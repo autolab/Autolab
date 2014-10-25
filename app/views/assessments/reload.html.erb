@@ -1,0 +1,9 @@
+<h2>Error Parsing your Assessment Configuration File:</h2><pre> <%=h @error.to_s %></pre>
+<br>
+<a href="<%= request.url %>">Click here once you have fixed the
+  above error</a>
+
+<%= debug @error %>
+<pre><%= @error.backtrace.join("\n") %></pre>
+
+

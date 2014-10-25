@@ -1,0 +1,51 @@
+<h2>Create Submission for <%= link_to @assessment.display_name, [@course, @assessment] %> </h2>
+
+<p>
+<%= link_to "Manage Submissions", :action=>"index", :assessment_id=>@assessment %>
+</p>
+
+<%= form_for @submission, as: :submission,
+      url: [@course, @assessment, @submission], method: :post,
+      html: {multipart: true}  do |f| %>
+<%= f.error_messages %>
+<table class="verticalTable" >
+<tr>
+  <th>User:</th>
+  <td>
+  <%= if params["cud_id"].nil? then 
+      f.select(:course_user_datum_id,@cuds) 
+    else
+      raw(@cuds.collect { |u| u.full_name_with_email}.join(", ") + 
+      "<input type='hidden' name='submission[user_id]' 
+      value='" + @cuds.collect{ |u| u.id }.join(',') + "' />")
+    end
+  %>
+  </td>
+</tr>
+<tr>
+  <th>Assessment:</th><td><%= @assessment.display_name %></td>
+  <%= f.hidden_field(:assessment_id) %>
+</tr>
+<tr>
+  <th>File:</th><td><%= f.file_field :file %></td>
+</tr>
+<tr>
+  <th>Notes:</th><td><%= f.text_area :notes %></td>
+</tr>
+<tr>
+  <th>Tweak:</th>
+  <td>
+  <%= f.fields_for :tweak, @submission.tweak do |t| %>
+    <%= t.text_field :value %>
+    <%= t.select :kind, options_for_select({"points" => "points", "%" => "percent"}, :selected => (@submission.tweak ? @submission.tweak.kind : "points")) %>
+  <% end %>
+  </td>
+</tr>
+<tr>
+  <td colspan=2 >
+  <br>
+  <%= f.submit "Create Submission", { :class=>"btn primary"} %>
+  </td>
+</tr>
+</table>
+<% end %>

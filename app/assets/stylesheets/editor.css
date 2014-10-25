@@ -1,0 +1,32 @@
+
+	table {
+		border-collapse: separate;
+		border-spacing: 2px; }
+
+	#code {
+		position: relative;
+		width: auto;
+		height: 500px;
+	}
+	#editorControl, #editorBar {
+		position: relative;
+		float: left;
+		background-color: #DDD;
+		width: 250px;
+	}
+
+	#editorBar {
+		margin-top: 2px;
+	}
+
+	#editorControl {
+		margin-top: 13px;
+	}
+	
+	#editorControl td {
+		text-align: right;
+	}
+
+	#editorControl td + td {
+		text-align: left;
+	}

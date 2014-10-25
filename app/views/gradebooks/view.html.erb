@@ -1,0 +1,100 @@
+<% content_for :head do %>
+  <%= stylesheet_link_tag "instructor_gradebook" %>
+  <%= stylesheet_link_tag "SlickGrid/2.02/slick.grid.css" %>
+  <%= stylesheet_link_tag "SlickGrid/2.02/controls/slick.columnpicker.css" %>
+  <%= stylesheet_link_tag "icons" %>
+
+  <%= external_javascript_include_tag "jquery-ui", "1.10.2" %>
+  <%= external_javascript_include_tag "bootstrap-tooltip", "2.3.1" %>
+  <%= javascript_include_tag "jquery.event.drag-2.2.js" %>
+  <%= javascript_include_tag "SlickGrid/2.02/slick.core.js" %>
+  <%= javascript_include_tag "SlickGrid/2.02/slick.grid.js" %>
+  <%= javascript_include_tag "SlickGrid/2.02/slick.dataview.js" %>
+  <%= javascript_include_tag "SlickGrid/2.02/controls/slick.columnpicker.js" %>
+
+  <script type="text/javascript">
+    var columns = <%== gradebook_columns(@matrix, @course).to_json %>
+    var data = <%== gradebook_rows(@matrix, @course, @section).to_json %>
+    var options = <%== @options.to_json %>
+  </script>
+
+  <%= javascript_include_tag "gradebook" %>
+
+  <!-- Temporary Bootstrap overrides -->
+  <style type="text/css">
+    *, *:before, *:after {
+      -moz-box-sizing: content-box;
+           box-sizing: content-box;
+    }
+    div#pageBody {
+      width: 95%;
+      margin: 0 auto;
+      padding: 15px;
+      box-sizing: border-box;
+    }
+
+    h1#courseTitle {
+      font-size: 24.5px;
+      margin-bottom: 0;
+    }
+
+    span.label {
+      text-transform: uppercase;
+      font-size: 8.5px;
+      vertical-align: text-bottom;
+    }
+
+    .slick-cell img {
+      vertical-align: baseline;
+    }
+
+    input#filter {
+      margin-bottom: 0;
+    }
+
+    #gradebook {
+      font-size: 12px;
+    }
+
+    input {
+      font-size: inherit !important;
+    }
+
+    div#footer {
+      display: none;
+    }
+
+<% unless @options[:show_actions] %>
+    div#filter_container {
+      margin-bottom: 20px;
+    }
+<% end %>
+  </style>
+<% end %>
+
+<% if not @course.gb_message.blank? %>
+  <div class="gb_message"><%= @course.gb_message %></div>
+<% end %>
+
+<div id="filter_container">
+  <input id="filter" placeholder="Search..." type="text"></input>
+</div>
+
+<% if @options[:show_actions] %>
+  <div id="last_updated">
+    <a class="tip link" title="Export as CSV" href="<%= url_for :action => :csv %>">
+      Export
+    </a> /
+    <a class="tip link" title="Course Statistics" href="<%= url_for :action => :statistics %>">
+      Statistics
+    </a> /
+    <a class="tip regenerate" title="Regenerate (~10 seconds)" href="<%= url_for :action => :invalidate %>">
+      <i class="icon-refresh"></i>
+      <%= time_ago_in_words(DateTime.parse @matrix.last_updated) %> old
+    </a>
+  </div>
+<% end %>
+
+<div id="gradebook">
+  <!-- will be filled in by gradebook.js -->
+</div>

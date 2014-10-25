@@ -1,0 +1,208 @@
+.mobileonly{}
+.desktoponly{display:none;}
+
+html {
+}
+
+body {
+	font-family: Helvetica,Arial,sans-serif;
+	font-size: 17px;
+	font-weight: normal;
+	color:#333;
+	background-color:#EEE;
+	text-align:center;
+	line-height:25px;
+}
+p{font-size:15px;}
+h1{ 
+	font-size:20px; 
+	color:#000;
+}
+th, h2 {
+	text-align:left;
+	margin:0px;
+	font-size:17px;
+	color:#666;
+	max-width:100%;
+	background-color:#DDD;
+	background: -moz-linear-gradient(top,  #CCC, #EEE);
+	background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#999), to(#BBB));
+	border-top:1px solid #999;
+	border-bottom:1px solid #999;
+	
+	
+	padding: 5px 20px;
+	padding-left:15px;
+}
+h3{	font-size:17px;}
+
+a{	/*background-color:#F3F3F3; 
+	color:#000;
+	text-decoration:none;
+	padding:1px;
+	border:1px solid #CCC;*/
+	color:#000;
+	text-decoration:none;
+	}
+
+
+
+ul{
+	position:relative;
+	left:0px;
+	padding:0px;
+	margin:0px;
+	width:100%;
+	overflow-x:hidden;
+	}
+li{
+
+	list-style-type:none;
+	position:relative;
+	margin: 0px auto;
+	max-width:100%;
+	padding:15px 15px;
+	color:#888;
+	border-bottom: 1px solid #CCC;
+	text-align:left;
+}
+li { background:#EEE; }
+li:nth-child(odd) { background:#FFF; }
+li b{color:#000;}
+
+
+
+#userWelcome{
+	display:none;
+	background-color:#990000;
+	color:#111;
+	position:absolute; top:0px; left:0px;
+	width:100%;
+	padding:3px 0px; 
+	padding-top:30px;
+	height:25px;
+	font-size:12px;
+}
+#pageBody{
+	position:absolute; top:0px; left:0px;
+	width:100%;
+	}
+#courseTitle{
+	margin:0px;
+	background-color:#990000;
+	color:#FFF;
+	position:relative;
+	padding-top:8px; padding-bottom:8px;
+	padding-left:35px;
+	text-align:left;
+	max-width:100%;
+	top:0px;
+	left:0px;
+	text-shadow: 0 0 2px #000; -moz-text-shadow: 0 0 2px #000; -webkit-text-shadow: 0 0 2px #000;
+}
+#content{width:100%;}
+#footer{
+	padding:10px 0px;
+	margin:0px;
+	background-color:#EEE;
+	color:#EEE;
+}
+#footer a{
+	color:#AAA;
+	margin: 1px auto;
+	font-size:12px;
+}
+#cmuHeader{display:none;}
+.navLinks{
+	/*display:none;*/
+	text-align:left;
+	overflow:hidden;
+	background-color:#770000;
+	border-top:1px solid #600;
+	font-size:17px;
+	position:relative;
+	top:0px;
+	margin:0px;
+	line-height:36px;
+	height:36px;
+}
+.navLinks a{
+	/*border:1px solid #000;*/
+	text-align:center;
+	margin:0px;
+	height:36px;
+	width:32%;
+	display:inline-block;
+	color:#FFF;
+	/*background-color:#999;
+	
+	-moz-border-radius: 5px 5px 0px 0px;
+	border-radius: 5px 5px 0px 0px;*/
+}
+.navLinks a:hover, .navLinks a.selected{
+	background-color:#9E3636;
+}
+
+.announcements{
+
+}
+
+table, tbody, tr{
+	position:relative;
+	left:0px;
+	border:none;
+	border-spacing:0px;
+	margin:0px; padding:0px;
+	width:100%;
+}
+.duedate{
+	display:block;
+	color:#666;
+}
+
+div.back{
+	position:absolute;
+	top:0px; left:0px;
+	margin:0px;
+	width:23px; height:41px;
+	background-color:#8A0000;
+	border-right:1px solid #770000;	/*CC2525;*/
+}
+div.back img{height:100%;}
+
+img.select{
+	height:60px;
+	position:absolute;
+	top:0px; right:25px;
+}
+
+
+.button{
+	display:block;
+	margin:10px 15px;
+	text-align:center;
+	color:#FFF;
+	cursor:pointer;
+	text-decoration:none;
+	padding:15px;
+	-webkit-border-radius: 5px; border-radius:5px;
+	background-color:#EEE;
+	background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#FFF), to(#EEE));
+	color:#888;
+	border:1px solid #CCC;
+}
+.half {
+	margin: 10px auto;
+	display:inline-block; 
+	width:45%;
+	padding:5px
+}
+.button:hover{
+	background-color:#F5F5F5;
+	background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#F8F8F8), to(#F0F0F0));
+}
+.button:active{
+	background-color:#DDD;
+	background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#F0F0F0), to(#F8F8F8));
+
+}

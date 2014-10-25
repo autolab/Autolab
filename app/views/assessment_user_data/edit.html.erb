@@ -1,0 +1,57 @@
+<% content_for :head do %>
+  <%= external_stylesheet_link_tag "bootstrap", "2.3.1" %>
+  <%= external_javascript_include_tag "bootstrap", "2.3.1" %>
+
+  <style type="text/css">
+    /* TODO: temporary Bootstrap override */
+    h1#courseTitle {
+      font-size: 28.5px;
+    }
+
+    div.container {
+      margin-left: 15px;
+    }
+
+    form fieldset {
+      padding-left: 20px;
+      padding-bottom: 10px;
+    }
+
+    input[type='submit'] {
+      border-radius: 3px;
+      padding: 2px;
+    }
+  </style>
+<% end %>
+
+<% if flash[:notice] %>
+  <div class="alert alert-success"><%= flash[:notice] %></div>
+<% end %>
+
+<div class="container">
+  <h5>Grade type for <%= @aud.user.andrewID %> on <%= @aud.assessment.display_name %></h5>
+
+  <%= form_for @aud, :url => { :action => :update } do |f| %>
+    <%= f.error_messages %>
+
+    <fieldset>
+      <label class="radio">
+        <%= f.radio_button :grade_type, AssessmentUserDatum::NORMAL %>
+        <%= grade_type_to_s AssessmentUserDatum::NORMAL %>
+      </label>
+
+      <label class="radio">
+        <%= f.radio_button :grade_type, AssessmentUserDatum::ZEROED %>
+        <%= grade_type_to_s AssessmentUserDatum::ZEROED %>
+      </label>
+
+      <label class="radio">
+        <%= f.radio_button :grade_type, AssessmentUserDatum::EXCUSED %>
+        <%= grade_type_to_s AssessmentUserDatum::EXCUSED %>
+      </label>
+
+    </fieldset>
+    
+    <%= f.submit "Save" %>
+  <% end %>
+</div>

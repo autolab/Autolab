@@ -1,0 +1,35 @@
+<h2>Create New Problem</h2>
+<br>
+<%= f.error_messages %>
+<table class="verticalTable">
+<tr>
+  <th>Name:</th>
+  <td><%=f.text_field :name %></td>
+  <td class="smallText">Each problem has a name that is unique to the assessment.</td>
+</tr>
+<tr>
+  <th>Description:</th>
+  <td><%= f.text_field :description %></td>
+  <td class="smallText">Short description of the problem.</td>
+</tr>
+<tr>
+  <th>Max Score:</th>
+  <td><%= f.text_field :max_score %></td>
+  <td class="smallText">The maximum score for this problem.</td>
+</tr>
+<tr>
+  <th>Optional?</th>
+  <td><%= f.check_box :optional %></td>
+
+  <td class="smallText">By default, all problems are
+  "required". Autolab will only display the total score to a student
+  if all required problems have a released score. Marking a problem
+  as optional will allow a student to see their total score without
+  having a score for that problem.  Use this option carefully. In
+  most cases, you should leave it unchecked.</td>
+
+</tr>
+<tr>
+  <td colspan=2><br><%= f.submit 'Save Problem', :class => 'btn primary'%></td>
+</tr>
+</table>

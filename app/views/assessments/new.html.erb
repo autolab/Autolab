@@ -1,0 +1,51 @@
+<h2>Create new assessment</h2>
+
+<%= form_for @assessment, url: course_assessments_path do |f| %>
+  <% if @assessment.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(@assessment.errors.count, "error") %>
+      prohibited this assessment from being saved:</h2>
+
+      <ul>
+      <% @assessment.errors.full_messages.each do |msg| %>
+        <li><%= msg %></li>
+      <% end %>
+      </ul>
+    </div>
+  <% end %>
+	
+	<table width="70%" class='verticalTable'>
+		
+	<tr>
+		<th width=50><%= f.label :name %></th>
+		<td width=100><%= f.text_field :name %></td>
+		<td style="border:0px;width:200px;" class="smallText">This name should be all lowercase alphanumeric only (no spaces or punctuation)</i></td>
+	</tr>
+	
+	<tr>
+		<th><%= f.label :category %></th>
+		<td><%= f.collection_select :category_id, @categories, :id, :name %></td>
+	  <td style="border:0px;width:200px;" class="smallText"> You can create a new category <%= link_to "here", new_course_assessment_category_path %>.
+	  </td>
+	</tr>
+	
+	<tr>
+	  <th>Optional<br>modules</th>
+	  <td>
+	    <% for mod in @modules do  %>
+	      <%= check_box_tag "modules[#{mod}]" %>
+	      <%= mod %><br>
+	    <% end %>
+	  </td>
+
+	  <td style="border:0px;width:200px;" class="smallText"> Optional
+	    features are provided as modules. Click the features you would
+	    like. You can read about them <a
+	    href="http://docs.autolab.cs.cmu.edu/document/view/73">here</a>.
+	  </td>
+	</tr>
+	
+	</table>
+	<br>
+	<%= f.submit "Create assessment", {:class => "btn primary"}  %>
+<% end %>

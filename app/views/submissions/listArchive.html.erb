@@ -1,0 +1,28 @@
+<h3>
+  Submission Version <%= @submission.version %> for
+  <%= @assessment.display_name %> (<%= @submission.course_user_datum.email %>)
+</h3>
+
+Files in this Archive: <br/>
+<ul>
+<% @files.each do |file| %>
+  <li>
+  <%= 
+  link_to file[:pathname],
+    :action => :download,
+    :header_position => file[:header_position],
+    :id => @submission.id
+  %>
+  <% if file[:highlight] then %>
+    <ul><li>
+    <%=
+    link_to "View as Syntax Highlighted Source",
+      :action => :view,
+      :header_position => file[:header_position],
+      :id => @submission.id
+    %>
+    </li></ul>
+  <% end %>
+  </li>
+<% end %>
+</ul>

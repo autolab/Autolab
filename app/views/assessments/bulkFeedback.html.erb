@@ -1,0 +1,45 @@
+<%= external_javascript_include_tag 'prototype', '1.6.0.3' %>
+<% if params[:file] then %>
+  <h2>Feedback Files Saved! Please Enter Grades:</h2>
+  <%= form_tag(url_for(:post=>"grades")) do %>
+  <table class=prettyBorder >
+  <thead><tr>
+  <th>Student</th>
+  <th>Feedback File</th>
+  <th><%= @problem.name %> Score</th>
+  </tr></thead>
+  <% tabindex = 1 %>
+  <% for row in @uploadedStudents do %> 
+    <tr>
+    <td><%=row[:user].full_name_with_email %></td>
+    <td><%= link_to row[:feedback] ,{:action=>"downloadFeedbackFile",
+      :id=>row[:score].id},:class=>"smallText",
+      %></td>
+    <td><%= text_field_tag "score[#{row[:score].id}]", row[:score].score,
+      :size=>4,:tabindex=>tabindex %></td>
+    </tr>
+    <% tabindex += 1 %>
+  <% end %>
+  </table>
+  <%= submit_tag 'Submit',:tabindex=>tabindex %>
+  <% end %>
+  <script type="script/javascript">
+    document.getElementById(
+      "score_<%= @uploadedStudents[0][:score].id %>").focus()
+  </script>
+<% else %>
+  <h1>Upload an archive of feedback files</h1>
+  <i>This is an <b>experimental</b> feature! Please email
+  autolab-dev@andrew.cmu.edu with any issues or feedback!</i>
+  <%= form_tag(url_for(:controller=>"assessment",:action=>"bulkFeedback"),
+    :method=>"post",:multipart=>true) do %>
+  Upload Archive of Feedback: <%= file_field_tag :file %>
+  <br>
+  <h3>Problem:</h3>
+  <% for p in @assessment.problems do %>
+  <%= radio_button_tag :problem,p.id %><%= p.name %><Br>
+  <% end %>
+  <%= submit_tag %>
+  
+  <% end %>
+<% end %>

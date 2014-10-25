@@ -1,0 +1,177 @@
+<%= external_javascript_include_tag "jquery-ui", "1.9.1" %>
+<%= external_javascript_include_tag "lodash", "1.0.0" %>
+<%= external_javascript_include_tag "backbone", "0.9.2" %>
+<%= external_javascript_include_tag "jquery.dataTables", "1.9.2" %>
+<%= external_javascript_include_tag "handlebars", "1.0.0-rc.3" %>
+
+<%= javascript_include_tag "KeyTable" %>
+<%= javascript_include_tag "jquery.simplemodal-1.4.4.js" %>
+
+<%= javascript_include_tag "lodash_set_template_style.js" %>
+<%= stylesheet_link_tag "gradesheet" %>
+
+<script type="text/javascript">
+  var andrewID_col = 1
+  var course = '<%= @course.name %>';
+  var user = <%= @user.to_json %>;
+  var submissions = <%= @submissions_json %>;
+  var problems_length = <%= @assessment.problems.length %>;
+  var first_problem_column = 5;
+  var first_non_searchable_column = 3
+</script>
+
+<%= javascript_include_tag "gradesheet.js" %>
+<div id="shortcut-help">
+  <h1>Keyboard Shortcuts</h1>
+  <ul>
+    <li><span class = "shortcut">tab</span> Save & move to next score</li>
+    <li><span class = "shortcut">shift + tab</span> Save & move to previous score</li>
+    <li><span class = "shortcut">`</span>  Focus between feedback & score</li>
+    <li><span class = "shortcut">enter</span>  Save & go down </li>
+    <li><span class = "shortcut">h or &larr;</span> Save & move left</li>
+    <li><span class = "shortcut">j or &darr;</span> Save & move down</li>
+    <li><span class = "shortcut">k or &uarr;</span> Save & move up</li>
+    <li><span class = "shortcut">l or &rarr;</span> Save & move right</li>
+  </ul>
+</div>
+<span onclick="javascript:$('#shortcut-help').modal()"" id="keyboard">Keyboard shortcuts <%= image_tag("keyboard.png", :size => "20x14", :class => "keyboard-icon") %> </span>
+<div id="table_container" style="text-align: center">
+
+<table id="grades">
+
+<thead>
+  <tr class="sortable">
+    <th class="enumerator">#</th>
+    <th class="id">ID</th>
+    <th>Name</th>
+    <th class="lec">Lec</th>
+    <th class="sec">Sec</th>
+    <th class="total">Total</th>
+    <% for p in @assessment.problems do %>
+      <th class="problem">
+        <%= p.name %>
+        <span class="max_score">(<%= p.max_score %>)</span>
+      </th>
+    <% end %>
+    <% if @user.instructor? %>
+        <th class="late_penalty">Late<br>Penalty</th>
+        <th class="tweak">Tweak</th>
+    <% end %>
+  </tr>
+</thead>
+</table>
+
+<script type="text/template" id="score-template">
+  <span class="view {{#if released}}released{{/if}}">
+    {{{displayScore score}}}
+  </span>
+  <input class="edit" type="text" value="{{{displayScore score}}}"/>
+</script>
+
+<script type="text/template" id="score-popover-template">
+  <div class="popover" id="score-pop-{{= cid }}">
+    <table class="score_details">
+      <tr><th>Feedback</th><td><textarea class="feedback">{{= feedback}}</textarea></td></tr>
+      <tr>
+        <th>Grader</th>
+        <td id="grader"></td>
+      </tr>
+      <tr>
+        <th>Released</th>
+        <td><input class="released" type="checkbox" {{= released ? "checked" : "" }}></input></td>
+      </tr>
+    </table>
+  </div>
+</script>
+
+<script type="text/template" id="submission-boot-template">
+  <tbody>
+  {{#each .}}
+    <tr id="submission-{{ id }}" data-submission-id="{{ id }}" class="submission">
+    <td class="enumerator"></td>
+    <td class="id">
+      <a tabindex="-1" class="andrewID">{{ user.andrewID }}</a>
+      {{#if filename }}
+        <a href="go_to_file/{{ id}}">
+          <img src='/images/go.png' style='vertical-align: -1px'>
+        </a>
+      {{/if}}
+    </td>
+    <td>{{ user.last_name }}, {{ user.first_name }}</td>
+    <td class="lec">{{ user.lecture }}</td>
+    <td class="sec">{{ user.section }}</td>
+    <td class="total">{{{displayTotal total }}}</td>
+    {{#each problems}}
+        {{{displayScoreView this ../scores }}}
+      </td>
+    {{/each}}
+    <% if @user.instructor? %>
+      <td class="late_penalty">{{{displayLatePenalty late_penalty}}}</td>
+      <td class="tweak">
+        <a href="../submission/edit/{{id}}">
+          {{{displayTweak tweak}}}
+        </a>
+      </td>
+    <% end %>
+    </tr>
+  {{/each}}
+  </body>
+</script>
+
+<script type="text/template" id="submission-popover-template">
+  <div class="popover" id="sub-pop-{{=id}}">
+    {{ if (filename) { }}
+      <span class="filename">
+        <a href="go_to_file/{{= id}}">{{= filename }}</a>
+        <span class="links">
+          {{ if (is_archive) { }}
+            <a href="../submission/listArchive/{{= id}}"> View Archive </a> &middot;
+          {{ } else if (is_syntax) { }}
+            <a href="../submission/view/{{= id}}"> View/annnotate source </a> &middot;
+          {{ } }}
+          <a href="../submission/download/{{= id}}"> Download </a>
+        </span>
+      </span>
+    {{ } }}
+    <table class="sub_info">
+      {{ if (filename) { }}
+        <tr><th>type</th><td>{{= mime_type }}</td></tr>
+      {{ } }}
+      <tr>
+        <th>Version</th>
+        <td class="version">
+          {{ if (version === 0) { }}
+            Unofficial
+          {{ } else { }}
+            {{= version }}
+          {{ } }}
+          <% if @user.instructor? %>
+            (<a href="history/{{= user_id}}">more...</a>)
+          <% end %>
+        </td>
+      </tr>
+      <tr><th>Submitted on</th><td>{{= new Date(created_at).toString()}}</td></tr>
+      <% if @user.instructor? %>
+        <tr><th>Used grace days</th><td>{{= grace_days_used }}</td></tr>
+        <tr><th>+ Penalty late days</th><td>{{= penalty_late_days }}</td></tr>
+        <tr><th>= Days late</th><td>{{= days_late }}</td></tr>
+        <tr>
+          <th>Grade Type</td>
+          <td>
+            <a href="../submission/edit/{{= id}}">
+            {{ if (special_type === 0 ) { }}
+              Normal
+            {{ } else if(special_type === 1) {  }}
+              No-Grade
+            {{ } else { }}
+              Excused
+            {{ } }}
+            </a>
+          </td>
+        </tr>
+      <% end %>
+    </table>
+  </div>
+</script>
+
+</div>

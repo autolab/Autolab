@@ -1,0 +1,191 @@
+<% content_for :head do %>
+  <%= stylesheet_link_tag "student_gradebook" %>
+  <%= external_stylesheet_link_tag "bootstrap", "2.3.1" %>
+
+  <%= external_javascript_include_tag "bootstrap", "2.3.1" %>
+  <%= external_javascript_include_tag "bootstrap-tooltip", "2.3.1" %>
+
+  <!-- Temporary Bootstrap overrides -->
+  <style type="text/css">
+    div#pageBody {
+      max-width: 940px;
+      min-width: 640px;
+      box-sizing: border-box;
+      margin: 0 auto;
+    }
+
+    div.container-fluid {
+      padding: 0;
+    }
+
+    h1#courseTitle {
+      font-size: 24.5px;
+      margin-bottom: 0;
+   }
+
+    span.label {
+      text-transform: uppercase;
+      font-size: 8.5px;
+      vertical-align: text-bottom;
+    }
+
+    body {
+      font-size: 12px;
+    }
+  </style>
+
+  <script type="text/javascript">
+  $(function() {
+    $('.tip').tooltip({
+      placement: 'top',
+      container: 'body',
+      html: true
+    });
+  });
+  </script>
+
+  <title>Grades for <%= @_cud.email %></title>
+<% end %>
+
+<div class="gradebook">
+  <h4>Grades for <%= @_cud.email %> </h4>
+
+  <% if not @course.gb_message.blank? %>
+    <div class="gb_message"><%= @course.gb_message %></div>
+  <% end %>
+
+  <div class="grades_container">
+    <div class="container-fluid">
+      <% @categories_sorted.each_slice(2) do |cat_pair| %>
+      <div class="row-fluid cat_pair">
+        <% cat_pair.each do |cat| %>
+          <div class="span6 cat_container">
+
+          <div class="category">
+            <table class="grades">
+              <colgroup>
+                <col class="asmt_names"></col>
+                <% if @course.grace_days > 0 %>
+                  <col class="gdu"></col>
+                <% end %>
+                <col class="pld"></col>
+                <col class="fs"></col>
+              </colgroup>
+
+              <tr class="header">
+                <th class="cat_name"><%= cat.name %></th>
+                <% if @course.grace_days > 0 %>
+                  <th>
+                    GDU
+                    <i class="tip icon-question-sign icon-aaa" title="<b>Grace Days Used</b><br />Number of late days used for which <em>no</em> penalty was incurred"></i>
+                  </th>
+                <% end %>
+                <th>
+                  PLD
+                  <i class="tip icon-question-sign icon-aaa" data-title="<b>Penalty Late Days</b><br />Number of late days used for which a penalty was incurred"></i>
+                </th>
+                <th>Final Score</th>
+              </tr>
+
+              <% cat.assessments.each do |asmt| %>
+                <% aud = asmt.aud_for @_cud  %>
+                <tr>
+                  <td>
+                    <span>
+                    <%= link_to asmt.display_name, course_assessment_path(@course, asmt) %>
+                    <% unless @cud.student? %>
+                      <a class="history_icon" href="<%= history_url(@_cud, asmt) %>">
+                        <i title="Handin history" class="icon-list tip"></i>
+                      </a>
+                    <% end %>
+                  </td>
+                  <% if @course.grace_days > 0 %>
+                    <td><%= aud.grace_days_used %></td>
+                  <% end %>
+                  <td><%= aud.penalty_late_days %></td>
+                  <td>
+                    <% case aud.grade_type
+
+                       when AssessmentUserDatum::ZEROED %>
+                      <% if @cud.instructor? %>
+                        <span data-title="This final score has been zeroed out." class="tip zeroed">
+                          <%= render_final_score aud %>
+                        </span>
+                      <% else %>
+                        <%= render_final_score aud %>
+                      <% end %>
+
+                    <% when AssessmentUserDatum::EXCUSED %>
+                      <% pronoun = @cud == @_cud ? "You" : @_cud.email %>
+                      <% tip = "#{pronoun} has been excused from #{asmt.display_name}." %>
+                      <span data-title="<%= tip %>" class="tip excused label label-info">
+                        Excused
+                      </span>
+
+                    <% when AssessmentUserDatum::NORMAL %>
+                      <% case aud.submission_status
+                         when :submitted %>
+                        <% if Time.now <= aud.assessment.grading_deadline %>
+                          <i data-title="Final score will be visible once grading is complete." class="tip icon-time"></i>
+                        <% else %> 
+                          <%= render_final_score aud %>
+                        <% end %>
+
+                      <% when :not_submitted %>
+                        <% if Time.now <= aud.assessment.grading_deadline %>
+                          <i data-title="No submission was made." class="tip icon-exclamation-sign"></i>
+                        <% else %> 
+                          <span data-title="No submission was made." class="tip not-submitted">
+                            <%= render_final_score aud %>
+                          </span>
+                        <% end %>
+
+                      <% when :not_yet_submitted %>
+                        <% if Time.now <= aud.assessment.grading_deadline %>
+                          <i data-title="No submission has been made yet." class="tip icon-exclamation-sign"></i>
+                        <% else %> 
+                          <span data-title="No submission has been made yet." class="tip not-yet-submitted">
+                            <%= render_final_score aud %>
+                          </span>
+                        <% end %>
+                      <% end %>
+                    <% end %>
+                  </td>
+                </tr>
+              <% end %>
+              <tr class="footer">
+                <th>Category Average</th>
+                <% if @course.grace_days > 0 %><th></th><% end %>
+                <th></th>
+                <th class="cat_avg"><%= computed_score { @_cud.category_average cat, @cud } %></td>
+              </tr>
+            </table>
+          </div>
+
+          </div> <!-- span -->
+        <% end %> <!-- cat -->
+      </div> <!-- row -->
+      <% end %> <!-- cat_pair -->
+    </div>
+
+    <div class="course">
+      <table>
+        <% if @cud.instructor? %>
+        <tr>
+          <th>Average Tweak</th>
+          <td><%= link_to raw(tweak(@_cud.tweak)), [:edit, @course, @_cud] %></td>
+        </tr>
+        <% elsif @_cud.tweak %>
+        <tr>
+          <th>Average Tweak</th>
+          <td><%== tweak @_cud.tweak %></td>
+        </tr>
+        <% end %>
+        <tr>
+          <th>Course Average</th>
+          <td><%== computed_score { @_cud.average @cud } %></td>
+        </tr>
+      </table>
+    </div>
+  </div>
+</div>

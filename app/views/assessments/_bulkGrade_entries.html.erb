@@ -1,0 +1,20 @@
+<table id="entries">
+  <tr>
+    <th class="i">#</th>
+    <th class="andrew_ID">Andrew ID</th>
+  <% problems.each do |problem| %>
+    <th><%= problem.name %></th>
+  <% end %>
+    <th>Grade Type</th>
+  </tr>
+<% entries.each_with_index do |entry, i| %>
+  <tr>
+    <td class="i"><%= i %></td>
+    <td class="andrew_ID <%= bulkGrade_cell_class entry[:andrew_ID] %>"><%= bulkGrade_cell entry[:andrew_ID] %>
+  <% problems.each do |problem| %>
+    <td class="datum <%= bulkGrade_cell_class entry[:data][problem.name] %>"><%= bulkGrade_cell entry[:data][problem.name] %></td>
+  <% end %>
+    <td class="grade_type <%= bulkGrade_cell_class entry[:grade_type] %>"><%= bulkGrade_cell entry[:grade_type] %></td>
+  </tr>
+<% end %>
+</table>

@@ -1,0 +1,35 @@
+<% content_for :head do %>
+  <%= stylesheet_link_tag "assessments/create_edit" %>
+  <%= javascript_include_tag "assessments/create_edit" %>
+<% end %>
+
+<h3><%= @assessment.display_name %> Settings</h3>
+
+<ul id="tabs" class="nav nav-tabs">
+<% [ "basic", "handin", "penalties", "problems" ].each do |tab_name| %>
+  <%= (tab_name == params[:active_tab]) ? tag(:li, class: :active) : tag(:li) %>
+    <%= content_tag :a, tab_name.titleize, href: "edit_#{tab_name}" %>
+  </li>
+<% end %>
+</ul>
+
+<%= form_for [ @course, @assessment ], url: "edit_#{params[:active_tab]}",
+                                   builder: FormBuilderWithDateTimeInput do |f| %>
+  <% if @course.errors.any? %>
+      <ul>
+        <% @course.errors.full_messages.each do |msg| %>
+          <li><%= msg %></li>
+        <% end %>
+      </ul>
+  <% end %> 
+
+  <% if @assessment.errors.any? %>
+      <ul>
+        <% @assessment.errors.full_messages.each do |msg| %>
+          <li><%= msg %></li>
+        <% end %>
+      </ul>
+  <% end %>
+
+  <%= render "edit_#{params[:active_tab]}", f: f %>
+<% end %>

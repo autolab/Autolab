@@ -1,0 +1,35 @@
+<%= f.text_field :name, disabled: true, class: "form-control", help_text: "The unique (for this course) name of the assessment. Must be lowercase alphanumeric (no punctuation). E.g., <kbd>malloclab</kbd>".html_safe %>
+
+<%= f.text_field :display_name, help_text: "Name that will be displayed on the course home page. E.g., 'Malloc Lab'" %>
+
+<%= #f.label :category 
+%>
+<%= 
+#f.collection_select :category, @course.assessment_categories, :id, :name, selected: @assessment.category.id
+%>
+<!--<td style="border:0px;width:200px;" class="smallText"> You can create a new category <%= 
+#link_to "here", new_course_assessment_category_path 
+%>.
+</td><br></br> -->
+<hr>
+<h4>Modules Used</h4>
+<%= f.check_box :has_autograde%>
+<label for="assessment_has_autograde">Autograde</label><br>
+<%= f.check_box :has_partners %>
+<label for="assessment_has_partners">Partners</label><br>
+<%= f.check_box :has_svn %>
+<label for="assessment_has_svn">SVN</label><br>
+<%= f.check_box :has_scoreboard %>
+<label for="assessment_has_scoreboard">Scoreboard</label><br>
+<hr>
+<%= f.text_area  :description %>
+
+
+<%= f.text_field :handout, help_text: "File in the assessment directory containing materials that the instructor hands out to students or URL to redirect to. E.g., 'malloclab-handout.tar', 'http://school.edu/class/malloclab.zip'" %>
+
+<%= f.text_field :writeup, help_text: "File in the assessment directory or URL containing instructions to students. E.g., 'writeup/malloclab.pdf', 'http://school.edu/class/writeup.pdf'" %>
+
+<div class="action_buttons">
+  <%= f.submit "Save" %>
+  <%= link_to "Delete this Assessment", course_assessment_path(@course, @assessment), method: :delete, class: 'btn btn-danger', data: { confirm: " Deleting will delete all associated assessment data and cannot be undone. Are you sure you want to delete this assessment?" } %>
+</div>

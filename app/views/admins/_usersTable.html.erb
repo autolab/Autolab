@@ -1,0 +1,31 @@
+<h4>Found <%= @cuds.count %> users</h4>
+<table class="prettyBorder sortable" >
+<thead>
+<tr><th>id</th><th>andrewID</th><th>First Name</th><th>Last Name</th><th>Email</th><th>Lecture</th><th>section</th><th>School</th><th>Major</th><th>Year</th><th>Nickname</th><th>Dropped?</th><th>Type</th></tr>
+</thead>
+<% for cud in @cuds do %>
+<tr class="user-row">
+  <td><%= cud.id %></td>
+  <td><%= link_to cud.user.email, course_course_user_datum_path(@course, cud) %></td>
+  <td><%= cud.user.first_name %></td>
+  <td><%= cud.user.last_name %></td>
+  <td><%= cud.user.email %></td>
+  <td><%= cud.lecture %></td>
+  <td><%= cud.section %></td>
+  <td><%= cud.school %></td>
+  <td><%= cud.major %></td>
+  <td><%= cud.year %></td>
+  <td><%= cud.nickname %></td>
+  <td><%= cud.dropped %></td>
+  <td><%= if cud.instructor? then 
+    "Instructor"
+  elsif cud.course_assistant? then
+    "Course Assistant"
+  else
+    "Student"
+  end
+  %></td> 
+</tr>
+<% end %>
+</table>
+

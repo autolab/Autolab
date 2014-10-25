@@ -1,0 +1,33 @@
+<h2>Admin Autograding for <%= link_to @assessment.display_name, {:assessment=>@assessment.name}%></h2>
+
+<% if request.post? then %>
+    <b><%= flash[:info] %></b>
+<% end %>
+
+<%= form_for :autograde_prop, :url=>{:action=>"adminAutograde"} do |f| %>
+<%= f.error_messages %>
+
+<table class="verticalTable">
+
+<tr>
+  <th>VM image</th>
+  <td><%= f.text_field :autograde_image %></td>
+  <td class=smallText> VM image for autograding (e.g., "<kbd>rhel.img</kbd>"). Here is the <a href="/vmlist.html">list of VMs used at CMU</a></td>
+</tr>
+
+<tr>
+  <th>Timeout</th>
+  <td><%= f.text_field :autograde_timeout %></td>
+  <td class=smallText>Timeout for autograding jobs (secs)</td>
+</tr>
+
+<tr>
+  <th>Release scores?</th>
+  <td><%= f.check_box :release_score %></td>
+  <td class=smallText>Check to release autograded scores to students immediately after autograding (strongly recommended).</td>
+</tr>
+</table>
+<br>
+
+<%= f.submit 'Update', { :class=> "btn primary"} %>
+<% end %>

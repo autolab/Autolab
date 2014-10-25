@@ -1,0 +1,6 @@
+<h2>Step 2. Edit Problems for <%= link_to @assessment.display_name, {:assessment=>@assessment.name}%></h2>
+<ul>
+  <% # this bit of Rails magic renders app/views/problems/_problem.html.erb for every problem in the collection %>
+  <%= render @assessment.problems %>
+</ul>
+<%= link_to "Add Problem", new_course_assessment_problem_path(@course, @assessment) %>

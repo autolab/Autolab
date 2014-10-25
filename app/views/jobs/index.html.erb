@@ -1,0 +1,111 @@
+<% require 'autoConfig' %>
+
+<%= javascript_include_tag "sorttable" %>
+
+<p>
+This page shows you the status of current and recent autograding jobs. 
+</p>
+
+<h2>Currently Running Jobs</h2>
+
+<% if @running_jobs == [] then %>
+  None
+<% else %>
+  <table class='prettyBorder sortable'>
+  <tr><th>Job ID</th><th>Job Name</th><th>Submitted At</th>
+  <th>Elapsed (s)</th><th>Status</th></tr>
+  <% for @job in @running_jobs do %>
+    <tr>
+    <td> <%= @job[:id] %> </td> 
+    <td> <%= @job[:name] %> </td> 
+    <td> <%= @job[:first] %> </td> 
+    <td> <%= @job[:elapsed] %> </td>
+
+    <% if @job[:name] == "*" then %>
+      <td> <%= @job[:state] %> </td>
+    <% elsif @cud.user.administrator? or @cud.instructor? %>
+      <td> <%= link_to @job[:status] , 
+      {:controller=>"jobs", :action=>"getjob", :id=>@job[:id]}%> </td>
+    <% else %>
+      <td><%= @job[:status] %></td>
+    <% end %>
+
+    </tr>
+  <% end %>
+  </table>
+<% end %>
+
+<h2>Jobs Waiting to Run</h2>
+
+<% if @waiting_jobs == [] then %>
+  None
+<% else %>
+  <table class='prettyBorder sortable'>
+  <tr><th>Job ID</th><th>Job Name</th><th>Submitted At</th><th>Elapsed (s)</th><th>Status</th></tr>
+  <% for @job in @waiting_jobs do %>
+    <tr>
+    <td> <%= @job[:id] %> </td> 
+    <td> <%= @job[:name] %> </td> 
+    <td> <%= @job[:first] %> </td> 
+    <td> <%= @job[:elapsed] %> </td>
+
+    <% if @job[:name] == "*" then %>
+      <td> <%= @job[:state] %> </td>
+    <% elsif @cud.user.administrator? or @cud.instructor? %>
+      <td> <%= link_to @job[:state] , 
+      {:controller=>"jobs", :action=>"getjob", :id=>@job[:id]}%> </td>
+    <% else %>
+      <td> <%= @job[:state] %></td>
+    <% end %>
+
+    </tr>
+  <% end %>
+  </table>
+<% end %>
+
+
+<% 
+since = ""
+if @dead_jobs_view[-1] and 
+  @dead_jobs_view[-1][:first] and 
+  @dead_jobs_view[-1][:first] != "" then
+    since = "(since #{@dead_jobs_view[-1][:first]})"
+end
+%>
+
+<% if @cud.user.administrator? then %>
+  <h2>Recently Completed Jobs <%=since%></h2>
+<% elsif @cud.instructor? then %>
+  <h2>Recently Completed Jobs For This Course <%=since%></h2>
+<% else %>
+  <h2>Your Recently Completed Jobs <%=since%></h2>
+<% end %>
+
+<% if @dead_jobs == [] then %>
+  None
+<% else %>
+  <table class='prettyBorder sortable'>
+  <tr><th>Job ID</th><th>Job Name</th><th>Submitted At</th>
+  <th>Elapsed (s)</th><th>Status</th></tr>
+  <% for @job in @dead_jobs_view do %>
+    <tr>
+    <td> <%= @job[:id] %> </td> 
+    <td> <%= @job[:name] %> </td> 
+    <td> <%= @job[:first] %> </td> 
+    <td> <%= @job[:elapsed] %> </td>
+    <td> <%= link_to @job[:state], {:controller => "jobs", :action => "getjob", :id=>@job[:id]} %> </td>
+    </tr>
+  <% end %>
+  </table>
+
+  <p>
+  <% if @dead_jobs_view.size <= AUTOCONFIG_DEF_DEAD_JOBS then %>
+    <%= link_to "View long list of recently completed jobs", 
+      {:controller=>"jobs", :id=>AUTOCONFIG_MAX_DEAD_JOBS} %>
+  <% else %>
+    <%= link_to "View short list of recently completed jobs", 
+      {:controller=>"jobs", :id=>nil} %>
+  <% end %>
+  </p>
+<% end %>
+

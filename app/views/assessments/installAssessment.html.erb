@@ -1,0 +1,39 @@
+<h2>Option 1: Create a new assessment from scratch.</h2>
+
+<p>You can create a new assessment from scratch using our 
+	<%= link_to "Assessment Builder", new_course_assessment_path %>. </p>
+
+<h2>Option 2: Import an existing assessment from file system.</h2>
+<p style="width:50%" >
+
+<% if @availableAssessments.empty? then %>
+  <i>There are no uninstalled assessments available for importing.</i>
+<% else %>
+  <p>If you have an existing Autolab assessment from a previous course offering,
+  then you can import it into your current course:</p>
+
+  <ul>
+  <li> Step 1: Copy the assessment from the previous course directory to the current course directory (<%= File.join(Rails.root, "courses", @course.name) %>).
+
+  <li>Step 2: Refresh this page to cause your new assessment to appear 
+  in the list below. 
+
+  <li>Step 3: Click the link on the uninstalled assessment you want to import:
+  <ul>
+
+  <% for assign in @availableAssessments do %>
+    <li><%= link_to assign, {:action => "importAssessment",
+                :assessment_name=>assign} %>
+  <% end %>         
+
+  </ul>
+</ul>
+<% end %>
+
+<h2>Option 3: Import an existing assessment from tarball.</h2>
+<i>You can also import a tarball with the assessment directory.</i>
+<%= form_tag({action: :importAsmtFromTar}, multipart: true) do %>
+  <p>Assessment Tarball: <%= file_field_tag "tarFile", :class=>"btn default" %></p>
+  <%= submit_tag "Upload", :class=>"btn primary" %>
+<% end %>
+

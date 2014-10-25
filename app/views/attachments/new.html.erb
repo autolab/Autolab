@@ -1,0 +1,23 @@
+<% path = (@is_assessment)? course_assessment_attachments_path(@course, @assessment) : course_attachments_path(@course) %>
+<%= form_for :attachment, url: path, method: :create, html: {multipart: true} do |f| %>
+  <%= f.error_messages %>
+  <table class="verticalTable">
+    <tr>
+      <th>Name</th>
+      <td><%= f.text_field :name %></td>
+    </tr>
+    <tr>
+      <th>Released</th>
+      <td><%= f.check_box :released %></td>
+    </tr>
+    <tr>
+      <th>File</th>
+      <td><%= f.file_field :file %></td>
+    </tr>
+    <tr>
+      <td colspan=2>
+        <%= f.submit("Upload") %>
+      </td>
+    </tr>
+  </table>
+<% end %>

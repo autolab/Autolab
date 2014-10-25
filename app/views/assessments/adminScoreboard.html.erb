@@ -1,0 +1,46 @@
+<h2>Admin Scoreboard for <%= link_to @assessment.display_name, {:assessment=>@assessment.name}%></h2>
+
+<% if request.post? then %>
+    <b><%= flash[:info] %></b>
+<% end %>
+
+
+<%= form_for :scoreboard_prop, :url=>{:action=>"adminScoreboard"} do |f| %>
+<%= f.error_messages %> 
+<p>
+Use this page to configure the scoreboard 
+(<a href="/scoreboardHelp.html">Learn more</a>).
+</p>
+
+<table class="verticalTable">
+
+<tr>
+  <th>Banner</th>
+  <td><%= f.text_field :banner, :size=>80 %></td>
+  <td class=smallText> Optional HTML banner text. Leave blank for default.
+</td></tr>
+
+<tr>
+  <th>Column specification</th>
+  <td><%= f.text_area :colspec, :rows=>5, :cols=>80 %></td>
+
+  <td class=smallText>Optional JSON string that describes your
+customized scoreboard columns. Leave blank for default.<br />
+Example: For scoreboard with two cols: "Score" and "Props", with "Score" sorted descending, and "Props"
+ascending:
+<b><kbd>'{"scoreboard": [ {"hdr":"Score"}, {"hdr":"Props", "asc":1} ] }'</kbd></b> (inside the quotes).</td>
+
+</tr>
+
+<tr>
+  <th>Column summary</th>       
+  <td><%= @column_summary %>
+  <td class=smallText><kbd>[desc]/[asc]</kbd>: break ties by sorting this column is descending or ascending order.</kbd></b></td> 
+</tr>
+
+</table>
+<br>
+<%= f.submit 'Update', {:class =>"btn primary"} %>
+
+<% end %>
+

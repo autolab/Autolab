@@ -1,0 +1,36 @@
+Choose a file that contain rows of problem scores or feedback in the following comma-separated format:
+
+<div class="code">
+  <p class="code">
+    <code>Andrew ID, <% @assessment.problems.each { |p| %><%= p.name %> Score/Feedback, <% } %>Grade Type</code>
+  </p>
+  
+  <p>All columns are mandatory. An empty cell will leave the existing value unmodified. Valid values for Grade Type are <code>normal</code>, <code>zeroed</code>, <code>excused</code>, and empty.</p>
+</div>
+
+<%= form_for :upload, :html => { :multipart => true } do |f| %>
+  <div class="controls">
+    <%= f.file_field :file %>
+
+    <div class="radio">
+      <label>
+        <%= f.radio_button :data_type, "scores", { :checked => true } %>
+        Scores
+      </label>
+    </div>
+
+    <div class="radio">
+      <label>
+        <%= f.radio_button :data_type, "feedback" %>
+        Feedback <span class="info">use escape characters in place of newlines (\n) and tabs (\t)</span>
+      </label>
+    </div>
+  </div>
+
+  <p>
+    We will show you a preview of the uploaded data before it used to update grades. The update will occur as a 
+    <a href="http://en.wikipedia.org/wiki/Database_transaction#Transactional_databases">transaction</a>,
+    allowing you to correct errors and re-submit.
+  </p>
+  <%= f.submit 'Start' %>
+<% end %>

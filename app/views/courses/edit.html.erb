@@ -1,0 +1,29 @@
+<h2>Edit Course</h2>
+
+<%= form_for @course, as: :editCourse, url: course_path(@course), method: :patch do |f| %>
+<% if @course.errors.any? %>
+	<div id="error_explanation">
+		<h2><%= pluralize(@course.errors.count, "error") %>
+      prohibited this course from being saved:</h2>
+			
+		<ul>
+			<% @course.errors.full_messages.each do |msg| %>
+			<li><%= msg %></li>
+			<% end %>
+		</ul>
+	</div>
+<% end %>
+
+<table width=70% class="verticalTable">
+  <%= render :partial=>"courseFields", :locals=>{:f=>f, :course=>@course} %>
+</table>
+
+<br>
+<%= f.submit 'Update', { :class=> "btn primary" } %>
+<% end %>
+<hr>
+
+<% if current_user.administrator? %>
+<%= link_to "Delete Course", course_path(@course), method: :delete, 
+	data: {confirm: "Are you sure to destroy #{@course.display_name}?"}, class: "btn" %>
+<% end %> 

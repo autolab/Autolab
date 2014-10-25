@@ -1,0 +1,20 @@
+<% if ! @destroyUser then %>
+  No such user!
+<% else %>
+  <h2>Destroy <%= @destroyUser.andrewID %></h2>
+  <h3>DON'T DO THIS!!!!</h3>
+  <b>This will destroy the account information, including their submission
+history, their grades, their scores, and pretty much everything except for their
+actual submission files... we keep those. <br></b>
+  <%= form_tag url_for(:action=>"destroy",:id=>@destroyUser.id) do %>
+  <%= check_box_tag "yes1" %>Yes, I'm really freaking sure I want to do this. <br>
+  <%= check_box_tag "yes2" %>I understand I'm about to destroy a student's
+account, and that this is potentially REALLY bad. <br>
+  <%= check_box_tag "yes3" %>I promise I will not run to one of the
+system-adminstrators and beg them to restore the database because I accidently
+deleted the account of <b><%= @destroyUser.first_name %> <%=
+@destroyUser.last_name %></b><br>
+  <%= submit_tag("Oh just delete the account already!") %>
+  <% end %>
+  
+<% end %>

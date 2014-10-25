@@ -1,0 +1,60 @@
+<h2>Manage Extensions for <%= link_to @assessment.display_name, [@course, @assessment] %> </h2>
+
+<table>
+<tr>
+<td>
+<p><b>Current Extensions</b></p>
+<table class="verticalTable">
+<tr>
+  <th>AndrewID</th>
+  <th colspan=2>Extension Length</th>
+</tr>
+Size:<%= @extensions.size %>
+<% for ext in @extensions do %>
+  <tr>
+    <th><%= ext.course_user_datum.email %></th>
+    <td><%= ext.infinite? ? "Infinite" : "#{ext.days} days" %></td>
+    <td><%= link_to 'Delete' , {:action=>:destroy,:id=>ext.id} %></td>
+  </tr>
+<% end %>
+</table>
+
+</td><td>&nbsp;</td><td style='vertical-align:text-top' >
+<% if params[:errors] then %>
+  <br><i>Errors:<%= params[:errors] %></i><br>
+<% end %>
+<p></p>
+<b>Create New Extension</b>
+<%= form_for @newExtension, :as=>"extension", :url=>{:action=>"create"} do |f| %>
+  <% if @newExtension.errors.any? %>
+    <ul>
+      <% @newExtension.errors.full_messages.each do |msg| %>
+        <li><%= msg %></li>
+      <% end %>
+    </ul>
+  <% end %>
+  <%= f.select(:course_user_datum_id, @users) %>
+  <%= f.text_field :days, :size=>3, :id => "extension_days" %> day(s)
+  -OR- Infinite? <%= f.check_box :infinite, :id => "infinite_extension" %>
+  <%= f.hidden_field(:assessment_id)%>
+  <%= f.submit "Create" %>
+<% end %>
+</td></tr></table>
+
+<script>
+/* Enable/disable extension days options */
+jQuery(function() {
+  $extensionDaysField = $('#extension_days');
+  $enableInfiniteExtension = $('#infinite_extension');
+  if ($enableInfiniteExtension.is(':checked')) {
+    $extensionDaysField.prop('disabled',true);
+  }
+  $enableInfiniteExtension.click(function() {
+    if ($enableInfiniteExtension.is(':checked')) {
+      $extensionDaysField.prop('disabled',true);
+    } else {
+      $extensionDaysField.prop('disabled',false);
+    }
+  });
+});
+</script>

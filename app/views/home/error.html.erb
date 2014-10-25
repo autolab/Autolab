@@ -1,0 +1,27 @@
+<h2>500 &ndash; Internal error</h2>
+
+<h2 style="margin-bottom:0px"><%= @errorMessage %></h2>
+
+<% if flash[:error] %><p><b><%= flash[:error] %></b></p><% end %>
+
+<p><b>Oops!</b> Autolab seems to have done something wrong.  We have been notified about this and will look into it. If you would like to file a Bug Report, you may email us at: <a href="mailto:autolab-dev@andrew.cmu.edu">autolab-dev@andrew.cmu.edu</a>.</p>
+
+<%= image_tag "DonkeyKong.jpg", width: '200px' %>
+
+<% if @error then %>
+  <p><i>Remember that if you modify any config files, you'll need to  reload them for the changes to take effect.</i></p>
+
+  <p>
+    <h3>Error Information</h3>
+    <pre><%= debug(@error) %></pre>
+  </p>
+  <p>
+    <h3>Stack Dump</h3>
+    <pre><%= processStackDump(@error.backtrace).join("<br>").html_safe %></pre>
+  </p>
+<% end %>
+
+<div id="footer">
+  <a href="http://autolab.cs.cmu.edu">CMU Autolab</a>
+  <p>Questions or problems? Please <a href="/contactUs.html">contact us</a>.</p>
+</div>

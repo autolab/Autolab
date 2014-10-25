@@ -1,0 +1,15 @@
+ul#tabs { margin: 20px 0; }
+
+form.edit_assessment, form.new_assessment { max-width: 600px;
+
+  div.action_buttons { margin: 25px 0 15px 0; }
+
+  input.datepicker, input.time_input { display: inline; }
+
+  .score-adjustment {
+    .value { display: inline; width: 5em; }
+    .kind { display: inline; margin-left: 5px; width: 6em; }
+  }
+
+  label.suppress-bottom-margin { margin-bottom: 0; }
+}

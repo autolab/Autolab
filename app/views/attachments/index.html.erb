@@ -1,0 +1,23 @@
+<% if @is_assessment then %> 
+  <h2>Listing <%= link_to @assessment.display_name, [@course, @assessment] %> Attachments</h2>
+<% else %>
+  <h2>Listing <%= link_to @course.display_name, @course %> Attachments</h2>
+<% end %>
+
+
+<p>
+  <% if @is_assessment then %>
+    <%= link_to 'Add '+@assessment.display_name+' Attachment', new_course_assessment_attachment_path(@course, @assessment) %>
+  <% else %>
+    <%= link_to 'Add Course Attachment', new_course_attachment_path(@course) %>
+  <% end %>
+</p>
+
+<% if @attachments.any? then  %>
+  <ul>
+    <%= render @attachments %>
+  </ul>
+<% else %>
+  There are no attachments yet.
+<% end %>
+

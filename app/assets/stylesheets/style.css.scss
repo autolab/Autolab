@@ -1,0 +1,702 @@
+/******************************************************************************
+ * RULE ORDER - keep CSS rules in alphabetical order                          *
+ *  keep browser prefix (-webkit-, -moz-, etc) rules with the standard rule   *
+ ******************************************************************************/
+
+/*******************************************
+* Class and ID Rules. Also pseudo classes *
+*******************************************/
+
+html, body {
+  height: 100%;
+}
+
+/* Error Classes - for elements that display error/status messages */
+.error {
+  color: red;
+}
+.success {
+  color: green;
+}
+.fieldWithErrors {
+  display:inline;
+}
+
+/* Navbar Styling */
+
+div.main-header {
+  background-color: rgba(153, 0, 0, 0.9);
+  width: 100%;
+  border-bottom: 1px solid rgba(133, 0, 0, 0.9);
+  margin-bottom: 15px;
+}
+
+div.main-header .logo {
+  display: inline-block;
+  vertical-align: top;
+  line-height: 54px;
+}
+
+div.main-header h2 {
+
+  font-size: 22px;
+  line-height: 54px;
+  color:#fff;
+  display: inline-block;
+  vertical-align: top;
+  margin:0 4px;
+  font-weight: lighter;
+
+  a {
+    text-decoration: none;
+    color: #fff;
+    line-height: 32px;
+    margin-top: 11px;
+    margin-left: 2px;
+    border-left: 1px solid rgba(255, 255, 255, 0.7);
+    padding-left: 10px;
+    display: inline-block;
+  }
+
+}
+
+div.main-header img {
+  margin-top: 11px;
+  margin-left: 11px;
+  margin-bottom: 11px;
+}
+
+
+.action-links.navbar-nav  {
+  list-style: none;
+  display:inline-block;
+  margin-right: 14px;
+  margin-top: 12px;
+}
+
+.action-links li {
+  display: inline-block;
+  margin-right: 6px;
+}
+
+.action-links.navbar-nav li a {
+  padding: 6px 10px;
+  background-color: #fff;
+  font-size: 14px;
+  line-height: 14px;
+  border-radius: 18px;
+  font-weight: normal;
+  color: rgba(153, 0, 0, 0.9);
+  border: 2px solid #fff;
+}
+
+.action-links.navbar-nav li a:hover {
+  text-decoration:none;
+  color: #fff;
+  background-color: transparent;
+}
+
+.action-links.navbar-nav .dropdown li {
+  width: 100%;
+}
+
+.action-links.navbar-nav .dropdown li:hover {
+  background-color: #eee;
+}
+
+.action-links.navbar-nav li.dropdown a {
+  border: none;
+}
+
+.action-links.navbar-nav li.dropdown a:hover {
+  color: rgba(153, 0, 0, 0.9);
+}
+
+.main-header .dropdown {
+  display:inline-block;
+  margin-right: 18px;
+  line-height: 30px;
+  margin-left: 10px;
+}
+
+.main-header .pull-right {
+  padding-top: 16px;
+}
+
+.main-header .dropdown-toggle {
+  color: #fff;
+  font-weight: normal ;
+  cursor:pointer;
+}
+
+.main-header .dropdown-toggle .caret {
+  border-top: 4px solid #fff;
+}
+
+.main-header .dropdown-menu {
+  -webkit-animation-duration: 0.2s;
+  -moz-animation-duration: 0.2s;
+}
+
+.navbar-toggle .icon-bar {
+  background-color: #fff;
+}
+
+@media (max-width: 768px) {
+
+  div.main-header h2 {
+    font-size: 16px;
+  }
+
+  div.main-header .logo {
+
+    img {
+      width: 120px;
+    }
+  }
+
+
+  .action-links.navbar-nav {
+    width: 100%;
+    margin: 0;
+  }
+
+  .action-links.navbar-nav li {
+    display: block;
+    border-bottom: 1px solid #fff;  
+    margin: 0;
+  }
+
+  .action-links.navbar-nav li:last-child {
+    border-bottom: none;
+  }
+
+  .action-links.navbar-nav li a {
+    background-color: transparent;
+    width: 100%;
+    line-height: 36px;
+    color: #fff;
+    border: none;
+  }
+
+  .action-links.navbar-nav li.dropdown {
+    line-height: 36px;
+    border: none;
+  }
+  .action-links.navbar-nav li.dropdown .dropdown-toggle {
+    display: none;
+  }
+  .action-links.navbar-nav li.dropdown .dropdown-menu {
+    width: 100%;
+    position: static;
+    display: block;
+    border: none;
+    background-color: transparent;
+    -webkit-box-shadow: none;
+    box-shadow: none;
+  }
+
+
+}
+
+/* Footer - Information, About, etc. Should be in a <footer> tag. */
+div#footer{
+  clear: both;
+  font-size: 12px;
+  color: #ccc;
+  height: 42px;
+  padding: 0 10px;
+}
+
+div#footer a {
+  display: inline-block;
+  padding: 12px;
+  color: #ccc;
+}
+
+div#footer a:hover {
+  text-decoration: none;
+  color: #428bca;
+}
+
+
+/* used for the submission history popup on submissions#index */
+#floater{ 
+  background-color: #fff;
+  border:1px solid black;	
+  display: none;
+  height:80%;
+  left:15%;
+  overflow:auto;
+  padding: 5px 10px;
+  position:fixed;
+  top:10%;
+  width:70%;
+}
+
+/* Gray Box Lists - for announcements and user accounts */
+ul.gray-box {
+  list-style-image:none;
+  list-style-type:none;
+  margin:16px 0px;
+  padding:0px;
+}
+ul.gray-box li{
+  background-color:#FAFAFA;
+  border:1px solid #EEE;
+  color:#666;
+  margin:8px 0px;
+  padding:10px;
+}
+ul.gray-box a {
+  text-decoration: none;
+}
+ul.gray-box b {
+  color:#555;
+}
+
+/* This one is actually in use.  Just so we're clear. */
+.smallText{
+  font-size:10px;
+}
+
+/**
+* Displayed on the home page
+**/
+
+div#publicCourse{
+  border: 2px dotted #000;
+  margin-right:10%;
+  padding:15px;
+}
+
+/* For autocompleting something. Not sure that these are in use anymore... */
+div.autoCompleteDiv  { 
+  background-color:white;
+  border: 1px solid black;
+  font-color:black;
+  margin-right:10px;
+  padding: 2px;
+}
+div.autoCompleteDiv:hover, div.selectedAutoCompleteDiv { 
+  background-color:#d2d2d2;
+  border: 1px solid black;
+  font-color:black;
+  margin-right:10px;
+  padding: 2px;
+}
+
+/*
+ * For announcing Exams 
+ */
+p.attention {
+  color: green;
+  font-style: italic;
+}
+
+/**
+ * ULs on the moss page
+ **/
+ul.moss-list {
+  list-style: none;
+  padding: 0;
+}
+ul.moss-list > li {
+  background: #eee;
+  border: 1px solid #ccc;
+  cursor: pointer;
+  margin: 5px;
+  padding: 4px;
+}
+ul.moss-list > li > h3 {
+  color: #900;
+  font-weight: bold;
+  margin: 0;
+}
+ul.moss-inner-list {
+  list-style: none;
+  padding: 0;
+}
+ul.moss-inner-list > li {
+  background: linear-gradient(to top, #eee, #fff);
+  border: 1px solid #ccc;
+  cursor: default;
+  padding: 2px;
+}
+ul.moss-inner-list > li > h3 {
+  margin: 0;
+}
+ul.moss-inner-list > li > input[type="checkbox"]:not(:checked) ~ div {
+  display: none;
+}
+ul.moss-inner-list > li > input[type="checkbox"]:checked ~ div {
+  display: block;
+}
+
+/**
+ * Spans that behave as links.  Used for LDAP lookup on Create User Page
+ **/
+.spanLink {
+  color: #c90;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+div.field_with_errors {
+  display: inline;
+}
+
+div.field_with_errors {
+  display: inline;
+}
+
+
+/* TABLE STYLES.  Styles for the multiple tables that we have for some reason */
+/* Pretty Border Tables. I vote we make this the generic table style. */
+table.prettyBorder, table.prettyBorder tr, table.prettyBorder th, table.prettyBorder td {
+  border: 1px solid #ddd;
+  text-align: left;
+}
+table.prettyBorder{
+  border-collapse:collapse;
+  font-size:15px;
+  width: 100%;
+}
+table.prettyBorder tr {
+  background-color: #fff;
+}
+table.prettyBorder tr:hover {
+  background-color:#abcdef;
+}
+table.prettyBorder th{
+  background-color:#E5E5E5;
+  background: linear-gradient(to bottom, #EFEFEF, #E5E5E5);
+  border: 1px solid #ccc;
+  color:#888;
+  cursor:pointer;
+  font-family: Helvetica, sans-serif; 
+  font-size: 12px; 
+  font-weight: bold;
+  padding: 5px;
+  text-align:left;
+  text-transform:uppercase;
+}
+table.prettyBorder td {
+  border: 1px solid #ddd;
+  padding: 0 5px;
+}
+
+table.navigatable tr {
+  height: 30px;
+  border-bottom:1px solid #f3f3f3;
+}
+
+table.navigatable tr:hover {
+  background-color: #f3f3f3;
+}
+
+/* Card Styling */
+
+div.card {
+  display:inline-block;
+  width: 320px;
+  margin-right: 20px;
+  margin-top: 15px;
+  vertical-align: top;
+  padding:0;
+  webkit-box-shadow: 0 0 8px rgba(0,0,0,0.10);
+  -moz-box-shadow: 0 0 8px rgba(0,0,0,0.10);
+  box-shadow: 0 0 8px rgba(0,0,0,0.10);
+  -webkit-border-radius: 6px;
+  -moz-border-radius: 6px;
+  overflow: hidden;
+  text-align:center;
+  min-height: 215px;
+}
+
+div.card:hover {
+  webkit-box-shadow: 0 0 12px rgba(0,0,0,0.18);
+  -moz-box-shadow: 0 0 12px rgba(0,0,0,0.18);
+  box-shadow: 0 0 12px rgba(0,0,0,0.18);
+}
+
+
+div.card h1, 
+div.card h2 {
+  font-weight: 300;
+  margin: 0;
+}
+
+div.card h1 {
+  background-color:#9F9B9D;
+  color:#fff;
+  font-size: 20px;
+}
+
+div.card:hover h1 {
+  background-color:#949092;
+}
+
+div.card h1 a {
+  display: block;
+  color: #fff;
+  font-size: 20px;
+  padding: 15px 24px;
+  line-height: 24px;
+}
+
+div.card .content {
+}
+
+div.card ul {
+  list-style: none;
+  list-style-position:inside;
+  padding:0;
+  font-size: 17px;
+  font-weight: normal;
+  text-align: left;
+}
+
+div.card ul li {
+  color: #747072;
+  height: 50px;
+  border-bottom: 1px solid #eee;
+  padding-left: 24px;
+}
+
+div.card ul li .shortcuts {
+  margin-right: 24px;
+  line-height: 50px;
+
+  a {
+    margin-left: 4px;
+  }
+}
+
+div.card ul a {
+  line-height: 50px;
+}
+
+div.card .btn.main {
+  margin-top: 12px;
+}
+
+div.card .btn.main:hover {
+  background-color: rgba(153, 0, 0, 0.9)
+}
+
+div.card:nth-child(3) {
+  margin-right: 0;
+}
+
+@media (max-width: 768px) {
+  
+  .rolodex {
+    text-align: center;
+  }
+
+  div.card {
+    width: 280px;
+    margin-right: 4px;
+    margin-left: 4px;
+    margin-top: 15px;
+  }
+}
+
+/* General Styling */
+
+body.autolab {
+  
+  font-family: 'Source Sans Pro', sans-serif;
+  font-weight: 300;
+
+  h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
+    font-family: 'Source Sans Pro', sans-serif;
+  }
+
+}
+
+
+input[type="text"],
+input[type="email"],
+input[type="password"] {
+  border: none;
+  padding: 10px 8px;
+  border: 1px solid #ccc;
+}
+
+input[type="text"]:disabled,
+input[type="email"]:disabled,
+input[type="password"]:disabled,
+input[type="text"]:read-only,
+input[type="email"]:read-only,
+input[type="password"]:read-only {
+  background-color: #eee;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus {
+  border: 1px solid rgba(133, 0, 0, 1);
+  outline: none;
+}
+
+.page-wrapper {
+  min-height: 100%;
+  /* equal to footer height */
+  margin-bottom: -42px; 
+}
+.page-wrapper:after {
+  content: "";
+  display: block;
+}
+.page-wrapper:after {
+  /* .push must be the same height as footer */
+  height: 42px; 
+}
+
+.autolab .btn {
+  display: inline-block;
+  padding: 13px 18px;
+  margin-bottom: 0;
+  font-size: 16px;
+  font-weight: 400;
+  color: #fff;
+  line-height: 18px;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: middle;
+  cursor: pointer;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  -webkit-user-select: none;
+  background-color: #bbb;
+}
+
+.autolab .btn:hover {
+  color: #fff;
+  background-color: #aaa;
+  text-decoration: none;
+}
+
+.autolab .btn.primary {
+  background-color: rgba(153,0,0,0.9);
+}
+
+/**
+ * Checkbox styling
+ */
+
+.autolab .checkbox {
+  position: relative;
+  display: inline-block;
+  min-width: 75px;
+  text-align: left;
+}
+
+.checkbox input[type=checkbox] {
+  visibility: hidden;
+}
+
+.checkbox label {
+  margin-left: 8px;
+}
+.checkbox label::before {
+  cursor: pointer;
+  position: absolute;
+  display:inline-block;
+  width: 24px;
+  height: 24px;
+  top: -2px;
+  left: -2px;
+  background: #eee;
+  border:1px solid #ddd;
+  content: '';
+  border-radius: 2px;
+}
+
+.checkbox label::after {
+  opacity: 0.1;
+  content: '';
+  position: absolute;
+  width: 12px;
+  height: 7px;
+  background: transparent;
+  top: 5px;
+  left: 4px;
+  border: 3px solid #666;
+  border-top: none;
+  border-right: none;
+
+  -webkit-transform: rotate(-45deg);
+  -moz-transform: rotate(-45deg);
+  -o-transform: rotate(-45deg);
+  -ms-transform: rotate(-45deg);
+  transform: rotate(-45deg);
+}
+
+.checkbox label:hover::after {
+  opacity: 0.5;
+}
+
+.checkbox input[type=checkbox]:checked + label::after {
+  opacity: 1;
+}
+
+.checkbox input[type=checkbox]:checked + label::before {
+  border:1px solid #bbb;
+}
+
+/* Form Tables */
+
+.verticalTable {
+  
+}
+
+.verticalTable tr {
+  height: 48px;
+  padding-top:2px;
+  padding-bottom: 2px;
+}
+
+/* Homepage Styling */
+
+.home {
+  text-align: center;
+
+  input[type="text"],
+  input[type="email"],
+  input[type="password"] {
+    min-width: 240px;
+    margin-top: 6px;
+  }
+
+  input[type="submit"] {
+    min-width: 220px;
+  }
+
+  label {
+    margin-top: 10px;
+    margin-bottom: 10px;
+  }
+
+  hr {
+    max-width: 320px;
+  }
+
+  .checkbox {
+    width: 220px;
+    margin-top: 18px;
+    margin-bottom: 18px;
+  }
+
+  h2 {
+    margin-bottom: 20px;
+  }
+
+}
+
+.action-menu {
+  font-size: 16px;
+  line-height: 24px;
+}

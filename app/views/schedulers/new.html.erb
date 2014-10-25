@@ -1,0 +1,24 @@
+<h2>New scheduler</h2>
+
+<%= form_for :scheduler, :url=>{:action=>"create"} do |f| %>
+  <%= f.error_messages %>
+  <table class="verticalTable">
+  <tr>
+    <th>Action</th>
+    <td><%= f.text_field :action %></td>
+  </tr>
+  <tr>
+    <th>Next</th>
+    <td><%= f.datetime_select :next %></td>
+  </tr>
+  <tr>
+    <th>Interval (Seconds)</th>
+    <td><%= f.text_field :interval %></td>
+  </tr>
+  <tr>
+    <td colspan=2><%= f.submit "Create" %></td>
+  </tr>
+  </table>
+<% end %>
+
+<%= link_to 'Back', :action=>"index" %>

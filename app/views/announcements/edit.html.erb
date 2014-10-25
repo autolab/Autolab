@@ -1,0 +1,4 @@
+<h2>Edit Announcement</h2>
+<%= form_for :announcement, url: course_announcement_path(@course, @announcement), method: :patch do |f| %>
+  <%= render partial:'announcementFields', locals:{f:f} %>
+<% end %>

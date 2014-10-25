@@ -1,0 +1,322 @@
+td.focus {
+    background-color: #1874Cd !important;
+    color: white !important;
+}
+
+#grades_wrapper .tools {
+    margin-top: 15px;
+    margin-bottom: 20px;
+}
+
+#grades_wrapper .tools div{
+    display: inline;
+    margin-right: 7px;
+}
+
+#grades td.edit {
+    text-align: center;
+    color: #1874Cd;
+    cursor: pointer;
+}
+
+#grades td.edit div.editable.error {
+    color: red;
+}
+
+#grades td.edit:hover {
+    color: #2ba6ff;
+}
+
+#grades tr.sortable th {
+    cursor: pointer;
+}
+
+th {
+    padding-left: 7px;
+    padding-right: 7px;
+    white-space: nowrap;
+}
+
+#grades_filter {
+    margin-bottom: 10px;
+}
+
+#grades_filter input {
+    padding: 5px;
+    border: 1px solid #d0d0d0;
+    height: 18px;
+    width: 200px;
+    border-radius: 3px;
+    box-shadow: 0 0 2px #CCC;
+}
+
+#grades td.edit input {
+    border: 0px solid #ccc;
+    color: #2ba6ff;
+    font: inherit;
+    text-align: inherit;
+}
+
+#grades td.edit input:hover {
+    color: #2ba6ff;
+}
+
+#grades {
+    box-shadow: 0 0 5px 0px #ccc;
+    font-size: 1.2em;
+    font-family: Helvetica;
+    border: 1px solid #ccc;
+    border-radius: 2px;
+    border-collapse: collapse;
+    margin: 0 auto 0 auto;
+}
+
+td {
+    background-color: #f8f8f8;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-right: none;
+    border-left: none;
+    border-spacing: 0;
+    text-align: left;
+    white-space: nowrap;
+    color: #777;
+}
+
+#grades td.edit {
+    text-align: center;
+    background-color: white;
+}
+
+th {
+    background-color: #ebebeb;
+    padding: 8px;
+    border-right: none;
+    border-left: none;
+    text-transform: uppercase;
+    font-size: 0.8em;
+    color: #909090;
+    white-space: nowrap;
+    overflow: hidden;
+    padding-left: 10px;
+    padding-right: 15px;
+    text-align: left;
+}
+
+#grades th.problem {
+    background-color: #f2f2f2;
+    font-size: 0.7em;
+    white-space: normal;
+    text-align: center;
+}
+
+#grades th span.max_score {
+    line-height: 1.5em;
+    font-style: italic;
+    font-weight: normal;
+    display: block;
+}
+
+#grades .sec {
+    padding-right: 15px;
+}
+
+#grades .sec, #grades .lec, #grades .total, #grades .tweak, #grades .late_penalty {
+    text-align: center;
+}
+
+#grades .tweak a, #grades .id a {
+    color: #1874Cd;
+    text-decoration: none;
+    font: inherit;
+}
+
+#grades td.id > a {
+}
+
+#grades .tweak a:hover {
+    color: #2ba6ff;
+}
+
+#grades .released {
+    font-weight: bold;
+}
+
+td.id {
+    overflow: visible;
+}
+
+#grades th.enumerator, #grades td.enumerator {
+  text-align: right;
+  padding-right: 10px;
+}
+
+.popover {
+    cursor: auto;
+    display: none;
+    font-size: 0.8em;
+    color: #ddd;
+    position: absolute;
+    top: 0;
+    left: 0;
+    box-shadow: 1px 1px 4px 1px #ccc;
+    border-radius: 5px;
+    z-index: 100000;
+    padding: 3px;
+    background-color: #7e7e7e;
+    display: none;
+}
+
+.popover span.filename {
+    padding-left: 3px;
+    line-height: 1.8em;
+}
+
+.popover span.filename a {
+    color: #dfdfdf;
+}
+
+.popover span.filename span.links {
+    float: right;
+    padding-right: 3px;
+    text-transform: uppercase; 
+    font-weight: bold;
+    font-size: 0.9em;
+}
+
+.popover table.sub_info {
+    border-collapse: collapse;
+    font-family: Helvetica;
+}
+
+.popover td, .popover th {
+    padding: 6px;
+    border: none;
+}
+
+#grades tr.special_submission td.id > a {
+    font-style: italic;
+}
+
+.popover th {
+    font-size: 0.9em;
+    text-transform: uppercase;
+    text-align: right;
+    padding-right: 7px;
+    padding-left: 10px;
+}
+
+.popover table.subinfo td.version a {
+    font-weight: normal;
+}
+
+.popover div.file_download {
+    background-color: #f8f8f8;
+    padding: 5px;
+    margin: 3px 0 0px 0;
+    font-size: 0.9em;
+    text-transform: uppercase;
+    padding-right: 7px;
+    padding-left: 10px;
+    font-weight: bold;
+}
+
+.popover .arrow {
+    position: absolute;
+    height: 12px;
+    width: 5px;
+    background-image: url("/assets/popover-arrow.png")
+}
+.popover table.score_details {
+    font-weight: normal;
+    border-collapse: collapse;
+}
+
+.popover table.score_details td, .popover table.score_details th {
+    padding: 5px;
+    padding-bottom: 0;
+    border: none;
+}
+
+.popover table.score_details th {
+    font-size: 0.9em;
+}
+
+.popover table.score_details td input.released {
+    margin: 1px;
+    margin-bottom: 3px;
+}
+
+.popover table.score_details td.grader {
+    padding-left: 6px;
+}
+
+.popover table.score_details td textarea {
+    width: 200px;
+    height: 100px;
+}
+
+td.editing .edit {
+  display: block;
+  width: 30px;
+  font-weight: 300;
+  margin: auto auto;
+  text-align: center;
+}
+
+td .edit {
+  display: none;
+}
+
+td.editing .view {
+  display: none;
+}
+
+.popover {
+  display: block;
+}
+
+td .view {
+  text-align: center;
+  font-weight: normal;
+  color: #1874CD;
+  cursor: pointer;
+  display: block;
+}
+td .view b {
+  font-weight: 900;
+  font-size: 15px;
+}
+
+#shortcut-help ul {
+  list-style-type: none;
+  list-style-image: none;
+}
+
+#shortcut-help {
+  display: none;
+  padding: 15px;
+  height: 270px;
+  width: 500px;
+  background: white;
+}
+
+#keyboard:hover {
+  cursor: pointer;
+}
+
+.shortcut {
+  display: inline-block;
+  padding: 3px 6px;
+  text-align: center;
+  font-family: Monaco;
+  background: #333;
+  color: white;
+}
+
+#simplemodal-overlay {background-color:#000;}
+#simplemodal-container a.modalCloseImg {background:url(../images/x.png) no-repeat; width:25px; height:29px; display:inline; z-index:3200; position:absolute; top:-15px; right:-16px; cursor:pointer;}
+.keyboard-icon {
+  position: relative;
+  top: 2px;
+}

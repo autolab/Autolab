@@ -1,0 +1,5 @@
+<%= form_for @problem, url: course_assessment_problem_path(@course, @assessment, @problem), method: :delete do |f| %>
+Are you sure you want to destroy this problem? It will also destroy all
+scores associated with this problem!!!<br>
+<%= f.submit "Yes, I'm sure!", :confirm=>"Are you sure you're sure?" %>
+<% end %>

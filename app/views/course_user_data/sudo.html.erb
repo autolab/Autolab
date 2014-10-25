@@ -1,0 +1,10 @@
+<h2>Act as User</h2>
+
+<p>You can use sudo to examine how Autolab appears to other users. You can also change your permission levels to see what your course assistants or students generically see.</p>
+
+<p>
+<%= form_tag do %>
+  Act as user (email): <%= email_field_tag :sudo_email %>
+  <%= submit_tag "Sudo", {:value=>"Sudo"} %>
+<% end %>
+</p>

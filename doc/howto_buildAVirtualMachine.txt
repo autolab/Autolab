@@ -1,0 +1,204 @@
+=============================
+** Howto Build a virtual machine
+** By Hunter Pitelka (hpitelka@andrew.cmu.edu or hunter@hunterpitelka.com)
+** 2/14/2011
+=============================
+
+
+
+This document covers the annoyningly detailed steps to creating a virtual
+machine. It assumes the reader knows the basics of virtualization, linux
+networking and how to install the guest operating system.  If you have
+problems with any of the commands, you should first READ THE MAN PAGE for
+those commands. 
+
+
+You will want to work on one of the cluster node managers for this. I prefer
+megamouth.ics.cs.cmu.edu, you'll find most of the scripts that I reference on
+that machine in the root directory. However all the scripts are dumped here for
+your convienence. 
+
+In order to do this you'll need the .iso image of the guest OS you want to
+install. 
+
+------------------------
+1) Build the Sparse Disk
+------------------------
+$ dd if=/dev/zero of=sparse-file bs=1 count=1 seek=5G
+
+Will build a 5 gigabyte sparse disk image called sparse-file.  You should rename
+this file something appropiate. 
+
+
+------------------------
+2) Begin the install process
+------------------------
+** I strongly recommend you put the following command in a shell script so you
+** don't have to keep retyping it.  I keep this in isoInstall.sh
+
+$ /usr/local/kvm/bin/qemu-system-x86_64  -clock dynticks \
+-drive file=~/NAME_OF_SPARSE_DISK,if=ide,index=0,snapshot=off,media=disk \
+-net none \
+-cdrom ~/NAME_OF_INSTALL_MEDIA.iso \
+-m 1024 -smp 1 -serial none -vnc :1 -monitor stdio
+
+
+------------------------
+3) Install the Guest OS
+------------------------
+Now, you can VNC into the host machine on :1 (or whatever you changed the -vnc
+option to above) and install your guest OS.  It is really important for you to
+keep this machine as simple as possible. No GUI, no games, no bells or whistles.
+I even strongly recommend you keep the hard drive partition as simple as
+possible. (It is known that LVM makes things _really_ difficult for you later
+on). 
+
+
+------------------------
+4) Wire up some networking and update the guest. 
+------------------------
+You'll probably want to grab updates to the Guest OS, to do this we'll want to
+hook up networking.  This is done through a series of iptables rules. If you are
+using the tashi infrastructure there are easy commands to do this for you, but
+here are the basics that will always work. 
+
+** This command depends on the /etc/qemu-if{up,down}.1 scripts that hpitelka
+** wrote way back in the day. If they aren't on your system, they are included
+** at the end of this document. They do /some/ iptables magic. 
+
+Append the following two lines to your qemu command that you ran in step 2. 
+-net nic,macaddr=52:54:00:cc:2b:86,model=e1000,vlan=1 \
+-net tap,ifname=myVM,vlan=1,script=/etc/qemu-ifup.1,downscript=/etc/qemu-ifdown.1
+
+** The following commands also need to be run to allow nat'ing
+$ echo 1 > /proc/sys/net/ipv4/ip_forward
+$ iptables -t nat --append POSTROUTING --out-interface eth0 -j MASQUERADE
+
+
+Now boot your VM and attempt to hook up networking. dhcp should work if you're
+on the cluster that hpitelka configured ( you should get a 192.168.1.0/24
+address.  You might need to add a gateway (if you get a connect: network
+unreachable error), you do this (on linux) with `route add default gw
+XXX.XXX.XXX.XXX` where the X's are the IP address of your HOST machine.
+Your host machine acts as a router for your guests and if it sees traffic
+destined for the outside world it will route it via the iptables NAT table. 
+
+If this fails, you should start by looking at iptables, and seeing if anything
+is wrong there.  Finding a linux networking god might be helpful as well. 
+
+------------------
+5) Locally mounting your guest for file transfers
+-----------------
+Your guest is updated, but that was painful to do, we'd like to be able to work
+on our guest and transfer files without that networking junk.  To do this we'll
+mount it locally on your host using a loopback device.  First, figure out what
+sector in the virtual hard drive is the beginning of the / partition.
+
+$ parted myVmDisk.img
+GNU Parted 2.2
+Using /root/rhelVM.img
+Welcome to GNU Parted! Type 'help' to view a list of commands.
+(parted) unit B
+(parted) print                                                            
+Model:  (file)
+Disk /root/myVmDisk.img: 5368709120B
+Sector size (logical/physical): 512B/512B
+Partition Table: msdos
+
+Number  Start        End          Size         Type     File system     Flags
+1      32256B       106928639B   106896384B   primary  ext3            boot
+2      106928640B   4820014079B  4713085440B  primary  ext3
+3      4820014080B  5354657279B  534643200B   primary  linux-swap(v1)
+
+
+This shows that your boot partition starts 32256 bytes in, and your "other"
+(root) partion starts 106928640 bytes in. You should figure out whatever
+partition you want.  Then you'll want to modify the mountDiskImage.sh script
+(see the appendix if you don't have it) so that the mount offset is the start
+bytes. Then
+
+$ ./mountDiskImage myVmDisk.img 
+
+will load up your disk and drop you in a chroot jail so you can play around. 
+
+** Fun Fact! If your host and your guest are a close enough operating system,
+** then your host's devices will actually map to the same device files in your
+** guest which mean you can access the network and your physical devices inside the
+** chroot jail of your guest! 
+
+To copy files between the two systems you can change the `chroot ...` line in
+the file to just be /bin/bash and it will launch a shell in which you can copy
+files between the two systems and then when you exit that shell it will
+automagically unmount your guest's drive. 
+
+----------------------
+6) Profit!
+----------------------
+The howto_autograding.txt document will cover you from here if you are
+plugging this into Autolab.  
+
+
+=========================
+APPENDIX OF SCRIPTS
+=========================
+$ cat /etc/qemu-ifup.1
+#!/bin/sh
+
+#setup iptables for the firewall
+iptables -N $1
+iptables -I FORWARD 1 -m physdev --physdev-in $1 -g $1
+
+#iptables -N $1.NAT
+iptables -I FORWARD 1 -i eth0 -o virbr -j $1
+#iptables -I INPUT 1  -j $1.NAT 
+
+iptables -t nat -N $1 
+iptables -t nat -I PREROUTING 1 -j $1
+
+/sbin/ifconfig $1 0.0.0.0 up
+/usr/sbin/brctl addif virbr $1
+exit 0
+
+******************************
+******************************
+$ cat /etc/qemu-ifdown.1 
+#!/bin/sh
+iface=$1
+
+#destroy iptables for the firewall
+iptables -D FORWARD -m physdev --physdev-in $iface -g $iface;
+
+iptables -D FORWARD -i eth0 -o virbr -j $iface;
+iptables -F $iface
+iptables -X $iface
+
+iptables -t nat -D PREROUTING -j $iface;
+iptables -t nat -F $iface
+iptables -t nat -X $iface
+
+/sbin/ifconfig $iface down
+/usr/sbin/brctl delif virbr $iface
+
+exit 0
+
+********************************
+********************************
+********************************
+$ cat mountDiskImage.sh 
+#!/bin/bash
+loop=`losetup -f`
+
+if [ "$#" != "1" ]; then
+	echo "Usage: $0 imageFile.img"
+	exit 0
+fi
+
+losetup $loop $1
+mkdir /mnt/diskMount
+mount -o offset=106928640 $loop  /mnt/diskMount
+chroot /mnt/diskMount
+umount /mnt/diskMount
+rmdir /mnt/diskMount
+losetup -d $loop
+
+

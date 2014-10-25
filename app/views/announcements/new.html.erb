@@ -1,0 +1,4 @@
+<h2>Create Announcement</h2>
+<%= form_for :announcement, url:{action:"create"} do |f| %>
+  <%= render partial:'announcementFields', locals:{f:f} %>
+<% end %>

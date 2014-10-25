@@ -1,0 +1,48 @@
+<h2>Edit <%= @submission.course_user_datum.email %>'s Submission
+#<%= @submission.version %> for <%= link_to @assessment.display_name, course_assessment_path(@submission.course_user_datum.course, @assessment) %></h2>
+
+<%= form_for @submission, url: [@submission.course_user_datum.course, @assessment, @submission], method: :patch do |f| %>
+<%= f.error_messages %>
+<table class="verticalTable">
+  <tr>
+    <th>User:</th>
+    <td><%= @submission.course_user_datum.email %></td>
+  </tr>
+  <tr>
+    <th>Assessment:</th>
+    <td><%= @submission.assessment.display_name %></td>
+  </tr>
+  <tr>
+    <th>Version:</th>
+    <td><%= @submission.version %></td>
+  </tr>
+  <tr>
+    <th>File:</th>
+    <td>
+      <% if @submission.filename then %>
+        <%= link_to "#{@submission.filename}",
+          download_course_assessment_submission_path(@submission.course_user_datum.course, @assessment, @submission) %>
+      <% else %>
+        None
+      <% end %>
+    </td>
+  </tr>
+  <tr>
+    <th>Notes:</th>
+    <td><%= f.text_area :notes, :rows=>5 %></td>
+  </tr>
+  <tr>
+    <th>Tweak:</th>
+    <td>
+    <%= f.fields_for :tweak, @submission.tweak do |t| %>
+      <%= t.text_field :value %>
+      <%= t.select :kind, options_for_select({"points" => "points", "%" => "percent"}, :selected => (@submission.tweak ? @submission.tweak.kind : "points")) %>
+    <% end %>
+    </td>
+  </tr>
+  <tr>
+    <td colspan=2><br><%= f.submit :class => 'btn' %></td>
+  </tr>
+</table>
+
+<% end %>

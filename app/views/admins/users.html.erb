@@ -1,0 +1,33 @@
+<%= external_javascript_include_tag "prototype", "1.6.0.3" %>
+<%= javascript_include_tag "sorttable" %>
+<%= javascript_include_tag "table_floating_header" %>
+<h2>Manage Accounts</h2>
+
+<hr>
+<p>
+<%= link_to raw('<span class="btn">Add User to Course</span>'),
+  new_course_course_user_datum_path %>
+<%= link_to raw('<span class="btn">Import Roster/Users</span>'), {:action=>"uploadRoster"} %>
+<%= link_to raw('<span class="btn">Export Roster</span>'), {:action=>"downloadRoster"} %>
+</p>
+
+<hr>
+Search: <%= text_field_tag 'search', nil, onkeyup:'filterRows(this.value)' %>
+<br>
+
+<div id='ajaxTable'>
+<%= render :partial=>'usersTable' %>
+</div>
+<script type="text/javascript">
+  function filterRows(name) {
+    var rows = document.getElementsByClassName("user-row"),
+        i = 0, L = rows.length, r;
+    while (i < L) {
+      r = rows[i++];
+      if (r.innerHTML.indexOf(name) != -1)
+        r.style.display = "table-row";
+      else
+        r.style.display = "none";
+    }
+  }
+</script>

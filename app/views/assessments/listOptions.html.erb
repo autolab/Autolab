@@ -1,0 +1,97 @@
+<%# Make sure these options are not on the general user options list.  %>
+<%# We have to do this because we exposed the internal interface for building options lists %>
+<%# and some users have fiddled with this in their assessment.rb file %>
+
+<%# These options have been eliminated %>
+<% @list.delete("listAdmin") %>
+
+<%# These options should only be on the admin list %>
+<% @list.delete("edit") %>
+<% @list.delete("viewGradesheet") %>
+<% @list.delete("attachments") %>
+<% @list.delete("extension") %>
+<% @list.delete("submission") %>
+<% @list.delete("reload") %>
+
+<%# Now begin displaying the page %>
+<h2><%=@assessment.display_name%></h2>
+
+<p><i><%= @assessment.description %> </i></p>
+
+<p>
+<b>Due at:</b> <%= due_at_display @aud.due_at %>
+(<b>Last day to handin:</b> <%= end_at_display(@aud.end_at false) %>)
+</p>
+
+<% if @cud.instructor? and @assessment.exam? %>
+<p class="attention">This is an exam. While it is in progress, please check Admin > Edit Course > Exam In Progress.</p>
+<% end %>
+
+<table><tr valign=top>
+
+<%# Display general user options %> 
+<td>
+<h2>Options</h2>
+<ul>
+<% @list.sort { |a,b| a[1] <=> b[1] }.each { |key, value| %>
+  <% if value.size > 0  then  %>
+    <li> <%= link_to value, {:action => key}, {:title=>(@list_title[key] || "")} %> </li>
+  <% end %>
+<% } %>
+</ul>
+</td>
+
+<%# Display any optional instructor admin options %>
+<% if @cud.instructor? then %>
+  <td width=20></td>
+  <td>
+  <h2>Admin Options (staff)</h2>
+  <ul>
+  <% @adminlist.sort { |a,b| a[1] <=> b[1] }.each { |key, value| %>
+    <% if value.size > 0  then  %>
+      <li> <%= link_to value, {:action => key}, {:title=>(@admin_title[key] || "")} %></li>
+  <% end %>
+  <% } %>
+  </ul>
+  </td>
+<% end %>
+
+
+<%# Display the optional CA admin options %>
+<% if @cud.course_assistant? then %>
+  <td width=20></td>
+  <td>
+  <h2>Admin Options (CA)</h2>
+  <ul>
+  <% for option in @options do %>
+    <li><%= link_to option['name'], option['url'], :title=>option[:title] %></li>
+  <% end %>
+  </ul>
+  </td>
+<% end %>
+
+</tr></table>
+
+<%# Display any attachments %>
+<% if @assessment.attachments.length > 0 %>
+  <h2><%= @assessment.display_name %> Files</h2>
+  <ul>
+    <%= render @assessment.attachments %>
+
+    <% # this code is temporarily "commented out" because Dan wants to preserve the logic for future changes to _attachment.html.erb %>
+    <% if false then %>
+      <% for a in @assessment.attachments do %>
+        <% if a.released? then %>
+          <% if (Time.now() > @assessment.start_at) or (@cud.instructor?) then %>
+            <li><%= link_to a.name, [@course, @assessment, a] %></li>
+          <% else %>
+            <li><%= a.name %></li>
+          <% end %>
+        <% elsif @cud.instructor? then %>
+          <li><i><%= link_to a.name, [@course, @assessment, a] %>*</i></li>
+        <% end %>
+      <% end %>
+    <% end %>
+  </ul>
+<% end %>
+

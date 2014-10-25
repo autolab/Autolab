@@ -1,0 +1,3 @@
+#!/bin/bash
+script_dir=`dirname $0`
+ln -fs ../../script/git_hooks/post-checkout $script_dir/../.git/hooks/post-checkout

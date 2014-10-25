@@ -1,0 +1,10 @@
+<h2>Statistics for <%= link_to @assessment.display_name, course_assessment_path(@course, @assessment) %></h2>
+<% if @assessment.problems.count > 0 %>
+<br />
+<%= render :partial=>"statistics",:locals=>{
+      :scores=>@stat_scores,:byGrader=>@stat_byGrader,:byMajor=>@stat_byMajor,
+      :byYear=>@stat_byYear,:bySchool=>@stat_bySchool,:byLecture=>@stat_byLecture,
+      :bySection=>@stat_bySection} %>
+<% else %>
+This assessment has no problems.
+<% end %>

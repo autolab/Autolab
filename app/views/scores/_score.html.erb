@@ -1,0 +1,20 @@
+<h2>Feedback for 
+  <%= "#{@assessment.display_name} - #{@score.problem.name}" %>
+  (<%= @score.submission.course_user_datum.email %>)
+</h2>
+
+<% # this line creates a MissingAttributeError and Dan doesn't know why
+   # Also, this feature is deprecated... %>
+<% # if not @score.feedback_file.nil? then %>
+<% if false then %>
+  Download Feedback File: <%= link_to @score.feedback_file_name,
+    :action=>"downloadFeedbackFile",
+    :id=>@score.id %>
+<% end %>
+
+<pre>
+  <%= @score.feedback %>
+  Score for this problem: <%= @score.score.to_f().round(1) %>
+
+  Graded by: <%= if @score.grader then @score.grader.email end %>
+</pre>

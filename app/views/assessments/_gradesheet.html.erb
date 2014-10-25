@@ -1,0 +1,99 @@
+<%= external_javascript_include_tag "jquery", "1.7.2" %>
+<%= external_javascript_include_tag "jquery-ui", "1.8.20" %>
+<%= external_javascript_include_tag "jquery.dataTables", "1.9.2" %>
+
+<%= javascript_include_tag "jquery.jeditable" %>
+<%= javascript_include_tag "KeyTable" %>
+
+<script type="text/javascript">
+  andrewID_col = 1
+  problem_count = <%= @assessment.problems.length %>
+  first_problem_column = 5;
+  first_non_searchable_column = 3 
+</script>
+
+<%= javascript_include_tag "gradesheet1" %>
+<%= stylesheet_link_tag "gradesheet1" %>
+
+<div id="table_container" style="text-align: center">
+
+<table id="grades">
+
+<thead>
+    <tr class="sortable">
+        <th class="enumerator">#</th>
+        <th class="id">ID</th>
+        <th>Name</th>
+        <th class="lec">Lec</th>
+        <th class="sec">Sec</th>
+        <% for p in @assessment.problems do %>
+        <th class="problem">
+                <%= p.name %>
+                <span class="max_score">(<%= p.max_score %>)</span>
+            </th>
+        <% end %>
+        <% if @cud.instructor? %>
+            <th class="late_penalty">Late<br>Penalty</th>
+            <% if @assessment.version_penalty? %>
+              <th class="version_penalty">Version<br>Penalty</th>
+            <% end %>
+            <th class="tweak">Tweak</th>
+        <% end %>
+        <th class="total">Total</th>
+    </tr>
+</thead>
+
+<% for s in @submissions do %>
+<tr class="<%= aud_special_grade_type?(s.aud) && @cud.instructor? ? "special_submission" : "" %>">
+  <td class="enumerator"></td>
+  <td class="id" data-submission-id="<%= s.id.to_s %>">
+        <a tabindex="-1" class="andrewID"><%= s.course_user_datum.email %></a>
+        <% if s.filename %>
+          <%=raw(view_file(s, go_img(-1), go_img(-1), go_img(-1))) %>
+        <% end %>
+        <div class="popover">
+        </div>
+    </td>
+  <td><%= s.course_user_datum.last_name %>, <%= s.course_user_datum.first_name %></td>
+  <td class="lec"><%= s.course_user_datum.lecture %></td>
+    <td class="sec"><%= s.course_user_datum.section %></td>
+    <% p_scores = s.problems_to_scores %>
+    <% for p in @assessment.problems do %>
+        <% p_score = p_scores[p.id] %>
+        <% id = s.id.to_s + "_" + p.id.to_s %>
+        <% released = p_score && p_score.released ? "released" : "" %>
+      <td <%= p_score ? "data-score-id=#{p_score.id}" : "" %> data-submission-id="<%= s.id.to_s %>" data-problem-id="<%= p.id.to_s %>" class="edit <%= released %>">
+            <div class="editable"><%= p_score && p_score.score ? p_score.score : raw("&ndash;") %></div>
+            <div class="popover">
+                <div class="arrow"></div>
+                <table class="score_details">
+                    <tr><th>Feedback</th><td><textarea class="feedback"><%= p_score ? p_score.feedback : "" %></textarea></td></tr>
+                    <tr><th>Released</th><td>
+                        <input class="released" type="checkbox" <%= (p_score && p_score.released) ? "checked" : "" %>></input>
+                        <span class="save_box">
+                            <span class="saving">Saving...</span>
+                            <span class="save" tabindex="1">Save</span>
+                            <span class="error" tabindex="1">Try again?</span>
+                        </span>
+                    </td></tr>
+                </table>
+            </div>
+        </td>
+    <% end %>
+    <% if @cud.instructor? %>
+    <td class="late_penalty"><%= computed_score(history_url s.course_user_datum) { s.late_penalty @cud } %></td>
+    <% if @assessment.version_penalty? %>
+      <td class="version_penalty"><%= computed_score(history_url s.course_user_datum) { s.version_penalty @cud } %></td>
+    <% end %>
+    <td class="tweak">
+      <%= link_to raw(tweak(s.tweak)), 
+                  edit_course_assessment_submission_path(@course, @assessment, s),
+                  tabindex: -1 %>
+    </td>
+    <% end %>
+    <td class="total"><%= computed_score(history_url s.course_user_datum) { s.final_score @cud } %></td>
+</tr>
+<% end %>
+
+</table>
+</div>

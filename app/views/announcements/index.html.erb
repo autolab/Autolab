@@ -1,0 +1,7 @@
+<h2>Make Announcements</h2>
+<ul class="gray-box">
+<%= render @announcements %>
+</ul>
+<%= link_to raw('<span class="button">Create Announcement</span>'), 
+      new_course_announcement_path(@course) %>
+<%= link_to raw('<span class="button">Save All Changes</span>'), @course %>

@@ -1,0 +1,36 @@
+<% content_for :head do %>
+  <%= stylesheet_link_tag "bootstrap-datepicker" %>
+  <%= stylesheet_link_tag "bootstrap-datepicker-fixes" %>
+  <%= javascript_include_tag "bootstrap-datepicker" %>
+  <%= javascript_include_tag "moment" %>
+  <%= javascript_include_tag "time_input" %>
+  <%= stylesheet_link_tag "time_input" %>
+<% end %>
+
+<%= f.label :start_at %><br>
+<%= f.datetime_local_field :start_at, help_text: "The time this assessment is released to students." %>
+<br><br>
+<%= f.label :due_at %><br>
+<%= f.datetime_local_field :due_at, help_text: "Students can submit before this time without being penalized or using grace days." %>
+<br><br>
+<%= f.label :end_at %><br>
+<%= f.datetime_local_field :end_at, help_text: "Last possible time that students can submit (except those granted extensions.)" %>
+<br><br>
+<div class="form-group">
+  <label for="disable_handins" class="suppress-bottom-margin">Disable Handins</label>
+  <%= f.check_box :disable_handins %>
+  <p class="help-block">Check this to disallow handins through Autolab. E.g., paper exams, problem sets</p>
+</div>
+
+<%= content_tag :div, id: "handin", class: (f.object.disable_handins ? "disabled" : "") + " form-group" do %>
+  <%= f.text_field :handin_directory, help_text: "The subdirectory in the assessment directory where student submissions will be store. You generally shouldn't need to change this. Default: <kbd>handin</kbd>".html_safe %>
+
+  <%= f.text_field :handin_filename, help_text: "The suffix (fname) that is appended to student submission files. Autolab stores submission files in the handin directory as <kbd>andrewID_version_fname</kbd>. E.g., 'mm.c'".html_safe %>
+<% end %>
+
+<div class="action_buttons">
+  <%= f.submit "Save" %>
+</div>
+<script>
+$('.datepicker').datepicker();
+</script>

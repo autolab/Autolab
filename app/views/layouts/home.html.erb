@@ -1,0 +1,60 @@
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=0">
+    <%= csrf_meta_tag %>
+    <link rel="shortcut icon" href="/assets/autolab.ico" type="image/x-icon"> 
+
+    <%= stylesheet_link_tag 'style' %>
+    <%= stylesheet_link_tag 'animate' %>
+    <%= stylesheet_link_tag 'waves' %>
+
+    <%= external_stylesheet_link_tag "bootstrap", "3.0.0" %>
+
+    <%= external_javascript_include_tag "jquery", "2.1.1" %>
+    <%= external_javascript_include_tag "bootstrap", "3.0.0" %>
+
+
+    <%= javascript_include_tag 'application' %>
+    <%= javascript_include_tag 'waves' %>
+
+    <%= yield :head %>
+    <link href='//fonts.googleapis.com/css?family=Source+Sans+Pro:300,400' rel='stylesheet' type='text/css'>
+    <title>Autolab Home</title>
+  </head>
+
+  <body class="autolab">
+    <div class="page-wrapper">  
+      <%= render "layouts/navbar" %>
+
+      <!-- Page Body -->
+      <div id="pageBody" class="container">
+
+        <!-- Flashes -->
+        <div id='flashes'>
+          <% flash.each do |name, msg| %>
+          <%= content_tag :div, raw(msg), id: "flash_#{name}", 
+  					 	class: "#{name}" %>
+          <% end %>
+       </div>
+        <!-- End Flashes -->
+
+        <!-- Content -->
+        <div id="content">
+          <%= yield %>
+        </div>
+        <!-- End Content -->
+      </div>
+      <!-- End Page Body -->
+    </div>
+    <!-- Footer -->
+    <div id="footer">
+          <a href="http://autolabproject.com">Autolab Project</a>
+          · <a href="/contactUs.html">Contact</a>
+          · <%= link_to "Logout", destroy_user_session_path, method: :delete %>
+    </div>
+    <script type="text/javascript">
+      Waves.displayEffect();
+    </script>
+    <!-- End Footer -->
+  </body>
+</html>

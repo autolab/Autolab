@@ -1,0 +1,42 @@
+<h2>Need help using the system?</h2>
+
+<p>
+Check out our <a href="http://docs.autolab.cs.cmu.edu/">documentation</a>.
+</p>
+
+<h2>Stuck on a bug?</h2>
+
+<p>
+If you've encountered a bug, please report it here so we can take care of it.</p>
+</p>
+<p>
+Note: if you encountered the following problems, please contact your course instructor first.
+</p>
+<ul>
+  <li>Registered to the wrong Autolab course.</li>
+  <li>Unintended Autograde feedback.</li>
+  <li>Assignment does not show up.</li>
+  <li>Grade issues.</li>
+  <li>TA/Course assistant doesn't have proper access.</li>
+</ul>
+
+<%= form_tag do %>
+<table>
+  <tr>
+    <th>Title: </th>
+    <td><%= text_field_tag :title %></td>
+  </tr>
+  <tr>
+    <th colspan=2>Summary: </th>
+  </tr>
+  <tr>
+    <td colspan=2><%= text_area_tag :summary, nil, 
+            {:placeholder=>"Include a brief description of your problem here", 
+            :rows=>15, :cols=>50 } %></td>
+  </tr>
+  <tr>
+    <td colspan=2><%= submit_tag "Submit Bug"%></td>
+  </tr>
+</table>
+<% end %>
+

@@ -1,0 +1,74 @@
+div.dataTables_length {
+  float: left;
+}
+
+div.dataTables_filter {
+  float: right;
+}
+
+div.dataTables_info {
+  float: left;
+}
+
+div.dataTables_paginate {
+  float: right;
+}
+
+div.dataTables_length,
+div.dataTables_filter,
+div.dataTables_info,
+div.dataTables_paginate {
+  padding: 6px 0px;
+}
+
+div.dataTables_filter,
+div.dataTables_paginate {
+  padding-right: 14px;
+}
+
+div.dataTables_wrapper {
+  width: 70%;
+}
+
+div.dataTables_wrapper:after {
+  content: ".";
+  display: block;
+  clear: both;
+  visibility: hidden;
+  line-height: 0;
+  height: 0;
+}
+
+html[xmlns] .dataTables_wrapper {
+  display: block;
+}
+
+* html .dataTables_wrapper {
+  height: 1%;
+}
+
+table.dataTable {
+  clear: both;
+}
+
+a.paginate_button,
+a.paginate_active {
+  display: inline-block;
+  padding: 2px 4px;
+  margin-left: 2px;
+  cursor: pointer;
+          *cursor: hand;
+}
+
+a.paginate_active {
+  border: 1px solid #888;
+}
+
+a.paginate_button_disabled {
+  visibility: hidden;
+}
+
+div.dataTables_paginate span>a {
+  width: 15px;
+  text-align: center;
+}

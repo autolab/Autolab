@@ -1,0 +1,2 @@
+module AssessmentCategoryHelper
+end

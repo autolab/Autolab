@@ -1,0 +1,70 @@
+GRADEBOOK DOCUMENTATION
+
+=======
+Introduction
+=======
+This document serves to try and explain how the gradebook for Autolab2 works,
+both from a user perspective, and from the instructor perspective.  For the
+developer perspective, you should probably just read the code, it's pretty well
+documented. 
+
+======
+Scores
+======
+Assessments have problems. Problems have scores. Scores are the only value
+students ever receive for their work.  Students handin a submission, and a
+floating point number can be assigned to each of of the problems for that
+submission.  In the event that a student does not hand in a submission, one can
+be created for them. 
+	Submissions can either be
+		->Normal: Students upload files, instructors assign scores
+		->Excused: Regardless of scores assigned to this submission, it will not
+		be used to calculate averages
+		->No-grade: An instructor has explicitly stated that this submission
+		will never receive a grade.  A zero will be used to calculate averages
+
+=====
+Grading Assessments
+=====
+The final score a student receives on an Assessment is determined by taking
+their raw score on the submission, applying a late penalty (if applicable) and
+then applying a tweak (if applicable).  By default, the raw score of a
+submission is simply the sum of all scores on all problems.  An Assessment
+class can override the raw_score function to change this. 
+
+=====
+Student Gradebook
+=====
+The student gradebook shows a listing of assessment scores for a particular
+student.  A "--" is shown wherever the grade for the student is not completed.
+"Completed" means that a score has been entered for each problem in the most
+recent submission.  If there is no submission, or the submission is missing
+scores, a "--" will appear. A "NG" means that an instructor has assigned this
+submission a No-grade and that assessment will receive zero points. A "EXC"
+means that the assessment is excused, and that it will not count towards the
+student's average. 
+
+
+======
+Calculating Averages
+=====
+Category Averages:
+	The course.rb file must define a function for each category, which will
+	accept a map of assessment names to assessment scores and will return a
+	floating point average for that category.  This function will be called for
+	each student.  For submissions which are marked as 'Excused', that
+	assessment will simply not be passed to the category average function. 
+
+Course Averages:
+	The course.rb file must define a function called courseAverage which will
+	accept a map of assessment names and "cat#{@category.name}" to assessment
+	(and category) scores. This function will be called for each student.
+	The same convention as the category average functions is followed for
+	excused submissions.  
+
+
+**IMPORTANT** the averages functions MUST be intelligent and calculate the
+  average correctly depending on which assessments are passed to it.  If a
+  student has not turned in an assignment, we will not pass it to your average
+  function.  If you want to give the student an explicit ZERO, you should
+  create a submission for them and mark it as No-Grade. 

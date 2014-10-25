@@ -1,0 +1,53 @@
+<%= render partial: "announcements/announcements_list", 
+           locals: { announcements: @announcements } %>
+
+<% if @is_instructor and @course.exam_in_progress? %>
+    <p class="attention">An exam is in progress. Uncheck Admin > Edit Course > Exam In Progress after it's administered.</p>
+<% end %>
+
+<% if @is_instructor %>
+<h2>Instructor Actions</h2>
+  <%= button_to 'Install Assessment',
+                    {:action=>"installAssessment"},
+                    {:title=>"Install Assessment", :class => "btn" } %>
+<% end %>
+<h2>Assignments</h2>
+<div class="rolodex">
+<% @course.assessment_categories.each do |cat| %>
+  <% asmts = @is_instructor ? cat.assessments.ordered : cat.assessments.released.ordered %>
+  <% if asmts.any? %>
+  <div class="card">
+    <h1><a href=""><%= cat.name.pluralize %></a></h1>
+    <div class="content">
+      <ul>
+      <% asmts.each do |asmt| %>
+        <li>
+          <%= link_to asmt.display_name, course_assessment_url(@course, asmt) %><%= "*" unless asmt.released? %>
+          <span class="pull-right shortcuts">
+
+            <a class="handin-icon-small" href="<%= handin_course_assessment_path(@course, asmt) %>"><%= image_tag "upload.png", :height => 22, :alt=>"Handin Assignment" %></a>
+            <a class="goto-icon-small" href="<%= course_assessment_path(@course, asmt) %>"><%= image_tag "go-new.png", :height => 22, :alt=>"Go to assessment" %></a>
+          </span>
+        </li>
+      <% end %>
+      <% if asmts.length == 0%>
+       <div><i>No assignments in this category.</i></div>
+      <% end %>
+      </ul>
+    </div>
+  </div>
+  <% end %>
+<% end %>
+</div>
+
+<% if @attachments.any? %>
+  <h2>Files</h2>
+
+  <ul>
+    <%= render @attachments %>
+  </ul>
+<% end %>
+
+<% if @is_instructor and (@course.assessments.unreleased.any? or @course.attachments.where(released: false).any?) %>
+  <i class="smallText">* Not visible to students</i>
+<% end %>

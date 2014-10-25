@@ -1,0 +1,130 @@
+div.cat_pair {
+  margin-bottom: 20px;
+}
+
+div.gradebook h4 {
+  color: #666;
+}
+
+div.gradebook {
+  margin: 20px 0;
+  padding: 0 10px;
+}
+
+div.grades_container {
+  margin: 15px -10px;
+}
+
+div.category, div.course {
+  background-color: #fafafa;
+  width: 100%;
+  color: #777;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  box-shadow: 0 0 2px 0px #f4f4f4;
+  font-size: 1.2em;
+  padding: 5px 15px;
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+}
+
+table.grades {
+  width: 100%;
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  table-layout: fixed;
+}
+
+table.grades tr > * {
+  padding: 5px 0px;
+  text-align: center;
+}
+
+table.grades col {
+  width: 3.5em;
+}
+
+table.grades col.fs {
+  width: 6em;
+}
+
+table.grades col.asmt_names {
+  width: auto;
+}
+
+table.grades tr > *:first-child {
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-right: 10px;
+}
+
+table.grades tr > *:last-child {
+  text-align: right;
+}
+
+span.max_score {
+  color: #bbb;
+}
+
+table.grades tr.header > th:not(.cat_name),
+table.grades tr.footer > th:not(.cat_avg),
+div.course table tr th {
+  color: #aaa;
+  text-transform: uppercase;
+  font-size: 0.7em;
+  font-weight: bold;
+}
+
+i.icon-aaa {
+  background-image: url(/images/glyphicons-halflings-aaa.png)
+}
+
+table.grades tr.header > th i {
+  vertical-align: -3px;
+}
+
+div.course table {
+  width: 100%;
+}
+
+div.course table tr td {
+  text-align: right;
+  font-weight: bold;
+  font-size: 0.9em;
+}
+
+th.cat_avg {
+  font-size: 0.9em;
+}
+
+th.cat_name {
+  font-size: 0.8em;
+  text-transform: uppercase;
+  font-weight: bold;
+}
+
+div.gradebook a {
+  color: #08c;
+  font: inherit;
+}
+
+div.gradebook span.not-submitted a {
+  color: #c94a48;
+}
+
+div.gradebook span.not-yet-submitted a {
+  color: #f89406;
+}
+
+div.gradebook span.zeroed a {
+  font-weight: bold;
+  color: #3a87ad;
+}
+
+table.grades tr a.history_icon {
+  display: none;
+}
+table.grades tr:hover a.history_icon {
+  display: inline;
+}

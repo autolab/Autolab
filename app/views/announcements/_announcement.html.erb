@@ -1,0 +1,14 @@
+<li>
+  <% if announcement.course_id == -1 then %>
+    <b>SYSTEM</b>--
+  <% end %>
+  <b><%= announcement.title %></b><br>
+  <%= announcement.description %><br>
+  <% if @cud.has_auth_level? :instructor then %>
+    <%= link_to raw('<span class="button half">Edit</span>'), 
+      [:edit, @course, announcement] %> 
+    <%= link_to raw('<span class="button half">Delete</span>'),
+      [@course, announcement], method: :delete, 
+      data: {confirm: "Are you sure you want to delete this announcement?"} %>
+  <% end %>
+</li>

@@ -1,0 +1,31 @@
+<h1>Courses</h1>
+
+<% @listing.each do |category, list| %><% if list.size > 0 %>
+
+  <h2><%= category.capitalize %></h2>
+  <div class="rolodex">
+    <% list.each do |course| %>
+    <div class="card course">
+        <h1><%= link_to course.display_name, course_path(course) %></h1>
+        <div class="content">
+          <ul>
+          <% course.current_assessments.each do |asmt| %>
+            <li>
+              <%= link_to asmt.display_name, course_assessment_path(course, asmt) %>
+              <span class="pull-right shortcuts">
+                <a href="<%= handin_course_assessment_path(course, asmt) %>"><%= image_tag "upload.png", :height => 22, :alt=>"Handin Assignment" %></a>
+                <a href="<%= course_assessment_path(course, asmt) %>"><%= image_tag "go-new.png", :height => 22, :alt=>"Go to assessment" %></a>
+              </span>
+            </li>
+          <% end %>
+          </ul>
+          <% if course.current_assessments.length == 0 %>
+            <div><i>No current assesments</i></div>
+          <% end %>
+          <%= link_to 'Go to Course Page', course_path(course), :class=>'btn main' %>
+        </div>
+    </div>
+    <% end %>
+  </div>
+
+<% end %><% end %>

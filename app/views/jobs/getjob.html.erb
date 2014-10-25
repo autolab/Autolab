@@ -1,0 +1,54 @@
+<%= javascript_include_tag "sorttable" %>
+
+<h1>Job <%= @job[:name]%></h1>
+<p>
+<%= link_to "Return to Jobs", {:action=>"index"} %>
+</p>
+<h2>Summary</h2>
+<ul>
+<li>Job ID: <%= @job[:id] %>
+<li>State: <%= @job[:state] %>
+<li>Status: <%= @job[:status] %>
+<li>Elapsed time: <%= @job[:elapsed] %> secs
+<li>VM instance: <%= @job[:rjob]["vm"]["id"] %>
+</ul>
+
+<h2>Job Parameters</h2>
+<ul>
+<li>VM image: <kbd><%= @job[:rjob]["vm"]["name"]%>.img</kbd>
+<li><kbd>timeout</kbd>: <%= @job[:rjob]["timeout"] %> secs
+<li><kbd>maxOutputFileSize</kbd>: <%= @job[:rjob]["maxOutputFileSize"] %> bytes.
+<li>Input Files: 
+<table class=prettyBorder>
+<tr><th>Local File on Server (<kbd>localFile</kbd>)</th>
+<th>Filename on VM (<kbd>destFile</kbd>)</th></tr>
+<% for item in @job[:rjob]["input"] do %>
+  <tr>
+  <td><font size=-1><kbd><%= item["localFile"].sub(/\/afs\/cs.cmu.edu\/academic\/autolab\/autolab2\/courses/, "[autolab courses]")%></kbd></font></td>
+  <td><font size=-1><kbd><%= item["destFile"] %></kbd></font></td>
+  </tr>
+<% end %>
+</tr></table>
+
+<% if @cud.user.administrator?  then %>
+<li><kbd>notifyURL</kbd>: <kbd><%= @job[:rjob]["notifyURL"] %> </kbd>
+<% end %>
+
+<li><kbd>outputFile</kbd>: <kbd><%= @job[:rjob]["outputFile"].sub(/\/afs\/cs.cmu.edu\/academic\/autolab\/autolab2/, "[autolab]") %></kbd>
+</ul>
+
+<h2>Runtime Trace</h2>
+<ul>
+<% for item in @job[:rjob]["trace"] do %>
+  <li> <%= item %>
+<% end %>
+</ul>
+
+<h2>Most Recent Autograder Feedback for this Submission</h2>
+<% if @feedback_str == nil || @feedback_str == "" then %>
+None available
+<% else %>
+<pre>
+<%= @feedback_str %>
+</pre>
+<% end %>
