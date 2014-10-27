@@ -93,7 +93,7 @@ You can run the tests by:
 bundle exec rake spec
 ```
 
-We have a very limited testing suit at the moment, but we are working on it.
+We have a very limited testing suite at the moment, but we are working on it.
 
 ## Contributing
 
