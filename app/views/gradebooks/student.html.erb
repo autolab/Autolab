@@ -51,7 +51,7 @@
   <h4>Grades for <%= @_cud.email %> </h4>
 
   <% if not @course.gb_message.blank? %>
-    <div class="gb_message"><%= @course.gb_message %></div>
+    <div class="gb_message"><%=raw(@course.gb_message)%></div>
   <% end %>
 
   <div class="grades_container">
