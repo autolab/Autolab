@@ -83,7 +83,7 @@ class SubmissionsController < ApplicationController
   action_no_auth :autograde_done
   def autograde_done
     
-    feedback_str = request.body.read
+    feedback_str = params[:file].read
 
     @submission = Submission.where(:id => params[:id]).first
     @course = Course.where(:id => params[:course_id]).first
