@@ -73,7 +73,7 @@
 <% end %>
 
 <% if not @course.gb_message.blank? %>
-  <div class="gb_message"><%= @course.gb_message %></div>
+  <div class="gb_message"><%=raw(@course.gb_message)%></div>
 <% end %>
 
 <div id="filter_container">

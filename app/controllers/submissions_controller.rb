@@ -508,8 +508,6 @@ class SubmissionsController < ApplicationController
           extension = "txt"
         end
        
-        i += 1
-
         next if pathname.include? "__MACOSX" or
           pathname.include? ".DS_Store" or
           pathname.include? ".metadata"
@@ -520,6 +518,7 @@ class SubmissionsController < ApplicationController
           :highlight => (Simplabs::Highlight.get_language_sym(extension) or (extension == "txt"))
         }
 
+        i += 1
       end
 
       tar_extract.close
@@ -675,8 +674,8 @@ class SubmissionsController < ApplicationController
       pSubmission.autoresult = autoresult
       pSubmission.save
     end
-    logger = Logger.new(Rails.root + "/courses/#{@course.name}/#{@assessment.name}/log.txt")
-    logger.add(Logger::INFO) {"#{@user.andrewID}, #{submission.version}, #{autoresult}"}
+    logger = Logger.new(Rails.root.join("courses", @course.name, @assessment.name, "log.txt")
+    logger.add(Logger::INFO) {"#{@user.email}, #{submission.version}, #{autoresult}"}
   end
 
   # 
