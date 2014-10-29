@@ -674,8 +674,8 @@ class SubmissionsController < ApplicationController
       pSubmission.autoresult = autoresult
       pSubmission.save
     end
-    logger = Logger.new(Rails.root + "/courses/#{@course.name}/#{@assessment.name}/log.txt")
-    logger.add(Logger::INFO) {"#{@user.andrewID}, #{submission.version}, #{autoresult}"}
+    logger = Logger.new(Rails.root.join("courses", @course.name, @assessment.name, "log.txt")
+    logger.add(Logger::INFO) {"#{@user.email}, #{submission.version}, #{autoresult}"}
   end
 
   # 
