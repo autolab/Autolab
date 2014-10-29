@@ -253,7 +253,7 @@ private
   # called on ActiveRecord::RecordNotFound exception. 
   # Redirect user to the 404 page without error notification
   def render_404
-    render :template => "public/404.html", :layout => false
+    render :file => "public/404.html", :layout => false
   end
 
 end

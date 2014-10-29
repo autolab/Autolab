@@ -125,9 +125,9 @@ class AssessmentUserDatum < ActiveRecord::Base
   # TODO
   # Refer to https://github.com/autolab/autolab-src/wiki/Caching
   def invalidate_cgdubs_for_assessments_after
-    User.transaction {
+    CourseUserDatum.transaction {
       # acquire lock
-      User.lock(true).find(course_user_datum_id)
+      CourseUserDatum.lock(true).find(course_user_datum_id)
 
       # invalidate
       auds_for_assessments_after.each do |aud|
@@ -235,9 +235,9 @@ private
 
     cache_key = cgdub_cache_key
     unless (cgdub = Rails.cache.read cache_key) 
-      User.transaction {
+      CourseUserDatum.transaction {
         # acquire lock on user
-        User.lock(true).find(course_user_datum_id)
+        CourseUserDatum.lock(true).find(course_user_datum_id)
 
         # compute
         cgdub = cumulative_grace_days_used_before!
