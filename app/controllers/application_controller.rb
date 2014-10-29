@@ -24,10 +24,10 @@ class ApplicationController < ActionController::Base
   #
   # the policy is basically a replica of Rails's default error handling policy
   # described in http://guides.rubyonrails.org/action_controller_overview.html#rescue
-  unless Rails.application.config.consider_all_requests_local
+  unless Rails.env.development?
     # this doesn't appear to be getting called -Dan
     #rescue_from ActiveRecord::RecordNotFound, :with => :render_404
-    rescue_from Exception, :with => :render_error
+    rescue_from Exception, with: :render_error
   end  
 
   def self.autolabRequire(path)
