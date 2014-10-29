@@ -32,6 +32,18 @@ module Autolab3
     # TODO: this should be a macro
     config.action_mailer.default_url_options = {protocol: 'https', host: 'sawshark.ics.cs.cmu.edu' }
 
+    config.action_mailer.delivery_method = :sendmail
+    config.action_mailer.perform_deliveries = true
+    config.action_mailer.raise_delivery_errors = true
+
+    config.middleware.use ExceptionNotification::Rack,
+      email: {
+        email_prefix: "[Autolab Error] ",
+        sender_address: "\"Dom Brokaw\" <dom.brokaw@andrew.cmu.edu>",
+        exception_recipients: "autolab-dev@andrew.cmu.edu"
+      }
+
+
     # Settings in config/environments/* take precedence over those specified here.
     # Application configuration should go into files in config/initializers
     # -- all .rb files in that directory are automatically loaded.

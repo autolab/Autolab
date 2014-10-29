@@ -2,7 +2,6 @@
 # Likewise, all the methods added will be available for all controllers.
 
 class ApplicationController < ActionController::Base
-  #include ExceptionNotification::Notifiable
   helper :all # include all helpers, all the time
 
   before_action :configure_permitted_paramters, if: :devise_controller?
@@ -26,8 +25,9 @@ class ApplicationController < ActionController::Base
   # the policy is basically a replica of Rails's default error handling policy
   # described in http://guides.rubyonrails.org/action_controller_overview.html#rescue
   unless Rails.application.config.consider_all_requests_local
+    # this doesn't appear to be getting called -Dan
+    #rescue_from ActiveRecord::RecordNotFound, :with => :render_404
     rescue_from Exception, :with => :render_error
-    rescue_from ActiveRecord::RecordNotFound, :with => :render_404
   end  
 
   def self.autolabRequire(path)
@@ -241,11 +241,10 @@ private
   # Shows good ol' Donkey Kong to students
   def render_error(exception)
     # use the exception_notifier gem to send out an e-mail to the notification list specified in config/environment.rb
-    # notify_about_exception(exception)
-    print 'error'
-    print exception
+    ExceptionNotifier.notify_exception(exception)
 
-    @error = exception #if @user && @user.has_auth_level?(:course_assistant)
+    #TODO: hide stack traces from students after the beta.  leave @error undefined to hide stack traces
+    @error = exception
 
     render "home/error"
   end
@@ -253,7 +252,7 @@ private
   # called on ActiveRecord::RecordNotFound exception. 
   # Redirect user to the 404 page without error notification
   def render_404
-    render :file => "public/404.html", :layout => false
+    render file: "public/404.html", layout: false
   end
 
 end

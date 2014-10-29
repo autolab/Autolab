@@ -508,8 +508,6 @@ class SubmissionsController < ApplicationController
           extension = "txt"
         end
        
-        i += 1
-
         next if pathname.include? "__MACOSX" or
           pathname.include? ".DS_Store" or
           pathname.include? ".metadata"
@@ -520,6 +518,7 @@ class SubmissionsController < ApplicationController
           :highlight => (Simplabs::Highlight.get_language_sym(extension) or (extension == "txt"))
         }
 
+        i += 1
       end
 
       tar_extract.close
