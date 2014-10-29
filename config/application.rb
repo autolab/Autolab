@@ -41,8 +41,11 @@ module Autolab3
         email_prefix: "[Autolab Error] ",
         sender_address: "\"Dom Brokaw\" <dom.brokaw@andrew.cmu.edu>",
         exception_recipients: "autolab-dev@andrew.cmu.edu"
+      },
+      slack: {
+        webhook_url: "https://hooks.slack.com/services/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",
+        channel: "#exceptions"
       }
-
 
     # Settings in config/environments/* take precedence over those specified here.
     # Application configuration should go into files in config/initializers

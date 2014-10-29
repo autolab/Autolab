@@ -19,6 +19,10 @@ known bugs:
 <% content_for :stylesheets do %>
   <%= stylesheet_link_tag 'highlight' %>
   <%= stylesheet_link_tag "viewSubmission", "css/ui-lightness/jquery-ui-1.8.21.custom.css" %>
+  <style type="text/css">
+    /** this is a temp fix for proper indentation. -Daniel **/
+    code { white-space: pre-wrap; }
+  </style>
 <% end %>
 
 <%= external_javascript_include_tag "jquery-ui", "1.8.20" %>
