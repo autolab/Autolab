@@ -726,7 +726,6 @@ private
     end
 
     @assessment = @submission.assessment
-    @cud = @submission.course_user_datum
 
     if ((!@cud.user.administrator?) && (@cud.course_id != @assessment.course_id)) then 
       flash[:error] = "You do not have permission to access this submission"
