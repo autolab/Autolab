@@ -82,7 +82,7 @@ function filter(item, args) {
 
   if (filter == "") {
     return true 
-  } else if (item["andrew"].toLowerCase().indexOf(filter) != -1 ||
+  } else if (item["email"].toLowerCase().indexOf(filter) != -1 ||
              item["first_name"].toLowerCase().indexOf(filter) != -1 ||
              item["last_name"].toLowerCase().indexOf(filter) != -1) {
     return true;
