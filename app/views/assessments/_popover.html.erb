@@ -16,7 +16,7 @@
         <% version = s.version == 0 ? "Unofficial" : s.version %>
         <%= version %>
         <% if @cud.instructor? %>
-            (<%= link_to "more...", { :action => "history", :id => s.course_user_datum_id } %>)
+            (<%= link_to "more...", { :action => "history", :cud_id => s.course_user_datum_id } %>)
         <% end %>
     </td></tr>
     <% if @cud.instructor? && @assessment.version_penalty? %>

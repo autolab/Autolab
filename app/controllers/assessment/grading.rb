@@ -283,7 +283,7 @@ public
   end
   
   def submission_popover
-    render :partial => "popover", :locals => { :s => Submission.find(params[:id]) }
+    render :partial => "popover", :locals => { :s => Submission.find(params[:submission_id].to_i) }
   end
   
   def score_grader_info

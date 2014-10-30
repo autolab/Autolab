@@ -460,7 +460,7 @@ jQuery(function() {
       var popover = link.siblings("div.popover")
 
       jQuery.ajax("submission_popover", {
-        data: { id: link.parent().data("submission-id") },
+        data: { submission_id: link.parent().data("submission-id") },
         success: function(data, status, jqXHR) {
           popover.html(data)
         show_popover(popover, {
