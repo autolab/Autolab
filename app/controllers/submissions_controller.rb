@@ -654,7 +654,7 @@ class SubmissionsController < ApplicationController
       score.feedback +=  "\nBacktrace:\n" +  e.backtrace.join("\n")
       score.feedback += "\n\n"
 
-      if lines and (lines.length < 10000) then
+      if lines && (lines.length < 10000) then
         score.feedback += lines.join()
       end
       score.released = true
@@ -674,8 +674,8 @@ class SubmissionsController < ApplicationController
       pSubmission.autoresult = autoresult
       pSubmission.save
     end
-    logger = Logger.new(Rails.root.join("courses", @course.name, @assessment.name, "log.txt")
-    logger.add(Logger::INFO) {"#{@user.email}, #{submission.version}, #{autoresult}"}
+    logger = Logger.new(Rails.root.join("courses", @course.name, @assessment.name, "log.txt"))
+    logger.add(Logger::INFO) {"#{@cud.email}, #{submission.version}, #{autoresult}"}
   end
 
   # 
