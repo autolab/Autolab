@@ -675,7 +675,7 @@ class SubmissionsController < ApplicationController
       pSubmission.save
     end
     logger = Logger.new(Rails.root.join("courses", @course.name, @assessment.name, "log.txt"))
-    logger.add(Logger::INFO) {"#{@cud.email}, #{submission.version}, #{autoresult}"}
+    logger.add(Logger::INFO) {"#{submission.course_user_datum.email}, #{submission.version}, #{autoresult}"}
   end
 
   # 
