@@ -874,13 +874,8 @@ class AssessmentsController < ApplicationController
     end
 
     # Check if we should include regrade as a function
-    assign = @assessment.name.gsub(/\./,'') 
-    modName = (assign + (@course.name).gsub(/[^A-Za-z0-9]/,"")).camelize
-    @autograded = false
-    begin
-      @autograded = eval("#{modName}.include?(Autograde)")
-    rescue Exception 
-    end
+    @autograded = @assessment.has_autograde
+    
     if params[:partial] then
       @partial = true
       render "history", layout: false and return

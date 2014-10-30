@@ -180,8 +180,8 @@ module ApplicationHelper
     end
   end
 
-  def history_url(user, asmt = @assessment)
-    history_course_assessment_path(@course, asmt)
+  def history_url(cud, asmt = @assessment)
+    history_course_assessment_path(@course, asmt, cud_id: cud.id)
   end
 
 end
