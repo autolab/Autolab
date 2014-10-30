@@ -8,7 +8,7 @@ class AssessmentUserDataController < ApplicationController
   def update
     @aud = AssessmentUserDatum.find params[:id]
 
-    if (@aud.update_attributes params[:assessment_user_datum])
+    if @aud.update_attributes(edit_aud_params)
       flash[:notice] = "Grade type updated!"
       redirect_to :action => :show
     else
@@ -19,6 +19,10 @@ class AssessmentUserDataController < ApplicationController
 
   def show
     redirect_to :action => :edit
+  end
+
+  def edit_aud_params
+    params.require(:assessment_user_datum).permit(:grade_type)
   end
 
 end
