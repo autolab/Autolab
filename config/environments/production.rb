@@ -67,4 +67,20 @@ Autolab3::Application.configure do
   # Log the query plan for queries taking more than this (works
   # with SQLite, MySQL, and PostgreSQL)
   # config.active_record.auto_explain_threshold_in_seconds = 0.5
+
+  config.action_mailer.delivery_method = :sendmail
+  config.action_mailer.perform_deliveries = true
+  config.action_mailer.raise_delivery_errors = true
+
+  config.middleware.use ExceptionNotification::Rack,
+    email: {
+      email_prefix: "[Autolab Error] ",
+      sender_address: "\"Dom Brokaw\" <dom.brokaw@andrew.cmu.edu>",
+      exception_recipients: "autolab-dev@andrew.cmu.edu"
+    },
+    slack: {
+      webhook_url: "https://hooks.slack.com/services/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",
+      channel: "#exceptions"
+    }
+
 end
