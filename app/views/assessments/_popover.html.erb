@@ -8,22 +8,22 @@
     </span>
 </span>
 <% end %>
-<table class="sub_info">
+<table class="sub_info" style="width:100%">
 <% if s.filename %>
     <tr><th>Type</th><td><%= s.mime_type %></td></tr>
 <% end %>
     <tr><th>Version</td><td class="version">
         <% version = s.version == 0 ? "Unofficial" : s.version %>
         <%= version %>
-        <% if @user.instructor? %>
-            (<%= link_to "more...", { :action => "history", :id => s.user_id } %>)
+        <% if @cud.instructor? %>
+            (<%= link_to "more...", { :action => "history", :id => s.course_user_datum_id } %>)
         <% end %>
     </td></tr>
-    <% if @user.instructor? && @assessment.version_penalty? %>
+    <% if @cud.instructor? && @assessment.version_penalty? %>
       <tr><th>Version Over Threshold By</th><td><%= s.version_over_threshold_by %></tr>
     <% end %>
     <tr><th>Submitted on</td><td><%= s.created_at %></td></tr>
-    <% if @user.instructor? %>
+    <% if @cud.instructor? %>
         <tr><th>Used grace days</th><td><%= s.grace_days_used %></tr>
         <tr><th>+ Penalty late days</th><td><%= s.penalty_late_days %></td></tr>
         <tr><th>= Days late</th><td><%= s.days_late %></td></tr>

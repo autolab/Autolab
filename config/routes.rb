@@ -77,6 +77,7 @@ Autolab3::Application.routes.draw do
         get 'handout'
         get 'partner'
         get 'scoreboard'
+        get 'submission_popover'
         #partner actions
         match 'setPartner', via: [:get, :post]
         get 'importPartners'

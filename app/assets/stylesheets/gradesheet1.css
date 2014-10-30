@@ -164,6 +164,7 @@ td.id {
     padding: 3px;
     background-color: #7e7e7e;
     display: none;
+    max-width: 360px;
 }
 
 #grades td.id .popover span.filename {
