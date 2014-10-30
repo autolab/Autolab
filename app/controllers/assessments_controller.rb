@@ -1506,7 +1506,7 @@ class AssessmentsController < ApplicationController
       if @assessment.config_module.instance_methods.include?(:scoreboardHeader) then
         @header =  @assessment.config_module.scoreboardHeader()
       else
-      	@header = scoreboardHeader()
+	@header = scoreboardHeader()
       end
     rescue Exception => e
       if (@cud.instructor? ) then
