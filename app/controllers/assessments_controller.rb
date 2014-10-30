@@ -1459,6 +1459,7 @@ class AssessmentsController < ApplicationController
   # scoreboard - This function draws the scoreboard for an assessment.
   #
   def scoreboard
+    extend_config_module
     @students = CourseUserDatum.joins("INNER JOIN submissions ON course_user_datum.id=submissions.course_user_datum_id")
                     .where("submissions.assessment_id=?",@assessment.id)
                     .group("users.id")
@@ -1502,7 +1503,11 @@ class AssessmentsController < ApplicationController
 
     # Build the html for the scoreboard header 
     begin
-      @header = scoreboardHeader()
+      if @assessment.config_module.instance_methods.include?(:scoreboardHeader) then
+        @header =  @assessment.config_module.scoreboardHeader()
+      else
+      	@header = scoreboardHeader()
+      end
     rescue Exception => e
       if (@cud.instructor? ) then
         @errorMessage = "An error occurred while calling " +
@@ -1517,10 +1522,17 @@ class AssessmentsController < ApplicationController
 
     # Build the scoreboard entries for each student
     for grade in @grades.values do
-      begin 
-        grade[:entry] = createScoreboardEntry(
+      begin
+	
+	if @assessment.config_module.instance_methods.include?(:createScoreboardEntry) then
+          grade[:entry] = @assessment.config_module.createScoreboardEntry(
+					      grade[:problems],
+					      grade[:autoresult]) 
+	else 
+          grade[:entry] = createScoreboardEntry(
                                               grade[:problems],
                                               grade[:autoresult])	
+	end
       rescue Exception => e
         # Screw 'em! usually this means the grader failed. 
         grade[:entry] = {}
