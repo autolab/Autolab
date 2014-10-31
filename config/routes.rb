@@ -134,5 +134,4 @@ Autolab3::Application.routes.draw do
     end
 
   end
-  match '/404', to: 'errors#file_not_found', via: :all
 end
