@@ -82,5 +82,8 @@ module Autolab3
     config.action_view.field_error_proc = Proc.new { |html_tag, instance| 
       "<div class=\"field_with_errors has-error\">#{html_tag}</div>".html_safe
     }
+
+    # Handle HTTP 404/500/etc. pages with Rails routing
+    config.exceptions_app = self.routes
   end
 end
