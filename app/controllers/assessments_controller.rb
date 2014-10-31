@@ -1886,7 +1886,7 @@ protected
 
     # If the lab is not autograded, or the columns property is not
     # specified, then return the default header.
-    if (@assessment.has_autograde or
+    if (!@assessment.has_autograde or
         !@scoreboard_prop or @scoreboard_prop.colspec.blank?) then
       head =	banner + "<table class='sortable prettyBorder'> 
 			<tr><th>Nickname</th><th>Version</th><th>Time</th>"
