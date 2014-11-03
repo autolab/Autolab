@@ -315,7 +315,7 @@ td .view b {
 }
 
 #simplemodal-overlay {background-color:#000;}
-#simplemodal-container a.modalCloseImg {background:url(image_path('x.png')) no-repeat; width:25px; height:29px; display:inline; z-index:3200; position:absolute; top:-15px; right:-16px; cursor:pointer;}
+#simplemodal-container a.modalCloseImg {background:image-url('x.png') no-repeat; width:25px; height:29px; display:inline; z-index:3200; position:absolute; top:-15px; right:-16px; cursor:pointer;}
 .keyboard-icon {
   position: relative;
   top: 2px;
