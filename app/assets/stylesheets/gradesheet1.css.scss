@@ -229,7 +229,9 @@ td.id {
     position: absolute;
     height: 12px;
     width: 5px;
-    background-image: image-url('popover-arrow.png')
+    background-image: image-url('popover-arrow.png');
+    background-repeat: no-repeat;
+    border-width: 0;
 }
 
 #grades td .popover table.score_details {
