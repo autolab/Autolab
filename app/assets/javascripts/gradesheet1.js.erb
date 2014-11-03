@@ -272,7 +272,7 @@ jQuery(function() {
           name: 'score',
           event: "click",
           placeholder: "&ndash;",
-          indicator: '<img src="/assets/spinner.gif"></img>',
+          indicator: '<img src="<%= asset_path('spinner.gif') %>"></img>',
           select: true, // select all text in score editor on click/enter
           onblur: function() {
           },
