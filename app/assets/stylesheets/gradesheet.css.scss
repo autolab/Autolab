@@ -1,5 +1,5 @@
 td.focus {
-    background: #1874Cd !important;
+    background-color: #1874Cd !important;
     color: white !important;
 }
 
@@ -31,7 +31,7 @@ td.focus {
     cursor: pointer;
 }
 
-#grades th {
+th {
     padding-left: 7px;
     padding-right: 7px;
     white-space: nowrap;
@@ -44,6 +44,7 @@ td.focus {
 #grades_filter input {
     padding: 5px;
     border: 1px solid #d0d0d0;
+    height: 18px;
     width: 200px;
     border-radius: 3px;
     box-shadow: 0 0 2px #CCC;
@@ -61,7 +62,7 @@ td.focus {
 }
 
 #grades {
-    box-shadow: 0 0 5px 0px #eee;
+    box-shadow: 0 0 5px 0px #ccc;
     font-size: 1.2em;
     font-family: Helvetica;
     border: 1px solid #ccc;
@@ -70,10 +71,10 @@ td.focus {
     margin: 0 auto 0 auto;
 }
 
-#grades td {
+td {
     background-color: #f8f8f8;
     padding: 10px;
-    border: 1px solid #e8e8e8;
+    border: 1px solid #ccc;
     border-right: none;
     border-left: none;
     border-spacing: 0;
@@ -87,7 +88,7 @@ td.focus {
     background-color: white;
 }
 
-#grades th {
+th {
     background-color: #ebebeb;
     padding: 8px;
     border-right: none;
@@ -120,7 +121,7 @@ td.focus {
     padding-right: 15px;
 }
 
-#grades .sec, #grades .lec, #grades .total, #grades .tweak, #grades .late_penalty, #grades .version_penalty {
+#grades .sec, #grades .lec, #grades .total, #grades .tweak, #grades .late_penalty {
     text-align: center;
 }
 
@@ -150,7 +151,7 @@ td.id {
   padding-right: 10px;
 }
 
-#grades .popover {
+.popover {
     cursor: auto;
     display: none;
     font-size: 0.8em;
@@ -164,19 +165,18 @@ td.id {
     padding: 3px;
     background-color: #7e7e7e;
     display: none;
-    max-width: 360px;
 }
 
-#grades td.id .popover span.filename {
+.popover span.filename {
     padding-left: 3px;
     line-height: 1.8em;
 }
 
-#grades td.id .popover span.filename a {
+.popover span.filename a {
     color: #dfdfdf;
 }
 
-#grades td.id .popover span.filename span.links {
+.popover span.filename span.links {
     float: right;
     padding-right: 3px;
     text-transform: uppercase; 
@@ -184,13 +184,13 @@ td.id {
     font-size: 0.9em;
 }
 
-#grades td.id .popover table.sub_info {
+.popover table.sub_info {
     border-collapse: collapse;
     font-family: Helvetica;
 }
 
-#grades td.id .popover td, #grades td.id .popover th {
-    padding: 5px;
+.popover td, .popover th {
+    padding: 6px;
     border: none;
 }
 
@@ -198,7 +198,7 @@ td.id {
     font-style: italic;
 }
 
-#grades td.id .popover th {
+.popover th {
     font-size: 0.9em;
     text-transform: uppercase;
     text-align: right;
@@ -206,12 +206,12 @@ td.id {
     padding-left: 10px;
 }
 
-#grades td.id .popover table.subinfo td.version a {
+.popover table.subinfo td.version a {
     font-weight: normal;
 }
 
-#grades td.id .popover div.file_download {
-    background: #f8f8f8;
+.popover div.file_download {
+    background-color: #f8f8f8;
     padding: 5px;
     margin: 3px 0 0px 0;
     font-size: 0.9em;
@@ -221,65 +221,102 @@ td.id {
     font-weight: bold;
 }
 
-#grades td.id .popover div.file_download a {
-    /*color: #909090;*/
-}
-
 .popover .arrow {
     position: absolute;
     height: 12px;
     width: 5px;
     background-image: url("/assets/popover-arrow.png")
 }
-
-#grades td .popover table.score_details {
+.popover table.score_details {
     font-weight: normal;
     border-collapse: collapse;
 }
 
-#grades td .popover table.score_details td, #grades td.id .popover table.score_details th {
+.popover table.score_details td, .popover table.score_details th {
     padding: 5px;
     padding-bottom: 0;
     border: none;
 }
 
-#grades td .popover table.score_details th {
+.popover table.score_details th {
     font-size: 0.9em;
 }
 
-#grades td .popover table.score_details td input.released {
+.popover table.score_details td input.released {
     margin: 1px;
     margin-bottom: 3px;
 }
 
-#grades td .popover table.score_details td.grader {
+.popover table.score_details td.grader {
     padding-left: 6px;
 }
 
-#grades td .popover table.score_details td textarea {
+.popover table.score_details td textarea {
     width: 200px;
     height: 100px;
 }
 
-#grades td .popover table.score_details td span.save_box {
-    margin: 2px;
-    float: right;
-    font-weight: 600;
+td.editing .edit {
+  display: block;
+  width: 30px;
+  font-weight: 300;
+  margin: auto auto;
+  text-align: center;
 }
 
-#grades td .popover table.score_details td span.save_box * {
+td .edit {
+  display: none;
 }
 
-#grades td .popover table.score_details td span.save_box span.save {
-    color: #1874Cd;
+td.editing .view {
+  display: none;
 }
 
-#grades td .popover table.score_details td span.save_box span.saving {
-    display: none;
-    color: #777;
+.popover {
+  display: block;
 }
 
-#grades td .popover table.score_details td span.save_box span.error {
-    display: none;
-    color: red;
+td .view {
+  text-align: center;
+  font-weight: normal;
+  color: #1874CD;
+  cursor: pointer;
+  display: block;
+}
+td .view b {
+  font-weight: 900;
+  font-size: 15px;
+}
+
+#shortcut-help ul {
+  list-style-type: none;
+  list-style-image: none;
+}
+
+#shortcut-help {
+  display: none;
+  padding: 15px;
+  height: 270px;
+  width: 500px;
+  background: white;
+}
+
+#keyboard:hover {
+  cursor: pointer;
+}
+
+.shortcut {
+  display: inline-block;
+  padding: 3px 6px;
+  text-align: center;
+  font-family: Monaco;
+  background: #333;
+  color: white;
+}
+
+#simplemodal-overlay {background-color:#000;}
+#simplemodal-container a.modalCloseImg {background:url(image_path('x.png')) no-repeat; width:25px; height:29px; display:inline; z-index:3200; position:absolute; top:-15px; right:-16px; cursor:pointer;}
+.keyboard-icon {
+  position: relative;
+  top: 2px;
 }
