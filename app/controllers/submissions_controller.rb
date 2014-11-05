@@ -194,7 +194,7 @@ class SubmissionsController < ApplicationController
       flash[:success] = ("Success: Regrading #{@submission.filename} (#{link})").html_safe
     end
     
-    redirect_to history_course_assessment_path(@course, @assessment) and return
+    redirect_to history_course_assessment_path(@course, @assessment, cud_id: @effectiveCud.id) and return
   end
 
   ##
