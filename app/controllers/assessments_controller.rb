@@ -1492,7 +1492,7 @@ class AssessmentsController < ApplicationController
         @grades[uid][:problems] = {}
       end
       if @grades[uid][:version] != row["version"] then
-        @grades[uid][:time] = row["time"]
+        @grades[uid][:time] = row["time"].localtime
         @grades[uid][:version] = row["version"].to_i
         @grades[uid][:autoresult] = row["autoresult"]
       end
