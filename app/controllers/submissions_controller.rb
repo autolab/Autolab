@@ -684,7 +684,7 @@ class SubmissionsController < ApplicationController
   # with the caller. Can be overridden in the lab config file.
   #
   def parseAutoresult(autoresult, isOfficial)
-    parsed = ActiveSupport::JSON.decode(autoresult)
+    parsed = ActiveSupport::JSON.decode(autoresult.gsub(/([a-zA-Z0-9]+):/, '"\1":'))
     if !parsed then
       raise "Empty autoresult"
     end
