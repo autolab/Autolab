@@ -6,7 +6,7 @@
 RESTFUL_HOST = "<tango_host>"
 
 # Port for Tango RESTful API
-RESTFUL_PORT = "<tango_port>"
+RESTFUL_PORT = <tango_port>
 
 # Where is the "courses" directory?
 AUTOCONFIG_COURSE_DIR = "<autolab_courses_path>"
