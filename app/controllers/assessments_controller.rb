@@ -96,6 +96,7 @@ class AssessmentsController < ApplicationController
   # tar file with the assessment directory.
   action_auth_level :installAssessment, :instructor
   def installAssessment
+    @title = "Install Assessment"
     @assignDir = File.join(Rails.root, "courses", @course.name)
     @availableAssessments = []
     begin
@@ -938,6 +939,7 @@ class AssessmentsController < ApplicationController
 
   action_auth_level :edit, :instructor
   def edit
+    @title = "Settings"
     # default to the basic tab
     params[:active_tab] ||= "basic"
 

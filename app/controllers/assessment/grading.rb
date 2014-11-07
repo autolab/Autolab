@@ -16,6 +16,7 @@ module AssessmentGrading
 
   # Allows the user to upload multiple scores or comments from a CSV file
   def bulkGrade
+    @title = "Bulk Upload Grades"
     return unless request.post?
 
     # part 1: submitting a CSV for processing and returning errors in CSV
@@ -296,6 +297,7 @@ public
   end
 
   def viewGradesheet
+    @title = "View Gradesheet"
     load_gradesheet_data
   end
 

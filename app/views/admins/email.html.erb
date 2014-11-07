@@ -1,5 +1,3 @@
-<h2>Send a Bulk Email to Your Class</h2>
-
 <% if @errors then %>
   <font color=red><%=@errors %></font>
 <% elsif @email then %>
@@ -7,9 +5,7 @@
   <pre><%= @email.encoded %></pre>
 <% else %>
   <% if Rails.env == "development" then %>
-    <font color=red><b>WARNING: Rails is in development mode right now, 
-    so you're probably not in AFS, you NEED to be in AFS for this interface 
-    to work!!!!</b></font><br>
+    <font color=red><b>WARNING: Rails is in development mode right now.</b></font><br>
   <% end %>
   <%
   sections = @course.course_user_data.select("section").group("section")

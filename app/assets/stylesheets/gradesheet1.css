@@ -41,12 +41,18 @@ td.focus {
     margin-bottom: 10px;
 }
 
+#grades_filter label {
+    width: 100%
+}
+
 #grades_filter input {
-    padding: 5px;
     border: 1px solid #d0d0d0;
-    width: 200px;
     border-radius: 3px;
     box-shadow: 0 0 2px #CCC;
+    font-size: 18px;
+    padding: 6px 12px;
+    width: 100%;
+    max-width: 400px;
 }
 
 #grades td.edit input {

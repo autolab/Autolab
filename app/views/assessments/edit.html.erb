@@ -3,8 +3,6 @@
   <%= javascript_include_tag "assessments/create_edit" %>
 <% end %>
 
-<h3><%= @assessment.display_name %> Settings</h3>
-
 <ul id="tabs" class="nav nav-tabs">
 <% [ "basic", "handin", "penalties", "problems" ].each do |tab_name| %>
   <%= (tab_name == params[:active_tab]) ? tag(:li, class: :active) : tag(:li) %>
