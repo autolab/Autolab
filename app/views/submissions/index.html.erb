@@ -3,8 +3,6 @@
 <%= javascript_include_tag "table_floating_header" %>
 <%= stylesheet_link_tag "datatable.adapter" %>
 
-<h2>Manage Submissions for <%= link_to @assessment.display_name, [@course, @assessment] %> </h2>
-
 <hr>
 <%= link_to "Create New Submission", new_course_assessment_submission_path(@course, @assessment), 
     {:title=>"Create a new submission for a student, with an option to submit a handin file on their behalf",
