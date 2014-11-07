@@ -1,0 +1,33 @@
+# This file defines manifest constants related to the Autolab
+# backend. If you change anything here you'll need to restart the
+# server for the changes to take effect.
+
+# What is Tango's hostname?
+AUTOCONFIG_TANGO_HOST = ""
+
+# What port is Tango is listening on?
+AUTOCONFIG_TANGO_PORT = 80
+
+# Where is the course directory?
+AUTOCONFIG_COURSE_DIR = ""
+
+# How many seconds to wait for Tango RPC calls before timing out?
+AUTOCONFIG_TANGO_TIMEOUT = 15
+
+# How big is the Tango dead job queue?
+AUTOCONFIG_MAX_DEAD_JOBS = 500
+
+# Default number of dead jobs to display
+AUTOCONFIG_DEF_DEAD_JOBS = 15
+
+# Key for RESTful API
+RESTFUL_KEY = ""
+
+# Courselab for RESTful API
+RESTFUL_COURSELAB = ""
+
+# Hostname for RESTful API
+RESTFUL_HOST = ""
+
+# Port for RESTful API
+RESTFUL_PORT = "80"
