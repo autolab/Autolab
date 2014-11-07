@@ -18,6 +18,7 @@ class GradebooksController < ApplicationController
 
   action_auth_level :view, :course_assistant
   def view
+    @title = "Gradebook"
     @matrix = GradeMatrix.new @course, @cud
     @section = params[:section]
 
@@ -33,6 +34,7 @@ class GradebooksController < ApplicationController
       flash[:error] = "You can't view other section gradebooks."
       redirect_to :controller => :home, :action => :error
     end
+
   end
 
   action_auth_level :student, :student

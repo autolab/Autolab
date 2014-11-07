@@ -87,7 +87,7 @@ class CoursesController < ApplicationController
 
   action_auth_level :edit, :instructor
   def edit
-    
+    @title = "Edit Course"
   end
 
   action_auth_level :update, :instructor
