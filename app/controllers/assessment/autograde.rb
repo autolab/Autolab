@@ -156,10 +156,6 @@ module AssessmentAutograde
 
     COURSE_LOGGER.log("Callback: #{callBackURL}") 
 
-    if (Rails.env == "development") then
-      callBackURL += "&development=#{AUTOCONFIG_COURSE_DIR}"
-    end
-
     jobName = @course.name + "_" +
       @assessment.name + "_" +
       @submission.version.to_s + "_" +
