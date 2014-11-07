@@ -1,0 +1,3 @@
+all:
+	tar -mxf autograde.tar
+	python grader.py
