@@ -11,6 +11,18 @@ namespace :autolab do
   COURSE_START = Time.now - 80.days
   COURSE_END = COURSE_START + 1.years
 
+  AUTOGRADE_CATEGORY_NAME = "CategoryAutograde"
+  AUTOGRADE_TEMPLATE_DIR_PATH =
+          File.join(Rails.root, "templates", "labtemplate")
+  AUTOGRADE_TEMPLATE_CONFIG_PATH =
+          File.join(Rails.root, "templates", "AutoPopulated-labtemplate.rb")
+  AUTOGRADE_TEMPLATE_NAME = "labtemplate"
+  AUTOGRADE_TEMPLATE_DISPLAY_NAME = "Lab Template"
+  AUTOGRADE_TEMPLATE_MAX_SCORE = 100.0
+  AUTOGRADE_TEMPLATE_PROBLEM_NAME = "autograded"
+  AUTOGRADE_TEMPLATE_HANDIN_DIRECTORY = "handin"
+  AUTOGRADE_TEMPLATE_HANDIN_FILENAME = "handin.py"
+
   def load_course name
     Course.create do |c|
       c.name = name
@@ -172,6 +184,7 @@ namespace :autolab do
     user = cud.user
 
     course.assessments.each do |a|
+
       sub_count = 1 + rand(SUBMISSION_MAX)
       assessment_dir = File.join(course_dir, a.name)
       assessment_handin_dir = File.join(assessment_dir, a.handin_directory)
@@ -254,6 +267,50 @@ namespace :autolab do
     end
   end
 
+  def load_autograde_assessment course
+
+    course_dir = File.join(Rails.root, "courses", course.name)
+
+    # Create assessment category
+    cat = course.assessment_categories.create(name: AUTOGRADE_CATEGORY_NAME)
+
+    # Create assessment
+    asmt = cat.assessments.create! do |a|
+      a.visible_at = COURSE_START,
+      a.start_at = COURSE_START,
+      a.due_at = COURSE_START + (5 + rand(11)).days,
+      a.end_at = a.due_at + (1 + rand(7)).day,
+      a.grading_deadline = a.end_at + (1 + rand(7)).day,
+
+      a.name = AUTOGRADE_TEMPLATE_NAME,
+      a.display_name = AUTOGRADE_TEMPLATE_DISPLAY_NAME,
+      a.handin_directory = AUTOGRADE_TEMPLATE_HANDIN_DIRECTORY,
+      a.handin_filename = AUTOGRADE_TEMPLATE_HANDIN_FILENAME,
+      a.has_autograde = true
+      a.course_id = course.id
+
+      FileUtils.mkdir_p(File.join(course_dir, a.name, a.handin_directory))
+    end
+
+    # Load problem "autograded"
+    asmt.problems.create(name: AUTOGRADE_TEMPLATE_PROBLEM_NAME,
+                         max_score: AUTOGRADE_TEMPLATE_MAX_SCORE)
+
+    # Copy assessment folder
+    FileUtils.cp_r(AUTOGRADE_TEMPLATE_DIR_PATH, course_dir)
+
+    # Copy assessment config
+    assessmentConfig_dir = File.join(Rails.root, "assessmentConfig")
+    FileUtils.cp(AUTOGRADE_TEMPLATE_CONFIG_PATH, assessmentConfig_dir)
+
+    # Reload config file
+    asmt.construct_config_file
+
+    # create all auds
+    asmt.create_AUDs_modulo_callbacks
+
+  end
+
   task :populate, [:name] => :environment do |t, args|
     require "populator" 
   
@@ -293,6 +350,9 @@ namespace :autolab do
 
     puts "Creating configuration files"
     add_assessment_files course
+
+    puts "Creating Autograde Assessment"
+    load_autograde_assessment course
 
     course.reload_config_file
 

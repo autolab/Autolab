@@ -1,0 +1,21 @@
+---
+general:
+  name: labtemplate
+  display_name: Lab Template
+  description: ''
+  handin_filename: handin.py
+  handin_directory: handin
+  max_grace_days: 0
+  handout: ''
+  writeup: ''
+  allow_unofficial: false
+  max_submissions: -1
+  disable_handins: false
+  max_size: 2
+  category: CategoryAutograde
+problems: []
+scoreboard: {}
+autograde: 
+  autograde_image: rhel.img
+  autograde_timeout: 180
+  release_score: false
