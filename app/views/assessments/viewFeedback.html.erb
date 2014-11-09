@@ -11,7 +11,7 @@
 <%= h @score.feedback %>
 Score for this problem: <%= @score.score.to_f().round(1) %>
 
-Graded by: <%= if @score.grader then @score.grader.andrewID end %>
+Graded by: <%= if @score.grader && @score.grader.user then @score.grader.user.email end %>
 </pre>
 
 <!--
