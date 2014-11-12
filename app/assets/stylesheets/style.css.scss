@@ -166,7 +166,6 @@ div.main-header img {
 .sub-navigation .item {
   color: rgb(183, 180, 180);
   font-size: 16px;
-  font-weight: bold;
   line-height: 22px;
 }
 
@@ -180,11 +179,22 @@ div.main-header img {
 
 .sub-navigation .left-nav .item:last-child {
   color: rgb(103, 100, 100);
-  font-size: 20px;
+  font-weight: bold;
 }
 
-.sub-navigation .item img {
+.sub-navigation .item .upload-icon {
+  background-image: image-url("upload.png");
+  display: inline-block;
   height: 51px;
+  width: 80px;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 50% auto;
+  cursor: pointer;
+
+  &:hover {
+    background-image: image-url("upload_highlighted.png");
+  }
 }
 
 
@@ -251,7 +261,20 @@ div.main-header img {
     box-shadow: none;
   }
 
+}
 
+.handin-panel {
+  background-color: rgba(243, 240, 240, 0.7);
+  border: 1px dashed #999;
+  padding: 18px;
+}
+
+.handin-panel #submission_file {
+  display: none;
+}
+
+.handin-panel.modal {
+  display: none;
 }
 
 /* Footer - Information, About, etc. Should be in a <footer> tag. */

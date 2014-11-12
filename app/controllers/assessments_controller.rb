@@ -20,6 +20,7 @@ class AssessmentsController < ApplicationController
 
 
   before_action :get_assessment, except: [ :index, :new, :create, :installAssessment, :importAsmtFromTar, :importAssessment, :getCategory, :unofficial_submit ]
+  before_action :get_handin, except: [ :index, :new, :create, :installAssessment, :importAsmtFromTar, :importAssessment, :getCategory, :unofficial_submit ]
 
   # We have to do this here, because the modules don't inherit ApplicationController.
 
@@ -664,7 +665,6 @@ class AssessmentsController < ApplicationController
     @list = {
       'writeup'=>"View writeup",
       'handout'=>"Download handout",
-      'handin'=>"Handin your work",
       'history'=>"View handin history"
     }
 
@@ -672,7 +672,6 @@ class AssessmentsController < ApplicationController
     @list_title = {}
     @list_title['writeup'] = "View the assessment writeup"
     @list_title['handout'] = "Download handout materials and starter code"
-    @list_title['handin'] = "Handin your work for credit"
     @list_title['history'] = "View your submissions, scores, and feedback from the course staff"
 
     if @assessment.config_module.instance_methods.include?(:listOptions) then
@@ -692,8 +691,6 @@ class AssessmentsController < ApplicationController
     end
     
     listOptions()
-
-    render :action=>"listOptions" and return
   end
   
 
@@ -831,6 +828,7 @@ class AssessmentsController < ApplicationController
 
   action_auth_level :history, :student
   def history
+    @title = "Handin History"
     # Remember the student ID in case the user wants visit the gradesheet
     if params[:cud_id] then 
       session["gradeUser#{@assessment.id}"] = params[:cud_id]
@@ -1950,6 +1948,44 @@ protected
       flash[:error] = "Sorry! we couldn't load the assessment \"#{assign}\""
       redirect_to home_error_path and return
     end
+  end
+
+  def get_handin
+    submission_count = @assessment.submissions.count(:conditions => { :course_user_datum_id => @cud.id })
+    @left_count = [ @assessment.max_submissions - submission_count, 0 ].max
+    @aud = AssessmentUserDatum.get @assessment.id, @cud.id
+    @can_submit, @why_not = @aud.can_submit? Time.now
+
+    # processing handin
+    if request.post? then
+      # call validateHandin, saveHandin and afterHandin callbacks
+      # that could be overridden by modules and assessments
+      unless validateHandin
+        redirect_to :action => :handin and return
+      end
+
+      @submission = saveHandin
+
+      # make sure submission was correctly constructed and saved
+      unless @submission and !@submission.new_record?
+        # Avoid overwriting the flash[:error] set by saveHandin
+        if (!flash[:error].nil? && !flash[:error].empty?) then
+          flash[:error] = "There was an error handing in your submission."
+        end
+        redirect_to :action => :handin and return
+      end
+
+
+      if @assessment.has_autograde then
+        autogradeAfterHandin @submission
+      elsif @assessment.has_partners then
+        partnersAfterHandin @submission
+      end
+
+      redirect_to [:history, @course, @assessment] and return
+    end
+
+    @submission = Submission.new
   end
 
   def extend_config_module
