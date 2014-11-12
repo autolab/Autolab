@@ -24,6 +24,9 @@
 <p class="attention">This is an exam. While it is in progress, please check Admin > Edit Course > Exam In Progress.</p>
 <% end %>
 
+<%= render partial: "handin_form", locals: {modal: false, id: "handin_show_assessment"} %>
+
+
 <table><tr valign=top>
 
 <%# Display general user options %> 
@@ -92,3 +95,6 @@
   </ul>
 <% end %>
 
+<% content_for :javascript do %>
+  <%= javascript_include_tag "assessments_show" %>
+<% end %>
