@@ -1390,6 +1390,8 @@ class AssessmentsController < ApplicationController
   # adminAutograde - edit the autograding properties for this assessment
   #
   def adminAutograde
+    @title = "Admin Autograding"
+
     # POST request. Try to save the updated fields. 
     if request.post? then
       @autograde_prop = AutogradingSetup.where(:assessment_id => @assessment.id).first      
@@ -1459,6 +1461,7 @@ class AssessmentsController < ApplicationController
   # scoreboard - This function draws the scoreboard for an assessment.
   #
   def scoreboard
+    @title = "Scoreboard"
     extend_config_module
     @students = CourseUserDatum.joins("INNER JOIN submissions ON course_user_datum.id=submissions.course_user_datum_id")
                     .where("submissions.assessment_id=?",@assessment.id)

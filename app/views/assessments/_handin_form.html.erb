@@ -11,12 +11,11 @@
 
 	  <%= form_for @submission , :url=>{:action=>"handin"}, :html=>{:multipart=>true} do |f| %>
 	    <%= f.file_field :file %>
-	    <input class="btn primary" id="fake-submit" confirm="Are you sure you want to submit late?" name="commit" type="submit" value="Submit File">
-	    <% if @aud.past_due_at? then %>
-<!-- 	      <p><%= f.submit("Handin",:confirm=>"Are you sure you want to submit late?",  :class=>"btn primary") %></p> -->
+		<% if @aud.past_due_at? then %>
+ 	      	<p><%= f.submit("Submit File Late", id:"fake-submit",  :class=>"btn primary") %></p>
 	    <% else %>
-<!-- 	      <p><%= f.submit("Handin", :class=>"btn primary") %></p>
- -->	    <% end %>
+			<p><%= f.submit("Submit File", id:"fake-submit", :class=>"btn primary") %></p>
+ 	    <% end %>
 	  <% end %>
 	  
 	<% else %>
