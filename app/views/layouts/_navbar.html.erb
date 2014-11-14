@@ -1,15 +1,6 @@
-
 <div class="main-header">
 	<div class="navbar-header">
 		<a href="/" class="logo"><%= image_tag "AUTOLAB@2x.png", :width=> 180, :alt=>"Carnegie Mellon University" %></a>
-
-		<% if @course %>
-		<h2><%= link_to @course.display_name, course_path(@course), :id=>"courseTitle" %>
-			<% if @course.disabled? %> (Course Disabled)<% end %>
-		</h2>
-		<% else %>
-		<% end %>
-
 
 		<button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target=".navbar-collapse">
 			<span class="sr-only">Toggle navigation</span>
@@ -62,7 +53,7 @@
 					<%= current_user.display_name %>
 					<span class="caret"></span>
 				</div>
-				<ul class="dropdown-menu animated fadeIn" role="menu" aria-labelledby="dropdownMenu1">
+				<ul class="dropdown-menu animated fadeInDown" role="menu" aria-labelledby="dropdownMenu1">
 					<% unless current_user.nil? %>
 					<li role="presentation">
 						<%= link_to "Account", edit_user_path(current_user), :title => "View your account info" %>
@@ -73,8 +64,7 @@
 						<a href='/home/developer_login'>Dev Login</a>
 					</li>
 					<% end %>
-					<li role="presentation" class="divider"></li>
-					<li role="presentation">
+					<li role="presentation" class="divider"></li><li role="presentation">
 						<%= link_to "Log out", destroy_user_session_path, :method => :delete  %>
 					</li>
 				</ul>
@@ -85,3 +75,29 @@
 	</div>
 
 </div>
+<% if @course %>
+<div class="sub-navigation">
+	<span class="left-nav">
+		<span class="item">
+			<%= link_to @course.display_name, course_path(@course), :id=>"courseTitle" %>
+			<% if @course.disabled? %> (Course Disabled)<% end %>
+		</span>
+		<% if @assessment %>
+		<span class="item">
+			<span class="arrow">»</span>
+			<%= current_assessment_link %>
+		</span>
+		<% end %>
+		<% if @title %>
+		<span class="item">
+			<span class="arrow">»</span>
+			<span class="title"><%= @title %></span>
+		</span>
+		<% end %>
+	</span>
+	
+</div>
+<% end %>
+<% if @assessment %>
+<%= render partial: "handin_form", locals: {modal: true, id: "handin_navbar"} %>
+<% end %>

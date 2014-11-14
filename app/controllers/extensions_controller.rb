@@ -3,6 +3,7 @@ class ExtensionsController < ApplicationController
   # TODO
   action_auth_level :index, :instructor
   def index
+    @title = "Manage Extensions"
     @assessment = @course.assessments.find(params[:assessment_id])
     if !@assessment then
       redirect_to course_path(@course) and return

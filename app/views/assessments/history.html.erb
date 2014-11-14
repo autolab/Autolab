@@ -1,9 +1,6 @@
 <% if @partial then %>
   <a onclick="hideStudent()">Exit</a>
 <% end %>
-
-<h2>Handin History for <%= current_assessment_link %> </h2>
-
 <% download_access = (@cud.instructor?) %>
 
 <% if @extension then %>

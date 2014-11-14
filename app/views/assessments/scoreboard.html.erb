@@ -1,7 +1,5 @@
 <%= javascript_include_tag "sorttable" %>
 
-<h2>Class Scoreboard for <%= link_to @assessment.display_name, {:assessment=>@assessment.name}%> </h2>
-
 <% if @staticOverride  then %>
   <%= f = File.new(@staticOverride,'r') 
       f.read()
@@ -28,8 +26,6 @@
   <% end %>
   </table>
 <% end %>
-
-
 
 <%= form_for @cud, url: course_course_user_datum_path(@course, @cud) do |f| %>
 <% if @cud.errors.any? %>

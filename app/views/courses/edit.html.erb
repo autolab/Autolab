@@ -1,5 +1,3 @@
-<h2>Edit Course</h2>
-
 <%= form_for @course, as: :editCourse, url: course_path(@course), method: :patch do |f| %>
 <% if @course.errors.any? %>
 	<div id="error_explanation">
