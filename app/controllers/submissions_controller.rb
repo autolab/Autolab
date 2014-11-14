@@ -8,7 +8,6 @@ class SubmissionsController < ApplicationController
   # this page loads.  links/functionality may be/are off
   action_auth_level :index, :instructor
   def index
-    @title = "Manage Submissions"
     @course = Course.where(:id => params[:course_id]).first  
     @assessment = @course.assessments.find(params[:assessment_id])
     @submissions = @assessment.submissions.order("created_at DESC")
