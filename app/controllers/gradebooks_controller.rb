@@ -18,7 +18,6 @@ class GradebooksController < ApplicationController
 
   action_auth_level :view, :course_assistant
   def view
-    @title = "Gradebook"
     @matrix = GradeMatrix.new @course, @cud
     @section = params[:section]
 
