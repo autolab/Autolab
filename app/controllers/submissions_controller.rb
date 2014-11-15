@@ -3,11 +3,7 @@ class SubmissionsController < ApplicationController
   autolabRequire File.join(Rails.root, 'app/controllers/assessment/autograde.rb')
   include AssessmentAutograde
 
-  autolabRequire File.join(Rails.root, 'app/controllers/assessment/handin.rb')
-  include AssessmentHandin
-
   before_action :load_submission, only: [:destroy]
-  before_action :get_handin, except: [:destroy]
 
   # this page loads.  links/functionality may be/are off
   action_auth_level :index, :instructor
