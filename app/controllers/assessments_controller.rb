@@ -664,18 +664,10 @@ class AssessmentsController < ApplicationController
     extend_config_module()
 
     @aud = @assessment.aud_for @cud.id
-
-    @list = {
-      'writeup'=>"View writeup",
-      'handout'=>"Download handout",
-      'history'=>"View handin history"
-    }
-
-    # Add tooltips for the general user options
-    @list_title = {}
-    @list_title['writeup'] = "View the assessment writeup"
-    @list_title['handout'] = "Download handout materials and starter code"
-    @list_title['history'] = "View your submissions, scores, and feedback from the course staff"
+    
+    # these exists so instructors can add their own options that they define in their modules
+    @list = {} # the key is the action, and the value is the text in the link
+    @list_title = {} # Add tooltips for the general user options
 
     if @assessment.config_module.instance_methods.include?(:listOptions) then
       list = @list
@@ -699,18 +691,8 @@ class AssessmentsController < ApplicationController
 
   # This is easy to override, and no conflicts can occur
   def listOptions
-
-    if @assessment.has_groups? then
-      groupsListOptions()
-    end
-  
-    if @assessment.has_svn then
-      svnListOptions()
-    end
-  
-    if @assessment.has_scoreboard then
-      scoreboardListOptions()
-    end
+    # Dan believes this function should be removed, but its here for instructors who want to add
+    # special options, in case this is still how that is accomplished
   end
 
 
@@ -957,7 +939,7 @@ class AssessmentsController < ApplicationController
 
     flash[:success] = "Saved!" if @assessment.update_attributes(params.require(:assessment).permit!)
 
-    render "edit"
+    redirect_to action: :edit and return
   end
 
   def edit_old
