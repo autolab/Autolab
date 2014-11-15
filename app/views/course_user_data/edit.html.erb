@@ -1,4 +1,4 @@
-<% @title = "Editing Account Details for <%= @editCUD.user.email %>" %>
+<% @title = "Editing Account Details for " + @editCUD.user.email %>
 
 <%= form_for @editCUD, url: course_course_user_datum_path(@course, @editCUD) do |f| %>
 <% if @editCUD.errors.any? %>
