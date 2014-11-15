@@ -32,6 +32,7 @@ Autolab3::Application.routes.draw do
       end
       resources :assessment_user_data, only: [:show, :edit, :update]
       resources :extensions, only: [:index, :create, :destroy]
+      resources :groups
       resources :submissions do
         resources :annotations, only: [:create, :update, :destroy]
         resources :scores, only: [:create, :show, :update]
