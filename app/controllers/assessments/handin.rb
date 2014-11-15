@@ -1,5 +1,5 @@
 module AssessmentHandin 
-  
+
   # handin - The generic default handin function. 
   # This function calls out to smaller helper functions which provide for
   # specific functionality. 
@@ -34,11 +34,10 @@ module AssessmentHandin
       redirect_to :action => :show and return
     end
 
-
     if @assessment.has_autograde then
       autogradeAfterHandin @submission
-    elsif @assessment.has_partners then
-      partnersAfterHandin @submission
+    elsif @assessment.has_groups? then
+      groupsAfterHandin @submission
     end
 
     redirect_to [:history, @course, @assessment] and return
