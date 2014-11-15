@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20140831215605) do
+ActiveRecord::Schema.define(version: 20141115172601) do
 
   create_table "annotations", force: true do |t|
     t.integer  "submission_id"
@@ -46,12 +46,14 @@ ActiveRecord::Schema.define(version: 20140831215605) do
   end
 
   create_table "assessment_user_data", force: true do |t|
-    t.integer  "course_user_datum_id",             null: false
-    t.integer  "assessment_id",                    null: false
+    t.integer  "course_user_datum_id",                 null: false
+    t.integer  "assessment_id",                        null: false
     t.integer  "latest_submission_id"
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.integer  "grade_type",           default: 0, null: false
+    t.integer  "grade_type",           default: 0,     null: false
+    t.integer  "group_id"
+    t.boolean  "group_confirmed",      default: false
   end
 
   add_index "assessment_user_data", ["assessment_id"], name: "index_assessment_user_data_on_assessment_id", using: :btree
@@ -88,9 +90,9 @@ ActiveRecord::Schema.define(version: 20140831215605) do
     t.integer  "version_penalty_id"
     t.datetime "grading_deadline",                               null: false
     t.boolean  "has_autograde"
-    t.boolean  "has_partners"
     t.boolean  "has_scoreboard"
     t.boolean  "has_svn"
+    t.integer  "group_size",                     default: 1
   end
 
   create_table "attachments", force: true do |t|
@@ -172,6 +174,12 @@ ActiveRecord::Schema.define(version: 20140831215605) do
     t.integer "assessment_id"
     t.integer "days"
     t.boolean "infinite",             default: false, null: false
+  end
+
+  create_table "groups", force: true do |t|
+    t.string   "name"
+    t.datetime "created_at"
+    t.datetime "updated_at"
   end
 
   create_table "module_data", force: true do |t|
