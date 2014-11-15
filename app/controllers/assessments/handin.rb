@@ -37,6 +37,8 @@ module AssessmentHandin
 
     if @assessment.has_autograde then
       autogradeAfterHandin @submission
+    elsif @assessment.has_groups? then
+      groupsAfterHandin @submission
     end
 
     redirect_to [:history, @course, @assessment] and return
