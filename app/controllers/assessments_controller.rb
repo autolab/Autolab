@@ -20,7 +20,6 @@ class AssessmentsController < ApplicationController
 
 
   before_action :get_assessment, except: [ :index, :new, :create, :installAssessment, :importAsmtFromTar, :importAssessment, :getCategory, :unofficial_submit ]
-  before_action :get_handin, except: [ :index, :new, :create, :installAssessment, :importAsmtFromTar, :importAssessment, :getCategory, :unofficial_submit ]
 
   # We have to do this here, because the modules don't inherit ApplicationController.
 
@@ -97,7 +96,6 @@ class AssessmentsController < ApplicationController
   # tar file with the assessment directory.
   action_auth_level :installAssessment, :instructor
   def installAssessment
-    @title = "Install Assessment"
     @assignDir = File.join(Rails.root, "courses", @course.name)
     @availableAssessments = []
     begin
@@ -658,6 +656,7 @@ class AssessmentsController < ApplicationController
 
   action_auth_level :show, :student
   def show
+    get_handin
     extend_config_module()
 
     @aud = @assessment.aud_for @cud.id
@@ -828,7 +827,6 @@ class AssessmentsController < ApplicationController
 
   action_auth_level :history, :student
   def history
-    @title = "Handin History"
     # Remember the student ID in case the user wants visit the gradesheet
     if params[:cud_id] then 
       session["gradeUser#{@assessment.id}"] = params[:cud_id]
@@ -932,7 +930,6 @@ class AssessmentsController < ApplicationController
 
   action_auth_level :edit, :instructor
   def edit
-    @title = "Settings"
     # default to the basic tab
     params[:active_tab] ||= "basic"
 
@@ -1390,8 +1387,6 @@ class AssessmentsController < ApplicationController
   # adminAutograde - edit the autograding properties for this assessment
   #
   def adminAutograde
-    @title = "Admin Autograding"
-
     # POST request. Try to save the updated fields. 
     if request.post? then
       @autograde_prop = AutogradingSetup.where(:assessment_id => @assessment.id).first      
@@ -1461,7 +1456,6 @@ class AssessmentsController < ApplicationController
   # scoreboard - This function draws the scoreboard for an assessment.
   #
   def scoreboard
-    @title = "Scoreboard"
     extend_config_module
     @students = CourseUserDatum.joins("INNER JOIN submissions ON course_user_datum.id=submissions.course_user_datum_id")
                     .where("submissions.assessment_id=?",@assessment.id)
@@ -1951,44 +1945,6 @@ protected
       flash[:error] = "Sorry! we couldn't load the assessment \"#{assign}\""
       redirect_to home_error_path and return
     end
-  end
-
-  def get_handin
-    submission_count = @assessment.submissions.count(:conditions => { :course_user_datum_id => @cud.id })
-    @left_count = [ @assessment.max_submissions - submission_count, 0 ].max
-    @aud = AssessmentUserDatum.get @assessment.id, @cud.id
-    @can_submit, @why_not = @aud.can_submit? Time.now
-
-    # processing handin
-    if request.post? then
-      # call validateHandin, saveHandin and afterHandin callbacks
-      # that could be overridden by modules and assessments
-      unless validateHandin
-        redirect_to :action => :handin and return
-      end
-
-      @submission = saveHandin
-
-      # make sure submission was correctly constructed and saved
-      unless @submission and !@submission.new_record?
-        # Avoid overwriting the flash[:error] set by saveHandin
-        if (!flash[:error].nil? && !flash[:error].empty?) then
-          flash[:error] = "There was an error handing in your submission."
-        end
-        redirect_to :action => :handin and return
-      end
-
-
-      if @assessment.has_autograde then
-        autogradeAfterHandin @submission
-      elsif @assessment.has_partners then
-        partnersAfterHandin @submission
-      end
-
-      redirect_to [:history, @course, @assessment] and return
-    end
-
-    @submission = Submission.new
   end
 
   def extend_config_module

@@ -277,7 +277,6 @@ e.to_s() + e.backtrace().join("<br>")
         #
   action_auth_level :email, :instructor
   def email
-    @title = "Send a Bulk Email to " + @course.display_name
     if request.post? then
       if params[:section].length > 0 then
         section = params[:section]
