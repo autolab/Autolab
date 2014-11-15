@@ -20,7 +20,7 @@ module AssessmentHandin
     # processing handin
     # call validateHandin, saveHandin and afterHandin callbacks
     unless validateHandin
-      redirect_to :action => :handin and return
+      redirect_to :action => :show and return
     end
 
     @submission = saveHandin
@@ -31,7 +31,7 @@ module AssessmentHandin
       if (!flash[:error].nil? && !flash[:error].empty?) then
         flash[:error] = "There was an error handing in your submission."
       end
-      redirect_to :action => :handin and return
+      redirect_to :action => :show and return
     end
 
 
