@@ -31,14 +31,23 @@
 
 <%# Display general user options %> 
 <td>
-<h2>Options</h2>
-<ul>
-<% @list.sort { |a,b| a[1] <=> b[1] }.each { |key, value| %>
-  <% if value.size > 0  then  %>
-    <li> <%= link_to value, {:action => key}, {:title=>(@list_title[key] || "")} %> </li>
-  <% end %>
-<% } %>
-</ul>
+  <h2>Options</h2>
+  <ul>
+    <% if @assessment.has_groups? then %>
+      <li><%= link_to "Check group", course_assessment_groups_path(@course, @assessment), { title: "Request a group or view your current group" } %>
+    <% end %>
+    <li><%= link_to "Download handout", [:handout, @course, @assessment], { title: "Download handout materials and starter code" } %></li>
+    <li><%= link_to "View handin history", [:history, @course, @assessment], { title: "View your submissions, scores, and feedback from the course staff" } %></li>
+    <% if @assessment.has_scoreboard then %>
+      <li><%= link_to "View scoreboard", [:scoreboard, @course, @assessment], { title: "View the class scoreboard" } %>
+    <% end %>
+    <li><%= link_to "View writeup", [:writeup, @course, @assessment], { title: "View the assessment writeup" } %></li>
+    <% @list.sort { |a,b| a[1] <=> b[1] }.each do |key, value| %>
+      <% if value.size > 0  then  %>
+        <li> <%= link_to value, {:action => key}, {:title=>(@list_title[key] || "")} %> </li>
+      <% end %>
+    <% end %>
+  </ul>
 </td>
 
 <%# Display any optional instructor admin options %>
