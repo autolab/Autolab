@@ -17,42 +17,31 @@ module AssessmentHandin
   #
   # Any errors should be added to flash[:error] and return false or nil.
   def handin
-    submission_count = @assessment.submissions.count(:conditions => { :course_user_datum_id => @cud.id })
-    @left_count = [ @assessment.max_submissions - submission_count, 0 ].max
-    @aud = AssessmentUserDatum.get @assessment.id, @cud.id
-    @can_submit, @why_not = @aud.can_submit? Time.now
-
     # processing handin
-    if request.post? then
-      # call validateHandin, saveHandin and afterHandin callbacks
-      # that could be overridden by modules and assessments
-      unless validateHandin
-        redirect_to :action => :handin and return
-      end
-
-      @submission = saveHandin
-
-      # make sure submission was correctly constructed and saved
-      unless @submission and !@submission.new_record?
-        # Avoid overwriting the flash[:error] set by saveHandin
-        if (!flash[:error].nil? && !flash[:error].empty?) then
-          flash[:error] = "There was an error handing in your submission."
-        end
-        redirect_to :action => :handin and return
-      end
-
-
-      if @assessment.has_autograde then
-        autogradeAfterHandin @submission
-      elsif @assessment.has_partners then
-        partnersAfterHandin @submission
-      end
-
-      redirect_to [:history, @course, @assessment] and return
+    # call validateHandin, saveHandin and afterHandin callbacks
+    unless validateHandin
+      redirect_to :action => :handin and return
     end
 
-    @submission = Submission.new
-    loadHandinPage
+    @submission = saveHandin
+
+    # make sure submission was correctly constructed and saved
+    unless @submission and !@submission.new_record?
+      # Avoid overwriting the flash[:error] set by saveHandin
+      if (!flash[:error].nil? && !flash[:error].empty?) then
+        flash[:error] = "There was an error handing in your submission."
+      end
+      redirect_to :action => :handin and return
+    end
+
+
+    if @assessment.has_autograde then
+      autogradeAfterHandin @submission
+    elsif @assessment.has_partners then
+      partnersAfterHandin @submission
+    end
+
+    redirect_to [:history, @course, @assessment] and return
   end
   
   private
