@@ -1,23 +1,25 @@
 <h3>Showing user <%= @user.display_name %></h3>
 
 <ul class="gray-box">
-  <li><b>Contact</b><br>
-    <a href="mailto:<%= @user.email %>"><%= @user.email %></a></li>
+  <li>
+    <b>Contact</b><br>
+    <a href="mailto:<%= @user.email %>"><%= @user.email %></a>
+    </li>
   <li> <b>About</b><br>
     First name <strong><%= @user.first_name %></strong><br>
     Last name <strong><%= @user.last_name %></strong><br>
     Courses 
-			<% if @cuds.empty? %>
-			<strong> None </strong>
-			<% else %>
-			<ul>
-				<% @cuds.each do |cud| %>
-				<li><%= link_to cud.course.display_name, edit_course_course_user_datum_path(course_id: cud.course, course_user_datum: cud) %>
-				</li>
-				<% end %>
-			</ul>
-			<% end %>
-	</li>
+    <% if @cuds.empty? %>
+    <strong> None </strong>
+    <% else %>
+    <ul>
+            <% @cuds.each do |cud| %>
+            <li><%= link_to cud.course.display_name, edit_course_course_user_datum_path(cud.course, cud) %>
+            </li>
+            <% end %>
+    </ul>
+    <% end %>
+  </li>
 </ul>
 
 <%= link_to raw('<span class="btn primary">Edit Information</span>'), edit_user_path(@user) %><br>
