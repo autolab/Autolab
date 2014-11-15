@@ -6,16 +6,19 @@ require 'date_time_input'
 class AssessmentsController < ApplicationController
   include ActiveSupport::Callbacks
 
-  autolabRequire File.join(Rails.root, 'app/controllers/assessment/handin.rb')
+  autolabRequire Rails.root.join('app/controllers/assessments/handin.rb')
   include AssessmentHandin
 
-  autolabRequire File.join(Rails.root, 'app/controllers/assessment/handout.rb')
+  autolabRequire Rails.root.join('app/controllers/assessments/handout.rb')
   include AssessmentHandout
 
-  autolabRequire File.join(Rails.root, 'app/controllers/assessment/grading.rb')
+  autolabRequire Rails.root.join('app/controllers/assessments/grading.rb')
   include AssessmentGrading
 
-  autolabRequire File.join(Rails.root, 'app/controllers/assessment/autograde.rb')
+  autolabRequire Rails.root.join('app/controllers/assessments/groups.rb')
+  include AssessmentGroups
+
+  autolabRequire Rails.root.join('app/controllers/assessments/autograde.rb')
   include AssessmentAutograde
 
 
@@ -78,7 +81,7 @@ class AssessmentsController < ApplicationController
   def new
     @assessment = Assessment.new
     @categories = @course.assessment_categories
-    @moduleDir = File.join(Rails.root, "lib", "modules")
+    @moduleDir = Rails.root.join("lib", "modules")
     @modules = []
     begin
       Dir.foreach(@moduleDir) { |filename|
@@ -96,7 +99,8 @@ class AssessmentsController < ApplicationController
   # tar file with the assessment directory.
   action_auth_level :installAssessment, :instructor
   def installAssessment
-    @assignDir = File.join(Rails.root, "courses", @course.name)
+    @title = "Install Assessment"
+    @assignDir = Rails.root.join("courses", @course.name)
     @availableAssessments = []
     begin
       Dir.foreach(@assignDir) { |filename|
@@ -189,7 +193,7 @@ class AssessmentsController < ApplicationController
     end
     # If all requirements are satisfied, extract assessment files.
     begin
-      course_root = File.join(Rails.root, "courses", @course.name)
+      course_root = Rails.root.join("courses", @course.name)
       tar_extract.rewind
       tar_extract.each do |entry|
         relative_pathname = entry.full_name
@@ -224,7 +228,7 @@ class AssessmentsController < ApplicationController
   action_auth_level :importAssessment, :instructor
   def importAssessment
     name = params['assessment_name']
-    filename = File.join(Rails.root, "courses", @course.name, name, "#{name}.yml") 
+    filename = Rails.root.join("courses", @course.name, name, "#{name}.yml") 
 
     # Load up the properties file
     props = {}
@@ -308,13 +312,13 @@ class AssessmentsController < ApplicationController
 
       # We need to make the assessment directory before we try to upload
       # files 
-      assDir = File.join(Rails.root,"courses", @course.name, assName)
+      assDir = Rails.root.join("courses", @course.name, assName)
       if !File.directory?(assDir) then
         Dir.mkdir(assDir)
       end
       
       # Open and read the default assessment config file
-      defaultName = File.join(Rails.root,"lib","__defaultAssessment.rb")
+      defaultName = Rails.root.join("lib","__defaultAssessment.rb")
       defaultConfigFile = File.open(defaultName,"r")
       defaultConfig = defaultConfigFile.read()
       defaultConfigFile.close()
@@ -388,7 +392,7 @@ class AssessmentsController < ApplicationController
       
     # Create the properties file if it doesn't exist
     begin     
-      f = File.join(Rails.root, "courses", @course.name, 
+      f = Rails.root.join("courses", @course.name, 
               @assessment.name, "#{@assessment.name}.yml") 
       if !File.exists?(f) and !put_props() then
         raise "Error while executing put_props()"
@@ -493,7 +497,7 @@ class AssessmentsController < ApplicationController
     @submission = @assessment.submissions.find(params[:submission])
     #Shows a form which has the submission on top, and feedback on bottom
     begin
-      subFile =File.join(Rails.root,"courses",
+      subFile = Rails.root.join("courses",
             @course.name,@assessment.name,
             @assessment.handin_directory,
             @submission.filename)
@@ -518,7 +522,7 @@ class AssessmentsController < ApplicationController
   def export
     require 'fileutils'
     require 'rubygems/package'
-    base_path = File.join(Rails.root, "courses", @course.name) 
+    base_path = Rails.root.join("courses", @course.name) 
     asmt_dir = @assessment.name
     begin
       # Update the assessment config YAML file.
@@ -696,8 +700,8 @@ class AssessmentsController < ApplicationController
   # This is easy to override, and no conflicts can occur
   def listOptions
 
-    if @assessment.has_partners then
-      partnersListOptions()
+    if @assessment.has_groups? then
+      groupsListOptions()
     end
   
     if @assessment.has_svn then
@@ -752,8 +756,8 @@ class AssessmentsController < ApplicationController
       autogradeListAdmin
     end
 
-    if @assessment.has_partners then
-      partnersListAdmin
+    if @assessment.has_groups? then
+      groupsListAdmin
     end
 
     if @assessment.has_scoreboard then
@@ -773,7 +777,8 @@ class AssessmentsController < ApplicationController
     @admin_title["adminAutograde"] = "Modify autograding properties such as the VM image and the timeout value"
   end
 
-  def partnersListAdmin
+  # TODO_GROUPS integrate this elsewhere
+  def groupsListAdmin
     @adminlist["adminPartners"] = "Admin partners"
     @admin_title["adminPartners"] = "View and modify the different partner groups"
   end
@@ -1106,8 +1111,7 @@ class AssessmentsController < ApplicationController
   def uninstall(name)
     if !name.blank? then
       @assessment.destroy()
-      f = File.join(Rails.root, "assessmentConfig/",
-               "#{@course.name}-#{name}.rb")
+      f = Rails.root.join("assessmentConfig/", "#{@course.name}-#{name}.rb")
       File.delete(f)
     end
   end
@@ -1659,8 +1663,7 @@ protected
     end
 
     # Now dump the properties 
-    filename = File.join(Rails.root, "courses", @course.name, 
-               @assessment.name, "#{@assessment.name}.yml") 
+    filename = Rails.root.join("courses", @course.name, @assessment.name, "#{@assessment.name}.yml") 
     begin
       f = File.open(filename, 'w')
       f.puts YAML.dump(props)
@@ -1910,7 +1913,7 @@ protected
   # get_props - Helper function that loads the persistent assessment
   # properties from a yaml file and returns a hash of the properties 
   def get_props
-    filename = File.join(Rails.root, "courses", @course.name, 
+    filename = Rails.root.join("courses", @course.name, 
                @assessment.name, "#{@assessment.name}.yml") 
     props = {}
     if File.exists?(filename) and File.readable?(filename) then
