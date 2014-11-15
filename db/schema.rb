@@ -52,6 +52,8 @@ ActiveRecord::Schema.define(version: 20141119222558) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.integer  "grade_type",           limit: 4, default: 0, null: false
+    t.integer  "group_id",             limit: 4
+    t.boolean  "group_confirmed",      default: false
   end
 
   add_index "assessment_user_data", ["assessment_id"], name: "index_assessment_user_data_on_assessment_id", using: :btree
@@ -88,9 +90,9 @@ ActiveRecord::Schema.define(version: 20141119222558) do
     t.integer  "version_penalty_id",  limit: 4
     t.datetime "grading_deadline",                                  null: false
     t.boolean  "has_autograde",       limit: 1
-    t.boolean  "has_partners",        limit: 1
     t.boolean  "has_scoreboard",      limit: 1
     t.boolean  "has_svn",             limit: 1
+    t.integer  "group_size",          limit: 4,     default: 1
   end
 
   create_table "attachments", force: :cascade do |t|
@@ -172,6 +174,12 @@ ActiveRecord::Schema.define(version: 20141119222558) do
     t.integer "assessment_id",        limit: 4
     t.integer "days",                 limit: 4
     t.boolean "infinite",             limit: 1, default: false, null: false
+  end
+
+  create_table "groups", force: true do |t|
+    t.string   "name"
+    t.datetime "created_at"
+    t.datetime "updated_at"
   end
 
   create_table "module_data", force: :cascade do |t|
