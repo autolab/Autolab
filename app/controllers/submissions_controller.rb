@@ -587,7 +587,7 @@ class SubmissionsController < ApplicationController
     lines = File.open(feedbackFile).readlines()
     begin
       
-      if @assessment.has_partners then
+      if @assessment.has_groups? then
         # Create a submission for partner
         pSubmission = createPartnerSubmission(submission)
       end
@@ -632,7 +632,7 @@ class SubmissionsController < ApplicationController
         puts "save score"
         puts score.save!
        
-      	if @assessment.has_partners then 
+      	if @assessment.has_groups? then 
               # call method in ModuleBase to update this score for partner
       	    saveAutogradeForPartner(score, pSubmission)
       	end
@@ -661,7 +661,7 @@ class SubmissionsController < ApplicationController
       score.grader_id=0
       score.save
       
-      if @assessment.has_partners then
+      if @assessment.has_groups? then
       	# call method in ModuleBase to update this score for parter
       	saveAutogradeForPartner(score, pSubmission)
       end
