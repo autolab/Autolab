@@ -7,7 +7,7 @@ module ApplicationHelper
   end
 
   def current_assessment_link
-    link_to @assessment.display_name, course_assessment_path(@course, @assessment)
+    link_to @assessment.display_name, [@course, @assessment]
   end
 
   # Older Helpers

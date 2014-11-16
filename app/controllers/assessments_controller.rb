@@ -18,6 +18,14 @@ class AssessmentsController < ApplicationController
   autolabRequire Rails.root.join('app/controllers/assessments/groups.rb')
   include AssessmentGroups
 
+  # SVN
+  autolabRequire Rails.root.join('app/controllers/assessments/SVN.rb')
+  include AssessmentSVN
+  
+  action_auth_level :adminSVN, :instructor
+  action_auth_level :setRepository, :instructor
+  action_auth_level :importSvn, :instructor
+
   autolabRequire Rails.root.join('app/controllers/assessments/autograde.rb')
   include AssessmentAutograde
 
@@ -57,11 +65,6 @@ class AssessmentsController < ApplicationController
   action_auth_level :adminPartners, :instructor
   action_auth_level :deletePartner, :instructor
   action_auth_level :importPartners, :instructor
-
-  # SVN
-  action_auth_level :adminSvn, :instructor
-  action_auth_level :setRepository, :instructor
-  action_auth_level :importSvn, :instructor
 
   # Scoreboard
   action_auth_level :adminScoreboard, :instructor
@@ -766,8 +769,8 @@ class AssessmentsController < ApplicationController
   end
 
   def svnListAdmin
-    @adminlist["adminSvn"] = "Admin svn"
-    @admin_title["adminSvn"] = "Manage the SVN repositiory"
+    @adminlist["adminSVN"] = "Admin SVN"
+    @admin_title["adminSVN"] = "Manage the SVN repositiory"
   end
 
   # scoreboardListAdmin - Adds the "admin scoreboard" option to the
