@@ -54,6 +54,7 @@ Autolab3::Application.routes.draw do
       member do
         match 'adminAutograde', via: [:get, :post]
       	match 'adminScoreboard', via: [:get, :post]
+        get 'adminSVN'
       	get 'adminPartners'
         get 'bulkExport'
         get 'bulkGrade'

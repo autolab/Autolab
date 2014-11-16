@@ -24,8 +24,11 @@
 <p class="attention">This is an exam. While it is in progress, please check Admin > Edit Course > Exam In Progress.</p>
 <% end %>
 
-<%= render partial: "handin_form", locals: {modal: false, id: "handin_show_assessment"} %>
-
+<% if @assessment.has_svn then %>
+  <%= render partial: "handinSVN" %>
+<% else %>
+  <%= render partial: "handin_form", locals: {modal: false, id: "handin_show_assessment"} %>
+<% end %>
 
 <table><tr valign=top>
 
