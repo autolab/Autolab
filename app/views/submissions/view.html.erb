@@ -57,7 +57,7 @@ known bugs:
     <% end %>
   </ul>
   <input type="button" value="Reload" class="btn primary" onClick="window.location.reload()">
-
+  <input type="checkbox" id="highlightLongLines" style="margin-left:20px;"> Highlight lines longer than 80 characters
 </div>
 </div>
 <div style="clear:both">
@@ -94,6 +94,25 @@ known bugs:
 <% if @cud.instructor? || @cud.course_assistant? %>
 <script>
 $(function() {
+
+  /* Highlights lines longer than 80 characters autolab red color w*/
+  var highlightLines = function(highlight) {
+    $(".code").each(function() {
+      var text = $(this).text();
+      // To account for lines that have 80 characters and a line break
+      var diff = text[text.length - 1] === "\n" ? 1 : 0;
+      if(text.length - diff > 80 && highlight){
+        $(this).css("background-color", "rgba(153, 0, 0, .9)");
+        $(this).prev().css("background-color", "rgba(153, 0, 0, .9)");
+      } else {
+        $(this).css("background-color", "white");
+        $(this).prev().css("background-color", "white");
+      }
+    });
+  };
+  $("#highlightLongLines").click(function(){
+    highlightLines(this.checked);
+  })
 
   /* following paths/functions for annotations */
   var path = '<%= course_assessment_submission_annotations_path(@course, @assessment, @submission) %>';
