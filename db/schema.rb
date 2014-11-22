@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20141115172601) do
+ActiveRecord::Schema.define(version: 20141119222558) do
 
   create_table "annotations", force: true do |t|
     t.integer  "submission_id"
@@ -261,6 +261,7 @@ ActiveRecord::Schema.define(version: 20141115172601) do
     t.integer  "tweak_id"
     t.boolean  "ignored_old",                     default: false, null: false
     t.boolean  "ignored",                         default: false, null: false
+    t.string   "dave"
   end
 
   add_index "submissions", ["assessment_id"], name: "index_submissions_on_assessment_id", using: :btree
