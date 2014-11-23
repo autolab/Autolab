@@ -206,6 +206,16 @@ class AssessmentUserDatum < ActiveRecord::Base
     connection.execute insert_sql
   end
 
+  ##
+  # returns the AUD's confirmed group if it has one, or nil if it does not
+  def get_confirmed_group
+    if self.group_id == nil or not self.group_confirmed then
+      return nil
+    else
+      return self.group
+    end
+  end
+
 protected
   def cumulative_grace_days_used
     grace_days_used + cumulative_grace_days_used_before

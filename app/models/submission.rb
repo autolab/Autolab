@@ -78,42 +78,39 @@ class Submission < ActiveRecord::Base
     FileUtils.mv(handin_file_path, submission_backup)
   end
 
+
+  ##
+  # Saves the given +upload+ file.  
+  # +upload+ should either have a 'file' or 'tar' field that is an HTTP file
+
   def saveFile(upload)
     filename = self.course_user_datum.user.email + "_" +
            self.version.to_s + "_" +
            self.assessment.handin_filename
     directory = self.assessment.handin_directory
-    path = File.join(Rails.root, "courses", 
-              self.course_user_datum.course.name,
+    path = Rails.root.join("courses", self.course_user_datum.course.name,
               self.assessment.name, directory, filename)
 
     if upload['file'] then
       # Sanity!
       upload['file'].rewind
-      File.open(path,"wb") { |f| f.write(upload['file'].read)}
+      File.open(path,"wb") { |f| f.write(upload['file'].read) }
+
+      self.mime_type = upload['file'].content_type or 'text/plain'
     elsif upload['tar'] then
       src = upload['tar']
       `mv #{src} #{path}`
+
+      self.mime_type = 'application/x-tgz'
     end
 
     self.filename = filename
 
-    if upload['file'] then
-      self.mime_type = upload['file'].content_type
-      if !(self.mime_type) then
-        self.mime_type = 'text/plain'
-      end
-    elsif upload['tar'] then
-      self.mime_type = 'application/x-tgz'
-    end
-
-    self.save
+    self.save!
   end
 
   def handin_file_path
-    return nil unless filename
-    return File.join(assessment.handin_directory_path, 
-                     filename)
+    return (if filename then File.join(assessment.handin_directory_path, filename) else nil end)
   end
 
   def handinFile()

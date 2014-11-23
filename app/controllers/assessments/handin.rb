@@ -23,6 +23,7 @@ module AssessmentHandin
       redirect_to :action => :show and return
     end
 
+    # this saves a submission/file for each CUD in the submitter's group
     @submission = saveHandin
 
     # make sure submission was correctly constructed and saved
@@ -36,14 +37,12 @@ module AssessmentHandin
 
     if @assessment.has_autograde then
       autogradeAfterHandin @submission
-    elsif @assessment.has_groups? then
-      groupsAfterHandin @submission
     end
 
     redirect_to [:history, @course, @assessment] and return
   end
   
-  private
+private
 
   def validateHandin()
     # Make sure that handins are allowed 
@@ -57,6 +56,7 @@ module AssessmentHandin
       flash[:error] = "Submission was blank - please upload again."
       return false
     end
+
     # Check if the file is too large
     if params[:submission]['file'].size > @assessment.max_size*(2**20) then
       flash[:error] = "Your submission is larger than the max allowed " +
@@ -76,16 +76,25 @@ module AssessmentHandin
     return true
   end
 
-  def saveHandin()
-    @submission = Submission.create(:assessment_id => @assessment.id,
-                                    :course_user_datum_id => @cud.id,
-                                    :submitter_ip => request.remote_ip)
-    @submission.saveFile(params[:submission])
+  ##
+  # creates a new Submission and saves a file for each member of the submitter's group
+  #
+  def saveHandin
+    auds = Group.AUDs_for(@assessment, @cud)
+
+    # and save a submission and the file for each one
+    auds.each do |aud|
+      @submission = Submission.create!(assessment_id: aud.assessment_id,
+                                course_user_datum_id: aud.course_user_datum_id,
+                                        submitter_ip: request.remote_ip)
+      @submission.saveFile(params[:submission])
+    end
+
+    # return the last submission
     return @submission
   end
 
   def get_handin
-
     if @assessment.nil? then
       @assessment = @course.assessments.find(params[:assessment_id])
     end
