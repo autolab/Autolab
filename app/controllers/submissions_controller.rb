@@ -564,42 +564,63 @@ class SubmissionsController < ApplicationController
   # each autograded problem. The default autoresult string is in
   # JSON format, but this can be overrriden in the lab.rb file.
   #
-  def saveAutograde(submission,feedbackFile)
+  def saveAutograde(submission, feedbackFile)
     lines = File.open(feedbackFile).readlines()
-    begin
-      
-      if @assessment.has_groups? then
-        # Create a submission for partner
-        pSubmission = createPartnerSubmission(submission)
-      end
-      
-      if (lines == nil) then
-        raise "The Autograder returned no output. \n"
-      end
-
+    autoresult = if (lines == nil or lines.length == 0) then
+      nil
+    else
       # The last line of the output is assumed to be the
       # autoresult string from the autograding driver
-      autoresult = lines[lines.length-1].chomp
+      lines[lines.length-1].chomp
+    end
 
-      if @assessment.config_module.instance_methods.include?(:parseAutoresult) then
-        scores = @assessment.config_module.parseAutoresult(autoresult, true);
-      else
-        scores = parseAutoresult(autoresult, true)
-      end
+    # get the AUD for everyone in the submitter's group
+    auds = Group.AUDs_for(@assessment, submission.course_user_datum)
 
-      if scores.keys.length == 0 then 
-        raise "Empty autoresult string."
-      end
+    scores = nil
+    begin
+      scores = validateAutoresult(@assessment, autoresult)
+    rescue Exception => e
+      print "\n\nError:#{e}\n\n"
 
-      # Grab the autograde config info
-      @autograde_prop = AutogradingSetup.where(:assessment_id => @assessment.id).first
+      problem = @assessment.problems.first
 
-      # Record each of the scores extracted from the autoresult
-      for key in scores.keys do
-        problem = @assessment.problems.where(:name => key).first
-        if !problem then
-          raise "Problem \"" + key + "\" not found."
+      auds.each do |aud|
+        submission = aud.latest_submission
+        score = submission.scores.where(problem_id: problem.id).first_or_initialize
+        score.score = 0
+        score.feedback = "An error occurred while parsing the autoresult returned by the Autograder.
+
+Error message: #{ e.to_s }
+
+Backtrace:
+#{ e.backtrace.join("\n") }
+
+"
+
+        if lines && (lines.length < 10000) then
+          score.feedback += lines.join()
         end
+
+        score.released = true
+        score.grader_id = 0
+        score.save!
+     
+        # update the submission as well
+        submission.autoresult = autoresult
+        submission.dave = nil
+        submission.save!
+      end
+
+      return
+    end
+
+    # Record each of the scores extracted from the autoresult
+    for key in scores.keys do
+      problem = @assessment.problems.where(:name => key).first
+      auds.each do |aud|
+        sub = aud.latest_submission
+
         score = submission.scores.where(:problem_id => problem.id).first
         if !score then 
           score = submission.scores.new(:problem_id=>problem.id)
@@ -608,55 +629,19 @@ class SubmissionsController < ApplicationController
         end
         score.score = scores[key]
         score.feedback = lines.join()
-        score.released = @autograde_prop.release_score
+        score.released = @assessment.autograding_setup.release_score
         score.grader_id = 0
-        puts "save score"
-        puts score.save!
-       
-      	if @assessment.has_groups? then 
-              # call method in ModuleBase to update this score for partner
-      	    saveAutogradeForPartner(score, pSubmission)
-      	end
-
-      end
-    rescue Exception => e
-
-      print "\n\nError:#{e}\n\n"
-
-      problem = @assessment.problems.first
-      score = submission.scores.where(:problem_id => problem.id).first
-      if !score then
-        score = submission.scores.new(:problem_id=>problem.id)
-      end
-      score.score = 0
-      score.feedback = "An error occurred while parsing the autoresult returned by the Autograder.\n\n" 
-      # score.feedback += "Autoresult: " + "\"" + autoresult + "\"" + "\n"
-      score.feedback +=  "Error message: " + e.to_s + "\n"
-      score.feedback +=  "\nBacktrace:\n" +  e.backtrace.join("\n")
-      score.feedback += "\n\n"
-
-      if lines && (lines.length < 10000) then
-        score.feedback += lines.join()
-      end
-      score.released = true
-      score.grader_id=0
-      score.save
-      
-      if @assessment.has_groups? then
-      	# call method in ModuleBase to update this score for parter
-      	saveAutogradeForPartner(score, pSubmission)
+        score.save!
       end
     end
-
-    submission.autoresult = autoresult
-    submission.dave = nil
-    submission.save
-    # save autoresult for partner
-    if pSubmission then
-      pSubmission.autoresult = autoresult
-      pSubmission.dave = nil
-      pSubmission.save
+     
+    auds.each do |aud|
+      sub = aud.latest_submission
+      sub.autoresult = autoresult
+      sub.dave = nil
+      sub.save!
     end
+
     logger = Logger.new(Rails.root.join("courses", @course.name, @assessment.name, "log.txt"))
     logger.add(Logger::INFO) {"#{submission.course_user_datum.email}, #{submission.version}, #{autoresult}"}
   end
@@ -675,6 +660,37 @@ class SubmissionsController < ApplicationController
       raise "Missing 'scores' object in the autoresult"
     end
     return parsed["scores"]
+  end
+
+  ##
+  # either returns a valid scores object, or raises an Exception if the autoresult is invalid
+  def validateAutoresult(assessment, autoresult)
+    if (autoresult == nil) then
+      raise "The Autograder returned no output. \n"
+    end
+
+    if @assessment.config_module.instance_methods.include?(:parseAutoresult) then
+      scores = @assessment.config_module.parseAutoresult(autoresult, true);
+    else
+      scores = parseAutoresult(autoresult, true)
+    end
+
+    if scores.keys.length == 0 then 
+      raise "Empty autoresult string."
+    end
+
+    # Grab the autograde config info
+    autograde_prop = assessment.autograding_setup
+
+    # Record each of the scores extracted from the autoresult
+    for key in scores.keys do
+      problem = @assessment.problems.where(:name => key).first
+      if !problem then
+        raise "Problem \"" + key + "\" not found."
+      end
+    end
+
+    return scores
   end
 
 private
