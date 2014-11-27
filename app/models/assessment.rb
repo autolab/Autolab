@@ -30,7 +30,7 @@ class Assessment < ActiveRecord::Base
                             :greater_than_or_equal_to => -1, :allow_nil => true
   validates_numericality_of :max_grace_days, :only_integer => true,
                             :greater_than_or_equal_to => 0, :allow_nil => true
-  validates_presence_of :name, :display_name, :due_at, :end_at, :start_at,
+  validates_presence_of :name, :display_name, :due_at, :end_at, :start_at, :quiz, :quizData,
                         :grading_deadline, :category_id, :max_size, :max_submissions
 
   # Callbacks

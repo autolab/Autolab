@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20140831215605) do
+ActiveRecord::Schema.define(version: 20141125044705) do
 
   create_table "annotations", force: true do |t|
     t.integer  "submission_id"
@@ -91,6 +91,8 @@ ActiveRecord::Schema.define(version: 20140831215605) do
     t.boolean  "has_partners"
     t.boolean  "has_scoreboard"
     t.boolean  "has_svn"
+    t.boolean  "quiz",                           default: false
+    t.string   "quizData"
   end
 
   create_table "attachments", force: true do |t|
