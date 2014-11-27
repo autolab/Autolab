@@ -134,9 +134,10 @@ class AssessmentsController < ApplicationController
       @submission = Submission.create(:assessment_id => @assessment.id,
                                 :course_user_datum_id=>@cud.id)
       problem = Problem.find_by(:assessment_id => @assessment.id)
+
       quizScore = Score.new(:score => score,
                         :feedback => "",
-                        :grader_id => 1,
+                        :grader_id => @cud.id,
                         :released => true,
                         :problem_id => problem.id,
                         :submission_id => @submission.id)
