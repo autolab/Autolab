@@ -115,6 +115,7 @@ class AssessmentsController < ApplicationController
     end
   end
 
+  action_auth_level :takeQuiz, :student
   def takeQuiz
     submission_count = @assessment.submissions.count(:conditions => { :course_user_datum_id => @cud.id })
     left_count = [ @assessment.max_submissions - submission_count, 0 ].max
@@ -122,32 +123,39 @@ class AssessmentsController < ApplicationController
       redirect_to course_assessment_path(@course, @assessment) and return
     end
     @quizData = JSON.parse(@assessment.quizData)
-    if request.post?
-      score = 0
-      @quizData.each do |i, q|
-        answer = params[i]
-        actualAnswer = @quizData[i]["answer"]
-        if (answer.to_i == actualAnswer)
-          score = score + 1
-        end
-      end
-      @submission = Submission.create(:assessment_id => @assessment.id,
-                                :course_user_datum_id=>@cud.id)
-      problem = Problem.find_by(:assessment_id => @assessment.id)
+    @submitPath = submitQuiz_course_assessment_path(@course, @assessment)
+    render :template=>"assessments/takeQuiz" and return
+  end
 
-      quizScore = Score.new(:score => score,
-                        :feedback => "",
-                        :grader_id => @cud.id,
-                        :released => true,
-                        :problem_id => problem.id,
-                        :submission_id => @submission.id)
-      if !quizScore.save()
-        flash[:error] = "Unable to make quiz submission."
-      end
-      redirect_to history_course_assessment_path(@course, @assessment) and return
-    else
-      render :template=>"assessments/takeQuiz" and return
+  action_auth_level :submitQuiz, :student
+  def submitQuiz
+    submission_count = @assessment.submissions.count(:conditions => { :course_user_datum_id => @cud.id })
+    left_count = [ @assessment.max_submissions - submission_count, 0 ].max
+    if (@assessment.max_submissions != -1 and left_count == 0)
+      redirect_to course_assessment_path(@course, @assessment) and return
     end
+    @quizData = JSON.parse(@assessment.quizData)
+    score = 0
+    @quizData.each do |i, q|
+    answer = params[i]
+      actualAnswer = @quizData[i]["answer"]
+      if (answer.to_i == actualAnswer)
+        score = score + 1
+      end
+    end
+    @submission = Submission.create(:assessment_id => @assessment.id,
+                                    :course_user_datum_id=>@cud.id)
+    problem = Problem.find_by(:assessment_id => @assessment.id)
+    quizScore = Score.new(:score => score,
+                          :feedback => "",
+                          :grader_id => @cud.id,
+                          :released => true,
+                          :problem_id => problem.id,
+                          :submission_id => @submission.id)
+    if !quizScore.save()
+      flash[:error] = "Unable to make quiz submission."
+    end
+    redirect_to history_course_assessment_path(@course, @assessment) and return
   end
 
   # installAssessment - Installs a new assessment, either by

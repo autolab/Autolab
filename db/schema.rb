@@ -92,7 +92,7 @@ ActiveRecord::Schema.define(version: 20141125044705) do
     t.boolean  "has_scoreboard"
     t.boolean  "has_svn"
     t.boolean  "quiz",                           default: false
-    t.string   "quizData"
+    t.text     "quizData"
   end
 
   create_table "attachments", force: true do |t|

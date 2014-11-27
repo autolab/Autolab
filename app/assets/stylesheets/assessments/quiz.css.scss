@@ -1,78 +1,78 @@
 div.questionBlock, div.block {
-	width: 1020px;
-	background-color: #EBEBEB;
-	padding: 10px;
-	text-align: center;
-	margin: 0 auto;
-	margin-top: 10px;
+  width: 1020px;
+  background-color: #EBEBEB;
+  padding: 10px;
+  text-align: center;
+  margin: 0 auto;
+  margin-top: 10px;
 
-	h2 {
-		margin: 5px 0 10px 0;
-		padding: 0px;
-	}
+  h2 {
+    margin: 5px 0 10px 0;
+    padding: 0px;
+  }
 
-	.quizName {
-		width: 1000px;
-	}
+  .quizName {
+    width: 1000px;
+  }
 
-	.category {
-		width: 1000px;
-		height: 35px;
-		border: 1px solid;
-		border-radius: 0px;
-		background-color: white;
-	}
+  .category {
+    width: 1000px;
+    height: 35px;
+    border: 1px solid;
+    border-radius: 0px;
+    background-color: white;
+  }
 
-	.question {
-		width: 1000px;
-	}
+  .question {
+    width: 1000px;
+  }
 
-	.optionBlock {
-		width: 100%;
-		float: left;
-		margin-top: 5px;
-		.option {
-			width: 960px;
-		}
-		.answer {
-			width: 20px;
-			float: left;
-			margin-top: 15px;
-		}
-		.deleteOption {
-			width: 20px;
-			font-size: 18px;
-			cursor: pointer;
-			color: rgba(153, 0, 0, 0.9);
-		}
-	}
+  .optionBlock {
+    width: 100%;
+    float: left;
+    margin-top: 5px;
+    .option {
+      width: 960px;
+    }
+    .answer {
+      width: 20px;
+      float: left;
+      margin-top: 15px;
+    }
+    .deleteOption {
+      width: 20px;
+      font-size: 18px;
+      cursor: pointer;
+      color: rgba(153, 0, 0, 0.9);
+    }
+  }
 
-	.btn {
-		margin-top: 10px;
-	}
+  .btn {
+    margin-top: 10px;
+  }
 
-	.deleteQuestion {
-		margin-left: 90px;
-	}
+  .deleteQuestion {
+    margin-left: 90px;
+  }
 }
 
 .defaultQuestionBlock {
-	display: none;
+  display: none;
 }
 
 .addQuestion {
-	margin-top: 20px;
+  margin-top: 20px;
 }
 
 .form {
-	width: 1020px;
-	margin: 0 auto;
-	text-align: center;
-	#submit {
-		margin-top: 20px;
-		width: 100%;
-	}
-	.addQuestion {
-		width: 100%;
-	}
+  width: 1020px;
+  margin: 0 auto;
+  text-align: center;
+  #submit {
+    margin-top: 20px;
+    width: 100%;
+  }
+  .addQuestion {
+    width: 100%;
+  }
 }

@@ -70,7 +70,8 @@ Autolab3::Application.routes.draw do
       	patch 'edit_*active_tab', action: :update
         get 'edit_*active_tab', action: :edit
         post 'handin'
-        match 'takeQuiz', via: [:get, :post]
+        get 'takeQuiz'
+        post 'submitQuiz'
         get 'history'
         get 'viewFeedback'
         get 'viewGradesheet'

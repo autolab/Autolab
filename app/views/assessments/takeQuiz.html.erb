@@ -2,7 +2,7 @@
 
 <h2>Quiz</h2>
 <%= @score %>
-<form method="POST">
+<form method="POST" action="<%= @submitPath %>">
 
   <% @quizData.each do |i, q| %>
     <h4><%= q["question"] %></h4>
