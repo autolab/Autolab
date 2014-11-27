@@ -20,6 +20,9 @@ class AdminsController < ApplicationController
 
        {"name"=>"Install assessment", path: installAssessment_course_assessments_path(@course),
         "title"=>"Create an assessment from scratch or install one from an existing directory"},
+       
+       {"name"=>"Install quiz", path: installQuiz_course_assessments_path(@course),
+        "title"=>"Create a quiz"},
 
        {"name"=>"Send bulk email","action"=>"email",
         "title"=>"Send an email to everyone in the class"},

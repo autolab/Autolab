@@ -1,0 +1,112 @@
+<% @title = "Install Quiz" %>
+<%= stylesheet_link_tag "assessments/quiz.css" %>
+
+<h2>Create a Quiz</h2>
+<p>This is a multiple choice quiz generator. For each question, make one of the options the answer by using the radio button the left. If you want to delete an option, use the red x button the right. You can easily add and remove questions using the buttons below.</p>
+
+<form method="POST" class="form">
+
+  <div class="block">
+    <h2>Quiz Name</h2>
+    <input class="quizName" name="quizName" type="text" placeholder="Quiz Name" required>
+  </div>
+
+  <div class="block">
+    <h2>Assessment Category</h2>
+    <select name="category" class="category">
+      <% @categories.each do |c, i| %>
+        <option value="<%= i %>"><%= c %></option>
+      <% end %>
+    </select>
+  </div>
+
+  <div id="questions">
+    <div class="defaultQuestionBlock">
+      <h2>Question <span class="questionNum"></span></h2>
+      <input class="question" type="text" placeholder="Question">
+      <div class="optionBlock">
+        <input type="radio" class="answer" name="answer">
+        <input class="option" type="text" placeholder="Option">
+        <span class="deleteOption">&times;</span>
+      </div>
+      <input type="button" class="btn addOption" value="Add Option">
+      <input type="button" class="btn deleteQuestion" value="Delete Question">
+    </div>
+  </div>
+
+  <input type="button" class="btn addQuestion" value="Add Question">
+  <input id="quiz" type="hidden" name="quiz">
+  <input id="submit" type="submit" value="Create Quiz" class="btn primary">
+
+</form>
+
+<script>
+  $(function() {
+    var quiz = {};
+    $("#submit").click(function(){
+      $(".questionBlock").each(function(questionNum) {
+        quiz[questionNum] = {};
+        quiz[questionNum]["question"] = $(this).find(".question").val();
+        $(this).find(".answer").each(function(optionNum){
+          if (this.checked) {
+            quiz[questionNum]["answer"] = optionNum;
+          }
+        });
+        $(this).find(".option").each(function(optionNum) {
+          quiz[questionNum][optionNum] = $(this).val();
+        });
+      });
+      $("#quiz").val(JSON.stringify(quiz));
+      console.log(quiz);
+    });
+
+    var nameQuestions = function() {
+      $(".questionBlock").each(function(questionNum) {
+        $(this).find(".questionNum").text(questionNum + 1);
+        $(this).attr("questionNum", questionNum);
+        $(this).find(".answer").each(function(optionNum){
+          $(this).attr("name", "answer" + questionNum);
+          $(this).attr("required", "required");
+        });
+        $(this).find(".option").each(function(optionNum){
+          $(this).attr("required", "required");
+        });
+        $(this).find(".question").each(function(optionNum){
+          $(this).attr("required", "required");
+        });
+      });
+    }
+
+    var addQuestion = function() {
+      var c = $(".defaultQuestionBlock").clone();
+      c.removeClass('defaultQuestionBlock');
+      c.addClass('questionBlock');
+      c.appendTo($("#questions"));
+      nameQuestions();
+    }
+    addQuestion();
+
+    $(".addQuestion").click(function() {
+      addQuestion();
+    });
+
+    $("#questions").on('click', '.addOption', function(){
+      $(this).before($(".optionBlock:first").clone());
+      nameQuestions();
+    });
+
+    $("#questions").on('click', '.deleteOption', function(){
+      if ($(this).parent().parent().children('.optionBlock').length > 1) {
+        $(this).parent().remove();
+      } else {
+        // Questions need at least one option, so don't delete, but simply clear the field
+        $(this).prev().val("");
+      }
+    });
+
+    $("#questions").on('click', '.deleteQuestion', function(){
+      $(this).parent().remove();
+      nameQuestions();
+    });
+  });
+</script>
