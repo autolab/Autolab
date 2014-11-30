@@ -49,6 +49,8 @@ ActiveRecord::Schema.define(version: 20141125044705) do
     t.integer  "course_user_datum_id",             null: false
     t.integer  "assessment_id",                    null: false
     t.integer  "latest_submission_id"
+    t.integer  "cgdub"
+    t.integer  "special_type",         default: 0, null: false
     t.datetime "created_at"
     t.datetime "updated_at"
     t.integer  "grade_type",           default: 0, null: false
@@ -163,9 +165,9 @@ ActiveRecord::Schema.define(version: 20141125044705) do
     t.boolean  "exam_in_progress",                         default: false
     t.integer  "version_threshold",                        default: -1,    null: false
     t.float    "version_penalty_old",           limit: 24, default: 0.0,   null: false
+    t.datetime "cgdub_dependencies_updated_at"
     t.integer  "late_penalty_id"
     t.integer  "version_penalty_id"
-    t.datetime "cgdub_dependencies_updated_at"
     t.text     "gb_message"
   end
 
@@ -252,8 +254,8 @@ ActiveRecord::Schema.define(version: 20141125044705) do
     t.boolean  "absolute_tweak",                  default: true,  null: false
     t.string   "detected_mime_type"
     t.string   "submitter_ip",         limit: 40
-    t.integer  "tweak_id"
     t.boolean  "ignored_old",                     default: false, null: false
+    t.integer  "tweak_id"
     t.boolean  "ignored",                         default: false, null: false
   end
 

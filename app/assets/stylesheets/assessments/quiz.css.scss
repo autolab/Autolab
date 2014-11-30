@@ -1,10 +1,24 @@
+.quiz-form {
+  max-width: 900px;
+  width: 100%;
+  margin: 0 auto;
+  text-align: center;
+  #submit {
+    margin-top: 20px;
+    width: 100%;
+  }
+  .addQuestion {
+    width: 100%;
+  }
+}
+
 div.questionBlock, div.block {
-  width: 1020px;
+  
   background-color: #EBEBEB;
-  padding: 10px;
+  padding: 15px 25px;
   text-align: center;
   margin: 0 auto;
-  margin-top: 10px;
+  margin-top: 15px;
 
   h2 {
     margin: 5px 0 10px 0;
@@ -12,11 +26,15 @@ div.questionBlock, div.block {
   }
 
   .quizName {
-    width: 1000px;
+    width: 100%;
+  }
+
+  .categoryInput {
+    width: 40%;
   }
 
   .category {
-    width: 1000px;
+    width: 40%;
     height: 35px;
     border: 1px solid;
     border-radius: 0px;
@@ -24,16 +42,19 @@ div.questionBlock, div.block {
   }
 
   .question {
-    width: 1000px;
+    width: 100%;
   }
 
   .optionBlock {
+    
     width: 100%;
-    float: left;
     margin-top: 5px;
+    text-align: left;
+
     .option {
-      width: 960px;
+      width: 80%;
     }
+
     .answer {
       width: 20px;
       float: left;
@@ -41,7 +62,8 @@ div.questionBlock, div.block {
     }
     .deleteOption {
       width: 20px;
-      font-size: 18px;
+      font-size: 22px;
+      font-weight: bold;
       cursor: pointer;
       color: rgba(153, 0, 0, 0.9);
     }
@@ -62,17 +84,4 @@ div.questionBlock, div.block {
 
 .addQuestion {
   margin-top: 20px;
-}
-
-.form {
-  width: 1020px;
-  margin: 0 auto;
-  text-align: center;
-  #submit {
-    margin-top: 20px;
-    width: 100%;
-  }
-  .addQuestion {
-    width: 100%;
-  }
 }

@@ -4,7 +4,7 @@
 <h2>Create a Quiz</h2>
 <p>This is a multiple choice quiz generator. For each question, make one of the options the answer by using the radio button the left. If you want to delete an option, use the red x button the right. You can easily add and remove questions using the buttons below.</p>
 
-<form method="POST" class="form">
+<form method="POST" class="quiz-form">
 
   <div class="block">
     <h2>Quiz Name</h2>
@@ -13,11 +13,15 @@
 
   <div class="block">
     <h2>Assessment Category</h2>
+    <i>Select an existing category or enter a new category name (you can always change it later)</i>
+    <br><br>
     <select name="category" class="category">
       <% @categories.each do |c, i| %>
         <option value="<%= i %>"><%= c %></option>
       <% end %>
     </select>
+    <br>or<br>
+    <%= text_field_tag :new_category, nil, :placeholder=>"Create New Category", :class=>"categoryInput" %>
   </div>
 
   <div id="questions">
@@ -29,12 +33,12 @@
         <input class="option" type="text" placeholder="Option">
         <span class="deleteOption">&times;</span>
       </div>
-      <input type="button" class="btn addOption" value="Add Option">
+      <input type="button" class="btn addOption" value="Add Another Option">
       <input type="button" class="btn deleteQuestion" value="Delete Question">
     </div>
   </div>
 
-  <input type="button" class="btn addQuestion" value="Add Question">
+  <input type="button" class="btn addQuestion" value="Add New Question">
   <input id="quiz" type="hidden" name="quiz">
   <input id="submit" type="submit" value="Create Quiz" class="btn primary">
 
