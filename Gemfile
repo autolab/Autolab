@@ -75,4 +75,4 @@ gem 'capybara', group: [:development, :test]
 # gem 'capistrano-rails', group: :development
 
 # Use debugger
-gem 'debugger2', group: [:development, :test]
+gem 'debugger', group: [:development, :test]

@@ -1,8 +1,8 @@
 development:
   adapter: mysql2
-  database: <username>_autolab_development 
+  database: kelly_autolab_development 
   pool: 5
-  username: <username>
-  password: '<password>'
+  username: kelly
+  password: kelly
   socket: /var/run/mysqld/mysqld.sock
   host: localhost
