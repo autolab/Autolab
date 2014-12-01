@@ -24,6 +24,11 @@
     <%= text_field_tag :new_category, nil, :placeholder=>"Create New Category", :class=>"categoryInput" %>
   </div>
 
+  <div class="block">
+    <h2>Maximum Attempts on Quiz</h2>
+    <input name="attemptsAllowed" class="attemptsAllowed" type="text" value="1" title="How many attempts are allowed?" required>
+  </div>
+
   <div id="questions">
     <div class="defaultQuestionBlock">
       <h2>Question <span class="questionNum"></span></h2>

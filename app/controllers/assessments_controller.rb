@@ -99,7 +99,7 @@ class AssessmentsController < ApplicationController
       params[:assessment] = {name: quizName, category_id: quizCat}
       params[:quiz] = true
       params[:quizData] = quiz
-      params[:max_submissions] = 1
+      params[:max_submissions] = params[:attemptsAllowed]
       create
       quizData = JSON.parse(quiz)
       p = Problem.new(:name=>"Quiz",
