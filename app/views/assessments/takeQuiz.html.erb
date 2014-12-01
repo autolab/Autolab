@@ -6,9 +6,9 @@
 
   <% @quizData.each do |i, q| %>
     <h4><%= q["question"] %></h4>
-    <% q.each do |key, option| %>
+    <% q.keys.shuffle.each do |key| %>
       <% if key != "question" && key != "answer" %>
-        <input type="radio" name="<%= i %>" value="<%= key %>" required> <%= option %><br />
+        <input type="radio" name="<%= i %>" value="<%= key %>" required> <%= q[key] %><br />
       <% end %>
     <% end %>
   <% end %>

@@ -8,7 +8,7 @@
 
   <div class="block">
     <h2>Quiz Name</h2>
-    <input class="quizName" name="quizName" type="text" placeholder="Quiz Name" required>
+    <input class="quizName" name="quizName" type="text" placeholder="Quiz Name" title="Name the quiz." required>
   </div>
 
   <div class="block">
@@ -27,10 +27,10 @@
   <div id="questions">
     <div class="defaultQuestionBlock">
       <h2>Question <span class="questionNum"></span></h2>
-      <input class="question" type="text" placeholder="Question">
+      <input class="question" type="text" placeholder="Question" title="Fill in the question.">
       <div class="optionBlock">
-        <input type="radio" class="answer" name="answer">
-        <input class="option" type="text" placeholder="Option">
+        <input type="radio" class="answer" name="answer" title="Pick an answer.">
+        <input class="option" type="text" placeholder="Option" title="Don't leave an empty option.">
         <span class="deleteOption">&times;</span>
       </div>
       <input type="button" class="btn addOption" value="Add Another Option">
@@ -111,6 +111,11 @@
     $("#questions").on('click', '.deleteQuestion', function(){
       $(this).parent().remove();
       nameQuestions();
+    });
+
+    $("#questions").on('click', '.answer', function(){
+      $(this).parents(".questionBlock").find(".option").css("background-color", "white");
+      $(this).next(".option").css("background-color", "rgba(0, 153, 0, 0.9)");
     });
   });
 </script>
