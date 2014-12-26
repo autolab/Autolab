@@ -13,7 +13,60 @@ class User < ActiveRecord::Base
   
   trim_field :school
   validates_presence_of :first_name, :last_name, :email
+  
+  # check if user is instructor in any course
+  def instructor?
+    cuds = self.course_user_data
+    
+    cuds.each do |cud|
+      if cud.instructor?
+        return true
+      end
+    end
+    
+    return false
+  end
+  
+  # check if self is instructor of a user
+  def instructor_of?(user)
+    cuds = self.course_user_data
+    
+    cuds.each do |cud|
+      if cud.instructor?
+         if !cud.course.course_user_data.where(user: user).empty?
+           return true
+         end
+      end
+    end
+    
+    return false
+  end
 
+  def full_name
+    first_name + " " + last_name
+  end
+
+  def full_name_with_email
+    first_name + " " + last_name + " (" + email + ")"
+  end
+
+  def display_name
+    if first_name and last_name then
+      full_name
+    else
+      email
+    end
+  end
+
+  def after_create
+    COURSE_LOGGER.log("User CREATED #{self.email}:" +
+      "{#{self.first_name},#{self.last_name}")
+  end
+
+  def after_update
+    COURSE_LOGGER.log("User UPDATED #{self.email}:"+
+      "{#{self.first_name},#{self.last_name}")
+  end
   
   def self.find_for_facebook_oauth(auth, signed_in_resource=nil)
     authentication = Authentication.where(provider: auth.provider, 
@@ -57,47 +110,8 @@ class User < ActiveRecord::Base
         user.email = data["uid"]  # email is uid in our case
         user.authentications.new(provider: "CMU-Shibboleth",
                                  uid: data["uid"])
-      
       end
     end
-  end
-  
-  # check if user is instructor in any course
-  def self.instructor?
-    cuds = course_user_data
-    
-    cuds.each do |cud|
-      if cud.instructor?
-        return true
-      end
-    end
-    
-    return false
-  end
-  
-  # check if self is instructor of a user
-  def self.instructor_of?(user)
-    cuds = course_user_data
-    
-    cuds.each do |cud|
-      if cud.instructor?
-         if !cud.course.course_user_data.where(user: user).empty?
-           return true
-         end
-      end
-    end
-    
-    return false
-  end
-
-  def after_create
-    COURSE_LOGGER.log("User CREATED #{self.email}:" +
-      "{#{self.first_name},#{self.last_name}")
-  end
-
-  def after_update
-    COURSE_LOGGER.log("User UPDATED #{self.email}:"+
-      "{#{self.first_name},#{self.last_name}")
   end
   
   # user created by roster
@@ -154,22 +168,6 @@ class User < ActiveRecord::Base
       return Course.all
     else
       return user.courses
-    end
-  end
-
-  def full_name
-    first_name + " " + last_name
-  end
-
-  def full_name_with_email
-    first_name + " " + last_name + " (" + email + ")"
-  end
-
-  def display_name
-    if first_name and last_name then
-      full_name
-    else
-      email
     end
   end
 end
