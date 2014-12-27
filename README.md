@@ -8,7 +8,7 @@ Autolab also provides other services that instructors expect in a course managem
 
 **Scoreboard.** The latest autograded scores for each student are displayed, rank ordered, on a real-time scoreboard. The scoreboard is a fun and powerful motivation for students. When coupled with autograding, it creates a sense of community and a healthy competition that seems to benefit everyone. Students anonymize themselves on the scoreboard by giving themselves nicknames. A mix of curiosity and competitiveness drives the stronger students to be at the top of the scoreboard, and all students have a clear idea of what they need for full credit. In our experience, everyone wins.
 
-Since 2010, Autolab has had a transformative impact on education at CMU. Each semester, it is used by about 3,000 CMU students in courses in Pittsburgh, Silicon Valley, Qatar, and Rwanda. In Fall, 2014, we are releasing Autolab as an open-source system, where it will be available to schools all over the world, and hopefully have the same impact it's had at CMU. 
+Since 2010, Autolab has had a transformative impact on education at CMU. Each semester, it is used by about 3,000 CMU students in courses in Pittsburgh, Silicon Valley, Qatar, and Rwanda. In Fall, 2014, we are releasing Autolab as an open-source system, where it will be available to schools all over the world, and hopefully have the same impact it's had at CMU.
 
 This is the main repository that includes the application layer of the project. Installing other services are optional but highly recommended for full functionality. For further information:
 
@@ -25,7 +25,7 @@ This is the main repository that includes the application layer of the project. 
 	```sh
 	git clone https://github.com/sstephenson/ruby-build.git ~/.rbenv/plugins/ruby-build
 	```
-	
+
 	_(You might need to restart your shell at this point in order to start using your newly installed rbenv)_
 3. Install the version of ruby in the text file `.ruby-version`:
 	```sh
@@ -49,23 +49,23 @@ This is the main repository that includes the application layer of the project. 
   ```
 
 5. `cd` into `autolab-src` and install the required gems:
-	
+
   ```sh
   bundle install
   ```
   You need to have MySQL installed before hand.
- 
+
 
 5.  Configure your database next. You need to fill the `username` and `password` fields on 		`config/database.yml.template` and rename it to `config/database.yml.template`.
 
 6. Create and initialize the database tables:
 
 	```sh
-	bundle exec rake db:create	
+	bundle exec rake db:create
 	bundle exec rake db:migrate
 	```
    Do not forget to use `bundle exec` in fron of every rake/rails command.
-   
+
 
 7. (Optional) Populate dummy data for development purposes:
 
@@ -104,7 +104,7 @@ We encourage you to contribute to Autolab! Please check out the
 
 ## License
 
-Autolab is released under the [Apache License 2.0](http://opensource.org/licenses/Apache-2.0). 
+Autolab is released under the [Apache License 2.0](http://opensource.org/licenses/Apache-2.0).
 
 ## Using Autolab
 
