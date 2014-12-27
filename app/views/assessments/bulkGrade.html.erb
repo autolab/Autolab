@@ -22,7 +22,7 @@
       <%= f.hidden_field :bulkGrade_csv, :value => @csv %>
       <%= f.hidden_field :bulkGrade_data_type, :value => @data_type %>
 
-      <%= f.submit 'Yes' %><%= link_to "No", { :action => :bulkGrade }, :class => "no" %>
+      <%= f.submit 'Yes' , {:class=>"btn submit"} %><%= link_to "No", { :action => :bulkGrade }, :class => "no" %>
     <% end %>
   <% else %>
     <%= render 'bulkGrade_initial' %>
