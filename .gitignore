@@ -17,3 +17,4 @@ tmp/
 !tmp/restart.txt
 *.swp
 db/*.sqlite3
+tags
