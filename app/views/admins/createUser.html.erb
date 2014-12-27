@@ -5,14 +5,14 @@
 <div id="userTable" >
 <h2>Create New User</h2>
 <%= form_tag(controller: "admin", action: "createUser") do |f| %>
-	
+
     <%= f.fields_for :user do |ff| %>
 	<table>
 		<tr><td>First name: </td><td><%= f.text_field :first_name %></td></tr>
 		<tr><td>Last name: </td><td><%= f.text_field :last_name %></td></tr>
 		<tr><td>Email: </td><td><%= f.text_fielf :email %></td></tr>
 	<% end %>
-	
+
 	<%= f.fields_for :cud do |ff| %>
 	<table>
 	  <tr><td>Nickname:</td><td><%=h f.text_field :nickname %></td>
@@ -43,7 +43,7 @@
 	  <td class="smallText">Course assistants can assign scores to problems and nothing else.</td></tr>
 
 	  <tr><td>Course</td><td><%=h @course.display_name %></td></tr>
-	  <tr><td colspan=2><%= f.submit 'Create' %></td></tr>
+    <tr><td colspan=2><%= f.submit 'Create' , {:class=>"btn primary"} %></td></tr>
 	</table>
 	<% end %>
 <%end %>

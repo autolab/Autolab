@@ -5,7 +5,7 @@
 	<div id="error_explanation">
 		<h2><%= pluralize(@editCUD.errors.count, "error") %>
       prohibited the data from being saved:</h2>
-			
+
 		<ul>
 			<% @editCUD.errors.full_messages.each do |msg| %>
 			<li><%= msg %></li>
@@ -16,7 +16,7 @@
 
   <table width=70% class="verticalTable" >
   <tr><th>Course</th><td><%= @editCUD.course.display_name %></td></tr>
-    
+
   <%= f.fields_for :user, @editCUD.user do |u| %>
     <tr><th>First name: </th><td><%= u.text_field :first_name, readonly: true %></td></tr>
     <tr><th>Last name: </th><td><%= u.text_field :last_name, readonly:true %></td></tr>
@@ -50,7 +50,7 @@
       <%= t.text_field :value, :size => 18 %>
       <%= t.select :kind, options_for_select({"points" => "points", "%" => "percent"}, :selected => (@editCUD.tweak ? @editCUD.tweak.kind : "points")) %>
     <% end %>
-    </td> 
+    </td>
     <td class="smallText">A tweak is a positive or negative value that adjusts the student's course average.<br>Ex: A tweak of 5 points would increase the student's course average by 5 points. </td>
   </tr>
 
@@ -63,7 +63,7 @@
   <tr><th>Course assistant?</th><td><%= f.check_box :course_assistant %></td>
   <td class="smallText">Course assistants can assign scores to problems and nothing else.</td></tr>
   <% end %>
-  
+
   </table>
   <br>
   <script>
@@ -79,28 +79,28 @@
         nickname.setAttribute('style','background-color:#FFF352');
         if (formlog!= 'Your nickname '){formlog+=' and ';}
         formlog +=msg;
-        
+
         nickname.focus();
       }
       var nickname = document.getElementById('user_nickname');
       var approve = true;
-      
+
       if (nickname.value.length>20){approve = false; flag('is too long',nickname);}
       if (DoubleByte(nickname.value)===true){approve = false; flag('has non-ASCII characters',nickname);}
-      
+
       if (approve){form.submit();}
       else{
       alert(formlog);
       }
-      
-      
+
+
     }
   </script>
   <br>
   <input id="user_submit" name="commit" type="submit" class="btn primary" value="Save Changes" onclick="formvalidation(this.parentNode); return false;">
-  <!--<%= f.submit 'Save Changes' %>-->
-  <%= if @cud.instructor? then 
+  <!--<%= f.submit 'Save Changes' , {:class=>"btn primary"} %>-->
+  <%= if @cud.instructor? then
         link_to raw('<span class="btn">Delete User</span>'), course_course_user_datum_destroyConfirm_path(@course, @editCUD), data: {confirm: "Are you sure!?"}
-  end %> 
+  end %>
 
 <%end %>

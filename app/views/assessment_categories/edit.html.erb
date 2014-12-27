@@ -6,7 +6,7 @@
 	<div id="error_explanation">
 		<h2><%= pluralize(@category.errors.count, "error") %>
       prohibited this category from being saved:</h2>
-			
+
 		<ul>
 			<% @category.errors.full_messages.each do |msg| %>
 			<li><%= msg %></li>
@@ -22,7 +22,7 @@
   <td><%= f.text_field :name %></td>
 </tr>
 <tr>
-  <td colspan=2><%= f.submit "Save" %></td>
+  <td colspan=2><%= f.submit "Save" , {:class=>"btn primary"} %></td>
 </tr>
 </table>
 <% end %>
