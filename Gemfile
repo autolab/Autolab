@@ -38,7 +38,7 @@ gem 'exception_notification', git: 'https://github.com/smartinez87/exception_not
 gem 'highlight', :require => 'simplabs/highlight'
 
 # Used by lib/tasks/autolab.rake to populate DB with dummy seed data
-gem 'rake', '10.3.2'
+gem 'rake'
 gem 'populator', '>=1.0.0'
 
 # To communicate with MySQL database
