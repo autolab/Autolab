@@ -184,7 +184,7 @@ file, most likely a duplicate email.  The exact error was: #{e} "
                       lecture: row[9].to_s.chomp(" "),
                       section: row[10].to_s.chomp(" ")}
             cud = @currentCUDs.find { |cud| 
-              cud.user.email == newCUD[:email] 
+              cud.user and cud.user.email == newCUD[:email] 
             }
             if !cud then
               newCUD[:color] = "green"

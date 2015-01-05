@@ -154,7 +154,7 @@ protected
     end
 
     if current_user.nil? then
-      redirect_to 
+      redirect_to root_path and return
     end
     uid = current_user.id
     # don't allow sudoing across courses
