@@ -603,6 +603,10 @@ input[type="password"] {
   border: 1px solid #ccc;
 }
 
+input[type="submit"] {
+  margin-top: 15px;
+}
+
 input[type="text"]:disabled,
 input[type="email"]:disabled,
 input[type="password"]:disabled,

@@ -37,7 +37,7 @@ Size:<%= @extensions.size %>
   <%= f.text_field :days, :size=>3, :id => "extension_days" %> day(s)
   -OR- Infinite? <%= f.check_box :infinite, :id => "infinite_extension" %>
   <%= f.hidden_field(:assessment_id)%>
-  <%= f.submit "Create" %>
+  <%= f.submit "Create" , {:class=>"btn primary"} %>
 <% end %>
 </td></tr></table>
 
