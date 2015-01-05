@@ -1,7 +1,5 @@
-require "spec_helper"
-
-describe "authentication homepage" do
-  it "allows registered and confirmed user to log in" do
+RSpec.describe "home page", :type => :feature do
+  it "allows registered user to log in" do
     # Creates a dummy user
     user = User.create!(:email => "user@foo.bar",
                         :first_name => "Test",
