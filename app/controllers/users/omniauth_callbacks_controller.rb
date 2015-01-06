@@ -68,22 +68,27 @@ class Users::OmniauthCallbacksController < Devise::OmniauthCallbacksController
         set_flash_message(:notice, :success, :kind => "Shibboleth") if is_navigational_format?
       else
         # Skip sign up for CMU Shibboleth user
-        @user = User.new
-        
         data = request.env["omniauth.auth"]
-        @user.email = data["uid"]  # email is uid in our case
+        @user = User.where(email: data["uid"]).first # email is uid in our case
+        
+        # If user doesn't exist, create one first
+        if @user.nil? then
+          @user = User.new
+          @user.email = data["uid"]
+                                 
+          # Auto-generate placeholder name and password
+          @user.first_name = "(blank)"
+          @user.last_name = "(blank)"
+        
+          temp_pass = Devise.friendly_token[0, 20]    # generate a random token
+          @user.password = temp_pass
+          @user.password_confirmation = temp_pass
+          @user.skip_confirmation!
+          
+        end
+        
         @user.authentications.new(provider: "CMU-Shibboleth",
                                  uid: data["uid"])
-                                 
-        # Auto-generate placeholder name and password
-        @user.first_name = "(blank)"
-        @user.last_name = "(blank)"
-        
-        temp_pass = Devise.friendly_token[0, 20]    # generate a random token
-        @user.password = temp_pass
-        @user.password_confirmation = temp_pass
-        @user.skip_confirmation!
-        
         @user.save!
         sign_in_and_redirect @user, :event => :authentication #this will throw if @user is not activated
         set_flash_message(:notice, :success, :kind => "Shibboleth") if is_navigational_format?

@@ -276,16 +276,16 @@ namespace :autolab do
 
     # Create assessment
     asmt = cat.assessments.create! do |a|
-      a.visible_at = COURSE_START,
-      a.start_at = COURSE_START,
-      a.due_at = COURSE_START + (5 + rand(11)).days,
-      a.end_at = a.due_at + (1 + rand(7)).day,
-      a.grading_deadline = a.end_at + (1 + rand(7)).day,
+      a.visible_at = COURSE_START
+      a.start_at = COURSE_START
+      a.due_at = COURSE_START + (5 + rand(11)).days
+      a.end_at = a.due_at + (1 + rand(7)).day
+      a.grading_deadline = a.end_at + (1 + rand(7)).day
 
-      a.name = AUTOGRADE_TEMPLATE_NAME,
-      a.display_name = AUTOGRADE_TEMPLATE_DISPLAY_NAME,
-      a.handin_directory = AUTOGRADE_TEMPLATE_HANDIN_DIRECTORY,
-      a.handin_filename = AUTOGRADE_TEMPLATE_HANDIN_FILENAME,
+      a.name = AUTOGRADE_TEMPLATE_NAME
+      a.display_name = AUTOGRADE_TEMPLATE_DISPLAY_NAME
+      a.handin_directory = AUTOGRADE_TEMPLATE_HANDIN_DIRECTORY
+      a.handin_filename = AUTOGRADE_TEMPLATE_HANDIN_FILENAME
       a.has_autograde = true
       a.course_id = course.id
 
