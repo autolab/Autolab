@@ -153,6 +153,9 @@ protected
       redirect_to controller: :home, action: :error and return
     end
 
+    if current_user.nil? then
+      redirect_to root_path and return
+    end
     uid = current_user.id
     # don't allow sudoing across courses
     if (session[:sudo]) then
@@ -243,8 +246,11 @@ private
     # use the exception_notifier gem to send out an e-mail to the notification list specified in config/environment.rb
     ExceptionNotifier.notify_exception(exception)
 
-    #TODO: hide stack traces from students after the beta.  leave @error undefined to hide stack traces
-    @error = exception
+    # stack traces are only shown to instructors and administrators
+    # by leaving @error undefined, students and CAs do not see stack traces
+    if (not current_user.nil?) and (current_user.instructor? or current_user.administrator?) then
+      @error = exception
+    end
 
     render "home/error"
   end
