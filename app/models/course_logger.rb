@@ -11,7 +11,12 @@ class CourseLogger
   end
 
   def setCourse(course)
-    @logger = Logger.new("#{Rails.root}/courses/#{course.name}/autolab.log",'monthly')
+    # if this can't grab the file, Autolab should still function
+    begin
+      @logger = Logger.new("#{Rails.root}/courses/#{course.name}/autolab.log",'monthly')
+    rescue
+      @logger = nil
+    end
   end
 
   def log(message,severity=Logger::INFO)
