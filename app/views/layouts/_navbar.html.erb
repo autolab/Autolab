@@ -82,7 +82,7 @@
 			<%= link_to @course.display_name, course_path(@course), :id=>"courseTitle" %>
 			<% if @course.disabled? %> (Course Disabled)<% end %>
 		</span>
-		<% if @assessment %>
+		<% if @assessment and @assessment.id %>
 		<span class="item">
 			<span class="arrow">»</span>
 			<%= current_assessment_link %>
