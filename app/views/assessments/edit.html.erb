@@ -6,12 +6,12 @@
 <ul id="tabs" class="nav nav-tabs">
 <% [ "basic", "handin", "penalties", "problems" ].each do |tab_name| %>
   <%= (tab_name == params[:active_tab]) ? tag(:li, class: :active) : tag(:li) %>
-    <%= content_tag :a, tab_name.titleize, href: "edit_#{tab_name}" %>
+    <%= link_to tab_name.titleize, href: edit_course_assessment_path(@course, @assessment) + "/#{tab_name}" %>
   </li>
 <% end %>
 </ul>
 
-<%= form_for [ @course, @assessment ], url: "edit_#{params[:active_tab]}",
+<%= form_for [ @course, @assessment ], url: edit_course_assessment_path(@course, @assessment) + "/#{params[:active_tab]}",
                                    builder: FormBuilderWithDateTimeInput do |f| %>
   <% if @course.errors.any? %>
       <ul>

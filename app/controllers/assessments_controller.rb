@@ -943,6 +943,7 @@ class AssessmentsController < ApplicationController
     @assessment.build_version_penalty unless @assessment.late_penalty
   end
 
+  action_auth_level :update, :instructor
   def update
     p = params[:assessment]
 

@@ -41,7 +41,7 @@ Autolab3::Application.routes.draw do
           get 'listArchive', as: :list_archive
           get 'regrade'
           get 'view'
-	        post 'autograde_done'
+          post 'autograde_done'
         end
         collection do
           get 'regradeAll'
@@ -67,8 +67,8 @@ Autolab3::Application.routes.draw do
       	get 'attachments'	
       	get 'extensions'
       	get 'submissions'
-      	patch 'edit_*active_tab', action: :update
-        get 'edit_*active_tab', action: :edit
+      	patch 'edit/*active_tab', action: :update
+        get 'edit/*active_tab', action: :edit
         post 'handin'
         get 'history'
         get 'viewFeedback'
@@ -83,7 +83,7 @@ Autolab3::Application.routes.draw do
         get 'importPartners'
         get 'deletePartner'
         get 'cancelRequest'
-	      # gradesheet ajax actions
+        # gradesheet ajax actions
         post 'quickSetScore'
         post 'quickSetScoreDetails'
         post 'quickGetTotal'
