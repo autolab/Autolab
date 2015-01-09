@@ -6,7 +6,7 @@
 <ul id="tabs" class="nav nav-tabs">
 <% [ "basic", "handin", "penalties", "problems" ].each do |tab_name| %>
   <%= (tab_name == params[:active_tab]) ? tag(:li, class: :active) : tag(:li) %>
-    <%= link_to tab_name.titleize, href: edit_course_assessment_path(@course, @assessment) + "/#{tab_name}" %>
+    <%= link_to tab_name.titleize, edit_course_assessment_path(@course, @assessment) + "/#{tab_name}" %>
   </li>
 <% end %>
 </ul>
