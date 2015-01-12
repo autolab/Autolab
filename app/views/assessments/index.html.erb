@@ -24,8 +24,6 @@
         <li>
           <%= link_to asmt.display_name, course_assessment_url(@course, asmt) %><%= "*" unless asmt.released? %>
           <span class="pull-right shortcuts">
-
-            <a class="handin-icon-small" href="<%= handin_course_assessment_path(@course, asmt) %>"><%= image_tag "upload.png", :height => 22, :alt=>"Handin Assignment" %></a>
             <a class="goto-icon-small" href="<%= course_assessment_path(@course, asmt) %>"><%= image_tag "go-new.png", :height => 22, :alt=>"Go to assessment" %></a>
           </span>
         </li>
