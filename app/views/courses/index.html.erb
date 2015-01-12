@@ -13,7 +13,6 @@
             <li>
               <%= link_to asmt.display_name, course_assessment_path(course, asmt) %>
               <span class="pull-right shortcuts">
-                <a href="<%= handin_course_assessment_path(course, asmt) %>"><%= image_tag "upload.png", :height => 22, :alt=>"Handin Assignment" %></a>
                 <a href="<%= course_assessment_path(course, asmt) %>"><%= image_tag "go-new.png", :height => 22, :alt=>"Go to assessment" %></a>
               </span>
             </li>
