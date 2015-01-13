@@ -1,12 +1,11 @@
 <h2>Checkout your Work on <%= link_to @assessment.display_name, [@course, @assessment] %> for Credit</h2>
 
-<% @aud = AssessmentUserDatum.get @assessment.id, @cud.id %>
 <% numSubmissions = @cud.submissions.where(assessment_id: @assessment.id).count %>
 
-<% if (!@cud.instructor?) and (@aud.past_submit_until?) then %>
+<% if (!@cud.instructor?) and (@aud.past_end_at?) then %>
   <h3>We are no longer accepting submissions for <%= @assessment.display_name %>.</h3>
 
-<% elsif (!@cud.instructor?) and (Time.now() < @assessment.start_date) then %>
+<% elsif (!@cud.instructor?) and (Time.now() < @assessment.start_at) then %>
   <h3>We are not yet accepting submissions for <%= @assessment.display_name %></h3>
 
 <% elsif @cud.dropped? then %>
@@ -40,5 +39,3 @@
     <% end %>
   <% end %>
 <% end %>
-
-<font size=-1><%= link_to "Go back to #{@assessment.display_name}", [@course, @assessment] %></font>

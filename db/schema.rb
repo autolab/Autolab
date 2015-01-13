@@ -46,14 +46,14 @@ ActiveRecord::Schema.define(version: 20141119222558) do
   end
 
   create_table "assessment_user_data", force: :cascade do |t|
-    t.integer  "course_user_datum_id", limit: 4,             null: false
-    t.integer  "assessment_id",        limit: 4,             null: false
+    t.integer  "course_user_datum_id", limit: 4,                 null: false
+    t.integer  "assessment_id",        limit: 4,                 null: false
     t.integer  "latest_submission_id", limit: 4
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.integer  "grade_type",           limit: 4, default: 0, null: false
+    t.integer  "grade_type",           limit: 4, default: 0,     null: false
     t.integer  "group_id",             limit: 4
-    t.boolean  "group_confirmed",      default: false
+    t.boolean  "group_confirmed",      limit: 1, default: false
   end
 
   add_index "assessment_user_data", ["assessment_id"], name: "index_assessment_user_data_on_assessment_id", using: :btree
@@ -176,8 +176,8 @@ ActiveRecord::Schema.define(version: 20141119222558) do
     t.boolean "infinite",             limit: 1, default: false, null: false
   end
 
-  create_table "groups", force: true do |t|
-    t.string   "name"
+  create_table "groups", force: :cascade do |t|
+    t.string   "name",       limit: 255
     t.datetime "created_at"
     t.datetime "updated_at"
   end
@@ -261,7 +261,7 @@ ActiveRecord::Schema.define(version: 20141119222558) do
     t.integer  "tweak_id",             limit: 4
     t.boolean  "ignored_old",          limit: 1,     default: false, null: false
     t.boolean  "ignored",              limit: 1,     default: false, null: false
-    t.string   "dave",                 limit: 63 
+    t.string   "dave",                 limit: 255
   end
 
   add_index "submissions", ["assessment_id"], name: "index_submissions_on_assessment_id", using: :btree
