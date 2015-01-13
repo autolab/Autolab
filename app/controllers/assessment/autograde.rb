@@ -165,7 +165,7 @@ module AssessmentAutograde
     # Send ADDJOB api request to add autograde job to queue.
     addJobHTTPReq = Net::HTTP.new(RESTFUL_HOST, RESTFUL_PORT)
     addJobReq = Net::HTTP::Post.new("/addJob/#{RESTFUL_KEY}/#{RESTFUL_COURSELAB}/")
-    addJobReq.body = {"image" => "rhel", #@autograde_prop.autograde_image,
+    addJobReq.body = {"image" => @autograde_prop.autograde_image,
                       "files" => uploadFileList.map{|f| Pathname.new(f["destFile"]).basename.to_s},
                       "output_file" => filename,
                       "timeout" => @autograde_prop.autograde_timeout,
