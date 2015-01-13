@@ -5,10 +5,41 @@ require "ModuleBase.rb"
 
 class JobsController < ApplicationController
   include ModuleBase
+
+  # 
+  # getRecentJobs - this function retrieves the currently running jobs
+  #
+  def getCurrentJobs
+    getJobs('0/')
+  end
+
+  # 
+  # getDeadJobs - this function retrieves the recent dead jobs
+  #
+  def getDeadJobs
+    getJobs('1/')
+  end
+
+  private 
+
+  def getJobs(suffix = '0/')
+    COURSE_LOGGER.log("getJobs called")
+    reqURL = "http://#{RESTFUL_HOST}:#{RESTFUL_PORT}/jobs/#{RESTFUL_KEY}/#{RESTFUL_COURSELAB}/" + suffix
+    COURSE_LOGGER.log("Req: " + reqURL)
+    response = Net::HTTP.get_response(URI.parse(reqURL))
+    response = JSON.parse(response.body)
+    jobs = response["jobs"]
+  end
+
+
   # index - This is the default action that generates lists of the
   # running, waiting, and completed jobs.
   action_auth_level :index, :student
   def index
+    return nil
+    puts "\n----->\n"
+
+
     # Instance variables that will be used by the view
     @running_jobs = []   # running jobs
     @waiting_jobs = []   # jobs waiting in job queue
@@ -27,9 +58,16 @@ class JobsController < ApplicationController
       dead_count = AUTOCONFIG_MAX_DEAD_JOBS
     end
 
+    print "\n----->\n"
+    print raw_live_jobs
+    print raw_dead_jobs
+    print "\n----<\n"
+
     # Get the complete lists of live and dead jobs from the server
     raw_live_jobs = getCurrentJobs()
     raw_dead_jobs = getDeadJobs()
+
+
 
     # Build formatted lists of the running, waiting, and dead jobs
     if raw_live_jobs and raw_dead_jobs then
@@ -159,6 +197,13 @@ class JobsController < ApplicationController
     job[:rjob] = rjob
     job[:id] = rjob["id"]
     job[:name] = rjob["name"]
+    
+    if rjob["notifyURL"] then
+      params =  rjob["notifyURL"].split('/')
+      job[:submission] = params[-2]
+      job[:assessment] = params[-4]
+      job[:course] = params[-6]
+    end
 
     # Determine whether to expose the job name (which contains an AndrewID).
     if !@cud.user.administrator?  then
@@ -169,7 +214,7 @@ class JobsController < ApplicationController
         end
       else
         # Instructors can see only their course's job names
-        if !rjob["notifyURL"] then
+        if !rjob["notifyURL"] or job[:course] != @cud.course.id then
           job[:name] = "*"
         end
       end

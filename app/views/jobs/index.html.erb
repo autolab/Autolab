@@ -8,7 +8,7 @@ This page shows you the status of current and recent autograding jobs.
 
 <h2>Currently Running Jobs</h2>
 
-<% if @running_jobs == [] then %>
+<% if !@running_jobs or @running_jobs == [] then %>
   None
 <% else %>
   <table class='prettyBorder sortable'>
@@ -37,7 +37,7 @@ This page shows you the status of current and recent autograding jobs.
 
 <h2>Jobs Waiting to Run</h2>
 
-<% if @waiting_jobs == [] then %>
+<% if !@waiting_jobs or @waiting_jobs == [] then %>
   None
 <% else %>
   <table class='prettyBorder sortable'>
@@ -66,7 +66,8 @@ This page shows you the status of current and recent autograding jobs.
 
 <% 
 since = ""
-if @dead_jobs_view[-1] and 
+if @dead_jobs_view and 
+  @dead_jobs_view[-1] and 
   @dead_jobs_view[-1][:first] and 
   @dead_jobs_view[-1][:first] != "" then
     since = "(since #{@dead_jobs_view[-1][:first]})"
@@ -81,7 +82,7 @@ end
   <h2>Your Recently Completed Jobs <%=since%></h2>
 <% end %>
 
-<% if @dead_jobs == [] then %>
+<% if !@dead_jobs_view or @dead_jobs == [] then %>
   None
 <% else %>
   <table class='prettyBorder sortable'>
