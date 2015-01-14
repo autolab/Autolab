@@ -18,9 +18,9 @@
   <tr><th>Course</th><td><%= @editCUD.course.display_name %></td></tr>
 
   <%= f.fields_for :user, @editCUD.user do |u| %>
-    <tr><th>First name: </th><td><%= u.text_field :first_name, readonly: true %></td></tr>
-    <tr><th>Last name: </th><td><%= u.text_field :last_name, readonly:true %></td></tr>
-  	<tr><th>Email: </th><td><%= u.text_field :email, readonly: true %></td></tr>
+    <tr><th>First name: </th><td><%= u.text_field :first_name %></td></tr>
+    <tr><th>Last name: </th><td><%= u.text_field :last_name %></td></tr>
+  	<tr><th>Email: </th><td><%= u.text_field :email %></td></tr>
   <% end %>
 
   <tr><th>Nickname: </th><td><%= f.text_field :nickname %></td>
