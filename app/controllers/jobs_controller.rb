@@ -1,10 +1,6 @@
- $:.unshift("/usr/share/tango2/thrift/gen-rb/")
-
 require 'autoConfig'
-require "ModuleBase.rb"
 
 class JobsController < ApplicationController
-  include ModuleBase
 
   # 
   # getRecentJobs - this function retrieves the currently running jobs
@@ -20,25 +16,11 @@ class JobsController < ApplicationController
     getJobs('1/')
   end
 
-  private 
-
-  def getJobs(suffix = '0/')
-    COURSE_LOGGER.log("getJobs called")
-    reqURL = "http://#{RESTFUL_HOST}:#{RESTFUL_PORT}/jobs/#{RESTFUL_KEY}/#{RESTFUL_COURSELAB}/" + suffix
-    COURSE_LOGGER.log("Req: " + reqURL)
-    response = Net::HTTP.get_response(URI.parse(reqURL))
-    response = JSON.parse(response.body)
-    jobs = response["jobs"]
-  end
-
 
   # index - This is the default action that generates lists of the
   # running, waiting, and completed jobs.
   action_auth_level :index, :student
   def index
-    return nil
-    puts "\n----->\n"
-
 
     # Instance variables that will be used by the view
     @running_jobs = []   # running jobs
@@ -58,16 +40,9 @@ class JobsController < ApplicationController
       dead_count = AUTOCONFIG_MAX_DEAD_JOBS
     end
 
-    print "\n----->\n"
-    print raw_live_jobs
-    print raw_dead_jobs
-    print "\n----<\n"
-
     # Get the complete lists of live and dead jobs from the server
     raw_live_jobs = getCurrentJobs()
     raw_dead_jobs = getDeadJobs()
-
-
 
     # Build formatted lists of the running, waiting, and dead jobs
     if raw_live_jobs and raw_dead_jobs then
@@ -189,6 +164,16 @@ class JobsController < ApplicationController
 
   protected
 
+  def getJobs(suffix = '0/')
+    COURSE_LOGGER.log("getJobs called")
+    reqURL = "http://#{RESTFUL_HOST}:#{RESTFUL_PORT}/jobs/#{RESTFUL_KEY}/#{RESTFUL_COURSELAB}/" + suffix
+    COURSE_LOGGER.log("Req: " + reqURL)
+    response = Net::HTTP.get_response(URI.parse(reqURL))
+    response = JSON.parse(response.body)
+    jobs = response["jobs"]
+  end
+
+
   # formatRawJob - Given a raw job from the server, creates a job
   # hash for the view.
   def formatRawJob(rjob, is_live) 
@@ -205,16 +190,16 @@ class JobsController < ApplicationController
       job[:course] = params[-6]
     end
 
-    # Determine whether to expose the job name (which contains an AndrewID).
+    # Determine whether to expose the job name.
     if !@cud.user.administrator?  then
-      if !@cud.instructor? then 
+      if !@cud.instructor? then
         # Students can see only their own job names
         if !job[:name][@cud.user.email] then
           job[:name] = "*"
         end
       else
         # Instructors can see only their course's job names
-        if !rjob["notifyURL"] or job[:course] != @cud.course.id then
+        if !rjob["notifyURL"] or !(job[:course].eql? @cud.course.id.to_s) then
           job[:name] = "*"
         end
       end
