@@ -18,7 +18,7 @@ This page shows you the status of current and recent autograding jobs.
     <tr>
     <td> <%= @job[:id] %> </td> 
     <td> <%= @job[:name] %> </td> 
-    <td> <%= @job[:first] %> </td> 
+    <td> <%= DateTime.parse(@job[:first]).to_time.localtime.to_s(:db) %> </td> 
     <td> <%= @job[:elapsed] %> </td>
 
     <% if @job[:name] == "*" then %>
@@ -46,7 +46,7 @@ This page shows you the status of current and recent autograding jobs.
     <tr>
     <td> <%= @job[:id] %> </td> 
     <td> <%= @job[:name] %> </td> 
-    <td> <%= @job[:first] %> </td> 
+    <td> <%= DateTime.parse(@job[:first]).to_time.localtime.to_s(:db) %> </td> 
     <td> <%= @job[:elapsed] %> </td>
 
     <% if @job[:name] == "*" then %>
@@ -70,7 +70,7 @@ if @dead_jobs_view and
   @dead_jobs_view[-1] and 
   @dead_jobs_view[-1][:first] and 
   @dead_jobs_view[-1][:first] != "" then
-    since = "(since #{@dead_jobs_view[-1][:first]})"
+    since = "(since #{DateTime.parse(@dead_jobs_view[-1][:first]).to_time.localtime.to_s(:db)})"
 end
 %>
 
@@ -92,7 +92,7 @@ end
     <tr>
     <td> <%= @job[:id] %> </td> 
     <td> <%= @job[:name] %> </td> 
-    <td> <%= @job[:first] %> </td> 
+    <td> <%= DateTime.parse(@job[:first]).to_time.localtime.to_s(:db) %> </td> 
     <td> <%= @job[:elapsed] %> </td>
     <td> <%= link_to @job[:state], {:controller => "jobs", :action => "getjob", :id=>@job[:id]} %> </td>
     </tr>
