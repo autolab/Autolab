@@ -54,7 +54,6 @@ Autolab3::Application.routes.draw do
       member do
         match 'adminAutograde', via: [:get, :post]
       	match 'adminScoreboard', via: [:get, :post]
-        get 'adminSVN'
       	get 'adminPartners'
         get 'bulkExport'
         get 'bulkGrade'
@@ -85,6 +84,12 @@ Autolab3::Application.routes.draw do
         get 'importPartners'
         get 'deletePartner'
         get 'cancelRequest'
+
+        # SVN actions
+        get 'adminSVN'
+        post 'importSVN'
+        post 'setRepository'
+
         # gradesheet ajax actions
         post 'quickSetScore'
         post 'quickSetScoreDetails'

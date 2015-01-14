@@ -1,20 +1,15 @@
 <h2>Admin Svn for <%= current_assessment_link %></h2>
 
 <table class=prettyBorder >
-<tr><th>email</th><th>Repository</th></tr>
+  <tr><th>email</th><th>Repository</th></tr>
   <% for u in @cuds do %>
+    <% repo = @assessment.aud_for(u).repository %>
     <tr>
       <td><%= u.email %></td>
       <td>
-      <% if u["repository"] then %>
         <%= form_tag url_for(:action=>"setRepository", :id=>u.id) %>
-        <%= text_field_tag 'repository', u["repository"], :size=>80 %> <%= submit_tag 'Edit' %>
+        <%= text_field_tag 'repository', repo, :size=>80 %> <%= submit_tag (if repo then 'Edit' else 'Create' end) %>
         </form>
-      <% else %>
-        <%= form_tag url_for(:action=>"setRepository", :id=>u.id) %>
-        <%= text_field_tag 'repository', nil, :size=>80 %> <%= submit_tag 'Create' %>
-        </form>
-      <% end %>
       </td>
     </tr>
   <% end %>
@@ -24,6 +19,6 @@
 
 <b>Load repositories from previous assignment: </b>
 
-<%= form_tag url_for(:action=>"importSvn") %>
+<%= form_tag url_for(:action=>"importSVN") %>
   <%= select_tag 'importfrom', options_from_collection_for_select(@assessments, "id", "name") %> <%= submit_tag 'Go!' %>
 </form>
