@@ -113,30 +113,4 @@ module ModuleBase
     end
   end
 
-
-  # 
-  # getRecentJobs - this function retrieves the currently running jobs
-  #
-  def getCurrentJobs
-    getJobs('0/')
-  end
-
-  # 
-  # getDeadJobs - this function retrieves the recent dead jobs
-  #
-  def getDeadJobs
-    getJobs('1/')
-  end
-
-  private 
-
-  def getJobs(suffix = '0/')
-    COURSE_LOGGER.log("getJobs called")
-    reqURL = "http://#{RESTFUL_HOST}:#{RESTFUL_PORT}/jobs/#{RESTFUL_KEY}/#{RESTFUL_COURSELAB}/" + suffix
-    COURSE_LOGGER.log("Req: " + reqURL)
-    response = Net::HTTP.get_response(URI.parse(reqURL))
-    response = JSON.parse(response.body)
-    response["jobs"]
-  end
-
 end

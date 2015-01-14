@@ -1,14 +1,27 @@
- $:.unshift("/usr/share/tango2/thrift/gen-rb/")
-
 require 'autoConfig'
-require "ModuleBase.rb"
 
 class JobsController < ApplicationController
-  include ModuleBase
+
+  # 
+  # getRecentJobs - this function retrieves the currently running jobs
+  #
+  def getCurrentJobs
+    getJobs('0/')
+  end
+
+  # 
+  # getDeadJobs - this function retrieves the recent dead jobs
+  #
+  def getDeadJobs
+    getJobs('1/')
+  end
+
+
   # index - This is the default action that generates lists of the
   # running, waiting, and completed jobs.
   action_auth_level :index, :student
   def index
+
     # Instance variables that will be used by the view
     @running_jobs = []   # running jobs
     @waiting_jobs = []   # jobs waiting in job queue
@@ -151,6 +164,16 @@ class JobsController < ApplicationController
 
   protected
 
+  def getJobs(suffix = '0/')
+    COURSE_LOGGER.log("getJobs called")
+    reqURL = "http://#{RESTFUL_HOST}:#{RESTFUL_PORT}/jobs/#{RESTFUL_KEY}/#{RESTFUL_COURSELAB}/" + suffix
+    COURSE_LOGGER.log("Req: " + reqURL)
+    response = Net::HTTP.get_response(URI.parse(reqURL))
+    response = JSON.parse(response.body)
+    jobs = response["jobs"]
+  end
+
+
   # formatRawJob - Given a raw job from the server, creates a job
   # hash for the view.
   def formatRawJob(rjob, is_live) 
@@ -159,17 +182,24 @@ class JobsController < ApplicationController
     job[:rjob] = rjob
     job[:id] = rjob["id"]
     job[:name] = rjob["name"]
+    
+    if rjob["notifyURL"] then
+      params =  rjob["notifyURL"].split('/')
+      job[:submission] = params[-2]
+      job[:assessment] = params[-4]
+      job[:course] = params[-6]
+    end
 
-    # Determine whether to expose the job name (which contains an AndrewID).
+    # Determine whether to expose the job name.
     if !@cud.user.administrator?  then
-      if !@cud.instructor? then 
+      if !@cud.instructor? then
         # Students can see only their own job names
         if !job[:name][@cud.user.email] then
           job[:name] = "*"
         end
       else
         # Instructors can see only their course's job names
-        if !rjob["notifyURL"] then
+        if !rjob["notifyURL"] or !(job[:course].eql? @cud.course.id.to_s) then
           job[:name] = "*"
         end
       end

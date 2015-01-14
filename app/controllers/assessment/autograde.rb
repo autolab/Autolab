@@ -54,8 +54,6 @@ module AssessmentAutograde
   def createVm
     extend_config_module()
 
-  	print "\n---> createVm() \n"
-
     assessmentDir = File.join(AUTOCONFIG_COURSE_DIR,@course.name,@assessment.name)
 
     # Send OPEN api request to create course-lab directory.
