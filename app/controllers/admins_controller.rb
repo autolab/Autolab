@@ -118,7 +118,7 @@ class AdminsController < ApplicationController
                   user = User.roster_create(email, first_name, last_name, school,
                                         major, year)
                   if (user.nil?)
-                    throw NewUserCreationException
+                    raise "New user cannot be created in uploadRoster."
                   end
                 else
                   # Override current user
@@ -132,7 +132,7 @@ class AdminsController < ApplicationController
                 
                 # Make sure this user doesn't have a cud in the course
                 if (@course.course_user_data.where(user: user).first)
-                  throw GreenCUDExistInCourseException
+                  raise "Green CUD doesn't exist in the database."
                 end
                 
                 # Delete unneeded data
