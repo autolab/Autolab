@@ -22,12 +22,25 @@ Search: <%= text_field_tag 'search', nil, onkeyup:'filterRows(this.value)' %>
   function filterRows(name) {
     var rows = document.getElementsByClassName("user-row"),
         i = 0, L = rows.length, r;
+    var newTotal = 0;
+
+    // Filter rows, keep track of number remaining
     while (i < L) {
       r = rows[i++];
-      if (r.innerHTML.indexOf(name) != -1)
+      if (r.innerHTML.indexOf(name) != -1) {
         r.style.display = "table-row";
+        newTotal++;
+      }
       else
         r.style.display = "none";
+    }
+
+    // Update "Found ... users" heading
+    if(newTotal > 0) {
+      document.getElementById("results-count").innerHTML = newTotal;
+    }
+    else {
+      document.getElementById("results-count").innerHTML = "no";
     }
   }
 </script>
