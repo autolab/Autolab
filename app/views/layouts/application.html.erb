@@ -23,13 +23,13 @@
 
     <script type="text/javascript">
       /*Scripts to load when the page is ready*/
-      
+
 <%#      // the lines below weren't working, as evidenced by the broken gradesheet.
 #      //jQuery(document).ajaxSend(function(e, xhr, options) {
 #      //  var token = jQuery("meta[name='csrf-token']").attr("content");
 #      //  xhr.setRequestHeader("X-CSRF-Token", token);
 #      //});%>
-      
+
       // this does work
       jQuery.ajaxSetup({
         headers: {
@@ -69,7 +69,7 @@
         <!-- End Flashes -->
 
         <!-- Persistent Announcements -->
-        <%= render partial: "announcements/announcements_list", 
+        <%= render partial: "announcements/announcements_list",
                    locals: { announcements: @persistent_announcements } %>
         <!-- End Persistent Announcements -->
 
@@ -92,9 +92,6 @@
         · <%= link_to "Logout", destroy_user_session_path, method: :delete %>
     </div>
     <!-- End Footer -->
-    <script type="text/javascript">
-      Waves.displayEffect();
-    </script>
     <%= yield :javascript %>
 
   </body>

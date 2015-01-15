@@ -21,7 +21,7 @@
   </head>
 
   <body class="autolab">
-    <div class="page-wrapper">  
+    <div class="page-wrapper">
       <%= render "layouts/navbar" %>
 
       <!-- Page Body -->
@@ -30,7 +30,7 @@
         <!-- Flashes -->
         <div id='flashes'>
           <% flash.each do |name, msg| %>
-          <%= content_tag :div, raw(msg), id: "flash_#{name}", 
+          <%= content_tag :div, raw(msg), id: "flash_#{name}",
   					 	class: "#{name}" %>
           <% end %>
        </div>
@@ -50,9 +50,6 @@
           · <a href="/contactUs.html">Contact</a>
           · <%= link_to "Logout", destroy_user_session_path, method: :delete %>
     </div>
-    <script type="text/javascript">
-      Waves.displayEffect();
-    </script>
     <%= yield :javascript %>
     <!-- End Footer -->
   </body>
