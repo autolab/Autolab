@@ -554,7 +554,7 @@ private
 
   # This is different from all of the others because it doesn't
   # group by submission but by score (since multiple graders can
-  # grade problems for a single submissions).
+  # grade problems for a single submission).
   def stats_for_grader(submissions)
     result = []
     problem_id_to_name = @assessment.problem_id_to_name
@@ -575,14 +575,15 @@ private
     end
 
     grader_ids = grader_scores.keys
-    print grader_scores
     def find_user(i)
-      print "\n FIND USER I \n"
-      print i
-      if 0 == i
-        return Hash["full_name", "Autograder", 
-                    "id", 0,
-                    "full_name_with_email", "Autograder"]
+      if i == 0
+        autograder = Hash["full_name", "Autograder",
+                          "id", 0,
+                          "full_name_with_email", "Autograder"]
+        def autograder.method_missing(m)
+          self[m.to_s]
+        end
+        return autograder
       else
         return User.find(i)
       end
@@ -594,10 +595,6 @@ private
 
     graders.each do |grader|
       scores = grader_scores[grader["id"]]
-      print "\n SCORES \n"
-      print grader[:id]
-      print "\n"
-      print scores
 
       problem_scores = {}
       @assessment.problems.each do |problem|
@@ -613,7 +610,7 @@ private
         problem_stats << [problem.name, stats.stats(problem_scores[problem.id])]
       end
 
-      result << [grader["full_name_with_email"], problem_stats]
+      result << [grader.full_name_with_email, problem_stats]
     end
     return result
   end
