@@ -27,7 +27,9 @@ module AssessmentAutograde
     @submission = submission
     @assessment = submission.assessment
     job = createVm()
-    if job == -2 then 
+    if job == -3 then # createVm returned an exception
+      flash[:error] = "Autograding failed because of an unexpected exception in the system."
+    elsif job == -2 then 
       flash[:error] = "Autograding failed because there are no autograding properties."
       if @cud.instructor? then
         link = "<a href=\"#{url_for(:action=>'adminAutograde')}\">Admin Autograding</a>"
