@@ -81,6 +81,11 @@ class AdminsController < ApplicationController
     redirect_to action: :show and return
   end
 
+  # Upload a CSV roster and import the users into the course
+  # Colors are associated to each row of CUD after roster is processed:
+  #   green - User doesn't exist in the course, and is going to be added
+  #   red - User is going to be dropped from the course
+  #   black - User exists in the course
   action_auth_level :uploadRoster, :instructor
   def uploadRoster
     if request.post? then
@@ -152,7 +157,7 @@ class AdminsController < ApplicationController
                 existing = @course.course_user_data.includes(:user).where(users: { email: newCUD[:email]}).first
                 
                 if (existing.nil?) then
-                  throw RedCUDDoesntExistException
+                  raise "Red CUD doesn't exist in the database."
                 end
                 
                 existing.dropped = true
@@ -163,12 +168,12 @@ class AdminsController < ApplicationController
                 existing = @course.course_user_data.includes(:user).where(users: { email: newCUD[:email]}).first
 
                 if (existing.nil?) then
-                  throw BlackCUDDoesntExistException
+                  raise "Black CUD doesn't exist in the database."
                 end
                 
                 user = existing.user
                 if (user.nil?) then
-                  throw BlackCUDUserDoesntExistException
+                  raise "User associated to black CUD doesn't exist in the database."
                 end
                 
                 # Update user data
