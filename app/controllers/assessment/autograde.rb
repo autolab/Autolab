@@ -2,7 +2,7 @@ module AssessmentAutograde
   require 'autoConfig'
 
 
-  # Initialize the module-specific key-value store 
+  # Initialize the module-specific key-value store
   def moduleInstallAutograde
     UserModule.create(:name=>"Autograde",:course_id=>@assessment.id)
     um = UserModule.load("Autograde",@assessment.id)
@@ -10,7 +10,7 @@ module AssessmentAutograde
     um.addColumn("dave_user",String)
   end
 
-  # 
+  #
   # autogradeAfterHandin - submits an autograding job to Tango when
   # the students submit their work.
   #
@@ -27,7 +27,7 @@ module AssessmentAutograde
     @submission = submission
     @assessment = submission.assessment
     job = createVm()
-    if job == -2 then 
+    if job == -2 then
       flash[:error] = "Autograding failed because there are no autograding properties."
       if @cud.instructor? then
         link = "<a href=\"#{url_for(:action=>'adminAutograde')}\">Admin Autograding</a>"
@@ -45,7 +45,7 @@ module AssessmentAutograde
     end
   end
 
-# 
+#
   # createVM - this scary-looking function initiates an autograding
   # job request on the backend. It builds a job structure that
   # contains various info about the job, send submits it to the
@@ -78,7 +78,7 @@ module AssessmentAutograde
 
       if @assessment.config_module.instance_methods.include?(:autogradeInputFiles) then
         uploadFileList =  @assessment.config_module.autogradeInputFiles(assessmentDir)
-      else 
+      else
         uploadFileList =  autogradeInputFiles(assessmentDir)
         print "\n\n"
         print uploadFileList
@@ -118,15 +118,15 @@ module AssessmentAutograde
           file.close unless file.nil?
         end
         uploadResponse = uploadHTTPReq.request(uploadReq)
-        COURSE_LOGGER.log("Req: "+ "/upload/#{RESTFUL_KEY}/#{RESTFUL_COURSELAB}/"); 
+        COURSE_LOGGER.log("Req: "+ "/upload/#{RESTFUL_KEY}/#{RESTFUL_COURSELAB}/");
 	uploadResponseJSON = JSON.parse(uploadResponse.body)
-        if (uploadResponseJSON.nil? || uploadResponseJSON["statusId"] < 0) then 
+        if (uploadResponseJSON.nil? || uploadResponseJSON["statusId"] < 0) then
           return -6
         end
       end
     }
 
-    # Get the autograding properties for this assessment. 
+    # Get the autograding properties for this assessment.
     @autograde_prop = AutogradingSetup.where(:assessment_id => @assessment.id).first
     if !@autograde_prop then
       return -2
@@ -144,7 +144,7 @@ module AssessmentAutograde
 
     # Generate the dave number/string, this is used when autograding is
     # done.  The key is not guaranteed to be unique, we just hope to God
-    # it is. 
+    # it is.
     dave = (0...60).map{65.+(rand(25)).chr}.join
     daveNum = rand(2000000000)
 
@@ -152,7 +152,7 @@ module AssessmentAutograde
       "/courses/#{@course.id}/assessments/#{@assessment.id}/submissions/#{@submission.id}/" +
       "autograde_done?dave=#{dave}"
 
-    COURSE_LOGGER.log("Callback: #{callBackURL}") 
+    COURSE_LOGGER.log("Callback: #{callBackURL}")
 
     jobName = @course.name + "_" +
       @assessment.name + "_" +
@@ -202,7 +202,7 @@ module AssessmentAutograde
             if pollResponse.content_type == "application/json" then
               pollResponseStatusId = JSON.parse(pollResponse.body)["statusId"]
             else
-              feedback = pollResponse.body 
+              feedback = pollResponse.body
               break
             end
             sleep 3
@@ -218,7 +218,7 @@ module AssessmentAutograde
         autogradeDone(dave, @submission, feedback)
       end
     end #if no callback url
-    
+
     return addJobResponseJSON["jobId"]
   end
 
@@ -232,7 +232,7 @@ module AssessmentAutograde
     # The makefile that runs the process, 3) The tarfile with all
     # of files needed by the autograder. Can be overridden in the
     # lab config file.
-    localHandin = File.join(assessmentDir, @assessment.handin_directory, 
+    localHandin = File.join(assessmentDir, @assessment.handin_directory,
                             @submission.filename)
     localMakefile = File.join(assessmentDir, "autograde-Makefile")
     localAutograde = File.join(assessmentDir, "autograde.tar")

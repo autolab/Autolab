@@ -7,9 +7,9 @@ class TransferSubmissionTweaks < ActiveRecord::Migration
 
 	  tweaked_submissions.each do |s|
       tweak_type = (s.absolute_tweak ? "points" : "percent")
-		  s.tweak = ScoreAdjustment.create(:value => s.tweak_old, 
+		  s.tweak = ScoreAdjustment.create(:value => s.tweak_old,
 										                   :kind => tweak_type)
-      
+
 		  s.save!
 	  end
   end

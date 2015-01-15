@@ -56,7 +56,7 @@ class Assessment < ActiveRecord::Base
   # Also used by populator (in autolab.rake) to populate AUD.latest_submission
   def create_AUDs_modulo_callbacks
     course.course_user_data.find_each { |cud|
-      AssessmentUserDatum.create_modulo_callbacks({ :assessment_id => id, 
+      AssessmentUserDatum.create_modulo_callbacks({ :assessment_id => id,
                                                     :course_user_datum_id => cud.id })
     }
   end
@@ -117,7 +117,7 @@ class Assessment < ActiveRecord::Base
 
   def config_module_name
     (sanitized_name + course.sanitized_name).camelize
-  end 
+  end
 
   def config
     @config ||= config!
@@ -131,13 +131,13 @@ class Assessment < ActiveRecord::Base
   end
 
   # Penalty to apply per version past the version_threshold
-  def effective_version_penalty 
+  def effective_version_penalty
     version_penalty || course.version_penalty
   end
 
   # Submission version number past which to start applying version penalty
   #
-  # Since version numbers are start at 1, a version_threshold of 0 would mean 
+  # Since version numbers are start at 1, a version_threshold of 0 would mean
   # that all versions > 0 would be penalized. Since versions start at 1, this
   # means that all versions are penalized.
   def effective_version_threshold
@@ -217,10 +217,10 @@ class Assessment < ActiveRecord::Base
   end
 
   # raw_score
-  # @param map of problem names to problem scores 
+  # @param map of problem names to problem scores
   # @return score on this assignment not including any tweak or late penalty.
   # We generically cast all values to floating point numbers because we don't
-  # trust the upstream developer to do that for us. 
+  # trust the upstream developer to do that for us.
   def raw_score(scores)
     if config.respond_to? :raw_score
       raw_score = Utilities.execute_instructor_code(:raw_score) {
@@ -355,7 +355,7 @@ private
 
       !(d || f)
     end
-  end 
+  end
 
   def handin_directory_exists_or_disable_handins
     if disable_handins?

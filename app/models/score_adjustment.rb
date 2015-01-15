@@ -3,7 +3,7 @@ class ScoreAdjustment < ActiveRecord::Base
 
   validates_presence_of :value, :kind
   validates_numericality_of :value
- 
+
   # constants for the kind of score_adjustment
   POINTS=0
   PERCENT=1
@@ -41,7 +41,7 @@ class ScoreAdjustment < ActiveRecord::Base
     when "points"
       write_attribute(:kind, POINTS)
     when "percent"
-      write_attribute(:kind, PERCENT) 
+      write_attribute(:kind, PERCENT)
     else
       raise ArgumentError
     end
@@ -60,7 +60,7 @@ class ScoreAdjustment < ActiveRecord::Base
     case read_attribute(:kind)
     when POINTS
       type_str = "points"
-    when PERCENT    
+    when PERCENT
       type_str = "%"
     else
       raise ArgumentError

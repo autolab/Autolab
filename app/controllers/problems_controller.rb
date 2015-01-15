@@ -1,6 +1,6 @@
 class ProblemsController < ApplicationController
 
-  before_action :loadAssessment 
+  before_action :loadAssessment
 
   action_auth_level :index, :instructor
   def index
@@ -54,7 +54,7 @@ class ProblemsController < ApplicationController
   end
 
 # Non-RESTful routes below
-  
+
   # this route is called when 'delete' is clicked, confirming the deletion
   action_auth_level :destroyConfirm, :instructor
   def destroyConfirm
@@ -62,11 +62,11 @@ class ProblemsController < ApplicationController
   end
 
 protected
-  
+
   # this loads the problem's assessment before anything else happens
   def loadAssessment
     @assessment = @course.assessments.find(params[:assessment_id])
-    if @assessment.nil? then 
+    if @assessment.nil? then
       flash[:error] = "Error: Course #{@course.display_name} has no Assessment with the given id."
       redirect_to home_error_path and return
     end

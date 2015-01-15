@@ -4,7 +4,7 @@ require File.expand_path(File.dirname(__FILE__)+'/../config/environment')
 
 course_id = ARGV[0]
 @course = Course.find(course_id)
-exit if !@course 
+exit if !@course
 
 #require(File.expand_path("app/models/gradebook_cache.rb"))
 

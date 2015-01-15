@@ -8,7 +8,7 @@ class AnnouncementsController < ApplicationController
       @announcements = Announcement.where(course_id: @course.id)
     end
   end
-  
+
   action_auth_level :new, :instructor
   def new
     # for consistency with REST
@@ -29,7 +29,7 @@ class AnnouncementsController < ApplicationController
       redirect_to 'new' and return
     end
   end
-  
+
   action_auth_level :show, :instructor
   def show
     # for consistency with REST
@@ -69,7 +69,7 @@ class AnnouncementsController < ApplicationController
   end
 
 private
-  
+
   def announcement_params
     params.require(:announcement).permit(:title, :description, :start_date, :end_date, :system, :persistent)
   end

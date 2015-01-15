@@ -70,7 +70,7 @@ private
       asmt.association_cache = self
     } if @assessments
 
-    (@auds.each_value { |aud| 
+    (@auds.each_value { |aud|
       aud.association_cache = self
     }) if @auds
 
@@ -150,7 +150,7 @@ module AssessmentAssociationCache
 
   def assessment_before_with_cache
     asmt_before_cache = @ass_cache && @ass_cache.assessments_before
-    asmt_before_cache ? asmt_before_cache[id] : assessment_before_without_cache 
+    asmt_before_cache ? asmt_before_cache[id] : assessment_before_without_cache
   end
 
   def aud_for_with_cache(cud_id)

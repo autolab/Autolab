@@ -18,7 +18,7 @@ class CreateUsers < ActiveRecord::Migration
     create_table :courses do |t|
       t.string :name
       t.string :semester
-    end   
+    end
   end
 
   def self.down

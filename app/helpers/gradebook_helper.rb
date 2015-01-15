@@ -122,7 +122,7 @@ module GradebookHelper
   end
 
   def formatted_status status
-    case status 
+    case status
       when Float
         round status
       when String

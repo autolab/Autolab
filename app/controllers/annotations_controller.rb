@@ -1,11 +1,11 @@
-# All modifications to the annotations are meant to be asynchronous and 
+# All modifications to the annotations are meant to be asynchronous and
 # thus this contorller only exposes javascript interfaces.
 #
 # Only people acting as instructors or CA's should be able to do anything
 # but view the annotations and since all of these mutate them, they are
 # all restricted to those types.
 class AnnotationsController < ApplicationController
-  
+
   before_action :scrape_text, except: [:destroy]
   before_action :load_annotation, except: [:index, :new, :create]
 
@@ -31,7 +31,7 @@ class AnnotationsController < ApplicationController
         description, value, line, problem = annotation.get_grades()[0]
         print
         print annotation
-        annotationObj = {"text"=> annotation.text, 
+        annotationObj = {"text"=> annotation.text,
                          "id"=> annotation.id,
                          "line"=>line,
                          "annotator"=> annotation.submitted_by,
@@ -85,7 +85,7 @@ private
   end
 
   def annotation_params
-    params.require(:annotation).permit(:filename, :position, 
+    params.require(:annotation).permit(:filename, :position,
               :line, :text, :submitted_by, :comment, :value)
   end
 

@@ -1,7 +1,7 @@
 module AssessmentHelper
 
   def stats_table(data)
-    out = 
+    out =
     '<table class="prettyBorder smallText">
        <thead>
          <tr>
@@ -24,7 +24,7 @@ module AssessmentHelper
       out += "<td>#{stats[:min]}</td>"
       out += '</tr>'
     end
-    out += 
+    out +=
     '  </tbody>
      </table>'
     return out
@@ -35,7 +35,7 @@ module AssessmentHelper
     return aud.grade_type != AssessmentUserDatum::NORMAL
   end
 
-  def edit_course_url 
+  def edit_course_url
     url_for :controller => :admin,
             :action => :editCourse
   end

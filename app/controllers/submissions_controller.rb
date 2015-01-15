@@ -8,16 +8,16 @@ class SubmissionsController < ApplicationController
   # this page loads.  links/functionality may be/are off
   action_auth_level :index, :instructor
   def index
-    @course = Course.where(:id => params[:course_id]).first  
+    @course = Course.where(:id => params[:course_id]).first
     @assessment = @course.assessments.find(params[:assessment_id])
     @submissions = @assessment.submissions.order("created_at DESC")
-    
-    assign = @assessment.name.gsub(/\./,'')  
+
+    assign = @assessment.name.gsub(/\./,'')
     modName = (assign + (@course.name).gsub(/[^A-Za-z0-9]/,"")).camelize
     @autograded = false
     begin
       @autograded = @assessment.has_autograde
-    rescue Exception 
+    rescue Exception
     end
   end
 
@@ -26,15 +26,15 @@ class SubmissionsController < ApplicationController
   def new
     @assessment = @course.assessments.find(params[:assessment_id])
     @submission = @assessment.submissions.new(tweak: Tweak.new)
-    
+
     if params["cud_id"] != nil then
       cud_ids = params["cud_id"].split(',')
       @cuds = @course.course_user_data.find(cud_ids)
       if @cuds.size != cud_ids.size then
         @errorMessage = "Couldn't find all course_user_data in #{cuds_ids}. " +
-          "Expected #{cud_ids.size} course_user_data, but only found " + 
+          "Expected #{cud_ids.size} course_user_data, but only found " +
           "#{@cuds.size} course_user_data."
-        render :template=>"home/error",:status=>422 and return 
+        render :template=>"home/error",:status=>422 and return
       end
     else
       @cuds = {}
@@ -50,15 +50,15 @@ class SubmissionsController < ApplicationController
   def create
     @assessment = @course.assessments.find(params[:assessment_id])
     @submission = @assessment.submissions.new
-    
+
     cud_ids = params[:submission][:course_user_datum_id].split(',')
     # Validate all users before we start
     @cuds = @course.course_user_data.find(cud_ids)
-    if (@cuds.size != cud_ids.size) then 
+    if (@cuds.size != cud_ids.size) then
       @errorMessage = "Invalid CourseUserDatum ID in #{cud_ids}"
       render :template=>"home/error",:status=>422 and return
     end
-    for cud_id in cud_ids do 
+    for cud_id in cud_ids do
       @submission = Submission.new(:assessment_id=>@assessment.id)
       @submission.course_user_datum_id = cud_id
       @submission.notes = params[:submission]['notes']
@@ -69,7 +69,7 @@ class SubmissionsController < ApplicationController
       @submission.submitted_by_id = @cud.id
       if @submission.save! then  #Now we have a version number!
         if params[:submission]['file'] &&
-          (not params[:submission]['file'].blank?) then 
+          (not params[:submission]['file'].blank?) then
           @submission.saveFile(params[:submission])
         end
       end
@@ -82,7 +82,7 @@ class SubmissionsController < ApplicationController
   # action_auth_level :autograde_done, :student
   action_no_auth :autograde_done
   def autograde_done
-    
+
     feedback_str = params[:file].read
 
     @submission = Submission.where(:id => params[:id]).first
@@ -94,11 +94,11 @@ class SubmissionsController < ApplicationController
     dir = File.join(autolab_dir, "assessmentConfig", configName)
     require_relative dir
 
-    assign = @assessment.name.gsub(/\./,'') 
+    assign = @assessment.name.gsub(/\./,'')
     modName = (assign + (@course.name).gsub(/[^A-Za-z0-9]/,"")).camelize
 
     dave = params[:dave]
-  
+
     if @assessment.has_autograde then
       autogradeDone(dave, @submission, feedback_str)
     end
@@ -110,16 +110,16 @@ class SubmissionsController < ApplicationController
   def show
     submission = Submission.find(params[:id])
     #respond_to do |format|
-    #  if submission 
-    #    format.js { 
+    #  if submission
+    #    format.js {
     #      render :json => submission.to_json(
     #        :include => {:course_user_datum =>  # TODO: user?
     #                              {:only => [:user,
-    #                                         :first_name, 
+    #                                         :first_name,
     #                                         :last_name,
-    #                                         :lecture, 
-    #                                         :section]}, 
-    #                     :scores => {:include => :grader}}, 
+    #                                         :lecture,
+    #                                         :section]},
+    #                     :scores => {:include => :grader}},
     #        :methods => [:is_syntax, :is_archive, :grace_days_used,
     #                     :penalty_late_days, :days_late, :tweak],
     #        :seen_by => @cud)
@@ -129,7 +129,7 @@ class SubmissionsController < ApplicationController
     #  end
     #end
   end
-  
+
   # this loads and looks good
   action_auth_level :edit, :instructor
   def edit
@@ -181,11 +181,11 @@ class SubmissionsController < ApplicationController
 
     jobid = createVm()
 
-    if jobid == -2 then 
+    if jobid == -2 then
       link = "<a href=\"#{url_for(:action=>'adminAutograde')}\">Admin Autograding</a>"
       flash[:error] = "Autograding failed because there are no autograding properties. " +
         " Visit #{link} to set the autograding properties."
-    elsif jobid == -1 then 
+    elsif jobid == -1 then
       link = "<a href=\"#{url_for(:controller=>'jobs')}\">Jobs</a>"
       flash[:error] = "There was an error submitting your autograding job. " +
         "Check the #{link} page for more info."
@@ -193,7 +193,7 @@ class SubmissionsController < ApplicationController
       link = "<a href=\"#{url_for(:controller=>'jobs')}\">Job ID = #{jobid}</a>"
       flash[:success] = ("Success: Regrading #{@submission.filename} (#{link})").html_safe
     end
-    
+
     redirect_to history_course_assessment_path(@course, @assessment, cud_id: @effectiveCud.id) and return
   end
 
@@ -206,14 +206,14 @@ class SubmissionsController < ApplicationController
   def missing
     @assessment = @course.assessments.find(params[:assessment_id])
     @submissions = @assessment.submissions
-    
+
     cuds = @course.students.to_a
     @missing = []
 
     for submission in @submissions do
       cuds.delete(submission.course_user_datum)
     end
-  
+
     cuds.each_with_index do |c, i|
       @missing[i] = {}
       @missing[i][:id] = c.id
@@ -257,7 +257,7 @@ class SubmissionsController < ApplicationController
       paths.each { |p| z.add(File.basename(p), p) }
     end
 
-    send_file(result.path, 
+    send_file(result.path,
               :type => 'application/zip',
               :stream => false, # So we can delete the file immediately.
               :filename => File.basename(result.path))
@@ -272,7 +272,7 @@ class SubmissionsController < ApplicationController
   #   end
   # end
 
-  # 
+  #
   # regradeAll - regrade the most recent submissions from each student
   #
   action_auth_level :regradeAll, :instructor
@@ -308,8 +308,8 @@ class SubmissionsController < ApplicationController
           link = "<a href=\"#{url_for(:action=>'adminAutograde')}\">Admin Autograding</a>"
           flash[:error] = "No jobs autograded because there are no autograding properties." +
             " Visit #{link} to set the autograding properties."
-          redirect_to(:controller=>"submission", 
-                      :action=>"index", 
+          redirect_to(:controller=>"submission",
+                      :action=>"index",
                       :assessment_id=>@assessment.id) and return
         end
       else
@@ -349,7 +349,7 @@ class SubmissionsController < ApplicationController
         :disposition => "inline"
     else
       mime = params[:forceMime] || @submission.detected_mime_type
-      send_file @filename, 
+      send_file @filename,
         :filename => @basename,
         :disposition => "inline"
       #  :type => mime
@@ -386,7 +386,7 @@ class SubmissionsController < ApplicationController
       @displayFilename = @submission.filename
     end
     return unless file
-    
+
     if extension == "c0" or extension == "go" then
       extension = "c"
     elsif extension == "h0" then
@@ -394,7 +394,7 @@ class SubmissionsController < ApplicationController
     elsif extension == "clac" or extension == "sml" then
       extension = "txt"
     end
-    
+
     @escape_code = false
     if extension and Simplabs::Highlight.get_language_sym extension then
       begin
@@ -431,10 +431,10 @@ class SubmissionsController < ApplicationController
     # fix for tar files
     if params[:header_position] then
       annotations = Annotation.where("submission_id = ? and position = ?", @submission.id, params[:header_position]).to_a
-    else 
+    else
       annotations = Annotation.where("submission_id = ?", @submission.id).to_a
     end
-    
+
     annotations.sort! {|a,b| a.line <=> b.line }
 
     @problemSummaries = Hash.new
@@ -449,8 +449,8 @@ class SubmissionsController < ApplicationController
         end
         # make the '[' swap
         description = description.gsub("\u0001", "[").gsub("\u0002", "]")
-        if value == Annotation.INVALID_VALUE or 
-          problem == Annotation.SYNTAX_ERROR or 
+        if value == Annotation.INVALID_VALUE or
+          problem == Annotation.SYNTAX_ERROR or
           problem == Annotation.INVALID_PROBLEM then
           if @errorLines == "" then
             @errorLines += line.to_s
@@ -480,12 +480,12 @@ class SubmissionsController < ApplicationController
   end
 
   # Action to be taken when the user wants to get a listing of all
-  # files in a submission that is an archive file. 
+  # files in a submission that is an archive file.
   def listArchive
     begin
       load_submission() or return false
       get_submission_file() or return false
-      
+
       require 'rubygems/package'
       require 'zlib'
 
@@ -493,7 +493,7 @@ class SubmissionsController < ApplicationController
       f = File.new(@filename)
       tar_extract = Gem::Package::TarReader.new(f)
       tar_extract.rewind # The extract has to be rewinded after every iteration
-      
+
       i = 0
       tar_extract.each do |entry|
 
@@ -507,7 +507,7 @@ class SubmissionsController < ApplicationController
         elsif extension == "clac" or extension == "sml" then
           extension = "txt"
         end
-       
+
         next if pathname.include? "__MACOSX" or
           pathname.include? ".DS_Store" or
           pathname.include? ".metadata"
@@ -542,17 +542,17 @@ class SubmissionsController < ApplicationController
     autogradeModule = UserModule.load("Autograde",@assessment.id)
     # Get the key from the dave value used in the url,
     # then use the key to get the submission
-    # daveNum = autogradeModule.getByVal("dave_key",dave)    
+    # daveNum = autogradeModule.getByVal("dave_key",dave)
     #if (daveNum == nil) then
     #  return #TODO: this should do something
     # end
     # userVersion = autogradeModule.get("dave_user",daveNum)
-    
+
     @user = submission.course_user_datum.user
 
     assessmentDir = File.join(AUTOCONFIG_COURSE_DIR, submission.course_user_datum.course.name, submission.assessment.name)
 
-    filename = @submission.course_user_datum.email + "_" + 
+    filename = @submission.course_user_datum.email + "_" +
       @submission.version.to_s + "_" +
       @assessment.name + "_" +
       "autograde.txt"
@@ -568,9 +568,9 @@ class SubmissionsController < ApplicationController
     ensure
       f.close unless f.nil?
     end
-    
+
     saveAutograde(submission,feedbackFile)
-    
+
     # Now remove the entries and file
     # autogradeModule.delete("dave_key", daveNum)
     # autogradeModule.delete("dave_user", daveNum)
@@ -586,12 +586,12 @@ class SubmissionsController < ApplicationController
   def saveAutograde(submission,feedbackFile)
     lines = File.open(feedbackFile).readlines()
     begin
-      
+
       if @assessment.has_partners then
         # Create a submission for partner
         pSubmission = createPartnerSubmission(submission)
       end
-      
+
       if (lines == nil) then
         raise "The Autograder returned no output. \n"
       end
@@ -606,7 +606,7 @@ class SubmissionsController < ApplicationController
         scores = parseAutoresult(autoresult, true)
       end
 
-      if scores.keys.length == 0 then 
+      if scores.keys.length == 0 then
         raise "Empty autoresult string."
       end
 
@@ -620,7 +620,7 @@ class SubmissionsController < ApplicationController
           raise "Problem \"" + key + "\" not found."
         end
         score = submission.scores.where(:problem_id => problem.id).first
-        if !score then 
+        if !score then
           score = submission.scores.new(:problem_id=>problem.id)
         else
           score = submission.scores.where(:problem_id => problem.id).first
@@ -631,8 +631,8 @@ class SubmissionsController < ApplicationController
         score.grader_id = 0
         puts "save score"
         puts score.save!
-       
-      	if @assessment.has_partners then 
+
+      	if @assessment.has_partners then
               # call method in ModuleBase to update this score for partner
       	    saveAutogradeForPartner(score, pSubmission)
       	end
@@ -648,7 +648,7 @@ class SubmissionsController < ApplicationController
         score = submission.scores.new(:problem_id=>problem.id)
       end
       score.score = 0
-      score.feedback = "An error occurred while parsing the autoresult returned by the Autograder.\n\n" 
+      score.feedback = "An error occurred while parsing the autoresult returned by the Autograder.\n\n"
       # score.feedback += "Autoresult: " + "\"" + autoresult + "\"" + "\n"
       score.feedback +=  "Error message: " + e.to_s + "\n"
       score.feedback +=  "\nBacktrace:\n" +  e.backtrace.join("\n")
@@ -660,7 +660,7 @@ class SubmissionsController < ApplicationController
       score.released = true
       score.grader_id=0
       score.save
-      
+
       if @assessment.has_partners then
       	# call method in ModuleBase to update this score for parter
       	saveAutogradeForPartner(score, pSubmission)
@@ -678,7 +678,7 @@ class SubmissionsController < ApplicationController
     logger.add(Logger::INFO) {"#{submission.course_user_datum.email}, #{submission.version}, #{autoresult}"}
   end
 
-  # 
+  #
   # parseAutoresult - Extracts the problem scores from a JSON
   # autoresult string. If anything goes wrong, raise an exception
   # with the caller. Can be overridden in the lab config file.
@@ -706,7 +706,7 @@ private
       tweak_attributes: [:_destroy, :kind, :value])
   end
 
-  # Loads the submission from the DB 
+  # Loads the submission from the DB
   # needed by the various methods for dealing with submissions.
   # Redirects to the error page if it encounters an issue.
   def load_submission
@@ -717,7 +717,7 @@ private
       redirect_to :controller => "home", :action => "error" and return false
       return false
     end
-    
+
     if not (@submission.course_user_datum.user == @cud.user or
       @cud.instructor? or @cud.user.administrator? or
       @cud.course_assistant?) then
@@ -727,7 +727,7 @@ private
 
     @assessment = @submission.assessment
 
-    if ((!@cud.user.administrator?) && (@cud.course_id != @assessment.course_id)) then 
+    if ((!@cud.user.administrator?) && (@cud.course_id != @assessment.course_id)) then
       flash[:error] = "You do not have permission to access this submission"
       redirect_to :controller=>"home" , :action=>"error" and return false
     end
@@ -771,7 +771,7 @@ private
     f = File.new(@filename)
     tar_extract = Gem::Package::TarReader.new(f)
     tar_extract.rewind # The extract has to be rewinded after every iteration
-      
+
     i = 0
     tar_extract.each do |entry|
       COURSE_LOGGER.log(entry)
@@ -795,17 +795,17 @@ private
   # Filename format is andrewID_version_asessment.ext
   def extractAndrewID(filename)
     underscoreInd = filename.index("_")
-    if !underscoreInd.nil?  
+    if !underscoreInd.nil?
       return filename[0...underscoreInd]
     end
-    return nil 
+    return nil
   end
 
   # Extract the version from a filename
   # Filename format is andrewID_version_asessment.ext
   def extractVersion(filename)
     firstUnderscoreInd = filename.index("_")
-    return nil unless !firstUnderscoreInd.nil? 
+    return nil unless !firstUnderscoreInd.nil?
 
     secondUnderscoreInd = filename.index("_", firstUnderscoreInd + 1)
     return nil unless !secondUnderscoreInd.nil?
@@ -816,9 +816,9 @@ private
     begin
       @assessment = @submission.assessment
       require @assessment.config_file_path
-            
 
-      # casted to local variable so that 
+
+      # casted to local variable so that
       # they can be passed into `module_eval`
       assessment = @assessment
       methods = @assessment.config_module.instance_methods
@@ -831,7 +831,7 @@ private
       req_port = request.port;
 
       @assessment.config_module.module_eval do
-        
+
         # we cast these values into module variables
         # so that they can be accessible inside module
         # methods
@@ -864,7 +864,7 @@ private
         # this makes them available without mixing in the module
         # creating an instance of it.
         # http://www.ruby-doc.org/core-2.1.3/Module.html#method-i-instance_method
-        methods.each { |nonmodule_func| 
+        methods.each { |nonmodule_func|
           print nonmodule_func
           module_function(nonmodule_func)
           public nonmodule_func

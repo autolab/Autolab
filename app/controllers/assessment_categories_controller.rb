@@ -14,7 +14,7 @@ class AssessmentCategoriesController < ApplicationController
   def create
     @category = @course.assessment_categories.new(new_category_params)
     if @category.save
-      redirect_to course_assessment_categories_path(@course) and return 
+      redirect_to course_assessment_categories_path(@course) and return
     else
       flash[:error] = "Create new assessment category failed. Check all fields"
       redirect_to action: :new and return
@@ -24,22 +24,22 @@ class AssessmentCategoriesController < ApplicationController
   action_auth_level :edit, :instructor
   def edit
     @category = @course.assessment_categories.find(params[:id])
-    
+
     if @category.nil?
       flash[:error] = "Can't find category in the course."
       redirect_to course_assessment_categories_path(@course) and return
     end
   end
-    
+
   action_auth_level :update, :instructor
   def update
     @category = @course.assessment_categories.find(params[:id])
-    
+
     if @category.nil?
       flash[:error] = "Can't find category in the course."
       redirect_to course_assessment_categories_path(@course) and return
     end
-    
+
     if @category.update(category_params)
       flash[:success] = "Successful updated category name to #{@category.name}."
       redirect_to course_assessment_categories_path(@course) and return
@@ -64,13 +64,13 @@ class AssessmentCategoriesController < ApplicationController
     @category.destroy()
     redirect_to action: :index and return
   end
-  
+
 private
 
   def new_category_params
     params.require(:assessment_category).permit(:name)
   end
-  
+
   def category_params
     params.require(:assessment_category).permit(:name)
   end

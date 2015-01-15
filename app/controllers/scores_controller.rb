@@ -1,7 +1,7 @@
 class ScoresController < ApplicationController
 
   before_action :get_assessment_and_submission
-  
+
   action_auth_level :index, :course_assistant
   def index
 
@@ -21,7 +21,7 @@ class ScoresController < ApplicationController
                             :released => params[:released],
                             :problem_id => params[:problem_id],
                             :submission_id => params[:submission_id]})
-    respond_to do |format| 
+    respond_to do |format|
       if score.save
         format.js { render :json => score.to_json(:include => :grader) }
       else
@@ -38,11 +38,11 @@ class ScoresController < ApplicationController
     if !@score then
       redirect_to :action=>"index" and return
     end
-    unless (@score.submission.course_user_datum_id == @cud.id) || 
+    unless (@score.submission.course_user_datum_id == @cud.id) ||
            (@cud.has_auth_level? :course_assistant) then
-        redirect_to :action=>"index" and return 
-    end 
-    
+        redirect_to :action=>"index" and return
+    end
+
     @submission = @score.submission
 
     return
@@ -74,7 +74,7 @@ class ScoresController < ApplicationController
          format.js { render :json => score.to_json(:include => :grader) }
        else
          format.js { head :bad_request }
-       end 
+       end
     end
   end
 

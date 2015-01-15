@@ -23,7 +23,7 @@ require 'pathname'
 class ExceptionNotification::Notifier < ActionMailer::Base
   self.mailer_name = 'exception_notifier'
   self.view_paths << "#{File.dirname(__FILE__)}/../../views"
-  
+
   @@sender_address = %("Exception Notifier" <exception.notifier@default.com>)
   cattr_accessor :sender_address
 

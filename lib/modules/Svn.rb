@@ -55,7 +55,7 @@ module Svn
         cud["repository"] = repo
       end
     end
-    
+
     # Grab all assessments that also have the partners module
     assessments = @course.assessments
     @assessments = []
@@ -69,8 +69,8 @@ module Svn
         @assessments << ass
       end
     end
-    
-    render(:file=>"lib/modules/views/adminSvn.html.erb", 
+
+    render(:file=>"lib/modules/views/adminSvn.html.erb",
            :layout=>true) and return
   end
 
@@ -108,7 +108,7 @@ module Svn
       svnModuleInstall()
       @sModule = UserModule.load("Svn.2", @assessment.id)
     end
-    
+
     for cud in @course.course_user_data do
       # When importing, clear all current entries
       if @sModule.get("repository", cud.id) then
@@ -132,7 +132,7 @@ module Svn
       svnModuleInstall()
       @sModule = UserModule.load("Svn.2",@assessment.id)
     end
-    
+
     repo = @sModule.get("repository", @cud.id)
     if repo.nil? then
       flash[:error] = "Your repository has not been registered- " +
@@ -146,7 +146,7 @@ module Svn
     @submission = Submission.create(:assessment_id => @assessment.id,
                                     :course_user_datum_id => @cud.id,
                                     :submitter_ip => request.remote_ip)
-    
+
     # Checkout the svn directory and put it into a tar file
     repo = @sModule.get("repository", @cud.id)
     assDir = File.join(Rails.root, "courses", @course.name, @assessment.name, @assessment.handin_directory)
@@ -176,9 +176,9 @@ module Svn
     `rm #{svnTar}`
     return @submission
   end
-  
+
   # Override to change to a different subversion client.
   def subversionType
     return "test"
   end
-end 
+end

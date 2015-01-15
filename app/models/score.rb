@@ -30,15 +30,15 @@ class Score < ActiveRecord::Base
   end
 
   def self.find_or_initialize_by_submission_id_and_problem_id(submission_id, problem_id)
-    
+
     score = Score.where(:submission_id=> submission_id, :problem_id => problem_id).first
-    
-    if !score then 
+
+    if !score then
       return Score.new(:submission_id=> submission_id, :problem_id=> problem_id)
     else
       return score
     end
-  
+
   end
 
   def log_entry
@@ -49,7 +49,7 @@ class Score < ActiveRecord::Base
     end
     # Some scores don't have submissions, probably if they're deleted ones
     if (! submission.nil?)
-      COURSE_LOGGER.log("Score #{id} UPDATED for " +  
+      COURSE_LOGGER.log("Score #{id} UPDATED for " +
       "#{submission.course_user_datum.user.email} set to " +
       "#{score} on #{submission.assessment.name}:#{problem.name} by" +
       " #{setter}")

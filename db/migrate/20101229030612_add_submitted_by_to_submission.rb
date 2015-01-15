@@ -1,6 +1,6 @@
 class AddSubmittedByToSubmission < ActiveRecord::Migration
   def self.up
-    add_column :submissions, :submitted_by_id, :integer 
+    add_column :submissions, :submitted_by_id, :integer
   end
 
   def self.down

@@ -4,8 +4,8 @@ class AssessmentCategory < ActiveRecord::Base
   validates_uniqueness_of :name , :scope=>:course_id
   has_many :assessments,:foreign_key=>:category_id
   belongs_to :course
-  
-  
+
+
   # getList -  returns a hash of category->id pairs
   def self.getList(course)
     categoryDump = AssessmentCategory.where(course: course)
@@ -15,5 +15,5 @@ class AssessmentCategory < ActiveRecord::Base
     end
     return categories
   end
-  
+
 end

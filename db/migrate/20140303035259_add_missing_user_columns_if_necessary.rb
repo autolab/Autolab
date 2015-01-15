@@ -13,7 +13,7 @@ class AddMissingUserColumnsIfNecessary < ActiveRecord::Migration
       add_column :users, :unconfirmed_email, :string
     end
     User.find_each do |u|
-      if (!u.confirmed?) 
+      if (!u.confirmed?)
         u.confirm!
       end
     end

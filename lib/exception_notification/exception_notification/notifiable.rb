@@ -33,12 +33,12 @@ module ExceptionNotification::Notifiable
         self.exception_data = deliverer
       end
     end
-    
+
     def skip_exception_notifications(boolean=true)
       class_attribute :skip_exception_notifications
       self.skip_exception_notifications = boolean
     end
-    
+
     def skip_exception_notifications?
       :skip_exception_notifications
     end
@@ -50,11 +50,11 @@ private
     super
     notify_about_exception(exception) if deliver_exception_notification?
   end
-  
+
   def deliver_exception_notification?
     !self.class.skip_exception_notifications? && ![404, "404 Not Found"].include?(response.status)
   end
-  
+
   def notify_about_exception(exception)
     deliverer = self.class.exception_data
     data = case deliverer

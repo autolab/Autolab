@@ -19,7 +19,7 @@ protected
     return if colspec.blank?
 
     # The parse will throw an exception if the string has a JSON syntax error
-    begin 
+    begin
       # Quote JSON keys and values if they are not already quoted
       quoted = colspec.gsub(/([a-zA-Z0-9]+):/, '"\1":').gsub(/:([a-zA-Z0-9]+)/, ':"\1"')
       parsed = ActiveSupport::JSON.decode(quoted)
@@ -51,7 +51,7 @@ protected
         return
       end
 
-      hash.each_key do |k| 
+      hash.each_key do |k|
         unless k == "hdr" or k == "asc"
           errors.add "colspec", "unknown key('#{k}') in scoreboard[#{i}]"
           return

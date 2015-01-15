@@ -51,7 +51,7 @@ class Annotation < ActiveRecord::Base
     return tag[0...tag.index("[")].strip
   end
 
-  # something has a grade if it has '[' and ']' 
+  # something has a grade if it has '[' and ']'
   # and '[' is before ']'
   def self.has_grade?(text)
     left = text.index('[')
@@ -83,7 +83,7 @@ class Annotation < ActiveRecord::Base
     # vp stands for [value,problem]
 
     case vp.length
-    when 0 
+    when 0
       return [0.0, self.NO_PROBLEM] # return [0.0, self.SYNTAX_ERROR]
     when 1 # just a score, belongs to no problem
       vp = vp + [self.NO_PROBLEM] #vp = vp + [self.SYNTAX_ERROR]
@@ -134,7 +134,7 @@ class Annotation < ActiveRecord::Base
     for description, value, line, problem in self.scrape_text(text, lineNum) do
       case problem
       when self.PLAIN_ANNOTATION then
-        parsed_text += description 
+        parsed_text += description
       when self.NO_PROBLEM then
         parsed_text += self.construct_NO_PROBLEM(description, value)
       when self.SYNTAX_ERROR then
@@ -144,7 +144,7 @@ class Annotation < ActiveRecord::Base
       else # properly formatted
         problem = self.find_problem(problem, problems)
         parsed_text += self.construct_annotation(description, value, problem)
-      end 
+      end
       parsed_text += self.GRADE_SEPARATOR + " "
     end
     return parsed_text[0...(parsed_text.length - 2)] # don't include last semicolon
@@ -208,11 +208,11 @@ class Annotation < ActiveRecord::Base
   # ========================================================
 
   def comment
-    upgrade_to_v2 
+    upgrade_to_v2
     return read_attribute(:comment)
   end
 
-  def value 
+  def value
     upgrade_to_v2
     return read_attribute(:value)
   end
@@ -249,19 +249,19 @@ class Annotation < ActiveRecord::Base
   def parse_text_to_attributes
     # return text as comment, by default
     result = { "comment" => self.text, "problem_id" => nil, "value" => nil }
-  
+
     # process the "[+4.0:problem_name]" part
     def parse_value_problem(s_p)
         value_problem = {}
-    
+
         # parse value and problem name
         s_p = s_p[1...-1]         # remove starting and trailing brackets
         s_p = s_p.split(":", 2)   # split on :, at most two parts
         value_text = s_p[0]
         problem_name = s_p[1]     # if no : to split on, problem_name is nil
-        
+
         # extract value, return nil if unable to
-        value = Float(value_text) rescue nil 
+        value = Float(value_text) rescue nil
         value_problem.update({ "value" => value }) if value
 
         # extract problem, ignore problem if problem_name is invalid or not provided
@@ -271,10 +271,10 @@ class Annotation < ActiveRecord::Base
 
         return value_problem
     end
-  
+
     # if there is a right bracket (]) at the end
     if self.text.end_with?("]") then
-      
+
       # and a left bracket ([) (find the last one)
       if (l_bracket = self.text.rindex("["))
 
@@ -285,9 +285,9 @@ class Annotation < ActiveRecord::Base
         # extract comment
         comment = self.text[0...l_bracket].rstrip
         result.update({ "comment" => comment })
-      end 
+      end
     end
-      
-    return result 
+
+    return result
   end
 end

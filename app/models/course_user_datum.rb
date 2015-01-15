@@ -13,7 +13,7 @@ class CourseUserDatum < ActiveRecord::Base
 
   # Don't want to trim the nickname.
   trim_field :school, :major, :year, :lecture, :section, :grade_policy, :email
-  
+
   belongs_to :course
   belongs_to :user
   belongs_to :tweak, :class_name => "Tweak"
@@ -64,7 +64,7 @@ class CourseUserDatum < ActiveRecord::Base
     elsif not nickname.ascii_only? then
       errors.add("nickname", "must consist of only ASCII characters")
       false
-    elsif nickname.length > 20 then 
+    elsif nickname.length > 20 then
       errors.add("nickname", "is too long (maximum is 20 characters)")
       false
     else
@@ -118,7 +118,7 @@ class CourseUserDatum < ActiveRecord::Base
 
   def instructor_of?(student)
     return false unless instructor?
-    return false unless student.student? 
+    return false unless student.student?
     course == student.course
   end
 
@@ -159,10 +159,10 @@ class CourseUserDatum < ActiveRecord::Base
   end
 
   #
-  # User Attribute Wrappers - these functions get attributes from the CUD's 
+  # User Attribute Wrappers - these functions get attributes from the CUD's
   #   associated User object, in an attempt to hide the User object
   #
- 
+
   def administrator?
     user.administrator?
   end
@@ -198,24 +198,24 @@ class CourseUserDatum < ActiveRecord::Base
   end
 
 
-  # find a cud in the course, or create one using 
+  # find a cud in the course, or create one using
   # user's info if he's an admin
   def self.find_or_create_cud_for_course(course, uid)
     user = User.find(uid)
-    
+
     cud = user.course_user_data.where(course: course).first
-    
+
     if cud then
       return [ cud, :found ]
     else
       if user.administrator?
-        
+
         new_cud = course.course_user_data.new({
             user: user,
             instructor: true,
             course_assistant: true,
           })
-          
+
         return new_cud.save ? [ new_cud, :admin_created ] : [ nil, :admin_creation_error ]
       else
         return [ nil, :unauthorized ]
@@ -228,7 +228,7 @@ private
   # Need to create AUDs for all assessments when new user is created
   def create_AUDs_modulo_callbacks
     course.assessments.find_each { |asmt|
-      AssessmentUserDatum.create_modulo_callbacks({ assessment_id: asmt.id, 
+      AssessmentUserDatum.create_modulo_callbacks({ assessment_id: asmt.id,
                                                     course_user_datum_id: id })
                                                     # TODO: which id?
     }

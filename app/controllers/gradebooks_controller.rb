@@ -4,7 +4,7 @@ require 'Statistics.rb'
 require 'utilities'
 
 class GradebooksController < ApplicationController
-  
+
   action_auth_level :show, :student
   def show
     if @cud.instructor? then
@@ -38,7 +38,7 @@ class GradebooksController < ApplicationController
 
   action_auth_level :student, :student
   def student
-    @_cud = params[:id] ? 
+    @_cud = params[:id] ?
               CourseUserDatum.find_by_id(params[:id]) : @cud
 
     if (@_cud.nil?)

@@ -7,7 +7,7 @@ module AssessmentHandout
           else "application/octet-stream"
       end
   end
-  
+
   def handout
      get_assessment()
   	extend_config_module
@@ -22,8 +22,8 @@ module AssessmentHandout
     print "\n\n"
     if @assessment.config_module.instance_methods.include?(:handout) then
       hash = @assessment.config_module.handout()
-      send_file(hash["fullpath"], 
-            :disposition => 'inline', 
+      send_file(hash["fullpath"],
+            :disposition => 'inline',
             :filename => hash["filename"]) and return
       return
     end
@@ -35,8 +35,8 @@ module AssessmentHandout
 
     if @assessment.handout_is_file? then
       filename = @assessment.handout_path
-      send_file(filename, 
-            :disposition => 'inline', 
+      send_file(filename,
+            :disposition => 'inline',
             :file => File.basename(filename))
       return
     end
@@ -44,4 +44,3 @@ module AssessmentHandout
     flash[:error] = "There is no handout for this assessment."
   end
 end
-  

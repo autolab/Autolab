@@ -1,5 +1,5 @@
 class SchedulersController < ApplicationController
-  
+
   action_auth_level :index, :instructor
   def index
     @schedulers = Scheduler.where(:course_id => @course.id)
@@ -31,7 +31,7 @@ class SchedulersController < ApplicationController
   def edit
     @scheduler = Scheduler.find(params[:id])
   end
-  
+
   action_auth_level :update, :instructor
   def update
     @scheduler = Scheduler.find(params[:id])

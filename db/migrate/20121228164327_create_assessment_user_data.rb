@@ -16,7 +16,7 @@ class CreateAssessmentUserData < ActiveRecord::Migration
   end
 
   def self.create_AUD_modulo_callbacks(asmt_id, user_id)
-    insert_sql = "INSERT INTO #{AssessmentUserDatum.table_name} 
+    insert_sql = "INSERT INTO #{AssessmentUserDatum.table_name}
                   (assessment_id, user_id) VALUES (#{asmt_id}, #{user_id})"
     AssessmentUserDatum.connection.execute insert_sql
   end
@@ -49,7 +49,7 @@ class CreateAssessmentUserData < ActiveRecord::Migration
       t.integer :user_id, :null => false
       t.integer :assessment_id, :null => false
       t.integer :latest_submission_id
-      
+
       t.timestamps
     end
 

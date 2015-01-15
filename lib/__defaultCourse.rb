@@ -1,7 +1,7 @@
 #
 # course.rb - Autolab Course Configuration File
 #
-# This file is cached on the Autolab server. 
+# This file is cached on the Autolab server.
 #
 # To make your changes go live: Admin->Reload course config file
 #
@@ -25,7 +25,7 @@
 # might say:
 #
 #    def LabAverage(user)
-#        return ((user['datalab'].to_f() + user['bomblab'].to_f()) 
+#        return ((user['datalab'].to_f() + user['bomblab'].to_f())
 #        / (64+70)) * 100.0
 #    end
 #
