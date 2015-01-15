@@ -4,7 +4,7 @@ class TransferUserTweaks < ActiveRecord::Migration
 	  add_column :users, :tweak_id, :integer, :null => true, :default => nil
 
   	tweaked_users = User.where("tweak_old != 0")
-	  
+
     tweaked_users.each do |u|
       tweak_kind = (u.absolute_tweak ? "points" : "percent")
 
@@ -13,7 +13,7 @@ class TransferUserTweaks < ActiveRecord::Migration
 
       # users might not have nicknames
       u.save false
-	  end	
+	  end
   end
 
   def self.down

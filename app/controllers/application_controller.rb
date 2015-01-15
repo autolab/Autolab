@@ -5,7 +5,7 @@ class ApplicationController < ActionController::Base
   helper :all # include all helpers, all the time
 
   before_action :configure_permitted_paramters, if: :devise_controller?
-  before_action :maintenance_mode? 
+  before_action :maintenance_mode?
   before_action :run_scheduler
 
   before_action :authenticate_user!
@@ -28,10 +28,10 @@ class ApplicationController < ActionController::Base
     # this doesn't appear to be getting called -Dan
     #rescue_from ActiveRecord::RecordNotFound, :with => :render_404
     rescue_from Exception, with: :render_error
-  end  
+  end
 
   def self.autolabRequire(path)
-    if (Rails.env == "development") then 
+    if (Rails.env == "development") then
       $".delete(path)
     end
     require(path)
@@ -44,7 +44,7 @@ class ApplicationController < ActionController::Base
     raise ArgumentError.new("The level must be specified.") if level.nil?
     raise ArgumentError.new("The level must be symbol.") unless level.is_a? Symbol
     unless CourseUserDatum::AUTH_LEVELS.include?(level)
-      raise ArgumentError.new("#{level.to_s} is not an auth level") 
+      raise ArgumentError.new("#{level.to_s} is not an auth level")
     end
 
     controller_whitelist = (@@global_whitelist[self.controller_name.to_sym] ||= {})
@@ -66,7 +66,7 @@ class ApplicationController < ActionController::Base
   end
 
 protected
-  
+
   def configure_permitted_paramters
     devise_parameter_sanitizer.for(:sign_in) { |u| u.permit(:email) }
     devise_parameter_sanitizer.for(:sign_up) { |u| u.permit(:email, :first_name, :last_name, :password, :password_confirmation) }
@@ -96,14 +96,14 @@ protected
     authentication_failed unless @cud.has_auth_level?(level)
   end
 
-  protect_from_forgery 
+  protect_from_forgery
   def verify_authenticity_token
     msg = "Invalid request! Please go back, reload the " +
         "page and try again.  If you continue to see this error. " +
-        " please contact the Autolab Development team at the " + 
-        "contact link below" 
+        " please contact the Autolab Development team at the " +
+        "contact link below"
 
-    if not verified_request? then 
+    if not verified_request? then
       authentication_failed(msg)
     end
   end
@@ -125,7 +125,7 @@ protected
   #     else
   #       redirect_to controller: :home, action: :developer_login and return
   #     end
-  # 
+  #
   #   # production
   #   else
   #     # request.remote_user set by Shibboleth (WebLogin)
@@ -199,7 +199,7 @@ protected
                         (params[:action] == "edit" or params[:action] == "update" or
                          params[:action] == "unsudo")
 
-    if (invalid_cud or nicknameless_student) and !in_edit_or_unsudo then 
+    if (invalid_cud or nicknameless_student) and !in_edit_or_unsudo then
       flash[:error] = "Please complete all of your account information before continuing"
       redirect_to edit_course_course_user_datum_path(id: @cud.id, course_id: @cud.course.id)
     end
@@ -208,7 +208,7 @@ protected
   def run_scheduler
 
     actions = Scheduler.where("next < ?",Time.now())
-    for action in actions do 
+    for action in actions do
       action.next = Time.now + action.interval
       action.save()
       puts "Executing #{File.join(Rails.root,action.action)}"
@@ -222,14 +222,14 @@ protected
         end
 
         Process.detach(pid)
-      rescue Exception => e  
+      rescue Exception => e
         puts e
-        puts e.message  
+        puts e.message
         puts e.backtrace.inspect
       end
     end
   end
-  
+
   def update_persistent_announcements
     @persistent_announcements = Announcement.where("persistent and (course_id=? or system)", @course.id)
   end
@@ -255,7 +255,7 @@ private
     render "home/error"
   end
 
-  # called on ActiveRecord::RecordNotFound exception. 
+  # called on ActiveRecord::RecordNotFound exception.
   # Redirect user to the 404 page without error notification
   def render_404
     render file: "public/404.html", layout: false

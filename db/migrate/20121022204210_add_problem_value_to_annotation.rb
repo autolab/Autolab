@@ -3,7 +3,7 @@ class AddProblemValueToAnnotation < ActiveRecord::Migration
     add_column :annotations, :comment, :text
     add_column :annotations, :value, :float
     add_column :annotations, :problem_id, :integer
-    
+
   end
 
   def self.down

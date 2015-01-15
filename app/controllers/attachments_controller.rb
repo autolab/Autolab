@@ -9,7 +9,7 @@ class AttachmentsController < ApplicationController
       @attachments = (@assessment)? @assessment.attachments : nil
     end
   end
-  
+
   action_auth_level :new, :instructor
   def new
     if @is_assessment then

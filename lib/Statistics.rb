@@ -9,7 +9,7 @@ class Statistics
     return result.round(1)
   end
 
-  #I stole this from the internets. 
+  #I stole this from the internets.
   def variance(a)
     n = 0
     mean = 0.0
@@ -51,7 +51,7 @@ class Statistics
   end
 
   def median(a)
-    if a.nil? || a.empty? 
+    if a.nil? || a.empty?
       return "--"
     end
 

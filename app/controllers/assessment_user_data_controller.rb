@@ -1,5 +1,5 @@
 class AssessmentUserDataController < ApplicationController
-  
+
   action_auth_level :edit, :instructor
   def edit
     @aud = AssessmentUserDatum.find params[:id]

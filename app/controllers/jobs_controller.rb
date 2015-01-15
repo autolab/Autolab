@@ -2,14 +2,14 @@ require 'autoConfig'
 
 class JobsController < ApplicationController
 
-  # 
+  #
   # getRecentJobs - this function retrieves the currently running jobs
   #
   def getCurrentJobs
     getJobs('0/')
   end
 
-  # 
+  #
   # getDeadJobs - this function retrieves the recent dead jobs
   #
   def getDeadJobs
@@ -79,7 +79,7 @@ class JobsController < ApplicationController
   action_auth_level :getjob, :student
   def getjob
     # Make sure we have a job id parameter
-    if not params[:id] then 
+    if not params[:id] then
       flash[:error] = "Error: missing job ID parameter in URL"
       redirect_to :controller=>"jobs", :item=>nil and return
     else
@@ -115,21 +115,21 @@ class JobsController < ApplicationController
       flash[:error] = "Could not find job #{job_id}"
       redirect_to :controller=>"jobs", :item=>nil and return
     end
-    
+
     # Create the job record that will be used by the view
     @job = formatRawJob(rjob, is_live)
-   
+
     # Try to find the autograder feedback for this submission and
     # assign it to the @feedback_str instance variable for later
     # use by the view
-    if rjob["notifyURL"] then 
+    if rjob["notifyURL"] then
 
       # Parse the notify URL from the autograder
       params =  rjob["notifyURL"].split('/')
       url_submission = params[-2]
       url_assessment = params[-4]
       url_course = params[-6]
-   
+
       # Grab all of the scores for this submission
       scores = Score.where(:submission_id=>url_submission)
 
@@ -153,9 +153,9 @@ class JobsController < ApplicationController
     # bypass the view and redirect them to the viewFeedback page
     if !@cud.user.administrator? and !@cud.instructor? then
       if url_assessment and url_submission and feedback_num > 0 then
-        redirect_to :controller=>url_assessment, :action=>"viewFeedback", 
-        :submission=>url_submission, :feedback=>feedback_num and return 
-      else 
+        redirect_to :controller=>url_assessment, :action=>"viewFeedback",
+        :submission=>url_submission, :feedback=>feedback_num and return
+      else
         flash[:error] = "Could not locate autograder feedback"
         redirect_to :controller=>"jobs", :item=>nil and return
       end
@@ -176,13 +176,13 @@ class JobsController < ApplicationController
 
   # formatRawJob - Given a raw job from the server, creates a job
   # hash for the view.
-  def formatRawJob(rjob, is_live) 
+  def formatRawJob(rjob, is_live)
 
     job = Hash.new
     job[:rjob] = rjob
     job[:id] = rjob["id"]
     job[:name] = rjob["name"]
-    
+
     if rjob["notifyURL"] then
       params =  rjob["notifyURL"].split('/')
       job[:submission] = params[-2]
@@ -205,18 +205,18 @@ class JobsController < ApplicationController
       end
     end
 
-    # Extract timestamps of first and last trace records    
+    # Extract timestamps of first and last trace records
     if rjob["trace"] then
-      job[:first] = rjob["trace"][0].split("|")[0] 
-      job[:last] = rjob["trace"][-1].split("|")[0] 
-    
+      job[:first] = rjob["trace"][0].split("|")[0]
+      job[:last] = rjob["trace"][-1].split("|")[0]
+
       # Compute elapsed time. Live jobs show time from submission
       # until now.  Dead jobs show end-to-end elapsed time.
       t1 = DateTime.parse(job[:first]).to_time
       if is_live then
         snow = Time.now.localtime.to_s
         t2 = DateTime.parse(snow).to_time
-      else 
+      else
         t2 = DateTime.parse(job[:last]).to_time
       end
       job[:elapsed] = t2.to_i - t1.to_i # elapsed seconds

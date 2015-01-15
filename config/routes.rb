@@ -2,13 +2,13 @@ Autolab3::Application.routes.draw do
   root 'courses#index'
 
   devise_for :users, controllers: { omniauth_callbacks: 'users/omniauth_callbacks' }, path_prefix: 'auth'
-  
+
   namespace :home do
     match 'developer_login', via: [ :post, :get ]
     get 'error'
     get 'no_user'
   end
-  
+
   resources :users do
     get 'admin'
   end
@@ -64,7 +64,7 @@ Autolab3::Application.routes.draw do
       	get 'statistics'
       	get 'withdrawAllGrades'
       	get 'export'
-      	get 'attachments'	
+      	get 'attachments'
       	get 'extensions'
       	get 'submissions'
       	patch 'edit/*active_tab', action: :update
@@ -116,7 +116,7 @@ Autolab3::Application.routes.draw do
         get 'view'
       end
     end
-    
+
     resource :admin, only: :show do
       collection do
         get 'throwException'

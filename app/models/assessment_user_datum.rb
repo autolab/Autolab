@@ -42,7 +42,7 @@ class AssessmentUserDatum < ActiveRecord::Base
     AssessmentUserDatum.transaction {
       # acquire lock on AUD
       reload(:lock => true)
-    
+
       # update
       self.latest_submission = latest_submission!
       save!
@@ -56,10 +56,10 @@ class AssessmentUserDatum < ActiveRecord::Base
     if (max_version = Submission.where(assessment_id: assessment_id,
                         course_user_datum_id: course_user_datum_id,
                         ignored: false).maximum(:version))
-      Submission.where(:version => max_version, :assessment_id => assessment_id, 
+      Submission.where(:version => max_version, :assessment_id => assessment_id,
                        :course_user_datum_id => course_user_datum_id).first
     else
-      nil 
+      nil
     end
   end
 
@@ -98,10 +98,10 @@ class AssessmentUserDatum < ActiveRecord::Base
   def grace_days_usable
     course_grace_days = assessment.course.grace_days
     assessment_max_grace_days = assessment.max_grace_days
-    
+
     # save doing potentially expensive stuff if not needed
     return 0 if course_grace_days == 0 || assessment_max_grace_days == 0
-    
+
     grace_days_left = course_grace_days - cumulative_grace_days_used_before
     raise "fatal: negative grace days left" if grace_days_left < 0
 
@@ -165,7 +165,7 @@ class AssessmentUserDatum < ActiveRecord::Base
       [ false, :at_submission_limit ]
     else
       [ true, nil ]
-    end 
+    end
   end
 
   # Check if user has hit submission count limit, if one exists
@@ -174,7 +174,7 @@ class AssessmentUserDatum < ActiveRecord::Base
       false
     else
       count = assessment.submissions.count(:conditions => { :course_user_datum => course_user_datum })
-      count >= assessment.max_submissions  
+      count >= assessment.max_submissions
     end
   end
 
@@ -229,12 +229,12 @@ private
     end
   end
 
-  # TODO: 
+  # TODO:
   def cumulative_grace_days_used_before
     return @cgdub if @cgdub
 
     cache_key = cgdub_cache_key
-    unless (cgdub = Rails.cache.read cache_key) 
+    unless (cgdub = Rails.cache.read cache_key)
       CourseUserDatum.transaction {
         # acquire lock on user
         CourseUserDatum.lock(true).find(course_user_datum_id)

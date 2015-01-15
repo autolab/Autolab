@@ -18,7 +18,7 @@ module Utilities
     yield
   rescue Exception => e
     raise InstructorException.new("Error executing #{invoked_method_name}: #{e}")
-  end 
+  end
 
   def self.validated_score_value(score, invoked_method_name, allow_nil = false)
     message = "Error executing #{invoked_method_name}"
@@ -37,7 +37,7 @@ module Utilities
   end
 end
 
-class ScoreComputationException < StandardError 
+class ScoreComputationException < StandardError
 end
 
 class InvalidComputedScoreException < ScoreComputationException

@@ -25,7 +25,7 @@ module Partners
       partnersModuleInstall()
       @pModule = UserModule.load("Partners.2",@assessment.id)
     end
-    
+
     #does this student have a partner already?
     currentPartner = @pModule.get("partnerID",@cud.id)
 
@@ -48,14 +48,14 @@ module Partners
     render(:file=>"lib/modules/views/viewPartner.html.erb",
            :layout=>true)
   end
-  
+
   def cancelRequest
     @pModule = UserModule.load("Partners.2",@assessment.id)
     if !@pModule then
       partnersModuleInstall()
       @pModule = UserModule.load("Partners.2",@assessment.id)
     end
-    currentPartner = @pModule.get("partnerID",@cud.id)	
+    currentPartner = @pModule.get("partnerID",@cud.id)
     if currentPartner then
       confirmed = @pModule.get("partnerID", currentPartner)
       if confirmed then
@@ -178,9 +178,9 @@ module Partners
            :layout=>true) and return
   end
 
-  # this one will change later, when students can drop 
+  # this one will change later, when students can drop
   # partners themselves
-  def deletePartner 
+  def deletePartner
     if !(@user.instructor?) then
       flash[:error] = "You are not authorized to view this page!"
       redirect_to :action=>"error",:controller=>"home" and return
@@ -209,7 +209,7 @@ module Partners
       if @pModule.get("partnerID",@partner) != @cud.id then
         flash[:error] = "You cannot submit because your partner has not
 					confirmed you as their partner yet!"
-        return false	
+        return false
         # Check to make sure the PARTNER can still submit!
       elsif @assessment.max_submissions != -1 then
         partnerNum = Submission.where(:user_id=>@partner, :assessment_id => @assessment.id).count
@@ -220,7 +220,7 @@ module Partners
         end
       end
     end
-    return true	
+    return true
   end
 
   def importPartners
@@ -241,7 +241,7 @@ module Partners
       partnersModuleInstall()
       @pModule = UserModule.load("Partners.2", @assessment.id)
     end
-    
+
     for user in @course.course_user_data do
       # When importing, clear all current entries
       if @pModule.get("partnerID", user.id) then
@@ -270,7 +270,7 @@ module Partners
       return CourseUserDatum.find_cud_for_course(@course, partner_id) unless (partner_id.nil? || partner_id == 0)
     end
   end
-  
+
   # use the same scheme as partnersAfterAutograde to create
   # a submission for partner
   def partnersAfterHandin(submission)
@@ -296,7 +296,7 @@ module Partners
       sub = { }
       sub["tar"] = pathMirror
       pSubmission.saveFile(sub)
-      
+
       pSubmission.save
 
       return pSubmission
@@ -348,4 +348,4 @@ module Partners
 
   end
 
-end	
+end

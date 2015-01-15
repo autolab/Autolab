@@ -9,7 +9,7 @@ module Autolab3
     config.to_prepare do
       Devise::ConfirmationsController.skip_before_action :authorize_user_for_course
       Devise::ConfirmationsController.skip_before_action :authenticate_for_action
-      Devise::ConfirmationsController.skip_before_action :update_persistent_announcements     
+      Devise::ConfirmationsController.skip_before_action :update_persistent_announcements
       Devise::SessionsController.skip_before_action :authorize_user_for_course
       Devise::SessionsController.skip_before_action :authenticate_for_action
       Devise::SessionsController.skip_before_action :update_persistent_announcements
@@ -25,8 +25,8 @@ module Autolab3
       Devise::SessionsController.layout "home"
       Devise::RegistrationsController.layout proc{ |controller| user_signed_in? ? "application"   : "home" }
       Devise::ConfirmationsController.layout "home"
-      Devise::UnlocksController.layout "home"            
-      Devise::PasswordsController.layout "home"        
+      Devise::UnlocksController.layout "home"
+      Devise::PasswordsController.layout "home"
     end
 
     # TODO: this should be a macro
@@ -79,7 +79,7 @@ module Autolab3
     config.assets.version = '1.0'
 
     # Customize form control error state: controls with erroneous input get wrapped with this
-    config.action_view.field_error_proc = Proc.new { |html_tag, instance| 
+    config.action_view.field_error_proc = Proc.new { |html_tag, instance|
       "<div class=\"field_with_errors has-error\">#{html_tag}</div>".html_safe
     }
   end

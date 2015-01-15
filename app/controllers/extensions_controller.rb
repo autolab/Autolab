@@ -1,5 +1,5 @@
 class ExtensionsController < ApplicationController
-  
+
   # TODO
   action_auth_level :index, :instructor
   def index

@@ -1,15 +1,15 @@
-module AssessmentHandin 
-  
-  # handin - The generic default handin function. 
+module AssessmentHandin
+
+  # handin - The generic default handin function.
   # This function calls out to smaller helper functions which provide for
-  # specific functionality. 
-  # 
+  # specific functionality.
+  #
   # validateHandin() : Returns true or false if the handin is valid.
   # saveHandin() : Does the actual process of saving the handin to the
-  #     database and writing the handin file to Disk. 
+  #     database and writing the handin file to Disk.
   # afterHandin(@submission): Does any post-handing-in actions. Argument is
-  #     the database Submission object. 
-  # 
+  #     the database Submission object.
+  #
   # Both validateHandin() and afterHandin() cannot modify the state of the
   # world in any way. And they both should call super() to enable any other
   # functionality.  The only reason to not call super() is if you want to
@@ -43,11 +43,11 @@ module AssessmentHandin
 
     redirect_to [:history, @course, @assessment] and return
   end
-  
+
   private
 
   def validateHandin()
-    # Make sure that handins are allowed 
+    # Make sure that handins are allowed
     if @assessment.disable_handins? then
       flash[:error] = "Sorry, handins are disabled for this assessment."
       return false
@@ -99,4 +99,4 @@ module AssessmentHandin
     @submission = Submission.new
   end
 
-end 
+end

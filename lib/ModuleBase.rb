@@ -1,12 +1,12 @@
 # This module, which is inherited by all modules, organizes how
-# methods are overridden. 
+# methods are overridden.
 
 module ModuleBase
-  
+
   def updateModules
     @allModules = [ "Autograde", "Scoreboard", "Partners", "Svn" ]
     @modulesUsed = []
-    assign = @assessment.name.gsub(/\./,'') 
+    assign = @assessment.name.gsub(/\./,'')
     modName = (assign + (@course.name).gsub(/[^A-Za-z0-9]/,"")).camelize
 
     for mod in @allModules do
@@ -37,7 +37,7 @@ module ModuleBase
     if @modulesUsed.include?("Partners") then
       partnersListAdmin()
     end
-  
+
     if @modulesUsed.include?("Svn") then
       svnListAdmin()
     end
@@ -65,7 +65,7 @@ module ModuleBase
         return false
       end
     end
-  
+
     # If we're validating for svn, we don't have a file to check
     if @modulesUsed.include?("Svn") then
       if ! svnValidateHandin() then

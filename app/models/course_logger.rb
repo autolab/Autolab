@@ -3,9 +3,9 @@ class Logger
     strTime = time.strftime("%m/%d/%y %H:%M:%S")
     "#{level} -- #{strTime} -- #{msg}\n"
   end
-end 
+end
 
-class CourseLogger 
+class CourseLogger
   def initalize()
     @logger = nil
   end

@@ -64,7 +64,7 @@ class Course < ActiveRecord::Base
   end
 
   def display_name
-    if self[:semester].to_s.size > 0 then 
+    if self[:semester].to_s.size > 0 then
       self[:display_name] + " (" + self[:semester] + ")"
     else
       self[:display_name]
@@ -105,7 +105,7 @@ class Course < ActiveRecord::Base
     cgdub_dependencies_updated
     save!
   end
-  
+
   # NOTE: Needs to be updated as new items are cached
   def invalidate_caches
     # cgdubs
@@ -129,7 +129,7 @@ class Course < ActiveRecord::Base
 
 
 private
-  def cgdub_dependencies_updated 
+  def cgdub_dependencies_updated
     self.cgdub_dependencies_updated_at = Time.now
   end
 

@@ -6,7 +6,7 @@ module ExceptionNotification::ConsiderLocal
       require 'ipaddr'
       target.extend(ClassMethods)
     end
-    
+
     def consider_local(*args)
       local_addresses.concat(args.flatten.map { |a| IPAddr.new(a) })
     end
@@ -20,12 +20,12 @@ module ExceptionNotification::ConsiderLocal
       addresses
     end
   end
-  
+
 private
-  
+
   def local_request?
     remote = IPAddr.new(request.remote_ip)
     !self.class.local_addresses.detect { |addr| addr.include?(remote) }.nil?
   end
-  
+
 end

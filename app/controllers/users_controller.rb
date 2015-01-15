@@ -3,7 +3,7 @@ class UsersController < ApplicationController
   skip_before_action :authorize_user_for_course
   skip_before_action :authenticate_for_action
   skip_before_action :update_persistent_announcements
-  
+
   # GET /users
   def index
     if current_user.administrator?
@@ -11,17 +11,17 @@ class UsersController < ApplicationController
     else
       users = [current_user]
       cuds = current_user.course_user_data
-      
+
       cuds.each do |cud|
         if cud.instructor?
           users |= cud.course.course_user_data.collect { |c| c.user }
         end
       end
-      
+
       @users = users.sort_by { |user| user.email }
     end
   end
-  
+
   # GET /users/id
   # show the info of a user together with his cuds
   # based on current user's role
@@ -31,7 +31,7 @@ class UsersController < ApplicationController
       flash[:error] = "User does not exist"
       redirect_to users_path and return
     end
-      
+
     if current_user.administrator?
       # if current user is admin, show whatever he requests
       @user = user
@@ -40,17 +40,17 @@ class UsersController < ApplicationController
       # look for cud in courses where current user is instructor of
       cuds = current_user.course_user_data
       user_cuds = []
-      
+
       cuds.each do |cud|
         if cud.instructor?
-          user_cud = 
+          user_cud =
             cud.course.course_user_data.where(user: user).first
           if !user_cud.nil?
             user_cuds << user_cud
           end
         end
-      end        
-        
+      end
+
       if !user_cuds.empty?
         # current user is instructor to user
         @user = user
@@ -70,7 +70,7 @@ class UsersController < ApplicationController
   def account
     @user = current_user
   end
-      
+
   # GET users/new
   # only adminstrator and instructors are allowed
   def new
@@ -108,10 +108,10 @@ class UsersController < ApplicationController
         redirect_to users_path and return
     else
         flash[:error] = "User creation failed"
-        render action: 'new' 
+        render action: 'new'
     end
   end
-  
+
   # GET users/:id/edit
   def edit
     user = User.find(params[:id])
@@ -119,7 +119,7 @@ class UsersController < ApplicationController
       flash[:error] = "User does not exist"
       redirect_to users_path and return
     end
-      
+
     if (current_user.administrator?) then
       @user = user
     else
@@ -132,7 +132,7 @@ class UsersController < ApplicationController
       end
     end
   end
-  
+
   # PATCH users/:id/
   action_auth_level :update, :student
   def update
@@ -141,8 +141,8 @@ class UsersController < ApplicationController
       flash[:error] = "User does not exist"
       redirect_to users_path and return
     end
-    
-    if (current_user.administrator? || 
+
+    if (current_user.administrator? ||
         current_user.instructor_of?(user))
       @user = user
     else
@@ -154,7 +154,7 @@ class UsersController < ApplicationController
         @user = current_user
       end
     end
-        
+
     if user.update(current_user.administrator? ?
                     admin_user_params : user_params)
       flash[:success] = 'User was successfully updated.'
@@ -164,7 +164,7 @@ class UsersController < ApplicationController
       redirect_to edit_user_path(user) and return
     end
   end
-  
+
   # DELETE users/:id/
   action_auth_level :destroy, :administrator
   def destroy
@@ -172,30 +172,30 @@ class UsersController < ApplicationController
       flash[:error] = "Permission denied."
       redirect_to users_path and return
     end
-    
+
     user = User.find(params[:id])
     if user.nil?
       flash[:error] = "User doesn't exist."
       redirect_to users_path and return
     end
-    
+
     # TODO Need to cleanup user resources here
-    
+
     user.destroy
     flash[:success] = "User destroyed."
     redirect_to users_path and return
   end
-    
+
 
   private
     def new_user_params
       params.require(:user).permit(:email, :first_name, :last_name)
     end
-    
+
     def admin_new_user_params
       params.require(:user).permit(:email, :first_name, :last_name, :administrator)
     end
-    
+
     def user_params
       params.require(:user).permit(:first_name, :last_name)
     end
