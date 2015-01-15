@@ -4,7 +4,7 @@ require('fileutils')
 
 class AdminsController < ApplicationController
   
-  CMU_ROSTER_COLUMNS = 29
+  NEW_ROSTER_COLUMNS = 29
 
   action_auth_level :show, :instructor
   def show
@@ -469,14 +469,14 @@ private
     parsedRoster = CSV.parse(roster)
     if (parsedRoster[0][0].nil?)
       raise "Roster cannot be recognized"
-    elsif (parsedRoster[0].length == CMU_ROSTER_COLUMNS)
+    elsif (parsedRoster[0].length == NEW_ROSTER_COLUMNS)
       # In CMU S3 roster. Columns are:
       # Semester(0), Lecture(1), Section(2), (skip)(3), (skip)(4), Last Name(5), 
       # First Name(6), (skip)(7), Andrew ID(8), (skip)(9), School(10), 
       # Major(11), Year(12), (skip)(13), Grade Policy(14), ...
 
       # Sanitize roster input, ignoring empty / incomplete lines.
-      parsedRoster.select! { |row| row.length == CMU_ROSTER_COLUMNS }
+      parsedRoster.select! { |row| row.length == NEW_ROSTER_COLUMNS }
       # Detect if there is a header row
       if (parsedRoster[0][0] == "Semester")
         offset = 1
