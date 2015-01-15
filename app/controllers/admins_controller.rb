@@ -475,6 +475,8 @@ private
       # First Name(6), (skip)(7), Andrew ID(8), (skip)(9), School(10), 
       # Major(11), Year(12), (skip)(13), Grade Policy(14), ...
 
+      # Sanitize roster input, ignoring empty / incomplete lines.
+      parsedRoster.select! { |row| row.length == CMU_ROSTER_COLUMNS }
       # Detect if there is a header row
       if (parsedRoster[0][0] == "Semester")
         offset = 1
