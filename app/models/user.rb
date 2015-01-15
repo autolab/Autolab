@@ -115,7 +115,7 @@ class User < ActiveRecord::Base
   end
   
   # user created by roster
-  def self.roster_create(email, first_name, last_name)
+  def self.roster_create(email, first_name, last_name, school, major, year)
 
     auth = Authentication.new
     auth.provider = "CMU-Shibboleth"
@@ -126,6 +126,9 @@ class User < ActiveRecord::Base
     user.email = email
     user.first_name = first_name
     user.last_name = last_name
+    user.school = school
+    user.major = major
+    user.year = year
     user.authentications << auth
 
     temp_pass = Devise.friendly_token[0, 20]    # generate a random token

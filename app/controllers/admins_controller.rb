@@ -81,6 +81,11 @@ class AdminsController < ApplicationController
     redirect_to action: :show and return
   end
 
+  # Upload a CSV roster and import the users into the course
+  # Colors are associated to each row of CUD after roster is processed:
+  #   green - User doesn't exist in the course, and is going to be added
+  #   red - User is going to be dropped from the course
+  #   black - User exists in the course
   action_auth_level :uploadRoster, :instructor
   def uploadRoster
     if request.post? then
@@ -102,19 +107,32 @@ class AdminsController < ApplicationController
                 # Add this user to the course
                 # Look for this user
                 email = newCUD[:email]
+                first_name = newCUD[:first_name]
+                last_name = newCUD[:last_name]
+                school = newCUD[:school]
+                major = newCUD[:major]
+                year = newCUD[:year]
                 
                 if ((user = User.where(email: email).first).nil?)
                   # Create a new user
-                  user = User.roster_create(email, newCUD[:first_name],
-                                            newCUD[:last_name])
+                  user = User.roster_create(email, first_name, last_name, school,
+                                        major, year)
                   if (user.nil?)
-                    throw NewUserCreationException
+                    raise "New user cannot be created in uploadRoster."
                   end
+                else
+                  # Override current user
+                  user.first_name = first_name
+                  user.last_name = last_name
+                  user.school = school
+                  user.major = major
+                  user.year = year
+                  user.save
                 end
                 
                 # Make sure this user doesn't have a cud in the course
                 if (@course.course_user_data.where(user: user).first)
-                  throw NewUserExistInCourseException
+                  raise "Green CUD doesn't exist in the database."
                 end
                 
                 # Delete unneeded data
@@ -122,11 +140,14 @@ class AdminsController < ApplicationController
                 newCUD.delete(:email)
                 newCUD.delete(:first_name)
                 newCUD.delete(:last_name)
+                newCUD.delete(:school)
+                newCUD.delete(:major)
+                newCUD.delete(:year)
                 
                 # Build cud
                 cud = @course.course_user_data.new
                 cud.user = user
-                cud.assign_attributes(newCUD.permit(:lecture, :section, :school, :major, :year, :grade_policy))
+                cud.assign_attributes(newCUD.permit(:lecture, :section, :grade_policy))
                 
                 # Save without validations
                 cud.save(validate: false) 
@@ -134,6 +155,11 @@ class AdminsController < ApplicationController
               elsif newCUD["color"] == "red" then
                 # Drop this user from the course
                 existing = @course.course_user_data.includes(:user).where(users: { email: newCUD[:email]}).first
+                
+                if (existing.nil?) then
+                  raise "Red CUD doesn't exist in the database."
+                end
+                
                 existing.dropped = true
                 existing.save(validate: false)
                 
@@ -141,14 +167,32 @@ class AdminsController < ApplicationController
                 # Update this user's attributes. 
                 existing = @course.course_user_data.includes(:user).where(users: { email: newCUD[:email]}).first
 
+                if (existing.nil?) then
+                  raise "Black CUD doesn't exist in the database."
+                end
+                
+                user = existing.user
+                if (user.nil?) then
+                  raise "User associated to black CUD doesn't exist in the database."
+                end
+                
+                # Update user data
+                user.school = newCUD[:school]
+                user.major = newCUD[:major]
+                user.year = newCUD[:year]
+                user.save!
+
                 # Delete unneeded data
                 newCUD.delete(:color)
                 newCUD.delete(:email)
                 newCUD.delete(:first_name)
                 newCUD.delete(:last_name)
+                newCUD.delete(:school)
+                newCUD.delete(:major)
+                newCUD.delete(:year)
                 
                 # assign attributes
-                existing.assign_attributes(newCUD.permit(:lecture, :section, :school, :major, :year, :grade_policy))
+                existing.assign_attributes(newCUD.permit(:lecture, :section, :grade_policy))
                 existing.save(validate: false) # Save without validations.
               end
               
