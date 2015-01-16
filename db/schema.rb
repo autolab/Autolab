@@ -233,9 +233,9 @@ ActiveRecord::Schema.define(version: 20150113040129) do
     t.integer  "problem_id",         limit: 4
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.boolean  "released",           limit: 1,          default: false
+    t.boolean  "released",           limit: 1,     default: false
     t.integer  "grader_id",          limit: 4
-    t.binary   "feedback_file",      limit: 4294967295
+    t.binary   "feedback_file",      limit: 65535
     t.string   "feedback_file_type", limit: 255
     t.string   "feedback_file_name", limit: 255
   end
