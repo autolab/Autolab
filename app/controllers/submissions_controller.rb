@@ -639,9 +639,6 @@ class SubmissionsController < ApplicationController
 
       end
     rescue Exception => e
-
-      print "\n\nError:#{e}\n\n"
-
       problem = @assessment.problems.first
       score = submission.scores.where(:problem_id => problem.id).first
       if !score then
@@ -649,10 +646,7 @@ class SubmissionsController < ApplicationController
       end
       score.score = 0
       score.feedback = "An error occurred while parsing the autoresult returned by the Autograder.\n\n" 
-      # score.feedback += "Autoresult: " + "\"" + autoresult + "\"" + "\n"
-      score.feedback +=  "Error message: " + e.to_s + "\n"
-      score.feedback +=  "\nBacktrace:\n" +  e.backtrace.join("\n")
-      score.feedback += "\n\n"
+      score.feedback +=  "Error message: " + e.to_s + "\n\n"
 
       if lines && (lines.length < 10000) then
         score.feedback += lines.join()
@@ -865,15 +859,12 @@ private
         # creating an instance of it.
         # http://www.ruby-doc.org/core-2.1.3/Module.html#method-i-instance_method
         methods.each { |nonmodule_func| 
-          print nonmodule_func
           module_function(nonmodule_func)
           public nonmodule_func
         }
       end
 
     rescue Exception => @error
-      # printing the error so that the bugs are traceable
-      puts @error
       COURSE_LOGGER.log(@error)
 
       if @cud and @cud.has_auth_level? :instructor
