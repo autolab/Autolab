@@ -1,6 +1,11 @@
-<%= external_javascript_include_tag "prototype", "1.6.0.3" %>
 <%= javascript_include_tag "sorttable" %>
+<!--
+  TODO: Fix table floating headers (absolute positioning)
+  NOTE: I think this problem can be solved almost entirely with CSS, with
+        minimal JS (to apply a CSS class once the element hits the top of the
+        screen). The current "solution" is overkill. -JZ
 <%= javascript_include_tag "table_floating_header" %>
+-->
 <h2>Manage Accounts</h2>
 
 <hr>
@@ -18,7 +23,14 @@ Search: <%= text_field_tag 'search', nil, onkeyup:'filterRows(this.value)' %>
 <div id='ajaxTable'>
 <%= render :partial=>'usersTable' %>
 </div>
+
 <script type="text/javascript">
+  // Once the DOM is loaded, add sorting functionality to the columns
+  jQuery(document).ready(function() {
+    sorttables();
+  });
+
+  // Triggered on keyup in the search field
   function filterRows(name) {
     var rows = document.getElementsByClassName("user-row"),
         i = 0, L = rows.length, r;
