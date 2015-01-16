@@ -82,5 +82,8 @@ module Autolab3
     config.action_view.field_error_proc = Proc.new { |html_tag, instance| 
       "<div class=\"field_with_errors has-error\">#{html_tag}</div>".html_safe
     }
+
+    # Allow embedding as iFrame on external sites
+    config.action_dispatch.default_headers.merge!({'X-Frame-Options' => 'ALLOWALL'})
   end
 end
