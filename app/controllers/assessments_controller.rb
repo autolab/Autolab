@@ -1020,7 +1020,7 @@ class AssessmentsController < ApplicationController
       return
     end
 
-    num_released = releaseMatchingGrades { |submission, _| @cud.CA_of? submission.user }
+    num_released = releaseMatchingGrades { |submission, _| @cud.CA_of? submission.course_user_datum }
 
     if (num_released > 0) 
         flash[:success] = "%d %s released." % [num_released, (num_released > 1 ? "grades were" : "grade was")]
