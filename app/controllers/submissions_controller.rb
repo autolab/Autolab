@@ -485,19 +485,35 @@ class SubmissionsController < ApplicationController
     begin
       load_submission() or return false
       get_submission_file() or return false
-      
+
+      archive_type = IO.popen(["file", "--brief", "--mime-type", @filename],
+                              in: :close, err: :close) { |io| io.read.chomp }
+      @files = []
+
+      require 'rubygems'
       require 'rubygems/package'
       require 'zlib'
+      require 'zip'
 
-      @files = []
-      f = File.new(@filename)
-      tar_extract = Gem::Package::TarReader.new(f)
-      tar_extract.rewind # The extract has to be rewinded after every iteration
-      
+      # Extract archive by type
+      if archive_type.include? "tar" then
+        f = File.new(@filename)
+        archive_extract = Gem::Package::TarReader.new(f)
+        archive_extract.rewind # The extract has to be rewinded after every iteration
+      elsif archive_type.include? "gzip" then
+        archive_extract = Gem::Package::TarReader.new(Zlib::GzipReader.open @filename)
+        archive_extract.rewind
+      elsif archive_type.include? "zip" then
+        archive_extract = Zip::File.open(@filename)
+      else
+        raise "Unrecognized archive type!"
+      end
+
+      # Parse archive header
       i = 0
-      tar_extract.each do |entry|
-
-        pathname = entry.full_name
+      archive_extract.each do |entry|
+        # Obtain path name depending for tar/zip entry
+        pathname = entry.respond_to?(:full_name) ? entry.full_name : entry.name
         extension = File.extname pathname
         extension = extension[1..-1]
         if extension == "c0" or extension == "go" then
@@ -521,14 +537,15 @@ class SubmissionsController < ApplicationController
         i += 1
       end
 
-      tar_extract.close
-
+      archive_extract.close
       return
+
     rescue Exception => e
         COURSE_LOGGER.log(e);
         flash[:error] = "This does not appear to be a valid archive file."
         redirect_to :controller => "home", :action => "error" and return false
     end
+
   end
 
 
@@ -758,31 +775,52 @@ private
   # Gets the contents and path of the file at a
   # given header position in the submission archive.
   def getFileAt(position)
+    require 'rubygems'
     require 'rubygems/package'
     require 'zlib'
+    require 'zip'
 
-    @files = []
-    f = File.new(@filename)
-    tar_extract = Gem::Package::TarReader.new(f)
-    tar_extract.rewind # The extract has to be rewinded after every iteration
-      
+    archive_type = IO.popen(["file", "--brief", "--mime-type", @filename],
+                            in: :close, err: :close) { |io| io.read.chomp }
+    # Extract archive by type
+    if archive_type.include? "tar" then
+      f = File.new(@filename)
+      archive_extract = Gem::Package::TarReader.new(f)
+      archive_extract.rewind # The extract has to be rewinded after every iteration
+    elsif archive_type.include? "gzip" then
+      archive_extract = Gem::Package::TarReader.new(Zlib::GzipReader.open @filename)
+      archive_extract.rewind
+    elsif archive_type.include? "zip" then
+      archive_extract = Zip::File.open(@filename)
+    else
+      raise "Unrecognized archive type!"
+    end
+
+    # Iterate through archive until file position
     i = 0
-    tar_extract.each do |entry|
-      COURSE_LOGGER.log(entry)
-      COURSE_LOGGER.log(i)
+    archive_extract.each do |entry|
+      # Obtain path name depending for tar/zip entry
+      pathname = entry.respond_to?(:full_name) ? entry.full_name : entry.name
+      # Skip Mac metafiles
+      next if pathname.include? "__MACOSX" or
+          pathname.include? ".DS_Store" or
+          pathname.include? ".metadata"
 
       if i == position then
         return nil, nil unless entry
-        return entry.read, entry.full_name
+        # Case One: tar or tgz archive
+        if entry.respond_to?(:read) then
+          return entry.read, entry.full_name
+        # Case Two: zip archive
+        else
+          return entry.get_input_stream.read, entry.name
+        end
       end
 
       i += 1
     end
 
     return nil, nil unless header
-
-  rescue
-    return nil, nil
   end
 
   # Extract the andrewID from a filename.
