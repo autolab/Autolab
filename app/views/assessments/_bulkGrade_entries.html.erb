@@ -1,7 +1,7 @@
 <table id="entries">
   <tr>
     <th class="i">#</th>
-    <th class="andrew_ID">Andrew ID</th>
+    <th class="email">Email</th>
   <% problems.each do |problem| %>
     <th><%= problem.name %></th>
   <% end %>
@@ -10,7 +10,7 @@
 <% entries.each_with_index do |entry, i| %>
   <tr>
     <td class="i"><%= i %></td>
-    <td class="andrew_ID <%= bulkGrade_cell_class entry[:andrew_ID] %>"><%= bulkGrade_cell entry[:andrew_ID] %>
+    <td class="email <%= bulkGrade_cell_class entry[:email] %>"><%= bulkGrade_cell entry[:email] %>
   <% problems.each do |problem| %>
     <td class="datum <%= bulkGrade_cell_class entry[:data][problem.name] %>"><%= bulkGrade_cell entry[:data][problem.name] %></td>
   <% end %>
