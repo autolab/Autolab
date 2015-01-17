@@ -183,3 +183,8 @@ var sorttables = (function($) { return function() {
 		});
 	});
 }})(jQuery);
+
+// Once the DOM has loaded, make the table columns sortable
+jQuery(document).ready(function() {
+  sorttables();
+});

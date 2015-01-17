@@ -3,7 +3,7 @@
 <%= javascript_include_tag "sorttable" %>
 
 <% if @staticOverride  then %>
-  <%= f = File.new(@staticOverride,'r') 
+  <%= f = File.new(@staticOverride,'r')
       f.read()
   %>
 <% else %>
@@ -34,7 +34,7 @@
 	<div id="error_explanation">
 		<h2><%= pluralize(@cud.errors.count, "error") %>
       prohibited the data from being saved:</h2>
-			
+
 		<ul>
 			<% @cud.errors.full_messages.each do |msg| %>
 			<li><%= msg %></li>

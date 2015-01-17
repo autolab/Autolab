@@ -25,11 +25,6 @@ Search: <%= text_field_tag 'search', nil, onkeyup:'filterRows(this.value)' %>
 </div>
 
 <script type="text/javascript">
-  // Once the DOM is loaded, add sorting functionality to the columns
-  jQuery(document).ready(function() {
-    sorttables();
-  });
-
   // Triggered on keyup in the search field
   function filterRows(name) {
     var rows = document.getElementsByClassName("user-row"),
