@@ -8,16 +8,16 @@
 <% end %>
 
 <%= f.label :start_at %><br>
-<%= f.datetime_local_field :start_at, help_text: "The time this assessment is released to students." %>
+<%= f.datetime_local_field :start_at, step: 1, help_text: "The time this assessment is released to students." %>
 <br><br>
 <%= f.label :due_at %><br>
-<%= f.datetime_local_field :due_at, help_text: "Students can submit before this time without being penalized or using grace days." %>
+<%= f.datetime_local_field :due_at, step: 1, help_text: "Students can submit before this time without being penalized or using grace days." %>
 <br><br>
 <%= f.label :end_at %><br>
-<%= f.datetime_local_field :end_at, help_text: "Last possible time that students can submit (except those granted extensions.)" %>
+<%= f.datetime_local_field :end_at, step: 1, help_text: "Last possible time that students can submit (except those granted extensions.)" %>
 <br><br>
 <%= f.label :grading_deadline %><br>
-<%= f.datetime_local_field :grading_deadline, help_text: "Time after which final scores are included in the gradebook" %>
+<%= f.datetime_local_field :grading_deadline, step: 1, help_text: "Time after which final scores are included in the gradebook" %>
 <br><br>
 <div class="form-group">
   <label for="disable_handins" class="suppress-bottom-margin">Disable Handins</label>

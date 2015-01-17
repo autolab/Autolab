@@ -31,10 +31,10 @@ function newCat() {
     <tr><td><b>Handin filename:</b></td>
       <td><%= f.text_field :handin_filename %></td></tr>
 
-    <tr><td><b>Visible on date:</b></td><td><%= f.datetime_select :visible_at %></td></tr>
-    <tr><td><b>Start at:</b></td><td><%= f.datetime_select :start_at %></td></tr>
-    <tr><td><b>Due at:</b></td><td><%= f.datetime_select :due_at %></td></tr>
-    <tr><td><b>End at:</b></td><td><%= f.datetime_select :end_at %></td></tr>
+    <tr><td><b>Visible on date:</b></td><td><%= f.datetime_select :visible_at, step: 1 %></td></tr>
+    <tr><td><b>Start at:</b></td><td><%= f.datetime_select :start_at, step: 1 %></td></tr>
+    <tr><td><b>Due at:</b></td><td><%= f.datetime_select :due_at, step: 1 %></td></tr>
+    <tr><td><b>End at:</b></td><td><%= f.datetime_select :end_at, step: 1 %></td></tr>
 
 
     <tr><td><b>Description:</b></td>
