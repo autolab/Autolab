@@ -622,8 +622,7 @@ private
   
     # section filter
     o = params[:section] ? {
-      :conditions => { :assessment_id => id, :users => { :section => @user.section } },
-      :joins => "INNER JOIN users ON submissions.user_id = users.id" # hash doesn't work, Rails = stupid
+      :conditions => { :assessment_id => id, :course_user_data => { :section => @cud.section } },
     } : {
       :conditions => { :assessment_id => id }
     }

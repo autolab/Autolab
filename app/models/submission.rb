@@ -33,7 +33,7 @@ class Submission < ActiveRecord::Base
   # attr_accessible :notes, :tweak_attributes
 
   # latest (unignored) submissions
-  scope :latest, -> { joins(:assessment_user_datum) }
+  scope :latest, -> { joins(:assessment_user_datum).joins(:course_user_datum) }
 
   # constants for special submission types
   NORMAL=0
