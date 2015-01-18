@@ -66,7 +66,6 @@ class AttachmentsController < ApplicationController
     else
       @attachment = @course.attachments.where(id:params[:id]).first
       @attachment.update(attachment_params)
-      debugger
       redirect_to course_attachments_path(@course) and return
     end
   end

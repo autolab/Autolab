@@ -684,9 +684,6 @@ class AssessmentsController < ApplicationController
     if @cud.instructor? then
       listAdmin
     end
-    if @cud.course_assistant? then
-      listCA
-    end
     
     listOptions()
   end
@@ -698,114 +695,9 @@ class AssessmentsController < ApplicationController
     # special options, in case this is still how that is accomplished
   end
 
-
-  def listAdmin
-  
-    if ! @cud.instructor? then 
-      redirect_to :action=>"index" and return 
-    end
-
-
-    @adminlist = {
-      "viewGradesheet" => "Grade submissions",
-      "releaseAllGrades" => "Release all grades",
-      "withdrawAllGrades" => "Withdraw all grades",
-      "edit" => "Edit assessment",
-      "export"=>"Export assessment",
-      "reload" => "Reload config file",
-      "extensions" => "Manage extensions",
-      "submissions" => "Manage submissions",
-      "attachments" => "Manage assessment attachments",
-      "statistics" => "View statistics",
-      "bulkGrade" => "Bulk import grades",
-      "bulkExport" => "Bulk export grades"
-    }
-
-    # Add tooltips for the instructor admin options
+  def listAdmin 
+    @adminlist = {}
     @admin_title = {}
-    @admin_title['viewGradesheet'] = "View and enter grades on the gradesheet"
-    @admin_title['releaseAllGrades'] = "Make all scores for this assessment visible to students"
-    @admin_title['withdrawAllGrades'] = "Hide all scores for this assessment from students"
-    @admin_title['zero_fill_missing_scores'] = "For each student who has not handed in anything, create a submission and assign a score of zero"
-    @admin_title['edit'] = "View and modify the properties for this assessment, including its problems"
-    @admin_title['export'] = "Export persistent properties that will be imported when you install this assessment in a future term"
-    @admin_title['reload'] = "Reload the assessment config file (provided for backward compatibility with legacy assessments)"
-    @admin_title['extensions'] = "Give extensions to students"
-    @admin_title['submission'] = "Create, view, export, and re-autograde submissions"
-    @admin_title['attachments'] = "Distribute files to your students"
-    @admin_title['statistics'] = "View detailed stats for this assessment"
-    @admin_title['bulkGrade'] = "Upload scores or feedback for multiple students from a CSV file"
-    @admin_title['bulkExport'] = "Export grades (with sub-scores) \nfor all students to a CSV file"
-    
-    if @assessment.has_autograde then
-      autogradeListAdmin
-    end
-
-    if @assessment.has_groups? then
-      groupsListAdmin
-    end
-
-    if @assessment.has_scoreboard then
-      scoreboardListAdmin
-    end
-
-    if @assessment.has_svn then
-      svnListAdmin
-    end
-
-  end
-
-  # autogradeListAdmin - adds the "admin autograding" option to
-  # the assessment admin menu
-  def autogradeListAdmin
-    @adminlist["adminAutograde"] = "Admin autograding"
-    @admin_title["adminAutograde"] = "Modify autograding properties such as the VM image and the timeout value"
-  end
-
-  # TODO_GROUPS integrate this elsewhere
-  def groupsListAdmin
-    @adminlist["adminPartners"] = "Admin partners"
-    @admin_title["adminPartners"] = "View and modify the different partner groups"
-  end
-
-  def svnListAdmin
-    @adminlist["adminSVN"] = "Admin SVN"
-    @admin_title["adminSVN"] = "Manage the SVN repositiory"
-  end
-
-  # scoreboardListAdmin - Adds the "admin scoreboard" option to the
-  # assessment admin menu. Only autograded labs have configurable
-  # scoreboards.
-  def scoreboardListAdmin
-    @adminlist["adminScoreboard"] = "Admin scoreboard"
-    @admin_title["adminScoreboard"] = "Configure the appearance of the scoreboard"
-  end
-
-  def listCA
-    if ! @cud.course_assistant? then
-      redirect_to :action=>"index" and return 
-    end
-    @options = 
-      [
-       { 'url' => url_for(:action => 'viewGradesheet', :section => '1', :escape => false), 
-         'name' => "Grade section #{@cud.section} submissions",
-         :title => "View and enter grades for your section. Make sure your instructor has assigned you to a section in your Autolab account"},
-       { 'url' => url_for(:action => 'viewGradesheet'), 
-         'name' => 'Grade all submissions', 
-         :title => "View and enter grades for all sections"},
-       { 'url' => url_for(:action => 'releaseSectionGrades'), 
-         'name' => 'Release section grades',
-         :title => "Make all scores visible to the students in your section. This will work only if your instructor has assigned you to a lecture and section in your Autolab account."},
-       { 'url' => url_for(:action => 'reload'), 
-         'name' => 'Reload config file',
-         :title => "Reload the assessment configuration file (provided for backward compatibility with legacy assessments)"}
-    ]
-    if !@assessment.disable_handins
-      @options << { 'url' => url_for(:action => 'downloadSubmissions'), 
-        'name' => 'Download submissions',
-        :title => "Download all submissions"}
-    end  
-
   end
 
   # scoreboardListOptions - Adds the view scoreboard option to the

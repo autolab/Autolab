@@ -24,16 +24,15 @@
 <p class="attention">This is an exam. While it is in progress, please check Admin > Edit Course > Exam In Progress.</p>
 <% end %>
 
+<%# Display the handin form %>
 <% if @assessment.has_svn then %>
   <%= render partial: "handinSVN" %>
 <% else %>
   <%= render partial: "handin_form", locals: {modal: false, id: "handin_show_assessment"} %>
 <% end %>
 
-<table><tr valign=top>
-
-<%# Display general user options %> 
-<td>
+<%# Display general user options %>
+<div class="ass-wrapper">
   <h2>Options</h2>
   <ul>
     <% if @assessment.has_groups? then %>
@@ -45,47 +44,79 @@
       <li><%= link_to "View scoreboard", [:scoreboard, @course, @assessment], { title: "View the class scoreboard" } %>
     <% end %>
     <li><%= link_to "View writeup", [:writeup, @course, @assessment], { title: "View the assessment writeup" } %></li>
+    
     <% @list.sort { |a,b| a[1] <=> b[1] }.each do |key, value| %>
       <% if value.size > 0  then  %>
         <li> <%= link_to value, {:action => key}, {:title=>(@list_title[key] || "")} %> </li>
       <% end %>
     <% end %>
   </ul>
-</td>
+</div>
 
 <%# Display any optional instructor admin options %>
 <% if @cud.instructor? then %>
-  <td width=20></td>
-  <td>
+<div class="ass-wrapper">
   <h2>Admin Options (staff)</h2>
   <ul>
-  <% @adminlist.sort { |a,b| a[1] <=> b[1] }.each { |key, value| %>
-    <% if value.size > 0  then  %>
-      <li> <%= link_to value, {:action => key}, {:title=>(@admin_title[key] || "")} %></li>
-  <% end %>
-  <% } %>
+    <% if @assessment.has_autograde then %>
+      <li><%= link_to "Autograding Settings", [:adminAutograde, @course, @assessment], { title: "Modify autograding properties such as the VM image and the timeout value." } %></li>
+    <% end %>
+    <% if @assessment.has_groups? then %>
+      <li><%= link_to "Group Settings", course_assessment_groups_path(@course, @assessment), { title: "View and modify the assessment groups." } %></li>
+    <% end %>
+    <% if @assessment.has_scoreboard then %>
+      <li><%= link_to "Scoreboard Settings", [:adminScoreboard, @course, @assessment], { title: "Configure the appearance of the scoreboard." } %></li>
+    <% end %>
+    <% if @assessment.has_svn then %>
+      <li><%= link_to "SVN Settings", [:adminSVN, @course, @assessment], { title: "Manage the SVN repositories." } %></li>
+    <% end %>
+
+    <li><%= link_to "Assessment Settings", [:edit, @course, @assessment], { title: "View and modify the properties for this assessment, including its problems" } %></li>
+    <li><%= link_to "Bulk Export Grades", [:bulkExport, @course, @assessment], { title: "Export grades (with sub-scores) \nfor all students to a CSV file" } %></li>
+    <li><%= link_to "Bulk Import Grades", [:bulkGrade, @course, @assessment], { title: "Upload scores or feedback for multiple students from a CSV file" } %></li>
+    <li><%= link_to "Export Assessment", [:export, @course, @assessment], { title: "Export persistent properties that will be imported when you install this assessment in a future term" } %></li>
+    <li><%= link_to "Grade Submissions", [:viewGradesheet, @course, @assessment], { title: "View and enter grades on the gradesheet" } %></li>
+    <li><%= link_to "Manage Assessment Attachments", [:attachments, @course, @assessment], { title: "Distribute files to your students" } %></li>
+    <li><%= link_to "Manage Extensions", [:extensions, @course, @assessment], { title: "Give extensions to students" } %></li>
+    <li><%= link_to "Manage Submissions", [:submissions, @course, @assessment], { title: "Create, view, export, and re-autograde submissions" } %></li>
+    <li><%= link_to "Release All Grades", [:releaseAllGrades, @course, @assessment], { title: "Make all scores for this assessment visible to students" } %></li>
+    <li><%= link_to "Reload Config File", [:reload, @course, @assessment], { title: "Reload the assessment config file (provided for backward compatibility with legacy assessments)" } %></li>
+    <li><%= link_to "View Statistics", [:statistics, @course, @assessment], { title: "View detailed stats for this assessment" } %></li>
+    <li><%= link_to "Withdraw All Grades", [:withdrawAllGrades, @course, @assessment], { title: "Hide all scores for this assessment from students" } %></li>
+    
+    <% @adminlist.sort { |a,b| a[1] <=> b[1] }.each do |key, value| %>
+      <% if value.size > 0  then  %>
+        <li> <%= link_to value, {:action => key}, {:title=>(@admin_title[key] || "")} %></li>
+      <% end %>
+    <% end %>
   </ul>
-  </td>
+</div>
 <% end %>
 
 
 <%# Display the optional CA admin options %>
 <% if @cud.course_assistant? then %>
-  <td width=20></td>
-  <td>
+<div class="ass-wrapper">
   <h2>Admin Options (CA)</h2>
   <ul>
-  <% for option in @options do %>
-    <li><%= link_to option['name'], option['url'], :title=>option[:title] %></li>
-  <% end %>
+    <% unless @assessment.disable_handins then %>
+      <li><%= link_to "Download Submissions", [:downloadSubmissions, @course, @assessment], title: "Download all submissions." %></li>
+    <% end %>
+    <li><%= link_to "Grade All Submissions", [:viewGradesheet, @course, @assessment],
+                    title: "View and enter grades for all sections." %></li>
+    <li><%= link_to "Grade Section #{@cud.section} Submissions", url_for(action: :viewGradesheet, section: @cud.section, escape: false), 
+                    title: "View and enter grades for your section.  Make sure your instructor has assigned you to a section in your Autolab account." %></li>
+    <li><%= link_to "Release Section Grades", [:releaseSectionGrades, @course, @assessment], 
+                    title: "Make all scores visible to the students in your section.  This will work only if your instructor has assigned you to a lecture and section in your Autolab account." %></li>
+    <li><%= link_to "Reload Config File", [:reload, @course, @assessment], 
+                    title: "Reload the assessment configuration file (provided for backward compatibility with legacy assessments)" %></li>
   </ul>
-  </td>
+</div>
 <% end %>
-
-</tr></table>
 
 <%# Display any attachments %>
 <% if @assessment.attachments.length > 0 %>
+<div class="ass-wrapper">
   <h2><%= @assessment.display_name %> Files</h2>
   <ul>
     <%= render @assessment.attachments %>
@@ -105,6 +136,7 @@
       <% end %>
     <% end %>
   </ul>
+</div>
 <% end %>
 
 <% content_for :javascript do %>

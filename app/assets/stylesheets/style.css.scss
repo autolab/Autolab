@@ -782,3 +782,9 @@ input[type="password"]:focus {
   font-size: 16px;
   line-height: 24px;
 }
+
+/* wrapper divs for lists on assessments#show */
+.ass-wrapper {
+  float: left;
+  margin: 0 20px 20px 0;
+}
