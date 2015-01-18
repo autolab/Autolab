@@ -44,7 +44,7 @@ module AssessmentHelper
     CSV.generate do |csv|
 
       # title row with the column names:
-      title = ["Andrew ID:"]
+      title = ["Email:"]
       asmt.problems.each { |problem| title << "#{problem.name}:" }
       title << "Total:"
       csv << title
@@ -66,7 +66,7 @@ private
     aud = AssessmentUserDatum.get asmt.id, cud.id
     throw "csv_row_for: no AUD for (#{asmt.id}, #{cud.id})" unless aud
 
-    # create csv row with Andrew ID (first column)
+    # create csv row with user email (first column)
     row = [ cud.user.email ]
 
     grade_type = aud.grade_type
@@ -105,9 +105,9 @@ private
   def bulkGrade_cell cell
     case cell
     when Hash
-      cell[:error] ? cell[:error] : '<span class="glyphicon glyphicon-search"></span>'
+      cell[:error] ? cell[:error] : '<span class="glyphicon glyphicon-search"></span>'.html_safe
     when NilClass
-      '<span class="glyphicon glyphicon-pushpin"></span>'
+      '<span class="glyphicon glyphicon-pushpin"></span>'.html_safe
     else
       cell
     end
