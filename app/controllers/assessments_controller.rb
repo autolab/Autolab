@@ -24,7 +24,7 @@ class AssessmentsController < ApplicationController
   
   action_auth_level :adminSVN, :instructor
   action_auth_level :setRepository, :instructor
-  action_auth_level :importSvn, :instructor
+  action_auth_level :importSVN, :instructor
 
   autolabRequire Rails.root.join('app/controllers/assessments/autograde.rb')
   include AssessmentAutograde
