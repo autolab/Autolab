@@ -109,7 +109,7 @@ private
 
           unless sub = aud.latest_submission
             sub = asmt.submissions.build(
-              :user_id => user.id,
+              :course_user_datum_id => user.id,
               :assessment_id => asmt.id,
               :submitted_by_id => @cud.id
             )
@@ -153,7 +153,7 @@ private
   def parse_csv csv, data_type
     # inputs for parse_csv_row
     problems = @assessment.problems
-    emails = Set.new(@course.course_user_data.map &:email)
+    emails = Set.new(CourseUserDatum.joins(:user).where(:course => @assessment.course).map &:email)
 
     # process CSV
     entries = []
