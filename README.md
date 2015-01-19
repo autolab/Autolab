@@ -76,13 +76,17 @@ This is the main repository that includes the application layer of the project. 
 	(#TODO: make it so that setup.sh initiates the directories)
 
 
-8. Start rails server:
+8. (Optional) Setup [Tango Service] (https://github.com/autolab/Tango) following the [instructions on the wiki] (https://github.com/autolab/Tango/wiki/Setting-up-Tango-server-and-VMs). 
+
+9. Create the autoConfig file by editing `lib/autoConfig.rb.template` and renaming to `lib/autoConfig.rb`. 
+
+10. Start rails server:
 
 	```sh
 	bundle exec rails s -p 3000
 	```
 
-9. Go to <yoururl>:3000 to see if the application is running. You can use the `Developer Login` option with the email "admin@foo.bar".
+11. Go to <yoururl>:3000 to see if the application is running. You can use the `Developer Login` option with the email "admin@foo.bar".
 
 
 ## Testing
