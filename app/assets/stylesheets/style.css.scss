@@ -228,7 +228,7 @@ div.main-header img {
 
   .action-links.navbar-nav li {
     display: block;
-    border-bottom: 1px solid #fff;  
+    border-bottom: 1px solid #fff;
     margin: 0;
   }
 
@@ -299,9 +299,9 @@ div#footer a:hover {
 
 
 /* used for the submission history popup on submissions#index */
-#floater{ 
+#floater{
   background-color: #fff;
-  border:1px solid black;	
+  border:1px solid black;
   display: none;
   height:80%;
   left:15%;
@@ -349,14 +349,14 @@ div#publicCourse{
 }
 
 /* For autocompleting something. Not sure that these are in use anymore... */
-div.autoCompleteDiv  { 
+div.autoCompleteDiv  {
   background-color:white;
   border: 1px solid black;
   font-color:black;
   margin-right:10px;
   padding: 2px;
 }
-div.autoCompleteDiv:hover, div.selectedAutoCompleteDiv { 
+div.autoCompleteDiv:hover, div.selectedAutoCompleteDiv {
   background-color:#d2d2d2;
   border: 1px solid black;
   font-color:black;
@@ -365,7 +365,7 @@ div.autoCompleteDiv:hover, div.selectedAutoCompleteDiv {
 }
 
 /*
- * For announcing Exams 
+ * For announcing Exams
  */
 p.attention {
   color: green;
@@ -452,8 +452,8 @@ table.prettyBorder th{
   border: 1px solid #ccc;
   color:#888;
   cursor:pointer;
-  font-family: Helvetica, sans-serif; 
-  font-size: 12px; 
+  font-family: Helvetica, sans-serif;
+  font-size: 12px;
   font-weight: bold;
   padding: 5px;
   text-align:left;
@@ -499,7 +499,7 @@ div.card:hover {
 }
 
 
-div.card h1, 
+div.card h1,
 div.card h2 {
   font-weight: 300;
   margin: 0;
@@ -563,12 +563,8 @@ div.card .btn.main:hover {
   background-color: rgba(153, 0, 0, 0.9)
 }
 
-div.card:nth-child(3) {
-  margin-right: 0;
-}
-
 @media (max-width: 768px) {
-  
+
   .rolodex {
     text-align: center;
   }
@@ -584,7 +580,7 @@ div.card:nth-child(3) {
 /* General Styling */
 
 body.autolab {
-  
+
   font-family: 'Source Sans Pro', sans-serif;
   font-weight: 300;
 
@@ -626,7 +622,7 @@ input[type="password"]:focus {
 .page-wrapper {
   min-height: 100%;
   /* equal to footer height */
-  margin-bottom: -42px; 
+  margin-bottom: -42px;
 }
 .page-wrapper:after {
   content: "";
@@ -634,7 +630,7 @@ input[type="password"]:focus {
 }
 .page-wrapper:after {
   /* .push must be the same height as footer */
-  height: 42px; 
+  height: 42px;
 }
 
 .autolab .btn {
@@ -732,7 +728,7 @@ input[type="password"]:focus {
 /* Form Tables */
 
 .verticalTable {
-  
+
 }
 
 .verticalTable tr {
