@@ -284,15 +284,7 @@ class SubmissionsController < ApplicationController
     @submissions = Submission.where(:assessment_id=>@assessment.id,
                                     :special_type=>Submission::NORMAL).order("version DESC")
 
-    # Extract the most recent submission from each student
-    prev_user_id = 0
-    last_submissions = []
-    for @submission in @submissions do
-      if prev_user_id != @submission.course_user_datum.email then
-        last_submissions << @submission
-        prev_user_id = @submission.course_user_datum.email
-      end
-    end
+    last_submissions = @submissions.latest
 
     # Now regrade only the most recent submissions. Keep track of
     # any handins that fail.
