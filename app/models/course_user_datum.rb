@@ -61,11 +61,8 @@ class CourseUserDatum < ActiveRecord::Base
   def valid_nickname?
     if not nickname
       true
-    elsif not nickname.ascii_only? then
-      errors.add("nickname", "must consist of only ASCII characters")
-      false
-    elsif nickname.length > 20 then 
-      errors.add("nickname", "is too long (maximum is 20 characters)")
+    elsif nickname.length > 32 then 
+      errors.add("nickname", "is too long (maximum is 32 characters)")
       false
     else
       true
