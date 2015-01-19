@@ -59,7 +59,7 @@ module AssessmentAutograde
     assessmentDir = File.join(AUTOCONFIG_COURSE_DIR,@course.name,@assessment.name)
 
     # Send OPEN api request to create course-lab directory.
-    openReqURL = "http://#{RESTFUL_HOST}:#{RESTFUL_PORT}/open/#{RESTFUL_KEY}/#{RESTFUL_COURSELAB}/"
+    openReqURL = "http://#{RESTFUL_HOST}:#{RESTFUL_PORT}/open/#{RESTFUL_KEY}/#{@course.name}/"
     COURSE_LOGGER.log("Req: " + openReqURL)
     openResponse = Net::HTTP.get_response(URI.parse(openReqURL))
     openResponseJSON = JSON.parse(openResponse.body)
@@ -109,7 +109,7 @@ module AssessmentAutograde
       print md5hash
       print "\n"
       unless existingFileList.include?(md5hash)
-        uploadReq = Net::HTTP::Post.new("/upload/#{RESTFUL_KEY}/#{RESTFUL_COURSELAB}/")
+        uploadReq = Net::HTTP::Post.new("/upload/#{RESTFUL_KEY}/#{@course.name}/")
 	      uploadReq.add_field("Filename", f["destFile"])
         begin
           file = File.open(f["localFile"], "rb")
@@ -120,7 +120,7 @@ module AssessmentAutograde
           file.close unless file.nil?
         end
         uploadResponse = uploadHTTPReq.request(uploadReq)
-        COURSE_LOGGER.log("Req: "+ "/upload/#{RESTFUL_KEY}/#{RESTFUL_COURSELAB}/"); 
+        COURSE_LOGGER.log("Req: "+ "/upload/#{RESTFUL_KEY}/#{@course.name}/"); 
 	uploadResponseJSON = JSON.parse(uploadResponse.body)
         if (uploadResponseJSON.nil? || uploadResponseJSON["statusId"] < 0) then 
           return -6
@@ -164,7 +164,7 @@ module AssessmentAutograde
 
     # Send ADDJOB api request to add autograde job to queue.
     addJobHTTPReq = Net::HTTP.new(RESTFUL_HOST, RESTFUL_PORT)
-    addJobReq = Net::HTTP::Post.new("/addJob/#{RESTFUL_KEY}/#{RESTFUL_COURSELAB}/")
+    addJobReq = Net::HTTP::Post.new("/addJob/#{RESTFUL_KEY}/#{@course.name}/")
     addJobReq.body = {"image" => @autograde_prop.autograde_image,
                       "files" => uploadFileList.map{|f| Pathname.new(f["destFile"]).basename.to_s},
                       "output_file" => filename,
@@ -175,7 +175,7 @@ module AssessmentAutograde
 
     list = uploadFileList.map{|f| Pathname.new(f["destFile"]).basename.to_s}
     COURSE_LOGGER.log("Files: #{list.to_s}")
-    COURSE_LOGGER.log("Req: "+ "/addJob/#{RESTFUL_KEY}/#{RESTFUL_COURSELAB}/")
+    COURSE_LOGGER.log("Req: "+ "/addJob/#{RESTFUL_KEY}/#{@course.name}/")
     addJobResponse = addJobHTTPReq.request(addJobReq)
     addJobResponseJSON = JSON.parse(addJobResponse.body)
     autogradeModule = UserModule.load("Autograde",@assessment.id)
@@ -199,7 +199,7 @@ module AssessmentAutograde
       begin
         feedback = Timeout::timeout(80) {
           while true do
-            pollReqURL = "http://#{RESTFUL_HOST}:#{RESTFUL_PORT}/poll/#{RESTFUL_KEY}/#{RESTFUL_COURSELAB}/#{filename}/"
+            pollReqURL = "http://#{RESTFUL_HOST}:#{RESTFUL_PORT}/poll/#{RESTFUL_KEY}/#{@course.name}/#{filename}/"
             pollResponse = Net::HTTP.get_response(URI.parse(pollReqURL))
             if pollResponse.content_type == "application/json" then
               pollResponseStatusId = JSON.parse(pollResponse.body)["statusId"]
