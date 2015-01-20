@@ -263,15 +263,6 @@ class SubmissionsController < ApplicationController
               :filename => File.basename(result.path))
   end
 
-  # should be okay, but untested
-  # def regradeAll
-  #   load_submission() or return false
-
-  #   if @assessment.has_autograde then
-  #     regradeAll()
-  #   end
-  # end
-
   # 
   # regradeAll - regrade the most recent submissions from each student
   #
