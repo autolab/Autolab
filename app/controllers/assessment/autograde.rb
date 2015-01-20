@@ -55,10 +55,9 @@ module AssessmentAutograde
   #
   def createVm
     extend_config_module()
-
     assessmentDir = File.join(AUTOCONFIG_COURSE_DIR,@course.name,@assessment.name)
 
-    # Send OPEN api request to create course-lab directory.
+    # Send OPEN api request to create/query course-lab directory.
     openReqURL = "http://#{RESTFUL_HOST}:#{RESTFUL_PORT}/open/#{RESTFUL_KEY}/#{@course.name}/"
     COURSE_LOGGER.log("Req: " + openReqURL)
     openResponse = Net::HTTP.get_response(URI.parse(openReqURL))
@@ -67,10 +66,6 @@ module AssessmentAutograde
       return -1
     end
     existingFileList = openResponseJSON["files"]
-    print "\n\n"
-    print existingFileList
-    print "\n\n"
-
     COURSE_LOGGER.log("Existing File List: #{existingFileList.to_s}")
 
     # Send UPLOAD api request to upload autograde files.
@@ -82,35 +77,20 @@ module AssessmentAutograde
         uploadFileList =  @assessment.config_module.autogradeInputFiles(assessmentDir)
       else 
         uploadFileList =  autogradeInputFiles(assessmentDir)
-        print "\n\n"
-        print uploadFileList
-        print "\n\n"
-
       end
 
       COURSE_LOGGER.log("Upload File List: #{uploadFileList.to_s}")
     rescue Exception => e
-      print e
       COURSE_LOGGER.log("Error with getting files: " + e.to_s)
       e.backtrace.each { |line| COURSE_LOGGER.log(line) }
       return -3
     end
 
-
     uploadFileList.each { |f|
-
-      print "\n"
-      print f["localFile"]
-      print "\n"
-
       md5hash = Digest::MD5.file(f["localFile"]).to_s
-
-      print "\n"
-      print md5hash
-      print "\n"
       unless existingFileList.include?(md5hash)
         uploadReq = Net::HTTP::Post.new("/upload/#{RESTFUL_KEY}/#{@course.name}/")
-	      uploadReq.add_field("Filename", f["destFile"])
+	      uploadReq.add_field("Filename", File.basename(f["localFile"]))
         begin
           file = File.open(f["localFile"], "rb")
           uploadReq.body = file.read
@@ -166,7 +146,8 @@ module AssessmentAutograde
     addJobHTTPReq = Net::HTTP.new(RESTFUL_HOST, RESTFUL_PORT)
     addJobReq = Net::HTTP::Post.new("/addJob/#{RESTFUL_KEY}/#{@course.name}/")
     addJobReq.body = {"image" => @autograde_prop.autograde_image,
-                      "files" => uploadFileList.map{|f| Pathname.new(f["destFile"]).basename.to_s},
+                      "files" => uploadFileList.map{|f| {"localFile" => File.basename(f["localFile"]),
+                                                         "destFile" => Pathname.new(f["destFile"]).basename.to_s}},
                       "output_file" => filename,
                       "timeout" => @autograde_prop.autograde_timeout,
                       "callback_url" => callBackURL,
