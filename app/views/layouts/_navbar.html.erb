@@ -12,7 +12,7 @@
 
 	<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
 		<ul class="nav navbar-nav navbar-right action-links" role="navigation">
-            
+
 			<% if session[:sudo] && @cud then %>
 			<li>
 				<%= link_to "(#{@cud.display_name}) Reset user",
@@ -23,7 +23,7 @@
 			<li>
 				<a href="/">Courses</a>
 			</li>
-						
+
 			<% if @cud %>
 			<li>
 				<% link = (@cud.course_assistant? && !@cud.section.blank?) ? "Section #{@cud.section} Gradebook" : "Gradebook" %>
@@ -32,20 +32,20 @@
 			<li>
 				<%= link_to "Jobs", course_jobs_path(@cud.course), :title => "View a history of autograding jobs" %>
 			</li>
-            
+
 			<% if @cud.instructor? %>
 			<li>
 				<%= link_to "Course Admin", course_admin_path(@cud.course), :title => "Perform course-wise administrative actions" %>
 			</li>
 			<% end %>
 			<% end %>
-					
+
 			<% if !@cud && current_user && current_user.administrator? %>
 			<li>
 				<%= link_to "Autolab Admin", user_admin_path(current_user), :title => "Perform system-wise administrative actions" %>
 			</li>
 			<% end %>
-						
+
 			<!-- User -->
 			<% if user_signed_in? %>
 			<li class="dropdown">
@@ -57,6 +57,11 @@
 					<% unless current_user.nil? %>
 					<li role="presentation">
 						<%= link_to "Account", edit_user_path(current_user), :title => "View your account info" %>
+					</li>
+					<% end %>
+					<% if @course %>
+					<li role="presentation">
+						<%= link_to "Course Profile", course_course_user_datum_path(@course, @cud), :title => "View your user profile for the current course" %>
 					</li>
 					<% end %>
 					<% if Rails.env.development? %>
@@ -95,6 +100,6 @@
 		</span>
 		<% end %>
 	</span>
-	
+
 </div>
 <% end %>
