@@ -85,9 +85,17 @@ class SubmissionsController < ApplicationController
     
     feedback_str = params[:file].read
 
-    @submission = Submission.where(:id => params[:id]).first
-    @course = Course.where(:id => params[:course_id]).first
-    @assessment = Assessment.where(:id => params[:assessment_id]).first
+    puts "DAVE KEY: " + params[:dave]
+
+    @submission = Submission.where(id: params[:id], dave: params[:dave]).first
+    @course = Course.where(id: params[:course_id]).first
+    @assessment = Assessment.where(id: params[:assessment_id]).first
+
+    puts @submission
+
+    unless @submission and @course and @assessment then
+      render nothing: true and return
+    end
 
     autolab_dir = File.expand_path(File.dirname(__FILE__)+'/../../')
     configName = "#{@course.name}-#{@assessment.name}.rb"
@@ -97,10 +105,8 @@ class SubmissionsController < ApplicationController
     assign = @assessment.name.gsub(/\./,'') 
     modName = (assign + (@course.name).gsub(/[^A-Za-z0-9]/,"")).camelize
 
-    dave = params[:dave]
-  
     if @assessment.has_autograde then
-      autogradeDone(dave, @submission, feedback_str)
+      autogradeDone(@submission, feedback_str)
     end
 
     render :nothing => true
@@ -535,19 +541,11 @@ class SubmissionsController < ApplicationController
 
   # AUTOGRADING
   #
-  # autogradeDone - This is called when Tango completes the
-  # autograding for a job on the backend.
+  # autogradeDone - called when autograding is done, either by the submissions#autograde_done
+  # route getting called by Tango or by the Autograde module polling Tango. In either case,
+  # submission is confirmed via dave key to have been created by Autolab
   #
-  def autogradeDone(dave,submission,feedback)
-    autogradeModule = UserModule.load("Autograde",@assessment.id)
-    # Get the key from the dave value used in the url,
-    # then use the key to get the submission
-    # daveNum = autogradeModule.getByVal("dave_key",dave)    
-    #if (daveNum == nil) then
-    #  return #TODO: this should do something
-    # end
-    # userVersion = autogradeModule.get("dave_user",daveNum)
-    
+  def autogradeDone(submission, feedback)
     @user = submission.course_user_datum.user
 
     assessmentDir = File.join(AUTOCONFIG_COURSE_DIR, submission.course_user_datum.course.name, submission.assessment.name)
@@ -570,11 +568,6 @@ class SubmissionsController < ApplicationController
     end
     
     saveAutograde(submission,feedbackFile)
-    
-    # Now remove the entries and file
-    # autogradeModule.delete("dave_key", daveNum)
-    # autogradeModule.delete("dave_user", daveNum)
-
   end
 
   #
