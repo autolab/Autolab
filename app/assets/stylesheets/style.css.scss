@@ -481,7 +481,6 @@ div.card {
   margin-right: 20px;
   margin-top: 15px;
   vertical-align: top;
-  padding:0;
   webkit-box-shadow: 0 0 8px rgba(0,0,0,0.10);
   -moz-box-shadow: 0 0 8px rgba(0,0,0,0.10);
   box-shadow: 0 0 8px rgba(0,0,0,0.10);
@@ -489,7 +488,10 @@ div.card {
   -moz-border-radius: 6px;
   overflow: hidden;
   text-align:center;
-  min-height: 215px;
+  padding: 0;
+  // There is 22px between the assignment list and the button (from various
+  // margins), so let's match it below the button as well.
+  padding-bottom: 22px;
 }
 
 div.card:hover {
