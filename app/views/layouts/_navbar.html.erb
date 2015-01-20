@@ -59,7 +59,7 @@
 						<%= link_to "Account", edit_user_path(current_user), :title => "View your account info" %>
 					</li>
 					<% end %>
-					<% if @course %>
+					<% if @course and @cud %>
 					<li role="presentation">
 						<%= link_to "Course Profile", course_course_user_datum_path(@course, @cud), :title => "View your user profile for the current course" %>
 					</li>
