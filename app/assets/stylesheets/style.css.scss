@@ -492,6 +492,7 @@ div.card {
   // There is 22px between the assignment list and the button (from various
   // margins), so let's match it below the button as well.
   padding-bottom: 22px;
+  min-height: 215px;
 }
 
 div.card:hover {
