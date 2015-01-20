@@ -1,11 +1,11 @@
 class CourseUserDataController < ApplicationController
-  
+
   action_auth_level :index, :student
   def index
     @requestedUser = @cud
     render :action=>:show
   end
-  
+
   action_auth_level :new, :instructor
   def new
     @newCUD = @course.course_user_data.new
@@ -16,7 +16,7 @@ class CourseUserDataController < ApplicationController
   action_auth_level :create, :instructor
   def create
     @newCUD = @course.course_user_data.new(cud_params)
-    
+
     # check user existence
     email = params[:course_user_datum][:user_attributes][:email]
     user = User.where(email: email).first
@@ -28,13 +28,13 @@ class CourseUserDataController < ApplicationController
       auth.save!
       @newUser = User.new(cud_params[:user_attributes])
       @newUser.authentications << auth
-      
+
       temp_pass = Devise.friendly_token[0, 20]    # generate a random token
       @newUser.password = temp_pass
 
       if @newUser.save then
          @newCUD.user = @newUser
-      else 
+      else
         @newUser.errors.each do |msg|
           print msg
         end
@@ -50,7 +50,7 @@ class CourseUserDataController < ApplicationController
       end
       @newCUD.user = user
     end
-    
+
     # save CUD
     if @newCUD.save then
       flash[:success] = "Success: added user #{email} in #{@course.display_name}"
@@ -85,15 +85,15 @@ class CourseUserDataController < ApplicationController
     if @editCUD == nil then
       flash[:error] = "Can't find user in the course."
       redirect_to :action=>"index" and return
-    end 
+    end
 
-    if (@editCUD.id != @cud.id) and (!@cud.instructor?) and 
+    if (@editCUD.id != @cud.id) and (!@cud.instructor?) and
         (!@cud.user.administrator?) then
       flash[:error] = "Permission denied."
       redirect_to :action=>"index" and return
     end
- 
-    @editCUD.tweak ||= Tweak.new 
+
+    @editCUD.tweak ||= Tweak.new
   end
 
   action_auth_level :update, :student
@@ -104,7 +104,7 @@ class CourseUserDataController < ApplicationController
     @editCUD = @course.course_user_data.find(params[:id])
     if @editCUD == nil then
       redirect_to :action=>"index" and return
-    end 
+    end
 
     if (@editCUD.id != @cud.id) and (!@cud.instructor?) then
       redirect_to :action=>"index" and return
@@ -143,9 +143,9 @@ class CourseUserDataController < ApplicationController
       redirect_to users_course_admin_path(@course) and return
     end
   end
-  
+
   # Non-RESTful paths below
-  
+
   # this GET page confirms that the instructor wants to destroy the user
   action_auth_level :destroyConfirm, :instructor
   def destroyConfirm
@@ -200,7 +200,7 @@ class CourseUserDataController < ApplicationController
   end
 
 private
-  
+
   def cud_params
     if @cud.administrator? then
       params.require(:course_user_datum).permit(:school, :major, :year,
