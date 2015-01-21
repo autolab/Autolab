@@ -91,7 +91,7 @@ module AssessmentHandin
       @assessment = @course.assessments.find(params[:assessment_id])
     end
 
-    submission_count = @assessment.submissions.count(:conditions => { :course_user_datum_id => @cud.id })
+    submission_count = @assessment.submissions.where(course_user_datum_id: @cud.id).count
     @left_count = [ @assessment.max_submissions - submission_count, 0 ].max
     @aud = AssessmentUserDatum.get @assessment.id, @cud.id
     @can_submit, @why_not = @aud.can_submit? Time.now

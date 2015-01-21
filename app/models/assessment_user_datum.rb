@@ -173,7 +173,7 @@ class AssessmentUserDatum < ActiveRecord::Base
     if assessment.max_submissions == -1
       false
     else
-      count = assessment.submissions.count(:conditions => { :course_user_datum => course_user_datum })
+      count = assessment.submissions.where(course_user_datum: course_user_datum).count
       count >= assessment.max_submissions  
     end
   end
