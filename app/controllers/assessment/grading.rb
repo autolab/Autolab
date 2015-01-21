@@ -237,7 +237,7 @@ public
     score = Score.find_or_initialize_by_submission_id_and_problem_id(sub_id, prob_id)
 
     score.grader_id = @cud.id
-    score.score = params[:score].to_i
+    score.score = params[:score].to_f
 
     updateScore(score.submission.course_user_datum_id, score)
 
