@@ -54,9 +54,9 @@ class AdminsController < ApplicationController
   def users
     if(params[:search]) then
       # left over from when AJAX was used to find users on the admin users list
-      @cuds = @course.course_user_data.joins(:user).order('users.email ASC').where(CourseUserDatum.conditions_by_like(params[:search]))
+      @cuds = @course.course_user_data.includes(:user).order('users.email ASC').where(CourseUserDatum.conditions_by_like(params[:search]))
     else
-      @cuds = @course.course_user_data.joins(:user).order('users.email ASC')
+      @cuds = @course.course_user_data.includes(:user).order('users.email ASC')
     end
 
   end
