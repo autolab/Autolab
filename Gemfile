@@ -74,5 +74,8 @@ gem 'capybara', group: [:development, :test]
 # Use Capistrano for deployment
 # gem 'capistrano-rails', group: :development
 
+# Force SSL on certain routes
+gem 'rack-ssl-enforcer'
+
 # Use debugger
 gem 'debugger2', group: [:development, :test]
