@@ -106,29 +106,30 @@ class CourseUserDataController < ApplicationController
       redirect_to :action=>"index" and return
     end
 
-    if (@editCUD.id != @cud.id) and (!@cud.instructor?) then
-      redirect_to :action=>"index" and return
+    if (@cud.student?) then
+      if (@editCUD.id != @cud.id) then
+        redirect_to action: :index and return
+      else
+        @editCUD.nickname = params[:course_user_datum][:nickname]
+        if @editCUD.save then
+          redirect_to action: :show and return
+        else
+          redirect_to action: :edit and return
+        end
+      end
     end
-
-    if @editCUD.student? and params[:course_user_datum][:nickname].blank?
-      @editCUD.errors.add :nickname, "must be chosen"
-      redirect_to edit_course_course_user_datum_path(@course, @editCUD) and return
-    end
-
+    
+    # editor is not a student at this point
     # won't have tweak attributes if student is editing
     tweak_attrs = params[:course_user_datum][:tweak_attributes]
-    if tweak_attrs && tweak_attrs[:value].blank?
+    if tweak_attrs && tweak_attrs[:value].blank? then
       params[:course_user_datum][:tweak_attributes][:_destroy] = true
     end
 
     # When we're finished editing, go back to the user table
-    if @editCUD.update_attributes!(edit_cud_params) then
+    if @editCUD.update!(edit_cud_params) then
       flash[:success] = "Success: Updated user #{@editCUD.email}"
-      if @cud.administrator?
-        redirect_to users_course_admin_path and return
-      else
-        redirect_to course_course_user_datum_path(@course, @editCUD) and return
-      end
+      redirect_to [@course, @editCUD] and return
     else
       flash[:error] = "Update failed. Check all fields"
       redirect_to action: :edit and return
