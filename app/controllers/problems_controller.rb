@@ -16,7 +16,7 @@ class ProblemsController < ApplicationController
   def create
     @problem = @assessment.problems.create(problem_params)
     if (@problem.save()) then
-      redirect_to edit_course_assessment_path(@course, @assessment) and return
+      redirect_to edit_course_assessment_path(@course, @assessment) + "/problems" and return
     else
       flash[:error] = "An error occurred while creating the new problem"
       redirect_to new_course_assessment_problem_path(@course, @assessment) and return
@@ -41,7 +41,7 @@ class ProblemsController < ApplicationController
     else
       flash[:error] = "Error: Problem not saved"
     end
-    redirect_to edit_course_assessment_path(@course, @assessment) and return
+    redirect_to edit_course_assessment_path(@course, @assessment) + "/problems" and return
   end
 
   action_auth_level :destroy, :instructor
@@ -50,7 +50,7 @@ class ProblemsController < ApplicationController
     if @problem.destroy() then
       flash[:success] = "Problem successfully destroyed."
     end
-    redirect_to edit_course_assessment_path(@course, @assessment) and return
+    redirect_to edit_course_assessment_path(@course, @assessment) + "/problems" and return
   end
 
 # Non-RESTful routes below
