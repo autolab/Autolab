@@ -78,18 +78,20 @@ Autolab3::Application.routes.draw do
         get 'handout'
         get 'partner'
         get 'scoreboard'
-        get 'submission_popover'
+
         #partner actions
         match 'setPartner', via: [:get, :post]
         get 'importPartners'
         get 'deletePartner'
         get 'cancelRequest'
+
         # gradesheet ajax actions
         post 'quickSetScore'
         post 'quickSetScoreDetails'
-        post 'quickGetTotal'
+        get 'quickGetTotal'
         get 'score_grader_info'
-        post 'submission_popover'
+        get 'submission_popover'
+
         # remote calls
         post 'official_submit'
         get  'unofficial_submit'
