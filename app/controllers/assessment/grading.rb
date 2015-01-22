@@ -108,12 +108,11 @@ private
           end
 
           unless sub = aud.latest_submission
-            sub = asmt.submissions.build(
-              :user_id => user.id,
-              :assessment_id => asmt.id,
-              :submitted_by_id => @cud.id
+            sub = asmt.submissions.create!(
+              course_user_datum_id: user.id,
+              assessment_id: asmt.id,
+              submitted_by_id: @cud.id
             )
-            sub.save!
           end
 
           entry[:data].each do |problem_name, datum|
@@ -123,9 +122,9 @@ private
 
             score = sub.scores.find_by_problem_id problem.id
             unless score
-              score = sub.scores.build(
-                :grader_id => @cud.id,
-                :problem_id => problem.id
+              score = sub.scores.new(
+                grader_id: @cud.id,
+                problem_id: problem.id
               )
             end
 

@@ -27,8 +27,8 @@ class SubmissionsController < ApplicationController
     @assessment = @course.assessments.find(params[:assessment_id])
     @submission = @assessment.submissions.new(tweak: Tweak.new)
     
-    if params["cud_id"] != nil then
-      cud_ids = params["cud_id"].split(',')
+    if params["course_user_datum_id"] != nil then
+      cud_ids = params["course_user_datum_id"].split(',')
       @cuds = @course.course_user_data.find(cud_ids)
       if @cuds.size != cud_ids.size then
         @errorMessage = "Couldn't find all course_user_data in #{cuds_ids}. " +
@@ -149,7 +149,6 @@ class SubmissionsController < ApplicationController
     else
       redirect_to edit_course_assessment_submission_path(@submission.course_user_datum.course, @assessment, @submission) and return
     end
-    debugger
   end
 
   # this is good
