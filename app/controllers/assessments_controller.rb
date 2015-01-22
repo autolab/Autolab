@@ -1290,8 +1290,8 @@ class AssessmentsController < ApplicationController
 
     personal_directory = @user.email + "_remote_handin"
     directory = @assessment.handin_directory
-    handinDir = File.join(@course.name, @assessment.name, directory, personal_directory)
-    internalDir = File.join(Rails.root, "courses", handinDir)
+    handinDir = File.join(@assessment.name, directory, personal_directory)
+    internalDir = File.join(Rails.root, "courses", @course.name, handinDir)
 
     if (params[:submit]) then
       #They've copied their handin over, lets go grab it. 
