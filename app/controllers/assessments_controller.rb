@@ -19,7 +19,7 @@ class AssessmentsController < ApplicationController
   include AssessmentAutograde
 
 
-  before_action :get_assessment, except: [ :index, :new, :create, :installAssessment, :importAsmtFromTar, :importAssessment, :getCategory, :unofficial_submit, :official_submit ]
+  before_action :get_assessment, except: [ :index, :new, :create, :installAssessment, :importAsmtFromTar, :importAssessment, :getCategory, :log_submit, :local_submit ]
 
   # We have to do this here, because the modules don't inherit ApplicationController.
 
@@ -45,8 +45,8 @@ class AssessmentsController < ApplicationController
   # Autograde
   action_auth_level :adminAutograde, :instructor
   action_auth_level :regrade, :instructor
-  action_no_auth    :unofficial_submit
-  action_no_auth    :official_submit
+  action_no_auth    :log_submit
+  action_no_auth    :local_submit
 
   # Partners
   action_auth_level :partner, :student
@@ -1168,8 +1168,8 @@ class AssessmentsController < ApplicationController
 
 
   # method called when student makes
-  # unofficial submission in the database
-  def unofficial_submit
+  # log submission in the database
+  def log_submit
     
     feedback_str = request.body.read
 
@@ -1225,7 +1225,7 @@ class AssessmentsController < ApplicationController
         render :nothing => true and return
       end
 
-      # Try to find an existing unofficial submission (always version 0). 
+      # Try to find an existing submission (always version 0). 
       submission = @assessment.submissions.where(:version=>0,:user_id=>@user.id).first
       if !submission then
         submission = @assessment.submissions.new(:version=>0,
@@ -1266,8 +1266,7 @@ class AssessmentsController < ApplicationController
 
   # method called when student makes
   # unofficial submission in the database
-  # action_no_auth :official_submit
-  def official_submit
+  def local_submit
     
     @course = Course.where(:id => params[:course_id]).first
     @assessment = Assessment.where(:id => params[:id]).first
