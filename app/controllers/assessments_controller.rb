@@ -1269,10 +1269,11 @@ class AssessmentsController < ApplicationController
   # action_no_auth :official_submit
   def official_submit
     
-    @course = Course.where(:id => params[:course]).first
-    @assessment = Assessment.where(:id => params[:assessment]).first
-    @user = User.where(:id => params[:user]).first
-    
+    @course = Course.where(:id => params[:course_id]).first
+    @assessment = Assessment.where(:id => params[:id]).first
+    @user = User.where(:email => params[:user]).first
+
+
     if !@course  then
       err = "ERROR: invalid course"
       render plain: err, status: :bad_request and return
@@ -1287,10 +1288,6 @@ class AssessmentsController < ApplicationController
       err = "ERROR: Invalid Assessment (#{assessment}) for course #{@course.id}"
       render plain: err, status: :bad_request and return
     end
-
-
-    # handinDir = "/courses/"
-    # handinDir += @user.email + "_" + @assessment.name + "/"
 
     personal_directory = @user.email + "_remote_handin"
     directory = @assessment.handin_directory
