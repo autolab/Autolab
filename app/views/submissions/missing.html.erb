@@ -13,8 +13,7 @@
     {:title=>"Grant extensions to students"} %> 
 |
 <%= link_to "Fill In Empty Submissions", 
-    {:action=>"create",  :assessment_id=>@assessment.id, 
-     :user_id=>@missing.collect{ |u| u[:id]}.join(',')}, 
+    new_course_assessment_submission_path(@course, @assessment, course_user_datum_id: @missing.collect{ |u| u[:id]}.join(',')),
     {:title=>"Create submissions for all of the missing students"} %>
 
 <p>

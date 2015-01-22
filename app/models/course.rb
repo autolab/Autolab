@@ -124,7 +124,7 @@ class Course < ActiveRecord::Base
   # TODO: should probably exclude adminstrators, but the fact that admins are in
   #   the User model instead of CourseUserDatum makes that difficult
   def students
-    course_user_data.where(course_assistant: false, instructor: false, dropped: false)
+    course_user_data.where(course_assistant: false, instructor: false, dropped: [false, nil])
   end
 
 
