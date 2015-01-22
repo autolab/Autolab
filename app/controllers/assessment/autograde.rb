@@ -1,15 +1,6 @@
 module AssessmentAutograde
   require 'autoConfig'
 
-
-  # Initialize the module-specific key-value store 
-  def moduleInstallAutograde
-    UserModule.create(:name=>"Autograde",:course_id=>@assessment.id)
-    um = UserModule.load("Autograde",@assessment.id)
-    um.addColumn("dave_key",String)
-    um.addColumn("dave_user",String)
-  end
-
   # 
   # autogradeAfterHandin - submits an autograding job to Tango when
   # the students submit their work.
@@ -128,7 +119,10 @@ module AssessmentAutograde
     # done.  The key is not guaranteed to be unique, we just hope to God
     # it is. 
     dave = (0...60).map{65.+(rand(25)).chr}.join
-    daveNum = rand(2000000000)
+
+    # save a dave key
+    @submission.dave = dave
+    @submission.save! 
 
     callBackURL = request.base_url +
       "/courses/#{@course.id}/assessments/#{@assessment.id}/submissions/#{@submission.id}/" +
@@ -159,15 +153,6 @@ module AssessmentAutograde
     COURSE_LOGGER.log("Req: "+ "/addJob/#{RESTFUL_KEY}/#{@course.name}-#{@assessment.name}/")
     addJobResponse = addJobHTTPReq.request(addJobReq)
     addJobResponseJSON = JSON.parse(addJobResponse.body)
-    autogradeModule = UserModule.load("Autograde",@assessment.id)
-    if (autogradeModule == nil) then
-      moduleInstallAutograde()
-      autogradeModule = UserModule.load("Autograde",@assessment.id)
-    end
-    autogradeModule.put("dave_key",daveNum,dave)
-
-    subName = "#{@submission.course_user_datum.email}-#{@submission.version}"
-    autogradeModule.put("dave_user",daveNum,subName)
 
     # Sanity check that job has been added successfully.
     if addJobResponseJSON.nil? || addJobResponseJSON["statusId"] < 0 then
@@ -198,7 +183,7 @@ module AssessmentAutograde
       if feedback.nil? then
         return -19 #pollResponseStatusId
       else
-        autogradeDone(dave, @submission, feedback)
+        autogradeDone(@submission, feedback)
       end
     end #if no callback url
     
