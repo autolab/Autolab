@@ -1288,8 +1288,13 @@ class AssessmentsController < ApplicationController
     end
 
 
-    handinDir = "/afs/andrew.cmu.edu/scs/cs/autolabEmail/handin/"
-    handinDir += @user.email + "_" + @assessment.name + "/"
+    # handinDir = "/courses/"
+    # handinDir += @user.email + "_" + @assessment.name + "/"
+
+    personal_directory = @user.email + "_remote_handin"
+    directory = @assessment.handin_directory
+    handinDir = File.join(@course.name, @assessment.name, directory, personal_directory)
+    internalDir = File.join(Rails.root, "courses", handinDir)
 
     if (params[:submit]) then
       #They've copied their handin over, lets go grab it. 
@@ -1339,6 +1344,7 @@ class AssessmentsController < ApplicationController
       else
         puts "There was an error saving your submission. Please contact your
         course staff"
+        render :bad_request and return
       end
 
       numSubmissions = Submission.where(:user_id=>@user.id, :assessment_id=>@assessment.id).count
@@ -1359,24 +1365,22 @@ class AssessmentsController < ApplicationController
       # The handin Directory really should not exist, as this script deletes it
       # when it's done.  However, if it's there, we'll try to remove an empty
       # folder, else fail w/ error message. 
-      if (Dir.exist?(handinDir)) then
+      if (Dir.exist?(internalDir)) then
         begin
           FileUtils.rm_rf(handinDir)
         rescue SystemCallError 
-          puts "WARNING: could not clear previous handin directory, please" +
-          "verify results on autolab.cs.cmu.edu "
+          render plain: "WARNING: could not clear previous handin directory, please" and return
         end
       end
 
       begin
-        Dir.mkdir(handinDir)
+        Dir.mkdir(internalDir)
       rescue SystemCallError
         puts "ERROR: Could not create handin directory. Please contact
         autolab-dev@andrew.cmu.edu with this error" 
       end
 
-      system("fs sa #{handinDir} #{@user.email} rlidw")
-      puts "Copied to:" + handinDir
+      system("fs sa #{internalDir} #{@user.email} rlidw")
     end
 
     render plain: handinDir and return
