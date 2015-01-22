@@ -1178,29 +1178,29 @@ class AssessmentsController < ApplicationController
 
     if !@course  then
       puts "ERROR: invalid course"
-      exit
+      render :bad_request
     end
 
     if !@user then
       puts "ERROR: invalid username (#{user}) for class #{course.id}"
-      exit
+      render :bad_request
     end
 
     if !@assessment then
       puts "ERROR: Invalid Assessment (#{assessment}) for course #{course.id}"
-      exit
+      render :bad_request
     end
 
     if !@assessment.allow_unofficial then
       puts "ERROR: This assessment does not allow Unofficial Submissions"
-      exit
+      render :bad_request
     end
 
     @result = params[:result]
 
     if !@result then
       puts "ERROR: No result!"
-      exit
+      render :bad_request
     end
 
     # Everything looks OK, so append the autoresult to the log.txt file for this lab
@@ -1258,7 +1258,7 @@ class AssessmentsController < ApplicationController
     end
 
 
-    render :nothing => true and return
+    render plain: "OK" and return
 
   end
 
@@ -1274,17 +1274,17 @@ class AssessmentsController < ApplicationController
     
     if !@course  then
       puts "ERROR: invalid course"
-      exit
+      render :bad_request
     end
 
     if ! @user then
       puts "ERROR: invalid username (#{user}) for class #{@course.id}"
-      exit
+      render :bad_request
     end
 
     if !@assessment then
       puts "ERROR: Invalid Assessment (#{assessment}) for course #{@course.id}"
-      exit
+      render :bad_request
     end
 
 
@@ -1302,26 +1302,26 @@ class AssessmentsController < ApplicationController
         # Eventually, we'll make *this* a module so that we can do verifications
         # properly. Until then...
 
-        handinFile = cgi.params["submit"][0]
+        handinFile = params[:submit].read
 
         # we're going to fake an upload object so we can save it. God I hate this
         # system.
         ###
-        #  class FakeUpload
-        #  def initialize(filename)
-        #    @filename = filename
-        #  end
-        #  def content_type
-        #    "text/plain"
-        #  end
-        #  def read
-        #    IO.read(@filename)
-        #  end
+        class FakeUpload
+          def initialize(filename)
+            @filename = filename
+          end
+          def content_type
+            "text/plain"
+          end
+          def read
+            IO.read(@filename)
+          end
 
-        #  def rewind
-        #    # do nothing, we open the file from scratch on every read
-        #  end
-        #end
+          def rewind
+            # do nothing, we open the file from scratch on every read
+          end
+        end
         ###
         upload = {'file'=>FakeUpload.new(handinDir + handinFile)}
         @submission = Submission.create(:assessment_id=>@assessment.id,
@@ -1329,10 +1329,9 @@ class AssessmentsController < ApplicationController
         @submission.saveFile(upload)
         afterHandin(@submission)
       rescue Exception  => e
-        # So, Autolab is a web-service, and we are accessing it via not a web
-        # request, so things go wrong.... a lot. Therefore, if an exception
-        # occurs, I really don't care. Love, Hunter.
+        print e
       end
+
       File.delete(handinDir + handinFile)
 
       if(@submission) then
@@ -1377,11 +1376,10 @@ class AssessmentsController < ApplicationController
       end
 
       system("fs sa #{handinDir} #{@user.email} rlidw")
-      puts handinDir
+      puts "Copied to:" + handinDir
     end
 
-    render :nothing => true
-
+    render plain: handinDir and return
   end
 
   #
