@@ -19,7 +19,7 @@ class AssessmentsController < ApplicationController
   include AssessmentAutograde
 
 
-  before_action :get_assessment, except: [ :index, :new, :create, :installAssessment, :importAsmtFromTar, :importAssessment, :getCategory, :unofficial_submit ]
+  before_action :get_assessment, except: [ :index, :new, :create, :installAssessment, :importAsmtFromTar, :importAssessment, :getCategory, :unofficial_submit, :official_submit ]
 
   # We have to do this here, because the modules don't inherit ApplicationController.
 
@@ -46,6 +46,7 @@ class AssessmentsController < ApplicationController
   action_auth_level :adminAutograde, :instructor
   action_auth_level :regrade, :instructor
   action_no_auth    :unofficial_submit
+  action_no_auth    :official_submit
 
   # Partners
   action_auth_level :partner, :student
@@ -1177,30 +1178,30 @@ class AssessmentsController < ApplicationController
     @user = User.where(:email => params[:user]).first
 
     if !@course  then
-      puts "ERROR: invalid course"
-      render :bad_request
+      err = "ERROR: invalid course"
+      render plain: err, status: :bad_request and return
     end
 
     if !@user then
-      puts "ERROR: invalid username (#{user}) for class #{course.id}"
-      render :bad_request
+      err = "ERROR: invalid username (#{user}) for class #{course.id}"
+      render plain: err, status: :bad_request and return
     end
 
     if !@assessment then
-      puts "ERROR: Invalid Assessment (#{assessment}) for course #{course.id}"
-      render :bad_request
+      err = "ERROR: Invalid Assessment (#{assessment}) for course #{course.id}"
+      render plain: err, status: :bad_request and return
     end
 
     if !@assessment.allow_unofficial then
-      puts "ERROR: This assessment does not allow Unofficial Submissions"
-      render :bad_request
+      err = "ERROR: This assessment does not allow Unofficial Submissions"
+      render plain: err, status: :bad_request and return
     end
 
     @result = params[:result]
 
     if !@result then
-      puts "ERROR: No result!"
-      render :bad_request
+      err = "ERROR: No result!"
+      render plain: err, status: :bad_request and return
     end
 
     # Everything looks OK, so append the autoresult to the log.txt file for this lab
@@ -1258,7 +1259,7 @@ class AssessmentsController < ApplicationController
     end
 
 
-    render plain: "OK" and return
+    render plain: "OK", status: 200 and return
 
   end
 
@@ -1273,18 +1274,18 @@ class AssessmentsController < ApplicationController
     @user = User.where(:id => params[:user]).first
     
     if !@course  then
-      puts "ERROR: invalid course"
-      render :bad_request
+      err = "ERROR: invalid course"
+      render plain: err, status: :bad_request and return
     end
 
     if ! @user then
-      puts "ERROR: invalid username (#{user}) for class #{@course.id}"
-      render :bad_request
+      err = "ERROR: invalid username (#{user}) for class #{@course.id}"
+      render plain: err, status: :bad_request and return
     end
 
     if !@assessment then
-      puts "ERROR: Invalid Assessment (#{assessment}) for course #{@course.id}"
-      render :bad_request
+      err = "ERROR: Invalid Assessment (#{assessment}) for course #{@course.id}"
+      render plain: err, status: :bad_request and return
     end
 
 
@@ -1312,21 +1313,23 @@ class AssessmentsController < ApplicationController
         # we're going to fake an upload object so we can save it. God I hate this
         # system.
         ###
-        class FakeUpload
-          def initialize(filename)
-            @filename = filename
-          end
-          def content_type
-            "text/plain"
-          end
-          def read
-            IO.read(@filename)
-          end
 
-          def rewind
-            # do nothing, we open the file from scratch on every read
-          end
-        end
+        # class FakeUpload
+        #   def initialize(filename)
+        #     @filename = filename
+        #   end
+        #   def content_type
+        #     "text/plain"
+        #   end
+        #   def read
+        #     IO.read(@filename)
+        #   end
+
+        #   def rewind
+        #     # do nothing, we open the file from scratch on every read
+        #   end
+        # end
+
         ###
         upload = {'file'=>FakeUpload.new(handinDir + handinFile)}
         @submission = Submission.create(:assessment_id=>@assessment.id,
