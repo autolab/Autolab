@@ -152,7 +152,7 @@ private
   def parse_csv csv, data_type
     # inputs for parse_csv_row
     problems = @assessment.problems
-    emails = Set.new(@course.course_user_data.map &:email)
+    emails = Set.new(CourseUserDatum.joins(:user).where(course: @assessment.course).map &:email)
 
     # process CSV
     entries = []
