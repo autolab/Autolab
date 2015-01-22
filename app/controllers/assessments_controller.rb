@@ -1273,14 +1273,14 @@ class AssessmentsController < ApplicationController
     @assessment = Assessment.where(:id => params[:id]).first
     @user = User.where(:email => params[:user]).first
 
-
     if !@course  then
       err = "ERROR: invalid course"
       render plain: err, status: :bad_request and return
     end
 
     if ! @user then
-      err = "ERROR: invalid username (#{user}) for class #{@course.id}"
+      user = params[:user]
+      err = "ERROR: invalid username (#{user}) for class #{@course.name}"
       render plain: err, status: :bad_request and return
     end
 
@@ -1296,68 +1296,43 @@ class AssessmentsController < ApplicationController
 
     if (params[:submit]) then
       #They've copied their handin over, lets go grab it. 
-      # Load up the lab.rb file
       begin
-        modName = @assessment.name + (@course.name).gsub(/[^A-Za-z0-9]/,"")
-        require(Rails.root + "/assessmentConfig/#{@course.name}-#{@assessment.name}.rb")
-        eval("extend #{modName.camelcase}")
 
-        # Eventually, we'll make *this* a module so that we can do verifications
-        # properly. Until then...
-
-        handinFile = params[:submit].read
-
-        # we're going to fake an upload object so we can save it. God I hate this
-        # system.
-        ###
-
-        # class FakeUpload
-        #   def initialize(filename)
-        #     @filename = filename
-        #   end
-        #   def content_type
-        #     "text/plain"
-        #   end
-        #   def read
-        #     IO.read(@filename)
-        #   end
-
-        #   def rewind
-        #     # do nothing, we open the file from scratch on every read
-        #   end
-        # end
-
-        ###
-        upload = {'file'=>FakeUpload.new(handinDir + handinFile)}
+        handinFile = params[:submit]
+        @cud = CourseUserDatum.find_cud_for_course(@course, @user.id)
         @submission = Submission.create(:assessment_id=>@assessment.id,
-          :user_id=>@user.id);
-        @submission.saveFile(upload)
+          :course_user_datum_id => @cud.id);
+        @submission.filename = File.join(internalDir, handinFile)
+        @submission.save!
+
         afterHandin(@submission)
+
       rescue Exception  => e
         print e
+        COURSE_LOGGER.log(e.to_s)
       end
 
-      File.delete(handinDir + handinFile)
+      # File.delete(handinDir + handinFile)
 
       if(@submission) then
         puts "Submission received, ID##{@submission.id}"
       else
-        puts "There was an error saving your submission. Please contact your
-        course staff"
-        render :bad_request and return
+        err = "There was an error saving your submission. Please contact your course staff"
+        render plain: err, status: :bad_request and return
       end
 
-      numSubmissions = Submission.where(:user_id=>@user.id, :assessment_id=>@assessment.id).count
+      numSubmissions = Submission.where(:course_user_datum=>@cud.id, :assessment_id=>@assessment.id).count
 
       if @assessment.max_submissions != -1 then
         if numSubmissions >= @assessment.max_submissions then
-          puts " - You have 0 submissions left."
+          render plain: " - You have 0 submissions left." and return
         else
           numSubmissions = @assessment.max_submissions - numSubmissions
-          puts " - You have #{numSubmissions} submissions left"
+          render plain: " - You have #{numSubmissions} submissions left" and return
         end
       end
     
+      render plain: "Successfully submitted" and return
     else
       
       #Create a handin directory for them. 
