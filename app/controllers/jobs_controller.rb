@@ -166,7 +166,7 @@ class JobsController < ApplicationController
 
   def getJobs(suffix = '0/')
     COURSE_LOGGER.log("getJobs called")
-    reqURL = "http://#{RESTFUL_HOST}:#{RESTFUL_PORT}/jobs/#{RESTFUL_KEY}/#{@cud.course.name}/" + suffix
+    reqURL = "http://#{RESTFUL_HOST}:#{RESTFUL_PORT}/jobs/#{RESTFUL_KEY}/" + suffix
     COURSE_LOGGER.log("Req: " + reqURL)
     response = Net::HTTP.get_response(URI.parse(reqURL))
     response = JSON.parse(response.body)
