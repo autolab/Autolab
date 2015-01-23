@@ -33,7 +33,7 @@ Autolab3::Application.configure do
 
   # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
   # config.force_ssl = true
-  config.middleware.use Rack::SslEnforcer, :except => [ /unofficial_submit/ ]
+  config.middleware.use Rack::SslEnforcer, :except => [ /log_submit/, /local_submit/ ]
 
 
   # See everything in the log (default is :info)

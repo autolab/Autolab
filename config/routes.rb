@@ -93,8 +93,8 @@ Autolab3::Application.routes.draw do
         get 'submission_popover'
 
         # remote calls
-        post 'official_submit'
-        get  'unofficial_submit'
+        match 'local_submit', via: [:get, :post]
+        get  'log_submit'
       end
 
       collection do

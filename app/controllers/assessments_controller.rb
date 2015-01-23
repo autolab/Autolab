@@ -19,7 +19,7 @@ class AssessmentsController < ApplicationController
   include AssessmentAutograde
 
 
-  before_action :get_assessment, except: [ :index, :new, :create, :installAssessment, :importAsmtFromTar, :importAssessment, :getCategory, :unofficial_submit ]
+  before_action :get_assessment, except: [ :index, :new, :create, :installAssessment, :importAsmtFromTar, :importAssessment, :getCategory, :log_submit, :local_submit ]
 
   # We have to do this here, because the modules don't inherit ApplicationController.
 
@@ -45,7 +45,8 @@ class AssessmentsController < ApplicationController
   # Autograde
   action_auth_level :adminAutograde, :instructor
   action_auth_level :regrade, :instructor
-  action_no_auth    :unofficial_submit
+  action_no_auth    :log_submit
+  action_no_auth    :local_submit
 
   # Partners
   action_auth_level :partner, :student
@@ -1167,8 +1168,8 @@ class AssessmentsController < ApplicationController
 
 
   # method called when student makes
-  # unofficial submission in the database
-  def unofficial_submit
+  # log submission in the database
+  def log_submit
     
     feedback_str = request.body.read
 
@@ -1177,30 +1178,30 @@ class AssessmentsController < ApplicationController
     @user = User.where(:email => params[:user]).first
 
     if !@course  then
-      puts "ERROR: invalid course"
-      exit
+      err = "ERROR: invalid course"
+      render plain: err, status: :bad_request and return
     end
 
     if !@user then
-      puts "ERROR: invalid username (#{user}) for class #{course.id}"
-      exit
+      err = "ERROR: invalid username (#{user}) for class #{course.id}"
+      render plain: err, status: :bad_request and return
     end
 
     if !@assessment then
-      puts "ERROR: Invalid Assessment (#{assessment}) for course #{course.id}"
-      exit
+      err = "ERROR: Invalid Assessment (#{assessment}) for course #{course.id}"
+      render plain: err, status: :bad_request and return
     end
 
     if !@assessment.allow_unofficial then
-      puts "ERROR: This assessment does not allow Unofficial Submissions"
-      exit
+      err = "ERROR: This assessment does not allow Unofficial Submissions"
+      render plain: err, status: :bad_request and return
     end
 
     @result = params[:result]
 
     if !@result then
-      puts "ERROR: No result!"
-      exit
+      err = "ERROR: No result!"
+      render plain: err, status: :bad_request and return
     end
 
     # Everything looks OK, so append the autoresult to the log.txt file for this lab
@@ -1224,7 +1225,7 @@ class AssessmentsController < ApplicationController
         render :nothing => true and return
       end
 
-      # Try to find an existing unofficial submission (always version 0). 
+      # Try to find an existing submission (always version 0). 
       submission = @assessment.submissions.where(:version=>0,:user_id=>@user.id).first
       if !submission then
         submission = @assessment.submissions.new(:version=>0,
@@ -1258,101 +1259,79 @@ class AssessmentsController < ApplicationController
     end
 
 
-    render :nothing => true and return
+    render plain: "OK", status: 200 and return
 
   end
 
 
   # method called when student makes
   # unofficial submission in the database
-  # action_no_auth :official_submit
-  def official_submit
+  def local_submit
     
-    @course = Course.where(:id => params[:course]).first
-    @assessment = Assessment.where(:id => params[:assessment]).first
-    @user = User.where(:id => params[:user]).first
-    
+    @course = Course.where(:id => params[:course_id]).first
+    @assessment = Assessment.where(:id => params[:id]).first
+    @user = User.where(:email => params[:user]).first
+
     if !@course  then
-      puts "ERROR: invalid course"
-      exit
+      err = "ERROR: invalid course"
+      render plain: err, status: :bad_request and return
     end
 
     if ! @user then
-      puts "ERROR: invalid username (#{user}) for class #{@course.id}"
-      exit
+      user = params[:user]
+      err = "ERROR: invalid username (#{user}) for class #{@course.name}"
+      render plain: err, status: :bad_request and return
     end
 
     if !@assessment then
-      puts "ERROR: Invalid Assessment (#{assessment}) for course #{@course.id}"
-      exit
+      err = "ERROR: Invalid Assessment (#{assessment}) for course #{@course.id}"
+      render plain: err, status: :bad_request and return
     end
 
-
-    handinDir = "/afs/andrew.cmu.edu/scs/cs/autolabEmail/handin/"
-    handinDir += @user.email + "_" + @assessment.name + "/"
+    personal_directory = @user.email + "_remote_handin"
+    directory = @assessment.handin_directory
+    handinDir = File.join(@assessment.name, directory, personal_directory)
+    internalDir = File.join(Rails.root, "courses", @course.name, handinDir)
 
     if (params[:submit]) then
       #They've copied their handin over, lets go grab it. 
-      # Load up the lab.rb file
       begin
-        modName = @assessment.name + (@course.name).gsub(/[^A-Za-z0-9]/,"")
-        require(Rails.root + "/assessmentConfig/#{@course.name}-#{@assessment.name}.rb")
-        eval("extend #{modName.camelcase}")
 
-        # Eventually, we'll make *this* a module so that we can do verifications
-        # properly. Until then...
-
-        handinFile = cgi.params["submit"][0]
-
-        # we're going to fake an upload object so we can save it. God I hate this
-        # system.
-        ###
-        #  class FakeUpload
-        #  def initialize(filename)
-        #    @filename = filename
-        #  end
-        #  def content_type
-        #    "text/plain"
-        #  end
-        #  def read
-        #    IO.read(@filename)
-        #  end
-
-        #  def rewind
-        #    # do nothing, we open the file from scratch on every read
-        #  end
-        #end
-        ###
-        upload = {'file'=>FakeUpload.new(handinDir + handinFile)}
+        handinFile = params[:submit]
+        @cud = CourseUserDatum.find_cud_for_course(@course, @user.id)
         @submission = Submission.create(:assessment_id=>@assessment.id,
-          :user_id=>@user.id);
-        @submission.saveFile(upload)
+          :course_user_datum_id => @cud.id);
+        @submission.filename = File.join(internalDir, handinFile)
+        @submission.save!
+
         afterHandin(@submission)
+
       rescue Exception  => e
-        # So, Autolab is a web-service, and we are accessing it via not a web
-        # request, so things go wrong.... a lot. Therefore, if an exception
-        # occurs, I really don't care. Love, Hunter.
+        print e
+        COURSE_LOGGER.log(e.to_s)
       end
-      File.delete(handinDir + handinFile)
+
+      # File.delete(handinDir + handinFile)
 
       if(@submission) then
         puts "Submission received, ID##{@submission.id}"
       else
-        puts "There was an error saving your submission. Please contact your
-        course staff"
+        err = "There was an error saving your submission. Please contact your course staff"
+        render plain: err, status: :bad_request and return
       end
 
-      numSubmissions = Submission.where(:user_id=>@user.id, :assessment_id=>@assessment.id).count
+      numSubmissions = Submission.where(:course_user_datum=>@cud.id, :assessment_id=>@assessment.id).count
 
       if @assessment.max_submissions != -1 then
         if numSubmissions >= @assessment.max_submissions then
-          puts " - You have 0 submissions left."
+          render plain: " - You have 0 submissions left." and return
         else
           numSubmissions = @assessment.max_submissions - numSubmissions
-          puts " - You have #{numSubmissions} submissions left"
+          render plain: " - You have #{numSubmissions} submissions left" and return
         end
       end
     
+      render plain: "Successfully submitted" and return
     else
       
       #Create a handin directory for them. 
@@ -1360,28 +1339,25 @@ class AssessmentsController < ApplicationController
       # The handin Directory really should not exist, as this script deletes it
       # when it's done.  However, if it's there, we'll try to remove an empty
       # folder, else fail w/ error message. 
-      if (Dir.exist?(handinDir)) then
+      if (Dir.exist?(internalDir)) then
         begin
           FileUtils.rm_rf(handinDir)
         rescue SystemCallError 
-          puts "WARNING: could not clear previous handin directory, please" +
-          "verify results on autolab.cs.cmu.edu "
+          render plain: "WARNING: could not clear previous handin directory, please" and return
         end
       end
 
       begin
-        Dir.mkdir(handinDir)
+        Dir.mkdir(internalDir)
       rescue SystemCallError
         puts "ERROR: Could not create handin directory. Please contact
         autolab-dev@andrew.cmu.edu with this error" 
       end
 
-      system("fs sa #{handinDir} #{@user.email} rlidw")
-      puts handinDir
+      system("fs sa #{internalDir} #{@user.email} rlidw")
     end
 
-    render :nothing => true
-
+    render plain: handinDir and return
   end
 
   #
