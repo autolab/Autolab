@@ -34,7 +34,7 @@
       <td><%= student[:aud].extension ? "yes" : "no" %></td>
       <td><%= end_at_display student[:aud].end_at %></td>
       <td><%= link_to "Create Submission", 
-               new_course_assessment_submission_path(@course, @assessment, cud_id: student[:id]),
+               new_course_assessment_submission_path(@course, @assessment, course_user_datum_id: student[:id]),
                {:title=>"Create a submission for this student, with the option to handin a file on their behalf"} %>
       </td>
     </tr>
