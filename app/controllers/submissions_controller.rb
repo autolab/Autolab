@@ -162,7 +162,7 @@ class SubmissionsController < ApplicationController
   def destroy
     load_submission() or return false
     @submission.destroy
-    redirect_to history_course_assessment_path(@submission.course_user_datum.course, @submission.assessment) and return
+    redirect_to course_assessment_submissions_path(@submission.course_user_datum.course, @submission.assessment) and return
   end
 
   # this is good
