@@ -47,8 +47,6 @@ class ExtensionsController < ApplicationController
       redirect_to :controller=>"course" ,:action=>"index" and return
     end
     extension.destroy()
-    redirect_to :controller=>"extension",
-          :action=>"index",
-          :assessment=>extension.assessment.id
+    redirect_to action: :index and return
   end
 end

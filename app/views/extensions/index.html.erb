@@ -14,7 +14,7 @@ Size:<%= @extensions.size %>
   <tr>
     <th><%= ext.course_user_datum.email %></th>
     <td><%= ext.infinite? ? "Infinite" : "#{ext.days} days" %></td>
-    <td><%= link_to 'Delete' , {:action=>:destroy,:id=>ext.id} %></td>
+    <td><%= link_to 'Delete', [@course, @assessment, ext], method: :delete %></td>
   </tr>
 <% end %>
 </table>
