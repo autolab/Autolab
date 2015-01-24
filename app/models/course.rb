@@ -97,6 +97,21 @@ class Course < ActiveRecord::Base
     return eval("Course#{course.camelize}")
   end
 
+  # reload_course_config
+  # Reload the course config file and extend the loaded methods
+  # to AdminsController
+  def reload_course_config()
+    mod = nil
+    begin
+      mod = reload_config_file
+    rescue Exception => @error
+      return false
+    end
+
+    AdminsController.extend(mod)
+    return true
+  end
+
   def sanitized_name
     name.gsub(/[^A-Za-z0-9]/, '')
   end
