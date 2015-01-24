@@ -941,7 +941,7 @@ class AssessmentsController < ApplicationController
 
     # make sure the penalties are set up
     @assessment.build_late_penalty unless @assessment.late_penalty
-    @assessment.build_version_penalty unless @assessment.late_penalty
+    @assessment.build_version_penalty unless @assessment.version_penalty
   end
 
   action_auth_level :update, :instructor
