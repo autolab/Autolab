@@ -139,7 +139,12 @@ protected
   # end
 
   def authorize_user_for_course
-    @course = Course.find(params[:course_id] || params[:id])
+    course_id = params[:course_id] ||
+          (params[:controller] == "courses" ? params[:id] : nil)
+    if (course_id) then
+      @course = Course.find(course_id)
+    end
+
     unless @course
       flash[:error] = "Course #{params[:course]} does not exist!"
       redirect_to controller: :home, action: :error and return
@@ -250,6 +255,14 @@ private
     # by leaving @error undefined, students and CAs do not see stack traces
     if (not current_user.nil?) and (current_user.instructor? or current_user.administrator?) then
       @error = exception
+
+      # Generate course id and assesssment id objects
+      @course_id = params[:course_id] ||
+            (params[:controller] == "courses" ? params[:id] : nil)
+      if (@course_id) then
+        @assessment_id = params[:assessment_id] ||
+            (params[:controller] == "assessments" ? params[:id] : nil)
+      end
     end
 
     render "home/error"
