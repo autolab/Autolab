@@ -924,7 +924,7 @@ class AssessmentsController < ApplicationController
     rescue Exception => @error
       # let the reload view render
     else
-      flash[:success] = "Success: Config file reloaded!"
+      flash[:success] = "Success: Assessment config file reloaded!"
       redirect_to action: :show and return
     end
   end

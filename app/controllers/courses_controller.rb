@@ -66,8 +66,16 @@ class CoursesController < ApplicationController
       newCUD.instructor = true
       
       if newCUD.save then
-        flash[:success] = "New Course #{@newCourse.name} successfully created!"
-        redirect_to edit_course_path(@newCourse) and return
+        if AdminsController.reload_course_config(@newCourse) then
+          flash[:success] = "New Course #{@newCourse.name} successfully created!"
+          redirect_to edit_course_path(@newCourse) and return
+        else
+          # roll back course creation and instruction creation
+          newCUD.destroy
+          @newCourse.destroy
+          flash[:error] = "Can't load course config for #{@newCourse.name}."
+          render action: 'new' and return
+        end
       else
         # roll back course creation
         @newCourse.destroy
