@@ -24,7 +24,7 @@ class ApplicationController < ActionController::Base
     rescue_from CourseUserDatum::AuthenticationFailed do |e|
       COURSE_LOGGER.log("AUTHENTICATION FAILED: #{e.user_message}, #{e.dev_message}")
       flash[:error] = e.user_message
-      redirect_to root_path and return
+      redirect_to root_path
     end
   end  
 
