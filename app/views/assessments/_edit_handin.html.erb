@@ -31,6 +31,8 @@
   <%= f.text_field :handin_filename, help_text: "The suffix (fname) that is appended to student submission files. Autolab stores submission files in the handin directory as <kbd>email_version_fname</kbd>. E.g., 'mm.c'".html_safe %>
 <% end %>
 
+<%= f.text_field :max_size, help_text: "The maximum size that a handin file can have, in megabytes (MB)." %>
+
 <div class="action_buttons">
   <%= f.submit "Save" , {:class=>"btn primary"} %>
 </div>
