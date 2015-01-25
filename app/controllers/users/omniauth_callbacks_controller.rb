@@ -76,9 +76,13 @@ class Users::OmniauthCallbacksController < Devise::OmniauthCallbacksController
           @user = User.new
           @user.email = data["uid"]
                                  
-          # Auto-generate placeholder name and password
-          @user.first_name = "(blank)"
-          @user.last_name = "(blank)"
+          # Set user info based on shibboleth authentication object
+          info = data["info"]
+          @user.first_name = choose_shib_attr(info["first_name"])
+          @user.last_name = choose_shib_attr(info["last_name"])
+          @user.school= choose_shib_attr(info["school"])
+          @user.major = choose_shib_attr(info["major"])
+          @user.year = choose_shib_attr(info["year"])
         
           temp_pass = Devise.friendly_token[0, 20]    # generate a random token
           @user.password = temp_pass
@@ -93,6 +97,20 @@ class Users::OmniauthCallbacksController < Devise::OmniauthCallbacksController
         sign_in_and_redirect @user, :event => :authentication #this will throw if @user is not activated
         set_flash_message(:notice, :success, :kind => "Shibboleth") if is_navigational_format?
       end
+    end
+  end
+
+  private
+
+  # choose_shib_attr
+  # Shibboleth may return semi-column seperated attributes.
+  # The function returns the first one if attributes_str is not nil, otherwise
+  # it returns "(blank)" as a placeholder
+  def choose_shib_attr(attributes_str)
+    if attributes_str.nil? then
+      return "(blank)"
+    else
+      return attributes_str.split(";")[0]
     end
   end
   
