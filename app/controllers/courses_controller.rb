@@ -66,7 +66,7 @@ class CoursesController < ApplicationController
       newCUD.instructor = true
       
       if newCUD.save then
-        if AdminsController.reload_course_config(@newCourse) then
+        if @newCourse.reload_course_config then
           flash[:success] = "New Course #{@newCourse.name} successfully created!"
           redirect_to edit_course_path(@newCourse) and return
         else

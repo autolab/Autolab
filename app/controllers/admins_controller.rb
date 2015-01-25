@@ -69,7 +69,7 @@ class AdminsController < ApplicationController
 
   action_auth_level :reload, :instructor
   def reload
-    if AdminsController.reload_course_config(@course) then
+    if @course.reload_course_config then
       flash[:success] = "Success: Course config file reloaded!"
       redirect_to action: :show and return
     else
@@ -477,20 +477,6 @@ e.to_s() + e.backtrace().join("<br>")
   
     # Clean up after ourselves (droh: leave for debugging)
     #`rm -rf #{tmpDir}`
-  end
-
-  # self.reload_course_config
-  # Reload the course config file and extend the loaded methods
-  def self.reload_course_config(course)
-    mod = nil
-    begin
-      mod = course.reload_config_file
-    rescue Exception => @error
-      return false
-    end
-
-    extend(mod)
-    return true
   end
 
 private
