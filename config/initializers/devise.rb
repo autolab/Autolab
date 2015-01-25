@@ -231,7 +231,7 @@ Devise.setup do |config|
   config.omniauth :facebook, '543694762392643', '765cf9957238898903110ee768e2f8a6'
   config.omniauth :google_oauth2, '872176111723-tda213u8b9aso6htu3nqfooip6shnpn8.apps.googleusercontent.com', '_Yf3UyDmBZqUEOFs38YFFg8B'
   config.omniauth :shibboleth, {uid_field: 'eppn', 
-                    info_fields: {email: 'mail', name: 'cn', last_name: 'sn'},
+                    info_fields: {first_name: 'givenName', last_name: 'sn', major: 'cmuDepartment', school: 'eduPersonSchoolCollegeName', year: 'cmuStudentClass'},
                     extra_fields: []
                   }
 
