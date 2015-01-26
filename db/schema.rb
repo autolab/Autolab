@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150119232050) do
+ActiveRecord::Schema.define(version: 20150126231959) do
 
   create_table "annotations", force: :cascade do |t|
     t.integer  "submission_id", limit: 4
@@ -220,7 +220,7 @@ ActiveRecord::Schema.define(version: 20150119232050) do
   create_table "scores", force: :cascade do |t|
     t.integer  "submission_id",      limit: 4
     t.float    "score",              limit: 24
-    t.text     "feedback",           limit: 65535
+    t.text     "feedback",           limit: 16777215
     t.integer  "problem_id",         limit: 4
     t.datetime "created_at"
     t.datetime "updated_at"
