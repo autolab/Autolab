@@ -92,6 +92,8 @@ class Submission < ActiveRecord::Base
       upload['file'].rewind
       File.open(path,"wb") { |f| f.write(upload['file'].read)}
     elsif upload['local_submit_file']
+      # local_submit_file is a path string to the temporary handin
+      # directory we create for local submissions
       File.open(path,"wb") { |f| f.write(IO.read(upload['local_submit_file']))}
     elsif upload['tar'] then
       src = upload['tar']
