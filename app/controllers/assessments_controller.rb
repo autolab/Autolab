@@ -1302,7 +1302,12 @@ class AssessmentsController < ApplicationController
         upload = {'local_submit_file'=>File.join(internalDir, handinFile)}
 
         @submission.saveFile(upload)
-        afterHandin(@submission)
+
+        if @assessment.has_autograde then
+          autogradeAfterHandin @submission
+        elsif @assessment.has_partners then
+          partnersAfterHandin @submission
+        end
 
       rescue Exception  => e
         print e
