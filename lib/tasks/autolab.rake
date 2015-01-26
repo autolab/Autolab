@@ -119,7 +119,7 @@ namespace :autolab do
       :section => "Instructor",
 
       :instructor => true,
-      :course_assistant => false,
+      :course_assistant => true,
 
       :nickname => "admin_#{course.name}"
     })
