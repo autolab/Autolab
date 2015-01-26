@@ -91,6 +91,8 @@ class Submission < ActiveRecord::Base
       # Sanity!
       upload['file'].rewind
       File.open(path,"wb") { |f| f.write(upload['file'].read)}
+    elsif upload['local_submit_file']
+      File.open(path,"wb") { |f| f.write(IO.read(upload['local_submit_file']))}
     elsif upload['tar'] then
       src = upload['tar']
       `mv #{src} #{path}`
@@ -103,6 +105,8 @@ class Submission < ActiveRecord::Base
       if !(self.mime_type) then
         self.mime_type = 'text/plain'
       end
+    elsif upload['local_submit_file']
+      self.mime_type = 'text/plain'
     elsif upload['tar'] then
       self.mime_type = 'application/x-tgz'
     end

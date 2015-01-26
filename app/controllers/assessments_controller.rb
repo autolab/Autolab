@@ -1301,9 +1301,9 @@ class AssessmentsController < ApplicationController
         @cud = CourseUserDatum.find_cud_for_course(@course, @user.id)
         @submission = Submission.create(:assessment_id=>@assessment.id,
           :course_user_datum_id => @cud.id);
-        @submission.filename = File.join(internalDir, handinFile)
-        @submission.save!
+        upload = {'local_submit_file'=>File.join(internalDir, handinFile)}
 
+        @submission.saveFile(upload)
         afterHandin(@submission)
 
       rescue Exception  => e
