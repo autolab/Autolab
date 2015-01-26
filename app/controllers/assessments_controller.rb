@@ -1056,9 +1056,7 @@ class AssessmentsController < ApplicationController
 
   action_auth_level :downloadSubmissions, :course_assistant
   def downloadSubmissions
-    redirect_to :controller => "submission",
-                :action => "downloadSubmissions",
-                :assessment_id => @assessment.id
+    redirect_to downloadAll_course_assessment_submissions_path(@course, @assessment) and return
   end
 
   def writeup
