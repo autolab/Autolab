@@ -484,7 +484,7 @@ jQuery(function() {
         if (score_id) {
           jQuery.ajax("score_grader_info", {
             data: {
-              id: score_id
+              "score_id": score_id
             },
             success: function(data, status, jqXHR) {
               jQuery(".grader", $score_details_tbody).parent().remove();

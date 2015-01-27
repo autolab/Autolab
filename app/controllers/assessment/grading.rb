@@ -286,8 +286,9 @@ public
   end
 
   def score_grader_info
-    grader = Score.find(params[:id]).grader
-    if grader
+    score = Score.find(params[:score_id])
+    grader = (if score then score.grader else nil end)
+    if grader then
       render :text => "#{grader.first_name} #{grader.last_name} (#{grader.email})"
     else
       render :nothing => true
