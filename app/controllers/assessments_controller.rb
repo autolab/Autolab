@@ -1286,6 +1286,12 @@ class AssessmentsController < ApplicationController
       render plain: err, status: :bad_request and return
     end
 
+    if @assessment.remote_handin_path.nil? then
+      err = "ERROR: Remote handin directory is not defined by the instructor."
+      render plain: err, status: :bad_request and return
+    end
+
+
     personal_directory = @user.email + "_remote_handin_" +  @assessment.name
     remoteHandinDir = File.join(@assessment.remote_handin_path, personal_directory)
 
