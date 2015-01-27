@@ -1220,7 +1220,7 @@ class AssessmentsController < ApplicationController
       scores = parseAutoresult(@result,false)
 
       if scores.keys.length == 0 then 
-        render :nothing => true and return
+        render plain: "OK", status: 200 and return
       end
 
       # Try to find an existing submission (always version 0). 
