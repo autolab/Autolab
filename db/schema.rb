@@ -225,7 +225,7 @@ ActiveRecord::Schema.define(version: 20150127014933) do
   create_table "scores", force: :cascade do |t|
     t.integer  "submission_id",      limit: 4
     t.float    "score",              limit: 24
-    t.text     "feedback",           limit: 65535
+    t.text     "feedback",           limit: 16777215
     t.integer  "problem_id",         limit: 4
     t.datetime "created_at"
     t.datetime "updated_at"
