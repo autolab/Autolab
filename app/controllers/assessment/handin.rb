@@ -7,10 +7,10 @@ module AssessmentHandin
   # validateHandin() : Returns true or false if the handin is valid.
   # saveHandin() : Does the actual process of saving the handin to the
   #     database and writing the handin file to Disk. 
-  # afterHandin(@submission): Does any post-handing-in actions. Argument is
+  # autogradeAfterHandin(@submission): Does any post-handing-in actions. Argument is
   #     the database Submission object. 
   # 
-  # Both validateHandin() and afterHandin() cannot modify the state of the
+  # Both validateHandin() and autogradeAfterHandin() cannot modify the state of the
   # world in any way. And they both should call super() to enable any other
   # functionality.  The only reason to not call super() is if you want to
   # prevent other functionlity.  You should be very careful about this.
@@ -18,7 +18,7 @@ module AssessmentHandin
   # Any errors should be added to flash[:error] and return false or nil.
   def handin
     # processing handin
-    # call validateHandin, saveHandin and afterHandin callbacks
+    # call validateHandin, saveHandin, autogradeAfterHandin and partnersAfterHandin callbacks
     unless validateHandin
       redirect_to :action => :show and return
     end

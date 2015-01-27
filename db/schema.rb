@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150119232050) do
+ActiveRecord::Schema.define(version: 20150127014933) do
 
   create_table "annotations", force: :cascade do |t|
     t.integer  "submission_id", limit: 4
@@ -49,6 +49,8 @@ ActiveRecord::Schema.define(version: 20150119232050) do
     t.integer  "course_user_datum_id", limit: 4,             null: false
     t.integer  "assessment_id",        limit: 4,             null: false
     t.integer  "latest_submission_id", limit: 4
+    t.integer  "cgdub",                limit: 4
+    t.integer  "special_type",         limit: 4, default: 0, null: false
     t.datetime "created_at"
     t.datetime "updated_at"
     t.integer  "grade_type",           limit: 4, default: 0, null: false
@@ -91,6 +93,9 @@ ActiveRecord::Schema.define(version: 20150119232050) do
     t.boolean  "has_partners",        limit: 1
     t.boolean  "has_scoreboard",      limit: 1
     t.boolean  "has_svn",             limit: 1
+    t.boolean  "quiz",                limit: 1,     default: false
+    t.text     "quizData",            limit: 65535
+    t.string   "remote_handin_path",  limit: 255
   end
 
   create_table "attachments", force: :cascade do |t|
@@ -161,9 +166,9 @@ ActiveRecord::Schema.define(version: 20150119232050) do
     t.boolean  "exam_in_progress",              limit: 1,     default: false
     t.integer  "version_threshold",             limit: 4,     default: -1,    null: false
     t.float    "version_penalty_old",           limit: 24,    default: 0.0,   null: false
+    t.datetime "cgdub_dependencies_updated_at"
     t.integer  "late_penalty_id",               limit: 4
     t.integer  "version_penalty_id",            limit: 4
-    t.datetime "cgdub_dependencies_updated_at"
     t.text     "gb_message",                    limit: 65535
   end
 
@@ -250,8 +255,8 @@ ActiveRecord::Schema.define(version: 20150119232050) do
     t.boolean  "absolute_tweak",       limit: 1,     default: true,  null: false
     t.string   "detected_mime_type",   limit: 255
     t.string   "submitter_ip",         limit: 40
-    t.integer  "tweak_id",             limit: 4
     t.boolean  "ignored_old",          limit: 1,     default: false, null: false
+    t.integer  "tweak_id",             limit: 4
     t.boolean  "ignored",              limit: 1,     default: false, null: false
     t.string   "dave",                 limit: 255
   end

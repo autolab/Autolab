@@ -1286,10 +1286,8 @@ class AssessmentsController < ApplicationController
       render plain: err, status: :bad_request and return
     end
 
-    personal_directory = @user.email + "_remote_handin"
-    directory = @assessment.handin_directory
-    handinDir = File.join(@assessment.name, directory, personal_directory)
-    internalDir = File.join(Rails.root, "courses", @course.name, handinDir)
+    personal_directory = @user.email + "_remote_handin_" +  @assessment.name
+    remoteHandinDir = File.join(@assessment.remote_handin_path, personal_directory)
 
     if (params[:submit]) then
       #They've copied their handin over, lets go grab it. 
@@ -1299,17 +1297,20 @@ class AssessmentsController < ApplicationController
         @cud = CourseUserDatum.find_cud_for_course(@course, @user.id)
         @submission = Submission.create(:assessment_id=>@assessment.id,
           :course_user_datum_id => @cud.id);
-        @submission.filename = File.join(internalDir, handinFile)
-        @submission.save!
+        upload = {'local_submit_file'=>File.join(remoteHandinDir, handinFile)}
 
-        afterHandin(@submission)
+        @submission.saveFile(upload)
+
+        if @assessment.has_autograde then
+          autogradeAfterHandin @submission
+        elsif @assessment.has_partners then
+          partnersAfterHandin @submission
+        end
 
       rescue Exception  => e
         print e
         COURSE_LOGGER.log(e.to_s)
       end
-
-      # File.delete(handinDir + handinFile)
 
       if(@submission) then
         puts "Submission received, ID##{@submission.id}"
@@ -1337,25 +1338,25 @@ class AssessmentsController < ApplicationController
       # The handin Directory really should not exist, as this script deletes it
       # when it's done.  However, if it's there, we'll try to remove an empty
       # folder, else fail w/ error message. 
-      if (Dir.exist?(internalDir)) then
+      if (Dir.exist?(remoteHandinDir)) then
         begin
-          FileUtils.rm_rf(handinDir)
+          FileUtils.rm_rf(remoteHandinDir)
         rescue SystemCallError 
           render plain: "WARNING: could not clear previous handin directory, please" and return
         end
       end
 
       begin
-        Dir.mkdir(internalDir)
+        Dir.mkdir(remoteHandinDir)
       rescue SystemCallError
         puts "ERROR: Could not create handin directory. Please contact
         autolab-dev@andrew.cmu.edu with this error" 
       end
 
-      system("fs sa #{internalDir} #{@user.email} rlidw")
+      system("fs sa #{remoteHandinDir} #{@user.email} rlidw")
     end
 
-    render plain: handinDir and return
+    render plain: remoteHandinDir and return
   end
 
   #
