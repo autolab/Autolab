@@ -1181,12 +1181,12 @@ class AssessmentsController < ApplicationController
     end
 
     if !@user then
-      err = "ERROR: invalid username (#{user}) for class #{course.id}"
+      err = "ERROR: invalid username (#{params[:user]}) for class #{@course.id}"
       render plain: err, status: :bad_request and return
     end
 
     if !@assessment then
-      err = "ERROR: Invalid Assessment (#{assessment}) for course #{course.id}"
+      err = "ERROR: Invalid Assessment (#{params[:id]}) for course #{@course.id}"
       render plain: err, status: :bad_request and return
     end
 
