@@ -1286,8 +1286,7 @@ class AssessmentsController < ApplicationController
       render plain: err, status: :bad_request and return
     end
 
-    directory = @assessment.handin_directory
-    personal_directory = @user.email + "_remote_handin"
+    personal_directory = @user.email + "_remote_handin_" +  @assessment.name
     remoteHandinDir = File.join(@assessment.remote_handin_path, personal_directory)
 
     if (params[:submit]) then
