@@ -141,8 +141,8 @@ class CourseUserDataController < ApplicationController
     @destroyCUD = @course.course_user_data.find(params[:id])
     if @destroyCUD and @destroyCUD != @cud and params[:yes1] and params[:yes2] and params[:yes3] then
       @destroyCUD.destroy() #awwww!!!
-      redirect_to users_course_admin_path(@course) and return
     end
+    redirect_to users_course_admin_path(@course) and return
   end
 
   # Non-RESTful paths below
