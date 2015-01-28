@@ -1,112 +1,112 @@
 <div class="main-header">
-	<div class="navbar-header">
-		<a href="/" class="logo"><%= image_tag "AUTOLAB@2x.png", :width=> 180, :alt=>"Carnegie Mellon University" %></a>
+  <div class="navbar-header">
+    <a href="/" class="logo"><%= image_tag "AUTOLAB@2x.png", :width=> 180, :alt=>"Carnegie Mellon University" %></a>
 
-		<button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target=".navbar-collapse">
-			<span class="sr-only">Toggle navigation</span>
-			<span class="icon-bar"></span>
-			<span class="icon-bar"></span>
-			<span class="icon-bar"></span>
-		</button>
-	</div>
+    <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target=".navbar-collapse">
+      <span class="sr-only">Toggle navigation</span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+    </button>
+  </div>
 
-	<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-		<ul class="nav navbar-nav navbar-right action-links" role="navigation">
+  <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+    <ul class="nav navbar-nav navbar-right action-links" role="navigation">
 
-			<% if session[:sudo] && @cud then %>
-			<li>
-				<%= link_to "(#{@cud.display_name}) Reset user",
-				course_course_user_datum_unsudo_path(course_user_datum_id: current_user.id) %>
-			</li>
-			<% end %>
+      <% if session[:sudo] && @cud then %>
+      <li>
+        <%= link_to "(#{@cud.display_name}) Reset user",
+        course_course_user_datum_unsudo_path(course_user_datum_id: current_user.id) %>
+      </li>
+      <% end %>
 
-			<li>
-				<a href="/">Courses</a>
-			</li>
+      <li>
+        <a href="/">Courses</a>
+      </li>
 
-			<% if @cud %>
-			<li>
-				<% link = (@cud.course_assistant? && !@cud.section.blank?) ? "Section #{@cud.section} Gradebook" : "Gradebook" %>
-				<%= link_to link, course_course_user_datum_gradebook_path(@cud.course, @cud), :title => "View your gradebook" %>
-			</li>
-			<li>
-				<%= link_to "Jobs", course_jobs_path(@cud.course), :title => "View a history of autograding jobs" %>
-			</li>
+      <% if @cud %>
+      <li>
+        <% link = (@cud.course_assistant? && !@cud.section.blank?) ? "Section #{@cud.section} Gradebook" : "Gradebook" %>
+        <%= link_to link, course_course_user_datum_gradebook_path(@cud.course, @cud), :title => "View your gradebook" %>
+      </li>
+      <li>
+        <%= link_to "Jobs", course_jobs_path(@cud.course), :title => "View a history of autograding jobs" %>
+      </li>
 
-			<% if @cud.instructor? %>
-			<li>
-				<%= link_to "Course Admin", course_admin_path(@cud.course), :title => "Perform course-wise administrative actions" %>
-			</li>
-			<% end %>
-			<% end %>
+      <% if @cud.instructor? %>
+      <li>
+        <%= link_to "Course Admin", course_admin_path(@cud.course), :title => "Perform course-wise administrative actions" %>
+      </li>
+      <% end %>
+      <% end %>
 
-			<% if !@cud && current_user && current_user.administrator? %>
-			<li>
-				<%= link_to "Autolab Admin", user_admin_path(current_user), :title => "Perform system-wise administrative actions" %>
-			</li>
-			<% end %>
+      <% if !@cud && current_user && current_user.administrator? %>
+      <li>
+        <%= link_to "Autolab Admin", user_admin_path(current_user), :title => "Perform system-wise administrative actions" %>
+      </li>
+      <% end %>
 
-			<!-- User -->
-			<% if user_signed_in? %>
-			<li class="dropdown">
-				<div class="dropdown-toggle" id="dropdownMenu1" data-toggle="dropdown">
-					<%= current_user.display_name %>
-					<span class="caret"></span>
-				</div>
-				<ul class="dropdown-menu animated fadeInDown" role="menu" aria-labelledby="dropdownMenu1">
-					<% unless current_user.nil? %>
-					<li role="presentation">
-						<%= link_to "Account", edit_user_path(current_user), :title => "View your account info" %>
-					</li>
-					<% end %>
-					<% if @course and @cud %>
-					<li role="presentation">
-						<%= link_to "Course Profile", course_course_user_datum_path(@course, @cud), :title => "View your user profile for the current course" %>
-					</li>
-					<% end %>
-					<% if Rails.env.development? %>
-					<li role="presentation">
-						<a href='/home/developer_login'>Dev Login</a>
-					</li>
-					<% end %>
-					<li role="presentation" class="divider"></li><li role="presentation">
-						<%= link_to "Log out", destroy_user_session_path, :method => :delete  %>
-					</li>
-				</ul>
-			</li>
-			<% end %>
-			<!-- End User -->
-		</ul>
-	</div>
+      <!-- User -->
+      <% if user_signed_in? %>
+      <li class="dropdown">
+        <div class="dropdown-toggle" id="dropdownMenu1" data-toggle="dropdown">
+          <%= current_user.display_name %>
+          <span class="caret"></span>
+        </div>
+        <ul class="dropdown-menu animated fadeInDown" role="menu" aria-labelledby="dropdownMenu1">
+          <% unless current_user.nil? %>
+          <li role="presentation">
+            <%= link_to "Account", edit_user_path(current_user), :title => "View your account info" %>
+          </li>
+          <% end %>
+          <% if @course and @cud %>
+          <li role="presentation">
+            <%= link_to "Course Profile", course_course_user_datum_path(@course, @cud), :title => "View your user profile for the current course" %>
+          </li>
+          <% end %>
+          <% if Rails.env.development? %>
+          <li role="presentation">
+            <a href='/home/developer_login'>Dev Login</a>
+          </li>
+          <% end %>
+          <li role="presentation" class="divider"></li><li role="presentation">
+            <%= link_to "Log out", destroy_user_session_path, :method => :delete  %>
+          </li>
+        </ul>
+      </li>
+      <% end %>
+      <!-- End User -->
+    </ul>
+  </div>
 
 </div>
 <% if @course %>
 <div class="sub-navigation">
-	<span class="left-nav">
-		<span class="item">
-			<%= link_to @course.display_name, course_path(@course), :id=>"courseTitle" %>
-			<% if @course.disabled? %> (Course Disabled)<% end %>
-		</span>
-		<% if @assessment and @assessment.id %>
-		<span class="item">
-			<span class="arrow">»</span>
-			<%= current_assessment_link %>
-		</span>
-		<% end %>
+  <span class="left-nav">
+    <span class="item">
+      <%= link_to @course.display_name, course_path(@course), :id=>"courseTitle" %>
+      <% if @course.disabled? %> (Course Disabled)<% end %>
+    </span>
+    <% if @assessment and @assessment.id %>
+    <span class="item">
+      <span class="arrow">»</span>
+      <%= current_assessment_link %>
+    </span>
+    <% end %>
     <% if @problem or @creating_problem %>
-		<span class="item">
-			<span class="arrow">»</span>
+    <span class="item">
+      <span class="arrow">»</span>
         <%# When we're editing a problem, go back to the assessment's problems %>
         <%= link_to "Edit Assessment", edit_course_assessment_path(@course, @assessment) + "/problems" %>
-		</span>
+    </span>
     <% end %>
     <% if @title %>
-		<span class="item">
-			<span class="arrow">»</span>
-			<span class="title"><%= @title %></span>
-		</span>
-		<% end %>
-	</span>
+    <span class="item">
+      <span class="arrow">»</span>
+      <span class="title"><%= @title %></span>
+    </span>
+    <% end %>
+  </span>
 
 </div>
 <% end %>
