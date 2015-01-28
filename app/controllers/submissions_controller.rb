@@ -39,7 +39,7 @@ class SubmissionsController < ApplicationController
     else
       @cuds = {}
       # TODO: change order
-      for cud in @course.course_user_data.order("nickname ASC") do
+      for cud in @course.course_user_data.joins(:user).order("email ASC") do
         @cuds[cud.full_name_with_email] = cud.id
       end
     end
