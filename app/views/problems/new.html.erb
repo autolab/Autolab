@@ -1,3 +1,13 @@
-<%= form_for :problem, url: course_assessment_problems_path(@course, @assessment), method: :post do |f|%>
+<% content_for :head do %>
+  <%= stylesheet_link_tag "problems" %>
+<% end %>
+
+<%# For navigation breadcrumbs %>
+<% @title = 'Edit Problem' %>
+<%# Slight hack to get navigation bread crumbs to work %>
+<%# (since @problem is nil until created with a POST) %>
+<% @creating_problem = true %>
+
+<%= form_for :problem, url: course_assessment_problems_path(@course, @assessment), method: :post, html: {class: 'edit_problem'}, builder: FormBuilderWithDateTimeInput do |f|%>
   <%= render partial: "fields", locals: {f: f} %>
 <% end %>

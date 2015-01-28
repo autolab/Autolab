@@ -2,6 +2,9 @@
   <%= stylesheet_link_tag "assessments/create_edit" %>
 <% end %>
 
+<%# For navigation breadcrumbs %>
+<% @title = 'Edit Assessment' %>
+
 <ul id="tabs" class="nav nav-tabs">
 <% [ "basic", "handin", "penalties", "problems" ].each do |tab_name| %>
   <%= (tab_name == params[:active_tab]) ? tag(:li, class: :active) : tag(:li) %>

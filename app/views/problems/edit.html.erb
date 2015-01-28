@@ -1,3 +1,10 @@
-<%= form_for @problem, url: course_assessment_problem_path(@course, @assessment, @problem), method: :patch do |f|%>
+<% content_for :head do %>
+  <%= stylesheet_link_tag "problems" %>
+<% end %>
+
+<%# For navigation breadcrumbs %>
+<% @title = 'Edit Problem' %>
+
+<%= form_for @problem, url: course_assessment_problem_path(@course, @assessment, @problem), method: :patch, builder: FormBuilderWithDateTimeInput do |f|%>
   <%= render partial: "fields", locals: {f: f} %>
 <% end %>
