@@ -93,7 +93,14 @@
 			<%= current_assessment_link %>
 		</span>
 		<% end %>
-		<% if @title %>
+    <% if @problem or @creating_problem %>
+		<span class="item">
+			<span class="arrow">»</span>
+        <%# When we're editing a problem, go back to the assessment's problems %>
+        <%= link_to "Edit Assessment", edit_course_assessment_path(@course, @assessment) + "/problems" %>
+		</span>
+    <% end %>
+    <% if @title %>
 		<span class="item">
 			<span class="arrow">»</span>
 			<span class="title"><%= @title %></span>
