@@ -168,9 +168,9 @@ class User < ActiveRecord::Base
   # list all courses if he's an admin
   def self.courses_for_user(user)
     if user.administrator?
-      return Course.all
+      return Course.order("display_name ASC")
     else
-      return user.courses
+      return user.courses.order("display_name ASC")
     end
   end
 end
