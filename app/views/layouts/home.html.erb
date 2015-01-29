@@ -29,9 +29,9 @@
       <div id="pageBody" class="container">
 
         <!-- Flashes -->
-        <div id='flashes'>
+        <div id="flashes">
           <% flash.each do |name, msg| %>
-          <%= content_tag :div, raw(msg), id: "flash_#{name}",
+          <%= content_tag :div, sanitize(msg), id: "flash_#{name}",
   					 	class: "#{name}" %>
           <% end %>
        </div>
