@@ -52,7 +52,7 @@ protected
       end
 
       hash.each_key do |k| 
-        unless k == "hdr" or k == "asc"
+        unless k == "hdr" or k == "asc" or k == "img"
           errors.add "colspec", "unknown key('#{k}') in scoreboard[#{i}]"
           return
         end
