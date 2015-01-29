@@ -1553,6 +1553,12 @@ class AssessmentsController < ApplicationController
       end
     }
 
+    begin
+      @colspec = ActiveSupport::JSON.decode(@assessment.scoreboard_setup.colspec)["scoreboard"]
+    rescue
+      @colspec = nil
+    end
+
   end
 
 protected
