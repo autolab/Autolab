@@ -239,21 +239,7 @@ class AssessmentsController < ApplicationController
     # creating a new category if necessary. 
     if props['general'] and props['general']['category'] then
       requested_cat = props['general']['category']
-      categories = AssessmentCategory.getList(@course)
-      if categories.has_key?(requested_cat) then
-        category_id = categories[requested_cat]
-      else
-        cat = @course.assessment_categories.new(name: requested_cat)
-        if cat.save then
-          category_id = cat.id
-        else
-          flash[:error] = "Cannot create assessment category #{requested_cat}"
-          redirect_to importAssessment_course_assessments_path(course_id: @course.id)
-          return
-        end
-      end
-
-      params[:assessment] = {name: name, category_id: category_id}
+      params[:assessment] = {name: name, category_name: requested_cat}
       create and return
 
     # Otherwise, ask the user to give us a category before we create the
@@ -567,31 +553,18 @@ class AssessmentsController < ApplicationController
     # Before importing, convert the category name to an existing
     # category ID. Create a new category if necessary.
     general = props['general']
-    catName = general['category'] || AssessmentCategory.find_by_id(@assessment.category_id).name
+    catName = general['category'] || @assessment.category_name
+    
     if !catName || catName.blank? then
       catName = "Default"
     end
-    allCats = @course.assessment_categories
-    catId = nil 
-    for cat in allCats do
-      if cat.name == catName then
-        catId = cat.id
-        break
-      end
-    end
-    if catId.nil? then
-      c = @course.assessment_categories.new(name: catName)
-      c.save()
-      # Dan's pretty certain this is unneccessary
-      #c = @course.assessment_categories.where(name: catName).first
-      catId = c.id
-    end
-    general['category_id'] = catId
+
+    general['category_name'] = catName
 
     # Import general properties
     general.delete('category')
     @assessment.update_attributes(general)
-    
+
     # Import problems
     problems = props['problems']
     if Problem.where(:assessment_id => @assessment.id).count == 0 then
@@ -1610,8 +1583,7 @@ protected
     props["general"]["max_size"] = 2 if !props["general"]["max_size"]
 
     # Category name
-    c = AssessmentCategory.find_by_id(@assessment.category_id)
-    props["general"]["category"] = c.name
+    props["general"]["category"] = @assessment.category_name
     
     # Array of problems (an array because order matters)
     props["problems"] = Array.new

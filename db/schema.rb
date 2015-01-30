@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150127210917) do
+ActiveRecord::Schema.define(version: 20150130054629) do
 
   create_table "annotations", force: :cascade do |t|
     t.integer  "submission_id", limit: 4
@@ -38,11 +38,6 @@ ActiveRecord::Schema.define(version: 20150127210917) do
     t.datetime "updated_at"
     t.boolean  "persistent",           limit: 1,     default: false, null: false
     t.boolean  "system",               limit: 1,     default: false, null: false
-  end
-
-  create_table "assessment_categories", force: :cascade do |t|
-    t.string  "name",      limit: 255
-    t.integer "course_id", limit: 4
   end
 
   create_table "assessment_user_data", force: :cascade do |t|
@@ -96,6 +91,7 @@ ActiveRecord::Schema.define(version: 20150127210917) do
     t.boolean  "quiz",                limit: 1,     default: false
     t.text     "quizData",            limit: 65535
     t.string   "remote_handin_path",  limit: 255
+    t.string   "category_name",       limit: 255
   end
 
   create_table "attachments", force: :cascade do |t|
