@@ -4,6 +4,7 @@ tmp/cache/
 lib/autoConfig.rb
 assessmentConfig/
 courseConfig/
+config/environments/production.rb
 /courses/
 /courses
 /gradebooks/

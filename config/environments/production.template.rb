@@ -78,12 +78,8 @@ Autolab3::Application.configure do
   config.middleware.use ExceptionNotification::Rack,
     email: {
       email_prefix: "[Autolab Error] ",
-      sender_address: "\"Dom Brokaw\" <dom.brokaw@andrew.cmu.edu>",
-      exception_recipients: "autolab-dev@andrew.cmu.edu"
-    },
-    slack: {
-      webhook_url: "https://hooks.slack.com/services/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",
-      channel: "#exceptions"
+      sender_address: "\"NOTIFIER\" <NOTIFICATIONS@YOURAPP.com>",
+      exception_recipients: "TEAM@YOURAPP.COM"
     }
 
 end

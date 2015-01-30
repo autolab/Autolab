@@ -30,7 +30,7 @@ module Autolab3
     end
 
     # TODO: this should be a macro
-    config.action_mailer.default_url_options = {protocol: 'https', host: 'autolab.cs.cmu.edu' }
+    config.action_mailer.default_url_options = {protocol: 'https', host: 'YOUR_APP_URL' }
 
     # Settings in config/environments/* take precedence over those specified here.
     # Application configuration should go into files in config/initializers
