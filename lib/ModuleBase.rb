@@ -48,11 +48,7 @@ module ModuleBase
   def loadHandinPage
 
     updateModules()
-    if @modulesUsed.include?("Svn") then
-      svnLoadHandinPage()
-    else
-      super()
-    end
+    super()
   end
 
   # Validations can be combined if done in a descending order- make sure to

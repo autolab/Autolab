@@ -26,7 +26,6 @@
 
 <%= render partial: "handin_form", locals: {modal: false, id: "handin_show_assessment"} %>
 
-
 <table><tr valign=top>
 
 <%# Display general user options %> 
@@ -47,11 +46,15 @@
   <td>
   <h2>Admin Options (staff)</h2>
   <ul>
-  <% @adminlist.sort { |a,b| a[1] <=> b[1] }.each { |key, value| %>
-    <% if value.size > 0  then  %>
-      <li> <%= link_to value, {:action => key}, {:title=>(@admin_title[key] || "")} %></li>
-  <% end %>
-  <% } %>
+    <% if @assessment.has_svn then %>
+      <li><%= link_to "SVN Settings", [:adminSVN, @course, @assessment], title: "Manage the SVN repositories" %></li>
+    <% end %>
+
+    <% @adminlist.sort { |a,b| a[1] <=> b[1] }.each do |key, value| %>
+      <% if value.size > 0  then  %>
+        <li> <%= link_to value, {:action => key}, {:title=>(@admin_title[key] || "")} %></li>
+      <% end %>
+    <% end %>
   </ul>
   </td>
 <% end %>
