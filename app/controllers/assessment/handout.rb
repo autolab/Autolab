@@ -17,9 +17,6 @@ module AssessmentHandout
       return
     end
 
-    print "\n"
-    print @assessment.config_module.instance_methods
-    print "\n\n"
     if @assessment.config_module.instance_methods.include?(:handout) then
       hash = @assessment.config_module.handout()
       send_file(hash["fullpath"], 

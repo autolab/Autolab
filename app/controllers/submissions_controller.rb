@@ -106,7 +106,13 @@ class SubmissionsController < ApplicationController
     modName = (assign + (@course.name).gsub(/[^A-Za-z0-9]/,"")).camelize
 
     if @assessment.has_autograde then
-      autogradeDone(@submission, feedback_str)
+      
+      if @assessment.config_module.instance_methods.include?(:autogradeDone) then
+        @assessment.config_module.autogradeDone(@submission, feedback_str)
+      else
+        autogradeDone(@submission, feedback_str)
+      end
+
     end
 
     render :nothing => true
@@ -184,7 +190,7 @@ class SubmissionsController < ApplicationController
       redirect_to :action=>"history", :id=>@effectiveCud.id and return -3
     end
 
-    jobid = createVm()
+    jobid = sendJob()
 
     if jobid == -2 then 
       link = "<a href=\"#{url_for(:action=>'adminAutograde')}\">Admin Autograding</a>"
@@ -288,7 +294,7 @@ class SubmissionsController < ApplicationController
     failed_list = ""
     for @submission in last_submissions do
       if autograde?(@submission) then
-        job = createVm()
+        job = sendJob()
         if job == -1 then
           failed_jobs += 1
           failed_list += "#{@submission.filename}: autograding error.<br>"

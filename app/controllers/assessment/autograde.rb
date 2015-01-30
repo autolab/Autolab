@@ -17,8 +17,8 @@ module AssessmentAutograde
 
     @submission = submission
     @assessment = submission.assessment
-    job = createVm()
-    if job == -3 then # createVm returned an exception
+    job = sendJob()
+    if job == -3 then # sendJob returned an exception
       flash[:error] = "Autograding failed because of an unexpected exception in the system."
     elsif job == -2 then 
       flash[:error] = "Autograding failed because there are no autograding properties."
@@ -39,12 +39,12 @@ module AssessmentAutograde
   end
 
 # 
-  # createVM - this scary-looking function initiates an autograding
+  # sendJob - this scary-looking function initiates an autograding
   # job request on the backend. It builds a job structure that
   # contains various info about the job, send submits it to the
   # Tango server via an addJob() Thrift RPC call.
   #
-  def createVm
+  def sendJob
     extend_config_module()
     assessmentDir = File.join(AUTOCONFIG_COURSE_DIR,@course.name,@assessment.name)
 
@@ -183,7 +183,11 @@ module AssessmentAutograde
       if feedback.nil? then
         return -19 #pollResponseStatusId
       else
-        autogradeDone(@submission, feedback)
+        if @assessment.config_module.instance_methods.include?(:autogradeDone) then
+          @assessment.config_module.autogradeDone(@submission, feedback)
+        else
+          autogradeDone(@submission, feedback)
+        end
       end
     end #if no callback url
     
