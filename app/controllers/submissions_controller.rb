@@ -625,31 +625,29 @@ class SubmissionsController < ApplicationController
         puts score.save!
        
       	if @assessment.has_partners then 
-              # call method in ModuleBase to update this score for partner
-      	    saveAutogradeForPartner(score, pSubmission)
+          # call method in ModuleBase to update this score for partner
+          saveAutogradeForPartner(score, pSubmission)
       	end
 
       end
     rescue Exception => e
-      problem = @assessment.problems.first
-      score = submission.scores.where(:problem_id => problem.id).first
-      if !score then
-        score = submission.scores.new(:problem_id=>problem.id)
-      end
-      score.score = 0
-      score.feedback = "An error occurred while parsing the autoresult returned by the Autograder.\n\n" 
-      score.feedback +=  "Error message: " + e.to_s + "\n\n"
-
+      feedback_str = "An error occurred while parsing the autoresult returned by the Autograder.\n\nError message: " + e.to_s + "\n\n"
       if lines && (lines.length < 10000) then
-        score.feedback += lines.join()
+        feedback_str += lines.join()
       end
-      score.released = true
-      score.grader_id=0
-      score.save
-      
-      if @assessment.has_partners then
-      	# call method in ModuleBase to update this score for parter
-      	saveAutogradeForPartner(score, pSubmission)
+      @assessment.problems.each do |p|
+        score = submission.scores.find_or_initialize_by(problem_id: p.id)
+        score.score = 0
+        score.feedback = feedback_str
+
+        score.released = true
+        score.grader_id = 0
+        score.save!
+
+        if @assessment.has_partners then
+          # call method in ModuleBase to update this score for parter
+          saveAutogradeForPartner(score, pSubmission)
+        end
       end
     end
 
