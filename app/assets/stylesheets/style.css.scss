@@ -431,37 +431,56 @@ div.field_with_errors {
 
 /* TABLE STYLES.  Styles for the multiple tables that we have for some reason */
 /* Pretty Border Tables. I vote we make this the generic table style. */
-table.prettyBorder, table.prettyBorder tr, table.prettyBorder th, table.prettyBorder td {
+table.prettyBorder,
+table.prettyBorder tr,
+table.prettyBorder th,
+table.prettyBorder td {
   border: 1px solid #ddd;
   text-align: left;
 }
-table.prettyBorder{
+table.prettyBorder {
   border-collapse:collapse;
   font-size:15px;
   width: 100%;
-}
-table.prettyBorder tr {
-  background-color: #fff;
-}
-table.prettyBorder tr:hover {
-  background-color:#abcdef;
-}
-table.prettyBorder th{
-  background-color:#E5E5E5;
-  background: linear-gradient(to bottom, #EFEFEF, #E5E5E5);
-  border: 1px solid #ccc;
-  color:#888;
-  cursor:pointer;
-  font-family: Helvetica, sans-serif;
-  font-size: 12px;
-  font-weight: bold;
-  padding: 5px;
-  text-align:left;
-  text-transform:uppercase;
-}
-table.prettyBorder td {
-  border: 1px solid #ddd;
-  padding: 0 5px;
+  // keep track of what row this is
+  counter-reset: rowNumber;
+
+  tr {
+    background-color: #fff;
+
+    &:hover {
+      background-color:#abcdef;
+    }
+  }
+
+  .user-row {
+    // Increment counter for each non-heading row
+    counter-increment: rowNumber;
+
+    .row-index::before {
+      // populate the row index
+      content: counter(rowNumber);
+    }
+  }
+
+  th {
+    background-color:#E5E5E5;
+    background: linear-gradient(to bottom, #EFEFEF, #E5E5E5);
+    border: 1px solid #ccc;
+    color:#888;
+    cursor:pointer;
+    font-family: Helvetica, sans-serif;
+    font-size: 12px;
+    font-weight: bold;
+    padding: 5px;
+    text-align:left;
+    text-transform:uppercase;
+  }
+
+  td {
+    border: 1px solid #ddd;
+    padding: 0 5px;
+  }
 }
 
 table.navigatable tr {

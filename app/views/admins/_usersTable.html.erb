@@ -2,7 +2,7 @@
 <table class="prettyBorder sortable" >
 <thead>
   <tr>
-    <th>&#8470;</th>
+    <th>&#8470;</th><!-- "No." symbol. -->
     <th>ID</th>
     <th>First Name</th>
     <th>Last Name</th>
@@ -17,9 +17,10 @@
     <th>Type</th>
   </tr>
 </thead>
-<% @cuds.each_with_index do |cud, idx| %>
+<!-- Row index is set using CSS. -->
+<% @cuds.each do |cud| %>
 <tr class="user-row">
-  <td><%= idx + 1 %></td>
+  <td class="row-index"></td>
   <td><%= cud.id %></td>
   <td><%= cud.user.first_name %></td>
   <td><%= cud.user.last_name %></td>
