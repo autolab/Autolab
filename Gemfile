@@ -74,6 +74,10 @@ gem 'capybara', group: [:development, :test]
 # Use Capistrano for deployment
 # gem 'capistrano-rails', group: :development
 
+# Dates and times
+gem 'momentjs-rails', '>= 2.9.0'
+gem 'bootstrap3-datetimepicker-rails', '~> 4.0.0'
+
 # Force SSL on certain routes
 gem 'rack-ssl-enforcer'
 

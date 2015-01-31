@@ -796,3 +796,29 @@ input[type="password"]:focus {
   font-size: 16px;
   line-height: 24px;
 }
+
+// Bootstrap 3 Datepicker overrides
+.bootstrap-datetimepicker-widget {
+  a[data-action="incrementHours"],
+  a[data-action="decrementHours"],
+  a[data-action="incrementMinutes"],
+  a[data-action="decrementMinutes"] {
+    span:hover {
+      background: none;
+    }
+  }
+
+  // Custom CSS classes added to buttons in initialize_datepickers.js
+  .time-btn:after {
+    content: ' Time';
+  }
+
+  .date-btn:after {
+    content: ' Date';
+  }
+
+  .now-btn:after {
+    content: ' Now';
+  }
+
+}
