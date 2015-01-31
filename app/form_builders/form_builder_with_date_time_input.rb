@@ -1,23 +1,4 @@
 class FormBuilderWithDateTimeInput < ActionView::Helpers::FormBuilder
-  def datetime_input(name, *args)
-    options = args.extract_options!
-
-    # get the DateTime backing this field (this is like assessment.start_at)
-    datetime = object.send name
-
-    # generate datetime_input field
-    datetime_input_field = @template.content_tag :div do
-      date = @template.text_field_tag "#{object_name}[#{name}][date]", datetime.strftime("%m/%d/%Y"),
-                               { data: { provide: "datepicker" }, class: "datepicker form-control" }
-      time = @template.text_field_tag "#{object_name}[#{name}][time]", datetime.strftime("%l:%M %p").strip,
-                               { data: { provide: "time" }, class: "time_input form-control" }
-
-      "#{date} #{time}".html_safe
-    end
-
-    wrap_field name, datetime_input_field, options[:help_text]
-  end
-
   %w(text_field text_area).each do |method_name|
     # retain access to default textfield, etc. helpers
     alias_method "vanilla_#{method_name}", method_name
@@ -52,6 +33,24 @@ class FormBuilderWithDateTimeInput < ActionView::Helpers::FormBuilder
     options[:class] = "btn btn-primary #{options[:class]}"
 
     super text, *(args + [ options ])
+  end
+
+  def date_select(name, options = {}, html_options = {})
+    existing_date = @object.send(name)
+    formatted_date = existing_date.to_date.strftime("%F") if existing_date.present?
+    field = text_field(name, :value => formatted_date,
+                 :class => "form-control datepicker",
+                 :"data-date-format" => "YYYY-MM-DD")
+    wrap_field name, field, options[:help_text]
+  end
+
+  def datetime_select(name, options = {}, html_options = {})
+    existing_time = @object.send(name)
+    formatted_time = existing_time.to_time.strftime("%F %I:%M %p") if existing_time.present?
+    field = vanilla_text_field(name, :value => formatted_time,
+                 :class => "form-control datetimepicker",
+                 :"data-date-format" => "YYYY-MM-DD hh:mm A")
+    wrap_field name, field, options[:help_text]
   end
 
 private
