@@ -442,11 +442,24 @@ table.prettyBorder {
   border-collapse:collapse;
   font-size:15px;
   width: 100%;
+  // keep track of what row this is
+  counter-reset: rowNumber;
+
   tr {
     background-color: #fff;
 
     &:hover {
       background-color:#abcdef;
+    }
+  }
+
+  .user-row {
+    // Increment counter for each non-heading row
+    counter-increment: rowNumber;
+
+    .row-index::before {
+      // populate the row index
+      content: counter(rowNumber);
     }
   }
 
