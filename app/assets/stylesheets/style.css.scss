@@ -431,37 +431,43 @@ div.field_with_errors {
 
 /* TABLE STYLES.  Styles for the multiple tables that we have for some reason */
 /* Pretty Border Tables. I vote we make this the generic table style. */
-table.prettyBorder, table.prettyBorder tr, table.prettyBorder th, table.prettyBorder td {
+table.prettyBorder,
+table.prettyBorder tr,
+table.prettyBorder th,
+table.prettyBorder td {
   border: 1px solid #ddd;
   text-align: left;
 }
-table.prettyBorder{
+table.prettyBorder {
   border-collapse:collapse;
   font-size:15px;
   width: 100%;
-}
-table.prettyBorder tr {
-  background-color: #fff;
-}
-table.prettyBorder tr:hover {
-  background-color:#abcdef;
-}
-table.prettyBorder th{
-  background-color:#E5E5E5;
-  background: linear-gradient(to bottom, #EFEFEF, #E5E5E5);
-  border: 1px solid #ccc;
-  color:#888;
-  cursor:pointer;
-  font-family: Helvetica, sans-serif;
-  font-size: 12px;
-  font-weight: bold;
-  padding: 5px;
-  text-align:left;
-  text-transform:uppercase;
-}
-table.prettyBorder td {
-  border: 1px solid #ddd;
-  padding: 0 5px;
+  tr {
+    background-color: #fff;
+
+    &:hover {
+      background-color:#abcdef;
+    }
+  }
+
+  th {
+    background-color:#E5E5E5;
+    background: linear-gradient(to bottom, #EFEFEF, #E5E5E5);
+    border: 1px solid #ccc;
+    color:#888;
+    cursor:pointer;
+    font-family: Helvetica, sans-serif;
+    font-size: 12px;
+    font-weight: bold;
+    padding: 5px;
+    text-align:left;
+    text-transform:uppercase;
+  }
+
+  td {
+    border: 1px solid #ddd;
+    padding: 0 5px;
+  }
 }
 
 table.navigatable tr {
