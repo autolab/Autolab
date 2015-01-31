@@ -46,6 +46,8 @@ GEM
       tzinfo (~> 1.1)
     arel (6.0.0)
     bcrypt (3.1.9)
+    bootstrap3-datetimepicker-rails (4.0.0)
+      momentjs-rails (>= 2.8.1)
     builder (3.2.2)
     capybara (2.4.4)
       mime-types (>= 1.16)
@@ -103,6 +105,8 @@ GEM
     mime-types (2.4.3)
     mini_portile (0.6.2)
     minitest (5.5.1)
+    momentjs-rails (2.9.0)
+      railties (>= 3.1)
     multi_json (1.10.1)
     multi_xml (0.5.5)
     multipart-post (2.0.0)
@@ -230,6 +234,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  bootstrap3-datetimepicker-rails (~> 4.0.0)
   capybara
   coffee-rails (>= 4.0.0)
   debugger2
@@ -239,6 +244,7 @@ DEPENDENCIES
   highlight
   jbuilder (>= 2.0)
   jquery-rails
+  momentjs-rails (>= 2.9.0)
   mysql2
   omniauth (>= 1.2.2)
   omniauth-facebook (>= 2.0.0)
