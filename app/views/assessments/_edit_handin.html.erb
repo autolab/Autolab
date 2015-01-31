@@ -1,12 +1,3 @@
-<% content_for :head do %>
-  <%= stylesheet_link_tag "bootstrap-datepicker" %>
-  <%= stylesheet_link_tag "bootstrap-datepicker-fixes" %>
-  <%= javascript_include_tag "bootstrap-datepicker" %>
-  <%= javascript_include_tag "moment" %>
-  <%= javascript_include_tag "time_input" %>
-  <%= stylesheet_link_tag "time_input" %>
-<% end %>
-
 <%= f.label :start_at %><br>
 <%= f.datetime_local_field :start_at, step: 1, help_text: "The time this assessment is released to students." %>
 <br><br>
