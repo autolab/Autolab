@@ -13,23 +13,26 @@
 <% end %>
 </ul>
 
-<%= form_for [ @course, @assessment ], url: edit_course_assessment_path(@course, @assessment) + "/#{params[:active_tab]}",
-                                   builder: FormBuilderWithDateTimeInput do |f| %>
-  <% if @course.errors.any? %>
-      <ul>
-        <% @course.errors.full_messages.each do |msg| %>
-          <li><%= msg %></li>
-        <% end %>
-      </ul>
-  <% end %> 
+<div class="row">
+  <div class="col-md-6">
+    <%= form_for [ @course, @assessment ], url: edit_course_assessment_path(@course, @assessment) + "/#{params[:active_tab]}", builder: FormBuilderWithDateTimeInput do |f| %>
+      <% if @course.errors.any? %>
+          <ul>
+            <% @course.errors.full_messages.each do |msg| %>
+              <li><%= msg %></li>
+            <% end %>
+          </ul>
+      <% end %>
 
-  <% if @assessment.errors.any? %>
-      <ul>
-        <% @assessment.errors.full_messages.each do |msg| %>
-          <li><%= msg %></li>
-        <% end %>
-      </ul>
-  <% end %>
+      <% if @assessment.errors.any? %>
+          <ul>
+            <% @assessment.errors.full_messages.each do |msg| %>
+              <li><%= msg %></li>
+            <% end %>
+          </ul>
+      <% end %>
 
-  <%= render "edit_#{params[:active_tab]}", f: f %>
-<% end %>
+      <%= render "edit_#{params[:active_tab]}", f: f %>
+    <% end %>
+  </div>
+</div>
