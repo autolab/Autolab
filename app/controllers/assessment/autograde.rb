@@ -42,7 +42,10 @@ module AssessmentAutograde
   # sendJob - this scary-looking function initiates an autograding
   # job request on the backend. It builds a job structure that
   # contains various info about the job, send submits it to the
-  # Tango server via an addJob() Thrift RPC call.
+  # Tango server via an REST API.
+  #
+  # Required global input variables:
+  # @course, @assessment, @submission
   #
   def sendJob
     extend_config_module()
@@ -64,7 +67,7 @@ module AssessmentAutograde
     begin
       COURSE_LOGGER.log("Dir: #{assessmentDir}")
 
-      if @assessment.config_module.instance_methods.include?(:autogradeInputFiles) then
+      if @assessment.overwrites_method?(:autogradeInputFiles) then
         uploadFileList =  @assessment.config_module.autogradeInputFiles(assessmentDir)
       else 
         uploadFileList =  autogradeInputFiles(assessmentDir)
@@ -183,7 +186,7 @@ module AssessmentAutograde
       if feedback.nil? then
         return -19 #pollResponseStatusId
       else
-        if @assessment.config_module.instance_methods.include?(:autogradeDone) then
+        if @assessment.overwrites_method?(:autogradeDone) then
           @assessment.config_module.autogradeDone(@submission, feedback)
         else
           autogradeDone(@submission, feedback)

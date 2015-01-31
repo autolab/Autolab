@@ -17,7 +17,7 @@ module AssessmentHandout
       return
     end
 
-    if @assessment.config_module.instance_methods.include?(:handout) then
+    if @assessment.overwrites_method?(:handout) then
       hash = @assessment.config_module.handout()
       send_file(hash["fullpath"], 
             :disposition => 'inline', 

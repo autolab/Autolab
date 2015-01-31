@@ -481,7 +481,7 @@ class AssessmentsController < ApplicationController
   def raw_score(scores)
     
     if @assessment.has_autograde and 
-      @assessment.config_module.instance_methods.include?(:raw_score) then
+      @assessment.overwrites_method?(:raw_score) then
       sum = @assessment.config_module.raw_score(scores)
     else
       sum = 0.0
@@ -676,7 +676,7 @@ class AssessmentsController < ApplicationController
     @list_title['handout'] = "Download handout materials and starter code"
     @list_title['history'] = "View your submissions, scores, and feedback from the course staff"
 
-    if @assessment.config_module.instance_methods.include?(:listOptions) then
+    if @assessment.overwrites_method?(:listOptions) then
       list = @list
       @list = @assessment.config_module.listOptions(list)
     end
@@ -1470,7 +1470,7 @@ class AssessmentsController < ApplicationController
 
     # Build the html for the scoreboard header 
     begin
-      if @assessment.config_module.instance_methods.include?(:scoreboardHeader) then
+      if @assessment.overwrites_method?(:scoreboardHeader) then
         @header =  @assessment.config_module.scoreboardHeader()
       else
         @header = scoreboardHeader()
@@ -1491,7 +1491,7 @@ class AssessmentsController < ApplicationController
     for grade in @grades.values do
       begin
 	
-        if @assessment.config_module.instance_methods.include?(:createScoreboardEntry) then
+        if @assessment.overwrites_method?(:createScoreboardEntry) then
           grade[:entry] = @assessment.config_module.createScoreboardEntry(
 					      grade[:problems],
 					      grade[:autoresult]) 

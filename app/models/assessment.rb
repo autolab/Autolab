@@ -233,6 +233,10 @@ class Assessment < ActiveRecord::Base
     end
   end
 
+  def overwrites_method?(methodKey)
+    self.config_module.instance_methods.include?(methodKey)
+  end
+
 private
   def path filename
     File.join Rails.root, 'courses', course.name, name, filename
