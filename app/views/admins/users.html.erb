@@ -34,7 +34,7 @@ Search: <%= text_field_tag 'search', nil, onkeyup:'filterRows(this.value)' %>
     // Filter rows, keep track of number remaining
     while (i < L) {
       r = rows[i++];
-      if (r.innerHTML.indexOf(name) != -1) {
+      if (r.innerHTML.toLowerCase().indexOf(name.toLowerCase()) != -1) {
         r.style.display = "table-row";
         newTotal++;
       }
