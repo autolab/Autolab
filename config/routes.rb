@@ -79,11 +79,16 @@ Autolab3::Application.routes.draw do
         get 'partner'
         get 'scoreboard'
 
-        #partner actions
+        # partner actions
         match 'setPartner', via: [:get, :post]
         get 'importPartners'
         get 'deletePartner'
         get 'cancelRequest'
+
+        # SVN actions
+        get 'adminSVN'
+        post 'importSVN'
+        post 'setRepository'
 
         # gradesheet ajax actions
         post 'quickSetScore'

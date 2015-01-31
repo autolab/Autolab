@@ -1,40 +1,49 @@
 <div class="handin-panel <% if modal -%>modal<% end -%>" id="<%= id %>" data-cansubmit="<%= @can_submit %> ">
-	<% if @can_submit %> 
-	  <% if @assessment.max_submissions != -1 %>
-	    <p>You have <%= @left_count %> <%= (@left_count == 1) ? "submission" : "submissions" %> left.</p>
-	  <% end %>
+  <% if @can_submit %> 
+    <% if @assessment.max_submissions != -1 %>
+      <p>You have <%= @left_count %> <%= (@left_count == 1) ? "submission" : "submissions" %> left.</p>
+    <% end %>
 
-	  <% if @aud.past_due_at? %>
-	    <p><b>Warning:</b> It is past the due date for this assessment. Submitting now
-	    might result in the usage of a grace day or a grade penalty!</p>
-	  <% end %>
+    <% if @aud.past_due_at? %>
+      <p><b>Warning:</b> It is past the due date for this assessment. Submitting now might result in the usage of a grace day or a grade penalty!</p>
+    <% end %>
 
-	  <%= form_for @submission , :url=>{:action=>"handin"}, :html=>{:multipart=>true} do |f| %>
-	    <%= f.file_field :file %>
-		<% if @aud.past_due_at? then %>
- 	      	<p><%= f.submit("Submit File Late", id:"fake-submit",  :class=>"btn primary") %></p>
-	    <% else %>
-			<p><%= f.submit("Submit File", id:"fake-submit", :class=>"btn primary") %></p>
- 	    <% end %>
-	  <% end %>
+    <% if @assessment.has_svn then %>
+      <%= form_for @submission, url: {action: :handin}, method: :post do |f| %>
+        <% if @aud.past_due_at? then %>
+          <p><%= f.submit("Checkout Repository", class: "btn primary", data: { confirm: "Are you sure you want to submit late?" }) %></p>
+        <% else %>
+          <p><%= f.submit("Checkout Repository", class: "btn primary") %></p>
+        <% end %>
+      <% end %>
+    <% else %>
+      <%= form_for @submission, url: {action: :handin}, multipart: true do |f| %>
+        <%= f.file_field :file %>
+        <% if @aud.past_due_at? then %>
+          <p><%= f.submit("Submit File Late", id:"fake-submit",  class: "btn primary") %></p>
+        <% else %>
+          <p><%= f.submit("Submit File", id:"fake-submit", class: "btn primary") %></p>
+        <% end %>
+      <% end %>
+    <% end %>
 	  
-	<% else %>
-	  <% case @why_not
-	     when :user_dropped %>
-	    <h3>You cannot submit because you have dropped the course.</h3>
+  <% else %>
+    <% case @why_not
+       when :user_dropped %>
+      <h3>You cannot submit because you have dropped the course.</h3>
 
-	  <% when :before_start_at %>
-	    <h3>We are not yet accepting submissions for this assessment.</h3>
+    <% when :before_start_at %>
+      <h3>We are not yet accepting submissions for this assessment.</h3>
 
-	  <% when :past_end_at %>
-	    <h3>We are no longer accepting submissions for this assessment.</h3>
+    <% when :past_end_at %>
+      <h3>We are no longer accepting submissions for this assessment.</h3>
 
-	  <% when :at_submission_limit %>
-	    <h3>You have reached the maximum number of submissions allowed for this assessment.</h3>
+    <% when :at_submission_limit %>
+      <h3>You have reached the maximum number of submissions allowed for this assessment.</h3>
 
-	  <% else %>
-	    <% raise "FATAL: unknown reason for submission denial" %>
+    <% else %>
+      <h3>You are not allowed to submit this assessment.</h3>
 
-	  <% end %>
-	<% end %>
+    <% end %>
+  <% end %>
 </div>

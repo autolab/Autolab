@@ -18,7 +18,6 @@ class AssessmentsController < ApplicationController
   autolabRequire File.join(Rails.root, 'app/controllers/assessment/autograde.rb')
   include AssessmentAutograde
 
-
   before_action :get_assessment, except: [ :index, :new, :create, :installAssessment, :importAsmtFromTar, :importAssessment, :getCategory, :log_submit, :local_submit ]
 
   # We have to do this here, because the modules don't inherit ApplicationController.
@@ -57,9 +56,12 @@ class AssessmentsController < ApplicationController
   action_auth_level :importPartners, :instructor
 
   # SVN
-  action_auth_level :adminSvn, :instructor
+  autolabRequire Rails.root.join('app', 'controllers', 'assessment', 'SVN.rb')
+  include AssessmentSVN
+
+  action_auth_level :adminSVN, :instructor
   action_auth_level :setRepository, :instructor
-  action_auth_level :importSvn, :instructor
+  action_auth_level :importSVN, :instructor
 
   # Scoreboard
   action_auth_level :adminScoreboard, :instructor
@@ -701,10 +703,6 @@ class AssessmentsController < ApplicationController
       partnersListOptions()
     end
   
-    if @assessment.has_svn then
-      svnListOptions()
-    end
-  
     if @assessment.has_scoreboard then
       scoreboardListOptions()
     end
@@ -760,11 +758,6 @@ class AssessmentsController < ApplicationController
     if @assessment.has_scoreboard then
       scoreboardListAdmin
     end
-
-    if @assessment.has_svn then
-      svnListAdmin
-    end
-
   end
 
   # autogradeListAdmin - adds the "admin autograding" option to
@@ -777,11 +770,6 @@ class AssessmentsController < ApplicationController
   def partnersListAdmin
     @adminlist["adminPartners"] = "Admin partners"
     @admin_title["adminPartners"] = "View and modify the different partner groups"
-  end
-
-  def svnListAdmin
-    @adminlist["adminSvn"] = "Admin svn"
-    @admin_title["adminSvn"] = "Manage the SVN repositiory"
   end
 
   # scoreboardListAdmin - Adds the "admin scoreboard" option to the
