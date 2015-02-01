@@ -422,7 +422,7 @@ public
   #       redirect_to :action=>"bulkFeedback" and return
   #     end
   #
-  #     require 'libarchive'
+  #     require 'libarchive' # this must be removed if this function is ever uncommented
   #     errors = []
   #     @uploadedStudents = []
   #     begin
