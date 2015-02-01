@@ -205,12 +205,44 @@ class Submission < ActiveRecord::Base
 
   # not the most efficient way of doing this
   def get_filename_in_archive_at(position)
-    require "libarchive"
-    archive = Archive.read_open_filename self.handin_file_path
-    while header = archive.next_header do
-      return header.pathname if archive.header_position == position 
+    require 'rubygems'
+    require 'rubygems/package'
+    require 'zlib'
+    require 'zip'
+
+    archive_type = IO.popen(["file", "--brief", "--mime-type", @filename],
+                            in: :close, err: :close) { |io| io.read.chomp }
+    # Extract archive by type
+    if archive_type.include? "tar" then
+      f = File.new(@filename)
+      archive_extract = Gem::Package::TarReader.new(f)
+      archive_extract.rewind # The extract has to be rewinded after every iteration
+    elsif archive_type.include? "gzip" then
+      archive_extract = Gem::Package::TarReader.new(Zlib::GzipReader.open @filename)
+      archive_extract.rewind
+    elsif archive_type.include? "zip" then
+      archive_extract = Zip::File.open(@filename)
+    else
+      raise "Unrecognized archive type!"
     end
-  rescue
+
+    # Iterate through archive until file position
+    i = 0
+    archive_extract.each do |entry|
+      # Obtain path name depending for tar/zip entry
+      pathname = entry.respond_to?(:full_name) ? entry.full_name : entry.name
+      # Skip Mac metafiles
+      next if pathname.include? "__MACOSX" or
+          pathname.include? ".DS_Store" or
+          pathname.include? ".metadata"
+
+      if i == position then
+        return pathname
+      end
+
+      i += 1
+    end
+
     return nil
   end
 
