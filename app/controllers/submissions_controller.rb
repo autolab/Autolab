@@ -107,7 +107,7 @@ class SubmissionsController < ApplicationController
 
     if @assessment.has_autograde then
       
-      if @assessment.config_module.instance_methods.include?(:autogradeDone) then
+      if @assessment.overwrites_method?(:autogradeDone) then
         @assessment.config_module.autogradeDone(@submission, feedback_str)
       else
         autogradeDone(@submission, feedback_str)
@@ -598,7 +598,7 @@ class SubmissionsController < ApplicationController
       # autoresult string from the autograding driver
       autoresult = lines[lines.length-1].chomp
 
-      if @assessment.config_module.instance_methods.include?(:parseAutoresult) then
+      if @assessment.overwrites_method?(:parseAutoresult) then
         scores = @assessment.config_module.parseAutoresult(autoresult, true);
       else
         scores = parseAutoresult(autoresult, true)

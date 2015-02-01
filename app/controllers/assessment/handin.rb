@@ -66,7 +66,7 @@ module AssessmentHandin
       return false
     end
 
-    if @assessment.config_module.instance_methods.include?(:checkMimeType) \
+    if @assessment.overwrites_method?(:checkMimeType) \
       and !(@assessment.config_module.checkMimeType(
         params[:submission]['file'].content_type,
         params[:submission]['file'].original_filename)) then
