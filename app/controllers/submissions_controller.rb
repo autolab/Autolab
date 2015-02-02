@@ -85,13 +85,13 @@ class SubmissionsController < ApplicationController
     
     feedback_str = params[:file].read
 
-    puts "DAVE KEY: " + params[:dave]
-
     @submission = Submission.where(id: params[:id], dave: params[:dave]).first
     @course = Course.where(id: params[:course_id]).first
     @assessment = Assessment.where(id: params[:assessment_id]).first
 
-    puts @submission
+    COURSE_LOGGER.setCourse(@course)
+    COURSE_LOGGER.log("autograde_done")
+    COURSE_LOGGER.log("autograde_done hit: #{request.fullpath}")
 
     unless @submission and @course and @assessment then
       render nothing: true and return

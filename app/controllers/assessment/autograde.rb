@@ -1,5 +1,5 @@
 module AssessmentAutograde
-  require 'autoConfig'
+  require 'autoConfig.rb'
 
   # 
   # autogradeAfterHandin - submits an autograding job to Tango when
@@ -127,9 +127,16 @@ module AssessmentAutograde
     @submission.dave = dave
     @submission.save! 
 
-    callBackURL = request.base_url +
-      "/courses/#{@course.id}/assessments/#{@assessment.id}/submissions/#{@submission.id}/" +
-      "autograde_done?dave=#{dave}"
+    begin
+      hostname = request.base_url
+    rescue Exception => e
+      hostname = `hostname`
+      hostname = "https://" + hostname 
+   end
+
+    callBackURL = hostname +
+        "/courses/#{@course.id}/assessments/#{@assessment.id}/submissions/#{@submission.id}/" +
+        "autograde_done?dave=#{dave}"
 
     COURSE_LOGGER.log("Callback: #{callBackURL}") 
 
@@ -228,4 +235,83 @@ module AssessmentAutograde
     not (submission.nil? or submission.handinFile().nil?)
   end
 
+  def extend_config_module
+    begin
+      @assessment = @submission.assessment
+      require @assessment.config_file_path
+            
+
+      # casted to local variable so that 
+      # they can be passed into `module_eval`
+      assessment = @assessment
+      methods = @assessment.config_module.instance_methods
+      assignName = @assessment.name
+      submission = @submission
+
+      course = @course
+      cud = @cud
+
+      begin
+        req_hostname = request.host
+      rescue Exception => e
+	req_hostname = "n/a"
+      end
+
+      begin
+	req_port = request.port
+      rescue Exception => e
+        req_port = 80
+      end
+
+      @assessment.config_module.module_eval do
+        
+        # we cast these values into module variables
+        # so that they can be accessible inside module
+        # methods
+        @cud = cud
+        @course = course
+        @assessment = course.assessments.where(:name=>assignName).first
+        @hostname = req_hostname
+        @port = req_port
+        @submission = submission
+
+        if ! @assessment then
+          raise "Assessment #{assignName} does not exist!"
+        end
+
+        if @assessment == nil then
+          flash[:error] = "Error: Invalid assessment"
+          redirect_to home_error_path and return
+        end
+
+        @name = @assessment.name
+        @description = @assessment.description
+        @start_at = @assessment.start_at
+        @due_at = @assessment.due_at
+        @end_at = @assessment.end_at
+        @visible_at = @assessment.visible_at
+        @id = @assessment.id
+
+        # we iterate over all the methods
+        # and convert them into `module methods`
+        # this makes them available without mixing in the module
+        # creating an instance of it.
+        # http://www.ruby-doc.org/core-2.1.3/Module.html#method-i-instance_method
+        methods.each { |nonmodule_func| 
+          module_function(nonmodule_func)
+          public nonmodule_func
+        }
+      end
+
+    rescue Exception => @error
+      COURSE_LOGGER.log(@error)
+      COURSE_LOGGER.log(@error.backtrace)
+
+      if @cud and @cud.has_auth_level? :instructor
+        redirect_to action: :reload and return
+      else
+        redirect_to home_error_path and return
+       end
+    end
+  end
 end

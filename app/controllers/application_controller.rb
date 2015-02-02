@@ -226,6 +226,7 @@ protected
 
         Process.detach(pid)
       rescue Exception => e  
+        COURSE_LOGGER.log("Error updater: #{e.to_s}")
         puts e
         puts e.message  
         puts e.backtrace.inspect
