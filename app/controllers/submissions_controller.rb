@@ -166,8 +166,9 @@ class SubmissionsController < ApplicationController
   # this is good
   action_auth_level :destroy, :instructor
   def destroy
-    load_submission() or return false
-    @submission.destroy
+    if params[:yes] && load_submission() then
+      @submission.destroy!
+    end
     redirect_to course_assessment_submissions_path(@submission.course_user_datum.course, @submission.assessment) and return
   end
 
