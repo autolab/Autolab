@@ -168,6 +168,8 @@ class SubmissionsController < ApplicationController
   def destroy
     if params[:yes] && load_submission() then
       @submission.destroy!
+    else
+      flash[:error] = "There was an error deleting the submission."
     end
     redirect_to course_assessment_submissions_path(@submission.course_user_datum.course, @submission.assessment) and return
   end
