@@ -131,7 +131,7 @@ module AssessmentAutograde
       hostname = request.base_url
     rescue Exception => e
       hostname = `hostname`
-      hostname = "https://" + hostname 
+      hostname = "https://" + hostname.strip 
    end
 
     callBackURL = hostname +

@@ -82,7 +82,6 @@ class SubmissionsController < ApplicationController
   # action_auth_level :autograde_done, :student
   action_no_auth :autograde_done
   def autograde_done
-    
     feedback_str = params[:file].read
 
     @submission = Submission.where(id: params[:id], dave: params[:dave]).first
@@ -92,6 +91,13 @@ class SubmissionsController < ApplicationController
     COURSE_LOGGER.setCourse(@course)
     COURSE_LOGGER.log("autograde_done")
     COURSE_LOGGER.log("autograde_done hit: #{request.fullpath}")
+
+    begin
+	extend_config_module()
+    rescue Exception => e
+	COURSE_LOGGER.log("Error extend config")
+	COURSE_LOGGER.log(e)
+    end
 
     unless @submission and @course and @assessment then
       render nothing: true and return
@@ -104,6 +110,7 @@ class SubmissionsController < ApplicationController
 
     assign = @assessment.name.gsub(/\./,'') 
     modName = (assign + (@course.name).gsub(/[^A-Za-z0-9]/,"")).camelize
+
 
     if @assessment.has_autograde then
       
