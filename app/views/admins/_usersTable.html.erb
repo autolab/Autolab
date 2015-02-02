@@ -3,7 +3,6 @@
 <thead>
   <tr>
     <th>&#8470;</th><!-- "No." symbol. -->
-    <th>ID</th>
     <th>First Name</th>
     <th>Last Name</th>
     <th>Email</th>
@@ -21,7 +20,6 @@
 <% @cuds.each do |cud| %>
 <tr class="user-row">
   <td class="row-index"></td>
-  <td><%= cud.id %></td>
   <td><%= cud.user.first_name %></td>
   <td><%= cud.user.last_name %></td>
   <td><%= link_to cud.user.email, course_course_user_datum_path(@course, cud) %></td>
