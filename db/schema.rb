@@ -122,26 +122,18 @@ ActiveRecord::Schema.define(version: 20150203151605) do
   end
 
   create_table "course_user_data", force: :cascade do |t|
-    t.string   "first_name_backup",    limit: 255, default: ""
-    t.string   "last_name_backup",     limit: 255, default: ""
-    t.string   "andrewID_backup",      limit: 255, default: ""
-    t.string   "school_backup",        limit: 255, default: ""
-    t.string   "major_backup",         limit: 255, default: ""
-    t.string   "year_backup",          limit: 255
-    t.string   "lecture",              limit: 255
-    t.string   "section",              limit: 255, default: ""
-    t.string   "grade_policy",         limit: 255, default: ""
-    t.integer  "course_id",            limit: 4,                   null: false
-    t.string   "email_backup",         limit: 255, default: ""
+    t.string   "lecture",          limit: 255
+    t.string   "section",          limit: 255, default: ""
+    t.string   "grade_policy",     limit: 255, default: ""
+    t.integer  "course_id",        limit: 4,                   null: false
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.boolean  "instructor",           limit: 1,   default: false
-    t.boolean  "administrator_backup", limit: 1,   default: false
-    t.boolean  "dropped",              limit: 1,   default: false
-    t.string   "nickname",             limit: 255
-    t.boolean  "course_assistant",     limit: 1,   default: false
-    t.integer  "tweak_id",             limit: 4
-    t.integer  "user_id",              limit: 4,                   null: false
+    t.boolean  "instructor",       limit: 1,   default: false
+    t.boolean  "dropped",          limit: 1,   default: false
+    t.string   "nickname",         limit: 255
+    t.boolean  "course_assistant", limit: 1,   default: false
+    t.integer  "tweak_id",         limit: 4
+    t.integer  "user_id",          limit: 4,                   null: false
   end
 
   create_table "courses", force: :cascade do |t|
@@ -240,7 +232,6 @@ ActiveRecord::Schema.define(version: 20150203151605) do
     t.integer  "special_type",         limit: 4,     default: 0
     t.integer  "submitted_by_id",      limit: 4
     t.text     "autoresult",           limit: 65535
-    t.boolean  "absolute_tweak",       limit: 1,     default: true,  null: false
     t.string   "detected_mime_type",   limit: 255
     t.string   "submitter_ip",         limit: 40
     t.integer  "tweak_id",             limit: 4
