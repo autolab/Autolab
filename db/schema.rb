@@ -91,6 +91,8 @@ ActiveRecord::Schema.define(version: 20150203151605) do
     t.boolean  "has_scoreboard",     limit: 1
     t.boolean  "has_svn",            limit: 1
     t.string   "remote_handin_path", limit: 255
+    t.boolean  "quiz",               limit: 1,     default: false
+    t.text     "quizData",           limit: 65535
   end
 
   create_table "attachments", force: :cascade do |t|

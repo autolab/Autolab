@@ -18,7 +18,7 @@ class AssessmentsController < ApplicationController
   autolabRequire File.join(Rails.root, 'app/controllers/assessment/autograde.rb')
   include AssessmentAutograde
 
-  before_action :get_assessment, except: [ :index, :new, :create, :installAssessment, :importAsmtFromTar, :importAssessment, :getCategory, :log_submit, :local_submit ]
+  before_action :get_assessment, except: [ :index, :new, :create, :installQuiz, :installAssessment, :importAsmtFromTar, :importAssessment, :getCategory, :log_submit, :local_submit ]
 
   # We have to do this here, because the modules don't inherit ApplicationController.
 
@@ -91,6 +91,74 @@ class AssessmentsController < ApplicationController
       }
     rescue Exception 
     end
+  end
+
+  action_auth_level :installQuiz, :instructor
+  def installQuiz
+    if request.post? and params.include?(:quiz)
+      quiz = params[:quiz]
+      quizName = params[:quizName]
+      quizCat = params[:category]
+      params[:assessment] = {name: quizName, category_id: quizCat}
+      params[:quiz] = true
+      params[:quizData] = quiz
+      params[:max_submissions] = params[:attemptsAllowed]
+      create
+      quizData = JSON.parse(quiz)
+      p = Problem.new(:name=>"Quiz",
+              :description=>"",
+              :assessment_id=>@assessment.id,
+              :max_score=>quizData.length,
+              :optional=>false)
+      p.save()
+      return
+    else
+      @categories = AssessmentCategory.getList(@course)
+      render :template=>"assessments/installQuiz" and return
+    end
+  end
+
+  action_auth_level :takeQuiz, :student
+  def takeQuiz
+    submission_count = @assessment.submissions.count(:conditions => { :course_user_datum_id => @cud.id })
+    left_count = [ @assessment.max_submissions - submission_count, 0 ].max
+    if (@assessment.max_submissions != -1 and left_count == 0)
+      redirect_to course_assessment_path(@course, @assessment) and return
+    end
+    @quizData = JSON.parse(@assessment.quizData)
+    @submitPath = submitQuiz_course_assessment_path(@course, @assessment)
+    render :template=>"assessments/takeQuiz" and return
+  end
+
+  action_auth_level :submitQuiz, :student
+  def submitQuiz
+    submission_count = @assessment.submissions.count(:conditions => { :course_user_datum_id => @cud.id })
+    left_count = [ @assessment.max_submissions - submission_count, 0 ].max
+    if (@assessment.max_submissions != -1 and left_count == 0)
+      redirect_to course_assessment_path(@course, @assessment) and return
+    end
+    @quizData = JSON.parse(@assessment.quizData)
+    score = 0
+    @quizData.each do |i, q|
+    answer = params[i]
+      actualAnswer = @quizData[i]["answer"]
+      if (answer.to_i == actualAnswer)
+        score = score + 1
+      end
+    end
+    @submission = Submission.create(:assessment_id => @assessment.id,
+                                    :course_user_datum_id=>@cud.id)
+    problem = Problem.find_by(:assessment_id => @assessment.id)
+    quizScore = Score.new(:score => score,
+                          :feedback => "",
+                          :grader_id => @cud.id,
+                          :released => true,
+                          :problem_id => problem.id,
+                          :submission_id => @submission.id)
+    if !quizScore.save()
+      flash[:error] = "Unable to make quiz submission."
+    end
+    redirect_to history_course_assessment_path(@course, @assessment) and return
   end
 
   # installAssessment - Installs a new assessment, either by
@@ -365,6 +433,9 @@ class AssessmentsController < ApplicationController
     @assessment.due_at= Time.now
     @assessment.grading_deadline = Time.now
     @assessment.end_at = Time.now
+    @assessment.quiz = params.include?(:quiz) ? params[:quiz] : false
+    @assessment.quizData = params.include?(:quizData) ? params[:quizData] : ""
+    @assessment.max_submissions = params.include?(:max_submissions) ? params[:max_submissions] : -1
     
     if !@assessment.save
       flash[:error] = "Error saving #{@assessment.name}"
