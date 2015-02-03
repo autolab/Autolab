@@ -84,9 +84,7 @@ ActiveRecord::Schema.define(version: 20150130034712) do
     t.boolean  "disable_handins",     limit: 1
     t.boolean  "exam",                limit: 1,     default: false
     t.integer  "max_size",            limit: 4,     default: 2
-    t.float    "late_penalty_old",    limit: 24
     t.integer  "version_threshold",   limit: 4
-    t.float    "version_penalty_old", limit: 24
     t.integer  "late_penalty_id",     limit: 4
     t.integer  "version_penalty_id",  limit: 4
     t.datetime "grading_deadline",                                  null: false
@@ -103,8 +101,6 @@ ActiveRecord::Schema.define(version: 20150130034712) do
     t.string   "filename",        limit: 255
     t.string   "mime_type",       limit: 255
     t.boolean  "released",        limit: 1
-    t.string   "type_old",        limit: 255
-    t.integer  "foreign_key_old", limit: 4
     t.string   "name",            limit: 255
     t.datetime "created_at"
     t.datetime "updated_at"
@@ -148,7 +144,6 @@ ActiveRecord::Schema.define(version: 20150130034712) do
     t.boolean  "dropped",              limit: 1,   default: false
     t.string   "nickname",             limit: 255
     t.boolean  "course_assistant",     limit: 1,   default: false
-    t.float    "tweak_old",            limit: 24,  default: 0.0
     t.boolean  "absolute_tweak",       limit: 1,   default: true
     t.integer  "tweak_id",             limit: 4
     t.integer  "user_id",              limit: 4,                   null: false
@@ -159,14 +154,12 @@ ActiveRecord::Schema.define(version: 20150130034712) do
     t.string   "semester",                      limit: 255
     t.integer  "late_slack",                    limit: 4
     t.integer  "grace_days",                    limit: 4
-    t.float    "late_penalty_old",              limit: 24
     t.string   "display_name",                  limit: 255
     t.date     "start_date"
     t.date     "end_date"
     t.boolean  "disabled",                      limit: 1,     default: false
     t.boolean  "exam_in_progress",              limit: 1,     default: false
     t.integer  "version_threshold",             limit: 4,     default: -1,    null: false
-    t.float    "version_penalty_old",           limit: 24,    default: 0.0,   null: false
     t.datetime "cgdub_dependencies_updated_at"
     t.integer  "late_penalty_id",               limit: 4
     t.integer  "version_penalty_id",            limit: 4
@@ -248,7 +241,6 @@ ActiveRecord::Schema.define(version: 20150130034712) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.string   "notes",                limit: 255,   default: ""
-    t.float    "tweak_old",            limit: 24,    default: 0.0
     t.string   "mime_type",            limit: 255
     t.integer  "special_type",         limit: 4,     default: 0
     t.integer  "submitted_by_id",      limit: 4
@@ -256,7 +248,6 @@ ActiveRecord::Schema.define(version: 20150130034712) do
     t.boolean  "absolute_tweak",       limit: 1,     default: true,  null: false
     t.string   "detected_mime_type",   limit: 255
     t.string   "submitter_ip",         limit: 40
-    t.boolean  "ignored_old",          limit: 1,     default: false, null: false
     t.integer  "tweak_id",             limit: 4
     t.boolean  "ignored",              limit: 1,     default: false, null: false
     t.string   "dave",                 limit: 255
