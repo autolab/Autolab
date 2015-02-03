@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150130034712) do
+ActiveRecord::Schema.define(version: 20150203151605) do
 
   create_table "annotations", force: :cascade do |t|
     t.integer  "submission_id", limit: 4
@@ -49,8 +49,6 @@ ActiveRecord::Schema.define(version: 20150130034712) do
     t.integer  "course_user_datum_id", limit: 4,               null: false
     t.integer  "assessment_id",        limit: 4,               null: false
     t.integer  "latest_submission_id", limit: 4
-    t.integer  "cgdub",                limit: 4
-    t.integer  "special_type",         limit: 4,   default: 0, null: false
     t.datetime "created_at"
     t.datetime "updated_at"
     t.integer  "grade_type",           limit: 4,   default: 0, null: false
@@ -67,49 +65,43 @@ ActiveRecord::Schema.define(version: 20150130034712) do
     t.datetime "end_at"
     t.datetime "visible_at"
     t.datetime "start_at"
-    t.string   "name",                limit: 255
-    t.text     "description",         limit: 65535
+    t.string   "name",               limit: 255
+    t.text     "description",        limit: 65535
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.integer  "course_id",           limit: 4
-    t.string   "display_name",        limit: 255
-    t.integer  "category_id",         limit: 4
-    t.string   "handin_filename",     limit: 255
-    t.string   "handin_directory",    limit: 255
-    t.integer  "max_grace_days",      limit: 4,     default: 0
-    t.string   "handout",             limit: 255
-    t.string   "writeup",             limit: 255
-    t.boolean  "allow_unofficial",    limit: 1
-    t.integer  "max_submissions",     limit: 4,     default: -1
-    t.boolean  "disable_handins",     limit: 1
-    t.boolean  "exam",                limit: 1,     default: false
-    t.integer  "max_size",            limit: 4,     default: 2
-    t.float    "late_penalty_old",    limit: 24
-    t.integer  "version_threshold",   limit: 4
-    t.float    "version_penalty_old", limit: 24
-    t.integer  "late_penalty_id",     limit: 4
-    t.integer  "version_penalty_id",  limit: 4
-    t.datetime "grading_deadline",                                  null: false
-    t.boolean  "has_autograde",       limit: 1
-    t.boolean  "has_partners",        limit: 1
-    t.boolean  "has_scoreboard",      limit: 1
-    t.boolean  "has_svn",             limit: 1
-    t.boolean  "quiz",                limit: 1,     default: false
-    t.text     "quizData",            limit: 65535
-    t.string   "remote_handin_path",  limit: 255
+    t.integer  "course_id",          limit: 4
+    t.string   "display_name",       limit: 255
+    t.integer  "category_id",        limit: 4
+    t.string   "handin_filename",    limit: 255
+    t.string   "handin_directory",   limit: 255
+    t.integer  "max_grace_days",     limit: 4,     default: 0
+    t.string   "handout",            limit: 255
+    t.string   "writeup",            limit: 255
+    t.boolean  "allow_unofficial",   limit: 1
+    t.integer  "max_submissions",    limit: 4,     default: -1
+    t.boolean  "disable_handins",    limit: 1
+    t.boolean  "exam",               limit: 1,     default: false
+    t.integer  "max_size",           limit: 4,     default: 2
+    t.integer  "version_threshold",  limit: 4
+    t.integer  "late_penalty_id",    limit: 4
+    t.integer  "version_penalty_id", limit: 4
+    t.datetime "grading_deadline",                                 null: false
+    t.boolean  "has_autograde",      limit: 1
+    t.boolean  "has_partners",       limit: 1
+    t.boolean  "has_scoreboard",     limit: 1
+    t.boolean  "has_svn",            limit: 1
+    t.string   "remote_handin_path", limit: 255
   end
 
   create_table "attachments", force: :cascade do |t|
-    t.string   "filename",        limit: 255
-    t.string   "mime_type",       limit: 255
-    t.boolean  "released",        limit: 1
-    t.string   "type_old",        limit: 255
-    t.integer  "foreign_key_old", limit: 4
-    t.string   "name",            limit: 255
+    t.string   "filename",      limit: 255
+    t.string   "mime_type",     limit: 255
+    t.boolean  "released",      limit: 1
+    t.string   "name",          limit: 255
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.integer  "course_id",       limit: 4
-    t.integer  "assessment_id",   limit: 4
+    t.integer  "course_id",     limit: 4
+    t.integer  "assessment_id", limit: 4
   end
 
   add_index "attachments", ["assessment_id"], name: "index_attachments_on_assessment_id", using: :btree
@@ -130,28 +122,18 @@ ActiveRecord::Schema.define(version: 20150130034712) do
   end
 
   create_table "course_user_data", force: :cascade do |t|
-    t.string   "first_name_backup",    limit: 255, default: ""
-    t.string   "last_name_backup",     limit: 255, default: ""
-    t.string   "andrewID_backup",      limit: 255, default: ""
-    t.string   "school_backup",        limit: 255, default: ""
-    t.string   "major_backup",         limit: 255, default: ""
-    t.string   "year_backup",          limit: 255
-    t.string   "lecture",              limit: 255
-    t.string   "section",              limit: 255, default: ""
-    t.string   "grade_policy",         limit: 255, default: ""
-    t.integer  "course_id",            limit: 4,                   null: false
-    t.string   "email_backup",         limit: 255, default: ""
+    t.string   "lecture",          limit: 255
+    t.string   "section",          limit: 255, default: ""
+    t.string   "grade_policy",     limit: 255, default: ""
+    t.integer  "course_id",        limit: 4,                   null: false
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.boolean  "instructor",           limit: 1,   default: false
-    t.boolean  "administrator_backup", limit: 1,   default: false
-    t.boolean  "dropped",              limit: 1,   default: false
-    t.string   "nickname",             limit: 255
-    t.boolean  "course_assistant",     limit: 1,   default: false
-    t.float    "tweak_old",            limit: 24,  default: 0.0
-    t.boolean  "absolute_tweak",       limit: 1,   default: true
-    t.integer  "tweak_id",             limit: 4
-    t.integer  "user_id",              limit: 4,                   null: false
+    t.boolean  "instructor",       limit: 1,   default: false
+    t.boolean  "dropped",          limit: 1,   default: false
+    t.string   "nickname",         limit: 255
+    t.boolean  "course_assistant", limit: 1,   default: false
+    t.integer  "tweak_id",         limit: 4
+    t.integer  "user_id",          limit: 4,                   null: false
   end
 
   create_table "courses", force: :cascade do |t|
@@ -159,17 +141,15 @@ ActiveRecord::Schema.define(version: 20150130034712) do
     t.string   "semester",                      limit: 255
     t.integer  "late_slack",                    limit: 4
     t.integer  "grace_days",                    limit: 4
-    t.float    "late_penalty_old",              limit: 24
     t.string   "display_name",                  limit: 255
     t.date     "start_date"
     t.date     "end_date"
     t.boolean  "disabled",                      limit: 1,     default: false
     t.boolean  "exam_in_progress",              limit: 1,     default: false
     t.integer  "version_threshold",             limit: 4,     default: -1,    null: false
-    t.float    "version_penalty_old",           limit: 24,    default: 0.0,   null: false
-    t.datetime "cgdub_dependencies_updated_at"
     t.integer  "late_penalty_id",               limit: 4
     t.integer  "version_penalty_id",            limit: 4
+    t.datetime "cgdub_dependencies_updated_at"
     t.text     "gb_message",                    limit: 65535
   end
 
@@ -248,15 +228,12 @@ ActiveRecord::Schema.define(version: 20150130034712) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.string   "notes",                limit: 255,   default: ""
-    t.float    "tweak_old",            limit: 24,    default: 0.0
     t.string   "mime_type",            limit: 255
     t.integer  "special_type",         limit: 4,     default: 0
     t.integer  "submitted_by_id",      limit: 4
     t.text     "autoresult",           limit: 65535
-    t.boolean  "absolute_tweak",       limit: 1,     default: true,  null: false
     t.string   "detected_mime_type",   limit: 255
     t.string   "submitter_ip",         limit: 40
-    t.boolean  "ignored_old",          limit: 1,     default: false, null: false
     t.integer  "tweak_id",             limit: 4
     t.boolean  "ignored",              limit: 1,     default: false, null: false
     t.string   "dave",                 limit: 255
