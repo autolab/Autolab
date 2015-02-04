@@ -95,13 +95,13 @@ class JobsController < ApplicationController
     is_live = false
     if raw_live_jobs and raw_dead_jobs then
       for item in raw_live_jobs do
-        if item[:id] == job_id then
+        if item["id"] == job_id then
           rjob = item
           is_live = true
           break
         end
       end
-      if not rjob then
+      if rjob.nil? then
         for item in raw_dead_jobs do
           if item["id"] == job_id then
             rjob = item

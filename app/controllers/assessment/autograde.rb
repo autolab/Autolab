@@ -32,7 +32,7 @@ module AssessmentAutograde
       flash[:error] = "There was an error (#{job}) submitting your autograding job. " +
         "Please contact your instructor."
     else
-      link = "<a href=\"#{url_for(:controller=>'jobs')}\">Job ID = #{job}</a>"
+      link = "<a href=\"#{url_for(:controller=>"jobs", :action=>"getjob", :id=>job)}\">Job ID = #{job}</a>"
       flash[:success] = ("Submitted file #{@submission.filename} (#{link}) for autograding." +
         " Refresh the page to see the results.").html_safe
     end
