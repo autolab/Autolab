@@ -137,7 +137,7 @@ class Submission < ActiveRecord::Base
     conditions[:position] = position if position
     annotations = self.annotations.where(conditions)
 
-    result = file.lines.map { |line| [line, nil] }
+    result = file.lines.map { |line| [line.force_encoding("UTF-8"), nil] }
 
     # annotation lines are one-indexed, so adjust for the zero-indexed array
     annotations.each { |a| result[a.line-1][1] = a}
