@@ -36,24 +36,34 @@ class FormBuilderWithDateTimeInput < ActionView::Helpers::FormBuilder
   end
 
   def date_select(name, options = {}, html_options = {})
-    existing_date = @object.send(name)
-    formatted_date = existing_date.to_date.strftime("%F") if existing_date.present?
-    field = text_field(name, :value => formatted_date,
-                 :class => "form-control datepicker",
-                 :"data-date-format" => "YYYY-MM-DD")
-    wrap_field name, field, options[:help_text]
+    strftime = "%F"
+    date_format = "YYYY-MM-DD"
+    date_helper name, options, strftime, date_format
   end
 
   def datetime_select(name, options = {}, html_options = {})
-    existing_time = @object.send(name)
-    formatted_time = existing_time.to_time.strftime("%F %I:%M %p") if existing_time.present?
-    field = vanilla_text_field(name, :value => formatted_time,
-                 :class => "form-control datetimepicker",
-                 :"data-date-format" => "YYYY-MM-DD hh:mm A")
-    wrap_field name, field, options[:help_text]
+    strftime = "%F %I:%M %p"
+    date_format = "YYYY-MM-DD hh:mm A"
+    date_helper name, options, strftime, date_format
   end
 
 private
+  # Pass space-delimited list of IDs of datepickers on the :less_than and
+  # :greater_than properties to initialize relationships between datepicker
+  # fields.
+  def date_helper name, options, strftime, date_format
+    existing_time = @object.send(name)
+    formatted_datetime = existing_time.to_time.strftime(strftime) if existing_time.present?
+
+    field = vanilla_text_field(name, :value => formatted_datetime,
+        :class => "form-control datetimepicker",
+        :"data-date-format" => date_format,
+        :"data-date-less-than" => options[:less_than],
+        :"data-date-greater-than" => options[:greater_than])
+
+    wrap_field name, field, options[:help_text]
+  end
+
   def wrap_field name, field, help_text
     @template.content_tag :div, class: "form-group" do
       label(name, class: "control-label") + field + help_text(name, help_text)

@@ -71,6 +71,8 @@ Autolab3::Application.routes.draw do
       	patch 'edit/*active_tab', action: :update
         get 'edit/*active_tab', action: :edit
         post 'handin'
+        get 'takeQuiz'
+        post 'submitQuiz'
         get 'history'
         get 'viewFeedback'
         get 'viewGradesheet'
@@ -107,6 +109,7 @@ Autolab3::Application.routes.draw do
         match 'importAssessment', via: [:get, :post]
         match 'importAsmtFromTar', via: [:post]
         match 'getCategory', via: [:get, :post]
+        match 'installQuiz', via: [:get, :post]
       end
     end
 
