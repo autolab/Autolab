@@ -1,11 +1,14 @@
+<% content_for :head do %>
+  <%= javascript_include_tag "initialize_datetimepickers" %>
+<% end %>
 <% @title = "Edit Course" %>
 
-<%= form_for @course, as: :editCourse, url: course_path(@course), method: :patch do |f| %>
+<%= form_for @course, as: :editCourse, url: course_path(@course), method: :patch, builder: FormBuilderWithDateTimeInput do |f| %>
 <% if @course.errors.any? %>
 	<div id="error_explanation">
 		<h2><%= pluralize(@course.errors.count, "error") %>
       prohibited this course from being saved:</h2>
-			
+
 		<ul>
 			<% @course.errors.full_messages.each do |msg| %>
 			<li><%= msg %></li>
@@ -14,9 +17,12 @@
 	</div>
 <% end %>
 
-<table width=70% class="verticalTable">
-  <%= render :partial=>"courseFields", :locals=>{:f=>f, :course=>@course} %>
-</table>
+
+<div class="row">
+  <div class="col-md-6">
+    <%= render :partial=>"courseFields", :locals=>{:f=>f, :course=>@course} %>
+  </div>
+</div>
 
 <br>
 <%= f.submit 'Update', { :class=> "btn primary" } %>
@@ -24,6 +30,6 @@
 <hr>
 
 <% if current_user.administrator? %>
-<%= link_to "Delete Course", course_path(@course), method: :delete, 
+<%= link_to "Delete Course", course_path(@course), method: :delete,
 	data: {confirm: "Are you sure to destroy #{@course.display_name}?"}, class: "btn" %>
-<% end %> 
+<% end %>
