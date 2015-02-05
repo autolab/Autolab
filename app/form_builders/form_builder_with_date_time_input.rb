@@ -10,7 +10,7 @@ class FormBuilderWithDateTimeInput < ActionView::Helpers::FormBuilder
       options[:class] = "form-control #{options[:class]}"
       field = super name, *(args + [ options ])
 
-      wrap_field name, field, options[:help_text]
+      wrap_field name, field, options[:help_text], options[:display_name]
     end
   end
 
@@ -33,6 +33,17 @@ class FormBuilderWithDateTimeInput < ActionView::Helpers::FormBuilder
     options[:class] = "btn btn-primary #{options[:class]}"
 
     super text, *(args + [ options ])
+  end
+
+  def check_box(name, *args)
+    options = args.extract_options!
+
+    field = super name, *(args + [ options ])
+
+    @template.content_tag :div, class: "form-group" do
+       field + label(name, class: "control-label") +
+          help_text(name, options[:help_text])
+    end
   end
 
   def date_select(name, options = {}, html_options = {})
@@ -64,9 +75,9 @@ private
     wrap_field name, field, options[:help_text]
   end
 
-  def wrap_field name, field, help_text
+  def wrap_field name, field, help_text, display_name=nil
     @template.content_tag :div, class: "form-group" do
-      label(name, class: "control-label") + field + help_text(name, help_text)
+      label(name, display_name, class: "control-label") + field + help_text(name, help_text)
     end
   end
 
