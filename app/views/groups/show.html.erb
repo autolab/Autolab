@@ -5,5 +5,5 @@
   <%= @group.name %>
 </p>
 
-<%= link_to 'Edit', edit_group_path(@group) %> |
-<%= link_to 'Back', groups_path %>
+<%= link_to 'Edit', [:edit, @course, @assessment, @group] %> |
+<%= groups_back_link %>

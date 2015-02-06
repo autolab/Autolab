@@ -817,10 +817,6 @@ class AssessmentsController < ApplicationController
       autogradeListAdmin
     end
 
-    if @assessment.has_partners then
-      partnersListAdmin
-    end
-
     if @assessment.has_scoreboard then
       scoreboardListAdmin
     end
@@ -831,11 +827,6 @@ class AssessmentsController < ApplicationController
   def autogradeListAdmin
     @adminlist["adminAutograde"] = "Admin autograding"
     @admin_title["adminAutograde"] = "Modify autograding properties such as the VM image and the timeout value"
-  end
-
-  def partnersListAdmin
-    @adminlist["adminPartners"] = "Admin partners"
-    @admin_title["adminPartners"] = "View and modify the different partner groups"
   end
 
   # scoreboardListAdmin - Adds the "admin scoreboard" option to the
