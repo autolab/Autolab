@@ -30,32 +30,39 @@
 
 <%# Display general user options %> 
 <td>
-<h2>Options</h2>
-<ul>
-<% @list.sort { |a,b| a[1] <=> b[1] }.each { |key, value| %>
-  <% if value.size > 0  then  %>
-    <li> <%= link_to value, {:action => key}, {:title=>(@list_title[key] || "")} %> </li>
-  <% end %>
-<% } %>
-</ul>
+  <h2>Options</h2>
+  <ul>
+    <% if @assessment.has_groups? then %>
+      <li><%= link_to "Group Options", [@course, @assessment, :groups], title: "Check your Group settings." %></li>
+    <% end %>
+
+    <% @list.sort { |a,b| a[1] <=> b[1] }.each do |key, value| %>
+      <% if value.size > 0  then  %>
+        <li> <%= link_to value, {action: key}, {title: (@list_title[key] || "")} %> </li>
+      <% end %>
+    <% end %>
+  </ul>
 </td>
 
 <%# Display any optional instructor admin options %>
 <% if @cud.instructor? then %>
   <td width=20></td>
   <td>
-  <h2>Admin Options (staff)</h2>
-  <ul>
-    <% if @assessment.has_svn then %>
-      <li><%= link_to "SVN Settings", [:adminSVN, @course, @assessment], title: "Manage the SVN repositories" %></li>
-    <% end %>
-
-    <% @adminlist.sort { |a,b| a[1] <=> b[1] }.each do |key, value| %>
-      <% if value.size > 0  then  %>
-        <li> <%= link_to value, {:action => key}, {:title=>(@admin_title[key] || "")} %></li>
+    <h2>Admin Options (staff)</h2>
+    <ul>
+      <% if @assessment.has_groups? then %>
+        <li><%= link_to "Group Settings", [@course, @assessment, :groups], title: "Manage Group Settings" %></li>
       <% end %>
-    <% end %>
-  </ul>
+      <% if @assessment.has_svn then %>
+        <li><%= link_to "SVN Settings", [:adminSVN, @course, @assessment], title: "Manage the SVN repositories" %></li>
+      <% end %>
+
+      <% @adminlist.sort { |a,b| a[1] <=> b[1] }.each do |key, value| %>
+        <% if value.size > 0  then  %>
+          <li> <%= link_to value, {:action => key}, {:title=>(@admin_title[key] || "")} %></li>
+        <% end %>
+      <% end %>
+    </ul>
   </td>
 <% end %>
 
@@ -64,12 +71,12 @@
 <% if @cud.course_assistant? then %>
   <td width=20></td>
   <td>
-  <h2>Admin Options (CA)</h2>
-  <ul>
-  <% for option in @options do %>
-    <li><%= link_to option['name'], option['url'], :title=>option[:title] %></li>
-  <% end %>
-  </ul>
+    <h2>Admin Options (CA)</h2>
+    <ul>
+      <% for option in @options do %>
+        <li><%= link_to option['name'], option['url'], :title=>option[:title] %></li>
+      <% end %>
+    </ul>
   </td>
 <% end %>
 

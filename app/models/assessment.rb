@@ -30,7 +30,8 @@ class Assessment < ActiveRecord::Base
                             :greater_than_or_equal_to => -1, :allow_nil => true
   validates_numericality_of :max_grace_days, :only_integer => true,
                             :greater_than_or_equal_to => 0, :allow_nil => true
-  validates_presence_of :name, :display_name, :due_at, :end_at, :start_at, :quiz, :quizData,
+  validates_numericality_of :group_size, only_integer: true, greater_than_or_equal_to: 1, allow_nil: true
+  validates_presence_of :name, :display_name, :due_at, :end_at, :start_at,
                         :grading_deadline, :category_id, :max_size, :max_submissions
 
   # Callbacks
@@ -235,6 +236,10 @@ class Assessment < ActiveRecord::Base
 
   def overwrites_method?(methodKey)
     self.config_module.instance_methods.include?(methodKey)
+  end
+
+  def has_groups?
+    group_size && group_size > 1
   end
 
 private

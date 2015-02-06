@@ -769,11 +769,6 @@ class AssessmentsController < ApplicationController
 
   # This is easy to override, and no conflicts can occur
   def listOptions
-
-    if @assessment.has_partners then
-      partnersListOptions()
-    end
-  
     if @assessment.has_scoreboard then
       scoreboardListOptions()
     end

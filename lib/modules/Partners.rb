@@ -9,16 +9,6 @@ module Partners
     um.addColumn("partnerID",Integer)
   end
 
-  def partnersListAdmin
-    @adminlist["adminPartners"] = "Admin partners"
-    @admin_title["adminPartners"] = "View and modify the different partner groups"
-  end
-
-  def partnersListOptions
-    @list["partner"] = "Check partner"
-    @list_title["partner"] = "Request a partner or view your current partner"
-  end
-
   def partner
     @pModule = UserModule.load("Partners.2",@assessment.id)
     if !@pModule then

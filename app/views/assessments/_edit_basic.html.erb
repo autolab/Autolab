@@ -17,13 +17,14 @@
 <label for="assessment_has_autograde">Autograde</label><br>
 <%= f.check_box :has_partners %>
 <label for="assessment_has_partners">Partners</label><br>
+<%= f.text_field :group_size, help_text: "Set the maximum size of groups allowed for the assessment." %><br>
 <%= f.check_box :has_svn %>
 <label for="assessment_has_svn">SVN</label><br>
 <%= f.check_box :has_scoreboard %>
 <label for="assessment_has_scoreboard">Scoreboard</label><br>
 <hr>
-<%= f.text_area  :description %>
 
+<%= f.text_area  :description %>
 
 <%= f.text_field :handout, help_text: "File in the assessment directory containing materials that the instructor hands out to students or URL to redirect to. E.g., 'malloclab-handout.tar', 'http://school.edu/class/malloclab.zip'" %>
 

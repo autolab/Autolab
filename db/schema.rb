@@ -94,7 +94,7 @@ ActiveRecord::Schema.define(version: 20150206035106) do
     t.string   "remote_handin_path", limit: 255
     t.boolean  "quiz",               limit: 1,     default: false
     t.text     "quizData",           limit: 65535
-    t.integer  "group_size",         limit: 4
+    t.integer  "group_size",         limit: 4,     default: 1
   end
 
   create_table "attachments", force: :cascade do |t|
