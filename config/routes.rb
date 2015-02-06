@@ -26,12 +26,13 @@ Autolab3::Application.routes.draw do
     resources :attachments
 
     resources :assessments, except: :update do
+      resources :assessment_user_data, only: [:show, :edit, :update]
       resources :attachments
+      resources :extensions, only: [:index, :create, :destroy]
+      resources :groups
       resources :problems, except: [:index, :show] do
         get 'destroyConfirm', on: :member
       end
-      resources :assessment_user_data, only: [:show, :edit, :update]
-      resources :extensions, only: [:index, :create, :destroy]
       resources :submissions do
         resources :annotations, only: [:create, :update, :destroy]
         resources :scores, only: [:create, :show, :update]
