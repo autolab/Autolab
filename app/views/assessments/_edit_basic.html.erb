@@ -2,15 +2,11 @@
 
 <%= f.text_field :display_name, help_text: "Name that will be displayed on the course home page. E.g., 'Malloc Lab'" %>
 
-<%= #f.label :category 
-%>
-<%= 
-#f.collection_select :category, @course.assessment_categories, :id, :name, selected: @assessment.category.id
-%>
-<!--<td style="border:0px;width:200px;" class="smallText"> You can create a new category <%= 
-#link_to "here", new_course_assessment_category_path 
-%>.
-</td><br></br> -->
+<div class="form-group">
+  <%= f.label :category_id %>
+  <%= f.collection_select :category_id, @course.assessment_categories, :id, :name, {selected: @assessment.category.id}, {class: "form-control"} %>
+  <p class="help-block">You can create a new category <%= link_to "here", new_course_assessment_category_path %>.</p>
+</div>
 <hr>
 <h4>Modules Used</h4>
 <%= f.check_box :has_autograde%>
