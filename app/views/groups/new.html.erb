@@ -2,4 +2,29 @@
 
 <%= render 'form' %>
 
+<table>
+  <thead>
+    <tr>
+      <th>Email</th>
+      <th></th>
+    </tr>
+  </thead>
+  
+  <tbody>
+    <% @grouplessCUDs.each do |cud| %>
+      <% if cud.id != @cud.id %>
+        <tr>
+          <td>(<%= cud.id %>) <%= cud.email %></td>
+          <td>
+            <%= form_for [@course, @assessment, @group], method: :post do |f| %>
+              <%= hidden_field_tag :groupmate_id, cud.id %>
+              <%= f.submit "Create Group" %>
+            <% end %>
+          </td>
+        </tr>
+      <% end %>
+    <% end %>
+  </tbody>
+</table>
+  
 <%= groups_back_link %>

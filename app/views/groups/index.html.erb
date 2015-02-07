@@ -1,27 +1,65 @@
-<p id="notice"><%= notice %></p>
+<h2>Groups for <%= current_assessment_link %></h2>
 
-<h1>Listing Groups</h1>
+<h3><%= link_to 'Create New Group', [:new, @course, @assessment, :group] %></h3>
 
-<table>
-  <thead>
-    <tr>
-      <th>Name</th>
-      <th colspan="3"></th>
-    </tr>
-  </thead>
-
-  <tbody>
-    <% @groups.each do |group| %>
-      <tr>
-        <td><%= group.name %></td>
-        <td><%= link_to 'Show', [@course, @assessment, group] %></td>
-        <td><%= link_to 'Edit', [:edit, @course, @assessment, group] %></td>
-        <td><%= link_to 'Destroy', [@course, @assessment, group], method: :delete, data: { confirm: 'Are you sure?' } %></td>
-      </tr>
+<table class=prettyBorder >
+  <tr>
+    <th>Group Name</th>
+    <% @assessment.group_size.times do |i| %>
+      <th>Member</th>
     <% end %>
-  </tbody>
+    <th></th>
+  </tr>
+
+  <% @groups.each do |group| %>
+    <tr>
+      <td><%= link_to group.name, [@course, @assessment, group] %></td>
+      <% group.assessment_user_data.each do |aud| %>
+        <% cud = aud.course_user_datum %>
+        <td>
+          <%= cud.email %>
+          <% unless aud.group_confirmed then %>
+            (Unconfirmed)
+          <% end %>
+        </td>
+      <% end %>
+      <td>
+        <%= link_to "Edit", [:edit, @course, @assessment, group] %> | 
+        <%= link_to "Destroy", [@course, @assessment, group], method: :delete, data: { confirm: 'Are you sure?' } %>
+      </td>
+    </tr>
+  <% end %>
 </table>
 
-<br>
+<h2>Users Without Groups for <% current_assessment_link %></h2>
 
-<%= link_to 'New Group', [:new, @course, @assessment, :group] %>
+<table class=prettyBorder >
+  <tr>
+    <th>User Name</th>
+    <th>(Set Group?)</th>
+  </tr>
+
+  <% @grouplessCUDs.each do |cud| %>
+    <tr>
+      <td><%= cud.email %></td>
+      <td>
+        <% if false then %>
+          <%= form_tag url_for(:action=>"setPartner", :id=>u["user"].id) do %>
+            <%= text_field_tag 'partner' %>
+            <%= submit_tag 'Go!' %>
+          <% end %>
+        <% else %>
+          (TODO)
+        <% end %>
+      </td>
+    </tr>
+  <% end %>
+</table>
+
+<% if @assessments.size > 0 then %>
+  <h2>Load groups from a previous assignment:</h2>
+  <%= form_tag url_for(action: :import) do %>
+    <%= select_tag 'importFrom', options_from_collection_for_select(@assessments, :id, :name) %>
+    <%= submit_tag 'Go!' %>
+  <% end %>
+<% end %>

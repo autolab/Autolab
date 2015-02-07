@@ -46,14 +46,15 @@ ActiveRecord::Schema.define(version: 20150206035106) do
   end
 
   create_table "assessment_user_data", force: :cascade do |t|
-    t.integer  "course_user_datum_id", limit: 4,               null: false
-    t.integer  "assessment_id",        limit: 4,               null: false
+    t.integer  "course_user_datum_id", limit: 4,                   null: false
+    t.integer  "assessment_id",        limit: 4,                   null: false
     t.integer  "latest_submission_id", limit: 4
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.integer  "grade_type",           limit: 4,   default: 0, null: false
+    t.integer  "grade_type",           limit: 4,   default: 0,     null: false
     t.string   "repository",           limit: 255
     t.integer  "group_id",             limit: 4
+    t.boolean  "group_confirmed",      limit: 1,   default: false
   end
 
   add_index "assessment_user_data", ["assessment_id"], name: "index_assessment_user_data_on_assessment_id", using: :btree

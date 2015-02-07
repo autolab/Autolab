@@ -29,7 +29,10 @@ Autolab3::Application.routes.draw do
       resources :assessment_user_data, only: [:show, :edit, :update]
       resources :attachments
       resources :extensions, only: [:index, :create, :destroy]
-      resources :groups
+      resources :groups do
+        post 'confirm', on: :member
+        post 'import', on: :collection
+      end
       resources :problems, except: [:index, :show] do
         get 'destroyConfirm', on: :member
       end

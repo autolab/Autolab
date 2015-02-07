@@ -1,9 +1,17 @@
-<p id="notice"><%= notice %></p>
+<h1>Your Group: <%= @group.name %></h1>
 
-<p>
-  <strong>Name:</strong>
-  <%= @group.name %>
-</p>
+<h2>Group Members</h2>
+<ul>
+<% @group.assessment_user_data.each do |aud| %>
+  <li>
+    <% cud = aud.course_user_datum %>
+    <%= cud.email %>
+    <% unless aud.group_confirmed then %>
+      (Not Confirmed)
+    <% end %>
+  </li>
+<% end %>
+</ul>
 
 <%= link_to 'Edit', [:edit, @course, @assessment, @group] %> |
 <%= groups_back_link %>
