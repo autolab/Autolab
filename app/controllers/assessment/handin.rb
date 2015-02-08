@@ -34,7 +34,6 @@ module AssessmentHandin
       redirect_to :action => :show and return
     end
 
-
     if @assessment.has_autograde then
       autogradeAfterHandin @submission
     elsif @assessment.has_partners then
@@ -107,11 +106,30 @@ module AssessmentHandin
     return true
   end
       
-  def saveHandin()
-    @submission = Submission.create(:assessment_id => @assessment.id,
-                                    :course_user_datum_id => @cud.id,
-                                    :submitter_ip => request.remote_ip)
-    @submission.saveFile(params[:submission])
+  def saveHandin
+    if !@assessment.has_groups? then
+      @submission = @assessment.submissions.create(course_user_datum_id: @cud.id,
+                                                   submitter_ip: request.remote_ip)
+      @submission.saveFile(params[:submission])
+      return @submission
+    end
+      
+    aud = @assessment.aud_for @cud.id
+    group = aud && aud.group
+    if group.nil? then
+      @submission = @assessment.submissions.create(course_user_datum_id: @cud.id,
+                                                   submitter_ip: request.remote_ip)
+      @submission.saveFile(params[:submission])
+      return @submission
+    end
+      
+    ActiveRecord::Base.transaction do
+      group.course_user_data.each do |cud|
+        @submission = @assessment.submissions.create(course_user_datum_id: cud.id,
+                                                     submitter_ip: request.remote_ip)
+        @submission.saveFile(params[:submission])
+      end
+    end
     return @submission
   end
 
