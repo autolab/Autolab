@@ -1,7 +1,5 @@
 <h2>Groups for <%= current_assessment_link %></h2>
 
-<h3><%= link_to 'Create New Group', [:new, @course, @assessment, :group] %></h3>
-
 <table class=prettyBorder >
   <tr>
     <th>Group Name</th>
@@ -30,6 +28,8 @@
     </tr>
   <% end %>
 </table>
+
+<h3><%= link_to 'Create New Group', [:new, @course, @assessment, :group] %></h3>
 
 <h2>Users Without Groups for <%= current_assessment_link %></h2>
 

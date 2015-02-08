@@ -23,9 +23,8 @@ class GroupsController < ApplicationController
 
   action_auth_level :show, :student
   def show
-    if @cud.instructor then
-    else
-      @aud = @assessment.aud_for @cud.id
+    @aud = @assessment.aud_for @cud.id
+    if !@cud.instructor? then
       puts @aud.group_id, params[:id]
       if @aud.group_id == nil then
         redirect_to action: :new and return

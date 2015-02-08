@@ -185,34 +185,6 @@ module Partners
     redirect_to :action=>"adminPartners" and return
   end
 
-  def partnersValidateHandin
-    @pModule = UserModule.load("Partners.2",@assessment.id)
-    if !@pModule then
-      partnersModuleInstall()
-      @pModule = UserModule.load("Partners.2",@assessment.id)
-    end
-
-    # If they're requesting a partner, make sure the other person
-    # has accepted
-    @partner = @pModule.get("partnerID",@cud.id)
-    if @partner then
-      if @pModule.get("partnerID",@partner) != @cud.id then
-        flash[:error] = "You cannot submit because your partner has not
-					confirmed you as their partner yet!"
-        return false	
-        # Check to make sure the PARTNER can still submit!
-      elsif @assessment.max_submissions != -1 then
-        partnerNum = Submission.where(:user_id=>@partner, :assessment_id => @assessment.id).count
-        if partnerNum >= @assessment.max_submissions then
-          flash[:error] = "Your partner has already reached the " +
-            "maximum number of submissions."
-          return false
-        end
-      end
-    end
-    return true	
-  end
-
   def importPartners
     unless @user.instructor?
       flash[:error] = "You are not authorized to perform this action"

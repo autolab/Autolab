@@ -74,9 +74,39 @@ module AssessmentHandin
       flash[:error] = "Submission failed Filetype Check. " + flash[:error]
       return false
     end
-    return true
+      
+    return validateForGroups()
   end
 
+  def validateForGroups
+    unless @assessment.has_groups? then
+      return true
+    end
+      
+    aud = @assessment.aud_for @cud.id
+    group = aud && aud.group
+    if group.nil? then
+      return true
+    end
+    
+    group.assessment_user_data.each do |aud|
+      unless aud.group_confirmed then
+        flash[:error] = "You cannot submit until all group members confirm their group membership"
+        return false
+      end
+      
+      if @assessment.max_submissions != -1 then
+        submission_count = aud.course_user_datum.submissions.size
+        if submission_count >= @assessment.max_submissions then
+          flash[:error] = "A member of your group has reached the submission limit for this assessment"
+          return false
+        end
+      end
+    end
+    
+    return true
+  end
+      
   def saveHandin()
     @submission = Submission.create(:assessment_id => @assessment.id,
                                     :course_user_datum_id => @cud.id,
@@ -86,7 +116,6 @@ module AssessmentHandin
   end
 
   def get_handin
-
     if @assessment.nil? then
       @assessment = @course.assessments.find(params[:assessment_id])
     end
