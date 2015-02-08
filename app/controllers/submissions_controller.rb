@@ -485,11 +485,14 @@ class SubmissionsController < ApplicationController
 
   # Action to be taken when the user wants to get a listing of all
   # files in a submission that is an archive file. 
+  action_auth_level :listArchive, :student
   def listArchive
     begin
       load_submission() or return false
       get_submission_file() or return false
 
+      # note: @filename is defined by get_submission_file and is actually
+      # submission.handin_file_path because up is down and black is white.
       archive_type = IO.popen(["file", "--brief", "--mime-type", @filename],
                               in: :close, err: :close) { |io| io.read.chomp }
       @files = []
