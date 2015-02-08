@@ -561,8 +561,6 @@ class SubmissionsController < ApplicationController
   # submission is confirmed via dave key to have been created by Autolab
   #
   def autogradeDone(submission, feedback)
-    @user = submission.course_user_datum.user
-
     assessmentDir = File.join(AUTOCONFIG_COURSE_DIR, submission.course_user_datum.course.name, submission.assessment.name)
 
     filename = @submission.course_user_datum.email + "_" + 
@@ -594,10 +592,16 @@ class SubmissionsController < ApplicationController
   def saveAutograde(submission,feedbackFile)
     lines = File.open(feedbackFile).readlines()
     begin
-      
-      if @assessment.has_partners then
-        # Create a submission for partner
-        pSubmission = createPartnerSubmission(submission)
+      if !@assessment.has_groups? then
+        submissions = [submission]
+      else
+        aud = @assessment.aud_for submission.course_user_datum
+        group = aud && aud.group
+        if group then
+          submissions = Submission.joins(:assessment_user_data).where(assessment_user_data: { group_id: group.id}).all
+        else
+          submissions = [submission]
+        end
       end
       
       if (lines == nil) then
@@ -623,28 +627,18 @@ class SubmissionsController < ApplicationController
 
       # Record each of the scores extracted from the autoresult
       for key in scores.keys do
-        problem = @assessment.problems.where(:name => key).first
+        problem = @assessment.problems.find_by(name: key)
         if !problem then
           raise "Problem \"" + key + "\" not found."
         end
-        score = submission.scores.where(:problem_id => problem.id).first
-        if !score then 
-          score = submission.scores.new(:problem_id=>problem.id)
-        else
-          score = submission.scores.where(:problem_id => problem.id).first
+        submissions.each do |submission|
+          score = submission.scores.find_or_initialize_by(problem_id: problem.id)
+          score.score = scores[key]
+          score.feedback = lines.join()
+          score.released = @autograde_prop.release_score
+          score.grader_id = 0
+          score.save!
         end
-        score.score = scores[key]
-        score.feedback = lines.join()
-        score.released = @autograde_prop.release_score
-        score.grader_id = 0
-        puts "save score"
-        puts score.save!
-       
-      	if @assessment.has_partners then 
-          # call method in ModuleBase to update this score for partner
-          saveAutogradeForPartner(score, pSubmission)
-      	end
-
       end
     rescue Exception => e
       feedback_str = "An error occurred while parsing the autoresult returned by the Autograder.\n\nError message: " + e.to_s + "\n\n"
@@ -652,28 +646,24 @@ class SubmissionsController < ApplicationController
         feedback_str += lines.join()
       end
       @assessment.problems.each do |p|
-        score = submission.scores.find_or_initialize_by(problem_id: p.id)
-        score.score = 0
-        score.feedback = feedback_str
-
-        score.released = true
-        score.grader_id = 0
-        score.save!
-
-        if @assessment.has_partners then
-          # call method in ModuleBase to update this score for parter
-          saveAutogradeForPartner(score, pSubmission)
+        submissions.each do |submission|
+          score = submission.scores.find_or_initialize_by(problem_id: p.id)
+          score.score = 0
+          score.feedback = feedback_str
+          score.released = true
+          score.grader_id = 0
+          score.save!
         end
       end
     end
-
-    submission.autoresult = autoresult
-    submission.save
-    # save autoresult for partner
-    if pSubmission then
-      pSubmission.autoresult = autoresult
-      pSubmission.save
+    
+    ActiveRecord::Base.transaction do
+      submissions.each do |submission|
+        submission.autoresult = autoresult
+        submission.save!
+      end
     end
+    
     logger = Logger.new(Rails.root.join("courses", @course.name, @assessment.name, "log.txt"))
     logger.add(Logger::INFO) {"#{submission.course_user_datum.email}, #{submission.version}, #{autoresult}"}
   end

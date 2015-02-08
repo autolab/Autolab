@@ -8,10 +8,9 @@ module AssessmentAutograde
   def autogradeAfterHandin(submission)
     # Check for nil first, since students should know about this
     if submission.nil? then
-      flash[:error] = "Submission could not be autograded due to " +
-        "an error in creation"
+      flash[:error] = "Submission could not be autograded due to an error in creation"
       return
-    elsif ! autograde?(submission) then
+    elsif !autograde?(submission) then
       return # not an error- we specified this behavior!
     end
 
@@ -132,7 +131,7 @@ module AssessmentAutograde
     rescue Exception => e
       hostname = `hostname`
       hostname = "https://" + hostname.strip 
-   end
+    end
 
     callBackURL = hostname +
         "/courses/#{@course.id}/assessments/#{@assessment.id}/submissions/#{@submission.id}/" +

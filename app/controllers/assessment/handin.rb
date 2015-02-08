@@ -18,7 +18,7 @@ module AssessmentHandin
   # Any errors should be added to flash[:error] and return false or nil.
   def handin
     # processing handin
-    # call validateHandin, saveHandin, autogradeAfterHandin and partnersAfterHandin callbacks
+    # call validateHandin, saveHandin and autogradeAfterHandin callbacks
     unless validateHandin
       redirect_to :action => :show and return
     end
@@ -36,8 +36,6 @@ module AssessmentHandin
 
     if @assessment.has_autograde then
       autogradeAfterHandin @submission
-    elsif @assessment.has_partners then
-      partnersAfterHandin @submission
     end
 
     redirect_to [:history, @course, @assessment] and return

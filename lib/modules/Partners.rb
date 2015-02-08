@@ -233,12 +233,6 @@ module Partners
     end
   end
   
-  # use the same scheme as partnersAfterAutograde to create
-  # a submission for partner
-  def partnersAfterHandin(submission)
-    return partnersAfterAutograde(submission)
-  end
-
   def partnersAfterAutograde(submission)
     partner_cud = getPartner(submission.course_user_datum)
     if partner_cud then
@@ -263,51 +257,6 @@ module Partners
 
       return pSubmission
     end
-  end
-
-  def hasPartner(userID)
-    @pModule = UserModule.load("Partners.2", @assessment.id)
-    if @pModule then
-      p = @pModule.get("partnerID", userID)
-      return ! p.nil?
-    end
-    return false
-  end
-
-  # update the score of user's partner
-  # pSubmission is not nil
-  def updatePartnerScore(score, pSubmission)
-
-    problem = pSubmission.assessment.problems.find(score.problem_id)
-    pScore = pSubmission.scores.find_by_problem_id(problem.id)
-
-    if pScore.nil? then
-
-      # partner score doesn't exist yet
-      pScore = pSubmission.scores.new(:problem_id => problem.id,
-                                      :submission_id => pSubmission.id)
-
-    end
-
-    begin
-
-      pScore.score = score.score
-      pScore.feedback = score.feedback
-      pScore.released = score.released
-      pScore.grader_id = score.grader_id
-
-      pScore.save
-
-    rescue Exception => e
-      # score can't be saved. Reflect this in feedback
-      pScore.score = score.score
-      pScore.feedback = "An error occurred while saving the partner grade.\n\n"
-      pScore.released = true
-      pScore.grader_id = 0
-
-      pScore.save
-    end
-
   end
 
 end	

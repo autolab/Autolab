@@ -1355,7 +1355,7 @@ class AssessmentsController < ApplicationController
         if @assessment.has_autograde then
           autogradeAfterHandin @submission
         elsif @assessment.has_partners then
-          partnersAfterHandin @submission
+          partnersAfterAutograde @submission
         end
 
       rescue Exception  => e
