@@ -1353,7 +1353,7 @@ class AssessmentsController < ApplicationController
         @submission.saveFile(upload)
 
         if @assessment.has_autograde then
-          autogradeAfterHandin @submission
+          autogradeSubmissions(@course, @assessment, [@submission])
         elsif @assessment.has_partners then
           partnersAfterAutograde @submission
         end

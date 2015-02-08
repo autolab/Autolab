@@ -7,35 +7,40 @@ module AssessmentHandin
   # validateHandin() : Returns true or false if the handin is valid.
   # saveHandin() : Does the actual process of saving the handin to the
   #     database and writing the handin file to Disk. 
-  # autogradeAfterHandin(@submission): Does any post-handing-in actions. Argument is
-  #     the database Submission object. 
+  # autogradeSubmissions(course, assessment, submissions): Does any post-handing-in actions.
+  #     arguments are the course object, assessment object, and a list of submissions objects
   # 
-  # Both validateHandin() and autogradeAfterHandin() cannot modify the state of the
+  # Both validateHandin() and autogradeSubmissions() cannot modify the state of the
   # world in any way. And they both should call super() to enable any other
   # functionality.  The only reason to not call super() is if you want to
   # prevent other functionlity.  You should be very careful about this.
   #
   # Any errors should be added to flash[:error] and return false or nil.
   def handin
-    # processing handin
-    # call validateHandin, saveHandin and autogradeAfterHandin callbacks
-    unless validateHandin
+    # validate the handin
+    unless validateHandin then
       redirect_to :action => :show and return
     end
 
-    @submission = saveHandin
+    # save the submissions
+    begin
+      submissions = saveHandin
+    rescue Exception => e
+      submissions = nil
+    end
 
     # make sure submission was correctly constructed and saved
-    unless @submission and !@submission.new_record?
+    unless submissions then
       # Avoid overwriting the flash[:error] set by saveHandin
       if (!flash[:error].nil? && !flash[:error].empty?) then
         flash[:error] = "There was an error handing in your submission."
       end
-      redirect_to :action => :show and return
+      redirect_to action: :show and return
     end
 
+    # autograde the submissions
     if @assessment.has_autograde then
-      autogradeAfterHandin @submission
+      autogradeSubmissions(@course, @assessment, submissions)
     end
 
     redirect_to [:history, @course, @assessment] and return
@@ -43,7 +48,7 @@ module AssessmentHandin
   
   private
 
-  def validateHandin()
+  def validateHandin
     # Make sure that handins are allowed 
     if @assessment.disable_handins? then
       flash[:error] = "Sorry, handins are disabled for this assessment."
@@ -80,11 +85,8 @@ module AssessmentHandin
       return true
     end
       
-    aud = @assessment.aud_for @cud.id
-    group = aud && aud.group
-    if group.nil? then
-      return true
-    end
+    aud = @assessment.aud_for(@cud.id) or return true
+    group = aud.group or return true
     
     group.assessment_user_data.each do |aud|
       unless aud.group_confirmed then
@@ -103,32 +105,37 @@ module AssessmentHandin
     
     return true
   end
-      
+  
+  ##
+  # this function returns a list of the submissions created by this handin.
+  
   def saveHandin
     if !@assessment.has_groups? then
-      @submission = @assessment.submissions.create(course_user_datum_id: @cud.id,
-                                                   submitter_ip: request.remote_ip)
-      @submission.saveFile(params[:submission])
-      return @submission
+      submission = @assessment.submissions.create(course_user_datum_id: @cud.id,
+                                                  submitter_ip: request.remote_ip)
+      submission.saveFile(params[:submission])
+      return [submission]
     end
       
     aud = @assessment.aud_for @cud.id
-    group = aud && aud.group
+    group = aud.group
     if group.nil? then
-      @submission = @assessment.submissions.create(course_user_datum_id: @cud.id,
-                                                   submitter_ip: request.remote_ip)
-      @submission.saveFile(params[:submission])
-      return @submission
+      submission = @assessment.submissions.create(course_user_datum_id: @cud.id,
+                                                  submitter_ip: request.remote_ip)
+      submission.saveFile(params[:submission])
+      return [submission]
     end
-      
+    
+    submissions = []
     ActiveRecord::Base.transaction do
       group.course_user_data.each do |cud|
-        @submission = @assessment.submissions.create(course_user_datum_id: cud.id,
-                                                     submitter_ip: request.remote_ip)
-        @submission.saveFile(params[:submission])
+        submission = @assessment.submissions.create(course_user_datum_id: cud.id,
+                                                    submitter_ip: request.remote_ip)
+        submission.saveFile(params[:submission])
+        submissions << submission
       end
     end
-    return @submission
+    return submissions
   end
 
   def get_handin
