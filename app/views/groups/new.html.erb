@@ -2,6 +2,8 @@
 
 <%= render 'form' %>
 
+<h2>Users Without Groups for <%= current_assessment_link %></h2>
+
 <table>
   <thead>
     <tr>
@@ -14,7 +16,7 @@
     <% @grouplessCUDs.each do |cud| %>
       <% if cud.id != @cud.id %>
         <tr>
-          <td>(<%= cud.id %>) <%= cud.email %></td>
+          <td><%= cud.email %></td>
           <td>
             <%= form_for [@course, @assessment, @group], method: :post do |f| %>
               <%= hidden_field_tag :groupmate_id, cud.id %>

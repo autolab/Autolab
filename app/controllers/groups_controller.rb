@@ -23,6 +23,17 @@ class GroupsController < ApplicationController
 
   action_auth_level :show, :student
   def show
+    if @cud.instructor then
+    else
+      @aud = @assessment.aud_for @cud.id
+      puts @aud.group_id, params[:id]
+      if @aud.group_id == nil then
+        redirect_to action: :new and return
+      elsif @aud.group_id != params[:id].to_i then
+        puts "this some old bull shit"
+        redirect_to [@course, @assessment, @aud.group] and return
+      end
+    end
     respond_with(@course, @assessment, @group)
   end
 
@@ -53,15 +64,17 @@ class GroupsController < ApplicationController
         flash[:error] = aud2.course_user_datum.email + " already has a confirmed group."
         redirect_to action: :new and return
       end
-      @group = Group.new
-      @group.name = "Untitled"
-      @group.save!
-      @aud1.group_id = @group.id
-      @aud1.group_confirmed = true
-      @aud1.save!
-      @aud2.group_id = @group.id
-      @aud2.group_confirmed = false
-      @aud2.save!
+      ActiveRecord::Base.transaction do
+        @group = Group.new
+        @group.name = "Untitled"
+        @group.save!
+        @aud1.group_id = @group.id
+        @aud1.group_confirmed = true
+        @aud1.save!
+        @aud2.group_id = @group.id
+        @aud2.group_confirmed = false
+        @aud2.save!
+      end
     else
       @group = Group.new(group_params)
       flash[:notice] = 'Group was successfully created.' if @group.save
@@ -71,7 +84,28 @@ class GroupsController < ApplicationController
 
   action_auth_level :update, :student
   def update
-    flash[:notice] = 'Group was successfully updated.' if @group.update(group_params)
+    if params[:addMember] then
+      addAUD = @assessment.aud_for(params[:addMember])
+      unless addAUD.group_confirmed then
+        cudAUD = @assessment.aud_for @cud.id
+        confirmed = @cud.instructor? || (params[:confirmed] && (cudAUD == addAUD))
+        addAUD.group = @group
+        addAUD.group_confirmed = confirmed
+        addAUD.save!
+      end
+    end
+    if params[:removeMember] then
+      aud = @group.assessment_user_data.find(params[:removeMember])
+      authed = @cud.instructor? || (@assessment.aud_for @cud.id == aud)
+      unless aud.nil? || !authed then
+        aud.group = nil
+        aud.group_confirmed = false
+        aud.save!
+      end
+    end
+    if params[:group] then
+      flash[:notice] = 'Group was successfully updated.' if @group.update(group_params)
+    end
     respond_with(@course, @assessment, @group)
   end
 
