@@ -38,10 +38,12 @@ class FormBuilderWithDateTimeInput < ActionView::Helpers::FormBuilder
   def check_box(name, *args)
     options = args.extract_options!
 
+    display_name = options[:display_name]
+
     field = super name, *(args + [ options ])
 
     @template.content_tag :div, class: "form-group" do
-       field + label(name, class: "control-label") +
+       field + label(name, display_name, class: "control-label") +
           help_text(name, options[:help_text])
     end
   end
