@@ -1,4 +1,4 @@
-<div class="handin-panel <% if modal -%>modal<% end -%>" id="<%= id %>" data-cansubmit="<%= @can_submit %> ">
+<div id="<%= id %>" data-cansubmit="<%= @can_submit %> ">
   <% if @can_submit %> 
     <% if @assessment.max_submissions != -1 %>
       <p>You have <%= @left_count %> <%= (@left_count == 1) ? "submission" : "submissions" %> left.</p>

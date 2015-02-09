@@ -1,9 +1,9 @@
 <div id=hiddenDownload style='display:inline;'>
     <% if can_always_download or not (sub.assessment.exam or sub.assessment.course.exam_in_progress) %>
-  <nobr><a onclick='dropDown<%= sub.id %>()'><%= sub.filename %>
+  <a onclick='dropDown<%= sub.id %>()'><%= sub.filename %>
     <%= image_tag 'download.png', :id=>"downloadImg#{sub.id}", :border=>0, :width=>'15px', :height=>'15px' %>
 		<%= image_tag 'downloadUp.png', :id=>"downloadImg#{sub.id}Up", :border=>0, :width=>'15px', :height=>'15px', :style=>'display:none;' %>
-  </a></nobr>
+  </a>
     <% else %>
     <%= sub.filename %>
     <% end %>

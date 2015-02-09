@@ -605,6 +605,7 @@ body.autolab {
 
   font-family: 'Source Sans Pro', sans-serif;
   font-weight: 300;
+  font-size: 16px;
 
   h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
     font-family: 'Source Sans Pro', sans-serif;
@@ -612,6 +613,11 @@ body.autolab {
 
 }
 
+@media (min-width: 1200px) {
+  #pageBody.container {
+    max-width: 970px;
+  }
+}
 
 input[type="text"],
 input[type="email"],
@@ -743,6 +749,10 @@ input[type="password"]:focus {
   border:1px solid #bbb;
 }
 
+.options {
+  line-height: 24px;
+}
+
 /* Form Tables */
 
 .verticalTable {
@@ -822,3 +832,16 @@ input[type="password"]:focus {
   }
 
 }
+
+/*  Warnings  */
+
+#flash_alert.alert,
+#flash_error.error {
+  background-color: #d88;
+  margin-top: 8px;
+  color: #fff;
+  padding: 10px;
+  margin-bottom: 0px;
+  border-radius: 3px;
+}
+
