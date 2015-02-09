@@ -77,7 +77,7 @@ module GradebookHelper
       row["section"] = cud.section
 
       # TODO: formalize score render stack, consolidate with computed score
-      course.assessments.each do |a|
+      course.assessments.ordered.each do |a|
         next unless matrix.has_assessment? a.id
 
         cell = matrix.cell(a.id, cud.id)
@@ -110,7 +110,7 @@ module GradebookHelper
     header = [ "Email", "first_name", "last_name", "Lecture", "Section", "School", "Major", "Year" ]
     course.assessment_categories.each do |cat|
       next unless matrix.has_category? cat.id
-      cat.assessments.each do |asmt|
+      cat.assessments.ordered.each do |asmt|
         next unless matrix.has_assessment? asmt.id
         header << asmt.name
       end
@@ -146,7 +146,7 @@ module GradebookHelper
         course.assessment_categories.each do |cat|
           next unless matrix.has_category? cat.id
 
-          cat.assessments.each do |asmt|
+          cat.assessments.ordered.each do |asmt|
             next unless matrix.has_assessment? asmt.id
 
             row << formatted_status(matrix.cell(asmt.id, cud.id)["status"])
