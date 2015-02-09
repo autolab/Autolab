@@ -20,10 +20,8 @@
 
         <div class="btn-group">
           <% mime_type = submission.detected_mime_type %>
-            <a type="button" class="btn btn-default" aria-label="Left Align" href="<%= download_file_url(submission) %>"><span class="glyphicon glyphicon-download" aria-hidden="true"></span></a>
-            
-
-          <a type="button" class="btn btn-default" aria-label="Justify"><span class="glyphicon glyphicon-zoom-in" aria-hidden="true"></span></a>
+          <a type="button" class="btn btn-default" data-toggle="tooltip" data-placement="top" title="Download Submission" aria-label="Left Align" href="<%= download_file_url(submission) %>"><span class="glyphicon glyphicon-download" aria-hidden="true"></span></a>
+          <a type="button" class="btn btn-default" data-toggle="tooltip" title="View Source" aria-label="Justify"><span class="glyphicon glyphicon-zoom-in" aria-hidden="true"></span></a>
         </div>
 
 
@@ -124,13 +122,13 @@
 
 </table>
 <br>
+
   <% if @cud.instructor? then %>
-<!--       <b>Admin actions: </b>
- -->      <% if @assessment.has_autograde and submission.version > 0 then %>
-        <%= link_to 'Regrade', regrade_course_assessment_submission_path(@course, @assessment, submission) %>  ·
+      <% if @assessment.has_autograde and submission.version > 0 then %>
+        <%= link_to 'Regrade', [:regrade, @course, @assessment, submission] %> · 
       <% end %>
-      <%= link_to 'Destroy', course_assessment_submission_path(@course,@assessment,submission), method: :delete %>  ·
-      <%= link_to 'Edit', edit_course_assessment_submission_path(@course, @assessment, submission)  %>
+      <%= link_to 'Destroy', [:destroyConfirm, @course, @assessment, submission] %> · 
+      <%= link_to 'Edit', [:edit, @course, @assessment, submission] %>
   <% end %>
 
     <% if @cud.instructor? %>
