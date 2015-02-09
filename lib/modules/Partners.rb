@@ -9,16 +9,6 @@ module Partners
     um.addColumn("partnerID",Integer)
   end
 
-  def partnersListAdmin
-    @adminlist["adminPartners"] = "Admin partners"
-    @admin_title["adminPartners"] = "View and modify the different partner groups"
-  end
-
-  def partnersListOptions
-    @list["partner"] = "Check partner"
-    @list_title["partner"] = "Request a partner or view your current partner"
-  end
-
   def partner
     @pModule = UserModule.load("Partners.2",@assessment.id)
     if !@pModule then
@@ -195,34 +185,6 @@ module Partners
     redirect_to :action=>"adminPartners" and return
   end
 
-  def partnersValidateHandin
-    @pModule = UserModule.load("Partners.2",@assessment.id)
-    if !@pModule then
-      partnersModuleInstall()
-      @pModule = UserModule.load("Partners.2",@assessment.id)
-    end
-
-    # If they're requesting a partner, make sure the other person
-    # has accepted
-    @partner = @pModule.get("partnerID",@cud.id)
-    if @partner then
-      if @pModule.get("partnerID",@partner) != @cud.id then
-        flash[:error] = "You cannot submit because your partner has not
-					confirmed you as their partner yet!"
-        return false	
-        # Check to make sure the PARTNER can still submit!
-      elsif @assessment.max_submissions != -1 then
-        partnerNum = Submission.where(:user_id=>@partner, :assessment_id => @assessment.id).count
-        if partnerNum >= @assessment.max_submissions then
-          flash[:error] = "Your partner has already reached the " +
-            "maximum number of submissions."
-          return false
-        end
-      end
-    end
-    return true	
-  end
-
   def importPartners
     unless @user.instructor?
       flash[:error] = "You are not authorized to perform this action"
@@ -271,12 +233,6 @@ module Partners
     end
   end
   
-  # use the same scheme as partnersAfterAutograde to create
-  # a submission for partner
-  def partnersAfterHandin(submission)
-    return partnersAfterAutograde(submission)
-  end
-
   def partnersAfterAutograde(submission)
     partner_cud = getPartner(submission.course_user_datum)
     if partner_cud then
@@ -301,51 +257,6 @@ module Partners
 
       return pSubmission
     end
-  end
-
-  def hasPartner(userID)
-    @pModule = UserModule.load("Partners.2", @assessment.id)
-    if @pModule then
-      p = @pModule.get("partnerID", userID)
-      return ! p.nil?
-    end
-    return false
-  end
-
-  # update the score of user's partner
-  # pSubmission is not nil
-  def updatePartnerScore(score, pSubmission)
-
-    problem = pSubmission.assessment.problems.find(score.problem_id)
-    pScore = pSubmission.scores.find_by_problem_id(problem.id)
-
-    if pScore.nil? then
-
-      # partner score doesn't exist yet
-      pScore = pSubmission.scores.new(:problem_id => problem.id,
-                                      :submission_id => pSubmission.id)
-
-    end
-
-    begin
-
-      pScore.score = score.score
-      pScore.feedback = score.feedback
-      pScore.released = score.released
-      pScore.grader_id = score.grader_id
-
-      pScore.save
-
-    rescue Exception => e
-      # score can't be saved. Reflect this in feedback
-      pScore.score = score.score
-      pScore.feedback = "An error occurred while saving the partner grade.\n\n"
-      pScore.released = true
-      pScore.grader_id = 0
-
-      pScore.save
-    end
-
   end
 
 end	

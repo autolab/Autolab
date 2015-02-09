@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150203151605) do
+ActiveRecord::Schema.define(version: 20150206035106) do
 
   create_table "annotations", force: :cascade do |t|
     t.integer  "submission_id", limit: 4
@@ -46,13 +46,15 @@ ActiveRecord::Schema.define(version: 20150203151605) do
   end
 
   create_table "assessment_user_data", force: :cascade do |t|
-    t.integer  "course_user_datum_id", limit: 4,               null: false
-    t.integer  "assessment_id",        limit: 4,               null: false
+    t.integer  "course_user_datum_id", limit: 4,                   null: false
+    t.integer  "assessment_id",        limit: 4,                   null: false
     t.integer  "latest_submission_id", limit: 4
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.integer  "grade_type",           limit: 4,   default: 0, null: false
+    t.integer  "grade_type",           limit: 4,   default: 0,     null: false
     t.string   "repository",           limit: 255
+    t.integer  "group_id",             limit: 4
+    t.boolean  "group_confirmed",      limit: 1,   default: false
   end
 
   add_index "assessment_user_data", ["assessment_id"], name: "index_assessment_user_data_on_assessment_id", using: :btree
@@ -91,6 +93,9 @@ ActiveRecord::Schema.define(version: 20150203151605) do
     t.boolean  "has_scoreboard",     limit: 1
     t.boolean  "has_svn",            limit: 1
     t.string   "remote_handin_path", limit: 255
+    t.boolean  "quiz",               limit: 1,     default: false
+    t.text     "quizData",           limit: 65535
+    t.integer  "group_size",         limit: 4,     default: 1
   end
 
   create_table "attachments", force: :cascade do |t|
@@ -158,6 +163,12 @@ ActiveRecord::Schema.define(version: 20150203151605) do
     t.integer "assessment_id",        limit: 4
     t.integer "days",                 limit: 4
     t.boolean "infinite",             limit: 1, default: false, null: false
+  end
+
+  create_table "groups", force: :cascade do |t|
+    t.string   "name",       limit: 255
+    t.datetime "created_at",             null: false
+    t.datetime "updated_at",             null: false
   end
 
   create_table "module_data", force: :cascade do |t|

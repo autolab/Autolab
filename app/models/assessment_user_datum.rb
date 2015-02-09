@@ -5,6 +5,7 @@ class AssessmentUserDatum < ActiveRecord::Base
   belongs_to :course_user_datum
   belongs_to :assessment
   belongs_to :latest_submission, :class_name => "Submission"
+  belongs_to :group
 
   # attr_accessible :grade_type
 
