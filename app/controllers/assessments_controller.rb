@@ -764,6 +764,53 @@ class AssessmentsController < ApplicationController
     end
     
     listOptions()
+
+      # Remember the student ID in case the user wants visit the gradesheet
+    if params[:cud_id] then 
+      session["gradeUser#{@assessment.id}"] = params[:cud_id]
+    end
+
+    @startTime = Time.now
+    if @cud.instructor? and params[:cud_id] then
+      @effectiveCud = @course.course_user_data.find(params[:cud_id])
+    else
+      @effectiveCud = @cud
+    end
+    @submissions = @assessment.submissions.where(course_user_datum_id: @effectiveCud.id).order("version DESC")
+    @extension = @assessment.extensions.find_by(course_user_datum_id: @effectiveCud.id)
+    @problems = @assessment.problems
+
+    results = @submissions.select("submissions.id AS submission_id",
+        "problems.id AS problem_id",
+        "scores.id AS score_id",
+        "scores.*")
+      .joins("LEFT JOIN problems ON 
+        submissions.assessment_id = problems.assessment_id")
+      .joins("LEFT JOIN scores ON 
+        (submissions.id = scores.submission_id 
+        AND problems.id = scores.problem_id)")
+
+    # Process them to get into a format we want. 
+    @scores = {}  
+    for result in results do
+      subId = result["submission_id"].to_i
+      unless @scores.has_key?(subId) then
+        @scores[subId]= {}
+      end
+      
+      @scores[subId][result["problem_id"].to_i] = {
+        :score=>result["score"].to_f,
+        :feedback=>result["feedback"],
+        :feedback_file=>result["feedback_file_name"],
+        :score_id=>result["score_id"].to_i,
+        :released=>result["released"].to_i,
+        #score_model: Score.find(result["score_id"].to_i)
+      }
+    end
+
+    # Check if we should include regrade as a function
+    @autograded = @assessment.has_autograde
+
   end
   
 
