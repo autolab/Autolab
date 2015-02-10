@@ -25,11 +25,9 @@ class GroupsController < ApplicationController
   def show
     @aud = @assessment.aud_for @cud.id
     if !@cud.instructor? then
-      puts @aud.group_id, params[:id]
       if @aud.group_id == nil then
         redirect_to action: :new and return
       elsif @aud.group_id != params[:id].to_i then
-        puts "this some old bull shit"
         redirect_to [@course, @assessment, @aud.group] and return
       end
     end
