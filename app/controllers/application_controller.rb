@@ -12,6 +12,7 @@ class ApplicationController < ActionController::Base
   before_action :authorize_user_for_course, except: [:action_no_auth ]
   before_action :authenticate_for_action
   before_action :update_persistent_announcements
+  before_action :set_breadcrumbs
 
   # this is where Error Handling is configured. this routes exceptions to
   # the error handler in the HomeController, unless we're in development mode
@@ -236,6 +237,17 @@ protected
   
   def update_persistent_announcements
     @persistent_announcements = Announcement.where("persistent and (course_id=? or system)", @course.id)
+  end
+      
+  def set_breadcrumbs
+    @breadcrumbs = []
+    if @course then
+      if @course.disabled? then
+        @breadcrumbs << (view_context.link_to "#{@course.display_name} (Course Disabled)", [@course], id: "courseTitle")
+      else
+        @breadcrumbs << (view_context.link_to @course.display_name, [@course], id: "courseTitle")
+      end
+    end
   end
 
   def pluralize(count, singular, plural = nil)
