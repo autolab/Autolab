@@ -1,8 +1,5 @@
 class SubmissionsController < ApplicationController
 
-  autolabRequire File.join(Rails.root, 'app/controllers/assessment/autograde.rb')
-  include AssessmentAutograde
-
   before_action :load_submission, only: [:destroy]
 
   # this page loads.  links/functionality may be/are off
@@ -14,11 +11,7 @@ class SubmissionsController < ApplicationController
     
     assign = @assessment.name.gsub(/\./,'')  
     modName = (assign + (@course.name).gsub(/[^A-Za-z0-9]/,"")).camelize
-    @autograded = false
-    begin
-      @autograded = @assessment.has_autograde
-    rescue Exception 
-    end
+    @autograded = @assessment.has_autograde
   end
 
   # this works
@@ -76,48 +69,6 @@ class SubmissionsController < ApplicationController
     end
     flash[:success] = pluralize(cud_ids.size, "Submission") + " Created"
     redirect_to course_assessment_submissions_path(@course, @assessment)
-  end
-
-  # method called when Tango returns the output
-  # action_auth_level :autograde_done, :student
-  action_no_auth :autograde_done
-  def autograde_done
-    @course = Course.find(params[:course_id]) or render nothing: true and return
-    @assessment = @course.assessments.find(params[:assessment_id])
-    unless @assessment && @assessment.has_autograde then
-      render nothing: true and return
-    end
-    # there can be multiple submission with the same dave if this was a group submission
-    submissions = Submission.where(dave: params[:dave])
-    
-    feedback_str = params[:file].read
-
-    COURSE_LOGGER.setCourse(@course)
-    COURSE_LOGGER.log("autograde_done")
-    COURSE_LOGGER.log("autograde_done hit: #{request.fullpath}")
-
-    begin
-      extend_config_module()
-    rescue Exception => e
-      COURSE_LOGGER.log("Error extend config")
-      COURSE_LOGGER.log(e)
-    end
-
-    autolab_dir = File.expand_path(File.dirname(__FILE__)+'/../../')
-    configName = "#{@course.name}-#{@assessment.name}.rb"
-    dir = File.join(autolab_dir, "assessmentConfig", configName)
-    require_relative dir
-
-    assign = @assessment.name.gsub(/\./,'') 
-    modName = (assign + (@course.name).gsub(/[^A-Za-z0-9]/,"")).camelize
-
-    if @assessment.overwrites_method?(:autogradeDone) then
-      @assessment.config_module.autogradeDone(submissions, feedback_str)
-    else
-      autogradeDone(submissions, feedback_str)
-    end
-
-    render nothing: true and return
   end
 
   action_auth_level :show, :student
@@ -180,24 +131,6 @@ class SubmissionsController < ApplicationController
   action_auth_level :destroyConfirm, :instructor
   def destroyConfirm
     load_submission() or return false
-  end
-
-  action_auth_level :regrade, :instructor
-  def regrade
-    @submission = Submission.find(params[:id])
-    @effectiveCud = @submission.course_user_datum
-    @course = @submission.course_user_datum.course
-    @assessment = @submission.assessment
-
-    if !@assessment.has_autograde then
-      # Not an error, this behavior was specified!
-      flash[:info] = "This submission is not autogradable"
-      redirect_to history_course_assessment_path(@course, @assessment, cud_id: @effectiveCud.id) and return
-    end
-    
-    autogradeSubmissions(@course, @assessment, [@submission])
-
-    redirect_to history_course_assessment_path(@course, @assessment, cud_id: @effectiveCud.id) and return
   end
 
   ##
@@ -264,50 +197,6 @@ class SubmissionsController < ApplicationController
               :type => 'application/zip',
               :stream => false, # So we can delete the file immediately.
               :filename => File.basename(result.path))
-  end
-
-  # 
-  # regradeAll - regrade the most recent submissions from each student
-  #
-  action_auth_level :regradeAll, :instructor
-  def regradeAll
-    # load_submission() or return false
-    @assessment = @course.assessments.find(params[:assessment_id])
-    
-    # Grab all of the submissions for this assessment
-    @submissions = @assessment.submissions.where(special_type: Submission::NORMAL).order("version DESC")
-
-    last_submissions = @submissions.latest
-
-    # Now regrade only the most recent submissions. Keep track of
-    # any handins that fail.
-    failed_jobs = 0
-    failed_list = ""
-    last_submissions.each do |submission|
-      if submission then
-        job = autogradeSubmissions(@course, @assessment, [submission])
-        if job == -1 then # autograding failed
-          failed_jobs += 1
-          failed_list += "#{@submission.filename}: autograding error.<br>"
-        elsif job == -2 then # no autograding properties for this assessment
-          redirect_to [@course, @assessment, :submissions] and return
-        end
-      else
-        failed_jobs += 1
-        failed_list += "#{submission.filename}: not found or not readable.<br>"
-      end
-    end
-
-    if failed_jobs > 0 then
-      flash[:error] = "Warning: Could not regrade #{failed_jobs} submission(s):<br>" + failed_list
-    end
-    success_jobs = last_submissions.size - failed_jobs
-    if success_jobs > 0 then
-      link = "<a href=\"#{url_for(:controller=>'jobs')}\">#{success_jobs} students</a>"
-      flash[:success] = ("Regrading the most recent submissions from #{link}").html_safe
-    end
-
-    redirect_to [@course, @assessment, :submissions] and return
   end
 
   # Action to be taken when the user wants do download a submission but
@@ -531,121 +420,6 @@ class SubmissionsController < ApplicationController
 
   end
 
-
-
-  # AUTOGRADING
-  #
-  # autogradeDone - called when autograding is done, either by the submissions#autograde_done
-  # route getting called by Tango or by the Autograde module polling Tango. In either case,
-  # submission is confirmed via dave key to have been created by Autolab
-  #
-  def autogradeDone(submissions, feedback)
-    assessmentDir = File.join(AUTOCONFIG_COURSE_DIR, @course.name, @assessment.name)
-
-    filename = "%s_%d_%s_autograde.txt" % [submissions[0].course_user_datum.email, submissions[0].version, @assessment.name]
-
-    feedbackFile = File.join(assessmentDir, @assessment.handin_directory, filename)
-    COURSE_LOGGER.log("Looking for Feedbackfile:" + feedbackFile)
-
-    begin
-      f = File.open(feedbackFile, "w")
-      f.write(feedback)
-    ensure
-      f.close unless f.nil?
-    end
-    
-    saveAutograde(submissions, feedbackFile)
-  end
-
-  #
-  # saveAutograde - parses the autoresult returned by the
-  # autograding driver on the backend and updates the scores for
-  # each autograded problem. The default autoresult string is in
-  # JSON format, but this can be overrriden in the lab.rb file.
-  #
-  def saveAutograde(submissions, feedbackFile)
-    begin
-      lines = File.open(feedbackFile).readlines()
-      if (lines == nil) then
-        raise "The Autograder returned no output. \n"
-      end
-
-      # The last line of the output is assumed to be the
-      # autoresult string from the autograding driver
-      autoresult = lines[lines.length-1].chomp
-
-      if @assessment.overwrites_method?(:parseAutoresult) then
-        scores = @assessment.config_module.parseAutoresult(autoresult, true);
-      else
-        scores = parseAutoresult(autoresult, true)
-      end
-
-      if scores.keys.length == 0 then 
-        raise "Empty autoresult string."
-      end
-
-      # Grab the autograde config info
-      @autograde_prop = AutogradingSetup.find_by(assessment_id: @assessment.id)
-
-      # Record each of the scores extracted from the autoresult
-      for key in scores.keys do
-        problem = @assessment.problems.find_by(name: key)
-        if !problem then
-          raise "Problem \"" + key + "\" not found."
-        end
-        submissions.each do |submission|
-          score = submission.scores.find_or_initialize_by(problem_id: problem.id)
-          score.score = scores[key]
-          score.feedback = lines.join()
-          score.released = @autograde_prop.release_score
-          score.grader_id = 0
-          score.save!
-        end
-      end
-    rescue Exception => e
-      feedback_str = "An error occurred while parsing the autoresult returned by the Autograder.\n\nError message: " + e.to_s + "\n\n"
-      if lines && (lines.length < 10000) then
-        feedback_str += lines.join()
-      end
-      @assessment.problems.each do |p|
-        submissions.each do |submission|
-          score = submission.scores.find_or_initialize_by(problem_id: p.id)
-          score.score = 0
-          score.feedback = feedback_str
-          score.released = true
-          score.grader_id = 0
-          score.save!
-        end
-      end
-    end
-    
-    ActiveRecord::Base.transaction do
-      submissions.each do |submission|
-        submission.autoresult = autoresult
-        submission.save!
-      end
-    end
-    
-    logger = Logger.new(Rails.root.join("courses", @course.name, @assessment.name, "log.txt"))
-    logger.add(Logger::INFO) {"#{submissions[0].course_user_datum.email}, #{submissions[0].version}, #{autoresult}"}
-  end
-
-  # 
-  # parseAutoresult - Extracts the problem scores from a JSON
-  # autoresult string. If anything goes wrong, raise an exception
-  # with the caller. Can be overridden in the lab config file.
-  #
-  def parseAutoresult(autoresult, isOfficial)
-    parsed = ActiveSupport::JSON.decode(autoresult.gsub(/([a-zA-Z0-9]+):/, '"\1":'))
-    if !parsed then
-      raise "Empty autoresult"
-    end
-    if !parsed["scores"] then
-      raise "Missing 'scores' object in the autoresult"
-    end
-    return parsed["scores"]
-  end
-
 private
 
   def new_submission_params
@@ -785,72 +559,4 @@ private
     return filename[firstUnderscoreInd + 1...secondUnderscoreInd].to_i
   end
 
-  def extend_config_module
-    begin
-      @assessment = @submission.assessment
-      require @assessment.config_file_path
-            
-
-      # casted to local variable so that 
-      # they can be passed into `module_eval`
-      assessment = @assessment
-      methods = @assessment.config_module.instance_methods
-      assignName = @assessment.name
-      submission = @submission
-
-      course = @course
-      cud = @cud
-      req_hostname = request.host;
-      req_port = request.port;
-
-      @assessment.config_module.module_eval do
-        
-        # we cast these values into module variables
-        # so that they can be accessible inside module
-        # methods
-        @cud = cud
-        @course = course
-        @assessment = course.assessments.where(:name=>assignName).first
-        @hostname = req_hostname
-        @port = req_port
-        @submission = submission
-
-        if ! @assessment then
-          raise "Assessment #{assignName} does not exist!"
-        end
-
-        if @assessment == nil then
-          flash[:error] = "Error: Invalid assessment"
-          redirect_to home_error_path and return
-        end
-
-        @name = @assessment.name
-        @description = @assessment.description
-        @start_at = @assessment.start_at
-        @due_at = @assessment.due_at
-        @end_at = @assessment.end_at
-        @visible_at = @assessment.visible_at
-        @id = @assessment.id
-
-        # we iterate over all the methods
-        # and convert them into `module methods`
-        # this makes them available without mixing in the module
-        # creating an instance of it.
-        # http://www.ruby-doc.org/core-2.1.3/Module.html#method-i-instance_method
-        methods.each { |nonmodule_func| 
-          module_function(nonmodule_func)
-          public nonmodule_func
-        }
-      end
-
-    rescue Exception => @error
-      COURSE_LOGGER.log(@error)
-
-      if @cud and @cud.has_auth_level? :instructor
-        redirect_to action: :reload and return
-      else
-        redirect_to home_error_path and return
-       end
-    end
-  end
 end

@@ -9,8 +9,8 @@ module AssessmentHandout
   end
   
   def handout
-     get_assessment()
-  	extend_config_module
+    get_assessment()
+  	extend_config_module(@assessment, nil, @cud)
 
     if Time.now() < @assessment.start_at && !@cud.instructor? then
       flash[:error] = "This assessment has not started yet."

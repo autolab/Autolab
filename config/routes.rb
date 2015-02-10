@@ -43,12 +43,9 @@ Autolab3::Application.routes.draw do
           get 'destroyConfirm'
           get 'download'
           get 'listArchive', as: :list_archive
-          get 'regrade'
           get 'view'
-          post 'autograde_done'
         end
         collection do
-          get 'regradeAll'
           get 'downloadAll'
           get 'missing'
         end
@@ -85,6 +82,11 @@ Autolab3::Application.routes.draw do
         get 'partner'
         get 'scoreboard'
 
+        # autograde actions
+        post 'autograde_done'
+        post 'regrade'
+        post 'regradeAll'
+        
         # partner actions
         match 'setPartner', via: [:get, :post]
         get 'importPartners'

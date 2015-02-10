@@ -42,8 +42,10 @@ class AssessmentsController < ApplicationController
   action_auth_level :handout, :student
 
   # Autograde
+  action_no_auth    :autograde_done
   action_auth_level :adminAutograde, :instructor
   action_auth_level :regrade, :instructor
+  action_auth_level :regradeAll, :instructor
   action_no_auth    :log_submit
   action_no_auth    :local_submit
 
@@ -441,24 +443,6 @@ class AssessmentsController < ApplicationController
       flash[:error] = "Error saving #{@assessment.name}"
       redirect_to action: :installAssessment and return
     end
-
-    # Stage the config file in assessmentConfig and then reload it
-    name = @assessment.name
-    begin
-      #extend_config_module
-      
-      # Verify that we have a module named correctly. 
-      # assign = name.gsub(/\./, '')
-      # modName = assign + (@course.name).gsub(/[^A-Za-z0-9]/, "")
-      # if (not Module.constants.include?(modName.camelize.to_sym)) then
-      #   raise "There is no module named #{assign.camelize} in" +
-      #     " #{assign}/#{assign}.rb " 
-      # end
-    rescue Exception => e
-      flash[:error] = "Error loading #{name}.rb. This is possibly due to a typo or syntax error in your file. Contact Autolab team if the problem persists.<br />Rails error message: #{e}.".html_safe
-      uninstall(name)
-      redirect_to course_path(@course) and return
-    end
       
     # Create the properties file if it doesn't exist
     begin     
@@ -731,7 +715,7 @@ class AssessmentsController < ApplicationController
   action_auth_level :show, :student
   def show
     get_handin
-    extend_config_module()
+    extend_config_module(@assessment, @submission, @cud)
 
     @aud = @assessment.aud_for @cud.id
 
@@ -1483,7 +1467,7 @@ class AssessmentsController < ApplicationController
   # scoreboard - This function draws the scoreboard for an assessment.
   #
   def scoreboard
-    extend_config_module
+    extend_config_module(@assessment, nil, @cud)
     @students = CourseUserDatum.joins("INNER JOIN submissions ON course_user_datum.id=submissions.course_user_datum_id")
                     .where("submissions.assessment_id=?",@assessment.id)
                     .group("users.id")
@@ -1977,78 +1961,6 @@ protected
     unless @assessment
       flash[:error] = "Sorry! we couldn't load the assessment \"#{assign}\""
       redirect_to home_error_path and return
-    end
-  end
-
-  def extend_config_module
-    begin
-      require @assessment.config_file_path
-      assessmentInitialize @assessment.name
-      
-
-      # casted to local variable so that 
-      # they can be passed into `module_eval`
-      assessment = @assessment
-      methods = @assessment.config_module.instance_methods
-      assignName = @assessment.name
-      submission = @submission
-
-      course = @course
-      cud = @cud
-      req_hostname = request.host;
-      req_port = request.port;
-
-      @assessment.config_module.module_eval do
-        
-        # we cast these values into module variables
-        # so that they can be accessible inside module
-        # methods
-        @cud = cud
-        @course = course
-        @assessment = course.assessments.where(:name=>assignName).first
-        @hostname = req_hostname
-        @port = req_port
-        @submission = submission
-
-        if ! @assessment then
-          raise "Assessment #{assignName} does not exist!"
-        end
-
-        if @assessment == nil then
-          flash[:error] = "Error: Invalid assessment"
-          redirect_to home_error_path and return
-        end
-
-        @name = @assessment.name
-        @description = @assessment.description
-        @start_at = @assessment.start_at
-        @due_at = @assessment.due_at
-        @end_at = @assessment.end_at
-        @visible_at = @assessment.visible_at
-        @id = @assessment.id
-
-        # we iterate over all the methods
-        # and convert them into `module methods`
-        # this makes them available without mixing in the module
-        # creating an instance of it.
-        # http://www.ruby-doc.org/core-2.1.3/Module.html#method-i-instance_method
-        methods.each { |nonmodule_func| 
-          print nonmodule_func
-          module_function(nonmodule_func)
-          public nonmodule_func
-        }
-      end
-
-    rescue Exception => @error
-      # printing the error so that the bugs are traceable
-      puts @error
-      COURSE_LOGGER.log(@error)
-
-      if @cud and @cud.has_auth_level? :instructor
-        redirect_to action: :reload and return
-      else
-        redirect_to home_error_path and return
-       end
     end
   end
 
