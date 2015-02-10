@@ -44,7 +44,7 @@ class Assessment < ActiveRecord::Base
   RELEASED = "start_at < ?"
 
   # Scopes
-  scope :ordered, -> { order ORDERING }
+  scope :ordered, -> { order(ORDERING) }
   scope :released, ->(as_of = Time.now) { where(RELEASED, as_of) }
   scope :unreleased, ->(as_of = Time.now) { where.not(RELEASED, as_of) }
 
