@@ -210,20 +210,21 @@ class Submission < ActiveRecord::Base
     require 'zlib'
     require 'zip'
 
-    archive_type = IO.popen(["file", "--brief", "--mime-type", self.filename],
+    filename = self.handin_file_path
+    archive_type = IO.popen(["file", "--brief", "--mime-type", filename],
                             in: :close, err: :close) { |io| io.read.chomp }
     # Extract archive by type
     if archive_type.include? "tar" then
-      f = File.new(self.filename)
+      f = File.new(filename)
       archive_extract = Gem::Package::TarReader.new(f)
       archive_extract.rewind # The extract has to be rewinded after every iteration
     elsif archive_type.include? "gzip" then
-      archive_extract = Gem::Package::TarReader.new(Zlib::GzipReader.open self.filename)
+      archive_extract = Gem::Package::TarReader.new(Zlib::GzipReader.open filename)
       archive_extract.rewind
     elsif archive_type.include? "zip" then
-      archive_extract = Zip::File.open(self.filename)
+      archive_extract = Zip::File.open(filename)
     else
-      raise "Unrecognized archive type!"
+      return self.filename # well, we tried
     end
 
     # Iterate through archive until file position

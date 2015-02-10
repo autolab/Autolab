@@ -86,7 +86,7 @@
                 <th>Final Score</th>
               </tr>
 
-              <% cat.assessments.each do |asmt| %>
+              <% cat.assessments.ordered.each do |asmt| %>
                 <% aud = asmt.aud_for @_cud  %>
                 <tr>
                   <td>
