@@ -14,7 +14,6 @@ class GradeMatrix
         _.load_auds
         _.load_course_user_data
         _.load_assessments
-        _.load_assessment_categories
       }
 
       ActiveSupport::Gzip.compress(matrix!.to_json)
@@ -103,8 +102,8 @@ private
 
       @course.assessment_categories.each do |cat|
         a = cud.category_average(cat, @as_seen_by)
-        cat_avg_by_cat["#{cat}"] ||= {}
-        cat_avg_by_cat["#{cat}"]["#{cud.id}"] = a
+        cat_avg_by_cat[cat] ||= {}
+        cat_avg_by_cat[cat]["#{cud.id}"] = a
       end
 
       course_avg_by_user["#{cud.id}"] = cud.average @as_seen_by

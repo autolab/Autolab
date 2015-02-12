@@ -3,7 +3,13 @@ class AddCategoryToAssessments < ActiveRecord::Migration
     add_column :assessments, :category_name, :string
     
     Assessment.all.each do |assessment|
-    	assessment.category_name = AssessmentCategory.find_by_id(assessment.category_id).name
+      sql = "SELECT name FROM assessment_categories WHERE id=" + assessment.category_id.to_s
+		  records_array = ActiveRecord::Base.connection.execute(sql)
+	   	
+	   	records_array.each do |cat|
+    		assessment.category_name = cat[0]
+			  assessment.save!
+	    end
     end
 
     remove_column :assessments, :category_id

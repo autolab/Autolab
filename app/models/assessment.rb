@@ -31,7 +31,7 @@ class Assessment < ActiveRecord::Base
                             :greater_than_or_equal_to => 0, :allow_nil => true
 
   validates_presence_of :name, :display_name, :due_at, :end_at, :start_at,
-                        :grading_deadline, :max_size, :max_submissions
+                        :grading_deadline, :category_name, :max_size, :max_submissions
 
   # Callbacks
   trim_field :name, :display_name, :handin_filename, :handin_directory, :handout, :writeup

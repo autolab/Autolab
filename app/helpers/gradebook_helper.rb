@@ -33,7 +33,7 @@ module GradebookHelper
 
       # category average column
       columns << { :id => cat, :name => cat + ' Average',
-                   :field => "#{cat.name}_category_average",
+                   :field => "#{cat}_category_average",
                    :sortable => true, :cssClass => "computed category_average",
                    :headerCssClass => "category_average", width: 100 }
     end

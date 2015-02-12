@@ -142,7 +142,7 @@ class Course < ActiveRecord::Base
   end
 
   def assessment_categories
-    assessments.pluck(:category_name).uniq.sort
+    assessments.pluck(:category_name).distinct.sort
   end
 
   def assessments_with_category(cat_name)
