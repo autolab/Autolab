@@ -129,7 +129,7 @@ class GroupsController < ApplicationController
         newMember.save!
       end
     end
-    redirect_to [@course, @assessment, @group] and return
+    respond_with(@course, @assessment, @group)
   end
   
   ##
@@ -154,7 +154,7 @@ class GroupsController < ApplicationController
         newMember.save!
       end
     end
-    redirect_to [@course, @assessment, @group] and return
+    respond_with(@course, @assessment, @group)
   end
   
   ##
@@ -177,13 +177,15 @@ class GroupsController < ApplicationController
       end
     else
       leaver = @assessment.aud_for(@cud.id)
-      group = leaver.group
+      unless leaver.group_id == @group.id then
+        redirect_to [@course, @assessment, @group] and return
+      end
       leaver.group = nil
       leaver.membership_status = AssessmentUserDatum::UNCONFIRMED
       ActiveRecord::Base.transaction do
         leaver.save!
-        if group.assessment_user_data.size == 0 then
-          group.destroy!
+        if @group.assessment_user_data.size == 0 then
+          @group.destroy!
         end
       end
     end

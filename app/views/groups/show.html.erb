@@ -1,9 +1,13 @@
 <h1>Group: <%= @group.name %></h1>
 
-<% if @aud.group_id == @group.id && !@aud.group_confirmed then %>
-  <p>You have not confirmed your group yet.</p>
-  <%= link_to "Confirm", [:join, @course, @assessment, @group], method: :post %> |
-  <%= link_to "Leave", [:leave, @course, @assessment, @group], method: :post %>
+<% if @aud.group_id == @group.id %>
+  <% if (@aud.membership_status & AssessmentUserDatum::MEMBER_CONFIRMED) == 0 then %>
+    <p>You have not confirmed your group yet.</p>
+    <%= link_to "Confirm", [:join, @course, @assessment, @group], method: :post %> |
+    <%= link_to "Leave", [:leave, @course, @assessment, @group], method: :post %>
+  <% elsif (@aud.membership_status & AssessmentUserDatum::GROUP_CONFIRMED) == 0 then %>
+    <p>Your group has not confirmed your membership yet.</p>
+  <% end %>
 <% end %>
 
 <h2>Group Members</h2>
@@ -12,15 +16,20 @@
   <li>
     <% cud = aud.course_user_datum %>
     <%= cud.email %>
-    <% unless aud.group_confirmed then %>
+    <% if !aud.group_confirmed(AssessmentUserDatum::MEMBER_CONFIRMED) then %>
       (Not Confirmed)
+    <% elsif !aud.group_confirmed(AssessmentUserDatum::GROUP_CONFIRMED) && @aud.confirmed_in_group(@group) then %>
+      <%= link_to "(Confirm Membership?)", [:add, @course, @assessment, @group, member_id: aud.id] %>
     <% end %>
   </li>
 <% end %>
 </ul>
 
 <% if @aud.group_id == @group.id then %>
-  <%= link_to 'Change Name', [:edit, @course, @assessment, @group] %> | 
-  <%= link_to 'Leave Group', [:leave, @course, @assessment, @group], { method: :post, data: { confirm: 'Are you sure?' } } %> | 
+  <% if @aud.group_confirmed then %>
+    <%= link_to 'Change Name', [:edit, @course, @assessment, @group] %> | 
+  <% end %>
+  <%= link_to 'Leave Group', [:leave, @course, @assessment, @group], 
+              { method: :post, data: { confirm: 'Are you sure you want to leave your group?' } } %> | 
 <% end %>
 <%= groups_back_link %>

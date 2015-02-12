@@ -35,8 +35,12 @@ class AssessmentUserDatum < ActiveRecord::Base
   GROUP_CONFIRMED = 0x2
   CONFIRMED = 0x3
   
-  def group_confirmed
-    membership_status == CONFIRMED
+  def group_confirmed(flags = CONFIRMED)
+    (membership_status & flags) != 0
+  end
+  
+  def confirmed_in_group(group)
+    group_id == group.id && membership_status == CONFIRMED
   end
   
   # Updates latest_submission atomically
