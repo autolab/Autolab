@@ -30,7 +30,11 @@ Autolab3::Application.routes.draw do
       resources :attachments
       resources :extensions, only: [:index, :create, :destroy]
       resources :groups do
-        post 'confirm', on: :member
+        member do
+          post 'add'
+          post 'join'
+          post 'leave'
+        end
         post 'import', on: :collection
       end
       resources :problems, except: [:index, :show] do

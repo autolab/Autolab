@@ -29,6 +29,16 @@ class AssessmentUserDatum < ActiveRecord::Base
     :excused => EXCUSED
   }
 
+  # Different statuses for group membership
+  UNCONFIRMED = 0x0
+  MEMBER_CONFIRMED = 0x1
+  GROUP_CONFIRMED = 0x2
+  CONFIRMED = 0x3
+  
+  def group_confirmed
+    membership_status == CONFIRMED
+  end
+  
   # Updates latest_submission atomically
   #
   # Using this method *prevents* the following interleaving, for example:

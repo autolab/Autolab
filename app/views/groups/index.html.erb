@@ -3,15 +3,18 @@
 <table class=prettyBorder >
   <tr>
     <th>Group Name</th>
+    
     <% @assessment.group_size.times do |i| %>
       <th>Member</th>
     <% end %>
-    <th></th>
+    
+    <th>Options</th>
   </tr>
 
   <% @groups.each do |group| %>
     <tr>
       <td><%= link_to group.name, [@course, @assessment, group] %></td>
+      
       <% group.assessment_user_data.each do |aud| %>
         <% cud = aud.course_user_datum %>
         <td>
@@ -21,6 +24,11 @@
           <% end %>
         </td>
       <% end %>
+      
+      <% (@assessment.group_size - group.assessment_user_data.size).times do %>
+        <td>&ndash;</td>
+      <% end %>
+      
       <td>
         <%= link_to "Edit", [:edit, @course, @assessment, group] %> | 
         <%= link_to "Destroy", [@course, @assessment, group], method: :delete, data: { confirm: 'Are you sure?' } %>

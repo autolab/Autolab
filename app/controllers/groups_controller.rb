@@ -1,6 +1,6 @@
 class GroupsController < ApplicationController
   before_action :set_assessment
-  before_action :set_group, only: [:show, :edit, :update, :destroy]
+  before_action :set_group, only: [:show, :edit, :update, :destroy, :add, :join, :leave]
 
   respond_to :html
 
@@ -9,7 +9,7 @@ class GroupsController < ApplicationController
     if @cud.instructor then
       @groups = Group.joins(:assessment_user_data).where(assessment_user_data: {assessment_id: @assessment.id}).distinct
       @assessments = @course.assessments.where('group_size > 1').where.not(id: @assessment.id)
-      @grouplessCUDs = @course.course_user_data.joins(:assessment_user_data).where(assessment_user_data: {assessment_id: @assessment.id, group_confirmed: false})
+      @grouplessCUDs = @course.course_user_data.joins(:assessment_user_data).where(assessment_user_data: {assessment_id: @assessment.id, membership_status: AssessmentUserDatum::UNCONFIRMED})
     else
       aud = @assessment.aud_for @cud.id
       if aud.group then
@@ -37,7 +37,7 @@ class GroupsController < ApplicationController
   action_auth_level :new, :student
   def new
     @group = Group.new
-    @grouplessCUDs = @course.course_user_data.joins(:assessment_user_data).where(assessment_user_data: {assessment_id: @assessment.id, group_confirmed: false})
+    @grouplessCUDs = @course.course_user_data.joins(:assessment_user_data).where(assessment_user_data: {assessment_id: @assessment.id, membership_status: AssessmentUserDatum::UNCONFIRMED})
     respond_with(@course, @assessment, @group)
   end
 
@@ -66,40 +66,18 @@ class GroupsController < ApplicationController
         @group.name = "Untitled"
         @group.save!
         @aud1.group_id = @group.id
-        @aud1.group_confirmed = true
+        @aud1.membership_status = AssessmentUserDatum::CONFIRMED
         @aud1.save!
         @aud2.group_id = @group.id
-        @aud2.group_confirmed = false
+        @aud2.membership_status = AssessmentUserDatum::GROUP_CONFIRMED
         @aud2.save!
       end
-    else
-      @group = Group.new(group_params)
-      flash[:notice] = 'Group was successfully created.' if @group.save
     end
     respond_with(@course, @assessment, @group)
   end
 
   action_auth_level :update, :student
   def update
-    if params[:addMember] then
-      addAUD = @assessment.aud_for(params[:addMember])
-      unless addAUD.group_confirmed then
-        cudAUD = @assessment.aud_for @cud.id
-        confirmed = @cud.instructor? || (params[:confirmed] && (cudAUD == addAUD))
-        addAUD.group = @group
-        addAUD.group_confirmed = confirmed
-        addAUD.save!
-      end
-    end
-    if params[:removeMember] then
-      aud = @group.assessment_user_data.find(params[:removeMember])
-      authed = @cud.instructor? || (@assessment.aud_for @cud.id == aud)
-      unless aud.nil? || !authed then
-        aud.group = nil
-        aud.group_confirmed = false
-        aud.save!
-      end
-    end
     if params[:group] then
       flash[:notice] = 'Group was successfully updated.' if @group.update(group_params)
     end
@@ -111,7 +89,7 @@ class GroupsController < ApplicationController
     ActiveRecord::Base.transaction do
       @group.assessment_user_data.each do |aud|
         aud.group_id = nil
-        aud.group_confirmed = false
+        aud.membership_status = AssessmentUserDatum::UNCONFIRMED
         aud.save!
       end
       @group.destroy!
@@ -127,15 +105,97 @@ class GroupsController < ApplicationController
     end
     redirect_to action: :index and return
   end
-    
-  action_auth_level :confirm, :student
-  def confirm
-    
+  
+  ##
+  # add is when a group adds a student to itself.
+  # the student will need to confirm membership with a call to join.
+  #
+  # member_id - the id of the member to be added
+  #
+  action_auth_level :add, :student
+  def add
+    newMember = @assessment.aud_for(params[:member_id].to_i)
+    if newMember then
+      members = @group.assessment_user_data.all
+      # make sure that the group is not too large
+      if newMember.group_id != @group.id && members.size >= @assessment.group_size then
+        flash[:error] = "This group is at the maximum size for this assessment"
+        redirect_to [@course, @assessment, :groups] and return
+      end
+      # if the new member has no previous group or was already in this group, group-confirm the new member
+      if (newMember.membership_status == AssessmentUserDatum::UNCONFIRMED || newMember.group_id == @group.id) then
+        newMember.group = @group
+        newMember.membership_status |= AssessmentUserDatum::GROUP_CONFIRMED
+        newMember.save!
+      end
+    end
+    redirect_to [@course, @assessment, @group] and return
+  end
+  
+  ##
+  # join is when a student asks to join a group.
+  # a group-confirmed member of the group will need to confirm membership
+  # with a call to add.
+  #
+  action_auth_level :join, :student
+  def join
+    newMember = @assessment.aud_for(@cud.id)
+    if newMember then
+      members = @group.assessment_user_data.all
+      # make sure that the group is not too large
+      if newMember.group_id != @group.id && members.size >= @assessment.group_size then
+        flash[:error] = "This group is at the maximum size for this assessment"
+        redirect_to [@course, @assessment, :groups] and return
+      end
+      # if the new member has no previous group or was already in this group, group-confirm the new member
+      if (newMember.membership_status == AssessmentUserDatum::UNCONFIRMED || newMember.group_id == @group.id) then
+        newMember.group = @group
+        newMember.membership_status |= AssessmentUserDatum::MEMBER_CONFIRMED
+        newMember.save!
+      end
+    end
+    redirect_to [@course, @assessment, @group] and return
+  end
+  
+  ##
+  # leave will clear a student's membership status with a group
+  # students can always leave their own group, and groups can remove
+  # a group-confirmed, but not member-confirmed, student
+  #
+  # member_id - the id of the member, or @cud.id if not present
+  #
+  action_auth_level :leave, :student
+  def leave
+    if params[:member_id] then
+      leaver = @assessment.aud_for(params[:member_id].to_i)
+      booter = @assessment.aud_for(@cud.id)
+      if booter.group_id == @group.id && leaver.group_id == @group.id && 
+        leaver.membership_status != AssessmentUserDatum::CONFIRMED then
+        leaver.group = nil
+        leaver.membership_status = AssessmentUserDatum::UNCONFIRMED
+        leaver.save!
+      end
+    else
+      leaver = @assessment.aud_for(@cud.id)
+      group = leaver.group
+      leaver.group = nil
+      leaver.membership_status = AssessmentUserDatum::UNCONFIRMED
+      ActiveRecord::Base.transaction do
+        leaver.save!
+        if group.assessment_user_data.size == 0 then
+          group.destroy!
+        end
+      end
+    end
+    respond_with(@course, @assessment, @group)
   end
 
   private
     def set_assessment
       @assessment = @course.assessments.find(params[:assessment_id])
+      unless @assessment.has_groups? then
+        redirect_to [@course, @assessment] and return
+      end
     end
 
     def set_group

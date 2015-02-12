@@ -33,7 +33,11 @@
   <h2>Options</h2>
   <ul>
     <% if @assessment.has_groups? then %>
-      <li><%= link_to "Group Options", [@course, @assessment, :groups], title: "Check your Group settings." %></li>
+      <% if @aud.membership_status != AssessmentUserDatum::UNCONFIRMED then %>
+        <li><%= link_to "Group Options", [@course, @assessment, @aud.group], title: "Check your Group settings." %></li>
+      <% else %>
+        <li><%= link_to "Group Options", [:new, @course, @assessment, :group], title: "Check your Group settings." %></li>
+      <% end %>
     <% end %>
 
     <% @list.sort { |a,b| a[1] <=> b[1] }.each do |key, value| %>

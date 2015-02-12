@@ -2,15 +2,8 @@
 
 <% if @aud.group_id == @group.id && !@aud.group_confirmed then %>
   <p>You have not confirmed your group yet.</p>
-  <%= form_for [@course, @assessment, @group], method: :patch do |f| %>
-    <%= hidden_field_tag :addMember, @cud.id %>
-    <%= hidden_field_tag :confirmed, true %>
-    <%= f.submit "Confirm" %>
-  <% end %>
-  <%= form_for [@course, @assessment, @group], method: :patch do |f| %>
-    <%= hidden_field_tag :removeMember, @cud.id %>
-    <%= f.submit "Leave Group" %>
-  <% end %>
+  <%= link_to "Confirm", [:join, @course, @assessment, @group], method: :post %> |
+  <%= link_to "Leave", [:leave, @course, @assessment, @group], method: :post %>
 <% end %>
 
 <h2>Group Members</h2>
@@ -26,4 +19,8 @@
 <% end %>
 </ul>
 
-<%= link_to 'Change Name', [:edit, @course, @assessment, @group] %> | <%= groups_back_link %>
+<% if @aud.group_id == @group.id then %>
+  <%= link_to 'Change Name', [:edit, @course, @assessment, @group] %> | 
+  <%= link_to 'Leave Group', [:leave, @course, @assessment, @group], { method: :post, data: { confirm: 'Are you sure?' } } %> | 
+<% end %>
+<%= groups_back_link %>

@@ -8,6 +8,6 @@ class CreateGroups < ActiveRecord::Migration
 
     add_column :assessments, :group_size, :integer, default: 1
     add_reference :assessment_user_data, :group, null: true
-    add_column :assessment_user_data, :group_confirmed, :boolean, default: false
+    add_column :assessment_user_data, :membership_status, :integer, limit: 1, default: 0
   end
 end
