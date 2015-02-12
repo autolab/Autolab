@@ -98,8 +98,7 @@ class AssessmentsController < ApplicationController
     if request.post? and params.include?(:quiz)
       quiz = params[:quiz]
       quizName = params[:quizName]
-      quizCat = params[:category]
-      params[:assessment] = {name: quizName, category_id: quizCat}
+      params[:assessment] = {name: quizName, category_name: params[:category]}
       params[:quiz] = true
       params[:quizData] = quiz
       params[:max_submissions] = params[:attemptsAllowed]
@@ -113,7 +112,7 @@ class AssessmentsController < ApplicationController
       p.save()
       return
     else
-      @categories = AssessmentCategory.getList(@course)
+      @categories = @course.assessment_categories
       render :template=>"assessments/installQuiz" and return
     end
   end
@@ -989,48 +988,6 @@ class AssessmentsController < ApplicationController
     render "edit"
   end
 
-  def edit_old
-    if not request.patch?
-      # need a dummy variable to render the text boxes 
-      @assessment.late_penalty ||= Penalty.new
-      @assessment.version_penalty ||= Penalty.new
-    end  
-
-    if request.patch?
-      # destroy old penalites if they're now blank 
-      if params[:newAssessment][:late_penalty_attributes][:value].blank?
-        params[:newAssessment][:late_penalty_attributes][:_destroy] = true
-      end
-      if params[:newAssessment][:version_penalty_attributes][:value].blank?
-        params[:newAssessment][:version_penalty_attributes][:_destroy] = true
-      end
-
-      if params[:newAssessment]['category_id'] == "-1" then
-        cat = @course.assessment_categories.new(name: params[:new_category])
-        if cat.save then
-          params[:newAssessment]['category_id']= cat.id
-        else
-          params[:newAssessment]['category_id'] = nil
-        end
-      end
-      if @assessment.update_attributes(params[:newAssessment]) then
-        put_props()
-        flash[:success] = "Success: Assessment updated."
-      else
-        flash[:error] = "There were errors updating the assessment"
-      end
-      redirect_to :controller=>"assessment", :action=>"edit"
-
-    end
-
-    @categoryDump = @course.assessment_categories
-    @categories = {}
-    for cat in @categoryDump do
-      @categories[cat.name] = cat.id
-    end
-    @categories["Create New Category"] = -1
-  end
-
 
   action_auth_level :releaseAllGrades, :instructor
   def releaseAllGrades
@@ -1175,25 +1132,18 @@ class AssessmentsController < ApplicationController
   def getCategory
     if request.post? then
       name = params[:assessment_name]
-      category_id = params[:category_id]
+      category_name = params[:category_name]
       new_category = params[:new_category]
       if !new_category.blank? then
-        cat = @course.assessment_categories.new(name: new_category)
-        if cat.save then
-          category_id = cat.id
-        else
-          flash[:error] = "Category #{new_category} already exists. Please select from the existing categories."
-          redirect_to getCategory_course_assessments_path(course_id: @course.id)
-          return
-        end
+        category_name = new_category
       end
-      params[:assessment] = {name: name, category_id: category_id}
+      params[:assessment] = {name: name, category_name: category_name}
       create
       return
     end
 
     # Intialize the list of categories for the form
-    @categories = getCategoryList()
+    @categories = @course.assessment_categories
   end
 
 
@@ -2083,16 +2033,7 @@ protected
   private
   
     def new_assessment_params
-      params.require(:assessment).permit(:name, :category_id)
+      params.require(:assessment).permit(:name, :category_name)
     end
 
-    # getCategoryList -  Helper that returns a hash of category->id pairs
-    def getCategoryList
-      categoryDump = @course.assessment_categories
-      categories = {}
-      for cat in categoryDump do
-        categories[cat.name] = cat.id
-      end
-      return categories
-    end
 end
