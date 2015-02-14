@@ -29,7 +29,7 @@ Autolab3::Application.routes.draw do
       resources :assessment_user_data, only: [:show, :edit, :update]
       resources :attachments
       resources :extensions, only: [:index, :create, :destroy]
-      resources :groups do
+      resources :groups, except: :edit do
         member do
           post 'add'
           post 'join'

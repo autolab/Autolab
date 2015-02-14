@@ -1,32 +1,34 @@
-<h1>New Group</h1>
+<h1>Create a Group</h1>
 
-<%= render 'form' %>
+<h2>Students Without Groups</h2>
 
-<h2>Users Without Groups for <%= current_assessment_link %></h2>
-
-<table>
-  <thead>
-    <tr>
-      <th>Email</th>
-      <th></th>
-    </tr>
-  </thead>
-  
-  <tbody>
-    <% @grouplessCUDs.each do |cud| %>
-      <% if cud.id != @cud.id %>
-        <tr>
-          <td><%= cud.email %></td>
-          <td>
-            <%= form_for [@course, @assessment, @group], method: :post do |f| %>
-              <%= hidden_field_tag :groupmate_id, cud.id %>
-              <%= f.submit "Create Group" %>
-            <% end %>
-          </td>
-        </tr>
-      <% end %>
+<ul class="list-unstyled">
+  <% @grouplessCUDs.each do |cud| %>
+    <% if cud.id != @cud.id && cud.student? then %>
+      <li><%= cud.email %> 
+        (<%= link_to "Invite to Group", [@course, @assessment, @group, member_id: cud.id], method: :post %>)</li>
+      </li>
     <% end %>
-  </tbody>
-</table>
-  
+  <% end %>
+</ul>
+
+<h1>Join a Group</h1>
+
+<h2>Groups that Aren't Full</h2>
+
+<ul class="list-unstyled">
+  <% @groups.each do |group| %>
+    <% if group.assessment_user_data.size < @assessment.group_size then %>
+      <li>
+        <h3>group.name (<%= link_to "Ask to Join Group", [:join, @course, @assessment, group], method: :post %>)</h3>
+        <ul class="list-inline">
+          <% group.assessment_user_data.each do |aud| %>
+            <li><%= aud.course_user_datum.email %></li>
+          <% end %>
+        </ul>
+      </li>
+    <% end %>
+  <% end %>
+</ul>
+
 <%= groups_back_link %>

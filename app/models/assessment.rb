@@ -241,6 +241,14 @@ class Assessment < ActiveRecord::Base
   def has_groups?
     group_size && group_size > 1
   end
+  
+  def groups
+    Group.joins(:assessment_user_data).where(assessment_user_data: {assessment_id: self.id}).distinct
+  end
+  
+  def grouplessCUDs
+    self.course.course_user_data.joins(:assessment_user_data).where(assessment_user_data: {assessment_id: self.id, membership_status: AssessmentUserDatum::UNCONFIRMED})
+  end
 
 private
   def path filename

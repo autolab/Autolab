@@ -35,8 +35,11 @@ class AssessmentUserDatum < ActiveRecord::Base
   GROUP_CONFIRMED = 0x2
   CONFIRMED = 0x3
   
+  ##
+  # checks a user's membership status
+  #
   def group_confirmed(flags = CONFIRMED)
-    (membership_status & flags) != 0
+    (flags == UNCONFIRMED && self.membership_status == UNCONFIRMED) || ((membership_status & flags) == flags)
   end
   
   def confirmed_in_group(group)

@@ -7,7 +7,7 @@ class GroupsController < ApplicationController
   action_auth_level :index, :student
   def index
     if @cud.instructor then
-      @groups = Group.joins(:assessment_user_data).where(assessment_user_data: {assessment_id: @assessment.id}).distinct
+      @groups = @assessment.groups
       @assessments = @course.assessments.where('group_size > 1').where.not(id: @assessment.id)
       @grouplessCUDs = @course.course_user_data.joins(:assessment_user_data).where(assessment_user_data: {assessment_id: @assessment.id, membership_status: AssessmentUserDatum::UNCONFIRMED})
     else
@@ -24,12 +24,15 @@ class GroupsController < ApplicationController
   action_auth_level :show, :student
   def show
     @aud = @assessment.aud_for @cud.id
-    if !@cud.instructor? then
+    unless @cud.instructor? then
       if @aud.group_id == nil then
         redirect_to action: :new and return
       elsif @aud.group_id != params[:id].to_i then
         redirect_to [@course, @assessment, @aud.group] and return
       end
+    end
+    if @group.size < @assessment.group_size then
+      @grouplessCUDs = @assessment.grouplessCUDs
     end
     respond_with(@course, @assessment, @group)
   end
@@ -37,23 +40,20 @@ class GroupsController < ApplicationController
   action_auth_level :new, :student
   def new
     @group = Group.new
-    @grouplessCUDs = @course.course_user_data.joins(:assessment_user_data).where(assessment_user_data: {assessment_id: @assessment.id, membership_status: AssessmentUserDatum::UNCONFIRMED})
+    @grouplessCUDs = @assessment.grouplessCUDs
+    @groups = @assessment.groups
     respond_with(@course, @assessment, @group)
-  end
-
-  action_auth_level :edit, :student
-  def edit
   end
 
   action_auth_level :create, :student
   def create
-    if params[:groupmate_id] then
-      if params[:groupmate_id] == @cud.id then
+    if params[:member_id] then
+      if params[:member_id].to_i == @cud.id then
         flash[:error] = "You can't create a group with just yourself"
         redirect_to action: :new and return
       end
       @aud1 = @assessment.aud_for @cud.id
-      @aud2 = @assessment.aud_for params[:groupmate_id]
+      @aud2 = @assessment.aud_for params[:member_id].to_i
       if @aud1.group_confirmed then
         flash[:error] = "You already have a confirmed group."
         redirect_to action: :new and return
@@ -127,7 +127,10 @@ class GroupsController < ApplicationController
         newMember.group = @group
         newMember.membership_status |= AssessmentUserDatum::GROUP_CONFIRMED
         newMember.save!
+        flash[:success] = "Member confirmed!"
       end
+    else
+      flash[:error] = "Member #{params[:member_id]} not found"
     end
     respond_with(@course, @assessment, @group)
   end
@@ -196,6 +199,7 @@ class GroupsController < ApplicationController
     def set_assessment
       @assessment = @course.assessments.find(params[:assessment_id])
       unless @assessment.has_groups? then
+        flash[:error] = "This is a solo assessment."
         redirect_to [@course, @assessment] and return
       end
     end
