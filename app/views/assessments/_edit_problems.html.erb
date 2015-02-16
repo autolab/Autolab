@@ -1,4 +1,4 @@
-<h2>Step 2. Edit Problems for <%= link_to @assessment.display_name, {:assessment=>@assessment.name}%></h2>
+<h2>Edit Problems for <%= current_assessment_link %></h2>
 <ul>
   <% # this bit of Rails magic renders app/views/problems/_problem.html.erb for every problem in the collection %>
   <%= render @assessment.problems %>

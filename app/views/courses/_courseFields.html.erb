@@ -75,7 +75,6 @@
   <% end %>
 <% end %>
 
-<b>Exam in Progress?</b>
 <%= f.check_box :exam_in_progress,
   help_text: "While checked, students are not allowed to view their previous
   submissions for any assessment in this class." %>
@@ -86,7 +85,6 @@
 <%= f.date_select :end_date, help_text: "When the course becomes inactive.",
   greater_than: "course_start_date" %>
 
-<b>Disabled?</b>
 <%= f.check_box :disabled,
   help_text: "If this box is checked, then students won't be able download labs
   or upload submissions." %>

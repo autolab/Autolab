@@ -1646,7 +1646,13 @@ class AssessmentsController < ApplicationController
     
     @sortedGrades = @grades.values.sort {|a,b|
       begin
-        scoreboardOrderSubmissions(a,b)
+  
+        if @assessment.overwrites_method?(:scoreboardOrderSubmissions) then
+          @assessment.config_module.scoreboardOrderSubmissions(a,b)
+        else
+          scoreboardOrderSubmissions(a,b)
+        end
+
       rescue Exception => e
         if @cud.instructor? then
           @errorMessage = "An error occurred while calling "+
