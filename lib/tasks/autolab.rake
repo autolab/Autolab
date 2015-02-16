@@ -306,9 +306,6 @@ namespace :autolab do
     # Reload config file
     asmt.construct_config_file
 
-    # create all auds
-    asmt.create_AUDs_modulo_callbacks
-
   end
 
   task :populate, [:name] => :environment do |t, args|
