@@ -1,25 +1,40 @@
-<%= f.text_field :name, disabled: true, class: "form-control", help_text: "The unique (for this course) name of the assessment. Must be lowercase alphanumeric (no punctuation). E.g., <kbd>malloclab</kbd>".html_safe %>
+<%= f.text_field :name, disabled: true, class: "form-control",
+  help_text: "The unique (for this course) name of the assessment. Must be
+  lowercase alphanumeric (no punctuation). E.g.,
+  <kbd>malloclab</kbd>".html_safe %>
 
-<%= f.text_field :display_name, help_text: "Name that will be displayed on the course home page. E.g., 'Malloc Lab'" %>
+<%= f.text_field :display_name,
+  help_text: "Name that will be displayed on the course home page. E.g.,
+  'Malloc Lab'" %>
 
 <div class="form-group">
   <%= f.label :category_name %>
   <%= f.collection_select :category_name, @course.assessment_categories, :to_s, :to_s, {selected: @assessment.category_name}, {class: "form-control"} %>
   <p class="help-block">You can create a new category <%= link_to "here", new_course_assessment_category_path %>.</p>
 </div>
-<hr>
-<h4>Modules Used</h4>
-<%= f.check_box :has_autograde%>
-<label for="assessment_has_autograde">Autograde</label><br>
-<%= f.check_box :has_partners %>
-<label for="assessment_has_partners">Partners</label><br>
-<%= f.check_box :has_svn %>
-<label for="assessment_has_svn">SVN</label><br>
-<%= f.check_box :has_scoreboard %>
-<label for="assessment_has_scoreboard">Scoreboard</label><br>
-<hr>
-<%= f.text_area  :description %>
 
+<hr>
+
+<h4>Modules Used</h4>
+<%= f.check_box :has_autograde,
+  display_name: "Enable autograding?",
+  help_text: "Whether this assignment will be autograded." %>
+
+<%= f.check_box :has_partners,
+  display_name: "Partner assignment?",
+  help_text: "Is this a group or partner assignment?" %>
+
+<%= f.check_box :has_svn,
+  display_name: "Use SVN?",
+  help_text: "Whether to use SVN in conjunction with this assignment." %>
+
+<%= f.check_box :has_scoreboard,
+  display_name: "Enable scoreboard?",
+  help_text: "Should there be a publically-visible scoreboard?" %>
+
+<hr>
+
+<%= f.text_area  :description %>
 
 <%= f.text_field :handout, help_text: "File in the assessment directory containing materials that the instructor hands out to students or URL to redirect to. E.g., 'malloclab-handout.tar', 'http://school.edu/class/malloclab.zip'" %>
 

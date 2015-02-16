@@ -643,6 +643,11 @@ input[type="password"]:focus {
   outline: none;
 }
 
+input[type="checkbox"] {
+  // For spacing between this and an adjacent label
+  margin-right: 10px;
+}
+
 .page-wrapper {
   min-height: 100%;
   /* equal to footer height */

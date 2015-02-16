@@ -57,8 +57,14 @@ class CoursesController < ApplicationController
       
       # create a new user as instructor if he didn't exist
       if (instructor.nil?)
-        instructor = User.instructor_create(params[:instructor_email],
-                                            @newCourse.name)
+        begin
+          instructor = User.instructor_create(params[:instructor_email],
+                                              @newCourse.name)
+        rescue Exception => e
+          flash[:error] = "Can't create instructor for the course: #{e.to_s}"
+          render action: 'new' and return
+        end
+
       end
       
       newCUD = @newCourse.course_user_data.new
