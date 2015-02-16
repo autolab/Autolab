@@ -22,7 +22,7 @@ function newCat() {
     <td><%= f.text_field :name,{:readonly=>"readonly"} %></td></tr>
     <tr><td><b>Display name:</b></td>
       <td><%= f.text_field :display_name %></td></tr>
-    <tr><td><b>Category:</b></td><td><%=f.select(:category_id,@categories,{},{:onchange=>'newCat()'}) %>
+    <tr><td><b>Category:</b></td><td><%=f.select(:category,@categories,{},{:onchange=>'newCat()'}) %>
     <br><%= text_field_tag "new_category" %>
 
     </td></tr>

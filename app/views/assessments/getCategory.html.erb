@@ -25,7 +25,7 @@ function newCat() {
 <tr><th width=200>Select an existing category
 or enter a new category name
 <i>(you can always change it later)</i></th>
-<td><%= select_tag(:category_id, options_for_select(@categories), {}) %>
+<td><%= select_tag(:category_name, options_for_select(@categories), {}) %>
 <hr>
 <%= text_field_tag(:new_category) %>
 <%= hidden_field_tag :assessment_name, params[:assessment_name] %>

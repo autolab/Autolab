@@ -19,21 +19,21 @@ module GradebookHelper
     ]
 
     course.assessment_categories.each do |cat|
-      next unless matrix.has_category? cat.id
+      next unless matrix.has_category? cat
 
       # assessment column
-      cat.assessments.ordered.each do |a|
-        next unless matrix.has_assessment? a.id
+      course.assessments_with_category(cat).each do |asmt|
+        next unless matrix.has_assessment? asmt.id
 
-        columns << { :id => a.name, :name => a.display_name, :field => a.name,
+        columns << { :id => asmt.name, :name => asmt.display_name, :field => asmt.name,
                      :sortable => true, :cssClass => "computed assessment_final_score",
                      :headerCssClass => "assessment_final_score",
-                     :before_grading_deadline => matrix.before_grading_deadline?(a.id) }
+                     :before_grading_deadline => matrix.before_grading_deadline?(asmt.id) }
       end
 
       # category average column
-      columns << { :id => cat.name, :name => cat.name + ' Average',
-                   :field => "#{cat.name}_category_average",
+      columns << { :id => cat, :name => cat + ' Average',
+                   :field => "#{cat}_category_average",
                    :sortable => true, :cssClass => "computed category_average",
                    :headerCssClass => "category_average", width: 100 }
     end
@@ -88,10 +88,10 @@ module GradebookHelper
       end
 
       course.assessment_categories.each do |cat|
-        next unless matrix.has_category? cat.id
+        next unless matrix.has_category? cat
 
-        key = "#{cat.name}_category_average"
-        row[key] = round matrix.category_average(cat.id, cud.id)
+        key = "#{cat}_category_average"
+        row[key] = round matrix.category_average(cat, cud.id)
       end
 
       row["course_average"] = round matrix.course_average(cud.id)
@@ -109,12 +109,14 @@ module GradebookHelper
   def csv_header(matrix, course)
     header = [ "Email", "first_name", "last_name", "Lecture", "Section", "School", "Major", "Year" ]
     course.assessment_categories.each do |cat|
-      next unless matrix.has_category? cat.id
-      cat.assessments.ordered.each do |asmt|
+
+      next unless matrix.has_category? cat
+      course.assessments_with_category(cat).each do |asmt|
+
         next unless matrix.has_assessment? asmt.id
         header << asmt.name
       end
-      header << "#{cat.name} Average"
+      header << "#{cat} Average"
     end
     header << "Course Average"
 
@@ -144,15 +146,16 @@ module GradebookHelper
 
         # assessment status (see AssessmentUserDatum.status), category averages
         course.assessment_categories.each do |cat|
-          next unless matrix.has_category? cat.id
 
-          cat.assessments.ordered.each do |asmt|
+          next unless matrix.has_category? cat
+          course.assessments_with_category(cat).each do |asmt|
+
             next unless matrix.has_assessment? asmt.id
 
             row << formatted_status(matrix.cell(asmt.id, cud.id)["status"])
           end
 
-          row << round(matrix.category_average(cat.id, cud.id))
+          row << round(matrix.category_average(cat, cud.id))
         end
 
         # course average

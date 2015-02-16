@@ -24,7 +24,7 @@
 	
 	<tr>
 		<th><%= f.label :category %></th>
-		<td><%= f.collection_select :category_id, @categories, :id, :name %></td>
+		<td><%= f.collection_select :category_name, @categories, :to_s, :to_s %></td>
 	  <td style="border:0px;width:200px;" class="smallText"> You can create a new category <%= link_to "here", new_course_assessment_category_path %>.
 	  </td>
 	</tr>

@@ -6,8 +6,7 @@ class AssociationCache
               :auds,
               :latest_submissions,
               :latest_submission_scores,
-              :assessments_before,
-              :assessment_categories
+              :assessments_before
 
   def initialize(course)
     @course = course
@@ -28,13 +27,6 @@ class AssociationCache
     setup_assessments_before @sorted_assessments
     @sorted_assessments.each do |asmt|
       @assessments[asmt.id] = asmt
-    end
-  end
-
-  def load_assessment_categories(find_options = {})
-    @assessment_categories = {}
-    @course.assessment_categories.where(find_options[:conditions]).each do |cat|
-      @assessment_categories[cat.id] = cat
     end
   end
 
@@ -117,7 +109,6 @@ module CourseAssociationCache
   def self.included(base)
     base.alias_method_chain :course_user_data, :cache
     base.alias_method_chain :assessments, :cache
-    base.alias_method_chain :assessment_categories, :cache
   end
 
   def course_user_data_with_cache
@@ -128,16 +119,12 @@ module CourseAssociationCache
     @assessments || assessments_without_cache
   end
 
-  def assessment_categories_with_cache
-    @assessment_categories || assessment_categories_without_cache
-  end
 
   def association_cache=(cache)
     @ass_cache = cache
 
     @cuds = cache.course_user_data.values if cache.course_user_data
     @assessments = cache.sorted_assessments if cache.sorted_assessments
-    @assessment_categories = cache.assessment_categories.values if cache.assessment_categories
   end
 end
 

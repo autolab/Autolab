@@ -40,11 +40,6 @@ ActiveRecord::Schema.define(version: 20150203151605) do
     t.boolean  "system",               limit: 1,     default: false, null: false
   end
 
-  create_table "assessment_categories", force: :cascade do |t|
-    t.string  "name",      limit: 255
-    t.integer "course_id", limit: 4
-  end
-
   create_table "assessment_user_data", force: :cascade do |t|
     t.integer  "course_user_datum_id", limit: 4,               null: false
     t.integer  "assessment_id",        limit: 4,               null: false
@@ -90,9 +85,10 @@ ActiveRecord::Schema.define(version: 20150203151605) do
     t.boolean  "has_partners",       limit: 1
     t.boolean  "has_scoreboard",     limit: 1
     t.boolean  "has_svn",            limit: 1
-    t.string   "remote_handin_path", limit: 255
     t.boolean  "quiz",               limit: 1,     default: false
     t.text     "quizData",           limit: 65535
+    t.string   "remote_handin_path", limit: 255
+    t.string   "category_name",      limit: 255
   end
 
   create_table "attachments", force: :cascade do |t|
@@ -149,9 +145,9 @@ ActiveRecord::Schema.define(version: 20150203151605) do
     t.boolean  "disabled",                      limit: 1,     default: false
     t.boolean  "exam_in_progress",              limit: 1,     default: false
     t.integer  "version_threshold",             limit: 4,     default: -1,    null: false
+    t.datetime "cgdub_dependencies_updated_at"
     t.integer  "late_penalty_id",               limit: 4
     t.integer  "version_penalty_id",            limit: 4
-    t.datetime "cgdub_dependencies_updated_at"
     t.text     "gb_message",                    limit: 65535
   end
 
