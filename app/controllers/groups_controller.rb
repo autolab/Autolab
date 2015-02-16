@@ -31,7 +31,7 @@ class GroupsController < ApplicationController
         redirect_to [@course, @assessment, @aud.group] and return
       end
     end
-    if @group.size < @assessment.group_size then
+    if @group.size < @assessment.group_size && @group.is_member(@aud) then
       @grouplessCUDs = @assessment.grouplessCUDs
     end
     respond_with(@course, @assessment, @group)
@@ -39,9 +39,15 @@ class GroupsController < ApplicationController
 
   action_auth_level :new, :student
   def new
+    aud = @assessment.aud_for(@cud)
+    if aud.group_confirmed && !@cud.instructor then
+      redirect_to [@course, @assessment, aud.group] and return
+    end
+    
     @group = Group.new
     @grouplessCUDs = @assessment.grouplessCUDs
     @groups = @assessment.groups
+    
     respond_with(@course, @assessment, @group)
   end
 

@@ -30,8 +30,8 @@
       <% end %>
       
       <td>
-        <%= link_to "Edit", [:edit, @course, @assessment, group] %> | 
-        <%= link_to "Destroy", [@course, @assessment, group], method: :delete, data: { confirm: 'Are you sure?' } %>
+        <%= link_to "Edit", [@course, @assessment, group] %> | 
+        <%= link_to "Destroy", [@course, @assessment, group], method: :delete, data: { confirm: "Are you sure you want to disband this group?" } %>
       </td>
     </tr>
   <% end %>
@@ -50,16 +50,7 @@
   <% @grouplessCUDs.each do |cud| %>
     <tr>
       <td><%= cud.email %></td>
-      <td>
-        <% if false then %>
-          <%= form_tag url_for(:action=>"setPartner", :id=>u["user"].id) do %>
-            <%= text_field_tag 'partner' %>
-            <%= submit_tag 'Go!' %>
-          <% end %>
-        <% else %>
-          (TODO)
-        <% end %>
-      </td>
+      <td>(TODO)</td>
     </tr>
   <% end %>
 </table>

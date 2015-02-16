@@ -5,4 +5,9 @@ class Group < ActiveRecord::Base
   def size
     assessment_user_data.size
   end
+  
+  def is_member(aud)
+    aud.group_id == self.id && aud.group_confirmed(AssessmentUserDatum::CONFIRMED)
+  end
+  
 end

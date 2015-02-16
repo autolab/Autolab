@@ -48,6 +48,10 @@ module AssessmentHandin
   
   private
 
+  ##
+  # this function checks that now is a valid time to submit and that the
+  # submission file is okay to submit.
+  #
   def validateHandin
     # Make sure that handins are allowed 
     if @assessment.disable_handins? then
@@ -80,6 +84,12 @@ module AssessmentHandin
     return validateForGroups()
   end
 
+  ##
+  # this function makes sure that the submitter's group can submit.
+  # If the assessment does not have groups, or the user has no group,
+  # this returns true.  Otherwise, it checks that everyone is confirmed
+  # to be in the group and that no one is over the submission limit.
+  #
   def validateForGroups
     unless @assessment.has_groups? then
       return true

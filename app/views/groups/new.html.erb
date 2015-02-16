@@ -2,11 +2,11 @@
 
 <h2>Students Without Groups</h2>
 
-<ul class="list-unstyled">
+<ul class="gray-box">
   <% @grouplessCUDs.each do |cud| %>
     <% if cud.id != @cud.id && cud.student? then %>
-      <li><%= cud.email %> 
-        (<%= link_to "Invite to Group", [@course, @assessment, @group, member_id: cud.id], method: :post %>)</li>
+      <li><b><%= cud.email %></b>
+        (<%= link_to "Invite to Group", [@course, @assessment, @group, member_id: cud.id], method: :post %>)
       </li>
     <% end %>
   <% end %>
@@ -14,19 +14,10 @@
 
 <h1>Join a Group</h1>
 
-<h2>Groups that Aren't Full</h2>
-
-<ul class="list-unstyled">
+<ul class="gray-box">
   <% @groups.each do |group| %>
     <% if group.assessment_user_data.size < @assessment.group_size then %>
-      <li>
-        <h3>group.name (<%= link_to "Ask to Join Group", [:join, @course, @assessment, group], method: :post %>)</h3>
-        <ul class="list-inline">
-          <% group.assessment_user_data.each do |aud| %>
-            <li><%= aud.course_user_datum.email %></li>
-          <% end %>
-        </ul>
-      </li>
+      <%= render "list_item", {group: group} %>
     <% end %>
   <% end %>
 </ul>
