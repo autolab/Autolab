@@ -12,6 +12,7 @@ namespace :autolab do
   COURSE_END = COURSE_START + 1.years
 
   AUTOGRADE_CATEGORY_NAME = "CategoryAutograde"
+  AUTOGRADE_CATEGORY_ID = ASSESSMENT_CATEGORY_COUNT + 1
   AUTOGRADE_TEMPLATE_DIR_PATH =
           File.join(Rails.root, "templates", "labtemplate")
   AUTOGRADE_TEMPLATE_CONFIG_PATH =
@@ -38,31 +39,26 @@ namespace :autolab do
     end
   end
 
-  def load_assessment_categories course
-    ASSESSMENT_CATEGORY_COUNT.times do |i|
-      course.assessment_categories.create do |c|
-        c.name = "Category#{i.to_s}"
-      end
-    end
-  end
-
   def load_assessments course
     course_dir = File.join(Rails.root, "courses", course.name)
-    course.assessment_categories.each do |c|
+    ASSESSMENT_CATEGORY_COUNT.times do |cat_id|
 
       # start date for this category
       start = COURSE_START + rand(20).day
 
       ASSESSMENT_COUNT.times do |i|
-        c.assessments.create do |a|
+        Assessment.create do |a|
           a.visible_at = start 
           a.start_at = start
           a.due_at = start + (5 + rand(11)).days          # 5-15d after start date
           a.end_at = a.due_at + (1 + rand(7)).day   # 1d-1w after the due date
           a.grading_deadline = a.end_at + (1 + rand(7)).day   # 1-7d after submit deadline 
 
-          a.name = "#{c.name}assessment#{i.to_s}".downcase
-          a.display_name = "#{c.name}Assessment#{i.to_s}"
+          a.category_id = cat_id;
+          a.category_name = "Category#{cat_id.to_s}"
+
+          a.name = "#{a.category_name}assessment#{i.to_s}".downcase
+          a.display_name = "#{a.category_name}Assessment#{i.to_s}"
           a.handin_directory = "handin"
           a.handin_filename = "handin.c"
           a.course_id = course.id
@@ -271,11 +267,8 @@ namespace :autolab do
 
     course_dir = File.join(Rails.root, "courses", course.name)
 
-    # Create assessment category
-    cat = course.assessment_categories.create(name: AUTOGRADE_CATEGORY_NAME)
-
     # Create assessment
-    asmt = cat.assessments.create! do |a|
+    asmt = Assessment.create! do |a|
       a.visible_at = COURSE_START
       a.start_at = COURSE_START
       a.due_at = COURSE_START + (5 + rand(11)).days
@@ -288,6 +281,9 @@ namespace :autolab do
       a.handin_filename = AUTOGRADE_TEMPLATE_HANDIN_FILENAME
       a.has_autograde = true
       a.course_id = course.id
+
+      a.category_id = AUTOGRADE_CATEGORY_ID
+      a.category_name = AUTOGRADE_CATEGORY_NAME
 
       FileUtils.mkdir_p(File.join(course_dir, a.name, a.handin_directory))
     end
@@ -329,9 +325,6 @@ namespace :autolab do
 
     puts "Creating Course #{args.name} and config file" 
     course = load_course args.name
-
-    puts "Creating Assessment Categories"
-    load_assessment_categories course
 
     puts "Creating Assessments"
     load_assessments course
