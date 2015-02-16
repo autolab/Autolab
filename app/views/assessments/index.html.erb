@@ -14,10 +14,10 @@
 <h2>Assignments</h2>
 <div class="rolodex">
 <% @course.assessment_categories.each do |cat| %>
-  <% asmts = @is_instructor ? cat.assessments.ordered : cat.assessments.released.ordered %>
+  <% asmts = @course.assessments_with_category(cat) %>
   <% if asmts.any? %>
   <div class="card">
-    <h1><a href=""><%= cat.name.pluralize %></a></h1>
+    <h1><a href=""><%= cat %></a></h1>
     <div class="content">
       <ul>
       <% asmts.each do |asmt| %>

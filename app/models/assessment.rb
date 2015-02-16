@@ -8,7 +8,6 @@ class Assessment < ActiveRecord::Base
   # Associations
   belongs_to :course
   belongs_to :course_user_datum
-  belongs_to :category, :class_name => "AssessmentCategory"
   belongs_to :late_penalty, :class_name => "Penalty"
   belongs_to :version_penalty, :class_name => "Penalty"
   has_many :submissions
@@ -32,7 +31,7 @@ class Assessment < ActiveRecord::Base
                             :greater_than_or_equal_to => 0, :allow_nil => true
   validates_numericality_of :group_size, only_integer: true, greater_than_or_equal_to: 1, allow_nil: true
   validates_presence_of :name, :display_name, :due_at, :end_at, :start_at,
-                        :grading_deadline, :category_id, :max_size, :max_submissions
+                        :grading_deadline, :category_name, :max_size, :max_submissions
 
   # Callbacks
   trim_field :name, :display_name, :handin_filename, :handin_directory, :handout, :writeup

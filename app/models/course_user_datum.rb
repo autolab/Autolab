@@ -136,8 +136,8 @@ class CourseUserDatum < ActiveRecord::Base
 
   def category_average(category, as_seen_by)
     @category_average ||= {}
-    @category_average[category.id] ||= {}
-    @category_average[category.id][as_seen_by] ||= category_average! category, as_seen_by
+    @category_average[category] ||= {}
+    @category_average[category][as_seen_by] ||= category_average! category, as_seen_by
   end
 
   def has_auth_level?(level)
@@ -244,7 +244,7 @@ private
 
   def category_average!(category, as_seen_by)
     input = category_average_input(category, as_seen_by)
-    method_name = "#{category.name}Average".to_sym
+    method_name = "#{category}Average".to_sym
 
     config = course.config
     average = if config.respond_to? method_name
@@ -271,11 +271,11 @@ private
   def category_average_input(category, as_seen_by)
     @category_average_input ||= {}
     @category_average_input[as_seen_by] ||= {}
-    input = (@category_average_input[as_seen_by][category.id] ||= {})
+    input = (@category_average_input[as_seen_by][category] ||= {})
 
     user_id = id
     course.assessments.each do |a|
-      next unless a.category_id == category.id
+      next unless a.category_name == category
       input[a.name] ||= a.aud_for(id).final_score as_seen_by
     end
 
@@ -293,7 +293,7 @@ private
     end
 
     course.assessment_categories.each do |cat|
-      input["cat#{cat.name}"] ||= category_average cat, as_seen_by
+      input["cat#{cat}"] ||= category_average cat, as_seen_by
     end
 
     # remove nil computed scores -- instructors shouldn't have to deal with nils
