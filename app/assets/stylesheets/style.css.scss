@@ -271,7 +271,8 @@ div.main-header img {
 
 .handin-panel {
   background-color: rgba(243, 240, 240, 0.7);
-  border: 1px dashed #999;
+  border: 1px solid #ddd;
+  border-radius: 4px;
   padding: 18px;
 }
 
@@ -281,6 +282,10 @@ div.main-header img {
 
 .handin-panel.modal {
   display: none;
+}
+
+.history-download-pane .glyphicon {
+  font-size: 14px;
 }
 
 /* Footer - Information, About, etc. Should be in a <footer> tag. */
@@ -502,8 +507,8 @@ table.navigatable tr:hover {
 
 div.card {
   display:inline-block;
-  width: 320px;
-  margin-right: 20px;
+  width: 300px;
+  margin-right: 10px;
   margin-top: 15px;
   vertical-align: top;
   webkit-box-shadow: 0 0 8px rgba(0,0,0,0.10);
@@ -617,6 +622,11 @@ body.autolab {
     font-family: 'Source Sans Pro', sans-serif;
   }
 
+  h4 {
+    font-size: 22px;
+    font-weight: bold;
+  }
+
 }
 
 @media (min-width: 1200px) {
@@ -653,6 +663,30 @@ input[type="checkbox"] {
   // For spacing between this and an adjacent label
   margin-right: 10px;
 }
+
+label.control-label {
+  font-size: 18px;
+}
+
+.help-block {
+  font-size: 15px;
+  margin-left: 8px;
+}
+
+#pageBody select.form-control {
+  height: 34px;
+}
+
+#pageBody .form-control {
+  display: block;
+  width: 100%;
+  /* These are used to overwrite bootstrap's .form-control properties
+     and using our default input styling */
+  border-radius: inherit;
+  box-shadow: inherit;
+  height: inherit;
+}
+
 
 .page-wrapper {
   min-height: 100%;
@@ -694,6 +728,10 @@ input[type="checkbox"] {
 
 .autolab .btn.primary {
   background-color: rgba(153,0,0,0.9);
+}
+
+.autolab .btn.small {
+  padding: 5px 10px;
 }
 
 /**
@@ -761,7 +799,23 @@ input[type="checkbox"] {
 }
 
 .options {
-  line-height: 24px;
+line-height: 36px;
+list-style: none;
+border-top: 1px solid #eee;
+padding-left: 0;
+}
+
+.options li:hover {
+background-color: #eee;
+}
+
+.options li {
+border-bottom: 1px solid #eee;
+}
+
+.options li a {
+padding-left: 14px;
+display: block;
 }
 
 /* Form Tables */

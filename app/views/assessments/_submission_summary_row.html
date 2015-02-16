@@ -2,7 +2,7 @@
 
 <% dontTotal = false %>
   <div class="row">
-    <h3 style="word-break: break-all;" class="col-md-9">
+    <h3 style="word-break: break-all;" class="col-md-12">
       <% if submission.version == 0 then %>
         <font size=-2>Unofficial</font>
       <% else %>
@@ -14,31 +14,17 @@
       <% else %>
         None
       <% end %>
-    </h3>
-    <div class="col-md-3">
-      <% if download_access or not (submission.assessment.exam or submission.assessment.course.exam_in_progress) %>
+      <span class="pull-right">
+         <% if download_access or not (submission.assessment.exam or submission.assessment.course.exam_in_progress) %>
 
-        <div class="btn-group">
           <% mime_type = submission.detected_mime_type %>
-          <a type="button" class="btn btn-default" data-toggle="tooltip" data-placement="top" title="Download Submission" aria-label="Left Align" href="<%= download_file_url(submission) %>"><span class="glyphicon glyphicon-download" aria-hidden="true"></span></a>
-          <a type="button" class="btn btn-default" data-toggle="tooltip" title="View Source" aria-label="Justify"><span class="glyphicon glyphicon-zoom-in" aria-hidden="true"></span></a>
-        </div>
+          <a href="<%= download_file_url(submission) %>" data-toggle="tooltip" data-placement="top" title="Download Submission" ><span class="glyphicon glyphicon-download" aria-hidden="true" style="margin-right:6px; font-size: 20px;"></span></a>
+          <a data-toggle="tooltip" title="View Source" aria-label="Justify" style="margin-right:6px; font-size: 20px;"><span class="glyphicon glyphicon-zoom-in" aria-hidden="true"></span></a>
 
-
-<!--           <ul style='text-align:left;margin:0px'>
-            <% mime_type = submission.detected_mime_type %>
-            <li><%= download_file(submission, "Download as #{mime_type}") %></li>
-            <% if mime_type =~ /text\/.*/ then %>
-                  <li><%= link_to "Download as text/plain", download_course_assessment_submission_path(@course, @assessment, submission, :forceMime=>"text/plain") %>
-            </li>
-            <% end %>
-            <% link = view_syntax_highlighted_source(submission, "View Source"); if link %><li><%= link %></li><% end %>
-              <% link = list_archive_files(submission, "View Source"); if link %><li><%= link %></li><% end %>
-          </ul> -->
         <% end %>
-    </div>
+      </span>
+    </h3>
   </div>
-  Submitted at: <%= submission.created_at %>
   <br>
 
 <table class="prettyBorder" border=1 style="width: 100%; white-space: nowrap; table-layout: fixed;">
@@ -122,7 +108,8 @@
 
 </table>
 <br>
-
+  <span class="smallText">Submitted at: <%= submission.created_at %></span>
+<br>
   <% if @cud.instructor? then %>
       <% if @assessment.has_autograde and submission.version > 0 then %>
         <%= link_to 'Regrade', [:regrade, @course, @assessment, submission] %> · 

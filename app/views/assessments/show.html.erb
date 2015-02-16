@@ -14,8 +14,9 @@
 <% @list.delete("reload") %>
 
 <div class="row">
-  <div class="col-md-8 col-md-offset-4"> 
+  <div class="col-md-12"> 
     <h2><%= @assessment.name %></h2>
+    <hr>
   </div>
 </div>
 <div class="row">
@@ -66,10 +67,6 @@
 
     <%= render partial: "handin_form", locals: {modal: false, id: "handin_show_assessment"} %>
     </div>
-<% @title = "Handin History" %>
-<% if @partial then %>
-  <a onclick="hideStudent()">Exit</a>
-<% end %>
 <% download_access = (@cud.instructor?) %>
 
 <% if @extension then %>
