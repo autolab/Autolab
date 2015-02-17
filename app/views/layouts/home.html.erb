@@ -14,8 +14,6 @@
     <%= external_javascript_include_tag "bootstrap", "3.0.0" %>
 
 
-    <%= javascript_include_tag 'application' %>
-
     <%= yield :head %>
     <link href='//fonts.googleapis.com/css?family=Source+Sans+Pro:300,400' rel='stylesheet' type='text/css'>
     <title>Autolab Home</title>
@@ -51,6 +49,7 @@
           · <a href="/contactUs.html">Contact</a>
           · <%= link_to "Logout", destroy_user_session_path, method: :delete %>
     </div>
+    <%= javascript_include_tag 'application' %>
     <%= yield :javascript %>
     <!-- End Footer -->
   </body>

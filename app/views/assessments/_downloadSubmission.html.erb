@@ -10,7 +10,7 @@
       <% end %>
       
       <%  if link = view_course_assessment_submission_path(@course, @assessment, sub) %>
-          <a href="<%= link %>" data-toggle="tooltip" title="View Source" aria-label="Justify" style="margin-right:6px; font-size: 20px;"><span class="glyphicon glyphicon-zoom-in" aria-hidden="true"></span></a>
+          <a href="<%= link %>" data-toggle="tooltip" title="View Source" aria-label="Justify" style="margin-right:3px;"><span class="glyphicon glyphicon-zoom-in" aria-hidden="true"></span></a>
 
       <% end %>
         <% link = list_archive_files(sub, "View Source"); if link %>

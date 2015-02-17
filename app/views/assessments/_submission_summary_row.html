@@ -19,7 +19,11 @@
 
           <% mime_type = submission.detected_mime_type %>
           <a href="<%= download_file_url(submission) %>" data-toggle="tooltip" data-placement="top" title="Download Submission" ><span class="glyphicon glyphicon-download" aria-hidden="true" style="margin-right:6px; font-size: 20px;"></span></a>
-          <a data-toggle="tooltip" title="View Source" aria-label="Justify" style="margin-right:6px; font-size: 20px;"><span class="glyphicon glyphicon-zoom-in" aria-hidden="true"></span></a>
+        <%  if link = view_course_assessment_submission_path(@course, @assessment, submission) %>
+          <a href="<%= link %>" data-toggle="tooltip" title="View Source" aria-label="Justify" style="margin-right:6px; font-size: 20px;"><span class="glyphicon glyphicon-zoom-in" aria-hidden="true"></span></a>
+
+        <% end %>
+
 
         <% end %>
       </span>
@@ -27,7 +31,7 @@
   </div>
   <br>
 
-<table class="prettyBorder" border=1 style="width: 100%; white-space: nowrap; table-layout: fixed;">
+<table class="prettyBorder" border=1 style="width: 100%; white-space: nowrap;">
 
   <thead>
     <tr>
@@ -39,7 +43,7 @@
       <%end%>
 
       <% if @course.grace_days >= 0 then %>
-        <th>Late Penalty<br> (penalty late days)</th>
+        <th>Late Day Penalty<br> (penalty late days)</th>
       <% end %>
 
       <% if @assessment.version_penalty? %>
@@ -112,10 +116,10 @@
 <br>
   <% if @cud.instructor? then %>
       <% if @assessment.has_autograde and submission.version > 0 then %>
-        <%= link_to 'Regrade', [:regrade, @course, @assessment, submission] %> · 
+        <%= link_to 'Regrade', [:regrade, @course, @assessment, submission], {:class=>"btn small"} %> 
       <% end %>
-      <%= link_to 'Destroy', [:destroyConfirm, @course, @assessment, submission] %> · 
-      <%= link_to 'Edit', [:edit, @course, @assessment, submission] %>
+      <%= link_to 'Destroy', [:destroyConfirm, @course, @assessment, submission], {:class=>"btn small"} %> 
+      <%= link_to 'Edit', [:edit, @course, @assessment, submission], {:class=>"btn small"} %>
   <% end %>
 
     <% if @cud.instructor? %>
