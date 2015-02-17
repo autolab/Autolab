@@ -348,6 +348,7 @@ e.to_s() + e.backtrace().join("<br>")
   def runMoss
     # Return if we have no files to process.
     unless request.post? and (params["assessments"] or params["external_tar"])
+      flash[:error] = "No input files provided for MOSS."
       redirect_to :action=>"moss" and return
     end
     assessmentIDs = params["assessments"]
@@ -370,7 +371,12 @@ e.to_s() + e.backtrace().join("<br>")
         assessments << assessment
       end
     end
-  
+
+    require 'rubygems'
+    require 'rubygems/package'
+    require 'zlib'
+    require 'zip'
+
     @mossCmd= "mossnet -d "
   
     # Create a temporary directory for this
@@ -405,18 +411,28 @@ e.to_s() + e.backtrace().join("<br>")
         
         # Copy their submission over
         FileUtils.cp(subFile,stuDir)
-        require 'rubygems/package'
 
-        # If we need to unarchive this file, then do so
+        # If we need to unarchive this file, then create archive reader
+        arch_type = params["archiveCmd"][ass.id.to_s]
+        arch_path = "#{stuDir}/#{sub.filename}"
+        if arch_type == "tar" then
+          f = File.new(arch_path)
+          archive_extract = Gem::Package::TarReader.new(f)
+          archive_extract.rewind
+        elsif arch_type == "zip" then
+          archive_extract = Zip::File.open(arch_path)
+        elsif arch_type == "tar.gz" then
+          archive_extract = Gem::Package::TarReader.new(Zlib::GzipReader.open arch_path)
+          archive_extract.rewind
+        end
+
+        # Read archive files
         if ['tar','zip','tar.gz'].member? params["archiveCmd"][ass.id.to_s]
-          
-          f = File.new("#{stuDir}/#{sub.filename}")
-          tar_extract = Gem::Package::TarReader.new(f)
-	  tar_extract.rewind
-          tar_extract.each do |entry|
-	    destination = "#{stuDir}/#{entry.full_name}"
+          archive_extract.each do |entry|
+            pathname = entry.respond_to?(:full_name) ? entry.full_name : entry.name
+	    destination = "#{stuDir}/#{pathname}"
 	    begin
-	      open destination, 'wb', entry.header.mode do |out|
+	      open destination, 'wb' do |out|
                 out.write entry.read
                 out.fsync rescue nil # for filesystems without fsync(2)
               end
@@ -425,7 +441,7 @@ e.to_s() + e.backtrace().join("<br>")
 	    end
 	  end
         end
-  
+
       end
       # add this assessment to the moss command
       @mossCmd += "#{assDir}/*/#{params["files"][ass.id.to_s]} "
@@ -447,7 +463,7 @@ e.to_s() + e.backtrace().join("<br>")
       extFilesDir = File.join(extTarDir, "submissions")
       Dir.mkdir(extFilesDir)                    # To hold all submissions
   
-      # Untar the given Tar file. 
+      # Untar the given Tar file.
       arch = Archive.new(extTarPath)
       Dir.chdir(extFilesDir)
       arch.extract
@@ -465,7 +481,7 @@ e.to_s() + e.backtrace().join("<br>")
           end
         end
       }
-  
+
       # Feed the uploaded files to MOSS.
       @mossCmd += "#{extFilesDir}/*/#{params["files"][ass.id.to_s]} "
     end
