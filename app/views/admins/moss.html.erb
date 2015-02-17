@@ -61,9 +61,10 @@ function filterCourses(name) {
 <br>
 
 <h2><b>Step 2:</b> (Optional) Upload a tarball containing the additional submissions you'd like Moss to compare against.</h2>
-<h3>(Note: Each additional submission, tarball or single file, <b>must</b> be placed directly in the tar file.)</h3>
+<!--<h3>(Note: Each additional submission, tarball or single file, <b>must</b> be placed directly in the tar file.)</h3>-->
 
-<%= file_field_tag 'external_tar' %>
+<!--%= file_field_tag 'external_tar' %-->
+<h4><i>Currently, external tar uploads are not working. We hope to resolve this issue soon.</i></h4>
 
 <p>
 <br>
@@ -71,6 +72,6 @@ function filterCourses(name) {
 <h2><b>Step 3:</b> Click "Go!" once to run Moss. This may take up to a minute, so be patient...</h2>
 
 <p>
-<%= submit_tag "Go!", :disable_with => "Please wait...", :class => "btn primary" %>
+<%= submit_tag "Go!", :data => { :disable_with => "Please wait..." }, :class => "btn primary" %>
 </p>
 </form>
