@@ -71,6 +71,6 @@ function filterCourses(name) {
 <h2><b>Step 3:</b> Click "Go!" once to run Moss. This may take up to a minute, so be patient...</h2>
 
 <p>
-<%= submit_tag "Go!", :disable_with => "Please wait...", :class => "btn primary" %>
+<%= submit_tag "Go!", :data => { :disable_with => "Please wait..." }, :class => "btn primary" %>
 </p>
 </form>

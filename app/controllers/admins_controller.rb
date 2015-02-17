@@ -345,6 +345,7 @@ e.to_s() + e.backtrace().join("<br>")
   def runMoss
     # Return if we have no files to process.
     unless request.post? and (params["assessments"] or params["external_tar"])
+      flash[:error] = "No input files provided for MOSS."
       redirect_to :action=>"moss" and return
     end
     assessmentIDs = params["assessments"]
@@ -428,7 +429,7 @@ e.to_s() + e.backtrace().join("<br>")
             pathname = entry.respond_to?(:full_name) ? entry.full_name : entry.name
 	    destination = "#{stuDir}/#{pathname}"
 	    begin
-	      open destination, 'wb', "664" do |out|
+	      open destination, 'wb' do |out|
                 out.write entry.read
                 out.fsync rescue nil # for filesystems without fsync(2)
               end
