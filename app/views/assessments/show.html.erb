@@ -29,10 +29,8 @@
           <li><%= link_to "SVN Settings", [:adminSVN, @course, @assessment], title: "Manage the SVN repositories" %></li>
         <% end %>
 
-        <% @adminlist.sort { |a,b| a[1] <=> b[1] }.each do |key, value| %>
-          <% if value.size > 0  then  %>
+        <% @adminlist.each_pair do |key, value| %>
             <li> <%= link_to value, {:action => key}, {:title=>(@admin_title[key] || "")} %></li>
-          <% end %>
         <% end %>
       </ul>
     <% end %>

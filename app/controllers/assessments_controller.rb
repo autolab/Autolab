@@ -807,10 +807,10 @@ class AssessmentsController < ApplicationController
 
 
     @adminlist = {
+      "edit" => "Edit assessment",
       "viewGradesheet" => "Grade submissions",
       "releaseAllGrades" => "Release all grades",
       "withdrawAllGrades" => "Withdraw all grades",
-      "edit" => "Edit assessment",
       "export"=>"Export assessment",
       "reload" => "Reload config file",
       "extensions" => "Manage extensions",

@@ -10,7 +10,14 @@
       <% end %>
       -
       <% if submission.filename then %>
+        <%  if link = view_course_assessment_submission_path(@course, @assessment, submission) %>
+          <a href="<%= link %>" data-toggle="tooltip" title="View Source" data-placement="right" aria-label="Justify" style="margin-right:6px; font-size: 20px;"><%= submission.filename %></a>
+
+        <% else %>
         <%= submission.filename %>
+        <% end %>
+
+        
       <% else %>
         None
       <% end %>
@@ -20,7 +27,7 @@
           <% mime_type = submission.detected_mime_type %>
           <a href="<%= download_file_url(submission) %>" data-toggle="tooltip" data-placement="top" title="Download Submission" ><span class="glyphicon glyphicon-download" aria-hidden="true" style="margin-right:6px; font-size: 20px;"></span></a>
         <%  if link = view_course_assessment_submission_path(@course, @assessment, submission) %>
-          <a href="<%= link %>" data-toggle="tooltip" title="View Source" aria-label="Justify" style="margin-right:6px; font-size: 20px;"><span class="glyphicon glyphicon-zoom-in" aria-hidden="true"></span></a>
+          <a href="<%= link %>" data-toggle="tooltip" title="View Source" aria-label="" style="margin-right:6px; font-size: 20px;"><span class="glyphicon glyphicon-zoom-in" aria-hidden="true"></span></a>
 
         <% end %>
 

@@ -8,3 +8,8 @@ $(".moment-time").each(function(ind) {
 	var formattedDate = moment(new Date(unformattedDate)).format(format);
 	$el.html(formattedDate);
 })
+
+/* Activating Tooltips */
+$(function () {
+  $('[data-toggle="tooltip"]').tooltip()
+})
