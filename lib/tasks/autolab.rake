@@ -3,7 +3,7 @@ require "fileutils"
 namespace :autolab do
   COURSE_NAME = "AutoPopulated"
   USER_COUNT = 50
-  ASSESSMENT_CATEGORY_COUNT = 3
+  ASSESSMENT_CATEGORIES = ["Homework", "Lab", "Quiz"]
   ASSESSMENT_COUNT = 6
   PROBLEM_COUNT = 3 
   SUBMISSION_MAX = 3
@@ -38,31 +38,25 @@ namespace :autolab do
     end
   end
 
-  def load_assessment_categories course
-    ASSESSMENT_CATEGORY_COUNT.times do |i|
-      course.assessment_categories.create do |c|
-        c.name = "Category#{i.to_s}"
-      end
-    end
-  end
-
   def load_assessments course
     course_dir = File.join(Rails.root, "courses", course.name)
-    course.assessment_categories.each do |c|
+    ASSESSMENT_CATEGORIES.each do |cat|
 
       # start date for this category
       start = COURSE_START + rand(20).day
 
       ASSESSMENT_COUNT.times do |i|
-        c.assessments.create do |a|
+        course.assessments.create do |a|
+          a.category_name = cat
+          
           a.visible_at = start 
           a.start_at = start
           a.due_at = start + (5 + rand(11)).days          # 5-15d after start date
           a.end_at = a.due_at + (1 + rand(7)).day   # 1d-1w after the due date
           a.grading_deadline = a.end_at + (1 + rand(7)).day   # 1-7d after submit deadline 
 
-          a.name = "#{c.name}assessment#{i.to_s}".downcase
-          a.display_name = "#{c.name}Assessment#{i.to_s}"
+          a.name = "#{cat}#{i.to_s}".downcase
+          a.display_name = "#{cat} #{i.to_s}"
           a.handin_directory = "handin"
           a.handin_filename = "handin.c"
           a.course_id = course.id
@@ -271,11 +265,10 @@ namespace :autolab do
 
     course_dir = File.join(Rails.root, "courses", course.name)
 
-    # Create assessment category
-    cat = course.assessment_categories.create(name: AUTOGRADE_CATEGORY_NAME)
-
     # Create assessment
-    asmt = cat.assessments.create! do |a|
+    asmt = course.assessments.create! do |a|
+      a.category_name = AUTOGRADE_CATEGORY_NAME
+      
       a.visible_at = COURSE_START
       a.start_at = COURSE_START
       a.due_at = COURSE_START + (5 + rand(11)).days
@@ -326,9 +319,6 @@ namespace :autolab do
 
     puts "Creating Course #{args.name} and config file" 
     course = load_course args.name
-
-    puts "Creating Assessment Categories"
-    load_assessment_categories course
 
     puts "Creating Assessments"
     load_assessments course
