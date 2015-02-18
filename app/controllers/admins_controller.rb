@@ -1,6 +1,6 @@
-require('csv')
-require('fileutils')
-
+require 'csv'
+require 'fileutils'
+require 'Statistics.rb'
 
 class AdminsController < ApplicationController
   
