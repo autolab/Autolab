@@ -39,11 +39,11 @@
 
 <% if @grouplessCUDs then %>
   <h2>Invite Another Student to Join This Group</h2>
-  <ul class="gray-box">
+  <ul class="small gray-box">
     <% @grouplessCUDs.each do |cud| %>
       <% if cud.id != @cud.id && cud.student? then %>
         <li><b><%= cud.email %></b>
-          (<%= link_to "Invite to Group", [@course, @assessment, @group, member_id: cud.id], method: :post %>)
+          (<%= link_to "Invite to Group", [:add, @course, @assessment, @group, member_id: cud.id], method: :post %>)
         </li>
       <% end %>
     <% end %>

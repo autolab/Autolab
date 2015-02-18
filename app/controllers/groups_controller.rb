@@ -4,13 +4,13 @@ class GroupsController < ApplicationController
 
   respond_to :html
 
+  ##
+  # can be used by instructors to check groups.  Students get redirected,
+  #   either to action: :new or to their group page.
+  #
   action_auth_level :index, :student
   def index
-    if @cud.instructor then
-      @groups = @assessment.groups
-      @assessments = @course.assessments.where('group_size > 1').where.not(id: @assessment.id)
-      @grouplessCUDs = @course.course_user_data.joins(:assessment_user_data).where(assessment_user_data: {assessment_id: @assessment.id, membership_status: AssessmentUserDatum::UNCONFIRMED})
-    else
+    unless @cud.instructor then
       aud = @assessment.aud_for @cud.id
       if aud.group then
         redirect_to [@course, @assessment, aud.group] and return
@@ -18,79 +18,120 @@ class GroupsController < ApplicationController
         redirect_to action: :new and return
       end
     end
+    
+    @groups = @assessment.groups
+    @groupAssessments = @course.assessments
+      .where('`group_size` > 1 AND `group_size` <= ?', @assessment.group_size).where.not(id: @assessment.id)
+    @grouplessCUDs = @assessment.grouplessCUDs
     respond_with(@course, @assessment, @groups)
   end
 
+  ##
+  # instructors can use this to view groups, and students can view
+  #   their own group with it as well
+  #
   action_auth_level :show, :student
   def show
     @aud = @assessment.aud_for @cud.id
-    unless @cud.instructor? then
+    unless @cud.instructor then
       if @aud.group_id == nil then
         redirect_to action: :new and return
       elsif @aud.group_id != params[:id].to_i then
         redirect_to [@course, @assessment, @aud.group] and return
       end
     end
+    
     if @group.size < @assessment.group_size && @group.is_member(@aud) then
       @grouplessCUDs = @assessment.grouplessCUDs
     end
     respond_with(@course, @assessment, @group)
   end
 
+  ##
+  # lets users create new groups.  students with groups get redirected.
+  #
   action_auth_level :new, :student
   def new
     aud = @assessment.aud_for(@cud)
-    if aud.group_confirmed && !@cud.instructor then
-      redirect_to [@course, @assessment, aud.group] and return
+    unless @cud.instructor then
+      if aud.group then
+        redirect_to [@course, @assessment, aud.group] and return
+      end
     end
     
     @group = Group.new
     @grouplessCUDs = @assessment.grouplessCUDs
-    @groups = @assessment.groups
+    @unfullGroups = @assessment.groups.all.select{|g| g.assessment_user_data.size < @assessment.group_size }
     
     respond_with(@course, @assessment, @group)
   end
 
+  ##
+  # Given a member_id or member_email (id taking precidence), this creates
+  # a new group, with @cud being confirmed and the member being GROUP_CONFIRMED
+  #
   action_auth_level :create, :student
   def create
-    if params[:member_id] then
-      if params[:member_id].to_i == @cud.id then
-        flash[:error] = "You can't create a group with just yourself"
-        redirect_to action: :new and return
-      end
-      @aud1 = @assessment.aud_for @cud.id
-      @aud2 = @assessment.aud_for params[:member_id].to_i
-      if @aud1.group_confirmed then
-        flash[:error] = "You already have a confirmed group."
-        redirect_to action: :new and return
-      elsif @aud2.group_confirmed then
-        flash[:error] = aud2.course_user_datum.email + " already has a confirmed group."
-        redirect_to action: :new and return
-      end
-      ActiveRecord::Base.transaction do
-        @group = Group.new
-        @group.name = "Untitled"
-        @group.save!
-        @aud1.group_id = @group.id
-        @aud1.membership_status = AssessmentUserDatum::CONFIRMED
-        @aud1.save!
-        @aud2.group_id = @group.id
-        @aud2.membership_status = AssessmentUserDatum::GROUP_CONFIRMED
-        @aud2.save!
-      end
+    cud2 = if params[:member_id] then
+      @course.course_user_data.find(params[:member_id].to_i)
+    elsif params[:member_email] then
+      @course.course_user_data.joins(:user).where(users: {email: params[:member_email]})
+    else
+      nil
     end
+    if !cud2 then
+      flash[:error] = "The given student was not found in this course."
+      redirect_to action: :new and return
+    elsif @cud.id == cud2.id then
+      flash[:error] = "You can't create a group with just yourself."
+      redirect_to action: :new and return
+    end
+    
+    aud1 = @assessment.aud_for @cud.id
+    aud2 = @assessment.aud_for cud2.id
+    if aud1.group_confirmed(AssessmentUserDatum::MEMBER_CONFIRMED) then
+      flash[:error] = "You have already selected a group."
+      redirect_to action: :new and return
+    elsif aud2.group_confirmed(AssessmentUserDatum::MEMBER_CONFIRMED) then
+      flash[:error] = cud2.email + " has already selected a group."
+      redirect_to action: :new and return
+    end
+      
+    ActiveRecord::Base.transaction do
+      group = Group.new
+      group.name = params[:group_name] || "Untitled"
+      group.save!
+      aud1.group_id = @group.id
+      aud1.membership_status = AssessmentUserDatum::CONFIRMED
+      aud1.save!
+      aud2.group_id = @group.id
+      aud2.membership_status = AssessmentUserDatum::GROUP_CONFIRMED
+      aud2.save!
+    end
+    
+    flash[:success] = "Group Created!"
+    
     respond_with(@course, @assessment, @group)
   end
 
+  ##
+  # this is used to update the name of the given group
+  #
   action_auth_level :update, :student
   def update
     if params[:group] then
-      flash[:notice] = 'Group was successfully updated.' if @group.update(group_params)
+      aud = @assessment.aud_for @cud.id
+      if aud.confirmed_in_group(@group) or @cud.instructor then
+        flash[:notice] = 'Group was successfully updated.' if @group.update(group_params)
+      end
     end
     respond_with(@course, @assessment, @group)
   end
 
-  action_auth_level :destroy, :student
+  ##
+  # instructors can use this to disband a group.  No CUDs are harmed
+  #
+  action_auth_level :destroy, :instructor
   def destroy
     ActiveRecord::Base.transaction do
       @group.assessment_user_data.each do |aud|
@@ -102,13 +143,45 @@ class GroupsController < ApplicationController
     end
     respond_with(@course, @assessment, @group)
   end
- 
+  
+  ##
+  # attempts to copy the groups from the assessment with importFrom as the id.
+  # it will leave currently created groups untouched, and won't work if importFrom
+  # has larger groups than this assessment, or no groups at all
+  #
   action_auth_level :import, :instructor
   def import
-    importFrom = @course.assessments.find(params[:importFrom])
-    if importFrom then
-      #todo
+    ass = @course.assessments.find(params[:ass])
+    if !ass then
+      flash[:error] = "Assessment not found."
+      redirect_to action: :index and return
+    elsif !ass.has_groups? or ass.group_size > @assessment.group_size or @assessment.id == ass.id then
+      flash[:error] = "That assessment cannot be imported."
+      redirect_to action: :index and return
     end
+    
+    ass.groups.each do |g|
+      group = Group.new
+      group.name = g.name
+      count = 0
+      g.assessment_user_data.each do |a|
+        cud = a.course_user_datum
+        aud = @assessment.aud_for cud.id
+        if aud.group_confirmed(AssessmentUserDatum::UNCONFIRMED) then
+          aud.group = group
+          aud.membership_status = a.membership_status
+          if aud.save! then
+            count += 1
+          end
+        end
+      end
+      if count > 0 then
+        group.save!
+      end
+    end
+    
+    flash[:success] = "Groups Successfully Imported"
+    
     redirect_to action: :index and return
   end
   

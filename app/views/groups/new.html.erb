@@ -2,7 +2,7 @@
 
 <h2>Students Without Groups</h2>
 
-<ul class="gray-box">
+<ul class="small gray-box">
   <% @grouplessCUDs.each do |cud| %>
     <% if cud.id != @cud.id && cud.student? then %>
       <li><b><%= cud.email %></b>
@@ -15,10 +15,8 @@
 <h1>Join a Group</h1>
 
 <ul class="gray-box">
-  <% @groups.each do |group| %>
-    <% if group.assessment_user_data.size < @assessment.group_size then %>
-      <%= render "list_item", {group: group} %>
-    <% end %>
+  <% @unfullGroups.each do |group| %>
+    <%= render "list_item", {group: group} %>
   <% end %>
 </ul>
 
