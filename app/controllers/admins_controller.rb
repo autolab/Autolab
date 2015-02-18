@@ -51,6 +51,36 @@ class AdminsController < ApplicationController
        # TODO: re-add CSV export
        # {"name"=>"Export grades as CSV","controller"=>"gradebook","action"=>"csv"}
     ]
+
+    matrix = GradeMatrix.new @course, @cud
+    cols = {}
+
+    # extract assessment final scores
+    @course.assessments.each do |asmt|
+      next unless matrix.has_assessment? asmt.id
+
+      cells = matrix.cells_for_assessment asmt.id
+      final_scores = cells.map { |c| c["final_score"] }
+      cols[asmt.name] = final_scores
+    end
+
+    # category averages
+    @course.assessment_categories.each do |cat|
+      next unless matrix.has_category? cat
+
+      cols["#{cat} Average"] = matrix.averages_for_category cat
+    end
+
+    # course averages
+    cols["Course Average"] = matrix.course_averages
+
+    # calculate statistics
+    @course_stats = {}
+    stat = Statistics.new
+    cols.each do |key, value|
+      @course_stats[key] = stat.stats(value)
+    end
+
   end
 
   action_auth_level :users, :instructor
