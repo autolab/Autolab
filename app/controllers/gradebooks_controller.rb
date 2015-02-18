@@ -90,9 +90,9 @@ class GradebooksController < ApplicationController
 
     # category averages
     @course.assessment_categories.each do |cat|
-      next unless matrix.has_category? cat.id
+      next unless matrix.has_category? cat
 
-      cols["#{cat.name} Average"] = matrix.averages_for_category cat.id
+      cols["#{cat} Average"] = matrix.averages_for_category cat
     end
 
     # course averages
