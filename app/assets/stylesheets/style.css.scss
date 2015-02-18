@@ -673,11 +673,11 @@ label.control-label {
   margin-left: 8px;
 }
 
-#pageBody select.form-control {
+.autolab select.form-control {
   height: 34px;
 }
 
-#pageBody .form-control {
+.autolab .form-control {
   display: block;
   width: 100%;
   /* These are used to overwrite bootstrap's .form-control properties
@@ -687,6 +687,11 @@ label.control-label {
   height: inherit;
 }
 
+.autolab .input-group-addon select.form-control {
+  height: inherit;
+  width: 80px;
+  border: none;
+}
 
 .page-wrapper {
   min-height: 100%;

@@ -56,8 +56,8 @@
     <p><i><%= @assessment.description %></i></p>
     <br>
     <div class="handin-panel">
-    <p><b>Due at: </b><span class="moment-time" data-format="MMMM Do YYYY, dddd, h:mm:ss a"> <%= due_at_display @aud.due_at %></span></p>
-    <p><b>Last day to handin: </b><span class="moment-time" data-format="MMMM Do YYYY, dddd, h:mm:ss a"> <%= end_at_display(@aud.end_at false) %></span></p>
+    <p><b>Due at: </b><span class="moment-date-time"> <%= due_at_display @aud.due_at %></span></p>
+    <p><b>Last day to handin: </b><span class="moment-date-time"> <%= end_at_display(@aud.end_at false) %></span></p>
 
     <% if @cud.instructor? and @assessment.exam? %>
     <p class="attention">This is an exam. While it is in progress, please check Admin > Edit Course > Exam In Progress.</p>
@@ -85,6 +85,29 @@
     <i>You have <%= numSubmissions %> <%= (numSubmissions == 1) ? "submission" : "submissions" %> left.</i> 
   <% end %>
 
+  <%# Display any attachments %>
+  <% if @assessment.attachments.length > 0 %>
+    <h2><%= @assessment.display_name %> Files</h2>
+    <ul>
+      <%= render @assessment.attachments %>
+
+      <% # this code is temporarily "commented out" because Dan wants to preserve the logic for future changes to _attachment.html.erb %>
+      <% if false then %>
+        <% for a in @assessment.attachments do %>
+          <% if a.released? then %>
+            <% if (Time.now() > @assessment.start_at) or (@cud.instructor?) then %>
+              <li><%= link_to a.name, [@course, @assessment, a] %></li>
+            <% else %>
+              <li><%= a.name %></li>
+            <% end %>
+          <% elsif @cud.instructor? then %>
+            <li><i><%= link_to a.name, [@course, @assessment, a] %>*</i></li>
+          <% end %>
+        <% end %>
+      <% end %>
+    </ul>
+  <% end %>
+
   <% if @assessment.exam? %>
       <% if download_access %>
           <p>Students will not be able to view previous exam submissions.</p>
@@ -107,33 +130,11 @@
           locals: { submission: submission, 
           download_access: download_access } %>
       <% end %>
+      <hr>
+      <%= link_to "See all submissions", {:action => "history"} %></li>
+
     <% end %>
-
-
   </div>
-
-<%# Display any attachments %>
-<% if @assessment.attachments.length > 0 %>
-  <h2><%= @assessment.display_name %> Files</h2>
-  <ul>
-    <%= render @assessment.attachments %>
-
-    <% # this code is temporarily "commented out" because Dan wants to preserve the logic for future changes to _attachment.html.erb %>
-    <% if false then %>
-      <% for a in @assessment.attachments do %>
-        <% if a.released? then %>
-          <% if (Time.now() > @assessment.start_at) or (@cud.instructor?) then %>
-            <li><%= link_to a.name, [@course, @assessment, a] %></li>
-          <% else %>
-            <li><%= a.name %></li>
-          <% end %>
-        <% elsif @cud.instructor? then %>
-          <li><i><%= link_to a.name, [@course, @assessment, a] %>*</i></li>
-        <% end %>
-      <% end %>
-    <% end %>
-  </ul>
-<% end %>
 
 <% content_for :javascript do %>
   <%= javascript_include_tag "assessments_show" %>

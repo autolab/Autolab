@@ -1,15 +1,16 @@
 <h3>Edit Problems for <%= current_assessment_link %></h3>
 <br>
-<ul>
 	<% for problem in @assessment.problems do %> 
-  	<li>
-	  <b><%= problem.name %></b>
+  	<div class="row">
+	  <div class="col-md-8"><b><%= problem.name %></b>
 	  [max score: <%= problem.max_score %>, optional: <%= problem.optional ? "yes" : "no" %>]
+	  </div>
+	  <div class="btn-group col-md-4" role="group">
 	  <%= link_to "Edit", edit_course_assessment_problem_path(@course, @assessment, problem), { :class => "btn small"} %>
 	  <%= link_to "Delete", destroyConfirm_course_assessment_problem_path(@course, @assessment, problem), { :class => "btn small"} %>
-	</li>
+	  </div>
+	</div>
 	<hr>
 	<% end %>
-</ul>
 <br>
 <%= link_to "Add Problem", new_course_assessment_problem_path(@course, @assessment), { :class=> "btn primary" } %>
