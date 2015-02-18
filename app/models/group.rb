@@ -10,4 +10,8 @@ class Group < ActiveRecord::Base
     aud.group_id == self.id && aud.group_confirmed(AssessmentUserDatum::CONFIRMED)
   end
   
+  def enough_room_for(aud, group_size)
+    aud.group_id == self.id || self.size < group_size
+  end
+  
 end

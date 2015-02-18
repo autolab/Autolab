@@ -1,6 +1,6 @@
 <li>
   <h3><%= group.name %></h3>
-  <p><b><%= group.assessment_user_data.all.map{|aud| aud.course_user_datum.email}.join(", ") %></b></p>
+  <p><b><%= group.assessment_user_data.all.map{|aud| aud.course_user_datum.full_name }.join(", ") %></b></p>
   <p>
     <%= link_to "Ask to Join Group", [:join, @course, @assessment, group], method: :post %>
     <% if @cud.instructor then %>

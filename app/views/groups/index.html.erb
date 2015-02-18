@@ -46,19 +46,11 @@
 <% if @grouplessCUDs.size > 0 then %>
   <h2>Users Without Groups</h2>
 
-  <table class=prettyBorder >
-    <tr>
-      <th>User Name</th>
-      <th>(Set Group?)</th>
-    </tr>
-
+  <ul class="small gray-box">
     <% @grouplessCUDs.each do |cud| %>
-      <tr>
-        <td><%= cud.email %></td>
-        <td>(TODO)</td>
-      </tr>
+      <li><b><%= cud.email %></b></li>
     <% end %>
-  </table>
+  </ul>
 <% end %>
 
 <% if @groupAssessments.size > 0 then %>

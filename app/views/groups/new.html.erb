@@ -1,23 +1,31 @@
-<h1>Create a Group</h1>
+<h2>Create a Group</h2>
 
-<h2>Students Without Groups</h2>
+<%= render "new_form" %>
 
-<ul class="small gray-box">
-  <% @grouplessCUDs.each do |cud| %>
-    <% if cud.id != @cud.id && cud.student? then %>
-      <li><b><%= cud.email %></b>
-        (<%= link_to "Invite to Group", [@course, @assessment, @group, member_id: cud.id], method: :post %>)
-      </li>
+<% if false then # not sure we should trust students with the class roster... %>
+  <h2>Students Without Groups</h2>
+
+  <ul class="small gray-box">
+    <% @grouplessCUDs.each do |cud| %>
+      <% if cud.id != @cud.id && cud.student? then %>
+        <li><b><%= cud.email %></b>
+          (<%= link_to "Invite to Group", [@course, @assessment, @group, member_id: cud.id], method: :post %>)
+        </li>
+      <% end %>
     <% end %>
-  <% end %>
-</ul>
+  </ul>
+<% end %>
 
-<h1>Join a Group</h1>
+<% if @unfullGroups.size > 0 then %>
+  <h2>Join a Group</h2>
 
-<ul class="gray-box">
-  <% @unfullGroups.each do |group| %>
-    <%= render "list_item", {group: group} %>
-  <% end %>
-</ul>
+  <ul class="gray-box">
+    <% @unfullGroups.each do |group| %>
+      <%= render "list_item", {group: group} %>
+    <% end %>
+  </ul>
+<% end %>
 
-<%= groups_back_link %>
+<div style="margin-top: 1em">
+  <%= groups_back_link %>
+</div>
