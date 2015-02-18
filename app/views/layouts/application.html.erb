@@ -7,39 +7,21 @@
 
     <%= stylesheet_link_tag 'application' %>
     <%= stylesheet_link_tag 'animate' %>
-
     <%= external_stylesheet_link_tag "bootstrap", "3.0.0" %>
     <%= stylesheet_link_tag 'style' %>
 
-    <%= external_javascript_include_tag "jquery", "2.1.1" %>
-    <%= external_javascript_include_tag "bootstrap", "3.0.0" %>
-
-    <%= javascript_include_tag 'application' %>
-
-    <link href='//fonts.googleapis.com/css?family=Source+Sans+Pro:300,400' rel='stylesheet' type='text/css'>
-
+    <% if Rails.configuration.x.analytics_id %>
     <script type="text/javascript">
-      /*Scripts to load when the page is ready*/
-
-<%#      // the lines below weren't working, as evidenced by the broken gradesheet.
-#      //jQuery(document).ajaxSend(function(e, xhr, options) {
-#      //  var token = jQuery("meta[name='csrf-token']").attr("content");
-#      //  xhr.setRequestHeader("X-CSRF-Token", token);
-#      //});%>
-
-      // this does work
-      jQuery.ajaxSetup({
-        headers: {
-            'X-CSRF-Token' : $('meta[name="csrf-token"]').attr('content')
-        },
-      });
+      window.heap=window.heap||[],heap.load=function(t,e){window.heap.appid=t,window.heap.config=e;var a=document.createElement("script");a.type="text/javascript",a.async=!0,a.src=("https:"===document.location.protocol?"https:":"http:")+"//cdn.heapanalytics.com/js/heap-"+t+".js";var n=document.getElementsByTagName("script")[0];n.parentNode.insertBefore(a,n);for(var o=function(t){return function(){heap.push([t].concat(Array.prototype.slice.call(arguments,0)))}},p=["clearEventProperties","identify","setEventProperties","track","unsetEventProperty"],c=0;c<p.length;c++)heap[p[c]]=o(p[c])};
+      heap.load("<%= Rails.configuration.x.analytics_id %>");
     </script>
+    <% end %>
 
     <%= yield :head %>
-
+    <link href='//fonts.googleapis.com/css?family=Source+Sans+Pro:300,400' rel='stylesheet' type='text/css'>
     <%= content_for :stylesheets %>
-
     <title><%= if @course then @course.display_name else "Autolab" end %></title>
+
   </head>
 
   <body class="autolab">
@@ -72,20 +54,22 @@
           <%= yield %>
         </div>
         <!-- End Content -->
-
-      </div>
-      <!-- End Page Body -->
-      <!-- Footer -->
-    </div>
-    <div id="footer">
+        <div id="footer">
         <a href="http://autolabproject.com">Autolab Project</a>
         · <a href="/contactUs.html">Contact</a>
         <% if @course %>
         · <%= link_to "Need Help?", course_report_bug_path(@course) %>
         <% end %>
-        · <%= link_to "Logout", destroy_user_session_path, method: :delete %>
+        </div>
+        <!-- End Footer -->
+      </div>
+      <!-- End Page Body -->
+      <!-- Footer -->
     </div>
-    <!-- End Footer -->
+
+    <%= external_javascript_include_tag "jquery", "2.1.1" %>
+    <%= external_javascript_include_tag "bootstrap", "3.0.0" %>
+    <%= javascript_include_tag 'application' %>
     <%= yield :javascript %>
 
   </body>

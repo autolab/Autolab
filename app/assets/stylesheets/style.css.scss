@@ -271,7 +271,8 @@ div.main-header img {
 
 .handin-panel {
   background-color: rgba(243, 240, 240, 0.7);
-  border: 1px dashed #999;
+  border: 1px solid #ddd;
+  border-radius: 4px;
   padding: 18px;
 }
 
@@ -281,6 +282,10 @@ div.main-header img {
 
 .handin-panel.modal {
   display: none;
+}
+
+.history-download-pane .glyphicon {
+  font-size: 14px;
 }
 
 /* Footer - Information, About, etc. Should be in a <footer> tag. */
@@ -376,6 +381,11 @@ div.autoCompleteDiv:hover, div.selectedAutoCompleteDiv {
 p.attention {
   color: green;
   font-style: italic;
+}
+
+.autolab .tooltip-inner {
+    white-space:pre;
+    max-width:none;
 }
 
 /**
@@ -502,8 +512,8 @@ table.navigatable tr:hover {
 
 div.card {
   display:inline-block;
-  width: 320px;
-  margin-right: 20px;
+  width: 300px;
+  margin-right: 10px;
   margin-top: 15px;
   vertical-align: top;
   webkit-box-shadow: 0 0 8px rgba(0,0,0,0.10);
@@ -611,13 +621,24 @@ body.autolab {
 
   font-family: 'Source Sans Pro', sans-serif;
   font-weight: 300;
+  font-size: 16px;
 
   h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
     font-family: 'Source Sans Pro', sans-serif;
   }
 
+  h4 {
+    font-size: 22px;
+    font-weight: bold;
+  }
+
 }
 
+@media (min-width: 1200px) {
+  #pageBody.container {
+    max-width: 970px;
+  }
+}
 
 input[type="text"],
 input[type="email"],
@@ -646,6 +667,35 @@ input[type="password"]:focus {
 input[type="checkbox"] {
   // For spacing between this and an adjacent label
   margin-right: 10px;
+}
+
+label.control-label {
+  font-size: 18px;
+}
+
+.help-block {
+  font-size: 15px;
+  margin-left: 8px;
+}
+
+.autolab select.form-control {
+  height: 34px;
+}
+
+.autolab .form-control {
+  display: block;
+  width: 100%;
+  /* These are used to overwrite bootstrap's .form-control properties
+     and using our default input styling */
+  border-radius: inherit;
+  box-shadow: inherit;
+  height: inherit;
+}
+
+.autolab .input-group-addon select.form-control {
+  height: inherit;
+  width: 80px;
+  border: none;
 }
 
 .page-wrapper {
@@ -688,6 +738,11 @@ input[type="checkbox"] {
 
 .autolab .btn.primary {
   background-color: rgba(153,0,0,0.9);
+}
+
+.autolab .btn.small {
+  padding: 5px 10px;
+  font-size: 15px;
 }
 
 /**
@@ -752,6 +807,26 @@ input[type="checkbox"] {
 
 .checkbox input[type=checkbox]:checked + label::before {
   border:1px solid #bbb;
+}
+
+.options {
+line-height: 36px;
+list-style: none;
+border-top: 1px solid #eee;
+padding-left: 0;
+}
+
+.options li:hover {
+background-color: #eee;
+}
+
+.options li {
+border-bottom: 1px solid #eee;
+}
+
+.options li a {
+padding-left: 14px;
+display: block;
 }
 
 /* Form Tables */
@@ -833,3 +908,16 @@ input[type="checkbox"] {
   }
 
 }
+
+/*  Warnings  */
+
+#flash_alert.alert,
+#flash_error.error {
+  background-color: #d88;
+  margin-top: 8px;
+  color: #fff;
+  padding: 10px;
+  margin-bottom: 0px;
+  border-radius: 3px;
+}
+

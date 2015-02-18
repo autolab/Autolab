@@ -72,10 +72,22 @@ module ApplicationHelper
             :tabindex => -1, :target => "_blank"
   end
 
+
+  def download_file_url(submission)
+    download_course_assessment_submission_path(@course, @assessment, submission)
+  end
+
+
   def view_syntax_highlighted_source(submission, title)
     if submission.is_syntax
       link_to title, view_course_assessment_submission_path(@course, @assessment, submission),
               :tabindex => -1, :target => "_blank"
+    end
+  end
+
+  def view_syntax_highlighted_source_url(submission)
+    if submission.is_syntax
+      view_course_assessment_submission_path(@course, @assessment, submission)
     end
   end
 

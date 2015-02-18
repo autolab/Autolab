@@ -1,48 +1,24 @@
-<div id=hiddenDownload style='display:inline;'>
+<div class="history-download-pane" style="margin-right: 30px;">
     <% if can_always_download or not (sub.assessment.exam or sub.assessment.course.exam_in_progress) %>
-  <nobr><a onclick='dropDown<%= sub.id %>()'><%= sub.filename %>
-    <%= image_tag 'download.png', :id=>"downloadImg#{sub.id}", :border=>0, :width=>'15px', :height=>'15px' %>
-		<%= image_tag 'downloadUp.png', :id=>"downloadImg#{sub.id}Up", :border=>0, :width=>'15px', :height=>'15px', :style=>'display:none;' %>
-  </a></nobr>
+      <a><%= sub.filename %></a>
+
+      <% mime_type = sub.detected_mime_type %>    
+          <a href="<%= download_course_assessment_submission_path(@course, @assessment, sub)%> " data-toggle="tooltip" data-placement="top" title="Download as text/plain" ><span class="glyphicon glyphicon-download" aria-hidden="true" style="margin-right:3px;"></span></a>
+
+      <% if mime_type =~ /text\/.*/ then %>
+          <a href="<%= download_course_assessment_submission_path(@course, @assessment, sub, :forceMime=>'text/plain') %>" data-toggle="tooltip" data-placement="top" title="Download as text/plain" ><span class="glyphicon glyphicon-download" aria-hidden="true" style="margin-right:3px;"></span></a>
+      <% end %>
+      
+      <%  if link = view_course_assessment_submission_path(@course, @assessment, sub) %>
+          <a href="<%= link %>" data-toggle="tooltip" title="View Source" aria-label="Justify" style="margin-right:3px;"><span class="glyphicon glyphicon-zoom-in" aria-hidden="true"></span></a>
+
+      <% end %>
+        <% link = list_archive_files(sub, "View Source"); if link %>
+        <li><%= link %></li><% end %>
+
+
     <% else %>
     <%= sub.filename %>
     <% end %>
 </div>
 
-<div id=<%="show#{sub.id}Download"%> style='display:none;border:1px solid black;position:absolute;background-color:white;padding:5px;padding-left:-10px;'>
-  <ul style='text-align:left;margin:0px'>
-    <% mime_type = sub.detected_mime_type %>
-      <li><%= download_file(sub, "Download as #{mime_type}") %></li>
-      <% if mime_type =~ /text\/.*/ then %>
-            <li><%= link_to "Download as text/plain", download_course_assessment_submission_path(@course, @assessment, sub, :forceMime=>"text/plain") %></li>
-      <% end %>
-        <% link = view_syntax_highlighted_source(sub, "View Source"); if link %><li><%= link %></li><% end %>
-        <% link = list_archive_files(sub, "View Source"); if link %><li><%= link %></li><% end %>
-    </ul>
-</div>
-<script type="text/javascript">
-  function dropDown<%= sub.id %>() {
-  var show = document.getElementById('<%=="show#{sub.id}Download"%>');
-  var img = document.getElementById('<%=="downloadImg#{sub.id}"%>');
-  var imgUp = document.getElementById('<%=="downloadImg#{sub.id}Up"%>');
-  if (show.style.display == "none") {
-    show.style.display="block";
-    img.style.display="none";
-		imgUp.style.display="inline";
-  } else {
-    show.style.display="none";
-    img.style.display="inline";
-		imgUp.style.display="none";
-  }
-}
-
-function toggleDownload() {
-  var show = document.getElementById("showDownload");
-  if (show.style.display == "none") { 
-    show.style.display="block";
-  } else {
-    show.style.display="none";
-  }
-
-}
-</script>

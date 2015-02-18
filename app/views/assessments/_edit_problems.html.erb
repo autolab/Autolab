@@ -1,6 +1,16 @@
-<h2>Edit Problems for <%= current_assessment_link %></h2>
-<ul>
-  <% # this bit of Rails magic renders app/views/problems/_problem.html.erb for every problem in the collection %>
-  <%= render @assessment.problems %>
-</ul>
-<%= link_to "Add Problem", new_course_assessment_problem_path(@course, @assessment) %>
+<h3>Edit Problems for <%= current_assessment_link %></h3>
+<br>
+	<% for problem in @assessment.problems do %> 
+  	<div class="row">
+	  <div class="col-md-8"><b><%= problem.name %></b>
+	  [max score: <%= problem.max_score %>, optional: <%= problem.optional ? "yes" : "no" %>]
+	  </div>
+	  <div class="btn-group col-md-4" role="group">
+	  <%= link_to "Edit", edit_course_assessment_problem_path(@course, @assessment, problem), { :class => "btn small"} %>
+	  <%= link_to "Delete", destroyConfirm_course_assessment_problem_path(@course, @assessment, problem), { :class => "btn small"} %>
+	  </div>
+	</div>
+	<hr>
+	<% end %>
+<br>
+<%= link_to "Add Problem", new_course_assessment_problem_path(@course, @assessment), { :class=> "btn primary" } %>
