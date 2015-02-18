@@ -128,3 +128,71 @@ table.grades tr a.history_icon {
 table.grades tr:hover a.history_icon {
   display: inline;
 }
+
+table.grades col.gdu {
+  width: 9em !important;
+}
+
+table.grades tr > *:last-child {
+  text-align: center;
+}
+
+table.grades h4 {
+  margin-left: 10px;
+  margin-bottom: 15px;
+  color: #666;
+}
+
+table.grades a.asmt_link {
+  font: inherit !important;    
+  color: #1874cd !important;
+}
+
+table.grades tr {
+  border-top: 1px solid #e4e4e4;
+  border-bottom: 1px solid #e4e4e4;
+}
+
+table.grades col {
+  border-right: 1px solid #efefef;
+}
+
+table.grades col:last-child {
+  border-right: none;
+}
+
+table.grades tr:first-child {
+  border-top: none;
+}
+
+table.grades tr:last-child {
+  border-bottom: none;
+}
+
+table.stats-table thead {
+  border-bottom: 2px solid #e4e4e4;
+}
+
+table.stats-table {
+  width: 100%; white-space: nowrap;
+  font-size: 16px;
+}
+
+table.stats-table tr:last-child {
+   border-bottom: none;
+}
+
+table.stats-table tr:first-child {
+  border-top: none;
+}
+
+table.stats-table td,
+table.stats-table th {
+  padding: 8px 0px;
+}
+
+table.stats-table tr {
+  border-top: 1px solid #e4e4e4;
+  border-bottom: 1px solid #e4e4e4;
+}
+

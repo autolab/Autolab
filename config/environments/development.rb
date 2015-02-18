@@ -27,4 +27,7 @@ Autolab3::Application.configure do
   config.assets.debug = true
 
   config.serve_static_files = true
+
+  # ID for Heap Analytics
+  config.x.analytics_id = nil
 end

@@ -44,6 +44,8 @@ ActiveRecord::Schema.define(version: 20150206035106) do
     t.integer  "course_user_datum_id", limit: 4,               null: false
     t.integer  "assessment_id",        limit: 4,               null: false
     t.integer  "latest_submission_id", limit: 4
+    t.integer  "cgdub",                limit: 4
+    t.integer  "special_type",         limit: 4,   default: 0, null: false
     t.datetime "created_at"
     t.datetime "updated_at"
     t.integer  "grade_type",           limit: 4,   default: 0, null: false

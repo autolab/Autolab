@@ -8,7 +8,7 @@
   'Malloc Lab'" %>
 
 <div class="form-group">
-  <%= f.label :category_name %>
+  <%= f.label :category_name, { :class=>"control-label" } %>
   <%= f.collection_select :category_name, @course.assessment_categories, :to_s, :to_s, {selected: @assessment.category_name}, {class: "form-control"} %>
   <p class="help-block">You can create a new category <%= link_to "here", new_course_assessment_category_path %>.</p>
 </div>
@@ -16,21 +16,21 @@
 <hr>
 
 <h4>Modules Used</h4>
-<%= f.check_box :has_autograde,
+<span class="checkbox"><%= f.check_box :has_autograde,
   display_name: "Enable autograding?",
-  help_text: "Whether this assignment will be autograded." %>
+  help_text: "Whether this assignment will be autograded." %></span>
 
-<%= f.check_box :has_partners,
+<span class="checkbox"><%= f.check_box :has_partners,
   display_name: "Partner assignment?",
-  help_text: "Is this a group or partner assignment?" %>
+  help_text: "Is this a group or partner assignment?" %></span>
 
-<%= f.check_box :has_svn,
+<span class="checkbox"><%= f.check_box :has_svn,
   display_name: "Use SVN?",
-  help_text: "Whether to use SVN in conjunction with this assignment." %>
+  help_text: "Whether to use SVN in conjunction with this assignment." %></span>
 
-<%= f.check_box :has_scoreboard,
+<span class="checkbox"><%= f.check_box :has_scoreboard,
   display_name: "Enable scoreboard?",
-  help_text: "Should there be a publically-visible scoreboard?" %>
+  help_text: "Should there be a publically-visible scoreboard?" %></span>
 
 <%= f.text_field :group_size,
   display_name: "Group Size",

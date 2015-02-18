@@ -36,3 +36,26 @@
     <% end %>
   </div>
 </div>
+<% content_for :javascript do %>
+  <script type="text/javascript">
+      var changes = false;
+
+      $('input').on('change', function(e) {
+        changes = true;
+
+      });
+                
+      window.onbeforeunload = function() {
+        if (changes) {
+          var message = "You have some unsaved changes. \n Are you sure you want to navigate away from this page?";
+          if (confirm(message)) return true;
+          else return false;
+        }
+      }
+
+      $('form').on('submit', function() {
+        changes = false;
+      });
+  </script>
+<% end %>
+

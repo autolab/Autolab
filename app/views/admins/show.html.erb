@@ -1,24 +1,84 @@
-<h2>Admin Course</h2>
-<ul class="action-menu">
-  <% for option in @options do %>
-    <% if option[:path].nil? %>
-      <li><%= link_to option['name'], course_admin_path(@course) + "/" + option['action'],
-        { title: option['title'] } %></li>
-    <% else %>
-      <li><%= link_to option['name'], option[:path], { title: option['title'] } %></li>
-    <% end %>
-  <% end %>
-</ul>
-
-<% if @cud.user.administrator? then %>
-<h2>Admin Autolab</h2>
-<ul class="action-menu">
-  <li><%= link_to 'Create new course', new_course_path,
-                  {:title=>"Create a new course"} %></li>
-  <li><%= link_to raw('<span class="button">Manage users</span>'), 
-                  users_path %></li>
-  <li><%= link_to 'Throw exception', 
-                  throwException_course_admin_path(@course),
-                  {:title=>"Seldom used debugging feature"} %></li>
-</ul>
+<% content_for :head do %>
+  <%= stylesheet_link_tag "student_gradebook" %>
 <% end %>
+
+
+<div class="row">
+  <div class="col-md-12"> 
+    <h2>Course Admin</h2>
+    <hr>
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-4"> 
+  <h3>Admin Course</h3>
+  <ul class="options">
+    <% for option in @options do %>
+      <% if option[:path].nil? %>
+        <li><%= link_to option['name'], course_admin_path(@course) + "/" + option['action'],
+          { title: option['title'] } %></li>
+      <% else %>
+        <li><%= link_to option['name'], option[:path], { title: option['title'] } %></li>
+      <% end %>
+    <% end %>
+  </ul>
+
+  <% if @cud.user.administrator? then %>
+  <h3>Admin Autolab</h3>
+  <ul class="options">
+    <li><%= link_to 'Create new course', new_course_path,
+                    {:title=>"Create a new course"} %></li>
+    <li><%= link_to raw('<span class="button">Manage users</span>'), 
+                    users_path %></li>
+    <li><%= link_to 'Throw exception', 
+                    throwException_course_admin_path(@course),
+                    {:title=>"Seldom used debugging feature"} %></li>
+  </ul>
+  <% end %>
+
+
+  </div>
+  <div class="col-md-8">
+    <h3>Course Statistics</h3>
+    <div class="category">
+      <table class="stats-table">
+        <colgroup>
+          <col class="asmt_names"></col>
+          <col class="gdu"></col>
+          <col class="gdu"></col>
+          <col class="gdu"></col>
+          <col class="gdu"></col>
+          <col class="gdu"></col>
+        </colgroup>
+        <thead>
+          <tr class="header">
+            <th></th>
+            <th>Mean</th>
+            <th>Median</th>
+            <th>Std. Dev.</th>
+            <th>Min</th>
+            <th>Max</th>
+          </tr>
+        </thead>
+        <tbody>
+        <% @course_stats.each do |name, stats| %>
+          <tr>
+            <td>
+              <% # TODO: RESTORE LINKS %>
+              <%= name %>
+              <% # TODO: BAD! FIX! %>
+              <% # name.end_with?(' Average') ? name : (link_to name, { :controller => name }, :class => :asmt_link) %>
+            </td>
+            <td><%= stats[:mean] %></td>
+            <td><%= stats[:median] %></td>
+            <td><%= stats[:stddev] %></td>
+            <td><%= stats[:min] %></td>
+            <td><%= stats[:max] %></td>
+          </tr>
+        <% end %>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</div>

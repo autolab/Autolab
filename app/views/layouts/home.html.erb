@@ -5,20 +5,23 @@
     <%= csrf_meta_tag %>
     <%= favicon_link_tag 'autolab.ico' %>
 
+    <%= stylesheet_link_tag 'application' %>
     <%= stylesheet_link_tag 'animate' %>
-
     <%= external_stylesheet_link_tag "bootstrap", "3.0.0" %>
     <%= stylesheet_link_tag 'style' %>
 
-    <%= external_javascript_include_tag "jquery", "2.1.1" %>
-    <%= external_javascript_include_tag "bootstrap", "3.0.0" %>
-
-
-    <%= javascript_include_tag 'application' %>
+    <% if Rails.configuration.x.analytics_id %>
+    <script type="text/javascript">
+      window.heap=window.heap||[],heap.load=function(t,e){window.heap.appid=t,window.heap.config=e;var a=document.createElement("script");a.type="text/javascript",a.async=!0,a.src=("https:"===document.location.protocol?"https:":"http:")+"//cdn.heapanalytics.com/js/heap-"+t+".js";var n=document.getElementsByTagName("script")[0];n.parentNode.insertBefore(a,n);for(var o=function(t){return function(){heap.push([t].concat(Array.prototype.slice.call(arguments,0)))}},p=["clearEventProperties","identify","setEventProperties","track","unsetEventProperty"],c=0;c<p.length;c++)heap[p[c]]=o(p[c])};
+      heap.load("<%= Rails.configuration.x.analytics_id %>");
+    </script>
+    <% end %>
 
     <%= yield :head %>
     <link href='//fonts.googleapis.com/css?family=Source+Sans+Pro:300,400' rel='stylesheet' type='text/css'>
+    <%= content_for :stylesheets %>
     <title>Autolab Home</title>
+
   </head>
 
   <body class="autolab">
@@ -51,7 +54,11 @@
           · <a href="/contactUs.html">Contact</a>
           · <%= link_to "Logout", destroy_user_session_path, method: :delete %>
     </div>
-    <%= yield :javascript %>
     <!-- End Footer -->
+
+    <%= external_javascript_include_tag "jquery", "2.1.1" %>
+    <%= external_javascript_include_tag "bootstrap", "3.0.0" %>
+    <%= javascript_include_tag 'application' %>
+    <%= yield :javascript %>
   </body>
 </html>
