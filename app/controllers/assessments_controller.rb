@@ -18,7 +18,9 @@ class AssessmentsController < ApplicationController
   autolabRequire File.join(Rails.root, 'app/controllers/assessment/autograde.rb')
   include AssessmentAutograde
 
-  before_action :get_assessment, except: [ :index, :new, :create, :installQuiz, :installAssessment, :importAsmtFromTar, :importAssessment, :getCategory, :log_submit, :local_submit ]
+  before_action :get_assessment, except: [ :index, :new, :create, :installQuiz, :installAssessment, 
+                                           :importAsmtFromTar, :importAssessment, :getCategory, 
+                                           :log_submit, :local_submit, :autograde_done ]
 
   # We have to do this here, because the modules don't inherit ApplicationController.
 

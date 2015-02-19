@@ -5,13 +5,13 @@ module AssessmentAutograde
   # method called when Tango returns the output
   # action_no_auth :autograde_done
   def autograde_done
-    @course = Course.find(params[:course_id]) or render nothing: true and return
+    @course = Course.find(params[:course_id]) or (render nothing: true and return)
     @assessment = @course.assessments.find(params[:assessment_id])
     unless @assessment && @assessment.has_autograde then
       render nothing: true and return
     end
     # there can be multiple submission with the same dave if this was a group submission
-    submissions = Submission.where(dave: params[:dave])
+    submissions = Submission.where(dave: params[:dave]).all
     
     feedback_str = params[:file].read
 
@@ -26,10 +26,7 @@ module AssessmentAutograde
       COURSE_LOGGER.log(e)
     end
 
-    autolab_dir = File.expand_path(File.dirname(__FILE__)+'/../../')
-    configName = "#{@course.name}-#{@assessment.name}.rb"
-    dir = File.join(autolab_dir, "assessmentConfig", configName)
-    require_relative dir
+    require_relative(Rails.root.join("assessmentConfig", "#{@course.name}-#{@assessment.name}.rb"))
 
     assign = @assessment.name.gsub(/\./,'') 
     modName = (assign + (@course.name).gsub(/[^A-Za-z0-9]/,"")).camelize
@@ -40,6 +37,9 @@ module AssessmentAutograde
       autogradeDone(submissions, feedback_str)
     end
 
+    render nothing: true and return
+  rescue
+    Rails.logger.error "Exception in autograde_done"
     render nothing: true and return
   end
   
@@ -249,7 +249,7 @@ module AssessmentAutograde
                                                          "destFile" => Pathname.new(f["destFile"]).basename.to_s}},
                       "output_file" => filename,
                       "timeout" => @autograde_prop.autograde_timeout,
-                      #"callback_url" => callBackURL,
+                      "callback_url" => callBackURL,
                       "jobName" => jobName }.to_json
 
     list = uploadFileList.map{|f| Pathname.new(f["destFile"]).basename.to_s}
