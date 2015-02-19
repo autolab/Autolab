@@ -123,7 +123,7 @@
 <br>
   <% if @cud.instructor? then %>
       <% if @assessment.has_autograde and submission.version > 0 then %>
-        <%= link_to 'Regrade', [:regrade, @course, @assessment, submission], {:class=>"btn small"} %> 
+        <%= link_to 'Regrade', [:regrade, @course, @assessment, submission_id: submission], {class:"btn small"} %> 
       <% end %>
       <%= link_to 'Destroy', [:destroyConfirm, @course, @assessment, submission], {:class=>"btn small"} %> 
       <%= link_to 'Edit', [:edit, @course, @assessment, submission], {:class=>"btn small"} %>

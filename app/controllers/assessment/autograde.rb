@@ -1,5 +1,6 @@
 module AssessmentAutograde
   require 'autoConfig.rb'
+  require 'uri'
 
   # method called when Tango returns the output
   # action_no_auth :autograde_done
@@ -233,8 +234,8 @@ module AssessmentAutograde
       hostname = "https://" + hostname.strip 
     end
 
-    #callBackURL = "#{hostname}/courses/#{course.id}/assessments/#{assessment.id}/autograde_done?dave=#{dave}"
-    callBackURL = ""
+    callBackURL = "#{hostname}/courses/#{course.id}/assessments/#{assessment.id}/autograde_done?dave=#{dave}"
+    #callBackURL = "" # uncomment this to enable polling
 
     COURSE_LOGGER.log("Callback: #{callBackURL}") 
 
@@ -268,7 +269,7 @@ module AssessmentAutograde
       begin
         feedback = Timeout::timeout(80) {
           while true do
-            pollReqURL = "http://#{RESTFUL_HOST}:#{RESTFUL_PORT}/poll/#{RESTFUL_KEY}/#{course.name}-#{assessment.name}/#{filename}/"
+            pollReqURL = "http://#{RESTFUL_HOST}:#{RESTFUL_PORT}/poll/#{RESTFUL_KEY}/#{course.name}-#{assessment.name}/#{URI.encode(filename)}/"
             pollResponse = Net::HTTP.get_response(URI.parse(pollReqURL))
             if pollResponse.content_type == "application/json" then
               pollResponseStatusId = JSON.parse(pollResponse.body)["statusId"]
