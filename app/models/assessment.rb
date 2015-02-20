@@ -29,7 +29,7 @@ class Assessment < ActiveRecord::Base
                             :greater_than_or_equal_to => -1, :allow_nil => true
   validates_numericality_of :max_grace_days, :only_integer => true,
                             :greater_than_or_equal_to => 0, :allow_nil => true
-
+  validates_numericality_of :group_size, only_integer: true, greater_than_or_equal_to: 1, allow_nil: true
   validates_presence_of :name, :display_name, :due_at, :end_at, :start_at,
                         :grading_deadline, :category_name, :max_size, :max_submissions
 
@@ -237,6 +237,18 @@ class Assessment < ActiveRecord::Base
     self.config_module.instance_methods.include?(methodKey)
   end
 
+  def has_groups?
+    group_size && group_size > 1
+  end
+  
+  def groups
+    Group.joins(:assessment_user_data).where(assessment_user_data: {assessment_id: self.id}).distinct
+  end
+  
+  def grouplessCUDs
+    self.course.course_user_data.joins(:assessment_user_data).where(assessment_user_data: {assessment_id: self.id, membership_status: AssessmentUserDatum::UNCONFIRMED})
+  end
+
 private
   def path filename
     File.join Rails.root, 'courses', course.name, name, filename
@@ -308,7 +320,7 @@ private
   end
 
   GENERAL_SERIALIZABLE = Set.new [ "name", "display_name", "description", "handin_filename", "handin_directory",
-                           "has_autograde", "has_partners", "has_svn", "has_scoreboard",
+                           "has_autograde", "has_svn", "has_scoreboard",
                            "max_grace_days", "handout", "writeup", "max_submissions",
                            "disable_handins", "max_size" ]
 

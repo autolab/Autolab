@@ -327,21 +327,39 @@ div#footer a:hover {
 ul.gray-box {
   list-style-image:none;
   list-style-type:none;
-  margin:16px 0px;
-  padding:0px;
+  margin: 16px 0;
+  padding: 0;
 }
-ul.gray-box li{
-  background-color:#FAFAFA;
-  border:1px solid #EEE;
-  color:#666;
-  margin:8px 0px;
-  padding:10px;
+ul.gray-box > li {
+  background-color: #FAFAFA;
+  border: 1px solid #EEE;
+  color: #666;
+  margin: 0;
+  padding: 10px;
+}
+ul.gray-box > li + li {
+  margin-top: 8px;
+}
+ul.gray-box > li > *:first-child {
+  margin-top: 0;
+}
+ul.gray-box > li > *:last-child {
+  margin-bottom: 0;
 }
 ul.gray-box a {
   text-decoration: none;
 }
 ul.gray-box b {
   color:#555;
+}
+ul.gray-box.small {
+  margin: 8px 0;
+}
+ul.gray-box.small > li {
+  padding: 5px;
+}
+ul.gray-box.small > li + li {
+  margin-top: 4px;
 }
 
 /* This one is actually in use.  Just so we're clear. */

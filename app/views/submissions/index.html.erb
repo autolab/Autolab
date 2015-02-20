@@ -23,8 +23,9 @@
      :class=>"btn"} %>
 <% if @autograded then %>
 <%= link_to "Regrade All", 
-    regradeAll_course_assessment_submissions_path(@course, @assessment),
-    {:title=>"Regrade the most recent submission from each student", 
+    [:regradeAll, @course, @assessment], 
+    { method: :post,
+     :title=>"Regrade the most recent submission from each student", 
      :confirm=>"Are you sure you want to do this? It will regrade the most recent submission from each student, which might take a while.",
      :class=>"btn"} %>
 
@@ -66,8 +67,9 @@
       </td>
       <td><% if @autograded and submission.version > 0 then %>
             <%= link_to "(Regrade)", 
-                regrade_course_assessment_submission_path(@course, @assessment, submission),
-                {:title=>"Rerun the autograder on this submission"} %>
+                [:regrade, @course, @assessment, submission_id: submission.id], 
+                { method: :post,
+                 :title=>"Rerun the autograder on this submission"} %>
           <% end %>
           <%= link_to "(Edit)", [:edit, @course, @assessment, submission],
               {:title=>"Edit the grading properties of this submission"} %>

@@ -113,7 +113,7 @@ class Submission < ActiveRecord::Base
       self.mime_type = 'application/x-tgz'
     end
 
-    self.save
+    self.save!
   end
 
   def handin_file_path

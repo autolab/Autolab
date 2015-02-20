@@ -85,28 +85,4 @@ module ModuleBase
     end
   end
 
-  # called when autograde is done
-  # creates a partner submission
-  def createPartnerSubmission(submission)
-    updateModules()
-    hasPartners = @modulesUsed.include?("Partners")
-    # return the submission created for partner
-    if hasPartners then
-      pSubmission = partnersAfterAutograde(submission)
-
-      unless pSubmission.nil?
-        pSubmission.save!
-      end
-
-      return pSubmission
-    end
-  end
-
-  # save a score on the partner submission
-  def saveAutogradeForPartner(score, pSubmission)
-    if pSubmission then
-      updatePartnerScore(score, pSubmission)
-    end
-  end
-
 end
