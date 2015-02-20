@@ -38,21 +38,4 @@ class CourseMailer < ActionMailer::Base
   end
 
 
-  # makeDlist - Creates a string of emails that can be added as b/cc field.
-  # @param section The section to email.  nil if we should email the entire
-  # class. 
-  # @return The filename of the dlist that was created. 
-  def makeDlist(cuds)
-    #We're going to create the dlist file right quick.
-   
-    emails = []
-
-    for cud in cuds do 
-      emails << "#{cud.user.email}"
-    end
-
-
-    return emails.join(",")
-  end
-
 end

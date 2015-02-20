@@ -141,6 +141,11 @@ class Course < ActiveRecord::Base
     course_user_data.where(course_assistant: false, instructor: false, dropped: [false, nil])
   end
 
+  # return all CUDs that are not course_assistants, instructors, or dropped
+  def instructors
+    course_user_data.where(instructor: true)
+  end
+
   def assessment_categories
     assessments.pluck("DISTINCT category_name").sort
   end
