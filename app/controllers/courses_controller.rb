@@ -24,7 +24,7 @@ class CoursesController < ApplicationController
   NEW_ROSTER_COLUMNS = 29
 
   action_auth_level :show, :instructor
-  def admin
+  def manage
     @options = 
       [{"name"=>"Edit course", path: [:edit, @course], 
         "title"=>"Modify the properties for this course"},
