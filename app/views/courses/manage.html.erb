@@ -14,14 +14,31 @@
   <div class="col-md-4"> 
   <h3>Admin Course</h3>
   <ul class="options">
-    <% for option in @options do %>
-      <% if option[:path].nil? %>
-        <li><%= link_to option['name'], course_admin_path(@course) + "/" + option['action'],
-          { title: option['title'] } %></li>
-      <% else %>
-        <li><%= link_to option['name'], option[:path], { title: option['title'] } %></li>
-      <% end %>
-    <% end %>
+
+    <li><%= link_to "Course settings", [:edit, @course], 
+        { title: "Modify the properties for this course" } %></li>
+    <li><%= link_to "Manage students", course_users_path(@course), 
+        { title: "Create, modify, and delete user accounts" } %></li>
+    <li><%= link_to "Install assessment", installAssessment_course_assessments_path(@course), 
+        { title: "Create an assessment from scratch or install one from an existing directory" } %></li>
+    <li><%= link_to "Install quiz", installQuiz_course_assessments_path(@course), 
+        { title: "Create a quiz" } %></li>
+    <li><%= link_to "Send bulk email", course_email_path, 
+        { title: "Send an email to everyone in the class" } %></li>
+    <li><%= link_to "Manage course attachments", course_attachments_path(@course), 
+        { title: "Distribute files to your students" } %></li>
+    <li><%= link_to "Manage announcements", course_announcements_path(@course), 
+        { title: "Manage announcements via banners on either front page or all pages (persistent)." } %></li>
+    <li><%= link_to "Release all grades", bulkRelease_course_course_user_datum_gradebook_path(@course, @cud), 
+        { title: "Release all grades for all assessments" } %></li>
+    <li><%= link_to "Manage schedulers", course_schedulers_path(@course), 
+        { title: "Set and update scheduler for log submissions. (Advanced feature)"} %></li>
+    <li><%= link_to "Act as user", course_sudo_path(@course), 
+        { title: "Temporarily become another user" } %></li>
+    <li><%= link_to "Run Moss cheat checker", course_moss_path(@course), 
+        { title: "Use the Stanford Moss server to detect copying" } %></li>
+    <li><%= link_to "Reload course config file", course_reload_path(@course), 
+        { title: "Do this each time your modify the course.rb file" } %></li>
   </ul>
 
   <% if @cud.user.administrator? then %>

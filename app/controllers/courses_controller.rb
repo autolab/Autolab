@@ -25,49 +25,6 @@ class CoursesController < ApplicationController
 
   action_auth_level :show, :instructor
   def manage
-    @options = 
-      [{"name"=>"Edit course", path: [:edit, @course], 
-        "title"=>"Modify the properties for this course"},
-     
-       {"name"=>"Manage accounts", path: course_users_path(@course),
-        "title"=>"Create, modify, and delete user accounts"},
-
-       {"name"=>"Act as user", path: course_sudo_path(@course),
-        "title"=>"Temporarily become another user"},
-
-       {"name"=>"Install assessment", path: installAssessment_course_assessments_path(@course),
-        "title"=>"Create an assessment from scratch or install one from an existing directory"},
-       
-       {"name"=>"Install quiz", path: installQuiz_course_assessments_path(@course),
-        "title"=>"Create a quiz"},
-
-       {"name"=>"Send bulk email", path: course_email_path,
-        "title"=>"Send an email to everyone in the class"},
-
-       {"name"=>"Manage categories", path: course_assessment_categories_path(@course),
-        "title"=>"Create and delete assessment categories"},
-
-       {"name"=>"Manage schedulers", path: course_schedulers_path(@course),
-        "title"=>"An advanced feature used only for some 15-213 labs"},
-
-       {"name"=>"Manage course attachments", path: course_attachments_path(@course),
-        "title"=>"Distribute files to your students"},
-
-       {"name"=>"Manage announcements", path: course_announcements_path(@course),
-        "title"=>"Manage announcements via banners on either front page or all pages (persistent)."},
-
-       {"name"=>"Run Moss cheat checker", path: course_moss_path(@course),
-        "title"=>"Use the Stanford Moss server to detect copying"},
-
-       {"name"=>"Reload course config file", path: course_reload_path(@course),
-        "title"=>"Do this each time your modify the course.rb file"},
-
-       {"name"=>"Bulk release all grades", path: bulkRelease_course_course_user_datum_gradebook_path(@course, @cud),
-        "title"=>"Release all grades for all assessments"}
-
-       # TODO: re-add CSV export
-       # {"name"=>"Export grades as CSV","controller"=>"gradebook","action"=>"csv"}
-    ]
 
     matrix = GradeMatrix.new @course, @cud
     cols = {}
