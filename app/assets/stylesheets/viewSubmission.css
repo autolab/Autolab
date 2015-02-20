@@ -58,7 +58,7 @@ tr.filename {
 }
 
 .code {
-  padding: 2px .5em;
+  padding: 2px .5ch;
   white-space: pre-wrap;
 }
 
@@ -69,7 +69,7 @@ tr.filename {
 }
 
 .divCode {
-  max-width: 81em; /* 80 characters plus padding */
+  max-width: 81ch; /* 80 characters plus padding */
 }
 
 .line .annotation {
