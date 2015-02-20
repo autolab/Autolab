@@ -13,7 +13,7 @@
   <p><i>Remember that if you modify any config files, you'll need to  reload them for the changes to take effect.</i><br>
     <% if @course_id then %>
       <b><%= link_to "Reload Course Config",
-              reload_course_admin_path(course_id: @course_id) %></b><br>
+              course_reload_path(course_id: @course_id) %></b><br>
       <% if @assessment_id then %>
         <b><%= link_to "Reload Assessment Config",
                 reload_course_assessment_path(course_id: @course_id,
