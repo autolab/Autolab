@@ -132,7 +132,7 @@ Autolab3::Application.routes.draw do
       end
     end
     
-      get 'admin'
+      get  'manage'
       get  'bulkRelease'
       get  'downloadRoster'
       match 'email', via: [:get, :post]
