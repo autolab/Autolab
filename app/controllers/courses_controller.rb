@@ -278,7 +278,7 @@ class CoursesController < ApplicationController
   def reload
     if @course.reload_course_config then
       flash[:success] = "Success: Course config file reloaded!"
-      redirect_to action: :show and return
+      redirect_to [@course] and return
     else
       render and return
     end
@@ -296,7 +296,7 @@ class CoursesController < ApplicationController
       # Check if any file is attached
       if params['upload'] && params['upload']['file'].nil? then
         flash[:error] = 'Please attach a roster!'
-        redirect_to :action => 'uploadRoster' and return
+        redirect_to action: :uploadRoster and return
       end
       
       if params[:doIt] then

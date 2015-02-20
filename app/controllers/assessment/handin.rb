@@ -193,7 +193,7 @@ module AssessmentHandin
 
     # Load up the lab.rb file
     modName = @assessment.name + (@course.name).gsub(/[^A-Za-z0-9]/,"")
-    require(Rails.root.join("assessmentConfig", "#{@course.name}-#{@assessment.name}.rb")
+    require(Rails.root.join("assessmentConfig", "#{@course.name}-#{@assessment.name}.rb"))
     eval("extend #{modName.camelcase}")
 
     begin

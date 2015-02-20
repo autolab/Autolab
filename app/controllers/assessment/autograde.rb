@@ -6,7 +6,7 @@ module AssessmentAutograde
   # action_no_auth :autograde_done
   def autograde_done
     @course = Course.find(params[:course_id]) or (render nothing: true and return)
-    @assessment = @course.assessments.find(params[:assessment_id])
+    @assessment = @course.assessments.find(params[:id])
     unless @assessment && @assessment.has_autograde then
       render nothing: true and return
     end
@@ -235,9 +235,9 @@ module AssessmentAutograde
     end
     
     callBackURL = if RESTFUL_USE_POLLING then
-      "#{hostname}/courses/#{course.id}/assessments/#{assessment.id}/autograde_done?dave=#{dave}"
-    else 
-      "" 
+      ""
+    else
+      "#{hostname}/courses/#{course.id}/assessments/#{assessment.id}/autograde_done?dave=#{dave}" 
     end
 
     COURSE_LOGGER.log("Callback: #{callBackURL}") 
