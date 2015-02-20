@@ -518,8 +518,6 @@ e.to_s() + e.backtrace().join("<br>")
   
   # email - The email action allows instructors to email the entire course, or
   # a single section at a time.  Sections are passed via params[:section].
-  # The makeDlist() function creates the actual email list that andrew mailman
-  # servers can understand. 
   action_auth_level :email, :instructor
   def email
     if request.post? then
@@ -536,7 +534,7 @@ e.to_s() + e.backtrace().join("<br>")
         @cuds = @course.course_user_data.where(:dropped=>false)
       end
 
-      bccString = CourseMailer.makeDlist(@cuds)
+      bccString = makeDlist(@cuds)
 
       @email = CourseMailer.course_announcement(
             params[:from],

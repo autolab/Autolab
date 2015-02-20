@@ -252,6 +252,20 @@ protected
     "#{count || 0} " + ((count == 1 || count =~ /^1(\.0+)?$/) ? singular : (plural || singular.pluralize))
   end
 
+  # makeDlist - Creates a string of emails that can be added as b/cc field.
+  # @param section The section to email.  nil if we should email the entire
+  # class. 
+  # @return The filename of the dlist that was created. 
+  def makeDlist(cuds)
+    emails = []
+
+    for cud in cuds do 
+      emails << "#{cud.user.email}"
+    end
+
+    return emails.join(",")
+  end
+
 private
 
   # called on Exceptions.  Shows a stack trace to course assistants, and above.
