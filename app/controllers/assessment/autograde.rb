@@ -233,9 +233,12 @@ module AssessmentAutograde
       hostname = `hostname`
       hostname = "https://" + hostname.strip 
     end
-
-    callBackURL = "#{hostname}/courses/#{course.id}/assessments/#{assessment.id}/autograde_done?dave=#{dave}"
-    #callBackURL = "" # uncomment this to enable polling
+    
+    callBackURL = if RESTFUL_USE_POLLING then
+      "#{hostname}/courses/#{course.id}/assessments/#{assessment.id}/autograde_done?dave=#{dave}"
+    else 
+      "" 
+    end
 
     COURSE_LOGGER.log("Callback: #{callBackURL}") 
 
