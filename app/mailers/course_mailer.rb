@@ -1,5 +1,17 @@
 class CourseMailer < ActionMailer::Base
-  def announcement(sender, to, subject, text, cud, course)
+  
+  def system_announcement(sender, to, subject, text)
+    @text = text
+
+    return mail(
+      subject: subject,
+      from: sender,
+      bcc: to,
+      sent_on: Time.now
+    )
+  end
+
+  def course_announcement(sender, to, subject, text, cud, course)
     @cud = cud
     @course = course
     @text = text
@@ -24,4 +36,28 @@ class CourseMailer < ActionMailer::Base
       sent_on: Time.now
     )
   end
+
+
+    # makeDlist - Creates a string of emails that can be added as b/cc field.
+  # @param section The section to email.  nil if we should email the entire
+  # class. 
+  # @return The filename of the dlist that was created. 
+  def makeDlist(section)
+    #We're going to create the dlist file right quick.
+   
+    emails = []
+    #don't email kids who dropped!
+    if section then
+      @cuds = @course.course_user_data.where(:dropped=>false, :section=>section)
+    else
+      @cuds = @course.course_user_data.where(:dropped=>false)
+    end
+    for cud in @cuds do 
+      emails << "#{cud.user.email}"
+    end
+
+
+    return emails.join(",")
+  end
+
 end

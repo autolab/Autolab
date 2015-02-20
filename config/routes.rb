@@ -8,7 +8,11 @@ Autolab3::Application.routes.draw do
     get 'error'
     get 'no_user'
   end
-  
+
+  resource :admin do
+    match 'emailInstructors', via: [:get, :post]
+  end
+
   resources :users do
     get 'admin'
   end
@@ -138,10 +142,7 @@ Autolab3::Application.routes.draw do
       end
     end
     
-    resource :admin, only: :show do
-      collection do
-        get 'throwException'
-      end
+      get 'admin'
       get  'bulkRelease'
       get  'downloadRoster'
       match 'email', via: [:get, :post]
@@ -152,7 +153,6 @@ Autolab3::Application.routes.draw do
       get  'reload'
       get  'sudo'
       post 'runMoss'
-    end
 
   end
 end
