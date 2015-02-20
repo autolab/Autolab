@@ -30,12 +30,20 @@ Autolab3::Application.routes.draw do
     resources :attachments
 
     resources :assessments, except: :update do
+      resources :assessment_user_data, only: [:show, :edit, :update]
       resources :attachments
+      resources :extensions, only: [:index, :create, :destroy]
+      resources :groups, except: :edit do
+        member do
+          post 'add'
+          post 'join'
+          post 'leave'
+        end
+        post 'import', on: :collection
+      end
       resources :problems, except: [:index, :show] do
         get 'destroyConfirm', on: :member
       end
-      resources :assessment_user_data, only: [:show, :edit, :update]
-      resources :extensions, only: [:index, :create, :destroy]
       resources :submissions do
         resources :annotations, only: [:create, :update, :destroy]
         resources :scores, only: [:create, :show, :update]
@@ -43,12 +51,9 @@ Autolab3::Application.routes.draw do
           get 'destroyConfirm'
           get 'download'
           get 'listArchive', as: :list_archive
-          get 'regrade'
           get 'view'
-          post 'autograde_done'
         end
         collection do
-          get 'regradeAll'
           get 'downloadAll'
           get 'missing'
         end
@@ -85,6 +90,11 @@ Autolab3::Application.routes.draw do
         get 'partner'
         get 'scoreboard'
 
+        # autograde actions
+        post 'autograde_done'
+        post 'regrade'
+        post 'regradeAll'
+        
         # partner actions
         match 'setPartner', via: [:get, :post]
         get 'importPartners'
