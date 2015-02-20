@@ -18,13 +18,7 @@ class AdminsController < ApplicationController
 
       @cuds = CourseUserDatum.select(:user_id).distinct.where(:instructor=>true)
      
-      emails = []
-      for cud in @cuds do 
-        emails << "#{cud.user.email}"
-      end
-
-      bccString = emails.join(",")
-
+      bccString = CourseMailer.makeDlist(@cuds)
 
       @email = CourseMailer.system_announcement(
             params[:from],
