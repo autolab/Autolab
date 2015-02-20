@@ -42,7 +42,7 @@
 
       <% if !@cud && current_user && current_user.administrator? %>
       <li>
-        <%= link_to "Autolab Admin", user_admin_path(current_user), :title => "Perform system-wise administrative actions" %>
+        <%= link_to "Autolab Admin", admin_path, :title => "Perform system-wise administrative actions" %>
       </li>
       <% end %>
 
