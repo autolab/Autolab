@@ -320,7 +320,7 @@ private
   end
 
   GENERAL_SERIALIZABLE = Set.new [ "name", "display_name", "description", "handin_filename", "handin_directory",
-                           "has_autograde", "has_partners", "has_svn", "has_scoreboard",
+                           "has_autograde", "has_svn", "has_scoreboard",
                            "max_grace_days", "handout", "writeup", "max_submissions",
                            "disable_handins", "max_size" ]
 

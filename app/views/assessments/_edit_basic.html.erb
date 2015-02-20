@@ -20,10 +20,6 @@
   display_name: "Enable autograding?",
   help_text: "Whether this assignment will be autograded." %></span>
 
-<span class="checkbox"><%= f.check_box :has_partners,
-  display_name: "Partner assignment?",
-  help_text: "Is this a group or partner assignment?" %></span>
-
 <span class="checkbox"><%= f.check_box :has_svn,
   display_name: "Use SVN?",
   help_text: "Whether to use SVN in conjunction with this assignment." %></span>
@@ -34,7 +30,7 @@
 
 <%= f.text_field :group_size,
   display_name: "Group Size",
-  help_text: "Set the maximum size of groups for this assessment." %>
+  help_text: "Set the maximum size of groups for this assessment.  If group size is 1, the assessment is solo.  If the size is decreased, groups that are too large will not be broken up.  If the size is set to 1, groups will be saved, but the assessment will be solo." %>
 
 <hr>
 
