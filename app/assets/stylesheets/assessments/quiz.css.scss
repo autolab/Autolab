@@ -12,9 +12,12 @@
   }
 }
 
+div.block {
+  background-color: #EBEBEB;
+}
+
 div.questionBlock, div.block {
   
-  background-color: #EBEBEB;
   padding: 15px 25px;
   text-align: center;
   margin: 0 auto;
@@ -48,7 +51,8 @@ div.questionBlock, div.block {
   .optionBlock {
     
     width: 100%;
-    margin-top: 5px;
+    padding-top: 8px;
+    padding-bottom: 8px;
     text-align: left;
 
     .option {

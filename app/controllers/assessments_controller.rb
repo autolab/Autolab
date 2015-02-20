@@ -95,26 +95,61 @@ class AssessmentsController < ApplicationController
 
   action_auth_level :installQuiz, :instructor
   def installQuiz
+    
+    @categories = @course.assessment_categories
+
     if request.post? and params.include?(:quiz)
-      quiz = params[:quiz]
-      quizName = params[:quizName]
-      params[:assessment] = {name: quizName, category_name: params[:category]}
-      params[:quiz] = true
-      params[:quizData] = quiz
-      params[:max_submissions] = params[:attemptsAllowed]
-      create
-      quizData = JSON.parse(quiz)
-      p = Problem.new(:name=>"Quiz",
-              :description=>"",
-              :assessment_id=>@assessment.id,
-              :max_score=>quizData.length,
-              :optional=>false)
-      p.save()
-      return
+
+      begin
+
+          @assessment = Assessment.new
+
+          quizJSON = params[:quiz]
+          quizDisplayName = params[:quizName]
+          quizName = quizDisplayName.downcase.gsub(/[^a-z0-9]/,"")
+          category_name = params[:new_category] || params[:category]
+          
+
+          # fill in other fields
+          @assessment.course = @course
+          @assessment.name = quizName
+          @assessment.display_name = quizDisplayName
+          @assessment.handin_directory = "handin"
+          @assessment.handin_filename = "handin.c"
+          @assessment.category_name = category_name
+          @assessment.visible_at = Time.now
+          @assessment.start_at = Time.now
+          @assessment.due_at= Time.now
+          @assessment.grading_deadline = Time.now
+          @assessment.end_at = Time.now
+          @assessment.quiz = true
+          @assessment.quizData = quizJSON
+          @assessment.max_submissions = params.include?(:max_submissions) ? params[:max_submissions] : -1
+          
+
+          @assessment.save!
+
+          quizData = JSON.parse(quizJSON)
+          
+          p = Problem.new(:name=>"Quiz",
+                  :description=>"",
+                  :assessment_id=>@assessment.id,
+                  :max_score=>quizData.length,
+                  :optional=>false)
+
+          p.save()
+
+          redirect_to edit_course_assessment_path(@course, @assessment)
+
+      rescue Exception => e
+        flash[:error] = e.to_s
+        render :template=>"assessments/installQuiz" and return
+      end
+
     else
-      @categories = @course.assessment_categories
-      render :template=>"assessments/installQuiz" and return
+      @assessment = Assessment.new
     end
+
   end
 
   action_auth_level :takeQuiz, :student
@@ -1829,6 +1864,7 @@ protected
   end
 
   def extend_config_module
+
     begin
       require @assessment.config_file_path
       assessmentInitialize @assessment.name
