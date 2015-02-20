@@ -528,7 +528,15 @@ e.to_s() + e.backtrace().join("<br>")
       else
         section = nil
       end
-      bccString = makeDlist(section)
+
+      #don't email kids who dropped!
+      if section then
+        @cuds = @course.course_user_data.where(:dropped=>false, :section=>section)
+      else
+        @cuds = @course.course_user_data.where(:dropped=>false)
+      end
+
+      bccString = CourseMailer.makeDlist(@cuds)
 
       @email = CourseMailer.course_announcement(
             params[:from],
