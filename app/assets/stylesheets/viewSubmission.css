@@ -1,116 +1,117 @@
 #codeTable {
-	border-collapse: collapse;
+  border-collapse: collapse;
 }
 
 tr.filename {
-	background-color: #ccc;
+  background-color: #ccc;
 }
 
 .line {
-	cursor:default;
+  cursor:default;
 }
 
 .line td{
-	padding-right: 10px;
-	padding-left: 10px;
-	font-family: monospace;
+  padding-right: 10px;
+  padding-left: 10px;
+  font-family: monospace;
 }
 
 .lineNumber {
-	text-align: right;
+  text-align: right;
 }
 
 /* make the 'X' big and red */
 .line .deleteAnnotation {
-	color: #F00;
-	font-size: 18px;
+  color: #F00;
+  font-size: 18px;
 }
 
 .line .createAnnotation,
 .line .annotationModifier {
-	opacity: 0.0;
+  opacity: 0.0;
 }
 
 .line:hover,
 .line:hover .annotation,
 .line:hover .annotationModifier {
-	/* annotations show up on mouseover */
-	background-color: #DDD;
-	opacity: 1.0;
-	cursor: pointer;
+  /* annotations show up on mouseover */
+  background-color: #DDD;
+  opacity: 1.0;
+  cursor: pointer;
 }
 
 .line.annotated .annotation,
 .line.annotating .annotation, 
 .line.annotating .annotationModifier {
-	opacity: 1.0;
+  opacity: 1.0;
 
-    /* spice up the annotations a little to make them more obvious */
-    font-size: 13px;
-    font-weight: bold;
-    /*font-style: italic; */
+  /* spice up the annotations a little to make them more obvious */
+  font-size: 13px;
+  font-weight: bold;
+  /*font-style: italic; */
 }
 
 .line a:link {
-	color: black;
-	text-decoration: none;
-	font-family: monospace;
+  color: black;
+  text-decoration: none;
+  font-family: monospace;
 }
 
 .code {
-	white-space: pre-wrap;
+  padding: 2px .5ch;
+  white-space: pre-wrap;
 }
 
 .divCode,
 .line .annotation,
 .descript {
-	word-wrap:break-word;
+  word-wrap:break-word;
 }
 
 .divCode {
-	max-width: 560px;
+  max-width: 81ch; /* 80 characters plus padding */
 }
 
 .line .annotation {
-	max-width: 500px;
+  max-width: 500px;
 }
 
 
 .syntaxError {
-	font-weight:normal !important;
-	font-style:italic !important;
-	color: #F00;
+  font-weight:normal !important;
+  font-style:italic !important;
+  color: #F00;
 }
 
 .annotationSummary {
-	margin:5px;
-	padding:0px 10px 5px 10px;
-	float:left;
-	height:100%;
+  margin:5px;
+  padding:0px 10px 5px 10px;
+  float:left;
+  height:100%;
 }
 
 .annotationHeader {
-	text-align:left;
+  text-align:left;
 }
 
 .annotationPane {
-	padding: 15px;
+  padding: 15px;
 }
 
 .comment {
-	width: 240px;
+  width: 240px;
 }
 
 .value {
-	width: 40px;
+  width: 40px;
 }
 
 .problem {
-	width: 151px;
+  width: 151px;
 }
 
 .inputForm {
-	font-size: 12px;
-	font-style: normal;
-	font-weight: normal;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: normal;
 }
