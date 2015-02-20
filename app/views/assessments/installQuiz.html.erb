@@ -126,7 +126,7 @@
 
     $("#questions").on('click', '.answer', function(){
       $(this).parents(".questionBlock").find(".option").css("background-color", "white");
-      $(this).next(".option").css("background-color", "rgba(0, 153, 0, 0.9)");
+      $(this).parents(".optionBlock").css("background-color", "rgba(0, 153, 0, 0.6)");
     });
   });
 </script>

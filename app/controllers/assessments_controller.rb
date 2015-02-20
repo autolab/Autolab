@@ -365,7 +365,7 @@ class AssessmentsController < ApplicationController
     @assessment = Assessment.new(new_assessment_params)
 
     # Validate the name 
-    assName = @assessment.name.downcase.gsub(/[^a-z0-9]/,"")
+    assName = @assessment.display_name.downcase.gsub(/[^a-z0-9]/,"")
     if assName.blank? then
       flash[:error] = "Assessment name cannot be blank" 
       redirect_to action: :installAssessment and return
@@ -374,29 +374,14 @@ class AssessmentsController < ApplicationController
     # Update name in object
     @assessment.name = assName
     
-    # Reload modules list
-    @modules = []
-    begin
-      Dir.foreach(@moduleDir) { |filename|
-        if (filename =~ /.*\.rb/) then
-          @modules << filename.gsub(/\.rb/,"")
-        end
-      }
-    rescue Exception 
+    # Modules must be in the module list. 
+    @modules = params[:modules]
+
+    if @modules[:Autograde] == 1
+      @assessment.has_autograde = true
     end
 
-    # Modules must be in the module list. 
-    modules = params[:modules]
-    modulesInclude = ""
-    modulesRequire = ""
-    if modules then 
-      for mod in modules.keys do
-        if @modules.include?(mod) then
-          modulesInclude += "\tinclude #{mod}\n"
-          modulesRequire += "require \"modules/#{mod}.rb\"\n"
-        end
-      end
-    end
+    # TODO add other modules
 
     # From here on, if something weird happens, we rollback
     begin 
@@ -416,10 +401,7 @@ class AssessmentsController < ApplicationController
       
       # Update with this assessment information
       defaultConfig.gsub!("##NAME_CAMEL##",assName.camelize)
-      defaultConfig.gsub!("##NAME_LOWER##",assName)
-      defaultConfig.gsub!("##MODULES_INCLUDE##",modulesInclude)
-      defaultConfig.gsub!("##MODULES_REQUIRE##",modulesRequire)
-     
+      defaultConfig.gsub!("##NAME_LOWER##",assName)     
 
       assessmentConfigName = File.join(assDir, "#{assName}.rb") 
       if !File.file?(assessmentConfigName) then
@@ -449,7 +431,6 @@ class AssessmentsController < ApplicationController
     
     # fill in other fields
     @assessment.course = @course
-    @assessment.display_name = @assessment.name
     @assessment.handin_directory = "handin"
     @assessment.handin_filename = "handin.c"
     @assessment.visible_at = Time.now
@@ -501,7 +482,7 @@ class AssessmentsController < ApplicationController
       redirect_to course_path(@course) and return
     end
       
-    flash[:success] = "Successfully installed #{name}."
+    flash[:success] = "Successfully installed #{@assessment.name}."
     redirect_to course_path(@course) and return
   end
 
@@ -1693,7 +1674,7 @@ protected
   private
   
     def new_assessment_params
-      params.require(:assessment).permit(:name, :category_name)
+      params.require(:assessment).permit(:display_name, :category_name)
     end
 
 end
