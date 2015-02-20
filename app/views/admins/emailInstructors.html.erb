@@ -1,0 +1,38 @@
+<% @title = "Bulk Email to Instructors"%>
+
+<% if @errors then %>
+  <font color=red><%=@errors %></font>
+<% elsif @email then %>
+  <font color=green>Success!</font>
+  <pre><%= @email.encoded %></pre>
+<% else %>
+  <% if Rails.env == "development" then %>
+    <font color=red><b>WARNING: Rails is in development mode right now.</b></font><br>
+  <% end %>
+ 
+  <%= form_tag :action=>"emailInstructors" do %>
+  <table class=verticalTable >
+    <tr>
+      <th><b> From: </b></th>
+      <td><%= text_field_tag :from %></td>
+      <td class=smallText>This will be the from and reply-to address,
+      so it should be legitimate</td>
+    </tr>
+    <tr>
+      <th><b> Subject:</b></th>
+      <td><%= text_field_tag :subject %></td>
+    </tr>
+    <tr>
+      <td colspan=2>
+      <%= text_area_tag :body,nil,{:rows=>15,:cols=>50}%>
+      </td>
+    </tr>
+    <tr>
+      <td colspan=2>
+      <br>
+      <%= submit_tag "Send Email",:confirm=>"Are you sure?", :class=>"btn primary" %>
+      </td>
+    </tr>
+  </table>
+  <% end %>
+<% end %>
