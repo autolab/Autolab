@@ -1,13 +1,16 @@
 <script type="text/javascript">
   function flip(section) { 
     var div = document.getElementById(section);
-    var arrow = document.getElementById(section +"Arrow");
+    var arrowDown = document.getElementById(section +"Arrow");
+    var arrowRight = document.getElementById(section +"ArrowRight");
     if (div.style.display == "none") {
       div.style.display = "block";
-      arrow.src = "/assets/arrowDown.png";
+      arrowDown.style.display = "inline";
+      arrowRight.style.display = "none";
     } else { 
       div.style.display = "none";
-      arrow.src = "/assets/arrowRight.png";
+      arrowDown.style.display = "none";
+      arrowRight.style.display = "inline";
     }
   }
 </script>
@@ -21,19 +24,22 @@
   }
 </style>
 
-<h2 style="display:inline" onclick="flip('allGradesDiv')">
+<h3 style="display:inline" onclick="flip('allGradesDiv')">
   <%= image_tag 'arrowDown.png', :id=>'allGradesDivArrow' %>
+  <%= image_tag 'arrowRight.png', :id=>'allGradesDivArrowRight', { :style=>"display:none;"} %>
+
   All Grades
-</h2>
+</h3>
 
 <div id='allGradesDiv' >
   <%=raw stats_table(@statistics[:all]) %>
 </div>
 
-<h2 onclick="flip('lectureDiv')">
-  <%= image_tag 'arrowRight.png', :id=>'lectureDivArrow' %>
+<h3 onclick="flip('lectureDiv')">
+  <%= image_tag 'arrowDown.png', :id=>'lectureDivArrow', { :style=>"display:none;"} %>
+  <%= image_tag 'arrowRight.png', :id=>'lectureDivArrowRight' %>
   Statistics by Lecture
-</h2>
+</h3>
 
 <div id='lectureDiv' style="display:none" >
 <% @statistics[:lecture].each do |(lecture, group_stats)| %>
@@ -42,10 +48,11 @@
 <% end %>
 </div>
 
-<h2 onclick="flip('sectionDiv')">
-  <%= image_tag 'arrowRight.png', :id=>'sectionDivArrow' %>
+<h3 onclick="flip('sectionDiv')">
+  <%= image_tag 'arrowDown.png', :id=>'sectionDivArrow', { :style=>"display:none;"} %>
+  <%= image_tag 'arrowRight.png', :id=>'sectionDivArrowRight' %>
   Statistics by Section
-</h2>
+</h3>
 
 <div id='sectionDiv' style="display:none" >
 <% @statistics[:section].each do |(section, group_stats)| %>
@@ -54,10 +61,11 @@
 <% end %>
 </div>
 
-<h2 onclick="flip('graderDiv')">
-  <%= image_tag 'arrowRight.png', :id=>'graderDivArrow' %>
+<h3 onclick="flip('graderDiv')">
+  <%= image_tag 'arrowDown.png', :id=>'graderDivArrow', { :style=>"display:none;"} %>
+  <%= image_tag 'arrowRight.png', :id=>'graderDivArrowRight' %>
   Statistics by Grader
-</h2>
+</h3>
 
 <div id='graderDiv' style="display:none" >
 <% @statistics[:grader].each do |(grader, group_stats)| %>
@@ -66,10 +74,11 @@
 <% end %>
 </div>
 
-<h2 onclick="flip('schoolDiv')">
-  <%= image_tag 'arrowRight.png', :id=>'schoolDivArrow' %>
+<h3 onclick="flip('schoolDiv')">
+  <%= image_tag 'arrowDown.png', :id=>'schoolDivArrow', { :style=>"display:none;"} %>
+  <%= image_tag 'arrowRight.png', :id=>'schoolDivArrowRight' %>
   Statistics by School
-</h2>
+</h3>
 
 <div id='schoolDiv' style="display:none" >
 <% @statistics[:school].each do |(school, group_stats)| %>
@@ -78,10 +87,11 @@
 <% end %>
 </div>
 
-<h2 onclick="flip('majorDiv')">
-  <%= image_tag 'arrowRight.png', :id=>'majorDivArrow' %>
+<h3 onclick="flip('majorDiv')">
+  <%= image_tag 'arrowDown.png', :id=>'majorDivArrow', { :style=>"display:none;"} %>
+  <%= image_tag 'arrowRight.png', :id=>'majorDivArrowRight' %>
   Statistics by Major
-</h2>
+</h3>
 
 <div id='majorDiv' style="display:none" >
 <% @statistics[:major].each do |(major, group_stats)| %>
@@ -90,10 +100,11 @@
 <% end %>
 </div>
 
-<h2 onclick="flip('yearDiv')">
-  <%= image_tag 'arrowRight.png', :id=>'yearDivArrow' %>
+<h3 onclick="flip('yearDiv')">
+  <%= image_tag 'arrowDown.png', :id=>'yearDivArrow', { :style=>"display:none;"} %>
+  <%= image_tag 'arrowRight.png', :id=>'yearDivArrowRight' %>
   Statistics by Year
-</h2>
+</h3>
 
 <div id='yearDiv' style="display:none" >
 <% @statistics[:year].each do |(year, group_stats)| %>
