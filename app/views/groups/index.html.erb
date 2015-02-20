@@ -1,0 +1,62 @@
+<% if @groups.size > 0 then %>
+  <h2>Groups</h2>
+
+  <table class=prettyBorder >
+    <tr>
+      <th>Group Name</th>
+
+      <% @assessment.group_size.times do |i| %>
+        <th>Member</th>
+      <% end %>
+
+      <th>Options</th>
+    </tr>
+
+    <% @groups.each do |group| %>
+      <tr>
+        <td><%= link_to group.name, [@course, @assessment, group] %></td>
+
+        <% group.assessment_user_data.each do |aud| %>
+          <% cud = aud.course_user_datum %>
+          <td>
+            <%= cud.email %>
+            <% unless aud.group_confirmed then %>
+              (Unconfirmed)
+            <% end %>
+          </td>
+        <% end %>
+
+        <% (@assessment.group_size - group.assessment_user_data.size).times do %>
+          <td>&ndash;</td>
+        <% end %>
+
+        <td>
+          <%= link_to "Edit", [@course, @assessment, group] %> | 
+          <%= link_to "Destroy", [@course, @assessment, group], method: :delete, data: { confirm: "Are you sure you want to disband this group?" } %>
+        </td>
+      </tr>
+    <% end %>
+  </table>
+<% else %>
+  <h2>No Groups have been set yet.</h2>
+<% end %>
+
+<h3><%= link_to 'Create New Group', [:new, @course, @assessment, :group] %></h3>
+
+<% if @grouplessCUDs.size > 0 then %>
+  <h2>Users Without Groups</h2>
+
+  <ul class="small gray-box">
+    <% @grouplessCUDs.each do |cud| %>
+      <li><b><%= cud.email %></b></li>
+    <% end %>
+  </ul>
+<% end %>
+
+<% if @groupAssessments.size > 0 then %>
+  <h2>Load Groups from Another Assessment</h2>
+  <%= form_tag [:import, @course, @assessment, :groups] do %>
+    <%= select_tag :ass, options_from_collection_for_select(@groupAssessments, :id, :name) %>
+    <%= submit_tag 'Go!', class: "btn btn-primary" %>
+  <% end %>
+<% end %>

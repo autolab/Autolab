@@ -1,0 +1,31 @@
+<h2>Create a Group</h2>
+
+<%= render "new_form" %>
+
+<% if false then # not sure we should trust students with the class roster... %>
+  <h2>Students Without Groups</h2>
+
+  <ul class="small gray-box">
+    <% @grouplessCUDs.each do |cud| %>
+      <% if cud.id != @cud.id && cud.student? then %>
+        <li><b><%= cud.email %></b>
+          (<%= link_to "Invite to Group", [@course, @assessment, @group, member_id: cud.id], method: :post %>)
+        </li>
+      <% end %>
+    <% end %>
+  </ul>
+<% end %>
+
+<% if @unfullGroups.size > 0 then %>
+  <h2>Join a Group</h2>
+
+  <ul class="gray-box">
+    <% @unfullGroups.each do |group| %>
+      <%= render "list_item", {group: group} %>
+    <% end %>
+  </ul>
+<% end %>
+
+<div style="margin-top: 1em">
+  <%= groups_back_link %>
+</div>

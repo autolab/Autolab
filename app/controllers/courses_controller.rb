@@ -253,7 +253,7 @@ class CoursesController < ApplicationController
       # Check if any file is attached
       if params['upload'] && params['upload']['file'].nil? then
         flash[:error] = 'Please attach a roster!'
-        redirect_to :action => 'uploadRoster' and return
+        redirect_to action: :uploadRoster and return
       end
       
       if params[:doIt] then

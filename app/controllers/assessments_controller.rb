@@ -18,7 +18,9 @@ class AssessmentsController < ApplicationController
   autolabRequire File.join(Rails.root, 'app/controllers/assessment/autograde.rb')
   include AssessmentAutograde
 
-  before_action :get_assessment, except: [ :index, :new, :create, :installQuiz, :installAssessment, :importAsmtFromTar, :importAssessment, :getCategory, :log_submit, :local_submit ]
+  before_action :get_assessment, except: [ :index, :new, :create, :installQuiz, :installAssessment, 
+                                           :importAsmtFromTar, :importAssessment, :getCategory, 
+                                           :log_submit, :local_submit, :autograde_done ]
 
   # We have to do this here, because the modules don't inherit ApplicationController.
 
@@ -42,8 +44,10 @@ class AssessmentsController < ApplicationController
   action_auth_level :handout, :student
 
   # Autograde
+  action_no_auth    :autograde_done
   action_auth_level :adminAutograde, :instructor
   action_auth_level :regrade, :instructor
+  action_auth_level :regradeAll, :instructor
   action_no_auth    :log_submit
   action_no_auth    :local_submit
 
@@ -461,24 +465,6 @@ class AssessmentsController < ApplicationController
       flash[:error] = "Error saving #{@assessment.name}"
       redirect_to action: :installAssessment and return
     end
-
-    # Stage the config file in assessmentConfig and then reload it
-    name = @assessment.name
-    begin
-      #extend_config_module
-      
-      # Verify that we have a module named correctly. 
-      # assign = name.gsub(/\./, '')
-      # modName = assign + (@course.name).gsub(/[^A-Za-z0-9]/, "")
-      # if (not Module.constants.include?(modName.camelize.to_sym)) then
-      #   raise "There is no module named #{assign.camelize} in" +
-      #     " #{assign}/#{assign}.rb " 
-      # end
-    rescue Exception => e
-      flash[:error] = "Error loading #{name}.rb. This is possibly due to a typo or syntax error in your file. Contact Autolab team if the problem persists.<br />Rails error message: #{e}.".html_safe
-      uninstall(name)
-      redirect_to course_path(@course) and return
-    end
       
     # Create the properties file if it doesn't exist
     begin     
@@ -738,7 +724,7 @@ class AssessmentsController < ApplicationController
   action_auth_level :show, :student
   def show
     get_handin
-    extend_config_module()
+    extend_config_module(@assessment, @submission, @cud)
 
     @aud = @assessment.aud_for @cud.id
 
@@ -1087,207 +1073,6 @@ class AssessmentsController < ApplicationController
     @categories = @course.assessment_categories
   end
 
-
-  # method called when student makes
-  # log submission in the database
-  def log_submit
-    
-    feedback_str = request.body.read
-
-    @course = Course.where(:id => params[:course_id]).first
-    @assessment = Assessment.where(:id => params[:id]).first
-    @user = User.where(:email => params[:user]).first
-
-    if !@course  then
-      err = "ERROR: invalid course"
-      render plain: err, status: :bad_request and return
-    end
-
-    if !@user then
-      err = "ERROR: invalid username (#{params[:user]}) for class #{@course.id}"
-      render plain: err, status: :bad_request and return
-    end
-
-    if !@assessment then
-      err = "ERROR: Invalid Assessment (#{params[:id]}) for course #{@course.id}"
-      render plain: err, status: :bad_request and return
-    end
-
-    if !@assessment.allow_unofficial then
-      err = "ERROR: This assessment does not allow Unofficial Submissions"
-      render plain: err, status: :bad_request and return
-    end
-
-    @result = params[:result]
-
-    if !@result then
-      err = "ERROR: No result!"
-      render plain: err, status: :bad_request and return
-    end
-
-    # Everything looks OK, so append the autoresult to the log.txt file for this lab
-    @logger = Logger.new("#{Rails.root}/courses/#{@course.name}/#{@assessment.name}/log.txt")
-    @logger.add(Logger::INFO) { "#{@user.email},0,#{@result}" }
-
-    # Load up the lab.rb file
-    modName = @assessment.name + (@course.name).gsub(/[^A-Za-z0-9]/,"")
-    require("#{Rails.root}/assessmentConfig/#{@course.name}-#{@assessment.name}.rb")
-    eval("extend #{modName.camelcase}")
-
-    begin
-      # Call the parseAutoresult function defined in the lab.rb file.  If
-      # the list of scores it returns is empty, then we the lab developer is
-      # asking us not to create an unofficial submission in the
-      # database. Simply return a successful status string to the client and
-      # exit.
-      scores = parseAutoresult(@result,false)
-
-      if scores.keys.length == 0 then 
-        render plain: "OK", status: 200 and return
-      end
-
-      # Try to find an existing submission (always version 0). 
-      submission = @assessment.submissions.where(:version=>0,:user_id=>@user.id).first
-      if !submission then
-        submission = @assessment.submissions.new(:version=>0,
-              :autoresult=>@result,
-              :user_id=>@user.id,
-              :submitted_by_id=>0)
-        submission.save!()
-      else
-        #update this one
-        submission.autoresult= @result
-        submission.created_at = Time.now()
-        submission.save!()
-      end
-
-
-      # Update the scores in the db's unofficial submission using the list
-      # returned by the parseAutoresult function
-      for key in scores.keys do
-        problem = @assessment.problems.where(:name => key).first
-        score = submission.scores.where(:problem_id => problem.id).first
-        if !score then 
-          score = submission.scores.new(:problem_id=>problem.id)
-        end
-        score.score = scores[key]
-        score.released = true
-        score.grader_id= 0
-        score.save!()
-      end
-    rescue Exception  => e
-      print e
-    end
-
-
-    render plain: "OK", status: 200 and return
-
-  end
-
-
-  # method called when student makes
-  # unofficial submission in the database
-  def local_submit
-    
-    @course = Course.where(:id => params[:course_id]).first
-    @assessment = Assessment.where(:id => params[:id]).first
-    @user = User.where(:email => params[:user]).first
-
-    if !@course  then
-      err = "ERROR: invalid course"
-      render plain: err, status: :bad_request and return
-    end
-
-    if ! @user then
-      user = params[:user]
-      err = "ERROR: invalid username (#{user}) for class #{@course.name}"
-      render plain: err, status: :bad_request and return
-    end
-
-    if !@assessment then
-      err = "ERROR: Invalid Assessment (#{assessment}) for course #{@course.id}"
-      render plain: err, status: :bad_request and return
-    end
-
-    if @assessment.remote_handin_path.nil? then
-      err = "ERROR: Remote handin directory is not defined by the instructor."
-      render plain: err, status: :bad_request and return
-    end
-
-
-    personal_directory = @user.email + "_remote_handin_" +  @assessment.name
-    remoteHandinDir = File.join(@assessment.remote_handin_path, personal_directory)
-
-    if (params[:submit]) then
-      #They've copied their handin over, lets go grab it. 
-      begin
-
-        handinFile = params[:submit]
-        @cud = CourseUserDatum.find_cud_for_course(@course, @user.id)
-        @submission = Submission.create(:assessment_id=>@assessment.id,
-          :course_user_datum_id => @cud.id);
-        upload = {'local_submit_file'=>File.join(remoteHandinDir, handinFile)}
-
-        @submission.saveFile(upload)
-
-        if @assessment.has_autograde then
-          autogradeAfterHandin @submission
-        elsif @assessment.has_partners then
-          partnersAfterHandin @submission
-        end
-
-      rescue Exception  => e
-        print e
-        COURSE_LOGGER.log(e.to_s)
-      end
-
-      if(@submission) then
-        puts "Submission received, ID##{@submission.id}"
-      else
-        err = "There was an error saving your submission. Please contact your course staff"
-        render plain: err, status: :bad_request and return
-      end
-
-      numSubmissions = Submission.where(:course_user_datum=>@cud.id, :assessment_id=>@assessment.id).count
-
-      if @assessment.max_submissions != -1 then
-        if numSubmissions >= @assessment.max_submissions then
-          render plain: " - You have 0 submissions left." and return
-        else
-          numSubmissions = @assessment.max_submissions - numSubmissions
-          render plain: " - You have #{numSubmissions} submissions left" and return
-        end
-      end
-    
-      render plain: "Successfully submitted" and return
-    else
-      
-      #Create a handin directory for them. 
-
-      # The handin Directory really should not exist, as this script deletes it
-      # when it's done.  However, if it's there, we'll try to remove an empty
-      # folder, else fail w/ error message. 
-      if (Dir.exist?(remoteHandinDir)) then
-        begin
-          FileUtils.rm_rf(remoteHandinDir)
-        rescue SystemCallError 
-          render plain: "WARNING: could not clear previous handin directory, please" and return
-        end
-      end
-
-      begin
-        Dir.mkdir(remoteHandinDir)
-      rescue SystemCallError
-        puts "ERROR: Could not create handin directory. Please contact
-        autolab-dev@andrew.cmu.edu with this error" 
-      end
-
-      system("fs sa #{remoteHandinDir} #{@user.email} rlidw")
-    end
-
-    render plain: remoteHandinDir and return
-  end
-
   #
   # adminAutograde - edit the autograding properties for this assessment
   #
@@ -1361,7 +1146,7 @@ class AssessmentsController < ApplicationController
   # scoreboard - This function draws the scoreboard for an assessment.
   #
   def scoreboard
-    extend_config_module
+    extend_config_module(@assessment, nil, @cud)
     @students = CourseUserDatum.joins("INNER JOIN submissions ON course_user_datum.id=submissions.course_user_datum_id")
                     .where("submissions.assessment_id=?",@assessment.id)
                     .group("users.id")
@@ -1849,7 +1634,7 @@ protected
   end
 
   def get_assessment
-    @assessment = Assessment.find params[:assessment_id] || params[:id]
+    @assessment = Assessment.find(params[:assessment_id] || params[:id])
     @course = @assessment.course
 
     if ((!@cud.user.administrator?) && (@cud.course_id != @assessment.course_id)) then 
@@ -1860,79 +1645,6 @@ protected
     unless @assessment
       flash[:error] = "Sorry! we couldn't load the assessment \"#{assign}\""
       redirect_to home_error_path and return
-    end
-  end
-
-  def extend_config_module
-
-    begin
-      require @assessment.config_file_path
-      assessmentInitialize @assessment.name
-      
-
-      # casted to local variable so that 
-      # they can be passed into `module_eval`
-      assessment = @assessment
-      methods = @assessment.config_module.instance_methods
-      assignName = @assessment.name
-      submission = @submission
-
-      course = @course
-      cud = @cud
-      req_hostname = request.host;
-      req_port = request.port;
-
-      @assessment.config_module.module_eval do
-        
-        # we cast these values into module variables
-        # so that they can be accessible inside module
-        # methods
-        @cud = cud
-        @course = course
-        @assessment = course.assessments.where(:name=>assignName).first
-        @hostname = req_hostname
-        @port = req_port
-        @submission = submission
-
-        if ! @assessment then
-          raise "Assessment #{assignName} does not exist!"
-        end
-
-        if @assessment == nil then
-          flash[:error] = "Error: Invalid assessment"
-          redirect_to home_error_path and return
-        end
-
-        @name = @assessment.name
-        @description = @assessment.description
-        @start_at = @assessment.start_at
-        @due_at = @assessment.due_at
-        @end_at = @assessment.end_at
-        @visible_at = @assessment.visible_at
-        @id = @assessment.id
-
-        # we iterate over all the methods
-        # and convert them into `module methods`
-        # this makes them available without mixing in the module
-        # creating an instance of it.
-        # http://www.ruby-doc.org/core-2.1.3/Module.html#method-i-instance_method
-        methods.each { |nonmodule_func| 
-          print nonmodule_func
-          module_function(nonmodule_func)
-          public nonmodule_func
-        }
-      end
-
-    rescue Exception => @error
-      # printing the error so that the bugs are traceable
-      puts @error
-      COURSE_LOGGER.log(@error)
-
-      if @cud and @cud.has_auth_level? :instructor
-        redirect_to action: :reload and return
-      else
-        redirect_to home_error_path and return
-       end
     end
   end
 
