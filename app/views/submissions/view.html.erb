@@ -17,15 +17,19 @@ known bugs:
 
 <% # include the highlight styles %>
 <% content_for :stylesheets do %>
-  <%= stylesheet_link_tag 'highlight' %>
-  <%= stylesheet_link_tag "viewSubmission", "css/ui-lightness/jquery-ui-1.8.21.custom.css" %>
+  <%= stylesheet_link_tag "highlight" %>
+  <%= stylesheet_link_tag "viewSubmission" %>
+  <% #stylesheet_link_tag("viewSubmission"), "css/ui-lightness/jquery-ui-1.8.21.custom.css" %>
   <style type="text/css">
     /** this is a temp fix for proper indentation. -Daniel **/
     code { white-space: pre-wrap; }
   </style>
+
+  <% # highlightjs - change the style sheet for different styles %>
+  <%= stylesheet_link_tag "highlightjs-styles/vs.css" %>
 <% end %>
 
-<%= external_javascript_include_tag "jquery-ui", "1.8.20" %>
+<% #external_javascript_include_tag "jquery-ui", "1.8.20" %>
 
 <h3>Submission Version <%=@submission.version%> for
 <%= current_assessment_link %> (<%= @submission.course_user_datum.email %>)
@@ -44,16 +48,16 @@ known bugs:
   <% end %>
   <ul id="summaryList">
     <% @problemSummaries.each do |problem, descriptTuples| %>
-      <li class="problemListItem"> <%=h "Problem: #{problem} [#{plus_fix(@problemGrades[problem])}]" %>
+      <li class="problemListItem"> <%= "Problem: #{problem} [#{plus_fix(@problemGrades[problem])}]" %>
         <ul id="problem-list-<%= problem %>">
         <% descriptTuples.each do |descript, value, line, user, id| %>
-          <li class="descript" id="li-annotation-<%= id %>"><%=h (user ? "line: #{line}, #{descript} [#{plus_fix(value)}] (#{user})" : "line: #{line}, #{descript} [#{plus_fix(value)}]") %></li>
+          <li class="descript" id="li-annotation-<%= id %>"><%= (user ? "line: #{line}, #{descript} [#{plus_fix(value)}] (#{user})" : "line: #{line}, #{descript} [#{plus_fix(value)}]") %></li>
         <% end %>
         </ul>
       </li>
     <% end %>
     <% if @errorLines != "" then %>
-      <li class="syntaxError"> Syntax Error on line(s): <%=h @errorLines %></li>
+      <li class="syntaxError"> Syntax Error on line(s): <%= @errorLines %></li>
     <% end %>
   </ul>
   <input type="button" value="Reload" class="btn primary" onClick="window.location.reload()">
@@ -63,22 +67,30 @@ known bugs:
 <div style="clear:both">
 <br />
 </div>
+
+<h3 id="filename"><%= @displayFilename %></h3>
+
+<div id="code-box">
+  <% # these lines can't have white space due to the styling for pre and code tages %>
+  <% # anything wrapped in a <pre><code> will be highlighted by highlightsjs %>
+  <pre><code><ol id="code-list"><% 
+    @data.each_with_index do |(code, annotation), index| %><li id="<%= index+1 %>"><%= 
+      code 
+    %></li><% end %></ol></code></pre>
+</div>
+
 <table id="codeTable">
   <thead>
-    <tr class="filename"><td></td><td colspan="3"><code><%= @displayFilename %></code></td></tr>
+    <tr class="filename"><td></td><td colspan="3"><pre><code><%= @displayFilename %></code></pre></td></tr>
   </thead>
   <tbody>
   <% @data.each_with_index do |(code, annotation), index| %>
     <tr class=<%= raw(line_class(annotation)) %>>
       <td class="lineNumber"><%= index + 1 %></td>
-    <% if @escape_code %>
-      <td class="code"><div class="divCode"><code><%= code %></code></div></td>
-    <% else %>
-      <td class="code"><div class="divCode"><code><%=raw code %></code></div></td>
-    <% end %>
+      <td class="code"><div class="divCode"><pre><code><%= code %></code></pre></div></td>
     <%- if @cud.instructor? || @cud.course_assistant? %>
-      <td class=<%== annotation_mod_class(annotation) %>>
-        <%== annotation_mod(annotation).strip %>
+      <td class=<%= annotation_mod_class(annotation) %>>
+        <%= annotation_mod(annotation).strip %>
       </td>
     <%- end %>
     <td class=<%= raw(annotation_class(annotation)) %> id=<%= raw(annotation_id(annotation)) %>
@@ -91,7 +103,27 @@ known bugs:
 </table>
 
 
-<% if @cud.instructor? || @cud.course_assistant? %>
+<% if @cud.instructor? || @cud.course_assistant? then %>
+<% content_for :javascript do %>
+<%= javascript_include_tag "highlight.pack.js" %>
+
+<script type="application/javascript">
+  var annotations = <%= @annotations.as_json %>;
+  console.log(annotations);
+  $(document).ready(function() {
+    $("pre > code").each(function(i, block) {
+      hljs.highlightBlock(block);
+      var lines = document.querySelector("#code-list").children;
+      for (var i = 0; i < children.length; ++i) {
+        
+      }
+      for (i = 0; i < annotations.length; ++i) {
+        
+      }
+    });
+  });
+</script>
+
 <script>
 $(function() {
 
@@ -466,4 +498,4 @@ $(function() {
 });
 </script>
 <% end %>
-
+<% end %>

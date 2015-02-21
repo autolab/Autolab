@@ -85,7 +85,6 @@ GEM
     globalid (0.3.0)
       activesupport (>= 4.1.0)
     hashie (3.3.2)
-    highlight (2.0.0)
     hike (1.2.3)
     i18n (0.7.0)
     jbuilder (2.2.6)
@@ -241,7 +240,6 @@ DEPENDENCIES
   devise (>= 3.3.0)
   dynamic_form
   exception_notification!
-  highlight
   jbuilder (>= 2.0)
   jquery-rails
   momentjs-rails (>= 2.9.0)

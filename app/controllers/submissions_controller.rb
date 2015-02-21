@@ -1,6 +1,7 @@
 class SubmissionsController < ApplicationController
 
-  before_action :load_submission, only: [:destroy]
+  before_action :load_submission, only: [:destroy, :destroyConfirm, :download, :edit, :listArchive, :update, :view]
+  before_action :get_submission_file, only: [:download, :listArchive, :view]
 
   # this page loads.  links/functionality may be/are off
   action_auth_level :index, :instructor
@@ -98,14 +99,12 @@ class SubmissionsController < ApplicationController
   # this loads and looks good
   action_auth_level :edit, :instructor
   def edit
-    load_submission() or return false
     @submission.tweak ||= Tweak.new
   end
 
   # this is good
   action_auth_level :update, :instructor
   def update
-    load_submission() or (redirect_to history_course_assessment_path(@submission.course_user_datum.course, @assessment) and return false)
     if params[:submission][:tweak_attributes][:value].blank?
       params[:submission][:tweak_attributes][:_destroy] = true
     end
@@ -119,7 +118,7 @@ class SubmissionsController < ApplicationController
   # this is good
   action_auth_level :destroy, :instructor
   def destroy
-    if params[:yes] && load_submission() then
+    if params[:yes] then
       @submission.destroy!
     else
       flash[:error] = "There was an error deleting the submission."
@@ -130,7 +129,6 @@ class SubmissionsController < ApplicationController
   # this is good
   action_auth_level :destroyConfirm, :instructor
   def destroyConfirm
-    load_submission() or return false
   end
 
   ##
@@ -204,8 +202,6 @@ class SubmissionsController < ApplicationController
   # try to send the file at that position in the archive.
   action_auth_level :download, :student
   def download
-    load_submission() or return false
-    get_submission_file() or return false
     if params[:header_position] then
       file, pathname = getFileAt params[:header_position].to_i
       if not (file and pathname) then
@@ -231,57 +227,24 @@ class SubmissionsController < ApplicationController
   # archive.
   action_auth_level :view, :student
   def view
-    load_submission() or return false
-    get_submission_file() or return false
-
-    @course = @submission.course_user_datum.course
-
     if params[:header_position] then
       file, pathname = getFileAt params[:header_position].to_i
-      if not (file and pathname) then
+      unless (file and pathname) then
         flash[:error] = "Could not read archive."
-        redirect_to :controller => "home", :action => "error" and return false
+        redirect_to controller: :home, action: :error and return false
       end
 
       @displayFilename = pathname
-
-      extension = File.extname pathname
-      extension = extension[1..-1]
     else
-      extension = File.extname @submission.filename
-      extension = extension[1..-1]
       file = @submission.handinFile.read
 
       @displayFilename = @submission.filename
     end
     return unless file
     
-    if extension == "c0" or extension == "go" then
-      extension = "c"
-    elsif extension == "h0" then
-      extension = "h"
-    elsif extension == "clac" or extension == "sml" then
-      extension = "txt"
-    end
-    
-    @escape_code = false
-    if extension and Simplabs::Highlight.get_language_sym extension then
-      begin
-        file = Simplabs::Highlight.highlight extension, file
-        @data = @submission.annotated_file(file, @filename, params[:header_position])
-      rescue
-        flash[:error] = "Could not display file because it's extension isn't supported."
-      end
-    elsif extension and extension == "txt" then
-      @escape_code = true
-      begin
-        @data = @submission.annotated_file(file, @filename, params[:header_position])
-      rescue
-        flash[:error] = "Could not display file"
-      end
-    end
-
-    if @data.nil? || @data.empty? then
+    begin
+      @data = @submission.annotated_file(file, @filename, params[:header_position])
+    rescue
       flash[:error] = "Sorry, we could not display your file because it contains non-ASCII characters. Please remove these characters and resubmit your work."
       redirect_to :back and return
     end
@@ -299,19 +262,19 @@ class SubmissionsController < ApplicationController
 
     # fix for tar files
     if params[:header_position] then
-      annotations = Annotation.where("submission_id = ? and position = ?", @submission.id, params[:header_position]).to_a
+      @annotations = @submission.annotations.where(position: params[:header_position]).to_a
     else 
-      annotations = Annotation.where("submission_id = ?", @submission.id).to_a
+      @annotations = @submission.annotations.to_a
     end
     
-    annotations.sort! {|a,b| a.line <=> b.line }
+    @annotations.sort! {|a,b| a.line <=> b.line }
 
     @problemSummaries = Hash.new
     @problemGrades = Hash.new
     @errorLines = ""
 
     # extract information from annotations
-    for annotation in annotations do
+    for annotation in @annotations do
       for description, value, line, problem in annotation.get_grades do
         if problem == Annotation.PLAIN_ANNOTATION then
           next
@@ -339,7 +302,7 @@ class SubmissionsController < ApplicationController
       end
     end
 
-    @problems = Problem.where("assessment_id = ?", @submission.assessment_id).to_a
+    @problems = @assessment.problems.to_a
     @problems.sort! {|a,b| a.id <=> b.id }
     @problems.map! {|p| p.name}
 
@@ -353,9 +316,6 @@ class SubmissionsController < ApplicationController
   action_auth_level :listArchive, :student
   def listArchive
     begin
-      load_submission() or return false
-      get_submission_file() or return false
-
       # note: @filename is defined by get_submission_file and is actually
       # submission.handin_file_path because up is down and black is white.
       archive_type = IO.popen(["file", "--brief", "--mime-type", @filename],
@@ -437,42 +397,30 @@ private
   # Redirects to the error page if it encounters an issue.
   def load_submission
     begin
-      @submission = Submission.find params[:id]
+      @assessment = @course.assessments.find params[:assessment_id]
+      @submission = @assessment.submissions.find params[:id]
     rescue
       flash[:error] = "Could not find submission with id #{params[:id]}."
-      redirect_to :controller => "home", :action => "error" and return false
-      return false
+      redirect_to controller: :home, action: :error and return false
     end
     
-    if not (@submission.course_user_datum.user == @cud.user or
-      @cud.instructor? or @cud.user.administrator? or
-      @cud.course_assistant?) then
+    unless (@cud.instructor or @cud.course_assistant or @submission.course_user_datum_id == @cud.id) then
       flash[:error] = "You do not have permission to access this submission."
-      redirect_to :controller => "home", :action => "error" and return false
+      redirect_to controller: :home, action: :error and return false
     end
 
-    @assessment = @submission.assessment
-
-    if ((!@cud.user.administrator?) && (@cud.course_id != @assessment.course_id)) then 
-      flash[:error] = "You do not have permission to access this submission"
-      redirect_to :controller=>"home" , :action=>"error" and return false
-    end
-
-    if (@assessment.exam? or @submission.course_user_datum.course.exam_in_progress?) and
-        not (@cud.instructor? or @cud.course_assistant? or @cud.user.administrator?)
+    if (@assessment.exam? or @course.exam_in_progress?) and not (@cud.instructor or @cud.course_assistant) then
       flash[:error] = "You cannot view this submission.
               Either an exam is in progress or this is an exam submission."
-          redirect_to :controller=>"home", :action=>"error" and return false
+      redirect_to controller: :home, action: :error and return false
     end
     return true
   end
 
-  action_auth_level :get_submission_file, :student
   def get_submission_file
-    if not @submission.filename then
+    unless @submission.filename then
       flash[:error] = "No file associated with submission."
-      redirect_to :controller => "home", :action => "error" and return false
-      return false
+      redirect_to controller: :home, action: :error and return false
     end
 
     @filename = @submission.handin_file_path
@@ -480,8 +428,7 @@ private
 
     if not File.exists? @filename then
       flash[:error] = "Could not find submission file."
-      redirect_to :controller => "home", :action => "error" and return false
-      return false
+      redirect_to controller: :home, action: :error and return false
     end
 
     return true
