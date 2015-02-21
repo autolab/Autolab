@@ -1,32 +1,37 @@
-<script type="text/javascript">
-  function flip(section) { 
-    var div = document.getElementById(section);
-    var arrowDown = document.getElementById(section +"Arrow");
-    var arrowRight = document.getElementById(section +"ArrowRight");
-    if (div.style.display == "none") {
-      div.style.display = "block";
-      arrowDown.style.display = "inline";
-      arrowRight.style.display = "none";
-    } else { 
-      div.style.display = "none";
-      arrowDown.style.display = "none";
-      arrowRight.style.display = "inline";
+<% content_for :stylesheets do %>
+  <style type="text/css">
+    h3.statSectionTitle { 
+      display:inline;
     }
-  }
-</script>
-<style>
-  h3.statSectionTitle { 
-    display:inline;
-  }
-  font.statsPopulationSize {
-    font-size:10px;
-    font-style:italic;
-  }
-</style>
+    font.statsPopulationSize {
+      font-size:10px;
+      font-style:italic;
+    }
+  </style>
+<% end %>
+
+<% content_for :javascripts do %>
+  <script type="text/javascript">
+    function flip(section) { 
+      var div = document.getElementById(section);
+      var arrowDown = document.getElementById(section +"Arrow");
+      var arrowRight = document.getElementById(section +"ArrowRight");
+      if (div.style.display == "none") {
+        div.style.display = "block";
+        arrowDown.style.display = "inline";
+        arrowRight.style.display = "none";
+      } else { 
+        div.style.display = "none";
+        arrowDown.style.display = "none";
+        arrowRight.style.display = "inline";
+      }
+    }
+  </script>
+<% end %>
 
 <h3 style="display:inline" onclick="flip('allGradesDiv')">
   <%= image_tag 'arrowDown.png', :id=>'allGradesDivArrow' %>
-  <%= image_tag 'arrowRight.png', :id=>'allGradesDivArrowRight', { :style=>"display:none;"} %>
+  <%= image_tag 'arrowRight.png', :id=>'allGradesDivArrowRight', :style=>"display:none;" %>
 
   All Grades
 </h3>
@@ -36,7 +41,7 @@
 </div>
 
 <h3 onclick="flip('lectureDiv')">
-  <%= image_tag 'arrowDown.png', :id=>'lectureDivArrow', { :style=>"display:none;"} %>
+  <%= image_tag 'arrowDown.png', :id=>'lectureDivArrow', :style=>"display:none;" %>
   <%= image_tag 'arrowRight.png', :id=>'lectureDivArrowRight' %>
   Statistics by Lecture
 </h3>
@@ -49,7 +54,7 @@
 </div>
 
 <h3 onclick="flip('sectionDiv')">
-  <%= image_tag 'arrowDown.png', :id=>'sectionDivArrow', { :style=>"display:none;"} %>
+  <%= image_tag 'arrowDown.png', :id=>'sectionDivArrow', :style=>"display:none;" %>
   <%= image_tag 'arrowRight.png', :id=>'sectionDivArrowRight' %>
   Statistics by Section
 </h3>
@@ -62,7 +67,7 @@
 </div>
 
 <h3 onclick="flip('graderDiv')">
-  <%= image_tag 'arrowDown.png', :id=>'graderDivArrow', { :style=>"display:none;"} %>
+  <%= image_tag 'arrowDown.png', :id=>'graderDivArrow', :style=>"display:none;" %>
   <%= image_tag 'arrowRight.png', :id=>'graderDivArrowRight' %>
   Statistics by Grader
 </h3>
@@ -75,7 +80,7 @@
 </div>
 
 <h3 onclick="flip('schoolDiv')">
-  <%= image_tag 'arrowDown.png', :id=>'schoolDivArrow', { :style=>"display:none;"} %>
+  <%= image_tag 'arrowDown.png', :id=>'schoolDivArrow', :style=>"display:none;" %>
   <%= image_tag 'arrowRight.png', :id=>'schoolDivArrowRight' %>
   Statistics by School
 </h3>
@@ -88,7 +93,7 @@
 </div>
 
 <h3 onclick="flip('majorDiv')">
-  <%= image_tag 'arrowDown.png', :id=>'majorDivArrow', { :style=>"display:none;"} %>
+  <%= image_tag 'arrowDown.png', :id=>'majorDivArrow', :style=>"display:none;" %>
   <%= image_tag 'arrowRight.png', :id=>'majorDivArrowRight' %>
   Statistics by Major
 </h3>
@@ -101,7 +106,7 @@
 </div>
 
 <h3 onclick="flip('yearDiv')">
-  <%= image_tag 'arrowDown.png', :id=>'yearDivArrow', { :style=>"display:none;"} %>
+  <%= image_tag 'arrowDown.png', :id=>'yearDivArrow', :style=>"display:none;" %>
   <%= image_tag 'arrowRight.png', :id=>'yearDivArrowRight' %>
   Statistics by Year
 </h3>

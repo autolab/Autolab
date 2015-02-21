@@ -78,7 +78,7 @@ This is the main repository that includes the application layer of the project. 
 
 8. (Optional) Setup [Tango Service] (https://github.com/autolab/Tango) following the [instructions on the wiki] (https://github.com/autolab/Tango/wiki/Setting-up-Tango-server-and-VMs). 
 
-9. Create the autoConfig file by editing `lib/autoConfig.rb.template` and renaming to `lib/autoConfig.rb`. 
+9. Create the autogradeConfig file by editing `config/autogradeConfig.rb.template` and renaming to `config/autogradeConfig.rb`. 
 
 10. Start rails server:
 

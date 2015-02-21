@@ -1,4 +1,5 @@
-<% content_for :head do %>
+<% content_for :javascripts do %>
+  <%= javascript_include_tag "initialize_datetimepickers" %>
 <% end %>
 
 <%# Initialize datepickers by defining linked relationships (using IDs) %>
@@ -39,7 +40,3 @@
 <div class="action_buttons">
   <%= f.submit "Save" , {:class=>"btn primary"} %>
 </div>
-
-<% content_for :javascript do %>
-  <%= javascript_include_tag "initialize_datetimepickers" %>
-<% end %>
