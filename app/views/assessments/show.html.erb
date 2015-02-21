@@ -1,3 +1,7 @@
+<% content_for :javascripts do %>
+  <%= javascript_include_tag "assessments_show" %>
+<% end %>
+
 <%# Make sure these options are not on the general user options list.  %>
 <%# We have to do this because we exposed the internal interface for building options lists %>
 <%# and some users have fiddled with this in their assessment.rb file %>
@@ -172,7 +176,3 @@
 
     <% end %>
   </div>
-
-<% content_for :javascript do %>
-  <%= javascript_include_tag "assessments_show" %>
-<% end %>

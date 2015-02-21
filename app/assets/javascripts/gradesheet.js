@@ -212,7 +212,7 @@ $(function() {
       if (grader) {
         this.pop.find('#grader').html(grader.get('first_name') + ' ' +
                                grader.get('last_name') + ' (' +
-                               grader.get('andrewID') + ')');
+                               grader.get('email') + ')');
       } else {
         this.pop.find('#grader').html('None');
       }
@@ -346,7 +346,7 @@ $(function() {
     tagName: 'tr',
     className: 'submission',
     events: {
-      'click .andrewID' : 'showPopover',
+      'click .email' : 'showPopover',
       'click .score' : 'openScore'
     },
 
@@ -652,7 +652,7 @@ $(function() {
       'aoColumnDefs': [
         { "bSortable": false, "aTargets": [ 0 ] },
         { "bSearchable": false, "aTargets": non_searchable_columns },
-        { "sType": "html", "aTargets": [ andrewID_col ] },
+        { "sType": "html", "aTargets": [ email_col ] },
         { "sType": "num-html", "aTargets": numeric_columns },
       ],
       "fnDrawCallback": function(oSettings) {
@@ -666,7 +666,7 @@ $(function() {
           });
         }
       },
-      // "aaSorting": [[ andrewID_col, 'asc' ]] -- this is slowww
+      // "aaSorting": [[ email_col, 'asc' ]] -- this is slowww
   });
 
   console.log("datatables took: " + (new Date() - start));

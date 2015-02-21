@@ -1,3 +1,36 @@
+<% content_for :javascripts do %>
+  <script type="application/javascript">
+    $("#user-lookup").on('click', userLookup);
+    $("#course_user_datum_user_attributes_email").on('blur', userLookup)
+    /**
+     * this AJAX function does an LDAP lookup on the partially-entered user email.
+     **/
+    function userLookup() {
+      var email_input = document.getElementById("course_user_datum_user_attributes_email").value;
+      if (!email_input || email_input == "") return;
+
+      $.get('<%= url_for :controller=>"courses", :action=>"userLookup", :remote=>true  %>',  { email: email_input }, function( data ) {
+
+        if (!data)  {
+          $('#course_user_datum_user_attributes_first_name').prop('disabled', false);
+          $('#course_user_datum_user_attributes_last_name').prop('disabled', false);
+          $('#course_user_datum_user_attributes_first_name').focus();
+          $('#course_user_datum_user_attributes_first_name').val("");
+            $('#course_user_datum_user_attributes_last_name').val("");
+          return;
+        }
+        else {
+          $('#course_user_datum_user_attributes_first_name').val(data.first_name);
+          $('#course_user_datum_user_attributes_first_name').prop('disabled', true);
+          $('#course_user_datum_user_attributes_last_name').val(data.last_name);
+          $('#course_user_datum_user_attributes_last_name').prop('disabled', true);
+          $('#course_user_datum_nickname').focus();
+        }
+      });
+    }
+  </script>
+<% end %>
+
 <h2>Add New User to Course</h2>
 <%= form_for @newCUD, url: course_course_user_data_path do |f| %>
 
@@ -64,38 +97,6 @@
   
   </table>
   <br>
-  <script>
-
-    $("#user-lookup").on('click', userLookup);
-    $("#course_user_datum_user_attributes_email").on('blur', userLookup)
-    /**
-     * this AJAX function does an LDAP lookup on the partially-entered user email.
-     **/
-    function userLookup() {
-      var email_input = document.getElementById("course_user_datum_user_attributes_email").value;
-      if (!email_input || email_input == "") return;
-
-      $.get('<%= url_for :controller=>"courses", :action=>"userLookup", :remote=>true  %>',  { email: email_input }, function( data ) {
-
-        if (!data)  {
-          $('#course_user_datum_user_attributes_first_name').prop('disabled', false);
-          $('#course_user_datum_user_attributes_last_name').prop('disabled', false);
-          $('#course_user_datum_user_attributes_first_name').focus();
-          $('#course_user_datum_user_attributes_first_name').val("");
-            $('#course_user_datum_user_attributes_last_name').val("");
-          return;
-        }
-        else {
-          $('#course_user_datum_user_attributes_first_name').val(data.first_name);
-          $('#course_user_datum_user_attributes_first_name').prop('disabled', true);
-          $('#course_user_datum_user_attributes_last_name').val(data.last_name);
-          $('#course_user_datum_user_attributes_last_name').prop('disabled', true);
-          $('#course_user_datum_nickname').focus();
-        }
-      });
-    }
-
-  </script>
   <input id="user_submit" class="btn primary"name="commit" type="submit" value="Save Changes" onclick="formvalidation(this.parentNode); return false;">
 
-<%end %>
+<% end %>

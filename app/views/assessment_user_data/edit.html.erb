@@ -1,6 +1,5 @@
-<% content_for :head do %>
+<% content_for :stylesheets do %>
   <%= external_stylesheet_link_tag "bootstrap", "2.3.1" %>
-  <%= external_javascript_include_tag "bootstrap", "2.3.1" %>
 
   <style type="text/css">
     /* TODO: temporary Bootstrap override */
@@ -22,6 +21,10 @@
       padding: 2px;
     }
   </style>
+<% end %>
+
+<% content_for :javascripts do %>
+  <%= external_javascript_include_tag "bootstrap", "2.3.1" %>
 <% end %>
 
 <% if flash[:notice] %>

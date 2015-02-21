@@ -1,4 +1,6 @@
-<%= javascript_include_tag "sorttable" %>
+<% content_for :javascripts do %>
+  <%= javascript_include_tag "sorttable" %>
+<% end %>
 
 <h1>Job <%= @job[:name]%></h1>
 <p>
