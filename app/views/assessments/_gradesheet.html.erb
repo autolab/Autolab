@@ -1,19 +1,24 @@
-<%= external_javascript_include_tag "jquery", "1.7.2" %>
-<%= external_javascript_include_tag "jquery-ui", "1.8.20" %>
-<%= external_javascript_include_tag "jquery.dataTables", "1.9.2" %>
+<% content_for :stylesheets do %>
+  <%= stylesheet_link_tag "gradesheet1" %>
+<% end %>
 
-<%= javascript_include_tag "jquery.jeditable" %>
-<%= javascript_include_tag "KeyTable" %>
+<% content_for :javascripts do %>
+  <%= external_javascript_include_tag "jquery", "1.7.2" %>
+  <%= external_javascript_include_tag "jquery-ui", "1.8.20" %>
+  <%= external_javascript_include_tag "jquery.dataTables", "1.9.2" %>
 
-<script type="text/javascript">
-  andrewID_col = 1
-  problem_count = <%= @assessment.problems.length %>
-  first_problem_column = 5;
-  first_non_searchable_column = 3 
-</script>
+  <%= javascript_include_tag "jquery.jeditable" %>
+  <%= javascript_include_tag "KeyTable" %>
 
-<%= javascript_include_tag "gradesheet1" %>
-<%= stylesheet_link_tag "gradesheet1" %>
+  <script type="text/javascript">
+    andrewID_col = 1
+    problem_count = <%= @assessment.problems.length %>
+    first_problem_column = 5;
+    first_non_searchable_column = 3 
+  </script>
+
+  <%= javascript_include_tag "gradesheet1" %>
+<% end %>
 
 <div id="table_container" style="text-align: center">
 

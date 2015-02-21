@@ -1,28 +1,33 @@
-<script type="text/javascript">
-  function flip(section) { 
-    var div = document.getElementById(section);
-    var arrowDown = document.getElementById(section +"Arrow");
-    var arrowRight = document.getElementById(section +"ArrowRight");
-    if (div.style.display == "none") {
-      div.style.display = "block";
-      arrowDown.style.display = "inline";
-      arrowRight.style.display = "none";
-    } else { 
-      div.style.display = "none";
-      arrowDown.style.display = "none";
-      arrowRight.style.display = "inline";
+<% content_for :stylesheets do %>
+  <style type="text/css">
+    h3.statSectionTitle { 
+      display:inline;
     }
-  }
-</script>
-<style>
-  h3.statSectionTitle { 
-    display:inline;
-  }
-  font.statsPopulationSize {
-    font-size:10px;
-    font-style:italic;
-  }
-</style>
+    font.statsPopulationSize {
+      font-size:10px;
+      font-style:italic;
+    }
+  </style>
+<% end %>
+
+<% content_for :javascripts do %>
+  <script type="text/javascript">
+    function flip(section) { 
+      var div = document.getElementById(section);
+      var arrowDown = document.getElementById(section +"Arrow");
+      var arrowRight = document.getElementById(section +"ArrowRight");
+      if (div.style.display == "none") {
+        div.style.display = "block";
+        arrowDown.style.display = "inline";
+        arrowRight.style.display = "none";
+      } else { 
+        div.style.display = "none";
+        arrowDown.style.display = "none";
+        arrowRight.style.display = "inline";
+      }
+    }
+  </script>
+<% end %>
 
 <h3 style="display:inline" onclick="flip('allGradesDiv')">
   <%= image_tag 'arrowDown.png', :id=>'allGradesDivArrow' %>

@@ -1,6 +1,8 @@
 <% require 'autoConfig' %>
 
-<%= javascript_include_tag "sorttable" %>
+<% content_for :javascripts do %>
+  <%= javascript_include_tag "sorttable" %>
+<% end %>
 
 <p>
 This page shows you the status of current and recent autograding jobs. 

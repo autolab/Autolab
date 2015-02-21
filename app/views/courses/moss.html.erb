@@ -1,28 +1,31 @@
 <% @title = "Moss Cheat Checker" %>
-<h2>Run the Moss Cheat Checker</h2>
-<script type="text/javascript">
-/**
- * toggles the "style.display" of the element with the given id.
- **/
-function toggleOptions(id) {
-  var show = document.getElementById(id);
-  show.style.display = (show.style.display == "none")? "block" : "none";
-}
 
-function filterCourses(name) {
-  $(".filterableCourse").each( function() {
-    var course = this;
-    var keywords = name.split(" ");
-    var toShow = true;
-    for (var i=0; i<keywords.length; i++) {
-      if (course.id.toLowerCase().indexOf(keywords[i]) == -1)
-        toShow = false;
+<% content_for :javascripts do %>
+  <script type="text/javascript">
+    /**
+     * toggles the "style.display" of the element with the given id.
+     **/
+    function toggleOptions(id) {
+      var show = document.getElementById(id);
+      show.style.display = (show.style.display == "none")? "block" : "none";
     }
-    $(this).toggle(toShow);
-  });
-}
-</script>
 
+    function filterCourses(name) {
+      $(".filterableCourse").each( function() {
+        var course = this;
+        var keywords = name.split(" ");
+        var toShow = true;
+        for (var i=0; i<keywords.length; i++) {
+          if (course.id.toLowerCase().indexOf(keywords[i]) == -1)
+            toShow = false;
+        }
+        $(this).toggle(toShow);
+      });
+    }
+  </script>
+<% end %>
+
+<h2>Run the Moss Cheat Checker</h2>
 <br>
 
 <h2><b>Step 1:</b> Click on course names to see their assessments, then check box all of the assessments you want Moss to compare against.</h2>

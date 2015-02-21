@@ -19,3 +19,4 @@ tmp/
 *.swp
 db/*.sqlite3
 tags
+.DS_Store
