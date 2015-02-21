@@ -3,7 +3,6 @@ require 'net/http'
 require 'json'
 require 'pathname'
 require_relative "../ModuleBase.rb"
-require_relative "../autoConfig.rb"
 require "digest/md5"
 
 
