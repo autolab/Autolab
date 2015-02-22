@@ -130,5 +130,5 @@
   <% end %>
 
     <% if @cud.instructor? %>
-      <td style="color: red;"><%= submission.errors.full_messages.join("<br />") %></td>
+      <div style="color: red;"><%= submission.errors.full_messages.join("<br />") %></div>
     <% end %>

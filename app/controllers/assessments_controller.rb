@@ -99,26 +99,63 @@ class AssessmentsController < ApplicationController
 
   action_auth_level :installQuiz, :instructor
   def installQuiz
+    
+    @categories = @course.assessment_categories
+
     if request.post? and params.include?(:quiz)
-      quiz = params[:quiz]
-      quizName = params[:quizName]
-      params[:assessment] = {name: quizName, category_name: params[:category]}
-      params[:quiz] = true
-      params[:quizData] = quiz
-      params[:max_submissions] = params[:attemptsAllowed]
-      create
-      quizData = JSON.parse(quiz)
-      p = Problem.new(:name=>"Quiz",
-              :description=>"",
-              :assessment_id=>@assessment.id,
-              :max_score=>quizData.length,
-              :optional=>false)
-      p.save()
-      return
+
+      begin
+
+          @assessment = Assessment.new
+
+          quizJSON = params[:quiz]
+          quizDisplayName = params[:quizName]
+          quizName = quizDisplayName.downcase.gsub(/[^a-z0-9]/,"")
+          category_name = params[:new_category].blank? ? params[:category]: params[:new_category]
+          
+          # Setup quiz's assessmnet structure
+          setupAssessment(quizName);
+
+          # fill in other fields
+          @assessment.course = @course
+          @assessment.name = quizName
+          @assessment.display_name = quizDisplayName
+          @assessment.handin_directory = "handin"
+          @assessment.handin_filename = "handin.c"
+          @assessment.category_name = category_name
+          @assessment.visible_at = Time.now
+          @assessment.start_at = Time.now
+          @assessment.due_at= Time.now
+          @assessment.grading_deadline = Time.now
+          @assessment.end_at = Time.now
+          @assessment.quiz = true
+          @assessment.quizData = quizJSON
+          @assessment.max_submissions = params.include?(:max_submissions) ? params[:max_submissions] : -1
+          
+
+          @assessment.save!
+
+          quizData = JSON.parse(quizJSON)
+          
+          p = Problem.new(:name=>"Quiz",
+                  :description=>"",
+                  :assessment_id=>@assessment.id,
+                  :max_score=>quizData.length,
+                  :optional=>false)
+
+          p.save()
+
+          redirect_to edit_course_assessment_path(@course, @assessment)
+
+      rescue Exception => e
+        flash[:error] = e.to_s
+        render :template=>"assessments/installQuiz" and return
+      end
+
     else
-      @categories = @course.assessment_categories
-      render :template=>"assessments/installQuiz" and return
+      @assessment = Assessment.new
     end
+
   end
 
   action_auth_level :takeQuiz, :student
@@ -330,7 +367,7 @@ class AssessmentsController < ApplicationController
     @assessment = Assessment.new(new_assessment_params)
 
     # Validate the name 
-    assName = @assessment.name.downcase.gsub(/[^a-z0-9]/,"")
+    assName = @assessment.display_name.downcase.gsub(/[^a-z0-9]/,"")
     if assName.blank? then
       flash[:error] = "Assessment name cannot be blank" 
       redirect_to action: :installAssessment and return
@@ -339,67 +376,20 @@ class AssessmentsController < ApplicationController
     # Update name in object
     @assessment.name = assName
     
-    # Reload modules list
-    @modules = []
-    begin
-      Dir.foreach(@moduleDir) { |filename|
-        if (filename =~ /.*\.rb/) then
-          @modules << filename.gsub(/\.rb/,"")
-        end
-      }
-    rescue Exception 
+    # Modules must be in the module list. 
+    @modules = params[:modules]
+
+    if @modules[:Autograde] == 1
+      @assessment.has_autograde = true
     end
 
-    # Modules must be in the module list. 
-    modules = params[:modules]
-    modulesInclude = ""
-    modulesRequire = ""
-    if modules then 
-      for mod in modules.keys do
-        if @modules.include?(mod) then
-          modulesInclude += "\tinclude #{mod}\n"
-          modulesRequire += "require \"modules/#{mod}.rb\"\n"
-        end
-      end
-    end
+    # TODO add other modules
 
     # From here on, if something weird happens, we rollback
     begin 
 
-      # We need to make the assessment directory before we try to upload
-      # files 
-      assDir = File.join(Rails.root,"courses", @course.name, assName)
-      if !File.directory?(assDir) then
-        Dir.mkdir(assDir)
-      end
-      
-      # Open and read the default assessment config file
-      defaultName = File.join(Rails.root,"lib","__defaultAssessment.rb")
-      defaultConfigFile = File.open(defaultName,"r")
-      defaultConfig = defaultConfigFile.read()
-      defaultConfigFile.close()
-      
-      # Update with this assessment information
-      defaultConfig.gsub!("##NAME_CAMEL##",assName.camelize)
-      defaultConfig.gsub!("##NAME_LOWER##",assName)
-      defaultConfig.gsub!("##MODULES_INCLUDE##",modulesInclude)
-      defaultConfig.gsub!("##MODULES_REQUIRE##",modulesRequire)
-     
+      setupAssessment(assName)
 
-      assessmentConfigName = File.join(assDir, "#{assName}.rb") 
-      if !File.file?(assessmentConfigName) then
-        # Write the new config out to the right file. 
-        assessmentConfigFile = File.open(assessmentConfigName, "w")
-        assessmentConfigFile.write(defaultConfig)
-        assessmentConfigFile.close()      
-      end
-
-      # Make the handin directory
-      handinDir = File.join(assDir,"handin")
-      if !File.directory?(handinDir) then
-        Dir.mkdir(handinDir)
-      end
-      
     rescue Exception => e
       # Something bad happened. Undo everything       
       flash[:error] = e.to_s()
@@ -414,7 +404,6 @@ class AssessmentsController < ApplicationController
     
     # fill in other fields
     @assessment.course = @course
-    @assessment.display_name = @assessment.name
     @assessment.handin_directory = "handin"
     @assessment.handin_filename = "handin.c"
     @assessment.visible_at = Time.now
@@ -466,7 +455,7 @@ class AssessmentsController < ApplicationController
       redirect_to course_path(@course) and return
     end
       
-    flash[:success] = "Successfully installed #{name}."
+    flash[:success] = "Successfully installed #{@assessment.name}."
     redirect_to course_path(@course) and return
   end
 
@@ -1242,6 +1231,41 @@ class AssessmentsController < ApplicationController
 
 protected
 
+  # Setup assessment's directory and create assessment config file as well as
+  # handin directory
+  def setupAssessment(assName)
+    # We need to make the assessment directory before we try to upload
+    # files
+    assDir = File.join(Rails.root,"courses", @course.name, assName)
+    if !File.directory?(assDir) then
+      Dir.mkdir(assDir)
+    end
+
+    # Open and read the default assessment config file
+    defaultName = File.join(Rails.root,"lib","__defaultAssessment.rb")
+    defaultConfigFile = File.open(defaultName,"r")
+    defaultConfig = defaultConfigFile.read()
+    defaultConfigFile.close()
+
+    # Update with this assessment information
+    defaultConfig.gsub!("##NAME_CAMEL##",assName.camelize)
+    defaultConfig.gsub!("##NAME_LOWER##",assName)
+
+    assessmentConfigName = File.join(assDir, "#{assName}.rb")
+    if !File.file?(assessmentConfigName) then
+      # Write the new config out to the right file.
+      assessmentConfigFile = File.open(assessmentConfigName, "w")
+      assessmentConfigFile.write(defaultConfig)
+      assessmentConfigFile.close()
+    end
+
+    # Make the handin directory
+    handinDir = File.join(assDir,"handin")
+    if !File.directory?(handinDir) then
+      Dir.mkdir(handinDir)
+    end
+  end
+
   # We only do this so that it can be overwritten by modules
   def updateScore(user, score)
     score.save!()
@@ -1658,7 +1682,7 @@ protected
   private
   
     def new_assessment_params
-      params.require(:assessment).permit(:name, :category_name)
+      params.require(:assessment).permit(:display_name, :category_name)
     end
 
 end

@@ -85,7 +85,7 @@
 <h2>Create a Quiz</h2>
 <p>This is a multiple choice quiz generator. For each question, make one of the options the answer by using the radio button the left. If you want to delete an option, use the red x button the right. You can easily add and remove questions using the buttons below.</p>
 
-<form method="POST" class="quiz-form">
+<%= form_for @assessment, :html => {:class => "quiz-form"}, :method => :POST, :url => { :action => "installQuiz" } do |f| %>
 
   <div class="block">
     <h2>Quiz Name</h2>
@@ -97,8 +97,8 @@
     <i>Select an existing category or enter a new category name (you can always change it later)</i>
     <br><br>
     <select name="category" class="category">
-      <% @categories.each do |c, i| %>
-        <option value="<%= i %>"><%= c %></option>
+      <% @categories.each do |cat| %>
+        <option value="<%= cat %>"><%= cat %></option>
       <% end %>
     </select>
     <br>or<br>
@@ -114,6 +114,7 @@
     <div class="defaultQuestionBlock">
       <h2>Question <span class="questionNum"></span></h2>
       <input class="question" type="text" placeholder="Question" title="Fill in the question.">
+      <hr>
       <div class="optionBlock">
         <input type="radio" class="answer" name="answer" title="Pick an answer.">
         <input class="option" type="text" placeholder="Option" title="Don't leave an empty option.">
@@ -126,6 +127,7 @@
 
   <input type="button" class="btn addQuestion" value="Add New Question">
   <input id="quiz" type="hidden" name="quiz">
-  <input id="submit" type="submit" value="Create Quiz" class="btn primary">
+  <%= f.submit "Create Quiz", {:class => "btn primary", :id => "submit"}  %>
 
-</form>
+<% end %>
+
