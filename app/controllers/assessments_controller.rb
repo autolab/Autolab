@@ -113,11 +113,8 @@ class AssessmentsController < ApplicationController
           quizName = quizDisplayName.downcase.gsub(/[^a-z0-9]/,"")
           category_name = params[:new_category].blank? ? params[:category]: params[:new_category]
           
-          # Create quiz directory
-          quizDir = File.join(Rails.root, "courses", @course.name, quizName)
-          if (!File.directory?(quizDir)) then
-            Dir.mkdir(quizDir)
-          end
+          # Setup quiz's assessmnet structure
+          setupAssessment(quizName);
 
           # fill in other fields
           @assessment.course = @course
@@ -391,37 +388,8 @@ class AssessmentsController < ApplicationController
     # From here on, if something weird happens, we rollback
     begin 
 
-      # We need to make the assessment directory before we try to upload
-      # files 
-      assDir = File.join(Rails.root,"courses", @course.name, assName)
-      if !File.directory?(assDir) then
-        Dir.mkdir(assDir)
-      end
-      
-      # Open and read the default assessment config file
-      defaultName = File.join(Rails.root,"lib","__defaultAssessment.rb")
-      defaultConfigFile = File.open(defaultName,"r")
-      defaultConfig = defaultConfigFile.read()
-      defaultConfigFile.close()
-      
-      # Update with this assessment information
-      defaultConfig.gsub!("##NAME_CAMEL##",assName.camelize)
-      defaultConfig.gsub!("##NAME_LOWER##",assName)     
+      setupAssessment(assName)
 
-      assessmentConfigName = File.join(assDir, "#{assName}.rb") 
-      if !File.file?(assessmentConfigName) then
-        # Write the new config out to the right file. 
-        assessmentConfigFile = File.open(assessmentConfigName, "w")
-        assessmentConfigFile.write(defaultConfig)
-        assessmentConfigFile.close()      
-      end
-
-      # Make the handin directory
-      handinDir = File.join(assDir,"handin")
-      if !File.directory?(handinDir) then
-        Dir.mkdir(handinDir)
-      end
-      
     rescue Exception => e
       # Something bad happened. Undo everything       
       flash[:error] = e.to_s()
@@ -1262,6 +1230,41 @@ class AssessmentsController < ApplicationController
   end
 
 protected
+
+  # Setup assessment's directory and create assessment config file as well as
+  # handin directory
+  def setupAssessment(assName)
+    # We need to make the assessment directory before we try to upload
+    # files
+    assDir = File.join(Rails.root,"courses", @course.name, assName)
+    if !File.directory?(assDir) then
+      Dir.mkdir(assDir)
+    end
+
+    # Open and read the default assessment config file
+    defaultName = File.join(Rails.root,"lib","__defaultAssessment.rb")
+    defaultConfigFile = File.open(defaultName,"r")
+    defaultConfig = defaultConfigFile.read()
+    defaultConfigFile.close()
+
+    # Update with this assessment information
+    defaultConfig.gsub!("##NAME_CAMEL##",assName.camelize)
+    defaultConfig.gsub!("##NAME_LOWER##",assName)
+
+    assessmentConfigName = File.join(assDir, "#{assName}.rb")
+    if !File.file?(assessmentConfigName) then
+      # Write the new config out to the right file.
+      assessmentConfigFile = File.open(assessmentConfigName, "w")
+      assessmentConfigFile.write(defaultConfig)
+      assessmentConfigFile.close()
+    end
+
+    # Make the handin directory
+    handinDir = File.join(assDir,"handin")
+    if !File.directory?(handinDir) then
+      Dir.mkdir(handinDir)
+    end
+  end
 
   # We only do this so that it can be overwritten by modules
   def updateScore(user, score)
