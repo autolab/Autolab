@@ -111,7 +111,7 @@ class AssessmentsController < ApplicationController
           quizJSON = params[:quiz]
           quizDisplayName = params[:quizName]
           quizName = quizDisplayName.downcase.gsub(/[^a-z0-9]/,"")
-          category_name = params[:new_category] || params[:category]
+          category_name = params[:new_category].blank? ? params[:category]: params[:new_category]
           
 
           # fill in other fields
