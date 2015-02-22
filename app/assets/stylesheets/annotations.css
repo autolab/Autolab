@@ -1,3 +1,36 @@
+@charset "utf-8";
+
+#code-list > li:hover,
+#code-list > li:hover .annotation,
+#code-list > li:hover .annotationModifier {
+  /* annotations show up on mouseover */
+  background-color: #DDD;
+  opacity: 1.0;
+  cursor: pointer;
+}
+#code-list > li {
+  width: 82ch;
+}
+#code-list > li > code {
+  float: left;
+  width: 80ch;
+}
+#code-list > li > span.expand {
+  background: red;
+  color: white;
+  display: block;
+  float: left;
+  font-weight: bold;
+  text-align: center;
+  width: 2ch;
+}
+#code-list > li > div,
+#code-list > li > form {
+  width: 82ch;
+}
+
+/** old code **/
+
 #codeTable {
   border-collapse: collapse;
 }

@@ -304,7 +304,6 @@ class SubmissionsController < ApplicationController
 
     @problems = @assessment.problems.to_a
     @problems.sort! {|a,b| a.id <=> b.id }
-    @problems.map! {|p| p.name}
 
     session[:problems] = @problems
 
