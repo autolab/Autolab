@@ -1,26 +1,10 @@
 <% @title = "Gradebook" %>
 
-<% content_for :head do %>
+<% content_for :stylesheets do %>
   <%= stylesheet_link_tag "instructor_gradebook" %>
   <%= stylesheet_link_tag "SlickGrid/2.02/slick.grid.css" %>
   <%= stylesheet_link_tag "SlickGrid/2.02/controls/slick.columnpicker.css" %>
   <%= stylesheet_link_tag "icons" %>
-
-  <%= external_javascript_include_tag "jquery-ui", "1.10.2" %>
-  <%= external_javascript_include_tag "bootstrap-tooltip", "2.3.1" %>
-  <%= javascript_include_tag "jquery.event.drag-2.2.js" %>
-  <%= javascript_include_tag "SlickGrid/2.02/slick.core.js" %>
-  <%= javascript_include_tag "SlickGrid/2.02/slick.grid.js" %>
-  <%= javascript_include_tag "SlickGrid/2.02/slick.dataview.js" %>
-  <%= javascript_include_tag "SlickGrid/2.02/controls/slick.columnpicker.js" %>
-
-  <script type="text/javascript">
-    var columns = <%== gradebook_columns(@matrix, @course).to_json %>
-    var data = <%== gradebook_rows(@matrix, @course, @section).to_json %>
-    var options = <%== @options.to_json %>
-  </script>
-
-  <%= javascript_include_tag "gradebook" %>
 
   <!-- Temporary Bootstrap overrides -->
   <style type="text/css">
@@ -66,12 +50,30 @@
       display: none;
     }
 
-<% unless @options[:show_actions] %>
-    div#filter_container {
-      margin-bottom: 20px;
-    }
-<% end %>
+    <% unless @options[:show_actions] %>
+      div#filter_container {
+        margin-bottom: 20px;
+      }
+    <% end %>
   </style>
+<% end %>
+
+<% content_for :javascripts do %>
+  <%= external_javascript_include_tag "jquery-ui", "1.10.2" %>
+  <%= external_javascript_include_tag "bootstrap-tooltip", "2.3.1" %>
+  <%= javascript_include_tag "jquery.event.drag-2.2.js" %>
+  <%= javascript_include_tag "SlickGrid/2.02/slick.core.js" %>
+  <%= javascript_include_tag "SlickGrid/2.02/slick.grid.js" %>
+  <%= javascript_include_tag "SlickGrid/2.02/slick.dataview.js" %>
+  <%= javascript_include_tag "SlickGrid/2.02/controls/slick.columnpicker.js" %>
+
+  <script type="text/javascript">
+    var columns = <%== gradebook_columns(@matrix, @course).to_json %>
+    var data = <%== gradebook_rows(@matrix, @course, @section).to_json %>
+    var options = <%== @options.to_json %>
+  </script>
+
+  <%= javascript_include_tag "gradebook" %>
 <% end %>
 
 <% if not @course.gb_message.blank? %>

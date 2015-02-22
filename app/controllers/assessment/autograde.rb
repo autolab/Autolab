@@ -1,5 +1,4 @@
 module AssessmentAutograde
-  require 'autoConfig.rb'
   require 'uri'
 
   # method called when Tango returns the output

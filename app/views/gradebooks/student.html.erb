@@ -1,10 +1,13 @@
 <% content_for :head do %>
+  <title>Grades for <%= @_cud.email %></title>
+<% end %>
+
+<% content_for :stylesheets do %>
   <%= stylesheet_link_tag "student_gradebook" %>
   <%= external_stylesheet_link_tag "bootstrap", "2.3.1" %>
 
-  <%= external_javascript_include_tag "bootstrap-tooltip", "2.3.1" %>
-
   <!-- Temporary Bootstrap overrides -->
+  <!-- "Temporary My Ass" - Daniel Bucci, years later -->
   <style type="text/css">
     div#pageBody {
       max-width: 940px;
@@ -32,18 +35,20 @@
       font-size: 12px;
     }
   </style>
+<% end %>
+
+<% content_for :javascripts do %>
+  <%= external_javascript_include_tag "bootstrap-tooltip", "2.3.1" %>
 
   <script type="text/javascript">
-  $(function() {
-    $('.tip').tooltip({
-      placement: 'top',
-      container: 'body',
-      html: true
+    $(function() {
+      $('.tip').tooltip({
+        placement: 'top',
+        container: 'body',
+        html: true
+      });
     });
-  });
   </script>
-
-  <title>Grades for <%= @_cud.email %></title>
 <% end %>
 
 <div class="gradebook">

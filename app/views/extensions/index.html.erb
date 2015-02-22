@@ -1,5 +1,25 @@
 <% @title = "Manage Extensions" %>
 
+<% content_for :javascripts do %>
+  <script type="application/javascript">
+    /* Enable/disable extension days options */
+    jQuery(function() {
+      $extensionDaysField = $('#extension_days');
+      $enableInfiniteExtension = $('#infinite_extension');
+      if ($enableInfiniteExtension.is(':checked')) {
+        $extensionDaysField.prop('disabled',true);
+      }
+      $enableInfiniteExtension.click(function() {
+        if ($enableInfiniteExtension.is(':checked')) {
+          $extensionDaysField.prop('disabled',true);
+        } else {
+          $extensionDaysField.prop('disabled',false);
+        }
+      });
+    });
+  </script>
+<% end %>
+
 <table>
 <tr>
 <td>
@@ -40,21 +60,3 @@ Size:<%= @extensions.size %>
   <%= f.submit "Create" , {:class=>"btn primary"} %>
 <% end %>
 </td></tr></table>
-
-<script>
-/* Enable/disable extension days options */
-jQuery(function() {
-  $extensionDaysField = $('#extension_days');
-  $enableInfiniteExtension = $('#infinite_extension');
-  if ($enableInfiniteExtension.is(':checked')) {
-    $extensionDaysField.prop('disabled',true);
-  }
-  $enableInfiniteExtension.click(function() {
-    if ($enableInfiniteExtension.is(':checked')) {
-      $extensionDaysField.prop('disabled',true);
-    } else {
-      $extensionDaysField.prop('disabled',false);
-    }
-  });
-});
-</script>

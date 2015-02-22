@@ -1,9 +1,50 @@
 <% @title = "Manage Submissions" %>
 
-<%= javascript_include_tag "sorttable" %>
-<%= external_javascript_include_tag "jquery.dataTables", "1.9.2" %>
-<%= javascript_include_tag "table_floating_header" %>
-<%= stylesheet_link_tag "datatable.adapter" %>
+<% content_for :stylesheets do %>
+  <%= stylesheet_link_tag "datatable.adapter" %>
+<% end %>
+
+<% content_for :javascripts do %>
+  <%= javascript_include_tag "sorttable" %>
+  <%= external_javascript_include_tag "jquery.dataTables", "1.9.2" %>
+  <%= javascript_include_tag "table_floating_header" %>
+
+  <script type="text/javascript">
+    jQuery.noConflict();
+
+    var hideStudent;
+
+    jQuery(function($) {
+      var $floater = $("#floater"),
+          $backdrop = $("#gradeBackdrop");
+      $('.trigger').bind('ajax:success', function showStudent(event, data, status, xhr) {
+        $floater.html(data);
+        $floater.show();
+        $backdrop.show();
+      });
+
+      /** override the global **/
+      hideStudent = function hideStudent() {
+        $floater.hide();
+        $backdrop.hide();
+      };
+
+      $('#submissions').dataTable({
+        'sPaginationType': 'full_numbers',
+        'oLanguage': {
+          'sLengthMenu': 'Display <select>'+
+          '<option value="10">10</option>'+
+          '<option value="20">20</option>'+
+          '<option value="50">50</option>'+
+          '<option value="100">100</option>'+
+          '<option value="-1">All</option>'+
+          '</select> records'
+        },
+        "aaSorting": [[ 3, "desc" ]]
+      });
+    });
+  </script>
+<% end %>
 
 <hr>
 <%= link_to "Create New Submission", new_course_assessment_submission_path(@course, @assessment), 
@@ -87,39 +128,3 @@
 
 <div id="floater">
 </div>
-
-<script type="text/javascript">
-jQuery.noConflict();
-
-var hideStudent;
-
-jQuery(function($) {
-  var $floater = $("#floater"),
-      $backdrop = $("#gradeBackdrop");
-  $('.trigger').bind('ajax:success', function showStudent(event, data, status, xhr) {
-    $floater.html(data);
-    $floater.show();
-    $backdrop.show();
-  });
-
-  /** override the global **/
-  hideStudent = function hideStudent() {
-    $floater.hide();
-    $backdrop.hide();
-  };
-
-  $('#submissions').dataTable({
-    'sPaginationType': 'full_numbers',
-    'oLanguage': {
-      'sLengthMenu': 'Display <select>'+
-      '<option value="10">10</option>'+
-      '<option value="20">20</option>'+
-      '<option value="50">50</option>'+
-      '<option value="100">100</option>'+
-      '<option value="-1">All</option>'+
-      '</select> records'
-    },
-    "aaSorting": [[ 3, "desc" ]]
-  });
-});
-</script>

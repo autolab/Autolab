@@ -1,14 +1,18 @@
-<script type='text/javascript'>
-function newCat() {
-  catName = document.getElementById("assessment_category_id")
-  text_field = document.getElementById("new_category")
-  if (catName.options[catName.selectedIndex].value =="-1"){
-    text_field.style.visibility="visible"
-  }else {
-    text_field.style.visibility="hidden"
-  }
-}
-</script>
+<% content_for :javascripts do %>
+  <script type='text/javascript'>
+    function newCat() {
+      catName = document.getElementById("assessment_category_id")
+      text_field = document.getElementById("new_category")
+      if (catName.options[catName.selectedIndex].value =="-1"){
+        text_field.style.visibility="visible"
+      }else {
+        text_field.style.visibility="hidden"
+      }
+    }
+    // this will be loaded at the end of the body, so this function should be runnable
+    newCat();
+  </script>
+<% end %>
 
 <% if @errors then %>
   You have syntax errors in your lab configuration file, please contact
@@ -43,6 +47,3 @@ function newCat() {
   <%= f.submit "Create" , {:class=>"btn primary"} %>
   <% end %>
 <% end %>
-<script type='text/javascript'>
-newCat()
-</script>

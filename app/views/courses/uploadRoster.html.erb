@@ -1,9 +1,3 @@
-<script type="text/javascript" >
-function editField(element) { 
-
-}
-</script>
-
 <h2>Import Course Roster</h2>
 <% if params[:upload] then %>
   Existing accounts in <b>Black</b>.  New accounts in <b><font
@@ -25,7 +19,7 @@ function editField(element) {
           value="<%= cud[:color] %>" />
         <td><%= cud[:email] %>
           <input type="hidden" name="cuds[<%=rowNum %>][email]"
-            value="<%= cud[:email]%>" onclick="editField(this)" />
+            value="<%= cud[:email]%>" />
         </td>
         <td><%= cud[:first_name] %>
           <input type="hidden" name="cuds[<%=rowNum%>][first_name]"

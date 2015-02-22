@@ -1,6 +1,8 @@
 <% @title = "Scoreboard" %>
 
-<%= javascript_include_tag "sorttable" %>
+<% content_for :javascripts do %>
+  <%= javascript_include_tag "sorttable" %>
+<% end %>
 
 <% if @staticOverride  then %>
   <%= f = File.new(@staticOverride,'r')
