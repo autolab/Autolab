@@ -113,6 +113,11 @@ class AssessmentsController < ApplicationController
           quizName = quizDisplayName.downcase.gsub(/[^a-z0-9]/,"")
           category_name = params[:new_category].blank? ? params[:category]: params[:new_category]
           
+          # Create quiz directory
+          quizDir = File.join(Rails.root, "courses", @course.name, quizName)
+          if (!File.directory?(quizDir)) then
+            Dir.mkdir(quizDir)
+          end
 
           # fill in other fields
           @assessment.course = @course
