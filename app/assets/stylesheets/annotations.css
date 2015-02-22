@@ -9,142 +9,46 @@
   cursor: pointer;
 }
 #code-list > li {
-  width: 82ch;
-}
-#code-list > li > code {
-  float: left;
+  position: relative;
   width: 80ch;
 }
-#code-list > li > span.expand {
+#code-list > li > code {
+  width: 80ch;
+}
+#code-list > li > div {
+  width: 80ch;
+}
+.expand {
+  background: #090;
+  color: #fff;
+  display: none;
+  left: 100%;
+  position: absolute;
+}
+#code-list > li:hover > .expand {
+  display: inline;
+}
+
+.ann-box {
+  border: 1px solid #ddd;
+  border-radius: .25em;
+  margin: .5em;
+}
+.ann-box > .header {
+  background: #eee;
+  padding: .5em;
+}
+.ann-box > .header > .delete {
+  border: 1px solid #ddd;
   background: red;
   color: white;
-  display: block;
-  float: left;
+  display: inline-block;
   font-weight: bold;
   text-align: center;
-  width: 2ch;
+  width: 2em;
+  float: right;
 }
-#code-list > li > div,
-#code-list > li > form {
-  width: 82ch;
-}
-
-/** old code **/
-
-#codeTable {
-  border-collapse: collapse;
-}
-
-tr.filename {
-  background-color: #ccc;
-}
-
-.line {
-  cursor:default;
-}
-
-.line td{
-  padding-right: 10px;
-  padding-left: 10px;
-  font-family: monospace;
-}
-
-.lineNumber {
-  text-align: right;
-}
-
-/* make the 'X' big and red */
-.line .deleteAnnotation {
-  color: #F00;
-  font-size: 18px;
-}
-
-.line .createAnnotation,
-.line .annotationModifier {
-  opacity: 0.0;
-}
-
-.line:hover,
-.line:hover .annotation,
-.line:hover .annotationModifier {
-  /* annotations show up on mouseover */
-  background-color: #DDD;
-  opacity: 1.0;
-  cursor: pointer;
-}
-
-.line.annotated .annotation,
-.line.annotating .annotation, 
-.line.annotating .annotationModifier {
-  opacity: 1.0;
-
-  /* spice up the annotations a little to make them more obvious */
-  font-size: 13px;
-  font-weight: bold;
-  /*font-style: italic; */
-}
-
-.line a:link {
-  color: black;
-  text-decoration: none;
-  font-family: monospace;
-}
-
-.code {
-  padding: 2px .5ch;
-  white-space: pre-wrap;
-}
-
-.divCode,
-.line .annotation,
-.descript {
-  word-wrap:break-word;
-}
-
-.divCode {
-  max-width: 81ch; /* 80 characters plus padding */
-}
-
-.line .annotation {
-  max-width: 500px;
-}
-
-
-.syntaxError {
-  font-weight:normal !important;
-  font-style:italic !important;
-  color: #F00;
-}
-
-.annotationSummary {
-  margin:5px;
-  padding:0px 10px 5px 10px;
-  float:left;
-  height:100%;
-}
-
-.annotationHeader {
-  text-align:left;
-}
-
-.annotationPane {
-  padding: 15px;
-}
-
-.comment {
-  width: 240px;
-}
-
-.value {
-  width: 40px;
-}
-
-.problem {
-  width: 151px;
-}
-
-.inputForm {
-  font-size: 12px;
-  font-style: normal;
-  font-weight: normal;
+.ann-box > .body {
+  background: #fff;
+  padding: .5em;
 }

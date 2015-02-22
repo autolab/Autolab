@@ -1,428 +1,252 @@
-<!-- 
-known bugs:
-1. 400 Bad Request is sent when the submitted annotation is empty.
--->
-
-<% # Quick Description
-# The annotations are loaded from the submission controller
-# on creation of this page. An annotation line can be in 3 states:
-# 1. No Annotation (class="line")
-# 2. Currently Being Annotated (class="line annotating")
-# 3. Has annotation (class="annotated line")
-
-# Then the actual annotation html form has 2 states
-# 1. has a comment (class="annotation updateAnnotation")
-# 2. Doesn't have a comment (class="annotation createAnnotation")
-%>
-
-<% # include the highlight styles %>
 <% content_for :stylesheets do %>
-  <%= stylesheet_link_tag "highlight" %>
   <%= stylesheet_link_tag "annotations" %>
   <% # highlightjs - change the style sheet for different styles %>
   <%= stylesheet_link_tag "highlightjs-styles/vs.css" %>
 <% end %>
 
 <% content_for :javascripts do %>
-  <%= external_javascript_include_tag "jquery-ui", "1.8.20" %>
   <%= javascript_include_tag "highlight.pack.js" %>
   <script type="application/javascript">
+    <%# this code should be in a js file, but it relies on templating, for json data
+      # about shit and so that students can't edit shit, so that's kind of a bitch to do %>
     $(function() {
       $("pre > code").each(function(i, block) {
         hljs.highlightBlock(block);
       <% if @cud.instructor || @cud.course_assistant then %>
-        var lines = document.querySelector("#code-list").children;
-        var line, addButton;
-        for (var j = 0; j < lines.length; ++j) {
-          line = lines[j];
-          addButton = document.createElement("span");
-          addButton.className = "expand";
-          addButton.innerHTML = "+";
-          line.appendChild(addButton);
+        var annotations = <%=raw @annotations.to_json %>;
+        var annotationsByLine = {};
+        for (var i = 0; i < annotations.length; ++i) {
+          annotationsByLine[annotations[i].line] = annotations[i];
         }
         
-  // html helpers
-  function elt(t, a) {
-    var el = document.createElement(t);
-    if (a) {
-      for (var attr in a)
-        if (a.hasOwnProperty(attr))
-          el.setAttribute(attr, a[attr]);
-    }
-    for (var i = 2; i < arguments.length; ++i) {
-      var arg = arguments[i];
-      if (typeof arg === "string")
-        arg = document.createTextNode(arg);
-      el.appendChild(arg);
-    }
-    return el;
-  }
-  
-  function Annotation(line) {
-    return {
-      filename: "<%= @filename %>",
-      line: line,
-    <% if params[:header_position] %>
-      position: <%= params[:header_position] %>,
-    <% end %>
-      submission_id: "<%= @submission.id %>",
-      submitted_by: "<%= @cud.email %>",
-    };
-  }
-  var annotations = <%=raw @annotations.to_json %>;
-  var annotationsByLine = {};
-  for (var i = 0; i < annotations.length; ++i) {
-    annotationsByLine[annotations.line] = annotations[i];
-  }
-  var problems = <%=raw @problems.to_json %>;
-  var currentAnnotation = null;
-  var currentLine = null;
-  var commentInput = elt("input", {type:"text", name:"comment", placeholder:"Comments Here", maxlength:"255"}),
-      valueInput = elt("input", {type:"text", name:"value", placeholder:"Score Here"}),
-      problemSelect = elt("select", {name:"problem"}),
-      submitButton = elt("input", {type:"submit", value:"Save"}),
-      cancelButton = elt("input", {type:"button", value:"Cancel"}),
-      annotationForm = elt("form", {title:"<Enter> to Submit"}, commentInput, valueInput, problemSelect, submitButton, cancelButton);
-  annotationForm.onsubmit = function (e) {
-    e.preventDefault();
-    cleanAndSubmit();
-  };
-  for (i = 0; i < problems.length; ++i) {
-    problemSelect.appendChild(elt("option", {value:problems[i].name}, problems[i].name));
-  }
-                           
-  function startAnnotating(index) {
-    if (annotationForm.parentNode) {
-      annotationForm.parentNode.removeChild(annotationForm);
-    }
-    var line = document.querySelector("#line-"+index);
-    if (line) {
-      currentAnnotation = annotationsByLine[index] || Annotation(index);
-      currentLine = line;
-      //annotationForm; // do stuff
-      line.appendChild(annotationForm);
-      annotationForm.comment.focus();
-    }
-  }
-  
-  /* following paths/functions for annotations */
-  var annotationsPath = '<%= course_assessment_submission_annotations_path(@course, @assessment, @submission) %>';
-  var createPath = annotationsPath + ".js";
-  var updatePath = function(annotation) {
-    return [path, "/", annotation.attr("id").replace(/[^0-9]*/, ""), ".js"].join("");
-  };
-  var deletePath = updatePath;
-
-  var emptyAnnotation = "<%= annotation_text(nil) %>";
-
-  /* This function takes an annotation jQuery $(node) and turns it
-   * into an annotated node with the proper id to identify it by later*/
-  var setAnnotationTypeUpdate = function(annotation, id) {
-    annotation.removeClass('createAnnotation')
-        .addClass('updateAnnotation')
-        .attr('id', 'annotation' + id);
-    annotation.prev().text('\u00D7')
-        .removeClass('createAnnotation')
-        .addClass('deleteAnnotation');
-
-    annotation.parent().addClass('annotated');
-  }
-
-  /* This is like the above function but it is called when an annotation
-   * is deleted and resets it back to what it would be if it were
-   * never annotated.
-   */
-  var resetAnnotationType = function(annotation) {
-
-    var annotationId = annotation.attr('id').replace('annotation','');
-
-    annotation.text(emptyAnnotation)
-        .removeClass('updateAnnotation')
-        .addClass('createAnnotation')
-        .removeAttr('id');
-    annotation.prev().text('+')
-        .removeClass('deleteAnnotation')
-        .addClass('createAnnotation');
-
-    annotation.parent().removeClass('annotated');
-    $('#li-annotation-'+annotationId).remove();
-  }
-
-  /* This function takes an annotation jquery node and
-   * brings up three input boxes. 
-   * One for each of: comment, value, problem.
-   * 
-   * Additionally, it sets the keydown functions for the inputs
-   * so they submit on <Return> and the last one tabs back to
-   * the first.
-   * */
-  var annotate = function(index, annotation) {
-
-    annotation.parent().addClass("annotating");
-    annotation.removeClass('syntaxError');
-
-    var commentValueProblem = parseAnnotation(annotation.attr('name').trim());
-    var comment = commentValueProblem[0];
-    var value = commentValueProblem[1];
-    var problem = commentValueProblem[2];
-
-    var annotationForm = $(document.createElement('form'));
-    annotationForm.addClass('inputForm');
-    annotationForm.attr('title', '<Return> to submit');
-
-    var commentInput = document.createElement('input');
-    var valueInput = document.createElement('input');
-    $(commentInput).addClass("comment").addClass("ui-widget-content");
-    $(commentInput).attr('maxlength', '255');
-    $(valueInput).addClass("value").addClass("ui-widget-content");
-    commentInput.value = comment;
-    valueInput.value = value;
-
-    var problemInput = document.createElement('select');
-    problemInput.innerHTML = "<option value=''>None</option>";
-    var newOption = "";
-    for (var i = 0; i < problems.length; i++) {
-      newOption = "\n<option value='" + problems[i] + "'";
-      if (problems[i] === problem) {
-        newOption += " selected='selected'";
-      }
-      newOption += ">" + problems[i] + "</option>";
-      problemInput.innerHTML = problemInput.innerHTML + newOption;
-    }
-    $(problemInput).addClass("problem").addClass("ui-widget-content");
-
-    var commentLabel = document.createElement('text');
-    commentLabel.innerHTML = "<span>Comment: </span>";
-    var problemLabel = document.createElement('text');
-    problemLabel.innerHTML = " Problem:";
-    var valueLabel = document.createElement('text');
-    valueLabel.innerHTML = "<span>Value: </span>";
-
-    annotationForm.append(commentLabel);
-    annotationForm.append(commentInput);
-    annotationForm.append("<br />");
-    annotationForm.append(valueLabel);
-    annotationForm.append(valueInput);
-    annotationForm.append(problemLabel);
-    annotationForm.append(problemInput);
-
-    /* submit on Return for all inputs */
-    annotationForm.find("*").on('keydown', function (e) {
-      if (e.keyCode === 13) { 
-        cleanAndSubmit(); 
-      }
-    }); 
-
-    /* submit on Return, and ignore tab so they don't get tabbed
-           to the bottom of the screen */
-    annotationForm.find(".problem").on('keydown', function (e) {
-      if (e.keyCode === 13) { 
-        cleanAndSubmit(); 
-      }
-      else if (e.keyCode === 9) { 
-        /* tab in circles */
-        $(this).parent().find(".comment").focus();
-        e.preventDefault(); 
-      }
-    });
-
-    annotation.empty();
-    annotation.append(annotationForm);
-    $(commentInput).focus();
-  };
-
-  /* first get the annotation, then set it's text to "Deleting...",
-   * then use ajax to delete the annotation 
-   * note: deleteAnnotation is only the little 'x' in the html */
-  $(document).on("click", ".deleteAnnotation", function() {
-    var annotation = $(this).next();
-    annotation.text('Deleting...');
-    annotation.removeClass('syntaxError');
-    annotation.parent().removeClass('annotating');
-    $.ajax({
-      url: deletePath(annotation),
-      type: 'DELETE',
-      complete: function() {
-        annotation.remove()
-        resetAnnotationType(annotation);
-      }
-    });
-    return false;
-  });
-
-  /* if you click a line, clean up any '.annotating's and
-   * call annotate to set up the annotation.
-   */
-  $(document).on("click", "#code-list > li > code, #code-list > li > span.expand", function(e) {
-    if (currentAnnotation) {
-      cleanAndSubmit();
-    }
-    startAnnotating(parseInt(this.parentNode.id.split("-")[1], 10));
-    /*
-    var annotation = $(".annotation", $(this));
-    if (!annotation.parent().hasClass("annotating")) {
-      cleanAndSubmit();
-      annotate($(this).index(), annotation);
-    }
-    */
-    e.stopPropagation();
-  });
-
-  /* simple but important function. We get any node that
-   * is being annotated and submit it's contents. 
-   */
-  var cleanAndSubmit = function() {
-    if (annotationForm.parentNode) {
-      annotationForm.parentNode.remove(annotationForm);
-      doSubmit();
-    }
-  }
-
-  /* sets up and calls $.ajax to submit an annotation */
-  var doSubmit = function() {
-    if (currentAnnotation.id) {
-      method = 'PUT';
-      resource = updatePath(annotation);
-    } else {
-      method = 'POST';
-      resource = createPath;
-    }
-
-    currentAnnotation.comment = annotationForm.comment;
-    currentAnnotation.value = annotationForm.value;
-    currentAnnotation.problem = annotationForm.problem;
-    currentLine.innerHTML = "Saving...";
-    var line = currentLine;
-
-    $.ajax({
-      url: resource,
-      accepts: "json",
-      dataType: "json",
-      data: {
-        annotation: currentAnnotation
-      },
-      type: method,
-      success: function (data, type) {
-        console.log("SUCCESS");
-        line.appendChild(data.comment);
-        /*
-        setAnnotationTypeUpdate(annotation, data.id);
-        storeLocal(annotation, data.text);
-        if (isError(data.text)) {
-          annotation.addClass('syntaxError');
+        var lines = document.querySelector("#code-list").children, ann;
+        for (var j = 0; j < lines.length; ++j) {
+          if (ann = annotationsByLine[j+1]) {
+            lines[j].lastChild.appendChild(AnnotationHTML(ann));
+          }
         }
-        else {
-          var annStr = ['<li class="descript" id="li-annotation-'+data.id+'">line: ',
-                        data.line,
-                        ', ',
-                        data.text,
-                        '('+data.annotator+')</li>'].join('');
-          $('#problem-list-' + data.problem).append(annStr);
+
+        // create an HTML element real nice and easy like
+        function elt(t, a) {
+          var el = document.createElement(t);
+          if (a) {
+            for (var attr in a)
+              if (a.hasOwnProperty(attr))
+                el.setAttribute(attr, a[attr]);
+          }
+          for (var i = 2; i < arguments.length; ++i) {
+            var arg = arguments[i];
+            if (typeof arg === "string")
+              arg = document.createTextNode(arg);
+            el.appendChild(arg);
+          }
+          return el;
         }
-        */
-      },
-      error: function (result, type) {
-        console.log(result);
-        console.log(type);
-        line.appendChild("Failed to Save Annotation!!!");
-      },
-      complete : function(result, type) {}
-    });
-  }
+        
+        // orphan the given node.  Welcome to life, node.
+        function oliverTwist(node) {
+          node.parentNode.removeChild(node);
+        }
 
-  /* This function takes the contents of the 3 inputs and 
-   * turns them into an annotation to be submitted to the server
-   */
-  var getText = function(node) {
-    var form = node.find('form');
-    var comment = form.find('.comment')[0].value;
-    var problem = form.find('.problem')[0].value;
-    var value = form.find('.value')[0].value;
+        // this creates a JSON representation of what the actual Rails Annotation model looks like
+        function Annotation(line) {
+          return {
+            filename: "<%= @filename %>",
+            line: line,
+          <% if params[:header_position] %>
+            position: <%= params[:header_position] %>,
+          <% end %>
+            submitted_by: "<%= @cud.email %>",
+          };
+        }
 
-    /* turn '[' to '\u01' and ']' to '\u02' */
-    comment = visibleToRaw(comment);
+        // this creates the HTML to display an annotation.
+        function AnnotationHTML(ann) {
+          var grader = elt("span", {class:"grader"}, ann.submitted_by + " says:"),
+              del = elt("span", {class:"delete glyphicon glyphicon-remove"}),
+              header = elt("div", {class:"header"}, grader, del),
+              body = elt("div", {class:"body"}, decodeURI(ann.text)),
+              box = elt("div", {class:"ann-box"}, header, body)
+          del.onclick = function (e) {
+            var parent = box.parentNode;
+            box.parentNode.innerHTML = "Deleting...";
+            $.ajax({
+              url: deletePath(ann),
+              type: 'DELETE',
+              complete: function() {
+                parent.innerHTML = "";
+                annotationsByLine[ann.line] = null;
+              }
+            });
+            return false;
+          };
+          body.onclick = function (e) {
+            if (annotationForm.parentNode !== body) {
+              currentAnnotation = ann;
+              currentLine = document.querySelector("#line-"+ann.line);
+              attrs = parseText(ann.text);
+              commentInput.value = attrs[0];
+              valueInput.value = attrs[1];
+              problemSelect.value = attrs[2];
+              body.innerHTML = "";
+              body.appendChild(annotationForm);
+              annotationForm.comment.focus();
+            }
+          };
+          return box;
+        }
 
-    if (value) {
-      if (problem) {
-        return comment + "[" + value + ":" + problem + "]";
-      } else {
-        return comment + "[" + value + "]";
-      }
-    } else {
-      if (problem) {
-        return comment + "[?:" + problem + "]";
-      }
-    }
-    return comment;
-  }
+        // a json list of problems for this assessment
+        var problems = <%=raw @problems.to_json %>;
+        // the current Annotation instance
+        var currentAnnotation = null;
+        // the currently examined li
+        var currentLine = null;
+        
+        // this section creates the new/edit annotation form that's used everywhere
+        var commentInput = elt("input", {type:"text", name:"comment", placeholder:"Comments Here", maxlength:"255"}),
+            valueInput = elt("input", {type:"text", name:"score", placeholder:"Score Here"}),
+            problemSelect = elt("select", {name:"problem"}, elt("option", {value:""}, "None")),
+            submitButton = elt("input", {type:"submit", value:"Save"}),
+            cancelButton = elt("input", {type:"button", value:"Cancel"}),
+            annotationForm = elt("form", {title:"<Enter> to Submit"}, commentInput, valueInput, problemSelect, submitButton, cancelButton);
+        cancelButton.onclick = function (e) {
+          oliverTwist(annotationForm);
+        };
+        annotationForm.onsubmit = function (e) {
+          e.preventDefault();
+          cleanAndSubmit();
+        };
+        for (i = 0; i < problems.length; ++i) {
+          problemSelect.appendChild(elt("option", {value:problems[i].name}, problems[i].name));
+        }
 
-  /* did the server send back an error? */
-  var isError = function(text) {
-    var inComment = false;
-    for (var i = 0; i < text.length; i++) {
-      if (text[i] === '[') {
-        inComment = true;
-      } else if (text[i] === ']') {
-        inComment = false;
-      } else if (text[i] === '?' && inComment) {
-        return true;
-      }
-    }
-    return false;
-  }
+        // start annotating the line with the given index
+        function startAnnotating(index) {
+          if (annotationForm.parentNode) {
+            oliverTwist(annotationForm);
+          }
+          var line = document.querySelector("#line-"+index);
+          if (line) {
+            currentAnnotation = annotationsByLine[index] || Annotation(index);
+            currentLine = line;
+            commentInput.value = "";
+            valueInput.value = "";
+            problemSelect.value = "";
+            line.lastChild.innerHTML = "";
+            line.lastChild.appendChild(annotationForm);
+            annotationForm.comment.focus();
+          }
+        }
 
-  /* Unfinished function which would replace reloading the annotations
-   * by just refreshing the page.*/
-  var scrapeAndUpdate = function() {
-    var annotations = $('.annotation');
-    for (var i = 0; i < annotations.length; i++) {
-      if (annotations[i].innerHTML.trim() !== emptyAnnotation) {
-        //do stuff
-      }
-    }
-  }
+        /* following paths/functions for annotations */
+        var basePath = "<%= course_assessment_submission_annotations_path(@course, @assessment, @submission) %>";
+        var createPath = basePath + ".json";
+        var updatePath = function(ann) {
+          return [basePath, "/", ann.id, ".json"].join("");
+        };
+        var deletePath = updatePath;
 
-  var storeLocal = function(node, text) {
-    node.html(rawToVisible(text));
-    node.attr('name', text);
-  }
+        /* if you click a line, clean up any '.annotating's and
+         * call annotate to set up the annotation.
+         */
+        $(document).on("click", "#code-list > li > span.expand", function(e) {
+          if (commentInput.value || valueInput.value || problemSelect.value) {
+            cleanAndSubmit();
+          }
+          startAnnotating(parseInt(this.parentNode.id.split("-")[1], 10));
+          e.stopPropagation();
+        });
 
-  var rawToVisible = function(text) {
-    var result = "";
-    for (var i = 0; i < text.length; i++) {
-      if (text.charAt(i) === "\u0001") {
-        result += "[";
-      } else if (text.charAt(i) === "\u0002") {
-        result += "]";
-      } else {
-        result += text.charAt(i);
-      }
-    }
-    return result;
-  }
+        /* simple but important function. We get any node that
+         * is being annotated and submit it's contents. 
+         */
+        var cleanAndSubmit = function() {
+          if (annotationForm.parentNode) {
+            oliverTwist(annotationForm);
+            doSubmit();
+          }
+        }
 
-  var visibleToRaw = function(text) {
-    var result = "";
-    for (var i = 0; i < text.length; i++) {
-      if (text.charAt(i) === "[") {
-        result += "\u0001";
-      } else if (text.charAt(i) === "]") {
-        result += "\u0002";
-      } else {
-        result += text.charAt(i);
-      }
-    }
-    return result;
-  }
+        /* sets up and calls $.ajax to submit an annotation */
+        var doSubmit = function() {
+          if (currentAnnotation.id) {
+            method = "PUT";
+            resource = updatePath(currentAnnotation);
+          } else {
+            method = "POST";
+            resource = createPath;
+          }
 
-  window.addEventListener("click", cleanAndSubmit, false);
+          currentAnnotation.text = getText(commentInput.value, valueInput.value, problemSelect.value);
+          currentLine.lastChild.innerHTML = "Saving...";
+          var line = currentLine;
+
+          $.ajax({
+            url: resource,
+            accepts: "json",
+            dataType: "json",
+            data: {
+              annotation: currentAnnotation
+            },
+            type: method,
+            success: function (data, type) {
+              console.log("SUCCESS");
+              line.lastChild.innerHTML = "";
+              line.lastChild.appendChild(AnnotationHTML(data));
+              annotationsByLine[data.line] = data;
+            },
+            error: function (result, type) {
+              console.log(result);
+              console.log(type);
+              line.lastChild.innerHTML = "Failed to Save Annotation!!!";
+            },
+            complete : function(result, type) {}
+          });
+        }
+
+        /* This function takes the contents of the 3 inputs and 
+         * turns them into an annotation to be submitted to the server
+         */
+        var getText = function(comment, value, problem) {
+          comment = encodeURI(comment);
+
+          if (value) {
+            if (problem) {
+              return comment + "[" + value + ":" + problem + "]";
+            } else {
+              return comment + "[" + value + "]";
+            }
+          } else {
+            if (problem) {
+              return comment + "[?:" + problem + "]";
+            }
+          }
+          return comment;
+        }
+
+        // given annotation tex, return an array of [comment, value, problem]
+        var parseText = function (text) {
+          var res = text.split("[");
+          if (text.length === 1) {
+            return [decodeURI(text), "", ""];
+          } else {
+            res2 = res[1].split(":");
+            if (res2.length === 1) {
+              return [decodeURI(res[0]), res[1].split("]")[0], ""];
+            } else {
+              if (res2[0] === "?") {
+                return [decodeURI(res[0]), "", res2[1].split("]")[0]];
+              } else {
+                return [decodeURI(res[0]), res2[0], res2[1].split("]")[0]];
+              }
+            }
+          }
+        };
       <% end %>
       });
     });
   </script>
-  <% if @cud.instructor || @cud.course_assistant then %>
-    <%#javascript_include_tag "annotations" %>
-  <% end %>
 <% end %>
 
 <h3>Submission Version <%=@submission.version%> for
@@ -430,8 +254,7 @@ known bugs:
 </h3>
 
 <div>
-<p id="wahoo"></p>
-<div class="ui-widget-content annotationPane" style="max-width:730px">
+<div class="annotationPane">
   <h2 class="annotationHeader">
   Annotation Summary
   </h2>
@@ -454,7 +277,7 @@ known bugs:
       <li class="syntaxError"> Syntax Error on line(s): <%= @errorLines %></li>
     <% end %>
   </ul>
-  <input type="button" value="Reload" class="btn primary" onClick="window.location.reload()">
+  <input type="button" value="Reload" class="btn primary" onclick="window.location.reload()">
   <input type="checkbox" id="highlightLongLines" style="margin-left:20px;"> Highlight lines longer than 80 characters
 </div>
 </div>
@@ -471,54 +294,6 @@ known bugs:
     @data.each_with_index do |(code, annotation), index|
       %><li id="line-<%= index+1 %>"><code><%= 
         code 
-      %></code></li><% 
+      %></code><span class="expand glyphicon glyphicon-plus"></span><div></div></li><% 
     end %></ol></code></pre>
 </div>
-
-<% if false then %>
-<table id="codeTable">
-  <thead>
-    <tr class="filename"><td></td><td colspan="3"><pre><code><%= @displayFilename %></code></pre></td></tr>
-  </thead>
-  <tbody>
-  <% @data.each_with_index do |(code, annotation), index| %>
-    <tr class=<%= raw(line_class(annotation)) %>>
-      <td class="lineNumber"><%= index + 1 %></td>
-      <td class="code"><div class="divCode"><pre><code><%= code %></code></pre></div></td>
-    <%- if @cud.instructor? || @cud.course_assistant? %>
-      <td class=<%= annotation_mod_class(annotation) %>>
-        <%= annotation_mod(annotation).strip %>
-      </td>
-    <%- end %>
-    <td class=<%= raw(annotation_class(annotation)) %> id=<%= raw(annotation_id(annotation)) %>
-        name='<%= annotation_raw_text(annotation).strip %>'>
-      <%= annotation_text(annotation).strip %>
-    </td>
-    </tr>
-  <% end %>
-  </tbody>
-</table>
-<% end %>
-
-<% content_for :javascripts do %>
-<script type="application/javascript">
-  /* Highlights lines longer than 80 characters autolab red color w*/
-  var highlightLines = function(highlight) {
-    $("#code-list > li > code").each(function() {
-      var text = $(this).text();
-      // To account for lines that have 80 characters and a line break
-      var diff = text[text.length - 1] === "\n" ? 1 : 0;
-      if(text.length - diff > 80 && highlight){
-        $(this).css("background-color", "rgba(153, 0, 0, .9)");
-        $(this).prev().css("background-color", "rgba(153, 0, 0, .9)");
-      } else {
-        $(this).css("background-color", "white");
-        $(this).prev().css("background-color", "white");
-      }
-    });
-  };
-  $("#highlightLongLines").click(function(){
-    highlightLines(this.checked);
-  });
-</script>
-<% end %>
