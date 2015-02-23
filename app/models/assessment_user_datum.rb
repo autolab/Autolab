@@ -5,6 +5,7 @@ class AssessmentUserDatum < ActiveRecord::Base
   belongs_to :course_user_datum
   belongs_to :assessment
   belongs_to :latest_submission, :class_name => "Submission"
+  belongs_to :group
 
   # attr_accessible :grade_type
 
@@ -28,6 +29,19 @@ class AssessmentUserDatum < ActiveRecord::Base
     :excused => EXCUSED
   }
 
+  # Different statuses for group membership
+  UNCONFIRMED = 0x0
+  MEMBER_CONFIRMED = 0x1
+  GROUP_CONFIRMED = 0x2
+  CONFIRMED = 0x3
+  
+  ##
+  # checks a user's membership status
+  #
+  def group_confirmed(flags = CONFIRMED)
+    (flags == UNCONFIRMED && self.membership_status == UNCONFIRMED) || ((self.membership_status & flags) == flags)
+  end
+  
   # Updates latest_submission atomically
   #
   # Using this method *prevents* the following interleaving, for example:

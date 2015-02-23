@@ -1,6 +1,6 @@
-require 'autoConfig'
-
 class JobsController < ApplicationController
+
+  autolabRequire Rails.root.join('config', 'autogradeConfig.rb')
 
   # 
   # getRecentJobs - this function retrieves the currently running jobs

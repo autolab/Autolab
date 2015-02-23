@@ -45,6 +45,12 @@ class ApplicationController < ActionController::Base
       raise ArgumentError.new("#{level.to_s} is not an auth level") 
     end
 
+    if level == :administrator then
+      skip_before_filter :authorize_user_for_course, only: [action]
+      skip_filter :authenticate_for_action => [action]
+      skip_before_filter :update_persistent_announcements, only: [action]
+    end
+
     controller_whitelist = (@@global_whitelist[self.controller_name.to_sym] ||= {})
     raise ArgumentError.new("#{action.to_s} already specified.") if controller_whitelist[action]
 
@@ -91,7 +97,11 @@ protected
     level = controller_whitelist[params[:action].to_sym]
     return if level.nil?
 
-    authentication_failed unless @cud.has_auth_level?(level)
+    if level == :administrator then
+      authentication_failed unless current_user.administrator
+    else
+      authentication_failed unless @cud.has_auth_level?(level)
+    end
   end
 
   protect_from_forgery 
@@ -240,6 +250,20 @@ protected
 
   def pluralize(count, singular, plural = nil)
     "#{count || 0} " + ((count == 1 || count =~ /^1(\.0+)?$/) ? singular : (plural || singular.pluralize))
+  end
+
+  # makeDlist - Creates a string of emails that can be added as b/cc field.
+  # @param section The section to email.  nil if we should email the entire
+  # class. 
+  # @return The filename of the dlist that was created. 
+  def makeDlist(cuds)
+    emails = []
+
+    for cud in cuds do 
+      emails << "#{cud.user.email}"
+    end
+
+    return emails.join(",")
   end
 
 private

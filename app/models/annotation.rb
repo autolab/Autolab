@@ -232,8 +232,8 @@ class Annotation < ActiveRecord::Base
   end
 
   def upgrade_to_v2
-    comment_value_problem = parse_text_to_attributes
-    update_attributes(comment_value_problem)
+    #comment_value_problem = parse_text_to_attributes
+    #update_attributes(comment_value_problem)
   end
 
   # Annotations v1 parser

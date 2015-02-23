@@ -8,7 +8,11 @@ Autolab3::Application.routes.draw do
     get 'error'
     get 'no_user'
   end
-  
+
+  resource :admin do
+    match 'emailInstructors', via: [:get, :post]
+  end
+
   resources :users do
     get 'admin'
   end
@@ -26,12 +30,20 @@ Autolab3::Application.routes.draw do
     resources :attachments
 
     resources :assessments, except: :update do
+      resources :assessment_user_data, only: [:show, :edit, :update]
       resources :attachments
+      resources :extensions, only: [:index, :create, :destroy]
+      resources :groups, except: :edit do
+        member do
+          post 'add'
+          post 'join'
+          post 'leave'
+        end
+        post 'import', on: :collection
+      end
       resources :problems, except: [:index, :show] do
         get 'destroyConfirm', on: :member
       end
-      resources :assessment_user_data, only: [:show, :edit, :update]
-      resources :extensions, only: [:index, :create, :destroy]
       resources :submissions do
         resources :annotations, only: [:create, :update, :destroy]
         resources :scores, only: [:create, :show, :update]
@@ -39,12 +51,9 @@ Autolab3::Application.routes.draw do
           get 'destroyConfirm'
           get 'download'
           get 'listArchive', as: :list_archive
-          get 'regrade'
           get 'view'
-          post 'autograde_done'
         end
         collection do
-          get 'regradeAll'
           get 'downloadAll'
           get 'missing'
         end
@@ -71,6 +80,8 @@ Autolab3::Application.routes.draw do
       	patch 'edit/*active_tab', action: :update
         get 'edit/*active_tab', action: :edit
         post 'handin'
+        get 'takeQuiz'
+        post 'submitQuiz'
         get 'history'
         get 'viewFeedback'
         get 'viewGradesheet'
@@ -79,6 +90,11 @@ Autolab3::Application.routes.draw do
         get 'partner'
         get 'scoreboard'
 
+        # autograde actions
+        post 'autograde_done'
+        post 'regrade'
+        post 'regradeAll'
+        
         # partner actions
         match 'setPartner', via: [:get, :post]
         get 'importPartners'
@@ -107,6 +123,7 @@ Autolab3::Application.routes.draw do
         match 'importAssessment', via: [:get, :post]
         match 'importAsmtFromTar', via: [:post]
         match 'getCategory', via: [:get, :post]
+        match 'installQuiz', via: [:get, :post]
       end
     end
 
@@ -125,10 +142,7 @@ Autolab3::Application.routes.draw do
       end
     end
     
-    resource :admin, only: :show do
-      collection do
-        get 'throwException'
-      end
+      get  'manage'
       get  'bulkRelease'
       get  'downloadRoster'
       match 'email', via: [:get, :post]
@@ -139,7 +153,6 @@ Autolab3::Application.routes.draw do
       get  'reload'
       get  'sudo'
       post 'runMoss'
-    end
 
   end
 end

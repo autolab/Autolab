@@ -156,12 +156,10 @@ class User < ActiveRecord::Base
     user.password_confirmation = temp_pass
     user.skip_confirmation!
 
-    if (user.save) then
-        user.send_reset_password_instructions
-        return user
-    else
-        return nil 
-    end
+    user.save!
+    user.send_reset_password_instructions
+    return user
+
   end
   
   # list courses of a user

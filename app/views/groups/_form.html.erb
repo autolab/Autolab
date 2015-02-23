@@ -1,0 +1,5 @@
+<%= form_for @group, url: [@course, @assessment, @group], builder: FormBuilderWithDateTimeInput do |f| %>
+  <%= f.text_field :name, help_text: "Change the name of this group." %>
+
+  <%= f.submit "Change Name" %>
+<% end %>

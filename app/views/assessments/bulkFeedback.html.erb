@@ -1,4 +1,10 @@
-<%= external_javascript_include_tag 'prototype', '1.6.0.3' %>
+<% content_for :javascripts do %>
+  <%= external_javascript_include_tag 'prototype', '1.6.0.3' %>
+  <script type="script/javascript">
+    document.getElementById("score_<%= @uploadedStudents[0][:score].id %>").focus();
+  </script>
+<% end %>
+
 <% if params[:file] then %>
   <h2>Feedback Files Saved! Please Enter Grades:</h2>
   <%= form_tag(url_for(:post=>"grades")) do %>
@@ -23,10 +29,6 @@
   </table>
   <%= submit_tag 'Submit',:tabindex=>tabindex %>
   <% end %>
-  <script type="script/javascript">
-    document.getElementById(
-      "score_<%= @uploadedStudents[0][:score].id %>").focus()
-  </script>
 <% else %>
   <h1>Upload an archive of feedback files</h1>
   <i>This is an <b>experimental</b> feature! Please email

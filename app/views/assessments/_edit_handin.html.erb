@@ -1,15 +1,30 @@
-<%= f.datetime_select :start_at, help_text: "The time this assessment is released to students." %>
+<% content_for :javascripts do %>
+  <%= javascript_include_tag "initialize_datetimepickers" %>
+<% end %>
 
-<%= f.datetime_select :due_at, help_text: "Students can submit before this time without being penalized or using grace days." %>
+<%# Initialize datepickers by defining linked relationships (using IDs) %>
+<%= f.datetime_select :start_at,
+  help_text: "The time this assessment is released to students.",
+  less_than: "assessment_due_at assessment_end_at assessment_grading_deadline" %>
 
-<%= f.datetime_select :end_at, help_text: "Last possible time that students can submit (except those granted extensions.)" %>
+<%= f.datetime_select :due_at,
+  help_text: "Students can submit before this time without being penalized or using grace days.",
+  greater_than: "assessment_start_at",
+  less_than: "assessment_end_at assessment_grading_deadline" %>
 
-<%= f.datetime_select :grading_deadline, help_text: "Time after which final scores are included in the gradebook" %>
+<%= f.datetime_select :end_at,
+  help_text: "Last possible time that students can submit (except those granted extensions.)",
+  greater_than: "assessment_start_at assessment_due_at",
+  less_than: "assessment_grading_deadline" %>
+
+<%= f.datetime_select :grading_deadline,
+  help_text: "Time after which final scores are included in the gradebook",
+  greater_than: "assessment_start_at assessment_due_at assessment_end_at" %>
 
 <div class="form-group">
-  <label for="disable_handins" class="suppress-bottom-margin">Disable Handins</label>
-  <%= f.check_box :disable_handins %>
-  <p class="help-block">Check this to disallow handins through Autolab. E.g., paper exams, problem sets</p>
+  <span class="checkbox"><%= f.check_box :disable_handins,
+    help_text: "Check this to disallow handins through Autolab. E.g., paper
+    exams, problem sets" %></span>
 </div>
 
 <%= content_tag :div, id: "handin", class: (f.object.disable_handins ? "disabled" : "") + " form-group" do %>

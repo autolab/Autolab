@@ -1,14 +1,17 @@
-<script type='text/javascript'>
-function newCat() {
-  catName = document.getElementById("newAssessment_category_id")
-  text_field = document.getElementById("new_category")
-  if (catName.options[catName.selectedIndex].value =="-1"){
-    text_field.style.visibility="visible"
-  }else {
-    text_field.style.visibility="hidden"
-  }
-}
-</script>
+<% content_for :javascripts do %>
+  <script type='text/javascript'>
+    function newCat() {
+      catName = document.getElementById("newAssessment_category_id")
+      text_field = document.getElementById("new_category")
+      if (catName.options[catName.selectedIndex].value =="-1"){
+        text_field.style.visibility="visible"
+      }else {
+        text_field.style.visibility="hidden"
+      }
+    }
+    newCat();
+  </script>
+<% end %>
 
 <h2>Select Category for <%= params[:assessment_name] %></h2>
 <br>
@@ -25,7 +28,7 @@ function newCat() {
 <tr><th width=200>Select an existing category
 or enter a new category name
 <i>(you can always change it later)</i></th>
-<td><%= select_tag(:category_id, options_for_select(@categories), {}) %>
+<td><%= select_tag(:category_name, options_for_select(@categories), {}) %>
 <hr>
 <%= text_field_tag(:new_category) %>
 <%= hidden_field_tag :assessment_name, params[:assessment_name] %>
@@ -35,7 +38,3 @@ or enter a new category name
 <br>
 <p><%= submit_tag("Submit", :class => "btn primary") %></p>
 </form>
-
-<script type='text/javascript'>
-newCat()
-</script>

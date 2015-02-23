@@ -1,4 +1,4 @@
-<div class="handin-panel <% if modal -%>modal<% end -%>" id="<%= id %>" data-cansubmit="<%= @can_submit %> ">
+<div id="<%= id %>" data-cansubmit="<%= @can_submit %> ">
   <% if @can_submit %> 
     <% if @assessment.max_submissions != -1 %>
       <p>You have <%= @left_count %> <%= (@left_count == 1) ? "submission" : "submissions" %> left.</p>
@@ -16,6 +16,18 @@
           <p><%= f.submit("Checkout Repository", class: "btn primary") %></p>
         <% end %>
       <% end %>
+
+
+    <% elsif @is_quiz %>
+        <% if @assessment.max_submissions == -1 or @left_count > 0 %>
+          <% if @aud.past_due_at? then %>
+            <a href="<%= @quiz_path %>"><button class="btn primary">Take Quiz Late</button></a>
+          <% else %>
+            <a href="<%= @quiz_path %>"><button class="btn primary">Take Quiz</button></a>
+          <% end %>
+        <% else %>
+          <a href="#"><button class="btn primary">Cannot Take Quiz Again</button></a>
+        <% end %>
     <% else %>
       <%= form_for @submission, url: {action: :handin}, multipart: true do |f| %>
         <%= f.file_field :file %>

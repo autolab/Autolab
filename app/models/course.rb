@@ -12,7 +12,6 @@ class Course < ActiveRecord::Base
 
   has_many :course_user_data, :dependent=>:destroy
   has_many :assessments, :dependent=>:destroy
-  has_many :assessment_categories, :dependent=>:destroy
   has_many :user_modules, :dependent=>:destroy
   has_many :scheduler, :dependent=>:destroy
   has_many :announcements, dependent: :destroy
@@ -142,6 +141,18 @@ class Course < ActiveRecord::Base
     course_user_data.where(course_assistant: false, instructor: false, dropped: [false, nil])
   end
 
+  # return all CUDs that are not course_assistants, instructors, or dropped
+  def instructors
+    course_user_data.where(instructor: true)
+  end
+
+  def assessment_categories
+    assessments.pluck("DISTINCT category_name").sort
+  end
+
+  def assessments_with_category(cat_name)
+    assessments.where(category_name: cat_name).ordered
+  end
 
 private
   def cgdub_dependencies_updated 

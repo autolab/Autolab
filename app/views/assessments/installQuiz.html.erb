@@ -1,0 +1,133 @@
+<% @title = "Install Quiz" %>
+
+<% content_for :stylesheets do %>
+  <%= stylesheet_link_tag "assessments/quiz.css" %>
+<% end %>
+
+<% content_for :javascripts do %>
+  <script type="application/javascript">
+    $(function() {
+      var quiz = {};
+      $("#submit").click(function(){
+        $(".questionBlock").each(function(questionNum) {
+          quiz[questionNum] = {};
+          quiz[questionNum]["question"] = $(this).find(".question").val();
+          $(this).find(".answer").each(function(optionNum){
+            if (this.checked) {
+              quiz[questionNum]["answer"] = optionNum;
+            }
+          });
+          $(this).find(".option").each(function(optionNum) {
+            quiz[questionNum][optionNum] = $(this).val();
+          });
+        });
+        $("#quiz").val(JSON.stringify(quiz));
+        console.log(quiz);
+      });
+
+      var nameQuestions = function() {
+        $(".questionBlock").each(function(questionNum) {
+          $(this).find(".questionNum").text(questionNum + 1);
+          $(this).attr("questionNum", questionNum);
+          $(this).find(".answer").each(function(optionNum){
+            $(this).attr("name", "answer" + questionNum);
+            $(this).attr("required", "required");
+          });
+          $(this).find(".option").each(function(optionNum){
+            $(this).attr("required", "required");
+          });
+          $(this).find(".question").each(function(optionNum){
+            $(this).attr("required", "required");
+          });
+        });
+      }
+
+      var addQuestion = function() {
+        var c = $(".defaultQuestionBlock").clone();
+        c.removeClass('defaultQuestionBlock');
+        c.addClass('questionBlock');
+        c.appendTo($("#questions"));
+        nameQuestions();
+      }
+      addQuestion();
+
+      $(".addQuestion").click(function() {
+        addQuestion();
+      });
+
+      $("#questions").on('click', '.addOption', function(){
+        $(this).before($(".optionBlock:first").clone());
+        nameQuestions();
+      });
+
+      $("#questions").on('click', '.deleteOption', function(){
+        if ($(this).parent().parent().children('.optionBlock').length > 1) {
+          $(this).parent().remove();
+        } else {
+          // Questions need at least one option, so don't delete, but simply clear the field
+          $(this).prev().val("");
+        }
+      });
+
+      $("#questions").on('click', '.deleteQuestion', function(){
+        $(this).parent().remove();
+        nameQuestions();
+      });
+
+      $("#questions").on('click', '.answer', function(){
+        $(this).parents(".questionBlock").find(".option").css("background-color", "white");
+        $(this).next(".option").css("background-color", "rgba(0, 153, 0, 0.9)");
+      });
+    });
+  </script>
+<% end %>
+
+<h2>Create a Quiz</h2>
+<p>This is a multiple choice quiz generator. For each question, make one of the options the answer by using the radio button the left. If you want to delete an option, use the red x button the right. You can easily add and remove questions using the buttons below.</p>
+
+<%= form_for @assessment, :html => {:class => "quiz-form"}, :method => :POST, :url => { :action => "installQuiz" } do |f| %>
+
+  <div class="block">
+    <h2>Quiz Name</h2>
+    <input class="quizName" name="quizName" type="text" placeholder="Quiz Name" title="Name the quiz." required>
+  </div>
+
+  <div class="block">
+    <h2>Assessment Category</h2>
+    <i>Select an existing category or enter a new category name (you can always change it later)</i>
+    <br><br>
+    <select name="category" class="category">
+      <% @categories.each do |cat| %>
+        <option value="<%= cat %>"><%= cat %></option>
+      <% end %>
+    </select>
+    <br>or<br>
+    <%= text_field_tag :new_category, nil, :placeholder=>"Create New Category", :class=>"categoryInput" %>
+  </div>
+
+  <div class="block">
+    <h2>Maximum Attempts on Quiz</h2>
+    <input name="attemptsAllowed" class="attemptsAllowed" type="text" value="1" title="How many attempts are allowed?" required>
+  </div>
+
+  <div id="questions">
+    <div class="defaultQuestionBlock">
+      <h2>Question <span class="questionNum"></span></h2>
+      <input class="question" type="text" placeholder="Question" title="Fill in the question.">
+      <hr>
+      <div class="optionBlock">
+        <input type="radio" class="answer" name="answer" title="Pick an answer.">
+        <input class="option" type="text" placeholder="Option" title="Don't leave an empty option.">
+        <span class="deleteOption">&times;</span>
+      </div>
+      <input type="button" class="btn addOption" value="Add Another Option">
+      <input type="button" class="btn deleteQuestion" value="Delete Question">
+    </div>
+  </div>
+
+  <input type="button" class="btn addQuestion" value="Add New Question">
+  <input id="quiz" type="hidden" name="quiz">
+  <%= f.submit "Create Quiz", {:class => "btn primary", :id => "submit"}  %>
+
+<% end %>
+
