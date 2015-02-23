@@ -1,6 +1,6 @@
 module AssessmentAutograde
   require 'uri'
-  require Rails.root.join("config", "autogradeConfig.rb")
+  require_relative Rails.root.join("config", "autogradeConfig.rb")
 
   # method called when Tango returns the output
   # action_no_auth :autograde_done
