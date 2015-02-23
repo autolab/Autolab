@@ -9,22 +9,26 @@
 <% content_for :javascripts do %>
   <%= javascript_include_tag "highlight.pack.js" %>
   <script type="application/javascript">
-    <%# this code should be in a js file, but it relies on templating, for json data
-      # about shit and so that students can't edit shit, so that's kind of a bitch to do %>
+
     <% if @cud.instructor || @cud.course_assistant then %>
       var isInstructor = true;
-      var annotations = <%=raw @annotations.to_json %>;
-      var fileNameStr = "<%= @filename %>";
-      var cudEmailStr = "<%= @cud.email %>";
-      // a json list of problems for this assessment
-      var problems = <%=raw @problems.to_json %>;
-      var basePath = "<%= course_assessment_submission_annotations_path(@course, @assessment, @submission) %>";
-
-      var headerPositionStr = null;
-      <% if params[:header_position] %>
-      var headerPositionStr = <%= params[:header_position] %>,
-      <% end %>
+    <% else %>
+      var isInstructor = false;
     <% end %>
+
+    var annotations = <%=raw @annotations.to_json %>;
+    var fileNameStr = "<%= @filename %>";
+    var cudEmailStr = "<%= @cud.email %>";
+    // a json list of problems for this assessment
+    var problems = <%=raw @problems.to_json %>;
+    var basePath = "<%= course_assessment_submission_annotations_path(@course, @assessment, @submission) %>";
+
+    <% if params[:header_position] %>
+    var headerPositionStr = <%= params[:header_position] %>,
+    <% else %>
+    var headerPositionStr = null;
+    <% end %>
+
   </script>
   <%= javascript_include_tag "annotations.js" %>
 <% end %>
