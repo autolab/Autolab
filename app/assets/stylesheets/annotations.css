@@ -106,9 +106,27 @@ pre code {
   border-radius: 4px;
 }
 
+.ann-box .score-box {
+  float: right;
+  background-color: #ddd;
+  border-radius: 2px;
+  font-size: 10px;
+  margin-right: 4px;
+  overflow: hidden;
+}
+
+.ann-box .score-box span {
+  line-height: 20px;
+  padding: 4px;
+}
+
+.ann-box .score-box span:first-child {
+  background-color: #ccc;
+}
+
 .ann-box > .header > .delete:hover,
 .ann-box > .header > .edit:hover {
-  border: 1px solid #999;
+  border: 1px solid #ccc;
 }
 
 .ann-box > .body {
