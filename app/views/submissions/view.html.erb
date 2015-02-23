@@ -24,7 +24,7 @@
     var basePath = "<%= course_assessment_submission_annotations_path(@course, @assessment, @submission) %>";
 
     <% if params[:header_position] %>
-    var headerPositionStr = <%= params[:header_position] %>,
+    var headerPositionStr = "<%= params[:header_position] %>";
     <% else %>
     var headerPositionStr = null;
     <% end %>
