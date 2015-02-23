@@ -1,6 +1,6 @@
 <h2>Create new assessment</h2>
 
-<%= form_for @assessment, url: course_assessments_path do |f| %>
+<%= form_for @assessment, url: course_assessments_path, builder: FormBuilderWithDateTimeInput do |f| %>
   <% if @assessment.errors.any? %>
     <div id="error_explanation">
       <h2><%= pluralize(@assessment.errors.count, "error") %>
@@ -13,39 +13,38 @@
       </ul>
     </div>
   <% end %>
-	
-	<table width="70%" class='verticalTable'>
-		
-	<tr>
-		<th width=50><%= f.label :display_name %></th>
-		<td width=100><%= f.text_field :display_name %></td>
-		<td style="border:0px;width:200px;" class="smallText">This name should be all lowercase alphanumeric only (no spaces or punctuation)</i></td>
-	</tr>
-	
-	<tr>
-		<th><%= f.label :category_name %></th>
-		<td><%= f.collection_select :category_name, @categories, :to_s, :to_s %></td>
-	  <td style="border:0px;width:200px;" class="smallText"> You can create a new category <%= link_to "here", new_course_assessment_category_path %>.
-	  </td>
-	</tr>
-	
-	<tr>
-	  <th>Optional<br>modules</th>
-	  <td>
-	    <% for mod in @modules do  %>
-	      <%= check_box_tag "modules[#{mod}]" %>
-	      <%= mod %><br>
-	    <% end %>
-	  </td>
 
-	  <td style="border:0px;width:200px;" class="smallText"> Optional
-	    features are provided as modules. Click the features you would
-	    like. You can read about them <a
-	    href="http://docs.autolab.cs.cmu.edu/document/view/73">here</a>.
-	  </td>
-	</tr>
-	
-	</table>
-	<br>
-	<%= f.submit "Create assessment", {:class => "btn primary"}  %>
+  <div class="col-md-6">
+    <%= f.text_field :display_name,
+      help_text: "Name that will be displayed on the course home page. E.g.,
+      'Malloc Lab'" %>
+
+    <div class="form-group">
+      <%= f.label :category_name, { :class=>"control-label" } %>
+      <%= f.collection_select :category_name, @course.assessment_categories, :to_s, :to_s, {selected: @assessment.category_name}, {class: "form-control"} %>
+      <p class="help-block">You can create a new category <%= link_to "here", new_course_assessment_category_path %>.</p>
+    </div>
+
+    <hr>
+
+    <h4>Optional Modules Used</h4>
+    <span class="checkbox"><%= f.check_box :has_autograde,
+      display_name: "Enable autograding?",
+      help_text: "Whether this assignment will be autograded." %></span>
+
+    <span class="checkbox"><%= f.check_box :has_svn,
+      display_name: "Use SVN?",
+      help_text: "Whether to use SVN in conjunction with this assignment." %></span>
+
+    <span class="checkbox"><%= f.check_box :has_scoreboard,
+      display_name: "Enable scoreboard?",
+      help_text: "Should there be a publically-visible scoreboard?" %></span>
+
+    <%= f.text_field :group_size,
+      display_name: "Group Size",
+      help_text: "Set the maximum size of groups for this assessment.  If group size is 1, the assessment is solo.  If the size is decreased, groups that are too large will not be broken up.  If the size is set to 1, groups will be saved, but the assessment will be solo." %>
+
+    <br>
+    <%= f.submit "Create assessment", class: "btn primary"  %>
+  </div>
 <% end %>
