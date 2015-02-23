@@ -119,7 +119,7 @@ protected
   def maintenance_mode?
     # enable/disable maintenance mode with this switch:
     if false
-      unless @user.administrator?
+      unless user_signed_in? and current_user.administrator?
         redirect_to "/maintenance.html"
       end
     end
