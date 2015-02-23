@@ -16,17 +16,28 @@
         hljs.highlightBlock(block);
       <% if @cud.instructor || @cud.course_assistant then %>
         var annotations = <%=raw @annotations.to_json %>;
+        
+        // annotationsByLine: { 'lineNumber': [annotations_array ]}
         var annotationsByLine = {};
-        for (var i = 0; i < annotations.length; ++i) {
-          annotationsByLine[annotations[i].line] = annotations[i];
-        }
+        $.each(annotations, function(ind, annotationObj) {
+          var lineInd = annotationObj.line
+          if (!annotationsByLine[lineInd]) {
+            annotationsByLine[lineInd] = [];
+          }
+          annotationsByLine[lineInd].push(annotationObj);
+        });
+
         
         var lines = document.querySelector("#code-list").children, ann;
         for (var j = 0; j < lines.length; ++j) {
-          if (ann = annotationsByLine[j+1]) {
-            lines[j].lastChild.appendChild(AnnotationHTML(ann));
-          }
+          $(lines[j]).append('<div class="annotations-container"></div>');
         }
+
+        $.each(annotationsByLine, function(lineInd, arr_annotations) {
+          $.each(arr_annotations, function(ind, annotationObj) {
+            $(lines[lineInd-1]).find(".annotations-container").append(newAnnotationBox(annotationObj));
+          });
+        });
 
         // create an HTML element real nice and easy like
         function elt(t, a) {
@@ -51,7 +62,7 @@
         }
 
         // this creates a JSON representation of what the actual Rails Annotation model looks like
-        function Annotation(line) {
+        function createAnnotation(line) {
           return {
             filename: "<%= @filename %>",
             line: line,
@@ -63,39 +74,41 @@
         }
 
         // this creates the HTML to display an annotation.
-        function AnnotationHTML(ann) {
-          var grader = elt("span", {class:"grader"}, ann.submitted_by + " says:"),
-              del = elt("span", {class:"delete glyphicon glyphicon-remove"}),
-              header = elt("div", {class:"header"}, grader, del),
-              body = elt("div", {class:"body"}, decodeURI(ann.text)),
-              box = elt("div", {class:"ann-box"}, header, body)
-          del.onclick = function (e) {
-            var parent = box.parentNode;
-            box.parentNode.innerHTML = "Deleting...";
+        function newAnnotationBox(ann) {
+          
+          var grader = elt("span", {class:"grader"}, ann.submitted_by + " says:");
+          var edit = elt("span", {class:"edit glyphicon glyphicon-edit"});
+          var del = elt("span", {class:"delete glyphicon glyphicon-remove"});
+          var header = elt("div", {class:"header"}, grader, del, edit);
+          var body = elt("div", {class:"body"}, decodeURI(ann.text));
+
+          var box = elt("div", {class:"ann-box", id: "ann-box-"+ann.id}, header, body)
+
+          $(del).on("click", function (e) {
             $.ajax({
               url: deletePath(ann),
               type: 'DELETE',
               complete: function() {
-                parent.innerHTML = "";
-                annotationsByLine[ann.line] = null;
+                $(box).remove();
               }
             });
             return false;
-          };
-          body.onclick = function (e) {
-            if (annotationForm.parentNode !== body) {
-              currentAnnotation = ann;
-              currentLine = document.querySelector("#line-"+ann.line);
-              attrs = parseText(ann.text);
-              commentInput.value = attrs[0];
-              valueInput.value = attrs[1];
-              problemSelect.value = attrs[2];
-              body.innerHTML = "";
-              body.appendChild(annotationForm);
-              annotationForm.comment.focus();
-            }
-          };
+          });
+
+          $(edit).on("click", function(e) {
+            $(body).hide();
+            var form = newEditAnnotationForm(ann.line, ann);
+            $(box).append(form);
+            //var updateAnnotation = function(annotationObj, lineInd, formEl) {
+
+          });
+
           return box;
+        }
+
+        var updateAnnotationBox = function(ann) {
+          $('#ann-box-'+ann.id).find('.body').show();
+          $('#ann-box-'+ann.id).find('.body').html(decodeURI(ann.text));
         }
 
         // a json list of problems for this assessment
@@ -104,44 +117,100 @@
         var currentAnnotation = null;
         // the currently examined li
         var currentLine = null;
-        
-        // this section creates the new/edit annotation form that's used everywhere
-        var commentInput = elt("input", {class:"col-md-6", type:"text", name:"comment", placeholder:"Comments Here", maxlength:"255"});
-        var valueInput = elt("input", {class:"col-md-2", type:"text", name:"score", placeholder:"Score Here"});
-        var problemSelect = elt("select", {class:"col-md-2", name:"problem"}, elt("option", {value:""}, "None"));
-        var rowDiv = elt("div", {class: "row", style:"margin-left:4px;"}, commentInput, valueInput, problemSelect);
+  
+        var newAnnotationForm = function(lineInd) {
+
+          // this section creates the new/edit annotation form that's used everywhere
+          var commentInput = elt("input", {class:"col-md-6 comment", type:"text", name:"comment", placeholder:"Comments Here", maxlength:"255"});
+          var valueInput = elt("input", {class:"col-md-2", type:"text", name:"score", placeholder:"Score Here"});
+          var problemSelect = elt("select", {class:"col-md-2", name:"problem"}, elt("option", {value:""}, "None"));
+          var rowDiv = elt("div", {class: "row", style:"margin-left:4px;"}, commentInput, valueInput, problemSelect);
 
 
-        var submitButton = elt("input", {type:"submit", value:"Save", class:"btn primary small"});
-        var cancelButton = elt("input", {style: "margin-left: 4px;", type:"button", value:"Cancel", class: "btn small"});
-        var hr = elt("hr");
-        var annotationForm = elt("form", {title:"Press <Enter> to Submit", class:"annotation-form"},rowDiv, hr, submitButton, cancelButton);
-        cancelButton.onclick = function (e) {
-          oliverTwist(annotationForm);
-        };
-        annotationForm.onsubmit = function (e) {
-          e.preventDefault();
-          cleanAndSubmit();
-        };
-        for (i = 0; i < problems.length; ++i) {
-          problemSelect.appendChild(elt("option", {value:problems[i].name}, problems[i].name));
+          var submitButton = elt("input", {type:"submit", value:"Save", class:"btn primary small"});
+          var cancelButton = elt("input", {style: "margin-left: 4px;", type:"button", value:"Cancel", class: "btn small"});
+          var hr = elt("hr");
+
+          for (i = 0; i < problems.length; ++i) {
+            problemSelect.appendChild(elt("option", {value:problems[i].name}, problems[i].name));
+          }
+
+          var newForm = elt("form", {title:"Press <Enter> to Submit", class:"annotation-form", id: "annotation-form-"+lineInd},rowDiv, hr, submitButton, cancelButton);
+
+          newForm.onsubmit = function (e) {
+            e.preventDefault();
+
+            var comment = commentInput.value;
+            var value = valueInput.value;
+            var problem = problemSelect.value;
+
+            submitNewAnnotation(comment, value, problem, lineInd, newForm);
+          };
+
+          $(cancelButton).on('click', function() {
+            $(newForm).remove();
+          })
+
+          return newForm;
         }
 
-        // start annotating the line with the given index
-        function startAnnotating(index) {
-          if (annotationForm.parentNode) {
-            oliverTwist(annotationForm);
+
+        var newEditAnnotationForm = function(lineInd, ann) {
+          var arr = parseText(ann.text);
+          var commentStr = arr[0];
+          var valueStr = arr[1];
+          var problemStr = arr[2];
+
+          // this section creates the new/edit annotation form that's used everywhere
+          var commentInput = elt("input", {class:"col-md-6 comment", type:"text", name:"comment", placeholder:"Comments Here", maxlength:"255", value: commentStr});
+          var valueInput = elt("input", {class:"col-md-2", type:"text", name:"score", placeholder:"Score Here", value: valueStr});
+          var problemSelect = elt("select", {class:"col-md-2", name:"problem"}, elt("option", {value:""}, "None"));
+          var rowDiv = elt("div", {class: "row", style:"margin-left:4px;"}, commentInput, valueInput, problemSelect);
+
+
+          var submitButton = elt("input", {type:"submit", value:"Save Changes", class:"btn primary small"});
+          var cancelButton = elt("input", {style: "margin-left: 4px;", type:"button", value:"Cancel", class: "btn small"});
+          var hr = elt("hr");
+
+          for (i = 0; i < problems.length; ++i) {
+            if (problemStr ==  problems[i].name) {
+              $(problemSelect).val(problemStr);
+            }
+            problemSelect.appendChild(elt("option", {value:problems[i].name}, problems[i].name));
           }
-          var line = document.querySelector("#line-"+index);
-          if (line) {
-            currentAnnotation = annotationsByLine[index] || Annotation(index);
-            currentLine = line;
-            commentInput.value = "";
-            valueInput.value = "";
-            problemSelect.value = "";
-            line.lastChild.innerHTML = "";
-            line.lastChild.appendChild(annotationForm);
-            annotationForm.comment.focus();
+
+          var newForm = elt("form", {title:"Press <Enter> to Submit", class:"annotation-edit-form", id: "edit-annotation-form-"+lineInd},rowDiv, hr, submitButton, cancelButton);
+
+          newForm.onsubmit = function (e) {
+            e.preventDefault();
+
+            var comment = commentInput.value;
+            var value = valueInput.value;
+            var problem = problemSelect.value;
+
+            ann.text = getText(comment, value, problem)
+            //function(annotationObj, lineInd, formEl) {
+            updateAnnotation(ann, lineInd, newForm);
+          };
+
+          $(cancelButton).on('click', function() {
+            updateAnnotationBox(ann);
+            $(newForm).remove();
+          })
+
+          return newForm;
+        }
+
+
+
+        // start annotating the line with the given index
+        function showAnnotationForm(lineInd) {
+          var $line = $("#line-"+lineInd);
+          
+          if ($line.length) {
+            var newForm = newAnnotationForm(lineInd)
+            $line.append(newForm);
+            $(newForm).find('.comment').focus();
           }
         }
 
@@ -156,56 +225,64 @@
         /* if you click a line, clean up any '.annotating's and
          * call annotate to set up the annotation.
          */
-        $(document).on("click", "#code-list > li > span.expand", function(e) {
-          if (commentInput.value || valueInput.value || problemSelect.value) {
-            cleanAndSubmit();
+        $(".add-annotation-btn").on("click", function(e) {
+          var btn = e.currentTarget;
+          var lineInd = parseInt(btn.id.replace('add-btn-',''),10);
+          if ($('#annotation-form-' + lineInd).length) {
+            $('#annotation-form-' + lineInd).find('.comment').focus();
           }
-          startAnnotating(parseInt(this.parentNode.id.split("-")[1], 10));
+          else {
+            showAnnotationForm(lineInd);
+          }
           e.stopPropagation();
         });
 
-        /* simple but important function. We get any node that
-         * is being annotated and submit it's contents. 
-         */
-        var cleanAndSubmit = function() {
-          if (annotationForm.parentNode) {
-            oliverTwist(annotationForm);
-            doSubmit();
-          }
-        }
 
         /* sets up and calls $.ajax to submit an annotation */
-        var doSubmit = function() {
-          if (currentAnnotation.id) {
-            method = "PUT";
-            resource = updatePath(currentAnnotation);
-          } else {
-            method = "POST";
-            resource = createPath;
-          }
+        var submitNewAnnotation = function(comment, value, problem, lineInd, formEl) {
 
-          currentAnnotation.text = getText(commentInput.value, valueInput.value, problemSelect.value);
-          currentLine.lastChild.innerHTML = "Saving...";
-          var line = currentLine;
+          var newAnnotation = createAnnotation(lineInd);
+          newAnnotation.text = getText(comment, value, problem);
+          var $line = $('#line-'+lineInd);
 
           $.ajax({
-            url: resource,
+            url: createPath,
             accepts: "json",
             dataType: "json",
             data: {
-              annotation: currentAnnotation
+              annotation: newAnnotation
             },
-            type: method,
+            type: "POST",
             success: function (data, type) {
-              console.log("SUCCESS");
-              line.lastChild.innerHTML = "";
-              line.lastChild.appendChild(AnnotationHTML(data));
-              annotationsByLine[data.line] = data;
+              $line.find('.annotations-container').append(newAnnotationBox(data));
+              if (!annotationsByLine[lineInd]) {
+                annotationsByLine[lineInd] = [];
+              }
+              annotationsByLine[lineInd].push(data);
+              $(formEl).remove();
             },
             error: function (result, type) {
-              console.log(result);
-              console.log(type);
-              line.lastChild.innerHTML = "Failed to Save Annotation!!!";
+              $(formEl).append("Failed to Save Annotation!!!");
+            },
+            complete : function(result, type) {}
+          });
+        }
+
+        var updateAnnotation = function(annotationObj, lineInd, formEl) {
+          $.ajax({
+            url: updatePath(annotationObj),
+            accepts: "json",
+            dataType: "json",
+            data: {
+              annotation: annotationObj
+            },
+            type: "PUT",
+            success: function (data, type) {
+              updateAnnotationBox(annotationObj);
+              $(formEl).remove();
+            },
+            error: function (result, type) {
+              $(formEl).append("Failed to Save Annotation!!!");
             },
             complete : function(result, type) {}
           });
@@ -300,7 +377,7 @@
       @data.each_with_index do |(code, annotation), index|
         %><li id="line-<%= index+1 %>"><code><%= 
           code 
-        %></code><span class="expand glyphicon glyphicon-plus"></span><div></div></li><% 
+        %></code><span class="add-annotation-btn glyphicon glyphicon-plus" id="add-btn-<%= index+1 %>"></span><div></div></li><% 
       end %></ol></code></pre>
   </div>
   </div>

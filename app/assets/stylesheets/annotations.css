@@ -25,11 +25,9 @@ pre code {
     font-family: 'Source Sans Pro', sans-serif;
 }
 
-#code-list > li:hover,
-#code-list > li:hover .annotation,
-#code-list > li:hover .annotationModifier {
+#code-list > li:hover {
   /* annotations show up on mouseover */
-  background-color: #DDD;
+  background-color: #fcfcfc;
   opacity: 1.0;
   cursor: pointer;
 }
@@ -49,7 +47,7 @@ pre code {
   width: 80ch;
 }
 
-.expand {
+.add-annotation-btn {
   background: #090;
   color: #fff;
   display: none;
@@ -65,13 +63,13 @@ pre code {
   box-shadow: 0 1px 4px rgba(0,0,0,0.15);
 }
 
-.expand:hover {
+.add-annotation-btn:hover {
   -ms-transform: scale(1.2); /* IE 9 */
   -webkit-transform: scale(1.2); /* Chrome, Safari, Opera */
   transform: scale(1.2);
 }
 
-#code-list > li:hover > .expand {
+#code-list > li:hover > .add-annotation-btn {
   display: inline;
 }
 
@@ -84,26 +82,32 @@ pre code {
   overflow: hidden;
 }
 
+.ann-box:hover {
+  border: 1px solid #bbb;
+}
+
 .ann-box > .header {
   background: #eee;
   padding: .5em;
   font-weight: bold;
 }
 
-.ann-box > .header > .delete {
+.ann-box > .header > .delete,
+ .ann-box > .header > .edit {
   border: 1px solid transparent;
   display: inline-block;
   font-weight: bold;
   text-align: center;
   width: 2em;
   float: right;
-  color: #333;
+  color: #666;
   line-height: 28px;
   margin-top: -6px;
   border-radius: 4px;
 }
 
-.ann-box > .header > .delete:hover {
+.ann-box > .header > .delete:hover,
+.ann-box > .header > .edit:hover {
   border: 1px solid #999;
 }
 
@@ -120,7 +124,14 @@ pre code {
   padding: 6px;
   background-color: #fff;
   margin-top: 6px;
+}
 
+.annotation-edit-form {
+  border-radius: 4px;
+  font-family: 'Source Sans Pro', sans-serif;
+  padding: 6px;
+  background-color: #fff;
+  margin-top: 6px;
 }
 
 .annotation-form hr {
