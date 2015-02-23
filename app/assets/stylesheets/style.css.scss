@@ -930,12 +930,19 @@ display: block;
 /*  Warnings  */
 
 #flash_alert.alert,
-#flash_error.error {
-  background-color: #d88;
-  margin-top: 8px;
-  color: #fff;
+#flash_error.error,
+#flash_notice {
+  color: #ce4844;
   padding: 10px;
   margin-bottom: 0px;
   border-radius: 3px;
+  border: 1px solid #eee;
+  border-left: 5px solid #ce4844;
+  font-weight: 500;
+}
+
+#flash_notice {
+  color: #1b809e;
+  border-left: 5px solid #1b809e;
 }
 
