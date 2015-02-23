@@ -1,3 +1,5 @@
+<% @title = "Annotate Submission" %>
+
 <% content_for :stylesheets do %>
   <%= stylesheet_link_tag "annotations" %>
   <% # highlightjs - change the style sheet for different styles %>
@@ -104,12 +106,16 @@
         var currentLine = null;
         
         // this section creates the new/edit annotation form that's used everywhere
-        var commentInput = elt("input", {type:"text", name:"comment", placeholder:"Comments Here", maxlength:"255"}),
-            valueInput = elt("input", {type:"text", name:"score", placeholder:"Score Here"}),
-            problemSelect = elt("select", {name:"problem"}, elt("option", {value:""}, "None")),
-            submitButton = elt("input", {type:"submit", value:"Save"}),
-            cancelButton = elt("input", {type:"button", value:"Cancel"}),
-            annotationForm = elt("form", {title:"<Enter> to Submit"}, commentInput, valueInput, problemSelect, submitButton, cancelButton);
+        var commentInput = elt("input", {class:"col-md-6", type:"text", name:"comment", placeholder:"Comments Here", maxlength:"255"});
+        var valueInput = elt("input", {class:"col-md-2", type:"text", name:"score", placeholder:"Score Here"});
+        var problemSelect = elt("select", {class:"col-md-2", name:"problem"}, elt("option", {value:""}, "None"));
+        var rowDiv = elt("div", {class: "row", style:"margin-left:4px;"}, commentInput, valueInput, problemSelect);
+
+
+        var submitButton = elt("input", {type:"submit", value:"Save", class:"btn primary small"});
+        var cancelButton = elt("input", {style: "margin-left: 4px;", type:"button", value:"Cancel", class: "btn small"});
+        var hr = elt("hr");
+        var annotationForm = elt("form", {title:"Press <Enter> to Submit", class:"annotation-form"},rowDiv, hr, submitButton, cancelButton);
         cancelButton.onclick = function (e) {
           oliverTwist(annotationForm);
         };
@@ -249,51 +255,55 @@
   </script>
 <% end %>
 
-<h3>Submission Version <%=@submission.version%> for
+<h2>Submission Version <%=@submission.version%> for
 <%= current_assessment_link %> (<%= @submission.course_user_datum.email %>)
-</h3>
-
-<div>
-<div class="annotationPane">
-  <h2 class="annotationHeader">
-  Annotation Summary
-  </h2>
-  <% if @noAnnotations and @errorLines == "" and (@cud.instructor? or @cud.course_assistant?) then %>
-    <p style="text-align:center">Click anywhere on the code below to annotate.</p>
-  <% elsif (@noAnnotations and !(@cud.instructor? or @cud.course_assistant?)) then %>
-    <p style="text-align:center">Nothing to summarize.</p>
-  <% end %>
-  <ul id="summaryList">
-    <% @problemSummaries.each do |problem, descriptTuples| %>
-      <li class="problemListItem"> <%= "Problem: #{problem} [#{plus_fix(@problemGrades[problem])}]" %>
-        <ul id="problem-list-<%= problem %>">
-        <% descriptTuples.each do |descript, value, line, user, id| %>
-          <li class="descript" id="li-annotation-<%= id %>"><%= (user ? "line: #{line}, #{descript} [#{plus_fix(value)}] (#{user})" : "line: #{line}, #{descript} [#{plus_fix(value)}]") %></li>
-        <% end %>
-        </ul>
-      </li>
+</h2>
+<hr>
+<div class="row">
+  <div class="annotationPane col-md-3">
+    <h3 class="annotationHeader">Summary</h3>
+    <% if @noAnnotations and @errorLines == "" and (@cud.instructor? or @cud.course_assistant?) then %>
+      <p>Click anywhere on the code to annotate.</p>
+    <% elsif (@noAnnotations and !(@cud.instructor? or @cud.course_assistant?)) then %>
+      <p>Nothing to summarize yet.</p>
     <% end %>
-    <% if @errorLines != "" then %>
-      <li class="syntaxError"> Syntax Error on line(s): <%= @errorLines %></li>
-    <% end %>
-  </ul>
-  <input type="button" value="Reload" class="btn primary" onclick="window.location.reload()">
-  <input type="checkbox" id="highlightLongLines" style="margin-left:20px;"> Highlight lines longer than 80 characters
-</div>
-</div>
-<div style="clear:both">
-<br />
+    <div id="summaryList">
+      <% @problemSummaries.each do |problem, descriptTuples| %>
+        <hr>
+        <div class="problemListItem"> <%= "Problem: #{problem} [#{plus_fix(@problemGrades[problem])}]" %>
+          <ul id="problem-list-<%= problem %>">
+          <% descriptTuples.each do |descript, value, line, user, id| %>
+            <li class="descript" id="li-annotation-<%= id %>"><%= (user ? "line: #{line}, #{descript} [#{plus_fix(value)}] (#{user})" : "line: #{line}, #{descript} [#{plus_fix(value)}]") %></li>
+          <% end %>
+          </ul>
+        </div>
+      <% end %>
+      <% if @errorLines != "" then %>
+        <div class="syntaxError"> Syntax Error on line(s): <%= @errorLines %></div>
+      <% end %>
+    </div>
+    <hr>
+    <span class="checkbox">
+      <input type="checkbox" id="highlightLongLines">
+      <label for="highlightLongLines">Highlight lines longer than 80 characters</label>
+    </span>
+    <hr>
+    <input type="button" value="Reload Summary" class="btn primary" onclick="window.location.reload()">
+
+  </div>
+  <div class="col-md-9">
+    <h3 id="filename"><%= @displayFilename %></h3>
+    <div id="code-box">
+    <% # these lines can't have white space due to the styling for pre and code tages %>
+    <% # anything wrapped in a <pre><code> will be highlighted by highlightsjs %>
+    <pre><code><ol id="code-list"><% 
+      @data.each_with_index do |(code, annotation), index|
+        %><li id="line-<%= index+1 %>"><code><%= 
+          code 
+        %></code><span class="expand glyphicon glyphicon-plus"></span><div></div></li><% 
+      end %></ol></code></pre>
+  </div>
+  </div>
 </div>
 
-<h3 id="filename"><%= @displayFilename %></h3>
 
-<div id="code-box">
-  <% # these lines can't have white space due to the styling for pre and code tages %>
-  <% # anything wrapped in a <pre><code> will be highlighted by highlightsjs %>
-  <pre><code><ol id="code-list"><% 
-    @data.each_with_index do |(code, annotation), index|
-      %><li id="line-<%= index+1 %>"><code><%= 
-        code 
-      %></code><span class="expand glyphicon glyphicon-plus"></span><div></div></li><% 
-    end %></ol></code></pre>
-</div>

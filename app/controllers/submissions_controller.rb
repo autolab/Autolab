@@ -362,7 +362,7 @@ class SubmissionsController < ApplicationController
         @files << {
           :pathname => pathname,
           :header_position => i,
-          :highlight => (Simplabs::Highlight.get_language_sym(extension) or (extension == "txt"))
+          :highlight => true
         }
 
         i += 1

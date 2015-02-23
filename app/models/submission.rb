@@ -345,8 +345,7 @@ class Submission < ActiveRecord::Base
 
     ext = File.extname(self.filename)     # get extension
     if ext then ext = ext.gsub(/\./, "") end            # remove dot
-    return Simplabs::Highlight.get_language_sym(ext) || (ext == "txt") || 
-           (ext == "go") || (ext == "clac") # see commit 350d827
+    return true
   end
 
   # override as_json to include the total with a paramter

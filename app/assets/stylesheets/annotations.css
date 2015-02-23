@@ -1,5 +1,30 @@
 @charset "utf-8";
 
+pre code {
+  font-size: 12px;
+}
+
+#code-list {
+  padding-top: 16px;
+  padding-left: 24px;
+  background-color: white;
+  margin-left: 14px;
+  margin-bottom: 0;
+      counter-reset: item;
+    list-style-type: none;
+}
+
+#code-list li { display: block; }
+#code-list li:before { 
+    content: counter(item) "  "; 
+    counter-increment: item;
+    margin-left: -32px;
+    padding-right: 12px;
+    font-size: 10px;
+    font-weight: bold;
+    font-family: 'Source Sans Pro', sans-serif;
+}
+
 #code-list > li:hover,
 #code-list > li:hover .annotation,
 #code-list > li:hover .annotationModifier {
@@ -11,20 +36,41 @@
 #code-list > li {
   position: relative;
   width: 80ch;
+  background: white;
+  padding: 3px 1px;
+  padding-left: 6px;
+  margin-left: -12px;
 }
+
 #code-list > li > code {
   width: 80ch;
 }
 #code-list > li > div {
   width: 80ch;
 }
+
 .expand {
   background: #090;
   color: #fff;
   display: none;
-  left: 100%;
+  left: 0;
+  margin-left: -16px;
   position: absolute;
+  font-size: 8px;
+  line-height: 18px;
+  text-align: center;
+  height: 20px;
+  width: 20px;
+  border-radius: 4px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.15);
 }
+
+.expand:hover {
+  -ms-transform: scale(1.2); /* IE 9 */
+  -webkit-transform: scale(1.2); /* Chrome, Safari, Opera */
+  transform: scale(1.2);
+}
+
 #code-list > li:hover > .expand {
   display: inline;
 }
@@ -33,22 +79,56 @@
   border: 1px solid #ddd;
   border-radius: .25em;
   margin: .5em;
+  font-family: 'Source Sans Pro', sans-serif;
+  font-size: 14px;
+  overflow: hidden;
 }
+
 .ann-box > .header {
   background: #eee;
   padding: .5em;
+  font-weight: bold;
 }
+
 .ann-box > .header > .delete {
-  border: 1px solid #ddd;
-  background: red;
-  color: white;
+  border: 1px solid transparent;
   display: inline-block;
   font-weight: bold;
   text-align: center;
   width: 2em;
   float: right;
+  color: #333;
+  line-height: 28px;
+  margin-top: -6px;
+  border-radius: 4px;
 }
+
+.ann-box > .header > .delete:hover {
+  border: 1px solid #999;
+}
+
 .ann-box > .body {
   background: #fff;
   padding: .5em;
+}
+
+.annotation-form {
+  width: 94%;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-family: 'Source Sans Pro', sans-serif;
+  padding: 6px;
+  background-color: #fff;
+  margin-top: 6px;
+
+}
+
+.annotation-form hr {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+#code-box pre {
+  padding-top: 0;
+  padding-bottom: 0;
 }
