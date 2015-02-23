@@ -34,9 +34,6 @@ gem 'slack-notifier'
 # E-mail autolab-dev on exceptions in production, pulls the latest to get slack notifications
 gem 'exception_notification', git: 'https://github.com/smartinez87/exception_notification.git'
 
-# Server-side syntax highlighting
-gem 'highlight', :require => 'simplabs/highlight'
-
 # Used by lib/tasks/autolab.rake to populate DB with dummy seed data
 gem 'rake', '>=10.3.2'
 gem 'populator', '>=1.0.0'

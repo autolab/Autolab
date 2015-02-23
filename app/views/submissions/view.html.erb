@@ -1,96 +1,87 @@
-<!-- 
-known bugs:
-1. 400 Bad Request is sent when the submitted annotation is empty.
--->
+<% @title = "Annotate Submission" %>
 
-<% # Quick Description
-# The annotations are loaded from the submission controller
-# on creation of this page. An annotation line can be in 3 states:
-# 1. No Annotation (class="line")
-# 2. Currently Being Annotated (class="line annotating")
-# 3. Has annotation (class="annotated line")
-
-# Then the actual annotation html form has 2 states
-# 1. has a comment (class="annotation updateAnnotation")
-# 2. Doesn't have a comment (class="annotation createAnnotation")
-%>
-
-<% # include the highlight styles %>
 <% content_for :stylesheets do %>
-  <%= stylesheet_link_tag 'highlight' %>
-  <%= stylesheet_link_tag "viewSubmission", "css/ui-lightness/jquery-ui-1.8.21.custom.css" %>
-  <style type="text/css">
-    /** this is a temp fix for proper indentation. -Daniel **/
-    code { white-space: pre-wrap; }
-  </style>
+  <%= stylesheet_link_tag "annotations" %>
+  <% # highlightjs - change the style sheet for different styles %>
+  <%= stylesheet_link_tag "highlightjs-styles/vs.css" %>
 <% end %>
 
 <% content_for :javascripts do %>
-  <%= external_javascript_include_tag "jquery-ui", "1.8.20" %>
-  <% if @cud.instructor || @cud.course_assistant then %>
-    <%= javascript_include_tag "annotations" %>
-  <% end %>
+  <%= javascript_include_tag "highlight.pack.js" %>
+  <script type="application/javascript">
+
+    <% if @cud.instructor || @cud.course_assistant then %>
+      var isInstructor = true;
+    <% else %>
+      var isInstructor = false;
+    <% end %>
+
+    var annotations = <%=raw @annotations.to_json %>;
+    var fileNameStr = "<%= @filename %>";
+    var cudEmailStr = "<%= @cud.email %>";
+    // a json list of problems for this assessment
+    var problems = <%=raw @problems.to_json %>;
+    var basePath = "<%= course_assessment_submission_annotations_path(@course, @assessment, @submission) %>";
+
+    <% if params[:header_position] %>
+    var headerPositionStr = "<%= params[:header_position] %>";
+    <% else %>
+    var headerPositionStr = null;
+    <% end %>
+
+  </script>
+  <%= javascript_include_tag "annotations.js" %>
 <% end %>
 
-<h3>Submission Version <%=@submission.version%> for
+<h2>Submission Version <%=@submission.version%> for
 <%= current_assessment_link %> (<%= @submission.course_user_datum.email %>)
-</h3>
+</h2>
+<hr>
+<div class="row">
+  <div class="annotationPane col-md-3">
+    <h3 class="annotationHeader">Summary</h3>
+    <% if @noAnnotations and @errorLines == "" and (@cud.instructor? or @cud.course_assistant?) then %>
+      <p>Click anywhere on the code to annotate.</p>
+    <% elsif (@noAnnotations and !(@cud.instructor? or @cud.course_assistant?)) then %>
+      <p>Nothing to summarize yet.</p>
+    <% end %>
+    <div id="summaryList">
+      <% @problemSummaries.each do |problem, descriptTuples| %>
+        <hr>
+        <div class="problemListItem"> <%= "Problem: #{problem} [#{plus_fix(@problemGrades[problem])}]" %>
+          <ul id="problem-list-<%= problem %>">
+          <% descriptTuples.each do |descript, value, line, user, id| %>
+            <li class="descript" id="li-annotation-<%= id %>"><%= (user ? "line: #{line}, #{descript} [#{plus_fix(value)}] (#{user})" : "line: #{line}, #{descript} [#{plus_fix(value)}]") %></li>
+          <% end %>
+          </ul>
+        </div>
+      <% end %>
+      <% if @errorLines != "" then %>
+        <div class="syntaxError"> Syntax Error on line(s): <%= @errorLines %></div>
+      <% end %>
+    </div>
+    <hr>
+    <span class="checkbox">
+      <input type="checkbox" id="highlightLongLines">
+      <label for="highlightLongLines">Highlight lines longer than 80 characters</label>
+    </span>
+    <hr>
+    <input type="button" value="Reload Summary" class="btn primary" onclick="window.location.reload()">
 
-<div>
-<p id="wahoo"></p>
-<div class="ui-widget-content annotationPane" style="max-width:730px">
-  <h2 class="annotationHeader">
-  Annotation Summary
-  </h2>
-  <% if @noAnnotations and @errorLines == "" and (@cud.instructor? or @cud.course_assistant?) then %>
-    <p style="text-align:center">Click anywhere on the code below to annotate.</p>
-  <% elsif (@noAnnotations and !(@cud.instructor? or @cud.course_assistant?)) then %>
-    <p style="text-align:center">Nothing to summarize.</p>
-  <% end %>
-  <ul id="summaryList">
-    <% @problemSummaries.each do |problem, descriptTuples| %>
-      <li class="problemListItem"> <%=h "Problem: #{problem} [#{plus_fix(@problemGrades[problem])}]" %>
-        <ul id="problem-list-<%= problem %>">
-        <% descriptTuples.each do |descript, value, line, user, id| %>
-          <li class="descript" id="li-annotation-<%= id %>"><%=h (user ? "line: #{line}, #{descript} [#{plus_fix(value)}] (#{user})" : "line: #{line}, #{descript} [#{plus_fix(value)}]") %></li>
-        <% end %>
-        </ul>
-      </li>
-    <% end %>
-    <% if @errorLines != "" then %>
-      <li class="syntaxError"> Syntax Error on line(s): <%=h @errorLines %></li>
-    <% end %>
-  </ul>
-  <input type="button" value="Reload" class="btn primary" onClick="window.location.reload()">
-  <input type="checkbox" id="highlightLongLines" style="margin-left:20px;"> Highlight lines longer than 80 characters
+  </div>
+  <div class="col-md-9">
+    <h3 id="filename"><%= @displayFilename %></h3>
+    <div id="code-box">
+    <% # these lines can't have white space due to the styling for pre and code tages %>
+    <% # anything wrapped in a <pre><code> will be highlighted by highlightsjs %>
+    <pre><code id="code-block"><ol id="code-list"><% 
+      @data.each_with_index do |(code, annotation), index|
+        %><li id="line-<%= index+1 %>"><code><%= 
+          code 
+        %></code><% if @cud.instructor? or @cud.course_assistant? then %><span class="add-annotation-btn glyphicon glyphicon-plus" id="add-btn-<%= index+1 %>"></span><% end %><div class="annotations-container"></div></li><% 
+      end %></ol></code></pre>
+  </div>
+  </div>
 </div>
-</div>
-<div style="clear:both">
-<br />
-</div>
-<table id="codeTable">
-  <thead>
-    <tr class="filename"><td></td><td colspan="3"><code><%= @displayFilename %></code></td></tr>
-  </thead>
-  <tbody>
-  <% @data.each_with_index do |(code, annotation), index| %>
-    <tr class=<%= raw(line_class(annotation)) %>>
-      <td class="lineNumber"><%= index + 1 %></td>
-    <% if @escape_code %>
-      <td class="code"><div class="divCode"><code><%= code %></code></div></td>
-    <% else %>
-      <td class="code"><div class="divCode"><code><%=raw code %></code></div></td>
-    <% end %>
-    <%- if @cud.instructor? || @cud.course_assistant? %>
-      <td class=<%== annotation_mod_class(annotation) %>>
-        <%== annotation_mod(annotation).strip %>
-      </td>
-    <%- end %>
-    <td class=<%= raw(annotation_class(annotation)) %> id=<%= raw(annotation_id(annotation)) %>
-        name='<%= annotation_raw_text(annotation).strip %>'>
-      <%= annotation_text(annotation).strip %>
-    </td>
-    </tr>
-  <% end %>
-  </tbody>
-</table>
+
+

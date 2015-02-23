@@ -1,0 +1,163 @@
+@charset "utf-8";
+
+pre code {
+  font-size: 12px;
+}
+
+#code-list {
+  padding-top: 16px;
+  padding-left: 24px;
+  background-color: white;
+  margin-left: 14px;
+  margin-bottom: 0;
+      counter-reset: item;
+    list-style-type: none;
+}
+
+#code-list li { display: block; }
+#code-list li:before { 
+    content: counter(item) "  "; 
+    counter-increment: item;
+    margin-left: -32px;
+    padding-right: 12px;
+    font-size: 10px;
+    font-weight: bold;
+    font-family: 'Source Sans Pro', sans-serif;
+}
+
+#code-list > li:hover {
+  /* annotations show up on mouseover */
+  background-color: #fcfcfc;
+  opacity: 1.0;
+  cursor: pointer;
+}
+#code-list > li {
+  position: relative;
+  width: 80ch;
+  background: white;
+  padding: 3px 1px;
+  padding-left: 6px;
+  margin-left: -12px;
+}
+
+#code-list > li > code {
+  width: 80ch;
+}
+#code-list > li > div {
+  width: 80ch;
+}
+
+.add-annotation-btn {
+  background: #090;
+  color: #fff;
+  display: none;
+  left: 0;
+  margin-left: -16px;
+  position: absolute;
+  font-size: 8px;
+  line-height: 18px;
+  text-align: center;
+  height: 20px;
+  width: 20px;
+  border-radius: 4px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+}
+
+.add-annotation-btn:hover {
+  -ms-transform: scale(1.2); /* IE 9 */
+  -webkit-transform: scale(1.2); /* Chrome, Safari, Opera */
+  transform: scale(1.2);
+}
+
+#code-list > li:hover > .add-annotation-btn {
+  display: inline;
+}
+
+.ann-box {
+  border: 1px solid #ddd;
+  border-radius: .25em;
+  margin: .5em;
+  font-family: 'Source Sans Pro', sans-serif;
+  font-size: 14px;
+  overflow: hidden;
+}
+
+.ann-box:hover {
+  border: 1px solid #bbb;
+}
+
+.ann-box > .header {
+  background: #eee;
+  padding: .5em;
+  font-weight: bold;
+}
+
+.ann-box > .header > .delete,
+ .ann-box > .header > .edit {
+  border: 1px solid transparent;
+  display: inline-block;
+  font-weight: bold;
+  text-align: center;
+  width: 2em;
+  float: right;
+  color: #666;
+  line-height: 28px;
+  margin-top: -6px;
+  border-radius: 4px;
+}
+
+.ann-box .score-box {
+  float: right;
+  background-color: #ddd;
+  border-radius: 2px;
+  font-size: 10px;
+  margin-right: 4px;
+  overflow: hidden;
+}
+
+.ann-box .score-box span {
+  line-height: 20px;
+  padding: 4px;
+}
+
+.ann-box .score-box span:first-child {
+  background-color: #ccc;
+}
+
+.ann-box > .header > .delete:hover,
+.ann-box > .header > .edit:hover {
+  border: 1px solid #ccc;
+}
+
+.ann-box > .body {
+  background: #fff;
+  padding: .5em;
+}
+
+.annotation-form {
+  width: 94%;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-family: 'Source Sans Pro', sans-serif;
+  padding: 6px;
+  background-color: #fff;
+  margin-top: 6px;
+}
+
+.annotation-edit-form {
+  border-radius: 4px;
+  font-family: 'Source Sans Pro', sans-serif;
+  padding: 6px;
+  background-color: #fff;
+  margin-top: 6px;
+}
+
+.annotation-form hr {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+#code-box pre {
+  padding-top: 0;
+  padding-bottom: 0;
+}
