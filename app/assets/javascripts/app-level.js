@@ -15,7 +15,7 @@ $(".moment-date-time").each(function(ind) {
 	$el = $(this);
 	var format = $el.data("format")  || "dddd, MMM Do YYYY, h:mm:ss a";
 	var unformattedDate = $el.html();
-	var formattedDate = moment(new Date(unformattedDate)).format(format);
+	var formattedDate = moment(new Date(unformattedDate), "yy/mm/dd").format(format);
 	$el.html(formattedDate);
 })
 
