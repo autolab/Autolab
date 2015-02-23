@@ -1,5 +1,6 @@
 module AssessmentAutograde
   require 'uri'
+  require Rails.root.join("config", "autogradeConfig.rb")
 
   # method called when Tango returns the output
   # action_no_auth :autograde_done
@@ -335,19 +336,21 @@ module AssessmentAutograde
   def autogradeDone(submissions, feedback)
     assessmentDir = File.join(AUTOCONFIG_COURSE_DIR, @course.name, @assessment.name)
 
-    filename = "%s_%d_%s_autograde.txt" % [submissions[0].course_user_datum.email, submissions[0].version, @assessment.name]
+    submissions.each do |submission|
+      filename = "%s_%d_%s_autograde.txt" % [submission.course_user_datum.email, submission.version, @assessment.name]
 
-    feedbackFile = File.join(assessmentDir, @assessment.handin_directory, filename)
-    COURSE_LOGGER.log("Looking for Feedbackfile:" + feedbackFile)
+      feedbackFile = File.join(assessmentDir, @assessment.handin_directory, filename)
+      COURSE_LOGGER.log("Looking for Feedbackfile:" + feedbackFile)
 
-    begin
-      f = File.open(feedbackFile, "w")
-      f.write(feedback)
-    ensure
-      f.close unless f.nil?
+      begin
+        f = File.open(feedbackFile, "w")
+        f.write(feedback)
+      ensure
+        f.close unless f.nil?
+      end
     end
     
-    saveAutograde(submissions, feedbackFile)
+    saveAutograde(submissions, feedback)
   end
 
   ##
@@ -356,9 +359,9 @@ module AssessmentAutograde
   # each autograded problem. The default autoresult string is in
   # JSON format, but this can be overrriden in the lab.rb file.
   #
-  def saveAutograde(submissions, feedbackFile)
+  def saveAutograde(submissions, feedback)
     begin
-      lines = File.open(feedbackFile).readlines()
+      lines = feedback.lines
       if (lines == nil) then
         raise "The Autograder returned no output. \n"
       end
@@ -415,12 +418,15 @@ module AssessmentAutograde
     ActiveRecord::Base.transaction do
       submissions.each do |submission|
         submission.autoresult = autoresult
+        submission.dave = nil
         submission.save!
       end
     end
     
     logger = Logger.new(Rails.root.join("courses", @course.name, @assessment.name, "log.txt"))
-    logger.add(Logger::INFO) {"#{submissions[0].course_user_datum.email}, #{submissions[0].version}, #{autoresult}"}
+    submissions.each do |submission|
+      logger.add(Logger::INFO) {"#{submission.course_user_datum.email}, #{submission.version}, #{autoresult}"}
+    end
   end
 
   ##
