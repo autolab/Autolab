@@ -25,3 +25,6 @@ RESTFUL_KEY = "<restful_key>"
 
 # Whether or not Autolab should use polling to get Tango results
 RESTFUL_USE_POLLING = false
+
+# How many times saveAutograde can fail and resubmit
+RESTFUL_MAX_RETRIES = 5
