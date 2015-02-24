@@ -2,7 +2,9 @@ Autolab3::Application.routes.draw do
   root 'courses#index'
 
   devise_for :users, controllers: { omniauth_callbacks: 'users/omniauth_callbacks' }, path_prefix: 'auth'
-  
+
+  get 'contact', to: 'home#contact'
+
   namespace :home do
     match 'developer_login', via: [ :post, :get ]
     get 'error'
@@ -61,23 +63,23 @@ Autolab3::Application.routes.draw do
 
       member do
         match 'adminAutograde', via: [:get, :post]
-      	match 'adminScoreboard', via: [:get, :post]
+        match 'adminScoreboard', via: [:get, :post]
         match 'bulkGrade', via: [:get, :post]
         post 'bulkGrade_complete'
-      	get 'adminPartners'
+        get 'adminPartners'
         get 'bulkExport'
-      	get 'downloadSubmissions'
-      	get 'releaseAllGrades'
-      	get 'releaseSectionGrades'
-      	get 'viewFeedback'
-      	get 'reload'
-      	get 'statistics'
-      	get 'withdrawAllGrades'
-      	get 'export'
-      	get 'attachments'	
-      	get 'extensions'
-      	get 'submissions'
-      	patch 'edit/*active_tab', action: :update
+        get 'downloadSubmissions'
+        get 'releaseAllGrades'
+        get 'releaseSectionGrades'
+        get 'viewFeedback'
+        get 'reload'
+        get 'statistics'
+        get 'withdrawAllGrades'
+        get 'export'
+        get 'attachments'
+        get 'extensions'
+        get 'submissions'
+        patch 'edit/*active_tab', action: :update
         get 'edit/*active_tab', action: :edit
         post 'handin'
         get 'takeQuiz'
@@ -94,7 +96,7 @@ Autolab3::Application.routes.draw do
         post 'autograde_done'
         post 'regrade'
         post 'regradeAll'
-        
+
         # partner actions
         match 'setPartner', via: [:get, :post]
         get 'importPartners'
@@ -141,7 +143,7 @@ Autolab3::Application.routes.draw do
         get 'view'
       end
     end
-    
+
       get  'manage'
       get  'bulkRelease'
       get  'downloadRoster'
