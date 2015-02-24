@@ -102,7 +102,7 @@ We have a very limited testing suite at the moment, but we are working on it.
 ## Contributing
 
 We encourage you to contribute to Autolab! Please check out the
-[Contributing to Autolab Guide](#) for guidelines about how to proceed. [Join us!](http://contributors.autolabproject.org)
+[Contributing to Autolab Guide](https://github.com/autolab/Autolab/blob/master/CONTRIBUTING.md) for guidelines about how to proceed. [Join us!](http://contributors.autolabproject.org)
 
 
 
