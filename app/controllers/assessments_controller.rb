@@ -376,20 +376,9 @@ class AssessmentsController < ApplicationController
     # Update name in object
     @assessment.name = assName
     
-    # Modules must be in the module list. 
-    @modules = params[:modules]
-
-    if @modules[:Autograde] == 1
-      @assessment.has_autograde = true
-    end
-
-    # TODO add other modules
-
     # From here on, if something weird happens, we rollback
     begin 
-
       setupAssessment(assName)
-
     rescue Exception => e
       # Something bad happened. Undo everything       
       flash[:error] = e.to_s()
@@ -1682,7 +1671,7 @@ protected
   private
   
     def new_assessment_params
-      params.require(:assessment).permit(:display_name, :category_name)
+      params.require(:assessment).permit(:display_name, :category_name, :has_autograde, :has_svn, :has_scoreboard, :group_size)
     end
 
 end
