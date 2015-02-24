@@ -236,6 +236,16 @@ class SubmissionsController < ApplicationController
 
       @displayFilename = pathname
     else
+      # note: @filename is defined by get_submission_file and is actually
+      # submission.handin_file_path because up is down and black is white.
+      archive_type = IO.popen(["file", "--brief", "--mime-type", @submission.handin_file_path],
+                              in: :close, err: :close) { |io| io.read.chomp }
+      
+      # redirect on archives
+      if archive_type.include?("tar") || archive_type.include?("gzip") || archive_type.include?("zip") then
+        redirect_to action: :listArchive and return
+      end
+        
       file = @submission.handinFile.read
 
       @displayFilename = @submission.filename
@@ -314,69 +324,62 @@ class SubmissionsController < ApplicationController
   # files in a submission that is an archive file. 
   action_auth_level :listArchive, :student
   def listArchive
-    begin
-      # note: @filename is defined by get_submission_file and is actually
-      # submission.handin_file_path because up is down and black is white.
-      archive_type = IO.popen(["file", "--brief", "--mime-type", @filename],
-                              in: :close, err: :close) { |io| io.read.chomp }
-      @files = []
+    # note: @filename is defined by get_submission_file and is actually
+    # submission.handin_file_path because up is down and black is white.
+    archive_type = IO.popen(["file", "--brief", "--mime-type", @filename],
+                            in: :close, err: :close) { |io| io.read.chomp }
+    @files = []
 
-      require 'rubygems'
-      require 'rubygems/package'
-      require 'zlib'
-      require 'zip'
+    require 'rubygems'
+    require 'rubygems/package'
+    require 'zlib'
+    require 'zip'
 
-      # Extract archive by type
-      if archive_type.include? "tar" then
-        f = File.new(@filename)
-        archive_extract = Gem::Package::TarReader.new(f)
-        archive_extract.rewind # The extract has to be rewinded after every iteration
-      elsif archive_type.include? "gzip" then
-        archive_extract = Gem::Package::TarReader.new(Zlib::GzipReader.open @filename)
-        archive_extract.rewind
-      elsif archive_type.include? "zip" then
-        archive_extract = Zip::File.open(@filename)
-      else
-        raise "Unrecognized archive type!"
-      end
-
-      # Parse archive header
-      i = 0
-      archive_extract.each do |entry|
-        # Obtain path name depending for tar/zip entry
-        pathname = entry.respond_to?(:full_name) ? entry.full_name : entry.name
-        extension = File.extname pathname
-        extension = extension[1..-1]
-        if extension == "c0" or extension == "go" then
-          extension = "c"
-        elsif extension == "h0" then
-          extension = "h"
-        elsif extension == "clac" or extension == "sml" then
-          extension = "txt"
-        end
-       
-        next if pathname.include? "__MACOSX" or
-          pathname.include? ".DS_Store" or
-          pathname.include? ".metadata"
-
-        @files << {
-          :pathname => pathname,
-          :header_position => i,
-          :highlight => true
-        }
-
-        i += 1
-      end
-
-      archive_extract.close
-      return
-
-    rescue Exception => e
-        COURSE_LOGGER.log(e);
-        flash[:error] = "This does not appear to be a valid archive file."
-        redirect_to :controller => "home", :action => "error" and return false
+    # Extract archive by type
+    if archive_type.include? "tar" then
+      f = File.new(@filename)
+      archive_extract = Gem::Package::TarReader.new(f)
+      archive_extract.rewind # The extract has to be rewinded after every iteration
+    elsif archive_type.include? "gzip" then
+      archive_extract = Gem::Package::TarReader.new(Zlib::GzipReader.open @filename)
+      archive_extract.rewind
+    elsif archive_type.include? "zip" then
+      archive_extract = Zip::File.open(@filename)
+    else
+      raise "Unrecognized archive type!"
     end
 
+    # Parse archive header
+    i = 0
+    archive_extract.each do |entry|
+      # Obtain path name depending for tar/zip entry
+      pathname = entry.respond_to?(:full_name) ? entry.full_name : entry.name
+      extension = File.extname pathname
+      extension = extension[1..-1]
+      if extension == "c0" or extension == "go" then
+        extension = "c"
+      elsif extension == "h0" then
+        extension = "h"
+      elsif extension == "clac" or extension == "sml" then
+        extension = "txt"
+      end
+
+      next if pathname.include? "__MACOSX" or
+        pathname.include? ".DS_Store" or
+        pathname.include? ".metadata"
+
+      @files << {
+        :pathname => pathname,
+        :header_position => i,
+        :highlight => true
+      }
+
+      i += 1
+    end
+
+    archive_extract.close
+
+    @files.sort! {|a,b| a[:pathname] <=> b[:pathname] }
   end
 
 private
