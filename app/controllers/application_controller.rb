@@ -120,7 +120,8 @@ protected
     # enable/disable maintenance mode with this switch:
     if false
       unless user_signed_in? and current_user.administrator?
-        redirect_to "/maintenance.html"
+        render :maintenance
+        return false
       end
     end
   end
