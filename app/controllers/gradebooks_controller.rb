@@ -55,9 +55,7 @@ class GradebooksController < ApplicationController
       redirect_to course_course_user_datum_gradebook_path and return
     end
 
-    @categories_sorted = @course.assessment_categories.sort { |a, b|
-      b.assessments.size <=> a.assessments.size
-    }
+    @categories_sorted = @course.assessment_categories
   end
 
   action_auth_level :csv, :instructor

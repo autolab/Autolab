@@ -77,7 +77,7 @@
               </colgroup>
 
               <tr class="header">
-                <th class="cat_name"><%= cat.name %></th>
+                <th class="cat_name"><%= cat %></th>
                 <% if @course.grace_days > 0 %>
                   <th>
                     GDU
@@ -91,7 +91,7 @@
                 <th>Final Score</th>
               </tr>
 
-              <% cat.assessments.ordered.each do |asmt| %>
+              <% @course.assessments.ordered.where(category_name: cat).each do |asmt| %>
                 <% aud = asmt.aud_for @_cud  %>
                 <tr>
                   <td>
