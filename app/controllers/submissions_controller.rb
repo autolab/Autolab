@@ -322,7 +322,7 @@ class SubmissionsController < ApplicationController
     # Rendering this page fails. Often. Mostly due to PDFs.
     # So if it fails, redirect, instead of showing an error page.
     begin
-      render :edit and return
+      render :view and return
     rescue
       flash[:error] = "Autolab cannot display this file"
       redirect_to [:history, @course, @assessment] and return
