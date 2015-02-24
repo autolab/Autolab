@@ -318,6 +318,15 @@ class SubmissionsController < ApplicationController
     session[:problems] = @problems
 
     @noAnnotations = @problemSummaries.empty?
+
+    # Rendering this page fails. Often. Mostly due to PDFs.
+    # So if it fails, redirect, instead of showing an error page.
+    begin
+      render :edit and return
+    rescue
+      flash[:error] = "Autolab cannot display this file"
+      redirect_to [:history, @course, @assessment] and return
+    end
   end
 
   # Action to be taken when the user wants to get a listing of all
