@@ -366,26 +366,29 @@ class AssessmentsController < ApplicationController
   def create
     @assessment = Assessment.new(new_assessment_params)
 
-    # Validate the name 
-    assName = @assessment.display_name.downcase.gsub(/[^a-z0-9]/,"")
-    if assName.blank? then
-      flash[:error] = "Assessment name cannot be blank" 
-      redirect_to action: :installAssessment and return
+    if @assessment.name.blank? then
+      # Validate the name 
+      assName = @assessment.display_name.downcase.gsub(/[^a-z0-9]/,"")
+      
+      if assName.blank? then
+        flash[:error] = "Assessment name cannot be blank" 
+        redirect_to action: :installAssessment and return
+      end
+      
+      # Update name in object
+      @assessment.name = assName
     end
-    
-    # Update name in object
-    @assessment.name = assName
-    
+
     # From here on, if something weird happens, we rollback
     begin 
-      setupAssessment(assName)
+      setupAssessment(@assessment.name)
     rescue Exception => e
-      # Something bad happened. Undo everything       
+      # Something bad happened. Undo everything
       flash[:error] = e.to_s()
       begin
         FileUtils.remove_dir(assDir)
       rescue Exception => e2
-        flash[:error] = "An error occurred (#{e2}} " +
+        flash[:error] += "An error occurred (#{e2}} " +
           " while recovering from a previous error (#{flash[:error]})"
       end
       redirect_to action: :installAssessment and return
@@ -404,7 +407,9 @@ class AssessmentsController < ApplicationController
     @assessment.quizData = params.include?(:quizData) ? params[:quizData] : ""
     @assessment.max_submissions = params.include?(:max_submissions) ? params[:max_submissions] : -1
     
-    if !@assessment.save
+    begin
+      @assessment.save!
+    rescue Exception => e
       flash[:error] = "Error saving #{@assessment.name}"
       redirect_to action: :installAssessment and return
     end
@@ -1002,13 +1007,19 @@ class AssessmentsController < ApplicationController
   def getCategory
     if request.post? then
       name = params[:assessment_name]
+      display_name = params[:display_name]
       category_name = params[:category_name]
       new_category = params[:new_category]
+
       if !new_category.blank? then
         category_name = new_category
       end
-      params[:assessment] = {name: name, category_name: category_name}
-      create
+
+      params[:assessment] = { name: name,
+                              category_name: category_name, 
+                              display_name: display_name }
+
+      create()
       return
     end
 
@@ -1671,7 +1682,7 @@ protected
   private
   
     def new_assessment_params
-      params.require(:assessment).permit(:display_name, :category_name, :has_autograde, :has_svn, :has_scoreboard, :group_size)
+      params.require(:assessment).permit(:name, :display_name, :category_name, :has_autograde, :has_svn, :has_scoreboard, :group_size)
     end
 
 end

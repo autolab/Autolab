@@ -13,7 +13,7 @@
   </script>
 <% end %>
 
-<h2>Select Category for <%= params[:assessment_name] %></h2>
+<h2>Install <%= params[:assessment_name] %></h2>
 <br>
 <% unless @errors.blank? %>
 <ul>
@@ -24,17 +24,16 @@
 <% end %>
 
 <%= form_tag(:action => :getCategory) %>
-<table class='verticalTable'>
-<tr><th width=200>Select an existing category
-or enter a new category name
-<i>(you can always change it later)</i></th>
-<td><%= select_tag(:category_name, options_for_select(@categories), {}) %>
+<label>Display Name</label>
+<%= text_field_tag(:display_name, params[:assessment_name]) %>
 <hr>
-<%= text_field_tag(:new_category) %>
+<label>Category</label>
+Select an existing categoryor enter a new category name
+<i>(you can always change it later)</i>
+<br><%= select_tag(:category_name, options_for_select(@categories), {}) %>
+or <%= text_field_tag :new_category, nil, placeholder: "New Category" %>
+<hr>
 <%= hidden_field_tag :assessment_name, params[:assessment_name] %>
-</td>
-</tr>   
-</table>
 <br>
-<p><%= submit_tag("Submit", :class => "btn primary") %></p>
+<p><%= submit_tag("Install", :class => "btn primary") %></p>
 </form>
