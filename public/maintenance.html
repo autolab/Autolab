@@ -1,35 +1,73 @@
+<!DOCTYPE html>
 <html>
-    <head>
-        <link rel="stylesheet" type="text/css" href="/assets/style.css">
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=0">
+    <link rel="shortcut icon" type="image/x-icon" href="/assets/autolab.ico?v=2" />
 
-        <link rel="shortcut icon" href="/assets/autolab.ico" type="image/x-icon"> 
-        <title>Autolab Home</title>
-    </head>
+    <link rel="stylesheet" media="screen" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.0.0/css/bootstrap.css" />
+    <link rel="stylesheet" media="screen" href="/assets/style.css?body=1" />
 
-    <body>
-        <div id="cmuHeader" width="100%">
-            <img src="/assets/cmu-header.gif" alt="Carnegie Mellon University" />
+    <link href='//fonts.googleapis.com/css?family=Source+Sans+Pro:300,400' rel='stylesheet' type='text/css'>
+
+    <title>Autolab</title>
+  </head>
+
+  <body class="autolab">
+    <div class="page-wrapper">
+
+      <div class="main-header">
+        <div class="navbar-header">
+          <a href="/" class="logo"><img width="180" alt="Carnegie Mellon University" src="/assets/AUTOLAB@2x.png" /></a>
+          <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
         </div>
-        <div id="pageBody">
-            <h1 id="courseTitle">Autolab</h1>
-
-            <div id="content">
-                <h2>Autolab is down for maintenance.</h2>
-
-                <p>Autolab is currently down for regular maintenance. Nothing particular is 
-                wrong, we just need some time to ourselves to make the site better for you. 
-                We try to schedule maintenance for times when you usually don't need the 
-                site, so hopefully you can come back to this later. If this is a major 
-                problem, please email your instructor.<p>
-                <img src="/assets/donkeyKongTheBuilder.png" width=400px />
-            </div>
-            <div id="footer">
-                <p>
-                <a href="https://autolab.cs.cmu.edu">CMU Autolab</a>
-                <p>Questions or problems? Please <a href="/contactUs.html">contact us</a>.</p>
-                </p>
-            </div>
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+          <ul class="nav navbar-nav navbar-right action-links" role="navigation">
+            <li>
+              <a href="/">Courses</a>
+            </li>
+          </ul>
         </div>
-    </body>
+      </div>
+
+      <div id="pageBody" class="container">
+        <div id="content">
+          <div class="container">
+            <div class="col-md-10">
+              <h1>Whoa there.</h1>
+              <p class="lead">
+              <b>Autolab is currently down for regular maintenance.</b> Nothing in
+              particular is wrong; we just need some time to make the site better
+              for you.
+              </p>
+              <p>
+              We try to schedule maintenance for times when few people are using
+              the site, and we also try to be done with maintenance as quickly as
+              possible.  If this is a major disruption for you, be sure to let your
+              instructor know. We're sorry for the inconveniences, but hopefully
+              when Autolab comes back on it'll be better than ever before!
+              </p>
+              <img src="/assets/donkeyKongTheBuilder.png" width=400px />
+              <p class="lead">
+              <br>
+              <b>Thanks!</b>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="footer">
+          <a href="http://autolabproject.com">Autolab Project</a>
+          · <a href="/contactUs.html">Contact</a>
+          · <a rel="nofollow" data-method="delete" href="/auth/users/sign_out">Logout</a>
+    </div>
+
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.0.0/js/bootstrap.js"></script>
+  </body>
 </html>
-
