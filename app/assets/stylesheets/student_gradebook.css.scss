@@ -97,6 +97,8 @@ h1#courseTitle {
 
     a.history_icon {
       display: none;
+      // Prevent tr from resizing when history_icon is displayed
+      font-size: 15px;
     }
 
     &:hover {
