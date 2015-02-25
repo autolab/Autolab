@@ -184,9 +184,8 @@ class JobsController < ApplicationController
     
     if rjob["notifyURL"] then
       params =  rjob["notifyURL"].split('/')
-      job[:submission] = params[-2]
-      job[:assessment] = params[-4]
-      job[:course] = params[-6]
+      job[:assessment] = params[-2]
+      job[:course] = params[-4]
     end
 
     # Determine whether to expose the job name.
