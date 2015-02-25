@@ -80,7 +80,6 @@ module AssessmentHandin
       begin
         handinFile = params[:submit]
         
-        @cud = @course.course_user_data.find_by(email: @user.email)
         if @assessment.max_submissions != -1 then
           submission_count = @cud.submissions.where(assessment: @assessment).size
           if submission_count >= @assessment.max_submissions then
@@ -96,6 +95,7 @@ module AssessmentHandin
         begin
           submissions = saveHandin({'local_submit_file'=>File.join(remoteHandinDir, handinFile)})
         rescue Exception => e
+          puts "Error Saving Submission:\n#{e}"
           submissions = nil
         end
         
@@ -121,15 +121,15 @@ module AssessmentHandin
       if (submissions) then
         puts "Submission received, ID##{submissions[0].id}"
       else
-        err = "There was an error saving your submission. Please contact your course staff"
+        err = "There was an error saving your submission. Please contact your course staff\n"
         render plain: err, status: :bad_request and return
       end
 
       if @assessment.max_submissions != -1 then
-        render plain: " - You have #{assessment.max_submissions - submissons_count} submissions left" and return
+        render plain: " - You have #{assessment.max_submissions - submissons_count} submissions left\n" and return
       end
     
-      render plain: "Successfully submitted" and return
+      render plain: "Successfully submitted\n" and return
     else
       
       # Create a handin directory for them. 
