@@ -110,14 +110,14 @@ module AssessmentAutograde
   # autogradeSubmissions - submits an autograding job to Tango.
   # Called by assessments#handin, submissions#regrade and submissions#regradeAll
   # returns the job status returned by sendJob
-  def autogradeSubmissions(course, assessment, submissions)
+  def autogradeSubmissions(course, assessment, submissions, retries: 0)
     # Check for nil first, since students should know about this
     if submissions.blank? then
       flash[:error] = "Submission could not be autograded due to an error in creation"
       return
     end
 
-    job = sendJob(course, assessment, submissions, @cud)
+    job = sendJob(course, assessment, submissions, @cud, retries)
     if job == -3 then # sendJob returned an exception
       flash[:error] = "Autograding failed because of an unexpected exception in the system."
     elsif job == -2 then 
@@ -148,7 +148,7 @@ module AssessmentAutograde
   #
   # submissions must have at least one element
   #
-  def sendJob(course, assessment, submissions, cud)
+  def sendJob(course, assessment, submissions, cud, retries)
     extend_config_module(assessment, submissions[0], cud)
     assessmentDir = File.join(AUTOCONFIG_COURSE_DIR, course.name, assessment.name)
 
@@ -237,7 +237,7 @@ module AssessmentAutograde
     callBackURL = if RESTFUL_USE_POLLING then
       ""
     else
-      "#{hostname}/courses/#{course.id}/assessments/#{assessment.id}/autograde_done?dave=#{dave}" 
+      "#{hostname}/courses/#{course.id}/assessments/#{assessment.id}/autograde_done?dave=#{dave}&retries=#{retries}"
     end
 
     COURSE_LOGGER.log("Callback: #{callBackURL}") 
@@ -398,28 +398,42 @@ module AssessmentAutograde
           score.save!
         end
       end
-    rescue Exception => e
-      feedback_str = "An error occurred while parsing the autoresult returned by the Autograder.\n\nError message: " + e.to_s + "\n\n"
-      if lines && (lines.length < 10000) then
-        feedback_str += lines.join()
-      end
-      @assessment.problems.each do |p|
+      
+      ActiveRecord::Base.transaction do
         submissions.each do |submission|
-          score = submission.scores.find_or_initialize_by(problem_id: p.id)
-          score.score = 0
-          score.feedback = feedback_str
-          score.released = true
-          score.grader_id = 0
-          score.save!
+          submission.autoresult = autoresult
+          submission.dave = nil
+          submission.save!
         end
       end
-    end
-    
-    ActiveRecord::Base.transaction do
-      submissions.each do |submission|
-        submission.autoresult = autoresult
-        submission.dave = nil
-        submission.save!
+
+    rescue Exception => e
+      # try autograding again
+      begin
+        retries = [0, params[:retries].to_i].max
+      rescue
+        retries = 0
+      end
+      # if we get here, it's Tango's fault, so we should resubmit like gentlemen
+      if !retries < RESTFUL_MAX_RETRIES then
+        autogradeSubmissions(@course, @assessment, submissions, retries: retries + 1)
+      else
+        feedback_str = "An error occurred while parsing the autoresult returned by the Autograder.\n\nError message: " + e.to_s + "\n\n"
+        if lines && (lines.length < 10000) then
+          feedback_str += lines.join()
+        end
+        @assessment.problems.each do |p|
+          submissions.each do |submission|
+            score = submission.scores.find_or_initialize_by(problem_id: p.id)
+            unless score.id then # only save scores that haven't been set yet
+              score.score = 0
+              score.feedback = feedback_str
+              score.released = true
+              score.grader_id = 0
+              score.save!
+            end
+          end
+        end
       end
     end
     
