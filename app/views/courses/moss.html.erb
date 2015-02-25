@@ -30,52 +30,52 @@
 
 <h2><b>Step 1:</b> Click on course names to see their assessments, then check box all of the assessments you want Moss to compare against.</h2>
 <h3 style="display:inline">Filter Courses (Keywords Separated by Space): </h3><input type="text" onkeyup="filterCourses(this.value.toLowerCase())" />
-<%= form_tag(course_moss_path(@course), multipart: true) %>
-<ul class="moss-list">
-<% for course in @courses %>
-  <li class="filterableCourse" id="<%= course.display_name %>">
-    <h3 onclick="toggleOptions('<%= course.id %>Assessments')"> 
-      <%= course.display_name %>
-    </h3>
-    <ul id="<%= course.id %>Assessments" class="moss-inner-list" style="display:none" >
-    <% for a in course.assessments do %>
-      <li>
-        <%= check_box_tag "assessments[#{a.id}]","1",false %>
-        <%= a.display_name %> <br>
-        <div id='<%= a.id %>OptionsDiv' style="padding-left:10px;" >
-          <b>Archive Type:</b>
-          <%= radio_button_tag "archiveCmd[#{a.id}]" , 'None' ,checked=true %>None
-          <%= radio_button_tag "archiveCmd[#{a.id}]" , 'tar' %>tarball
-          <%= radio_button_tag "archiveCmd[#{a.id}]" , 'zip' %>ZIP 
-          <%= radio_button_tag "archiveCmd[#{a.id}]" , 'tar.gz' %>gunzipped
-          tarball     
-          <br>
-          <b>Files to send to Moss:</b>
-          <%= text_field_tag "files[#{a.id}]", "*" %>
-          <i>This can be file names (foo.c) or patterns(*.c)</i>
-          <br>
-        </div>
-      </li>
-    <% end %>
-    </ul>
-  </span>
+<%= form_tag([@course, :runMoss], multipart: true) do %>
+  <ul class="moss-list">
+  <% for course in @courses %>
+    <li class="filterableCourse" id="<%= course.display_name %>">
+      <h3 onclick="toggleOptions('<%= course.id %>Assessments')"> 
+        <%= course.display_name %>
+      </h3>
+      <ul id="<%= course.id %>Assessments" class="moss-inner-list" style="display:none" >
+      <% for a in course.assessments do %>
+        <li>
+          <%= check_box_tag "assessments[#{a.id}]","1",false %>
+          <%= a.display_name %> <br>
+          <div id='<%= a.id %>OptionsDiv' style="padding-left:10px;" >
+            <b>Archive Type:</b>
+            <%= radio_button_tag "archiveCmd[#{a.id}]" , 'None' ,checked=true %>None
+            <%= radio_button_tag "archiveCmd[#{a.id}]" , 'tar' %>tarball
+            <%= radio_button_tag "archiveCmd[#{a.id}]" , 'zip' %>ZIP 
+            <%= radio_button_tag "archiveCmd[#{a.id}]" , 'tar.gz' %>gunzipped
+            tarball     
+            <br>
+            <b>Files to send to Moss:</b>
+            <%= text_field_tag "files[#{a.id}]", "*" %>
+            <i>This can be file names (foo.c) or patterns(*.c)</i>
+            <br>
+          </div>
+        </li>
+      <% end %>
+      </ul>
+    </span>
+  <% end %>
+  </ul>
+
+  <br>
+
+  <h2><b>Step 2:</b> (Optional) Upload a tarball containing the additional submissions you'd like Moss to compare against.</h2>
+  <!--<h3>(Note: Each additional submission, tarball or single file, <b>must</b> be placed directly in the tar file.)</h3>-->
+
+  <!--%= file_field_tag 'external_tar' %-->
+  <h4><i>Currently, external tar uploads are not working. We hope to resolve this issue soon.</i></h4>
+
+  <p>
+  <br>
+
+  <h2><b>Step 3:</b> Click "Go!" once to run Moss. This may take up to a minute, so be patient...</h2>
+
+  <p>
+  <%= submit_tag "Go!", :data => { :disable_with => "Please wait..." }, :class => "btn primary" %>
+  </p>
 <% end %>
-</ul>
-
-<br>
-
-<h2><b>Step 2:</b> (Optional) Upload a tarball containing the additional submissions you'd like Moss to compare against.</h2>
-<!--<h3>(Note: Each additional submission, tarball or single file, <b>must</b> be placed directly in the tar file.)</h3>-->
-
-<!--%= file_field_tag 'external_tar' %-->
-<h4><i>Currently, external tar uploads are not working. We hope to resolve this issue soon.</i></h4>
-
-<p>
-<br>
-
-<h2><b>Step 3:</b> Click "Go!" once to run Moss. This may take up to a minute, so be patient...</h2>
-
-<p>
-<%= submit_tag "Go!", :data => { :disable_with => "Please wait..." }, :class => "btn primary" %>
-</p>
-</form>
