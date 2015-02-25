@@ -139,11 +139,8 @@ module ApplicationHelper
 
     fs = computed_score(history_url(@_cud, asmt), false) { aud.final_score @cud }
     raise "FATAL: can't be nil" unless fs
-    if @cud.student?
-      link = link_to fs, history_url(@_cud, asmt)
-    else
-      link = link_to fs, :assessment => asmt.name, :action => :student
-    end
+
+    link = link_to fs, history_url(@_cud, asmt)
 
     max_score = computed_score { asmt.max_score }
     max_score_s = '<span class="max_score">' + max_score.to_s + '</span>'
@@ -187,8 +184,6 @@ module ApplicationHelper
       javascript_include_tag "#{cloudflare}/handlebars.js/#{version}/handlebars.min.js"
     when 'bootstrap'
       javascript_include_tag "#{cloudflare}/twitter-bootstrap/#{version}/js/bootstrap.js"
-    when 'bootstrap-tooltip'
-      javascript_include_tag "#{cloudflare}/twitter-bootstrap/#{version}/js/bootstrap-tooltip.js"
     end
   end
 

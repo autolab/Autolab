@@ -57,8 +57,10 @@
     <!-- End Footer -->
 
     <%= external_javascript_include_tag "jquery", "2.1.1" %>
+    <%= content_for :js_widget_patch %>
     <%= external_javascript_include_tag "bootstrap", "3.0.0" %>
     <%= javascript_include_tag 'application' %>
-    <%= content_for :javascript %>
+    <%= content_for :javascripts %>
+
   </body>
 </html>
