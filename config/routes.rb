@@ -144,17 +144,17 @@ Autolab3::Application.routes.draw do
       end
     end
 
-      get  'manage'
-      get  'bulkRelease'
-      get  'downloadRoster'
-      match 'email', via: [:get, :post]
-      get  'moss'
-      post 'uploadRoster'
-      get  'uploadRoster'
-      get  'users'
-      get  'reload'
-      get  'sudo'
-      post 'runMoss'
+    get  'manage'
+    get  'bulkRelease'
+    get  'downloadRoster'
+    match 'email', via: [:get, :post]
+    get  'moss'
+    post 'uploadRoster'
+    get  'uploadRoster'
+    get  'users'
+    get  'reload'
+    get  'sudo'
+    post 'runMoss'
 
   end
 end
