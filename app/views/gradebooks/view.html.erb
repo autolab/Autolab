@@ -58,9 +58,18 @@
   </style>
 <% end %>
 
-<% content_for :javascripts do %>
+
+<% content_for :js_widget_patch do %>
   <%= external_javascript_include_tag "jquery-ui", "1.10.2" %>
-  <%= external_javascript_include_tag "bootstrap-tooltip", "2.3.1" %>
+  <%# jQuery UI is required for SlickGrid, but Bootstrap provides a tooltip plugin %>
+  <%# The following must come after jQuery UI but before Bootstrap 3 is loaded %>
+  <%# to resolve namespace issues %>
+  <script>
+    $.widget.bridge('uitooltip', $.ui.tooltip);
+  </script>
+<% end %>
+
+<% content_for :javascripts do %>
   <%= javascript_include_tag "jquery.event.drag-2.2.js" %>
   <%= javascript_include_tag "SlickGrid/2.02/slick.core.js" %>
   <%= javascript_include_tag "SlickGrid/2.02/slick.grid.js" %>
