@@ -5,6 +5,7 @@ config/autogradeConfig.rb
 assessmentConfig/
 courseConfig/
 config/environments/production.rb
+config/initializers/devise.rb
 /courses/
 /courses
 /gradebooks/
