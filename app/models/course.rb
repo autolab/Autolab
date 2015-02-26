@@ -150,8 +150,12 @@ class Course < ActiveRecord::Base
     assessments.pluck("DISTINCT category_name").sort
   end
 
-  def assessments_with_category(cat_name)
-    assessments.where(category_name: cat_name).ordered
+  def assessments_with_category(cat_name, isStudent=false)
+    if isStudent then
+      assessments.where(category_name: cat_name).ordered.released
+    else
+      assessments.where(category_name: cat_name).ordered
+    end
   end
 
 private

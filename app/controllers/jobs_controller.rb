@@ -163,8 +163,8 @@ class JobsController < ApplicationController
     # Students see only the output report from the autograder. So
     # bypass the view and redirect them to the viewFeedback page
     if !@cud.user.administrator? and !@cud.instructor? then
-      if url_assessment and url_submission and feedback_num > 0 then
-        redirect_to viewFeedback_course_assessment_path(url_course.to_i, url_assessment.to_i, submission: url_submission.to_i, feedback: feedback_num) and return 
+      if url_assessment and submission and feedback_num > 0 then
+        redirect_to viewFeedback_course_assessment_path(url_course.to_i, url_assessment.to_i, submission: submission.id, feedback: feedback_num) and return 
       else 
         flash[:error] = "Could not locate autograder feedback"
         redirect_to :controller=>"jobs", :item=>nil and return

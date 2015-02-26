@@ -5,6 +5,7 @@ class UsersController < ApplicationController
   skip_before_action :update_persistent_announcements
   
   # GET /users
+  action_auth_level :index, :student
   def index
     if current_user.administrator?
       @users = User.all.sort_by { |user| user.email }
@@ -25,6 +26,7 @@ class UsersController < ApplicationController
   # GET /users/id
   # show the info of a user together with his cuds
   # based on current user's role
+  action_auth_level :show, :student
   def show
     user = User.find(params[:id])
     if user.nil?
@@ -66,13 +68,9 @@ class UsersController < ApplicationController
     end
   end
 
-
-  def account
-    @user = current_user
-  end
-      
   # GET users/new
   # only adminstrator and instructors are allowed
+  action_auth_level :new, :instructor
   def new
     if current_user.administrator? || current_user.instructor?
       @user = User.new
@@ -86,6 +84,7 @@ class UsersController < ApplicationController
   # POST users/create
   # create action for instructors or above.
   # send out an email to new user on success
+  action_auth_level :create, :instructor
   def create
     if current_user.administrator?
       @user = User.new(admin_new_user_params)
@@ -113,6 +112,7 @@ class UsersController < ApplicationController
   end
   
   # GET users/:id/edit
+  action_auth_level :edit, :student
   def edit
     user = User.find(params[:id])
     if user.nil?
