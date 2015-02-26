@@ -17,7 +17,7 @@
 <h2>Assignments</h2>
 <div class="rolodex">
 <% @course.assessment_categories.each do |cat| %>
-  <% asmts = @course.assessments_with_category(cat) %>
+  <% asmts = @course.assessments_with_category(cat, @cud.student?) %>
   <% if asmts.any? %>
   <div class="card">
     <h1><a href=""><%= cat %></a></h1>

@@ -409,6 +409,9 @@ private
   def load_submission
     begin
       @assessment = @course.assessments.find params[:assessment_id]
+      if @cud.student? && !@assessment.released? then
+        redirect_to [@course, :assessments] and return
+      end
       @submission = @assessment.submissions.find params[:id]
     rescue
       flash[:error] = "Could not find submission with id #{params[:id]}."

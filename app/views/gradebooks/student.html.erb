@@ -91,7 +91,7 @@
                 <th>Final Score</th>
               </tr>
 
-              <% @course.assessments.ordered.where(category_name: cat).each do |asmt| %>
+              <% @course.assessments_with_category(cat, @cud.student?).each do |asmt| %>
                 <% aud = asmt.aud_for @_cud  %>
                 <tr>
                   <td>

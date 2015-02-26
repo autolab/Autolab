@@ -51,14 +51,6 @@ class AssessmentsController < ApplicationController
   action_no_auth    :log_submit
   action_no_auth    :local_submit
 
-  # Partners
-  action_auth_level :partner, :student
-  action_auth_level :setPartner, :student
-  action_auth_level :cancelRequest, :student
-  action_auth_level :adminPartners, :instructor
-  action_auth_level :deletePartner, :instructor
-  action_auth_level :importPartners, :instructor
-
   # SVN
   autolabRequire Rails.root.join('app', 'controllers', 'assessment', 'SVN.rb')
   include AssessmentSVN
@@ -1623,17 +1615,15 @@ protected
   end
 
   def get_assessment
-    @assessment = Assessment.find(params[:assessment_id] || params[:id])
-    @course = @assessment.course
-
-    if ((!@cud.user.administrator?) && (@cud.course_id != @assessment.course_id)) then 
-      flash[:error] = "You do not have permission to access this submission"
-      redirect_to home_error_path and return
+    begin
+      @assessment = @course.assessments.find(params[:assessment_id] || params[:id])
+    rescue
+      flash[:error] = "The assessment was not found for this course."
+      redirect_to action: :index and return
     end
 
-    unless @assessment
-      flash[:error] = "Sorry! we couldn't load the assessment \"#{assign}\""
-      redirect_to home_error_path and return
+    if @cud.student? && !@assessment.released? then
+      redirect_to action: :index and return
     end
   end
 
