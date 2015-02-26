@@ -55,7 +55,7 @@ module AssessmentHandin
     end
     
     @user = User.find_by(email: params[:user])
-    @cud = @user and @course.course_user_data.find_by(user_id: @user.id)
+    @cud = if @user then @course.course_user_data.find_by(user_id: @user.id) else nil end
     if !@cud then
       err = "ERROR: invalid username (#{params[:user]}) for class #{@course.id}"
       render plain: err, status: :bad_request and return
@@ -167,7 +167,7 @@ module AssessmentHandin
     end
     
     @user = User.find_by(email: params[:user])
-    @cud = @user and @course.course_user_data.find_by(user_id: @user.id)
+    @cud = if @user then @course.course_user_data.find_by(user_id: @user.id) else nil end
     if !@cud then
       err = "ERROR: invalid username (#{params[:user]}) for class #{@course.id}"
       render plain: err, status: :bad_request and return
