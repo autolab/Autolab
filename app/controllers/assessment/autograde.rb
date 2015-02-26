@@ -237,7 +237,7 @@ module AssessmentAutograde
     callBackURL = if RESTFUL_USE_POLLING then
       ""
     else
-      "#{hostname}/courses/#{course.id}/assessments/#{assessment.id}/autograde_done?dave=#{dave}" 
+      "#{hostname}/courses/#{course.id}/assessments/#{assessment.id}/autograde_done?dave=#{dave}&submission_id=#{submissions[0].id}" 
     end
 
     COURSE_LOGGER.log("Callback: #{callBackURL}") 
