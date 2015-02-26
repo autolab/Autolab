@@ -41,16 +41,15 @@
 
 <h2>Runtime Trace</h2>
 <ul>
-<% for item in @job[:rjob]["trace"] do %>
-  <li> <%= item %>
-<% end %>
+  <% for item in @job[:rjob]["trace"] do %>
+    <% poo = item.split("|") %>
+    <li><%= DateTime.parse(poo[0]).to_time.localtime.to_s(:db) %> | <%= poo[1] %></li>
+  <% end %>
 </ul>
 
 <h2>Most Recent Autograder Feedback for this Submission</h2>
 <% if @feedback_str == nil || @feedback_str == "" then %>
-None available
+  <pre>No Feedback Available</pre>
 <% else %>
-<pre>
-<%= @feedback_str %>
-</pre>
+  <pre><%= @feedback_str %></pre>
 <% end %>
