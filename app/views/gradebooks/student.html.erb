@@ -48,17 +48,16 @@
               </th>
               <th>Final Score</th>
             </tr>
-
-            <% @course.assessments.ordered.where(category_name: cat).each do |asmt| %>
-              <% aud = asmt.aud_for @_cud  %>
-              <tr>
-                <td>
-                  <span>
-                  <%= link_to asmt.display_name, course_assessment_path(@course, asmt) %>
-                  <% unless @cud.student? %>
-                    <a class="history_icon" href="<%= history_url(@_cud, asmt) %>">
-                      <i class="glyphicon glyphicon-list" data-toggle="tooltip" title="Handin history"></i>
-                    </a>
+              <% @course.assessments_with_category(cat, @cud.student?).each do |asmt| %>
+                <% aud = asmt.aud_for @_cud  %>
+                <tr>
+                  <td>
+                    <span>
+                    <%= link_to asmt.display_name, course_assessment_path(@course, asmt) %>
+                    <% unless @cud.student? %>
+                      <a class="history_icon" href="<%= history_url(@_cud, asmt) %>">
+                        <i title="Handin history" class="icon-list tip"></i>
+                      </a>
                   <% end %>
                 </td>
                 <% if @course.grace_days > 0 %>
@@ -67,7 +66,6 @@
                 <td><%= aud.penalty_late_days %></td>
                 <td>
                   <% case aud.grade_type
-
                      when AssessmentUserDatum::ZEROED %>
                     <% if @cud.instructor? %>
                       <span class="zeroed" data-toggle="tooltip" title="This final score has been zeroed out.">

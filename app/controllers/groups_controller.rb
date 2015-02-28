@@ -274,6 +274,10 @@ class GroupsController < ApplicationController
         flash[:error] = "This is a solo assessment."
         redirect_to [@course, @assessment] and return
       end
+      
+      if @cud.student? && !@assessment.released? then
+        redirect_to [@course, :assessments] and return
+      end
     end
 
     def set_group

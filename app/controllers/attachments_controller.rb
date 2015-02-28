@@ -1,20 +1,16 @@
 class AttachmentsController < ApplicationController
-  before_action :assessment_or_course
+  before_action :load_assessment
 
   action_auth_level :index, :instructor
   def index
     @attachments = @course.attachments
     if (@is_assessment) then
-      @assessment = @course.assessments.where(id: params[:assessment_id]).first
-      @attachments = (@assessment)? @assessment.attachments : nil
+      @attachments = @assessment.attachments
     end
   end
   
   action_auth_level :new, :instructor
   def new
-    if @is_assessment then
-      @assessment = @course.assessments.where(id: params[:assessment_id]).first
-    end
   end
 
   action_auth_level :create, :instructor
@@ -32,7 +28,7 @@ class AttachmentsController < ApplicationController
 
   action_auth_level :show, :student
   def show
-    @attachment = @course.attachments.where(id: params[:id]).first
+    @attachment = @course.attachments.find(params[:id])
     if !@attachment then
       flash[:error] = "Could not find Attachment # #{params[:id]}"
       redirect_to :controller=>"home",:action=>"error" and return
@@ -83,8 +79,14 @@ class AttachmentsController < ApplicationController
 
 private
 
-  def assessment_or_course
+  def load_assessment
     @is_assessment = params.has_key?(:assessment_id)
+    if @is_assessment then
+      @assessment = @course.assessments.find(params[:assessment_id])
+      if @cud.student? && !@assessment.released? then
+        redirect_to [@course, :assessments] and return false
+      end
+    end
   end
 
   def attachment_params
