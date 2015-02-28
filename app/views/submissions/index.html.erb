@@ -6,15 +6,33 @@
 
 <% content_for :javascripts do %>
   <%= javascript_include_tag "sorttable" %>
-  <%= external_javascript_include_tag "jquery.dataTables", "1.9.2" %>
+  <%= external_javascript_include_tag "jquery.dataTables", "1.10.5" %>
   <%= javascript_include_tag "table_floating_header" %>
 
   <script type="text/javascript">
-    jQuery.noConflict();
 
     var hideStudent;
 
     jQuery(function($) {
+
+
+      $.fn.dataTable.ext.search.push(
+          function( settings, data, dataIndex ) {
+              var filterOnlyLatest = $("#only-latest").is(':checked');
+              var isSubmissionLatest = data[6]; // use data for the age column
+              if (!filterOnlyLatest) {
+                // if not filtered, return all the rows
+                return true;
+              }
+              else {
+                return (isSubmissionLatest == "true");
+              }
+
+              return false;
+          }
+      );
+
+
       var $floater = $("#floater"),
           $backdrop = $("#gradeBackdrop");
       $('.trigger').bind('ajax:success', function showStudent(event, data, status, xhr) {
@@ -29,8 +47,9 @@
         $backdrop.hide();
       };
 
-      $('#submissions').dataTable({
+      var table = $('#submissions').DataTable({
         'sPaginationType': 'full_numbers',
+        'iDisplayLength': 100,
         'oLanguage': {
           'sLengthMenu': 'Display <select>'+
           '<option value="10">10</option>'+
@@ -38,10 +57,23 @@
           '<option value="50">50</option>'+
           '<option value="100">100</option>'+
           '<option value="-1">All</option>'+
-          '</select> records'
+          '</select> records   ·   ' + 
+          '<span class="checkbox"><input type="checkbox" id="only-latest">'+
+          '<label for="only-latest">Show only latest</label></span>'
         },
+        "columnDefs": [
+            {
+                "targets": [ 6 ],
+                "visible": false,
+                // "searchable": false
+            }],
         "aaSorting": [[ 3, "desc" ]]
       });
+
+      $("#only-latest").on("change", function() {
+        console.log(table);
+        table.draw();
+      })
     });
   </script>
 <% end %>
@@ -75,7 +107,7 @@
 
 <p>
 <table class="prettyBorder" id="submissions">
-  <% headers = ["Submitted By", "Version", "Submission Date (YYYY-MM-DD)", "File", "IP Address", "Actions"] %>
+  <% headers = ["Submitted By", "Version", "Submission Date (YYYY-MM-DD)", "File", "IP Address", "Actions", "isLatest"] %>
   <thead>
     <tr>
     <% for header in headers %>
@@ -116,6 +148,8 @@
               {:title=>"Edit the grading properties of this submission"} %>
           <%= link_to "(Destroy)", destroyConfirm_course_assessment_submission_path(@course, @assessment, submission),
               {:title=>"Destroy this submission forever"} %>
+      </td>
+      <td><%= submission.is_latest %>
       </td>
     </tr>
   <% end %>
