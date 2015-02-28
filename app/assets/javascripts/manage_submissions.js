@@ -101,13 +101,13 @@ jQuery(function($) {
     updateBatchRegradeButton();
   }
 
-  $('.submission-row').on("click", function(e) {
+  $('#submissions').on("click", ".submission-row", function(e) {
     var submissionId = parseInt(e.currentTarget.id.replace("row-", ""), 10);
     toggleRow(submissionId);
     return false;
   });
 
-  $('.cbox').on("click", function(e) {
+  $('#submissions').on("click", ".cbox", function(e) {
     var submissionId = parseInt(e.currentTarget.id.replace("cbox-", ""), 10);
     toggleRow(submissionId);
     e.stopPropagation();

@@ -72,14 +72,15 @@ module AssessmentAutograde
   # action_auth_level :regradeAll, :instructor
   def regradeBatch
     
-    submissions = @assessment.submissions.find_all_by_id(params[:submission_ids])
+    submission_ids = params[:submission_ids]
 
     # Now regrade only the most recent submissions. Keep track of
     # any handins that fail.
     failed_jobs = 0
     failed_list = ""
 
-    submissions.each do |submission|
+    submission_ids.each do |submission_id|
+      submission = @assessment.submissions.find_by_id(submission_id)
       if submission then
         job = autogradeSubmissions(@course, @assessment, [submission])
         if job == -1 then # autograding failed
@@ -97,7 +98,7 @@ module AssessmentAutograde
     if failed_jobs > 0 then
       flash[:error] = "Warning: Could not regrade #{failed_jobs} submission(s):<br>" + failed_list
     end
-    success_jobs = last_submissions.size - failed_jobs
+    success_jobs = submission_ids.size - failed_jobs
     if success_jobs > 0 then
       link = "<a href=\"#{url_for(:controller=>'jobs')}\">#{success_jobs} submission</a>"
       flash[:success] = ("Regrading #{link}").html_safe
