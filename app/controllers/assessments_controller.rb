@@ -19,7 +19,7 @@ class AssessmentsController < ApplicationController
   include AssessmentAutograde
 
   before_action :get_assessment, except: [ :index, :new, :create, :installQuiz, :installAssessment, 
-                                           :importAsmtFromTar, :importAssessment, :getCategory, 
+                                           :importAsmtFromTar, :importAssessment, :setCategory, 
                                            :log_submit, :local_submit, :autograde_done ]
 
   # We have to do this here, because the modules don't inherit ApplicationController.
@@ -348,7 +348,7 @@ class AssessmentsController < ApplicationController
     # Otherwise, ask the user to give us a category before we create the
     # assessment
     else
-      redirect_to getCategory_course_assessments_path(course_id: @course.id, assessment_name: name) 
+      redirect_to setCategory_course_assessments_path(course_id: @course.id, assessment_name: name) 
       return
     end
   end
@@ -993,11 +993,11 @@ class AssessmentsController < ApplicationController
     end
   end
 
-  # getCategory - Determines the category name for a new
+  # setCategory - Determines the category name for a new
   # assessment. Expects the assessment name to be passed in
   # params['assessment']
-  action_auth_level :getCategory, :instructor
-  def getCategory
+  action_auth_level :setCategory, :instructor
+  def setCategory
     if request.post? then
       name = params[:assessment_name]
       display_name = params[:display_name]
