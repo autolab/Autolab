@@ -348,6 +348,10 @@ class Submission < ActiveRecord::Base
     return true
   end
 
+  def is_latest
+    return (aud.latest_submission_id == self.id)
+  end
+
   # override as_json to include the total with a paramter
   def as_json(options = {})
     json = super(options)

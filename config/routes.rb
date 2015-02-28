@@ -95,6 +95,7 @@ Autolab3::Application.routes.draw do
         # autograde actions
         post 'autograde_done'
         post 'regrade'
+        post 'regradeBatch'
         post 'regradeAll'
 
         # partner actions

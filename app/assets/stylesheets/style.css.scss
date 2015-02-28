@@ -481,7 +481,6 @@ table.prettyBorder {
 
   tr {
     background-color: #fff;
-
     &:hover {
       background-color:#abcdef;
     }
@@ -514,6 +513,15 @@ table.prettyBorder {
   td {
     border: 1px solid #ddd;
     padding: 0 5px;
+  }
+
+  tr.selected {
+    background-color: #eee;
+  }
+
+  tr .btn.small {
+    margin-top: 3px;
+    margin-bottom: 3px;
   }
 }
 
@@ -928,6 +936,10 @@ display: block;
 }
 
 /*  Warnings  */
+
+#flashes {
+  margin-top: 8px;
+}
 
 #flash_alert.alert,
 #flash_error.error,
