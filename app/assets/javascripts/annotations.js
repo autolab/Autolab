@@ -39,15 +39,21 @@ var parseText = function(text) {
   var res = text.split("[");
   if (res.length === 1) {
     return [decodeURI(text), "", ""];
-  } else {
-    res2 = res[1].split(":");
-    if (res2.length === 1) {
-      return [decodeURI(res[0]), res[1].split("]")[0], ""];
+  } 
+  if (res.length > 1) {
+
+    var len = res.length;
+    var points = res.splice(len-1,1);
+    var points = points[0].split(":");
+    var comment = decodeURI(res.join("["));
+    
+    if (points.length === 1) {
+      return [comment, points[0].replace("]",""), ""];
     } else {
-      if (res2[0] === "?") {
-        return [decodeURI(res[0]), "", res2[1].split("]")[0]];
+      if (points[0] === "?") {
+        return [comment, "", points[1].replace("]","")];
       } else {
-        return [decodeURI(res[0]), res2[0], res2[1].split("]")[0]];
+        return [comment, points[0], points[1].replace("]","")];
       }
     }
   }
@@ -185,9 +191,15 @@ $(function() {
   }
 
   var updateAnnotationBox = function(ann) {
+
+    var parsedAnn = parseText(decodeURI(ann.text));
+    var problemStr = parsedAnn[2] || "General"
+
     $('#ann-box-' + ann.id).find('.edit').show();
     $('#ann-box-' + ann.id).find('.body').show();
-    $('#ann-box-' + ann.id).find('.body').html(decodeURI(ann.text));
+    $('#ann-box-' + ann.id).find('.score-box').html("<span>"+problemStr+"</span><span>"+parsedAnn[1]+"</span>");
+    $('#ann-box-' + ann.id).find('.body').html(parsedAnn[0]);
+
   }
 
   // the current Annotation instance
@@ -427,7 +439,6 @@ $(function() {
         $(formEl).remove();
       },
       error: function(result, type) {
-        console.log(result);
         $(formEl).append("Failed to Save Annotation!!!");
       },
       complete: function(result, type) {}

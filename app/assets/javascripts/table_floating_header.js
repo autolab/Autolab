@@ -71,7 +71,10 @@ this.build_header = function() {
     this.header.style.position='absolute';
     this.header.style.display='none';
     this.header.appendChild(thead);
-    this.header.style.width = this.table_obj.offsetWidth;
+    this.header.style.width = this.table_obj.offsetWidth+2 + "px";
+    this.header.style.left = "50%";
+    this.header.style.marginLeft = (-1 * this.table_obj.offsetWidth/2) -1 + "px";
+
     var srcths = this.table_obj.getElementsByTagName('THEAD')[0].getElementsByTagName('*');
     var copyths = thead.getElementsByTagName('*');
     for ( var x = 0; x < copyths.length; x++ ) {
