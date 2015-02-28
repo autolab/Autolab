@@ -10,8 +10,6 @@
   <%= javascript_include_tag "table_floating_header" %>
 
   <script type="text/javascript">
-    jQuery.noConflict();
-
     var hideStudent;
 
     jQuery(function($) {
@@ -31,6 +29,7 @@
 
       $('#submissions').dataTable({
         'sPaginationType': 'full_numbers',
+        'iDisplayLength': 100,
         'oLanguage': {
           'sLengthMenu': 'Display <select>'+
           '<option value="10">10</option>'+
