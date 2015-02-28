@@ -6,15 +6,13 @@ jQuery(function($) {
   $.fn.dataTable.ext.search.push(
     function(settings, data, dataIndex) {
       var filterOnlyLatest = $("#only-latest").is(':checked');
-      var isSubmissionLatest = data[7]; // use data for the age column
       if (!filterOnlyLatest) {
         // if not filtered, return all the rows
         return true;
       } else {
+        var isSubmissionLatest = data[7]; // use data for the age column
         return (isSubmissionLatest == "true");
       }
-
-      return false;
     }
   );
 
