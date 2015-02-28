@@ -340,8 +340,9 @@ class AssessmentsController < ApplicationController
     # If the properties file defines a category, then use it,
     # creating a new category if necessary. 
     if props['general'] and props['general']['category'] then
-      requested_cat = props['general']['category']
-      params[:assessment] = {name: name, category_name: requested_cat}
+      params[:assessment] = { name: name,
+                              display_name: props['general']['display_name'],
+                              category_name: props['general']['category'] }
       create and return
 
     # Otherwise, ask the user to give us a category before we create the
