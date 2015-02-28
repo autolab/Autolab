@@ -937,6 +937,10 @@ display: block;
 
 /*  Warnings  */
 
+#flashes {
+  margin-top: 8px;
+}
+
 #flash_alert.alert,
 #flash_error.error,
 #flash_notice {
