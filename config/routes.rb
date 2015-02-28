@@ -125,7 +125,7 @@ Autolab3::Application.routes.draw do
         match 'installAssessment', via: [:get, :post]
         match 'importAssessment', via: [:get, :post]
         match 'importAsmtFromTar', via: [:post]
-        match 'getCategory', via: [:get, :post]
+        match 'setCategory', via: [:get, :post]
         match 'installQuiz', via: [:get, :post]
       end
     end
