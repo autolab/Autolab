@@ -65,11 +65,9 @@ module AssessmentAutograde
 
 
   # 
-  # regradeAll - regrade the most recent submissions from each student
+  # regradeBatch - regrade the selected submissions by the instructor
   #
-  # RESTfully speaking, this belongs in submissions controller,
-  #   but because it uses autograding, it is easier to have it here
-  # action_auth_level :regradeAll, :instructor
+  # action_auth_level :regradeBatch, :instructor
   def regradeBatch
     
     submission_ids = params[:submission_ids]
