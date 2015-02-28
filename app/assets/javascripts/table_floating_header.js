@@ -75,9 +75,6 @@ this.build_header = function() {
     this.header.style.left = "50%";
     this.header.style.marginLeft = (-1 * this.table_obj.offsetWidth/2) -1 + "px";
 
-    console.log(this.table_obj.offsetWidth)
-    console.log(this.header);
-
     var srcths = this.table_obj.getElementsByTagName('THEAD')[0].getElementsByTagName('*');
     var copyths = thead.getElementsByTagName('*');
     for ( var x = 0; x < copyths.length; x++ ) {
