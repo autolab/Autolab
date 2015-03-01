@@ -61,8 +61,8 @@ module Archive
     return res
   end
 
-  def self.get_nth_filename(archive_path, n)
-    return get_nth_file(archive_path, n)[1]
+  def self.get_nth_filename(files, n)
+    files[n][:pathname]
   end
 
   def self.is_archive?(filename)

@@ -187,6 +187,20 @@ class Annotation < ActiveRecord::Base
     return self.INVALID_PROBLEM
   end
 
+  def as_text
+    if (self.value) then
+      if (self.problem) then
+        "#{self.comment} (#{self.value}, #{self.problem.name})"
+      else
+        "#{self.comment} (#{self.value})"
+      end
+    elsif (self.problem) then
+      "#{self.comment} (#{self.problem.name})"
+    else
+      self.comment
+    end
+  end
+
   # instance method that just calls the class method
   def has_grades?
     for grade in Annotation.extract_grades(self.text) do

@@ -1,3 +1,4 @@
+require 'archive.rb'
 require 'csv'
 require 'yaml'
 require 'Statistics.rb'
@@ -795,6 +796,10 @@ class AssessmentsController < ApplicationController
     end 
     
     @submission = @score.submission
+
+    if Archive.is_archive? @submission.handin_file_path then
+      @files = Archive.get_files @submission.handin_file_path
+    end
   end
 
   action_auth_level :downloadFeedbackFile, :student

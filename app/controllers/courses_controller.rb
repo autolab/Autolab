@@ -514,11 +514,11 @@ e.to_s() + e.backtrace().join("<br>")
   action_auth_level :runMoss, :instructor
   def runMoss
     # Return if we have no files to process.
-    unless request.post? and (params["assessments"] or params["external_tar"])
+    unless (params[:assessments] or params[:external_tar]) then
       flash[:error] = "No input files provided for MOSS."
-      redirect_to :action=>"moss" and return
+      redirect_to action: :moss and return
     end
-    assessmentIDs = params["assessments"]
+    assessmentIDs = params[:assessments]
     assessments = []
   
     # First, validate access on each of the requested assessments
@@ -526,25 +526,19 @@ e.to_s() + e.backtrace().join("<br>")
       for aID in assessmentIDs.keys do 
         assessment = Assessment.find(aID)
         if !assessment then
-          flash[:error] = "Invalid Assessment"
-          redirect_to :action=>"moss" and return
+          flash[:error] = "Invalid Assessment ID: #{aID}"
+          redirect_to action: :moss and return
         end
-        assessmentCUD = assessment.course.course_user_data.joins(:user).where(users: { email: current_user.email },
-                                                                               instructor: true).first
-        if !assessmentCUD and (not @cud.user.administrator? ) then 
+        assessmentCUD = assessment.course.course_user_data.joins(:user).find_by(users: { email: current_user.email }, instructor: true)
+        if !assessmentCUD && (not @cud.user.administrator? ) then 
           flash[:error] = "Invalid User"
-          redirect_to :action=>"moss" and return
+          redirect_to action: :moss and return
         end
         assessments << assessment
       end
     end
 
-    require 'rubygems'
-    require 'rubygems/package'
-    require 'zlib'
-    require 'zip'
-
-    @mossCmd= "mossnet -d "
+    @mossCmd = [Rails.root.join("vendor", "mossnet -d")]
   
     # Create a temporary directory for this
     tmpDir = Dir.mktmpdir("#{@cud.user.email}Moss", File.join(Rails.root, 'tmp'))
@@ -567,8 +561,8 @@ e.to_s() + e.backtrace().join("<br>")
         if ! sub.filename then
           next
         end
-        subFile = File.join(Rails.root,"courses",ass.course.name,
-            ass.name,ass.handin_directory,sub.filename)
+        subFile = Rails.root.join("courses", ass.course.name,
+            ass.name, ass.handin_directory, sub.filename)
         if !File.exists?(subFile) then
           next
         end
@@ -597,28 +591,28 @@ e.to_s() + e.backtrace().join("<br>")
         if ['tar','zip','tar.gz'].member? params["archiveCmd"][ass.id.to_s]
           archive_extract.each do |entry|
             pathname = entry.respond_to?(:full_name) ? entry.full_name : entry.name
-      destination = "#{stuDir}/#{pathname}"
-      begin
-        open destination, 'wb' do |out|
+            destination = "#{stuDir}/#{pathname}"
+            begin
+              open destination, 'wb' do |out|
                 out.write entry.read
                 out.fsync rescue nil # for filesystems without fsync(2)
               end
-      rescue
-        FileUtils.mkdir_p File.dirname destination
-      end
-    end
+            rescue
+              FileUtils.mkdir_p File.dirname destination
+            end
+          end
         end
 
       end
       # add this assessment to the moss command
-      @mossCmd += "#{assDir}/*/#{params["files"][ass.id.to_s]} "
+      @mossCmd << "#{assDir}/*/#{params["files"][ass.id.to_s]}"
     end
   
     # Grasp the external code source (tarball).
-    external_tar = params["external_tar"];
+    external_tar = params[:external_tar];
     if external_tar then   # Sanity check.
       # Directory to hold tar ball and all individual files.
-      extTarDir = File.join(tmpDir,"external_input")
+      extTarDir = File.join(tmpDir, "external_input")
       Dir.mkdir(extTarDir)
   
       # Read in the tarfile from the given source.
@@ -636,10 +630,10 @@ e.to_s() + e.backtrace().join("<br>")
       arch.extract
   
       # Unarchive / reorganize the submission files.
-      Dir.foreach(extFilesDir) { |filename|
+      Dir.foreach(extFilesDir) do |filename|
         if filename != "." && filename != ".."
           subDir = Dir.mktmpdir(filename[0 .. filename.rindex(/\./) - 1], extFilesDir)
-          if ['tar','zip','tar.gz'].member? params["archiveCmd"][ass.id.to_s]
+          if ['tar','zip','tar.gz'].member? params[:archiveCmd][ass.id.to_s]
             arch = Archive.new(File.join(extFilesDir, filename))
             Dir.chdir subDir
             arch.extract
@@ -647,17 +641,17 @@ e.to_s() + e.backtrace().join("<br>")
             FileUtils.cp File.join(extFilesDir, filename), subDir
           end
         end
-      }
+      end
 
       # Feed the uploaded files to MOSS.
-      @mossCmd += "#{extFilesDir}/*/#{params["files"][ass.id.to_s]} "
+      @mossCmd << "#{extFilesDir}/*/#{params["files"][ass.id.to_s]}"
     end
   
     # Ensure that all files in Moss tmp dir are readable
     system("chmod -R a+r #{tmpDir}")
   
     # Now run the Moss command
-    mossWithPath = File.join(Rails.root,"vendor",@mossCmd)
+    mossWithPath = @mossCmd.join(" ")
     @mossExit = $?
     @mossOutput = `#{mossWithPath} 2>&1`
   
