@@ -5,24 +5,12 @@
 
 Files in this Archive: <br/>
 <ul>
-<% @files.each do |file| %>
-  <li>
-  <%= 
-  link_to file[:pathname],
-    :action => :download,
-    :header_position => file[:header_position],
-    :id => @submission.id
-  %>
-  <% if file[:highlight] then %>
-    <ul><li>
-    <%=
-    link_to "View as Syntax Highlighted Source",
-      :action => :view,
-      :header_position => file[:header_position],
-      :id => @submission.id
-    %>
-    </li></ul>
+  <% @files.each do |file| %>
+    <% unless file[:directory] then %>
+      <li>
+        <%= link_to file[:pathname], [:download, @course, @assessment, @submission, header_position: file[:header_position] ]%>
+        <ul><li><%= link_to "View as Syntax Highlighted Source", [:view, @course, @assessment, @submission, header_position: file[:header_position] ] %></li></ul>
+      </li>
+    <% end %>
   <% end %>
-  </li>
-<% end %>
 </ul>

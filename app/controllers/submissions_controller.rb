@@ -1,4 +1,4 @@
-require 'archives.rb'
+require 'archive.rb'
 
 class SubmissionsController < ApplicationController
 

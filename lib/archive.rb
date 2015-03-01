@@ -22,7 +22,7 @@ module Archive
       files << {
         pathname: pathname,
         header_position: i,
-        highlight: !File.directory?(pathname)
+        directory: File.directory?(pathname)
       }
     end
 
@@ -47,8 +47,9 @@ module Archive
         pathname.include? ".metadata"
       
       if i == n then
-        return nil, nil unless entry
-        if entry.respond_to?(:read) then # tar and tgz
+        if !entry || File.directory?(pathname) then
+          res = nil, nil
+        elsif entry.respond_to?(:read) then # tar and tgz
           res = entry.read, entry.full_name
         else # zip
           res = entry.get_input_stream.read, entry.name
