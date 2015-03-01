@@ -15,20 +15,18 @@ module Archive
       # Obtain path name depending for tar/zip entry
       pathname = entry.respond_to?(:full_name) ? entry.full_name : entry.name
 
-      next if pathname.include? "__MACOSX" or
-        pathname.include? ".DS_Store" or
-        pathname.include? ".metadata"
-
       files << {
         pathname: pathname,
         header_position: i,
+        mac_bs_file: pathname.include?("__MACOSX") ||
+                     pathname.include?(".DS_Store") ||
+                     pathname.include?(".metadata"),
         directory: File.directory?(pathname)
       }
     end
 
     archive_extract.close
 
-    files.sort! { |a,b| a[:pathname] <=> b[:pathname] }
     files
   end
 
@@ -47,8 +45,8 @@ module Archive
         pathname.include? ".metadata"
       
       if i == n then
-        if !entry || File.directory?(pathname) then
-          res = nil, nil
+        if File.directory?(pathname) then
+          res = nil, pathname
         elsif entry.respond_to?(:read) then # tar and tgz
           res = entry.read, entry.full_name
         else # zip
@@ -61,6 +59,10 @@ module Archive
     archive_extract.close
 
     return res
+  end
+
+  def self.get_nth_filename(archive_path, n)
+    return get_nth_file(archive_path, n)[1]
   end
 
   def self.is_archive?(filename)

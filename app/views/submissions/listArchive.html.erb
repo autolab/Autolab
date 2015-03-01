@@ -6,10 +6,19 @@
 Files in this Archive: <br/>
 <ul>
   <% @files.each do |file| %>
-    <% unless file[:directory] then %>
+    <% unless file[:directory] || file[:mac_bs_file] then %>
       <li>
-        <%= link_to file[:pathname], [:download, @course, @assessment, @submission, header_position: file[:header_position] ]%>
-        <ul><li><%= link_to "View as Syntax Highlighted Source", [:view, @course, @assessment, @submission, header_position: file[:header_position] ] %></li></ul>
+        <%= file[:pathname] %>
+        <%= link_to [:download, @course, @assessment, @submission, header_position: file[:header_position] ],
+                    data: {toggle: "tooltip", placement:"top"}, 
+                    title: "Download Submission" do %>
+          <span class="glyphicon glyphicon-download" aria-hidden="true" style="margin-right:3px;"></span>
+        <% end %>
+        <%= link_to [:view, @course, @assessment, @submission, header_position: file[:header_position] ],
+                    data: {toggle: "tooltip", title: "View Source"}, 
+                    aria: {label: "Justify"}, style: "margin-right:3px;" do %>
+          <span class="glyphicon glyphicon-zoom-in" aria-hidden="true"></span>
+        <% end %>
       </li>
     <% end %>
   <% end %>

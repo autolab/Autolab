@@ -322,7 +322,11 @@ class SubmissionsController < ApplicationController
       render :view and return
     rescue
       flash[:error] = "Autolab cannot display this file"
-      redirect_to [:history, @course, @assessment] and return
+      if params[:header_position] then
+        redirect_to [:list_archive, @course, @assessment, @submission] and return
+      else
+        redirect_to [:history, @course, @assessment] and return
+      end
     end
   end
 
@@ -330,7 +334,7 @@ class SubmissionsController < ApplicationController
   # files in a submission that is an archive file. 
   action_auth_level :listArchive, :student
   def listArchive
-    @files = Archive.get_files(@filename)
+    @files = Archive.get_files(@filename).sort! { |a,b| a[:pathname] <=> b[:pathname] }
   end
 
 private
