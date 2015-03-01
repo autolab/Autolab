@@ -24,7 +24,6 @@ $(function() {
   hljs.highlightBlock(block);
 
   function getProblemNameWithId(problem_id) {
-    console.log(problem_id)
     var problem_id = parseInt(problem_id, 10);
     var problem = _.findWhere(problems, {"id":problem_id});
     return problem.name;

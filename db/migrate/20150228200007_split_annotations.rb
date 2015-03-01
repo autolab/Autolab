@@ -29,7 +29,6 @@ class SplitAnnotations < ActiveRecord::Migration
                 annotation.value = 0;
               else
                 problemStr =  points[1].delete("]")
-                puts problemStr
                 problem = annotation.submission.assessment.problems.find_by(name: problemStr)
                 annotation.problem = problem
                 annotation.value =  points[0].to_f
