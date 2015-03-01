@@ -155,7 +155,7 @@ $(function() {
 
     var problemStr = annObj.problem_id? getProblemNameWithId(annObj.problem_id) : "General";
     var valueStr = annObj.value? annObj.value.toString() : "None";
-    var commentStr = decodeURI(annObj.comment);
+    var commentStr = annObj.comment;
 
     $('#ann-box-' + annObj.id).find('.edit').show();
     $('#ann-box-' + annObj.id).find('.body').show();
@@ -229,7 +229,11 @@ $(function() {
       var value = valueInput.value;
       var problem_id = problemSelect.value;
 
-      submitNewAnnotation(comment, value, problem_id, lineInd, newForm);
+      if (!comment) {
+        newForm.appendChild(elt("div", null, "The comment cannot be empty"));
+      } else {
+        submitNewAnnotation(comment, value, problem_id, lineInd, newForm);
+      }
     };
 
     $(cancelButton).on('click', function() {
@@ -244,7 +248,7 @@ $(function() {
 
     var problemStr = annObj.problem_id? getProblemNameWithId(annObj.problem_id) : "General";
     var valueStr = annObj.value? annObj.value.toString() : "None";
-    var commentStr = decodeURI(annObj.comment);
+    var commentStr = annObj.comment;
 
     // this section creates the new/edit annotation form that's used everywhere
     var commentInput = elt("input", {
@@ -307,12 +311,14 @@ $(function() {
       var comment = commentInput.value;
       var value = valueInput.value;
       var problem_id = problemSelect.value;
-
-      annObj.comment = comment;
-      annObj.value = value;
-      annObj.problem_id = problem_id
-        //function(annotationObj, lineInd, formEl) {
-      updateAnnotation(annObj, lineInd, newForm);
+      if (!comment) {
+        newForm.appendChild(elt("div", null, "The comment cannot be empty"));
+      } else {
+        annObj.comment = comment;
+        annObj.value = value;
+        annObj.problem_id = problem_id
+        updateAnnotation(annObj, lineInd, newForm);
+      }
     };
 
     $(cancelButton).on('click', function() {
@@ -385,7 +391,7 @@ $(function() {
         $(formEl).remove();
       },
       error: function(result, type) {
-        $(formEl).append("Failed to Save Annotation!!!");
+        $(formEl).append(elt("div", null, "Failed to Save Annotation!!!"));
       },
       complete: function(result, type) {}
     });
@@ -405,7 +411,7 @@ $(function() {
         $(formEl).remove();
       },
       error: function(result, type) {
-        $(formEl).append("Failed to Save Annotation!!!");
+        $(formEl).append(elt("div", null, "Failed to Save Annotation!!!"));
       },
       complete: function(result, type) {}
     });
