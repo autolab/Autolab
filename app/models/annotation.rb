@@ -3,7 +3,7 @@ class Annotation < ActiveRecord::Base
   belongs_to :problem
 
   validates_presence_of :submission_id, :filename
-  validates_presence_of :line, :text
+  validates_presence_of :line, :comment
 
   def self.NO_PROBLEM
     "_"
