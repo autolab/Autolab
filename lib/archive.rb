@@ -69,6 +69,7 @@ module Archive
   end
 
   def self.is_archive?(filename)
+    return nil unless filename
     archive_type = get_archive_type(filename)
     return (archive_type.include?("tar") || archive_type.include?("gzip") || archive_type.include?("zip"))
   end
