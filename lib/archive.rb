@@ -48,10 +48,8 @@ module Archive
       if i == n then
         if File.directory?(pathname) then
           res = nil, pathname
-        elsif entry.respond_to?(:read) then # tar and tgz
-          res = entry.read, entry.full_name
-        else # zip
-          res = entry.get_input_stream.read, entry.name
+        else
+          res = read_entry_file(entry), get_entry_name(entry)
         end
         break
       end
@@ -95,7 +93,13 @@ module Archive
   end
 
   def self.get_entry_name(entry)
+    # tar/tgz vs zip
     entry.respond_to?(:full_name) ? entry.full_name : entry.name
+  end
+
+  def self.read_entry_file(entry)
+    # tar/tgz vs zip
+    entry.respond_to?(:read) ? entry.read : entry.get_input_stream.read
   end
 
   ##

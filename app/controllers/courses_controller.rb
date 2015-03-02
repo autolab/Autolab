@@ -577,7 +577,7 @@ e.to_s() + e.backtrace().join("<br>")
               # make sure all subdirectories are there
               FileUtils.mkdir_p(File.dirname destination)
               File.open(destination, "wb") do |out|
-                out.write entry.read
+                out.write Archive.read_entry_file(entry)
                 out.fsync rescue nil # for filesystems without fsync(2)
               end
             end
@@ -597,7 +597,7 @@ e.to_s() + e.backtrace().join("<br>")
       Dir.mkdir(extTarDir)
   
       # Read in the tarfile from the given source.
-      extTarPath = File.join(extTarDir, "input_file.tar")
+      extTarPath = File.join(extTarDir, "input_file")
       external_tar.rewind
       File.open(extTarPath,"wb") { |f| f.write(external_tar.read)} # Write tar file.
   
@@ -613,10 +613,11 @@ e.to_s() + e.backtrace().join("<br>")
       archive_extract.each do |entry|
         pathname = Archive.get_entry_name(entry)
         if !File.directory?(pathname) then
-          destination = File.join(extFilesDir, pathname.gsub!(/\//, "-"))
+          pathname.gsub!(/\//, "-")
+          destination = File.join(extFilesDir, pathname)
           # make sure all subdirectories are there
           File.open(destination, "wb") do |out|
-            out.write entry.read
+            out.write Archive.read_entry_file(entry)
             out.fsync rescue nil # for filesystems without fsync(2)
           end
         end
