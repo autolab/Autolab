@@ -41,26 +41,26 @@
 <div class="row">
   <div class="annotationPane col-md-3">
     <h3 class="annotationHeader">Summary</h3>
-    <% if @noAnnotations and @errorLines == "" and (@cud.instructor? or @cud.course_assistant?) then %>
-      <p>Click anywhere on the code to annotate.</p>
-    <% elsif (@noAnnotations and !(@cud.instructor? or @cud.course_assistant?)) then %>
-      <p>Nothing to summarize yet.</p>
+    <% if @problemSummaries.empty? then %>
+      <% if (@cud.instructor? or @cud.course_assistant?) then %>
+        <p>Click anywhere on the code to annotate.</p>
+      <% else %>
+        <p>Nothing to summarize yet.</p>
+      <% end %>
+    <% else %>
+      <div id="summaryList">
+        <% @problemSummaries.each do |problem, descriptTuples| %>
+          <hr>
+          <div class="problemListItem"> <%= "Problem: #{problem} [#{plus_fix(@problemGrades[problem])}]" %>
+            <ul id="problem-list-<%= problem %>">
+            <% descriptTuples.each do |descript, value, line, user, id| %>
+              <li class="descript" id="li-annotation-<%= id %>"><%= (user ? "line: #{line}, #{descript} [#{plus_fix(value)}] (#{user})" : "line: #{line}, #{descript} [#{plus_fix(value)}]") %></li>
+            <% end %>
+            </ul>
+          </div>
+        <% end %>
+      </div>
     <% end %>
-    <div id="summaryList">
-      <% @problemSummaries.each do |problem, descriptTuples| %>
-        <hr>
-        <div class="problemListItem"> <%= "Problem: #{problem} [#{plus_fix(@problemGrades[problem])}]" %>
-          <ul id="problem-list-<%= problem %>">
-          <% descriptTuples.each do |descript, value, line, user, id| %>
-            <li class="descript" id="li-annotation-<%= id %>"><%= (user ? "line: #{line}, #{descript} [#{plus_fix(value)}] (#{user})" : "line: #{line}, #{descript} [#{plus_fix(value)}]") %></li>
-          <% end %>
-          </ul>
-        </div>
-      <% end %>
-      <% if @errorLines != "" then %>
-        <div class="syntaxError"> Syntax Error on line(s): <%= @errorLines %></div>
-      <% end %>
-    </div>
     <hr>
     <span class="checkbox">
       <input type="checkbox" id="highlightLongLines">

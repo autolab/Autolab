@@ -269,43 +269,25 @@ class SubmissionsController < ApplicationController
 
     @problemSummaries = Hash.new
     @problemGrades = Hash.new
-    @errorLines = ""
 
     # extract information from annotations
     for annotation in @annotations do
-      for description, value, line, problem in annotation.get_grades do
-        if problem == Annotation.PLAIN_ANNOTATION then
-          next
-        end
-        # make the '[' swap
-        description = description.gsub("\u0001", "[").gsub("\u0002", "]")
-        if value == Annotation.INVALID_VALUE or 
-          problem == Annotation.SYNTAX_ERROR or 
-          problem == Annotation.INVALID_PROBLEM then
-          if @errorLines == "" then
-            @errorLines += line.to_s
-          else
-            @errorLines += ", #{line}"
-          end
-          next
-        end
-        if problem == Annotation.NO_PROBLEM then
-          problem = "None"
-        end
-        @problemSummaries[problem] ||= []
-        @problemSummaries[problem] << [description, value, line, annotation.submitted_by, annotation.id]
+      description = annotation.comment
+      value = annotation.value || 0
+      line = annotation.line
+      problem = annotation.problem ? annotation.problem.name : "General"
 
-        @problemGrades[problem] ||= 0
-        @problemGrades[problem] += value
-      end
+      @problemSummaries[problem] ||= []
+      @problemSummaries[problem] << [description, value, line, annotation.submitted_by, annotation.id]
+
+      @problemGrades[problem] ||= 0
+      @problemGrades[problem] += value
     end
 
     @problems = @assessment.problems.to_a
     @problems.sort! {|a,b| a.id <=> b.id }
 
     session[:problems] = @problems
-
-    @noAnnotations = @problemSummaries.empty?
 
     # Rendering this page fails. Often. Mostly due to PDFs.
     # So if it fails, redirect, instead of showing an error page.
