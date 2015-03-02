@@ -16,7 +16,7 @@
         heap.load("<%= Rails.configuration.x.analytics_id %>");
       </script>
     <% end %>
-    
+
     <%= content_for :head %>
     <link href='//fonts.googleapis.com/css?family=Source+Sans+Pro:300,400' rel='stylesheet' type='text/css'>
     <%= content_for :stylesheets %>
@@ -56,7 +56,7 @@
         <!-- End Content -->
         <div id="footer">
         <a href="http://autolabproject.com">Autolab Project</a>
-        · <a href="/contactUs.html">Contact</a>
+        · <a href="/contact">Contact</a>
         <% if @course %>
         · <%= link_to "Need Help?", course_report_bug_path(@course) %>
         <% end %>
@@ -68,6 +68,7 @@
     </div>
 
     <%= external_javascript_include_tag "jquery", "2.1.1" %>
+    <%= content_for :js_widget_patch %>
     <%= external_javascript_include_tag "bootstrap", "3.0.0" %>
     <%= javascript_include_tag 'application' %>
     <%= content_for :javascripts %>

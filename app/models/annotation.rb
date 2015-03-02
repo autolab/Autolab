@@ -3,7 +3,7 @@ class Annotation < ActiveRecord::Base
   belongs_to :problem
 
   validates_presence_of :submission_id, :filename
-  validates_presence_of :line, :text
+  validates_presence_of :line, :comment
 
   def self.NO_PROBLEM
     "_"
@@ -185,6 +185,20 @@ class Annotation < ActiveRecord::Base
       end
     end
     return self.INVALID_PROBLEM
+  end
+
+  def as_text
+    if (self.value) then
+      if (self.problem) then
+        "#{self.comment} (#{self.value}, #{self.problem.name})"
+      else
+        "#{self.comment} (#{self.value})"
+      end
+    elsif (self.problem) then
+      "#{self.comment} (#{self.problem.name})"
+    else
+      self.comment
+    end
   end
 
   # instance method that just calls the class method

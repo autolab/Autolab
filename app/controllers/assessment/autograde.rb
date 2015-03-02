@@ -63,6 +63,48 @@ module AssessmentAutograde
     redirect_to history_course_assessment_path(@course, @assessment, cud_id: @effectiveCud.id) and return
   end
 
+
+  # 
+  # regradeBatch - regrade the selected submissions by the instructor
+  #
+  # action_auth_level :regradeBatch, :instructor
+  def regradeBatch
+    
+    submission_ids = params[:submission_ids]
+
+    # Now regrade only the most recent submissions. Keep track of
+    # any handins that fail.
+    failed_jobs = 0
+    failed_list = ""
+
+    submission_ids.each do |submission_id|
+      submission = @assessment.submissions.find_by_id(submission_id)
+      if submission then
+        job = autogradeSubmissions(@course, @assessment, [submission])
+        if job == -1 then # autograding failed
+          failed_jobs += 1
+          failed_list += "#{@submission.filename}: autograding error.<br>"
+        elsif job == -2 then # no autograding properties for this assessment
+          redirect_to [@course, @assessment, :submissions] and return
+        end
+      else
+        failed_jobs += 1
+        failed_list += "#{submission.filename}: not found or not readable.<br>"
+      end
+    end
+
+    if failed_jobs > 0 then
+      flash[:error] = "Warning: Could not regrade #{failed_jobs} submission(s):<br>" + failed_list
+    end
+    success_jobs = submission_ids.size - failed_jobs
+    if success_jobs > 0 then
+      link = "<a href=\"#{url_for(:controller=>'jobs')}\">#{success_jobs} submission</a>"
+      flash[:success] = ("Regrading #{link}").html_safe
+    end
+
+    redirect_to [@course, @assessment, :submissions] and return
+  end
+
   # 
   # regradeAll - regrade the most recent submissions from each student
   #

@@ -1,3 +1,4 @@
+require 'archive.rb'
 require 'csv'
 require 'yaml'
 require 'Statistics.rb'
@@ -19,7 +20,7 @@ class AssessmentsController < ApplicationController
   include AssessmentAutograde
 
   before_action :get_assessment, except: [ :index, :new, :create, :installQuiz, :installAssessment, 
-                                           :importAsmtFromTar, :importAssessment, :getCategory, 
+                                           :importAsmtFromTar, :importAssessment, :setCategory, 
                                            :log_submit, :local_submit, :autograde_done ]
 
   # We have to do this here, because the modules don't inherit ApplicationController.
@@ -340,14 +341,15 @@ class AssessmentsController < ApplicationController
     # If the properties file defines a category, then use it,
     # creating a new category if necessary. 
     if props['general'] and props['general']['category'] then
-      requested_cat = props['general']['category']
-      params[:assessment] = {name: name, category_name: requested_cat}
+      params[:assessment] = { name: name,
+                              display_name: props['general']['display_name'],
+                              category_name: props['general']['category'] }
       create and return
 
     # Otherwise, ask the user to give us a category before we create the
     # assessment
     else
-      redirect_to getCategory_course_assessments_path(course_id: @course.id, assessment_name: name) 
+      redirect_to setCategory_course_assessments_path(course_id: @course.id, assessment_name: name) 
       return
     end
   end
@@ -794,6 +796,10 @@ class AssessmentsController < ApplicationController
     end 
     
     @submission = @score.submission
+
+    if Archive.is_archive? @submission.handin_file_path then
+      @files = Archive.get_files @submission.handin_file_path
+    end
   end
 
   action_auth_level :downloadFeedbackFile, :student
@@ -975,7 +981,7 @@ class AssessmentsController < ApplicationController
       flash[:error] = "Could not find that submission."
       redirect_to :controller => :home, :action => :error and return
     end
-    if (@submission.is_archive)
+    if Archive.is_archive? @submission.handin_file_path then
       redirect_to :action => "listArchive",
                   :id => @submission.id,
                   :controller => :submission 
@@ -992,11 +998,11 @@ class AssessmentsController < ApplicationController
     end
   end
 
-  # getCategory - Determines the category name for a new
+  # setCategory - Determines the category name for a new
   # assessment. Expects the assessment name to be passed in
   # params['assessment']
-  action_auth_level :getCategory, :instructor
-  def getCategory
+  action_auth_level :setCategory, :instructor
+  def setCategory
     if request.post? then
       name = params[:assessment_name]
       display_name = params[:display_name]

@@ -14,52 +14,6 @@ var highlightLines = function(highlight) {
   });
 };
 
-/* This function takes the contents of the 3 inputs and 
- * turns them into an annotation to be submitted to the server
- */
-var getText = function(comment, value, problem) {
-  comment = encodeURI(comment);
-
-  if (value) {
-    if (problem) {
-      return comment + "[" + value + ":" + problem + "]";
-    } else {
-      return comment + "[" + value + "]";
-    }
-  } else {
-    if (problem) {
-      return comment + "[?:" + problem + "]";
-    }
-  }
-  return comment;
-}
-
-// given annotation tex, return an array of [comment, value, problem]
-var parseText = function(text) {
-  var res = text.split("[");
-  if (res.length === 1) {
-    return [decodeURI(text), "", ""];
-  } 
-  if (res.length > 1) {
-
-    var len = res.length;
-    var points = res.splice(len-1,1);
-    var points = points[0].split(":");
-    var comment = decodeURI(res.join("["));
-    
-    if (points.length === 1) {
-      return [comment, points[0].replace("]",""), ""];
-    } else {
-      if (points[0] === "?") {
-        return [comment, "", points[1].replace("]","")];
-      } else {
-        return [comment, points[0], points[1].replace("]","")];
-      }
-    }
-  }
-};
-
-
 $("#highlightLongLines").click(function() {
   highlightLines(this.checked);
 });
@@ -69,10 +23,15 @@ $(function() {
 
   hljs.highlightBlock(block);
 
+  function getProblemNameWithId(problem_id) {
+    var problem_id = parseInt(problem_id, 10);
+    var problem = _.findWhere(problems, {"id":problem_id});
+    return problem.name;
+  }
 
   // annotationsByLine: { 'lineNumber': [annotations_array ]}
   var annotationsByLine = {};
-  $.each(annotations, function(ind, annotationObj) {
+  _.each(annotations, function(annotationObj, ind) {
     var lineInd = annotationObj.line
     if (!annotationsByLine[lineInd]) {
       annotationsByLine[lineInd] = [];
@@ -84,8 +43,8 @@ $(function() {
   var lines = document.querySelector("#code-list").children,
     ann;
 
-  $.each(annotationsByLine, function(lineInd, arr_annotations) {
-    $.each(arr_annotations, function(ind, annotationObj) {
+  _.each(annotationsByLine, function(arr_annotations, lineInd) {
+    _.each(arr_annotations, function(annotationObj, ind) {
       $(lines[lineInd - 1]).find(".annotations-container").append(newAnnotationBox(annotationObj));
     });
   });
@@ -128,11 +87,12 @@ $(function() {
   }
 
   // this creates the HTML to display an annotation.
-  function newAnnotationBox(ann) {
+  function newAnnotationBox(annObj) {
 
-    var annObj = ann;
-    var parsedAnn = parseText(decodeURI(annObj.text));
-    var problemStr = parsedAnn[2] || "General"
+    var problemStr = annObj.problem_id? getProblemNameWithId(annObj.problem_id) : "General";
+    var valueStr = annObj.value? annObj.value.toString() : "None";
+    var commentStr = decodeURI(annObj.comment);
+
     var grader = elt("span", {
       class: "grader"
     }, annObj.submitted_by + " says:");
@@ -143,7 +103,8 @@ $(function() {
 
     var score = elt("span", {
       class: "score-box"
-    }, elt("span", {}, problemStr), elt("span", {}, parsedAnn[1]));
+    }, elt("span", {}, problemStr), elt("span", {}, valueStr));
+
     var del = elt("span", {
       class: "delete glyphicon glyphicon-remove"
     });
@@ -160,7 +121,7 @@ $(function() {
 
     var body = elt("div", {
       class: "body"
-    }, parsedAnn[0]);
+    }, commentStr);
 
     var box = elt("div", {
       class: "ann-box",
@@ -190,15 +151,16 @@ $(function() {
     return box;
   }
 
-  var updateAnnotationBox = function(ann) {
+  var updateAnnotationBox = function(annObj) {
 
-    var parsedAnn = parseText(decodeURI(ann.text));
-    var problemStr = parsedAnn[2] || "General"
+    var problemStr = annObj.problem_id? getProblemNameWithId(annObj.problem_id) : "General";
+    var valueStr = annObj.value? annObj.value.toString() : "None";
+    var commentStr = annObj.comment;
 
-    $('#ann-box-' + ann.id).find('.edit').show();
-    $('#ann-box-' + ann.id).find('.body').show();
-    $('#ann-box-' + ann.id).find('.score-box').html("<span>"+problemStr+"</span><span>"+parsedAnn[1]+"</span>");
-    $('#ann-box-' + ann.id).find('.body').html(parsedAnn[0]);
+    $('#ann-box-' + annObj.id).find('.edit').show();
+    $('#ann-box-' + annObj.id).find('.body').show();
+    $('#ann-box-' + annObj.id).find('.score-box').html("<span>"+problemStr+"</span><span>"+valueStr+"</span>");
+    $('#ann-box-' + annObj.id).find('.body').html(commentStr);
 
   }
 
@@ -248,11 +210,11 @@ $(function() {
     });
     var hr = elt("hr");
 
-    for (i = 0; i < problems.length; ++i) {
+    _.each(problems, function(problem) {
       problemSelect.appendChild(elt("option", {
-        value: problems[i].name
-      }, problems[i].name));
-    }
+        value: problem.id
+      }, problem.name));
+    })
 
     var newForm = elt("form", {
       title: "Press <Enter> to Submit",
@@ -265,9 +227,13 @@ $(function() {
 
       var comment = commentInput.value;
       var value = valueInput.value;
-      var problem = problemSelect.value;
+      var problem_id = problemSelect.value;
 
-      submitNewAnnotation(comment, value, problem, lineInd, newForm);
+      if (!comment) {
+        newForm.appendChild(elt("div", null, "The comment cannot be empty"));
+      } else {
+        submitNewAnnotation(comment, value, problem_id, lineInd, newForm);
+      }
     };
 
     $(cancelButton).on('click', function() {
@@ -278,12 +244,11 @@ $(function() {
   }
 
 
-  var newEditAnnotationForm = function(lineInd, ann) {
+  var newEditAnnotationForm = function(lineInd, annObj) {
 
-    var arr = parseText(ann.text);
-    var commentStr = arr[0];
-    var valueStr = arr[1];
-    var problemStr = arr[2];
+    var problemStr = annObj.problem_id? getProblemNameWithId(annObj.problem_id) : "General";
+    var valueStr = annObj.value? annObj.value.toString() : "None";
+    var commentStr = annObj.comment;
 
     // this section creates the new/edit annotation form that's used everywhere
     var commentInput = elt("input", {
@@ -326,13 +291,13 @@ $(function() {
     });
     var hr = elt("hr");
 
-    for (i = 0; i < problems.length; ++i) {
+    _.each(problems, function(problem) {
       problemSelect.appendChild(elt("option", {
-        value: problems[i].name
-      }, problems[i].name));
-    }
+        value: problem.id
+      }, problem.name));
+    })
 
-    $(problemSelect).val(problemStr);
+    $(problemSelect).val(annObj.problem_id);
 
     var newForm = elt("form", {
       title: "Press <Enter> to Submit",
@@ -345,15 +310,19 @@ $(function() {
 
       var comment = commentInput.value;
       var value = valueInput.value;
-      var problem = problemSelect.value;
-
-      ann.text = getText(comment, value, problem)
-        //function(annotationObj, lineInd, formEl) {
-      updateAnnotation(ann, lineInd, newForm);
+      var problem_id = problemSelect.value;
+      if (!comment) {
+        newForm.appendChild(elt("div", null, "The comment cannot be empty"));
+      } else {
+        annObj.comment = comment;
+        annObj.value = value;
+        annObj.problem_id = problem_id
+        updateAnnotation(annObj, lineInd, newForm);
+      }
     };
 
     $(cancelButton).on('click', function() {
-      updateAnnotationBox(ann);
+      updateAnnotationBox(annObj);
       $(newForm).remove();
     })
 
@@ -396,10 +365,13 @@ $(function() {
 
 
   /* sets up and calls $.ajax to submit an annotation */
-  var submitNewAnnotation = function(comment, value, problem, lineInd, formEl) {
+  var submitNewAnnotation = function(comment, value, problem_id, lineInd, formEl) {
 
     var newAnnotation = createAnnotation(lineInd);
-    newAnnotation.text = getText(comment, value, problem);
+    newAnnotation.comment = comment;
+    newAnnotation.value = value;
+    newAnnotation.problem_id = problem_id;
+
     var $line = $('#line-' + lineInd);
 
     $.ajax({
@@ -419,7 +391,7 @@ $(function() {
         $(formEl).remove();
       },
       error: function(result, type) {
-        $(formEl).append("Failed to Save Annotation!!!");
+        $(formEl).append(elt("div", null, "Failed to Save Annotation!!!"));
       },
       complete: function(result, type) {}
     });
@@ -439,7 +411,7 @@ $(function() {
         $(formEl).remove();
       },
       error: function(result, type) {
-        $(formEl).append("Failed to Save Annotation!!!");
+        $(formEl).append(elt("div", null, "Failed to Save Annotation!!!"));
       },
       complete: function(result, type) {}
     });
