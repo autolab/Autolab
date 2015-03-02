@@ -981,7 +981,7 @@ class AssessmentsController < ApplicationController
       flash[:error] = "Could not find that submission."
       redirect_to :controller => :home, :action => :error and return
     end
-    if (@submission.is_archive)
+    if Archive.is_archive? @submission.handin_file_path then
       redirect_to :action => "listArchive",
                   :id => @submission.id,
                   :controller => :submission 

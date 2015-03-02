@@ -290,12 +290,6 @@ class Submission < ActiveRecord::Base
     self.detected_mime_type = file_output[/^(\w)+\/([\w-])+/]
   end
 
-  def is_archive
-    archives = %w(application/x-tar application/x-gzip application/gzip
-                  application/zip application/x-zip application/x-zip-compressed)
-    archives.include?(detected_mime_type)
-  end
-
   def is_syntax
     return false if (self.filename.nil?)
 

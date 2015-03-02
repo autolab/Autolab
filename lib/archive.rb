@@ -1,5 +1,6 @@
 require 'rubygems'
 require 'rubygems/package'
+require 'tempfile'
 require 'zlib'
 require 'zip'
 
@@ -65,13 +66,13 @@ module Archive
     files[n][:pathname]
   end
 
+  def self.get_archive_type(filename)
+    IO.popen(["file", "--brief", "--mime-type", filename], in: :close, err: :close) { |io| io.read.chomp }
+  end
+
   def self.is_archive?(filename)
     archive_type = get_archive_type(filename)
     return (archive_type.include?("tar") || archive_type.include?("gzip") || archive_type.include?("zip"))
-  end
-
-  def self.get_archive_type(filename)
-    IO.popen(["file", "--brief", "--mime-type", filename], in: :close, err: :close) { |io| io.read.chomp }
   end
 
   def self.get_archive(filename, archive_type)
@@ -87,6 +88,24 @@ module Archive
       raise "Unrecognized archive type!"
     end
     archive_extract
+  end
+
+  ##
+  # returns a zip archive containing every file in the given path array
+  #
+  def self.create_zip(paths)
+    if paths.nil? || paths.empty?
+      return nil
+    end
+
+    Tempfile.open(['submissions', '.zip']) do |t|
+      Zip::File.open(t.path, Zip::File::CREATE) do |z|
+        paths.each { |p| z.add(File.basename(p), p) }
+        z
+      end
+      t
+    end
+    # the return value should be the return value of the outer block, which is the tempfile
   end
 
 end

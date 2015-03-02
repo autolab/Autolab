@@ -88,7 +88,7 @@ class SubmissionsController < ApplicationController
     #                                         :lecture, 
     #                                         :section]}, 
     #                     :scores => {:include => :grader}}, 
-    #        :methods => [:is_syntax, :is_archive, :grace_days_used,
+    #        :methods => [:is_syntax, :grace_days_used,
     #                     :penalty_late_days, :days_late, :tweak],
     #        :seen_by => @cud)
     #    }
@@ -161,42 +161,33 @@ class SubmissionsController < ApplicationController
   # should be okay, but untested
   action_auth_level :downloadAll, :course_assistant
   def downloadAll
-    require 'tempfile'
-    require 'rubygems'
-    require 'zip'
-
     assessment = @course.assessments.find(params[:assessment_id])
-    if assessment.disable_handins
+    if assessment.disable_handins then
       flash[:error] = "There are no submissions to download."
-      redirect_to course_assessment_submissions_path(@course, assessment) and return
+      redirect_to [@course, assessment, :submissions] and return
     end
 
-    if params[:final]
+    if params[:final] then
       submissions = assessment.submissions.latest.includes(:course_user_datum)
     else
-      submissions = assessment.submissions(:include => [:course_user_datum])
+      submissions = assessment.submissions.includes(:course_user_datum)
     end
 
     submissions = submissions.select { |s| @cud.can_administer?(s.course_user_datum) }
     paths = submissions.collect { |s| s.handin_file_path }
     paths = paths.select { |p| !p.nil? && File.exists?(p) && File.readable?(p) }
 
-    if paths.nil? || paths.empty?
-      flash[:error] = "There are no submissions to download."
-      redirect_to(:action => "index",
-                  :assessment_id => params[:assessment_id])
-      return
-    end
+    result = Archive.create_zip paths
 
-    result = Tempfile.new(['submissions', '.zip'])
-    Zip::File.open(result.path, Zip::File::CREATE) do |z|
-      paths.each { |p| z.add(File.basename(p), p) }
+    if result.nil? then
+      flash[:error] = "There are no submissions to download."
+      redirect_to [@course, assessment, :submissions] and return
     end
 
     send_file(result.path, 
-              :type => 'application/zip',
-              :stream => false, # So we can delete the file immediately.
-              :filename => File.basename(result.path))
+              type: 'application/zip',
+              stream: false, # So we can delete the file immediately.
+              filename: File.basename(result.path)) and return
   end
 
   # Action to be taken when the user wants do download a submission but
