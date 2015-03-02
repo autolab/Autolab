@@ -85,7 +85,6 @@ Autolab3::Application.routes.draw do
         get 'takeQuiz'
         post 'submitQuiz'
         get 'history'
-        get 'viewFeedback'
         get 'viewGradesheet'
         get 'writeup'
         get 'handout'
