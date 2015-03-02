@@ -624,7 +624,7 @@ e.to_s() + e.backtrace().join("<br>")
       end
 
       # Feed the uploaded files to MOSS.
-      @mossCmd << File.join(extFilesDir, "*", params["files"][ass.id.to_s])
+      @mossCmd << File.join(extFilesDir, "*")
     end
   
     # Ensure that all files in Moss tmp dir are readable
