@@ -22,7 +22,7 @@ module Archive
         mac_bs_file: pathname.include?("__MACOSX") ||
                      pathname.include?(".DS_Store") ||
                      pathname.include?(".metadata"),
-        directory: File.directory?(pathname)
+        directory: looks_like_directory?(pathname)
       }
     end
 
@@ -46,7 +46,7 @@ module Archive
         pathname.include? ".metadata"
       
       if i == n then
-        if File.directory?(pathname) then
+        if looks_like_directory?(pathname) then
           res = nil, pathname
         else
           res = read_entry_file(entry), get_entry_name(entry)
@@ -119,6 +119,10 @@ module Archive
       t
     end
     # the return value should be the return value of the outer block, which is the tempfile
+  end
+
+  def self.looks_like_directory?(pathname)
+    return pathname.ends_with?("/")
   end
 
 end
