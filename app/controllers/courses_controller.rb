@@ -571,13 +571,15 @@ e.to_s() + e.backtrace().join("<br>")
           archive_extract = Archive.get_archive(archive_path)
 
           archive_extract.each do |entry|
-            pathname = entry.respond_to?(:full_name) ? entry.full_name : entry.name
-            destination = File.join(stuDir, pathname)
-            # make sure all subdirectories are there
-            FileUtils.mkdir_p(File.dirname destination)
-            File.open(destination, "wb") do |out|
-              out.write entry.read
-              out.fsync rescue nil # for filesystems without fsync(2)
+            pathname = Archive.get_entry_name(entry)
+            if !File.directory?(pathname) then
+              destination = File.join(stuDir, pathname)
+              # make sure all subdirectories are there
+              FileUtils.mkdir_p(File.dirname destination)
+              File.open(destination, "wb") do |out|
+                out.write entry.read
+                out.fsync rescue nil # for filesystems without fsync(2)
+              end
             end
           end
         end
@@ -602,22 +604,20 @@ e.to_s() + e.backtrace().join("<br>")
       # Directory to hold all external individual submission.
       extFilesDir = File.join(extTarDir, "submissions")
       Dir.mkdir(extFilesDir)                    # To hold all submissions
+      Dir.chdir(extFilesDir)
   
       # Untar the given Tar file.
-      arch = Archive.new(extTarPath)
-      Dir.chdir(extFilesDir)
-      arch.extract
-  
-      # Unarchive / reorganize the submission files.
-      Dir.foreach(extFilesDir) do |filename|
-        if filename != "." && filename != ".."
-          subDir = Dir.mktmpdir(filename[0 .. filename.rindex(/\./) - 1], extFilesDir)
-          if ['tar','zip','tar.gz'].member? params[:archiveCmd][ass.id.to_s]
-            arch = Archive.new(File.join(extFilesDir, filename))
-            Dir.chdir subDir
-            arch.extract
-          else
-            FileUtils.cp File.join(extFilesDir, filename), subDir
+      archive_extract = Archive.get_archive(extTarPath)
+
+      # write each file, renaming nested files 
+      archive_extract.each do |entry|
+        pathname = Archive.get_entry_name(entry)
+        if !File.directory?(pathname) then
+          destination = File.join(extFilesDir, pathname.gsub!(/\//, "-"))
+          # make sure all subdirectories are there
+          File.open(destination, "wb") do |out|
+            out.write entry.read
+            out.fsync rescue nil # for filesystems without fsync(2)
           end
         end
       end

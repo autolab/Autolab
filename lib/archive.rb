@@ -14,7 +14,7 @@ module Archive
     # Parse archive header
     archive_extract.each_with_index do |entry, i|
       # Obtain path name depending for tar/zip entry
-      pathname = entry.respond_to?(:full_name) ? entry.full_name : entry.name
+      pathname = get_entry_name(entry)
 
       files << {
         pathname: pathname,
@@ -39,7 +39,7 @@ module Archive
     res = nil, nil
     archive_extract.each_with_index do |entry, i|
       # Obtain path name depending for tar/zip entry
-      pathname = entry.respond_to?(:full_name) ? entry.full_name : entry.name
+      pathname = get_entry_name(entry) 
 
       next if pathname.include? "__MACOSX" or
         pathname.include? ".DS_Store" or
@@ -92,6 +92,10 @@ module Archive
       raise "Unrecognized archive type!"
     end
     archive_extract
+  end
+
+  def self.get_entry_name(entry)
+    entry.respond_to?(:full_name) ? entry.full_name : entry.name
   end
 
   ##
