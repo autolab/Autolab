@@ -75,7 +75,11 @@ module Archive
     return (archive_type.include?("tar") || archive_type.include?("gzip") || archive_type.include?("zip"))
   end
 
-  def self.get_archive(filename, archive_type)
+  def self.get_archive(filename, archive_type = nil)
+    if archive_type == nil then
+      archive_type = get_archive_type(filename)
+    end
+
     if archive_type.include? "tar" then
       archive_extract = Gem::Package::TarReader.new(File.new(filename))
       archive_extract.rewind # The extract has to be rewinded after every iteration

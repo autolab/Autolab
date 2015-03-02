@@ -251,11 +251,11 @@ class Assessment < ActiveRecord::Base
 
 private
   def path filename
-    File.join Rails.root, 'courses', course.name, name, filename
+    Rails.root.join "courses", course.name, name, filename
   end
 
   def source_config_file_path
-    File.join Rails.root, "courses", course.name, sanitized_name, "#{sanitized_name}.rb"
+    Rails.root.join "courses", course.name, sanitized_name, "#{sanitized_name}.rb"
   end
 
   def source_config_module_name

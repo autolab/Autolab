@@ -118,8 +118,7 @@ class Submission < ActiveRecord::Base
 
   def handin_file_path
     return nil unless filename
-    return File.join(assessment.handin_directory_path, 
-                     filename)
+    return File.join(assessment.handin_directory_path, filename)
   end
 
   def handinFile()
