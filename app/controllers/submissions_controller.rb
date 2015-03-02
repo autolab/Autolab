@@ -1,3 +1,5 @@
+require 'archive.rb'
+
 class SubmissionsController < ApplicationController
 
   before_action :load_submission, only: [:destroy, :destroyConfirm, :download, :edit, :listArchive, :update, :view]
@@ -86,7 +88,7 @@ class SubmissionsController < ApplicationController
     #                                         :lecture, 
     #                                         :section]}, 
     #                     :scores => {:include => :grader}}, 
-    #        :methods => [:is_syntax, :is_archive, :grace_days_used,
+    #        :methods => [:is_syntax, :grace_days_used,
     #                     :penalty_late_days, :days_late, :tweak],
     #        :seen_by => @cud)
     #    }
@@ -159,42 +161,33 @@ class SubmissionsController < ApplicationController
   # should be okay, but untested
   action_auth_level :downloadAll, :course_assistant
   def downloadAll
-    require 'tempfile'
-    require 'rubygems'
-    require 'zip'
-
     assessment = @course.assessments.find(params[:assessment_id])
-    if assessment.disable_handins
+    if assessment.disable_handins then
       flash[:error] = "There are no submissions to download."
-      redirect_to course_assessment_submissions_path(@course, assessment) and return
+      redirect_to [@course, assessment, :submissions] and return
     end
 
-    if params[:final]
+    if params[:final] then
       submissions = assessment.submissions.latest.includes(:course_user_datum)
     else
-      submissions = assessment.submissions(:include => [:course_user_datum])
+      submissions = assessment.submissions.includes(:course_user_datum)
     end
 
     submissions = submissions.select { |s| @cud.can_administer?(s.course_user_datum) }
     paths = submissions.collect { |s| s.handin_file_path }
     paths = paths.select { |p| !p.nil? && File.exists?(p) && File.readable?(p) }
 
-    if paths.nil? || paths.empty?
-      flash[:error] = "There are no submissions to download."
-      redirect_to(:action => "index",
-                  :assessment_id => params[:assessment_id])
-      return
-    end
+    result = Archive.create_zip paths
 
-    result = Tempfile.new(['submissions', '.zip'])
-    Zip::File.open(result.path, Zip::File::CREATE) do |z|
-      paths.each { |p| z.add(File.basename(p), p) }
+    if result.nil? then
+      flash[:error] = "There are no submissions to download."
+      redirect_to [@course, assessment, :submissions] and return
     end
 
     send_file(result.path, 
-              :type => 'application/zip',
-              :stream => false, # So we can delete the file immediately.
-              :filename => File.basename(result.path))
+              type: 'application/zip',
+              stream: false, # So we can delete the file immediately.
+              filename: File.basename(result.path)) and return
   end
 
   # Action to be taken when the user wants do download a submission but
@@ -203,7 +196,7 @@ class SubmissionsController < ApplicationController
   action_auth_level :download, :student
   def download
     if params[:header_position] then
-      file, pathname = getFileAt params[:header_position].to_i
+      file, pathname = Archive.get_nth_file(@filename, params[:header_position].to_i)
       if not (file and pathname) then
         flash[:error] = "Could not read archive."
         redirect_to :controller => "home", :action => "error" and return false
@@ -228,7 +221,7 @@ class SubmissionsController < ApplicationController
   action_auth_level :view, :student
   def view
     if params[:header_position] then
-      file, pathname = getFileAt params[:header_position].to_i
+      file, pathname = Archive.get_nth_file(@submission.handin_file_path, params[:header_position].to_i)
       unless (file and pathname) then
         flash[:error] = "Could not read archive."
         redirect_to controller: :home, action: :error and return false
@@ -236,13 +229,8 @@ class SubmissionsController < ApplicationController
 
       @displayFilename = pathname
     else
-      # note: @filename is defined by get_submission_file and is actually
-      # submission.handin_file_path because up is down and black is white.
-      archive_type = IO.popen(["file", "--brief", "--mime-type", @submission.handin_file_path],
-                              in: :close, err: :close) { |io| io.read.chomp }
-      
       # redirect on archives
-      if archive_type.include?("tar") || archive_type.include?("gzip") || archive_type.include?("zip") then
+      if Archive.is_archive?(@submission.handin_file_path) then
         redirect_to action: :listArchive and return
       end
         
@@ -325,7 +313,11 @@ class SubmissionsController < ApplicationController
       render :view and return
     rescue
       flash[:error] = "Autolab cannot display this file"
-      redirect_to [:history, @course, @assessment] and return
+      if params[:header_position] then
+        redirect_to [:list_archive, @course, @assessment, @submission] and return
+      else
+        redirect_to [:history, @course, @assessment] and return
+      end
     end
   end
 
@@ -333,62 +325,7 @@ class SubmissionsController < ApplicationController
   # files in a submission that is an archive file. 
   action_auth_level :listArchive, :student
   def listArchive
-    # note: @filename is defined by get_submission_file and is actually
-    # submission.handin_file_path because up is down and black is white.
-    archive_type = IO.popen(["file", "--brief", "--mime-type", @filename],
-                            in: :close, err: :close) { |io| io.read.chomp }
-    @files = []
-
-    require 'rubygems'
-    require 'rubygems/package'
-    require 'zlib'
-    require 'zip'
-
-    # Extract archive by type
-    if archive_type.include? "tar" then
-      f = File.new(@filename)
-      archive_extract = Gem::Package::TarReader.new(f)
-      archive_extract.rewind # The extract has to be rewinded after every iteration
-    elsif archive_type.include? "gzip" then
-      archive_extract = Gem::Package::TarReader.new(Zlib::GzipReader.open @filename)
-      archive_extract.rewind
-    elsif archive_type.include? "zip" then
-      archive_extract = Zip::File.open(@filename)
-    else
-      raise "Unrecognized archive type!"
-    end
-
-    # Parse archive header
-    i = 0
-    archive_extract.each do |entry|
-      # Obtain path name depending for tar/zip entry
-      pathname = entry.respond_to?(:full_name) ? entry.full_name : entry.name
-      extension = File.extname pathname
-      extension = extension[1..-1]
-      if extension == "c0" or extension == "go" then
-        extension = "c"
-      elsif extension == "h0" then
-        extension = "h"
-      elsif extension == "clac" or extension == "sml" then
-        extension = "txt"
-      end
-
-      next if pathname.include? "__MACOSX" or
-        pathname.include? ".DS_Store" or
-        pathname.include? ".metadata"
-
-      @files << {
-        :pathname => pathname,
-        :header_position => i,
-        :highlight => true
-      }
-
-      i += 1
-    end
-
-    archive_extract.close
-
-    @files.sort! {|a,b| a[:pathname] <=> b[:pathname] }
+    @files = Archive.get_files(@filename).sort! { |a,b| a[:pathname] <=> b[:pathname] }
   end
 
 private
@@ -446,57 +383,6 @@ private
     end
 
     return true
-  end
-
-  # Gets the contents and path of the file at a
-  # given header position in the submission archive.
-  def getFileAt(position)
-    require 'rubygems'
-    require 'rubygems/package'
-    require 'zlib'
-    require 'zip'
-
-    archive_type = IO.popen(["file", "--brief", "--mime-type", @filename],
-                            in: :close, err: :close) { |io| io.read.chomp }
-    # Extract archive by type
-    if archive_type.include? "tar" then
-      f = File.new(@filename)
-      archive_extract = Gem::Package::TarReader.new(f)
-      archive_extract.rewind # The extract has to be rewinded after every iteration
-    elsif archive_type.include? "gzip" then
-      archive_extract = Gem::Package::TarReader.new(Zlib::GzipReader.open @filename)
-      archive_extract.rewind
-    elsif archive_type.include? "zip" then
-      archive_extract = Zip::File.open(@filename)
-    else
-      raise "Unrecognized archive type!"
-    end
-
-    # Iterate through archive until file position
-    i = 0
-    archive_extract.each do |entry|
-      # Obtain path name depending for tar/zip entry
-      pathname = entry.respond_to?(:full_name) ? entry.full_name : entry.name
-      # Skip Mac metafiles
-      next if pathname.include? "__MACOSX" or
-          pathname.include? ".DS_Store" or
-          pathname.include? ".metadata"
-
-      if i == position then
-        return nil, nil unless entry
-        # Case One: tar or tgz archive
-        if entry.respond_to?(:read) then
-          return entry.read, entry.full_name
-        # Case Two: zip archive
-        else
-          return entry.get_input_stream.read, entry.name
-        end
-      end
-
-      i += 1
-    end
-
-    return nil, nil unless header
   end
 
   # Extract the andrewID from a filename.

@@ -8,7 +8,7 @@
     :id=>@score.id %>
 <% end %>
 <pre>
-<%= h @score.feedback %>
+<%= @score.feedback %>
 Score for this problem: <%= @score.score.to_f().round(1) %>
 
 Graded by: <%= if @score.grader && @score.grader.user then @score.grader.user.email end %>
@@ -25,17 +25,12 @@ Yes, feedback if per problem but we show all annotations for this submission any
 <ul>
 <% @submission.annotations.each do |annotation| %>
   <li>
-    <%= link_to annotation.text,
-        view_course_assessment_submission_path(@course, @assessment, @submission),
-        :header_position => annotation.position # ignored if annotation.position is nil
-    %>
-    
+    <%= link_to annotation.as_text, [:view, @course, @assessment, @submission, header_position: annotation.position] %>
     <% 
-    # if the submission is an archive, use filename in archive; otherwise, use submission filename
-    filename = annotation.position ? @submission.get_filename_in_archive_at(annotation.position) 
-                                   : @submission.filename
+      # if the submission is an archive, use filename in archive; otherwise, use submission filename
+      filename = @files && annotation.position ? Archive.get_nth_filename(@files, annotation.position) : @submission.filename
     %>
-    (<%= filename %>:<%= annotation.line %>)
+    (<%= filename %>: <%= annotation.line %>)
   </li>
 <% end %>
 </ul>
