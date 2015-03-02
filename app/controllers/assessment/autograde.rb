@@ -440,6 +440,14 @@ module AssessmentAutograde
           score.save!
         end
       end
+      
+      ActiveRecord::Base.transaction do
+        submissions.each do |submission|
+          submission.autoresult = autoresult
+          submission.dave = nil
+          submission.save!
+        end
+      end
     rescue Exception => e
       feedback_str = "An error occurred while parsing the autoresult returned by the Autograder.\n\nError message: " + e.to_s + "\n\n"
       if lines && (lines.length < 10000) then
@@ -448,20 +456,14 @@ module AssessmentAutograde
       @assessment.problems.each do |p|
         submissions.each do |submission|
           score = submission.scores.find_or_initialize_by(problem_id: p.id)
-          score.score = 0
-          score.feedback = feedback_str
-          score.released = true
-          score.grader_id = 0
-          score.save!
+          if score.new_record? then # don't overwrite scores
+            score.score = 0
+            score.feedback = feedback_str
+            score.released = true
+            score.grader_id = 0
+            score.save!
+          end
         end
-      end
-    end
-    
-    ActiveRecord::Base.transaction do
-      submissions.each do |submission|
-        submission.autoresult = autoresult
-        submission.dave = nil
-        submission.save!
       end
     end
     
