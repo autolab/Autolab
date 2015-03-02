@@ -192,6 +192,7 @@ jQuery(function() {
     }
 
     function close_current_editor() {
+        $(current_editor).parent().removeClass("focus");
         var editor = get_enclosing_editor(current_editor);
         submit_score_details(editor);
         current_editor.reset();
@@ -234,7 +235,7 @@ jQuery(function() {
         }
 
         $editable = jQuery(editable);
-
+        $editable.parent().addClass("focus");
         // lazily register editor events
         if ($editable.data("initialized") != true) {
           make_editable($editable);
