@@ -69,7 +69,6 @@ td.focus {
 #grades {
     box-shadow: 0 0 5px 0px #eee;
     font-size: 16px;
-    font-family: Helvetica;
     border: 1px solid #ccc;
     border-radius: 2px;
     border-collapse: collapse;
@@ -160,7 +159,7 @@ td.id {
     cursor: auto;
     display: none;
     font-size: 0.8em;
-    color: #ddd;
+    color: #666;
     position: absolute;
     top: 0;
     left: 0;
@@ -168,7 +167,7 @@ td.id {
     border-radius: 5px;
     z-index: 100000;
     padding: 3px;
-    background-color: #7e7e7e;
+    background-color: #eee;
     display: none;
     max-width: 360px;
 }
@@ -176,10 +175,6 @@ td.id {
 #grades td.id .popover span.filename {
     padding-left: 3px;
     line-height: 1.8em;
-}
-
-#grades td.id .popover span.filename a {
-    color: #dfdfdf;
 }
 
 #grades td.id .popover span.filename span.links {
@@ -240,54 +235,32 @@ td.id {
     border-width: 0;
 }
 
-#grades td .popover table.score_details {
+#grades td .popover .score_details {
     font-weight: normal;
     border-collapse: collapse;
 }
 
-#grades td .popover table.score_details td, #grades td.id .popover table.score_details th {
-    padding: 5px;
-    padding-bottom: 0;
-    border: none;
+
+#grades td .score_details .feedback {
+    width: 290px;
+    min-height: 75px;
 }
 
-#grades td .popover table.score_details th {
-    font-size: 0.9em;
-}
-
-#grades td .popover table.score_details td input.released {
-    margin: 1px;
-    margin-bottom: 3px;
-}
-
-#grades td .popover table.score_details td.grader {
-    padding-left: 6px;
-}
-
-#grades td .popover table.score_details td textarea {
-    width: 200px;
-    height: 100px;
-}
-
-#grades td .popover table.score_details td span.save_box {
+#grades td .popover .score_details span.save_box {
     margin: 2px;
     float: right;
     font-weight: 600;
 }
 
-#grades td .popover table.score_details td span.save_box * {
+#grades td .popover .score_details span.save_box * {
 }
 
-#grades td .popover table.score_details td span.save_box span.save {
-    color: #1874Cd;
-}
-
-#grades td .popover table.score_details td span.save_box span.saving {
+#grades td .popover .score_details span.save_box span.saving {
     display: none;
     color: #777;
 }
 
-#grades td .popover table.score_details td span.save_box span.error {
+#grades td .popover .score_details span.save_box span.error {
     display: none;
     color: red;
 }

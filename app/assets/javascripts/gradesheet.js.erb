@@ -1,4 +1,3 @@
-jQuery.noConflict();
 jQuery(function() {
     start = new Date();
 
@@ -120,16 +119,7 @@ jQuery(function() {
     // placeholder text in Search field
     jQuery("#grades_filter input").attr("placeholder", "Search");
 
-    // keyTable handles tabbing between cells, ESCaping from table, enter to enter editor
-    var keyTable = new KeyTable({
-        'table': document.getElementById("grades"),
-        'datatable': oTable,
-        'focus': [ first_problem_column, 0 ],
-        'form': true,
-        'start': first_problem_column,
-        'num': problem_count
-    });
-    
+
     // get enclosing editor from inside of it
     function get_enclosing_editor(el) {
         return jQuery(el).closest('td.edit');
@@ -195,15 +185,15 @@ jQuery(function() {
 
     // always called when editor's closed, the hub for which is current_editor.reset()
     function _close_current_editor() {
-        if (!current_editor.opening_another) {
-            asap(function() { keyTable.block = false; });
-        }
+
         close_current_popover();
         current_editor = null;
 
     }
 
     function close_current_editor() {
+        var editor = get_enclosing_editor(current_editor);
+        submit_score_details(editor);
         current_editor.reset();
     }
 
@@ -217,7 +207,6 @@ jQuery(function() {
     function close_current_popover() {
         current_popover.hide();
         current_popover = undefined;
-
     }
 
     function close_current_popover_on_blur(event) {
@@ -243,9 +232,6 @@ jQuery(function() {
             current_editor.opening_another = true;
             close_current_editor();
         }
-
-        // we're going to be in an editor, prevent KeyTable from processing keyboard input (prevent tabbing between table cells)
-        keyTable.block = true;
 
         $editable = jQuery(editable);
 
@@ -281,6 +267,11 @@ jQuery(function() {
               close_current_editor();
           },
           submitdata: function(value, settings) {
+
+              var editor = get_enclosing_editor(this);
+              // also always submit score details
+              submit_score_details(editor);
+
               return {
                   submission_id: get_enclosing_editor(this).data("submission-id"),
                   problem_id: get_enclosing_editor(this).data("problem-id")
@@ -290,9 +281,6 @@ jQuery(function() {
               var editor = get_enclosing_editor(this);
               var total = editor.siblings(".total");
         
-              // also always submit score details
-              submit_score_details(editor);
-
               jQuery.ajax("quickGetTotal", {
                   data: {
                       submission_id: editor.data('submission-id')
@@ -317,7 +305,7 @@ jQuery(function() {
       $editable.data('tabNext', jQuery('textarea.feedback', editor));
       $editable.data('tabPrev', jQuery('.save_box .save, .save_box .error', editor));
 
-      jQuery("input", $editable).live('keydown', function(event) {
+      jQuery("input", $editable).on('keydown', function(event) {
           if (event.keyCode == TAB_KEY) {
               event.preventDefault();
               tabber(jQuery(this).closest('div.editable'), event.shiftKey);
@@ -354,13 +342,14 @@ jQuery(function() {
     }
 
     function submit_score_details(editor, not_score) {
-        var released = jQuery('table.score_details input.released', editor).is(':checked');
+
+        var released = jQuery('.score_details input.released', editor).is(':checked');
         jQuery.ajax("quickSetScoreDetails", {
             type: 'POST',
             data: {
                 submission_id: editor.data('submission-id'),
                 problem_id: editor.data('problem-id'),
-                feedback: jQuery('table.score_details textarea.feedback', editor).val(),
+                feedback: jQuery('.score_details textarea.feedback', editor).val(),
                 released: released,
                 score: jQuery(".editable input", editor).val()  // currently unused -- tombug#50
             },
@@ -391,18 +380,10 @@ jQuery(function() {
     }
 
     var $editables = jQuery("#grades td.edit div.editable");
-    $editables.live('click', function(event) {
+    $editables.on('click', function(event) {
         open_editor(this);
     });
 
-    keyTable.event.action(null, null, function(nCell) {
-        jQuery('div.editable', nCell).click();
-    });
-
-    keyTable.event.esc(null, null, function() {
-        jQuery("#grades_filter input").focus();
-        keyTable.fnBlur();
-    });
 
     jQuery("#grades_filter input").keydown(function(event){
             if (event.keyCode === 13) { // return
@@ -426,7 +407,6 @@ jQuery(function() {
       if (current_popover) close_current_popover();
 
       // show popover
-      console.log("opening popover");
       popover.show();
       popover.position(at);
 
@@ -450,7 +430,7 @@ jQuery(function() {
     }
 
     // to show the the ID column popovers
-    jQuery('#grades td.id a.email').live('click', function() {
+    jQuery('#grades td.id a.email').on('click', function() {
       jQuery('div.popover').hide();
 
       var link = jQuery(this)
@@ -474,7 +454,7 @@ jQuery(function() {
       var $editable = jQuery(e)
         var $popover = $editable.siblings("div.popover")
         var $td = $editable.parent()
-        var $score_details_tbody = jQuery("tbody", $popover)
+        var $score_details_tbody = jQuery(".score_details", $popover)
         var score_id = $td.data("score-id")
 
         // lazy load grader
@@ -484,10 +464,10 @@ jQuery(function() {
               "score_id": score_id
             },
             success: function(data, status, jqXHR) {
-              jQuery(".grader", $score_details_tbody).parent().remove();
+              jQuery(".grader-name").remove();
               // TODO: wtf?
               if (data != " ") {
-                $score_details_tbody.prepend("<tr><th>Grader</th><td class='grader'>" + data + "</td></tr>")
+                $score_details_tbody.prepend("<div class='grader-name'>Grader: " + data + "</div>")
               }
             }
           });
