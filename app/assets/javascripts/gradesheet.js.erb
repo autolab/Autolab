@@ -379,8 +379,8 @@ jQuery(function() {
         score_details_dirty(editor, "saving");
     }
 
-    var $editables = jQuery("#grades td.edit div.editable");
-    $editables.on('click', function(event) {
+    // var $editables = jQuery("#grades td.edit div.editable");
+    jQuery("#grades").on('click', 'div.editable', function(event) {
         open_editor(this);
     });
 
