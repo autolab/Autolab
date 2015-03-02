@@ -572,7 +572,7 @@ e.to_s() + e.backtrace().join("<br>")
 
           archive_extract.each do |entry|
             pathname = Archive.get_entry_name(entry)
-            if !File.directory?(pathname) then
+            if !Archive.looks_like_directory?(pathname) then
               destination = File.join(stuDir, pathname)
               # make sure all subdirectories are there
               FileUtils.mkdir_p(File.dirname destination)
@@ -612,7 +612,7 @@ e.to_s() + e.backtrace().join("<br>")
       # write each file, renaming nested files 
       archive_extract.each do |entry|
         pathname = Archive.get_entry_name(entry)
-        if !File.directory?(pathname) then
+        if !Archive.looks_like_directory?(pathname) then
           pathname.gsub!(/\//, "-")
           destination = File.join(extFilesDir, pathname)
           # make sure all subdirectories are there
