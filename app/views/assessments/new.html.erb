@@ -19,10 +19,14 @@
       help_text: "Name that will be displayed on the course home page. E.g.,
       'Malloc Lab'" %>
 
+    <hr>
+
     <div class="form-group">
       <%= f.label :category_name, { :class=>"control-label" } %>
       <%= f.collection_select :category_name, @course.assessment_categories, :to_s, :to_s, {selected: @assessment.category_name}, {class: "form-control"} %>
-      <p class="help-block">You can create a new category <%= link_to "here", new_course_assessment_category_path %>.</p>
+      <p>or</p>
+      <%= text_field_tag :new_category, nil, placeholder: "New Category" %>
+      <p class="help-block">Select an existing category or enter a new category name <i>(you can always change it later)</i></p>
     </div>
 
     <hr>
