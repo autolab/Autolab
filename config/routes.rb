@@ -28,7 +28,6 @@ Autolab3::Application.routes.draw do
       get 'getjob', on: :member
     end
     resources :announcements, except: :show
-    resources :assessment_categories, except: :show
     resources :attachments
 
     resources :assessments, except: :update do
@@ -121,11 +120,10 @@ Autolab3::Application.routes.draw do
       end
 
       collection do
-        match 'installAssessment', via: [:get, :post]
-        match 'importAssessment', via: [:get, :post]
-        match 'importAsmtFromTar', via: [:post]
-        match 'setCategory', via: [:get, :post]
-        match 'installQuiz', via: [:get, :post]
+        get 'installAssessment'
+        post 'importAssessment'
+        post 'importAsmtFromTar'
+        post 'installQuiz'
       end
     end
 

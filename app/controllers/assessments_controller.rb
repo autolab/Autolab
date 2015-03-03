@@ -20,7 +20,7 @@ class AssessmentsController < ApplicationController
   include AssessmentAutograde
 
   before_action :get_assessment, except: [ :index, :new, :create, :installQuiz, :installAssessment, 
-                                           :importAsmtFromTar, :importAssessment, :setCategory, 
+                                           :importAsmtFromTar, :importAssessment, 
                                            :log_submit, :local_submit, :autograde_done ]
 
   # We have to do this here, because the modules don't inherit ApplicationController.
@@ -225,10 +225,6 @@ class AssessmentsController < ApplicationController
  
   action_auth_level :importAsmtFromTar, :instructor
   def importAsmtFromTar
-    # Only handle POST requests.
-    if !request.post? then
-      redirect_to(:action => "installAssessment") and return
-    end
     require 'rubygems/package'
     require 'fileutils'
     tarFile = params['tarFile']
@@ -340,17 +336,17 @@ class AssessmentsController < ApplicationController
     
     # If the properties file defines a category, then use it,
     # creating a new category if necessary. 
-    if props['general'] and props['general']['category'] then
+    if props['general'] then
+      props['general']['category'] ||= 'General'
       params[:assessment] = { name: name,
                               display_name: props['general']['display_name'],
                               category_name: props['general']['category'] }
-      create and return
-
+      create and return # create should handle the redirection
     # Otherwise, ask the user to give us a category before we create the
     # assessment
     else
-      redirect_to setCategory_course_assessments_path(course_id: @course.id, assessment_name: name) 
-      return
+      flash[:error] = "The YAML file must have a top-level 'general' property"
+      redirect_to action: :installAssessment and return
     end
   end
   
@@ -374,7 +370,7 @@ class AssessmentsController < ApplicationController
     end
 
     # From here on, if something weird happens, we rollback
-    begin 
+    begin
       setupAssessment(@assessment.name)
     rescue Exception => e
       # Something bad happened. Undo everything
@@ -850,15 +846,9 @@ class AssessmentsController < ApplicationController
 
   action_auth_level :update, :instructor
   def update
-    p = params[:assessment]
+    flash[:success] = "Saved!" if @assessment.update(edit_assessment_params)
 
-    # [ :start_at, :due_at, :end_at ].each do |field|
-      # p[field] = DateTimeInput.hash_to_datetime p[field] if p[field]
-    # end
-
-    flash[:success] = "Saved!" if @assessment.update_attributes(params.require(:assessment).permit!)
-
-    render "edit"
+    redirect_to action: :edit and return
   end
 
 
@@ -996,33 +986,6 @@ class AssessmentsController < ApplicationController
                   :id => @submission.id, 
                   :controller => :submission
     end
-  end
-
-  # setCategory - Determines the category name for a new
-  # assessment. Expects the assessment name to be passed in
-  # params['assessment']
-  action_auth_level :setCategory, :instructor
-  def setCategory
-    if request.post? then
-      name = params[:assessment_name]
-      display_name = params[:display_name]
-      category_name = params[:category_name]
-      new_category = params[:new_category]
-
-      if !new_category.blank? then
-        category_name = new_category
-      end
-
-      params[:assessment] = { name: name,
-                              category_name: category_name, 
-                              display_name: display_name }
-
-      create()
-      return
-    end
-
-    # Intialize the list of categories for the form
-    @categories = @course.assessment_categories
   end
 
   #
@@ -1678,7 +1641,19 @@ protected
   private
   
     def new_assessment_params
-      params.require(:assessment).permit(:name, :display_name, :category_name, :has_autograde, :has_svn, :has_scoreboard, :group_size)
+      ass = params.require(:assessment)
+      unless params[:new_category].blank? then
+        ass[:category_name] = params[:new_category]
+      end
+      ass.permit(:name, :display_name, :category_name, :has_autograde, :has_svn, :has_scoreboard, :group_size)
+    end
+
+    def edit_assessment_params
+      ass = params.require(:assessment)
+      unless params[:new_category].blank? then
+        ass[:category_name] = params[:new_category]
+      end
+      ass.permit!
     end
 
 end
