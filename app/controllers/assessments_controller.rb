@@ -204,7 +204,7 @@ class AssessmentsController < ApplicationController
     @availableAssessments = []
     begin
       Dir.foreach(@assignDir) { |filename|
-        if File.exist?(File.join(@assignDir, filename, "#{filename}.rb")) then
+        if File.exist?(File.join(@assignDir, filename, "#{filename}.yml")) then
           # names must be only lowercase letters and digits
           if filename =~ /[^a-z0-9]/ then
             next
@@ -315,7 +315,8 @@ class AssessmentsController < ApplicationController
       flash[:error] = "Error while extracting tarball to server -- #{e.message}."
       redirect_to(:action => "installAssessment") and return
     end
-    redirect_to(:action => "importAssessment", :assessment_name => asmt_name) and return
+    params[:assessment_name] = asmt_name
+    importAssessment and return
   end
 
   # importAssessment - Imports an existing assessment from local file.
@@ -332,15 +333,18 @@ class AssessmentsController < ApplicationController
       f = File.open(filename, 'r')
       props = YAML.load(f.read)
       f.close
+    else
+      flash[:error] = "YAML file not found or not readable."
+      redirect_to action: :installAssessment and return
     end
     
     # If the properties file defines a category, then use it,
     # creating a new category if necessary. 
     if props['general'] then
-      props['general']['category'] ||= 'General'
+      props['general']['category_name'] ||= props['general']['category'] || 'General'
       params[:assessment] = { name: name,
                               display_name: props['general']['display_name'],
-                              category_name: props['general']['category'] }
+                              category_name: props['general']['category_name'] }
       create and return # create should handle the redirection
     # Otherwise, ask the user to give us a category before we create the
     # assessment

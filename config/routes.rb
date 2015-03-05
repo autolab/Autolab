@@ -65,7 +65,6 @@ Autolab3::Application.routes.draw do
         match 'adminScoreboard', via: [:get, :post]
         match 'bulkGrade', via: [:get, :post]
         post 'bulkGrade_complete'
-        get 'adminPartners'
         get 'bulkExport'
         get 'downloadSubmissions'
         get 'releaseAllGrades'
@@ -87,7 +86,6 @@ Autolab3::Application.routes.draw do
         get 'viewGradesheet'
         get 'writeup'
         get 'handout'
-        get 'partner'
         get 'scoreboard'
 
         # autograde actions
@@ -95,12 +93,6 @@ Autolab3::Application.routes.draw do
         post 'regrade'
         post 'regradeBatch'
         post 'regradeAll'
-
-        # partner actions
-        match 'setPartner', via: [:get, :post]
-        get 'importPartners'
-        get 'deletePartner'
-        get 'cancelRequest'
 
         # SVN actions
         get 'adminSVN'

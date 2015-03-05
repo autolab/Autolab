@@ -25,8 +25,7 @@
   <ul>
 
   <% for assign in @availableAssessments do %>
-    <li><%= link_to assign, {:action => "importAssessment",
-                :assessment_name=>assign} %>
+    <li><%= link_to assign, {action: :importAssessment, assessment_name: assign}, method: :post %></li>
   <% end %>         
 
   </ul>
