@@ -1,8 +1,9 @@
 class AttachmentsController < ApplicationController
   
   # inherited from ApplicationController
-  before_action :set_assessment
-  before_action :set_is_assessment
+  # this will also set an @is_assessment variable based on the result of is_assessment?
+  before_action :set_assessment, if: :is_assessment?
+  before_action :add_attachments_breadcrumb
 
   action_auth_level :index, :instructor
   def index
@@ -80,14 +81,22 @@ class AttachmentsController < ApplicationController
     end
   end
 
-private
+  private
 
-  def set_is_assessment
-    @is_assessment = params.has_key?(:assessment_id)
-  end
+    def is_assessment?
+      @is_assessment = params.has_key?(:assessment_id)
+    end
 
-  def attachment_params
-    params.require(:attachment).permit(:name, :file, :released, :mime_type)
-  end
+    def add_attachments_breadcrumb
+      if @is_assessment then
+        @breadcrumbs << (view_context.link_to "Assessment Attachments", [@course, @assessment, :attachments])
+      else
+        @breadcrumbs << (view_context.link_to "Course Attachments", [@course, :attachments])
+      end
+    end
+
+    def attachment_params
+      params.require(:attachment).permit(:name, :file, :released, :mime_type)
+    end
 
 end

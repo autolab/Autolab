@@ -2,6 +2,8 @@ require 'archive.rb'
 
 class SubmissionsController < ApplicationController
 
+  # inherited from ApplicationController
+  before_action :set_assessment
   before_action :set_submission, only: [:destroy, :destroyConfirm, :download, :edit, :listArchive, :update, :view]
   before_action :get_submission_file, only: [:download, :listArchive, :view]
 
@@ -325,12 +327,8 @@ private
   # Loads the submission from the DB 
   # needed by the various methods for dealing with submissions.
   # Redirects to the error page if it encounters an issue.
-  def load_submission
+  def set_submission
     begin
-      @assessment = @course.assessments.find params[:assessment_id]
-      if @cud.student? && !@assessment.released? then
-        redirect_to [@course, :assessments] and return
-      end
       @submission = @assessment.submissions.find params[:id]
     rescue
       flash[:error] = "Could not find submission with id #{params[:id]}."
