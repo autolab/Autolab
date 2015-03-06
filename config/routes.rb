@@ -66,7 +66,6 @@ Autolab3::Application.routes.draw do
         match 'bulkGrade', via: [:get, :post]
         post 'bulkGrade_complete'
         get 'bulkExport'
-        get 'downloadSubmissions'
         get 'releaseAllGrades'
         get 'releaseSectionGrades'
         get 'viewFeedback'

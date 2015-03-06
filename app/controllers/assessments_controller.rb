@@ -910,11 +910,6 @@ class AssessmentsController < ApplicationController
       :assessment=>@assessment.id
   end
 
-  action_auth_level :downloadSubmissions, :course_assistant
-  def downloadSubmissions
-    redirect_to downloadAll_course_assessment_submissions_path(@course, @assessment) and return
-  end
-
   def writeup
     if Time.now() < @assessment.start_at && !@cud.instructor? then
       @output = "This assessment has not started yet."
