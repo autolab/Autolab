@@ -1,5 +1,8 @@
 class AttachmentsController < ApplicationController
-  before_action :load_assessment
+  
+  # inherited from ApplicationController
+  before_action :set_assessment
+  before_action :set_is_assessment
 
   action_auth_level :index, :instructor
   def index
@@ -79,14 +82,8 @@ class AttachmentsController < ApplicationController
 
 private
 
-  def load_assessment
+  def set_is_assessment
     @is_assessment = params.has_key?(:assessment_id)
-    if @is_assessment then
-      @assessment = @course.assessments.find(params[:assessment_id])
-      if @cud.student? && !@assessment.released? then
-        redirect_to [@course, :assessments] and return false
-      end
-    end
   end
 
   def attachment_params

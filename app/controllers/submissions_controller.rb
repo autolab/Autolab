@@ -2,7 +2,7 @@ require 'archive.rb'
 
 class SubmissionsController < ApplicationController
 
-  before_action :load_submission, only: [:destroy, :destroyConfirm, :download, :edit, :listArchive, :update, :view]
+  before_action :set_submission, only: [:destroy, :destroyConfirm, :download, :edit, :listArchive, :update, :view]
   before_action :get_submission_file, only: [:download, :listArchive, :view]
 
   # this page loads.  links/functionality may be/are off

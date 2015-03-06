@@ -219,6 +219,25 @@ protected
       redirect_to edit_course_course_user_datum_path(id: @cud.id, course_id: @cud.course.id)
     end
   end
+  
+  ##
+  # this loads the current assessment.  It's up to sub-controllers to call this
+  # as a before_action when they need the assessment.
+  #
+  def set_assessment
+    begin
+      @assessment = @course.assessments.find(params[:assessment_id] || params[:id])
+    rescue
+      flash[:error] = "The assessment was not found for this course."
+      redirect_to action: :index and return
+    end
+    
+    if @cud.student? && !@assessment.released? then
+      redirect_to action: :index and return
+    end
+      
+    @breadcrumbs << (view_context.current_assessment_link)
+  end
 
   def run_scheduler
 

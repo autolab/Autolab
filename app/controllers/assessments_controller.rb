@@ -19,7 +19,8 @@ class AssessmentsController < ApplicationController
   autolabRequire File.join(Rails.root, 'app/controllers/assessment/autograde.rb')
   include AssessmentAutograde
 
-  before_action :get_assessment, except: [ :index, :new, :create, :installQuiz, :installAssessment, 
+  # this is inherited from ApplicationController
+  before_action :set_assessment, except: [ :index, :new, :create, :installQuiz, :installAssessment, 
                                            :importAsmtFromTar, :importAssessment, 
                                            :log_submit, :local_submit, :autograde_done ]
 
@@ -1580,21 +1581,6 @@ protected
     end
     
     return props
-  end
-
-  def get_assessment
-    begin
-      @assessment = @course.assessments.find(params[:assessment_id] || params[:id])
-    rescue
-      flash[:error] = "The assessment was not found for this course."
-      redirect_to action: :index and return
-    end
-    
-    if @cud.student? && !@assessment.released? then
-      redirect_to action: :index and return
-    end
-      
-    @breadcrumbs << (view_context.current_assessment_link)
   end
 
   def releaseMatchingGrades
