@@ -71,8 +71,7 @@
             :title=> "Reload the assessment configuration file (provided for backward compatibility with legacy assessments)" %></li>
 
           <% if !@assessment.disable_handins %>
-          <li><%= link_to  "Download submissions", url_for(:action => 'downloadSubmissions'), 
-            :title=> "Download all submissions" %></li>
+            <li><%= link_to  "Download Section #{@cud.section} Submissions", [:downloadAll, @course, @assessment, :submissions, final: true], title: "Download Section #{@cud.section} Submissions" %></li>
           <% end %>
 
         </ul>
