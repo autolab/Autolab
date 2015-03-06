@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150203151605) do
+ActiveRecord::Schema.define(version: 20150228200007) do
 
   create_table "annotations", force: :cascade do |t|
     t.integer  "submission_id", limit: 4
@@ -40,11 +40,6 @@ ActiveRecord::Schema.define(version: 20150203151605) do
     t.boolean  "system",               limit: 1,     default: false, null: false
   end
 
-  create_table "assessment_categories", force: :cascade do |t|
-    t.string  "name",      limit: 255
-    t.integer "course_id", limit: 4
-  end
-
   create_table "assessment_user_data", force: :cascade do |t|
     t.integer  "course_user_datum_id", limit: 4,               null: false
     t.integer  "assessment_id",        limit: 4,               null: false
@@ -53,6 +48,8 @@ ActiveRecord::Schema.define(version: 20150203151605) do
     t.datetime "updated_at"
     t.integer  "grade_type",           limit: 4,   default: 0, null: false
     t.string   "repository",           limit: 255
+    t.integer  "group_id",             limit: 4
+    t.integer  "membership_status",    limit: 1,   default: 0
   end
 
   add_index "assessment_user_data", ["assessment_id"], name: "index_assessment_user_data_on_assessment_id", using: :btree
@@ -87,12 +84,13 @@ ActiveRecord::Schema.define(version: 20150203151605) do
     t.integer  "version_penalty_id", limit: 4
     t.datetime "grading_deadline",                                 null: false
     t.boolean  "has_autograde",      limit: 1
-    t.boolean  "has_partners",       limit: 1
     t.boolean  "has_scoreboard",     limit: 1
     t.boolean  "has_svn",            limit: 1
-    t.string   "remote_handin_path", limit: 255
     t.boolean  "quiz",               limit: 1,     default: false
     t.text     "quizData",           limit: 65535
+    t.string   "remote_handin_path", limit: 255
+    t.string   "category_name",      limit: 255
+    t.integer  "group_size",         limit: 4,     default: 1
   end
 
   create_table "attachments", force: :cascade do |t|
@@ -149,9 +147,9 @@ ActiveRecord::Schema.define(version: 20150203151605) do
     t.boolean  "disabled",                      limit: 1,     default: false
     t.boolean  "exam_in_progress",              limit: 1,     default: false
     t.integer  "version_threshold",             limit: 4,     default: -1,    null: false
+    t.datetime "cgdub_dependencies_updated_at"
     t.integer  "late_penalty_id",               limit: 4
     t.integer  "version_penalty_id",            limit: 4
-    t.datetime "cgdub_dependencies_updated_at"
     t.text     "gb_message",                    limit: 65535
   end
 
@@ -160,6 +158,12 @@ ActiveRecord::Schema.define(version: 20150203151605) do
     t.integer "assessment_id",        limit: 4
     t.integer "days",                 limit: 4
     t.boolean "infinite",             limit: 1, default: false, null: false
+  end
+
+  create_table "groups", force: :cascade do |t|
+    t.string   "name",       limit: 255
+    t.datetime "created_at",             null: false
+    t.datetime "updated_at",             null: false
   end
 
   create_table "module_data", force: :cascade do |t|
@@ -243,11 +247,6 @@ ActiveRecord::Schema.define(version: 20150203151605) do
 
   add_index "submissions", ["assessment_id"], name: "index_submissions_on_assessment_id", using: :btree
   add_index "submissions", ["course_user_datum_id"], name: "index_submissions_on_course_user_datum_id", using: :btree
-
-  create_table "user_modules", force: :cascade do |t|
-    t.integer "course_id", limit: 4
-    t.string  "name",      limit: 255
-  end
 
   create_table "users", force: :cascade do |t|
     t.string   "email",                  limit: 255, default: "",    null: false

@@ -99,7 +99,7 @@ jQuery(function() {
         'aoColumnDefs': [
           { "bSortable": false, "aTargets": [ 0 ] },
           { "bSearchable": false, "aTargets": non_searchable_columns },
-          { "sType": "html", "aTargets": [ andrewID_col ] },
+          { "sType": "html", "aTargets": [ email_col ] },
           { "sType": "num-html", "aTargets": numeric_columns }, 
         ],
         "fnDrawCallback": function(oSettings) {
@@ -113,10 +113,9 @@ jQuery(function() {
             });
           }
         },
-        // "aaSorting": [[ andrewID_col, 'asc' ]] -- this is slowww
+        // "aaSorting": [[ email_col, 'asc' ]] -- this is slowww
     }).fnSetFilteringDelay();
 
-    console.log("datatables took: " + (new Date() - start));
 
     // placeholder text in Search field
     jQuery("#grades_filter input").attr("placeholder", "Search");
@@ -172,7 +171,6 @@ jQuery(function() {
      * @return nothing
      */
     function tabber(from, reverse) { from = jQuery(from);
-        console.log("tabbing");
 
         // guaranteed to be jQuery objects
         var tabNext = normalizeToObject(from.data('tabNext'));
@@ -202,7 +200,7 @@ jQuery(function() {
         }
         close_current_popover();
         current_editor = null;
-        console.log("closed editor");
+
     }
 
     function close_current_editor() {
@@ -219,7 +217,7 @@ jQuery(function() {
     function close_current_popover() {
         current_popover.hide();
         current_popover = undefined;
-        console.log("closed popover");
+
     }
 
     function close_current_popover_on_blur(event) {
@@ -261,7 +259,6 @@ jQuery(function() {
           $editable.data("initialized", true);
         }
 
-        console.log("opening editor");
         open_score_popover(editable);
         current_editor = editable;
     }
@@ -453,7 +450,7 @@ jQuery(function() {
     }
 
     // to show the the ID column popovers
-    jQuery('#grades td.id a.andrewID').live('click', function() {
+    jQuery('#grades td.id a.email').live('click', function() {
       jQuery('div.popover').hide();
 
       var link = jQuery(this)
@@ -529,10 +526,5 @@ jQuery(function() {
     var dirty = function(event) {
         score_details_dirty(get_enclosing_editor(event.target), "dirty");
     }
-    
-    //jQuery("table.score_details textarea.feedback").live('keypress', dirty);
-    //jQuery("table.score_details input.released").live('click', dirty);
-    //jQuery(".editable input").keypress(dirty); -- for some other day tombug#50
 
-    console.log(new Date() - start)
 });

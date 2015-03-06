@@ -14,7 +14,6 @@ class GradeMatrix
         _.load_auds
         _.load_course_user_data
         _.load_assessments
-        _.load_assessment_categories
       }
 
       ActiveSupport::Gzip.compress(matrix!.to_json)
@@ -34,8 +33,8 @@ class GradeMatrix
     @matrix["cell_by_asmt"]["#{asmt_id}"]["#{cud_id}"]
   end
 
-  def category_average(cat_id, cud_id)
-    @matrix["cat_avg_by_cat"]["#{cat_id}"]["#{cud_id}"]
+  def category_average(cat, cud_id)
+    @matrix["cat_avg_by_cat"]["#{cat}"]["#{cud_id}"]
   end
 
   def course_average(cud_id)
@@ -46,8 +45,8 @@ class GradeMatrix
     @matrix["cell_by_asmt"]["#{asmt_id}"].values
   end
 
-  def averages_for_category(cat_id)
-    @matrix["cat_avg_by_cat"]["#{cat_id}"].values
+  def averages_for_category(cat)
+    @matrix["cat_avg_by_cat"]["#{cat}"].values
   end
 
   def course_averages
@@ -67,8 +66,8 @@ class GradeMatrix
   end
 
   # Check whether the specified category is included in the GradeMatrix cache
-  def has_category?(cat_id)
-    @matrix["cat_avg_by_cat"]["#{cat_id}"] != nil
+  def has_category?(cat)
+    @matrix["cat_avg_by_cat"]["#{cat}"] != nil
   end
 
   def self.invalidate(course)
@@ -103,8 +102,8 @@ private
 
       @course.assessment_categories.each do |cat|
         a = cud.category_average(cat, @as_seen_by)
-        cat_avg_by_cat["#{cat.id}"] ||= {}
-        cat_avg_by_cat["#{cat.id}"]["#{cud.id}"] = a
+        cat_avg_by_cat[cat] ||= {}
+        cat_avg_by_cat[cat]["#{cud.id}"] = a
       end
 
       course_avg_by_user["#{cud.id}"] = cud.average @as_seen_by

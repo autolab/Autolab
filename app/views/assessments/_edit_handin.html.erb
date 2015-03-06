@@ -1,4 +1,4 @@
-<% content_for :head do %>
+<% content_for :javascripts do %>
   <%= javascript_include_tag "initialize_datetimepickers" %>
 <% end %>
 
@@ -22,9 +22,9 @@
   greater_than: "assessment_start_at assessment_due_at assessment_end_at" %>
 
 <div class="form-group">
-  <%= f.check_box :disable_handins,
+  <span class="checkbox"><%= f.check_box :disable_handins,
     help_text: "Check this to disallow handins through Autolab. E.g., paper
-    exams, problem sets" %>
+    exams, problem sets" %></span>
 </div>
 
 <%= content_tag :div, id: "handin", class: (f.object.disable_handins ? "disabled" : "") + " form-group" do %>

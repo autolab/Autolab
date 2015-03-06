@@ -1,0 +1,74 @@
+<% @title = "Moss Cheat Checker" %>
+
+<% content_for :javascripts do %>
+  <script type="text/javascript">
+    /**
+     * toggles the "style.display" of the element with the given id.
+     **/
+    function toggleOptions(id) {
+      var show = document.getElementById(id);
+      show.style.display = (show.style.display == "none")? "block" : "none";
+    }
+
+    function filterCourses(name) {
+      $(".filterableCourse").each( function() {
+        var course = this;
+        var keywords = name.split(" ");
+        var toShow = true;
+        for (var i=0; i<keywords.length; i++) {
+          if (course.id.toLowerCase().indexOf(keywords[i]) == -1)
+            toShow = false;
+        }
+        $(this).toggle(toShow);
+      });
+    }
+  </script>
+<% end %>
+
+<h2>Run the Moss Cheat Checker</h2>
+<br>
+
+<h2><b>Step 1:</b> Click on course names to see their assessments, then check box all of the assessments you want Moss to compare against.</h2>
+<h3 style="display:inline">Filter Courses (Keywords Separated by Space): </h3><input type="text" onkeyup="filterCourses(this.value.toLowerCase())" />
+<%= form_tag([@course, :runMoss], multipart: true) do %>
+  <ul class="moss-list">
+  <% for course in @courses %>
+    <li class="filterableCourse" id="<%= course.display_name %>">
+      <h3 onclick="toggleOptions('<%= course.id %>Assessments')"> 
+        <%= course.display_name %>
+      </h3>
+      <ul id="<%= course.id %>Assessments" class="moss-inner-list" style="display:none" >
+      <% for a in course.assessments do %>
+        <li>
+          <%= check_box_tag "assessments[#{a.id}]","1",false %>
+          <%= a.display_name %> <br>
+          <div id='<%= a.id %>OptionsDiv' style="padding-left:10px;" >
+            <b>Is Archive:</b>
+            <%= check_box_tag "isArchive[#{a.id}]" %>
+            <i>Check this if the submissions will need to be extracted. (The handin filename was: <%= a.handin_filename %>)</i>
+            <br>
+            <b>Files to send to Moss:</b>
+            <%= text_field_tag "files[#{a.id}]", "*" %>
+            <i>This can be file names (foo.c) or patterns(*.c)</i>
+            <br>
+          </div>
+        </li>
+      <% end %>
+      </ul>
+    </span>
+  <% end %>
+  </ul>
+
+  <br>
+
+  <h2><b>Step 2:</b> (Optional) Upload an archive containing additional files you'd like Moss to compare against.</h2>
+  <h3>(Note: the archive must contain only regular files.  Nested archives wil not be extracted.)</h3>
+
+  <%= file_field_tag 'external_tar' %>
+
+  <br>
+
+  <h2><b>Step 3:</b> Click "Go!" once to run Moss. This may take up to a minute, so be patient...</h2>
+
+  <p><%= submit_tag "Go!", data: { disable_with: "Please wait..." }, class: "btn primary" %></p>
+<% end %>

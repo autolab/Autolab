@@ -82,4 +82,8 @@ Autolab3::Application.configure do
       exception_recipients: "TEAM@YOURAPP.COM"
     }
 
+
+  # ID for Heap Analytics
+  config.x.analytics_id = nil
+
 end

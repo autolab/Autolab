@@ -1,6 +1,9 @@
-require 'autoConfig'
+require 'cgi'
+require 'uri'
 
 class JobsController < ApplicationController
+  
+  autolabRequire Rails.root.join('config', 'autogradeConfig.rb')
 
   # 
   # getRecentJobs - this function retrieves the currently running jobs
@@ -123,15 +126,23 @@ class JobsController < ApplicationController
     # assign it to the @feedback_str instance variable for later
     # use by the view
     if rjob["notifyURL"] then 
-
+      uri = URI(rjob["notifyURL"])
+      
       # Parse the notify URL from the autograder
-      params =  rjob["notifyURL"].split('/')
-      url_submission = params[-2]
-      url_assessment = params[-4]
-      url_course = params[-6]
+      path_parts =  uri.path.split('/')
+      url_course = path_parts[2]
+      url_assessment = path_parts[4]
+      
+      # create a hash of keys pointing to value arrays
+      params = CGI::parse(uri.query) 
    
       # Grab all of the scores for this submission
-      scores = Score.where(:submission_id=>url_submission)
+      begin
+        submission = Submission.find(params["submission_id"][0])
+      rescue # submission not found, tar tar sauce!
+        return 
+      end
+      scores = submission.scores
 
       # We don't have any information about which problems were
       # autograded, so search each problem until we find one
@@ -152,8 +163,8 @@ class JobsController < ApplicationController
     # Students see only the output report from the autograder. So
     # bypass the view and redirect them to the viewFeedback page
     if !@cud.user.administrator? and !@cud.instructor? then
-      if url_assessment and url_submission and feedback_num > 0 then
-        redirect_to viewFeedback_course_assessment_path(url_course.to_i, url_assessment.to_i, submission: url_submission.to_i, feedback: feedback_num) and return 
+      if url_assessment and submission and feedback_num > 0 then
+        redirect_to viewFeedback_course_assessment_path(url_course.to_i, url_assessment.to_i, submission: submission.id, feedback: feedback_num) and return 
       else 
         flash[:error] = "Could not locate autograder feedback"
         redirect_to :controller=>"jobs", :item=>nil and return
@@ -183,10 +194,10 @@ class JobsController < ApplicationController
     job[:name] = rjob["name"]
     
     if rjob["notifyURL"] then
-      params =  rjob["notifyURL"].split('/')
-      job[:submission] = params[-2]
-      job[:assessment] = params[-4]
-      job[:course] = params[-6]
+      uri = URI(rjob["notifyURL"])
+      path_parts = uri.path.split('/')
+      job[:course] = path_parts[2]
+      job[:assessment] = path_parts[4]
     end
 
     # Determine whether to expose the job name.

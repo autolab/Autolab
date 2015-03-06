@@ -1,0 +1,180 @@
+h1#courseTitle {
+  font-size: 24.5px;
+  margin-bottom: 0;
+}
+
+.label {
+  text-transform: uppercase;
+  font-size: 8.5px;
+  vertical-align: text-bottom;
+}
+
+#pageBody.container {
+  // Override default width styles so that we can use up the whole page
+  max-width: 1200px;
+  width: 90%;
+}
+
+.cat_pair {
+  margin-bottom: 20px;
+}
+
+.gradebook {
+  margin: 20px 0;
+  padding: 0 10px;
+
+  h4 {
+    margin-bottom: 15px;
+    color: #666;
+  }
+
+  a {
+    color: #08c;
+    font: inherit;
+  }
+
+  .not-submitted a {
+    color: #c94a48;
+  }
+  .not-yet-submitted a {
+    color: #f89406;
+  }
+  .zeroed a {
+    font-weight: bold;
+    color: #3a87ad;
+  }
+}
+
+.category,
+.course {
+  background-color: #fafafa;
+  width: 100%;
+  color: #777;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  box-shadow: 0 0 2px 0px #f4f4f4;
+  font-size: 1.2em;
+  padding: 5px 15px;
+  box-sizing: border-box;
+}
+
+.grades {
+  width: 100%;
+  box-sizing: border-box;
+  table-layout: fixed;
+
+  tr > * {
+    padding: 5px 0px;
+    text-align: center;
+
+    &:first-child {
+      text-align: left;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      padding-right: 10px;
+    }
+
+    &:last-child {
+      text-align: right;
+    }
+  }
+
+  tr.header > th i {
+    vertical-align: -3px;
+  }
+
+  tr {
+    border-top: 1px solid #e4e4e4;
+    border-bottom: 1px solid #e4e4e4;
+
+    &:first-child {
+      border-top: none;
+    }
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    a.history_icon {
+      display: none;
+      // Prevent tr from resizing when history_icon is displayed
+      font-size: 15px;
+    }
+
+    &:hover {
+      a.history_icon {
+        display: inline;
+      }
+    }
+  }
+
+  col {
+    width: 3.5em;
+    border-right: 1px solid #efefef;
+
+    &:last-child {
+      border-right: none;
+    }
+
+    &.fs {
+      width: 6em;
+    }
+    &.asmt_names {
+      width: auto;
+    }
+  }
+
+  .max_score {
+    color: #bbb;
+  }
+}
+
+.grades tr.header > th:not(.cat_name),
+.grades tr.footer > th:not(.cat_avg),
+.course table tr th {
+  color: #aaa;
+  font-size: 0.7em;
+  font-weight: bold;
+}
+
+.course table {
+  width: 100%;
+
+  tr td {
+    text-align: right;
+    font-weight: bold;
+    font-size: 0.9em;
+  }
+}
+
+th.cat_avg {
+  font-size: 0.9em;
+}
+
+th.cat_name {
+  font-size: 0.8em;
+  text-transform: uppercase;
+  font-weight: bold;
+}
+
+.stats-table {
+  width: 100%; white-space: nowrap;
+  font-size: 16px;
+
+  thead {
+    border-bottom: 2px solid #e4e4e4;
+  }
+
+  tr {
+    border-top: 1px solid #e4e4e4;
+    border-bottom: 1px solid #e4e4e4;
+
+    &:first-child { border-top: none; }
+    &:last-child { border-bottom: none; }
+  }
+
+  td,
+  th {
+    padding: 8px 0px;
+  }
+}

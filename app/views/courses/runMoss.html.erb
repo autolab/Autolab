@@ -1,0 +1,16 @@
+<h2>Moss Result:
+<% if @mossExit == 0 then %>
+  <% begin %>
+    <% message = @mossOutput.split("\n")[-1] %>
+    <% # Check whether the job is successful. %>
+    <% result = URI.parse(message).to_s %>
+    <a href=<%= result %>><%= result %></a>
+  <% rescue URI::InvalidURIError %>
+    <%= message %>
+  <% end %>
+<% else %>
+  Failed!
+<% end %>
+</h2>
+<pre><%= @mossCmdString %></pre>
+<pre><%= @mossOutput %></pre>

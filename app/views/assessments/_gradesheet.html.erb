@@ -1,19 +1,24 @@
-<%= external_javascript_include_tag "jquery", "1.7.2" %>
-<%= external_javascript_include_tag "jquery-ui", "1.8.20" %>
-<%= external_javascript_include_tag "jquery.dataTables", "1.9.2" %>
+<% content_for :stylesheets do %>
+  <%= stylesheet_link_tag "gradesheet1" %>
+<% end %>
 
-<%= javascript_include_tag "jquery.jeditable" %>
-<%= javascript_include_tag "KeyTable" %>
+<% content_for :javascripts do %>
+  <%= external_javascript_include_tag "jquery", "1.7.2" %>
+  <%= external_javascript_include_tag "jquery-ui", "1.8.20" %>
+  <%= external_javascript_include_tag "jquery.dataTables", "1.10.5" %>
 
-<script type="text/javascript">
-  andrewID_col = 1
-  problem_count = <%= @assessment.problems.length %>
-  first_problem_column = 5;
-  first_non_searchable_column = 3 
-</script>
+  <%= javascript_include_tag "jquery.jeditable" %>
+  <%= javascript_include_tag "KeyTable" %>
 
-<%= javascript_include_tag "gradesheet1" %>
-<%= stylesheet_link_tag "gradesheet1" %>
+  <script type="text/javascript">
+    email_col = 1
+    problem_count = <%= @assessment.problems.length %>
+    first_problem_column = 5;
+    first_non_searchable_column = 3 
+  </script>
+
+  <%= javascript_include_tag "gradesheet1" %>
+<% end %>
 
 <div id="table_container" style="text-align: center">
 
@@ -22,7 +27,7 @@
 <thead>
     <tr class="sortable">
         <th class="enumerator">#</th>
-        <th class="id">ID</th>
+        <th class="id">Email</th>
         <th>Name</th>
         <th class="lec">Lec</th>
         <th class="sec">Sec</th>
@@ -47,7 +52,7 @@
 <tr class="<%= aud_special_grade_type?(s.aud) && @cud.instructor? ? "special_submission" : "" %>">
   <td class="enumerator"></td>
   <td class="id" data-submission-id="<%= s.id.to_s %>">
-        <a tabindex="-1" class="andrewID"><%= s.course_user_datum.email %></a>
+        <a tabindex="-1" class="email"><%= s.course_user_datum.email %></a>
         <% if s.filename %>
           <%=raw(view_file(s, go_img(-1), go_img(-1), go_img(-1))) %>
         <% end %>

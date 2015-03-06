@@ -1,3 +1,7 @@
+<% content_for :javascripts do %>
+  <%= javascript_include_tag "assessments_show" %>
+<% end %>
+
 <%# Make sure these options are not on the general user options list.  %>
 <%# We have to do this because we exposed the internal interface for building options lists %>
 <%# and some users have fiddled with this in their assessment.rb file %>
@@ -13,91 +17,161 @@
 <% @list.delete("submission") %>
 <% @list.delete("reload") %>
 
-<p><i><%= @assessment.description %> </i></p>
+<div class="row">
+  <div class="col-md-12"> 
+    <h2><%= @assessment.display_name %></h2>
+    <hr>
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-4"> 
+    <%# Display any optional instructor admin options %>
+    <% if @cud.instructor? then %>
+      <h3>Admin Options</h3>
+      <ul class="options">
+    
+        <li> <%= link_to "Edit assessment", {:action => "edit" }, {:title=> "View and modify the properties for this assessment, including its problems" } %></li>
+        <li> <%= link_to "Grade submissions", {:action => "viewGradesheet" }, {:title=> "View and enter grades on the gradesheet" } %></li>
+        <li> <%= link_to "Release all grades", {:action => "releaseAllGrades" }, {:title=>  "Make all scores for this assessment visible to students" } %></li>
+        <li> <%= link_to "Withdraw all grades", {:action => "withdrawAllGrades" }, {:title=>  "Hide all scores for this assessment from students" } %></li>
+        <li> <%= link_to "Export assessment", {:action => "export" }, {:title=> "Export persistent properties that will be imported when you install this assessment in a future term" } %></li>
+        <li> <%= link_to "Reload config file", {:action => "reload" }, {:title=> "Reload the assessment config file (provided for backward compatibility with legacy assessments)" } %></li>
+        <li> <%= link_to "Manage extensions", {:action => "extensions" }, {:title=> "Give extensions to students" } %></li>
+        <li> <%= link_to "Manage submissions", {:action => "submissions" }, {:title=> "Create, view, export, and re-autograde submissions" } %></li>
+        <li> <%= link_to "Manage assessment attachments", {:action => "attachments" }, {:title=> "Distribute files to your students" } %></li>
+        <li> <%= link_to "View statistics", {:action => "statistics" }, {:title=> "View detailed stats for this assessment" } %></li>
+        <li> <%= link_to "Bulk import grades", {:action => "bulkGrade" }, {:title=> "Upload scores or feedback for multiple students from a CSV file" } %></li>
+        <li> <%= link_to "Bulk export grades", {:action => "bulkExport" }, {:title=> "Export grades (with sub-scores) \nfor all students to a CSV file" } %></li>
 
-<p>
-<b>Due at:</b> <%= due_at_display @aud.due_at %>
-(<b>Last day to handin:</b> <%= end_at_display(@aud.end_at false) %>)
-</p>
+        <% if @assessment.has_svn then %>
+          <li><%= link_to "SVN Settings", [:adminSVN, @course, @assessment], title: "Manage the SVN repositories" %></li>
+        <% end %>
 
-<% if @cud.instructor? and @assessment.exam? %>
-<p class="attention">This is an exam. While it is in progress, please check Admin > Edit Course > Exam In Progress.</p>
-<% end %>
+        <% if @assessment.has_autograde then %>
+          <li><%= link_to "Autograding Settings", {:action => "adminAutograde" }, title: "Modify autograding properties such as the VM image and the timeout value" %></li>
+        <% end %>
 
-<%= render partial: "handin_form", locals: {modal: false, id: "handin_show_assessment"} %>
+        <% if @assessment.has_scoreboard then %>
+          <li><%= link_to "Scoreboard Settings", {:action => "adminScoreboard" }, title: "Configure the appearance of the scoreboard" %></li>
+        <% end %>
 
-<table><tr valign=top>
-
-<%# Display general user options %> 
-<td>
-<h2>Options</h2>
-<ul>
-<% @list.sort { |a,b| a[1] <=> b[1] }.each { |key, value| %>
-  <% if value.size > 0  then  %>
-    <li> <%= link_to value, {:action => key}, {:title=>(@list_title[key] || "")} %> </li>
-  <% end %>
-<% } %>
-</ul>
-</td>
-
-<%# Display any optional instructor admin options %>
-<% if @cud.instructor? then %>
-  <td width=20></td>
-  <td>
-  <h2>Admin Options (staff)</h2>
-  <ul>
-    <% if @assessment.has_svn then %>
-      <li><%= link_to "SVN Settings", [:adminSVN, @course, @assessment], title: "Manage the SVN repositories" %></li>
+      </ul>
     <% end %>
+    <%# Display the optional CA admin options %>
+    <% if @cud.course_assistant? or @cud.instructor? then %>
+        <h3>Admin Options (CA)</h3>
+        <ul class="options">
+          <li><%= link_to "Grade section #{@cud.section} submissions", url_for(:action => 'viewGradesheet', :section => '1', :escape => false), 
+            :title=> "View and enter grades for your section. Make sure your instructor has assigned you to a section in your Autolab account" %></li>
+          <li><%= link_to "Grade all submissions", url_for(:action => 'viewGradesheet'), 
+            :title=> "View and enter grades for all sections"  %></li>
+          <li><%= link_to "Release section grades", url_for(:action => 'releaseSectionGrades'), 
+            :title=> "Make all scores visible to the students in your section. This will work only if your instructor has assigned you to a lecture and section in your Autolab account." %></li>
+          <li><%= link_to "Reload config file", url_for(:action => 'reload'), 
+            :title=> "Reload the assessment configuration file (provided for backward compatibility with legacy assessments)" %></li>
 
-    <% @adminlist.sort { |a,b| a[1] <=> b[1] }.each do |key, value| %>
-      <% if value.size > 0  then  %>
-        <li> <%= link_to value, {:action => key}, {:title=>(@admin_title[key] || "")} %></li>
-      <% end %>
-    <% end %>
-  </ul>
-  </td>
-<% end %>
-
-
-<%# Display the optional CA admin options %>
-<% if @cud.course_assistant? then %>
-  <td width=20></td>
-  <td>
-  <h2>Admin Options (CA)</h2>
-  <ul>
-  <% for option in @options do %>
-    <li><%= link_to option['name'], option['url'], :title=>option[:title] %></li>
-  <% end %>
-  </ul>
-  </td>
-<% end %>
-
-</tr></table>
-
-<%# Display any attachments %>
-<% if @assessment.attachments.length > 0 %>
-  <h2><%= @assessment.display_name %> Files</h2>
-  <ul>
-    <%= render @assessment.attachments %>
-
-    <% # this code is temporarily "commented out" because Dan wants to preserve the logic for future changes to _attachment.html.erb %>
-    <% if false then %>
-      <% for a in @assessment.attachments do %>
-        <% if a.released? then %>
-          <% if (Time.now() > @assessment.start_at) or (@cud.instructor?) then %>
-            <li><%= link_to a.name, [@course, @assessment, a] %></li>
-          <% else %>
-            <li><%= a.name %></li>
+          <% if !@assessment.disable_handins %>
+            <li><%= link_to  "Download Section #{@cud.section} Submissions", [:downloadAll, @course, @assessment, :submissions, final: true], title: "Download Section #{@cud.section} Submissions" %></li>
           <% end %>
-        <% elsif @cud.instructor? then %>
-          <li><i><%= link_to a.name, [@course, @assessment, a] %>*</i></li>
+
+        </ul>
+    <% end %>
+    <h3>Options</h3>
+    <ul class="options">
+      <li> <%= link_to "View writeup", {:action => 'writeup'}, {:title=> "View the assessment writeup" } %> </li>
+      <li> <%= link_to "Download handout", {:action => 'handout'}, {:title=> "Download handout materials and starter code" } %> </li>
+      <li> <%= link_to "View handin history", {:action => 'history'}, {:title=> "View your submissions, scores, and feedback from the course staff" } %> </li>
+      <% if @assessment.has_scoreboard then %>
+          <li><%= link_to "View scoreboard", {:action => "scoreboard" }, title: "View the class scoreboard" %></li>
+      <% end %>
+
+    <% @list.sort { |a,b| a[1] <=> b[1] }.each { |key, value| %>
+      <% if value.size > 0  then  %>
+        <li> <%= link_to value, {:action => key}, {:title=>(@list_title[key] || "")} %> </li>
+      <% end %>
+    <% } %>
+    </ul>
+  </div>
+  <div class="col-md-8">
+    <p><i><%= @assessment.description %></i></p>
+    <br>
+    <div class="handin-panel">
+    <p><b>Due at: </b><span class="moment-date-time"> <%= due_at_display @aud.due_at %></span></p>
+    <p><b>Last day to handin: </b><span class="moment-date-time"> <%= end_at_display(@aud.end_at false) %></span></p>
+
+    <% if @cud.instructor? and @assessment.exam? %>
+    <p class="attention">This is an exam. While it is in progress, please check Admin > Edit Course > Exam In Progress.</p>
+    <% end %>
+
+    <%= render partial: "handin_form", locals: {modal: false, id: "handin_show_assessment"} %>
+    </div>
+<% download_access = (@cud.instructor?) %>
+
+<% if @extension then %>
+  <i>
+  You have a <%=@extension.days %> day extension on this assessment
+  </i>
+  <font size=-1>
+  (Due date: <%= due_at_display(@assessment.aud_for(@effectiveCud.id).due_at) %>)
+  </font>
+  <% end %>
+  <% if @assessment.max_submissions != -1 then %>
+    <% numSubmissions = @submissions.size %>
+    <% if numSubmissions > @assessment.max_submissions then %>
+      <% numSubmissions = 0 %>
+    <% else %>
+      <% numSubmissions = @assessment.max_submissions - numSubmissions %>
+    <% end %>
+    <i>You have <%= numSubmissions %> <%= (numSubmissions == 1) ? "submission" : "submissions" %> left.</i> 
+  <% end %>
+
+  <%# Display any attachments %>
+  <% if @assessment.attachments.length > 0 %>
+    <h2><%= @assessment.display_name %> Files</h2>
+    <ul>
+      <%= render @assessment.attachments %>
+
+      <% # this code is temporarily "commented out" because Dan wants to preserve the logic for future changes to _attachment.html.erb %>
+      <% if false then %>
+        <% for a in @assessment.attachments do %>
+          <% if a.released? then %>
+            <% if (Time.now() > @assessment.start_at) or (@cud.instructor?) then %>
+              <li><%= link_to a.name, [@course, @assessment, a] %></li>
+            <% else %>
+              <li><%= a.name %></li>
+            <% end %>
+          <% elsif @cud.instructor? then %>
+            <li><i><%= link_to a.name, [@course, @assessment, a] %>*</i></li>
+          <% end %>
         <% end %>
       <% end %>
-    <% end %>
-  </ul>
-<% end %>
+    </ul>
+  <% end %>
 
-<% content_for :javascript do %>
-  <%= javascript_include_tag "assessments_show" %>
-<% end %>
+  <% if @assessment.exam? %>
+      <% if download_access %>
+          <p>Students will not be able to view previous exam submissions.</p>
+      <% else %>
+          <p>You cannot view previous exam submissions.</p>
+      <% end %>
+  <% elsif @assessment.course.exam_in_progress? %>
+      <% if download_access %>
+          <p>Students will not be able to view previous submissions while an exam is in progress.</p>
+      <% else %>
+          <p>You cannot view previous submissions while an exam is in progress.</p>
+      <% end %>
+  <% end %>
+
+    <% if @submissions.size == 0 then %>
+      No Submissions yet!
+    <% else %>
+      <% for submission in @submissions.first(limit=3) do %>
+        <%= render partial: "submission_summary_row", 
+          locals: { submission: submission, 
+          download_access: download_access } %>
+      <% end %>
+      <hr>
+      <%= link_to "See all submissions", {:action => "history"} %></li>
+
+    <% end %>
+  </div>

@@ -8,29 +8,31 @@
   'Malloc Lab'" %>
 
 <div class="form-group">
-  <%= f.label :category_id %>
-  <%= f.collection_select :category_id, @course.assessment_categories, :id, :name, {selected: @assessment.category.id}, {class: "form-control"} %>
-  <p class="help-block">You can create a new category <%= link_to "here", new_course_assessment_category_path %>.</p>
+  <%= f.label :category_name, { :class=>"control-label" } %>
+  <%= f.collection_select :category_name, @course.assessment_categories, :to_s, :to_s, {selected: @assessment.category_name}, {class: "form-control"} %>
+  <p>or</p>
+  <%= text_field_tag :new_category, nil, placeholder: "New Category" %>
+  <p class="help-block">Select an existing category or enter a new category name <i>(you can always change it later)</i></p>
 </div>
 
 <hr>
 
 <h4>Modules Used</h4>
-<%= f.check_box :has_autograde,
+<span class="checkbox"><%= f.check_box :has_autograde,
   display_name: "Enable autograding?",
-  help_text: "Whether this assignment will be autograded." %>
+  help_text: "Whether this assignment will be autograded." %></span>
 
-<%= f.check_box :has_partners,
-  display_name: "Partner assignment?",
-  help_text: "Is this a group or partner assignment?" %>
-
-<%= f.check_box :has_svn,
+<span class="checkbox"><%= f.check_box :has_svn,
   display_name: "Use SVN?",
-  help_text: "Whether to use SVN in conjunction with this assignment." %>
+  help_text: "Whether to use SVN in conjunction with this assignment." %></span>
 
-<%= f.check_box :has_scoreboard,
+<span class="checkbox"><%= f.check_box :has_scoreboard,
   display_name: "Enable scoreboard?",
-  help_text: "Should there be a publically-visible scoreboard?" %>
+  help_text: "Should there be a publically-visible scoreboard?" %></span>
+
+<%= f.text_field :group_size,
+  display_name: "Group Size",
+  help_text: "Set the maximum size of groups for this assessment.  If group size is 1, the assessment is solo.  If the size is decreased, groups that are too large will not be broken up.  If the size is set to 1, groups will be saved, but the assessment will be solo." %>
 
 <hr>
 

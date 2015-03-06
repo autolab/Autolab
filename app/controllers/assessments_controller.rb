@@ -1,3 +1,4 @@
+require 'archive.rb'
 require 'csv'
 require 'yaml'
 require 'Statistics.rb'
@@ -18,7 +19,9 @@ class AssessmentsController < ApplicationController
   autolabRequire File.join(Rails.root, 'app/controllers/assessment/autograde.rb')
   include AssessmentAutograde
 
-  before_action :get_assessment, except: [ :index, :new, :create, :installQuiz, :installAssessment, :importAsmtFromTar, :importAssessment, :getCategory, :log_submit, :local_submit ]
+  before_action :get_assessment, except: [ :index, :new, :create, :installQuiz, :installAssessment, 
+                                           :importAsmtFromTar, :importAssessment, 
+                                           :log_submit, :local_submit, :autograde_done ]
 
   # We have to do this here, because the modules don't inherit ApplicationController.
 
@@ -42,18 +45,12 @@ class AssessmentsController < ApplicationController
   action_auth_level :handout, :student
 
   # Autograde
+  action_no_auth    :autograde_done
   action_auth_level :adminAutograde, :instructor
   action_auth_level :regrade, :instructor
+  action_auth_level :regradeAll, :instructor
   action_no_auth    :log_submit
   action_no_auth    :local_submit
-
-  # Partners
-  action_auth_level :partner, :student
-  action_auth_level :setPartner, :student
-  action_auth_level :cancelRequest, :student
-  action_auth_level :adminPartners, :instructor
-  action_auth_level :deletePartner, :instructor
-  action_auth_level :importPartners, :instructor
 
   # SVN
   autolabRequire Rails.root.join('app', 'controllers', 'assessment', 'SVN.rb')
@@ -95,27 +92,63 @@ class AssessmentsController < ApplicationController
 
   action_auth_level :installQuiz, :instructor
   def installQuiz
+    
+    @categories = @course.assessment_categories
+
     if request.post? and params.include?(:quiz)
-      quiz = params[:quiz]
-      quizName = params[:quizName]
-      quizCat = params[:category]
-      params[:assessment] = {name: quizName, category_id: quizCat}
-      params[:quiz] = true
-      params[:quizData] = quiz
-      params[:max_submissions] = params[:attemptsAllowed]
-      create
-      quizData = JSON.parse(quiz)
-      p = Problem.new(:name=>"Quiz",
-              :description=>"",
-              :assessment_id=>@assessment.id,
-              :max_score=>quizData.length,
-              :optional=>false)
-      p.save()
-      return
+
+      begin
+
+          @assessment = Assessment.new
+
+          quizJSON = params[:quiz]
+          quizDisplayName = params[:quizName]
+          quizName = quizDisplayName.downcase.gsub(/[^a-z0-9]/,"")
+          category_name = params[:new_category].blank? ? params[:category]: params[:new_category]
+          
+          # Setup quiz's assessmnet structure
+          setupAssessment(quizName);
+
+          # fill in other fields
+          @assessment.course = @course
+          @assessment.name = quizName
+          @assessment.display_name = quizDisplayName
+          @assessment.handin_directory = "handin"
+          @assessment.handin_filename = "handin.c"
+          @assessment.category_name = category_name
+          @assessment.visible_at = Time.now
+          @assessment.start_at = Time.now
+          @assessment.due_at= Time.now
+          @assessment.grading_deadline = Time.now
+          @assessment.end_at = Time.now
+          @assessment.quiz = true
+          @assessment.quizData = quizJSON
+          @assessment.max_submissions = params.include?(:max_submissions) ? params[:max_submissions] : -1
+          
+
+          @assessment.save!
+
+          quizData = JSON.parse(quizJSON)
+          
+          p = Problem.new(:name=>"Quiz",
+                  :description=>"",
+                  :assessment_id=>@assessment.id,
+                  :max_score=>quizData.length,
+                  :optional=>false)
+
+          p.save()
+
+          redirect_to edit_course_assessment_path(@course, @assessment)
+
+      rescue Exception => e
+        flash[:error] = e.to_s
+        render :template=>"assessments/installQuiz" and return
+      end
+
     else
-      @categories = AssessmentCategory.getList(@course)
-      render :template=>"assessments/installQuiz" and return
+      @assessment = Assessment.new
     end
+
   end
 
   action_auth_level :takeQuiz, :student
@@ -171,7 +204,7 @@ class AssessmentsController < ApplicationController
     @availableAssessments = []
     begin
       Dir.foreach(@assignDir) { |filename|
-        if File.exist?(File.join(@assignDir, filename, "#{filename}.rb")) then
+        if File.exist?(File.join(@assignDir, filename, "#{filename}.yml")) then
           # names must be only lowercase letters and digits
           if filename =~ /[^a-z0-9]/ then
             next
@@ -192,10 +225,6 @@ class AssessmentsController < ApplicationController
  
   action_auth_level :importAsmtFromTar, :instructor
   def importAsmtFromTar
-    # Only handle POST requests.
-    if !request.post? then
-      redirect_to(:action => "installAssessment") and return
-    end
     require 'rubygems/package'
     require 'fileutils'
     tarFile = params['tarFile']
@@ -286,7 +315,8 @@ class AssessmentsController < ApplicationController
       flash[:error] = "Error while extracting tarball to server -- #{e.message}."
       redirect_to(:action => "installAssessment") and return
     end
-    redirect_to(:action => "importAssessment", :assessment_name => asmt_name) and return
+    params[:assessment_name] = asmt_name
+    importAssessment and return
   end
 
   # importAssessment - Imports an existing assessment from local file.
@@ -303,34 +333,24 @@ class AssessmentsController < ApplicationController
       f = File.open(filename, 'r')
       props = YAML.load(f.read)
       f.close
+    else
+      flash[:error] = "YAML file not found or not readable."
+      redirect_to action: :installAssessment and return
     end
     
     # If the properties file defines a category, then use it,
     # creating a new category if necessary. 
-    if props['general'] and props['general']['category'] then
-      requested_cat = props['general']['category']
-      categories = AssessmentCategory.getList(@course)
-      if categories.has_key?(requested_cat) then
-        category_id = categories[requested_cat]
-      else
-        cat = @course.assessment_categories.new(name: requested_cat)
-        if cat.save then
-          category_id = cat.id
-        else
-          flash[:error] = "Cannot create assessment category #{requested_cat}"
-          redirect_to importAssessment_course_assessments_path(course_id: @course.id)
-          return
-        end
-      end
-
-      params[:assessment] = {name: name, category_id: category_id}
-      create and return
-
+    if props['general'] then
+      props['general']['category_name'] ||= props['general']['category'] || 'General'
+      params[:assessment] = { name: name,
+                              display_name: props['general']['display_name'],
+                              category_name: props['general']['category_name'] }
+      create and return # create should handle the redirection
     # Otherwise, ask the user to give us a category before we create the
     # assessment
     else
-      redirect_to getCategory_course_assessments_path(course_id: @course.id, assessment_name: name) 
-      return
+      flash[:error] = "The YAML file must have a top-level 'general' property"
+      redirect_to action: :installAssessment and return
     end
   end
   
@@ -340,84 +360,29 @@ class AssessmentsController < ApplicationController
   def create
     @assessment = Assessment.new(new_assessment_params)
 
-    # Validate the name 
-    assName = @assessment.name.downcase.gsub(/[^a-z0-9]/,"")
-    if assName.blank? then
-      flash[:error] = "Assessment name cannot be blank" 
-      redirect_to action: :installAssessment and return
-    end
-    
-    # Update name in object
-    @assessment.name = assName
-    
-    # Reload modules list
-    @modules = []
-    begin
-      Dir.foreach(@moduleDir) { |filename|
-        if (filename =~ /.*\.rb/) then
-          @modules << filename.gsub(/\.rb/,"")
-        end
-      }
-    rescue Exception 
-    end
-
-    # Modules must be in the module list. 
-    modules = params[:modules]
-    modulesInclude = ""
-    modulesRequire = ""
-    if modules then 
-      for mod in modules.keys do
-        if @modules.include?(mod) then
-          modulesInclude += "\tinclude #{mod}\n"
-          modulesRequire += "require \"modules/#{mod}.rb\"\n"
-        end
+    if @assessment.name.blank? then
+      # Validate the name 
+      assName = @assessment.display_name.downcase.gsub(/[^a-z0-9]/,"")
+      
+      if assName.blank? then
+        flash[:error] = "Assessment name cannot be blank" 
+        redirect_to action: :installAssessment and return
       end
+      
+      # Update name in object
+      @assessment.name = assName
     end
 
     # From here on, if something weird happens, we rollback
-    begin 
-
-      # We need to make the assessment directory before we try to upload
-      # files 
-      assDir = File.join(Rails.root,"courses", @course.name, assName)
-      if !File.directory?(assDir) then
-        Dir.mkdir(assDir)
-      end
-      
-      # Open and read the default assessment config file
-      defaultName = File.join(Rails.root,"lib","__defaultAssessment.rb")
-      defaultConfigFile = File.open(defaultName,"r")
-      defaultConfig = defaultConfigFile.read()
-      defaultConfigFile.close()
-      
-      # Update with this assessment information
-      defaultConfig.gsub!("##NAME_CAMEL##",assName.camelize)
-      defaultConfig.gsub!("##NAME_LOWER##",assName)
-      defaultConfig.gsub!("##MODULES_INCLUDE##",modulesInclude)
-      defaultConfig.gsub!("##MODULES_REQUIRE##",modulesRequire)
-     
-
-      assessmentConfigName = File.join(assDir, "#{assName}.rb") 
-      if !File.file?(assessmentConfigName) then
-        # Write the new config out to the right file. 
-        assessmentConfigFile = File.open(assessmentConfigName, "w")
-        assessmentConfigFile.write(defaultConfig)
-        assessmentConfigFile.close()      
-      end
-
-      # Make the handin directory
-      handinDir = File.join(assDir,"handin")
-      if !File.directory?(handinDir) then
-        Dir.mkdir(handinDir)
-      end
-      
+    begin
+      setupAssessment(@assessment.name)
     rescue Exception => e
-      # Something bad happened. Undo everything       
+      # Something bad happened. Undo everything
       flash[:error] = e.to_s()
       begin
         FileUtils.remove_dir(assDir)
       rescue Exception => e2
-        flash[:error] = "An error occurred (#{e2}} " +
+        flash[:error] += "An error occurred (#{e2}} " +
           " while recovering from a previous error (#{flash[:error]})"
       end
       redirect_to action: :installAssessment and return
@@ -425,7 +390,6 @@ class AssessmentsController < ApplicationController
     
     # fill in other fields
     @assessment.course = @course
-    @assessment.display_name = @assessment.name
     @assessment.handin_directory = "handin"
     @assessment.handin_filename = "handin.c"
     @assessment.visible_at = Time.now
@@ -437,27 +401,11 @@ class AssessmentsController < ApplicationController
     @assessment.quizData = params.include?(:quizData) ? params[:quizData] : ""
     @assessment.max_submissions = params.include?(:max_submissions) ? params[:max_submissions] : -1
     
-    if !@assessment.save
+    begin
+      @assessment.save!
+    rescue Exception => e
       flash[:error] = "Error saving #{@assessment.name}"
       redirect_to action: :installAssessment and return
-    end
-
-    # Stage the config file in assessmentConfig and then reload it
-    name = @assessment.name
-    begin
-      #extend_config_module
-      
-      # Verify that we have a module named correctly. 
-      # assign = name.gsub(/\./, '')
-      # modName = assign + (@course.name).gsub(/[^A-Za-z0-9]/, "")
-      # if (not Module.constants.include?(modName.camelize.to_sym)) then
-      #   raise "There is no module named #{assign.camelize} in" +
-      #     " #{assign}/#{assign}.rb " 
-      # end
-    rescue Exception => e
-      flash[:error] = "Error loading #{name}.rb. This is possibly due to a typo or syntax error in your file. Contact Autolab team if the problem persists.<br />Rails error message: #{e}.".html_safe
-      uninstall(name)
-      redirect_to course_path(@course) and return
     end
       
     # Create the properties file if it doesn't exist
@@ -495,7 +443,7 @@ class AssessmentsController < ApplicationController
       redirect_to course_path(@course) and return
     end
       
-    flash[:success] = "Successfully installed #{name}."
+    flash[:success] = "Successfully installed #{@assessment.name}."
     redirect_to course_path(@course) and return
   end
 
@@ -640,31 +588,18 @@ class AssessmentsController < ApplicationController
     # Before importing, convert the category name to an existing
     # category ID. Create a new category if necessary.
     general = props['general']
-    catName = general['category'] || AssessmentCategory.find_by_id(@assessment.category_id).name
+    catName = general['category'] || @assessment.category_name
+    
     if !catName || catName.blank? then
       catName = "Default"
     end
-    allCats = @course.assessment_categories
-    catId = nil 
-    for cat in allCats do
-      if cat.name == catName then
-        catId = cat.id
-        break
-      end
-    end
-    if catId.nil? then
-      c = @course.assessment_categories.new(name: catName)
-      c.save()
-      # Dan's pretty certain this is unneccessary
-      #c = @course.assessment_categories.where(name: catName).first
-      catId = c.id
-    end
-    general['category_id'] = catId
+
+    general['category_name'] = catName
 
     # Import general properties
     general.delete('category')
     @assessment.update_attributes(general)
-    
+
     # Import problems
     problems = props['problems']
     if Problem.where(:assessment_id => @assessment.id).count == 0 then
@@ -731,158 +666,64 @@ class AssessmentsController < ApplicationController
   action_auth_level :show, :student
   def show
     get_handin
-    extend_config_module()
+    extend_config_module(@assessment, @submission, @cud)
 
     @aud = @assessment.aud_for @cud.id
 
-    @list = {
-      'writeup'=>"View writeup",
-      'handout'=>"Download handout",
-      'history'=>"View handin history"
-    }
-
-    # Add tooltips for the general user options
+    @list = {}
     @list_title = {}
-    @list_title['writeup'] = "View the assessment writeup"
-    @list_title['handout'] = "Download handout materials and starter code"
-    @list_title['history'] = "View your submissions, scores, and feedback from the course staff"
 
     if @assessment.overwrites_method?(:listOptions) then
       list = @list
       @list = @assessment.config_module.listOptions(list)
     end
-
-    if @assessment.disable_handins? then
-      @list.delete("handin")
-    end
  
-    if @cud.instructor? then
-      listAdmin
-    end
-    if @cud.course_assistant? then
-      listCA
-    end
-    
-    listOptions()
-  end
-  
-
-  # This is easy to override, and no conflicts can occur
-  def listOptions
-
-    if @assessment.has_partners then
-      partnersListOptions()
-    end
-  
-    if @assessment.has_scoreboard then
-      scoreboardListOptions()
-    end
-  end
-
-
-  def listAdmin
-  
-    if ! @cud.instructor? then 
-      redirect_to :action=>"index" and return 
+      # Remember the student ID in case the user wants visit the gradesheet
+    if params[:cud_id] then 
+      session["gradeUser#{@assessment.id}"] = params[:cud_id]
     end
 
+    @startTime = Time.now
+    if @cud.instructor? and params[:cud_id] then
+      @effectiveCud = @course.course_user_data.find(params[:cud_id])
+    else
+      @effectiveCud = @cud
+    end
+    @submissions = @assessment.submissions.where(course_user_datum_id: @effectiveCud.id).order("version DESC")
+    @extension = @assessment.extensions.find_by(course_user_datum_id: @effectiveCud.id)
+    @problems = @assessment.problems
 
-    @adminlist = {
-      "viewGradesheet" => "Grade submissions",
-      "releaseAllGrades" => "Release all grades",
-      "withdrawAllGrades" => "Withdraw all grades",
-      "edit" => "Edit assessment",
-      "export"=>"Export assessment",
-      "reload" => "Reload config file",
-      "extensions" => "Manage extensions",
-      "submissions" => "Manage submissions",
-      "attachments" => "Manage assessment attachments",
-      "statistics" => "View statistics",
-      "bulkGrade" => "Bulk import grades",
-      "bulkExport" => "Bulk export grades"
-    }
+    results = @submissions.select("submissions.id AS submission_id",
+        "problems.id AS problem_id",
+        "scores.id AS score_id",
+        "scores.*")
+      .joins("LEFT JOIN problems ON 
+        submissions.assessment_id = problems.assessment_id")
+      .joins("LEFT JOIN scores ON 
+        (submissions.id = scores.submission_id 
+        AND problems.id = scores.problem_id)")
 
-    # Add tooltips for the instructor admin options
-    @admin_title = {}
-    @admin_title['viewGradesheet'] = "View and enter grades on the gradesheet"
-    @admin_title['releaseAllGrades'] = "Make all scores for this assessment visible to students"
-    @admin_title['withdrawAllGrades'] = "Hide all scores for this assessment from students"
-    @admin_title['zero_fill_missing_scores'] = "For each student who has not handed in anything, create a submission and assign a score of zero"
-    @admin_title['edit'] = "View and modify the properties for this assessment, including its problems"
-    @admin_title['export'] = "Export persistent properties that will be imported when you install this assessment in a future term"
-    @admin_title['reload'] = "Reload the assessment config file (provided for backward compatibility with legacy assessments)"
-    @admin_title['extensions'] = "Give extensions to students"
-    @admin_title['submission'] = "Create, view, export, and re-autograde submissions"
-    @admin_title['attachments'] = "Distribute files to your students"
-    @admin_title['statistics'] = "View detailed stats for this assessment"
-    @admin_title['bulkGrade'] = "Upload scores or feedback for multiple students from a CSV file"
-    @admin_title['bulkExport'] = "Export grades (with sub-scores) \nfor all students to a CSV file"
-    
-    if @assessment.has_autograde then
-      autogradeListAdmin
+    # Process them to get into a format we want. 
+    @scores = {}  
+    for result in results do
+      subId = result["submission_id"].to_i
+      unless @scores.has_key?(subId) then
+        @scores[subId]= {}
+      end
+      
+      @scores[subId][result["problem_id"].to_i] = {
+        :score=>result["score"].to_f,
+        :feedback=>result["feedback"],
+        :feedback_file=>result["feedback_file_name"],
+        :score_id=>result["score_id"].to_i,
+        :released=>result["released"].to_i,
+        #score_model: Score.find(result["score_id"].to_i)
+      }
     end
 
-    if @assessment.has_partners then
-      partnersListAdmin
-    end
+    # Check if we should include regrade as a function
+    @autograded = @assessment.has_autograde
 
-    if @assessment.has_scoreboard then
-      scoreboardListAdmin
-    end
-  end
-
-  # autogradeListAdmin - adds the "admin autograding" option to
-  # the assessment admin menu
-  def autogradeListAdmin
-    @adminlist["adminAutograde"] = "Admin autograding"
-    @admin_title["adminAutograde"] = "Modify autograding properties such as the VM image and the timeout value"
-  end
-
-  def partnersListAdmin
-    @adminlist["adminPartners"] = "Admin partners"
-    @admin_title["adminPartners"] = "View and modify the different partner groups"
-  end
-
-  # scoreboardListAdmin - Adds the "admin scoreboard" option to the
-  # assessment admin menu. Only autograded labs have configurable
-  # scoreboards.
-  def scoreboardListAdmin
-    @adminlist["adminScoreboard"] = "Admin scoreboard"
-    @admin_title["adminScoreboard"] = "Configure the appearance of the scoreboard"
-  end
-
-  def listCA
-    if ! @cud.course_assistant? then
-      redirect_to :action=>"index" and return 
-    end
-    @options = 
-      [
-       { 'url' => url_for(:action => 'viewGradesheet', :section => '1', :escape => false), 
-         'name' => "Grade section #{@cud.section} submissions",
-         :title => "View and enter grades for your section. Make sure your instructor has assigned you to a section in your Autolab account"},
-       { 'url' => url_for(:action => 'viewGradesheet'), 
-         'name' => 'Grade all submissions', 
-         :title => "View and enter grades for all sections"},
-       { 'url' => url_for(:action => 'releaseSectionGrades'), 
-         'name' => 'Release section grades',
-         :title => "Make all scores visible to the students in your section. This will work only if your instructor has assigned you to a lecture and section in your Autolab account."},
-       { 'url' => url_for(:action => 'reload'), 
-         'name' => 'Reload config file',
-         :title => "Reload the assessment configuration file (provided for backward compatibility with legacy assessments)"}
-    ]
-    if !@assessment.disable_handins
-      @options << { 'url' => url_for(:action => 'downloadSubmissions'), 
-        'name' => 'Download submissions',
-        :title => "Download all submissions"}
-    end  
-
-  end
-
-  # scoreboardListOptions - Adds the view scoreboard option to the
-  # assessment menu
-  def scoreboardListOptions
-    @list["scoreboard"] = "View scoreboard"
-    @list_title["scoreboard"] = "View the class scoreboard"
   end
 
   action_auth_level :history, :student
@@ -955,6 +796,10 @@ class AssessmentsController < ApplicationController
     end 
     
     @submission = @score.submission
+
+    if Archive.is_archive? @submission.handin_file_path then
+      @files = Archive.get_files @submission.handin_file_path
+    end
   end
 
   action_auth_level :downloadFeedbackFile, :student
@@ -1005,57 +850,9 @@ class AssessmentsController < ApplicationController
 
   action_auth_level :update, :instructor
   def update
-    p = params[:assessment]
+    flash[:success] = "Saved!" if @assessment.update(edit_assessment_params)
 
-    # [ :start_at, :due_at, :end_at ].each do |field|
-      # p[field] = DateTimeInput.hash_to_datetime p[field] if p[field]
-    # end
-
-    flash[:success] = "Saved!" if @assessment.update_attributes(params.require(:assessment).permit!)
-
-    render "edit"
-  end
-
-  def edit_old
-    if not request.patch?
-      # need a dummy variable to render the text boxes 
-      @assessment.late_penalty ||= Penalty.new
-      @assessment.version_penalty ||= Penalty.new
-    end  
-
-    if request.patch?
-      # destroy old penalites if they're now blank 
-      if params[:newAssessment][:late_penalty_attributes][:value].blank?
-        params[:newAssessment][:late_penalty_attributes][:_destroy] = true
-      end
-      if params[:newAssessment][:version_penalty_attributes][:value].blank?
-        params[:newAssessment][:version_penalty_attributes][:_destroy] = true
-      end
-
-      if params[:newAssessment]['category_id'] == "-1" then
-        cat = @course.assessment_categories.new(name: params[:new_category])
-        if cat.save then
-          params[:newAssessment]['category_id']= cat.id
-        else
-          params[:newAssessment]['category_id'] = nil
-        end
-      end
-      if @assessment.update_attributes(params[:newAssessment]) then
-        put_props()
-        flash[:success] = "Success: Assessment updated."
-      else
-        flash[:error] = "There were errors updating the assessment"
-      end
-      redirect_to :controller=>"assessment", :action=>"edit"
-
-    end
-
-    @categoryDump = @course.assessment_categories
-    @categories = {}
-    for cat in @categoryDump do
-      @categories[cat.name] = cat.id
-    end
-    @categories["Create New Category"] = -1
+    redirect_to action: :edit and return
   end
 
 
@@ -1111,11 +908,6 @@ class AssessmentsController < ApplicationController
     redirect_to :controller=>"extension",
       :action=>"index",
       :assessment=>@assessment.id
-  end
-
-  action_auth_level :downloadSubmissions, :course_assistant
-  def downloadSubmissions
-    redirect_to downloadAll_course_assessment_submissions_path(@course, @assessment) and return
   end
 
   def writeup
@@ -1178,7 +970,7 @@ class AssessmentsController < ApplicationController
       flash[:error] = "Could not find that submission."
       redirect_to :controller => :home, :action => :error and return
     end
-    if (@submission.is_archive)
+    if Archive.is_archive? @submission.handin_file_path then
       redirect_to :action => "listArchive",
                   :id => @submission.id,
                   :controller => :submission 
@@ -1193,235 +985,6 @@ class AssessmentsController < ApplicationController
                   :id => @submission.id, 
                   :controller => :submission
     end
-  end
-
-  # getCategory - Determines the category name for a new
-  # assessment. Expects the assessment name to be passed in
-  # params['assessment']
-  action_auth_level :getCategory, :instructor
-  def getCategory
-    if request.post? then
-      name = params[:assessment_name]
-      category_id = params[:category_id]
-      new_category = params[:new_category]
-      if !new_category.blank? then
-        cat = @course.assessment_categories.new(name: new_category)
-        if cat.save then
-          category_id = cat.id
-        else
-          flash[:error] = "Category #{new_category} already exists. Please select from the existing categories."
-          redirect_to getCategory_course_assessments_path(course_id: @course.id)
-          return
-        end
-      end
-      params[:assessment] = {name: name, category_id: category_id}
-      create
-      return
-    end
-
-    # Intialize the list of categories for the form
-    @categories = getCategoryList()
-  end
-
-
-  # method called when student makes
-  # log submission in the database
-  def log_submit
-    
-    feedback_str = request.body.read
-
-    @course = Course.where(:id => params[:course_id]).first
-    @assessment = Assessment.where(:id => params[:id]).first
-    @user = User.where(:email => params[:user]).first
-
-    if !@course  then
-      err = "ERROR: invalid course"
-      render plain: err, status: :bad_request and return
-    end
-
-    if !@user then
-      err = "ERROR: invalid username (#{params[:user]}) for class #{@course.id}"
-      render plain: err, status: :bad_request and return
-    end
-
-    if !@assessment then
-      err = "ERROR: Invalid Assessment (#{params[:id]}) for course #{@course.id}"
-      render plain: err, status: :bad_request and return
-    end
-
-    if !@assessment.allow_unofficial then
-      err = "ERROR: This assessment does not allow Unofficial Submissions"
-      render plain: err, status: :bad_request and return
-    end
-
-    @result = params[:result]
-
-    if !@result then
-      err = "ERROR: No result!"
-      render plain: err, status: :bad_request and return
-    end
-
-    # Everything looks OK, so append the autoresult to the log.txt file for this lab
-    @logger = Logger.new("#{Rails.root}/courses/#{@course.name}/#{@assessment.name}/log.txt")
-    @logger.add(Logger::INFO) { "#{@user.email},0,#{@result}" }
-
-    # Load up the lab.rb file
-    modName = @assessment.name + (@course.name).gsub(/[^A-Za-z0-9]/,"")
-    require("#{Rails.root}/assessmentConfig/#{@course.name}-#{@assessment.name}.rb")
-    eval("extend #{modName.camelcase}")
-
-    begin
-      # Call the parseAutoresult function defined in the lab.rb file.  If
-      # the list of scores it returns is empty, then we the lab developer is
-      # asking us not to create an unofficial submission in the
-      # database. Simply return a successful status string to the client and
-      # exit.
-      scores = parseAutoresult(@result,false)
-
-      if scores.keys.length == 0 then 
-        render plain: "OK", status: 200 and return
-      end
-
-      # Try to find an existing submission (always version 0). 
-      submission = @assessment.submissions.where(:version=>0,:user_id=>@user.id).first
-      if !submission then
-        submission = @assessment.submissions.new(:version=>0,
-              :autoresult=>@result,
-              :user_id=>@user.id,
-              :submitted_by_id=>0)
-        submission.save!()
-      else
-        #update this one
-        submission.autoresult= @result
-        submission.created_at = Time.now()
-        submission.save!()
-      end
-
-
-      # Update the scores in the db's unofficial submission using the list
-      # returned by the parseAutoresult function
-      for key in scores.keys do
-        problem = @assessment.problems.where(:name => key).first
-        score = submission.scores.where(:problem_id => problem.id).first
-        if !score then 
-          score = submission.scores.new(:problem_id=>problem.id)
-        end
-        score.score = scores[key]
-        score.released = true
-        score.grader_id= 0
-        score.save!()
-      end
-    rescue Exception  => e
-      print e
-    end
-
-
-    render plain: "OK", status: 200 and return
-
-  end
-
-
-  # method called when student makes
-  # unofficial submission in the database
-  def local_submit
-    
-    @course = Course.where(:id => params[:course_id]).first
-    @assessment = Assessment.where(:id => params[:id]).first
-    @user = User.where(:email => params[:user]).first
-
-    if !@course  then
-      err = "ERROR: invalid course"
-      render plain: err, status: :bad_request and return
-    end
-
-    if ! @user then
-      user = params[:user]
-      err = "ERROR: invalid username (#{user}) for class #{@course.name}"
-      render plain: err, status: :bad_request and return
-    end
-
-    if !@assessment then
-      err = "ERROR: Invalid Assessment (#{assessment}) for course #{@course.id}"
-      render plain: err, status: :bad_request and return
-    end
-
-    if @assessment.remote_handin_path.nil? then
-      err = "ERROR: Remote handin directory is not defined by the instructor."
-      render plain: err, status: :bad_request and return
-    end
-
-
-    personal_directory = @user.email + "_remote_handin_" +  @assessment.name
-    remoteHandinDir = File.join(@assessment.remote_handin_path, personal_directory)
-
-    if (params[:submit]) then
-      #They've copied their handin over, lets go grab it. 
-      begin
-
-        handinFile = params[:submit]
-        @cud = CourseUserDatum.find_cud_for_course(@course, @user.id)
-        @submission = Submission.create(:assessment_id=>@assessment.id,
-          :course_user_datum_id => @cud.id);
-        upload = {'local_submit_file'=>File.join(remoteHandinDir, handinFile)}
-
-        @submission.saveFile(upload)
-
-        if @assessment.has_autograde then
-          autogradeAfterHandin @submission
-        elsif @assessment.has_partners then
-          partnersAfterHandin @submission
-        end
-
-      rescue Exception  => e
-        print e
-        COURSE_LOGGER.log(e.to_s)
-      end
-
-      if(@submission) then
-        puts "Submission received, ID##{@submission.id}"
-      else
-        err = "There was an error saving your submission. Please contact your course staff"
-        render plain: err, status: :bad_request and return
-      end
-
-      numSubmissions = Submission.where(:course_user_datum=>@cud.id, :assessment_id=>@assessment.id).count
-
-      if @assessment.max_submissions != -1 then
-        if numSubmissions >= @assessment.max_submissions then
-          render plain: " - You have 0 submissions left." and return
-        else
-          numSubmissions = @assessment.max_submissions - numSubmissions
-          render plain: " - You have #{numSubmissions} submissions left" and return
-        end
-      end
-    
-      render plain: "Successfully submitted" and return
-    else
-      
-      #Create a handin directory for them. 
-
-      # The handin Directory really should not exist, as this script deletes it
-      # when it's done.  However, if it's there, we'll try to remove an empty
-      # folder, else fail w/ error message. 
-      if (Dir.exist?(remoteHandinDir)) then
-        begin
-          FileUtils.rm_rf(remoteHandinDir)
-        rescue SystemCallError 
-          render plain: "WARNING: could not clear previous handin directory, please" and return
-        end
-      end
-
-      begin
-        Dir.mkdir(remoteHandinDir)
-      rescue SystemCallError
-        puts "ERROR: Could not create handin directory. Please contact
-        autolab-dev@andrew.cmu.edu with this error" 
-      end
-
-      system("fs sa #{remoteHandinDir} #{@user.email} rlidw")
-    end
-
-    render plain: remoteHandinDir and return
   end
 
   #
@@ -1497,7 +1060,7 @@ class AssessmentsController < ApplicationController
   # scoreboard - This function draws the scoreboard for an assessment.
   #
   def scoreboard
-    extend_config_module
+    extend_config_module(@assessment, nil, @cud)
     @students = CourseUserDatum.joins("INNER JOIN submissions ON course_user_datum.id=submissions.course_user_datum_id")
                     .where("submissions.assessment_id=?",@assessment.id)
                     .group("users.id")
@@ -1599,7 +1162,13 @@ class AssessmentsController < ApplicationController
     
     @sortedGrades = @grades.values.sort {|a,b|
       begin
-        scoreboardOrderSubmissions(a,b)
+  
+        if @assessment.overwrites_method?(:scoreboardOrderSubmissions) then
+          @assessment.config_module.scoreboardOrderSubmissions(a,b)
+        else
+          scoreboardOrderSubmissions(a,b)
+        end
+
       rescue Exception => e
         if @cud.instructor? then
           @errorMessage = "An error occurred while calling "+
@@ -1621,6 +1190,41 @@ class AssessmentsController < ApplicationController
   end
 
 protected
+
+  # Setup assessment's directory and create assessment config file as well as
+  # handin directory
+  def setupAssessment(assName)
+    # We need to make the assessment directory before we try to upload
+    # files
+    assDir = File.join(Rails.root,"courses", @course.name, assName)
+    if !File.directory?(assDir) then
+      Dir.mkdir(assDir)
+    end
+
+    # Open and read the default assessment config file
+    defaultName = File.join(Rails.root,"lib","__defaultAssessment.rb")
+    defaultConfigFile = File.open(defaultName,"r")
+    defaultConfig = defaultConfigFile.read()
+    defaultConfigFile.close()
+
+    # Update with this assessment information
+    defaultConfig.gsub!("##NAME_CAMEL##",assName.camelize)
+    defaultConfig.gsub!("##NAME_LOWER##",assName)
+
+    assessmentConfigName = File.join(assDir, "#{assName}.rb")
+    if !File.file?(assessmentConfigName) then
+      # Write the new config out to the right file.
+      assessmentConfigFile = File.open(assessmentConfigName, "w")
+      assessmentConfigFile.write(defaultConfig)
+      assessmentConfigFile.close()
+    end
+
+    # Make the handin directory
+    handinDir = File.join(assDir,"handin")
+    if !File.directory?(handinDir) then
+      Dir.mkdir(handinDir)
+    end
+  end
 
   # We only do this so that it can be overwritten by modules
   def updateScore(user, score)
@@ -1669,8 +1273,7 @@ protected
     props["general"]["max_size"] = 2 if !props["general"]["max_size"]
 
     # Category name
-    c = AssessmentCategory.find_by_id(@assessment.category_id)
-    props["general"]["category"] = c.name
+    props["general"]["category"] = @assessment.category_name
     
     # Array of problems (an array because order matters)
     props["problems"] = Array.new
@@ -1980,91 +1583,18 @@ protected
   end
 
   def get_assessment
-    @assessment = Assessment.find params[:assessment_id] || params[:id]
-    @course = @assessment.course
-    @breadcrumbs << (view_context.current_assessment_link)
-
-    if ((!@cud.user.administrator?) && (@cud.course_id != @assessment.course_id)) then 
-      flash[:error] = "You do not have permission to access this submission"
-      redirect_to home_error_path and return
-    end
-
-    unless @assessment
-      flash[:error] = "Sorry! we couldn't load the assessment \"#{assign}\""
-      redirect_to home_error_path and return
-    end
-  end
-
-  def extend_config_module
     begin
-      require @assessment.config_file_path
-      assessmentInitialize @assessment.name
-      
-
-      # casted to local variable so that 
-      # they can be passed into `module_eval`
-      assessment = @assessment
-      methods = @assessment.config_module.instance_methods
-      assignName = @assessment.name
-      submission = @submission
-
-      course = @course
-      cud = @cud
-      req_hostname = request.host;
-      req_port = request.port;
-
-      @assessment.config_module.module_eval do
-        
-        # we cast these values into module variables
-        # so that they can be accessible inside module
-        # methods
-        @cud = cud
-        @course = course
-        @assessment = course.assessments.where(:name=>assignName).first
-        @hostname = req_hostname
-        @port = req_port
-        @submission = submission
-
-        if ! @assessment then
-          raise "Assessment #{assignName} does not exist!"
-        end
-
-        if @assessment == nil then
-          flash[:error] = "Error: Invalid assessment"
-          redirect_to home_error_path and return
-        end
-
-        @name = @assessment.name
-        @description = @assessment.description
-        @start_at = @assessment.start_at
-        @due_at = @assessment.due_at
-        @end_at = @assessment.end_at
-        @visible_at = @assessment.visible_at
-        @id = @assessment.id
-
-        # we iterate over all the methods
-        # and convert them into `module methods`
-        # this makes them available without mixing in the module
-        # creating an instance of it.
-        # http://www.ruby-doc.org/core-2.1.3/Module.html#method-i-instance_method
-        methods.each { |nonmodule_func| 
-          print nonmodule_func
-          module_function(nonmodule_func)
-          public nonmodule_func
-        }
-      end
-
-    rescue Exception => @error
-      # printing the error so that the bugs are traceable
-      puts @error
-      COURSE_LOGGER.log(@error)
-
-      if @cud and @cud.has_auth_level? :instructor
-        redirect_to action: :reload and return
-      else
-        redirect_to home_error_path and return
-       end
+      @assessment = @course.assessments.find(params[:assessment_id] || params[:id])
+    rescue
+      flash[:error] = "The assessment was not found for this course."
+      redirect_to action: :index and return
     end
+    
+    if @cud.student? && !@assessment.released? then
+      redirect_to action: :index and return
+    end
+      
+    @breadcrumbs << (view_context.current_assessment_link)
   end
 
   def releaseMatchingGrades
@@ -2112,16 +1642,19 @@ protected
   private
   
     def new_assessment_params
-      params.require(:assessment).permit(:name, :category_id)
+      ass = params.require(:assessment)
+      unless params[:new_category].blank? then
+        ass[:category_name] = params[:new_category]
+      end
+      ass.permit(:name, :display_name, :category_name, :has_autograde, :has_svn, :has_scoreboard, :group_size)
     end
 
-    # getCategoryList -  Helper that returns a hash of category->id pairs
-    def getCategoryList
-      categoryDump = @course.assessment_categories
-      categories = {}
-      for cat in categoryDump do
-        categories[cat.name] = cat.id
+    def edit_assessment_params
+      ass = params.require(:assessment)
+      unless params[:new_category].blank? then
+        ass[:category_name] = params[:new_category]
       end
-      return categories
+      ass.permit!
     end
+
 end

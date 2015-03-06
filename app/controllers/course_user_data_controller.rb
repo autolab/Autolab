@@ -55,7 +55,7 @@ class CourseUserDataController < ApplicationController
     if @newCUD.save then
       flash[:success] = "Success: added user #{email} in #{@course.display_name}"
       if @cud.user.administrator?
-        redirect_to users_course_admin_path and return
+        redirect_to course_users_path and return
       else
         redirect_to action: 'new' and return
       end
@@ -142,7 +142,7 @@ class CourseUserDataController < ApplicationController
     if @destroyCUD and @destroyCUD != @cud and params[:yes1] and params[:yes2] and params[:yes3] then
       @destroyCUD.destroy() #awwww!!!
     end
-    redirect_to users_course_admin_path(@course) and return
+    redirect_to course_users_path(@course) and return
   end
 
   # Non-RESTful paths below

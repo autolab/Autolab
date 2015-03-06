@@ -72,6 +72,12 @@ module ApplicationHelper
             :tabindex => -1, :target => "_blank"
   end
 
+
+  def download_file_url(submission)
+    download_course_assessment_submission_path(@course, @assessment, submission)
+  end
+
+
   def view_syntax_highlighted_source(submission, title)
     if submission.is_syntax
       link_to title, view_course_assessment_submission_path(@course, @assessment, submission),
@@ -79,8 +85,14 @@ module ApplicationHelper
     end
   end
 
+  def view_syntax_highlighted_source_url(submission)
+    if submission.is_syntax
+      view_course_assessment_submission_path(@course, @assessment, submission)
+    end
+  end
+
   def list_archive_files(submission, title)
-    if submission.is_archive
+    if Archive.is_archive? submission.handin_file_path then
       link_to title, list_archive_course_assessment_submission_path(@course, @assessment, submission),
         :tabindex => -1, :target => "_blank"
     end
@@ -127,11 +139,8 @@ module ApplicationHelper
 
     fs = computed_score(history_url(@_cud, asmt), false) { aud.final_score @cud }
     raise "FATAL: can't be nil" unless fs
-    if @cud.student?
-      link = link_to fs, history_url(@_cud, asmt)
-    else
-      link = link_to fs, :assessment => asmt.name, :action => :student
-    end
+
+    link = link_to fs, history_url(@_cud, asmt)
 
     max_score = computed_score { asmt.max_score }
     max_score_s = '<span class="max_score">' + max_score.to_s + '</span>'
@@ -170,13 +179,13 @@ module ApplicationHelper
     when 'backbone-relational'
       javascript_include_tag "#{cloudflare}/backbone-relational/#{version}/backbone-relational.min.js"
     when 'jquery.dataTables'
-      javascript_include_tag "#{cloudflare}/datatables/#{version}/jquery.dataTables.min.js"
+      javascript_include_tag "#{cloudflare}/datatables/#{version}/js/jquery.dataTables.min.js"
     when 'handlebars'
       javascript_include_tag "#{cloudflare}/handlebars.js/#{version}/handlebars.min.js"
     when 'bootstrap'
       javascript_include_tag "#{cloudflare}/twitter-bootstrap/#{version}/js/bootstrap.js"
-    when 'bootstrap-tooltip'
-      javascript_include_tag "#{cloudflare}/twitter-bootstrap/#{version}/js/bootstrap-tooltip.js"
+    when 'lodash'
+      javascript_include_tag "#{cloudflare}/lodash.js/#{version}/lodash.min.js"
     end
   end
 

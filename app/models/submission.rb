@@ -113,13 +113,12 @@ class Submission < ActiveRecord::Base
       self.mime_type = 'application/x-tgz'
     end
 
-    self.save
+    self.save!
   end
 
   def handin_file_path
     return nil unless filename
-    return File.join(assessment.handin_directory_path, 
-                     filename)
+    return File.join(assessment.handin_directory_path, filename)
   end
 
   def handinFile()
@@ -201,50 +200,6 @@ class Submission < ActiveRecord::Base
     }
 
     return scores
-  end
-
-  # not the most efficient way of doing this
-  def get_filename_in_archive_at(position)
-    require 'rubygems'
-    require 'rubygems/package'
-    require 'zlib'
-    require 'zip'
-
-    filename = self.handin_file_path
-    archive_type = IO.popen(["file", "--brief", "--mime-type", filename],
-                            in: :close, err: :close) { |io| io.read.chomp }
-    # Extract archive by type
-    if archive_type.include? "tar" then
-      f = File.new(filename)
-      archive_extract = Gem::Package::TarReader.new(f)
-      archive_extract.rewind # The extract has to be rewinded after every iteration
-    elsif archive_type.include? "gzip" then
-      archive_extract = Gem::Package::TarReader.new(Zlib::GzipReader.open filename)
-      archive_extract.rewind
-    elsif archive_type.include? "zip" then
-      archive_extract = Zip::File.open(filename)
-    else
-      return self.filename # well, we tried
-    end
-
-    # Iterate through archive until file position
-    i = 0
-    archive_extract.each do |entry|
-      # Obtain path name depending for tar/zip entry
-      pathname = entry.respond_to?(:full_name) ? entry.full_name : entry.name
-      # Skip Mac metafiles
-      next if pathname.include? "__MACOSX" or
-          pathname.include? ".DS_Store" or
-          pathname.include? ".metadata"
-
-      if i == position then
-        return pathname
-      end
-
-      i += 1
-    end
-
-    return nil
   end
 
   def problems_to_scores
@@ -334,19 +289,16 @@ class Submission < ActiveRecord::Base
     self.detected_mime_type = file_output[/^(\w)+\/([\w-])+/]
   end
 
-  def is_archive
-    archives = %w(application/x-tar application/x-gzip application/gzip
-                  application/zip application/x-zip application/x-zip-compressed)
-    archives.include?(detected_mime_type)
-  end
-
   def is_syntax
     return false if (self.filename.nil?)
 
     ext = File.extname(self.filename)     # get extension
     if ext then ext = ext.gsub(/\./, "") end            # remove dot
-    return Simplabs::Highlight.get_language_sym(ext) || (ext == "txt") || 
-           (ext == "go") || (ext == "clac") # see commit 350d827
+    return true
+  end
+
+  def is_latest
+    return (aud.latest_submission_id == self.id)
   end
 
   # override as_json to include the total with a paramter

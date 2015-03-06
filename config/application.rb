@@ -85,5 +85,8 @@ module Autolab3
 
     # Allow embedding as iFrame on external sites
     config.action_dispatch.default_headers.merge!({'X-Frame-Options' => 'ALLOWALL'})
+
+    # Allow MOSS to work with as many files as it wants
+    Rack::Utils.multipart_part_limit = 0
   end
 end
