@@ -1,8 +1,5 @@
 <%# For navigation breadcrumbs %>
-<% @title = 'Edit Problem' %>
-<%# Slight hack to get navigation bread crumbs to work %>
-<%# (since @problem is nil until created with a POST) %>
-<% @creating_problem = true %>
+<% @breadcrumbs << "New Problem" %>
 
 <% content_for :stylesheets do %>
   <%= stylesheet_link_tag "problems" %>

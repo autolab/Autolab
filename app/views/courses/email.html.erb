@@ -1,4 +1,4 @@
-<% @title = "Send a Bulk Email to " + @course.display_name %>
+<% @breadcrumbs << "Send a Bulk Email to " + @course.display_name %>
 
 <% if @errors then %>
   <font color=red><%=@errors %></font>

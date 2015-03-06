@@ -6,6 +6,7 @@ class AssessmentUserDataController < ApplicationController
   
   action_auth_level :edit, :instructor
   def edit
+    @breadcrumbs << (view_context.link_to "Gradesheet", [:viewGradesheet, @course, @assessment])
   end
 
   action_auth_level :update, :instructor
