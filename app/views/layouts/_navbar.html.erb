@@ -85,8 +85,10 @@
   <div class="sub-navigation">
     <span class="left-nav">
       <% @breadcrumbs.each do |b| %>
-        <% # based on the assumption that any links will start with <, this only wraps text breadcrumbs %>
-        <span class="item"><%= if b[0] == "<" then b else raw("<span class='title'>#{b}</span>") end %></span>
+        <span class="item"><%= b %></span>
+      <% end %>
+      <% if @title then %>
+        <span class="item"><span class="title"><%= @title %></span></span>
       <% end %>
     </span>
   </div>

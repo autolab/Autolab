@@ -228,8 +228,9 @@ class SubmissionsController < ApplicationController
         flash[:error] = "Could not read archive."
         redirect_to controller: :home, action: :error and return false
       end
-
+      
       @displayFilename = pathname
+      @breadcrumbs << (view_context.link_to "View Archive", [:list_archive, @course, @assessment, @submission])
     else
       # redirect on archives
       if Archive.is_archive?(@submission.handin_file_path) then
