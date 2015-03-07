@@ -12,7 +12,9 @@
 <tr>
   <th>VM image</th>
   <td><%= f.text_field :autograde_image %></td>
-  <td class=smallText> VM image for autograding (e.g., "<kbd>rhel.img</kbd>"). Here is the <a href="/vmlist.html">list of VMs used at CMU</a></td>
+  <td class=smallText> VM image for autograding (e.g., "<kbd>rhel.img</kbd>"). Here is the
+    <%= link_to "list of VMs used at CMU", [:home, :vmlist] %>
+  </td>
 </tr>
 
 <tr>

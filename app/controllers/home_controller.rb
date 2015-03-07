@@ -53,4 +53,24 @@ class HomeController < ApplicationController
     # --- empty ---
     # This route just renders the home#contact page, nothing special
   end
+  
+  def vmlist
+    @images = {}
+    AutogradingSetup.all.each do |a|
+      image = a.autograde_image
+      assessment = a.assessment
+      course = assessment.course
+      if (course.temporal_status == :current) then
+        @images[image] ||= Set.new
+        @images[image].add(course.name)
+      end
+    end
+    @images.each do |image, courseSet|
+      res = []
+      courseSet.each do |c|
+        res << c
+      end
+      @images[image] = res.join(", ")
+    end
+  end
 end
