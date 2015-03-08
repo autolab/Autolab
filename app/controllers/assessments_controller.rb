@@ -7,16 +7,16 @@ require 'date_time_input'
 class AssessmentsController < ApplicationController
   include ActiveSupport::Callbacks
 
-  autolabRequire File.join(Rails.root, 'app/controllers/assessment/handin.rb')
+  autolabRequire Rails.root.join("app", "controllers", "assessment", "handin.rb")
   include AssessmentHandin
 
-  autolabRequire File.join(Rails.root, 'app/controllers/assessment/handout.rb')
+  autolabRequire Rails.root.join("app", "controllers", "assessment", "handout.rb")
   include AssessmentHandout
 
-  autolabRequire File.join(Rails.root, 'app/controllers/assessment/grading.rb')
+  autolabRequire Rails.root.join("app", "controllers", "assessment", "grading.rb")
   include AssessmentGrading
 
-  autolabRequire File.join(Rails.root, 'app/controllers/assessment/autograde.rb')
+  autolabRequire Rails.root.join("app", "controllers", "assessment", "autograde.rb")
   include AssessmentAutograde
 
   before_action :get_assessment, except: [ :index, :new, :create, :installQuiz, :installAssessment, 
@@ -850,7 +850,7 @@ class AssessmentsController < ApplicationController
 
   action_auth_level :update, :instructor
   def update
-    flash[:success] = "Saved!" if @assessment.update(edit_assessment_params)
+    flash[:success] = "Saved!" if @assessment.update!(edit_assessment_params)
 
     redirect_to action: :edit and return
   end
