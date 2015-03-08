@@ -50,7 +50,7 @@
 <tr class="<%= aud_special_grade_type?(s.aud) && @cud.instructor? ? "special_submission" : "" %>">
   <td class="enumerator"></td>
   <td class="id" data-submission-id="<%= s.id.to_s %>">
-        <a tabindex="-1" class="email"><%= s.course_user_datum.email %></a>
+        <a tabindex="-1" class="email" href="#"><%= s.course_user_datum.email %></a>
         <% if s.filename %>
           <%=raw(view_file(s, go_img(-1), go_img(-1), go_img(-1))) %>
         <% end %>
