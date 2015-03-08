@@ -104,7 +104,7 @@ class CourseUserDatum < ActiveRecord::Base
   end
 
   def student?
-    !(instructor? || course_assistant? || user.administrator?)
+    !(instructor? || course_assistant?)
   end
 
   def CA_of?(student)
