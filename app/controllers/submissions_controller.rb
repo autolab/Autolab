@@ -1,4 +1,5 @@
 require 'archive.rb'
+require 'pdf.rb'
 
 class SubmissionsController < ApplicationController
 
@@ -239,6 +240,11 @@ class SubmissionsController < ApplicationController
       @displayFilename = @submission.filename
     end
     return unless file
+    
+    filename = @submission.handin_file_path
+    if PDF.is_pdf?(file) then
+      send_data(file, type: "application/pdf", disposition: "inline", filename: File.basename(filename)) and return
+    end
     
     begin
       @data = @submission.annotated_file(file, @filename, params[:header_position])
