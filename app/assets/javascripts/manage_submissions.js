@@ -100,9 +100,14 @@ jQuery(function($) {
   }
 
   $('#submissions').on("click", ".submission-row", function(e) {
-    var submissionId = parseInt(e.currentTarget.id.replace("row-", ""), 10);
-    toggleRow(submissionId);
-    return false;
+    // Don't toggle row if we originally clicked on an anchor tag
+    if(e.target.localName != 'a') {
+      // e.target: tightest element that triggered the event
+      // e.currentTarget: element the event has bubbled up to currently
+      var submissionId = parseInt(e.currentTarget.id.replace("row-", ""), 10);
+      toggleRow(submissionId);
+      return false;
+    }
   });
 
   $('#submissions').on("click", ".cbox", function(e) {
