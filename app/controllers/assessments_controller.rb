@@ -19,7 +19,8 @@ class AssessmentsController < ApplicationController
   autolabRequire Rails.root.join("app", "controllers", "assessment", "autograde.rb")
   include AssessmentAutograde
 
-  before_action :get_assessment, except: [ :index, :new, :create, :installQuiz, :installAssessment, 
+  # this is inherited from ApplicationController
+  before_action :set_assessment, except: [ :index, :new, :create, :installQuiz, :installAssessment, 
                                            :importAsmtFromTar, :importAssessment, 
                                            :log_submit, :local_submit, :autograde_done ]
 
@@ -991,19 +992,19 @@ class AssessmentsController < ApplicationController
   # adminAutograde - edit the autograding properties for this assessment
   #
   def adminAutograde
-    # POST request. Try to save the updated fields. 
     if request.post? then
+      # POST request. Try to save the updated fields. 
       @autograde_prop = AutogradingSetup.where(:assessment_id => @assessment.id).first      
       if (@autograde_prop.update_attributes(autograde_prop_params)) then
         flash[:success] = "Success: Updated autograding properties."
-        redirect_to :action=>"adminAutograde" and return
       else
         flash[:error] = "Errors prevented the autograding properties from being saved."
       end
-
+        
+      redirect_to action: :adminAutograde and return
+    else
       # GET request. If an autograding properties record doesn't
       # exist for this assessment, then create default one.
-    else
       @autograde_prop = AutogradingSetup.where(:assessment_id => @assessment.id).first
       if !@autograde_prop then
         @autograde_prop = AutogradingSetup.new
@@ -1013,11 +1014,7 @@ class AssessmentsController < ApplicationController
         @autograde_prop.release_score = true
         @autograde_prop.save!
       end
-
     end
-
-    # Regardless if GET or POST, show the page
-    render(:file=>"lib/modules/views/adminAutograde.html.erb", :layout=>true)
   end
 
   # adminScoreboard - Edit the scoreboard properties for this assessment
@@ -1580,19 +1577,6 @@ protected
     end
     
     return props
-  end
-
-  def get_assessment
-    begin
-      @assessment = @course.assessments.find(params[:assessment_id] || params[:id])
-    rescue
-      flash[:error] = "The assessment was not found for this course."
-      redirect_to action: :index and return
-    end
-
-    if @cud.student? && !@assessment.released? then
-      redirect_to action: :index and return
-    end
   end
 
   def releaseMatchingGrades

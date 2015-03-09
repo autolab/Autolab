@@ -80,33 +80,16 @@
   </div>
 
 </div>
-<% if @course %>
-<div class="sub-navigation">
-  <span class="left-nav">
-    <span class="item">
-      <%= link_to @course.display_name, course_path(@course), :id=>"courseTitle" %>
-      <% if @course.disabled? %> (Course Disabled)<% end %>
-    </span>
-    <% if @assessment and @assessment.id %>
-    <span class="item">
-      <span class="arrow">»</span>
-      <%= current_assessment_link %>
-    </span>
-    <% end %>
-    <% if @problem or @creating_problem %>
-    <span class="item">
-      <span class="arrow">»</span>
-        <%# When we're editing a problem, go back to the assessment's problems %>
-        <%= link_to "Edit Assessment", edit_course_assessment_path(@course, @assessment) + "/problems" %>
-    </span>
-    <% end %>
-    <% if @title %>
-    <span class="item">
-      <span class="arrow">»</span>
-      <span class="title"><%= @title %></span>
-    </span>
-    <% end %>
-  </span>
 
-</div>
+<% unless @breadcrumbs.blank? then %>
+  <div class="sub-navigation">
+    <span class="left-nav">
+      <% @breadcrumbs.each do |b| %>
+        <span class="item"><%= b %></span>
+      <% end %>
+      <% if @title then %>
+        <span class="item"><span class="title"><%= @title %></span></span>
+      <% end %>
+    </span>
+  </div>
 <% end %>

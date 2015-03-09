@@ -6,8 +6,9 @@
 # all restricted to those types.
 class AnnotationsController < ApplicationController
   
-  before_action :load_ass_sub
-  before_action :load_annotation, except: [:create]
+  before_action :set_assessment
+  before_action :set_submission
+  before_action :set_annotation, except: [:create]
   
   respond_to :json
 
@@ -35,22 +36,33 @@ class AnnotationsController < ApplicationController
     respond_with(@course, @assessment, @submission, @annotation)
   end
 
-private
+  private
 
-  def annotation_params
-    params[:annotation].delete(:id)
-    params[:annotation].delete(:submission_id)
-    params[:annotation].delete(:created_at)
-    params[:annotation].delete(:updated_at)
-    params.require(:annotation).permit(:filename, :position, :line, :text, :submitted_by, :comment, :value, :problem_id)
-  end
+    def annotation_params
+      params[:annotation].delete(:id)
+      params[:annotation].delete(:submission_id)
+      params[:annotation].delete(:created_at)
+      params[:annotation].delete(:updated_at)
+      params.require(:annotation).permit(:filename, :position, :line, :text, :submitted_by, :comment, :value, :problem_id)
+    end
 
-  def load_ass_sub
-    @assessment = @course.assessments.find(params[:assessment_id])
-    @submission = @assessment.submissions.find(params[:submission_id])
-  end
+    def set_submission
+      @submission = @assessment.submissions.find(params[:submission_id])
     
-  def load_annotation
-    @annotation = @submission.annotations.find(params[:id])
-  end
+      unless (@cud.instructor or @cud.course_assistant or @submission.course_user_datum_id == @cud.id) then
+        flash[:error] = "You do not have permission to access this submission."
+        redirect_to controller: :home, action: :error and return false
+      end
+
+      if (@assessment.exam? or @course.exam_in_progress?) and not (@cud.instructor or @cud.course_assistant) then
+        flash[:error] = "You cannot view this submission.
+                Either an exam is in progress or this is an exam submission."
+        redirect_to controller: :home, action: :error and return false
+      end
+      return true
+    end
+
+    def set_annotation
+      @annotation = @submission.annotations.find(params[:id])
+    end
 end

@@ -32,7 +32,7 @@ Autolab3::Application.routes.draw do
     resources :attachments
 
     resources :assessments, except: :update do
-      resources :assessment_user_data, only: [:show, :edit, :update]
+      resources :assessment_user_data, only: [:edit, :update]
       resources :attachments
       resources :extensions, only: [:index, :create, :destroy]
       resources :groups, except: :edit do

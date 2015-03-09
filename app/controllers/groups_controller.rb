@@ -1,5 +1,8 @@
 class GroupsController < ApplicationController
+  
+  # inherited from ApplicationController
   before_action :set_assessment
+  before_action :check_assessment_for_groups
   before_action :set_group, only: [:show, :edit, :update, :destroy, :add, :join, :leave]
 
   respond_to :html
@@ -268,15 +271,11 @@ class GroupsController < ApplicationController
   end
 
   private
-    def set_assessment
-      @assessment = @course.assessments.find(params[:assessment_id])
+    
+    def check_assessment_for_groups
       unless @assessment.has_groups? then
         flash[:error] = "This is a solo assessment."
         redirect_to [@course, @assessment] and return
-      end
-      
-      if @cud.student? && !@assessment.released? then
-        redirect_to [@course, :assessments] and return
       end
     end
 
