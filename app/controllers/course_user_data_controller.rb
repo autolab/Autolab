@@ -1,5 +1,7 @@
 class CourseUserDataController < ApplicationController
 
+  before_action :add_users_breadcrumb
+  
   action_auth_level :index, :student
   def index
     @requestedUser = @cud
@@ -201,6 +203,12 @@ class CourseUserDataController < ApplicationController
   end
 
 private
+      
+  def add_users_breadcrumb
+    if @cud.instructor then
+      @breadcrumbs << (view_context.link_to "Users", [@course, :users])
+    end
+  end
 
   def cud_params
     if @cud.administrator? then

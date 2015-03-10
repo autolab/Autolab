@@ -208,9 +208,11 @@ div.main-header img {
   color: rgb(103, 100, 100);
 }
 
-.sub-navigation .arrow {
+.sub-navigation .item + .item:before, /* IE8 *sigh* */
+.sub-navigation .item + .item::before {
+  color: #999696;
+  content: "»";
   font-size: 24px;
-  color: rgb(153, 150, 150);
 }
 
 @media (max-width: 768px) {

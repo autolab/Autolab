@@ -9,6 +9,7 @@ Autolab3::Application.routes.draw do
     match 'developer_login', via: [ :post, :get ]
     get 'error'
     get 'no_user'
+    get 'vmlist'
   end
 
   resource :admin do
@@ -31,7 +32,7 @@ Autolab3::Application.routes.draw do
     resources :attachments
 
     resources :assessments, except: :update do
-      resources :assessment_user_data, only: [:show, :edit, :update]
+      resources :assessment_user_data, only: [:edit, :update]
       resources :attachments
       resources :extensions, only: [:index, :create, :destroy]
       resources :groups, except: :edit do
@@ -66,7 +67,6 @@ Autolab3::Application.routes.draw do
         match 'bulkGrade', via: [:get, :post]
         post 'bulkGrade_complete'
         get 'bulkExport'
-        get 'downloadSubmissions'
         get 'releaseAllGrades'
         get 'releaseSectionGrades'
         get 'viewFeedback'

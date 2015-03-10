@@ -12,6 +12,7 @@ class ApplicationController < ActionController::Base
   before_action :authorize_user_for_course, except: [:action_no_auth ]
   before_action :authenticate_for_action
   before_action :update_persistent_announcements
+  before_action :set_breadcrumbs
 
   # this is where Error Handling is configured. this routes exceptions to
   # the error handler in the HomeController, unless we're in development mode
@@ -218,6 +219,25 @@ protected
       redirect_to edit_course_course_user_datum_path(id: @cud.id, course_id: @cud.course.id)
     end
   end
+  
+  ##
+  # this loads the current assessment.  It's up to sub-controllers to call this
+  # as a before_action when they need the assessment.
+  #
+  def set_assessment
+    begin
+      @assessment = @course.assessments.find(params[:assessment_id] || params[:id])
+    rescue
+      flash[:error] = "The assessment was not found for this course."
+      redirect_to action: :index and return
+    end
+    
+    if @cud.student? && !@assessment.released? then
+      redirect_to action: :index and return
+    end
+      
+    @breadcrumbs << (view_context.current_assessment_link)
+  end
 
   def run_scheduler
 
@@ -247,6 +267,17 @@ protected
   
   def update_persistent_announcements
     @persistent_announcements = Announcement.where("persistent and (course_id=? or system)", @course.id)
+  end
+      
+  def set_breadcrumbs
+    @breadcrumbs = []
+    if @course then
+      if @course.disabled? then
+        @breadcrumbs << (view_context.link_to "#{@course.display_name} (Course Disabled)", [@course], id: "courseTitle")
+      else
+        @breadcrumbs << (view_context.link_to @course.display_name, [@course], id: "courseTitle")
+      end
+    end
   end
 
   def pluralize(count, singular, plural = nil)
