@@ -25,8 +25,7 @@
 <thead>
     <tr class="sortable">
         <th class="enumerator">#</th>
-        <th class="id">Email</th>
-        <th>Name</th>
+        <th class="id">Email &amp; Name</th>
         <th class="lec">Lec</th>
         <th class="sec">Sec</th>
         <% for p in @assessment.problems do %>
@@ -50,14 +49,16 @@
 <tr class="<%= aud_special_grade_type?(s.aud) && @cud.instructor? ? "special_submission" : "" %>">
   <td class="enumerator"></td>
   <td class="id" data-submission-id="<%= s.id.to_s %>">
-        <a tabindex="-1" class="email" href="#"><%= s.course_user_datum.email %></a>
+        <%= s.course_user_datum.last_name %>, <%= s.course_user_datum.first_name %>
+        <br>
+        <a tabindex="-1" class="email"><%= s.course_user_datum.email %></a>
+
         <% if s.filename %>
           <%=raw(view_file(s, go_img(-1), go_img(-1), go_img(-1))) %>
         <% end %>
         <div class="popover">
         </div>
-    </td>
-  <td><%= s.course_user_datum.last_name %>, <%= s.course_user_datum.first_name %></td>
+  </td>
   <td class="lec"><%= s.course_user_datum.lecture %></td>
     <td class="sec"><%= s.course_user_datum.section %></td>
     <% p_scores = s.problems_to_scores %>
