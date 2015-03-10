@@ -543,6 +543,8 @@ e.to_s() + e.backtrace().join("<br>")
   
     # Create a temporary directory for this
     tmpDir = Dir.mktmpdir("#{@cud.user.email}Moss", Rails.root.join('tmp'))
+
+    @failures = []
     
     # for each assessment 
     for ass in assessments do 
@@ -568,19 +570,23 @@ e.to_s() + e.backtrace().join("<br>")
         if isArchive then
           # If we need to unarchive this file, then create archive reader
           archive_path = File.join(stuDir, sub.filename)
-          archive_extract = Archive.get_archive(archive_path)
+          begin
+            archive_extract = Archive.get_archive(archive_path)
 
-          archive_extract.each do |entry|
-            pathname = Archive.get_entry_name(entry)
-            if !Archive.looks_like_directory?(pathname) then
-              destination = File.join(stuDir, pathname)
-              # make sure all subdirectories are there
-              FileUtils.mkdir_p(File.dirname destination)
-              File.open(destination, "wb") do |out|
-                out.write Archive.read_entry_file(entry)
-                out.fsync rescue nil # for filesystems without fsync(2)
+            archive_extract.each do |entry|
+              pathname = Archive.get_entry_name(entry)
+              if !Archive.looks_like_directory?(pathname) then
+                destination = File.join(stuDir, pathname)
+                # make sure all subdirectories are there
+                FileUtils.mkdir_p(File.dirname destination)
+                File.open(destination, "wb") do |out|
+                  out.write Archive.read_entry_file(entry)
+                  out.fsync rescue nil # for filesystems without fsync(2)
+                end
               end
             end
+          rescue
+            @failures << sub.filename
           end
         end
       end
@@ -607,20 +613,24 @@ e.to_s() + e.backtrace().join("<br>")
       Dir.chdir(extFilesDir)
   
       # Untar the given Tar file.
-      archive_extract = Archive.get_archive(extTarPath)
-
-      # write each file, renaming nested files 
-      archive_extract.each do |entry|
-        pathname = Archive.get_entry_name(entry)
-        if !Archive.looks_like_directory?(pathname) then
-          pathname.gsub!(/\//, "-")
-          destination = File.join(extFilesDir, pathname)
-          # make sure all subdirectories are there
-          File.open(destination, "wb") do |out|
-            out.write Archive.read_entry_file(entry)
-            out.fsync rescue nil # for filesystems without fsync(2)
+      begin
+        archive_extract = Archive.get_archive(archive_path)
+       
+        # write each file, renaming nested files 
+        archive_extract.each do |entry|
+          pathname = Archive.get_entry_name(entry)
+          if !Archive.looks_like_directory?(pathname) then
+            pathname.gsub!(/\//, "-")
+            destination = File.join(extFilesDir, pathname)
+            # make sure all subdirectories are there
+            File.open(destination, "wb") do |out|
+              out.write Archive.read_entry_file(entry)
+              out.fsync rescue nil # for filesystems without fsync(2)
+            end
           end
         end
+      rescue
+        @failures << "External Tar"
       end
 
       # Feed the uploaded files to MOSS.
