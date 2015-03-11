@@ -93,7 +93,7 @@
                 [:regrade, @course, @assessment, submission_id: submission.id],
                 { method: :post,
                  :title=>"Rerun the autograder on this submission",
-                 :class=>"btn small"} %>
+                 :class=>"btn small regrade-override"} %>
           <% end %>
           <%= link_to "Edit", [:edit, @course, @assessment, submission],
               {:title=>"Edit the grading properties of this submission",

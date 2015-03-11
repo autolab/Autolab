@@ -116,4 +116,13 @@ jQuery(function($) {
     e.stopPropagation();
   });
 
+  $('.regrade-override').click(function(e) {
+    // Because regrade requests are sent with `data-method="post"`, we need to
+    // trick the link into behaving... like a link. When holding down Ctrl or
+    // Cmd, the regrade should open in a new tab.
+    if (e.metaKey || e.ctrlKey) {
+      $(this).attr('target', '_blank');
+    }
+  });
+
 });
