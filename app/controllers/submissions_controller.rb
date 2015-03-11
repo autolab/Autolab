@@ -32,7 +32,7 @@ class SubmissionsController < ApplicationController
         @errorMessage = "Couldn't find all course_user_data in #{cuds_ids}. " \
           "Expected #{cud_ids.size} course_user_data, but only found " \
           "#{@cuds.size} course_user_data."
-        render([@course, @assessment, :submissions]) && return 
+        render [@course, @assessment, :submissions] and return
       end
     else
       @cuds = {}
@@ -54,7 +54,7 @@ class SubmissionsController < ApplicationController
     @cuds = @course.course_user_data.find(cud_ids)
     if (@cuds.size != cud_ids.size) then 
       @errorMessage = "Invalid CourseUserDatum ID in #{cud_ids}"
-      render([@course, @assessment, :submissions]) && return
+      render [@course, @assessment, :submissions] and return
     end
     for cud_id in cud_ids do 
       @submission = Submission.new(assessment_id: @assessment.id)

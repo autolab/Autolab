@@ -453,7 +453,7 @@ class AssessmentsController < ApplicationController
 
     if @assessment.nil?
       flash[:error] = "Error: Invalid assessment"
-      redirect_to([@course, :assessments]) && return
+      redirect_to [@course, :assessments] and return
     end
 
     @name = @assessment.name
@@ -971,7 +971,7 @@ class AssessmentsController < ApplicationController
   def adminScoreboard
     unless @cud.instructor?
       flash[:error] = "You are not authorized to view this page"
-      redirect_to([@course, @assessment]) && return
+      redirect_to [@course, @assessment] and return
     end
 
     if request.post?
@@ -1058,7 +1058,7 @@ class AssessmentsController < ApplicationController
       if @cud.instructor?
         @errorMessage = "An error occurred while calling scoreboardHeader()"
         @error = e
-        render([@course, @assessment]) && return
+        render [@course, @assessment] and return
       end
       # For students just ignore the header.
       @header = "<table class=prettyBorder >"
@@ -1087,7 +1087,7 @@ class AssessmentsController < ApplicationController
             "createScoreboardEntry(#{grade[:problems].inspect},"\
             "#{grade[:autoresult]})"
           @error = e
-          render([@course, @assessment]) && return
+          render [@course, @assessment] and return
         end
       end
     end
@@ -1117,7 +1117,7 @@ class AssessmentsController < ApplicationController
             "scoreboardOrderSubmissions(#{a.inspect},"\
             "#{b.inspect})"
           @error = e
-          render([@course, @assessment]) && return
+          render [@course, @assessment] and return
         end
         0 # Just say they're equal!
       end

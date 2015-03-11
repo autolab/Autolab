@@ -59,6 +59,14 @@ class ScoresController < ApplicationController
 
   def set_score
     @score = @submission.scores.find(params[:id])
+    unless (@score.submission.course_user_datum_id == @cud.id) || 
+           (@cud.has_auth_level? :course_assistant) then
+      redirect_to :action=>"index" and return 
+    end
+  end
+
+  def set_score
+    @score = @submission.scores.find(params[:id])
     unless (@score.submission.course_user_datum_id == @cud.id) ||
            (@cud.has_auth_level? :course_assistant)
       redirect_to(action: "index") && return
