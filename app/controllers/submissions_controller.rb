@@ -33,7 +33,7 @@ class SubmissionsController < ApplicationController
         @errorMessage = "Couldn't find all course_user_data in #{cuds_ids}. " +
           "Expected #{cud_ids.size} course_user_data, but only found " + 
           "#{@cuds.size} course_user_data."
-        render :template=>"home/error",:status=>422 and return 
+        render [@course, @assessment, :submissions] and return 
       end
     else
       @cuds = {}
@@ -55,7 +55,7 @@ class SubmissionsController < ApplicationController
     @cuds = @course.course_user_data.find(cud_ids)
     if (@cuds.size != cud_ids.size) then 
       @errorMessage = "Invalid CourseUserDatum ID in #{cud_ids}"
-      render :template=>"home/error",:status=>422 and return
+      render [@course, @assessment, :submissions] and return
     end
     for cud_id in cud_ids do 
       @submission = Submission.new(:assessment_id=>@assessment.id)
@@ -202,7 +202,7 @@ class SubmissionsController < ApplicationController
       file, pathname = Archive.get_nth_file(@filename, params[:header_position].to_i)
       if not (file and pathname) then
         flash[:error] = "Could not read archive."
-        redirect_to :controller => "home", :action => "error" and return false
+        redirect_to [@course, @assessment] and return false
       end
 
       send_data file,
@@ -227,7 +227,7 @@ class SubmissionsController < ApplicationController
       file, pathname = Archive.get_nth_file(@submission.handin_file_path, params[:header_position].to_i)
       unless (file and pathname) then
         flash[:error] = "Could not read archive."
-        redirect_to controller: :home, action: :error and return false
+        redirect_to [@course, @assessment] and return false
       end
       
       @displayFilename = pathname
@@ -339,18 +339,18 @@ private
       @submission = @assessment.submissions.find params[:id]
     rescue
       flash[:error] = "Could not find submission with id #{params[:id]}."
-      redirect_to controller: :home, action: :error and return false
+      redirect_to [@course, @assessment] and return false
     end
     
     unless (@cud.instructor or @cud.course_assistant or @submission.course_user_datum_id == @cud.id) then
       flash[:error] = "You do not have permission to access this submission."
-      redirect_to controller: :home, action: :error and return false
+      redirect_to [@course, @assessment] and return false
     end
 
     if (@assessment.exam? or @course.exam_in_progress?) and not (@cud.instructor or @cud.course_assistant) then
       flash[:error] = "You cannot view this submission.
               Either an exam is in progress or this is an exam submission."
-      redirect_to controller: :home, action: :error and return false
+      redirect_to [@course, @assessment] and return false
     end
     return true
   end
@@ -358,7 +358,7 @@ private
   def get_submission_file
     unless @submission.filename then
       flash[:error] = "No file associated with submission."
-      redirect_to controller: :home, action: :error and return false
+      redirect_to [@course, @assessment] and return false
     end
 
     @filename = @submission.handin_file_path
@@ -366,7 +366,7 @@ private
 
     if not File.exists? @filename then
       flash[:error] = "Could not find submission file."
-      redirect_to controller: :home, action: :error and return false
+      redirect_to [@course, @assessment] and return false
     end
 
     return true

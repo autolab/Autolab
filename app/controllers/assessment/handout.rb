@@ -1,20 +1,15 @@
 module AssessmentHandout
 
   def mime_type_from_ext(ext)
-      case ext
-          when ".html" then "text/html"
-          when ".pdf" then "application/pdf"
-          else "application/octet-stream"
-      end
+    case ext
+      when ".html" then "text/html"
+      when ".pdf" then "application/pdf"
+      else "application/octet-stream"
+    end
   end
   
   def handout
-  	extend_config_module(@assessment, nil, @cud)
-
-    if Time.now() < @assessment.start_at && !@cud.instructor? then
-      flash[:error] = "This assessment has not started yet."
-      return
-    end
+    extend_config_module(@assessment, nil, @cud)
 
     if @assessment.overwrites_method?(:handout) then
       hash = @assessment.config_module.handout()

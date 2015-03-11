@@ -449,14 +449,14 @@ class AssessmentsController < ApplicationController
   end
 
   def assessmentInitialize(assignName)
-    @assessment = @course.assessments.where(:name=>assignName).first
+    @assessment = @course.assessments.find_by(name: assignName)
     if ! @assessment then
       raise "Assessment #{assignName} does not exist!"
     end
 
     if @assessment == nil then
       flash[:error] = "Error: Invalid assessment"
-      redirect_to :controller=>"home",:action=>"error" and return
+      redirect_to [@course, :assessments] and return
     end
 
     @name = @assessment.name
@@ -937,22 +937,6 @@ class AssessmentsController < ApplicationController
     @output = "There is no writeup for this assessment."
   end
 
-  def action_missing(methId)
-    if(self.methods.include?(methId.to_sym)) then
-      puts "meth: #{methId}"
-      eval("#{methId}")
-    else
-      flash[:error] = "Unknown action #{methId}"  
-      render :template=>"home/error"  and return
-    end
-  end
-
-  action_auth_level :attachments, :instructor
-  def attachments
-    redirect_to course_attachments_path(@course) and return
-    @attachments = @assessment.attachments
-  end
-
   # uninstall - uninstalls an assessment
   action_auth_level :uninstall, :instructor
   def uninstall(name)
@@ -961,30 +945,6 @@ class AssessmentsController < ApplicationController
       f = File.join(Rails.root, "assessmentConfig/",
                "#{@course.name}-#{name}.rb")
       File.delete(f)
-    end
-  end
-
-  action_auth_level :go_to_file, :course_assistant
-  def go_to_file 
-    @submission = Submission.find(params[:id])
-    if (@submission.nil?)
-      flash[:error] = "Could not find that submission."
-      redirect_to :controller => :home, :action => :error and return
-    end
-    if Archive.is_archive? @submission.handin_file_path then
-      redirect_to :action => "listArchive",
-                  :id => @submission.id,
-                  :controller => :submission 
-      return
-    elsif (@submission.is_syntax)
-      redirect_to :action => "view",
-                  :id => @submission.id,
-                  :controller => :submission
-      return
-    else
-      redirect_to :action => "download", 
-                  :id => @submission.id, 
-                  :controller => :submission
     end
   end
 
@@ -1021,7 +981,7 @@ class AssessmentsController < ApplicationController
   def adminScoreboard
     if !(@cud.instructor?) then
       flash[:error] = "You are not authorized to view this page"
-      redirect_to :action=>"error",:controller=>"home" and return
+      redirect_to [@course, @assessment] and return
     end
 
     if request.post? then
@@ -1108,10 +1068,9 @@ class AssessmentsController < ApplicationController
       end
     rescue Exception => e
       if (@cud.instructor? ) then
-        @errorMessage = "An error occurred while calling " +
-          "scoreboardHeader()"
+        @errorMessage = "An error occurred while calling scoreboardHeader()"
         @error = e
-        render :template=>"home/error" and return
+        render [@course, @assessment] and return
       end
       #For students just ignore the header. 
       @header = "<table class=prettyBorder >"
@@ -1141,7 +1100,7 @@ class AssessmentsController < ApplicationController
             "createScoreboardEntry(#{grade[:problems].inspect},"+
             "#{grade[:autoresult]})"
           @error = e
-          render :template=>"home/error" and return 
+          render [@course, @assessment] and return 
         end
       end
     end
@@ -1172,7 +1131,7 @@ class AssessmentsController < ApplicationController
             "scoreboardOrderSubmissions(#{a.inspect},"+
             "#{b.inspect})"
           @error = e
-          render :template=>"home/error" and return
+          render [@course, @assessment] and return
         end
         0 #Just say they're equal!
       end

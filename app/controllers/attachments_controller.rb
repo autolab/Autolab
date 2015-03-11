@@ -35,12 +35,12 @@ class AttachmentsController < ApplicationController
     @attachment = @course.attachments.find(params[:id])
     if !@attachment then
       flash[:error] = "Could not find Attachment # #{params[:id]}"
-      redirect_to :controller=>"home",:action=>"error" and return
+      redirect_to [@course, :attachments] and return
     end
     filename= File.join("attachments",@attachment.filename)
     if ! File.exists?(filename) then
       flash[:error] = "Error loading #{@attachment.name} from #{@attachment.filename}"
-      redirect_to :controller=>"home",:action=>"error" and return
+      redirect_to [@course, :attachments] and return
     end
     send_file(filename,:disposition=>'inline',:type=>@attachment.mime_type,:filename=>@attachment.filename) and return
   end
