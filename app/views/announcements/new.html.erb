@@ -1,4 +1,8 @@
 <h2>Create Announcement</h2>
-<%= form_for :announcement, url:{action:"create"} do |f| %>
-  <%= render partial:'announcementFields', locals:{f:f} %>
-<% end %>
+<div class="row">
+  <div class="col-md-6">
+    <%= form_for :announcement, url:{action:"create"}, builder: FormBuilderWithDateTimeInput do |f| %>
+      <%= render partial: 'announcementFields', locals: {f:f} %>
+    <% end %>
+  </div>
+</div>
