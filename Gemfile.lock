@@ -249,7 +249,6 @@ DEPENDENCIES
   dynamic_form
   exception_notification!
   factory_girl_rails
-  highlight
   jbuilder (>= 2.0)
   jquery-rails
   momentjs-rails (>= 2.9.0)
