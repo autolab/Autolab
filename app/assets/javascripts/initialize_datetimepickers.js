@@ -7,27 +7,30 @@
     var lessThans = $(this).data('dateLessThan');
     var greaterThans = $(this).data('dateGreaterThan');
 
+    function compareDates(dp_id, cmp) {
+      if (dp_id) {
+        var theirID = '#' + dp_id;
+        var theirDateData = $(theirID).data('DateTimePicker');
+
+        // Check whether the other target has been initialized
+        if (theirDateData) {
+          var theirDate = theirDateData.date();
+          $(theirID).data('DateTimePicker').date(cmp(theirDate, ourDate));
+        }
+      }
+    }
+
     // We are less than (older than) each of these elements
     if (lessThans) {
       lessThans.split(' ').forEach(function(dp_id, idx, arr) {
-        if (dp_id) {
-          var theirID = '#' + dp_id;
-          var theirDate = $(theirID).data('DateTimePicker').date();
-
-          $(theirID).data('DateTimePicker').date(moment.max(theirDate, ourDate));
-        }
+        compareDates(dp_id, moment.max);
       });
     }
 
     // We are greater than (younger than) each of these elements
     if (greaterThans) {
       greaterThans.split(' ').forEach(function(dp_id, idx, arr) {
-        if (dp_id) {
-          var theirID = '#' + dp_id;
-          var theirDate = $(theirID).data('DateTimePicker').date();
-
-          $(theirID).data('DateTimePicker').date(moment.min(theirDate, ourDate));
-        }
+        compareDates(dp_id, moment.min);
       });
     }
   }
