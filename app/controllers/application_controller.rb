@@ -127,27 +127,6 @@ protected
     end
   end
 
-  # def authenticate_user
-  #   # development
-  #   if Rails.env == "development"
-  #     if cookies[:dev_user] then
-  #       @username = cookies[:dev_user]
-  #     else
-  #       redirect_to controller: :home, action: :developer_login and return
-  #     end
-  # 
-  #   # production
-  #   else
-  #     # request.remote_user set by Shibboleth (WebLogin)
-  #     if request.remote_user
-  #       @username = request.remote_user.split("@")[0]
-  #     else
-  #       flash[:error] = "You are not logged in?"
-  #       redirect_to :controller => :home, :action => :error and return
-  #     end
-  #   end
-  # end
-
   def authorize_user_for_course
     course_id = params[:course_id] ||
           (params[:controller] == "courses" ? params[:id] : nil)

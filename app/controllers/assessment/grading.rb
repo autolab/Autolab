@@ -24,7 +24,7 @@ module AssessmentGrading
       @data_type = params[:upload][:data_type].to_sym
       unless @data_type == :scores || @data_type == :feedback
         flash[:error] = "bulkGrade: invalid data_type received from client"
-        redirect_to :controller => :home, :action => :error and return
+        redirect_to action: :bulkGrade and return
       end
 
       # get CSV
@@ -33,7 +33,7 @@ module AssessmentGrading
         @csv = csv_file.read
       else
         flash[:error] = "You need to choose a CSV file to upload."
-        redirect_to :action => :bulkGrade and return
+        redirect_to action: :bulkGrade and return
       end
 
       # process CSV
@@ -42,7 +42,7 @@ module AssessmentGrading
         @entries = entries
         @valid_entries = valid_entries? entries
       else
-        redirect_to :action => :bulkGrade and return
+        redirect_to action: :bulkGrade and return
       end
     end
   end
@@ -62,15 +62,16 @@ module AssessmentGrading
     success, @entries = parse_csv csv, data_type
     if !success
       flash[:error] = "bulkGrade_complete: invalid csv returned from client"
-      redirect_to :controller => :home, :action => :error and return
+      redirect_to action: :bulkGrade and return
     elsif !valid_entries?(@entries)
       flash[:error] = "bulkGrade_complete: invalid entries returned from client"
-      redirect_to :controller => :home, :action => :error and return
+      redirect_to action: :bulkGrade and return
     end
 
     # save data
     unless save_entries @entries, data_type
-      redirect_to :controller => :home, :action => :error and return
+      flash[:error] = "Failed to Save Entries"
+      redirect_to action: :bulkGrade and return
     end
   end
 
