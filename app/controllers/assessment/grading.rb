@@ -2,7 +2,7 @@ require 'csv'
 require 'utilities'
 
 module AssessmentGrading
- 
+
   # Export all scores for an assessment for all students as CSV
   def bulkExport
     # generate CSV
@@ -92,135 +92,134 @@ private
     end
   end
 
-  # TODO
-  # def save_entries entries, data_type
-#     asmt = @assessment
-# 
-#     begin 
-#       User.transaction do
-#         entries.each do |entry|
-#           user = asmt.course.users.find_by_andrewID entry[:andrew_ID]
-# 
-#           aud = AssessmentUserDatum.get asmt.id, user.id
-#           if entry[:grade_type]
-#             aud.grade_type = AssessmentUserDatum::GRADE_TYPE_MAP[entry[:grade_type]]
-#             aud.save!
-#           end
-#   
-#           unless sub = aud.latest_submission
-#             sub = asmt.submissions.build(
-#               :user_id => user.id,
-#               :assessment_id => asmt.id,
-#               :submitted_by_id => @user.id
-#             )
-#             sub.save!
-#           end
-# 
-#           entry[:data].each do |problem_name, datum|
-#             next unless datum
-# 
-#             problem = asmt.problems.find_by_name problem_name
-# 
-#             score = sub.scores.find_by_problem_id problem.id
-#             unless score
-#               score = sub.scores.build(
-#                 :grader_id => @user.id,
-#                 :problem_id => problem.id
-#               )
-#             end
-# 
-#             case data_type 
-#             when :scores
-#               score.score = datum
-#             when :feedback
-#               score.feedback = datum.gsub("\\n", "\n").gsub("\\t", "\t")
-#             end
-# 
-#             updateScore user.id, score
-#           end
-# 
-#         end # entries.each
-#       end # User.transaction
-# 
-#       true
-#     rescue => e
-#       flash[:error] = "An error occurred: #{e}"
-# 
-#       false
-#     end
-#   end
-  # 
-  # def parse_csv csv, data_type
-  #   # inputs for parse_csv_row
-  #   problems = @assessment.problems
-  #   andrew_IDs = Set.new(@course.users.map &:andrewID)
-  # 
-  #   # process CSV
-  #   entries = []
-  #   begin
-  #     CSV.parse(csv, { :skip_blanks => true }) do |row|
-  #       entries << parse_csv_row(row, data_type, problems, andrew_IDs)
-  #     end
-  #   rescue CSV::MalformedCSVError => e
-  #     flash[:error] = "Failed to parse CSV -- make sure the grades " +
-  #                     "are formatted correctly: <pre>#{e.to_s}</pre>"
-  #     return false, []
-  #   end
-  # 
-  #   return true, entries
-  # end
-  # 
-  # def parse_csv_row row, kind, problems, andrew_IDs
-  #   row = row.dup
-  # 
-  #   andrew_ID = row.shift.to_s
-  #   data = row.shift problems.count
-  #   grade_type = row.shift.to_s
-  # 
-  #   # to be returned
-  #   processed = {}
-  #   processed[:extra_cells] = row if row.length > 0 # currently unused
-  # 
-  #   # andrew ID
-  #   processed[:andrew_ID] = if andrew_ID.blank?
-  #     { :error => nil }
-  #   elsif andrew_IDs.include? andrew_ID
-  #     andrew_ID
-  #   else
-  #     { :error => andrew_ID }
-  #   end
-  # 
-  #   # data
-  #   data.map! do |datum|
-  #     if datum.blank?
-  #       nil
-  #     else
-  #       case kind
-  #       when :scores
-  #         Float(datum) rescue({ :error => datum })
-  #       when :feedback
-  #         datum
-  #       end
-  #     end
-  #   end
-  # 
-  #   # pad data with nil until there are problems.count elements
-  #   data.fill nil, data.length, problems.count - data.length
-  # 
-  #   processed[:data] = {}
-  #   problems.each_with_index { |problem, i| processed[:data][problem.name] = data[i] }
-  # 
-  #   # grade type
-  #   processed[:grade_type] = if grade_type.blank?
-  #     nil
-  #   elsif AssessmentUserDatum::GRADE_TYPE_MAP.has_key? grade_type.to_sym
-  #     grade_type.to_sym
-  #   else
-  #     { :error => grade_type }
-  #   end
-  # 
-  #   processed
-  # end
+  def save_entries entries, data_type
+    asmt = @assessment
+
+    begin
+      User.transaction do
+        entries.each do |entry|
+          user = CourseUserDatum.joins(:user).
+              find_by(users: { :email =>entry[:email] }, :course => asmt.course)
+
+          aud = AssessmentUserDatum.get asmt.id, user.id
+          if entry[:grade_type]
+            aud.grade_type = AssessmentUserDatum::GRADE_TYPE_MAP[entry[:grade_type]]
+            aud.save!
+          end
+
+          unless sub = aud.latest_submission
+            sub = asmt.submissions.create!(
+              course_user_datum_id: user.id,
+              assessment_id: asmt.id,
+              submitted_by_id: @cud.id
+            )
+          end
+
+          entry[:data].each do |problem_name, datum|
+            next unless datum
+
+            problem = asmt.problems.find_by_name problem_name
+
+            score = sub.scores.find_by_problem_id problem.id
+            unless score
+              score = sub.scores.new(
+                grader_id: @cud.id,
+                problem_id: problem.id
+              )
+            end
+
+            case data_type
+            when :scores
+              score.score = datum
+            when :feedback
+              score.feedback = datum.gsub("\\n", "\n").gsub("\\t", "\t")
+            end
+
+            updateScore user.id, score
+          end
+
+        end # entries.each
+      end # User.transaction
+
+      true
+    rescue => e
+      flash[:error] = "An error occurred: #{e}"
+
+      false
+    end
+  end
+
+  def parse_csv csv, data_type
+    # inputs for parse_csv_row
+    problems = @assessment.problems
+    emails = Set.new(CourseUserDatum.joins(:user).where(course: @assessment.course).map &:email)
+
+    # process CSV
+    entries = []
+    begin
+      CSV.parse(csv, { :skip_blanks => true }) do |row|
+        entries << parse_csv_row(row, data_type, problems, emails)
+      end
+    rescue CSV::MalformedCSVError => e
+      flash[:error] = "Failed to parse CSV -- make sure the grades " +
+                      "are formatted correctly: <pre>#{e.to_s}</pre>"
+      return false, []
+    end
+
+    return true, entries
+  end
+
+  def parse_csv_row row, kind, problems, emails
+    row = row.dup
+
+    email = row.shift.to_s
+    data = row.shift problems.count
+    grade_type = row.shift.to_s
+
+    # to be returned
+    processed = {}
+    processed[:extra_cells] = row if row.length > 0 # currently unused
+
+    # Checking that emails are valid
+    processed[:email] = if email.blank?
+      { :error => nil }
+    elsif emails.include? email
+      email
+    else
+      { :error => email }
+    end
+
+    # data
+    data.map! do |datum|
+      if datum.blank?
+        nil
+      else
+        case kind
+        when :scores
+          Float(datum) rescue({ :error => datum })
+        when :feedback
+          datum
+        end
+      end
+    end
+
+    # pad data with nil until there are problems.count elements
+    data.fill nil, data.length, problems.count - data.length
+
+    processed[:data] = {}
+    problems.each_with_index { |problem, i| processed[:data][problem.name] = data[i] }
+
+    # grade type
+    processed[:grade_type] = if grade_type.blank?
+      nil
+    elsif AssessmentUserDatum::GRADE_TYPE_MAP.has_key? grade_type.to_sym
+      grade_type.to_sym
+    else
+      { :error => grade_type }
+    end
+
+    processed
+  end
 
 public
   def quickSetScore
@@ -237,7 +236,7 @@ public
     score = Score.find_or_initialize_by_submission_id_and_problem_id(sub_id, prob_id)
 
     score.grader_id = @cud.id
-    score.score = params[:score].to_i
+    score.score = params[:score].to_f
 
     updateScore(score.submission.course_user_datum_id, score)
 
@@ -260,7 +259,7 @@ public
     # get submission and problem IDs
     sub_id = params[:submission_id].to_i
     prob_id = params[:problem_id].to_i
-    
+
     # find existing score for this problem, if there's one
     # otherwise, create it
     score = Score.find_or_initialize_by_submission_id_and_problem_id(sub_id, prob_id)
@@ -281,14 +280,15 @@ public
     retry unless ((@retries_left -= 1) < 0)
     raise error
   end
-  
+
   def submission_popover
     render :partial => "popover", :locals => { :s => Submission.find(params[:submission_id].to_i) }
   end
-  
+
   def score_grader_info
-    grader = Score.find(params[:id]).grader
-    if grader
+    score = Score.find(params[:score_id])
+    grader = (if score then score.grader else nil end)
+    if grader then
       render :text => "#{grader.first_name} #{grader.last_name} (#{grader.email})"
     else
       render :nothing => true
@@ -325,7 +325,7 @@ public
     else
       @statistics[:all] = all_grouping[1]
     end
-    
+
     by_lecture = latest_submissions.group_by { |s| s.course_user_datum.lecture }
     @statistics[:lecture] = stats_for_grouping(by_lecture)
 
@@ -346,30 +346,30 @@ public
 
   # TODO
   # def autoCompleteAndrewID
-  #   if !params[:andrewID] then 
+  #   if !params[:andrewID] then
   #     render :text=>"" and return
   #   end
-  #   if (params[:spellSuggest].to_s() == "true") then 
+  #   if (params[:spellSuggest].to_s() == "true") then
   #     # Implementation of a super simple Spell Correction Algorithm
-  #     # Written by Hunter Pitelka while waiting for Oracle to install. 
+  #     # Written by Hunter Pitelka while waiting for Oracle to install.
   #     dictionary = @course.users.all
   #     search = params[:andrewID]
   #     distances = []
   #     for user in dictionary do
   #       word = user.andrewID
   #       distance = 0
-  #       for i in 0..[search.length,word.length].max do 
+  #       for i in 0..[search.length,word.length].max do
   #         # Letters that match perfectly earn 2 points
-  #         distance += (search[i] == word[i]) ? 2 : 0 
-  # 
+  #         distance += (search[i] == word[i]) ? 2 : 0
+  #
   #         # Letters that match to the left or right earn 1 point
   #         distance += (search[i] == word[i+1]) ? 1 : 0
   #         distance += (search[i] == word[i-1]) ? 1 : 0
   #       end
   #       distances << {:distance=>distance,:word=>user}
   #     end
-  #     distances.sort!{ |a,b| 
-  #       a[:distance] <=> b[:distance] 
+  #     distances.sort!{ |a,b|
+  #       a[:distance] <=> b[:distance]
   #     }
   #     @users = distances[-5..-1].reverse
   #   else
@@ -378,34 +378,34 @@ public
   #   end
   #   render :partial=>"autoCompleteAndrewID", :layout=>false and return
   # end
-  # 
+  #
   # def bulkFeedback
   #   if not request.post? then
   #     return
   #   end
-  # 
+  #
   #   if params[:post] == "grades" then
   #     # Get a list of the valid score ID's for fast(er) validation
   #     dbResult = ActiveRecord::Base.connection.select_values(
   #       "SELECT scores.id
-  #       FROM scores,submissions 
+  #       FROM scores,submissions
   #       WHERE scores.submission_id = submissions.id
   #       AND submissions.assessment_id = #{@assessment.id}")
   #     validScoreIds = dbResult.map { |i| i.to_i }
-  #     params["score"].each_key { |key| 
+  #     params["score"].each_key { |key|
   #       unless validScoreIds.include?(key.to_i()) then
   #         flash[:error] = "Invalid Score ID #{key}"
   #         redirect_to :action=>"bulkFeedback" and return
   #       end
   #     }
-  # 
-  #     params["score"].each_pair { |scoreId,value| 
+  #
+  #     params["score"].each_pair { |scoreId,value|
   #       id = scoreId.to_i()
   #       score = Score.find(id)
   #       score.score = value
   #       score.save()
   #     }
-  #     flash[:success] = "Successfully stored " + 
+  #     flash[:success] = "Successfully stored " +
   #       params["score"].length.to_s + " scores!"
   #     redirect_to :action=>"index" and return
   #   else
@@ -415,92 +415,92 @@ public
   #       flash[:error] = "Invalid Problem id #{params[:problem]}!"
   #       redirect_to :action=>"bulkFeedback" and return
   #     end
-  # 
+  #
   #     archive = params[:file]
   #     if (archive.nil?) then
   #       flash[:error] = "You must specify a file to upload!"
   #       redirect_to :action=>"bulkFeedback" and return
   #     end
-  # 
-  #     require 'libarchive'
+  #
+  #     require 'libarchive' # this must be removed if this function is ever uncommented
   #     errors = []
   #     @uploadedStudents = []
   #     begin
   #     Archive.read_open_memory(archive.read()) do |ar|
   #       while entry = ar.next_header()  do
   #         filename = entry.pathname()
-  # 
+  #
   #         #Figure out the andrewID
   #         andrewID = filename.split("_")[0]
   #         student = @course.users.where(:andrewID => andrewID).first
   #         if student.nil? then
-  #           errors << "Invalid andrewID:#{andrewID} " + 
+  #           errors << "Invalid andrewID:#{andrewID} " +
   #             "from file #{filename}"
   #           next
   #         end
-  # 
+  #
   #         # Get the submission entry
   #         submission = @assessment.submissions.where(:user_id=>student.id).order("version DESC").first
   #         if submission.nil? then
-  #           errors << "Student " + 
+  #           errors << "Student " +
   #             student.full_name_with_email +
   #             " has no submission for this assignment!"
   #           next
   #         end
-  # 
+  #
   #         # Get the score entry
   #         score = submission.scores.find_with_feedback(:first,
   #           :conditions => { :problem_id => @problem.id,
   #             :submission_id=>submission.id}
   #         )
-  #         if score.nil? then 
-  #           #That's okay, let's create one. 
+  #         if score.nil? then
+  #           #That's okay, let's create one.
   #           score = Score.new(:submission_id=>submission.id,
   #             :problem_id=>@problem.id,:released=>false)
   #         end
-  # 
+  #
   #         score.grader_id = @user.id
-  # 
-  #         #Upload this file as a feedback file. 
+  #
+  #         #Upload this file as a feedback file.
   #         score.feedback_file_name = filename
   # #       score.feedback_file_type =
-  #         score.feedback_file = ar.read_data()  
+  #         score.feedback_file = ar.read_data()
   #         score.save()
-  # 
+  #
   #         @uploadedStudents << {:user=>student,
   #           :submission=>submission,
   #           :score=>score,
   #           :feedback=>filename}
   #       end
   #     end
-  #     rescue Archive::Error 
-  #       flash[:error] = "Unsupported Archive File: " + 
+  #     rescue Archive::Error
+  #       flash[:error] = "Unsupported Archive File: " +
   #         " #{archive.original_filename}"
   #       redirect_to :action=>"bulkFeedback" and return
   #     end
-  # 
-  #     @uploadedStudents.sort! { |a,b| 
-  #       a[:user].andrewID <=> b[:user].andrewID 
+  #
+  #     @uploadedStudents.sort! { |a,b|
+  #       a[:user].andrewID <=> b[:user].andrewID
   #     }
-  # 
-  #     if @uploadedStudents.size == 0 then 
-  #       flash[:error] = "You uploaded an empty Archive File"  
+  #
+  #     if @uploadedStudents.size == 0 then
+  #       flash[:error] = "You uploaded an empty Archive File"
   #       redirect_to :action=>"bulkFeedback" and return
   #     end
-  # 
+  #
   #     if errors.size > 0 then
   #       flash[:error] = "Errors occurred while processing" +
   #         " your request<br>" + errors.join("<br>")
   #       redirect_to :action=>"bulkFeedback" and return
   #     end
-  # 
+  #
   #   end
   # end
 
 private
   def load_course_config
     course = @course.name.gsub(/[^A-Za-z0-9]/,'')
-    begin 
+    begin
       load(File.join(Rails.root,"courseConfig",
         "#{course}.rb"))
       eval("extend(Course#{course.camelize})")
@@ -554,7 +554,7 @@ private
 
   # This is different from all of the others because it doesn't
   # group by submission but by score (since multiple graders can
-  # grade problems for a single submissions).
+  # grade problems for a single submission).
   def stats_for_grader(submissions)
     result = []
     problem_id_to_name = @assessment.problem_id_to_name
@@ -575,14 +575,15 @@ private
     end
 
     grader_ids = grader_scores.keys
-    print grader_scores
     def find_user(i)
-      print "\n FIND USER I \n"
-      print i
-      if 0 == i
-        return Hash["full_name", "Autograder", 
-                    "id", 0,
-                    "full_name_with_email", "Autograder"]
+      if i == 0
+        autograder = Hash["full_name", "Autograder",
+                          "id", 0,
+                          "full_name_with_email", "Autograder"]
+        def autograder.method_missing(m)
+          self[m.to_s]
+        end
+        return autograder
       else
         return User.find(i)
       end
@@ -594,10 +595,6 @@ private
 
     graders.each do |grader|
       scores = grader_scores[grader["id"]]
-      print "\n SCORES \n"
-      print grader[:id]
-      print "\n"
-      print scores
 
       problem_scores = {}
       @assessment.problems.each do |problem|
@@ -613,7 +610,7 @@ private
         problem_stats << [problem.name, stats.stats(problem_scores[problem.id])]
       end
 
-      result << [grader["full_name_with_email"], problem_stats]
+      result << [grader.full_name_with_email, problem_stats]
     end
     return result
   end
@@ -622,15 +619,14 @@ private
   def load_gradesheet_data
     @start = Time.now()
     id = @assessment.id
-  
+
     # section filter
     o = params[:section] ? {
-      :conditions => { :assessment_id => id, :users => { :section => @user.section } },
-      :joins => "INNER JOIN users ON submissions.user_id = users.id" # hash doesn't work, Rails = stupid
+      :conditions => { :assessment_id => id, :course_user_data => { :section => @cud.section } },
     } : {
       :conditions => { :assessment_id => id }
     }
-  
+
     # currently loads *all* assessment AUDs, scores in spite of the section filter
     # but that's okay, it only takes a couple 10ms
     cache = AssociationCache.new(@course) { |_|
@@ -640,7 +636,7 @@ private
       _.load_latest_submission_scores({ :conditions => { :submissions => { :assessment_id => id } } })
       _.load_assessments
     }
-  
+
     @assessment = cache.assessments[@assessment.id]
     @submissions = cache.latest_submissions.values
   end

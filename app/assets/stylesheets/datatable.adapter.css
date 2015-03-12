@@ -26,10 +26,6 @@ div.dataTables_paginate {
   padding-right: 14px;
 }
 
-div.dataTables_wrapper {
-  width: 70%;
-}
-
 div.dataTables_wrapper:after {
   content: ".";
   display: block;

@@ -1,4 +1,6 @@
-<%= javascript_include_tag "sorttable" %>
+<% content_for :javascripts do %>
+  <%= javascript_include_tag "sorttable" %>
+<% end %>
 
 <h1>Job <%= @job[:name]%></h1>
 <p>
@@ -15,9 +17,9 @@
 
 <h2>Job Parameters</h2>
 <ul>
-<li>VM image: <kbd><%= @job[:rjob]["vm"]["name"]%>.img</kbd>
-<li><kbd>timeout</kbd>: <%= @job[:rjob]["timeout"] %> secs
-<li><kbd>maxOutputFileSize</kbd>: <%= @job[:rjob]["maxOutputFileSize"] %> bytes.
+<li>VM image: <%= @job[:rjob]["vm"]["name"]%>
+<li>Job Timeout: <%= @job[:rjob]["timeout"] %> secs
+<li>Maximum Output File Size: <%= @job[:rjob]["maxOutputFileSize"] %> bytes
 <li>Input Files: 
 <table class=prettyBorder>
 <tr><th>Local File on Server (<kbd>localFile</kbd>)</th>
@@ -31,24 +33,23 @@
 </tr></table>
 
 <% if @cud.user.administrator?  then %>
-<li><kbd>notifyURL</kbd>: <kbd><%= @job[:rjob]["notifyURL"] %> </kbd>
+<li><kbd>notifyURL</kbd>: <%= @job[:rjob]["notifyURL"] %>
 <% end %>
 
-<li><kbd>outputFile</kbd>: <kbd><%= @job[:rjob]["outputFile"].sub(/\/afs\/cs.cmu.edu\/academic\/autolab\/autolab2/, "[autolab]") %></kbd>
+<li>Output File: <%= @job[:rjob]["outputFile"].sub(/\/afs\/cs.cmu.edu\/academic\/autolab\/autolab2/, "[autolab]") %>
 </ul>
 
 <h2>Runtime Trace</h2>
 <ul>
-<% for item in @job[:rjob]["trace"] do %>
-  <li> <%= item %>
-<% end %>
+  <% for item in @job[:rjob]["trace"] do %>
+    <% poo = item.split("|") %>
+    <li><%= DateTime.parse(poo[0]).to_time.localtime.to_s(:db) %> | <%= poo[1] %></li>
+  <% end %>
 </ul>
 
 <h2>Most Recent Autograder Feedback for this Submission</h2>
 <% if @feedback_str == nil || @feedback_str == "" then %>
-None available
+  <pre>No Feedback Available</pre>
 <% else %>
-<pre>
-<%= @feedback_str %>
-</pre>
+  <pre><%= @feedback_str %></pre>
 <% end %>

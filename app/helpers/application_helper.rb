@@ -36,7 +36,7 @@ module ApplicationHelper
   def tweak(tweak)
     tweak ? tweak.to_s : "&ndash;"
   end
-  
+
   def editor_modes
     self.editor_mode_options.transpose[1]
   end
@@ -68,9 +68,15 @@ module ApplicationHelper
   end
 
   def download_file(submission, title)
-    link_to title, download_course_assessment_submission_path(@course, @assessment, submission), 
+    link_to title, download_course_assessment_submission_path(@course, @assessment, submission),
             :tabindex => -1, :target => "_blank"
   end
+
+
+  def download_file_url(submission)
+    download_course_assessment_submission_path(@course, @assessment, submission)
+  end
+
 
   def view_syntax_highlighted_source(submission, title)
     if submission.is_syntax
@@ -79,15 +85,21 @@ module ApplicationHelper
     end
   end
 
+  def view_syntax_highlighted_source_url(submission)
+    if submission.is_syntax
+      view_course_assessment_submission_path(@course, @assessment, submission)
+    end
+  end
+
   def list_archive_files(submission, title)
-    if submission.is_archive
+    if Archive.is_archive? submission.handin_file_path then
       link_to title, list_archive_course_assessment_submission_path(@course, @assessment, submission),
         :tabindex => -1, :target => "_blank"
     end
   end
 
   def view_file(submission, list_archive_title, view_source_title, download_title = nil)
-    if (link = list_archive_files(submission, list_archive_title)) 
+    if (link = list_archive_files(submission, list_archive_title))
       link
     elsif (link = view_syntax_highlighted_source(submission, view_source_title))
       link
@@ -107,7 +119,7 @@ module ApplicationHelper
   # TODO: fix during gradebook, handin history, etc. rewrite
   def computed_score(link = nil, nil_to_dash = true)
     begin
-      # if non-nil, round value; otherwise, -- 
+      # if non-nil, round value; otherwise, --
       value = yield
       value = value ? value.round(1) : value
       nil_to_dash && (value == nil) ? raw("&ndash;") : value
@@ -120,22 +132,19 @@ module ApplicationHelper
   def round(v)
     v ? v.round(1) : v
   end
-  
+
   # NOTE: aud.final_score cannot be nil in here
   def render_final_score(aud)
     asmt = aud.assessment
-  
+
     fs = computed_score(history_url(@_cud, asmt), false) { aud.final_score @cud }
     raise "FATAL: can't be nil" unless fs
-    if @cud.student?
-      link = link_to fs, history_url(@_cud, asmt)
-    else
-      link = link_to fs, :assessment => asmt.name, :action => :student
-    end
-  
+
+    link = link_to fs, history_url(@_cud, asmt)
+
     max_score = computed_score { asmt.max_score }
     max_score_s = '<span class="max_score">' + max_score.to_s + '</span>'
-  
+
     raw("#{link}/#{max_score_s}")
   end
 
@@ -146,7 +155,7 @@ module ApplicationHelper
 
   def external_stylesheet_link_tag(library, version)
     cloudflare = "//cdnjs.cloudflare.com/ajax/libs"
-    case library 
+    case library
     when 'bootstrap'
       stylesheet_link_tag "#{cloudflare}/twitter-bootstrap/#{version}/css/bootstrap.css"
     end
@@ -156,7 +165,7 @@ module ApplicationHelper
     cloudflare = "//cdnjs.cloudflare.com/ajax/libs"
     google = "//ajax.googleapis.com/ajax/libs"
 
-    case library 
+    case library
     when 'jquery'
       javascript_include_tag "#{google}/jquery/#{version}/jquery.min.js"
     when 'jquery-ui'
@@ -170,13 +179,13 @@ module ApplicationHelper
     when 'backbone-relational'
       javascript_include_tag "#{cloudflare}/backbone-relational/#{version}/backbone-relational.min.js"
     when 'jquery.dataTables'
-      javascript_include_tag "#{cloudflare}/datatables/#{version}/jquery.dataTables.min.js"
+      javascript_include_tag "#{cloudflare}/datatables/#{version}/js/jquery.dataTables.min.js"
     when 'handlebars'
       javascript_include_tag "#{cloudflare}/handlebars.js/#{version}/handlebars.min.js"
     when 'bootstrap'
       javascript_include_tag "#{cloudflare}/twitter-bootstrap/#{version}/js/bootstrap.js"
-    when 'bootstrap-tooltip'
-      javascript_include_tag "#{cloudflare}/twitter-bootstrap/#{version}/js/bootstrap-tooltip.js"
+    when 'lodash'
+      javascript_include_tag "#{cloudflare}/lodash.js/#{version}/lodash.min.js"
     end
   end
 

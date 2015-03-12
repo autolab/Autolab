@@ -30,7 +30,7 @@ module Autolab3
     end
 
     # TODO: this should be a macro
-    config.action_mailer.default_url_options = {protocol: 'https', host: 'milkshark.ics.cs.cmu.edu' }
+    config.action_mailer.default_url_options = {protocol: 'https', host: 'YOUR_APP_URL' }
 
     # Settings in config/environments/* take precedence over those specified here.
     # Application configuration should go into files in config/initializers
@@ -82,5 +82,11 @@ module Autolab3
     config.action_view.field_error_proc = Proc.new { |html_tag, instance| 
       "<div class=\"field_with_errors has-error\">#{html_tag}</div>".html_safe
     }
+
+    # Allow embedding as iFrame on external sites
+    config.action_dispatch.default_headers.merge!({'X-Frame-Options' => 'ALLOWALL'})
+
+    # Allow MOSS to work with as many files as it wants
+    Rack::Utils.multipart_part_limit = 0
   end
 end

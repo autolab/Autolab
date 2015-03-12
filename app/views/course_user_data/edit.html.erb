@@ -1,5 +1,37 @@
 <% @title = "Editing Account Details for " + @editCUD.user.email %>
 
+<% content_for :javascripts do %>
+  <script type="application/javascript">
+    function formvalidation(form){
+      function DoubleByte(str) {
+        for (var i = 0, n = str.length; i < n; i++) {
+          if (str[i].charCodeAt() > 127) { return true; }
+        }
+        return false;
+      }
+      var formlog = 'Your nickname ';
+      function flag(msg, nickname){
+        nickname.setAttribute('style','background-color:#FFF352');
+        if (formlog!= 'Your nickname '){formlog+=' and ';}
+        formlog +=msg;
+
+        nickname.focus();
+      }
+      var nickname = document.getElementById('user_nickname');
+      var approve = true;
+
+      if (nickname.value.length>20){approve = false; flag('is too long',nickname);}
+      if (DoubleByte(nickname.value)===true){approve = false; flag('has non-ASCII characters',nickname);}
+
+      if (approve){
+        form.submit();
+      } else {
+        alert(formlog);
+      }
+    }
+  </script>
+<% end %>
+
 <%= form_for @editCUD, url: course_course_user_datum_path(@course, @editCUD) do |f| %>
 <% if @editCUD.errors.any? %>
 	<div id="error_explanation">
@@ -18,9 +50,9 @@
   <tr><th>Course</th><td><%= @editCUD.course.display_name %></td></tr>
 
   <%= f.fields_for :user, @editCUD.user do |u| %>
-    <tr><th>First name: </th><td><%= u.text_field :first_name, readonly: true %></td></tr>
-    <tr><th>Last name: </th><td><%= u.text_field :last_name, readonly:true %></td></tr>
-  	<tr><th>Email: </th><td><%= u.text_field :email, readonly: true %></td></tr>
+    <tr><th>First name: </th><td><%= u.text_field :first_name %></td></tr>
+    <tr><th>Last name: </th><td><%= u.text_field :last_name %></td></tr>
+  	<tr><th>Email: </th><td><%= u.text_field :email %></td></tr>
   <% end %>
 
   <tr><th>Nickname: </th><td><%= f.text_field :nickname %></td>
@@ -66,36 +98,6 @@
 
   </table>
   <br>
-  <script>
-    function formvalidation(form){
-      function DoubleByte(str) {
-           for (var i = 0, n = str.length; i < n; i++) {
-              if (str[i].charCodeAt() > 127) { return true; }
-            }
-          return false;
-      }
-      var formlog = 'Your nickname ';
-      function flag(msg, nickname){
-        nickname.setAttribute('style','background-color:#FFF352');
-        if (formlog!= 'Your nickname '){formlog+=' and ';}
-        formlog +=msg;
-
-        nickname.focus();
-      }
-      var nickname = document.getElementById('user_nickname');
-      var approve = true;
-
-      if (nickname.value.length>20){approve = false; flag('is too long',nickname);}
-      if (DoubleByte(nickname.value)===true){approve = false; flag('has non-ASCII characters',nickname);}
-
-      if (approve){form.submit();}
-      else{
-      alert(formlog);
-      }
-
-
-    }
-  </script>
   <br>
   <input id="user_submit" name="commit" type="submit" class="btn primary" value="Save Changes" onclick="formvalidation(this.parentNode); return false;">
   <!--<%= f.submit 'Save Changes' , {:class=>"btn primary"} %>-->

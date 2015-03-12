@@ -12,7 +12,6 @@ class Course < ActiveRecord::Base
 
   has_many :course_user_data, :dependent=>:destroy
   has_many :assessments, :dependent=>:destroy
-  has_many :assessment_categories, :dependent=>:destroy
   has_many :user_modules, :dependent=>:destroy
   has_many :scheduler, :dependent=>:destroy
   has_many :announcements, dependent: :destroy
@@ -97,6 +96,21 @@ class Course < ActiveRecord::Base
     return eval("Course#{course.camelize}")
   end
 
+  # reload_course_config
+  # Reload the course config file and extend the loaded methods
+  # to AdminsController
+  def reload_course_config()
+    mod = nil
+    begin
+      mod = reload_config_file
+    rescue Exception => @error
+      return false
+    end
+
+    AdminsController.extend(mod)
+    return true
+  end
+
   def sanitized_name
     name.gsub(/[^A-Za-z0-9]/, '')
   end
@@ -124,9 +138,25 @@ class Course < ActiveRecord::Base
   # TODO: should probably exclude adminstrators, but the fact that admins are in
   #   the User model instead of CourseUserDatum makes that difficult
   def students
-    course_user_data.where(course_assistant: false, instructor: false, dropped: false)
+    course_user_data.where(course_assistant: false, instructor: false, dropped: [false, nil])
   end
 
+  # return all CUDs that are not course_assistants, instructors, or dropped
+  def instructors
+    course_user_data.where(instructor: true)
+  end
+
+  def assessment_categories
+    assessments.pluck("DISTINCT category_name").sort
+  end
+
+  def assessments_with_category(cat_name, isStudent=false)
+    if isStudent then
+      assessments.where(category_name: cat_name).ordered.released
+    else
+      assessments.where(category_name: cat_name).ordered
+    end
+  end
 
 private
   def cgdub_dependencies_updated 

@@ -1,19 +1,22 @@
-<%= external_javascript_include_tag "jquery", "1.7.2" %>
-<%= external_javascript_include_tag "jquery-ui", "1.8.20" %>
-<%= external_javascript_include_tag "jquery.dataTables", "1.9.2" %>
+<% content_for :stylesheets do %>
+  <%= stylesheet_link_tag "gradesheet" %>
+<% end %>
 
-<%= javascript_include_tag "jquery.jeditable" %>
-<%= javascript_include_tag "KeyTable" %>
+<% content_for :javascripts do %>
+  <%= external_javascript_include_tag "jquery-ui", "1.10.2" %>
+  <%= external_javascript_include_tag "jquery.dataTables", "1.10.5" %>
 
-<script type="text/javascript">
-  andrewID_col = 1
-  problem_count = <%= @assessment.problems.length %>
-  first_problem_column = 5;
-  first_non_searchable_column = 3 
-</script>
+  <%= javascript_include_tag "jquery.jeditable" %>
 
-<%= javascript_include_tag "gradesheet1" %>
-<%= stylesheet_link_tag "gradesheet1" %>
+  <script type="text/javascript">
+    email_col = 1
+    problem_count = <%= @assessment.problems.length %>
+    first_problem_column = 5;
+    first_non_searchable_column = 3 
+  </script>
+
+  <%= javascript_include_tag "gradesheet" %>
+<% end %>
 
 <div id="table_container" style="text-align: center">
 
@@ -22,8 +25,7 @@
 <thead>
     <tr class="sortable">
         <th class="enumerator">#</th>
-        <th class="id">ID</th>
-        <th>Name</th>
+        <th class="id">Email &amp; Name</th>
         <th class="lec">Lec</th>
         <th class="sec">Sec</th>
         <% for p in @assessment.problems do %>
@@ -47,14 +49,16 @@
 <tr class="<%= aud_special_grade_type?(s.aud) && @cud.instructor? ? "special_submission" : "" %>">
   <td class="enumerator"></td>
   <td class="id" data-submission-id="<%= s.id.to_s %>">
-        <a tabindex="-1" class="andrewID"><%= s.course_user_datum.email %></a>
+        <%= s.course_user_datum.last_name %>, <%= s.course_user_datum.first_name %>
+        <br>
+        <a tabindex="-1" class="email"><%= s.course_user_datum.email %></a>
+
         <% if s.filename %>
           <%=raw(view_file(s, go_img(-1), go_img(-1), go_img(-1))) %>
         <% end %>
         <div class="popover">
         </div>
-    </td>
-  <td><%= s.course_user_datum.last_name %>, <%= s.course_user_datum.first_name %></td>
+  </td>
   <td class="lec"><%= s.course_user_datum.lecture %></td>
     <td class="sec"><%= s.course_user_datum.section %></td>
     <% p_scores = s.problems_to_scores %>
@@ -66,17 +70,22 @@
             <div class="editable"><%= p_score && p_score.score ? p_score.score : raw("&ndash;") %></div>
             <div class="popover">
                 <div class="arrow"></div>
-                <table class="score_details">
-                    <tr><th>Feedback</th><td><textarea class="feedback"><%= p_score ? p_score.feedback : "" %></textarea></td></tr>
-                    <tr><th>Released</th><td>
+                <div class="score_details">
+                    <div>
+                      <b>Feedback</b>
+                      <br>
+                      <textarea class="feedback"><%= p_score ? p_score.feedback : "" %></textarea>
+                    </div>
+                    <div>
+                      <b>Released</b>
                         <input class="released" type="checkbox" <%= (p_score && p_score.released) ? "checked" : "" %>></input>
                         <span class="save_box">
                             <span class="saving">Saving...</span>
-                            <span class="save" tabindex="1">Save</span>
+                            <span class="save btn small primary" tabindex="1">Save</span>
                             <span class="error" tabindex="1">Try again?</span>
                         </span>
-                    </td></tr>
-                </table>
+                    </div>
+                </div>
             </div>
         </td>
     <% end %>

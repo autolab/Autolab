@@ -33,7 +33,7 @@ class Submission < ActiveRecord::Base
   # attr_accessible :notes, :tweak_attributes
 
   # latest (unignored) submissions
-  scope :latest, -> { joins(:assessment_user_datum) }
+  scope :latest, -> { joins(:assessment_user_datum).joins(:course_user_datum) }
 
   # constants for special submission types
   NORMAL=0
@@ -91,6 +91,10 @@ class Submission < ActiveRecord::Base
       # Sanity!
       upload['file'].rewind
       File.open(path,"wb") { |f| f.write(upload['file'].read)}
+    elsif upload['local_submit_file']
+      # local_submit_file is a path string to the temporary handin
+      # directory we create for local submissions
+      File.open(path,"wb") { |f| f.write(IO.read(upload['local_submit_file']))}
     elsif upload['tar'] then
       src = upload['tar']
       `mv #{src} #{path}`
@@ -103,17 +107,18 @@ class Submission < ActiveRecord::Base
       if !(self.mime_type) then
         self.mime_type = 'text/plain'
       end
+    elsif upload['local_submit_file']
+      self.mime_type = 'text/plain'
     elsif upload['tar'] then
       self.mime_type = 'application/x-tgz'
     end
 
-    self.save
+    self.save!
   end
 
   def handin_file_path
     return nil unless filename
-    return File.join(assessment.handin_directory_path, 
-                     filename)
+    return File.join(assessment.handin_directory_path, filename)
   end
 
   def handinFile()
@@ -131,7 +136,7 @@ class Submission < ActiveRecord::Base
     conditions[:position] = position if position
     annotations = self.annotations.where(conditions)
 
-    result = file.lines.map { |line| [line, nil] }
+    result = file.lines.map { |line| [line.force_encoding("UTF-8"), nil] }
 
     # annotation lines are one-indexed, so adjust for the zero-indexed array
     annotations.each { |a| result[a.line-1][1] = a}
@@ -195,17 +200,6 @@ class Submission < ActiveRecord::Base
     }
 
     return scores
-  end
-
-  # not the most efficient way of doing this
-  def get_filename_in_archive_at(position)
-    require "libarchive"
-    archive = Archive.read_open_filename self.handin_file_path
-    while header = archive.next_header do
-      return header.pathname if archive.header_position == position 
-    end
-  rescue
-    return nil
   end
 
   def problems_to_scores
@@ -295,19 +289,16 @@ class Submission < ActiveRecord::Base
     self.detected_mime_type = file_output[/^(\w)+\/([\w-])+/]
   end
 
-  def is_archive
-    archives = %w(application/x-tar application/x-gzip application/gzip
-                  application/zip application/x-zip application/x-zip-compressed)
-    archives.include?(detected_mime_type)
-  end
-
   def is_syntax
     return false if (self.filename.nil?)
 
     ext = File.extname(self.filename)     # get extension
     if ext then ext = ext.gsub(/\./, "") end            # remove dot
-    return Simplabs::Highlight.get_language_sym(ext) || (ext == "txt") || 
-           (ext == "go") || (ext == "clac") # see commit 350d827
+    return true
+  end
+
+  def is_latest
+    return (aud.latest_submission_id == self.id)
   end
 
   # override as_json to include the total with a paramter

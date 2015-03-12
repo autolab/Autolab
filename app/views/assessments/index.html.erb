@@ -7,25 +7,26 @@
 
 <% if @is_instructor %>
 <h2>Instructor Actions</h2>
-  <%= button_to 'Install Assessment',
+  <%= link_to 'Install Assessment',
                     {:action=>"installAssessment"},
                     {:title=>"Install Assessment", :class => "btn" } %>
+  <%= link_to 'Install Quiz',
+                    {:action=>"installQuiz"},
+                    {:title=>"Install Quiz", :class => "btn" } %>
 <% end %>
 <h2>Assignments</h2>
 <div class="rolodex">
 <% @course.assessment_categories.each do |cat| %>
-  <% asmts = @is_instructor ? cat.assessments.ordered : cat.assessments.released.ordered %>
+  <% asmts = @course.assessments_with_category(cat, @cud.student?) %>
   <% if asmts.any? %>
   <div class="card">
-    <h1><a href=""><%= cat.name.pluralize %></a></h1>
+    <h1><a href=""><%= cat %></a></h1>
     <div class="content">
       <ul>
       <% asmts.each do |asmt| %>
         <li>
           <%= link_to asmt.display_name, course_assessment_url(@course, asmt) %><%= "*" unless asmt.released? %>
           <span class="pull-right shortcuts">
-
-            <a class="handin-icon-small" href="<%= handin_course_assessment_path(@course, asmt) %>"><%= image_tag "upload.png", :height => 22, :alt=>"Handin Assignment" %></a>
             <a class="goto-icon-small" href="<%= course_assessment_path(@course, asmt) %>"><%= image_tag "go-new.png", :height => 22, :alt=>"Go to assessment" %></a>
           </span>
         </li>

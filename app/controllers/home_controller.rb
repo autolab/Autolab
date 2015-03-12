@@ -27,14 +27,14 @@ class HomeController < ApplicationController
       flash[:error] = "Public course doesn't exist. Please check your link again."
       redirect_to :controller => "home", :action => "index" and return
     end
-    
+
     @course = Course.find(course_id)
     cud = CourseUserDatum.where(course: @course, user: current_user)
     if cud.nil? then
       # construct a new cud
       cud = @course.course_user_data.new(user: user)
     end
-    # allows user to be an instructor for demo course only   
+    # allows user to be an instructor for demo course only
     cud.instructor = params[:isInstructor] if course_id == PUBLIC_COURSE_ID
     if cud.save then
       flash[:success] = "You have successfully registered for " +
@@ -43,10 +43,34 @@ class HomeController < ApplicationController
           :action => "index" and return
     else
       flash[:error] = "An internal error occured. Please contact the " +
-                    "Autolab Development team at the " + 
+                    "Autolab Development team at the " +
                     "contact link below"
       redirect_to :controller => "home", :action => "index" and return
     end
   end
 
+  def contact
+    # --- empty ---
+    # This route just renders the home#contact page, nothing special
+  end
+  
+  def vmlist
+    @images = {}
+    AutogradingSetup.all.each do |a|
+      image = a.autograde_image
+      assessment = a.assessment
+      course = assessment.course
+      if (course.temporal_status == :current) then
+        @images[image] ||= Set.new
+        @images[image].add(course.name)
+      end
+    end
+    @images.each do |image, courseSet|
+      res = []
+      courseSet.each do |c|
+        res << c
+      end
+      @images[image] = res.join(", ")
+    end
+  end
 end

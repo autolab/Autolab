@@ -5,6 +5,7 @@
 <p>You can create a new assessment from scratch using our 
 	<%= link_to "Assessment Builder", new_course_assessment_path %>. </p>
 
+<hr>
 <h2>Option 2: Import an existing assessment from file system.</h2>
 <p style="width:50%" >
 
@@ -24,14 +25,13 @@
   <ul>
 
   <% for assign in @availableAssessments do %>
-    <li><%= link_to assign, {:action => "importAssessment",
-                :assessment_name=>assign} %>
+    <li><%= link_to assign, {action: :importAssessment, assessment_name: assign}, method: :post %></li>
   <% end %>         
 
   </ul>
 </ul>
 <% end %>
-
+<hr>
 <h2>Option 3: Import an existing assessment from tarball.</h2>
 <i>You can also import a tarball with the assessment directory.</i>
 <%= form_tag({action: :importAsmtFromTar}, multipart: true) do %>

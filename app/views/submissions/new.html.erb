@@ -12,14 +12,12 @@
 <tr>
   <th>User:</th>
   <td>
-  <%= if params["cud_id"].nil? then 
-      f.select(:course_user_datum_id,@cuds) 
-    else
-      raw(@cuds.collect { |u| u.full_name_with_email}.join(", ") + 
-      "<input type='hidden' name='submission[user_id]' 
-      value='" + @cuds.collect{ |u| u.id }.join(',') + "' />")
-    end
-  %>
+  <% if params[:course_user_datum_id].nil? then %>
+    <%= f.select(:course_user_datum_id,@cuds) %>
+  <% else %>
+    <%= @cuds.collect { |u| u.email }.join(", ") %>
+    <input type='hidden' name='submission[course_user_datum_id]' value='<%=@cuds.collect{ |u| u.id }.join(',')%>' />
+  <% end %>
   </td>
 </tr>
 <tr>

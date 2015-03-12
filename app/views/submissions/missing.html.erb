@@ -1,5 +1,7 @@
-<%= javascript_include_tag "sorttable" %>
-<%= javascript_include_tag "table_floating_header" %>
+<% content_for :javascripts do %>
+  <%= javascript_include_tag "sorttable" %>
+  <%= javascript_include_tag "table_floating_header" %>
+<% end %>
 
 <h2>Missing Submissions for <%= link_to @assessment.display_name, [@course, @assessment] %> </h2>
 
@@ -13,8 +15,7 @@
     {:title=>"Grant extensions to students"} %> 
 |
 <%= link_to "Fill In Empty Submissions", 
-    {:action=>"create",  :assessment_id=>@assessment.id, 
-     :user_id=>@missing.collect{ |u| u[:id]}.join(',')}, 
+    new_course_assessment_submission_path(@course, @assessment, course_user_datum_id: @missing.collect{ |u| u[:id]}.join(',')),
     {:title=>"Create submissions for all of the missing students"} %>
 
 <p>
@@ -35,7 +36,7 @@
       <td><%= student[:aud].extension ? "yes" : "no" %></td>
       <td><%= end_at_display student[:aud].end_at %></td>
       <td><%= link_to "Create Submission", 
-               new_course_assessment_submission_path(@course, @assessment, cud_id: student[:id]),
+               new_course_assessment_submission_path(@course, @assessment, course_user_datum_id: student[:id]),
                {:title=>"Create a submission for this student, with the option to handin a file on their behalf"} %>
       </td>
     </tr>

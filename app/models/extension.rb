@@ -11,8 +11,7 @@ class Extension < ActiveRecord::Base
 
   def days_or_infinite
     if (days.blank? && !infinite?)
-      errors.add_to_base("Please enter days of extension," +
-                         "or mark as infinite.")
+      errors.add(:base, "Please enter days of extension, or mark as infinite.")
     end
   end
 

@@ -34,9 +34,6 @@ gem 'slack-notifier'
 # E-mail autolab-dev on exceptions in production, pulls the latest to get slack notifications
 gem 'exception_notification', git: 'https://github.com/smartinez87/exception_notification.git'
 
-# Server-side syntax highlighting
-gem 'highlight', :require => 'simplabs/highlight'
-
 # Used by lib/tasks/autolab.rake to populate DB with dummy seed data
 gem 'rake', '>=10.3.2'
 gem 'populator', '>=1.0.0'
@@ -75,5 +72,13 @@ gem 'factory_girl_rails', group: [:development, :test]
 # Use Capistrano for deployment
 # gem 'capistrano-rails', group: :development
 
-# Use debugger
-gem 'debugger2', group: [:development, :test]
+# Dates and times
+gem 'momentjs-rails', '>= 2.9.0'
+gem 'bootstrap3-datetimepicker-rails', '~> 4.0.0'
+
+# Force SSL on certain routes
+gem 'rack-ssl-enforcer'
+
+# Useful debugger
+gem 'byebug', '>=3.5.1', group: [:development, :test]
+

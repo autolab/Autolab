@@ -55,9 +55,7 @@ class GradebooksController < ApplicationController
       redirect_to course_course_user_datum_gradebook_path and return
     end
 
-    @categories_sorted = @course.assessment_categories.sort { |a, b|
-      b.assessments.size <=> a.assessments.size
-    }
+    @categories_sorted = @course.assessment_categories
   end
 
   action_auth_level :csv, :instructor
@@ -90,9 +88,9 @@ class GradebooksController < ApplicationController
 
     # category averages
     @course.assessment_categories.each do |cat|
-      next unless matrix.has_category? cat.id
+      next unless matrix.has_category? cat
 
-      cols["#{cat.name} Average"] = matrix.averages_for_category cat.id
+      cols["#{cat} Average"] = matrix.averages_for_category cat
     end
 
     # course averages

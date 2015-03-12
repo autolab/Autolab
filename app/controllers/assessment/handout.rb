@@ -9,18 +9,15 @@ module AssessmentHandout
   end
   
   def handout
-     get_assessment()
-  	extend_config_module
+    get_assessment()
+  	extend_config_module(@assessment, nil, @cud)
 
     if Time.now() < @assessment.start_at && !@cud.instructor? then
       flash[:error] = "This assessment has not started yet."
       return
     end
 
-    print "\n"
-    print @assessment.config_module.instance_methods
-    print "\n\n"
-    if @assessment.config_module.instance_methods.include?(:handout) then
+    if @assessment.overwrites_method?(:handout) then
       hash = @assessment.config_module.handout()
       send_file(hash["fullpath"], 
             :disposition => 'inline', 

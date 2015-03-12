@@ -1,3 +1,10 @@
+<% content_for :stylesheets do %>
+  <style type="text/css">
+    code {font-weight:bold;}
+    code.template {font-size:14px;}
+  </style>
+<% end %>
+
 <div style="width:300px">
   <p>Click on a line of code to annotate. You will see text boxes for a comment, value and problem. If you enter a value, you're annotation will be added to the summary. Try tabbing between boxes to save time.</p>
 <% if params[:id] %>
@@ -6,10 +13,6 @@
 </div>
 <hr />
 <div style="width:485px">
-<style type="text/css">
-code {font-weight:bold;}
-code.template {font-size:14px;}
-</style>
 <h3>Here are the different ways you can annotate your code.</h3>
 <code class="template">Simple Annotation </code>
 <ul>

@@ -1,24 +1,13 @@
-<h2>Admin Course</h2>
-<ul class="action-menu">
-  <% for option in @options do %>
-    <% if option[:path].nil? %>
-      <li><%= link_to option['name'], course_admin_path(@course) + "/" + option['action'],
-        { title: option['title'] } %></li>
-    <% else %>
-      <li><%= link_to option['name'], option[:path], { title: option['title'] } %></li>
-    <% end %>
-  <% end %>
-</ul>
-
-<% if @cud.user.administrator? then %>
+<% if current_user.administrator? then %>
 <h2>Admin Autolab</h2>
-<ul class="action-menu">
+<ul>
   <li><%= link_to 'Create new course', new_course_path,
                   {:title=>"Create a new course"} %></li>
   <li><%= link_to raw('<span class="button">Manage users</span>'), 
                   users_path %></li>
-  <li><%= link_to 'Throw exception', 
-                  throwException_course_admin_path(@course),
-                  {:title=>"Seldom used debugging feature"} %></li>
+  <li><%= link_to 'Bulk Email Instructors', emailInstructors_admin_path,
+                  {:title=>"Create a new course"} %></li>
 </ul>
+<% else %>
+<h2 class="warning">Admin only page.</h2>
 <% end %>

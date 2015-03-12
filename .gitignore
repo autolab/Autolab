@@ -1,9 +1,11 @@
 /attachments/
 log/
 tmp/cache/
-lib/autoConfig.rb
+config/autogradeConfig.rb
 assessmentConfig/
 courseConfig/
+config/environments/production.rb
+config/initializers/devise.rb
 /courses/
 /courses
 /gradebooks/
@@ -18,3 +20,4 @@ tmp/
 *.swp
 db/*.sqlite3
 tags
+.DS_Store

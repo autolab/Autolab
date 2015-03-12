@@ -1,20 +1,20 @@
 class AttachmentsController < ApplicationController
-  before_action :assessment_or_course
+  
+  # inherited from ApplicationController
+  # this will also set an @is_assessment variable based on the result of is_assessment?
+  before_action :set_assessment, if: :is_assessment?
+  before_action :add_attachments_breadcrumb
 
   action_auth_level :index, :instructor
   def index
     @attachments = @course.attachments
     if (@is_assessment) then
-      @assessment = @course.assessments.where(id: params[:assessment_id]).first
-      @attachments = (@assessment)? @assessment.attachments : nil
+      @attachments = @assessment.attachments
     end
   end
   
   action_auth_level :new, :instructor
   def new
-    if @is_assessment then
-      @assessment = @course.assessments.where(id: params[:assessment_id]).first
-    end
   end
 
   action_auth_level :create, :instructor
@@ -32,7 +32,7 @@ class AttachmentsController < ApplicationController
 
   action_auth_level :show, :student
   def show
-    @attachment = @course.attachments.where(id: params[:id]).first
+    @attachment = @course.attachments.find(params[:id])
     if !@attachment then
       flash[:error] = "Could not find Attachment # #{params[:id]}"
       redirect_to :controller=>"home",:action=>"error" and return
@@ -66,7 +66,6 @@ class AttachmentsController < ApplicationController
     else
       @attachment = @course.attachments.where(id:params[:id]).first
       @attachment.update(attachment_params)
-      debugger
       redirect_to course_attachments_path(@course) and return
     end
   end
@@ -82,14 +81,22 @@ class AttachmentsController < ApplicationController
     end
   end
 
-private
+  private
 
-  def assessment_or_course
-    @is_assessment = params.has_key?(:assessment_id)
-  end
+    def is_assessment?
+      @is_assessment = params.has_key?(:assessment_id)
+    end
 
-  def attachment_params
-    params.require(:attachment).permit(:name, :file, :released, :mime_type)
-  end
+    def add_attachments_breadcrumb
+      if @is_assessment then
+        @breadcrumbs << (view_context.link_to "Assessment Attachments", [@course, @assessment, :attachments])
+      else
+        @breadcrumbs << (view_context.link_to "Course Attachments", [@course, :attachments])
+      end
+    end
+
+    def attachment_params
+      params.require(:attachment).permit(:name, :file, :released, :mime_type)
+    end
 
 end

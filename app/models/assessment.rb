@@ -8,7 +8,6 @@ class Assessment < ActiveRecord::Base
   # Associations
   belongs_to :course
   belongs_to :course_user_datum
-  belongs_to :category, :class_name => "AssessmentCategory"
   belongs_to :late_penalty, :class_name => "Penalty"
   belongs_to :version_penalty, :class_name => "Penalty"
   has_many :submissions
@@ -30,8 +29,9 @@ class Assessment < ActiveRecord::Base
                             :greater_than_or_equal_to => -1, :allow_nil => true
   validates_numericality_of :max_grace_days, :only_integer => true,
                             :greater_than_or_equal_to => 0, :allow_nil => true
+  validates_numericality_of :group_size, only_integer: true, greater_than_or_equal_to: 1, allow_nil: true
   validates_presence_of :name, :display_name, :due_at, :end_at, :start_at,
-                        :grading_deadline, :category_id, :max_size, :max_submissions
+                        :grading_deadline, :category_name, :max_size, :max_submissions
 
   # Callbacks
   trim_field :name, :display_name, :handin_filename, :handin_directory, :handout, :writeup
@@ -44,7 +44,7 @@ class Assessment < ActiveRecord::Base
   RELEASED = "start_at < ?"
 
   # Scopes
-  scope :ordered, -> { order ORDERING }
+  scope :ordered, -> { order(ORDERING) }
   scope :released, ->(as_of = Time.now) { where(RELEASED, as_of) }
   scope :unreleased, ->(as_of = Time.now) { where.not(RELEASED, as_of) }
 
@@ -233,13 +233,29 @@ class Assessment < ActiveRecord::Base
     end
   end
 
+  def overwrites_method?(methodKey)
+    self.config_module.instance_methods.include?(methodKey)
+  end
+
+  def has_groups?
+    group_size && group_size > 1
+  end
+  
+  def groups
+    Group.joins(:assessment_user_data).where(assessment_user_data: {assessment_id: self.id}).distinct
+  end
+  
+  def grouplessCUDs
+    self.course.course_user_data.joins(:assessment_user_data).where(assessment_user_data: {assessment_id: self.id, membership_status: AssessmentUserDatum::UNCONFIRMED})
+  end
+
 private
   def path filename
-    File.join Rails.root, 'courses', course.name, name, filename
+    Rails.root.join "courses", course.name, name, filename
   end
 
   def source_config_file_path
-    File.join Rails.root, "courses", course.name, sanitized_name, "#{sanitized_name}.rb"
+    Rails.root.join "courses", course.name, sanitized_name, "#{sanitized_name}.rb"
   end
 
   def source_config_module_name
@@ -303,8 +319,9 @@ private
     s
   end
 
-  GENERAL_SERIALIZABLE = Set.new [ "name", "display_name", "description", "handin_filename", "handin_directory",
-                           "has_autograde", "has_partners", "has_svn", "has_scoreboard",
+  GENERAL_SERIALIZABLE = Set.new [ "name", "display_name", "category_name", "description", 
+                           "handin_filename", "handin_directory",
+                           "has_autograde", "has_svn", "has_scoreboard",
                            "max_grace_days", "handout", "writeup", "max_submissions",
                            "disable_handins", "max_size" ]
 

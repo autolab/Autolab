@@ -12,12 +12,7 @@ class ApplicationController < ActionController::Base
   before_action :authorize_user_for_course, except: [:action_no_auth ]
   before_action :authenticate_for_action
   before_action :update_persistent_announcements
-
-  rescue_from CourseUserDatum::AuthenticationFailed do |e|
-    COURSE_LOGGER.log("AUTHENTICATION FAILED: #{e.user_message}, #{e.dev_message}")
-    flash[:error] = e.user_message
-    redirect_to :controller => "home", :action => "error"
-  end
+  before_action :set_breadcrumbs
 
   # this is where Error Handling is configured. this routes exceptions to
   # the error handler in the HomeController, unless we're in development mode
@@ -25,9 +20,13 @@ class ApplicationController < ActionController::Base
   # the policy is basically a replica of Rails's default error handling policy
   # described in http://guides.rubyonrails.org/action_controller_overview.html#rescue
   unless Rails.env.development?
-    # this doesn't appear to be getting called -Dan
-    #rescue_from ActiveRecord::RecordNotFound, :with => :render_404
+    # going against all logic, handlers registered last get called first
     rescue_from Exception, with: :render_error
+    rescue_from CourseUserDatum::AuthenticationFailed do |e|
+      COURSE_LOGGER.log("AUTHENTICATION FAILED: #{e.user_message}, #{e.dev_message}")
+      flash[:error] = e.user_message
+      redirect_to root_path
+    end
   end  
 
   def self.autolabRequire(path)
@@ -45,6 +44,12 @@ class ApplicationController < ActionController::Base
     raise ArgumentError.new("The level must be symbol.") unless level.is_a? Symbol
     unless CourseUserDatum::AUTH_LEVELS.include?(level)
       raise ArgumentError.new("#{level.to_s} is not an auth level") 
+    end
+
+    if level == :administrator then
+      skip_before_filter :authorize_user_for_course, only: [action]
+      skip_filter :authenticate_for_action => [action]
+      skip_before_filter :update_persistent_announcements, only: [action]
     end
 
     controller_whitelist = (@@global_whitelist[self.controller_name.to_sym] ||= {})
@@ -93,7 +98,11 @@ protected
     level = controller_whitelist[params[:action].to_sym]
     return if level.nil?
 
-    authentication_failed unless @cud.has_auth_level?(level)
+    if level == :administrator then
+      authentication_failed unless current_user.administrator
+    else
+      authentication_failed unless @cud.has_auth_level?(level)
+    end
   end
 
   protect_from_forgery 
@@ -111,8 +120,9 @@ protected
   def maintenance_mode?
     # enable/disable maintenance mode with this switch:
     if false
-      unless @user.administrator?
-        redirect_to "/maintenance.html"
+      unless user_signed_in? and current_user.administrator?
+        render :maintenance
+        return false
       end
     end
   end
@@ -139,7 +149,12 @@ protected
   # end
 
   def authorize_user_for_course
-    @course = Course.find(params[:course_id] || params[:id])
+    course_id = params[:course_id] ||
+          (params[:controller] == "courses" ? params[:id] : nil)
+    if (course_id) then
+      @course = Course.find(course_id)
+    end
+
     unless @course
       flash[:error] = "Course #{params[:course]} does not exist!"
       redirect_to controller: :home, action: :error and return
@@ -204,6 +219,25 @@ protected
       redirect_to edit_course_course_user_datum_path(id: @cud.id, course_id: @cud.course.id)
     end
   end
+  
+  ##
+  # this loads the current assessment.  It's up to sub-controllers to call this
+  # as a before_action when they need the assessment.
+  #
+  def set_assessment
+    begin
+      @assessment = @course.assessments.find(params[:assessment_id] || params[:id])
+    rescue
+      flash[:error] = "The assessment was not found for this course."
+      redirect_to action: :index and return
+    end
+    
+    if @cud.student? && !@assessment.released? then
+      redirect_to action: :index and return
+    end
+      
+    @breadcrumbs << (view_context.current_assessment_link)
+  end
 
   def run_scheduler
 
@@ -223,6 +257,7 @@ protected
 
         Process.detach(pid)
       rescue Exception => e  
+        COURSE_LOGGER.log("Error updater: #{e.to_s}")
         puts e
         puts e.message  
         puts e.backtrace.inspect
@@ -233,9 +268,34 @@ protected
   def update_persistent_announcements
     @persistent_announcements = Announcement.where("persistent and (course_id=? or system)", @course.id)
   end
+      
+  def set_breadcrumbs
+    @breadcrumbs = []
+    if @course then
+      if @course.disabled? then
+        @breadcrumbs << (view_context.link_to "#{@course.display_name} (Course Disabled)", [@course], id: "courseTitle")
+      else
+        @breadcrumbs << (view_context.link_to @course.display_name, [@course], id: "courseTitle")
+      end
+    end
+  end
 
   def pluralize(count, singular, plural = nil)
     "#{count || 0} " + ((count == 1 || count =~ /^1(\.0+)?$/) ? singular : (plural || singular.pluralize))
+  end
+
+  # makeDlist - Creates a string of emails that can be added as b/cc field.
+  # @param section The section to email.  nil if we should email the entire
+  # class. 
+  # @return The filename of the dlist that was created. 
+  def makeDlist(cuds)
+    emails = []
+
+    for cud in cuds do 
+      emails << "#{cud.user.email}"
+    end
+
+    return emails.join(",")
   end
 
 private
@@ -244,21 +304,23 @@ private
   # Shows good ol' Donkey Kong to students
   def render_error(exception)
     # use the exception_notifier gem to send out an e-mail to the notification list specified in config/environment.rb
-    ExceptionNotifier.notify_exception(exception)
+    ExceptionNotifier.notify_exception(exception, env: request.env, data: {message: "was doing something wrong"})
 
     # stack traces are only shown to instructors and administrators
     # by leaving @error undefined, students and CAs do not see stack traces
     if (not current_user.nil?) and (current_user.instructor? or current_user.administrator?) then
       @error = exception
+
+      # Generate course id and assesssment id objects
+      @course_id = params[:course_id] ||
+            (params[:controller] == "courses" ? params[:id] : nil)
+      if (@course_id) then
+        @assessment_id = params[:assessment_id] ||
+            (params[:controller] == "assessments" ? params[:id] : nil)
+      end
     end
 
     render "home/error"
-  end
-
-  # called on ActiveRecord::RecordNotFound exception. 
-  # Redirect user to the 404 page without error notification
-  def render_404
-    render file: "public/404.html", layout: false
   end
 
 end

@@ -1,33 +1,60 @@
-<% content_for :head do %>
+<%# For navigation breadcrumbs %>
+<% @title = "Edit Assessment" %>
+
+<% content_for :stylesheets do %>
   <%= stylesheet_link_tag "assessments/create_edit" %>
-  <%= javascript_include_tag "assessments/create_edit" %>
+<% end %>
+
+<% content_for :javascripts do %>
+  <script type="text/javascript">
+    var changes = false;
+
+    $('input').on('change', function(e) {
+      changes = true;
+    });
+
+    window.onbeforeunload = function() {
+      if (changes) {
+        var message = "You have some unsaved changes. \n Are you sure you want to navigate away from this page?";
+        if (confirm(message)) return true;
+        else return false;
+      }
+    }
+
+    $('form').on('submit', function() {
+      changes = false;
+    });
+  </script>
 <% end %>
 
 <ul id="tabs" class="nav nav-tabs">
 <% [ "basic", "handin", "penalties", "problems" ].each do |tab_name| %>
   <%= (tab_name == params[:active_tab]) ? tag(:li, class: :active) : tag(:li) %>
-    <%= content_tag :a, tab_name.titleize, href: "edit_#{tab_name}" %>
+    <%= link_to tab_name.titleize, edit_course_assessment_path(@course, @assessment) + "/#{tab_name}" %>
   </li>
 <% end %>
 </ul>
 
-<%= form_for [ @course, @assessment ], url: "edit_#{params[:active_tab]}",
-                                   builder: FormBuilderWithDateTimeInput do |f| %>
-  <% if @course.errors.any? %>
-      <ul>
-        <% @course.errors.full_messages.each do |msg| %>
-          <li><%= msg %></li>
-        <% end %>
-      </ul>
-  <% end %> 
+<div class="row">
+  <div class="col-md-6">
+    <%= form_for [ @course, @assessment ], url: edit_course_assessment_path(@course, @assessment) + "/#{params[:active_tab]}", builder: FormBuilderWithDateTimeInput do |f| %>
+      <% if @course.errors.any? %>
+          <ul>
+            <% @course.errors.full_messages.each do |msg| %>
+              <li><%= msg %></li>
+            <% end %>
+          </ul>
+      <% end %>
 
-  <% if @assessment.errors.any? %>
-      <ul>
-        <% @assessment.errors.full_messages.each do |msg| %>
-          <li><%= msg %></li>
-        <% end %>
-      </ul>
-  <% end %>
+      <% if @assessment.errors.any? %>
+          <ul>
+            <% @assessment.errors.full_messages.each do |msg| %>
+              <li><%= msg %></li>
+            <% end %>
+          </ul>
+      <% end %>
 
-  <%= render "edit_#{params[:active_tab]}", f: f %>
-<% end %>
+      <%= render "edit_#{params[:active_tab]}", f: f %>
+    <% end %>
+  </div>
+</div>

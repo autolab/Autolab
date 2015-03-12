@@ -115,7 +115,7 @@ class User < ActiveRecord::Base
   end
   
   # user created by roster
-  def self.roster_create(email, first_name, last_name)
+  def self.roster_create(email, first_name, last_name, school, major, year)
 
     auth = Authentication.new
     auth.provider = "CMU-Shibboleth"
@@ -126,6 +126,9 @@ class User < ActiveRecord::Base
     user.email = email
     user.first_name = first_name
     user.last_name = last_name
+    user.school = school
+    user.major = major
+    user.year = year
     user.authentications << auth
 
     temp_pass = Devise.friendly_token[0, 20]    # generate a random token
@@ -153,21 +156,19 @@ class User < ActiveRecord::Base
     user.password_confirmation = temp_pass
     user.skip_confirmation!
 
-    if (user.save) then
-        user.send_reset_password_instructions
-        return user
-    else
-        return nil 
-    end
+    user.save!
+    user.send_reset_password_instructions
+    return user
+
   end
   
   # list courses of a user
   # list all courses if he's an admin
   def self.courses_for_user(user)
     if user.administrator?
-      return Course.all
+      return Course.order("display_name ASC")
     else
-      return user.courses
+      return user.courses.order("display_name ASC")
     end
   end
 end

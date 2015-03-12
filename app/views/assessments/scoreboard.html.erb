@@ -1,9 +1,11 @@
 <% @title = "Scoreboard" %>
 
-<%= javascript_include_tag "sorttable" %>
+<% content_for :javascripts do %>
+  <%= javascript_include_tag "sorttable" %>
+<% end %>
 
 <% if @staticOverride  then %>
-  <%= f = File.new(@staticOverride,'r') 
+  <%= f = File.new(@staticOverride,'r')
       f.read()
   %>
 <% else %>
@@ -21,9 +23,19 @@
       grade[:version]
       end%></td>
     <td><%= grade[:time] %></td>
-    <% for column in grade[:entry] do %>
-      <td><%= column %></td>
-    <% end %>
+      <% if @colspec then %>
+        <% @colspec.each_with_index do |c, i| %>
+          <% if c["img"] then %>
+            <td><img src="data:image/png;base64,<%= grade[:entry][i] %>" /></td>
+          <% else %>
+            <td><%= grade[:entry][i] %></td>
+          <% end %>
+        <% end %>
+      <% else %>
+        <% for column in grade[:entry] do %>
+          <td><%= column %></td>
+        <% end %>
+      <% end %>
     </tr>
   <% end %>
   </table>
@@ -34,7 +46,7 @@
 	<div id="error_explanation">
 		<h2><%= pluralize(@cud.errors.count, "error") %>
       prohibited the data from being saved:</h2>
-			
+
 		<ul>
 			<% @cud.errors.full_messages.each do |msg| %>
 			<li><%= msg %></li>

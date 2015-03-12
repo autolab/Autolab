@@ -22,6 +22,12 @@ html, body {
   display:inline;
 }
 
+/* Helper Styles */
+
+.full-width {
+  width: 100%;
+}
+
 /* Navbar Styling */
 
 div.main-header {
@@ -202,9 +208,11 @@ div.main-header img {
   color: rgb(103, 100, 100);
 }
 
-.sub-navigation .arrow {
+.sub-navigation .item + .item:before, /* IE8 *sigh* */
+.sub-navigation .item + .item::before {
+  color: #999696;
+  content: "»";
   font-size: 24px;
-  color: rgb(153, 150, 150);
 }
 
 @media (max-width: 768px) {
@@ -228,7 +236,7 @@ div.main-header img {
 
   .action-links.navbar-nav li {
     display: block;
-    border-bottom: 1px solid #fff;  
+    border-bottom: 1px solid #fff;
     margin: 0;
   }
 
@@ -265,7 +273,8 @@ div.main-header img {
 
 .handin-panel {
   background-color: rgba(243, 240, 240, 0.7);
-  border: 1px dashed #999;
+  border: 1px solid #ddd;
+  border-radius: 4px;
   padding: 18px;
 }
 
@@ -275,6 +284,10 @@ div.main-header img {
 
 .handin-panel.modal {
   display: none;
+}
+
+.history-download-pane .glyphicon {
+  font-size: 14px;
 }
 
 /* Footer - Information, About, etc. Should be in a <footer> tag. */
@@ -299,9 +312,9 @@ div#footer a:hover {
 
 
 /* used for the submission history popup on submissions#index */
-#floater{ 
+#floater{
   background-color: #fff;
-  border:1px solid black;	
+  border:1px solid black;
   display: none;
   height:80%;
   left:15%;
@@ -316,21 +329,39 @@ div#footer a:hover {
 ul.gray-box {
   list-style-image:none;
   list-style-type:none;
-  margin:16px 0px;
-  padding:0px;
+  margin: 16px 0;
+  padding: 0;
 }
-ul.gray-box li{
-  background-color:#FAFAFA;
-  border:1px solid #EEE;
-  color:#666;
-  margin:8px 0px;
-  padding:10px;
+ul.gray-box > li {
+  background-color: #FAFAFA;
+  border: 1px solid #EEE;
+  color: #666;
+  margin: 0;
+  padding: 10px;
+}
+ul.gray-box > li + li {
+  margin-top: 8px;
+}
+ul.gray-box > li > *:first-child {
+  margin-top: 0;
+}
+ul.gray-box > li > *:last-child {
+  margin-bottom: 0;
 }
 ul.gray-box a {
   text-decoration: none;
 }
 ul.gray-box b {
   color:#555;
+}
+ul.gray-box.small {
+  margin: 8px 0;
+}
+ul.gray-box.small > li {
+  padding: 5px;
+}
+ul.gray-box.small > li + li {
+  margin-top: 4px;
 }
 
 /* This one is actually in use.  Just so we're clear. */
@@ -349,14 +380,14 @@ div#publicCourse{
 }
 
 /* For autocompleting something. Not sure that these are in use anymore... */
-div.autoCompleteDiv  { 
+div.autoCompleteDiv  {
   background-color:white;
   border: 1px solid black;
   font-color:black;
   margin-right:10px;
   padding: 2px;
 }
-div.autoCompleteDiv:hover, div.selectedAutoCompleteDiv { 
+div.autoCompleteDiv:hover, div.selectedAutoCompleteDiv {
   background-color:#d2d2d2;
   border: 1px solid black;
   font-color:black;
@@ -365,11 +396,16 @@ div.autoCompleteDiv:hover, div.selectedAutoCompleteDiv {
 }
 
 /*
- * For announcing Exams 
+ * For announcing Exams
  */
 p.attention {
   color: green;
   font-style: italic;
+}
+
+.autolab .tooltip-inner {
+    white-space:pre;
+    max-width:none;
 }
 
 /**
@@ -431,37 +467,64 @@ div.field_with_errors {
 
 /* TABLE STYLES.  Styles for the multiple tables that we have for some reason */
 /* Pretty Border Tables. I vote we make this the generic table style. */
-table.prettyBorder, table.prettyBorder tr, table.prettyBorder th, table.prettyBorder td {
+table.prettyBorder,
+table.prettyBorder tr,
+table.prettyBorder th,
+table.prettyBorder td {
   border: 1px solid #ddd;
   text-align: left;
 }
-table.prettyBorder{
+table.prettyBorder {
   border-collapse:collapse;
   font-size:15px;
   width: 100%;
-}
-table.prettyBorder tr {
-  background-color: #fff;
-}
-table.prettyBorder tr:hover {
-  background-color:#abcdef;
-}
-table.prettyBorder th{
-  background-color:#E5E5E5;
-  background: linear-gradient(to bottom, #EFEFEF, #E5E5E5);
-  border: 1px solid #ccc;
-  color:#888;
-  cursor:pointer;
-  font-family: Helvetica, sans-serif; 
-  font-size: 12px; 
-  font-weight: bold;
-  padding: 5px;
-  text-align:left;
-  text-transform:uppercase;
-}
-table.prettyBorder td {
-  border: 1px solid #ddd;
-  padding: 0 5px;
+  // keep track of what row this is
+  counter-reset: rowNumber;
+
+  tr {
+    background-color: #fff;
+    &:hover {
+      background-color:#abcdef;
+    }
+  }
+
+  .user-row {
+    // Increment counter for each non-heading row
+    counter-increment: rowNumber;
+
+    .row-index::before {
+      // populate the row index
+      content: counter(rowNumber);
+    }
+  }
+
+  th {
+    background-color:#E5E5E5;
+    background: linear-gradient(to bottom, #EFEFEF, #E5E5E5);
+    border: 1px solid #ccc;
+    color:#888;
+    cursor:pointer;
+    font-family: Helvetica, sans-serif;
+    font-size: 12px;
+    font-weight: bold;
+    padding: 5px;
+    text-align:left;
+    text-transform:uppercase;
+  }
+
+  td {
+    border: 1px solid #ddd;
+    padding: 0 5px;
+  }
+
+  tr.selected {
+    background-color: #eee;
+  }
+
+  tr .btn.small {
+    margin-top: 3px;
+    margin-bottom: 3px;
+  }
 }
 
 table.navigatable tr {
@@ -477,11 +540,10 @@ table.navigatable tr:hover {
 
 div.card {
   display:inline-block;
-  width: 320px;
-  margin-right: 20px;
+  width: 300px;
+  margin-right: 10px;
   margin-top: 15px;
   vertical-align: top;
-  padding:0;
   webkit-box-shadow: 0 0 8px rgba(0,0,0,0.10);
   -moz-box-shadow: 0 0 8px rgba(0,0,0,0.10);
   box-shadow: 0 0 8px rgba(0,0,0,0.10);
@@ -489,6 +551,10 @@ div.card {
   -moz-border-radius: 6px;
   overflow: hidden;
   text-align:center;
+  padding: 0;
+  // There is 22px between the assignment list and the button (from various
+  // margins), so let's match it below the button as well.
+  padding-bottom: 22px;
   min-height: 215px;
 }
 
@@ -499,7 +565,7 @@ div.card:hover {
 }
 
 
-div.card h1, 
+div.card h1,
 div.card h2 {
   font-weight: 300;
   margin: 0;
@@ -563,12 +629,8 @@ div.card .btn.main:hover {
   background-color: rgba(153, 0, 0, 0.9)
 }
 
-div.card:nth-child(3) {
-  margin-right: 0;
-}
-
 @media (max-width: 768px) {
-  
+
   .rolodex {
     text-align: center;
   }
@@ -584,16 +646,27 @@ div.card:nth-child(3) {
 /* General Styling */
 
 body.autolab {
-  
+
   font-family: 'Source Sans Pro', sans-serif;
   font-weight: 300;
+  font-size: 16px;
 
   h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
     font-family: 'Source Sans Pro', sans-serif;
   }
 
+  h4 {
+    font-size: 22px;
+    font-weight: bold;
+  }
+
 }
 
+@media (min-width: 1200px) {
+  #pageBody.container {
+    max-width: 970px;
+  }
+}
 
 input[type="text"],
 input[type="email"],
@@ -601,10 +674,6 @@ input[type="password"] {
   border: none;
   padding: 10px 8px;
   border: 1px solid #ccc;
-}
-
-input[type="submit"] {
-  margin-top: 15px;
 }
 
 input[type="text"]:disabled,
@@ -623,10 +692,44 @@ input[type="password"]:focus {
   outline: none;
 }
 
+input[type="checkbox"] {
+  // For spacing between this and an adjacent label
+  margin-right: 10px;
+}
+
+label.control-label {
+  font-size: 18px;
+}
+
+.help-block {
+  font-size: 15px;
+  margin-left: 8px;
+}
+
+.autolab select.form-control {
+  height: 34px;
+}
+
+.autolab .form-control {
+  display: block;
+  width: 100%;
+  /* These are used to overwrite bootstrap's .form-control properties
+     and using our default input styling */
+  border-radius: inherit;
+  box-shadow: inherit;
+  height: inherit;
+}
+
+.autolab .input-group-addon select.form-control {
+  height: inherit;
+  width: 80px;
+  border: none;
+}
+
 .page-wrapper {
   min-height: 100%;
   /* equal to footer height */
-  margin-bottom: -42px; 
+  margin-bottom: -42px;
 }
 .page-wrapper:after {
   content: "";
@@ -634,7 +737,7 @@ input[type="password"]:focus {
 }
 .page-wrapper:after {
   /* .push must be the same height as footer */
-  height: 42px; 
+  height: 42px;
 }
 
 .autolab .btn {
@@ -663,6 +766,11 @@ input[type="password"]:focus {
 
 .autolab .btn.primary {
   background-color: rgba(153,0,0,0.9);
+}
+
+.autolab .btn.small {
+  padding: 5px 10px;
+  font-size: 15px;
 }
 
 /**
@@ -729,10 +837,30 @@ input[type="password"]:focus {
   border:1px solid #bbb;
 }
 
+.options {
+line-height: 36px;
+list-style: none;
+border-top: 1px solid #eee;
+padding-left: 0;
+}
+
+.options li:hover {
+background-color: #eee;
+}
+
+.options li {
+border-bottom: 1px solid #eee;
+}
+
+.options li a {
+padding-left: 14px;
+display: block;
+}
+
 /* Form Tables */
 
 .verticalTable {
-  
+
 }
 
 .verticalTable tr {
@@ -782,3 +910,53 @@ input[type="password"]:focus {
   font-size: 16px;
   line-height: 24px;
 }
+
+// Bootstrap 3 Datepicker overrides
+.bootstrap-datetimepicker-widget {
+  a[data-action="incrementHours"],
+  a[data-action="decrementHours"],
+  a[data-action="incrementMinutes"],
+  a[data-action="decrementMinutes"] {
+    span:hover {
+      background: none;
+    }
+  }
+
+  // Custom CSS classes added to buttons in initialize_datepickers.js
+  .time-btn:after {
+    content: ' Time';
+  }
+
+  .date-btn:after {
+    content: ' Date';
+  }
+
+  .now-btn:after {
+    content: ' Now';
+  }
+
+}
+
+/*  Warnings  */
+
+#flashes {
+  margin-top: 8px;
+}
+
+#flash_alert.alert,
+#flash_error.error,
+#flash_notice {
+  color: #ce4844;
+  padding: 10px;
+  margin-bottom: 0px;
+  border-radius: 3px;
+  border: 1px solid #eee;
+  border-left: 5px solid #ce4844;
+  font-weight: 500;
+}
+
+#flash_notice {
+  color: #1b809e;
+  border-left: 5px solid #1b809e;
+}
+

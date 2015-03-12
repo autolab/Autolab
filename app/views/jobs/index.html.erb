@@ -1,6 +1,6 @@
-<% require 'autoConfig' %>
-
-<%= javascript_include_tag "sorttable" %>
+<% content_for :javascripts do %>
+  <%= javascript_include_tag "sorttable" %>
+<% end %>
 
 <p>
 This page shows you the status of current and recent autograding jobs. 
@@ -8,7 +8,7 @@ This page shows you the status of current and recent autograding jobs.
 
 <h2>Currently Running Jobs</h2>
 
-<% if @running_jobs == [] then %>
+<% if @running_jobs.blank? or @running_jobs == [] then %>
   None
 <% else %>
   <table class='prettyBorder sortable'>
@@ -18,7 +18,7 @@ This page shows you the status of current and recent autograding jobs.
     <tr>
     <td> <%= @job[:id] %> </td> 
     <td> <%= @job[:name] %> </td> 
-    <td> <%= @job[:first] %> </td> 
+    <td> <%= DateTime.parse(@job[:first]).to_time.localtime.to_s(:db) %> </td> 
     <td> <%= @job[:elapsed] %> </td>
 
     <% if @job[:name] == "*" then %>
@@ -37,7 +37,7 @@ This page shows you the status of current and recent autograding jobs.
 
 <h2>Jobs Waiting to Run</h2>
 
-<% if @waiting_jobs == [] then %>
+<% if @waiting_jobs.blank? or @waiting_jobs == [] then %>
   None
 <% else %>
   <table class='prettyBorder sortable'>
@@ -46,7 +46,7 @@ This page shows you the status of current and recent autograding jobs.
     <tr>
     <td> <%= @job[:id] %> </td> 
     <td> <%= @job[:name] %> </td> 
-    <td> <%= @job[:first] %> </td> 
+    <td> <%= DateTime.parse(@job[:first]).to_time.localtime.to_s(:db) %> </td> 
     <td> <%= @job[:elapsed] %> </td>
 
     <% if @job[:name] == "*" then %>
@@ -66,10 +66,11 @@ This page shows you the status of current and recent autograding jobs.
 
 <% 
 since = ""
-if @dead_jobs_view[-1] and 
+if @dead_jobs_view and 
+  @dead_jobs_view[-1] and 
   @dead_jobs_view[-1][:first] and 
   @dead_jobs_view[-1][:first] != "" then
-    since = "(since #{@dead_jobs_view[-1][:first]})"
+    since = "(since #{DateTime.parse(@dead_jobs_view[-1][:first]).to_time.localtime.to_s(:db)})"
 end
 %>
 
@@ -81,7 +82,7 @@ end
   <h2>Your Recently Completed Jobs <%=since%></h2>
 <% end %>
 
-<% if @dead_jobs == [] then %>
+<% if @dead_jobs_view.blank? or @dead_jobs == [] then %>
   None
 <% else %>
   <table class='prettyBorder sortable'>
@@ -91,7 +92,7 @@ end
     <tr>
     <td> <%= @job[:id] %> </td> 
     <td> <%= @job[:name] %> </td> 
-    <td> <%= @job[:first] %> </td> 
+    <td> <%= DateTime.parse(@job[:first]).to_time.localtime.to_s(:db) %> </td> 
     <td> <%= @job[:elapsed] %> </td>
     <td> <%= link_to @job[:state], {:controller => "jobs", :action => "getjob", :id=>@job[:id]} %> </td>
     </tr>

@@ -1,9 +1,9 @@
-<% content_for :head do %>
+<% content_for :stylesheets do %>
   <%= external_stylesheet_link_tag "bootstrap", "3.0.0" %>
   <%= stylesheet_link_tag "bulkGrade" %>
 <% end %>
 
-<h2>Bulk Upload Grades for <%= link_to @assessment.display_name, { :controller => @assessment.name } %></h2>
+<h2>Bulk Upload Grades for <%= link_to @assessment.display_name, current_assessment_path %></h2>
 
 <p><span class="success">Success</span>! The following entries were saved:</p>
 

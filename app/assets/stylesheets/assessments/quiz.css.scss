@@ -1,0 +1,92 @@
+.quiz-form {
+  max-width: 900px;
+  width: 100%;
+  margin: 0 auto;
+  text-align: center;
+  #submit {
+    margin-top: 20px;
+    width: 100%;
+  }
+  .addQuestion {
+    width: 100%;
+  }
+}
+
+div.block {
+  background-color: #EBEBEB;
+}
+
+div.questionBlock, div.block {
+  
+  padding: 15px 25px;
+  text-align: center;
+  margin: 0 auto;
+  margin-top: 15px;
+
+  h2 {
+    margin: 5px 0 10px 0;
+    padding: 0px;
+  }
+
+  .quizName, .attemptsAllowed {
+    width: 100%;
+  }
+
+  .categoryInput {
+    width: 40%;
+  }
+
+  .category {
+    width: 40%;
+    height: 35px;
+    border: 1px solid;
+    border-radius: 0px;
+    background-color: white;
+  }
+
+  .question {
+    width: 100%;
+  }
+
+  .optionBlock {
+    
+    width: 100%;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    padding-left: 8px;
+    text-align: left;
+
+    .option {
+      width: 80%;
+    }
+
+    .answer {
+      width: 20px;
+      float: left;
+      margin-top: 15px;
+    }
+    .deleteOption {
+      width: 20px;
+      font-size: 22px;
+      font-weight: bold;
+      cursor: pointer;
+      color: rgba(153, 0, 0, 0.9);
+    }
+  }
+
+  .btn {
+    margin-top: 10px;
+  }
+
+  .deleteQuestion {
+    margin-left: 90px;
+  }
+}
+
+.defaultQuestionBlock {
+  display: none;
+}
+
+.addQuestion {
+  margin-top: 20px;
+}

@@ -3,46 +3,25 @@
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=0">
     <%= csrf_meta_tag %>
-    <%= favicon_link_tag 'autolab.ico' %>
+    <%= favicon_link_tag 'autolab.ico?v=2' %>
 
-    <%= stylesheet_link_tag 'style' %>
+    <%= stylesheet_link_tag 'application' %>
     <%= stylesheet_link_tag 'animate' %>
-<%# waves has been breaking links, so we're gonna disable it -Daniel
-#    <%=# stylesheet_link_tag 'waves' %>
-
     <%= external_stylesheet_link_tag "bootstrap", "3.0.0" %>
+    <%= stylesheet_link_tag 'style' %>
 
-    <%= external_javascript_include_tag "jquery", "2.1.1" %>
-    <%= external_javascript_include_tag "bootstrap", "3.0.0" %>
+    <% if Rails.configuration.x.analytics_id %>
+      <script type="text/javascript">
+        window.heap=window.heap||[],heap.load=function(t,e){window.heap.appid=t,window.heap.config=e;var a=document.createElement("script");a.type="text/javascript",a.async=!0,a.src=("https:"===document.location.protocol?"https:":"http:")+"//cdn.heapanalytics.com/js/heap-"+t+".js";var n=document.getElementsByTagName("script")[0];n.parentNode.insertBefore(a,n);for(var o=function(t){return function(){heap.push([t].concat(Array.prototype.slice.call(arguments,0)))}},p=["clearEventProperties","identify","setEventProperties","track","unsetEventProperty"],c=0;c<p.length;c++)heap[p[c]]=o(p[c])};
+        heap.load("<%= Rails.configuration.x.analytics_id %>");
+      </script>
+    <% end %>
 
-    <%= javascript_include_tag 'application' %>
-<%# waves has been breaking links, so we're gonna disable it -Daniel
-#    <%=# javascript_include_tag 'waves' %>
-
+    <%= content_for :head %>
     <link href='//fonts.googleapis.com/css?family=Source+Sans+Pro:300,400' rel='stylesheet' type='text/css'>
-
-    <script type="text/javascript">
-      /*Scripts to load when the page is ready*/
-      
-<%#      // the lines below weren't working, as evidenced by the broken gradesheet.
-#      //jQuery(document).ajaxSend(function(e, xhr, options) {
-#      //  var token = jQuery("meta[name='csrf-token']").attr("content");
-#      //  xhr.setRequestHeader("X-CSRF-Token", token);
-#      //});%>
-      
-      // this does work
-      jQuery.ajaxSetup({
-        headers: {
-            'X-CSRF-Token' : $('meta[name="csrf-token"]').attr('content')
-        },
-      });
-    </script>
-
-    <%= yield :head %>
-
     <%= content_for :stylesheets %>
-
     <title><%= if @course then @course.display_name else "Autolab" end %></title>
+
   </head>
 
   <body class="autolab">
@@ -57,19 +36,16 @@
         <% end %>
 
         <!-- Flashes -->
-      <% if flash[:error] %>
-        <p class="error"><%= flash[:error].html_safe %></p>
-      <% end %>
-      <% if flash[:success] %>
-        <p class="success"><%=flash[:success].html_safe%></p>
-      <% end %>
-      <% if flash[:info] %>
-        <p><%= flash[:info] %></p>
-      <% end %>
+        <div id="flashes">
+          <% flash.each do |name, msg| %>
+          <%= content_tag :div, sanitize(msg), id: "flash_#{name}",
+              class: "#{name}" %>
+          <% end %>
+        </div>
         <!-- End Flashes -->
 
         <!-- Persistent Announcements -->
-        <%= render partial: "announcements/announcements_list", 
+        <%= render partial: "announcements/announcements_list",
                    locals: { announcements: @persistent_announcements } %>
         <!-- End Persistent Announcements -->
 
@@ -78,24 +54,24 @@
           <%= yield %>
         </div>
         <!-- End Content -->
-
+        <div id="footer">
+        <a href="http://autolabproject.com">Autolab Project</a>
+        · <a href="/contact">Contact</a>
+        <% if @course %>
+        · <%= link_to "Need Help?", course_report_bug_path(@course) %>
+        <% end %>
+        </div>
+        <!-- End Footer -->
       </div>
       <!-- End Page Body -->
       <!-- Footer -->
     </div>
-    <div id="footer">
-        <a href="http://autolabproject.com">Autolab Project</a>
-        · <a href="/contactUs.html">Contact</a>
-        <% if @course %>
-        · <%= link_to "Need Help?", course_report_bug_path(@course) %>
-        <% end %>
-        · <%= link_to "Logout", destroy_user_session_path, method: :delete %>
-    </div>
-    <!-- End Footer -->
-    <script type="text/javascript">
-      Waves.displayEffect();
-    </script>
-    <%= yield :javascript %>
+
+    <%= external_javascript_include_tag "jquery", "2.1.1" %>
+    <%= content_for :js_widget_patch %>
+    <%= external_javascript_include_tag "bootstrap", "3.0.0" %>
+    <%= javascript_include_tag 'application' %>
+    <%= content_for :javascripts %>
 
   </body>
 </html>
