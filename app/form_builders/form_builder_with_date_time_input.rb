@@ -67,8 +67,12 @@ private
   # :greater_than properties to initialize relationships between datepicker
   # fields.
   def date_helper name, options, strftime, date_format
-    existing_time = @object.send(name)
-    formatted_datetime = existing_time.to_time.strftime(strftime) if existing_time.present?
+    begin
+      existing_time = @object.send(name)
+    rescue
+      existing_time = nil
+    end
+    formatted_datetime = existing_time.present? ? existing_time.to_time.strftime(strftime) : ''
 
     field = vanilla_text_field(name, :value => formatted_datetime,
         :class => "form-control datetimepicker",
