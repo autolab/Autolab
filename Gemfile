@@ -62,6 +62,7 @@ gem 'rubyzip'
 gem 'rspec-rails'
 gem 'capybara', group: [:development, :test]
 gem 'factory_girl_rails', group: [:development, :test]
+gem 'database_cleaner', group: [:development, :test]
 
 # Use ActiveModel has_secure_password
 # gem 'bcrypt', '~> 3.1.7'
