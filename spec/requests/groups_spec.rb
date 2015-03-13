@@ -1,6 +1,6 @@
-require 'rails_helper'
+require "rails_helper"
 
-RSpec.describe "Groups", :type => :request do
+RSpec.describe "Groups", type: :request do
   describe "GET /groups" do
     it "works! (now write some real specs)" do
       get groups_path

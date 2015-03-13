@@ -6,17 +6,16 @@ class Annotation < ActiveRecord::Base
   validates_presence_of :line, :comment
 
   def as_text
-    if (self.value) then
-      if (self.problem) then
-        "#{self.comment} (#{self.value}, #{self.problem.name})"
+    if value
+      if problem
+        "#{comment} (#{value}, #{problem.name})"
       else
-        "#{self.comment} (#{self.value})"
+        "#{comment} (#{value})"
       end
-    elsif (self.problem) then
-      "#{self.comment} (#{self.problem.name})"
+    elsif problem
+      "#{comment} (#{problem.name})"
     else
-      self.comment
+      comment
     end
   end
-
 end

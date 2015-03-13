@@ -1,5 +1,5 @@
-require 'test_helper'
-require 'rails/performance_test_help'
+require "test_helper"
+require "rails/performance_test_help"
 
 class BrowsingTest < ActionDispatch::PerformanceTest
   # Refer to the documentation for all available options
@@ -7,6 +7,6 @@ class BrowsingTest < ActionDispatch::PerformanceTest
   #                          :output => 'tmp/performance', :formats => [:flat] }
 
   def test_homepage
-    get '/'
+    get "/"
   end
 end

@@ -4,42 +4,42 @@ class User < ActiveRecord::Base
   devise :database_authenticatable, :registerable,
          :recoverable, :rememberable, :trackable, :validatable,
          :confirmable
-         
+
   devise :omniauthable, omniauth_providers: [:shibboleth]
-  
-  has_many :course_user_data, :dependent => :destroy
-  has_many :courses, :through => :course_user_data
+
+  has_many :course_user_data, dependent: :destroy
+  has_many :courses, through: :course_user_data
   has_many :authentications
-  
+
   trim_field :school
   validates_presence_of :first_name, :last_name, :email
-  
+
   # check if user is instructor in any course
   def instructor?
-    cuds = self.course_user_data
-    
+    cuds = course_user_data
+
     cuds.each do |cud|
       if cud.instructor?
         return true
       end
     end
-    
-    return false
+
+    false
   end
-  
+
   # check if self is instructor of a user
   def instructor_of?(user)
-    cuds = self.course_user_data
-    
+    cuds = course_user_data
+
     cuds.each do |cud|
       if cud.instructor?
-         if !cud.course.course_user_data.where(user: user).empty?
-           return true
-         end
+        unless cud.course.course_user_data.where(user: user).empty?
+          return true
+        end
       end
     end
-    
-    return false
+
+    false
   end
 
   def full_name
@@ -51,7 +51,7 @@ class User < ActiveRecord::Base
   end
 
   def display_name
-    if first_name and last_name then
+    if first_name && last_name
       full_name
     else
       email
@@ -59,39 +59,39 @@ class User < ActiveRecord::Base
   end
 
   def after_create
-    COURSE_LOGGER.log("User CREATED #{self.email}:" +
-      "{#{self.first_name},#{self.last_name}")
+    COURSE_LOGGER.log("User CREATED #{email}:" \
+      "{#{first_name},#{last_name}")
   end
 
   def after_update
-    COURSE_LOGGER.log("User UPDATED #{self.email}:"+
-      "{#{self.first_name},#{self.last_name}")
+    COURSE_LOGGER.log("User UPDATED #{email}:"\
+      "{#{first_name},#{last_name}")
   end
-  
-  def self.find_for_facebook_oauth(auth, signed_in_resource=nil)
-    authentication = Authentication.where(provider: auth.provider, 
+
+  def self.find_for_facebook_oauth(auth, _signed_in_resource = nil)
+    authentication = Authentication.where(provider: auth.provider,
                                           uid: auth.uid).first
     if authentication && authentication.user
       return authentication.user
     end
   end
-  
-  def self.find_for_google_oauth2_oauth(auth, signed_in_resource=nil)
-    authentication = Authentication.where(provider: auth.provider, 
+
+  def self.find_for_google_oauth2_oauth(auth, _signed_in_resource = nil)
+    authentication = Authentication.where(provider: auth.provider,
                                           uid: auth.uid).first
     if authentication && authentication.user
       return authentication.user
     end
   end
-  
-  def self.find_for_shibboleth_oauth(auth, signed_in_resource=nil)
-    authentication = Authentication.where(provider: "CMU-Shibboleth", 
+
+  def self.find_for_shibboleth_oauth(auth, _signed_in_resource = nil)
+    authentication = Authentication.where(provider: "CMU-Shibboleth",
                                           uid: auth.uid).first
     if authentication && authentication.user
       return authentication.user
     end
   end
-  
+
   def self.new_with_session(params, session)
     super.tap do |user|
       if data = session["devise.facebook_data"]
@@ -113,10 +113,9 @@ class User < ActiveRecord::Base
       end
     end
   end
-  
+
   # user created by roster
   def self.roster_create(email, first_name, last_name, school, major, year)
-
     auth = Authentication.new
     auth.provider = "CMU-Shibboleth"
     auth.uid = email
@@ -136,14 +135,14 @@ class User < ActiveRecord::Base
     user.password_confirmation = temp_pass
     user.skip_confirmation!
 
-    if (user.save) then
-        #user.send_reset_password_instructions
-        return user
+    if user.save
+      # user.send_reset_password_instructions
+      return user
     else
-        return nil 
+      return nil
     end
   end
-  
+
   # user (instructor) created by building a course
   def self.instructor_create(email, course_name)
     user = User.new
@@ -158,10 +157,9 @@ class User < ActiveRecord::Base
 
     user.save!
     user.send_reset_password_instructions
-    return user
-
+    user
   end
-  
+
   # list courses of a user
   # list all courses if he's an admin
   def self.courses_for_user(user)

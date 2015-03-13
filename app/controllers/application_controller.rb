@@ -43,41 +43,40 @@ class ApplicationController < ActionController::Base
     raise ArgumentError.new("The level must be specified.") if level.nil?
     raise ArgumentError.new("The level must be symbol.") unless level.is_a? Symbol
     unless CourseUserDatum::AUTH_LEVELS.include?(level)
-      raise ArgumentError.new("#{level.to_s} is not an auth level") 
+      raise ArgumentError.new("#{level} is not an auth level") 
     end
 
     if level == :administrator then
       skip_before_filter :authorize_user_for_course, only: [action]
-      skip_filter :authenticate_for_action => [action]
+      skip_filter authenticate_for_action: [action]
       skip_before_filter :update_persistent_announcements, only: [action]
     end
 
     controller_whitelist = (@@global_whitelist[self.controller_name.to_sym] ||= {})
-    raise ArgumentError.new("#{action.to_s} already specified.") if controller_whitelist[action]
+    raise ArgumentError.new("#{action} already specified.") if controller_whitelist[action]
 
     controller_whitelist[action] = level
   end
 
   def self.action_no_auth(action)
     skip_before_action :verify_authenticity_token, :authenticate_user!
-    skip_filter :configure_permitted_paramters => [action]
-    skip_filter :maintenance_mode => [action]
-    skip_filter :run_scheduler => [action]
+    skip_filter configure_permitted_paramters: [action]
+    skip_filter maintenance_mode: [action]
+    skip_filter run_scheduler: [action]
 
-    skip_filter :authenticate_user => [action]
+    skip_filter authenticate_user: [action]
     skip_before_filter :authorize_user_for_course, only: [action]
-    skip_filter :authenticate_for_action => [action]
+    skip_filter authenticate_for_action: [action]
     skip_before_filter :update_persistent_announcements, only: [action]
   end
 
-protected
+  protected
   
   def configure_permitted_paramters
     devise_parameter_sanitizer.for(:sign_in) { |u| u.permit(:email) }
     devise_parameter_sanitizer.for(:sign_up) { |u| u.permit(:email, :first_name, :last_name, :password, :password_confirmation) }
     devise_parameter_sanitizer.for(:account_update) { |u| u.permit(:email, :password, :password_confirmation, :current_password) }
   end
-
 
   def authentication_failed(user_message=nil, dev_message=nil)
     user_message ||= "You are not authorized to view this page"
@@ -107,9 +106,9 @@ protected
 
   protect_from_forgery 
   def verify_authenticity_token
-    msg = "Invalid request! Please go back, reload the " +
-        "page and try again.  If you continue to see this error. " +
-        " please contact the Autolab Development team at the " + 
+    msg = "Invalid request! Please go back, reload the " \
+        "page and try again.  If you continue to see this error. " \
+        " please contact the Autolab Development team at the " \ 
         "contact link below" 
 
     if not verified_request? then 
@@ -120,7 +119,7 @@ protected
   def maintenance_mode?
     # enable/disable maintenance mode with this switch:
     if false
-      unless user_signed_in? and current_user.administrator?
+      unless user_signed_in? && current_user.administrator?
         render :maintenance
         return false
       end
@@ -136,7 +135,7 @@ protected
 
     unless @course
       flash[:error] = "Course #{params[:course]} does not exist!"
-      redirect_to controller: :home, action: :error and return
+      redirect_to(controller: :home, action: :error) && return
     end
 
     # set course logger
@@ -144,11 +143,11 @@ protected
       COURSE_LOGGER.setCourse(@course)
     rescue Exception => e
       flash[:error] = e.to_s
-      redirect_to controller: :home, action: :error and return
+      redirect_to(controller: :home, action: :error) && return
     end
 
     if current_user.nil? then
-      redirect_to root_path and return
+      redirect_to(root_path) && return
     end
     uid = current_user.id
     # don't allow sudoing across courses
@@ -172,17 +171,17 @@ protected
 
     when :admin_creation_error
       flash[:error] = "Error adding user: #{current_user.email} to course"
-      redirect_to controller: :home, action: :error and return
+      redirect_to(controller: :home, action: :error) && return
 
     when :unauthorized
       flash[:error] = "User #{current_user.email} is not in this course"
-      redirect_to controller: :home, action: :error and return
+      redirect_to(controller: :home, action: :error) && return
     end
 
     # check if course was disabled
-    if @course.disabled? and !@cud.has_auth_level?(:instructor) then
+    if @course.disabled? && !@cud.has_auth_level?(:instructor) then
       flash[:error] = "Your course has been disabled by your instructor. Please contact them directly if you have any questions"
-      redirect_to controller: :home, action: :error and return
+      redirect_to(controller: :home, action: :error) && return
     end
 
     # should be able to unsudo from an invalid user and
@@ -190,10 +189,10 @@ protected
     invalid_cud = !@cud.valid?
     nicknameless_student = @cud.student? && @cud.nickname.blank?
     in_edit_or_unsudo = (params[:controller] == "course_user_data") &&
-                        (params[:action] == "edit" or params[:action] == "update" or
+                        (params[:action] == "edit" || params[:action] == "update" ||
                          params[:action] == "unsudo")
 
-    if (invalid_cud or nicknameless_student) and !in_edit_or_unsudo then 
+    if (invalid_cud || nicknameless_student) && !in_edit_or_unsudo then 
       flash[:error] = "Please complete all of your account information before continuing"
       redirect_to edit_course_course_user_datum_path(id: @cud.id, course_id: @cud.course.id)
     end
@@ -208,18 +207,17 @@ protected
       @assessment = @course.assessments.find(params[:assessment_id] || params[:id])
     rescue
       flash[:error] = "The assessment was not found for this course."
-      redirect_to action: :index and return
+      redirect_to(action: :index) && return
     end
     
     if @cud.student? && !@assessment.released? then
-      redirect_to action: :index and return
+      redirect_to(action: :index) && return
     end
       
     @breadcrumbs << (view_context.current_assessment_link)
   end
 
   def run_scheduler
-
     actions = Scheduler.where("next < ?",Time.now())
     for action in actions do 
       action.next = Time.now + action.interval
@@ -236,7 +234,7 @@ protected
 
         Process.detach(pid)
       rescue Exception => e  
-        COURSE_LOGGER.log("Error updater: #{e.to_s}")
+        COURSE_LOGGER.log("Error updater: #{e}")
         puts e
         puts e.message  
         puts e.backtrace.inspect
@@ -277,7 +275,7 @@ protected
     return emails.join(",")
   end
 
-private
+  private
 
   # called on Exceptions.  Shows a stack trace to course assistants, and above.
   # Shows good ol' Donkey Kong to students
@@ -287,7 +285,7 @@ private
 
     # stack traces are only shown to instructors and administrators
     # by leaving @error undefined, students and CAs do not see stack traces
-    if (not current_user.nil?) and (current_user.instructor? or current_user.administrator?) then
+    if (not current_user.nil?) && (current_user.instructor? || current_user.administrator?) then
       @error = exception
 
       # Generate course id and assesssment id objects
@@ -301,5 +299,4 @@ private
 
     render "home/error"
   end
-
 end

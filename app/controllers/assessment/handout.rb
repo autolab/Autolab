@@ -1,5 +1,4 @@
 module AssessmentHandout
-
   def mime_type_from_ext(ext)
     case ext
       when ".html" then "text/html"
@@ -7,32 +6,31 @@ module AssessmentHandout
       else "application/octet-stream"
     end
   end
-  
+
   def handout
     extend_config_module(@assessment, nil, @cud)
 
-    if @assessment.overwrites_method?(:handout) then
-      hash = @assessment.config_module.handout()
-      send_file(hash["fullpath"], 
-            :disposition => 'inline', 
-            :filename => hash["filename"]) and return
+    if @assessment.overwrites_method?(:handout)
+      hash = @assessment.config_module.handout
+      send_file(hash["fullpath"],
+                disposition: "inline",
+                filename: hash["filename"]) && return
       return
     end
 
-    if @assessment.handout_is_url? then
+    if @assessment.handout_is_url?
       redirect_to @assessment.handout
       return
     end
 
-    if @assessment.handout_is_file? then
+    if @assessment.handout_is_file?
       filename = @assessment.handout_path
-      send_file(filename, 
-            :disposition => 'inline', 
-            :file => File.basename(filename))
+      send_file(filename,
+                disposition: "inline",
+                file: File.basename(filename))
       return
     end
 
     flash[:error] = "There is no handout for this assessment."
   end
 end
-  

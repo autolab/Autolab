@@ -6,26 +6,26 @@ class Submission < ActiveRecord::Base
 
   belongs_to :course_user_datum
   belongs_to :assessment
-  has_many :scores,:dependent=>:destroy
-  belongs_to :submitted_by, :class_name=>"CourseUserDatum"
-  belongs_to :tweak, :class_name => "Tweak" 
+  has_many :scores,dependent: :destroy
+  belongs_to :submitted_by, class_name: "CourseUserDatum"
+  belongs_to :tweak, class_name: "Tweak" 
   accepts_nested_attributes_for :tweak, allow_destroy: true
-  has_one :assessment_user_datum, :foreign_key => "latest_submission_id"
+  has_one :assessment_user_datum, foreign_key: "latest_submission_id"
 
-  validate :allowed?, :on => :create
+  validate :allowed?, on: :create
   validates_associated :assessment
-  validates_uniqueness_of :version, :scope=>[:course_user_datum_id,:assessment_id]
+  validates_uniqueness_of :version, scope: [:course_user_datum_id,:assessment_id]
   validate :user_and_assessment_in_same_course
 
-  has_many :annotations, :dependent => :destroy
+  has_many :annotations, dependent: :destroy
 
   before_save :detect_mime_type
   before_destroy :archive_handin
-  before_validation :set_version, :on => :create
+  before_validation :set_version, on: :create
 
   # keep track of latest submission
-  after_save :update_latest_submission, :if => :version_changed?
-  after_save :update_latest_submission, :if => :ignored_changed?
+  after_save :update_latest_submission, if: :version_changed?
+  after_save :update_latest_submission, if: :ignored_changed?
   after_create :update_latest_submission
   after_destroy :update_latest_submission
   
@@ -64,17 +64,17 @@ class Submission < ActiveRecord::Base
   def archive_handin
     return if assessment.disable_handins
     return if filename.nil?
-    return unless File.exists?(handin_file_path)
+    return unless File.exist?(handin_file_path)
 
     archive = File.join(assessment.handin_directory_path, 'archive')
     Dir.mkdir(archive) unless FileTest.directory?(archive)
 
     # Using the id instead of the version guarentees a unique filename
     submission_backup = File.join(archive, 
-      'deleted_' + 
-      course_user_datum.user.email + '_' + 
-      id.to_s + '_' +
-      assessment.handin_filename)
+                                  'deleted_' + 
+                                  course_user_datum.user.email + '_' + 
+                                  id.to_s + '_' +
+                                  assessment.handin_filename)
     FileUtils.mv(handin_file_path, submission_backup)
   end
 
@@ -84,8 +84,8 @@ class Submission < ActiveRecord::Base
            self.assessment.handin_filename
     directory = self.assessment.handin_directory
     path = File.join(Rails.root, "courses", 
-              self.course_user_datum.course.name,
-              self.assessment.name, directory, filename)
+                     self.course_user_datum.course.name,
+                     self.assessment.name, directory, filename)
 
     if upload['file'] then
       # Sanity!
@@ -121,10 +121,10 @@ class Submission < ActiveRecord::Base
     return File.join(assessment.handin_directory_path, filename)
   end
 
-  def handinFile()
+  def handinFile
     path = self.handin_file_path
     return nil unless path
-    if !File.exist?(path) or !File.readable?(path) then
+    if !File.exist?(path) || !File.readable?(path) then
       return nil
     else
       return File.open path, 'r'
@@ -132,7 +132,7 @@ class Submission < ActiveRecord::Base
   end
 
   def annotated_file(file, filename, position)
-    conditions = {:filename => filename}
+    conditions = {filename: filename}
     conditions[:position] = position if position
     annotations = self.annotations.where(conditions)
 
@@ -166,11 +166,11 @@ class Submission < ActiveRecord::Base
 
   def after_save
     begin
-    COURSE_LOGGER.log("Submission #{id} SAVED for " + 
-      "#{course_user_datum.user.email} on" +
-      " #{assessment.name}, file #{self.filename} (#{self.mime_type}),"+
-      "version: #{self.version}") 
-    rescue
+      COURSE_LOGGER.log("Submission #{id} SAVED for " \ 
+        "#{course_user_datum.user.email} on" \
+        " #{assessment.name}, file #{self.filename} (#{self.mime_type}),"\
+        "version: #{self.version}") 
+      rescue
     end
   end    
 
@@ -192,12 +192,12 @@ class Submission < ActiveRecord::Base
     return scores
   end
 
-  def get_scores(released_only, problem_id_to_name)
+  def get_scores(_released_only, problem_id_to_name)
     scores = {}
 
-    self.scores.each { |score|
-        scores[problem_id_to_name[score.problem_id]] = score.score.to_f
-    }
+    self.scores.each do |score|
+      scores[problem_id_to_name[score.problem_id]] = score.score.to_f
+    end
 
     return scores
   end
@@ -210,11 +210,11 @@ class Submission < ActiveRecord::Base
   end
 
   def late_penalty(as_seen_by)
-    late_penalty_opts({ :include_unreleased => !as_seen_by.student? })
+    late_penalty_opts(include_unreleased: !as_seen_by.student?)
   end
 
   def version_penalty(as_seen_by)
-    version_penalty_opts({ :include_unreleased => !as_seen_by.student? })
+    version_penalty_opts(include_unreleased: !as_seen_by.student?)
   end
 
   # Number of days past user's due at
@@ -261,15 +261,14 @@ class Submission < ActiveRecord::Base
   # Refer to https://github.com/autolab/autolab-src/wiki/Caching
   # NOTE: Remember to add invalidations if more options are added
   def invalidate_raw_score
-    Submission.transaction {
+    Submission.transaction do
       # acquire lock
-      reload(:lock => true)
+      reload(lock: true)
 
       # invalidate
-      Rails.cache.delete(raw_score_cache_key({ :include_unreleased => true }))
-      Rails.cache.delete(raw_score_cache_key({ :include_unreleased => false }))
-
-    } # release lock
+      Rails.cache.delete(raw_score_cache_key(include_unreleased: true))
+      Rails.cache.delete(raw_score_cache_key(include_unreleased: false))
+    end # release lock
   end
 
   # fall back to UA-reported mime_type, if not detected
@@ -317,7 +316,7 @@ class Submission < ActiveRecord::Base
     include_unreleased = !as_seen_by.student?
     
     complete, released = scores_status
-    (released or include_unreleased) and complete
+    (released || include_unreleased) && complete
   end
 
   def scores_status
@@ -339,7 +338,8 @@ class Submission < ActiveRecord::Base
     assessment.aud_for course_user_datum_id
   end
 
-private
+  private
+
   # NOTE: remember to update cache_key if additional options are added
   def raw_score_cache_key(options)
     raw_score_base = 'raw_score'
@@ -361,7 +361,7 @@ private
     #    see: https://github.com/autolab/autolab-src/wiki/Caching
     cache_key = raw_score_cache_key options
     unless (raw_score = Rails.cache.read cache_key)
-      Submission.transaction {
+      Submission.transaction do
         # acquire lock on submission
         acquire_lock
 
@@ -370,8 +370,7 @@ private
 
         # cache
         Rails.cache.write(cache_key, raw_score)
-
-      } # release lock
+      end # release lock
     end
 
     raw_score
@@ -426,7 +425,7 @@ private
 
   # Returns valid final_score (float)
   def final_score_opts!(options = {})
-    include_unreleased_opt = { :include_unreleased => options[:include_unreleased] }
+    include_unreleased_opt = { include_unreleased: options[:include_unreleased] }
     
     score = raw_score include_unreleased_opt
     score = apply_late_penalty(score, include_unreleased_opt)

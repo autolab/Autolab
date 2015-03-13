@@ -87,5 +87,5 @@ group :development do
   gem 'byebug', '>=3.5.1'
 
   # static code analyzer
-  gem 'rubocop'
+  gem 'rubocop', require: false
 end

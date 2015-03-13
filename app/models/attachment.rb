@@ -1,7 +1,7 @@
 class Attachment < ActiveRecord::Base
-  #trim_field :filename, :mime_type, :type, :name
-  #validates_presence_of :type
-  #validates_presence_of :foreign_key
+  # trim_field :filename, :mime_type, :type, :name
+  # validates_presence_of :type
+  # validates_presence_of :foreign_key
   validates_presence_of :name
   validates_presence_of :filename
   
@@ -14,10 +14,10 @@ class Attachment < ActiveRecord::Base
     path = File.join(Rails.root,directory,filename)
     addendum = 1
 
-    #Deal with duplicate filenames on disk
-    while File.exists?(path) do
+    # Deal with duplicate filenames on disk
+    while File.exist?(path) do
       path = File.join(Rails.root,directory,
-          "#{filename}.#{addendum}")
+                       "#{filename}.#{addendum}")
       
       addendum += 1
     end
@@ -27,7 +27,7 @@ class Attachment < ActiveRecord::Base
   end
 
   def after_create
-    COURSE_LOGGER.log("Created Attachment #{id}:#{self.filename} " + 
+    COURSE_LOGGER.log("Created Attachment #{id}:#{self.filename} " \ 
       "(#{self.mime_type}) as \"#{self.name}\")")
   end
 end

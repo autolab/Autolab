@@ -1,4 +1,4 @@
-require 'association_cache'
+require "association_cache"
 
 class CourseUserDatum < ActiveRecord::Base
   class AuthenticationFailed < Exception
@@ -13,14 +13,14 @@ class CourseUserDatum < ActiveRecord::Base
 
   # Don't want to trim the nickname.
   trim_field :school, :major, :year, :lecture, :section, :grade_policy, :email
-  
+
   belongs_to :course
   belongs_to :user
-  belongs_to :tweak, :class_name => "Tweak"
-  has_many :submissions, :dependent => :destroy
-  has_many :extensions, :dependent => :destroy
-  has_many :scores, :through=>:submissions
-  has_many :assessment_user_data, :dependent => :destroy
+  belongs_to :tweak, class_name: "Tweak"
+  has_many :submissions, dependent: :destroy
+  has_many :extensions, dependent: :destroy
+  has_many :scores, through: :submissions
+  has_many :assessment_user_data, dependent: :destroy
 
   attr_readonly :course_id
   before_save :strip_html
@@ -31,37 +31,37 @@ class CourseUserDatum < ActiveRecord::Base
 
   def self.conditions_by_like(value, *columns)
     columns = self.columns if columns.size == 0
-    columns = columns[0] if columns[0].kind_of?(Array)
-    conditions = columns.map {|c|
-      c = c.name if c.kind_of? ActiveRecord::ConnectionAdapters::Column
+    columns = columns[0] if columns[0].is_a?(Array)
+    conditions = columns.map do|c|
+      c = c.name if c.is_a? ActiveRecord::ConnectionAdapters::Column
       "`#{c}` LIKE " + ActiveRecord::Base.connection.quote("%#{value}%")
-    }.join(" OR ")
+    end.join(" OR ")
   end
 
   def strip_html
     for column in CourseUserDatum.content_columns
-      if column.type == :string || column.type == :text then
-        if !self[column.name].nil? then
-          self[column.name] = self[column.name].gsub(/</,"")
+      if column.type == :string || column.type == :text
+        unless self[column.name].nil?
+          self[column.name] = self[column.name].gsub(/</, "")
         end
       end
     end
   end
 
   def after_create
-    COURSE_LOGGER.log("CourseUserDatum CREATED for #{user.email}:" +
+    COURSE_LOGGER.log("CourseUserDatum CREATED for #{user.email}:" \
       "{#{nickname},#{major},#{lecture},#{section}}")
   end
 
   def after_update
-    COURSE_LOGGER.log("CourseUserDatum UPDATED for #{user.email}:" +
+    COURSE_LOGGER.log("CourseUserDatum UPDATED for #{user.email}:" \
       "{#{nickname},#{major},#{lecture},#{section}}")
   end
 
   def valid_nickname?
-    if not nickname
+    if !nickname
       true
-    elsif nickname.length > 32 then 
+    elsif nickname.length > 32
       errors.add("nickname", "is too long (maximum is 32 characters)")
       false
     else
@@ -72,31 +72,25 @@ class CourseUserDatum < ActiveRecord::Base
   ##
   # HELPER ALIASES
   ##
-  def full_name
-    user.full_name
-  end
+  delegate :full_name, to: :user
 
-  def full_name_with_email
-    user.full_name_with_email
-  end
+  delegate :full_name_with_email, to: :user
 
-  def display_name
-    user.display_name
-  end
+  delegate :display_name, to: :user
 
   ##
   # END HELPER ALIASES
   ##
 
   def can_sudo?
-    user.administrator? or instructor?
+    user.administrator? || instructor?
   end
 
   def can_sudo_to?(cud)
-    if user.administrator? then
+    if user.administrator?
       return true
-    elsif instructor? and ! cud.user.administrator? and
-        course == cud.course then
+    elsif instructor? && !cud.user.administrator? &&
+          course == cud.course
       return true
     else
       return false
@@ -115,18 +109,18 @@ class CourseUserDatum < ActiveRecord::Base
 
   def instructor_of?(student)
     return false unless instructor?
-    return false unless student.student? 
+    return false unless student.student?
     course == student.course
   end
 
   # because CAs can do things that instructors can't as of 2/19/2013
   # e.g.: CAs can release (their) section grades, instructors can't
   def CA_only?
-    course_assistant? && (not instructor?)
+    course_assistant? && (!instructor?)
   end
 
   def can_administer?(student)
-    user.administrator? or instructor_of?(student) or CA_of?(student)
+    user.administrator? || instructor_of?(student) || CA_of?(student)
   end
 
   def average(as_seen_by)
@@ -156,37 +150,23 @@ class CourseUserDatum < ActiveRecord::Base
   end
 
   #
-  # User Attribute Wrappers - these functions get attributes from the CUD's 
+  # User Attribute Wrappers - these functions get attributes from the CUD's
   #   associated User object, in an attempt to hide the User object
   #
- 
-  def administrator?
-    user.administrator?
-  end
 
-  def email
-    user.email
-  end
+  delegate :administrator?, to: :user
 
-  def first_name
-    user.first_name
-  end
+  delegate :email, to: :user
 
-  def last_name
-    user.last_name
-  end
+  delegate :first_name, to: :user
 
-  def major
-    user.major
-  end
+  delegate :last_name, to: :user
 
-  def school
-    user.school
-  end
+  delegate :major, to: :user
 
-  def year
-    user.year
-  end
+  delegate :school, to: :user
+
+  delegate :year, to: :user
 
   # find a cud in the course
   def self.find_cud_for_course(course, uid)
@@ -194,48 +174,45 @@ class CourseUserDatum < ActiveRecord::Base
     cud = user.course_user_data.where(course: course).first
   end
 
-
-  # find a cud in the course, or create one using 
+  # find a cud in the course, or create one using
   # user's info if he's an admin
   def self.find_or_create_cud_for_course(course, uid)
     user = User.find(uid)
-    
+
     cud = user.course_user_data.where(course: course).first
-    
-    if cud then
-      return [ cud, :found ]
+
+    if cud
+      return [cud, :found]
     else
       if user.administrator?
-        
-        new_cud = course.course_user_data.new({
-            user: user,
-            instructor: true,
-            course_assistant: true,
-          })
-          
-        return new_cud.save ? [ new_cud, :admin_created ] : [ nil, :admin_creation_error ]
+
+        new_cud = course.course_user_data.new(user: user,
+                                              instructor: true,
+                                              course_assistant: true)
+
+        return new_cud.save ? [new_cud, :admin_created] : [nil, :admin_creation_error]
       else
-        return [ nil, :unauthorized ]
+        return [nil, :unauthorized]
       end
     end
   end
 
-private
+  private
 
   # Need to create AUDs for all assessments when new user is created
   def create_AUDs_modulo_callbacks
-    course.assessments.find_each { |asmt|
-      AssessmentUserDatum.create_modulo_callbacks({ assessment_id: asmt.id, 
-                                                    course_user_datum_id: id })
-                                                    # TODO: which id?
-    }
+    course.assessments.find_each do |asmt|
+      AssessmentUserDatum.create_modulo_callbacks(assessment_id: asmt.id,
+                                                  course_user_datum_id: id)
+      # TODO: which id?
+    end
   end
 
   def average!(as_seen_by)
     input = average_input as_seen_by
-    v = Utilities.execute_instructor_code(:courseAverage) {
+    v = Utilities.execute_instructor_code(:courseAverage) do
       course.config.courseAverage input
-    }
+    end
     avg = Utilities.validated_score_value(v, :courseAverage, true)
 
     # apply tweak
@@ -248,12 +225,12 @@ private
 
     config = course.config
     average = if config.respond_to? method_name
-      v = Utilities.execute_instructor_code(method_name) {
-        config.send method_name, input
-      }
-      Utilities.validated_score_value(v, method_name, true);
-    else
-      default_category_average input
+                v = Utilities.execute_instructor_code(method_name) do
+                  config.send method_name, input
+                end
+                Utilities.validated_score_value(v, method_name, true)
+              else
+                default_category_average input
     end
 
     average
