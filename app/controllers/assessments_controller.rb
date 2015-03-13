@@ -36,7 +36,6 @@ class AssessmentsController < ApplicationController
   action_auth_level :viewGradesheet2, :course_assistant
   action_auth_level :quickGetTotal, :course_assistant
   action_auth_level :statistics, :instructor
-  action_auth_level :bulkFeedback, :instructor
 
   # Handin
   action_auth_level :handin, :student
