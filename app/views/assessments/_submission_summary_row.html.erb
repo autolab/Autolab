@@ -74,9 +74,9 @@
         score = @scores[submission.id][problem.id]
         if score[:feedback] or score[:feedback_file] then %>
 
-          <%= link_to (score[:score].to_f.round(1).to_s), {:action=>"viewFeedback",
-            :submission=>submission.id,
-            :feedback=>problem.id} %>
+          <%= link_to (score[:score].to_f.round(1).to_s), {action: :viewFeedback,
+            submission_id: submission.id,
+            feedback: problem.id} %>
 
         <% else %>
           <%= score[:score].to_f.round(1).to_s %>

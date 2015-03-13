@@ -42,22 +42,6 @@ class ScoresController < ApplicationController
 
   private
 
-    def set_submission
-      @submission = @assessment.submissions.find(params[:submission_id])
-    
-      unless (@cud.instructor or @cud.course_assistant or @submission.course_user_datum_id == @cud.id) then
-        flash[:error] = "You do not have permission to access this submission."
-        redirect_to [@course, @assessment] and return false
-      end
-
-      if (@assessment.exam? or @course.exam_in_progress?) and not (@cud.instructor or @cud.course_assistant) then
-        flash[:error] = "You cannot view this submission.
-                Either an exam is in progress or this is an exam submission."
-        redirect_to [@course, @assessment] and return false
-      end
-      return true
-    end
-
     def set_score
       @score = @submission.scores.find(params[:id])
       unless (@score.submission.course_user_datum_id == @cud.id) || 
