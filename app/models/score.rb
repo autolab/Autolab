@@ -16,8 +16,6 @@ class Score < ActiveRecord::Base
     submission.invalidate_raw_score
   end
 
-  default_scope { select("id", "submission_id", "score", "feedback", "problem_id", "created_at", "updated_at", "released", "grader_id") }
-
   # Verifies that we will only ever have one score per problem per submission
   # This is what allows us to use submission.scores.maximum(:score,:group=>:problem_id) later on
   validates_uniqueness_of(:problem_id,scope: :submission_id)

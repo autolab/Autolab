@@ -777,22 +777,14 @@ class AssessmentsController < ApplicationController
 
   action_auth_level :viewFeedback, :student
   def viewFeedback
-    # User requested to view feedback on a score
-    @score = Score.unscoped.where(submission_id: params[:submission],
-                                  problem_id: params[:feedback]).first
-    unless @score
-      redirect_to(action: "index") && return
-    end
-    if (@score.submission.course_user_datum_id != @cud.id) &&
-       (!@cud.instructor?) &&
-       (!@cud.course_assistant?) &&
-       (!@cud.administrator?)
-      redirect_to(action: "index") && return
+    set_submission
+    #User requested to view feedback on a score
+    @score = @submission.scores.find_by(problem_id: params[:feedback])
+    if !@score then
+      redirect_to action: "index" and return
     end
 
-    @submission = @score.submission
-
-    if Archive.is_archive? @submission.handin_file_path
+    if Archive.is_archive? @submission.handin_file_path then
       @files = Archive.get_files @submission.handin_file_path
     end
   end

@@ -45,22 +45,6 @@ class AnnotationsController < ApplicationController
     params.require(:annotation).permit(:filename, :position, :line, :text, :submitted_by, :comment, :value, :problem_id)
   end
 
-  def set_submission
-    @submission = @assessment.submissions.find(params[:submission_id])
-
-    unless @cud.instructor || @cud.course_assistant || @submission.course_user_datum_id == @cud.id
-      flash[:error] = "You do not have permission to access this submission."
-      redirect_to [@course, @assessment] and return false
-    end
-
-    if (@assessment.exam? || @course.exam_in_progress?) && !(@cud.instructor || @cud.course_assistant)
-      flash[:error] = "You cannot view this submission.
-              Either an exam is in progress or this is an exam submission."
-      redirect_to [@course, @assessment] and return false
-    end
-    true
-  end
-
   def set_annotation
     @annotation = @submission.annotations.find(params[:id])
   end

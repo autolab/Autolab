@@ -330,30 +330,6 @@ class SubmissionsController < ApplicationController
                                        tweak_attributes: [:_destroy, :kind, :value])
   end
 
-  # Loads the submission from the DB 
-  # needed by the various methods for dealing with submissions.
-  # Redirects to the error page if it encounters an issue.
-  def set_submission
-    begin
-      @submission = @assessment.submissions.find params[:id]
-    rescue
-      flash[:error] = "Could not find submission with id #{params[:id]}."
-      redirect_to [@course, @assessment] and return false
-    end
-    
-    unless (@cud.instructor || @cud.course_assistant || @submission.course_user_datum_id == @cud.id) then
-      flash[:error] = "You do not have permission to access this submission."
-      redirect_to [@course, @assessment] and return false
-    end
-
-    if (@assessment.exam? || @course.exam_in_progress?) and not (@cud.instructor || @cud.course_assistant) then
-      flash[:error] = "You cannot view this submission.
-              Either an exam is in progress or this is an exam submission."
-      redirect_to [@course, @assessment] and return false
-    end
-    return true
-  end
-
   def get_submission_file
     unless @submission.filename then
       flash[:error] = "No file associated with submission."
