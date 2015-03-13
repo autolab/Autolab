@@ -74,9 +74,6 @@ Autolab3::Application.routes.draw do
         get 'statistics'
         get 'withdrawAllGrades'
         get 'export'
-        get 'attachments'
-        get 'extensions'
-        get 'submissions'
         patch 'edit/*active_tab', action: :update
         get 'edit/*active_tab', action: :edit
         post 'handin'
