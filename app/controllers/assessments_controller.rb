@@ -41,8 +41,7 @@ class AssessmentsController < ApplicationController
   # Handin
   action_auth_level :handin, :student
 
-  # AssessmentBase
-  action_auth_level :writeup, :student
+  # Handout
   action_auth_level :handout, :student
 
   # Autograde
@@ -798,23 +797,6 @@ class AssessmentsController < ApplicationController
     end
   end
 
-  action_auth_level :downloadFeedbackFile, :student
-  def downloadFeedbackFile
-    @score = Score.find_with_feedback(params[:id])
-    logger.debug("here")
-    if @score.feedback_file.nil?
-      redirect_to(action: "viewFeedback") && return
-    end
-    if @score.feedback_file_type.nil?
-      send_data(@score.feedback_file,        filename: @score.feedback_file_name,
-                                             disposition: "inline")
-    else
-      send_data(@score.feedback_file,        filename: @score.feedback_file_name,
-                                             type: @score.feedback_file_type,
-                                             disposition: "inline")
-    end
-  end
-
   action_auth_level :reload, :instructor
   def reload
     @assessment.construct_config_file
@@ -894,13 +876,7 @@ class AssessmentsController < ApplicationController
     redirect_to action: "viewGradesheet"
   end
 
-  action_auth_level :extension, :instructor
-  def extension
-    redirect_to controller: "extension",
-                action: "index",
-                assessment: @assessment.id
-  end
-
+  action_auth_level :writeup, :student
   def writeup
     if Time.now < @assessment.start_at && !@cud.instructor?
       @output = "This assessment has not started yet."
