@@ -244,12 +244,13 @@ class JobsController < ApplicationController
       end
     else
       job[:state] = "Completed"
+      if rjob["trace"][-1].split("|")[1].include? "Error"
+        job[:state] = "Failed"
+      end
     end
 
     return job
   end
 
 end
-
-
 

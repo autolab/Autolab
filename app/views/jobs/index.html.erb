@@ -89,8 +89,7 @@ end
   <tr><th>Job ID</th><th>Job Name</th><th>Submitted At</th>
   <th>Elapsed (s)</th><th>Status</th></tr>
   <% for @job in @dead_jobs_view do %>
-    <tr>
-    <td> <%= @job[:id] %> </td> 
+    <tr <% if @job[:state] == "Failed" then %> style="background-color:#ce4844; color:#fff"<% end %>>    <td> <%= @job[:id] %> </td>
     <td> <%= @job[:name] %> </td> 
     <td> <%= DateTime.parse(@job[:first]).to_time.localtime.to_s(:db) %> </td> 
     <td> <%= @job[:elapsed] %> </td>
