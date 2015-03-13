@@ -78,6 +78,14 @@ gem 'bootstrap3-datetimepicker-rails', '~> 4.0.0'
 # Force SSL on certain routes
 gem 'rack-ssl-enforcer'
 
-# Useful debugger
-gem 'byebug', '>=3.5.1', group: [:development, :test]
+group :development do
+  # Better Error Pages
+  gem 'better_errors'
+  gem 'binding_of_caller' # enhances better_errors
 
+  # Useful debugger
+  gem 'byebug', '>=3.5.1'
+
+  # static code analyzer
+  gem 'rubocop'
+end
