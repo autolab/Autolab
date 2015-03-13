@@ -709,10 +709,8 @@ class AssessmentsController < ApplicationController
       @scores[subId][result["problem_id"].to_i] = {
         score: result["score"].to_f,
         feedback: result["feedback"],
-        feedback_file: result["feedback_file_name"],
         score_id: result["score_id"].to_i,
         released: result["released"].to_i,
-        # score_model: Score.find(result["score_id"].to_i)
       }
     end
 
@@ -758,10 +756,8 @@ class AssessmentsController < ApplicationController
       @scores[subId][result["problem_id"].to_i] = {
         score: result["score"].to_f,
         feedback: result["feedback"],
-        feedback_file: result["feedback_file_name"],
         score_id: result["score_id"].to_i,
         released: result["released"].to_i,
-        # score_model: Score.find(result["score_id"].to_i)
       }
     end
 
