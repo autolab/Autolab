@@ -2,11 +2,6 @@
 <%= "#{@assessment.display_name} - #{@score.problem.name}" %>
 (<%=@score.submission.course_user_datum.user.email %>)
 </h2>
-<% if @score.feedback_file then %>
-  Download Feedback File: <%= link_to @score.feedback_file_name,
-    :action=>"downloadFeedbackFile",
-    :id=>@score.id %>
-<% end %>
 <pre>
 <%= @score.feedback %>
 Score for this problem: <%= @score.score.to_f().round(1) %>

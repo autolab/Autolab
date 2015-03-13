@@ -36,13 +36,11 @@ class AssessmentsController < ApplicationController
   action_auth_level :viewGradesheet2, :course_assistant
   action_auth_level :quickGetTotal, :course_assistant
   action_auth_level :statistics, :instructor
-  action_auth_level :bulkFeedback, :instructor
 
   # Handin
   action_auth_level :handin, :student
 
-  # AssessmentBase
-  action_auth_level :writeup, :student
+  # Handout
   action_auth_level :handout, :student
 
   # Autograde
@@ -715,10 +713,8 @@ class AssessmentsController < ApplicationController
       @scores[subId][result["problem_id"].to_i] = {
         :score=>result["score"].to_f,
         :feedback=>result["feedback"],
-        :feedback_file=>result["feedback_file_name"],
         :score_id=>result["score_id"].to_i,
         :released=>result["released"].to_i,
-        #score_model: Score.find(result["score_id"].to_i)
       }
     end
 
@@ -765,10 +761,8 @@ class AssessmentsController < ApplicationController
       @scores[subId][result["problem_id"].to_i] = {
         :score=>result["score"].to_f,
         :feedback=>result["feedback"],
-        :feedback_file=>result["feedback_file_name"],
         :score_id=>result["score_id"].to_i,
         :released=>result["released"].to_i,
-        #score_model: Score.find(result["score_id"].to_i)
       }
     end
 
@@ -783,42 +777,15 @@ class AssessmentsController < ApplicationController
 
   action_auth_level :viewFeedback, :student
   def viewFeedback
+    set_submission
     #User requested to view feedback on a score
-    @score = Score.unscoped.where(:submission_id=>params[:submission],
-                                  :problem_id=>params[:feedback]).first
+    @score = @submission.scores.find_by(problem_id: params[:feedback])
     if !@score then
-      redirect_to :action=>"index" and return
+      redirect_to action: "index" and return
     end
-    if (@score.submission.course_user_datum_id != @cud.id) and
-      (not @cud.instructor? ) and 
-      (not @cud.course_assistant?) and
-      (not @cud.administrator? ) then
-        redirect_to :action=>"index" and return 
-    end 
     
-    @submission = @score.submission
-
     if Archive.is_archive? @submission.handin_file_path then
       @files = Archive.get_files @submission.handin_file_path
-    end
-  end
-
-  action_auth_level :downloadFeedbackFile, :student
-  def downloadFeedbackFile
-    @score = Score.find_with_feedback(params[:id])
-    logger.debug("here")
-    if @score.feedback_file.nil?  then 
-      redirect_to :action=>"viewFeedback" and return
-    end
-    if (@score.feedback_file_type.nil?) then
-      send_data(@score.feedback_file,{
-        :filename=>@score.feedback_file_name,
-        :disposition=>'inline'} )
-    else
-      send_data(@score.feedback_file,{
-        :filename=>@score.feedback_file_name,
-        :type=>@score.feedback_file_type,
-        :disposition=>'inline'} )
     end
   end
 
@@ -904,13 +871,7 @@ class AssessmentsController < ApplicationController
     redirect_to :action=>"viewGradesheet"
   end
 
-  action_auth_level :extension, :instructor
-  def extension
-    redirect_to :controller=>"extension",
-      :action=>"index",
-      :assessment=>@assessment.id
-  end
-
+  action_auth_level :writeup, :student
   def writeup
     if Time.now() < @assessment.start_at && !@cud.instructor? then
       @output = "This assessment has not started yet."
