@@ -12,7 +12,6 @@ class Course < ActiveRecord::Base
 
   has_many :course_user_data, :dependent=>:destroy
   has_many :assessments, :dependent=>:destroy
-  has_many :user_modules, :dependent=>:destroy
   has_many :scheduler, :dependent=>:destroy
   has_many :announcements, dependent: :destroy
   has_many :attachments, dependent: :destroy
