@@ -330,6 +330,8 @@ class CoursesController < ApplicationController
                 end
 
                 # Update user data
+                user.first_name = newCUD[:first_name]
+                user.last_name = newCUD[:last_name]
                 user.school = newCUD[:school]
                 user.major = newCUD[:major]
                 user.year = newCUD[:year]
