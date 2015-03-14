@@ -19,7 +19,7 @@
 
 <!-- TODO: custom title 'Persistent Announcement?' -->
 <%= f.check_box :persistent,
-  help_text: "A persistent announcement ignores the 'end date' field above." %>
+  help_text: "A persistent announcement is shown on every page in the course." %>
 
 <% if @cud.administrator? then %>
   <%= f.check_box :system,
