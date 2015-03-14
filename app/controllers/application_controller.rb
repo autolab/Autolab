@@ -108,7 +108,7 @@ class ApplicationController < ActionController::Base
   def verify_authenticity_token
     msg = "Invalid request! Please go back, reload the " \
         "page and try again.  If you continue to see this error. " \
-        " please contact the Autolab Development team at the " \ 
+        " please contact the Autolab Development team at the " \
         "contact link below" 
 
     if not verified_request? then 
