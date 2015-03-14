@@ -43,9 +43,7 @@ Autolab3::Application.routes.draw do
         end
         post 'import', on: :collection
       end
-      resources :problems, except: [:index, :show] do
-        get 'destroyConfirm', on: :member
-      end
+      resources :problems, except: [:index, :show]
       resources :submissions do
         resources :annotations, only: [:create, :update, :destroy]
         resources :scores, only: [:create, :show, :update]
