@@ -12,7 +12,7 @@ Autolab3::Application.routes.draw do
     get 'vmlist'
   end
 
-  resource :admin do
+  resource :admin, only: :show do
     match 'emailInstructors', via: [:get, :post]
   end
 
