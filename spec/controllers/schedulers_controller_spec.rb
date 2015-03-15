@@ -5,14 +5,6 @@ RSpec.describe SchedulersController, :type => :controller do
 
   render_views
 
-  before(:suite) {
-    Scheduler.delete_all
-  }
-
-  after(:suite) {
-    Scheduler.delete_all
-  }
-
   describe "#index" do
     context "when user is Autolab admin" do
       u = get_admin

@@ -25,4 +25,14 @@ RSpec.configure do |config|
   config.infer_spec_type_from_file_location!
   config.include Devise::TestHelpers, :type => :controller
   config.extend ControllerMacros, :type => :controller
+
+  # Before hooks for initialization
+  config.before(:suite) do
+
+  end
+
+  # After hooks for cleanup
+  config.after(:suite) do
+    Scheduler.delete_all
+  end
 end
