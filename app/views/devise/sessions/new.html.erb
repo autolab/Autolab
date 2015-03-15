@@ -1,8 +1,6 @@
 <div class="sign-in-panel home">
 <h1>Autolab Homepage</h1>
-<!-- <h2>Sign In</h2>
- -->
- <br>
+<br>
 <%= form_for(resource, :as => resource_name, :url => session_path(resource_name)) do |f| %>
   
   <div><%= f.email_field :email, :autofocus => true, :placeholder=> "Email Address"%></div>
