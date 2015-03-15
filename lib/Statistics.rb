@@ -1,26 +1,25 @@
 class Statistics
-
   def mean(a)
     if a.nil? || a.empty?
       return "--"
     else
-       result = (a.inject(0) {|sum,el| sum + el }.to_f) / a.to_a.length()
+      result = (a.inject(0) { |sum, el| sum + el }.to_f) / a.to_a.length
     end
-    return result.round(1)
+    result.round(1)
   end
 
-  #I stole this from the internets. 
+  # I stole this from the internets.
   def variance(a)
     n = 0
     mean = 0.0
     s = 0.0
-    a.each { |x|
-      n = n + 1
+    a.each do |x|
+      n += 1
       delta = x - mean
-      mean = mean + (delta / n)
-      s = s + delta * (x - mean)
-    }
-    return s / n
+      mean += (delta / n)
+      s += delta * (x - mean)
+    end
+    s / n
   end
 
   # calculate the standard deviation of a population
@@ -51,26 +50,26 @@ class Statistics
   end
 
   def median(a)
-    if a.nil? || a.empty? 
+    if a.nil? || a.empty?
       return "--"
     end
 
     a = a.sort
     len = a.size
-    if len % 2 == 0 then
-      result = (a[len/2-1] + a[len/2]) / 2.0
+    if len.even?
+      result = (a[len / 2 - 1] + a[len / 2]) / 2.0
     else
-      result = a[len/2].to_f
+      result = a[len / 2].to_f
     end
-    return result.round(1)
+    result.round(1)
   end
 
   def stats(pop)
     pop = pop.compact
     result = {}
     [:median, :min, :max, :mean, :stddev].each do |stat|
-      result[stat] = self.send(stat, pop)
+      result[stat] = send(stat, pop)
     end
-    return result
+    result
   end
 end

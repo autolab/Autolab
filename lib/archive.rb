@@ -1,8 +1,8 @@
-require 'rubygems'
-require 'rubygems/package'
-require 'tempfile'
-require 'zlib'
-require 'zip'
+require "rubygems"
+require "rubygems/package"
+require "tempfile"
+require "zlib"
+require "zip"
 
 module Archive
   def self.get_files(archive_path)
@@ -20,8 +20,8 @@ module Archive
         pathname: pathname,
         header_position: i,
         mac_bs_file: pathname.include?("__MACOSX") ||
-                     pathname.include?(".DS_Store") ||
-                     pathname.include?(".metadata"),
+          pathname.include?(".DS_Store") ||
+          pathname.include?(".metadata"),
         directory: looks_like_directory?(pathname)
       }
     end
@@ -39,14 +39,14 @@ module Archive
     res = nil, nil
     archive_extract.each_with_index do |entry, i|
       # Obtain path name depending for tar/zip entry
-      pathname = get_entry_name(entry) 
+      pathname = get_entry_name(entry)
 
-      next if pathname.include? "__MACOSX" or
-        pathname.include? ".DS_Store" or
-        pathname.include? ".metadata"
-      
-      if i == n then
-        if looks_like_directory?(pathname) then
+      next if pathname.include?("__MACOSX") ||
+              pathname.include?(".DS_Store") ||
+              pathname.include?(".metadata")
+
+      if i == n
+        if looks_like_directory?(pathname)
           res = nil, pathname
         else
           res = read_entry_file(entry), get_entry_name(entry)
@@ -57,7 +57,7 @@ module Archive
 
     archive_extract.close
 
-    return res
+    res
   end
 
   def self.get_nth_filename(files, n)
@@ -71,24 +71,24 @@ module Archive
   def self.is_archive?(filename)
     return nil unless filename
     archive_type = get_archive_type(filename)
-    return (archive_type.include?("tar") || archive_type.include?("gzip") || archive_type.include?("zip"))
+    (archive_type.include?("tar") || archive_type.include?("gzip") || archive_type.include?("zip"))
   end
 
   def self.get_archive(filename, archive_type = nil)
-    if archive_type == nil then
+    if archive_type.nil?
       archive_type = get_archive_type(filename)
     end
 
-    if archive_type.include? "tar" then
+    if archive_type.include? "tar"
       archive_extract = Gem::Package::TarReader.new(File.new(filename))
       archive_extract.rewind # The extract has to be rewinded after every iteration
-    elsif archive_type.include? "gzip" then
+    elsif archive_type.include? "gzip"
       archive_extract = Gem::Package::TarReader.new(Zlib::GzipReader.open(filename))
       archive_extract.rewind
-    elsif archive_type.include? "zip" then
+    elsif archive_type.include? "zip"
       archive_extract = Zip::File.open(filename)
     else
-      raise "Unrecognized archive type!"
+      fail "Unrecognized archive type!"
     end
     archive_extract
   end
@@ -111,7 +111,7 @@ module Archive
       return nil
     end
 
-    Tempfile.open(['submissions', '.zip']) do |t|
+    Tempfile.open(["submissions", ".zip"]) do |t|
       Zip::File.open(t.path, Zip::File::CREATE) do |z|
         paths.each { |p| z.add(File.basename(p), p) }
         z
@@ -122,7 +122,6 @@ module Archive
   end
 
   def self.looks_like_directory?(pathname)
-    return pathname.ends_with?("/")
+    pathname.ends_with?("/")
   end
-
 end

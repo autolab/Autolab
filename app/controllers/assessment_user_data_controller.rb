@@ -1,9 +1,8 @@
 class AssessmentUserDataController < ApplicationController
-  
   # inherited from ApplicationController
   before_action :set_assessment
   before_action :set_aud
-  
+
   action_auth_level :edit, :instructor
   def edit
     @breadcrumbs << (view_context.link_to "Gradesheet", [:viewGradesheet, @course, @assessment])
@@ -11,7 +10,7 @@ class AssessmentUserDataController < ApplicationController
 
   action_auth_level :update, :instructor
   def update
-    if @aud.update(edit_aud_params) then
+    if @aud.update(edit_aud_params)
       flash[:notice] = "Grade type updated!"
     else
       flash[:error] = "Error updating grade type!"
@@ -20,13 +19,12 @@ class AssessmentUserDataController < ApplicationController
   end
 
   private
-    
-    def set_aud
-      @aud = @assessment.assessment_user_data.find(params[:id])
-    end
-    
-    def edit_aud_params
-      params.require(:assessment_user_datum).permit(:grade_type)
-    end
 
+  def set_aud
+    @aud = @assessment.assessment_user_data.find(params[:id])
+  end
+
+  def edit_aud_params
+    params.require(:assessment_user_datum).permit(:grade_type)
+  end
 end

@@ -3,10 +3,10 @@ class ScoreAdjustment < ActiveRecord::Base
 
   validates_presence_of :value, :kind
   validates_numericality_of :value
- 
+
   # constants for the kind of score_adjustment
-  POINTS=0
-  PERCENT=1
+  POINTS = 0
+  PERCENT = 1
 
   # @param adj        ScoreAdjustment/nil   The adjustment to be applied, if any
   # @param score      float                 The score to be applied on
@@ -15,7 +15,7 @@ class ScoreAdjustment < ActiveRecord::Base
   # @return The applied adjustment (float)
   def self.applied_value(adj, score, multiplier)
     if score.nil?
-      raise ArgumentError.new("ScoreAdjustment.applied_value: score was nil")
+      fail ArgumentError.new("ScoreAdjustment.applied_value: score was nil")
     elsif adj.nil?
       0.0
     else
@@ -31,7 +31,7 @@ class ScoreAdjustment < ActiveRecord::Base
           score * multiplier * (adj.value / 100)
         end
       else
-        raise ArgumentError
+        fail ArgumentError
       end
     end
   end
@@ -39,16 +39,16 @@ class ScoreAdjustment < ActiveRecord::Base
   def kind=(kind)
     case kind
     when "points"
-      write_attribute(:kind, POINTS)
+      self[:kind] = POINTS
     when "percent"
-      write_attribute(:kind, PERCENT) 
+      self[:kind] = PERCENT
     else
-      raise ArgumentError
+      fail ArgumentError
     end
   end
 
   def kind
-    case read_attribute(:kind)
+    case self[:kind]
     when POINTS
       "points"
     when PERCENT
@@ -57,13 +57,13 @@ class ScoreAdjustment < ActiveRecord::Base
   end
 
   def to_s
-    case read_attribute(:kind)
+    case self[:kind]
     when POINTS
       type_str = "points"
-    when PERCENT    
+    when PERCENT
       type_str = "%"
     else
-      raise ArgumentError
+      fail ArgumentError
     end
 
     sprintf("%+g", value) + " " + type_str
