@@ -99,6 +99,8 @@ bundle exec rake spec
 
 We have a very limited testing suite at the moment, but we are working on it.
 
+[![Code Climate](https://codeclimate.com/github/autolab/Autolab/badges/gpa.svg)](https://codeclimate.com/github/autolab/Autolab)
+
 ## Contributing
 
 We encourage you to contribute to Autolab! Please check out the
