@@ -13,4 +13,3 @@ FactoryGirl.define do
     disabled false
   end
 end
-

@@ -17,12 +17,12 @@ class AutogradingSetup < ActiveRecord::Base
     end
   end
 
-  SERIALIZABLE = Set.new [ "autograde_image", "autograde_timeout", "release_score" ]
+  SERIALIZABLE = Set.new %w(autograde_image autograde_timeout release_score)
   def serialize
     Utilities.serializable attributes, SERIALIZABLE
   end
 
-  def self.deserialize s
+  def self.deserialize(s)
     new s
   end
 end

@@ -2,7 +2,6 @@ require 'archive.rb'
 require 'pdf.rb'
 
 class SubmissionsController < ApplicationController
-
   # inherited from ApplicationController
   before_action :set_assessment
   before_action :set_submission, only: [:destroy, :destroyConfirm, :download, :edit, :listArchive, :update, :view]
@@ -11,7 +10,7 @@ class SubmissionsController < ApplicationController
   # this page loads.  links/functionality may be/are off
   action_auth_level :index, :instructor
   def index
-    @course = Course.where(:id => params[:course_id]).first  
+    @course = Course.where(id: params[:course_id]).first  
     @assessment = @course.assessments.find(params[:assessment_id])
     @submissions = @assessment.submissions.order("created_at DESC")
     
@@ -30,10 +29,10 @@ class SubmissionsController < ApplicationController
       cud_ids = params["course_user_datum_id"].split(',')
       @cuds = @course.course_user_data.find(cud_ids)
       if @cuds.size != cud_ids.size then
-        @errorMessage = "Couldn't find all course_user_data in #{cuds_ids}. " +
-          "Expected #{cud_ids.size} course_user_data, but only found " + 
+        @errorMessage = "Couldn't find all course_user_data in #{cuds_ids}. " \
+          "Expected #{cud_ids.size} course_user_data, but only found " \
           "#{@cuds.size} course_user_data."
-        render [@course, @assessment, :submissions] and return 
+        render([@course, @assessment, :submissions]) && return 
       end
     else
       @cuds = {}
@@ -55,10 +54,10 @@ class SubmissionsController < ApplicationController
     @cuds = @course.course_user_data.find(cud_ids)
     if (@cuds.size != cud_ids.size) then 
       @errorMessage = "Invalid CourseUserDatum ID in #{cud_ids}"
-      render [@course, @assessment, :submissions] and return
+      render([@course, @assessment, :submissions]) && return
     end
     for cud_id in cud_ids do 
-      @submission = Submission.new(:assessment_id=>@assessment.id)
+      @submission = Submission.new(assessment_id: @assessment.id)
       @submission.course_user_datum_id = cud_id
       @submission.notes = params[:submission]['notes']
       if not params[:submission][:tweak_attributes][:value].blank?
@@ -66,7 +65,7 @@ class SubmissionsController < ApplicationController
       end
       @submission.special_type = params[:submission]['special_type']
       @submission.submitted_by_id = @cud.id
-      if @submission.save! then  #Now we have a version number!
+      if @submission.save! then  # Now we have a version number!
         if params[:submission]['file'] &&
           (not params[:submission]['file'].blank?) then 
           @submission.saveFile(params[:submission])
@@ -80,7 +79,7 @@ class SubmissionsController < ApplicationController
   action_auth_level :show, :student
   def show
     submission = Submission.find(params[:id])
-    #respond_to do |format|
+    # respond_to do |format|
     #  if submission 
     #    format.js { 
     #      render :json => submission.to_json(
@@ -98,7 +97,7 @@ class SubmissionsController < ApplicationController
     #  else
     #    format.js { head :bad_request }
     #  end
-    #end
+    # end
   end
   
   # this loads and looks good
@@ -114,9 +113,9 @@ class SubmissionsController < ApplicationController
       params[:submission][:tweak_attributes][:_destroy] = true
     end
     if @submission.update(edit_submission_params) then
-      redirect_to history_course_assessment_path(@submission.course_user_datum.course, @assessment) and return
+      redirect_to(history_course_assessment_path(@submission.course_user_datum.course, @assessment)) && return
     else
-      redirect_to edit_course_assessment_submission_path(@submission.course_user_datum.course, @assessment, @submission) and return
+      redirect_to(edit_course_assessment_submission_path(@submission.course_user_datum.course, @assessment, @submission)) && return
     end
   end
 
@@ -128,7 +127,7 @@ class SubmissionsController < ApplicationController
     else
       flash[:error] = "There was an error deleting the submission."
     end
-    redirect_to course_assessment_submissions_path(@submission.course_user_datum.course, @submission.assessment) and return
+    redirect_to(course_assessment_submissions_path(@submission.course_user_datum.course, @submission.assessment)) && return
   end
 
   # this is good
@@ -167,7 +166,7 @@ class SubmissionsController < ApplicationController
     assessment = @course.assessments.find(params[:assessment_id])
     if assessment.disable_handins then
       flash[:error] = "There are no submissions to download."
-      redirect_to [@course, assessment, :submissions] and return
+      redirect_to([@course, assessment, :submissions]) && return
     end
 
     if params[:final] then
@@ -178,19 +177,19 @@ class SubmissionsController < ApplicationController
 
     submissions = submissions.select { |s| @cud.can_administer?(s.course_user_datum) }
     paths = submissions.collect { |s| s.handin_file_path }
-    paths = paths.select { |p| !p.nil? && File.exists?(p) && File.readable?(p) }
+    paths = paths.select { |p| !p.nil? && File.exist?(p) && File.readable?(p) }
 
     result = Archive.create_zip paths
 
     if result.nil? then
       flash[:error] = "There are no submissions to download."
-      redirect_to [@course, assessment, :submissions] and return
+      redirect_to([@course, assessment, :submissions]) && return
     end
 
     send_file(result.path, 
               type: 'application/zip',
               stream: false, # So we can delete the file immediately.
-              filename: File.basename(result.path)) and return
+              filename: File.basename(result.path)) && return
   end
 
   # Action to be taken when the user wants do download a submission but
@@ -200,19 +199,19 @@ class SubmissionsController < ApplicationController
   def download
     if params[:header_position] then
       file, pathname = Archive.get_nth_file(@filename, params[:header_position].to_i)
-      if not (file and pathname) then
+      if not (file && pathname) then
         flash[:error] = "Could not read archive."
         redirect_to [@course, @assessment] and return false
       end
 
       send_data file,
-        :filename => pathname,
-        :disposition => "inline"
+                filename: pathname,
+                disposition: "inline"
     else
       mime = params[:forceMime] || @submission.detected_mime_type
       send_file @filename, 
-        :filename => @basename,
-        :disposition => "inline"
+                filename: @basename,
+                disposition: "inline"
       #  :type => mime
     end
   end
@@ -225,7 +224,7 @@ class SubmissionsController < ApplicationController
   def view
     if params[:header_position] then
       file, pathname = Archive.get_nth_file(@submission.handin_file_path, params[:header_position].to_i)
-      unless (file and pathname) then
+      unless (file && pathname) then
         flash[:error] = "Could not read archive."
         redirect_to [@course, @assessment] and return false
       end
@@ -235,7 +234,7 @@ class SubmissionsController < ApplicationController
     else
       # redirect on archives
       if Archive.is_archive?(@submission.handin_file_path) then
-        redirect_to action: :listArchive and return
+        redirect_to(action: :listArchive) && return
       end
         
       file = @submission.handinFile.read
@@ -246,14 +245,14 @@ class SubmissionsController < ApplicationController
     
     filename = @submission.handin_file_path
     if PDF.is_pdf?(file) then
-      send_data(file, type: "application/pdf", disposition: "inline", filename: File.basename(filename)) and return
+      send_data(file, type: "application/pdf", disposition: "inline", filename: File.basename(filename)) && return
     end
     
     begin
       @data = @submission.annotated_file(file, @filename, params[:header_position])
     rescue
       flash[:error] = "Sorry, we could not display your file because it contains non-ASCII characters. Please remove these characters and resubmit your work."
-      redirect_to :back and return
+      redirect_to(:back) && return
     end
 
     begin
@@ -264,7 +263,7 @@ class SubmissionsController < ApplicationController
     rescue ArgumentError => e
       raise e unless e.message == "invalid byte sequence in UTF-8"
       flash[:error] = "Sorry, we could not parse your file because it contains non-ASCII characters. Please download file to view the source."
-      redirect_to :back and return
+      redirect_to(:back) && return
     end
 
     # fix for tar files
@@ -276,8 +275,8 @@ class SubmissionsController < ApplicationController
     
     @annotations.sort! {|a,b| a.line <=> b.line }
 
-    @problemSummaries = Hash.new
-    @problemGrades = Hash.new
+    @problemSummaries = {}
+    @problemGrades = {}
 
     # extract information from annotations
     for annotation in @annotations do
@@ -301,13 +300,13 @@ class SubmissionsController < ApplicationController
     # Rendering this page fails. Often. Mostly due to PDFs.
     # So if it fails, redirect, instead of showing an error page.
     begin
-      render :view and return
+      render(:view) && return
     rescue
       flash[:error] = "Autolab cannot display this file"
       if params[:header_position] then
-        redirect_to [:list_archive, @course, @assessment, @submission] and return
+        redirect_to([:list_archive, @course, @assessment, @submission]) && return
       else
-        redirect_to [:history, @course, @assessment, cud_id: @submission.course_user_datum_id] and return
+        redirect_to([:history, @course, @assessment, cud_id: @submission.course_user_datum_id]) && return
       end
     end
   end
@@ -319,16 +318,16 @@ class SubmissionsController < ApplicationController
     @files = Archive.get_files(@filename).sort! { |a,b| a[:pathname] <=> b[:pathname] }
   end
 
-private
+  private
 
   def new_submission_params
     params.require(:submission).permit(:course_used_datum_id, :notes, :file,
-      tweak_attributes: [:_destroy, :kind, :value])
+                                       tweak_attributes: [:_destroy, :kind, :value])
   end
 
   def edit_submission_params
     params.require(:submission).permit(:notes,
-      tweak_attributes: [:_destroy, :kind, :value])
+                                       tweak_attributes: [:_destroy, :kind, :value])
   end
 
   # Loads the submission from the DB 
@@ -342,12 +341,12 @@ private
       redirect_to [@course, @assessment] and return false
     end
     
-    unless (@cud.instructor or @cud.course_assistant or @submission.course_user_datum_id == @cud.id) then
+    unless (@cud.instructor || @cud.course_assistant || @submission.course_user_datum_id == @cud.id) then
       flash[:error] = "You do not have permission to access this submission."
       redirect_to [@course, @assessment] and return false
     end
 
-    if (@assessment.exam? or @course.exam_in_progress?) and not (@cud.instructor or @cud.course_assistant) then
+    if (@assessment.exam? || @course.exam_in_progress?) and not (@cud.instructor || @cud.course_assistant) then
       flash[:error] = "You cannot view this submission.
               Either an exam is in progress or this is an exam submission."
       redirect_to [@course, @assessment] and return false
@@ -364,7 +363,7 @@ private
     @filename = @submission.handin_file_path
     @basename = File.basename @filename
 
-    if not File.exists? @filename then
+    if not File.exist? @filename then
       flash[:error] = "Could not find submission file."
       redirect_to [@course, @assessment] and return false
     end
@@ -392,5 +391,4 @@ private
     return nil unless !secondUnderscoreInd.nil?
     return filename[firstUnderscoreInd + 1...secondUnderscoreInd].to_i
   end
-
 end

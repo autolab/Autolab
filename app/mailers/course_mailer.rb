@@ -1,9 +1,8 @@
 class CourseMailer < ActionMailer::Base
-  
   def system_announcement(sender, to, subject, text)
     @text = text
 
-    return mail(
+    mail(
       subject: subject,
       from: sender,
       bcc: to,
@@ -16,7 +15,7 @@ class CourseMailer < ActionMailer::Base
     @course = course
     @text = text
 
-    return mail(
+    mail(
       subject: subject,
       from: sender,
       bcc: to,
@@ -36,6 +35,4 @@ class CourseMailer < ActionMailer::Base
       sent_on: Time.now
     )
   end
-
-
 end

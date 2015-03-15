@@ -21,7 +21,7 @@ class AssociationCache
     end
   end
 
-  def load_assessments(find_options = {})
+  def load_assessments(_find_options = {})
     @assessments = {}
     @sorted_assessments = @course.assessments.ordered.load
     setup_assessments_before @sorted_assessments
@@ -56,32 +56,33 @@ class AssociationCache
     @latest_submission_scores.default = []
   end
 
-private
+  private
+
   def setup_associations
-    @assessments.each_value { |asmt|
+    @assessments.each_value do |asmt|
       asmt.association_cache = self
-    } if @assessments
+    end if @assessments
 
-    (@auds.each_value { |aud| 
+    (@auds.each_value do |aud|
       aud.association_cache = self
-    }) if @auds
+    end) if @auds
 
-    (@latest_submissions.each_value { |ls|
+    (@latest_submissions.each_value do |ls|
       ls.association_cache = self
-    }) if @latest_submissions
+    end) if @latest_submissions
 
     @course.association_cache = self
 
-    @course_user_data.each_value { |cud|
+    @course_user_data.each_value do |cud|
       cud.association_cache = self
-    } if @course_user_data
+    end if @course_user_data
   end
 
   def setup_assessments_before(sorted_assessments)
     @assessments_before = {}
-    sorted_assessments.each_with_index { |asmt, i|
+    sorted_assessments.each_with_index do |asmt, i|
       @assessments_before[asmt.id] = sorted_assessments[i - 1] if i > 0
-    }
+    end
   end
 end
 
@@ -119,7 +120,6 @@ module CourseAssociationCache
     @assessments || assessments_without_cache
   end
 
-
   def association_cache=(cache)
     @ass_cache = cache
 
@@ -137,7 +137,7 @@ module AssessmentAssociationCache
 
   def assessment_before_with_cache
     asmt_before_cache = @ass_cache && @ass_cache.assessments_before
-    asmt_before_cache ? asmt_before_cache[id] : assessment_before_without_cache 
+    asmt_before_cache ? asmt_before_cache[id] : assessment_before_without_cache
   end
 
   def aud_for_with_cache(cud_id)
@@ -174,6 +174,7 @@ module AUDAssociationCache
   def assessment_with_cache
     @assessment || assessment_without_cache
   end
+
   def association_cache=(cache)
     @ass_cache = cache
 

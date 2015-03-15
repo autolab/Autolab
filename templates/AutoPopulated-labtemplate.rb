@@ -6,8 +6,7 @@ module LabtemplateAutoPopulated
   include Autograde
 
   def assessmentInitialize(course)
-    super("labtemplate",course)
+    super("labtemplate", course)
     @problems = []
   end
-
 end

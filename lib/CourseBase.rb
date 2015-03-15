@@ -1,12 +1,11 @@
-require 'Statistics.rb'
+require "Statistics.rb"
 
 module CourseBase
-
   def courseAverage(user)
     Statistics.mean(user.values)
   end
 
-  def gradebookMessage()
+  def gradebookMessage
     ""
   end
 end

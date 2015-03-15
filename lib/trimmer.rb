@@ -10,13 +10,12 @@ module Trimmer
 
   # Don't pollute the namespace.
   module ClassMethods
-    def trim_field *field_list
+    def trim_field(*field_list)
       before_validation do |model|
         field_list.each do |n|
-          model[n] = model[n].strip if model[n].respond_to? 'strip'
+          model[n] = model[n].strip if model[n].respond_to? "strip"
         end
       end
     end
   end
 end
-
