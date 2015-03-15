@@ -21,7 +21,7 @@ class Extension < ActiveRecord::Base
 
   def after_create
     if self.infinite? then
-      COURSE_LOGGER.log("Extension #{id}: CREATED for " \ 
+      COURSE_LOGGER.log("Extension #{id}: CREATED for " \
       "#{course_user_datum.user.email} on" \
       " #{assessment.name} for unlimited days")
     else
@@ -32,7 +32,7 @@ class Extension < ActiveRecord::Base
   end
 
   def after_destroy
-    COURSE_LOGGER.log("Extension #{id}: DESTROYED for " \ 
+    COURSE_LOGGER.log("Extension #{id}: DESTROYED for " \
     "#{course_user_datum.user.email} on" \
       " #{assessment.name}")
   end

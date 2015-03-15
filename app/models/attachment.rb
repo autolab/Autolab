@@ -27,7 +27,7 @@ class Attachment < ActiveRecord::Base
   end
 
   def after_create
-    COURSE_LOGGER.log("Created Attachment #{id}:#{self.filename} " \ 
+    COURSE_LOGGER.log("Created Attachment #{id}:#{self.filename} " \
       "(#{self.mime_type}) as \"#{self.name}\")")
   end
 end

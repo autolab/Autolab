@@ -49,7 +49,7 @@ class Score < ActiveRecord::Base
     end
     # Some scores don't have submissions, probably if they're deleted ones
     if (! submission.nil?)
-      COURSE_LOGGER.log("Score #{id} UPDATED for " \  
+      COURSE_LOGGER.log("Score #{id} UPDATED for " \
       "#{submission.course_user_datum.user.email} set to " \
       "#{score} on #{submission.assessment.name}:#{problem.name} by" \
       " #{setter}")

@@ -30,7 +30,7 @@ class SubmissionsController < ApplicationController
       @cuds = @course.course_user_data.find(cud_ids)
       if @cuds.size != cud_ids.size then
         @errorMessage = "Couldn't find all course_user_data in #{cuds_ids}. " \
-          "Expected #{cud_ids.size} course_user_data, but only found " \ 
+          "Expected #{cud_ids.size} course_user_data, but only found " \
           "#{@cuds.size} course_user_data."
         render([@course, @assessment, :submissions]) && return 
       end

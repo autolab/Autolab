@@ -166,7 +166,7 @@ class Submission < ActiveRecord::Base
 
   def after_save
     begin
-      COURSE_LOGGER.log("Submission #{id} SAVED for " \ 
+      COURSE_LOGGER.log("Submission #{id} SAVED for " \
         "#{course_user_datum.user.email} on" \
         " #{assessment.name}, file #{self.filename} (#{self.mime_type}),"\
         "version: #{self.version}") 
