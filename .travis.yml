@@ -7,5 +7,5 @@ before_script:
   - RAILS_ENV=test bundle exec rake db:setup --trace
   - RAILS_ENV=test bundle exec rake autolab:populate
 script:
-  - RAILS_ENV=test bundle exec rspec ./spec/features/
+  - RAILS_ENV=test CODECLIMATE_REPO_TOKEN=d37a8b9e09642cb73cfcf4ecfb4115fc3d6a55a7714110187ac59856ae4ab5ad bundle exec rspec ./spec/features/
 

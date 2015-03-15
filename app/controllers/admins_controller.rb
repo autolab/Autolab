@@ -13,7 +13,6 @@ class AdminsController < ApplicationController
   action_auth_level :emailInstructors, :administrator
   def emailInstructors
     if request.post? then
-      
 
       @cuds = CourseUserDatum.select(:user_id).distinct.joins(:course)
         .where("courses.end_date > ? and instructor = 1", DateTime.now)
