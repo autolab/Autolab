@@ -8,7 +8,6 @@ class CoursesController < ApplicationController
   skip_before_action :authorize_user_for_course, only: [ :index, :new, :create ]
   # if there's no course, there are no persistent announcements for that course
   skip_before_action :update_persistent_announcements, only: [ :index, :new, :create ]
-  skip_before_action :authenticate_for_action
   
   def index
     courses_for_user = User.courses_for_user current_user
@@ -22,9 +21,14 @@ class CoursesController < ApplicationController
     render layout: "home"
   end
 
+  action_auth_level :show, :student
+  def show
+    redirect_to course_assessments_url(@course)
+  end
+
   NEW_ROSTER_COLUMNS = 29
 
-  action_auth_level :show, :instructor
+  action_auth_level :manage, :instructor
   def manage
 
     matrix = GradeMatrix.new @course, @cud
@@ -136,9 +140,6 @@ class CoursesController < ApplicationController
     end
   end
 
-  def show
-    redirect_to course_assessments_url(@course)
-  end
 
   action_auth_level :edit, :instructor
   def edit
