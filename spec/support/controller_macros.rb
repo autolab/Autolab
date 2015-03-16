@@ -1,3 +1,5 @@
+require 'tempfile'
+
 module ControllerMacros
   def get_admin
     admins = User.where(:administrator => true)
@@ -58,5 +60,36 @@ module ControllerMacros
                                         :interval => 86400, :next => Time.now()})
     s.save
     return s
+  end
+
+  def create_course_att_with_cid(cid)
+    # Prepare course attachment file
+    course_att_file = Rails.root.join("attachments/testattach.txt");
+    File.open(course_att_file, 'w') { |f|
+      f.write("Course attachment file")
+    }
+    att = Attachment.new({:course_id => cid, :assessment_id => nil,
+                          :name => "att#{cid}",
+                          :released => true})
+    att.file = ActionDispatch::Http::UploadedFile.new(
+        {:filename => File.basename(course_att_file), :type => "text/plain",
+         :tempfile => Tempfile.new("attach.tmp")
+        })
+    att.save
+    return att
+  end
+
+  def create_assess_att_with_cid_aid(cid, aid)
+    # Prepare assessment attachment file
+    assess_att_file = Rails.root.join("attachments/assessattach.txt");
+    File.open(assess_att_file, 'w') { |f|
+      f.write("Assessment attachment file")
+    }
+    att = Attachment.new({:course_id => cid, :assessment_id => aid,
+                          :name => "att#{cid}-#{aid}", :filename => assess_att_file,
+                          :released => true, :mime_type => "text/plain"})
+    att.file = File.open(assess_att_file, "w")
+    att.save
+    return att
   end
 end
