@@ -247,7 +247,3 @@ class JobsController < ApplicationController
     job
   end
 end
-<<<<<<< HEAD
-
-=======
->>>>>>> 6271e1550e596f4abbf7fea69e208da9320e0a9b

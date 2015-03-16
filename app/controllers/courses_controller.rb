@@ -7,14 +7,8 @@ class CoursesController < ApplicationController
   # you need to be able to pick a course to be authorized for it
   skip_before_action :authorize_user_for_course, only: [:index, :new, :create]
   # if there's no course, there are no persistent announcements for that course
-<<<<<<< HEAD
   skip_before_action :update_persistent_announcements, only: [ :index, :new, :create ]
-  
-=======
-  skip_before_action :update_persistent_announcements, only: [:index, :new, :create]
-  skip_before_action :authenticate_for_action
 
->>>>>>> 6271e1550e596f4abbf7fea69e208da9320e0a9b
   def index
     courses_for_user = User.courses_for_user current_user
 
