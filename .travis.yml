@@ -4,6 +4,7 @@ rvm:
 before_script:
 - cp config/database.travis.yml config/database.yml
 - cp config/initializers/devise.rb.template config/initializers/devise.rb
+- cp config/autogradeConfig.rb.template config/autogradeConfig.rb
 - bundle install
 - RAILS_ENV=test bundle exec rails generate devise:install --skip
 - RAILS_ENV=test bundle exec rake db:create --trace

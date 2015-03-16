@@ -3,13 +3,13 @@
 # server for the changes to take effect.
 
 # Hostname for Tango RESTful API
-RESTFUL_HOST = "<tango_host>"
+RESTFUL_HOST = ENV["RESTFUL_HOST"]
 
 # Port for Tango RESTful API
-RESTFUL_PORT = <tango_port>
+RESTFUL_PORT = ENV["RESTFUL_PORT"]
 
 # Where is the "courses" directory?
-AUTOCONFIG_COURSE_DIR = "<autolab_courses_path>"
+AUTOCONFIG_COURSE_DIR = ENV["AUTOCONFIG_COURSE_DIR"]
 
 # How many seconds to wait for Tango RPC calls before timing out?
 AUTOCONFIG_TANGO_TIMEOUT = 15
@@ -21,7 +21,7 @@ AUTOCONFIG_MAX_DEAD_JOBS = 500
 AUTOCONFIG_DEF_DEAD_JOBS = 15
 
 # Key for Tango RESTful API
-RESTFUL_KEY = "<restful_key>"
+RESTFUL_KEY = ENV["RESTFUL_KEY"]
 
 # Whether or not Autolab should use polling to get Tango results
 RESTFUL_USE_POLLING = false
