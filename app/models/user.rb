@@ -68,6 +68,30 @@ class User < ActiveRecord::Base
       "{#{first_name},#{last_name}")
   end
 
+  # Reset user fields with LDAP lookup
+  def ldap_reset
+   if email.include? "@andrew.cmu.edu" then
+      ldapResult = User.ldap_lookup(email.split("@")[0])
+      if (ldapResult) then
+        self.first_name = ldapResult[:first_name]
+        self.last_name = ldapResult[:last_name]
+        self.school = ldapResult[:school]
+        self.major = ldapResult[:major]
+        self.year = ldapResult[:year]
+      end
+
+      # If LDAP lookup failed, use (blank) as place holder
+      if self.first_name.nil? then
+        self.first_name = "(blank)"
+      end
+      if self.last_name.nil? then
+        self.last_name = "(blank)"
+      end
+
+      self.save
+    end
+  end
+
   def self.find_for_facebook_oauth(auth, _signed_in_resource = nil)
     authentication = Authentication.where(provider: auth.provider,
                                           uid: auth.uid).first
@@ -169,4 +193,89 @@ class User < ActiveRecord::Base
       return user.courses.order("display_name ASC")
     end
   end
+
+  # use LDAP to look up a user
+  def self.ldap_lookup(andrewID)
+    if (andrewID) then
+      require 'rubygems'
+      require 'net/ldap'
+
+      host = "ldap.andrew.cmu.edu"
+      ldap = Net::LDAP.new(host: host, port: 389)
+      user = ldap.search(:base=>"ou=Person,dc=cmu,dc=edu",
+              :filter=>"cmuAndrewId=" + andrewID)[0]
+
+      if user then
+        # Create result hash and parse ldap response
+        result = {}
+        result[:first_name] = user[:givenname][-1]
+        result[:last_name] = user[:sn][-1]
+        result[:major] = case user[:cmudepartment][0]
+          when "Architecture" then "ARC"
+          when "Computational Biology" then "CB"
+          when "Computer Science and Arts" then "BCA"
+          when "Computer Science Department" then "CSD"
+          when "HCII: Human Computer Interaction Institute" then "HCI"
+          when "Humanities and Arts" then "BHA"
+          when "General CIT" then "C00"
+          when "Civil & Environmental Engineering" then "CEE"
+          when "Chemical Engineering" then "CHE"
+          when "Computer Science" then "CS"
+          when "Electrical & Computer Engineering" then "ECE"
+          when "Entertainment Technology Pittsburgh" then "ETC"
+          when "Economics" then "ECO"
+          when "History" then "HIS"
+          when "H&SS Interdisciplinary" then "HSS"
+          when "Information Networking Institute" then "INI"
+          when "Institute for Software Research" then "ISR"
+          when "Information Systems:Sch of IS & Mgt" then "ISM"
+          when "Mechanical Engineering" then "MEG"
+          when "Mathematical Sciences" then "MSC"
+          when "General MCS" then "M00"
+          when "Software Engineering" then "SE"
+          when "Science and Humanities Scholars" then "SHS"
+          when "Business Administration" then "BA"
+          when "Machine Learning" then "ML"
+          when "NREC: National Robotics Engineering Center" then "Robotics"
+          else user[:cmudepartment][0]
+        end
+        result[:year] = case user[:cmustudentclass][0] 
+          when "Freshman" then "1"
+          when "Sophomore" then "2"
+          when "Junior" then "3"
+          when "Senior" then "4"
+          when "Masters" then "10"
+          else user[:cmustudentclass][0]
+        end
+
+        # There is no consistent pattern about where the college name is
+        # within the eduPrsonSchoolCollegeName record, so we iterate through
+        # them until we find something.  Per Chaos "I remember it being that
+        # hard."
+        for college in user[:edupersonschoolcollegename] do
+          result[:school] = case college
+            when "College of Fine Arts" then "CFA"
+            when "Carnegie Institute of Technology" then "CIT"
+            when "Carnegie Mellon University" then "CMU"
+            when "School of Computer Science" then "SCS"
+            when "SCS - SCH of Computer Science" then "SCS"
+            when "H. John Heinz III College" then "HC"
+            when "College of Humanities and Social Sciences" then "HSS"
+            when "Mellon College of Science" then "MCS"
+            when "David A. Tepper School of Business" then "TSB"
+          end
+
+          # Break as soon as we find the correct record. 
+          break if result[:school] 
+        end 
+
+        # If nothing matches, we fall back to the first record
+        if !result[:school] then 
+          result[:school] = user[:edupersonschoolcollegename][0]
+        end 
+        return result
+      end
+    end
+  end
+
 end
