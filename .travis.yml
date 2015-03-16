@@ -5,7 +5,7 @@ before_script:
 - cp config/database.travis.yml config/database.yml
 - cp config/initializers/devise.rb.template config/initializers/devise.rb
 - cp config/autogradeConfig.rb.template config/autogradeConfig.rb
-- mkdir attachments/
+- mkdir attachments/ tmp/
 - bundle install --quiet
 - RAILS_ENV=test bundle exec rails generate devise:install --skip --quiet
 - RAILS_ENV=test bundle exec rake db:create --trace
