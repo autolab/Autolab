@@ -75,13 +75,25 @@ class Users::OmniauthCallbacksController < Devise::OmniauthCallbacksController
           @user = User.new
           @user.email = data["uid"]
 
-          # Set user info based on shibboleth authentication object
-          info = data["info"]
-          @user.first_name = choose_shib_attr(info["first_name"])
-          @user.last_name = choose_shib_attr(info["last_name"])
-          @user.school = choose_shib_attr(info["school"])
-          @user.major = choose_shib_attr(info["major"])
-          @user.year = choose_shib_attr(info["year"])
+          # Set user info based on LDAP lookup
+          if @user.email.include? "@andrew.cmu.edu" then
+            ldapResult = User.ldap_lookup(@user.email.split("@")[0])
+            if (ldapResult) then
+              @user.first_name = ldapResult[:first_name]
+              @user.last_name = ldapResult[:last_name]
+              @user.school = ldapResult[:school]
+              @user.major = ldapResult[:major]
+              @user.year = ldapResult[:year]
+            end
+          end
+
+          # If LDAP lookup failed, use (blank) as place holder
+          if @user.first_name.nil? then
+            @user.first_name = "(blank)"
+          end
+          if @user.last_name.nil? then
+            @user.last_name = "(blank)"
+          end
 
           temp_pass = Devise.friendly_token[0, 20]    # generate a random token
           @user.password = temp_pass
@@ -99,17 +111,4 @@ class Users::OmniauthCallbacksController < Devise::OmniauthCallbacksController
     end
   end
 
-  private
-
-  # choose_shib_attr
-  # Shibboleth may return semi-column seperated attributes.
-  # The function returns the first one if attributes_str is not nil, otherwise
-  # it returns "(blank)" as a placeholder
-  def choose_shib_attr(attributes_str)
-    if attributes_str.nil?
-      return "(blank)"
-    else
-      return attributes_str.split(";")[0]
-    end
-  end
 end

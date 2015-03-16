@@ -89,3 +89,6 @@ group :development do
   # static code analyzer
   gem 'rubocop', require: false
 end
+
+# LDAP Lookup
+gem 'net-ldap'
