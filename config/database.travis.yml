@@ -6,4 +6,5 @@ test:
   password: ''
   socket: /var/run/mysqld/mysqld.sock
   host: localhost
+  reconnect: true
 
