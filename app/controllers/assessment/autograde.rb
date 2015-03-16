@@ -225,7 +225,7 @@ module AssessmentAutograde
 
     uploadFileList.each do |f|
       md5hash = Digest::MD5.file(f["localFile"]).to_s
-      unless existingFileList.any? { |h| h[:md5] == md5hash && h[:localFile] == File.basename(f["localFile"]) }
+      unless existingFileList.any? { |h| h["md5"] == md5hash && h["localFile"] == File.basename(f["localFile"]) }
         uploadReq = Net::HTTP::Post.new("/upload/#{RESTFUL_KEY}/#{course.name}-#{assessment.name}/")
 	      uploadReq.add_field("Filename", File.basename(f["localFile"]))
         begin
