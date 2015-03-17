@@ -10,10 +10,11 @@ class Course < ActiveRecord::Base
   validates_numericality_of :version_threshold, only_integer: true, greater_than_or_equal_to: -1
   validate :order_of_dates
 
+
   has_many :course_user_data, dependent: :destroy
   has_many :assessments, dependent: :destroy
-  has_many :user_modules, dependent: :destroy
   has_many :scheduler, dependent: :destroy
+
   has_many :announcements, dependent: :destroy
   has_many :attachments, dependent: :destroy
   belongs_to :late_penalty, class_name: "Penalty"

@@ -11,6 +11,7 @@ class AdminsController < ApplicationController
 
   action_auth_level :emailInstructors, :administrator
   def emailInstructors
+
     if request.post?
 
       @cuds = CourseUserDatum.select(:user_id).distinct.joins(:course)

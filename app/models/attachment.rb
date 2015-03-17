@@ -1,7 +1,5 @@
 class Attachment < ActiveRecord::Base
-  # trim_field :filename, :mime_type, :type, :name
-  # validates_presence_of :type
-  # validates_presence_of :foreign_key
+
   validates_presence_of :name
   validates_presence_of :filename
   

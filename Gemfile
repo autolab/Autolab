@@ -58,9 +58,13 @@ gem 'dynamic_form'
 # Supports zip file generation.
 gem 'rubyzip'
 
-# Enables RSpec testing framework with Capybara.
+# Enables RSpec testing framework with Capybara and Factory Girl.
 gem 'rspec-rails'
+gem 'rack-test'
 gem 'capybara', group: [:development, :test]
+gem 'factory_girl_rails', group: [:development, :test]
+gem 'database_cleaner', group: [:development, :test]
+gem "codeclimate-test-reporter", group: :test, require: nil
 
 # Use ActiveModel has_secure_password
 # gem 'bcrypt', '~> 3.1.7'

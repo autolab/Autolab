@@ -1,3 +1,13 @@
+<<<<<<< HEAD
+RSpec.describe "home page", :type => :feature do
+  it "allows registered user to log in" do
+    user = FactoryGirl.create(:user)
+
+    # Simulates user log in
+    visit "/auth/users/sign_in"
+    fill_in "user_email",    :with => user.email
+    fill_in "user_password", :with => user.password 
+=======
 require "spec_helper"
 
 describe "authentication homepage" do
@@ -14,6 +24,7 @@ describe "authentication homepage" do
     visit "/auth/users/sign_in"
     fill_in "user_email",    with: "user@foo.bar"
     fill_in "user_password", with: "AutolabProject"
+>>>>>>> develop
     click_button "Sign in"
 
     expect(page).to have_content "Signed in successfully."

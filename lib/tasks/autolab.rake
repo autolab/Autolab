@@ -305,8 +305,16 @@ namespace :autolab do
     require "populator" 
   
     args.with_defaults(:name => COURSE_NAME)
-    abort("Only use this task in development.") unless Rails.env == "development"
-    abort("Course name #{args.name} alread in use. Depopulate or change name.") if Course.where(:name => args.name).first
+    abort("Only use this task in development or test.") unless ["development", "test"].include? Rails.env
+    # If course exists, in `dev` aborts; in `test` overwrites.
+    if Course.where(:name => args.name).first
+      if Rails.env == "development"
+        abort("Course name #{args.name} alread in use. Depopulate or change name.")
+      else
+        Rake::Task["autolab:depopulate"].invoke(args.name)
+        Rake::Task["db:reset"].invoke()
+      end
+    end
 
     # seed rng
     srand 1234
@@ -363,7 +371,7 @@ namespace :autolab do
 
   task :depopulate, [:name] => :environment do |t, args|
     args.with_defaults(:name => COURSE_NAME)
-    abort("Only use this task in development.") unless Rails.env == "development"
+    abort("Only use this task in development or test.") unless ["development", "test"].include? Rails.env
 
     course = Course.where(:name => args.name).first
 
@@ -380,3 +388,4 @@ namespace :autolab do
     end
   end
 end
+
