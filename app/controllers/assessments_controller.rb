@@ -23,6 +23,7 @@ class AssessmentsController < ApplicationController
   before_action :set_assessment, except: [:index, :new, :create, :installQuiz, :installAssessment,
                                           :importAsmtFromTar, :importAssessment,
                                           :log_submit, :local_submit, :autograde_done]
+  before_action :set_submission, only: [:viewFeedback]
 
   # We have to do this here, because the modules don't inherit ApplicationController.
 
@@ -772,7 +773,6 @@ class AssessmentsController < ApplicationController
 
   action_auth_level :viewFeedback, :student
   def viewFeedback
-    set_submission
     #User requested to view feedback on a score
     @score = @submission.scores.find_by(problem_id: params[:feedback])
     if !@score then
