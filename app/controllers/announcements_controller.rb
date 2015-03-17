@@ -10,7 +10,7 @@ class AnnouncementsController < ApplicationController
 
   action_auth_level :new, :instructor
   def new
-    # for consistency with REST
+    @announcement = Announcement.new
   end
 
   action_auth_level :create, :instructor
