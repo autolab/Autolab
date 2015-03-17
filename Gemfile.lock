@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/smartinez87/exception_notification.git
-  revision: f9dee5b5f6a1e1823bb274f719f1ae9c551e2f84
+  revision: b5d7262cb1f896f40c7c8705304f79fa631e912c
   specs:
     exception_notification (4.1.0.rc1)
       actionmailer (>= 3.0.4)
@@ -58,22 +58,17 @@ GEM
     bootstrap3-datetimepicker-rails (4.0.0)
       momentjs-rails (>= 2.8.1)
     builder (3.2.2)
-    byebug (3.5.1)
-      columnize (~> 0.8)
-      debugger-linecache (~> 1.2)
-      slop (~> 3.6)
+    byebug (4.0.2)
+      columnize (= 0.9.0)
     capybara (2.4.4)
       mime-types (>= 1.16)
       nokogiri (>= 1.3.3)
       rack (>= 1.0.0)
       rack-test (>= 0.5.4)
       xpath (~> 2.0)
-<<<<<<< HEAD
     codeclimate-test-reporter (0.4.7)
       simplecov (>= 0.7.1, < 1.0.0)
-=======
     coderay (1.1.0)
->>>>>>> develop
     coffee-rails (4.1.0)
       coffee-script (>= 2.2.0)
       railties (>= 4.0.0, < 5.0)
@@ -82,14 +77,9 @@ GEM
       execjs
     coffee-script-source (1.9.1)
     columnize (0.9.0)
-<<<<<<< HEAD
-    daemons (1.1.9)
-    database_cleaner (1.4.1)
-=======
     daemons (1.2.1)
+    database_cleaner (1.4.1)
     debug_inspector (0.0.2)
->>>>>>> develop
-    debugger-linecache (1.2.0)
     devise (3.4.1)
       bcrypt (~> 3.0)
       orm_adapter (~> 0.1)
@@ -102,16 +92,12 @@ GEM
     dynamic_form (1.1.4)
     erubis (2.7.0)
     eventmachine (1.0.7)
-<<<<<<< HEAD
-    execjs (2.3.0)
+    execjs (2.4.0)
     factory_girl (4.5.0)
       activesupport (>= 3.0.0)
     factory_girl_rails (4.5.0)
       factory_girl (~> 4.5.0)
       railties (>= 3.0.0)
-=======
-    execjs (2.4.0)
->>>>>>> develop
     faraday (0.9.1)
       multipart-post (>= 1.2, < 3)
     globalid (0.3.3)
@@ -246,7 +232,6 @@ GEM
       simplecov-html (~> 0.9.0)
     simplecov-html (0.9.0)
     slack-notifier (1.1.0)
-    slop (3.6.0)
     spring (1.3.3)
     sprockets (2.12.3)
       hike (~> 1.2)
