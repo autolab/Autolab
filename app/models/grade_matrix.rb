@@ -9,12 +9,12 @@ class GradeMatrix
     # only need to generate objects if they're going to be used
     cache_key = GradeMatrix.cache_key @course.id
     @matrix = Rails.cache.fetch cache_key do
-      AssociationCache.new(@course) { |_|
+      AssociationCache.new(@course) do |_|
         _.load_latest_submissions
         _.load_auds
         _.load_course_user_data
         _.load_assessments
-      }
+      end
 
       ActiveSupport::Gzip.compress(matrix!.to_json)
     end
@@ -78,7 +78,8 @@ class GradeMatrix
     "course_#{course_id}_grade_matrix"
   end
 
-private
+  private
+
   def matrix!
     cell_by_asmt = {}
     cat_avg_by_cat = {}
@@ -92,7 +93,6 @@ private
     @course.course_user_data.each do |cud|
       next unless cud.student?
       next if cud.dropped?
-
 
       @course.assessments.each do |a|
         s = summarize a.aud_for(cud.id)

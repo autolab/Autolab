@@ -1,5 +1,2 @@
 module AssessmentBase
-  
-
-
 end

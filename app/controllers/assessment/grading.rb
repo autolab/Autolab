@@ -1,17 +1,16 @@
-require 'csv'
-require 'utilities'
+require "csv"
+require "utilities"
 
 module AssessmentGrading
-
   # Export all scores for an assessment for all students as CSV
   def bulkExport
     # generate CSV
-    csv = render_to_string :layout => false
+    csv = render_to_string layout: false
 
     # send CSV file
     timestamp = Time.now.strftime "%Y%m%d%H%M"
     file_name = "#{@course.name}_#{@assessment.name}_#{timestamp}.csv"
-    send_data csv, :filename => file_name
+    send_data csv, filename: file_name
   end
 
   # Allows the user to upload multiple scores or comments from a CSV file
@@ -24,7 +23,7 @@ module AssessmentGrading
       @data_type = params[:upload][:data_type].to_sym
       unless @data_type == :scores || @data_type == :feedback
         flash[:error] = "bulkGrade: invalid data_type received from client"
-        redirect_to :controller => :home, :action => :error and return
+        redirect_to(action: :bulkGrade) && return
       end
 
       # get CSV
@@ -33,7 +32,7 @@ module AssessmentGrading
         @csv = csv_file.read
       else
         flash[:error] = "You need to choose a CSV file to upload."
-        redirect_to :action => :bulkGrade and return
+        redirect_to(action: :bulkGrade) && return
       end
 
       # process CSV
@@ -42,46 +41,48 @@ module AssessmentGrading
         @entries = entries
         @valid_entries = valid_entries? entries
       else
-        redirect_to :action => :bulkGrade and return
+        redirect_to(action: :bulkGrade) && return
       end
     end
   end
 
   # part 2: confirming a CSV upload and saving data
   def bulkGrade_complete
-    redirect_to :action => :bulkGrade and return unless request.post?
+    redirect_to(action: :bulkGrade) && return unless request.post?
 
     # retrieve entries CSV from hidden field in form
     csv = params[:confirm][:bulkGrade_csv]
     data_type = params[:confirm][:bulkGrade_data_type].to_sym
     unless csv && data_type
       flash[:error] = "Please try again."
-      redirect_to :action => :bulkGrade and return
+      redirect_to(action: :bulkGrade) && return
     end
 
     success, @entries = parse_csv csv, data_type
     if !success
       flash[:error] = "bulkGrade_complete: invalid csv returned from client"
-      redirect_to :controller => :home, :action => :error and return
+      redirect_to(action: :bulkGrade) && return
     elsif !valid_entries?(@entries)
       flash[:error] = "bulkGrade_complete: invalid entries returned from client"
-      redirect_to :controller => :home, :action => :error and return
+      redirect_to(action: :bulkGrade) && return
     end
 
     # save data
     unless save_entries @entries, data_type
-      redirect_to :controller => :home, :action => :error and return
+      flash[:error] = "Failed to Save Entries"
+      redirect_to(action: :bulkGrade) && return
     end
   end
 
-private
-  def valid_entries? entries
+  private
+
+  def valid_entries?(entries)
     entries.reduce true do |acc, entry|
       acc && valid_entry?(entry)
     end
   end
 
-  def valid_entry? entry
+  def valid_entry?(entry)
     entry.values.reduce true do |acc, v|
       acc && (case v
       when Hash
@@ -92,14 +93,14 @@ private
     end
   end
 
-  def save_entries entries, data_type
+  def save_entries(entries, data_type)
     asmt = @assessment
 
     begin
       User.transaction do
         entries.each do |entry|
-          user = CourseUserDatum.joins(:user).
-              find_by(users: { :email =>entry[:email] }, :course => asmt.course)
+          user = CourseUserDatum.joins(:user)
+                 .find_by(users: { email: entry[:email] }, course: asmt.course)
 
           aud = AssessmentUserDatum.get asmt.id, user.id
           if entry[:grade_type]
@@ -137,7 +138,6 @@ private
 
             updateScore user.id, score
           end
-
         end # entries.each
       end # User.transaction
 
@@ -149,7 +149,7 @@ private
     end
   end
 
-  def parse_csv csv, data_type
+  def parse_csv(csv, data_type)
     # inputs for parse_csv_row
     problems = @assessment.problems
     emails = Set.new(CourseUserDatum.joins(:user).where(course: @assessment.course).map &:email)
@@ -157,19 +157,19 @@ private
     # process CSV
     entries = []
     begin
-      CSV.parse(csv, { :skip_blanks => true }) do |row|
+      CSV.parse(csv, skip_blanks: true) do |row|
         entries << parse_csv_row(row, data_type, problems, emails)
       end
     rescue CSV::MalformedCSVError => e
-      flash[:error] = "Failed to parse CSV -- make sure the grades " +
-                      "are formatted correctly: <pre>#{e.to_s}</pre>"
+      flash[:error] = "Failed to parse CSV -- make sure the grades " \
+                      "are formatted correctly: <pre>#{e}</pre>"
       return false, []
     end
 
-    return true, entries
+    [true, entries]
   end
 
-  def parse_csv_row row, kind, problems, emails
+  def parse_csv_row(row, kind, problems, emails)
     row = row.dup
 
     email = row.shift.to_s
@@ -182,11 +182,11 @@ private
 
     # Checking that emails are valid
     processed[:email] = if email.blank?
-      { :error => nil }
-    elsif emails.include? email
-      email
-    else
-      { :error => email }
+                          { error: nil }
+                        elsif emails.include? email
+                          email
+                        else
+                          { error: email }
     end
 
     # data
@@ -196,7 +196,7 @@ private
       else
         case kind
         when :scores
-          Float(datum) rescue({ :error => datum })
+          Float(datum) rescue({ error: datum })
         when :feedback
           datum
         end
@@ -211,17 +211,18 @@ private
 
     # grade type
     processed[:grade_type] = if grade_type.blank?
-      nil
-    elsif AssessmentUserDatum::GRADE_TYPE_MAP.has_key? grade_type.to_sym
-      grade_type.to_sym
-    else
-      { :error => grade_type }
+                               nil
+                             elsif AssessmentUserDatum::GRADE_TYPE_MAP.key? grade_type.to_sym
+                               grade_type.to_sym
+                             else
+                               { error: grade_type }
     end
 
     processed
   end
 
-public
+  public
+
   def quickSetScore
     return unless request.post?
     return unless params[:submission_id]
@@ -240,14 +241,14 @@ public
 
     updateScore(score.submission.course_user_datum_id, score)
 
-    render :text => score.score
+    render text: score.score
 
   # see http://stackoverflow.com/questions/6163125/duplicate-records-created-by-find-or-create-by
   # and http://barelyenough.org/blog/2007/11/activerecord-race-conditions/
   # and http://stackoverflow.com/questions/5917355/find-or-create-race-conditions
   rescue ActiveRecord::StatementInvalid, ActiveRecord::RecordInvalid => error
-    @retries_left = @retries_left || 2
-    retry unless ((@retries_left -= 1) < 0)
+    @retries_left ||= 2
+    retry unless (@retries_left -= 1) < 0
     raise error
   end
 
@@ -265,33 +266,33 @@ public
     score = Score.find_or_initialize_by_submission_id_and_problem_id(sub_id, prob_id)
 
     score.grader_id = @cud.id
-    score.feedback = params[:feedback];
-    score.released = params[:released];
+    score.feedback = params[:feedback]
+    score.released = params[:released]
 
     updateScore(score.submission.course_user_datum_id, score)
 
-    render :text => score.id
+    render text: score.id
 
   # see http://stackoverflow.com/questions/6163125/duplicate-records-created-by-find-or-create-by
   # and http://barelyenough.org/blog/2007/11/activerecord-race-conditions/
   # and http://stackoverflow.com/questions/5917355/find-or-create-race-conditions
   rescue ActiveRecord::StatementInvalid, ActiveRecord::RecordInvalid => error
-    @retries_left = @retries_left || 2
-    retry unless ((@retries_left -= 1) < 0)
+    @retries_left ||= 2
+    retry unless (@retries_left -= 1) < 0
     raise error
   end
 
   def submission_popover
-    render :partial => "popover", :locals => { :s => Submission.find(params[:submission_id].to_i) }
+    render partial: "popover", locals: { s: Submission.find(params[:submission_id].to_i) }
   end
 
   def score_grader_info
     score = Score.find(params[:score_id])
     grader = (if score then score.grader else nil end)
-    if grader then
-      render :text => "#{grader.first_name} #{grader.last_name} (#{grader.email})"
+    if grader
+      render text: "#{grader.first_name} #{grader.last_name} (#{grader.email})"
     else
-      render :nothing => true
+      render nothing: true
     end
   end
 
@@ -305,7 +306,7 @@ public
     # get submission and problem IDs
     sub_id = params[:submission_id].to_i
 
-    render :text => Submission.find(sub_id).final_score(@cud)
+    render text: Submission.find(sub_id).final_score(@cud)
   end
 
   def statistics
@@ -497,20 +498,21 @@ public
   #   end
   # end
 
-private
+  private
+
   def load_course_config
-    course = @course.name.gsub(/[^A-Za-z0-9]/,'')
+    course = @course.name.gsub(/[^A-Za-z0-9]/, "")
     begin
-      load(File.join(Rails.root,"courseConfig",
-        "#{course}.rb"))
+      load(File.join(Rails.root, "courseConfig",
+                     "#{course}.rb"))
       eval("extend(Course#{course.camelize})")
     rescue Exception
-      render(:text=>"Error loading your course's grading " +
-        "configuration file.  Please go <a href='/#{@course.name}/"+
+      render(text: "Error loading your course's grading " \
+        "configuration file.  Please go <a href='/#{@course.name}/"\
         "admin/reload'>here</a> to reload the file, and try again") and
-      return false
+        return false
     end
-    return true
+    true
   end
 
   def stats_for_grouping(grouping)
@@ -545,11 +547,11 @@ private
       @assessment.problems.each do |problem|
         problem_stats << [problem.name, stats.stats(problem_scores[problem.id])]
       end
-      problem_stats << ['Total', stats.stats(problem_scores[:total])]
+      problem_stats << ["Total", stats.stats(problem_scores[:total])]
 
       result << [group, problem_stats]
     end
-    return result
+    result
   end
 
   # This is different from all of the others because it doesn't
@@ -566,7 +568,7 @@ private
 
       submission.scores.each do |score|
         next if score.grader_id.nil?
-        if grader_scores.has_key? score.grader_id
+        if grader_scores.key? score.grader_id
           grader_scores[score.grader_id] << score
         else
           grader_scores[score.grader_id] = [score]
@@ -592,7 +594,6 @@ private
     graders = graders.compact
     graders.sort! { |g1, g2| g1.full_name <=> g2.full_name }
 
-
     graders.each do |grader|
       scores = grader_scores[grader["id"]]
 
@@ -612,30 +613,30 @@ private
 
       result << [grader.full_name_with_email, problem_stats]
     end
-    return result
+    result
   end
 
   # TODO
   def load_gradesheet_data
-    @start = Time.now()
+    @start = Time.now
     id = @assessment.id
 
     # section filter
     o = params[:section] ? {
-      :conditions => { :assessment_id => id, :course_user_data => { :section => @cud.section } },
+      conditions: { assessment_id: id, course_user_data: { section: @cud.section } }
     } : {
-      :conditions => { :assessment_id => id }
+      conditions: { assessment_id: id }
     }
 
     # currently loads *all* assessment AUDs, scores in spite of the section filter
     # but that's okay, it only takes a couple 10ms
-    cache = AssociationCache.new(@course) { |_|
+    cache = AssociationCache.new(@course) do |_|
       _.load_course_user_data
       _.load_auds
       _.load_latest_submissions o
-      _.load_latest_submission_scores({ :conditions => { :submissions => { :assessment_id => id } } })
+      _.load_latest_submission_scores(conditions: { submissions: { assessment_id: id } })
       _.load_assessments
-    }
+    end
 
     @assessment = cache.assessments[@assessment.id]
     @submissions = cache.latest_submissions.values

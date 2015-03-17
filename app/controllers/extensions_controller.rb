@@ -1,8 +1,7 @@
 class ExtensionsController < ApplicationController
-  
   # inherited from ApplicationController
   before_action :set_assessment
-  
+
   # TODO
   action_auth_level :index, :instructor
   def index
@@ -22,23 +21,22 @@ class ExtensionsController < ApplicationController
       @course.course_user_data.find(params[:extension][:course_user_datum_id])
     rescue
       flash[:error] = "No student with id #{params[:extension][:course_user_datum_id]} was found for this course."
-      redirect_to action: :index and return
+      redirect_to(action: :index) && return
     end
     ext = @assessment.extensions.create(extension_params)
-    redirect_to action: :index, errors: ext.errors.full_messages and return
+    redirect_to(action: :index, errors: ext.errors.full_messages) && return
   end
 
   action_auth_level :destroy, :instructor
   def destroy
     extension = @assessment.extensions.find(params[:id])
     extension.destroy
-    redirect_to action: :index and return
+    redirect_to(action: :index) && return
   end
-  
+
   private
-    
-    def extension_params
-      params.require(:extension).permit(:course_user_datum_id, :days, :infinite, :commit, :course_id, :assessment_id)
-    end
-  
+
+  def extension_params
+    params.require(:extension).permit(:course_user_datum_id, :days, :infinite, :commit, :course_id, :assessment_id)
+  end
 end

@@ -5,6 +5,6 @@ module PDF
     # this is used instead of MIME type detection because it should work
     # for PDFs inside of Archives as well.
     # the scrub call prevents invalid byte sequence errors.
-    return (file.scrub("*") =~ /\%PDF-\d+\.?\d+/)
+    (file.scrub("*") =~ /\%PDF-\d+\.?\d+/)
   end
 end

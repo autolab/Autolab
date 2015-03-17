@@ -1,4 +1,4 @@
-require 'pp'
+require "pp"
 
 # Copyright (c) 2005 Jamis Buck
 #
@@ -27,22 +27,22 @@ module ExceptionNotification::NotifierHelper
     Rails.logger.info("rendering section #{section.inspect}")
     summary = render("exception_notifier/#{section}").strip
     unless summary.blank?
-      title = render("exception_notifier/title", :locals => { :title => section }).strip
-      "#{title}\n\n#{summary.gsub(/^/, "  ")}\n\n"
+      title = render("exception_notifier/title", locals: { title: section }).strip
+      "#{title}\n\n#{summary.gsub(/^/, '  ')}\n\n"
     end
   end
 
-  def inspect_model_object(model, locals={})
-    render('exception_notifier/inspect_model',
-      :locals => { :inspect_model => model,
-                   :show_instance_variables => true,
-                   :show_attributes => true }.merge(locals))
+  def inspect_model_object(model, locals = {})
+    render("exception_notifier/inspect_model",
+           locals: { inspect_model: model,
+                     show_instance_variables: true,
+                     show_attributes: true }.merge(locals))
   end
 
   def inspect_value(value)
     len = 512
     result = object_to_yaml(value).gsub(/\n/, "\n  ").strip
-    result = result[0,len] + "... (#{result.length-len} bytes more)" if result.length > len+20
+    result = result[0, len] + "... (#{result.length - len} bytes more)" if result.length > len + 20
     result
   end
 
@@ -53,15 +53,14 @@ module ExceptionNotification::NotifierHelper
   def exclude_raw_post_parameters?
     @controller && @controller.respond_to?(:filter_parameters)
   end
-  
+
   def filter_sensitive_post_data_parameters(parameters)
     exclude_raw_post_parameters? ? @controller.__send__(:filter_parameters, parameters) : parameters
   end
-  
+
   def filter_sensitive_post_data_from_env(env_key, env_value)
     return env_value unless exclude_raw_post_parameters?
-    return PARAM_FILTER_REPLACEMENT if (env_key =~ /RAW_POST_DATA/i)
-    return @controller.__send__(:filter_parameters, {env_key => env_value}).values[0]
+    return PARAM_FILTER_REPLACEMENT if env_key =~ /RAW_POST_DATA/i
+    @controller.__send__(:filter_parameters, env_key => env_value).values[0]
   end
-  
 end

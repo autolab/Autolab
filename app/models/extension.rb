@@ -3,8 +3,8 @@ class Extension < ActiveRecord::Base
   belongs_to :course_user_datum
   validates_presence_of :course_user_datum_id
   validate :days_or_infinite
-  validates_uniqueness_of :course_user_datum_id, :scope => :assessment_id, 
-                          :message=>"already has an extension."
+  validates_uniqueness_of :course_user_datum_id, scope: :assessment_id, 
+                                                 message: "already has an extension."
 
   after_save :invalidate_cgdubs_for_assessments_after
   after_destroy :invalidate_cgdubs_for_assessments_after
@@ -21,19 +21,19 @@ class Extension < ActiveRecord::Base
 
   def after_create
     if self.infinite? then
-      COURSE_LOGGER.log("Extension #{id}: CREATED for " + 
-      "#{course_user_datum.user.email} on" +
+      COURSE_LOGGER.log("Extension #{id}: CREATED for " \
+      "#{course_user_datum.user.email} on" \
       " #{assessment.name} for unlimited days")
     else
-      COURSE_LOGGER.log("Extension #{id}: CREATED for " +
-      "#{course_user_datum.user.email} on" +
+      COURSE_LOGGER.log("Extension #{id}: CREATED for " \
+      "#{course_user_datum.user.email} on" \
       " #{assessment.name} for #{self.days} days")
     end
   end
 
   def after_destroy
-    COURSE_LOGGER.log("Extension #{id}: DESTROYED for " + 
-    "#{course_user_datum.user.email} on" +
+    COURSE_LOGGER.log("Extension #{id}: DESTROYED for " \
+    "#{course_user_datum.user.email} on" \
       " #{assessment.name}")
   end
 end

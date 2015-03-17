@@ -1,7 +1,7 @@
 #
 # course.rb - Autolab Course Configuration File
 #
-# This file is cached on the Autolab server. 
+# This file is cached on the Autolab server.
 #
 # To make your changes go live: Admin->Reload course config file
 #
@@ -25,7 +25,7 @@
 # might say:
 #
 #    def LabAverage(user)
-#        return ((user['datalab'].to_f() + user['bomblab'].to_f()) 
+#        return ((user['datalab'].to_f() + user['bomblab'].to_f())
 #        / (64+70)) * 100.0
 #    end
 #
@@ -33,8 +33,8 @@
 #
 # fooAverage - Computes the gradebook average for category "foo"
 #
-def fooAverage(user)
-  return 0
+def fooAverage(_user)
+  0
 end
 
 #
@@ -49,13 +49,13 @@ end
 #     return (user['catLab'].to_f())*0.4 + user['catExam'].to_f())*0.6
 # end
 #
-def courseAverage(user)
-  return 0
+def courseAverage(_user)
+  0
 end
 
 #
 # 3. gradebookMessage - Displays a message on the student gradebook
 #
-def gradebookMessage()
+def gradebookMessage
   " "
 end
