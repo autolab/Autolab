@@ -1,10 +1,10 @@
-require 'association_cache'
+require "association_cache"
 
 # Read https://github.com/autolab/autolab-src/wiki/Caching
 class AssessmentUserDatum < ActiveRecord::Base
   belongs_to :course_user_datum
   belongs_to :assessment
-  belongs_to :latest_submission, :class_name => "Submission"
+  belongs_to :latest_submission, class_name: "Submission"
   belongs_to :group
 
   # attr_accessible :grade_type
@@ -24,9 +24,9 @@ class AssessmentUserDatum < ActiveRecord::Base
   EXCUSED = 2
 
   GRADE_TYPE_MAP = {
-    :normal => NORMAL,
-    :zeroed => ZEROED,
-    :excused => EXCUSED
+    normal: NORMAL,
+    zeroed: ZEROED,
+    excused: EXCUSED
   }
 
   # Different statuses for group membership
@@ -34,14 +34,14 @@ class AssessmentUserDatum < ActiveRecord::Base
   MEMBER_CONFIRMED = 0x1
   GROUP_CONFIRMED = 0x2
   CONFIRMED = 0x3
-  
+
   ##
   # checks a user's membership status
   #
   def group_confirmed(flags = CONFIRMED)
-    (flags == UNCONFIRMED && self.membership_status == UNCONFIRMED) || ((self.membership_status & flags) == flags)
+    (flags == UNCONFIRMED && membership_status == UNCONFIRMED) || ((membership_status & flags) == flags)
   end
-  
+
   # Updates latest_submission atomically
   #
   # Using this method *prevents* the following interleaving, for example:
@@ -53,27 +53,26 @@ class AssessmentUserDatum < ActiveRecord::Base
   #   6. A: aud.save                                       (but then submission 1 is saved as aud.latest_submission)
   # by making sure (2 and 6) and (4 and 5) each occur atomically.
   def update_latest_submission
-    AssessmentUserDatum.transaction {
+    AssessmentUserDatum.transaction do
       # acquire lock on AUD
-      reload(:lock => true)
-    
+      reload(lock: true)
+
       # update
       self.latest_submission = latest_submission!
       save!
-
-    } # release lock on AUD
-      # see: http://dev.mysql.com/doc/refman/5.0/en/innodb-locking-reads.html
+    end # release lock on AUD
+    # see: http://dev.mysql.com/doc/refman/5.0/en/innodb-locking-reads.html
   end
 
   # Calculate latest unignored submission (i.e. with max version and unignored)
   def latest_submission!
     if (max_version = Submission.where(assessment_id: assessment_id,
-                        course_user_datum_id: course_user_datum_id,
-                        ignored: false).maximum(:version))
-      Submission.where(:version => max_version, :assessment_id => assessment_id, 
-                       :course_user_datum_id => course_user_datum_id).first
+                                       course_user_datum_id: course_user_datum_id,
+                                       ignored: false).maximum(:version))
+      Submission.where(version: max_version, assessment_id: assessment_id,
+                       course_user_datum_id: course_user_datum_id).first
     else
-      nil 
+      nil
     end
   end
 
@@ -104,7 +103,7 @@ class AssessmentUserDatum < ActiveRecord::Base
   end
 
   def status(as_seen_by)
-    @status||= {}
+    @status ||= {}
     @status[as_seen_by] ||= status! as_seen_by
   end
 
@@ -112,17 +111,17 @@ class AssessmentUserDatum < ActiveRecord::Base
   def grace_days_usable
     course_grace_days = assessment.course.grace_days
     assessment_max_grace_days = assessment.max_grace_days
-    
+
     # save doing potentially expensive stuff if not needed
     return 0 if course_grace_days == 0 || assessment_max_grace_days == 0
-    
+
     grace_days_left = course_grace_days - cumulative_grace_days_used_before
-    raise "fatal: negative grace days left" if grace_days_left < 0
+    fail "fatal: negative grace days left" if grace_days_left < 0
 
     # if the assessment has no max_grace_days specified, then upto grace_days_left
     # number of grace days can be used on this assessment
     if assessment_max_grace_days
-      [ grace_days_left, assessment_max_grace_days ].min
+      [grace_days_left, assessment_max_grace_days].min
     else
       grace_days_left
     end
@@ -139,7 +138,7 @@ class AssessmentUserDatum < ActiveRecord::Base
   # TODO
   # Refer to https://github.com/autolab/autolab-src/wiki/Caching
   def invalidate_cgdubs_for_assessments_after
-    CourseUserDatum.transaction {
+    CourseUserDatum.transaction do
       # acquire lock
       CourseUserDatum.lock(true).find(course_user_datum_id)
 
@@ -147,8 +146,7 @@ class AssessmentUserDatum < ActiveRecord::Base
       auds_for_assessments_after.each do |aud|
         Rails.cache.delete aud.cgdub_cache_key
       end
-
-    } # release lock
+    end # release lock
   end
 
   # Due date for user
@@ -168,18 +166,18 @@ class AssessmentUserDatum < ActiveRecord::Base
   # Check if user can submit at given date/time; provide reason, if not
   def can_submit?(at, submitter = course_user_datum)
     if submitter.instructor?
-      [ true, nil ]
+      [true, nil]
     elsif course_user_datum.dropped? # TODO: why not submitter?
-      [ false, :user_dropped ]
+      [false, :user_dropped]
     elsif at < assessment.start_at
-      [ false, :before_start_at ]
+      [false, :before_start_at]
     elsif past_end_at?
-      [ false, :past_end_at ]
+      [false, :past_end_at]
     elsif at_submission_limit?
-      [ false, :at_submission_limit ]
+      [false, :at_submission_limit]
     else
-      [ true, nil ]
-    end 
+      [true, nil]
+    end
   end
 
   # Check if user has hit submission count limit, if one exists
@@ -188,20 +186,20 @@ class AssessmentUserDatum < ActiveRecord::Base
       false
     else
       count = assessment.submissions.where(course_user_datum: course_user_datum).count
-      count >= assessment.max_submissions  
+      count >= assessment.max_submissions
     end
   end
 
   def past_due_at?(as_of = Time.now)
-    due_at and due_at < as_of
+    due_at && due_at < as_of
   end
 
   def past_end_at?(as_of = Time.now)
-    end_at and end_at < as_of
+    end_at && end_at < as_of
   end
 
   def extension
-    Extension.where(:course_user_datum => course_user_datum, :assessment_id => assessment_id).first
+    Extension.where(course_user_datum: course_user_datum, assessment_id: assessment_id).first
   end
 
   def self.get(assessment_id, cud_id)
@@ -220,7 +218,8 @@ class AssessmentUserDatum < ActiveRecord::Base
     connection.execute insert_sql
   end
 
-protected
+  protected
+
   def cumulative_grace_days_used
     grace_days_used + cumulative_grace_days_used_before
   end
@@ -232,7 +231,8 @@ protected
     "cgdub/dua-#{dua}/u-#{course_user_datum_id}/a-#{assessment_id}"
   end
 
-private
+  private
+
   # Applies given extension to given date limit (due date or end_at).
   # Returns nil, if extension is infinite and thus the date limit is void.
   def apply_extension(original_date, ext)
@@ -243,13 +243,13 @@ private
     end
   end
 
-  # TODO: 
+  # TODO:
   def cumulative_grace_days_used_before
     return @cgdub if @cgdub
 
     cache_key = cgdub_cache_key
-    unless (cgdub = Rails.cache.read cache_key) 
-      CourseUserDatum.transaction {
+    unless (cgdub = Rails.cache.read cache_key)
+      CourseUserDatum.transaction do
         # acquire lock on user
         CourseUserDatum.lock(true).find(course_user_datum_id)
 
@@ -258,8 +258,7 @@ private
 
         # cache
         Rails.cache.write(cache_key, cgdub)
-
-      } # release lock
+      end # release lock
     end
 
     @cgdub = cgdub

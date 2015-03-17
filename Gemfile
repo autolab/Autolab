@@ -58,9 +58,13 @@ gem 'dynamic_form'
 # Supports zip file generation.
 gem 'rubyzip'
 
-# Enables RSpec testing framework with Capybara.
+# Enables RSpec testing framework with Capybara and Factory Girl.
 gem 'rspec-rails'
+gem 'rack-test'
 gem 'capybara', group: [:development, :test]
+gem 'factory_girl_rails', group: [:development, :test]
+gem 'database_cleaner', group: [:development, :test]
+gem "codeclimate-test-reporter", group: :test, require: nil
 
 # Use ActiveModel has_secure_password
 # gem 'bcrypt', '~> 3.1.7'
@@ -78,6 +82,17 @@ gem 'bootstrap3-datetimepicker-rails', '~> 4.0.0'
 # Force SSL on certain routes
 gem 'rack-ssl-enforcer'
 
-# Useful debugger
-gem 'byebug', '>=3.5.1', group: [:development, :test]
+group :development do
+  # Better Error Pages
+  gem 'better_errors'
+  gem 'binding_of_caller' # enhances better_errors
 
+  # Useful debugger
+  gem 'byebug', '>=3.5.1'
+
+  # static code analyzer
+  gem 'rubocop', require: false
+end
+
+# LDAP Lookup
+gem 'net-ldap'

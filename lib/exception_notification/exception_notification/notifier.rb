@@ -1,4 +1,4 @@
-require 'pathname'
+require "pathname"
 
 # Copyright (c) 2005 Jamis Buck
 #
@@ -21,9 +21,9 @@ require 'pathname'
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 class ExceptionNotification::Notifier < ActionMailer::Base
-  self.mailer_name = 'exception_notifier'
-  self.view_paths << "#{File.dirname(__FILE__)}/../../views"
-  
+  self.mailer_name = "exception_notifier"
+  view_paths << "#{File.dirname(__FILE__)}/../../views"
+
   @@sender_address = %("Exception Notifier" <exception.notifier@default.com>)
   cattr_accessor :sender_address
 
@@ -36,22 +36,24 @@ class ExceptionNotification::Notifier < ActionMailer::Base
   @@sections = %w(request session environment backtrace)
   cattr_accessor :sections
 
-  def self.reloadable?() false end
+  def self.reloadable?
+    false
+  end
 
-  def exception_notification(exception, controller, request, data={})
+  def exception_notification(exception, controller, request, data = {})
     source = self.class.exception_source(controller)
     content_type "text/plain"
 
-    subject    "#{email_prefix}#{source} (#{exception.class}) #{exception.message.inspect}"
+    subject "#{email_prefix}#{source} (#{exception.class}) #{exception.message.inspect}"
 
     recipients exception_recipients
-    from       sender_address
+    from sender_address
 
-    body       data.merge({ :controller => controller, :request => request,
-                  :exception => exception, :exception_source => source, :host => (request.env["HTTP_X_FORWARDED_HOST"] || request.env["HTTP_HOST"]),
-                  :backtrace => sanitize_backtrace(exception.backtrace),
-                  :rails_root => rails_root, :data => data,
-                  :sections => sections })
+    body data.merge(controller: controller, request: request,
+                    exception: exception, exception_source: source, host: (request.env["HTTP_X_FORWARDED_HOST"] || request.env["HTTP_HOST"]),
+                    backtrace: sanitize_backtrace(exception.backtrace),
+                    rails_root: rails_root, data: data,
+                    sections: sections)
   end
 
   def self.exception_source(controller)
@@ -62,7 +64,7 @@ class ExceptionNotification::Notifier < ActionMailer::Base
     end
   end
 
-private
+  private
 
   def sanitize_backtrace(trace)
     re = Regexp.new(/^#{Regexp.escape(rails_root)}/)

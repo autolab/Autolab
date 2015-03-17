@@ -3,14 +3,6 @@
 (<%=@score.submission.course_user_datum.email %>)
 </h2>
 
-<% # this line creates a MissingAttributeError and Dan doesn't know why %>
-<% # if not @score.feedback_file.nil? then %>
-<% if false then %>
-  Download Feedback File: <%= link_to @score.feedback_file_name,
-    :action=>"downloadFeedbackFile",
-    :id=>@score.id %>
-<% end %>
-
 <pre>
 <%= h @score.feedback %>
 Score for this problem: <%= @score.score.to_f().round(1) %>

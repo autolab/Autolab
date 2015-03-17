@@ -3,23 +3,24 @@ class ScoreboardSetup < ActiveRecord::Base
   trim_field :banner, :colspec
   validate :col_spec
 
-  SERIALIZABLE = Set.new [ :banner, :colspec ]
+  SERIALIZABLE = Set.new [:banner, :colspec]
   def serialize
     Utilities.serializable attributes, SERIALIZABLE
   end
 
-  def self.deserialize s
+  def self.deserialize(s)
     new s
   end
 
-protected
+  protected
+
   # Validates a JSON column spec for correctness before saving it the database
   def col_spec
     # An empty spec is OK
     return if colspec.blank?
 
     # The parse will throw an exception if the string has a JSON syntax error
-    begin 
+    begin
       # Quote JSON keys and values if they are not already quoted
       quoted = colspec.gsub(/([a-zA-Z0-9]+):/, '"\1":').gsub(/:([a-zA-Z0-9]+)/, ':"\1"')
       parsed = ActiveSupport::JSON.decode(quoted)
@@ -51,13 +52,13 @@ protected
         return
       end
 
-      hash.each_key do |k| 
-        unless k == "hdr" or k == "asc" or k == "img"
+      hash.each_key do |k|
+        unless k == "hdr" || k == "asc" || k == "img"
           errors.add "colspec", "unknown key('#{k}') in scoreboard[#{i}]"
           return
         end
 
-        if k == "asc" and i > 2
+        if k == "asc" && i > 2
           errors.add "colspec", "'asc' key in col #{i} ignored because only the first three columns are sorted."
         end
       end

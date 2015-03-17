@@ -1,30 +1,27 @@
-require 'cgi'
-require 'uri'
+require "cgi"
+require "uri"
 
 class JobsController < ApplicationController
-  
-  autolabRequire Rails.root.join('config', 'autogradeConfig.rb')
+  autolabRequire Rails.root.join("config", "autogradeConfig.rb")
 
-  # 
+  #
   # getRecentJobs - this function retrieves the currently running jobs
   #
   def getCurrentJobs
-    getJobs('0/')
+    getJobs("0/")
   end
 
-  # 
+  #
   # getDeadJobs - this function retrieves the recent dead jobs
   #
   def getDeadJobs
-    getJobs('1/')
+    getJobs("1/")
   end
-
 
   # index - This is the default action that generates lists of the
   # running, waiting, and completed jobs.
   action_auth_level :index, :student
   def index
-
     # Instance variables that will be used by the view
     @running_jobs = []   # running jobs
     @waiting_jobs = []   # jobs waiting in job queue
@@ -33,24 +30,24 @@ class JobsController < ApplicationController
 
     # Get the number of dead jobs the user wants to view
     dead_count = AUTOCONFIG_DEF_DEAD_JOBS
-    if params[:id] then
+    if params[:id]
       dead_count = params[:id].to_i
     end
-    if dead_count < 0 then
+    if dead_count < 0
       dead_count = 0
     end
-    if dead_count > AUTOCONFIG_MAX_DEAD_JOBS then
+    if dead_count > AUTOCONFIG_MAX_DEAD_JOBS
       dead_count = AUTOCONFIG_MAX_DEAD_JOBS
     end
 
     # Get the complete lists of live and dead jobs from the server
-    raw_live_jobs = getCurrentJobs()
-    raw_dead_jobs = getDeadJobs()
+    raw_live_jobs = getCurrentJobs
+    raw_dead_jobs = getDeadJobs
 
     # Build formatted lists of the running, waiting, and dead jobs
-    if raw_live_jobs and raw_dead_jobs then
+    if raw_live_jobs && raw_dead_jobs
       for rjob in raw_live_jobs do
-        if rjob["assigned"] == true then
+        if rjob["assigned"] == true
           @running_jobs << formatRawJob(rjob, true)
         else
           @waiting_jobs << formatRawJob(rjob, true)
@@ -64,13 +61,13 @@ class JobsController < ApplicationController
       for rjob in raw_dead_jobs do
         job = formatRawJob(rjob, false)
 
-        if job[:name] != "*" then
+        if job[:name] != "*"
           @dead_jobs << job
         end
       end
 
       # Sort the list of dead jobs and then trim it for the view
-      @dead_jobs.sort! {|a,b| [b[:tlast],b[:id]] <=> [a[:tlast],a[:id]] }
+      @dead_jobs.sort! { |a, b| [b[:tlast], b[:id]] <=> [a[:tlast], a[:id]] }
       @dead_jobs_view = @dead_jobs[0, dead_count]
 
     end
@@ -82,31 +79,31 @@ class JobsController < ApplicationController
   action_auth_level :getjob, :student
   def getjob
     # Make sure we have a job id parameter
-    if not params[:id] then 
+    if !params[:id]
       flash[:error] = "Error: missing job ID parameter in URL"
-      redirect_to :controller=>"jobs", :item=>nil and return
+      redirect_to(controller: "jobs", item: nil) && return
     else
       job_id = params[:id] ? params[:id].to_i : 0
     end
 
     # Get the complete lists of live and dead jobs from the server
-    raw_live_jobs = getCurrentJobs()
-    raw_dead_jobs = getDeadJobs()
+    raw_live_jobs = getCurrentJobs
+    raw_dead_jobs = getDeadJobs
 
     # Find job job_id in one of those lists
     rjob = nil
     is_live = false
-    if raw_live_jobs and raw_dead_jobs then
+    if raw_live_jobs && raw_dead_jobs
       for item in raw_live_jobs do
-        if item["id"] == job_id then
+        if item["id"] == job_id
           rjob = item
           is_live = true
           break
         end
       end
-      if rjob.nil? then
+      if rjob.nil?
         for item in raw_dead_jobs do
-          if item["id"] == job_id then
+          if item["id"] == job_id
             rjob = item
             break
           end
@@ -114,33 +111,33 @@ class JobsController < ApplicationController
       end
     end
 
-    if rjob == nil then
+    if rjob.nil?
       flash[:error] = "Could not find job #{job_id}"
-      redirect_to :controller=>"jobs", :item=>nil and return
+      redirect_to(controller: "jobs", item: nil) && return
     end
-    
+
     # Create the job record that will be used by the view
     @job = formatRawJob(rjob, is_live)
-   
+
     # Try to find the autograder feedback for this submission and
     # assign it to the @feedback_str instance variable for later
     # use by the view
-    if rjob["notifyURL"] then 
+    if rjob["notifyURL"]
       uri = URI(rjob["notifyURL"])
-      
+
       # Parse the notify URL from the autograder
-      path_parts =  uri.path.split('/')
+      path_parts =  uri.path.split("/")
       url_course = path_parts[2]
       url_assessment = path_parts[4]
-      
+
       # create a hash of keys pointing to value arrays
-      params = CGI::parse(uri.query) 
-   
+      params = CGI.parse(uri.query)
+
       # Grab all of the scores for this submission
       begin
         submission = Submission.find(params["submission_id"][0])
       rescue # submission not found, tar tar sauce!
-        return 
+        return
       end
       scores = submission.scores
 
@@ -152,7 +149,7 @@ class JobsController < ApplicationController
       @feedback_str = ""
       for score in scores do
         i += 1
-        if score.feedback != nil and score.feedback["Autograder"] then
+        if !score.feedback.nil? && score.feedback["Autograder"]
           @feedback_str = score.feedback
           feedback_num = i
           break
@@ -162,19 +159,19 @@ class JobsController < ApplicationController
 
     # Students see only the output report from the autograder. So
     # bypass the view and redirect them to the viewFeedback page
-    if !@cud.user.administrator? and !@cud.instructor? then
-      if url_assessment and submission and feedback_num > 0 then
-        redirect_to viewFeedback_course_assessment_path(url_course.to_i, url_assessment.to_i, submission: submission.id, feedback: feedback_num) and return 
-      else 
+    if !@cud.user.administrator? && !@cud.instructor?
+      if url_assessment && submission && feedback_num > 0
+        redirect_to viewFeedback_course_assessment_path(url_course.to_i, url_assessment.to_i, submission_id: submission.id, feedback: feedback_num) and return 
+      else
         flash[:error] = "Could not locate autograder feedback"
-        redirect_to :controller=>"jobs", :item=>nil and return
+        redirect_to(controller: "jobs", item: nil) && return
       end
     end
   end
 
   protected
 
-  def getJobs(suffix = '0/')
+  def getJobs(suffix = "0/")
     COURSE_LOGGER.log("getJobs called")
     reqURL = "http://#{RESTFUL_HOST}:#{RESTFUL_PORT}/jobs/#{RESTFUL_KEY}/" + suffix
     COURSE_LOGGER.log("Req: " + reqURL)
@@ -183,50 +180,48 @@ class JobsController < ApplicationController
     jobs = response["jobs"]
   end
 
-
   # formatRawJob - Given a raw job from the server, creates a job
   # hash for the view.
-  def formatRawJob(rjob, is_live) 
-
-    job = Hash.new
+  def formatRawJob(rjob, is_live)
+    job = {}
     job[:rjob] = rjob
     job[:id] = rjob["id"]
     job[:name] = rjob["name"]
-    
-    if rjob["notifyURL"] then
+
+    if rjob["notifyURL"]
       uri = URI(rjob["notifyURL"])
-      path_parts = uri.path.split('/')
+      path_parts = uri.path.split("/")
       job[:course] = path_parts[2]
       job[:assessment] = path_parts[4]
     end
 
     # Determine whether to expose the job name.
-    if !@cud.user.administrator?  then
-      if !@cud.instructor? then
+    unless @cud.user.administrator?
+      if !@cud.instructor?
         # Students can see only their own job names
-        if !job[:name][@cud.user.email] then
+        unless job[:name][@cud.user.email]
           job[:name] = "*"
         end
       else
         # Instructors can see only their course's job names
-        if !rjob["notifyURL"] or !(job[:course].eql? @cud.course.id.to_s) then
+        if !rjob["notifyURL"] || !(job[:course].eql? @cud.course.id.to_s)
           job[:name] = "*"
         end
       end
     end
 
-    # Extract timestamps of first and last trace records    
-    if rjob["trace"] then
-      job[:first] = rjob["trace"][0].split("|")[0] 
-      job[:last] = rjob["trace"][-1].split("|")[0] 
-    
+    # Extract timestamps of first and last trace records
+    if rjob["trace"]
+      job[:first] = rjob["trace"][0].split("|")[0]
+      job[:last] = rjob["trace"][-1].split("|")[0]
+
       # Compute elapsed time. Live jobs show time from submission
       # until now.  Dead jobs show end-to-end elapsed time.
       t1 = DateTime.parse(job[:first]).to_time
-      if is_live then
+      if is_live
         snow = Time.now.localtime.to_s
         t2 = DateTime.parse(snow).to_time
-      else 
+      else
         t2 = DateTime.parse(job[:last]).to_time
       end
       job[:elapsed] = t2.to_i - t1.to_i # elapsed seconds
@@ -236,20 +231,19 @@ class JobsController < ApplicationController
       job[:status] = rjob["trace"][-1].split("|")[1]
     end
 
-    if is_live then
-      if job[:status]["Added job"] then
+    if is_live
+      if job[:status]["Added job"]
         job[:state] = "Waiting"
       else
         job[:state] = "Running"
       end
     else
       job[:state] = "Completed"
+      if rjob["trace"][-1].split("|")[1].include? "Error"
+        job[:state] = "Failed"
+      end
     end
 
-    return job
+    job
   end
-
 end
-
-
-

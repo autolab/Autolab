@@ -1,10 +1,9 @@
 module AssessmentSVN
-
   # action_auth_level :adminSVN, :instructor
   def adminSVN
     # Grab the CUDS.  ALL THE CUDS.
     @cuds = @course.course_user_data.includes(:user).order("users.email ASC")
-    
+
     # Grab all assessments that also have SVN
     @assessments = @course.assessments.where(has_svn: true).where.not(id: @assessment.id)
   end
@@ -15,20 +14,20 @@ module AssessmentSVN
     aud.repository = params[:repository]
     aud.save!
 
-    redirect_to action: :adminSVN and return
+    redirect_to(action: :adminSVN) && return
   end
 
   # action_auth_level :importSVN, :instructor
   def importSVN
     assessment = @course.assessments.find(params[:importfrom])
-    unless assessment.has_svn then
+    unless assessment.has_svn
       flash[:error] = "SVN was not used in that assessment!"
-      redirect_to action: :adminSVN and return
+      redirect_to(action: :adminSVN) && return
     end
 
     for cud in @course.course_user_data do
       oldRepo = assessment.aud_for(cud).repository
-      if oldRepo then
+      if oldRepo
         aud = @assessment.aud_for(cud)
         aud.repository = oldRepo
         aud.save!
@@ -36,14 +35,14 @@ module AssessmentSVN
     end
 
     flash[:info] = "Repositories were imported successfully"
-    redirect_to action: :adminSVN and return
+    redirect_to(action: :adminSVN) && return
   end
 
-protected
+  protected
 
   def svnValidateHandin
     repo = @assessment.aud_for(@cud).repository
-    if repo then
+    if repo
       return true
     else
       flash[:error] = "Your repository has not been registered.  Please contact your course staff."
@@ -61,13 +60,13 @@ protected
     svnDir = File.join(assDir, @cud.user.email + "_svn_checkout")
     svnTar = File.join(assDir, @cud.user.email + "_svn_checkout.tar.gz")
 
-    if File.exists?(svnDir) then
+    if File.exist?(svnDir)
       # To avoid conflicts, end this handin
       flash[:error] = "Another checkout is already in progress"
       return nil
     end
 
-    unless checkoutWork(repo, svnDir) then
+    unless checkoutWork(repo, svnDir)
       # Clean up svnDir
       `rm -r #{svnDir}`
       return nil
@@ -76,17 +75,16 @@ protected
     # Tar up the checked-out work, then clean up the directory
     `tar -cvf #{svnTar} #{svnDir} --exclude ".svn"`
     `rm -r #{svnDir}`
-    unless File.exists?(svnTar) then
+    unless File.exist?(svnTar)
       flash[:error] = "There was a problem with checking out your work, please try again."
       return nil
     end
 
-    sub = { }
+    sub = {}
     sub["tar"] = svnTar
     @submission.saveFile(sub) # this will also save the submission model if successful
     `rm #{svnTar}`
 
-    return @submission
+    @submission
   end
-  
-end 
+end

@@ -1,21 +1,21 @@
-require 'utilities'
+require "utilities"
 
 module GradebookHelper
   def gradebook_columns(matrix, course)
     # user info columns
     columns = [
-      { :id => "number", :name => "#", :field => "", width: 50 },
-      { :id => "email", :name => "Email", :field => "email",
-        :sortable => true, :width => 100, :cssClass => "email",
-        :headerCssClass => "email" },
-      { :id => "first_name", :name => "First", :field => "first_name",
-        :sortable => true, :width => 100, :cssClass => "first_name",
-        :headerCssClass => "first_name" },
-      { :id => "last_name", :name => "Last", :field => "last_name",
-        :sortable => true, :width => 100, :cssClass => "last_name",
-        :headerCssClass => "last_name" },
-      { :id => "section", :name => "Sec", :field => "section",
-        :sortable => true, :width => 50 }
+      { id: "number", name: "#", field: "", width: 50 },
+      { id: "email", name: "Email", field: "email",
+        sortable: true, width: 100, cssClass: "email",
+        headerCssClass: "email" },
+      { id: "first_name", name: "First", field: "first_name",
+        sortable: true, width: 100, cssClass: "first_name",
+        headerCssClass: "first_name" },
+      { id: "last_name", name: "Last", field: "last_name",
+        sortable: true, width: 100, cssClass: "last_name",
+        headerCssClass: "last_name" },
+      { id: "section", name: "Sec", field: "section",
+        sortable: true, width: 50 }
     ]
 
     course.assessment_categories.each do |cat|
@@ -25,27 +25,27 @@ module GradebookHelper
       course.assessments_with_category(cat).each do |asmt|
         next unless matrix.has_assessment? asmt.id
 
-        columns << { :id => asmt.name, :name => asmt.display_name, :field => asmt.name,
-                     :sortable => true, :cssClass => "computed assessment_final_score",
-                     :headerCssClass => "assessment_final_score",
-                     :before_grading_deadline => matrix.before_grading_deadline?(asmt.id) }
+        columns << { id: asmt.name, name: asmt.display_name, field: asmt.name,
+                     sortable: true, cssClass: "computed assessment_final_score",
+                     headerCssClass: "assessment_final_score",
+                     before_grading_deadline: matrix.before_grading_deadline?(asmt.id) }
       end
 
       # category average column
-      columns << { :id => cat, :name => cat + ' Average',
-                   :field => "#{cat}_category_average",
-                   :sortable => true, :cssClass => "computed category_average",
-                   :headerCssClass => "category_average", width: 100 }
+      columns << { id: cat, name: cat + " Average",
+                   field: "#{cat}_category_average",
+                   sortable: true, cssClass: "computed category_average",
+                   headerCssClass: "category_average", width: 100 }
     end
 
     # course average column
-    columns << { :id => "average", :name => "Average", :field => "course_average",
-                 :sortable => true, width: 100, :cssClass => "computed course_average",
-                 :headerCssClass => "course_average" }
+    columns << { id: "average", name: "Average", field: "course_average",
+                 sortable: true, width: 100, cssClass: "computed course_average",
+                 headerCssClass: "course_average" }
 
-    columns << { :id => "email_right", :name => "Email", :field => "email",
-                 :sortable => true, :width => 100, :cssClass => "email right",
-                 :headerCssClass => "email right" }
+    columns << { id: "email_right", name: "Email", field: "email",
+                 sortable: true, width: 100, cssClass: "email right",
+                 headerCssClass: "email right" }
 
     columns
   end
@@ -107,12 +107,10 @@ module GradebookHelper
   end
 
   def csv_header(matrix, course)
-    header = [ "Email", "first_name", "last_name", "Lecture", "Section", "School", "Major", "Year" ]
+    header = %w(Email first_name last_name Lecture Section School Major Year)
     course.assessment_categories.each do |cat|
-
       next unless matrix.has_category? cat
       course.assessments_with_category(cat).each do |asmt|
-
         next unless matrix.has_assessment? asmt.id
         header << asmt.name
       end
@@ -123,8 +121,8 @@ module GradebookHelper
     header
   end
 
-  def formatted_status status
-    case status 
+  def formatted_status(status)
+    case status
       when Float
         round status
       when String
@@ -142,14 +140,12 @@ module GradebookHelper
         next unless matrix.has_cud? cud.id
 
         # general info
-        row = [ cud.user.email, cud.user.first_name, cud.user.last_name, cud.lecture, cud.section, cud.school, cud.major, cud.year ]
+        row = [cud.user.email, cud.user.first_name, cud.user.last_name, cud.lecture, cud.section, cud.school, cud.major, cud.year]
 
         # assessment status (see AssessmentUserDatum.status), category averages
         course.assessment_categories.each do |cat|
-
           next unless matrix.has_category? cat
           course.assessments_with_category(cat).each do |asmt|
-
             next unless matrix.has_assessment? asmt.id
 
             row << formatted_status(matrix.cell(asmt.id, cud.id)["status"])

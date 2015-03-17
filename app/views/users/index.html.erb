@@ -2,7 +2,7 @@
 <%= link_to "Create user", new_user_path, { :class=>"btn" }%>
 <% end %>
 
-<% if @users.count > 1 %>
+<% if @users.count >= 1 %>
 <h3>Users List</h3>
 
 <table class="noStyle navigatable">

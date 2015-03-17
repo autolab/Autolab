@@ -1,5 +1,5 @@
-require 'utilities'
-require 'association_cache'
+require "utilities"
+require "association_cache"
 
 class Assessment < ActiveRecord::Base
   # Mass-assignment
@@ -8,35 +8,35 @@ class Assessment < ActiveRecord::Base
   # Associations
   belongs_to :course
   belongs_to :course_user_datum
-  belongs_to :late_penalty, :class_name => "Penalty"
-  belongs_to :version_penalty, :class_name => "Penalty"
+  belongs_to :late_penalty, class_name: "Penalty"
+  belongs_to :version_penalty, class_name: "Penalty"
   has_many :submissions
-  has_many :problems, :dependent => :destroy
-  has_many :extensions, :dependent => :destroy
+  has_many :problems, dependent: :destroy
+  has_many :extensions, dependent: :destroy
   has_many :attachments
-  has_many :assessment_user_data, :dependent => :destroy
-  has_one :autograding_setup, :dependent => :destroy
-  has_one :scoreboard_setup, :dependent => :destroy
+  has_many :assessment_user_data, dependent: :destroy
+  has_one :autograding_setup, dependent: :destroy
+  has_one :scoreboard_setup, dependent: :destroy
 
   # Validations
-  validates_uniqueness_of :name, :scope => :course_id
-  validates_length_of :display_name, :minimum => 1
+  validates_uniqueness_of :name, scope: :course_id
+  validates_length_of :display_name, minimum: 1
   validate :verify_dates_order
-  validate :handin_directory_and_filename_or_disable_handins, :if => :active?
-  validate :handin_directory_exists_or_disable_handins, :if => :active?
+  validate :handin_directory_and_filename_or_disable_handins, if: :active?
+  validate :handin_directory_exists_or_disable_handins, if: :active?
   validates_numericality_of :max_size, :max_submissions
-  validates_numericality_of :version_threshold, :only_integer => true,
-                            :greater_than_or_equal_to => -1, :allow_nil => true
-  validates_numericality_of :max_grace_days, :only_integer => true,
-                            :greater_than_or_equal_to => 0, :allow_nil => true
+  validates_numericality_of :version_threshold, only_integer: true,
+                                                greater_than_or_equal_to: -1, allow_nil: true
+  validates_numericality_of :max_grace_days, only_integer: true,
+                                             greater_than_or_equal_to: 0, allow_nil: true
   validates_numericality_of :group_size, only_integer: true, greater_than_or_equal_to: 1, allow_nil: true
   validates_presence_of :name, :display_name, :due_at, :end_at, :start_at,
                         :grading_deadline, :category_name, :max_size, :max_submissions
 
   # Callbacks
   trim_field :name, :display_name, :handin_filename, :handin_directory, :handout, :writeup
-  after_save :invalidate_course_cgdubs, :if => :due_at_changed?
-  after_save :invalidate_course_cgdubs, :if => :max_grace_days_changed?
+  after_save :invalidate_course_cgdubs, if: :due_at_changed?
+  after_save :invalidate_course_cgdubs, if: :max_grace_days_changed?
   after_create :create_AUDs_modulo_callbacks
 
   # Constants
@@ -49,16 +49,16 @@ class Assessment < ActiveRecord::Base
   scope :unreleased, ->(as_of = Time.now) { where.not(RELEASED, as_of) }
 
   # Misc.
-  accepts_nested_attributes_for :late_penalty, :version_penalty, :allow_destroy => true
+  accepts_nested_attributes_for :late_penalty, :version_penalty, allow_destroy: true
 
   # Need to create AUDs for all users when new assessment is created
   #
   # Also used by populator (in autolab.rake) to populate AUD.latest_submission
   def create_AUDs_modulo_callbacks
-    course.course_user_data.find_each { |cud|
-      AssessmentUserDatum.create_modulo_callbacks({ :assessment_id => id, 
-                                                    :course_user_datum_id => cud.id })
-    }
+    course.course_user_data.find_each do |cud|
+      AssessmentUserDatum.create_modulo_callbacks(assessment_id: id,
+                                                  course_user_datum_id: cud.id)
+    end
   end
 
   # Used by populator (in autolab.rake) to update AUD.latest_submission
@@ -66,8 +66,8 @@ class Assessment < ActiveRecord::Base
   # Can be used manually if AUD.latest_submission goes out of sync (emergency!)
   def update_latest_submissions_modulo_callbacks
     calculate_latest_submissions.each do |s|
-      AssessmentUserDatum.where({ :assessment_id => id, :course_user_datum_id => s.course_user_datum_id })
-                         .update_all({ :latest_submission_id => s.id })
+      AssessmentUserDatum.where(assessment_id: id, course_user_datum_id: s.course_user_datum_id)
+        .update_all(latest_submission_id: s.id)
     end
   end
 
@@ -107,8 +107,8 @@ class Assessment < ActiveRecord::Base
     problem_id_to_name
   end
 
-  def latest_submission_by cud
-    assessment_user_data.where(:course_user_datum => cud).first.latest_submission
+  def latest_submission_by(cud)
+    assessment_user_data.where(course_user_datum: cud).first.latest_submission
   end
 
   def config_file_path
@@ -117,7 +117,7 @@ class Assessment < ActiveRecord::Base
 
   def config_module_name
     (sanitized_name + course.sanitized_name).camelize
-  end 
+  end
 
   def config
     @config ||= config!
@@ -131,13 +131,13 @@ class Assessment < ActiveRecord::Base
   end
 
   # Penalty to apply per version past the version_threshold
-  def effective_version_penalty 
+  def effective_version_penalty
     version_penalty || course.version_penalty
   end
 
   # Submission version number past which to start applying version penalty
   #
-  # Since version numbers are start at 1, a version_threshold of 0 would mean 
+  # Since version numbers are start at 1, a version_threshold of 0 would mean
   # that all versions > 0 would be penalized. Since versions start at 1, this
   # means that all versions are penalized.
   def effective_version_threshold
@@ -182,7 +182,7 @@ class Assessment < ActiveRecord::Base
 
   def config_module
     # (re)construct config file from source, unless it already exists
-    construct_config_file unless File.exists? config_file_path
+    construct_config_file unless File.exist? config_file_path
 
     # (re)load config file if it was updated or wasn't ever loaded into this process
     reload_config_file if config_file_updated?
@@ -195,9 +195,9 @@ class Assessment < ActiveRecord::Base
     path "#{name}.yml"
   end
 
-  def serialize_yaml_to_path path
+  def serialize_yaml_to_path(path)
     yaml = YAML.dump serialize
-    File.open(path, 'w') { |f| f.puts yaml }
+    File.open(path, "w") { |f| f.puts yaml }
   end
 
   def writeup_is_url?
@@ -217,40 +217,41 @@ class Assessment < ActiveRecord::Base
   end
 
   # raw_score
-  # @param map of problem names to problem scores 
+  # @param map of problem names to problem scores
   # @return score on this assignment not including any tweak or late penalty.
   # We generically cast all values to floating point numbers because we don't
-  # trust the upstream developer to do that for us. 
+  # trust the upstream developer to do that for us.
   def raw_score(scores)
     if config.respond_to? :raw_score
-      raw_score = Utilities.execute_instructor_code(:raw_score) {
+      raw_score = Utilities.execute_instructor_code(:raw_score) do
         config.raw_score scores
-      }
+      end
       Utilities.validated_score_value(raw_score, :raw_score)
     else
-      score_values = scores.values.map { |score| score.to_f() }
+      score_values = scores.values.map(&:to_f)
       score_values.reduce(0, :+)
     end
   end
 
   def overwrites_method?(methodKey)
-    self.config_module.instance_methods.include?(methodKey)
+    config_module.instance_methods.include?(methodKey)
   end
 
   def has_groups?
     group_size && group_size > 1
   end
-  
+
   def groups
-    Group.joins(:assessment_user_data).where(assessment_user_data: {assessment_id: self.id}).distinct
-  end
-  
-  def grouplessCUDs
-    self.course.course_user_data.joins(:assessment_user_data).where(assessment_user_data: {assessment_id: self.id, membership_status: AssessmentUserDatum::UNCONFIRMED})
+    Group.joins(:assessment_user_data).where(assessment_user_data: { assessment_id: id }).distinct
   end
 
-private
-  def path filename
+  def grouplessCUDs
+    course.course_user_data.joins(:assessment_user_data).where(assessment_user_data: { assessment_id: id, membership_status: AssessmentUserDatum::UNCONFIRMED })
+  end
+
+  private
+
+  def path(filename)
     Rails.root.join "courses", course.name, name, filename
   end
 
@@ -305,9 +306,9 @@ private
 
   def config!
     source = "#{name}_assessment_config".to_sym
-    Utilities.execute_instructor_code(source) {
+    Utilities.execute_instructor_code(source) do
       Class.new.extend config_module
-    }
+    end
   end
 
   def serialize
@@ -319,17 +320,13 @@ private
     s
   end
 
-  GENERAL_SERIALIZABLE = Set.new [ "name", "display_name", "category_name", "description", 
-                           "handin_filename", "handin_directory",
-                           "has_autograde", "has_svn", "has_scoreboard",
-                           "max_grace_days", "handout", "writeup", "max_submissions",
-                           "disable_handins", "max_size" ]
+  GENERAL_SERIALIZABLE = Set.new %w(name display_name category_name description handin_filename handin_directory has_autograde has_svn has_scoreboard max_grace_days handout writeup max_submissions disable_handins max_size)
 
   def serialize_general
     Utilities.serializable attributes, GENERAL_SERIALIZABLE
   end
 
-  def deserialize s
+  def deserialize(s)
     attributes = s["general"] if s["general"]
     problems = Problem.deserialize_list s["problems"] if s["problems"]
     autograding_setup = AutogradingSetup.deserialize s["autograding_setup"] if s["autograding_setup"]
@@ -342,16 +339,16 @@ private
 
   def max_score!
     if config.respond_to? :max_score
-      v = Utilities.execute_instructor_code(:max_score) {
+      v = Utilities.execute_instructor_code(:max_score) do
         config.max_score
-      }
+      end
       Utilities.validated_score_value(v, :max_score)
     else
       default_max_score
     end
   end
 
-  def is_file? name
+  def is_file?(name)
     !name.blank? && File.file?(path name)
   end
 
@@ -372,7 +369,7 @@ private
 
       !(d || f)
     end
-  end 
+  end
 
   def handin_directory_exists_or_disable_handins
     if disable_handins?
@@ -400,7 +397,7 @@ private
   end
 
   def sanitized_name
-    name.gsub(/\./, '')
+    name.gsub(/\./, "")
   end
 
   def active?

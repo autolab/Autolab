@@ -4,42 +4,42 @@ class User < ActiveRecord::Base
   devise :database_authenticatable, :registerable,
          :recoverable, :rememberable, :trackable, :validatable,
          :confirmable
-         
+
   devise :omniauthable, omniauth_providers: [:shibboleth]
-  
-  has_many :course_user_data, :dependent => :destroy
-  has_many :courses, :through => :course_user_data
+
+  has_many :course_user_data, dependent: :destroy
+  has_many :courses, through: :course_user_data
   has_many :authentications
-  
+
   trim_field :school
   validates_presence_of :first_name, :last_name, :email
-  
+
   # check if user is instructor in any course
   def instructor?
-    cuds = self.course_user_data
-    
+    cuds = course_user_data
+
     cuds.each do |cud|
       if cud.instructor?
         return true
       end
     end
-    
-    return false
+
+    false
   end
-  
+
   # check if self is instructor of a user
   def instructor_of?(user)
-    cuds = self.course_user_data
-    
+    cuds = course_user_data
+
     cuds.each do |cud|
       if cud.instructor?
-         if !cud.course.course_user_data.where(user: user).empty?
-           return true
-         end
+        unless cud.course.course_user_data.where(user: user).empty?
+          return true
+        end
       end
     end
-    
-    return false
+
+    false
   end
 
   def full_name
@@ -51,7 +51,7 @@ class User < ActiveRecord::Base
   end
 
   def display_name
-    if first_name and last_name then
+    if first_name && last_name
       full_name
     else
       email
@@ -59,39 +59,63 @@ class User < ActiveRecord::Base
   end
 
   def after_create
-    COURSE_LOGGER.log("User CREATED #{self.email}:" +
-      "{#{self.first_name},#{self.last_name}")
+    COURSE_LOGGER.log("User CREATED #{email}:" \
+      "{#{first_name},#{last_name}")
   end
 
   def after_update
-    COURSE_LOGGER.log("User UPDATED #{self.email}:"+
-      "{#{self.first_name},#{self.last_name}")
+    COURSE_LOGGER.log("User UPDATED #{email}:"\
+      "{#{first_name},#{last_name}")
   end
-  
-  def self.find_for_facebook_oauth(auth, signed_in_resource=nil)
-    authentication = Authentication.where(provider: auth.provider, 
+
+  # Reset user fields with LDAP lookup
+  def ldap_reset
+   if email.include? "@andrew.cmu.edu" then
+      ldapResult = User.ldap_lookup(email.split("@")[0])
+      if (ldapResult) then
+        self.first_name = ldapResult[:first_name]
+        self.last_name = ldapResult[:last_name]
+        self.school = ldapResult[:school]
+        self.major = ldapResult[:major]
+        self.year = ldapResult[:year]
+      end
+
+      # If LDAP lookup failed, use (blank) as place holder
+      if self.first_name.nil? then
+        self.first_name = "(blank)"
+      end
+      if self.last_name.nil? then
+        self.last_name = "(blank)"
+      end
+
+      self.save
+    end
+  end
+
+  def self.find_for_facebook_oauth(auth, _signed_in_resource = nil)
+    authentication = Authentication.where(provider: auth.provider,
                                           uid: auth.uid).first
     if authentication && authentication.user
       return authentication.user
     end
   end
-  
-  def self.find_for_google_oauth2_oauth(auth, signed_in_resource=nil)
-    authentication = Authentication.where(provider: auth.provider, 
+
+  def self.find_for_google_oauth2_oauth(auth, _signed_in_resource = nil)
+    authentication = Authentication.where(provider: auth.provider,
                                           uid: auth.uid).first
     if authentication && authentication.user
       return authentication.user
     end
   end
-  
-  def self.find_for_shibboleth_oauth(auth, signed_in_resource=nil)
-    authentication = Authentication.where(provider: "CMU-Shibboleth", 
+
+  def self.find_for_shibboleth_oauth(auth, _signed_in_resource = nil)
+    authentication = Authentication.where(provider: "CMU-Shibboleth",
                                           uid: auth.uid).first
     if authentication && authentication.user
       return authentication.user
     end
   end
-  
+
   def self.new_with_session(params, session)
     super.tap do |user|
       if data = session["devise.facebook_data"]
@@ -113,10 +137,9 @@ class User < ActiveRecord::Base
       end
     end
   end
-  
+
   # user created by roster
   def self.roster_create(email, first_name, last_name, school, major, year)
-
     auth = Authentication.new
     auth.provider = "CMU-Shibboleth"
     auth.uid = email
@@ -136,14 +159,14 @@ class User < ActiveRecord::Base
     user.password_confirmation = temp_pass
     user.skip_confirmation!
 
-    if (user.save) then
-        #user.send_reset_password_instructions
-        return user
+    if user.save
+      # user.send_reset_password_instructions
+      return user
     else
-        return nil 
+      return nil
     end
   end
-  
+
   # user (instructor) created by building a course
   def self.instructor_create(email, course_name)
     user = User.new
@@ -158,10 +181,9 @@ class User < ActiveRecord::Base
 
     user.save!
     user.send_reset_password_instructions
-    return user
-
+    user
   end
-  
+
   # list courses of a user
   # list all courses if he's an admin
   def self.courses_for_user(user)
@@ -171,4 +193,89 @@ class User < ActiveRecord::Base
       return user.courses.order("display_name ASC")
     end
   end
+
+  # use LDAP to look up a user
+  def self.ldap_lookup(andrewID)
+    if (andrewID) then
+      require 'rubygems'
+      require 'net/ldap'
+
+      host = "ldap.andrew.cmu.edu"
+      ldap = Net::LDAP.new(host: host, port: 389)
+      user = ldap.search(:base=>"ou=Person,dc=cmu,dc=edu",
+              :filter=>"cmuAndrewId=" + andrewID)[0]
+
+      if user then
+        # Create result hash and parse ldap response
+        result = {}
+        result[:first_name] = user[:givenname][-1]
+        result[:last_name] = user[:sn][-1]
+        result[:major] = case user[:cmudepartment][0]
+          when "Architecture" then "ARC"
+          when "Computational Biology" then "CB"
+          when "Computer Science and Arts" then "BCA"
+          when "Computer Science Department" then "CSD"
+          when "HCII: Human Computer Interaction Institute" then "HCI"
+          when "Humanities and Arts" then "BHA"
+          when "General CIT" then "C00"
+          when "Civil & Environmental Engineering" then "CEE"
+          when "Chemical Engineering" then "CHE"
+          when "Computer Science" then "CS"
+          when "Electrical & Computer Engineering" then "ECE"
+          when "Entertainment Technology Pittsburgh" then "ETC"
+          when "Economics" then "ECO"
+          when "History" then "HIS"
+          when "H&SS Interdisciplinary" then "HSS"
+          when "Information Networking Institute" then "INI"
+          when "Institute for Software Research" then "ISR"
+          when "Information Systems:Sch of IS & Mgt" then "ISM"
+          when "Mechanical Engineering" then "MEG"
+          when "Mathematical Sciences" then "MSC"
+          when "General MCS" then "M00"
+          when "Software Engineering" then "SE"
+          when "Science and Humanities Scholars" then "SHS"
+          when "Business Administration" then "BA"
+          when "Machine Learning" then "ML"
+          when "NREC: National Robotics Engineering Center" then "Robotics"
+          else user[:cmudepartment][0]
+        end
+        result[:year] = case user[:cmustudentclass][0] 
+          when "Freshman" then "1"
+          when "Sophomore" then "2"
+          when "Junior" then "3"
+          when "Senior" then "4"
+          when "Masters" then "10"
+          else user[:cmustudentclass][0]
+        end
+
+        # There is no consistent pattern about where the college name is
+        # within the eduPrsonSchoolCollegeName record, so we iterate through
+        # them until we find something.  Per Chaos "I remember it being that
+        # hard."
+        for college in user[:edupersonschoolcollegename] do
+          result[:school] = case college
+            when "College of Fine Arts" then "CFA"
+            when "Carnegie Institute of Technology" then "CIT"
+            when "Carnegie Mellon University" then "CMU"
+            when "School of Computer Science" then "SCS"
+            when "SCS - SCH of Computer Science" then "SCS"
+            when "H. John Heinz III College" then "HC"
+            when "College of Humanities and Social Sciences" then "HSS"
+            when "Mellon College of Science" then "MCS"
+            when "David A. Tepper School of Business" then "TSB"
+          end
+
+          # Break as soon as we find the correct record. 
+          break if result[:school] 
+        end 
+
+        # If nothing matches, we fall back to the first record
+        if !result[:school] then 
+          result[:school] = user[:edupersonschoolcollegename][0]
+        end 
+        return result
+      end
+    end
+  end
+
 end

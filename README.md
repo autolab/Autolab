@@ -64,7 +64,7 @@ This is the main repository that includes the application layer of the project. 
 	bundle exec rake db:create
 	bundle exec rake db:migrate
 	```
-   Do not forget to use `bundle exec` in fron of every rake/rails command.
+   Do not forget to use `bundle exec` in front of every rake/rails command.
 
 
 7. (Optional) Populate dummy data for development purposes:
@@ -91,15 +91,33 @@ This is the main repository that includes the application layer of the project. 
 
 ## Testing
 
-You can run the tests by:
+### Setting up Tests
+
+1. Add a test database in `database.yml`
+
+2. Create and migrate the database.
+	```sh
+	RAILS_ENV=test bundle exec rake db:create
+	RAILS_ENV=test bundle exec rake db:migrate
+	```
+   Do not forget to use `RAILS_ENV=test bundle exec` in front of every rake/rails command.
+
+3. Create necessary directories.
+
+	```
+	mkdir attachments/ tmp/
+	```
+
+### Running Tests
+
+After setting up the test environment, simply run spec by:
 
 ```sh
 bundle exec rake spec
 ```
 
-We have a very limited testing suite at the moment, but we are working on it.
 
-[![Code Climate](https://codeclimate.com/github/autolab/Autolab/badges/gpa.svg)](https://codeclimate.com/github/autolab/Autolab)
+[![Build Status](https://travis-ci.org/autolab/Autolab.svg)](https://travis-ci.org/autolab/Autolab) [![Code Climate](https://codeclimate.com/github/autolab/Autolab/badges/gpa.svg)](https://codeclimate.com/github/autolab/Autolab) [![Test Coverage](https://codeclimate.com/github/autolab/Autolab/badges/coverage.svg)](https://codeclimate.com/github/autolab/Autolab)
 
 ## Contributing
 

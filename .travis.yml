@@ -1,0 +1,18 @@
+language: ruby
+rvm:
+- 2.2.0
+before_script:
+- cp config/database.travis.yml config/database.yml
+- cp config/initializers/devise.rb.template config/initializers/devise.rb
+- cp config/autogradeConfig.rb.template config/autogradeConfig.rb
+- mkdir attachments/ tmp/
+- bundle install --quiet
+- RAILS_ENV=test bundle exec rails generate devise:install --skip --quiet
+- RAILS_ENV=test bundle exec rake db:create --trace
+- RAILS_ENV=test bundle exec rake db:setup --trace
+- RAILS_ENV=test bundle exec rake autolab:populate
+script:
+- RAILS_ENV=test CODECLIMATE_REPO_TOKEN=d37a8b9e09642cb73cfcf4ecfb4115fc3d6a55a7714110187ac59856ae4ab5ad bundle exec rspec ./spec/features/ 
+notifications:
+  slack:
+    secure: GXcycaSBFaOYI6Ge0vhqCYK1xxixwjASOMkV2bkfE6PNIGkDEEQdTpOkohPGoKuz2W9KCGrXC38sbu4npMtonz0/sISydG+g7V33XkLqPaW8oUcdYhwJyBUEB/Ds17U/FJ4IhT9oOrhl17Sm0rm92Mhu6O2eeZYAclGqJgZNLvg=

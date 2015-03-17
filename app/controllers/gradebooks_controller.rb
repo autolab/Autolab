@@ -1,18 +1,17 @@
-require 'association_cache'
-require 'csv'
-require 'Statistics.rb'
-require 'utilities'
+require "association_cache"
+require "csv"
+require "Statistics.rb"
+require "utilities"
 
 class GradebooksController < ApplicationController
-  
   action_auth_level :show, :student
   def show
-    if @cud.instructor? then
-      redirect_to :action => :view
-    elsif @cud.course_assistant? then
-      redirect_to :action => :view, :section => @cud.section
+    if @cud.instructor?
+      redirect_to action: :view
+    elsif @cud.course_assistant?
+      redirect_to action: :view, section: @cud.section
     else
-      redirect_to :action => :student
+      redirect_to action: :student
     end
   end
 
@@ -23,27 +22,26 @@ class GradebooksController < ApplicationController
 
     permission = @cud.has_auth_level? :instructor
     @options = {
-      :linkify_andrew_ids => permission,
-      :render_excused_grade_type => permission,
-      :render_zeroed_grade_type => permission,
-      :show_actions => permission
+      linkify_andrew_ids: permission,
+      render_excused_grade_type: permission,
+      render_zeroed_grade_type: permission,
+      show_actions: permission
     }
 
-    unless @cud.has_auth_level? :instructor or @section == @cud.section
+    unless @cud.has_auth_level?(:instructor) || @section == @cud.section
       flash[:error] = "You can't view other section gradebooks."
-      redirect_to :controller => :home, :action => :error
+      redirect_to [@course] and return
     end
-
   end
 
   action_auth_level :student, :student
   def student
-    @_cud = params[:id] ? 
+    @_cud = params[:id] ?
               CourseUserDatum.find_by_id(params[:id]) : @cud
 
-    if (@_cud.nil?)
+    if @_cud.nil?
       flash[:error] = "Can't find requested user course data."
-      redirect_to course_course_user_datum_gradebook_path and return
+      redirect_to(course_course_user_datum_gradebook_path) && return
     end
 
     unless @cud == @_cud || (@cud.instructor? && @cud.course == @_cud.course)
@@ -52,7 +50,7 @@ class GradebooksController < ApplicationController
       else
         flash[:error] = "You can't view other classes' gradebooks."
       end
-      redirect_to course_course_user_datum_gradebook_path and return
+      redirect_to(course_course_user_datum_gradebook_path) && return
     end
 
     @categories_sorted = @course.assessment_categories
@@ -62,8 +60,8 @@ class GradebooksController < ApplicationController
   def csv
     @matrix = GradeMatrix.new @course, @cud
 
-    csv = render_to_string :layout => false
-    send_data csv, :filename => "#{@course.name}.csv"
+    csv = render_to_string layout: false
+    send_data csv, filename: "#{@course.name}.csv"
   end
 
   action_auth_level :invalidate, :instructor
@@ -102,14 +100,13 @@ class GradebooksController < ApplicationController
     cols.each do |key, value|
       @course_stats[key] = stat.stats(value)
     end
-
   end
 
   action_auth_level :bulkRelease, :instructor
   def bulkRelease
     for assessment in @course.assessments do
       for problem in assessment.problems do
-        scores = problem.scores.where(:released=>false)
+        scores = problem.scores.where(released: false)
         for score in scores do
           score.released = true
           score.save

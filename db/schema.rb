@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150228200007) do
+ActiveRecord::Schema.define(version: 20150313023538) do
 
   create_table "annotations", force: :cascade do |t|
     t.integer  "submission_id", limit: 4
@@ -68,7 +68,6 @@ ActiveRecord::Schema.define(version: 20150228200007) do
     t.datetime "updated_at"
     t.integer  "course_id",          limit: 4
     t.string   "display_name",       limit: 255
-    t.integer  "category_id",        limit: 4
     t.string   "handin_filename",    limit: 255
     t.string   "handin_directory",   limit: 255
     t.integer  "max_grace_days",     limit: 4,     default: 0
@@ -147,9 +146,9 @@ ActiveRecord::Schema.define(version: 20150228200007) do
     t.boolean  "disabled",                      limit: 1,     default: false
     t.boolean  "exam_in_progress",              limit: 1,     default: false
     t.integer  "version_threshold",             limit: 4,     default: -1,    null: false
-    t.datetime "cgdub_dependencies_updated_at"
     t.integer  "late_penalty_id",               limit: 4
     t.integer  "version_penalty_id",            limit: 4
+    t.datetime "cgdub_dependencies_updated_at"
     t.text     "gb_message",                    limit: 65535
   end
 
@@ -210,17 +209,14 @@ ActiveRecord::Schema.define(version: 20150228200007) do
   end
 
   create_table "scores", force: :cascade do |t|
-    t.integer  "submission_id",      limit: 4
-    t.float    "score",              limit: 24
-    t.text     "feedback",           limit: 16777215
-    t.integer  "problem_id",         limit: 4
+    t.integer  "submission_id", limit: 4
+    t.float    "score",         limit: 24
+    t.text     "feedback",      limit: 16777215
+    t.integer  "problem_id",    limit: 4
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.boolean  "released",           limit: 1,          default: false
-    t.integer  "grader_id",          limit: 4
-    t.binary   "feedback_file",      limit: 4294967295
-    t.string   "feedback_file_type", limit: 255
-    t.string   "feedback_file_name", limit: 255
+    t.boolean  "released",      limit: 1,        default: false
+    t.integer  "grader_id",     limit: 4
   end
 
   add_index "scores", ["problem_id", "submission_id"], name: "problem_submission_unique", unique: true, using: :btree
