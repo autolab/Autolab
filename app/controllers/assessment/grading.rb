@@ -24,6 +24,7 @@ module AssessmentGrading
       unless @data_type == :scores || @data_type == :feedback
         flash[:error] = "bulkGrade: invalid data_type received from client"
         redirect_to(action: :bulkGrade) && return
+      end
 
       # get CSV
       csv_file = params[:upload][:file]
