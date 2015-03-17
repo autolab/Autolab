@@ -1,3 +1,5 @@
+# Extend the Rails ApplicationController to define some RESTful endpoints for
+# dealing with Announcements.
 class AnnouncementsController < ApplicationController
   action_auth_level :index, :instructor
   def index
@@ -10,16 +12,19 @@ class AnnouncementsController < ApplicationController
 
   action_auth_level :new, :instructor
   def new
-    # for consistency with REST
+    @announcement = Announcement.new
   end
 
   action_auth_level :create, :instructor
   def create
     if !@cud.user.administrator? && params[:announcement][:system]
-      flash[:error] = "You don't have the permission to create system announcements!"
+      flash[:error] = "You don't have the permission " \
+        "to create system announcements!"
       redirect_to(action: "index") && return
     end
+
     @announcement = @course.announcements.create(announcement_params)
+
     if @announcement.save
       flash[:success] = "Create success!"
       redirect_to(course_announcements_path(@course)) && return
@@ -37,11 +42,13 @@ class AnnouncementsController < ApplicationController
   action_auth_level :edit, :instructor
   def edit
     @announcement = Announcement.find(params[:id])
+
     # Prevent non-admin from entering system announcements edit page
-    if !@cud.user.administrator? && @announcement.system
-      flash[:error] = "You don't have the permission to edit system announcements!"
-      redirect_to(action: "index") && return
-    end
+    return unless @cud.user.administrator? || @announcement.system
+
+    flash[:error] = "You don't have the permission " \
+      "to edit system announcements!"
+    redirect_to(action: "index") && return
   end
 
   action_auth_level :update, :instructor
@@ -60,7 +67,8 @@ class AnnouncementsController < ApplicationController
   def destroy
     @announcement = Announcement.find(params[:id])
     if !@cud.user.administrator? && @announcement.system
-      flash[:error] = "You don't have the permission to destroy system announcements!"
+      flash[:error] = "You don't have the permission " \
+        "to destroy system announcements!"
       redirect_to(action: "index") && return
     end
     @announcement.destroy
@@ -70,6 +78,7 @@ class AnnouncementsController < ApplicationController
   private
 
   def announcement_params
-    params.require(:announcement).permit(:title, :description, :start_date, :end_date, :system, :persistent)
+    params.require(:announcement).permit(:title, :description, :start_date,
+                                         :end_date, :system, :persistent)
   end
 end

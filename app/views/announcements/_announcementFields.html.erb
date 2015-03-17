@@ -1,31 +1,29 @@
-<table class="verticalTable">
-  <tr>
-    <th>Title:</th>
-    <td><%= f.text_field :title %></td>
-  </tr>
-  <tr>
-    <th>Description:</th>
-    <td><%= f.text_area :description %></td>
-  </tr>
-  <tr>
-    <th>Start Date:</th>
-    <td><%= f.datetime_select :start_date, step: 1 %></td>
-  </tr>
-  <tr>
-    <th>End Date:</th>
-    <td><%= f.datetime_select :end_date, step: 1 %></td>
-  </tr>
-  <tr>
-    <th>Persistent Announcement?</th>
-    <td><%= f.check_box (:persistent) %></td>
-  </tr>
-  <% if @cud.administrator? then %>
-    <tr>
-      <th>System Announcement?</th>
-      <td><%= f.check_box (:system) %></td>
-    </tr>
-  <% end %>
-  <tr>
-    <td colspan=2><%= f.submit 'Submit' , {:class=>"btn primary"} %></td>
-  </tr>
-</table>
+<% content_for :javascripts do %>
+  <%= javascript_include_tag "initialize_datetimepickers" %>
+  <%= javascript_include_tag "confirm_discard_changes" %>
+<% end %>
+
+<%= f.text_field :title,
+  help_text: "The best titles are short and sweet." %>
+
+<%= f.text_area :description,
+  help_text: "There'll also be limited space for the description text. If you need something long-form, perhaps link to a longer announcement posted on external media." %>
+
+<%= f.datetime_select :start_date,
+  help_text: "When should the announcement appear?",
+  less_than: "announcement_end_date" %>
+
+<%= f.datetime_select :end_date,
+  help_text: "When should the announcement come down?",
+  greater_than: "announcement_start_date" %>
+
+<!-- TODO: custom title 'Persistent Announcement?' -->
+<%= f.check_box :persistent,
+  help_text: "A persistent announcement is shown on every page in the course." %>
+
+<% if @cud.administrator? then %>
+  <%= f.check_box :system,
+    help_text: "Check this to make a system-wide announcement." %>
+<% end %>
+
+<%= f.submit 'Submit' %>
