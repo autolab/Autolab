@@ -1,3 +1,8 @@
+# Extend the Rails FormBuilder class.
+#
+# The naming is unfortunate, as this FormBuilder does more than just add a
+# custom datetimepicker. In reality, it's goal is to wrap common form builder
+# methods in Bootstrap boilerplate code.
 class FormBuilderWithDateTimeInput < ActionView::Helpers::FormBuilder
   %w(text_field text_area).each do |method_name|
     # retain access to default textfield, etc. helpers
@@ -21,7 +26,8 @@ class FormBuilderWithDateTimeInput < ActionView::Helpers::FormBuilder
       @template.content_tag :div, class: "score-adjustment input-group" do
         (f.vanilla_text_field :value, class: "form-control value") +
         (@template.content_tag :div, class: "input-group-addon" do
-          f.select(:kind, { "points" => "points", "%" => "percent" }, {}, class: "form-control kind input-group-addon")
+          f.select(:kind, { "points" => "points", "%" => "percent" }, {},
+                   class: "form-control kind input-group-addon")
         end)
       end
     end
@@ -68,21 +74,33 @@ class FormBuilderWithDateTimeInput < ActionView::Helpers::FormBuilder
   # :greater_than properties to initialize relationships between datepicker
   # fields.
   def date_helper(name, options, strftime, date_format)
-    existing_time = @object.send(name)
-    formatted_datetime = existing_time.to_time.strftime(strftime) if existing_time.present?
+    begin
+      existing_time = @object.send(name)
+    rescue
+      existing_time = nil
+    end
 
-    field = vanilla_text_field(name, :value => formatted_datetime,
-                                     :class => "form-control datetimepicker",
-                                     :"data-date-format" => date_format,
-                                     :"data-date-less-than" => options[:less_than],
-                                     :"data-date-greater-than" => options[:greater_than])
+    if existing_time.present?
+      formatted_datetime = existing_time.to_time.strftime(strftime)
+    else
+      formatted_datetime = ""
+    end
+
+    field = vanilla_text_field(
+      name,
+      :value => formatted_datetime,
+      :class => "form-control datetimepicker",
+      :"data-date-format" => date_format,
+      :"data-date-less-than" => options[:less_than],
+      :"data-date-greater-than" => options[:greater_than])
 
     wrap_field name, field, options[:help_text]
   end
 
   def wrap_field(name, field, help_text, display_name = nil)
     @template.content_tag :div, class: "form-group" do
-      label(name, display_name, class: "control-label") + field + help_text(name, help_text)
+      label(name, display_name, class: "control-label") +
+        field + help_text(name, help_text)
     end
   end
 

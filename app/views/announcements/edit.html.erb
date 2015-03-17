@@ -1,4 +1,8 @@
 <h2>Edit Announcement</h2>
-<%= form_for :announcement, url: course_announcement_path(@course, @announcement), method: :patch do |f| %>
-  <%= render partial:'announcementFields', locals:{f:f} %>
-<% end %>
+<div class="row">
+  <div class="col-md-6">
+    <%= form_for @announcement, url: course_announcement_path(@course, @announcement), method: :patch, builder: FormBuilderWithDateTimeInput do |f| %>
+      <%= render partial: 'announcementFields', locals: {f:f} %>
+    <% end %>
+  </div>
+</div>
