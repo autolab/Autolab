@@ -29,7 +29,6 @@ module AssessmentAutograde
     require_relative(Rails.root.join("assessmentConfig", "#{@course.name}-#{@assessment.name}.rb"))
 
     assign = @assessment.name.gsub(/\./, "")
-    modName = (assign + (@course.name).gsub(/[^A-Za-z0-9]/, "")).camelize
 
     if @assessment.overwrites_method?(:autogradeDone)
       @assessment.config_module.autogradeDone(submissions, feedback_str)
@@ -79,11 +78,11 @@ module AssessmentAutograde
       submission = @assessment.submissions.find_by_id(submission_id)
       if submission
         job = autogradeSubmissions(@course, @assessment, [submission])
-        if job == -1 # autograding failed
+        if job == -2 # no autograding properties for this assessment
+          redirect_to([@course, @assessment, :submissions]) && return
+        elsif job < 0 # autograding failed
           failed_jobs += 1
           failed_list += "#{@submission.filename}: autograding error.<br>"
-        elsif job == -2 # no autograding properties for this assessment
-          redirect_to([@course, @assessment, :submissions]) && return
         end
       else
         failed_jobs += 1
@@ -122,11 +121,11 @@ module AssessmentAutograde
     last_submissions.each do |submission|
       if submission
         job = autogradeSubmissions(@course, @assessment, [submission])
-        if job == -1 # autograding failed
+        if job == -2 # no autograding properties for this assessment
+          redirect_to([@course, @assessment, :submissions]) && return
+        elsif job < 0 # autograding failed
           failed_jobs += 1
           failed_list += "#{@submission.filename}: autograding error.<br>"
-        elsif job == -2 # no autograding properties for this assessment
-          redirect_to([@course, @assessment, :submissions]) && return
         end
       else
         failed_jobs += 1
@@ -158,9 +157,7 @@ module AssessmentAutograde
     end
 
     job = sendJob(course, assessment, submissions, @cud)
-    if job == -3 # sendJob returned an exception
-      flash[:error] = "Autograding failed because of an unexpected exception in the system."
-    elsif job == -2
+    if job == -2
       flash[:error] = "Autograding failed because there are no autograding properties."
       if @cud.instructor?
         link = "<a href=\"#{url_for(action: 'adminAutograde')}\">Admin Autograding</a>"
@@ -171,7 +168,17 @@ module AssessmentAutograde
     elsif job == -1
       link = "<a href=\"#{url_for(controller: 'jobs')}\">Jobs</a>"
       flash[:error] = "There was an error submitting your autograding job. " \
-        "Check the #{link} page for more info."
+          "Check the #{link} page for more info."
+    elsif job == -3 || job == -4 || job == -6
+      flash[:error] = "There was an error uploading the submission file. (Error #{job})"
+    elsif job == -9
+      flash[:error] = "Submission was rejected by autograder."
+      if @cud.instructor?
+        link = "<a href=\"#{url_for(action: 'adminAutograde')}\">Admin Autograding</a>"
+        flash[:error] += " (Verify the autograding properties at #{link}.)"
+      end
+    elsif job < 0
+      flash[:error] = "Autograding failed because of an unexpected exception in the system."
     else
       link = "<a href=\"#{url_for(controller: 'jobs', action: 'getjob', id: job)}\">Job ID = #{job}</a>"
       flash[:success] = ("Submitted file #{submissions[0].filename} (#{link}) for autograding." \
@@ -330,7 +337,7 @@ module AssessmentAutograde
         return -11 # pollResponseStatusId
       end
       if feedback.nil?
-        return -19 # pollResponseStatusId
+        return -12 # pollResponseStatusId
       else
         if assessment.overwrites_method?(:autogradeDone)
           assessment.config_module.autogradeDone(submissions, feedback)
