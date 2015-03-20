@@ -295,8 +295,6 @@ class SubmissionsController < ApplicationController
     @problems = @assessment.problems.to_a
     @problems.sort! {|a,b| a.id <=> b.id }
 
-    session[:problems] = @problems
-
     # Rendering this page fails. Often. Mostly due to PDFs.
     # So if it fails, redirect, instead of showing an error page.
     begin
