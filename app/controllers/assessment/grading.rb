@@ -434,7 +434,7 @@ module AssessmentGrading
         end
         return autograder
       else
-        return User.find(i)
+        return @course.course_user_data.find(i)
       end
     end
     graders = grader_ids.map(&method(:find_user))
