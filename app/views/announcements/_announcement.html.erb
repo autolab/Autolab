@@ -1,7 +1,7 @@
 <li>
   <b><%= announcement.title %></b><br>
   <%= announcement.description %><br>
-  <% if @cud.administrator? || (@cud.has_auth_level? :instructor && @cud.course_id == announcement.course_id) then %>
+  <% if (@cud.instructor? && @cud.course_id == announcement.course_id) || @cud.administrator? then %>
     <%= link_to [:edit, @course, announcement] do %>
       <span class="btn small">Edit</span>
     <% end %>
