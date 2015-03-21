@@ -1,3 +1,8 @@
+##
+# Contains all functions related to autograding, including functions to send autograding jobs,
+#   the callback route for when jobs are completed, and regrading routes.
+# Gets imported into AssessmentsController
+#
 module AssessmentAutograde
   require "uri"
   require_relative Rails.root.join("config", "autogradeConfig.rb")
@@ -5,11 +10,10 @@ module AssessmentAutograde
   # method called when Tango returns the output
   # action_no_auth :autograde_done
   def autograde_done
-    @course = Course.find(params[:course_id]) or (render(nothing: true) && return)
+    @course = Course.find(params[:course_id]) || (render(nothing: true) && return)
     @assessment = @course.assessments.find(params[:id])
-    unless @assessment && @assessment.has_autograde
-      render(nothing: true) && return
-    end
+    render(nothing: true) && return unless @assessment && @assessment.has_autograde
+
     # there can be multiple submission with the same dave if this was a group submission
     submissions = Submission.where(dave: params[:dave]).all
 
@@ -21,14 +25,12 @@ module AssessmentAutograde
 
     begin
       extend_config_module(@assessment, submissions[0], @cud)
-    rescue Exception => e
+    rescue StandardError => e
       COURSE_LOGGER.log("Error extend config")
       COURSE_LOGGER.log(e)
     end
 
     require_relative(Rails.root.join("assessmentConfig", "#{@course.name}-#{@assessment.name}.rb"))
-
-    assign = @assessment.name.gsub(/\./, "")
 
     if @assessment.overwrites_method?(:autogradeDone)
       @assessment.config_module.autogradeDone(submissions, feedback_str)
@@ -47,19 +49,19 @@ module AssessmentAutograde
   # action_auth_level :regrade, :instructor
   def regrade
     @submission = Submission.find(params[:submission_id])
-    @effectiveCud = @submission.course_user_datum
+    @effective_cud = @submission.course_user_datum
     @course = @submission.course_user_datum.course
     @assessment = @submission.assessment
 
     unless @assessment.has_autograde
       # Not an error, this behavior was specified!
       flash[:info] = "This submission is not autogradable"
-      redirect_to(history_course_assessment_path(@course, @assessment, cud_id: @effectiveCud.id)) && return
+      redirect_to([:history, @course, @assessment, cud_id: @effective_cud.id]) && return
     end
 
     autogradeSubmissions(@course, @assessment, [@submission])
 
-    redirect_to(history_course_assessment_path(@course, @assessment, cud_id: @effectiveCud.id)) && return
+    redirect_to([:history, @course, @assessment, cud_id: @effective_cud.id]) && return
   end
 
   #
@@ -90,9 +92,8 @@ module AssessmentAutograde
       end
     end
 
-    if failed_jobs > 0
-      flash[:error] = "Warning: Could not regrade #{failed_jobs} submission(s):<br>" + failed_list
-    end
+    flash[:error] = "Warning: Could not regrade #{failed_jobs} submission(s):<br>" + failed_list if failed_jobs > 0
+
     success_jobs = submission_ids.size - failed_jobs
     if success_jobs > 0
       link = "<a href=\"#{url_for(controller: 'jobs')}\">#{success_jobs} submission</a>"
@@ -110,7 +111,8 @@ module AssessmentAutograde
   # action_auth_level :regradeAll, :instructor
   def regradeAll
     # Grab all of the submissions for this assessment
-    @submissions = @assessment.submissions.where(special_type: Submission::NORMAL).order("version DESC")
+    @submissions = @assessment.submissions.where(special_type: Submission::NORMAL)
+                   .order("version DESC")
 
     last_submissions = @submissions.latest
 
@@ -133,9 +135,8 @@ module AssessmentAutograde
       end
     end
 
-    if failed_jobs > 0
-      flash[:error] = "Warning: Could not regrade #{failed_jobs} submission(s):<br>" + failed_list
-    end
+    flash[:error] = "Warning: Could not regrade #{failed_jobs} submission(s):<br>" + failed_list if failed_jobs > 0
+
     success_jobs = last_submissions.size - failed_jobs
     if success_jobs > 0
       link = "<a href=\"#{url_for(controller: 'jobs')}\">#{success_jobs} students</a>"
@@ -151,10 +152,7 @@ module AssessmentAutograde
   # returns the job status returned by sendJob
   def autogradeSubmissions(course, assessment, submissions)
     # Check for nil first, since students should know about this
-    if submissions.blank?
-      flash[:error] = "Submission could not be autograded due to an error in creation"
-      return
-    end
+    flash[:error] = "Submission could not be autograded due to an error in creation" && return if submissions.blank?
 
     job = sendJob(course, assessment, submissions, @cud)
     if job == -2
@@ -188,6 +186,196 @@ module AssessmentAutograde
   end
 
   ##
+  # Sends the open request to tango.
+  # Returns a list of files already on Tango, or -1 on failure
+  #
+  def tango_open(course, assessment)
+    # Send OPEN api request to create/query course-lab directory.
+    open_req_url = "http://#{RESTFUL_HOST}:#{RESTFUL_PORT}/open/#{RESTFUL_KEY}/#{course.name}-#{assessment.name}/"
+    COURSE_LOGGER.log("Req: " + open_req_url)
+
+    open_resp = Net::HTTP.get_response(URI.parse(open_req_url))
+    open_resp_json = JSON.parse(open_resp.body)
+    return -1, nil if open_resp_json.nil? || open_resp_json["statusId"] < 0
+
+    COURSE_LOGGER.log("Existing File List: #{open_resp_json['files']}")
+    [0, open_resp_json["files"]]
+  end
+
+  ##
+  # sends an upload request for every file that needs to be uploaded.
+  # returns a list of files uploaded on success and a negative number on failure
+  #
+  def tango_upload(course, assessment, submission, existing_files)
+    # first, figure out which files need to get sent
+    ass_dir = File.join(AUTOCONFIG_COURSE_DIR, course.name, assessment.name)
+    begin
+      COURSE_LOGGER.log("Dir: #{ass_dir}")
+
+      if assessment.overwrites_method?(:autogradeInputFiles)
+        upload_file_list = assessment.config_module.autogradeInputFiles(ass_dir)
+      else
+        upload_file_list = autogradeInputFiles(ass_dir, assessment, submission)
+      end
+
+      COURSE_LOGGER.log("Upload File List: #{upload_file_list}")
+    rescue StandardError => e
+      COURSE_LOGGER.log("Error with getting files: #{e}")
+      e.backtrace.each { |line| COURSE_LOGGER.log(line) }
+      return -3, nil
+    end
+
+    # now actually send all of the upload requests
+    upload_http_req = Net::HTTP.new(RESTFUL_HOST, RESTFUL_PORT)
+    upload_req_uri = "/upload/#{RESTFUL_KEY}/#{course.name}-#{assessment.name}/"
+    upload_file_list.each do |f|
+      md5hash = Digest::MD5.file(f["localFile"]).to_s
+      next if existing_files.any? do |h|
+        h["md5"] == md5hash && h["localFile"] == File.basename(f["localFile"])
+      end
+
+      upload_req = Net::HTTP::Post.new(upload_req_uri)
+      upload_req.add_field("Filename", File.basename(f["localFile"]))
+      begin
+        file = File.open(f["localFile"], "rb")
+        upload_req.body = file.read
+      rescue StandardError
+        return -4, nil
+      ensure
+        file.close unless file.nil?
+      end
+
+      upload_resp = upload_http_req.request(upload_req)
+      COURSE_LOGGER.log("Req: /upload/#{RESTFUL_KEY}/#{course.name}-#{assessment.name}/")
+
+      upload_resp_json = JSON.parse(upload_resp.body)
+      return -6, nil if upload_resp_json.nil? || upload_resp_json["statusId"] < 0
+    end
+
+    [0, upload_file_list]
+  end
+
+  ##
+  # Generates a dave key, and saves it for each submission.
+  # Returns 0 on success and -13 on failure
+  #
+  def save_daves(submissions)
+    # Generate the dave number/string, this is used when autograding is done.
+    # The key is not guaranteed to be unique, but it's gonna be unique.
+    dave = (0...60).map { 65.+(rand(25)).chr }.join
+
+    begin
+      # save dave keys.  These let us know which submissions to save the autoresult for
+      ActiveRecord::Base.transaction do
+        submissions.each do |submission|
+          submission.dave = dave
+          submission.save!
+        end
+      end
+    rescue
+      return -13, nil
+    end
+
+    [0, dave]
+  end
+
+  def get_output_file(assessment, submission)
+    "#{submission.course_user_datum.email}_#{submission.version}_#{assessment.name}_autograde.txt"
+  end
+
+  ##
+  # Returns the callback_url for the given submission/dave key
+  #
+  def get_callback_url(course, assessment, submission, dave)
+    begin
+      hostname = request.base_url
+    rescue
+      hostname = `hostname`
+      hostname = "https://" + hostname.strip
+    end
+
+    callback_url = (RESTFUL_USE_POLLING) ? "" :
+      "#{hostname}/courses/#{course.id}/assessments/#{assessment.id}/autograde_done?dave=#{dave}&submission_id=#{submission.id}"
+    COURSE_LOGGER.log("Callback: #{callback_url}")
+
+    callback_url
+  end
+
+  ##
+  # Returns the job name for the given submission
+  #
+  def get_job_name(course, assessment, submission)
+    "#{course.name}_#{assessment.name}_#{submission.version}_#{submission.course_user_datum.email}"
+  end
+
+  ##
+  # Makes the Tango addJob request.
+  # Returns 0 on success and -9 on failure.
+  #
+  def tango_add_job(course, assessment, upload_file_list, callback_url, job_name, output_file)
+    http = Net::HTTP.new(RESTFUL_HOST, RESTFUL_PORT)
+    request = Net::HTTP::Post.new("/addJob/#{RESTFUL_KEY}/#{course.name}-#{assessment.name}/")
+    request.body = { "image" => @autograde_prop.autograde_image,
+                     "files" => upload_file_list.map do |f|
+                       { "localFile" => File.basename(f["localFile"]),
+                         "destFile" => Pathname.new(f["destFile"]).basename.to_s }
+                     end,
+                     "output_file" => output_file,
+                     "timeout" => @autograde_prop.autograde_timeout,
+                     "callback_url" => callback_url,
+                     "jobName" => job_name }.to_json
+
+    list = upload_file_list.map { |f| Pathname.new(f["destFile"]).basename.to_s }
+    COURSE_LOGGER.log("Files: #{list}")
+    COURSE_LOGGER.log("Req: /addJob/#{RESTFUL_KEY}/#{course.name}-#{assessment.name}/")
+
+    response = http.request(request)
+    response_json = JSON.parse(response.body)
+
+    # Sanity check that job has been added successfully.
+    return -9, nil if response_json.nil? || response_json["statusId"] < 0
+
+    [0, response_json]
+  end
+
+  ##
+  # Polls Tango every 3 seconds until the autograding job is done.
+  # Returns 0 on success and a negative number if there is an error
+  #
+  def tango_poll(course, assessment, submissions, output_file)
+    feedback = nil
+    request_url = "http://#{RESTFUL_HOST}:#{RESTFUL_PORT}/poll/#{RESTFUL_KEY}/#{course.name}-#{assessment.name}/#{URI.encode(output_file)}/"
+    begin
+      Timeout.timeout(80) do
+        loop do
+          response = Net::HTTP.get_response(URI.parse(request_url))
+          # json is returned when a job is not complete
+          unless response.content_type == "application/json"
+            feedback = response.body
+            break
+          end
+          sleep 3
+        end
+      end
+    rescue Timeout::Error
+      return -11
+    end
+
+    if feedback.nil?
+      return -12
+    else
+      if assessment.overwrites_method?(:autogradeDone)
+        assessment.config_module.autogradeDone(submissions, feedback)
+      else
+        # this doesn't work because autogradeDone is defined in submissions_controller
+        autogradeDone(submissions, feedback)
+      end
+
+      return 0
+    end
+  end
+
+  ##
   # sendJob - this scary-looking function initiates an autograding
   # job request on the backend. It builds a job structure that
   # contains various info about the job, send submits it to the
@@ -197,182 +385,60 @@ module AssessmentAutograde
   #
   def sendJob(course, assessment, submissions, cud)
     extend_config_module(assessment, submissions[0], cud)
-    assessmentDir = File.join(AUTOCONFIG_COURSE_DIR, course.name, assessment.name)
-
-    # Send OPEN api request to create/query course-lab directory.
-    openReqURL = "http://#{RESTFUL_HOST}:#{RESTFUL_PORT}/open/#{RESTFUL_KEY}/#{course.name}-#{assessment.name}/"
-    COURSE_LOGGER.log("Req: " + openReqURL)
-    openResponse = Net::HTTP.get_response(URI.parse(openReqURL))
-    openResponseJSON = JSON.parse(openResponse.body)
-    if openResponseJSON.nil? || openResponseJSON["statusId"] < 0
-      return -1
-    end
-    existingFileList = openResponseJSON["files"]
-    COURSE_LOGGER.log("Existing File List: #{existingFileList}")
-
-    # Send UPLOAD api request to upload autograde files.
-    uploadHTTPReq = Net::HTTP.new(RESTFUL_HOST, RESTFUL_PORT)
-    begin
-      COURSE_LOGGER.log("Dir: #{assessmentDir}")
-
-      if assessment.overwrites_method?(:autogradeInputFiles)
-        uploadFileList =  assessment.config_module.autogradeInputFiles(assessmentDir)
-      else
-        uploadFileList =  autogradeInputFiles(assessmentDir, assessment, submissions[0])
-      end
-
-      COURSE_LOGGER.log("Upload File List: #{uploadFileList}")
-    rescue Exception => e
-      COURSE_LOGGER.log("Error with getting files: " + e.to_s)
-      e.backtrace.each { |line| COURSE_LOGGER.log(line) }
-      return -3
-    end
-
-    uploadFileList.each do |f|
-      md5hash = Digest::MD5.file(f["localFile"]).to_s
-      unless existingFileList.any? { |h| h["md5"] == md5hash && h["localFile"] == File.basename(f["localFile"]) }
-        uploadReq = Net::HTTP::Post.new("/upload/#{RESTFUL_KEY}/#{course.name}-#{assessment.name}/")
-        uploadReq.add_field("Filename", File.basename(f["localFile"]))
-        begin
-          file = File.open(f["localFile"], "rb")
-          uploadReq.body = file.read
-        rescue Exception
-          return -4
-        ensure
-          file.close unless file.nil?
-        end
-        uploadResponse = uploadHTTPReq.request(uploadReq)
-        COURSE_LOGGER.log("Req: " + "/upload/#{RESTFUL_KEY}/#{course.name}-#{assessment.name}/")
-        uploadResponseJSON = JSON.parse(uploadResponse.body)
-        if uploadResponseJSON.nil? || uploadResponseJSON["statusId"] < 0
-          return -6
-        end
-      end
-    end
 
     # Get the autograding properties for this assessment.
     @autograde_prop = AutogradingSetup.find_by(assessment_id: assessment.id)
-    unless @autograde_prop
-      return -2
+    return -2 unless @autograde_prop
+
+    # send the tango open request
+    status, existing_files = tango_open(course, assessment)
+    return status if status < 0
+
+    # send the tango upload requests
+    status, upload_file_list = tango_upload(course, assessment, submissions[0], existing_files)
+    return status if status < 0
+
+    status, dave = save_daves(submissions)
+    return status if status < 0
+
+    output_file = get_output_file(assessment, submissions[0])
+    callback_url = get_callback_url(course, assessment, submissions[0], dave)
+    job_name = get_job_name(course, assessment, submissions[0])
+
+    status, response_json = tango_add_job(course, assessment, upload_file_list,
+                                          callback_url, job_name, output_file)
+    return status if status < 0
+
+    # If autolab user opts not to use a callback URL, we poll the job for 80 seconds
+    if callback_url.blank?
+      status = tango_poll(course, assessment, submissions, output_file)
+      return status if status < 0
     end
 
-    filename = submissions[0].autograde_feedback_filename
-    feedbackFile = File.join(assessmentDir, assessment.handin_directory, filename)
-
-    COURSE_LOGGER.log("Feedbackfile:" + feedbackFile)
-
-    # Generate the dave number/string, this is used when autograding is
-    # done.  The key is not guaranteed to be unique, we just hope to God
-    # it is.
-    dave = (0...60).map { 65.+(rand(25)).chr }.join
-
-    # save dave keys.  These let us know which submissions to save the autoresult for
-    ActiveRecord::Base.transaction do
-      submissions.each do |submission|
-        submission.dave = dave
-        submission.save!
-      end
-    end
-
-    begin
-      hostname = request.base_url
-    rescue Exception => e
-      hostname = `hostname`
-      hostname = "https://" + hostname.strip
-    end
-
-    callBackURL = if RESTFUL_USE_POLLING
-                    ""
-                  else
-                    "#{hostname}/courses/#{course.id}/assessments/#{assessment.id}/autograde_done?dave=#{dave}&submission_id=#{submissions[0].id}"
-    end
-
-    COURSE_LOGGER.log("Callback: #{callBackURL}")
-
-    jobName = "%s_%s_%d_%s" % [course.name, assessment.name, submissions[0].version, submissions[0].course_user_datum.email]
-
-    # Send ADDJOB api request to add autograde job to queue.
-    addJobHTTPReq = Net::HTTP.new(RESTFUL_HOST, RESTFUL_PORT)
-    addJobReq = Net::HTTP::Post.new("/addJob/#{RESTFUL_KEY}/#{course.name}-#{assessment.name}/")
-    addJobReq.body = { "image" => @autograde_prop.autograde_image,
-                       "files" => uploadFileList.map do|f|
-                         { "localFile" => File.basename(f["localFile"]),
-                           "destFile" => Pathname.new(f["destFile"]).basename.to_s }
-                       end,
-                       "output_file" => filename,
-                       "timeout" => @autograde_prop.autograde_timeout,
-                       "callback_url" => callBackURL,
-                       "jobName" => jobName }.to_json
-
-    list = uploadFileList.map { |f| Pathname.new(f["destFile"]).basename.to_s }
-    COURSE_LOGGER.log("Files: #{list}")
-    COURSE_LOGGER.log("Req: " + "/addJob/#{RESTFUL_KEY}/#{course.name}-#{assessment.name}/")
-    addJobResponse = addJobHTTPReq.request(addJobReq)
-    addJobResponseJSON = JSON.parse(addJobResponse.body)
-
-    # Sanity check that job has been added successfully.
-    if addJobResponseJSON.nil? || addJobResponseJSON["statusId"] < 0
-      return -9
-    end
-
-    # If user opt not to use a call back URL, we pull the job for 50 seconds.
-    # Otherwise, nothing needs to be done here.
-    if callBackURL.blank?
-      begin
-        feedback = Timeout.timeout(80) do
-          loop do
-            pollReqURL = "http://#{RESTFUL_HOST}:#{RESTFUL_PORT}/poll/#{RESTFUL_KEY}/#{course.name}-#{assessment.name}/#{URI.encode(filename)}/"
-            pollResponse = Net::HTTP.get_response(URI.parse(pollReqURL))
-            if pollResponse.content_type == "application/json"
-              pollResponseStatusId = JSON.parse(pollResponse.body)["statusId"]
-            else
-              feedback = pollResponse.body
-              break
-            end
-            sleep 3
-          end
-          feedback = feedback
-        end
-      rescue Timeout::Error
-        return -11 # pollResponseStatusId
-      end
-      if feedback.nil?
-        return -12 # pollResponseStatusId
-      else
-        if assessment.overwrites_method?(:autogradeDone)
-          assessment.config_module.autogradeDone(submissions, feedback)
-        else
-          # this doesn't work because autogradeDone is defined in submissions_controller
-          autogradeDone(submissions, feedback)
-        end
-      end
-    end # if no callback url
-
-    addJobResponseJSON["jobId"].to_i
+    response_json["jobId"].to_i
   end
 
   #
   # autogradeInputFiles - Specifies the input files for the autograder.
   # Can be overridden in the lab config file.
   #
-  def autogradeInputFiles(assessmentDir, assessment, submission)
+  def autogradeInputFiles(ass_dir, assessment, submission)
     # Absolute path names on the local autolab server of the input
     # autograding input files: 1) The student's handin file, 2)
     # The makefile that runs the process, 3) The tarfile with all
     # of files needed by the autograder. Can be overridden in the
     # lab config file.
-    localHandin = File.join(assessmentDir, assessment.handin_directory,
-                            submission.filename)
-    localMakefile = File.join(assessmentDir, "autograde-Makefile")
-    localAutograde = File.join(assessmentDir, "autograde.tar")
+    local_handin = File.join(ass_dir, assessment.handin_directory, submission.filename)
+    local_makefile = File.join(ass_dir, "autograde-Makefile")
+    local_autograde = File.join(ass_dir, "autograde.tar")
 
     # Name of the handin file on the destination machine
-    destHandin = assessment.handin_filename
+    dest_handin = assessment.handin_filename
 
     # Construct the array of input files.
-    handin = { "localFile" => localHandin, "destFile" => destHandin }
-    makefile = { "localFile" => localMakefile, "destFile" => "Makefile" }
-    autograde = { "localFile" => localAutograde, "destFile" => "autograde.tar" }
+    handin = { "localFile" => local_handin, "destFile" => dest_handin }
+    makefile = { "localFile" => local_makefile, "destFile" => "Makefile" }
+    autograde = { "localFile" => local_autograde, "destFile" => "autograde.tar" }
 
     [handin, makefile, autograde]
   end
@@ -383,15 +449,15 @@ module AssessmentAutograde
   # submission is confirmed via dave key to have been created by Autolab
   #
   def autogradeDone(submissions, feedback)
-    assessmentDir = File.join(AUTOCONFIG_COURSE_DIR, @course.name, @assessment.name)
+    ass_dir = File.join(AUTOCONFIG_COURSE_DIR, @course.name, @assessment.name)
 
     submissions.each do |submission|
       filename = submission.autograde_feedback_filename
 
-      feedbackFile = File.join(assessmentDir, @assessment.handin_directory, filename)
-      COURSE_LOGGER.log("Looking for Feedbackfile:" + feedbackFile)
+      feedback_file = File.join(ass_dir, @assessment.handin_directory, filename)
+      COURSE_LOGGER.log("Looking for Feedbackfile:" + feedback_file)
 
-      File.open(feedbackFile, "w") do |f|
+      File.open(feedback_file, "w") do |f|
         f.write(feedback)
       end
     end
@@ -408,9 +474,7 @@ module AssessmentAutograde
   def saveAutograde(submissions, feedback)
     begin
       lines = feedback.lines
-      if lines.nil?
-        fail "The Autograder returned no output. \n"
-      end
+      fail "The Autograder returned no output. \n" if lines.nil?
 
       # The last line of the output is assumed to be the
       # autoresult string from the autograding driver
@@ -422,19 +486,15 @@ module AssessmentAutograde
         scores = parseAutoresult(autoresult, true)
       end
 
-      if scores.keys.length == 0
-        fail "Empty autoresult string."
-      end
+      fail "Empty autoresult string." if scores.keys.length == 0
 
       # Grab the autograde config info
       @autograde_prop = AutogradingSetup.find_by(assessment_id: @assessment.id)
 
       # Record each of the scores extracted from the autoresult
-      for key in scores.keys do
+      scores.keys.each do |key|
         problem = @assessment.problems.find_by(name: key)
-        unless problem
-          fail "Problem \"" + key + "\" not found."
-        end
+        fail "Problem \"" + key + "\" not found." unless problem
         submissions.each do |submission|
           score = submission.scores.find_or_initialize_by(problem_id: problem.id)
           score.score = scores[key]
@@ -452,21 +512,19 @@ module AssessmentAutograde
           submission.save!
         end
       end
-    rescue Exception => e
-      feedback_str = "An error occurred while parsing the autoresult returned by the Autograder.\n\nError message: " + e.to_s + "\n\n"
-      if lines && (lines.length < 10_000)
-        feedback_str += lines.join
-      end
+    rescue StandardError => e
+      feedback_str = "An error occurred while parsing the autoresult returned by the Autograder.\n
+        \nError message: #{e}\n\n"
+      feedback_str += lines.join if lines && (lines.length < 10_000)
       @assessment.problems.each do |p|
         submissions.each do |submission|
           score = submission.scores.find_or_initialize_by(problem_id: p.id)
-          if score.new_record? # don't overwrite scores
-            score.score = 0
-            score.feedback = feedback_str
-            score.released = true
-            score.grader_id = 0
-            score.save!
-          end
+          next unless score.new_record? # don't overwrite scores
+          score.score = 0
+          score.feedback = feedback_str
+          score.released = true
+          score.grader_id = 0
+          score.save!
         end
       end
     end
@@ -484,12 +542,8 @@ module AssessmentAutograde
   #
   def parseAutoresult(autoresult, _isOfficial)
     parsed = ActiveSupport::JSON.decode(autoresult.gsub(/([a-zA-Z0-9]+):/, '"\1":'))
-    unless parsed
-      fail "Empty autoresult"
-    end
-    unless parsed["scores"]
-      fail "Missing 'scores' object in the autoresult"
-    end
+    fail "Empty autoresult" unless parsed
+    fail "Missing 'scores' object in the autoresult" unless parsed["scores"]
     parsed["scores"]
   end
 
@@ -499,18 +553,18 @@ module AssessmentAutograde
     # casted to local variable so that
     # they can be passed into `module_eval`
     methods = assessment.config_module.instance_methods
-    assignName = assessment.name
+    ass_name = assessment.name
     course = assessment.course
 
     begin
       req_hostname = request.host
-    rescue Exception => e
+    rescue
       req_hostname = "n/a"
     end
 
     begin
       req_port = request.port
-    rescue Exception => e
+    rescue
       req_port = 80
     end
 
@@ -520,14 +574,12 @@ module AssessmentAutograde
       # methods
       @cud = cud
       @course = course
-      @assessment = course.assessments.find_by(name: assignName)
+      @assessment = course.assessments.find_by(name: ass_name)
       @hostname = req_hostname
       @port = req_port
       @submission = submission
 
-      unless @assessment
-        fail "Assessment #{assignName} does not exist!"
-      end
+      fail "Assessment #{ass_name} does not exist!" unless @assessment
 
       if @assessment.nil?
         flash[:error] = "Error: Invalid assessment"
@@ -553,7 +605,7 @@ module AssessmentAutograde
       end
     end
 
-  rescue Exception => error
+  rescue StandardError => error
     COURSE_LOGGER.log(error)
     COURSE_LOGGER.log(error.backtrace)
 
