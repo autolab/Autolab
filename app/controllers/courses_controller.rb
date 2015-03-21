@@ -605,7 +605,7 @@ file, most likely a duplicate email.  The exact error was: #{e} "
 
       # Untar the given Tar file.
       begin
-        archive_extract = Archive.get_archive(archive_path)
+        archive_extract = Archive.get_archive(extTarPath)
 
         # write each file, renaming nested files
         archive_extract.each do |entry|
