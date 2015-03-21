@@ -256,7 +256,7 @@ module AssessmentAutograde
       return -2
     end
 
-    filename = "%s_%d_%s_autograde.txt" % [submissions[0].course_user_datum.email, submissions[0].version, assessment.name]
+    filename = submissions[0].autograde_feedback_filename
     feedbackFile = File.join(assessmentDir, assessment.handin_directory, filename)
 
     COURSE_LOGGER.log("Feedbackfile:" + feedbackFile)
@@ -348,7 +348,7 @@ module AssessmentAutograde
       end
     end # if no callback url
 
-    addJobResponseJSON["jobId"]
+    addJobResponseJSON["jobId"].to_i
   end
 
   #
@@ -386,16 +386,13 @@ module AssessmentAutograde
     assessmentDir = File.join(AUTOCONFIG_COURSE_DIR, @course.name, @assessment.name)
 
     submissions.each do |submission|
-      filename = "%s_%d_%s_autograde.txt" % [submission.course_user_datum.email, submission.version, @assessment.name]
+      filename = submission.autograde_feedback_filename
 
       feedbackFile = File.join(assessmentDir, @assessment.handin_directory, filename)
       COURSE_LOGGER.log("Looking for Feedbackfile:" + feedbackFile)
 
-      begin
-        f = File.open(feedbackFile, "w")
+      File.open(feedbackFile, "w") do |f|
         f.write(feedback)
-      ensure
-        f.close unless f.nil?
       end
     end
 

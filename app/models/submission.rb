@@ -61,23 +61,6 @@ class Submission < ActiveRecord::Base
     aud.update_latest_submission
   end
 
-  def archive_handin
-    return if assessment.disable_handins
-    return if filename.nil?
-    return unless File.exist?(handin_file_path)
-
-    archive = File.join(assessment.handin_directory_path, 'archive')
-    Dir.mkdir(archive) unless FileTest.directory?(archive)
-
-    # Using the id instead of the version guarentees a unique filename
-    submission_backup = File.join(archive, 
-                                  'deleted_' + 
-                                  course_user_datum.user.email + '_' + 
-                                  id.to_s + '_' +
-                                  assessment.handin_filename)
-    FileUtils.mv(handin_file_path, submission_backup)
-  end
-
   def saveFile(upload)
     filename = self.course_user_datum.user.email + "_" +
            self.version.to_s + "_" +
@@ -116,9 +99,41 @@ class Submission < ActiveRecord::Base
     self.save!
   end
 
+  def archive_handin
+    return if assessment.disable_handins
+    return if filename.nil?
+    return unless File.exist?(handin_file_path)
+
+    archive = File.join(assessment.handin_directory_path, "archive")
+    Dir.mkdir(archive) unless FileTest.directory?(archive)
+
+    # Using the id instead of the version guarentees a unique filename
+    submission_backup = File.join(archive, "deleted_#{self.filename}")
+    FileUtils.mv(handin_file_path, submission_backup)
+
+    archive_autograder_feedback(archive)
+  end
+
+  def archive_autograder_feedback(archive)
+    return unless assessment.has_autograde
+    feedback_path = self.autograde_feedback_path
+    return unless File.exist?(feedback_path)
+
+    backup = File.join(archive, "deleted_#{self.autograde_feedback_filename}")
+    FileUtils.mv(feedback_path, backup)
+  end
+
   def handin_file_path
     return nil unless filename
     return File.join(assessment.handin_directory_path, filename)
+  end
+
+  def autograde_feedback_filename
+    "%s_%d_%s_autograde.txt" % [course_user_datum.email, version, assessment.name]
+  end
+
+  def autograde_feedback_path
+    return File.join(assessment.handin_directory_path, self.autograde_feedback_filename)
   end
 
   def handinFile
