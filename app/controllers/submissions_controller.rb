@@ -68,7 +68,7 @@ class SubmissionsController < ApplicationController
       if @submission.save! then  # Now we have a version number!
         if params[:submission]['file'] &&
           (not params[:submission]['file'].blank?) then 
-          @submission.saveFile(params[:submission])
+          @submission.save_file(params[:submission])
         end
       end
     end
@@ -237,7 +237,7 @@ class SubmissionsController < ApplicationController
         redirect_to(action: :listArchive) && return
       end
         
-      file = @submission.handinFile.read
+      file = @submission.handin_file.read
 
       @displayFilename = @submission.filename
     end
