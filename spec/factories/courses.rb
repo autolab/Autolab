@@ -5,9 +5,9 @@ FactoryGirl.define do
     semester "t01"
     late_slack 3600
     grace_days 4
-    association :late_penalty, :factory => :penalty
+    association :late_penalty, factory: :penalty
     version_threshold 5
-    association :version_penalty, :factory => :penalty
+    association :version_penalty, factory: :penalty
     start_date { 1.days.ago.to_s(:db) }
     end_date { 100.days.from_now.to_s(:db) }
     disabled false

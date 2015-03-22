@@ -38,7 +38,7 @@ module AssessmentSVN
     redirect_to(action: :adminSVN) && return
   end
 
-  protected
+protected
 
   def svnValidateHandin
     repo = @assessment.aud_for(@cud).repository

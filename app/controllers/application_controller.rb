@@ -5,11 +5,11 @@ class ApplicationController < ActionController::Base
   helper :all # include all helpers, all the time
 
   before_action :configure_permitted_paramters, if: :devise_controller?
-  before_action :maintenance_mode? 
+  before_action :maintenance_mode?
   before_action :run_scheduler
 
   before_action :authenticate_user!
-  before_action :authorize_user_for_course, except: [:action_no_auth ]
+  before_action :authorize_user_for_course, except: [:action_no_auth]
   before_action :authenticate_for_action
   before_action :update_persistent_announcements
   before_action :set_breadcrumbs
@@ -27,33 +27,33 @@ class ApplicationController < ActionController::Base
       flash[:error] = e.user_message
       redirect_to root_path
     end
-  end  
+  end
 
   def self.autolabRequire(path)
-    if (Rails.env == "development") then 
-      $".delete(path)
+    if (Rails.env == "development")
+      $LOADED_FEATURES.delete(path)
     end
     require(path)
   end
 
   @@global_whitelist = {}
   def self.action_auth_level(action, level)
-    raise ArgumentError.new("The action must be specified.") if action.nil?
-    raise ArgumentError.new("The action must be symbol.") unless action.is_a? Symbol
-    raise ArgumentError.new("The level must be specified.") if level.nil?
-    raise ArgumentError.new("The level must be symbol.") unless level.is_a? Symbol
+    fail ArgumentError.new("The action must be specified.") if action.nil?
+    fail ArgumentError.new("The action must be symbol.") unless action.is_a? Symbol
+    fail ArgumentError.new("The level must be specified.") if level.nil?
+    fail ArgumentError.new("The level must be symbol.") unless level.is_a? Symbol
     unless CourseUserDatum::AUTH_LEVELS.include?(level)
-      raise ArgumentError.new("#{level} is not an auth level") 
+      fail ArgumentError.new("#{level} is not an auth level")
     end
 
-    if level == :administrator then
-      skip_before_filter :authorize_user_for_course, only: [action]
+    if level == :administrator
+      skip_before_action :authorize_user_for_course, only: [action]
       skip_filter authenticate_for_action: [action]
-      skip_before_filter :update_persistent_announcements, only: [action]
+      skip_before_action :update_persistent_announcements, only: [action]
     end
 
-    controller_whitelist = (@@global_whitelist[self.controller_name.to_sym] ||= {})
-    raise ArgumentError.new("#{action} already specified.") if controller_whitelist[action]
+    controller_whitelist = (@@global_whitelist[controller_name.to_sym] ||= {})
+    fail ArgumentError.new("#{action} already specified.") if controller_whitelist[action]
 
     controller_whitelist[action] = level
   end
@@ -65,20 +65,20 @@ class ApplicationController < ActionController::Base
     skip_filter run_scheduler: [action]
 
     skip_filter authenticate_user: [action]
-    skip_before_filter :authorize_user_for_course, only: [action]
+    skip_before_action :authorize_user_for_course, only: [action]
     skip_filter authenticate_for_action: [action]
-    skip_before_filter :update_persistent_announcements, only: [action]
+    skip_before_action :update_persistent_announcements, only: [action]
   end
 
-  protected
-  
+protected
+
   def configure_permitted_paramters
     devise_parameter_sanitizer.for(:sign_in) { |u| u.permit(:email) }
     devise_parameter_sanitizer.for(:sign_up) { |u| u.permit(:email, :first_name, :last_name, :password, :password_confirmation) }
     devise_parameter_sanitizer.for(:account_update) { |u| u.permit(:email, :password, :password_confirmation, :current_password) }
   end
 
-  def authentication_failed(user_message=nil, dev_message=nil)
+  def authentication_failed(user_message = nil, dev_message = nil)
     user_message ||= "You are not authorized to view this page"
 
     if user_signed_in?
@@ -87,7 +87,7 @@ class ApplicationController < ActionController::Base
       dev_message ||= "Before initial user authentication."
     end
 
-    raise CourseUserDatum::AuthenticationFailed.new(user_message, dev_message)
+    fail CourseUserDatum::AuthenticationFailed.new(user_message, dev_message)
   end
 
   def authenticate_for_action
@@ -97,21 +97,21 @@ class ApplicationController < ActionController::Base
     level = controller_whitelist[params[:action].to_sym]
     return if level.nil?
 
-    if level == :administrator then
+    if level == :administrator
       authentication_failed unless current_user.administrator
     else
       authentication_failed unless @cud.has_auth_level?(level)
     end
   end
 
-  protect_from_forgery 
+  protect_from_forgery
   def verify_authenticity_token
     msg = "Invalid request! Please go back, reload the " \
         "page and try again.  If you continue to see this error. " \
         " please contact the Autolab Development team at the " \
-        "contact link below" 
+        "contact link below"
 
-    if not verified_request? then 
+    unless verified_request?
       authentication_failed(msg)
     end
   end
@@ -128,8 +128,8 @@ class ApplicationController < ActionController::Base
 
   def authorize_user_for_course
     course_id = params[:course_id] ||
-          (params[:controller] == "courses" ? params[:id] : nil)
-    if (course_id) then
+                (params[:controller] == "courses" ? params[:id] : nil)
+    if course_id
       @course = Course.find(course_id)
     end
 
@@ -146,13 +146,13 @@ class ApplicationController < ActionController::Base
       redirect_to(controller: :home, action: :error) && return
     end
 
-    if current_user.nil? then
+    if current_user.nil?
       redirect_to(root_path) && return
     end
     uid = current_user.id
     # don't allow sudoing across courses
-    if (session[:sudo]) then
-      if (@course.id == session[:sudo]["course_id"]) then
+    if session[:sudo]
+      if (@course.id == session[:sudo]["course_id"])
         uid = session[:sudo]["user_id"]
       else
         session[:sudo] = nil
@@ -179,7 +179,7 @@ class ApplicationController < ActionController::Base
     end
 
     # check if course was disabled
-    if @course.disabled? && !@cud.has_auth_level?(:instructor) then
+    if @course.disabled? && !@cud.has_auth_level?(:instructor)
       flash[:error] = "Your course has been disabled by your instructor. Please contact them directly if you have any questions"
       redirect_to(controller: :home, action: :error) && return
     end
@@ -192,12 +192,12 @@ class ApplicationController < ActionController::Base
                         (params[:action] == "edit" || params[:action] == "update" ||
                          params[:action] == "unsudo")
 
-    if (invalid_cud || nicknameless_student) && !in_edit_or_unsudo then 
+    if (invalid_cud || nicknameless_student) && !in_edit_or_unsudo
       flash[:error] = "Please complete all of your account information before continuing"
       redirect_to edit_course_course_user_datum_path(id: @cud.id, course_id: @cud.course.id)
     end
   end
-  
+
   ##
   # this loads the current assessment.  It's up to sub-controllers to call this
   # as a before_action when they need the assessment.
@@ -209,15 +209,15 @@ class ApplicationController < ActionController::Base
       flash[:error] = "The assessment was not found for this course."
       redirect_to(action: :index) && return
     end
-    
-    if @cud.student? && !@assessment.released? then
+
+    if @cud.student? && !@assessment.released?
       redirect_to(action: :index) && return
     end
-      
+
     @breadcrumbs << (view_context.current_assessment_link)
   end
-  
-  # Loads the submission from the DB 
+
+  # Loads the submission from the DB
   # needed by the various methods for dealing with submissions.
   # Redirects to the error page if it encounters an issue.
   def set_submission
@@ -227,53 +227,53 @@ class ApplicationController < ActionController::Base
       flash[:error] = "Could not find submission with id #{params[:submission_id] || params[:id]}."
       redirect_to [@course, @assessment] and return false
     end
-    
-    unless (@cud.instructor or @cud.course_assistant or @submission.course_user_datum_id == @cud.id) then
+
+    unless @cud.instructor || @cud.course_assistant || @submission.course_user_datum_id == @cud.id
       flash[:error] = "You do not have permission to access this submission."
       redirect_to [@course, @assessment] and return false
     end
 
-    if (@assessment.exam? or @course.exam_in_progress?) and not (@cud.instructor or @cud.course_assistant) then
+    if (@assessment.exam? || @course.exam_in_progress?) && !(@cud.instructor || @cud.course_assistant)
       flash[:error] = "You cannot view this submission.
               Either an exam is in progress or this is an exam submission."
       redirect_to [@course, @assessment] and return false
     end
-    return true
+    true
   end
 
   def run_scheduler
-    actions = Scheduler.where("next < ?",Time.now())
-    for action in actions do 
+    actions = Scheduler.where("next < ?", Time.now)
+    for action in actions do
       action.next = Time.now + action.interval
-      action.save()
-      puts "Executing #{File.join(Rails.root,action.action)}"
+      action.save
+      puts "Executing #{File.join(Rails.root, action.action)}"
       begin
         pid = fork do
           # child process
           @course = action.course
-          modName = File.join(Rails.root,action.action)
+          modName = File.join(Rails.root, action.action)
           require "#{modName}"
           Updater.update(@course)
         end
 
         Process.detach(pid)
-      rescue Exception => e  
+      rescue Exception => e
         COURSE_LOGGER.log("Error updater: #{e}")
         puts e
-        puts e.message  
+        puts e.message
         puts e.backtrace.inspect
       end
     end
   end
-  
+
   def update_persistent_announcements
     @persistent_announcements = Announcement.where("persistent and (course_id=? or system)", @course.id)
   end
-      
+
   def set_breadcrumbs
     @breadcrumbs = []
-    if @course then
-      if @course.disabled? then
+    if @course
+      if @course.disabled?
         @breadcrumbs << (view_context.link_to "#{@course.display_name} (Course Disabled)", [@course], id: "courseTitle")
       else
         @breadcrumbs << (view_context.link_to @course.display_name, [@course], id: "courseTitle")
@@ -287,37 +287,37 @@ class ApplicationController < ActionController::Base
 
   # makeDlist - Creates a string of emails that can be added as b/cc field.
   # @param section The section to email.  nil if we should email the entire
-  # class. 
-  # @return The filename of the dlist that was created. 
+  # class.
+  # @return The filename of the dlist that was created.
   def makeDlist(cuds)
     emails = []
 
-    for cud in cuds do 
+    for cud in cuds do
       emails << "#{cud.user.email}"
     end
 
-    return emails.join(",")
+    emails.join(",")
   end
 
-  private
+private
 
   # called on Exceptions.  Shows a stack trace to course assistants, and above.
   # Shows good ol' Donkey Kong to students
   def render_error(exception)
     # use the exception_notifier gem to send out an e-mail to the notification list specified in config/environment.rb
-    ExceptionNotifier.notify_exception(exception, env: request.env, data: {message: "was doing something wrong"})
+    ExceptionNotifier.notify_exception(exception, env: request.env, data: { message: "was doing something wrong" })
 
     # stack traces are only shown to instructors and administrators
     # by leaving @error undefined, students and CAs do not see stack traces
-    if (not current_user.nil?) && (current_user.instructor? || current_user.administrator?) then
+    if (!current_user.nil?) && (current_user.instructor? || current_user.administrator?)
       @error = exception
 
       # Generate course id and assesssment id objects
       @course_id = params[:course_id] ||
-            (params[:controller] == "courses" ? params[:id] : nil)
-      if (@course_id) then
+                   (params[:controller] == "courses" ? params[:id] : nil)
+      if @course_id
         @assessment_id = params[:assessment_id] ||
-            (params[:controller] == "assessments" ? params[:id] : nil)
+                         (params[:controller] == "assessments" ? params[:id] : nil)
       end
     end
 

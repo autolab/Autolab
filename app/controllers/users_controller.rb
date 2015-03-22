@@ -185,7 +185,7 @@ class UsersController < ApplicationController
     redirect_to(users_path) && return
   end
 
-  private
+private
 
   def new_user_params
     params.require(:user).permit(:email, :first_name, :last_name)

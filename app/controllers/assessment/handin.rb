@@ -240,7 +240,7 @@ module AssessmentHandin
     render(plain: "OK", status: 200) && return
   end
 
-  private
+private
 
   ##
   # this function checks that now is a valid time to submit and that the

@@ -1,5 +1,4 @@
-require 'rails_helper'
+require "rails_helper"
 
-RSpec.describe ScoresController, :type => :controller do
-
+RSpec.describe ScoresController, type: :controller do
 end

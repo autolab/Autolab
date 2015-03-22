@@ -76,9 +76,9 @@ class Users::OmniauthCallbacksController < Devise::OmniauthCallbacksController
           @user.email = data["uid"]
 
           # Set user info based on LDAP lookup
-          if @user.email.include? "@andrew.cmu.edu" then
+          if @user.email.include? "@andrew.cmu.edu"
             ldapResult = User.ldap_lookup(@user.email.split("@")[0])
-            if (ldapResult) then
+            if ldapResult
               @user.first_name = ldapResult[:first_name]
               @user.last_name = ldapResult[:last_name]
               @user.school = ldapResult[:school]
@@ -88,10 +88,10 @@ class Users::OmniauthCallbacksController < Devise::OmniauthCallbacksController
           end
 
           # If LDAP lookup failed, use (blank) as place holder
-          if @user.first_name.nil? then
+          if @user.first_name.nil?
             @user.first_name = "(blank)"
           end
-          if @user.last_name.nil? then
+          if @user.last_name.nil?
             @user.last_name = "(blank)"
           end
 
@@ -110,5 +110,4 @@ class Users::OmniauthCallbacksController < Devise::OmniauthCallbacksController
       end
     end
   end
-
 end

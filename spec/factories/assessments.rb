@@ -13,7 +13,7 @@ FactoryGirl.define do
     handin_filename "placeholder"
     handin_directory "placeholder"
     category_name "test category"
-    max_size 1024000
+    max_size 1_024_000
     max_submissions 10
     created_at { 2.weeks.ago.to_s(:db) }
     updated_at { 1.weeks.ago.to_s(:db) }

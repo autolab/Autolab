@@ -1,5 +1,5 @@
-require 'rails_helper'
+require "rails_helper"
 
-RSpec.describe GradeMatrix, :type => :model do
+RSpec.describe GradeMatrix, type: :model do
   pending "add some examples to (or delete) #{__FILE__}"
 end

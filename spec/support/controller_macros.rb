@@ -1,26 +1,26 @@
-require 'tempfile'
+require "tempfile"
 
 module ControllerMacros
   def get_admin
-    admins = User.where(:administrator => true)
-    return admins.offset(rand(admins.count)).first
+    admins = User.where(administrator: true)
+    admins.offset(rand(admins.count)).first
   end
 
   def get_instructor
-    instructorCUDs = CourseUserDatum.where(:instructor => true)
-    return instructorCUDs.offset(rand(instructorCUDs.count)).first.user
+    instructorCUDs = CourseUserDatum.where(instructor: true)
+    instructorCUDs.offset(rand(instructorCUDs.count)).first.user
   end
 
   def get_course_assistant
-    caCUDs = CourseUserDatum.where(:course_assistant => true)
-    return caCUDs.offset(rand(caCUDs.count)).first.user
+    caCUDs = CourseUserDatum.where(course_assistant: true)
+    caCUDs.offset(rand(caCUDs.count)).first.user
   end
 
   def get_user
-    users = CourseUserDatum.joins(:user).where({'users.administrator' => false,
-                                                :instructor => 0,
-                                                :course_assistant => 0})
-    return users.offset(rand(users.count)).first.user
+    users = CourseUserDatum.joins(:user).where("users.administrator" => false,
+                                               :instructor => 0,
+                                               :course_assistant => 0)
+    users.offset(rand(users.count)).first.user
   end
 
   def login_admin
@@ -47,49 +47,48 @@ module ControllerMacros
   end
 
   def get_course_id_by_uid(uid)
-    CourseUserDatum.where(:user_id => uid).first.course_id
+    CourseUserDatum.where(user_id: uid).first.course_id
   end
 
   def create_scheduler_with_cid(cid)
     # Prepare the updater script for scheduler to run
-    update_script_path = Rails.root.join("tmp/testscript.rb");
-    File.open(update_script_path, 'w') { |f|
+    update_script_path = Rails.root.join("tmp/testscript.rb")
+    File.open(update_script_path, "w") do |f|
       f.write("module Updater def self.update(foo) 0 end end")
-    }
-    s = Course.find(cid).scheduler.new({:action => "tmp/testscript.rb",
-                                        :interval => 86400, :next => Time.now()})
+    end
+    s = Course.find(cid).scheduler.new(action: "tmp/testscript.rb",
+                                       interval: 86_400, next: Time.now)
     s.save
-    return s
+    s
   end
 
   def create_course_att_with_cid(cid)
     # Prepare course attachment file
-    course_att_file = Rails.root.join("attachments/testattach.txt");
-    File.open(course_att_file, 'w') { |f|
+    course_att_file = Rails.root.join("attachments/testattach.txt")
+    File.open(course_att_file, "w") do |f|
       f.write("Course attachment file")
-    }
-    att = Attachment.new({:course_id => cid, :assessment_id => nil,
-                          :name => "att#{cid}",
-                          :released => true})
+    end
+    att = Attachment.new(course_id: cid, assessment_id: nil,
+                         name: "att#{cid}",
+                         released: true)
     att.file = ActionDispatch::Http::UploadedFile.new(
-        {:filename => File.basename(course_att_file), :type => "text/plain",
-         :tempfile => Tempfile.new("attach.tmp")
-        })
+      filename: File.basename(course_att_file), type: "text/plain",
+      tempfile: Tempfile.new("attach.tmp"))
     att.save
-    return att
+    att
   end
 
   def create_assess_att_with_cid_aid(cid, aid)
     # Prepare assessment attachment file
-    assess_att_file = Rails.root.join("attachments/assessattach.txt");
-    File.open(assess_att_file, 'w') { |f|
+    assess_att_file = Rails.root.join("attachments/assessattach.txt")
+    File.open(assess_att_file, "w") do |f|
       f.write("Assessment attachment file")
-    }
-    att = Attachment.new({:course_id => cid, :assessment_id => aid,
-                          :name => "att#{cid}-#{aid}", :filename => assess_att_file,
-                          :released => true, :mime_type => "text/plain"})
+    end
+    att = Attachment.new(course_id: cid, assessment_id: aid,
+                         name: "att#{cid}-#{aid}", filename: assess_att_file,
+                         released: true, mime_type: "text/plain")
     att.file = File.open(assess_att_file, "w")
     att.save
-    return att
+    att
   end
 end

@@ -30,7 +30,7 @@ class GradebooksController < ApplicationController
 
     unless @cud.has_auth_level?(:instructor) || @section == @cud.section
       flash[:error] = "You can't view other section gradebooks."
-      redirect_to [@course] and return
+      redirect_to([@course]) && return
     end
   end
 

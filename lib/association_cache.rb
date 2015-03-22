@@ -56,7 +56,7 @@ class AssociationCache
     @latest_submission_scores.default = []
   end
 
-  private
+private
 
   def setup_associations
     @assessments.each_value do |asmt|

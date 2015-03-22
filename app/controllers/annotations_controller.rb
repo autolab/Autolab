@@ -35,7 +35,7 @@ class AnnotationsController < ApplicationController
     respond_with(@course, @assessment, @submission, @annotation)
   end
 
-  private
+private
 
   def annotation_params
     params[:annotation].delete(:id)
