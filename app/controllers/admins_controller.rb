@@ -18,7 +18,7 @@ class AdminsController < ApplicationController
 
       # select(:user_id).distinct.where(:instructor=>true)
       # @cuds = Course.where(:temporal_status => :current ).instructors
-      bccString = makeDlist(@cuds)
+      bccString = make_dlist(@cuds)
 
       @email = CourseMailer.system_announcement(
         params[:from],

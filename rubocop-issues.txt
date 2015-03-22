@@ -1,5 +1,5 @@
 Inspecting 263 files
-..CCCWCWWCCCWCCWCCWCWCCWWWC.CCCWWCCCCCCCCCCCCCCWWCCCWCWCWCCWCCCWCCWWCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC....CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCECCCCCCCCCCCWCCCCCC.W.............................W...........................CCC
+..CCCCCWWCCCWCCWCCWCWCCWWWC.CCCWWCCCCCCCCCCCCCCWWCCCWCWCWCCWCCCWCCWWCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC....CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCECCCCCCCCCCCWCCCCCC.W.............................W...........................CCC
 
 Offenses:
 
@@ -13,7 +13,7 @@ app/controllers/admins_controller.rb:14:5: C: Use a guard clause instead of wrap
     if request.post?
     ^^
 app/controllers/admins_controller.rb:21:7: C: Use snake_case for variable names.
-      bccString = makeDlist(@cuds)
+      bccString = make_dlist(@cuds)
       ^^^^^^^^^
 app/controllers/annotations_controller.rb:45:101: C: Line is too long. [120/100]
     params.require(:annotation).permit(:filename, :position, :line, :text, :submitted_by, :comment, :value, :problem_id)
@@ -21,180 +21,66 @@ app/controllers/annotations_controller.rb:45:101: C: Line is too long. [120/100]
 app/controllers/announcements_controller.rb:63:5: C: Use a guard clause instead of wrapping the code inside a conditional expression.
     if @announcement.system && !@cud.user.administrator?
     ^^
-app/controllers/application_controller.rb:4:1: C: Class definition is too long. [239/100]
+app/controllers/application_controller.rb:9:1: C: Class definition is too long. [234/100]
 class ApplicationController < ActionController::Base
 ^^^^^
-app/controllers/application_controller.rb:4:1: C: Missing top-level class documentation comment.
-class ApplicationController < ActionController::Base
-^^^^^
-app/controllers/application_controller.rb:32:12: C: Use snake_case for method names.
-  def self.autolabRequire(path)
-           ^^^^^^^^^^^^^^
-app/controllers/application_controller.rb:33:5: C: Favor modifier [33mif[0m usage when having a single-line body. Another good alternative is the usage of control flow [33m&&[0m/[33m||[0m.
-    if (Rails.env == "development")
-    ^^
-app/controllers/application_controller.rb:39:3: C: Replace class var @@global_whitelist with a class instance var.
+app/controllers/application_controller.rb:42:3: C: Replace class var @@global_whitelist with a class instance var.
   @@global_whitelist = {}
   ^^^^^^^^^^^^^^^^^^
-app/controllers/application_controller.rb:40:3: C: Assignment Branch Condition size for action_auth_level is too high. [27/15]
+app/controllers/application_controller.rb:43:3: C: Assignment Branch Condition size for action_auth_level is too high. [21.28/15]
   def self.action_auth_level(action, level)
   ^^^
-app/controllers/application_controller.rb:40:3: C: Cyclomatic complexity for action_auth_level is too high. [8/6]
+app/controllers/application_controller.rb:43:3: C: Cyclomatic complexity for action_auth_level is too high. [8/6]
   def self.action_auth_level(action, level)
   ^^^
-app/controllers/application_controller.rb:40:3: C: Perceived complexity for action_auth_level is too high. [8/7]
+app/controllers/application_controller.rb:43:3: C: Perceived complexity for action_auth_level is too high. [8/7]
   def self.action_auth_level(action, level)
   ^^^
-app/controllers/application_controller.rb:41:5: C: Provide an exception class and message as arguments to [33mfail[0m.
-    fail ArgumentError.new("The action must be specified.") if action.nil?
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-app/controllers/application_controller.rb:42:5: C: Provide an exception class and message as arguments to [33mfail[0m.
-    fail ArgumentError.new("The action must be symbol.") unless action.is_a? Symbol
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-app/controllers/application_controller.rb:43:5: C: Provide an exception class and message as arguments to [33mfail[0m.
-    fail ArgumentError.new("The level must be specified.") if level.nil?
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-app/controllers/application_controller.rb:44:5: C: Provide an exception class and message as arguments to [33mfail[0m.
-    fail ArgumentError.new("The level must be symbol.") unless level.is_a? Symbol
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-app/controllers/application_controller.rb:46:7: C: Provide an exception class and message as arguments to [33mfail[0m.
-      fail ArgumentError.new("#{level} is not an auth level")
-      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-app/controllers/application_controller.rb:56:5: C: Provide an exception class and message as arguments to [33mfail[0m.
-    fail ArgumentError.new("#{action} already specified.") if controller_whitelist[action]
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-app/controllers/application_controller.rb:77:101: C: Line is too long. [129/100]
-    devise_parameter_sanitizer.for(:sign_up) { |u| u.permit(:email, :first_name, :last_name, :password, :password_confirmation) }
-                                                                                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-app/controllers/application_controller.rb:78:101: C: Line is too long. [130/100]
-    devise_parameter_sanitizer.for(:account_update) { |u| u.permit(:email, :password, :password_confirmation, :current_password) }
-                                                                                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-app/controllers/application_controller.rb:93:3: C: Assignment Branch Condition size for authenticate_for_action is too high. [16.88/15]
+app/controllers/application_controller.rb:100:3: C: Assignment Branch Condition size for authenticate_for_action is too high. [16.88/15]
   def authenticate_for_action
   ^^^
-app/controllers/application_controller.rb:114:5: C: Use a guard clause instead of wrapping the code inside a conditional expression.
-    unless verified_request?
-    ^^^^^^
-app/controllers/application_controller.rb:114:5: C: Favor modifier [33munless[0m usage when having a single-line body. Another good alternative is the usage of control flow [33m&&[0m/[33m||[0m.
-    unless verified_request?
-    ^^^^^^
-app/controllers/application_controller.rb:121:5: C: Use a guard clause instead of wrapping the code inside a conditional expression.
-    if false
-    ^^
-app/controllers/application_controller.rb:121:8: W: Literal [33mfalse[0m appeared in a condition.
-    if false
-       ^^^^^
-app/controllers/application_controller.rb:129:3: C: Assignment Branch Condition size for authorize_user_for_course is too high. [85.43/15]
+app/controllers/application_controller.rb:130:3: C: Assignment Branch Condition size for authorize_user_for_course is too high. [85.43/15]
   def authorize_user_for_course
   ^^^
-app/controllers/application_controller.rb:129:3: C: Cyclomatic complexity for authorize_user_for_course is too high. [28/6]
+app/controllers/application_controller.rb:130:3: C: Cyclomatic complexity for authorize_user_for_course is too high. [28/6]
   def authorize_user_for_course
   ^^^
-app/controllers/application_controller.rb:129:3: C: Method has too many lines. [53/20]
+app/controllers/application_controller.rb:130:3: C: Method has too many lines. [49/20]
   def authorize_user_for_course
   ^^^
-app/controllers/application_controller.rb:129:3: C: Perceived complexity for authorize_user_for_course is too high. [27/7]
+app/controllers/application_controller.rb:130:3: C: Perceived complexity for authorize_user_for_course is too high. [27/7]
   def authorize_user_for_course
   ^^^
-app/controllers/application_controller.rb:132:5: C: Favor modifier [33mif[0m usage when having a single-line body. Another good alternative is the usage of control flow [33m&&[0m/[33m||[0m.
-    if course_id
-    ^^
-app/controllers/application_controller.rb:144:5: W: Avoid rescuing the [33mException[0m class. Perhaps you meant to rescue [33mStandardError[0m?
-    rescue Exception => e
-    ^^^^^^^^^^^^^^^^^^^^^
-app/controllers/application_controller.rb:149:5: C: Favor modifier [33mif[0m usage when having a single-line body. Another good alternative is the usage of control flow [33m&&[0m/[33m||[0m.
-    if current_user.nil?
-    ^^
-app/controllers/application_controller.rb:183:101: C: Line is too long. [128/100]
-      flash[:error] = "Your course has been disabled by your instructor. Please contact them directly if you have any questions"
-                                                                                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-app/controllers/application_controller.rb:195:5: C: Use a guard clause instead of wrapping the code inside a conditional expression.
+app/controllers/application_controller.rb:193:5: C: Use a guard clause instead of wrapping the code inside a conditional expression.
     if (invalid_cud || nicknameless_student) && !in_edit_or_unsudo
     ^^
-app/controllers/application_controller.rb:205:3: C: Assignment Branch Condition size for set_assessment is too high. [17.12/15]
+app/controllers/application_controller.rb:203:3: C: Assignment Branch Condition size for set_assessment is too high. [17.12/15]
   def set_assessment
   ^^^
-app/controllers/application_controller.rb:205:3: C: Cyclomatic complexity for set_assessment is too high. [7/6]
+app/controllers/application_controller.rb:203:3: C: Cyclomatic complexity for set_assessment is too high. [7/6]
   def set_assessment
   ^^^
-app/controllers/application_controller.rb:223:3: C: Assignment Branch Condition size for set_submission is too high. [31.8/15]
+app/controllers/application_controller.rb:219:3: C: Assignment Branch Condition size for set_submission is too high. [31.8/15]
   def set_submission
   ^^^
-app/controllers/application_controller.rb:223:3: C: Cyclomatic complexity for set_submission is too high. [14/6]
+app/controllers/application_controller.rb:219:3: C: Cyclomatic complexity for set_submission is too high. [14/6]
   def set_submission
   ^^^
-app/controllers/application_controller.rb:223:3: C: Perceived complexity for set_submission is too high. [14/7]
+app/controllers/application_controller.rb:219:3: C: Perceived complexity for set_submission is too high. [14/7]
   def set_submission
   ^^^
-app/controllers/application_controller.rb:228:42: C: Use [33m&&[0m instead of [33mand[0m.
-      redirect_to [@course, @assessment] and return false
-                                         ^^^
-app/controllers/application_controller.rb:233:42: C: Use [33m&&[0m instead of [33mand[0m.
-      redirect_to [@course, @assessment] and return false
-                                         ^^^
-app/controllers/application_controller.rb:236:101: C: Line is too long. [102/100]
-    if (@assessment.exam? || @course.exam_in_progress?) && !(@cud.instructor || @cud.course_assistant)
-                                                                                                    ^^
-app/controllers/application_controller.rb:239:42: C: Use [33m&&[0m instead of [33mand[0m.
-      redirect_to [@course, @assessment] and return false
-                                         ^^^
-app/controllers/application_controller.rb:244:3: C: Assignment Branch Condition size for run_scheduler is too high. [26.76/15]
+app/controllers/application_controller.rb:242:3: C: Assignment Branch Condition size for run_scheduler is too high. [32.4/15]
   def run_scheduler
   ^^^
-app/controllers/application_controller.rb:246:5: C: Prefer [33meach[0m over [33mfor[0m.
-    for action in actions do
-    ^^^
-app/controllers/application_controller.rb:249:7: C: Do not write to stdout. Use Rails' logger if you want to log.
-      puts "Executing #{File.join(Rails.root, action.action)}"
-      ^^^^
-app/controllers/application_controller.rb:254:11: C: Use snake_case for variable names.
-          modName = File.join(Rails.root, action.action)
-          ^^^^^^^
-app/controllers/application_controller.rb:260:7: W: Avoid rescuing the [33mException[0m class. Perhaps you meant to rescue [33mStandardError[0m?
-      rescue Exception => e
-      ^^^^^^^^^^^^^^^^^^^^^
-app/controllers/application_controller.rb:262:9: C: Do not write to stdout. Use Rails' logger if you want to log.
-        puts e
-        ^^^^
-app/controllers/application_controller.rb:263:9: C: Do not write to stdout. Use Rails' logger if you want to log.
-        puts e.message
-        ^^^^
-app/controllers/application_controller.rb:264:9: C: Do not write to stdout. Use Rails' logger if you want to log.
-        puts e.backtrace.inspect
-        ^^^^
-app/controllers/application_controller.rb:270:101: C: Line is too long. [104/100]
-    @persistent_announcements = Announcement.where("persistent and (course_id=? or system)", @course.id)
-                                                                                                    ^^^^
-app/controllers/application_controller.rb:275:5: C: Use a guard clause instead of wrapping the code inside a conditional expression.
-    if @course
-    ^^
-app/controllers/application_controller.rb:277:101: C: Line is too long. [120/100]
-        @breadcrumbs << (view_context.link_to "#{@course.display_name} (Course Disabled)", [@course], id: "courseTitle")
-                                                                                                    ^^^^^^^^^^^^^^^^^^^^
-app/controllers/application_controller.rb:285:101: C: Line is too long. [106/100]
-    "#{count || 0} " + ((count == 1 || count =~ /^1(\.0+)?$/) ? singular : (plural || singular.pluralize))
-                                                                                                    ^^^^^^
-app/controllers/application_controller.rb:292:7: C: Use snake_case for method names.
-  def makeDlist(cuds)
-      ^^^^^^^^^
-app/controllers/application_controller.rb:295:5: C: Prefer [33meach[0m over [33mfor[0m.
-    for cud in cuds do
-    ^^^
-app/controllers/application_controller.rb:306:3: C: Assignment Branch Condition size for render_error is too high. [26.42/15]
+app/controllers/application_controller.rb:307:3: C: Assignment Branch Condition size for render_error is too high. [26.42/15]
   def render_error(exception)
   ^^^
-app/controllers/application_controller.rb:306:3: C: Cyclomatic complexity for render_error is too high. [9/6]
+app/controllers/application_controller.rb:307:3: C: Cyclomatic complexity for render_error is too high. [9/6]
   def render_error(exception)
   ^^^
-app/controllers/application_controller.rb:306:3: C: Perceived complexity for render_error is too high. [9/7]
+app/controllers/application_controller.rb:307:3: C: Perceived complexity for render_error is too high. [9/7]
   def render_error(exception)
   ^^^
-app/controllers/application_controller.rb:307:101: C: Line is too long. [118/100]
-    # use the exception_notifier gem to send out an e-mail to the notification list specified in config/environment.rb
-                                                                                                    ^^^^^^^^^^^^^^^^^^
-app/controllers/application_controller.rb:308:101: C: Line is too long. [115/100]
-    ExceptionNotifier.notify_exception(exception, env: request.env, data: { message: "was doing something wrong" })
-                                                                                                    ^^^^^^^^^^^^^^^
 app/controllers/assessment/autograde.rb:12:3: C: Assignment Branch Condition size for autograde_done is too high. [40.57/15]
   def autograde_done
   ^^^
@@ -1756,7 +1642,7 @@ app/controllers/courses_controller.rb:473:5: C: Use a guard clause instead of wr
     if request.post?
     ^^
 app/controllers/courses_controller.rb:487:7: C: Use snake_case for variable names.
-      bccString = makeDlist(@cuds)
+      bccString = make_dlist(@cuds)
       ^^^^^^^^^
 app/controllers/courses_controller.rb:506:3: C: Assignment Branch Condition size for runMoss is too high. [109/15]
   def runMoss
@@ -4681,4 +4567,4 @@ templates/labtemplate/labtemplate.rb:8:7: C: Use snake_case for method names.
   def assessmentInitialize(course)
       ^^^^^^^^^^^^^^^^^^^^
 
-263 files inspected, 1559 offenses detected
+263 files inspected, 1521 offenses detected

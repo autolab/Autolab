@@ -2,7 +2,7 @@ require "cgi"
 require "uri"
 
 class JobsController < ApplicationController
-  autolabRequire Rails.root.join("config", "autogradeConfig.rb")
+  autolab_require Rails.root.join("config", "autogradeConfig.rb")
 
   #
   # getRecentJobs - this function retrieves the currently running jobs
