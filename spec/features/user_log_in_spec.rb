@@ -1,12 +1,12 @@
 # <<<<<<< HEAD
-RSpec.describe "home page", :type => :feature do
+RSpec.describe "home page", type: :feature do
   it "allows registered user to log in" do
     user = FactoryGirl.create(:user)
 
     # Simulates user log in
     visit "/auth/users/sign_in"
-    fill_in "user_email",    :with => user.email
-    fill_in "user_password", :with => user.password 
+    fill_in "user_email",    with: user.email
+    fill_in "user_password", with: user.password
 
     user = User.create!(email: "user@foo.bar",
                         first_name: "Test",

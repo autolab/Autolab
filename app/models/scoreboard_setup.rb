@@ -12,7 +12,7 @@ class ScoreboardSetup < ActiveRecord::Base
     new s
   end
 
-  protected
+protected
 
   # Validates a JSON column spec for correctness before saving it the database
   def col_spec

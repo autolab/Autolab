@@ -20,7 +20,7 @@ module Svn
     true
   end
 
-  protected
+protected
 
   # Override to change to a different subversion client.
   def subversionType

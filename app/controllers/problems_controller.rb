@@ -41,7 +41,7 @@ class ProblemsController < ApplicationController
     redirect_to(problems_index) && return
   end
 
-  private
+private
 
   def set_problem
     @problem = @assessment.problems.find(params[:id])

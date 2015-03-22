@@ -18,7 +18,7 @@ class AssessmentUserDataController < ApplicationController
     redirect_to action: :edit
   end
 
-  private
+private
 
   def set_aud
     @aud = @assessment.assessment_user_data.find(params[:id])

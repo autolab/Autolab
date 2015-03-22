@@ -57,7 +57,7 @@ module AssessmentHelper
     end
   end
 
-  private
+private
 
   def csv_row_for(asmt, cud, as_seen_by)
     aud = AssessmentUserDatum.get asmt.id, cud.id

@@ -1,7 +1,6 @@
-require 'rails_helper'
+require "rails_helper"
 
-RSpec.describe AdminsController, :type => :controller do
-  
+RSpec.describe AdminsController, type: :controller do
   render_views
 
   describe "#show" do

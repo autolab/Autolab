@@ -70,9 +70,9 @@ class User < ActiveRecord::Base
 
   # Reset user fields with LDAP lookup
   def ldap_reset
-   if email.include? "@andrew.cmu.edu" then
+    if email.include? "@andrew.cmu.edu"
       ldapResult = User.ldap_lookup(email.split("@")[0])
-      if (ldapResult) then
+      if ldapResult
         self.first_name = ldapResult[:first_name]
         self.last_name = ldapResult[:last_name]
         self.school = ldapResult[:school]
@@ -81,15 +81,15 @@ class User < ActiveRecord::Base
       end
 
       # If LDAP lookup failed, use (blank) as place holder
-      if self.first_name.nil? then
+      if first_name.nil?
         self.first_name = "(blank)"
       end
-      if self.last_name.nil? then
+      if last_name.nil?
         self.last_name = "(blank)"
       end
 
-      self.save
-    end
+      save
+     end
   end
 
   def self.find_for_facebook_oauth(auth, _signed_in_resource = nil)
@@ -196,16 +196,16 @@ class User < ActiveRecord::Base
 
   # use LDAP to look up a user
   def self.ldap_lookup(andrewID)
-    if (andrewID) then
-      require 'rubygems'
-      require 'net/ldap'
+    if andrewID
+      require "rubygems"
+      require "net/ldap"
 
       host = "ldap.andrew.cmu.edu"
       ldap = Net::LDAP.new(host: host, port: 389)
-      user = ldap.search(:base=>"ou=Person,dc=cmu,dc=edu",
-              :filter=>"cmuAndrewId=" + andrewID)[0]
+      user = ldap.search(base: "ou=Person,dc=cmu,dc=edu",
+                         filter: "cmuAndrewId=" + andrewID)[0]
 
-      if user then
+      if user
         # Create result hash and parse ldap response
         result = {}
         result[:first_name] = user[:givenname][-1]
@@ -239,7 +239,7 @@ class User < ActiveRecord::Base
           when "NREC: National Robotics Engineering Center" then "Robotics"
           else user[:cmudepartment][0]
         end
-        result[:year] = case user[:cmustudentclass][0] 
+        result[:year] = case user[:cmustudentclass][0]
           when "Freshman" then "1"
           when "Sophomore" then "2"
           when "Junior" then "3"
@@ -265,17 +265,16 @@ class User < ActiveRecord::Base
             when "David A. Tepper School of Business" then "TSB"
           end
 
-          # Break as soon as we find the correct record. 
-          break if result[:school] 
-        end 
+          # Break as soon as we find the correct record.
+          break if result[:school]
+        end
 
         # If nothing matches, we fall back to the first record
-        if !result[:school] then 
+        unless result[:school]
           result[:school] = user[:edupersonschoolcollegename][0]
-        end 
+        end
         return result
       end
     end
   end
-
 end
