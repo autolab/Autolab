@@ -1,6 +1,11 @@
+##
+# All Controllers inherit this controller.  It handles setting @course, and doing authentication
+# and authorization.  It also has functions for loading assessments and submissions so that
+# various validations are always applied, so use those functions as before_actions!
+#
 # Filters added to this controller apply to all controllers in the application.
 # Likewise, all the methods added will be available for all controllers.
-
+#
 class ApplicationController < ActionController::Base
   helper :all # include all helpers, all the time
 
@@ -29,21 +34,19 @@ class ApplicationController < ActionController::Base
     end
   end
 
-  def self.autolabRequire(path)
-    if (Rails.env == "development")
-      $LOADED_FEATURES.delete(path)
-    end
+  def self.autolab_require(path)
+    $LOADED_FEATURES.delete(path) if (Rails.env == "development")
     require(path)
   end
 
   @@global_whitelist = {}
   def self.action_auth_level(action, level)
-    fail ArgumentError.new("The action must be specified.") if action.nil?
-    fail ArgumentError.new("The action must be symbol.") unless action.is_a? Symbol
-    fail ArgumentError.new("The level must be specified.") if level.nil?
-    fail ArgumentError.new("The level must be symbol.") unless level.is_a? Symbol
+    fail ArgumentError, "The action must be specified." if action.nil?
+    fail ArgumentError, "The action must be symbol." unless action.is_a? Symbol
+    fail ArgumentError, "The level must be specified." if level.nil?
+    fail ArgumentError, "The level must be symbol." unless level.is_a? Symbol
     unless CourseUserDatum::AUTH_LEVELS.include?(level)
-      fail ArgumentError.new("#{level} is not an auth level")
+      fail ArgumentError, "#{level} is not an auth level"
     end
 
     if level == :administrator
@@ -53,7 +56,7 @@ class ApplicationController < ActionController::Base
     end
 
     controller_whitelist = (@@global_whitelist[controller_name.to_sym] ||= {})
-    fail ArgumentError.new("#{action} already specified.") if controller_whitelist[action]
+    fail ArgumentError, "#{action} already specified." if controller_whitelist[action]
 
     controller_whitelist[action] = level
   end
@@ -74,8 +77,12 @@ protected
 
   def configure_permitted_paramters
     devise_parameter_sanitizer.for(:sign_in) { |u| u.permit(:email) }
-    devise_parameter_sanitizer.for(:sign_up) { |u| u.permit(:email, :first_name, :last_name, :password, :password_confirmation) }
-    devise_parameter_sanitizer.for(:account_update) { |u| u.permit(:email, :password, :password_confirmation, :current_password) }
+    devise_parameter_sanitizer.for(:sign_up) do |u|
+      u.permit(:email, :first_name, :last_name, :password, :password_confirmation)
+    end
+    devise_parameter_sanitizer.for(:account_update) do |u|
+      u.permit(:email, :password, :password_confirmation, :current_password)
+    end
   end
 
   def authentication_failed(user_message = nil, dev_message = nil)
@@ -111,27 +118,18 @@ protected
         " please contact the Autolab Development team at the " \
         "contact link below"
 
-    unless verified_request?
-      authentication_failed(msg)
-    end
+    authentication_failed(msg) unless verified_request?
   end
 
   def maintenance_mode?
     # enable/disable maintenance mode with this switch:
-    if false
-      unless user_signed_in? && current_user.administrator?
-        render :maintenance
-        return false
-      end
-    end
+    return unless ENV["AUTOLAB_MAINTENANCE"]
+    render(:maintenance) && return unless user_signed_in? && current_user.administrator?
   end
 
   def authorize_user_for_course
-    course_id = params[:course_id] ||
-                (params[:controller] == "courses" ? params[:id] : nil)
-    if course_id
-      @course = Course.find(course_id)
-    end
+    course_id = params[:course_id] || (params[:controller] == "courses" ? params[:id] : nil)
+    @course = Course.find(course_id) if course_id
 
     unless @course
       flash[:error] = "Course #{params[:course]} does not exist!"
@@ -141,14 +139,13 @@ protected
     # set course logger
     begin
       COURSE_LOGGER.setCourse(@course)
-    rescue Exception => e
+    rescue StandardError => e
       flash[:error] = e.to_s
       redirect_to(controller: :home, action: :error) && return
     end
 
-    if current_user.nil?
-      redirect_to(root_path) && return
-    end
+    redirect_to(root_path) && return if current_user.nil?
+
     uid = current_user.id
     # don't allow sudoing across courses
     if session[:sudo]
@@ -180,7 +177,8 @@ protected
 
     # check if course was disabled
     if @course.disabled? && !@cud.has_auth_level?(:instructor)
-      flash[:error] = "Your course has been disabled by your instructor. Please contact them directly if you have any questions"
+      flash[:error] = "Your course has been disabled by your instructor.
+                       Please contact them directly if you have any questions"
       redirect_to(controller: :home, action: :error) && return
     end
 
@@ -210,9 +208,7 @@ protected
       redirect_to(action: :index) && return
     end
 
-    if @cud.student? && !@assessment.released?
-      redirect_to(action: :index) && return
-    end
+    redirect_to(action: :index) && return if @cud.student? && !@assessment.released?
 
     @breadcrumbs << (view_context.current_assessment_link)
   end
@@ -225,74 +221,79 @@ protected
       @submission = @assessment.submissions.find(params[:submission_id] || params[:id])
     rescue
       flash[:error] = "Could not find submission with id #{params[:submission_id] || params[:id]}."
-      redirect_to [@course, @assessment] and return false
+      redirect_to([@course, @assessment]) && return
     end
 
-    unless @cud.instructor || @cud.course_assistant || @submission.course_user_datum_id == @cud.id
+    unless @cud.instructor || @cud.course_assistant ||
+           @submission.course_user_datum_id == @cud.id
       flash[:error] = "You do not have permission to access this submission."
-      redirect_to [@course, @assessment] and return false
+      redirect_to([@course, @assessment]) && return
     end
 
-    if (@assessment.exam? || @course.exam_in_progress?) && !(@cud.instructor || @cud.course_assistant)
+    if (@assessment.exam? || @course.exam_in_progress?) &&
+       !(@cud.instructor || @cud.course_assistant)
       flash[:error] = "You cannot view this submission.
               Either an exam is in progress or this is an exam submission."
-      redirect_to [@course, @assessment] and return false
+      redirect_to([@course, @assessment]) && return
     end
     true
   end
 
   def run_scheduler
     actions = Scheduler.where("next < ?", Time.now)
-    for action in actions do
+    actions.each do |action|
       action.next = Time.now + action.interval
       action.save
-      puts "Executing #{File.join(Rails.root, action.action)}"
+      Rails.logger.info("Executing #{Rails.root.join(action.action)}")
       begin
         pid = fork do
           # child process
           @course = action.course
-          modName = File.join(Rails.root, action.action)
-          require "#{modName}"
+          mod_name = Rails.root.join(action.action)
+          require mod_name
           Updater.update(@course)
         end
 
         Process.detach(pid)
-      rescue Exception => e
-        COURSE_LOGGER.log("Error updater: #{e}")
-        puts e
-        puts e.message
-        puts e.backtrace.inspect
+      rescue StandardError => e
+        Rails.logger.error("Error updater: #{e}")
+        Rails.logger.error(e)
+        Rails.logger.error(e.message)
+        Rails.logger.error(e.backtrace.inspect)
       end
     end
   end
 
   def update_persistent_announcements
-    @persistent_announcements = Announcement.where("persistent and (course_id=? or system)", @course.id)
+    @persistent_announcements = Announcement.where("persistent and (course_id=? or system)",
+                                                   @course.id)
   end
 
   def set_breadcrumbs
     @breadcrumbs = []
-    if @course
-      if @course.disabled?
-        @breadcrumbs << (view_context.link_to "#{@course.display_name} (Course Disabled)", [@course], id: "courseTitle")
-      else
-        @breadcrumbs << (view_context.link_to @course.display_name, [@course], id: "courseTitle")
-      end
+    return unless @course
+
+    if @course.disabled?
+      @breadcrumbs << (view_context.link_to "#{@course.display_name} (Course Disabled)",
+                                            [@course], id: "courseTitle")
+    else
+      @breadcrumbs << (view_context.link_to @course.display_name, [@course], id: "courseTitle")
     end
   end
 
   def pluralize(count, singular, plural = nil)
-    "#{count || 0} " + ((count == 1 || count =~ /^1(\.0+)?$/) ? singular : (plural || singular.pluralize))
+    "#{count || 0} " +
+      ((count == 1 || count =~ /^1(\.0+)?$/) ? singular : (plural || singular.pluralize))
   end
 
-  # makeDlist - Creates a string of emails that can be added as b/cc field.
+  # make_dlist - Creates a string of emails that can be added as b/cc field.
   # @param section The section to email.  nil if we should email the entire
   # class.
   # @return The filename of the dlist that was created.
-  def makeDlist(cuds)
+  def make_dlist(cuds)
     emails = []
 
-    for cud in cuds do
+    cuds.each do |cud|
       emails << "#{cud.user.email}"
     end
 
@@ -304,8 +305,10 @@ private
   # called on Exceptions.  Shows a stack trace to course assistants, and above.
   # Shows good ol' Donkey Kong to students
   def render_error(exception)
-    # use the exception_notifier gem to send out an e-mail to the notification list specified in config/environment.rb
-    ExceptionNotifier.notify_exception(exception, env: request.env, data: { message: "was doing something wrong" })
+    # use the exception_notifier gem to send out an e-mail
+    # to the notification list specified in config/environment.rb
+    ExceptionNotifier.notify_exception(exception, env: request.env,
+                                                  data: { message: "was doing something wrong" })
 
     # stack traces are only shown to instructors and administrators
     # by leaving @error undefined, students and CAs do not see stack traces

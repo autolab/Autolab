@@ -7,16 +7,16 @@ require "date_time_input"
 class AssessmentsController < ApplicationController
   include ActiveSupport::Callbacks
 
-  autolabRequire Rails.root.join("app", "controllers", "assessment", "handin.rb")
+  autolab_require Rails.root.join("app", "controllers", "assessment", "handin.rb")
   include AssessmentHandin
 
-  autolabRequire Rails.root.join("app", "controllers", "assessment", "handout.rb")
+  autolab_require Rails.root.join("app", "controllers", "assessment", "handout.rb")
   include AssessmentHandout
 
-  autolabRequire Rails.root.join("app", "controllers", "assessment", "grading.rb")
+  autolab_require Rails.root.join("app", "controllers", "assessment", "grading.rb")
   include AssessmentGrading
 
-  autolabRequire Rails.root.join("app", "controllers", "assessment", "autograde.rb")
+  autolab_require Rails.root.join("app", "controllers", "assessment", "autograde.rb")
   include AssessmentAutograde
 
   # this is inherited from ApplicationController
@@ -53,7 +53,7 @@ class AssessmentsController < ApplicationController
   action_no_auth :local_submit
 
   # SVN
-  autolabRequire Rails.root.join("app", "controllers", "assessment", "SVN.rb")
+  autolab_require Rails.root.join("app", "controllers", "assessment", "SVN.rb")
   include AssessmentSVN
 
   action_auth_level :adminSVN, :instructor

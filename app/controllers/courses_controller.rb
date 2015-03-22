@@ -484,7 +484,7 @@ file, most likely a duplicate email.  The exact error was: #{e} "
         @cuds = @course.course_user_data.where(dropped: false)
       end
 
-      bccString = makeDlist(@cuds)
+      bccString = make_dlist(@cuds)
 
       @email = CourseMailer.course_announcement(
         params[:from],
