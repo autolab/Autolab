@@ -1,20 +1,23 @@
-require 'utilities'
-require 'association_cache'
+require "utilities"
+require "association_cache"
 
+##
+# Submissions jointly belong to Assessments and CourseUserData
+#
 class Submission < ActiveRecord::Base
   trim_field :filename, :notes, :mime_type
 
   belongs_to :course_user_datum
   belongs_to :assessment
-  has_many :scores,dependent: :destroy
+  has_many :scores, dependent: :destroy
   belongs_to :submitted_by, class_name: "CourseUserDatum"
-  belongs_to :tweak, class_name: "Tweak" 
+  belongs_to :tweak, class_name: "Tweak"
   accepts_nested_attributes_for :tweak, allow_destroy: true
   has_one :assessment_user_datum, foreign_key: "latest_submission_id"
 
   validate :allowed?, on: :create
   validates_associated :assessment
-  validates_uniqueness_of :version, scope: [:course_user_datum_id,:assessment_id]
+  validates :version, uniqueness: { scope: [:course_user_datum_id, :assessment_id] }
   validate :user_and_assessment_in_same_course
 
   has_many :annotations, dependent: :destroy
@@ -26,9 +29,16 @@ class Submission < ActiveRecord::Base
   # keep track of latest submission
   after_save :update_latest_submission, if: :version_changed?
   after_save :update_latest_submission, if: :ignored_changed?
+  after_save do |sub|
+    COURSE_LOGGER.log("Submission #{sub.id} SAVED for " \
+      "#{sub.course_user_datum.user.email} on" \
+      " #{sub.assessment.name}, file #{sub.filename} (#{sub.mime_type}),"\
+      "version: #{sub.version}")
+  end
+
   after_create :update_latest_submission
   after_destroy :update_latest_submission
-  
+
   # allow stuff to get updated by mass assign
   # attr_accessible :notes, :tweak_attributes
 
@@ -36,19 +46,19 @@ class Submission < ActiveRecord::Base
   scope :latest, -> { joins(:assessment_user_datum).joins(:course_user_datum) }
 
   # constants for special submission types
-  NORMAL=0
-  NG=1
-  EXC=2
+  NORMAL = 0
+  NG = 1
+  EXC = 2
 
   # since we enforce that a submission's version is immutable, it seems
   # like we should take advantage of the fact and special case an after_create
   # filter to update the latest submission to the one being created (instead of
   # computing it). but this is *not* the case due it opening the possibility of
   # race conditions.
-  # 
+  #
   # in fact, *not* assuming self is the latest submission here is the very
   # reason why this caching works and isn't susceptible to race conditions
-  # (such as: someone submits twice quickly in succession and the first 
+  # (such as: someone submits twice quickly in succession and the first
   # update_latest_submission happens after the second).
   #
   # because we actually compute the latest submission in update_latest_submission
@@ -57,8 +67,42 @@ class Submission < ActiveRecord::Base
   # that, whatever the interleaving, the last thing that happens will be an
   # update_latest_submission which will atomically compute the latest submission
   # and cache it in the AUD (assessment_user_data).
-  def update_latest_submission
-    aud.update_latest_submission
+  delegate :update_latest_submission, to: :aud
+
+  def save_file(upload)
+    filename = course_user_datum.user.email + "_" +
+               version.to_s + "_" +
+               assessment.handin_filename
+    directory = assessment.handin_directory
+    path = File.join(Rails.root, "courses",
+                     course_user_datum.course.name,
+                     assessment.name, directory, filename)
+
+    if upload["file"]
+      # Sanity!
+      upload["file"].rewind
+      File.open(path, "wb") { |f| f.write(upload["file"].read) }
+    elsif upload["local_submit_file"]
+      # local_submit_file is a path string to the temporary handin
+      # directory we create for local submissions
+      File.open(path, "wb") { |f| f.write(IO.read(upload["local_submit_file"])) }
+    elsif upload["tar"]
+      src = upload["tar"]
+      `mv #{src} #{path}`
+    end
+
+    self.filename = filename
+
+    if upload["file"]
+      self.mime_type = upload["file"].content_type
+      self.mime_type = "text/plain" unless mime_type
+    elsif upload["local_submit_file"]
+      self.mime_type = "text/plain"
+    elsif upload["tar"]
+      self.mime_type = "application/x-tgz"
+    end
+
+    self.save!
   end
 
   def archive_handin
@@ -66,140 +110,76 @@ class Submission < ActiveRecord::Base
     return if filename.nil?
     return unless File.exist?(handin_file_path)
 
-    archive = File.join(assessment.handin_directory_path, 'archive')
+    archive = File.join(assessment.handin_directory_path, "archive")
     Dir.mkdir(archive) unless FileTest.directory?(archive)
 
     # Using the id instead of the version guarentees a unique filename
-    submission_backup = File.join(archive, 
-                                  'deleted_' + 
-                                  course_user_datum.user.email + '_' + 
-                                  id.to_s + '_' +
-                                  assessment.handin_filename)
+    submission_backup = File.join(archive, "deleted_#{filename}")
     FileUtils.mv(handin_file_path, submission_backup)
+
+    archive_autograder_feedback(archive)
   end
 
-  def saveFile(upload)
-    filename = self.course_user_datum.user.email + "_" +
-           self.version.to_s + "_" +
-           self.assessment.handin_filename
-    directory = self.assessment.handin_directory
-    path = File.join(Rails.root, "courses", 
-                     self.course_user_datum.course.name,
-                     self.assessment.name, directory, filename)
+  def archive_autograder_feedback(archive)
+    return unless assessment.has_autograde
+    feedback_path = autograde_feedback_path
+    return unless File.exist?(feedback_path)
 
-    if upload['file'] then
-      # Sanity!
-      upload['file'].rewind
-      File.open(path,"wb") { |f| f.write(upload['file'].read)}
-    elsif upload['local_submit_file']
-      # local_submit_file is a path string to the temporary handin
-      # directory we create for local submissions
-      File.open(path,"wb") { |f| f.write(IO.read(upload['local_submit_file']))}
-    elsif upload['tar'] then
-      src = upload['tar']
-      `mv #{src} #{path}`
-    end
-
-    self.filename = filename
-
-    if upload['file'] then
-      self.mime_type = upload['file'].content_type
-      if !(self.mime_type) then
-        self.mime_type = 'text/plain'
-      end
-    elsif upload['local_submit_file']
-      self.mime_type = 'text/plain'
-    elsif upload['tar'] then
-      self.mime_type = 'application/x-tgz'
-    end
-
-    self.save!
+    backup = File.join(archive, "deleted_#{autograde_feedback_filename}")
+    FileUtils.mv(feedback_path, backup)
   end
 
   def handin_file_path
     return nil unless filename
-    return File.join(assessment.handin_directory_path, filename)
+    File.join(assessment.handin_directory_path, filename)
   end
 
-  def handinFile
-    path = self.handin_file_path
+  def autograde_feedback_filename
+    "#{course_user_datum.email}_#{version}_#{assessment.name}_autograde.txt"
+  end
+
+  def autograde_feedback_path
+    File.join(assessment.handin_directory_path, autograde_feedback_filename)
+  end
+
+  def handin_file
+    path = handin_file_path
     return nil unless path
-    if !File.exist?(path) || !File.readable?(path) then
+    if !File.exist?(path) || !File.readable?(path)
       return nil
     else
-      return File.open path, 'r'
+      return File.open path, "r"
     end
   end
 
   def annotated_file(file, filename, position)
-    conditions = {filename: filename}
+    conditions = { filename: filename }
     conditions[:position] = position if position
     annotations = self.annotations.where(conditions)
 
     result = file.lines.map { |line| [line.force_encoding("UTF-8"), nil] }
 
     # annotation lines are one-indexed, so adjust for the zero-indexed array
-    annotations.each { |a| result[a.line-1][1] = a}
-    
+    annotations.each { |a| result[a.line - 1][1] = a }
+
     result
   end
-    
+
   def user_and_assessment_in_same_course
-    if (course_user_datum.course_id != assessment.course_id)
-      errors.add(:course_user_datum,"Invalid CourseUserDatum or Assessment")
-    end
+    return if (course_user_datum.course_id == assessment.course_id)
+    errors.add(:course_user_datum, "Invalid CourseUserDatum or Assessment")
   end
-  
+
   def set_version
-    if ! self.submitted_by_id then
-      self.submitted_by_id = self.course_user_datum_id
-    end
+    self.submitted_by_id = course_user_datum_id unless submitted_by_id
     begin
-      if self.version != 0 then
-        self.version = 1 + assessment.submissions.where(course_user_datum: 
+      if version != 0
+        self.version = 1 + assessment.submissions.where(course_user_datum:
           course_user_datum).maximum(:version)
       end
     rescue TypeError
       self.version = 1
     end
-  end
-
-  def after_save
-    begin
-      COURSE_LOGGER.log("Submission #{id} SAVED for " \
-        "#{course_user_datum.user.email} on" \
-        " #{assessment.name}, file #{self.filename} (#{self.mime_type}),"\
-        "version: #{self.version}") 
-      rescue
-    end
-  end    
-
-  def getScores(releasedOnly)
-    scoresQuery = "SELECT problems.name, scores.score
-      FROM problems,scores,submissions 
-      WHERE submissions.id=#{id}
-      AND scores.submission_id = submissions.id
-      AND problems.assessment_id= submissions.assessment_id
-      AND problems.id = scores.problem_id"
-    if releasedOnly then
-      scoresQuery += " AND scores.released = true"
-    end
-    dbScores =  ActiveRecord::Base.connection.select_all(scoresQuery)
-    scores = {}
-    for score in dbScores
-      scores[score["name"]] = score["score"].to_f()
-    end
-    return scores
-  end
-
-  def get_scores(_released_only, problem_id_to_name)
-    scores = {}
-
-    self.scores.each do |score|
-      scores[problem_id_to_name[score.problem_id]] = score.score.to_f
-    end
-
-    return scores
   end
 
   def problems_to_scores
@@ -240,8 +220,8 @@ class Submission < ActiveRecord::Base
   end
 
   def final_score(as_seen_by)
-    raise "FATAL: authorization error" if as_seen_by.student? && as_seen_by != course_user_datum
-  
+    fail "FATAL: authorization error" if as_seen_by.student? && as_seen_by != course_user_datum
+
     o = {}
     o[:include_unreleased] = true unless as_seen_by.student?
     o[:untweaked] = true if as_seen_by.CA_only? # TODO: make this a policy option
@@ -253,7 +233,7 @@ class Submission < ActiveRecord::Base
     # version threshold of -1 allows infinite submissions without penalty
     return 0 if assessment.effective_version_threshold < 0
 
-    # normal submission versions start at 1 
+    # normal submission versions start at 1
     # unofficial submissions conveniently have version 0
     [version - assessment.effective_version_threshold, 0].max
   end
@@ -273,7 +253,7 @@ class Submission < ActiveRecord::Base
 
   # fall back to UA-reported mime_type, if not detected
   def detected_mime_type
-    read_attribute(:detected_mime_type) || mime_type
+    self[:detected_mime_type] || mime_type
   end
 
   # detect_mime_type - the mime_type field in a submission record is
@@ -282,39 +262,35 @@ class Submission < ActiveRecord::Base
   def detect_mime_type
     # no file, no mime type
     return unless filename
-    
-    path = File.join(assessment.handin_directory_path, filename) 
+
+    path = File.join(assessment.handin_directory_path, filename)
     file_output = `file -ib #{path}`
     self.detected_mime_type = file_output[/^(\w)+\/([\w-])+/]
   end
 
-  def is_syntax
-    return false if (self.filename.nil?)
-
-    ext = File.extname(self.filename)     # get extension
-    if ext then ext = ext.gsub(/\./, "") end            # remove dot
-    return true
+  def syntax?
+    !filename.nil?
   end
 
-  def is_latest
-    return (aud.latest_submission_id == self.id)
+  def latest?
+    (aud.latest_submission_id == id)
   end
 
   # override as_json to include the total with a paramter
   def as_json(options = {})
     json = super(options)
-    json['total'] = final_score options[:seen_by]
-    json['late_penalty'] = late_penalty options[:seen_by]
-    json['grace_days_used'] = grace_days_used
-    json['penalty_late_days'] = penalty_late_days
-    json['days_late'] = days_late
-    json['problems'] = assessment.problems
+    json["total"] = final_score options[:seen_by]
+    json["late_penalty"] = late_penalty options[:seen_by]
+    json["grace_days_used"] = grace_days_used
+    json["penalty_late_days"] = penalty_late_days
+    json["days_late"] = days_late
+    json["problems"] = assessment.problems
     json
   end
 
   def grading_complete?(as_seen_by)
     include_unreleased = !as_seen_by.student?
-    
+
     complete, released = scores_status
     (released || include_unreleased) && complete
   end
@@ -323,14 +299,13 @@ class Submission < ActiveRecord::Base
     all_complete, all_released = true, true
 
     problems_to_scores.each do |problem, score|
-      unless problem.optional?
-        return false unless score
-        all_complete &&= false unless score.score
-        all_released &&= score.released?
-      end
+      next if problem.optional?
+      return false unless score
+      all_complete &&= false unless score.score
+      all_released &&= score.released?
     end
 
-    [ all_complete, all_released ]
+    [all_complete, all_released]
   end
 
   # easy access to AUD
@@ -338,12 +313,12 @@ class Submission < ActiveRecord::Base
     assessment.aud_for course_user_datum_id
   end
 
-  private
+private
 
   # NOTE: remember to update cache_key if additional options are added
   def raw_score_cache_key(options)
-    raw_score_base = 'raw_score'
-    raw_score_base << '_includes_unreleased' if options[:include_unreleased]
+    raw_score_base = "raw_score"
+    raw_score_base << "_includes_unreleased" if options[:include_unreleased]
 
     "#{raw_score_base}/#{cache_key}/#{assessment.cache_key}"
   end
@@ -404,7 +379,7 @@ class Submission < ActiveRecord::Base
       assessment.raw_score scores
     rescue ScoreComputationException => e
       errors[:base] << e.message
-      raise e 
+      raise e
     end
   end
 
@@ -426,7 +401,7 @@ class Submission < ActiveRecord::Base
   # Returns valid final_score (float)
   def final_score_opts!(options = {})
     include_unreleased_opt = { include_unreleased: options[:include_unreleased] }
-    
+
     score = raw_score include_unreleased_opt
     score = apply_late_penalty(score, include_unreleased_opt)
     score = apply_version_penalty(score, include_unreleased_opt)
@@ -435,7 +410,7 @@ class Submission < ActiveRecord::Base
   end
 
   def apply_late_penalty(v, include_unreleased_opt)
-    [ v - late_penalty_opts(include_unreleased_opt), 0 ].max
+    [v - late_penalty_opts(include_unreleased_opt), 0].max
   end
 
   def apply_tweak(v)
@@ -443,8 +418,8 @@ class Submission < ActiveRecord::Base
   end
 
   def apply_version_penalty(v, include_unreleased_opt)
-    [ v - version_penalty_opts(include_unreleased_opt), 0 ].max
-  end 
+    [v - version_penalty_opts(include_unreleased_opt), 0].max
+  end
 
   def allowed?
     submitted_at = created_at || Time.now
@@ -463,14 +438,14 @@ class Submission < ActiveRecord::Base
       when :at_submission_limit
         errors[:base] << "You you have already reached the submission limit."
       else
-        raise "FATAL: unknown reason for submission denial"
+        fail "FATAL: unknown reason for submission denial"
       end
       false
     end
   end
 
   def acquire_lock
-    Submission.find_by_sql [ "SELECT 1=1 FROM submissions WHERE id = ? FOR UPDATE", id ]
+    Submission.find_by_sql ["SELECT 1=1 FROM submissions WHERE id = ? FOR UPDATE", id]
   end
 
   def penalty_late_days!
@@ -480,7 +455,7 @@ class Submission < ActiveRecord::Base
     if (days_late == 0)
       0
     else
-      [ days_late - aud.grace_days_usable, 0 ].max
+      [days_late - aud.grace_days_usable, 0].max
     end
   end
 
@@ -491,12 +466,13 @@ class Submission < ActiveRecord::Base
     if days_late == 0
       0
     else
-      [ aud.grace_days_usable, days_late ].min
+      [aud.grace_days_usable, days_late].min
     end
   end
-  
+
   def days_late!
-    # submissions for students who are Excused or Zeroed (for the assessment) shouldn't be considered late
+    # submissions for students who are Excused or Zeroed (for the assessment)
+    # shouldn't be considered late
     return 0 if aud.grade_type != AssessmentUserDatum::NORMAL
 
     # optimization: without applying extension, etc. check if before due date
@@ -518,11 +494,11 @@ class Submission < ActiveRecord::Base
   end
 
   # Penalty incurred due to submitting late (after having used any grace days)
-  # 
+  #
   # Though this *is* what is displayed to the user, note that a lesser penalty
   # might *actually* be incurred if their raw_score is low enough. For example:
   #   raw_score = 10, late_penalty (this) = 15 => final_score = 0
-  # 
+  #
   # Also, note that percentage late penalties are applied to the *raw score*.
   # Thus, if assessment.late_penalty = 25pts, assessment.late_penalty = 20%,
   # and raw_score = 100, then final_score = 55. *Not* 80% * (100 - 25) or
@@ -532,7 +508,7 @@ class Submission < ActiveRecord::Base
     return 0.0 if assessment.course.grace_days < 0
 
     # no penalty if no penalty late days used
-    pld = self.penalty_late_days
+    pld = penalty_late_days
     return 0.0 if pld == 0
 
     # otherwise, apply penalty
@@ -542,22 +518,22 @@ class Submission < ActiveRecord::Base
   end
 
   # Penalty incurred due to having submitted too many versions
-  # 
+  #
   # Though this *is* what is displayed to the user, note that a lesser penalty
   # might *actually* be incurred if their raw_score is low enough. For example:
   #   raw_score = 10, version_penalty (this) = 15 => final_score = 0
-  # 
+  #
   # Also, note that percentage version penalties are applied to the *raw score*.
   # Thus, if assessment.version_penalty = 25%, assessment.late_penalty = 20pts,
   # and raw_score = 100, then final_score = 55. *Not* 75% * (100 - 20) or
   # (75% * 100) - 20 because the order of penalty application would then matter.
   def version_penalty_opts!(options = {})
     # no version penalty policy
-    return 0.0 unless assessment.version_penalty?   
+    return 0.0 unless assessment.version_penalty?
 
     # no penalty if version not over threshold
     votb = version_over_threshold_by
-    return 0.0 if votb == 0 
+    return 0.0 if votb == 0
 
     # otherwise, apply penalty
     per_version_penalty = assessment.effective_version_penalty
