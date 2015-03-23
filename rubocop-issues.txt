@@ -1,26 +1,11 @@
 Inspecting 263 files
-..CCCCCWWCCCWCCWCCWCWCCWWWC.CCCWWCCCCCCCCCCCCCCWWCCCWCWCWCCWCCCWCCWWCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC....CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCECCCCCCCCCCCWCCCCCC.W.............................W...........................CCC
+..C..CCWWCCCWCCWCCWCWCCWWWC.CCCWWCCCCCCCCCCCCCCWWCCCWCWCWCCWCCCWCCWWCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC....CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCECCCCCCCCCCCWCCCCCC.W.............................W...........................CCC
 
 Offenses:
 
-app/controllers/admins_controller.rb:13:3: C: Assignment Branch Condition size for emailInstructors is too high. [16.31/15]
-  def emailInstructors
+app/controllers/admins_controller.rb:14:3: C: Assignment Branch Condition size for email_instructors is too high. [16.16/15]
+  def email_instructors
   ^^^
-app/controllers/admins_controller.rb:13:7: C: Use snake_case for method names.
-  def emailInstructors
-      ^^^^^^^^^^^^^^^^
-app/controllers/admins_controller.rb:14:5: C: Use a guard clause instead of wrapping the code inside a conditional expression.
-    if request.post?
-    ^^
-app/controllers/admins_controller.rb:21:7: C: Use snake_case for variable names.
-      bccString = make_dlist(@cuds)
-      ^^^^^^^^^
-app/controllers/annotations_controller.rb:45:101: C: Line is too long. [120/100]
-    params.require(:annotation).permit(:filename, :position, :line, :text, :submitted_by, :comment, :value, :problem_id)
-                                                                                                    ^^^^^^^^^^^^^^^^^^^^
-app/controllers/announcements_controller.rb:63:5: C: Use a guard clause instead of wrapping the code inside a conditional expression.
-    if @announcement.system && !@cud.user.administrator?
-    ^^
 app/controllers/application_controller.rb:9:1: C: Class definition is too long. [234/100]
 class ApplicationController < ActionController::Base
 ^^^^^
@@ -1326,39 +1311,18 @@ app/controllers/assessments_controller.rb:1518:101: C: Line is too long. [104/10
 app/controllers/assessments_controller.rb:1532:101: C: Line is too long. [108/100]
     ass.permit(:name, :display_name, :category_name, :has_autograde, :has_svn, :has_scoreboard, :group_size)
                                                                                                     ^^^^^^^^
-app/controllers/attachments_controller.rb:1:1: C: Missing top-level class documentation comment.
-class AttachmentsController < ApplicationController
-^^^^^
-app/controllers/attachments_controller.rb:10:5: C: Use a guard clause instead of wrapping the code inside a conditional expression.
-    if @is_assessment
-    ^^
-app/controllers/attachments_controller.rb:10:5: C: Favor modifier [33mif[0m usage when having a single-line body. Another good alternative is the usage of control flow [33m&&[0m/[33m||[0m.
-    if @is_assessment
-    ^^
-app/controllers/attachments_controller.rb:33:3: C: Assignment Branch Condition size for show is too high. [20.71/15]
+app/controllers/attachments_controller.rb:34:3: C: Assignment Branch Condition size for show is too high. [20.71/15]
   def show
   ^^^
-app/controllers/attachments_controller.rb:44:101: C: Line is too long. [117/100]
-    send_file(filename, disposition: "inline", type: @attachment.mime_type, filename: @attachment.filename) && return
-                                                                                                    ^^^^^^^^^^^^^^^^^
-app/controllers/attachments_controller.rb:50:101: C: Line is too long. [107/100]
-      @attachment = @course.attachments.where(assessment_id: params[:assessment_id], id: params[:id]).first
-                                                                                                    ^^^^^^^
-app/controllers/attachments_controller.rb:57:3: C: Assignment Branch Condition size for update is too high. [21.93/15]
+app/controllers/attachments_controller.rb:60:3: C: Assignment Branch Condition size for update is too high. [20.02/15]
   def update
   ^^^
-app/controllers/attachments_controller.rb:57:3: C: Cyclomatic complexity for update is too high. [7/6]
+app/controllers/attachments_controller.rb:60:3: C: Cyclomatic complexity for update is too high. [7/6]
   def update
   ^^^
-app/controllers/attachments_controller.rb:57:3: C: Perceived complexity for update is too high. [9/7]
+app/controllers/attachments_controller.rb:60:3: C: Perceived complexity for update is too high. [9/7]
   def update
   ^^^
-app/controllers/attachments_controller.rb:85:7: C: Rename [33mis_assessment?[0m to [33massessment?[0m.
-  def is_assessment?
-      ^^^^^^^^^^^^^^
-app/controllers/attachments_controller.rb:91:101: C: Line is too long. [107/100]
-      @breadcrumbs << (view_context.link_to "Assessment Attachments", [@course, @assessment, :attachments])
-                                                                                                    ^^^^^^^
 app/controllers/course_user_data_controller.rb:1:1: C: Class definition is too long. [195/100]
 class CourseUserDataController < ApplicationController
 ^^^^^
@@ -4567,4 +4531,4 @@ templates/labtemplate/labtemplate.rb:8:7: C: Use snake_case for method names.
   def assessmentInitialize(course)
       ^^^^^^^^^^^^^^^^^^^^
 
-263 files inspected, 1521 offenses detected
+263 files inspected, 1509 offenses detected
