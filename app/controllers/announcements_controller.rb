@@ -60,10 +60,10 @@ private
 
   def set_announcement
     @announcement = @course.announcements.find(params[:id])
-    if @announcement.system && !@cud.user.administrator?
-      flash[:error] = "You don't have permission to access system announcments."
-      redirect_to(action: :index) && return
-    end
+    return unless @announcement.system && !@cud.user.administrator?
+
+    flash[:error] = "You don't have permission to access system announcments."
+    redirect_to(action: :index) && return
   end
 
   def announcement_params

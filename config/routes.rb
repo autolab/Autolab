@@ -13,7 +13,7 @@ Autolab3::Application.routes.draw do
   end
 
   resource :admin do
-    match 'emailInstructors', via: [:get, :post]
+    match 'email_instructors', via: [:get, :post]
   end
 
   resources :users do
