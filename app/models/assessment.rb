@@ -249,6 +249,10 @@ class Assessment < ActiveRecord::Base
     course.course_user_data.joins(:assessment_user_data).where(assessment_user_data: { assessment_id: id, membership_status: AssessmentUserDatum::UNCONFIRMED })
   end
 
+  def to_param
+    self.name
+  end
+
   private
 
   def path(filename)

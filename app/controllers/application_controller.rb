@@ -127,10 +127,10 @@ class ApplicationController < ActionController::Base
   end
 
   def authorize_user_for_course
-    course_id = params[:course_id] ||
+    course_name = params[:course_id] ||
           (params[:controller] == "courses" ? params[:id] : nil)
-    if (course_id) then
-      @course = Course.find_by_name(course_id)
+    if (course_name) then
+      @course = Course.find_by_name(course_name)
     end
 
     unless @course
@@ -204,7 +204,7 @@ class ApplicationController < ActionController::Base
   #
   def set_assessment
     begin
-      @assessment = @course.assessments.find(params[:assessment_id] || params[:id])
+      @assessment = @course.assessments.find_by_name(params[:assessment_id] || params[:id])
     rescue
       flash[:error] = "The assessment was not found for this course."
       redirect_to(action: :index) && return
