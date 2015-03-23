@@ -130,7 +130,7 @@ class ApplicationController < ActionController::Base
     course_id = params[:course_id] ||
           (params[:controller] == "courses" ? params[:id] : nil)
     if (course_id) then
-      @course = Course.find(course_id)
+      @course = Course.find_by_name(course_id)
     end
 
     unless @course
