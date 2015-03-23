@@ -5,7 +5,7 @@ module AssessmentAutograde
   # method called when Tango returns the output
   # action_no_auth :autograde_done
   def autograde_done
-    @course = Course.find(params[:course_id]) or (render(nothing: true) && return)
+    @course = Course.find_by_name(params[:course_id]) or (render(nothing: true) && return)
     @assessment = @course.assessments.find(params[:id])
     unless @assessment && @assessment.has_autograde
       render(nothing: true) && return

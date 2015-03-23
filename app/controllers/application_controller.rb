@@ -313,10 +313,10 @@ class ApplicationController < ActionController::Base
       @error = exception
 
       # Generate course id and assesssment id objects
-      @course_id = params[:course_id] ||
+      @course_name = params[:course_id] ||
             (params[:controller] == "courses" ? params[:id] : nil)
       if (@course_id) then
-        @assessment_id = params[:assessment_id] ||
+        @assessment_name = params[:assessment_id] ||
             (params[:controller] == "assessments" ? params[:id] : nil)
       end
     end

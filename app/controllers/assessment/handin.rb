@@ -48,7 +48,7 @@ module AssessmentHandin
   # method called when student makes
   # unofficial submission in the database
   def local_submit
-    @course = Course.find(params[:course_id])
+    @course = Course.find_by_name(params[:course_id])
     unless @course
       render(plain: "ERROR: invalid course", status: :bad_request) && return
     end
@@ -160,7 +160,7 @@ module AssessmentHandin
   # method called when student makes
   # log submission in the database
   def log_submit
-    @course = Course.find(params[:course_id])
+    @course = Course.find_by_name(params[:course_id])
     unless @course
       render(plain: "ERROR: invalid course", status: :bad_request) && return
     end
@@ -344,7 +344,7 @@ module AssessmentHandin
 
   def get_handin
     if @assessment.nil?
-      @assessment = @course.assessments.find(params[:assessment_id])
+      @assessment = @course.assessments.find_by_name(params[:assessment_id])
     end
 
     submission_count = @assessment.submissions.where(course_user_datum_id: @cud.id).count
