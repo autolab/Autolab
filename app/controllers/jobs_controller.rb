@@ -4,7 +4,6 @@ require "tango_client"
 
 class JobsController < ApplicationController
   autolab_require Rails.root.join("config", "autogradeConfig.rb")
-  include TangoClient
 
   # index - This is the default action that generates lists of the
   # running, waiting, and completed jobs.

@@ -8,8 +8,6 @@ require_relative Rails.root.join("config", "autogradeConfig.rb")
 # Gets imported into AssessmentsController
 #
 module AssessmentAutograde
-  include TangoClient
-
   # method called when Tango returns the output
   # action_no_auth :autograde_done
   def autograde_done
@@ -286,7 +284,7 @@ module AssessmentAutograde
     callback_url = (RESTFUL_USE_POLLING) ? "" :
       "#{hostname}/courses/#{course.id}/assessments/#{assessment.id}/autograde_done?dave=#{dave}&submission_id=#{submission.id}"
     COURSE_LOGGER.log("Callback: #{callback_url}")
-    
+
     callback_url
   end
 
@@ -328,7 +326,7 @@ module AssessmentAutograde
     begin
       Timeout.timeout(80) do
         loop do
-          response = TangoClient.tango_poll("#{course.name}-#{assessment.name}", "#{URI.encode(output_file)}") 
+          response = TangoClient.tango_poll("#{course.name}-#{assessment.name}", "#{URI.encode(output_file)}")
           # json is returned when a job is not complete
           unless response.content_type == "application/json"
             feedback = response.body
