@@ -19,8 +19,7 @@ class AttachmentsController < ApplicationController
 
   action_auth_level :create, :instructor
   def create
-    assessment = Assessment.find_by_name(params[:assessment_id])
-    @attachment = Attachment.new(course_id: @course.id, assessment_id: assessment.id)
+    @attachment = Attachment.new(course_id: @course.id, assessment_id: @assessment.id)
     if @attachment.update(attachment_params)
       if @is_assessment
         redirect_to(course_assessment_attachments_path(@course, @attachment.assessment)) && return
@@ -50,9 +49,8 @@ class AttachmentsController < ApplicationController
   action_auth_level :edit, :instructor
   def edit
     if @is_assessment
-      @attachment = @course.attachments.where(assessment_id: Assessment.find_by_name(params[:assessment_id]).id, 
+      @attachment = @course.attachments.where(assessment_id: @assessment.id, 
                                                 id: params[:id]).first
-
     else
       @attachment = @course.attachments.find(params[:id])
     end
@@ -62,7 +60,7 @@ class AttachmentsController < ApplicationController
   def update
     if @is_assessment
 
-      @attachment = @course.attachments.where(assessment_id: Assessment.find_by_name(params[:assessment_id]).id).first
+      @attachment = @course.attachments.where(assessment_id: @assessment.id).first
 
       if @attachment && @attachment.update(attachment_params)
         redirect_to(course_assessment_attachments_path(@course, @attachment.assessment)) && return
