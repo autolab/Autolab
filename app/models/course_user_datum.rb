@@ -139,9 +139,9 @@ class CourseUserDatum < ActiveRecord::Base
     when :administrator
       user.administrator?
     when :instructor
-      user.administrator? || instructor?
+      instructor? || user.administrator?
     when :course_assistant
-      user.administrator? || instructor? || course_assistant?
+      course_assistant? || instructor? || user.administrator?
     when :student
       true
     else
@@ -197,7 +197,7 @@ class CourseUserDatum < ActiveRecord::Base
     end
   end
 
-  private
+private
 
   # Need to create AUDs for all assessments when new user is created
   def create_AUDs_modulo_callbacks

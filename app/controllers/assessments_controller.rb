@@ -7,16 +7,16 @@ require "date_time_input"
 class AssessmentsController < ApplicationController
   include ActiveSupport::Callbacks
 
-  autolabRequire Rails.root.join("app", "controllers", "assessment", "handin.rb")
+  autolab_require Rails.root.join("app", "controllers", "assessment", "handin.rb")
   include AssessmentHandin
 
-  autolabRequire Rails.root.join("app", "controllers", "assessment", "handout.rb")
+  autolab_require Rails.root.join("app", "controllers", "assessment", "handout.rb")
   include AssessmentHandout
 
-  autolabRequire Rails.root.join("app", "controllers", "assessment", "grading.rb")
+  autolab_require Rails.root.join("app", "controllers", "assessment", "grading.rb")
   include AssessmentGrading
 
-  autolabRequire Rails.root.join("app", "controllers", "assessment", "autograde.rb")
+  autolab_require Rails.root.join("app", "controllers", "assessment", "autograde.rb")
   include AssessmentAutograde
 
   # this is inherited from ApplicationController
@@ -53,7 +53,7 @@ class AssessmentsController < ApplicationController
   action_no_auth :local_submit
 
   # SVN
-  autolabRequire Rails.root.join("app", "controllers", "assessment", "SVN.rb")
+  autolab_require Rails.root.join("app", "controllers", "assessment", "SVN.rb")
   include AssessmentSVN
 
   action_auth_level :adminSVN, :instructor
@@ -452,7 +452,7 @@ class AssessmentsController < ApplicationController
 
     if @assessment.nil?
       flash[:error] = "Error: Invalid assessment"
-      redirect_to [@course, :assessments] and return
+      redirect_to([@course, :assessments]) && return
     end
 
     @name = @assessment.name
@@ -711,7 +711,7 @@ class AssessmentsController < ApplicationController
         score: result["score"].to_f,
         feedback: result["feedback"],
         score_id: result["score_id"].to_i,
-        released: result["released"].to_i,
+        released: result["released"].to_i
       }
     end
 
@@ -758,7 +758,7 @@ class AssessmentsController < ApplicationController
         score: result["score"].to_f,
         feedback: result["feedback"],
         score_id: result["score_id"].to_i,
-        released: result["released"].to_i,
+        released: result["released"].to_i
       }
     end
 
@@ -773,13 +773,13 @@ class AssessmentsController < ApplicationController
 
   action_auth_level :viewFeedback, :student
   def viewFeedback
-    #User requested to view feedback on a score
+    # User requested to view feedback on a score
     @score = @submission.scores.find_by(problem_id: params[:feedback])
-    if !@score then
-      redirect_to action: "index" and return
+    unless @score
+      redirect_to(action: "index") && return
     end
 
-    if Archive.is_archive? @submission.handin_file_path then
+    if Archive.is_archive? @submission.handin_file_path
       @files = Archive.get_files @submission.handin_file_path
     end
   end
@@ -934,7 +934,7 @@ class AssessmentsController < ApplicationController
   def adminScoreboard
     unless @cud.instructor?
       flash[:error] = "You are not authorized to view this page"
-      redirect_to [@course, @assessment] and return
+      redirect_to([@course, @assessment]) && return
     end
 
     if request.post?
@@ -1021,7 +1021,7 @@ class AssessmentsController < ApplicationController
       if @cud.instructor?
         @errorMessage = "An error occurred while calling scoreboardHeader()"
         @error = e
-        render [@course, @assessment] and return
+        render([@course, @assessment]) && return
       end
       # For students just ignore the header.
       @header = "<table class=prettyBorder >"
@@ -1050,7 +1050,7 @@ class AssessmentsController < ApplicationController
             "createScoreboardEntry(#{grade[:problems].inspect},"\
             "#{grade[:autoresult]})"
           @error = e
-          render [@course, @assessment] and return
+          render([@course, @assessment]) && return
         end
       end
     end
@@ -1080,7 +1080,7 @@ class AssessmentsController < ApplicationController
             "scoreboardOrderSubmissions(#{a.inspect},"\
             "#{b.inspect})"
           @error = e
-          render [@course, @assessment] and return
+          render([@course, @assessment]) && return
         end
         0 # Just say they're equal!
       end
@@ -1093,7 +1093,7 @@ class AssessmentsController < ApplicationController
     end
   end
 
-  protected
+protected
 
   # Setup assessment's directory and create assessment config file as well as
   # handin directory
@@ -1522,7 +1522,7 @@ class AssessmentsController < ApplicationController
     params[:scoreboard_prop].permit(:banner, :colspec)
   end
 
-  private
+private
 
   def new_assessment_params
     ass = params.require(:assessment)

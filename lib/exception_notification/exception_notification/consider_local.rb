@@ -21,7 +21,7 @@ module ExceptionNotification::ConsiderLocal
     end
   end
 
-  private
+private
 
   def local_request?
     remote = IPAddr.new(request.remote_ip)

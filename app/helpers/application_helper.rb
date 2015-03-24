@@ -76,15 +76,9 @@ module ApplicationHelper
   end
 
   def view_syntax_highlighted_source(submission, title)
-    if submission.is_syntax
+    if submission.syntax?
       link_to title, view_course_assessment_submission_path(@course, @assessment, submission),
               tabindex: -1, target: "_blank"
-    end
-  end
-
-  def view_syntax_highlighted_source_url(submission)
-    if submission.is_syntax
-      view_course_assessment_submission_path(@course, @assessment, submission)
     end
   end
 

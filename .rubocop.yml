@@ -9,6 +9,26 @@ AllCops:
     - 'tmp/**/*'
   RunRailsCops: true
 
+Metrics/LineLength:
+  Max: 100
+  # To make it possible to copy or click on URIs in the code, we allow lines
+  # contaning a URI to be longer than Max.
+  AllowURI: true
+  URISchemes:
+    - http
+    - https
+
+Metrics/MethodLength:
+  CountComments: false  # count full line comments?
+  Max: 20
+
+# Indent private/protected/public as deep as method definitions
+Style/AccessModifierIndentation:
+  EnforcedStyle: outdent
+  SupportedStyles:
+    - outdent
+    - indent
+
 Style/StringLiterals:
   EnforcedStyle: double_quotes
   SupportedStyles:

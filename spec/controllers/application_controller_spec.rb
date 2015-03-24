@@ -1,5 +1,4 @@
-require 'rails_helper'
+require "rails_helper"
 
-RSpec.describe ApplicationController, :type => :controller do
-
+RSpec.describe ApplicationController, type: :controller do
 end

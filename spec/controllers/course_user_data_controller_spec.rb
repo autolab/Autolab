@@ -1,5 +1,4 @@
-require 'rails_helper'
+require "rails_helper"
 
-RSpec.describe CourseUserDataController, :type => :controller do
-
+RSpec.describe CourseUserDataController, type: :controller do
 end

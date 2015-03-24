@@ -77,7 +77,7 @@ module AssessmentHandin
     if params[:submit]
       # They've copied their handin over, lets go grab it.
       begin
-        handinFile = params[:submit]
+        handin_file = params[:submit]
 
         if @assessment.max_submissions != -1
           submission_count = @cud.submissions.where(assessment: @assessment).size
@@ -92,7 +92,7 @@ module AssessmentHandin
 
         # save the submissions
         begin
-          submissions = saveHandin("local_submit_file" => File.join(remoteHandinDir, handinFile))
+          submissions = saveHandin("local_submit_file" => File.join(remoteHandinDir, handin_file))
         rescue Exception => e
           puts "Error Saving Submission:\n#{e}"
           submissions = nil
@@ -240,7 +240,7 @@ module AssessmentHandin
     render(plain: "OK", status: 200) && return
   end
 
-  private
+private
 
   ##
   # this function checks that now is a valid time to submit and that the
@@ -317,7 +317,7 @@ module AssessmentHandin
     unless @assessment.has_groups?
       submission = @assessment.submissions.create(course_user_datum_id: @cud.id,
                                                   submitter_ip: request.remote_ip)
-      submission.saveFile(sub)
+      submission.save_file(sub)
       return [submission]
     end
 
@@ -326,7 +326,7 @@ module AssessmentHandin
     if group.nil?
       submission = @assessment.submissions.create(course_user_datum_id: @cud.id,
                                                   submitter_ip: request.remote_ip)
-      submission.saveFile(sub)
+      submission.save_file(sub)
       return [submission]
     end
 
@@ -335,7 +335,7 @@ module AssessmentHandin
       group.course_user_data.each do |cud|
         submission = @assessment.submissions.create(course_user_datum_id: cud.id,
                                                     submitter_ip: request.remote_ip)
-        submission.saveFile(sub)
+        submission.save_file(sub)
         submissions << submission
       end
     end

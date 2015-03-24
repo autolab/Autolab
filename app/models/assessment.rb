@@ -253,7 +253,7 @@ class Assessment < ActiveRecord::Base
     self.name
   end
 
-  private
+private
 
   def path(filename)
     Rails.root.join "courses", course.name, name, filename

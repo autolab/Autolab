@@ -1,81 +1,70 @@
 # Extend the Rails ApplicationController to define some RESTful endpoints for
 # dealing with Announcements.
 class AnnouncementsController < ApplicationController
+  before_action :set_announcement, except: [:index, :new, :create]
+
   action_auth_level :index, :instructor
   def index
     if @cud.user.administrator?
       @announcements = Announcement.where("course_id=? or system", @course.id)
     else
-      @announcements = Announcement.where(course_id: @course.id)
+      @announcements = @course.announcements
     end
   end
 
   action_auth_level :new, :instructor
   def new
-    @announcement = Announcement.new
+    @announcement = @course.announcements.new
   end
 
   action_auth_level :create, :instructor
   def create
-    if !@cud.user.administrator? && params[:announcement][:system]
-      flash[:error] = "You don't have the permission " \
-        "to create system announcements!"
-      redirect_to(action: "index") && return
-    end
-
-    @announcement = @course.announcements.create(announcement_params)
+    @announcement = @course.announcements.new(announcement_params)
 
     if @announcement.save
-      flash[:success] = "Create success!"
-      redirect_to(course_announcements_path(@course)) && return
+      flash[:success] = "Announcement Created"
+      redirect_to(action: :index) && return
     else
-      flash[:error] = "Create failed! Check all fields."
-      redirect_to("new") && return
+      flash[:error] = "Error Creating Announcement"
+      redirect_to(action: :new) && return
     end
-  end
-
-  action_auth_level :show, :instructor
-  def show
-    # for consistency with REST
   end
 
   action_auth_level :edit, :instructor
   def edit
-    @announcement = Announcement.find(params[:id])
-
-    # Prevent non-admin from entering system announcements edit page
-    return unless @cud.user.administrator? || @announcement.system
-
-    flash[:error] = "You don't have the permission " \
-      "to edit system announcements!"
-    redirect_to(action: "index") && return
   end
 
   action_auth_level :update, :instructor
   def update
-    @announcement = Announcement.find(params[:id])
     if @announcement.update(announcement_params)
-      flash[:success] = "Edit Success!"
-      redirect_to(course_announcements_path(@course)) && return
+      flash[:success] = "Announcement Successfully Edited"
+      redirect_to(action: :index) && return
     else
-      flash[:error] = "Edit Failed!"
-      redirect_to("edit") && return
+      flash[:error] = "Error Editing Announcement"
+      redirect_to(action: :edit) && return
     end
   end
 
   action_auth_level :destroy, :instructor
   def destroy
-    @announcement = Announcement.find(params[:id])
-    if !@cud.user.administrator? && @announcement.system
-      flash[:error] = "You don't have the permission " \
-        "to destroy system announcements!"
-      redirect_to(action: "index") && return
+    if @announcement.destroy
+      flash[:success] = "Announcement Deleted"
+      redirect_to(action: :index) && return
+    else
+      flash[:error] = "Error Deleting Announcement"
+      redirect_to(action: :edit) && return
     end
-    @announcement.destroy
-    redirect_to action: "index"
   end
 
-  private
+private
+
+  def set_announcement
+    @announcement = @course.announcements.find(params[:id])
+    return unless @announcement.system && !@cud.user.administrator?
+
+    flash[:error] = "You don't have permission to access system announcments."
+    redirect_to(action: :index) && return
+  end
 
   def announcement_params
     params.require(:announcement).permit(:title, :description, :start_date,

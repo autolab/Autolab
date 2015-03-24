@@ -1,5 +1,4 @@
-require 'rails_helper'
+require "rails_helper"
 
-RSpec.describe AnnouncementsController, :type => :controller do
-
+RSpec.describe AnnouncementsController, type: :controller do
 end

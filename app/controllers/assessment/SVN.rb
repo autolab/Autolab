@@ -38,7 +38,7 @@ module AssessmentSVN
     redirect_to(action: :adminSVN) && return
   end
 
-  protected
+protected
 
   def svnValidateHandin
     repo = @assessment.aud_for(@cud).repository
@@ -82,7 +82,7 @@ module AssessmentSVN
 
     sub = {}
     sub["tar"] = svnTar
-    @submission.saveFile(sub) # this will also save the submission model if successful
+    @submission.save_file(sub) # this will also save the submission model if successful
     `rm #{svnTar}`
 
     @submission

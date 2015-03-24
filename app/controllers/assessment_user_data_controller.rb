@@ -1,3 +1,7 @@
+##
+# AssessmentUserData are joins between Assessments and CourseUserData.
+# This basically lets you update grade types for a student for an assessment.
+#
 class AssessmentUserDataController < ApplicationController
   # inherited from ApplicationController
   before_action :set_assessment
@@ -18,7 +22,7 @@ class AssessmentUserDataController < ApplicationController
     redirect_to action: :edit
   end
 
-  private
+private
 
   def set_aud
     @aud = @assessment.assessment_user_data.find(params[:id])

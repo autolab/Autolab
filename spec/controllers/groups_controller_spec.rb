@@ -1,5 +1,4 @@
 require "rails_helper"
 
-RSpec.describe GroupsController, :type => :controller do
-
+RSpec.describe GroupsController, type: :controller do
 end

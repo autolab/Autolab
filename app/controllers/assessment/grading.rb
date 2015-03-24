@@ -32,7 +32,7 @@ module AssessmentGrading
         @csv = csv_file.read
       else
         flash[:error] = "You need to choose a CSV file to upload."
-        redirect_to action: :bulkGrade and return
+        redirect_to(action: :bulkGrade) && return
       end
 
       # process CSV
@@ -41,7 +41,7 @@ module AssessmentGrading
         @entries = entries
         @valid_entries = valid_entries? entries
       else
-        redirect_to action: :bulkGrade and return
+        redirect_to(action: :bulkGrade) && return
       end
     end
   end
@@ -61,20 +61,20 @@ module AssessmentGrading
     success, @entries = parse_csv csv, data_type
     if !success
       flash[:error] = "bulkGrade_complete: invalid csv returned from client"
-      redirect_to action: :bulkGrade and return
+      redirect_to(action: :bulkGrade) && return
     elsif !valid_entries?(@entries)
       flash[:error] = "bulkGrade_complete: invalid entries returned from client"
-      redirect_to action: :bulkGrade and return
+      redirect_to(action: :bulkGrade) && return
     end
 
     # save data
     unless save_entries @entries, data_type
       flash[:error] = "Failed to Save Entries"
-      redirect_to action: :bulkGrade and return
+      redirect_to(action: :bulkGrade) && return
     end
   end
 
-  private
+private
 
   def valid_entries?(entries)
     entries.reduce true do |acc, entry|
@@ -221,7 +221,7 @@ module AssessmentGrading
     processed
   end
 
-  public
+public
 
   def quickSetScore
     return unless request.post?
@@ -345,7 +345,7 @@ module AssessmentGrading
     @statistics[:grader] = stats_for_grader(latest_submissions)
   end
 
-  private
+private
 
   def load_course_config
     course = @course.name.gsub(/[^A-Za-z0-9]/, "")
@@ -434,7 +434,7 @@ module AssessmentGrading
         end
         return autograder
       else
-        return User.find(i)
+        return @course.course_user_data.find(i)
       end
     end
     graders = grader_ids.map(&method(:find_user))

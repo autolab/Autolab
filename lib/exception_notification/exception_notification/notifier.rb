@@ -64,7 +64,7 @@ class ExceptionNotification::Notifier < ActionMailer::Base
     end
   end
 
-  private
+private
 
   def sanitize_backtrace(trace)
     re = Regexp.new(/^#{Regexp.escape(rails_root)}/)

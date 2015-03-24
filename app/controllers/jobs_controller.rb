@@ -2,7 +2,7 @@ require "cgi"
 require "uri"
 
 class JobsController < ApplicationController
-  autolabRequire Rails.root.join("config", "autogradeConfig.rb")
+  autolab_require Rails.root.join("config", "autogradeConfig.rb")
 
   #
   # getRecentJobs - this function retrieves the currently running jobs
@@ -161,7 +161,7 @@ class JobsController < ApplicationController
     # bypass the view and redirect them to the viewFeedback page
     if !@cud.user.administrator? && !@cud.instructor?
       if url_assessment && submission && feedback_num > 0
-        redirect_to viewFeedback_course_assessment_path(url_course.to_i, url_assessment.to_i, submission_id: submission.id, feedback: feedback_num) and return 
+        redirect_to(viewFeedback_course_assessment_path(url_course.to_i, url_assessment.to_i, submission_id: submission.id, feedback: feedback_num)) && return
       else
         flash[:error] = "Could not locate autograder feedback"
         redirect_to(controller: "jobs", item: nil) && return
@@ -169,7 +169,7 @@ class JobsController < ApplicationController
     end
   end
 
-  protected
+protected
 
   def getJobs(suffix = "0/")
     COURSE_LOGGER.log("getJobs called")
