@@ -296,7 +296,7 @@ module AssessmentAutograde
     end
 
     callback_url = (RESTFUL_USE_POLLING) ? "" :
-      "#{hostname}/courses/#{course.id}/assessments/#{assessment.id}/autograde_done?dave=#{dave}&submission_id=#{submission.id}"
+      "#{hostname}/courses/#{course.name}/assessments/#{assessment.name}/autograde_done?dave=#{dave}&submission_id=#{submission.id}"
     COURSE_LOGGER.log("Callback: #{callback_url}")
 
     callback_url

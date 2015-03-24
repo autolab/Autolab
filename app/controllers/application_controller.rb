@@ -320,7 +320,7 @@ private
       # Generate course id and assesssment id objects
       @course_name = params[:course_id] ||
             (params[:controller] == "courses" ? params[:id] : nil)
-      if (@course_id) then
+      if (@course_name) then
         @assessment_name = params[:assessment_id] ||
             (params[:controller] == "assessments" ? params[:id] : nil)
 
