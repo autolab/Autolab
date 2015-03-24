@@ -112,7 +112,7 @@
   You have a <%=@extension.days %> day extension on this assessment
   </i>
   <font size=-1>
-  (Due date: <%= due_at_display(@assessment.aud_for(@effectiveCud.id).due_at) %>)
+    (Due date: <span class="moment-date-time"><%= due_at_display(@assessment.aud_for(@effectiveCud.id).due_at) %></span>)
   </font>
   <% end %>
   <% if @assessment.max_submissions != -1 then %>

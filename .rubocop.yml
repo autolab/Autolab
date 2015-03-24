@@ -18,6 +18,10 @@ Metrics/LineLength:
     - http
     - https
 
+Metrics/MethodLength:
+  CountComments: false  # count full line comments?
+  Max: 20
+
 # Indent private/protected/public as deep as method definitions
 Style/AccessModifierIndentation:
   EnforcedStyle: outdent

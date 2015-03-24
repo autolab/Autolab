@@ -78,7 +78,7 @@ class GradeMatrix
     "course_#{course_id}_grade_matrix"
   end
 
-  private
+private
 
   def matrix!
     cell_by_asmt = {}

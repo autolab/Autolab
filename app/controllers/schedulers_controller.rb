@@ -49,7 +49,7 @@ class SchedulersController < ApplicationController
     redirect_to(action: "index") && return
   end
 
-  private
+private
 
   def scheduler_params
     params.require(:scheduler).permit(:action, :next, :interval)

@@ -269,7 +269,7 @@ class GroupsController < ApplicationController
     respond_with(@course, @assessment, @group)
   end
 
-  private
+private
 
   def check_assessment_for_groups
     unless @assessment.has_groups?

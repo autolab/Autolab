@@ -7,7 +7,7 @@ class CoursesController < ApplicationController
   # you need to be able to pick a course to be authorized for it
   skip_before_action :authorize_user_for_course, only: [:index, :new, :create]
   # if there's no course, there are no persistent announcements for that course
-  skip_before_action :update_persistent_announcements, only: [ :index, :new, :create ]
+  skip_before_action :update_persistent_announcements, only: [:index, :new, :create]
 
   def index
     courses_for_user = User.courses_for_user current_user
@@ -137,7 +137,6 @@ class CoursesController < ApplicationController
       render(action: "new") && return
     end
   end
-
 
   action_auth_level :edit, :instructor
   def edit
@@ -485,7 +484,7 @@ file, most likely a duplicate email.  The exact error was: #{e} "
         @cuds = @course.course_user_data.where(dropped: false)
       end
 
-      bccString = makeDlist(@cuds)
+      bccString = make_dlist(@cuds)
 
       @email = CourseMailer.course_announcement(
         params[:from],
@@ -640,7 +639,7 @@ file, most likely a duplicate email.  The exact error was: #{e} "
     # `rm -rf #{tmpDir}`
   end
 
-  private
+private
 
   def new_course_params
     params.require(:newCourse).permit(:name, :semester)

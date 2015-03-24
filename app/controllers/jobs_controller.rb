@@ -1,9 +1,9 @@
 require "cgi"
 require "uri"
-require "TangoClient"
+require "tango_client"
 
 class JobsController < ApplicationController
-  autolabRequire Rails.root.join("config", "autogradeConfig.rb")
+  autolab_require Rails.root.join("config", "autogradeConfig.rb")
   include TangoClient
 
   # index - This is the default action that generates lists of the
@@ -151,7 +151,7 @@ class JobsController < ApplicationController
       if url_assessment && submission && feedback_num > 0
         redirect_to viewFeedback_course_assessment_path(url_course.to_i, url_assessment.to_i,
                                                         submission_id: submission.id,
-                                                        feedback: feedback_num) and return
+                                                        feedback: feedback_num) && return
       else
         flash[:error] = "Could not locate autograder feedback"
         redirect_to(controller: "jobs", item: nil) && return

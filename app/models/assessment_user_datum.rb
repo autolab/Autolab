@@ -218,7 +218,7 @@ class AssessmentUserDatum < ActiveRecord::Base
     connection.execute insert_sql
   end
 
-  protected
+protected
 
   def cumulative_grace_days_used
     grace_days_used + cumulative_grace_days_used_before
@@ -231,7 +231,7 @@ class AssessmentUserDatum < ActiveRecord::Base
     "cgdub/dua-#{dua}/u-#{course_user_datum_id}/a-#{assessment_id}"
   end
 
-  private
+private
 
   # Applies given extension to given date limit (due date or end_at).
   # Returns nil, if extension is infinite and thus the date limit is void.

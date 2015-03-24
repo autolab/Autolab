@@ -35,14 +35,15 @@ class AnnotationsController < ApplicationController
     respond_with(@course, @assessment, @submission, @annotation)
   end
 
-  private
+private
 
   def annotation_params
     params[:annotation].delete(:id)
     params[:annotation].delete(:submission_id)
     params[:annotation].delete(:created_at)
     params[:annotation].delete(:updated_at)
-    params.require(:annotation).permit(:filename, :position, :line, :text, :submitted_by, :comment, :value, :problem_id)
+    params.require(:annotation).permit(:filename, :position, :line, :text, :submitted_by,
+                                       :comment, :value, :problem_id)
   end
 
   def set_annotation

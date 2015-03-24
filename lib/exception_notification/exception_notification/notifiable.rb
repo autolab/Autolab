@@ -44,7 +44,7 @@ module ExceptionNotification::Notifiable
     end
   end
 
-  private
+private
 
   def rescue_action_in_public(exception)
     super

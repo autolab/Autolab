@@ -1,15 +1,16 @@
+##
+# Attachments can be either assessment or course-specific.
+# This controller handles both types, setting @is_assessment to distinguish the two
+#
 class AttachmentsController < ApplicationController
   # inherited from ApplicationController
   # this will also set an @is_assessment variable based on the result of is_assessment?
-  before_action :set_assessment, if: :is_assessment?
+  before_action :set_assessment, if: :assessment?
   before_action :add_attachments_breadcrumb
 
   action_auth_level :index, :instructor
   def index
-    @attachments = @course.attachments
-    if @is_assessment
-      @attachments = @assessment.attachments
-    end
+    @attachments = (@is_assessment) ? @assessment.attachments : @course.attachments
   end
 
   action_auth_level :new, :instructor
@@ -34,36 +35,38 @@ class AttachmentsController < ApplicationController
     @attachment = @course.attachments.find(params[:id])
     unless @attachment
       flash[:error] = "Could not find Attachment # #{params[:id]}"
-      redirect_to [@course, :attachments] and return
+      redirect_to([@course, :attachments]) && return
     end
     filename = File.join("attachments", @attachment.filename)
     unless File.exist?(filename)
       flash[:error] = "Error loading #{@attachment.name} from #{@attachment.filename}"
-      redirect_to [@course, :attachments] and return
+      redirect_to([@course, :attachments]) && return
     end
-    send_file(filename, disposition: "inline", type: @attachment.mime_type, filename: @attachment.filename) && return
+    send_file(filename, disposition: "inline",
+                        type: @attachment.mime_type, filename: @attachment.filename) && return
   end
 
   action_auth_level :edit, :instructor
   def edit
     if @is_assessment
-      @attachment = @course.attachments.where(assessment_id: params[:assessment_id], id: params[:id]).first
+      @attachment = @course.attachments.find_by(assessment_id: params[:assessment_id],
+                                                id: params[:id])
     else
-      @attachment = @course.attachments.where(id: params[:id]).first
+      @attachment = @course.attachments.find(params[:id])
     end
   end
 
   action_auth_level :update, :instructor
   def update
     if @is_assessment
-      @attachment = @course.attachments.where(assessment_id: params[:assessment_id]).first
+      @attachment = @course.attachments.find_by(assessment_id: params[:assessment_id])
       if @attachment && @attachment.update(attachment_params)
         redirect_to(course_assessment_attachments_path(@course, @attachment.assessment)) && return
       else
         redirect_to([:edit, @course, @attachment.assessment, @attachment]) && return
       end
     else
-      @attachment = @course.attachments.where(id: params[:id]).first
+      @attachment = @course.attachments.find(params[:id])
       @attachment.update(attachment_params)
       redirect_to(course_attachments_path(@course)) && return
     end
@@ -80,15 +83,16 @@ class AttachmentsController < ApplicationController
     end
   end
 
-  private
+private
 
-  def is_assessment?
+  def assessment?
     @is_assessment = params.key?(:assessment_id)
   end
 
   def add_attachments_breadcrumb
     if @is_assessment
-      @breadcrumbs << (view_context.link_to "Assessment Attachments", [@course, @assessment, :attachments])
+      @breadcrumbs << (view_context.link_to "Assessment Attachments",
+                                            [@course, @assessment, :attachments])
     else
       @breadcrumbs << (view_context.link_to "Course Attachments", [@course, :attachments])
     end

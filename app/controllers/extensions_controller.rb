@@ -34,7 +34,7 @@ class ExtensionsController < ApplicationController
     redirect_to(action: :index) && return
   end
 
-  private
+private
 
   def extension_params
     params.require(:extension).permit(:course_user_datum_id, :days, :infinite, :commit, :course_id, :assessment_id)

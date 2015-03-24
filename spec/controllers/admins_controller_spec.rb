@@ -1,7 +1,6 @@
-require 'rails_helper'
+require "rails_helper"
 
-RSpec.describe AdminsController, :type => :controller do
-  
+RSpec.describe AdminsController, type: :controller do
   render_views
 
   describe "#show" do
@@ -32,11 +31,11 @@ RSpec.describe AdminsController, :type => :controller do
     end
   end
 
-  describe "#emailInstructors" do
+  describe "#email_instructors" do
     context "when user is Autolab admin" do
       login_admin
       it "renders successfully" do
-        get :emailInstructors
+        get :email_instructors
         expect(response).to be_success
         expect(response.body).to match(/From:/m)
         expect(response.body).to match(/Subject:/m)
@@ -46,7 +45,7 @@ RSpec.describe AdminsController, :type => :controller do
     context "when user is Autolab normal user" do
       login_user
       it "renders with failure" do
-        get :emailInstructors
+        get :email_instructors
         expect(response).not_to be_success
         expect(response.body).not_to match(/From:/m)
         expect(response.body).not_to match(/Subject:/m)
@@ -55,7 +54,7 @@ RSpec.describe AdminsController, :type => :controller do
 
     context "when user is not logged in" do
       it "renders with failure" do
-        get :emailInstructors
+        get :email_instructors
         expect(response).not_to be_success
         expect(response.body).not_to match(/From:/m)
         expect(response.body).not_to match(/Subject:/m)
