@@ -6,7 +6,7 @@ module AssessmentAutograde
   # action_no_auth :autograde_done
   def autograde_done
     @course = Course.find_by_name(params[:course_id]) or (render(nothing: true) && return)
-    @assessment = @course.assessments.find(params[:id])
+    @assessment = @course.assessments.find_by_name(params[:id])
     unless @assessment && @assessment.has_autograde
       render(nothing: true) && return
     end

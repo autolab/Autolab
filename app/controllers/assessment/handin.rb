@@ -60,7 +60,7 @@ module AssessmentHandin
       render(plain: err, status: :bad_request) && return
     end
 
-    @assessment = @course.assessments.find(params[:id])
+    @assessment = @course.assessments.find_by_name(params[:id])
     if !@assessment
       err = "ERROR: Invalid Assessment (#{params[:id]}) for course #{@course.id}"
       render(plain: err, status: :bad_request) && return
@@ -172,7 +172,7 @@ module AssessmentHandin
       render(plain: err, status: :bad_request) && return
     end
 
-    @assessment = @course.assessments.find(params[:id])
+    @assessment = @course.assessments.find_by_name(params[:id])
     if !@assessment
       err = "ERROR: Invalid Assessment (#{params[:id]}) for course #{@course.id}"
       render(plain: err, status: :bad_request) && return
