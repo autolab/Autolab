@@ -45,10 +45,10 @@ Size:<%= @extensions.size %>
 <% end %>
 <p></p>
 <b>Create New Extension</b>
-<%= form_for @newExtension, :as=>"extension", :url=>{:action=>"create"} do |f| %>
-  <% if @newExtension.errors.any? %>
+<%= form_for @new_extension, :as=>"extension", :url=>{:action=>"create"} do |f| %>
+  <% if @new_extension.errors.any? %>
     <ul>
-      <% @newExtension.errors.full_messages.each do |msg| %>
+      <% @new_extension.errors.full_messages.each do |msg| %>
         <li><%= msg %></li>
       <% end %>
     </ul>

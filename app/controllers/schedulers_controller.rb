@@ -1,3 +1,8 @@
+##
+# Schedulers are used by like buflab and bomblab and that's it.  Tasks don't actually
+# get accurately scheduled, but with each request, we check all schedulers, and if one
+# hasn't ran in more than its period's time, it's function is run.  This is awful.
+#
 class SchedulersController < ApplicationController
   action_auth_level :index, :instructor
   def index

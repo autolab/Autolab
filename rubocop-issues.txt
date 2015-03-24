@@ -1,26 +1,11 @@
-Inspecting 263 files
-..CCCCCWWCCCWCCWCCWCWCCWWWC.CCCWWCCCCCCCCCCCCCCWWCCCWCWCWCCWCCCWCCWWCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC....CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCECCCCCCCCCCCWCCCCCC.W.............................W...........................CCC
+Inspecting 262 files
+..C..CCWWCC.WCCWCCWCW..CWWC.CCCWWCCCCCCCCCCCCCCWWCCCWCWCWCCWCCCWCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC....CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCECCCCCCCCCCCWCCCCCC.W.............................W...........................CCC
 
 Offenses:
 
-app/controllers/admins_controller.rb:13:3: C: Assignment Branch Condition size for emailInstructors is too high. [16.31/15]
-  def emailInstructors
+app/controllers/admins_controller.rb:14:3: C: Assignment Branch Condition size for email_instructors is too high. [16.16/15]
+  def email_instructors
   ^^^
-app/controllers/admins_controller.rb:13:7: C: Use snake_case for method names.
-  def emailInstructors
-      ^^^^^^^^^^^^^^^^
-app/controllers/admins_controller.rb:14:5: C: Use a guard clause instead of wrapping the code inside a conditional expression.
-    if request.post?
-    ^^
-app/controllers/admins_controller.rb:21:7: C: Use snake_case for variable names.
-      bccString = make_dlist(@cuds)
-      ^^^^^^^^^
-app/controllers/annotations_controller.rb:45:101: C: Line is too long. [120/100]
-    params.require(:annotation).permit(:filename, :position, :line, :text, :submitted_by, :comment, :value, :problem_id)
-                                                                                                    ^^^^^^^^^^^^^^^^^^^^
-app/controllers/announcements_controller.rb:63:5: C: Use a guard clause instead of wrapping the code inside a conditional expression.
-    if @announcement.system && !@cud.user.administrator?
-    ^^
 app/controllers/application_controller.rb:9:1: C: Class definition is too long. [234/100]
 class ApplicationController < ActionController::Base
 ^^^^^
@@ -597,9 +582,6 @@ app/controllers/assessment/SVN.rb:60:5: C: Use snake_case for variable names.
 app/controllers/assessment/SVN.rb:61:5: C: Use snake_case for variable names.
     svnTar = File.join(assDir, @cud.user.email + "_svn_checkout.tar.gz")
     ^^^^^^
-app/controllers/assessment_user_data_controller.rb:1:1: C: Missing top-level class documentation comment.
-class AssessmentUserDataController < ApplicationController
-^^^^^
 app/controllers/assessments_controller.rb:7:1: C: Class definition is too long. [1152/100]
 class AssessmentsController < ApplicationController
 ^^^^^
@@ -1326,39 +1308,18 @@ app/controllers/assessments_controller.rb:1518:101: C: Line is too long. [104/10
 app/controllers/assessments_controller.rb:1532:101: C: Line is too long. [108/100]
     ass.permit(:name, :display_name, :category_name, :has_autograde, :has_svn, :has_scoreboard, :group_size)
                                                                                                     ^^^^^^^^
-app/controllers/attachments_controller.rb:1:1: C: Missing top-level class documentation comment.
-class AttachmentsController < ApplicationController
-^^^^^
-app/controllers/attachments_controller.rb:10:5: C: Use a guard clause instead of wrapping the code inside a conditional expression.
-    if @is_assessment
-    ^^
-app/controllers/attachments_controller.rb:10:5: C: Favor modifier [33mif[0m usage when having a single-line body. Another good alternative is the usage of control flow [33m&&[0m/[33m||[0m.
-    if @is_assessment
-    ^^
-app/controllers/attachments_controller.rb:33:3: C: Assignment Branch Condition size for show is too high. [20.71/15]
+app/controllers/attachments_controller.rb:34:3: C: Assignment Branch Condition size for show is too high. [20.71/15]
   def show
   ^^^
-app/controllers/attachments_controller.rb:44:101: C: Line is too long. [117/100]
-    send_file(filename, disposition: "inline", type: @attachment.mime_type, filename: @attachment.filename) && return
-                                                                                                    ^^^^^^^^^^^^^^^^^
-app/controllers/attachments_controller.rb:50:101: C: Line is too long. [107/100]
-      @attachment = @course.attachments.where(assessment_id: params[:assessment_id], id: params[:id]).first
-                                                                                                    ^^^^^^^
-app/controllers/attachments_controller.rb:57:3: C: Assignment Branch Condition size for update is too high. [21.93/15]
+app/controllers/attachments_controller.rb:60:3: C: Assignment Branch Condition size for update is too high. [20.02/15]
   def update
   ^^^
-app/controllers/attachments_controller.rb:57:3: C: Cyclomatic complexity for update is too high. [7/6]
+app/controllers/attachments_controller.rb:60:3: C: Cyclomatic complexity for update is too high. [7/6]
   def update
   ^^^
-app/controllers/attachments_controller.rb:57:3: C: Perceived complexity for update is too high. [9/7]
+app/controllers/attachments_controller.rb:60:3: C: Perceived complexity for update is too high. [9/7]
   def update
   ^^^
-app/controllers/attachments_controller.rb:85:7: C: Rename [33mis_assessment?[0m to [33massessment?[0m.
-  def is_assessment?
-      ^^^^^^^^^^^^^^
-app/controllers/attachments_controller.rb:91:101: C: Line is too long. [107/100]
-      @breadcrumbs << (view_context.link_to "Assessment Attachments", [@course, @assessment, :attachments])
-                                                                                                    ^^^^^^^
 app/controllers/course_user_data_controller.rb:1:1: C: Class definition is too long. [195/100]
 class CourseUserDataController < ApplicationController
 ^^^^^
@@ -1767,24 +1728,9 @@ app/controllers/courses_controller.rb:697:7: C: Use snake_case for variable name
 app/controllers/courses_controller.rb:699:7: C: Prefer [33meach[0m over [33mfor[0m.
       for i in 0..(numRows - 1)
       ^^^
-app/controllers/extensions_controller.rb:1:1: C: Missing top-level class documentation comment.
-class ExtensionsController < ApplicationController
-^^^^^
-app/controllers/extensions_controller.rb:10:5: C: Prefer [33meach[0m over [33mfor[0m.
-    for u in @course.course_user_data do
-    ^^^
-app/controllers/extensions_controller.rb:13:5: C: Use snake_case for variable names.
-    @newExtension = @assessment.extensions.new
-    ^^^^^^^^^^^^^
-app/controllers/extensions_controller.rb:17:3: C: Assignment Branch Condition size for create is too high. [17.29/15]
+app/controllers/extensions_controller.rb:20:3: C: Assignment Branch Condition size for create is too high. [17.29/15]
   def create
   ^^^
-app/controllers/extensions_controller.rb:23:101: C: Line is too long. [114/100]
-      flash[:error] = "No student with id #{params[:extension][:course_user_datum_id]} was found for this course."
-                                                                                                    ^^^^^^^^^^^^^^
-app/controllers/extensions_controller.rb:40:101: C: Line is too long. [115/100]
-    params.require(:extension).permit(:course_user_datum_id, :days, :infinite, :commit, :course_id, :assessment_id)
-                                                                                                    ^^^^^^^^^^^^^^^
 app/controllers/gradebooks_controller.rb:6:1: C: Missing top-level class documentation comment.
 class GradebooksController < ApplicationController
 ^^^^^
@@ -1965,28 +1911,19 @@ app/controllers/groups_controller.rb:298:11: C: Redundant empty [33melse[0m-cl
 app/controllers/groups_controller.rb:300:5: W: [33mend[0m at 300, 4 is not aligned with [33mif[0m at 294, 10
     end
     ^^^
-app/controllers/home_controller.rb:1:1: C: Missing top-level class documentation comment.
-class HomeController < ApplicationController
-^^^^^
-app/controllers/home_controller.rb:8:5: C: Use a guard clause instead of wrapping the code inside a conditional expression.
-    if request.post?
-    ^^
-app/controllers/home_controller.rb:22:3: C: Assignment Branch Condition size for publicSignUp is too high. [30.35/15]
+app/controllers/home_controller.rb:27:3: C: Assignment Branch Condition size for publicSignUp is too high. [27.09/15]
   def publicSignUp
   ^^^
-app/controllers/home_controller.rb:22:3: C: Cyclomatic complexity for publicSignUp is too high. [9/6]
+app/controllers/home_controller.rb:27:3: C: Cyclomatic complexity for publicSignUp is too high. [8/6]
   def publicSignUp
   ^^^
-app/controllers/home_controller.rb:22:3: C: Method has too many lines. [22/20]
+app/controllers/home_controller.rb:27:3: C: Perceived complexity for publicSignUp is too high. [9/7]
   def publicSignUp
   ^^^
-app/controllers/home_controller.rb:22:3: C: Perceived complexity for publicSignUp is too high. [10/7]
-  def publicSignUp
-  ^^^
-app/controllers/home_controller.rb:22:7: C: Use snake_case for method names.
+app/controllers/home_controller.rb:27:7: C: Use snake_case for method names.
   def publicSignUp
       ^^^^^^^^^^^^
-app/controllers/home_controller.rb:56:3: C: Assignment Branch Condition size for vmlist is too high. [18.06/15]
+app/controllers/home_controller.rb:58:3: C: Assignment Branch Condition size for vmlist is too high. [18.06/15]
   def vmlist
   ^^^
 app/controllers/jobs_controller.rb:4:1: C: Class definition is too long. [169/100]
@@ -2097,33 +2034,12 @@ app/controllers/jobs_controller.rb:202:9: C: Favor modifier [33munless[0m usag
 app/controllers/jobs_controller.rb:242:7: C: Favor modifier [33mif[0m usage when having a single-line body. Another good alternative is the usage of control flow [33m&&[0m/[33m||[0m.
       if rjob["trace"][-1].split("|")[1].include? "Error"
       ^^
-app/controllers/problems_controller.rb:1:1: C: Missing top-level class documentation comment.
-class ProblemsController < ApplicationController
-^^^^^
-app/controllers/problems_controller.rb:38:5: C: Favor modifier [33mif[0m usage when having a single-line body. Another good alternative is the usage of control flow [33m&&[0m/[33m||[0m.
-    if @problem.destroy
-    ^^
-app/controllers/schedulers_controller.rb:1:1: C: Missing top-level class documentation comment.
-class SchedulersController < ApplicationController
-^^^^^
-app/controllers/scores_controller.rb:1:1: C: Missing top-level class documentation comment.
-class ScoresController < ApplicationController
-^^^^^
-app/controllers/scores_controller.rb:7:3: C: Assignment Branch Condition size for create is too high. [21.05/15]
+app/controllers/scores_controller.rb:11:3: C: Assignment Branch Condition size for create is too high. [21.05/15]
   def create
   ^^^
-app/controllers/scores_controller.rb:29:3: C: Assignment Branch Condition size for update is too high. [15.13/15]
+app/controllers/scores_controller.rb:33:3: C: Assignment Branch Condition size for update is too high. [15.13/15]
   def update
   ^^^
-app/controllers/scores_controller.rb:46:5: C: Use a guard clause instead of wrapping the code inside a conditional expression.
-    unless (@score.submission.course_user_datum_id == @cud.id) ||
-    ^^^^^^
-app/controllers/scores_controller.rb:52:3: W: Duplicate methods [33mset_score[0m at lines [33m44, 52[0m detected.
-  def set_score
-  ^^^
-app/controllers/scores_controller.rb:54:5: C: Use a guard clause instead of wrapping the code inside a conditional expression.
-    unless (@score.submission.course_user_datum_id == @cud.id) ||
-    ^^^^^^
 app/controllers/submissions_controller.rb:4:1: C: Class definition is too long. [260/100]
 class SubmissionsController < ApplicationController
 ^^^^^
@@ -3051,318 +2967,36 @@ class Tweak < ScoreAdjustment
 app/models/tweak.rb:12:7: C: Provide an exception class and message as arguments to [33mfail[0m.
       fail ArgumentError.new("ScoreAdjustment.apply_tweak: score was nil")
       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-app/models/user.rb:1:1: C: Class definition is too long. [225/100]
+app/models/user.rb:5:1: C: Class definition is too long. [198/100]
 class User < ActiveRecord::Base
 ^^^^^
-app/models/user.rb:1:1: C: Missing top-level class documentation comment.
-class User < ActiveRecord::Base
-^^^^^
-app/models/user.rb:15:3: C: Prefer the new style validations [33mvalidates :column, presence: value[0m over [33mvalidates_presence_of[0m.
-  validates_presence_of :first_name, :last_name, :email
-  ^^^^^^^^^^^^^^^^^^^^^
-app/models/user.rb:22:7: C: Favor modifier [33mif[0m usage when having a single-line body. Another good alternative is the usage of control flow [33m&&[0m/[33m||[0m.
-      if cud.instructor?
-      ^^
-app/models/user.rb:34:10: C: Use [33mnext[0m to skip iteration.
-    cuds.each do |cud|
-         ^^^^
-app/models/user.rb:36:9: C: Favor modifier [33munless[0m usage when having a single-line body. Another good alternative is the usage of control flow [33m&&[0m/[33m||[0m.
-        unless cud.course.course_user_data.where(user: user).empty?
-        ^^^^^^
-app/models/user.rb:72:3: C: Assignment Branch Condition size for ldap_reset is too high. [23.37/15]
+app/models/user.rb:63:3: C: Assignment Branch Condition size for ldap_reset is too high. [23.37/15]
   def ldap_reset
   ^^^
-app/models/user.rb:73:5: C: Use a guard clause instead of wrapping the code inside a conditional expression.
-    if email.include? "@andrew.cmu.edu"
-    ^^
-app/models/user.rb:74:7: C: Use snake_case for variable names.
-      ldapResult = User.ldap_lookup(email.split("@")[0])
-      ^^^^^^^^^^
-app/models/user.rb:84:7: C: Favor modifier [33mif[0m usage when having a single-line body. Another good alternative is the usage of control flow [33m&&[0m/[33m||[0m.
-      if first_name.nil?
-      ^^
-app/models/user.rb:87:7: C: Favor modifier [33mif[0m usage when having a single-line body. Another good alternative is the usage of control flow [33m&&[0m/[33m||[0m.
-      if last_name.nil?
-      ^^
-app/models/user.rb:92:6: W: [33mend[0m at 92, 5 is not aligned with [33mif[0m at 73, 4
-     end
-     ^^^
-app/models/user.rb:98:5: C: Favor modifier [33mif[0m usage when having a single-line body. Another good alternative is the usage of control flow [33m&&[0m/[33m||[0m.
-    if authentication && authentication.user
-    ^^
-app/models/user.rb:106:5: C: Favor modifier [33mif[0m usage when having a single-line body. Another good alternative is the usage of control flow [33m&&[0m/[33m||[0m.
-    if authentication && authentication.user
-    ^^
-app/models/user.rb:114:5: C: Favor modifier [33mif[0m usage when having a single-line body. Another good alternative is the usage of control flow [33m&&[0m/[33m||[0m.
-    if authentication && authentication.user
-    ^^
-app/models/user.rb:119:3: C: Assignment Branch Condition size for new_with_session is too high. [35.26/15]
+app/models/user.rb:100:3: C: Assignment Branch Condition size for new_with_session is too high. [35.26/15]
   def self.new_with_session(params, session)
   ^^^
-app/models/user.rb:121:15: W: Assignment in condition - you probably meant to use [33m==[0m.
-      if data = session["devise.facebook_data"]
-              ^
-app/models/user.rb:127:18: W: Assignment in condition - you probably meant to use [33m==[0m.
-      elsif data = session["devise.google_oauth2_data"]
-                 ^
-app/models/user.rb:133:18: W: Assignment in condition - you probably meant to use [33m==[0m.
-      elsif data = session["devise.shibboleth_data"]
-                 ^
-app/models/user.rb:142:3: C: Assignment Branch Condition size for roster_create is too high. [19.26/15]
+app/models/user.rb:123:3: C: Assignment Branch Condition size for roster_create is too high. [19.26/15]
   def self.roster_create(email, first_name, last_name, school, major, year)
   ^^^
-app/models/user.rb:142:3: C: Method has too many lines. [21/20]
+app/models/user.rb:123:3: C: Method has too many lines. [21/20]
   def self.roster_create(email, first_name, last_name, school, major, year)
   ^^^
-app/models/user.rb:142:25: C: Avoid parameter lists longer than 5 parameters.
+app/models/user.rb:123:25: C: Avoid parameter lists longer than 5 parameters.
   def self.roster_create(email, first_name, last_name, school, major, year)
                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-app/models/user.rb:198:3: C: Assignment Branch Condition size for ldap_lookup is too high. [53.77/15]
+app/models/user.rb:179:3: C: Assignment Branch Condition size for ldap_lookup is too high. [52.11/15]
   def self.ldap_lookup(andrewID)
   ^^^
-app/models/user.rb:198:3: C: Cyclomatic complexity for ldap_lookup is too high. [46/6]
+app/models/user.rb:179:3: C: Cyclomatic complexity for ldap_lookup is too high. [44/6]
   def self.ldap_lookup(andrewID)
   ^^^
-app/models/user.rb:198:3: C: Method has too many lines. [68/20]
+app/models/user.rb:179:3: C: Method has too many lines. [65/20]
   def self.ldap_lookup(andrewID)
   ^^^
-app/models/user.rb:198:3: C: Perceived complexity for ldap_lookup is too high. [17/7]
+app/models/user.rb:179:3: C: Perceived complexity for ldap_lookup is too high. [15/7]
   def self.ldap_lookup(andrewID)
   ^^^
-app/models/user.rb:214:11: C: Indent [33mwhen[0m as deep as [33mcase[0m.
-          when "Architecture" then "ARC"
-          ^^^^
-app/models/user.rb:215:11: C: Indent [33mwhen[0m as deep as [33mcase[0m.
-          when "Computational Biology" then "CB"
-          ^^^^
-app/models/user.rb:216:11: C: Indent [33mwhen[0m as deep as [33mcase[0m.
-          when "Computer Science and Arts" then "BCA"
-          ^^^^
-app/models/user.rb:217:11: C: Indent [33mwhen[0m as deep as [33mcase[0m.
-          when "Computer Science Department" then "CSD"
-          ^^^^
-app/models/user.rb:218:11: C: Indent [33mwhen[0m as deep as [33mcase[0m.
-          when "HCII: Human Computer Interaction Institute" then "HCI"
-          ^^^^
-app/models/user.rb:219:11: C: Indent [33mwhen[0m as deep as [33mcase[0m.
-          when "Humanities and Arts" then "BHA"
-          ^^^^
-app/models/user.rb:220:11: C: Indent [33mwhen[0m as deep as [33mcase[0m.
-          when "General CIT" then "C00"
-          ^^^^
-app/models/user.rb:221:11: C: Indent [33mwhen[0m as deep as [33mcase[0m.
-          when "Civil & Environmental Engineering" then "CEE"
-          ^^^^
-app/models/user.rb:222:11: C: Indent [33mwhen[0m as deep as [33mcase[0m.
-          when "Chemical Engineering" then "CHE"
-          ^^^^
-app/models/user.rb:223:11: C: Indent [33mwhen[0m as deep as [33mcase[0m.
-          when "Computer Science" then "CS"
-          ^^^^
-app/models/user.rb:224:11: C: Indent [33mwhen[0m as deep as [33mcase[0m.
-          when "Electrical & Computer Engineering" then "ECE"
-          ^^^^
-app/models/user.rb:225:11: C: Indent [33mwhen[0m as deep as [33mcase[0m.
-          when "Entertainment Technology Pittsburgh" then "ETC"
-          ^^^^
-app/models/user.rb:226:11: C: Indent [33mwhen[0m as deep as [33mcase[0m.
-          when "Economics" then "ECO"
-          ^^^^
-app/models/user.rb:227:11: C: Indent [33mwhen[0m as deep as [33mcase[0m.
-          when "History" then "HIS"
-          ^^^^
-app/models/user.rb:228:11: C: Indent [33mwhen[0m as deep as [33mcase[0m.
-          when "H&SS Interdisciplinary" then "HSS"
-          ^^^^
-app/models/user.rb:229:11: C: Indent [33mwhen[0m as deep as [33mcase[0m.
-          when "Information Networking Institute" then "INI"
-          ^^^^
-app/models/user.rb:230:11: C: Indent [33mwhen[0m as deep as [33mcase[0m.
-          when "Institute for Software Research" then "ISR"
-          ^^^^
-app/models/user.rb:231:11: C: Indent [33mwhen[0m as deep as [33mcase[0m.
-          when "Information Systems:Sch of IS & Mgt" then "ISM"
-          ^^^^
-app/models/user.rb:232:11: C: Indent [33mwhen[0m as deep as [33mcase[0m.
-          when "Mechanical Engineering" then "MEG"
-          ^^^^
-app/models/user.rb:233:11: C: Indent [33mwhen[0m as deep as [33mcase[0m.
-          when "Mathematical Sciences" then "MSC"
-          ^^^^
-app/models/user.rb:234:11: C: Indent [33mwhen[0m as deep as [33mcase[0m.
-          when "General MCS" then "M00"
-          ^^^^
-app/models/user.rb:235:11: C: Indent [33mwhen[0m as deep as [33mcase[0m.
-          when "Software Engineering" then "SE"
-          ^^^^
-app/models/user.rb:236:11: C: Indent [33mwhen[0m as deep as [33mcase[0m.
-          when "Science and Humanities Scholars" then "SHS"
-          ^^^^
-app/models/user.rb:237:11: C: Indent [33mwhen[0m as deep as [33mcase[0m.
-          when "Business Administration" then "BA"
-          ^^^^
-app/models/user.rb:238:11: C: Indent [33mwhen[0m as deep as [33mcase[0m.
-          when "Machine Learning" then "ML"
-          ^^^^
-app/models/user.rb:239:11: C: Indent [33mwhen[0m as deep as [33mcase[0m.
-          when "NREC: National Robotics Engineering Center" then "Robotics"
-          ^^^^
-app/models/user.rb:243:11: C: Indent [33mwhen[0m as deep as [33mcase[0m.
-          when "Freshman" then "1"
-          ^^^^
-app/models/user.rb:244:11: C: Indent [33mwhen[0m as deep as [33mcase[0m.
-          when "Sophomore" then "2"
-          ^^^^
-app/models/user.rb:245:11: C: Indent [33mwhen[0m as deep as [33mcase[0m.
-          when "Junior" then "3"
-          ^^^^
-app/models/user.rb:246:11: C: Indent [33mwhen[0m as deep as [33mcase[0m.
-          when "Senior" then "4"
-          ^^^^
-app/models/user.rb:247:11: C: Indent [33mwhen[0m as deep as [33mcase[0m.
-          when "Masters" then "10"
-          ^^^^
-app/models/user.rb:255:9: C: Prefer [33meach[0m over [33mfor[0m.
-        for college in user[:edupersonschoolcollegename] do
-        ^^^
-app/models/user.rb:256:29: C: Avoid more than 3 levels of block nesting.
-          result[:school] = case college
-                            ^^^^^^^^^^^^
-app/models/user.rb:257:13: C: Indent [33mwhen[0m as deep as [33mcase[0m.
-            when "College of Fine Arts" then "CFA"
-            ^^^^
-app/models/user.rb:258:13: C: Indent [33mwhen[0m as deep as [33mcase[0m.
-            when "Carnegie Institute of Technology" then "CIT"
-            ^^^^
-app/models/user.rb:259:13: C: Indent [33mwhen[0m as deep as [33mcase[0m.
-            when "Carnegie Mellon University" then "CMU"
-            ^^^^
-app/models/user.rb:260:13: C: Indent [33mwhen[0m as deep as [33mcase[0m.
-            when "School of Computer Science" then "SCS"
-            ^^^^
-app/models/user.rb:261:13: C: Indent [33mwhen[0m as deep as [33mcase[0m.
-            when "SCS - SCH of Computer Science" then "SCS"
-            ^^^^
-app/models/user.rb:262:13: C: Indent [33mwhen[0m as deep as [33mcase[0m.
-            when "H. John Heinz III College" then "HC"
-            ^^^^
-app/models/user.rb:263:13: C: Indent [33mwhen[0m as deep as [33mcase[0m.
-            when "College of Humanities and Social Sciences" then "HSS"
-            ^^^^
-app/models/user.rb:264:13: C: Indent [33mwhen[0m as deep as [33mcase[0m.
-            when "Mellon College of Science" then "MCS"
-            ^^^^
-app/models/user.rb:265:13: C: Indent [33mwhen[0m as deep as [33mcase[0m.
-            when "David A. Tepper School of Business" then "TSB"
-            ^^^^
-app/models/user.rb:269:11: C: Avoid more than 3 levels of block nesting.
-          break if result[:school]
-          ^^^^^^^^^^^^^^^^^^^^^^^^
-app/models/user_module.rb:1:1: C: Class definition is too long. [145/100]
-class UserModule < ActiveRecord::Base
-^^^^^
-app/models/user_module.rb:1:1: C: Missing top-level class documentation comment.
-class UserModule < ActiveRecord::Base
-^^^^^
-app/models/user_module.rb:14:5: C: Favor modifier [33munless[0m usage when having a single-line body. Another good alternative is the usage of control flow [33m&&[0m/[33m||[0m.
-    unless whitelist.find { |c| c == arg.class }
-    ^^^^^^
-app/models/user_module.rb:20:7: C: Use snake_case for method names.
-  def addColumn(field_name, data_type)
-      ^^^^^^^^^
-app/models/user_module.rb:21:5: C: Favor modifier [33mif[0m usage when having a single-line body. Another good alternative is the usage of control flow [33m&&[0m/[33m||[0m.
-    if data_type.class != Class
-    ^^
-app/models/user_module.rb:30:7: C: Use snake_case for method names.
-  def removeColumn(field_name)
-      ^^^^^^^^^^^^
-app/models/user_module.rb:35:5: C: Favor modifier [33mif[0m usage when having a single-line body. Another good alternative is the usage of control flow [33m&&[0m/[33m||[0m.
-    if result.empty?
-    ^^
-app/models/user_module.rb:46:3: C: Assignment Branch Condition size for put is too high. [18.14/15]
-  def put(fieldName, data_id, data)
-  ^^^
-app/models/user_module.rb:46:3: C: Method has too many lines. [21/20]
-  def put(fieldName, data_id, data)
-  ^^^
-app/models/user_module.rb:47:5: C: Use snake_case for variable names.
-    fieldName = sql_safe(fieldName)
-    ^^^^^^^^^
-app/models/user_module.rb:54:5: C: Favor modifier [33mif[0m usage when having a single-line body. Another good alternative is the usage of control flow [33m&&[0m/[33m||[0m.
-    if result.empty?
-    ^^
-app/models/user_module.rb:76:5: C: Use snake_case for variable names.
-    fieldName = sql_safe(fieldName)
-    ^^^^^^^^^
-app/models/user_module.rb:82:5: C: Favor modifier [33mif[0m usage when having a single-line body. Another good alternative is the usage of control flow [33m&&[0m/[33m||[0m.
-    if result.empty?
-    ^^
-app/models/user_module.rb:92:3: C: Assignment Branch Condition size for get is too high. [36.25/15]
-  def get(fieldName, data_id = nil)
-  ^^^
-app/models/user_module.rb:92:3: C: Cyclomatic complexity for get is too high. [10/6]
-  def get(fieldName, data_id = nil)
-  ^^^
-app/models/user_module.rb:92:3: C: Method has too many lines. [45/20]
-  def get(fieldName, data_id = nil)
-  ^^^
-app/models/user_module.rb:92:3: C: Perceived complexity for get is too high. [13/7]
-  def get(fieldName, data_id = nil)
-  ^^^
-app/models/user_module.rb:93:5: C: Use snake_case for variable names.
-    fieldName = sql_safe(fieldName)
-    ^^^^^^^^^
-app/models/user_module.rb:103:5: C: Favor modifier [33mif[0m usage when having a single-line body. Another good alternative is the usage of control flow [33m&&[0m/[33m||[0m.
-    if result.empty?
-    ^^
-app/models/user_module.rb:117:5: C: Favor modifier [33mif[0m usage when having a single-line body. Another good alternative is the usage of control flow [33m&&[0m/[33m||[0m.
-    if result.empty?
-    ^^
-app/models/user_module.rb:123:9: C: Prefer [33meach[0m over [33mfor[0m.
-        for r in result do
-        ^^^
-app/models/user_module.rb:128:40: W: The use of [33meval[0m is a serious security risk.
-          results[r["data_id"].to_i] = eval("#{data_type}(\"#{r['data']}\")")
-                                       ^^^^
-app/models/user_module.rb:132:16: W: The use of [33meval[0m is a serious security risk.
-        return eval("#{data_type}(\"#{result[0]['data']}\")")
-               ^^^^
-app/models/user_module.rb:135:7: C: Do not write to stdout. Use Rails' logger if you want to log.
-      puts $ERROR_INFO
-      ^^^^
-app/models/user_module.rb:138:9: C: Prefer [33meach[0m over [33mfor[0m.
-        for r in result do
-        ^^^
-app/models/user_module.rb:147:3: C: Assignment Branch Condition size for getByVal is too high. [24.23/15]
-  def getByVal(fieldName, data)
-  ^^^
-app/models/user_module.rb:147:3: C: Method has too many lines. [25/20]
-  def getByVal(fieldName, data)
-  ^^^
-app/models/user_module.rb:147:7: C: Use snake_case for method names.
-  def getByVal(fieldName, data)
-      ^^^^^^^^
-app/models/user_module.rb:148:5: C: Use snake_case for variable names.
-    fieldName = sql_safe(fieldName)
-    ^^^^^^^^^
-app/models/user_module.rb:154:5: C: Do not write to stdout. Use Rails' logger if you want to log.
-    puts result
-    ^^^^
-app/models/user_module.rb:155:5: C: Do not write to stdout. Use Rails' logger if you want to log.
-    puts result.count
-    ^^^^
-app/models/user_module.rb:156:5: C: Do not write to stdout. Use Rails' logger if you want to log.
-    puts "restss"
-    ^^^^
-app/models/user_module.rb:157:5: C: Favor modifier [33mif[0m usage when having a single-line body. Another good alternative is the usage of control flow [33m&&[0m/[33m||[0m.
-    if result.empty?
-    ^^
-app/models/user_module.rb:164:5: W: Unreachable code detected.
-    result = ActiveRecord::Base.connection.select_all("SELECT * from module_data
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-app/models/user_module.rb:168:7: C: Prefer [33meach[0m over [33mfor[0m.
-      for r in result do
-      ^^^
 assessmentConfig/AutoPopulated-balls.rb:1:1: C: Use snake_case for source file names.
 require "AssessmentBase.rb"
 ^
@@ -4567,4 +4201,4 @@ templates/labtemplate/labtemplate.rb:8:7: C: Use snake_case for method names.
   def assessmentInitialize(course)
       ^^^^^^^^^^^^^^^^^^^^
 
-263 files inspected, 1521 offenses detected
+262 files inspected, 1399 offenses detected

@@ -1,3 +1,7 @@
+##
+# An Assessment can have any number of Problems, which are basically just a name,
+# and a think for Scores to join with.
+#
 class ProblemsController < ApplicationController
   # inherited from ApplicationController
   before_action :set_assessment
@@ -35,9 +39,7 @@ class ProblemsController < ApplicationController
 
   action_auth_level :destroy, :instructor
   def destroy
-    if @problem.destroy
-      flash[:success] = "Problem successfully destroyed."
-    end
+    flash[:success] = "Problem successfully destroyed." if @problem.destroy
     redirect_to(problems_index) && return
   end
 
