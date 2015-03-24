@@ -131,7 +131,7 @@ protected
 
     course_name = params[:course_id] ||
           (params[:controller] == "courses" ? params[:id] : nil)
-    @course = Course.find(course_name) if course_name
+    @course = Course.find_by_name(course_name) if course_name
 
     unless @course
       flash[:error] = "Course #{params[:course]} does not exist!"
