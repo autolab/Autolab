@@ -29,8 +29,8 @@ class JobsController < ApplicationController
 
     # Get the complete lists of live and dead jobs from the server
     begin
-      raw_live_jobs = TangoClient.tango_jobs()["jobs"]
-      raw_dead_jobs = TangoClient.tango_jobs(deadjobs=1)["jobs"]
+      raw_live_jobs = TangoClient.tango_jobs()
+      raw_dead_jobs = TangoClient.tango_jobs(deadjobs=1)
     rescue TangoClient::TangoException => e
       flash[:error] = "Error while getting job list: #{e.message}"
     end
@@ -79,8 +79,8 @@ class JobsController < ApplicationController
 
     # Get the complete lists of live and dead jobs from the server
     begin
-      raw_live_jobs = TangoClient.tango_jobs()["jobs"]
-      raw_dead_jobs = TangoClient.tango_jobs(deadjobs=1)["jobs"]
+      raw_live_jobs = TangoClient.tango_jobs()
+      raw_dead_jobs = TangoClient.tango_jobs(deadjobs=1)
     rescue TangoClient::TangoException => e
       flash[:error] = "Error while getting job list: #{e.message}"
     end

@@ -361,7 +361,7 @@ module AssessmentAutograde
 
     # send the tango open request
     begin
-      existing_files = TangoClient.tango_open("#{course.name}-#{assessment.name}")["files"]
+      existing_files = TangoClient.tango_open("#{course.name}-#{assessment.name}")
     rescue TangoClient::TangoException => e
       flash[:error] = "Error with open request on Tango: #{e.message}"
       return -1
