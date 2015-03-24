@@ -13,6 +13,10 @@ module TangoClient
 
   def self.tango_handle_timeouts
     yield
+  rescue Net::OpenTimeout, Net::ReadTimeout
+    nil
+  rescue StandardError
+    nil
   end
 
   def self.tango_open(courselab)
