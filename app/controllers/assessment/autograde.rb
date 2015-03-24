@@ -187,19 +187,6 @@ module AssessmentAutograde
   end
 
   ##
-  # Sends the open request to tango.
-  # Returns a list of files already on Tango, or -1 on failure
-  #
-  def tango_open(course, assessment)
-    # Send OPEN api request to create/query course-lab directory.
-    open_resp = TangoClient.tango_open("#{course.name}-#{assessment.name}")
-    return -1, nil if open_resp.nil? || open_resp["statusId"] < 0
-
-    COURSE_LOGGER.log("Existing File List: #{open_res['files']}")
-    [0, open_resp["files"]]
-  end
-
-  ##
   # sends an upload request for every file that needs to be uploaded.
   # returns a list of files uploaded on success and a negative number on failure
   #
@@ -230,13 +217,13 @@ module AssessmentAutograde
       end
 
       begin
-        upload_resp = TangoClient.tango_upload("#{course.name}-#{assessment.name}",
-                                               File.basename(f["localFile"]),
-                                               File.open(f["localFile"], "rb").read)
-      rescue StandardError
+        TangoClient.tango_upload("#{course.name}-#{assessment.name}",
+                                 File.basename(f["localFile"]),
+                                 File.open(f["localFile"], "rb").read)
+      rescue TangoClient::TangoException => e
+        flash[:error] = "Error while uploading autograding files: #{e.message}"
         return -4, nil
       end
-      return -6, nil if upload_resp.nil? || upload_resp["statusId"] < 0
     end
 
     [0, upload_file_list]
@@ -309,12 +296,13 @@ module AssessmentAutograde
                        "timeout" => @autograde_prop.autograde_timeout,
                        "callback_url" => callback_url,
                        "jobName" => job_name }.to_json
-
-    response = TangoClient.tango_addjob("#{course.name}-#{assessment.name}", job_properties)
-    # Sanity check that job has been added successfully.
-    return -9, nil if response.nil? || response["statusId"] < 0
-
-    [0, response_json]
+    begin
+      response = TangoClient.tango_addjob("#{course.name}-#{assessment.name}", job_properties)
+    rescue TangoClient::TangoException => e
+      flash[:error] = "Error while adding job to the queue: #{e.message}"
+      return -9, nil
+    end
+    [0, response]
   end
 
   ##
@@ -336,6 +324,9 @@ module AssessmentAutograde
         end
       end
     rescue Timeout::Error
+      return -11
+    rescue TangoClient::TangoException => e
+      flash[:error] = "Error while polling for job status: #{e.message}"
       return -11
     end
 
@@ -369,8 +360,12 @@ module AssessmentAutograde
     return -2 unless @autograde_prop
 
     # send the tango open request
-    status, existing_files = tango_open(course, assessment)
-    return status if status < 0
+    begin
+      existing_files = TangoClient.tango_open("#{course.name}-#{assessment.name}")["files"]
+    rescue TangoClient::TangoException => e
+      flash[:error] = "Error with open request on Tango: #{e.message}"
+      return -1
+    end
 
     # send the tango upload requests
     status, upload_file_list = tango_upload(course, assessment, submissions[0], existing_files)

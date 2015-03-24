@@ -11,12 +11,19 @@ module TangoClient
     default_timeout 10
   end
 
+  # Exception for Tango API Client
+  class TangoException < StandardError; end
+
   def self.tango_handle_timeouts
-    yield
+    resp = yield
+    if resp.content_type == "application/json" && resp["statusId"] && resp["statusId"] < 0
+      fail TangoException, "Tango returned negative status code."
+    end
+    return resp
   rescue Net::OpenTimeout, Net::ReadTimeout
-    nil
-  rescue StandardError
-    nil
+    raise TangoException, "Connection timed out with Tango."
+  rescue StandardError => e
+    raise TangoException, "Unexpected error with Tango (#{e})."
   end
 
   def self.tango_open(courselab)
