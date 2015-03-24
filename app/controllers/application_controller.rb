@@ -191,10 +191,10 @@ protected
                         (params[:action] == "edit" || params[:action] == "update" ||
                          params[:action] == "unsudo")
 
-    if (invalid_cud || nicknameless_student) && !in_edit_or_unsudo
-      flash[:error] = "Please complete all of your account information before continuing"
-      redirect_to edit_course_course_user_datum_path(id: @cud.id, course_id: @cud.course.id)
-    end
+    return unless (invalid_cud || nicknameless_student) && !in_edit_or_unsudo
+    
+    flash[:error] = "Please complete all of your account information before continuing"
+    redirect_to([:edit, @course, @cud]) && return
   end
 
   ##
