@@ -1,7 +1,7 @@
 <h2>Create Submission for <%= link_to @assessment.display_name, [@course, @assessment] %> </h2>
 
 <p>
-<%= link_to "Manage Submissions", :action=>"index", :assessment_id=>@assessment %>
+<%= link_to "Manage Submissions", [@course, @assessment, :submissions] %>
 </p>
 
 <%= form_for @submission, as: :submission,

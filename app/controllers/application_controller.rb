@@ -128,13 +128,12 @@ protected
   end
 
   def authorize_user_for_course
-
-    course_name = params[:course_id] ||
-          (params[:controller] == "courses" ? params[:id] : nil)
-    @course = Course.find_by_name(course_name) if course_name
+    course_name = params[:course_name] ||
+          (params[:controller] == "courses" ? params[:name] : nil)
+    @course = Course.find_by(name: course_name) if course_name
 
     unless @course
-      flash[:error] = "Course #{params[:course]} does not exist!"
+      flash[:error] = "Course #{params[:course_name]} does not exist!"
       redirect_to(controller: :home, action: :error) && return
     end
 
@@ -204,7 +203,7 @@ protected
   #
   def set_assessment
     begin
-      @assessment = @course.assessments.find_by_name(params[:assessment_id] || params[:id])
+      @assessment = @course.assessments.find_by!(name: params[:assessment_name] || params[:name])
     rescue
       flash[:error] = "The assessment was not found for this course."
       redirect_to(action: :index) && return
@@ -318,11 +317,11 @@ private
       @error = exception
 
       # Generate course id and assesssment id objects
-      @course_name = params[:course_id] ||
-            (params[:controller] == "courses" ? params[:id] : nil)
+      @course_name = params[:course_name] ||
+            (params[:controller] == "courses" ? params[:name] : nil)
       if (@course_name) then
-        @assessment_name = params[:assessment_id] ||
-            (params[:controller] == "assessments" ? params[:id] : nil)
+        @assessment_name = params[:assessment_name] ||
+            (params[:controller] == "assessments" ? params[:name] : nil)
 
       end
     end

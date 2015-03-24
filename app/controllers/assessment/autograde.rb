@@ -10,9 +10,8 @@ module AssessmentAutograde
   # method called when Tango returns the output
   # action_no_auth :autograde_done
   def autograde_done
-
-    @course = Course.find_by_name(params[:course_id]) || (render(nothing: true) && return)
-    @assessment = @course.assessments.find_by_name(params[:id])
+    @course = Course.find_by(name: params[:course_name]) || (render(nothing: true) && return)
+    @assessment = @course.assessments.find_by(name: params[:name])
     render(nothing: true) && return unless @assessment && @assessment.has_autograde
 
     # there can be multiple submission with the same dave if this was a group submission

@@ -17,9 +17,7 @@ module AssessmentHandin
   # Any errors should be added to flash[:error] and return false or nil.
   def handin
     # validate the handin
-    unless validateHandin
-      redirect_to(action: :show) && return
-    end
+    redirect_to(action: :show) && return unless validateHandin
 
     # save the submissions
     begin
@@ -38,9 +36,7 @@ module AssessmentHandin
     end
 
     # autograde the submissions
-    if @assessment.has_autograde
-      autogradeSubmissions(@course, @assessment, submissions)
-    end
+    autogradeSubmissions(@course, @assessment, submissions) if @assessment.has_autograde
 
     redirect_to([:history, @course, @assessment]) && return
   end
@@ -48,10 +44,8 @@ module AssessmentHandin
   # method called when student makes
   # unofficial submission in the database
   def local_submit
-    @course = Course.find_by_name(params[:course_id])
-    unless @course
-      render(plain: "ERROR: invalid course", status: :bad_request) && return
-    end
+    @course = Course.find_by(params[:course_name])
+    render(plain: "ERROR: invalid course", status: :bad_request) && return unless @course
 
     @user = User.find_by(email: params[:user])
     @cud = if @user then @course.course_user_data.find_by(user_id: @user.id) else nil end
@@ -60,7 +54,7 @@ module AssessmentHandin
       render(plain: err, status: :bad_request) && return
     end
 
-    @assessment = @course.assessments.find_by_name(params[:id])
+    @assessment = @course.assessments.find_by(params[:name])
     if !@assessment
       err = "ERROR: Invalid Assessment (#{params[:id]}) for course #{@course.id}"
       render(plain: err, status: :bad_request) && return
@@ -86,9 +80,7 @@ module AssessmentHandin
           end
         end
 
-        unless validateForGroups
-          render(plain: flash[:error], status: :bad_request) && return
-        end
+        render(plain: flash[:error], status: :bad_request) && return unless validateForGroups
 
         # save the submissions
         begin
@@ -160,10 +152,8 @@ module AssessmentHandin
   # method called when student makes
   # log submission in the database
   def log_submit
-    @course = Course.find_by_name(params[:course_id])
-    unless @course
-      render(plain: "ERROR: invalid course", status: :bad_request) && return
-    end
+    @course = Course.find_by(name: params[:course_name])
+    render(plain: "ERROR: invalid course", status: :bad_request) && return unless @course
 
     @user = User.find_by(email: params[:user])
     @cud = if @user then @course.course_user_data.find_by(user_id: @user.id) else nil end
@@ -172,7 +162,7 @@ module AssessmentHandin
       render(plain: err, status: :bad_request) && return
     end
 
-    @assessment = @course.assessments.find_by_name(params[:id])
+    @assessment = @course.assessments.find_by(name: params[:name])
     if !@assessment
       err = "ERROR: Invalid Assessment (#{params[:id]}) for course #{@course.id}"
       render(plain: err, status: :bad_request) && return
@@ -343,10 +333,6 @@ private
   end
 
   def get_handin
-    if @assessment.nil?
-      @assessment = @course.assessments.find_by_name(params[:assessment_id])
-    end
-
     submission_count = @assessment.submissions.where(course_user_datum_id: @cud.id).count
     @left_count = [@assessment.max_submissions - submission_count, 0].max
     @aud = AssessmentUserDatum.get @assessment.id, @cud.id
