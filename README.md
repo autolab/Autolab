@@ -17,76 +17,7 @@ This is the main repository that includes the application layer of the project. 
 
 ## Getting Started
 
-
-1. Install rbenv (Basic GitHub Checkout method): [Github rbenv](https://github.com/sstephenson/rbenv)
-
-
-2. Install ruby-build (as an rbenv plugin): [Github ruby-build](https://github.com/sstephenson/ruby-build)
-	```sh
-	git clone https://github.com/sstephenson/ruby-build.git ~/.rbenv/plugins/ruby-build
-	```
-
-	_(You might need to restart your shell at this point in order to start using your newly installed rbenv)_
-3. Install the version of ruby in the text file `.ruby-version`:
-	```sh
-	rbenv install 2.1.2
-	```
- At this point, confirm that `rbenv` is working (depending on your shell, you might need to logout and log back in):
-
-  ```
-  $ which ruby
-  ~/.rbenv/shims/ruby
-
-  $ which rake
-  ~/.rbenv/shims/rake
-  ```
-
-5. Install `bundler`:
-
-  ```
-  gem install bundler
-  rbenv rehash
-  ```
-
-5. `cd` into `autolab-src` and install the required gems:
-
-  ```sh
-  bundle install
-  ```
-  You need to have MySQL installed before hand.
-
-
-5.  Configure your database next. You need to fill the `username` and `password` fields on 		`config/database.yml.template` and rename it to `config/database.yml`. Depending on how you installed MySQL and which platform you're running on, you might have to change the database socket setting in this file. Search online to determine where your MySQL server's socket is if you don't already know.
-
-6. Create and initialize the database tables:
-
-	```sh
-	bundle exec rake db:create
-	bundle exec rake db:migrate
-	```
-   Do not forget to use `bundle exec` in front of every rake/rails command.
-
-
-7. (Optional) Populate dummy data for development purposes:
-
-	```sh
-	rake autolab:populate
-	```
-
-	(#TODO: make it so that setup.sh initiates the directories)
-
-
-8. (Optional) Setup [Tango Service] (https://github.com/autolab/Tango) following the [instructions on the wiki] (https://github.com/autolab/Tango/wiki/Setting-up-Tango-server-and-VMs). 
-
-9. Create the autogradeConfig file by editing `config/autogradeConfig.rb.template` and renaming to `config/autogradeConfig.rb`. 
-
-10. Start rails server:
-
-	```sh
-	bundle exec rails s -p 3000
-	```
-
-11. Go to <yoururl>:3000 to see if the application is running. You can use the `Developer Login` option with the email "admin@foo.bar".
+We've moved all our documentation to the [Wiki](wiki), and it looks pretty good! For a super-quick setup guide, check out [Installing Autolab on Ubuntu](wiki/Installing-Autolab-on-Ubuntu). Mac OS X setup instructions coming soon!
 
 
 ## Testing
@@ -119,16 +50,17 @@ bundle exec rake spec
 
 [![Build Status](https://travis-ci.org/autolab/Autolab.svg)](https://travis-ci.org/autolab/Autolab) [![Code Climate](https://codeclimate.com/github/autolab/Autolab/badges/gpa.svg)](https://codeclimate.com/github/autolab/Autolab) [![Test Coverage](https://codeclimate.com/github/autolab/Autolab/badges/coverage.svg)](https://codeclimate.com/github/autolab/Autolab)
 
+
 ## Contributing
 
 We encourage you to contribute to Autolab! Please check out the
 [Contributing to Autolab Guide](https://github.com/autolab/Autolab/blob/master/CONTRIBUTING.md) for guidelines about how to proceed. [Join us!](http://contributors.autolabproject.org)
 
 
-
 ## License
 
 Autolab is released under the [Apache License 2.0](http://opensource.org/licenses/Apache-2.0).
+
 
 ## Using Autolab
 
