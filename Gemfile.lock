@@ -104,6 +104,9 @@ GEM
       activesupport (>= 4.1.0)
     hashie (3.4.0)
     hike (1.2.3)
+    httparty (0.13.3)
+      json (~> 1.8)
+      multi_xml (>= 0.5.2)
     i18n (0.7.0)
     jbuilder (2.2.11)
       activesupport (>= 3.0.0, < 5)
@@ -281,6 +284,7 @@ DEPENDENCIES
   dynamic_form
   exception_notification!
   factory_girl_rails
+  httparty
   jbuilder (>= 2.0)
   jquery-rails
   momentjs-rails (>= 2.9.0)

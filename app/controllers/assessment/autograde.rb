@@ -1,6 +1,9 @@
+require "uri"
+require "TangoClient"
+require_relative Rails.root.join("config", "autogradeConfig.rb")
+
 module AssessmentAutograde
-  require "uri"
-  require_relative Rails.root.join("config", "autogradeConfig.rb")
+  include TangoClient
 
   # method called when Tango returns the output
   # action_no_auth :autograde_done
@@ -193,18 +196,14 @@ module AssessmentAutograde
     assessmentDir = File.join(AUTOCONFIG_COURSE_DIR, course.name, assessment.name)
 
     # Send OPEN api request to create/query course-lab directory.
-    openReqURL = "http://#{RESTFUL_HOST}:#{RESTFUL_PORT}/open/#{RESTFUL_KEY}/#{course.name}-#{assessment.name}/"
-    COURSE_LOGGER.log("Req: " + openReqURL)
-    openResponse = Net::HTTP.get_response(URI.parse(openReqURL))
-    openResponseJSON = JSON.parse(openResponse.body)
-    if openResponseJSON.nil? || openResponseJSON["statusId"] < 0
+    openResponse = TangoClient.tango_open("#{course.name}-#{assessment.name}")
+    if openResponse.nil? || openResponse["statusId"] < 0
       return -1
     end
-    existingFileList = openResponseJSON["files"]
+    existingFileList = openResponse["files"]
     COURSE_LOGGER.log("Existing File List: #{existingFileList}")
 
     # Send UPLOAD api request to upload autograde files.
-    uploadHTTPReq = Net::HTTP.new(RESTFUL_HOST, RESTFUL_PORT)
     begin
       COURSE_LOGGER.log("Dir: #{assessmentDir}")
 
@@ -224,20 +223,14 @@ module AssessmentAutograde
     uploadFileList.each do |f|
       md5hash = Digest::MD5.file(f["localFile"]).to_s
       unless existingFileList.any? { |h| h["md5"] == md5hash && h["localFile"] == File.basename(f["localFile"]) }
-        uploadReq = Net::HTTP::Post.new("/upload/#{RESTFUL_KEY}/#{course.name}-#{assessment.name}/")
-        uploadReq.add_field("Filename", File.basename(f["localFile"]))
         begin
-          file = File.open(f["localFile"], "rb")
-          uploadReq.body = file.read
+          uploadResponse = TangoClient.tango_upload("#{course.name}-#{assessment.name}",
+                                                  File.basename(f["localFile"]),
+                                                  File.open(f["localFile"], "rb").read)
         rescue Exception
           return -4
-        ensure
-          file.close unless file.nil?
         end
-        uploadResponse = uploadHTTPReq.request(uploadReq)
-        COURSE_LOGGER.log("Req: " + "/upload/#{RESTFUL_KEY}/#{course.name}-#{assessment.name}/")
-        uploadResponseJSON = JSON.parse(uploadResponse.body)
-        if uploadResponseJSON.nil? || uploadResponseJSON["statusId"] < 0
+        if uploadResponse.nil? || uploadResponse["statusId"] < 0
           return -6
         end
       end
@@ -282,12 +275,10 @@ module AssessmentAutograde
 
     COURSE_LOGGER.log("Callback: #{callBackURL}")
 
-    jobName = "%s_%s_%d_%s" % [course.name, assessment.name, submissions[0].version, submissions[0].course_user_datum.email]
+    job_name = "%s_%s_%d_%s" % [course.name, assessment.name, submissions[0].version, submissions[0].course_user_datum.email]
 
     # Send ADDJOB api request to add autograde job to queue.
-    addJobHTTPReq = Net::HTTP.new(RESTFUL_HOST, RESTFUL_PORT)
-    addJobReq = Net::HTTP::Post.new("/addJob/#{RESTFUL_KEY}/#{course.name}-#{assessment.name}/")
-    addJobReq.body = { "image" => @autograde_prop.autograde_image,
+    job_properties = { "image" => @autograde_prop.autograde_image,
                        "files" => uploadFileList.map do|f|
                          { "localFile" => File.basename(f["localFile"]),
                            "destFile" => Pathname.new(f["destFile"]).basename.to_s }
@@ -295,16 +286,13 @@ module AssessmentAutograde
                        "output_file" => filename,
                        "timeout" => @autograde_prop.autograde_timeout,
                        "callback_url" => callBackURL,
-                       "jobName" => jobName }.to_json
+                       "jobName" => job_name }.to_json
 
     list = uploadFileList.map { |f| Pathname.new(f["destFile"]).basename.to_s }
-    COURSE_LOGGER.log("Files: #{list}")
-    COURSE_LOGGER.log("Req: " + "/addJob/#{RESTFUL_KEY}/#{course.name}-#{assessment.name}/")
-    addJobResponse = addJobHTTPReq.request(addJobReq)
-    addJobResponseJSON = JSON.parse(addJobResponse.body)
+    addJobResponse = TangoClient.tango_addjob("#{course.name}-#{assessment.name}", job_properties)
 
     # Sanity check that job has been added successfully.
-    if addJobResponseJSON.nil? || addJobResponseJSON["statusId"] < 0
+    if addJobResponse.nil? || addJobResponse["statusId"] < 0
       return -9
     end
 
@@ -314,10 +302,9 @@ module AssessmentAutograde
       begin
         feedback = Timeout.timeout(80) do
           loop do
-            pollReqURL = "http://#{RESTFUL_HOST}:#{RESTFUL_PORT}/poll/#{RESTFUL_KEY}/#{course.name}-#{assessment.name}/#{URI.encode(filename)}/"
-            pollResponse = Net::HTTP.get_response(URI.parse(pollReqURL))
-            if pollResponse.content_type == "application/json"
-              pollResponseStatusId = JSON.parse(pollResponse.body)["statusId"]
+            response = TangoClient.tango_poll("#{course.name}-#{assessment.name}", "#{URI.encode(filename)}")
+            if response.content_type == "application/json"
+              pollResponseStatusId = response["statusId"]
             else
               feedback = pollResponse.body
               break
@@ -325,7 +312,7 @@ module AssessmentAutograde
             sleep 3
           end
           feedback = feedback
-        end
+      end
       rescue Timeout::Error
         return -11 # pollResponseStatusId
       end
@@ -341,7 +328,7 @@ module AssessmentAutograde
       end
     end # if no callback url
 
-    addJobResponseJSON["jobId"]
+    addJobResponse["jobId"]
   end
 
   #
