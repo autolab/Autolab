@@ -1,5 +1,5 @@
 Inspecting 263 files
-..C..CCWWCCCWCCWCCWCWCCWWWC.CCCWWCCCCCCCCCCCCCCWWCCCWCWCWCCWCCCWCCWWCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC....CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCECCCCCCCCCCCWCCCCCC.W.............................W...........................CCC
+..C..CCWWCC.WCCWCCWCW..CWWC.CCCWWCCCCCCCCCCCCCCWWCCCWCWCWCCWCCCWCCWWCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC....CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCECCCCCCCCCCCWCCCCCC.W.............................W...........................CCC
 
 Offenses:
 
@@ -582,9 +582,6 @@ app/controllers/assessment/SVN.rb:60:5: C: Use snake_case for variable names.
 app/controllers/assessment/SVN.rb:61:5: C: Use snake_case for variable names.
     svnTar = File.join(assDir, @cud.user.email + "_svn_checkout.tar.gz")
     ^^^^^^
-app/controllers/assessment_user_data_controller.rb:1:1: C: Missing top-level class documentation comment.
-class AssessmentUserDataController < ApplicationController
-^^^^^
 app/controllers/assessments_controller.rb:7:1: C: Class definition is too long. [1152/100]
 class AssessmentsController < ApplicationController
 ^^^^^
@@ -1731,24 +1728,9 @@ app/controllers/courses_controller.rb:697:7: C: Use snake_case for variable name
 app/controllers/courses_controller.rb:699:7: C: Prefer [33meach[0m over [33mfor[0m.
       for i in 0..(numRows - 1)
       ^^^
-app/controllers/extensions_controller.rb:1:1: C: Missing top-level class documentation comment.
-class ExtensionsController < ApplicationController
-^^^^^
-app/controllers/extensions_controller.rb:10:5: C: Prefer [33meach[0m over [33mfor[0m.
-    for u in @course.course_user_data do
-    ^^^
-app/controllers/extensions_controller.rb:13:5: C: Use snake_case for variable names.
-    @newExtension = @assessment.extensions.new
-    ^^^^^^^^^^^^^
-app/controllers/extensions_controller.rb:17:3: C: Assignment Branch Condition size for create is too high. [17.29/15]
+app/controllers/extensions_controller.rb:20:3: C: Assignment Branch Condition size for create is too high. [17.29/15]
   def create
   ^^^
-app/controllers/extensions_controller.rb:23:101: C: Line is too long. [114/100]
-      flash[:error] = "No student with id #{params[:extension][:course_user_datum_id]} was found for this course."
-                                                                                                    ^^^^^^^^^^^^^^
-app/controllers/extensions_controller.rb:40:101: C: Line is too long. [115/100]
-    params.require(:extension).permit(:course_user_datum_id, :days, :infinite, :commit, :course_id, :assessment_id)
-                                                                                                    ^^^^^^^^^^^^^^^
 app/controllers/gradebooks_controller.rb:6:1: C: Missing top-level class documentation comment.
 class GradebooksController < ApplicationController
 ^^^^^
@@ -1929,28 +1911,19 @@ app/controllers/groups_controller.rb:298:11: C: Redundant empty [33melse[0m-cl
 app/controllers/groups_controller.rb:300:5: W: [33mend[0m at 300, 4 is not aligned with [33mif[0m at 294, 10
     end
     ^^^
-app/controllers/home_controller.rb:1:1: C: Missing top-level class documentation comment.
-class HomeController < ApplicationController
-^^^^^
-app/controllers/home_controller.rb:8:5: C: Use a guard clause instead of wrapping the code inside a conditional expression.
-    if request.post?
-    ^^
-app/controllers/home_controller.rb:22:3: C: Assignment Branch Condition size for publicSignUp is too high. [30.35/15]
+app/controllers/home_controller.rb:27:3: C: Assignment Branch Condition size for publicSignUp is too high. [27.09/15]
   def publicSignUp
   ^^^
-app/controllers/home_controller.rb:22:3: C: Cyclomatic complexity for publicSignUp is too high. [9/6]
+app/controllers/home_controller.rb:27:3: C: Cyclomatic complexity for publicSignUp is too high. [8/6]
   def publicSignUp
   ^^^
-app/controllers/home_controller.rb:22:3: C: Method has too many lines. [22/20]
+app/controllers/home_controller.rb:27:3: C: Perceived complexity for publicSignUp is too high. [9/7]
   def publicSignUp
   ^^^
-app/controllers/home_controller.rb:22:3: C: Perceived complexity for publicSignUp is too high. [10/7]
-  def publicSignUp
-  ^^^
-app/controllers/home_controller.rb:22:7: C: Use snake_case for method names.
+app/controllers/home_controller.rb:27:7: C: Use snake_case for method names.
   def publicSignUp
       ^^^^^^^^^^^^
-app/controllers/home_controller.rb:56:3: C: Assignment Branch Condition size for vmlist is too high. [18.06/15]
+app/controllers/home_controller.rb:58:3: C: Assignment Branch Condition size for vmlist is too high. [18.06/15]
   def vmlist
   ^^^
 app/controllers/jobs_controller.rb:4:1: C: Class definition is too long. [169/100]
@@ -2061,33 +2034,12 @@ app/controllers/jobs_controller.rb:202:9: C: Favor modifier [33munless[0m usag
 app/controllers/jobs_controller.rb:242:7: C: Favor modifier [33mif[0m usage when having a single-line body. Another good alternative is the usage of control flow [33m&&[0m/[33m||[0m.
       if rjob["trace"][-1].split("|")[1].include? "Error"
       ^^
-app/controllers/problems_controller.rb:1:1: C: Missing top-level class documentation comment.
-class ProblemsController < ApplicationController
-^^^^^
-app/controllers/problems_controller.rb:38:5: C: Favor modifier [33mif[0m usage when having a single-line body. Another good alternative is the usage of control flow [33m&&[0m/[33m||[0m.
-    if @problem.destroy
-    ^^
-app/controllers/schedulers_controller.rb:1:1: C: Missing top-level class documentation comment.
-class SchedulersController < ApplicationController
-^^^^^
-app/controllers/scores_controller.rb:1:1: C: Missing top-level class documentation comment.
-class ScoresController < ApplicationController
-^^^^^
-app/controllers/scores_controller.rb:7:3: C: Assignment Branch Condition size for create is too high. [21.05/15]
+app/controllers/scores_controller.rb:11:3: C: Assignment Branch Condition size for create is too high. [21.05/15]
   def create
   ^^^
-app/controllers/scores_controller.rb:29:3: C: Assignment Branch Condition size for update is too high. [15.13/15]
+app/controllers/scores_controller.rb:33:3: C: Assignment Branch Condition size for update is too high. [15.13/15]
   def update
   ^^^
-app/controllers/scores_controller.rb:46:5: C: Use a guard clause instead of wrapping the code inside a conditional expression.
-    unless (@score.submission.course_user_datum_id == @cud.id) ||
-    ^^^^^^
-app/controllers/scores_controller.rb:52:3: W: Duplicate methods [33mset_score[0m at lines [33m44, 52[0m detected.
-  def set_score
-  ^^^
-app/controllers/scores_controller.rb:54:5: C: Use a guard clause instead of wrapping the code inside a conditional expression.
-    unless (@score.submission.course_user_datum_id == @cud.id) ||
-    ^^^^^^
 app/controllers/submissions_controller.rb:4:1: C: Class definition is too long. [260/100]
 class SubmissionsController < ApplicationController
 ^^^^^
@@ -4531,4 +4483,4 @@ templates/labtemplate/labtemplate.rb:8:7: C: Use snake_case for method names.
   def assessmentInitialize(course)
       ^^^^^^^^^^^^^^^^^^^^
 
-263 files inspected, 1509 offenses detected
+263 files inspected, 1493 offenses detected

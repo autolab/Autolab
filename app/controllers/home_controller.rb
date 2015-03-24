@@ -1,3 +1,6 @@
+##
+# The Home Controller houses (ha) any action that's available to the general public.
+#
 class HomeController < ApplicationController
   skip_before_action :authenticate_user!, except: [:publicSignUp]
   skip_before_action :authorize_user_for_course
@@ -5,20 +8,22 @@ class HomeController < ApplicationController
   skip_before_action :update_persistent_announcements
 
   def developer_login
-    if request.post?
-      user = User.where(email: params[:email]).first
-      if user
-        sign_in :user, user
-        redirect_to("/") && return
-      else
-        flash[:error] = "User with Email: '#{params[:email]}' doesn't exist"
-        redirect_to("/home/developer_login") && return
-      end
+    return unless request.post?
+
+    user = User.find_by(email: params[:email])
+    if user
+      sign_in :user, user
+      redirect_to("/") && return
+    else
+      flash[:error] = "User with Email: '#{params[:email]}' doesn't exist"
+      redirect_to("/home/developer_login") && return
     end
   end
 
   # https://autolab.cs.cmu.edu/home/publicSignUp?id={#course_id}
   # where {#course_id} is the id of the public course a user wants to register
+  #
+  # This currently isn't in use, but if we reenable it, SWITCH TO snake_case PLEASE!
   def publicSignUp
     course_id = params[:id].to_i
     # for now, only check if this id is PUBLIC_COURSE_ID or ACM_COURSE_ID
@@ -28,11 +33,8 @@ class HomeController < ApplicationController
     end
 
     @course = Course.find(course_id)
-    cud = CourseUserDatum.where(course: @course, user: current_user)
-    if cud.nil?
-      # construct a new cud
-      cud = @course.course_user_data.new(user: user)
-    end
+    cud = @course.course_user_data.find_or_initialize_by(user: current_user)
+
     # allows user to be an instructor for demo course only
     cud.instructor = params[:isInstructor] if course_id == PUBLIC_COURSE_ID
     if cud.save

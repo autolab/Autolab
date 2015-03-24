@@ -1,3 +1,6 @@
+##
+# Extensions can be for a finite amount of time or infinite.
+#
 class ExtensionsController < ApplicationController
   # inherited from ApplicationController
   before_action :set_assessment
@@ -7,10 +10,10 @@ class ExtensionsController < ApplicationController
   def index
     @extensions = @assessment.extensions.includes(:course_user_datum)
     @users = {}
-    for u in @course.course_user_data do
-      @users[u.email] = u.id
+    @course.course_user_data.each do |cud|
+      @users[cud.email] = cud.id
     end
-    @newExtension = @assessment.extensions.new
+    @new_extension = @assessment.extensions.new
   end
 
   action_auth_level :create, :instructor
@@ -20,7 +23,8 @@ class ExtensionsController < ApplicationController
     begin
       @course.course_user_data.find(params[:extension][:course_user_datum_id])
     rescue
-      flash[:error] = "No student with id #{params[:extension][:course_user_datum_id]} was found for this course."
+      flash[:error] = "No student with id #{params[:extension][:course_user_datum_id]}
+        was found for this course."
       redirect_to(action: :index) && return
     end
     ext = @assessment.extensions.create(extension_params)
@@ -37,6 +41,7 @@ class ExtensionsController < ApplicationController
 private
 
   def extension_params
-    params.require(:extension).permit(:course_user_datum_id, :days, :infinite, :commit, :course_id, :assessment_id)
+    params.require(:extension).permit(:course_user_datum_id, :days, :infinite,
+                                      :commit, :course_id, :assessment_id)
   end
 end
