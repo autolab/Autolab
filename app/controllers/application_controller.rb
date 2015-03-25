@@ -128,11 +128,12 @@ protected
   end
 
   def authorize_user_for_course
-    course_id = params[:course_id] || (params[:controller] == "courses" ? params[:id] : nil)
-    @course = Course.find(course_id) if course_id
+    course_name = params[:course_name] ||
+          (params[:controller] == "courses" ? params[:name] : nil)
+    @course = Course.find_by(name: course_name) if course_name
 
     unless @course
-      flash[:error] = "Course #{params[:course]} does not exist!"
+      flash[:error] = "Course #{params[:course_name]} does not exist!"
       redirect_to(controller: :home, action: :error) && return
     end
 
@@ -190,10 +191,10 @@ protected
                         (params[:action] == "edit" || params[:action] == "update" ||
                          params[:action] == "unsudo")
 
-    if (invalid_cud || nicknameless_student) && !in_edit_or_unsudo
-      flash[:error] = "Please complete all of your account information before continuing"
-      redirect_to edit_course_course_user_datum_path(id: @cud.id, course_id: @cud.course.id)
-    end
+    return unless (invalid_cud || nicknameless_student) && !in_edit_or_unsudo
+    
+    flash[:error] = "Please complete all of your account information before continuing"
+    redirect_to([:edit, @course, @cud]) && return
   end
 
   ##
@@ -202,7 +203,7 @@ protected
   #
   def set_assessment
     begin
-      @assessment = @course.assessments.find(params[:assessment_id] || params[:id])
+      @assessment = @course.assessments.find_by!(name: params[:assessment_name] || params[:name])
     rescue
       flash[:error] = "The assessment was not found for this course."
       redirect_to(action: :index) && return
@@ -316,11 +317,12 @@ private
       @error = exception
 
       # Generate course id and assesssment id objects
-      @course_id = params[:course_id] ||
-                   (params[:controller] == "courses" ? params[:id] : nil)
-      if @course_id
-        @assessment_id = params[:assessment_id] ||
-                         (params[:controller] == "assessments" ? params[:id] : nil)
+      @course_name = params[:course_name] ||
+            (params[:controller] == "courses" ? params[:name] : nil)
+      if (@course_name) then
+        @assessment_name = params[:assessment_name] ||
+            (params[:controller] == "assessments" ? params[:name] : nil)
+
       end
     end
 

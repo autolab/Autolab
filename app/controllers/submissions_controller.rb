@@ -10,8 +10,6 @@ class SubmissionsController < ApplicationController
   # this page loads.  links/functionality may be/are off
   action_auth_level :index, :instructor
   def index
-    @course = Course.where(id: params[:course_id]).first
-    @assessment = @course.assessments.find(params[:assessment_id])
     @submissions = @assessment.submissions.order("created_at DESC")
 
     assign = @assessment.name.gsub(/\./, "")
@@ -22,7 +20,6 @@ class SubmissionsController < ApplicationController
   # this works
   action_auth_level :new, :instructor
   def new
-    @assessment = @course.assessments.find(params[:assessment_id])
     @submission = @assessment.submissions.new(tweak: Tweak.new)
 
     if !params["course_user_datum_id"].nil?
@@ -46,7 +43,6 @@ class SubmissionsController < ApplicationController
   # this seems to work to.
   action_auth_level :create, :instructor
   def create
-    @assessment = @course.assessments.find(params[:assessment_id])
     @submission = @assessment.submissions.new
 
     cud_ids = params[:submission][:course_user_datum_id].split(",")
@@ -142,7 +138,6 @@ class SubmissionsController < ApplicationController
   # TODONE?  THIS MAY DELETE MOST OF YOUR USERS.  USE WITH CAUTION.
   action_auth_level :missing, :instructor
   def missing
-    @assessment = @course.assessments.find(params[:assessment_id])
     @submissions = @assessment.submissions
 
     cuds = @course.students.to_a
@@ -163,16 +158,15 @@ class SubmissionsController < ApplicationController
   # should be okay, but untested
   action_auth_level :downloadAll, :course_assistant
   def downloadAll
-    assessment = @course.assessments.find(params[:assessment_id])
-    if assessment.disable_handins
+    if @assessment.disable_handins then
       flash[:error] = "There are no submissions to download."
-      redirect_to([@course, assessment, :submissions]) && return
+      redirect_to([@course, @assessment, :submissions]) && return
     end
 
     if params[:final]
-      submissions = assessment.submissions.latest.includes(:course_user_datum)
+      submissions = @assessment.submissions.latest.includes(:course_user_datum)
     else
-      submissions = assessment.submissions.includes(:course_user_datum)
+      submissions = @assessment.submissions.includes(:course_user_datum)
     end
 
     submissions = submissions.select { |s| @cud.can_administer?(s.course_user_datum) }
@@ -183,7 +177,7 @@ class SubmissionsController < ApplicationController
 
     if result.nil?
       flash[:error] = "There are no submissions to download."
-      redirect_to([@course, assessment, :submissions]) && return
+      redirect_to([@course, @assessment, :submissions]) && return
     end
 
     send_file(result.path,
