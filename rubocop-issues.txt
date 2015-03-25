@@ -1,5 +1,5 @@
 Inspecting 262 files
-..C..CCWWCC.WCCWCCWCW..CWWC.CCCWWCCCCCCCCCCCCCCWWCCCWCWCWCCWCCCWCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC....CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCECCCCCCCCCCCWCCCCCC.W.............................W...........................CCC
+..C..CCWWCC.WCCWCCWCW..CWWC.CCCWWCCCCCCCCCCCC..WCC..WCWCWCCWCCCWCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC....CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCECCCCCCCCCCCWCCCCCC.W.............................W...........................CCC
 
 Offenses:
 
@@ -24,46 +24,43 @@ app/controllers/application_controller.rb:43:3: C: Perceived complexity for acti
 app/controllers/application_controller.rb:100:3: C: Assignment Branch Condition size for authenticate_for_action is too high. [16.88/15]
   def authenticate_for_action
   ^^^
-app/controllers/application_controller.rb:130:3: C: Assignment Branch Condition size for authorize_user_for_course is too high. [85.43/15]
+app/controllers/application_controller.rb:130:3: C: Assignment Branch Condition size for authorize_user_for_course is too high. [82.03/15]
   def authorize_user_for_course
   ^^^
-app/controllers/application_controller.rb:130:3: C: Cyclomatic complexity for authorize_user_for_course is too high. [28/6]
+app/controllers/application_controller.rb:130:3: C: Cyclomatic complexity for authorize_user_for_course is too high. [29/6]
   def authorize_user_for_course
   ^^^
 app/controllers/application_controller.rb:130:3: C: Method has too many lines. [49/20]
   def authorize_user_for_course
   ^^^
-app/controllers/application_controller.rb:130:3: C: Perceived complexity for authorize_user_for_course is too high. [27/7]
+app/controllers/application_controller.rb:130:3: C: Perceived complexity for authorize_user_for_course is too high. [28/7]
   def authorize_user_for_course
   ^^^
-app/controllers/application_controller.rb:193:5: C: Use a guard clause instead of wrapping the code inside a conditional expression.
-    if (invalid_cud || nicknameless_student) && !in_edit_or_unsudo
-    ^^
-app/controllers/application_controller.rb:203:3: C: Assignment Branch Condition size for set_assessment is too high. [17.12/15]
+app/controllers/application_controller.rb:204:3: C: Assignment Branch Condition size for set_assessment is too high. [17.12/15]
   def set_assessment
   ^^^
-app/controllers/application_controller.rb:203:3: C: Cyclomatic complexity for set_assessment is too high. [7/6]
+app/controllers/application_controller.rb:204:3: C: Cyclomatic complexity for set_assessment is too high. [7/6]
   def set_assessment
   ^^^
-app/controllers/application_controller.rb:219:3: C: Assignment Branch Condition size for set_submission is too high. [31.8/15]
+app/controllers/application_controller.rb:220:3: C: Assignment Branch Condition size for set_submission is too high. [31.8/15]
   def set_submission
   ^^^
-app/controllers/application_controller.rb:219:3: C: Cyclomatic complexity for set_submission is too high. [14/6]
+app/controllers/application_controller.rb:220:3: C: Cyclomatic complexity for set_submission is too high. [14/6]
   def set_submission
   ^^^
-app/controllers/application_controller.rb:219:3: C: Perceived complexity for set_submission is too high. [14/7]
+app/controllers/application_controller.rb:220:3: C: Perceived complexity for set_submission is too high. [14/7]
   def set_submission
   ^^^
-app/controllers/application_controller.rb:242:3: C: Assignment Branch Condition size for run_scheduler is too high. [32.4/15]
+app/controllers/application_controller.rb:243:3: C: Assignment Branch Condition size for run_scheduler is too high. [32.4/15]
   def run_scheduler
   ^^^
-app/controllers/application_controller.rb:307:3: C: Assignment Branch Condition size for render_error is too high. [26.42/15]
+app/controllers/application_controller.rb:308:3: C: Assignment Branch Condition size for render_error is too high. [26.42/15]
   def render_error(exception)
   ^^^
-app/controllers/application_controller.rb:307:3: C: Cyclomatic complexity for render_error is too high. [9/6]
+app/controllers/application_controller.rb:308:3: C: Cyclomatic complexity for render_error is too high. [9/6]
   def render_error(exception)
   ^^^
-app/controllers/application_controller.rb:307:3: C: Perceived complexity for render_error is too high. [9/7]
+app/controllers/application_controller.rb:308:3: C: Perceived complexity for render_error is too high. [9/7]
   def render_error(exception)
   ^^^
 app/controllers/assessment/autograde.rb:12:3: C: Assignment Branch Condition size for autograde_done is too high. [40.57/15]
@@ -153,9 +150,9 @@ app/controllers/assessment/autograde.rb:209:3: C: Method has too many lines. [37
 app/controllers/assessment/autograde.rb:209:3: C: Perceived complexity for tango_upload is too high. [10/7]
   def tango_upload(course, assessment, submission, existing_files)
   ^^^
-app/controllers/assessment/autograde.rb:298:101: C: Line is too long. [128/100]
-      "#{hostname}/courses/#{course.id}/assessments/#{assessment.id}/autograde_done?dave=#{dave}&submission_id=#{submission.id}"
-                                                                                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app/controllers/assessment/autograde.rb:298:101: C: Line is too long. [132/100]
+      "#{hostname}/courses/#{course.name}/assessments/#{assessment.name}/autograde_done?dave=#{dave}&submission_id=#{submission.id}"
+                                                                                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 app/controllers/assessment/autograde.rb:315:3: C: Assignment Branch Condition size for tango_add_job is too high. [30.48/15]
   def tango_add_job(course, assessment, upload_file_list, callback_url, job_name, output_file)
   ^^^
@@ -378,148 +375,145 @@ app/controllers/assessment/handin.rb:18:3: C: Cyclomatic complexity for handin i
 app/controllers/assessment/handin.rb:18:3: C: Perceived complexity for handin is too high. [10/7]
   def handin
   ^^^
-app/controllers/assessment/handin.rb:20:5: C: Favor modifier [33munless[0m usage when having a single-line body. Another good alternative is the usage of control flow [33m&&[0m/[33m||[0m.
-    unless validateHandin
-    ^^^^^^
-app/controllers/assessment/handin.rb:27:5: W: Avoid rescuing the [33mException[0m class. Perhaps you meant to rescue [33mStandardError[0m?
+app/controllers/assessment/handin.rb:25:5: W: Avoid rescuing the [33mException[0m class. Perhaps you meant to rescue [33mStandardError[0m?
     rescue Exception => e
     ^^^^^^^^^^^^^^^^^^^^^
-app/controllers/assessment/handin.rb:27:25: W: Useless assignment to variable - [33me[0m.
+app/controllers/assessment/handin.rb:25:25: W: Useless assignment to variable - [33me[0m.
     rescue Exception => e
                         ^
-app/controllers/assessment/handin.rb:50:3: C: Assignment Branch Condition size for local_submit is too high. [96.09/15]
+app/controllers/assessment/handin.rb:46:3: C: Assignment Branch Condition size for local_submit is too high. [96.09/15]
   def local_submit
   ^^^
-app/controllers/assessment/handin.rb:50:3: C: Cyclomatic complexity for local_submit is too high. [33/6]
+app/controllers/assessment/handin.rb:46:3: C: Cyclomatic complexity for local_submit is too high. [33/6]
   def local_submit
   ^^^
-app/controllers/assessment/handin.rb:50:3: C: Method has too many lines. [79/20]
+app/controllers/assessment/handin.rb:46:3: C: Method has too many lines. [75/20]
   def local_submit
   ^^^
-app/controllers/assessment/handin.rb:50:3: C: Perceived complexity for local_submit is too high. [37/7]
+app/controllers/assessment/handin.rb:46:3: C: Perceived complexity for local_submit is too high. [37/7]
   def local_submit
   ^^^
-app/controllers/assessment/handin.rb:57:12: C: Favor the ternary operator (?:) over if/then/else/end constructs.
+app/controllers/assessment/handin.rb:51:12: C: Favor the ternary operator (?:) over if/then/else/end constructs.
     @cud = if @user then @course.course_user_data.find_by(user_id: @user.id) else nil end
            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-app/controllers/assessment/handin.rb:57:78: C: Redundant empty [33melse[0m-clause.
+app/controllers/assessment/handin.rb:51:78: C: Redundant empty [33melse[0m-clause.
     @cud = if @user then @course.course_user_data.find_by(user_id: @user.id) else nil end
                                                                              ^^^^
-app/controllers/assessment/handin.rb:73:5: C: Use snake_case for variable names.
+app/controllers/assessment/handin.rb:67:5: C: Use snake_case for variable names.
     remoteHandinDir = File.join(@assessment.remote_handin_path, personal_directory)
     ^^^^^^^^^^^^^^^
-app/controllers/assessment/handin.rb:75:5: W: Useless assignment to variable - [33msubmission_count[0m. Did you mean [33msubmissons_count[0m?
+app/controllers/assessment/handin.rb:69:5: W: Useless assignment to variable - [33msubmission_count[0m. Did you mean [33msubmissons_count[0m?
     submission_count = 0
     ^^^^^^^^^^^^^^^^
-app/controllers/assessment/handin.rb:85:101: C: Line is too long. [114/100]
+app/controllers/assessment/handin.rb:79:101: C: Line is too long. [114/100]
             render(plain: "You have no remaining submissions for this assessment", status: :bad_request) && return
                                                                                                     ^^^^^^^^^^^^^^
-app/controllers/assessment/handin.rb:96:9: W: Avoid rescuing the [33mException[0m class. Perhaps you meant to rescue [33mStandardError[0m?
+app/controllers/assessment/handin.rb:88:9: W: Avoid rescuing the [33mException[0m class. Perhaps you meant to rescue [33mStandardError[0m?
         rescue Exception => e
         ^^^^^^^^^^^^^^^^^^^^^
-app/controllers/assessment/handin.rb:97:11: C: Do not write to stdout. Use Rails' logger if you want to log.
+app/controllers/assessment/handin.rb:89:11: C: Do not write to stdout. Use Rails' logger if you want to log.
           puts "Error Saving Submission:\n#{e}"
           ^^^^
-app/controllers/assessment/handin.rb:115:7: W: Avoid rescuing the [33mException[0m class. Perhaps you meant to rescue [33mStandardError[0m?
+app/controllers/assessment/handin.rb:107:7: W: Avoid rescuing the [33mException[0m class. Perhaps you meant to rescue [33mStandardError[0m?
       rescue Exception  => e
       ^^^^^^^^^^^^^^^^^^^^^^
-app/controllers/assessment/handin.rb:116:9: C: Do not write to stdout. Use Rails' logger if you want to log.
+app/controllers/assessment/handin.rb:108:9: C: Do not write to stdout. Use Rails' logger if you want to log.
         print e
         ^^^^^
-app/controllers/assessment/handin.rb:121:9: C: Do not write to stdout. Use Rails' logger if you want to log.
+app/controllers/assessment/handin.rb:113:9: C: Do not write to stdout. Use Rails' logger if you want to log.
         puts "Submission received, ID##{submissions[0].id}"
         ^^^^
-app/controllers/assessment/handin.rb:128:101: C: Line is too long. [114/100]
+app/controllers/assessment/handin.rb:120:101: C: Line is too long. [114/100]
         render(plain: " - You have #{assessment.max_submissions - submissons_count} submissions left\n") && return
                                                                                                     ^^^^^^^^^^^^^^
-app/controllers/assessment/handin.rb:150:9: C: Do not write to stdout. Use Rails' logger if you want to log.
+app/controllers/assessment/handin.rb:142:9: C: Do not write to stdout. Use Rails' logger if you want to log.
         puts "ERROR: Could not create handin directory. Please contact
         ^^^^
-app/controllers/assessment/handin.rb:162:3: C: Assignment Branch Condition size for log_submit is too high. [80.67/15]
+app/controllers/assessment/handin.rb:154:3: C: Assignment Branch Condition size for log_submit is too high. [80.67/15]
   def log_submit
   ^^^
-app/controllers/assessment/handin.rb:162:3: C: Cyclomatic complexity for log_submit is too high. [18/6]
+app/controllers/assessment/handin.rb:154:3: C: Cyclomatic complexity for log_submit is too high. [18/6]
   def log_submit
   ^^^
-app/controllers/assessment/handin.rb:162:3: C: Method has too many lines. [57/20]
+app/controllers/assessment/handin.rb:154:3: C: Method has too many lines. [55/20]
   def log_submit
   ^^^
-app/controllers/assessment/handin.rb:162:3: C: Perceived complexity for log_submit is too high. [21/7]
+app/controllers/assessment/handin.rb:154:3: C: Perceived complexity for log_submit is too high. [21/7]
   def log_submit
   ^^^
-app/controllers/assessment/handin.rb:169:12: C: Favor the ternary operator (?:) over if/then/else/end constructs.
+app/controllers/assessment/handin.rb:159:12: C: Favor the ternary operator (?:) over if/then/else/end constructs.
     @cud = if @user then @course.course_user_data.find_by(user_id: @user.id) else nil end
            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-app/controllers/assessment/handin.rb:169:78: C: Redundant empty [33melse[0m-clause.
+app/controllers/assessment/handin.rb:159:78: C: Redundant empty [33melse[0m-clause.
     @cud = if @user then @course.course_user_data.find_by(user_id: @user.id) else nil end
                                                                              ^^^^
-app/controllers/assessment/handin.rb:194:5: C: Use snake_case for variable names.
+app/controllers/assessment/handin.rb:184:5: C: Use snake_case for variable names.
     modName = @assessment.name + (@course.name).gsub(/[^A-Za-z0-9]/, "")
     ^^^^^^^
-app/controllers/assessment/handin.rb:196:5: W: The use of [33meval[0m is a serious security risk.
+app/controllers/assessment/handin.rb:186:5: W: The use of [33meval[0m is a serious security risk.
     eval("extend #{modName.camelcase}")
     ^^^^
-app/controllers/assessment/handin.rb:206:7: C: Favor modifier [33mif[0m usage when having a single-line body. Another good alternative is the usage of control flow [33m&&[0m/[33m||[0m.
+app/controllers/assessment/handin.rb:196:7: C: Favor modifier [33mif[0m usage when having a single-line body. Another good alternative is the usage of control flow [33m&&[0m/[33m||[0m.
       if scores.keys.length == 0
       ^^
-app/controllers/assessment/handin.rb:228:7: C: Prefer [33meach[0m over [33mfor[0m.
+app/controllers/assessment/handin.rb:218:7: C: Prefer [33meach[0m over [33mfor[0m.
       for key in scores.keys do
       ^^^
-app/controllers/assessment/handin.rb:236:5: W: Avoid rescuing the [33mException[0m class. Perhaps you meant to rescue [33mStandardError[0m?
+app/controllers/assessment/handin.rb:226:5: W: Avoid rescuing the [33mException[0m class. Perhaps you meant to rescue [33mStandardError[0m?
     rescue Exception  => e
     ^^^^^^^^^^^^^^^^^^^^^^
-app/controllers/assessment/handin.rb:237:7: C: Do not write to stdout. Use Rails' logger if you want to log.
+app/controllers/assessment/handin.rb:227:7: C: Do not write to stdout. Use Rails' logger if you want to log.
       print e
       ^^^^^
-app/controllers/assessment/handin.rb:249:3: C: Assignment Branch Condition size for validateHandin is too high. [37.34/15]
+app/controllers/assessment/handin.rb:239:3: C: Assignment Branch Condition size for validateHandin is too high. [37.34/15]
   def validateHandin
   ^^^
-app/controllers/assessment/handin.rb:249:3: C: Method has too many lines. [22/20]
+app/controllers/assessment/handin.rb:239:3: C: Method has too many lines. [22/20]
   def validateHandin
   ^^^
-app/controllers/assessment/handin.rb:249:7: C: Use snake_case for method names.
+app/controllers/assessment/handin.rb:239:7: C: Use snake_case for method names.
   def validateHandin
       ^^^^^^^^^^^^^^
-app/controllers/assessment/handin.rb:287:3: C: Assignment Branch Condition size for validateForGroups is too high. [20.15/15]
+app/controllers/assessment/handin.rb:277:3: C: Assignment Branch Condition size for validateForGroups is too high. [20.15/15]
   def validateForGroups
   ^^^
-app/controllers/assessment/handin.rb:287:3: C: Cyclomatic complexity for validateForGroups is too high. [7/6]
+app/controllers/assessment/handin.rb:277:3: C: Cyclomatic complexity for validateForGroups is too high. [7/6]
   def validateForGroups
   ^^^
-app/controllers/assessment/handin.rb:287:7: C: Use snake_case for method names.
+app/controllers/assessment/handin.rb:277:7: C: Use snake_case for method names.
   def validateForGroups
       ^^^^^^^^^^^^^^^^^
-app/controllers/assessment/handin.rb:288:5: C: Favor modifier [33munless[0m usage when having a single-line body. Another good alternative is the usage of control flow [33m&&[0m/[33m||[0m.
+app/controllers/assessment/handin.rb:278:5: C: Favor modifier [33munless[0m usage when having a single-line body. Another good alternative is the usage of control flow [33m&&[0m/[33m||[0m.
     unless @assessment.has_groups?
     ^^^^^^
-app/controllers/assessment/handin.rb:292:40: C: Use [33m||[0m instead of [33mor[0m.
+app/controllers/assessment/handin.rb:282:40: C: Use [33m||[0m instead of [33mor[0m.
     aud = @assessment.aud_for(@cud.id) or return true
                                        ^^
-app/controllers/assessment/handin.rb:293:23: C: Use [33m||[0m instead of [33mor[0m.
+app/controllers/assessment/handin.rb:283:23: C: Use [33m||[0m instead of [33mor[0m.
     group = aud.group or return true
                       ^^
-app/controllers/assessment/handin.rb:295:32: C: Use [33mnext[0m to skip iteration.
+app/controllers/assessment/handin.rb:285:32: C: Use [33mnext[0m to skip iteration.
     group.assessment_user_data.each do |aud|
                                ^^^^
-app/controllers/assessment/handin.rb:295:41: W: Shadowing outer local variable - [33maud[0m.
+app/controllers/assessment/handin.rb:285:41: W: Shadowing outer local variable - [33maud[0m.
     group.assessment_user_data.each do |aud|
                                         ^^^
-app/controllers/assessment/handin.rb:304:101: C: Line is too long. [103/100]
+app/controllers/assessment/handin.rb:294:101: C: Line is too long. [103/100]
           flash[:error] = "A member of your group has reached the submission limit for this assessment"
                                                                                                     ^^^
-app/controllers/assessment/handin.rb:316:3: C: Assignment Branch Condition size for saveHandin is too high. [27.73/15]
+app/controllers/assessment/handin.rb:306:3: C: Assignment Branch Condition size for saveHandin is too high. [27.73/15]
   def saveHandin(sub)
   ^^^
-app/controllers/assessment/handin.rb:316:3: C: Method has too many lines. [24/20]
+app/controllers/assessment/handin.rb:306:3: C: Method has too many lines. [24/20]
   def saveHandin(sub)
   ^^^
-app/controllers/assessment/handin.rb:316:7: C: Use snake_case for method names.
+app/controllers/assessment/handin.rb:306:7: C: Use snake_case for method names.
   def saveHandin(sub)
       ^^^^^^^^^^
-app/controllers/assessment/handin.rb:345:3: C: Assignment Branch Condition size for get_handin is too high. [22.38/15]
+app/controllers/assessment/handin.rb:335:3: C: Assignment Branch Condition size for get_handin is too high. [17.49/15]
   def get_handin
   ^^^
-app/controllers/assessment/handin.rb:345:7: C: Do not prefix reader method names with [33mget_[0m.
+app/controllers/assessment/handin.rb:335:7: C: Do not prefix reader method names with [33mget_[0m.
   def get_handin
       ^^^^^^^^^^
 app/controllers/assessment/handout.rb:1:1: C: Missing top-level module documentation comment.
@@ -1308,16 +1302,13 @@ app/controllers/assessments_controller.rb:1518:101: C: Line is too long. [104/10
 app/controllers/assessments_controller.rb:1532:101: C: Line is too long. [108/100]
     ass.permit(:name, :display_name, :category_name, :has_autograde, :has_svn, :has_scoreboard, :group_size)
                                                                                                     ^^^^^^^^
-app/controllers/attachments_controller.rb:34:3: C: Assignment Branch Condition size for show is too high. [20.71/15]
+app/controllers/attachments_controller.rb:33:3: C: Assignment Branch Condition size for show is too high. [16.79/15]
   def show
   ^^^
-app/controllers/attachments_controller.rb:60:3: C: Assignment Branch Condition size for update is too high. [20.02/15]
+app/controllers/attachments_controller.rb:52:3: C: Cyclomatic complexity for update is too high. [8/6]
   def update
   ^^^
-app/controllers/attachments_controller.rb:60:3: C: Cyclomatic complexity for update is too high. [7/6]
-  def update
-  ^^^
-app/controllers/attachments_controller.rb:60:3: C: Perceived complexity for update is too high. [9/7]
+app/controllers/attachments_controller.rb:52:3: C: Perceived complexity for update is too high. [11/7]
   def update
   ^^^
 app/controllers/course_user_data_controller.rb:1:1: C: Class definition is too long. [195/100]
@@ -2040,7 +2031,7 @@ app/controllers/scores_controller.rb:11:3: C: Assignment Branch Condition size f
 app/controllers/scores_controller.rb:33:3: C: Assignment Branch Condition size for update is too high. [15.13/15]
   def update
   ^^^
-app/controllers/submissions_controller.rb:4:1: C: Class definition is too long. [260/100]
+app/controllers/submissions_controller.rb:4:1: C: Class definition is too long. [254/100]
 class SubmissionsController < ApplicationController
 ^^^^^
 app/controllers/submissions_controller.rb:4:1: C: Missing top-level class documentation comment.
@@ -2049,178 +2040,175 @@ class SubmissionsController < ApplicationController
 app/controllers/submissions_controller.rb:7:101: C: Line is too long. [114/100]
   before_action :set_submission, only: [:destroy, :destroyConfirm, :download, :edit, :listArchive, :update, :view]
                                                                                                     ^^^^^^^^^^^^^^
-app/controllers/submissions_controller.rb:12:3: C: Assignment Branch Condition size for index is too high. [18.03/15]
-  def index
-  ^^^
-app/controllers/submissions_controller.rb:18:5: W: Useless assignment to variable - [33mmodName[0m.
+app/controllers/submissions_controller.rb:16:5: W: Useless assignment to variable - [33mmodName[0m.
     modName = (assign + (@course.name).gsub(/[^A-Za-z0-9]/, "")).camelize
     ^^^^^^^
-app/controllers/submissions_controller.rb:18:5: C: Use snake_case for variable names.
+app/controllers/submissions_controller.rb:16:5: C: Use snake_case for variable names.
     modName = (assign + (@course.name).gsub(/[^A-Za-z0-9]/, "")).camelize
     ^^^^^^^
-app/controllers/submissions_controller.rb:24:3: C: Assignment Branch Condition size for new is too high. [30.1/15]
+app/controllers/submissions_controller.rb:22:3: C: Assignment Branch Condition size for new is too high. [26.02/15]
   def new
   ^^^
-app/controllers/submissions_controller.rb:32:9: C: Use snake_case for variable names.
+app/controllers/submissions_controller.rb:29:9: C: Use snake_case for variable names.
         @errorMessage = "Couldn't find all course_user_data in #{cuds_ids}. " \
         ^^^^^^^^^^^^^
-app/controllers/submissions_controller.rb:40:7: C: Prefer [33meach[0m over [33mfor[0m.
+app/controllers/submissions_controller.rb:37:7: C: Prefer [33meach[0m over [33mfor[0m.
       for cud in @course.course_user_data.joins(:user).order("email ASC") do
       ^^^
-app/controllers/submissions_controller.rb:48:3: C: Assignment Branch Condition size for create is too high. [59.82/15]
+app/controllers/submissions_controller.rb:45:3: C: Assignment Branch Condition size for create is too high. [55.77/15]
   def create
   ^^^
-app/controllers/submissions_controller.rb:48:3: C: Cyclomatic complexity for create is too high. [8/6]
+app/controllers/submissions_controller.rb:45:3: C: Cyclomatic complexity for create is too high. [8/6]
   def create
   ^^^
-app/controllers/submissions_controller.rb:48:3: C: Method has too many lines. [26/20]
+app/controllers/submissions_controller.rb:45:3: C: Method has too many lines. [25/20]
   def create
   ^^^
-app/controllers/submissions_controller.rb:48:3: C: Perceived complexity for create is too high. [8/7]
+app/controllers/submissions_controller.rb:45:3: C: Perceived complexity for create is too high. [8/7]
   def create
   ^^^
-app/controllers/submissions_controller.rb:56:7: C: Use snake_case for variable names.
+app/controllers/submissions_controller.rb:52:7: C: Use snake_case for variable names.
       @errorMessage = "Invalid CourseUserDatum ID in #{cud_ids}"
       ^^^^^^^^^^^^^
-app/controllers/submissions_controller.rb:59:5: C: Prefer [33meach[0m over [33mfor[0m.
+app/controllers/submissions_controller.rb:55:5: C: Prefer [33meach[0m over [33mfor[0m.
     for cud_id in cud_ids do
     ^^^
-app/controllers/submissions_controller.rb:59:5: C: Use [33mnext[0m to skip iteration.
+app/controllers/submissions_controller.rb:55:5: C: Use [33mnext[0m to skip iteration.
     for cud_id in cud_ids do
     ^^^
-app/controllers/submissions_controller.rb:64:101: C: Line is too long. [112/100]
+app/controllers/submissions_controller.rb:60:101: C: Line is too long. [112/100]
         @submission.tweak = Tweak.new(params[:submission][:tweak_attributes].permit([:value, :kind, :_destroy]))
                                                                                                     ^^^^^^^^^^^^
-app/controllers/submissions_controller.rb:81:5: W: Useless assignment to variable - [33msubmission[0m.
+app/controllers/submissions_controller.rb:77:5: W: Useless assignment to variable - [33msubmission[0m.
     submission = Submission.find(params[:id])
     ^^^^^^^^^^
-app/controllers/submissions_controller.rb:111:3: C: Assignment Branch Condition size for update is too high. [19.42/15]
+app/controllers/submissions_controller.rb:107:3: C: Assignment Branch Condition size for update is too high. [19.42/15]
   def update
   ^^^
-app/controllers/submissions_controller.rb:116:101: C: Line is too long. [110/100]
+app/controllers/submissions_controller.rb:112:101: C: Line is too long. [110/100]
       redirect_to(history_course_assessment_path(@submission.course_user_datum.course, @assessment)) && return
                                                                                                     ^^^^^^^^^^
-app/controllers/submissions_controller.rb:118:101: C: Line is too long. [131/100]
+app/controllers/submissions_controller.rb:114:101: C: Line is too long. [131/100]
       redirect_to(edit_course_assessment_submission_path(@submission.course_user_datum.course, @assessment, @submission)) && return
                                                                                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-app/controllers/submissions_controller.rb:130:101: C: Line is too long. [123/100]
+app/controllers/submissions_controller.rb:126:101: C: Line is too long. [123/100]
     redirect_to(course_assessment_submissions_path(@submission.course_user_datum.course, @submission.assessment)) && return
                                                                                                     ^^^^^^^^^^^^^^^^^^^^^^^
-app/controllers/submissions_controller.rb:135:7: C: Use snake_case for method names.
+app/controllers/submissions_controller.rb:131:7: C: Use snake_case for method names.
   def destroyConfirm
       ^^^^^^^^^^^^^^
-app/controllers/submissions_controller.rb:144:3: C: Assignment Branch Condition size for missing is too high. [22.58/15]
+app/controllers/submissions_controller.rb:140:3: C: Assignment Branch Condition size for missing is too high. [18.47/15]
   def missing
   ^^^
-app/controllers/submissions_controller.rb:151:5: C: Prefer [33meach[0m over [33mfor[0m.
+app/controllers/submissions_controller.rb:146:5: C: Prefer [33meach[0m over [33mfor[0m.
     for submission in @submissions do
     ^^^
-app/controllers/submissions_controller.rb:165:3: C: Assignment Branch Condition size for downloadAll is too high. [34.67/15]
+app/controllers/submissions_controller.rb:160:3: C: Assignment Branch Condition size for downloadAll is too high. [30.68/15]
   def downloadAll
   ^^^
-app/controllers/submissions_controller.rb:165:3: C: Cyclomatic complexity for downloadAll is too high. [9/6]
+app/controllers/submissions_controller.rb:160:3: C: Cyclomatic complexity for downloadAll is too high. [9/6]
   def downloadAll
   ^^^
-app/controllers/submissions_controller.rb:165:3: C: Method has too many lines. [22/20]
+app/controllers/submissions_controller.rb:160:3: C: Method has too many lines. [21/20]
   def downloadAll
   ^^^
-app/controllers/submissions_controller.rb:165:3: C: Perceived complexity for downloadAll is too high. [10/7]
+app/controllers/submissions_controller.rb:160:3: C: Perceived complexity for downloadAll is too high. [10/7]
   def downloadAll
   ^^^
-app/controllers/submissions_controller.rb:165:7: C: Use snake_case for method names.
+app/controllers/submissions_controller.rb:160:7: C: Use snake_case for method names.
   def downloadAll
       ^^^^^^^^^^^
-app/controllers/submissions_controller.rb:199:3: C: Assignment Branch Condition size for download is too high. [15.39/15]
+app/controllers/submissions_controller.rb:193:3: C: Assignment Branch Condition size for download is too high. [15.39/15]
   def download
   ^^^
-app/controllers/submissions_controller.rb:204:44: C: Use [33m&&[0m instead of [33mand[0m.
+app/controllers/submissions_controller.rb:198:44: C: Use [33m&&[0m instead of [33mand[0m.
         redirect_to [@course, @assessment] and return false
                                            ^^^
-app/controllers/submissions_controller.rb:211:7: W: Useless assignment to variable - [33mmime[0m.
+app/controllers/submissions_controller.rb:205:7: W: Useless assignment to variable - [33mmime[0m.
       mime = params[:forceMime] || @submission.detected_mime_type
       ^^^^
-app/controllers/submissions_controller.rb:224:3: C: Assignment Branch Condition size for view is too high. [86.63/15]
+app/controllers/submissions_controller.rb:218:3: C: Assignment Branch Condition size for view is too high. [86.63/15]
   def view
   ^^^
-app/controllers/submissions_controller.rb:224:3: C: Cyclomatic complexity for view is too high. [25/6]
+app/controllers/submissions_controller.rb:218:3: C: Cyclomatic complexity for view is too high. [25/6]
   def view
   ^^^
-app/controllers/submissions_controller.rb:224:3: C: Method has too many lines. [65/20]
+app/controllers/submissions_controller.rb:218:3: C: Method has too many lines. [65/20]
   def view
   ^^^
-app/controllers/submissions_controller.rb:224:3: C: Perceived complexity for view is too high. [28/7]
+app/controllers/submissions_controller.rb:218:3: C: Perceived complexity for view is too high. [28/7]
   def view
   ^^^
-app/controllers/submissions_controller.rb:226:101: C: Line is too long. [104/100]
+app/controllers/submissions_controller.rb:220:101: C: Line is too long. [104/100]
       file, pathname = Archive.get_nth_file(@submission.handin_file_path, params[:header_position].to_i)
                                                                                                     ^^^^
-app/controllers/submissions_controller.rb:229:44: C: Use [33m&&[0m instead of [33mand[0m.
+app/controllers/submissions_controller.rb:223:44: C: Use [33m&&[0m instead of [33mand[0m.
         redirect_to [@course, @assessment] and return false
                                            ^^^
-app/controllers/submissions_controller.rb:232:7: C: Use snake_case for variable names.
+app/controllers/submissions_controller.rb:226:7: C: Use snake_case for variable names.
       @displayFilename = pathname
       ^^^^^^^^^^^^^^^^
-app/controllers/submissions_controller.rb:233:101: C: Line is too long. [111/100]
+app/controllers/submissions_controller.rb:227:101: C: Line is too long. [111/100]
       @breadcrumbs << (view_context.link_to "View Archive", [:list_archive, @course, @assessment, @submission])
                                                                                                     ^^^^^^^^^^^
-app/controllers/submissions_controller.rb:242:7: C: Use snake_case for variable names.
+app/controllers/submissions_controller.rb:236:7: C: Use snake_case for variable names.
       @displayFilename = @submission.filename
       ^^^^^^^^^^^^^^^^
-app/controllers/submissions_controller.rb:248:101: C: Line is too long. [114/100]
+app/controllers/submissions_controller.rb:242:101: C: Line is too long. [114/100]
       send_data(file, type: "application/pdf", disposition: "inline", filename: File.basename(filename)) && return
                                                                                                     ^^^^^^^^^^^^^^
-app/controllers/submissions_controller.rb:254:101: C: Line is too long. [158/100]
+app/controllers/submissions_controller.rb:248:101: C: Line is too long. [158/100]
       flash[:error] = "Sorry, we could not display your file because it contains non-ASCII characters. Please remove these characters and resubmit your work."
                                                                                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-app/controllers/submissions_controller.rb:260:7: C: Prefer [33meach[0m over [33mfor[0m.
+app/controllers/submissions_controller.rb:254:7: C: Prefer [33meach[0m over [33mfor[0m.
       for i in 0...@data.length do
       ^^^
-app/controllers/submissions_controller.rb:265:101: C: Line is too long. [142/100]
+app/controllers/submissions_controller.rb:259:101: C: Line is too long. [142/100]
       flash[:error] = "Sorry, we could not parse your file because it contains non-ASCII characters. Please download file to view the source."
                                                                                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-app/controllers/submissions_controller.rb:278:5: C: Use snake_case for variable names.
+app/controllers/submissions_controller.rb:272:5: C: Use snake_case for variable names.
     @problemSummaries = {}
     ^^^^^^^^^^^^^^^^^
-app/controllers/submissions_controller.rb:279:5: C: Use snake_case for variable names.
+app/controllers/submissions_controller.rb:273:5: C: Use snake_case for variable names.
     @problemGrades = {}
     ^^^^^^^^^^^^^^
-app/controllers/submissions_controller.rb:282:5: C: Prefer [33meach[0m over [33mfor[0m.
+app/controllers/submissions_controller.rb:276:5: C: Prefer [33meach[0m over [33mfor[0m.
     for annotation in @annotations do
     ^^^
-app/controllers/submissions_controller.rb:289:101: C: Line is too long. [102/100]
+app/controllers/submissions_controller.rb:283:101: C: Line is too long. [102/100]
       @problemSummaries[problem] << [description, value, line, annotation.submitted_by, annotation.id]
                                                                                                     ^^
-app/controllers/submissions_controller.rb:307:101: C: Line is too long. [105/100]
+app/controllers/submissions_controller.rb:301:101: C: Line is too long. [105/100]
         redirect_to([:history, @course, @assessment, cud_id: @submission.course_user_datum_id]) && return
                                                                                                     ^^^^^
-app/controllers/submissions_controller.rb:315:7: C: Use snake_case for method names.
+app/controllers/submissions_controller.rb:309:7: C: Use snake_case for method names.
   def listArchive
       ^^^^^^^^^^^
-app/controllers/submissions_controller.rb:331:7: C: Do not prefix reader method names with [33mget_[0m.
+app/controllers/submissions_controller.rb:325:7: C: Do not prefix reader method names with [33mget_[0m.
   def get_submission_file
       ^^^^^^^^^^^^^^^^^^^
-app/controllers/submissions_controller.rb:334:42: C: Use [33m&&[0m instead of [33mand[0m.
+app/controllers/submissions_controller.rb:328:42: C: Use [33m&&[0m instead of [33mand[0m.
       redirect_to [@course, @assessment] and return false
                                          ^^^
-app/controllers/submissions_controller.rb:342:42: C: Use [33m&&[0m instead of [33mand[0m.
+app/controllers/submissions_controller.rb:336:42: C: Use [33m&&[0m instead of [33mand[0m.
       redirect_to [@course, @assessment] and return false
                                          ^^^
-app/controllers/submissions_controller.rb:350:7: C: Use snake_case for method names.
+app/controllers/submissions_controller.rb:344:7: C: Use snake_case for method names.
   def extractAndrewID(filename)
       ^^^^^^^^^^^^^^^
-app/controllers/submissions_controller.rb:351:5: C: Use snake_case for variable names.
+app/controllers/submissions_controller.rb:345:5: C: Use snake_case for variable names.
     underscoreInd = filename.index("_")
     ^^^^^^^^^^^^^
-app/controllers/submissions_controller.rb:352:5: C: Favor modifier [33munless[0m usage when having a single-line body. Another good alternative is the usage of control flow [33m&&[0m/[33m||[0m.
+app/controllers/submissions_controller.rb:346:5: C: Favor modifier [33munless[0m usage when having a single-line body. Another good alternative is the usage of control flow [33m&&[0m/[33m||[0m.
     unless underscoreInd.nil?
     ^^^^^^
-app/controllers/submissions_controller.rb:360:7: C: Use snake_case for method names.
+app/controllers/submissions_controller.rb:354:7: C: Use snake_case for method names.
   def extractVersion(filename)
       ^^^^^^^^^^^^^^
-app/controllers/submissions_controller.rb:361:5: C: Use snake_case for variable names.
+app/controllers/submissions_controller.rb:355:5: C: Use snake_case for variable names.
     firstUnderscoreInd = filename.index("_")
     ^^^^^^^^^^^^^^^^^^
-app/controllers/submissions_controller.rb:364:5: C: Use snake_case for variable names.
+app/controllers/submissions_controller.rb:358:5: C: Use snake_case for variable names.
     secondUnderscoreInd = filename.index("_", firstUnderscoreInd + 1)
     ^^^^^^^^^^^^^^^^^^^
 app/controllers/users/omniauth_callbacks_controller.rb:1:1: C: Missing top-level class documentation comment.
@@ -2514,19 +2502,7 @@ class CourseMailer < ActionMailer::Base
 app/mailers/course_mailer.rb:13:26: C: Avoid parameter lists longer than 5 parameters.
   def course_announcement(sender, to, subject, text, cud, course)
                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-app/models/annotation.rb:1:1: C: Missing top-level class documentation comment.
-class Annotation < ActiveRecord::Base
-^^^^^
-app/models/annotation.rb:5:3: C: Prefer the new style validations [33mvalidates :column, presence: value[0m over [33mvalidates_presence_of[0m.
-  validates_presence_of :submission_id, :filename
-  ^^^^^^^^^^^^^^^^^^^^^
-app/models/annotation.rb:6:3: C: Prefer the new style validations [33mvalidates :column, presence: value[0m over [33mvalidates_presence_of[0m.
-  validates_presence_of :line, :comment
-  ^^^^^^^^^^^^^^^^^^^^^
-app/models/announcement.rb:1:1: C: Missing top-level class documentation comment.
-class Announcement < ActiveRecord::Base
-^^^^^
-app/models/assessment.rb:4:1: C: Class definition is too long. [276/100]
+app/models/assessment.rb:4:1: C: Class definition is too long. [279/100]
 class Assessment < ActiveRecord::Base
 ^^^^^
 app/models/assessment.rb:4:1: C: Missing top-level class documentation comment.
@@ -2577,112 +2553,49 @@ app/models/assessment.rb:248:7: C: Use snake_case for method names.
 app/models/assessment.rb:249:101: C: Line is too long. [160/100]
     course.course_user_data.joins(:assessment_user_data).where(assessment_user_data: { assessment_id: id, membership_status: AssessmentUserDatum::UNCONFIRMED })
                                                                                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-app/models/assessment.rb:266:3: C: Replace class var @@CONFIG_FILE_LAST_LOADED with a class instance var.
+app/models/assessment.rb:270:3: C: Replace class var @@CONFIG_FILE_LAST_LOADED with a class instance var.
   @@CONFIG_FILE_LAST_LOADED = {}
   ^^^^^^^^^^^^^^^^^^^^^^^^^
-app/models/assessment.rb:266:3: C: Use snake_case for variable names.
+app/models/assessment.rb:270:3: C: Use snake_case for variable names.
   @@CONFIG_FILE_LAST_LOADED = {}
   ^^^^^^^^^^^^^^^^^^^^^^^^^
-app/models/assessment.rb:300:101: C: Line is too long. [134/100]
+app/models/assessment.rb:304:101: C: Line is too long. [134/100]
     Submission.select("submissions.*").where("(version, course_user_datum_id) IN (#{max_version_subquery}) AND assessment_id = ?", id)
                                                                                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-app/models/assessment.rb:317:34: W: Ambiguous block operator. Parenthesize the method arguments if it's surely a block operator, or add a whitespace to the right of the [33m&[0m if it should be a binary AND.
+app/models/assessment.rb:321:34: W: Ambiguous block operator. Parenthesize the method arguments if it's surely a block operator, or add a whitespace to the right of the [33m&[0m if it should be a binary AND.
     s["problems"] = problems.map &:serialize
                                  ^
-app/models/assessment.rb:323:101: C: Line is too long. [222/100]
+app/models/assessment.rb:327:101: C: Line is too long. [222/100]
   GENERAL_SERIALIZABLE = Set.new %w(name display_name category_name description handin_filename handin_directory has_autograde has_svn has_scoreboard max_grace_days handout writeup max_submissions disable_handins max_size)
                                                                                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-app/models/assessment.rb:330:5: W: Useless assignment to variable - [33mattributes[0m.
+app/models/assessment.rb:334:5: W: Useless assignment to variable - [33mattributes[0m.
     attributes = s["general"] if s["general"]
     ^^^^^^^^^^
-app/models/assessment.rb:331:5: W: Useless assignment to variable - [33mproblems[0m.
+app/models/assessment.rb:335:5: W: Useless assignment to variable - [33mproblems[0m.
     problems = Problem.deserialize_list s["problems"] if s["problems"]
     ^^^^^^^^
-app/models/assessment.rb:332:5: W: Useless assignment to variable - [33mautograding_setup[0m.
+app/models/assessment.rb:336:5: W: Useless assignment to variable - [33mautograding_setup[0m.
     autograding_setup = AutogradingSetup.deserialize s["autograding_setup"] if s["autograding_setup"]
     ^^^^^^^^^^^^^^^^^
-app/models/assessment.rb:332:101: C: Line is too long. [101/100]
+app/models/assessment.rb:336:101: C: Line is too long. [101/100]
     autograding_setup = AutogradingSetup.deserialize s["autograding_setup"] if s["autograding_setup"]
                                                                                                     ^
-app/models/assessment.rb:333:5: W: Useless assignment to variable - [33mscoreboard_setup[0m.
+app/models/assessment.rb:337:5: W: Useless assignment to variable - [33mscoreboard_setup[0m.
     scoreboard_setup = ScoreboardSetup.deserialize s["autograding_setup"] if s["scoreboard_setup"]
     ^^^^^^^^^^^^^^^^
-app/models/assessment.rb:351:7: C: Rename [33mis_file?[0m to [33mfile?[0m.
+app/models/assessment.rb:355:7: C: Rename [33mis_file?[0m to [33mfile?[0m.
   def is_file?(name)
       ^^^^^^^^
-app/models/assessment.rb:385:101: C: Line is too long. [102/100]
+app/models/assessment.rb:389:101: C: Line is too long. [102/100]
           errors.add :handin_directory, "(#{dir}) could not be created, please do so manually. (#{e})"
                                                                                                     ^^
-app/models/assessment_user_datum.rb:4:1: C: Class definition is too long. [218/100]
+app/models/assessment_user_datum.rb:9:1: C: Class definition is too long. [217/100]
 class AssessmentUserDatum < ActiveRecord::Base
 ^^^^^
-app/models/assessment_user_datum.rb:13:101: C: Line is too long. [101/100]
-  #   so we need to invalidate the cumulative grace days used for all AUDs for assessments after this
-                                                                                                    ^
-app/models/assessment_user_datum.rb:42:101: C: Line is too long. [104/100]
-    (flags == UNCONFIRMED && membership_status == UNCONFIRMED) || ((membership_status & flags) == flags)
-                                                                                                    ^^^^
-app/models/assessment_user_datum.rb:52:101: C: Line is too long. [107/100]
-  #   5. B: aud.save                                       (submission 2 is saved as aud.latest_submission)
-                                                                                                    ^^^^^^^
-app/models/assessment_user_datum.rb:53:101: C: Line is too long. [116/100]
-  #   6. A: aud.save                                       (but then submission 1 is saved as aud.latest_submission)
-                                                                                                    ^^^^^^^^^^^^^^^^
-app/models/assessment_user_datum.rb:74:5: C: Redundant empty [33melse[0m-clause.
-    else
-    ^^^^
-app/models/assessment_user_datum.rb:212:31: W: Ambiguous splat operator. Parenthesize the method arguments if it's surely a splat operator, or add a whitespace to the right of the [33m*[0m if it should be a multiplication.
-    values = params.values_at *columns
-                              ^
-app/models/assessment_user_datum.rb:246:5: C: Annotation keywords should be all upper case, followed by a colon and a space, then a note describing the problem.
-  # TODO:
-    ^^^^^
-app/models/assessment_user_datum.rb:271:7: C: Indent [33mwhen[0m as deep as [33mcase[0m.
-      when NORMAL
-      ^^^^
-app/models/assessment_user_datum.rb:279:7: C: Indent [33mwhen[0m as deep as [33mcase[0m.
-      when ZEROED
-      ^^^^
-app/models/assessment_user_datum.rb:281:7: C: Indent [33mwhen[0m as deep as [33mcase[0m.
-      when EXCUSED
-      ^^^^
-app/models/assessment_user_datum.rb:327:5: C: Redundant empty [33melse[0m-clause.
-    else
-    ^^^^
-app/models/attachment.rb:1:1: C: Missing top-level class documentation comment.
-class Attachment < ActiveRecord::Base
-^^^^^
-app/models/attachment.rb:2:3: C: Prefer the new style validations [33mvalidates :column, presence: value[0m over [33mvalidates_presence_of[0m.
-  validates_presence_of :name
-  ^^^^^^^^^^^^^^^^^^^^^
-app/models/attachment.rb:3:3: C: Prefer the new style validations [33mvalidates :column, presence: value[0m over [33mvalidates_presence_of[0m.
-  validates_presence_of :filename
-  ^^^^^^^^^^^^^^^^^^^^^
-app/models/attachment.rb:8:3: C: Assignment Branch Condition size for file= is too high. [15.68/15]
+app/models/attachment.rb:12:3: C: Assignment Branch Condition size for file= is too high. [15.68/15]
   def file=(upload)
   ^^^
-app/models/authentication.rb:1:1: C: Missing top-level class documentation comment.
-class Authentication < ActiveRecord::Base
-^^^^^
-app/models/autograding_setup.rb:1:1: C: Missing top-level class documentation comment.
-class AutogradingSetup < ActiveRecord::Base
-^^^^^
-app/models/autograding_setup.rb:6:3: C: Prefer the new style validations [33mvalidates :column, numericality: value[0m over [33mvalidates_numericality_of[0m.
-  validates_numericality_of :autograde_timeout
-  ^^^^^^^^^^^^^^^^^^^^^^^^^
-app/models/autograding_setup.rb:7:3: C: Prefer the new style validations [33mvalidates :column, presence: value[0m over [33mvalidates_presence_of[0m.
-  validates_presence_of :autograde_timeout
-  ^^^^^^^^^^^^^^^^^^^^^
-app/models/autograding_setup.rb:8:3: C: Prefer the new style validations [33mvalidates :column, presence: value[0m over [33mvalidates_presence_of[0m.
-  validates_presence_of :autograde_image
-  ^^^^^^^^^^^^^^^^^^^^^
-app/models/autograding_setup.rb:9:3: C: Prefer the new style validations [33mvalidates :column, length: value[0m over [33mvalidates_length_of[0m.
-  validates_length_of :autograde_image,  maximum: 64
-  ^^^^^^^^^^^^^^^^^^^
-app/models/autograding_setup.rb:14:5: C: Use a guard clause instead of wrapping the code inside a conditional expression.
-    unless autograde_timeout.blank?
-    ^^^^^^
-app/models/course.rb:4:1: C: Class definition is too long. [135/100]
+app/models/course.rb:4:1: C: Class definition is too long. [138/100]
 class Course < ActiveRecord::Base
 ^^^^^
 app/models/course.rb:4:1: C: Missing top-level class documentation comment.
@@ -2733,7 +2646,7 @@ app/models/course.rb:96:5: W: The use of [33meval[0m is a serious security ris
 app/models/course.rb:106:5: W: Avoid rescuing the [33mException[0m class. Perhaps you meant to rescue [33mStandardError[0m?
     rescue Exception => @error
     ^^^^^^^^^^^^^^^^^^^^^^^^^^
-app/models/course.rb:171:24: W: The use of [33meval[0m is a serious security risk.
+app/models/course.rb:175:24: W: The use of [33meval[0m is a serious security risk.
       Class.new.extend eval(config_module_name)
                        ^^^^
 app/models/course_logger.rb:1:1: C: Missing top-level class documentation comment.
@@ -4201,4 +4114,4 @@ templates/labtemplate/labtemplate.rb:8:7: C: Use snake_case for method names.
   def assessmentInitialize(course)
       ^^^^^^^^^^^^^^^^^^^^
 
-262 files inspected, 1399 offenses detected
+262 files inspected, 1370 offenses detected

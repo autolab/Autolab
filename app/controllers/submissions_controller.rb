@@ -158,7 +158,7 @@ class SubmissionsController < ApplicationController
   # should be okay, but untested
   action_auth_level :downloadAll, :course_assistant
   def downloadAll
-    if @assessment.disable_handins then
+    if @assessment.disable_handins
       flash[:error] = "There are no submissions to download."
       redirect_to([@course, @assessment, :submissions]) && return
     end
