@@ -1,7 +1,3 @@
-require "csv"
-require "fileutils"
-require "statistics.rb"
-
 ##
 # this controller contains methods for system-wise
 # admin functionality

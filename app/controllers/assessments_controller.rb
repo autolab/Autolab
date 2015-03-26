@@ -1,8 +1,7 @@
-require "archive.rb"
+require "archive"
 require "csv"
+require "statistics"
 require "yaml"
-require "statistics.rb"
-require "date_time_input"
 
 class AssessmentsController < ApplicationController
   include ActiveSupport::Callbacks

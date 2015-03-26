@@ -1,5 +1,5 @@
-require "archive.rb"
-require "pdf.rb"
+require "archive"
+require "pdf"
 
 class SubmissionsController < ApplicationController
   # inherited from ApplicationController
