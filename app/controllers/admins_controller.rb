@@ -1,6 +1,6 @@
 require "csv"
 require "fileutils"
-require "Statistics.rb"
+require "statistics.rb"
 
 ##
 # this controller contains methods for system-wise

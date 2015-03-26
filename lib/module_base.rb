@@ -1,6 +1,7 @@
-# This module, which is inherited by all modules, organizes how
-# methods are overridden.
-
+##
+# This module, which is inherited by all modules, organizes how methods are overridden.
+# I'm pretty sure this is obsolete.
+#
 module ModuleBase
   def updateModules
     @allModules = %w(Autograde Scoreboard Partners Svn)

@@ -1,5 +1,5 @@
-Inspecting 154 files
-..C..CCWWCC.WCCWCCWCW..CWWC.CCCWWCCCCCCCCCCCC..WCC..WCWCWCCWCCCWCCC....CCEC.CCCCCCCCCWCCCC.C.W.............................W...........................CCC
+Inspecting 148 files
+..C..CCWWCC.WCCWCCWCW..CWWC.CCCWWCCCCCCCCCCCC..WCC..WCWCWCCWCCCWCCC....CCEC.CCCWCCCC.C.W.............................W...........................CCC
 
 Offenses:
 
@@ -2992,7 +2992,7 @@ lib/association_cache.rb:211:3: C: Assignment Branch Condition size for associat
   def association_cache=(cache)
   ^^^
 lib/CourseBase.rb:1:1: C: Use snake_case for source file names.
-require "Statistics.rb"
+require "statistics.rb"
 ^
 lib/CourseBase.rb:3:1: C: Missing top-level module documentation comment.
 module CourseBase
@@ -3003,181 +3003,103 @@ lib/CourseBase.rb:4:7: C: Use snake_case for method names.
 lib/CourseBase.rb:8:7: C: Use snake_case for method names.
   def gradebookMessage
       ^^^^^^^^^^^^^^^^
-lib/date_time_input.rb:1:1: C: Missing top-level module documentation comment.
-module DateTimeInput
-^^^^^^
-lib/exception_notification/exception_notification/consider_local.rb:1:101: C: Line is too long. [109/100]
-# This didn't belong on ExceptionNotifier and made backtraces worse.  To keep original functionality in place
-                                                                                                    ^^^^^^^^^
-lib/exception_notification/exception_notification/consider_local.rb:2:101: C: Line is too long. [113/100]
-# 'ActionController::Base.send :include, ExceptionNotification::ConsiderLocal' or just include in your controller
-                                                                                                    ^^^^^^^^^^^^^
-lib/exception_notification/exception_notification/consider_local.rb:3:8: C: Use nested module/class definitions instead of compact style.
-module ExceptionNotification::ConsiderLocal
-       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-lib/exception_notification/exception_notification/consider_local.rb:4:3: C: Missing top-level module documentation comment.
-  module ClassMethods
-  ^^^^^^
-lib/exception_notification/exception_notification/notifiable.rb:21:8: C: Use nested module/class definitions instead of compact style.
-module ExceptionNotification::Notifiable
-       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-lib/exception_notification/exception_notification/notifiable.rb:27:3: C: Missing top-level module documentation comment.
-  module ClassMethods
-  ^^^^^^
-lib/exception_notification/exception_notification/notifiable.rb:61:7: C: Indent [33mwhen[0m as deep as [33mcase[0m.
-      when nil then {}
-      ^^^^
-lib/exception_notification/exception_notification/notifiable.rb:62:7: C: Indent [33mwhen[0m as deep as [33mcase[0m.
-      when Symbol then send(deliverer)
-      ^^^^
-lib/exception_notification/exception_notification/notifiable.rb:63:7: C: Indent [33mwhen[0m as deep as [33mcase[0m.
-      when Proc then deliverer.call(self)
-      ^^^^
-lib/exception_notification/exception_notification/notifier.rb:23:7: C: Use nested module/class definitions instead of compact style.
-class ExceptionNotification::Notifier < ActionMailer::Base
-      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-lib/exception_notification/exception_notification/notifier.rb:27:3: C: Replace class var @@sender_address with a class instance var.
-  @@sender_address = %("Exception Notifier" <exception.notifier@default.com>)
-  ^^^^^^^^^^^^^^^^
-lib/exception_notification/exception_notification/notifier.rb:30:3: C: Replace class var @@exception_recipients with a class instance var.
-  @@exception_recipients = []
-  ^^^^^^^^^^^^^^^^^^^^^^
-lib/exception_notification/exception_notification/notifier.rb:33:3: C: Replace class var @@email_prefix with a class instance var.
-  @@email_prefix = "[ERROR] "
-  ^^^^^^^^^^^^^^
-lib/exception_notification/exception_notification/notifier.rb:36:3: C: Replace class var @@sections with a class instance var.
-  @@sections = %w(request session environment backtrace)
-  ^^^^^^^^^^
-lib/exception_notification/exception_notification/notifier.rb:43:3: C: Assignment Branch Condition size for exception_notification is too high. [22.05/15]
-  def exception_notification(exception, controller, request, data = {})
-  ^^^
-lib/exception_notification/exception_notification/notifier.rb:53:101: C: Line is too long. [141/100]
-                    exception: exception, exception_source: source, host: (request.env["HTTP_X_FORWARDED_HOST"] || request.env["HTTP_HOST"]),
-                                                                                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-lib/exception_notification/exception_notification/notifier_helper.rb:23:8: C: Use nested module/class definitions instead of compact style.
-module ExceptionNotification::NotifierHelper
-       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-lib/exception_notification/exception_notification/notifier_helper.rb:29:5: C: Use a guard clause instead of wrapping the code inside a conditional expression.
-    unless summary.blank?
-    ^^^^^^
-lib/exception_notification/exception_notification.rb:2:1: C: Missing top-level module documentation comment.
-module ExceptionNotification
-^^^^^^
-lib/ModuleBase.rb:1:1: C: Use snake_case for source file names.
-# This module, which is inherited by all modules, organizes how
-^
-lib/ModuleBase.rb:4:1: C: Missing top-level module documentation comment.
-module ModuleBase
-^^^^^^
-lib/ModuleBase.rb:5:7: C: Use snake_case for method names.
+lib/module_base.rb:6:7: C: Use snake_case for method names.
   def updateModules
       ^^^^^^^^^^^^^
-lib/ModuleBase.rb:6:5: C: Use snake_case for variable names.
+lib/module_base.rb:7:5: C: Use snake_case for variable names.
     @allModules = %w(Autograde Scoreboard Partners Svn)
     ^^^^^^^^^^^
-lib/ModuleBase.rb:7:5: C: Use snake_case for variable names.
+lib/module_base.rb:8:5: C: Use snake_case for variable names.
     @modulesUsed = []
     ^^^^^^^^^^^^
-lib/ModuleBase.rb:9:5: C: Use snake_case for variable names.
+lib/module_base.rb:10:5: C: Use snake_case for variable names.
     modName = (assign + (@course.name).gsub(/[^A-Za-z0-9]/, "")).camelize
     ^^^^^^^
-lib/ModuleBase.rb:11:5: C: Prefer [33meach[0m over [33mfor[0m.
+lib/module_base.rb:12:5: C: Prefer [33meach[0m over [33mfor[0m.
     for mod in @allModules do
     ^^^
-lib/ModuleBase.rb:13:9: C: Use snake_case for variable names.
+lib/module_base.rb:14:9: C: Use snake_case for variable names.
         modUsed = eval("#{modName}.include?(#{mod})")
         ^^^^^^^
-lib/ModuleBase.rb:13:19: W: The use of [33meval[0m is a serious security risk.
+lib/module_base.rb:14:19: W: The use of [33meval[0m is a serious security risk.
         modUsed = eval("#{modName}.include?(#{mod})")
                   ^^^^
-lib/ModuleBase.rb:14:9: C: Favor modifier [33mif[0m usage when having a single-line body. Another good alternative is the usage of control flow [33m&&[0m/[33m||[0m.
+lib/module_base.rb:15:9: C: Favor modifier [33mif[0m usage when having a single-line body. Another good alternative is the usage of control flow [33m&&[0m/[33m||[0m.
         if modUsed
         ^^
-lib/ModuleBase.rb:17:7: W: Do not suppress exceptions.
+lib/module_base.rb:18:7: W: Do not suppress exceptions.
       rescue Exception
       ^^^^^^^^^^^^^^^^
-lib/ModuleBase.rb:17:7: W: Avoid rescuing the [33mException[0m class. Perhaps you meant to rescue [33mStandardError[0m?
+lib/module_base.rb:18:7: W: Avoid rescuing the [33mException[0m class. Perhaps you meant to rescue [33mStandardError[0m?
       rescue Exception
       ^^^^^^^^^^^^^^^^
-lib/ModuleBase.rb:24:7: C: Use snake_case for method names.
+lib/module_base.rb:25:7: C: Use snake_case for method names.
   def listAdmin
       ^^^^^^^^^
-lib/ModuleBase.rb:28:5: C: Favor modifier [33mif[0m usage when having a single-line body. Another good alternative is the usage of control flow [33m&&[0m/[33m||[0m.
+lib/module_base.rb:29:5: C: Favor modifier [33mif[0m usage when having a single-line body. Another good alternative is the usage of control flow [33m&&[0m/[33m||[0m.
     if @modulesUsed.include?("Autograde")
     ^^
-lib/ModuleBase.rb:32:5: C: Favor modifier [33mif[0m usage when having a single-line body. Another good alternative is the usage of control flow [33m&&[0m/[33m||[0m.
+lib/module_base.rb:33:5: C: Favor modifier [33mif[0m usage when having a single-line body. Another good alternative is the usage of control flow [33m&&[0m/[33m||[0m.
     if @modulesUsed.include?("Scoreboard")
     ^^
-lib/ModuleBase.rb:36:5: C: Favor modifier [33mif[0m usage when having a single-line body. Another good alternative is the usage of control flow [33m&&[0m/[33m||[0m.
+lib/module_base.rb:37:5: C: Favor modifier [33mif[0m usage when having a single-line body. Another good alternative is the usage of control flow [33m&&[0m/[33m||[0m.
     if @modulesUsed.include?("Partners")
     ^^
-lib/ModuleBase.rb:40:5: C: Use a guard clause instead of wrapping the code inside a conditional expression.
+lib/module_base.rb:41:5: C: Use a guard clause instead of wrapping the code inside a conditional expression.
     if @modulesUsed.include?("Svn")
     ^^
-lib/ModuleBase.rb:40:5: C: Favor modifier [33mif[0m usage when having a single-line body. Another good alternative is the usage of control flow [33m&&[0m/[33m||[0m.
+lib/module_base.rb:41:5: C: Favor modifier [33mif[0m usage when having a single-line body. Another good alternative is the usage of control flow [33m&&[0m/[33m||[0m.
     if @modulesUsed.include?("Svn")
     ^^
-lib/ModuleBase.rb:47:7: C: Use snake_case for method names.
+lib/module_base.rb:48:7: C: Use snake_case for method names.
   def loadHandinPage
       ^^^^^^^^^^^^^^
-lib/ModuleBase.rb:54:7: C: Use snake_case for method names.
+lib/module_base.rb:55:7: C: Use snake_case for method names.
   def validateHandin
       ^^^^^^^^^^^^^^
-lib/ModuleBase.rb:58:7: C: Favor modifier [33munless[0m usage when having a single-line body. Another good alternative is the usage of control flow [33m&&[0m/[33m||[0m.
+lib/module_base.rb:59:7: C: Favor modifier [33munless[0m usage when having a single-line body. Another good alternative is the usage of control flow [33m&&[0m/[33m||[0m.
       unless partnersValidateHandin
       ^^^^^^
-lib/ModuleBase.rb:65:7: C: Favor modifier [33munless[0m usage when having a single-line body. Another good alternative is the usage of control flow [33m&&[0m/[33m||[0m.
+lib/module_base.rb:66:7: C: Favor modifier [33munless[0m usage when having a single-line body. Another good alternative is the usage of control flow [33m&&[0m/[33m||[0m.
       unless svnValidateHandin
       ^^^^^^
-lib/ModuleBase.rb:69:7: C: Favor modifier [33munless[0m usage when having a single-line body. Another good alternative is the usage of control flow [33m&&[0m/[33m||[0m.
+lib/module_base.rb:70:7: C: Favor modifier [33munless[0m usage when having a single-line body. Another good alternative is the usage of control flow [33m&&[0m/[33m||[0m.
       unless super()
       ^^^^^^
-lib/ModuleBase.rb:78:7: C: Use snake_case for method names.
+lib/module_base.rb:79:7: C: Use snake_case for method names.
   def saveHandin
       ^^^^^^^^^^
 lib/modules/Autograde.rb:1:1: C: Use snake_case for source file names.
-# Production
+##
 ^
-lib/modules/Partners.rb:1:1: C: Missing top-level module documentation comment.
-module Partners
-^^^^^^
 lib/modules/Partners.rb:1:1: C: Use snake_case for source file names.
-module Partners
+##
 ^
 lib/modules/Scoreboard.rb:1:1: C: Use snake_case for source file names.
-require "ModuleBase.rb"
+##
 ^
-lib/modules/Scoreboard.rb:3:1: C: Missing top-level module documentation comment.
-module Scoreboard
-^^^^^^
-lib/modules/Svn.rb:1:1: C: Missing top-level module documentation comment.
-module Svn
-^^^^^^
 lib/modules/Svn.rb:1:1: C: Use snake_case for source file names.
-module Svn
+##
 ^
-lib/modules/Svn.rb:4:7: C: Use snake_case for method names.
+lib/modules/Svn.rb:7:7: C: Use snake_case for method names.
   def checkoutWork(_repo, targetDir)
       ^^^^^^^^^^^^
-lib/modules/Svn.rb:12:7: C: Use snake_case for variable names.
+lib/modules/Svn.rb:15:7: C: Use snake_case for variable names.
       testFile = File.join(targetDir, "test.txt")
       ^^^^^^^^
-lib/modules/Svn.rb:26:7: C: Use snake_case for method names.
+lib/modules/Svn.rb:29:7: C: Use snake_case for method names.
   def subversionType
       ^^^^^^^^^^^^^^
-lib/Statistics.rb:1:1: C: Missing top-level class documentation comment.
+lib/statistics.rb:1:1: C: Missing top-level class documentation comment.
 class Statistics
 ^^^^^
-lib/Statistics.rb:1:1: C: Use snake_case for source file names.
-class Statistics
-^
-lib/Statistics.rb:6:31: C: Name [33minject[0m block params [33m|a, e|[0m.
+lib/statistics.rb:6:31: C: Name [33minject[0m block params [33m|a, e|[0m.
       result = (a.inject(0) { |sum, el| sum + el }.to_f) / a.to_a.length
                               ^^^^^^^^^
-lib/Statistics.rb:52:3: C: Assignment Branch Condition size for median is too high. [16.76/15]
+lib/statistics.rb:52:3: C: Assignment Branch Condition size for median is too high. [16.76/15]
   def median(a)
   ^^^
-lib/Statistics.rb:53:5: C: Favor modifier [33mif[0m usage when having a single-line body. Another good alternative is the usage of control flow [33m&&[0m/[33m||[0m.
+lib/statistics.rb:53:5: C: Favor modifier [33mif[0m usage when having a single-line body. Another good alternative is the usage of control flow [33m&&[0m/[33m||[0m.
     if a.nil? || a.empty?
     ^^
 lib/utilities.rb:1:1: C: Missing top-level module documentation comment.
@@ -3253,4 +3175,4 @@ templates/labtemplate/labtemplate.rb:8:7: C: Use snake_case for method names.
   def assessmentInitialize(course)
       ^^^^^^^^^^^^^^^^^^^^
 
-154 files inspected, 1083 offenses detected
+148 files inspected, 1057 offenses detected

@@ -1,7 +1,7 @@
 require "archive.rb"
 require "csv"
 require "yaml"
-require "Statistics.rb"
+require "statistics.rb"
 require "date_time_input"
 
 class AssessmentsController < ApplicationController
