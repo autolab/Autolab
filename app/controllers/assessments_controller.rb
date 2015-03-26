@@ -779,7 +779,7 @@ class AssessmentsController < ApplicationController
       redirect_to(action: "index") && return
     end
 
-    if Archive.is_archive? @submission.handin_file_path
+    if Archive.archive? @submission.handin_file_path
       @files = Archive.get_files @submission.handin_file_path
     end
   end

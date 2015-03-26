@@ -1,5 +1,5 @@
 Inspecting 154 files
-..C..CCWWCC.WCCWCCWCW..CWWC.CCCWWCCCCCCCCCCCC..WCC..WCWCWCCWCCCWCCC....CCECCCCCCCCCCCWCCCCCC.W.............................W...........................CCC
+..C..CCWWCC.WCCWCCWCW..CWWC.CCCWWCCCCCCCCCCCC..WCC..WCWCWCCWCCCWCCC....CCEC.CCCCCCCCCWCCCC.C.W.............................W...........................CCC
 
 Offenses:
 
@@ -961,7 +961,7 @@ app/controllers/assessments_controller.rb:778:5: C: Favor modifier [33munless[
     unless @score
     ^^^^^^
 app/controllers/assessments_controller.rb:782:5: C: Use a guard clause instead of wrapping the code inside a conditional expression.
-    if Archive.is_archive? @submission.handin_file_path
+    if Archive.archive? @submission.handin_file_path
     ^^
 app/controllers/assessments_controller.rb:790:3: W: Do not suppress exceptions.
   rescue Exception => @error
@@ -2031,7 +2031,7 @@ app/controllers/scores_controller.rb:11:3: C: Assignment Branch Condition size f
 app/controllers/scores_controller.rb:33:3: C: Assignment Branch Condition size for update is too high. [15.13/15]
   def update
   ^^^
-app/controllers/submissions_controller.rb:4:1: C: Class definition is too long. [254/100]
+app/controllers/submissions_controller.rb:4:1: C: Class definition is too long. [252/100]
 class SubmissionsController < ApplicationController
 ^^^^^
 app/controllers/submissions_controller.rb:4:1: C: Missing top-level class documentation comment.
@@ -2133,7 +2133,7 @@ app/controllers/submissions_controller.rb:218:3: C: Assignment Branch Condition 
 app/controllers/submissions_controller.rb:218:3: C: Cyclomatic complexity for view is too high. [25/6]
   def view
   ^^^
-app/controllers/submissions_controller.rb:218:3: C: Method has too many lines. [65/20]
+app/controllers/submissions_controller.rb:218:3: C: Method has too many lines. [63/20]
   def view
   ^^^
 app/controllers/submissions_controller.rb:218:3: C: Perceived complexity for view is too high. [28/7]
@@ -2151,64 +2151,64 @@ app/controllers/submissions_controller.rb:226:7: C: Use snake_case for variable 
 app/controllers/submissions_controller.rb:227:101: C: Line is too long. [111/100]
       @breadcrumbs << (view_context.link_to "View Archive", [:list_archive, @course, @assessment, @submission])
                                                                                                     ^^^^^^^^^^^
-app/controllers/submissions_controller.rb:236:7: C: Use snake_case for variable names.
+app/controllers/submissions_controller.rb:234:7: C: Use snake_case for variable names.
       @displayFilename = @submission.filename
       ^^^^^^^^^^^^^^^^
-app/controllers/submissions_controller.rb:242:101: C: Line is too long. [114/100]
+app/controllers/submissions_controller.rb:240:101: C: Line is too long. [114/100]
       send_data(file, type: "application/pdf", disposition: "inline", filename: File.basename(filename)) && return
                                                                                                     ^^^^^^^^^^^^^^
-app/controllers/submissions_controller.rb:248:101: C: Line is too long. [158/100]
+app/controllers/submissions_controller.rb:246:101: C: Line is too long. [158/100]
       flash[:error] = "Sorry, we could not display your file because it contains non-ASCII characters. Please remove these characters and resubmit your work."
                                                                                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-app/controllers/submissions_controller.rb:254:7: C: Prefer [33meach[0m over [33mfor[0m.
+app/controllers/submissions_controller.rb:252:7: C: Prefer [33meach[0m over [33mfor[0m.
       for i in 0...@data.length do
       ^^^
-app/controllers/submissions_controller.rb:259:101: C: Line is too long. [142/100]
+app/controllers/submissions_controller.rb:257:101: C: Line is too long. [142/100]
       flash[:error] = "Sorry, we could not parse your file because it contains non-ASCII characters. Please download file to view the source."
                                                                                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-app/controllers/submissions_controller.rb:272:5: C: Use snake_case for variable names.
+app/controllers/submissions_controller.rb:270:5: C: Use snake_case for variable names.
     @problemSummaries = {}
     ^^^^^^^^^^^^^^^^^
-app/controllers/submissions_controller.rb:273:5: C: Use snake_case for variable names.
+app/controllers/submissions_controller.rb:271:5: C: Use snake_case for variable names.
     @problemGrades = {}
     ^^^^^^^^^^^^^^
-app/controllers/submissions_controller.rb:276:5: C: Prefer [33meach[0m over [33mfor[0m.
+app/controllers/submissions_controller.rb:274:5: C: Prefer [33meach[0m over [33mfor[0m.
     for annotation in @annotations do
     ^^^
-app/controllers/submissions_controller.rb:283:101: C: Line is too long. [102/100]
+app/controllers/submissions_controller.rb:281:101: C: Line is too long. [102/100]
       @problemSummaries[problem] << [description, value, line, annotation.submitted_by, annotation.id]
                                                                                                     ^^
-app/controllers/submissions_controller.rb:301:101: C: Line is too long. [105/100]
+app/controllers/submissions_controller.rb:299:101: C: Line is too long. [105/100]
         redirect_to([:history, @course, @assessment, cud_id: @submission.course_user_datum_id]) && return
                                                                                                     ^^^^^
-app/controllers/submissions_controller.rb:309:7: C: Use snake_case for method names.
+app/controllers/submissions_controller.rb:307:7: C: Use snake_case for method names.
   def listArchive
       ^^^^^^^^^^^
-app/controllers/submissions_controller.rb:325:7: C: Do not prefix reader method names with [33mget_[0m.
+app/controllers/submissions_controller.rb:323:7: C: Do not prefix reader method names with [33mget_[0m.
   def get_submission_file
       ^^^^^^^^^^^^^^^^^^^
-app/controllers/submissions_controller.rb:328:42: C: Use [33m&&[0m instead of [33mand[0m.
+app/controllers/submissions_controller.rb:326:42: C: Use [33m&&[0m instead of [33mand[0m.
       redirect_to [@course, @assessment] and return false
                                          ^^^
-app/controllers/submissions_controller.rb:336:42: C: Use [33m&&[0m instead of [33mand[0m.
+app/controllers/submissions_controller.rb:334:42: C: Use [33m&&[0m instead of [33mand[0m.
       redirect_to [@course, @assessment] and return false
                                          ^^^
-app/controllers/submissions_controller.rb:344:7: C: Use snake_case for method names.
+app/controllers/submissions_controller.rb:342:7: C: Use snake_case for method names.
   def extractAndrewID(filename)
       ^^^^^^^^^^^^^^^
-app/controllers/submissions_controller.rb:345:5: C: Use snake_case for variable names.
+app/controllers/submissions_controller.rb:343:5: C: Use snake_case for variable names.
     underscoreInd = filename.index("_")
     ^^^^^^^^^^^^^
-app/controllers/submissions_controller.rb:346:5: C: Favor modifier [33munless[0m usage when having a single-line body. Another good alternative is the usage of control flow [33m&&[0m/[33m||[0m.
+app/controllers/submissions_controller.rb:344:5: C: Favor modifier [33munless[0m usage when having a single-line body. Another good alternative is the usage of control flow [33m&&[0m/[33m||[0m.
     unless underscoreInd.nil?
     ^^^^^^
-app/controllers/submissions_controller.rb:354:7: C: Use snake_case for method names.
+app/controllers/submissions_controller.rb:352:7: C: Use snake_case for method names.
   def extractVersion(filename)
       ^^^^^^^^^^^^^^
-app/controllers/submissions_controller.rb:355:5: C: Use snake_case for variable names.
+app/controllers/submissions_controller.rb:353:5: C: Use snake_case for variable names.
     firstUnderscoreInd = filename.index("_")
     ^^^^^^^^^^^^^^^^^^
-app/controllers/submissions_controller.rb:358:5: C: Use snake_case for variable names.
+app/controllers/submissions_controller.rb:356:5: C: Use snake_case for variable names.
     secondUnderscoreInd = filename.index("_", firstUnderscoreInd + 1)
     ^^^^^^^^^^^^^^^^^^^
 app/controllers/users/omniauth_callbacks_controller.rb:1:1: C: Missing top-level class documentation comment.
@@ -2362,7 +2362,7 @@ app/helpers/application_helper.rb:79:5: C: Use a guard clause instead of wrappin
     if submission.syntax?
     ^^
 app/helpers/application_helper.rb:86:5: C: Use a guard clause instead of wrapping the code inside a conditional expression.
-    if Archive.is_archive? submission.handin_file_path
+    if Archive.archive? submission.handin_file_path
     ^^
 app/helpers/application_helper.rb:87:101: C: Line is too long. [102/100]
       link_to title, list_archive_course_assessment_submission_path(@course, @assessment, submission),
@@ -2958,24 +2958,6 @@ def courseAverage(_user)
 lib/__defaultCourse.rb:59:5: C: Use snake_case for method names.
 def gradebookMessage
     ^^^^^^^^^^^^^^^^
-lib/archive.rb:7:1: C: Missing top-level module documentation comment.
-module Archive
-^^^^^^
-lib/archive.rb:40:21: C: Use [33mnext[0m to skip iteration.
-    archive_extract.each_with_index do |entry, i|
-                    ^^^^^^^^^^^^^^^
-lib/archive.rb:68:101: C: Line is too long. [106/100]
-    IO.popen(["file", "--brief", "--mime-type", filename], in: :close, err: :close) { |io| io.read.chomp }
-                                                                                                    ^^^^^^
-lib/archive.rb:71:12: C: Rename [33mis_archive?[0m to [33marchive?[0m.
-  def self.is_archive?(filename)
-           ^^^^^^^^^^^
-lib/archive.rb:78:5: C: Favor modifier [33mif[0m usage when having a single-line body. Another good alternative is the usage of control flow [33m&&[0m/[33m||[0m.
-    if archive_type.nil?
-    ^^
-lib/archive.rb:110:5: C: Favor modifier [33mif[0m usage when having a single-line body. Another good alternative is the usage of control flow [33m&&[0m/[33m||[0m.
-    if paths.nil? || paths.empty?
-    ^^
 lib/AssessmentBase.rb:1:1: C: Missing top-level module documentation comment.
 module AssessmentBase
 ^^^^^^
@@ -3183,12 +3165,6 @@ lib/modules/Svn.rb:12:7: C: Use snake_case for variable names.
 lib/modules/Svn.rb:26:7: C: Use snake_case for method names.
   def subversionType
       ^^^^^^^^^^^^^^
-lib/pdf.rb:1:1: C: Missing top-level module documentation comment.
-module PDF
-^^^^^^
-lib/pdf.rb:2:12: C: Rename [33mis_pdf?[0m to [33mpdf?[0m.
-  def self.is_pdf?(file)
-           ^^^^^^^
 lib/Statistics.rb:1:1: C: Missing top-level class documentation comment.
 class Statistics
 ^^^^^
@@ -3277,4 +3253,4 @@ templates/labtemplate/labtemplate.rb:8:7: C: Use snake_case for method names.
   def assessmentInitialize(course)
       ^^^^^^^^^^^^^^^^^^^^
 
-154 files inspected, 1091 offenses detected
+154 files inspected, 1083 offenses detected
