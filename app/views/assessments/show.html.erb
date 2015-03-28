@@ -47,8 +47,8 @@
           <li><%= link_to "SVN Settings", [:adminSVN, @course, @assessment], title: "Manage the SVN repositories" %></li>
         <% end %>
 
-        <% if @assessment.has_autograde then %>
-          <li><%= link_to "Autograding Settings", {:action => "adminAutograde" }, title: "Modify autograding properties such as the VM image and the timeout value" %></li>
+        <% if @assessment.has_autograder? then %>
+          <li><%= link_to "Autograder Settings", [:edit, @course, @assessment, :autograder], title: "Modify autograding properties such as the VM image and the timeout value" %></li>
         <% end %>
 
         <% if @assessment.has_scoreboard then %>

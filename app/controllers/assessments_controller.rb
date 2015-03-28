@@ -495,7 +495,7 @@ class AssessmentsController < ApplicationController
   # We generically cast all values to floating point numbers because we don't
   # trust the upstream developer to do that for us.
   def raw_score(scores)
-    if @assessment.has_autograde &&
+    if @assessment.has_autograder? &&
        @assessment.overwrites_method?(:raw_score)
       sum = @assessment.config_module.raw_score(scores)
     else
@@ -611,19 +611,18 @@ class AssessmentsController < ApplicationController
 
     # Import autograde
     autograde = props["autograde"]
-    if !autograde.nil? && !autograde.empty?
-      autograde_prop = AutogradingSetup.where(assessment_id: @assessment.id).first
-      if !autograde_prop
-        autograde_prop = AutogradingSetup.new
-        autograde_prop.assessment_id = @assessment.id
-        autograde_prop.autograde_image = autograde["autograde_image"]
-        autograde_prop.autograde_timeout = autograde["autograde_timeout"]
-        autograde_prop.release_score = autograde["release_score"]
-        autograde_prop.save!
+    unless autograde.blank?
+      autograder = @assessment.autograder
+      if autograder
+        autograder.update(autograde)
       else
-        autograde_prop.update_attributes(autograde)
+        Autograder.create do |autograder|
+          autograder.assessment_id = @assessment.id
+          autograder.autograde_image = autograde["autograde_image"]
+          autograder.autograde_timeout = autograde["autograde_timeout"]
+          autograder.release_score = autograde["release_score"]
+        end
       end
-      @assessment.update(has_autograde: true)
     end
 
     # Import scoreboard
@@ -716,7 +715,7 @@ class AssessmentsController < ApplicationController
     end
 
     # Check if we should include regrade as a function
-    @autograded = @assessment.has_autograde
+    @autograded = @assessment.has_autograder?
   end
 
   action_auth_level :history, :student
@@ -763,7 +762,7 @@ class AssessmentsController < ApplicationController
     end
 
     # Check if we should include regrade as a function
-    @autograded = @assessment.has_autograde
+    @autograded = @assessment.has_autograder?
 
     if params[:partial]
       @partial = true
@@ -898,35 +897,6 @@ class AssessmentsController < ApplicationController
       f = File.join(Rails.root, "assessmentConfig/",
                     "#{@course.name}-#{name}.rb")
       File.delete(f)
-    end
-  end
-
-  #
-  # adminAutograde - edit the autograding properties for this assessment
-  #
-  def adminAutograde
-    if request.post?
-      # POST request. Try to save the updated fields.
-      @autograde_prop = AutogradingSetup.where(assessment_id: @assessment.id).first
-      if @autograde_prop.update_attributes(autograde_prop_params)
-        flash[:success] = "Success: Updated autograding properties."
-      else
-        flash[:error] = "Errors prevented the autograding properties from being saved."
-      end
-
-      redirect_to(action: :adminAutograde) && return
-    else
-      # GET request. If an autograding properties record doesn't
-      # exist for this assessment, then create default one.
-      @autograde_prop = AutogradingSetup.where(assessment_id: @assessment.id).first
-      unless @autograde_prop
-        @autograde_prop = AutogradingSetup.new
-        @autograde_prop.assessment_id = @assessment.id
-        @autograde_prop.autograde_image = "changeme.img"
-        @autograde_prop.autograde_timeout = 180
-        @autograde_prop.release_score = true
-        @autograde_prop.save!
-      end
     end
   end
 
@@ -1203,12 +1173,12 @@ protected
 
     # Autograde properties (if any)
     props["autograde"] = {}
-    autograde_prop = AutogradingSetup.find_by_assessment_id(@assessment.id)
-    if autograde_prop
+    autograder = @assessment.autograder
+    if autograder
       props["autograde"] = {
-        "autograde_image" => autograde_prop["autograde_image"],
-        "autograde_timeout" => autograde_prop["autograde_timeout"],
-        "release_score" => autograde_prop["release_score"]
+        "autograde_image" => autograder["autograde_image"],
+        "autograde_timeout" => autograder["autograde_timeout"],
+        "release_score" => autograder["release_score"]
       }
     end
 
@@ -1282,7 +1252,7 @@ protected
     # If the assessment is not autograded, or the instructor did
     # not create a custom column spec, then revert to the default,
     # which sorts by total problem, then by submission time.
-    if !@assessment.has_autograde ||
+    if !@assessment.has_autograder? ||
        !@scoreboard_prop || @scoreboard_prop.colspec.blank?
       aSum = 0; bSum = 0
       for key in a[:problems].keys do
@@ -1433,7 +1403,7 @@ protected
 
     # If the lab is not autograded, or the columns property is not
     # specified, then return the default header.
-    if !@assessment.has_autograde ||
+    if !@assessment.has_autograder? ||
        !@scoreboard_prop || @scoreboard_prop.colspec.blank?
       head =	banner + "<table class='sortable prettyBorder'>
       <tr><th>Nickname</th><th>Version</th><th>Time</th>"
@@ -1513,11 +1483,6 @@ protected
     num_released
   end
 
-  # AutogradingSetup parameters for adminAutograde
-  def autograde_prop_params
-    params[:autograde_prop].permit(:assessment_id, :autograde_timeout, :autograde_image, :release_score)
-  end
-
   def scoreboard_prop_params
     params[:scoreboard_prop].permit(:banner, :colspec)
   end
@@ -1526,17 +1491,13 @@ private
 
   def new_assessment_params
     ass = params.require(:assessment)
-    unless params[:new_category].blank?
-      ass[:category_name] = params[:new_category]
-    end
-    ass.permit(:name, :display_name, :category_name, :has_autograde, :has_svn, :has_scoreboard, :group_size)
+    ass[:category_name] = params[:new_category] unless params[:new_category].blank?
+    ass.permit(:name, :display_name, :category_name, :has_svn, :has_scoreboard, :group_size)
   end
 
   def edit_assessment_params
     ass = params.require(:assessment)
-    unless params[:new_category].blank?
-      ass[:category_name] = params[:new_category]
-    end
+    ass[:category_name] = params[:new_category] unless params[:new_category].blank?
     ass.permit!
   end
 end

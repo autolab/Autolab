@@ -12,7 +12,7 @@ module AssessmentAutograde
   def autograde_done
     @course = Course.find_by(name: params[:course_name]) || (render(nothing: true) && return)
     @assessment = @course.assessments.find_by(name: params[:name])
-    render(nothing: true) && return unless @assessment && @assessment.has_autograde
+    render(nothing: true) && return unless @assessment && @assessment.has_autograder?
 
     # there can be multiple submission with the same dave if this was a group submission
     submissions = Submission.where(dave: params[:dave]).all
@@ -53,7 +53,7 @@ module AssessmentAutograde
     @course = @submission.course_user_datum.course
     @assessment = @submission.assessment
 
-    unless @assessment.has_autograde
+    unless @assessment.has_autograder?
       # Not an error, this behavior was specified!
       flash[:info] = "This submission is not autogradable"
       redirect_to([:history, @course, @assessment, cud_id: @effective_cud.id]) && return
@@ -387,7 +387,7 @@ module AssessmentAutograde
     extend_config_module(assessment, submissions[0], cud)
 
     # Get the autograding properties for this assessment.
-    @autograde_prop = AutogradingSetup.find_by(assessment_id: assessment.id)
+    @autograde_prop = assessment.autograder
     return -2 unless @autograde_prop
 
     # send the tango open request
@@ -489,7 +489,7 @@ module AssessmentAutograde
       fail "Empty autoresult string." if scores.keys.length == 0
 
       # Grab the autograde config info
-      @autograde_prop = AutogradingSetup.find_by(assessment_id: @assessment.id)
+      @autograde_prop = @assessment.autograder
 
       # Record each of the scores extracted from the autoresult
       scores.keys.each do |key|

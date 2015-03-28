@@ -15,7 +15,7 @@ class Assessment < ActiveRecord::Base
   has_many :extensions, dependent: :destroy
   has_many :attachments
   has_many :assessment_user_data, dependent: :destroy
-  has_one :autograding_setup, dependent: :destroy
+  has_one :autograder, dependent: :destroy
   has_one :scoreboard_setup, dependent: :destroy
 
   # Validations
@@ -237,6 +237,10 @@ class Assessment < ActiveRecord::Base
     config_module.instance_methods.include?(methodKey)
   end
 
+  def has_autograder?
+    autograder != nil
+  end
+
   def has_groups?
     group_size && group_size > 1
   end
@@ -333,7 +337,7 @@ private
   def deserialize(s)
     attributes = s["general"] if s["general"]
     problems = Problem.deserialize_list s["problems"] if s["problems"]
-    autograding_setup = AutogradingSetup.deserialize s["autograding_setup"] if s["autograding_setup"]
+    autograder = Autograder.deserialize s["autograding_setup"] if s["autograding_setup"]
     scoreboard_setup = ScoreboardSetup.deserialize s["autograding_setup"] if s["scoreboard_setup"]
   end
 

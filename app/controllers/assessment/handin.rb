@@ -36,7 +36,7 @@ module AssessmentHandin
     end
 
     # autograde the submissions
-    autogradeSubmissions(@course, @assessment, submissions) if @assessment.has_autograde
+    autogradeSubmissions(@course, @assessment, submissions) if @assessment.has_autograder?
 
     redirect_to([:history, @course, @assessment]) && return
   end
@@ -100,9 +100,7 @@ module AssessmentHandin
         end
 
         # autograde the submissions
-        if @assessment.has_autograde
-          autogradeSubmissions(@course, @assessment, submissions)
-        end
+        autogradeSubmissions(@course, @assessment, submissions) if @assessment.has_autograder?
 
       rescue Exception  => e
         print e

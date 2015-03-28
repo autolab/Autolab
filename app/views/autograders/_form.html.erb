@@ -1,0 +1,14 @@
+<%= form_for [@course, @assessment, @autograder], builder: FormBuilderWithDateTimeInput do |f| %>
+  <%= f.error_messages %>
+
+  <%= f.text_field :autograde_image, display_name: "VM Image" %>
+  <p class="help-block">
+    VM image for autograding (e.g., "<kbd>rhel.img</kbd>"). Here is the <%= link_to "list of VMs used at CMU.", [:home, :vmlist] %>
+  </p>
+  <%= f.text_field :autograde_timeout, display_name: "Timeout",
+    help_text: "Timeout for autograding jobs (secs)" %>
+  <%= f.check_box :release_score, display_name: "Release Scores?",
+    help_text: "Check to release autograded scores to students immediately after autograding (strongly recommended)." %>
+
+  <%= f.submit "Save Settings", { class: "btn primary" } %>
+<% end %>

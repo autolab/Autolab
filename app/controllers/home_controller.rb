@@ -57,7 +57,7 @@ class HomeController < ApplicationController
 
   def vmlist
     @images = {}
-    AutogradingSetup.all.each do |a|
+    Autograder.find_each do |a|
       image = a.autograde_image
       assessment = a.assessment
       course = assessment.course
