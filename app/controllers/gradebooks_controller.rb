@@ -1,6 +1,6 @@
 require "association_cache"
 require "csv"
-require "Statistics.rb"
+require "statistics"
 require "utilities"
 
 class GradebooksController < ApplicationController

@@ -1,5 +1,4 @@
-require "ModuleBase.rb"
-
-module Scoreboard
-  include ModuleBase
-end
+##
+# Provided for BC for assessments that might be importing this
+#
+module Scoreboard; end

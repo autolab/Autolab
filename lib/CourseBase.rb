@@ -1,4 +1,4 @@
-require "Statistics.rb"
+require "statistics.rb"
 
 module CourseBase
   def courseAverage(user)

@@ -1,8 +1,7 @@
-require "archive.rb"
+require "archive"
 require "csv"
+require "statistics"
 require "yaml"
-require "Statistics.rb"
-require "date_time_input"
 
 class AssessmentsController < ApplicationController
   include ActiveSupport::Callbacks
@@ -779,7 +778,7 @@ class AssessmentsController < ApplicationController
       redirect_to(action: "index") && return
     end
 
-    if Archive.is_archive? @submission.handin_file_path
+    if Archive.archive? @submission.handin_file_path
       @files = Archive.get_files @submission.handin_file_path
     end
   end

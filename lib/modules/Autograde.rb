@@ -1,15 +1,4 @@
-# Production
-require "net/http"
-require "json"
-require "pathname"
-require_relative "../ModuleBase.rb"
-require "digest/md5"
-
-# include ModuleBase
-
-# The Autograde module overrides the handin action and provides the
-# 'autogradeDone' action which is called by Tango on completion of a job to
-# notify Autolab
-module Autograde
-  include ModuleBase
-end
+##
+# Provided for BC with old assesments that might be importing this
+#
+module Autograde; end

@@ -1,7 +1,7 @@
-require "archive.rb"
+require "archive"
 require "csv"
 require "fileutils"
-require "Statistics.rb"
+require "statistics"
 
 class CoursesController < ApplicationController
   # you need to be able to pick a course to be authorized for it
