@@ -805,8 +805,8 @@ class AssessmentsController < ApplicationController
     end
 
     # make sure the penalties are set up
-    @assessment.build_late_penalty unless @assessment.late_penalty
-    @assessment.build_version_penalty unless @assessment.version_penalty
+    @assessment.late_penalty ||= Penalty.new(value: 0, kind:"points")
+    @assessment.version_penalty ||= Penalty.new(value: 0, kind:"points")
   end
 
   action_auth_level :update, :instructor
