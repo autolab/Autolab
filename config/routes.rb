@@ -30,6 +30,7 @@ Autolab3::Application.routes.draw do
     resources :attachments
 
     resources :assessments, param: :name, except: :update do
+      resource :autograder, except: [:new, :show]
       resources :assessment_user_data, only: [:edit, :update]
       resources :attachments
       resources :extensions, only: [:index, :create, :destroy]

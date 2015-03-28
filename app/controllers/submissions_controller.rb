@@ -14,7 +14,7 @@ class SubmissionsController < ApplicationController
 
     assign = @assessment.name.gsub(/\./, "")
     modName = (assign + (@course.name).gsub(/[^A-Za-z0-9]/, "")).camelize
-    @autograded = @assessment.has_autograde
+    @autograded = @assessment.has_autograder?
   end
 
   # this works
