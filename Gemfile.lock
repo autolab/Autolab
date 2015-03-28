@@ -129,6 +129,7 @@ GEM
     multipart-post (2.0.0)
     mysql2 (0.3.18)
     net-ldap (0.11)
+    newrelic_rpm (3.11.1.284)
     nokogiri (1.6.6.2)
       mini_portile (~> 0.6.0)
     oauth2 (1.0.0)
@@ -286,6 +287,7 @@ DEPENDENCIES
   momentjs-rails (>= 2.9.0)
   mysql2
   net-ldap
+  newrelic_rpm
   omniauth (>= 1.2.2)
   omniauth-facebook (>= 2.0.0)
   omniauth-google-oauth2 (>= 0.2.5)
