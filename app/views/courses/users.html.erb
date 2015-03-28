@@ -46,11 +46,21 @@
 <%= link_to raw('<span class="btn">Import Roster/Users</span>'), {:action=>"uploadRoster"} %>
 <%= link_to raw('<span class="btn">Export Roster</span>'), {:action=>"downloadRoster"} %>
 </p>
-
 <hr>
-Search: <%= text_field_tag 'search', nil, onkeyup:'filterRows(this.value)' %>
+<h3>Current Students</h3>
+<span class="pull-right">Search: <%= text_field_tag 'search', nil, onkeyup:'filterRows(this.value)' %></span>
 <br>
 
 <div id='ajaxTable'>
 <%= render :partial=>'usersTable' %>
 </div>
+
+<% if @course.requires_permission %>
+<hr>
+<h3>Join Requests</h3>
+<% @requests.each do |req| %>
+  <%= req.user.first_name %> <%= req.user.last_name %> (<%= req.user.email %>)
+  <%= link_to "Confirm", [@course, req, :confirm], :class=>"btn small" %>
+  <%= link_to "Cancel", [@course, req], :method => :delete, :class=>"btn small" %>
+<% end %>
+<% end %>

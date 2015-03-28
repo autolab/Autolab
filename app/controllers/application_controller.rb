@@ -19,6 +19,8 @@ class ApplicationController < ActionController::Base
   before_action :update_persistent_announcements
   before_action :set_breadcrumbs
 
+  helper_method :resource_name, :resource_class, :resource, :devise_mapping
+
   # this is where Error Handling is configured. this routes exceptions to
   # the error handler in the HomeController, unless we're in development mode
   #
@@ -63,13 +65,19 @@ class ApplicationController < ActionController::Base
 
   def self.action_no_auth(action)
     skip_before_action :verify_authenticity_token, :authenticate_user!
-    skip_filter configure_permitted_paramters: [action]
+    # skip_filter configure_permitted_paramters: [action]
     skip_filter maintenance_mode: [action]
     skip_filter run_scheduler: [action]
 
     skip_filter authenticate_user: [action]
     skip_before_action :authorize_user_for_course, only: [action]
-    skip_filter authenticate_for_action: [action]
+    # skip_filter authenticate_for_action: [action]
+    skip_before_action :update_persistent_announcements, only: [action]
+
+  end
+
+  def self.action_auth_no_course(action)
+    skip_before_action :authorize_user_for_course, only: [action]
     skip_before_action :update_persistent_announcements, only: [action]
   end
 
@@ -299,6 +307,24 @@ protected
     end
 
     emails.join(",")
+  end
+
+  # These methods help us put sign in form and links
+  # on every page.
+  def resource_name
+    :user
+  end
+
+  def resource_class
+    devise_mapping.to
+  end
+
+  def resource
+    @resource ||= User.new
+  end
+
+  def devise_mapping
+    @devise_mapping ||= Devise.mappings[:user]
   end
 
 private

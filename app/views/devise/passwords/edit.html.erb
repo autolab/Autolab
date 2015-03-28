@@ -9,8 +9,8 @@
 
   <div><%= f.label :password_confirmation, "Confirm new password" %><br />
   <%= f.password_field :password_confirmation %></div>
-
+  <br>
   <div><%= f.submit "Change my password" , {:class=>"btn primary"} %></div>
 <% end %>
-
+<hr>
 <%= render "devise/shared/links" %>

@@ -1,5 +1,5 @@
 class CourseUserDataController < ApplicationController
-  before_action :add_users_breadcrumb
+  before_action :add_users_breadcrumb, except: [ :create ]
 
   action_auth_level :index, :student
   def index
@@ -52,6 +52,7 @@ class CourseUserDataController < ApplicationController
       @newCUD.user = user
     end
 
+
     # save CUD
     if @newCUD.save
       flash[:success] = "Success: added user #{email} in #{@course.display_name}"
@@ -60,10 +61,12 @@ class CourseUserDataController < ApplicationController
       else
         redirect_to(action: "new") && return
       end
+
     else
       flash[:error] = "Adding user failed. Check all fields"
       redirect_to(action: "new") && return
     end
+
   end
 
   action_auth_level :show, :student
@@ -209,18 +212,18 @@ private
   end
 
   def cud_params
-    if @cud.administrator?
+    if @cud && @cud.administrator?
       params.require(:course_user_datum).permit(:school, :major, :year,
                                                 :lecture, :section, :instructor, :dropped, :nickname, :course_assistant,
                                                 user_attributes: [:first_name, :last_name, :email],
                                                 tweak_attributes: [:_destroy, :kind, :value])
-    elsif @cud.instructor?
+    elsif @cud && @cud.instructor?
       params.require(:course_user_datum).permit(:school, :major, :year,
                                                 :lecture, :section, :instructor, :dropped, :nickname, :course_assistant,
                                                 user_attributes: [:email, :first_name, :last_name],
                                                 tweak_attributes: [:_destroy, :kind, :value])
     else
-      params.require(:course_user_datum).permit(:nickname) # ,
+      # params.require(:course_user_datum).permit(user_attributes: [:email, :first_name, :last_name]) # ,
       #        user_attributes: [:first_name, :last_name])
     end
   end

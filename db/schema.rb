@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150313023538) do
+ActiveRecord::Schema.define(version: 20150326152543) do
 
   create_table "annotations", force: :cascade do |t|
     t.integer  "submission_id", limit: 4
@@ -68,6 +68,7 @@ ActiveRecord::Schema.define(version: 20150313023538) do
     t.datetime "updated_at"
     t.integer  "course_id",          limit: 4
     t.string   "display_name",       limit: 255
+    t.integer  "category_id",        limit: 4
     t.string   "handin_filename",    limit: 255
     t.string   "handin_directory",   limit: 255
     t.integer  "max_grace_days",     limit: 4,     default: 0
@@ -146,10 +147,20 @@ ActiveRecord::Schema.define(version: 20150313023538) do
     t.boolean  "disabled",                      limit: 1,     default: false
     t.boolean  "exam_in_progress",              limit: 1,     default: false
     t.integer  "version_threshold",             limit: 4,     default: -1,    null: false
+    t.datetime "cgdub_dependencies_updated_at"
     t.integer  "late_penalty_id",               limit: 4
     t.integer  "version_penalty_id",            limit: 4
-    t.datetime "cgdub_dependencies_updated_at"
     t.text     "gb_message",                    limit: 65535
+    t.boolean  "public",                        limit: 1
+    t.boolean  "requires_permission",           limit: 1
+    t.string   "website_url",                   limit: 255
+  end
+
+  create_table "cud_requests", force: :cascade do |t|
+    t.datetime "created_at",           null: false
+    t.datetime "updated_at",           null: false
+    t.integer  "user_id",    limit: 4, null: false
+    t.integer  "course_id",  limit: 4, null: false
   end
 
   create_table "extensions", force: :cascade do |t|

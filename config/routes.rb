@@ -1,8 +1,20 @@
 Autolab3::Application.routes.draw do
-  root "courses#index"
 
   devise_for :users, controllers: { omniauth_callbacks: "users/omniauth_callbacks" },
                      path_prefix: "auth"
+
+  devise_scope :user do
+
+    authenticated :user do
+      root 'courses#index', as: :authenticated_root
+    end
+
+    unauthenticated do
+      root 'devise/sessions#new', as: :unauthenticated_root
+    end
+
+  end
+
 
   get "contact", to: "home#contact"
 
@@ -24,6 +36,7 @@ Autolab3::Application.routes.draw do
   resources :courses, param: :name do
     match "report_bug", via: [:post, :get]
     get "userLookup"
+    post "join"
 
     resources :schedulers
     resources :jobs, only: :index do
@@ -31,6 +44,9 @@ Autolab3::Application.routes.draw do
     end
     resources :announcements, except: :show
     resources :attachments
+    resources :cud_requests, only: [:create, :destroy] do
+      get :confirm
+    end
 
     resources :assessments, param: :name, except: :update do
       resources :assessment_user_data, only: [:edit, :update]

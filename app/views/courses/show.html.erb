@@ -1,0 +1,30 @@
+<h1><%= @course.display_name %></h1>
+<hr>
+<% if current_user.nil? %>
+<div>You need to sign in to be able to join this class.</div>
+<br>
+<div class="sign-in-panel">
+<% if Rails.env == "development" %>
+<%= link_to "Developer Login", "/home/developer_login" %><br />
+<% end %>
+<%= render "devise/shared/links" %>
+</div>
+<% else %>
+
+    <% if @course.requires_permission %>
+        <% if @cudRequest.nil? %>
+            <%= form_for @newCudRequest, url: course_cud_requests_path(@course) do |f| %>
+            <%= f.submit("Request to Join!", :class=>"btn primary") %>
+            <% end %>
+        <% else %>
+            Your request for joining this class is waiting for instructor approval. <%= link_to "Cancel", [@course, @cudRequest], :method => :delete %>
+
+
+        <% end %>
+    <% else %>
+        <%= form_for @newCUD, url: course_join_path(@course) do |f| %>
+        <%= f.submit("Join!", :class=>"btn primary") %>
+        <% end %>
+    <% end %>
+
+<% end %>

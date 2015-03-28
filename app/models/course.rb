@@ -11,6 +11,7 @@ class Course < ActiveRecord::Base
   validate :order_of_dates
 
   has_many :course_user_data, dependent: :destroy
+  has_many :cud_request, dependent: :destroy
   has_many :assessments, dependent: :destroy
   has_many :scheduler, dependent: :destroy
 
