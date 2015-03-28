@@ -17,9 +17,7 @@ module AssessmentHandin
   # Any errors should be added to flash[:error] and return false or nil.
   def handin
     # validate the handin
-    unless validateHandin
-      redirect_to(action: :show) && return
-    end
+    redirect_to(action: :show) && return unless validateHandin
 
     # save the submissions
     begin
@@ -38,9 +36,7 @@ module AssessmentHandin
     end
 
     # autograde the submissions
-    if @assessment.has_autograde
-      autogradeSubmissions(@course, @assessment, submissions)
-    end
+    autogradeSubmissions(@course, @assessment, submissions) if @assessment.has_autograde
 
     redirect_to([:history, @course, @assessment]) && return
   end
@@ -48,10 +44,8 @@ module AssessmentHandin
   # method called when student makes
   # unofficial submission in the database
   def local_submit
-    @course = Course.find(params[:course_id])
-    unless @course
-      render(plain: "ERROR: invalid course", status: :bad_request) && return
-    end
+    @course = Course.find_by(params[:course_name])
+    render(plain: "ERROR: invalid course", status: :bad_request) && return unless @course
 
     @user = User.find_by(email: params[:user])
     @cud = if @user then @course.course_user_data.find_by(user_id: @user.id) else nil end
@@ -60,7 +54,7 @@ module AssessmentHandin
       render(plain: err, status: :bad_request) && return
     end
 
-    @assessment = @course.assessments.find(params[:id])
+    @assessment = @course.assessments.find_by(params[:name])
     if !@assessment
       err = "ERROR: Invalid Assessment (#{params[:id]}) for course #{@course.id}"
       render(plain: err, status: :bad_request) && return
@@ -77,7 +71,7 @@ module AssessmentHandin
     if params[:submit]
       # They've copied their handin over, lets go grab it.
       begin
-        handinFile = params[:submit]
+        handin_file = params[:submit]
 
         if @assessment.max_submissions != -1
           submission_count = @cud.submissions.where(assessment: @assessment).size
@@ -86,13 +80,11 @@ module AssessmentHandin
           end
         end
 
-        unless validateForGroups
-          render(plain: flash[:error], status: :bad_request) && return
-        end
+        render(plain: flash[:error], status: :bad_request) && return unless validateForGroups
 
         # save the submissions
         begin
-          submissions = saveHandin("local_submit_file" => File.join(remoteHandinDir, handinFile))
+          submissions = saveHandin("local_submit_file" => File.join(remoteHandinDir, handin_file))
         rescue Exception => e
           puts "Error Saving Submission:\n#{e}"
           submissions = nil
@@ -160,10 +152,8 @@ module AssessmentHandin
   # method called when student makes
   # log submission in the database
   def log_submit
-    @course = Course.find(params[:course_id])
-    unless @course
-      render(plain: "ERROR: invalid course", status: :bad_request) && return
-    end
+    @course = Course.find_by(name: params[:course_name])
+    render(plain: "ERROR: invalid course", status: :bad_request) && return unless @course
 
     @user = User.find_by(email: params[:user])
     @cud = if @user then @course.course_user_data.find_by(user_id: @user.id) else nil end
@@ -172,7 +162,7 @@ module AssessmentHandin
       render(plain: err, status: :bad_request) && return
     end
 
-    @assessment = @course.assessments.find(params[:id])
+    @assessment = @course.assessments.find_by(name: params[:name])
     if !@assessment
       err = "ERROR: Invalid Assessment (#{params[:id]}) for course #{@course.id}"
       render(plain: err, status: :bad_request) && return
@@ -240,7 +230,7 @@ module AssessmentHandin
     render(plain: "OK", status: 200) && return
   end
 
-  private
+private
 
   ##
   # this function checks that now is a valid time to submit and that the
@@ -317,7 +307,7 @@ module AssessmentHandin
     unless @assessment.has_groups?
       submission = @assessment.submissions.create(course_user_datum_id: @cud.id,
                                                   submitter_ip: request.remote_ip)
-      submission.saveFile(sub)
+      submission.save_file(sub)
       return [submission]
     end
 
@@ -326,7 +316,7 @@ module AssessmentHandin
     if group.nil?
       submission = @assessment.submissions.create(course_user_datum_id: @cud.id,
                                                   submitter_ip: request.remote_ip)
-      submission.saveFile(sub)
+      submission.save_file(sub)
       return [submission]
     end
 
@@ -335,7 +325,7 @@ module AssessmentHandin
       group.course_user_data.each do |cud|
         submission = @assessment.submissions.create(course_user_datum_id: cud.id,
                                                     submitter_ip: request.remote_ip)
-        submission.saveFile(sub)
+        submission.save_file(sub)
         submissions << submission
       end
     end
@@ -343,10 +333,6 @@ module AssessmentHandin
   end
 
   def get_handin
-    if @assessment.nil?
-      @assessment = @course.assessments.find(params[:assessment_id])
-    end
-
     submission_count = @assessment.submissions.where(course_user_datum_id: @cud.id).count
     @left_count = [@assessment.max_submissions - submission_count, 0].max
     @aud = AssessmentUserDatum.get @assessment.id, @cud.id

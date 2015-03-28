@@ -197,7 +197,7 @@ class CourseUserDatum < ActiveRecord::Base
     end
   end
 
-  private
+private
 
   # Need to create AUDs for all assessments when new user is created
   def create_AUDs_modulo_callbacks

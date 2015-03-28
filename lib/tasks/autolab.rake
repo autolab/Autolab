@@ -285,6 +285,14 @@ namespace :autolab do
       FileUtils.mkdir_p(File.join(course_dir, a.name, a.handin_directory))
     end
 
+    # Load autograding properties
+    autograde_prop = AutogradingSetup.new
+    autograde_prop.assessment_id = asmt.id
+    autograde_prop.autograde_image = "rhel.img"
+    autograde_prop.autograde_timeout = 180
+    autograde_prop.release_score = true
+    autograde_prop.save!
+
     # Load problem "autograded"
     asmt.problems.create(name: AUTOGRADE_TEMPLATE_PROBLEM_NAME,
                          max_score: AUTOGRADE_TEMPLATE_MAX_SCORE)

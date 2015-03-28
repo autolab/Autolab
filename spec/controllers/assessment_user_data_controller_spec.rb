@@ -1,5 +1,4 @@
-require 'rails_helper'
+require "rails_helper"
 
-RSpec.describe AssessmentUserDataController, :type => :controller do
-
+RSpec.describe AssessmentUserDataController, type: :controller do
 end

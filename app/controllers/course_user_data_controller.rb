@@ -200,7 +200,7 @@ class CourseUserDataController < ApplicationController
     redirect_to course_path(@cud.course.id)
   end
 
-  private
+private
 
   def add_users_breadcrumb
     if @cud.instructor

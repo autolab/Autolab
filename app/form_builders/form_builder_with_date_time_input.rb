@@ -68,7 +68,7 @@ class FormBuilderWithDateTimeInput < ActionView::Helpers::FormBuilder
     date_helper name, options, strftime, date_format
   end
 
-  private
+private
 
   # Pass space-delimited list of IDs of datepickers on the :less_than and
   # :greater_than properties to initialize relationships between datepicker
