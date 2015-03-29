@@ -155,49 +155,47 @@ class CourseUserDataController < ApplicationController
 
   action_auth_level :sudo, :instructor
   def sudo
-    unless @cud.can_sudo? || session[:sudo]
-      redirect_to(course_path(@cud.course.id)) && return
+    redirect_to([@cud.course]) && return unless @cud.can_sudo? || session[:sudo]
+
+    return unless request.post?
+
+    sudo_user = User.where(email: params[:sudo_email]).first
+    unless sudo_user
+      flash[:error] = "User #{params[:sudo_email]} does not exist."
+      redirect_to([@cud.course]) && return
     end
 
-    if request.post?
-      sudo_user = User.where(email: params[:sudo_email]).first
-      unless sudo_user
-        flash[:error] = "User #{params[:sudo_email]} does not exist."
-        redirect_to(course_path(@cud.course.id)) && return
-      end
-
-      sudo_cud = @course.course_user_data.where(user_id: sudo_user.id).first
-      unless sudo_cud
-        flash[:error] = "User #{params[:sudo_email]} does not exist."
-        redirect_to(course_path(@cud.course.id)) && return
-      end
-
-      unless @cud.can_sudo_to?(sudo_cud)
-        flash[:error] = "You do not have the privileges to act as " \
-                "#{sudo_cud.display_name}."
-        redirect_to(course_path(@cud.course.id)) && return
-      end
-
-      if @cud.id == sudo_cud.id
-        flash[:error] = "There's no point in trying to act as yourself."
-        redirect_to(course_path(@cud.course.id)) && return
-      end
-
-      session[:sudo] = {}
-      session[:sudo][:user_id] = sudo_cud.user.id
-      session[:sudo][:course_id] = sudo_cud.course.id
-
-      # this was sudo_cud.display_name
-      session[:sudo][:actual_name] = @cud.display_name
-
-      redirect_to(course_path(@cud.course.id)) && return
+    sudo_cud = @course.course_user_data.where(user_id: sudo_user.id).first
+    unless sudo_cud
+      flash[:error] = "User #{params[:sudo_email]} does not exist."
+      redirect_to([@cud.course]) && return
     end
+
+    unless @cud.can_sudo_to?(sudo_cud)
+      flash[:error] = "You do not have the privileges to act as " \
+              "#{sudo_cud.display_name}."
+      redirect_to([@cud.course]) && return
+    end
+
+    if @cud.id == sudo_cud.id
+      flash[:error] = "There's no point in trying to act as yourself."
+      redirect_to([@cud.course]) && return
+    end
+
+    session[:sudo] = {}
+    session[:sudo][:user_id] = sudo_cud.user.id
+    session[:sudo][:course_id] = sudo_cud.course.id
+
+    # this was sudo_cud.display_name
+    session[:sudo][:actual_name] = @cud.display_name
+
+    redirect_to([@cud.course]) && return
   end
 
   action_auth_level :unsudo, :student
   def unsudo
     session[:sudo] = nil
-    redirect_to course_path(@cud.course.id)
+    redirect_to([@cud.course]) && return
   end
 
 private
