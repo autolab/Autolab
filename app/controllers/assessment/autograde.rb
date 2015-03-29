@@ -11,8 +11,8 @@ module AssessmentAutograde
   # method called when Tango returns the output
   # action_no_auth :autograde_done
   def autograde_done
-    @course = Course.find(params[:course_id]) || (render(nothing: true) && return)
-    @assessment = @course.assessments.find(params[:id])
+    @course = Course.find_by(name: params[:course_name]) || (render(nothing: true) && return)
+    @assessment = @course.assessments.find_by(name: params[:name])
     render(nothing: true) && return unless @assessment && @assessment.has_autograde
 
     # there can be multiple submission with the same dave if this was a group submission
@@ -269,7 +269,7 @@ module AssessmentAutograde
     end
 
     callback_url = (RESTFUL_USE_POLLING) ? "" :
-      "#{hostname}/courses/#{course.id}/assessments/#{assessment.id}/autograde_done?dave=#{dave}&submission_id=#{submission.id}"
+      "#{hostname}/courses/#{course.name}/assessments/#{assessment.name}/autograde_done?dave=#{dave}&submission_id=#{submission.id}"
     COURSE_LOGGER.log("Callback: #{callback_url}")
 
     callback_url

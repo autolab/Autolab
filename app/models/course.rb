@@ -158,6 +158,10 @@ class Course < ActiveRecord::Base
     end
   end
 
+  def to_param
+    name
+  end
+
 private
 
   def cgdub_dependencies_updated

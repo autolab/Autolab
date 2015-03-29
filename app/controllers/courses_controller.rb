@@ -1,7 +1,7 @@
-require "archive.rb"
+require "archive"
 require "csv"
 require "fileutils"
-require "Statistics.rb"
+require "statistics"
 
 class CoursesController < ApplicationController
   # you need to be able to pick a course to be authorized for it
@@ -542,7 +542,8 @@ file, most likely a duplicate email.  The exact error was: #{e} "
       assDir = File.join(tmpDir, "#{ass.name}-#{ass.course.name}")
       Dir.mkdir(assDir)
 
-      isArchive = params[:isArchive][ass.id.to_s]
+      # params[:isArchive] might be nil if no archive assessments are submitted
+      isArchive = params[:isArchive] && params[:isArchive][ass.id.to_s]
 
       # For each student who submitted
       for sub in ass.submissions.latest do

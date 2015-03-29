@@ -1,3 +1,7 @@
+##
+# There's a score for each problem and each submission in every assessment.
+# That is A LOT OF SCORES.
+#
 class ScoresController < ApplicationController
   before_action :set_assessment
   before_action :set_submission
@@ -43,17 +47,8 @@ private
 
   def set_score
     @score = @submission.scores.find(params[:id])
-    unless (@score.submission.course_user_datum_id == @cud.id) ||
-           (@cud.has_auth_level? :course_assistant)
-      redirect_to(action: "index") && return
-    end
-  end
-
-  def set_score
-    @score = @submission.scores.find(params[:id])
-    unless (@score.submission.course_user_datum_id == @cud.id) ||
-           (@cud.has_auth_level? :course_assistant)
-      redirect_to(action: "index") && return
-    end
+    return if (@score.submission.course_user_datum_id == @cud.id) ||
+              (@cud.has_auth_level? :course_assistant)
+    redirect_to(action: "index") && return
   end
 end

@@ -1,3 +1,6 @@
+##
+# This is mostly a reminder that SVN still doesn't work
+#
 module Svn
   # Override to specify how repository checkout should work
   # TODO: implement base versions for svn and git, these don't work
