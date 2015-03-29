@@ -176,10 +176,10 @@ class CoursesController < ApplicationController
   def report_bug
     if request.post?
       CourseMailer.bug_report(
-        params[:title],
-        params[:summary],
-        current_user,
-        @course
+          params[:title],
+          params[:summary],
+          current_user,
+          @course
       ).deliver
     end
   end
@@ -200,9 +200,9 @@ class CoursesController < ApplicationController
       render(json: nil) && return
     end
 
-    @user_data = { first_name: user.first_name,
-                   last_name: user.last_name,
-                   email: user.email }
+    @user_data = {first_name: user.first_name,
+                  last_name: user.last_name,
+                  email: user.email}
 
     render json: @user_data
   end
@@ -240,188 +240,24 @@ class CoursesController < ApplicationController
   #   black - User exists in the course
   action_auth_level :uploadRoster, :instructor
   def uploadRoster
-    if request.post?
-      # Check if any file is attached
-      if params["upload"] && params["upload"]["file"].nil?
-        flash[:error] = "Please attach a roster!"
-        redirect_to(action: :uploadRoster) && return
-      end
+    return unless request.post?
+    # Check if any file is attached
+    if params["upload"] && params["upload"]["file"].nil?
+      flash[:error] = "Please attach a roster!"
+      redirect_to(action: :uploadRoster) && return
+    end
 
-      if params[:doIt]
-        begin
-          CourseUserDatum.transaction do
-            rowNum = 0
-
-            until params["cuds"][rowNum.to_s].nil?
-              newCUD = params["cuds"][rowNum.to_s]
-
-              if newCUD["color"] == "green"
-                # Add this user to the course
-                # Look for this user
-                email = newCUD[:email]
-                first_name = newCUD[:first_name]
-                last_name = newCUD[:last_name]
-                school = newCUD[:school]
-                major = newCUD[:major]
-                year = newCUD[:year]
-
-                if (user = User.where(email: email).first).nil?
-                  # Create a new user
-                  user = User.roster_create(email, first_name, last_name, school,
-                                            major, year)
-                  if user.nil?
-                    fail "New user cannot be created in uploadRoster."
-                  end
-                else
-                  # Override current user
-                  user.first_name = first_name
-                  user.last_name = last_name
-                  user.school = school
-                  user.major = major
-                  user.year = year
-                  user.save
-                end
-
-                # Make sure this user doesn't have a cud in the course
-                if @course.course_user_data.where(user: user).first
-                  fail "Green CUD doesn't exist in the database."
-                end
-
-                # Delete unneeded data
-                newCUD.delete(:color)
-                newCUD.delete(:email)
-                newCUD.delete(:first_name)
-                newCUD.delete(:last_name)
-                newCUD.delete(:school)
-                newCUD.delete(:major)
-                newCUD.delete(:year)
-
-                # Build cud
-                cud = @course.course_user_data.new
-                cud.user = user
-                cud.assign_attributes(newCUD.permit(:lecture, :section, :grade_policy))
-
-                # Save without validations
-                cud.save(validate: false)
-
-              elsif newCUD["color"] == "red"
-                # Drop this user from the course
-                existing = @course.course_user_data.includes(:user).where(users: { email: newCUD[:email] }).first
-
-                if existing.nil?
-                  fail "Red CUD doesn't exist in the database."
-                end
-
-                existing.dropped = true
-                existing.save(validate: false)
-
-              else
-                # Update this user's attributes.
-                existing = @course.course_user_data.includes(:user).where(users: { email: newCUD[:email] }).first
-
-                if existing.nil?
-                  fail "Black CUD doesn't exist in the database."
-                end
-
-                user = existing.user
-                if user.nil?
-                  fail "User associated to black CUD doesn't exist in the database."
-                end
-
-                # Update user data
-                user.first_name = newCUD[:first_name]
-                user.last_name = newCUD[:last_name]
-                user.school = newCUD[:school]
-                user.major = newCUD[:major]
-                user.year = newCUD[:year]
-                user.save!
-
-                # Delete unneeded data
-                newCUD.delete(:color)
-                newCUD.delete(:email)
-                newCUD.delete(:first_name)
-                newCUD.delete(:last_name)
-                newCUD.delete(:school)
-                newCUD.delete(:major)
-                newCUD.delete(:year)
-
-                # assign attributes
-                existing.assign_attributes(newCUD.permit(:lecture, :section, :grade_policy))
-                existing.save(validate: false) # Save without validations.
-              end
-
-              rowNum += 1
-            end
-          end
-
-          flash[:success] = "Success!"
-
-        rescue Exception => e
-          flash[:error] = "There was an error uploading the roster
+    if params[:doIt]
+      begin
+        save_uploaded_roster
+        flash[:success] = "Success!"
+      rescue Exception => e
+        flash[:error] = "There was an error uploading the roster
 file, most likely a duplicate email.  The exact error was: #{e} "
-          redirect_to(action: "uploadRoster") && return
-        end
-
-      else
-        # generate doIt form from the upload
-        @cuds = []
-        @currentCUDs = @course.course_user_data.all.to_a
-        @newCUDs = []
-
-        begin
-          csv = detectAndConvertRoster(params["upload"]["file"].read)
-          csv.each do |row|
-            next if row[1].nil? || row[1].chomp.size == 0
-            newCUD = { email: row[1].to_s,
-                       last_name: row[2].to_s.chomp(" "),
-                       first_name: row[3].to_s.chomp(" "),
-                       school: row[4].to_s.chomp(" "),
-                       major: row[5].to_s.chomp(" "),
-                       year: row[6].to_s.chomp(" "),
-                       grade_policy: row[7].to_s.chomp(" "),
-                       lecture: row[9].to_s.chomp(" "),
-                       section: row[10].to_s.chomp(" ") }
-            cud = @currentCUDs.find do |cud|
-              cud.user && cud.user.email == newCUD[:email]
-            end
-            if !cud
-              newCUD[:color] = "green"
-            else
-              @currentCUDs.delete(cud)
-            end
-            @cuds << newCUD
-          end
-        rescue CSV::MalformedCSVError => error
-          flash[:error] = "Error parsing CSV file: #{error}"
-          redirect_to(action: "uploadRoster") && return
-        rescue Exception => e
-          raise e
-          flash[:error] = "Error uploading the CSV file!: " +
-                          e.to_s + e.backtrace.join("<br>")
-          redirect_to(action: "uploadRoster") && return
-        end
-
-        # drop the rest if indicated
-        if params[:upload][:dropMissing] == "1"
-          # We never drop instructors, remove them first
-          @currentCUDs.delete_if do |cud|
-            cud.instructor? || cud.user.administrator? || cud.course_assistant?
-          end
-          for cud in @currentCUDs do # These are the drops
-            newCUD = { email: cud.user.email,
-                       last_name: cud.user.last_name,
-                       first_name: cud.user.first_name,
-                       school: cud.school,
-                       major: cud.major,
-                       year: cud.year,
-                       grade_policy: cud.grade_policy,
-                       lecture: cud.lecture,
-                       section: cud.section,
-                       color: "red" }
-            @cuds << newCUD
-          end
-        end
+        redirect_to(action: "uploadRoster") && return
       end
+    else
+      parse_roster_csv
     end
   end
 
@@ -433,7 +269,9 @@ file, most likely a duplicate email.  The exact error was: #{e} "
     output = ""
     for cud in @cuds do
       user = cud.user
-      output += "#{@course.semester},#{cud.user.email},#{user.last_name},#{user.first_name},#{cud.school},#{cud.major},#{cud.year},#{cud.grade_policy},#{cud.lecture},#{cud.section}\n"
+      output += "#{@course.semester},#{cud.user.email},#{user.last_name},#{user.first_name}," \
+                "#{cud.school},#{cud.major},#{cud.year},#{cud.grade_policy}," \
+                "#{cud.lecture},#{cud.section}\n"
     end
     send_data output, filename: "roster.csv", type: "text/csv", disposition: "inline"
   end
@@ -487,12 +325,12 @@ file, most likely a duplicate email.  The exact error was: #{e} "
       bccString = make_dlist(@cuds)
 
       @email = CourseMailer.course_announcement(
-        params[:from],
-        bccString,
-        params[:subject],
-        params[:body],
-        @cud,
-        @course)
+          params[:from],
+          bccString,
+          params[:subject],
+          params[:body],
+          @cud,
+          @course)
       @email.deliver
     end
   end
@@ -520,7 +358,7 @@ file, most likely a duplicate email.  The exact error was: #{e} "
           flash[:error] = "Invalid Assessment ID: #{aID}"
           redirect_to(action: :moss) && return
         end
-        assessmentCUD = assessment.course.course_user_data.joins(:user).find_by(users: { email: current_user.email }, instructor: true)
+        assessmentCUD = assessment.course.course_user_data.joins(:user).find_by(users: {email: current_user.email}, instructor: true)
         if !assessmentCUD && (!@cud.user.administrator?)
           flash[:error] = "Invalid User"
           redirect_to(action: :moss) && return
@@ -531,103 +369,11 @@ file, most likely a duplicate email.  The exact error was: #{e} "
 
     @mossCmd = [Rails.root.join("vendor", "mossnet -d")]
 
-    # Create a temporary directory for this
-    tmpDir = Dir.mktmpdir("#{@cud.user.email}Moss", Rails.root.join("tmp"))
-
+    # Create a temporary directory
     @failures = []
-
-    # for each assessment
-    for ass in assessments do
-      # Create a directory for ths assessment
-      assDir = File.join(tmpDir, "#{ass.name}-#{ass.course.name}")
-      Dir.mkdir(assDir)
-
-      # params[:isArchive] might be nil if no archive assessments are submitted
-      isArchive = params[:isArchive] && params[:isArchive][ass.id.to_s]
-
-      # For each student who submitted
-      for sub in ass.submissions.latest do
-        subFile = sub.handin_file_path
-        next unless subFile && File.exist?(subFile)
-
-        # Create a directory for this student
-        stuDir = File.join(assDir, sub.course_user_datum.email)
-        Dir.mkdir(stuDir)
-
-        # Copy their submission over
-        FileUtils.cp(subFile, stuDir)
-
-        # Read archive files
-        if isArchive
-          # If we need to unarchive this file, then create archive reader
-          archive_path = File.join(stuDir, sub.filename)
-          begin
-            archive_extract = Archive.get_archive(archive_path)
-
-            archive_extract.each do |entry|
-              pathname = Archive.get_entry_name(entry)
-              unless Archive.looks_like_directory?(pathname)
-                destination = File.join(stuDir, pathname)
-                # make sure all subdirectories are there
-                FileUtils.mkdir_p(File.dirname destination)
-                File.open(destination, "wb") do |out|
-                  out.write Archive.read_entry_file(entry)
-                  out.fsync rescue nil # for filesystems without fsync(2)
-                end
-              end
-            end
-          rescue
-            @failures << sub.filename
-          end
-        end
-      end
-
-      # add this assessment to the moss command
-      @mossCmd << File.join(assDir, "*", params["files"][ass.id.to_s])
-    end
-
-    # Grasp the external code source (tarball).
-    external_tar = params[:external_tar]
-    if external_tar   # Sanity check.
-      # Directory to hold tar ball and all individual files.
-      extTarDir = File.join(tmpDir, "external_input")
-      Dir.mkdir(extTarDir)
-
-      # Read in the tarfile from the given source.
-      extTarPath = File.join(extTarDir, "input_file")
-      external_tar.rewind
-      File.open(extTarPath, "wb") { |f| f.write(external_tar.read) } # Write tar file.
-
-      # Directory to hold all external individual submission.
-      extFilesDir = File.join(extTarDir, "submissions")
-      Dir.mkdir(extFilesDir)                    # To hold all submissions
-      Dir.chdir(extFilesDir)
-
-      # Untar the given Tar file.
-      begin
-        archive_extract = Archive.get_archive(extTarPath)
-
-        # write each file, renaming nested files
-        archive_extract.each do |entry|
-          pathname = Archive.get_entry_name(entry)
-          unless Archive.looks_like_directory?(pathname)
-            pathname.gsub!(/\//, "-")
-            destination = File.join(extFilesDir, pathname)
-            # make sure all subdirectories are there
-            File.open(destination, "wb") do |out|
-              out.write Archive.read_entry_file(entry)
-              out.fsync rescue nil # for filesystems without fsync(2)
-            end
-          end
-        end
-      rescue
-        @failures << "External Tar"
-      end
-
-      # Feed the uploaded files to MOSS.
-      @mossCmd << File.join(extFilesDir, "*")
-    end
-
+    tmpDir = Dir.mktmpdir("#{@cud.user.email}Moss", Rails.root.join("tmp"))
+    extract_asmt_for_moss(assessments)
+    extract_tar_for_moss(params[:external_tar])
     # Ensure that all files in Moss tmp dir are readable
     system("chmod -R a+r #{tmpDir}")
 
@@ -640,7 +386,7 @@ file, most likely a duplicate email.  The exact error was: #{e} "
     # `rm -rf #{tmpDir}`
   end
 
-private
+  private
 
   def new_course_params
     params.require(:newCourse).permit(:name, :semester)
@@ -672,6 +418,174 @@ private
     end
 
     listing
+  end
+
+  def save_uploaded_roster
+    CourseUserDatum.transaction do
+      rowNum = 0
+
+      until params["cuds"][rowNum.to_s].nil?
+        newCUD = params["cuds"][rowNum.to_s]
+
+        if newCUD["color"] == "green"
+          # Add this user to the course
+          # Look for this user
+          email = newCUD[:email]
+          first_name = newCUD[:first_name]
+          last_name = newCUD[:last_name]
+          school = newCUD[:school]
+          major = newCUD[:major]
+          year = newCUD[:year]
+
+          if (user = User.where(email: email).first).nil?
+            # Create a new user
+            user = User.roster_create(email, first_name, last_name, school,
+                                      major, year)
+            if user.nil?
+              fail "New user cannot be created in uploadRoster."
+            end
+          else
+            # Override current user
+            user.first_name = first_name
+            user.last_name = last_name
+            user.school = school
+            user.major = major
+            user.year = year
+            user.save
+          end
+
+          # Make sure this user doesn't have a cud in the course
+          if @course.course_user_data.where(user: user).first
+            fail "Green CUD doesn't exist in the database."
+          end
+
+          # Delete unneeded data
+          newCUD.delete(:color)
+          newCUD.delete(:email)
+          newCUD.delete(:first_name)
+          newCUD.delete(:last_name)
+          newCUD.delete(:school)
+          newCUD.delete(:major)
+          newCUD.delete(:year)
+
+          # Build cud
+          cud = @course.course_user_data.new
+          cud.user = user
+          cud.assign_attributes(newCUD.permit(:lecture, :section, :grade_policy))
+
+          # Save without validations
+          cud.save(validate: false)
+
+        elsif newCUD["color"] == "red"
+          # Drop this user from the course
+          existing = @course.course_user_data.includes(:user).where(users: {email: newCUD[:email]}).first
+
+          if existing.nil?
+            fail "Red CUD doesn't exist in the database."
+          end
+
+          existing.dropped = true
+          existing.save(validate: false)
+
+        else
+          # Update this user's attributes.
+          existing = @course.course_user_data.includes(:user).where(users: {email: newCUD[:email]}).first
+
+          if existing.nil?
+            fail "Black CUD doesn't exist in the database."
+          end
+
+          user = existing.user
+          if user.nil?
+            fail "User associated to black CUD doesn't exist in the database."
+          end
+
+          # Update user data
+          user.first_name = newCUD[:first_name]
+          user.last_name = newCUD[:last_name]
+          user.school = newCUD[:school]
+          user.major = newCUD[:major]
+          user.year = newCUD[:year]
+          user.save!
+
+          # Delete unneeded data
+          newCUD.delete(:color)
+          newCUD.delete(:email)
+          newCUD.delete(:first_name)
+          newCUD.delete(:last_name)
+          newCUD.delete(:school)
+          newCUD.delete(:major)
+          newCUD.delete(:year)
+
+          # assign attributes
+          existing.assign_attributes(newCUD.permit(:lecture, :section, :grade_policy))
+          existing.save(validate: false) # Save without validations.
+        end
+
+        rowNum += 1
+      end
+    end
+  end
+
+  def parse_roster_csv
+    # generate doIt form from the upload
+    @cuds = []
+    @currentCUDs = @course.course_user_data.all.to_a
+    @newCUDs = []
+
+    begin
+      csv = detectAndConvertRoster(params["upload"]["file"].read)
+      csv.each do |row|
+        next if row[1].nil? || row[1].chomp.size == 0
+        newCUD = {email: row[1].to_s,
+                  last_name: row[2].to_s.chomp(" "),
+                  first_name: row[3].to_s.chomp(" "),
+                  school: row[4].to_s.chomp(" "),
+                  major: row[5].to_s.chomp(" "),
+                  year: row[6].to_s.chomp(" "),
+                  grade_policy: row[7].to_s.chomp(" "),
+                  lecture: row[9].to_s.chomp(" "),
+                  section: row[10].to_s.chomp(" ")}
+        cud = @currentCUDs.find do |cud|
+          cud.user && cud.user.email == newCUD[:email]
+        end
+        if !cud
+          newCUD[:color] = "green"
+        else
+          @currentCUDs.delete(cud)
+        end
+        @cuds << newCUD
+      end
+    rescue CSV::MalformedCSVError => error
+      flash[:error] = "Error parsing CSV file: #{error}"
+      redirect_to(action: "uploadRoster") && return
+    rescue Exception => e
+      raise e
+      flash[:error] = "Error uploading the CSV file!: " +
+          e.to_s + e.backtrace.join("<br>")
+      redirect_to(action: "uploadRoster") && return
+    end
+
+    # drop the rest if indicated
+    if params[:upload][:dropMissing] == "1"
+      # We never drop instructors, remove them first
+      @currentCUDs.delete_if do |cud|
+        cud.instructor? || cud.user.administrator? || cud.course_assistant?
+      end
+      for cud in @currentCUDs do # These are the drops
+        newCUD = {email: cud.user.email,
+                  last_name: cud.user.last_name,
+                  first_name: cud.user.first_name,
+                  school: cud.school,
+                  major: cud.major,
+                  year: cud.year,
+                  grade_policy: cud.grade_policy,
+                  lecture: cud.lecture,
+                  section: cud.section,
+                  color: "red"}
+        @cuds << newCUD
+      end
+    end
   end
 
   # detectAndConvertRoster - Detect the type of a roster based on roster
@@ -721,5 +635,98 @@ private
       # Section(10), ...
       return parsedRoster
     end
+  end
+
+  def extract_asmt_for_moss(assessments)
+    # for each assessment
+    for ass in assessments do
+      # Create a directory for ths assessment
+      assDir = File.join(tmpDir, "#{ass.name}-#{ass.course.name}")
+      Dir.mkdir(assDir)
+
+      # params[:isArchive] might be nil if no archive assessments are submitted
+      isArchive = params[:isArchive] && params[:isArchive][ass.id.to_s]
+
+      # For each student who submitted
+      for sub in ass.submissions.latest do
+        subFile = sub.handin_file_path
+        next unless subFile && File.exist?(subFile)
+
+        # Create a directory for this student
+        stuDir = File.join(assDir, sub.course_user_datum.email)
+        Dir.mkdir(stuDir)
+
+        # Copy their submission over
+        FileUtils.cp(subFile, stuDir)
+
+        # Read archive files
+        if isArchive
+          # If we need to unarchive this file, then create archive reader
+          archive_path = File.join(stuDir, sub.filename)
+          begin
+            archive_extract = Archive.get_archive(archive_path)
+
+            archive_extract.each do |entry|
+              pathname = Archive.get_entry_name(entry)
+              unless Archive.looks_like_directory?(pathname)
+                destination = File.join(stuDir, pathname)
+                # make sure all subdirectories are there
+                FileUtils.mkdir_p(File.dirname destination)
+                File.open(destination, "wb") do |out|
+                  out.write Archive.read_entry_file(entry)
+                  out.fsync rescue nil # for filesystems without fsync(2)
+                end
+              end
+            end
+          rescue
+            @failures << sub.filename
+          end
+        end
+      end
+
+      # add this assessment to the moss command
+      @mossCmd << File.join(assDir, "*", params["files"][ass.id.to_s])
+    end
+  end
+
+  def extract_tar_for_moss(external_tar)
+    return unless external_tar
+    # Directory to hold tar ball and all individual files.
+    extTarDir = File.join(tmpDir, "external_input")
+    Dir.mkdir(extTarDir)
+
+    # Read in the tarfile from the given source.
+    extTarPath = File.join(extTarDir, "input_file")
+    external_tar.rewind
+    File.open(extTarPath, "wb") { |f| f.write(external_tar.read) } # Write tar file.
+
+    # Directory to hold all external individual submission.
+    extFilesDir = File.join(extTarDir, "submissions")
+    Dir.mkdir(extFilesDir) # To hold all submissions
+    Dir.chdir(extFilesDir)
+
+    # Untar the given Tar file.
+    begin
+      archive_extract = Archive.get_archive(extTarPath)
+
+      # write each file, renaming nested files
+      archive_extract.each do |entry|
+        pathname = Archive.get_entry_name(entry)
+        unless Archive.looks_like_directory?(pathname)
+          pathname.gsub!(/\//, "-")
+          destination = File.join(extFilesDir, pathname)
+          # make sure all subdirectories are there
+          File.open(destination, "wb") do |out|
+            out.write Archive.read_entry_file(entry)
+            out.fsync rescue nil # for filesystems without fsync(2)
+          end
+        end
+      end
+    rescue
+      @failures << "External Tar"
+    end
+
+    # Feed the uploaded files to MOSS.
+    @mossCmd << File.join(extFilesDir, "*")
   end
 end

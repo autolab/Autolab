@@ -54,7 +54,6 @@ class AssessmentsController < ApplicationController
   # SVN
   autolab_require Rails.root.join("app", "controllers", "assessment", "SVN.rb")
   include AssessmentSVN
-
   action_auth_level :adminSVN, :instructor
   action_auth_level :setRepository, :instructor
   action_auth_level :importSVN, :instructor
@@ -92,11 +91,8 @@ class AssessmentsController < ApplicationController
   action_auth_level :installQuiz, :instructor
   def installQuiz
     @categories = @course.assessment_categories
-
     if request.post? && params.include?(:quiz)
-
       begin
-
         @assessment = Assessment.new
 
         quizJSON = params[:quiz]
@@ -122,26 +118,20 @@ class AssessmentsController < ApplicationController
         @assessment.quiz = true
         @assessment.quizData = quizJSON
         @assessment.max_submissions = params.include?(:max_submissions) ? params[:max_submissions] : -1
-
         @assessment.save!
 
         quizData = JSON.parse(quizJSON)
-
         p = Problem.new(name: "Quiz",
                         description: "",
                         assessment_id: @assessment.id,
                         max_score: quizData.length,
                         optional: false)
-
         p.save
-
         redirect_to edit_course_assessment_path(@course, @assessment)
-
-    rescue Exception => e
-      flash[:error] = e.to_s
-      render(template: "assessments/installQuiz") && return
+      rescue Exception => e
+        flash[:error] = e.to_s
+        render(template: "assessments/installQuiz") && return
       end
-
     else
       @assessment = Assessment.new
     end
@@ -149,7 +139,7 @@ class AssessmentsController < ApplicationController
 
   action_auth_level :takeQuiz, :student
   def takeQuiz
-    submission_count = @assessment.submissions.count(conditions: { course_user_datum_id: @cud.id })
+    submission_count = @assessment.submissions.count(conditions: {course_user_datum_id: @cud.id})
     left_count = [@assessment.max_submissions - submission_count, 0].max
     if @assessment.max_submissions != -1 && left_count == 0
       redirect_to(course_assessment_path(@course, @assessment)) && return
@@ -161,7 +151,7 @@ class AssessmentsController < ApplicationController
 
   action_auth_level :submitQuiz, :student
   def submitQuiz
-    submission_count = @assessment.submissions.count(conditions: { course_user_datum_id: @cud.id })
+    submission_count = @assessment.submissions.count(conditions: {course_user_datum_id: @cud.id})
     left_count = [@assessment.max_submissions - submission_count, 0].max
     if @assessment.max_submissions != -1 && left_count == 0
       redirect_to(course_assessment_path(@course, @assessment)) && return
@@ -232,45 +222,9 @@ class AssessmentsController < ApplicationController
       tarFile = File.new(tarFile.open, "rb")
       tar_extract = Gem::Package::TarReader.new(tarFile)
       tar_extract.rewind
-      # Verify integrity of assessment tarball.
-      file_list = []
-      dir_list = []
-      tar_extract.each do |entry|
-        pathname = entry.full_name
-        next if pathname.start_with? "."
-        isdir = entry.directory?
-        if isdir
-          dir_list << pathname
-        else
-          file_list << pathname
-        end
-      end
+      is_valid_tar = valid_asmt_tar(tar_extract)
       tar_extract.close
-      dir_list.sort!
-      file_list.sort!
-      valid_file = nil
-      asmt_name = nil
-      asmt_rb_exist = false
-      asmt_yml_exist = false
-      dir_list.each do |dir|
-        if dir.count("/") == 0
-          if !asmt_name.nil?
-            valid_file = false
-            break
-          else
-            asmt_name = dir
-          end
-        end
-      end
-      file_list.each do |file|
-        if file == "#{asmt_name}/#{asmt_name}.rb"
-          asmt_rb_exist = true
-        elsif file == "#{asmt_name}/#{asmt_name}.yml"
-          asmt_yml_exist = true
-        end
-      end
-      valid_file = (valid_file != false) && !asmt_name.nil? && asmt_rb_exist && asmt_yml_exist
-      unless valid_file
+      unless is_valid_tar
         flash[:error] = "Invalid tarball. Please verify the existence of configuration files."
         redirect_to(action: "installAssessment") && return
       end
@@ -338,12 +292,12 @@ class AssessmentsController < ApplicationController
     # creating a new category if necessary.
     if props["general"]
       props["general"]["category_name"] ||= props["general"]["category"] || "General"
-      params[:assessment] = { name: name,
-                              display_name: props["general"]["display_name"],
-                              category_name: props["general"]["category_name"] }
+      params[:assessment] = {name: name,
+                             display_name: props["general"]["display_name"],
+                             category_name: props["general"]["category_name"]}
       create && return # create should handle the redirection
-    # Otherwise, ask the user to give us a category before we create the
-    # assessment
+      # Otherwise, ask the user to give us a category before we create the
+      # assessment
     else
       flash[:error] = "The YAML file must have a top-level 'general' property"
       redirect_to(action: :installAssessment) && return
@@ -432,11 +386,11 @@ class AssessmentsController < ApplicationController
     begin
       # assessmentInitialize(name)
       # installProblems()
-      rescue Exception => e
-        puts "\n\n ERROR: \n #{e} \n #{e.backtrace} \n"
-        flash[:error] = "Error initializing #{name}: #{e}"
-        uninstall(name)
-        redirect_to(course_path(@course)) && return
+    rescue Exception => e
+      puts "\n\n ERROR: \n #{e} \n #{e.backtrace} \n"
+      flash[:error] = "Error initializing #{name}: #{e}"
+      uninstall(name)
+      redirect_to(course_path(@course)) && return
     end
 
     flash[:success] = "Successfully installed #{@assessment.name}."
@@ -495,7 +449,7 @@ class AssessmentsController < ApplicationController
   # trust the upstream developer to do that for us.
   def raw_score(scores)
     if @assessment.has_autograde &&
-       @assessment.overwrites_method?(:raw_score)
+        @assessment.overwrites_method?(:raw_score)
       sum = @assessment.config_module.raw_score(scores)
     else
       sum = 0.0
@@ -692,9 +646,9 @@ class AssessmentsController < ApplicationController
                                   "problems.id AS problem_id",
                                   "scores.id AS score_id",
                                   "scores.*")
-              .joins("LEFT JOIN problems ON
+                  .joins("LEFT JOIN problems ON
         submissions.assessment_id = problems.assessment_id")
-              .joins("LEFT JOIN scores ON
+                  .joins("LEFT JOIN scores ON
         (submissions.id = scores.submission_id
         AND problems.id = scores.problem_id)")
 
@@ -707,10 +661,10 @@ class AssessmentsController < ApplicationController
       end
 
       @scores[subId][result["problem_id"].to_i] = {
-        score: result["score"].to_f,
-        feedback: result["feedback"],
-        score_id: result["score_id"].to_i,
-        released: result["released"].to_i
+          score: result["score"].to_f,
+          feedback: result["feedback"],
+          score_id: result["score_id"].to_i,
+          released: result["released"].to_i
       }
     end
 
@@ -739,9 +693,9 @@ class AssessmentsController < ApplicationController
                                   "problems.id AS problem_id",
                                   "scores.id AS score_id",
                                   "scores.*")
-              .joins("LEFT JOIN problems ON
+                  .joins("LEFT JOIN problems ON
         submissions.assessment_id = problems.assessment_id")
-              .joins("LEFT JOIN scores ON
+                  .joins("LEFT JOIN scores ON
         (submissions.id = scores.submission_id
         AND problems.id = scores.problem_id)")
 
@@ -754,10 +708,10 @@ class AssessmentsController < ApplicationController
       end
 
       @scores[subId][result["problem_id"].to_i] = {
-        score: result["score"].to_f,
-        feedback: result["feedback"],
-        score_id: result["score_id"].to_i,
-        released: result["released"].to_i
+          score: result["score"].to_f,
+          feedback: result["feedback"],
+          score_id: result["score_id"].to_i,
+          released: result["released"].to_i
       }
     end
 
@@ -804,8 +758,8 @@ class AssessmentsController < ApplicationController
     end
 
     # make sure the penalties are set up
-    @assessment.late_penalty ||= Penalty.new(value: 0, kind:"points")
-    @assessment.version_penalty ||= Penalty.new(value: 0, kind:"points")
+    @assessment.late_penalty ||= Penalty.new(value: 0, kind: "points")
+    @assessment.version_penalty ||= Penalty.new(value: 0, kind: "points")
   end
 
   action_auth_level :update, :instructor
@@ -970,8 +924,8 @@ class AssessmentsController < ApplicationController
   def scoreboard
     extend_config_module(@assessment, nil, @cud)
     @students = CourseUserDatum.joins("INNER JOIN submissions ON course_user_datum.id=submissions.course_user_datum_id")
-                .where("submissions.assessment_id=?", @assessment.id)
-                .group("users.id")
+                    .where("submissions.assessment_id=?", @assessment.id)
+                    .group("users.id")
     # .order("users.andrewID ASC")
 
     # It turns out that it's faster to just get everything and let the
@@ -1012,7 +966,7 @@ class AssessmentsController < ApplicationController
     # Build the html for the scoreboard header
     begin
       if @assessment.overwrites_method?(:scoreboardHeader)
-        @header =  @assessment.config_module.scoreboardHeader
+        @header = @assessment.config_module.scoreboardHeader
       else
         @header = scoreboardHeader
       end
@@ -1032,12 +986,12 @@ class AssessmentsController < ApplicationController
 
         if @assessment.overwrites_method?(:createScoreboardEntry)
           grade[:entry] = @assessment.config_module.createScoreboardEntry(
-            grade[:problems],
-            grade[:autoresult])
+              grade[:problems],
+              grade[:autoresult])
         else
           grade[:entry] = createScoreboardEntry(
-            grade[:problems],
-            grade[:autoresult])
+              grade[:problems],
+              grade[:autoresult])
         end
       rescue Exception => e
         # Screw 'em! usually this means the grader failed.
@@ -1064,7 +1018,7 @@ class AssessmentsController < ApplicationController
     # Catch errors along the way. An instructor will get the errors, a
     # student will simply see an unsorted scoreboard.
 
-    @sortedGrades = @grades.values.sort do|a, b|
+    @sortedGrades = @grades.values.sort do |a, b|
       begin
 
         if @assessment.overwrites_method?(:scoreboardOrderSubmissions)
@@ -1092,7 +1046,7 @@ class AssessmentsController < ApplicationController
     end
   end
 
-protected
+  protected
 
   # Setup assessment's directory and create assessment config file as well as
   # handin directory
@@ -1146,18 +1100,18 @@ protected
     # Generic properties
     props = {}
     props["general"] = {
-      "name" => @assessment.name,
-      "display_name" => @assessment.display_name,
-      "description" => @assessment.description,
-      "handin_filename" => @assessment.handin_filename,
-      "handin_directory" => @assessment.handin_directory,
-      "max_grace_days" => @assessment.max_grace_days,
-      "handout" => @assessment.handout,
-      "writeup" => @assessment.writeup,
-      "allow_unofficial" => @assessment.allow_unofficial,
-      "max_submissions" => @assessment.max_submissions,
-      "disable_handins" => @assessment.disable_handins,
-      "max_size" => @assessment.max_size
+        "name" => @assessment.name,
+        "display_name" => @assessment.display_name,
+        "description" => @assessment.description,
+        "handin_filename" => @assessment.handin_filename,
+        "handin_directory" => @assessment.handin_directory,
+        "max_grace_days" => @assessment.max_grace_days,
+        "handout" => @assessment.handout,
+        "writeup" => @assessment.writeup,
+        "allow_unofficial" => @assessment.allow_unofficial,
+        "max_submissions" => @assessment.max_submissions,
+        "disable_handins" => @assessment.disable_handins,
+        "max_size" => @assessment.max_size
     }
 
     # Make sure we don't have any nil values in the
@@ -1195,8 +1149,8 @@ protected
     scoreboard_prop = ScoreboardSetup.find_by_assessment_id(@assessment.id)
     if scoreboard_prop
       props["scoreboard"] = {
-        "banner" => scoreboard_prop["banner"],
-        "colspec" => scoreboard_prop["colspec"]
+          "banner" => scoreboard_prop["banner"],
+          "colspec" => scoreboard_prop["colspec"]
       }
     end
 
@@ -1205,9 +1159,9 @@ protected
     autograde_prop = AutogradingSetup.find_by_assessment_id(@assessment.id)
     if autograde_prop
       props["autograde"] = {
-        "autograde_image" => autograde_prop["autograde_image"],
-        "autograde_timeout" => autograde_prop["autograde_timeout"],
-        "release_score" => autograde_prop["release_score"]
+          "autograde_image" => autograde_prop["autograde_image"],
+          "autograde_timeout" => autograde_prop["autograde_timeout"],
+          "release_score" => autograde_prop["release_score"]
       }
     end
 
@@ -1282,7 +1236,7 @@ protected
     # not create a custom column spec, then revert to the default,
     # which sorts by total problem, then by submission time.
     if !@assessment.has_autograde ||
-       !@scoreboard_prop || @scoreboard_prop.colspec.blank?
+        !@scoreboard_prop || @scoreboard_prop.colspec.blank?
       aSum = 0; bSum = 0
       for key in a[:problems].keys do
         aSum += a[:problems][key].to_f
@@ -1312,35 +1266,34 @@ protected
       begin
         parsed = ActiveSupport::JSON.decode(@scoreboard_prop.colspec)
       rescue Exception => e
-
       end
 
       if a0 != b0
         if parsed && parsed["scoreboard"] &&
-           parsed["scoreboard"].size > 0 &&
-           parsed["scoreboard"][0]["asc"]
+            parsed["scoreboard"].size > 0 &&
+            parsed["scoreboard"][0]["asc"]
           a0 <=> b0 # ascending order
         else
           b0 <=> a0 # descending order
         end
       elsif a1 != b1
         if parsed && parsed["scoreboard"] &&
-           parsed["scoreboard"].size > 1 &&
-           parsed["scoreboard"][1]["asc"]
+            parsed["scoreboard"].size > 1 &&
+            parsed["scoreboard"][1]["asc"]
           a1 <=> b1 # ascending order
         else
           b1 <=> a1 # descending order
         end
       elsif a2 != b2
         if parsed && parsed["scoreboard"] &&
-           parsed["scoreboard"].size > 2 &&
-           parsed["scoreboard"][2]["asc"]
+            parsed["scoreboard"].size > 2 &&
+            parsed["scoreboard"][2]["asc"]
           a2 <=> b2 # ascending order
         else
           b2 <=> a2 # descending order
         end
       else
-        a[:time] <=> b[:time]  # ascending by submission time
+        a[:time] <=> b[:time] # ascending by submission time
       end
     end
   end
@@ -1359,9 +1312,9 @@ protected
     # not customized, then simply return the list of problem
     # scores and their total.
     if !autoresult ||
-       !@scoreboard_prop ||
-       !@scoreboard_prop.colspec ||
-       @scoreboard_prop.colspec.blank?
+        !@scoreboard_prop ||
+            !@scoreboard_prop.colspec ||
+                @scoreboard_prop.colspec.blank?
 
       # First we need to get the total score
       total = 0.0
@@ -1433,8 +1386,8 @@ protected
     # If the lab is not autograded, or the columns property is not
     # specified, then return the default header.
     if !@assessment.has_autograde ||
-       !@scoreboard_prop || @scoreboard_prop.colspec.blank?
-      head =	banner + "<table class='sortable prettyBorder'>
+        !@scoreboard_prop || @scoreboard_prop.colspec.blank?
+      head = banner + "<table class='sortable prettyBorder'>
       <tr><th>Nickname</th><th>Version</th><th>Time</th>"
       head += "<th>Total</th>"
       for problem in @assessment.problems do
@@ -1447,7 +1400,7 @@ protected
     # non-empty column spec. Parse the spec and then return the
     # customized header.
     parsed = ActiveSupport::JSON.decode(@scoreboard_prop.colspec)
-    head =	banner + "<table class='sortable prettyBorder'>
+    head = banner + "<table class='sortable prettyBorder'>
       <tr><th>Nickname</th><th>Version</th><th>Time</th>"
     for object in parsed["scoreboard"] do
       head += "<th>" + object["hdr"] + "</th>"
@@ -1497,7 +1450,7 @@ protected
             num_released += 1
           end
 
-        # if score doesn't exist yet, create it and release it
+          # if score doesn't exist yet, create it and release it
         else
           score = problem.scores.new(submission: sub,
                                      released: true,
@@ -1521,7 +1474,7 @@ protected
     params[:scoreboard_prop].permit(:banner, :colspec)
   end
 
-private
+  private
 
   def new_assessment_params
     ass = params.require(:assessment)
@@ -1537,5 +1490,45 @@ private
       ass[:category_name] = params[:new_category]
     end
     ass.permit!
+  end
+
+  def valid_asmt_tar(tar_extract)
+    file_list = []
+    dir_list = []
+    tar_extract.each do |entry|
+      pathname = entry.full_name
+      next if pathname.start_with? "."
+      if entry.directory?
+        dir_list << pathname
+      else
+        file_list << pathname
+      end
+    end
+    dir_list.sort!
+    file_list.sort!
+    valid_file = false
+    asmt_name = nil
+    asmt_rb_exist = false
+    asmt_yml_exist = false
+    # The only root-level directory is the assessment name.
+    dir_list.each do |dir|
+      next if dir.count("/") > 0
+      if !asmt_name.nil?
+        valid_file = false
+        break
+      else
+        asmt_name = dir
+      end
+    end
+    return false if asmt.nil? || !valid_file
+
+    file_list.each do |file|
+      if file == "#{asmt_name}/#{asmt_name}.rb"
+        asmt_rb_exist = true
+      elsif file == "#{asmt_name}/#{asmt_name}.yml"
+        asmt_yml_exist = true
+      end
+    end
+    valid_file = asmt_rb_exist && asmt_yml_exist
   end
 end
