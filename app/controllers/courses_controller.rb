@@ -1,7 +1,7 @@
-require "archive.rb"
+require "archive"
 require "csv"
 require "fileutils"
-require "Statistics.rb"
+require "statistics"
 
 class CoursesController < ApplicationController
   # you need to be able to pick a course to be authorized for it
@@ -220,7 +220,7 @@ class CoursesController < ApplicationController
   action_auth_level :sudo, :instructor
   def sudo
     session[:sudo] = nil
-    redirect_to course_course_user_datum_sudo_path(course_user_datum_id: @cud.id)
+    redirect_to([:sudo, @course, @cud]) && return
   end
 
   action_auth_level :reload, :instructor

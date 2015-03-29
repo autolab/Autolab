@@ -159,7 +159,7 @@ class Course < ActiveRecord::Base
   end
 
   def to_param
-    self.name
+    name
   end
 
 private

@@ -4,6 +4,10 @@ require "tempfile"
 require "zlib"
 require "zip"
 
+##
+# This module provides functionality for dealing with Archives, including zips,
+# tars, and gunzipped tars
+#
 module Archive
   def self.get_files(archive_path)
     archive_type = get_archive_type(archive_path)
@@ -43,16 +47,15 @@ module Archive
 
       next if pathname.include?("__MACOSX") ||
               pathname.include?(".DS_Store") ||
-              pathname.include?(".metadata")
+              pathname.include?(".metadata") ||
+              i != n
 
-      if i == n
-        if looks_like_directory?(pathname)
-          res = nil, pathname
-        else
-          res = read_entry_file(entry), get_entry_name(entry)
-        end
-        break
+      if looks_like_directory?(pathname)
+        res = nil, pathname
+      else
+        res = read_entry_file(entry), get_entry_name(entry)
       end
+      break
     end
 
     archive_extract.close
@@ -65,19 +68,19 @@ module Archive
   end
 
   def self.get_archive_type(filename)
-    IO.popen(["file", "--brief", "--mime-type", filename], in: :close, err: :close) { |io| io.read.chomp }
+    IO.popen(["file", "--brief", "--mime-type", filename], in: :close, err: :close) do |io|
+      io.read.chomp
+    end
   end
 
-  def self.is_archive?(filename)
+  def self.archive?(filename)
     return nil unless filename
     archive_type = get_archive_type(filename)
     (archive_type.include?("tar") || archive_type.include?("gzip") || archive_type.include?("zip"))
   end
 
   def self.get_archive(filename, archive_type = nil)
-    if archive_type.nil?
-      archive_type = get_archive_type(filename)
-    end
+    archive_type = get_archive_type(filename) if archive_type.nil?
 
     if archive_type.include? "tar"
       archive_extract = Gem::Package::TarReader.new(File.new(filename))
@@ -107,9 +110,7 @@ module Archive
   # returns a zip archive containing every file in the given path array
   #
   def self.create_zip(paths)
-    if paths.nil? || paths.empty?
-      return nil
-    end
+    return nil if paths.nil? || paths.empty?
 
     Tempfile.open(["submissions", ".zip"]) do |t|
       Zip::File.open(t.path, Zip::File::CREATE) do |z|

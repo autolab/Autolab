@@ -1,5 +1,5 @@
 ##
-# This controller has nothing to do with actually autograding assessments, and instead deals
+# This model has nothing to do with actually autograding assessments, and instead deals
 # with autograding properties for an assessment
 #
 class Autograder < ActiveRecord::Base

@@ -1,22 +1,12 @@
 require "cgi"
 require "uri"
+require "tango_client"
 
+##
+# This controller communicates with Tango to give information about autograding jobs
+#
 class JobsController < ApplicationController
   autolab_require Rails.root.join("config", "autogradeConfig.rb")
-
-  #
-  # getRecentJobs - this function retrieves the currently running jobs
-  #
-  def getCurrentJobs
-    getJobs("0/")
-  end
-
-  #
-  # getDeadJobs - this function retrieves the recent dead jobs
-  #
-  def getDeadJobs
-    getJobs("1/")
-  end
 
   # index - This is the default action that generates lists of the
   # running, waiting, and completed jobs.
@@ -30,47 +20,42 @@ class JobsController < ApplicationController
 
     # Get the number of dead jobs the user wants to view
     dead_count = AUTOCONFIG_DEF_DEAD_JOBS
-    if params[:id]
-      dead_count = params[:id].to_i
-    end
-    if dead_count < 0
-      dead_count = 0
-    end
-    if dead_count > AUTOCONFIG_MAX_DEAD_JOBS
-      dead_count = AUTOCONFIG_MAX_DEAD_JOBS
-    end
+    dead_count = params[:id].to_i if params[:id]
+    dead_count = 0 if dead_count < 0
+    dead_count = AUTOCONFIG_MAX_DEAD_JOBS if dead_count > AUTOCONFIG_MAX_DEAD_JOBS
 
     # Get the complete lists of live and dead jobs from the server
-    raw_live_jobs = getCurrentJobs
-    raw_dead_jobs = getDeadJobs
+    begin
+      raw_live_jobs = TangoClient.jobs()
+      raw_dead_jobs = TangoClient.jobs(deadjobs=1)
+    rescue TangoClient::TangoException => e
+      flash[:error] = "Error while getting job list: #{e.message}"
+    end
 
     # Build formatted lists of the running, waiting, and dead jobs
-    if raw_live_jobs && raw_dead_jobs
-      for rjob in raw_live_jobs do
-        if rjob["assigned"] == true
-          @running_jobs << formatRawJob(rjob, true)
-        else
-          @waiting_jobs << formatRawJob(rjob, true)
-        end
+    return unless raw_live_jobs && raw_dead_jobs
+
+    raw_live_jobs.each do |rjob|
+      if rjob["assigned"] == true
+        @running_jobs << formatRawJob(rjob, true)
+      else
+        @waiting_jobs << formatRawJob(rjob, true)
       end
-
-      # Non-admins have a limited view of the completed
-      # jobs. Instructors can see only the completed jobs from
-      # the current course. Students can see only their own
-      # jobs.
-      for rjob in raw_dead_jobs do
-        job = formatRawJob(rjob, false)
-
-        if job[:name] != "*"
-          @dead_jobs << job
-        end
-      end
-
-      # Sort the list of dead jobs and then trim it for the view
-      @dead_jobs.sort! { |a, b| [b[:tlast], b[:id]] <=> [a[:tlast], a[:id]] }
-      @dead_jobs_view = @dead_jobs[0, dead_count]
-
     end
+
+    # Non-admins have a limited view of the completed
+    # jobs. Instructors can see only the completed jobs from
+    # the current course. Students can see only their own
+    # jobs.
+    raw_dead_jobs.each do |rjob|
+      job = formatRawJob(rjob, false)
+
+      @dead_jobs << job if job[:name] != "*"
+    end
+
+    # Sort the list of dead jobs and then trim it for the view
+    @dead_jobs.sort! { |a, b| [b[:tlast], b[:id]] <=> [a[:tlast], a[:id]] }
+    @dead_jobs_view = @dead_jobs[0, dead_count]
   end
 
   #
@@ -87,26 +72,28 @@ class JobsController < ApplicationController
     end
 
     # Get the complete lists of live and dead jobs from the server
-    raw_live_jobs = getCurrentJobs
-    raw_dead_jobs = getDeadJobs
+    begin
+      raw_live_jobs = TangoClient.jobs()
+      raw_dead_jobs = TangoClient.jobs(deadjobs=1)
+    rescue TangoClient::TangoException => e
+      flash[:error] = "Error while getting job list: #{e.message}"
+    end
 
     # Find job job_id in one of those lists
     rjob = nil
     is_live = false
     if raw_live_jobs && raw_dead_jobs
-      for item in raw_live_jobs do
-        if item["id"] == job_id
-          rjob = item
-          is_live = true
-          break
-        end
+      raw_live_jobs.each do |item|
+        next unless item["id"] == job_id
+        rjob = item
+        is_live = true
+        break
       end
       if rjob.nil?
-        for item in raw_dead_jobs do
-          if item["id"] == job_id
-            rjob = item
-            break
-          end
+        raw_dead_jobs.each do |item|
+          next unless item["id"] == job_id
+          rjob = item
+          break
         end
       end
     end
@@ -147,38 +134,30 @@ class JobsController < ApplicationController
       i = 0
       feedback_num = 0
       @feedback_str = ""
-      for score in scores do
+      scores.each do |score|
         i += 1
-        if !score.feedback.nil? && score.feedback["Autograder"]
-          @feedback_str = score.feedback
-          feedback_num = i
-          break
-        end
+        next unless score.feedback && score.feedback["Autograder"]
+        @feedback_str = score.feedback
+        feedback_num = i
+        break
       end
     end
 
     # Students see only the output report from the autograder. So
     # bypass the view and redirect them to the viewFeedback page
-    if !@cud.user.administrator? && !@cud.instructor?
-      if url_assessment && submission && feedback_num > 0
-        redirect_to(viewFeedback_course_assessment_path(url_course.to_i, url_assessment.to_i, submission_id: submission.id, feedback: feedback_num)) && return
-      else
-        flash[:error] = "Could not locate autograder feedback"
-        redirect_to(controller: "jobs", item: nil) && return
-      end
+    return unless !@cud.instructor? && !@cud.user.administrator?
+
+    if url_assessment && submission && feedback_num > 0
+      redirect_to(viewFeedback_course_assessment_path(url_course, url_assessment,
+                                                      submission_id: submission.id,
+                                                      feedback: feedback_num)) && return
+    else
+      flash[:error] = "Could not locate autograder feedback"
+      redirect_to(controller: :jobs, item: nil) && return
     end
   end
 
-protected
-
-  def getJobs(suffix = "0/")
-    COURSE_LOGGER.log("getJobs called")
-    reqURL = "http://#{RESTFUL_HOST}:#{RESTFUL_PORT}/jobs/#{RESTFUL_KEY}/" + suffix
-    COURSE_LOGGER.log("Req: " + reqURL)
-    response = Net::HTTP.get_response(URI.parse(reqURL))
-    response = JSON.parse(response.body)
-    jobs = response["jobs"]
-  end
+  protected
 
   # formatRawJob - Given a raw job from the server, creates a job
   # hash for the view.
@@ -199,14 +178,10 @@ protected
     unless @cud.user.administrator?
       if !@cud.instructor?
         # Students can see only their own job names
-        unless job[:name][@cud.user.email]
-          job[:name] = "*"
-        end
+        job[:name] = "*" unless job[:name][@cud.user.email]
       else
         # Instructors can see only their course's job names
-        if !rjob["notifyURL"] || !(job[:course].eql? @cud.course.id.to_s)
-          job[:name] = "*"
-        end
+        job[:name] = "*" if !rjob["notifyURL"] || !(job[:course].eql? @cud.course.id.to_s)
       end
     end
 
@@ -239,9 +214,7 @@ protected
       end
     else
       job[:state] = "Completed"
-      if rjob["trace"][-1].split("|")[1].include? "Error"
-        job[:state] = "Failed"
-      end
+      job[:state] = "Failed" if rjob["trace"][-1].split("|")[1].include? "Error"
     end
 
     job

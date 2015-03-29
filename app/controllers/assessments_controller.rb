@@ -1,8 +1,7 @@
-require "archive.rb"
+require "archive"
 require "csv"
+require "statistics"
 require "yaml"
-require "Statistics.rb"
-require "date_time_input"
 
 class AssessmentsController < ApplicationController
   include ActiveSupport::Callbacks
@@ -778,7 +777,7 @@ class AssessmentsController < ApplicationController
       redirect_to(action: "index") && return
     end
 
-    if Archive.is_archive? @submission.handin_file_path
+    if Archive.archive? @submission.handin_file_path
       @files = Archive.get_files @submission.handin_file_path
     end
   end
@@ -804,8 +803,8 @@ class AssessmentsController < ApplicationController
     end
 
     # make sure the penalties are set up
-    @assessment.build_late_penalty unless @assessment.late_penalty
-    @assessment.build_version_penalty unless @assessment.version_penalty
+    @assessment.late_penalty ||= Penalty.new(value: 0, kind:"points")
+    @assessment.version_penalty ||= Penalty.new(value: 0, kind:"points")
   end
 
   action_auth_level :update, :instructor
