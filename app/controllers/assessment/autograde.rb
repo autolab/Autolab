@@ -217,7 +217,7 @@ module AssessmentAutograde
       end
 
       begin
-        TangoClient.tango_upload("#{course.name}-#{assessment.name}",
+        TangoClient.upload("#{course.name}-#{assessment.name}",
                                  File.basename(f["localFile"]),
                                  File.open(f["localFile"], "rb").read)
       rescue TangoClient::TangoException => e
@@ -297,7 +297,7 @@ module AssessmentAutograde
                        "callback_url" => callback_url,
                        "jobName" => job_name }.to_json
     begin
-      response = TangoClient.tango_addjob("#{course.name}-#{assessment.name}", job_properties)
+      response = TangoClient.addjob("#{course.name}-#{assessment.name}", job_properties)
     rescue TangoClient::TangoException => e
       flash[:error] = "Error while adding job to the queue: #{e.message}"
       return -9, nil
@@ -314,7 +314,7 @@ module AssessmentAutograde
     begin
       Timeout.timeout(80) do
         loop do
-          response = TangoClient.tango_poll("#{course.name}-#{assessment.name}", "#{URI.encode(output_file)}")
+          response = TangoClient.poll("#{course.name}-#{assessment.name}", "#{URI.encode(output_file)}")
           # json is returned when a job is not complete
           unless response.content_type == "application/json"
             feedback = response.body
@@ -361,7 +361,7 @@ module AssessmentAutograde
 
     # send the tango open request
     begin
-      existing_files = TangoClient.tango_open("#{course.name}-#{assessment.name}")
+      existing_files = TangoClient.open("#{course.name}-#{assessment.name}")
     rescue TangoClient::TangoException => e
       flash[:error] = "Error with open request on Tango: #{e.message}"
       return -1
