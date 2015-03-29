@@ -58,6 +58,9 @@ gem 'dynamic_form'
 # Supports zip file generation.
 gem 'rubyzip'
 
+# Helper gem for Ruby JSON API client
+gem 'httparty'
+
 # Enables RSpec testing framework with Capybara and Factory Girl.
 gem 'rspec-rails'
 gem 'rack-test'

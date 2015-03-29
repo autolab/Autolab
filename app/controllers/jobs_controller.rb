@@ -1,22 +1,9 @@
 require "cgi"
 require "uri"
+require "tango_client"
 
 class JobsController < ApplicationController
   autolab_require Rails.root.join("config", "autogradeConfig.rb")
-
-  #
-  # getRecentJobs - this function retrieves the currently running jobs
-  #
-  def getCurrentJobs
-    getJobs("0/")
-  end
-
-  #
-  # getDeadJobs - this function retrieves the recent dead jobs
-  #
-  def getDeadJobs
-    getJobs("1/")
-  end
 
   # index - This is the default action that generates lists of the
   # running, waiting, and completed jobs.
@@ -41,8 +28,12 @@ class JobsController < ApplicationController
     end
 
     # Get the complete lists of live and dead jobs from the server
-    raw_live_jobs = getCurrentJobs
-    raw_dead_jobs = getDeadJobs
+    begin
+      raw_live_jobs = TangoClient.jobs()
+      raw_dead_jobs = TangoClient.jobs(deadjobs=1)
+    rescue TangoClient::TangoException => e
+      flash[:error] = "Error while getting job list: #{e.message}"
+    end
 
     # Build formatted lists of the running, waiting, and dead jobs
     if raw_live_jobs && raw_dead_jobs
@@ -87,8 +78,12 @@ class JobsController < ApplicationController
     end
 
     # Get the complete lists of live and dead jobs from the server
-    raw_live_jobs = getCurrentJobs
-    raw_dead_jobs = getDeadJobs
+    begin
+      raw_live_jobs = TangoClient.jobs()
+      raw_dead_jobs = TangoClient.jobs(deadjobs=1)
+    rescue TangoClient::TangoException => e
+      flash[:error] = "Error while getting job list: #{e.message}"
+    end
 
     # Find job job_id in one of those lists
     rjob = nil
@@ -161,7 +156,9 @@ class JobsController < ApplicationController
     # bypass the view and redirect them to the viewFeedback page
     if !@cud.user.administrator? && !@cud.instructor?
       if url_assessment && submission && feedback_num > 0
-        redirect_to(viewFeedback_course_assessment_path(url_course.to_i, url_assessment.to_i, submission_id: submission.id, feedback: feedback_num)) && return
+        redirect_to viewFeedback_course_assessment_path(url_course.to_i, url_assessment.to_i,
+                                                        submission_id: submission.id,
+                                                        feedback: feedback_num) && return
       else
         flash[:error] = "Could not locate autograder feedback"
         redirect_to(controller: "jobs", item: nil) && return
@@ -169,16 +166,7 @@ class JobsController < ApplicationController
     end
   end
 
-protected
-
-  def getJobs(suffix = "0/")
-    COURSE_LOGGER.log("getJobs called")
-    reqURL = "http://#{RESTFUL_HOST}:#{RESTFUL_PORT}/jobs/#{RESTFUL_KEY}/" + suffix
-    COURSE_LOGGER.log("Req: " + reqURL)
-    response = Net::HTTP.get_response(URI.parse(reqURL))
-    response = JSON.parse(response.body)
-    jobs = response["jobs"]
-  end
+  protected
 
   # formatRawJob - Given a raw job from the server, creates a job
   # hash for the view.
