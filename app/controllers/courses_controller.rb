@@ -176,10 +176,10 @@ class CoursesController < ApplicationController
   def report_bug
     if request.post?
       CourseMailer.bug_report(
-          params[:title],
-          params[:summary],
-          current_user,
-          @course
+        params[:title],
+        params[:summary],
+        current_user,
+        @course
       ).deliver
     end
   end
@@ -200,9 +200,9 @@ class CoursesController < ApplicationController
       render(json: nil) && return
     end
 
-    @user_data = {first_name: user.first_name,
-                  last_name: user.last_name,
-                  email: user.email}
+    @user_data = { first_name: user.first_name,
+                   last_name: user.last_name,
+                   email: user.email }
 
     render json: @user_data
   end
@@ -325,12 +325,12 @@ file, most likely a duplicate email.  The exact error was: #{e} "
       bccString = make_dlist(@cuds)
 
       @email = CourseMailer.course_announcement(
-          params[:from],
-          bccString,
-          params[:subject],
-          params[:body],
-          @cud,
-          @course)
+        params[:from],
+        bccString,
+        params[:subject],
+        params[:body],
+        @cud,
+        @course)
       @email.deliver
     end
   end
@@ -358,7 +358,7 @@ file, most likely a duplicate email.  The exact error was: #{e} "
           flash[:error] = "Invalid Assessment ID: #{aID}"
           redirect_to(action: :moss) && return
         end
-        assessmentCUD = assessment.course.course_user_data.joins(:user).find_by(users: {email: current_user.email}, instructor: true)
+        assessmentCUD = assessment.course.course_user_data.joins(:user).find_by(users: { email: current_user.email }, instructor: true)
         if !assessmentCUD && (!@cud.user.administrator?)
           flash[:error] = "Invalid User"
           redirect_to(action: :moss) && return
@@ -386,7 +386,7 @@ file, most likely a duplicate email.  The exact error was: #{e} "
     # `rm -rf #{tmpDir}`
   end
 
-  private
+private
 
   def new_course_params
     params.require(:newCourse).permit(:name, :semester)
@@ -478,7 +478,7 @@ file, most likely a duplicate email.  The exact error was: #{e} "
 
         elsif newCUD["color"] == "red"
           # Drop this user from the course
-          existing = @course.course_user_data.includes(:user).where(users: {email: newCUD[:email]}).first
+          existing = @course.course_user_data.includes(:user).where(users: { email: newCUD[:email] }).first
 
           if existing.nil?
             fail "Red CUD doesn't exist in the database."
@@ -489,7 +489,7 @@ file, most likely a duplicate email.  The exact error was: #{e} "
 
         else
           # Update this user's attributes.
-          existing = @course.course_user_data.includes(:user).where(users: {email: newCUD[:email]}).first
+          existing = @course.course_user_data.includes(:user).where(users: { email: newCUD[:email] }).first
 
           if existing.nil?
             fail "Black CUD doesn't exist in the database."
@@ -537,15 +537,15 @@ file, most likely a duplicate email.  The exact error was: #{e} "
       csv = detectAndConvertRoster(params["upload"]["file"].read)
       csv.each do |row|
         next if row[1].nil? || row[1].chomp.size == 0
-        newCUD = {email: row[1].to_s,
-                  last_name: row[2].to_s.chomp(" "),
-                  first_name: row[3].to_s.chomp(" "),
-                  school: row[4].to_s.chomp(" "),
-                  major: row[5].to_s.chomp(" "),
-                  year: row[6].to_s.chomp(" "),
-                  grade_policy: row[7].to_s.chomp(" "),
-                  lecture: row[9].to_s.chomp(" "),
-                  section: row[10].to_s.chomp(" ")}
+        newCUD = { email: row[1].to_s,
+                   last_name: row[2].to_s.chomp(" "),
+                   first_name: row[3].to_s.chomp(" "),
+                   school: row[4].to_s.chomp(" "),
+                   major: row[5].to_s.chomp(" "),
+                   year: row[6].to_s.chomp(" "),
+                   grade_policy: row[7].to_s.chomp(" "),
+                   lecture: row[9].to_s.chomp(" "),
+                   section: row[10].to_s.chomp(" ") }
         cud = @currentCUDs.find do |cud|
           cud.user && cud.user.email == newCUD[:email]
         end
@@ -562,7 +562,7 @@ file, most likely a duplicate email.  The exact error was: #{e} "
     rescue Exception => e
       raise e
       flash[:error] = "Error uploading the CSV file!: " +
-          e.to_s + e.backtrace.join("<br>")
+                      e.to_s + e.backtrace.join("<br>")
       redirect_to(action: "uploadRoster") && return
     end
 
@@ -573,16 +573,16 @@ file, most likely a duplicate email.  The exact error was: #{e} "
         cud.instructor? || cud.user.administrator? || cud.course_assistant?
       end
       for cud in @currentCUDs do # These are the drops
-        newCUD = {email: cud.user.email,
-                  last_name: cud.user.last_name,
-                  first_name: cud.user.first_name,
-                  school: cud.school,
-                  major: cud.major,
-                  year: cud.year,
-                  grade_policy: cud.grade_policy,
-                  lecture: cud.lecture,
-                  section: cud.section,
-                  color: "red"}
+        newCUD = { email: cud.user.email,
+                   last_name: cud.user.last_name,
+                   first_name: cud.user.first_name,
+                   school: cud.school,
+                   major: cud.major,
+                   year: cud.year,
+                   grade_policy: cud.grade_policy,
+                   lecture: cud.lecture,
+                   section: cud.section,
+                   color: "red" }
         @cuds << newCUD
       end
     end

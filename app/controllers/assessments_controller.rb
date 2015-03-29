@@ -139,7 +139,7 @@ class AssessmentsController < ApplicationController
 
   action_auth_level :takeQuiz, :student
   def takeQuiz
-    submission_count = @assessment.submissions.count(conditions: {course_user_datum_id: @cud.id})
+    submission_count = @assessment.submissions.count(conditions: { course_user_datum_id: @cud.id })
     left_count = [@assessment.max_submissions - submission_count, 0].max
     if @assessment.max_submissions != -1 && left_count == 0
       redirect_to(course_assessment_path(@course, @assessment)) && return
@@ -151,7 +151,7 @@ class AssessmentsController < ApplicationController
 
   action_auth_level :submitQuiz, :student
   def submitQuiz
-    submission_count = @assessment.submissions.count(conditions: {course_user_datum_id: @cud.id})
+    submission_count = @assessment.submissions.count(conditions: { course_user_datum_id: @cud.id })
     left_count = [@assessment.max_submissions - submission_count, 0].max
     if @assessment.max_submissions != -1 && left_count == 0
       redirect_to(course_assessment_path(@course, @assessment)) && return
@@ -292,9 +292,9 @@ class AssessmentsController < ApplicationController
     # creating a new category if necessary.
     if props["general"]
       props["general"]["category_name"] ||= props["general"]["category"] || "General"
-      params[:assessment] = {name: name,
-                             display_name: props["general"]["display_name"],
-                             category_name: props["general"]["category_name"]}
+      params[:assessment] = { name: name,
+                              display_name: props["general"]["display_name"],
+                              category_name: props["general"]["category_name"] }
       create && return # create should handle the redirection
       # Otherwise, ask the user to give us a category before we create the
       # assessment
@@ -386,11 +386,11 @@ class AssessmentsController < ApplicationController
     begin
       # assessmentInitialize(name)
       # installProblems()
-    rescue Exception => e
-      puts "\n\n ERROR: \n #{e} \n #{e.backtrace} \n"
-      flash[:error] = "Error initializing #{name}: #{e}"
-      uninstall(name)
-      redirect_to(course_path(@course)) && return
+      rescue Exception => e
+        puts "\n\n ERROR: \n #{e} \n #{e.backtrace} \n"
+        flash[:error] = "Error initializing #{name}: #{e}"
+        uninstall(name)
+        redirect_to(course_path(@course)) && return
     end
 
     flash[:success] = "Successfully installed #{@assessment.name}."
@@ -449,7 +449,7 @@ class AssessmentsController < ApplicationController
   # trust the upstream developer to do that for us.
   def raw_score(scores)
     if @assessment.has_autograde &&
-        @assessment.overwrites_method?(:raw_score)
+       @assessment.overwrites_method?(:raw_score)
       sum = @assessment.config_module.raw_score(scores)
     else
       sum = 0.0
@@ -646,9 +646,9 @@ class AssessmentsController < ApplicationController
                                   "problems.id AS problem_id",
                                   "scores.id AS score_id",
                                   "scores.*")
-                  .joins("LEFT JOIN problems ON
+              .joins("LEFT JOIN problems ON
         submissions.assessment_id = problems.assessment_id")
-                  .joins("LEFT JOIN scores ON
+              .joins("LEFT JOIN scores ON
         (submissions.id = scores.submission_id
         AND problems.id = scores.problem_id)")
 
@@ -661,10 +661,10 @@ class AssessmentsController < ApplicationController
       end
 
       @scores[subId][result["problem_id"].to_i] = {
-          score: result["score"].to_f,
-          feedback: result["feedback"],
-          score_id: result["score_id"].to_i,
-          released: result["released"].to_i
+        score: result["score"].to_f,
+        feedback: result["feedback"],
+        score_id: result["score_id"].to_i,
+        released: result["released"].to_i
       }
     end
 
@@ -693,9 +693,9 @@ class AssessmentsController < ApplicationController
                                   "problems.id AS problem_id",
                                   "scores.id AS score_id",
                                   "scores.*")
-                  .joins("LEFT JOIN problems ON
+              .joins("LEFT JOIN problems ON
         submissions.assessment_id = problems.assessment_id")
-                  .joins("LEFT JOIN scores ON
+              .joins("LEFT JOIN scores ON
         (submissions.id = scores.submission_id
         AND problems.id = scores.problem_id)")
 
@@ -708,10 +708,10 @@ class AssessmentsController < ApplicationController
       end
 
       @scores[subId][result["problem_id"].to_i] = {
-          score: result["score"].to_f,
-          feedback: result["feedback"],
-          score_id: result["score_id"].to_i,
-          released: result["released"].to_i
+        score: result["score"].to_f,
+        feedback: result["feedback"],
+        score_id: result["score_id"].to_i,
+        released: result["released"].to_i
       }
     end
 
@@ -924,8 +924,8 @@ class AssessmentsController < ApplicationController
   def scoreboard
     extend_config_module(@assessment, nil, @cud)
     @students = CourseUserDatum.joins("INNER JOIN submissions ON course_user_datum.id=submissions.course_user_datum_id")
-                    .where("submissions.assessment_id=?", @assessment.id)
-                    .group("users.id")
+                .where("submissions.assessment_id=?", @assessment.id)
+                .group("users.id")
     # .order("users.andrewID ASC")
 
     # It turns out that it's faster to just get everything and let the
@@ -986,12 +986,12 @@ class AssessmentsController < ApplicationController
 
         if @assessment.overwrites_method?(:createScoreboardEntry)
           grade[:entry] = @assessment.config_module.createScoreboardEntry(
-              grade[:problems],
-              grade[:autoresult])
+            grade[:problems],
+            grade[:autoresult])
         else
           grade[:entry] = createScoreboardEntry(
-              grade[:problems],
-              grade[:autoresult])
+            grade[:problems],
+            grade[:autoresult])
         end
       rescue Exception => e
         # Screw 'em! usually this means the grader failed.
@@ -1046,7 +1046,7 @@ class AssessmentsController < ApplicationController
     end
   end
 
-  protected
+protected
 
   # Setup assessment's directory and create assessment config file as well as
   # handin directory
@@ -1100,18 +1100,18 @@ class AssessmentsController < ApplicationController
     # Generic properties
     props = {}
     props["general"] = {
-        "name" => @assessment.name,
-        "display_name" => @assessment.display_name,
-        "description" => @assessment.description,
-        "handin_filename" => @assessment.handin_filename,
-        "handin_directory" => @assessment.handin_directory,
-        "max_grace_days" => @assessment.max_grace_days,
-        "handout" => @assessment.handout,
-        "writeup" => @assessment.writeup,
-        "allow_unofficial" => @assessment.allow_unofficial,
-        "max_submissions" => @assessment.max_submissions,
-        "disable_handins" => @assessment.disable_handins,
-        "max_size" => @assessment.max_size
+      "name" => @assessment.name,
+      "display_name" => @assessment.display_name,
+      "description" => @assessment.description,
+      "handin_filename" => @assessment.handin_filename,
+      "handin_directory" => @assessment.handin_directory,
+      "max_grace_days" => @assessment.max_grace_days,
+      "handout" => @assessment.handout,
+      "writeup" => @assessment.writeup,
+      "allow_unofficial" => @assessment.allow_unofficial,
+      "max_submissions" => @assessment.max_submissions,
+      "disable_handins" => @assessment.disable_handins,
+      "max_size" => @assessment.max_size
     }
 
     # Make sure we don't have any nil values in the
@@ -1149,8 +1149,8 @@ class AssessmentsController < ApplicationController
     scoreboard_prop = ScoreboardSetup.find_by_assessment_id(@assessment.id)
     if scoreboard_prop
       props["scoreboard"] = {
-          "banner" => scoreboard_prop["banner"],
-          "colspec" => scoreboard_prop["colspec"]
+        "banner" => scoreboard_prop["banner"],
+        "colspec" => scoreboard_prop["colspec"]
       }
     end
 
@@ -1159,9 +1159,9 @@ class AssessmentsController < ApplicationController
     autograde_prop = AutogradingSetup.find_by_assessment_id(@assessment.id)
     if autograde_prop
       props["autograde"] = {
-          "autograde_image" => autograde_prop["autograde_image"],
-          "autograde_timeout" => autograde_prop["autograde_timeout"],
-          "release_score" => autograde_prop["release_score"]
+        "autograde_image" => autograde_prop["autograde_image"],
+        "autograde_timeout" => autograde_prop["autograde_timeout"],
+        "release_score" => autograde_prop["release_score"]
       }
     end
 
@@ -1236,7 +1236,7 @@ class AssessmentsController < ApplicationController
     # not create a custom column spec, then revert to the default,
     # which sorts by total problem, then by submission time.
     if !@assessment.has_autograde ||
-        !@scoreboard_prop || @scoreboard_prop.colspec.blank?
+       !@scoreboard_prop || @scoreboard_prop.colspec.blank?
       aSum = 0; bSum = 0
       for key in a[:problems].keys do
         aSum += a[:problems][key].to_f
@@ -1270,24 +1270,24 @@ class AssessmentsController < ApplicationController
 
       if a0 != b0
         if parsed && parsed["scoreboard"] &&
-            parsed["scoreboard"].size > 0 &&
-            parsed["scoreboard"][0]["asc"]
+           parsed["scoreboard"].size > 0 &&
+           parsed["scoreboard"][0]["asc"]
           a0 <=> b0 # ascending order
         else
           b0 <=> a0 # descending order
         end
       elsif a1 != b1
         if parsed && parsed["scoreboard"] &&
-            parsed["scoreboard"].size > 1 &&
-            parsed["scoreboard"][1]["asc"]
+           parsed["scoreboard"].size > 1 &&
+           parsed["scoreboard"][1]["asc"]
           a1 <=> b1 # ascending order
         else
           b1 <=> a1 # descending order
         end
       elsif a2 != b2
         if parsed && parsed["scoreboard"] &&
-            parsed["scoreboard"].size > 2 &&
-            parsed["scoreboard"][2]["asc"]
+           parsed["scoreboard"].size > 2 &&
+           parsed["scoreboard"][2]["asc"]
           a2 <=> b2 # ascending order
         else
           b2 <=> a2 # descending order
@@ -1312,9 +1312,9 @@ class AssessmentsController < ApplicationController
     # not customized, then simply return the list of problem
     # scores and their total.
     if !autoresult ||
-        !@scoreboard_prop ||
-            !@scoreboard_prop.colspec ||
-                @scoreboard_prop.colspec.blank?
+       !@scoreboard_prop ||
+       !@scoreboard_prop.colspec ||
+       @scoreboard_prop.colspec.blank?
 
       # First we need to get the total score
       total = 0.0
@@ -1386,7 +1386,7 @@ class AssessmentsController < ApplicationController
     # If the lab is not autograded, or the columns property is not
     # specified, then return the default header.
     if !@assessment.has_autograde ||
-        !@scoreboard_prop || @scoreboard_prop.colspec.blank?
+       !@scoreboard_prop || @scoreboard_prop.colspec.blank?
       head = banner + "<table class='sortable prettyBorder'>
       <tr><th>Nickname</th><th>Version</th><th>Time</th>"
       head += "<th>Total</th>"
@@ -1474,7 +1474,7 @@ class AssessmentsController < ApplicationController
     params[:scoreboard_prop].permit(:banner, :colspec)
   end
 
-  private
+private
 
   def new_assessment_params
     ass = params.require(:assessment)
