@@ -278,7 +278,6 @@ namespace :autolab do
       a.display_name = AUTOGRADE_TEMPLATE_DISPLAY_NAME
       a.handin_directory = AUTOGRADE_TEMPLATE_HANDIN_DIRECTORY
       a.handin_filename = AUTOGRADE_TEMPLATE_HANDIN_FILENAME
-      a.has_autograde = true
       a.course_id = course.id
 
       FileUtils.mkdir_p(File.join(course_dir, a.name, a.handin_directory))
