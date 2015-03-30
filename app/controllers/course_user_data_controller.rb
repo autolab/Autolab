@@ -56,7 +56,7 @@ class CourseUserDataController < ApplicationController
     if @newCUD.save
       flash[:success] = "Success: added user #{email} in #{@course.display_name}"
       if @cud.user.administrator?
-        redirect_to(course_users_path) && return
+        redirect_to([:users, @course]) && return
       else
         redirect_to(action: "new") && return
       end
@@ -142,7 +142,7 @@ class CourseUserDataController < ApplicationController
     if @destroyCUD && @destroyCUD != @cud && params[:yes1] && params[:yes2] && params[:yes3]
       @destroyCUD.destroy # awwww!!!
     end
-    redirect_to(course_users_path(@course)) && return
+    redirect_to([:users, @course]) && return
   end
 
   # Non-RESTful paths below
@@ -150,7 +150,7 @@ class CourseUserDataController < ApplicationController
   # this GET page confirms that the instructor wants to destroy the user
   action_auth_level :destroyConfirm, :instructor
   def destroyConfirm
-    @destroyCUD = @course.course_user_data.find(params[:course_user_datum_id])
+    @destroyCUD = @course.course_user_data.find(params[:id])
   end
 
   action_auth_level :sudo, :instructor
@@ -202,7 +202,7 @@ private
 
   def add_users_breadcrumb
     if @cud.instructor
-      @breadcrumbs << (view_context.link_to "Users", [@course, :users])
+      @breadcrumbs << (view_context.link_to "Users", [:users, @course])
     end
   end
 

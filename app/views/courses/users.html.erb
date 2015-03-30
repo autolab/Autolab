@@ -41,8 +41,7 @@
 
 <hr>
 <p>
-<%= link_to raw('<span class="btn">Add User to Course</span>'),
-  new_course_course_user_datum_path %>
+<%= link_to raw('<span class="btn">Add User to Course</span>'), [:new, @course, :course_user_datum] %>
 <%= link_to raw('<span class="btn">Import Roster/Users</span>'), {:action=>"uploadRoster"} %>
 <%= link_to raw('<span class="btn">Export Roster</span>'), {:action=>"downloadRoster"} %>
 </p>

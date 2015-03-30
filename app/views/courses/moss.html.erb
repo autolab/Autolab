@@ -30,7 +30,7 @@
 
 <h2><b>Step 1:</b> Click on course names to see their assessments, then check box all of the assessments you want Moss to compare against.</h2>
 <h3 style="display:inline">Filter Courses (Keywords Separated by Space): </h3><input type="text" onkeyup="filterCourses(this.value.toLowerCase())" />
-<%= form_tag([@course, :runMoss], multipart: true) do %>
+<%= form_tag([:runMoss, @course], multipart: true) do %>
   <ul class="moss-list">
   <% for course in @courses %>
     <li class="filterableCourse" id="<%= course.display_name %>">
