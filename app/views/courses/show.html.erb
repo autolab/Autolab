@@ -18,8 +18,6 @@
             <% end %>
         <% else %>
             Your request for joining this class is waiting for instructor approval. <%= link_to "Cancel", [@course, @cudRequest], :method => :delete %>
-
-
         <% end %>
     <% else %>
         <%= form_for @newCUD, url: course_join_path(@course) do |f| %>

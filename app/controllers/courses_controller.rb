@@ -33,10 +33,11 @@ class CoursesController < ApplicationController
 
     if not current_user.nil?
 
-      cud = CourseUserDatum.find_cud_for_course @course, current_user.id
+      cud = @course.course_user_data.find_by(user_id: current_user.id)
 
       if not cud.nil?
-        redirect_to course_assessments_url(@course)
+        redirect_to course_assessments_path(@course)
+        return
       else
         if @course.requires_permission
           @cudRequest = @course.cud_request.find_by(user_id: current_user.id)
