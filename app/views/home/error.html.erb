@@ -11,13 +11,13 @@
 <% if @error then %>
   <br><br>
   <p><i>Remember that if you modify any config files, you'll need to  reload them for the changes to take effect.</i><br>
-    <% if @course_id then %>
+    <% if @course_name then %>
       <b><%= link_to "Reload Course Config",
-              reload_course_path(course_id: @course_id) %></b><br>
-      <% if @assessment_id then %>
+              reload_course_path(name: @course_name) %></b><br>
+      <% if @assessment_name then %>
         <b><%= link_to "Reload Assessment Config",
-                reload_course_assessment_path(course_id: @course_id,
-                  assessment_id: @assessment_id) %></b>
+                reload_course_assessment_path(course_name: @course_name,
+                  name: @assessment_name) %></b>
       <% end %>
     <% end %>
   </p>
