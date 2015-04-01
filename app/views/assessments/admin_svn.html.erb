@@ -11,7 +11,7 @@
     <tr>
       <td><%= cud.email %></td>
       <td>
-        <%= form_tag url_for(action: :setRepository, cud_id: cud.id), method: :post do %>
+        <%= form_tag url_for(action: :set_repo, cud_id: cud.id), method: :post do %>
           <%= text_field_tag :repository, repo, size: 80 %>
           <%= submit_tag (if repo then 'Edit' else 'Create' end) %>
         <% end %>
@@ -22,7 +22,7 @@
 
 <b>Load repositories from previous assignment: </b>
 
-<%= form_tag url_for(action: :importSVN), method: :post do %>
+<%= form_tag url_for(action: :import_svn), method: :post do %>
   <%= select_tag :importfrom, options_from_collection_for_select(@assessments, :id, :name) %>
   <%= submit_tag 'Go!' %>
 <% end %>

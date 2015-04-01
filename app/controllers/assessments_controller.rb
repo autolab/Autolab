@@ -52,11 +52,11 @@ class AssessmentsController < ApplicationController
   action_no_auth :local_submit
 
   # SVN
-  autolab_require Rails.root.join("app", "controllers", "assessment", "SVN.rb")
+  autolab_require Rails.root.join("app", "controllers", "assessment", "svn.rb")
   include AssessmentSVN
-  action_auth_level :adminSVN, :instructor
-  action_auth_level :setRepository, :instructor
-  action_auth_level :importSVN, :instructor
+  action_auth_level :admin_svn, :instructor
+  action_auth_level :set_repo, :instructor
+  action_auth_level :import_svn, :instructor
 
   # Scoreboard
   action_auth_level :adminScoreboard, :instructor
