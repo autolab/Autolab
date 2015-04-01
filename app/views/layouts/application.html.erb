@@ -58,7 +58,7 @@
         <a href="http://autolabproject.com">Autolab Project</a>
         · <a href="/contact">Contact</a>
         <% if @course %>
-        · <%= link_to "Need Help?", course_report_bug_path(@course) %>
+        · <%= link_to "Need Help?", [:report_bug, @course] %>
         <% end %>
         </div>
         <!-- End Footer -->

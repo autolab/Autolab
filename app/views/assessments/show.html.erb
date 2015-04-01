@@ -47,11 +47,15 @@
           <li><%= link_to "SVN Settings", [:admin_svn, @course, @assessment], title: "Manage the SVN repositories" %></li>
         <% end %>
 
-        <% if @assessment.has_autograde then %>
+        <% if @assessment.has_autograde %>
           <li><%= link_to "Autograding Settings", {:action => "adminAutograde" }, title: "Modify autograding properties such as the VM image and the timeout value" %></li>
         <% end %>
 
-        <% if @assessment.has_scoreboard then %>
+        <% if @assessment.has_groups? %>
+          <li><%= link_to "Group Settings", [@course, @assessment, :groups], title: "Manage Group Settings" %></li>
+        <% end %>
+
+        <% if @assessment.has_scoreboard %>
           <li><%= link_to "Scoreboard Settings", {:action => "adminScoreboard" }, title: "Configure the appearance of the scoreboard" %></li>
         <% end %>
 
@@ -81,7 +85,14 @@
       <li> <%= link_to "View writeup", {:action => 'writeup'}, {:title=> "View the assessment writeup" } %> </li>
       <li> <%= link_to "Download handout", {:action => 'handout'}, {:title=> "Download handout materials and starter code" } %> </li>
       <li> <%= link_to "View handin history", {:action => 'history'}, {:title=> "View your submissions, scores, and feedback from the course staff" } %> </li>
-      <% if @assessment.has_scoreboard then %>
+      <% if @assessment.has_groups? %>
+        <% if @aud.membership_status != AssessmentUserDatum::UNCONFIRMED then %>
+          <li><%= link_to "Group Options", [@course, @assessment, @aud.group], title: "Check your Group settings." %></li>
+        <% else %>
+          <li><%= link_to "Group Options", [:new, @course, @assessment, :group], title: "Check your Group settings." %></li>
+        <% end %>
+      <% end %>
+      <% if @assessment.has_scoreboard %>
           <li><%= link_to "View scoreboard", {:action => "scoreboard" }, title: "View the class scoreboard" %></li>
       <% end %>
 
