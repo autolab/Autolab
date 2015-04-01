@@ -614,7 +614,7 @@ class AssessmentsController < ApplicationController
 
   action_auth_level :show, :student
   def show
-    get_handin
+    set_handin
     extend_config_module(@assessment, @submission, @cud)
 
     @aud = @assessment.aud_for @cud.id

@@ -1,9 +1,12 @@
+##
+# Defines handout method, so students can get handout
+#
 module AssessmentHandout
   def mime_type_from_ext(ext)
     case ext
-      when ".html" then "text/html"
-      when ".pdf" then "application/pdf"
-      else "application/octet-stream"
+    when ".html" then "text/html"
+    when ".pdf" then "application/pdf"
+    else "application/octet-stream"
     end
   end
 
@@ -14,14 +17,11 @@ module AssessmentHandout
       hash = @assessment.config_module.handout
       send_file(hash["fullpath"],
                 disposition: "inline",
-                filename: hash["filename"]) && return
+                filename: hash["filename"])
       return
     end
 
-    if @assessment.handout_is_url?
-      redirect_to @assessment.handout
-      return
-    end
+    redirect_to(@assessment.handout) && return if @assessment.handout_is_url?
 
     if @assessment.handout_is_file?
       filename = @assessment.handout_path

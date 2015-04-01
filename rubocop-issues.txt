@@ -1,5 +1,5 @@
-Inspecting 148 files
-..C..CCWWCC.WCCWCCWCW..CWWC.CCCWWCCCCCCCCCCCC..WCC..WCWCWCCWCCCWCCC....EC.CCCWCCCC.C..W.............................W............................CCC
+Inspecting 147 files
+..C..CCWWCC.WCCWCCWCW..CWWC.CCCWWCCCCCCCCCCCC..WCC..WCWCWCCWCCCWCCC....EC.CCCWCCCC.C..W.............................W...........................CCC
 
 Offenses:
 
@@ -357,219 +357,84 @@ app/controllers/assessment/grading.rb:472:9: C: Avoid multi-line ?: (the ternary
 app/controllers/assessment/grading.rb:480:47: W: Do not use prefix [33m_[0m for a variable that is used.
     cache = AssociationCache.new(@course) do |_|
                                               ^
-app/controllers/assessment/handin.rb:1:1: C: Missing top-level module documentation comment.
-module AssessmentHandin
-^^^^^^
-app/controllers/assessment/handin.rb:18:3: C: Assignment Branch Condition size for handin is too high. [21.24/15]
+app/controllers/assessment/handin.rb:21:3: C: Assignment Branch Condition size for handin is too high. [21.12/15]
   def handin
   ^^^
-app/controllers/assessment/handin.rb:18:3: C: Cyclomatic complexity for handin is too high. [10/6]
+app/controllers/assessment/handin.rb:21:3: C: Cyclomatic complexity for handin is too high. [10/6]
   def handin
   ^^^
-app/controllers/assessment/handin.rb:18:3: C: Perceived complexity for handin is too high. [10/7]
+app/controllers/assessment/handin.rb:21:3: C: Perceived complexity for handin is too high. [10/7]
   def handin
   ^^^
-app/controllers/assessment/handin.rb:25:5: W: Avoid rescuing the [33mException[0m class. Perhaps you meant to rescue [33mStandardError[0m?
-    rescue Exception => e
-    ^^^^^^^^^^^^^^^^^^^^^
-app/controllers/assessment/handin.rb:25:25: W: Useless assignment to variable - [33me[0m.
-    rescue Exception => e
-                        ^
-app/controllers/assessment/handin.rb:46:3: C: Assignment Branch Condition size for local_submit is too high. [96.09/15]
+app/controllers/assessment/handin.rb:49:3: C: Assignment Branch Condition size for local_submit is too high. [94.24/15]
   def local_submit
   ^^^
-app/controllers/assessment/handin.rb:46:3: C: Cyclomatic complexity for local_submit is too high. [33/6]
+app/controllers/assessment/handin.rb:49:3: C: Cyclomatic complexity for local_submit is too high. [33/6]
   def local_submit
   ^^^
-app/controllers/assessment/handin.rb:46:3: C: Method has too many lines. [75/20]
+app/controllers/assessment/handin.rb:49:3: C: Method has too many lines. [73/20]
   def local_submit
   ^^^
-app/controllers/assessment/handin.rb:46:3: C: Perceived complexity for local_submit is too high. [37/7]
+app/controllers/assessment/handin.rb:49:3: C: Perceived complexity for local_submit is too high. [36/7]
   def local_submit
   ^^^
-app/controllers/assessment/handin.rb:51:12: C: Favor the ternary operator (?:) over if/then/else/end constructs.
-    @cud = if @user then @course.course_user_data.find_by(user_id: @user.id) else nil end
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-app/controllers/assessment/handin.rb:51:78: C: Redundant empty [33melse[0m-clause.
-    @cud = if @user then @course.course_user_data.find_by(user_id: @user.id) else nil end
-                                                                             ^^^^
-app/controllers/assessment/handin.rb:67:5: C: Use snake_case for variable names.
-    remoteHandinDir = File.join(@assessment.remote_handin_path, personal_directory)
-    ^^^^^^^^^^^^^^^
-app/controllers/assessment/handin.rb:69:5: W: Useless assignment to variable - [33msubmission_count[0m. Did you mean [33msubmissons_count[0m?
-    submission_count = 0
-    ^^^^^^^^^^^^^^^^
-app/controllers/assessment/handin.rb:79:101: C: Line is too long. [114/100]
-            render(plain: "You have no remaining submissions for this assessment", status: :bad_request) && return
-                                                                                                    ^^^^^^^^^^^^^^
-app/controllers/assessment/handin.rb:88:9: W: Avoid rescuing the [33mException[0m class. Perhaps you meant to rescue [33mStandardError[0m?
-        rescue Exception => e
-        ^^^^^^^^^^^^^^^^^^^^^
-app/controllers/assessment/handin.rb:89:11: C: Do not write to stdout. Use Rails' logger if you want to log.
-          puts "Error Saving Submission:\n#{e}"
-          ^^^^
-app/controllers/assessment/handin.rb:107:7: W: Avoid rescuing the [33mException[0m class. Perhaps you meant to rescue [33mStandardError[0m?
-      rescue Exception  => e
-      ^^^^^^^^^^^^^^^^^^^^^^
-app/controllers/assessment/handin.rb:108:9: C: Do not write to stdout. Use Rails' logger if you want to log.
-        print e
-        ^^^^^
-app/controllers/assessment/handin.rb:113:9: C: Do not write to stdout. Use Rails' logger if you want to log.
-        puts "Submission received, ID##{submissions[0].id}"
-        ^^^^
-app/controllers/assessment/handin.rb:120:101: C: Line is too long. [114/100]
-        render(plain: " - You have #{assessment.max_submissions - submissons_count} submissions left\n") && return
-                                                                                                    ^^^^^^^^^^^^^^
-app/controllers/assessment/handin.rb:142:9: C: Do not write to stdout. Use Rails' logger if you want to log.
-        puts "ERROR: Could not create handin directory. Please contact
-        ^^^^
-app/controllers/assessment/handin.rb:154:3: C: Assignment Branch Condition size for log_submit is too high. [80.67/15]
+app/controllers/assessment/handin.rb:154:3: C: Assignment Branch Condition size for log_submit is too high. [82.18/15]
   def log_submit
   ^^^
-app/controllers/assessment/handin.rb:154:3: C: Cyclomatic complexity for log_submit is too high. [18/6]
+app/controllers/assessment/handin.rb:154:3: C: Cyclomatic complexity for log_submit is too high. [17/6]
   def log_submit
   ^^^
-app/controllers/assessment/handin.rb:154:3: C: Method has too many lines. [55/20]
+app/controllers/assessment/handin.rb:154:3: C: Method has too many lines. [51/20]
   def log_submit
   ^^^
-app/controllers/assessment/handin.rb:154:3: C: Perceived complexity for log_submit is too high. [21/7]
+app/controllers/assessment/handin.rb:154:3: C: Perceived complexity for log_submit is too high. [19/7]
   def log_submit
   ^^^
-app/controllers/assessment/handin.rb:159:12: C: Favor the ternary operator (?:) over if/then/else/end constructs.
-    @cud = if @user then @course.course_user_data.find_by(user_id: @user.id) else nil end
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-app/controllers/assessment/handin.rb:159:78: C: Redundant empty [33melse[0m-clause.
-    @cud = if @user then @course.course_user_data.find_by(user_id: @user.id) else nil end
-                                                                             ^^^^
-app/controllers/assessment/handin.rb:184:5: C: Use snake_case for variable names.
-    modName = @assessment.name + (@course.name).gsub(/[^A-Za-z0-9]/, "")
-    ^^^^^^^
-app/controllers/assessment/handin.rb:186:5: W: The use of [33meval[0m is a serious security risk.
-    eval("extend #{modName.camelcase}")
+app/controllers/assessment/handin.rb:184:5: W: The use of [33meval[0m is a serious security risk.
+    eval("extend #{mod_name.camelcase}")
     ^^^^
-app/controllers/assessment/handin.rb:196:7: C: Favor modifier [33mif[0m usage when having a single-line body. Another good alternative is the usage of control flow [33m&&[0m/[33m||[0m.
-      if scores.keys.length == 0
-      ^^
-app/controllers/assessment/handin.rb:218:7: C: Prefer [33meach[0m over [33mfor[0m.
-      for key in scores.keys do
-      ^^^
-app/controllers/assessment/handin.rb:226:5: W: Avoid rescuing the [33mException[0m class. Perhaps you meant to rescue [33mStandardError[0m?
-    rescue Exception  => e
-    ^^^^^^^^^^^^^^^^^^^^^^
-app/controllers/assessment/handin.rb:227:7: C: Do not write to stdout. Use Rails' logger if you want to log.
-      print e
-      ^^^^^
-app/controllers/assessment/handin.rb:239:3: C: Assignment Branch Condition size for validateHandin is too high. [37.34/15]
+app/controllers/assessment/handin.rb:235:3: C: Assignment Branch Condition size for validateHandin is too high. [37.34/15]
   def validateHandin
   ^^^
-app/controllers/assessment/handin.rb:239:3: C: Method has too many lines. [22/20]
+app/controllers/assessment/handin.rb:235:3: C: Method has too many lines. [22/20]
   def validateHandin
   ^^^
-app/controllers/assessment/handin.rb:239:7: C: Use snake_case for method names.
+app/controllers/assessment/handin.rb:235:7: C: Use snake_case for method names.
   def validateHandin
       ^^^^^^^^^^^^^^
-app/controllers/assessment/handin.rb:277:3: C: Assignment Branch Condition size for validateForGroups is too high. [20.15/15]
-  def validateForGroups
+app/controllers/assessment/handin.rb:273:3: C: Assignment Branch Condition size for validate_for_groups is too high. [20.15/15]
+  def validate_for_groups
   ^^^
-app/controllers/assessment/handin.rb:277:3: C: Cyclomatic complexity for validateForGroups is too high. [7/6]
-  def validateForGroups
+app/controllers/assessment/handin.rb:273:3: C: Cyclomatic complexity for validate_for_groups is too high. [7/6]
+  def validate_for_groups
   ^^^
-app/controllers/assessment/handin.rb:277:7: C: Use snake_case for method names.
-  def validateForGroups
-      ^^^^^^^^^^^^^^^^^
-app/controllers/assessment/handin.rb:278:5: C: Favor modifier [33munless[0m usage when having a single-line body. Another good alternative is the usage of control flow [33m&&[0m/[33m||[0m.
-    unless @assessment.has_groups?
-    ^^^^^^
-app/controllers/assessment/handin.rb:282:40: C: Use [33m||[0m instead of [33mor[0m.
-    aud = @assessment.aud_for(@cud.id) or return true
-                                       ^^
-app/controllers/assessment/handin.rb:283:23: C: Use [33m||[0m instead of [33mor[0m.
-    group = aud.group or return true
-                      ^^
-app/controllers/assessment/handin.rb:285:32: C: Use [33mnext[0m to skip iteration.
-    group.assessment_user_data.each do |aud|
-                               ^^^^
-app/controllers/assessment/handin.rb:285:41: W: Shadowing outer local variable - [33maud[0m.
-    group.assessment_user_data.each do |aud|
-                                        ^^^
-app/controllers/assessment/handin.rb:294:101: C: Line is too long. [103/100]
-          flash[:error] = "A member of your group has reached the submission limit for this assessment"
-                                                                                                    ^^^
-app/controllers/assessment/handin.rb:306:3: C: Assignment Branch Condition size for saveHandin is too high. [27.73/15]
+app/controllers/assessment/handin.rb:302:3: C: Assignment Branch Condition size for saveHandin is too high. [27.73/15]
   def saveHandin(sub)
   ^^^
-app/controllers/assessment/handin.rb:306:3: C: Method has too many lines. [24/20]
+app/controllers/assessment/handin.rb:302:3: C: Method has too many lines. [24/20]
   def saveHandin(sub)
   ^^^
-app/controllers/assessment/handin.rb:306:7: C: Use snake_case for method names.
+app/controllers/assessment/handin.rb:302:7: C: Use snake_case for method names.
   def saveHandin(sub)
       ^^^^^^^^^^
-app/controllers/assessment/handin.rb:335:3: C: Assignment Branch Condition size for get_handin is too high. [17.49/15]
-  def get_handin
+app/controllers/assessment/handin.rb:331:3: C: Assignment Branch Condition size for set_handin is too high. [17.49/15]
+  def set_handin
   ^^^
-app/controllers/assessment/handin.rb:335:7: C: Do not prefix reader method names with [33mget_[0m.
-  def get_handin
-      ^^^^^^^^^^
-app/controllers/assessment/handout.rb:1:1: C: Missing top-level module documentation comment.
-module AssessmentHandout
-^^^^^^
-app/controllers/assessment/handout.rb:4:7: C: Indent [33mwhen[0m as deep as [33mcase[0m.
-      when ".html" then "text/html"
-      ^^^^
-app/controllers/assessment/handout.rb:5:7: C: Indent [33mwhen[0m as deep as [33mcase[0m.
-      when ".pdf" then "application/pdf"
-      ^^^^
-app/controllers/assessment/handout.rb:10:3: C: Assignment Branch Condition size for handout is too high. [16.61/15]
+app/controllers/assessment/handout.rb:13:3: C: Assignment Branch Condition size for handout is too high. [16.61/15]
   def handout
   ^^^
-app/controllers/assessment/SVN.rb:1:1: C: Missing top-level module documentation comment.
-module AssessmentSVN
-^^^^^^
 app/controllers/assessment/SVN.rb:1:1: C: Use snake_case for source file names.
-module AssessmentSVN
+##
 ^
-app/controllers/assessment/SVN.rb:3:7: C: Use snake_case for method names.
-  def adminSVN
-      ^^^^^^^^
-app/controllers/assessment/SVN.rb:12:7: C: Use snake_case for method names.
-  def setRepository
-      ^^^^^^^^^^^^^
-app/controllers/assessment/SVN.rb:21:3: C: Assignment Branch Condition size for importSVN is too high. [18.17/15]
-  def importSVN
+app/controllers/assessment/SVN.rb:25:3: C: Assignment Branch Condition size for import_svn is too high. [18.68/15]
+  def import_svn
   ^^^
-app/controllers/assessment/SVN.rb:21:7: C: Use snake_case for method names.
-  def importSVN
-      ^^^^^^^^^
-app/controllers/assessment/SVN.rb:28:5: C: Prefer [33meach[0m over [33mfor[0m.
-    for cud in @course.course_user_data do
-    ^^^
-app/controllers/assessment/SVN.rb:28:5: C: Use [33mnext[0m to skip iteration.
-    for cud in @course.course_user_data do
-    ^^^
-app/controllers/assessment/SVN.rb:29:7: C: Use snake_case for variable names.
-      oldRepo = assessment.aud_for(cud).repository
-      ^^^^^^^
-app/controllers/assessment/SVN.rb:43:7: C: Use snake_case for method names.
-  def svnValidateHandin
-      ^^^^^^^^^^^^^^^^^
-app/controllers/assessment/SVN.rb:53:3: C: Assignment Branch Condition size for svnSaveHandin is too high. [27.82/15]
-  def svnSaveHandin
+app/controllers/assessment/SVN.rb:53:3: C: Assignment Branch Condition size for svn_save_handin is too high. [27.82/15]
+  def svn_save_handin
   ^^^
 app/controllers/assessment/SVN.rb:53:3: C: Method has too many lines. [25/20]
-  def svnSaveHandin
+  def svn_save_handin
   ^^^
-app/controllers/assessment/SVN.rb:53:7: C: Use snake_case for method names.
-  def svnSaveHandin
-      ^^^^^^^^^^^^^
-app/controllers/assessment/SVN.rb:59:5: C: Use snake_case for variable names.
-    assDir = Rails.root("courses", @course.name, @assessment.name, @assessment.handin_directory)
-    ^^^^^^
-app/controllers/assessment/SVN.rb:60:5: C: Use snake_case for variable names.
-    svnDir = File.join(assDir, @cud.user.email + "_svn_checkout")
-    ^^^^^^
-app/controllers/assessment/SVN.rb:61:5: C: Use snake_case for variable names.
-    svnTar = File.join(assDir, @cud.user.email + "_svn_checkout.tar.gz")
-    ^^^^^^
 app/controllers/assessments_controller.rb:6:1: C: Class definition is too long. [1154/100]
 class AssessmentsController < ApplicationController
 ^^^^^
@@ -3007,7 +2872,7 @@ lib/module_base.rb:59:7: C: Favor modifier [33munless[0m usage when having a s
       unless partnersValidateHandin
       ^^^^^^
 lib/module_base.rb:66:7: C: Favor modifier [33munless[0m usage when having a single-line body. Another good alternative is the usage of control flow [33m&&[0m/[33m||[0m.
-      unless svnValidateHandin
+      unless svn_validate_handin
       ^^^^^^
 lib/module_base.rb:70:7: C: Favor modifier [33munless[0m usage when having a single-line body. Another good alternative is the usage of control flow [33m&&[0m/[33m||[0m.
       unless super()
@@ -3121,4 +2986,4 @@ templates/labtemplate/labtemplate.rb:8:7: C: Use snake_case for method names.
   def assessmentInitialize(course)
       ^^^^^^^^^^^^^^^^^^^^
 
-148 files inspected, 1039 offenses detected
+147 files inspected, 994 offenses detected
