@@ -9,7 +9,7 @@
       var email_input = document.getElementById("course_user_datum_user_attributes_email").value;
       if (!email_input || email_input == "") return;
 
-      $.get('<%= url_for :controller=>"courses", :action=>"userLookup", :remote=>true  %>',  { email: email_input }, function( data ) {
+      $.get('<%= url_for [:userLookup, @course, remote: true]  %>',  { email: email_input }, function( data ) {
 
         if (!data)  {
           $('#course_user_datum_user_attributes_first_name').prop('disabled', false);

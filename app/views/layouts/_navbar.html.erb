@@ -15,8 +15,7 @@
 
       <% if session[:sudo] && @cud then %>
       <li>
-        <%= link_to "(#{@cud.display_name}) Reset user",
-        course_course_user_datum_unsudo_path(course_user_datum_id: current_user.id) %>
+        <%= link_to "(#{@cud.display_name}) Reset user", [:unsudo, @course, @cud] %>
       </li>
       <% end %>
 
@@ -30,12 +29,12 @@
         <%= link_to link, course_course_user_datum_gradebook_path(@cud.course, @cud), :title => "View your gradebook" %>
       </li>
       <li>
-        <%= link_to "Jobs", course_jobs_path(@cud.course), :title => "View a history of autograding jobs" %>
+        <%= link_to "Jobs", [@course, :jobs], :title => "View a history of autograding jobs" %>
       </li>
 
       <% if @cud.instructor? %>
       <li>
-        <%= link_to "Manage Course", course_manage_path(@cud.course), :title => "Perform course-wise administrative actions" %>
+        <%= link_to "Manage Course", [:manage, @course], :title => "Perform course-wise administrative actions" %>
       </li>
       <% end %>
       <% end %>
@@ -61,7 +60,7 @@
           <% end %>
           <% if @course and @cud %>
           <li role="presentation">
-            <%= link_to "Course Profile", course_course_user_datum_path(@course, @cud), :title => "View your user profile for the current course" %>
+            <%= link_to "Course Profile", [@course, @cud], :title => "View your user profile for the current course" %>
           </li>
           <% end %>
           <% if Rails.env.development? %>
