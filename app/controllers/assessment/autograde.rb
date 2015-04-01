@@ -218,8 +218,8 @@ module AssessmentAutograde
 
       begin
         TangoClient.upload("#{course.name}-#{assessment.name}",
-                                 File.basename(f["localFile"]),
-                                 File.open(f["localFile"], "rb").read)
+                           File.basename(f["localFile"]),
+                           File.open(f["localFile"], "rb").read)
       rescue TangoClient::TangoException => e
         flash[:error] = "Error while uploading autograding files: #{e.message}"
         return -4, nil

@@ -63,7 +63,7 @@ module ModuleBase
 
     # If we're validating for svn, we don't have a file to check
     if @modulesUsed.include?("Svn")
-      unless svnValidateHandin
+      unless svn_validate_handin
         return false
       end
     else
@@ -78,7 +78,7 @@ module ModuleBase
   # If you need to combine two saves, write a new function
   def saveHandin
     if @modulesUsed.include?("Svn")
-      return svnSaveHandin
+      return svn_save_handin
     else
       return super()
     end

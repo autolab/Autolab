@@ -91,9 +91,9 @@ Autolab3::Application.routes.draw do
         post "regradeAll"
 
         # SVN actions
-        get "adminSVN"
-        post "importSVN"
-        post "setRepository"
+        get "admin_svn"
+        post "import_svn"
+        post "set_repo"
 
         # gradesheet ajax actions
         post "quickSetScore"

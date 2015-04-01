@@ -43,8 +43,8 @@
         <li> <%= link_to "Bulk import grades", {:action => "bulkGrade" }, {:title=> "Upload scores or feedback for multiple students from a CSV file" } %></li>
         <li> <%= link_to "Bulk export grades", {:action => "bulkExport" }, {:title=> "Export grades (with sub-scores) \nfor all students to a CSV file" } %></li>
 
-        <% if @assessment.has_svn %>
-          <li><%= link_to "SVN Settings", [:adminSVN, @course, @assessment], title: "Manage the SVN repositories" %></li>
+        <% if @assessment.has_svn then %>
+          <li><%= link_to "SVN Settings", [:admin_svn, @course, @assessment], title: "Manage the SVN repositories" %></li>
         <% end %>
 
         <% if @assessment.has_autograde %>

@@ -6,6 +6,7 @@ AllCops:
     - 'assessmentConfig/**/*'
     - 'attachments/**/*'
     - 'config/**/*'
+    - 'courseConfig/**/*'
     - 'courses/**/*'
     - 'db/**/*'
     - 'script/**/*'
