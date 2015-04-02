@@ -68,7 +68,6 @@ ActiveRecord::Schema.define(version: 20150328011303) do
     t.datetime "updated_at"
     t.integer  "course_id",          limit: 4
     t.string   "display_name",       limit: 255
-    t.integer  "category_id",        limit: 4
     t.string   "handin_filename",    limit: 255
     t.string   "handin_directory",   limit: 255
     t.integer  "max_grace_days",     limit: 4,     default: 0
@@ -147,9 +146,9 @@ ActiveRecord::Schema.define(version: 20150328011303) do
     t.boolean  "disabled",                      limit: 1,     default: false
     t.boolean  "exam_in_progress",              limit: 1,     default: false
     t.integer  "version_threshold",             limit: 4,     default: -1,    null: false
-    t.datetime "cgdub_dependencies_updated_at"
     t.integer  "late_penalty_id",               limit: 4
     t.integer  "version_penalty_id",            limit: 4
+    t.datetime "cgdub_dependencies_updated_at"
     t.text     "gb_message",                    limit: 65535
   end
 
