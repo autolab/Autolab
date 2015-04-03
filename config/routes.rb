@@ -19,7 +19,7 @@ Autolab3::Application.routes.draw do
   get "contact", to: "home#contact"
 
   namespace :home do
-    match "developer_login", via: [:post, :get]
+    match "developer_login", via: [:get, :post]
     get "error"
     get "no_user"
     get "vmlist"
@@ -34,9 +34,6 @@ Autolab3::Application.routes.draw do
   end
 
   resources :courses, param: :name do
-    match "report_bug", via: [:post, :get]
-    get "userLookup"
-    post "join"
 
     resources :schedulers
     resources :jobs, only: :index do
@@ -55,18 +52,21 @@ Autolab3::Application.routes.draw do
           post "join"
           post "leave"
         end
+
         post "import", on: :collection
       end
       resources :problems, except: [:index, :show]
       resources :submissions do
         resources :annotations, only: [:create, :update, :destroy]
         resources :scores, only: [:create, :show, :update]
+
         member do
           get "destroyConfirm"
           get "download"
           get "listArchive", as: :list_archive
           get "view"
         end
+
         collection do
           get "downloadAll"
           get "missing"
@@ -104,9 +104,9 @@ Autolab3::Application.routes.draw do
         post "regradeAll"
 
         # SVN actions
-        get "adminSVN"
-        post "importSVN"
-        post "setRepository"
+        get "admin_svn"
+        post "import_svn"
+        post "set_repo"
 
         # gradesheet ajax actions
         post "quickSetScore"
@@ -129,10 +129,6 @@ Autolab3::Application.routes.draw do
     end
 
     resources :course_user_data do
-      match "sudo", via: [:get, :post]
-      get "unsudo"
-      get "destroyConfirm"
-      get "confirm"
 
       resource :gradebook, only: :show do
         get "bulkRelease"
@@ -142,18 +138,29 @@ Autolab3::Application.routes.draw do
         get "student"
         get "view"
       end
+
+      member do
+        get "confirm"
+        get "destroyConfirm"
+        match "sudo", via: [:get, :post]
+        get "unsudo"
+      end
     end
 
-    get "manage"
-    get "bulkRelease"
-    get "downloadRoster"
-    match "email", via: [:get, :post]
-    get "moss"
-    post "uploadRoster"
-    get "uploadRoster"
-    get "users"
-    get "reload"
-    get "sudo"
-    post "runMoss"
+    member do
+      get "bulkRelease"
+      get "downloadRoster"
+      match "email", via: [:get, :post]
+      post "join"
+      get "manage"
+      get "moss"
+      get "reload"
+      match "report_bug", via: [:get, :post]
+      post "runMoss"
+      get "sudo"
+      match "uploadRoster", via: [:get, :post]
+      get "userLookup"
+      get "users"
+    end
   end
 end

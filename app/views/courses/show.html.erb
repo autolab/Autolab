@@ -12,15 +12,15 @@
 <% else %>
 
     <% if @course.requires_permission %>
-        <% if @cud.nil? %>
-            <%= form_for @newCUD, url: course_join_path(@course) do |f| %>
+        <% if @cud.nil?%>
+            <%= form_for @newCUD, url: join_course_path(@course) do |f| %>
             <%= f.submit("Request to Join!", :class=>"btn primary") %>
             <% end %>
         <% else %>
-            Your request for joining this class is waiting for instructor approval. <%= link_to "Cancel", [@course, @cudRequest], :method => :delete %>
+            Your request for joining this class is waiting for instructor approval. <%= link_to "Cancel", [@course, @cud], :method => :delete %>
         <% end %>
     <% else %>
-        <%= form_for @newCUD, url: course_join_path(@course) do |f| %>
+        <%= form_for @newCUD, url: join_course_path(@course) do |f| %>
         <%= f.submit("Join!", :class=>"btn primary") %>
         <% end %>
     <% end %>

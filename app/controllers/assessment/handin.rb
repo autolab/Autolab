@@ -1,3 +1,6 @@
+##
+# Handles different handin methods, including web form, local_submit and log_submit
+#
 module AssessmentHandin
   # handin - The generic default handin function.
   # This function calls out to smaller helper functions which provide for
@@ -22,7 +25,7 @@ module AssessmentHandin
     # save the submissions
     begin
       submissions = saveHandin(params[:submission])
-    rescue Exception => e
+    rescue
       submissions = nil
     end
 
@@ -44,17 +47,17 @@ module AssessmentHandin
   # method called when student makes
   # unofficial submission in the database
   def local_submit
-    @course = Course.find_by(params[:course_name])
+    @course = Course.find_by(name: params[:course_name])
     render(plain: "ERROR: invalid course", status: :bad_request) && return unless @course
 
     @user = User.find_by(email: params[:user])
-    @cud = if @user then @course.course_user_data.find_by(user_id: @user.id) else nil end
+    @cud = @user ? @course.course_user_data.find_by(user_id: @user.id) : nil
     unless @cud
       err = "ERROR: invalid username (#{params[:user]}) for class #{@course.id}"
       render(plain: err, status: :bad_request) && return
     end
 
-    @assessment = @course.assessments.find_by(params[:name])
+    @assessment = @course.assessments.find_by(name: params[:name])
     if !@assessment
       err = "ERROR: Invalid Assessment (#{params[:id]}) for course #{@course.id}"
       render(plain: err, status: :bad_request) && return
@@ -64,9 +67,7 @@ module AssessmentHandin
     end
 
     personal_directory = @user.email + "_remote_handin_" +  @assessment.name
-    remoteHandinDir = File.join(@assessment.remote_handin_path, personal_directory)
-
-    submission_count = 0
+    remote_handin_dir = File.join(@assessment.remote_handin_path, personal_directory)
 
     if params[:submit]
       # They've copied their handin over, lets go grab it.
@@ -76,7 +77,8 @@ module AssessmentHandin
         if @assessment.max_submissions != -1
           submission_count = @cud.submissions.where(assessment: @assessment).size
           if submission_count >= @assessment.max_submissions
-            render(plain: "You have no remaining submissions for this assessment", status: :bad_request) && return
+            render(plain: "You have no remaining submissions for this assessment",
+                   status: :bad_request) && return
           end
         end
 
@@ -84,9 +86,9 @@ module AssessmentHandin
 
         # save the submissions
         begin
-          submissions = saveHandin("local_submit_file" => File.join(remoteHandinDir, handin_file))
-        rescue Exception => e
-          puts "Error Saving Submission:\n#{e}"
+          submissions = saveHandin("local_submit_file" => File.join(remote_handin_dir, handin_file))
+        rescue StandardError => e
+          COURSE_LOGGER.log("Error Saving Submission:\n#{e}")
           submissions = nil
         end
 
@@ -100,24 +102,22 @@ module AssessmentHandin
         end
 
         # autograde the submissions
-        if @assessment.has_autograde
-          autogradeSubmissions(@course, @assessment, submissions)
-        end
+        autogradeSubmissions(@course, @assessment, submissions) if @assessment.has_autograde
 
-      rescue Exception  => e
-        print e
+      rescue StandardError => e
         COURSE_LOGGER.log(e.to_s)
       end
 
       if submissions
-        puts "Submission received, ID##{submissions[0].id}"
+        COURSE_LOGGER.log("Submission received, ID##{submissions[0].id}")
       else
         err = "There was an error saving your submission. Please contact your course staff\n"
         render(plain: err, status: :bad_request) && return
       end
 
       if @assessment.max_submissions != -1
-        render(plain: " - You have #{assessment.max_submissions - submissons_count} submissions left\n") && return
+        remaining = @assessment.max_submissions - submissions.count
+        render(plain: " - You have #{remaining} submissions left\n") && return
       end
 
       render(plain: "Successfully submitted\n") && return
@@ -128,25 +128,25 @@ module AssessmentHandin
       # The handin Directory really should not exist, as this script deletes it
       # when it's done.  However, if it's there, we'll try to remove an empty
       # folder, else fail w/ error message.
-      if Dir.exist?(remoteHandinDir)
+      if Dir.exist?(remote_handin_dir)
         begin
-          FileUtils.rm_rf(remoteHandinDir)
+          FileUtils.rm_rf(remote_handin_dir)
         rescue SystemCallError
           render(plain: "WARNING: could not clear previous handin directory, please") && return
         end
       end
 
       begin
-        Dir.mkdir(remoteHandinDir)
+        Dir.mkdir(remote_handin_dir)
       rescue SystemCallError
-        puts "ERROR: Could not create handin directory. Please contact
-        autolab-dev@andrew.cmu.edu with this error"
+        COURSE_LOGGER.log("ERROR: Could not create handin directory. Please contact
+        autolab-dev@andrew.cmu.edu with this error")
       end
 
-      system("fs sa #{remoteHandinDir} #{@user.email} rlidw")
+      system("fs sa #{remote_handin_dir} #{@user.email} rlidw")
     end
 
-    render(plain: remoteHandinDir) && return
+    render(plain: remote_handin_dir) && return
   end
 
   # method called when student makes
@@ -156,7 +156,7 @@ module AssessmentHandin
     render(plain: "ERROR: invalid course", status: :bad_request) && return unless @course
 
     @user = User.find_by(email: params[:user])
-    @cud = if @user then @course.course_user_data.find_by(user_id: @user.id) else nil end
+    @cud = @user ? @course.course_user_data.find_by(user_id: @user.id) : nil
     unless @cud
       err = "ERROR: invalid username (#{params[:user]}) for class #{@course.id}"
       render(plain: err, status: :bad_request) && return
@@ -172,18 +172,16 @@ module AssessmentHandin
     end
 
     @result = params[:result]
-    unless @result
-      render(plain: "ERROR: No result!", status: :bad_request) && return
-    end
+    render(plain: "ERROR: No result!", status: :bad_request) && return unless @result
 
     # Everything looks OK, so append the autoresult to the log.txt file for this lab
     @logger = Logger.new(Rails.root.join("courses", @course.name, @assessment.name, "log.txt"))
     @logger.add(Logger::INFO) { "#{@user.email},0,#{@result}" }
 
     # Load up the lab.rb file
-    modName = @assessment.name + (@course.name).gsub(/[^A-Za-z0-9]/, "")
+    mod_name = @assessment.name + (@course.name).gsub(/[^A-Za-z0-9]/, "")
     require(Rails.root.join("assessmentConfig", "#{@course.name}-#{@assessment.name}.rb"))
-    eval("extend #{modName.camelcase}")
+    eval("extend #{mod_name.camelcase}")
 
     begin
       # Call the parseAutoresult function defined in the lab.rb file.  If
@@ -193,9 +191,7 @@ module AssessmentHandin
       # exit.
       scores = parseAutoresult(@result, false)
 
-      if scores.keys.length == 0
-        render(plain: "OK", status: 200) && return
-      end
+      render(plain: "OK", status: 200) && return if scores.keys.length == 0
 
       # Try to find an existing submission (always version 0).
       submission = @assessment.submissions.find_by(version: 0, course_user_datum_id: @cud.id)
@@ -215,7 +211,7 @@ module AssessmentHandin
 
       # Update the scores in the db's unofficial submission using the list
       # returned by the parseAutoresult function
-      for key in scores.keys do
+      scores.keys.each do |key|
         problem = @assessment.problems.find_by(name: key)
         score = submission.scores.find_or_initialize_by(problem_id: problem.id)
         score.score = scores[key]
@@ -223,8 +219,8 @@ module AssessmentHandin
         score.grader_id = 0
         score.save!
       end
-    rescue Exception  => e
-      print e
+    rescue StandardError => e
+      COURSE_LOGGER.log(e.to_s)
     end
 
     render(plain: "OK", status: 200) && return
@@ -265,7 +261,7 @@ private
       return false
     end
 
-    validateForGroups
+    validate_for_groups
   end
 
   ##
@@ -274,13 +270,13 @@ private
   # this returns true.  Otherwise, it checks that everyone is confirmed
   # to be in the group and that no one is over the submission limit.
   #
-  def validateForGroups
-    unless @assessment.has_groups?
-      return true
-    end
+  def validate_for_groups
+    return true unless @assessment.has_groups?
 
-    aud = @assessment.aud_for(@cud.id) or return true
-    group = aud.group or return true
+    submitter_aud = @assessment.aud_for(@cud.id)
+    return true unless submitter_aud
+    group = submitter_aud.group
+    return true unless group
 
     group.assessment_user_data.each do |aud|
       unless aud.group_confirmed
@@ -288,13 +284,13 @@ private
         return false
       end
 
-      if @assessment.max_submissions != -1
-        submission_count = aud.course_user_datum.submissions.where(assessment: @assessment).size
-        if submission_count >= @assessment.max_submissions
-          flash[:error] = "A member of your group has reached the submission limit for this assessment"
-          return false
-        end
-      end
+      next unless @assessment.max_submissions != -1
+
+      submission_count = aud.course_user_datum.submissions.where(assessment: @assessment).size
+      next unless submission_count >= @assessment.max_submissions
+
+      flash[:error] = "A member of your group has reached the submission limit for this assessment"
+      return false
     end
 
     true
@@ -332,7 +328,7 @@ private
     submissions
   end
 
-  def get_handin
+  def set_handin
     submission_count = @assessment.submissions.where(course_user_datum_id: @cud.id).count
     @left_count = [@assessment.max_submissions - submission_count, 0].max
     @aud = AssessmentUserDatum.get @assessment.id, @cud.id

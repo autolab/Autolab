@@ -1,8 +1,7 @@
-require "archive.rb"
+require "archive"
 require "csv"
+require "statistics"
 require "yaml"
-require "Statistics.rb"
-require "date_time_input"
 
 class AssessmentsController < ApplicationController
   include ActiveSupport::Callbacks
@@ -53,12 +52,11 @@ class AssessmentsController < ApplicationController
   action_no_auth :local_submit
 
   # SVN
-  autolab_require Rails.root.join("app", "controllers", "assessment", "SVN.rb")
+  autolab_require Rails.root.join("app", "controllers", "assessment", "svn.rb")
   include AssessmentSVN
-
-  action_auth_level :adminSVN, :instructor
-  action_auth_level :setRepository, :instructor
-  action_auth_level :importSVN, :instructor
+  action_auth_level :admin_svn, :instructor
+  action_auth_level :set_repo, :instructor
+  action_auth_level :import_svn, :instructor
 
   # Scoreboard
   action_auth_level :adminScoreboard, :instructor
@@ -93,11 +91,8 @@ class AssessmentsController < ApplicationController
   action_auth_level :installQuiz, :instructor
   def installQuiz
     @categories = @course.assessment_categories
-
     if request.post? && params.include?(:quiz)
-
       begin
-
         @assessment = Assessment.new
 
         quizJSON = params[:quiz]
@@ -123,26 +118,20 @@ class AssessmentsController < ApplicationController
         @assessment.quiz = true
         @assessment.quizData = quizJSON
         @assessment.max_submissions = params.include?(:max_submissions) ? params[:max_submissions] : -1
-
         @assessment.save!
 
         quizData = JSON.parse(quizJSON)
-
         p = Problem.new(name: "Quiz",
                         description: "",
                         assessment_id: @assessment.id,
                         max_score: quizData.length,
                         optional: false)
-
         p.save
-
         redirect_to edit_course_assessment_path(@course, @assessment)
-
-    rescue Exception => e
-      flash[:error] = e.to_s
-      render(template: "assessments/installQuiz") && return
+      rescue Exception => e
+        flash[:error] = e.to_s
+        render(template: "assessments/installQuiz") && return
       end
-
     else
       @assessment = Assessment.new
     end
@@ -233,45 +222,9 @@ class AssessmentsController < ApplicationController
       tarFile = File.new(tarFile.open, "rb")
       tar_extract = Gem::Package::TarReader.new(tarFile)
       tar_extract.rewind
-      # Verify integrity of assessment tarball.
-      file_list = []
-      dir_list = []
-      tar_extract.each do |entry|
-        pathname = entry.full_name
-        next if pathname.start_with? "."
-        isdir = entry.directory?
-        if isdir
-          dir_list << pathname
-        else
-          file_list << pathname
-        end
-      end
+      is_valid_tar = valid_asmt_tar(tar_extract)
       tar_extract.close
-      dir_list.sort!
-      file_list.sort!
-      valid_file = nil
-      asmt_name = nil
-      asmt_rb_exist = false
-      asmt_yml_exist = false
-      dir_list.each do |dir|
-        if dir.count("/") == 0
-          if !asmt_name.nil?
-            valid_file = false
-            break
-          else
-            asmt_name = dir
-          end
-        end
-      end
-      file_list.each do |file|
-        if file == "#{asmt_name}/#{asmt_name}.rb"
-          asmt_rb_exist = true
-        elsif file == "#{asmt_name}/#{asmt_name}.yml"
-          asmt_yml_exist = true
-        end
-      end
-      valid_file = (valid_file != false) && !asmt_name.nil? && asmt_rb_exist && asmt_yml_exist
-      unless valid_file
+      unless is_valid_tar
         flash[:error] = "Invalid tarball. Please verify the existence of configuration files."
         redirect_to(action: "installAssessment") && return
       end
@@ -343,8 +296,8 @@ class AssessmentsController < ApplicationController
                               display_name: props["general"]["display_name"],
                               category_name: props["general"]["category_name"] }
       create && return # create should handle the redirection
-    # Otherwise, ask the user to give us a category before we create the
-    # assessment
+      # Otherwise, ask the user to give us a category before we create the
+      # assessment
     else
       flash[:error] = "The YAML file must have a top-level 'general' property"
       redirect_to(action: :installAssessment) && return
@@ -661,7 +614,7 @@ class AssessmentsController < ApplicationController
 
   action_auth_level :show, :student
   def show
-    get_handin
+    set_handin
     extend_config_module(@assessment, @submission, @cud)
 
     @aud = @assessment.aud_for @cud.id
@@ -779,7 +732,7 @@ class AssessmentsController < ApplicationController
       redirect_to(action: "index") && return
     end
 
-    if Archive.is_archive? @submission.handin_file_path
+    if Archive.archive? @submission.handin_file_path
       @files = Archive.get_files @submission.handin_file_path
     end
   end
@@ -805,8 +758,8 @@ class AssessmentsController < ApplicationController
     end
 
     # make sure the penalties are set up
-    @assessment.build_late_penalty unless @assessment.late_penalty
-    @assessment.build_version_penalty unless @assessment.version_penalty
+    @assessment.late_penalty ||= Penalty.new(value: 0, kind: "points")
+    @assessment.version_penalty ||= Penalty.new(value: 0, kind: "points")
   end
 
   action_auth_level :update, :instructor
@@ -1013,7 +966,7 @@ class AssessmentsController < ApplicationController
     # Build the html for the scoreboard header
     begin
       if @assessment.overwrites_method?(:scoreboardHeader)
-        @header =  @assessment.config_module.scoreboardHeader
+        @header = @assessment.config_module.scoreboardHeader
       else
         @header = scoreboardHeader
       end
@@ -1065,7 +1018,7 @@ class AssessmentsController < ApplicationController
     # Catch errors along the way. An instructor will get the errors, a
     # student will simply see an unsorted scoreboard.
 
-    @sortedGrades = @grades.values.sort do|a, b|
+    @sortedGrades = @grades.values.sort do |a, b|
       begin
 
         if @assessment.overwrites_method?(:scoreboardOrderSubmissions)
@@ -1313,7 +1266,6 @@ protected
       begin
         parsed = ActiveSupport::JSON.decode(@scoreboard_prop.colspec)
       rescue Exception => e
-
       end
 
       if a0 != b0
@@ -1341,7 +1293,7 @@ protected
           b2 <=> a2 # descending order
         end
       else
-        a[:time] <=> b[:time]  # ascending by submission time
+        a[:time] <=> b[:time] # ascending by submission time
       end
     end
   end
@@ -1435,7 +1387,7 @@ protected
     # specified, then return the default header.
     if !@assessment.has_autograde ||
        !@scoreboard_prop || @scoreboard_prop.colspec.blank?
-      head =	banner + "<table class='sortable prettyBorder'>
+      head = banner + "<table class='sortable prettyBorder'>
       <tr><th>Nickname</th><th>Version</th><th>Time</th>"
       head += "<th>Total</th>"
       for problem in @assessment.problems do
@@ -1448,7 +1400,7 @@ protected
     # non-empty column spec. Parse the spec and then return the
     # customized header.
     parsed = ActiveSupport::JSON.decode(@scoreboard_prop.colspec)
-    head =	banner + "<table class='sortable prettyBorder'>
+    head = banner + "<table class='sortable prettyBorder'>
       <tr><th>Nickname</th><th>Version</th><th>Time</th>"
     for object in parsed["scoreboard"] do
       head += "<th>" + object["hdr"] + "</th>"
@@ -1498,7 +1450,7 @@ protected
             num_released += 1
           end
 
-        # if score doesn't exist yet, create it and release it
+          # if score doesn't exist yet, create it and release it
         else
           score = problem.scores.new(submission: sub,
                                      released: true,
@@ -1538,5 +1490,45 @@ private
       ass[:category_name] = params[:new_category]
     end
     ass.permit!
+  end
+
+  def valid_asmt_tar(tar_extract)
+    file_list = []
+    dir_list = []
+    tar_extract.each do |entry|
+      pathname = entry.full_name
+      next if pathname.start_with? "."
+      if entry.directory?
+        dir_list << pathname
+      else
+        file_list << pathname
+      end
+    end
+    dir_list.sort!
+    file_list.sort!
+    valid_file = false
+    asmt_name = nil
+    asmt_rb_exist = false
+    asmt_yml_exist = false
+    # The only root-level directory is the assessment name.
+    dir_list.each do |dir|
+      next if dir.count("/") > 0
+      if !asmt_name.nil?
+        valid_file = false
+        break
+      else
+        asmt_name = dir
+      end
+    end
+    return false if asmt.nil? || !valid_file
+
+    file_list.each do |file|
+      if file == "#{asmt_name}/#{asmt_name}.rb"
+        asmt_rb_exist = true
+      elsif file == "#{asmt_name}/#{asmt_name}.yml"
+        asmt_yml_exist = true
+      end
+    end
+    valid_file = asmt_rb_exist && asmt_yml_exist
   end
 end

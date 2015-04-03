@@ -1,5 +1,5 @@
 class CourseUserDataController < ApplicationController
-  before_action :add_users_breadcrumb, except: [ :create ]
+  before_action :add_users_breadcrumb, except: [ :create, :destroy ]
 
   action_auth_level :index, :student
   def index
@@ -57,7 +57,7 @@ class CourseUserDataController < ApplicationController
     if @newCUD.save
       flash[:success] = "Success: added user #{email} in #{@course.display_name}"
       if @cud.user.administrator?
-        redirect_to(course_users_path) && return
+        redirect_to([:users, @course]) && return
       else
         redirect_to(action: "new") && return
       end
@@ -139,13 +139,21 @@ class CourseUserDataController < ApplicationController
     end
   end
 
-  action_auth_level :destroy, :instructor
+  action_auth_no_course :destroy
   def destroy
-    @destroyCUD = @course.course_user_data.find(params[:id])
-    if @destroyCUD && @destroyCUD != @cud && params[:yes1] && params[:yes2] && params[:yes3]
-      @destroyCUD.destroy # awwww!!!
+    @course = Course.find_by(name: params[:course_name])
+    @cud = CourseUserDatum.unscoped.find(params[:id])
+
+    if @cud.instructor?
+      @destroyCUD = @course.course_user_data.find(params[:id])
+      if @destroyCUD && @destroyCUD != @cud && params[:yes1] && params[:yes2] && params[:yes3]
+        @destroyCUD.destroy # awwww!!!
+      end
+      redirect_to([:users, @course]) && return
+    elsif not @cud.has_joined?
+      @cud.destroy
+      redirect_to(course_path(@course)) && return
     end
-    redirect_to(course_users_path(@course)) && return
   end
 
   # Non-RESTful paths below
@@ -153,70 +161,68 @@ class CourseUserDataController < ApplicationController
   # this GET page confirms that the instructor wants to destroy the user
   action_auth_level :destroyConfirm, :instructor
   def destroyConfirm
-    @destroyCUD = @course.course_user_data.find(params[:course_user_datum_id])
+    @destroyCUD = @course.course_user_data.find(params[:id])
   end
 
   action_auth_level :sudo, :instructor
   def sudo
-    unless @cud.can_sudo? || session[:sudo]
-      redirect_to(course_path(@cud.course.id)) && return
+    redirect_to([@cud.course]) && return unless @cud.can_sudo? || session[:sudo]
+
+    return unless request.post?
+
+    sudo_user = User.where(email: params[:sudo_email]).first
+    unless sudo_user
+      flash[:error] = "User #{params[:sudo_email]} does not exist."
+      redirect_to([@cud.course]) && return
     end
 
-    if request.post?
-      sudo_user = User.where(email: params[:sudo_email]).first
-      unless sudo_user
-        flash[:error] = "User #{params[:sudo_email]} does not exist."
-        redirect_to(course_path(@cud.course.id)) && return
-      end
-
-      sudo_cud = @course.course_user_data.where(user_id: sudo_user.id).first
-      unless sudo_cud
-        flash[:error] = "User #{params[:sudo_email]} does not exist."
-        redirect_to(course_path(@cud.course.id)) && return
-      end
-
-      unless @cud.can_sudo_to?(sudo_cud)
-        flash[:error] = "You do not have the privileges to act as " \
-                "#{sudo_cud.display_name}."
-        redirect_to(course_path(@cud.course.id)) && return
-      end
-
-      if @cud.id == sudo_cud.id
-        flash[:error] = "There's no point in trying to act as yourself."
-        redirect_to(course_path(@cud.course.id)) && return
-      end
-
-      session[:sudo] = {}
-      session[:sudo][:user_id] = sudo_cud.user.id
-      session[:sudo][:course_id] = sudo_cud.course.id
-
-      # this was sudo_cud.display_name
-      session[:sudo][:actual_name] = @cud.display_name
-
-      redirect_to(course_path(@cud.course.id)) && return
+    sudo_cud = @course.course_user_data.where(user_id: sudo_user.id).first
+    unless sudo_cud
+      flash[:error] = "User #{params[:sudo_email]} does not exist."
+      redirect_to([@cud.course]) && return
     end
+
+    unless @cud.can_sudo_to?(sudo_cud)
+      flash[:error] = "You do not have the privileges to act as " \
+              "#{sudo_cud.display_name}."
+      redirect_to([@cud.course]) && return
+    end
+
+    if @cud.id == sudo_cud.id
+      flash[:error] = "There's no point in trying to act as yourself."
+      redirect_to([@cud.course]) && return
+    end
+
+    session[:sudo] = {}
+    session[:sudo][:user_id] = sudo_cud.user.id
+    session[:sudo][:course_id] = sudo_cud.course.id
+
+    # this was sudo_cud.display_name
+    session[:sudo][:actual_name] = @cud.display_name
+
+    redirect_to([@cud.course]) && return
   end
 
   action_auth_level :unsudo, :student
   def unsudo
     session[:sudo] = nil
-    redirect_to course_path(@cud.course.id)
+    redirect_to([@cud.course]) && return
   end
 
 
   action_auth_level :confirm, :instructor
   def confirm
-    @student_cud = @course.course_user_data.unscoped.find(params[:course_user_datum_id])
+    @student_cud = CourseUserDatum.unscoped.find(params[:id])
     @student_cud.has_joined = true
     @student_cud.save!
-    redirect_to(course_users_path(@course)) && return
+    redirect_to(users_course_path(@course)) && return
   end
 
 private
 
   def add_users_breadcrumb
     if @cud.instructor
-      @breadcrumbs << (view_context.link_to "Users", [@course, :users])
+      @breadcrumbs << (view_context.link_to "Users", [:users, @course])
     end
   end
 

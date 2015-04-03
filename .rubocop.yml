@@ -3,7 +3,11 @@ AllCops:
     - '**/Rakefile'
     - '**/config.ru'
   Exclude:
+    - 'assessmentConfig/**/*'
+    - 'attachments/**/*'
     - 'config/**/*'
+    - 'courseConfig/**/*'
+    - 'courses/**/*'
     - 'db/**/*'
     - 'script/**/*'
     - 'tmp/**/*'
