@@ -24,10 +24,7 @@ class CoursesController < ApplicationController
   action_no_auth :show
   def show
 
-    course_name = params[:name]
-    puts "\nNAME: #{course_name}\n"
-
-    @course = Course.find_by(name: course_name) if course_name
+    @course = Course.find_by(name: params[:name])
 
     unless @course
       redirect_to(controller: :home, action: :error) && return
