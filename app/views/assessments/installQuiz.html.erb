@@ -97,7 +97,7 @@
     <i>Select an existing category or enter a new category name (you can always change it later)</i>
     <br><br>
     <select name="category" class="category">
-      <% @categories.each do |cat| %>
+      <% @course.assessment_categories.each do |cat| %>
         <option value="<%= cat %>"><%= cat %></option>
       <% end %>
     </select>

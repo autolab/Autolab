@@ -76,75 +76,51 @@ class AssessmentsController < ApplicationController
   # assessment directory.
   action_auth_level :new, :instructor
   def new
-    @assessment = Assessment.new
-    @categories = @course.assessment_categories
-    @moduleDir = File.join(Rails.root, "lib", "modules")
-    @modules = []
-    begin
-      Dir.foreach(@moduleDir) do |filename|
-        if filename =~ /.*\.rb/
-          @modules << filename.gsub(/\.rb/, "")
-        end
-      end
-    rescue Exception
-    end
+    @assessment = @course.assessments.new
   end
 
   action_auth_level :installQuiz, :instructor
   def installQuiz
-    @categories = @course.assessment_categories
+    @assessment = @course.assessments.new
+    return unless request.post?
 
-    if request.post? && params.include?(:quiz)
+    begin
+      quizJSON = params[:quiz]
+      quizDisplayName = params[:quizName]
+      quizName = quizDisplayName.downcase.gsub(/[^a-z0-9]/, "")
+      category_name = params[:new_category].blank? ? params[:category] : params[:new_category]
 
-      begin
+      # Setup quiz's assessmnet structure
+      setupAssessment(quizName)
 
-        @assessment = Assessment.new
+      # fill in other fields
+      @assessment.name = quizName
+      @assessment.display_name = quizDisplayName
+      @assessment.handin_directory = "handin"
+      @assessment.handin_filename = "handin.c"
+      @assessment.category_name = category_name
+      @assessment.visible_at = Time.now
+      @assessment.start_at = Time.now
+      @assessment.due_at = Time.now
+      @assessment.grading_deadline = Time.now
+      @assessment.end_at = Time.now
+      @assessment.quiz = true
+      @assessment.quizData = quizJSON
+      @assessment.max_submissions = params.include?(:max_submissions) ? params[:max_submissions] : -1
+      @assessment.save!
 
-        quizJSON = params[:quiz]
-        quizDisplayName = params[:quizName]
-        quizName = quizDisplayName.downcase.gsub(/[^a-z0-9]/, "")
-        category_name = params[:new_category].blank? ? params[:category] : params[:new_category]
+      quizData = JSON.parse(quizJSON)
 
-        # Setup quiz's assessmnet structure
-        setupAssessment(quizName)
+      p = @assessment.problems.new(name: "Quiz",
+                                   description: "",
+                                   max_score: quizData.length,
+                                   optional: false)
+      p.save!
 
-        # fill in other fields
-        @assessment.course = @course
-        @assessment.name = quizName
-        @assessment.display_name = quizDisplayName
-        @assessment.handin_directory = "handin"
-        @assessment.handin_filename = "handin.c"
-        @assessment.category_name = category_name
-        @assessment.visible_at = Time.now
-        @assessment.start_at = Time.now
-        @assessment.due_at = Time.now
-        @assessment.grading_deadline = Time.now
-        @assessment.end_at = Time.now
-        @assessment.quiz = true
-        @assessment.quizData = quizJSON
-        @assessment.max_submissions = params.include?(:max_submissions) ? params[:max_submissions] : -1
-
-        @assessment.save!
-
-        quizData = JSON.parse(quizJSON)
-
-        p = Problem.new(name: "Quiz",
-                        description: "",
-                        assessment_id: @assessment.id,
-                        max_score: quizData.length,
-                        optional: false)
-
-        p.save
-
-        redirect_to edit_course_assessment_path(@course, @assessment)
-
-    rescue Exception => e
+      redirect_to([:edit, @course, @assessment])
+    rescue StandardError => e
       flash[:error] = e.to_s
-      render(template: "assessments/installQuiz") && return
-      end
-
-    else
-      @assessment = Assessment.new
+      redirect_to(action: :installQuiz)
     end
   end
 
@@ -197,25 +173,20 @@ class AssessmentsController < ApplicationController
   # tar file with the assessment directory.
   action_auth_level :installAssessment, :instructor
   def installAssessment
-    @assignDir = File.join(Rails.root, "courses", @course.name)
-    @availableAssessments = []
+    ass_dir = Rails.root.join("courses", @course.name)
+    @unused_config_files = []
     begin
-      Dir.foreach(@assignDir) do |filename|
-        if File.exist?(File.join(@assignDir, filename, "#{filename}.yml"))
-          # names must be only lowercase letters and digits
-          if filename =~ /[^a-z0-9]/
-            next
-          end
+      Dir.foreach(ass_dir) do |filename|
+        next unless File.exist?(File.join(ass_dir, filename, "#{filename}.yml"))
+        # names must be only lowercase letters and digits
+        next if filename =~ /[^a-z0-9]/
 
-          # Only list assessments that aren't installed yet
-          assessment = @course.assessments.where(name: filename).first
-          unless assessment
-            @availableAssessments << filename
-          end
-        end
+        # Only list assessments that aren't installed yet
+        assessment_exists = @course.assessments.exists?(name: filename)
+        @unused_config_files << filename unless assessment_exists
       end
-      @availableAssessments = @availableAssessments.sort
-    rescue Exception => error
+      @unused_config_files = @unused_config_files.sort
+    rescue StandardError => error
       render(text: "<h3>#{error}</h3>", layout: true) && return
     end
   end
@@ -275,7 +246,7 @@ class AssessmentsController < ApplicationController
         flash[:error] = "Invalid tarball. Please verify the existence of configuration files."
         redirect_to(action: "installAssessment") && return
       end
-    rescue Exception => e
+    rescue StandardError => e
       flash[:error] = "Error while reading the tarball -- #{e.message}."
       redirect_to(action: "installAssessment") && return
     end
@@ -308,7 +279,7 @@ class AssessmentsController < ApplicationController
         end
       end
       tar_extract.close
-    rescue Exception => e
+    rescue StandardError => e
       flash[:error] = "Error while extracting tarball to server -- #{e.message}."
       redirect_to(action: "installAssessment") && return
     end
@@ -325,11 +296,11 @@ class AssessmentsController < ApplicationController
     filename = File.join(Rails.root, "courses", @course.name, name, "#{name}.yml")
 
     # Load up the properties file
-    props = {}
+    props = nil
     if File.exist?(filename) && File.readable?(filename)
-      f = File.open(filename, "r")
-      props = YAML.load(f.read)
-      f.close
+      File.open(filename, "r") do |f|
+        props = YAML.load(f.read)
+      end
     else
       flash[:error] = "YAML file not found or not readable."
       redirect_to(action: :installAssessment) && return
@@ -355,30 +326,30 @@ class AssessmentsController < ApplicationController
   # residing in the course directory.
   action_auth_level :create, :instructor
   def create
-    @assessment = Assessment.new(new_assessment_params)
+    @assessment = @course.assessments.new(new_assessment_params)
 
     if @assessment.name.blank?
       # Validate the name
-      assName = @assessment.display_name.downcase.gsub(/[^a-z0-9]/, "")
+      ass_name = @assessment.display_name.downcase.gsub(/[^a-z0-9]/, "")
 
-      if assName.blank?
+      if ass_name.blank?
         flash[:error] = "Assessment name cannot be blank"
         redirect_to(action: :installAssessment) && return
       end
 
       # Update name in object
-      @assessment.name = assName
+      @assessment.name = ass_name
     end
 
     # From here on, if something weird happens, we rollback
     begin
       setupAssessment(@assessment.name)
-    rescue Exception => e
+    rescue StandardError => e
       # Something bad happened. Undo everything
       flash[:error] = e.to_s
       begin
         FileUtils.remove_dir(assDir)
-      rescue Exception => e2
+      rescue StandardError => e2
         flash[:error] += "An error occurred (#{e2}} " \
           " while recovering from a previous error (#{flash[:error]})"
       end
@@ -400,8 +371,8 @@ class AssessmentsController < ApplicationController
 
     begin
       @assessment.save!
-    rescue Exception => e
-      flash[:error] = "Error saving #{@assessment.name}"
+    rescue StandardError => e
+      flash[:error] = "Error saving #{@assessment.name}: #{e.to_s}"
       redirect_to(action: :installAssessment) && return
     end
 
@@ -412,7 +383,7 @@ class AssessmentsController < ApplicationController
       if !File.exist?(f) && !put_props
         fail "Error while executing put_props()"
       end
-    rescue Exception => e
+    rescue StandardError => e
       flash[:error] = "Error saving property file: #{e}"
       uninstall(name)
       redirect_to(course_path(@course)) && return
@@ -421,27 +392,14 @@ class AssessmentsController < ApplicationController
     # Import properties from the properties file
     begin
       import
-    rescue Exception => e
+    rescue StandardError => e
       flash[:error] = "Error importing properties: #{e}"
       uninstall(name)
       redirect_to(course_path(@course)) && return
     end
 
-    # Initialize the problems using the deprecated assessment.rb
-    # approach. For backwards compatibility only as we transition
-    # to the new property-file based approach.
-    begin
-      # assessmentInitialize(name)
-      # installProblems()
-      rescue Exception => e
-        puts "\n\n ERROR: \n #{e} \n #{e.backtrace} \n"
-        flash[:error] = "Error initializing #{name}: #{e}"
-        uninstall(name)
-        redirect_to(course_path(@course)) && return
-    end
-
     flash[:success] = "Successfully installed #{@assessment.name}."
-    redirect_to(course_path(@course)) && return
+    redirect_to([@course, @assessment]) && return
   end
 
   def assessmentInitialize(assignName)
@@ -562,9 +520,9 @@ class AssessmentsController < ApplicationController
       tarStream.close
       send_data tarStream.string.force_encoding("binary"), filename: "#{@assessment.name}_#{Time.now.strftime('%Y%m%d')}.tar", content_type: "application/x-tar"
     rescue SystemCallError => e
-      flash[:error] = "Unable to update the config YAML file."
+      flash[:error] = "Unable to update the config YAML file: #{e.to_s}"
       redirect_to action: "index"
-    rescue Exception => e
+    rescue StandardError => e
       flash[:error] = "Unable to generate tarball -- #{e.message}"
       redirect_to action: "index"
     else
@@ -787,7 +745,7 @@ class AssessmentsController < ApplicationController
   action_auth_level :reload, :instructor
   def reload
     @assessment.construct_config_file
-  rescue Exception => @error
+  rescue StandardError => @error
     # let the reload view render
   else
     flash[:success] = "Success: Assessment config file reloaded!"
@@ -1017,7 +975,7 @@ class AssessmentsController < ApplicationController
       else
         @header = scoreboardHeader
       end
-    rescue Exception => e
+    rescue StandardError => e
       if @cud.instructor?
         @errorMessage = "An error occurred while calling scoreboardHeader()"
         @error = e
@@ -1040,7 +998,7 @@ class AssessmentsController < ApplicationController
             grade[:problems],
             grade[:autoresult])
         end
-      rescue Exception => e
+      rescue StandardError => e
         # Screw 'em! usually this means the grader failed.
         grade[:entry] = {}
         # But, if this was an instructor, we want them to know about
@@ -1074,7 +1032,7 @@ class AssessmentsController < ApplicationController
           scoreboardOrderSubmissions(a, b)
         end
 
-      rescue Exception => e
+      rescue StandardError => e
         if @cud.instructor?
           @errorMessage = "An error occurred while calling "\
             "scoreboardOrderSubmissions(#{a.inspect},"\
@@ -1219,7 +1177,7 @@ protected
       f = File.open(filename, "w")
       f.puts YAML.dump(props)
       f.close
-    rescue Exception => e
+    rescue
       return false
     end
     true
@@ -1233,7 +1191,7 @@ protected
       # Quote JSON keys and values if they are not already quoted
       quoted = colspec.gsub(/([a-zA-Z0-9]+):/, '"\1":').gsub(/:([a-zA-Z0-9]+)/, ':"\1"')
       parsed = ActiveSupport::JSON.decode(quoted)
-    rescue Exception => e
+    rescue StandardError => e
       return "Invalid column spec"
     end
 
@@ -1312,8 +1270,7 @@ protected
 
       begin
         parsed = ActiveSupport::JSON.decode(@scoreboard_prop.colspec)
-      rescue Exception => e
-
+      rescue
       end
 
       if a0 != b0
@@ -1385,7 +1342,7 @@ protected
     begin
       parsed = ActiveSupport::JSON.decode(autoresult)
       fail if !parsed || !parsed["scoreboard"]
-    rescue Exception => e
+    rescue
       # If there is no autoresult for this student (typically
       # because their code did not compile or it segfaulted and
       # the intructor's autograder did not catch it) then
