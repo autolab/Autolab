@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150326152543) do
+ActiveRecord::Schema.define(version: 20150403173410) do
 
   create_table "annotations", force: :cascade do |t|
     t.integer  "submission_id", limit: 4
@@ -134,6 +134,7 @@ ActiveRecord::Schema.define(version: 20150326152543) do
     t.boolean  "course_assistant", limit: 1,   default: false
     t.integer  "tweak_id",         limit: 4
     t.integer  "user_id",          limit: 4,                   null: false
+    t.boolean  "has_joined",       limit: 1
   end
 
   create_table "courses", force: :cascade do |t|
@@ -154,13 +155,6 @@ ActiveRecord::Schema.define(version: 20150326152543) do
     t.boolean  "public",                        limit: 1
     t.boolean  "requires_permission",           limit: 1
     t.string   "website_url",                   limit: 255
-  end
-
-  create_table "cud_requests", force: :cascade do |t|
-    t.datetime "created_at",           null: false
-    t.datetime "updated_at",           null: false
-    t.integer  "user_id",    limit: 4, null: false
-    t.integer  "course_id",  limit: 4, null: false
   end
 
   create_table "extensions", force: :cascade do |t|

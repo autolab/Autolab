@@ -9,6 +9,8 @@ class CourseUserDatum < ActiveRecord::Base
     end
   end
 
+  default_scope { where(has_joined: true) }
+
   AUTH_LEVELS = [:student, :course_assistant, :instructor, :administrator]
 
   # Don't want to trim the nickname.

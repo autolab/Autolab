@@ -39,17 +39,9 @@ class CoursesController < ApplicationController
         redirect_to course_assessments_path(@course)
         return
       else
-        if @course.requires_permission
-          @cudRequest = @course.cud_request.find_by(user_id: current_user.id)
-          if @cudRequest.nil? 
-            @newCudRequest = @course.cud_request.new
-            @newCudRequest.user = current_user
-          end
-        else
-          @newCUD = @course.course_user_data.new
-          @newCUD.user = current_user
-          @newCUD.tweak = Tweak.new
-        end
+        @newCUD = @course.course_user_data.new
+        @newCUD.user = current_user
+        @newCUD.tweak = Tweak.new
       end
 
     end
@@ -194,6 +186,7 @@ class CoursesController < ApplicationController
     if @course.public? && !@course.requires_permission
 
       @newCUD = @course.course_user_data.find_or_create_by(user_id: current_user.id)
+      @newCUD.has_joined = true
 
       if @newCUD.save
         flash[:success] = "Success: You just joined #{@course.display_name}"
@@ -203,7 +196,20 @@ class CoursesController < ApplicationController
         redirect_to(course_path(@course)) && return
       end
     
+    elsif @course.public? && @course.requires_permission?
+      @newCUD = @course.course_user_data.find_or_create_by(user_id: current_user.id)
+      @newCUD.has_joined = false
+
+      if @newCUD.save
+        flash[:success] = "Success: You just requested to joined #{@course.display_name}"
+        redirect_to(course_path(@course)) && return
+      else
+        flash[:error] = "Request failed. Check all fields"
+        redirect_to(course_path(@course)) && return
+      end
+
     end
+
   end
 
   # DELETE courses/:id/
@@ -271,7 +277,7 @@ class CoursesController < ApplicationController
     end
 
     if @course.requires_permission?
-      @requests = @course.cud_request.joins(:user).order("users.email ASC")
+      @requests = @course.course_user_data.unscoped.where(has_joined: false).joins(:user).order("users.email ASC")
     end
 
   end
@@ -705,8 +711,9 @@ private
   end
 
   def edit_course_params
-    params.require(:editCourse).permit(:name, :semester, :late_slack, :grace_days, :display_name, :public, :requires_permission,
-                                       :start_date, :end_date, :disabled, :exam_in_progress, :version_threshold, :gb_message,
+    params.require(:editCourse).permit(:name, :semester, :late_slack, :grace_days, :display_name, :website_url, 
+                                       :public, :requires_permission, :start_date, :end_date, :disabled, 
+                                       :exam_in_progress, :version_threshold, :gb_message,
                                        late_penalty_attributes: [:kind, :value],
                                        version_penalty_attributes: [:kind, :value])
   end

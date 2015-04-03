@@ -2,6 +2,7 @@ require "association_cache"
 require "fileutils"
 
 class Course < ActiveRecord::Base
+
   trim_field :name, :semester, :display_name
   validates_uniqueness_of :name
   validates_presence_of :display_name, :start_date, :end_date
@@ -11,7 +12,6 @@ class Course < ActiveRecord::Base
   validate :order_of_dates
 
   has_many :course_user_data, dependent: :destroy
-  has_many :cud_request, dependent: :destroy
   has_many :assessments, dependent: :destroy
   has_many :scheduler, dependent: :destroy
 

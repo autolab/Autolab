@@ -44,9 +44,6 @@ Autolab3::Application.routes.draw do
     end
     resources :announcements, except: :show
     resources :attachments
-    resources :cud_requests, only: [:create, :destroy] do
-      get :confirm
-    end
 
     resources :assessments, param: :name, except: :update do
       resources :assessment_user_data, only: [:edit, :update]
@@ -135,6 +132,7 @@ Autolab3::Application.routes.draw do
       match "sudo", via: [:get, :post]
       get "unsudo"
       get "destroyConfirm"
+      get "confirm"
 
       resource :gradebook, only: :show do
         get "bulkRelease"

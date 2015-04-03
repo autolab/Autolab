@@ -203,6 +203,15 @@ class CourseUserDataController < ApplicationController
     redirect_to course_path(@cud.course.id)
   end
 
+
+  action_auth_level :confirm, :instructor
+  def confirm
+    @student_cud = @course.course_user_data.unscoped.find(params[:course_user_datum_id])
+    @student_cud.has_joined = true
+    @student_cud.save!
+    redirect_to(course_users_path(@course)) && return
+  end
+
 private
 
   def add_users_breadcrumb
