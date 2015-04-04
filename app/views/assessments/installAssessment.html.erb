@@ -9,7 +9,7 @@
 <h2>Option 2: Import an existing assessment from file system.</h2>
 <p style="width:50%" >
 
-<% if @availableAssessments.empty? then %>
+<% if @unused_config_files.empty? then %>
   <i>There are no uninstalled assessments available for importing.</i>
 <% else %>
   <p>If you have an existing Autolab assessment from a previous course offering,
@@ -24,8 +24,8 @@
   <li>Step 3: Click the link on the uninstalled assessment you want to import:
   <ul>
 
-  <% for assign in @availableAssessments do %>
-    <li><%= link_to assign, {action: :importAssessment, assessment_name: assign}, method: :post %></li>
+  <% @unused_config_files.each do |ass_file| %>
+    <li><%= link_to ass_file, {action: :importAssessment, assessment_name: ass_file}, method: :post %></li>
   <% end %>         
 
   </ul>
