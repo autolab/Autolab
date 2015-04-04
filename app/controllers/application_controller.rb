@@ -274,8 +274,8 @@ protected
   end
 
   def update_persistent_announcements
-    @persistent_announcements = Announcement.where("persistent and (course_id=? or system)",
-                                                   @course.id)
+    @persistent_announcements = Announcement.where(persistent: true)
+                                            .where("course_id = ? OR system = ?", @course.id, true)
   end
 
   def set_breadcrumbs
