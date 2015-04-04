@@ -111,7 +111,7 @@ Autolab3::Application.routes.draw do
         get "installAssessment"
         post "importAssessment"
         post "importAsmtFromTar"
-        post "installQuiz"
+        match "installQuiz", via: [:get, :post]
       end
     end
 
