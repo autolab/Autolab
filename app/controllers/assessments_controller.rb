@@ -64,7 +64,7 @@ class AssessmentsController < ApplicationController
 
   def index
     @is_instructor = @cud.has_auth_level? :instructor
-    @announcements = Announcement.where("start_date<? and end_date>? and (course_id=? or system) and !persistent", Time.now, Time.now, @course.id).order("start_date")
+    @announcements = Announcement.where("start_date<? AND end_date>? AND (course_id=? OR system) AND NOT persistent", Time.now, Time.now, @course.id).order("start_date")
     @attachments = (@cud.instructor?) ? @course.attachments : @course.attachments.where(released: true)
   end
 
