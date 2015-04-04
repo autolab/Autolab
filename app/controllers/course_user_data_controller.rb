@@ -142,12 +142,12 @@ class CourseUserDataController < ApplicationController
   action_auth_no_course :destroy
   def destroy
     @course = Course.find_by(name: params[:course_name])
-    @cud = CourseUserDatum.unscoped.find(params[:id])
+    @cud = CourseUserDatum.unscoped.find_by(user_id: current_user.id, course: @course)
 
     if @cud.instructor?
-      @destroyCUD = @course.course_user_data.find(params[:id])
-      if @destroyCUD && @destroyCUD != @cud && params[:yes1] && params[:yes2] && params[:yes3]
-        @destroyCUD.destroy # awwww!!!
+      @destroyCUD = CourseUserDatum.unscoped.find_by(id:params[:id],  course: @course)
+      if @destroyCUD && @destroyCUD != @cud
+        @destroyCUD.destroy!
       end
       redirect_to([:users, @course]) && return
     elsif not @cud.has_joined?
@@ -212,7 +212,7 @@ class CourseUserDataController < ApplicationController
 
   action_auth_level :confirm, :instructor
   def confirm
-    @student_cud = CourseUserDatum.unscoped.find(params[:id])
+    @student_cud = CourseUserDatum.unscoped.find_by(id:params[:id], course: @course)
     @student_cud.has_joined = true
     @student_cud.save!
     redirect_to(users_course_path(@course)) && return
@@ -238,8 +238,7 @@ private
                                                 user_attributes: [:email, :first_name, :last_name],
                                                 tweak_attributes: [:_destroy, :kind, :value])
     else
-      # params.require(:course_user_datum).permit(user_attributes: [:email, :first_name, :last_name]) # ,
-      #        user_attributes: [:first_name, :last_name])
+      params.require(:course_user_datum).permit(user_attributes: [:email, :first_name, :last_name])
     end
   end
 

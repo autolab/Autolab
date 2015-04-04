@@ -19,6 +19,8 @@ class ApplicationController < ActionController::Base
   before_action :update_persistent_announcements
   before_action :set_breadcrumbs
 
+  # helper methods being used by Devise when we add Signin/Signup
+  # forms on pages other than the homepage
   helper_method :resource_name, :resource_class, :resource, :devise_mapping
 
   # this is where Error Handling is configured. this routes exceptions to
@@ -74,6 +76,8 @@ class ApplicationController < ActionController::Base
 
   end
 
+  # this authenticates the user but does not try authenticating 
+  # to a class
   def self.action_auth_no_course(action)
     skip_before_action :authorize_user_for_course, only: [action]
     skip_before_action :update_persistent_announcements, only: [action]

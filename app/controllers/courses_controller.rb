@@ -17,8 +17,6 @@ class CoursesController < ApplicationController
     else
       @listing = []
     end
-
-    # render layout: "home"
   end
 
   action_no_auth :show
@@ -26,11 +24,9 @@ class CoursesController < ApplicationController
 
     @course = Course.find_by(name: params[:name])
 
-    unless @course
-      redirect_to(controller: :home, action: :error) && return
-    end
+    redirect_to(controller: :home, action: :error) && return unless @course
 
-    if not current_user.nil?
+    unless current_user.nil?
 
       @cud = CourseUserDatum.unscoped.find_by(user_id: current_user.id, 
                                               course_id: @course.id)
@@ -46,9 +42,7 @@ class CoursesController < ApplicationController
 
     end
 
-    if not @course.public?
-      redirect_to(controller: :home, action: :error) && return
-    end
+    redirect_to(controller: :home, action: :error) && return unless @course.public?
 
   end
 
