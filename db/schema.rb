@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150313023538) do
+ActiveRecord::Schema.define(version: 20150328011303) do
 
   create_table "annotations", force: :cascade do |t|
     t.integer  "submission_id", limit: 4
@@ -82,7 +82,7 @@ ActiveRecord::Schema.define(version: 20150313023538) do
     t.integer  "late_penalty_id",    limit: 4
     t.integer  "version_penalty_id", limit: 4
     t.datetime "grading_deadline",                                 null: false
-    t.boolean  "has_autograde",      limit: 1
+    t.boolean  "has_autograde_old",  limit: 1
     t.boolean  "has_scoreboard",     limit: 1
     t.boolean  "has_svn",            limit: 1
     t.boolean  "quiz",               limit: 1,     default: false
@@ -113,7 +113,7 @@ ActiveRecord::Schema.define(version: 20150313023538) do
     t.datetime "updated_at"
   end
 
-  create_table "autograding_setups", force: :cascade do |t|
+  create_table "autograders", force: :cascade do |t|
     t.integer "assessment_id",     limit: 4
     t.integer "autograde_timeout", limit: 4
     t.string  "autograde_image",   limit: 255
