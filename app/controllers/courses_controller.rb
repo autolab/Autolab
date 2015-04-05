@@ -12,7 +12,7 @@ class CoursesController < ApplicationController
   def index
     courses_for_user = User.courses_for_user current_user
 
-    if not courses_for_user.nil?
+    if !courses_for_user.nil?
       @listing = categorize_courses_for_listing courses_for_user
     else
       @listing = []
@@ -21,7 +21,6 @@ class CoursesController < ApplicationController
 
   action_no_auth :show
   def show
-
     @course = Course.find_by(name: params[:name])
 
     redirect_to(controller: :home, action: :error) && return unless @course
@@ -42,7 +41,6 @@ class CoursesController < ApplicationController
     end
 
     redirect_to(controller: :home, action: :error) && return unless @course.public?
-
   end
 
   NEW_ROSTER_COLUMNS = 29
@@ -172,7 +170,6 @@ class CoursesController < ApplicationController
   end
 
   def join
-
     course_name = params[:name]
     @course = Course.find_by(name: course_name) if course_name
 
@@ -188,7 +185,7 @@ class CoursesController < ApplicationController
         flash[:error] = "Joining failed. Check all fields"
         redirect_to(course_path(@course)) && return
       end
-    
+
     elsif @course.public? && @course.requires_permission?
       @newCUD = @course.course_user_data.find_or_create_by(user_id: current_user.id)
       @newCUD.has_joined = false
@@ -202,7 +199,6 @@ class CoursesController < ApplicationController
       end
 
     end
-
   end
 
   # DELETE courses/:id/
@@ -272,7 +268,6 @@ class CoursesController < ApplicationController
     if @course.requires_permission?
       @requests = @course.course_user_data.where(has_joined: false).joins(:user).order("users.email ASC")
     end
-
   end
 
   action_auth_level :reload, :instructor
@@ -445,8 +440,8 @@ private
   end
 
   def edit_course_params
-    params.require(:editCourse).permit(:name, :semester, :late_slack, :grace_days, :display_name, :website_url, 
-                                       :public, :requires_permission, :start_date, :end_date, :disabled, 
+    params.require(:editCourse).permit(:name, :semester, :late_slack, :grace_days, :display_name, :website_url,
+                                       :public, :requires_permission, :start_date, :end_date, :disabled,
                                        :exam_in_progress, :version_threshold, :gb_message,
                                        late_penalty_attributes: [:kind, :value],
                                        version_penalty_attributes: [:kind, :value])

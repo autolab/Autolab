@@ -1,5 +1,5 @@
 class CourseUserDataController < ApplicationController
-  before_action :add_users_breadcrumb, except: [ :create, :destroy ]
+  before_action :add_users_breadcrumb, except: [:create, :destroy]
 
   action_auth_level :index, :student
   def index
@@ -52,7 +52,6 @@ class CourseUserDataController < ApplicationController
       @newCUD.user = user
     end
 
-
     # save CUD
     if @newCUD.save
       flash[:success] = "Success: added user #{email} in #{@course.display_name}"
@@ -66,7 +65,6 @@ class CourseUserDataController < ApplicationController
       flash[:error] = "Adding user failed. Check all fields"
       redirect_to(action: "new") && return
     end
-
   end
 
   action_auth_level :show, :student
@@ -150,7 +148,7 @@ class CourseUserDataController < ApplicationController
         @destroyCUD.destroy!
       end
       redirect_to([:users, @course]) && return
-    elsif not @cud.has_joined?
+    elsif !@cud.has_joined?
       @cud.destroy
       redirect_to(course_path(@course)) && return
     end
@@ -208,7 +206,6 @@ class CourseUserDataController < ApplicationController
     session[:sudo] = nil
     redirect_to([@cud.course]) && return
   end
-
 
   action_auth_level :confirm, :instructor
   def confirm
