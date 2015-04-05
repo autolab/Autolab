@@ -169,6 +169,12 @@ protected
 
     # set @cud
     cud, reason = CourseUserDatum.find_or_create_cud_for_course @course, uid
+    
+    unless cud.has_joined
+      flash[:error] = "Your request has not been confirmed yet"
+      redirect_to(controller: :home, action: :error) && return
+    end
+
     case reason
     when :found
       @cud = cud

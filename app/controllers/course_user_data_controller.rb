@@ -142,10 +142,10 @@ class CourseUserDataController < ApplicationController
   action_auth_no_course :destroy
   def destroy
     @course = Course.find_by(name: params[:course_name])
-    @cud = CourseUserDatum.unscoped.find_by(user_id: current_user.id, course: @course)
+    @cud = @course.course_user_data.find_by(user_id: current_user.id)
 
     if @cud.instructor?
-      @destroyCUD = CourseUserDatum.unscoped.find_by(id:params[:id],  course: @course)
+      @destroyCUD = @course.course_user_data.find(params[:id])
       if @destroyCUD && @destroyCUD != @cud
         @destroyCUD.destroy!
       end
@@ -212,7 +212,7 @@ class CourseUserDataController < ApplicationController
 
   action_auth_level :confirm, :instructor
   def confirm
-    @student_cud = CourseUserDatum.unscoped.find_by(id:params[:id], course: @course)
+    @student_cud = @course.course_user_data.find_by(id: params[:id])
     @student_cud.has_joined = true
     @student_cud.save!
     redirect_to(users_course_path(@course)) && return

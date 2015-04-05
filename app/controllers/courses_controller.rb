@@ -28,8 +28,7 @@ class CoursesController < ApplicationController
 
     unless current_user.nil?
 
-      @cud = CourseUserDatum.unscoped.find_by(user_id: current_user.id, 
-                                              course_id: @course.id)
+      @cud = @course.course_user_data.find_by(user_id: current_user.id)
 
       if @cud && @cud.has_joined?
         redirect_to course_assessments_path(@course)
@@ -271,7 +270,7 @@ class CoursesController < ApplicationController
     end
 
     if @course.requires_permission?
-      @requests = CourseUserDatum.unscoped.where(has_joined: false, course_id: @course.id).joins(:user).order("users.email ASC")
+      @requests = @course.course_user_data.where(has_joined: false).joins(:user).order("users.email ASC")
     end
 
   end
