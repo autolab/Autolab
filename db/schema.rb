@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150328011303) do
+ActiveRecord::Schema.define(version: 20150406221712) do
 
   create_table "annotations", force: :cascade do |t|
     t.integer  "submission_id", limit: 4
@@ -83,7 +83,7 @@ ActiveRecord::Schema.define(version: 20150328011303) do
     t.integer  "version_penalty_id", limit: 4
     t.datetime "grading_deadline",                                 null: false
     t.boolean  "has_autograde_old",  limit: 1
-    t.boolean  "has_scoreboard",     limit: 1
+    t.boolean  "has_scoreboard_old", limit: 1
     t.boolean  "has_svn",            limit: 1
     t.boolean  "quiz",               limit: 1,     default: false
     t.text     "quizData",           limit: 65535
@@ -202,7 +202,7 @@ ActiveRecord::Schema.define(version: 20150328011303) do
     t.string  "type",  limit: 255, default: "Tweak", null: false
   end
 
-  create_table "scoreboard_setups", force: :cascade do |t|
+  create_table "scoreboards", force: :cascade do |t|
     t.integer "assessment_id", limit: 4
     t.string  "banner",        limit: 255
     t.string  "colspec",       limit: 255

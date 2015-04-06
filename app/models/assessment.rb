@@ -16,7 +16,7 @@ class Assessment < ActiveRecord::Base
   has_many :attachments
   has_many :assessment_user_data, dependent: :destroy
   has_one :autograder, dependent: :destroy
-  has_one :scoreboard_setup, dependent: :destroy
+  has_one :scoreboard, dependent: :destroy
 
   # Validations
   validates_uniqueness_of :name, scope: :course_id

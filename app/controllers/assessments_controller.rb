@@ -820,41 +820,6 @@ class AssessmentsController < ApplicationController
     end
   end
 
-  # adminScoreboard - Edit the scoreboard properties for this assessment
-  def adminScoreboard
-    unless @cud.instructor?
-      flash[:error] = "You are not authorized to view this page"
-      redirect_to([@course, @assessment]) && return
-    end
-
-    if request.post?
-      # Update the scoreboard properties in the db
-      colspec = params[:scoreboard_prop][:colspec]
-      @scoreboard_prop = ScoreboardSetup.where(assessment_id: @assessment.id).first
-      if @scoreboard_prop.update_attributes(scoreboard_prop_params)
-        flash[:success] = "Updated scoreboard properties."
-        redirect_to(action: "adminScoreboard") && return
-      else
-        flash[:error] = "Errors prevented the scoreboard properties from being saved."
-      end
-    else
-      # Get the current scoreboard properties for this
-      # assessment. If not present, then create a default entry in
-      # the db before displaying the form
-      @scoreboard_prop = ScoreboardSetup.where(assessment_id: @assessment.id).first
-      unless @scoreboard_prop
-        @scoreboard_prop = ScoreboardSetup.new
-        @scoreboard_prop.assessment_id = @assessment.id
-        @scoreboard_prop.banner = ""
-        @scoreboard_prop.colspec = ""
-        @scoreboard_prop.save!
-      end
-
-      # Set the @column_summary instance variable for the view
-      @column_summary = emitColSpec(@scoreboard_prop.colspec)
-    end
-  end
-
   #
   # scoreboard - This function draws the scoreboard for an assessment.
   #
@@ -1113,46 +1078,6 @@ protected
       return false
     end
     true
-  end
-
-  # emitColSpec - Emits a text summary of a column specification string.
-  def emitColSpec(colspec)
-    return "Empty column specification" if colspec.nil?
-
-    begin
-      # Quote JSON keys and values if they are not already quoted
-      quoted = colspec.gsub(/([a-zA-Z0-9]+):/, '"\1":').gsub(/:([a-zA-Z0-9]+)/, ':"\1"')
-      parsed = ActiveSupport::JSON.decode(quoted)
-    rescue StandardError => e
-      return "Invalid column spec"
-    end
-
-    # If there is no column spec, then use the default scoreboard
-    unless parsed
-      str = "TOTAL [desc] "
-      for problem in @assessment.problems do
-        str += "| #{problem.name.to_s.upcase}"
-      end
-      return str
-    end
-
-    # In this case there is a valid colspec
-    first = true
-    i = 0
-    for hash in parsed["scoreboard"] do
-      if first
-        str = ""
-        first = false
-      else
-        str += " | "
-      end
-      str += hash["hdr"].to_s.upcase
-      if i < 3
-        str += hash["asc"] ? " [asc]" : " [desc]"
-      end
-      i += 1
-    end
-    str
   end
 
   #
