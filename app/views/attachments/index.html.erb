@@ -1,7 +1,7 @@
 <% if @is_assessment then %> 
   <h2>Listing <%= link_to @assessment.display_name, [@course, @assessment] %> Attachments</h2>
 <% else %>
-  <h2>Listing <%= link_to @course.display_name, @course %> Attachments</h2>
+  <h2>Listing <%= link_to @course.full_name, @course %> Attachments</h2>
 <% end %>
 
 

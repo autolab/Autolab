@@ -1,8 +1,7 @@
-require "archive.rb"
+require "archive"
 require "csv"
+require "statistics"
 require "yaml"
-require "Statistics.rb"
-require "date_time_input"
 
 class AssessmentsController < ApplicationController
   include ActiveSupport::Callbacks
@@ -53,12 +52,11 @@ class AssessmentsController < ApplicationController
   action_no_auth :local_submit
 
   # SVN
-  autolab_require Rails.root.join("app", "controllers", "assessment", "SVN.rb")
+  autolab_require Rails.root.join("app", "controllers", "assessment", "svn.rb")
   include AssessmentSVN
-
-  action_auth_level :adminSVN, :instructor
-  action_auth_level :setRepository, :instructor
-  action_auth_level :importSVN, :instructor
+  action_auth_level :admin_svn, :instructor
+  action_auth_level :set_repo, :instructor
+  action_auth_level :import_svn, :instructor
 
   # Scoreboard
   action_auth_level :adminScoreboard, :instructor
@@ -204,45 +202,9 @@ class AssessmentsController < ApplicationController
       tarFile = File.new(tarFile.open, "rb")
       tar_extract = Gem::Package::TarReader.new(tarFile)
       tar_extract.rewind
-      # Verify integrity of assessment tarball.
-      file_list = []
-      dir_list = []
-      tar_extract.each do |entry|
-        pathname = entry.full_name
-        next if pathname.start_with? "."
-        isdir = entry.directory?
-        if isdir
-          dir_list << pathname
-        else
-          file_list << pathname
-        end
-      end
+      is_valid_tar = valid_asmt_tar(tar_extract)
       tar_extract.close
-      dir_list.sort!
-      file_list.sort!
-      valid_file = nil
-      asmt_name = nil
-      asmt_rb_exist = false
-      asmt_yml_exist = false
-      dir_list.each do |dir|
-        if dir.count("/") == 0
-          if !asmt_name.nil?
-            valid_file = false
-            break
-          else
-            asmt_name = dir
-          end
-        end
-      end
-      file_list.each do |file|
-        if file == "#{asmt_name}/#{asmt_name}.rb"
-          asmt_rb_exist = true
-        elsif file == "#{asmt_name}/#{asmt_name}.yml"
-          asmt_yml_exist = true
-        end
-      end
-      valid_file = (valid_file != false) && !asmt_name.nil? && asmt_rb_exist && asmt_yml_exist
-      unless valid_file
+      unless is_valid_tar
         flash[:error] = "Invalid tarball. Please verify the existence of configuration files."
         redirect_to(action: "installAssessment") && return
       end
@@ -314,8 +276,8 @@ class AssessmentsController < ApplicationController
                               display_name: props["general"]["display_name"],
                               category_name: props["general"]["category_name"] }
       create && return # create should handle the redirection
-    # Otherwise, ask the user to give us a category before we create the
-    # assessment
+      # Otherwise, ask the user to give us a category before we create the
+      # assessment
     else
       flash[:error] = "The YAML file must have a top-level 'general' property"
       redirect_to(action: :installAssessment) && return
@@ -454,7 +416,7 @@ class AssessmentsController < ApplicationController
   # We generically cast all values to floating point numbers because we don't
   # trust the upstream developer to do that for us.
   def raw_score(scores)
-    if @assessment.has_autograde &&
+    if @assessment.has_autograder? &&
        @assessment.overwrites_method?(:raw_score)
       sum = @assessment.config_module.raw_score(scores)
     else
@@ -570,19 +532,18 @@ class AssessmentsController < ApplicationController
 
     # Import autograde
     autograde = props["autograde"]
-    if !autograde.nil? && !autograde.empty?
-      autograde_prop = AutogradingSetup.where(assessment_id: @assessment.id).first
-      if !autograde_prop
-        autograde_prop = AutogradingSetup.new
-        autograde_prop.assessment_id = @assessment.id
-        autograde_prop.autograde_image = autograde["autograde_image"]
-        autograde_prop.autograde_timeout = autograde["autograde_timeout"]
-        autograde_prop.release_score = autograde["release_score"]
-        autograde_prop.save!
+    unless autograde.blank?
+      autograder = @assessment.autograder
+      if autograder
+        autograder.update(autograde)
       else
-        autograde_prop.update_attributes(autograde)
+        Autograder.create do |autograder|
+          autograder.assessment_id = @assessment.id
+          autograder.autograde_image = autograde["autograde_image"]
+          autograder.autograde_timeout = autograde["autograde_timeout"]
+          autograder.release_score = autograde["release_score"]
+        end
       end
-      @assessment.update(has_autograde: true)
     end
 
     # Import scoreboard
@@ -620,7 +581,7 @@ class AssessmentsController < ApplicationController
 
   action_auth_level :show, :student
   def show
-    get_handin
+    set_handin
     extend_config_module(@assessment, @submission, @cud)
 
     @aud = @assessment.aud_for @cud.id
@@ -675,7 +636,7 @@ class AssessmentsController < ApplicationController
     end
 
     # Check if we should include regrade as a function
-    @autograded = @assessment.has_autograde
+    @autograded = @assessment.has_autograder?
   end
 
   action_auth_level :history, :student
@@ -722,7 +683,7 @@ class AssessmentsController < ApplicationController
     end
 
     # Check if we should include regrade as a function
-    @autograded = @assessment.has_autograde
+    @autograded = @assessment.has_autograder?
 
     if params[:partial]
       @partial = true
@@ -738,7 +699,7 @@ class AssessmentsController < ApplicationController
       redirect_to(action: "index") && return
     end
 
-    if Archive.is_archive? @submission.handin_file_path
+    if Archive.archive? @submission.handin_file_path
       @files = Archive.get_files @submission.handin_file_path
     end
   end
@@ -764,8 +725,8 @@ class AssessmentsController < ApplicationController
     end
 
     # make sure the penalties are set up
-    @assessment.build_late_penalty unless @assessment.late_penalty
-    @assessment.build_version_penalty unless @assessment.version_penalty
+    @assessment.late_penalty ||= Penalty.new(value: 0, kind: "points")
+    @assessment.version_penalty ||= Penalty.new(value: 0, kind: "points")
   end
 
   action_auth_level :update, :instructor
@@ -860,35 +821,6 @@ class AssessmentsController < ApplicationController
     end
   end
 
-  #
-  # adminAutograde - edit the autograding properties for this assessment
-  #
-  def adminAutograde
-    if request.post?
-      # POST request. Try to save the updated fields.
-      @autograde_prop = AutogradingSetup.where(assessment_id: @assessment.id).first
-      if @autograde_prop.update_attributes(autograde_prop_params)
-        flash[:success] = "Success: Updated autograding properties."
-      else
-        flash[:error] = "Errors prevented the autograding properties from being saved."
-      end
-
-      redirect_to(action: :adminAutograde) && return
-    else
-      # GET request. If an autograding properties record doesn't
-      # exist for this assessment, then create default one.
-      @autograde_prop = AutogradingSetup.where(assessment_id: @assessment.id).first
-      unless @autograde_prop
-        @autograde_prop = AutogradingSetup.new
-        @autograde_prop.assessment_id = @assessment.id
-        @autograde_prop.autograde_image = "changeme.img"
-        @autograde_prop.autograde_timeout = 180
-        @autograde_prop.release_score = true
-        @autograde_prop.save!
-      end
-    end
-  end
-
   # adminScoreboard - Edit the scoreboard properties for this assessment
   def adminScoreboard
     unless @cud.instructor?
@@ -972,7 +904,7 @@ class AssessmentsController < ApplicationController
     # Build the html for the scoreboard header
     begin
       if @assessment.overwrites_method?(:scoreboardHeader)
-        @header =  @assessment.config_module.scoreboardHeader
+        @header = @assessment.config_module.scoreboardHeader
       else
         @header = scoreboardHeader
       end
@@ -1024,7 +956,7 @@ class AssessmentsController < ApplicationController
     # Catch errors along the way. An instructor will get the errors, a
     # student will simply see an unsorted scoreboard.
 
-    @sortedGrades = @grades.values.sort do|a, b|
+    @sortedGrades = @grades.values.sort do |a, b|
       begin
 
         if @assessment.overwrites_method?(:scoreboardOrderSubmissions)
@@ -1162,12 +1094,12 @@ protected
 
     # Autograde properties (if any)
     props["autograde"] = {}
-    autograde_prop = AutogradingSetup.find_by_assessment_id(@assessment.id)
-    if autograde_prop
+    autograder = @assessment.autograder
+    if autograder
       props["autograde"] = {
-        "autograde_image" => autograde_prop["autograde_image"],
-        "autograde_timeout" => autograde_prop["autograde_timeout"],
-        "release_score" => autograde_prop["release_score"]
+        "autograde_image" => autograder["autograde_image"],
+        "autograde_timeout" => autograder["autograde_timeout"],
+        "release_score" => autograder["release_score"]
       }
     end
 
@@ -1241,7 +1173,7 @@ protected
     # If the assessment is not autograded, or the instructor did
     # not create a custom column spec, then revert to the default,
     # which sorts by total problem, then by submission time.
-    if !@assessment.has_autograde ||
+    if !@assessment.has_autograder? ||
        !@scoreboard_prop || @scoreboard_prop.colspec.blank?
       aSum = 0; bSum = 0
       for key in a[:problems].keys do
@@ -1299,7 +1231,7 @@ protected
           b2 <=> a2 # descending order
         end
       else
-        a[:time] <=> b[:time]  # ascending by submission time
+        a[:time] <=> b[:time] # ascending by submission time
       end
     end
   end
@@ -1391,9 +1323,9 @@ protected
 
     # If the lab is not autograded, or the columns property is not
     # specified, then return the default header.
-    if !@assessment.has_autograde ||
+    if !@assessment.has_autograder? ||
        !@scoreboard_prop || @scoreboard_prop.colspec.blank?
-      head =	banner + "<table class='sortable prettyBorder'>
+      head = banner + "<table class='sortable prettyBorder'>
       <tr><th>Nickname</th><th>Version</th><th>Time</th>"
       head += "<th>Total</th>"
       for problem in @assessment.problems do
@@ -1406,7 +1338,7 @@ protected
     # non-empty column spec. Parse the spec and then return the
     # customized header.
     parsed = ActiveSupport::JSON.decode(@scoreboard_prop.colspec)
-    head =	banner + "<table class='sortable prettyBorder'>
+    head = banner + "<table class='sortable prettyBorder'>
       <tr><th>Nickname</th><th>Version</th><th>Time</th>"
     for object in parsed["scoreboard"] do
       head += "<th>" + object["hdr"] + "</th>"
@@ -1456,7 +1388,7 @@ protected
             num_released += 1
           end
 
-        # if score doesn't exist yet, create it and release it
+          # if score doesn't exist yet, create it and release it
         else
           score = problem.scores.new(submission: sub,
                                      released: true,
@@ -1471,11 +1403,6 @@ protected
     num_released
   end
 
-  # AutogradingSetup parameters for adminAutograde
-  def autograde_prop_params
-    params[:autograde_prop].permit(:assessment_id, :autograde_timeout, :autograde_image, :release_score)
-  end
-
   def scoreboard_prop_params
     params[:scoreboard_prop].permit(:banner, :colspec)
   end
@@ -1484,17 +1411,53 @@ private
 
   def new_assessment_params
     ass = params.require(:assessment)
-    unless params[:new_category].blank?
-      ass[:category_name] = params[:new_category]
-    end
-    ass.permit(:name, :display_name, :category_name, :has_autograde, :has_svn, :has_scoreboard, :group_size)
+    ass[:category_name] = params[:new_category] unless params[:new_category].blank?
+    ass.permit(:name, :display_name, :category_name, :has_svn, :has_scoreboard, :group_size)
   end
 
   def edit_assessment_params
     ass = params.require(:assessment)
-    unless params[:new_category].blank?
-      ass[:category_name] = params[:new_category]
-    end
+    ass[:category_name] = params[:new_category] unless params[:new_category].blank?
     ass.permit!
+  end
+
+  def valid_asmt_tar(tar_extract)
+    file_list = []
+    dir_list = []
+    tar_extract.each do |entry|
+      pathname = entry.full_name
+      next if pathname.start_with? "."
+      if entry.directory?
+        dir_list << pathname
+      else
+        file_list << pathname
+      end
+    end
+    dir_list.sort!
+    file_list.sort!
+    valid_file = false
+    asmt_name = nil
+    asmt_rb_exist = false
+    asmt_yml_exist = false
+    # The only root-level directory is the assessment name.
+    dir_list.each do |dir|
+      next if dir.count("/") > 0
+      if !asmt_name.nil?
+        valid_file = false
+        break
+      else
+        asmt_name = dir
+      end
+    end
+    return false if asmt.nil? || !valid_file
+
+    file_list.each do |file|
+      if file == "#{asmt_name}/#{asmt_name}.rb"
+        asmt_rb_exist = true
+      elsif file == "#{asmt_name}/#{asmt_name}.yml"
+        asmt_yml_exist = true
+      end
+    end
+    valid_file = asmt_rb_exist && asmt_yml_exist
   end
 end

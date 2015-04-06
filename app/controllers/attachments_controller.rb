@@ -26,7 +26,7 @@ class AttachmentsController < ApplicationController
       @attachment = @course.attachments.new
     end
 
-    return update
+    update
   end
 
   action_auth_level :show, :student

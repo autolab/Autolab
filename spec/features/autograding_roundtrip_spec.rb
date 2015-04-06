@@ -1,4 +1,4 @@
-require 'tempfile'
+require "tempfile"
 
 RSpec.describe "autograding", type: :feature do
   it "runs through successfully" do
@@ -14,7 +14,7 @@ RSpec.describe "autograding", type: :feature do
     click_link "Lab Template"
 
     # Submit adder file
-    tmp_file = Tempfile.new('adder.py')
+    tmp_file = Tempfile.new("adder.py")
     tmp_file << "def adder(x,y):\n\treturn x+y"
     tmp_file.flush
     tmp_file.close
@@ -24,7 +24,7 @@ RSpec.describe "autograding", type: :feature do
 
     # Verify job status page
     sleep(15)
-    first('#flash_success a').click
+    first("#flash_success a").click
     expect(page).to have_content "AutoPopulated_labtemplate"
     expect(page).to have_content "Success: Autodriver returned normally"
   end

@@ -30,6 +30,7 @@ Autolab3::Application.routes.draw do
     resources :attachments
 
     resources :assessments, param: :name, except: :update do
+      resource :autograder, except: [:new, :show]
       resources :assessment_user_data, only: [:edit, :update]
       resources :attachments
       resources :extensions, only: [:index, :create, :destroy]
@@ -91,9 +92,9 @@ Autolab3::Application.routes.draw do
         post "regradeAll"
 
         # SVN actions
-        get "adminSVN"
-        post "importSVN"
-        post "setRepository"
+        get "admin_svn"
+        post "import_svn"
+        post "set_repo"
 
         # gradesheet ajax actions
         post "quickSetScore"

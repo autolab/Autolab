@@ -7,7 +7,7 @@
     <div class="rolodex">
       <% list.each do |course| %>
         <div class="card course">
-          <h1><%= link_to course.display_name, course_path(course) %></h1>
+          <h1><%= link_to course.full_name, course_path(course) %></h1>
 
           <div class="content">
             <ul>
