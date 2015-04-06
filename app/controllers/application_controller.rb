@@ -154,7 +154,7 @@ protected
       redirect_to(controller: :home, action: :error) && return
     end
 
-    redirect_to(root_path) && return if current_user.nil?
+    redirect_to(controller: :home, action: :error) && return if current_user.nil?
 
     uid = current_user.id
     # don't allow sudoing across courses

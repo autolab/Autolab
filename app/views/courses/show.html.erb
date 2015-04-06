@@ -4,9 +4,6 @@
 <div>You need to sign in to be able to join this class.</div>
 <br>
 <div class="sign-in-panel">
-<% if Rails.env == "development" %>
-<%= link_to "Developer Login", "/home/developer_login" %><br />
-<% end %>
 <%= render "devise/shared/links" %>
 </div>
 <% else %>

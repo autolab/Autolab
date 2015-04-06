@@ -1,3 +1,7 @@
+<% if Rails.env == "development" %>
+  <%= link_to "Developer Login", "/home/developer_login" %><br />
+<% end %>
+
 <%- if controller_name != 'sessions' %>
   <%= link_to "Sign in", new_session_path(resource_name) %><br />
 <% end -%>
