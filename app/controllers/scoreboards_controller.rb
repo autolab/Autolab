@@ -14,7 +14,7 @@ class ScoreboardsController < ApplicationController
       s.colspec = ""
     end
     flash[:info] = "Scoreboard Created" if @scoreboard.save
-    redirect_to([:edit, @course, @assessment, :scoreboard]) && return
+    redirect_to(action: :edit) && return
   end
 
   action_auth_level :show, :student
@@ -27,7 +27,6 @@ class ScoreboardsController < ApplicationController
     @column_summary = emitColSpec(@scoreboard.colspec)
   end
 
-
   action_auth_level :update, :instructor
   def update
     # Update the scoreboard properties in the db
@@ -35,13 +34,13 @@ class ScoreboardsController < ApplicationController
     @scoreboard_prop = ScoreboardSetup.where(assessment_id: @assessment.id).first
     if @scoreboard_prop.update_attributes(scoreboard_prop_params)
       flash[:success] = "Updated scoreboard properties."
-      redirect_to(action: "adminScoreboard") && return
+      redirect_to(action: :edit) && return
     else
       flash[:error] = "Errors prevented the scoreboard properties from being saved."
     end
 
     flash[:info] = "Saved!" if @scoreboard.update(scoreboard_params)
-    redirect_to([:edit, @course, @assessment, :scoreboard]) && return
+    redirect_to(action: :edit) && return
   end
 
   action_auth_level :destroy, :instructor
@@ -63,7 +62,7 @@ private
   def set_scoreboard
     @scoreboard = @assessment.scoreboard
   end
-  
+
   def scoreboard_params
     params[:scoreboard].permit(:banner, :colspec)
   end
@@ -107,5 +106,4 @@ private
     end
     str
   end
-
 end

@@ -58,7 +58,6 @@ class AssessmentsController < ApplicationController
   action_auth_level :import_svn, :instructor
 
   # Scoreboard
-  action_auth_level :adminScoreboard, :instructor
   action_auth_level :scoreboard, :student
 
   def index
@@ -333,7 +332,7 @@ class AssessmentsController < ApplicationController
     begin
       @assessment.save!
     rescue StandardError => e
-      flash[:error] = "Error saving #{@assessment.name}: #{e.to_s}"
+      flash[:error] = "Error saving #{@assessment.name}: #{e}"
       redirect_to(action: :installAssessment) && return
     end
 
@@ -482,7 +481,7 @@ class AssessmentsController < ApplicationController
       tarStream.close
       send_data tarStream.string.force_encoding("binary"), filename: "#{@assessment.name}_#{Time.now.strftime('%Y%m%d')}.tar", content_type: "application/x-tar"
     rescue SystemCallError => e
-      flash[:error] = "Unable to update the config YAML file: #{e.to_s}"
+      flash[:error] = "Unable to update the config YAML file: #{e}"
       redirect_to action: "index"
     rescue StandardError => e
       flash[:error] = "Unable to generate tarball -- #{e.message}"

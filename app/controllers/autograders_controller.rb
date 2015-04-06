@@ -43,9 +43,8 @@ private
   def set_autograder
     @autograder = @assessment.autograder
   end
-  
+
   def autograder_params
     params[:autograder].permit(:autograde_timeout, :autograde_image, :release_score)
   end
-
 end

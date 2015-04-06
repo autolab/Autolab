@@ -245,6 +245,10 @@ class Assessment < ActiveRecord::Base
     group_size && group_size > 1
   end
 
+  def has_scoreboard?
+    scoreboard != nil
+  end
+
   def groups
     Group.joins(:assessment_user_data).where(assessment_user_data: { assessment_id: id }).distinct
   end
