@@ -297,7 +297,7 @@ private
   #
   # NOTE: Must be kept in sync with AUD.latest_submission!
   def calculate_latest_submissions
-    submissions.group(:course_user_datum_id).having('MAX("submissions"."version")')
+    submissions.group(:course_user_datum_id).having("MAX(submissions.version)")
   end
 
   def invalidate_course_cgdubs
