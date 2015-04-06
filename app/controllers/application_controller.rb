@@ -275,10 +275,10 @@ protected
     return unless @course
 
     if @course.disabled?
-      @breadcrumbs << (view_context.link_to "#{@course.display_name} (Course Disabled)",
+      @breadcrumbs << (view_context.link_to "#{@course.full_name} (Course Disabled)",
                                             [@course], id: "courseTitle")
     else
-      @breadcrumbs << (view_context.link_to @course.display_name, [@course], id: "courseTitle")
+      @breadcrumbs << (view_context.link_to @course.full_name, [@course], id: "courseTitle")
     end
   end
 
