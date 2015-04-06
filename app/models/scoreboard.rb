@@ -1,4 +1,4 @@
-class ScoreboardSetup < ActiveRecord::Base
+class Scoreboard < ActiveRecord::Base
   belongs_to :assessment
   trim_field :banner, :colspec
   validate :col_spec
@@ -24,7 +24,7 @@ protected
       # Quote JSON keys and values if they are not already quoted
       quoted = colspec.gsub(/([a-zA-Z0-9]+):/, '"\1":').gsub(/:([a-zA-Z0-9]+)/, ':"\1"')
       parsed = ActiveSupport::JSON.decode(quoted)
-    rescue Exception => e
+    rescue StandardError => e
       errors.add "colspec", "#{e}"
       return
     end

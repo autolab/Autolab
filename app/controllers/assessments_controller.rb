@@ -45,7 +45,6 @@ class AssessmentsController < ApplicationController
 
   # Autograde
   action_no_auth :autograde_done
-  action_auth_level :adminAutograde, :instructor
   action_auth_level :regrade, :instructor
   action_auth_level :regradeAll, :instructor
   action_no_auth :log_submit
@@ -1401,10 +1400,6 @@ protected
     end
 
     num_released
-  end
-
-  def scoreboard_prop_params
-    params[:scoreboard_prop].permit(:banner, :colspec)
   end
 
 private
