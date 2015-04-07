@@ -19,6 +19,125 @@ class ScoreboardsController < ApplicationController
 
   action_auth_level :show, :student
   def show
+    @students = CourseUserDatum.joins(:submissions)
+                .where(submissions: { assessment_id: @assessment.id }).distinct
+
+    # It turns out that it's faster to just get everything and let the
+    # view handle it
+    problemQuery = "SELECT scores.score AS score,
+        submissions.version AS version,
+        submissions.created_at AS time,
+        submissions.autoresult AS autoresult,
+        problem_id AS problem_id,
+        problems.name AS problem_name,
+        submissions.course_user_datum_id AS course_user_datum_id
+        FROM scores,submissions,problems
+        WHERE submissions.assessment_id=#{@assessment.id}
+        AND submissions.id = scores.submission_id
+        AND problems.id = scores.problem_id
+        ORDER BY submissions.created_at ASC"
+    result = ActiveRecord::Base.connection.select_all(problemQuery)
+    @grades = {}
+    result.each do |row|
+      uid = row["course_user_datum_id"].to_i
+      unless @grades.key?(uid)
+        user = @course.course_user_data.find(uid)
+        @grades[uid] = {}
+        @grades[uid][:nickname] = user.nickname
+        @grades[uid][:andrewID] = user.email
+        @grades[uid][:fullName] = user.first_name + " " + user.last_name
+        @grades[uid][:problems] = {}
+      end
+      if @grades[uid][:version] != row["version"]
+        @grades[uid][:time] = row["time"].localtime
+        @grades[uid][:version] = row["version"].to_i
+        @grades[uid][:autoresult] = row["autoresult"]
+      end
+      #			@grades[uid][:problems][row["problem_id"].to_i] = row["score"].to_i
+      @grades[uid][:problems][row["problem_name"]] = row["score"].to_f.round(1)
+    end
+
+    # Build the html for the scoreboard header
+    begin
+      if @assessment.overwrites_method?(:scoreboardHeader)
+        @header = @assessment.config_module.scoreboardHeader
+      else
+        @header = scoreboardHeader
+      end
+    rescue StandardError => e
+      if @cud.instructor?
+        @errorMessage = "An error occurred while calling scoreboardHeader()"
+        @error = e
+        render([@course, @assessment]) && return
+      end
+      # For students just ignore the header.
+      @header = "<table class=prettyBorder >"
+    end
+
+    # Build the scoreboard entries for each student
+    @grades.values.each do |grade|
+      begin
+
+        if @assessment.overwrites_method?(:createScoreboardEntry)
+          grade[:entry] = @assessment.config_module.createScoreboardEntry(
+            grade[:problems],
+            grade[:autoresult])
+        else
+          grade[:entry] = createScoreboardEntry(
+            grade[:problems],
+            grade[:autoresult])
+        end
+      rescue StandardError => e
+        # Screw 'em! usually this means the grader failed.
+        grade[:entry] = {}
+        # But, if this was an instructor, we want them to know about
+        # this.
+        if @user.instructor?
+          @errorMessage = "An error occurred while calling " \
+            "createScoreboardEntry(#{grade[:problems].inspect},"\
+            "#{grade[:autoresult]})"
+          @error = e
+          render([@course, @assessment]) && return
+        end
+      end
+    end
+
+    # We want to sort @grades.values instead of just @grades because @grades
+    # is a hash, and we only care about the values. This is also why we
+    # included the :nickname and :andrewID in the hash instead of looking
+    # them up based on the uid index. See
+    # http://greatwhite.ics.cs.cmu.edu/rubydoc/ruby/classes/Hash.html#M001122
+    # for more information.
+
+    # Catch errors along the way. An instructor will get the errors, a
+    # student will simply see an unsorted scoreboard.
+
+    @sortedGrades = @grades.values.sort do |a, b|
+      begin
+
+        if @assessment.overwrites_method?(:scoreboardOrderSubmissions)
+          @assessment.config_module.scoreboardOrderSubmissions(a, b)
+        else
+          scoreboardOrderSubmissions(a, b)
+        end
+
+      rescue StandardError => e
+        if @cud.instructor?
+          @errorMessage = "An error occurred while calling "\
+            "scoreboardOrderSubmissions(#{a.inspect},"\
+            "#{b.inspect})"
+          @error = e
+          render([@course, @assessment]) && return
+        end
+        0 # Just say they're equal!
+      end
+    end
+
+    begin
+      @colspec = ActiveSupport::JSON.decode(@assessment.scoreboard_setup.colspec)["scoreboard"]
+    rescue
+      @colspec = nil
+    end
   end
 
   action_auth_level :edit, :instructor
@@ -105,5 +224,194 @@ private
       i += 1
     end
     str
+  end
+
+  #
+  # scoreboardHeader - Build a scoreboard header string.
+  #
+  # For backward compatibility, this function can be overridden in
+  # the config file.
+  #
+  def scoreboardHeader
+    # If no submissions yet, then don't display the table
+    return "<h3>No submissions yet.</h3>" if @grades.values.empty?
+
+    # Grab the scoreboard properties for this assessment
+    @scoreboard_prop = ScoreboardSetup.where(assessment_id: @assessment.id).first
+
+    # Determine which banner to use in the header
+    banner = "<h3>Here are the most recent scores for the class.</h3>"
+    if @scoreboard_prop && !@scoreboard_prop.banner.blank?
+      banner = "<h3>" + @scoreboard_prop.banner + "</h3>"
+    end
+
+    # If the lab is not autograded, or the columns property is not
+    # specified, then return the default header.
+    if !@assessment.has_autograder? ||
+       !@scoreboard_prop || @scoreboard_prop.colspec.blank?
+      head = banner + "<table class='sortable prettyBorder'>
+      <tr><th>Nickname</th><th>Version</th><th>Time</th>"
+      head += "<th>Total</th>"
+      @assessment.problems.each do |problem|
+        head += "<th>" + problem.name + "</th>"
+      end
+      return head
+    end
+
+    # At this point, we know we have an autograded lab with a
+    # non-empty column spec. Parse the spec and then return the
+    # customized header.
+    parsed = ActiveSupport::JSON.decode(@scoreboard_prop.colspec)
+    head = banner + "<table class='sortable prettyBorder'>
+      <tr><th>Nickname</th><th>Version</th><th>Time</th>"
+    parsed["scoreboard"].each do |object|
+      head += "<th>" + object["hdr"] + "</th>"
+    end
+    head += "</tr>"
+    head
+  end
+
+  #
+  # createScoreboardEntry - Create a row in the scoreboard. If the
+  # JSON autoresult string has a scoreboard array object, then use
+  # that as the template, otherwise use the default, which is the
+  # total score followed by the sum of the individual problem
+  # scores.
+  #
+  # Lab authors can override this function in the lab config file.
+  #
+  def createScoreboardEntry(scores, autoresult)
+    # If the assessment was not autograded or the scoreboard was
+    # not customized, then simply return the list of problem
+    # scores and their total.
+    if !autoresult ||
+       !@scoreboard_prop ||
+       !@scoreboard_prop.colspec ||
+       @scoreboard_prop.colspec.blank?
+
+      # First we need to get the total score
+      total = 0.0
+      for problem in @assessment.problems do
+        total += scores[problem.name].to_f
+      end
+
+      # Now build the array of scores
+      entry = []
+      entry << total.round(1).to_s
+      for problem in @assessment.problems do
+        entry << scores[problem.name]
+      end
+      return entry
+    end
+
+    # At this point we have an autograded assessment with a
+    # customized scoreboard. Extract the scoreboard entry
+    # from the scoreboard array object in the JSON autoresult.
+    begin
+      parsed = ActiveSupport::JSON.decode(autoresult)
+      fail if !parsed || !parsed["scoreboard"]
+    rescue
+      # If there is no autoresult for this student (typically
+      # because their code did not compile or it segfaulted and
+      # the intructor's autograder did not catch it) then
+      # return a nicely formatted nil result.
+      begin
+        parsed = ActiveSupport::JSON.decode(@scoreboard_prop.colspec)
+        fail if !parsed || !parsed["scoreboard"]
+        entry = []
+        for item in parsed["scoreboard"] do
+          entry << "-"
+        end
+        return entry
+      rescue
+        # Give up and bail
+        return ["-"]
+      end
+    end
+
+    # Found a valid scoreboard array, so simply return it. If we
+    # wanted to be really careful, we would verify that the size
+    # was the same size as the column specification.
+    parsed["scoreboard"]
+  end
+
+  #
+  # scoreboardOrderSubmissions - This function provides a "<=>"
+  # functionality to sort rows on a scoreboard.  Row pairs are
+  # passed in (a,b) and must return -1, 0, or 1 depending if a is
+  # less than, equal to, or greater than b.  Parms a and b are of
+  # form {:uid, :andrewID, :version, :time, :problems, :entry},
+  # where problems is a hash that contains keys for each problem id
+  # as well as for each problem name.  An entry is the array
+  # returned from createScoreboardEntry.
+  #
+  # This function can be overwritten by the instructor in the lab
+  # config file.
+  #
+  def scoreboardOrderSubmissions(a, b)
+    # If the assessment is not autograded, or the instructor did
+    # not create a custom column spec, then revert to the default,
+    # which sorts by total problem, then by submission time.
+    if !@assessment.has_autograder? ||
+       !@scoreboard_prop || @scoreboard_prop.colspec.blank?
+      aSum = 0; bSum = 0
+      for key in a[:problems].keys do
+        aSum += a[:problems][key].to_f
+      end
+      for key in b[:problems].keys do
+        bSum += b[:problems][key].to_f
+      end
+      if (bSum != aSum)
+        bSum <=> aSum # descending
+      else
+        a[:time] <=> b[:time]
+      end
+
+      # In this case, we have an autograded lab for which the
+      # instructor has created a custom column specification.  By
+      # default, we sort the first three columns from left to right
+      # in descending order. Lab authors can modify the default
+      # direction with the "asc" key in the column spec.
+    else
+      a0 = a[:entry][0].to_f
+      a1 = a[:entry][1].to_f
+      a2 = a[:entry][2].to_f
+      b0 = b[:entry][0].to_f
+      b1 = b[:entry][1].to_f
+      b2 = b[:entry][2].to_f
+
+      begin
+        parsed = ActiveSupport::JSON.decode(@scoreboard_prop.colspec)
+      rescue
+      end
+
+      if a0 != b0
+        if parsed && parsed["scoreboard"] &&
+           parsed["scoreboard"].size > 0 &&
+           parsed["scoreboard"][0]["asc"]
+          a0 <=> b0 # ascending order
+        else
+          b0 <=> a0 # descending order
+        end
+      elsif a1 != b1
+        if parsed && parsed["scoreboard"] &&
+           parsed["scoreboard"].size > 1 &&
+           parsed["scoreboard"][1]["asc"]
+          a1 <=> b1 # ascending order
+        else
+          b1 <=> a1 # descending order
+        end
+      elsif a2 != b2
+        if parsed && parsed["scoreboard"] &&
+           parsed["scoreboard"].size > 2 &&
+           parsed["scoreboard"][2]["asc"]
+          a2 <=> b2 # ascending order
+        else
+          b2 <=> a2 # descending order
+        end
+      else
+        a[:time] <=> b[:time] # ascending by submission time
+      end
+    end
   end
 end

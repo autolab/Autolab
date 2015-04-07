@@ -1,3 +1,6 @@
+##
+# Scoreboards belong to Assessments, and basically specify how the scoreboard should display
+#
 class Scoreboard < ActiveRecord::Base
   belongs_to :assessment
   trim_field :banner, :colspec
