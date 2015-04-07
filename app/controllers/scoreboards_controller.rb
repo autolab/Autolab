@@ -13,15 +13,12 @@ class ScoreboardsController < ApplicationController
       s.banner = ""
       s.colspec = ""
     end
-    flash[:info] = "Scoreboard Created" if @scoreboard.save
+    flash[:info] = "Scoreboard Created" if @scoreboard.save!
     redirect_to(action: :edit) && return
   end
 
   action_auth_level :show, :student
   def show
-    @students = CourseUserDatum.joins(:submissions)
-                .where(submissions: { assessment_id: @assessment.id }).distinct
-
     # It turns out that it's faster to just get everything and let the
     # view handle it
     problemQuery = "SELECT scores.score AS score,
@@ -148,16 +145,6 @@ class ScoreboardsController < ApplicationController
 
   action_auth_level :update, :instructor
   def update
-    # Update the scoreboard properties in the db
-    colspec = params[:scoreboard_prop][:colspec]
-    @scoreboard_prop = ScoreboardSetup.where(assessment_id: @assessment.id).first
-    if @scoreboard_prop.update_attributes(scoreboard_prop_params)
-      flash[:success] = "Updated scoreboard properties."
-      redirect_to(action: :edit) && return
-    else
-      flash[:error] = "Errors prevented the scoreboard properties from being saved."
-    end
-
     flash[:info] = "Saved!" if @scoreboard.update(scoreboard_params)
     redirect_to(action: :edit) && return
   end
@@ -355,10 +342,10 @@ private
     if !@assessment.has_autograder? ||
        !@scoreboard_prop || @scoreboard_prop.colspec.blank?
       aSum = 0; bSum = 0
-      for key in a[:problems].keys do
+      a[:problems].keys.each do |key|
         aSum += a[:problems][key].to_f
       end
-      for key in b[:problems].keys do
+      b[:problems].keys.each do |key|
         bSum += b[:problems][key].to_f
       end
       if (bSum != aSum)
