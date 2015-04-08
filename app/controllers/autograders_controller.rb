@@ -42,6 +42,7 @@ private
 
   def set_autograder
     @autograder = @assessment.autograder
+    redirect_to([@course, @assessment]) if @autograder.nil?
   end
 
   def autograder_params

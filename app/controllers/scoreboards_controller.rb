@@ -55,20 +55,8 @@ class ScoreboardsController < ApplicationController
     end
 
     # Build the html for the scoreboard header
-    begin
-      if @assessment.overwrites_method?(:scoreboardHeader)
-        @header = @assessment.config_module.scoreboardHeader
-      else
-        @header = scoreboardHeader
-      end
-    rescue StandardError => e
-      if @cud.instructor?
-        @errorMessage = "An error occurred while calling scoreboardHeader()"
-        @error = e
-        render([@course, @assessment]) && return
-      end
-      # For students just ignore the header.
-      @header = "<table class=prettyBorder >"
+    if @assessment.overwrites_method?(:scoreboardHeader)
+      @config_header = @assessment.config_module.scoreboardHeader
     end
 
     # Build the scoreboard entries for each student
@@ -131,7 +119,7 @@ class ScoreboardsController < ApplicationController
     end
 
     begin
-      @colspec = ActiveSupport::JSON.decode(@assessment.scoreboard_setup.colspec)["scoreboard"]
+      @colspec = ActiveSupport::JSON.decode(@scoreboard.colspec)["scoreboard"]
     rescue
       @colspec = nil
     end
@@ -167,6 +155,7 @@ private
 
   def set_scoreboard
     @scoreboard = @assessment.scoreboard
+    redirect_to([@course, @assessment]) if @scoreboard.nil?
   end
 
   def scoreboard_params
@@ -211,51 +200,6 @@ private
       i += 1
     end
     str
-  end
-
-  #
-  # scoreboardHeader - Build a scoreboard header string.
-  #
-  # For backward compatibility, this function can be overridden in
-  # the config file.
-  #
-  def scoreboardHeader
-    # If no submissions yet, then don't display the table
-    return "<h3>No submissions yet.</h3>" if @grades.values.empty?
-
-    # Grab the scoreboard properties for this assessment
-    @scoreboard_prop = ScoreboardSetup.where(assessment_id: @assessment.id).first
-
-    # Determine which banner to use in the header
-    banner = "<h3>Here are the most recent scores for the class.</h3>"
-    if @scoreboard_prop && !@scoreboard_prop.banner.blank?
-      banner = "<h3>" + @scoreboard_prop.banner + "</h3>"
-    end
-
-    # If the lab is not autograded, or the columns property is not
-    # specified, then return the default header.
-    if !@assessment.has_autograder? ||
-       !@scoreboard_prop || @scoreboard_prop.colspec.blank?
-      head = banner + "<table class='sortable prettyBorder'>
-      <tr><th>Nickname</th><th>Version</th><th>Time</th>"
-      head += "<th>Total</th>"
-      @assessment.problems.each do |problem|
-        head += "<th>" + problem.name + "</th>"
-      end
-      return head
-    end
-
-    # At this point, we know we have an autograded lab with a
-    # non-empty column spec. Parse the spec and then return the
-    # customized header.
-    parsed = ActiveSupport::JSON.decode(@scoreboard_prop.colspec)
-    head = banner + "<table class='sortable prettyBorder'>
-      <tr><th>Nickname</th><th>Version</th><th>Time</th>"
-    parsed["scoreboard"].each do |object|
-      head += "<th>" + object["hdr"] + "</th>"
-    end
-    head += "</tr>"
-    head
   end
 
   #

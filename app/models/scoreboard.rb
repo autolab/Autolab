@@ -4,7 +4,7 @@
 class Scoreboard < ActiveRecord::Base
   belongs_to :assessment
   trim_field :banner, :colspec
-  validate :col_spec
+  validate :colspec_is_well_formed
 
   SERIALIZABLE = Set.new [:banner, :colspec]
   def serialize
@@ -18,7 +18,7 @@ class Scoreboard < ActiveRecord::Base
 protected
 
   # Validates a JSON column spec for correctness before saving it the database
-  def col_spec
+  def colspec_is_well_formed
     # An empty spec is OK
     return if colspec.blank?
 

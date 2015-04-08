@@ -4,7 +4,40 @@
   <%= javascript_include_tag "sorttable" %>
 <% end %>
 
-<%= @header.html_safe %>
+<% if @grades.values.empty? %>
+  <h3>No submissions yet.</h3>
+<% else %>
+  <h3>
+    <% if @scoreboard.banner.blank? %>
+      Here are the most recent scores for the class.
+    <% else %>
+      <%= @scoreboard.banner %>
+    <% end %>
+  </h3>
+
+  <table class="sortable prettyBorder">
+    <thead>
+      <tr>
+        <% if @config_header %>
+          <%= sanitize @config_header, tags: %w(th td) %>
+        <% else %>
+          <% if @scoreboard.colspec.blank? %>
+            <th>Nickname</th><th>Version</th><th>Time</th><th>Total</th>
+            <% @assessment.problems.each do |problem| %>
+              <th><%= problem.name %></th>
+            <% end %>
+          <% else %>
+            <th>Nickname</th><th>Version</th><th>Time</th>
+            <% parsed["scoreboard"].each do |column| %>
+              <th><%= column["hdr"] %></th>
+            <% end %>
+          <% end %>
+        <% end %>
+      </tr>
+    </thead>
+  </table>
+<% end %>
+
 <% @sortedGrades.each do |grade| %>
   <tr>
     <% if @cud.instructor? then
