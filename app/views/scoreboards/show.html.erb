@@ -21,52 +21,55 @@
         <% if @config_header %>
           <%= sanitize @config_header, tags: %w(th td) %>
         <% else %>
-          <% if @scoreboard.colspec.blank? %>
+          <% if @colspec %>
+            <th>Nickname</th><th>Version</th><th>Time</th>
+            <% @colspec.each do |column| %>
+              <th><%= column["hdr"] %></th>
+            <% end %>
+          <% else %>
             <th>Nickname</th><th>Version</th><th>Time</th><th>Total</th>
             <% @assessment.problems.each do |problem| %>
               <th><%= problem.name %></th>
-            <% end %>
-          <% else %>
-            <th>Nickname</th><th>Version</th><th>Time</th>
-            <% parsed["scoreboard"].each do |column| %>
-              <th><%= column["hdr"] %></th>
             <% end %>
           <% end %>
         <% end %>
       </tr>
     </thead>
+
+    <tbody>
+      <% @sortedGrades.each do |grade| %>
+        <tr>
+          <td title="<%= (@cud.instructor?) ? "#{grade[:fullName]} (#{grade[:andrewID]})" : "" %>">
+            <%= grade[:nickname] %>
+          </td>
+          <td>
+            <%= if grade[:version] == 0 %>
+              <font size="-2">Unofficial</font>
+            <% else %>
+              <%= grade[:version] %>
+            <% end %>
+          </td>
+          <td><%= grade[:time] %></td>
+          <% if @colspec %>
+            <% @colspec.each_with_index do |c, i| %>
+              <% # this is a hack for 15-122's image lab.  It displays b64 encoded results in image tags %>
+              <% if c["img"] %>
+                <td><img src="data:image/png;base64,<%= grade[:entry][i] %>" /></td>
+              <% else %>
+                <td><%= grade[:entry][i] %></td>
+              <% end %>
+            <% end %>
+          <% else %>
+            <% grade[:entry].each do |column| %>
+              <td><%= column %></td>
+            <% end %>
+          <% end %>
+        </tr>
+      <% end %>
+    </tbody>
   </table>
 <% end %>
 
-<% @sortedGrades.each do |grade| %>
-  <tr>
-    <% if @cud.instructor? then
-      title = "#{grade[:fullName]} (#{grade[:andrewID]})"
-    end%>
-  <td title="<%=title %>"><%= grade[:nickname] %></td>
-  <td>
-    <%= if grade[:version] == 0 then
-          "<font size=-2>Unofficial</font>"
-        else
-    grade[:version]
-    end%></td>
-  <td><%= grade[:time] %></td>
-    <% if @colspec then %>
-      <% @colspec.each_with_index do |c, i| %>
-        <% if c["img"] then %>
-          <td><img src="data:image/png;base64,<%= grade[:entry][i] %>" /></td>
-        <% else %>
-          <td><%= grade[:entry][i] %></td>
-        <% end %>
-      <% end %>
-    <% else %>
-      <% grade[:entry].each do |column| %>
-        <td><%= column %></td>
-      <% end %>
-    <% end %>
-  </tr>
-<% end %>
-</table>
 
 <%= form_for @cud, url: course_course_user_datum_path(@course, @cud) do |f| %>
 <% if @cud.errors.any? %>
@@ -83,4 +86,4 @@
   <table width=50% class="verticalTable" >
   <tr><th><h3>Nickname:</h3> </th><td><%= f.text_field :nickname %>  <input id="user_submit" name="commit" type="submit" class="btn" value="Update Nickname" onclick="formvalidation(this.parentNode); return false;"></td></tr>
   </table>
-<%end %>
+<% end %>

@@ -26,7 +26,7 @@ protected
     begin
       # Quote JSON keys and values if they are not already quoted
       quoted = colspec.gsub(/([a-zA-Z0-9]+):/, '"\1":').gsub(/:([a-zA-Z0-9]+)/, ':"\1"')
-      parsed = ActiveSupport::JSON.decode(quoted)
+      parsed = ActiveSupport::JSON.decode(colspec)
     rescue StandardError => e
       errors.add "colspec", "#{e}"
       return

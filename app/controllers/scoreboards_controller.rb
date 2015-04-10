@@ -19,13 +19,14 @@ class ScoreboardsController < ApplicationController
 
   action_auth_level :show, :student
   def show
+    @latest_submissions = @assessment.submissions.latest
+
     # It turns out that it's faster to just get everything and let the
     # view handle it
     problemQuery = "SELECT scores.score AS score,
         submissions.version AS version,
         submissions.created_at AS time,
         submissions.autoresult AS autoresult,
-        problem_id AS problem_id,
         problems.name AS problem_name,
         submissions.course_user_datum_id AS course_user_datum_id
         FROM scores,submissions,problems
@@ -50,7 +51,6 @@ class ScoreboardsController < ApplicationController
         @grades[uid][:version] = row["version"].to_i
         @grades[uid][:autoresult] = row["autoresult"]
       end
-      #			@grades[uid][:problems][row["problem_id"].to_i] = row["score"].to_i
       @grades[uid][:problems][row["problem_name"]] = row["score"].to_f.round(1)
     end
 
@@ -62,7 +62,6 @@ class ScoreboardsController < ApplicationController
     # Build the scoreboard entries for each student
     @grades.values.each do |grade|
       begin
-
         if @assessment.overwrites_method?(:createScoreboardEntry)
           grade[:entry] = @assessment.config_module.createScoreboardEntry(
             grade[:problems],
@@ -96,7 +95,6 @@ class ScoreboardsController < ApplicationController
 
     # Catch errors along the way. An instructor will get the errors, a
     # student will simply see an unsorted scoreboard.
-
     @sortedGrades = @grades.values.sort do |a, b|
       begin
 
@@ -118,10 +116,10 @@ class ScoreboardsController < ApplicationController
       end
     end
 
-    begin
+    @colspec = nil
+    unless @scoreboard.colspec.blank?
+      # our scoreboard validations should ensure this will always work
       @colspec = ActiveSupport::JSON.decode(@scoreboard.colspec)["scoreboard"]
-    rescue
-      @colspec = nil
     end
   end
 
@@ -164,7 +162,7 @@ private
 
   # emitColSpec - Emits a text summary of a column specification string.
   def emitColSpec(colspec)
-    return "Empty column specification" if colspec.nil?
+    return "Empty column specification" if colspec.blank?
 
     begin
       # Quote JSON keys and values if they are not already quoted
