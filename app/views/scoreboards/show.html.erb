@@ -18,6 +18,7 @@
   <table class="sortable prettyBorder">
     <thead>
       <tr>
+        <th>Rank</th>
         <% if @config_header %>
           <%= sanitize @config_header, tags: %w(th td) %>
         <% else %>
@@ -37,13 +38,14 @@
     </thead>
 
     <tbody>
-      <% @sortedGrades.each do |grade| %>
+      <% @sortedGrades.each_with_index do |grade, i| %>
         <tr>
+          <td><%= i + 1 %></td>
           <td title="<%= (@cud.instructor?) ? "#{grade[:fullName]} (#{grade[:andrewID]})" : "" %>">
             <%= grade[:nickname] %>
           </td>
           <td>
-            <%= if grade[:version] == 0 %>
+            <% if grade[:version] == 0 %>
               <font size="-2">Unofficial</font>
             <% else %>
               <%= grade[:version] %>

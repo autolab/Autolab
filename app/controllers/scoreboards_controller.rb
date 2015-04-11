@@ -19,8 +19,6 @@ class ScoreboardsController < ApplicationController
 
   action_auth_level :show, :student
   def show
-    @latest_submissions = @assessment.submissions.latest
-
     # It turns out that it's faster to just get everything and let the
     # view handle it
     problemQuery = "SELECT scores.score AS score,
