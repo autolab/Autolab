@@ -14,65 +14,60 @@
     <ul class="nav navbar-nav navbar-right action-links" role="navigation">
 
       <% if session[:sudo] && @cud then %>
-      <li>
-        <%= link_to "(#{@cud.display_name}) Reset user", [:unsudo, @course, @cud] %>
-      </li>
+        <li><%= link_to "(#{@cud.display_name}) Reset user", [:unsudo, @course, @cud] %></li>
       <% end %>
 
-      <li>
-        <a href="/">Courses</a>
-      </li>
+      <li><a href="/">Courses</a></li>
 
       <% if @cud %>
-      <li>
-        <% link = (@cud.course_assistant? && !@cud.section.blank?) ? "Section #{@cud.section} Gradebook" : "Gradebook" %>
-        <%= link_to link, course_course_user_datum_gradebook_path(@cud.course, @cud), :title => "View your gradebook" %>
-      </li>
-      <li>
-        <%= link_to "Jobs", [@course, :jobs], :title => "View a history of autograding jobs" %>
-      </li>
+        <% if @cud.course_assistant? && !@cud.section.blank? %>
+          <li><%= link_to "Section #{@cud.section} Gradebook", [:view, @course, @cud, :gradebook, section: @cud.section], title: "View your gradebook" %></li>
+        <% end %>
 
-      <% if @cud.instructor? %>
-      <li>
-        <%= link_to "Manage Course", [:manage, @course], :title => "Perform course-wise administrative actions" %>
-      </li>
-      <% end %>
+        <% if @cud.instructor? || !(@cud.course_assistant? && !@cud.section.blank?) %>
+          <li><%= link_to "Gradebook", [@course, @cud, :gradebook], title: "View your gradebook" %></li>
+        <% end %>
+
+        <li><%= link_to "Jobs", [@course, :jobs], title: "View a history of autograding jobs" %></li>
+
+        <% if @cud.instructor? %>
+          <li><%= link_to "Manage Course", [:manage, @course], title: "Perform course-wise administrative actions" %></li>
+        <% end %>
       <% end %>
 
-      <% if !@cud && current_user && current_user.administrator? %>
-      <li>
-        <%= link_to "Autolab Admin", admin_path, :title => "Perform system-wise administrative actions" %>
-      </li>
+      <% if current_user && current_user.administrator? %>
+        <li><%= link_to "Manage Autolab", admin_path, title: "Perform system-wide administrative actions" %></li>
       <% end %>
 
       <!-- User -->
       <% if user_signed_in? %>
-      <li class="dropdown">
-        <div class="dropdown-toggle" id="dropdownMenu1" data-toggle="dropdown">
-          <%= current_user.display_name %>
-          <span class="caret"></span>
-        </div>
-        <ul class="dropdown-menu animated fadeInDown" role="menu" aria-labelledby="dropdownMenu1">
-          <% unless current_user.nil? %>
-          <li role="presentation">
-            <%= link_to "Account", edit_user_path(current_user), :title => "View your account info" %>
-          </li>
-          <% end %>
-          <% if @course and @cud %>
-          <li role="presentation">
-            <%= link_to "Course Profile", [@course, @cud], :title => "View your user profile for the current course" %>
-          </li>
-          <% end %>
-          <% if Rails.env.development? %>
-          <li role="presentation">
-            <a href='/home/developer_login'>Dev Login</a>
-          </li>
-          <% end %>
-          <li role="presentation" class="divider"></li><li role="presentation">
-            <%= link_to "Log out", destroy_user_session_path, :method => :delete  %>
-          </li>
-        </ul>
-      </li>
+        <li class="dropdown">
+          <div class="dropdown-toggle" id="dropdownMenu1" data-toggle="dropdown">
+            <%= current_user.display_name %>
+            <span class="caret"></span>
+          </div>
+          <ul class="dropdown-menu animated fadeInDown" role="menu" aria-labelledby="dropdownMenu1">
+            <% unless current_user.nil? %>
+              <li role="presentation">
+                <%= link_to "Account", edit_user_path(current_user), :title => "View your account info" %>
+              </li>
+            <% end %>
+            <% if @cud %>
+              <li role="presentation">
+                <%= link_to "Course Profile", [@course, @cud], :title => "View your user profile for the current course" %>
+              </li>
+            <% end %>
+            <% if Rails.env.development? %>
+              <li role="presentation">
+                <a href='/home/developer_login'>Dev Login</a>
+              </li>
+            <% end %>
+            <li role="presentation" class="divider"></li>
+            <li role="presentation">
+              <%= link_to "Log out", destroy_user_session_path, :method => :delete  %>
+            </li>
+          </ul>
+        </li>
       <% end %>
       <!-- End User -->
     </ul>
