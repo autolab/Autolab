@@ -46,7 +46,7 @@ class CourseUserDataController < ApplicationController
     else
       # check CUD existence
       unless user.course_user_data.where(course: @course).empty?
-        flash[:error] = "User #{email} is already in #{@course.display_name}"
+        flash[:error] = "User #{email} is already in #{@course.full_name}"
         redirect_to(action: "new") && return
       end
       @newCUD.user = user
@@ -54,7 +54,7 @@ class CourseUserDataController < ApplicationController
 
     # save CUD
     if @newCUD.save
-      flash[:success] = "Success: added user #{email} in #{@course.display_name}"
+      flash[:success] = "Success: added user #{email} in #{@course.full_name}"
       if @cud.user.administrator?
         redirect_to([:users, @course]) && return
       else

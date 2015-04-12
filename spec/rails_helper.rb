@@ -28,6 +28,9 @@ RSpec.configure do |config|
 
   # Before hooks for initialization
   config.before(:suite) do
+    Capybara.app_host = "http://localhost:8200"
+    Capybara.run_server = true
+    Capybara.server_port = 8200
   end
 
   # After hooks for cleanup
