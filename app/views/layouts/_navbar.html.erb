@@ -17,8 +17,6 @@
         <li><%= link_to "(#{@cud.display_name}) Reset user", [:unsudo, @course, @cud] %></li>
       <% end %>
 
-      <li><a href="/">Courses</a></li>
-
       <% if @cud %>
         <% if @cud.course_assistant? && !@cud.section.blank? %>
           <li><%= link_to "Section #{@cud.section} Gradebook", [:view, @course, @cud, :gradebook, section: @cud.section], title: "View your gradebook" %></li>
@@ -78,6 +76,9 @@
 <% unless @breadcrumbs.blank? then %>
   <div class="sub-navigation">
     <span class="left-nav">
+      <span class="item">
+        <a href="/"><i class="fa fa-home fa-lg"></i></a>
+      </span>
       <% @breadcrumbs.each do |b| %>
         <span class="item"><%= b %></span>
       <% end %>
