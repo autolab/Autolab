@@ -1,5 +1,5 @@
 require "rails_helper"
 
-RSpec.describe ScoreboardSetup, type: :model do
+RSpec.describe Scoreboard, type: :model do
   pending "add some examples to (or delete) #{__FILE__}"
 end
