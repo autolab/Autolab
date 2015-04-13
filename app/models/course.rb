@@ -62,11 +62,11 @@ class Course < ActiveRecord::Base
     assessments.where("start_at < :now AND end_at > :now", now: now)
   end
 
-  def display_name
-    if self[:semester].to_s.size > 0
-      self[:display_name] + " (" + self[:semester] + ")"
+  def full_name
+    if semester.to_s.size > 0
+      display_name + " (" +semester + ")"
     else
-      self[:display_name]
+      display_name
     end
   end
 
