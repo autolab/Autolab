@@ -785,14 +785,6 @@ class AssessmentsController < ApplicationController
 
   action_auth_level :writeup, :student
   def writeup
-    if Time.now < @assessment.start_at && !@cud.instructor?
-      @output = "This assessment has not started yet."
-      return
-    end
-
-    print "\n\n\n"
-    print @assessment.writeup_path
-
     if @assessment.writeup_is_url?
       redirect_to @assessment.writeup
       return
