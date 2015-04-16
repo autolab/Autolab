@@ -204,8 +204,8 @@ ActiveRecord::Schema.define(version: 20150406221712) do
 
   create_table "scoreboards", force: :cascade do |t|
     t.integer "assessment_id", limit: 4
-    t.string  "banner",        limit: 255
-    t.string  "colspec",       limit: 255
+    t.text    "banner",        limit: 65535
+    t.text    "colspec",       limit: 65535
   end
 
   create_table "scores", force: :cascade do |t|
