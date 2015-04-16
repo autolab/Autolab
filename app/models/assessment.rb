@@ -327,12 +327,12 @@ private
     s = {}
     s["general"] = serialize_general
     s["problems"] = problems.map &:serialize
-    s["autograding_setup"] = autograding_setup.serialize if autograding_setup
-    s["scoreboard_setup"] = scoreboard_setup.serialize if scoreboard_setup
+    s["autograding_setup"] = autograder.serialize if has_autograder?
+    s["scoreboard_setup"] = scoreboard.serialize if has_scoreboard?
     s
   end
 
-  GENERAL_SERIALIZABLE = Set.new %w(name display_name category_name description handin_filename handin_directory has_autograde_old has_svn has_scoreboard_old max_grace_days handout writeup max_submissions disable_handins max_size)
+  GENERAL_SERIALIZABLE = Set.new %w(name display_name category_name description handin_filename handin_directory has_svn max_grace_days handout writeup max_submissions disable_handins max_size)
 
   def serialize_general
     Utilities.serializable attributes, GENERAL_SERIALIZABLE
@@ -342,7 +342,7 @@ private
     attributes = s["general"] if s["general"]
     problems = Problem.deserialize_list s["problems"] if s["problems"]
     autograder = Autograder.deserialize s["autograding_setup"] if s["autograding_setup"]
-    scoreboard_setup = Scoreboard.deserialize s["autograding_setup"] if s["scoreboard_setup"]
+    scoreboard = Scoreboard.deserialize s["scoreboard_setup"] if s["scoreboard_setup"]
   end
 
   def default_max_score

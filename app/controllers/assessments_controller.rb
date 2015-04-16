@@ -197,7 +197,7 @@ class AssessmentsController < ApplicationController
       tarFile = File.new(tarFile.open, "rb")
       tar_extract = Gem::Package::TarReader.new(tarFile)
       tar_extract.rewind
-      is_valid_tar = valid_asmt_tar(tar_extract)
+      is_valid_tar, asmt_name = valid_asmt_tar(tar_extract)
       tar_extract.close
       unless is_valid_tar
         flash[:error] = "Invalid tarball. Please verify the existence of configuration files."
@@ -208,13 +208,13 @@ class AssessmentsController < ApplicationController
       redirect_to(action: "installAssessment") && return
     end
     # Check if the assessment already exists.
-    unless Assessment.find_by(name: asmt_name, course_id: @course.id).nil?
+    unless @course.assessments.find_by(name: asmt_name).nil?
       flash[:error] = "An assessment with the same name already exists for the course. Please use a different name."
       redirect_to(action: "installAssessment") && return
     end
     # If all requirements are satisfied, extract assessment files.
     begin
-      course_root = File.join(Rails.root, "courses", @course.name)
+      course_root = Rails.root.join("courses", @course.name)
       tar_extract.rewind
       tar_extract.each do |entry|
         relative_pathname = entry.full_name
@@ -452,7 +452,7 @@ class AssessmentsController < ApplicationController
   def export
     require "fileutils"
     require "rubygems/package"
-    base_path = File.join(Rails.root, "courses", @course.name)
+    base_path = Rails.root.join("courses", @course.name).to_s
     asmt_dir = @assessment.name
     begin
       # Update the assessment config YAML file.
@@ -493,52 +493,39 @@ class AssessmentsController < ApplicationController
   action_auth_level :import, :instructor
   def import
     props = get_props
-    if !props || !props["general"]
-      return
-    end
+    return unless props && props["general"]
 
     # Before importing, convert the category name to an existing
     # category ID. Create a new category if necessary.
     general = props["general"]
     catName = general["category"] || @assessment.category_name
 
-    if !catName || catName.blank?
-      catName = "Default"
-    end
+    catName = "Default" if catName.blank?
 
     general["category_name"] = catName
 
     # Import general properties
     general.delete("category")
-    @assessment.update_attributes(general)
+    @assessment.update(general)
 
     # Import problems
     problems = props["problems"]
-    if Problem.where(assessment_id: @assessment.id).count == 0
-      for problem in problems do
-        p = Problem.new(name: problem["name"],
-                        description: problem["description"],
-                        assessment_id: @assessment.id,
-                        max_score: problem["max_score"],
-                        optional: problem["optional"])
-        p.save
+    if @assessment.problems.size == 0
+      problems.each do |problem|
+        p = @assessment.problems.create! do |p|
+          p.name = problem["name"]
+          p.description = problem["description"]
+          p.max_score = problem["max_score"]
+          p.optional = problem["optional"]
+        end
       end
     end
 
     # Import autograde
     autograde = props["autograde"]
     unless autograde.blank?
-      autograder = @assessment.autograder
-      if autograder
-        autograder.update(autograde)
-      else
-        Autograder.create do |autograder|
-          autograder.assessment_id = @assessment.id
-          autograder.autograde_image = autograde["autograde_image"]
-          autograder.autograde_timeout = autograde["autograde_timeout"]
-          autograder.release_score = autograde["release_score"]
-        end
-      end
+      autograder = Autograder.find_or_initialize_by(assessment_id: @assessment.id)
+      autograder.update(autograde)
     end
 
     # Import scoreboard
@@ -1009,18 +996,31 @@ private
     ass.permit!
   end
 
+  ##
+  # a valid assessment tar has a single root directory that's named after the
+  # assessment, containing an assessment yaml file and an assessment ruby file
+  #
   def valid_asmt_tar(tar_extract)
-    file_list = []
-    dir_list = []
+    asmt_name = nil
+    asmt_rb_exists = false
+    asmt_yml_exists = false
     tar_extract.each do |entry|
       pathname = entry.full_name
       next if pathname.start_with? "."
-      if entry.directory?
-        dir_list << pathname
+      # nested directories are okay
+      if entry.directory? && pathname.count("/") == 0
+        return false if asmt_name
+        asmt_name = pathname
       else
-        file_list << pathname
+        return false unless asmt_name
+        asmt_rb_exists = true if pathname == "#{asmt_name}/#{asmt_name}.rb"
+        asmt_yml_exists = true if pathname == "#{asmt_name}/#{asmt_name}.yml"
       end
     end
+    return asmt_rb_exists && asmt_yml_exists && (asmt_name != nil), asmt_name
+
+    file_list = []
+    dir_list = []
     dir_list.sort!
     file_list.sort!
     valid_file = false
@@ -1030,14 +1030,12 @@ private
     # The only root-level directory is the assessment name.
     dir_list.each do |dir|
       next if dir.count("/") > 0
-      if !asmt_name.nil?
-        valid_file = false
-        break
+      if asmt_name
+        return false
       else
         asmt_name = dir
       end
     end
-    return false if asmt.nil? || !valid_file
 
     file_list.each do |file|
       if file == "#{asmt_name}/#{asmt_name}.rb"
@@ -1048,4 +1046,5 @@ private
     end
     valid_file = asmt_rb_exist && asmt_yml_exist
   end
+
 end

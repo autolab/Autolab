@@ -6,7 +6,7 @@ class Scoreboard < ActiveRecord::Base
   trim_field :banner, :colspec
   validate :colspec_is_well_formed
 
-  SERIALIZABLE = Set.new [:banner, :colspec]
+  SERIALIZABLE = Set.new %w(banner colspec)
   def serialize
     Utilities.serializable attributes, SERIALIZABLE
   end
