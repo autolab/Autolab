@@ -168,20 +168,16 @@ class AssessmentsController < ApplicationController
   def installAssessment
     ass_dir = Rails.root.join("courses", @course.name)
     @unused_config_files = []
-    begin
-      Dir.foreach(ass_dir) do |filename|
-        next unless File.exist?(File.join(ass_dir, filename, "#{filename}.yml"))
-        # names must be only lowercase letters and digits
-        next if filename =~ /[^a-z0-9]/
+    Dir.foreach(ass_dir) do |filename|
+      next unless File.exist?(File.join(ass_dir, filename, "#{filename}.yml"))
+      # names must be only lowercase letters and digits
+      next if filename =~ /[^a-z0-9]/
 
-        # Only list assessments that aren't installed yet
-        assessment_exists = @course.assessments.exists?(name: filename)
-        @unused_config_files << filename unless assessment_exists
-      end
-      @unused_config_files = @unused_config_files.sort
-    rescue StandardError => error
-      render(text: "<h3>#{error}</h3>", layout: true) && return
+      # Only list assessments that aren't installed yet
+      assessment_exists = @course.assessments.exists?(name: filename)
+      @unused_config_files << filename unless assessment_exists
     end
+    @unused_config_files.sort!
   end
 
   action_auth_level :importAsmtFromTar, :instructor
@@ -250,33 +246,23 @@ class AssessmentsController < ApplicationController
   action_auth_level :importAssessment, :instructor
   def importAssessment
     name = params["assessment_name"]
-    filename = File.join(Rails.root, "courses", @course.name, name, "#{name}.yml")
+    props = get_props(@course.name, name)
 
-    # Load up the properties file
-    props = nil
-    if File.exist?(filename) && File.readable?(filename)
-      File.open(filename, "r") do |f|
-        props = YAML.load(f.read)
-      end
-    else
+    if props.nil?
       flash[:error] = "YAML file not found or not readable."
+      redirect_to(action: :installAssessment) && return
+    elsif !props.key?("general")
+      flash[:error] = "The YAML file must have a top-level 'general' property"
       redirect_to(action: :installAssessment) && return
     end
 
     # If the properties file defines a category, then use it,
     # creating a new category if necessary.
-    if props["general"]
-      props["general"]["category_name"] ||= props["general"]["category"] || "General"
-      params[:assessment] = { name: name,
-                              display_name: props["general"]["display_name"],
-                              category_name: props["general"]["category_name"] }
-      create && return # create should handle the redirection
-      # Otherwise, ask the user to give us a category before we create the
-      # assessment
-    else
-      flash[:error] = "The YAML file must have a top-level 'general' property"
-      redirect_to(action: :installAssessment) && return
-    end
+    props["general"]["category_name"] ||= props["general"]["category"] || "General"
+    params[:assessment] = { name: name,
+                            display_name: props["general"]["display_name"],
+                            category_name: props["general"]["category_name"] }
+    create # create should handle the redirection
   end
 
   # create - Creates an assessment from an assessment directory
@@ -490,9 +476,8 @@ class AssessmentsController < ApplicationController
 
   # import - Import an assessment by loading its persistent
   # properties from properties file.
-  action_auth_level :import, :instructor
   def import
-    props = get_props
+    props = get_props(@course.name, @assessment.name)
     return unless props && props["general"]
 
     # Before importing, convert the category name to an existing
@@ -668,9 +653,8 @@ class AssessmentsController < ApplicationController
   def viewFeedback
     # User requested to view feedback on a score
     @score = @submission.scores.find_by(problem_id: params[:feedback])
-    unless @score
-      redirect_to(action: "index") && return
-    end
+    
+    redirect_to(action: "index") && return unless @score
 
     if Archive.archive? @submission.handin_file_path
       @files = Archive.get_files @submission.handin_file_path
@@ -920,14 +904,16 @@ protected
 
   # get_props - Helper function that loads the persistent assessment
   # properties from a yaml file and returns a hash of the properties
-  def get_props
-    filename = File.join(Rails.root, "courses", @course.name,
-                         @assessment.name, "#{@assessment.name}.yml")
+  def get_props(course_name, ass_name)
+    filename = Rails.root.join("courses", course_name, ass_name, "#{ass_name}.yml")
+
     props = {}
     if File.exist?(filename) && File.readable?(filename)
-      f = File.open(filename, "r")
-      props = YAML.load(f.read)
-      f.close
+      File.open(filename, "r") do |f|
+        props = YAML.load(f.read)
+      end
+    else
+      return nil
     end
 
     if props["general"].key?("handout_filename")
