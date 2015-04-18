@@ -3,6 +3,6 @@ production:
   database: app_autolab_development
   pool: 5
   username: root
-  password: 'ua3djPq9WRLu63fY'
+  password:
   socket: /var/run/mysqld/mysqld.sock
   host: db

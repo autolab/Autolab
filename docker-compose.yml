@@ -2,7 +2,7 @@ db:
   image: mysql
   ports: "3306"
   env:
-    MYSQL_ROOT_PASSWORD: 'ua3djPq9WRLu63fY'
+    MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
 web:
   build: .
   links:
