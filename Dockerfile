@@ -37,11 +37,9 @@ RUN bundle install
 ADD . /home/app/webapp
 
 # precompile the Rails assets
+WORKDIR /home/app/webapp
 RUN RAILS_ENV=production bundle exec rake assets:precompile
 
 # Clean up APT when done.
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-
-# TODO: Look at configuring SSH?
-# TODO: remember to create ./db-data

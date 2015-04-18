@@ -1,7 +1,8 @@
 db:
   image: mysql
-  ports: "3306"
-  env:
+  ports:
+    - '3306'
+  environment:
     MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
 web:
   build: .
