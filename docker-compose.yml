@@ -1,0 +1,12 @@
+db:
+  image: mysql
+  ports: "3306"
+  env:
+    MYSQL_ROOT_PASSWORD: 'ua3djPq9WRLu63fY'
+web:
+  build: .
+  links:
+    - db
+  volumes:
+    - ./courses:/home/app/webapp/courses
+    - ./db-data:/var/lib/mysql
