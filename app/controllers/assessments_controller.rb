@@ -83,9 +83,6 @@ class AssessmentsController < ApplicationController
       quizName = quizDisplayName.downcase.gsub(/[^a-z0-9]/, "")
       category_name = params[:new_category].blank? ? params[:category] : params[:new_category]
 
-      # Setup quiz's assessmnet structure
-      setupAssessment(quizName)
-
       # fill in other fields
       @assessment.name = quizName
       @assessment.display_name = quizDisplayName
@@ -101,6 +98,8 @@ class AssessmentsController < ApplicationController
       @assessment.quizData = quizJSON
       @assessment.max_submissions = params.include?(:max_submissions) ? params[:max_submissions] : -1
       @assessment.save!
+
+      @assessment.construct_folder
 
       quizData = JSON.parse(quizJSON)
 
@@ -189,6 +188,7 @@ class AssessmentsController < ApplicationController
       flash[:error] = "Please select an assessment tarball for uploading."
       redirect_to(action: "installAssessment") && return
     end
+
     begin
       tarFile = File.new(tarFile.open, "rb")
       tar_extract = Gem::Package::TarReader.new(tarFile)
@@ -203,11 +203,13 @@ class AssessmentsController < ApplicationController
       flash[:error] = "Error while reading the tarball -- #{e.message}."
       redirect_to(action: "installAssessment") && return
     end
+
     # Check if the assessment already exists.
     unless @course.assessments.find_by(name: asmt_name).nil?
       flash[:error] = "An assessment with the same name already exists for the course. Please use a different name."
       redirect_to(action: "installAssessment") && return
     end
+
     # If all requirements are satisfied, extract assessment files.
     begin
       course_root = Rails.root.join("courses", @course.name)
@@ -236,6 +238,7 @@ class AssessmentsController < ApplicationController
       flash[:error] = "Error while extracting tarball to server -- #{e.message}."
       redirect_to(action: "installAssessment") && return
     end
+
     params[:assessment_name] = asmt_name
     importAssessment && return
   end
@@ -245,7 +248,7 @@ class AssessmentsController < ApplicationController
   # installed assessment should be assigned to.
   action_auth_level :importAssessment, :instructor
   def importAssessment
-    name = params["assessment_name"]
+    name = params[:assessment_name]
     props = get_props(@course.name, name)
 
     if props.nil?
@@ -286,7 +289,7 @@ class AssessmentsController < ApplicationController
 
     # From here on, if something weird happens, we rollback
     begin
-      setupAssessment(@assessment.name)
+      @assessment.construct_folder
     rescue StandardError => e
       # Something bad happened. Undo everything
       flash[:error] = e.to_s
@@ -329,7 +332,7 @@ class AssessmentsController < ApplicationController
     rescue StandardError => e
       flash[:error] = "Error saving property file: #{e}"
       uninstall(name)
-      redirect_to(course_path(@course)) && return
+      redirect_to(@course) && return
     end
 
     # Import properties from the properties file
@@ -338,7 +341,7 @@ class AssessmentsController < ApplicationController
     rescue StandardError => e
       flash[:error] = "Error importing properties: #{e}"
       uninstall(name)
-      redirect_to(course_path(@course)) && return
+      redirect_to(@course) && return
     end
 
     flash[:success] = "Successfully installed #{@assessment.name}."
@@ -375,18 +378,15 @@ class AssessmentsController < ApplicationController
   # current system, problems definitions are imported from the
   # assessment properties yaml file.
   def installProblems
-    unless @cud.instructor?
-      redirect_to(action: "index") && return
-    end
+    redirect_to(action: "index") && return unless @cud.instructor?
 
-    if Problem.where(assessment_id: @assessment.id).count == 0
-      for problem in @problems do
-        p = Problem.new(name: problem["name"],
-                        description: problem["description"],
-                        assessment_id: @assessment.id,
-                        max_score: problem["max_score"],
-                        optional: problem["optional"])
-        p.save
+    return unless @assessment.problems.count == 0
+    @problems.each do |problem|
+      @assessment.problems.create do |p|
+        p.name = problem["name"]
+        p.description = problem["description"]
+        p.max_score = problem["max_score"]
+        p.optional = problem["optional"])
       end
     end
   end
@@ -442,7 +442,7 @@ class AssessmentsController < ApplicationController
     asmt_dir = @assessment.name
     begin
       # Update the assessment config YAML file.
-      @assessment.serialize_yaml_to_path @assessment.settings_yaml_path
+      @assessment.dump_yaml
       # Pack assessment directory into a tarball.
       tarStream = StringIO.new("")
       Gem::Package::TarWriter.new(tarStream) do |tar|
@@ -663,7 +663,7 @@ class AssessmentsController < ApplicationController
 
   action_auth_level :reload, :instructor
   def reload
-    @assessment.construct_config_file
+    @assessment.load_config_file
   rescue StandardError => @error
     # let the reload view render
   else
@@ -760,52 +760,14 @@ class AssessmentsController < ApplicationController
   end
 
   # uninstall - uninstalls an assessment
-  action_auth_level :uninstall, :instructor
   def uninstall(name)
-    unless name.blank?
-      @assessment.destroy
-      f = File.join(Rails.root, "assessmentConfig/",
-                    "#{@course.name}-#{name}.rb")
-      File.delete(f)
-    end
+    return if name.blank?
+    @assessment.destroy
+    f = Rails.root.join("assessmentConfig", "#{@course.name}-#{name}.rb")
+    File.delete(f)
   end
 
 protected
-
-  # Setup assessment's directory and create assessment config file as well as
-  # handin directory
-  def setupAssessment(assName)
-    # We need to make the assessment directory before we try to upload
-    # files
-    assDir = File.join(Rails.root, "courses", @course.name, assName)
-    unless File.directory?(assDir)
-      Dir.mkdir(assDir)
-    end
-
-    # Open and read the default assessment config file
-    defaultName = File.join(Rails.root, "lib", "__defaultAssessment.rb")
-    defaultConfigFile = File.open(defaultName, "r")
-    defaultConfig = defaultConfigFile.read
-    defaultConfigFile.close
-
-    # Update with this assessment information
-    defaultConfig.gsub!("##NAME_CAMEL##", assName.camelize)
-    defaultConfig.gsub!("##NAME_LOWER##", assName)
-
-    assessmentConfigName = File.join(assDir, "#{assName}.rb")
-    unless File.file?(assessmentConfigName)
-      # Write the new config out to the right file.
-      assessmentConfigFile = File.open(assessmentConfigName, "w")
-      assessmentConfigFile.write(defaultConfig)
-      assessmentConfigFile.close
-    end
-
-    # Make the handin directory
-    handinDir = File.join(assDir, "handin")
-    unless File.directory?(handinDir)
-      Dir.mkdir(handinDir)
-    end
-  end
 
   # We only do this so that it can be overwritten by modules
   def updateScore(_user, score)
