@@ -8,6 +8,8 @@ web:
   build: .
   links:
     - db
+  ports:
+    - '80:80'
   volumes:
     - ./courses:/home/app/webapp/courses
     - ./db-data:/var/lib/mysql
