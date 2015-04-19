@@ -15,6 +15,7 @@ Autolab3::Application.routes.draw do
 
   resource :admin do
     match "email_instructors", via: [:get, :post]
+    get "tango_status"
   end
 
   resources :users do

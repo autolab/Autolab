@@ -1,0 +1,114 @@
+<% @title = "Tango Status" %>
+
+<% content_for :stylesheets do %>
+  <%= stylesheet_link_tag "eventdrops" %>
+<% end %>
+
+<% content_for :javascripts do %>
+  <%= javascript_include_tag "d3.v3.min" %>
+  <%= javascript_include_tag "eventdrops" %>
+    <script type="text/javascript">
+        // initialize dataset
+        var startTime = new Date("<%= @plot_start + "UTC" %>");
+        var data = <%== @plot_data.to_json %>;
+        data = jQuery.map(data, function(h) {
+                h['dates'] = jQuery.map(h['dates'], function(d) {
+                    return new Date(d + "UTC");
+                    });
+                return h;
+                });
+        var color = d3.scale.category20();
+        // create chart function
+        var eventDropsChart = d3.chart.eventDrops()
+            .start(startTime - 4000000) 
+            .end(Date.now() + 4000000)
+            .eventLineColor(function (datum, index) {
+                switch(index) {
+                case 0: return "#99ccff"
+                case 1: return "#FF7300"
+                case 2: return "#FF0000"
+                default: return "#000000"
+                }
+            })
+            .eventHover(function(e) {
+                var tstamp = d3.select(e).data()[0]; // timestamp of event
+                for (var row = 0; row < data.length; row++) {
+                    if (e.parentNode.firstChild.innerHTML.indexOf(data[row]['name']) == 0) {
+                        break;
+                    }
+                }
+                if (row == data.length) { return; }
+                for (var idx = 0; idx < data[row]['dates'].length; idx++) { // Index of event
+                    if (data[row]['dates'][idx] == tstamp) {
+                        break;
+                    }
+                }
+                if (idx == data[row]['dates']) { return; }
+                // display the event details
+                document.getElementById('job_time').innerHTML = tstamp;
+                document.getElementById('job_name').innerHTML = data[row]['job_name'][idx];
+                document.getElementById('vm_id').innerHTML = data[row]['vm_id'][idx];
+                document.getElementById('image_name').innerHTML = data[row]['vm_image'][idx];
+            })
+            .minScale(0.5)
+            .maxScale(100)
+            .width(1024)
+            .margin({ top: 60, left: 200, bottom: 0, right: 50 });
+        var element = d3.select('#tango_event_plot').datum(data);
+        // draw the chart
+        eventDropsChart(element);
+        // set up window resize handler
+        var chart = $("#tango_event_plot svg"),
+            aspect = chart.width() / chart.height(),
+            container = chart.parent();
+        $(window).on("resize", function() {
+            var targetWidth = container.width();
+            chart.attr("width", targetWidth);
+            chart.attr("height", Math.round(targetWidth / aspect));
+        }).trigger("resize");
+    </script>
+<% end %>
+
+<h2>Tango Status</h2>
+
+<h3>Global Statistics</h3>
+<ul>
+    <li>Total Job Requests: <%= @tango_info["job_requests"] %></li>
+    <li>Total Job Retries: <%= @tango_info["job_retries"] %></li>
+    <li>Job Runtime Errors: <%= @tango_info["runjob_errors"] %></li>
+    <li>Job Copyout Errors: <%= @tango_info["copyout_errors"] %></li>
+    <li>Tango Threads: <%= @tango_info["num_threads"] %></li>
+</ul>
+
+<h3>VM Pools</h3>
+
+<table class="navigatable prettyBorder">
+        <thead>
+            <tr><th>Pool Name:</th><th>Image Name:</th><th>VM List:</th><th>Free VM List:</th><th>VM Availability Rate:</th></tr>
+        </thead>
+        <tbody>
+                <% @vm_pool_list.each do |p| %>
+                <tr>
+                        <td><%= p[:pool_name] %></td>
+                        <td><%= p[:image_name] %></td>
+                        <td><%= p[:vm_list].join(", ") %></td>
+                        <td><%= p[:free_vm_list].join(", ") %></td>
+                        <td><%= number_to_percentage(p[:free_vm_rate], precision: 1) %></td>
+                </tr>
+                <% end %>
+        </tbody>
+</table>
+
+<h3>Global Job History</h3>
+<p>
+<div id="tango_event_plot"></div>
+<p>Event Summary:</p>
+<div id="tango_job_hover">
+    <ul>
+        <li><b>Event Timestamp:</b> <span id="job_time">Not selected</span>
+        <li><b>Job Name:</b> <span id="job_name">Not selected</span>
+        <li><b>VM ID:</b> <span id="vm_id">Not selected</span>
+        <li><b>Image Name:</b> <span id="image_name">Not selected</span>
+    </ul>
+</div>
+

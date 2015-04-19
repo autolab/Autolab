@@ -7,6 +7,8 @@
                   users_path %></li>
   <li><%= link_to 'Bulk Email Instructors', email_instructors_admin_path,
                   {:title=>"Create a new course"} %></li>
+  <li><%= link_to 'View Tango Status', tango_status_admin_path,
+                  {:title=>'View Tango Status'} %></li>
 </ul>
 <% else %>
 <h2 class="warning">Admin only page.</h2>
