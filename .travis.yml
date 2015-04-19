@@ -16,8 +16,8 @@ before_script:
 - chmod 600 id_ci_github
 - ssh-add ./id_ci_github
 - git clone git@github.com:autolab/cmu-prod.git
-- cp cmu-prod/frontend-configs/initializers/devise.rb Autolab/config/initializers/devise.rb
-- cd Autolab
+- cp cmu-prod/frontend-configs/initializers/devise.rb autolab/Autolab/config/initializers/devise.rb
+- cd autolab/Autolab/
 - cp config/database.travis.yml config/database.yml
 - cp config/autogradeConfig.rb.template config/autogradeConfig.rb
 - mkdir attachments/ tmp/
