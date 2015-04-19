@@ -12,6 +12,7 @@ web:
     - db
   ports:
     - '80:80'
+    - '443:443'
   volumes:
     - ./courses:/home/app/webapp/courses
     - ./db-data:/var/lib/mysql
