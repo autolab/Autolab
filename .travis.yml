@@ -2,9 +2,10 @@ language: ruby
 rvm:
 - 2.2.0
 env:
-- secure: HMIuu9EFHDQEfQRX/0sDzu6QhINF3qe/LAjqhEivEGLykbNF7WVwcg/OUAElVi9kM2FIoOvibzduP0T6oBG3dlnXj/X8XkiR/ROfg0Njyfb548MK9c88D8uMEGfjxnKvyyN34TPsT9oSVA8FziE+wyWo5smQ/4FjdVFSj4A2zfc=
-- secure: aMfZqog0j/AKV3SnpVY1ah14iNjDmwgVRPBdtRvd0lf7taqNV+7QZ01pTJ/XdqAOgHmJ7s6hj/0CHoVJxVqhj5ugoJb8T4XOwVuAuJdQKdfW5sAHSR3Th02oC72L5JO1HBv3/oE4LyQ1wARwwz0aym8IyrItA6V//nedoW5s04U=
-- secure: Z6YE6NuDeuraasd5gFG+x7PU3rKxhLjL6VZ7HJfZJEVyxFucRz8Hv4xlxkQV3P61w6S0uyp/reXwKy8meYAQLzVZ4pBpK7sEeSZ5w00WRH8NCGeMJmwdQi2JLCYRZ/KdOc0o5l5bbND+JG1o/U9HtG2cHO2G8M6hVGbARn+ywLg=
+  global:
+    - secure: HMIuu9EFHDQEfQRX/0sDzu6QhINF3qe/LAjqhEivEGLykbNF7WVwcg/OUAElVi9kM2FIoOvibzduP0T6oBG3dlnXj/X8XkiR/ROfg0Njyfb548MK9c88D8uMEGfjxnKvyyN34TPsT9oSVA8FziE+wyWo5smQ/4FjdVFSj4A2zfc=
+    - secure: aMfZqog0j/AKV3SnpVY1ah14iNjDmwgVRPBdtRvd0lf7taqNV+7QZ01pTJ/XdqAOgHmJ7s6hj/0CHoVJxVqhj5ugoJb8T4XOwVuAuJdQKdfW5sAHSR3Th02oC72L5JO1HBv3/oE4LyQ1wARwwz0aym8IyrItA6V//nedoW5s04U=
+    - secure: Z6YE6NuDeuraasd5gFG+x7PU3rKxhLjL6VZ7HJfZJEVyxFucRz8Hv4xlxkQV3P61w6S0uyp/reXwKy8meYAQLzVZ4pBpK7sEeSZ5w00WRH8NCGeMJmwdQi2JLCYRZ/KdOc0o5l5bbND+JG1o/U9HtG2cHO2G8M6hVGbARn+ywLg=
 before_script:
 - cd ~
 - curl -L -o id_ci_github.enc "$CI_GITHUB_USER_PRIVATE_KEY_URL"
