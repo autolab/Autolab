@@ -11,6 +11,7 @@ before_script:
 - curl -L -o id_ci_github.enc "$CI_GITHUB_USER_PRIVATE_KEY_URL"
 - openssl aes-256-cbc -k "$CI_GITHUB_USER_PRIVATE_KEY_SECRET" -in id_ci_github.enc
   -d -a -out id_ci_github
+- eval `ssh-agent`
 - ssh-add -D
 - chmod 600 id_ci_github
 - ssh-add ./id_ci_github
