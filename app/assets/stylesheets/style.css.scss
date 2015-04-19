@@ -163,6 +163,7 @@ div.main-header img {
   width: 100%;
   border-bottom: 1px solid rgba(223, 220, 220, 1);
   margin-bottom: 15px;
+  padding: 0 15px;
 }
 .sub-navigation .left-nav,
 .sub-navigation .right-nav {
@@ -173,6 +174,7 @@ div.main-header img {
   color: rgb(183, 180, 180);
   font-size: 16px;
   line-height: 22px;
+  cursor: pointer;
 }
 
 .sub-navigation .item a,

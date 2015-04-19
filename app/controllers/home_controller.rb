@@ -39,7 +39,7 @@ class HomeController < ApplicationController
     cud.instructor = params[:isInstructor] if course_id == PUBLIC_COURSE_ID
     if cud.save
       flash[:success] = "You have successfully registered for " +
-                        @course.display_name
+                        @course.full_name
       redirect_to(controller: "course", course: @course.name,
                   action: "index") && return
     else
@@ -57,7 +57,7 @@ class HomeController < ApplicationController
 
   def vmlist
     @images = {}
-    AutogradingSetup.all.each do |a|
+    Autograder.find_each do |a|
       image = a.autograde_image
       assessment = a.assessment
       course = assessment.course

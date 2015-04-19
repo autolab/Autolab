@@ -32,5 +32,5 @@
 
 <% if current_user.administrator? %>
 <%= link_to "Delete Course", course_path(@course), method: :delete,
-	data: {confirm: "Are you sure to destroy #{@course.display_name}?"}, class: "btn" %>
+	data: {confirm: "Are you sure to destroy #{@course.full_name}?"}, class: "btn" %>
 <% end %>

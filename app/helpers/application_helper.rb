@@ -83,7 +83,7 @@ module ApplicationHelper
   end
 
   def list_archive_files(submission, title)
-    if Archive.is_archive? submission.handin_file_path
+    if Archive.archive? submission.handin_file_path
       link_to title, list_archive_course_assessment_submission_path(@course, @assessment, submission),
               tabindex: -1, target: "_blank"
     end
