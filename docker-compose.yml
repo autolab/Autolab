@@ -4,6 +4,8 @@ db:
     - '3306'
   environment:
     MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+  volumes:
+    - ./mysql:/etc/mysql/conf.d
 web:
   build: .
   links:
