@@ -36,6 +36,12 @@ RUN bundle install
 # Add the rails app
 ADD . /home/app/webapp
 
+# Create the log files
+RUN mkdir -p /home/app/webapp/log && \
+  touch /home/app/webapp/log/production.log && \
+  chown -R app:app /home/app/webapp/log && \
+  chmod 0664 /home/app/webapp/log/production.log
+
 # precompile the Rails assets
 WORKDIR /home/app/webapp
 RUN RAILS_ENV=production bundle exec rake assets:precompile
