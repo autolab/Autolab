@@ -141,7 +141,7 @@ Autolab3::Application.routes.draw do
       end
 
       member do
-        get "confirm"
+        post "confirm"
         get "destroyConfirm"
         match "sudo", via: [:get, :post]
         get "unsudo"

@@ -59,7 +59,7 @@
 <h3>Join Requests</h3>
 <% @requests.each do |req_cud| %>
   <%= req_cud.user.first_name %> <%= req_cud.user.last_name %> (<%= req_cud.user.email %>)
-  <%= link_to "Confirm", [:confirm, @course, req_cud], :class=>"btn small" %>
+  <%= link_to "Confirm", [:confirm, @course, req_cud], :class=>"btn small", :method=>:post %>
   <%= link_to "Cancel", [@course, req_cud], :method => :delete, :class=>"btn small" %>
 <% end %>
 <% end %>
