@@ -204,7 +204,8 @@ class Assessment < ActiveRecord::Base
     config_source = File.open(source_config_file_path, "r") { |f| f.read }
 
     # uniquely rename module (so that it's unique among all assessment modules loaded in Autolab)
-    config = source_config.gsub "module #{source_config_module_name}", "module #{config_module_name}"
+    config = config_source.gsub("module #{source_config_module_name}",
+                                "module #{config_module_name}")
 
     # write to config_file_path
     File.open(config_file_path, "w") { |f| f.write config }
