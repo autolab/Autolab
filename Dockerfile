@@ -22,7 +22,7 @@ RUN rm -f /etc/service/nginx/down
 # Remove the default site
 RUN rm /etc/nginx/sites-enabled/default
 # Add the nginx info
-ADD nginx.conf /etc/nginx/sites-enabled/webapp.conf
+ADD docker/nginx.conf /etc/nginx/sites-enabled/webapp.conf
 
 # Prepare folders
 RUN mkdir /home/app/webapp
