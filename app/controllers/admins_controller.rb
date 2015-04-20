@@ -30,7 +30,8 @@ class AdminsController < ApplicationController
     # Obtain Tango VM Pools
     @vm_pool_list = [ { :pool_name => "rhel.img", :image_name => "rhel.img" },
                       { :pool_name => "rhel10601.img", :image_name => "rhel10601.img" },
-                      { :pool_name => "rhel210.img", :image_name => "rhel210.img" }
+                      { :pool_name => "ubun746.img", :image_name => "ubun746.img" },
+                      { :pool_name => "rhel122.img", :image_name => "rhel122.img" }
                     ]
     # Obtain VM status for each pool
     @vm_pool_list.each{ |p|
@@ -39,25 +40,37 @@ class AdminsController < ApplicationController
         p[:free_vm_list] = hash["free"].sort!
         p[:free_vm_rate] = hash["free"].length.to_f / hash["total"].length * 100
     }
+    # Obtain Image -> Course mapping
+    @img_to_course = { }
+    Assessment.all.each { |asmt|
+        if asmt.has_autograder? then
+            a = asmt.autograder
+            @img_to_course[a.autograde_image] ||= Set.new []
+            @img_to_course[a.autograde_image] << asmt.course.name
+        end
+    }
     # Run through job list and extract useful data
     @tango_live_jobs = TangoClient.jobs
     @tango_dead_jobs = TangoClient.jobs(deadjobs = 1)
-    @plot_data = { new_jobs: { name: "New Job Requests", dates: [], job_name: [],
-                                     vm_image: [], vm_id: [], status: [] },
-                   job_errors: { name: "Job Errors", dates: [], job_name: [],
-                                     vm_image: [], vm_id: [], retry_count: [] },
-                   failed_jobs: { name: "Job Failures", dates: [], job_name: [],
-                                  vm_image: [], vm_id: [] } }
+    @plot_data = { new_jobs: { name: "New Job Requests", dates: [], job_name: [], job_id: [],
+                                     vm_image: [], vm_id: [], status: [], duration: [] },
+                   job_errors: { name: "Job Errors", dates: [], job_name: [], job_id: [],
+                                     vm_image: [], vm_id: [], retry_count: [], duration: [] },
+                   failed_jobs: { name: "Job Failures", dates: [], job_name: [], job_id: [],
+                                  vm_image: [], vm_id: [], duration: [] } }
     @tango_live_jobs.each{ |j|
         next if j["trace"].nil? || j["trace"].length == 0
         tstamp = j["trace"][0].split("|")[0]
         name = j["name"]
         image = j["vm"]["image"]
         vmid = j["vm"]["id"]
-        status = j["assigned"] ? "#6699ff" : "#006699" # Assigned => pale blue; otherwise deep blue.
+        jid = j["id"]
+        status = j["assigned"] ? "Running (assigned)" : "Waiting to be assigned"
         trace = j["trace"].join
+        duration = Time.parse(j["trace"].last.split("|")[0]).to_i \
+                       - Time.parse(j["trace"].first.split("|")[0]).to_i
         if j["retries"] > 0 || trace.include?("fail") || trace.include?("error") then
-            status = "#660099" # If errors occured, color is purple.
+            status = "Running (error occured)"
             j["trace"].each{ |tr|
                 next unless tr.include?("fail") || tr.include?("error")
                 @plot_data[:job_errors][:dates] << tr.split("|")[0]
@@ -65,6 +78,8 @@ class AdminsController < ApplicationController
                 @plot_data[:job_errors][:vm_image] << image
                 @plot_data[:job_errors][:vm_id] << vmid
                 @plot_data[:job_errors][:retry_count] << j["retries"]
+                @plot_data[:job_errors][:duration] << duration
+                @plot_data[:job_errors][:job_id] << jid
             }
         end
         @plot_data[:new_jobs][:dates] << tstamp
@@ -72,14 +87,19 @@ class AdminsController < ApplicationController
         @plot_data[:new_jobs][:vm_image] << image
         @plot_data[:new_jobs][:vm_id] << vmid
         @plot_data[:new_jobs][:status] << status
+        @plot_data[:new_jobs][:duration] << duration
+        @plot_data[:new_jobs][:job_id] << jid
     }
     @tango_dead_jobs.each{ |j|
         next if j["trace"].nil? || j["trace"].length == 0
         tstamp = j["trace"][0].split("|")[0]
         name = j["name"]
+        jid = j["id"]
         image = j["vm"]["image"]
         vmid = j["vm"]["id"]
         trace = j["trace"].join
+        duration = Time.parse(j["trace"].last.split("|")[0]).to_i \
+            - Time.parse(j["trace"].first.split("|")[0]).to_i
         warnings = false
         if j["retries"] > 0 || trace.include?("fail") || trace.include?("error") then
             j["trace"].each{ |tr|
@@ -89,23 +109,29 @@ class AdminsController < ApplicationController
                 @plot_data[:job_errors][:vm_image] << image
                 @plot_data[:job_errors][:vm_id] << vmid
                 @plot_data[:job_errors][:retry_count] << j["retries"]
+                @plot_data[:job_errors][:duration] << duration
+                @plot_data[:job_errors][:job_id] << jid
             }
             warnings = true
         end
         if !j["trace"][-1].include?("Autodriver returned normally") then
-            status = "#ff0000" # If job fails, color is red.
+            status = "Errored"
             @plot_data[:failed_jobs][:dates] << tstamp 
             @plot_data[:failed_jobs][:job_name] << name
             @plot_data[:failed_jobs][:vm_image] << image
-            @plot_data[:failed_jobs][:vm_id] << vmid 
+            @plot_data[:failed_jobs][:vm_id] << vmid
+            @plot_data[:failed_jobs][:duration] << duration
+            @plot_data[:failed_jobs][:job_id] << jid
         else
-            status = warnings ? "#ff6600" : "#195905" # If job completes with warning, color is orange.
+            status = warnings ? "Completed with errors" : "Completed"
         end
         @plot_data[:new_jobs][:dates] << tstamp
         @plot_data[:new_jobs][:job_name] << name
         @plot_data[:new_jobs][:vm_image] << image
         @plot_data[:new_jobs][:vm_id] << vmid
         @plot_data[:new_jobs][:status] << status
+        @plot_data[:new_jobs][:duration] << duration
+        @plot_data[:new_jobs][:job_id] << jid
     }
     @plot_start = @plot_data[:new_jobs][:dates].min { |a,b| DateTime.parse(a) <=> DateTime.parse(b) }
     @plot_data = @plot_data.values
