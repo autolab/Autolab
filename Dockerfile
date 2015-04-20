@@ -36,6 +36,9 @@ RUN bundle install
 # Add the rails app
 ADD . /home/app/webapp
 
+# Move the database configuration into place
+ADD config/database.docker.yml /home/app/webapp/config/database.yml
+
 # Create the log files
 RUN mkdir -p /home/app/webapp/log && \
   touch /home/app/webapp/log/production.log && \
