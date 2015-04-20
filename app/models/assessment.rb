@@ -85,6 +85,10 @@ class Assessment < ActiveRecord::Base
     Time.now <= grading_deadline
   end
 
+  def folder_path
+    Rails.root.join("courses", course.name, name)
+  end
+
   def handout_path
     path handout
   end
@@ -164,29 +168,31 @@ class Assessment < ActiveRecord::Base
   def construct_folder
     # this should construct the assessment folder and the handin folder
     FileUtils.mkdir_p(handin_directory_path)
-    construct_default_config_file
-    dump_yaml
+    dump_yaml if construct_default_config_file
   end
 
   ##
-  # Gives the assessment a default config file, unless it already has a config file
+  # Gives the assessment a default config file, unless it already has a config file.
+  # returns true if the file is actually created
   #
   def construct_default_config_file
     assessment_config_file_path = source_config_file_path
-    return if File.file?(assessment_config_file_file)
+    return false if File.file?(assessment_config_file_path)
 
     # Open and read the default assessment config file
     default_config_file_path = Rails.root.join("lib", "__defaultAssessment.rb")
-    config_source = File.open(defaultName, "r") { |f| f.read }
+    config_source = File.open(default_config_file_path, "r") { |f| f.read }
 
     # Update with this assessment information
     config_source.gsub!("##NAME_CAMEL##", name.camelize)
     config_source.gsub!("##NAME_LOWER##", name)
 
     # Write the new config out to the right file.
-    File.open(assessment_config_file_path, "w") { |f| f.write config_source }
+    File.open(assessment_config_file_path, "w") { |f| f.write(config_source) }
     # Load the assessment config file while we're at it
     File.open(config_file_path, "w") { |f| f.write config }
+
+    true
   end
 
   ##
@@ -225,6 +231,17 @@ class Assessment < ActiveRecord::Base
   #
   def dump_yaml
     File.open(path "#{name}.yml", "w") { |f| f.write(YAML.dump serialize) }
+  end
+
+  ##
+  # reads from the properties of the YAML file and saves them to the assessment.
+  # Will only run if the assessment has not been saved.
+  #
+  def load_yaml
+    return unless new_record?
+    props = YAML.load(File.open(path("#{name}.yml"), "r") { |f| f.read })
+    backwards_compatibility(props)
+    deserialize(props)
   end
 
   def writeup_is_url?
@@ -353,9 +370,9 @@ private
   def serialize
     s = {}
     s["general"] = serialize_general
-    s["problems"] = problems.map &:serialize
-    s["autograding_setup"] = autograder.serialize if has_autograder?
-    s["scoreboard_setup"] = scoreboard.serialize if has_scoreboard?
+    s["problems"] = problems.map(&:serialize)
+    s["autograder"] = autograder.serialize if has_autograder?
+    s["scoreboard"] = scoreboard.serialize if has_scoreboard?
     s
   end
 
@@ -366,10 +383,17 @@ private
   end
 
   def deserialize(s)
-    attributes = s["general"] if s["general"]
-    problems = Problem.deserialize_list s["problems"] if s["problems"]
-    autograder = Autograder.deserialize s["autograding_setup"] if s["autograding_setup"]
-    scoreboard = Scoreboard.deserialize s["scoreboard_setup"] if s["scoreboard_setup"]
+    self.due_at = self.end_at = self.visible_at = self.start_at = self.grading_deadline = Time.now
+    self.quiz = false
+    self.quizData = ""
+    update(s["general"])
+    Problem.deserialize_list(self, s["problems"]) if s["problems"]
+    if s["autograder"]
+      Autograder.find_or_initialize_by(assessment_id: id).update(s["autograder"])
+    end
+    if s["scoreboard"]
+      Scoreboard.find_or_initialize_by(assessment_id: id).update(s["scoreboard"])
+    end
   end
 
   def default_max_score
@@ -437,6 +461,29 @@ private
 
   def active?
     Time.now <= course.end_date
+  end
+
+  ##
+  # This function attempts to preserve Backwords Compatibility for when assessments are
+  # imported from a YAML file
+  #
+  GENERAL_BC = { "category" => "category_name",
+                 "handout_filename" => "handout",
+                 "writeup_filename" => "writeup" }
+  BACKWORDS_COMPATIBILITY = { "autograding_setup" => "autograder",
+                              "scoreboard_setup" => "scoreboard" }
+  def backwards_compatibility(props)
+    GENERAL_BC.each do |old, new|
+      next unless props["general"].key?(old)
+      props["general"][new] = props["general"][old]
+      props["general"].delete(old)
+    end
+    BACKWORDS_COMPATIBILITY.each do |old, new|
+      next unless props.key?(old)
+      props[new] = props[old]
+      props.delete(old)
+    end
+    props["general"]["category_name"] ||= "General"
   end
 
   include AssessmentAssociationCache

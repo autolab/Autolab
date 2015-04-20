@@ -11,10 +11,6 @@ class Scoreboard < ActiveRecord::Base
     Utilities.serializable attributes, SERIALIZABLE
   end
 
-  def self.deserialize(s)
-    new s
-  end
-
 protected
 
   # Validates a JSON column spec for correctness before saving it the database

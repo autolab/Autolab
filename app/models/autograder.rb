@@ -16,8 +16,4 @@ class Autograder < ActiveRecord::Base
   def serialize
     Utilities.serializable attributes, SERIALIZABLE
   end
-
-  def self.deserialize(s)
-    new s
-  end
 end

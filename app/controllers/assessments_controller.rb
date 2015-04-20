@@ -1,5 +1,7 @@
 require "archive"
 require "csv"
+require "fileutils"
+require "rubygems/package"
 require "statistics"
 require "yaml"
 
@@ -140,9 +142,7 @@ class AssessmentsController < ApplicationController
     @quizData.each do |i, _q|
       answer = params[i]
       actualAnswer = @quizData[i]["answer"]
-      if (answer.to_i == actualAnswer)
-        score += 1
-      end
+      score += 1 if (answer.to_i == actualAnswer)
     end
     @submission = Submission.create(assessment_id: @assessment.id,
                                     course_user_datum_id: @cud.id)
@@ -153,9 +153,7 @@ class AssessmentsController < ApplicationController
                           released: true,
                           problem_id: problem.id,
                           submission_id: @submission.id)
-    unless quizScore.save
-      flash[:error] = "Unable to make quiz submission."
-    end
+    flash[:error] = "Unable to make quiz submission." unless quizScore.save
     redirect_to(history_course_assessment_path(@course, @assessment)) && return
   end
 
@@ -181,12 +179,11 @@ class AssessmentsController < ApplicationController
 
   action_auth_level :importAsmtFromTar, :instructor
   def importAsmtFromTar
-    require "rubygems/package"
-    require "fileutils"
     tarFile = params["tarFile"]
     if tarFile.nil?
       flash[:error] = "Please select an assessment tarball for uploading."
-      redirect_to(action: "installAssessment") && return
+      redirect_to(action: "installAssessment")
+      return
     end
 
     begin
@@ -197,11 +194,13 @@ class AssessmentsController < ApplicationController
       tar_extract.close
       unless is_valid_tar
         flash[:error] = "Invalid tarball. Please verify the existence of configuration files."
-        redirect_to(action: "installAssessment") && return
+        redirect_to(action: "installAssessment")
+        return
       end
     rescue StandardError => e
       flash[:error] = "Error while reading the tarball -- #{e.message}."
-      redirect_to(action: "installAssessment") && return
+      redirect_to(action: "installAssessment")
+      return
     end
 
     # Check if the assessment already exists.
@@ -216,16 +215,14 @@ class AssessmentsController < ApplicationController
       tar_extract.rewind
       tar_extract.each do |entry|
         relative_pathname = entry.full_name
-        isdir = entry.directory?
-        isfile = entry.file?
-        if isdir
-          FileUtils.mkdir_p File.join(course_root, relative_pathname),
-                            mode: entry.header.mode, verbose: false
-        elsif isfile
-          FileUtils.mkdir_p File.join(course_root, File.dirname(relative_pathname)),
-                            mode: entry.header.mode, verbose: false
+        if entry.directory?
+          FileUtils.mkdir_p(File.join(course_root, relative_pathname),
+                            mode: entry.header.mode, verbose: false)
+        elsif entry.file?
+          FileUtils.mkdir_p(File.join(course_root, File.dirname(relative_pathname)),
+                            mode: entry.header.mode, verbose: false)
           File.open(File.join(course_root, relative_pathname), "wb") do |f|
-            f.print entry.read
+            f.write entry.read
           end
           FileUtils.chmod entry.header.mode, File.join(course_root, relative_pathname),
                           verbose: false
@@ -248,24 +245,10 @@ class AssessmentsController < ApplicationController
   # installed assessment should be assigned to.
   action_auth_level :importAssessment, :instructor
   def importAssessment
-    name = params[:assessment_name]
-    props = get_props(@course.name, name)
-
-    if props.nil?
-      flash[:error] = "YAML file not found or not readable."
-      redirect_to(action: :installAssessment) && return
-    elsif !props.key?("general")
-      flash[:error] = "The YAML file must have a top-level 'general' property"
-      redirect_to(action: :installAssessment) && return
-    end
-
-    # If the properties file defines a category, then use it,
-    # creating a new category if necessary.
-    props["general"]["category_name"] ||= props["general"]["category"] || "General"
-    params[:assessment] = { name: name,
-                            display_name: props["general"]["display_name"],
-                            category_name: props["general"]["category_name"] }
-    create # create should handle the redirection
+    @assessment = @course.assessments.new(name: params[:assessment_name])
+    @assessment.load_yaml
+    @assessment.construct_folder # make sure there's a handin folder, just in case
+    redirect_to([@course, @assessment])
   end
 
   # create - Creates an assessment from an assessment directory
@@ -280,26 +263,12 @@ class AssessmentsController < ApplicationController
 
       if ass_name.blank?
         flash[:error] = "Assessment name cannot be blank"
-        redirect_to(action: :installAssessment) && return
+        redirect_to(action: :installAssessment)
+        return
       end
 
       # Update name in object
       @assessment.name = ass_name
-    end
-
-    # From here on, if something weird happens, we rollback
-    begin
-      @assessment.construct_folder
-    rescue StandardError => e
-      # Something bad happened. Undo everything
-      flash[:error] = e.to_s
-      begin
-        FileUtils.remove_dir(assDir)
-      rescue StandardError => e2
-        flash[:error] += "An error occurred (#{e2}} " \
-          " while recovering from a previous error (#{flash[:error]})"
-      end
-      redirect_to(action: :installAssessment) && return
     end
 
     # fill in other fields
@@ -311,37 +280,32 @@ class AssessmentsController < ApplicationController
     @assessment.due_at = Time.now
     @assessment.grading_deadline = Time.now
     @assessment.end_at = Time.now
-    @assessment.quiz = params.include?(:quiz) ? params[:quiz] : false
-    @assessment.quizData = params.include?(:quizData) ? params[:quizData] : ""
+    @assessment.quiz = false
+    @assessment.quizData = ""
     @assessment.max_submissions = params.include?(:max_submissions) ? params[:max_submissions] : -1
 
+    begin
+      @assessment.construct_folder
+    rescue StandardError => e
+      # Something bad happened. Undo everything
+      flash[:error] = e.to_s
+      begin
+        FileUtils.remove_dir(@assessment.folder_path)
+      rescue StandardError => e2
+        flash[:error] += "An error occurred (#{e2}} " \
+          " while recovering from a previous error (#{flash[:error]})"
+      end
+      redirect_to(action: :installAssessment)
+      return
+    end
+
+    # From here on, if something weird happens, we rollback
     begin
       @assessment.save!
     rescue StandardError => e
       flash[:error] = "Error saving #{@assessment.name}: #{e}"
-      redirect_to(action: :installAssessment) && return
-    end
-
-    # Create the properties file if it doesn't exist
-    begin
-      f = File.join(Rails.root, "courses", @course.name,
-                    @assessment.name, "#{@assessment.name}.yml")
-      if !File.exist?(f) && !put_props
-        fail "Error while executing put_props()"
-      end
-    rescue StandardError => e
-      flash[:error] = "Error saving property file: #{e}"
-      uninstall(name)
-      redirect_to(@course) && return
-    end
-
-    # Import properties from the properties file
-    begin
-      import
-    rescue StandardError => e
-      flash[:error] = "Error importing properties: #{e}"
-      uninstall(name)
-      redirect_to(@course) && return
+      redirect_to(action: :installAssessment)
+      return
     end
 
     flash[:success] = "Successfully installed #{@assessment.name}."
@@ -351,9 +315,7 @@ class AssessmentsController < ApplicationController
 
   def assessmentInitialize(assignName)
     @assessment = @course.assessments.find_by(name: assignName)
-    unless @assessment
-      fail "Assessment #{assignName} does not exist!"
-    end
+    fail "Assessment #{assignName} does not exist!" unless @assessment
 
     if @assessment.nil?
       flash[:error] = "Error: Invalid assessment"
@@ -386,7 +348,7 @@ class AssessmentsController < ApplicationController
         p.name = problem["name"]
         p.description = problem["description"]
         p.max_score = problem["max_score"]
-        p.optional = problem["optional"])
+        p.optional = problem["optional"]
       end
     end
   end
@@ -436,8 +398,6 @@ class AssessmentsController < ApplicationController
   # properties in a yaml properties file.
   action_auth_level :export, :instructor
   def export
-    require "fileutils"
-    require "rubygems/package"
     base_path = Rails.root.join("courses", @course.name).to_s
     asmt_dir = @assessment.name
     begin
@@ -449,7 +409,7 @@ class AssessmentsController < ApplicationController
         tar.mkdir asmt_dir, File.stat(File.join(base_path, asmt_dir)).mode
         Dir[File.join(base_path, asmt_dir, "**")].each do |file|
           mode = File.stat(file).mode
-          relative_path = file.sub /^#{Regexp.escape base_path}\/?/, ""
+          relative_path = file.sub((/^#{Regexp.escape base_path}\/?/), "")
 
           if File.directory?(file)
             tar.mkdir relative_path, mode
@@ -471,53 +431,6 @@ class AssessmentsController < ApplicationController
       redirect_to action: "index"
     else
       flash[:success] = "Successfully exported the assessment."
-    end
-  end
-
-  # import - Import an assessment by loading its persistent
-  # properties from properties file.
-  def import
-    props = get_props(@course.name, @assessment.name)
-    return unless props && props["general"]
-
-    # Before importing, convert the category name to an existing
-    # category ID. Create a new category if necessary.
-    general = props["general"]
-    catName = general["category"] || @assessment.category_name
-
-    catName = "Default" if catName.blank?
-
-    general["category_name"] = catName
-
-    # Import general properties
-    general.delete("category")
-    @assessment.update(general)
-
-    # Import problems
-    problems = props["problems"]
-    if @assessment.problems.size == 0
-      problems.each do |problem|
-        p = @assessment.problems.create! do |p|
-          p.name = problem["name"]
-          p.description = problem["description"]
-          p.max_score = problem["max_score"]
-          p.optional = problem["optional"]
-        end
-      end
-    end
-
-    # Import autograde
-    autograde = props["autograde"]
-    unless autograde.blank?
-      autograder = Autograder.find_or_initialize_by(assessment_id: @assessment.id)
-      autograder.update(autograde)
-    end
-
-    # Import scoreboard
-    scoreboard = props["scoreboard"]
-    unless scoreboard.blank?
-      scoreboard_prop = Scoreboard.find_or_initialize_by(assessment_id: @assessment.id)
-      scoreboard_prop.update(scoreboard)
     end
   end
 
@@ -553,9 +466,7 @@ class AssessmentsController < ApplicationController
     end
 
     # Remember the student ID in case the user wants visit the gradesheet
-    if params[:cud_id]
-      session["gradeUser#{@assessment.id}"] = params[:cud_id]
-    end
+    session["gradeUser#{@assessment.id}"] = params[:cud_id] if params[:cud_id]
 
     @startTime = Time.now
     if @cud.instructor? && params[:cud_id]
@@ -581,9 +492,7 @@ class AssessmentsController < ApplicationController
     @scores = {}
     for result in results do
       subId = result["submission_id"].to_i
-      unless @scores.key?(subId)
-        @scores[subId] = {}
-      end
+      @scores[subId] = {} unless @scores.key?(subId)
 
       @scores[subId][result["problem_id"].to_i] = {
         score: result["score"].to_f,
@@ -600,9 +509,7 @@ class AssessmentsController < ApplicationController
   action_auth_level :history, :student
   def history
     # Remember the student ID in case the user wants visit the gradesheet
-    if params[:cud_id]
-      session["gradeUser#{@assessment.id}"] = params[:cud_id]
-    end
+    session["gradeUser#{@assessment.id}"] = params[:cud_id] if params[:cud_id]
 
     @startTime = Time.now
     if @cud.instructor? && params[:cud_id]
@@ -628,9 +535,7 @@ class AssessmentsController < ApplicationController
     @scores = {}
     for result in results do
       subId = result["submission_id"].to_i
-      unless @scores.key?(subId)
-        @scores[subId] = {}
-      end
+      @scores[subId] = {} unless @scores.key?(subId)
 
       @scores[subId][result["problem_id"].to_i] = {
         score: result["score"].to_f,
@@ -653,7 +558,7 @@ class AssessmentsController < ApplicationController
   def viewFeedback
     # User requested to view feedback on a score
     @score = @submission.scores.find_by(problem_id: params[:feedback])
-    
+
     redirect_to(action: "index") && return unless @score
 
     if Archive.archive? @submission.handin_file_path
@@ -779,118 +684,6 @@ protected
   def loadHandinPage
   end
 
-  # put_props - Helper function that dumps an assessment's
-  # persistent properties to the properties file. Return true if
-  # successful.
-  def put_props
-    # Generic properties
-    props = {}
-    props["general"] = {
-      "name" => @assessment.name,
-      "display_name" => @assessment.display_name,
-      "description" => @assessment.description,
-      "handin_filename" => @assessment.handin_filename,
-      "handin_directory" => @assessment.handin_directory,
-      "max_grace_days" => @assessment.max_grace_days,
-      "handout" => @assessment.handout,
-      "writeup" => @assessment.writeup,
-      "allow_unofficial" => @assessment.allow_unofficial,
-      "max_submissions" => @assessment.max_submissions,
-      "disable_handins" => @assessment.disable_handins,
-      "max_size" => @assessment.max_size
-    }
-
-    # Make sure we don't have any nil values in the
-    # hash. Otherwise, the model will complain when we try to
-    # update properties.
-    props["general"]["display_name"] = "" unless props["general"]["display_name"]
-    props["general"]["description"] = "" unless props["general"]["description"]
-    props["general"]["handin_filename"] = "" unless props["general"]["handin_filename"]
-    props["general"]["handin_directory"] = "" unless props["general"]["handin_directory"]
-    props["general"]["max_grace_days"] = 0 unless props["general"]["max_grace_days"]
-    props["general"]["handout"] = "" unless props["general"]["handout"]
-    props["general"]["writeup"] = "" unless props["general"]["writeup"]
-    props["general"]["allow_unofficial"] = false unless props["general"]["allow_unofficial"]
-    props["general"]["disable_handins"] = false unless props["general"]["disable_handins"]
-    props["general"]["max_submissions"] = -1 unless props["general"]["max_submissions"]
-    props["general"]["max_size"] = 2 unless props["general"]["max_size"]
-
-    # Category name
-    props["general"]["category"] = @assessment.category_name
-
-    # Array of problems (an array because order matters)
-    props["problems"] = []
-    probs = Problem.where(assessment_id: @assessment.id)
-    for p in probs do
-      pelem = {}
-      pelem["name"] = p.name
-      pelem["description"] = p.description
-      pelem["max_score"] = p.max_score
-      pelem["optional"] = p.optional
-      props["problems"] << pelem
-    end
-
-    # Scoreboard properties (if any)
-    props["scoreboard"] = {}
-    scoreboard_prop = @assessment.scoreboard
-    if scoreboard_prop
-      props["scoreboard"] = {
-        "banner" => scoreboard_prop["banner"],
-        "colspec" => scoreboard_prop["colspec"]
-      }
-    end
-
-    # Autograde properties (if any)
-    props["autograde"] = {}
-    autograder = @assessment.autograder
-    if autograder
-      props["autograde"] = {
-        "autograde_image" => autograder["autograde_image"],
-        "autograde_timeout" => autograder["autograde_timeout"],
-        "release_score" => autograder["release_score"]
-      }
-    end
-
-    # Now dump the properties
-    filename = File.join(Rails.root, "courses", @course.name,
-                         @assessment.name, "#{@assessment.name}.yml")
-    begin
-      f = File.open(filename, "w")
-      f.puts YAML.dump(props)
-      f.close
-    rescue
-      return false
-    end
-    true
-  end
-
-  # get_props - Helper function that loads the persistent assessment
-  # properties from a yaml file and returns a hash of the properties
-  def get_props(course_name, ass_name)
-    filename = Rails.root.join("courses", course_name, ass_name, "#{ass_name}.yml")
-
-    props = {}
-    if File.exist?(filename) && File.readable?(filename)
-      File.open(filename, "r") do |f|
-        props = YAML.load(f.read)
-      end
-    else
-      return nil
-    end
-
-    if props["general"].key?("handout_filename")
-      props["general"]["handout"] = props["general"]["handout_filename"]
-      props["general"].delete("handout_filename")
-    end
-
-    if props["general"].key?("writeup_filename")
-      props["general"]["writeup"] = props["general"]["writeup_filename"]
-      props["general"].delete("writeup_filename")
-    end
-
-    props
-  end
-
   def releaseMatchingGrades
     num_released = 0
 
@@ -957,34 +750,6 @@ private
         asmt_yml_exists = true if pathname == "#{asmt_name}/#{asmt_name}.yml"
       end
     end
-    return asmt_rb_exists && asmt_yml_exists && (asmt_name != nil), asmt_name
-
-    file_list = []
-    dir_list = []
-    dir_list.sort!
-    file_list.sort!
-    valid_file = false
-    asmt_name = nil
-    asmt_rb_exist = false
-    asmt_yml_exist = false
-    # The only root-level directory is the assessment name.
-    dir_list.each do |dir|
-      next if dir.count("/") > 0
-      if asmt_name
-        return false
-      else
-        asmt_name = dir
-      end
-    end
-
-    file_list.each do |file|
-      if file == "#{asmt_name}/#{asmt_name}.rb"
-        asmt_rb_exist = true
-      elsif file == "#{asmt_name}/#{asmt_name}.yml"
-        asmt_yml_exist = true
-      end
-    end
-    valid_file = asmt_rb_exist && asmt_yml_exist
+    [asmt_rb_exists && asmt_yml_exists && (!asmt_name.nil?), asmt_name]
   end
-
 end
