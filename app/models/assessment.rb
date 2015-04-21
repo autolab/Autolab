@@ -36,6 +36,7 @@ class Assessment < ActiveRecord::Base
 
   # Callbacks
   trim_field :name, :display_name, :handin_filename, :handin_directory, :handout, :writeup
+  after_save :dump_yaml
   after_save :invalidate_course_cgdubs, if: :due_at_changed?
   after_save :invalidate_course_cgdubs, if: :max_grace_days_changed?
   after_create :create_AUDs_modulo_callbacks
