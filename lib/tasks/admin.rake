@@ -1,5 +1,5 @@
 namespace :admin do
-  desc ""
+  desc "Promote a user to the admin level"
   task :promote_user, [:email] => [:environment] do |t, args|
     unless args.email
       puts "Which user did you want to promote?"
