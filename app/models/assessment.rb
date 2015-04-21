@@ -232,7 +232,7 @@ class Assessment < ActiveRecord::Base
   # writes the properties of the assessment in YAML format to the assessment's yaml file
   #
   def dump_yaml
-    File.open(path "#{name}.yml", "w") { |f| f.write(YAML.dump serialize) }
+    File.open(path("#{name}.yml"), "w") { |f| f.write(YAML.dump serialize) }
   end
 
   ##
