@@ -147,6 +147,7 @@ Autolab3::Application.routes.draw do
       match "uploadRoster", via: [:get, :post]
       get "userLookup"
       get "users"
+      get "tango_status"
     end
   end
 end
