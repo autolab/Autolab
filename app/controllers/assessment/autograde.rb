@@ -24,12 +24,7 @@ module AssessmentAutograde
     COURSE_LOGGER.log("autograde_done")
     COURSE_LOGGER.log("autograde_done hit: #{request.fullpath}")
 
-    begin
-      extend_config_module(@assessment, submissions[0], @cud)
-    rescue StandardError => e
-      COURSE_LOGGER.log("Error extend config")
-      COURSE_LOGGER.log(e)
-    end
+    extend_config_module(@assessment, submissions[0], @cud)
 
     require_relative(Rails.root.join("assessmentConfig", "#{@course.name}-#{@assessment.name}.rb"))
 
@@ -581,11 +576,6 @@ module AssessmentAutograde
   rescue StandardError => error
     COURSE_LOGGER.log(error)
     COURSE_LOGGER.log(error.backtrace)
-
-    if @cud && @cud.has_auth_level?(:instructor)
-      redirect_to(action: :reload) && return
-    else
-      redirect_to(home_error_path) && return
-    end
+    raise error
   end
 end

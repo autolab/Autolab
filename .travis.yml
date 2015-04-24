@@ -1,9 +1,24 @@
 language: ruby
 rvm:
 - 2.2.0
+env:
+  global:
+    - secure: HMIuu9EFHDQEfQRX/0sDzu6QhINF3qe/LAjqhEivEGLykbNF7WVwcg/OUAElVi9kM2FIoOvibzduP0T6oBG3dlnXj/X8XkiR/ROfg0Njyfb548MK9c88D8uMEGfjxnKvyyN34TPsT9oSVA8FziE+wyWo5smQ/4FjdVFSj4A2zfc=
+    - secure: Z6YE6NuDeuraasd5gFG+x7PU3rKxhLjL6VZ7HJfZJEVyxFucRz8Hv4xlxkQV3P61w6S0uyp/reXwKy8meYAQLzVZ4pBpK7sEeSZ5w00WRH8NCGeMJmwdQi2JLCYRZ/KdOc0o5l5bbND+JG1o/U9HtG2cHO2G8M6hVGbARn+ywLg=
 before_script:
+- AUTOLAB=`pwd`; echo $AUTOLAB;
+- cd ~
+- curl -L -o id_ci_github.enc "$CI_GITHUB_USER_PRIVATE_KEY_URL"
+- openssl aes-256-cbc -k "$CI_GITHUB_USER_PRIVATE_KEY_SECRET" -in id_ci_github.enc
+  -d -a -out id_ci_github
+- eval `ssh-agent`
+- ssh-add -D
+- chmod 600 id_ci_github
+- ssh-add ./id_ci_github
+- git clone git@github.com:autolab/cmu-prod.git
+- cp cmu-prod/frontend-configs/initializers/devise.rb $AUTOLAB/config/initializers/devise.rb
+- cd $AUTOLAB
 - cp config/database.travis.yml config/database.yml
-- cp config/initializers/devise.rb.template config/initializers/devise.rb
 - cp config/autogradeConfig.rb.template config/autogradeConfig.rb
 - mkdir attachments/ tmp/
 - bundle install --quiet
@@ -12,7 +27,8 @@ before_script:
 - RAILS_ENV=test bundle exec rake db:setup --trace
 - RAILS_ENV=test bundle exec rake autolab:populate
 script:
-- RAILS_ENV=test CODECLIMATE_REPO_TOKEN=d37a8b9e09642cb73cfcf4ecfb4115fc3d6a55a7714110187ac59856ae4ab5ad bundle exec rspec ./spec/features/ 
+- RAILS_ENV=test CODECLIMATE_REPO_TOKEN=d37a8b9e09642cb73cfcf4ecfb4115fc3d6a55a7714110187ac59856ae4ab5ad
+  bundle exec rspec ./spec/features/
 notifications:
   slack:
     secure: GXcycaSBFaOYI6Ge0vhqCYK1xxixwjASOMkV2bkfE6PNIGkDEEQdTpOkohPGoKuz2W9KCGrXC38sbu4npMtonz0/sISydG+g7V33XkLqPaW8oUcdYhwJyBUEB/Ds17U/FJ4IhT9oOrhl17Sm0rm92Mhu6O2eeZYAclGqJgZNLvg=
