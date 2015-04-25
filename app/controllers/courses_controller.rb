@@ -380,11 +380,6 @@ file, most likely a duplicate email.  The exact error was: #{e} "
     # `rm -rf #{tmpDir}`
   end
 
-  action_auth_level :tango_status, :instructor
-  def tango_status
-    redirect_to tango_status_admin_path && return
-  end
-
 private
 
   def new_course_params

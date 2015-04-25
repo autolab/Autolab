@@ -25,6 +25,7 @@ Autolab3::Application.routes.draw do
   resources :courses, param: :name do
     resources :schedulers
     resources :jobs, only: :index do
+      get "tango_status"
       get "getjob", on: :member
     end
     resources :announcements, except: :show
@@ -147,7 +148,6 @@ Autolab3::Application.routes.draw do
       match "uploadRoster", via: [:get, :post]
       get "userLookup"
       get "users"
-      get "tango_status"
     end
   end
 end
