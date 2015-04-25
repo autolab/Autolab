@@ -15,7 +15,6 @@ Autolab3::Application.routes.draw do
 
   resource :admin do
     match "email_instructors", via: [:get, :post]
-    get "tango_status"
   end
 
   resources :users do
@@ -25,8 +24,11 @@ Autolab3::Application.routes.draw do
   resources :courses, param: :name do
     resources :schedulers
     resources :jobs, only: :index do
-      get "tango_status"
       get "getjob", on: :member
+
+      collection do
+        get "tango_status"
+      end
     end
     resources :announcements, except: :show
     resources :attachments
