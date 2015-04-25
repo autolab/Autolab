@@ -82,6 +82,7 @@
 <h2>Tango Status</h2>
 
 <h3>Global Statistics</h3>
+<p> In current Tango session:</p>
 <ul>
     <li>Total Job Requests: <%= @tango_info["job_requests"] %></li>
     <li>Total Job Retries: <%= @tango_info["job_retries"] %></li>
@@ -94,16 +95,15 @@
 
 <table class="navigatable prettyBorder">
         <thead>
-            <tr><th>Pool Name:</th><th>Image Name:</th><th>VM List:</th><th>Free VM List:</th><th>VM Availability Rate:</th></tr>
+            <tr><th>Pool Name:</th><th>VM List:</th><th>Free VM List:</th><th>VM Availability Rate:</th></tr>
         </thead>
         <tbody>
-                <% @vm_pool_list.each do |p| %>
+                <% @vm_pool_list.each do |k, p| %>
                 <tr>
-                        <td><%= p[:pool_name] %></td>
-                        <td><%= p[:image_name] %></td>
-                        <td><%= p[:vm_list].join(", ") %></td>
-                        <td><%= p[:free_vm_list].join(", ") %></td>
-                        <td><%= number_to_percentage(p[:free_vm_rate], precision: 1) %></td>
+                        <td><%= k %></td>
+                        <td><%= p["total"].join(", ") %></td>
+                        <td><%= p["free"].join(", ") %></td>
+                        <td><%= number_to_percentage(p["free"].length.to_f / p["total"].length * 100, precision: 1) %></td>
                 </tr>
                 <% end %>
         </tbody>

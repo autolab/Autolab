@@ -25,21 +25,9 @@ class AdminsController < ApplicationController
 
   action_auth_level :tango_status, :administrator
   def tango_status
-    # Obtain overall Tango info
+    # Obtain overall Tango info and pool status
     @tango_info = TangoClient.info
-    # Obtain Tango VM Pools
-    @vm_pool_list = [ { :pool_name => "rhel.img", :image_name => "rhel.img" },
-                      { :pool_name => "rhel10601.img", :image_name => "rhel10601.img" },
-                      { :pool_name => "ubun746.img", :image_name => "ubun746.img" },
-                      { :pool_name => "rhel122.img", :image_name => "rhel122.img" }
-                    ]
-    # Obtain VM status for each pool
-    @vm_pool_list.each{ |p|
-        hash = TangoClient.pool(p[:pool_name])
-        p[:vm_list] = hash["total"].sort!
-        p[:free_vm_list] = hash["free"].sort!
-        p[:free_vm_rate] = hash["free"].length.to_f / hash["total"].length * 100
-    }
+    @vm_pool_list = TangoClient.pool
     # Obtain Image -> Course mapping
     @img_to_course = { }
     Assessment.all.each { |asmt|

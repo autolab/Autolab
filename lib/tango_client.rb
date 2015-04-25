@@ -73,11 +73,12 @@ module TangoClient
     resp["jobs"]
   end
 
-  def self.pool(image)
-    handle_exceptions do
-      url = "/pool/#{api_key}/#{image}/"
+  def self.pool(image = nil)
+    resp = handle_exceptions do
+      url = image.nil? ? "/pool/#{api_key}/" : "/pool/#{api_key}/#{image}/"
       ClientObj.get(url)
     end
+    resp["pools"]
   end
 
   def self.prealloc(image, num, options = {})
