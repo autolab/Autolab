@@ -177,6 +177,12 @@ class JobsController < ApplicationController
     @plot_data = tango_plot_data(live_jobs = @tango_live_jobs, dead_jobs = @tango_dead_jobs)
   end
 
+  action_auth_level :tango_data, :instructor
+  def tango_data
+    @data = tango_plot_data
+    render json: @data and return
+  end
+
 protected
 
   # formatRawJob - Given a raw job from the server, creates a job

@@ -28,6 +28,7 @@ Autolab3::Application.routes.draw do
 
       collection do
         get "tango_status"
+        get "tango_data"
       end
     end
     resources :announcements, except: :show
