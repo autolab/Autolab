@@ -1,7 +1,7 @@
 .mg-active-datapoint {
     fill: black;
-    font-size: 0.9rem;
-    font-weight: 400;
+    font-size: 1.5rem;
+    font-weight: 600;
     opacity: 0.8;
 }
 
@@ -52,17 +52,17 @@
 
 .mg-baselines text {
     fill: black;
-    font-size: 0.7rem;
-    opacity: 0.5;
+    font-size: 1.0rem;
+    opacity: 0.8;
     stroke: none;
 }
 
 .mg-baselines-small text {
-    font-size: 0.6rem;
+    font-size: 0.8rem;
 }
 
 .mg-chart-title .popover {
-    font-size: 0.95rem;
+    font-size: 1.3rem;
 }
 
 .mg-chart-title .popover-content {
@@ -255,7 +255,7 @@
 
 .mg-markers text {
     fill: black;
-    font-size: 0.7rem;
+    font-size: 1.0rem;
     opacity: 0.5;
     stroke: none;
 }
@@ -330,15 +330,15 @@ circle.mg-points-mono {
     opacity: 1;
     shape-rendering: auto;
     stroke: #b3b2b2;
-    stroke-width: 1px;
+    stroke-width: 1.5px;
 }
 
 .mg-x-axis text,
 .mg-y-axis text,
 .mg-histogram .axis text {
     fill: black;
-    font-size: 0.9rem;
-    opacity: 0.5;
+    font-size: 1.8rem;
+    opacity: 1;
 }
 
 .mg-x-axis .label,
@@ -347,6 +347,7 @@ circle.mg-points-mono {
     font-size: 0.8rem;
     text-transform: uppercase;
     font-weight: 400;
+
 }
 
 .mg-x-axis-small text,
@@ -362,7 +363,7 @@ circle.mg-points-mono {
 
 .mg-year-marker text {
     fill: black;
-    font-size: 0.7rem;
+    font-size: 1.0rem;
     opacity: 0.5;
 }
 
@@ -374,5 +375,5 @@ circle.mg-points-mono {
 }
 
 .mg-year-marker-small text {
-    font-size: 0.6rem;
+    font-size: 0.8rem;
 }

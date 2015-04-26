@@ -60,7 +60,7 @@
           document.getElementById('job_time').innerHTML = tstamp;
           document.getElementById('job_name').innerHTML = data[row]['job_name'][idx];
           document.getElementById('vm_id').innerHTML = data[row]['vm_id'][idx];
-          document.getElementById('image_name').innerHTML = data[row]['vm_image'][idx];
+          document.getElementById('vm_pool').innerHTML = data[row]['vm_pool'][idx];
           document.getElementById('job_duration').innerHTML = data[row]['duration'][idx];
           document.getElementById('job_id').innerHTML = data[row]['job_id'][idx];
           var status;
@@ -113,19 +113,40 @@
         }
         eventarr.push(tmp);
       }
-      MG.data_graphic({
-          title: "Elapsed Seconds History for BLAH",
-          description: "This graphic shows a time-series of job lengths per VM pool.",
-          data: eventarr,
-          full_width: true,
-          height: 250,
-          buffer: 5,
-          target: '#tango_time_plot',
-          x_accessor: 'dates',
-          x_label: 'Submission Time',
-          y_accessor: 'duration',
-          y_label: 'Duration (s)',
-          interpolate_tension: 1
+      /* Function called to update time-series. */
+      var update_plot = function(pool) {
+          plot_diagram(pool);
+      };
+      /* Actual helper function to plot time-series for a pool (or global) */
+      var plot_diagram = function(pool) {
+        current_plot = pool;
+        var title = "Job Runtime History for ";
+        title += pool == '' ? "Global" : pool;
+        MG.data_graphic({
+            title: title,
+            description: "This diagram shows a time-series of job lengths per VM pool. Drag a time range to zoom in; left click on the diagram to revert zooming. Hover on events to view details. <i>The y-axis is logarithmically scaled to show abnormalities.</i>",
+            data: eventarr.filter(function (e) { return pool == '' || e.vm_pool == pool; }),
+            full_width: true,
+            height: 250,
+            buffer: 5,
+            target: '#tango_time_plot',
+            x_accessor: 'dates',
+            y_accessor: 'duration',
+            y_scale_type: 'log',
+            interpolate: 'linear',
+            mouseover: function(d, i) {
+              var prefix = d3.formatPrefix(d.value);
+              $('div#tango_time_plot svg .mg-active-datapoint')
+                .html('Job ID: ' + d.job_id + '| Submission Time: ' + d.dates + ' | Duration: ' + d.duration);
+            }
+        });
+      };
+      /* Initialize time-series diagram. */
+      $( document ).ready(function() {
+        $("#pool_selection input[name='vmpool']").click(function(){
+          plot_diagram($('input:radio[name=vmpool]:checked').val());
+        });
+        plot_diagram('');
       });
     </script>
 
@@ -191,13 +212,30 @@
         <li><b>Job ID:</b> <span id="job_id">Not selected</span>
         <li><b>Event Timestamp:</b> <span id="job_time">Not selected</span>
         <li><b>VM ID:</b> <span id="vm_id">Not selected</span>
-        <li><b>Image Name:</b> <span id="image_name">Not selected</span>
+        <li><b>VM Pool:</b> <span id="vm_pool">Not selected</span>
         <li><b>Elapsed Seconds:</b> <span id="job_duration">Not selected</span>
         <li><b>Status:</b> <span id="job_status">Not selected</span>
     </ul>
 </div>
 
-<h3>Job Elapsed Seconds</h3>
+<h3>Job Runtime History</h3>
+<p>Following are VM pools with at least one job &mdash; select the pool to view the time-series chart of jobs lengths for that pool.
+<div id="pool_selection">
+<% pool_list = []
+   @plot_data.each { |e|
+     if e[:name] == "New Job Requests" then
+       pool_list = e[:vm_pool].uniq.sort!
+       break
+     end
+   }
+%>
+   <%= radio_button_tag(:vmpool, '', true, class: 'vmpool') %>
+   <%= label_tag('global', 'global') %>
+   <% pool_list.each { |p| %>
+     <%= radio_button_tag(:vmpool, p, false, class: 'vmpool') %>
+     <%= label_tag(p, p) %>
+<% } %>
+</div>
 <div id="tango_time_plot"></div>
 
 <h3>Currently Running Jobs</h3>
