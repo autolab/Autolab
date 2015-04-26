@@ -175,16 +175,16 @@ class JobsController < ApplicationController
     @tango_live_jobs = TangoClient.jobs
     @tango_dead_jobs = TangoClient.jobs(deadjobs = 1)
     @plot_data = { new_jobs: { name: "New Job Requests", dates: [], job_name: [], job_id: [],
-                               vm_image: [], vm_id: [], status: [], duration: [] },
+                               vm_pool: [], vm_id: [], status: [], duration: [] },
                    job_errors: { name: "Job Errors", dates: [], job_name: [], job_id: [],
-                                 vm_image: [], vm_id: [], retry_count: [], duration: [] },
+                                 vm_pool: [], vm_id: [], retry_count: [], duration: [] },
                    failed_jobs: { name: "Job Failures", dates: [], job_name: [], job_id: [],
-                                  vm_image: [], vm_id: [], duration: [] } }
+                                  vm_pool: [], vm_id: [], duration: [] } }
     @tango_live_jobs.each do |j|
       next if j["trace"].nil? || j["trace"].length == 0
       tstamp = j["trace"][0].split("|")[0]
       name = j["name"]
-      image = j["vm"]["image"]
+      pool = j["vm"]["name"]
       vmid = j["vm"]["id"]
       jid = j["id"]
       status = j["assigned"] ? "Running (assigned)" : "Waiting to be assigned"
@@ -196,7 +196,7 @@ class JobsController < ApplicationController
           next unless tr.include?("fail") || tr.include?("error")
           @plot_data[:job_errors][:dates] << tr.split("|")[0]
           @plot_data[:job_errors][:job_name] << name
-          @plot_data[:job_errors][:vm_image] << image
+          @plot_data[:job_errors][:vm_pool] << pool
           @plot_data[:job_errors][:vm_id] << vmid
           @plot_data[:job_errors][:retry_count] << j["retries"]
           @plot_data[:job_errors][:duration] << duration
@@ -205,7 +205,7 @@ class JobsController < ApplicationController
       end
       @plot_data[:new_jobs][:dates] << tstamp
       @plot_data[:new_jobs][:job_name] << name
-      @plot_data[:new_jobs][:vm_image] << image
+      @plot_data[:new_jobs][:vm_pool] << pool
       @plot_data[:new_jobs][:vm_id] << vmid
       @plot_data[:new_jobs][:status] << status
       @plot_data[:new_jobs][:duration] << duration
@@ -216,7 +216,7 @@ class JobsController < ApplicationController
       tstamp = j["trace"][0].split("|")[0]
       name = j["name"]
       jid = j["id"]
-      image = j["vm"]["image"]
+      pool = j["vm"]["name"]
       vmid = j["vm"]["id"]
       trace = j["trace"].join
       duration = Time.parse(j["trace"].last.split("|")[0]).to_i - Time.parse(j["trace"].first.split("|")[0]).to_i
@@ -226,7 +226,7 @@ class JobsController < ApplicationController
           next unless tr.include?("fail") || tr.include?("error")
           @plot_data[:job_errors][:dates] << tr.split("|")[0] 
           @plot_data[:job_errors][:job_name] << name
-          @plot_data[:job_errors][:vm_image] << image
+          @plot_data[:job_errors][:vm_pool] << pool
           @plot_data[:job_errors][:vm_id] << vmid
           @plot_data[:job_errors][:retry_count] << j["retries"]
           @plot_data[:job_errors][:duration] << duration
@@ -238,7 +238,7 @@ class JobsController < ApplicationController
         status = "Errored"
         @plot_data[:failed_jobs][:dates] << tstamp 
         @plot_data[:failed_jobs][:job_name] << name
-        @plot_data[:failed_jobs][:vm_image] << image
+        @plot_data[:failed_jobs][:vm_pool] << pool
         @plot_data[:failed_jobs][:vm_id] << vmid
         @plot_data[:failed_jobs][:duration] << duration
         @plot_data[:failed_jobs][:job_id] << jid
@@ -247,7 +247,7 @@ class JobsController < ApplicationController
       end
       @plot_data[:new_jobs][:dates] << tstamp
       @plot_data[:new_jobs][:job_name] << name
-      @plot_data[:new_jobs][:vm_image] << image
+      @plot_data[:new_jobs][:vm_pool] << pool
       @plot_data[:new_jobs][:vm_id] << vmid
       @plot_data[:new_jobs][:status] << status
       @plot_data[:new_jobs][:duration] << duration
