@@ -13,7 +13,6 @@
   <%= javascript_include_tag "metricsgraphics_brushing" %>
   <script type="text/javascript">
       // initialize dataset
-      var startTime = new Date("<%= @plot_start + "UTC" %>");
       var data = <%== @plot_data.to_json %>;
       data = jQuery.map(data, function(h) {
         h['dates'] = jQuery.map(h['dates'], function(d) {
@@ -21,6 +20,8 @@
         });
         return h;
       });
+      var minDates = jQuery.map(data, function(h) {return Math.min.apply(null, h['dates']);});
+      var startTime = new Date(Math.min.apply(null, minDates));
       var color = d3.scale.category20();
       // create chart function
       var eventDropsChart = d3.chart.eventDrops()
