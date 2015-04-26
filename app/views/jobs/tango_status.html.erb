@@ -8,74 +8,93 @@
   <%= javascript_include_tag "d3.v3.min" %>
   <%= javascript_include_tag "eventdrops" %>
     <script type="text/javascript">
-        // initialize dataset
-        var startTime = new Date("<%= @plot_start + "UTC" %>");
-        var data = <%== @plot_data.to_json %>;
-        data = jQuery.map(data, function(h) {
-                h['dates'] = jQuery.map(h['dates'], function(d) {
-                    return new Date(d + "UTC");
-                    });
-                return h;
-                });
-        var color = d3.scale.category20();
-        // create chart function
-        var eventDropsChart = d3.chart.eventDrops()
-            .start(startTime - 4000000) 
-            .end(Date.now() + 4000000)
-            .eventLineColor(function (datum, index) {
-                switch(index) {
-                case 0: return "#99ccff"
-                case 1: return "#FF7300"
-                case 2: return "#FF0000"
-                default: return "#000000"
-                }
-            })
-            .eventHover(function(e) {
-                var tstamp = d3.select(e).data()[0]; // timestamp of event
-                for (var row = 0; row < data.length; row++) {
-                    if (e.parentNode.firstChild.innerHTML.indexOf(data[row]['name']) == 0) {
-                        break;
-                    }
-                }
-                if (row == data.length) { return; }
-                for (var idx = 0; idx < data[row]['dates'].length; idx++) { // Index of event
-                    if (data[row]['dates'][idx] == tstamp) {
-                        break;
-                    }
-                }
-                if (idx == data[row]['dates']) { return; }
-                // display the event details
-                document.getElementById('job_time').innerHTML = tstamp;
-                document.getElementById('job_name').innerHTML = data[row]['job_name'][idx];
-                document.getElementById('vm_id').innerHTML = data[row]['vm_id'][idx];
-                document.getElementById('image_name').innerHTML = data[row]['vm_image'][idx];
-                document.getElementById('job_duration').innerHTML = data[row]['duration'][idx];
-                document.getElementById('job_id').innerHTML = data[row]['job_id'][idx];
-                var status;
-                switch(row) {
-                case 0: status = data[row]['status'][idx]; break;
-                case 1: status = "Errored"; break;
-                case 2: status = "Failed"; break;
-                }
+      // initialize dataset
+      var startTime = new Date("<%= @plot_start + "UTC" %>");
+      var data = <%== @plot_data.to_json %>;
+      data = jQuery.map(data, function(h) {
+        h['dates'] = jQuery.map(h['dates'], function(d) {
+          return new Date(d + "UTC");
+        });
+        return h;
+      });
+      var color = d3.scale.category20();
+      // create chart function
+      var eventDropsChart = d3.chart.eventDrops()
+        .start(startTime - 4000000)
+        .end(Date.now() + 4000000)
+        .eventLineColor(function(datum, index) {
+          switch (index) {
+            case 0:
+              return "#99ccff"
+            case 1:
+              return "#FF7300"
+            case 2:
+              return "#FF0000"
+            default:
+              return "#000000"
+          }
+        })
+        .eventHover(function(e) {
+          var tstamp = d3.select(e).data()[0]; // timestamp of event
+          for (var row = 0; row < data.length; row++) {
+            if (e.parentNode.firstChild.innerHTML.indexOf(data[row]['name']) == 0) {
+              break;
+            }
+          }
+          if (row == data.length) {
+            return;
+          }
+          for (var idx = 0; idx < data[row]['dates'].length; idx++) { // Index of event
+            if (data[row]['dates'][idx] == tstamp) {
+              break;
+            }
+          }
+          if (idx == data[row]['dates']) {
+            return;
+          }
+          // display the event details
+          document.getElementById('job_time').innerHTML = tstamp;
+          document.getElementById('job_name').innerHTML = data[row]['job_name'][idx];
+          document.getElementById('vm_id').innerHTML = data[row]['vm_id'][idx];
+          document.getElementById('image_name').innerHTML = data[row]['vm_image'][idx];
+          document.getElementById('job_duration').innerHTML = data[row]['duration'][idx];
+          document.getElementById('job_id').innerHTML = data[row]['job_id'][idx];
+          var status;
+          switch (row) {
+            case 0:
+              status = data[row]['status'][idx];
+              break;
+            case 1:
+              status = "Errored";
+              break;
+            case 2:
+              status = "Failed";
+              break;
+          }
 
-                document.getElementById('job_status').innerHTML = status;
-            })
-            .minScale(0.5)
-            .maxScale(100)
-            .width(1024)
-            .margin({ top: 60, left: 200, bottom: 0, right: 50 });
-        var element = d3.select('#tango_event_plot').datum(data);
-        // draw the chart
-        eventDropsChart(element);
-        // set up window resize handler
-        var chart = $("#tango_event_plot svg"),
-            aspect = chart.width() / chart.height(),
-            container = chart.parent();
-        $(window).on("resize", function() {
-            var targetWidth = container.width();
-            chart.attr("width", targetWidth);
-            chart.attr("height", Math.round(targetWidth / aspect));
-        }).trigger("resize");
+          document.getElementById('job_status').innerHTML = status;
+        })
+        .minScale(0.5)
+        .maxScale(100)
+        .width(1024)
+        .margin({
+          top: 60,
+          left: 200,
+          bottom: 0,
+          right: 50
+        });
+      var element = d3.select('#tango_event_plot').datum(data);
+      // draw the chart
+      eventDropsChart(element);
+      // set up window resize handler
+      var chart = $("#tango_event_plot svg"),
+        aspect = chart.width() / chart.height(),
+        container = chart.parent();
+      $(window).on("resize", function() {
+        var targetWidth = container.width();
+        chart.attr("width", targetWidth);
+        chart.attr("height", Math.round(targetWidth / aspect));
+      }).trigger("resize");
     </script>
 <% end %>
 
