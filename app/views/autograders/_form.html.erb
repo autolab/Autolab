@@ -3,7 +3,7 @@
 
   <%= f.text_field :autograde_image, display_name: "VM Image" %>
   <p class="help-block">
-    VM image for autograding (e.g., "<kbd>rhel.img</kbd>"). Here is the <%= link_to "list of VMs used at CMU.", [:home, :vmlist] %>
+    VM image for autograding (e.g., "<kbd>rhel.img</kbd>"). <%= link_to "Click here", tango_status_course_jobs_path %> to view the list of VM images and pools currently being used.
   </p>
   <%= f.text_field :autograde_timeout, display_name: "Timeout",
     help_text: "Timeout for autograding jobs (secs)" %>

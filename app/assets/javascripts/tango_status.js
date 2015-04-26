@@ -132,8 +132,10 @@ var plotTimeSeries = function(data) {
       interpolate: 'linear',
       mouseover: function(d, i) {
         var prefix = d3.formatPrefix(d.value);
+        var timestamp = d.dates.toString();
+        timestamp = timestamp.substring(0, timestamp.lastIndexOf(':'));
         $('div#tango_time_plot svg .mg-active-datapoint')
-          .html('Job ID: ' + d.job_id + '| Submission Time: ' + d.dates + ' | Duration: ' + d.duration);
+          .html('Job ID: ' + d.job_id + ' | Submission Time: ' + timestamp + ' | Duration: ' + d.duration);
       }
     });
   };

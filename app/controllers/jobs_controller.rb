@@ -163,8 +163,8 @@ class JobsController < ApplicationController
     @tango_info = TangoClient.info
     @vm_pool_list = TangoClient.pool
     # Obtain Image -> Course mapping
-    @img_to_course = { }
-    Assessment.all.each do |asmt|
+    @img_to_course = {}
+    Assessment.find_each do |asmt|
       if asmt.has_autograder?
         a = asmt.autograder
         @img_to_course[a.autograde_image] ||= Set.new []
@@ -180,7 +180,7 @@ class JobsController < ApplicationController
   action_auth_level :tango_data, :instructor
   def tango_data
     @data = tango_plot_data
-    render json: @data and return
+    render(json: @data) && return
   end
 
 protected
@@ -299,7 +299,7 @@ protected
       if j["retries"] > 0 || trace.include?("fail") || trace.include?("error")
         j["trace"].each do |tr|
           next unless tr.include?("fail") || tr.include?("error")
-          @plot_data[:job_errors][:dates] << tr.split("|")[0] 
+          @plot_data[:job_errors][:dates] << tr.split("|")[0]
           @plot_data[:job_errors][:job_name] << name
           @plot_data[:job_errors][:vm_pool] << pool
           @plot_data[:job_errors][:vm_id] << vmid
@@ -311,7 +311,7 @@ protected
       end
       if !j["trace"][-1].include?("Autodriver returned normally")
         status = "Errored"
-        @plot_data[:failed_jobs][:dates] << tstamp 
+        @plot_data[:failed_jobs][:dates] << tstamp
         @plot_data[:failed_jobs][:job_name] << name
         @plot_data[:failed_jobs][:vm_pool] << pool
         @plot_data[:failed_jobs][:vm_id] << vmid
