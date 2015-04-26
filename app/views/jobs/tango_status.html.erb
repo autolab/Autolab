@@ -106,12 +106,11 @@
       var eventarr = [];
       for (var i = 0; i < new_jobs.dates.length; i++) {
         var tmp = {};
-        //for (var k in new_jobs) {
-        //  if (new_jobs[k].constructor === Array) {
-        //    tmp[k] = new_jobs[k][i];
-        //  }
-        tmp["dates"] = new_jobs["dates"][i];
-        tmp["duration"] = new_jobs["duration"][i] * 10000;
+        for (var k in new_jobs) {
+          if (new_jobs[k].constructor === Array) {
+            tmp[k] = new_jobs[k][i];
+          }
+        }
         eventarr.push(tmp);
       }
       MG.data_graphic({
@@ -126,6 +125,7 @@
           x_label: 'Submission Time',
           y_accessor: 'duration',
           y_label: 'Duration (s)',
+          interpolate_tension: 1
       });
     </script>
 

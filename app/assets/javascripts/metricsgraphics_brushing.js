@@ -50,7 +50,7 @@ function get_brush_interval(args) {
 
     if (!resolution) {
         if (args.time_series) {
-            resolution = d3.time.day;
+            resolution = d3.time.second;
         } else {
             resolution = 1;
         }
@@ -75,7 +75,6 @@ function get_brush_interval(args) {
     else {
         console.warn('The `brushing_interval` provided is invalid. It must be either a number or expose both `round` and `offset` methods');
     }
-
     return interval;
 }
 
@@ -214,7 +213,6 @@ function brushing() {
                     min_y: args.brushed_min_y || args.min_y
                 });
             }
-
             brushHistory[args.target].brushed = true;
 
             boundedData = [];
