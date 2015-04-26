@@ -11,7 +11,7 @@
   <%= javascript_include_tag "eventdrops" %>
   <%= javascript_include_tag "metricsgraphics.min" %>
   <%= javascript_include_tag "metricsgraphics_brushing" %>
-    <script type="text/javascript">
+  <script type="text/javascript">
       // initialize dataset
       var startTime = new Date("<%= @plot_start + "UTC" %>");
       var data = <%== @plot_data.to_json %>;
@@ -148,11 +148,47 @@
         });
         plot_diagram('');
       });
-    </script>
-
+  </script>
 <% end %>
 
 <h2>Tango Status</h2>
+
+<h3>Currently Running Jobs</h3>
+<table class="navigatable prettyBorder">
+        <thead>
+            <tr><th>Job ID:</th><th>Job Name</th><th>VM Name:</th><th>Submitted At</th><th>Elapsed (s)</th></tr>
+        </thead>
+        <tbody>
+                <% @tango_live_jobs.each do |j| %>
+                <%   next unless j["assigned"] %>
+                <tr>
+                        <td><%= j["id"] %></td>
+                        <td><%= j["name"] %></td>
+                        <td><%= j["vm"]["name"] %>:<%= j["vm"]["id"] %></td>
+                        <td><%= j["trace"].first.split("|")[0] %></td>
+                        <td><%= Time.parse(j["trace"].last.split("|")[0]).to_i - Time.parse(j["trace"].first.split("|")[0]).to_i %></td>
+                </tr>
+                <% end %>
+        </tbody>
+</table>
+
+<h3>Jobs Waiting to Run</h3>
+<table class="navigatable prettyBorder">
+        <thead>
+            <tr><th>Job ID:</th><th>Job Name</th><th>VM Name:</th><th>Submitted At</th><th>Elapsed (s)</th></tr>
+        </thead>
+        <tbody>
+                <% @tango_live_jobs.each do |j| %>
+                <%   next if j["assigned"] %>
+                <tr>
+                        <td><%= j["id"] %></td>
+                        <td><%= j["name"] %></td>
+                        <td><%= j["vm"]["name"] %>:<%= j["vm"]["id"] %></td>
+                        <td><%= j["trace"].first.split("|")[0] %></td>
+                        <td><%= Time.parse(j["trace"].last.split("|")[0]).to_i - Time.parse(j["trace"].first.split("|")[0]).to_i %></td>                </tr>
+                <% end %>
+        </tbody>
+</table>
 
 <h3>Global Statistics</h3>
 <p> In current Tango session:</p>
@@ -237,41 +273,4 @@
 <% } %>
 </div>
 <div id="tango_time_plot"></div>
-
-<h3>Currently Running Jobs</h3>
-<table class="navigatable prettyBorder">
-        <thead>
-            <tr><th>Job ID:</th><th>Job Name</th><th>VM Name:</th><th>Submitted At</th><th>Elapsed (s)</th></tr>
-        </thead>
-        <tbody>
-                <% @tango_live_jobs.each do |j| %>
-                <%   next unless j["assigned"] %>
-                <tr>
-                        <td><%= j["id"] %></td>
-                        <td><%= j["name"] %></td>
-                        <td><%= j["vm"]["name"] %>:<%= j["vm"]["id"] %></td>
-                        <td><%= j["trace"].first.split("|")[0] %></td>
-                        <td><%= Time.parse(j["trace"].last.split("|")[0]).to_i - Time.parse(j["trace"].first.split("|")[0]).to_i %></td>
-                </tr>
-                <% end %>
-        </tbody>
-</table>
-
-<h3>Jobs Waiting to Run</h3>
-<table class="navigatable prettyBorder">
-        <thead>
-            <tr><th>Job ID:</th><th>Job Name</th><th>VM Name:</th><th>Submitted At</th><th>Elapsed (s)</th></tr>
-        </thead>
-        <tbody>
-                <% @tango_live_jobs.each do |j| %>
-                <%   next if j["assigned"] %>
-                <tr>
-                        <td><%= j["id"] %></td>
-                        <td><%= j["name"] %></td>
-                        <td><%= j["vm"]["name"] %>:<%= j["vm"]["id"] %></td>
-                        <td><%= j["trace"].first.split("|")[0] %></td>
-                        <td><%= Time.parse(j["trace"].last.split("|")[0]).to_i - Time.parse(j["trace"].first.split("|")[0]).to_i %></td>                </tr>
-                <% end %>
-        </tbody>
-</table>
 
