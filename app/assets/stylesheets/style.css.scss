@@ -757,7 +757,7 @@ label.control-label {
   border: 1px solid transparent;
   border-radius: 4px;
   -webkit-user-select: none;
-  background-color: #bbb;
+  background-color: #808080;
 }
 
 .autolab .btn:hover {
@@ -937,6 +937,11 @@ display: block;
     content: ' Now';
   }
 
+}
+
+/* Header content for graphics */
+div.center {
+    text-align: center;
 }
 
 /*  Warnings  */

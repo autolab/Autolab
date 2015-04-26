@@ -131,7 +131,7 @@
 </div>
 <h3>Job Runtime History</h3>
 <p>Following are VM pools with at least one job &mdash; select the pool to view the time-series chart of jobs lengths for that pool.
-<div id="pool_selection">
+<div id="pool_selection" class="center">
   <% pool_list = []
     @plot_data.each { |e|
       if e[:name] == "New Job Requests" then
@@ -140,11 +140,9 @@
       end
     }
     %>
-  <%= radio_button_tag(:vmpool, '', true, class: 'vmpool') %>
-  <%= label_tag('global', 'All VM Pools') %>
+  <%= button_tag "All VM Pools", name: "vmpool", value: "", class: 'btn btn-info small' %>
   <% pool_list.each { |p| %>
-  <%= radio_button_tag(:vmpool, p, false, class: 'vmpool') %>
-  <%= label_tag(p, p) %>
+    <%= button_tag(p, name: "vmpool", value: p, class: 'btn btn-info small') %>
   <% } %>
 </div>
 <div id="tango_time_plot"></div>

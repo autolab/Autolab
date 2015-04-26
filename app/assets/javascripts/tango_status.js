@@ -1,3 +1,12 @@
+// Extend jQuery to allow setting `disabled` bit of many elements.
+jQuery.fn.extend({
+    disable: function(state) {
+        return this.each(function() {
+            this.disabled = state;
+        });
+    }
+});
+
 // initialize dataset
 $.getJSON('tango_data', function(data) {
   data = jQuery.map(data, function(h) {
@@ -109,6 +118,7 @@ var plotTimeSeries = function(data) {
   }
   /* Function called to update time-series. */
   var update_plot = function(pool) {
+    $("#pool_selection button[name='vmpool'][value='" + pool + "']").prop('disabled', true);
     plot_diagram(pool);
   };
   /* Actual helper function to plot time-series for a pool (or global) */
@@ -141,9 +151,11 @@ var plotTimeSeries = function(data) {
   };
   /* Initialize time-series diagram. */
   $(document).ready(function() {
-    $("#pool_selection input[name='vmpool']").click(function() {
-      plot_diagram($('input:radio[name=vmpool]:checked').val());
+    $("#pool_selection button[name='vmpool']").click(function() {
+      $("button[name='vmpool']").disable(false);
+      console.log(this);
+      update_plot(jQuery(this).val());
     });
-    plot_diagram('');
+    update_plot('');
   });
 };

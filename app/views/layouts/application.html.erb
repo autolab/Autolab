@@ -22,7 +22,7 @@
     <%= content_for :head %>
     <link href='//fonts.googleapis.com/css?family=Source+Sans+Pro:300,400' rel='stylesheet' type='text/css'>
     <%= content_for :stylesheets %>
-    <title><%= if @course then @course.display_name else "Autolab" end %></title>
+    <title><%= if @title then @title elsif @course then @course.display_name else "Autolab" end %></title>
 
   </head>
 
