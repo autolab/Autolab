@@ -66,7 +66,7 @@ module AssessmentHandin
       render(plain: err, status: :bad_request) && return
     end
 
-    personal_directory = @user.email + "_remote_handin_" +  @assessment.name
+    personal_directory = @user.email + "_remote_handin_" + @assessment.name
     remote_handin_dir = File.join(@assessment.remote_handin_path, personal_directory)
 
     if params[:submit]
@@ -252,8 +252,7 @@ private
       return false
     end
 
-    if @assessment.overwrites_method?(:checkMimeType) \
-      && !(@assessment.config_module.checkMimeType(
+    if @assessment.overwrites_method?(:checkMimeType) \ && !(@assessment.config_module.checkMimeType(
         params[:submission]["file"].content_type,
         params[:submission]["file"].original_filename))
 

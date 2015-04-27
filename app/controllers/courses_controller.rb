@@ -196,9 +196,7 @@ class CoursesController < ApplicationController
     # make sure that user already exists in the database
     user = User.where(email: params[:email]).first
 
-    if user.nil?
-      render(json: nil) && return
-    end
+    render(json: nil) && return if user.nil?
 
     @user_data = { first_name: user.first_name,
                    last_name: user.last_name,
@@ -281,15 +279,11 @@ file, most likely a duplicate email.  The exact error was: #{e} "
       Dir.foreach(@assignDir) do |filename|
         if File.exist?(File.join(@assignDir, filename, "#{filename}.rb"))
           # names must be only lowercase letters and digits
-          if filename =~ /[^a-z0-9]/
-            next
-          end
+          next if filename =~ /[^a-z0-9]/
 
           # Only list assessments that aren't installed yet
           assessment = @course.assessments.where(name: filename).first
-          unless assessment
-            @availableAssessments << filename
-          end
+          @availableAssessments << filename unless assessment
         end
       end
       @availableAssessments = @availableAssessments.sort
@@ -435,9 +429,7 @@ private
             # Create a new user
             user = User.roster_create(email, first_name, last_name, school,
                                       major, year)
-            if user.nil?
-              fail "New user cannot be created in uploadRoster."
-            end
+            fail "New user cannot be created in uploadRoster." if user.nil?
           else
             # Override current user
             user.first_name = first_name
@@ -474,9 +466,7 @@ private
           # Drop this user from the course
           existing = @course.course_user_data.includes(:user).where(users: { email: newCUD[:email] }).first
 
-          if existing.nil?
-            fail "Red CUD doesn't exist in the database."
-          end
+          fail "Red CUD doesn't exist in the database." if existing.nil?
 
           existing.dropped = true
           existing.save(validate: false)
@@ -485,9 +475,7 @@ private
           # Update this user's attributes.
           existing = @course.course_user_data.includes(:user).where(users: { email: newCUD[:email] }).first
 
-          if existing.nil?
-            fail "Black CUD doesn't exist in the database."
-          end
+          fail "Black CUD doesn't exist in the database." if existing.nil?
 
           user = existing.user
           if user.nil?

@@ -194,7 +194,7 @@ protected
     return unless (invalid_cud || nicknameless_student) && !in_edit_or_unsudo
 
     flash[:error] = "Please complete all of your account information before continuing:"
-    @cud.errors.full_messages.each do |msg| 
+    @cud.errors.full_messages.each do |msg|
       flash[:error] += "<br>#{msg}"
     end
     redirect_to([:edit, @course, @cud]) && return

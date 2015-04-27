@@ -94,9 +94,7 @@ class CourseUserDataController < ApplicationController
     # isn't a User model validation since users can start off without nicknames
     # application_controller's authenticate_user redirects here if nickname isn't set
     @editCUD = @course.course_user_data.find(params[:id])
-    if @editCUD.nil?
-      redirect_to(action: "index") && return
-    end
+    redirect_to(action: "index") && return if @editCUD.nil?
 
     if @cud.student?
       if (@editCUD.id != @cud.id)
@@ -107,7 +105,7 @@ class CourseUserDataController < ApplicationController
           redirect_to(action: :show) && return
         else
           flash[:error] = "Please complete all of your account information before continuing:"
-          @editCUD.errors.full_messages.each do |msg| 
+          @editCUD.errors.full_messages.each do |msg|
             flash[:error] += "<br>#{msg}"
           end
           redirect_to(action: :edit) && return

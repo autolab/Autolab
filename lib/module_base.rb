@@ -12,9 +12,7 @@ module ModuleBase
     for mod in @allModules do
       begin
         modUsed = eval("#{modName}.include?(#{mod})")
-        if modUsed
-          @modulesUsed << mod
-        end
+        @modulesUsed << mod if modUsed
       rescue Exception
         # do nothing
       end
@@ -26,21 +24,13 @@ module ModuleBase
     super()
     updateModules
 
-    if @modulesUsed.include?("Autograde")
-      autogradeListAdmin
-    end
+    autogradeListAdmin if @modulesUsed.include?("Autograde")
 
-    if @modulesUsed.include?("Scoreboard")
-      scoreboardListAdmin
-    end
+    scoreboardListAdmin if @modulesUsed.include?("Scoreboard")
 
-    if @modulesUsed.include?("Partners")
-      partnersListAdmin
-    end
+    partnersListAdmin if @modulesUsed.include?("Partners")
 
-    if @modulesUsed.include?("Svn")
-      svnListAdmin
-    end
+    svnListAdmin if @modulesUsed.include?("Svn")
   end
 
   # We can only load *one* page. If other modules are created with custom
@@ -56,20 +46,14 @@ module ModuleBase
     updateModules
     # Partners stand alone, they don't affect others
     if @modulesUsed.include?("Partners")
-      unless partnersValidateHandin
-        return false
-      end
+      return false unless partnersValidateHandin
     end
 
     # If we're validating for svn, we don't have a file to check
     if @modulesUsed.include?("Svn")
-      unless svn_validate_handin
-        return false
-      end
+      return false unless svn_validate_handin
     else
-      unless super()
-        return false
-      end
+      return false unless super()
     end
     true
   end

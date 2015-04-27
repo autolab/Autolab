@@ -190,9 +190,7 @@ private
         str += " | "
       end
       str += hash["hdr"].to_s.upcase
-      if i < 3
-        str += hash["asc"] ? " [asc]" : " [desc]"
-      end
+      str += hash["asc"] ? " [asc]" : " [desc]" if i < 3
       i += 1
     end
     str

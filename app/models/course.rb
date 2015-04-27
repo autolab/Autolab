@@ -64,7 +64,7 @@ class Course < ActiveRecord::Base
 
   def full_name
     if semester.to_s.size > 0
-      display_name + " (" +semester + ")"
+      display_name + " (" + semester + ")"
     else
       display_name
     end

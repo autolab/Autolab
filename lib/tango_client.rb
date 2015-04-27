@@ -62,7 +62,7 @@ module TangoClient
       ClientObj.get(url)
     end
     hash = CGI.parse(resp["info"].join("&"))
-    hash.each{ |k,v| hash[k] = v.first }
+    hash.each { |k, v| hash[k] = v.first }
   end
 
   def self.jobs(deadjobs = 0)
