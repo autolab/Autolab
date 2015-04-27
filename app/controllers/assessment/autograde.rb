@@ -154,7 +154,7 @@ module AssessmentAutograde
     if job == -2
       flash[:error] = "Autograding failed because there are no autograding properties."
       if @cud.instructor?
-        link = "<a href=\"#{url_for(action: 'adminAutograde')}\">Admin Autograding</a>"
+        link = (view_context.link_to "Autograder Settings", [:edit, course, assessment, :autograder])
         flash[:error] += " Visit #{link} to set the autograding properties."
       else
         flash[:error] += " Please contact your instructor."
@@ -168,7 +168,7 @@ module AssessmentAutograde
     elsif job == -9
       flash[:error] = "Submission was rejected by autograder."
       if @cud.instructor?
-        link = "<a href=\"#{url_for(action: 'adminAutograde')}\">Admin Autograding</a>"
+        link = (view_context.link_to "Autograder Settings", [:edit, course, assessment, :autograder])
         flash[:error] += " (Verify the autograding properties at #{link}.)"
       end
     elsif job < 0

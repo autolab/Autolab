@@ -55,8 +55,8 @@
           <li><%= link_to "Group Settings", [@course, @assessment, :groups], title: "Manage Group Settings" %></li>
         <% end %>
 
-        <% if @assessment.has_scoreboard %>
-          <li><%= link_to "Scoreboard Settings", {:action => "adminScoreboard" }, title: "Configure the appearance of the scoreboard" %></li>
+        <% if @assessment.has_scoreboard? %>
+          <li><%= link_to "Scoreboard Settings", [:edit, @course, @assessment, :scoreboard], title: "Configure the appearance of the scoreboard" %></li>
         <% end %>
 
       </ul>
@@ -92,8 +92,8 @@
           <li><%= link_to "Group Options", [:new, @course, @assessment, :group], title: "Check your Group settings." %></li>
         <% end %>
       <% end %>
-      <% if @assessment.has_scoreboard %>
-          <li><%= link_to "View scoreboard", {:action => "scoreboard" }, title: "View the class scoreboard" %></li>
+      <% if @assessment.has_scoreboard? %>
+          <li><%= link_to "View Scoreboard", [@course, @assessment, :scoreboard], title: "View the assessment scoreboard" %></li>
       <% end %>
 
     <% @list.sort { |a,b| a[1] <=> b[1] }.each { |key, value| %>

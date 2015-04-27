@@ -48,6 +48,9 @@ Autolab3::Application.routes.draw do
         post "import", on: :collection
       end
       resources :problems, except: [:index, :show]
+      resource :scoreboard, except: [:new] do
+        get "help", on: :member
+      end
       resources :submissions do
         resources :annotations, only: [:create, :update, :destroy]
         resources :scores, only: [:create, :show, :update]
@@ -66,8 +69,6 @@ Autolab3::Application.routes.draw do
       end
 
       member do
-        match "adminAutograde", via: [:get, :post]
-        match "adminScoreboard", via: [:get, :post]
         match "bulkGrade", via: [:get, :post]
         post "bulkGrade_complete"
         get "bulkExport"
@@ -87,7 +88,6 @@ Autolab3::Application.routes.draw do
         get "viewGradesheet"
         get "writeup"
         get "handout"
-        get "scoreboard"
 
         # autograde actions
         post "autograde_done"

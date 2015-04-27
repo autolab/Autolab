@@ -1,3 +1,7 @@
+##
+# An Assessment can have many Problems, each one creates a score for each Submission
+# for the Assessment.
+#
 class Problem < ActiveRecord::Base
   trim_field :name
 
@@ -6,7 +10,7 @@ class Problem < ActiveRecord::Base
   belongs_to :assessment, touch: true
   has_many :annotations
 
-  validates_presence_of :name
+  validates :name, presence: true
   validates_associated :assessment
 
   SERIALIZABLE = Set.new %w(name description max_score optional)
@@ -14,11 +18,7 @@ class Problem < ActiveRecord::Base
     Utilities.serializable attributes, SERIALIZABLE
   end
 
-  def self.deserialize_list(problems)
-    problems.map &:deserialize
-  end
-
-  def self.deserialize(s)
-    new s
+  def self.deserialize_list(assessment, problems)
+    problems.map { |p| assessment.problems.create(p) }
   end
 end

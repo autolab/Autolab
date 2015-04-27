@@ -1,5 +1,6 @@
-require "utilities"
 require "association_cache"
+require "fileutils"
+require "utilities"
 
 class Assessment < ActiveRecord::Base
   # Mass-assignment
@@ -16,7 +17,7 @@ class Assessment < ActiveRecord::Base
   has_many :attachments
   has_many :assessment_user_data, dependent: :destroy
   has_one :autograder, dependent: :destroy
-  has_one :scoreboard_setup, dependent: :destroy
+  has_one :scoreboard, dependent: :destroy
 
   # Validations
   validates_uniqueness_of :name, scope: :course_id
@@ -35,6 +36,7 @@ class Assessment < ActiveRecord::Base
 
   # Callbacks
   trim_field :name, :display_name, :handin_filename, :handin_directory, :handout, :writeup
+  after_save :dump_yaml
   after_save :invalidate_course_cgdubs, if: :due_at_changed?
   after_save :invalidate_course_cgdubs, if: :max_grace_days_changed?
   after_create :create_AUDs_modulo_callbacks
@@ -84,6 +86,10 @@ class Assessment < ActiveRecord::Base
     Time.now <= grading_deadline
   end
 
+  def folder_path
+    Rails.root.join("courses", course.name, name)
+  end
+
   def handout_path
     path handout
   end
@@ -108,11 +114,11 @@ class Assessment < ActiveRecord::Base
   end
 
   def latest_submission_by(cud)
-    assessment_user_data.where(course_user_datum: cud).first.latest_submission
+    assessment_user_data.find_by(course_user_datum: cud).latest_submission
   end
 
   def config_file_path
-    File.join Rails.root, "assessmentConfig", "#{course.name}-#{sanitized_name}.rb"
+    Rails.root.join("assessmentConfig", "#{course.name}-#{sanitized_name}.rb")
   end
 
   def config_module_name
@@ -160,29 +166,60 @@ class Assessment < ActiveRecord::Base
     @max_score ||= max_score!
   end
 
-  def construct_config_file
+  def construct_folder
+    # this should construct the assessment folder and the handin folder
+    FileUtils.mkdir_p(handin_directory_path)
+    dump_yaml if construct_default_config_file
+  end
+
+  ##
+  # Gives the assessment a default config file, unless it already has a config file.
+  # returns true if the file is actually created
+  #
+  def construct_default_config_file
+    assessment_config_file_path = source_config_file_path
+    return false if File.file?(assessment_config_file_path)
+
+    # Open and read the default assessment config file
+    default_config_file_path = Rails.root.join("lib", "__defaultAssessment.rb")
+    config_source = File.open(default_config_file_path, "r") { |f| f.read }
+
+    # Update with this assessment information
+    config_source.gsub!("##NAME_CAMEL##", name.camelize)
+    config_source.gsub!("##NAME_LOWER##", name)
+
+    # Write the new config out to the right file.
+    File.open(assessment_config_file_path, "w") { |f| f.write(config_source) }
+    # Load the assessment config file while we're at it
+    File.open(config_file_path, "w") { |f| f.write config }
+
+    true
+  end
+
+  ##
+  # Copies an assessment's config file to the RAILS_ROOT/assessmentConfig folder.
+  # Renames the module to include the course name so that the files have unique module names.
+  #
+  def load_config_file
     # read from source
-    source_config_file = File.open source_config_file_path, "r"
-    source_config = source_config_file.read
-    source_config_file.close
+    config_source = File.open(source_config_file_path, "r") { |f| f.read }
 
     # uniquely rename module (so that it's unique among all assessment modules loaded in Autolab)
-    config = source_config.gsub "module #{source_config_module_name}", "module #{config_module_name}"
+    config = config_source.gsub("module #{source_config_module_name}",
+                                "module #{config_module_name}")
 
     # write to config_file_path
-    config_file = File.open config_file_path, "w"
-    config_file.write config
-    config_file.close
+    File.open(config_file_path, "w") { |f| f.write config }
 
     # config file might have an updated custom raw score function: clear raw score cache
     invalidate_raw_scores
 
-    logger.info "Constructed #{config_file_path}"
+    logger.info "Loaded #{config_file_path}"
   end
 
   def config_module
     # (re)construct config file from source, unless it already exists
-    construct_config_file unless File.exist? config_file_path
+    load_config_file unless File.exist? config_file_path
 
     # (re)load config file if it was updated or wasn't ever loaded into this process
     reload_config_file if config_file_updated?
@@ -191,13 +228,22 @@ class Assessment < ActiveRecord::Base
     eval config_module_name
   end
 
-  def settings_yaml_path
-    path "#{name}.yml"
+  ##
+  # writes the properties of the assessment in YAML format to the assessment's yaml file
+  #
+  def dump_yaml
+    File.open(path("#{name}.yml"), "w") { |f| f.write(YAML.dump serialize) }
   end
 
-  def serialize_yaml_to_path(path)
-    yaml = YAML.dump serialize
-    File.open(path, "w") { |f| f.puts yaml }
+  ##
+  # reads from the properties of the YAML file and saves them to the assessment.
+  # Will only run if the assessment has not been saved.
+  #
+  def load_yaml
+    return unless new_record?
+    props = YAML.load(File.open(path("#{name}.yml"), "r") { |f| f.read })
+    backwards_compatibility(props)
+    deserialize(props)
   end
 
   def writeup_is_url?
@@ -245,6 +291,10 @@ class Assessment < ActiveRecord::Base
     group_size && group_size > 1
   end
 
+  def has_scoreboard?
+    scoreboard != nil
+  end
+
   def groups
     Group.joins(:assessment_user_data).where(assessment_user_data: { assessment_id: id }).distinct
   end
@@ -260,11 +310,11 @@ class Assessment < ActiveRecord::Base
 private
 
   def path(filename)
-    Rails.root.join "courses", course.name, name, filename
+    Rails.root.join("courses", course.name, name, filename)
   end
 
   def source_config_file_path
-    Rails.root.join "courses", course.name, sanitized_name, "#{sanitized_name}.rb"
+    Rails.root.join("courses", course.name, sanitized_name, "#{sanitized_name}.rb")
   end
 
   def source_config_module_name
@@ -322,23 +372,30 @@ private
   def serialize
     s = {}
     s["general"] = serialize_general
-    s["problems"] = problems.map &:serialize
-    s["autograding_setup"] = autograding_setup.serialize if autograding_setup
-    s["scoreboard_setup"] = scoreboard_setup.serialize if scoreboard_setup
+    s["problems"] = problems.map(&:serialize)
+    s["autograder"] = autograder.serialize if has_autograder?
+    s["scoreboard"] = scoreboard.serialize if has_scoreboard?
     s
   end
 
-  GENERAL_SERIALIZABLE = Set.new %w(name display_name category_name description handin_filename handin_directory has_autograde has_svn has_scoreboard max_grace_days handout writeup max_submissions disable_handins max_size)
+  GENERAL_SERIALIZABLE = Set.new %w(name display_name category_name description handin_filename handin_directory has_svn max_grace_days handout writeup max_submissions disable_handins max_size)
 
   def serialize_general
     Utilities.serializable attributes, GENERAL_SERIALIZABLE
   end
 
   def deserialize(s)
-    attributes = s["general"] if s["general"]
-    problems = Problem.deserialize_list s["problems"] if s["problems"]
-    autograder = Autograder.deserialize s["autograding_setup"] if s["autograding_setup"]
-    scoreboard_setup = ScoreboardSetup.deserialize s["autograding_setup"] if s["scoreboard_setup"]
+    self.due_at = self.end_at = self.visible_at = self.start_at = self.grading_deadline = Time.now
+    self.quiz = false
+    self.quizData = ""
+    update(s["general"])
+    Problem.deserialize_list(self, s["problems"]) if s["problems"]
+    if s["autograder"]
+      Autograder.find_or_initialize_by(assessment_id: id).update(s["autograder"])
+    end
+    if s["scoreboard"]
+      Scoreboard.find_or_initialize_by(assessment_id: id).update(s["scoreboard"])
+    end
   end
 
   def default_max_score
@@ -380,22 +437,18 @@ private
   end
 
   def handin_directory_exists_or_disable_handins
-    if disable_handins?
-      true
+    return true if disable_handins?
+
+    dir = handin_directory_path
+    return true if File.directory? dir
+
+    begin
+      Dir.mkdir dir
+    rescue SystemCallError => e
+      errors.add :handin_directory, "(#{dir}) could not be created, please do so manually. (#{e})"
+      false
     else
-      dir = handin_directory_path
-      if File.directory? dir
-        true
-      else
-        begin
-          Dir.mkdir dir
-        rescue SystemCallError => e
-          errors.add :handin_directory, "(#{dir}) could not be created, please do so manually. (#{e})"
-          false
-        else
-          true
-        end
-      end
+      true
     end
   end
 
@@ -410,6 +463,29 @@ private
 
   def active?
     Time.now <= course.end_date
+  end
+
+  ##
+  # This function attempts to preserve Backwords Compatibility for when assessments are
+  # imported from a YAML file
+  #
+  GENERAL_BC = { "category" => "category_name",
+                 "handout_filename" => "handout",
+                 "writeup_filename" => "writeup" }
+  BACKWORDS_COMPATIBILITY = { "autograding_setup" => "autograder",
+                              "scoreboard_setup" => "scoreboard" }
+  def backwards_compatibility(props)
+    GENERAL_BC.each do |old, new|
+      next unless props["general"].key?(old)
+      props["general"][new] = props["general"][old]
+      props["general"].delete(old)
+    end
+    BACKWORDS_COMPATIBILITY.each do |old, new|
+      next unless props.key?(old)
+      props[new] = props[old]
+      props.delete(old)
+    end
+    props["general"]["category_name"] ||= "General"
   end
 
   include AssessmentAssociationCache
