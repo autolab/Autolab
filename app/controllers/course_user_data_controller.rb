@@ -119,7 +119,7 @@ class CourseUserDataController < ApplicationController
     end
 
     # When we're finished editing, go back to the user table
-    if @editCUD.update!(edit_cud_params)
+    if @editCUD.update(edit_cud_params)
       flash[:success] = "Success: Updated user #{@editCUD.email}"
       redirect_to([@course, @editCUD]) && return
     else
