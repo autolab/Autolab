@@ -106,7 +106,8 @@ class CourseUserDataController < ApplicationController
         if @editCUD.save
           redirect_to(action: :show) && return
         else
-          redirect_to(action: :edit) && return
+          @editCUD.tweak ||= Tweak.new
+          render :edit
         end
       end
     end
