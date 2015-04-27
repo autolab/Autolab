@@ -129,7 +129,7 @@ protected
 
   def authorize_user_for_course
     course_name = params[:course_name] ||
-          (params[:controller] == "courses" ? params[:name] : nil)
+                  (params[:controller] == "courses" ? params[:name] : nil)
     @course = Course.find_by(name: course_name) if course_name
 
     unless @course
@@ -192,8 +192,11 @@ protected
                          params[:action] == "unsudo")
 
     return unless (invalid_cud || nicknameless_student) && !in_edit_or_unsudo
-    
-    flash[:error] = "Please complete all of your account information before continuing"
+
+    flash[:error] = "Please complete all of your account information before continuing:"
+    @cud.errors.full_messages.each do |msg|
+      flash[:error] += "<br>#{msg}"
+    end
     redirect_to([:edit, @course, @cud]) && return
   end
 
@@ -275,10 +278,10 @@ protected
     return unless @course
 
     if @course.disabled?
-      @breadcrumbs << (view_context.link_to "#{@course.display_name} (Course Disabled)",
+      @breadcrumbs << (view_context.link_to "#{@course.full_name} (Course Disabled)",
                                             [@course], id: "courseTitle")
     else
-      @breadcrumbs << (view_context.link_to @course.display_name, [@course], id: "courseTitle")
+      @breadcrumbs << (view_context.link_to @course.full_name, [@course], id: "courseTitle")
     end
   end
 
@@ -318,10 +321,10 @@ private
 
       # Generate course id and assesssment id objects
       @course_name = params[:course_name] ||
-            (params[:controller] == "courses" ? params[:name] : nil)
-      if (@course_name) then
+                     (params[:controller] == "courses" ? params[:name] : nil)
+      if @course_name
         @assessment_name = params[:assessment_name] ||
-            (params[:controller] == "assessments" ? params[:name] : nil)
+                           (params[:controller] == "assessments" ? params[:name] : nil)
 
       end
     end

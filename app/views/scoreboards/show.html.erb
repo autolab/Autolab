@@ -1,0 +1,91 @@
+<% @title = "Scoreboard" %>
+
+<% content_for :javascripts do %>
+  <%= javascript_include_tag "sorttable" %>
+<% end %>
+
+<% if @grades.values.empty? %>
+  <h3>No submissions yet.</h3>
+<% else %>
+  <h3>
+    <% if @scoreboard.banner.blank? %>
+      Here are the most recent scores for the class.
+    <% else %>
+      <%= @scoreboard.banner %>
+    <% end %>
+  </h3>
+
+  <table class="sortable prettyBorder">
+    <thead>
+      <tr>
+        <th>Rank</th>
+        <% if @config_header %>
+          <%= sanitize @config_header, tags: %w(th td) %>
+        <% else %>
+          <% if @colspec %>
+            <th>Nickname</th><th>Version</th><th>Time</th>
+            <% @colspec.each do |column| %>
+              <th><%= column["hdr"] %></th>
+            <% end %>
+          <% else %>
+            <th>Nickname</th><th>Version</th><th>Time</th><th>Total</th>
+            <% @assessment.problems.each do |problem| %>
+              <th><%= problem.name %></th>
+            <% end %>
+          <% end %>
+        <% end %>
+      </tr>
+    </thead>
+
+    <tbody>
+      <% @sortedGrades.each_with_index do |grade, i| %>
+        <tr>
+          <td><%= i + 1 %></td>
+          <td title="<%= (@cud.instructor?) ? "#{grade[:fullName]} (#{grade[:andrewID]})" : "" %>">
+            <%= grade[:nickname] %>
+          </td>
+          <td>
+            <% if grade[:version] == 0 %>
+              <font size="-2">Unofficial</font>
+            <% else %>
+              <%= grade[:version] %>
+            <% end %>
+          </td>
+          <td><%= grade[:time] %></td>
+          <% if @colspec %>
+            <% @colspec.each_with_index do |c, i| %>
+              <% # this is a hack for 15-122's image lab.  It displays b64 encoded results in image tags %>
+              <% if c["img"] %>
+                <td><img src="data:image/png;base64,<%= grade[:entry][i] %>" /></td>
+              <% else %>
+                <td><%= grade[:entry][i] %></td>
+              <% end %>
+            <% end %>
+          <% else %>
+            <% grade[:entry].each do |column| %>
+              <td><%= column %></td>
+            <% end %>
+          <% end %>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% end %>
+
+
+<%= form_for @cud, url: course_course_user_datum_path(@course, @cud) do |f| %>
+<% if @cud.errors.any? %>
+  <div id="error_explanation">
+    <h2><%= pluralize(@cud.errors.count, "error") %> prohibited the data from being saved:</h2>
+    <ul>
+      <% @cud.errors.full_messages.each do |msg| %>
+        <li><%= msg %></li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>
+<hr>
+  <table width=50% class="verticalTable" >
+  <tr><th><h3>Nickname:</h3> </th><td><%= f.text_field :nickname %>  <input id="user_submit" name="commit" type="submit" class="btn" value="Update Nickname" onclick="formvalidation(this.parentNode); return false;"></td></tr>
+  </table>
+<% end %>

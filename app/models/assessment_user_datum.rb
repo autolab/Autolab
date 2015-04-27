@@ -1,6 +1,11 @@
+# Read https://github.com/autolab/autolab-src/wiki/Caching
 require "association_cache"
 
-# Read https://github.com/autolab/autolab-src/wiki/Caching
+##
+# This class joins Assessments and Users, and exists mostly so that CUDs can be given special
+# status (excused or whatever) on an assessment.  It's also used by Groups, and tracks the latest
+# submission of the user for an assessment.
+#
 class AssessmentUserDatum < ActiveRecord::Base
   belongs_to :course_user_datum
   belongs_to :assessment
@@ -10,8 +15,8 @@ class AssessmentUserDatum < ActiveRecord::Base
   # attr_accessible :grade_type
 
   # * when a new submission is made, it is possible that the number of grace days used increased
-  #   so we need to invalidate the cumulative grace days used for all AUDs for assessments after this
-  #   one, for this user.
+  #   so we need to invalidate the cumulative grace days used for all AUDs for assessments after
+  #   this one, for this user.
   #
   # * similarly, when the grade type is updated, the number of grace days used could change.
   #   submissions associated with AUDs with Zeroed and Excused grade types aren't counted as late
@@ -39,7 +44,8 @@ class AssessmentUserDatum < ActiveRecord::Base
   # checks a user's membership status
   #
   def group_confirmed(flags = CONFIRMED)
-    (flags == UNCONFIRMED && membership_status == UNCONFIRMED) || ((membership_status & flags) == flags)
+    (flags == UNCONFIRMED && membership_status == UNCONFIRMED) ||
+      ((membership_status & flags) == flags)
   end
 
   # Updates latest_submission atomically
@@ -49,8 +55,8 @@ class AssessmentUserDatum < ActiveRecord::Base
   #   2. A: aud.latest_submission = find_latest_submission (returns submission 1)
   #   3. B: <same user submits submission 2>
   #   4. B: aud.latest_submission = find_latest_submission (returns submission 2)
-  #   5. B: aud.save                                       (submission 2 is saved as aud.latest_submission)
-  #   6. A: aud.save                                       (but then submission 1 is saved as aud.latest_submission)
+  #   5. B: aud.save             (submission 2 is saved as aud.latest_submission)
+  #   6. A: aud.save    (but then submission 1 is saved as aud.latest_submission)
   # by making sure (2 and 6) and (4 and 5) each occur atomically.
   def update_latest_submission
     AssessmentUserDatum.transaction do
@@ -69,11 +75,11 @@ class AssessmentUserDatum < ActiveRecord::Base
     if (max_version = Submission.where(assessment_id: assessment_id,
                                        course_user_datum_id: course_user_datum_id,
                                        ignored: false).maximum(:version))
-      Submission.where(version: max_version, assessment_id: assessment_id,
-                       course_user_datum_id: course_user_datum_id).first
-    else
-      nil
+      Submission.find_by(version: max_version, assessment_id: assessment_id,
+                         course_user_datum_id: course_user_datum_id)
     end
+
+    nil
   end
 
   def submission_status
@@ -199,7 +205,7 @@ class AssessmentUserDatum < ActiveRecord::Base
   end
 
   def extension
-    Extension.where(course_user_datum: course_user_datum, assessment_id: assessment_id).first
+    Extension.find_by(course_user_datum: course_user_datum, assessment_id: assessment_id)
   end
 
   def self.get(assessment_id, cud_id)
@@ -209,7 +215,7 @@ class AssessmentUserDatum < ActiveRecord::Base
   # Quickly create an AUD (without any callbacks, validations, AR object creation, etc.)
   def self.create_modulo_callbacks(params)
     columns = params.keys
-    values = params.values_at *columns
+    values = params.values_at(*columns)
 
     columns_sql = columns.join(", ")
     values_sql = values.join(", ")
@@ -243,7 +249,6 @@ private
     end
   end
 
-  # TODO:
   def cumulative_grace_days_used_before
     return @cgdub if @cgdub
 
@@ -268,19 +273,19 @@ private
   # TODO: make above policy
   def final_score!(as_seen_by)
     final_score = case grade_type
-      when NORMAL
-        if Time.now <= assessment.grading_deadline
-          nil
-        elsif latest_submission
-          latest_submission.final_score as_seen_by
-        else
-          0.0
-        end
-      when ZEROED
-        0.0
-      when EXCUSED
-        nil
-    end
+                  when NORMAL
+                    if Time.now <= assessment.grading_deadline
+                      nil
+                    elsif latest_submission
+                      latest_submission.final_score as_seen_by
+                    else
+                      0.0
+                    end
+                  when ZEROED
+                    0.0
+                  when EXCUSED
+                    nil
+                  end
 
     # TODO: final_score = apply_tweak(final_score) if final_score
     final_score
@@ -324,9 +329,9 @@ private
   def aud_for_assessment_before
     if (assessment_before = assessment.assessment_before)
       assessment_before.aud_for course_user_datum_id
-    else
-      nil
     end
+
+    nil
   end
 
   def auds_for_assessments_after

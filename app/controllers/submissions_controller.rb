@@ -1,5 +1,5 @@
-require "archive.rb"
-require "pdf.rb"
+require "archive"
+require "pdf"
 
 class SubmissionsController < ApplicationController
   # inherited from ApplicationController
@@ -14,7 +14,7 @@ class SubmissionsController < ApplicationController
 
     assign = @assessment.name.gsub(/\./, "")
     modName = (assign + (@course.name).gsub(/[^A-Za-z0-9]/, "")).camelize
-    @autograded = @assessment.has_autograde
+    @autograded = @assessment.has_autograder?
   end
 
   # this works
@@ -158,7 +158,7 @@ class SubmissionsController < ApplicationController
   # should be okay, but untested
   action_auth_level :downloadAll, :course_assistant
   def downloadAll
-    if @assessment.disable_handins then
+    if @assessment.disable_handins
       flash[:error] = "There are no submissions to download."
       redirect_to([@course, @assessment, :submissions]) && return
     end
@@ -227,9 +227,7 @@ class SubmissionsController < ApplicationController
       @breadcrumbs << (view_context.link_to "View Archive", [:list_archive, @course, @assessment, @submission])
     else
       # redirect on archives
-      if Archive.is_archive?(@submission.handin_file_path)
-        redirect_to(action: :listArchive) && return
-      end
+      redirect_to(action: :listArchive) && return if Archive.archive?(@submission.handin_file_path)
 
       file = @submission.handin_file.read
 
@@ -238,7 +236,7 @@ class SubmissionsController < ApplicationController
     return unless file
 
     filename = @submission.handin_file_path
-    if PDF.is_pdf?(file)
+    if PDF.pdf?(file)
       send_data(file, type: "application/pdf", disposition: "inline", filename: File.basename(filename)) && return
     end
 
@@ -343,9 +341,7 @@ private
   # Filename format is andrewID_version_asessment.ext
   def extractAndrewID(filename)
     underscoreInd = filename.index("_")
-    unless underscoreInd.nil?
-      return filename[0...underscoreInd]
-    end
+    return filename[0...underscoreInd] unless underscoreInd.nil?
     nil
   end
 

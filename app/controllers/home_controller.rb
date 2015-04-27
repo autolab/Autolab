@@ -39,7 +39,7 @@ class HomeController < ApplicationController
     cud.instructor = params[:isInstructor] if course_id == PUBLIC_COURSE_ID
     if cud.save
       flash[:success] = "You have successfully registered for " +
-                        @course.display_name
+                        @course.full_name
       redirect_to(controller: "course", course: @course.name,
                   action: "index") && return
     else
@@ -53,25 +53,5 @@ class HomeController < ApplicationController
   def contact
     # --- empty ---
     # This route just renders the home#contact page, nothing special
-  end
-
-  def vmlist
-    @images = {}
-    AutogradingSetup.all.each do |a|
-      image = a.autograde_image
-      assessment = a.assessment
-      course = assessment.course
-      if (course.temporal_status == :current)
-        @images[image] ||= Set.new
-        @images[image].add(course.name)
-      end
-    end
-    @images.each do |image, courseSet|
-      res = []
-      courseSet.each do |c|
-        res << c
-      end
-      @images[image] = res.join(", ")
-    end
   end
 end

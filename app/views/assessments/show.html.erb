@@ -43,20 +43,20 @@
         <li> <%= link_to "Bulk import grades", {:action => "bulkGrade" }, {:title=> "Upload scores or feedback for multiple students from a CSV file" } %></li>
         <li> <%= link_to "Bulk export grades", {:action => "bulkExport" }, {:title=> "Export grades (with sub-scores) \nfor all students to a CSV file" } %></li>
 
-        <% if @assessment.has_svn %>
-          <li><%= link_to "SVN Settings", [:adminSVN, @course, @assessment], title: "Manage the SVN repositories" %></li>
+        <% if @assessment.has_svn then %>
+          <li><%= link_to "SVN Settings", [:admin_svn, @course, @assessment], title: "Manage the SVN repositories" %></li>
         <% end %>
 
-        <% if @assessment.has_autograde %>
-          <li><%= link_to "Autograding Settings", {:action => "adminAutograde" }, title: "Modify autograding properties such as the VM image and the timeout value" %></li>
+        <% if @assessment.has_autograder? then %>
+          <li><%= link_to "Autograder Settings", [:edit, @course, @assessment, :autograder], title: "Modify autograding properties such as the VM image and the timeout value" %></li>
         <% end %>
 
         <% if @assessment.has_groups? %>
           <li><%= link_to "Group Settings", [@course, @assessment, :groups], title: "Manage Group Settings" %></li>
         <% end %>
 
-        <% if @assessment.has_scoreboard %>
-          <li><%= link_to "Scoreboard Settings", {:action => "adminScoreboard" }, title: "Configure the appearance of the scoreboard" %></li>
+        <% if @assessment.has_scoreboard? %>
+          <li><%= link_to "Scoreboard Settings", [:edit, @course, @assessment, :scoreboard], title: "Configure the appearance of the scoreboard" %></li>
         <% end %>
 
       </ul>
@@ -92,8 +92,8 @@
           <li><%= link_to "Group Options", [:new, @course, @assessment, :group], title: "Check your Group settings." %></li>
         <% end %>
       <% end %>
-      <% if @assessment.has_scoreboard %>
-          <li><%= link_to "View scoreboard", {:action => "scoreboard" }, title: "View the class scoreboard" %></li>
+      <% if @assessment.has_scoreboard? %>
+          <li><%= link_to "View Scoreboard", [@course, @assessment, :scoreboard], title: "View the assessment scoreboard" %></li>
       <% end %>
 
     <% @list.sort { |a,b| a[1] <=> b[1] }.each { |key, value| %>

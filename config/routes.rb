@@ -10,7 +10,6 @@ Autolab3::Application.routes.draw do
     match "developer_login", via: [:get, :post]
     get "error"
     get "no_user"
-    get "vmlist"
   end
 
   resource :admin do
@@ -25,11 +24,17 @@ Autolab3::Application.routes.draw do
     resources :schedulers
     resources :jobs, only: :index do
       get "getjob", on: :member
+
+      collection do
+        get "tango_status"
+        get "tango_data"
+      end
     end
     resources :announcements, except: :show
     resources :attachments
 
     resources :assessments, param: :name, except: :update do
+      resource :autograder, except: [:new, :show]
       resources :assessment_user_data, only: [:edit, :update]
       resources :attachments
       resources :extensions, only: [:index, :create, :destroy]
@@ -43,6 +48,9 @@ Autolab3::Application.routes.draw do
         post "import", on: :collection
       end
       resources :problems, except: [:index, :show]
+      resource :scoreboard, except: [:new] do
+        get "help", on: :member
+      end
       resources :submissions do
         resources :annotations, only: [:create, :update, :destroy]
         resources :scores, only: [:create, :show, :update]
@@ -61,8 +69,6 @@ Autolab3::Application.routes.draw do
       end
 
       member do
-        match "adminAutograde", via: [:get, :post]
-        match "adminScoreboard", via: [:get, :post]
         match "bulkGrade", via: [:get, :post]
         post "bulkGrade_complete"
         get "bulkExport"
@@ -82,7 +88,6 @@ Autolab3::Application.routes.draw do
         get "viewGradesheet"
         get "writeup"
         get "handout"
-        get "scoreboard"
 
         # autograde actions
         post "autograde_done"
@@ -91,9 +96,9 @@ Autolab3::Application.routes.draw do
         post "regradeAll"
 
         # SVN actions
-        get "adminSVN"
-        post "importSVN"
-        post "setRepository"
+        get "admin_svn"
+        post "import_svn"
+        post "set_repo"
 
         # gradesheet ajax actions
         post "quickSetScore"

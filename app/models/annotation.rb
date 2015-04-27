@@ -1,9 +1,13 @@
+##
+# Annotations are Submission and Problem specific.
+# Currently, they are just text, but it would be nice if they could be used in
+# score calculations in the future.
+#
 class Annotation < ActiveRecord::Base
   belongs_to :submission
   belongs_to :problem
 
-  validates_presence_of :submission_id, :filename
-  validates_presence_of :line, :comment
+  validates :comment, :filename, :line, :submission_id, presence: true
 
   def as_text
     if value

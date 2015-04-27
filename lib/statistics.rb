@@ -50,9 +50,7 @@ class Statistics
   end
 
   def median(a)
-    if a.nil? || a.empty?
-      return "--"
-    end
+    return "--" if a.nil? || a.empty?
 
     a = a.sort
     len = a.size

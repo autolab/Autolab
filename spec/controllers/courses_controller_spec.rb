@@ -8,8 +8,9 @@ RSpec.describe CoursesController, type: :controller do
       u = get_user
       login_as(u)
       cid = get_course_id_by_uid(u.id)
+      cname = Course.find(cid).name
       it "renders successfully" do
-        get :report_bug, course_id: cid
+        get :report_bug, name: cname
         expect(response).to be_success
         expect(response.body).to match(/Stuck on a bug/m)
       end
@@ -18,8 +19,9 @@ RSpec.describe CoursesController, type: :controller do
     context "when user is not logged in" do
       u = get_admin
       cid = get_course_id_by_uid(u.id)
+      cname = Course.find(cid).name
       it "renders with failure" do
-        get :report_bug, course_id: cid
+        get :report_bug, name: cname
         expect(response).not_to be_success
         expect(response.body).not_to match(/Stuck on a bug/m)
       end
@@ -31,8 +33,9 @@ RSpec.describe CoursesController, type: :controller do
       u = get_admin
       login_as(u)
       cid = get_course_id_by_uid(u.id)
+      cname = Course.find(cid).name
       it "renders successfully" do
-        get :userLookup, course_id: cid, email: u.email
+        get :userLookup, name: cname, email: u.email
         expect(response).to be_success
         expect(response.body).to match(/first_name/m)
       end
@@ -42,8 +45,9 @@ RSpec.describe CoursesController, type: :controller do
       u = get_instructor
       login_as(u)
       cid = get_course_id_by_uid(u.id)
+      cname = Course.find(cid).name
       it "renders successfully" do
-        get :userLookup, course_id: cid, email: u.email
+        get :userLookup, name: cname, email: u.email
         expect(response).to be_success
         expect(response.body).to match(/first_name/m)
       end
@@ -53,8 +57,9 @@ RSpec.describe CoursesController, type: :controller do
       u = get_user
       login_as(u)
       cid = get_course_id_by_uid(u.id)
+      cname = Course.find(cid).name
       it "renders with failure" do
-        get :userLookup, course_id: cid, email: u.email
+        get :userLookup, name: cname, email: u.email
         expect(response).not_to be_success
         expect(response.body).not_to match(/first_name/m)
       end
@@ -63,7 +68,7 @@ RSpec.describe CoursesController, type: :controller do
     context "when user is not logged in" do
       u = get_admin
       it "renders with failure" do
-        get :userLookup, course_id: 1, email: u.email
+        get :userLookup, name: "dummy", email: u.email
         expect(response).not_to be_success
         expect(response.body).not_to match(/first_name/m)
       end

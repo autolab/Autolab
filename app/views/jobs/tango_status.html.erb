@@ -1,0 +1,148 @@
+<% @title = "Tango Status" %>
+
+<% content_for :stylesheets do %>
+  <%= stylesheet_link_tag "eventdrops" %>
+  <%= stylesheet_link_tag "metricsgraphics" %>
+  <%= stylesheet_link_tag "metricsgraphics_brushing" %>
+<% end %>
+
+<% content_for :javascripts do %>
+  <%= javascript_include_tag "d3.v3.min" %>
+  <%= javascript_include_tag "eventdrops" %>
+  <%= javascript_include_tag "metricsgraphics.min" %>
+  <%= javascript_include_tag "metricsgraphics_brushing" %>
+  <%= javascript_include_tag "tango_status" %>
+<% end %>
+
+<h2>Tango Status</h2>
+<h3>Currently Running Jobs</h3>
+<table class="navigatable prettyBorder">
+  <thead>
+    <tr>
+      <th>Job ID:</th>
+      <th>Job Name</th>
+      <th>VM Name:</th>
+      <th>Submitted At</th>
+      <th>Elapsed (s)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @tango_live_jobs.each do |j| %>
+    <%   next unless j["assigned"] %>
+    <tr>
+      <td><%= j["id"] %></td>
+      <td><%= j["name"] %></td>
+      <td><%= j["vm"]["name"] %>:<%= j["vm"]["id"] %></td>
+      <td><%= j["trace"].first.split("|")[0] %></td>
+      <td><%= Time.parse(j["trace"].last.split("|")[0]).to_i - Time.parse(j["trace"].first.split("|")[0]).to_i %></td>
+    </tr>
+    <% end %>
+  </tbody>
+</table>
+<h3>Jobs Waiting to Run</h3>
+<table class="navigatable prettyBorder">
+  <thead>
+    <tr>
+      <th>Job ID:</th>
+      <th>Job Name</th>
+      <th>VM Name:</th>
+      <th>Submitted At</th>
+      <th>Elapsed (s)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @tango_live_jobs.each do |j| %>
+    <%   next if j["assigned"] %>
+    <tr>
+      <td><%= j["id"] %></td>
+      <td><%= j["name"] %></td>
+      <td><%= j["vm"]["name"] %>:<%= j["vm"]["id"] %></td>
+      <td><%= j["trace"].first.split("|")[0] %></td>
+      <td><%= Time.parse(j["trace"].last.split("|")[0]).to_i - Time.parse(j["trace"].first.split("|")[0]).to_i %></td>
+    </tr>
+    <% end %>
+  </tbody>
+</table>
+<h3>Global Statistics</h3>
+<p> In current Tango session:</p>
+<ul>
+  <li>Total Job Requests: <%= @tango_info["job_requests"] %></li>
+  <li>Total Job Retries: <%= @tango_info["job_retries"] %></li>
+  <li>Job Runtime Errors: <%= @tango_info["runjob_errors"] %></li>
+  <li>Job Copyout Errors: <%= @tango_info["copyout_errors"] %></li>
+  <li>Tango Threads: <%= @tango_info["num_threads"] %></li>
+</ul>
+<h3>VM Pools</h3>
+<table class="navigatable prettyBorder">
+  <thead>
+    <tr>
+      <th>Pool Name:</th>
+      <th>VM List:</th>
+      <th>Free VM List:</th>
+      <th>VM Availability Rate:</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @vm_pool_list.each do |k, p| %>
+    <tr>
+      <td><%= k %></td>
+      <td><%= p["total"].join(", ") %></td>
+      <td><%= p["free"].join(", ") %></td>
+      <td><%= number_to_percentage(p["free"].length.to_f / p["total"].length * 100, precision: 1) %></td>
+    </tr>
+    <% end %>
+  </tbody>
+</table>
+<h3>Autograding Images in Use</h3>
+<table class="navigatable prettyBorder">
+  <thead>
+    <tr>
+      <th>VM Image Name:</th>
+      <th>Courses Using VM Image:</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @img_to_course.each do |img, courses| %>
+    <tr>
+      <td><%= img %></td>
+      <td><%= courses.to_a.join(", ") %></td>
+    </tr>
+    <% end %>
+  </tbody>
+</table>
+<h3>Global Job History</h3>
+<p>
+  <i>Zoom/pan to adjust the timeframe below. Hover over an event to view details. Each dot in the diagram represent an event, including:</i><br />
+  &mdash; New Job Requests: any new jobs submitted to Tango;<br />
+  &mdash; Job Errors: non-fatal errors in Tango jobs;<br />
+  &mdash; Job Failures: jobs terminated with failure.<br />
+<div id="tango_event_plot"></div>
+
+<p><i>Following are VM pools with at least one job &mdash; select the pool to view the time-series chart of jobs lengths for that pool.</i>
+<div id="pool_selection" class="center">
+  <% pool_list = []
+    @plot_data.each { |e|
+      if e[:name] == "New Job Requests" then
+        pool_list = e[:vm_pool].uniq.sort!
+        break
+      end
+    }
+    %>
+  <%= button_tag "All VM Pools", name: "vmpool", value: "", class: 'btn btn-info small' %>
+  <% pool_list.each { |p| %>
+    <%= button_tag(p, name: "vmpool", value: p, class: 'btn btn-info small') %>
+  <% } %>
+</div>
+<div id="tango_time_plot"></div>
+<p><b>Event Summary:</b></p>
+<div id="tango_job_hover">
+  <ul>
+    <li><b>Job Name:</b> <span id="job_name">Not selected</span>
+    <li><b>Job ID:</b> <span id="job_id">Not selected</span>
+    <li><b>Event Timestamp:</b> <span id="job_time">Not selected</span>
+    <li><b>VM ID:</b> <span id="vm_id">Not selected</span>
+    <li><b>VM Pool:</b> <span id="vm_pool">Not selected</span>
+    <li><b>Elapsed Seconds:</b> <span id="job_duration">Not selected</span>
+    <li><b>Status:</b> <span id="job_status">Not selected</span>
+  </ul>
+</div>

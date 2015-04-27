@@ -13,9 +13,7 @@ class UsersController < ApplicationController
       cuds = current_user.course_user_data
 
       cuds.each do |cud|
-        if cud.instructor?
-          users |= cud.course.course_user_data.collect(&:user)
-        end
+        users |= cud.course.course_user_data.collect(&:user) if cud.instructor?
       end
 
       @users = users.sort_by(&:email)
@@ -46,9 +44,7 @@ class UsersController < ApplicationController
         if cud.instructor?
           user_cud =
             cud.course.course_user_data.where(user: user).first
-          unless user_cud.nil?
-            user_cuds << user_cud
-          end
+          user_cuds << user_cud unless user_cud.nil?
         end
       end
 

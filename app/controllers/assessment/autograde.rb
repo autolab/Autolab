@@ -1,18 +1,19 @@
+require "uri"
+require "tango_client"
+require_relative Rails.root.join("config", "autogradeConfig.rb")
+
 ##
 # Contains all functions related to autograding, including functions to send autograding jobs,
 #   the callback route for when jobs are completed, and regrading routes.
 # Gets imported into AssessmentsController
 #
 module AssessmentAutograde
-  require "uri"
-  require_relative Rails.root.join("config", "autogradeConfig.rb")
-
   # method called when Tango returns the output
   # action_no_auth :autograde_done
   def autograde_done
     @course = Course.find_by(name: params[:course_name]) || (render(nothing: true) && return)
     @assessment = @course.assessments.find_by(name: params[:name])
-    render(nothing: true) && return unless @assessment && @assessment.has_autograde
+    render(nothing: true) && return unless @assessment && @assessment.has_autograder?
 
     # there can be multiple submission with the same dave if this was a group submission
     submissions = Submission.where(dave: params[:dave]).all
@@ -23,12 +24,7 @@ module AssessmentAutograde
     COURSE_LOGGER.log("autograde_done")
     COURSE_LOGGER.log("autograde_done hit: #{request.fullpath}")
 
-    begin
-      extend_config_module(@assessment, submissions[0], @cud)
-    rescue StandardError => e
-      COURSE_LOGGER.log("Error extend config")
-      COURSE_LOGGER.log(e)
-    end
+    extend_config_module(@assessment, submissions[0], @cud)
 
     require_relative(Rails.root.join("assessmentConfig", "#{@course.name}-#{@assessment.name}.rb"))
 
@@ -53,7 +49,7 @@ module AssessmentAutograde
     @course = @submission.course_user_datum.course
     @assessment = @submission.assessment
 
-    unless @assessment.has_autograde
+    unless @assessment.has_autograder?
       # Not an error, this behavior was specified!
       flash[:info] = "This submission is not autogradable"
       redirect_to([:history, @course, @assessment, cud_id: @effective_cud.id]) && return
@@ -158,7 +154,7 @@ module AssessmentAutograde
     if job == -2
       flash[:error] = "Autograding failed because there are no autograding properties."
       if @cud.instructor?
-        link = "<a href=\"#{url_for(action: 'adminAutograde')}\">Admin Autograding</a>"
+        link = (view_context.link_to "Autograder Settings", [:edit, course, assessment, :autograder])
         flash[:error] += " Visit #{link} to set the autograding properties."
       else
         flash[:error] += " Please contact your instructor."
@@ -172,7 +168,7 @@ module AssessmentAutograde
     elsif job == -9
       flash[:error] = "Submission was rejected by autograder."
       if @cud.instructor?
-        link = "<a href=\"#{url_for(action: 'adminAutograde')}\">Admin Autograding</a>"
+        link = (view_context.link_to "Autograder Settings", [:edit, course, assessment, :autograder])
         flash[:error] += " (Verify the autograding properties at #{link}.)"
       end
     elsif job < 0
@@ -183,23 +179,6 @@ module AssessmentAutograde
         " Refresh the page to see the results.").html_safe
     end
     job
-  end
-
-  ##
-  # Sends the open request to tango.
-  # Returns a list of files already on Tango, or -1 on failure
-  #
-  def tango_open(course, assessment)
-    # Send OPEN api request to create/query course-lab directory.
-    open_req_url = "http://#{RESTFUL_HOST}:#{RESTFUL_PORT}/open/#{RESTFUL_KEY}/#{course.name}-#{assessment.name}/"
-    COURSE_LOGGER.log("Req: " + open_req_url)
-
-    open_resp = Net::HTTP.get_response(URI.parse(open_req_url))
-    open_resp_json = JSON.parse(open_resp.body)
-    return -1, nil if open_resp_json.nil? || open_resp_json["statusId"] < 0
-
-    COURSE_LOGGER.log("Existing File List: #{open_resp_json['files']}")
-    [0, open_resp_json["files"]]
   end
 
   ##
@@ -226,30 +205,20 @@ module AssessmentAutograde
     end
 
     # now actually send all of the upload requests
-    upload_http_req = Net::HTTP.new(RESTFUL_HOST, RESTFUL_PORT)
-    upload_req_uri = "/upload/#{RESTFUL_KEY}/#{course.name}-#{assessment.name}/"
     upload_file_list.each do |f|
       md5hash = Digest::MD5.file(f["localFile"]).to_s
       next if existing_files.any? do |h|
         h["md5"] == md5hash && h["localFile"] == File.basename(f["localFile"])
       end
 
-      upload_req = Net::HTTP::Post.new(upload_req_uri)
-      upload_req.add_field("Filename", File.basename(f["localFile"]))
       begin
-        file = File.open(f["localFile"], "rb")
-        upload_req.body = file.read
-      rescue StandardError
+        TangoClient.upload("#{course.name}-#{assessment.name}",
+                           File.basename(f["localFile"]),
+                           File.open(f["localFile"], "rb").read)
+      rescue TangoClient::TangoException => e
+        flash[:error] = "Error while uploading autograding files: #{e.message}"
         return -4, nil
-      ensure
-        file.close unless file.nil?
       end
-
-      upload_resp = upload_http_req.request(upload_req)
-      COURSE_LOGGER.log("Req: /upload/#{RESTFUL_KEY}/#{course.name}-#{assessment.name}/")
-
-      upload_resp_json = JSON.parse(upload_resp.body)
-      return -6, nil if upload_resp_json.nil? || upload_resp_json["statusId"] < 0
     end
 
     [0, upload_file_list]
@@ -313,29 +282,22 @@ module AssessmentAutograde
   # Returns 0 on success and -9 on failure.
   #
   def tango_add_job(course, assessment, upload_file_list, callback_url, job_name, output_file)
-    http = Net::HTTP.new(RESTFUL_HOST, RESTFUL_PORT)
-    request = Net::HTTP::Post.new("/addJob/#{RESTFUL_KEY}/#{course.name}-#{assessment.name}/")
-    request.body = { "image" => @autograde_prop.autograde_image,
-                     "files" => upload_file_list.map do |f|
-                       { "localFile" => File.basename(f["localFile"]),
-                         "destFile" => Pathname.new(f["destFile"]).basename.to_s }
-                     end,
-                     "output_file" => output_file,
-                     "timeout" => @autograde_prop.autograde_timeout,
-                     "callback_url" => callback_url,
-                     "jobName" => job_name }.to_json
-
-    list = upload_file_list.map { |f| Pathname.new(f["destFile"]).basename.to_s }
-    COURSE_LOGGER.log("Files: #{list}")
-    COURSE_LOGGER.log("Req: /addJob/#{RESTFUL_KEY}/#{course.name}-#{assessment.name}/")
-
-    response = http.request(request)
-    response_json = JSON.parse(response.body)
-
-    # Sanity check that job has been added successfully.
-    return -9, nil if response_json.nil? || response_json["statusId"] < 0
-
-    [0, response_json]
+    job_properties = { "image" => @autograde_prop.autograde_image,
+                       "files" => upload_file_list.map do |f|
+                         { "localFile" => File.basename(f["localFile"]),
+                           "destFile" => Pathname.new(f["destFile"]).basename.to_s }
+                       end,
+                       "output_file" => output_file,
+                       "timeout" => @autograde_prop.autograde_timeout,
+                       "callback_url" => callback_url,
+                       "jobName" => job_name }.to_json
+    begin
+      response = TangoClient.addjob("#{course.name}-#{assessment.name}", job_properties)
+    rescue TangoClient::TangoException => e
+      flash[:error] = "Error while adding job to the queue: #{e.message}"
+      return -9, nil
+    end
+    [0, response]
   end
 
   ##
@@ -344,11 +306,10 @@ module AssessmentAutograde
   #
   def tango_poll(course, assessment, submissions, output_file)
     feedback = nil
-    request_url = "http://#{RESTFUL_HOST}:#{RESTFUL_PORT}/poll/#{RESTFUL_KEY}/#{course.name}-#{assessment.name}/#{URI.encode(output_file)}/"
     begin
       Timeout.timeout(80) do
         loop do
-          response = Net::HTTP.get_response(URI.parse(request_url))
+          response = TangoClient.poll("#{course.name}-#{assessment.name}", "#{URI.encode(output_file)}")
           # json is returned when a job is not complete
           unless response.content_type == "application/json"
             feedback = response.body
@@ -358,6 +319,9 @@ module AssessmentAutograde
         end
       end
     rescue Timeout::Error
+      return -11
+    rescue TangoClient::TangoException => e
+      flash[:error] = "Error while polling for job status: #{e.message}"
       return -11
     end
 
@@ -387,12 +351,16 @@ module AssessmentAutograde
     extend_config_module(assessment, submissions[0], cud)
 
     # Get the autograding properties for this assessment.
-    @autograde_prop = AutogradingSetup.find_by(assessment_id: assessment.id)
+    @autograde_prop = assessment.autograder
     return -2 unless @autograde_prop
 
     # send the tango open request
-    status, existing_files = tango_open(course, assessment)
-    return status if status < 0
+    begin
+      existing_files = TangoClient.open("#{course.name}-#{assessment.name}")
+    rescue TangoClient::TangoException => e
+      flash[:error] = "Error with open request on Tango: #{e.message}"
+      return -1
+    end
 
     # send the tango upload requests
     status, upload_file_list = tango_upload(course, assessment, submissions[0], existing_files)
@@ -489,7 +457,7 @@ module AssessmentAutograde
       fail "Empty autoresult string." if scores.keys.length == 0
 
       # Grab the autograde config info
-      @autograde_prop = AutogradingSetup.find_by(assessment_id: @assessment.id)
+      @autograde_prop = @assessment.autograder
 
       # Record each of the scores extracted from the autoresult
       scores.keys.each do |key|
@@ -608,11 +576,6 @@ module AssessmentAutograde
   rescue StandardError => error
     COURSE_LOGGER.log(error)
     COURSE_LOGGER.log(error.backtrace)
-
-    if @cud && @cud.has_auth_level?(:instructor)
-      redirect_to(action: :reload) && return
-    else
-      redirect_to(home_error_path) && return
-    end
+    raise error
   end
 end
