@@ -16,29 +16,21 @@ class CourseUserDataController < ApplicationController
 
   action_auth_level :create, :instructor
   def create
-    @newCUD = @course.course_user_data.new(cud_params)
+    cud_parameters = cud_params
+    @newCUD = @course.course_user_data.new(cud_parameters)
 
     # check user existence
-    email = params[:course_user_datum][:user_attributes][:email]
+    email = cud_parameters[:user_attributes][:email]
     user = User.where(email: email).first
     if user.nil?
+      user = User.roster_create(email,
+                                cud_parameters[:user_attributes][:first_name],
+                                cud_parameters[:user_attributes][:last_name],
+                                "", "", "")
 
-      auth = Authentication.new
-      auth.provider = "CMU-Shibboleth"
-      auth.uid = email
-      auth.save!
-      @newUser = User.new(cud_params[:user_attributes])
-      @newUser.authentications << auth
-
-      temp_pass = Devise.friendly_token[0, 20]    # generate a random token
-      @newUser.password = temp_pass
-
-      if @newUser.save
-        @newCUD.user = @newUser
+      if user
+        @newCUD.user = user
       else
-        @newUser.errors.each do |msg|
-          print msg
-        end
         flash[:error] = "The user with email #{email} could not be created  "
         redirect_to(action: "new") && return
       end
