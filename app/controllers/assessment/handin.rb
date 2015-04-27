@@ -252,7 +252,7 @@ private
       return false
     end
 
-    if @assessment.overwrites_method?(:checkMimeType) \ && !(@assessment.config_module.checkMimeType(
+    if @assessment.overwrites_method?(:checkMimeType) && !(@assessment.config_module.checkMimeType(
         params[:submission]["file"].content_type,
         params[:submission]["file"].original_filename))
 
