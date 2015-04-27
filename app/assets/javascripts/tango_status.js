@@ -157,6 +157,7 @@ var plotTimeSeries = function(data) {
         document.getElementById('vm_pool').innerHTML = d.vm_pool;
         document.getElementById('job_duration').innerHTML = d.duration;
         document.getElementById('job_id').innerHTML = d.job_id;
+        document.getElementById('job_status').innerHTML = d.status;
       }
     });
   };
