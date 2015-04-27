@@ -117,20 +117,8 @@
   &mdash; Job Errors: non-fatal errors in Tango jobs;<br />
   &mdash; Job Failures: jobs terminated with failure.<br />
 <div id="tango_event_plot"></div>
-<p><b>Event Summary:</b></p>
-<div id="tango_job_hover">
-  <ul>
-    <li><b>Job Name:</b> <span id="job_name">Not selected</span>
-    <li><b>Job ID:</b> <span id="job_id">Not selected</span>
-    <li><b>Event Timestamp:</b> <span id="job_time">Not selected</span>
-    <li><b>VM ID:</b> <span id="vm_id">Not selected</span>
-    <li><b>VM Pool:</b> <span id="vm_pool">Not selected</span>
-    <li><b>Elapsed Seconds:</b> <span id="job_duration">Not selected</span>
-    <li><b>Status:</b> <span id="job_status">Not selected</span>
-  </ul>
-</div>
-<h3>Job Runtime History</h3>
-<p>Following are VM pools with at least one job &mdash; select the pool to view the time-series chart of jobs lengths for that pool.
+
+<p><i>Following are VM pools with at least one job &mdash; select the pool to view the time-series chart of jobs lengths for that pool.</i>
 <div id="pool_selection" class="center">
   <% pool_list = []
     @plot_data.each { |e|
@@ -146,3 +134,15 @@
   <% } %>
 </div>
 <div id="tango_time_plot"></div>
+<p><b>Event Summary:</b></p>
+<div id="tango_job_hover">
+  <ul>
+    <li><b>Job Name:</b> <span id="job_name">Not selected</span>
+    <li><b>Job ID:</b> <span id="job_id">Not selected</span>
+    <li><b>Event Timestamp:</b> <span id="job_time">Not selected</span>
+    <li><b>VM ID:</b> <span id="vm_id">Not selected</span>
+    <li><b>VM Pool:</b> <span id="vm_pool">Not selected</span>
+    <li><b>Elapsed Seconds:</b> <span id="job_duration">Not selected</span>
+    <li><b>Status:</b> <span id="job_status">Not selected</span>
+  </ul>
+</div>

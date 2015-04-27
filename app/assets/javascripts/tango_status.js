@@ -18,6 +18,8 @@ $.getJSON('tango_data', function(data) {
   plotEventDrops(data);
   plotTimeSeries(data);
 });
+
+// Plot the Event Drop graph.
 var plotEventDrops = function(data) {
   var minDates = jQuery.map(data, function(h) {
     return Math.min.apply(null, h['dates']);
@@ -103,6 +105,7 @@ var plotEventDrops = function(data) {
   }).trigger("resize");
 };
 
+// Plot the time-series of job lengths.
 var plotTimeSeries = function(data) {
   // Initialize Dataset
   var new_jobs = data[0];
@@ -133,19 +136,27 @@ var plotTimeSeries = function(data) {
         return pool == '' || e.vm_pool == pool;
       }),
       full_width: true,
-      height: 250,
+      height: 150,
       buffer: 5,
       target: '#tango_time_plot',
       x_accessor: 'dates',
       y_accessor: 'duration',
       y_scale_type: 'log',
       interpolate: 'linear',
+      top: 28,
+      buffer: 2,
       mouseover: function(d, i) {
         var prefix = d3.formatPrefix(d.value);
         var timestamp = d.dates.toString();
         timestamp = timestamp.substring(0, timestamp.lastIndexOf(':'));
         $('div#tango_time_plot svg .mg-active-datapoint')
           .html('Job ID: ' + d.job_id + ' | Submission Time: ' + timestamp + ' | Duration: ' + d.duration);
+        document.getElementById('job_time').innerHTML = d.dates;
+        document.getElementById('job_name').innerHTML = d.job_name;
+        document.getElementById('vm_id').innerHTML = d.vm_id;
+        document.getElementById('vm_pool').innerHTML = d.vm_pool;
+        document.getElementById('job_duration').innerHTML = d.duration;
+        document.getElementById('job_id').innerHTML = d.job_id;
       }
     });
   };
