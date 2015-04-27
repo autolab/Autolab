@@ -34,12 +34,4 @@ RSpec.describe HomeController, type: :controller do
       expect(response.body).to match(/didn't find your account/m)
     end
   end
-
-  describe "#vmlist" do
-    it "renders successfully" do
-      get :vmlist
-      expect(response).to be_success
-      expect(response.body).to match(/Autograding Images Currently in Use/m)
-    end
-  end
 end

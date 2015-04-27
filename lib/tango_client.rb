@@ -1,4 +1,5 @@
 require "httparty"
+require "cgi"
 require Rails.root.join("config", "autogradeConfig.rb")
 
 ##
@@ -8,7 +9,7 @@ module TangoClient
   class ClientObj
     include HTTParty
     base_uri "#{RESTFUL_HOST}:#{RESTFUL_PORT}"
-    default_timeout 10
+    default_timeout 15
   end
 
   # Exception for Tango API Client
@@ -55,11 +56,13 @@ module TangoClient
     end
   end
 
-  def self.info(courselab)
-    handle_exceptions do
-      url = "/info/#{api_key}/#{courselab}/"
+  def self.info
+    resp = handle_exceptions do
+      url = "/info/#{api_key}/"
       ClientObj.get(url)
     end
+    hash = CGI.parse(resp["info"].join("&"))
+    hash.each{ |k,v| hash[k] = v.first }
   end
 
   def self.jobs(deadjobs = 0)
@@ -70,11 +73,12 @@ module TangoClient
     resp["jobs"]
   end
 
-  def self.pool(image)
-    handle_exceptions do
-      url = "/pool/#{api_key}/#{image}/"
+  def self.pool(image = nil)
+    resp = handle_exceptions do
+      url = image.nil? ? "/pool/#{api_key}/" : "/pool/#{api_key}/#{image}/"
       ClientObj.get(url)
     end
+    resp["pools"]
   end
 
   def self.prealloc(image, num, options = {})

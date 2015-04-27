@@ -64,6 +64,9 @@ class CourseUserDatum < ActiveRecord::Base
     elsif nickname.length > 32
       errors.add("nickname", "is too long (maximum is 32 characters)")
       false
+    elsif !nickname.ascii_only?
+      errors.add("nickname", "can only contain ASCII characters")
+      false
     else
       true
     end

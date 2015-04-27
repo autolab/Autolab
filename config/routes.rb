@@ -10,7 +10,6 @@ Autolab3::Application.routes.draw do
     match "developer_login", via: [:get, :post]
     get "error"
     get "no_user"
-    get "vmlist"
   end
 
   resource :admin do
@@ -25,6 +24,11 @@ Autolab3::Application.routes.draw do
     resources :schedulers
     resources :jobs, only: :index do
       get "getjob", on: :member
+
+      collection do
+        get "tango_status"
+        get "tango_data"
+      end
     end
     resources :announcements, except: :show
     resources :attachments
