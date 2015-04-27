@@ -106,6 +106,10 @@ class CourseUserDataController < ApplicationController
         if @editCUD.save
           redirect_to(action: :show) && return
         else
+          flash[:error] = "Please complete all of your account information before continuing:"
+          @editCUD.errors.full_messages.each do |msg| 
+            flash[:error] += "<br>#{msg}"
+          end
           redirect_to(action: :edit) && return
         end
       end
