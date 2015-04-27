@@ -80,6 +80,8 @@
     font-size: 1.8rem;
     padding-top: 8px;
     text-align: center;
+    margin-top: 0px;
+    margin-bottom: 0px;
 }
 
 .mg-chart-title .fa {
