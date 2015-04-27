@@ -11,28 +11,35 @@
   <% end %>
  
   <%= form_tag :action=>"email_instructors" do %>
-  <table class=verticalTable >
-    <tr>
-      <th><b> From: </b></th>
-      <td><%= text_field_tag :from %></td>
-      <td class=smallText>This will be the from and reply-to address,
-      so it should be legitimate</td>
-    </tr>
-    <tr>
-      <th><b> Subject:</b></th>
-      <td><%= text_field_tag :subject %></td>
-    </tr>
-    <tr>
-      <td colspan=2>
-      <%= text_area_tag :body,nil,{:rows=>15,:cols=>50}%>
-      </td>
-    </tr>
-    <tr>
-      <td colspan=2>
-      <br>
-      <%= submit_tag "Send Email",:confirm=>"Are you sure?", :class=>"btn primary" %>
-      </td>
-    </tr>
-  </table>
+    <table class=verticalTable >
+      <tr>
+        <th><b> From: </b></th>
+        <td><%= text_field_tag :from %></td>
+        <td class=smallText>This will be the from and reply-to address,
+        so it should be legitimate</td>
+      </tr>
+      <tr>
+        <th><b> Subject:</b></th>
+        <td><%= text_field_tag :subject %></td>
+      </tr>
+      <tr>
+        <td colspan=2>
+        <%= text_area_tag :body,nil,{:rows=>15,:cols=>50}%>
+        </td>
+      </tr>
+      <tr>
+        <td colspan=2>
+        <br>
+        <%= submit_tag "Send Email",:confirm=>"Are you sure?", :class=>"btn primary" %>
+        </td>
+      </tr>
+    </table>
   <% end %>
+
+  <h3>This email will be sent to the following users:</h3>
+  <ul>
+    <% @cuds.each do |cud| %>
+      <li><%= cud.email %></li>
+    <% end %>
+  </ul>
 <% end %>
