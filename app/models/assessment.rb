@@ -191,7 +191,7 @@ class Assessment < ActiveRecord::Base
     # Write the new config out to the right file.
     File.open(assessment_config_file_path, "w") { |f| f.write(config_source) }
     # Load the assessment config file while we're at it
-    File.open(config_file_path, "w") { |f| f.write config }
+    File.open(config_file_path, "w") { |f| f.write config_source }
 
     true
   end
@@ -199,6 +199,8 @@ class Assessment < ActiveRecord::Base
   ##
   # Copies an assessment's config file to the RAILS_ROOT/assessmentConfig folder.
   # Renames the module to include the course name so that the files have unique module names.
+  #
+  # WILL NOT WORK ON NEW, UNSAVED ASSESSMENTS!!!
   #
   def load_config_file
     # read from source
