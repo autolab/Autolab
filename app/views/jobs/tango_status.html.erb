@@ -34,7 +34,7 @@
       <td><%= j["name"] %></td>
       <td><%= j["vm"]["name"] %>:<%= j["vm"]["id"] %></td>
       <td><%= j["trace"].first.split("|")[0] %></td>
-      <td><%= Time.parse(j["trace"].last.split("|")[0]).to_i - Time.parse(j["trace"].first.split("|")[0]).to_i %></td>
+      <td><%= Time.now.to_i - ActiveSupport::TimeZone["UTC"].parse(j["trace"].first.split("|")[0]).to_i %></td>
     </tr>
     <% end %>
   </tbody>
