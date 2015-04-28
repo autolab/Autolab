@@ -74,7 +74,7 @@ class ScoreboardsController < ApplicationController
         grade[:entry] = {}
         # But, if this was an instructor, we want them to know about
         # this.
-        if @user.instructor?
+        if @cud.instructor?
           @errorMessage = "An error occurred while calling " \
             "createScoreboardEntry(#{grade[:problems].inspect},"\
             "#{grade[:autoresult]})"

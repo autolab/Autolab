@@ -77,9 +77,9 @@ class AssessmentUserDatum < ActiveRecord::Base
                                        ignored: false).maximum(:version))
       Submission.find_by(version: max_version, assessment_id: assessment_id,
                          course_user_datum_id: course_user_datum_id)
+    else
+      nil
     end
-
-    nil
   end
 
   def submission_status

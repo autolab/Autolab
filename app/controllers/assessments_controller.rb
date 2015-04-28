@@ -102,6 +102,7 @@ class AssessmentsController < ApplicationController
       @assessment.save!
 
       @assessment.construct_folder
+      @assessment.load_config_file # only call this on saved assessments
 
       quizData = JSON.parse(quizJSON)
 
@@ -246,8 +247,9 @@ class AssessmentsController < ApplicationController
   action_auth_level :importAssessment, :instructor
   def importAssessment
     @assessment = @course.assessments.new(name: params[:assessment_name])
-    @assessment.load_yaml
+    @assessment.load_yaml # this will save the assessment
     @assessment.construct_folder # make sure there's a handin folder, just in case
+    @assessment.load_config_file # only call this on saved assessments
     redirect_to([@course, @assessment])
   end
 
@@ -307,6 +309,9 @@ class AssessmentsController < ApplicationController
       redirect_to(action: :installAssessment)
       return
     end
+
+    # reload the assessment's config file
+    @assessment.load_config_file # only call this on saved assessments
 
     flash[:success] = "Successfully installed #{@assessment.name}."
     # reload the course config file
