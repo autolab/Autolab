@@ -82,7 +82,7 @@ module AssessmentHandin
           end
         end
 
-        render(plain: flash[:error], status: :bad_request) && return unless validateForGroups
+        render(plain: flash[:error], status: :bad_request) && return unless validate_for_groups
 
         # save the submissions
         begin
