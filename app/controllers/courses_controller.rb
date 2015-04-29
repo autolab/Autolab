@@ -651,6 +651,7 @@ private
             archive_extract.each do |entry|
               pathname = Archive.get_entry_name(entry)
               unless Archive.looks_like_directory?(pathname)
+                pathname.gsub!(/\//, "-")
                 destination = File.join(stuDir, pathname)
                 # make sure all subdirectories are there
                 FileUtils.mkdir_p(File.dirname destination)
