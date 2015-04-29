@@ -210,9 +210,9 @@ private
     # not customized, then simply return the list of problem
     # scores and their total.
     if !autoresult ||
-       !@scoreboard_prop ||
-       !@scoreboard_prop.colspec ||
-       @scoreboard_prop.colspec.blank?
+       !@scoreboard ||
+       !@scoreboard.colspec ||
+       @scoreboard.colspec.blank?
 
       # First we need to get the total score
       total = 0.0
@@ -241,7 +241,7 @@ private
       # the intructor's autograder did not catch it) then
       # return a nicely formatted nil result.
       begin
-        parsed = ActiveSupport::JSON.decode(@scoreboard_prop.colspec)
+        parsed = ActiveSupport::JSON.decode(@scoreboard.colspec)
         fail if !parsed || !parsed["scoreboard"]
         entry = []
         for item in parsed["scoreboard"] do
@@ -278,7 +278,7 @@ private
     # not create a custom column spec, then revert to the default,
     # which sorts by total problem, then by submission time.
     if !@assessment.has_autograder? ||
-       !@scoreboard_prop || @scoreboard_prop.colspec.blank?
+       !@scoreboard || @scoreboard.colspec.blank?
       aSum = 0; bSum = 0
       a[:problems].keys.each do |key|
         aSum += a[:problems][key].to_f
@@ -306,7 +306,7 @@ private
       b2 = b[:entry][2].to_f
 
       begin
-        parsed = ActiveSupport::JSON.decode(@scoreboard_prop.colspec)
+        parsed = ActiveSupport::JSON.decode(@scoreboard.colspec)
       rescue
       end
 
