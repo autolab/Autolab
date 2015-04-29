@@ -11,7 +11,7 @@
     <% if @scoreboard.banner.blank? %>
       Here are the most recent scores for the class.
     <% else %>
-      <%= @scoreboard.banner %>
+      <%= sanitize @scoreboard.banner %>
     <% end %>
   </h3>
 
