@@ -4,6 +4,7 @@ require "fileutils"
 require "statistics"
 
 class CoursesController < ApplicationController
+  skip_before_action :set_course, only: [:index, :new, :create]
   # you need to be able to pick a course to be authorized for it
   skip_before_action :authorize_user_for_course, only: [:index, :new, :create]
   # if there's no course, there are no persistent announcements for that course
