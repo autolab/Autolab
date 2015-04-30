@@ -733,11 +733,11 @@ private
     ass[:category_name] = params[:new_category] unless params[:new_category].blank?
     if ass[:late_penalty_attributes] && ass[:late_penalty_attributes][:value].blank?
       ass.delete(:late_penalty_attributes)
-      @assessment.late_penalty.destroy
+      @assessment.late_penalty.destroy unless @assessment.late_penalty.nil?
     end
     if ass[:version_penalty_attributes] && ass[:version_penalty_attributes][:value].blank?
       ass.delete(:version_penalty_attributes)
-      @assessment.version_penalty.destroy
+      @assessment.version_penalty.destroy unless @assessment.version_penalty.nil?
     end
     ass.permit!
   end
