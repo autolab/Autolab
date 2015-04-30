@@ -360,11 +360,11 @@ file, most likely a duplicate email.  The exact error was: #{e} "
 
     # Create a temporary directory
     @failures = []
-    tmpDir = Dir.mktmpdir("#{@cud.user.email}Moss", Rails.root.join("tmp"))
-    extract_asmt_for_moss(assessments)
-    extract_tar_for_moss(params[:external_tar])
+    tmp_dir = Dir.mktmpdir("#{@cud.user.email}Moss", Rails.root.join("tmp"))
+    extract_asmt_for_moss(tmp_dir, assessments)
+    extract_tar_for_moss(tmp_dir, params[:external_tar])
     # Ensure that all files in Moss tmp dir are readable
-    system("chmod -R a+r #{tmpDir}")
+    system("chmod -R a+r #{tmp_dir}")
 
     # Now run the Moss command
     @mossCmdString = @mossCmd.join(" ")
@@ -372,7 +372,7 @@ file, most likely a duplicate email.  The exact error was: #{e} "
     @mossOutput = `#{@mossCmdString} 2>&1`
 
     # Clean up after ourselves (droh: leave for debugging)
-    # `rm -rf #{tmpDir}`
+    # `rm -rf #{tmp_dir}`
   end
 
 private
@@ -620,11 +620,11 @@ private
     end
   end
 
-  def extract_asmt_for_moss(assessments)
+  def extract_asmt_for_moss(tmp_dir, assessments)
     # for each assessment
     for ass in assessments do
       # Create a directory for ths assessment
-      assDir = File.join(tmpDir, "#{ass.name}-#{ass.course.name}")
+      assDir = File.join(tmp_dir, "#{ass.name}-#{ass.course.name}")
       Dir.mkdir(assDir)
 
       # params[:isArchive] might be nil if no archive assessments are submitted
@@ -652,6 +652,7 @@ private
             archive_extract.each do |entry|
               pathname = Archive.get_entry_name(entry)
               unless Archive.looks_like_directory?(pathname)
+                pathname.gsub!(/\//, "-")
                 destination = File.join(stuDir, pathname)
                 # make sure all subdirectories are there
                 FileUtils.mkdir_p(File.dirname destination)
@@ -672,10 +673,10 @@ private
     end
   end
 
-  def extract_tar_for_moss(external_tar)
+  def extract_tar_for_moss(tmp_dir, external_tar)
     return unless external_tar
     # Directory to hold tar ball and all individual files.
-    extTarDir = File.join(tmpDir, "external_input")
+    extTarDir = File.join(tmp_dir, "external_input")
     Dir.mkdir(extTarDir)
 
     # Read in the tarfile from the given source.
