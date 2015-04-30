@@ -3,8 +3,12 @@
 #
 class Scoreboard < ActiveRecord::Base
   belongs_to :assessment
+
   trim_field :banner, :colspec
+
   validate :colspec_is_well_formed
+
+  after_save -> { assessment.dump_yaml }
 
   SERIALIZABLE = Set.new %w(banner colspec)
   def serialize
