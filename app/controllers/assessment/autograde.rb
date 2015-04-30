@@ -11,7 +11,6 @@ module AssessmentAutograde
   # method called when Tango returns the output
   # action_no_auth :autograde_done
   def autograde_done
-    @course = Course.find_by(name: params[:course_name]) || (render(nothing: true) && return)
     @assessment = @course.assessments.find_by(name: params[:name])
     render(nothing: true) && return unless @assessment && @assessment.has_autograder?
 
@@ -20,7 +19,6 @@ module AssessmentAutograde
 
     feedback_str = params[:file].read
 
-    COURSE_LOGGER.setCourse(@course)
     COURSE_LOGGER.log("autograde_done")
     COURSE_LOGGER.log("autograde_done hit: #{request.fullpath}")
 
@@ -44,10 +42,8 @@ module AssessmentAutograde
   #   but because it uses autograding, it is easier to have it here
   # action_auth_level :regrade, :instructor
   def regrade
-    @submission = Submission.find(params[:submission_id])
+    @submission = @assessment.submissions.find(params[:submission_id])
     @effective_cud = @submission.course_user_datum
-    @course = @submission.course_user_datum.course
-    @assessment = @submission.assessment
 
     unless @assessment.has_autograder?
       # Not an error, this behavior was specified!
