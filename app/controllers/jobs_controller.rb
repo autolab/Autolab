@@ -175,6 +175,14 @@ class JobsController < ApplicationController
     @tango_live_jobs = TangoClient.jobs
     @tango_dead_jobs = TangoClient.jobs(deadjobs = 1)
     @plot_data = tango_plot_data(live_jobs = @tango_live_jobs, dead_jobs = @tango_dead_jobs)
+    # Get a list of current and upcoming assessments
+    @upcoming_asmt = []
+    Assessment.find_each do |asmt|
+      if asmt.has_autograder? && asmt.due_at > Time.now
+        @upcoming_asmt << asmt
+      end
+    end
+    @upcoming_asmt.sort! { |a, b| a.due_at <=> b.due_at }
   end
 
   action_auth_level :tango_data, :instructor

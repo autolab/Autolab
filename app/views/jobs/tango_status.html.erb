@@ -7,6 +7,7 @@
 <% end %>
 
 <% content_for :javascripts do %>
+  <%= javascript_include_tag "sorttable" %>
   <%= javascript_include_tag "d3.v3.min" %>
   <%= javascript_include_tag "eventdrops" %>
   <%= javascript_include_tag "metricsgraphics.min" %>
@@ -16,14 +17,14 @@
 
 <h2>Tango Status</h2>
 <h3>Currently Running Jobs</h3>
-<table class="navigatable prettyBorder">
+<table class="navigatable prettyBorder sortable">
   <thead>
     <tr>
       <th>Job ID:</th>
-      <th>Job Name</th>
+      <th>Job Name:</th>
       <th>VM Name:</th>
-      <th>Submitted At</th>
-      <th>Elapsed (s)</th>
+      <th>Submitted At:</th>
+      <th>Elapsed (s):</th>
     </tr>
   </thead>
   <tbody>
@@ -39,15 +40,16 @@
     <% end %>
   </tbody>
 </table>
+
 <h3>Jobs Waiting to Run</h3>
-<table class="navigatable prettyBorder">
+<table class="navigatable prettyBorder sortable">
   <thead>
     <tr>
       <th>Job ID:</th>
-      <th>Job Name</th>
+      <th>Job Name:</th>
       <th>VM Name:</th>
-      <th>Submitted At</th>
-      <th>Elapsed (s)</th>
+      <th>Submitted At:</th>
+      <th>Elapsed (s):</th>
     </tr>
   </thead>
   <tbody>
@@ -63,6 +65,7 @@
     <% end %>
   </tbody>
 </table>
+
 <h3>Global Statistics</h3>
 <p> In current Tango session:</p>
 <ul>
@@ -73,7 +76,7 @@
   <li>Tango Threads: <%= @tango_info["num_threads"] %></li>
 </ul>
 <h3>VM Pools</h3>
-<table class="navigatable prettyBorder">
+<table class="navigatable prettyBorder sortable">
   <thead>
     <tr>
       <th>Pool Name:</th>
@@ -88,13 +91,14 @@
       <td><%= k %></td>
       <td><%= p["total"].join(", ") %></td>
       <td><%= p["free"].join(", ") %></td>
-      <td><%= number_to_percentage(p["free"].length.to_f / p["total"].length * 100, precision: 1) %></td>
+      <td><%= p["total"].length == 0 ? number_to_percentage(0, precision: 1)
+                                     : number_to_percentage(p["free"].length.to_f / p["total"].length * 100, precision: 1) %></td>
     </tr>
     <% end %>
   </tbody>
 </table>
 <h3>Autograding Images in Use</h3>
-<table class="navigatable prettyBorder">
+<table class="navigatable prettyBorder sortable">
   <thead>
     <tr>
       <th>VM Image Name:</th>
@@ -146,3 +150,29 @@
     <li><b>Status:</b> <span id="job_status">Not selected</span>
   </ul>
 </div>
+
+<h3>Current &amp; Upcoming Autograded Assessments</h3>
+<table class="navigatable prettyBorder sortable">
+  <thead>
+    <tr>
+      <th>Due Date:</th>
+      <th>Start Date:</th>
+      <th>Course Name:</th>
+      <th>Assessment Name:</th>
+      <th>VM Pool:</th>
+      <th># of Students:</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @upcoming_asmt.each do |asmt| %>
+    <tr>
+      <td><%= asmt.due_at %></td>
+      <td><%= asmt.start_at %></td>
+      <td><%= asmt.course.name %></td>
+      <td><%= asmt.name %></td>
+      <td><%= asmt.autograder.autograde_image %></td>
+      <td><%= asmt.course.course_user_data.count %></td>
+    </tr>
+    <% end %>
+  </tbody>
+</table>
