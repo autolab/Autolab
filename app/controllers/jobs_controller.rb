@@ -182,7 +182,7 @@ class JobsController < ApplicationController
         @upcoming_asmt << asmt
       end
     end
-    @upcoming_asmt.sort! { |a, b| a.start_at <=> b.start_at }
+    @upcoming_asmt.sort! { |a, b| a.due_at <=> b.due_at }
   end
 
   action_auth_level :tango_data, :instructor
