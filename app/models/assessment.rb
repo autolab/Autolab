@@ -377,10 +377,12 @@ private
     s["problems"] = problems.map(&:serialize)
     s["autograder"] = autograder.serialize if has_autograder?
     s["scoreboard"] = scoreboard.serialize if has_scoreboard?
+    s["late_penalty"] = late_penalty.serialize if late_penalty
+    s["version_penalty"] = version_penalty.serialize if version_penalty
     s
   end
 
-  GENERAL_SERIALIZABLE = Set.new %w(name display_name category_name description handin_filename handin_directory has_svn max_grace_days handout writeup max_submissions disable_handins max_size)
+  GENERAL_SERIALIZABLE = Set.new %w(name display_name category_name description handin_filename handin_directory has_svn max_grace_days handout writeup max_submissions disable_handins max_size version_threshold)
 
   def serialize_general
     Utilities.serializable attributes, GENERAL_SERIALIZABLE
@@ -397,6 +399,14 @@ private
     end
     if s["scoreboard"]
       Scoreboard.find_or_initialize_by(assessment_id: id).update(s["scoreboard"])
+    end
+    if s["late_penalty"]
+      late_penalty ||= Penalty.new
+      late_penalty.update(s["late_penalty"])
+    end
+    if s["version_penalty"]
+      version_penalty ||= Penalty.new
+      version_penalty.update(s["version_penalty"])
     end
   end
 
