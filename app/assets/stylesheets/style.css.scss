@@ -163,6 +163,7 @@ div.main-header img {
   width: 100%;
   border-bottom: 1px solid rgba(223, 220, 220, 1);
   margin-bottom: 15px;
+  padding: 0 15px;
 }
 .sub-navigation .left-nav,
 .sub-navigation .right-nav {
@@ -173,6 +174,7 @@ div.main-header img {
   color: rgb(183, 180, 180);
   font-size: 16px;
   line-height: 22px;
+  cursor: pointer;
 }
 
 .sub-navigation .item a,
@@ -291,18 +293,29 @@ div.main-header img {
 }
 
 /* Footer - Information, About, etc. Should be in a <footer> tag. */
-div#footer{
+div#footer {
   clear: both;
-  font-size: 12px;
-  color: #ccc;
+  font-size: 14px;
+  color: #888;
   height: 42px;
   padding: 0 10px;
+  margin-top: 16px;
+  border-top: 1px solid #fafafa;
+}
+
+div#footer .pull-right {
+  padding-top: 14px;
 }
 
 div#footer a {
   display: inline-block;
   padding: 12px;
   color: #ccc;
+}
+
+div#footer div.fb-like.fb_iframe_widget {
+  vertical-align: top;
+  margin-left: 8px;
 }
 
 div#footer a:hover {
@@ -655,6 +668,9 @@ body.autolab {
     font-family: 'Source Sans Pro', sans-serif;
   }
 
+  h3 {
+    margin-top: 15px;
+  }
   h4 {
     font-size: 22px;
     font-weight: bold;
@@ -755,7 +771,7 @@ label.control-label {
   border: 1px solid transparent;
   border-radius: 4px;
   -webkit-user-select: none;
-  background-color: #bbb;
+  background-color: #808080;
 }
 
 .autolab .btn:hover {
@@ -935,6 +951,11 @@ display: block;
     content: ' Now';
   }
 
+}
+
+/* Header content for graphics */
+div.center {
+    text-align: center;
 }
 
 /*  Warnings  */

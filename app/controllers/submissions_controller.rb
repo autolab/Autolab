@@ -14,7 +14,7 @@ class SubmissionsController < ApplicationController
 
     assign = @assessment.name.gsub(/\./, "")
     modName = (assign + (@course.name).gsub(/[^A-Za-z0-9]/, "")).camelize
-    @autograded = @assessment.has_autograde
+    @autograded = @assessment.has_autograder?
   end
 
   # this works
@@ -341,9 +341,7 @@ private
   # Filename format is andrewID_version_asessment.ext
   def extractAndrewID(filename)
     underscoreInd = filename.index("_")
-    unless underscoreInd.nil?
-      return filename[0...underscoreInd]
-    end
+    return filename[0...underscoreInd] unless underscoreInd.nil?
     nil
   end
 

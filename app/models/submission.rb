@@ -121,7 +121,7 @@ class Submission < ActiveRecord::Base
   end
 
   def archive_autograder_feedback(archive)
-    return unless assessment.has_autograde
+    return unless assessment.has_autograder?
     feedback_path = autograde_feedback_path
     return unless File.exist?(feedback_path)
 

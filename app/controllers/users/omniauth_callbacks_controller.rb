@@ -88,12 +88,8 @@ class Users::OmniauthCallbacksController < Devise::OmniauthCallbacksController
           end
 
           # If LDAP lookup failed, use (blank) as place holder
-          if @user.first_name.nil?
-            @user.first_name = "(blank)"
-          end
-          if @user.last_name.nil?
-            @user.last_name = "(blank)"
-          end
+          @user.first_name = "(blank)" if @user.first_name.nil?
+          @user.last_name = "(blank)" if @user.last_name.nil?
 
           temp_pass = Devise.friendly_token[0, 20]    # generate a random token
           @user.password = temp_pass

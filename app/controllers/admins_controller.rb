@@ -8,10 +8,11 @@ class AdminsController < ApplicationController
 
   action_auth_level :email_instructors, :administrator
   def email_instructors
-    return unless request.post?
+    @cuds = CourseUserDatum.select(:user_id).distinct.joins(:course).joins(:user)
+            .where("courses.end_date > ?", DateTime.now).where(instructor: true)
+            .order("users.email ASC")
 
-    @cuds = CourseUserDatum.select(:user_id).distinct.joins(:course)
-            .where("courses.end_date > ? and instructor = 1", DateTime.now)
+    return unless request.post?
 
     @email = CourseMailer.system_announcement(
       params[:from],

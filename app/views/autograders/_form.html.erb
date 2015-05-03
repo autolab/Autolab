@@ -1,0 +1,17 @@
+<%= form_for [@course, @assessment, @autograder], builder: FormBuilderWithDateTimeInput do |f| %>
+  <%= f.error_messages %>
+
+  <%= f.text_field :autograde_image, display_name: "VM Image" %>
+  <p class="help-block">
+    VM image for autograding (e.g., "<kbd>rhel.img</kbd>"). <%= link_to "Click here", tango_status_course_jobs_path %> to view the list of VM images and pools currently being used.
+  </p>
+  <%= f.text_field :autograde_timeout, display_name: "Timeout",
+    help_text: "Timeout for autograding jobs (secs)" %>
+  <%= f.check_box :release_score, display_name: "Release Scores?",
+    help_text: "Check to release autograded scores to students immediately after autograding (strongly recommended)." %>
+
+  <%= f.submit "Save Settings", { class: "btn primary" } %>
+  
+  <%= link_to "Delete Autograder", [@course, @assessment, :autograder], method: :delete, class: "btn danger",
+              data: {confirm: "Are you sure you want to delete the Autograder for this assesssment?"} %>
+<% end %>

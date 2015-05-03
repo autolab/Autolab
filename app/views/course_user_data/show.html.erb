@@ -5,7 +5,7 @@
   <li> <b>About</b><br>
     Lecture <strong><%= @requestedUser.lecture %></strong><br>
     Section <strong><%= @requestedUser.section %></strong><br>
-    Course <strong><%= @requestedUser.course.display_name %></strong><br>
+    Course <strong><%= @requestedUser.course.full_name %></strong><br>
     <%= @requestedUser.school %> <%= @requestedUser.major %>, Class of <%= @requestedUser.year %></li>
   <% if @cud.instructor? then %>
   <li><b>Course Average Tweak</b> of <%=raw tweak(@requestedUser.tweak) %></li>

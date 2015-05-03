@@ -80,20 +80,20 @@ class User < ActiveRecord::Base
   end
 
   def self.find_for_facebook_oauth(auth, _signed_in_resource = nil)
-    authentication = Authentication.where(provider: auth.provider,
-                                          uid: auth.uid).first
+    authentication = Authentication.find_by(provider: auth.provider,
+                                            uid: auth.uid)
     return authentication.user if authentication && authentication.user
   end
 
   def self.find_for_google_oauth2_oauth(auth, _signed_in_resource = nil)
-    authentication = Authentication.where(provider: auth.provider,
-                                          uid: auth.uid).first
+    authentication = Authentication.find_by(provider: auth.provider,
+                                            uid: auth.uid)
     return authentication.user if authentication && authentication.user
   end
 
   def self.find_for_shibboleth_oauth(auth, _signed_in_resource = nil)
-    authentication = Authentication.where(provider: "CMU-Shibboleth",
-                                          uid: auth.uid).first
+    authentication = Authentication.find_by(provider: "CMU-Shibboleth",
+                                            uid: auth.uid)
     return authentication.user if authentication && authentication.user
   end
 

@@ -56,9 +56,7 @@ class GroupsController < ApplicationController
   def new
     aud = @assessment.aud_for(@cud)
     unless @cud.instructor
-      if aud.group
-        redirect_to([@course, @assessment, aud.group]) && return
-      end
+      redirect_to([@course, @assessment, aud.group]) && return if aud.group
     end
 
     @group = Group.new
@@ -161,14 +159,10 @@ class GroupsController < ApplicationController
         if aud.group_confirmed(AssessmentUserDatum::UNCONFIRMED)
           aud.group = group
           aud.membership_status = a.membership_status
-          if aud.save!
-            count += 1
-          end
+          count += 1 if aud.save!
         end
       end
-      if count > 0
-        group.save!
-      end
+      group.save! if count > 0
     end
 
     flash[:success] = "Groups Successfully Imported"
@@ -261,9 +255,7 @@ class GroupsController < ApplicationController
       leaver.membership_status = AssessmentUserDatum::UNCONFIRMED
       ActiveRecord::Base.transaction do
         leaver.save!
-        if @group.assessment_user_data.size == 0
-          @group.destroy!
-        end
+        @group.destroy! if @group.assessment_user_data.size == 0
       end
     end
     respond_with(@course, @assessment, @group)

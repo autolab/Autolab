@@ -10,6 +10,8 @@
     <%= external_stylesheet_link_tag "bootstrap", "3.0.0" %>
     <%= stylesheet_link_tag 'style' %>
 
+
+
     <% if Rails.configuration.x.analytics_id %>
       <script type="text/javascript">
         window.heap=window.heap||[],heap.load=function(t,e){window.heap.appid=t,window.heap.config=e;var a=document.createElement("script");a.type="text/javascript",a.async=!0,a.src=("https:"===document.location.protocol?"https:":"http:")+"//cdn.heapanalytics.com/js/heap-"+t+".js";var n=document.getElementsByTagName("script")[0];n.parentNode.insertBefore(a,n);for(var o=function(t){return function(){heap.push([t].concat(Array.prototype.slice.call(arguments,0)))}},p=["clearEventProperties","identify","setEventProperties","track","unsetEventProperty"],c=0;c<p.length;c++)heap[p[c]]=o(p[c])};
@@ -20,11 +22,20 @@
     <%= content_for :head %>
     <link href='//fonts.googleapis.com/css?family=Source+Sans+Pro:300,400' rel='stylesheet' type='text/css'>
     <%= content_for :stylesheets %>
-    <title><%= if @course then @course.display_name else "Autolab" end %></title>
+    <title><%= if @title then @title elsif @course then @course.display_name else "Autolab" end %></title>
 
   </head>
 
   <body class="autolab">
+    <div id="fb-root"></div>
+    <script>(function(d, s, id) {
+      var js, fjs = d.getElementsByTagName(s)[0];
+      if (d.getElementById(id)) return;
+      js = d.createElement(s); js.id = id;
+      js.src = "//connect.facebook.net/en_US/sdk.js#xfbml=1&version=v2.3&appId=259908887444831";
+      fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));</script>
+
     <div class="page-wrapper">
       <%= render "layouts/navbar" %>
 
@@ -54,13 +65,7 @@
           <%= yield %>
         </div>
         <!-- End Content -->
-        <div id="footer">
-        <a href="http://autolabproject.com">Autolab Project</a>
-        · <a href="/contact">Contact</a>
-        <% if @course %>
-        · <%= link_to "Need Help?", [:report_bug, @course] %>
-        <% end %>
-        </div>
+        <%= render "layouts/footer" %>
         <!-- End Footer -->
       </div>
       <!-- End Page Body -->
@@ -71,6 +76,7 @@
     <%= content_for :js_widget_patch %>
     <%= external_javascript_include_tag "bootstrap", "3.0.0" %>
     <%= javascript_include_tag 'application' %>
+    <script async defer id="github-bjs" src="https://buttons.github.io/buttons.js"></script>
     <%= content_for :javascripts %>
 
   </body>

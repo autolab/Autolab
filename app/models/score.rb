@@ -26,7 +26,7 @@ class Score < ActiveRecord::Base
   end
 
   def self.find_or_initialize_by_submission_id_and_problem_id(submission_id, problem_id)
-    score = Score.where(submission_id: submission_id, problem_id: problem_id).first
+    score = Score.find_by(submission_id: submission_id, problem_id: problem_id)
 
     if !score
       return Score.new(submission_id: submission_id, problem_id: problem_id)

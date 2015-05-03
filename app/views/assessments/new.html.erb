@@ -32,17 +32,10 @@
     <hr>
 
     <h4>Optional Modules Used</h4>
-    <span class="checkbox"><%= f.check_box :has_autograde,
-      display_name: "Enable autograding?",
-      help_text: "Whether this assignment will be autograded." %></span>
 
     <span class="checkbox"><%= f.check_box :has_svn,
       display_name: "Use SVN?",
       help_text: "Whether to use SVN in conjunction with this assignment." %></span>
-
-    <span class="checkbox"><%= f.check_box :has_scoreboard,
-      display_name: "Enable scoreboard?",
-      help_text: "Should there be a publically-visible scoreboard?" %></span>
 
     <%= f.text_field :group_size,
       display_name: "Group Size",

@@ -64,6 +64,9 @@ class CourseUserDatum < ActiveRecord::Base
     elsif nickname.length > 32
       errors.add("nickname", "is too long (maximum is 32 characters)")
       false
+    elsif !nickname.ascii_only?
+      errors.add("nickname", "can only contain ASCII characters")
+      false
     else
       true
     end
@@ -171,7 +174,7 @@ class CourseUserDatum < ActiveRecord::Base
   # find a cud in the course
   def self.find_cud_for_course(course, uid)
     user = User.find(uid)
-    cud = user.course_user_data.where(course: course).first
+    cud = user.course_user_data.find_by(course: course)
   end
 
   # find a cud in the course, or create one using
@@ -179,7 +182,7 @@ class CourseUserDatum < ActiveRecord::Base
   def self.find_or_create_cud_for_course(course, uid)
     user = User.find(uid)
 
-    cud = user.course_user_data.where(course: course).first
+    cud = user.course_user_data.find_by(course: course)
 
     if cud
       return [cud, :found]
