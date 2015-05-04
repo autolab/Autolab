@@ -483,13 +483,15 @@ private
   #
   GENERAL_BC = { "category" => "category_name",
                  "handout_filename" => "handout",
-                 "writeup_filename" => "writeup" }
+                 "writeup_filename" => "writeup",
+                 "has_autograde" => nil,
+                 "has_scoreboard" => nil }
   BACKWORDS_COMPATIBILITY = { "autograding_setup" => "autograder",
                               "scoreboard_setup" => "scoreboard" }
   def backwards_compatibility(props)
     GENERAL_BC.each do |old, new|
       next unless props["general"].key?(old)
-      props["general"][new] = props["general"][old]
+      props["general"][new] = props["general"][old] unless new.nil?
       props["general"].delete(old)
     end
     BACKWORDS_COMPATIBILITY.each do |old, new|
