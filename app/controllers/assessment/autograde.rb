@@ -8,23 +8,24 @@ require_relative Rails.root.join("config", "autogradeConfig.rb")
 # Gets imported into AssessmentsController
 #
 module AssessmentAutograde
+  class AutogradeError < StandardError; end
+
   # method called when Tango returns the output
   # action_no_auth :autograde_done
   def autograde_done
     @assessment = @course.assessments.find_by(name: params[:name])
-    render(nothing: true) && return unless @assessment && @assessment.has_autograder?
+    unless @assessment && @assessment.has_autograder?
+      fail AutogradeError, "No autograded assessment with that name exists"
+    end
 
     # there can be multiple submission with the same dave if this was a group submission
     submissions = Submission.where(dave: params[:dave]).all
 
     feedback_str = params[:file].read
 
-    COURSE_LOGGER.log("autograde_done")
-    COURSE_LOGGER.log("autograde_done hit: #{request.fullpath}")
-
     extend_config_module(@assessment, submissions[0], @cud)
 
-    require_relative(Rails.root.join("assessmentConfig", "#{@course.name}-#{@assessment.name}.rb"))
+    require_relative(@assessment.config_file_path)
 
     if @assessment.overwrites_method?(:autogradeDone)
       @assessment.config_module.autogradeDone(submissions, feedback_str)
@@ -32,10 +33,19 @@ module AssessmentAutograde
       autogradeDone(submissions, feedback_str)
     end
 
-    render(nothing: true) && return
-  rescue
-    Rails.logger.error "Exception in autograde_done"
-    render(nothing: true) && return
+    render(nothing: true)
+  rescue AutogradeError => e
+    COURSE_LOGGER.log "Exception in autograde_done: #{e.message}"
+    render(nothing: true)
+  rescue StandardError => e
+    COURSE_LOGGER.log "Exception in autograde_done: #{e.message}"
+    unless Rails.env.development?
+      # use the exception_notifier gem to send out an e-mail
+      # to the notification list specified in config/environment.rb
+      ExceptionNotifier.notify_exception(e, env: request.env,
+                                         data: { message: "Error in autograde_done: #{e.message}" })
+    end
+    render(nothing: true)
   end
 
   # RESTfully speaking, this belongs in submissions controller,
