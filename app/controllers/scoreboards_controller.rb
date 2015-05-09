@@ -45,7 +45,7 @@ class ScoreboardsController < ApplicationController
         @grades[uid][:problems] = {}
       end
       if @grades[uid][:version] != row["version"]
-        @grades[uid][:time] = row["time"].localtime
+        @grades[uid][:time] = Time.parse(row["time"]).localtime
         @grades[uid][:version] = row["version"].to_i
         @grades[uid][:autoresult] = row["autoresult"]
       end
