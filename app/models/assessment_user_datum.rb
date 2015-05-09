@@ -329,9 +329,9 @@ private
   def aud_for_assessment_before
     if (assessment_before = assessment.assessment_before)
       assessment_before.aud_for course_user_datum_id
+    else
+      nil
     end
-
-    nil
   end
 
   def auds_for_assessments_after
