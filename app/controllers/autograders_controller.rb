@@ -4,7 +4,7 @@
 class AutogradersController < ApplicationController
   before_action :set_assessment
   before_action :set_assessment_breadcrumb, only: [:edit]
-  before_action :set_autograder, except: [:new, :create]
+  before_action :set_autograder, except: [:create]
 
   action_auth_level :create, :instructor
   def create
@@ -42,11 +42,10 @@ private
 
   def set_autograder
     @autograder = @assessment.autograder
+    redirect_to([@course, @assessment]) if @autograder.nil?
   end
-  
-  # AutogradingSetup parameters for adminAutograde
+
   def autograder_params
     params[:autograder].permit(:autograde_timeout, :autograde_image, :release_score)
   end
-
 end

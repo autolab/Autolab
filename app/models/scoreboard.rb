@@ -1,21 +1,24 @@
-class ScoreboardSetup < ActiveRecord::Base
+##
+# Scoreboards belong to Assessments, and basically specify how the scoreboard should display
+#
+class Scoreboard < ActiveRecord::Base
   belongs_to :assessment
-  trim_field :banner, :colspec
-  validate :col_spec
 
-  SERIALIZABLE = Set.new [:banner, :colspec]
+  trim_field :banner, :colspec
+
+  validate :colspec_is_well_formed
+
+  after_save -> { assessment.dump_yaml }
+
+  SERIALIZABLE = Set.new %w(banner colspec)
   def serialize
     Utilities.serializable attributes, SERIALIZABLE
-  end
-
-  def self.deserialize(s)
-    new s
   end
 
 protected
 
   # Validates a JSON column spec for correctness before saving it the database
-  def col_spec
+  def colspec_is_well_formed
     # An empty spec is OK
     return if colspec.blank?
 
@@ -23,8 +26,8 @@ protected
     begin
       # Quote JSON keys and values if they are not already quoted
       quoted = colspec.gsub(/([a-zA-Z0-9]+):/, '"\1":').gsub(/:([a-zA-Z0-9]+)/, ':"\1"')
-      parsed = ActiveSupport::JSON.decode(quoted)
-    rescue Exception => e
+      parsed = ActiveSupport::JSON.decode(colspec)
+    rescue StandardError => e
       errors.add "colspec", "#{e}"
       return
     end

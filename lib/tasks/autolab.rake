@@ -305,7 +305,7 @@ namespace :autolab do
     FileUtils.cp(AUTOGRADE_TEMPLATE_CONFIG_PATH, assessmentConfig_dir)
 
     # Reload config file
-    asmt.construct_config_file
+    asmt.load_config_file
   end
 
   task :populate, [:name] => :environment do |t, args|

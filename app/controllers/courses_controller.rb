@@ -4,6 +4,7 @@ require "fileutils"
 require "statistics"
 
 class CoursesController < ApplicationController
+  skip_before_action :set_course, only: [:index, :new, :create]
   # you need to be able to pick a course to be authorized for it
   skip_before_action :authorize_user_for_course, only: [:index, :show, :new, :create, :join]
   # if there's no course, there are no persistent announcements for that course
@@ -245,9 +246,7 @@ class CoursesController < ApplicationController
     # make sure that user already exists in the database
     user = User.where(email: params[:email]).first
 
-    if user.nil?
-      render(json: nil) && return
-    end
+    render(json: nil) && return if user.nil?
 
     @user_data = { first_name: user.first_name,
                    last_name: user.last_name,
@@ -334,15 +333,11 @@ file, most likely a duplicate email.  The exact error was: #{e} "
       Dir.foreach(@assignDir) do |filename|
         if File.exist?(File.join(@assignDir, filename, "#{filename}.rb"))
           # names must be only lowercase letters and digits
-          if filename =~ /[^a-z0-9]/
-            next
-          end
+          next if filename =~ /[^a-z0-9]/
 
           # Only list assessments that aren't installed yet
           assessment = @course.assessments.where(name: filename).first
-          unless assessment
-            @availableAssessments << filename
-          end
+          @availableAssessments << filename unless assessment
         end
       end
       @availableAssessments = @availableAssessments.sort
@@ -418,11 +413,11 @@ file, most likely a duplicate email.  The exact error was: #{e} "
 
     # Create a temporary directory
     @failures = []
-    tmpDir = Dir.mktmpdir("#{@cud.user.email}Moss", Rails.root.join("tmp"))
-    extract_asmt_for_moss(assessments)
-    extract_tar_for_moss(params[:external_tar])
+    tmp_dir = Dir.mktmpdir("#{@cud.user.email}Moss", Rails.root.join("tmp"))
+    extract_asmt_for_moss(tmp_dir, assessments)
+    extract_tar_for_moss(tmp_dir, params[:external_tar])
     # Ensure that all files in Moss tmp dir are readable
-    system("chmod -R a+r #{tmpDir}")
+    system("chmod -R a+r #{tmp_dir}")
 
     # Now run the Moss command
     @mossCmdString = @mossCmd.join(" ")
@@ -430,7 +425,7 @@ file, most likely a duplicate email.  The exact error was: #{e} "
     @mossOutput = `#{@mossCmdString} 2>&1`
 
     # Clean up after ourselves (droh: leave for debugging)
-    # `rm -rf #{tmpDir}`
+    # `rm -rf #{tmp_dir}`
   end
 
 private
@@ -489,9 +484,7 @@ private
             # Create a new user
             user = User.roster_create(email, first_name, last_name, school,
                                       major, year)
-            if user.nil?
-              fail "New user cannot be created in uploadRoster."
-            end
+            fail "New user cannot be created in uploadRoster." if user.nil?
           else
             # Override current user
             user.first_name = first_name
@@ -528,9 +521,7 @@ private
           # Drop this user from the course
           existing = @course.course_user_data.includes(:user).where(users: { email: newCUD[:email] }).first
 
-          if existing.nil?
-            fail "Red CUD doesn't exist in the database."
-          end
+          fail "Red CUD doesn't exist in the database." if existing.nil?
 
           existing.dropped = true
           existing.save(validate: false)
@@ -539,9 +530,7 @@ private
           # Update this user's attributes.
           existing = @course.course_user_data.includes(:user).where(users: { email: newCUD[:email] }).first
 
-          if existing.nil?
-            fail "Black CUD doesn't exist in the database."
-          end
+          fail "Black CUD doesn't exist in the database." if existing.nil?
 
           user = existing.user
           if user.nil?
@@ -685,11 +674,11 @@ private
     end
   end
 
-  def extract_asmt_for_moss(assessments)
+  def extract_asmt_for_moss(tmp_dir, assessments)
     # for each assessment
     for ass in assessments do
       # Create a directory for ths assessment
-      assDir = File.join(tmpDir, "#{ass.name}-#{ass.course.name}")
+      assDir = File.join(tmp_dir, "#{ass.name}-#{ass.course.name}")
       Dir.mkdir(assDir)
 
       # params[:isArchive] might be nil if no archive assessments are submitted
@@ -717,6 +706,7 @@ private
             archive_extract.each do |entry|
               pathname = Archive.get_entry_name(entry)
               unless Archive.looks_like_directory?(pathname)
+                pathname.gsub!(/\//, "-")
                 destination = File.join(stuDir, pathname)
                 # make sure all subdirectories are there
                 FileUtils.mkdir_p(File.dirname destination)
@@ -737,10 +727,10 @@ private
     end
   end
 
-  def extract_tar_for_moss(external_tar)
+  def extract_tar_for_moss(tmp_dir, external_tar)
     return unless external_tar
     # Directory to hold tar ball and all individual files.
-    extTarDir = File.join(tmpDir, "external_input")
+    extTarDir = File.join(tmp_dir, "external_input")
     Dir.mkdir(extTarDir)
 
     # Read in the tarfile from the given source.

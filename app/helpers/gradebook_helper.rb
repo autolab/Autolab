@@ -57,13 +57,9 @@ module GradebookHelper
       next unless matrix.has_cud? cud.id
 
       # if this is a section gradebook
-      if section
-        next unless cud.section == section
-      end
+      next unless cud.section == section if section
 
-      if lecture
-        next unless cud.lecture == lecture
-      end
+      next unless cud.lecture == lecture if lecture
 
       sgb_link = url_for controller: :gradebooks, action: :student, id: cud.id
 

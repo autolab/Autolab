@@ -7,18 +7,23 @@ Bundler.require(:default, Rails.env)
 module Autolab3
   class Application < Rails::Application
     config.to_prepare do
+      Devise::ConfirmationsController.skip_before_action :set_course
       Devise::ConfirmationsController.skip_before_action :authorize_user_for_course
       Devise::ConfirmationsController.skip_before_action :authenticate_for_action
       Devise::ConfirmationsController.skip_before_action :update_persistent_announcements     
+      Devise::SessionsController.skip_before_action :set_course
       Devise::SessionsController.skip_before_action :authorize_user_for_course
       Devise::SessionsController.skip_before_action :authenticate_for_action
       Devise::SessionsController.skip_before_action :update_persistent_announcements
+      Devise::PasswordsController.skip_before_action :set_course
       Devise::PasswordsController.skip_before_action :authorize_user_for_course
       Devise::PasswordsController.skip_before_action :authenticate_for_action
       Devise::PasswordsController.skip_before_action :update_persistent_announcements
+      Devise::RegistrationsController.skip_before_action :set_course
       Devise::RegistrationsController.skip_before_action :authorize_user_for_course
       Devise::RegistrationsController.skip_before_action :authenticate_for_action
       Devise::RegistrationsController.skip_before_action :update_persistent_announcements
+      Devise::OmniauthCallbacksController.skip_before_action :set_course
       Devise::OmniauthCallbacksController.skip_before_action :authorize_user_for_course
       Devise::OmniauthCallbacksController.skip_before_action :authenticate_for_action
       Devise::OmniauthCallbacksController.skip_before_action :update_persistent_announcements

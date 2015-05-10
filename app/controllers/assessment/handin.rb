@@ -47,9 +47,6 @@ module AssessmentHandin
   # method called when student makes
   # unofficial submission in the database
   def local_submit
-    @course = Course.find_by(name: params[:course_name])
-    render(plain: "ERROR: invalid course", status: :bad_request) && return unless @course
-
     @user = User.find_by(email: params[:user])
     @cud = @user ? @course.course_user_data.find_by(user_id: @user.id) : nil
     unless @cud
@@ -66,7 +63,7 @@ module AssessmentHandin
       render(plain: err, status: :bad_request) && return
     end
 
-    personal_directory = @user.email + "_remote_handin_" +  @assessment.name
+    personal_directory = @user.email + "_remote_handin_" + @assessment.name
     remote_handin_dir = File.join(@assessment.remote_handin_path, personal_directory)
 
     if params[:submit]
@@ -82,7 +79,7 @@ module AssessmentHandin
           end
         end
 
-        render(plain: flash[:error], status: :bad_request) && return unless validateForGroups
+        render(plain: flash[:error], status: :bad_request) && return unless validate_for_groups
 
         # save the submissions
         begin
@@ -152,9 +149,6 @@ module AssessmentHandin
   # method called when student makes
   # log submission in the database
   def log_submit
-    @course = Course.find_by(name: params[:course_name])
-    render(plain: "ERROR: invalid course", status: :bad_request) && return unless @course
-
     @user = User.find_by(email: params[:user])
     @cud = @user ? @course.course_user_data.find_by(user_id: @user.id) : nil
     unless @cud
@@ -252,8 +246,7 @@ private
       return false
     end
 
-    if @assessment.overwrites_method?(:checkMimeType) \
-      && !(@assessment.config_module.checkMimeType(
+    if @assessment.overwrites_method?(:checkMimeType) && !(@assessment.config_module.checkMimeType(
         params[:submission]["file"].content_type,
         params[:submission]["file"].original_filename))
 

@@ -3,6 +3,7 @@
 #
 class HomeController < ApplicationController
   skip_before_action :authenticate_user!, except: [:publicSignUp]
+  skip_before_action :set_course
   skip_before_action :authorize_user_for_course
   skip_before_action :authenticate_for_action
   skip_before_action :update_persistent_announcements
@@ -53,25 +54,5 @@ class HomeController < ApplicationController
   def contact
     # --- empty ---
     # This route just renders the home#contact page, nothing special
-  end
-
-  def vmlist
-    @images = {}
-    Autograder.find_each do |a|
-      image = a.autograde_image
-      assessment = a.assessment
-      course = assessment.course
-      if (course.temporal_status == :current)
-        @images[image] ||= Set.new
-        @images[image].add(course.name)
-      end
-    end
-    @images.each do |image, courseSet|
-      res = []
-      courseSet.each do |c|
-        res << c
-      end
-      @images[image] = res.join(", ")
-    end
   end
 end

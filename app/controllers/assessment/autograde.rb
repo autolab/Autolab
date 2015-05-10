@@ -11,7 +11,6 @@ module AssessmentAutograde
   # method called when Tango returns the output
   # action_no_auth :autograde_done
   def autograde_done
-    @course = Course.find_by(name: params[:course_name]) || (render(nothing: true) && return)
     @assessment = @course.assessments.find_by(name: params[:name])
     render(nothing: true) && return unless @assessment && @assessment.has_autograder?
 
@@ -20,16 +19,10 @@ module AssessmentAutograde
 
     feedback_str = params[:file].read
 
-    COURSE_LOGGER.setCourse(@course)
     COURSE_LOGGER.log("autograde_done")
     COURSE_LOGGER.log("autograde_done hit: #{request.fullpath}")
 
-    begin
-      extend_config_module(@assessment, submissions[0], @cud)
-    rescue StandardError => e
-      COURSE_LOGGER.log("Error extend config")
-      COURSE_LOGGER.log(e)
-    end
+    extend_config_module(@assessment, submissions[0], @cud)
 
     require_relative(Rails.root.join("assessmentConfig", "#{@course.name}-#{@assessment.name}.rb"))
 
@@ -49,10 +42,8 @@ module AssessmentAutograde
   #   but because it uses autograding, it is easier to have it here
   # action_auth_level :regrade, :instructor
   def regrade
-    @submission = Submission.find(params[:submission_id])
+    @submission = @assessment.submissions.find(params[:submission_id])
     @effective_cud = @submission.course_user_datum
-    @course = @submission.course_user_datum.course
-    @assessment = @submission.assessment
 
     unless @assessment.has_autograder?
       # Not an error, this behavior was specified!
@@ -159,7 +150,7 @@ module AssessmentAutograde
     if job == -2
       flash[:error] = "Autograding failed because there are no autograding properties."
       if @cud.instructor?
-        link = "<a href=\"#{url_for(action: 'adminAutograde')}\">Admin Autograding</a>"
+        link = (view_context.link_to "Autograder Settings", [:edit, course, assessment, :autograder])
         flash[:error] += " Visit #{link} to set the autograding properties."
       else
         flash[:error] += " Please contact your instructor."
@@ -173,7 +164,7 @@ module AssessmentAutograde
     elsif job == -9
       flash[:error] = "Submission was rejected by autograder."
       if @cud.instructor?
-        link = "<a href=\"#{url_for(action: 'adminAutograde')}\">Admin Autograding</a>"
+        link = (view_context.link_to "Autograder Settings", [:edit, course, assessment, :autograder])
         flash[:error] += " (Verify the autograding properties at #{link}.)"
       end
     elsif job < 0
@@ -581,11 +572,6 @@ module AssessmentAutograde
   rescue StandardError => error
     COURSE_LOGGER.log(error)
     COURSE_LOGGER.log(error.backtrace)
-
-    if @cud && @cud.has_auth_level?(:instructor)
-      redirect_to(action: :reload) && return
-    else
-      redirect_to(home_error_path) && return
-    end
+    raise error
   end
 end

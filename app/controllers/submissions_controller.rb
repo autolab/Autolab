@@ -341,9 +341,7 @@ private
   # Filename format is andrewID_version_asessment.ext
   def extractAndrewID(filename)
     underscoreInd = filename.index("_")
-    unless underscoreInd.nil?
-      return filename[0...underscoreInd]
-    end
+    return filename[0...underscoreInd] unless underscoreInd.nil?
     nil
   end
 

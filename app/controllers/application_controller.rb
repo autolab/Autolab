@@ -14,6 +14,7 @@ class ApplicationController < ActionController::Base
   before_action :run_scheduler
 
   before_action :authenticate_user!
+  before_action :set_course
   before_action :authorize_user_for_course, except: [:action_no_auth]
   before_action :authenticate_for_action
   before_action :update_persistent_announcements
@@ -50,6 +51,7 @@ class ApplicationController < ActionController::Base
     end
 
     if level == :administrator
+      skip_before_action :set_course, only: [action]
       skip_before_action :authorize_user_for_course, only: [action]
       skip_filter authenticate_for_action: [action]
       skip_before_action :update_persistent_announcements, only: [action]
@@ -132,7 +134,7 @@ protected
     render(:maintenance) && return unless user_signed_in? && current_user.administrator?
   end
 
-  def authorize_user_for_course
+  def set_course
     course_name = params[:course_name] ||
                   (params[:controller] == "courses" ? params[:name] : nil)
     @course = Course.find_by(name: course_name) if course_name
@@ -149,8 +151,10 @@ protected
       flash[:error] = e.to_s
       redirect_to(controller: :home, action: :error) && return
     end
+  end
 
-    redirect_to(controller: :home, action: :error) && return if current_user.nil?
+  def authorize_user_for_course
+    redirect_to(root_path) && return if current_user.nil?
 
     uid = current_user.id
     # don't allow sudoing across courses
@@ -204,7 +208,10 @@ protected
 
     return unless (invalid_cud || nicknameless_student) && !in_edit_or_unsudo
 
-    flash[:error] = "Please complete all of your account information before continuing"
+    flash[:error] = "Please complete all of your account information before continuing:"
+    @cud.errors.full_messages.each do |msg|
+      flash[:error] += "<br>#{msg}"
+    end
     redirect_to([:edit, @course, @cud]) && return
   end
 
@@ -261,6 +268,7 @@ protected
         pid = fork do
           # child process
           @course = action.course
+          COURSE_LOGGER.setCourse(@course)
           mod_name = Rails.root.join(action.action)
           require mod_name
           Updater.update(@course)

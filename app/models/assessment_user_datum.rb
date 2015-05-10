@@ -77,9 +77,9 @@ class AssessmentUserDatum < ActiveRecord::Base
                                        ignored: false).maximum(:version))
       Submission.find_by(version: max_version, assessment_id: assessment_id,
                          course_user_datum_id: course_user_datum_id)
+    else
+      nil
     end
-
-    nil
   end
 
   def submission_status
@@ -205,7 +205,7 @@ class AssessmentUserDatum < ActiveRecord::Base
   end
 
   def extension
-    Extension.where(course_user_datum: course_user_datum, assessment_id: assessment_id).first
+    Extension.find_by(course_user_datum: course_user_datum, assessment_id: assessment_id)
   end
 
   def self.get(assessment_id, cud_id)
@@ -329,9 +329,9 @@ private
   def aud_for_assessment_before
     if (assessment_before = assessment.assessment_before)
       assessment_before.aud_for course_user_datum_id
+    else
+      nil
     end
-
-    nil
   end
 
   def auds_for_assessments_after

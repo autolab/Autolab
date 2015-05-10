@@ -16,29 +16,21 @@ class CourseUserDataController < ApplicationController
 
   action_auth_level :create, :instructor
   def create
-    @newCUD = @course.course_user_data.new(cud_params)
+    cud_parameters = cud_params
+    @newCUD = @course.course_user_data.new(cud_parameters)
 
     # check user existence
-    email = params[:course_user_datum][:user_attributes][:email]
+    email = cud_parameters[:user_attributes][:email]
     user = User.where(email: email).first
     if user.nil?
+      user = User.roster_create(email,
+                                cud_parameters[:user_attributes][:first_name],
+                                cud_parameters[:user_attributes][:last_name],
+                                "", "", "")
 
-      auth = Authentication.new
-      auth.provider = "CMU-Shibboleth"
-      auth.uid = email
-      auth.save!
-      @newUser = User.new(cud_params[:user_attributes])
-      @newUser.authentications << auth
-
-      temp_pass = Devise.friendly_token[0, 20]    # generate a random token
-      @newUser.password = temp_pass
-
-      if @newUser.save
-        @newCUD.user = @newUser
+      if user
+        @newCUD.user = user
       else
-        @newUser.errors.each do |msg|
-          print msg
-        end
         flash[:error] = "The user with email #{email} could not be created  "
         redirect_to(action: "new") && return
       end
@@ -103,9 +95,7 @@ class CourseUserDataController < ApplicationController
     # isn't a User model validation since users can start off without nicknames
     # application_controller's authenticate_user redirects here if nickname isn't set
     @editCUD = @course.course_user_data.find(params[:id])
-    if @editCUD.nil?
-      redirect_to(action: "index") && return
-    end
+    redirect_to(action: "index") && return if @editCUD.nil?
 
     if @cud.student?
       if (@editCUD.id != @cud.id)
@@ -115,6 +105,10 @@ class CourseUserDataController < ApplicationController
         if @editCUD.save
           redirect_to(action: :show) && return
         else
+          flash[:error] = "Please complete all of your account information before continuing:"
+          @editCUD.errors.full_messages.each do |msg|
+            flash[:error] += "<br>#{msg}"
+          end
           redirect_to(action: :edit) && return
         end
       end
@@ -128,7 +122,7 @@ class CourseUserDataController < ApplicationController
     end
 
     # When we're finished editing, go back to the user table
-    if @editCUD.update!(edit_cud_params)
+    if @editCUD.update(edit_cud_params)
       flash[:success] = "Success: Updated user #{@editCUD.email}"
       redirect_to([@course, @editCUD]) && return
     else
