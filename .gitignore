@@ -1,4 +1,5 @@
-/attachments/
+/attachments/*
+!/attachments/.gitkeep
 log/
 tmp/cache/
 config/autogradeConfig.rb
