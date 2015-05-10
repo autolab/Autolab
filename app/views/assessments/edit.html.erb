@@ -1,5 +1,5 @@
 <%# For navigation breadcrumbs %>
-<% @title = "Edit Assessment" %>
+<% @title = "Settings" %>
 
 <% content_for :stylesheets do %>
   <%= stylesheet_link_tag "assessments/create_edit" %>
@@ -9,17 +9,34 @@
   <%= javascript_include_tag "confirm_discard_changes" %>
 <% end %>
 
-<ul id="tabs" class="nav nav-tabs">
-<% [ "basic", "handin", "penalties", "problems" ].each do |tab_name| %>
-  <%= (tab_name == params[:active_tab]) ? tag(:li, class: :active) : tag(:li) %>
-    <%= link_to tab_name.titleize, edit_course_assessment_path(@course, @assessment) + "/#{tab_name}" %>
-  </li>
-<% end %>
-</ul>
-
 <div class="row">
-  <div class="col-md-6">
-    <%= form_for [ @course, @assessment ], url: edit_course_assessment_path(@course, @assessment) + "/#{params[:active_tab]}", builder: FormBuilderWithDateTimeInput do |f| %>
+  <div class="col-md-12"> 
+    <h2>Assessment Settings</h2>
+    <hr>
+  </div>
+</div>
+<div class="row">
+<%= form_for [ @course, @assessment ], url: edit_course_assessment_path(@course, @assessment) + "/#{params[:active_tab]}", builder: FormBuilderWithDateTimeInput do |f| %>
+
+  <div class="col-md-4"> 
+    <div class="sticky-menu" data-spy="affix" data-offset-top="200">
+
+      <h3>Sections</h3>
+      <ul class="options">   
+        <li><a href="#basic">Basic</a></li> 
+        <li><a href="#handin">Handin</a></li>
+        <li><a href="#modules">Modules</a></li>
+        <li><a href="#penalties">Penalties</a></li> 
+        <li><a href="#problems">Problems</a></li>
+      </ul>
+
+      <div class="action_buttons" style="text-align: center;">
+      <%= f.submit "Save Changes" , {:class=>"btn primary"} %>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-8">
       <% if @course.errors.any? %>
           <ul>
             <% @course.errors.full_messages.each do |msg| %>
@@ -36,7 +53,164 @@
           </ul>
       <% end %>
 
-      <%= render "edit_#{params[:active_tab]}", f: f %>
+<h3 id="basic">Basic</h3>
+<hr>
+<%= f.text_field :name, disabled: true, class: "form-control",
+  help_text: "The unique (for this course) name of the assessment. Must be
+  lowercase alphanumeric (no punctuation). E.g.,
+  <kbd>malloclab</kbd>".html_safe %>
+
+<%= f.text_field :display_name,
+  help_text: "Name that will be displayed on the course home page. E.g.,
+  'Malloc Lab'" %>
+
+<div class="form-group">
+  <%= f.label :category_name, { :class=>"control-label" } %>
+  <%= f.collection_select :category_name, @course.assessment_categories, :to_s, :to_s, {selected: @assessment.category_name}, {class: "form-control"} %>
+  <p>or</p>
+  <%= text_field_tag :new_category, nil, placeholder: "New Category" %>
+  <p class="help-block">Select an existing category or enter a new category name <i>(you can always change it later)</i></p>
+</div>
+
+<br>
+<h3 id="modules">Modules</h3>
+<hr>
+  <div class="form-group module">
+    <h4>Autograder</h4>
+    <% if @assessment.has_autograder? %>
+      <%= render "edit_autograder" %>
+    <% else %>
+      <%= link_to "Add Autograder", [@course, @assessment, :autograder], method: :post, class: "btn primary" %>
     <% end %>
   </div>
+
+  <div class="form-group module">
+    <h4>Scoreboard</h4>
+    <% if @assessment.has_scoreboard? %>
+      <%= render "edit_scoreboard" %>
+    <% else %>
+      <%= link_to "Add Scoreboard", [@course, @assessment, :scoreboard], method: :post, class: "btn primary" %>
+    <% end %>
+  </div>
+
+  <div class="form-group module">
+    <h4>SVN</h4>
+    <span class="checkbox"><%= f.check_box :has_svn,
+      display_name: "Use SVN?",
+      help_text: "Whether to use SVN in conjunction with this assignment." %></span>
+    <% if @assessment.has_svn? %>
+      <br>
+      <%= link_to "Manage SVN", [:admin_svn, @course, @assessment], title: "Manage the SVN repositories" %>
+    <% end %>
+  </div>
+
+  <div class="form-group module">
+    <h4>Groups</h4>
+    <%= f.text_field :group_size,
+      display_name: "Group Size",
+      help_text: "Set the maximum size of groups for this assessment.  If group size is 1, the assessment is solo.  If the size is decreased, groups that are too large will not be broken up.  If the size is set to 1, groups will be saved, but the assessment will be solo." %>
+    <% if @assessment.has_groups? %>
+      <br>
+      <%= link_to "Manage Groups", [@course, @assessment, :groups], title: "Manage Group Settings" %>
+    <% end %>
+  </div>
+
+<br>
+<h3 id="handin">Handin</h3>
+<hr>
+
+<%= f.text_area  :description %>
+
+<%= f.text_field :handout, help_text: "File in the assessment directory containing materials that the instructor hands out to students or URL to redirect to. E.g., 'malloclab-handout.tar', 'http://school.edu/class/malloclab.zip'" %>
+
+<%= f.text_field :writeup, help_text: "File in the assessment directory or URL containing instructions to students. E.g., 'writeup/malloclab.pdf', 'http://school.edu/class/writeup.pdf'" %>
+
+<br>
+<h3 id="penalties">Penalties</h3>
+<hr>
+
+<% content_for :javascripts do %>
+  <%= javascript_include_tag "initialize_datetimepickers" %>
+<% end %>
+
+<%# Initialize datepickers by defining linked relationships (using IDs) %>
+<%= f.datetime_select :start_at,
+  help_text: "The time this assessment is released to students.",
+  less_than: "assessment_due_at assessment_end_at assessment_grading_deadline" %>
+
+<%= f.datetime_select :due_at,
+  help_text: "Students can submit before this time without being penalized or using grace days.",
+  greater_than: "assessment_start_at",
+  less_than: "assessment_end_at assessment_grading_deadline" %>
+
+<%= f.datetime_select :end_at,
+  help_text: "Last possible time that students can submit (except those granted extensions.)",
+  greater_than: "assessment_start_at assessment_due_at",
+  less_than: "assessment_grading_deadline" %>
+
+<%= f.datetime_select :grading_deadline,
+  help_text: "Time after which final scores are included in the gradebook",
+  greater_than: "assessment_start_at assessment_due_at assessment_end_at" %>
+
+<div class="form-group">
+  <span class="checkbox"><%= f.check_box :disable_handins,
+    help_text: "Check this to disallow handins through Autolab. E.g., paper
+    exams, problem sets" %></span>
+</div>
+
+<%= content_tag :div, id: "handin", class: (f.object.disable_handins ? "disabled" : "") + " form-group" do %>
+  <%= f.text_field :handin_directory, help_text: "The subdirectory in the assessment directory where student submissions will be store. You generally shouldn't need to change this. Default: <kbd>handin</kbd>".html_safe %>
+
+  <%= f.text_field :remote_handin_path, help_text: "(Optional) The directory outside the assessment directory where student submissions directly from local machines will be copied.".html_safe %>
+
+  <%= f.text_field :handin_filename, help_text: "The suffix (fname) that is appended to student submission files. Autolab stores submission files in the handin directory as <kbd>email_version_fname</kbd>. E.g., 'mm.c'".html_safe %>
+<% end %>
+
+<%= f.text_field :max_size, help_text: "The maximum size that a handin file can have, in megabytes (MB)." %>
+
+<hr>
+
+<%= f.text_field :max_submissions, help_text: "The maximum number of times a student can submit the assessment.  Set this to -1 to allow unlimited submissions." %>
+
+<%= f.text_field :max_grace_days, help_text: "Maximum number of grace days that a student can spend on this assessment. E.g., 2. If left blank, all of the remaining available course grace days can be spent on this assessment." %>
+
+<%= f.score_adjustment_input :late_penalty, optional: true, help_text: "The penalty applied to late submissions after a student runs out of grace days. It represents the number of points or a percentage of the total score removed per day, and must be a non-negative number. If left blank, the course default is used. Example: 15%" %>
+
+
+
+<%= f.text_field :version_threshold, help_text: "The number of unpenalized submissions allowed. After this threshold, each additional submission is penalized according to the version penalty. If set to -1, no submissions are penalized. If this is left blank, the course default is used." %>
+
+<%= f.score_adjustment_input :version_penalty, optional: true, help_text: "The penalty applied to submissions with version greater than the version threshold. It represents the number of points or the percentage of the total score removed per version above the threshold, and must be a non-negative number. For example, if this is set to 1 point and the version threshold to 3, the fifth version of a student's submissions would be docked 2 points. If left blank, the course default is used." %>
+
+<br>
+<h3 id="problems">Problems</h3>
+<hr>
+  <% for problem in @assessment.problems do %> 
+    <div class="row">
+    <div class="col-md-8"><b><%= problem.name %></b>
+    [max score: <%= problem.max_score %>, optional: <%= problem.optional ? "yes" : "no" %>]
+    </div>
+    <div class="btn-group col-md-4" role="group">
+    <%= link_to "Edit", [:edit, @course, @assessment, problem], { class: "btn small" } %>
+    <%= link_to "Delete", [@course, @assessment, problem], method: :delete, class: "btn small", data: { confirm: "Are you sure you want to destroy this problem? It will also destroy all scores associated with this problem!!!" } %>
+    </div>
+    </div>
+    <hr>
+  <% end %>
+    <div class="row">
+      <div class="col-md-8"><b>
+      <%= link_to "+ Add Problem", new_course_assessment_problem_path(@course, @assessment), { :class=> "" } %></b>
+      </div>
+    </div>
+    <hr>
+
+<br>
+<h3 id="problems">Dangerous</h3>
+<hr>
+
+    <%= link_to "Delete this Assessment", course_assessment_path(@course, @assessment), method: :delete, class: 'btn btn-danger', data: { confirm: " Deleting will delete all associated assessment data and cannot be undone. Are you sure you want to delete this assessment?" } %>
+
+  </div>
+<% end %>
+
 </div>

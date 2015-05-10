@@ -1,4 +1,4 @@
-<%= form_for [@course, @assessment, @scoreboard], builder: FormBuilderWithDateTimeInput do |f| %>
+<%= form_for [@course, @assessment, @assessment.scoreboard], builder: FormBuilderWithDateTimeInput do |f| %>
   <%= f.error_messages %> 
   <p>Use this page to configure the scoreboard. (<%= link_to "Learn More", [:help, @course, @assessment, :scoreboard] %>)</p>
 
