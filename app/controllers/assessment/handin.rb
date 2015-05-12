@@ -247,8 +247,8 @@ private
     end
 
     if @assessment.overwrites_method?(:checkMimeType) && !(@assessment.config_module.checkMimeType(
-        params[:submission]["file"].content_type,
-        params[:submission]["file"].original_filename))
+      params[:submission]["file"].content_type,
+      params[:submission]["file"].original_filename))
 
       flash[:error] = "Submission failed Filetype Check. " + flash[:error]
       return false

@@ -178,9 +178,7 @@ class JobsController < ApplicationController
     # Get a list of current and upcoming assessments
     @upcoming_asmt = []
     Assessment.find_each do |asmt|
-      if asmt.has_autograder? && asmt.due_at > Time.now
-        @upcoming_asmt << asmt
-      end
+      @upcoming_asmt << asmt if asmt.has_autograder? && asmt.due_at > Time.now
     end
     @upcoming_asmt.sort! { |a, b| a.due_at <=> b.due_at }
   end
