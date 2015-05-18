@@ -75,25 +75,6 @@ class SubmissionsController < ApplicationController
   action_auth_level :show, :student
   def show
     submission = Submission.find(params[:id])
-    # respond_to do |format|
-    #  if submission
-    #    format.js {
-    #      render :json => submission.to_json(
-    #        :include => {:course_user_datum =>  # TODO: user?
-    #                              {:only => [:user,
-    #                                         :first_name,
-    #                                         :last_name,
-    #                                         :lecture,
-    #                                         :section]},
-    #                     :scores => {:include => :grader}},
-    #        :methods => [:is_syntax, :grace_days_used,
-    #                     :penalty_late_days, :days_late, :tweak],
-    #        :seen_by => @cud)
-    #    }
-    #  else
-    #    format.js { head :bad_request }
-    #  end
-    # end
   end
 
   # this loads and looks good
@@ -236,9 +217,6 @@ class SubmissionsController < ApplicationController
     return unless file
 
     filename = @submission.handin_file_path
-    if PDF.pdf?(file)
-      send_data(file, type: "application/pdf", disposition: "inline", filename: File.basename(filename)) && return
-    end
 
     begin
       @data = @submission.annotated_file(file, @filename, params[:header_position])
@@ -289,14 +267,18 @@ class SubmissionsController < ApplicationController
 
     # Rendering this page fails. Often. Mostly due to PDFs.
     # So if it fails, redirect, instead of showing an error page.
-    begin
-      render(:view) && return
-    rescue
-      flash[:error] = "Autolab cannot display this file"
-      if params[:header_position]
-        redirect_to([:list_archive, @course, @assessment, @submission]) && return
-      else
-        redirect_to([:history, @course, @assessment, cud_id: @submission.course_user_datum_id]) && return
+    if PDF.pdf?(file)
+        render(:viewPDF) && return
+    else 
+      begin
+        render(:view) && return
+      rescue
+        flash[:error] = "Autolab cannot display this file"
+        if params[:header_position]
+          redirect_to([:list_archive, @course, @assessment, @submission]) && return
+        else
+          redirect_to([:history, @course, @assessment, cud_id: @submission.course_user_datum_id]) && return
+        end
       end
     end
   end

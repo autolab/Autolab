@@ -1,0 +1,79 @@
+<% @title = "Annotate Submission" %>
+
+<% content_for :stylesheets do %>
+
+<% end %>
+
+<% content_for :javascripts do %>
+  <%= javascript_include_tag "pdf.js" %>
+  <script type="application/javascript">
+
+    <% if @cud.instructor || @cud.course_assistant then %>
+      var isInstructor = true;
+    <% else %>
+      var isInstructor = false;
+    <% end %>
+
+    var annotations = <%=raw @annotations.to_json %>;
+    var fileNameStr = "<%= @filename %>";
+    var fileLink    = "<%= download_course_assessment_submission_path(@course, @assessment, @submission) %>";
+    var cudEmailStr = "<%= @cud.email %>";
+    // a json list of problems for this assessment
+    var problems = <%=raw @problems.to_json %>;
+    var basePath = "<%= course_assessment_submission_annotations_path(@course, @assessment, @submission) %>";
+
+    <% if params[:header_position] %>
+    var headerPositionStr = "<%= params[:header_position] %>";
+    <% else %>
+    var headerPositionStr = null;
+    <% end %>
+
+    PDFJS.workerSrc = "<%= asset_url 'pdf.worker.js' %>";
+
+
+    var canvasContainer = document.getElementById("pdf-doc");
+    //
+    // Fetch the PDF document from the URL using promises
+    //
+    PDFJS.getDocument(fileLink).then(function(pdf) {
+      var nmrPages = pdf.pdfInfo.numPages;
+
+      for (var i=1; i<=nmrPages; i++) {
+        // Using promise to fetch the page
+        pdf.getPage(i).then(function(page) {
+          var scale = 1.3;
+          var viewport = page.getViewport(scale);
+
+          //
+          // Prepare canvas using PDF page dimensions
+          //
+          var canvas = document.createElement('canvas');
+          var ctx = canvas.getContext('2d');
+          var renderContext = {
+            canvasContext: ctx,
+            viewport: viewport
+          };
+          
+          canvas.height = viewport.height;
+          canvas.width = viewport.width;
+
+          canvasContainer.appendChild(canvas);
+
+          page.render(renderContext);
+        });
+      }
+    }).catch(function(error){
+        //no error message is logged either
+        console.log("Error occurred", error);
+    });
+
+  </script>
+<% end %>
+
+<h2>Submission Version <%=@submission.version%> for
+<%= current_assessment_link %> (<%= @submission.course_user_datum.email %>)
+</h2>
+<hr>
+<div class="row">
+  <div id="pdf-doc" style="border:1px solid black;"></div>
+</div>
