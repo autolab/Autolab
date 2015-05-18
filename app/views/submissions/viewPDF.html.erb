@@ -1,7 +1,13 @@
 <% @title = "Annotate Submission" %>
 
 <% content_for :stylesheets do %>
+<style type="text/css">
+  #pdf-doc canvas {
+    margin-bottom: 20px;
+    border: 1px solid #ddd;
+  }
 
+</style>
 <% end %>
 
 <% content_for :javascripts do %>
@@ -75,5 +81,5 @@
 </h2>
 <hr>
 <div class="row">
-  <div id="pdf-doc" style="border:1px solid black;"></div>
+  <div id="pdf-doc" style="text-align: center;"></div>
 </div>
