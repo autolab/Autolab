@@ -388,7 +388,7 @@ private
     self.due_at = self.end_at = self.visible_at = self.start_at = self.grading_deadline = Time.now
     self.quiz = false
     self.quizData = ""
-    update(s["general"])
+    update!(s["general"])
     Problem.deserialize_list(self, s["problems"]) if s["problems"]
     if s["autograder"]
       Autograder.find_or_initialize_by(assessment_id: id).update(s["autograder"])

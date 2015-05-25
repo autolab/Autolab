@@ -42,6 +42,11 @@ class ScoreAdjustment < ActiveRecord::Base
       self[:kind] = POINTS
     when "percent"
       self[:kind] = PERCENT
+    # these two cases are for deserialization
+    when POINTS
+      self[:kind] = POINTS
+    when PERCENT
+      self[:kind] = PERCENT
     else
       fail ArgumentError
     end
