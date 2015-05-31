@@ -1,6 +1,8 @@
 <% @title = "Annotate Submission" %>
 
 <% content_for :stylesheets do %>
+<%= stylesheet_link_tag "annotations" %>
+
 <style type="text/css">
   #pdf-doc canvas {
     margin-bottom: 20px;
@@ -54,6 +56,8 @@
           // Prepare canvas using PDF page dimensions
           //
           var canvas = document.createElement('canvas');
+          canvas.id = "page-canvas-"+i;
+          canvas.className = "page-canvas"
           var ctx = canvas.getContext('2d');
           var renderContext = {
             canvasContext: ctx,
@@ -73,6 +77,10 @@
         console.log("Error occurred", error);
     });
 
+  </script>
+  <%= javascript_include_tag "annotations.js" %>
+  <script type="text/javascript">
+    initializeAnnotationsForPDF();
   </script>
 <% end %>
 

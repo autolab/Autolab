@@ -18,6 +18,73 @@ $("#highlightLongLines").click(function() {
   highlightLines(this.checked);
 });
 
+var initializeAnnotationsForCode = function() {
+  
+  // annotationsByLine: { 'lineNumber': [annotations_array ]}
+  var annotationsByLine = {};
+  _.each(annotations, function(annotationObj, ind) {
+    var lineInd = annotationObj.line
+    if (!annotationsByLine[lineInd]) {
+      annotationsByLine[lineInd] = [];
+    }
+    annotationsByLine[lineInd].push(annotationObj);
+  });
+
+  var lines = document.querySelector("#code-list").children,
+    ann;
+
+  _.each(annotationsByLine, function(arr_annotations, lineInd) {
+    _.each(arr_annotations, function(annotationObj, ind) {
+      $(lines[lineInd - 1]).find(".annotations-container").append(newAnnotationBox(annotationObj));
+    });
+  });
+
+  /* if you click a line, clean up any '.annotating's and
+   * call annotate to set up the annotation.
+   */
+  $(".add-annotation-btn").on("click", function(e) {
+    var btn = e.currentTarget;
+    var lineInd = parseInt(btn.id.replace('add-btn-', ''), 10);
+    if ($('#annotation-form-' + lineInd).length) {
+      $('#annotation-form-' + lineInd).find('.comment').focus();
+    } else {
+      showAnnotationForm(lineInd);
+    }
+    e.stopPropagation();
+  });
+
+}
+
+
+var initializeAnnotationsForPDF = function() {
+
+  _.each(annotations, function(annotationObj, ind) {
+    if (!annotationObj.position) {
+      return;
+    }
+    var positionArr = annotationObj.position.split(',');
+    var xCord = positionArr[0];
+    var yCord = positionArr[1];
+    var page  = positionArr[2];
+
+    var annotationEl = newAnnotationBox(annotationObj);
+    annotationEl.css({ "left": xCord,  "top" : yCord});
+    $("#page-canvas-"+page).append(annotationEl);
+
+  });
+
+  /* if you click on a page, create an annotation there */
+  $(".page-canvas").on("click", function(e) {
+    console.log(e);
+    var pageCanvas = e.currentTarget;
+    var pageInd = parseInt(pageCanvas.id.replace('page-canvas-',''), 10);
+    // TODO: ADD THESE
+    showAnnotationFormAtCoord(pageInd, e.pageOffsetX, e.pageOffsetY);
+  });
+
+}
+
+
 $(function() {
   var block = document.getElementById('code-block');
 
@@ -29,25 +96,6 @@ $(function() {
     return problem.name;
   }
 
-  // annotationsByLine: { 'lineNumber': [annotations_array ]}
-  var annotationsByLine = {};
-  _.each(annotations, function(annotationObj, ind) {
-    var lineInd = annotationObj.line
-    if (!annotationsByLine[lineInd]) {
-      annotationsByLine[lineInd] = [];
-    }
-    annotationsByLine[lineInd].push(annotationObj);
-  });
-
-
-  var lines = document.querySelector("#code-list").children,
-    ann;
-
-  _.each(annotationsByLine, function(arr_annotations, lineInd) {
-    _.each(arr_annotations, function(annotationObj, ind) {
-      $(lines[lineInd - 1]).find(".annotations-container").append(newAnnotationBox(annotationObj));
-    });
-  });
 
   // create an HTML element real nice and easy like
   function elt(t, a) {
@@ -66,10 +114,6 @@ $(function() {
     return el;
   }
 
-  // orphan the given node.  Welcome to life, node.
-  function oliverTwist(node) {
-    node.parentNode.removeChild(node);
-  }
 
   // this creates a JSON representation of what the actual Rails Annotation model looks like
   function createAnnotation(line) {
@@ -329,7 +373,12 @@ $(function() {
     return newForm;
   }
 
-
+  /* following paths/functions for annotations */
+  var createPath = basePath + ".json";
+  var updatePath = function(ann) {
+    return [basePath, "/", ann.id, ".json"].join("");
+  };
+  var deletePath = updatePath;
 
   // start annotating the line with the given index
   function showAnnotationForm(lineInd) {
@@ -342,26 +391,18 @@ $(function() {
     }
   }
 
-  /* following paths/functions for annotations */
-  var createPath = basePath + ".json";
-  var updatePath = function(ann) {
-    return [basePath, "/", ann.id, ".json"].join("");
-  };
-  var deletePath = updatePath;
 
-  /* if you click a line, clean up any '.annotating's and
-   * call annotate to set up the annotation.
-   */
-  $(".add-annotation-btn").on("click", function(e) {
-    var btn = e.currentTarget;
-    var lineInd = parseInt(btn.id.replace('add-btn-', ''), 10);
-    if ($('#annotation-form-' + lineInd).length) {
-      $('#annotation-form-' + lineInd).find('.comment').focus();
-    } else {
-      showAnnotationForm(lineInd);
+  // start annotating the coordinate with the given x and y
+  function showAnnotationFormAtCoord(pageInd, x, y) {
+    var $page = $("#page-canvas-" + pageInd);
+
+    if ($page.length) {
+      var newForm = newAnnotationForm(lineInd)
+      newForm.css({ "left" : x, "top" : y});
+      $page.append(newForm);
+      $(newForm).find('.comment').focus();
     }
-    e.stopPropagation();
-  });
+  }
 
 
   /* sets up and calls $.ajax to submit an annotation */
