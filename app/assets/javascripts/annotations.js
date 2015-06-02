@@ -20,6 +20,9 @@ $("#highlightLongLines").click(function() {
 
 var initializeAnnotationsForCode = function() {
   
+  var block = document.getElementById('code-block');
+  hljs.highlightBlock(block);
+
   // annotationsByLine: { 'lineNumber': [annotations_array ]}
   var annotationsByLine = {};
   _.each(annotations, function(annotationObj, ind) {
@@ -56,40 +59,6 @@ var initializeAnnotationsForCode = function() {
 }
 
 
-var initializeAnnotationsForPDF = function() {
-
-  _.each(annotations, function(annotationObj, ind) {
-    if (!annotationObj.position) {
-      return;
-    }
-    var positionArr = annotationObj.position.split(',');
-    var xCord = positionArr[0];
-    var yCord = positionArr[1];
-    var page  = positionArr[2];
-
-    var annotationEl = newAnnotationBox(annotationObj);
-    annotationEl.css({ "left": xCord,  "top" : yCord});
-    $("#page-canvas-"+page).append(annotationEl);
-
-  });
-
-  /* if you click on a page, create an annotation there */
-  $(".page-canvas").on("click", function(e) {
-    console.log(e);
-    var pageCanvas = e.currentTarget;
-    var pageInd = parseInt(pageCanvas.id.replace('page-canvas-',''), 10);
-    // TODO: ADD THESE
-    showAnnotationFormAtCoord(pageInd, e.pageOffsetX, e.pageOffsetY);
-  });
-
-}
-
-
-$(function() {
-  var block = document.getElementById('code-block');
-
-  hljs.highlightBlock(block);
-
   function getProblemNameWithId(problem_id) {
     var problem_id = parseInt(problem_id, 10);
     var problem = _.findWhere(problems, {"id":problem_id});
@@ -116,10 +85,9 @@ $(function() {
 
 
   // this creates a JSON representation of what the actual Rails Annotation model looks like
-  function createAnnotation(line) {
+  function createAnnotation() {
     var annObj = {
       filename: fileNameStr,
-      line: line,
       submitted_by: cudEmailStr,
     };
 
@@ -280,9 +248,99 @@ $(function() {
       }
     };
 
-    $(cancelButton).on('click', function() {
+    $(cancelButton).on('click', function(e) {
       $(newForm).remove();
+      e.preventDefault();
     })
+
+    return newForm;
+  }
+
+  var newAnnotationFormForPDF = function(pageInd, xCord, yCord) {
+
+    // this section creates the new/edit annotation form that's used everywhere
+    var commentInput = elt("textarea", {
+      class: "col-md-11 comment",
+      name: "comment",
+      placeholder: "Explanation Here",
+      maxlength: "255"
+    });
+    var valueInput = elt("input", {
+      class: "col-md-6",
+      type: "text",
+      name: "score",
+      placeholder: "Score Here"
+    });
+    var problemSelect = elt("select", {
+      class: "col-md-4",
+      name: "problem"
+    }, elt("option", {
+      value: ""
+    }, "None"));
+    
+    var rowDiv1 = elt("div", {
+      class: "row",
+      style: "margin-left:4px;"
+    }, commentInput);
+    
+    var rowDiv2 = elt("div", {
+      class: "row",
+      style: "margin-left:4px;"
+    }, valueInput, problemSelect);
+
+
+
+    var submitButton = elt("input", {
+      type: "submit",
+      value: "Save",
+      class: "btn primary small"
+    });
+    var cancelButton = elt("input", {
+      style: "margin-left: 4px;",
+      type: "button",
+      value: "Cancel",
+      class: "btn small"
+    });
+    var hr = elt("hr");
+
+    _.each(problems, function(problem) {
+      problemSelect.appendChild(elt("option", {
+        value: problem.id
+      }, problem.name));
+    })
+
+    var newForm = elt("form", {
+      title: "Press <Enter> to Submit",
+      class: "annotation-form",
+      id: "annotation-form-" + pageInd
+    }, rowDiv1, rowDiv2, hr, submitButton, cancelButton);
+
+    newForm.onsubmit = function(e) {
+      e.preventDefault();
+
+      var comment = commentInput.value;
+      var value = valueInput.value;
+      var problem_id = problemSelect.value;
+
+      if (!comment) {
+        newForm.appendChild(elt("div", null, "The comment cannot be empty"));
+      } else {
+        submitNewPDFAnnotation(comment, value, problem_id, pageInd, xCord, yCord, newForm);
+      }
+      return false;
+    };
+
+    $(cancelButton).on('click', function (e) {
+      $(newForm).remove();
+      e.preventDefault();
+      return false;
+    });
+
+    $(submitButton).on('click', function (e) {
+      $(newForm).submit();
+      e.preventDefault();
+      return false;
+    });
 
     return newForm;
   }
@@ -392,51 +450,95 @@ $(function() {
   }
 
 
-  // start annotating the coordinate with the given x and y
-  function showAnnotationFormAtCoord(pageInd, x, y) {
-    var $page = $("#page-canvas-" + pageInd);
+// start annotating the coordinate with the given x and y
+var showAnnotationFormAtCoord = function(pageInd, x, y) {
+  var $page = $("#page-canvas-" + pageInd);
 
-    if ($page.length) {
-      var newForm = newAnnotationForm(lineInd)
-      newForm.css({ "left" : x, "top" : y});
+  if ($page.length) {
+      var newForm = newAnnotationFormForPDF(pageInd, x, y)
+      $(newForm).css({ "left" : x, "top" : y});
       $page.append(newForm);
+      $(newForm).on("click", function(e) {
+        return false;
+      });
+
+
       $(newForm).find('.comment').focus();
-    }
   }
+}
 
 
-  /* sets up and calls $.ajax to submit an annotation */
-  var submitNewAnnotation = function(comment, value, problem_id, lineInd, formEl) {
+var submitNewPDFAnnotation = function(comment, value, problem_id, pageInd, xCord, yCord, newForm) {
+  
+  var newAnnotation = createAnnotation();
+  newAnnotation.coordinate = xCord + "," + yCord + "," + pageInd;
+  newAnnotation.comment = comment;
+  newAnnotation.value = value;
+  newAnnotation.problem_id = problem_id;
 
-    var newAnnotation = createAnnotation(lineInd);
-    newAnnotation.comment = comment;
-    newAnnotation.value = value;
-    newAnnotation.problem_id = problem_id;
+  console.log("SAVING");
+  console.log(newAnnotation);
 
-    var $line = $('#line-' + lineInd);
 
-    $.ajax({
-      url: createPath,
-      accepts: "json",
-      dataType: "json",
-      data: {
-        annotation: newAnnotation
-      },
-      type: "POST",
-      success: function(data, type) {
-        $line.find('.annotations-container').append(newAnnotationBox(data));
-        if (!annotationsByLine[lineInd]) {
-          annotationsByLine[lineInd] = [];
-        }
-        annotationsByLine[lineInd].push(data);
-        $(formEl).remove();
-      },
-      error: function(result, type) {
-        $(formEl).append(elt("div", null, "Failed to Save Annotation!!!"));
-      },
-      complete: function(result, type) {}
-    });
-  }
+  var $page = $('#page-canvas-' + pageInd);
+
+  $.ajax({
+    url: createPath,
+    accepts: "json",
+    dataType: "json",
+    data: {
+      annotation: newAnnotation
+    },
+    type: "POST",
+    success: function(data, type) {
+
+      var annotationEl = newAnnotationBox(data);
+      $(annotationEl).css({ "left": xCord + "px",  "top" : yCord + "px", "position" : "absolute" });
+      $page.append(annotationEl);
+      $(newForm).remove();
+    },
+    error: function(result, type) {
+      $(formEl).append(elt("div", null, "Failed to Save Annotation!!!"));
+    },
+    complete: function(result, type) {}
+  });
+
+}
+
+/* sets up and calls $.ajax to submit an annotation */
+var submitNewAnnotation = function(comment, value, problem_id, lineInd, formEl) {
+
+  var newAnnotation = createAnnotation();
+  newAnnotation.line = lineInd;
+  newAnnotation.comment = comment;
+  newAnnotation.value = value;
+  newAnnotation.problem_id = problem_id;
+
+  var $line = $('#line-' + lineInd);
+
+  $.ajax({
+    url: createPath,
+    accepts: "json",
+    dataType: "json",
+    data: {
+      annotation: newAnnotation
+    },
+    type: "POST",
+    success: function(data, type) {
+      $line.find('.annotations-container').append(newAnnotationBox(data));
+      if (!annotationsByLine[lineInd]) {
+        annotationsByLine[lineInd] = [];
+      }
+      annotationsByLine[lineInd].push(data);
+      $(formEl).remove();
+    },
+    error: function(result, type) {
+      $(formEl).append(elt("div", null, "Failed to Save Annotation!!!"));
+    },
+    complete: function(result, type) {}
+  });
+
+}
 
   var updateAnnotation = function(annotationObj, lineInd, formEl) {
     $.ajax({
@@ -458,4 +560,37 @@ $(function() {
     });
   }
 
-});
+var initializeAnnotationsForPDF = function() {
+
+  _.each(annotations, function(annotationObj, ind) {
+    console.log(annotationObj);
+    if (!annotationObj.coordinate) {
+      return;
+    }
+    var positionArr = annotationObj.coordinate.split(',');
+    var xCord = positionArr[0];
+    var yCord = positionArr[1];
+    var page  = positionArr[2];
+
+    var annotationEl = newAnnotationBox(annotationObj);
+    $(annotationEl).css({ "left": xCord + "px",  "top" : yCord + "px", "position" : "absolute" });
+    $("#page-canvas-"+page).append(annotationEl);
+
+  });
+
+
+  $(".page-canvas").on("click", function(e) {
+    
+    if ($(e.currentTarget).hasClass("page-canvas")) {
+      var pageCanvas = e.currentTarget;
+      var pageInd = parseInt(pageCanvas.id.replace('page-canvas-',''), 10);
+
+      $('.annotation-form').remove();
+      showAnnotationFormAtCoord(pageInd, e.offsetX, e.offsetY);
+    }
+
+  });
+
+}
+
+

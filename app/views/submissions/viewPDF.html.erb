@@ -14,6 +14,9 @@
 
 <% content_for :javascripts do %>
   <%= javascript_include_tag "pdf.js" %>
+  <%= external_javascript_include_tag "lodash", "3.3.1" %>
+  <%= javascript_include_tag "highlight.pack.js" %>
+
   <script type="application/javascript">
 
     <% if @cud.instructor || @cud.course_assistant then %>
@@ -48,6 +51,7 @@
 
       for (var i=1; i<=nmrPages; i++) {
         // Using promise to fetch the page
+        var nmrPagesRendered = 0;
         pdf.getPage(i).then(function(page) {
           var scale = 1.3;
           var viewport = page.getViewport(scale);
@@ -55,9 +59,11 @@
           //
           // Prepare canvas using PDF page dimensions
           //
+          var div = document.createElement('div');
+          div.className = "page-canvas"
+          div.id = "page-canvas-"+page.pageIndex;
+
           var canvas = document.createElement('canvas');
-          canvas.id = "page-canvas-"+i;
-          canvas.className = "page-canvas"
           var ctx = canvas.getContext('2d');
           var renderContext = {
             canvasContext: ctx,
@@ -67,10 +73,20 @@
           canvas.height = viewport.height;
           canvas.width = viewport.width;
 
-          canvasContainer.appendChild(canvas);
+          div.appendChild(canvas);
+          div.style.width = Math.floor(viewport.width) + "px";
+
+          canvasContainer.appendChild(div);
 
           page.render(renderContext);
+          nmrPagesRendered = nmrPagesRendered + 1;
+
+          if (nmrPagesRendered == nmrPages) {
+            initializeAnnotationsForPDF();
+          }
         });
+
+        
       }
     }).catch(function(error){
         //no error message is logged either
@@ -79,9 +95,7 @@
 
   </script>
   <%= javascript_include_tag "annotations.js" %>
-  <script type="text/javascript">
-    initializeAnnotationsForPDF();
-  </script>
+
 <% end %>
 
 <h2>Submission Version <%=@submission.version%> for
