@@ -218,32 +218,38 @@ class SubmissionsController < ApplicationController
 
     filename = @submission.handin_file_path
 
-    begin
-      @data = @submission.annotated_file(file, @filename, params[:header_position])
-    rescue
-      flash[:error] = "Sorry, we could not display your file because it contains non-ASCII characters. Please remove these characters and resubmit your work."
-      redirect_to(:back) && return
-    end
 
-    begin
-      # replace tabs with 4 spaces
-      for i in 0...@data.length do
-        @data[i][0].gsub!("\t", " " * 4)
+    if !PDF.pdf?(file)
+      begin
+        @data = @submission.annotated_file(file, @filename, params[:header_position])
+      rescue
+        flash[:error] = "Sorry, we could not display your file because it contains non-ASCII characters. Please remove these characters and resubmit your work."
+        redirect_to(:back) && return
       end
-    rescue ArgumentError => e
-      raise e unless e.message == "invalid byte sequence in UTF-8"
-      flash[:error] = "Sorry, we could not parse your file because it contains non-ASCII characters. Please download file to view the source."
-      redirect_to(:back) && return
-    end
 
-    # fix for tar files
-    if params[:header_position]
-      @annotations = @submission.annotations.where(position: params[:header_position]).to_a
+      begin
+        # replace tabs with 4 spaces
+        for i in 0...@data.length do
+          @data[i][0].gsub!("\t", " " * 4)
+        end
+      rescue ArgumentError => e
+        raise e unless e.message == "invalid byte sequence in UTF-8"
+        flash[:error] = "Sorry, we could not parse your file because it contains non-ASCII characters. Please download file to view the source."
+        redirect_to(:back) && return
+      end
+
+      # fix for tar files
+      if params[:header_position]
+        @annotations = @submission.annotations.where(position: params[:header_position]).to_a
+      else
+        @annotations = @submission.annotations.to_a
+      end
+
+      @annotations.sort! { |a, b| a.line <=> b.line }
+
     else
-      @annotations = @submission.annotations.to_a
+        @annotations = @submission.annotations.to_a
     end
-
-    @annotations.sort! { |a, b| a.line <=> b.line }
 
     @problemSummaries = {}
     @problemGrades = {}
