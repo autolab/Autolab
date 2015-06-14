@@ -1013,5 +1013,9 @@ div.center {
     color: $autolab-highlight-gray;
     border-color: $autolab-highlight-gray;
   }
+
+  &.add {
+    border:none;
+  }
 }
  

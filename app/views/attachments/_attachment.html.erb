@@ -1,8 +1,8 @@
 <li class="attachment">
   <% if attachment.assessment.nil? then %>
-    <a href="<%= url_for [@course, attachment] %>" class="glyphicon glyphicon-folder-open" aria-hidden="true"></a>
+    <a href="<%= url_for [@course, attachment] %>" class="glyphicon glyphicon-list-alt" aria-hidden="true"></a>
   <% else %>
-    <a href="<%= url_for [@course, attachment.assessment, attachment] %>" class="glyphicon glyphicon-folder-open" aria-hidden="true"></a>
+    <a href="<%= url_for [@course, attachment.assessment, attachment] %>" class="glyphicon glyphicon-list-alt" aria-hidden="true"></a>
   <% end %>
   
   <% if attachment.assessment.nil? then %>
