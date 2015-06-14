@@ -136,7 +136,7 @@
   <% end %>
 
   <%# Display any attachments %>
-  <% if @assessment.attachments.length > 0 %>
+  <% if @assessment.attachments.length > 0 or @cud.instructor? %>
     <h2>Handouts</h2>
     <ul class="attachments">
       <%= render @assessment.attachments %>
