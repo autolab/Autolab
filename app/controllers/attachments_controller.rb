@@ -52,7 +52,7 @@ class AttachmentsController < ApplicationController
   def update
     if @attachment.update(attachment_params)
       if @is_assessment
-        redirect_to([@course, @assessment, :attachments]) && return
+        redirect_to([@course, @assessment]) && return
       else
         redirect_to([@course, :attachments]) && return
       end
