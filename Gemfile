@@ -98,5 +98,8 @@ group :development do
   gem 'rubocop', require: false
 end
 
+# for PDF annotations
+gem 'prawn'
+
 # LDAP Lookup
 gem 'net-ldap'

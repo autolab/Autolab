@@ -1,5 +1,6 @@
 require "archive"
 require "pdf"
+require "prawn"
 
 class SubmissionsController < ApplicationController
   # inherited from ApplicationController
@@ -182,6 +183,15 @@ class SubmissionsController < ApplicationController
       send_data file,
                 filename: pathname,
                 disposition: "inline"
+    
+    elsif params[:annotated]
+      Prawn::Document.generate(@filename_annotated) do
+        text "Hello World!"
+      end
+      send_file @filename_annotated,
+                filename: @basename_annotated,
+                disposition: "inline"
+
     else
       mime = params[:forceMime] || @submission.detected_mime_type
       send_file @filename,

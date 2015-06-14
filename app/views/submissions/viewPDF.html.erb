@@ -103,5 +103,14 @@
 </h2>
 <hr>
 <div class="row">
+  <div class="col-md-3 annotationPane">
+    <% if not (@submission.assessment.exam or @submission.assessment.course.exam_in_progress) %>
+      <% mime_type = @submission.detected_mime_type %>
+      <a href="<%= download_file_url(@submission) %>" title="Download Submission" class="btn">Download Original</a>
+      <a href="<%= download_file_url(@submission) %>?annotated=true" title="Download Submission" class="btn">Download Annotated</a>
+    <% end %>
+  </div>
+  <div class="col-md-9">
   <div id="pdf-doc" style="text-align: center;"></div>
+  </div>
 </div>
