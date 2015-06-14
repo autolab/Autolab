@@ -1,14 +1,12 @@
 <li class="attachment">
   <% if attachment.assessment.nil? then %>
-    <a href="<%= url_for [@course, attachment] %>" class="glyphicon glyphicon-list-alt" aria-hidden="true"></a>
+    <%= link_to [@course, attachment] do %>
+      <span class="glyphicon glyphicon-list-alt"></span><%= attachment.name %>
+    <% end %>
   <% else %>
-    <a href="<%= url_for [@course, attachment.assessment, attachment] %>" class="glyphicon glyphicon-list-alt" aria-hidden="true"></a>
-  <% end %>
-  
-  <% if attachment.assessment.nil? then %>
-    <%= link_to attachment.name, [@course, attachment] %>
-  <% else %>
-    <%= link_to attachment.name, [@course, attachment.assessment, attachment] %>
+    <%= link_to [@course, attachment.assessment, attachment] do %>
+      <span class="glyphicon glyphicon-list-alt"></span><%= attachment.name %>
+    <% end %>
   <% end %>
 
   <% if !attachment.assessment.nil? && @assessment.nil? then %>

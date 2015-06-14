@@ -157,8 +157,9 @@
       <% end %>
       <% if @cud.instructor? then %>
         <li class="attachment add">
-          <a href="<%= new_course_assessment_attachment_path(@course, @assessment) %>" class="glyphicon glyphicon-plus" aria-hidden="true"></a>
-          <%= link_to 'Add '+@assessment.display_name+' Attachment', new_course_assessment_attachment_path(@course, @assessment) %>
+          <%= link_to new_course_assessment_attachment_path(@course, @assessment) do %>
+            <span class="glyphicon glyphicon-plus"></span><%= "Add #{@assessment.display_name} Attachment" %>
+          <% end %>
         </li>
       <% end %>
     </ul>
