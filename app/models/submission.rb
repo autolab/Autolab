@@ -134,6 +134,11 @@ class Submission < ActiveRecord::Base
     File.join(assessment.handin_directory_path, filename)
   end
 
+  def handin_annotated_file_path
+    return nil unless filename
+    File.join(assessment.handin_directory_path, "annotated_#{filename}")
+  end
+
   def autograde_feedback_filename
     "#{course_user_datum.email}_#{version}_#{assessment.name}_autograde.txt"
   end

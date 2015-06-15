@@ -99,7 +99,10 @@ group :development do
 end
 
 # for PDF annotations
-gem 'prawn'
+# This is an outdate version however support for
+# templating has been dropped in the future versions
+# and it is crucial for us
+gem 'prawn', '0.13.0'
 
 # LDAP Lookup
 gem 'net-ldap'
