@@ -11,7 +11,7 @@ development:
 # SQLite Configuration
 #development:
 #  adapter: sqlite3
-#  database: db/butts.sqlite3
+#  database: db/db.sqlite3
 #  pool: 5
 #  timeout: 5000
 
