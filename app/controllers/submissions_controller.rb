@@ -185,9 +185,32 @@ class SubmissionsController < ApplicationController
                 disposition: "inline"
     
     elsif params[:annotated]
-      Prawn::Document.generate(@filename_annotated) do
-        text "Hello World!"
+
+      @filename_annotated = @submission.handin_annotated_file_path
+      @basename_annotated = File.basename @filename_annotated
+
+      @annotations = @submission.annotations.to_a
+
+      Prawn::Document.generate(@filename_annotated, :template => @filename) do |pdf|
+          
+        @annotations.each do |annotation|
+          
+          return if annotation.coordinate.nil?
+            
+          position = annotation.coordinate.split(',');
+          xCord = position[0].to_i;
+          yCord = position[1].to_i;
+          #page  = positionArr[2];
+          pdf.move_cursor_to yCord
+          pdf.text_box annotation.comment, 
+                      :at => [xCord, pdf.bounds.height-yCord], 
+                      :height => 100, 
+                      :width => 160
+
+        end
+
       end
+
       send_file @filename_annotated,
                 filename: @basename_annotated,
                 disposition: "inline"
