@@ -20,8 +20,7 @@
 <h4>Modules Used</h4>
 <div class="form-group">
   <% if @assessment.has_autograder? %>
-    <%= link_to "Edit Autograder Settings", [:edit, @course, @assessment, :autograder], class: "btn primary" %>
-    <%= link_to "Delete Autograder", [@course, @assessment, :autograder], method: :delete, class: "btn danger",
+    <%= link_to "Remove Autograder", [@course, @assessment, :autograder], method: :delete, class: "btn danger",
                 data: {confirm: "Are you sure you want to delete the Autograder for this assessment?"} %>
   <% else %>
     <%= link_to "Add Autograder", [@course, @assessment, :autograder], method: :post, class: "btn primary" %>
@@ -30,8 +29,7 @@
 
 <div class="form-group">
   <% if @assessment.has_scoreboard? %>
-    <%= link_to "Edit Scoreboard Settings", [:edit, @course, @assessment, :scoreboard], class: "btn primary" %>
-    <%= link_to "Delete Scoreboard", [@course, @assessment, :scoreboard], method: :delete, class: "btn danger",
+    <%= link_to "Remove Scoreboard", [@course, @assessment, :scoreboard], method: :delete, class: "btn danger",
                 data: {confirm: "Are you sure you want to delete the Scoreboard for this assessment?"} %>
   <% else %>
     <%= link_to "Add Scoreboard", [@course, @assessment, :scoreboard], method: :post, class: "btn primary" %>

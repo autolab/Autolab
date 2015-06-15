@@ -985,12 +985,29 @@ div.center {
   border-left: 5px solid #1b809e;
 }
 
+.sticky-menu.affix {
+  top: 30px;
+  padding-left: 0px;
+  width: 293px;
+}
+
+.sticky-menu .btn {
+  width: 80%;
+  margin: 3px 10%;
+}
+
+.form-group.module {
+  background-color: #eee;
+  padding: 15px;
+  padding-left: 30px;
+}
+
 .attachments {
   padding: 0;
 }
 
 .attachment {
-  
+
   font-weight: bold;
   color:  #eee;
   border: 2px solid #eee;
@@ -1018,4 +1035,4 @@ div.center {
     border:none;
   }
 }
- 
+

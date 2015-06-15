@@ -28,36 +28,24 @@
     <%# Display any optional instructor admin options %>
     <% if @cud.instructor? then %>
       <h3>Admin Options</h3>
-      <ul class="options">
-    
-        <li> <%= link_to "Edit assessment", {:action => "edit" }, {:title=> "View and modify the properties for this assessment, including its problems" } %></li>
+      <ul class="options">    
         <li> <%= link_to "Grade submissions", {:action => "viewGradesheet" }, {:title=> "View and enter grades on the gradesheet" } %></li>
         <li> <%= link_to "Release all grades", {:action => "releaseAllGrades" }, {:title=>  "Make all scores for this assessment visible to students" } %></li>
         <li> <%= link_to "Withdraw all grades", {:action => "withdrawAllGrades" }, {:title=>  "Hide all scores for this assessment from students" } %></li>
         <li> <%= link_to "Export assessment", {:action => "export" }, {:title=> "Export persistent properties that will be imported when you install this assessment in a future term" } %></li>
-        <li> <%= link_to "Reload config file", {:action => "reload" }, {:title=> "Reload the assessment config file (provided for backward compatibility with legacy assessments)" } %></li>
         <li> <%= link_to "Manage extensions", [@course, @assessment, :extensions], { title: "Give extensions to students" } %></li>
         <li> <%= link_to "Manage submissions", [@course, @assessment, :submissions], { title: "Create, view, export, and re-autograde submissions" } %></li>
         <li> <%= link_to "View statistics", {:action => "statistics" }, {:title=> "View detailed stats for this assessment" } %></li>
         <li> <%= link_to "Bulk import grades", {:action => "bulkGrade" }, {:title=> "Upload scores or feedback for multiple students from a CSV file" } %></li>
         <li> <%= link_to "Bulk export grades", {:action => "bulkExport" }, {:title=> "Export grades (with sub-scores) \nfor all students to a CSV file" } %></li>
-
         <% if @assessment.has_svn then %>
-          <li><%= link_to "SVN Settings", [:admin_svn, @course, @assessment], title: "Manage the SVN repositories" %></li>
+        <li> <%= link_to "Manage SVN", [:admin_svn, @course, @assessment], title: "Manage the SVN repositories" %></li>
         <% end %>
-
-        <% if @assessment.has_autograder? then %>
-          <li><%= link_to "Autograder Settings", [:edit, @course, @assessment, :autograder], title: "Modify autograding properties such as the VM image and the timeout value" %></li>
-        <% end %>
-
         <% if @assessment.has_groups? %>
-          <li><%= link_to "Group Settings", [@course, @assessment, :groups], title: "Manage Group Settings" %></li>
+        <li> <%= link_to "Manage Groups", [@course, @assessment, :groups], title: "Manage Group Settings" %></li>
         <% end %>
-
-        <% if @assessment.has_scoreboard? %>
-          <li><%= link_to "Scoreboard Settings", [:edit, @course, @assessment, :scoreboard], title: "Configure the appearance of the scoreboard" %></li>
-        <% end %>
-
+        <li> <%= link_to "Assessment Settings", [:edit, @course, @assessment], title: "View and modify the properties for this assessment, including its problems" %></li>
+        <li> <%= link_to "Reload config file", {:action => "reload" }, {:title=> "Reload the assessment config file (provided for backward compatibility with legacy assessments)" } %></li>
       </ul>
     <% end %>
     <%# Display the optional CA admin options %>

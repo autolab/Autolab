@@ -20,6 +20,8 @@ class AutogradersController < ApplicationController
 
   action_auth_level :edit, :instructor
   def edit
+    params[:active_tab] ||= "autograder"
+    redirect_to(edit_course_assessment_path(@course, @assessment)+"/#{params[:active_tab]}") && return
   end
 
   action_auth_level :update, :instructor
