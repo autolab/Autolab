@@ -45,6 +45,8 @@ class ScoreboardsController < ApplicationController
         @grades[uid][:problems] = {}
       end
       if @grades[uid][:version] != row["version"]
+        # MySQL returns a Time object, but SQLite returns a time-stamp string
+        row["time"] = Time.parse(row["time"]) if row["time"].class != Time
         @grades[uid][:time] = row["time"].localtime
         @grades[uid][:version] = row["version"].to_i
         @grades[uid][:autoresult] = row["autoresult"]
