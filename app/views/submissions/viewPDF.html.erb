@@ -27,7 +27,11 @@
 
     var annotations = <%=raw @annotations.to_json %>;
     var fileNameStr = "<%= @filename %>";
+    <% if @preview_mode then %>
+    var fileLink    = "<%= download_course_assessment_submission_path(@course, @assessment, @submission, :annotated => true) %>";
+    <% else %>
     var fileLink    = "<%= download_course_assessment_submission_path(@course, @assessment, @submission) %>";
+    <% end %>
     var cudEmailStr = "<%= @cud.email %>";
     // a json list of problems for this assessment
     var problems = <%=raw @problems.to_json %>;
@@ -60,11 +64,12 @@
           // Prepare canvas using PDF page dimensions
           //
           var div = document.createElement('div');
-          div.className = "page-canvas"
           div.id = "page-canvas-wrapper-"+page.pageIndex;
+          div.className = "page-canvas-wrapper";
 
           var canvas = document.createElement('canvas');
           canvas.id = "page-canvas-"+page.pageIndex;
+          canvas.className = "page-canvas"
 
           var ctx = canvas.getContext('2d');
           var renderContext = {
@@ -96,7 +101,10 @@
     });
 
   </script>
-  <%= javascript_include_tag "annotations.js" %>
+
+  <% if not @preview_mode then %>
+    <%= javascript_include_tag "annotations.js" %>
+  <% end %>
 
 <% end %>
 
@@ -107,13 +115,23 @@
 <div class="row">
   <div class="col-md-2 annotationPane">
     <% if not (@submission.assessment.exam or @submission.assessment.course.exam_in_progress) %>
-      <% mime_type = @submission.detected_mime_type %>
-      <a style="width:100%;" href="<%= download_file_url(@submission) %>" title="Download Submission" class="btn"> 
-        <span class="glyphicon glyphicon-download-alt" aria-hidden="true"></span>
+      <% if @preview_mode then %>
+      <a style="width:100%;" href="?" title="Download Submission" class="btn"> 
+        <span class="glyphicon glyphicon-pencil pull-left" aria-hidden="true"></span>
+        Edit
+      </a>
+      <% else %>
+      <a style="width:100%;" href="?preview=true" title="Download Submission" class="btn"> 
+        <span class="glyphicon glyphicon-zoom-out pull-left" aria-hidden="true"></span>
+        Preview
+      </a>
+      <% end %>
+      <a style="width:100%; margin-top: 6px;" href="<%= download_file_url(@submission) %>" title="Download Submission" class="btn"> 
+        <span class="glyphicon glyphicon-download-alt pull-left" aria-hidden="true"></span>
         Original
       </a>
       <a style="width:100%; margin-top: 6px;" href="<%= download_file_url(@submission) %>?annotated=true" title="Download Submission" class="btn">
-        <span class="glyphicon glyphicon-download-alt" aria-hidden="true"></span>
+        <span class="glyphicon glyphicon-download-alt pull-left" aria-hidden="true"></span>
         Annotated
       </a>
     <% end %>

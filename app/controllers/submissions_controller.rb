@@ -192,20 +192,23 @@ class SubmissionsController < ApplicationController
       @annotations = @submission.annotations.to_a
 
       Prawn::Document.generate(@filename_annotated, :template => @filename) do |pdf|
-          
+
         @annotations.each do |annotation|
           
           return if annotation.coordinate.nil?
-            
-          position = annotation.coordinate.split(',');
-          xCord = position[0].to_i;
-          yCord = position[1].to_i;
-          #page  = positionArr[2];
-          pdf.move_cursor_to yCord
+
+          position = annotation.coordinate.split(',')
+          page  = position[2].to_i
+          xCord = position[0].to_f * pdf.bounds.width
+          yCord = pdf.bounds.height - (position[1].to_f * pdf.bounds.height)
+
+          # + 1 since pages are indexed 1-based
+          pdf.go_to_page(page + 1)
+          pdf.fill_color "ff0000" 
           pdf.text_box annotation.comment, 
-                      :at => [xCord, pdf.bounds.height-yCord], 
-                      :height => 100, 
-                      :width => 160
+                      { :at => [xCord, yCord], 
+                        :height => 100, 
+                        :width => 160 }
 
         end
 
@@ -281,7 +284,7 @@ class SubmissionsController < ApplicationController
       @annotations.sort! { |a, b| a.line <=> b.line }
 
     else
-        @annotations = @submission.annotations.to_a
+      @annotations = @submission.annotations.to_a
     end
 
     @problemSummaries = {}
@@ -307,7 +310,12 @@ class SubmissionsController < ApplicationController
     # Rendering this page fails. Often. Mostly due to PDFs.
     # So if it fails, redirect, instead of showing an error page.
     if PDF.pdf?(file)
-        render(:viewPDF) && return
+      @preview_mode = false
+      if params[:preview] then 
+        @preview_mode = true 
+      end
+
+      render(:viewPDF) && return
     else 
       begin
         render(:view) && return
