@@ -455,14 +455,11 @@ var initializeAnnotationsForCode = function() {
 
 // start annotating the coordinate with the given x and y
 var showAnnotationFormAtCoord = function(pageInd, x, y) {
-  console.log(pageInd);
-  console.log($("#page-canvas-wrapper-" + pageInd));
   var $page = $("#page-canvas-wrapper-" + pageInd);
 
   if ($page.length) {
       var newForm = newAnnotationFormForPDF(pageInd, x, y)
       $(newForm).css({ "left" : x, "top" : y});
-      console.log($page);
       $page.append(newForm);
       $(newForm).on("click", function(e) {
         return false;
@@ -482,7 +479,6 @@ var submitNewPDFAnnotation = function(comment, value, problem_id, pageInd, xRati
   newAnnotation.value = value;
   newAnnotation.problem_id = problem_id;
 
-  console.log("PAge IND: " + pageInd);
   var $page = $('#page-canvas-wrapper-' + pageInd);
 
   $.ajax({
