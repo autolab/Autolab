@@ -61,9 +61,11 @@
           //
           var div = document.createElement('div');
           div.className = "page-canvas"
-          div.id = "page-canvas-"+page.pageIndex;
+          div.id = "page-canvas-wrapper-"+page.pageIndex;
 
           var canvas = document.createElement('canvas');
+          canvas.id = "page-canvas-"+page.pageIndex;
+
           var ctx = canvas.getContext('2d');
           var renderContext = {
             canvasContext: ctx,
@@ -103,14 +105,20 @@
 </h2>
 <hr>
 <div class="row">
-  <div class="col-md-3 annotationPane">
+  <div class="col-md-2 annotationPane">
     <% if not (@submission.assessment.exam or @submission.assessment.course.exam_in_progress) %>
       <% mime_type = @submission.detected_mime_type %>
-      <a style="width:100%;" href="<%= download_file_url(@submission) %>" title="Download Submission" class="btn">Download Original</a>
-      <a style="width:100%; margin-top: 6px;" href="<%= download_file_url(@submission) %>?annotated=true" title="Download Submission" class="btn">Download Annotated</a>
+      <a style="width:100%;" href="<%= download_file_url(@submission) %>" title="Download Submission" class="btn"> 
+        <span class="glyphicon glyphicon-download-alt" aria-hidden="true"></span>
+        Original
+      </a>
+      <a style="width:100%; margin-top: 6px;" href="<%= download_file_url(@submission) %>?annotated=true" title="Download Submission" class="btn">
+        <span class="glyphicon glyphicon-download-alt" aria-hidden="true"></span>
+        Annotated
+      </a>
     <% end %>
   </div>
-  <div class="col-md-9">
+  <div class="col-md-10">
   <div id="pdf-doc" style="text-align: center;"></div>
   </div>
 </div>
