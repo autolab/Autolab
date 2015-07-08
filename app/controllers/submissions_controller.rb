@@ -1,5 +1,6 @@
 require "archive"
 require "pdf"
+require "prawn"
 
 class SubmissionsController < ApplicationController
   # inherited from ApplicationController
@@ -182,6 +183,41 @@ class SubmissionsController < ApplicationController
       send_data file,
                 filename: pathname,
                 disposition: "inline"
+    
+    elsif params[:annotated]
+
+      @filename_annotated = @submission.handin_annotated_file_path
+      @basename_annotated = File.basename @filename_annotated
+
+      @annotations = @submission.annotations.to_a
+
+      Prawn::Document.generate(@filename_annotated, :template => @filename) do |pdf|
+
+        @annotations.each do |annotation|
+          
+          return if annotation.coordinate.nil?
+
+          position = annotation.coordinate.split(',')
+          page  = position[2].to_i
+          xCord = position[0].to_f * pdf.bounds.width
+          yCord = pdf.bounds.height - (position[1].to_f * pdf.bounds.height)
+
+          # + 1 since pages are indexed 1-based
+          pdf.go_to_page(page + 1)
+          pdf.fill_color "ff0000" 
+          pdf.text_box annotation.comment, 
+                      { :at => [xCord, yCord], 
+                        :height => 100, 
+                        :width => 160 }
+
+        end
+
+      end
+
+      send_file @filename_annotated,
+                filename: @basename_annotated,
+                disposition: "inline"
+
     else
       mime = params[:forceMime] || @submission.detected_mime_type
       send_file @filename,
@@ -218,32 +254,38 @@ class SubmissionsController < ApplicationController
 
     filename = @submission.handin_file_path
 
-    begin
-      @data = @submission.annotated_file(file, @filename, params[:header_position])
-    rescue
-      flash[:error] = "Sorry, we could not display your file because it contains non-ASCII characters. Please remove these characters and resubmit your work."
-      redirect_to(:back) && return
-    end
 
-    begin
-      # replace tabs with 4 spaces
-      for i in 0...@data.length do
-        @data[i][0].gsub!("\t", " " * 4)
+    if !PDF.pdf?(file)
+      begin
+        @data = @submission.annotated_file(file, @filename, params[:header_position])
+      rescue
+        flash[:error] = "Sorry, we could not display your file because it contains non-ASCII characters. Please remove these characters and resubmit your work."
+        redirect_to(:back) && return
       end
-    rescue ArgumentError => e
-      raise e unless e.message == "invalid byte sequence in UTF-8"
-      flash[:error] = "Sorry, we could not parse your file because it contains non-ASCII characters. Please download file to view the source."
-      redirect_to(:back) && return
-    end
 
-    # fix for tar files
-    if params[:header_position]
-      @annotations = @submission.annotations.where(position: params[:header_position]).to_a
+      begin
+        # replace tabs with 4 spaces
+        for i in 0...@data.length do
+          @data[i][0].gsub!("\t", " " * 4)
+        end
+      rescue ArgumentError => e
+        raise e unless e.message == "invalid byte sequence in UTF-8"
+        flash[:error] = "Sorry, we could not parse your file because it contains non-ASCII characters. Please download file to view the source."
+        redirect_to(:back) && return
+      end
+
+      # fix for tar files
+      if params[:header_position]
+        @annotations = @submission.annotations.where(position: params[:header_position]).to_a
+      else
+        @annotations = @submission.annotations.to_a
+      end
+
+      @annotations.sort! { |a, b| a.line <=> b.line }
+
     else
       @annotations = @submission.annotations.to_a
     end
-
-    @annotations.sort! { |a, b| a.line <=> b.line }
 
     @problemSummaries = {}
     @problemGrades = {}
@@ -268,7 +310,12 @@ class SubmissionsController < ApplicationController
     # Rendering this page fails. Often. Mostly due to PDFs.
     # So if it fails, redirect, instead of showing an error page.
     if PDF.pdf?(file)
-        render(:viewPDF) && return
+      @preview_mode = false
+      if params[:preview] then 
+        @preview_mode = true 
+      end
+
+      render(:viewPDF) && return
     else 
       begin
         render(:view) && return

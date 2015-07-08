@@ -43,7 +43,7 @@ private
     params[:annotation].delete(:created_at)
     params[:annotation].delete(:updated_at)
     params.require(:annotation).permit(:filename, :position, :line, :text, :submitted_by,
-                                       :comment, :value, :problem_id)
+                                       :comment, :value, :problem_id, :coordinate)
   end
 
   def set_annotation

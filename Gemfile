@@ -98,5 +98,11 @@ group :development do
   gem 'rubocop', require: false
 end
 
+# for PDF annotations
+# This is an outdate version however support for
+# templating has been dropped in the future versions
+# and it is crucial for us
+gem 'prawn', '0.13.0'
+
 # LDAP Lookup
 gem 'net-ldap'
