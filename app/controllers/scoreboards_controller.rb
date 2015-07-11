@@ -125,10 +125,8 @@ class ScoreboardsController < ApplicationController
 
   action_auth_level :edit, :instructor
   def edit
-    params[:active_tab] ||= "scoreboard"
     # Set the @column_summary instance variable for the view
     @column_summary = emitColSpec(@scoreboard.colspec)
-    redirect_to(edit_course_assessment_path(@course, @assessment)+"/#{params[:active_tab]}") && return
   end
 
   action_auth_level :update, :instructor

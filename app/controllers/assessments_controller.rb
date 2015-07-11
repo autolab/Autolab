@@ -591,7 +591,7 @@ class AssessmentsController < ApplicationController
     params[:active_tab] ||= "basic"
 
     # make sure the 'active_tab' is a real tab
-    unless %w(basic handin penalties problems autograder scoreboard svn groups).include? params[:active_tab]
+    unless %w(basic handin penalties problems).include? params[:active_tab]
       params[:active_tab] = "basic"
     end
 
