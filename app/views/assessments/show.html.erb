@@ -43,19 +43,19 @@
         <li> <%= link_to "Bulk export grades", {:action => "bulkExport" }, {:title=> "Export grades (with sub-scores) \nfor all students to a CSV file" } %></li>
 
         <% if @assessment.has_svn then %>
-          <li><%= link_to "SVN Settings", [:admin_svn, @course, @assessment], title: "Manage the SVN repositories" %></li>
+          <li><%= link_to "SVN settings", [:admin_svn, @course, @assessment], title: "Manage the SVN repositories" %></li>
         <% end %>
 
         <% if @assessment.has_autograder? then %>
-          <li><%= link_to "Autograder Settings", [:edit, @course, @assessment, :autograder], title: "Modify autograding properties such as the VM image and the timeout value" %></li>
+          <li><%= link_to "Autograder settings", [:edit, @course, @assessment, :autograder], title: "Modify autograding properties such as the VM image and the timeout value" %></li>
         <% end %>
 
         <% if @assessment.has_groups? %>
-          <li><%= link_to "Group Settings", [@course, @assessment, :groups], title: "Manage Group Settings" %></li>
+          <li><%= link_to "Group settings", [@course, @assessment, :groups], title: "Manage group settings" %></li>
         <% end %>
 
         <% if @assessment.has_scoreboard? %>
-          <li><%= link_to "Scoreboard Settings", [:edit, @course, @assessment, :scoreboard], title: "Configure the appearance of the scoreboard" %></li>
+          <li><%= link_to "Scoreboard settings", [:edit, @course, @assessment, :scoreboard], title: "Configure the appearance of the scoreboard" %></li>
         <% end %>
 
       </ul>
@@ -74,7 +74,7 @@
             :title=> "Reload the assessment configuration file (provided for backward compatibility with legacy assessments)" %></li>
 
           <% if !@assessment.disable_handins %>
-            <li><%= link_to  "Download Section #{@cud.section} Submissions", [:downloadAll, @course, @assessment, :submissions, final: true], title: "Download Section #{@cud.section} Submissions" %></li>
+            <li><%= link_to  "Download section #{@cud.section} submissions", [:downloadAll, @course, @assessment, :submissions, final: true], title: "Download section #{@cud.section} submissions" %></li>
           <% end %>
 
         </ul>
@@ -86,13 +86,13 @@
       <li> <%= link_to "View handin history", {:action => 'history'}, {:title=> "View your submissions, scores, and feedback from the course staff" } %> </li>
       <% if @assessment.has_groups? %>
         <% if @aud.membership_status != AssessmentUserDatum::UNCONFIRMED then %>
-          <li><%= link_to "Group Options", [@course, @assessment, @aud.group], title: "Check your Group settings." %></li>
+          <li><%= link_to "Group options", [@course, @assessment, @aud.group], title: "Check your group settings." %></li>
         <% else %>
-          <li><%= link_to "Group Options", [:new, @course, @assessment, :group], title: "Check your Group settings." %></li>
+          <li><%= link_to "Group options", [:new, @course, @assessment, :group], title: "Check your group settings." %></li>
         <% end %>
       <% end %>
       <% if @assessment.has_scoreboard? %>
-          <li><%= link_to "View Scoreboard", [@course, @assessment, :scoreboard], title: "View the assessment scoreboard" %></li>
+          <li><%= link_to "View scoreboard", [@course, @assessment, :scoreboard], title: "View the assessment scoreboard" %></li>
       <% end %>
 
     <% @list.sort { |a,b| a[1] <=> b[1] }.each { |key, value| %>
