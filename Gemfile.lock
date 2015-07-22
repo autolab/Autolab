@@ -1,11 +1,3 @@
-GIT
-  remote: https://github.com/smartinez87/exception_notification.git
-  revision: 924e11864628c0d90cd096ffb79b5fd93e8ffafe
-  specs:
-    exception_notification (4.1.0)
-      actionmailer (>= 3.0.4)
-      activesupport (>= 3.0.4)
-
 GEM
   remote: https://rubygems.org/
   specs:
@@ -94,6 +86,9 @@ GEM
     dynamic_form (1.1.4)
     erubis (2.7.0)
     eventmachine (1.0.7)
+    exception_notification (4.1.1)
+      actionmailer (>= 3.0.4)
+      activesupport (>= 3.0.4)
     execjs (2.5.2)
     factory_girl (4.5.0)
       activesupport (>= 3.0.0)
@@ -295,7 +290,7 @@ DEPENDENCIES
   database_cleaner
   devise (>= 3.3.0)
   dynamic_form
-  exception_notification!
+  exception_notification (>= 4.1.0)
   factory_girl_rails
   httparty
   jbuilder (>= 2.0)
