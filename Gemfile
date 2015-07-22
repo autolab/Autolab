@@ -31,8 +31,8 @@ gem 'spring', group: :development
 
 # Enables Slack notifications
 gem 'slack-notifier'
-# E-mail autolab-dev on exceptions in production, pulls the latest to get slack notifications
-gem 'exception_notification', git: 'https://github.com/smartinez87/exception_notification.git'
+# E-mail autolab-dev on exceptions in production
+gem 'exception_notification', ">= 4.1.0"
 
 # Used by lib/tasks/autolab.rake to populate DB with dummy seed data
 gem 'rake', '>=10.3.2'
