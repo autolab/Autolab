@@ -579,6 +579,9 @@ var initializeAnnotationsForPDF = function() {
 
     $(annotationEl).css({ "left": xCord + "px",  "top" : yCord + "px", "position" : "absolute" });
     $("#page-canvas-wrapper-"+pageInd).append(annotationEl);
+    console.log("making draggable")
+    $(annotationEl).draggable();
+    $(annotationEl).resizable();
 
   });
 
