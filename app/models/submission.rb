@@ -73,34 +73,24 @@ class Submission < ActiveRecord::Base
     filename = course_user_datum.user.email + "_" +
                version.to_s + "_" +
                assessment.handin_filename
-    directory = assessment.handin_directory
-    path = File.join(Rails.root, "courses",
-                     course_user_datum.course.name,
-                     assessment.name, directory, filename)
+    path = File.join(assessment.handin_directory_path, filename)
 
     if upload["file"]
       # Sanity!
       upload["file"].rewind
       File.open(path, "wb") { |f| f.write(upload["file"].read) }
+      self.mime_type = upload["file"].content_type || "text/plain"
     elsif upload["local_submit_file"]
       # local_submit_file is a path string to the temporary handin
       # directory we create for local submissions
       File.open(path, "wb") { |f| f.write(IO.read(upload["local_submit_file"])) }
-    elsif upload["tar"]
-      src = upload["tar"]
-      `mv #{src} #{path}`
+      self.mime_type = "text/plain"
+    elsif upload["svn_tar"]
+      File.open(path, "wb") { |f| f.write(IO.read(upload["svn_tar"])) }
+      self.mime_type = "application/x-tgz"
     end
 
     self.filename = filename
-
-    if upload["file"]
-      self.mime_type = upload["file"].content_type
-      self.mime_type = "text/plain" unless mime_type
-    elsif upload["local_submit_file"]
-      self.mime_type = "text/plain"
-    elsif upload["tar"]
-      self.mime_type = "application/x-tgz"
-    end
 
     self.save!
   end

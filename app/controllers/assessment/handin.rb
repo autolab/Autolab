@@ -24,7 +24,11 @@ module AssessmentHandin
 
     # save the submissions
     begin
-      submissions = saveHandin(params[:submission])
+      if @assessment.has_svn
+        submissions = svn_create_sub(@cud) { |sub| saveHandin(sub) }
+      else
+        submissions = saveHandin(params[:submission])
+      end
     rescue
       submissions = nil
     end
@@ -309,7 +313,7 @@ private
 
   def save_single_submission(cud, sub)
     if @assessment.has_svn
-      svn_save_handin(cud)
+      svn_save_single_submission(cud, sub)
     else
       submission = @assessment.submissions.create(course_user_datum_id: cud.id,
                                                   submitter_ip: request.remote_ip)
