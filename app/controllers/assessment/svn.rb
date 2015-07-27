@@ -43,22 +43,22 @@ module AssessmentSVN
 
 protected
 
-  def svn_validate_handin
+  def validate_for_svn
     repo = @assessment.aud_for(@cud).repository
     return true if repo
     flash[:error] = "Your repository has not been registered.  Please contact your course staff."
     false
   end
 
-  def svn_save_handin
-    @submission = @assessment.submissions.new(course_user_datum: @cud,
+  def svn_save_handin(cud)
+    @submission = @assessment.submissions.new(course_user_datum: cud,
                                               submitter_ip: request.remote_ip)
 
     # Checkout the svn directory and put it into a tar file
-    repo = @assessment.aud_for(@cud).repository
+    repo = @assessment.aud_for(cud).repository
     ass_dir = Rails.root("courses", @course.name, @assessment.name, @assessment.handin_directory)
-    svn_dir = File.join(ass_dir, @cud.user.email + "_svn_checkout")
-    svn_tar = File.join(ass_dir, @cud.user.email + "_svn_checkout.tar.gz")
+    svn_dir = File.join(ass_dir, cud.user.email + "_svn_checkout")
+    svn_tar = File.join(ass_dir, cud.user.email + "_svn_checkout.tar.gz")
 
     if File.exist?(svn_dir)
       # To avoid conflicts, end this handin
@@ -66,7 +66,8 @@ protected
       return nil
     end
 
-    unless checkoutWork(repo, svn_dir)
+    if !@assessment.overwrites_method?(:checkoutWork) ||
+       !@assessment.config_module.checkoutWork(repo, svn_dir) then
       # Clean up svn_dir
       `rm -r #{svn_dir}`
       return nil
