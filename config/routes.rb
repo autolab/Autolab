@@ -1,7 +1,8 @@
 Autolab3::Application.routes.draw do
   root "courses#index"
 
-  devise_for :users, controllers: { omniauth_callbacks: "users/omniauth_callbacks" },
+  devise_for :users, controllers: { omniauth_callbacks: "users/omniauth_callbacks",
+                                    registrations:      "registrations" },
                      path_prefix: "auth"
 
   get "contact", to: "home#contact"

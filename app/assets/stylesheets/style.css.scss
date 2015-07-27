@@ -7,6 +7,10 @@
 * Class and ID Rules. Also pseudo classes *
 *******************************************/
 
+$autolab-red: rgba(153, 0, 0, 0.9);
+$autolab-subtle-gray: #eee;
+$autolab-highlight-gray: #ccc;
+
 html, body {
   height: 100%;
 }
@@ -981,3 +985,59 @@ div.center {
   border-left: 5px solid #1b809e;
 }
 
+.attachments {
+  padding: 0;
+}
+
+.attachment {
+  
+  font-weight: bold;
+  color:  #eee;
+  border: 2px solid #eee;
+  border-radius: 6px;
+  list-style:none;
+  padding: 8px;
+  padding-left: 12px;
+  margin-bottom: 5px;
+  line-height: 30px;
+
+  .pull-right a {
+  vertical-align: top;
+  }
+
+  .glyphicon {
+    margin-right: 10px;
+  }
+
+  &:hover {
+    color: $autolab-highlight-gray;
+    border-color: $autolab-highlight-gray;
+  }
+
+  &.add {
+    border:none;
+  }
+}
+
+
+.page-canvas-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+#pdf-doc .annotation-form {
+  position: absolute;
+  width: 400px;
+  -webkit-box-shadow: rgba(0, 0, 0, 0.137255) 0px 0px 4px 0px, rgba(0, 0, 0, 0.278431) 0px 4px 8px 0px;
+  box-shadow: rgba(0, 0, 0, 0.137255) 0px 0px 4px 0px, rgba(0, 0, 0, 0.278431) 0px 4px 8px 0px;
+}
+
+#pdf-doc .ann-box {
+  opacity: 0.4;
+  -webkit-box-shadow: rgba(0, 0, 0, 0.137255) 0px 0px 4px 0px, rgba(0, 0, 0, 0.278431) 0px 4px 8px 0px;
+  box-shadow: rgba(0, 0, 0, 0.137255) 0px 0px 4px 0px, rgba(0, 0, 0, 0.278431) 0px 4px 8px 0px;
+}
+
+#pdf-doc .ann-box:hover {
+  opacity: 1;
+}

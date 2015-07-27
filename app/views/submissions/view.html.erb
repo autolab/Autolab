@@ -32,6 +32,10 @@
 
   </script>
   <%= javascript_include_tag "annotations.js" %>
+  <script type="text/javascript">
+    initializeAnnotationsForCode();
+  </script>
+
 <% end %>
 
 <h2>Submission Version <%=@submission.version%> for

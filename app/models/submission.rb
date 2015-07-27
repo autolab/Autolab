@@ -134,6 +134,11 @@ class Submission < ActiveRecord::Base
     File.join(assessment.handin_directory_path, filename)
   end
 
+  def handin_annotated_file_path
+    return nil unless filename
+    File.join(assessment.handin_directory_path, "annotated_#{filename}")
+  end
+
   def autograde_feedback_filename
     "#{course_user_datum.email}_#{version}_#{assessment.name}_autograde.txt"
   end
@@ -336,16 +341,13 @@ private
     #    see: https://github.com/autolab/autolab-src/wiki/Caching
     cache_key = raw_score_cache_key options
     unless (raw_score = Rails.cache.read cache_key)
-      Submission.transaction do
-        # acquire lock on submission
-        acquire_lock
-
+      with_lock do
         # compute
         raw_score = raw_score! options
 
         # cache
         Rails.cache.write(cache_key, raw_score)
-      end # release lock
+      end
     end
 
     raw_score
@@ -442,10 +444,6 @@ private
       end
       false
     end
-  end
-
-  def acquire_lock
-    Submission.find_by_sql ["SELECT 1=1 FROM submissions WHERE id = ? FOR UPDATE", id]
   end
 
   def penalty_late_days!
