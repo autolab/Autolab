@@ -496,6 +496,7 @@ var submitNewPDFAnnotation = function(comment, value, problem_id, pageInd, xRati
       var yCord = yRatio * $("#page-canvas-" + pageInd).attr('height');
       $(annotationEl).css({ "left": xCord + "px",  "top" : yCord + "px", "position" : "absolute" });
       $page.append(annotationEl);
+      makeAnnotationMovable(annotationEl, newAnnotation, pageInd);
       $(newForm).remove();
     },
     error: function(result, type) {
@@ -561,6 +562,25 @@ var submitNewAnnotation = function(comment, value, problem_id, lineInd, formEl) 
     });
   }
 
+var makeAnnotationMovable = function(annotationEl, annotationObj, pageInd) {
+    
+    $(annotationEl).draggable({
+      stop: function( event, ui ) {
+        var xRatio = ui.position.left / $("#page-canvas-" + pageInd).attr('width');
+        var yRatio = ui.position.top / $("#page-canvas-" + pageInd).attr('height');
+        annotationObj.coordinate = xRatio + "," + yRatio + "," + pageInd;
+        updateAnnotation(annotationObj, null, null);
+      }
+    });
+    
+    $(annotationEl).resizable({
+      stop: function( event, ui ) {
+        console.log("resized")
+      }
+    });
+
+}
+
 var initializeAnnotationsForPDF = function() {
 
   _.each(annotations, function(annotationObj, ind) {
@@ -579,9 +599,7 @@ var initializeAnnotationsForPDF = function() {
 
     $(annotationEl).css({ "left": xCord + "px",  "top" : yCord + "px", "position" : "absolute" });
     $("#page-canvas-wrapper-"+pageInd).append(annotationEl);
-    console.log("making draggable")
-    $(annotationEl).draggable();
-    $(annotationEl).resizable();
+    makeAnnotationMovable(annotationEl, annotationObj, pageInd);
 
   });
 
