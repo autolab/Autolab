@@ -1,0 +1,20 @@
+<%#
+  Use this file as an opportunity to broadcast a permanent message on
+  the root '/' path at the bottom of the page. This is normally the page
+  with a list of all courses.
+
+  For example, at CMU we use it to provide students and instructors with
+  a convenient link to an older deployment of Autolab that exists solely
+  for archival purposes. Uncomment the below, rename this file to drop
+  the `.template` suffix, and nagivate to Autolab in your browser to see
+  the effect.
+%>
+
+<%# REMOVE THIS LINE TO UNCOMMENT
+
+<h1>Older Courses</h1>
+<p>Courses on Autolab prior to Spring 2015 are viewable at oldautolab.cs.cmu.edu.</p>
+<%= link_to 'Old Autolab Courses', 'https://oldautolab.cs.cmu.edu', class: 'btn main' %>
+
+REMOVE THIS LINE TO UNCOMMENT %>
+
