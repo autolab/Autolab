@@ -55,4 +55,12 @@ class HomeController < ApplicationController
     # --- empty ---
     # This route just renders the home#contact page, nothing special
   end
+
+  def no_user
+    begin
+      @mysite = request.host
+    rescue
+      @mysite = `hostname`
+    end
+  end
 end
