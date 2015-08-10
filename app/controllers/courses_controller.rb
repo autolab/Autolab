@@ -18,7 +18,11 @@ class CoursesController < ApplicationController
     else
       redirect_to(home_no_user_path) && return
     end
-
+    begin
+      @mysite = request.host
+    rescue
+      @mysite = `hostname`
+    end
     render layout: "home"
   end
 

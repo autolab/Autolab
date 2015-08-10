@@ -31,8 +31,29 @@
   <% end %>
 <% end %>
 
+<% if @mysite == "autolab.cs.cmu.edu" %>
 <h1>Older Courses</h1>
 
 <p>Courses on Autolab prior to Spring 2015 are viewable at oldautolab.cs.cmu.edu.</p>
 
 <%= link_to 'Old Autolab Courses', 'https://oldautolab.cs.cmu.edu', class: 'btn main' %>
+<% end %>
+
+<% if ["autolab.andrew.cmu.edu", "autolab-dev.andrew.cmu.edu"].include?(@mysite)  %>
+<h1>Other Courses</h1>
+<div class="container">
+<div class="col-md-6">
+<% if Time.now().year == 2015 %>
+<p>Most Autolab courses for Fall 2015 are hosted at autolab.cs.cmu.edu, not autolab.andrew.cmu.edu. Come back next spring for more content here!</p>
+<% else %>
+<p>Courses on Autolab for Spring and Fall 2015 are viewable at autolab.cs.cmu.edu.</p>
+<% end %>
+<%= link_to 'CS Autolab', 'https://autolab.cs.cmu.edu', class: 'btn main' %>
+</div>
+<div class="col-md-6">
+<p>Courses on Autolab prior to Spring 2015 are viewable at oldautolab.cs.cmu.edu.</p>
+
+<%= link_to 'Old CS Autolab', 'https://oldautolab.cs.cmu.edu', class: 'btn main' %>
+</div>
+</div>
+<% end %>
