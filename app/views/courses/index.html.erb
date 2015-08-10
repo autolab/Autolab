@@ -31,8 +31,4 @@
   <% end %>
 <% end %>
 
-<h1>Older Courses</h1>
-
-<p>Courses on Autolab prior to Spring 2015 are viewable at oldautolab.cs.cmu.edu.</p>
-
-<%= link_to 'Old Autolab Courses', 'https://oldautolab.cs.cmu.edu', class: 'btn main' %>
+<%= render partial: "home/topannounce" rescue nil %>
