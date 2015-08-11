@@ -21,3 +21,4 @@ db/*.sqlite3
 tags
 .DS_Store
 .idea/
+/docker/nginx.conf

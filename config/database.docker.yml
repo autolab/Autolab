@@ -1,0 +1,11 @@
+development: &common
+  adapter: mysql2
+  database: app_autolab_development
+  pool: 5
+  username: root
+  password:
+  socket: /var/run/mysqld/mysqld.sock
+  host: db
+
+production:
+  <<: *common
