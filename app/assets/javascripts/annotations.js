@@ -163,6 +163,72 @@ var initializeAnnotationsForCode = function() {
     return box;
   }
 
+  function newAnnotationBoxForPDF(annObj) {
+
+    var problemStr = annObj.problem_id? getProblemNameWithId(annObj.problem_id) : "General";
+    var valueStr = annObj.value? annObj.value.toString() : "None";
+    var commentStr = decodeURI(annObj.comment);
+
+    var grader = elt("span", {
+      class: "grader"
+    }, annObj.submitted_by + " says:");
+    var edit = elt("span", {
+      class: "edit glyphicon glyphicon-edit",
+      id: "edit-ann-" + annObj.id
+    });
+
+    var score = elt("div", {
+      class: "score-box"
+    }, elt("div", {}, "Problem: " + problemStr), elt("div", {}, "Score: " + valueStr));
+
+    var del = elt("span", {
+      class: "delete glyphicon glyphicon-remove"
+    });
+
+    if (isInstructor) {
+      var header = elt("div", {
+        class: "header"
+      }, grader, del, edit);
+    } else {
+      var header = elt("div", {
+        class: "header"
+      }, grader);
+    }
+
+    var body = elt("div", {
+      class: "body"
+    }, commentStr);
+
+    var box = elt("div", {
+      class: "ann-box",
+      id: "ann-box-" + annObj.id
+    }, header, body, score);
+
+    $(del).on("click", function(e) {
+      $.ajax({
+        url: deletePath(annObj),
+        type: 'DELETE',
+        complete: function() {
+          $(box).remove();
+        }
+      });
+      return false;
+    });
+
+    $(edit).on("click", function(e) {
+      $(body).hide();
+      $(edit).hide();
+      $(score).hide();
+      var form = newEditAnnotationForm(annObj.line, annObj);
+      $(box).append(form);
+      //var updateAnnotation = function(annotationObj, lineInd, formEl) {
+
+    });
+
+    return box;
+
+  };
+
   var updateAnnotationBox = function(annObj) {
 
     var problemStr = annObj.problem_id? getProblemNameWithId(annObj.problem_id) : "General";
@@ -171,10 +237,18 @@ var initializeAnnotationsForCode = function() {
 
     $('#ann-box-' + annObj.id).find('.edit').show();
     $('#ann-box-' + annObj.id).find('.body').show();
-    $('#ann-box-' + annObj.id).find('.score-box').html("<span>"+problemStr+"</span><span>"+valueStr+"</span>");
+    if (annotationMode === "PDF") {
+      $('#ann-box-' + annObj.id).find('.score-box').html("<div>Problem: "+problemStr+"</div><div>Score: "+valueStr+"</div>");
+      $('#ann-box-' + annObj.id).find('.score-box').show();
+    }
+    else {
+      $('#ann-box-' + annObj.id).find('.score-box').html("<span>"+problemStr+"</span><span>"+valueStr+"</span>");
+    }
+
     $('#ann-box-' + annObj.id).find('.body').html(commentStr);
 
   }
+
 
   // the current Annotation instance
   var currentAnnotation = null;
@@ -491,7 +565,7 @@ var submitNewPDFAnnotation = function(comment, value, problem_id, pageInd, xRati
     type: "POST",
     success: function(data, type) {
 
-      var annotationEl = newAnnotationBox(data);
+      var annotationEl = newAnnotationBoxForPDF(data);
       var xCord = xRatio * $("#page-canvas-" + pageInd).attr('width');
       var yCord = yRatio * $("#page-canvas-" + pageInd).attr('height');
       $(annotationEl).css({ "left": xCord + "px",  "top" : yCord + "px", "position" : "absolute" });
@@ -582,6 +656,7 @@ var makeAnnotationMovable = function(annotationEl, annotationObj, pageInd) {
 }
 
 var initializeAnnotationsForPDF = function() {
+  window.annotationMode = "PDF";
 
   _.each(annotations, function(annotationObj, ind) {
 
@@ -595,7 +670,7 @@ var initializeAnnotationsForPDF = function() {
     var xCord = parseFloat(positionArr[0]) * $("#page-canvas-" + pageInd).attr('width');
     var yCord = parseFloat(positionArr[1]) * $("#page-canvas-" + pageInd).attr('height');
 
-    var annotationEl = newAnnotationBox(annotationObj);
+    var annotationEl = newAnnotationBoxForPDF(annotationObj);
 
     $(annotationEl).css({ "left": xCord + "px",  "top" : yCord + "px", "position" : "absolute" });
     $("#page-canvas-wrapper-"+pageInd).append(annotationEl);

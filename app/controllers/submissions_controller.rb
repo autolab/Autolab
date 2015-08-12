@@ -201,11 +201,17 @@ class SubmissionsController < ApplicationController
           page  = position[2].to_i
           xCord = position[0].to_f * pdf.bounds.width
           yCord = pdf.bounds.height - (position[1].to_f * pdf.bounds.height)
+          
+          puts "XCord"
+          puts xCord
+          puts yCord
+          puts page
 
+          comment = "#{annotation.comment}\n\nProblem: General\nScore:#{annotation.value}"
           # + 1 since pages are indexed 1-based
           pdf.go_to_page(page + 1)
           pdf.fill_color "ff0000" 
-          pdf.text_box annotation.comment, 
+          pdf.text_box comment,
                       { :at => [xCord, yCord], 
                         :height => 100, 
                         :width => 160 }
