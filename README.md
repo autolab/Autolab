@@ -58,6 +58,8 @@ This is the main repository that includes the application layer of the project. 
 
 5.  Configure your database next. You need to fill the `username` and `password` fields on 		`config/database.yml.template` and rename it to `config/database.yml`. Depending on how you installed MySQL and which platform you're running on, you might have to change the database socket setting in this file. Search online to determine where your MySQL server's socket is if you don't already know.
 
+6. Copy the `config/initializers/devise.rb.template` file to `config/initializers/devise.rb` and edit the `<YOUR-SECRET-KEY>` and `<YOUR_WEBSITE>` fields in that file.
+
 6. Create and initialize the database tables:
 
 	```sh
