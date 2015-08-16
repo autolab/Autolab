@@ -10,12 +10,14 @@
   <%= link_to 'Install Assessment',
                     {:action=>"installAssessment"},
                     {:title=>"Install Assessment", :class => "btn" } %>
+
   <% if false # disabled until quizzes don't suck %>
   <%= link_to 'Install Quiz',
                     {:action=>"installQuiz"},
                     {:title=>"Install Quiz", :class => "btn" } %>
   <% end %>
 <% end %>
+
 <h2>Assignments</h2>
 <div class="rolodex">
 <% @course.assessment_categories.each do |cat| %>

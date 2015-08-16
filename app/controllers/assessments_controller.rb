@@ -99,9 +99,11 @@ class AssessmentsController < ApplicationController
       @assessment.quiz = true
       @assessment.quizData = quizJSON
       @assessment.max_submissions = params.include?(:max_submissions) ? params[:max_submissions] : -1
+      
+      @assessment.construct_folder
+
       @assessment.save!
 
-      @assessment.construct_folder
       @assessment.load_config_file # only call this on saved assessments
 
       quizData = JSON.parse(quizJSON)

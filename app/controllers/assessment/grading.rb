@@ -380,7 +380,8 @@ private
 
       grouping[group].each do |submission|
         next unless submission.course_user_datum.student?
-        next unless submission.special_type == Submission::NORMAL
+        # TODO(jezimmer): Find a more permanent fix (see #529)
+        #next unless submission.special_type == Submission::NORMAL
 
         submission.scores.each do |score|
           problem_scores[score.problem_id] << score.score
