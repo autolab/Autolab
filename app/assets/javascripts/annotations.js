@@ -402,7 +402,10 @@ var initializeAnnotationsForCode = function() {
         var xRatio = xCord / $("#page-canvas-" + pageInd).attr('width');
         var yRatio = yCord / $("#page-canvas-" + pageInd).attr('height');
 
-        submitNewPDFAnnotation(comment, value, problem_id, pageInd, xRatio, yRatio, newForm);
+        var widthRatio = 200 / $("#page-canvas-" + pageInd).attr('width');
+        var heightRatio = 110 / $("#page-canvas-" + pageInd).attr('height');
+
+        submitNewPDFAnnotation(comment, value, problem_id, pageInd, xRatio, yRatio, widthRatio, heightRatio, newForm);
       }
       return false;
     };
@@ -435,9 +438,19 @@ var initializeAnnotationsForCode = function() {
       type: "text",
       name: "comment",
       placeholder: "Comments Here",
-      maxlength: "255",
-      value: commentStr
-    });
+      maxlength: "255"
+    }, commentStr);
+
+    if (annotationMode === "PDF") {
+      var commentInput = elt("textarea", {
+        class: "col-md-12 comment",
+        type: "text",
+        name: "comment",
+        placeholder: "Comments Here",
+        maxlength: "255"
+      }, commentStr);
+    }
+
     var valueInput = elt("input", {
       class: "col-md-2",
       type: "text",
@@ -545,10 +558,10 @@ var showAnnotationFormAtCoord = function(pageInd, x, y) {
 }
 
 
-var submitNewPDFAnnotation = function(comment, value, problem_id, pageInd, xRatio, yRatio, newForm) {
+var submitNewPDFAnnotation = function(comment, value, problem_id, pageInd, xRatio, yRatio, widthRatio, heightRatio, newForm) {
   
   var newAnnotation = createAnnotation();
-  newAnnotation.coordinate = xRatio + "," + yRatio + "," + pageInd;
+  newAnnotation.coordinate = [xRatio, yRatio, pageInd, widthRatio, heightRatio].join(',');
   newAnnotation.comment = comment;
   newAnnotation.value = value;
   newAnnotation.problem_id = problem_id;
@@ -564,13 +577,12 @@ var submitNewPDFAnnotation = function(comment, value, problem_id, pageInd, xRati
     },
     type: "POST",
     success: function(data, type) {
-
       var annotationEl = newAnnotationBoxForPDF(data);
       var xCord = xRatio * $("#page-canvas-" + pageInd).attr('width');
       var yCord = yRatio * $("#page-canvas-" + pageInd).attr('height');
       $(annotationEl).css({ "left": xCord + "px",  "top" : yCord + "px", "position" : "absolute" });
       $page.append(annotationEl);
-      makeAnnotationMovable(annotationEl, newAnnotation, pageInd);
+      makeAnnotationMovable(annotationEl, data, pageInd);
       $(newForm).remove();
     },
     error: function(result, type) {
@@ -617,6 +629,7 @@ var submitNewAnnotation = function(comment, value, problem_id, lineInd, formEl) 
 }
 
   var updateAnnotation = function(annotationObj, lineInd, formEl) {
+
     $.ajax({
       url: updatePath(annotationObj),
       accepts: "json",
