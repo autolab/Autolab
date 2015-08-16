@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150406221712) do
+ActiveRecord::Schema.define(version: 20150602140535) do
 
   create_table "annotations", force: :cascade do |t|
     t.integer  "submission_id", limit: 4
@@ -25,6 +25,7 @@ ActiveRecord::Schema.define(version: 20150406221712) do
     t.text     "comment",       limit: 65535
     t.float    "value",         limit: 24
     t.integer  "problem_id",    limit: 4
+    t.string   "coordinate",    limit: 255
   end
 
   create_table "announcements", force: :cascade do |t|

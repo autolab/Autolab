@@ -71,9 +71,23 @@ Autolab3::Application.configure do
   # with SQLite, MySQL, and PostgreSQL)
   # config.active_record.auto_explain_threshold_in_seconds = 0.5
 
+  # Provide context to the email generator about the host
+  #config.action_mailer.default_url_options = {protocol: 'http', host: 'example.com' }
+
   config.action_mailer.delivery_method = :sendmail
   config.action_mailer.perform_deliveries = true
   config.action_mailer.raise_delivery_errors = true
+
+  # Use a custom smtp server, like Mandrill
+  #config.action_mailer.smtp_settings = {
+  #  address:              'smtp.mandrillapp.com',
+  #  port:                 25,
+  #  enable_starttls_auto: true,
+  #  authentication:       'login',
+  #  user_name:            'MANDRILL_USERNAME',
+  #  password:             'MANDRILL_PASSWORD',
+  #  domain:               'example.com',
+  #}
 
   config.middleware.use ExceptionNotification::Rack,
     email: {

@@ -64,9 +64,13 @@ This is the main repository that includes the application layer of the project. 
 
 	```sh
 	bundle exec rake db:create
-	bundle exec rake db:migrate
+  # if you have no existing database:
+	bundle exec rake db:reset
+  # if you already have a database whose data you want to preserve:
+  bundle exec rake db:migrate
 	```
-   Do not forget to use `bundle exec` in front of every rake/rails command.
+
+  Do not forget to use `bundle exec` in front of every rake/rails command.
 
 
 7. (Optional) Populate dummy data for development purposes:
