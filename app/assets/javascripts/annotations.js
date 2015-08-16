@@ -19,12 +19,13 @@ $("#highlightLongLines").click(function() {
 });
 
 var initializeAnnotationsForCode = function() {
-  
+  window.annotationMode = "Code";
+
   var block = document.getElementById('code-block');
   hljs.highlightBlock(block);
 
   // annotationsByLine: { 'lineNumber': [annotations_array ]}
-  var annotationsByLine = {};
+  annotationsByLine = {};
   _.each(annotations, function(annotationObj, ind) {
     var lineInd = annotationObj.line
     if (!annotationsByLine[lineInd]) {
@@ -438,8 +439,9 @@ var initializeAnnotationsForCode = function() {
       type: "text",
       name: "comment",
       placeholder: "Comments Here",
-      maxlength: "255"
-    }, commentStr);
+      maxlength: "255",
+      value: commentStr
+    });
 
     if (annotationMode === "PDF") {
       var commentInput = elt("textarea", {
