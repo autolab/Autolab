@@ -189,6 +189,9 @@ class SubmissionsController < ApplicationController
       @filename_annotated = @submission.handin_annotated_file_path
       @basename_annotated = File.basename @filename_annotated
 
+      @problems = @assessment.problems.to_a
+      @problems.sort! { |a, b| a.id <=> b.id }
+
       @annotations = @submission.annotations.to_a
 
       Prawn::Document.generate(@filename_annotated, :template => @filename) do |pdf|
@@ -199,22 +202,30 @@ class SubmissionsController < ApplicationController
 
           position = annotation.coordinate.split(',')
           page  = position[2].to_i
+
+          width = position[3].to_f * pdf.bounds.width
+          height = position[4].to_f * pdf.bounds.height
+
           xCord = position[0].to_f * pdf.bounds.width
           yCord = pdf.bounds.height - (position[1].to_f * pdf.bounds.height)
-          
-          puts "XCord"
-          puts xCord
-          puts yCord
-          puts page
 
-          comment = "#{annotation.comment}\n\nProblem: General\nScore:#{annotation.value}"
+          value = "N/A"
+          if !annotation.value.blank? then value = annotation.value end
+          problem = "General"
+          if annotation.problem then problem = annotation.problem end
+          comment = "#{annotation.comment}\n\nProblem: #{problem.name}\nScore:#{value}"
+
+          pdf.stroke_color "ff0000"
+          pdf.stroke_rectangle [xCord, yCord], width, height
+          pdf.fill_color "000000"
+
           # + 1 since pages are indexed 1-based
           pdf.go_to_page(page + 1)
           pdf.fill_color "ff0000" 
           pdf.text_box comment,
-                      { :at => [xCord, yCord], 
-                        :height => 100, 
-                        :width => 160 }
+                      { :at => [xCord + 3, yCord - 3], 
+                        :height => height, 
+                        :width => width }
 
         end
 

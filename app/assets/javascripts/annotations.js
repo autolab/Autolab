@@ -636,20 +636,33 @@ var submitNewAnnotation = function(comment, value, problem_id, lineInd, formEl) 
     });
   }
 
-var makeAnnotationMovable = function(annotationEl, annotationObj, pageInd) {
+var makeAnnotationMovable = function(annotationEl, annotationObj) {
     
+    var positionArr = annotationObj.coordinate.split(',');
+
+    var curPageInd  = positionArr[2];
+    var $page =  $("#page-canvas-" + curPageInd);
+
+    var curXCord = parseFloat(positionArr[0]);
+    var curYCord = parseFloat(positionArr[1]);
+    var curWidth = (positionArr[3] || 120);
+    var curHeight = (positionArr[4] || 60);
+
     $(annotationEl).draggable({
       stop: function( event, ui ) {
-        var xRatio = ui.position.left / $("#page-canvas-" + pageInd).attr('width');
-        var yRatio = ui.position.top / $("#page-canvas-" + pageInd).attr('height');
-        annotationObj.coordinate = xRatio + "," + yRatio + "," + pageInd;
+        var xRatio = ui.position.left / $page.attr('width');
+        var yRatio = ui.position.top / $page.attr('height');
+        annotationObj.coordinate = [xRatio, yRatio, curPageInd, curWidth, curHeight].join(',');
         updateAnnotation(annotationObj, null, null);
       }
     });
     
     $(annotationEl).resizable({
       stop: function( event, ui ) {
-        console.log("resized")
+        var widthRatio = ui.size.width / $page.attr('width');
+        var heightRatio = ui.size.height / $page.attr('height');
+        annotationObj.coordinate = [curXCord, curYCord, curPageInd, widthRatio, heightRatio].join(',');
+        updateAnnotation(annotationObj, null, null);
       }
     });
 
@@ -669,17 +682,20 @@ var initializeAnnotationsForPDF = function() {
     var pageInd  = positionArr[2];
     var xCord = parseFloat(positionArr[0]) * $("#page-canvas-" + pageInd).attr('width');
     var yCord = parseFloat(positionArr[1]) * $("#page-canvas-" + pageInd).attr('height');
+    var width = (positionArr[3] || 0.4) * $("#page-canvas-" + pageInd).attr('width');
+    var height = (positionArr[4] || 0.2) * $("#page-canvas-" + pageInd).attr('height');
 
     var annotationEl = newAnnotationBoxForPDF(annotationObj);
 
-    $(annotationEl).css({ "left": xCord + "px",  "top" : yCord + "px", "position" : "absolute" });
+    $(annotationEl).css({ "left": xCord + "px",  "top" : yCord + "px", "position" : "absolute",
+                          "width": width, "height": height });
+
     $("#page-canvas-wrapper-"+pageInd).append(annotationEl);
     makeAnnotationMovable(annotationEl, annotationObj, pageInd);
 
   });
 
   $(".page-canvas").on("click", function(e) {
-
     if ($(e.target).hasClass("page-canvas")) {
       var pageCanvas = e.currentTarget;
       var pageInd = parseInt(pageCanvas.id.replace('page-canvas-',''), 10);
