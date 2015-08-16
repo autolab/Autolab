@@ -1,5 +1,5 @@
 class CourseUserDataController < ApplicationController
-  before_action :add_users_breadcrumb
+  before_action :add_users_breadcrumb, except: [:create, :destroy]
 
   action_auth_level :index, :student
   def index
@@ -52,6 +52,7 @@ class CourseUserDataController < ApplicationController
       else
         redirect_to(action: "new") && return
       end
+
     else
       flash[:error] = "Adding user failed. Check all fields"
       redirect_to(action: "new") && return
@@ -130,13 +131,21 @@ class CourseUserDataController < ApplicationController
     end
   end
 
-  action_auth_level :destroy, :instructor
+  action_auth_no_course :destroy
   def destroy
-    @destroyCUD = @course.course_user_data.find(params[:id])
-    if @destroyCUD && @destroyCUD != @cud && params[:yes1] && params[:yes2] && params[:yes3]
-      @destroyCUD.destroy # awwww!!!
+    @course = Course.find_by(name: params[:course_name])
+    @cud = @course.course_user_data.find_by(user_id: current_user.id)
+
+    if @cud.instructor?
+      @destroyCUD = @course.course_user_data.find(params[:id])
+      if @destroyCUD && @destroyCUD != @cud
+        @destroyCUD.destroy!
+      end
+      redirect_to([:users, @course]) && return
+    elsif !@cud.has_joined?
+      @cud.destroy
+      redirect_to(course_path(@course)) && return
     end
-    redirect_to([:users, @course]) && return
   end
 
   # Non-RESTful paths below
@@ -192,6 +201,14 @@ class CourseUserDataController < ApplicationController
     redirect_to([@cud.course]) && return
   end
 
+  action_auth_level :confirm, :instructor
+  def confirm
+    @student_cud = @course.course_user_data.find_by(id: params[:id])
+    @student_cud.has_joined = true
+    @student_cud.save!
+    redirect_to(users_course_path(@course)) && return
+  end
+
 private
 
   def add_users_breadcrumb
@@ -201,19 +218,18 @@ private
   end
 
   def cud_params
-    if @cud.administrator?
+    if @cud && @cud.administrator?
       params.require(:course_user_datum).permit(:school, :major, :year,
                                                 :lecture, :section, :instructor, :dropped, :nickname, :course_assistant,
                                                 user_attributes: [:first_name, :last_name, :email],
                                                 tweak_attributes: [:_destroy, :kind, :value])
-    elsif @cud.instructor?
+    elsif @cud && @cud.instructor?
       params.require(:course_user_datum).permit(:school, :major, :year,
                                                 :lecture, :section, :instructor, :dropped, :nickname, :course_assistant,
                                                 user_attributes: [:email, :first_name, :last_name],
                                                 tweak_attributes: [:_destroy, :kind, :value])
     else
-      params.require(:course_user_datum).permit(:nickname) # ,
-      #        user_attributes: [:first_name, :last_name])
+      params.require(:course_user_datum).permit(user_attributes: [:email, :first_name, :last_name])
     end
   end
 

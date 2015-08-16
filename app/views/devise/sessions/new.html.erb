@@ -13,9 +13,5 @@
   <div><%= f.submit "Sign in", :class=>"btn primary" %></div>
 <% end %>
 <hr>
-<% if Rails.env == "development" %>
-<%= link_to "Developer Login", "/home/developer_login" %><br />
-<% end %>
 <%= render "devise/shared/links" %>
-
 </div>

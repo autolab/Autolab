@@ -65,13 +65,18 @@ class ApplicationController < ActionController::Base
 
   def self.action_no_auth(action)
     skip_before_action :verify_authenticity_token, :authenticate_user!
-    skip_filter configure_permitted_paramters: [action]
     skip_filter maintenance_mode: [action]
     skip_filter run_scheduler: [action]
 
     skip_filter authenticate_user: [action]
     skip_before_action :authorize_user_for_course, only: [action]
-    skip_filter authenticate_for_action: [action]
+    skip_before_action :update_persistent_announcements, only: [action]
+  end
+
+  # this authenticates the user but does not try authenticating
+  # to a class
+  def self.action_auth_no_course(action)
+    skip_before_action :authorize_user_for_course, only: [action]
     skip_before_action :update_persistent_announcements, only: [action]
   end
 
@@ -163,6 +168,12 @@ protected
 
     # set @cud
     cud, reason = CourseUserDatum.find_or_create_cud_for_course @course, uid
+
+    unless cud.has_joined
+      flash[:error] = "Your request has not been confirmed yet"
+      redirect_to(controller: :home, action: :error) && return
+    end
+
     case reason
     when :found
       @cud = cud
