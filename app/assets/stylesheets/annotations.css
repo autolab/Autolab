@@ -172,6 +172,7 @@ pre code {
   -webkit-box-shadow: rgba(0, 0, 0, 0.137255) 0px 0px 4px 0px, rgba(0, 0, 0, 0.278431) 0px 4px 8px 0px;
   box-shadow: rgba(0, 0, 0, 0.137255) 0px 0px 4px 0px, rgba(0, 0, 0, 0.278431) 0px 4px 8px 0px;
   width: 200px;
+  background-color: #fff;
   text-align: left;
 }
 
