@@ -1024,20 +1024,3 @@ div.center {
   position: relative;
   display: inline-block;
 }
-
-#pdf-doc .annotation-form {
-  position: absolute;
-  width: 400px;
-  -webkit-box-shadow: rgba(0, 0, 0, 0.137255) 0px 0px 4px 0px, rgba(0, 0, 0, 0.278431) 0px 4px 8px 0px;
-  box-shadow: rgba(0, 0, 0, 0.137255) 0px 0px 4px 0px, rgba(0, 0, 0, 0.278431) 0px 4px 8px 0px;
-}
-
-#pdf-doc .ann-box {
-  opacity: 0.4;
-  -webkit-box-shadow: rgba(0, 0, 0, 0.137255) 0px 0px 4px 0px, rgba(0, 0, 0, 0.278431) 0px 4px 8px 0px;
-  box-shadow: rgba(0, 0, 0, 0.137255) 0px 0px 4px 0px, rgba(0, 0, 0, 0.278431) 0px 4px 8px 0px;
-}
-
-#pdf-doc .ann-box:hover {
-  opacity: 1;
-}
