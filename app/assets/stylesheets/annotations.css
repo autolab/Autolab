@@ -149,7 +149,6 @@ pre code {
   font-family: 'Source Sans Pro', sans-serif;
   padding: 6px;
   background-color: #fff;
-  margin-top: 6px;
 }
 
 .annotation-form hr {
@@ -161,3 +160,44 @@ pre code {
   padding-top: 0;
   padding-bottom: 0;
 }
+
+#pdf-doc .annotation-form {
+  position: absolute;
+  width: 400px;
+  -webkit-box-shadow: rgba(0, 0, 0, 0.137255) 0px 0px 4px 0px, rgba(0, 0, 0, 0.278431) 0px 4px 8px 0px;
+  box-shadow: rgba(0, 0, 0, 0.137255) 0px 0px 4px 0px, rgba(0, 0, 0, 0.278431) 0px 4px 8px 0px;
+}
+
+#pdf-doc .ann-box {
+  -webkit-box-shadow: rgba(0, 0, 0, 0.137255) 0px 0px 4px 0px, rgba(0, 0, 0, 0.278431) 0px 4px 8px 0px;
+  box-shadow: rgba(0, 0, 0, 0.137255) 0px 0px 4px 0px, rgba(0, 0, 0, 0.278431) 0px 4px 8px 0px;
+  width: 200px;
+  background-color: #fff;
+  text-align: left;
+}
+
+#pdf-doc .ann-box .header {
+  cursor: move;  
+}
+
+#pdf-doc .ann-box .body {
+  color: #ff0000;
+}
+
+#pdf-doc .ann-box .score-box {
+  float: none;
+  background-color: transparent;
+  color: red;
+  border-radius: 2px;
+  font-size: 12px;
+  margin-right: 4px;
+  overflow: hidden;
+  display: block;
+  padding: 0.5em;
+  background-color: #fff;
+}
+
+#pdf-doc .ann-box .score-box span:first-child {
+  background-color: transparent;
+}
+

@@ -7,7 +7,7 @@ class Annotation < ActiveRecord::Base
   belongs_to :submission
   belongs_to :problem
 
-  validates :comment, :filename, :line, :submission_id, presence: true
+  validates :comment, :filename, :submission_id, presence: true
 
   def as_text
     if value

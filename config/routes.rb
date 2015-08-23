@@ -1,8 +1,21 @@
 Autolab3::Application.routes.draw do
-  root "courses#index"
 
-  devise_for :users, controllers: { omniauth_callbacks: "users/omniauth_callbacks" },
+  devise_for :users, controllers: { omniauth_callbacks: "users/omniauth_callbacks",
+                                    registrations:      "registrations" },
                      path_prefix: "auth"
+
+  devise_scope :user do
+
+    authenticated :user do
+      root 'courses#index', as: :authenticated_root
+    end
+
+    unauthenticated do
+      root 'devise/sessions#new', as: :unauthenticated_root
+    end
+
+  end
+
 
   get "contact", to: "home#contact"
 
@@ -21,6 +34,7 @@ Autolab3::Application.routes.draw do
   end
 
   resources :courses, param: :name do
+
     resources :schedulers
     resources :jobs, only: :index do
       get "getjob", on: :member
@@ -121,6 +135,7 @@ Autolab3::Application.routes.draw do
     end
 
     resources :course_user_data do
+
       resource :gradebook, only: :show do
         get "bulkRelease"
         get "csv"
@@ -131,6 +146,7 @@ Autolab3::Application.routes.draw do
       end
 
       member do
+        post "confirm"
         get "destroyConfirm"
         match "sudo", via: [:get, :post]
         get "unsudo"
@@ -141,6 +157,7 @@ Autolab3::Application.routes.draw do
       get "bulkRelease"
       get "downloadRoster"
       match "email", via: [:get, :post]
+      post "join"
       get "manage"
       get "moss"
       get "reload"

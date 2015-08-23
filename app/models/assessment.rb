@@ -353,11 +353,7 @@ private
   #
   # NOTE: Must be kept in sync with AUD.latest_submission!
   def calculate_latest_submissions
-    max_version_subquery = "SELECT * FROM (SELECT MAX(version), course_user_datum_id
-                            FROM `submissions`
-                            WHERE assessment_id = #{id} AND ignored = FALSE
-                            GROUP BY course_user_datum_id) AS x"
-    Submission.select("submissions.*").where("(version, course_user_datum_id) IN (#{max_version_subquery}) AND assessment_id = ?", id)
+    submissions.group(:course_user_datum_id).having("MAX(submissions.version)")
   end
 
   def invalidate_course_cgdubs

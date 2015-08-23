@@ -1,5 +1,6 @@
 require "archive"
 require "pdf"
+require "prawn"
 
 class SubmissionsController < ApplicationController
   # inherited from ApplicationController
@@ -75,25 +76,6 @@ class SubmissionsController < ApplicationController
   action_auth_level :show, :student
   def show
     submission = Submission.find(params[:id])
-    # respond_to do |format|
-    #  if submission
-    #    format.js {
-    #      render :json => submission.to_json(
-    #        :include => {:course_user_datum =>  # TODO: user?
-    #                              {:only => [:user,
-    #                                         :first_name,
-    #                                         :last_name,
-    #                                         :lecture,
-    #                                         :section]},
-    #                     :scores => {:include => :grader}},
-    #        :methods => [:is_syntax, :grace_days_used,
-    #                     :penalty_late_days, :days_late, :tweak],
-    #        :seen_by => @cud)
-    #    }
-    #  else
-    #    format.js { head :bad_request }
-    #  end
-    # end
   end
 
   # this loads and looks good
@@ -201,6 +183,58 @@ class SubmissionsController < ApplicationController
       send_data file,
                 filename: pathname,
                 disposition: "inline"
+    
+    elsif params[:annotated]
+
+      @filename_annotated = @submission.handin_annotated_file_path
+      @basename_annotated = File.basename @filename_annotated
+
+      @problems = @assessment.problems.to_a
+      @problems.sort! { |a, b| a.id <=> b.id }
+
+      @annotations = @submission.annotations.to_a
+
+      Prawn::Document.generate(@filename_annotated, :template => @filename) do |pdf|
+
+        @annotations.each do |annotation|
+          
+          return if annotation.coordinate.nil?
+
+          position = annotation.coordinate.split(',')
+          page  = position[2].to_i
+
+          width = position[3].to_f * pdf.bounds.width
+          height = position[4].to_f * pdf.bounds.height
+
+          xCord = position[0].to_f * pdf.bounds.width
+          yCord = pdf.bounds.height - (position[1].to_f * pdf.bounds.height)
+
+          value = "N/A"
+          if !annotation.value.blank? then value = annotation.value end
+          problem = "General"
+          if annotation.problem then problem = annotation.problem end
+          comment = "#{annotation.comment}\n\nProblem: #{problem.name}\nScore:#{value}"
+
+          pdf.stroke_color "ff0000"
+          pdf.stroke_rectangle [xCord, yCord], width, height
+          pdf.fill_color "000000"
+
+          # + 1 since pages are indexed 1-based
+          pdf.go_to_page(page + 1)
+          pdf.fill_color "ff0000" 
+          pdf.text_box comment,
+                      { :at => [xCord + 3, yCord - 3], 
+                        :height => height, 
+                        :width => width }
+
+        end
+
+      end
+
+      send_file @filename_annotated,
+                filename: @basename_annotated,
+                disposition: "inline"
+
     else
       mime = params[:forceMime] || @submission.detected_mime_type
       send_file @filename,
@@ -236,36 +270,39 @@ class SubmissionsController < ApplicationController
     return unless file
 
     filename = @submission.handin_file_path
-    if PDF.pdf?(file)
-      send_data(file, type: "application/pdf", disposition: "inline", filename: File.basename(filename)) && return
-    end
 
-    begin
-      @data = @submission.annotated_file(file, @filename, params[:header_position])
-    rescue
-      flash[:error] = "Sorry, we could not display your file because it contains non-ASCII characters. Please remove these characters and resubmit your work."
-      redirect_to(:back) && return
-    end
 
-    begin
-      # replace tabs with 4 spaces
-      for i in 0...@data.length do
-        @data[i][0].gsub!("\t", " " * 4)
+    if !PDF.pdf?(file)
+      begin
+        @data = @submission.annotated_file(file, @filename, params[:header_position])
+      rescue
+        flash[:error] = "Sorry, we could not display your file because it contains non-ASCII characters. Please remove these characters and resubmit your work."
+        redirect_to(:back) && return
       end
-    rescue ArgumentError => e
-      raise e unless e.message == "invalid byte sequence in UTF-8"
-      flash[:error] = "Sorry, we could not parse your file because it contains non-ASCII characters. Please download file to view the source."
-      redirect_to(:back) && return
-    end
 
-    # fix for tar files
-    if params[:header_position]
-      @annotations = @submission.annotations.where(position: params[:header_position]).to_a
+      begin
+        # replace tabs with 4 spaces
+        for i in 0...@data.length do
+          @data[i][0].gsub!("\t", " " * 4)
+        end
+      rescue ArgumentError => e
+        raise e unless e.message == "invalid byte sequence in UTF-8"
+        flash[:error] = "Sorry, we could not parse your file because it contains non-ASCII characters. Please download file to view the source."
+        redirect_to(:back) && return
+      end
+
+      # fix for tar files
+      if params[:header_position]
+        @annotations = @submission.annotations.where(position: params[:header_position]).to_a
+      else
+        @annotations = @submission.annotations.to_a
+      end
+
+      @annotations.sort! { |a, b| a.line <=> b.line }
+
     else
       @annotations = @submission.annotations.to_a
     end
-
-    @annotations.sort! { |a, b| a.line <=> b.line }
 
     @problemSummaries = {}
     @problemGrades = {}
@@ -289,14 +326,23 @@ class SubmissionsController < ApplicationController
 
     # Rendering this page fails. Often. Mostly due to PDFs.
     # So if it fails, redirect, instead of showing an error page.
-    begin
-      render(:view) && return
-    rescue
-      flash[:error] = "Autolab cannot display this file"
-      if params[:header_position]
-        redirect_to([:list_archive, @course, @assessment, @submission]) && return
-      else
-        redirect_to([:history, @course, @assessment, cud_id: @submission.course_user_datum_id]) && return
+    if PDF.pdf?(file)
+      @preview_mode = false
+      if params[:preview] then 
+        @preview_mode = true 
+      end
+
+      render(:viewPDF) && return
+    else 
+      begin
+        render(:view) && return
+      rescue
+        flash[:error] = "Autolab cannot display this file"
+        if params[:header_position]
+          redirect_to([:list_archive, @course, @assessment, @submission]) && return
+        else
+          redirect_to([:history, @course, @assessment, cud_id: @submission.course_user_datum_id]) && return
+        end
       end
     end
   end

@@ -143,9 +143,13 @@ module ApplicationHelper
 
   def external_stylesheet_link_tag(library, version)
     cloudflare = "//cdnjs.cloudflare.com/ajax/libs"
+    google = "//ajax.googleapis.com/ajax/libs"
+
     case library
     when "bootstrap"
       stylesheet_link_tag "#{cloudflare}/twitter-bootstrap/#{version}/css/bootstrap.css"
+    when "jquery-ui"
+      stylesheet_link_tag "#{google}/jqueryui/#{version}/themes/smoothness/jquery-ui.css"
     end
   end
 
