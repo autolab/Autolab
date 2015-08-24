@@ -36,7 +36,12 @@ class CoursesController < ApplicationController
       else
         @newCUD = @course.course_user_data.new
         @newCUD.user = current_user
-        @newCUD.tweak = Tweak.new
+
+        if current_user.administrator? then
+          @newCUD.has_joined = true
+        end
+
+        return @newCUD.save!
       end
 
     end
