@@ -10,6 +10,12 @@ class AddHasJoinedToCud < ActiveRecord::Migration
 
     CourseUserDatum.find_each do |cud|
       cud.has_joined = true
+
+      if !cud.nickname.nil? then
+        # if there is a non-ascii nickname, we migrate it too
+        cud.nickname.gsub!(/\P{ASCII}/, '')
+      end
+
       cud.save!
     end
 
