@@ -18,8 +18,8 @@ module ControllerMacros
 
   def get_user
     users = CourseUserDatum.joins(:user).where("users.administrator" => false,
-                                               :instructor => 0,
-                                               :course_assistant => 0)
+                                               :instructor => false,
+                                               :course_assistant => false)
     users.offset(rand(users.count)).first.user
   end
 
