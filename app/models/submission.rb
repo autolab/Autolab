@@ -85,7 +85,7 @@ class Submission < ActiveRecord::Base
     elsif upload["local_submit_file"]
       # local_submit_file is a path string to the temporary handin
       # directory we create for local submissions
-      File.open(path, "wb") { |f| f.write(IO.read(upload["local_submit_file"])) }
+      File.open(path, "wb") { |f| f.write(IO.read(upload["local_submit_file"], mode: File::RDONLY|File::NOFOLLOW)) }
     elsif upload["tar"]
       src = upload["tar"]
       `mv #{src} #{path}`
