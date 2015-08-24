@@ -17,6 +17,7 @@ class User < ActiveRecord::Base
 
   trim_field :school
   validates :first_name, :last_name, :email, presence: true
+  validates_uniqueness_of :email
 
   # check if user is instructor in any course
   def instructor?

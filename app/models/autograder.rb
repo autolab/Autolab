@@ -11,6 +11,7 @@ class Autograder < ActiveRecord::Base
   validates :autograde_timeout, numericality: { greater_than: 10, less_than: 600 }
   validates :autograde_image, :autograde_timeout, presence: true
   validates :autograde_image, length: { maximum: 64 }
+  validates_uniqueness_of :assessment_id
 
   after_save -> { assessment.dump_yaml }
 
