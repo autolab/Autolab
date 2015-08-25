@@ -6,42 +6,25 @@ require "statistics"
 class CoursesController < ApplicationController
   skip_before_action :set_course, only: [:index, :new, :create]
   # you need to be able to pick a course to be authorized for it
-  skip_before_action :authorize_user_for_course, only: [:index, :show, :new, :create, :join]
+  skip_before_action :authorize_user_for_course, only: [:index, :new, :create]
   # if there's no course, there are no persistent announcements for that course
-  skip_before_action :update_persistent_announcements, only: [:index, :new, :create, :join]
+  skip_before_action :update_persistent_announcements, only: [:index, :new, :create]
 
   def index
     courses_for_user = User.courses_for_user current_user
 
-    if !courses_for_user.nil?
+    if courses_for_user.any?
       @listing = categorize_courses_for_listing courses_for_user
     else
-      @listing = []
+      redirect_to(home_no_user_path) && return
     end
+
+    render layout: "home"
   end
 
-  action_no_auth :show
+  action_auth_level :show, :student
   def show
-    @course = Course.find_by(name: params[:name])
-
-    redirect_to(controller: :home, action: :error) && return unless @course
-
-    unless current_user.nil?
-
-      @cud = @course.course_user_data.find_by(user_id: current_user.id)
-
-      if @cud && @cud.has_joined?
-        redirect_to course_assessments_path(@course)
-        return
-      else
-        @newCUD = @course.course_user_data.new
-        @newCUD.user = current_user
-        @newCUD.tweak = Tweak.new
-      end
-
-    end
-
-    redirect_to(controller: :home, action: :error) && return unless @course.public?
+    redirect_to course_assessments_url(@course)
   end
 
   NEW_ROSTER_COLUMNS = 29
@@ -170,38 +153,6 @@ class CoursesController < ApplicationController
     end
   end
 
-  def join
-    course_name = params[:name]
-    @course = Course.find_by(name: course_name) if course_name
-
-    if @course.public? && !@course.requires_permission
-
-      @newCUD = @course.course_user_data.find_or_create_by(user_id: current_user.id)
-      @newCUD.has_joined = true
-
-      if @newCUD.save
-        flash[:success] = "Success: You just joined #{@course.display_name}"
-        redirect_to(course_path(@course)) && return
-      else
-        flash[:error] = "Joining failed. Check all fields"
-        redirect_to(course_path(@course)) && return
-      end
-
-    elsif @course.public? && @course.requires_permission?
-      @newCUD = @course.course_user_data.find_or_create_by(user_id: current_user.id)
-      @newCUD.has_joined = false
-
-      if @newCUD.save
-        flash[:success] = "Success: You just requested to joined #{@course.display_name}"
-        redirect_to(course_path(@course)) && return
-      else
-        flash[:error] = "Request failed. Check all fields"
-        redirect_to(course_path(@course)) && return
-      end
-
-    end
-  end
-
   # DELETE courses/:id/
   action_auth_level :destroy, :administrator
   def destroy
@@ -262,10 +213,6 @@ class CoursesController < ApplicationController
       @cuds = @course.course_user_data.joins(:user).order("users.email ASC").where(CourseUserDatum.conditions_by_like(params[:search]))
     else
       @cuds = @course.course_user_data.joins(:user).order("users.email ASC")
-    end
-
-    if @course.requires_permission?
-      @requests = @course.course_user_data.where(has_joined: false).joins(:user).order("users.email ASC")
     end
   end
 
@@ -435,9 +382,8 @@ private
   end
 
   def edit_course_params
-    params.require(:editCourse).permit(:name, :semester, :late_slack, :grace_days, :display_name, :website_url,
-                                       :public, :requires_permission, :start_date, :end_date, :disabled,
-                                       :exam_in_progress, :version_threshold, :gb_message,
+    params.require(:editCourse).permit(:name, :semester, :late_slack, :grace_days, :display_name, :start_date, :end_date,
+                                       :disabled, :exam_in_progress, :version_threshold, :gb_message,
                                        late_penalty_attributes: [:kind, :value],
                                        version_penalty_attributes: [:kind, :value])
   end

@@ -113,9 +113,8 @@ namespace :autolab do
 
       :instructor => true,
       :course_assistant => true,
-      :nickname => "admin_#{course.name}",
 
-      :has_joined => true
+      :nickname => "admin_#{course.name}"
     })
 
     i = 0
@@ -133,7 +132,6 @@ namespace :autolab do
       CourseUserDatum.populate(1) do |cud|
         cud.course_id = course.id
         cud.user_id = u.id
-        cud.has_joined = true
 
         cud.lecture = "1"
         cud.section = "None"

@@ -7,34 +7,32 @@
 
 2. Search for similar issues on the [Issue Tracker](https://github.com/autolab/Autolab/issues); it may already be an identified problem.
 
-3. Make sure you can reproduce your problem and clearly describe the steps to reproduce it. Screenshots and error traces help a ton here!
+3. Make sure you can reproduce your problem and clearly describe the steps to reproduce it.
 
 5. If possible, submit a Pull Request with a failing test or fix the bug yourself (jump down to the "Contributing (Step-by-step)" section).
 
-6. When the bug is fixed, we will do our best to update the issue on the tracker as soon as possible. Keep in mind that the bugfix will likely first land to the `develop` branch, but it won't be marked as resolved until it makes it into the `master` branch.
+6. When the bug is fixed, we will do our best to update the issue on the tracker as soon as possible.
 
 ## Requesting New Features
 
-1. Provide a clear and detailed explanation of the feature you want and why it's important to add. The feature must apply to a wide array of users of Autolab. You may also want to provide us with some advance documentation on the feature, which will help the community to better understand where it will fit.
+1. Do not submit a feature request on GitHub; all feature requests on GitHub will be closed. Instead, e-mail the team at `autolab-dev@andrew.cmu.edu`
 
-2. If you're an awesome developer, build the feature yourself (refer to the "Contributing (Step-by-step)" section below).
+2. Provide a clear and detailed explanation of the feature you want and why it's important to add. The feature must apply to a wide array of users of Autolab. You may also want to provide us with some advance documentation on the feature, which will help the community to better understand where it will fit.
+
+3. If you're an awesome developer, build the feature yourself (refer to the "Contributing (Step-by-step)" section below).
 
 ## Contributing (Step-by-step)
 
 1. Clone the Repo:
 
-```
-git clone git@github.com:autolab/Autolab.git
-```
+        git clone git@github.com:autolab/Autolab.git
 
-2. Create a new feature branch by branching off of the `origin/develop` branch.
+2. Create a new Branch:
 
-```
-cd Autolab
-git checkout -b new_autolab_branch origin/develop
-```
+        cd Autolab
+        git checkout -b new_autolab_branch
 
-Please keep your code clean, and limit each branch to one feature or bug-fix. If you find multiple bugs you want to fix, make multiple branches and multiple respective pull requests.
+ > Please keep your code clean: one feature or bug-fix per branch. If you find another bug, you want to fix while being in a new branch, please fix it in a separated branch instead.
 
 3. Code
   * Adhere to common conventions you see in the existing code
@@ -42,7 +40,7 @@ Please keep your code clean, and limit each branch to one feature or bug-fix. If
 
 4. Follow the Coding Conventions
   * two spaces, no tabs
-  * no trailing whitespace, blank lines should have no spaces (you may want to consider getting a plugin for your text editor that shows you this information)
+  * no trailing whitespaces, blank lines should have no spaces
   * use spaces around operators, after commas, colons, semicolons, around `{` and before `}`
   * no space after `(`, `[` or before `]`, `)`
   * use Ruby 1.9 hash syntax: prefer `{ a: 1 }` over `{ :a => 1 }`
@@ -53,25 +51,23 @@ Please keep your code clean, and limit each branch to one feature or bug-fix. If
 
 5. Commit
 
-  Crafting good commit messages is a fine art. Good commit messages help organize your thoughts, document your thought for your future self, and communicate to the team why this commit was necessary.
+  For every commit please write a short (max 72 characters) summary in the first line followed with a blank line and then more detailed descriptions of the change. Use markdown syntax for simple styling.
 
-  Please follow the conventions described by Tim Pope in [_A Note About Good Commit Messages_][commit-messages].
+  **NEVER leave the commit message blank!** Provide a detailed, clear, and complete description of your commit!
 
 
 6. Update your branch
 
   ```
   git fetch origin
-  git rebase origin/develop
+  git rebase origin/master
   ```
 
-7. After creating a personal fork of the Autolab repo through the GitHub interface, run:
+7. Fork
 
   ```
   git remote add mine git@github.com:<your user name>/Autolab.git
   ```
-
-  You may also be interested in tools like [`hub`][hub] which help automate forking.
 
 8. Push to your remote
 
@@ -86,10 +82,11 @@ Please keep your code clean, and limit each branch to one feature or bug-fix. If
   ```
   git fetch origin
   git checkout new_autolab_branch
-  git rebase -i origin/develop
+  git rebase origin/master
+  git rebase -i
 
-  # the editor opens and allows you to change the commit history
-  # follow the instructions on the bottom of the editor to squash all your commits together
+  < the editor opens and allows you to change the commit history >
+  < follow the instructions on the bottom of the editor >
 
   git push -f mine new_autolab_branch
   ```
@@ -115,5 +112,4 @@ Please keep your code clean, and limit each branch to one feature or bug-fix. If
 
   > Though we ask you to clean your history and squash commit before submitting a pull-request, please do not change any commits you've submitted already (as other work might be build on top).
 
-[commit-messages]: http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html
-[hub]: https://github.com/github/hub
+
