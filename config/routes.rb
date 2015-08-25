@@ -16,6 +16,7 @@ Autolab3::Application.routes.draw do
 
   end
 
+  root "courses#index"
 
   get "contact", to: "home#contact"
 
