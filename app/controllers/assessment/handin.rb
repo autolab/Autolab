@@ -326,8 +326,6 @@ private
     @left_count = [@assessment.max_submissions - submission_count, 0].max
     @aud = AssessmentUserDatum.get @assessment.id, @cud.id
     @can_submit, @why_not = @aud.can_submit? Time.now
-    @is_quiz = @assessment.quiz
-    @quiz_path = takeQuiz_course_assessment_path(@course, @assessment)
 
     @submission = Submission.new
   end

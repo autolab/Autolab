@@ -21,7 +21,7 @@ class AssessmentsController < ApplicationController
   include AssessmentAutograde
 
   # this is inherited from ApplicationController
-  before_action :set_assessment, except: [:index, :new, :create, :installQuiz, :installAssessment,
+  before_action :set_assessment, except: [:index, :new, :create, :installAssessment,
                                           :importAsmtFromTar, :importAssessment,
                                           :log_submit, :local_submit, :autograde_done]
   before_action :set_submission, only: [:viewFeedback]
@@ -74,92 +74,6 @@ class AssessmentsController < ApplicationController
   action_auth_level :new, :instructor
   def new
     @assessment = @course.assessments.new
-  end
-
-  action_auth_level :installQuiz, :instructor
-  def installQuiz
-    @assessment = @course.assessments.new
-    return unless request.post?
-
-    begin
-      quizJSON = params[:quiz]
-      quizDisplayName = params[:quizName]
-      quizName = quizDisplayName.downcase.gsub(/[^a-z0-9]/, "")
-      category_name = params[:new_category].blank? ? params[:category] : params[:new_category]
-
-      # fill in other fields
-      @assessment.name = quizName
-      @assessment.display_name = quizDisplayName
-      @assessment.handin_directory = "handin"
-      @assessment.handin_filename = "handin.c"
-      @assessment.category_name = category_name
-      @assessment.visible_at = Time.now
-      @assessment.start_at = Time.now
-      @assessment.due_at = Time.now
-      @assessment.grading_deadline = Time.now
-      @assessment.end_at = Time.now
-      @assessment.quiz = true
-      @assessment.quizData = quizJSON
-      @assessment.max_submissions = params.include?(:max_submissions) ? params[:max_submissions] : -1
-      
-      @assessment.construct_folder
-
-      @assessment.save!
-
-      @assessment.load_config_file # only call this on saved assessments
-
-      quizData = JSON.parse(quizJSON)
-
-      p = @assessment.problems.new(name: "Quiz",
-                                   description: "",
-                                   max_score: quizData.length,
-                                   optional: false)
-      p.save!
-
-      redirect_to([:edit, @course, @assessment])
-    rescue StandardError => e
-      flash[:error] = e.to_s
-      redirect_to(action: :installQuiz)
-    end
-  end
-
-  action_auth_level :takeQuiz, :student
-  def takeQuiz
-    submission_count = @assessment.submissions.count(conditions: { course_user_datum_id: @cud.id })
-    left_count = [@assessment.max_submissions - submission_count, 0].max
-    if @assessment.max_submissions != -1 && left_count == 0
-      redirect_to(course_assessment_path(@course, @assessment)) && return
-    end
-    @quizData = JSON.parse(@assessment.quizData)
-    @submitPath = submitQuiz_course_assessment_path(@course, @assessment)
-    render(template: "assessments/takeQuiz") && return
-  end
-
-  action_auth_level :submitQuiz, :student
-  def submitQuiz
-    submission_count = @assessment.submissions.count(conditions: { course_user_datum_id: @cud.id })
-    left_count = [@assessment.max_submissions - submission_count, 0].max
-    if @assessment.max_submissions != -1 && left_count == 0
-      redirect_to(course_assessment_path(@course, @assessment)) && return
-    end
-    @quizData = JSON.parse(@assessment.quizData)
-    score = 0
-    @quizData.each do |i, _q|
-      answer = params[i]
-      actualAnswer = @quizData[i]["answer"]
-      score += 1 if (answer.to_i == actualAnswer)
-    end
-    @submission = Submission.create(assessment_id: @assessment.id,
-                                    course_user_datum_id: @cud.id)
-    problem = Problem.find_by(assessment_id: @assessment.id)
-    quizScore = Score.new(score: score,
-                          feedback: "",
-                          grader_id: @cud.id,
-                          released: true,
-                          problem_id: problem.id,
-                          submission_id: @submission.id)
-    flash[:error] = "Unable to make quiz submission." unless quizScore.save
-    redirect_to(history_course_assessment_path(@course, @assessment)) && return
   end
 
   # installAssessment - Installs a new assessment, either by
