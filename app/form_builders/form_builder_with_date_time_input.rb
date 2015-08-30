@@ -63,8 +63,8 @@ class FormBuilderWithDateTimeInput < ActionView::Helpers::FormBuilder
   end
 
   def datetime_select(name, options = {}, _html_options = {})
-    strftime = "%F %I:%M %p"
-    date_format = "YYYY-MM-DD hh:mm A"
+    strftime = "%F %I:%M %p %z"
+    date_format = "YYYY-MM-DD hh:mm A ZZ"
     date_helper name, options, strftime, date_format
   end
 
