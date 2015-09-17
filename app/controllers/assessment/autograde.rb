@@ -203,9 +203,8 @@ module AssessmentAutograde
     # now actually send all of the upload requests
     upload_file_list.each do |f|
       md5hash = Digest::MD5.file(f["localFile"]).to_s
-      next if existing_files.any? do |h|
-        h["md5"] == md5hash && h["localFile"] == File.basename(f["localFile"])
-      end
+      next if (existing_files.has_key?(File.basename(f["localFile"])) &&
+          existing_files[File.basename(f["localFile"])] == md5hash)
 
       begin
         TangoClient.upload("#{course.name}-#{assessment.name}",
