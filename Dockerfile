@@ -36,6 +36,13 @@ RUN bundle install
 # Add the rails app
 ADD . /home/app/webapp
 
+# Fixup permissions on courses folder
+RUN chown -R app:app /home/app/webapp/courses \
+    /home/app/webapp/assessmentConfig \
+    /home/app/webapp/courseConfig \
+    /home/app/webapp/gradebooks \
+    /home/app/webapp/tmp
+
 # Move the database configuration into place
 ADD config/database.docker.yml /home/app/webapp/config/database.yml
 
