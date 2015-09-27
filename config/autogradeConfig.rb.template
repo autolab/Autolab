@@ -8,9 +8,6 @@ RESTFUL_HOST = ENV["RESTFUL_HOST"]
 # Port for Tango RESTful API
 RESTFUL_PORT = ENV["RESTFUL_PORT"]
 
-# Where is the "courses" directory?
-AUTOCONFIG_COURSE_DIR = ENV["AUTOCONFIG_COURSE_DIR"]
-
 # How many seconds to wait for Tango RPC calls before timing out?
 AUTOCONFIG_TANGO_TIMEOUT = 15
 

@@ -31,9 +31,9 @@
     var annotations = <%=raw @annotations.to_json %>;
     var fileNameStr = "<%= @filename %>";
     <% if @preview_mode then %>
-    var fileLink    = "<%= download_course_assessment_submission_path(@course, @assessment, @submission, :annotated => true) %>";
+    var fileLink    = "<%= url_for [:download, @course, @assessment, @submission, header_position: params[:header_position], annotated: true] %>";
     <% else %>
-    var fileLink    = "<%= download_course_assessment_submission_path(@course, @assessment, @submission) %>";
+    var fileLink    = "<%= url_for [:download, @course, @assessment, @submission, header_position: params[:header_position]] %>";
     <% end %>
     var cudEmailStr = "<%= @cud.email %>";
     // a json list of problems for this assessment
@@ -129,11 +129,11 @@
         Preview
       </a>
       <% end %>
-      <a style="width:100%; margin-top: 6px;" href="<%= download_file_url(@submission) %>" title="Download Submission" class="btn"> 
+      <a style="width:100%; margin-top: 6px;" href="<%= url_for [:download, @course, @assessment, @submission, header_position: params[:header_position]] %>" title="Download Submission" class="btn"> 
         <span class="glyphicon glyphicon-download-alt pull-left" aria-hidden="true"></span>
         Original
       </a>
-      <a style="width:100%; margin-top: 6px;" href="<%= download_file_url(@submission) %>?annotated=true" title="Download Submission" class="btn">
+      <a style="width:100%; margin-top: 6px;" href="<%= url_for [:download, @course, @assessment, @submission, header_position: params[:header_position], annotated: true] %>" title="Download Submission" class="btn">
         <span class="glyphicon glyphicon-download-alt pull-left" aria-hidden="true"></span>
         Annotated
       </a>
