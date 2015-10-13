@@ -1,6 +1,11 @@
 <% @title = "Manage Extensions" %>
 
+<% content_for :stylesheets do %>
+  <%= stylesheet_link_tag 'chosen.min' %>
+<% end %>
+
 <% content_for :javascripts do %>
+  <%= javascript_include_tag 'chosen.jquery.min' %>
   <script type="application/javascript">
     /* Enable/disable extension days options */
     jQuery(function() {
@@ -16,8 +21,10 @@
           $extensionDaysField.prop('disabled',false);
         }
       });
+      $('.chosen-select').chosen();
     });
   </script>
+
 <% end %>
 
 <table>
@@ -53,7 +60,7 @@ Size:<%= @extensions.size %>
       <% end %>
     </ul>
   <% end %>
-  <%= f.select(:course_user_datum_id, @users) %>
+  <%= f.select(:course_user_datum_id, @users, {prompt: 'select user'}, {class: 'chosen-select'}) %>
   <%= f.text_field :days, :size=>3, :id => "extension_days" %> day(s)
   -OR- Infinite? <%= f.check_box :infinite, :id => "infinite_extension" %>
   <%= f.hidden_field(:assessment_id)%>
