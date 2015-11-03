@@ -10,7 +10,7 @@ class Problem < ActiveRecord::Base
   belongs_to :assessment, touch: true
   has_many :annotations
 
-  validates :name, presence: true, uniqueness: {scope: :assessment_id}
+  validates :name, presence: true, uniqueness: { scope: :assessment_id }
   validates_associated :assessment
 
   after_save -> { assessment.dump_yaml }
