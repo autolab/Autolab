@@ -35,7 +35,7 @@
   <% for course in @courses %>
     <li class="filterableCourse" id="<%= course.display_name %>">
       <h3 onclick="toggleOptions('<%= course.id %>Assessments')"> 
-        <%= course.display_name %>
+        <%= course.full_name %>
       </h3>
       <ul id="<%= course.id %>Assessments" class="moss-inner-list" style="display:none" >
       <% for a in course.assessments do %>
