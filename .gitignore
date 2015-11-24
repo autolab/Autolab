@@ -22,4 +22,3 @@ tags
 .DS_Store
 .idea/
 /docker/nginx.conf
-app/views/home/_topannounce.html.erb

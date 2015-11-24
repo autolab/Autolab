@@ -1,0 +1,26 @@
+<%#
+  Use this file as an opportunity to broadcast a permanent message on
+  the root '/' path at the bottom of the page. This is normally the page
+  with a list of all courses.
+
+  For example, at CMU we use it to provide students and instructors with
+  a convenient link to an older deployment of Autolab that exists solely
+  for archival purposes. Uncomment the below, rename this file to drop
+  the `.template` suffix, and nagivate to Autolab in your browser to see
+  the effect.
+%>
+
+<h1>Other Courses</h1>
+<div class="container">
+<div class="col-md-6">
+<p>A few courses are still hosted at Autolab.cs.cmu.edu. If you are a 15-213
+or 15/18-746 student or instructor, please proceed to the CS autolab server to use that content.<p>
+<%= link_to 'CS Autolab', 'https://autolab.cs.cmu.edu', class: 'btn main' %>
+</div>
+<div class="col-md-6">
+<p>Courses on Autolab prior to Spring 2015 are viewable at oldautolab.cs.cmu.edu.</p>
+<%= link_to 'Old Autolab Courses', 'https://oldautolab.cs.cmu.edu', class: 'btn main' %>
+</div>
+</div>
+
+
