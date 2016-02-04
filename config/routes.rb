@@ -8,7 +8,9 @@ Autolab3::Application.routes.draw do
   get "contact", to: "home#contact"
 
   namespace :home do
-    match "developer_login", via: [:get, :post]
+    if Rails.env == "development"
+      match "developer_login", via: [:get, :post]
+    end
     get "error"
     get "no_user"
   end

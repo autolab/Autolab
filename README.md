@@ -29,7 +29,7 @@ This is the main repository that includes the application layer of the project. 
 	_(You might need to restart your shell at this point in order to start using your newly installed rbenv)_
 3. Install the version of ruby in the text file `.ruby-version`:
 	```sh
-	rbenv install 2.1.2
+	rbenv install 2.2.0
 	```
  At this point, confirm that `rbenv` is working (depending on your shell, you might need to logout and log back in):
 
@@ -80,9 +80,9 @@ This is the main repository that includes the application layer of the project. 
 	(#TODO: make it so that setup.sh initiates the directories)
 
 
-8. (Optional) Setup [Tango Service] (https://github.com/autolab/Tango) following the [instructions on the wiki] (https://github.com/autolab/Tango/wiki/Setting-up-Tango-server-and-VMs). 
+8. (Optional) Setup [Tango Service] (https://github.com/autolab/Tango) following the [instructions on the wiki] (https://github.com/autolab/Tango/wiki/Setting-up-Tango-server-and-VMs).
 
-9. Create the autogradeConfig file by editing `config/autogradeConfig.rb.template` and renaming to `config/autogradeConfig.rb`. 
+9. Create the autogradeConfig file by editing `config/autogradeConfig.rb.template` and renaming to `config/autogradeConfig.rb`.
 
 10. Start rails server:
 
