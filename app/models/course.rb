@@ -8,7 +8,7 @@ class Course < ActiveRecord::Base
   validates_presence_of :late_slack, :grace_days, :late_penalty, :version_penalty
   validates_numericality_of :grace_days, greater_than_or_equal_to: 0
   validates_numericality_of :version_threshold, only_integer: true, greater_than_or_equal_to: -1
-  validates :name, format: { with: /^[^0-9].*/, message: "can't have leading numeral" }
+  validates :name, format: { with: /\A[^0-9].*/, message: "can't have leading numeral" }
   validate :order_of_dates
 
   has_many :course_user_data, dependent: :destroy
