@@ -16,7 +16,7 @@
           <p><%= f.submit("Checkout Repository", class: "btn primary") %></p>
         <% end %>
       <% end %>
-    <% else %>
+    <% elsif ! @assessment.disable_handins? then %>
       <%= form_for @submission, url: {action: :handin}, multipart: true do |f| %>
         <%= f.file_field :file %>
         <% if @aud.past_due_at? then %>
