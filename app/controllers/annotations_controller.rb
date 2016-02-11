@@ -32,7 +32,7 @@ class AnnotationsController < ApplicationController
   action_auth_level :destroy, :course_assistant
   def destroy
     @annotation.destroy
-    respond_with(@course, @assessment, @submission, @annotation)
+    head :no_content
   end
 
 private
