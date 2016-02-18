@@ -56,6 +56,14 @@ class FormBuilderWithDateTimeInput < ActionView::Helpers::FormBuilder
     end
   end
 
+  def file_field(name, *args)
+    options = args.extract_options!
+
+    field = super name, *(args + [options])
+
+    wrap_field name, field, options[:help_text], options[:display_name]
+  end
+
   def date_select(name, options = {}, _html_options = {})
     strftime = "%F"
     date_format = "YYYY-MM-DD"
@@ -63,8 +71,8 @@ class FormBuilderWithDateTimeInput < ActionView::Helpers::FormBuilder
   end
 
   def datetime_select(name, options = {}, _html_options = {})
-    strftime = "%F %I:%M %p"
-    date_format = "YYYY-MM-DD hh:mm A"
+    strftime = "%F %I:%M %p %z"
+    date_format = "YYYY-MM-DD hh:mm A ZZ"
     date_helper name, options, strftime, date_format
   end
 

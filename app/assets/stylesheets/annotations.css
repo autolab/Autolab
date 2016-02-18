@@ -8,7 +8,7 @@ pre code {
   padding-top: 16px;
   padding-left: 24px;
   background-color: white;
-  margin-left: 14px;
+  margin-left: 18px;
   margin-bottom: 0;
       counter-reset: item;
     list-style-type: none;
@@ -37,11 +37,13 @@ pre code {
   background: white;
   padding: 3px 1px;
   padding-left: 6px;
-  margin-left: -12px;
+  margin-left: -22px;
 }
 
 #code-list > li > code {
   width: 80ch;
+  position: absolute;
+  left: 0;
 }
 #code-list > li > div {
   width: 80ch;

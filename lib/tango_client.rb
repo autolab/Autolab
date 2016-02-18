@@ -9,7 +9,7 @@ module TangoClient
   class ClientObj
     include HTTParty
     base_uri "#{RESTFUL_HOST}:#{RESTFUL_PORT}"
-    default_timeout 15
+    default_timeout 30
   end
 
   # Exception for Tango API Client
@@ -61,8 +61,7 @@ module TangoClient
       url = "/info/#{api_key}/"
       ClientObj.get(url)
     end
-    hash = CGI.parse(resp["info"].join("&"))
-    hash.each { |k, v| hash[k] = v.first }
+    resp["info"]
   end
 
   def self.jobs(deadjobs = 0)

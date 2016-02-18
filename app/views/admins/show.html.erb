@@ -1,13 +1,6 @@
-<% if current_user.administrator? then %>
 <h2>Admin Autolab</h2>
 <ul>
-  <li><%= link_to 'Create new course', new_course_path,
-                  {:title=>"Create a new course"} %></li>
-  <li><%= link_to raw('<span class="button">Manage users</span>'), 
-                  users_path %></li>
-  <li><%= link_to 'Bulk Email Instructors', email_instructors_admin_path,
-                  {:title=>"Create a new course"} %></li>
+  <li><%= link_to "Create New Course", new_course_path, title: "Create a new course" %></li>
+  <li><%= link_to "Manage Users", users_path, title: "Manage every Autolab user" %></li>
+  <li><%= link_to "Bulk Email Instructors", email_instructors_admin_path, title: "Send a bulk email to every Autolab instructor" %></li>
 </ul>
-<% else %>
-<h2 class="warning">Admin only page.</h2>
-<% end %>
