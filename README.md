@@ -41,7 +41,7 @@ This is the main repository that includes the application layer of the project. 
   ~/.rbenv/shims/rake
   ```
 
-5. Install `bundler`:
+4. Install `bundler`:
 
   ```
   gem install bundler
@@ -56,9 +56,17 @@ This is the main repository that includes the application layer of the project. 
   You need to have MySQL installed before hand.
 
 
-5.  Configure your database next. You need to fill the `username` and `password` fields on 		`config/database.yml.template` and rename it to `config/database.yml`. Depending on how you installed MySQL and which platform you're running on, you might have to change the database socket setting in this file. Search online to determine where your MySQL server's socket is if you don't already know.
+6.  Configure your database next. You need to fill the `username` and `password` fields on 		`config/database.yml.template` and rename it to `config/database.yml`. Depending on how you installed MySQL and which platform you're running on, you might have to change the database socket setting in this file. Search online to determine where your MySQL server's socket is if you don't already know.
 
-6. Create and initialize the database tables:
+7. Set up initializer for Devise Auth systems with a unique key.
+   
+   Make sure you fill in `<YOUR_WEBSITE>` and insert a new `secret_key`. You can get a random token with
+  
+   ```sh
+   $ bundle exec rake secret
+   ```
+
+8. Create and initialize the database tables:
 
 	```sh
 	bundle exec rake db:create
@@ -71,7 +79,7 @@ This is the main repository that includes the application layer of the project. 
   Do not forget to use `bundle exec` in front of every rake/rails command.
 
 
-7. (Optional) Populate dummy data for development purposes:
+9. (Optional) Populate dummy data for development purposes:
 
 	```sh
 	rake autolab:populate
@@ -80,17 +88,17 @@ This is the main repository that includes the application layer of the project. 
 	(#TODO: make it so that setup.sh initiates the directories)
 
 
-8. (Optional) Setup [Tango Service] (https://github.com/autolab/Tango) following the [instructions on the wiki] (https://github.com/autolab/Tango/wiki/Setting-up-Tango-server-and-VMs).
+10. (Optional) Setup [Tango Service] (https://github.com/autolab/Tango) following the [instructions on the wiki] (https://github.com/autolab/Tango/wiki/Setting-up-Tango-server-and-VMs).
 
-9. Create the autogradeConfig file by editing `config/autogradeConfig.rb.template` and renaming to `config/autogradeConfig.rb`.
+11. Create the autogradeConfig file by editing `config/autogradeConfig.rb.template` and renaming to  `config/autogradeConfig.rb`.
 
-10. Start rails server:
+12. Start rails server:
 
 	```sh
 	bundle exec rails s -p 3000
 	```
 
-11. Go to <yoururl>:3000 to see if the application is running. You can use the `Developer Login` option with the email "admin@foo.bar".
+13. Go to <yoururl>:3000 to see if the application is running. You can use the `Developer Login` option with the email "admin@foo.bar".
 
 
 ## Testing
