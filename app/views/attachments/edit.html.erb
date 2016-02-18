@@ -1,22 +1,11 @@
-<% path = (@is_assessment)? course_assessment_attachment_path(@course, @attachment.assessment, @attachment) : course_attachment_path(@course, @attachment) %>
-<%= form_for @attachment, as: :attachment, url: path, method: :patch  do |f| %>
-  <%= f.error_messages %>
-  <table class="verticalTable">
-  <tr>
-    <th>Name</th>
-    <td><%= f.text_field :name %></td>
-  </tr>
-  <tr>
-    <th>Released</th>
-    <td><%= f.check_box :released %></td>
-  </tr>
-  <tr>
-    <th>Mime Type</th>
-    <td><%= f.text_field :mime_type %></td>
-  </tr>
-  <tr>
-    <td colspan=2><%= f.submit("Edit", class: "btn primary") %></td>
-  </tr>
-</table>
-<% end %>
-<i>Note: If you change the Mime type of a file, you might need to clear your browser's cache in order for you to see the change.</i>
+<% path = if @is_assessment
+            course_assessment_attachment_path(@course, @attachment.assessment, @attachment)
+          else
+            course_attachment_path(@course, @attachment)
+          end %>
+
+<div class="row">
+  <div class="col-md-6">
+    <%= render partial: "form", locals: {path: path} %>
+  </div>
+</div>

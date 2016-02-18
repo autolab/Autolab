@@ -211,9 +211,12 @@ class SubmissionsController < ApplicationController
 
           value = "N/A"
           if !annotation.value.blank? then value = annotation.value end
-          problem = "General"
+
           if annotation.problem then problem = annotation.problem end
-          comment = "#{annotation.comment}\n\nProblem: #{problem.name}\nScore:#{value}"
+          problem_name = "General"
+          if !problem.nil? then problem_name = problem.name end
+
+          comment = "#{annotation.comment}\n\nProblem: #{problem_name}\nScore:#{value}"
 
           pdf.stroke_color "ff0000"
           pdf.stroke_rectangle [xCord, yCord], width, height
@@ -301,7 +304,12 @@ class SubmissionsController < ApplicationController
       @annotations.sort! { |a, b| a.line <=> b.line }
 
     else
-      @annotations = @submission.annotations.to_a
+      # fix for tar files
+      if params[:header_position]
+        @annotations = @submission.annotations.where(position: params[:header_position]).to_a
+      else
+        @annotations = @submission.annotations.to_a
+      end
     end
 
     @problemSummaries = {}

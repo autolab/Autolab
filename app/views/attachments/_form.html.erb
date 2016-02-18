@@ -1,0 +1,16 @@
+<%= form_for @attachment, as: :attachment, url: path, builder: FormBuilderWithDateTimeInput do |f| %>
+  <%= f.error_messages %>
+
+  <%= f.text_field :name %>
+
+  <% if @attachment.new_record? %>
+    <%= f.file_field :file %>
+  <% else %>
+    <%= f.text_field :mime_type,
+      help_text: "Note: If you change the Mime type of a file, you might need to clear your browser's cache in order for you to see the change." %>
+  <% end %>
+
+  <%= f.check_box :released %>
+
+  <%= f.submit(@attachment.new_record? ? "Save" : "Upload", class: "btn primary") %>
+<% end %>

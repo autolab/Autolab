@@ -183,7 +183,7 @@ module AssessmentAutograde
   #
   def tango_upload(course, assessment, submission, existing_files)
     # first, figure out which files need to get sent
-    ass_dir = File.join(AUTOCONFIG_COURSE_DIR, course.name, assessment.name)
+    ass_dir = assessment.folder_path
     begin
       COURSE_LOGGER.log("Dir: #{ass_dir}")
 
@@ -354,6 +354,7 @@ module AssessmentAutograde
       existing_files = TangoClient.open("#{course.name}-#{assessment.name}")
     rescue TangoClient::TangoException => e
       flash[:error] = "Error with open request on Tango: #{e.message}"
+      COURSE_LOGGER.log("#{e.message}")
       return -1
     end
 
@@ -412,7 +413,7 @@ module AssessmentAutograde
   # submission is confirmed via dave key to have been created by Autolab
   #
   def autogradeDone(submissions, feedback)
-    ass_dir = File.join(AUTOCONFIG_COURSE_DIR, @course.name, @assessment.name)
+    ass_dir = @assessment.folder_path
 
     submissions.each do |submission|
       filename = submission.autograde_feedback_filename

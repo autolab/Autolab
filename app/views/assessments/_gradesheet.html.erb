@@ -9,10 +9,10 @@
   <%= javascript_include_tag "jquery.jeditable" %>
 
   <script type="text/javascript">
-    email_col = 1
-    problem_count = <%= @assessment.problems.length %>
-    first_problem_column = 5;
-    first_non_searchable_column = 3 
+    email_col = 1;
+    problem_count = <%= @assessment.problems.length %>;
+    first_problem_column = 4;
+    first_non_searchable_column = 2;
   </script>
 
   <%= javascript_include_tag "gradesheet" %>

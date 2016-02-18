@@ -9,7 +9,7 @@ module TangoClient
   class ClientObj
     include HTTParty
     base_uri "#{RESTFUL_HOST}:#{RESTFUL_PORT}"
-    default_timeout 15
+    default_timeout 30
   end
 
   # Exception for Tango API Client

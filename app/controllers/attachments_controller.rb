@@ -16,6 +16,7 @@ class AttachmentsController < ApplicationController
 
   action_auth_level :new, :instructor
   def new
+    @attachment = Attachment.new
   end
 
   action_auth_level :create, :instructor
