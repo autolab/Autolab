@@ -1,3 +1,16 @@
+<% content_for :stylesheets do %>
+  <%= stylesheet_link_tag 'chosen.min' %>
+<% end %>
+
+<% content_for :javascripts do %>
+  <%= javascript_include_tag 'chosen.jquery.min' %>
+  <script type="application/javascript">
+    jQuery(function() {
+      $('.chosen-select').chosen();
+    });
+  </script>
+<% end %>
+
 <h2>Create Submission for <%= link_to @assessment.display_name, [@course, @assessment] %> </h2>
 
 <p>
@@ -13,7 +26,7 @@
   <th>User:</th>
   <td>
   <% if params[:course_user_datum_id].nil? then %>
-    <%= f.select(:course_user_datum_id,@cuds) %>
+    <%= f.select(:course_user_datum_id, @cuds, {prompt: 'select user'}, {class: 'chosen-select'}) %>
   <% else %>
     <%= @cuds.collect { |u| u.email }.join(", ") %>
     <input type='hidden' name='submission[course_user_datum_id]' value='<%=@cuds.collect{ |u| u.id }.join(',')%>' />
