@@ -185,10 +185,9 @@ jQuery(function() {
 
     // always called when editor's closed, the hub for which is current_editor.reset()
     function _close_current_editor() {
-
+        $(current_editor).parent().removeClass("focus");
         close_current_popover();
         current_editor = null;
-
     }
 
     function close_current_editor() {
@@ -224,6 +223,10 @@ jQuery(function() {
         setTimeout(f, 0); 
     }
 
+    /* opens the score editor and feedback popover for a particular score
+     *
+     * @param {element} editable The div.editable element clicked on by the user
+     */
     function open_editor(editable) {
         // if we're already open, we're done
         if (current_editor == editable) return;
@@ -250,8 +253,14 @@ jQuery(function() {
         current_editor = editable;
     }
 
+
     function make_editable($editable) {
       // click/enter to edit cells
+
+      /* Calls the Jquery plugin Jeditable to set up the element for in-place editing.
+       * When done editing, a request to quickSetScore (on server) is called with the 
+       * following parameters.
+       */
       $editable.editable('quickSetScore', {
           name: 'score',
           event: "click",
@@ -278,6 +287,8 @@ jQuery(function() {
                   problem_id: get_enclosing_editor(this).data("problem-id")
               }
           },
+          /* This function is called after the feedback form has been submitted. 
+           * Updates the total score (last column) for this student. */
           callback: function(value, settings) {
               var editor = get_enclosing_editor(this);
               var total = editor.siblings(".total");
@@ -365,7 +376,7 @@ jQuery(function() {
                 // update score id
                 editor.data('score-id', data)
 
-                // code to update reloased score formatting
+                // code to update released score formatting
                 if (released) {
                     jQuery(editor).addClass("released");
                 } else {
@@ -397,10 +408,10 @@ jQuery(function() {
 
     jQuery('#grades_filter input').focus()
 
-      jQuery(document).click(function(event) {
-        close_current_editor_on_blur(event);
-        close_current_popover_on_blur(event);
-      });
+    jQuery(document).click(function(event) {
+      close_current_editor_on_blur(event);
+      close_current_popover_on_blur(event);
+    });
 
     // generic popover opening engine
     function show_popover(popover, at, arrow_at) {
@@ -441,44 +452,65 @@ jQuery(function() {
         data: { submission_id: link.parent().data("submission-id") },
         success: function(data, status, jqXHR) {
           popover.html(data)
-        show_popover(popover, {
-          my: "left center",
-        at: "right center",
-        of: link,
-        offset: "10px 0"
-        });
+          show_popover(popover, {
+            my: "left center",
+            at: "right center",
+            of: link,
+            offset: "10px 0"
+          });
         }
       });
     });
 
+    /* Open the popover for viewing/editing feedback for a particular score
+     *
+     *@param {element} e The editable element on which to show the feedback popover
+     */
     function open_score_popover(e) {
       var $editable = jQuery(e)
-        var $popover = $editable.siblings("div.popover")
-        var $td = $editable.parent()
-        var $score_details_tbody = jQuery(".score_details", $popover)
-        var score_id = $td.data("score-id")
+      var $popover = $editable.siblings("div.popover")
+      var $td = $editable.parent()
+      var $score_details_tbody = jQuery(".score_details", $popover)
+      var score_id = $td.data("score-id")
 
-        // lazy load grader
-        if (score_id) {
-          jQuery.ajax("score_grader_info", {
-            data: {
-              "score_id": score_id
-            },
-            success: function(data, status, jqXHR) {
-              jQuery(".grader-name").remove();
-              // TODO: wtf?
-              if (data != " ") {
-                $score_details_tbody.prepend("<div class='grader-name'>Grader: " + data + "</div>")
-              }
+      var grader_name_field = jQuery(".grader-name", $score_details_tbody);
+      var $feedback_textarea = jQuery(".feedback", $score_details_tbody);
+      $feedback_textarea.prop('disabled', true);  // disable feedback editing until ajax returns
+
+      // lazy load grader and feedback
+      if (score_id) {
+        jQuery.ajax("score_grader_info", {
+          data: {
+            "score_id": score_id
+          },
+          success: function(data, status, jqXHR) {
+            try {
+              var grader = data.grader;
+              var feedback = data.feedback;
+            } catch(err) {
+              // invalid response
+              console.log("Invalid response from server: " + data);
+              console.log(err);
+              return;
             }
-          });
-        }
+
+            if (grader_name_field.length != 0) {
+              grader_name_field.remove();
+            }
+            if (grader != " ") {
+              $score_details_tbody.prepend("<div class='grader-name'>Grader: " + grader + "</div>")
+            }
+            $feedback_textarea.html(feedback);
+            $feedback_textarea.prop('disabled', false);
+          }
+        });
+      }
 
       show_popover($popover, {
         my: "left center",
-      at: "right center",
-      of: $popover.parent(),
-      offset: "5px 0"
+        at: "right center",
+        of: $popover.parent(),
+        offset: "5px 0"
       });
     }
 
