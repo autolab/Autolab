@@ -91,10 +91,11 @@ jQuery(function() {
     // main score table
     var oTable = jQuery("#grades").dataTable({
         'sDom' : '<"tools"f>t', // '<"tools"fC>t', for individual problem column hide/show
-        'bPaginate': false,
+        'bPaginate': true,
         'bInfo': false,
         'oLanguage': { "sSearch": "" },
         'iTabIndex': -1,
+        'iDisplayLength': rows_on_display,
         'aoColumnDefs': [
           { "bSortable": false, "aTargets": [ 0 ] },
           { "bSearchable": false, "aTargets": non_searchable_columns },
@@ -115,6 +116,30 @@ jQuery(function() {
         // "aaSorting": [[ email_col, 'asc' ]] -- this is slowww
     }).fnSetFilteringDelay();
 
+    // dynamically change # of rows to display
+    function incrementDisplayLength(n) {
+      console.log('rendering ' + n + ' more rows');
+      rows_on_display += n;
+      oTable.fnSettings()._iDisplayLength = rows_on_display;
+      oTable.fnDraw();
+    }
+
+    function loadMoreRows() {
+      if (rows_on_display + increment_rows_by >= total_rows) {
+        incrementDisplayLength(total_rows - rows_on_display);
+        // unbind the event handler
+        $(window).unbind('scroll');
+        return;
+      }
+      incrementDisplayLength(increment_rows_by);
+    }
+
+    $(window).on('scroll', function() {
+      // check if the user has scrolled to near the bottom, if so, add more rows.
+      if($(window).scrollTop() + $(window).height() > $(document).height() - 150) {
+        loadMoreRows();
+      }
+    })
 
     // placeholder text in Search field
     jQuery("#grades_filter input").attr("placeholder", "Search");

@@ -9,6 +9,9 @@
   <%= javascript_include_tag "jquery.jeditable" %>
 
   <script type="text/javascript">
+    total_rows = <%= @submissions.length %>;
+    rows_on_display = 40;
+    increment_rows_by = 20;
     email_col = 1;
     problem_count = <%= @assessment.problems.length %>;
     first_problem_column = 4;
@@ -74,7 +77,7 @@
                     <div>
                       <b>Feedback</b>
                       <br>
-                      <textarea class="feedback">loading...</textarea>
+                      <textarea class="feedback"><%= p_score ? p_score.feedback : "" %></textarea>
                     </div>
                     <div>
                       <b>Released</b>
