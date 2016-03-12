@@ -17,12 +17,12 @@ This is the main repository that includes the application layer of the project. 
 
 ## Getting Started
 
-For Ubuntu 14.04+ users: To complete all following steps with a bash script, run:
+__For Ubuntu 14.04+ users__: To complete all following steps with a bash script, run:
 ```
 AUTOLAB_SCRIPT=`mktemp` && \curl -sSL https://raw.githubusercontent.com/autolab/Autolab/master/bin/setup.sh > $AUTOLAB_SCRIPT && \bash $AUTOLAB_SCRIPT
 ```
 
-For Mac users: Follow the step-by-step instruction below (we are working on an automated script for you)
+__For Mac users__: Follow the step-by-step instruction below (we are working on an automated script for you!)
 
 1. Install rbenv (Basic GitHub Checkout method): [Github rbenv](https://github.com/sstephenson/rbenv)
 
