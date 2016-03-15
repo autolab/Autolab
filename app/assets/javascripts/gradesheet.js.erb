@@ -88,21 +88,66 @@ jQuery(function() {
         return this;
     };
 
+    // add necessary classes and data to rows after creation but before rendering
+    function completeRow(row, data, index) {
+      var submission = aux_data[index];
+      row.className = submission['r_class'];
+
+      // set up name & email column
+      $td_name = $('.id', row);
+      $td_name.attr('data-submission-id', submission['submission-id']);
+      $name_col = $col_name_template.clone();
+      $email_tag = $('.email', $name_col);
+      $email_tag.html(submission['email']);
+      if ('file' in submission) {
+        jQuery(submission['file']).insertAfter($email_tag);
+      }
+      $name_col.children().appendTo($td_name);
+
+      // set up problem columns
+      $problems = jQuery('.problem',row);
+      for (var i = 0; i < $problems.length; i++) {
+        var prob_data = submission['problems'][i];
+
+        $prob_col = $col_prob_template.clone();
+        jQuery('.editable',$prob_col).html(prob_data['score']);
+
+        $td_prob = $($problems[i]);
+        if (prob_data['released']) {
+          $td_prob.addClass('released');
+          jQuery('.released',$prob_col).prop('checked',true);
+        }
+        $td_prob.addClass('edit');
+
+        if ('score-id' in prob_data) {
+          $td_prob.attr('data-score-id', prob_data['score-id']);
+        }
+        $td_prob.attr('data-submission-id', submission['submission-id']);
+        $td_prob.attr('data-problem-id', prob_data['problem-id']);
+
+        $prob_col.children().appendTo($td_prob);
+      }
+    }
+
     // main score table
     var oTable = jQuery("#grades").dataTable({
+        'data' : table_data,
         'sDom' : '<"tools"f>t', // '<"tools"fC>t', for individual problem column hide/show
         'bPaginate': true,
         'bInfo': false,
         'oLanguage': { "sSearch": "" },
         'iTabIndex': -1,
         'iDisplayLength': rows_on_display,
+        'deferRender': true,
         'aoColumnDefs': [
           { "bSortable": false, "aTargets": [ 0 ] },
           { "bSearchable": false, "aTargets": non_searchable_columns },
           { "sType": "html", "aTargets": [ email_col ] },
           { "sType": "num-html", "aTargets": numeric_columns }, 
         ],
-        "fnDrawCallback": function(oSettings) {
+        'columns' : columns,
+        'createdRow' : completeRow,
+        'fnDrawCallback': function(oSettings) {
           var that = this;
           // Need to redo the counters if filtered or sorted
           if (oSettings.bSorted || oSettings.bFiltered) {
@@ -112,7 +157,7 @@ jQuery(function() {
               });
             });
           }
-        },
+        }
         // "aaSorting": [[ email_col, 'asc' ]] -- this is slowww
     }).fnSetFilteringDelay();
 
