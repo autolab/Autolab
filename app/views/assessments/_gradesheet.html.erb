@@ -22,7 +22,7 @@
     /* table data */
     // header classes
     hclasses = ["enumerator", "id", "lec", "sec", 
-                <% for p in @assessment.problems do %>
+                <% for i in 0..(@assessment.problems.length - 1) do%>
                   "problem",
                 <% end %>
                 <% if @cud.instructor? %>
@@ -43,25 +43,28 @@
     // raw data for each row
     table_data = [
       <% for s in @submissions do %>
-          [ "",
-            "<%= s.course_user_datum.last_name %>, <%= s.course_user_datum.first_name %>",
-            "<%= s.course_user_datum.lecture %>",
-            "<%= s.course_user_datum.section %>",
+          { "id": "",
+            "name": {
+              name: "<%= s.course_user_datum.last_name %>, <%= s.course_user_datum.first_name %>",
+              email: "<%= s.course_user_datum.email %>"
+            },
+            "lec": "<%= s.course_user_datum.lecture %>",
+            "sec": "<%= s.course_user_datum.section %>",
             <% p_scores = s.problems_to_scores %>
-            <% for p in @assessment.problems do %>
-              "",
+            <% for i in 0..(@assessment.problems.length - 1) %>
+              "problem<%= i %>": "",
             <% end %>
             <% if @cud.instructor? %>
-              "<%= computed_score(history_url s.course_user_datum) { s.late_penalty @cud } %>",
+              "late_penalty": "<%= computed_score(history_url s.course_user_datum) { s.late_penalty @cud } %>",
               <% if @assessment.version_penalty? %>
-                "<%= computed_score(history_url s.course_user_datum) { s.version_penalty @cud } %>",
+                "version_penalty": "<%= computed_score(history_url s.course_user_datum) { s.version_penalty @cud } %>",
               <% end %>
-                `<%= link_to raw(tweak(s.tweak)), 
+                "tweak": `<%= link_to raw(tweak(s.tweak)), 
                   edit_course_assessment_submission_path(@course, @assessment, s),
                   tabindex: -1 %>`,
             <% end %>
-            "<%= computed_score(history_url s.course_user_datum) { s.final_score @cud } %>"
-          ],
+            "total": "<%= computed_score(history_url s.course_user_datum) { s.final_score @cud } %>"
+          },
       <% end %>
     ];
 
@@ -97,23 +100,28 @@
 
     // column spec
     columns = [
-      { title: "#", className: "enumerator" },
-      { title: "Email & Name", className: "id" },
-      { title: "Lec", className: "lec" },
-      { title: "Sec", className: "sec" },
-      <% for p in @assessment.problems do %>
+      { title: "#", className: "enumerator", data: "id" },
+      { title: "Email & Name", className: "id", data: "name",
+        render: {
+          _: "name",
+          sort: "email"
+        } },
+      { title: "Lec", className: "lec", data: "lec" },
+      { title: "Sec", className: "sec", data: "sec" },
+      <% @assessment.problems.each_with_index do |p,i| %>
         { title: `<%= p.name %>
             <span class="max_score">(<%= p.max_score %>)</span>`, 
-          className: "problem"},
+          className: "problem",
+          data: "problem<%= i %>"},
       <% end %>
       <% if @cud.instructor? %>
-        { title: "Late\nPenalty", className: "late_penalty" },
+        { title: "Late\nPenalty", className: "late_penalty", data: "late_penalty" },
         <% if @assessment.version_penalty? %>
-          { title: "Version\nPenalty", className: "version_penalty" },
+          { title: "Version\nPenalty", className: "version_penalty", data: "version_penalty" },
         <% end %>
-        { title: "Tweak", className: "tweak" },
+        { title: "Tweak", className: "tweak", data: "tweak" },
       <% end %>
-      { title: "Total", className: "total" }
+      { title: "Total", className: "total", data: "total" }
     ];
 
     // templates

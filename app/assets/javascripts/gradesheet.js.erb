@@ -133,11 +133,12 @@ jQuery(function() {
     var oTable = jQuery("#grades").dataTable({
         'data' : table_data,
         'sDom' : '<"tools"f>t', // '<"tools"fC>t', for individual problem column hide/show
-        'bPaginate': true,
         'bInfo': false,
+        'bPaginate': true,
         'oLanguage': { "sSearch": "" },
         'iTabIndex': -1,
         'iDisplayLength': rows_on_display,
+        'iDisplayStart': 0,
         'deferRender': true,
         'aoColumnDefs': [
           { "bSortable": false, "aTargets": [ 0 ] },
@@ -157,8 +158,8 @@ jQuery(function() {
               });
             });
           }
-        }
-        // "aaSorting": [[ email_col, 'asc' ]] -- this is slowww
+        },
+        "aaSorting": [[ email_col, 'asc' ]]
     }).fnSetFilteringDelay();
 
     // dynamically change # of rows to display
@@ -166,7 +167,7 @@ jQuery(function() {
       console.log('rendering ' + n + ' more rows');
       rows_on_display += n;
       oTable.fnSettings()._iDisplayLength = rows_on_display;
-      oTable.fnDraw();
+      oTable.fnDraw(false);
     }
 
     function loadMoreRows() {
