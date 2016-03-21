@@ -66,6 +66,10 @@ __For Mac users__: Follow the step-by-step instruction below (we are working on 
 
 7. Set up initializer for Devise Auth systems with a unique key.
    
+   ```console
+   cp config/initializers/devise.rb.template config/initializers/devise.rb
+   ```
+
    Make sure you fill in `<YOUR_WEBSITE>` and insert a new `secret_key`. You can get a random token with
   
    ```sh
