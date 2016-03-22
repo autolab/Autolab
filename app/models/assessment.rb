@@ -21,6 +21,7 @@ class Assessment < ActiveRecord::Base
 
   # Validations
   validates_uniqueness_of :name, scope: :course_id
+  validates_format_of :name, :with => /^[a-zA-Z]+$/, :multiline => true
   validates_length_of :display_name, minimum: 1
   validate :verify_dates_order
   validate :handin_directory_and_filename_or_disable_handins, if: :active?
