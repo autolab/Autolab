@@ -462,7 +462,6 @@ jQuery(function() {
         score_details_dirty(editor, "saving");
     }
 
-    // var $editables = jQuery("#grades td.edit div.editable");
     jQuery("#grades").on('click', 'div.editable', function(event) {
         open_editor(this);
     });
@@ -513,7 +512,7 @@ jQuery(function() {
     }
 
     // to show the the ID column popovers
-    jQuery('#grades td.id a.email').on('click', function() {
+    jQuery('#grades').on('click', 'td.id a.email', function() {
       jQuery('div.popover').hide();
 
       var link = jQuery(this)
