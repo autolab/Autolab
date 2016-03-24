@@ -15,9 +15,10 @@ This is the main repository that includes the application layer of the project. 
 * [Tango Service] (https://github.com/autolab/Tango)
 
 
-## Getting Started
+# Getting Started
 ####Running on Docker: Follow [this guide] (https://github.com/autolab/Autolab/wiki/Deploying-Autolab-with-Docker)
 ######This is recommended for real-world usage
+=====
 
 ####Running on your machine:
 ######This is recommended for development and trial purposes
