@@ -34,7 +34,6 @@ class Assessment < ActiveRecord::Base
   validates_numericality_of :group_size, only_integer: true, greater_than_or_equal_to: 1, allow_nil: true
   validates_presence_of :name, :display_name, :due_at, :end_at, :start_at,
                         :grading_deadline, :category_name, :max_size, :max_submissions
-  validates :name, format: { with: /\A[^0-9].*/, message: "can't have leading numeral" }
 
   # Callbacks
   trim_field :name, :display_name, :handin_filename, :handin_directory, :handout, :writeup
