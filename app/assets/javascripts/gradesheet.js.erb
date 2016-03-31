@@ -88,20 +88,67 @@ jQuery(function() {
         return this;
     };
 
+    // add necessary classes and data to rows after creation but before rendering
+    function completeRow(row, data, index) {
+      var submission = aux_data[index];
+      row.className = submission['r_class'];
+
+      // set up name & email column
+      $td_name = $('.id', row);
+      $td_name.attr('data-submission-id', submission['submission-id']);
+      $name_col = $col_name_template.clone();
+      $email_tag = $('.email', $name_col);
+      $email_tag.html(submission['email']);
+      if ('file' in submission) {
+        jQuery(submission['file']).insertAfter($email_tag);
+      }
+      $name_col.children().appendTo($td_name);
+
+      // set up problem columns
+      $problems = jQuery('.problem',row);
+      for (var i = 0; i < $problems.length; i++) {
+        var prob_data = submission['problems'][i];
+
+        $prob_col = $col_prob_template.clone();
+        jQuery('.editable',$prob_col).html(prob_data['score']);
+
+        $td_prob = $($problems[i]);
+        if (prob_data['released']) {
+          $td_prob.addClass('released');
+          jQuery('.released',$prob_col).prop('checked',true);
+        }
+        $td_prob.addClass('edit');
+
+        if ('score-id' in prob_data) {
+          $td_prob.attr('data-score-id', prob_data['score-id']);
+        }
+        $td_prob.attr('data-submission-id', submission['submission-id']);
+        $td_prob.attr('data-problem-id', prob_data['problem-id']);
+
+        $prob_col.children().appendTo($td_prob);
+      }
+    }
+
     // main score table
     var oTable = jQuery("#grades").dataTable({
+        'data' : table_data,
         'sDom' : '<"tools"f>t', // '<"tools"fC>t', for individual problem column hide/show
-        'bPaginate': false,
         'bInfo': false,
+        'bPaginate': true,
         'oLanguage': { "sSearch": "" },
         'iTabIndex': -1,
+        'iDisplayLength': rows_on_display,
+        'iDisplayStart': 0,
+        'deferRender': true,
         'aoColumnDefs': [
           { "bSortable": false, "aTargets": [ 0 ] },
           { "bSearchable": false, "aTargets": non_searchable_columns },
           { "sType": "html", "aTargets": [ email_col ] },
           { "sType": "num-html", "aTargets": numeric_columns }, 
         ],
-        "fnDrawCallback": function(oSettings) {
+        'columns' : columns,
+        'createdRow' : completeRow,
+        'fnDrawCallback': function(oSettings) {
           var that = this;
           // Need to redo the counters if filtered or sorted
           if (oSettings.bSorted || oSettings.bFiltered) {
@@ -112,9 +159,33 @@ jQuery(function() {
             });
           }
         },
-        // "aaSorting": [[ email_col, 'asc' ]] -- this is slowww
+        "aaSorting": [[ email_col, 'asc' ]]
     }).fnSetFilteringDelay();
 
+    // dynamically change # of rows to display
+    function incrementDisplayLength(n) {
+      console.log('rendering ' + n + ' more rows');
+      rows_on_display += n;
+      oTable.fnSettings()._iDisplayLength = rows_on_display;
+      oTable.fnDraw(false);
+    }
+
+    function loadMoreRows() {
+      if (rows_on_display + increment_rows_by >= total_rows) {
+        incrementDisplayLength(total_rows - rows_on_display);
+        // unbind the event handler
+        $(window).unbind('scroll');
+        return;
+      }
+      incrementDisplayLength(increment_rows_by);
+    }
+
+    $(window).on('scroll', function() {
+      // check if the user has scrolled to near the bottom, if so, add more rows.
+      if($(window).scrollTop() + $(window).height() > $(document).height() - 150) {
+        loadMoreRows();
+      }
+    })
 
     // placeholder text in Search field
     jQuery("#grades_filter input").attr("placeholder", "Search");
@@ -185,10 +256,9 @@ jQuery(function() {
 
     // always called when editor's closed, the hub for which is current_editor.reset()
     function _close_current_editor() {
-
+        $(current_editor).parent().removeClass("focus");
         close_current_popover();
         current_editor = null;
-
     }
 
     function close_current_editor() {
@@ -224,6 +294,10 @@ jQuery(function() {
         setTimeout(f, 0); 
     }
 
+    /* opens the score editor and feedback popover for a particular score
+     *
+     * @param {element} editable The div.editable element clicked on by the user
+     */
     function open_editor(editable) {
         // if we're already open, we're done
         if (current_editor == editable) return;
@@ -250,8 +324,14 @@ jQuery(function() {
         current_editor = editable;
     }
 
+
     function make_editable($editable) {
       // click/enter to edit cells
+
+      /* Calls the Jquery plugin Jeditable to set up the element for in-place editing.
+       * When done editing, a request to quickSetScore (on server) is called with the 
+       * following parameters.
+       */
       $editable.editable('quickSetScore', {
           name: 'score',
           event: "click",
@@ -278,6 +358,8 @@ jQuery(function() {
                   problem_id: get_enclosing_editor(this).data("problem-id")
               }
           },
+          /* This function is called after the feedback form has been submitted. 
+           * Updates the total score (last column) for this student. */
           callback: function(value, settings) {
               var editor = get_enclosing_editor(this);
               var total = editor.siblings(".total");
@@ -365,7 +447,7 @@ jQuery(function() {
                 // update score id
                 editor.data('score-id', data)
 
-                // code to update reloased score formatting
+                // code to update released score formatting
                 if (released) {
                     jQuery(editor).addClass("released");
                 } else {
@@ -380,7 +462,6 @@ jQuery(function() {
         score_details_dirty(editor, "saving");
     }
 
-    // var $editables = jQuery("#grades td.edit div.editable");
     jQuery("#grades").on('click', 'div.editable', function(event) {
         open_editor(this);
     });
@@ -397,10 +478,10 @@ jQuery(function() {
 
     jQuery('#grades_filter input').focus()
 
-      jQuery(document).click(function(event) {
-        close_current_editor_on_blur(event);
-        close_current_popover_on_blur(event);
-      });
+    jQuery(document).click(function(event) {
+      close_current_editor_on_blur(event);
+      close_current_popover_on_blur(event);
+    });
 
     // generic popover opening engine
     function show_popover(popover, at, arrow_at) {
@@ -431,7 +512,7 @@ jQuery(function() {
     }
 
     // to show the the ID column popovers
-    jQuery('#grades td.id a.email').on('click', function() {
+    jQuery('#grades').on('click', 'td.id a.email', function() {
       jQuery('div.popover').hide();
 
       var link = jQuery(this)
@@ -441,44 +522,65 @@ jQuery(function() {
         data: { submission_id: link.parent().data("submission-id") },
         success: function(data, status, jqXHR) {
           popover.html(data)
-        show_popover(popover, {
-          my: "left center",
-        at: "right center",
-        of: link,
-        offset: "10px 0"
-        });
+          show_popover(popover, {
+            my: "left center",
+            at: "right center",
+            of: link,
+            offset: "10px 0"
+          });
         }
       });
     });
 
+    /* Open the popover for viewing/editing feedback for a particular score
+     *
+     *@param {element} e The editable element on which to show the feedback popover
+     */
     function open_score_popover(e) {
       var $editable = jQuery(e)
-        var $popover = $editable.siblings("div.popover")
-        var $td = $editable.parent()
-        var $score_details_tbody = jQuery(".score_details", $popover)
-        var score_id = $td.data("score-id")
+      var $popover = $editable.siblings("div.popover")
+      var $td = $editable.parent()
+      var $score_details_tbody = jQuery(".score_details", $popover)
+      var score_id = $td.data("score-id")
 
-        // lazy load grader
-        if (score_id) {
-          jQuery.ajax("score_grader_info", {
-            data: {
-              "score_id": score_id
-            },
-            success: function(data, status, jqXHR) {
-              jQuery(".grader-name").remove();
-              // TODO: wtf?
-              if (data != " ") {
-                $score_details_tbody.prepend("<div class='grader-name'>Grader: " + data + "</div>")
-              }
+      var grader_name_field = jQuery(".grader-name", $score_details_tbody);
+      var $feedback_textarea = jQuery(".feedback", $score_details_tbody);
+      $feedback_textarea.prop('disabled', true);  // disable feedback editing until ajax returns
+
+      // lazy load grader and feedback
+      if (score_id) {
+        jQuery.ajax("score_grader_info", {
+          data: {
+            "score_id": score_id
+          },
+          success: function(data, status, jqXHR) {
+            try {
+              var grader = data.grader;
+              var feedback = data.feedback;
+            } catch(err) {
+              // invalid response
+              console.log("Invalid response from server: " + data);
+              console.log(err);
+              return;
             }
-          });
-        }
+
+            if (grader_name_field.length != 0) {
+              grader_name_field.remove();
+            }
+            if (grader != " ") {
+              $score_details_tbody.prepend("<div class='grader-name'>Grader: " + grader + "</div>")
+            }
+            $feedback_textarea.html(feedback);
+            $feedback_textarea.prop('disabled', false);
+          }
+        });
+      }
 
       show_popover($popover, {
         my: "left center",
-      at: "right center",
-      of: $popover.parent(),
-      offset: "5px 0"
+        at: "right center",
+        of: $popover.parent(),
+        offset: "5px 0"
       });
     }
 
