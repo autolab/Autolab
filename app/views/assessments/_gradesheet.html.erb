@@ -9,100 +9,164 @@
   <%= javascript_include_tag "jquery.jeditable" %>
 
   <script type="text/javascript">
+    // global constants
+    total_rows = <%= @submissions.length %>;
+    rows_on_display = 40;
+    increment_rows_by = 20;
     email_col = 1;
     problem_count = <%= @assessment.problems.length %>;
     first_problem_column = 4;
     first_non_searchable_column = 2;
+    first_row_ready = true;
+
+    /* table data */
+    // header classes
+    hclasses = ["enumerator", "id", "lec", "sec", 
+                <% for i in 0..(@assessment.problems.length - 1) do%>
+                  "problem",
+                <% end %>
+                <% if @cud.instructor? %>
+                  "late_penalty",
+                  <% if @assessment.version_penalty? %>
+                    "version_penalty",
+                  <% end %>
+                  "tweak",
+                <% end %>
+                "total"];
+    problems = [<% for p in @assessment.problems do %>
+                  {
+                    name: "<%= p.name %>",
+                    max_score: "<%= p.max_score %>"
+                  },
+                <% end %>];
+
+    // raw data for each row
+    table_data = [
+      <% for s in @submissions do %>
+          { "id": "",
+            "name": {
+              name: "<%= s.course_user_datum.last_name %>, <%= s.course_user_datum.first_name %>",
+              email: "<%= s.course_user_datum.email %>"
+            },
+            "lec": "<%= s.course_user_datum.lecture %>",
+            "sec": "<%= s.course_user_datum.section %>",
+            <% p_scores = s.problems_to_scores %>
+            <% for i in 0..(@assessment.problems.length - 1) %>
+              "problem<%= i %>": "",
+            <% end %>
+            <% if @cud.instructor? %>
+              "late_penalty": "<%= computed_score(history_url s.course_user_datum) { s.late_penalty @cud } %>",
+              <% if @assessment.version_penalty? %>
+                "version_penalty": "<%= computed_score(history_url s.course_user_datum) { s.version_penalty @cud } %>",
+              <% end %>
+                "tweak": `<%= link_to raw(tweak(s.tweak)), 
+                  edit_course_assessment_submission_path(@course, @assessment, s),
+                  tabindex: -1 %>`,
+            <% end %>
+            "total": "<%= computed_score(history_url s.course_user_datum) { s.final_score @cud } %>"
+          },
+      <% end %>
+    ];
+
+    // additional data for each row
+    aux_data = [
+      <% for s in @submissions do %>
+        {
+          "submission-id": "<%= s.id.to_s %>",
+          r_class: "<%= aud_special_grade_type?(s.aud) && @cud.instructor? ? "special_submission" : "" %>",
+          email: "<%= s.course_user_datum.email %>",
+          <% if s.filename %>
+          file: `<%=raw(view_file(s, go_img(-1), go_img(-1), go_img(-1))) %>`,
+          <% end %>
+          problems: [
+            <% p_scores = s.problems_to_scores %>
+            <% for p in @assessment.problems do %>
+              <% p_score = p_scores[p.id] %>
+              <% id = s.id.to_s + "_" + p.id.to_s %>
+              <% released = p_score && p_score.released ? "true" : "false" %>
+              {
+                released: <%= released %>,
+                score: '<%= p_score && p_score.score ? p_score.score : raw("&ndash;") %>',
+                <% if p_score %>
+                  "score-id": "<%= "#{p_score.id}" %>",
+                <% end %>
+                "problem-id": "<%= p.id.to_s %>"
+              },
+            <% end %>
+          ]
+        },
+      <% end %>
+    ];
+
+    // column spec
+    columns = [
+      { title: "#", className: "enumerator", data: "id" },
+      { title: "Email & Name", className: "id", data: "name",
+        render: {
+          _: "name",
+          sort: "email"
+        } },
+      { title: "Lec", className: "lec", data: "lec" },
+      { title: "Sec", className: "sec", data: "sec" },
+      <% @assessment.problems.each_with_index do |p,i| %>
+        { title: `<%= p.name %>
+            <span class="max_score">(<%= p.max_score %>)</span>`, 
+          className: "problem",
+          data: "problem<%= i %>"},
+      <% end %>
+      <% if @cud.instructor? %>
+        { title: "Late\nPenalty", className: "late_penalty", data: "late_penalty" },
+        <% if @assessment.version_penalty? %>
+          { title: "Version\nPenalty", className: "version_penalty", data: "version_penalty" },
+        <% end %>
+        { title: "Tweak", className: "tweak", data: "tweak" },
+      <% end %>
+      { title: "Total", className: "total", data: "total" }
+    ];
+
+    // templates
+    $col_name_template = jQuery('#col_name_template');
+    $col_prob_template = jQuery('#col_prob_template');
   </script>
 
   <%= javascript_include_tag "gradesheet" %>
 <% end %>
 
+
 <div id="table_container" style="text-align: center">
+  <table id="grades"></table>
+</div>
 
-<table id="grades">
 
-<thead>
-    <tr class="sortable">
-        <th class="enumerator">#</th>
-        <th class="id">Email &amp; Name</th>
-        <th class="lec">Lec</th>
-        <th class="sec">Sec</th>
-        <% for p in @assessment.problems do %>
-        <th class="problem">
-                <%= p.name %>
-                <span class="max_score">(<%= p.max_score %>)</span>
-            </th>
-        <% end %>
-        <% if @cud.instructor? %>
-            <th class="late_penalty">Late<br>Penalty</th>
-            <% if @assessment.version_penalty? %>
-              <th class="version_penalty">Version<br>Penalty</th>
-            <% end %>
-            <th class="tweak">Tweak</th>
-        <% end %>
-        <th class="total">Total</th>
-    </tr>
-</thead>
+<!-- templates -->
+<div id="col_name_template" class="template">
+  <!-- name goes here -->
+  <br>
+  <a tabindex="-1" class="email"><!-- email address go here --></a>
 
-<% for s in @submissions do %>
-<tr class="<%= aud_special_grade_type?(s.aud) && @cud.instructor? ? "special_submission" : "" %>">
-  <td class="enumerator"></td>
-  <td class="id" data-submission-id="<%= s.id.to_s %>">
-        <%= s.course_user_datum.last_name %>, <%= s.course_user_datum.first_name %>
-        <br>
-        <a tabindex="-1" class="email"><%= s.course_user_datum.email %></a>
+  <!-- file link go here -->
+  <div class="popover"></div>
+</div>
 
-        <% if s.filename %>
-          <%=raw(view_file(s, go_img(-1), go_img(-1), go_img(-1))) %>
-        <% end %>
-        <div class="popover">
-        </div>
-  </td>
-  <td class="lec"><%= s.course_user_datum.lecture %></td>
-    <td class="sec"><%= s.course_user_datum.section %></td>
-    <% p_scores = s.problems_to_scores %>
-    <% for p in @assessment.problems do %>
-        <% p_score = p_scores[p.id] %>
-        <% id = s.id.to_s + "_" + p.id.to_s %>
-        <% released = p_score && p_score.released ? "released" : "" %>
-      <td <%= p_score ? "data-score-id=#{p_score.id}" : "" %> data-submission-id="<%= s.id.to_s %>" data-problem-id="<%= p.id.to_s %>" class="edit <%= released %>">
-            <div class="editable"><%= p_score && p_score.score ? p_score.score : raw("&ndash;") %></div>
-            <div class="popover">
-                <div class="arrow"></div>
-                <div class="score_details">
-                    <div>
-                      <b>Feedback</b>
-                      <br>
-                      <textarea class="feedback"><%= p_score ? p_score.feedback : "" %></textarea>
-                    </div>
-                    <div>
-                      <b>Released</b>
-                        <input class="released" type="checkbox" <%= (p_score && p_score.released) ? "checked" : "" %>></input>
-                        <span class="save_box">
-                            <span class="saving">Saving...</span>
-                            <span class="save btn small primary" tabindex="1">Save</span>
-                            <span class="error" tabindex="1">Try again?</span>
-                        </span>
-                    </div>
-                </div>
-            </div>
-        </td>
-    <% end %>
-    <% if @cud.instructor? %>
-    <td class="late_penalty"><%= computed_score(history_url s.course_user_datum) { s.late_penalty @cud } %></td>
-    <% if @assessment.version_penalty? %>
-      <td class="version_penalty"><%= computed_score(history_url s.course_user_datum) { s.version_penalty @cud } %></td>
-    <% end %>
-    <td class="tweak">
-      <%= link_to raw(tweak(s.tweak)), 
-                  edit_course_assessment_submission_path(@course, @assessment, s),
-                  tabindex: -1 %>
-    </td>
-    <% end %>
-    <td class="total"><%= computed_score(history_url s.course_user_datum) { s.final_score @cud } %></td>
-</tr>
-<% end %>
-
-</table>
+<div id="col_prob_template" class="template">
+  <div class="editable"><!-- score goes here --></div>
+  <div class="popover">
+      <div class="arrow"></div>
+      <div class="score_details">
+          <div>
+            <b>Feedback</b>
+            <br>
+            <textarea class="feedback">loading...</textarea>
+          </div>
+          <div>
+            <b>Released</b>
+              <input class="released" type="checkbox"></input>
+              <span class="save_box">
+                  <span class="saving">Saving...</span>
+                  <span class="save btn small primary" tabindex="1">Save</span>
+                  <span class="error" tabindex="1">Try again?</span>
+              </span>
+          </div>
+      </div>
+  </div>
 </div>
