@@ -68,7 +68,18 @@ __For Mac users__: Follow the step-by-step instruction below (we are working on 
   You need to have MySQL installed before hand.
 
 
-6.  Configure your database next. You need to fill the `username` and `password` fields on 		`config/database.yml.template` and rename it to `config/database.yml`. Depending on how you installed MySQL and which platform you're running on, you might have to change the database socket setting in this file. Search online to determine where your MySQL server's socket is if you don't already know.
+6.  Configure your database next. You need to fill the `username` and `password` fields on 		`config/database.yml.template` and rename it to `config/database.yml`. 
+
+	-The default username is "root"
+	
+	-If this is your first time installing MySQL, you may need to set the root password.
+	
+	Start the server:
+	```sudo /usr/local/mysql/support-files/mysql.server start```
+	Set the password:
+	```mysqladmin -u root password "[New_Password]"```
+	
+	Depending on how you installed MySQL and which platform you're running on, you might have to change the database socket setting in this file. The default socket location is `/tmp/mysql.sock`.
 
 7. Set up initializer for Devise Auth systems with a unique key.
    
@@ -76,7 +87,7 @@ __For Mac users__: Follow the step-by-step instruction below (we are working on 
    cp config/initializers/devise.rb.template config/initializers/devise.rb
    ```
 
-   Make sure you fill in `<YOUR_WEBSITE>` and insert a new `secret_key`. You can get a random token with
+   Make sure you fill in `<YOUR_WEBSITE>` and insert a new `secret_key` in devise.rb. You can get a random token with
   
    ```sh
    $ bundle exec rake secret
