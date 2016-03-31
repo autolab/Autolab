@@ -289,11 +289,14 @@ public
   def score_grader_info
     score = Score.find(params[:score_id])
     grader = (if score then score.grader else nil end)
+    grader_info = ""
     if grader
-      render text: "#{grader.first_name} #{grader.last_name} (#{grader.email})"
-    else
-      render nothing: true
+      grader_info = "#{grader.first_name} #{grader.last_name} (#{grader.email})"
     end
+
+    feedback = score.feedback
+    response = {"grader" => grader_info, "feedback" => feedback}
+    render json: response
   end
 
   def viewGradesheet
