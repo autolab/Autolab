@@ -135,7 +135,8 @@ td.focus {
     font: inherit;
 }
 
-#grades td.id > a {
+#grades td.id > a.email {
+    margin-right: 4px;
 }
 
 #grades .tweak a:hover {
@@ -263,4 +264,8 @@ td.id {
 #grades td .popover .score_details span.save_box span.error {
     display: none;
     color: red;
+}
+
+.template {
+    display: none;
 }
