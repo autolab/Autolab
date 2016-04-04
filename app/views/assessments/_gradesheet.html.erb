@@ -127,6 +127,54 @@
     // templates
     $col_name_template = jQuery('#col_name_template');
     $col_prob_template = jQuery('#col_prob_template');
+
+    /*** local cache ***/
+    // original score and feedback used to check diff
+    cache = {};
+
+    // forcefully inserts the new score and feedback into cache
+    function cache_insert(sub_id, prob_id, score, feedback) {
+        if (!(sub_id in cache)) {
+          cache[sub_id] = {};
+        }
+        probs = cache[sub_id];
+
+        if (!(prob_id in probs)) {
+          probs[prob_id] = {};
+        }
+        data = probs[prob_id];
+
+        if (score != null) {
+          data['score'] = score;
+        }
+        if (feedback != null) {
+          data['feedback'] = feedback;
+        }
+    }
+    // gets the cached object
+    function cache_get(sub_id, prob_id) {
+        if (!(sub_id in cache)) {
+          return null;
+        }
+        probs = cache[sub_id];
+
+        if (!(prob_id in probs)) {
+          return null;
+        }
+        return probs[prob_id];
+    }
+    // gets an item from cache (either 'score' or 'feedback')
+    function cache_get_item(sub_id, prob_id, item) {
+        data = cache_get(sub_id, prob_id);
+        if (data == null) {
+          return null;
+        }
+
+        if (!(item in data)) {
+          return null
+        }
+        return data[item];
+    }
   </script>
 
   <%= javascript_include_tag "gradesheet" %>
