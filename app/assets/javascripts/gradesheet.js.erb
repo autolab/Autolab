@@ -360,11 +360,11 @@ jQuery(function() {
               var curr_score = $('input',this).val();
               if (curr_score != old_score) {
                 // update cache
-                console.log('returning true!');
                 cache_insert(sub_id, prob_id, 'score', curr_score);
                 return true;
               }
-              console.log('returning false!');
+              console.log("score didn't change, not submitting");
+              _close_current_editor();
               return false;
           },
           submitdata: function(value, settings) {
@@ -586,7 +586,8 @@ jQuery(function() {
             success: function(data, status, jqXHR) {
               try {
                 var grader = data.grader;
-                var feedback = data.feedback;
+                var feedback = data.feedback || "";
+                var score = data.score;
               } catch(err) {
                 // invalid response
                 console.log("Invalid response from server: " + data);
@@ -597,6 +598,7 @@ jQuery(function() {
               // update cache
               cache_insert(sub_id, prob_id, 'grader', grader);
               cache_insert(sub_id, prob_id, 'feedback', feedback);
+              cache_insert(sub_id, prob_id, 'score', score);
 
               // update interface
               if (grader_name_field.length != 0) {
