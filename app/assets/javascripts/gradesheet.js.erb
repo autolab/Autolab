@@ -361,9 +361,9 @@ jQuery(function() {
               if (curr_score != old_score) {
                 // update cache
                 cache_insert(sub_id, prob_id, 'score', curr_score);
+                console.log("submitting changes to score");
                 return true;
               }
-              console.log("score didn't change, not submitting");
               _close_current_editor();
               return false;
           },
@@ -437,8 +437,12 @@ jQuery(function() {
       save_error.click(function(event) {
           jQuery('div.editable form', get_enclosing_editor(this)).submit();
       });
+
+      jQuery('.score_details input.released', editor).data('changed', false);
     }
 
+    /* submit feedback, released-state, (and implicitly, the grader) to server, but only
+     * if feedback or released-state has changed. */
     function submit_score_details(editor, not_score) {
         var sub_id = editor.data("submission-id");
         var prob_id = editor.data("problem-id");
@@ -446,8 +450,10 @@ jQuery(function() {
         var old_feedback = cache_get_item(sub_id, prob_id, 'feedback');
         var curr_feedback = jQuery('.score_details textarea.feedback', editor).val();
 
-        if (old_feedback != curr_feedback) {
-          console.log('submitting changes to feedback');
+        var released_changed = jQuery('.score_details input.released', editor).data('changed');
+
+        if (released_changed || old_feedback != curr_feedback) {
+          console.log('submitting changes to feedback/released-state');
 
           var released = jQuery('.score_details input.released', editor).is(':checked');
           jQuery.ajax("quickSetScoreDetails", {
@@ -484,6 +490,10 @@ jQuery(function() {
 
     jQuery("#grades").on('click', 'div.editable', function(event) {
         open_editor(this);
+    });
+
+    jQuery("#grades").on('change', 'div.popover .score_details input.released', function(event) {
+        $(event.target).data('changed', !$(event.target).data('changed'));
     });
 
 
