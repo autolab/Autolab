@@ -360,9 +360,11 @@ jQuery(function() {
               var curr_score = $('input',this).val();
               if (curr_score != old_score) {
                 // update cache
+                console.log('returning true!');
                 cache_insert(sub_id, prob_id, 'score', curr_score);
                 return true;
               }
+              console.log('returning false!');
               return false;
           },
           submitdata: function(value, settings) {
@@ -433,7 +435,7 @@ jQuery(function() {
       });
 
       save_error.click(function(event) {
-          submit_score_details(get_enclosing_editor(this));
+          jQuery('div.editable form', get_enclosing_editor(this)).submit();
       });
     }
 
@@ -444,46 +446,39 @@ jQuery(function() {
         var old_feedback = cache_get_item(sub_id, prob_id, 'feedback');
         var curr_feedback = jQuery('.score_details textarea.feedback', editor).val();
 
-        if (old_feedback == curr_feedback) {
-          return;
+        if (old_feedback != curr_feedback) {
+          console.log('submitting changes to feedback');
+
+          var released = jQuery('.score_details input.released', editor).is(':checked');
+          jQuery.ajax("quickSetScoreDetails", {
+              type: 'POST',
+              data: {
+                  submission_id: sub_id,
+                  problem_id: prob_id,
+                  feedback: curr_feedback,
+                  released: released,
+                  score: jQuery(".editable input", editor).val()  // currently unused -- tombug#50
+              },
+              success: function(data, status, jqXHR) {
+                  // update cache
+                  cache_insert(sub_id, prob_id, 'feedback', curr_feedback);
+          
+                  // update score id
+                  editor.data('score-id', data)
+
+                  // code to update released score formatting
+                  if (released) {
+                      jQuery(editor).addClass("released");
+                  } else {
+                      jQuery(editor).removeClass("released");
+                  }
+                  score_details_dirty(editor, "saved");
+              },
+              error: function() {
+                  score_details_dirty(editor, "error");
+              }
+          });
         }
-
-        var released = jQuery('.score_details input.released', editor).is(':checked');
-        jQuery.ajax("quickSetScoreDetails", {
-            type: 'POST',
-            data: {
-                submission_id: sub_id,
-                problem_id: prob_id,
-                feedback: curr_feedback,
-                released: released,
-                score: jQuery(".editable input", editor).val()  // currently unused -- tombug#50
-            },
-            success: function(data, status, jqXHR) {
-                if (!not_score) {
-                    console.log("submit_score_details: submitting editor as well");
-                    jQuery('div.editable form', editor).submit();
-                } else {
-                    console.log("submit_score_details: not submitting editor");
-                }
-
-                // update cache
-                cache_insert(sub_id, prob_id, 'feedback', curr_feedback);
-        
-                // update score id
-                editor.data('score-id', data)
-
-                // code to update released score formatting
-                if (released) {
-                    jQuery(editor).addClass("released");
-                } else {
-                    jQuery(editor).removeClass("released");
-                }
-                score_details_dirty(editor, "saved");
-            },
-            error: function() {
-                score_details_dirty(editor, "error");
-            }
-        });
         score_details_dirty(editor, "saving");
     }
 
@@ -655,9 +650,6 @@ jQuery(function() {
     /***************
      * local cache *
      ***************/
-    // original score and feedback used to check diff
-    cache = {};
-
     // forcefully inserts an item into cache
     function cache_insert(sub_id, prob_id, item_name, value) {
         if (!(sub_id in cache)) {
