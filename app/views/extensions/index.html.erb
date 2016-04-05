@@ -8,8 +8,8 @@
   <%= javascript_include_tag 'chosen.jquery.min' %>
   <script type="application/javascript">
     jQuery(function() {
-      $dueDate = moment("<%= @assessment.due_at.to_s %>", "YYYY-MM-DD hh:mm:ss ZZ");
-    
+      $dueDate = moment("<%= @assessment.due_at.to_s %>", "YYYY-MM-DD hh:mm:ss ZZ").startOf('day');
+
       $extensionDaysField = $('#extension_days');
       $extensionNewDayField = $('#new_due_date_picker');
 
@@ -36,16 +36,19 @@
       });
 
       /* two-way-bind newDayField with daysField */
-      $extensionDaysField.change(function() {
+      $extensionDaysField.on('change', function() {
         $newDate = moment($dueDate);
-        $newDate.add($extensionDaysField.val(), 'days');
+        $newDate.add($extensionDaysField.val(), 'days').startOf('day');
         $extensionNewDayField.data('DateTimePicker').date($newDate);
-      })
-      $extensionNewDayField.on('dp.hide', function() {
-        $newDate = moment($extensionNewDayField.data('DateTimePicker').date());
+      });
+      $extensionNewDayField.on('dp.change', function() {
+        $newDate = moment($extensionNewDayField.data('DateTimePicker').date()).startOf('day');
         $extendBy = $newDate.diff($dueDate, 'days');
         $extensionDaysField.val($extendBy);
-      })
+      });
+      
+      /* need to manually toggle popup because it only shows once per focus */
+      $extensionNewDayField.on('click', $extensionNewDayField.data('DateTimePicker').show);
     });
   </script>
 
