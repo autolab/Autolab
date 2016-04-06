@@ -364,7 +364,7 @@ jQuery(function() {
                 console.log("submitting changes to score");
                 return true;
               }
-              _close_current_editor();
+              close_current_editor();
               return false;
           },
           submitdata: function(value, settings) {
@@ -454,6 +454,9 @@ jQuery(function() {
 
         if (released_changed || old_feedback != curr_feedback) {
           console.log('submitting changes to feedback/released-state');
+
+          // reset released-state changed flag
+          jQuery('.score_details input.released', editor).data('changed', false);
 
           var released = jQuery('.score_details input.released', editor).is(':checked');
           jQuery.ajax("quickSetScoreDetails", {
