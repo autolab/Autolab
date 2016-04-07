@@ -295,7 +295,7 @@ public
     end
 
     feedback = score.feedback
-    response = {"grader" => grader_info, "feedback" => feedback}
+    response = {"grader" => grader_info, "feedback" => feedback, "score" => score.score}
     render json: response
   end
 
