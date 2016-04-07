@@ -347,12 +347,27 @@ jQuery(function() {
               jQuery(current_editor).effect('highlight', { color: 'red' }, 400);
               close_current_editor();
           },
-          submitdata: function(value, settings) {
-
+          onsubmit: function() {
+              // also submit score details
               var editor = get_enclosing_editor(this);
-              // also always submit score details
               submit_score_details(editor);
 
+              // check if score changed (submit to server only if diff from cache)
+              var sub_id = editor.data("submission-id");
+              var prob_id = editor.data("problem-id");
+
+              var old_score = cache_get_item(sub_id, prob_id, 'score');
+              var curr_score = $('input',this).val();
+              if (curr_score != old_score) {
+                // update cache
+                cache_insert(sub_id, prob_id, 'score', curr_score);
+                console.log("submitting changes to score");
+                return true;
+              }
+              close_current_editor();
+              return false;
+          },
+          submitdata: function(value, settings) {
               return {
                   submission_id: get_enclosing_editor(this).data("submission-id"),
                   problem_id: get_enclosing_editor(this).data("problem-id")
@@ -420,50 +435,68 @@ jQuery(function() {
       });
 
       save_error.click(function(event) {
-          submit_score_details(get_enclosing_editor(this));
+          jQuery('div.editable form', get_enclosing_editor(this)).submit();
       });
+
+      jQuery('.score_details input.released', editor).data('changed', false);
     }
 
+    /* submit feedback, released-state, (and implicitly, the grader) to server, but only
+     * if feedback or released-state has changed. */
     function submit_score_details(editor, not_score) {
+        var sub_id = editor.data("submission-id");
+        var prob_id = editor.data("problem-id");
 
-        var released = jQuery('.score_details input.released', editor).is(':checked');
-        jQuery.ajax("quickSetScoreDetails", {
-            type: 'POST',
-            data: {
-                submission_id: editor.data('submission-id'),
-                problem_id: editor.data('problem-id'),
-                feedback: jQuery('.score_details textarea.feedback', editor).val(),
-                released: released,
-                score: jQuery(".editable input", editor).val()  // currently unused -- tombug#50
-            },
-            success: function(data, status, jqXHR) {
-                if (!not_score) {
-                    console.log("submit_score_details: submitting editor as well");
-                    jQuery('div.editable form', editor).submit();
-                } else {
-                    console.log("submit_score_details: not submitting editor");
-                }
-        
-                // update score id
-                editor.data('score-id', data)
+        var old_feedback = cache_get_item(sub_id, prob_id, 'feedback');
+        var curr_feedback = jQuery('.score_details textarea.feedback', editor).val();
 
-                // code to update released score formatting
-                if (released) {
-                    jQuery(editor).addClass("released");
-                } else {
-                    jQuery(editor).removeClass("released");
-                }
-                score_details_dirty(editor, "saved");
-            },
-            error: function() {
-                score_details_dirty(editor, "error");
-            }
-        });
+        var released_changed = jQuery('.score_details input.released', editor).data('changed');
+
+        if (released_changed || old_feedback != curr_feedback) {
+          console.log('submitting changes to feedback/released-state');
+
+          // reset released-state changed flag
+          jQuery('.score_details input.released', editor).data('changed', false);
+
+          var released = jQuery('.score_details input.released', editor).is(':checked');
+          jQuery.ajax("quickSetScoreDetails", {
+              type: 'POST',
+              data: {
+                  submission_id: sub_id,
+                  problem_id: prob_id,
+                  feedback: curr_feedback,
+                  released: released,
+                  score: jQuery(".editable input", editor).val()  // currently unused -- tombug#50
+              },
+              success: function(data, status, jqXHR) {
+                  // update cache
+                  cache_insert(sub_id, prob_id, 'feedback', curr_feedback);
+          
+                  // update score id
+                  editor.data('score-id', data)
+
+                  // code to update released score formatting
+                  if (released) {
+                      jQuery(editor).addClass("released");
+                  } else {
+                      jQuery(editor).removeClass("released");
+                  }
+                  score_details_dirty(editor, "saved");
+              },
+              error: function() {
+                  score_details_dirty(editor, "error");
+              }
+          });
+        }
         score_details_dirty(editor, "saving");
     }
 
     jQuery("#grades").on('click', 'div.editable', function(event) {
         open_editor(this);
+    });
+
+    jQuery("#grades").on('change', 'div.popover .score_details input.released', function(event) {
+        $(event.target).data('changed', !$(event.target).data('changed'));
     });
 
 
@@ -537,43 +570,61 @@ jQuery(function() {
      *@param {element} e The editable element on which to show the feedback popover
      */
     function open_score_popover(e) {
-      var $editable = jQuery(e)
-      var $popover = $editable.siblings("div.popover")
-      var $td = $editable.parent()
-      var $score_details_tbody = jQuery(".score_details", $popover)
-      var score_id = $td.data("score-id")
+      var $editable = jQuery(e);
+      var $popover = $editable.siblings("div.popover");
+      var $td = $editable.parent();
+      var $score_details_tbody = jQuery(".score_details", $popover);
+      var score_id = $td.data("score-id");
+      var sub_id = $td.data('submission-id');
+      var prob_id = $td.data('problem-id');
 
       var grader_name_field = jQuery(".grader-name", $score_details_tbody);
       var $feedback_textarea = jQuery(".feedback", $score_details_tbody);
-      $feedback_textarea.prop('disabled', true);  // disable feedback editing until ajax returns
 
-      // lazy load grader and feedback
-      if (score_id) {
-        jQuery.ajax("score_grader_info", {
-          data: {
-            "score_id": score_id
-          },
-          success: function(data, status, jqXHR) {
-            try {
-              var grader = data.grader;
-              var feedback = data.feedback;
-            } catch(err) {
-              // invalid response
-              console.log("Invalid response from server: " + data);
-              console.log(err);
-              return;
-            }
+      // check cache first
+      var cache_feedback = cache_get_item(sub_id, prob_id, 'feedback');
+      if (cache_feedback != null) {
+        // cache hit
+        $feedback_textarea.html(cache_feedback);
+      } else {
+        // cache miss
+        $feedback_textarea.prop('disabled', true);  // disable feedback editing until ajax returns
 
-            if (grader_name_field.length != 0) {
-              grader_name_field.remove();
+        // lazy load grader and feedback
+        if (score_id) {
+          jQuery.ajax("score_grader_info", {
+            data: {
+              "score_id": score_id
+            },
+            success: function(data, status, jqXHR) {
+              try {
+                var grader = data.grader;
+                var feedback = data.feedback || "";
+                var score = data.score;
+              } catch(err) {
+                // invalid response
+                console.log("Invalid response from server: " + data);
+                console.log(err);
+                return;
+              }
+
+              // update cache
+              cache_insert(sub_id, prob_id, 'grader', grader);
+              cache_insert(sub_id, prob_id, 'feedback', feedback);
+              cache_insert(sub_id, prob_id, 'score', score);
+
+              // update interface
+              if (grader_name_field.length != 0) {
+                grader_name_field.remove();
+              }
+              if (grader != " ") {
+                $score_details_tbody.prepend("<div class='grader-name'>Grader: " + grader + "</div>")
+              }
+              $feedback_textarea.html(feedback);
+              $feedback_textarea.prop('disabled', false);
             }
-            if (grader != " ") {
-              $score_details_tbody.prepend("<div class='grader-name'>Grader: " + grader + "</div>")
-            }
-            $feedback_textarea.html(feedback);
-            $feedback_textarea.prop('disabled', false);
-          }
-        });
+          });
+        }
       }
 
       show_popover($popover, {
@@ -608,6 +659,49 @@ jQuery(function() {
     
     var dirty = function(event) {
         score_details_dirty(get_enclosing_editor(event.target), "dirty");
+    }
+
+
+    /***************
+     * local cache *
+     ***************/
+    // forcefully inserts an item into cache
+    function cache_insert(sub_id, prob_id, item_name, value) {
+        if (!(sub_id in cache)) {
+          cache[sub_id] = {};
+        }
+        var probs = cache[sub_id];
+
+        if (!(prob_id in probs)) {
+          probs[prob_id] = {};
+        }
+        var data = probs[prob_id];
+
+        data[item_name] = value;
+    }
+    // gets the entire cached object
+    function cache_get(sub_id, prob_id) {
+        if (!(sub_id in cache)) {
+          return null;
+        }
+        var probs = cache[sub_id];
+
+        if (!(prob_id in probs)) {
+          return null;
+        }
+        return probs[prob_id];
+    }
+    // gets an item from cache (either 'score', 'feedback', or 'grader' for now)
+    function cache_get_item(sub_id, prob_id, item_name) {
+        var data = cache_get(sub_id, prob_id);
+        if (data == null) {
+          return null;
+        }
+
+        if (!(item_name in data)) {
+          return null
+        }
+        return data[item_name];
     }
 
 });
