@@ -43,8 +43,12 @@
       });
       $extensionNewDayField.on('dp.change', function() {
         $newDate = moment($extensionNewDayField.data('DateTimePicker').date()).startOf('day');
-        $extendBy = $newDate.diff($dueDate, 'days');
-        $extensionDaysField.val($extendBy);
+        if ($newDate.isValid()) {
+          $extendBy = $newDate.diff($dueDate, 'days');
+          $extensionDaysField.val($extendBy);
+        } else {
+          $extensionDaysField.val('');
+        }
       });
       
       /* need to manually toggle popup because it only shows once per focus */
@@ -106,7 +110,7 @@
       </td></tr>
       <tr><td>
       -OR- Specify number of days to extend:
-      <%= f.text_field :days, :size=>3, :id => "extension_days" %> day(s)
+      <%= f.text_field :days, :id => "extension_days", :type => "number", :style => "width:60px" %> day(s)
       <br>
       -OR- Infinite Extension? <%= f.check_box :infinite, :id => "infinite_extension" %>
       <%= f.hidden_field(:assessment_id)%>
