@@ -89,6 +89,8 @@ Autolab3::Application.routes.draw do
         get "viewGradesheet"
         get "writeup"
         get "handout"
+        patch "credentials", action: :updatec
+        get "credentials"
 
         # autograde actions
         post "autograde_done"

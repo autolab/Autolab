@@ -42,6 +42,10 @@
   display_name: "Use SVN?",
   help_text: "Whether to use SVN in conjunction with this assignment." %></span>
 
+<span class="checkbox"><%= f.check_box :use_aws_credentials,
+  display_name: "Use student credentials?",
+  help_text: "Whether to use students credentials when autograding." %></span>
+
 <%= f.text_field :group_size,
   display_name: "Group Size",
   help_text: "Set the maximum size of groups for this assessment.  If group size is 1, the assessment is solo.  If the size is decreased, groups that are too large will not be broken up.  If the size is set to 1, groups will be saved, but the assessment will be solo." %>

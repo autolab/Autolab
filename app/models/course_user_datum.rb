@@ -152,6 +152,10 @@ class CourseUserDatum < ActiveRecord::Base
     end
   end
 
+  def has_credentials?
+    access_key_id != nil && access_key != nil
+  end
+
   #
   # User Attribute Wrappers - these functions get attributes from the CUD's
   #   associated User object, in an attempt to hide the User object

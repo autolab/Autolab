@@ -94,6 +94,9 @@
       <% if @assessment.has_scoreboard? %>
           <li><%= link_to "View scoreboard", [@course, @assessment, :scoreboard], title: "View the assessment scoreboard" %></li>
       <% end %>
+      <% if @assessment.use_credentials? %>
+          <li> <%= link_to "Set credentials", {:action => 'credentials'}, {:title=> "Set your AWS credentails" } %> </li>
+      <% end %>
 
     <% @list.sort { |a,b| a[1] <=> b[1] }.each { |key, value| %>
       <% if value.size > 0  then  %>
@@ -195,3 +198,5 @@
 
     <% end %>
   </div>
+
+
