@@ -104,7 +104,7 @@ var initializeAnnotationsForCode = function() {
 
     var problemStr = annObj.problem_id? getProblemNameWithId(annObj.problem_id) : "General";
     var valueStr = annObj.value? annObj.value.toString() : "None";
-    var commentStr = decodeURI(annObj.comment);
+    var commentStr = annObj.comment;
 
     var grader = elt("span", {
       class: "grader"
@@ -168,7 +168,7 @@ var initializeAnnotationsForCode = function() {
 
     var problemStr = annObj.problem_id? getProblemNameWithId(annObj.problem_id) : "General";
     var valueStr = annObj.value? annObj.value.toString() : "None";
-    var commentStr = decodeURI(annObj.comment);
+    var commentStr = annObj.comment;
 
     var grader = elt("span", {
       class: "grader"
