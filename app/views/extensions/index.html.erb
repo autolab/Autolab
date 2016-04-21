@@ -8,8 +8,8 @@
   <%= javascript_include_tag 'chosen.jquery.min' %>
   <script type="application/javascript">
     jQuery(function() {
-      $dueDate = moment("<%= @assessment.due_at.to_s %>", "YYYY-MM-DD hh:mm:ss ZZ");
-    
+      $dueDate = moment("<%= @assessment.due_at.to_s %>", "YYYY-MM-DD hh:mm:ss ZZ").startOf('day');
+
       $extensionDaysField = $('#extension_days');
       $extensionNewDayField = $('#new_due_date_picker');
 
@@ -36,16 +36,23 @@
       });
 
       /* two-way-bind newDayField with daysField */
-      $extensionDaysField.change(function() {
+      $extensionDaysField.on('change', function() {
         $newDate = moment($dueDate);
-        $newDate.add($extensionDaysField.val(), 'days');
+        $newDate.add($extensionDaysField.val(), 'days').startOf('day');
         $extensionNewDayField.data('DateTimePicker').date($newDate);
-      })
-      $extensionNewDayField.on('dp.hide', function() {
-        $newDate = moment($extensionNewDayField.data('DateTimePicker').date());
-        $extendBy = $newDate.diff($dueDate, 'days');
-        $extensionDaysField.val($extendBy);
-      })
+      });
+      $extensionNewDayField.on('dp.change', function() {
+        $newDate = moment($extensionNewDayField.data('DateTimePicker').date()).startOf('day');
+        if ($newDate.isValid()) {
+          $extendBy = $newDate.diff($dueDate, 'days');
+          $extensionDaysField.val($extendBy);
+        } else {
+          $extensionDaysField.val('');
+        }
+      });
+      
+      /* need to manually toggle popup because it only shows once per focus */
+      $extensionNewDayField.on('click', $extensionNewDayField.data('DateTimePicker').show);
     });
   </script>
 
@@ -103,7 +110,7 @@
       </td></tr>
       <tr><td>
       -OR- Specify number of days to extend:
-      <%= f.text_field :days, :size=>3, :id => "extension_days" %> day(s)
+      <%= f.text_field :days, :id => "extension_days", :type => "number", :style => "width:60px" %> day(s)
       <br>
       -OR- Infinite Extension? <%= f.check_box :infinite, :id => "infinite_extension" %>
       <%= f.hidden_field(:assessment_id)%>
