@@ -1,11 +1,15 @@
 <% @title = "Statistics" %>
-<h2>Statistics for <%= link_to @assessment.display_name, course_assessment_path(@course, @assessment) %></h2>
+<h2 id="statsHeading">Statistics for <%= link_to @assessment.display_name, course_assessment_path(@course, @assessment) %></h2>
 <% if @assessment.problems.count > 0 %>
+<%= javascript_include_tag "https://code.jquery.com/jquery-2.1.4.min.js" -%>
+
+<%= stylesheet_link_tag "https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.5/css/materialize.min.css"-%>
+
+<%= javascript_include_tag "https://cdn.plot.ly/plotly-1.5.0.min.js" -%>
+<%= javascript_include_tag "https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.5/js/materialize.min.js" -%>
+
 <br />
-<%= render :partial=>"statistics",:locals=>{
-      :scores=>@stat_scores,:byGrader=>@stat_byGrader,:byMajor=>@stat_byMajor,
-      :byYear=>@stat_byYear,:bySchool=>@stat_bySchool,:byLecture=>@stat_byLecture,
-      :bySection=>@stat_bySection} %>
+<%= render :partial=>"statistics"%>
 <% else %>
 This assessment has no problems.
 <% end %>

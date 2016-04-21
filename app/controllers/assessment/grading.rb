@@ -317,31 +317,39 @@ public
     # [[<group>, {:mean, :median, :max, :min, :stddev}]...]
     # for each group. :all has just the hash.
     @statistics = {}
-
+    @scores = {}
     # Rather than special case this, we just index into the result.
     by_assessment = latest_submissions.group_by { |s| s.assessment.name }
-    all_grouping = stats_for_grouping(by_assessment)[0]
+    assessment_stats = stats_for_grouping(by_assessment)
+    all_grouping = assessment_stats[assessment_stats.keys[0]]
+
     if all_grouping.nil?
       @statistics[:all] = []
+      @scores[:all] = []
     else
-      @statistics[:all] = all_grouping[1]
+      @statistics[:all] = all_grouping[:data]
+      @scores[:all] = all_grouping[1]
     end
 
     by_lecture = latest_submissions.group_by { |s| s.course_user_datum.lecture }
     @statistics[:lecture] = stats_for_grouping(by_lecture)
+    @scores[:lecture] = scores_for_grouping(by_lecture)
 
     by_section = latest_submissions.group_by { |s| s.course_user_datum.section }
     @statistics[:section] = stats_for_grouping(by_section)
+    @scores[:section] = scores_for_grouping(by_section)
 
     by_school = latest_submissions.group_by { |s| s.course_user_datum.school }
     @statistics[:school] = stats_for_grouping(by_school)
+    @scores[:school] = scores_for_grouping(by_school)
 
     by_major = latest_submissions.group_by { |s| s.course_user_datum.major }
     @statistics[:major] = stats_for_grouping(by_major)
+    @scores[:major] = scores_for_grouping(by_major)
 
     by_year = latest_submissions.group_by { |s| s.course_user_datum.year }
     @statistics[:year] = stats_for_grouping(by_year)
-
+    @scores[:year] = scores_for_grouping(by_year)
     @statistics[:grader] = stats_for_grader(latest_submissions)
   end
 
@@ -362,43 +370,64 @@ private
     true
   end
 
+# Scores for grouping
+  def scores_for_grouping(grouping)
+    result = {}
+    grouping.keys.compact.sort.each do |group|
+      scoreresult = {}
+      problem_scores = problem_scores_for_group(grouping, group)
+      @assessment.problems.each do |problem|
+        scoreresult[problem.name] = problem_scores[problem.id]
+      end
+      result[group] = scoreresult
+    end
+    result
+  end
+
+  # Problem scores for grouping
+  def problem_scores_for_group(grouping, group)
+    problem_scores = {}
+
+    @assessment.problems.each do |problem|
+      problem_scores[problem.id] = []
+    end
+    problem_scores[:total] = []
+
+    grouping[group].each do |submission|
+      next unless submission.course_user_datum.student?
+      # TODO(jezimmer): Find a more permanent fix (see #529)
+      #next unless submission.special_type == Submission::NORMAL
+
+      submission.scores.each do |score|
+        problem_scores[score.problem_id] << score.score
+      end
+      problem_scores[:total] << submission.final_score(@cud)
+    end
+    problem_scores
+  end
+  
+# Stats for grouping
   def stats_for_grouping(grouping)
-    result = []
+    result = {}
     problem_id_to_name = @assessment.problem_id_to_name
     stats = Statistics.new
-
     # There can be null keys here because some of the
     # values we group by are nullable in the DB. We
     # shouldn't show those.
     grouping.keys.compact.sort.each do |group|
-      problem_scores = {}
-
-      @assessment.problems.each do |problem|
-        problem_scores[problem.id] = []
-      end
-      problem_scores[:total] = []
-
-      grouping[group].each do |submission|
-        next unless submission.course_user_datum.student?
-        # TODO(jezimmer): Find a more permanent fix (see #529)
-        #next unless submission.special_type == Submission::NORMAL
-
-        submission.scores.each do |score|
-          problem_scores[score.problem_id] << score.score
-        end
-
-        problem_scores[:total] << submission.final_score(@cud)
-      end
-
+      problem_scores = problem_scores_for_group(grouping,group)
       # Need the problems to be in the right order.
-      problem_stats = []
+      problem_stats = {}
+      # seems like we always index with 1
       @assessment.problems.each do |problem|
-        problem_stats << [problem.name, stats.stats(problem_scores[problem.id])]
+        problem_stats[problem.name] =  stats.stats(problem_scores[problem.id])
       end
-      problem_stats << ["Total", stats.stats(problem_scores[:total])]
-
-      result << [group, problem_stats]
+      problem_stats[:Total] = stats.stats(problem_scores[:total])
+      result[group] = {}
+      result[group][:data] = problem_stats
+      result[group][:total_students] =problem_scores[ problem_scores.keys[1]].length
     end
+    # raise result.inspect
     result
   end
 

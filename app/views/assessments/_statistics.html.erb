@@ -1,119 +1,119 @@
-<% content_for :stylesheets do %>
-  <style type="text/css">
-    h3.statSectionTitle { 
-      display:inline;
-    }
-    font.statsPopulationSize {
-      font-size:10px;
-      font-style:italic;
-    }
-  </style>
-<% end %>
+<div class="row">
+  <div class="col s12 m9 l10">
+    <% content_for :stylesheets do %>
+      <style type="text/css">
+        h4.statSectionTitle {
+          display:inline;
+        }
+        font.statsPopulationSize {
+          font-size:10px;
+          font-style:italic;
+        }
+      </style>
+    <% end %>
 
-<% content_for :javascripts do %>
-  <script type="text/javascript">
-    function flip(section) { 
-      var div = document.getElementById(section);
-      var arrowDown = document.getElementById(section +"Arrow");
-      var arrowRight = document.getElementById(section +"ArrowRight");
-      if (div.style.display == "none") {
-        div.style.display = "block";
-        arrowDown.style.display = "inline";
-        arrowRight.style.display = "none";
-      } else { 
-        div.style.display = "none";
-        arrowDown.style.display = "none";
-        arrowRight.style.display = "inline";
-      }
-    }
-  </script>
-<% end %>
+    <% content_for :javascripts do %>
+       <%= javascript_include_tag "assessments_statistics" %>
+       <%= javascript_include_tag "chroma.min" %>
+      <script type="text/javascript">
+        var hell = <%= raw @scores.to_json %>;
+        plotGraph(hell);
+      </script>
+    <% end %>
 
-<h3 style="display:inline" onclick="flip('allGradesDiv')">
-  <%= image_tag 'arrowDown.png', :id=>'allGradesDivArrow' %>
-  <%= image_tag 'arrowRight.png', :id=>'allGradesDivArrowRight', :style=>"display:none;" %>
+    <div id='allGradesDiv' class="section scrollspy" >
+      <h4>All Grades</h4>
 
-  All Grades
-</h3>
+      <%=raw stats_table(@statistics[:all]) %>
 
-<div id='allGradesDiv' >
-  <%=raw stats_table(@statistics[:all]) %>
-</div>
+    </div>
 
-<h3 onclick="flip('lectureDiv')">
-  <%= image_tag 'arrowDown.png', :id=>'lectureDivArrow', :style=>"display:none;" %>
-  <%= image_tag 'arrowRight.png', :id=>'lectureDivArrowRight' %>
-  Statistics by Lecture
-</h3>
+    <div id='lectureDiv'  class="section scrollspy" >
+      <h4> Statistics by Lecture </h4>
+    <% @statistics[:lecture].each do |(lecture, group_stats)| %>
+      <h4 class="statSectionTitle"><%= lecture %> [<%= group_stats[:total_students]%> Students]</h4>
+      <%=raw stats_table(group_stats[:data])%>
+      <%= raw stats_graph(lecture, "lecture")%>
+    <% end %>
+    <div id='lectureDivGraph'>
 
-<div id='lectureDiv' style="display:none" >
-<% @statistics[:lecture].each do |(lecture, group_stats)| %>
-  <h3 class="statSectionTitle"><%= lecture %></h3>
-  <%=raw stats_table(group_stats)%>
-<% end %>
-</div>
+    </div>
+    </div>
 
-<h3 onclick="flip('sectionDiv')">
-  <%= image_tag 'arrowDown.png', :id=>'sectionDivArrow', :style=>"display:none;" %>
-  <%= image_tag 'arrowRight.png', :id=>'sectionDivArrowRight' %>
-  Statistics by Section
-</h3>
+    <div id='sectionDiv' class="section scrollspy" >
+      <h4> Statistics by Section </h4>
+    <% @statistics[:section].each do |(section, group_stats)| %>
+      <h4 class="statSectionTitle"><%= section %>[<%= group_stats[:total_students]%> Students]</h4>
+      <%=raw stats_table(group_stats[:data]) %>
+      <%= raw stats_graph(section, "section")%>
 
-<div id='sectionDiv' style="display:none" >
-<% @statistics[:section].each do |(section, group_stats)| %>
-  <h3 class="statSectionTitle"><%= section %></h3>
-  <%=raw stats_table(group_stats) %>
-<% end %>
-</div>
+    <% end %>
+    <div id='sectionDivGraph'>
 
-<h3 onclick="flip('graderDiv')">
-  <%= image_tag 'arrowDown.png', :id=>'graderDivArrow', :style=>"display:none;" %>
-  <%= image_tag 'arrowRight.png', :id=>'graderDivArrowRight' %>
-  Statistics by Grader
-</h3>
+    </div>
+    </div>
 
-<div id='graderDiv' style="display:none" >
-<% @statistics[:grader].each do |(grader, group_stats)| %>
-  <h3 class="statSectionTitle"><%= grader %></h3>
-  <%=raw stats_table(group_stats) %>
-<% end %>
-</div>
+    <div id='graderDiv' class="section scrollspy" >
+      <h4> Statistics by Grader </h4>
+    <% @statistics[:grader].each do |(grader, group_stats)| %>
+      <h4 class="statSectionTitle"><%= grader %></h4>
+      <%=raw stats_table(group_stats) %>
 
-<h3 onclick="flip('schoolDiv')">
-  <%= image_tag 'arrowDown.png', :id=>'schoolDivArrow', :style=>"display:none;" %>
-  <%= image_tag 'arrowRight.png', :id=>'schoolDivArrowRight' %>
-  Statistics by School
-</h3>
+    <% end %>
+    <div id='graderDivGraph'>
 
-<div id='schoolDiv' style="display:none" >
-<% @statistics[:school].each do |(school, group_stats)| %>
-  <h3 class="statSectionTitle"><%= school %></h3>
-  <%=raw stats_table(group_stats) %>
-<% end %>
-</div>
+    </div>
+    </div>
 
-<h3 onclick="flip('majorDiv')">
-  <%= image_tag 'arrowDown.png', :id=>'majorDivArrow', :style=>"display:none;" %>
-  <%= image_tag 'arrowRight.png', :id=>'majorDivArrowRight' %>
-  Statistics by Major
-</h3>
+    <div id='schoolDiv' class="section scrollspy" >
+      <h4> Statistics by School </h4>
 
-<div id='majorDiv' style="display:none" >
-<% @statistics[:major].each do |(major, group_stats)| %>
-  <h3 class="statSectionTitle"><%= major %></h3>
-  <%=raw stats_table(group_stats) %>
-<% end %>
-</div>
+    <% @statistics[:school].each do |(school, group_stats)| %>
+      <h4 class="statSectionTitle"><%= school %>[<%= group_stats[:total_students]%> Students]</h4>
+      <%=raw stats_table(group_stats[:data]) %>
+      <%= raw stats_graph(school, "school")%>
 
-<h3 onclick="flip('yearDiv')">
-  <%= image_tag 'arrowDown.png', :id=>'yearDivArrow', :style=>"display:none;" %>
-  <%= image_tag 'arrowRight.png', :id=>'yearDivArrowRight' %>
-  Statistics by Year
-</h3>
+    <% end %>
+    <div id='schoolDivGraph'>
 
-<div id='yearDiv' style="display:none" >
-<% @statistics[:year].each do |(year, group_stats)| %>
-  <h3 class="statSectionTitle"><%= year %></h3>
-  <%=raw stats_table(group_stats) %>
-<% end %>
+    </div>
+    </div>
+
+    <div id='majorDiv' class="section scrollspy" >
+      <h4> Statistics by Major </h4>
+
+    <% @statistics[:major].each do |(major, group_stats)| %>
+      <h4 class="statSectionTitle"><%= major %>[<%= group_stats[:total_students]%> Students]</h4>
+      <%=raw stats_table(group_stats[:data]) %>
+      <%= raw stats_graph(major, "major")%>
+    <% end %>
+    <div id='majorDivGraph'>
+
+    </div>
+    </div>
+
+    <div id='yearDiv' class="section scrollspy" >
+      <h4> Statistics by Year </h4>
+
+    <% @statistics[:year].each do |(year, group_stats)| %>
+      <h4 class="statSectionTitle"><%= year %>[<%= group_stats[:total_students]%> Students]</h4>
+      <%=raw stats_table(group_stats[:data]) %>
+      <%= raw stats_graph(year, "year")%>
+    <% end %>
+    <div id='yearDivGraph'>
+
+    </div>
+    </div>
+  </div>
+  <div class="col hide-on-small-only m3 l2">
+    <ul class="section table-of-contents statsGroups">
+      <li><a href="#allGradesDiv">All Grades</a></li>
+      <li><a href="#lectureDiv">By Lecture</a></li>
+      <li><a href="#sectionDiv">By Section</a></li>
+      <li><a href="#graderDiv">By Grader</a></li>
+      <li><a href="#schoolDiv">By School</a></li>
+      <li><a href="#majorDiv">By Major </a></li>
+      <li><a href="#yearDiv">By Year</a></li>
+    </ul>
+  </div>
 </div>

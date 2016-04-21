@@ -35,7 +35,10 @@
       js.src = "//connect.facebook.net/en_US/sdk.js#xfbml=1&version=v2.3&appId=259908887444831";
       fjs.parentNode.insertBefore(js, fjs);
     }(document, 'script', 'facebook-jssdk'));</script>
-
+    <%= external_javascript_include_tag "jquery", "2.1.4" %>
+    <%= content_for :js_widget_patch %>
+    <%= external_javascript_include_tag "bootstrap", "3.0.0" %>
+    <%= javascript_include_tag 'application' %>
     <div class="page-wrapper">
       <%= render "layouts/navbar" %>
 
@@ -72,10 +75,7 @@
       <!-- Footer -->
     </div>
 
-    <%= external_javascript_include_tag "jquery", "2.1.1" %>
-    <%= content_for :js_widget_patch %>
-    <%= external_javascript_include_tag "bootstrap", "3.0.0" %>
-    <%= javascript_include_tag 'application' %>
+
     <script async defer id="github-bjs" src="https://buttons.github.io/buttons.js"></script>
     <%= content_for :javascripts %>
 

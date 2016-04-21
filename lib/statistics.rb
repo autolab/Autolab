@@ -1,3 +1,4 @@
+# Statistics Module: Computes basic statistics
 class Statistics
   def mean(a)
     if a.nil? || a.empty?
