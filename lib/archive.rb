@@ -98,7 +98,18 @@ module Archive
 
   def self.get_entry_name(entry)
     # tar/tgz vs zip
-    entry.respond_to?(:full_name) ? entry.full_name : entry.name
+    name = entry.respond_to?(:full_name) ? entry.full_name : entry.name
+    if ! name.ascii_only?
+      name = String.new(name)
+      name.force_encoding("UTF-8")
+      if ! name.valid_encoding?
+        # not utf-8. Assume single byte and choose windows western, since
+        # iso8859-1 printables are a subset
+        name.force_encoding("Windows-1252")
+        name.encode!()
+      end
+    end
+    name
   end
 
   def self.read_entry_file(entry)
