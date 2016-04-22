@@ -118,7 +118,17 @@
           data: "problem<%= i %>",
           render: function(data, type, full, meta) {
             if (type == "display") return "";
-            return data;
+
+            var submission = aux_data[meta.row];
+            var sub_id = submission['submission-id'];
+            var problem = submission['problems'][meta.col - first_problem_column];
+            var prob_id = problem['problem-id'];
+            var score = cache_get_item(sub_id, prob_id, 'score');
+            if (score == null) {
+              // if doesn't exist in cache (no update yet), then use original value
+              score = problem['score'];
+            }
+            return score;
           } },
       <% end %>
       <% if @cud.instructor? %>
@@ -135,8 +145,49 @@
     $col_name_template = jQuery('#col_name_template');
     $col_prob_template = jQuery('#col_prob_template');
 
-    /*** local cache ***/
+
+    /***************
+     * local cache *
+     ***************/
     cache = {};
+    // forcefully inserts an item into cache
+    function cache_insert(sub_id, prob_id, item_name, value) {
+        if (!(sub_id in cache)) {
+          cache[sub_id] = {};
+        }
+        var probs = cache[sub_id];
+
+        if (!(prob_id in probs)) {
+          probs[prob_id] = {};
+        }
+        var data = probs[prob_id];
+
+        data[item_name] = value;
+    }
+    // gets the entire cached object
+    function cache_get(sub_id, prob_id) {
+        if (!(sub_id in cache)) {
+          return null;
+        }
+        var probs = cache[sub_id];
+
+        if (!(prob_id in probs)) {
+          return null;
+        }
+        return probs[prob_id];
+    }
+    // gets an item from cache (either 'score', 'feedback', or 'grader' for now)
+    function cache_get_item(sub_id, prob_id, item_name) {
+        var data = cache_get(sub_id, prob_id);
+        if (data == null) {
+          return null;
+        }
+
+        if (!(item_name in data)) {
+          return null
+        }
+        return data[item_name];
+    }
   </script>
 
   <%= javascript_include_tag "gradesheet" %>
