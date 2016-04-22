@@ -452,14 +452,28 @@ jQuery(function() {
     });
 
     function open_score_popover(e) {
-      var $editable = jQuery(e)
-        var $popover = $editable.siblings("div.popover")
-        var $td = $editable.parent()
-        var $score_details_tbody = jQuery(".score_details", $popover)
-        var score_id = $td.data("score-id")
+      var $editable = jQuery(e);
+      var $popover = $editable.siblings("div.popover");
+      var $td = $editable.parent();
+      var $score_details_tbody = jQuery(".score_details", $popover);
+      var score_id = $td.data("score-id");
+      var sub_id = $td.data('submission-id');
+      var prob_id = $td.data('problem-id');
 
-        // lazy load grader
+      var grader_name_field = jQuery(".grader-name", $score_details_tbody);
+      var $feedback_textarea = jQuery(".feedback", $score_details_tbody);
+
+      // check cache first
+      var cache_feedback = cache_get_item(sub_id, prob_id, 'feedback');
+      if (cache_feedback != null) {
+        // cache hit
+        $feedback_textarea.html(cache_feedback);
+      } else {
+        // cache miss
+        // lazy load grader and feedback
         if (score_id) {
+          $feedback_textarea.prop('disabled', true);  // disable feedback editing until ajax returns
+
           jQuery.ajax("score_grader_info", {
             data: {
               "score_id": score_id
@@ -473,6 +487,7 @@ jQuery(function() {
             }
           });
         }
+      }
 
       show_popover($popover, {
         my: "left center",
