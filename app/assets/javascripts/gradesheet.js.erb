@@ -588,10 +588,10 @@ jQuery(function() {
         $feedback_textarea.html(cache_feedback);
       } else {
         // cache miss
-        $feedback_textarea.prop('disabled', true);  // disable feedback editing until ajax returns
-
         // lazy load grader and feedback
         if (score_id) {
+          $feedback_textarea.prop('disabled', true);  // disable feedback editing until ajax returns
+
           jQuery.ajax("score_grader_info", {
             data: {
               "score_id": score_id
