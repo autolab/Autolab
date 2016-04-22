@@ -47,8 +47,9 @@
             "lec": "<%= s.course_user_datum.lecture %>",
             "sec": "<%= s.course_user_datum.section %>",
             <% p_scores = s.problems_to_scores %>
-            <% for i in 0..(@assessment.problems.length - 1) %>
-              "problem<%= i %>": "",
+            <% @assessment.problems.each_with_index do |p,i| %>
+              <% p_score = p_scores[p.id] %>
+              "problem<%= i %>": "<%= p_score && p_score.score ? p_score.score : raw("&ndash;") %>",
             <% end %>
             <% if @cud.instructor? %>
               "late_penalty": "<%= computed_score(history_url s.course_user_datum) { s.late_penalty @cud } %>",
@@ -110,7 +111,11 @@
         { title: `<%= p.name %>
             <span class="max_score">(<%= p.max_score %>)</span>`, 
           className: "problem",
-          data: "problem<%= i %>"},
+          data: "problem<%= i %>",
+          render: function(data, type, full, meta) {
+            if (type == "display") return "";
+            return data;
+          } },
       <% end %>
       <% if @cud.instructor? %>
         { title: "Late\nPenalty", className: "late_penalty", data: "late_penalty" },
