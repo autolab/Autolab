@@ -102,9 +102,11 @@
     columns = [
       { title: "#", className: "enumerator", data: "id" },
       { title: "Email & Name", className: "id", data: "name",
-        render: {
-          _: "name",
-          sort: "email"
+        render: function(data, type, full, meta) {
+          if (type == "display") return data.name;
+          if (type == "filter") return data.name + " " + data.email;
+          if (type == "sort") return data.email;
+          return data.name;
         } },
       { title: "Lec", className: "lec", data: "lec" },
       { title: "Sec", className: "sec", data: "sec" },
