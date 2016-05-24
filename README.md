@@ -60,7 +60,7 @@ __For Mac users__: Follow the step-by-step instruction below (we are working on 
   rbenv rehash
   ```
 
-5. `cd` into `autolab-src` and install the required gems:
+5. `cd` into `bin` and install the required gems:
 
   ```sh
   bundle install
