@@ -317,7 +317,12 @@ private
     # use the exception_notifier gem to send out an e-mail
     # to the notification list specified in config/environment.rb
     ExceptionNotifier.notify_exception(exception, env: request.env,
-                                                  data: { message: "was doing something wrong" })
+                                       data: {
+                                         user: current_user,
+                                         course: @course,
+                                         assessment: @assessment,
+                                         submission: @submission
+                                       })
 
     # stack traces are only shown to instructors and administrators
     # by leaving @error undefined, students and CAs do not see stack traces
