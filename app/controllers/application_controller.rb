@@ -259,16 +259,20 @@ protected
           @course = action.course
           COURSE_LOGGER.setCourse(@course)
           mod_name = Rails.root.join(action.action)
-          require mod_name
-          Updater.update(@course)
+          begin
+            require mod_name
+            Updater.update(@course)
+          rescue ScriptError, StandardError => e
+            Rails.logger.error("Error in '#{@course.name}' updater: #{e.message}")
+            Rails.logger.error(e.backtrace.inspect)
+            ExceptionNotifier.notify_exception(e, data: {action_script: action.action, course: @course})
+          end
         end
 
         Process.detach(pid)
       rescue StandardError => e
-        Rails.logger.error("Error updater: #{e}")
-        Rails.logger.error(e)
-        Rails.logger.error(e.message)
-        Rails.logger.error(e.backtrace.inspect)
+        Rails.logger.error("Cannot fork '#{@course.name}' updater: #{e.message}")
+        ExceptionNotifier.notify_exception(e)
       end
     end
   end
