@@ -584,7 +584,8 @@ private
       # Major(11), Year(12), (skip)(13), Grade Policy(14), ...
 
       # Sanitize roster input, ignoring empty / incomplete lines.
-      parsedRoster.select! { |row| row.length == NEW_ROSTER_COLUMNS }
+      # Also requires each line to have an andrewID, else ignores it
+      parsedRoster.select! { |row| row.length == NEW_ROSTER_COLUMNS && row[8] != nil}
       # Detect if there is a header row
       if (parsedRoster[0][0] == "Semester")
         offset = 1
