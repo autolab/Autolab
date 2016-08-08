@@ -429,6 +429,11 @@ class AssessmentsController < ApplicationController
     @autograded = @assessment.has_autograder?
   end
 
+  action_auth_level :credentials, :student
+  def credentials
+  
+  end
+
   action_auth_level :history, :student
   def history
     # Remember the student ID in case the user wants visit the gradesheet
@@ -519,6 +524,13 @@ class AssessmentsController < ApplicationController
     flash[:success] = "Saved!" if @assessment.update!(edit_assessment_params)
 
     redirect_to(action: :edit) && return
+  end
+
+  action_auth_level :updatec, :student
+  def updatec
+    flash[:success] = "Saved!" if @cud.update!(edit_cud_params)
+
+    redirect_to(action: :credentials) && return
   end
 
   action_auth_level :releaseAllGrades, :instructor
@@ -658,6 +670,11 @@ private
       @assessment.version_penalty.destroy unless @assessment.version_penalty.nil?
     end
     ass.permit!
+  end
+
+  def edit_cud_params
+    cud = params.require(:course_user_datum)
+    cud.permit!
   end
 
   ##

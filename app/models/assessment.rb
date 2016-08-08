@@ -286,6 +286,10 @@ class Assessment < ActiveRecord::Base
     config_module.instance_methods.include?(methodKey)
   end
 
+  def use_credentials?
+    use_aws_credentials
+  end
+
   def has_autograder?
     autograder != nil
   end
@@ -501,3 +505,4 @@ private
 
   include AssessmentAssociationCache
 end
+

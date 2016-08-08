@@ -285,9 +285,21 @@ module AssessmentAutograde
                        "output_file" => output_file,
                        "timeout" => @autograde_prop.autograde_timeout,
                        "callback_url" => callback_url,
-                       "jobName" => job_name }.to_json
-    begin
-      response = TangoClient.addjob("#{course.name}-#{assessment.name}", job_properties)
+                       "jobName" => job_name }
+    # if use aws credentials, make sure they exist and send to Tango
+    if assessment.use_credentials?
+      if @cud.has_credentials?
+        job_properties[:accessKeyId] = @cud.access_key_id
+        job_properties[:accessKey] = @cud.access_key
+        puts job_properties.to_json
+      else
+        flash[:error] = "Error because you did not set credentials!"
+        return -9, nil
+      end
+    end  
+  
+  begin
+      response = TangoClient.addjob("#{course.name}-#{assessment.name}", job_properties.to_json)
     rescue TangoClient::TangoException => e
       flash[:error] = "Error while adding job to the queue: #{e.message}"
       return -9, nil
