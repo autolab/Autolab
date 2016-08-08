@@ -33,15 +33,15 @@ class Course < ActiveRecord::Base
     course_dir = File.join Rails.root, "courses", name
     FileUtils.mkdir_p course_dir
 
-    FileUtils.touch (File.join course_dir, "autolab.log")
+    FileUtils.touch(File.join(course_dir, "autolab.log"))
 
     course_rb = File.join course_dir, "course.rb"
     default_course_rb = File.join Rails.root, "lib", "__defaultCourse.rb"
     FileUtils.cp default_course_rb, course_rb
 
-    FileUtils.mkdir_p (File.join Rails.root, "assessmentConfig")
-    FileUtils.mkdir_p (File.join Rails.root, "courseConfig")
-    FileUtils.mkdir_p (File.join Rails.root, "gradebooks")
+    FileUtils.mkdir_p(File.join(Rails.root, "assessmentConfig"))
+    FileUtils.mkdir_p(File.join(Rails.root, "courseConfig"))
+    FileUtils.mkdir_p(File.join(Rails.root, "gradebooks"))
   end
 
   def order_of_dates
