@@ -3,3 +3,6 @@ This directory contains some examples of autograded labs.
 Files:
 hellolab/	The simplest autograded lab
 malloclab/	The CMU Malloc Lab
+
+git status
+git -a commit examples
