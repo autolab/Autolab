@@ -5,4 +5,6 @@ hellolab/	The simplest autograded lab
 malloclab/	The CMU Malloc Lab
 
 git status
-git -a commit examples
+git commit -a
+git push
+
