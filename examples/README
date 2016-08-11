@@ -5,6 +5,7 @@ hellolab/	The simplest autograded lab
 malloclab/	The CMU Malloc Lab
 
 git status
+git pull  ->first, then...
 git commit -a -m "updated msg"
 git push
 
