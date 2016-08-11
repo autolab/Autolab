@@ -1,0 +1,31 @@
+This is an example of the simplest possible autograded lab, called "hello."
+
+To build the lab:
+linux> make clean
+linux> make 
+
+To test offline:
+linux> cd test-autograder
+linux> make clean
+linux> make
+
+# Basic files created by the lab author
+Makefile                Builds the lab from src/
+README                  
+autograde-Makefile      Makefile that runs the autograder 
+src/                    Contains all src files and solutions         
+test-autograder/        For testing autograder offline
+writeup/                Lab writeup that students view from Autolab    
+
+# Files created by running make
+hello-handout/          The directory that is handed out to students, created
+                        using files from src/. 
+hello-handout.tar       Archive of hello-handout directory
+autograde.tar           File that is copied to the autograding instance 
+                        (along with autograde-Makefile and student handin file)
+
+# Files created and managed by Autolab
+handin/    All students handin files
+hello.rb   Config file
+hello.yml  Database properties that persist from semester to semester
+log.txt    Log of autograded submissions
