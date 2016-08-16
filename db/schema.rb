@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150825212603) do
+ActiveRecord::Schema.define(version: 20150602140535) do
 
   create_table "annotations", force: :cascade do |t|
     t.integer  "submission_id", limit: 4
@@ -86,11 +86,11 @@ ActiveRecord::Schema.define(version: 20150825212603) do
     t.boolean  "has_autograde_old",  limit: 1
     t.boolean  "has_scoreboard_old", limit: 1
     t.boolean  "has_svn",            limit: 1
-    t.string   "remote_handin_path", limit: 255
     t.boolean  "quiz",               limit: 1,     default: false
     t.text     "quizData",           limit: 65535
-    t.integer  "group_size",         limit: 4,     default: 1
+    t.string   "remote_handin_path", limit: 255
     t.string   "category_name",      limit: 255
+    t.integer  "group_size",         limit: 4,     default: 1
   end
 
   create_table "attachments", force: :cascade do |t|
