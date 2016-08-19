@@ -59,10 +59,20 @@ class AnnouncementsController < ApplicationController
 private
 
   def set_announcement
-    @announcement = @course.announcements.find(params[:id])
+    @announcement = @course.announcements.find_by_id(params[:id])
+    if @announcement.nil?   # May be system announcement / from another course
+      @announcement = Announcement.find_by_id(params[:id])
+      if @announcement.nil?
+        flash[:error] = "Announcement not found."
+        redirect_to(action: :index) && return
+      elsif !@cud.user.administrator?
+        flash[:error] = "You don't have permission to access this announcement."
+        redirect_to(action: :index) && return
+      end
+    end
+    # Sanity check
     return unless @announcement.system && !@cud.user.administrator?
-
-    flash[:error] = "You don't have permission to access system announcments."
+    flash[:error] = "You don't have permission to access system announcements."
     redirect_to(action: :index) && return
   end
 
