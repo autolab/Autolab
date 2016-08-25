@@ -1,4 +1,4 @@
-This is an example of the simplest possible autograded lab, called "hello."
+This is an example of the simplest possible autograded lab, called "hello." It uses the recommended file format that we've found helpful in the past. 
 
 To build the lab:
 linux> make clean
