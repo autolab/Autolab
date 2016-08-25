@@ -1,11 +1,4 @@
-This directory contains some examples of autograded labs.
+This directory contains examples of autograded labs.
 
 Files:
-hellolab/	The simplest autograded lab
-malloclab/	The CMU Malloc Lab
-
-git status
-git pull  ->first, then...
-git commit -a -m "updated msg"
-git push
-
+hello/	The simplest autograded lab
