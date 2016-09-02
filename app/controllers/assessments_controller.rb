@@ -671,10 +671,11 @@ private
     tar_extract.each do |entry|
       pathname = entry.full_name
       next if pathname.start_with? "."
+      pathname.chomp!("/") if entry.directory?
       # nested directories are okay
-      if entry.directory? && asmt_name.nil?
-        # the highest level directory is assumed to be the assessment name per spec above
-        asmt_name = pathname.chomp("/")
+      if entry.directory? && pathname.count("/") == 0
+        return false if asmt_name
+        asmt_name = pathname
       else
         return false unless asmt_name
         asmt_rb_exists = true if pathname == "#{asmt_name}/#{asmt_name}.rb"
