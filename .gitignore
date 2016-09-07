@@ -23,3 +23,5 @@ tags
 .idea/
 /docker/nginx.conf
 app/views/home/_topannounce.html.erb
+
+Gemfile.lock
