@@ -66,6 +66,8 @@ __For Mac users__: Follow the step-by-step instruction below (we are working on 
   bundle install
   ```
   You need to have [MySQL installed](http://dev.mysql.com/downloads/mysql/) before hand.
+  
+  As Gems get updated, this can have problems. Check the [FAQ] (https://github.com/autolab/Autolab/wiki/FAQ).
 
 
 6.  Configure your database next. You need to fill the `username` and `password` fields on 		`config/database.yml.template` and rename it to `config/database.yml`. Depending on how you installed MySQL and which platform you're running on, you might have to change the database socket setting in this file. If you're having trouble, look at the [FAQ] (https://github.com/autolab/Autolab/wiki/FAQ)
