@@ -671,6 +671,7 @@ private
     tar_extract.each do |entry|
       pathname = entry.full_name
       next if pathname.start_with? "."
+      pathname.chomp!("/") if entry.directory?
       # nested directories are okay
       if entry.directory? && pathname.count("/") == 0
         return false if asmt_name
