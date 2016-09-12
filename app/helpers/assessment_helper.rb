@@ -1,11 +1,11 @@
 module AssessmentHelper
   def stats_table(data)
     out =
-    '<table class="prettyBorder smallText">
+    '<table class="striped">
        <thead>
-         <tr>
-           <th>Problem</th>
-           <th>Mean</th>
+         <tr class="red darken-3 white-text">
+           <th class="red darken-3 white-text">Problem</th>
+           <th class="red darken-3 white-text">Mean</th>
            <th>Median</th>
            <th>StdDev</th>
            <th>Max</th>
@@ -29,6 +29,11 @@ module AssessmentHelper
     out
   end
 
+  def stats_graph(graph_name, type)
+    out = "<div id='#{graph_name + type}Div'></div>"
+    out
+  end
+
   def aud_special_grade_type?(aud)
     aud.grade_type != AssessmentUserDatum::NORMAL
   end
@@ -37,6 +42,7 @@ module AssessmentHelper
     url_for controller: :admin,
             action: :editCourse
   end
+
 
   def gradesheet_csv(asmt, as_seen_by)
     CSV.generate do |csv|
