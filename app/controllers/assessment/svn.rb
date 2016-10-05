@@ -43,22 +43,24 @@ module AssessmentSVN
 
 protected
 
-  def svn_validate_handin
+  def validate_for_svn
     repo = @assessment.aud_for(@cud).repository
     return true if repo
     flash[:error] = "Your repository has not been registered.  Please contact your course staff."
     false
   end
-
-  def svn_save_handin
-    @submission = @assessment.submissions.new(course_user_datum: @cud,
-                                              submitter_ip: request.remote_ip)
-
+  
+  ##
+  # this function checks out the submitter's repo, saves the submissions as a tar on the server
+  # and yields a hash with one key, "svn_tar", which maps to the location of the tar file.
+  # it returns the result of the yield call.
+  #
+  def svn_create_sub(cud)
     # Checkout the svn directory and put it into a tar file
-    repo = @assessment.aud_for(@cud).repository
-    ass_dir = Rails.root("courses", @course.name, @assessment.name, @assessment.handin_directory)
-    svn_dir = File.join(ass_dir, @cud.user.email + "_svn_checkout")
-    svn_tar = File.join(ass_dir, @cud.user.email + "_svn_checkout.tar.gz")
+    repo = @assessment.aud_for(cud).repository
+    ass_dir = @assessment.handin_directory_path
+    svn_dir = File.join(ass_dir, cud.user.email + "_svn_checkout")
+    svn_tar = File.join(ass_dir, cud.user.email + "_svn_checkout.tar.gz")
 
     if File.exist?(svn_dir)
       # To avoid conflicts, end this handin
@@ -66,7 +68,9 @@ protected
       return nil
     end
 
-    unless checkoutWork(repo, svn_dir)
+    if !@assessment.overwrites_method?(:checkoutWork) ||
+       !@assessment.config_module.checkoutWork(repo, svn_dir) then
+      flash[:error] = "There was an error checking out your work.  Please contact your instructor."
       # Clean up svn_dir
       `rm -r #{svn_dir}`
       return nil
@@ -79,12 +83,18 @@ protected
       flash[:error] = "There was a problem with checking out your work, please try again."
       return nil
     end
+  
+    sub = { "svn_tar" => svn_tar }
+    result = yield sub 
+  ensure
+    File.delete(svn_tar)
+    result
+  end
 
-    sub = {}
-    sub["tar"] = svn_tar
+  def svn_save_single_submission(cud, sub)
+    @submission = @assessment.submissions.new(course_user_datum: cud,
+                                              submitter_ip: request.remote_ip)
     @submission.save_file(sub) # this will also save the submission model if successful
-    `rm #{svn_tar}`
-
     @submission
   end
 end

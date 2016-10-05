@@ -24,7 +24,11 @@ module AssessmentHandin
 
     # save the submissions
     begin
-      submissions = saveHandin(params[:submission])
+      if @assessment.has_svn
+        submissions = svn_create_sub(@cud) { |sub| saveHandin(sub) }
+      else
+        submissions = saveHandin(params[:submission])
+      end
     rescue
       submissions = nil
     end
@@ -233,6 +237,8 @@ private
       return false
     end
 
+    return validate_for_svn && validate_for_groups if @assessment.has_svn
+
     # Check for if the submission is empty
     if params[:submission].nil?
       flash[:error] = "Submission was blank - please upload again."
@@ -293,32 +299,27 @@ private
   # this function returns a list of the submissions created by this handin.
 
   def saveHandin(sub)
-    unless @assessment.has_groups?
-      submission = @assessment.submissions.create(course_user_datum_id: @cud.id,
-                                                  submitter_ip: request.remote_ip)
-      submission.save_file(sub)
-      return [submission]
-    end
+    return [save_single_submission(@cud, sub)] unless @assessment.has_groups?
 
     aud = @assessment.aud_for @cud.id
     group = aud.group
-    if group.nil?
-      submission = @assessment.submissions.create(course_user_datum_id: @cud.id,
+    return [save_single_submission(@cud, sub)] if group.nil?
+
+    # transaction will return the value of the block, so the array will be returned
+    ActiveRecord::Base.transaction do
+      group.course_user_data.map { |cud| save_single_submission(cud, sub) }
+    end
+  end
+
+  def save_single_submission(cud, sub)
+    if @assessment.has_svn
+      svn_save_single_submission(cud, sub)
+    else
+      submission = @assessment.submissions.create(course_user_datum_id: cud.id,
                                                   submitter_ip: request.remote_ip)
       submission.save_file(sub)
-      return [submission]
+      return submission
     end
-
-    submissions = []
-    ActiveRecord::Base.transaction do
-      group.course_user_data.each do |cud|
-        submission = @assessment.submissions.create(course_user_datum_id: cud.id,
-                                                    submitter_ip: request.remote_ip)
-        submission.save_file(sub)
-        submissions << submission
-      end
-    end
-    submissions
   end
 
   def set_handin
