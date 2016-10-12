@@ -1,3 +1,9 @@
+class AutolabFormatter < ::Logger::Formatter
+  def call(level, time, _progname, msg)
+    strTime = time.strftime("%m/%d/%y %H:%M:%S")
+    "#{level} -- #{strTime} -- #{msg}\n"
+  end
+end
 
 class CustomLogger
   def initalize
@@ -7,17 +13,13 @@ class CustomLogger
   def setLogPath(path)
     # if this can't grab the file, Autolab should still function
     @logger = Logger.new(path, "monthly")
+    @logger.formatter = AutolabFormatter.new
   rescue
     @logger = Rails.logger
   end
 
   def resetPath
     @logger = Rails.logger
-  end
-
-  def format_message(level, time, _progname, msg)
-    strTime = time.strftime("%m/%d/%y %H:%M:%S")
-    "#{level} -- #{strTime} -- #{msg}\n"
   end
 
   def log(message, severity = Logger::INFO)
