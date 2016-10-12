@@ -177,9 +177,7 @@ module AssessmentAutograde
     end
     if job < 0
       COURSE_LOGGER.log("SendJob failed for #{submissions[0].id}: code #{job}")
-      flash[:error].each do |msg|
-         COURSE_LOGGER.log("SendJob user error message #{msg}")
-      end
+      COURSE_LOGGER.log("SendJob user error message #{flash[:error]}")
     end
     job
   end
