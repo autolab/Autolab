@@ -183,7 +183,7 @@ class SubmissionsController < ApplicationController
       send_data file,
                 filename: pathname,
                 disposition: "inline"
-    
+
     elsif params[:annotated]
 
       @filename_annotated = @submission.handin_annotated_file_path
@@ -197,7 +197,7 @@ class SubmissionsController < ApplicationController
       Prawn::Document.generate(@filename_annotated, :template => @filename) do |pdf|
 
         @annotations.each do |annotation|
-          
+
           return if annotation.coordinate.nil?
 
           position = annotation.coordinate.split(',')
@@ -224,10 +224,10 @@ class SubmissionsController < ApplicationController
 
           # + 1 since pages are indexed 1-based
           pdf.go_to_page(page + 1)
-          pdf.fill_color "ff0000" 
+          pdf.fill_color "ff0000"
           pdf.text_box comment,
-                      { :at => [xCord + 3, yCord - 3], 
-                        :height => height, 
+                      { :at => [xCord + 3, yCord - 3],
+                        :height => height,
                         :width => width }
 
         end
@@ -336,12 +336,12 @@ class SubmissionsController < ApplicationController
     # So if it fails, redirect, instead of showing an error page.
     if PDF.pdf?(file)
       @preview_mode = false
-      if params[:preview] then 
-        @preview_mode = true 
+      if params[:preview] then
+        @preview_mode = true
       end
 
       render(:viewPDF) && return
-    else 
+    else
       begin
         render(:view) && return
       rescue

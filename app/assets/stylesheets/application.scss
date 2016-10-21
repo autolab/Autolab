@@ -1,0 +1,10 @@
+/* ...
+* require_self
+* require_tree .
+*/
+
+/* For the materialize gem documentation, check out https://github.com/mkhairi/materialize-sass */
+
+$primary-color: #DD2222 !default;
+$secondary-color: #DD2222 !default;
+@import "materialize";
