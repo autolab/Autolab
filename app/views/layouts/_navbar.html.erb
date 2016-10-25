@@ -1,75 +1,141 @@
 <div class="main-header">
-  <div class="navbar-header">
-    <a href="/" class="logo"><%= image_tag "AUTOLAB@2x.png", :width=> 180, :alt=>"Carnegie Mellon University" %></a>
 
-    <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target=".navbar-collapse">
-      <span class="sr-only">Toggle navigation</span>
-      <span class="icon-bar"></span>
-      <span class="icon-bar"></span>
-      <span class="icon-bar"></span>
-    </button>
-  </div>
 
-  <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-    <ul class="nav navbar-nav navbar-right action-links" role="navigation">
+  <!-- Jquery -->
+  <!-- <script src="https://code.jquery.com/jquery-3.1.0.js"   integrity="sha256-slogkvB1K3VOkzAI8QITxV3VzpOnkeNVsKvtkYLMjfk="   crossorigin="anonymous"></script> -->
+  <!-- <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"   integrity="sha256-T0Vest3yCU7pafRw9r+settMBX6JkKN06dqBnpQ8d30="   crossorigin="anonymous"></script> -->
 
-      <% if session[:sudo] && @cud then %>
-        <li><%= link_to "(#{@cud.display_name}) Reset user", [:unsudo, @course, @cud] %></li>
-      <% end %>
+  <!-- Materialize -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.7/css/materialize.min.css"> -->
+  <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.7/js/materialize.min.js"></script> -->
 
-      <% if @cud %>
-        <% if @cud.course_assistant? && !@cud.section.blank? %>
-          <li><%= link_to "Section #{@cud.section} Gradebook", [:view, @course, @cud, :gradebook, section: @cud.section], title: "View your gradebook" %></li>
+  <script>
+    // Not using Jquery to bind the listener since it's not loaded at this point
+    document.addEventListener("DOMContentLoaded", function(event) {
+      $('.button-collapse').sideNav();
+    });
+  </script>
+
+  <%= stylesheet_link_tag 'navbar' %>
+
+  <!-- Experimental Navbar Code -->
+  <ul id="dropdown1" class="dropdown-content">
+    <% unless current_user.nil? %>
+      <li role="presentation">
+        <%= link_to "Account", edit_user_path(current_user), :title => "View your account info" %>
+      </li>
+    <% end %>
+    <% if @cud %>
+      <li role="presentation">
+        <%= link_to "Course Profile", [@course, @cud], :title => "View your user profile for the current course" %>
+      </li>
+    <% end %>
+    <% if Rails.env.development? %>
+      <li role="presentation">
+        <a href='/home/developer_login'>Dev Login</a>
+      </li>
+    <% end %>
+    <li role="presentation" class="divider"></li>
+    <li role="presentation">
+      <%= link_to "Log out", destroy_user_session_path, :method => :delete  %>
+    </li>
+  </ul>
+  <nav>
+    <div class="nav-wrapper">
+      <a href="#" class="brand-logo"><a href="/" class="logo"><%= image_tag "AUTOLAB@2x.png", :width=> 180, :alt=>"Carnegie Mellon University" %></a></a>
+      <a href="#" data-activates="mobile-demo" class="button-collapse right"><i class="material-icons">menu</i></a>
+
+      <ul class="right hide-on-med-and-down">
+        <% if session[:sudo] && @cud then %>
+          <li><%= link_to "(#{@cud.display_name}) Reset user", [:unsudo, @course, @cud] %></li>
         <% end %>
 
-        <% if @cud.instructor? || !(@cud.course_assistant? && !@cud.section.blank?) %>
-          <li><%= link_to "Gradebook", [@course, @cud, :gradebook], title: "View your gradebook" %></li>
+        <% if @cud %>
+          <% if @cud.course_assistant? && !@cud.section.blank? %>
+            <li><%= link_to "Section #{@cud.section} Gradebook", [:view, @course, @cud, :gradebook, section: @cud.section], title: "View your gradebook" %></li>
+          <% end %>
+
+          <% if @cud.instructor? || !(@cud.course_assistant? && !@cud.section.blank?) %>
+            <li><%= link_to "Gradebook", [@course, @cud, :gradebook], title: "View your gradebook" %></li>
+          <% end %>
+
+          <li><%= link_to "Jobs", [@course, :jobs], title: "View a history of autograding jobs" %></li>
+
+          <% if @cud.instructor? %>
+            <li><%= link_to "Manage Course", [:manage, @course], title: "Perform course-wise administrative actions" %></li>
+          <% end %>
         <% end %>
 
-        <li><%= link_to "Jobs", [@course, :jobs], title: "View a history of autograding jobs" %></li>
-
-        <% if @cud.instructor? %>
-          <li><%= link_to "Manage Course", [:manage, @course], title: "Perform course-wise administrative actions" %></li>
+        <% if current_user && current_user.administrator? %>
+          <li><%= link_to "Manage Autolab", admin_path, title: "Perform system-wide administrative actions" %></li>
         <% end %>
-      <% end %>
 
-      <% if current_user && current_user.administrator? %>
-        <li><%= link_to "Manage Autolab", admin_path, title: "Perform system-wide administrative actions" %></li>
-      <% end %>
+        <% if user_signed_in? %>
+          <li><a class="dropdown-button" href="#!" data-activates="dropdown1" data-beloworigin="true" data-hover="false"><%= current_user.display_name %><i class="material-icons right">arrow_drop_down</i></a></li>
+        <% end %>
+      </ul>
 
-      <!-- User -->
-      <% if user_signed_in? %>
-        <li class="dropdown">
-          <div class="dropdown-toggle" id="dropdownMenu1" data-toggle="dropdown">
+      <!-- Responsive Sidebar -->
+      <ul class="side-nav" id="mobile-demo">
+        <!-- User -->
+        <div id="nav-user" style="background:#e9cbcc;">
+        <% if user_signed_in? %>
+          <div class="dropdown-toggle" id="dropdownMenu1">
             <%= current_user.display_name %>
-            <span class="caret"></span>
           </div>
-          <ul class="dropdown-menu animated fadeInDown" role="menu" aria-labelledby="dropdownMenu1">
-            <% unless current_user.nil? %>
-              <li role="presentation">
-                <%= link_to "Account", edit_user_path(current_user), :title => "View your account info" %>
-              </li>
-            <% end %>
-            <% if @cud %>
-              <li role="presentation">
-                <%= link_to "Course Profile", [@course, @cud], :title => "View your user profile for the current course" %>
-              </li>
-            <% end %>
-            <% if Rails.env.development? %>
-              <li role="presentation">
-                <a href='/home/developer_login'>Dev Login</a>
-              </li>
-            <% end %>
-            <li role="presentation" class="divider"></li>
-            <li role="presentation">
-              <%= link_to "Log out", destroy_user_session_path, :method => :delete  %>
-            </li>
-          </ul>
+        <% unless current_user.nil? %>
+          <li role="presentation">
+            <%= link_to "Account", edit_user_path(current_user), :title => "View your account info" %>
+          </li>
+        <% end %>
+        <% if @cud %>
+          <li role="presentation">
+            <%= link_to "Course Profile", [@course, @cud], :title => "View your user profile for the current course" %>
+          </li>
+        <% end %>
+        <% if Rails.env.development? %>
+          <li role="presentation">
+            <a href='/home/developer_login'>Dev Login</a>
+          </li>
+        <% end %>
+        <li role="presentation">
+          <%= link_to "Log out", destroy_user_session_path, :method => :delete  %>
         </li>
-      <% end %>
-      <!-- End User -->
-    </ul>
-  </div>
+        <li role="presentation" class="divider"></li>
+        <% end %>
+      </div>
+        <!-- Usual Navbar Items -->
+        <% if session[:sudo] && @cud then %>
+          <li><%= link_to "(#{@cud.display_name}) Reset user", [:unsudo, @course, @cud] %></li>
+        <% end %>
+
+        <% if @cud %>
+          <% if @cud.course_assistant? && !@cud.section.blank? %>
+            <li><%= link_to "Section #{@cud.section} Gradebook", [:view, @course, @cud, :gradebook, section: @cud.section], title: "View your gradebook" %></li>
+          <% end %>
+
+          <% if @cud.instructor? || !(@cud.course_assistant? && !@cud.section.blank?) %>
+            <li><%= link_to "Gradebook", [@course, @cud, :gradebook], title: "View your gradebook" %></li>
+          <% end %>
+
+          <li><%= link_to "Jobs", [@course, :jobs], title: "View a history of autograding jobs" %></li>
+
+          <% if @cud.instructor? %>
+            <li><%= link_to "Manage Course", [:manage, @course], title: "Perform course-wise administrative actions" %></li>
+          <% end %>
+        <% end %>
+
+        <% if current_user && current_user.administrator? %>
+          <li><%= link_to "Manage Autolab", admin_path, title: "Perform system-wide administrative actions" %></li>
+        <% end %>
+      </ul>
+
+    </div>
+
+    <!-- Responsive Menu Code -->
+
+  </nav>
 
 </div>
 
