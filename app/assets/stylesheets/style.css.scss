@@ -44,6 +44,7 @@ div.main-header .logo {
   display: inline-block;
   vertical-align: top;
   line-height: 54px;
+  margin-top:5px;
 }
 
 div.main-header h2 {
@@ -230,7 +231,7 @@ div.main-header img {
   div.main-header .logo {
 
     img {
-      width: 120px;
+      // width: 120px;
     }
   }
 
@@ -990,7 +991,7 @@ div.center {
 }
 
 .attachment {
-  
+
   font-weight: bold;
   color:  #eee;
   border: 2px solid #eee;

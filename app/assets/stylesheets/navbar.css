@@ -1,0 +1,42 @@
+nav{
+  background: #a11d23;
+}
+nav a, nav a:hover, nav a:focus{
+  text-decoration: none;
+  color:white;
+}
+nav ul li{
+  cursor:pointer;
+}
+.dropdown-button{
+  font-weight: 500;
+}
+.dropdown-content li>a{
+  color: #a11d23;
+  font-weight:500;
+}
+
+.button-collapse{
+  margin-right:20px;
+}
+#mobile-demo #dropdownMenu1{
+  color:white;
+  text-align:center;
+  cursor:default;
+  background:#a11d23;
+}
+#mobile-demo li{
+  cursor:pointer;
+}
+#mobile-demo a:hover{
+  color:black;
+  background:transparent;
+}
+
+@media (max-width: 400px) {
+
+  /* On small screens the sidebar's too wide */
+  .side-nav {
+    width: 60% !important;
+  }
+}
