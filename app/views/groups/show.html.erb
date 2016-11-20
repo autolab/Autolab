@@ -20,7 +20,7 @@
       <% cud = aud.course_user_datum %>
       <h3><%= cud.email %></h3>
       <% if !aud.group_confirmed(AssessmentUserDatum::MEMBER_CONFIRMED) then %>
-        <p>This Member has not Confirmed his Membership yet.</p>
+        <p>This Member has not Confirmed their Membership yet.</p>
         <% if @group.is_member(@aud) or @cud.instructor then %>
           <p><%= link_to "Cancel Request", [:leave, @course, @assessment, @group, member_id: cud.id], method: :post %></p>
         <% end %>
