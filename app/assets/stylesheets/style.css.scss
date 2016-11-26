@@ -556,110 +556,23 @@ table.navigatable tr:hover {
 
 /* Card Styling */
 
-div.card {
-  display:inline-block;
-  width: 300px;
-  margin-right: 10px;
-  margin-top: 15px;
-  vertical-align: top;
-  webkit-box-shadow: 0 0 8px rgba(0,0,0,0.10);
-  -moz-box-shadow: 0 0 8px rgba(0,0,0,0.10);
-  box-shadow: 0 0 8px rgba(0,0,0,0.10);
-  -webkit-border-radius: 6px;
-  -moz-border-radius: 6px;
-  overflow: hidden;
-  text-align:center;
-  padding: 0;
-  // There is 22px between the assignment list and the button (from various
-  // margins), so let's match it below the button as well.
-  padding-bottom: 22px;
-  min-height: 215px;
+.card .card-content,
+.card .collection,
+.card .card-action {
+  border-radius: initial;
 }
 
-div.card:hover {
-  webkit-box-shadow: 0 0 12px rgba(0,0,0,0.18);
-  -moz-box-shadow: 0 0 12px rgba(0,0,0,0.18);
-  box-shadow: 0 0 12px rgba(0,0,0,0.18);
+.card .card-content .card-title {
+  line-height: normal;
 }
 
-
-div.card h1,
-div.card h2 {
-  font-weight: 300;
-  margin: 0;
+.card .collection {
+  margin-top: 0;
+  margin-bottom: 0;
+  border-left: 0;
+  border-right: 0;
 }
 
-div.card h1 {
-  background-color:#9F9B9D;
-  color:#fff;
-  font-size: 20px;
-}
-
-div.card:hover h1 {
-  background-color:#949092;
-}
-
-div.card h1 a {
-  display: block;
-  color: #fff;
-  font-size: 20px;
-  padding: 15px 24px;
-  line-height: 24px;
-}
-
-div.card .content {
-}
-
-div.card ul {
-  list-style: none;
-  list-style-position:inside;
-  padding:0;
-  font-size: 17px;
-  font-weight: normal;
-  text-align: left;
-}
-
-div.card ul li {
-  color: #747072;
-  height: 50px;
-  border-bottom: 1px solid #eee;
-  padding-left: 24px;
-}
-
-div.card ul li .shortcuts {
-  margin-right: 24px;
-  line-height: 50px;
-
-  a {
-    margin-left: 4px;
-  }
-}
-
-div.card ul a {
-  line-height: 50px;
-}
-
-div.card .btn.main {
-  margin-top: 12px;
-}
-
-div.card .btn.main:hover {
-  background-color: rgba(153, 0, 0, 0.9)
-}
-
-@media (max-width: 768px) {
-
-  .rolodex {
-    text-align: center;
-  }
-
-  div.card {
-    width: 280px;
-    margin-right: 4px;
-    margin-left: 4px;
-    margin-top: 15px;
-  }
-}
 
 /* General Styling */
 
@@ -792,6 +705,25 @@ label.control-label {
 .autolab .btn.small {
   padding: 5px 10px;
   font-size: 15px;
+}
+
+.section-title {
+  position:relative;
+  text-align:left;
+}
+
+.section-title:before {
+  content:"";
+  position:absolute;
+  top:50%;
+  left:0;
+  width:100%;
+  border-bottom:4px solid #dddddd;
+}
+
+.section-title span {
+  position: relative;
+  padding-right: 12px;
 }
 
 /**
