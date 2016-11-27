@@ -6,7 +6,10 @@
     <h3 class="section-title"><span class="white"><%= category.capitalize %></span></h3>
 
     <div class="row">
-      <% list.each do |course| %>
+      <% list.each_with_index do |course, idx| %>
+        <% if idx % 3 == 0 %>
+          <div class="clearfix hide-on-small-only"></div>
+        <% end %>
         <% course_cud = CourseUserDatum.find_cud_for_course(course, current_user.id) %>
         <% not_student = course_cud.course_assistant? || course_cud.instructor? %>
         <% main_color = not_student ? "deep-orange" : "red" %>

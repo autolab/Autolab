@@ -17,7 +17,10 @@
   <h3 class="section-title"><span class="white">Assignments</span></h3>
 
   <div class="row">
-    <% @course.assessment_categories.each do |cat| %>
+    <% @course.assessment_categories.each_with_index do |cat, idx| %>
+      <% if idx % 3 == 0 %>
+        <div class="clearfix hide-on-small-only"></div>
+      <% end %>
       <% asmts = @course.assessments_with_category(cat, @cud.student?) %>
       <% if asmts.any? %>
         <div class="col s12 m4">
