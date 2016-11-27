@@ -19,7 +19,7 @@
         <div class="col s12 m4">
           <div class="card hoverable">
             <div class="card-content <%= main_color %> darken-4">
-              <span class="card-title white-text"><%= course.full_name %></span>
+              <%= link_to course.full_name, course_path(course), class: "card-title white-text", title: "Go to course page" %>
             </div>
 
             <% if category != :completed %>
