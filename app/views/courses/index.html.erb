@@ -3,13 +3,12 @@
 <% @listing.each do |category, list| %>
   <% if list.size > 0 %>
     <div class="section">
-
     <h3 class="section-title"><span class="white"><%= category.capitalize %></span></h3>
 
     <div class="row">
       <% list.each do |course| %>
         <% course_cud = CourseUserDatum.find_cud_for_course(course, current_user.id) %>
-        <% not_student = course_cud.instructor? || (course_cud.course_assistant? && !course_cud.section.blank?) %>
+        <% not_student = course_cud.course_assistant? || course_cud.instructor? %>
         <% if not_student
              main_color = "deep-orange"
            else
@@ -23,19 +22,21 @@
               <span class="card-title white-text"><%= course.full_name %></span>
             </div>
 
-            <div class="collection <%= main_color %> darken-4" style="border-bottom: 0">
-              <% course.current_assessments.ordered.each do |asmt| %>
-                <%= link_to asmt.display_name, course_assessment_path(course, asmt), class: "collection-item grey-text text-darken-4" %>
-              <% end %>
-            </div>
+            <% if category != :completed %>
+              <div class="collection <%= main_color %> darken-4" style="border-bottom: 0">
+                <% course.current_assessments.ordered.each do |asmt| %>
+                  <%= link_to asmt.display_name, course_assessment_path(course, asmt), class: "collection-item grey-text text-darken-4" %>
+                <% end %>
+              </div>
+            <% end %>
 
             <div class="card-action">
               <%= link_to 'Course Page', course_path(course), class: "#{main_color}-text text-darken-4", title: "Go to course page" %>
               
               <% if course_cud %>
-                <% if not_student %>
-                  <%= link_to "Grade Section", [:view, course, course_cud, :gradebook, section: course_cud.section], title: "View your gradebook", class: "#{main_color}-text text-darken-4" %>
-                <% else %>
+                <% if not_student && !course_cud.section.blank? %>
+                  <%= link_to "Grade Section", [:view, course, course_cud, :gradebook, section: course_cud.section], title: "Grade your section", class: "#{main_color}-text text-darken-4" %>
+                <% elsif !not_student %>
                   <%= link_to "Gradebook", [course, course_cud, :gradebook], title: "View your gradebook", class: "#{main_color}-text text-darken-4" %>
                 <% end %>
               <% end %>
