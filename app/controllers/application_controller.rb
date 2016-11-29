@@ -20,11 +20,8 @@ class ApplicationController < ActionController::Base
   before_action :update_persistent_announcements
   before_action :set_breadcrumbs
 
-  # this is where Error Handling is configured. this routes exceptions to
-  # the error handler in the HomeController, unless we're in development mode
-  #
-  # the policy is basically a replica of Rails's default error handling policy
-  # described in http://guides.rubyonrails.org/action_controller_overview.html#rescue
+  # this is where Error Handling is configured. this routes exceptions to the error handler,
+  # unless we're in development mode
   unless Rails.env.development?
     # going against all logic, handlers registered last get called first
     rescue_from Exception, with: :render_error
@@ -317,7 +314,7 @@ private
     # use the exception_notifier gem to send out an e-mail
     # to the notification list specified in config/environment.rb
     ExceptionNotifier.notify_exception(exception, env: request.env,
-                                                  data: { message: "was doing something wrong" })
+                                                  data: { message: exception.message })
 
     # stack traces are only shown to instructors and administrators
     # by leaving @error undefined, students and CAs do not see stack traces

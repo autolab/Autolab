@@ -2,6 +2,8 @@
 # Handles different handin methods, including web form, local_submit and log_submit
 #
 module AssessmentHandin
+  class HandinError < StandardError; end
+
   # handin - The generic default handin function.
   # This function calls out to smaller helper functions which provide for
   # specific functionality.
@@ -50,76 +52,60 @@ module AssessmentHandin
     @user = User.find_by(email: params[:user])
     @cud = @user ? @course.course_user_data.find_by(user_id: @user.id) : nil
     unless @cud
-      err = "ERROR: invalid username (#{params[:user]}) for class #{@course.id}"
-      render(plain: err, status: :bad_request) && return
+      fail HandinError, "ERROR: invalid username (#{params[:user]}) for class #{@course.id}"
     end
 
     @assessment = @course.assessments.find_by(name: params[:name])
     if !@assessment
-      err = "ERROR: Invalid Assessment (#{params[:id]}) for course #{@course.id}"
-      render(plain: err, status: :bad_request) && return
+      fail HandinError, "ERROR: Invalid Assessment (#{params[:id]}) for course #{@course.id}"
     elsif @assessment.remote_handin_path.nil?
-      err = "ERROR: Remote handins have not been enabled by the instructor."
-      render(plain: err, status: :bad_request) && return
+      fail HandinError, "ERROR: Remote handins have not been enabled by the instructor."
     end
 
-    personal_directory = @user.email + "_remote_handin_" + @assessment.name
+    personal_directory = "#{@user.email}_remote_handin_#{@assessment.name}"
     remote_handin_dir = File.join(@assessment.remote_handin_path, personal_directory)
 
     if params[:submit]
-      # They've copied their handin over, lets go grab it.
+      handin_file = params[:submit]
+
+      if @assessment.max_submissions != -1
+        submission_count = @cud.submissions.where(assessment: @assessment).size
+        if submission_count >= @assessment.max_submissions
+          fail HandinError, "You have no remaining submissions for this assessment"
+        end
+      end
+
+      fail HandinError, flash[:error] unless validate_for_groups
+
+      # save the submissions
       begin
-        handin_file = params[:submit]
-
-        if @assessment.max_submissions != -1
-          submission_count = @cud.submissions.where(assessment: @assessment).size
-          if submission_count >= @assessment.max_submissions
-            render(plain: "You have no remaining submissions for this assessment",
-                   status: :bad_request) && return
-          end
-        end
-
-        render(plain: flash[:error], status: :bad_request) && return unless validate_for_groups
-
-        # save the submissions
-        begin
-          submissions = saveHandin("local_submit_file" => File.join(remote_handin_dir, handin_file))
-        rescue StandardError => e
-          COURSE_LOGGER.log("Error Saving Submission:\n#{e}")
-          submissions = nil
-        end
-
-        # make sure submission was correctly constructed and saved
-        unless submissions
-          # Avoid overwriting the flash[:error] set by saveHandin
-          if !flash[:error].nil? && !flash[:error].empty?
-            flash[:error] = "There was an error handing in your submission."
-          end
-          render(plain: flash[:error], status: :bad_request) && return
-        end
-
-        # autograde the submissions
-        autogradeSubmissions(@course, @assessment, submissions) if @assessment.has_autograder?
-
+        submissions = saveHandin("local_submit_file" => File.join(remote_handin_dir, handin_file))
       rescue StandardError => e
-        COURSE_LOGGER.log(e.to_s)
+        COURSE_LOGGER.log("Error Saving Submission:\n#{e}")
+        submissions = nil
       end
 
-      if submissions
-        COURSE_LOGGER.log("Submission received, ID##{submissions[0].id}")
-      else
-        err = "There was an error saving your submission. Please contact your course staff\n"
-        render(plain: err, status: :bad_request) && return
+      # make sure submission was correctly constructed and saved
+      unless submissions
+        # Avoid overwriting the flash[:error] set by saveHandin
+        if !flash[:error].nil? && !flash[:error].empty?
+          flash[:error] = "There was an error handing in your submission."
+        end
+        fail HandinError, flash[:error]
       end
+
+      COURSE_LOGGER.log("Submission received, ID##{submissions[0].id}")
+
+      # autograde the submissions
+      autogradeSubmissions(@course, @assessment, submissions) if @assessment.has_autograder?
 
       if @assessment.max_submissions != -1
         remaining = @assessment.max_submissions - submissions.count
-        render(plain: " - You have #{remaining} submissions left\n") && return
+        render(plain: " - You have #{remaining} submissions left\n")
+      else
+        render(plain: "Successfully submitted\n")
       end
-
-      render(plain: "Successfully submitted\n") && return
     else
-
       # Create a handin directory for them.
 
       # The handin Directory really should not exist, as this script deletes it
@@ -128,22 +114,34 @@ module AssessmentHandin
       if Dir.exist?(remote_handin_dir)
         begin
           FileUtils.rm_rf(remote_handin_dir)
-        rescue SystemCallError
-          render(plain: "WARNING: could not clear previous handin directory, please") && return
+        rescue SystemCallError => e
+          render(plain: "WARNING: could not clear previous handin directory, please")
+          raise e
         end
       end
 
       begin
         Dir.mkdir(remote_handin_dir)
-      rescue SystemCallError
+      rescue SystemCallError => e
         COURSE_LOGGER.log("ERROR: Could not create handin directory. Please contact
-        autolab-dev@andrew.cmu.edu with this error")
+                           autolab-dev@andrew.cmu.edu with this error")
+        raise e
       end
 
       system("fs sa #{remote_handin_dir} #{@user.email} rlidw")
-    end
 
-    render(plain: remote_handin_dir) && return
+      render(plain: remote_handin_dir)
+    end
+  rescue HandinError => e
+    render(plain: e.message, status: :bad_request)
+  rescue StandardError => e
+    unless Rails.env.development?
+      # use the exception_notifier gem to send out an e-mail
+      # to the notification list specified in config/environment.rb
+      ExceptionNotifier.notify_exception(e, env: request.env,
+                                         data: { message: "Error in local_submit: #{e.message}" })
+    end
+    render(plain: e.message, status: :bad_request)
   end
 
   # method called when student makes
@@ -152,30 +150,26 @@ module AssessmentHandin
     @user = User.find_by(email: params[:user])
     @cud = @user ? @course.course_user_data.find_by(user_id: @user.id) : nil
     unless @cud
-      err = "ERROR: invalid username (#{params[:user]}) for class #{@course.id}"
-      render(plain: err, status: :bad_request) && return
+      fail HandinError, "ERROR: invalid username (#{params[:user]}) for class #{@course.id}"
     end
 
     @assessment = @course.assessments.find_by(name: params[:name])
     if !@assessment
-      err = "ERROR: Invalid Assessment (#{params[:id]}) for course #{@course.id}"
-      render(plain: err, status: :bad_request) && return
+      fail HandinError, "ERROR: Invalid Assessment (#{params[:name]}) for course #{@course.id}"
     elsif !@assessment.allow_unofficial
-      err = "ERROR: This assessment does not allow Log Submissions"
-      render(plain: err, status: :bad_request) && return
+      fail HandinError, "ERROR: This assessment does not allow Log Submissions"
     end
 
     @result = params[:result]
-    render(plain: "ERROR: No result!", status: :bad_request) && return unless @result
+    fail HandinError, "ERROR: No result!" unless @result
 
     # Everything looks OK, so append the autoresult to the log.txt file for this lab
     @logger = Logger.new(Rails.root.join("courses", @course.name, @assessment.name, "log.txt"))
     @logger.add(Logger::INFO) { "#{@user.email},0,#{@result}" }
 
     # Load up the lab.rb file
-    mod_name = @assessment.name + (@course.name).gsub(/[^A-Za-z0-9]/, "")
-    require(Rails.root.join("assessmentConfig", "#{@course.name}-#{@assessment.name}.rb"))
-    eval("extend #{mod_name.camelcase}")
+    require(@assessment.config_file_path)
+    eval("extend #{@assessment.config_module_name}")
 
     begin
       # Call the parseAutoresult function defined in the lab.rb file.  If
@@ -185,7 +179,10 @@ module AssessmentHandin
       # exit.
       scores = parseAutoresult(@result, false)
 
-      render(plain: "OK", status: 200) && return if scores.keys.length == 0
+      if scores.keys.length == 0
+        render(plain: "OK", status: 200)
+        return
+      end
 
       # Try to find an existing submission (always version 0).
       submission = @assessment.submissions.find_by(version: 0, course_user_datum_id: @cud.id)
@@ -193,7 +190,7 @@ module AssessmentHandin
         submission = @assessment.submissions.new(
           version: 0,
           autoresult: @result,
-          user_id: @cud.id,
+          course_user_datum_id: @cud.id,
           submitted_by_id: 0)
         submission.save!
       else
@@ -214,10 +211,21 @@ module AssessmentHandin
         score.save!
       end
     rescue StandardError => e
-      COURSE_LOGGER.log(e.to_s)
+      COURSE_LOGGER.log("Error in log_submit: #{e.message}")
+      raise e
     end
 
-    render(plain: "OK", status: 200) && return
+    render(plain: "OK", status: :ok)
+  rescue HandinError => e
+    render(plain: e.message, status: :bad_request)
+  rescue StandardError => e
+    unless Rails.env.development?
+      # use the exception_notifier gem to send out an e-mail
+      # to the notification list specified in config/environment.rb
+      ExceptionNotifier.notify_exception(e, env: request.env,
+                                         data: { message: "Error in log_submit: #{e.message}" })
+    end
+    render(plain: e.message, status: :bad_request)
   end
 
 private
