@@ -286,7 +286,7 @@ namespace :autolab do
     # Load autograding properties
     Autograder.create! do |autograder|
       autograder.assessment_id = asmt.id
-      autograder.autograde_image = "rhel.img"
+      autograder.autograde_image = "autograding_image"
       autograder.autograde_timeout = 180
       autograder.release_score = true
     end
