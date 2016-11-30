@@ -1,8 +1,8 @@
 class ScoreAdjustment < ActiveRecord::Base
   # attr_accessible :kind, :value
 
-  validates_presence_of :value, :kind
-  validates_numericality_of :value
+  validates :value, :kind, presence: true
+  validates :value, numericality: true
 
   # constants for the kind of score_adjustment
   POINTS = 0

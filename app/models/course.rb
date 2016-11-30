@@ -3,12 +3,11 @@ require "fileutils"
 
 class Course < ActiveRecord::Base
   trim_field :name, :semester, :display_name
-  validates_uniqueness_of :name
-  validates_presence_of :display_name, :start_date, :end_date
-  validates_presence_of :late_slack, :grace_days, :late_penalty, :version_penalty
-  validates_numericality_of :grace_days, greater_than_or_equal_to: 0
-  validates_numericality_of :version_threshold, only_integer: true, greater_than_or_equal_to: -1
-  validates :name, format: { with: /\A[^0-9].*/, message: "can't have leading numeral" }
+  validates :name, format: { with: /\A[^0-9].*/, message: "can't have leading numeral" }, :name, uniqueness: true
+  validates :display_name, :start_date, :end_date, presence: true
+  validates :late_slack, :grace_days, :late_penalty, :version_penalty, presence: true
+  validates :grace_days, numericality: { greater_than_or_equal_to: 0 }
+  validates :version_threshold, numericality: { only_integer: true, greater_than_or_equal_to: -1 }
   validate :order_of_dates
 
   has_many :course_user_data, dependent: :destroy

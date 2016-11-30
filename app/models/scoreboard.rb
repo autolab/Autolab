@@ -7,6 +7,7 @@ class Scoreboard < ActiveRecord::Base
   trim_field :banner, :colspec
 
   validate :colspec_is_well_formed
+  validates :assessment_id, uniqueness: true
 
   after_save -> { assessment.dump_yaml }
 

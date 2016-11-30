@@ -16,8 +16,8 @@ class Score < ActiveRecord::Base
 
   # Verifies that we will only ever have one score per problem per submission
   # This is what allows us to use submission.scores.maximum(:score,:group=>:problem_id) later on
-  validates_uniqueness_of(:problem_id, scope: :submission_id)
-  validates_presence_of :grader_id
+  validates :problem_id, uniqueness: { scope: :submission_id }
+  validates :grader_id, presence: true
 
   after_save :log_entry
 

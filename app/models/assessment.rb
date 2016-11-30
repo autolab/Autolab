@@ -20,19 +20,19 @@ class Assessment < ActiveRecord::Base
   has_one :scoreboard, dependent: :destroy
 
   # Validations
-  validates_uniqueness_of :name, scope: :course_id
-  validates_length_of :display_name, minimum: 1
+  validates :name, uniqueness: { scope: :course_id }
+  validates :display_name, length: { minimum: 1 }
   validate :verify_dates_order
   validate :handin_directory_and_filename_or_disable_handins, if: :active?
   validate :handin_directory_exists_or_disable_handins, if: :active?
-  validates_numericality_of :max_size, :max_submissions
-  validates_numericality_of :version_threshold, only_integer: true,
-                                                greater_than_or_equal_to: -1, allow_nil: true
-  validates_numericality_of :max_grace_days, only_integer: true,
-                                             greater_than_or_equal_to: 0, allow_nil: true
-  validates_numericality_of :group_size, only_integer: true, greater_than_or_equal_to: 1, allow_nil: true
-  validates_presence_of :name, :display_name, :due_at, :end_at, :start_at,
-                        :grading_deadline, :category_name, :max_size, :max_submissions
+  validates :max_size, :max_submissions, numericality: true
+  validates :version_threshold, numericality: { only_integer: true,
+                                                greater_than_or_equal_to: -1, allow_nil: true }
+  validates :max_grace_days, numericality: { only_integer: true,
+                                             greater_than_or_equal_to: 0, allow_nil: true }
+  validates :group_size, numericality: { only_integer: true, greater_than_or_equal_to: 1, allow_nil: true }
+  validates :name, :display_name, :due_at, :end_at, :start_at, :grading_deadline,
+            :category_name, :max_size, :max_submissions, presence: true
 
   # Callbacks
   trim_field :name, :display_name, :handin_filename, :handin_directory, :handout, :writeup

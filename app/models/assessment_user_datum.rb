@@ -12,6 +12,7 @@ class AssessmentUserDatum < ActiveRecord::Base
   belongs_to :latest_submission, class_name: "Submission"
   belongs_to :group
 
+  validates :course_user_datum_id, uniqueness: { scope: :assessment_id }
   # attr_accessible :grade_type
 
   # * when a new submission is made, it is possible that the number of grace days used increased
