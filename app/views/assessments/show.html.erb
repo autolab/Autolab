@@ -17,14 +17,15 @@
 <% @list.delete("submission") %>
 <% @list.delete("reload") %>
 
+<div class="">
 <div class="row">
-  <div class="col-md-12"> 
+  <div class="col m12"> 
     <h2><%= @assessment.display_name %></h2>
     <hr>
   </div>
 </div>
 <div class="row">
-  <div class="col-md-4"> 
+  <div class="col m4"> 
     <%# Display any optional instructor admin options %>
     <% if @cud.instructor? then %>
       <h3>Admin Options</h3>
@@ -102,7 +103,7 @@
     <% } %>
     </ul>
   </div>
-  <div class="col-md-8">
+  <div class="col m8">
     <p><i><%= @assessment.description %></i></p>
     <br>
     <div class="handin-panel">
@@ -115,6 +116,7 @@
 
     <%= render partial: "handin_form", locals: {modal: false, id: "handin_show_assessment"} %>
     </div>
+</div>
 <% download_access = (@cud.instructor?) %>
 
 <% if @extension then %>
