@@ -33,8 +33,19 @@ nav ul li{
   background:transparent;
 }
 
-@media (max-width: 400px) {
+.side-nav li > a > i.material-icons{
+  margin: 0 12px 0 0;
+  height:48px;
+}
+nav i.material-icons{
+  margin-right: 5px;
+  font-size: 20px;
+}
+nav .nav-wrapper .button-collapse .material-icons{
+  font-size:2.7rem;
+}
 
+@media (max-width: 400px) {
   /* On small screens the sidebar's too wide */
   .side-nav {
     width: 60% !important;
