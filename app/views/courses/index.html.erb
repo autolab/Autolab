@@ -23,7 +23,7 @@
             </div>
 
             <% if category != :completed %>
-              <div class="collection red darken-4" style="border-bottom: 0">
+              <div class="collection red darken-4">
                 <% course.current_assessments.ordered.each do |asmt| %>
                   <%= link_to asmt.display_name, course_assessment_path(course, asmt), class: "collection-item grey-text text-darken-4" %>
                 <% end %>

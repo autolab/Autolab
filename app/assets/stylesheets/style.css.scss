@@ -558,27 +558,28 @@ table.navigatable tr:hover {
 
 .card {
   font-weight: normal;
-}
 
-.card .card-content,
-.card .collection,
-.card .card-action {
-  border-radius: initial;
-}
+  .card-content,
+  .collection,
+  .card-action {
+    border-radius: initial;
+  }
 
-.card .row {
-  margin: 0;
-}
+  .row {
+    margin: 0;
+  }
 
-.card .card-content .card-title {
-  line-height: normal;
-}
+  .card-content .card-title {
+    line-height: normal;
+  }
 
-.card .collection {
-  margin-top: 0;
-  margin-bottom: 0;
-  border-left: 0;
-  border-right: 0;
+  .collection {
+    margin-top: 0;
+    margin-bottom: 0;
+    border-left: 0;
+    border-right: 0;
+    border-bottom: 0;
+  }
 }
 
 /* badge */
