@@ -566,6 +566,10 @@ table.navigatable tr:hover {
   border-radius: initial;
 }
 
+.card .row {
+  margin: 0;
+}
+
 .card .card-content .card-title {
   line-height: normal;
 }
@@ -575,6 +579,17 @@ table.navigatable tr:hover {
   margin-bottom: 0;
   border-left: 0;
   border-right: 0;
+}
+
+/* badge */
+.badge.padded-badge {
+  padding: 2px 10px;
+}
+
+/* collections */
+.collection
+a.collection-item {
+  transition: none;
 }
 
 
