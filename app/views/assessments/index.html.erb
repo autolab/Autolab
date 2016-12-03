@@ -29,16 +29,17 @@
               <span class="card-title white-text"><%= cat %></span>
             </div>
 
-            <div class="collection red darken-4" style="border-bottom: 0">
+            <div class="collection red darken-4">
               <% asmts.each do |asmt| %>
-                <%= link_to(course_assessment_url(@course, asmt),
-                            {:class => "collection-item grey-text text-darken-4"}) do %>
-                    <%= asmt.display_name %>
-                    
-                    <% if !asmt.released? %>
+                <div class="collection-item">
+                  <%= link_to asmt.display_name, course_assessment_url(@course, asmt),
+                              {:class => "grey-text text-darken-4"} %>
+                  <% if !asmt.released? %>
+                    <a href="<%= edit_course_assessment_url(@course, asmt) %>/handin">
                       <span class="new badge blue darken-4" data-badge-caption="unreleased"></span>
-                    <% end %>
-                <% end %>
+                    </a>
+                  <% end %>
+                </div>
               <% end %>
             </div>
 

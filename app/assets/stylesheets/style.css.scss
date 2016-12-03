@@ -593,6 +593,11 @@ a.collection-item {
   transition: none;
 }
 
+.collection
+div.collection-item:hover {
+  background-color: #ddd;
+}
+
 
 /* General Styling */
 

@@ -11,7 +11,7 @@
           <div class="clearfix hide-on-small-only"></div>
         <% end %>
         <% course_cud = CourseUserDatum.find_cud_for_course(course, current_user.id) %>
-        <% not_student = course_cud.course_assistant? || course_cud.instructor? %>
+        <% not_student = course_cud.has_auth_level? :course_assistant %>
 
         <div class="col s12 m4">
           <div class="card hoverable">
