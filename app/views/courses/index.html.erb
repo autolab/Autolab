@@ -17,7 +17,7 @@
           <div class="card hoverable">
             <div class="card-content red darken-4">
               <div class="row">
-                <div class="col <%= not_student ? 's9' : 's12' %>"><%= link_to course.full_name, course_path(course), class: "card-title white-text", title: "Go to course page" %></div>
+                <div class="col <%= not_student ? 's9' : 's12' %>"><h4><%= link_to course.full_name, course_path(course), class: "card-title white-text", title: "Go to course page" %></h4></div>
                 <% if not_student %> <div class="col s3"><span class="new badge padded-badge" data-badge-caption="Instructor"></span></div> <% end %>
               </div>
             </div>
