@@ -283,6 +283,7 @@ div.main-header img {
   border: 1px solid #ddd;
   border-radius: 4px;
   padding: 18px;
+  top: -2.8rem;
 }
 
 .handin-panel #submission_file {
@@ -291,6 +292,10 @@ div.main-header img {
 
 .handin-panel.modal {
   display: none;
+}
+
+.handin-btn {
+  background-color: $autolab-red;
 }
 
 .history-download-pane .glyphicon {

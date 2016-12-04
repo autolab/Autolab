@@ -1,4 +1,4 @@
-<div id="<%= id %>" data-cansubmit="<%= @can_submit %> ">
+<div id="<%= id %>" data-cansubmit="<%= @can_submit %> " class="card-action">
   <% if @can_submit %> 
     <% if @assessment.max_submissions != -1 %>
       <p>You have <%= @left_count %> <%= (@left_count == 1) ? "submission" : "submissions" %> left.</p>
@@ -7,25 +7,28 @@
     <% if @aud.past_due_at? %>
       <p><b>Warning:</b> It is past the due date for this assessment. Submitting now might result in the usage of a grace day or a grade penalty!</p>
     <% end %>
-
-    <% if @assessment.has_svn then %>
-      <%= form_for @submission, url: {action: :handin}, method: :post do |f| %>
-        <% if @aud.past_due_at? then %>
-          <p><%= f.submit("Checkout Repository", class: "btn primary", data: { confirm: "Are you sure you want to submit late?" }) %></p>
-        <% else %>
-          <p><%= f.submit("Checkout Repository", class: "btn primary") %></p>
+    <div class="row">
+      <div class="col offset-s6 offset-m6 s6 m6">
+        <% if @assessment.has_svn then %>
+          <%= form_for @submission, url: {action: :handin}, method: :post do |f| %>
+            <% if @aud.past_due_at? then %>
+              <p><%= f.submit("Checkout Repository", class: "btn primary", data: { confirm: "Are you sure you want to submit late?" }) %></p>
+            <% else %>
+              <p><%= f.submit("Checkout Repository", class: "btn primary") %></p>
+            <% end %>
+          <% end %>
+        <% elsif ! @assessment.disable_handins? then %>
+          <%= form_for @submission, url: {action: :handin}, multipart: true do |f| %>
+            <%= f.file_field :file %>
+            <% if @aud.past_due_at? then %>
+              <p><%= f.submit("Submit File Late", id:"fake-submit",  class: "btn primary handin-btn") %></p>
+            <% else %>
+              <p><%= f.submit("Submit File", id:"fake-submit", class: "btn primary handin-btn") %></p>
+            <% end %>
+          <% end %>
         <% end %>
-      <% end %>
-    <% elsif ! @assessment.disable_handins? then %>
-      <%= form_for @submission, url: {action: :handin}, multipart: true do |f| %>
-        <%= f.file_field :file %>
-        <% if @aud.past_due_at? then %>
-          <p><%= f.submit("Submit File Late", id:"fake-submit",  class: "btn primary") %></p>
-        <% else %>
-          <p><%= f.submit("Submit File", id:"fake-submit", class: "btn primary") %></p>
-        <% end %>
-      <% end %>
-    <% end %>
+      </div>
+    </div>
 	  
   <% else %>
     <% case @why_not
