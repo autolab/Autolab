@@ -9,6 +9,7 @@ class Course < ActiveRecord::Base
   validates_numericality_of :grace_days, greater_than_or_equal_to: 0
   validates_numericality_of :version_threshold, only_integer: true, greater_than_or_equal_to: -1
   validate :order_of_dates
+  validates_format_of :name, with: /\A(\w|-)+\z/, on: :create
 
   has_many :course_user_data, dependent: :destroy
   has_many :assessments, dependent: :destroy
