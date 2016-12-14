@@ -33,18 +33,9 @@
           <div class="collapsible-header"><i class="material-icons"></i><h5>Admin Options</h5></div>
           <div class="collapsible-body">
             <ul class="options">
-              <li> <%= link_to "Edit assessment", {:action => "edit" }, {:title=> "View and modify the properties for this assessment, including its problems", :class=>"red-text"} %></li>
+              <li> <%= link_to "Edit assessment", {:action => "edit" }, {:title=> "View and modify the properties for this assessment, including its problems", :class=>""} %></li>
               <li> <%= link_to "Grade submissions", {:action => "viewGradesheet" }, {:title=> "View and enter grades on the gradesheet" } %></li>
-              <li> <%= link_to "Release all grades", {:action => "releaseAllGrades" }, {:title=>  "Make all scores for this assessment visible to students" } %></li>
-              <li> <%= link_to "Withdraw all grades", {:action => "withdrawAllGrades" }, {:title=>  "Hide all scores for this assessment from students" } %></li>
               <li> <%= link_to "Export assessment", {:action => "export" }, {:title=> "Export persistent properties that will be imported when you install this assessment in a future term" } %></li>
-              <li> <%= link_to "Reload config file", {:action => "reload" }, {:title=> "Reload the assessment config file (provided for backward compatibility with legacy assessments)" } %></li>
-              <li> <%= link_to "Manage extensions", [@course, @assessment, :extensions], { title: "Give extensions to students" } %></li>
-              <li> <%= link_to "Manage submissions", [@course, @assessment, :submissions], { title: "Create, view, export, and re-autograde submissions" } %></li>
-              <li> <%= link_to "View statistics", {:action => "statistics" }, {:title=> "View detailed stats for this assessment" } %></li>
-              <li> <%= link_to "Bulk import grades", {:action => "bulkGrade" }, {:title=> "Upload scores or feedback for multiple students from a CSV file" } %></li>
-              <li> <%= link_to "Bulk export grades", {:action => "bulkExport" }, {:title=> "Export grades (with sub-scores) \nfor all students to a CSV file" } %></li>
-
               <% if @assessment.has_svn then %>
                 <li><%= link_to "SVN settings", [:admin_svn, @course, @assessment], title: "Manage the SVN repositories" %></li>
               <% end %>
@@ -60,6 +51,17 @@
               <% if @assessment.has_scoreboard? %>
                 <li><%= link_to "Scoreboard settings", [:edit, @course, @assessment, :scoreboard], title: "Configure the appearance of the scoreboard" %></li>
               <% end %>
+              <li> <%= link_to "Manage extensions", [@course, @assessment, :extensions], { title: "Give extensions to students" } %></li>
+              <li> <%= link_to "Manage submissions", [@course, @assessment, :submissions], { title: "Create, view, export, and re-autograde submissions" } %></li>
+              <li> <%= link_to "View statistics", {:action => "statistics" }, {:title=> "View detailed stats for this assessment" } %></li>
+              <li> <%= link_to "Bulk import grades", {:action => "bulkGrade" }, {:title=> "Upload scores or feedback for multiple students from a CSV file" } %></li>
+              <li> <%= link_to "Bulk export grades", {:action => "bulkExport" }, {:title=> "Export grades (with sub-scores) \nfor all students to a CSV file" } %></li>
+              
+              <li class="collection-item red-text danger-bottom"><h4>Danger Zone</h4></li>
+              
+              <li class="danger-side"> <%= link_to "Release all grades", {:action => "releaseAllGrades" }, {:title=>  "Make all scores for this assessment visible to students" } %></li>
+              <li class="danger-side"> <%= link_to "Withdraw all grades", {:action => "withdrawAllGrades" }, {:title=>  "Hide all scores for this assessment from students" } %></li>
+              <li class="danger-side danger-bottom"> <%= link_to "Reload config file", {:action => "reload" }, {:title=> "Reload the assessment config file (provided for backward compatibility with legacy assessments)" } %></li>
             </ul>
           </div>
         </li>
@@ -76,14 +78,17 @@
                 :title=> "View and enter grades for your section. Make sure your instructor has assigned you to a section in your Autolab account" %></li>
               <li><%= link_to "Grade all submissions", url_for(:action => 'viewGradesheet'), 
                 :title=> "View and enter grades for all sections"  %></li>
-              <li><%= link_to "Release section grades", url_for(:action => 'releaseSectionGrades'), 
-                :title=> "Make all scores visible to the students in your section. This will work only if your instructor has assigned you to a lecture and section in your Autolab account." %></li>
-              <li><%= link_to "Reload config file", url_for(:action => 'reload'), 
-                :title=> "Reload the assessment configuration file (provided for backward compatibility with legacy assessments)" %></li>
-
+            
               <% if !@assessment.disable_handins %>
                 <li><%= link_to  "Download section #{@cud.section} submissions", [:downloadAll, @course, @assessment, :submissions, final: true], title: "Download section #{@cud.section} submissions" %></li>
               <% end %>
+              <li class="collection-item red-text danger-bottom"><h4>Danger Zone</h4></li>
+              <li class="danger-side"><%= link_to "Reload config file", url_for(:action => 'reload'), 
+                :title=> "Reload the assessment configuration file (provided for backward compatibility with legacy assessments)" %></li>
+              <li class="danger-side"><%= link_to "Release section grades", url_for(:action => 'releaseSectionGrades'), 
+                :title=> "Make all scores visible to the students in your section. This will work only if your instructor has assigned you to a lecture and section in your Autolab account." %></li>
+
+              
             </ul>
           </div>
         </li>
@@ -92,10 +97,10 @@
     
     <ul class="collapsible" data-collapsible="accordion">
       <li>
-        <div class="collapsible-header"><i class="material-icons"></i><h5>Options</h5></div>
+        <div class="collapsible-header active"><i class="material-icons"></i><h5>Options</h5></div>
         <div class="collapsible-body">
           <ul class="options">
-            <li> <%= link_to "View writeup", {:action => 'writeup'}, {:title=> "View the assessment writeup", :class=>"red-text"}%> </li>
+            <li> <%= link_to "View writeup", {:action => 'writeup'}, {:title=> "View the assessment writeup", :class=>""}%> </li>
             <li> <%= link_to "Download handout", {:action => 'handout'}, {:title=> "Download handout materials and starter code" } %> </li>
             <li> <%= link_to "View handin history", {:action => 'history'}, {:title=> "View your submissions, scores, and feedback from the course staff" } %> </li>
             <% if @assessment.has_groups? %>
@@ -123,7 +128,7 @@
   <div class="col s12 m8">
     <p><i><%= @assessment.description %></i></p>
     <br>
-    <div class="handin-panel card">
+    <div class="handin-panel card z-depth-0">
         <div class="card-content">
         <p><b>Due on: </b><span class="moment-date-time"> <%= due_at_display @aud.due_at %></span></p>
         <p><b>Last day to handin: </b><span class="moment-date-time"> <%= end_at_display(@aud.end_at false) %></span></p>

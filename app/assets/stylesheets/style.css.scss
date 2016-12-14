@@ -10,6 +10,7 @@
 $autolab-red: rgba(153, 0, 0, 0.9);
 $autolab-subtle-gray: #eee;
 $autolab-highlight-gray: #ccc;
+#F2EFEF
 
 html, body {
   height: 100%;
@@ -24,6 +25,13 @@ html, body {
 }
 .fieldWithErrors {
   display:inline;
+}
+
+/* Button Styles */
+
+.autolab .btn { 
+  font-weight: normal;
+  background-color: $autolab-red;
 }
 
 /* Helper Styles */
@@ -704,10 +712,6 @@ label.control-label {
   height: 42px;
 }
 
-.autolab .btn {
-  font-weight: normal;
-}
-
 .section-title {
   position:relative;
   text-align:left;
@@ -809,6 +813,19 @@ border-bottom: 1px solid #eee;
 .options li a {
 padding-left: 14px;
 display: block;
+}
+
+.options .danger-side {
+  border-left: 8px solid #e53935; 
+  border-right: 1px solid #e53935; 
+}
+
+.options .danger-bottom {
+  border-bottom: 1px solid #e53935;
+}
+
+.options .collection-item {
+  padding-left: 14px;
 }
 
 /* Form Tables */
