@@ -21,9 +21,9 @@
           <%= form_for @submission, url: {action: :handin}, multipart: true do |f| %>
             <%= f.file_field :file %>
             <% if @aud.past_due_at? then %>
-              <p><%= f.submit("Submit File Late", id:"fake-submit",  class: "btn primary handin-btn") %></p>
+              <p><%= f.submit("Submit Late", id:"fake-submit",  class: "btn primary handin-btn") %></p>
             <% else %>
-              <p><%= f.submit("Submit File", id:"fake-submit", class: "btn primary handin-btn") %></p>
+              <p><%= f.submit("Submit", id:"fake-submit", class: "btn primary handin-btn") %></p>
             <% end %>
           <% end %>
         <% end %>

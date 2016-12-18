@@ -815,10 +815,15 @@ padding-left: 14px;
 display: block;
 }
 
+.options .no-hover:hover {
+  background-color: transparent;
+}
+
 .options .danger-side {
-  border-left: 8px solid #e53935; 
+  border-left: 6px solid #e53935; 
   border-right: 1px solid #e53935; 
 }
+
 
 .options .danger-bottom {
   border-bottom: 1px solid #e53935;
