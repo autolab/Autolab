@@ -12,7 +12,8 @@ class FormBuilderWithDateTimeInput < ActionView::Helpers::FormBuilder
       options = args.extract_options!
 
       # add form-control class (for Bootstrap styling) and pass on to Rails
-      options[:class] = "form-control #{options[:class]}"
+      # add input-field class (for Materialize styling) and pass on to Rails
+      options[:class] = "#{options[:class]}"
       field = super name, *(args + [options])
 
       wrap_field name, field, options[:help_text], options[:display_name]
@@ -106,9 +107,9 @@ private
   end
 
   def wrap_field(name, field, help_text, display_name = nil)
-    @template.content_tag :div, class: "form-group" do
+    @template.content_tag :div, class: "input-field" do
       label(name, display_name, class: "control-label") +
-        field + help_text(name, help_text)
+         field + help_text(name, help_text)
     end
   end
 

@@ -644,6 +644,8 @@ input[type="text"],
 input[type="email"],
 input[type="password"] {
   border: none;
+  height: 2rem;
+  margin-bottom: -10px;
   padding: 10px 8px;
   border: 1px solid #ccc;
 }
@@ -669,13 +671,21 @@ input[type="checkbox"] {
   margin-right: 10px;
 }
 
-label.control-label {
-  font-size: 18px;
+.input-field {
+  margin-top: 3rem !important;
+  label.control-label {
+    font-size: 20px !important;
+    margin-left: 4px;
+  }
+
 }
 
 .help-block {
+  color: #9e9e9e;
   font-size: 15px;
   margin-left: 8px;
+  /*margin-top: -18px;*/
+  margin-bottom: 30px;
 }
 
 .autolab select.form-control {

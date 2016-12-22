@@ -1,4 +1,4 @@
-<%= f.text_field :name, disabled: true, class: "form-control",
+<%= f.text_field :name, disabled: true, class: "",
   help_text: "The unique (for this course) name of the assessment. Must be
   lowercase alphanumeric (no punctuation). E.g.,
   <kbd>malloclab</kbd>".html_safe %>
@@ -7,10 +7,10 @@
   help_text: "Name that will be displayed on the course home page. E.g.,
   'Malloc Lab'" %>
 
-<div class="form-group">
+<div class="input-field">
   <%= f.label :category_name, { :class=>"control-label" } %>
   <%= f.collection_select :category_name, @course.assessment_categories, :to_s, :to_s, {selected: @assessment.category_name}, {class: "form-control"} %>
-  <p>or</p>
+  <p class="">or</p>
   <%= text_field_tag :new_category, nil, placeholder: "New Category" %>
   <p class="help-block">Select an existing category or enter a new category name <i>(you can always change it later)</i></p>
 </div>
@@ -24,7 +24,7 @@
     <%= link_to "Delete Autograder", [@course, @assessment, :autograder], method: :delete, class: "btn danger",
                 data: {confirm: "Are you sure you want to delete the Autograder for this assessment?"} %>
   <% else %>
-    <%= link_to "Add Autograder", [@course, @assessment, :autograder], method: :post, class: "btn primary" %>
+    <%= link_to "Add Autograder", [@course, @assessment, :autograder], method: :post, class: "btn-flat" %>
   <% end %>
 </div>
 
@@ -48,7 +48,7 @@
 
 <hr>
 
-<%= f.text_area  :description %>
+<%= f.text_area  :description, class: "materialize-textarea" %>
 
 <%= f.text_field :handout, help_text: "File in the assessment directory containing materials that the instructor hands out to students or URL to redirect to. E.g., 'malloclab-handout.tar', 'http://school.edu/class/malloclab.zip'" %>
 
