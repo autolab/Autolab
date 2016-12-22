@@ -3,7 +3,7 @@
   lowercase alphanumeric (no punctuation). E.g.,
   <kbd>malloclab</kbd>".html_safe %>
 
-<%= f.text_field :display_name,
+<%= f.text_field :display_name, placeholder: "Homework0",
   help_text: "Name that will be displayed on the course home page. E.g.,
   'Malloc Lab'" %>
 
@@ -15,40 +15,41 @@
   <p class="help-block">Select an existing category or enter a new category name <i>(you can always change it later)</i></p>
 </div>
 
-<hr>
 
 <h4>Modules Used</h4>
-<div class="form-group">
-  <% if @assessment.has_autograder? %>
-    <%= link_to "Edit Autograder Settings", [:edit, @course, @assessment, :autograder], class: "btn primary" %>
-    <%= link_to "Delete Autograder", [@course, @assessment, :autograder], method: :delete, class: "btn danger",
+<ul class="collection attachments">
+  <li class="collection-item">
+    Autograder
+    <span class="secondary-content">
+      <% if @assessment.has_autograder? %>
+        <%= link_to "<i class=\"material-icons left\">mode_edit</i>".html_safe, [:edit, @course, @assessment, :autograder], class: "small" %>
+        <%= link_to "<i class=\"material-icons left\">delete</i>".html_safe, [@course, @assessment, :autograder], method: :delete, class: "small",
                 data: {confirm: "Are you sure you want to delete the Autograder for this assessment?"} %>
-  <% else %>
-    <%= link_to "Add Autograder", [@course, @assessment, :autograder], method: :post, class: "btn-flat" %>
-  <% end %>
-</div>
+      <% else %>
+        <%= link_to "<i class=\"material-icons left\">add</i>".html_safe, [@course, @assessment, :autograder], method: :post, class: "small" %>
+      <% end %>
+    </span>
+  </li>
+  <li class="collection-item">
+    Scoreboard
+    <span class="secondary-content">
+      <% if @assessment.has_scoreboard? %>
+        <%= link_to "<i class=\"material-icons left\">mode_edit</i>".html_safe, [:edit, @course, @assessment, :scoreboard], class: "small" %>
+        <%= link_to "<i class=\"material-icons left\">delete</i>".html_safe, [@course, @assessment, :scoreboard], method: :delete, class: "small", data: {confirm: "Are you sure you want to delete the Scoreboard for this assessment?"} %>
+      <% else %>
+        <%= link_to "<i class=\"material-icons left\">add</i>".html_safe, [@course, @assessment, :scoreboard], method: :post, class: "small" %>
+      <% end %>    
+    </span>
+  </li>
+</ul>
 
-<div class="form-group">
-  <% if @assessment.has_scoreboard? %>
-    <%= link_to "Edit Scoreboard Settings", [:edit, @course, @assessment, :scoreboard], class: "btn primary" %>
-    <%= link_to "Delete Scoreboard", [@course, @assessment, :scoreboard], method: :delete, class: "btn danger",
-                data: {confirm: "Are you sure you want to delete the Scoreboard for this assessment?"} %>
-  <% else %>
-    <%= link_to "Add Scoreboard", [@course, @assessment, :scoreboard], method: :post, class: "btn primary" %>
-  <% end %>
-</div>
-
-<span class="checkbox"><%= f.check_box :has_svn,
-  display_name: "Use SVN?",
-  help_text: "Whether to use SVN in conjunction with this assignment." %></span>
+<%= f.check_box :has_svn, display_name: "Use SVN?", help_text: "Whether to use SVN in conjunction with this assignment." %>
 
 <%= f.text_field :group_size,
   display_name: "Group Size",
   help_text: "Set the maximum size of groups for this assessment.  If group size is 1, the assessment is solo.  If the size is decreased, groups that are too large will not be broken up.  If the size is set to 1, groups will be saved, but the assessment will be solo." %>
 
-<hr>
-
-<%= f.text_area  :description, class: "materialize-textarea" %>
+<%= f.text_area  :description, class: "materialize-textarea", help_text: "", placeholder: "(Optional) Description of assessment" %>
 
 <%= f.text_field :handout, help_text: "File in the assessment directory containing materials that the instructor hands out to students or URL to redirect to. E.g., 'malloclab-handout.tar', 'http://school.edu/class/malloclab.zip'" %>
 
@@ -56,5 +57,5 @@
 
 <div class="action_buttons">
   <%= f.submit "Save" , {:class=>"btn primary"} %>
-  <%= link_to "Delete this Assessment", course_assessment_path(@course, @assessment), method: :delete, class: 'btn btn-danger', data: { confirm: " Deleting will delete all associated assessment data and cannot be undone. Are you sure you want to delete this assessment?" } %>
+  <%= link_to "Delete Assessment", course_assessment_path(@course, @assessment), method: :delete, class: 'btn btn-danger', data: { confirm: " Deleting will delete all associated assessment data and cannot be undone. Are you sure you want to delete this assessment?" } %>
 </div>

@@ -8,6 +8,7 @@
 *******************************************/
 
 $autolab-red: rgba(153, 0, 0, 0.9);
+$autolab-subtle-red: #C87B7E;
 $autolab-subtle-gray: #eee;
 $autolab-highlight-gray: #ccc;
 #F2EFEF
@@ -643,11 +644,16 @@ body.autolab {
 input[type="text"],
 input[type="email"],
 input[type="password"] {
-  border: none;
+  /*border: none;*/
   height: 2rem;
   margin-bottom: -10px;
   padding: 10px 8px;
-  border: 1px solid #ccc;
+  border-bottom: 1px solid $autolab-subtle-red;
+  /*border: 1px solid #ccc;*/
+}
+
+textarea.materialize-textarea { 
+  border-bottom: 1px solid $autolab-subtle-red;
 }
 
 input[type="text"]:disabled,
@@ -656,13 +662,13 @@ input[type="password"]:disabled,
 input[type="text"]:read-only,
 input[type="email"]:read-only,
 input[type="password"]:read-only {
-  background-color: #eee;
+  /*background-color: #eee;*/
 }
 
 input[type="text"]:focus,
 input[type="email"]:focus,
 input[type="password"]:focus {
-  border: 1px solid rgba(133, 0, 0, 1);
+  /*border: 1px solid rgba(133, 0, 0, 1);*/
   outline: none;
 }
 
@@ -674,9 +680,14 @@ input[type="checkbox"] {
 .input-field {
   margin-top: 3rem !important;
   label.control-label {
-    font-size: 20px !important;
+    font-size: 20px;
     margin-left: 4px;
   }
+
+  label.active {
+    font-size: inherit;
+  }
+
 
 }
 
