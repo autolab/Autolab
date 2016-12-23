@@ -11,8 +11,7 @@ class FormBuilderWithDateTimeInput < ActionView::Helpers::FormBuilder
     define_method(method_name) do |name, *args|
       options = args.extract_options!
 
-      # add form-control class (for Bootstrap styling) and pass on to Rails
-      # add input-field class (for Materialize styling) and pass on to Rails
+      # DEPRECATED: add form-control class (for Bootstrap styling) and pass on to Rails
       options[:class] = "#{options[:class]}"
       field = super name, *(args + [options])
 
@@ -24,11 +23,11 @@ class FormBuilderWithDateTimeInput < ActionView::Helpers::FormBuilder
     options = args.extract_options!
 
     fields = fields_for name do |f|
-      @template.content_tag :div, class: "score-adjustment input-group" do
-        (f.vanilla_text_field :value, class: "form-control value") +
+      @template.content_tag :div, class: "score-adjustment" do
+        (f.vanilla_text_field :value, class: "input-field value", placeholder: "10") +
         (@template.content_tag :div, class: "input-group-addon" do
           f.select(:kind, { "points" => "points", "%" => "percent" }, {},
-                   class: "form-control kind input-group-addon")
+                   class: "input-field kind input-group-addon")
         end)
       end
     end

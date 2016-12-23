@@ -34,7 +34,7 @@
 <%= content_tag :div, id: "handin", class: (f.object.disable_handins ? "disabled" : "") + " form-group" do %>
   <%= f.text_field :handin_directory, help_text: "The subdirectory in the assessment directory where student submissions will be store. You generally shouldn't need to change this. Default: <kbd>handin</kbd>".html_safe %>
 
-  <%= f.text_field :remote_handin_path, help_text: "(Optional) The directory outside the assessment directory where student submissions directly from local machines will be copied.".html_safe %>
+  <%= f.text_field :remote_handin_path, placeholder: "(Optional)", help_text: "The directory outside the assessment directory where student submissions directly from local machines will be copied.".html_safe %>
 
   <%= f.text_field :handin_filename, help_text: "The suffix (fname) that is appended to student submission files. Autolab stores submission files in the handin directory as <kbd>email_version_fname</kbd>. E.g., 'mm.c'".html_safe %>
 <% end %>
