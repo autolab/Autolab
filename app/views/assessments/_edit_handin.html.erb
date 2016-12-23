@@ -22,13 +22,13 @@
   greater_than: "assessment_start_at assessment_due_at assessment_end_at" %>
 
 <div class="form-group">
-  <span class="checkbox"><%= f.check_box :disable_handins,
+  <%= f.check_box :disable_handins,
     help_text: "Check this to disallow handins through Autolab. E.g., paper
-    exams, problem sets" %></span>
+    exams, problem sets" %>
 </div>
 
 <div class="form-group">
-  <span class="checkbox"><%= f.check_box :allow_unofficial, help_text: "Allow log submissions" %></span>
+  <%= f.check_box :allow_unofficial, help_text: "Allow log submissions" %>
 </div>
 
 <%= content_tag :div, id: "handin", class: (f.object.disable_handins ? "disabled" : "") + " form-group" do %>

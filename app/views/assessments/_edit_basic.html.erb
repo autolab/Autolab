@@ -10,11 +10,20 @@
 <div class="input-field">
   <%= f.label :category_name, { :class=>"control-label" } %>
   <%= f.collection_select :category_name, @course.assessment_categories, :to_s, :to_s, {selected: @assessment.category_name}, {class: "form-control"} %>
-  <p class="">or</p>
   <%= text_field_tag :new_category, nil, placeholder: "New Category" %>
   <p class="help-block">Select an existing category or enter a new category name <i>(you can always change it later)</i></p>
 </div>
 
+
+<%= f.text_field :group_size,
+  display_name: "Group Size",
+  help_text: "Set the maximum size of groups for this assessment.  If group size is 1, the assessment is solo.  If the size is decreased, groups that are too large will not be broken up.  If the size is set to 1, groups will be saved, but the assessment will be solo." %>
+
+<%= f.text_area  :description, class: "materialize-textarea", help_text: "", placeholder: "(Optional) Description of assessment" %>
+
+<%= f.text_field :handout, help_text: "File in the assessment directory containing materials that the instructor hands out to students or URL to redirect to. E.g., 'malloclab-handout.tar', 'http://school.edu/class/malloclab.zip'" %>
+
+<%= f.text_field :writeup, help_text: "File in the assessment directory or URL containing instructions to students. E.g., 'writeup/malloclab.pdf', 'http://school.edu/class/writeup.pdf'" %>
 
 <h4>Modules Used</h4>
 <ul class="collection attachments">
@@ -41,19 +50,13 @@
       <% end %>    
     </span>
   </li>
+  <li class="collection-item">
+    SVN
+    <span class="secondary-content">
+      <%= f.check_box :has_svn, display_name: "&zwnj;".html_safe, help_text: "" %>
+    </span>
+  </li>
 </ul>
-
-<%= f.check_box :has_svn, display_name: "Use SVN?", help_text: "Whether to use SVN in conjunction with this assignment." %>
-
-<%= f.text_field :group_size,
-  display_name: "Group Size",
-  help_text: "Set the maximum size of groups for this assessment.  If group size is 1, the assessment is solo.  If the size is decreased, groups that are too large will not be broken up.  If the size is set to 1, groups will be saved, but the assessment will be solo." %>
-
-<%= f.text_area  :description, class: "materialize-textarea", help_text: "", placeholder: "(Optional) Description of assessment" %>
-
-<%= f.text_field :handout, help_text: "File in the assessment directory containing materials that the instructor hands out to students or URL to redirect to. E.g., 'malloclab-handout.tar', 'http://school.edu/class/malloclab.zip'" %>
-
-<%= f.text_field :writeup, help_text: "File in the assessment directory or URL containing instructions to students. E.g., 'writeup/malloclab.pdf', 'http://school.edu/class/writeup.pdf'" %>
 
 <div class="action_buttons">
   <%= f.submit "Save" , {:class=>"btn primary"} %>

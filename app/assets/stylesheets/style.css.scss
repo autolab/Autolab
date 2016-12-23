@@ -648,12 +648,12 @@ input[type="password"] {
   height: 2rem;
   margin-bottom: -10px;
   padding: 10px 8px;
-  border-bottom: 1px solid $autolab-subtle-red;
+  /*border-bottom: 1px solid $autolab-subtle-red;*/
   /*border: 1px solid #ccc;*/
 }
 
 textarea.materialize-textarea { 
-  border-bottom: 1px solid $autolab-subtle-red;
+  /*border-bottom: 1px solid $autolab-subtle-red;*/
 }
 
 input[type="text"]:disabled,
