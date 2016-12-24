@@ -97,7 +97,7 @@ private
     field = vanilla_text_field(
       name,
       :value => formatted_datetime,
-      :class => "form-control datetimepicker",
+      :class => "datepicker",
       :"data-date-format" => date_format,
       :"data-date-less-than" => options[:less_than],
       :"data-date-greater-than" => options[:greater_than])

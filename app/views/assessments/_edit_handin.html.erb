@@ -12,7 +12,7 @@
   greater_than: "assessment_start_at",
   less_than: "assessment_end_at assessment_grading_deadline" %>
 
-<%= f.datetime_select :end_at,
+<%= f.datetime_select :end_at, class: "datepicker",
   help_text: "Last possible time that students can submit (except those granted extensions.)",
   greater_than: "assessment_start_at assessment_due_at",
   less_than: "assessment_grading_deadline" %>
