@@ -19,9 +19,7 @@ $(document).ready(function() {
 	});
 
 	/* Activating Tooltips */
-	$(function () {
-  		$('[data-toggle="tooltip"]').tooltip()
-	})
+	$('.tooltipped').tooltip({delay: 50});
 });
 
 
