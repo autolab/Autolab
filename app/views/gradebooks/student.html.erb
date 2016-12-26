@@ -39,12 +39,12 @@
               <% if @course.grace_days > 0 %>
                 <th>
                   GDU
-                  <i class="glyphicon glyphicon-question-sign" data-toggle="tooltip" data-html="true" title="<b>Grace Days Used</b><br />Number of late days used for which <em>no</em> penalty was incurred"></i>
+                  <i class="glyphicon glyphicon-question-sign tooltipped" data-html="true" title="<b>Grace Days Used</b><br />Number of late days used for which <em>no</em> penalty was incurred"></i>
                 </th>
               <% end %>
               <th>
                 PLD
-                <i class="glyphicon glyphicon-question-sign" data-toggle="tooltip" data-html="true" title="<b>Penalty Late Days</b><br />Number of late days used for which a penalty was incurred"></i>
+                <i class="glyphicon glyphicon-question-sign tooltipped" data-html="true" title="<b>Penalty Late Days</b><br />Number of late days used for which a penalty was incurred"></i>
               </th>
               <th>Final Score</th>
             </tr>
@@ -68,7 +68,7 @@
                   <% case aud.grade_type
                      when AssessmentUserDatum::ZEROED %>
                     <% if @cud.instructor? %>
-                      <span class="zeroed" data-toggle="tooltip" title="This final score has been zeroed out.">
+                      <span class="zeroed tooltipped" title="This final score has been zeroed out.">
                         <%= render_final_score aud %>
                       </span>
                     <% else %>
@@ -78,7 +78,7 @@
                   <% when AssessmentUserDatum::EXCUSED %>
                     <% pronoun = @cud == @_cud ? "You" : @_cud.email %>
                     <% tip = "#{pronoun} has been excused from #{asmt.display_name}." %>
-                    <span class="excused label label-info" data-toggle="tooltip" data-html="true" title="<%= tip %>">
+                    <span class="excused label label-info tooltipped" data-html="true" title="<%= tip %>">
                       Excused
                     </span>
 
@@ -86,25 +86,25 @@
                     <% case aud.submission_status
                        when :submitted %>
                       <% if Time.now <= aud.assessment.grading_deadline %>
-                        <i class="glyphicon glyphicon-time" data-toggle="tooltip" title="Final score will be visible once grading is complete."></i>
+                        <i class="glyphicon glyphicon-time tooltipped" title="Final score will be visible once grading is complete."></i>
                       <% else %>
                         <%= render_final_score aud %>
                       <% end %>
 
                     <% when :not_submitted %>
                       <% if Time.now <= aud.assessment.grading_deadline %>
-                        <i class="glyphicon glyphicon-exclamation-sign" data-toggle="tooltip" title="No submission was made."></i>
+                        <i class="glyphicon glyphicon-exclamation-sign tooltipped" title="No submission was made."></i>
                       <% else %>
-                        <span class="not-submitted" data-toggle="tooltip" title="No submission was made.">
+                        <span class="not-submitted tooltipped" title="No submission was made.">
                           <%= render_final_score aud %>
                         </span>
                       <% end %>
 
                     <% when :not_yet_submitted %>
                       <% if Time.now <= aud.assessment.grading_deadline %>
-                        <i class="glyphicon glyphicon-exclamation-sign" data-toggle="tooltip" title="No submission has been made yet."></i>
+                        <i class="glyphicon glyphicon-exclamation-sign tooltipped" title="No submission has been made yet."></i>
                       <% else %>
-                        <span class="not-yet-submitted" data-toggle="tooltip" title="No submission has been made yet.">
+                        <span class="not-yet-submitted tooltipped" title="No submission has been made yet.">
                           <%= render_final_score aud %>
                         </span>
                       <% end %>

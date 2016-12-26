@@ -1,4 +1,4 @@
-<table class="prettyBorder" border=1 width=80%>
+<table class="highlight" border=1 width=80%>
 
   <thead>
     <tr>
@@ -14,7 +14,7 @@
       <%end%>
 
       <% if @course.grace_days >= 0 then %>
-        <th>Late Penalty (penalty late days)</th>
+        <th>Late Days Used</th>
       <% end %>
 
       <% if @assessment.version_penalty? %>
