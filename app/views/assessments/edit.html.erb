@@ -9,10 +9,10 @@
   <%= javascript_include_tag "confirm_discard_changes" %>
 <% end %>
 
-<ul id="tabs" class="nav nav-tabs">
+<ul id="tabs" class="tabs">
 <% [ "basic", "handin", "penalties", "problems" ].each do |tab_name| %>
-  <%= (tab_name == params[:active_tab]) ? tag(:li, class: :active) : tag(:li) %>
-    <%= link_to tab_name.titleize, edit_course_assessment_path(@course, @assessment) + "/#{tab_name}" %>
+  <%= (tab_name == params[:active_tab]) ? tag(:li, {:class => "active tab"}) : tag(:li, class: :tab) %>
+    <%= link_to tab_name.titleize, "#tab_#{tab_name}" %>
   </li>
 <% end %>
 </ul>
@@ -35,8 +35,18 @@
             <% end %>
           </ul>
       <% end %>
-
-      <%= render "edit_#{params[:active_tab]}", f: f %>
+      <div id="tab_basic">
+        <%= render "edit_basic", f: f %>
+      </div>
+      <div id="tab_handin">
+        <%= render "edit_handin", f: f %>
+      </div>
+      <div id="tab_penalties">
+        <%= render "edit_penalties", f: f %>
+      </div>
+      <div id="tab_problems">
+        <%= render "edit_problems", f: f %>
+      </div>
     <% end %>
   </div>
 </div>

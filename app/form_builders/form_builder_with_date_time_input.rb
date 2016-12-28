@@ -11,8 +11,8 @@ class FormBuilderWithDateTimeInput < ActionView::Helpers::FormBuilder
     define_method(method_name) do |name, *args|
       options = args.extract_options!
 
-      # add form-control class (for Bootstrap styling) and pass on to Rails
-      options[:class] = "form-control #{options[:class]}"
+      # DEPRECATED: add form-control class (for Bootstrap styling) and pass on to Rails
+      options[:class] = "#{options[:class]}"
       field = super name, *(args + [options])
 
       wrap_field name, field, options[:help_text], options[:display_name]
@@ -23,11 +23,11 @@ class FormBuilderWithDateTimeInput < ActionView::Helpers::FormBuilder
     options = args.extract_options!
 
     fields = fields_for name do |f|
-      @template.content_tag :div, class: "score-adjustment input-group" do
-        (f.vanilla_text_field :value, class: "form-control value") +
+      @template.content_tag :div, class: "score-adjustment" do
+        (f.vanilla_text_field :value, class: "input-field value", placeholder: "10") +
         (@template.content_tag :div, class: "input-group-addon" do
           f.select(:kind, { "points" => "points", "%" => "percent" }, {},
-                   class: "form-control kind input-group-addon")
+                   class: "input-field kind input-group-addon")
         end)
       end
     end
@@ -97,7 +97,7 @@ private
     field = vanilla_text_field(
       name,
       :value => formatted_datetime,
-      :class => "form-control datetimepicker",
+      :class => "datepicker",
       :"data-date-format" => date_format,
       :"data-date-less-than" => options[:less_than],
       :"data-date-greater-than" => options[:greater_than])
@@ -106,9 +106,9 @@ private
   end
 
   def wrap_field(name, field, help_text, display_name = nil)
-    @template.content_tag :div, class: "form-group" do
+    @template.content_tag :div, class: "input-field" do
       label(name, display_name, class: "control-label") +
-        field + help_text(name, help_text)
+         field + help_text(name, help_text)
     end
   end
 
