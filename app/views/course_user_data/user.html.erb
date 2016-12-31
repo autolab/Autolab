@@ -12,4 +12,6 @@
   <li><b>Course Average Tweak</b> of <%=raw tweak(@requestedUser.tweak) %></li>
   <% end %>
 </ul>
+<% if @user.instructor? then %>
 <%= link_to raw('<span class="btn primary">Edit Information</span>'), edit_course_user_path(@course, @requestedUser), :id=>@requestedUser.id %>
+<% end %>
