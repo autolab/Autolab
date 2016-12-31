@@ -1,52 +1,51 @@
-// Initialize all Bootstrap 3 Datetime Pickers on the page
+// Initialize all Materialize Date and Time pickers
 ;(function() {
-  function updateDatetimePickers(e) {
-    var ourDate = e.date;
 
-    // Harvest data-* attributes describing linked relationships
-    var lessThans = $(this).data('dateLessThan');
-    var greaterThans = $(this).data('dateGreaterThan');
-
-    function compareDates(dp_id, cmp) {
-      if (dp_id) {
-        var theirID = '#' + dp_id;
-        var theirDateData = $(theirID).data('DateTimePicker');
-
-        // Check whether the other target has been initialized
-        if (theirDateData) {
-          var theirDate = theirDateData.date();
-          $(theirID).data('DateTimePicker').date(cmp(theirDate, ourDate));
+  $(document).ready(function() {
+    
+    function initDateTime(inputElt, timeElt=null) {
+      var input = $(inputElt).pickadate({
+        selectMonths: true,
+        selectYears: 5,
+        close: 'DONE',
+        format: 'mmmm d, yyyy'
+      });
+      var datepicker = input.pickadate('picker');
+      datepicker.on('close', function(data) {
+        console.log("Opening timepicker...", this.get());
+        if (timepicker) {
+          timepicker.pickatime('show');
         }
+
+      });
+      var afterDone = function(e) {
+        datepicker.set('select', datepicker.get() + ' ' + timepicker.val());
+        datepicker.set('view', datepicker.get() + ' ' + timepicker.val());
+        timepicker.val(datepicker.get() + ' ' + timepicker.val());
+        console.log("Got this from datepicker: ", datepicker.get() + ' ' + timepicker.val());
+      }
+      if (timeElt) {
+        var timepicker = $(timeElt).pickatime({
+          default: '23:59',
+          interval: 1,
+          autoclose: false,
+          twelvehour: true,
+          afterDone: afterDone
+        });
       }
     }
 
-    // We are less than (older than) each of these elements
-    if (lessThans) {
-      lessThans.split(' ').forEach(function(dp_id, idx, arr) {
-        compareDates(dp_id, moment.max);
-      });
+    var inputElts = $('.datepicker');
+    var timeElts = $('.timepicker').hide();
+
+    for (var i = 0; i < inputElts.length; i++) {
+      if (timeElts.length == inputElts.length) {
+        initDateTime(inputElts[i], timeElts[i]);
+      } else {
+        initDateTime(inputElts[i])
+      }
     }
 
-    // We are greater than (younger than) each of these elements
-    if (greaterThans) {
-      greaterThans.split(' ').forEach(function(dp_id, idx, arr) {
-        compareDates(dp_id, moment.min);
-      });
-    }
-  }
-
-  $(document).ready(function() {
-    $('.datetimepicker').each(function(idx) {
-      $(this).datetimepicker({
-        showTodayButton: true,
-        icons: {
-          time: 'glyphicon glyphicon-time time-btn',
-          date: 'glyphicon glyphicon-calendar date-btn',
-          today: 'glyphicon glyphicon-screenshot now-btn'
-        }
-      });
-    });
-
-    $('.datetimepicker').on('dp.change', updateDatetimePickers);
   });
+
 })();
