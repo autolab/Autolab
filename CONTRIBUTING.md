@@ -82,63 +82,37 @@ respective pull requests.
   Commit Messages_][commit-messages].
 
 
-6. Update your branch
+6. Update your branch with changes on master
 
   ```
+  git checkout <YOUR_BRANCH_NAME>
   git fetch origin
   git rebase origin/master
   ```
 
-7. After creating a personal fork of the Autolab repo through the GitHub
-   interface, run:
+7. Push branch to autolab repo
 
   ```
-  git remote add mine git@github.com:<your user name>/Autolab.git
+  git push origin <YOUR_BRANCH_NAME>
   ```
 
-  You may also be interested in tools like [`hub`][hub] which help automate
-  forking.
-
-8. Push to your remote
-
-  ```
-  git push mine new_autolab_branch
-  ```
-
-9. Issue a Pull Request
-
-  Before submitting a pull-request, clean up the history, go over your commits
-  and squash together minor changes and fixes into the corresponding commits.
-  You can squash commits with the interactive rebase command:
-
-  ```
-  git fetch origin
-  git checkout new_autolab_branch
-  git rebase origin/master
-  git rebase -i
-
-  < the editor opens and allows you to change the commit history >
-  < follow the instructions on the bottom of the editor >
-
-  git push -f mine new_autolab_branch
-  ```
+8. Issue a Pull Request
 
   In order to make a pull request,
 
   * Navigate to the Autolab repository you just pushed to (e.g.
-    https://github.com/your-user-name/Autolab)
+    https://github.com/autolab/Autolab)
   * Click "Pull Request" and "New Pull Request".
   * Write your branch name in the branch field (this is filled with `master` by
     default)
-  * Pick `develop` branch as the target branch on GitHub
-  * Click "Update Commit Range".
+  * Pick `master` branch as the target branch on GitHub
   * Ensure the changesets you introduced are included in the "Commits" tab.
   * Ensure that the "Files Changed" incorporate all of your changes.
   * Fill in some details about your potential patch including a meaningful
     title.
   * Click "Send pull request".
 
-10. Responding to Feedback
+9. Responding to Feedback
 
   The Autolab team may recommend adjustments to your code. Part of interacting
   with a healthy open-source community requires you to be open to learning new
