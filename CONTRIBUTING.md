@@ -43,9 +43,9 @@
         cd Autolab
         git checkout -b new_autolab_branch
 
-Please keep your code clean, and limit each branch to one feature or bug-fix. If
-you find multiple bugs you want to fix, make multiple branches and multiple
-respective pull requests.
+   Please keep your code clean, and limit each branch to one feature or bug-fix. If
+   you find multiple bugs you want to fix, make multiple branches and multiple
+   respective pull requests.
 
 3. Code
   * Adhere to common conventions you see in the existing code
