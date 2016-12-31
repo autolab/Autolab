@@ -8,18 +8,16 @@
 #  socket: /var/run/mysqld/mysqld.sock
 #  host: localhost
 
-SQLite Configuration
+# SQLite Configuration
 development:
   adapter: sqlite3
   database: db/db.sqlite3
   pool: 5
   timeout: 5000
 
+# Temporary SQLite Test Config
 test:
-  adapter: mysql2
-  database: <username>_autolab_test
+  adapter: sqlite3
+  database: db/db.sqlite3
   pool: 5
-  username: <username>
-  password: '<password>'
-  socket: /var/run/mysqld/mysqld.sock
-  host: localhost
+  timeout: 5000
