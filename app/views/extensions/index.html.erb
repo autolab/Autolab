@@ -6,6 +6,7 @@
 
 <% content_for :javascripts do %>
   <%= javascript_include_tag 'chosen.jquery.min' %>
+  
   <script type="application/javascript">
     jQuery(function() {
       $dueDate = moment("<%= @assessment.due_at.to_s %>", "YYYY-MM-DD hh:mm:ss ZZ").startOf('day');
@@ -17,10 +18,10 @@
         format: 'YYYY-MM-DD'
       });
       $extensionNewDayField.data('DateTimePicker').minDate($dueDate);
-      $('.chosen-select').chosen();
+      $('.chosen-select').chosen({width: '100%'});
 
       /* Enable/disable extension days options */
-      $enableInfiniteExtension = $('#infinite_extension');
+      $enableInfiniteExtension = $('#extension_infinite');
       if ($enableInfiniteExtension.is(':checked')) {
         $extensionDaysField.prop('disabled',true);
         $extensionNewDayField.prop('disabled',true);
@@ -54,67 +55,58 @@
 
 <% end %>
 
+<% if params[:errors] then %>
+  <br><i>Errors:<%= params[:errors] %></i><br>
+  <p></p>
+<% end %>
+
 <p> Current Due: <span class="moment-date-time"><%= @assessment.due_at.to_s %></span> </p>
 
-<table>
-<tr>
+<div class="row">
+  <div class="col s12 m6">
+    <p><b>Current Extensions</b></p>
+    Size:<%= @extensions.size %>
+    <table class="verticalTable">
+      <thead>
+        <tr>
+          <th>Email</th>
+          <th colspan=2>Extension Length</th>
+        </tr>
+      </thead>
 
-<td style='vertical-align:text-top'>
-  <p><b>Current Extensions</b></p>
-  <table class="verticalTable">
-  <tr>
-    <th>Email</th>
-    <th colspan=2>Extension Length</th>
-  </tr>
-  Size:<%= @extensions.size %>
-  <% for ext in @extensions do %>
-    <tr>
-      <th><%= ext.course_user_datum.email %></th>
-      <td style="padding: 0 5px"><%= ext.infinite? ? "Infinite" : "#{ext.days} days" %></td>
-      <td><%= link_to 'Delete', [@course, @assessment, ext], method: :delete %></td>
-    </tr>
-  <% end %>
-  </table>
-</td>
+      <tbody>
+        <% for ext in @extensions do %>
+          <tr>
+            <th><%= ext.course_user_datum.email %></th>
+            <td style="padding: 0 5px"><%= ext.infinite? ? "Infinite" : "#{ext.days} days" %></td>
+            <td><%= link_to 'Delete', [@course, @assessment, ext], method: :delete %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
 
-<td style="width:20px">&nbsp;</td>
-
-<td style='vertical-align:text-top'>
-  <% if params[:errors] then %>
-    <br><i>Errors:<%= params[:errors] %></i><br>
-    <p></p>
-  <% end %>
-
-  <b>Create New Extension</b>
-  <table>
-    <%= form_for @new_extension, :as=>"extension", :url=>{:action=>"create"} do |f| %>
-      <tr><td>
-      <% if @new_extension.errors.any? %>
-        <ul>
-          <% @new_extension.errors.full_messages.each do |msg| %>
-            <li><%= msg %></li>
-          <% end %>
-        </ul>
-      <% end %>
-      </td></tr>
-      <tr><td> <%= f.select(:course_user_datum_id, @users, {prompt: 'select user'}, {class: 'chosen-select'}) %> </td></tr>
-      <tr><td>
+  <div class="col s12 m6">
+    <p><b>Create New Extension</b></p>
+      <%= form_for @new_extension, :as=>"extension", :url=>{:action=>"create"}, builder: FormBuilderWithDateTimeInput do |f| %>
+        <% if @new_extension.errors.any? %>
+          <div>
+            <ul>
+              <% @new_extension.errors.full_messages.each do |msg| %>
+                <li><%= msg %></li>
+              <% end %>
+            </ul>
+          </div>
+        <% end %>
+        <%= f.select(:course_user_datum_id, @users, {prompt: 'select user'}, {class: 'chosen-select'}) %>
         <p>Select a new due date</p>
-        <div style="position:relative">
-          <input type="text" id="new_due_date_picker"></input>
-        </div>
-      </td></tr>
-      <tr><td>
-      -OR- Specify number of days to extend:
-      <%= f.text_field :days, :size=>3, :id => "extension_days" %> day(s)
-      <br>
-      -OR- Infinite Extension? <%= f.check_box :infinite, :id => "infinite_extension" %>
-      <%= f.hidden_field(:assessment_id)%>
-      </td></tr>
-      <tr><td style="padding-top:10px"> <%= f.submit "Create" , {:class=>"btn primary"} %> </td></tr>
-    <% end %>
-  </table>
-</td>
+        <input type="text" id="new_due_date_picker"></input><br>
+        <p>-OR- Specify number of days to extend:</p>
+        <%= f.text_field :days, :size=>3, :id => "extension_days" %>
+        <p>-OR- Infinite Extension? <%= f.check_box :infinite, :id => "extension_infinite" %></p>
+        <%= f.hidden_field(:assessment_id)%>
+        <%= f.submit "Create" , {:class=>"btn primary"} %>
+      <% end %>
+  </div>
 
-</tr>
-</table>
+</div>
