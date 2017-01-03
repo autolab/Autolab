@@ -1,4 +1,6 @@
+<%= stylesheet_link_tag 'materialize.clockpicker.css' %>
 <% content_for :javascripts do %>
+  <%= javascript_include_tag "materialize.clockpicker.js" %>
   <%= javascript_include_tag "initialize_datetimepickers" %>
 <% end %>
 
@@ -44,3 +46,5 @@
 <div class="action_buttons">
   <%= f.submit "Save" , {:class=>"btn primary"} %>
 </div>
+
+

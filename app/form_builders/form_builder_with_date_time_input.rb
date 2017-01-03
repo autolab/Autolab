@@ -67,13 +67,15 @@ class FormBuilderWithDateTimeInput < ActionView::Helpers::FormBuilder
   def date_select(name, options = {}, _html_options = {})
     strftime = "%F"
     date_format = "YYYY-MM-DD"
-    date_helper name, options, strftime, date_format
+    
+    date_helper name, options, strftime, date_format, false
   end
 
   def datetime_select(name, options = {}, _html_options = {})
     strftime = "%F %I:%M %p %z"
     date_format = "YYYY-MM-DD hh:mm A ZZ"
-    date_helper name, options, strftime, date_format
+    
+    date_helper name, options, strftime, date_format, true
   end
 
 private
@@ -81,7 +83,7 @@ private
   # Pass space-delimited list of IDs of datepickers on the :less_than and
   # :greater_than properties to initialize relationships between datepicker
   # fields.
-  def date_helper(name, options, strftime, date_format)
+  def date_helper(name, options, strftime, date_format, is_datetime)
     begin
       existing_time = @object.send(name)
     rescue
@@ -94,15 +96,26 @@ private
       formatted_datetime = ""
     end
 
-    field = vanilla_text_field(
+    field = (vanilla_text_field(
       name,
       :value => formatted_datetime,
       :class => "datepicker",
       :"data-date-format" => date_format,
       :"data-date-less-than" => options[:less_than],
-      :"data-date-greater-than" => options[:greater_than])
+      :"data-date-greater-than" => options[:greater_than]
+    ))
+    
+    if is_datetime
+      wrapper = wrap_field name, field, options[:help_text]
+      wrapper + (vanilla_text_field(
+          name,
+          :class => 'timepicker hidden',
+          :type => 'hidden'
+        ))
+    else
+      wrap_field name, field, options[:help_text]
+    end
 
-    wrap_field name, field, options[:help_text]
   end
 
   def wrap_field(name, field, help_text, display_name = nil)
