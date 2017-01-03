@@ -66,14 +66,18 @@ class FormBuilderWithDateTimeInput < ActionView::Helpers::FormBuilder
 
   def date_select(name, options = {}, _html_options = {})
     strftime = "%F"
-    date_format = "YYYY-MM-DD"
-    date_helper name, options, strftime, date_format
+    date_format = "F j, Y"
+    alt_format = "F j, Y"
+    options[:picker_class] = "datepicker"
+    date_helper name, options, strftime, date_format, alt_format
   end
 
   def datetime_select(name, options = {}, _html_options = {})
     strftime = "%F %I:%M %p %z"
-    date_format = "YYYY-MM-DD hh:mm A ZZ"
-    date_helper name, options, strftime, date_format
+    date_format = "F j, Y h:i K"
+    alt_format = "F j, Y h:i K"
+    options[:picker_class] = "datetimepicker"
+    date_helper name, options, strftime, date_format, alt_format
   end
 
 private
@@ -81,7 +85,7 @@ private
   # Pass space-delimited list of IDs of datepickers on the :less_than and
   # :greater_than properties to initialize relationships between datepicker
   # fields.
-  def date_helper(name, options, strftime, date_format)
+  def date_helper(name, options, strftime, date_format, alt_format)
     begin
       existing_time = @object.send(name)
     rescue
@@ -97,8 +101,9 @@ private
     field = vanilla_text_field(
       name,
       :value => formatted_datetime,
-      :class => "datepicker",
+      :class => "#{options[:picker_class]}",
       :"data-date-format" => date_format,
+      :"data-alt-format" => alt_format,
       :"data-date-less-than" => options[:less_than],
       :"data-date-greater-than" => options[:greater_than])
 

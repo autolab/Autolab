@@ -1,3 +1,8 @@
+<%= stylesheet_link_tag "https://unpkg.com/flatpickr/dist/flatpickr.min.css" %>
+
+<% content_for :javascripts do %>
+  <%= javascript_include_tag "https://unpkg.com/flatpickr" %>
+<% end %>
 
 <%= f.text_field :name,
   help_text: "The course ID used in URLs and DB keys. This field must be unique
