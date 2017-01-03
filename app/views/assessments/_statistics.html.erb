@@ -13,7 +13,8 @@
     <% end %>
 
     <% content_for :javascripts do %>
-       <%= javascript_include_tag "chroma.min" %>
+      <%= javascript_include_tag "assessments_statistics" %>
+      <%= javascript_include_tag "chroma.min" %>
     <% end %>
 
     <div id='allGradesDiv' class="section scrollspy" >
@@ -122,9 +123,10 @@
         top: 100,
         offset: 0
       });
-      var hell = <%= raw @scores.to_json %>;
-      console.log(hell)
-      //Plotly.newPlot('lectureDivGraph', hell);
+      var data = <%= raw @scores.to_json %>;
+      console.log(data["lecture"][1])
+      data["lecture"]["type"] = "histogram"
+      Plotly.plot('lectureDivGraph', [data["lecture"][1]]);
       //plotGraph(hell); 
     });
 
