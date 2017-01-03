@@ -6,18 +6,16 @@
 
 <% content_for :javascripts do %>
   <%= javascript_include_tag 'chosen.jquery.min' %>
+  <%= javascript_include_tag "initialize_datetimepickers" %>
   
   <script type="application/javascript">
     jQuery(function() {
       $dueDate = moment("<%= @assessment.due_at.to_s %>", "YYYY-MM-DD hh:mm:ss ZZ").startOf('day');
 
       $extensionDaysField = $('#extension_days');
-      $extensionNewDayField = $('#new_due_date_picker');
+      $extensionNewDayField = $('#extension_due_at');
+      $extensionDaysLabel = $('label[for="extension_days"]');
 
-      $extensionNewDayField.datetimepicker({
-        format: 'YYYY-MM-DD'
-      });
-      $extensionNewDayField.data('DateTimePicker').minDate($dueDate);
       $('.chosen-select').chosen({width: '100%'});
 
       /* Enable/disable extension days options */
@@ -40,16 +38,17 @@
       $extensionDaysField.on('change', function() {
         $newDate = moment($dueDate);
         $newDate.add($extensionDaysField.val(), 'days').startOf('day');
-        $extensionNewDayField.data('DateTimePicker').date($newDate);
+        $extensionNewDayField.flatpickr().setDate($newDate.toDate());
       });
-      $extensionNewDayField.on('dp.change', function() {
-        $newDate = moment($extensionNewDayField.data('DateTimePicker').date()).startOf('day');
+      $extensionNewDayField.on('change', function() {
+        $newDate = moment($extensionNewDayField.val()).startOf('day');
         $extendBy = $newDate.diff($dueDate, 'days');
         $extensionDaysField.val($extendBy);
+        $extensionDaysLabel.addClass("active");
       });
-      
-      /* need to manually toggle popup because it only shows once per focus */
-      $extensionNewDayField.on('click', $extensionNewDayField.data('DateTimePicker').show);
+
+      /* set initial value to original due date */
+      $extensionNewDayField.flatpickr().setDate($dueDate.toDate());
     });
   </script>
 
@@ -100,10 +99,10 @@
         <% end %>
         <%= f.select(:course_user_datum_id, @users, {prompt: 'select user'}, {class: 'chosen-select'}) %>
         <p>Select a new due date</p>
-        <input type="text" id="new_due_date_picker"></input><br>
+        <%= f.date_select :due_at, greater_than: @assessment.due_at, id: "extension_due_at" %><br>
         <p>-OR- Specify number of days to extend:</p>
         <%= f.text_field :days, :size=>3, :id => "extension_days" %>
-        <p>-OR- Infinite Extension? <%= f.check_box :infinite, :id => "extension_infinite" %></p>
+        <p>-OR- Infinite Extension? <%= f.check_box :infinite, id: "extension_infinite" %></p>
         <%= f.hidden_field(:assessment_id)%>
         <%= f.submit "Create" , {:class=>"btn primary"} %>
       <% end %>
