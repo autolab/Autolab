@@ -30,8 +30,14 @@ class ApplicationController < ActionController::Base
     rescue_from Exception, with: :render_error
     rescue_from CourseUserDatum::AuthenticationFailed do |e|
       COURSE_LOGGER.log("AUTHENTICATION FAILED: #{e.user_message}, #{e.dev_message}")
-      flash[:error] = e.user_message
-      redirect_to root_path
+      respond_to do |format| 
+         format.html {
+            flash[:error] = e.user_message
+            redirect_to root_path
+         }
+         format.json { head :forbidden }
+         format.js { head :forbidden }
+      end
     end
   end
 
@@ -259,16 +265,20 @@ protected
           @course = action.course
           COURSE_LOGGER.setCourse(@course)
           mod_name = Rails.root.join(action.action)
-          require mod_name
-          Updater.update(@course)
+          begin
+            require mod_name
+            Updater.update(@course)
+          rescue ScriptError, StandardError => e
+            Rails.logger.error("Error in '#{@course.name}' updater: #{e.message}")
+            Rails.logger.error(e.backtrace.inspect)
+            ExceptionNotifier.notify_exception(e, data: {action_script: action.action, course: @course})
+          end
         end
 
         Process.detach(pid)
       rescue StandardError => e
-        Rails.logger.error("Error updater: #{e}")
-        Rails.logger.error(e)
-        Rails.logger.error(e.message)
-        Rails.logger.error(e.backtrace.inspect)
+        Rails.logger.error("Cannot fork '#{@course.name}' updater: #{e.message}")
+        ExceptionNotifier.notify_exception(e)
       end
     end
   end
@@ -317,23 +327,34 @@ private
     # use the exception_notifier gem to send out an e-mail
     # to the notification list specified in config/environment.rb
     ExceptionNotifier.notify_exception(exception, env: request.env,
-                                                  data: { message: "was doing something wrong" })
+                                       data: {
+                                         user: current_user,
+                                         course: @course,
+                                         assessment: @assessment,
+                                         submission: @submission
+                                       })
 
-    # stack traces are only shown to instructors and administrators
-    # by leaving @error undefined, students and CAs do not see stack traces
-    if (!current_user.nil?) && (current_user.instructor? || current_user.administrator?)
-      @error = exception
+    respond_to do |format|
+       format.html {
+          # stack traces are only shown to instructors and administrators
+          # by leaving @error undefined, students and CAs do not see stack traces
+          if (!current_user.nil?) && (current_user.instructor? || current_user.administrator?)
+            @error = exception
 
-      # Generate course id and assesssment id objects
-      @course_name = params[:course_name] ||
-                     (params[:controller] == "courses" ? params[:name] : nil)
-      if @course_name
-        @assessment_name = params[:assessment_name] ||
-                           (params[:controller] == "assessments" ? params[:name] : nil)
+            # Generate course id and assesssment id objects
+            @course_name = params[:course_name] ||
+                           (params[:controller] == "courses" ? params[:name] : nil)
+            if @course_name
+              @assessment_name = params[:assessment_name] ||
+                                 (params[:controller] == "assessments" ? params[:name] : nil)
 
-      end
+            end
+          end
+
+          render "home/error"
+       }
+       format.json { head :internal_server_error }
+       format.js { head :internal_server_error }
     end
-
-    render "home/error"
   end
 end
