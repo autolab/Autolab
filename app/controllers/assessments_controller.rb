@@ -298,10 +298,9 @@ class AssessmentsController < ApplicationController
     @submission = @assessment.submissions.find(params[:submission])
     # Shows a form which has the submission on top, and feedback on bottom
     begin
-      subFile = File.join(Rails.root, "courses",
-                          @course.name, @assessment.name,
-                          @assessment.handin_directory,
-                          @submission.filename)
+      subFile = Rails.root.join("courses", @course.name, @assessment.name,
+                                @assessment.handin_directory,
+                                @submission.filename)
       @submissionData = File.read(subFile)
     rescue
       @submissionData = "Could not read #{subFile}"

@@ -16,7 +16,7 @@
   then you can import it into your current course:</p>
 
   <ul>
-  <li> Step 1: Copy the assessment from the previous course directory to the current course directory (<%= File.join(Rails.root, "courses", @course.name) %>).
+  <li> Step 1: Copy the assessment from the previous course directory to the current course directory (<%= Rails.root.join("courses", @course.name) %>).
 
   <li>Step 2: Refresh this page to cause your new assessment to appear 
   in the list below. 
