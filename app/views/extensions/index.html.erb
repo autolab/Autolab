@@ -69,7 +69,7 @@
       <thead>
         <tr>
           <th>Email</th>
-          <th colspan=2>Extension Length</th>
+          <th colspan=2>Length</th>
         </tr>
       </thead>
 
@@ -78,7 +78,7 @@
           <tr>
             <th><%= ext.course_user_datum.email %></th>
             <td style="padding: 0 5px"><%= ext.infinite? ? "Infinite" : "#{ext.days} days" %></td>
-            <td><%= link_to 'Delete', [@course, @assessment, ext], method: :delete %></td>
+            <td><%= link_to '<i class="material-icons">delete</i>'.html_safe, [@course, @assessment, ext], method: :delete %></td>
           </tr>
         <% end %>
       </tbody>
