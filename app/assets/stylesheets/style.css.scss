@@ -656,6 +656,10 @@ input[type="password"] {
   color: black;
 }
 
+.chosen-search input {
+  box-sizing: border-box;
+}
+
 textarea.materialize-textarea { 
   /*border-bottom: 1px solid $autolab-subtle-red;*/
 }
