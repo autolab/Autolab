@@ -652,8 +652,8 @@ input[type="password"] {
   /*border: 1px solid #ccc;*/
 }
 
-.flatpickr-input.form-control.input {
-  color: black;
+.flatpickr-input {
+  color: black !important;
 }
 
 textarea.materialize-textarea { 
@@ -679,6 +679,9 @@ input[type="password"]:focus {
 input[type="checkbox"] {
   // For spacing between this and an adjacent label
   margin-right: 10px;
+}
+.checkbox-input {
+  margin-top: 1rem;
 }
 
 .input-field {
