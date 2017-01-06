@@ -1,4 +1,6 @@
-<%= form_for [@course, @assessment, @autograder], builder: FormBuilderWithDateTimeInput do |f| %>
+<%= form_for [@course, @assessment, @autograder], 
+	builder: FormBuilderWithDateTimeInput,
+	html: { multipart: true } do |f| %>
   <%= f.error_messages %>
 
   <%= f.text_field :autograde_image, display_name: "VM Image" %>
@@ -9,6 +11,11 @@
     help_text: "Timeout for autograding jobs (secs)" %>
   <%= f.check_box :release_score, display_name: "Release Scores?",
     help_text: "Check to release autograded scores to students immediately after autograding (strongly recommended)." %>
+
+	<% if false %>
+  <%= f.file_field :"Autograde Makefile", class: "", :multiple => true, action: :upload_makefile_or_tar %> 
+  <%= f.file_field :"Autograde Tar", class: "", :multiple => true, action: :upload_makefile_or_tar %> 
+	<% end %>
 
   <%= f.submit "Save Settings", { class: "btn primary" } %>
   
