@@ -652,6 +652,10 @@ input[type="password"] {
   /*border: 1px solid #ccc;*/
 }
 
+.file-path-wrapper input[type="text"] {
+  margin-bottom: 2px;
+}
+
 .flatpickr-input.form-control.input {
   color: black;
 }
