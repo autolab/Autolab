@@ -25,6 +25,7 @@ class AutogradersController < ApplicationController
   action_auth_level :update, :instructor
   def update
     flash[:info] = "Saved!" if @autograder.update(autograder_params)
+		upload_makefile_or_tar
     redirect_to([:edit, @course, @assessment, :autograder]) && return
   end
 
@@ -32,6 +33,22 @@ class AutogradersController < ApplicationController
   def destroy
     flash[:info] = "Destroyed!" if @autograder.destroy
     redirect_to([:edit, @course, @assessment]) && return
+  end
+
+	action_auth_level :upadte, :instructor
+  def upload_makefile_or_tar
+    uploaded_tar = params[:autograder][:"Autograde Tar"]
+	  uploaded_makefile = params[:autograder][:"Autograde Makefile"]
+	  if not uploaded_makefile.nil?
+		  File.open(Rails.root.join('courses', @course.name, @assessment.name, 'autograde-Makefile'), 'wb') do |file|
+		  file.write(uploaded_makefile.read) unless uploaded_makefile.nil?
+		end	
+	  end
+	  if not uploaded_tar.nil?	
+		  File.open(Rails.root.join('courses', @course.name, @assessment.name, 'autograde.tar'), 'wb') do |file|
+		  file.write(uploaded_tar.read) unless uploaded_tar.nil?
+		 end
+	  end
   end
 
 private
