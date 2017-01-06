@@ -157,25 +157,18 @@ class CoursesController < ApplicationController
         configs = Assessment.where("course_id  =  #{@course.id}")
         configs.each do |assesments|
           FileUtils.mv(File.join(Rails.root, "assessmentConfig", old_name + "-" + assesments.name + ".rb") , File.join(Rails.root, "assessmentConfig", @course.name + "-" + assesments.name + ".rb"))
-           # Open and read the default assessment config file
-          default_config_file_path = Rails.root.join("lib", "__defaultAssessment.rb")
-          config_source = File.open(default_config_file_path, "r") { |f| f.read }
-
-          # Update with this assessment information
-          config_source.gsub!("##NAME_CAMEL##", assesments.name.camelize)
-          config_source.gsub!("##NAME_LOWER##", assesments.name)
-          sanitized_name = assesments.name.gsub(/\./, "")
-          # Write the new config out to the right file.
-          File.open(Rails.root.join("courses", @course.name, sanitized_name, "#{sanitized_name}.rb"), "w") { |f| f.write(config_source) }
-          config_source = File.open(default_config_file_path, "r") { |f| f.read }
-
-          # Update with this assessment information
-          config_source.gsub!("##NAME_CAMEL##", assesments.name.camelize + @course.name)
-          config_source.gsub!("##NAME_LOWER##", assesments.name)
+          config_source = File.open(File.join(Rails.root, "assessmentConfig", @course.name + "-" + assesments.name + ".rb"), "r") { |f| f.read }
+          config_source.gsub!("module " + assesments.name.camelize + old_name,"module " + assesments.name.camelize + @course.name)
           File.open(Rails.root.join("assessmentConfig", @course.name + "-" + assesments.name + ".rb"), "w") { |f| f.write(config_source) }
-        end 
+        end
+        
+        config_source = File.open(Rails.root.join("courseConfig", old_name.gsub(/[^A-Za-z0-9]/, "") + ".rb"), "r") { |f| f.read }
+        config_source.gsub!("module Course" + old_name.camelize, "module Course" + @course.name.camelize)
+
+        File.open(Rails.root.join("courseConfig", old_name.gsub(/[^A-Za-z0-9]/, "") + ".rb"), "w") { |f| f.write(config_source) }
         FileUtils.mv(File.join(Rails.root, "courseConfig", old_name.gsub(/[^A-Za-z0-9]/, "") + ".rb") , File.join(Rails.root, "courseConfig", @course.name.gsub(/[^A-Za-z0-9]/, "") + ".rb"))
-        @course.reload_course_config
+
+
         flash[:success] = "Success: Course info updated."
         redirect_to edit_course_path(@course)
       else
