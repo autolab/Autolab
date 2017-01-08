@@ -1,35 +1,4 @@
 <% content_for :javascripts do %>
-	<script type="text/javascript">
-		$(function() {
-		  // We can attach the `fileselect` event to all file inputs on the page
-  		$(document).on('change', ':file', function() {
-	  	  var input = $(this),
-      	  	numFiles = input.get(0).files ? input.get(0).files.length : 1,
-      		  label = input.val().replace(/\\/g, '/').replace(/.*\//, '');
-	    	input.trigger('fileselect', [numFiles, label]);
-  		});
-
-	  	// We can watch for our custom `fileselect` event like this
-	  	$(document).ready( function() {
-  	    $(':file').on('fileselect', function(event, numFiles, label) {
-	
-  	        var makefile = $(this).parents('.makefile-group').find(':text'),
-    	          log = numFiles > 1 ? numFiles + ' files selected' : label;
-		
-  	        var tar = $(this).parents('.tar-group').find(':text'),
-    	          log = numFiles > 1 ? numFiles + ' files selected' : label;
-	
-  	        if( makefile.length ) {
-    	          makefile.val(log);
-      	    } else if( tar.length ) {
-							tar.val(log);
-						} else {
-        	      if( log ) alert(log);
-          	}
-					});
-			 });
-  	}); 
-	</script>
 <% end %>
 
 <%= form_for [@course, @assessment, @autograder], 
@@ -46,21 +15,19 @@
   <%= f.check_box :release_score, display_name: "Release Scores?",
     help_text: "Check to release autograded scores to students immediately after autograding (strongly recommended)." %>
 
-
-
-  <div class="makefile-group">
-    <br> 
-    <span class="btn btn-primary">
-    	Autograder Makfile <%= f.file_field "makefile", class: "upload-autograder" %> 
+	<label class="btn btn-primary">
+  	Autograder Makefile
+	  <span style="display:none;">
+  	  <%= f.file_field :makefile, action: :upload_makefile_or_tar %>
 	  </span>
-		<input type="text" class="form-control" readonly><br />
-	</div>
-	<div class="tar-group">
-  	<span class="btn btn-primary">
-  		Autograder Tar <%= f.file_field :tar, class: "upload-autograder" %> 
+	</label><br />
+	<label class="btn btn-primary">
+  	Autograder Tar
+	  <span style="display:none;">
+  	  <%= f.file_field :tar, action: :upload_makefile_or_tar %>
 	  </span>
-		<input type="text" class="form-control" readonly><br />
-	</div>
+	</label><br />
+
 
   <%= f.submit "Save Settings", { class: "btn primary" } %>
   
