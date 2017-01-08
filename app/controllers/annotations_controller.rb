@@ -16,6 +16,24 @@ class AnnotationsController < ApplicationController
   def create
     annotation = @submission.annotations.new(annotation_params)
     annotation.save
+    
+    findScore = Score.where('submission_id = ? AND problem_id = ?', params[:submission_id] , annotation_params[:problem_id])
+    if findScore.blank?
+      score = Score.new
+      score.submission_id =  params[:submission_id]
+      score.score = annotation_params[:value]
+      score.problem_id = annotation_params[:problem_id]
+      score.released = 0
+      score.grader_id = annotation_params[:submitted_by]
+      score.save
+    else 
+      findScore.first.problem_id = annotation_params[:problem_id]
+      findScore.first.grader_id = annotation_params[:submitted_by]
+      findScore.first.score = annotation_params[:value]
+      findScore.first.save
+    end 
+    
+
     respond_with(@course, @assessment, @submission, annotation)
   end
 
@@ -39,7 +57,6 @@ private
 
   def annotation_params
     params[:annotation].delete(:id)
-    params[:annotation].delete(:submission_id)
     params[:annotation].delete(:created_at)
     params[:annotation].delete(:updated_at)
     params.require(:annotation).permit(:filename, :position, :line, :text, :submitted_by,

@@ -17,7 +17,6 @@ var highlightLines = function(highlight) {
 $("#highlightLongLines").click(function() {
   highlightLines(this.checked);
 });
-
 var initializeAnnotationsForCode = function() {
   window.annotationMode = "Code";
 
@@ -347,7 +346,7 @@ var initializeAnnotationsForCode = function() {
       placeholder: "Score Here"
     });
     var problemSelect = elt("select", {
-      class: "col-md-4",
+      class: "browser-default",
       name: "problem"
     }, elt("option", {
       value: ""
@@ -422,6 +421,7 @@ var initializeAnnotationsForCode = function() {
       e.preventDefault();
       return false;
     });
+
 
     return newForm;
   }
@@ -537,7 +537,9 @@ var initializeAnnotationsForCode = function() {
     if ($line.length) {
       var newForm = newAnnotationForm(lineInd)
       $line.append(newForm);
+      newForm.
       $(newForm).find('.comment').focus();
+
     }
   }
 
@@ -565,7 +567,7 @@ var submitNewPDFAnnotation = function(comment, value, problem_id, pageInd, xRati
   var newAnnotation = createAnnotation();
   newAnnotation.coordinate = [xRatio, yRatio, pageInd, widthRatio, heightRatio].join(',');
   newAnnotation.comment = comment;
-  newAnnotation.value = value;
+  newAnnotation.value =value;
   newAnnotation.problem_id = problem_id;
 
   var $page = $('#page-canvas-wrapper-' + pageInd);
@@ -716,6 +718,7 @@ var initializeAnnotationsForPDF = function() {
       var pageInd = parseInt(pageCanvas.id.replace('page-canvas-',''), 10);
       $('.annotation-form').remove();
       showAnnotationFormAtCoord(pageInd, e.offsetX, e.offsetY);
+
     }
 
   });
