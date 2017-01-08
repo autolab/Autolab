@@ -35,17 +35,17 @@
     help_text: "Check to release autograded scores to students immediately after autograding (strongly recommended)." %>
 
 	<br />
-	<label class="btn btn-primary">
+	<label class="btn primary">
   	Autograder Makefile
-	  <span style="display:none;">
+	  <span class="hide-all">
   	  <%= f.file_field :makefile, action: :upload %>
 	  </span>
 	</label><br />
 	<input var id="makefile_name" value="autograde-Makefile" readonly>
 	
-	<label class="btn btn-primary">
+	<label class="btn primary">
   	Autograder Tar
-	  <span style="display:none;">
+	  <span class="hide-all">
   	  <%= f.file_field :tar, action: :upload %>
 	  </span>
 	</label><br />
