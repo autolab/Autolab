@@ -35,10 +35,9 @@ class AutogradersController < ApplicationController
     redirect_to([:edit, @course, @assessment]) && return
   end
 
-	action_auth_level :upadte, :instructor
   def upload_makefile_or_tar
-    uploaded_tar = params[:autograder][:"Autograde Tar"]
-	  uploaded_makefile = params[:autograder][:"Autograde Makefile"]
+    uploaded_makefile = params[:autograder][:makefile]
+	  uploaded_tar = params[:autograder][:tar]
 	  if not uploaded_makefile.nil?
 		  File.open(Rails.root.join('courses', @course.name, @assessment.name, 'autograde-Makefile'), 'wb') do |file|
 		  file.write(uploaded_makefile.read) unless uploaded_makefile.nil?
