@@ -1,4 +1,23 @@
 <% content_for :javascripts do %>
+	<script>
+		$(function() {
+		  $(document).on('change', ':file', function() {
+		    var input = $(this),
+		    	numFiles = input.get(0).files ? input.get(0).files.length : 1,
+		      label = input.val().replace(/\\/g, '/').replace(/.*\//, '');
+		    	input.trigger('fileselect', [numFiles, label]);
+		  });
+
+		  $(document).ready( function() {
+		    $('#autograder_makefile:file').on('fileselect', function(event, numFiles, label) {
+					$('#makefile_name').val(label);
+		    });
+				$('#autograder_tar:file').on('fileselect', function(event, numFiles, label) {
+						$('#tar_name').val(label);
+		    });
+		  });
+		});
+	</script>
 <% end %>
 
 <%= form_for [@course, @assessment, @autograder], 
@@ -15,19 +34,25 @@
   <%= f.check_box :release_score, display_name: "Release Scores?",
     help_text: "Check to release autograded scores to students immediately after autograding (strongly recommended)." %>
 
+	<br />
 	<label class="btn btn-primary">
   	Autograder Makefile
 	  <span style="display:none;">
   	  <%= f.file_field :makefile, action: :upload %>
 	  </span>
 	</label><br />
+	<input var id="makefile_name" value="autograde-Makefile" readonly>
+	
 	<label class="btn btn-primary">
   	Autograder Tar
 	  <span style="display:none;">
   	  <%= f.file_field :tar, action: :upload %>
 	  </span>
 	</label><br />
-
+	<input var id="tar_name" type="text" value="autograde.tar" readonly>
+	<p class="help-block">
+		Both of the above files will be renamed upon upload.
+	</p>
 
   <%= f.submit "Save Settings", { class: "btn primary" } %>
   
