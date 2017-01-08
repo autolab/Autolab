@@ -25,17 +25,18 @@ class AutogradersController < ApplicationController
   action_auth_level :update, :instructor
   def update
     flash[:info] = "Saved!" if @autograder.update(autograder_params)
-		upload_makefile_or_tar
+		upload
     redirect_to([:edit, @course, @assessment, :autograder]) && return
   end
-
+	
   action_auth_level :destroy, :instructor
   def destroy
     flash[:info] = "Destroyed!" if @autograder.destroy
     redirect_to([:edit, @course, @assessment]) && return
   end
 
-  def upload_makefile_or_tar
+  action_auth_level :upload, :instructor
+  def upload
     uploaded_makefile = params[:autograder][:makefile]
 	  uploaded_tar = params[:autograder][:tar]
 	  if not uploaded_makefile.nil?
