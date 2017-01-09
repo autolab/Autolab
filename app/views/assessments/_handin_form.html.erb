@@ -1,14 +1,11 @@
 <div id="<%= id %>" data-cansubmit="<%= @can_submit %> " class="card-action">
   <% if @can_submit %> 
-    <% if @assessment.max_submissions != -1 %>
-      <p>You have <%= @left_count %> <%= (@left_count == 1) ? "submission" : "submissions" %> left.</p>
-    <% end %>
 
     <% if @aud.past_due_at? %>
-      <p><b>Warning:</b> It is past the due date for this assessment. Submitting now might result in the usage of a grace day or a grade penalty!</p>
+      <p><b>Warning:</b> Submitting late may result in the usage of a grace day or a grade penalty!</p>
     <% end %>
     <div class="row">
-      <div class="col offset-s6 offset-m6 s6 m6">
+      <div class="col offset-s5 offset-m8 s7 m4">
         <% if @assessment.has_svn then %>
           <%= form_for @submission, url: {action: :handin}, method: :post do |f| %>
             <% if @aud.past_due_at? then %>
@@ -21,10 +18,22 @@
           <%= form_for @submission, url: {action: :handin}, multipart: true do |f| %>
             <%= f.file_field :file %>
             <% if @aud.past_due_at? then %>
-              <p><%= f.submit("Submit Late", id:"fake-submit",  class: "btn primary handin-btn") %></p>
+              <p><%= f.submit("Submit Late", id:"fake-submit",  class: "btn handin-btn-small div-center") %></p>
             <% else %>
-              <p><%= f.submit("Submit", id:"fake-submit", class: "btn primary handin-btn") %></p>
+              <p><%= f.submit("Submit ", id:"fake-submit", class: "btn handin-btn div-center") %></p>
             <% end %>
+            <% if @assessment.max_submissions != -1 then %>
+              <% numSubmissions = @submissions.size %>
+              <% if numSubmissions > @assessment.max_submissions then %>
+                <% numSubmissions = 0 %>
+              <% else %>
+                <% numSubmissions = @assessment.max_submissions - numSubmissions %>
+              <% end %>
+              <span class="center-align smallText">(<%= numSubmissions %> submissions left)</span> 
+            <% else %>
+              <span class="center-align smallText">(&nbsp;&#x221e;&nbsp;&nbsp;submissions left)</span> 
+            <% end %>
+
           <% end %>
         <% end %>
       </div>
