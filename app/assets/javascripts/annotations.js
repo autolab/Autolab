@@ -590,7 +590,7 @@ var submitNewPDFAnnotation = function(comment, value, problem_id, pageInd, xRati
       $(newForm).remove();
     },
     error: function(result, type) {
-      $(formEl).append(elt("div", null, "Failed to Save Annotation!!!"));
+      $(newForm).append(elt("div", null, "Failed to Save Annotation!!! Make Sure You Have'nt Set A Score Twice And The Score Is Within Max Value Range."));
     },
     complete: function(result, type) {}
   });
@@ -647,7 +647,7 @@ var submitNewAnnotation = function(comment, value, problem_id, lineInd, formEl) 
         $(formEl).remove();
       },
       error: function(result, type) {
-        $(formEl).append(elt("div", null, "Failed to Save Annotation!!!"));
+        $(formEl).append(elt("div", null, "Failed to Save Annotation!!! Make Sure You Have'nt Set A Score Twice And The Score Is Within Max Value Range."));
       },
       complete: function(result, type) {}
     });

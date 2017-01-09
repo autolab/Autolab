@@ -14,25 +14,43 @@ class AnnotationsController < ApplicationController
   # POST /:course/annotations.json
   action_auth_level :create, :course_assistant
   def create
-    annotation = @submission.annotations.new(annotation_params)
-    annotation.save
     
-    findScore = Score.where('submission_id = ? AND problem_id = ?', params[:submission_id] , annotation_params[:problem_id])
+    maxScore = Problem.find(annotation_params[:problem_id]).max_score.to_i
+    if annotation_params[:value].to_i > maxScore
+      render :status => 422, :text => "bad data"
+      return
+    end 
+
+    findUser = User.where('email = ?', annotation_params[:submitted_by])
+    grader = annotation_params[:submitted_by]
+    if !findUser.blank?
+      grader = findUser.first.id
+
+    end
+    annotation = @submission.annotations.new(annotation_params)
+
+    if annotation_params[:problem_id] != nil
+      findScore = Score.where('submission_id = ? AND problem_id = ?', params[:submission_id] , annotation_params[:problem_id])
+    else
+      annotation.save
+      respond_with(@course, @assessment, @submission, annotation)
+      return
+    end    
+
     if findScore.blank?
       score = Score.new
       score.submission_id =  params[:submission_id]
       score.score = annotation_params[:value]
       score.problem_id = annotation_params[:problem_id]
       score.released = 0
-      score.grader_id = annotation_params[:submitted_by]
+      score.grader_id = grader
       score.save
-    else 
-      findScore.first.problem_id = annotation_params[:problem_id]
-      findScore.first.grader_id = annotation_params[:submitted_by]
+    else
       findScore.first.score = annotation_params[:value]
+      findScore.first.grader_id = grader
       findScore.first.save
     end 
-    
+    annotation.save
 
     respond_with(@course, @assessment, @submission, annotation)
   end
@@ -40,7 +58,32 @@ class AnnotationsController < ApplicationController
   # PUT /:course/annotations/1.json
   action_auth_level :update, :course_assistant
   def update
-    @annotation.update(annotation_params)
+    render :status => 422, :text => "bad data"
+    return
+    findUser = User.where('email = ?', annotation_params[:submitted_by])
+    grader = annotation_params[:submitted_by]
+    if !findUser.blank?
+      grader = findUser.first.id
+
+    end
+
+    if annotation_params[:problem_id] != nil
+      findScore = Score.where('submission_id = ? AND problem_id = ?', params[:submission_id], annotation_params[:problem_id])
+    else
+      @annotation.update(annotation_params)
+      respond_with(@course, @assessment, @submission, @annotation) do |format|
+        format.json { render json: @annotation }
+      end
+      return
+    end
+
+    if !findScore.blank?
+      findScore.first.problem_id = annotation_params[:problem_id]
+      findScore.first.grader_id = grader
+      findScore.first.score = annotation_params[:value]
+      findScore.first.save
+    end
+
     respond_with(@course, @assessment, @submission, @annotation) do |format|
       format.json { render json: @annotation }
     end
@@ -49,7 +92,8 @@ class AnnotationsController < ApplicationController
   # DELETE /:course/annotations/1.json
   action_auth_level :destroy, :course_assistant
   def destroy
-    @annotation.destroy
+    Score.where('submission_id = ? AND problem_id = ?', @annotation.submission_id , @annotation.problem_id).first.destroy
+    # @annotation.destroy
     head :no_content
   end
 
@@ -60,7 +104,7 @@ private
     params[:annotation].delete(:created_at)
     params[:annotation].delete(:updated_at)
     params.require(:annotation).permit(:filename, :position, :line, :text, :submitted_by,
-                                       :comment, :value, :problem_id, :coordinate)
+                                       :comment, :value, :problem_id,:submission_id, :coordinate)
   end
 
   def set_annotation
