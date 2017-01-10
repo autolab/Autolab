@@ -1,4 +1,4 @@
-# All modifications to the annotations are meant to be asynchronous and
+-# All modifications to the annotations are meant to be asynchronous and
 # thus this contorller only exposes javascript interfaces.
 #
 # Only people acting as instructors or CA's should be able to do anything
@@ -15,20 +15,23 @@ class AnnotationsController < ApplicationController
   action_auth_level :create, :course_assistant
   def create
     
+    #check to see if given score is greater than max possible score for the problem 
     maxScore = Problem.find(annotation_params[:problem_id]).max_score.to_i
     if annotation_params[:value].to_i > maxScore
       render :status => 422, :text => "bad data"
       return
     end 
-
+    #get the user id of the user who created the annotation from their email
     findUser = User.where('email = ?', annotation_params[:submitted_by])
     grader = annotation_params[:submitted_by]
     if !findUser.blank?
       grader = findUser.first.id
 
     end
+
     annotation = @submission.annotations.new(annotation_params)
 
+    #check to see if a problem was selected in the select box or not
     if annotation_params[:problem_id] != nil
       findScore = Score.where('submission_id = ? AND problem_id = ?', params[:submission_id] , annotation_params[:problem_id])
     else
@@ -36,7 +39,7 @@ class AnnotationsController < ApplicationController
       respond_with(@course, @assessment, @submission, annotation)
       return
     end    
-
+    # set all of the data and insert the score into the table if it doesnt already exists if it does update the entry
     if findScore.blank?
       score = Score.new
       score.submission_id =  params[:submission_id]
@@ -58,15 +61,14 @@ class AnnotationsController < ApplicationController
   # PUT /:course/annotations/1.json
   action_auth_level :update, :course_assistant
   def update
-    render :status => 422, :text => "bad data"
-    return
+    # find the user id that created the annoation from the email provided
     findUser = User.where('email = ?', annotation_params[:submitted_by])
     grader = annotation_params[:submitted_by]
     if !findUser.blank?
       grader = findUser.first.id
 
     end
-
+    #  check to see if a problem was selected
     if annotation_params[:problem_id] != nil
       findScore = Score.where('submission_id = ? AND problem_id = ?', params[:submission_id], annotation_params[:problem_id])
     else
@@ -76,7 +78,7 @@ class AnnotationsController < ApplicationController
       end
       return
     end
-
+    # create a score entry if one doesnt already exists
     if !findScore.blank?
       findScore.first.problem_id = annotation_params[:problem_id]
       findScore.first.grader_id = grader
@@ -92,8 +94,9 @@ class AnnotationsController < ApplicationController
   # DELETE /:course/annotations/1.json
   action_auth_level :destroy, :course_assistant
   def destroy
+    # remove score entry and delete annoation
     Score.where('submission_id = ? AND problem_id = ?', @annotation.submission_id , @annotation.problem_id).first.destroy
-    # @annotation.destroy
+    @annotation.destroy
     head :no_content
   end
 
