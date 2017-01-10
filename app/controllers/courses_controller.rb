@@ -603,7 +603,7 @@ private
 
     # Sanitize roster input, ignoring empty / incomplete lines.
     # Also requires each line to have an andrewID, else ignores it
-    parsedRoster.select! { |row| row.length == SELECT_COLUMNS && row[map[1]] != nil}
+    parsedRoster.select! { |row| row.length == select_columns && row[map[1]] != nil}
     # Detect if there is a header row
     if (parsedRoster[0][0] == "Semester")
       offset = 1
