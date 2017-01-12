@@ -272,7 +272,7 @@ var initializeAnnotationsForCode = function() {
       placeholder: "Score Here"
     });
     var problemSelect = elt("select", {
-      class: "col-md-2",
+      class: "browser-default",
       name: "problem"
     }, elt("option", {
       value: ""
@@ -537,7 +537,6 @@ var initializeAnnotationsForCode = function() {
     if ($line.length) {
       var newForm = newAnnotationForm(lineInd)
       $line.append(newForm);
-      newForm.
       $(newForm).find('.comment').focus();
 
     }
