@@ -1,4 +1,4 @@
--# All modifications to the annotations are meant to be asynchronous and
+# All modifications to the annotations are meant to be asynchronous and
 # thus this contorller only exposes javascript interfaces.
 #
 # Only people acting as instructors or CA's should be able to do anything
@@ -14,8 +14,7 @@ class AnnotationsController < ApplicationController
   # POST /:course/annotations.json
   action_auth_level :create, :course_assistant
   def create
-    
-    #check to see if given score is greater than max possible score for the problem 
+     #check to see if given score is greater than max possible score for the problem 
     maxScore = Problem.find(annotation_params[:problem_id]).max_score.to_i
     if annotation_params[:value].to_i > maxScore
       render :status => 422, :text => "bad data"
@@ -61,7 +60,7 @@ class AnnotationsController < ApplicationController
   # PUT /:course/annotations/1.json
   action_auth_level :update, :course_assistant
   def update
-    # find the user id that created the annoation from the email provided
+     # find the user id that created the annoation from the email provided
     findUser = User.where('email = ?', annotation_params[:submitted_by])
     grader = annotation_params[:submitted_by]
     if !findUser.blank?
