@@ -256,10 +256,17 @@ public
     return unless request.post?
     return unless params[:submission_id]
     return unless params[:problem_id]
-
-    # get submission and problem IDs
-    sub_id = params[:submission_id].to_i
-    prob_id = params[:problem_id].to_i
+       # get submission and problem IDs
+       sub_id = params[:submission_id].to_i
+       prob_id = params[:problem_id].to_i
+     #check to see if given score is greater than max possible score for the problem 
+     if params[:score].present?
+      maxScore = Problem.find(prob_id).max_score.to_i
+      if params[:score].to_i > maxScore
+       render :status => 422, :text => "bad data"
+       return
+     end 
+   end
 
     # find existing score for this problem, if there's one
     # otherwise, create it
@@ -268,19 +275,34 @@ public
     score.grader_id = @cud.id
     score.feedback = params[:feedback]
     score.released = params[:released]
-
+    if params[:score].present?
+      score.score = params[:score].to_i
+    end
     updateScore(score.submission.course_user_datum_id, score)
 
-    render text: score.id
+    grader = User.where('first_name = ? AND  last_name = ?', params[:grader_first_name], params[:grader_last_name])
+
+
+    if params[:score].present?
+      findanno = Annotation.where('submission_id = ? AND problem_id = ?', sub_id, prob_id)
+    # update annotation if it exists
+    if !findanno.blank?
+      findanno.first.submitted_by = grader.first.email
+      findanno.first.value = params[:score].to_i
+      findanno.first.save
+    end
+  end
+
+  render text: score.id
 
   # see http://stackoverflow.com/questions/6163125/duplicate-records-created-by-find-or-create-by
   # and http://barelyenough.org/blog/2007/11/activerecord-race-conditions/
   # and http://stackoverflow.com/questions/5917355/find-or-create-race-conditions
-  rescue ActiveRecord::StatementInvalid, ActiveRecord::RecordInvalid => error
-    @retries_left ||= 2
-    retry unless (@retries_left -= 1) < 0
-    raise error
-  end
+rescue ActiveRecord::StatementInvalid, ActiveRecord::RecordInvalid => error
+  @retries_left ||= 2
+  retry unless (@retries_left -= 1) < 0
+  raise error
+end
 
   def submission_popover
     render partial: "popover", locals: { s: Submission.find(params[:submission_id].to_i) }

@@ -60,6 +60,12 @@ class AnnotationsController < ApplicationController
   # PUT /:course/annotations/1.json
   action_auth_level :update, :course_assistant
   def update
+     #check to see if given score is greater than max possible score for the problem 
+    maxScore = Problem.find(annotation_params[:problem_id]).max_score.to_i
+    if annotation_params[:value].to_i > maxScore
+      render :status => 422, :text => "bad data"
+      return
+    end 
      # find the user id that created the annoation from the email provided
     findUser = User.where('email = ?', annotation_params[:submitted_by])
     grader = annotation_params[:submitted_by]
