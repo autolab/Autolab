@@ -656,6 +656,18 @@ input[type="password"] {
   color: black !important;
 }
 
+.file-path-wrapper input[type="text"] {
+  margin-bottom: 2px;
+}
+
+.flatpickr-input.form-control.input {
+  color: black;
+}
+
+.chosen-search input {
+  box-sizing: border-box;
+}
+
 textarea.materialize-textarea { 
   /*border-bottom: 1px solid $autolab-subtle-red;*/
 }
