@@ -878,7 +878,7 @@ display: block;
   padding-bottom: 2px;
 }
 
-/* Homepage Styling */
+/* Login page Styling */
 
 .home {
   text-align: center;
@@ -888,6 +888,8 @@ display: block;
   input[type="password"] {
     min-width: 240px;
     margin-top: 6px;
+    margin-bottom: 20px;
+    width: 38%;
   }
 
   input[type="submit"] {

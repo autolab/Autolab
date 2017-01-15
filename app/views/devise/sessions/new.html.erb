@@ -1,18 +1,23 @@
 <div class="sign-in-panel home">
-<h1>Autolab Homepage</h1>
 <br>
+
 <%= form_for(resource, :as => resource_name, :url => session_path(resource_name)) do |f| %>
   
+  <img src="/images/autolab.ico" alt="" class="circle responsive-img valign profile-image-login">
+  <h5>Login to Autolab</h5>
+
   <div><%= f.email_field :email, :autofocus => true, :placeholder=> "Email Address"%></div>
   <div><%= f.password_field :password, :placeholder=> "Password"%></div>
 
   <% if devise_mapping.rememberable? -%>
-    <span class="checkbox"><%= f.check_box :remember_me %><%= f.label :remember_me %></span>
+  	<div class="form-group">
+    	<%= f.check_box :remember_me %><%= f.label :remember_me %>
+    </div>
   <% end -%>
 
   <div><%= f.submit "Sign in", :class=>"btn primary" %></div>
 <% end %>
-<hr>
+<br>
 <% if Rails.env == "development" %>
 <%= link_to "Developer Login", "/home/developer_login" %><br />
 <% end %>
