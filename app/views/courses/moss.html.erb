@@ -61,14 +61,17 @@
 
   <br>
 
-  <h2><b>Step 2:</b> (Optional) Upload an archive containing additional files you'd like Moss to compare against.</h2>
-  <h3>(Note: the archive must contain only regular files.  Nested archives wil not be extracted.)</h3>
+	<h2><b>Step 2:</b> (Optional) Add moss flags that will be run with moss.</h2>
 
-  <%= file_field_tag 'external_tar' %>
+  <%= text_field_tag :moss_flags %>
+  <br>
+
+  <h2><b>Step 3:</b> (Optional) Upload an archive containing additional files you'd like Moss to compare against.</h2>
+  <h3>(Note: the archive must contain only regular files.  Nested archives wil not be extracted.)</h3>
 
   <br>
 
-  <h2><b>Step 3:</b> Click "Go!" once to run Moss. This may take up to a minute, so be patient...</h2>
+  <h2><b>Step 4:</b> Click "Go!" once to run Moss. This may take up to a minute, so be patient...</h2>
 
   <p><%= submit_tag "Go!", data: { disable_with: "Please wait..." }, class: "btn primary" %></p>
 <% end %>
