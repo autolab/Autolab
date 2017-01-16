@@ -355,8 +355,10 @@ file, most likely a duplicate email.  The exact error was: #{e} "
         assessments << assessment
       end
     end
+	
+		@moss_string = "mossnet -d"
 
-    @mossCmd = [Rails.root.join("vendor", "mossnet -d")]
+    @mossCmd = [Rails.root.join("vendor", moss_string)]
 
     # Create a temporary directory
     @failures = []
