@@ -29,7 +29,7 @@
 <br>
 
 <h2><b>Step 1:</b> Click on course names to see their assessments, then check box all of the assessments you want Moss to compare against.</h2>
-<h3 style="display:inline">Filter Courses (Keywords Separated by Space): </h3><input type="text" onkeyup="filterCourses(this.value.toLowerCase())" />
+<h3 style="display:inline">Filter Courses (Keywords Separated by Space): </h3><input type="text" onkeyup="filterCourses(this.value.toLowerCase())" style="margin-bottom: 10px;">
 <%= form_tag([:runMoss, @course], multipart: true) do %>
   <ul class="moss-list">
   <% for course in @courses %>
@@ -93,6 +93,7 @@
   <h3> This field can be used to add a bit more granularity to running moss. If any of the flags listed above are not quiet 
 	  what you're looking for, feel free to enter the command line arguments here and they will be passed along. </h3>
   <%= text_field_tag :moss_flags %>
+
   <br>
 
   <h2><b>Step 3:</b> (Optional) Upload an archive containing additional files you'd like Moss to compare against.</h2>
