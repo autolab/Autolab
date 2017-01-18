@@ -6,7 +6,7 @@
   <%= javascript_include_tag 'chosen.jquery.min' %>
   <script type="application/javascript">
     jQuery(function() {
-      $('.chosen-select').chosen();
+      $('.chosen-select').chosen({search_contains: true});
     });
   </script>
 <% end %>
