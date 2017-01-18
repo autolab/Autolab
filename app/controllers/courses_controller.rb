@@ -143,43 +143,15 @@ class CoursesController < ApplicationController
   def edit
   end
 
-
   action_auth_level :update, :instructor
   def update
-    course_dir = File.join Rails.root, "courses", edit_course_params[:name]
-    old_name = @course.name
-    if(Dir.exists?(course_dir))
-      flash[:error] = "Error: Course Name Exists Already Or Input Is Not Valid"
+    if @course.update(edit_course_params)
+      flash[:success] = "Success: Course info updated."
       redirect_to edit_course_path(@course)
     else
-      FileUtils.mv(File.join(Rails.root, "courses", @course.name), course_dir , :force => true)
-      if @course.update(edit_course_params)
-        configs = Assessment.where("course_id  =  #{@course.id}")
-        configs.each do |assesments|
-          FileUtils.mv(File.join(Rails.root, "assessmentConfig", old_name + "-" + assesments.name + ".rb") , File.join(Rails.root, "assessmentConfig", @course.name + "-" + assesments.name + ".rb"))
-          config_source = File.open(File.join(Rails.root, "assessmentConfig", @course.name + "-" + assesments.name + ".rb"), "r") { |f| f.read }
-          config_source.gsub!("module " + assesments.name.camelize + old_name,"module " + assesments.name.camelize + @course.name)
-          File.open(Rails.root.join("assessmentConfig", @course.name + "-" + assesments.name + ".rb"), "w") { |f| f.write(config_source) }
-        end
-        
-        config_source = File.open(Rails.root.join("courseConfig", old_name.gsub(/[^A-Za-z0-9]/, "") + ".rb"), "r") { |f| f.read }
-        config_source.gsub!("module Course" + old_name.camelize, "module Course" + @course.name.camelize)
-
-        File.open(Rails.root.join("courseConfig", old_name.gsub(/[^A-Za-z0-9]/, "") + ".rb"), "w") { |f| f.write(config_source) }
-        FileUtils.mv(File.join(Rails.root, "courseConfig", old_name.gsub(/[^A-Za-z0-9]/, "") + ".rb") , File.join(Rails.root, "courseConfig", @course.name.gsub(/[^A-Za-z0-9]/, "") + ".rb"))
-
-
-        flash[:success] = "Success: Course info updated."
-        redirect_to edit_course_path(@course)
-      else
-        FileUtils.mv(course_dir,File.join(Rails.root, "courses", @course.name) , :force => true)
-        flash[:error] = "Error: There were errors editing the course."
-      end
-
+      flash[:error] = "Error: There were errors editing the course."
     end
-
   end
-
 
   # DELETE courses/:id/
   action_auth_level :destroy, :administrator
