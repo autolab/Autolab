@@ -40,8 +40,9 @@
       <ul id="<%= course.id %>Assessments" class="moss-inner-list" style="display:none" >
       <% for a in course.assessments do %>
         <li>
-          <%= check_box_tag "assessments[#{a.id}]","1",false %>
-          <%= a.display_name %> <br>
+          <%= check_box_tag "assessments[#{a.id}]","1",false, :class => "filled-in" %> 
+          <label for="assessments_<%= a.id %>"> <%= a.display_name %> </label>
+          <br>
           <div id='<%= a.id %>OptionsDiv' style="padding-left:10px;" >
             <b>Is Archive:</b>
             <%= check_box_tag "isArchive[#{a.id}]" %>
