@@ -331,7 +331,7 @@ file, most likely a duplicate email.  The exact error was: #{e} "
 
   action_auth_level :runMoss, :instructor
   def runMoss
-    # Return if we have no files to process.
+  	# Return if we have no files to process.
     unless params[:assessments] || params[:external_tar]
       flash[:error] = "No input files provided for MOSS."
       redirect_to(action: :moss) && return
@@ -356,7 +356,10 @@ file, most likely a duplicate email.  The exact error was: #{e} "
       end
     end
 
-    @mossCmd = [Rails.root.join("vendor", "mossnet -d")]
+		# Get moss flags from text field 	
+		text_input = params[:moss_flags]
+		moss_flags = "mossnet " + text_input.to_s + " -d"
+    @mossCmd = [Rails.root.join("vendor", moss_flags)]
 
     # Create a temporary directory
     @failures = []

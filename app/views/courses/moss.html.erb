@@ -40,15 +40,16 @@
       <ul id="<%= course.id %>Assessments" class="moss-inner-list" style="display:none" >
       <% for a in course.assessments do %>
         <li>
-          <%= check_box_tag "assessments[#{a.id}]","1",false %>
-          <%= a.display_name %> <br>
+          <%= check_box_tag "assessments[#{a.id}]","1",false, :class => "filled-in" %> 
+          <label for="assessments_<%= a.id %>"> <%= a.display_name %> </label>
+          <br>
           <div id='<%= a.id %>OptionsDiv' style="padding-left:10px;" >
             <b>Is Archive:</b>
             <%= check_box_tag "isArchive[#{a.id}]" %>
             <i>Check this if the submissions will need to be extracted. (The handin filename was: <%= a.handin_filename %>)</i>
             <br>
             <b>Files to send to Moss:</b>
-            <%= text_field_tag "files[#{a.id}]", "*" %>
+			<%= text_field_tag "files[#{a.id}]", "*", :style => "margin-bottom: 10px;" %>
             <i>This can be file names (foo.c) or patterns(*.c)</i>
             <br>
           </div>
@@ -61,14 +62,54 @@
 
   <br>
 
-  <h2><b>Step 2:</b> (Optional) Upload an archive containing additional files you'd like Moss to compare against.</h2>
-  <h3>(Note: the archive must contain only regular files.  Nested archives wil not be extracted.)</h3>
+  <h2><b>Step 2:</b> (Optional) Add flags that will be run with moss.</h2>
+  <ul class="moss-list">
+    <li class="filterableCourse" id="Moss Flags">
+      <h3 onclick="toggleOptions('flags')"> 
+	  	Moss Flags
+	  </h3>
+      <ul id="flags" class="moss-inner-list" style="display:none" >
+        <li>
+          <%= check_box_tag "box_language","1",false, :class => "filled-in" %> 
+          <label for="box_language"> Language </label>
+          <br>
+		  <div id='<%= a.id %>OptionsDiv' style="padding-left:10px;" >
+			<%= text_field_tag "moss_language", "", :style => "margin-bottom: 10px;", placeholder: "c" %>
+          </div>
+        </li>
+		<li>
+          <%= check_box_tag "box_max","1",false, :class => "filled-in" %> 
+          <label for="box_max">Max Lines </label>
+          <br>
+		  <div id='<%= a.id %>OptionsDiv' style="padding-left:10px;" >
+			<%= text_field_tag "moss_max", "", :style => "margin-bottom: 10px;", placeholder: "10" %>
+          </div>
+        </li>
 
-  <%= file_field_tag 'external_tar' %>
-
+      </ul>
+    </span>
+  </ul>
+  
+  <h3> This field can be used to add a bit more granularity to running moss. If any of the flags listed above are not quiet 
+	  what you're looking for, feel free to enter the command line arguments here and they will be passed along. </h3>
+  <%= text_field_tag :moss_flags %>
   <br>
 
-  <h2><b>Step 3:</b> Click "Go!" once to run Moss. This may take up to a minute, so be patient...</h2>
+  <h2><b>Step 3:</b> (Optional) Upload an archive containing additional files you'd like Moss to compare against.</h2>
+  <h3>(Note: the archive must contain only regular files.  Nested archives wil not be extracted.)</h3>
+   
+  <div class="file-field input-field">
+    <div class="btn">
+      <span>Archive</span>
+      <%= file_field_tag 'external_tar' %>
+    </div>
+    <div class="file-path-wrapper">
+      <input class="file-path validate" type="text" placeholder="Additional files archive">
+    </div>
+  </div> 
+  <br>
+
+  <h2><b>Step 4:</b> Click "Go!" once to run Moss. This may take up to a minute, so be patient...</h2>
 
   <p><%= submit_tag "Go!", data: { disable_with: "Please wait..." }, class: "btn primary" %></p>
 <% end %>
