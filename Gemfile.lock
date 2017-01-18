@@ -42,6 +42,8 @@ GEM
     afm (0.2.2)
     arel (6.0.4)
     ast (2.3.0)
+    autoprefixer-rails (6.6.1)
+      execjs
     bcrypt (3.1.11)
     better_errors (2.1.1)
       coderay (>= 1.0.0)
@@ -49,6 +51,9 @@ GEM
       rack (>= 0.9.0)
     binding_of_caller (0.7.2)
       debug_inspector (>= 0.0.1)
+    bootstrap-sass (3.3.7)
+      autoprefixer-rails (>= 5.2.1)
+      sass (>= 3.3.4)
     bootstrap3-datetimepicker-rails (4.0.0)
       momentjs-rails (>= 2.8.1)
     builder (3.2.2)
@@ -289,6 +294,7 @@ PLATFORMS
 DEPENDENCIES
   better_errors
   binding_of_caller
+  bootstrap-sass (~> 3.3.6)
   bootstrap3-datetimepicker-rails (~> 4.0.0)
   byebug (>= 3.5.1)
   capybara
