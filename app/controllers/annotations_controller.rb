@@ -15,18 +15,11 @@ class AnnotationsController < ApplicationController
   action_auth_level :create, :course_assistant
   def create
      #check to see if given score is greater than max possible score for the problem 
-    maxScore = Problem.find(annotation_params[:problem_id]).max_score.to_i
-    if annotation_params[:value].to_i > maxScore
+    maxScore = Problem.find(annotation_params[:problem_id]).max_score.to_f
+    if annotation_params[:value].to_f > maxScore
       render :status => 422, :text => "bad data"
       return
     end 
-    #get the user id of the user who created the annotation from their email
-    findUser = User.where('email = ?', annotation_params[:submitted_by])
-    grader = annotation_params[:submitted_by]
-    if !findUser.blank?
-      grader = findUser.first.id
-
-    end
 
     annotation = @submission.annotations.new(annotation_params)
 
@@ -45,11 +38,11 @@ class AnnotationsController < ApplicationController
       score.score = annotation_params[:value]
       score.problem_id = annotation_params[:problem_id]
       score.released = 0
-      score.grader_id = grader
+      score.grader_id = @cud.id
       score.save
     else
       findScore.first.score = annotation_params[:value]
-      findScore.first.grader_id = grader
+      findScore.first.grader_id = @cud.id
       findScore.first.save
     end 
     annotation.save
@@ -61,21 +54,15 @@ class AnnotationsController < ApplicationController
   action_auth_level :update, :course_assistant
   def update
      #check to see if given score is greater than max possible score for the problem 
-    maxScore = Problem.find(annotation_params[:problem_id]).max_score.to_i
-    if annotation_params[:value].to_i > maxScore
+    maxScore = Problem.find(annotation_params[:problem_id]).max_score.to_f
+    if annotation_params[:value].to_f > maxScore
       render :status => 422, :text => "bad data"
       return
     end 
-     # find the user id that created the annoation from the email provided
-    findUser = User.where('email = ?', annotation_params[:submitted_by])
-    grader = annotation_params[:submitted_by]
-    if !findUser.blank?
-      grader = findUser.first.id
-
-    end
     #  check to see if a problem was selected
     if annotation_params[:problem_id] != nil
       findScore = Score.where('submission_id = ? AND problem_id = ?', params[:submission_id], annotation_params[:problem_id])
+      @annotation.update(annotation_params)
     else
       @annotation.update(annotation_params)
       respond_with(@course, @assessment, @submission, @annotation) do |format|
@@ -83,12 +70,20 @@ class AnnotationsController < ApplicationController
       end
       return
     end
-    # create a score entry if one doesnt already exists
+    # update the score if it exists.
     if !findScore.blank?
       findScore.first.problem_id = annotation_params[:problem_id]
-      findScore.first.grader_id = grader
+      findScore.first.grader_id = @cud.id
       findScore.first.score = annotation_params[:value]
       findScore.first.save
+    else
+      score = Score.new
+      score.submission_id =  params[:submission_id]
+      score.score = annotation_params[:value]
+      score.problem_id = annotation_params[:problem_id]
+      score.released = 0
+      score.grader_id = @cud.id
+      score.save
     end
 
     respond_with(@course, @assessment, @submission, @annotation) do |format|

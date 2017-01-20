@@ -232,6 +232,14 @@ public
     sub_id = params[:submission_id].to_i
     prob_id = params[:problem_id].to_i
 
+    if params[:score].present?
+      maxScore = Problem.find(prob_id).max_score.to_f
+      if params[:score].to_f > maxScore
+       render :status => 422, :text => "bad data"
+       return
+     end 
+   end
+
     # find existing score for this problem, if there's one
     # otherwise, create it
     score = Score.find_or_initialize_by_submission_id_and_problem_id(sub_id, prob_id)
@@ -240,6 +248,15 @@ public
     score.score = params[:score].to_f
 
     updateScore(score.submission.course_user_datum_id, score)
+
+    findanno = Annotation.where('submission_id = ? AND problem_id = ?', sub_id, prob_id)
+    # update annotation if it exists
+    if !findanno.blank?
+      findanno.first.submitted_by = @cud.email
+      findanno.first.value = params[:score].to_f
+      findanno.first.save
+    end
+
 
     render text: score.score
 
@@ -261,8 +278,8 @@ public
        prob_id = params[:problem_id].to_i
      #check to see if given score is greater than max possible score for the problem 
      if params[:score].present?
-      maxScore = Problem.find(prob_id).max_score.to_i
-      if params[:score].to_i > maxScore
+      maxScore = Problem.find(prob_id).max_score.to_f
+      if params[:score].to_f > maxScore
        render :status => 422, :text => "bad data"
        return
      end 
@@ -275,23 +292,18 @@ public
     score.grader_id = @cud.id
     score.feedback = params[:feedback]
     score.released = params[:released]
-    if params[:score].present?
-      score.score = params[:score].to_i
-    end
+    score.score = params[:score].to_f
+
     updateScore(score.submission.course_user_datum_id, score)
 
-    grader = User.where('first_name = ? AND  last_name = ?', params[:grader_first_name], params[:grader_last_name])
 
-
-    if params[:score].present?
-      findanno = Annotation.where('submission_id = ? AND problem_id = ?', sub_id, prob_id)
+    findanno = Annotation.where('submission_id = ? AND problem_id = ?', sub_id, prob_id)
     # update annotation if it exists
     if !findanno.blank?
-      findanno.first.submitted_by = grader.first.email
-      findanno.first.value = params[:score].to_i
+      findanno.first.submitted_by = @cud.email
+      findanno.first.value = params[:score].to_f
       findanno.first.save
     end
-  end
 
   render text: score.id
 
