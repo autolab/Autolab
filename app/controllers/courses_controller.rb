@@ -274,7 +274,7 @@ file, most likely a duplicate email.  The exact error was: #{e} "
   # assessment directory.
   action_auth_level :installAssessment, :instructor
   def installAssessment
-    @assignDir = File.join(Rails.root, "courses", @course.name)
+    @assignDir = Rails.root.join("courses", @course.name)
     @availableAssessments = []
     begin
       Dir.foreach(@assignDir) do |filename|

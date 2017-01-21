@@ -30,18 +30,18 @@ class Course < ActiveRecord::Base
 
   # generate course folder
   def init_course_folder
-    course_dir = File.join Rails.root, "courses", name
+    course_dir = Rails.root.join("courses", name)
     FileUtils.mkdir_p course_dir
 
-    FileUtils.touch (File.join course_dir, "autolab.log")
+    FileUtils.touch File.join(course_dir, "autolab.log")
 
-    course_rb = File.join course_dir, "course.rb"
-    default_course_rb = File.join Rails.root, "lib", "__defaultCourse.rb"
+    course_rb = File.join(course_dir, "course.rb")
+    default_course_rb = Rails.root.join("lib", "__defaultCourse.rb")
     FileUtils.cp default_course_rb, course_rb
 
-    FileUtils.mkdir_p (File.join Rails.root, "assessmentConfig")
-    FileUtils.mkdir_p (File.join Rails.root, "courseConfig")
-    FileUtils.mkdir_p (File.join Rails.root, "gradebooks")
+    FileUtils.mkdir_p Rails.root.join("assessmentConfig")
+    FileUtils.mkdir_p Rails.root.join("courseConfig")
+    FileUtils.mkdir_p Rails.root.join("gradebooks")
   end
 
   def order_of_dates
@@ -72,8 +72,8 @@ class Course < ActiveRecord::Base
 
   def reload_config_file
     course = name.gsub(/[^A-Za-z0-9]/, "")
-    src = File.join(Rails.root, "courses", name, "course.rb")
-    dest = File.join(Rails.root, "courseConfig/", "#{course}.rb")
+    src = Rails.root.join("courses", name, "course.rb")
+    dest = Rails.root.join("courseConfig/", "#{course}.rb")
     s = File.open(src, "r")
     lines = s.readlines
     s.close
@@ -177,7 +177,7 @@ private
   end
 
   def config_file_path
-    File.join(Rails.root, "courseConfig", "#{sanitized_name}.rb")
+    Rails.root.join("courseConfig", "#{sanitized_name}.rb")
   end
 
   def config_module_name

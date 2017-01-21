@@ -74,9 +74,8 @@ class Submission < ActiveRecord::Base
                version.to_s + "_" +
                assessment.handin_filename
     directory = assessment.handin_directory
-    path = File.join(Rails.root, "courses",
-                     course_user_datum.course.name,
-                     assessment.name, directory, filename)
+    path = Rails.root.join("courses", course_user_datum.course.name,
+                           assessment.name, directory, filename)
 
     if upload["file"]
       # Sanity!

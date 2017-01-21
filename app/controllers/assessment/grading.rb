@@ -361,8 +361,7 @@ private
   def load_course_config
     course = @course.name.gsub(/[^A-Za-z0-9]/, "")
     begin
-      load(File.join(Rails.root, "courseConfig",
-                     "#{course}.rb"))
+      load(Rails.root.join("courseConfig", "#{course}.rb"))
       eval("extend(Course#{course.camelize})")
     rescue Exception
       render(text: "Error loading your course's grading " \
