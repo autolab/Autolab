@@ -27,7 +27,8 @@ class CoursesController < ApplicationController
     redirect_to course_assessments_url(@course)
   end
 
-  NEW_ROSTER_COLUMNS = 29
+  ROSTER_COLUMNS_S15 = 29
+  ROSTER_COLUMNS_F16 = 32
 
   action_auth_level :manage, :instructor
   def manage
@@ -577,41 +578,21 @@ private
     parsedRoster = CSV.parse(roster)
     if parsedRoster[0][0].nil?
       fail "Roster cannot be recognized"
-    elsif (parsedRoster[0].length == NEW_ROSTER_COLUMNS)
+    elsif (parsedRoster[0].length == ROSTER_COLUMNS_F16)
+      # In CMU S3 roster. Columns are:
+      # Semester(0), Course(1), Section(2), (Lecture-skip)(3), (Mini-skip)(4),
+      # Last Name(5), First Name(6), (MI-skip)(7), Andrew ID(8),
+      # (Email-skip)(9), School(10), (Department-skip)(11), Major(12),
+      # Year(13), (skip)(14), Grade Policy(15), ...
+      map=[0, 8, 5, 6, 10, 12, 13, 15, -1, 1, 2]
+      select_columns=ROSTER_COLUMNS_F16
+    elsif (parsedRoster[0].length == ROSTER_COLUMNS_S15)
       # In CMU S3 roster. Columns are:
       # Semester(0), Lecture(1), Section(2), (skip)(3), (skip)(4), Last Name(5),
       # First Name(6), (skip)(7), Andrew ID(8), (skip)(9), School(10),
       # Major(11), Year(12), (skip)(13), Grade Policy(14), ...
-
-      # Sanitize roster input, ignoring empty / incomplete lines.
-      # Also requires each line to have an andrewID, else ignores it
-      parsedRoster.select! { |row| row.length == NEW_ROSTER_COLUMNS && row[8] != nil}
-      # Detect if there is a header row
-      if (parsedRoster[0][0] == "Semester")
-        offset = 1
-      else
-        offset = 0
-      end
-      numRows = parsedRoster.length - offset
-      convertedRoster = Array.new(numRows) { Array.new(11) }
-
-      for i in 0..(numRows - 1)
-        convertedRoster[i][0] = parsedRoster[i + offset][0]
-        if (Rails.env == "production")
-          convertedRoster[i][1] = parsedRoster[i + offset][8] + "@andrew.cmu.edu"
-        else
-          convertedRoster[i][1] = parsedRoster[i + offset][8] + "@foo.bar"
-        end
-        convertedRoster[i][2] = parsedRoster[i + offset][5]
-        convertedRoster[i][3] = parsedRoster[i + offset][6]
-        convertedRoster[i][4] = parsedRoster[i + offset][10]
-        convertedRoster[i][5] = parsedRoster[i + offset][11]
-        convertedRoster[i][6] = parsedRoster[i + offset][12]
-        convertedRoster[i][7] = parsedRoster[i + offset][14]
-        convertedRoster[i][9] = parsedRoster[i + offset][1]
-        convertedRoster[i][10] = parsedRoster[i + offset][2]
-      end
-      return convertedRoster
+      map=[0, 8, 5, 6, 10, 11, 12, 14, -1, 1, 2]
+      select_columns=ROSTER_COLUMNS_S15
     else
       # No header row. Columns are:
       # Semester(0), Email(1), Last Name(2), First Name(3), School(4),
@@ -619,6 +600,36 @@ private
       # Section(10), ...
       return parsedRoster
     end
+
+    # Sanitize roster input, ignoring empty / incomplete lines.
+    # Also requires each line to have an andrewID, else ignores it
+    parsedRoster.select! { |row| row.length == select_columns && row[map[1]] != nil}
+    # Detect if there is a header row
+    if (parsedRoster[0][0] == "Semester")
+      offset = 1
+    else
+      offset = 0
+    end
+    numRows = parsedRoster.length - offset
+    convertedRoster = Array.new(numRows) { Array.new(11) }
+
+    if (Rails.env == "production")
+       domain="andrew.cmu.edu"
+    else
+       domain="foo.bar"
+    end
+    for i in 0..(numRows - 1)
+      for j in 0..10
+        if map[j] >= 0
+          if j == 1
+            convertedRoster[i][j] = parsedRoster[i + offset][map[j]] + "@" + domain
+          else
+            convertedRoster[i][j] = parsedRoster[i + offset][map[j]]
+          end
+        end
+      end
+    end
+    return convertedRoster
   end
 
   def extract_asmt_for_moss(tmp_dir, assessments)
