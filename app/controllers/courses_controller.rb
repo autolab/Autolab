@@ -364,10 +364,12 @@ file, most likely a duplicate email.  The exact error was: #{e} "
     # Create a temporary directory
     @failures = []
     tmp_dir = Dir.mktmpdir("#{@cud.user.email}Moss", Rails.root.join("tmp"))
-    tmp_base_dir = Dir.mktmpdir("#{@cud.user.email}Moss", Rails.root.join("tmp_base"))
+    tmp_base_dir = Dir.mktmpdir("#{@cud.user.email}Moss_base", Rails.root.join("tmp"))
 		extract_asmt_for_moss(tmp_dir, assessments)
     extract_tar_for_moss(tmp_dir, params[:external_tar])
     extract_tar_for_moss(tmp_dir, params[:base_tar])
+
+		puts "hullo"
 
     # Ensure that all files in Moss tmp dir are readable
     system("chmod -R a+r #{tmp_dir}")
