@@ -310,17 +310,32 @@ class SubmissionsController < ApplicationController
       else
         @annotations = @submission.annotations.to_a
       end
+
     end
 
     @problemSummaries = {}
     @problemGrades = {}
 
+    @annotations.delete_if do |annotation|
+      problem = annotation.problem ? annotation.problem.name : "General"
+      if problem != "General" then
+        out = Score.where("submission_id = ? AND  problem_id = ?", @submission.id, Problem.where("assessment_id = ? AND name = ?", @assessment.id, problem).first.id).first.released
+        if !out  && !(@cud.instructor || @cud.course_assistant) then
+          true
+        else
+          false 
+        end
+      else
+        false
+      end 
+    end
     # extract information from annotations
-    for annotation in @annotations do
+    @annotations.each do |annotation|
       description = annotation.comment
       value = annotation.value || 0
       line = annotation.line
       problem = annotation.problem ? annotation.problem.name : "General"
+
 
       @problemSummaries[problem] ||= []
       @problemSummaries[problem] << [description, value, line, annotation.submitted_by, annotation.id]
@@ -328,6 +343,7 @@ class SubmissionsController < ApplicationController
       @problemGrades[problem] ||= 0
       @problemGrades[problem] += value
     end
+
 
     @problems = @assessment.problems.to_a
     @problems.sort! { |a, b| a.id <=> b.id }
