@@ -70,23 +70,39 @@
 	  </h3>
       <ul id="flags" class="moss-inner-list" style="display:none" >
         <li>
-          <%= check_box_tag "box_language","1",false, :class => "filled-in" %> 
-          <label for="box_language"> Language </label>
-          <br>
-		  <div id='<%= a.id %>OptionsDiv' style="padding-left:10px;" >
-			<%= text_field_tag "moss_language", "", :style => "margin-bottom: 10px;", placeholder: "c" %>
-          </div>
-        </li>
-		<li>
-          <%= check_box_tag "box_max","1",false, :class => "filled-in" %> 
-          <label for="box_max">Max Lines </label>
-          <br>
-		  <div id='<%= a.id %>OptionsDiv' style="padding-left:10px;" >
-			<%= text_field_tag "moss_max", "", :style => "margin-bottom: 10px;", placeholder: "10" %>
-          </div>
-        </li>
-
-      </ul>
+					<%= check_box_tag "box_language","1",false, :class => "filled-in" %> 
+					<label for="box_language"> Language </label>
+					<br>
+					<div id='<%= a.id %>OptionsDiv' style="padding-left:10px;" >
+						<%= text_field_tag "moss_language", "", :style => "margin-bottom: 10px;", placeholder: "c" %>
+					</div>
+				</li>
+				<li>
+					<%= check_box_tag "box_max","1",false, :class => "filled-in" %> 
+					<label for="box_max">Max Lines </label>
+					<br>
+					<div id='<%= a.id %>OptionsDiv' style="padding-left:10px;" >
+						<%= text_field_tag "moss_max", "", :style => "margin-bottom: 10px;", placeholder: "10" %>
+					</div>
+				</li>
+				<li>
+					<%= check_box_tag "box_basefile","1",false, :class => "filled-in" %> 
+					<label for="box_basefile">Base File Tar</label>
+					<br>
+					<div id='<%= a.id %>OptionsDiv' style="padding-left:10px;" >
+						<div class="file-field input-field">
+						  <div class="btn">
+					      <span>Base File</span>
+						    <%= file_field_tag 'base_tar' %>
+					    </div>
+					    <div class="file-path-wrapper">
+					      <input class="file-path validate" type="text" placeholder="Additional files archive">
+					    </div>
+					  </div> 
+						<i>This can be a tar file of any given code that will not be run against moss.</i>
+					</div>
+				</li>
+			</ul>
     </span>
   </ul>
   

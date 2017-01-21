@@ -364,18 +364,24 @@ file, most likely a duplicate email.  The exact error was: #{e} "
     # Create a temporary directory
     @failures = []
     tmp_dir = Dir.mktmpdir("#{@cud.user.email}Moss", Rails.root.join("tmp"))
-    extract_asmt_for_moss(tmp_dir, assessments)
+    tmp_base_dir = Dir.mktmpdir("#{@cud.user.email}Moss", Rails.root.join("tmp_base"))
+		extract_asmt_for_moss(tmp_dir, assessments)
     extract_tar_for_moss(tmp_dir, params[:external_tar])
+    extract_tar_for_moss(tmp_dir, params[:base_tar])
+
     # Ensure that all files in Moss tmp dir are readable
     system("chmod -R a+r #{tmp_dir}")
+    system("chmod -R a+r #{tmp_base_dir}")
     ActiveRecord::Base.clear_active_connections!
-    # Now run the Moss command
+    
+		# Now run the Moss command
     @mossCmdString = @mossCmd.join(" ")
     @mossExit = $CHILD_STATUS
     @mossOutput = `#{@mossCmdString} 2>&1`
 
-    # Clean up after ourselves (droh: leave for debugging)
-    # `rm -rf #{tmp_dir}`
+    # Clean up after ourselves (droh: leave for dsebugging)
+    #`rm -rf #{tmp_dir}`
+    #`rm -rf #{tmp_base_dir}`
   end
 
 private
