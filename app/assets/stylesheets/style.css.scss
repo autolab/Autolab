@@ -676,6 +676,10 @@ input[type="password"] {
   /*border: 1px solid #ccc;*/
 }
 
+.flatpickr-input {
+  color: black !important;
+}
+
 .file-path-wrapper input[type="text"] {
   margin-bottom: 2px;
 }
@@ -711,6 +715,9 @@ input[type="password"]:focus {
 input[type="checkbox"] {
   // For spacing between this and an adjacent label
   margin-right: 10px;
+}
+.checkbox-input {
+  margin-top: 1rem;
 }
 
 .input-field {
