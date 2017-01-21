@@ -11,7 +11,7 @@ class ExtensionsController < ApplicationController
     @extensions = @assessment.extensions.includes(:course_user_datum)
     @users = {}
     @course.course_user_data.each do |cud|
-      @users[cud.email] = cud.id
+      @users[cud.full_name_with_email] = cud.id
     end
     @new_extension = @assessment.extensions.new
   end

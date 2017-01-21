@@ -68,7 +68,8 @@
   <% for submission in @submissions %>
     <tr id="row-<%= submission.id %>" class="submission-row">
       <td><input class="cbox" type="checkbox" id="cbox-<%= submission.id %>"></td>
-      <td><%= link_to submission.course_user_datum.email,
+      <td><%= "#{submission.course_user_datum.last_name}, #{submission.course_user_datum.first_name}" %>
+      <%= link_to submission.course_user_datum.email,
                       history_course_assessment_path(@course, @assessment, cud_id: submission.course_user_datum_id, partial: true),
                       {remote: true, class: :trigger}
 

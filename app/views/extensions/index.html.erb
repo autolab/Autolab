@@ -8,6 +8,9 @@
   <%= javascript_include_tag 'chosen.jquery.min' %>
   <script type="application/javascript">
     jQuery(function() {
+      $('.chosen-select').chosen({search_contains: true});
+
+
       $dueDate = moment("<%= @assessment.due_at.to_s %>", "YYYY-MM-DD hh:mm:ss ZZ").startOf('day');
 
       $extensionDaysField = $('#extension_days');
@@ -17,7 +20,6 @@
         format: 'YYYY-MM-DD'
       });
       $extensionNewDayField.data('DateTimePicker').minDate($dueDate);
-      $('.chosen-select').chosen();
 
       /* Enable/disable extension days options */
       $enableInfiniteExtension = $('#infinite_extension');

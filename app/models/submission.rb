@@ -233,13 +233,18 @@ class Submission < ActiveRecord::Base
     final_score_opts o
   end
 
+  # NOTE: threshold  is no longer calculated using submission version,
+  # but now using the number of submissions. This way, deleted submissions will
+  # not be accounted for in the version penalty. 
   def version_over_threshold_by
     # version threshold of -1 allows infinite submissions without penalty
     return 0 if assessment.effective_version_threshold < 0
 
     # normal submission versions start at 1
     # unofficial submissions conveniently have version 0
-    [version - assessment.effective_version_threshold, 0].max
+    # actual version number is not used here, instead submission count is used
+    count = assessment.submissions.where(course_user_datum: course_user_datum).count
+    [count - assessment.effective_version_threshold, 0].max
   end
 
   # Refer to https://github.com/autolab/autolab-src/wiki/Caching
