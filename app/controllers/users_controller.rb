@@ -96,13 +96,26 @@ class UsersController < ApplicationController
     @user.password = temp_pass
     @user.password_confirmation = temp_pass
     @user.skip_confirmation!
-
-    if @user.save
+    save_worked = false
+    begin
+      save_worked = @user.save
+      if !save_worked
+        flash[:error] = "User creation failed"
+      end
+    rescue => error
+      error_message = error.message
+      if error_message.include? "Duplicate entry" and error_message.include? "@"
+        flash[:error] = "User with email #{@user.email} already exists"
+      else
+        flash[:error] = "User creation failed"
+      end
+      save_worked = false
+    end
+    if save_worked
       @user.send_reset_password_instructions
       flash[:success] = "User creation success"
       redirect_to(users_path) && return
     else
-      flash[:error] = "User creation failed"
       render action: "new"
     end
   end
