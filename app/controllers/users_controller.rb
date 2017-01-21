@@ -102,17 +102,17 @@ class UsersController < ApplicationController
     rescue => error
       error_message = error.message
       if error_message.include? "Duplicate entry" and error_message.include? "@"
-        flash[:error] = "Email #{@user.email} already in use"
+        flash[:error] = "User with email #{@user.email} already exists"
       else
-        flash[:error] = error_message
+        flash[:error] = "User creation failed"
       end
+      save_worked = false
     end
     if save_worked
       @user.send_reset_password_instructions
       flash[:success] = "User creation success"
       redirect_to(users_path) && return
     else
-      #flash[:error] = "User creation failed"
       render action: "new"
     end
   end
