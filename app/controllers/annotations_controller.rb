@@ -15,16 +15,18 @@ class AnnotationsController < ApplicationController
   action_auth_level :create, :course_assistant
   def create
      #check to see if given score is greater than max possible score for the problem 
-    maxScore = Problem.find(annotation_params[:problem_id]).max_score.to_f
-    if annotation_params[:value].to_f > maxScore
-      render :status => 422, :text => "bad data"
-      return
-    end 
+     if !annotation_params[:problem_id].blank? 
+      maxScore = Problem.find(annotation_params[:problem_id]).max_score.to_f
+      if annotation_params[:value].to_f > maxScore
+        render :status => 422, :text => "bad data"
+        return
+      end 
+    end
 
     annotation = @submission.annotations.new(annotation_params)
 
     #check to see if a problem was selected in the select box or not
-    if annotation_params[:problem_id] != nil
+    if !annotation_params[:problem_id].blank? 
       findScore = Score.where('submission_id = ? AND problem_id = ?', params[:submission_id] , annotation_params[:problem_id])
     else
       annotation.save
@@ -60,7 +62,7 @@ class AnnotationsController < ApplicationController
       return
     end 
     #  check to see if a problem was selected
-    if annotation_params[:problem_id] != nil
+    if !annotation_params[:problem_id].blank?
       findScore = Score.where('submission_id = ? AND problem_id = ?', params[:submission_id], annotation_params[:problem_id])
       @annotation.update(annotation_params)
     else
@@ -95,7 +97,9 @@ class AnnotationsController < ApplicationController
   action_auth_level :destroy, :course_assistant
   def destroy
     # remove score entry and delete annoation
-    Score.where('submission_id = ? AND problem_id = ?', @annotation.submission_id , @annotation.problem_id).first.destroy
+    if !@annotation.problem_id.blank?
+      Score.where('submission_id = ? AND problem_id = ?', @annotation.submission_id , @annotation.problem_id).first.destroy
+    end
     @annotation.destroy
     head :no_content
   end
