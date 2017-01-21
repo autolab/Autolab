@@ -99,6 +99,9 @@ class UsersController < ApplicationController
     save_worked = false
     begin
       save_worked = @user.save
+      if !save_worked
+        flash[:error] = "User creation failed"
+      end
     rescue => error
       error_message = error.message
       if error_message.include? "Duplicate entry" and error_message.include? "@"
