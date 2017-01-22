@@ -368,20 +368,14 @@ file, most likely a duplicate email.  The exact error was: #{e} "
 
 		if not base_file.nil?
 			extract_tar_for_moss(tmp_dir, params[:base_tar], false)
-			moss_params = " -b " + @basefiles
-			
-			#flash[:error] = "base file box"
-			#redirect_to(action: :moss) && return
+			moss_params = [moss_params, "-b", @basefiles].join(" ")
 		end
 		if not max_lines.nil?
-			
-			
 			#flash[:error] = "max_lines box"
 			#redirect_to(action: :moss) && return
 		end
 		if not language.nil?
-			#flash[:error] = "language box"
-			#redirect_to(action: :moss) && return
+			moss_params = [moss_params, "-l", params[:language_selection]].join(' ')
 		end				
 
 		# Get moss flags from text field 	
