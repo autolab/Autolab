@@ -62,6 +62,8 @@
 
   <br>
 
+	<%= select_tag :language_selection, options_for_select([ "VISA", "MasterCard" ], "MasterCard") %>
+
   <h2><b>Step 2:</b> (Optional) Add flags that will be run with moss.</h2>
   <ul class="moss-list">
     <li class="filterableCourse" id="Moss Flags">
@@ -74,7 +76,6 @@
 					<label for="box_language"> Language </label>
 					<br>
 					<div id='<%= a.id %>OptionsDiv' style="padding-left:10px;" >
-						<%= text_field_tag "moss_language", "", :style => "margin-bottom: 10px;", placeholder: "c" %>
 					</div>
 				</li>
 				<li>
@@ -82,7 +83,7 @@
 					<label for="box_max">Max Lines </label>
 					<br>
 					<div id='<%= a.id %>OptionsDiv' style="padding-left:10px;" >
-						<%= text_field_tag "moss_max", "", :style => "margin-bottom: 10px;", placeholder: "10" %>
+						<%= text_field_tag "moss_max", "", :style => "margin-bottom: 10px;", placeholder: "If you don't know what this is please read the Moss documentation before altering this value." %>
 					</div>
 				</li>
 				<li>
