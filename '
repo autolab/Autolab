@@ -356,6 +356,7 @@ file, most likely a duplicate email.  The exact error was: #{e} "
       end
     end
 
+=begin
 		base_file = params[:box_basefile]
 		max_lines = params[:box_max]
 		language = params[:box_language]
@@ -364,12 +365,8 @@ file, most likely a duplicate email.  The exact error was: #{e} "
 
 		if not base_file.nil?
 	    tmp_base_dir = Dir.mktmpdir("#{@cud.user.email}Moss_base", Rails.root.join("tmp"))
+			extract_tar_for_moss(tmp_base_dir, params[:base_tar])
 			
-			tar = params[:base_tar]
-			if not tar.nil?
-				extract_tar_for_moss(tmp_base_dir, params[:base_tar])
-			end
-
 			moss_params = " -b " + tmp_base_dir + "/* "
 			
 			#flash[:error] = "base file box"
@@ -383,6 +380,7 @@ file, most likely a duplicate email.  The exact error was: #{e} "
 			#flash[:error] = "language box"
 			#redirect_to(action: :moss) && return
 		end				
+=end
 
 		# Get moss flags from text field 	
 		text_input = params[:moss_flags]
