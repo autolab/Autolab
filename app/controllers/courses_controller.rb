@@ -371,16 +371,17 @@ file, most likely a duplicate email.  The exact error was: #{e} "
 			moss_params = [moss_params, "-b", @basefiles].join(" ")
 		end
 		if not max_lines.nil?
-			#flash[:error] = "max_lines box"
-			#redirect_to(action: :moss) && return
+			if params[:max_lines] == ""
+				params[:max_lines] = 10
+			end
+			moss_params = [moss_params, "-m", params[:max_lines]].join(" ")
 		end
 		if not language.nil?
-			moss_params = [moss_params, "-l", params[:language_selection]].join(' ')
+			moss_params = [moss_params, "-l", params[:language_selection]].join(" ")
 		end				
 
 		# Get moss flags from text field 	
-		text_input = params[:moss_flags]
-		moss_flags = "mossnet " + moss_params + text_input.to_s + " -d"
+		moss_flags = ["mossnet" + moss_params + " -d"].join(" ")
     @mossCmd = [Rails.root.join("vendor", moss_flags)]
 
 
@@ -389,7 +390,6 @@ file, most likely a duplicate email.  The exact error was: #{e} "
 
 		# Ensure that all files in Moss tmp dir are readable
     system("chmod -R a+r #{tmp_dir}")
-   # system("chmod -R a+r #{tmp_base_dir}")
     ActiveRecord::Base.clear_active_connections!
     
 		# Now run the Moss command
@@ -703,22 +703,30 @@ private
 
   def extract_tar_for_moss(tmp_dir, external_tar, archive)
     return unless external_tar
-    # Directory to hold tar ball and all individual files.
-    extTarDir = File.join(tmp_dir, "external_input")
- 		baseFilesDir = File.join(tmp_dir, "basefiles")
-		Dir.mkdir(extTarDir)
-    Dir.mkdir(baseFilesDir) # To hold all basefiles
-    Dir.chdir(baseFilesDir)
+    
+			# Directory to hold tar ball and all individual files.
+	    extTarDir = File.join(tmp_dir, "external_input")
+	 		baseFilesDir = File.join(tmp_dir, "basefiles")
+			begin
+				Dir.mkdir(extTarDir)
+			  Dir.mkdir(baseFilesDir) # To hold all basefiles
+				Dir.chdir(baseFilesDir)
+			rescue
+			end
 
-		# Read in the tarfile from the given source.
-    extTarPath = File.join(extTarDir, "input_file")
-    external_tar.rewind
-    File.open(extTarPath, "wb") { |f| f.write(external_tar.read) } # Write tar file.
+			# Read in the tarfile from the given source.
+	    extTarPath = File.join(extTarDir, "input_file")
+	    external_tar.rewind
+	    File.open(extTarPath, "wb") { |f| f.write(external_tar.read) } # Write tar file.
 
-    # Directory to hold all external individual submission.
-    extFilesDir = File.join(extTarDir, "submissions")
-    Dir.mkdir(extFilesDir) # To hold all submissions
-    Dir.chdir(extFilesDir)
+	    # Directory to hold all external individual submission.
+	    extFilesDir = File.join(extTarDir, "submissions")
+		
+		begin
+			Dir.mkdir(extFilesDir) # To hold all submissions
+	    Dir.chdir(extFilesDir)
+		rescue
+		end
 
     # Untar the given Tar file.
     begin
