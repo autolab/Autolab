@@ -22,6 +22,10 @@
         $(this).toggle(toShow);
       });
     }
+	  $(document).ready(function() {
+  	  $('select').material_select();
+	  });
+            
   </script>
 <% end %>
 
@@ -49,7 +53,7 @@
             <i>Check this if the submissions will need to be extracted. (The handin filename was: <%= a.handin_filename %>)</i>
             <br>
             <b>Files to send to Moss:</b>
-			<%= text_field_tag "files[#{a.id}]", "*", :style => "margin-bottom: 10px;" %>
+						<%= text_field_tag "files[#{a.id}]", "*", :style => "margin-bottom: 10px;" %>
             <i>This can be file names (foo.c) or patterns(*.c)</i>
             <br>
           </div>
@@ -70,26 +74,70 @@
 	  </h3>
       <ul id="flags" class="moss-inner-list" style="display:none" >
         <li>
-          <%= check_box_tag "box_language","1",false, :class => "filled-in" %> 
-          <label for="box_language"> Language </label>
-          <br>
-		  <div id='<%= a.id %>OptionsDiv' style="padding-left:10px;" >
-			<%= text_field_tag "moss_language", "", :style => "margin-bottom: 10px;", placeholder: "c" %>
-          </div>
-        </li>
-		<li>
-          <%= check_box_tag "box_max","1",false, :class => "filled-in" %> 
-          <label for="box_max">Max Lines </label>
-          <br>
-		  <div id='<%= a.id %>OptionsDiv' style="padding-left:10px;" >
-			<%= text_field_tag "moss_max", "", :style => "margin-bottom: 10px;", placeholder: "10" %>
-          </div>
-        </li>
-
-      </ul>
+					<%= check_box_tag "box_language","1",false, :class => "filled-in" %> 
+					<label for="box_language"> Language </label>
+					<br>
+					<div id='<%= a.id %>OptionsDiv' style="padding-left:10px;" >
+						<div class="input-field">
+							<%= select_tag :language_selection, options_for_select([
+								["C", "c"], 
+								["C++", "cc"],
+								["Java", "java"],
+								["C#", "csharp"],
+								["Python", "python"],
+								["Visual Basic", "vb"],
+								["Javascript", "javascript"],
+								["FORTRAN", "fortran"],
+								["ML", "ml"],
+								["Haskell", "haskell"],
+								["Lisp", "lisp"],
+								["Scheme", "scheme"],
+								["Pascal", "pascal"],
+								["Modula2", "modula2"],
+								["Ada", "ada"],
+								["Perl", "perl"],
+								["Matlab", "matlab"],
+								["VHDL", "vhdl"],
+								["Verilog", "verilog"],
+								["Spice", "spice"],
+								["MIPS Assembly", "mips"],
+								["a8086 Assembly", "a8086"],
+								["ASCII", "ascii"]
+							]) %>
+							<label>Language Options</label>
+						</div>
+					</div>
+				</li>
+				<li>
+					<%= check_box_tag "box_max","1",false, :class => "filled-in" %> 
+					<label for="box_max">Max Lines </label>
+					<br>
+					<div id='<%= a.id %>OptionsDiv' style="padding-left:10px;" >
+						<%= text_field_tag "max_lines", "", :style => "margin-bottom: 10px;", placeholder: "If you don't know what this is please read the Moss documentation before altering this value." %>
+					</div>
+				</li>
+				<li>
+					<%= check_box_tag "box_basefile", "1",false, :class => "filled-in" %> 
+					<label for="box_basefile">Base File Tar</label>
+					<br>
+					<div id='<%= a.id %>OptionsDiv' style="padding-left:10px;" >
+						<div class="file-field input-field">
+						  <div class="btn">
+					      <span>Base File</span>
+						    <%= file_field_tag 'base_tar' %>
+					    </div>
+					    <div class="file-path-wrapper">
+					      <input class="file-path validate" type="text" placeholder="Additional files archive">
+					    </div>
+					  </div> 
+						<i>This can be a tar file of any given code that will not be run against moss.</i>
+					</div>
+				</li>
+			</ul>
     </span>
   </ul>
   
+<<<<<<< HEAD
   <h3> This field can be used to add a bit more granularity to running moss. If any of the flags listed above are not quiet 
 	  what you're looking for, feel free to enter the command line arguments here and they will be passed along. </h3>
   <%= text_field_tag :moss_flags %>
@@ -97,6 +145,9 @@
   <br>
 
   <h2><b>Step 3:</b> (Optional) Upload an archive containing additional files you'd like Moss to compare against.</h2>
+=======
+  <h2><b>Step 3:</b> Upload an archive containing additional files you'd like Moss to compare against.</h2>
+>>>>>>> moss_fix
   <h3>(Note: the archive must contain only regular files.  Nested archives wil not be extracted.)</h3>
    
   <div class="file-field input-field">
