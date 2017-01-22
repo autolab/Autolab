@@ -355,6 +355,9 @@ file, most likely a duplicate email.  The exact error was: #{e} "
         assessments << assessment
       end
     end
+		# Create a temporary directory
+    @failures = []
+    tmp_dir = Dir.mktmpdir("#{@cud.user.email}Moss", Rails.root.join("tmp"))
 
 		base_file = params[:box_basefile]
 		max_lines = params[:box_max]
@@ -363,19 +366,15 @@ file, most likely a duplicate email.  The exact error was: #{e} "
 		moss_params = ""
 
 		if not base_file.nil?
-	    tmp_base_dir = Dir.mktmpdir("#{@cud.user.email}Moss_base", Rails.root.join("tmp"))
-			
-			tar = params[:base_tar]
-			if not tar.nil?
-				extract_tar_for_moss(tmp_base_dir, params[:base_tar])
-			end
-
-			moss_params = " -b " + tmp_base_dir + "/* "
+			extract_tar_for_moss(tmp_dir, params[:base_tar], false)
+			moss_params = " -b " + @basefiles
 			
 			#flash[:error] = "base file box"
 			#redirect_to(action: :moss) && return
 		end
 		if not max_lines.nil?
+			
+			
 			#flash[:error] = "max_lines box"
 			#redirect_to(action: :moss) && return
 		end
@@ -386,14 +385,12 @@ file, most likely a duplicate email.  The exact error was: #{e} "
 
 		# Get moss flags from text field 	
 		text_input = params[:moss_flags]
-		moss_flags = "mossnet " + text_input.to_s + " -d"
+		moss_flags = "mossnet " + moss_params + text_input.to_s + " -d"
     @mossCmd = [Rails.root.join("vendor", moss_flags)]
 
-		# Create a temporary directory
-    @failures = []
-    tmp_dir = Dir.mktmpdir("#{@cud.user.email}Moss", Rails.root.join("tmp"))
+
 		extract_asmt_for_moss(tmp_dir, assessments)
-    extract_tar_for_moss(tmp_dir, params[:external_tar])
+    extract_tar_for_moss(tmp_dir, params[:external_tar], true)
 
 		# Ensure that all files in Moss tmp dir are readable
     system("chmod -R a+r #{tmp_dir}")
@@ -709,13 +706,16 @@ private
     end
   end
 
-  def extract_tar_for_moss(tmp_dir, external_tar)
+  def extract_tar_for_moss(tmp_dir, external_tar, archive)
     return unless external_tar
     # Directory to hold tar ball and all individual files.
     extTarDir = File.join(tmp_dir, "external_input")
-    Dir.mkdir(extTarDir)
+ 		baseFilesDir = File.join(tmp_dir, "basefiles")
+		Dir.mkdir(extTarDir)
+    Dir.mkdir(baseFilesDir) # To hold all basefiles
+    Dir.chdir(baseFilesDir)
 
-    # Read in the tarfile from the given source.
+		# Read in the tarfile from the given source.
     extTarPath = File.join(extTarDir, "input_file")
     external_tar.rewind
     File.open(extTarPath, "wb") { |f| f.write(external_tar.read) } # Write tar file.
@@ -733,8 +733,8 @@ private
       archive_extract.each do |entry|
         pathname = Archive.get_entry_name(entry)
         unless Archive.looks_like_directory?(pathname)
+					destination = archive ? File.join(extFilesDir, pathname) : File.join(baseFilesDir, pathname)
           pathname.gsub!(/\//, "-")
-          destination = File.join(extFilesDir, pathname)
           # make sure all subdirectories are there
           File.open(destination, "wb") do |out|
             out.write Archive.read_entry_file(entry)
@@ -747,6 +747,10 @@ private
     end
 
     # Feed the uploaded files to MOSS.
-    @mossCmd << File.join(extFilesDir, "*")
+		if archive
+	    @mossCmd << File.join(extFilesDir, "*")
+		else
+			@basefiles = File.join(baseFilesDir, "*")
+		end
   end
 end
