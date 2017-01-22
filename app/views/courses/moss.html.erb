@@ -49,7 +49,7 @@
             <i>Check this if the submissions will need to be extracted. (The handin filename was: <%= a.handin_filename %>)</i>
             <br>
             <b>Files to send to Moss:</b>
-			<%= text_field_tag "files[#{a.id}]", "*", :style => "margin-bottom: 10px;" %>
+						<%= text_field_tag "files[#{a.id}]", "*", :style => "margin-bottom: 10px;" %>
             <i>This can be file names (foo.c) or patterns(*.c)</i>
             <br>
           </div>
@@ -86,7 +86,7 @@
 					</div>
 				</li>
 				<li>
-					<%= check_box_tag "box_basefile","1",false, :class => "filled-in" %> 
+					<%= check_box_tag "box_basefile", "1",false, :class => "filled-in" %> 
 					<label for="box_basefile">Base File Tar</label>
 					<br>
 					<div id='<%= a.id %>OptionsDiv' style="padding-left:10px;" >
