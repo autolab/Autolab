@@ -66,8 +66,6 @@
 
   <br>
 
-
-
   <h2><b>Step 2:</b> (Optional) Add flags that will be run with moss.</h2>
   <ul class="moss-list">
     <li class="filterableCourse" id="Moss Flags">
@@ -86,7 +84,7 @@
 								["C++", "cc"],
 								["Java", "java"],
 								["C#", "csharp"],
-								["Python", "pyhton"],
+								["Python", "python"],
 								["Visual Basic", "vb"],
 								["Javascript", "javascript"],
 								["FORTRAN", "fortran"],
@@ -115,7 +113,7 @@
 					<label for="box_max">Max Lines </label>
 					<br>
 					<div id='<%= a.id %>OptionsDiv' style="padding-left:10px;" >
-						<%= text_field_tag "moss_max", "", :style => "margin-bottom: 10px;", placeholder: "If you don't know what this is please read the Moss documentation before altering this value." %>
+						<%= text_field_tag "max_lines", "", :style => "margin-bottom: 10px;", placeholder: "If you don't know what this is please read the Moss documentation before altering this value." %>
 					</div>
 				</li>
 				<li>
@@ -139,13 +137,7 @@
     </span>
   </ul>
   
-  <h3> This field can be used to add a bit more granularity to running moss. If any of the flags listed above are not quiet 
-	  what you're looking for, feel free to enter the command line arguments here and they will be passed along. </h3>
-  <%= text_field_tag :moss_flags %>
-
-  <br>
-
-  <h2><b>Step 3:</b> (Optional) Upload an archive containing additional files you'd like Moss to compare against.</h2>
+  <h2><b>Step 3:</b> Upload an archive containing additional files you'd like Moss to compare against.</h2>
   <h3>(Note: the archive must contain only regular files.  Nested archives wil not be extracted.)</h3>
    
   <div class="file-field input-field">
