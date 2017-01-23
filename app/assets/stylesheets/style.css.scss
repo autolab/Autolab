@@ -299,8 +299,19 @@ div.main-header img {
   background-color: rgba(243, 240, 240, 0.7);
   border: 1px solid #ddd;
   border-radius: 4px;
-  padding: 18px;
+  /*padding: 18px;*/
   top: -2.8rem;
+}
+
+.handin-panel p {
+  margin: 8px !important;
+}
+
+.handin-panel .card-action {
+  padding-right: 20px;
+    padding-left: 20px;
+    padding-top: 3px;
+    padding-bottom: 10px;
 }
 
 .handin-panel #submission_file {
@@ -313,6 +324,10 @@ div.main-header img {
 
 .handin-btn {
   background-color: $autolab-red;
+  box-shadow: none;
+}
+.handin-btn-small {
+  padding: 0px 1.3rem;
 }
 
 .history-download-pane .glyphicon {
@@ -406,7 +421,17 @@ ul.gray-box.small > li + li {
 
 /* This one is actually in use.  Just so we're clear. */
 .smallText{
-  font-size:10px;
+  font-size:12px;
+}
+
+.center-align {
+  display: block;
+}
+
+.div-center {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 /**
@@ -581,7 +606,6 @@ table.navigatable tr:hover {
 .card {
   font-weight: normal;
 
-  .card-content,
   .collection,
   .card-action {
     border-radius: initial;
@@ -660,6 +684,14 @@ input[type="password"] {
   /*border: 1px solid #ccc;*/
 }
 
+.flatpickr-input {
+  color: black !important;
+}
+
+.file-path-wrapper input[type="text"] {
+  margin-bottom: 2px;
+}
+
 .flatpickr-input.form-control.input {
   color: black;
 }
@@ -691,6 +723,9 @@ input[type="password"]:focus {
 input[type="checkbox"] {
   // For spacing between this and an adjacent label
   margin-right: 10px;
+}
+.checkbox-input {
+  margin-top: 1rem;
 }
 
 .input-field {

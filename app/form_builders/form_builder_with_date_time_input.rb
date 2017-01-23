@@ -50,7 +50,7 @@ class FormBuilderWithDateTimeInput < ActionView::Helpers::FormBuilder
 
     field = super name, *(args + [options])
 
-    @template.content_tag :div, class: "form-group" do
+    @template.content_tag :div, class: "checkbox-input" do
       field + label(name, display_name, class: "control-label") +
         help_text(name, options[:help_text])
     end
