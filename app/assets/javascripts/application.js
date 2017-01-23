@@ -12,11 +12,8 @@
 //
 //
 //= require jquery
-//= require jquery.turbolinks
-//= require jquery_ujs
 //= require moment
 //= require bootstrap-datetimepicker
 //= require app-level
 //= require materialize
 //= require materialize-sprockets
-//= require turbolinks
