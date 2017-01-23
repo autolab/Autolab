@@ -53,7 +53,7 @@
             <i>Check this if the submissions will need to be extracted. (The handin filename was: <%= a.handin_filename %>)</i>
             <br>
             <b>Files to send to Moss:</b>
-						<%= text_field_tag "files[#{a.id}]", "*", :style => "margin-bottom: 10px;" %>
+			<%= text_field_tag "files[#{a.id}]", "*", :style => "margin-bottom: 10px;" %>
             <i>This can be file names (foo.c) or patterns(*.c)</i>
             <br>
           </div>
@@ -137,6 +137,21 @@
     </span>
   </ul>
   
+  <br>
+
+
+  <h2><b>Step 3:</b> (Optional) Upload an archive containing additional files you'd like Moss to compare against.</h2>
+  <h3>(Note: the archive must contain only regular files.  Nested archives wil not be extracted.)</h3>
+   
+  <div class="file-field input-field">
+    <div class="btn">
+      <span>Archive</span>
+      <%= file_field_tag 'external_tar' %>
+    </div>
+    <div class="file-path-wrapper">
+      <input class="file-path validate" type="text" placeholder="Additional files archive">
+    </div>
+  </div> 
   <br>
 
   <h2><b>Step 3:</b> (Optional) Upload an archive containing additional files you'd like Moss to compare against.</h2>

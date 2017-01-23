@@ -44,7 +44,11 @@
     <% end %>
 
     <div class="row">
+<<<<<<< HEAD
       <div class="col offset-s5 offset-m8 s7 m4">
+=======
+      <div>
+>>>>>>> integrity_checkbox
         <% if @assessment.has_svn then %>
           <%= form_for @submission, url: {action: :handin}, :html => {:name => "submissionForm", :onclick => "return validateIntegrity();"}, method: :post do |f| %>
 
@@ -73,6 +77,7 @@
 
             <%= f.file_field :file %>
             <% if @aud.past_due_at? then %>
+<<<<<<< HEAD
               <p><%= f.submit("Submit Late", id:"fake-submit",  class: "btn handin-btn-small div-center") %></p>
             <% else %>
               <p><%= f.submit("Submit ", id:"fake-submit", class: "btn handin-btn div-center") %></p>
@@ -87,6 +92,18 @@
               <span class="center-align smallText">(<%= numSubmissions %> submissions left)</span> 
             <% else %>
               <span class="center-align smallText">(&nbsp;&#x221e;&nbsp;&nbsp;submissions left)</span> 
+=======
+              <table style = "width:100%">
+                <td><%= f.submit("Submit Late", id:"fake-submit",  class: "btn primary handin-btn", onclick: "setSubmitClicked()") %></td>
+                <td id = "submission_error" style = "color:red"></td>
+              </table>
+
+            <% else %>
+              <table style = "width:100%">
+                <td><%= f.submit("Submit", id:"fake-submit", class: "btn primary handin-btn", onclick: "setSubmitClicked()") %></td>
+                <td id = "submission_error" style = "color:red"></td>
+              </table>
+>>>>>>> integrity_checkbox
             <% end %>
 
           <% end %>
