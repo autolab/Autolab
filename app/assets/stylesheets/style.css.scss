@@ -684,22 +684,6 @@ input[type="password"] {
   /*border: 1px solid #ccc;*/
 }
 
-.flatpickr-input {
-  color: black !important;
-}
-
-.file-path-wrapper input[type="text"] {
-  margin-bottom: 2px;
-}
-
-.flatpickr-input.form-control.input {
-  color: black;
-}
-
-.chosen-search input {
-  box-sizing: border-box;
-}
-
 input[type="text"]:disabled,
 input[type="email"]:disabled,
 input[type="password"]:disabled,
@@ -725,6 +709,23 @@ input[type=text] {
 	border-bottom: 1px #CCC;
 	box-shadow: 0 1px 0 0 #CCC;
 }
+
+.flatpickr-input {
+  color: black !important;
+}
+
+.file-path-wrapper input[type="text"] {
+  margin-bottom: 2px;
+}
+
+.flatpickr-input.form-control.input {
+  color: black;
+}
+
+.chosen-search input {
+  box-sizing: border-box;
+}
+
 
 .checkbox-input {
   margin-top: 1rem;
