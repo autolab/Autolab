@@ -355,18 +355,15 @@ file, most likely a duplicate email.  The exact error was: #{e} "
         assessments << assessment
       end
     end
-<<<<<<< HEAD
-		
-		# Create a temporary directory
-=======
 
+		# Create a temporary directory
 		# Get moss flags from text field 	
 		text_input = params[:moss_flags]
 		moss_flags = "mossnet " + text_input.to_s + " -d"
     @mossCmd = [Rails.root.join("vendor", moss_flags)]
 
     # Create a temporary directory
->>>>>>> integrity_checkbox
+
     @failures = []
     tmp_dir = Dir.mktmpdir("#{@cud.user.email}Moss", Rails.root.join("tmp"))
 
