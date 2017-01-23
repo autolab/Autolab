@@ -694,7 +694,7 @@ input[type="checkbox"] {
 }
 
 .input-field {
-  margin-top: 3rem !important;
+  //margin-top: 3rem !important;
   label.control-label {
     font-size: 20px;
     margin-left: 4px;
@@ -707,11 +707,6 @@ input[type="checkbox"] {
 
 .input-field input[type=text]:focus + label {
 	color: #000;
-}
- /* label underline focus color */
-.row .input-field input:focus {
-	border-bottom: 1px solid red !important;
-	box-shadow: 0 1px 0 0 red !important
 }
 
 .help-block {
