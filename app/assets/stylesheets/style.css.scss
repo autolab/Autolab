@@ -700,10 +700,6 @@ input[type="password"] {
   box-sizing: border-box;
 }
 
-textarea.materialize-textarea { 
-  /*border-bottom: 1px solid $autolab-subtle-red;*/
-}
-
 input[type="text"]:disabled,
 input[type="email"]:disabled,
 input[type="password"]:disabled,
@@ -724,6 +720,12 @@ input[type="checkbox"] {
   // For spacing between this and an adjacent label
   margin-right: 10px;
 }
+
+input[type=text] {
+	border-bottom: 1px #CCC;
+	box-shadow: 0 1px 0 0 #CCC;
+}
+
 .checkbox-input {
   margin-top: 1rem;
 }
