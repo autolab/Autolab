@@ -30,17 +30,17 @@
 <% end %>
 
 <h2>Run the Moss Cheat Checker</h2>
-<br>
 
-<h2><b>Step 1:</b> Click on course names to see their assessments, then check box all of the assessments you want Moss to compare against.</h2>
-<h3 style="display:inline">Filter Courses (Keywords Separated by Space): </h3><input type="text" onkeyup="filterCourses(this.value.toLowerCase())" style="margin-bottom: 10px;">
+<h4>Step 1:</h4>
+<p>Click on course names to see their assessments, then check box all of the assessments you want Moss to compare against.</p>
+<h4 style="display:inline">Filter Courses (Keywords Separated by Space): </h4><input type="text" onkeyup="filterCourses(this.value.toLowerCase())" style="margin-bottom: 10px;">
 <%= form_tag([:runMoss, @course], multipart: true) do %>
   <ul class="moss-list">
   <% for course in @courses %>
     <li class="filterableCourse" id="<%= course.display_name %>">
-      <h3 onclick="toggleOptions('<%= course.id %>Assessments')"> 
+      <h5 onclick="toggleOptions('<%= course.id %>Assessments')"> 
         <%= course.full_name %>
-      </h3>
+      </h5>
       <ul id="<%= course.id %>Assessments" class="moss-inner-list" style="display:none" >
       <% for a in course.assessments do %>
         <li>
@@ -66,18 +66,19 @@
 
   <br>
 
-  <h2><b>Step 2:</b> (Optional) Add flags that will be run with moss.</h2>
+	<h4>Step 2:</h4>
+	<p>(Optional) Add flags that will be run with moss.</p>
   <ul class="moss-list">
     <li class="filterableCourse" id="Moss Flags">
-      <h3 onclick="toggleOptions('flags')"> 
+    <h5 onclick="toggleOptions('flags')"> 
 	  	Moss Flags
-	  </h3>
+	  </h5>
       <ul id="flags" class="moss-inner-list" style="display:none" >
         <li>
 					<%= check_box_tag "box_language","1",false, :class => "filled-in" %> 
 					<label for="box_language"> Language </label>
 					<br>
-					<div id='<%= a.id %>OptionsDiv' style="padding-left:10px;" >
+					<div id='<%= a.id %>OptionsDiv' style="padding-left:10px; margin-right: 10px;" >
 						<div class="input-field">
 							<%= select_tag :language_selection, options_for_select([
 								["C", "c"], 
@@ -129,8 +130,9 @@
 					    <div class="file-path-wrapper">
 					      <input class="file-path validate" type="text" placeholder="Additional files archive">
 					    </div>
-					  </div> 
-						<i>This can be a tar file of any given code that will not be run against moss.</i>
+						</div>
+						<br>
+						<i>This if used must be an non-nested TAR. Contents of which will not be run against the assignments. Perfect for example code, or stubbed out functions that were given out.</i>
 					</div>
 				</li>
 			</ul>
@@ -139,8 +141,9 @@
   
   <br>
 
-  <h2><b>Step 3:</b> (Optional) Upload an archive containing additional files you'd like Moss to compare against.</h2>
-  <h3>(Note: the archive must contain only regular files.  Nested archives wil not be extracted.)</h3>
+	<h4>Step 3:</h4>
+	<p> (Optional) Upload an archive containing additional files you'd like Moss to compare against.</p>
+  <p>(Note: the archive must contain only regular files.  Nested archives wil not be extracted.)</p>
    
   <div class="file-field input-field">
     <div class="btn">
@@ -153,7 +156,8 @@
   </div> 
   <br>
 
-  <h2><b>Step 4:</b> Click "Go!" once to run Moss. This may take up to a minute, so be patient...</h2>
+	<h4>Step 4:</h4>
+	<p> Click "Go!" once to run Moss. This may take up to a minute, so be patient...</p>
 
   <p><%= submit_tag "Go!", data: { disable_with: "Please wait..." }, class: "btn primary" %></p>
 <% end %>

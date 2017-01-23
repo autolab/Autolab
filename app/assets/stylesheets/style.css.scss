@@ -136,6 +136,10 @@ div.main-header img {
   margin-bottom: 2px;
 }
 
+.caret {
+	border-color: transparent !important;
+}
+
 .hide-all {
   display: none;
 }
@@ -458,7 +462,7 @@ ul.moss-list > li {
   margin: 5px;
   padding: 4px;
 }
-ul.moss-list > li > h3 {
+ul.moss-list > li > h5 {
   color: #900;
   font-weight: bold;
   margin: 0;
@@ -473,7 +477,7 @@ ul.moss-inner-list > li {
   cursor: default;
   padding: 2px;
 }
-ul.moss-inner-list > li > h3 {
+ul.moss-inner-list > li > h5 {
   margin: 0;
 }
 ul.moss-inner-list > li > input[type="checkbox"]:not(:checked) ~ div {
@@ -699,8 +703,15 @@ input[type="checkbox"] {
   label.active {
     font-size: inherit;
   }
+}
 
-
+.input-field input[type=text]:focus + label {
+	color: #000;
+}
+ /* label underline focus color */
+.row .input-field input:focus {
+	border-bottom: 1px solid red !important;
+	box-shadow: 0 1px 0 0 red !important
 }
 
 .help-block {
