@@ -273,7 +273,7 @@ var initializeAnnotationsForCode = function() {
       placeholder: "Score Here"
     });
     var problemSelect = elt("select", {
-      class: "col-md-2",
+      class: "col-md-2 browser-default",
       name: "problem"
     }, elt("option", {
       value: ""
@@ -333,7 +333,6 @@ var initializeAnnotationsForCode = function() {
 
   var newAnnotationFormForPDF = function(pageInd, xCord, yCord) {
 
-
     // this section creates the new/edit annotation form that's used everywhere
     var commentInput = elt("textarea", {
       class: "col-md-11 comment",
@@ -342,21 +341,18 @@ var initializeAnnotationsForCode = function() {
       maxlength: "255"
     });
     var valueInput = elt("input", {
-      class: "col-md-11",
+      class: "col-md-4",
       type: "text",
       name: "score",
       placeholder: "Score Here"
     });
     var problemSelect = elt("select", {
-      class: "col-md-6",
+      class: "col-md-4 browser-default",
       name: "problem"
     }, elt("option", {
       value: ""
     }, "None"));
     
-    var problem_label = elt("label", {
-    }, "Problem");      
-
     var rowDiv1 = elt("div", {
       class: "row",
       style: "margin-left:4px;"
@@ -365,14 +361,7 @@ var initializeAnnotationsForCode = function() {
     var rowDiv2 = elt("div", {
       class: "row",
       style: "margin-left:4px; width: 100%;"
-    }, valueInput);
-
-    var rowDiv3 = elt("div", {
-      class: "row",
-      style: "margin-left:4px;"
-    }, problem_label, problemSelect);
-
-
+    }, valueInput, problemSelect);
 
     var submitButton = elt("input", {
       type: "submit",
@@ -391,13 +380,13 @@ var initializeAnnotationsForCode = function() {
       problemSelect.appendChild(elt("option", {
         value: problem.id
       }, problem.name));
-    })
+    }) 
 
     var newForm = elt("form", {
       title: "Press <Enter> to Submit",
       class: "annotation-form",
       id: "annotation-form-" + pageInd
-    }, rowDiv1, rowDiv2, rowDiv3, hr, submitButton, cancelButton);
+    }, rowDiv1, rowDiv2, hr, submitButton, cancelButton);
 
     newForm.onsubmit = function(e) {
       e.preventDefault();
