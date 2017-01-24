@@ -5,9 +5,9 @@
 $(document).ready(function() {
 	$(".moment-date-time").each(function(ind) {
 		$el = $(this);
-		var format = $el.data("format")  || "MMMM Do YYYY, h:mm:ss a";
+		var format = $el.data("format")  || "MMMM Do YYYY, h:mm a";
 		var unformattedDate = $el.html();
-		var formattedDate = moment(unformattedDate, "YYYY-MM-DD hh:mm:ss ZZ").format(format);
+		var formattedDate = moment(unformattedDate, "YYYY-MM-DD hh:mm ZZ").format(format);
 		$el.html(formattedDate);
 	});
 
@@ -20,6 +20,9 @@ $(document).ready(function() {
 
 	/* Activating Tooltips */
 	$('.tooltipped').tooltip({delay: 50});
+    
+    /* Materialize Initializations */
+    $('select').material_select();
 });
 
 

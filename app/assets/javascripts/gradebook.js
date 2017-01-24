@@ -24,14 +24,14 @@ var slickgrid_options = {
     case "excused":
       if (options.render_excused_grade_type) {
         tip = user + ' has been excused from ' + asmt + '.';
-        value = '<span data-title="' + tip + '" class="tip excused label label-info">Excused</span>';
+        value = '<span data-tooltip="' + tip + '" class="tooltipped excused label label-info">Excused</span>';
       }
       break;
 
     case "zeroed":
       if (options.render_zeroed_grade_type) {
         tip = user + '\'s final score on ' + asmt + ' has been zeroed out.';
-        value = '<span data-title="' + tip + '" class="tip zeroed">' + value + '</span>';
+        value = '<span data-tooltip="' + tip + '" class="tooltipped zeroed">' + value + '</span>';
       }
       break;
 
@@ -39,30 +39,30 @@ var slickgrid_options = {
       switch (data[submission_status_key]) {
       case "submitted":
         if (columnDef.before_grading_deadline) {
-          tip = 'Grading is in-progress. '  
-          tip += 'Final scores will be visible here after the grading deadline (specified as an assessment property). '
-          tip += 'Meanwhile, check the assessment gradesheet for updates.';
-          value = '<i data-title="' + tip + '" class="tip past-grading-deadline icon-time"></i>';
+          tip = 'Grading is in-progress. <br>'  
+          tip += 'Final scores will be visible here after the grading deadline (specified as an assessment property). <br>'
+          tip += 'Meanwhile, check the assessment gradesheet for updates.<br>';
+          value = '<a data-tooltip="' + tip + '" class="tooltipped past-grading-deadline icon-time"></a>';
         }
         break;
 
       case "not_submitted":
         if (columnDef.before_grading_deadline) {
-          value = "<i data-title='No submission was made.' class='tip icon-exclamation-sign'></i>";
+          value = "<a data-tooltip='No submission was made.' class='tooltipped icon-exclamation-sign'></a>";
         } else {
-          tip = user + ' has not made any submissions for ' + asmt + '. ';
+          tip = user + ' has not made any submissions for ' + asmt + '. <br>';
           tip += 'The last date for submission by ' + user + ' was ' + data[end_at_key] + '.';
-          value = '<span data-title="' + tip + '" class="tip not-submitted">' + value + '</span>';
+          value = '<a data-tooltip="' + tip + '" class="tooltipped not-submitted">' + value + '</a>';
         }
         break;
 
       case "not_yet_submitted":
         if (columnDef.before_grading_deadline) {
-          value = "<i data-title='No submission has been made yet.' class='tip icon-exclamation-sign'></i>";
+          value = "<a data-title='No submission has been made yet.' class='tip icon-exclamation-sign'></a>";
         } else {
           tip = user + ' has not yet made any submissions for ' + asmt + '. ';
           tip += 'The last date for submission by ' + user + ' is ' + data[end_at_key] + '.';
-          value = '<span data-title="' + tip + '" class="tip not-yet-submitted">' + value + '</span>';
+          value = '<a data-tooltip="' + tip + '" class="tooltipped not-yet-submitted">' + value + '</a>';
         }
         break;
       }
@@ -164,16 +164,16 @@ $(function () {
   $(window).resize();
 
   grid.onMouseEnter.subscribe(function(e, args) {
-    $('.tip', e.target).tooltip({
-      placement: 'top',
-      container: 'body',
+    $('.tooltipped', e.target).tooltip({
+      position: 'top',
+      delay: 100,
       html: true
     });
   });
 
-  $('.tip').tooltip({
-    placement: 'top',
-    container: 'body',
+  $('.tooltipped').tooltip({
+    position: 'top',
+    delay: 100,
     html: true
   });
 

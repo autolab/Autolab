@@ -53,7 +53,7 @@ div.main-header .logo {
   display: inline-block;
   vertical-align: top;
   line-height: 54px;
-  margin-top:5px;
+  //margin-top:5px;
 }
 
 div.main-header h2 {
@@ -134,6 +134,14 @@ div.main-header img {
 .action-links .dropdown-menu .divider {
   margin-top: 2px;
   margin-bottom: 2px;
+}
+
+.caret {
+	border-color: transparent !important;
+}
+
+.hide-all {
+  display: none;
 }
 
 .navbar-nav.action-links > li > .dropdown-menu {
@@ -291,8 +299,19 @@ div.main-header img {
   background-color: rgba(243, 240, 240, 0.7);
   border: 1px solid #ddd;
   border-radius: 4px;
-  padding: 18px;
+  /*padding: 18px;*/
   top: -2.8rem;
+}
+
+.handin-panel p {
+  margin: 8px !important;
+}
+
+.handin-panel .card-action {
+  padding-right: 20px;
+    padding-left: 20px;
+    padding-top: 3px;
+    padding-bottom: 10px;
 }
 
 .handin-panel #submission_file {
@@ -305,6 +324,10 @@ div.main-header img {
 
 .handin-btn {
   background-color: $autolab-red;
+  box-shadow: none;
+}
+.handin-btn-small {
+  padding: 0px 1.3rem;
 }
 
 .history-download-pane .glyphicon {
@@ -398,7 +421,17 @@ ul.gray-box.small > li + li {
 
 /* This one is actually in use.  Just so we're clear. */
 .smallText{
-  font-size:10px;
+  font-size:12px;
+}
+
+.center-align {
+  display: block;
+}
+
+.div-center {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 /**
@@ -454,7 +487,7 @@ ul.moss-list > li {
   margin: 5px;
   padding: 4px;
 }
-ul.moss-list > li > h3 {
+ul.moss-list > li > h5 {
   color: #900;
   font-weight: bold;
   margin: 0;
@@ -469,7 +502,7 @@ ul.moss-inner-list > li {
   cursor: default;
   padding: 2px;
 }
-ul.moss-inner-list > li > h3 {
+ul.moss-inner-list > li > h5 {
   margin: 0;
 }
 ul.moss-inner-list > li > input[type="checkbox"]:not(:checked) ~ div {
@@ -573,7 +606,6 @@ table.navigatable tr:hover {
 .card {
   font-weight: normal;
 
-  .card-content,
   .collection,
   .card-action {
     border-radius: initial;
@@ -652,18 +684,6 @@ input[type="password"] {
   /*border: 1px solid #ccc;*/
 }
 
-.flatpickr-input.form-control.input {
-  color: black;
-}
-
-.chosen-search input {
-  box-sizing: border-box;
-}
-
-textarea.materialize-textarea { 
-  /*border-bottom: 1px solid $autolab-subtle-red;*/
-}
-
 input[type="text"]:disabled,
 input[type="email"]:disabled,
 input[type="password"]:disabled,
@@ -685,22 +705,51 @@ input[type="checkbox"] {
   margin-right: 10px;
 }
 
+input[type=text] {
+	border-bottom: 1px #CCC;
+	box-shadow: 0 1px 0 0 #CCC;
+}
+
+.flatpickr-input {
+  color: black !important;
+}
+
+.file-path-wrapper input[type="text"] {
+  margin-bottom: 2px;
+}
+
+.flatpickr-input.form-control.input {
+  color: black;
+}
+
+.chosen-search input {
+  box-sizing: border-box;
+}
+
+
+.checkbox-input {
+  margin-top: 1rem;
+}
+
 .input-field {
-  margin-top: 3rem !important;
+	margin-top: 2rem !important;
   label.control-label {
     font-size: 20px;
     margin-left: 4px;
-  }
+	}
 
   label.active {
     font-size: inherit;
   }
+}
 
-
+input[type=text] {
+	box-sizing: border-box;
+	margin-bottom: 10px;
 }
 
 .help-block {
-  color: #9e9e9e;
+  color: #4e4e4e;
   font-size: 15px;
   margin-left: 8px;
   /*margin-top: -18px;*/
