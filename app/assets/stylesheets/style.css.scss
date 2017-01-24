@@ -136,6 +136,11 @@ div.main-header img {
   margin-bottom: 2px;
 }
 
+.annotationPane .pull-left {
+	float: none !important;
+	margin-left: -10px;
+}
+
 .caret {
 	border-color: transparent !important;
 }

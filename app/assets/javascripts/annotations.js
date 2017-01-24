@@ -333,6 +333,7 @@ var initializeAnnotationsForCode = function() {
 
   var newAnnotationFormForPDF = function(pageInd, xCord, yCord) {
 
+
     // this section creates the new/edit annotation form that's used everywhere
     var commentInput = elt("textarea", {
       class: "col-md-11 comment",
@@ -341,18 +342,21 @@ var initializeAnnotationsForCode = function() {
       maxlength: "255"
     });
     var valueInput = elt("input", {
-      class: "col-md-6",
+      class: "col-md-11",
       type: "text",
       name: "score",
       placeholder: "Score Here"
     });
     var problemSelect = elt("select", {
-      class: "col-md-4",
+      class: "col-md-6",
       name: "problem"
     }, elt("option", {
       value: ""
     }, "None"));
     
+    var problem_label = elt("label", {
+    }, "Problem");      
+
     var rowDiv1 = elt("div", {
       class: "row",
       style: "margin-left:4px;"
@@ -360,8 +364,13 @@ var initializeAnnotationsForCode = function() {
     
     var rowDiv2 = elt("div", {
       class: "row",
+      style: "margin-left:4px; width: 100%;"
+    }, valueInput);
+
+    var rowDiv3 = elt("div", {
+      class: "row",
       style: "margin-left:4px;"
-    }, valueInput, problemSelect);
+    }, problem_label, problemSelect);
 
 
 
@@ -388,7 +397,7 @@ var initializeAnnotationsForCode = function() {
       title: "Press <Enter> to Submit",
       class: "annotation-form",
       id: "annotation-form-" + pageInd
-    }, rowDiv1, rowDiv2, hr, submitButton, cancelButton);
+    }, rowDiv1, rowDiv2, rowDiv3, hr, submitButton, cancelButton);
 
     newForm.onsubmit = function(e) {
       e.preventDefault();
