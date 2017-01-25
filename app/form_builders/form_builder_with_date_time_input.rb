@@ -24,10 +24,10 @@ class FormBuilderWithDateTimeInput < ActionView::Helpers::FormBuilder
 
     fields = fields_for name do |f|
       @template.content_tag :div, class: "score-adjustment" do
-        (f.vanilla_text_field :value, class: "input-field value", placeholder: "10") +
-        (@template.content_tag :div, class: "input-group-addon" do
+        (f.vanilla_text_field :value, class: "input-field  carrot", placeholder: "10") +
+        (@template.content_tag :div, class: "" do
           f.select(:kind, { "points" => "points", "%" => "percent" }, {},
-                   class: "input-field kind input-group-addon")
+                   class: "input-field  carrot")
         end)
       end
     end
