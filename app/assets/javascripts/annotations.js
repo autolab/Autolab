@@ -586,7 +586,7 @@ var submitNewPDFAnnotation = function(comment, value, problem_id, pageInd, xRati
       $(newForm).remove();
     },
     error: function(result, type) {
-      $(formEl).append(elt("div", null, "Failed to Save Annotation!!!"));
+      $(newForm).append(elt("div", null, "Failed to Save Annotation!!!"));
     },
     complete: function(result, type) {}
   });
