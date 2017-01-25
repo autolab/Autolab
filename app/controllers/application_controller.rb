@@ -141,7 +141,6 @@ protected
     @course = Course.find_by(name: course_name) if course_name
 
     unless @course
-      # Throw a 404 error if the course page is not found.
       render :file => "#{Rails.root}/public/404.html",  :status => 404
     end
 
