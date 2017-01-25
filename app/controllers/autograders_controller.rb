@@ -11,7 +11,7 @@ class AutogradersController < ApplicationController
     @autograder = Autograder.new do |a|
       a.assessment_id = @assessment.id
       a.autograde_timeout = 180
-      a.autograde_image = "changeme.img"
+      a.autograde_image = "autograding_image"
       a.release_score = true
     end
     flash[:info] = "Autograder Created" if @autograder.save
