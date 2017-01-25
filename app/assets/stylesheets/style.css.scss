@@ -686,8 +686,8 @@ input[type="password"] {
 	margin-top: 0.8rem;
 	margin-bottom: -0.8rem;
   padding: 10px 8px;
-  /*border-bottom: 1px solid $autolab-subtle-red;*/
-  /*border: 1px solid #ccc;*/
+  border-bottom: 1px #CCC;
+	box-shadow: 0 1px 0 0 #CCC;
 }
 
 input[type="text"]:disabled,
@@ -709,11 +709,6 @@ input[type="password"]:focus {
 input[type="checkbox"] {
   // For spacing between this and an adjacent label
   margin-right: 10px;
-}
-
-input[type=text] {
-	border-bottom: 1px #CCC;
-	box-shadow: 0 1px 0 0 #CCC;
 }
 
 .flatpickr-input {
