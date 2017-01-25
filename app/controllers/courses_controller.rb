@@ -428,8 +428,7 @@ file, most likely a duplicate email.  The exact error was: #{e} "
     @mossOutput = `#{@mossCmdString} 2>&1`
 
     # Clean up after ourselves (droh: leave for dsebugging)
-    #`rm -rf #{tmp_dir}`
-    #`rm -rf #{tmp_base_dir}`
+    `rm -rf #{tmp_dir}`
   end
 
 private
