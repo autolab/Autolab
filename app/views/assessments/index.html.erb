@@ -1,3 +1,17 @@
+<% content_for :javascripts do %>
+  <script>
+    jQuery(function() {
+      /* a way to mimic nested anchor tags */
+      $('a.collection-item span.new.badge').each(function(idx, obj) {
+        $(obj).on("click", function() {
+          window.location = obj.dataset.url;
+          return false;  // prevent click propagation
+        });
+      });
+    });
+  </script>
+<% end %>
+
 <%= render partial: "announcements/announcements_list", 
            locals: { announcements: @announcements } %>
 
@@ -31,15 +45,13 @@
 
             <div class="collection red darken-4">
               <% asmts.each do |asmt| %>
-                <div class="collection-item">
-                  <%= link_to asmt.display_name, course_assessment_url(@course, asmt),
-                              {:class => "grey-text text-darken-4"} %>
+                <%= link_to course_assessment_url(@course, asmt), 
+                    :class => "collection-item grey-text text-darken-4" do %>
+                  <%= asmt.display_name %>
                   <% if !asmt.released? %>
-                    <a href="<%= edit_course_assessment_url(@course, asmt) %>/handin">
-                      <span class="new badge blue darken-4" data-badge-caption="unreleased"></span>
-                    </a>
+                      <span class="new badge blue darken-4" data-badge-caption="unreleased" data-url="<%= edit_course_assessment_url(@course, asmt) %>/handin"></span>
                   <% end %>
-                </div>
+                <% end %>
               <% end %>
             </div>
 
