@@ -683,7 +683,8 @@ input[type="email"],
 input[type="password"] {
   /*border: none;*/
   height: 2rem;
-  margin-bottom: -10px;
+	margin-top: 0.8rem;
+	margin-bottom: -0.8rem;
   padding: 10px 8px;
   /*border-bottom: 1px solid $autolab-subtle-red;*/
   /*border: 1px solid #ccc;*/
@@ -733,7 +734,7 @@ input[type=text] {
 
 
 .checkbox-input {
-  margin-top: 1rem;
+  //margin-top: 1rem;
 }
 
 .input-field {
