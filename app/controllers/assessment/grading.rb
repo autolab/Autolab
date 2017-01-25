@@ -232,6 +232,14 @@ public
     sub_id = params[:submission_id].to_i
     prob_id = params[:problem_id].to_i
 
+    if params[:score].present?
+      maxScore = Problem.find(prob_id).max_score.to_f
+      if params[:score].to_f > maxScore
+       render :status => 422, :text => "bad data"
+       return
+     end 
+   end
+
     # find existing score for this problem, if there's one
     # otherwise, create it
     score = Score.find_or_initialize_by_submission_id_and_problem_id(sub_id, prob_id)
@@ -240,6 +248,15 @@ public
     score.score = params[:score].to_f
 
     updateScore(score.submission.course_user_datum_id, score)
+
+    findanno = Annotation.where('submission_id = ? AND problem_id = ?', sub_id, prob_id)
+    # update annotation if it exists
+    if !findanno.blank?
+      findanno.first.submitted_by = @cud.email
+      findanno.first.value = params[:score].to_f
+      findanno.first.save
+    end
+
 
     render text: score.score
 
@@ -256,10 +273,17 @@ public
     return unless request.post?
     return unless params[:submission_id]
     return unless params[:problem_id]
-
-    # get submission and problem IDs
-    sub_id = params[:submission_id].to_i
-    prob_id = params[:problem_id].to_i
+       # get submission and problem IDs
+       sub_id = params[:submission_id].to_i
+       prob_id = params[:problem_id].to_i
+     #check to see if given score is greater than max possible score for the problem 
+     if params[:score].present?
+      maxScore = Problem.find(prob_id).max_score.to_f
+      if params[:score].to_f > maxScore
+       render :status => 422, :text => "bad data"
+       return
+     end 
+   end
 
     # find existing score for this problem, if there's one
     # otherwise, create it
@@ -268,19 +292,29 @@ public
     score.grader_id = @cud.id
     score.feedback = params[:feedback]
     score.released = params[:released]
+    score.score = params[:score].to_f
 
     updateScore(score.submission.course_user_datum_id, score)
 
-    render text: score.id
+
+    findanno = Annotation.where('submission_id = ? AND problem_id = ?', sub_id, prob_id)
+    # update annotation if it exists
+    if !findanno.blank?
+      findanno.first.submitted_by = @cud.email
+      findanno.first.value = params[:score].to_f
+      findanno.first.save
+    end
+
+  render text: score.id
 
   # see http://stackoverflow.com/questions/6163125/duplicate-records-created-by-find-or-create-by
   # and http://barelyenough.org/blog/2007/11/activerecord-race-conditions/
   # and http://stackoverflow.com/questions/5917355/find-or-create-race-conditions
-  rescue ActiveRecord::StatementInvalid, ActiveRecord::RecordInvalid => error
-    @retries_left ||= 2
-    retry unless (@retries_left -= 1) < 0
-    raise error
-  end
+rescue ActiveRecord::StatementInvalid, ActiveRecord::RecordInvalid => error
+  @retries_left ||= 2
+  retry unless (@retries_left -= 1) < 0
+  raise error
+end
 
   def submission_popover
     render partial: "popover", locals: { s: Submission.find(params[:submission_id].to_i) }
