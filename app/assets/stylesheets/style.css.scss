@@ -680,7 +680,7 @@ body.autolab {
 
 input[type="text"],
 input[type="email"],
-input[type="password"] {
+input[type="password"], {
   /*border: none;*/
   height: 2rem;
 	margin-top: 0.8rem;
@@ -709,6 +709,11 @@ input[type="password"]:focus {
 input[type="checkbox"] {
   // For spacing between this and an adjacent label
   margin-right: 10px;
+}
+
+input[type="search"] {
+	border-bottom: 1px #CCC;
+	box-shadow: 0 1px 0 0 #CCC;
 }
 
 textarea {
