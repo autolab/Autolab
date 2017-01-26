@@ -71,7 +71,7 @@
       <label for="highlightLongLines">Highlight lines longer than 80 characters</label>
     </span>
     <hr>
-    <input type="button" value="Reload Summary" class="waves-effect waves-light btn primary" onclick="window.location.reload()">
+    <input type="button" value="Reload Summary" class="btn primary" onclick="window.location.reload()">
 
   </div>
   <div class="col-md-9">
@@ -83,7 +83,7 @@
       @data.each_with_index do |(code, annotation), index|
         %><li id="line-<%= index+1 %>"><code><%= 
           code 
-        %></code><% if @cud.instructor? or @cud.course_assistant? then %><span class="add-annotation-waves-effect waves-light btn glyphicon glyphicon-plus" id="add-btn-<%= index+1 %>"></span><% end %><div class="annotations-container"></div></li><% 
+        %></code><% if @cud.instructor? or @cud.course_assistant? then %><span class="add-annotation-btn glyphicon glyphicon-plus" id="add-btn-<%= index+1 %>"></span><% end %><div class="annotations-container"></div></li><% 
       end %></ol></code></pre>
   </div>
   </div>
