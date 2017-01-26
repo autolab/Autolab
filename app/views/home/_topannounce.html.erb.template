@@ -14,7 +14,7 @@
 
 <h1>Older Courses</h1>
 <p>Courses on Autolab prior to Spring 2015 are viewable at oldautolab.cs.cmu.edu.</p>
-<%= link_to 'Old Autolab Courses', 'https://oldautolab.cs.cmu.edu', class: 'btn main' %>
+<%= link_to 'Old Autolab Courses', 'https://oldautolab.cs.cmu.edu', class: 'waves-effect waves-light btn main' %>
 
 REMOVE THIS LINE TO UNCOMMENT %>
 

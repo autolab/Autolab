@@ -22,7 +22,7 @@
   </li>
 </ul>
 
-<%= link_to raw('<span class="btn primary">Edit Information</span>'), edit_user_path(@user) %><br>
+<%= link_to raw('<span class="waves-effect waves-light btn primary">Edit Information</span>'), edit_user_path(@user) %><br>
 <% if @user == current_user %>
 <%= link_to "Change your password", edit_user_registration_path %>
 <% end %>

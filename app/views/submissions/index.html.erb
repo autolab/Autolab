@@ -93,14 +93,14 @@
                 [:regrade, @course, @assessment, submission_id: submission.id],
                 { method: :post,
                  :title=>"Rerun the autograder on this submission",
-                 :class=>"btn small regrade-override"} %>
+                 :class=>"waves-effect waves-light btn small regrade-override"} %>
           <% end %>
           <%= link_to "Edit", [:edit, @course, @assessment, submission],
               {:title=>"Edit the grading properties of this submission",
-                :class=>"btn small"} %>
+                :class=>"waves-effect waves-light btn small"} %>
           <%= link_to "Destroy", destroyConfirm_course_assessment_submission_path(@course, @assessment, submission),
               {:title=>"Destroy this submission forever",
-                :class=>"btn small"} %>
+                :class=>"waves-effect waves-light btn small"} %>
       </td>
       <td><%= submission.latest? %>
       </td>
