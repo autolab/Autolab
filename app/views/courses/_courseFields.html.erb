@@ -35,7 +35,7 @@
       <%= content_tag :div, class: "col s4" do %>
         <%= p.select :kind, options_for_select({"points" => "points", "%" => "percent"},
                                                :selected => (course.late_penalty ? course.late_penalty.kind : "points")),
-                            {}, {class: "form-control input-field"} %>
+                            {}, {class: "input-field"} %>
       <% end %>
     <% end %>
 
@@ -65,7 +65,7 @@
       <%= content_tag :div, class: "col s4" do %>
         <%= p.select :kind, options_for_select({"points" => "points", "%" => "percent"},
                                                :selected => (course.version_penalty ? course.version_penalty.kind : "points")),
-                            {}, {class: "form-control input-field"} %>
+                            {}, {class: "input-field"} %>
       <% end %>
     <% end %>
 
