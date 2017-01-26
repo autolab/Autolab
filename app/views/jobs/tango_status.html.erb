@@ -132,9 +132,9 @@
       end
     }
     %>
-  <%= button_tag "All VM Pools", name: "vmpool", value: "", class: 'btn btn-info small' %>
+  <%= button_tag "All VM Pools", name: "vmpool", value: "", class: 'waves-effect waves-light btn btn-info small' %>
   <% pool_list.each { |p| %>
-    <%= button_tag(p, name: "vmpool", value: p, class: 'btn btn-info small') %>
+    <%= button_tag(p, name: "vmpool", value: p, class: 'waves-effect waves-light btn btn-info small') %>
   <% } %>
 </div>
 <div id="tango_time_plot"></div>
