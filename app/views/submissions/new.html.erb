@@ -7,7 +7,20 @@
   <script type="application/javascript">
     jQuery(function() {
       $('.chosen-select').chosen();
-    });
+		});
+
+		function filterNames(name) {
+			$(".select-wrapper").each( function() {
+				var user = this;
+				var keywords = name.split(" ");
+				var toShow = true;
+				for (var i = 0; i < keywords.length; i++) {
+					toShow = false;
+				}
+				$(this).toggle(toShow);
+			});
+		}
+
   </script>
 <% end %>
 
@@ -21,6 +34,9 @@
       url: [@course, @assessment, @submission], method: :post,
       html: {multipart: true}  do |f| %>
 <%= f.error_messages %>
+<div class="input-field">
+	<input placeholder="Name or Email" type="text" onkeyup="filterNames(this.value.toLowerCase())" style="margin-bottom: 10px;">
+</div>
 <table class="verticalTable" >
 <tr>
   <th>User:</th>
