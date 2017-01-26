@@ -3,9 +3,9 @@ module AssessmentHelper
     out =
     '<table class="striped">
        <thead>
-         <tr class="red darken-3 white-text">
-           <th class="red darken-3 white-text">Problem</th>
-           <th class="red darken-3 white-text">Mean</th>
+         <tr class="blue darken-3 white-text">
+           <th class="blue darken-3 white-text">Problem</th>
+           <th class="blue darken-3 white-text">Mean</th>
            <th>Median</th>
            <th>StdDev</th>
            <th>Max</th>

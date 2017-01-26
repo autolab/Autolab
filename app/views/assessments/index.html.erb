@@ -10,7 +10,7 @@
   <h3 class="section-title"><span class="white">Instructor Actions</span></h4>
   <%= link_to 'Install Assessment',
                     {:action=>"installAssessment"},
-                    {:title=>"Install Assessment", :class => "waves-effect waves-light btn btn-large red darken-4" } %>
+                    {:title=>"Install Assessment", :class => "waves-effect waves-light btn btn-large blue darken-3" } %>
 <% end %>
 
 <div class="section">
@@ -25,18 +25,18 @@
       <% if asmts.any? %>
         <div class="col s12 m4">
           <div class="card hoverable">
-            <div class="card-content red darken-4">
+            <div class="card-content blue darken-3">
               <span class="card-title white-text"><%= cat %></span>
             </div>
 
-            <div class="collection red darken-4">
+            <div class="collection blue darken-3">
               <% asmts.each do |asmt| %>
                 <div class="collection-item">
                   <%= link_to asmt.display_name, course_assessment_url(@course, asmt),
-                              {:class => "grey-text text-darken-4"} %>
+                              {:class => "grey-text text-darken-3"} %>
                   <% if !asmt.released? %>
                     <a href="<%= edit_course_assessment_url(@course, asmt) %>/handin">
-                      <span class="new badge blue darken-4" data-badge-caption="unreleased"></span>
+                      <span class="new badge blue darken-3" data-badge-caption="unreleased"></span>
                     </a>
                   <% end %>
                 </div>
