@@ -30,7 +30,7 @@
 
     <%= content_tag :div, class: "row" do %>
       <%= content_tag :div, class: "col s8" do %>
-        <%= p.vanilla_text_field :value, class: "input-field" %>
+        <%= p.vanilla_text_field :value, class: "score-box input-field" %>
       <% end %>
       <%= content_tag :div, class: "col s4" do %>
         <%= p.select :kind, options_for_select({"points" => "points", "%" => "percent"},
@@ -60,7 +60,7 @@
 
     <%= content_tag :div, class: "row" do %>
       <%= content_tag :div, class: "col s8" do %>
-        <%= p.vanilla_text_field :value, class: "input-field" %>
+        <%= p.vanilla_text_field :value, class: "score-box input-field" %>
       <% end %>
       <%= content_tag :div, class: "col s4" do %>
         <%= p.select :kind, options_for_select({"points" => "points", "%" => "percent"},
