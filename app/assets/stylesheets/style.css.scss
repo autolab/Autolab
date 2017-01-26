@@ -7,7 +7,11 @@
 * Class and ID Rules. Also pseudo classes *
 *******************************************/
 
-$autolab-red: rgba(153, 0, 0, 0.9);
+/********************************************************
+* These colors have been changed to fit a UB aesthetic. *
+*            The var names have not											*
+********************************************************/
+$autolab-red: rgba(0, 91, 187, 0.9);
 $autolab-subtle-red: #C87B7E;
 $autolab-subtle-gray: #eee;
 $autolab-highlight-gray: #ccc;
@@ -44,7 +48,7 @@ html, body {
 /* Navbar Styling */
 
 div.main-header {
-  background-color: rgba(153, 0, 0, 0.9);
+  background-color: $autolab-red;
   width: 100%;
   border-bottom: 1px solid rgba(133, 0, 0, 0.9);
 }
@@ -61,7 +65,7 @@ div.main-header h2 {
   font-size: 22px;
   line-height: 54px;
   color:#fff;
-  display: inline-block;
+  
   vertical-align: top;
   margin:0 4px;
   font-weight: lighter;
@@ -105,7 +109,7 @@ div.main-header img {
   line-height: 14px;
   border-radius: 18px;
   font-weight: normal;
-  color: rgba(153, 0, 0, 0.9);
+  color: $autolab-red;
   border: 2px solid #fff;
 }
 
@@ -128,7 +132,7 @@ div.main-header img {
 }
 
 .action-links.navbar-nav li.dropdown a:hover {
-  color: rgba(153, 0, 0, 0.9);
+  color: $autolab-red;
 }
 
 .action-links .dropdown-menu .divider {
@@ -357,7 +361,7 @@ div#footer .pull-right {
 div#footer a {
   display: inline-block;
   padding: 12px;
-  color: #ccc;
+  color: $autolab-highlight-gray;
 }
 
 div#footer div.fb-like.fb_iframe_widget {
