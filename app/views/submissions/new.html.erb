@@ -34,9 +34,14 @@
       url: [@course, @assessment, @submission], method: :post,
       html: {multipart: true}  do |f| %>
 <%= f.error_messages %>
+
+<!-- Work in Progress
+
 <div class="input-field">
 	<input placeholder="Name or Email" type="text" onkeyup="filterNames(this.value.toLowerCase())" style="margin-bottom: 10px;">
 </div>
+
+-->
 <table class="verticalTable" >
 <tr>
   <th>User:</th>
