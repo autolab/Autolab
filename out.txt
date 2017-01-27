@@ -1,1 +1,1 @@
-{"utf8":"✓","authenticity_token":"+TR6XLM1cyjdGcGPQoMgdZj4ywieG1fG0rEoU74+EMbm6bhEKaWC/+GN6r+6EyuCl07xkeLv1ODRNqxZCmID1Q==","submission[embedded_quiz_form_answer]":"","q1":"2","q2":["1","3"],"group1":"yellow","first_name":"Mike","last_name":"Drewitt","password":"name","email":["email@email.com","a@email.com"]}
+{"utf8":"✓","authenticity_token":"pi7wQmhl0ft/e6Kuf+v8TcXWuZj1GeKwhBPF8DQZW/H4fcMkG1bH/UWyo5hPQU5HWL7ZpyPhYcO9fuZFFjc+qA==","submission[embedded_quiz_form_answer]":"","group1":"yellow"}

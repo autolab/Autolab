@@ -32,7 +32,7 @@ module AssessmentHandin
     end
 
     # validate the handin
-    redirect_to(action: :show) && return unless validateHandin
+    redirect_to(action: :show) && return unless validateHandin || @assessment.embedded_quiz
 
     # save the submissions
     begin
@@ -239,7 +239,7 @@ private
   # submission file is okay to submit.
   #
   def validateHandin
-    if @assessment.has_custom_form
+		if @assessment.has_custom_form
       for i in 0..@assessment.getTextfields.size-1
           if params[:submission][("formfield" + (i+1).to_s).to_sym].blank?
             flash[:error] = @assessment.getTextfields[i] + " is a required field."
