@@ -190,6 +190,75 @@
 
   <% end %>
 
+  <% if @assessment.embedded_quiz %>
+      <script>
+          $.fn.serializeObject = function()
+          {
+              var o = {};
+              var a = this.serializeArray();
+              $.each(a, function() {
+                  if (o[this.name] !== undefined) {
+                      if (!o[this.name].push) {
+                          o[this.name] = [o[this.name]];
+                      }
+                      o[this.name].push(this.value || '');
+                  } else {
+                      o[this.name] = this.value || '';
+                  }
+              });
+              return o;
+          };
+
+          $(function() {
+              $('form').submit(function() {
+                  $('#results').text(JSON.stringify($('#quiz_form').serializeObject()));
+                  showForm();
+                  //return false;
+              });
+          });
+
+          function showForm() {
+              var save = document.getElementById('results').innerHTML;
+              console.log(save);
+              document.getElementById("submission_embedded_quiz_form_answer").value = save;
+          }
+
+      </script>
+
+      <% if @cud.instructor %>
+          <div class = "row">
+            <div class = "col s12 offset-s0">
+              <b>This is how students will view this assessment:</b>
+            </div>
+          </div>
+      <% end %>
+
+      <div class = "row">
+        <div class = "col s10 offset-s1">
+          <hr>
+          <%= form_for @submission, url: {action: :handin}, :html => {:id => "quiz_form"}, method: :post do |f| %>
+
+              <%= f.hidden_field :embedded_quiz_form_answer, value: "" %>
+
+              <%# Render instructor's custom quiz form elements. %>
+              <p>
+                <% begin %>
+                    <%= @assessment.embedded_quiz_form_data.html_safe %>
+                <% rescue %>
+                  <p style = "color: red">Your assessment has no content yet! </p>
+                <% end %>
+              </p>
+
+              <input type="submit" class = "btn primary handin-btn">
+          <% end %>
+          <hr>
+        </div>
+      </div>
+
+      <pre class="hide" id="results"></pre>
+
+  <% end %>
+
   <% if @assessment.exam? %>
       <% if download_access %>
           <p>Students will not be able to view previous exam submissions.</p>

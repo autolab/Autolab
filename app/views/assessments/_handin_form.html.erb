@@ -64,7 +64,7 @@
               </table>
             <% end %>
           <% end %>
-        <% elsif ! @assessment.disable_handins? then %>
+        <% elsif ! @assessment.disable_handins? and !@assessment.embedded_quiz then %>
           <%= form_for @submission, url: {action: :handin}, :html => {:name => "submissionForm", :onclick => "return validateIntegrity();"}, multipart: true do |f| %>
             <% if @assessment.has_custom_form then %>
               <% if @assessment.getLanguages.size > 0 %>

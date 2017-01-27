@@ -145,6 +145,20 @@ div.main-header img {
 	border-color: transparent !important;
 }
 
+/* embedded-form */
+.embedded-form {
+  display: inline-block;
+  cursor: pointer;
+}
+
+input[type="file"].upload_embedded {
+    display: none;
+}
+
+#upload_button .control-label {
+  display: none;
+}
+
 .hide-all {
   display: none;
 }
