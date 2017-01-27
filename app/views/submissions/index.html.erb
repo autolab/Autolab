@@ -56,6 +56,14 @@
 <p>
 <table class="prettyBorder" id="submissions">
   <% headers = ["Submitted By", "Version", "Submission Date (YYYY-MM-DD)", "File", "IP Address", "Actions", "isLatest"] %>
+  <% if @assessment.has_custom_form then %>
+    <% if @assessment.getLanguages.size > 0 then %>
+        <% headers.push("Language") %>
+    <% end %>
+    <% for i in 0..@assessment.getTextfields.size - 1 do %>
+        <% headers.push(@assessment.getTextfields[i]) %>
+    <% end %>
+  <% end %>
   <thead>
     <tr>
       <th><input type="checkbox" id="selectall"/></th>
@@ -104,6 +112,14 @@
       </td>
       <td><%= submission.latest? %>
       </td>
+      <% if @assessment.has_custom_form then %>
+        <% if @assessment.getLanguages.size > 0 then %>
+            <td><%= submission.getSettings["Language"] %></td>
+        <% end %>
+        <% for i in 0..@assessment.getTextfields.size-1 do %>
+            <td><%= submission.getSettings[@assessment.getTextfields[i]] %></td>
+        <% end %>
+     <% end %>
     </tr>
   <% end %>
   </tbody>

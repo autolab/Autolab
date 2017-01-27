@@ -227,6 +227,14 @@ private
   # submission file is okay to submit.
   #
   def validateHandin
+    if @assessment.has_custom_form
+      for i in 0..@assessment.getTextfields.size-1
+          if params[:submission][("formfield" + (i+1).to_s).to_sym].blank?
+            flash[:error] = @assessment.getTextfields[i] + " is a required field."
+            return false
+          end
+      end
+    end
     # Make sure that handins are allowed
     if @assessment.disable_handins?
       flash[:error] = "Sorry, handins are disabled for this assessment."

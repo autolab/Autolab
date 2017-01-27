@@ -643,7 +643,7 @@ private
   def new_assessment_params
     ass = params.require(:assessment)
     ass[:category_name] = params[:new_category] unless params[:new_category].blank?
-    ass.permit(:name, :display_name, :category_name, :has_svn, :group_size)
+    ass.permit(:name, :display_name, :category_name, :has_svn, :has_lang, :group_size)
   end
 
   def edit_assessment_params

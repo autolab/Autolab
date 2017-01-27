@@ -1,10 +1,11 @@
 require "utilities"
 require "association_cache"
-
+require "json"
 ##
 # Submissions jointly belong to Assessments and CourseUserData
 #
 class Submission < ActiveRecord::Base
+  attr_accessor :lang, :formfield1, :formfield2, :formfield3
   trim_field :filename, :notes, :mime_type
 
   belongs_to :course_user_datum
@@ -101,8 +102,43 @@ class Submission < ActiveRecord::Base
     elsif upload["tar"]
       self.mime_type = "application/x-tgz"
     end
-
+    save_additional_form_fields(upload)
     self.save!
+    settings_file = course_user_datum.user.email + "_" +
+               version.to_s + "_" + assessment.handin_filename +
+               ".settings.json"
+
+		settings_path = File.join(Rails.root, "courses",
+                     course_user_datum.course.name,
+                     assessment.name, directory, settings_file)
+
+		File.open(settings_path, "wb") { |f| f.write(self.settings) }
+  end
+
+  def save_additional_form_fields(params)
+      form_hash = Hash.new
+      if params["lang"]
+          form_hash["Language"] = params["lang"]
+      end
+      if params["formfield1"]
+          form_hash[assessment.getTextfields[0]] = params["formfield1"]
+      end
+      if params["formfield2"]
+          form_hash[assessment.getTextfields[1]] = params["formfield2"]
+      end
+      if params["formfield3"]
+          form_hash[assessment.getTextfields[2]] = params["formfield3"]
+      end
+      self.settings = form_hash.to_json
+      self.save!
+  end
+
+  def getSettings
+      if self.settings
+          return JSON.parse(self.settings)
+      else
+          return Hash.new
+      end
   end
 
   def archive_handin
