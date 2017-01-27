@@ -82,7 +82,7 @@
       <%= t.text_field :value, :size => 18 %>
       <%= t.select :kind, options_for_select({"points" => "points", "%" => "percent"}, :selected => (@editCUD.tweak ? @editCUD.tweak.kind : "points")) %>
     <% end %>
-    </td>
+    </td>btn primary handin-btn
     <td class="smallText">A tweak is a positive or negative value that adjusts the student's course average.<br>Ex: A tweak of 5 points would increase the student's course average by 5 points. </td>
   </tr>
 
@@ -99,8 +99,8 @@
   </table>
   <br>
   <br>
-  <input id="user_submit" name="commit" type="submit" class="waves-effect waves-light btn primary" value="Save Changes" onclick="formvalidation(this.parentNode); return false;">
-  <!--<%= f.submit 'Save Changes' , {:class=>"waves-effect waves-light btn primary"} %>-->
+  <input id="user_submit" name="commit" type="submit" class="btn primary" value="Save Changes" onclick="formvalidation(this.parentNode); return false;">
+  <!--<%= f.submit 'Save Changes' , {:class=>""} %>-->
   <%= if @cud.instructor? then
         link_to raw('<span class="btn">Delete User</span>'), [:destroyConfirm, @course, @editCUD]
   end %>
