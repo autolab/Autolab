@@ -1,0 +1,1 @@
+{"utf8":"✓","authenticity_token":"pi7wQmhl0ft/e6Kuf+v8TcXWuZj1GeKwhBPF8DQZW/H4fcMkG1bH/UWyo5hPQU5HWL7ZpyPhYcO9fuZFFjc+qA==","submission[embedded_quiz_form_answer]":"","group1":"yellow"}
