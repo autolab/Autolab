@@ -95,7 +95,11 @@ class Submission < ActiveRecord::Base
     self.filename = filename
 
     if upload["file"]
-      self.mime_type = upload["file"].content_type
+      begin
+        self.mime_type = upload["file"].content_type
+      rescue
+        self.mime_type = nil
+      end
       self.mime_type = "text/plain" unless mime_type
     elsif upload["local_submit_file"]
       self.mime_type = "text/plain"

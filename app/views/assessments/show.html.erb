@@ -190,6 +190,54 @@
 
   <% end %>
 
+  <% if @assessment.embedded_quiz %>
+      <script>
+          function showForm() {
+              formElements = document.forms["quiz_form"];
+              responses = []
+
+              // skip hidden element and the submit button
+              for (i = 1; i < formElements.length - 1; i++) {
+                  responses.push(formElements[i].value)
+              }
+
+              // The server will always grab the information from the retVal field
+              formElements["submission_embedded_quiz_form_answer"].value = JSON.stringify(responses);
+              document.getElementById("server_info").innerHTML = returnString;
+          }
+      </script>
+
+      <% if @cud.instructor %>
+          <div class = "row">
+            <div class = "col s12 offset-s0">
+              <b>This is how students will view this assessment:</b>
+            </div>
+          </div>
+      <% end %>
+
+      <div class = "row">
+        <div class = "col s10 offset-s1">
+          <hr>
+          <%= form_for @submission, url: {action: :handin}, :html => {:name => "quiz_form", :onclick => "return showForm();"}, method: :post do |f| %>
+
+              <%= f.hidden_field :embedded_quiz_form_answer %>
+
+              <%# Render instructor's custom quiz form elements. %>
+              <p>
+                <% begin %>
+                    <%= @assessment.embedded_quiz_form_data.html_safe %>
+                <% rescue %>
+                  <p style = "color: red">Your assessment has no content yet! </p>
+                <% end %>
+              </p>
+
+              <input type = "submit" class = "btn primary handin-btn">
+          <% end %>
+          <hr>
+        </div>
+      </div>
+  <% end %>
+
   <% if @assessment.exam? %>
       <% if download_access %>
           <p>Students will not be able to view previous exam submissions.</p>

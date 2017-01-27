@@ -182,7 +182,7 @@ class AssessmentsController < ApplicationController
       ass_name = @assessment.display_name.downcase.gsub(/[^a-z0-9]/, "")
 
       if ass_name.blank?
-        flash[:error] = "Assessment name cannot be blank"
+        flash[:error] = "Assessment name cannot be blank!"
         redirect_to(action: :installAssessment)
         return
       end
@@ -204,6 +204,16 @@ class AssessmentsController < ApplicationController
     @assessment.quizData = ""
     @assessment.max_submissions = params.include?(:max_submissions) ? params[:max_submissions] : -1
 
+    if @assessment.embedded_quiz
+      begin
+        @assessment.embedded_quiz_form_data = params[:assessment][:embedded_quiz_form].read
+      rescue
+        flash[:error] = "Embedded quiz form cannot be empty!"
+        redirect_to(action: :installAssessment)
+        return
+      end
+    end
+
     begin
       @assessment.construct_folder
     rescue StandardError => e
@@ -214,9 +224,9 @@ class AssessmentsController < ApplicationController
       rescue StandardError => e2
         flash[:error] += "An error occurred (#{e2}} " \
           " while recovering from a previous error (#{flash[:error]})"
+        redirect_to(action: :installAssessment)
+        return
       end
-      redirect_to(action: :installAssessment)
-      return
     end
 
     # From here on, if something weird happens, we rollback
@@ -516,6 +526,12 @@ class AssessmentsController < ApplicationController
 
   action_auth_level :update, :instructor
   def update
+
+    if not params[:assessment][:embedded_quiz_form].nil?
+      @assessment.embedded_quiz_form_data = params[:assessment][:embedded_quiz_form].read
+      @assessment.save!
+    end
+
     flash[:success] = "Saved!" if @assessment.update!(edit_assessment_params)
 
     redirect_to(action: :edit) && return
@@ -643,7 +659,7 @@ private
   def new_assessment_params
     ass = params.require(:assessment)
     ass[:category_name] = params[:new_category] unless params[:new_category].blank?
-    ass.permit(:name, :display_name, :category_name, :has_svn, :has_lang, :group_size)
+    ass.permit(:name, :display_name, :category_name, :has_svn, :has_lang, :group_size, :embedded_quiz, :embedded_quiz_form, :embedded_quiz_form_data)
   end
 
   def edit_assessment_params
@@ -657,6 +673,7 @@ private
       ass.delete(:version_penalty_attributes)
       @assessment.version_penalty.destroy unless @assessment.version_penalty.nil?
     end
+
     ass.permit!
   end
 

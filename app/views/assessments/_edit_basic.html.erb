@@ -25,6 +25,8 @@
 	<%= f.text_field :writeup, help_text: "File in the assessment directory or URL containing instructions to students. E.g., 'writeup/malloclab.pdf', 'http://school.edu/class/writeup.pdf'" %>
 </div>
 
+<%= render "upload_form", f: f %>
+
 <h4>Additional Submission Form</h4>
 <div class="form-group">
     <span class="" onclick="validate();"><%= f.check_box :has_custom_form, class: "filled-in",
