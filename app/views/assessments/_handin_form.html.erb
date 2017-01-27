@@ -76,7 +76,7 @@
                       <p><%= f.label ("formfield" + i.to_s).to_sym, @assessment.getTextfields[i-1] + " *:" %></p>
                       <p><%= f.text_field ("formfield" + i.to_s).to_sym %></p>
                   <% end %>
-                  <p>* denotes required fields. The submission cannot be completed without filling out the required fields.</p>
+                  <p class="help-block">* denotes required fields. The submission cannot be completed without filling out the required fields.</p>
               <% else %>
                   <% for i in 1..@assessment.getTextfields.size do %>
                       <p><%= f.label ("formfield" + i.to_s).to_sym, @assessment.getTextfields[i-1] + " *:"%></p>
