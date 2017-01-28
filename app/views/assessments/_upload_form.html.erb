@@ -1,4 +1,4 @@
-<%= f.check_box :embedded_quiz, { onclick: "boxClicked();" } %>
+<%= f.check_box :embedded_quiz, style: "margin-top: 0.8rem;", onclick: "boxClicked();" %>
 
 <script>
     function boxClicked() {
@@ -31,11 +31,12 @@
 </style>
 
 <label class="custom-file-upload">
-      <span class = "btn primary" id = "upload_button">
-        Upload File...
+      <span class = "btn primary" id="upload_button">
+        Embedded Form
         <%= f.file_field :embedded_quiz_form %>
       </span>
 </label>
+
 
 <script>
     boxClicked();

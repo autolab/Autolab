@@ -192,19 +192,50 @@
 
   <% if @assessment.embedded_quiz %>
       <script>
-          function showForm() {
-              formElements = document.forms["quiz_form"];
-              responses = []
+//          function showForm() {
+//              var formElements = document.forms["quiz_form"];
+//              var map = {}
+//
+//              // skip hidden element and the submit button
+//              for (i = 3; i < formElements.length - 1; i++) {
+//
+//                  var curElement = formElements[i].value;
+//                  if (Array.isArray(curElement)) {
+//                      curElement = curElement.toString();
+//                  }
+//
+//                  map[formElements[i].id] = curElement;
+//              }
+//
+//              // The server will always grab the information from the retVal field
+//              formElements["submission_embedded_quiz_form_answer"].value = JSON.stringify(map);
+//              document.getElementById("server_info").innerHTML = returnString;
+//          }
 
-              // skip hidden element and the submit button
-              for (i = 1; i < formElements.length - 1; i++) {
-                  responses.push(formElements[i].value)
-              }
+        $.fn.serializeObject = function()
+        {
+            var o = {};
+            var a = this.serializeArray();
+            $.each(a, function() {
+                if (o[this.name] !== undefined) {
+                    if (!o[this.name].push) {
+                        o[this.name] = [o[this.name]];
+                    }
+                    o[this.name].push(this.value || '');
+                } else {
+                    o[this.name] = this.value || '';
+                }
+            });
+            return o;
+        };
 
-              // The server will always grab the information from the retVal field
-              formElements["submission_embedded_quiz_form_answer"].value = JSON.stringify(responses);
-              document.getElementById("server_info").innerHTML = returnString;
-          }
+        $(function() {
+            $('form').submit(function() {
+                $('#results').text(JSON.stringify($('form').serializeObject()));
+                return false;
+            });
+        });
+
       </script>
 
       <% if @cud.instructor %>
@@ -218,9 +249,9 @@
       <div class = "row">
         <div class = "col s10 offset-s1">
           <hr>
-          <%= form_for @submission, url: {action: :handin}, :html => {:name => "quiz_form", :onclick => "return showForm();"}, method: :post do |f| %>
+          <%= form_for @submission, url: {action: :handin}, :html => {:name => "quiz_form", :onsubmit => "return showForm();"}, method: :post do |f| %>
 
-              <%= f.hidden_field :embedded_quiz_form_answer %>
+              <%= f.hidden_field :embedded_quiz_form_answer, value: "" %>
 
               <%# Render instructor's custom quiz form elements. %>
               <p>
@@ -235,6 +266,10 @@
           <% end %>
           <hr>
         </div>
+      </div>
+      <button onclick="serializeObject()">Click</button>
+      <div id="results">
+
       </div>
   <% end %>
 
