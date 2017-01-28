@@ -30,7 +30,7 @@ class ApplicationController < ActionController::Base
     rescue_from Exception, with: :render_error
     rescue_from CourseUserDatum::AuthenticationFailed do |e|
       COURSE_LOGGER.log("AUTHENTICATION FAILED: #{e.user_message}, #{e.dev_message}")
-      respond_to do |format| 
+      respond_to do |format|
          format.html {
             flash[:error] = e.user_message
             redirect_to root_path
@@ -141,8 +141,7 @@ protected
     @course = Course.find_by(name: course_name) if course_name
 
     unless @course
-      flash[:error] = "Course #{params[:course_name]} does not exist!"
-      redirect_to(controller: :home, action: :error) && return
+      render :file => "#{Rails.root}/public/404.html",  :status => 404
     end
 
     # set course logger
