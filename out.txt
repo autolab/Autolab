@@ -1,1 +1,1 @@
-{"utf8":"✓","authenticity_token":"/D8JzfKxBwA5rV0EiAEYH/zdE9bPGnxSXS/MZWP57avOpZNxYHcx+kC05qvfN8O/WxmIL6QzQXnrhiKnAn3V6g==","submission[embedded_quiz_form_answer]":"","first_name":"","last_name":"","password":"","email":["",""],"integrity_checkbox":"1"}
+{"utf8":"✓","authenticity_token":"m0MZBKA+LusT6po27A7vKavQYZUitKG85lCNa9BC6vxF9lw8oAw4Gj1phTTOLrlc5HLXXu+uz5rylI2B+tZfRw==","submission[embedded_quiz_form_answer]":"","first_name":"","last_name":"","password":"","email":["",""],"integrity_checkbox":"1"}

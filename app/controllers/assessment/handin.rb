@@ -31,8 +31,18 @@ module AssessmentHandin
 
     end
 
-    # validate the handin
-    redirect_to(action: :show) && return unless validateHandin || @assessment.embedded_quiz
+    if @assessment.embedded_quiz
+      if @assessment.disable_handins?
+        flash[:error] = "Sorry, handins are disabled for this assessment."
+        redirect_to(action: :show)
+        return false
+      end
+    else
+
+      # validate the handin
+      redirect_to(action: :show) && return unless validateHandin
+
+    end
 
     # save the submissions
     begin
