@@ -25,7 +25,34 @@
 	<%= f.text_field :writeup, help_text: "File in the assessment directory or URL containing instructions to students. E.g., 'writeup/malloclab.pdf', 'http://school.edu/class/writeup.pdf'" %>
 </div>
 
-<%= render "upload_form", f: f %>
+<div class="embedded-form" style="margin-top: 2rem;">
+  <%= f.check_box :embedded_quiz, display_name: "Embedded Form", style: "margin-top: 0.8rem;", onclick: "boxClicked();" %>
+
+  <div class="row">
+    <label class="custom-file-upload">
+          <span class = "btn primary" id="upload_button">
+            Embedded Form
+            <%= f.file_field :embedded_quiz_form, class: "upload_embedded" %>
+          </span>
+    </label>
+    <% if @assessment.embedded_quiz_form_data.nil? %>
+        <input type="text" id="file_name" readonly value="Select to Upload a File.">
+    <% else %>
+        <input type="text" id="file_name" readonly value="Upload will replace existing file." class="red-text">
+    <% end %>
+
+  </div>
+
+  <p class="help-block">The inputs will be passed as a JSON object. The key will return the name attribute,
+    and the value acting as itself.</p>
+</div>
+
+<script>
+    document.getElementById("assessment_embedded_quiz_form").onchange = function(e) {
+        document.getElementById("file_name").value = document.getElementById("assessment_embedded_quiz_form").value.split(/(\\|\/)/g).pop();
+    }
+</script>
+
 
 <h4>Additional Submission Form</h4>
 <div class="form-group">

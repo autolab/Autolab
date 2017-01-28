@@ -1,15 +1,5 @@
-<%= f.check_box :embedded_quiz, style: "margin-top: 0.8rem;", onclick: "boxClicked();" %>
 
-<script>
-    function boxClicked() {
 
-        if (document.getElementById("assessment_embedded_quiz").checked) {
-            document.getElementById("upload_button").style.display = ""
-        } else {
-            document.getElementById("upload_button").style.display = "none"
-        }
-    }
-</script>
 
 <style>
 
@@ -30,12 +20,7 @@
 
 </style>
 
-<label class="custom-file-upload">
-      <span class = "btn primary" id="upload_button">
-        Embedded Form
-        <%= f.file_field :embedded_quiz_form %>
-      </span>
-</label>
+
 
 
 <script>
