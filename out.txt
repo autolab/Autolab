@@ -1,1 +1,5 @@
+<<<<<<< HEAD
 {"utf8":"✓","authenticity_token":"GBeLNUj8qGT9uZgTUO3AUEl6SdLKbg5DJ+lkEvflM6WAXTuQpG6iwFuQVmJeyDEoVEgAxfrFRuQPzS/3NIaGnw==","submission[embedded_quiz_form_answer]":"","group1":"red","q2":"2","q3":["1","2","3"],"q4":["1","2","3"]}
+=======
+{"utf8":"✓","authenticity_token":"m0MZBKA+LusT6po27A7vKavQYZUitKG85lCNa9BC6vxF9lw8oAw4Gj1phTTOLrlc5HLXXu+uz5rylI2B+tZfRw==","submission[embedded_quiz_form_answer]":"","first_name":"","last_name":"","password":"","email":["",""],"integrity_checkbox":"1"}
+>>>>>>> Autolab2.0

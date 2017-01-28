@@ -1,5 +1,6 @@
 <% content_for :javascripts do %>
   <%= javascript_include_tag "assessments_show" %>
+  <%= javascript_include_tag 'validateIntegrity.js' %>
 <% end %>
 
 <%# Make sure these options are not on the general user options list.  %>
@@ -236,7 +237,7 @@
       <div class = "row">
         <div class = "col s10 offset-s1">
           <hr>
-          <%= form_for @submission, url: {action: :handin}, :html => {:id => "quiz_form"}, method: :post do |f| %>
+          <%= form_for @submission, url: {action: :handin}, :html => {:id => "quiz_form", :onclick => "return validateIntegrity();"}, method: :post do |f| %>
 
               <%= f.hidden_field :embedded_quiz_form_answer, value: "" %>
 
@@ -249,7 +250,15 @@
                 <% end %>
               </p>
 
-              <input type="submit" class = "btn primary handin-btn">
+              <!-- Academic integrity checkbox -->
+              <%= check_box_tag(:integrity_checkbox) %>
+              <%= label_tag(:integrity_checkbox, "I affirm that I have complied with this course's academic integrity policy as defined in the syllabus.") %>
+
+              <div class = "row" style = "margin-top: 10px !important">
+                <input type="submit" class = "btn primary handin-btn" onclick = "setSubmitClicked()">
+                <span id="submission_error" style = "margin-left: 10px !important; color: red"></span>
+              </div>
+
           <% end %>
           <hr>
         </div>
