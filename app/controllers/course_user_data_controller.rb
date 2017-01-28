@@ -31,8 +31,21 @@ class CourseUserDataController < ApplicationController
       if user
         @newCUD.user = user
       else
-        flash[:error] = "The user with email #{email} could not be created  "
-        redirect_to(action: "new") && return
+        # Here I'm checking if any of three required fields are blank.
+        # If one of them is, we know what the error is and we can flash
+        # that to the user.
+        if cud_parameters[:user_attributes][:email] == "" or
+           cud_parameters[:user_attributes][:first_name] == "" or
+           cud_parameters[:user_attributes][:last_name] == ""
+
+          flash[:error] = "All required fields must be filled"
+          redirect_to(action: "new") && return
+        else
+          # If we get to this point, then we don't really know for certain
+          # what the error is, so we just flash an error message.
+          flash[:error] = "The user with email #{email} could not be created"
+          redirect_to(action: "new") && return
+        end
       end
 
     else
