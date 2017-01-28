@@ -192,49 +192,36 @@
 
   <% if @assessment.embedded_quiz %>
       <script>
-//          function showForm() {
-//              var formElements = document.forms["quiz_form"];
-//              var map = {}
-//
-//              // skip hidden element and the submit button
-//              for (i = 3; i < formElements.length - 1; i++) {
-//
-//                  var curElement = formElements[i].value;
-//                  if (Array.isArray(curElement)) {
-//                      curElement = curElement.toString();
-//                  }
-//
-//                  map[formElements[i].id] = curElement;
-//              }
-//
-//              // The server will always grab the information from the retVal field
-//              formElements["submission_embedded_quiz_form_answer"].value = JSON.stringify(map);
-//              document.getElementById("server_info").innerHTML = returnString;
-//          }
+          $.fn.serializeObject = function()
+          {
+              var o = {};
+              var a = this.serializeArray();
+              $.each(a, function() {
+                  if (o[this.name] !== undefined) {
+                      if (!o[this.name].push) {
+                          o[this.name] = [o[this.name]];
+                      }
+                      o[this.name].push(this.value || '');
+                  } else {
+                      o[this.name] = this.value || '';
+                  }
+              });
+              return o;
+          };
 
-        $.fn.serializeObject = function()
-        {
-            var o = {};
-            var a = this.serializeArray();
-            $.each(a, function() {
-                if (o[this.name] !== undefined) {
-                    if (!o[this.name].push) {
-                        o[this.name] = [o[this.name]];
-                    }
-                    o[this.name].push(this.value || '');
-                } else {
-                    o[this.name] = this.value || '';
-                }
-            });
-            return o;
-        };
+          $(function() {
+              $('form').submit(function() {
+                  $('#results').text(JSON.stringify($('#quiz_form').serializeObject()));
+                  showForm();
+                  //return false;
+              });
+          });
 
-        $(function() {
-            $('form').submit(function() {
-                $('#results').text(JSON.stringify($('form').serializeObject()));
-                return false;
-            });
-        });
+          function showForm() {
+              var save = document.getElementById('results').innerHTML;
+              console.log(save);
+              document.getElementById("submission_embedded_quiz_form_answer").value = save;
+          }
 
       </script>
 
@@ -249,7 +236,7 @@
       <div class = "row">
         <div class = "col s10 offset-s1">
           <hr>
-          <%= form_for @submission, url: {action: :handin}, :html => {:name => "quiz_form", :onsubmit => "return showForm();"}, method: :post do |f| %>
+          <%= form_for @submission, url: {action: :handin}, :html => {:id => "quiz_form"}, method: :post do |f| %>
 
               <%= f.hidden_field :embedded_quiz_form_answer, value: "" %>
 
@@ -267,10 +254,9 @@
           <hr>
         </div>
       </div>
-      <button onclick="serializeObject()">Click</button>
-      <div id="results">
 
-      </div>
+      <pre id="results"></pre>
+
   <% end %>
 
   <% if @assessment.exam? %>
