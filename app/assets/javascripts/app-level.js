@@ -5,7 +5,7 @@
 $(document).ready(function() {
 	$(".moment-date-time").each(function(ind) {
 		$el = $(this);
-		var format = $el.data("format")  || "MMMM Do YYYY, h:mm a";
+		var format = $el.data("format")  || "MMMM Do YYYY, HH:mm:ss";
 		var unformattedDate = $el.html();
 		var formattedDate = moment(unformattedDate, "YYYY-MM-DD hh:mm ZZ").format(format);
 		$el.html(formattedDate);
