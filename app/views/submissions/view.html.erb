@@ -79,14 +79,12 @@
     <div id="code-box">
     <% # these lines can't have white space due to the styling for pre and code tages %>
     <% # anything wrapped in a <pre><code> will be highlighted by highlightsjs %>
-    <pre><code id="code-block"><ol id="code-list"><% 
+    <pre><code id="code-block"><ol id="code-list"><%
       @data.each_with_index do |(code, annotation), index|
-        %><li id="line-<%= index+1 %>"><code><%= 
-          code 
-        %></code><% if @cud.instructor? or @cud.course_assistant? then %><span class="add-annotation-btn glyphicon glyphicon-plus" id="add-btn-<%= index+1 %>"></span><% end %><div class="annotations-container"></div></li><% 
+        %><li id="line-<%= index+1 %>"><code><%=
+          code
+        %></code><% if @cud.instructor? or @cud.course_assistant? then %><span class="add-annotation-btn glyphicon glyphicon-plus" id="add-btn-<%= index+1 %>"></span><% end %><div class="annotations-container"></div></li><%
       end %></ol></code></pre>
   </div>
   </div>
 </div>
-
-
