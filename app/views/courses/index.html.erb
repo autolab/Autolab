@@ -15,12 +15,14 @@
 
         <div class="col s12 m4">
           <div class="card hoverable">
-            <div class="card-content red darken-4">
-              <div class="row">
-                <div class="col <%= not_student ? 's9' : 's12' %>"><h4><%= link_to course.full_name, course_path(course), class: "card-title white-text", title: "Go to course page" %></h4></div>
-                <% if not_student %> <div class="col s3"><span class="new badge padded-badge" data-badge-caption="Instructor"></span></div> <% end %>
+            <%= link_to course_path(course), title: "Go to Course Page" do %>
+              <div class="card-content red darken-4">
+                <div class="row">
+                  <div class="col <%= not_student ? 's9' : 's12' %>"><h4><span class="card-title white-text"><%= course.full_name %></span></h4></div>
+                  <% if not_student %> <div class="col s3"><span class="new badge padded-badge" data-badge-caption="Instructor"></span></div> <% end %>
+                </div>
               </div>
-            </div>
+            <% end %>
 
             <% if category != :completed %>
               <div class="collection red darken-4">
