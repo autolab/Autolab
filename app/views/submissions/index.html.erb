@@ -105,10 +105,10 @@
           <% end %>
           <%= link_to "Edit", [:edit, @course, @assessment, submission],
               {:title=>"Edit the grading properties of this submission",
-                :class=>"waves-effect waves-light btn small"} %>
+                :class=>"btn small"} %>
           <%= link_to "Destroy", destroyConfirm_course_assessment_submission_path(@course, @assessment, submission),
               {:title=>"Destroy this submission forever",
-                :class=>"waves-effect waves-light btn small"} %>
+                :class=>"btn small"} %>
       </td>
       <td><%= submission.latest? %>
       </td>
