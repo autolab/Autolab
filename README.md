@@ -45,7 +45,7 @@ __For Mac users__: Follow the step-by-step instruction below (we are working on 
 	```
  At this point, confirm that `rbenv` is working (depending on your shell, you might need to logout and log back in):
 
-  ```
+  ```sh
   $ which ruby
   ~/.rbenv/shims/ruby
 
@@ -55,7 +55,7 @@ __For Mac users__: Follow the step-by-step instruction below (we are working on 
 
 4. Install `bundler`:
 
-  ```
+  ```sh
   gem install bundler
   rbenv rehash
   ```
@@ -72,14 +72,14 @@ __For Mac users__: Follow the step-by-step instruction below (we are working on 
 
 6.  Configure your SQLite database with the following command.
 
-   ```console
+   ```sh
    cd ../config
    sed -n '12,16p' < database.yml.template | sed -e "s/#//g" >> database.yml
    ```
 
 7. Set up initializer for Devise Auth systems with a unique key.
    
-   ```console
+   ```sh
    cp initializers/devise.rb.template initializers/devise.rb
    sed -i "s/<YOUR-SECRET-KEY>/`bundle exec rake secret`/g" initializers/devise.rb
    cd ..
