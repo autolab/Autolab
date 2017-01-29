@@ -84,7 +84,7 @@ __For Mac users__: Follow the step-by-step instruction below (we are working on 
    sed -i "s/<YOUR-SECRET-KEY>/`bundle exec rake secret`/g" initializers/devise.rb
    cd ..
    ```
-8. Make sure you fill in `<YOUR_WEBSITE>` in the `initializers/devise.rb` file.
+8. Make sure you fill in `<YOUR_WEBSITE>` in the `config/initializers/devise.rb` file.
 
 9. Create and initialize the database tables:
 
