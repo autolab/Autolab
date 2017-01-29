@@ -117,7 +117,8 @@ __For Mac users__: Follow the step-by-step instruction below (we are working on 
 13. Start rails server:
 
 	```sh
-	bundle exec rails s -p 3000
+	chmod +x start.sh
+	./start.sh
 	```
 
 14. Go to <yoururl>:3000 to see if the application is running. You can use the `Developer Login` option with the email "admin@foo.bar".
