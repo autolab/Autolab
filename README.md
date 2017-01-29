@@ -39,9 +39,9 @@ __For Mac users__: Follow the step-by-step instruction below (we are working on 
 	```
 
 	_(You might need to restart your shell at this point in order to start using your newly installed rbenv)_
-3. Install the version of ruby in the text file `.ruby-version`:
+3. Install the correct version of ruby:
 	```sh
-	rbenv install 2.2.0
+	rbenv install $(cat .ruby-version)
 	```
  At this point, confirm that `rbenv` is working (depending on your shell, you might need to logout and log back in):
 
