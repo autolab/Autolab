@@ -60,63 +60,67 @@ __For Mac users__: Follow the step-by-step instruction below (we are working on 
   rbenv rehash
   ```
 
-5. `cd` into `bin` and install the required gems:
+5. Install the required gems:
 
   ```sh
+  cd bin
   bundle install
   ```
-  You need to have [MySQL installed](http://dev.mysql.com/downloads/mysql/) before hand.
   
   As Gems get updated, this can have problems. Check the [FAQ] (https://github.com/autolab/Autolab/wiki/FAQ).
 
 
-6.  Configure your database next. You need to fill the `username` and `password` fields on 		`config/database.yml.template` and rename it to `config/database.yml`. Depending on how you installed MySQL and which platform you're running on, you might have to change the database socket setting in this file. If you're having trouble, look at the [FAQ] (https://github.com/autolab/Autolab/wiki/FAQ)
+6.  Configure your SQLite database with the following command.
+
+   ```console
+   cd ../config
+   sed -n '12,16p' < database.yml.template | sed -e "s/#//g" >> database.yml
+   ```
 
 7. Set up initializer for Devise Auth systems with a unique key.
    
    ```console
-   cp config/initializers/devise.rb.template config/initializers/devise.rb
+   cp initializers/devise.rb.template initializers/devise.rb
+   sed -i "s/<YOUR-SECRET-KEY>/`bundle exec rake secret`/g" initializers/devise.rb
+   cd ..
    ```
+8. Make sure you fill in `<YOUR_WEBSITE>` in the `initializers/devise.rb` file.
 
-   Make sure you fill in `<YOUR_WEBSITE>` and insert a new `secret_key` in devise.rb. You can get a random token with
-  
-   ```sh
-   $ bundle exec rake secret
-   ```
-
-8. Create and initialize the database tables:
+9. Create and initialize the database tables:
 
 	```sh
 	bundle exec rake db:create
-  # if you have no existing database:
-	bundle exec rake db:reset
-  # if you already have a database whose data you want to preserve:
-  bundle exec rake db:migrate
 	```
 
   Do not forget to use `bundle exec` in front of every rake/rails command.
 
 
-9. (Optional) Populate dummy data for development purposes:
+10. (Optional) Populate dummy data for development purposes:
 
 	```sh
-	rake autolab:populate
+	bundle exec rake autolab:populate
 	```
 
 	(#TODO: make it so that setup.sh initiates the directories)
 
 
-10. (Optional) Setup [Tango Service] (https://github.com/autolab/Tango) following the [instructions on the wiki] (https://github.com/autolab/Tango/wiki/Setting-up-Tango-server-and-VMs).
+11. (Optional) Setup [Tango Service] (https://github.com/autolab/Tango) following the [instructions on the wiki] (https://github.com/autolab/Tango/wiki/Setting-up-Tango-server-and-VMs).
 
-11. Create the autogradeConfig file by editing `config/autogradeConfig.rb.template` and renaming to  `config/autogradeConfig.rb`.
+12. Create the autograding configuations file.
 
-12. Start rails server:
+   ```sh
+   cp config/autogradeConfig.rb.template config/autogradeConfig.rb
+   ```
+   
+   (#TODO: guide on integrating Tango installation into this file.)
+
+13. Start rails server:
 
 	```sh
 	bundle exec rails s -p 3000
 	```
 
-13. Go to <yoururl>:3000 to see if the application is running. You can use the `Developer Login` option with the email "admin@foo.bar".
+14. Go to <yoururl>:3000 to see if the application is running. You can use the `Developer Login` option with the email "admin@foo.bar".
 
 
 ## Testing
