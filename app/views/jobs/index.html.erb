@@ -19,7 +19,7 @@ This page shows you the status of current and recent autograding jobs.<br />
     <tr>
     <td> <%= @job[:id] %> </td> 
     <td> <%= @job[:name] %> </td> 
-    <td> <span class="moment-date-time"><%= DateTime.parse(@job[:first]).to_time.localtime.to_s %></span> </td> 
+    <td> <span class="moment-date-time"><%= DateTime.parse(@job[:first]).to_time.in_time_zone.to_s %></span> </td> 
     <td> <%= @job[:elapsed] %> </td>
 
     <% if @job[:name] == "*" then %>
@@ -47,7 +47,7 @@ This page shows you the status of current and recent autograding jobs.<br />
     <tr>
     <td> <%= @job[:id] %> </td> 
     <td> <%= @job[:name] %> </td> 
-    <td> <span class="moment-date-time"><%= DateTime.parse(@job[:first]).to_time.localtime.to_s %></span> </td> 
+    <td> <span class="moment-date-time"><%= DateTime.parse(@job[:first]).to_time.in_time_zone.to_s %></span> </td> 
     <td> <%= @job[:elapsed] %> </td>
 
     <% if @job[:name] == "*" then %>
@@ -71,7 +71,7 @@ if @dead_jobs_view and
   @dead_jobs_view[-1] and 
   @dead_jobs_view[-1][:first] and 
   @dead_jobs_view[-1][:first] != "" then
-    since = DateTime.parse(@dead_jobs_view[-1][:first]).to_time.localtime.to_s
+    since = DateTime.parse(@dead_jobs_view[-1][:first]).to_time.in_time_zone.to_s
 end
 %>
 
@@ -92,7 +92,7 @@ end
   <% for @job in @dead_jobs_view do %>
     <tr <% if @job[:state] == "Failed" then %> style="background-color:#ce4844; color:#fff"<% end %>>    <td> <%= @job[:id] %> </td>
     <td> <%= @job[:name] %> </td> 
-    <td> <span class="moment-date-time"><%= DateTime.parse(@job[:first]).to_time.localtime.to_s %></span> </td> 
+    <td> <span class="moment-date-time"><%= DateTime.parse(@job[:first]).to_time.in_time_zone.to_s %></span> </td> 
     <td> <%= @job[:elapsed] %> </td>
     <td> <%= link_to @job[:state], {:controller => "jobs", :action => "getjob", :id=>@job[:id]} %> </td>
     </tr>

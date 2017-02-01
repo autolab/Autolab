@@ -226,7 +226,7 @@ protected
       # until now.  Dead jobs show end-to-end elapsed time.
       t1 = DateTime.parse(job[:first]).to_time
       if is_live
-        snow = Time.now.localtime.to_s
+        snow = Time.now.in_time_zone.to_s
         t2 = DateTime.parse(snow).to_time
       else
         t2 = DateTime.parse(job[:last]).to_time
