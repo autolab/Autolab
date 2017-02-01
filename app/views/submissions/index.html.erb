@@ -75,7 +75,7 @@
           %></td>
       <!-- TODO: for now, until rewrite -->
       <td style="<%= ignored_submission_style submission %>"><%= submission.version %></td>
-      <td><%= submission.created_at.strftime("%Y-%m-%d %T") %></td>
+      <td><span class="moment-date-time"><%= submission.created_at.localtime.to_s %></span></td>
       <!-- TODO: for now, until rewrite -->
       <td style="<%= ignored_submission_style submission %>">
         <% if submission.filename then %>
