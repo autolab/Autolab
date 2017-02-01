@@ -47,7 +47,7 @@
     <h3 class="annotationHeader">Summary</h3>
     <% if @problemSummaries.empty? then %>
       <% if (@cud.instructor? or @cud.course_assistant?) then %>
-        <p>Click anywhere on the code to annotate.</p>
+        <p>Hover over a line of code and click the green box to annotate.</p>
       <% else %>
         <p>Nothing to summarize yet.</p>
       <% end %>
