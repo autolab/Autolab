@@ -76,6 +76,15 @@ __For Mac users__: Follow the step-by-step instruction below (we are working on 
    cd ../config
    sed -n '12,16p' < database.yml.template | sed -e "s/#//g" >> database.yml
    ```
+   
+   Autolab also supports MySQL databases. For a development installation, MySQL is not needed; however, to configure Autolab to work with a MySQL database, use the following command.
+   
+   ```sh
+   cd ../config
+   cp database.yml.template database.yml
+   ```
+   
+   Proceed to edit the database.yml template and fill in the required paramaters. If you're having trouble, look at the [FAQ] (https://github.com/autolab/Autolab/wiki/FAQ)
 
 7. Set up initializer for Devise Auth systems with a unique key.
    
@@ -121,7 +130,7 @@ __For Mac users__: Follow the step-by-step instruction below (we are working on 
 	./start.sh
 	```
 
-14. Go to <yoururl>:3000 to see if the application is running. You can use the `Developer Login` option with the email "admin@foo.bar".
+14. Go to localhost:3000 to see if the application is running. You can use the `Developer Login` option with the email "admin@foo.bar".
 
 
 ## Testing
