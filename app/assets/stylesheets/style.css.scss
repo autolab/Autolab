@@ -386,6 +386,11 @@ ul.gray-box.small > li + li {
   font-size:10px;
 }
 
+/*This is the one that we're (I'm) using for required-field indicators.*/
+.redText {
+  color: red;
+}
+
 /**
 * Displayed on the home page
 **/
@@ -990,7 +995,7 @@ div.center {
 }
 
 .attachment {
-  
+
   font-weight: bold;
   color:  #eee;
   border: 2px solid #eee;

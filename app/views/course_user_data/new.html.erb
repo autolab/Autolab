@@ -8,9 +8,7 @@
     function userLookup() {
       var email_input = document.getElementById("course_user_datum_user_attributes_email").value;
       if (!email_input || email_input == "") return;
-
       $.get('<%= url_for [:userLookup, @course, remote: true]  %>',  { email: email_input }, function( data ) {
-
         if (!data)  {
           $('#course_user_datum_user_attributes_first_name').prop('disabled', false);
           $('#course_user_datum_user_attributes_last_name').prop('disabled', false);
@@ -32,13 +30,14 @@
 <% end %>
 
 <h2>Add New User to Course</h2>
+<div class=redText> * Indicates a required field</div>
 <%= form_for @newCUD, url: course_course_user_data_path do |f| %>
 
 <% if @newCUD.errors.any? %>
 	<div id="error_explanation">
 		<h2><%= pluralize(@newCUD.errors.count, "error") %>
       prohibited the data from being saved:</h2>
-			
+
 		<ul>
 			<% @newCUD.errors.full_messages.each do |msg| %>
 			<li><%= msg %></li>
@@ -49,15 +48,15 @@
 
   <table width=70% class="verticalTable" >
   <tr><th>Course</th><td><%= @course.display_name %></td></tr>
-  
+
   <%= f.fields_for :user, @newCUD.user do |u| %>
-    <tr><th>User Email: </th><td><%= u.email_field :email %></td>
+    <tr><th>User Email: <a class=redText>*</a></th><td><%= u.email_field :email %></td>
   		<td><a id="user-lookup">User Lookup</a>
       <i class='smallText'> <b>(Enter email, then click this link to fill in user info from records)</b></i></td></tr>
 
-    <tr><th>First Name</th><td><%= u.text_field :first_name %></td>
+    <tr><th>First Name <a class=redText>*</a></th><td><%= u.text_field :first_name %></td>
     <td class="smallText"></td></tr>
-    <tr><th>Last Name</th><td><%= u.text_field :last_name %></td>
+    <tr><th>Last Name <a class=redText>*</a></th><td><%= u.text_field :last_name %></td>
     <td class="smallText"></td></tr>
 
   <% end %>
@@ -80,7 +79,7 @@
       <%= t.text_field :value, :size => 18, :value => "0" %>
       <%= t.select :kind, options_for_select({"points" => "points", "%" => "percent"}, :selected => (@newCUD.tweak ? @newCUD.tweak.kind : "points")) %>
     <% end %>
-    </td> 
+    </td>
     <td class="smallText">A tweak is a positive or negative value that adjusts the student's course average.<br>Ex: A tweak of 5 points would increase the student's course average by 5 points. </td>
   </tr>
 
@@ -94,7 +93,7 @@
   <td class="smallText">Course assistants can assign scores to problems and nothing else.</td></tr>
   <% end %>
 
-  
+
   </table>
   <br>
   <input id="user_submit" class="btn primary"name="commit" type="submit" value="Save Changes" onclick="formvalidation(this.parentNode); return false;">
