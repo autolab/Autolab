@@ -425,7 +425,8 @@ file, most likely a duplicate email.  The exact error was: #{e} "
 		# Ensure that all files in Moss tmp dir are readable
     system("chmod -R a+r #{tmp_dir}")
     ActiveRecord::Base.clear_active_connections!
-    
+    # Remove non text files when making a moss run
+    `~/Autolab/script/cleanMoss #{tmp_dir}`
 		# Now run the Moss command
     @mossCmdString = @mossCmd.join(" ")
     @mossExit = $CHILD_STATUS
