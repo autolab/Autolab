@@ -8,6 +8,10 @@ require "yaml"
 class AssessmentsController < ApplicationController
   include ActiveSupport::Callbacks
 
+    rescue_from ActionView::MissingTemplate do |exception|
+      redirect_to("/home/error_404")
+  end
+
   autolab_require Rails.root.join("app", "controllers", "assessment", "handin.rb")
   include AssessmentHandin
 

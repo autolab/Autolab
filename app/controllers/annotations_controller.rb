@@ -8,6 +8,9 @@ class AnnotationsController < ApplicationController
   before_action :set_assessment
   before_action :set_submission
   before_action :set_annotation, except: [:create]
+    rescue_from ActionView::MissingTemplate do |exception|
+      redirect_to("/home/error_404")
+  end
 
   respond_to :json
 
