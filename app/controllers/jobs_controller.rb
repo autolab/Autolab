@@ -10,6 +10,9 @@ class JobsController < ApplicationController
 
   # index - This is the default action that generates lists of the
   # running, waiting, and completed jobs.
+    rescue_from ActionView::MissingTemplate do |exception|
+      redirect_to("/home/error_404")
+  end
   action_auth_level :index, :student
   def index
     # Instance variables that will be used by the view

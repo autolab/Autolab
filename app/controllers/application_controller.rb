@@ -19,6 +19,9 @@ class ApplicationController < ActionController::Base
   before_action :authenticate_for_action
   before_action :update_persistent_announcements
   before_action :set_breadcrumbs
+    rescue_from ActionView::MissingTemplate do |exception|
+      redirect_to("/home/error_404")
+  end
 
   # this is where Error Handling is configured. this routes exceptions to
   # the error handler in the HomeController, unless we're in development mode

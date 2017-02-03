@@ -4,6 +4,9 @@
 class ExtensionsController < ApplicationController
   # inherited from ApplicationController
   before_action :set_assessment
+    rescue_from ActionView::MissingTemplate do |exception|
+      redirect_to("/home/error_404")
+  end
 
   # TODO
   action_auth_level :index, :instructor
