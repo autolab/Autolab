@@ -1,4 +1,6 @@
+
 <li class="collection-item">
+  <p>
   <% if attachment.assessment.nil? then %>
     <i class="material-icons left">file_download</i>
     <%= link_to [@course, attachment] do %>
@@ -26,4 +28,5 @@
     <% end %>
   <% end %>
   </span>
+  </p>
 </li>
