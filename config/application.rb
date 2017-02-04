@@ -93,5 +93,8 @@ module Autolab3
 
     # Allow MOSS to work with as many files as it wants
     Rack::Utils.multipart_part_limit = 0
+
+    # School specific configuration (please edit config/school.yml)
+    config.school = config_for(:school)
   end
 end
