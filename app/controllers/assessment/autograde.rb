@@ -157,8 +157,7 @@ module AssessmentAutograde
       end
     elsif job == -1
       link = "<a href=\"#{url_for(controller: 'jobs')}\">Jobs</a>"
-      flash[:error] = "There was an error submitting your autograding job. " \
-          "Check the #{link} page for more info."
+      flash[:error] = "There was an error submitting your autograding job. We are likely down for maintenance if issues persist, please contact autolab-dev-list@listserv.buffalo.edu"
     elsif job == -3 || job == -4 || job == -6
       flash[:error] = "There was an error uploading the submission file. (Error #{job})"
     elsif job == -9
