@@ -118,7 +118,7 @@
 
 </table>
 <br>
-  <span class="smallText">Submitted at: <span class="moment-date-time"><%= submission.created_at %></span></span>
+  <span class="smallText">Submitted at: <span class="moment-date-time"><%= submission.created_at.in_time_zone.to_s %></span></span>
 <br>
   <% if @cud.instructor? then %>
       <% if @assessment.has_autograder? and submission.version > 0 then %>
