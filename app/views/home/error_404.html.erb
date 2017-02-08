@@ -4,7 +4,7 @@
 
 <% if flash[:error] %><p><b><%= flash[:error] %></b></p><% end %>
 
-<p><b>Oops!</b> Find this page Autolab can not. If you believe there should be something here please email us at  <a href="mailto:autolab-dev-list@listserv.buffalo.edu">autolab-dev-list@listserv.buffalo.edu</a>, with the page that you were trying to access.</p>
+<p><b>Oops!</b> Find this page Autolab can not. If you believe there should be something here please email us at  <a href="mailto:<%= Rails.configuration.school['support_email'] %>"><%= Rails.configuration.school['support_email'] %></a>, with the page that you were trying to access.</p>
 
 <%= image_tag "DonkeyKong.jpg", width: '200px' %>
 
