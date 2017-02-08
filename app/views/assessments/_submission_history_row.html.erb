@@ -17,7 +17,7 @@
     <% end %>
   </td>
 
-  <td class=smallText><%= submission.created_at %></td>
+  <td class=smallText><span class="moment-date-time"><%= submission.created_at.in_time_zone.to_s %></span></td>
 
   <% for problem in @problems do %>
     <td class="prettyBorder">
