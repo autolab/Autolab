@@ -49,8 +49,9 @@
           <label for="assessments_<%= a.id %>"> <%= a.display_name %> </label>
           <br>
           <div id='<%= a.id %>OptionsDiv' style="padding-left:10px;" >
-            <b>Is Archive:</b>
-            <%= check_box_tag "isArchive[#{a.id}]" %>
+	        <!-- <b>Is Archive:</b> -->
+			<%= check_box_tag "isArchive[#{a.id}]", :class => "filled-in" %>
+			<label for="isArchive_<%= a.id %>">Is Archive: </label></br>
             <i>Check this if the submissions will need to be extracted. (The handin filename was: <%= a.handin_filename %>)</i>
             <br>
             <b>Files to send to Moss:</b>
