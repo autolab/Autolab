@@ -73,7 +73,7 @@ class FormBuilderWithDateTimeInput < ActionView::Helpers::FormBuilder
   end
 
   def datetime_select(name, options = {}, _html_options = {})
-    strftime = "%F %I:%M %p %z"
+    strftime = "%F %H:%M"
     date_format = "F j, Y h:i K"
     alt_format = "F j, Y h:i K"
     options[:picker_class] = "datetimepicker"
@@ -93,11 +93,10 @@ private
     end
 
     if existing_time.present?
-      formatted_datetime = existing_time.to_time.strftime(strftime)
+      formatted_datetime = existing_time.strftime(strftime)
     else
       formatted_datetime = ""
     end
-
     field = vanilla_text_field(
       name,
       :value => formatted_datetime,
@@ -107,10 +106,12 @@ private
       :"data-date-less-than" => options[:less_than],
       :"data-date-greater-than" => options[:greater_than])
 
+
     wrap_field name, field, options[:help_text]
   end
 
   def wrap_field(name, field, help_text, display_name = nil)
+
     @template.content_tag :div, class: "input-field" do
       label(name, display_name, class: "control-label") +
          field + help_text(name, help_text)
