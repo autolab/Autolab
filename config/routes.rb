@@ -1,6 +1,11 @@
 Autolab3::Application.routes.draw do
   use_doorkeeper
-  
+
+  namespace :api, { defaults: {format: :json} } do
+    namespace :v1 do
+    end
+  end
+
   root "courses#index"
 
   devise_for :users, controllers: { omniauth_callbacks: "users/omniauth_callbacks",
