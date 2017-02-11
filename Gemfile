@@ -58,6 +58,9 @@ gem 'omniauth-facebook', '>=2.0.0'
 gem 'omniauth-google-oauth2', '>=0.2.5'
 gem 'omniauth-shibboleth', '>=1.1.2'
 
+# Autolab API OAuth Service
+gem 'doorkeeper'
+
 # Adds It also adds f.error_messages and f.error_message_on to form builders
 gem 'dynamic_form'
 
