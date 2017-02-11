@@ -1,5 +1,6 @@
 Autolab3::Application.routes.draw do
   use_doorkeeper
+  
   root "courses#index"
 
   devise_for :users, controllers: { omniauth_callbacks: "users/omniauth_callbacks",
