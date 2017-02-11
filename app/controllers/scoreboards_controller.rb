@@ -5,6 +5,9 @@ class ScoreboardsController < ApplicationController
   before_action :set_assessment
   before_action :set_assessment_breadcrumb, only: [:edit]
   before_action :set_scoreboard, except: [:create]
+  rescue_from ActionView::MissingTemplate do |exception|
+      redirect_to("/home/error_404")
+  end
 
   action_auth_level :create, :instructor
   def create

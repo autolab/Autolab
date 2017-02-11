@@ -97,7 +97,7 @@
             </ul>
           </div>
         <% end %>
-        <%= f.select(:course_user_datum_id, @users, {prompt: 'select user'}, {class: 'chosen-select'}) %>
+        <%= f.select(:course_user_datum_id, @users, {prompt: 'select user'}, {class: ''}) %>
         <p>Select a new due date</p>
         <%= f.date_select :due_at, greater_than: @assessment.due_at, id: "extension_due_at" %><br>
         <p>-OR- Specify number of days to extend:</p>

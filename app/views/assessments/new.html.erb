@@ -1,3 +1,6 @@
+
+
+
 <h2>Create new assessment</h2>
 
 <%= form_for @assessment, url: course_assessments_path, builder: FormBuilderWithDateTimeInput do |f| %>
@@ -19,15 +22,41 @@
       help_text: "Name that will be displayed on the course home page. E.g.,
       'Malloc Lab'" %>
 
-    <hr>
 
     <div class="form-group">
       <%= f.label :category_name, { :class=>"control-label" } %>
-      <%= f.collection_select :category_name, @course.assessment_categories, :to_s, :to_s, {selected: @assessment.category_name}, {class: "form-control"} %>
+      <%= f.collection_select :category_name, @course.assessment_categories, :to_s, :to_s, {selected: @assessment.category_name}  %>
       <p>or</p>
       <%= text_field_tag :new_category, nil, placeholder: "New Category" %>
       <p class="help-block">Select an existing category or enter a new category name <i>(you can always change it later)</i></p>
     </div>
+
+    <div class="embedded-form" style="margin-top: 2rem;">
+      <%= f.check_box :embedded_quiz, display_name: "Embedded Form", style: "margin-top: 0.8rem;", onclick: "boxClicked();" %>
+
+       <div class="row">
+         <label class="custom-file-upload">
+          <span class = "btn primary" id="upload_button">
+            Embedded Form
+            <%= f.file_field :embedded_quiz_form, class: "upload_embedded" %>
+          </span>
+        </label>
+         <% if @assessment.embedded_quiz_form_data.nil? %>
+             <input type="text" id="file_name" readonly value="Select to Upload a File.">
+         <% else %>
+             <input type="text" id="file_name" readonly value="Upload will replace existing file." class="red-text">
+         <% end %>
+        </div>
+
+      <p class="help-block">The inputs will be passed as a JSON object. The key will return the name attribute,
+        and the value acting as itself.</p>
+    </div>
+
+    <script>
+        document.getElementById("assessment_embedded_quiz_form").onchange = function(e) {
+            document.getElementById("file_name").value = document.getElementById("assessment_embedded_quiz_form").value.split(/(\\|\/)/g).pop();
+        }
+    </script>
 
     <hr>
 

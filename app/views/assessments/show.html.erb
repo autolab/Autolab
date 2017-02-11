@@ -1,5 +1,6 @@
 <% content_for :javascripts do %>
   <%= javascript_include_tag "assessments_show" %>
+  <%= javascript_include_tag 'validateIntegrity.js' %>
 <% end %>
 
 <%# Make sure these options are not on the general user options list.  %>
@@ -60,7 +61,7 @@
               <li> <%= link_to "Bulk import grades", {:action => "bulkGrade" }, {:title=> "Upload scores or feedback for multiple students from a CSV file" } %></li>
               <li> <%= link_to "Bulk export grades", {:action => "bulkExport" }, {:title=> "Export grades (with sub-scores) \nfor all students to a CSV file" } %></li>
               
-              <li class="collection-item red-text danger-bottom no-hover"><h4>Danger Zone</h4></li>
+              <li class="collection-item blue-text danger-bottom no-hover"><h4>Danger Zone</h4></li>
               
               <li class="danger-side"> 
                 <%= link_to "Release all grades", {:action => "releaseAllGrades" }, {:title=>  "Make all scores for this assessment visible to students", :class=>"", data: {confirm: "Are you sure you want to release all grades?"}} %>
@@ -88,7 +89,7 @@
               <% if !@assessment.disable_handins %>
                 <li><%= link_to  "Download section #{@cud.section} submissions", [:downloadAll, @course, @assessment, :submissions, final: true], title: "Download section #{@cud.section} submissions" %></li>
               <% end %>
-              <li class="collection-item red-text danger-bottom no-hover"><h4>Danger Zone</h4></li>
+              <li class="collection-item blue-text danger-bottom no-hover"><h4>Danger Zone</h4></li>
               <li class="danger-side"><%= link_to "Reload config file", url_for(:action => 'reload'), 
                 :title=> "Reload the assessment configuration file (provided for backward compatibility with legacy assessments)", data: {confirm: "Are you sure you want to reload the config file?"} %></li>
               <li class="danger-side danger-bottom"><%= link_to "Release section grades", url_for(:action => 'releaseSectionGrades'), 
@@ -187,6 +188,83 @@
     <% end %>   
     </ul>
     <hr>
+
+  <% end %>
+
+  <% if @assessment.embedded_quiz %>
+      <script>
+          $.fn.serializeObject = function()
+          {
+              var o = {};
+              var a = this.serializeArray();
+              $.each(a, function() {
+                  if (o[this.name] !== undefined) {
+                      if (!o[this.name].push) {
+                          o[this.name] = [o[this.name]];
+                      }
+                      o[this.name].push(this.value || '');
+                  } else {
+                      o[this.name] = this.value || '';
+                  }
+              });
+              return o;
+          };
+
+          $(function() {
+              $('form').submit(function() {
+                  $('#results').text(JSON.stringify($('#quiz_form').serializeObject()));
+                  showForm();
+                  //return false;
+              });
+          });
+
+          function showForm() {
+              var save = document.getElementById('results').innerHTML;
+              console.log(save);
+              document.getElementById("submission_embedded_quiz_form_answer").value = save;
+          }
+
+      </script>
+
+      <% if @cud.instructor %>
+          <div class = "row">
+            <div class = "col s12 offset-s0">
+              <b>This is how students will view this assessment:</b>
+            </div>
+          </div>
+      <% end %>
+
+      <div class = "row">
+        <div class = "col s10 offset-s1">
+          <hr>
+          <%= form_for @submission, url: {action: :handin}, :html => {:id => "quiz_form", :onclick => "return validateIntegrity();"}, method: :post do |f| %>
+
+              <%= f.hidden_field :embedded_quiz_form_answer, value: "" %>
+
+              <%# Render instructor's custom quiz form elements. %>
+              <p>
+                <% begin %>
+                    <%= @assessment.embedded_quiz_form_data.html_safe %>
+                <% rescue %>
+                  <p style = "color: red">Your assessment has no content yet! </p>
+                <% end %>
+              </p>
+
+              <!-- Academic integrity checkbox -->
+              <%= check_box_tag(:integrity_checkbox) %>
+              <%= label_tag(:integrity_checkbox, "I affirm that I have complied with this course's academic integrity policy as defined in the syllabus.") %>
+
+              <div class = "row" style = "margin-top: 10px !important">
+                <input type="submit" class = "btn primary handin-btn" onclick = "setSubmitClicked()">
+                <span id="submission_error" style = "margin-left: 10px !important; color: red"></span>
+              </div>
+
+          <% end %>
+          <hr>
+        </div>
+      </div>
+
+      <pre class="hide" id="results"></pre>
 
   <% end %>
 

@@ -82,17 +82,17 @@
       <%= t.text_field :value, :size => 18 %>
       <%= t.select :kind, options_for_select({"points" => "points", "%" => "percent"}, :selected => (@editCUD.tweak ? @editCUD.tweak.kind : "points")) %>
     <% end %>
-    </td>
+    </td>btn primary handin-btn
     <td class="smallText">A tweak is a positive or negative value that adjusts the student's course average.<br>Ex: A tweak of 5 points would increase the student's course average by 5 points. </td>
   </tr>
 
-  <tr><th>Dropped?</th><td><%= f.check_box :dropped %></td>
+	<tr><th>Dropped?</th><td><%= f.check_box :dropped %><label for="course_user_datum_dropped"></label></td>
   <td class="smallText">Dropping a student from a course prevents them from handing in submissions or downloading assessments. Additionally they do not appear in any gradebook. None of their account information or submissions are deleted.</td></tr>
 
-  <tr><th>Instructor?</th><td><%= f.check_box :instructor %></td>
+  <tr><th>Instructor?</th><td><%= f.check_box :instructor %><label for="course_user_datum_instructor"></label></td>
   <td class="smallText">Instructors have full read/write access to the course. </td></tr>
 
-  <tr><th>Course assistant?</th><td><%= f.check_box :course_assistant %></td>
+  <tr><th>Course assistant?</th><td><%= f.check_box :course_assistant %><label for="course_user_datum_course_assistant"></label></td>
   <td class="smallText">Course assistants can assign scores to problems and nothing else.</td></tr>
   <% end %>
 
@@ -100,7 +100,7 @@
   <br>
   <br>
   <input id="user_submit" name="commit" type="submit" class="btn primary" value="Save Changes" onclick="formvalidation(this.parentNode); return false;">
-  <!--<%= f.submit 'Save Changes' , {:class=>"btn primary"} %>-->
+  <!--<%= f.submit 'Save Changes' , {:class=>""} %>-->
   <%= if @cud.instructor? then
         link_to raw('<span class="btn">Delete User</span>'), [:destroyConfirm, @course, @editCUD]
   end %>

@@ -3,11 +3,11 @@
   <%= announcement.description %><br>
   <% if (@cud.instructor? && @cud.course_id == announcement.course_id) || @cud.administrator? then %>
     <%= link_to [:edit, @course, announcement] do %>
-      <span class="btn small">Edit</span>
+      <span class="waves-effect waves-light btn small">Edit</span>
     <% end %>
     <%= link_to [@course, announcement], method: :delete, 
       data: {confirm: "Are you sure you want to delete this announcement?"} do %>
-      <span class="btn small">Delete</span>
+      <span class="waves-effect waves-light btn small">Delete</span>
     <% end %>
   <% end %>
 </li>

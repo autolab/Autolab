@@ -10,6 +10,10 @@ class CoursesController < ApplicationController
   # if there's no course, there are no persistent announcements for that course
   skip_before_action :update_persistent_announcements, only: [:index, :new, :create]
 
+    rescue_from ActionView::MissingTemplate do |exception|
+      redirect_to("/home/error_404")
+  end
+
   def index
     courses_for_user = User.courses_for_user current_user
 
@@ -331,7 +335,7 @@ file, most likely a duplicate email.  The exact error was: #{e} "
 
   action_auth_level :runMoss, :instructor
   def runMoss
-    # Return if we have no files to process.
+  	# Return if we have no files to process.
     unless params[:assessments] || params[:external_tar]
       flash[:error] = "No input files provided for MOSS."
       redirect_to(action: :moss) && return
@@ -355,24 +359,81 @@ file, most likely a duplicate email.  The exact error was: #{e} "
         assessments << assessment
       end
     end
-
-    @mossCmd = [Rails.root.join("vendor", "mossnet -d")]
-
-    # Create a temporary directory
+		
+		# Create a temporary directory
     @failures = []
     tmp_dir = Dir.mktmpdir("#{@cud.user.email}Moss", Rails.root.join("tmp"))
-    extract_asmt_for_moss(tmp_dir, assessments)
-    extract_tar_for_moss(tmp_dir, params[:external_tar])
-    # Ensure that all files in Moss tmp dir are readable
+
+		base_file = params[:box_basefile]
+		max_lines = params[:box_max]
+		language = params[:box_language]
+
+		moss_params = ""
+
+		if not base_file.nil?
+			extract_tar_for_moss(tmp_dir, params[:base_tar], false)
+			moss_params = [moss_params, "-b", @basefiles].join(" ")
+		end
+		if not max_lines.nil?
+			if params[:max_lines] == ""
+				params[:max_lines] = 10
+			end
+			moss_params = [moss_params, "-m", params[:max_lines]].join(" ")
+		end
+		if not language.nil?
+			moss_params = [moss_params, "-l", params[:language_selection]].join(" ")
+		end				
+
+		# Create a temporary directory
+		# Get moss flags from text field 	
+		moss_flags = ["mossnet" + moss_params + " -d"].join(" ")
+    @mossCmd = [Rails.root.join("vendor", moss_flags)]
+
+    # Create a temporary directory
+
+    @failures = []
+    tmp_dir = Dir.mktmpdir("#{@cud.user.email}Moss", Rails.root.join("tmp"))
+
+		base_file = params[:box_basefile]
+		max_lines = params[:box_max]
+		language = params[:box_language]
+
+		moss_params = ""
+
+		if not base_file.nil?
+			extract_tar_for_moss(tmp_dir, params[:base_tar], false)
+			moss_params = [moss_params, "-b", @basefiles].join(" ")
+		end
+		if not max_lines.nil?
+			if params[:max_lines] == ""
+				params[:max_lines] = 10
+			end
+			moss_params = [moss_params, "-m", params[:max_lines]].join(" ")
+		end
+		if not language.nil?
+			moss_params = [moss_params, "-l", params[:language_selection]].join(" ")
+		end				
+
+		# Get moss flags from text field 	
+		moss_flags = ["mossnet" + moss_params + " -d"].join(" ")
+    @mossCmd = [Rails.root.join("vendor", moss_flags)]
+
+
+		extract_asmt_for_moss(tmp_dir, assessments)
+    extract_tar_for_moss(tmp_dir, params[:external_tar], true)
+
+		# Ensure that all files in Moss tmp dir are readable
     system("chmod -R a+r #{tmp_dir}")
     ActiveRecord::Base.clear_active_connections!
-    # Now run the Moss command
+    # Remove non text files when making a moss run
+    `~/Autolab/script/cleanMoss #{tmp_dir}`
+		# Now run the Moss command
     @mossCmdString = @mossCmd.join(" ")
     @mossExit = $CHILD_STATUS
     @mossOutput = `#{@mossCmdString} 2>&1`
 
-    # Clean up after ourselves (droh: leave for debugging)
-    # `rm -rf #{tmp_dir}`
+    # Clean up after ourselves (droh: leave for dsebugging)
+    `rm -rf #{tmp_dir}`
   end
 
 private
@@ -674,21 +735,32 @@ private
     end
   end
 
-  def extract_tar_for_moss(tmp_dir, external_tar)
+  def extract_tar_for_moss(tmp_dir, external_tar, archive)
     return unless external_tar
-    # Directory to hold tar ball and all individual files.
-    extTarDir = File.join(tmp_dir, "external_input")
-    Dir.mkdir(extTarDir)
+    
+			# Directory to hold tar ball and all individual files.
+	    extTarDir = File.join(tmp_dir, "external_input")
+	 		baseFilesDir = File.join(tmp_dir, "basefiles")
+			begin
+				Dir.mkdir(extTarDir)
+			  Dir.mkdir(baseFilesDir) # To hold all basefiles
+				Dir.chdir(baseFilesDir)
+			rescue
+			end
 
-    # Read in the tarfile from the given source.
-    extTarPath = File.join(extTarDir, "input_file")
-    external_tar.rewind
-    File.open(extTarPath, "wb") { |f| f.write(external_tar.read) } # Write tar file.
+			# Read in the tarfile from the given source.
+	    extTarPath = File.join(extTarDir, "input_file")
+	    external_tar.rewind
+	    File.open(extTarPath, "wb") { |f| f.write(external_tar.read) } # Write tar file.
 
-    # Directory to hold all external individual submission.
-    extFilesDir = File.join(extTarDir, "submissions")
-    Dir.mkdir(extFilesDir) # To hold all submissions
-    Dir.chdir(extFilesDir)
+	    # Directory to hold all external individual submission.
+	    extFilesDir = File.join(extTarDir, "submissions")
+		
+		begin
+			Dir.mkdir(extFilesDir) # To hold all submissions
+	    Dir.chdir(extFilesDir)
+		rescue
+		end
 
     # Untar the given Tar file.
     begin
@@ -698,8 +770,8 @@ private
       archive_extract.each do |entry|
         pathname = Archive.get_entry_name(entry)
         unless Archive.looks_like_directory?(pathname)
+					destination = archive ? File.join(extFilesDir, pathname) : File.join(baseFilesDir, pathname)
           pathname.gsub!(/\//, "-")
-          destination = File.join(extFilesDir, pathname)
           # make sure all subdirectories are there
           File.open(destination, "wb") do |out|
             out.write Archive.read_entry_file(entry)
@@ -712,6 +784,10 @@ private
     end
 
     # Feed the uploaded files to MOSS.
-    @mossCmd << File.join(extFilesDir, "*")
+		if archive
+	    @mossCmd << File.join(extFilesDir, "*")
+		else
+			@basefiles = File.join(baseFilesDir, "*")
+		end
   end
 end

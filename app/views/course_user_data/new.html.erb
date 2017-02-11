@@ -84,19 +84,19 @@
     <td class="smallText">A tweak is a positive or negative value that adjusts the student's course average.<br>Ex: A tweak of 5 points would increase the student's course average by 5 points. </td>
   </tr>
 
-  <tr><th>Dropped?</th><td><%= f.check_box :dropped %></td>
+	<tr><th>Dropped?</th><td><%= f.check_box :dropped %><label for="course_user_datum_dropped"></label></td>
   <td class="smallText">Dropping a student from a course prevents them from handing in submissions or downloading assessments. Additionally they do not appear in any gradebook. None of their account information or submissions are deleted.</td></tr>
 
-  <tr><th>Instructor?</th><td><%= f.check_box :instructor %></td>
+  <tr><th>Instructor?</th><td><%= f.check_box :instructor %><label for="course_user_datum_instructor"></label></td>
   <td class="smallText">Instructors have full read/write access to the course. </td></tr>
 
-  <tr><th>Course assistant?</th><td><%= f.check_box :course_assistant %></td>
+  <tr><th>Course assistant?</th><td><%= f.check_box :course_assistant %><label for="course_user_datum_course_assistant"></label></td>
   <td class="smallText">Course assistants can assign scores to problems and nothing else.</td></tr>
   <% end %>
 
   
   </table>
   <br>
-  <input id="user_submit" class="btn primary"name="commit" type="submit" value="Save Changes" onclick="formvalidation(this.parentNode); return false;">
+  <input id="user_submit" class="waves-effect waves-light btn primary"name="commit" type="submit" value="Save Changes" onclick="formvalidation(this.parentNode); return false;">
 
 <% end %>

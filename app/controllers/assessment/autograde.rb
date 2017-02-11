@@ -157,8 +157,7 @@ module AssessmentAutograde
       end
     elsif job == -1
       link = "<a href=\"#{url_for(controller: 'jobs')}\">Jobs</a>"
-      flash[:error] = "There was an error submitting your autograding job. " \
-          "Check the #{link} page for more info."
+      flash[:error] = "There was an error submitting your autograding job. We are likely down for maintenance if issues persist, please contact autolab-dev-list@listserv.buffalo.edu"
     elsif job == -3 || job == -4 || job == -6
       flash[:error] = "There was an error uploading the submission file. (Error #{job})"
     elsif job == -9
@@ -167,7 +166,9 @@ module AssessmentAutograde
         link = (view_context.link_to "Autograder Settings", [:edit, course, assessment, :autograder])
         flash[:error] += " (Verify the autograding properties at #{link}.)"
       end
-    elsif job < 0
+		elsif job == -10
+			flash[:error] = "One or more files in the Autograder module don't exist. Contact the instructor."
+		elsif job < 0
       flash[:error] = "Autograding failed because of an unexpected exception in the system."
     else
       link = "<a href=\"#{url_for(controller: 'jobs', action: 'getjob', id: job)}\">Job ID = #{job}</a>"
@@ -199,10 +200,17 @@ module AssessmentAutograde
       e.backtrace.each { |line| COURSE_LOGGER.log(line) }
       return -3, nil
     end
+    
+		upload_file_list.each do |f|
+			if !Pathname.new(f["localFile"]).file?
+        flash[:error] = "Error while uploading autograding files."
+				return -10, nil
+			end
+		end
 
-    # now actually send all of the upload requests
+		# now actually send all of the upload requests
     upload_file_list.each do |f|
-      md5hash = Digest::MD5.file(f["localFile"]).to_s
+			md5hash = Digest::MD5.file(f["localFile"]).to_s
       next if (existing_files.has_key?(File.basename(f["localFile"])) &&
           existing_files[File.basename(f["localFile"])] == md5hash)
 
@@ -399,6 +407,7 @@ module AssessmentAutograde
     local_handin = File.join(ass_dir, assessment.handin_directory, submission.filename)
     local_makefile = File.join(ass_dir, "autograde-Makefile")
     local_autograde = File.join(ass_dir, "autograde.tar")
+    local_settings_config = File.join(ass_dir, assessment.handin_directory, submission.filename + ".settings.json")
 
     # Name of the handin file on the destination machine
     dest_handin = assessment.handin_filename
@@ -407,8 +416,14 @@ module AssessmentAutograde
     handin = { "localFile" => local_handin, "destFile" => dest_handin }
     makefile = { "localFile" => local_makefile, "destFile" => "Makefile" }
     autograde = { "localFile" => local_autograde, "destFile" => "autograde.tar" }
+    settings_config = { "localFile" => local_settings_config, "destFile" => "settings.json" }
 
-    [handin, makefile, autograde]
+    if assessment.has_custom_form.to_s == "true"
+        [handin, makefile, autograde, settings_config]
+    else
+        [handin, makefile, autograde]
+    end
+    
   end
 
   ##
@@ -424,7 +439,6 @@ module AssessmentAutograde
 
       feedback_file = File.join(ass_dir, @assessment.handin_directory, filename)
       COURSE_LOGGER.log("Looking for Feedbackfile:" + feedback_file)
-
       File.open(feedback_file, "w") do |f|
         f.write(feedback)
       end
@@ -453,7 +467,6 @@ module AssessmentAutograde
       else
         scores = parseAutoresult(autoresult, true)
       end
-
       fail "Empty autoresult string." if scores.keys.length == 0
 
       # Grab the autograde config info
@@ -484,7 +497,7 @@ module AssessmentAutograde
       feedback_str = "An error occurred while parsing the autoresult returned by the Autograder.\n
         \nError message: #{e}\n\n"
       feedback_str += lines.join if lines && (lines.length < 10_000)
-      @assessment.problems.each do |p|
+			@assessment.problems.each do |p|
         submissions.each do |submission|
           score = submission.scores.find_or_initialize_by(problem_id: p.id)
           next unless score.new_record? # don't overwrite scores

@@ -29,11 +29,15 @@
     </tr>
     <tr>
       <th><b>Section:</b></th>
-      <td><%= select("","section",sectionSelect) %></td>
+      <td>
+				<div class="input-field">      	
+					<%= select("","section",sectionSelect) %>
+				</div>
+			</td>
     </tr>
     <tr>
       <td colspan=2>
-      <%= text_area_tag :body,nil,{:rows=>15,:cols=>50}%>
+					<%= text_area_tag :body,nil,{:rows=>15,:cols=>50}%>
       </td>
     </tr>
     <tr>
