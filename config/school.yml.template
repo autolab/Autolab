@@ -7,11 +7,11 @@ production:
 development:
   school_name: "Carnegie Mellon University"
   school_short_name: "CMU"
-  support_email: "autolab-help@andrew.cmu.edu"
-  tech_email: "autolab-dev@andrew.cmu.edu"
+  support_email: "autolab@myschool.edu"
+  tech_email: "autolab-tech@myschool.edu"
 
 test:
   school_name: "Carnegie Mellon University"
   school_short_name: "CMU"
-  support_email: "autolab-help@andrew.cmu.edu"
-  tech_email: "autolab-dev@andrew.cmu.edu"
+  support_email: "autolab@myschool.edu"
+  tech_email: "autolab-tech@myschool.edu"
