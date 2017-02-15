@@ -15,7 +15,7 @@ class Api::V1::CoursesController < Api::V1::BaseApiController
     	end
     end
 
-    respond_with courses_for_user
+    respond_with courses_for_user, only: [:name, :semester, :late_slack, :grace_days, :display_name]
   end
 
 end
