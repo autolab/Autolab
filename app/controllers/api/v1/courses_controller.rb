@@ -1,7 +1,7 @@
 class Api::V1::CoursesController < Api::V1::BaseApiController
 
-  skip_before_action :authorize_user_for_course, only: [:index]
   skip_before_action :set_course, only: [:index]
+  skip_before_action :authorize_user_for_course, only: [:index]
 
   def index
     courses_for_user = User.courses_for_user current_user

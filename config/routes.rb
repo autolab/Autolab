@@ -3,6 +3,8 @@ Autolab3::Application.routes.draw do
 
   namespace :api, { defaults: {format: :json} } do
     namespace :v1 do
+      get 'user', to: 'user#show'
+
       resources :courses, param: :name, only: [:index] do
         resources :assessments, param: :name, only: [:index]
       end
