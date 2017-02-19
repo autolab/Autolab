@@ -12,9 +12,12 @@ class Api::V1::BaseApiController < ActionController::Base
 
   rescue_from ApiError, with: :respond_with_api_error
 
+  respond_to :json
+
   before_action :doorkeeper_authorize! # OAuth2 token authentication for all actions
 
-  respond_to :json
+  before_action :set_course
+  before_action :authorize_user_for_course, except: [:action_no_auth]
 
   private
 
@@ -24,6 +27,25 @@ class Api::V1::BaseApiController < ActionController::Base
 
   def respond_with_api_error(error)
     render :json => {:error => error.message}.to_json, :status => error.status_code
+  end
+
+  protected
+
+  def set_course
+    course_name = params[:course_name] ||
+                  (params[:controller] == "courses" ? params[:name] : nil)
+    @course = Course.find_by(name: course_name) if course_name
+
+    unless @course
+      raise ApiError.new("Course does not exist", :not_found)
+    end
+  end
+
+  def authorize_user_for_course
+    # current user should always exist for API calls through doorkeeper
+    uid = current_user.id
+
+    @cud = CourseUserDatum.find_cud_for_course(@course, uid)
   end
 
 end
