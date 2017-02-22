@@ -22,12 +22,13 @@
   <tr><th>Last name: </th><td><%= f.text_field :last_name %></td></tr>
 
   <% if current_user.administrator? then %>
-  <tr><th>Administrator?</th><td><%= f.check_box :administrator %></td></tr>
+		<tr><th>Administrator?</th><td><%= f.check_box :administrator %><label for="user_administrator"></label>
+			    </p></td></tr>
   <% end %>
   
 </table>
 
-  <%= f.submit 'Save Changes', { :class=>"btn primary"} %>
+  <%= f.submit 'Save Changes', { :class=>"waves-effect waves-light btn primary"} %>
 <% end %>
 
 <% if current_user.administrator? %>

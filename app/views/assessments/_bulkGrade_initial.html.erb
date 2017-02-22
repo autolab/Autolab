@@ -15,14 +15,16 @@ Choose a file that contain rows of problem scores or feedback in the following c
     <div class="radio">
       <label>
         <%= f.radio_button :data_type, "scores", { :checked => true } %>
-        Scores
+        <label for="upload_data_type_scores">Scores</label>	
+		<!-- Scores -->
       </label>
     </div>
 
     <div class="radio">
       <label>
         <%= f.radio_button :data_type, "feedback" %>
-        Feedback <span class="info">use escape characters in place of newlines (\n) and tabs (\t)</span>
+		<label for="upload_data_type_feedback">Feedback</label></br>
+		<span class="info">use escape characters in place of newlines (\n) and tabs (\t)</span>
       </label>
     </div>
   </div>

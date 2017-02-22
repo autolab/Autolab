@@ -11,7 +11,7 @@ class AutogradersController < ApplicationController
     @autograder = Autograder.new do |a|
       a.assessment_id = @assessment.id
       a.autograde_timeout = 180
-      a.autograde_image = "changeme.img"
+      a.autograde_image = "autograding_image"
       a.release_score = true
     end
     flash[:info] = "Autograder Created" if @autograder.save
@@ -25,13 +25,30 @@ class AutogradersController < ApplicationController
   action_auth_level :update, :instructor
   def update
     flash[:info] = "Saved!" if @autograder.update(autograder_params)
+		upload
     redirect_to([:edit, @course, @assessment, :autograder]) && return
   end
-
+	
   action_auth_level :destroy, :instructor
   def destroy
     flash[:info] = "Destroyed!" if @autograder.destroy
     redirect_to([:edit, @course, @assessment]) && return
+  end
+
+  action_auth_level :upload, :instructor
+  def upload
+    uploaded_makefile = params[:autograder][:makefile]
+	  uploaded_tar = params[:autograder][:tar]
+	  if not uploaded_makefile.nil?
+		  File.open(Rails.root.join('courses', @course.name, @assessment.name, 'autograde-Makefile'), 'wb') do |file|
+		  file.write(uploaded_makefile.read) unless uploaded_makefile.nil?
+		end	
+	  end
+	  if not uploaded_tar.nil?	
+		  File.open(Rails.root.join('courses', @course.name, @assessment.name, 'autograde.tar'), 'wb') do |file|
+		  file.write(uploaded_tar.read) unless uploaded_tar.nil?
+		 end
+	  end
   end
 
 private

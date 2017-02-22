@@ -3,20 +3,30 @@
 <%= form_for(resource, :as => resource_name, :url => registration_path(resource_name)) do |f| %>
   <%= devise_error_messages! %>
 
-  <div><%= f.label :first_name %><br />
-  <%= f.text_field :first_name, :autofocus => true %></div>
+	<div class="input-field">
+	  <%= f.text_field :first_name, :autofocus => true %>
+		<%= f.label :first_name %>
+	</div>
 
-  <div><%= f.label :last_name %><br />
-  <%= f.text_field :last_name %></div>
+	<div class="input-field">
+		<%= f.text_field :last_name %>
+		<%= f.label :last_name %>
+	</div>
 
-  <div><%= f.label :email %><br />
-  <%= f.email_field :email %></div>
+	<div class="input-field">
+		<%= f.email_field :email %>
+		<%= f.label :email %>
+	</div>
 
-  <div><%= f.label :password %><br />
-  <%= f.password_field :password %></div>
+	<div class="input-field">
+		<%= f.password_field :password %>
+		<%= f.label :password %>
+	</div>
 
-  <div><%= f.label :password_confirmation %><br />
-  <%= f.password_field :password_confirmation %></div>
+	<div class="input-field">
+	  <%= f.password_field :password_confirmation %>
+		<%= f.label :password_confirmation %>
+	</div>
   <br />
   <div><%= f.submit "Sign up", { :class => "btn primary" } %></div>
 <% end %>

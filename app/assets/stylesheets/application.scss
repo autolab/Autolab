@@ -5,6 +5,8 @@
 */
 
 /* For the materialize gem documentation, check out https://github.com/mkhairi/materialize-sass */
-$primary-color: #DD2222 !default;
-$secondary-color: #DD2222 !default;
+$primary-color: #005BBB !default;
+$secondary-color: #005BBB !default;
+@import "bootstrap-sprockets";
+@import "bootstrap";
 @import "materialize";

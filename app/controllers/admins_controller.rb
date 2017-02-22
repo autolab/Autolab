@@ -2,6 +2,9 @@
 # this controller contains methods for system-wise
 # admin functionality
 class AdminsController < ApplicationController
+    rescue_from ActionView::MissingTemplate do |exception|
+      redirect_to("/home/error_404")
+  end
   action_auth_level :show, :administrator
   def show
   end

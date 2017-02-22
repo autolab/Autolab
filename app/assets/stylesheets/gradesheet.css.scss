@@ -1,5 +1,5 @@
 td.focus {
-    background-color: #1874Cd !important;
+    background-color: #666666 !important;
     color: white !important;
 }
 
@@ -15,7 +15,7 @@ td.focus {
 
 #grades td.edit {
     text-align: center;
-    color: #1874Cd;
+    color: #666666;
     cursor: pointer;
 }
 
@@ -24,7 +24,7 @@ td.focus {
 }
 
 #grades td.edit:hover {
-    color: #2ba6ff;
+    color: #e1e1e1;
 }
 
 #grades tr.sortable th {
@@ -57,13 +57,13 @@ td.focus {
 
 #grades td.edit input {
     border: 0px solid #ccc;
-    color: #2ba6ff;
+    color: #e1e1e1;
     font: inherit;
     text-align: inherit;
 }
 
 #grades td.edit input:hover {
-    color: #2ba6ff;
+    color: #e1e1e1;
 }
 
 #grades {
@@ -84,7 +84,7 @@ td.focus {
     border-spacing: 0;
     text-align: left;
     white-space: nowrap;
-    color: #777;
+    color: #555;
 }
 
 #grades td.edit {
@@ -130,7 +130,7 @@ td.focus {
 }
 
 #grades .tweak a, #grades .id a {
-    color: #1874Cd;
+    color: #666666;
     text-decoration: none;
     font: inherit;
 }
@@ -140,7 +140,7 @@ td.focus {
 }
 
 #grades .tweak a:hover {
-    color: #2ba6ff;
+    color: #e1e1e1;
 }
 
 #grades .released {
@@ -258,7 +258,7 @@ td.id {
 
 #grades td .popover .score_details span.save_box span.saving {
     display: none;
-    color: #777;
+    color: #555;
 }
 
 #grades td .popover .score_details span.save_box span.error {

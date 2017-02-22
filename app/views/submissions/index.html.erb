@@ -56,6 +56,14 @@
 <p>
 <table class="prettyBorder" id="submissions">
   <% headers = ["Submitted By", "Version", "Submission Date (YYYY-MM-DD)", "File", "IP Address", "Actions", "isLatest"] %>
+  <% if @assessment.has_custom_form then %>
+    <% if @assessment.getLanguages.size > 0 then %>
+        <% headers.push("Language") %>
+    <% end %>
+    <% for i in 0..@assessment.getTextfields.size - 1 do %>
+        <% headers.push(@assessment.getTextfields[i]) %>
+    <% end %>
+  <% end %>
   <thead>
     <tr>
       <th><input type="checkbox" id="selectall"/></th>
@@ -93,7 +101,7 @@
                 [:regrade, @course, @assessment, submission_id: submission.id],
                 { method: :post,
                  :title=>"Rerun the autograder on this submission",
-                 :class=>"btn small regrade-override"} %>
+                 :class=>"waves-effect waves-light btn small regrade-override"} %>
           <% end %>
           <%= link_to "Edit", [:edit, @course, @assessment, submission],
               {:title=>"Edit the grading properties of this submission",
@@ -104,11 +112,18 @@
       </td>
       <td><%= submission.latest? %>
       </td>
+      <% if @assessment.has_custom_form then %>
+        <% if @assessment.getLanguages.size > 0 then %>
+            <td><%= submission.getSettings["Language"] %></td>
+        <% end %>
+        <% for i in 0..@assessment.getTextfields.size-1 do %>
+            <td><%= submission.getSettings[@assessment.getTextfields[i]] %></td>
+        <% end %>
+     <% end %>
     </tr>
   <% end %>
   </tbody>
 </table>
-
 
 <div id="gradeBackdrop">
 </div>

@@ -22,8 +22,8 @@
     <kbd>[desc]/[asc]</kbd>: break ties by sorting this column is descending or ascending order.
   <p>
 
-  <%= f.submit "Save Settings", {class: "btn primary"} %>
-  <%= link_to "Delete Scoreboard", [@course, @assessment, :scoreboard], method: :delete, class: "btn danger",
+  <%= f.submit "Save Settings", {class: "waves-effect waves-light btn primary"} %>
+  <%= link_to "Delete Scoreboard", [@course, @assessment, :scoreboard], method: :delete, class: "waves-effect waves-light btn danger",
               data: {confirm: "Are you sure you want to delete the Scoreboard for this assesssment?"} %>
 
 <% end %>
