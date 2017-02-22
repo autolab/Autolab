@@ -1,5 +1,5 @@
 nav{
-  background: #005bbb;
+  background: #a31919;
 }
 nav a, nav a:hover, nav a:focus{
   text-decoration: none;
@@ -12,7 +12,7 @@ nav ul li{
   font-weight: 500;
 }
 .dropdown-content li>a{
-  color: #005bbb;
+  color: #a31919;
   font-weight:500;
 }
 
@@ -23,7 +23,7 @@ nav ul li{
   color:white;
   text-align:center;
   cursor:default;
-  background:#005bbb;
+  background:#a31919;
 }
 #mobile-demo li{
   cursor:pointer;
