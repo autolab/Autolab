@@ -6,7 +6,9 @@ Autolab3::Application.routes.draw do
       get 'user', to: 'user#show'
 
       resources :courses, param: :name, only: [:index] do
-        resources :assessments, param: :name, only: [:index]
+        resources :assessments, param: :name, only: [:index] do
+          resources :submissions, only: [:index]
+        end
       end
     end
   end

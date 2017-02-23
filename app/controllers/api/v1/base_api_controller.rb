@@ -17,7 +17,7 @@ class Api::V1::BaseApiController < ActionController::Base
   before_action :doorkeeper_authorize! # OAuth2 token authentication for all actions
 
   before_action :set_course
-  before_action :authorize_user_for_course, except: [:action_no_auth]
+  before_action :authorize_user_for_course
 
   private
 
@@ -46,6 +46,20 @@ class Api::V1::BaseApiController < ActionController::Base
     uid = current_user.id
 
     @cud = CourseUserDatum.find_cud_for_course(@course, uid)
+  end
+
+  def set_assessment
+    begin
+      @assessment = @course.assessments.find_by!(name: params[:assessment_name] || params[:name])
+    rescue
+      raise ApiError.new("Assessment does not exist", :not_found)
+    end
+
+    if @cud.student? && !@assessment.released?
+      # we can let the client know this assessment isn't released yet. No harm in telling them 
+      # that this assessment exists.
+      raise ApiError.new("Assessment not released yet", :forbidden)
+    end
   end
 
 end
