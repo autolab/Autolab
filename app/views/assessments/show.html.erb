@@ -24,10 +24,10 @@
     <h2 class="">
       <%= @assessment.display_name %>
     </h2>
-
-    <hr>
+    <p style="margin-left: 5px"><i><%= @assessment.description %></i></p>
   </div>
 </div>
+<hr>
 <div class="row">
   <div class="col s12 m4">
     <%# Display any optional instructor admin options %>
@@ -133,7 +133,7 @@
 
   </div>
   <div class="col s12 m8">
-    <p><i><%= @assessment.description %></i></p>
+    <br>
     <br>
     <div class="handin-panel card z-depth-0">
       <div class="card-content">
