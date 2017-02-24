@@ -58,7 +58,7 @@
     <% end %>
   </table>
   <br>
-  <%= f.submit "Confirm", {:class => "btn primary"} %>
+  <%= f.submit "Confirm", {:class => "waves-effect waves-light btn primary"} %>
 	<% end %>
 <% else %>
 <p>
@@ -76,7 +76,8 @@ The file should be in the following formats: <br><br>
 The CMU Roster file should include a header.  Editing accounts will occur as a <a href="http://en.wikipedia.org/wiki/Database_transaction#Transactional_databases">transaction</a>, if there is an error we will cancel all changes and allow you to correct the error and re-submit. </p>
 <%= form_for :upload, :url=>{:action=>"uploadRoster"}, :html=>{:multipart=>true} do |f| %>
 <%= f.file_field :file %><br>
-<%= f.check_box :dropMissing %> Mark students not included in this roster as 'Dropped'? <br>
+<%= f.check_box :dropMissing, class: "filled-in-box" %> 
+<label for="upload_dropMissing">Mark students not included in this roster as 'Dropped'?</label></br>
 <font class="smallText">Dropped students can view grades but cannot submit
 assignments or download new assignments</font>
 <p></p>

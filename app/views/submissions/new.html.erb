@@ -7,7 +7,20 @@
   <script type="application/javascript">
     jQuery(function() {
       $('.chosen-select').chosen();
-    });
+		});
+
+		function filterNames(name) {
+			$(".select-wrapper").each( function() {
+				var user = this;
+				var keywords = name.split(" ");
+				var toShow = true;
+				for (var i = 0; i < keywords.length; i++) {
+					toShow = false;
+				}
+				$(this).toggle(toShow);
+			});
+		}
+
   </script>
 <% end %>
 
@@ -21,12 +34,20 @@
       url: [@course, @assessment, @submission], method: :post,
       html: {multipart: true}  do |f| %>
 <%= f.error_messages %>
+
+<!-- Work in Progress
+
+<div class="input-field">
+	<input placeholder="Name or Email" type="text" onkeyup="filterNames(this.value.toLowerCase())" style="margin-bottom: 10px;">
+</div>
+
+-->
 <table class="verticalTable" >
 <tr>
   <th>User:</th>
   <td>
   <% if params[:course_user_datum_id].nil? then %>
-    <%= f.select(:course_user_datum_id, @cuds, {prompt: 'select user'}, {class: 'chosen-select'}) %>
+    <%= f.select(:course_user_datum_id, @cuds, {prompt: 'select user'}, {class: ''}) %>
   <% else %>
     <%= @cuds.collect { |u| u.email }.join(", ") %>
     <input type='hidden' name='submission[course_user_datum_id]' value='<%=@cuds.collect{ |u| u.id }.join(',')%>' />
@@ -55,7 +76,7 @@
 <tr>
   <td colspan=2 >
   <br>
-  <%= f.submit "Create Submission", { :class=>"btn primary"} %>
+  <%= f.submit "Create Submission", { :class=>"waves-effect waves-light btn primary"} %>
   </td>
 </tr>
 </table>

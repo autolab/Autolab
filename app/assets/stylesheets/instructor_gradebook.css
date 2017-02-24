@@ -1,11 +1,11 @@
 #grades td.edit {
   text-align: center;
-  color: #1874Cd;
+  color: #666666;
   cursor: pointer;
 }
 
 #grades td.edit:hover {
-  color: #2ba6ff;
+  color: #e1e1e1;
 }
 
 #filter_container {
@@ -66,7 +66,7 @@
   border: none;
   border-bottom: 1px solid #eee;
   white-space: nowrap;
-  color: #777;
+  color: #555;
   text-align: center;
 }
 
@@ -146,7 +146,7 @@
 }
 
 div.course {
-  color: #777;
+  color: #555;
   border-radius: 3px;
   box-shadow: 0 0 2px 0px #f4f4f4;
   font-size: 1.2em;

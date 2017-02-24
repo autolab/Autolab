@@ -57,6 +57,6 @@
   <h2>Load Groups from Another Assessment</h2>
   <%= form_tag [:import, @course, @assessment, :groups] do %>
     <%= select_tag :ass, options_from_collection_for_select(@groupAssessments, :id, :name) %>
-    <%= submit_tag 'Go!', class: "btn btn-primary" %>
+    <%= submit_tag 'Go!', class: "waves-effect waves-light btn btn-primary" %>
   <% end %>
 <% end %>

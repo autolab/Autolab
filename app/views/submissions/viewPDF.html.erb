@@ -79,7 +79,7 @@
             canvasContext: ctx,
             viewport: viewport
           };
-          
+
           canvas.height = viewport.height;
           canvas.width = viewport.width;
 
@@ -96,7 +96,7 @@
           }
         });
 
-        
+
       }
     }).catch(function(error){
         //no error message is logged either
@@ -119,17 +119,17 @@
   <div class="col-md-2 annotationPane">
     <% if not (@submission.assessment.exam or @submission.assessment.course.exam_in_progress) %>
       <% if @preview_mode then %>
-      <a style="width:100%;" href="?" title="Download Submission" class="btn"> 
+      <a style="width:100%;" href="?" title="Download Submission" class="btn">
         <span class="glyphicon glyphicon-pencil pull-left" aria-hidden="true"></span>
         Edit
       </a>
       <% else %>
-      <a style="width:100%;" href="?preview=true" title="Download Submission" class="btn"> 
+      <a style="width:100%;" href="?preview=true" title="Download Submission" class="btn">
         <span class="glyphicon glyphicon-zoom-out pull-left" aria-hidden="true"></span>
         Preview
       </a>
       <% end %>
-      <a style="width:100%; margin-top: 6px;" href="<%= url_for [:download, @course, @assessment, @submission, header_position: params[:header_position]] %>" title="Download Submission" class="btn"> 
+      <a style="width:100%; margin-top: 6px;" href="<%= url_for [:download, @course, @assessment, @submission, header_position: params[:header_position]] %>" title="Download Submission" class="btn">
         <span class="glyphicon glyphicon-download-alt pull-left" aria-hidden="true"></span>
         Original
       </a>
@@ -137,6 +137,14 @@
         <span class="glyphicon glyphicon-download-alt pull-left" aria-hidden="true"></span>
         Annotated
       </a>
+      <% if @assessment.has_custom_form then %>
+        <% if @assessment.getLanguages.size > 0 then %>
+            <p><b>Language:</b> <%= @submission.getSettings["Language"] %></p>
+        <% end %>
+        <% for i in 0..@assessment.getTextfields.size-1 do %>
+            <p><b><%= @assessment.getTextfields[i] %>:</b> <%= @submission.getSettings[@assessment.getTextfields[i]] %></p>
+        <% end %>
+     <% end %>
     <% end %>
   </div>
   <div class="col-md-10">

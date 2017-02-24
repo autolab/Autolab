@@ -25,7 +25,7 @@
             <% end %>
 
             <% if category != :completed %>
-              <div class="collection red darken-4">
+              <div class="collection red darken-3">
                 <% course.current_assessments.ordered.each do |asmt| %>
                   <%= link_to asmt.display_name, course_assessment_path(course, asmt), class: "collection-item grey-text text-darken-4" %>
                 <% end %>
@@ -33,13 +33,13 @@
             <% end %>
 
             <div class="card-action">
-              <%= link_to 'Course Page', course_path(course), class: "red-text text-darken-4", title: "Go to course page" %>
-              
+              <%= link_to 'Course Page', course_path(course), class: "red-text text-darken-3", title: "Go to course page" %>
+
               <% if course_cud %>
                 <% if not_student && !course_cud.section.blank? %>
-                  <%= link_to "Grade Section", [:view, course, course_cud, :gradebook, section: course_cud.section], title: "Grade your section", class: "red-text text-darken-4" %>
+                  <%= link_to "Grade Section", [:view, course, course_cud, :gradebook, section: course_cud.section], title: "Grade your section", class: "red-text text-darken-3" %>
                 <% elsif !not_student %>
-                  <%= link_to "Gradebook", [course, course_cud, :gradebook], title: "View your gradebook", class: "red-text text-darken-4" %>
+                  <%= link_to "Gradebook", [course, course_cud, :gradebook], title: "View your gradebook", class: "red-text text-darken-3" %>
                 <% end %>
               <% end %>
             </div>
