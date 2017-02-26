@@ -6,7 +6,7 @@
 <%= f.text_field :title,
   help_text: "The best titles are short and sweet." %>
 
-<%= f.text_area :description,
+<%= f.text_area :description, class: "materialize-textarea",
   help_text: "There'll also be limited space for the description text. If you need something long-form, perhaps link to a longer announcement posted on external media." %>
 
 <%= f.datetime_select :start_date,
