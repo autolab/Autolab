@@ -15,8 +15,12 @@ h1#courseTitle {
   width: 90%;
 }
 
-.cat_pair {
+.cat_container {
   margin-bottom: 20px;
+}
+
+.cat_pair {
+  margin-bottom: 0;
 }
 
 .gradebook {
@@ -176,5 +180,15 @@ th.cat_name {
   td,
   th {
     padding: 8px 0px;
+  }
+}
+
+@media only screen and (min-width: 992px) {
+  .cat_pair {
+    margin-bottom: 20px;
+  }
+
+  .cat_container {
+    margin-bottom: 0;
   }
 }
