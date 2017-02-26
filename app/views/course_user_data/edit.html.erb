@@ -101,8 +101,5 @@
   <br>
   <input id="user_submit" name="commit" type="submit" class="btn primary" value="Save Changes" onclick="formvalidation(this.parentNode); return false;">
   <!--<%= f.submit 'Save Changes' , {:class=>""} %>-->
-  <%= if @cud.instructor? then
-        link_to raw('<span class="btn">Delete User</span>'), [:destroyConfirm, @course, @editCUD]
-  end %>
 
 <%end %>
