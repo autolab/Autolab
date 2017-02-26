@@ -457,6 +457,11 @@ ul.gray-box.small > li + li {
   margin-right: auto;
 }
 
+/*This is the one that we're (I'm) using for required-field indicators.*/
+.redText {
+  color: red;
+}
+
 /**
 * Displayed on the home page
 **/

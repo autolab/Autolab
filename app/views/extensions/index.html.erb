@@ -10,6 +10,9 @@
   
   <script type="application/javascript">
     jQuery(function() {
+      $('.chosen-select').chosen({search_contains: true});
+
+
       $dueDate = moment("<%= @assessment.due_at.to_s %>", "YYYY-MM-DD hh:mm:ss ZZ").startOf('day');
 
       $extensionDaysField = $('#extension_days');
@@ -17,6 +20,11 @@
       $extensionDaysLabel = $('label[for="extension_days"]');
 
       $('.chosen-select').chosen({width: '100%'});
+
+      $extensionNewDayField.datetimepicker({
+        format: 'YYYY-MM-DD'
+      });
+      $extensionNewDayField.data('DateTimePicker').minDate($dueDate);
 
       /* Enable/disable extension days options */
       $enableInfiniteExtension = $('#extension_infinite');
