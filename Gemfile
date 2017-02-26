@@ -102,6 +102,10 @@ group :development do
 
   # static code analyzer
   gem 'rubocop', require: false
+
+  # documentation generator
+  gem 'yard'
+
 end
 
 # for PDF annotations

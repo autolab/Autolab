@@ -21,6 +21,7 @@ db/*.sqlite3
 tags
 .DS_Store
 .idea/
+.yardoc
 /docker/nginx.conf
 app/views/home/_topannounce.html.erb
 attachments/
