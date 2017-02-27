@@ -34,7 +34,7 @@ html, body {
 
 /* Button Styles */
 
-.autolab .btn { 
+.autolab .btn {
   font-weight: normal;
   background-color: $autolab-red;
 }
@@ -65,7 +65,7 @@ div.main-header h2 {
   font-size: 22px;
   line-height: 54px;
   color:#fff;
-  
+
   vertical-align: top;
   margin:0 4px;
   font-weight: lighter;
@@ -955,8 +955,8 @@ display: block;
 }
 
 .options .danger-side {
-  border-left: 6px solid #e53935; 
-  border-right: 1px solid #e53935; 
+  border-left: 6px solid #e53935;
+  border-right: 1px solid #e53935;
 }
 
 
@@ -1108,4 +1108,10 @@ div.center {
 .page-canvas-wrapper {
   position: relative;
   display: inline-block;
+}
+
+
+/* Restore hover functionality on Materialize buttons with color classes */
+.btn:hover {
+  background-color: rgba(140,0,0,0.95) !important;
 }
