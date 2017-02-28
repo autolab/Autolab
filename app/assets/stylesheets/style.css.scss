@@ -318,6 +318,8 @@ input[type="file"].upload_embedded {
 
 }
 
+/* Handin Panel */
+
 .handin-panel {
   background-color: rgba(243, 240, 240, 0.7);
   border: 1px solid #ddd;
@@ -978,9 +980,11 @@ display: block;
   padding-bottom: 2px;
 }
 
+
 #sudo_email {
 	margin-bottom: 2rem;
 }
+
 /* Homepage Styling */
 
 .home {
@@ -991,6 +995,8 @@ display: block;
   input[type="password"] {
     min-width: 240px;
     margin-top: 6px;
+    margin-bottom: 20px;
+    width: 38%;
   }
 
   input[type="submit"] {
@@ -1016,6 +1022,19 @@ display: block;
     margin-bottom: 20px;
   }
 
+}
+
+/* Login Panel */
+
+.login-logo {
+  width: 8%;
+}
+
+@media (max-width: 768px) {
+
+  .login-logo {
+    width: 15%;
+  }
 }
 
 .action-menu {
