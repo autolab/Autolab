@@ -7,7 +7,7 @@ jQuery(function() {
     var current_editor = undefined;
     var current_popover = undefined;
 
-    var num_cols = jQuery("table#grades > thead > tr:first > th").length
+    var num_cols = hclasses.length;
 
     numeric_columns = []
     for (var i = first_problem_column; i < num_cols; i++)
@@ -127,7 +127,7 @@ jQuery(function() {
         $prob_col.children().appendTo($td_prob);
       }
     }
-    console.log(table_data);
+    
     // main score table
     var oTable = jQuery("#grades").dataTable({
         'data' : table_data,
