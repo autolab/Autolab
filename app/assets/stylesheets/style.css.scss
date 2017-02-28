@@ -287,6 +287,22 @@ div.main-header img {
 
 }
 
+/* Login Panel */
+
+.login-logo {
+  width: 9%;
+}
+
+@media (max-width: 768px) {
+
+  .login-logo {
+    width: 15%;
+  }
+}
+
+
+/* Handin Panel */
+
 .handin-panel {
   background-color: rgba(243, 240, 240, 0.7);
   border: 1px solid #ddd;
