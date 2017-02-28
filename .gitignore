@@ -5,6 +5,7 @@ assessmentConfig/
 courseConfig/
 config/environments/production.rb
 config/initializers/devise.rb
+coverage/
 /courses/
 /courses
 /gradebooks/
