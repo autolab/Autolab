@@ -12,6 +12,7 @@ Autolab3::Application.routes.draw do
       match "developer_login", via: [:get, :post]
     end
     get "error"
+    get "error_404"
     get "no_user"
   end
 

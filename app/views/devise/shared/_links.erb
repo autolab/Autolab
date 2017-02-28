@@ -18,6 +18,7 @@
   <%= link_to "Didn't receive unlock instructions?", new_unlock_path(resource_name) %><br />
 <% end -%>
 
+<% if false %>
 <%- if devise_mapping.omniauthable? %>
   <%- resource_class.omniauth_providers.each do |provider| %>
 		<% if provider.to_s.titleize == "Shibboleth" %>
@@ -25,5 +26,7 @@
 		<% else %>
 			<%= link_to "Sign in with #{provider.to_s.titleize}", user_omniauth_authorize_path(provider) %><br />
 		<% end %>
-  <% end -%>
+	<% end -%>
+<% end %>
+
 <% end -%>

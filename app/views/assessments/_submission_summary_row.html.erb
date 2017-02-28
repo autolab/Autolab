@@ -16,7 +16,7 @@
         <%= submission.filename %>
         <% end %>
 
-        
+
       <% else %>
         None
       <% end %>
@@ -98,7 +98,7 @@
   <% if @assessment.version_penalty? %>
     <td><%== submission.version_penalty(@effectiveCud) %> <i>(<%= submission.version_over_threshold_by %>)</i></td>
   <% end %>
-  
+
   <td>
     <% if (submission.special_type == Submission::NG) then %>
       NG
@@ -118,14 +118,14 @@
 
 </table>
 <br>
-  <span class="smallText">Submitted at: <span class="moment-date-time"><%= submission.created_at %></span></span>
+  <span class="smallText">Submitted at: <span class="moment-date-time"><%= submission.created_at.in_time_zone.to_s %></span></span>
 <br>
   <% if @cud.instructor? then %>
       <% if @assessment.has_autograder? and submission.version > 0 then %>
-        <%= link_to 'Regrade', [:regrade, @course, @assessment, submission_id: submission], {method: :post, class:"btn small"} %> 
+        <%= link_to 'Regrade', [:regrade, @course, @assessment, submission_id: submission], {method: :post, class:"waves-effect waves-light btn small"} %> 
       <% end %>
-      <%= link_to 'Destroy', [:destroyConfirm, @course, @assessment, submission], {:class=>"btn small"} %> 
-      <%= link_to 'Edit', [:edit, @course, @assessment, submission], {:class=>"btn small"} %>
+      <%= link_to 'Destroy', [:destroyConfirm, @course, @assessment, submission], {:class=>"waves-effect waves-light btn small"} %> 
+      <%= link_to 'Edit', [:edit, @course, @assessment, submission], {:class=>"waves-effect waves-light btn small"} %>
   <% end %>
 
     <% if @cud.instructor? %>

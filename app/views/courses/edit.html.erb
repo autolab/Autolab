@@ -5,32 +5,42 @@
 <% end %>
 
 <%= form_for @course, as: :editCourse, url: course_path(@course), method: :patch, builder: FormBuilderWithDateTimeInput do |f| %>
-<% if @course.errors.any? %>
-	<div id="error_explanation">
-		<h2><%= pluralize(@course.errors.count, "error") %>
-      prohibited this course from being saved:</h2>
+	<% if @course.errors.any? %>
+		<div id="error_explanation">
+			<h2><%= pluralize(@course.errors.count, "error") %>
+	      prohibited this course from being saved:</h2>
 
-		<ul>
-			<% @course.errors.full_messages.each do |msg| %>
-			<li><%= msg %></li>
-			<% end %>
-		</ul>
+			<ul>
+				<% @course.errors.full_messages.each do |msg| %>
+				<li><%= msg %></li>
+				<% end %>
+			</ul>
+		</div>
+	<% end %>
+
+
+	<div class="row">
+		<div class="col-md-6">
+	    	<%= render :partial=>"courseFields", :locals=>{:f=>f, :course=>@course} %>
+	  	</div>
 	</div>
+
+	<br>
+	<div class="row">
+		<div class="col s2 ">
+			<%= f.submit 'Save', { :class=> "btn primary" } %>
+		</div>	
+		<div class="col s3">
+			<% if current_user.administrator? %>
+			<%= link_to "Delete Course", course_path(@course), method: :delete,
+				data: {confirm: "Are you sure to destroy #{@course.full_name}?"}, class: "btn" %>
+			<% end %>
+		</div>
+	</div>
+
+
 <% end %>
 
-
-<div class="row">
-  <div class="col-md-6">
-    <%= render :partial=>"courseFields", :locals=>{:f=>f, :course=>@course} %>
-  </div>
-</div>
-
-<br>
-<%= f.submit 'Update', { :class=> "btn primary" } %>
-<% end %>
-<hr>
-
-<% if current_user.administrator? %>
-<%= link_to "Delete Course", course_path(@course), method: :delete,
-	data: {confirm: "Are you sure to destroy #{@course.full_name}?"}, class: "btn" %>
-<% end %>
+<script>
+document.getElementById("editCourse_name").parentNode.setAttribute("hidden",true);
+</script>

@@ -7,6 +7,9 @@ class SubmissionsController < ApplicationController
   before_action :set_assessment
   before_action :set_submission, only: [:destroy, :destroyConfirm, :download, :edit, :listArchive, :update, :view]
   before_action :get_submission_file, only: [:download, :listArchive, :view]
+  rescue_from ActionView::MissingTemplate do |exception|
+      redirect_to("/home/error_404")
+  end
 
   # this page loads.  links/functionality may be/are off
   action_auth_level :index, :instructor
@@ -183,7 +186,7 @@ class SubmissionsController < ApplicationController
       send_data file,
                 filename: pathname,
                 disposition: "inline"
-    
+
     elsif params[:annotated]
 
       @filename_annotated = @submission.handin_annotated_file_path
@@ -197,7 +200,7 @@ class SubmissionsController < ApplicationController
       Prawn::Document.generate(@filename_annotated, :template => @filename) do |pdf|
 
         @annotations.each do |annotation|
-          
+
           return if annotation.coordinate.nil?
 
           position = annotation.coordinate.split(',')
@@ -224,10 +227,10 @@ class SubmissionsController < ApplicationController
 
           # + 1 since pages are indexed 1-based
           pdf.go_to_page(page + 1)
-          pdf.fill_color "ff0000" 
+          pdf.fill_color "ff0000"
           pdf.text_box comment,
-                      { :at => [xCord + 3, yCord - 3], 
-                        :height => height, 
+                      { :at => [xCord + 3, yCord - 3],
+                        :height => height,
                         :width => width }
 
         end
@@ -240,6 +243,7 @@ class SubmissionsController < ApplicationController
 
     else
       mime = params[:forceMime] || @submission.detected_mime_type
+
       send_file @filename,
                 filename: @basename,
                 disposition: "inline"
@@ -310,17 +314,41 @@ class SubmissionsController < ApplicationController
       else
         @annotations = @submission.annotations.to_a
       end
+
     end
 
     @problemSummaries = {}
     @problemGrades = {}
 
+
+    @annotations.delete_if do |annotation|
+      problem = annotation.problem ? annotation.problem.name : "General"
+      if problem != "General" then
+        out = Score.where("submission_id = ? AND  problem_id = ?", @submission.id, Problem.where("assessment_id = ? AND name = ?", @assessment.id, problem).first.id).first.released
+        if out || (@cud.instructor || @cud.course_assistant) then
+          false
+        else
+          if(@assessment.grading_deadline.past?) then 
+            false
+          else
+            true
+          end
+        end
+      else
+        if(@assessment.grading_deadline.past? || (@cud.instructor || @cud.course_assistant)) then 
+          false
+        else
+          true
+        end
+      end 
+    end
     # extract information from annotations
-    for annotation in @annotations do
+    @annotations.each do |annotation|
       description = annotation.comment
       value = annotation.value || 0
       line = annotation.line
       problem = annotation.problem ? annotation.problem.name : "General"
+
 
       @problemSummaries[problem] ||= []
       @problemSummaries[problem] << [description, value, line, annotation.submitted_by, annotation.id]
@@ -329,6 +357,7 @@ class SubmissionsController < ApplicationController
       @problemGrades[problem] += value
     end
 
+
     @problems = @assessment.problems.to_a
     @problems.sort! { |a, b| a.id <=> b.id }
 
@@ -336,12 +365,12 @@ class SubmissionsController < ApplicationController
     # So if it fails, redirect, instead of showing an error page.
     if PDF.pdf?(file)
       @preview_mode = false
-      if params[:preview] then 
-        @preview_mode = true 
+      if params[:preview] then
+        @preview_mode = true
       end
 
       render(:viewPDF) && return
-    else 
+    else
       begin
         render(:view) && return
       rescue
@@ -382,6 +411,11 @@ private
 
     @filename = @submission.handin_file_path
     @basename = File.basename @filename
+
+    basename_parts = @basename.split("_")
+    basename_parts.insert(-3, @assessment.name)
+
+    @basename = basename_parts.join("_")
 
     unless File.exist? @filename
       flash[:error] = "Could not find submission file."

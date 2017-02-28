@@ -1,0 +1,33 @@
+<h2>404 &ndash; Not found</h2>
+
+<h2 style="margin-bottom:0px"><%= @errorMessage %></h2>
+
+<% if flash[:error] %><p><b><%= flash[:error] %></b></p><% end %>
+
+<p><b>Oops!</b> Find this page Autolab can not. If you believe there should be something here please email us at  <a href="mailto:autolab-dev-list@listserv.buffalo.edu">autolab-dev-list@listserv.buffalo.edu</a>, with the page that you were trying to access.</p>
+
+<%= image_tag "DonkeyKong.jpg", width: '200px' %>
+
+<% if @error then %>
+  <br><br>
+  <p><i>Remember that if you modify any config files, you'll need to  reload them for the changes to take effect.</i><br>
+    <% if @course_name then %>
+      <b><%= link_to "Reload Course Config",
+              reload_course_path(name: @course_name) %></b><br>
+      <% if @assessment_name then %>
+        <b><%= link_to "Reload Assessment Config",
+                reload_course_assessment_path(course_name: @course_name,
+                  name: @assessment_name) %></b>
+      <% end %>
+    <% end %>
+  </p>
+
+  <p>
+    <h3>Error Information</h3>
+    <pre><%= debug(@error) %></pre>
+  </p>
+  <p>
+    <h3>Stack Dump</h3>
+    <pre><%= processStackDump(@error.backtrace).join("<br>").html_safe %></pre>
+  </p>
+<% end %>

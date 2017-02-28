@@ -10,6 +10,10 @@ class CoursesController < ApplicationController
   # if there's no course, there are no persistent announcements for that course
   skip_before_action :update_persistent_announcements, only: [:index, :new, :create]
 
+    rescue_from ActionView::MissingTemplate do |exception|
+      redirect_to("/home/error_404")
+  end
+
   def index
     courses_for_user = User.courses_for_user current_user
 
@@ -27,7 +31,8 @@ class CoursesController < ApplicationController
     redirect_to course_assessments_url(@course)
   end
 
-  NEW_ROSTER_COLUMNS = 29
+  ROSTER_COLUMNS_S15 = 29
+  ROSTER_COLUMNS_F16 = 32
 
   action_auth_level :manage, :instructor
   def manage
@@ -274,7 +279,7 @@ file, most likely a duplicate email.  The exact error was: #{e} "
   # assessment directory.
   action_auth_level :installAssessment, :instructor
   def installAssessment
-    @assignDir = File.join(Rails.root, "courses", @course.name)
+    @assignDir = Rails.root.join("courses", @course.name)
     @availableAssessments = []
     begin
       Dir.foreach(@assignDir) do |filename|
@@ -331,7 +336,7 @@ file, most likely a duplicate email.  The exact error was: #{e} "
 
   action_auth_level :runMoss, :instructor
   def runMoss
-    # Return if we have no files to process.
+  	# Return if we have no files to process.
     unless params[:assessments] || params[:external_tar]
       flash[:error] = "No input files provided for MOSS."
       redirect_to(action: :moss) && return
@@ -355,24 +360,81 @@ file, most likely a duplicate email.  The exact error was: #{e} "
         assessments << assessment
       end
     end
-
-    @mossCmd = [Rails.root.join("vendor", "mossnet -d")]
-
-    # Create a temporary directory
+		
+		# Create a temporary directory
     @failures = []
     tmp_dir = Dir.mktmpdir("#{@cud.user.email}Moss", Rails.root.join("tmp"))
-    extract_asmt_for_moss(tmp_dir, assessments)
-    extract_tar_for_moss(tmp_dir, params[:external_tar])
-    # Ensure that all files in Moss tmp dir are readable
+
+		base_file = params[:box_basefile]
+		max_lines = params[:box_max]
+		language = params[:box_language]
+
+		moss_params = ""
+
+		if not base_file.nil?
+			extract_tar_for_moss(tmp_dir, params[:base_tar], false)
+			moss_params = [moss_params, "-b", @basefiles].join(" ")
+		end
+		if not max_lines.nil?
+			if params[:max_lines] == ""
+				params[:max_lines] = 10
+			end
+			moss_params = [moss_params, "-m", params[:max_lines]].join(" ")
+		end
+		if not language.nil?
+			moss_params = [moss_params, "-l", params[:language_selection]].join(" ")
+		end				
+
+		# Create a temporary directory
+		# Get moss flags from text field 	
+		moss_flags = ["mossnet" + moss_params + " -d"].join(" ")
+    @mossCmd = [Rails.root.join("vendor", moss_flags)]
+
+    # Create a temporary directory
+
+    @failures = []
+    tmp_dir = Dir.mktmpdir("#{@cud.user.email}Moss", Rails.root.join("tmp"))
+
+		base_file = params[:box_basefile]
+		max_lines = params[:box_max]
+		language = params[:box_language]
+
+		moss_params = ""
+
+		if not base_file.nil?
+			extract_tar_for_moss(tmp_dir, params[:base_tar], false)
+			moss_params = [moss_params, "-b", @basefiles].join(" ")
+		end
+		if not max_lines.nil?
+			if params[:max_lines] == ""
+				params[:max_lines] = 10
+			end
+			moss_params = [moss_params, "-m", params[:max_lines]].join(" ")
+		end
+		if not language.nil?
+			moss_params = [moss_params, "-l", params[:language_selection]].join(" ")
+		end				
+
+		# Get moss flags from text field 	
+		moss_flags = ["mossnet" + moss_params + " -d"].join(" ")
+    @mossCmd = [Rails.root.join("vendor", moss_flags)]
+
+
+		extract_asmt_for_moss(tmp_dir, assessments)
+    extract_tar_for_moss(tmp_dir, params[:external_tar], true)
+
+		# Ensure that all files in Moss tmp dir are readable
     system("chmod -R a+r #{tmp_dir}")
     ActiveRecord::Base.clear_active_connections!
-    # Now run the Moss command
+    # Remove non text files when making a moss run
+    `~/Autolab/script/cleanMoss #{tmp_dir}`
+		# Now run the Moss command
     @mossCmdString = @mossCmd.join(" ")
     @mossExit = $CHILD_STATUS
     @mossOutput = `#{@mossCmdString} 2>&1`
 
-    # Clean up after ourselves (droh: leave for debugging)
-    # `rm -rf #{tmp_dir}`
+    # Clean up after ourselves (droh: leave for dsebugging)
+    `rm -rf #{tmp_dir}`
   end
 
 private
@@ -577,41 +639,21 @@ private
     parsedRoster = CSV.parse(roster)
     if parsedRoster[0][0].nil?
       fail "Roster cannot be recognized"
-    elsif (parsedRoster[0].length == NEW_ROSTER_COLUMNS)
+    elsif (parsedRoster[0].length == ROSTER_COLUMNS_F16)
+      # In CMU S3 roster. Columns are:
+      # Semester(0), Course(1), Section(2), (Lecture-skip)(3), (Mini-skip)(4),
+      # Last Name(5), First Name(6), (MI-skip)(7), Andrew ID(8),
+      # (Email-skip)(9), School(10), (Department-skip)(11), Major(12),
+      # Year(13), (skip)(14), Grade Policy(15), ...
+      map=[0, 8, 5, 6, 10, 12, 13, 15, -1, 1, 2]
+      select_columns=ROSTER_COLUMNS_F16
+    elsif (parsedRoster[0].length == ROSTER_COLUMNS_S15)
       # In CMU S3 roster. Columns are:
       # Semester(0), Lecture(1), Section(2), (skip)(3), (skip)(4), Last Name(5),
       # First Name(6), (skip)(7), Andrew ID(8), (skip)(9), School(10),
       # Major(11), Year(12), (skip)(13), Grade Policy(14), ...
-
-      # Sanitize roster input, ignoring empty / incomplete lines.
-      # Also requires each line to have an andrewID, else ignores it
-      parsedRoster.select! { |row| row.length == NEW_ROSTER_COLUMNS && row[8] != nil}
-      # Detect if there is a header row
-      if (parsedRoster[0][0] == "Semester")
-        offset = 1
-      else
-        offset = 0
-      end
-      numRows = parsedRoster.length - offset
-      convertedRoster = Array.new(numRows) { Array.new(11) }
-
-      for i in 0..(numRows - 1)
-        convertedRoster[i][0] = parsedRoster[i + offset][0]
-        if (Rails.env == "production")
-          convertedRoster[i][1] = parsedRoster[i + offset][8] + "@andrew.cmu.edu"
-        else
-          convertedRoster[i][1] = parsedRoster[i + offset][8] + "@foo.bar"
-        end
-        convertedRoster[i][2] = parsedRoster[i + offset][5]
-        convertedRoster[i][3] = parsedRoster[i + offset][6]
-        convertedRoster[i][4] = parsedRoster[i + offset][10]
-        convertedRoster[i][5] = parsedRoster[i + offset][11]
-        convertedRoster[i][6] = parsedRoster[i + offset][12]
-        convertedRoster[i][7] = parsedRoster[i + offset][14]
-        convertedRoster[i][9] = parsedRoster[i + offset][1]
-        convertedRoster[i][10] = parsedRoster[i + offset][2]
-      end
-      return convertedRoster
+      map=[0, 8, 5, 6, 10, 11, 12, 14, -1, 1, 2]
+      select_columns=ROSTER_COLUMNS_S15
     else
       # No header row. Columns are:
       # Semester(0), Email(1), Last Name(2), First Name(3), School(4),
@@ -619,6 +661,36 @@ private
       # Section(10), ...
       return parsedRoster
     end
+
+    # Sanitize roster input, ignoring empty / incomplete lines.
+    # Also requires each line to have an andrewID, else ignores it
+    parsedRoster.select! { |row| row.length == select_columns && row[map[1]] != nil}
+    # Detect if there is a header row
+    if (parsedRoster[0][0] == "Semester")
+      offset = 1
+    else
+      offset = 0
+    end
+    numRows = parsedRoster.length - offset
+    convertedRoster = Array.new(numRows) { Array.new(11) }
+
+    if (Rails.env == "production")
+       domain="andrew.cmu.edu"
+    else
+       domain="foo.bar"
+    end
+    for i in 0..(numRows - 1)
+      for j in 0..10
+        if map[j] >= 0
+          if j == 1
+            convertedRoster[i][j] = parsedRoster[i + offset][map[j]] + "@" + domain
+          else
+            convertedRoster[i][j] = parsedRoster[i + offset][map[j]]
+          end
+        end
+      end
+    end
+    return convertedRoster
   end
 
   def extract_asmt_for_moss(tmp_dir, assessments)
@@ -674,21 +746,32 @@ private
     end
   end
 
-  def extract_tar_for_moss(tmp_dir, external_tar)
+  def extract_tar_for_moss(tmp_dir, external_tar, archive)
     return unless external_tar
-    # Directory to hold tar ball and all individual files.
-    extTarDir = File.join(tmp_dir, "external_input")
-    Dir.mkdir(extTarDir)
+    
+			# Directory to hold tar ball and all individual files.
+	    extTarDir = File.join(tmp_dir, "external_input")
+	 		baseFilesDir = File.join(tmp_dir, "basefiles")
+			begin
+				Dir.mkdir(extTarDir)
+			  Dir.mkdir(baseFilesDir) # To hold all basefiles
+				Dir.chdir(baseFilesDir)
+			rescue
+			end
 
-    # Read in the tarfile from the given source.
-    extTarPath = File.join(extTarDir, "input_file")
-    external_tar.rewind
-    File.open(extTarPath, "wb") { |f| f.write(external_tar.read) } # Write tar file.
+			# Read in the tarfile from the given source.
+	    extTarPath = File.join(extTarDir, "input_file")
+	    external_tar.rewind
+	    File.open(extTarPath, "wb") { |f| f.write(external_tar.read) } # Write tar file.
 
-    # Directory to hold all external individual submission.
-    extFilesDir = File.join(extTarDir, "submissions")
-    Dir.mkdir(extFilesDir) # To hold all submissions
-    Dir.chdir(extFilesDir)
+	    # Directory to hold all external individual submission.
+	    extFilesDir = File.join(extTarDir, "submissions")
+		
+		begin
+			Dir.mkdir(extFilesDir) # To hold all submissions
+	    Dir.chdir(extFilesDir)
+		rescue
+		end
 
     # Untar the given Tar file.
     begin
@@ -698,8 +781,8 @@ private
       archive_extract.each do |entry|
         pathname = Archive.get_entry_name(entry)
         unless Archive.looks_like_directory?(pathname)
+					destination = archive ? File.join(extFilesDir, pathname) : File.join(baseFilesDir, pathname)
           pathname.gsub!(/\//, "-")
-          destination = File.join(extFilesDir, pathname)
           # make sure all subdirectories are there
           File.open(destination, "wb") do |out|
             out.write Archive.read_entry_file(entry)
@@ -712,6 +795,10 @@ private
     end
 
     # Feed the uploaded files to MOSS.
-    @mossCmd << File.join(extFilesDir, "*")
+		if archive
+	    @mossCmd << File.join(extFilesDir, "*")
+		else
+			@basefiles = File.join(baseFilesDir, "*")
+		end
   end
 end

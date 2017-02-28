@@ -13,9 +13,9 @@ namespace :autolab do
 
   AUTOGRADE_CATEGORY_NAME = "CategoryAutograde"
   AUTOGRADE_TEMPLATE_DIR_PATH =
-          File.join(Rails.root, "templates", "labtemplate")
+          Rails.root.join("templates", "labtemplate")
   AUTOGRADE_TEMPLATE_CONFIG_PATH =
-          File.join(Rails.root, "templates", "AutoPopulated-labtemplate.rb")
+          Rails.root.join("templates", "AutoPopulated-labtemplate.rb")
   AUTOGRADE_TEMPLATE_NAME = "labtemplate"
   AUTOGRADE_TEMPLATE_DISPLAY_NAME = "Lab Template"
   AUTOGRADE_TEMPLATE_MAX_SCORE = 100.0
@@ -38,7 +38,7 @@ namespace :autolab do
   end
 
   def load_assessments course
-    course_dir = File.join(Rails.root, "courses", course.name)
+    course_dir = Rails.root.join("courses", course.name)
     ASSESSMENT_CATEGORIES.each do |cat|
 
       # start date for this category
@@ -173,7 +173,7 @@ namespace :autolab do
   end
 
   def load_submissions_for(course, cud)
-    course_dir = File.join(Rails.root, "courses", course.name)
+    course_dir = Rails.root.join("courses", course.name)
     user = cud.user
 
     course.assessments.each do |a|
@@ -228,12 +228,12 @@ namespace :autolab do
   end
 
   def add_assessment_files course
-    course_dir = File.join Rails.root, "courses", course.name
+    course_dir = Rails.root.join("courses", course.name)
 
     course.assessments.each do |a|
       assessment_dir = File.join(course_dir, a.name)
       assessment_handin_dir = File.join(assessment_dir, a.handin_directory)
-      assessment_template_path = File.join(Rails.root, "lib", "__defaultAssessment.rb")
+      assessment_template_path = Rails.root.join("lib", "__defaultAssessment.rb")
       assessment_template = nil
 
       File.open(assessment_template_path) do |f|
@@ -262,7 +262,7 @@ namespace :autolab do
 
   def load_autograde_assessment course
 
-    course_dir = File.join(Rails.root, "courses", course.name)
+    course_dir = Rails.root.join("courses", course.name)
 
     # Create assessment
     asmt = course.assessments.create! do |a|
@@ -299,7 +299,7 @@ namespace :autolab do
     FileUtils.cp_r(AUTOGRADE_TEMPLATE_DIR_PATH, course_dir)
 
     # Copy assessment config
-    assessmentConfig_dir = File.join(Rails.root, "assessmentConfig")
+    assessmentConfig_dir = Rails.root.join("assessmentConfig")
     FileUtils.cp(AUTOGRADE_TEMPLATE_CONFIG_PATH, assessmentConfig_dir)
 
     # Reload config file
@@ -361,8 +361,8 @@ namespace :autolab do
 
   def delete_course course
     if course
-      course_dir = File.join(Rails.root, "courses", course.name)
-      course_config_dir = File.join(Rails.root, "courseConfig")
+      course_dir = Rails.root.join("courses", course.name)
+      course_config_dir = Rails.root.join("courseConfig")
       course_config_path = File.join(course_config_dir, "#{course.name}.rb")
 
       course.destroy

@@ -1,10 +1,11 @@
 require "utilities"
 require "association_cache"
-
+require "json"
 ##
 # Submissions jointly belong to Assessments and CourseUserData
 #
 class Submission < ActiveRecord::Base
+  attr_accessor :lang, :formfield1, :formfield2, :formfield3
   trim_field :filename, :notes, :mime_type
 
   belongs_to :course_user_datum
@@ -74,9 +75,8 @@ class Submission < ActiveRecord::Base
                version.to_s + "_" +
                assessment.handin_filename
     directory = assessment.handin_directory
-    path = File.join(Rails.root, "courses",
-                     course_user_datum.course.name,
-                     assessment.name, directory, filename)
+    path = Rails.root.join("courses", course_user_datum.course.name,
+                           assessment.name, directory, filename)
 
     if upload["file"]
       # Sanity!
@@ -94,15 +94,54 @@ class Submission < ActiveRecord::Base
     self.filename = filename
 
     if upload["file"]
-      self.mime_type = upload["file"].content_type
+      begin
+        self.mime_type = upload["file"].content_type
+      rescue
+        self.mime_type = nil
+      end
       self.mime_type = "text/plain" unless mime_type
     elsif upload["local_submit_file"]
       self.mime_type = "text/plain"
     elsif upload["tar"]
       self.mime_type = "application/x-tgz"
     end
-
+    save_additional_form_fields(upload)
     self.save!
+    settings_file = course_user_datum.user.email + "_" +
+               version.to_s + "_" + assessment.handin_filename +
+               ".settings.json"
+
+		settings_path = File.join(Rails.root, "courses",
+                     course_user_datum.course.name,
+                     assessment.name, directory, settings_file)
+
+		File.open(settings_path, "wb") { |f| f.write(self.settings) }
+  end
+
+  def save_additional_form_fields(params)
+      form_hash = Hash.new
+      if params["lang"]
+          form_hash["Language"] = params["lang"]
+      end
+      if params["formfield1"]
+          form_hash[assessment.getTextfields[0]] = params["formfield1"]
+      end
+      if params["formfield2"]
+          form_hash[assessment.getTextfields[1]] = params["formfield2"]
+      end
+      if params["formfield3"]
+          form_hash[assessment.getTextfields[2]] = params["formfield3"]
+      end
+      self.settings = form_hash.to_json
+      self.save!
+  end
+
+  def getSettings
+      if self.settings
+          return JSON.parse(self.settings)
+      else
+          return Hash.new
+      end
   end
 
   def archive_handin
@@ -234,13 +273,18 @@ class Submission < ActiveRecord::Base
     final_score_opts o
   end
 
+  # NOTE: threshold  is no longer calculated using submission version,
+  # but now using the number of submissions. This way, deleted submissions will
+  # not be accounted for in the version penalty. 
   def version_over_threshold_by
     # version threshold of -1 allows infinite submissions without penalty
     return 0 if assessment.effective_version_threshold < 0
 
     # normal submission versions start at 1
     # unofficial submissions conveniently have version 0
-    [version - assessment.effective_version_threshold, 0].max
+    # actual version number is not used here, instead submission count is used
+    count = assessment.submissions.where(course_user_datum: course_user_datum).count
+    [count - assessment.effective_version_threshold, 0].max
   end
 
   # Refer to https://github.com/autolab/autolab-src/wiki/Caching

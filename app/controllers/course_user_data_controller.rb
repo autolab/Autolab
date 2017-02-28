@@ -1,6 +1,10 @@
 class CourseUserDataController < ApplicationController
   before_action :add_users_breadcrumb
 
+    rescue_from ActionView::MissingTemplate do |exception|
+      redirect_to("/home/error_404")
+  end
+
   action_auth_level :index, :student
   def index
     @requestedUser = @cud
@@ -31,12 +35,19 @@ class CourseUserDataController < ApplicationController
       if user
         @newCUD.user = user
       else
-        flash[:error] = "The user with email #{email} could not be created  "
-        redirect_to(action: "new") && return
+        if cud_parameters[:user_attributes][:email] == "" or
+           cud_parameters[:user_attributes][:first_name] == "" or
+           cud_parameters[:user_attributes][:last_name] == ""
+
+          flash[:error] = "All required fields must be filled"
+          redirect_to(action: "new") && return
+        else
+          flash[:error] = "The user with email #{email} could not be created"
+          redirect_to(action: "new") && return
+        end
       end
 
     else
-      # check CUD existence
       unless user.course_user_data.where(course: @course).empty?
         flash[:error] = "User #{email} is already in #{@course.full_name}"
         redirect_to(action: "new") && return
@@ -44,7 +55,6 @@ class CourseUserDataController < ApplicationController
       @newCUD.user = user
     end
 
-    # save CUD
     if @newCUD.save
       flash[:success] = "Success: added user #{email} in #{@course.full_name}"
       if @cud.user.administrator?
