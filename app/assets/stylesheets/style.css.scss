@@ -287,20 +287,6 @@ div.main-header img {
 
 }
 
-/* Login Panel */
-
-.login-logo {
-  width: 9%;
-}
-
-@media (max-width: 768px) {
-
-  .login-logo {
-    width: 15%;
-  }
-}
-
-
 /* Handin Panel */
 
 .handin-panel {
@@ -931,6 +917,19 @@ display: block;
     margin-bottom: 20px;
   }
 
+}
+
+/* Login Panel */
+
+.login-logo {
+  width: 8%;
+}
+
+@media (max-width: 768px) {
+
+  .login-logo {
+    width: 15%;
+  }
 }
 
 .action-menu {
