@@ -40,9 +40,6 @@
               <li> <%= link_to "Edit assessment", {:action => "edit" }, {:title=> "View and modify the properties for this assessment, including its problems", :class=>""} %></li>
               <li> <%= link_to "Grade submissions", {:action => "viewGradesheet" }, {:title=> "View and enter grades on the gradesheet" } %></li>
               <li> <%= link_to "Export assessment", {:action => "export" }, {:title=> "Export persistent properties that will be imported when you install this assessment in a future term" } %></li>
-              <% if @assessment.has_svn then %>
-                <li><%= link_to "SVN settings", [:admin_svn, @course, @assessment], title: "Manage the SVN repositories" %></li>
-              <% end %>
 
               <% if @assessment.has_autograder? then %>
                 <li><%= link_to "Autograder settings", [:edit, @course, @assessment, :autograder], title: "Modify autograding properties such as the VM image and the timeout value" %></li>
