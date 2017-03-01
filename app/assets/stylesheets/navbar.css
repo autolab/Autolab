@@ -62,6 +62,7 @@ nav .nav-wrapper .button-collapse .material-icons{
   nav, nav .nav-wrapper i, nav a.button-collapse, nav a.button-collapse i {
     height: 50px;
     line-height: 50px;
+  }
 }
 
 @media (max-width: 400px) {
