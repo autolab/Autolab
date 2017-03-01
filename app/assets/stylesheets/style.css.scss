@@ -7,9 +7,15 @@
 * Class and ID Rules. Also pseudo classes *
 *******************************************/
 
+/********************************************************
+* These colors have been changed to fit a UB aesthetic. *
+*            The var names have not											*
+********************************************************/
 $autolab-red: rgba(153, 0, 0, 0.9);
+$autolab-subtle-red: #C87B7E;
 $autolab-subtle-gray: #eee;
 $autolab-highlight-gray: #ccc;
+#F2EFEF
 
 html, body {
   height: 100%;
@@ -26,6 +32,13 @@ html, body {
   display:inline;
 }
 
+/* Button Styles */
+
+.autolab .btn {
+  font-weight: normal;
+  background-color: $autolab-red;
+}
+
 /* Helper Styles */
 
 .full-width {
@@ -35,15 +48,16 @@ html, body {
 /* Navbar Styling */
 
 div.main-header {
-  background-color: rgba(153, 0, 0, 0.9);
+  background-color: $autolab-red;
   width: 100%;
-  border-bottom: 1px solid rgba(133, 0, 0, 0.9);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.9);
 }
 
 div.main-header .logo {
   display: inline-block;
   vertical-align: top;
   line-height: 54px;
+  //margin-top:5px;
 }
 
 div.main-header h2 {
@@ -51,7 +65,7 @@ div.main-header h2 {
   font-size: 22px;
   line-height: 54px;
   color:#fff;
-  display: inline-block;
+
   vertical-align: top;
   margin:0 4px;
   font-weight: lighter;
@@ -95,7 +109,7 @@ div.main-header img {
   line-height: 14px;
   border-radius: 18px;
   font-weight: normal;
-  color: rgba(153, 0, 0, 0.9);
+  color: $autolab-red;
   border: 2px solid #fff;
 }
 
@@ -118,12 +132,39 @@ div.main-header img {
 }
 
 .action-links.navbar-nav li.dropdown a:hover {
-  color: rgba(153, 0, 0, 0.9);
+  color: $autolab-red;
 }
 
 .action-links .dropdown-menu .divider {
   margin-top: 2px;
   margin-bottom: 2px;
+}
+
+.annotationPane .left {
+	float: none !important;
+	margin-left: -10px;
+}
+
+.caret {
+	border-color: transparent !important;
+}
+
+/* embedded-form */
+.embedded-form {
+  display: inline-block;
+  cursor: pointer;
+}
+
+input[type="file"].upload_embedded {
+    display: none;
+}
+
+#upload_button .control-label {
+  display: none;
+}
+
+.hide-all {
+  display: none;
 }
 
 .navbar-nav.action-links > li > .dropdown-menu {
@@ -137,10 +178,6 @@ div.main-header img {
   margin-right: 18px;
   line-height: 30px;
   margin-left: 10px;
-}
-
-.main-header .pull-right {
-  padding-top: 16px;
 }
 
 .main-header .dropdown-toggle {
@@ -230,7 +267,7 @@ div.main-header img {
   div.main-header .logo {
 
     img {
-      width: 120px;
+      // width: 120px;
     }
   }
 
@@ -277,11 +314,25 @@ div.main-header img {
 
 }
 
+/* Handin Panel */
+
 .handin-panel {
   background-color: rgba(243, 240, 240, 0.7);
   border: 1px solid #ddd;
   border-radius: 4px;
-  padding: 18px;
+  /*padding: 18px;*/
+  top: -2.8rem;
+}
+
+.handin-panel p {
+  margin: 8px !important;
+}
+
+.handin-panel .card-action {
+  padding-right: 20px;
+    padding-left: 20px;
+    padding-top: 3px;
+    padding-bottom: 10px;
 }
 
 .handin-panel #submission_file {
@@ -292,7 +343,15 @@ div.main-header img {
   display: none;
 }
 
-.history-download-pane .glyphicon {
+.handin-btn {
+  background-color: $autolab-red;
+  box-shadow: none;
+}
+.handin-btn-small {
+  padding: 0px 1.3rem;
+}
+
+.history-download-pane .material-icons {
   font-size: 14px;
 }
 
@@ -307,14 +366,14 @@ div#footer {
   border-top: 1px solid #fafafa;
 }
 
-div#footer .pull-right {
+div#footer .right {
   padding-top: 14px;
 }
 
 div#footer a {
   display: inline-block;
   padding: 12px;
-  color: #ccc;
+  color: $autolab-highlight-gray;
 }
 
 div#footer div.fb-like.fb_iframe_widget {
@@ -383,7 +442,17 @@ ul.gray-box.small > li + li {
 
 /* This one is actually in use.  Just so we're clear. */
 .smallText{
-  font-size:10px;
+  font-size:12px;
+}
+
+.center-align {
+  display: block;
+}
+
+.div-center {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 /*This is the one that we're (I'm) using for required-field indicators.*/
@@ -444,8 +513,8 @@ ul.moss-list > li {
   margin: 5px;
   padding: 4px;
 }
-ul.moss-list > li > h3 {
-  color: #900;
+ul.moss-list > li > h5 {
+  color: #00A;
   font-weight: bold;
   margin: 0;
 }
@@ -459,7 +528,7 @@ ul.moss-inner-list > li {
   cursor: default;
   padding: 2px;
 }
-ul.moss-inner-list > li > h3 {
+ul.moss-inner-list > li > h5 {
   margin: 0;
 }
 ul.moss-inner-list > li > input[type="checkbox"]:not(:checked) ~ div {
@@ -560,110 +629,47 @@ table.navigatable tr:hover {
 
 /* Card Styling */
 
-div.card {
-  display:inline-block;
-  width: 300px;
-  margin-right: 10px;
-  margin-top: 15px;
-  vertical-align: top;
-  webkit-box-shadow: 0 0 8px rgba(0,0,0,0.10);
-  -moz-box-shadow: 0 0 8px rgba(0,0,0,0.10);
-  box-shadow: 0 0 8px rgba(0,0,0,0.10);
-  -webkit-border-radius: 6px;
-  -moz-border-radius: 6px;
-  overflow: hidden;
-  text-align:center;
-  padding: 0;
-  // There is 22px between the assignment list and the button (from various
-  // margins), so let's match it below the button as well.
-  padding-bottom: 22px;
-  min-height: 215px;
-}
-
-div.card:hover {
-  webkit-box-shadow: 0 0 12px rgba(0,0,0,0.18);
-  -moz-box-shadow: 0 0 12px rgba(0,0,0,0.18);
-  box-shadow: 0 0 12px rgba(0,0,0,0.18);
-}
-
-
-div.card h1,
-div.card h2 {
-  font-weight: 300;
-  margin: 0;
-}
-
-div.card h1 {
-  background-color:#9F9B9D;
-  color:#fff;
-  font-size: 20px;
-}
-
-div.card:hover h1 {
-  background-color:#949092;
-}
-
-div.card h1 a {
-  display: block;
-  color: #fff;
-  font-size: 20px;
-  padding: 15px 24px;
-  line-height: 24px;
-}
-
-div.card .content {
-}
-
-div.card ul {
-  list-style: none;
-  list-style-position:inside;
-  padding:0;
-  font-size: 17px;
+.card {
   font-weight: normal;
-  text-align: left;
-}
 
-div.card ul li {
-  color: #747072;
-  height: 50px;
-  border-bottom: 1px solid #eee;
-  padding-left: 24px;
-}
+  .collection,
+  .card-action {
+    border-radius: initial;
+  }
 
-div.card ul li .shortcuts {
-  margin-right: 24px;
-  line-height: 50px;
+  .row {
+    margin: 0;
+  }
 
-  a {
-    margin-left: 4px;
+  .card-content .card-title {
+    line-height: normal;
+  }
+
+  .collection {
+    margin-top: 0;
+    margin-bottom: 0;
+    border-left: 0;
+    border-right: 0;
+    border-bottom: 0;
   }
 }
 
-div.card ul a {
-  line-height: 50px;
+/* badge */
+.badge.padded-badge {
+  padding: 2px 10px;
 }
 
-div.card .btn.main {
-  margin-top: 12px;
+/* collections */
+.collection
+a.collection-item {
+  transition: none;
 }
 
-div.card .btn.main:hover {
-  background-color: rgba(153, 0, 0, 0.9)
+.collection
+div.collection-item:hover {
+  background-color: #ddd;
 }
 
-@media (max-width: 768px) {
-
-  .rolodex {
-    text-align: center;
-  }
-
-  div.card {
-    width: 280px;
-    margin-right: 4px;
-    margin-left: 4px;
-    margin-top: 15px;
-  }
-}
 
 /* General Styling */
 
@@ -695,10 +701,14 @@ body.autolab {
 
 input[type="text"],
 input[type="email"],
-input[type="password"] {
-  border: none;
+input[type="password"], {
+  /*border: none;*/
+  height: auto;
+	margin-top: 0.8rem;
+	margin-bottom: -0.8rem;
   padding: 10px 8px;
-  border: 1px solid #ccc;
+  border-bottom: 1px #CCC;
+	box-shadow: 0 1px 0 0 #CCC;
 }
 
 input[type="text"]:disabled,
@@ -707,13 +717,13 @@ input[type="password"]:disabled,
 input[type="text"]:read-only,
 input[type="email"]:read-only,
 input[type="password"]:read-only {
-  background-color: #eee;
+  /*background-color: #eee;*/
 }
 
 input[type="text"]:focus,
 input[type="email"]:focus,
 input[type="password"]:focus {
-  border: 1px solid rgba(133, 0, 0, 1);
+  /*border: 1px solid rgba(133, 0, 0, 1);*/
   outline: none;
 }
 
@@ -722,13 +732,72 @@ input[type="checkbox"] {
   margin-right: 10px;
 }
 
-label.control-label {
-  font-size: 18px;
+input[type="search"] {
+	border-bottom: 1px #CCC;
+	box-shadow: 0 1px 0 0 #CCC;
+}
+
+textarea {
+  border-bottom: 1px #CCC;
+	box-shadow: 0 1px 0 0 #CCC !important;
+}
+
+.flatpickr-input {
+  color: black !important;
+}
+
+.file-path-wrapper input[type="text"] {
+  margin-bottom: 2px;
+}
+
+.flatpickr-input.form-control.input {
+  color: black;
+}
+
+.flatpickr-hour {
+  margin-top: 0 !important;
+  margin-bottom: .8rem;
+  padding-top: 0 !important;
+}
+
+.flatpickr-minute {
+  margin-top: 0 !important;
+  margin-bottom: .8rem;
+  padding-top: 0 !important;
+}
+
+.chosen-search input {
+  box-sizing: border-box;
+}
+
+
+.checkbox-input {
+  //margin-top: 1rem;
+}
+
+.input-field {
+	margin-top: 2rem !important;
+  label.control-label {
+    font-size: 20px;
+    margin-left: 4px;
+	}
+
+  label.active {
+    font-size: inherit;
+  }
+}
+
+input[type=text] {
+	box-sizing: border-box;
+	margin-bottom: 10px;
 }
 
 .help-block {
+  color: #4e4e4e;
   font-size: 15px;
   margin-left: 8px;
+  /*margin-top: -18px;*/
+  margin-bottom: 30px;
 }
 
 .autolab select.form-control {
@@ -765,37 +834,28 @@ label.control-label {
   height: 42px;
 }
 
-.autolab .btn {
-  display: inline-block;
-  padding: 13px 18px;
-  margin-bottom: 0;
-  font-size: 16px;
-  font-weight: 400;
-  color: #fff;
-  line-height: 18px;
-  text-align: center;
-  white-space: nowrap;
-  vertical-align: middle;
-  cursor: pointer;
-  border: 1px solid transparent;
-  border-radius: 4px;
-  -webkit-user-select: none;
-  background-color: #808080;
+.score-box {
+	margin-top: 3rem !important;
 }
 
-.autolab .btn:hover {
-  color: #fff;
-  background-color: #aaa;
-  text-decoration: none;
+
+.section-title {
+  position:relative;
+  text-align:left;
 }
 
-.autolab .btn.primary {
-  background-color: rgba(153,0,0,0.9);
+.section-title:before {
+  content:"";
+  position:absolute;
+  top:50%;
+  left:0;
+  width:100%;
+  border-bottom:4px solid #dddddd;
 }
 
-.autolab .btn.small {
-  padding: 5px 10px;
-  font-size: 15px;
+.section-title span {
+  position: relative;
+  padding-right: 12px;
 }
 
 /**
@@ -862,6 +922,10 @@ label.control-label {
   border:1px solid #bbb;
 }
 
+.new_submission {
+	margin-top: 1rem;
+}
+
 .options {
 line-height: 36px;
 list-style: none;
@@ -882,6 +946,24 @@ padding-left: 14px;
 display: block;
 }
 
+.options .no-hover:hover {
+  background-color: transparent;
+}
+
+.options .danger-side {
+  border-left: 6px solid #e53935;
+  border-right: 1px solid #e53935;
+}
+
+
+.options .danger-bottom {
+  border-bottom: 1px solid #e53935;
+}
+
+.options .collection-item {
+  padding-left: 14px;
+}
+
 /* Form Tables */
 
 .verticalTable {
@@ -894,6 +976,11 @@ display: block;
   padding-bottom: 2px;
 }
 
+
+#sudo_email {
+	margin-bottom: 2rem;
+}
+
 /* Homepage Styling */
 
 .home {
@@ -904,6 +991,8 @@ display: block;
   input[type="password"] {
     min-width: 240px;
     margin-top: 6px;
+    margin-bottom: 20px;
+    width: 38%;
   }
 
   input[type="submit"] {
@@ -931,35 +1020,22 @@ display: block;
 
 }
 
+/* Login Panel */
+
+.login-logo {
+  width: 8%;
+}
+
+@media (max-width: 768px) {
+
+  .login-logo {
+    width: 15%;
+  }
+}
+
 .action-menu {
   font-size: 16px;
   line-height: 24px;
-}
-
-// Bootstrap 3 Datepicker overrides
-.bootstrap-datetimepicker-widget {
-  a[data-action="incrementHours"],
-  a[data-action="decrementHours"],
-  a[data-action="incrementMinutes"],
-  a[data-action="decrementMinutes"] {
-    span:hover {
-      background: none;
-    }
-  }
-
-  // Custom CSS classes added to buttons in initialize_datepickers.js
-  .time-btn:after {
-    content: ' Time';
-  }
-
-  .date-btn:after {
-    content: ' Date';
-  }
-
-  .now-btn:after {
-    content: ' Now';
-  }
-
 }
 
 /* Header content for graphics */
@@ -1006,11 +1082,11 @@ div.center {
   margin-bottom: 5px;
   line-height: 30px;
 
-  .pull-right a {
+  .right a {
   vertical-align: top;
   }
 
-  .glyphicon {
+  .material-icons {
     margin-right: 10px;
   }
 
@@ -1028,4 +1104,10 @@ div.center {
 .page-canvas-wrapper {
   position: relative;
   display: inline-block;
+}
+
+
+/* Restore hover functionality on Materialize buttons with color classes */
+.btn:hover {
+  background-color: rgba(140,0,0,0.95) !important;
 }

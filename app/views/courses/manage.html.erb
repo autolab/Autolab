@@ -3,55 +3,72 @@
 <% content_for :stylesheets do %>
   <%= stylesheet_link_tag "student_gradebook" %>
 <% end %>
-
+<script type="text/javascript">
+  $(document).ready(function() {
+    $('.collapsible').collapsible();
+  })
+</script>
 <div class="row">
-  <div class="col-md-12"> 
-    <h2>Course Admin</h2>
+  <div class="col s12 m12">
+    <h2>Manage Course</h2>
     <hr>
   </div>
 </div>
 <div class="row">
-  <div class="col-md-4"> 
-  <h3>Admin Course</h3>
-  <ul class="options">
+  <div class="col s12 m4">
+    <ul class="collapsible" data-collapsible="accordion">
+      <li>
+        <div class="collapsible-header"><i class="material-icons"></i><h5>Admin Course</h5></div>
+        <div class="collapsible-body">
+          <ul class="options">
+            <li><%= link_to "Course settings", [:edit, @course],
+                { title: "Modify the properties for this course" } %></li>
+            <li><%= link_to "Manage students", [:users, @course],
+                { title: "Create, modify, and delete user accounts" } %></li>
+            <li><%= link_to "Install assessment", [:installAssessment, @course, :assessments],
+                { title: "Create an assessment from scratch or install one from an existing directory" } %></li>
+            <li><%= link_to "Send bulk email", [:email, @course],
+                { title: "Send an email to everyone in the class" } %></li>
+            <li><%= link_to "Manage course attachments", [@course, :attachments],
+                { title: "Distribute files to your students" } %></li>
+            <li><%= link_to "Manage announcements", [@course, :announcements],
+                { title: "Manage announcements via banners on either front page or all pages (persistent)." } %></li>
 
-    <li><%= link_to "Course settings", [:edit, @course], 
-        { title: "Modify the properties for this course" } %></li>
-    <li><%= link_to "Manage students", [:users, @course],
-        { title: "Create, modify, and delete user accounts" } %></li>
-    <li><%= link_to "Install assessment", [:installAssessment, @course, :assessments], 
-        { title: "Create an assessment from scratch or install one from an existing directory" } %></li>
-    <li><%= link_to "Send bulk email", [:email, @course],
-        { title: "Send an email to everyone in the class" } %></li>
-    <li><%= link_to "Manage course attachments", [@course, :attachments],
-        { title: "Distribute files to your students" } %></li>
-    <li><%= link_to "Manage announcements", [@course, :announcements],
-        { title: "Manage announcements via banners on either front page or all pages (persistent)." } %></li>
-    <li><%= link_to "Release all grades", [:bulkRelease, @course, @cud, :gradebook],
-        { title: "Release all grades for all assessments" } %></li>
-    <li><%= link_to "Manage schedulers", [@course, :schedulers], 
-        { title: "Set and update scheduler for log submissions. (Advanced feature)"} %></li>
-    <li><%= link_to "Act as user", [:sudo, @course, @cud], 
-        { title: "Temporarily become another user" } %></li>
-    <li><%= link_to "Run Moss cheat checker", [:moss, @course],
-        { title: "Use the Stanford Moss server to detect copying" } %></li>
-    <li><%= link_to "Reload course config file", [:reload, @course],
-        { title: "Do this each time your modify the course.rb file" } %></li>
-  </ul>
+            <li><%= link_to "Manage schedulers", [@course, :schedulers],
+                { title: "Set and update scheduler for log submissions. (Advanced feature)"} %></li>
+            <li><%= link_to "Act as user", [:sudo, @course, @cud],
+                { title: "Temporarily become another user" } %></li>
+            <li><%= link_to "Run Moss cheat checker", [:moss, @course],
+                { title: "Use the Stanford Moss server to detect copying" } %></li>
 
-  <% if @cud.user.administrator? then %>
-  <h3>Admin Autolab</h3>
-  <ul class="options">
-    <li><%= link_to 'Create new course', new_course_path,
-                    {:title=>"Create a new course"} %></li>
-    <li><%= link_to raw('<span class="button">Manage users</span>'), 
-                    users_path %></li>
-  </ul>
-  <% end %>
+            <li class="collection-item red-text danger-bottom no-hover"><h4>Danger Zone</h4></li>
+            <li class="danger-side"><%= link_to "Release all grades", [:bulkRelease, @course, @cud, :gradebook],
+                { title: "Release all grades for all assessments", data: {confirm: "Are you sure you want to release all grades?"}} %></li>
+            <li class="danger-side danger-bottom"><%= link_to "Reload course config file", [:reload, @course],
+                { title: "Do this each time your modify the course.rb file", data: {confirm: "Are you sure you want to reload the course config file?"}}%></li>
+          </ul>
+        </div>
+      </li>
+    </ul>
+    <% if @cud.user.administrator? then %>
+    <ul class="collapsible" data-collapsible="accordion">
+      <li>
 
+        <div class="collapsible-header"><i class="material-icons"></i><h5>Admin Autolab</h5></div>
+        <div class="collapsible-body">
+          <ul class="options">
+            <li><%= link_to 'Create new course', new_course_path,
+                          {:title=>"Create a new course"} %></li>
+            <li><%= link_to raw('<span class="button">Manage users</span>'),
+                          users_path %></li>
+          </ul>
+        </div>
+
+      </li>
+    </ul>
+    <% end %>
   </div>
-  <div class="col-md-8">
-    <h3>Course Statistics</h3>
+  <div class="col s12 m8">
     <div class="category">
       <table class="stats-table">
         <colgroup>

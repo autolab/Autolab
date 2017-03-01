@@ -15,8 +15,12 @@ h1#courseTitle {
   width: 90%;
 }
 
-.cat_pair {
+.cat_container {
   margin-bottom: 20px;
+}
+
+.cat_pair {
+  margin-bottom: 0;
 }
 
 .gradebook {
@@ -49,7 +53,7 @@ h1#courseTitle {
 .course {
   background-color: #fafafa;
   width: 100%;
-  color: #777;
+  color: #555;
   border: 1px solid #ddd;
   border-radius: 3px;
   box-shadow: 0 0 2px 0px #f4f4f4;
@@ -176,5 +180,15 @@ th.cat_name {
   td,
   th {
     padding: 8px 0px;
+  }
+}
+
+@media only screen and (min-width: 992px) {
+  .cat_pair {
+    margin-bottom: 20px;
+  }
+
+  .cat_container {
+    margin-bottom: 0;
   }
 }

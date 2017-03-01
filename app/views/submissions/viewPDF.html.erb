@@ -79,7 +79,7 @@
             canvasContext: ctx,
             viewport: viewport
           };
-          
+
           canvas.height = viewport.height;
           canvas.width = viewport.width;
 
@@ -96,7 +96,7 @@
           }
         });
 
-        
+
       }
     }).catch(function(error){
         //no error message is logged either
@@ -116,30 +116,38 @@
 </h2>
 <hr>
 <div class="row">
-  <div class="col-md-2 annotationPane">
+  <div class="col l2 annotationPane">
     <% if not (@submission.assessment.exam or @submission.assessment.course.exam_in_progress) %>
       <% if @preview_mode then %>
-      <a style="width:100%;" href="?" title="Download Submission" class="btn"> 
-        <span class="glyphicon glyphicon-pencil pull-left" aria-hidden="true"></span>
+      <a style="width:100%;" href="?" title="Download Submission" class="btn">
+        <i class="material-icons left" aria-hidden="true">mode_edit</i>
         Edit
       </a>
       <% else %>
-      <a style="width:100%;" href="?preview=true" title="Download Submission" class="btn"> 
-        <span class="glyphicon glyphicon-zoom-out pull-left" aria-hidden="true"></span>
+      <a style="width:100%;" href="?preview=true" title="Preview Submission" class="btn">
+        <i class="material-icons left" aria-hidden="true">zoom_out</i>
         Preview
       </a>
       <% end %>
-      <a style="width:100%; margin-top: 6px;" href="<%= url_for [:download, @course, @assessment, @submission, header_position: params[:header_position]] %>" title="Download Submission" class="btn"> 
-        <span class="glyphicon glyphicon-download-alt pull-left" aria-hidden="true"></span>
+      <a style="width:100%; margin-top: 6px;" href="<%= url_for [:download, @course, @assessment, @submission, header_position: params[:header_position]] %>" title="Original Submission" class="btn">
+        <i class="material-icons left" aria-hidden="true">file_download</i>
         Original
       </a>
-      <a style="width:100%; margin-top: 6px;" href="<%= url_for [:download, @course, @assessment, @submission, header_position: params[:header_position], annotated: true] %>" title="Download Submission" class="btn">
-        <span class="glyphicon glyphicon-download-alt pull-left" aria-hidden="true"></span>
+      <a style="width:100%; margin-top: 6px;" href="<%= url_for [:download, @course, @assessment, @submission, header_position: params[:header_position], annotated: true] %>" title="Annotated Submission" class="btn">
+        <i class="material-icons left" aria-hidden="true">file_download</i>
         Annotated
       </a>
+      <% if @assessment.has_custom_form then %>
+        <% if @assessment.getLanguages.size > 0 then %>
+            <p><b>Language:</b> <%= @submission.getSettings["Language"] %></p>
+        <% end %>
+        <% for i in 0..@assessment.getTextfields.size-1 do %>
+            <p><b><%= @assessment.getTextfields[i] %>:</b> <%= @submission.getSettings[@assessment.getTextfields[i]] %></p>
+        <% end %>
+     <% end %>
     <% end %>
   </div>
-  <div class="col-md-10">
-  <div id="pdf-doc" style="text-align: center;"></div>
+  <div class="col l10">
+    <div id="pdf-doc" style="text-align: center;"></div>
   </div>
 </div>

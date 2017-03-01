@@ -1,24 +1,17 @@
+<% content_for :javascripts do %>
+  <%= javascript_include_tag "initialize_datetimepickers" %>
+<% end %>
+
 <h2>Editing scheduler</h2>
 
-<%= form_for @scheduler, :url=>{:action=>"update"}, :method=>"patch" do |f| %>
+<%= form_for @scheduler, :url=>{:action=>"update"}, :method=>"patch", builder: FormBuilderWithDateTimeInput do |f| %>
   <%= f.error_messages %>
-  <table class="verticalTable">
-  <tr>
-    <th>Action</th>
-    <td><%= f.text_field :action %></td>
-  </tr>
-  <tr>
-    <th>Next</th>
-    <td><%= f.datetime_select :next, step: 1 %></td>
-  </tr>
-  <tr>
-    <th>Interval (Seconds)</th>
-    <td><%= f.text_field :interval %></td>
-  </tr>
-  <tr>
-    <td colspan=2><%= f.submit "Update" , {:class=>"btn primary"} %></td>
-  </tr>
-  </table>
+  <%= f.text_field :action, help_text: "  ", placeholder: "(scheduler action)" %>
+  <%= f.datetime_select :next, step: 1 %>
+  <%= f.text_field :interval , placeholder: "(in seconds)" %>
+  <div class="action_buttons">
+    <%= f.submit "Update" , {:class=>"waves-effect waves-light btn primary"} %>
+  </div>
 <% end %>
 
 <%= link_to 'Show', {:action=>"show",:id=>@scheduler.id} %> |

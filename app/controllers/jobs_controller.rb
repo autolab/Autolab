@@ -10,6 +10,9 @@ class JobsController < ApplicationController
 
   # index - This is the default action that generates lists of the
   # running, waiting, and completed jobs.
+    rescue_from ActionView::MissingTemplate do |exception|
+      redirect_to("/home/error_404")
+  end
   action_auth_level :index, :student
   def index
     # Instance variables that will be used by the view
@@ -226,7 +229,7 @@ protected
       # until now.  Dead jobs show end-to-end elapsed time.
       t1 = DateTime.parse(job[:first]).to_time
       if is_live
-        snow = Time.now.localtime.to_s
+        snow = Time.now.in_time_zone.to_s
         t2 = DateTime.parse(snow).to_time
       else
         t2 = DateTime.parse(job[:last]).to_time

@@ -42,8 +42,8 @@ jQuery(function($) {
         '<option value="100">100</option>' +
         '<option value="-1">All</option>' +
         '</select> records   ·   ' +
-        '<span class="checkbox"><input type="checkbox" id="only-latest">' +
-        '<label for="only-latest">Show only latest</label></span>'
+        '<div class="row"><input type="checkbox" id="only-latest">' +
+        '<label for="only-latest">Show only latest</label></div>'
     },
     "columnDefs": [{
       "targets": [7],

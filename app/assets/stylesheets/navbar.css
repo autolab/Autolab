@@ -1,0 +1,73 @@
+nav {
+  background: #a31919;
+  line-height: 50px;
+  height: 50px;
+}
+
+nav i, nav [class^="mdi-"], nav [class*="mdi-"], nav i.material-icons {
+  line-height: 50px;
+  height: 50px;
+}
+
+nav a, nav a:hover, nav a:focus{
+  text-decoration: none;
+  color:white;
+}
+nav ul li{
+  cursor:pointer;
+}
+.dropdown-button{
+  font-weight: 500;
+}
+.dropdown-content li>a{
+  color: #a31919;
+  font-weight:500;
+}
+
+.button-collapse{
+  margin-right:20px;
+}
+#mobile-demo #dropdownMenu1{
+  color:white;
+  text-align:center;
+  cursor:default;
+  background:#a31919;
+}
+#mobile-demo li{
+  cursor:pointer;
+}
+#mobile-demo a:hover{
+  color:black;
+  background:transparent;
+}
+
+.side-nav li > a > i.material-icons{
+  margin: 0 12px 0 0;
+  height:48px;
+}
+nav i.material-icons{
+  margin-right: 5px;
+  font-size: 20px;
+}
+nav .nav-wrapper .button-collapse .material-icons{
+  font-size:2.7rem;
+}
+
+.home-icon {
+  position: relative;
+  top: 5px;
+}
+
+@media only screen and (min-width: 601px) {
+  nav, nav .nav-wrapper i, nav a.button-collapse, nav a.button-collapse i {
+    height: 50px;
+    line-height: 50px;
+  }
+}
+
+@media (max-width: 400px) {
+  /* On small screens the sidebar's too wide */
+  .side-nav {
+    width: 60% !important;
+  }
+}

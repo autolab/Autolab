@@ -51,7 +51,7 @@
               <%= grade[:version] %>
             <% end %>
           </td>
-          <td><%= grade[:time] %></td>
+          <td><span class="moment-date-time"><%= grade[:time] %></span></td>
           <% if @colspec %>
             <% @colspec.each_with_index do |c, i| %>
               <% # this is a hack for 15-122's image lab.  It displays b64 encoded results in image tags %>

@@ -109,32 +109,33 @@ var initializeAnnotationsForCode = function() {
     var grader = elt("span", {
       class: "grader"
     }, annObj.submitted_by + " says:");
+
     var edit = elt("span", {
-      class: "edit glyphicon glyphicon-edit",
+      class: "edit",
       id: "edit-ann-" + annObj.id
-    });
+    }, elt("i", {class: "material-icons"}, "edit"));
 
     var score = elt("span", {
       class: "score-box"
     }, elt("span", {}, problemStr), elt("span", {}, valueStr));
 
     var del = elt("span", {
-      class: "delete glyphicon glyphicon-remove"
-    });
+      class: "delete"
+    }, elt("i", {class: "material-icons"}, "delete"));
 
     if (isInstructor) {
       var header = elt("div", {
         class: "header"
-      }, grader, del, edit, score);
+      }, grader, del, edit);
     } else {
       var header = elt("div", {
         class: "header"
-      }, grader, score);
+      }, grader);
     }
 
     var body = elt("div", {
       class: "body"
-    }, commentStr);
+    }, score, commentStr);
 
     var box = elt("div", {
       class: "ann-box",
@@ -174,17 +175,17 @@ var initializeAnnotationsForCode = function() {
       class: "grader"
     }, annObj.submitted_by + " says:");
     var edit = elt("span", {
-      class: "edit glyphicon glyphicon-edit",
+      class: "edit",
       id: "edit-ann-" + annObj.id
-    });
+    }, elt("i", {class: "material-icons"}, "edit"));
 
     var score = elt("div", {
       class: "score-box"
     }, elt("div", {}, "Problem: " + problemStr), elt("div", {}, "Score: " + valueStr));
 
     var del = elt("span", {
-      class: "delete glyphicon glyphicon-remove"
-    });
+      class: "delete"
+    }, elt("i", {class: "material-icons"}, "delete"));
 
     if (isInstructor) {
       var header = elt("div", {
@@ -260,20 +261,20 @@ var initializeAnnotationsForCode = function() {
 
     // this section creates the new/edit annotation form that's used everywhere
     var commentInput = elt("input", {
-      class: "col-md-6 comment",
+      class: "col l6 comment",
       type: "text",
       name: "comment",
       placeholder: "Comments Here",
       maxlength: "255"
     });
     var valueInput = elt("input", {
-      class: "col-md-2",
+      class: "col l3",
       type: "text",
       name: "score",
       placeholder: "Score Here"
     });
     var problemSelect = elt("select", {
-      class: "col-md-2",
+      class: "col l2 browser-default",
       name: "problem"
     }, elt("option", {
       value: ""
@@ -307,7 +308,7 @@ var initializeAnnotationsForCode = function() {
       title: "Press <Enter> to Submit",
       class: "annotation-form",
       id: "annotation-form-" + lineInd
-    }, rowDiv, hr, submitButton, cancelButton);
+    }, rowDiv, submitButton, cancelButton);
 
     newForm.onsubmit = function(e) {
       e.preventDefault();
@@ -335,35 +336,33 @@ var initializeAnnotationsForCode = function() {
 
     // this section creates the new/edit annotation form that's used everywhere
     var commentInput = elt("textarea", {
-      class: "col-md-11 comment",
+      class: "col l11 comment",
       name: "comment",
       placeholder: "Explanation Here",
       maxlength: "255"
     });
     var valueInput = elt("input", {
-      class: "col-md-6",
+      class: "col l4",
       type: "text",
       name: "score",
       placeholder: "Score Here"
     });
     var problemSelect = elt("select", {
-      class: "col-md-4",
+      class: "col l4 browser-default",
       name: "problem"
     }, elt("option", {
       value: ""
     }, "None"));
-    
+
     var rowDiv1 = elt("div", {
       class: "row",
       style: "margin-left:4px;"
     }, commentInput);
-    
+
     var rowDiv2 = elt("div", {
       class: "row",
-      style: "margin-left:4px;"
+      style: "margin-left:4px; width: 100%;"
     }, valueInput, problemSelect);
-
-
 
     var submitButton = elt("input", {
       type: "submit",
@@ -435,7 +434,7 @@ var initializeAnnotationsForCode = function() {
 
     // this section creates the new/edit annotation form that's used everywhere
     var commentInput = elt("input", {
-      class: "col-md-6 comment",
+      class: "col l6 comment",
       type: "text",
       name: "comment",
       placeholder: "Comments Here",
@@ -445,7 +444,7 @@ var initializeAnnotationsForCode = function() {
 
     if (annotationMode === "PDF") {
       var commentInput = elt("textarea", {
-        class: "col-md-12 comment",
+        class: "col l12 comment",
         type: "text",
         name: "comment",
         placeholder: "Comments Here",
@@ -454,14 +453,14 @@ var initializeAnnotationsForCode = function() {
     }
 
     var valueInput = elt("input", {
-      class: "col-md-2",
+      class: "col l2",
       type: "text",
       name: "score",
       placeholder: "Score Here",
       value: valueStr
     });
     var problemSelect = elt("select", {
-      class: "col-md-2",
+      class: "col l2",
       name: "problem"
     }, elt("option", {
       value: ""
@@ -483,7 +482,6 @@ var initializeAnnotationsForCode = function() {
       value: "Cancel",
       class: "btn small"
     });
-    var hr = elt("hr");
 
     _.each(problems, function(problem) {
       problemSelect.appendChild(elt("option", {
@@ -497,7 +495,7 @@ var initializeAnnotationsForCode = function() {
       title: "Press <Enter> to Submit",
       class: "annotation-edit-form",
       id: "edit-annotation-form-" + lineInd
-    }, rowDiv, hr, submitButton, cancelButton);
+    }, rowDiv, submitButton, cancelButton);
 
     newForm.onsubmit = function(e) {
       e.preventDefault();
@@ -561,7 +559,7 @@ var showAnnotationFormAtCoord = function(pageInd, x, y) {
 
 
 var submitNewPDFAnnotation = function(comment, value, problem_id, pageInd, xRatio, yRatio, widthRatio, heightRatio, newForm) {
-  
+
   var newAnnotation = createAnnotation();
   newAnnotation.coordinate = [xRatio, yRatio, pageInd, widthRatio, heightRatio].join(',');
   newAnnotation.comment = comment;
@@ -588,7 +586,7 @@ var submitNewPDFAnnotation = function(comment, value, problem_id, pageInd, xRati
       $(newForm).remove();
     },
     error: function(result, type) {
-      $(formEl).append(elt("div", null, "Failed to Save Annotation!!!"));
+      $(newForm).append(elt("div", null, "Failed to Save Annotation!!!"));
     },
     complete: function(result, type) {}
   });
@@ -652,7 +650,7 @@ var submitNewAnnotation = function(comment, value, problem_id, lineInd, formEl) 
   }
 
 var makeAnnotationMovable = function(annotationEl, annotationObj) {
-    
+
     var positionArr = annotationObj.coordinate.split(',');
 
     var curPageInd  = positionArr[2];
@@ -671,7 +669,7 @@ var makeAnnotationMovable = function(annotationEl, annotationObj) {
         updateAnnotation(annotationObj, null, null);
       }
     });
-    
+
     $(annotationEl).resizable({
       stop: function( event, ui ) {
         var widthRatio = ui.size.width / $page.attr('width');
@@ -721,5 +719,3 @@ var initializeAnnotationsForPDF = function() {
   });
 
 }
-
-

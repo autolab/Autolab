@@ -1,11 +1,15 @@
-<li class="attachment">
+
+<li class="collection-item">
+  <p>
   <% if attachment.assessment.nil? then %>
+    <i class="material-icons left">file_download</i>
     <%= link_to [@course, attachment] do %>
-      <span class="glyphicon glyphicon-list-alt"></span><%= attachment.name %>
+      <%= attachment.name %>
     <% end %>
-  <% else %>
+  <% else %> 
     <%= link_to [@course, attachment.assessment, attachment] do %>
-      <span class="glyphicon glyphicon-list-alt"></span><%= attachment.name %>
+      <i class="material-icons left">file_download</i>
+      <%= attachment.name %>
     <% end %>
   <% end %>
 
@@ -13,15 +17,16 @@
     (<%= attachment.assessment.display_name %>)
   <% end %>
 
-  <span class="pull-right">
+  <span class="secondary-content">
   <% if @cud.instructor? then %>
     <% if attachment.assessment.nil? then %>
-      <%= link_to 'Edit', [:edit, @course, attachment], {class:"btn small"} %>
-      <%= link_to 'Delete', [@course, attachment], {method: :delete, class:"btn small"} %>
+      <%= link_to '<i class="material-icons left">mode_edit</i>'.html_safe, [:edit, @course, attachment], {class:"small"} %>
+      <%= link_to '<i class="material-icons left">delete</i>'.html_safe, [@course, attachment], {method: :delete, class:"small"} %>
     <% else %>
-      <%= link_to 'Edit', [:edit, @course, attachment.assessment, attachment], {class:"btn small"} %>
-      <%= link_to 'Delete', [@course, attachment.assessment, attachment], {method: :delete, class:"btn small"} %>
+      <%= link_to '<i class="material-icons left">mode_edit</i>'.html_safe, [:edit, @course, attachment.assessment, attachment], {class:"small"} %>
+      <%= link_to '<i class="material-icons left">delete</i>'.html_safe, [@course, attachment.assessment, attachment], {method: :delete, class:"small"} %>
     <% end %>
   <% end %>
   </span>
+  </p>
 </li>

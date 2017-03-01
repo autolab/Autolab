@@ -1,9 +1,15 @@
 source 'https://rubygems.org'
 
-gem 'rails', '>=4.2.0'
+gem 'rails', '=4.2.1'
 
 # Use SCSS for stylesheets
 gem 'sass-rails', '>= 4.0.3'
+
+# Use Materialize for the base css
+gem 'materialize-sass'
+
+# Use for some of the glypicons on the site
+gem 'bootstrap-sass', '~> 3.3.6'
 
 # Use Uglifier as compressor for JavaScript assets
 gem 'uglifier', '>= 1.3.0'
@@ -39,14 +45,14 @@ gem 'rake', '>=10.3.2'
 gem 'populator', '>=1.0.0'
 
 # To communicate with MySQL database
-gem 'mysql2'
+gem 'mysql2', '=0.3.18'
 gem 'sqlite3'
 
 # Development server
 gem 'thin'
 
 # External authentication
-gem 'devise', '>=3.3.0'
+gem 'devise', '=3.4.0'
 gem 'omniauth', '>=1.2.2'
 gem 'omniauth-facebook', '>=2.0.0'
 gem 'omniauth-google-oauth2', '>=0.2.5'
@@ -96,6 +102,10 @@ group :development do
 
   # static code analyzer
   gem 'rubocop', require: false
+
+  # documentation generator
+  gem 'yard'
+
 end
 
 # for PDF annotations
@@ -106,3 +116,5 @@ gem 'prawn', '0.13.0'
 
 # LDAP Lookup
 gem 'net-ldap'
+
+gem 'sprockets-rails', '2.3.3'
