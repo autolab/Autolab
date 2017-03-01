@@ -2,26 +2,25 @@
   <% if can_always_download or not (sub.assessment.exam or sub.assessment.course.exam_in_progress) then %>
     <%= sub.filename %>
 
-    <% mime_type = sub.detected_mime_type %>   
-    <%= link_to download_course_assessment_submission_path(@course, @assessment, sub), 
+    <% mime_type = sub.detected_mime_type %>
+    <%= link_to download_course_assessment_submission_path(@course, @assessment, sub),
                 data: {toggle: "tooltip", placement:"top"}, title: "Download Submission" do %>
-      <span class="glyphicon glyphicon-download" aria-hidden="true" style="margin-right:3px;"></span>
+          <span style="margin-right:3px;"><i class="material-icons">file_download</i></span>
     <% end %>
 
     <% if mime_type =~ /text\/.*/ then %>
       <%= link_to download_course_assessment_submission_path(@course, @assessment, sub, forceMime: 'text/plain'),
                   data: {toggle: "tooltip", placement: "top"}, title: "Download as text/plain" do %>
-        <span class="glyphicon glyphicon-download" aria-hidden="true" style="margin-right:3px;"></span>
+        <span style="margin-right:3px;"><i class="material-icons">file_download</i></span>
       <% end %>
     <% end %>
 
     <% if link = view_course_assessment_submission_path(@course, @assessment, sub) then %>
       <%= link_to link, data: {toggle: "tooltip", title: "View Source"}, aria: {label: "Justify"}, style: "margin-right:3px;" do %>
-        <span class="glyphicon glyphicon-zoom-in" aria-hidden="true"></span>
+        <span><i class="material-icons">zoom_in</i></span>
       <% end %>
     <% end %>
   <% else %>
     <%= sub.filename %>
   <% end %>
 </div>
-
