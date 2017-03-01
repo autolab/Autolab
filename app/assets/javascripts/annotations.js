@@ -126,16 +126,16 @@ var initializeAnnotationsForCode = function() {
     if (isInstructor) {
       var header = elt("div", {
         class: "header"
-      }, grader, del, edit, score);
+      }, grader, del, edit);
     } else {
       var header = elt("div", {
         class: "header"
-      }, grader, score);
+      }, grader);
     }
 
     var body = elt("div", {
       class: "body"
-    }, commentStr);
+    }, score, commentStr);
 
     var box = elt("div", {
       class: "ann-box",
@@ -175,17 +175,17 @@ var initializeAnnotationsForCode = function() {
       class: "grader"
     }, annObj.submitted_by + " says:");
     var edit = elt("span", {
-      class: "edit glyphicon glyphicon-edit",
+      class: "edit",
       id: "edit-ann-" + annObj.id
-    });
+    }, elt("i", {class: "material-icons"}, "edit"));
 
     var score = elt("div", {
       class: "score-box"
     }, elt("div", {}, "Problem: " + problemStr), elt("div", {}, "Score: " + valueStr));
 
     var del = elt("span", {
-      class: "delete glyphicon glyphicon-remove"
-    });
+      class: "delete"
+    }, elt("i", {class: "material-icons"}, "delete"));
 
     if (isInstructor) {
       var header = elt("div", {
@@ -268,7 +268,7 @@ var initializeAnnotationsForCode = function() {
       maxlength: "255"
     });
     var valueInput = elt("input", {
-      class: "col l2",
+      class: "col l3",
       type: "text",
       name: "score",
       placeholder: "Score Here"
@@ -308,7 +308,7 @@ var initializeAnnotationsForCode = function() {
       title: "Press <Enter> to Submit",
       class: "annotation-form",
       id: "annotation-form-" + lineInd
-    }, rowDiv, hr, submitButton, cancelButton);
+    }, rowDiv, submitButton, cancelButton);
 
     newForm.onsubmit = function(e) {
       e.preventDefault();
@@ -482,7 +482,6 @@ var initializeAnnotationsForCode = function() {
       value: "Cancel",
       class: "btn small"
     });
-    var hr = elt("hr");
 
     _.each(problems, function(problem) {
       problemSelect.appendChild(elt("option", {
@@ -496,7 +495,7 @@ var initializeAnnotationsForCode = function() {
       title: "Press <Enter> to Submit",
       class: "annotation-edit-form",
       id: "edit-annotation-form-" + lineInd
-    }, rowDiv, hr, submitButton, cancelButton);
+    }, rowDiv, submitButton, cancelButton);
 
     newForm.onsubmit = function(e) {
       e.preventDefault();

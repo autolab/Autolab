@@ -94,18 +94,19 @@ pre code {
   background: #eee;
   padding: .5em;
   font-weight: bold;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .ann-box > .header > .delete,
  .ann-box > .header > .edit {
   border: 1px solid transparent;
-  display: inline-block;
+  display: block;
   font-weight: bold;
   text-align: center;
   width: 2em;
-  float: right;
   color: #666;
-  margin-top: -26px;
   border-radius: 4px;
 }
 
@@ -222,4 +223,8 @@ pre {
     background-color: #f5f5f5;
     border: 1px solid #ccc;
     border-radius: 4px;
+}
+
+.header > .grader {
+  flex: 2 0 0;
 }

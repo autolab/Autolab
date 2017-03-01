@@ -10,14 +10,14 @@ Files in this Archive: <br/>
       <li>
         <%= file[:pathname] %>
         <%= link_to [:download, @course, @assessment, @submission, header_position: file[:header_position] ],
-                    data: {toggle: "tooltip", placement:"top"}, 
+                    data: {toggle: "tooltip", placement:"top"},
                     title: "Download Submission" do %>
-          <span class="glyphicon glyphicon-download" aria-hidden="true" style="margin-right:3px;"></span>
+          <i class="material-icons" aria-hidden="true" style="margin-right:3px;">file_download</i>
         <% end %>
         <%= link_to [:view, @course, @assessment, @submission, header_position: file[:header_position] ],
-                    data: {toggle: "tooltip", title: "View Source"}, 
+                    data: {toggle: "tooltip", title: "View Source"},
                     aria: {label: "Justify"}, style: "margin-right:3px;" do %>
-          <span class="glyphicon glyphicon-zoom-in" aria-hidden="true"></span>
+          <i class="material-icons" aria-hidden="true">zoom_in</i>
         <% end %>
       </li>
     <% end %>

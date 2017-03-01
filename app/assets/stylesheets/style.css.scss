@@ -140,7 +140,7 @@ div.main-header img {
   margin-bottom: 2px;
 }
 
-.annotationPane .pull-left {
+.annotationPane .left {
 	float: none !important;
 	margin-left: -10px;
 }
@@ -178,10 +178,6 @@ input[type="file"].upload_embedded {
   margin-right: 18px;
   line-height: 30px;
   margin-left: 10px;
-}
-
-.main-header .pull-right {
-  padding-top: 16px;
 }
 
 .main-header .dropdown-toggle {
@@ -353,7 +349,7 @@ input[type="file"].upload_embedded {
   padding: 0px 1.3rem;
 }
 
-.history-download-pane .glyphicon {
+.history-download-pane .material-icons {
   font-size: 14px;
 }
 
@@ -368,7 +364,7 @@ div#footer {
   border-top: 1px solid #fafafa;
 }
 
-div#footer .pull-right {
+div#footer .right {
   padding-top: 14px;
 }
 
@@ -1067,11 +1063,11 @@ div.center {
   margin-bottom: 5px;
   line-height: 30px;
 
-  .pull-right a {
+  .right a {
   vertical-align: top;
   }
 
-  .glyphicon {
+  .material-icons {
     margin-right: 10px;
   }
 

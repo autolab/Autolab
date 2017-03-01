@@ -20,13 +20,13 @@
       <% else %>
         None
       <% end %>
-      <span class="pull-right">
+      <span class="right">
          <% if download_access or not (submission.assessment.exam or submission.assessment.course.exam_in_progress) %>
 
           <% mime_type = submission.detected_mime_type %>
-          <a href="<%= download_file_url(submission) %>" class="tooltipped" data-placement="top" data-tooltip="Download Submission" title="Download Submission" ><span class="glyphicon glyphicon-download" aria-hidden="true" style="margin-right:6px; font-size: 20px;"></span></a>
+          <a href="<%= download_file_url(submission) %>" class="tooltipped" data-placement="top" data-tooltip="Download Submission" title="Download Submission" ><i class="material-icons" aria-hidden="true" style="margin-right:6px; font-size: 20px;">file_download</i></a>
         <%  if link = view_course_assessment_submission_path(@course, @assessment, submission) %>
-          <a href="<%= link %>" class="tooltipped" title="View Source" data-tooltip="View Source" aria-label="" style="margin-right:6px; font-size: 20px;"><span class="glyphicon glyphicon-zoom-in" aria-hidden="true"></span></a>
+          <a href="<%= link %>" class="tooltipped" title="View Source" data-tooltip="View Source" aria-label="" style="margin-right:6px; font-size: 20px;"><i class="material-icons" aria-hidden="true">zoom_in</i></a>
 
         <% end %>
 
