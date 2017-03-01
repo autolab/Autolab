@@ -159,7 +159,7 @@ module AssessmentHandin
         Dir.mkdir(remote_handin_dir)
       rescue SystemCallError
         COURSE_LOGGER.log("ERROR: Could not create handin directory. Please contact
-        autolab-dev@andrew.cmu.edu with this error")
+        #{Rails.configuration.school['support_email']} with this error")
       end
 
       system("fs sa #{remote_handin_dir} #{@user.email} rlidw")

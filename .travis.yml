@@ -19,6 +19,7 @@ before_script:
 - cp cmu-prod/frontend-configs/initializers/devise.rb $AUTOLAB/config/initializers/devise.rb
 - cd $AUTOLAB
 - cp config/database.travis.yml config/database.yml
+- cp config/school.yml.template config/school.yml
 - cp config/autogradeConfig.rb.template config/autogradeConfig.rb
 - mkdir attachments/ tmp/
 - bundle install --quiet
