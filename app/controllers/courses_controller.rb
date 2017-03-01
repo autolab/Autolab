@@ -161,18 +161,7 @@ class CoursesController < ApplicationController
   # DELETE courses/:id/
   action_auth_level :destroy, :administrator
   def destroy
-    unless current_user.administrator?
-      flash[:error] = "Permission denied."
-      redirect_to(courses_path) && return
-    end
-
-    course = Course.find(params[:id])
-    if course.nil?
-      flash[:error] = "Course doesn't exist."
-      redirect_to(courses_path) && return
-    end
-
-    course.destroy
+    @course.destroy
     flash[:success] = "Course destroyed."
     redirect_to(courses_path) && return
   end
