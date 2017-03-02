@@ -1,7 +1,7 @@
 
 <% dontTotal = false %>
   <div class="row">
-    <h3 style="word-break: break-all;" class="col-md-12">
+    <h3 style="word-break: break-all;" class="col l12">
       <% if submission.version == 0 then %>
         <font size=-2>Unofficial</font>
       <% else %>
@@ -20,13 +20,13 @@
       <% else %>
         None
       <% end %>
-      <span class="pull-right">
+      <span class="right">
          <% if download_access or not (submission.assessment.exam or submission.assessment.course.exam_in_progress) %>
 
           <% mime_type = submission.detected_mime_type %>
-          <a href="<%= download_file_url(submission) %>" class="tooltipped" data-placement="top" data-tooltip="Download Submission" title="Download Submission" ><span class="glyphicon glyphicon-download" aria-hidden="true" style="margin-right:6px; font-size: 20px;"></span></a>
+          <a href="<%= download_file_url(submission) %>" class="tooltipped" data-placement="top" data-tooltip="Download Submission" title="Download Submission" ><i class="material-icons" aria-hidden="true" style="margin-right:6px; font-size: 20px;">file_download</i></a>
         <%  if link = view_course_assessment_submission_path(@course, @assessment, submission) %>
-          <a href="<%= link %>" class="tooltipped" title="View Source" data-tooltip="View Source" aria-label="" style="margin-right:6px; font-size: 20px;"><span class="glyphicon glyphicon-zoom-in" aria-hidden="true"></span></a>
+          <a href="<%= link %>" class="tooltipped" title="View Source" data-tooltip="View Source" aria-label="" style="margin-right:6px; font-size: 20px;"><i class="material-icons" aria-hidden="true">zoom_in</i></a>
 
         <% end %>
 
@@ -122,9 +122,9 @@
 <br>
   <% if @cud.instructor? then %>
       <% if @assessment.has_autograder? and submission.version > 0 then %>
-        <%= link_to 'Regrade', [:regrade, @course, @assessment, submission_id: submission], {method: :post, class:"waves-effect waves-light btn small"} %> 
+        <%= link_to 'Regrade', [:regrade, @course, @assessment, submission_id: submission], {method: :post, class:"waves-effect waves-light btn small"} %>
       <% end %>
-      <%= link_to 'Destroy', [:destroyConfirm, @course, @assessment, submission], {:class=>"waves-effect waves-light btn small"} %> 
+      <%= link_to 'Destroy', [:destroyConfirm, @course, @assessment, submission], {:class=>"waves-effect waves-light btn small"} %>
       <%= link_to 'Edit', [:edit, @course, @assessment, submission], {:class=>"waves-effect waves-light btn small"} %>
   <% end %>
 
