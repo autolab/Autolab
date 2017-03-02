@@ -63,7 +63,8 @@
         $extensionDaysLabel.addClass("active");
       });
 
-      /* set up flatpickr */
+      /* set up flatpickr (not using initialize_datetimepickers script since
+       * it seems to be causing trouble with setting minDate). */
       $extensionNewDayField.flatpickr({
         altInput: true,
         defaultDate: $dueDate.valueOf(),
