@@ -181,7 +181,7 @@ td.id {
 #grades td.id .popover span.filename span.links {
     float: right;
     padding-right: 3px;
-    text-transform: uppercase; 
+    text-transform: uppercase;
     font-weight: bold;
     font-size: 0.9em;
 }
@@ -268,4 +268,10 @@ td.id {
 
 .template {
     display: none;
+}
+
+[type="checkbox"]:not(:checked), [type="checkbox"]:checked {
+    position: static;
+    left: auto;
+    opacity: 1;
 }

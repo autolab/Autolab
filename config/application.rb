@@ -35,7 +35,7 @@ module Autolab3
     end
 
     # TODO: this should be a macro
-    config.action_mailer.default_url_options = {protocol: 'https', host: 'autograder.cse.buffalo.edu' }
+    config.action_mailer.default_url_options = {protocol: 'https', host: 'YOUR_APP_URL' }
 
     # Settings in config/environments/* take precedence over those specified here.
     # Application configuration should go into files in config/initializers
@@ -93,5 +93,8 @@ module Autolab3
 
     # Allow MOSS to work with as many files as it wants
     Rack::Utils.multipart_part_limit = 0
+
+    # School specific configuration (please edit config/school.yml)
+    config.school = config_for(:school)
   end
 end
