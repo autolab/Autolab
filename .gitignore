@@ -5,10 +5,12 @@ assessmentConfig/
 courseConfig/
 config/environments/production.rb
 config/initializers/devise.rb
+coverage/
 /courses/
 /courses
 /gradebooks/
 config/database.yml
+config/school.yml
 public/images/CourseSubmissions.png
 public/images/HourlySubmissions.png
 public/assets/
@@ -21,5 +23,9 @@ db/*.sqlite3
 tags
 .DS_Store
 .idea/
+.yardoc
 /docker/nginx.conf
 app/views/home/_topannounce.html.erb
+attachments/
+doc/
+out.txt

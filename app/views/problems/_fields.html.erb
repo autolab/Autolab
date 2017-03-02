@@ -2,11 +2,11 @@
 <br>
 <%= f.error_messages %>
 
-<%= f.text_field :name, class: "form-control", help_text: "Each problem has a name that is unique to the assessment.".html_safe %>
+<%= f.text_field :name, help_text: "Each problem has a name that is unique to the assessment.".html_safe %>
 
-<%= f.text_field :description, class: "form-control", help_text: "Short description of the problem." %>
+<%= f.text_field :description, help_text: "Short description of the problem." %>
 
-<%= f.text_field :max_score, class: "form-control", help_text: "The maximum score for this problem." %>
+<%= f.text_field :max_score, help_text: "The maximum score for this problem." %>
 
 <%= f.check_box :optional, help_text: "By default, all problems are
 \"required\". Autolab will only display the total score to a student if all
@@ -17,8 +17,8 @@ unchecked." %>
 <label for="problem_optional">Optional?</label><br>
 
 <div class="action_buttons">
-	<%= f.submit "Save Problem" , {:class=>"btn primary"} %>
+	<%= f.submit "Save Problem" , {:class=>"waves-effect waves-light btn primary"} %>
 	<% if @problem then %>
-	  <%= link_to "Delete this Problem", [@course, @assessment, @problem], method: :delete, class: 'btn btn-danger', data: { confirm: "Deleting will delete all associated problem data and cannot be undone. Are you sure you want to delete this problem?" } %>
+	  <%= link_to "Delete this Problem", [@course, @assessment, @problem], method: :delete, class: 'waves-effect waves-light btn btn-danger', data: { confirm: "Deleting will delete all associated problem data and cannot be undone. Are you sure you want to delete this problem?" } %>
 	<% end %>
 </div>

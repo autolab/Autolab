@@ -12,11 +12,12 @@ pre code {
   margin-bottom: 0;
       counter-reset: item;
     list-style-type: none;
+  margin-top: 0;
 }
 
 #code-list li { display: block; }
-#code-list li:before { 
-    content: counter(item) "  "; 
+#code-list li:before {
+    content: counter(item) "  ";
     counter-increment: item;
     margin-left: -32px;
     padding-right: 12px;
@@ -63,6 +64,7 @@ pre code {
   width: 20px;
   border-radius: 4px;
   box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+  z-index: 999;
 }
 
 .add-annotation-btn:hover {
@@ -92,19 +94,19 @@ pre code {
   background: #eee;
   padding: .5em;
   font-weight: bold;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .ann-box > .header > .delete,
  .ann-box > .header > .edit {
   border: 1px solid transparent;
-  display: inline-block;
+  display: block;
   font-weight: bold;
   text-align: center;
   width: 2em;
-  float: right;
   color: #666;
-  line-height: 28px;
-  margin-top: -6px;
   border-radius: 4px;
 }
 
@@ -179,7 +181,7 @@ pre code {
 }
 
 #pdf-doc .ann-box .header {
-  cursor: move;  
+  cursor: move;
 }
 
 #pdf-doc .ann-box .body {
@@ -203,3 +205,26 @@ pre code {
   background-color: transparent;
 }
 
+.add-annotation-btn .material-icons {
+  position: relative;
+  top: -2px;
+  left: -2px;
+}
+
+pre {
+    display: block;
+    padding: 9.5px;
+    margin: 0 0 10px;
+    font-size: 13px;
+    line-height: 1.42857143;
+    word-break: break-all;
+    word-wrap: break-word;
+    color: #333333;
+    background-color: #f5f5f5;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.header > .grader {
+  flex: 2 0 0;
+}

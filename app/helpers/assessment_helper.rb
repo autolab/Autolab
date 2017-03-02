@@ -108,9 +108,9 @@ private
   def bulkGrade_cell(cell)
     case cell
     when Hash
-      cell[:error] ? cell[:error] : '<span class="glyphicon glyphicon-search"></span>'.html_safe
+      cell[:error] ? cell[:error] : '<i class="material-icons">search</i>'.html_safe
     when NilClass
-      '<span class="glyphicon glyphicon-pushpin"></span>'.html_safe
+      '<i class="material-icons">bookmark_border</i>'.html_safe
     else
       cell
     end

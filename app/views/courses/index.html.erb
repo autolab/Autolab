@@ -1,33 +1,55 @@
-<h1>Courses</h1>
+<h2>Courses</h2>
 
 <% @listing.each do |category, list| %>
   <% if list.size > 0 %>
-    <h2><%= category.capitalize %></h2>
+    <div class="section">
+    <h3 class="section-title"><span class="white"><%= category.capitalize %></span></h3>
 
-    <div class="rolodex">
-      <% list.each do |course| %>
-        <div class="card course">
-          <h1><%= link_to course.full_name, course_path(course) %></h1>
+    <div class="row">
+      <% list.each_with_index do |course, idx| %>
+        <% if idx % 3 == 0 %>
+          <div class="clearfix hide-on-small-only"></div>
+        <% end %>
+        <% course_cud = CourseUserDatum.find_cud_for_course(course, current_user.id) %>
+        <% not_student = course_cud.has_auth_level? :course_assistant %>
 
-          <div class="content">
-            <ul>
-              <% course.current_assessments.ordered.each do |asmt| %>
-                <li>
-                  <%= link_to asmt.display_name, course_assessment_path(course, asmt) %>
-                  <span class="pull-right shortcuts">
-                    <a href="<%= course_assessment_path(course, asmt) %>"><%= image_tag "go-new.png", :height => 22, :alt=>"Go to assessment" %></a>
-                  </span>
-                </li>
-              <% end %>
-            </ul>
-            <% if course.current_assessments.length == 0 %>
-              <div><i>No current assessments</i></div>
+        <div class="col s12 m4">
+          <div class="card hoverable">
+            <%= link_to course_path(course), title: "Go to Course Page" do %>
+              <div class="card-content red darken-4">
+                <div class="row">
+                  <div class="col <%= not_student ? 's9' : 's12' %>"><h4><span class="card-title white-text"><%= course.full_name %></span></h4></div>
+                  <% if not_student %> <div class="col s3"><span class="new badge padded-badge" data-badge-caption="Instructor"></span></div> <% end %>
+                </div>
+              </div>
             <% end %>
-            <%= link_to 'Go to Course Page', course_path(course), :class=>'btn main' %>
+
+            <% if category != :completed %>
+              <div class="collection red darken-3">
+                <% course.current_assessments.ordered.each do |asmt| %>
+                  <%= link_to asmt.display_name, course_assessment_path(course, asmt), class: "collection-item grey-text text-darken-4" %>
+                <% end %>
+              </div>
+            <% end %>
+
+            <div class="card-action">
+              <%= link_to 'Course Page', course_path(course), class: "red-text text-darken-3", title: "Go to course page" %>
+
+              <% if course_cud %>
+                <% if not_student && !course_cud.section.blank? %>
+                  <%= link_to "Grade Section", [:view, course, course_cud, :gradebook, section: course_cud.section], title: "Grade your section", class: "red-text text-darken-3" %>
+                <% elsif !not_student %>
+                  <%= link_to "Gradebook", [course, course_cud, :gradebook], title: "View your gradebook", class: "red-text text-darken-3" %>
+                <% end %>
+              <% end %>
+            </div>
           </div>
         </div>
+
       <% end %>
     </div>
+
+    </div> <!-- section -->
   <% end %>
 <% end %>
 

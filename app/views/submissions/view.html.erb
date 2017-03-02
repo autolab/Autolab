@@ -43,7 +43,7 @@
 </h2>
 <hr>
 <div class="row">
-  <div class="annotationPane col-md-3">
+  <div class="annotationPane col l3">
     <h3 class="annotationHeader">Summary</h3>
     <% if @problemSummaries.empty? then %>
       <% if (@cud.instructor? or @cud.course_assistant?) then %>
@@ -66,15 +66,13 @@
       </div>
     <% end %>
     <hr>
-    <span class="checkbox">
-      <input type="checkbox" id="highlightLongLines">
-      <label for="highlightLongLines">Highlight lines longer than 80 characters</label>
-    </span>
+    <input type="checkbox" id="highlightLongLines">
+    <label for="highlightLongLines">Highlight lines longer than 80 characters</label>
     <hr>
     <input type="button" value="Reload Summary" class="btn primary" onclick="window.location.reload()">
 
   </div>
-  <div class="col-md-9">
+  <div class="col l9">
     <h3 id="filename"><%= @displayFilename %></h3>
     <div id="code-box">
     <% # these lines can't have white space due to the styling for pre and code tages %>
@@ -83,7 +81,7 @@
       @data.each_with_index do |(code, annotation), index|
         %><li id="line-<%= index+1 %>"><code><%=
           code
-        %></code><% if @cud.instructor? or @cud.course_assistant? then %><span class="add-annotation-btn glyphicon glyphicon-plus" id="add-btn-<%= index+1 %>"></span><% end %><div class="annotations-container"></div></li><%
+        %></code><% if @cud.instructor? or @cud.course_assistant? then %><span class="add-annotation-btn" id="add-btn-<%= index+1 %>"><i class="material-icons">add</i></span><% end %><div class="annotations-container"></div></li><%
       end %></ol></code></pre>
   </div>
   </div>

@@ -175,6 +175,16 @@ class CourseUserDatum < ActiveRecord::Base
   def self.find_cud_for_course(course, uid)
     user = User.find(uid)
     cud = user.course_user_data.find_by(course: course)
+    if cud.nil?
+      if user.administrator?
+        new_cud = course.course_user_data.new(user: user,
+                                              instructor: true,
+                                              course_assistant: true)
+        return new_cud.save ? new_cud : nil
+      end
+    else
+        return cud
+    end
   end
 
   # find a cud in the course, or create one using

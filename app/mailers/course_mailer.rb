@@ -29,7 +29,7 @@ class CourseMailer < ActionMailer::Base
     @text = text
 
     mail(
-      to: "autolab-dev@andrew.cmu.edu",
+      to: Rails.configuration.school['tech_email'],
       subject: subject,
       from: @user.email,
       sent_on: Time.now

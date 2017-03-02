@@ -1,14 +1,28 @@
 <%= form_for @attachment, as: :attachment, url: path, builder: FormBuilderWithDateTimeInput do |f| %>
   <%= f.error_messages %>
 
-  <%= f.text_field :name %>
+	<%= f.text_field :name, :required => true %>
 
-  <% if @attachment.new_record? %>
-    <%= f.file_field :file %>
-  <% else %>
-    <%= f.text_field :mime_type,
-      help_text: "Note: If you change the Mime type of a file, you might need to clear your browser's cache in order for you to see the change." %>
-  <% end %>
+	<% if @attachment.new_record? %>
+  <div class="row embedded-form">
+    <label class="custom-file-upload">
+			<span class="btn primary" id="upload_button">
+				Attatchment ...
+					<%= f.file_field :file, class: "upload_embedded" %>
+			</span>
+		</label>
+		<input type="text" id="upload_file" readonly value="Select to Upload a File.">
+  </div>
+	<% else %>
+		<%= f.text_field :mime_type,
+				help_text: "Note: If you change the Mime type of a file, you might need to clear your browser's cache in order for you to see the change." %>
+	<% end %>
+
+<script>
+    document.getElementById("attachment_file").onchange = function(e) {
+        document.getElementById("upload_file").value = document.getElementById("attachment_file").value.split(/(\\|\/)/g).pop();
+    }
+</script>
 
   <%= f.check_box :released %>
 

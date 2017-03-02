@@ -89,8 +89,11 @@
   <div class="gb_message"><%=raw(@course.gb_message)%></div>
 <% end %>
 
-<div id="filter_container">
-  <input id="filter" placeholder="Search..." type="text"></input>
+<div class="row">
+  <div class="input-field col s4 offset-s4 filter_container">
+    <i class="material-icons prefix">search</i>
+    <input id="filter" placeholder="Search..." type="text"></input>
+  </div>
 </div>
 
 <% if @options[:show_actions] %>

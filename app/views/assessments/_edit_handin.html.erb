@@ -1,40 +1,45 @@
+
 <% content_for :javascripts do %>
   <%= javascript_include_tag "initialize_datetimepickers" %>
 <% end %>
 
 <%# Initialize datepickers by defining linked relationships (using IDs) %>
 <%= f.datetime_select :start_at,
+  style: "margin-top: 0 !important;",
   help_text: "The time this assessment is released to students.",
   less_than: "assessment_due_at assessment_end_at assessment_grading_deadline" %>
 
 <%= f.datetime_select :due_at,
+  style: "margin-top: 0 !important;",
   help_text: "Students can submit before this time without being penalized or using grace days.",
   greater_than: "assessment_start_at",
   less_than: "assessment_end_at assessment_grading_deadline" %>
 
-<%= f.datetime_select :end_at,
+<%= f.datetime_select :end_at, class: "datepicker",
+  style: "margin-top: 0 !important;",
   help_text: "Last possible time that students can submit (except those granted extensions.)",
   greater_than: "assessment_start_at assessment_due_at",
   less_than: "assessment_grading_deadline" %>
 
 <%= f.datetime_select :grading_deadline,
+  style: "margin-top: 0 !important;",
   help_text: "Time after which final scores are included in the gradebook",
   greater_than: "assessment_start_at assessment_due_at assessment_end_at" %>
 
 <div class="form-group">
-  <span class="checkbox"><%= f.check_box :disable_handins,
+  <%= f.check_box :disable_handins,
     help_text: "Check this to disallow handins through Autolab. E.g., paper
-    exams, problem sets" %></span>
+    exams, problem sets" %>
 </div>
 
 <div class="form-group">
-  <span class="checkbox"><%= f.check_box :allow_unofficial, help_text: "Allow log submissions" %></span>
+  <%= f.check_box :allow_unofficial, help_text: "Allow log submissions" %>
 </div>
 
 <%= content_tag :div, id: "handin", class: (f.object.disable_handins ? "disabled" : "") + " form-group" do %>
   <%= f.text_field :handin_directory, help_text: "The subdirectory in the assessment directory where student submissions will be store. You generally shouldn't need to change this. Default: <kbd>handin</kbd>".html_safe %>
 
-  <%= f.text_field :remote_handin_path, help_text: "(Optional) The directory outside the assessment directory where student submissions directly from local machines will be copied.".html_safe %>
+  <%= f.text_field :remote_handin_path, placeholder: "(Optional)", help_text: "The directory outside the assessment directory where student submissions directly from local machines will be copied.".html_safe %>
 
   <%= f.text_field :handin_filename, help_text: "The suffix (fname) that is appended to student submission files. Autolab stores submission files in the handin directory as <kbd>email_version_fname</kbd>. E.g., 'mm.c'".html_safe %>
 <% end %>
@@ -42,5 +47,5 @@
 <%= f.text_field :max_size, help_text: "The maximum size that a handin file can have, in megabytes (MB)." %>
 
 <div class="action_buttons">
-  <%= f.submit "Save" , {:class=>"btn primary"} %>
+  <%= f.submit "Save" , {:class=>"waves-effect waves-light btn primary"} %>
 </div>

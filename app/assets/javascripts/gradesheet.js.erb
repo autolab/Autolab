@@ -7,7 +7,7 @@ jQuery(function() {
     var current_editor = undefined;
     var current_popover = undefined;
 
-    var num_cols = jQuery("table#grades > thead > tr:first > th").length
+    var num_cols = hclasses.length;
 
     numeric_columns = []
     for (var i = first_problem_column; i < num_cols; i++)
@@ -22,7 +22,6 @@ jQuery(function() {
           'X-CSRF-Token' : $('meta[name="csrf-token"]').attr('content')
       },
     });
-
     // fast numeric-html sorts (but --'s aren't sorted correctly)
     jQuery.extend(jQuery.fn.dataTableExt.oSort, {
       "num-html-pre": function (a) {
@@ -128,7 +127,7 @@ jQuery(function() {
         $prob_col.children().appendTo($td_prob);
       }
     }
-
+    
     // main score table
     var oTable = jQuery("#grades").dataTable({
         'data' : table_data,
@@ -394,7 +393,9 @@ jQuery(function() {
               });
               _close_current_editor();
           }
+
       });
+
     }
 
     function register_editor_events($editable) {
@@ -660,5 +661,6 @@ jQuery(function() {
     var dirty = function(event) {
         score_details_dirty(get_enclosing_editor(event.target), "dirty");
     }
+
 
 });

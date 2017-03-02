@@ -1,3 +1,8 @@
+<%= stylesheet_link_tag "https://unpkg.com/flatpickr/dist/flatpickr.min.css" %>
+
+<% content_for :javascripts do %>
+  <%= javascript_include_tag "https://unpkg.com/flatpickr" %>
+<% end %>
 
 <%= f.text_field :name,
   help_text: "The course ID used in URLs and DB keys. This field must be unique
@@ -20,21 +25,21 @@
   are allowed each semester. Example: 3" %>
 
 <%= f.fields_for :late_penalty, course.late_penalty do |p| %>
-  <%= content_tag :div, class: "form-group" do %>
+  <%= content_tag :div, class: "input-field" do %>
     <%= p.label :late_penalty, class: "control-label" %>
 
     <%= content_tag :div, class: "row" do %>
-      <%= content_tag :div, class: "col-xs-8" do %>
-        <%= p.vanilla_text_field :value, class: "form-control" %>
+      <%= content_tag :div, class: "col s8" do %>
+        <%= p.vanilla_text_field :value, class: "score-box input-field" %>
       <% end %>
-      <%= content_tag :div, class: "col-xs-4" do %>
+      <%= content_tag :div, class: "col s4" do %>
         <%= p.select :kind, options_for_select({"points" => "points", "%" => "percent"},
                                                :selected => (course.late_penalty ? course.late_penalty.kind : "points")),
-                            {}, {class: "form-control"} %>
+                            {}, {class: "input-field"} %>
       <% end %>
     <% end %>
 
-    <%= content_tag :p, class: "help-text" do %>
+    <%= content_tag :p, class: "help-block" do %>
       The penalty applied to late submissions after a student runs out of grace
       days. It represents an amount of points or a percentage of the total score
       removed per day, and must be a non-negative number. This field can be
@@ -50,34 +55,28 @@
   basis." %>
 
 <%= f.fields_for :version_penalty, course.version_penalty do |p| %>
-  <%= content_tag :div, class: "form-group" do %>
+  <%= content_tag :div, class: "input-field" do %>
     <%= p.label :version_penalty, class: "control-label" %>
 
     <%= content_tag :div, class: "row" do %>
-      <%= content_tag :div, class: "col-xs-8" do %>
-        <%= p.vanilla_text_field :value, class: "form-control" %>
+      <%= content_tag :div, class: "col s8" do %>
+        <%= p.vanilla_text_field :value, class: "score-box input-field" %>
       <% end %>
-      <%= content_tag :div, class: "col-xs-4" do %>
+      <%= content_tag :div, class: "col s4" do %>
         <%= p.select :kind, options_for_select({"points" => "points", "%" => "percent"},
                                                :selected => (course.version_penalty ? course.version_penalty.kind : "points")),
-                            {}, {class: "form-control"} %>
+                            {}, {class: "input-field"} %>
       <% end %>
     <% end %>
 
-    <%= content_tag :p, class: "help-text" do %>
+    <%= content_tag :p, class: "help-block" do %>
       The penalty applied to submissions with versions greater than the <em>version
-      threshold</em>. It represents a number of points or percentage of the total
-      score removed per version above the threshold, and must be a non-negative
-      number. For example, if this is set to 1 point and the version threshold to 3,
-      the fifth version of a student's submissions would be docked 2 points. This is
-      required, but can be overridden on a per-assessment basis.
+      threshold</em> i.e. number of points or percentage of the total
+      score removed per version above the threshold. For example, if this is set to 1 point and the version threshold to 3,
+      the fifth version of a student's submissions would be docked 2 points.
     <% end %>
   <% end %>
 <% end %>
-
-<%= f.check_box :exam_in_progress,
-  help_text: "While checked, students are not allowed to view their previous
-  submissions for any assessment in this class." %>
 
 <%= f.date_select :start_date, help_text: "When the course becomes active.",
   less_than: "course_end_date" %>
@@ -89,7 +88,10 @@
   help_text: "If this box is checked, then students won't be able download labs
   or upload submissions." %>
 
-<%= f.text_area :gb_message,
+<%= f.check_box :exam_in_progress, help_text: "While checked, students are not allowed to view their previous
+  submissions for any assessment in this class." %>
+
+<%= f.text_area :gb_message, class: "materialize-textarea",
   help_text: "An optional message that is displayed to students at the top of
   their gradebooks.  It can be used to explain grading criteria.",
   display_name: "Gradebook Message" %>

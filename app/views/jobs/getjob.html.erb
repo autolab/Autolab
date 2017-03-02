@@ -43,7 +43,7 @@
 <ul>
   <% for item in @job[:rjob]["trace"] do %>
     <% poo = item.split("|") %>
-    <li><%= DateTime.parse(poo[0]).to_time.localtime.to_s(:db) %> | <%= poo[1] %></li>
+    <li><span class="moment-date-time"><%= DateTime.parse(poo[0]).to_time.in_time_zone.to_s %></span> | <%= poo[1] %></li>
   <% end %>
 </ul>
 

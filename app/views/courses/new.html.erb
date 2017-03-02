@@ -11,10 +11,10 @@
   <%= f.text_field :semester, size: 3,
   help_text: "The current semester. Examples: f12, s13, m13" %>
 
-  <div class="form-group">
+  <div class="form-group input-field">
+    <%= text_field_tag :instructor_email, nil, class: "validate" %>	
     <label class="control-label" for="instructor_email">Instructor Email</label>
-    <%= text_field_tag :instructor_email, nil, class: "form-control" %>
-    <p class="help-block">Email of an Instructor, they will set up the course from here!</p>
+		<p class="help-block">Email of an Instructor, they will set up the course from here!</p>
   </div>
 
   <%= f.submit "Create" , {:class=>"btn primary"} %>

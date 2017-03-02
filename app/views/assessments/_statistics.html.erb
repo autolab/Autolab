@@ -13,12 +13,6 @@
     <% end %>
 
     <% content_for :javascripts do %>
-       <%= javascript_include_tag "assessments_statistics" %>
-       <%= javascript_include_tag "chroma.min" %>
-      <script type="text/javascript">
-        var hell = <%= raw @scores.to_json %>;
-        plotGraph(hell);
-      </script>
     <% end %>
 
     <div id='allGradesDiv' class="section scrollspy" >
@@ -116,4 +110,19 @@
       <li><a href="#yearDiv">By Year</a></li>
     </ul>
   </div>
+
+  <script type="text/javascript">
+       
+
+    $(document).ready(function() {
+       
+      $('.scrollspy').scrollSpy();
+      $('.statsGroups').pushpin({
+        top: 100,
+        offset: 0
+      });
+      
+    });
+
+  </script>
 </div>

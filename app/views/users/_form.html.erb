@@ -13,23 +13,23 @@
     </div>
   <% end %>
 
-  <div class="field">
-    <%= f.label :email %><br>
+  <div class="input-field">
     <%= f.email_field :email %>
+    <%= f.label :email %>
   </div>
 
-  <div class="field">
-    <%= f.label :first_name %><br>
+  <div class="input-field">
     <%= f.text_field :first_name %>
+    <%= f.label :first_name %>
   </div>
-  <div class="field">
-    <%= f.label :last_name %><br>
+  <div class="input-field">
     <%= f.text_field :last_name %>
+    <%= f.label :last_name %>
   </div>
   <% if current_user.administrator? %>
     <div class="field">
-      <%= f.label :administrator %><br>
       <%= f.check_box :administrator %>
+			<%= f.label :administrator %><br>
     </div>
   <% end %>
 

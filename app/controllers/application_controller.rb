@@ -19,6 +19,9 @@ class ApplicationController < ActionController::Base
   before_action :authenticate_for_action
   before_action :update_persistent_announcements
   before_action :set_breadcrumbs
+    rescue_from ActionView::MissingTemplate do |exception|
+      redirect_to("/home/error_404")
+  end
 
   # this is where Error Handling is configured. this routes exceptions to
   # the error handler in the HomeController, unless we're in development mode
@@ -57,7 +60,6 @@ class ApplicationController < ActionController::Base
     end
 
     if level == :administrator
-      skip_before_action :set_course, only: [action]
       skip_before_action :authorize_user_for_course, only: [action]
       skip_filter authenticate_for_action: [action]
       skip_before_action :update_persistent_announcements, only: [action]

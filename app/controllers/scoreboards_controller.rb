@@ -5,6 +5,9 @@ class ScoreboardsController < ApplicationController
   before_action :set_assessment
   before_action :set_assessment_breadcrumb, only: [:edit]
   before_action :set_scoreboard, except: [:create]
+  rescue_from ActionView::MissingTemplate do |exception|
+      redirect_to("/home/error_404")
+  end
 
   action_auth_level :create, :instructor
   def create
@@ -47,7 +50,7 @@ class ScoreboardsController < ApplicationController
       if @grades[uid][:version] != row["version"]
         # MySQL returns a Time object, but SQLite returns a time-stamp string
         row["time"] = Time.parse(row["time"]) if row["time"].class != Time
-        @grades[uid][:time] = row["time"].localtime
+        @grades[uid][:time] = row["time"].in_time_zone
         @grades[uid][:version] = row["version"].to_i
         @grades[uid][:autoresult] = row["autoresult"]
       end

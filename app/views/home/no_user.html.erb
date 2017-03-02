@@ -10,7 +10,7 @@ Here are some resources to get you started.
 
 <div class="container">
   <div class="row">
-    <div class="col-md-6">
+    <div class="col l6">
       <h3>How can I join a course?</h3>
       <p>
       For most types of courses, students can't enroll themselves. Fire off an
@@ -25,7 +25,7 @@ Here are some resources to get you started.
 
 <div class="container">
   <div class="row">
-    <div class="col-md-6">
+    <div class="col l6">
       <h3>How can I create my course?</h3>
       <p>
       You should ask your system administrator to create your course for you. If
@@ -33,7 +33,7 @@ Here are some resources to get you started.
       </p>
     </div>
 
-    <div class="col-md-6">
+    <div class="col l6">
       <h3>How do I manage my course?</h3>
       <p>
       We've got a bunch of documentation for how to create documentation online
@@ -46,7 +46,7 @@ Here are some resources to get you started.
   </div><!-- row -->
 
   <div class="row">
-    <div class="col-md-6">
+    <div class="col l6">
       <h3>How do I write an assessment autograder?</h3>
       <p>
       The instructions for creating labs, autograders, and assessments are also
@@ -64,7 +64,7 @@ Here are some resources to get you started.
 
 <div class="container">
   <div class="row">
-    <div class="col-md-6">
+    <div class="col l6">
       <h3>I just set up Autolab. How can I make myself an admin?</h3>
       <p>
       We have a Rake task that you can run where your app is deployed to promote
@@ -74,7 +74,7 @@ Here are some resources to get you started.
       </p>
     </div>
 
-    <div class="col-md-6">
+    <div class="col l6">
       <h3>Where can I keep up to date on releases and updates?</h3>
       <p>
       You can see information about each official release of Autolab
@@ -84,7 +84,7 @@ Here are some resources to get you started.
   </div><!-- row -->
 
   <div class="row">
-    <div class="col-md-6">
+    <div class="col l6">
       <h3>Where is the Autolab documentation?</h3>
       <p>
       We've migrated our documentation to the Github Wiki.
@@ -94,7 +94,7 @@ Here are some resources to get you started.
       </p>
     </div>
 
-    <div class="col-md-6">
+    <div class="col l6">
       <h3>Can I get in contact with the Autolab developers?</h3>
       <p>
       Yes, we love hearing from our users!
@@ -105,8 +105,7 @@ Here are some resources to get you started.
         </li>
         <li>
         If you need help troubleshooting something related to Autolab that
-        doens't belong on our issue tracker, you can email us at <b>autolab-dev
-        [at] andrew.cmu.edu</b>.
+        doens't belong on our issue tracker, you can email us at <b><%= Rails.configuration.school['tech_email'] %></b>.
         </li>
       </ul>
       </p>

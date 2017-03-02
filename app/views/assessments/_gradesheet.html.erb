@@ -4,7 +4,7 @@
 
 <% content_for :javascripts do %>
   <%= external_javascript_include_tag "jquery-ui", "1.10.2" %>
-  <%= external_javascript_include_tag "jquery.dataTables", "1.10.5" %>
+  <%= external_javascript_include_tag "jquery.dataTables", "1.10.9" %>
 
   <%= javascript_include_tag "jquery.jeditable" %>
 
@@ -21,7 +21,7 @@
 
     /* table data */
     // header classes
-    hclasses = ["enumerator", "id", "lec", "sec", 
+    hclasses = ["enumerator", "id", "lec", "sec",
                 <% for i in 0..(@assessment.problems.length - 1) do%>
                   "problem",
                 <% end %>
@@ -60,7 +60,7 @@
               <% if @assessment.version_penalty? %>
                 "version_penalty": "<%= computed_score(history_url s.course_user_datum) { s.version_penalty @cud } %>",
               <% end %>
-                "tweak": `<%= link_to raw(tweak(s.tweak)), 
+                "tweak": `<%= link_to raw(tweak(s.tweak)),
                   edit_course_assessment_submission_path(@course, @assessment, s),
                   tabindex: -1 %>`,
             <% end %>
@@ -113,7 +113,7 @@
       { title: "Sec", className: "sec", data: "sec" },
       <% @assessment.problems.each_with_index do |p,i| %>
         { title: `<%= p.name %>
-            <span class="max_score">(<%= p.max_score %>)</span>`, 
+            <span class="max_score">(<%= p.max_score %>)</span>`,
           className: "problem",
           data: "problem<%= i %>",
           render: function(data, type, full, meta) {
@@ -220,13 +220,15 @@
             <textarea class="feedback">loading...</textarea>
           </div>
           <div>
-            <b>Released</b>
-              <input class="released" type="checkbox"></input>
-              <span class="save_box">
-                  <span class="saving">Saving...</span>
-                  <span class="save btn small primary" tabindex="1">Save</span>
-                  <span class="error" tabindex="1">Try again?</span>
-              </span>
+            <span class="left">
+              <b>Released</b>
+              <input class="released" type="checkbox" />
+            </span>
+            <span class="save_box">
+              <span class="saving">Saving...</span>
+              <span class="save waves-effect waves-light btn small primary" tabindex="1">Save</span>
+              <span class="error" tabindex="1">Try again?</span>
+            </span>
           </div>
       </div>
   </div>

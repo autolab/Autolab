@@ -12,5 +12,5 @@
   <% end %>
 </ul>
 <% if @cud.instructor? then %>
-<%= link_to raw('<span class="btn primary">Edit Information</span>'), edit_course_course_user_datum_path(@course, @requestedUser) %>
+  <%= link_to raw('<span class="waves-effect waves-light btn primary">Edit Information</span>'), edit_course_course_user_datum_path(@course, @requestedUser) %>
 <% end %>

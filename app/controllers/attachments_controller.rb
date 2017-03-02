@@ -9,6 +9,10 @@ class AttachmentsController < ApplicationController
   before_action :set_attachment, except: [:index, :new, :create]
   before_action :add_attachments_breadcrumb
 
+    rescue_from ActionView::MissingTemplate do |exception|
+      redirect_to("/home/error_404")
+  end
+
   action_auth_level :index, :instructor
   def index
     @attachments = (@is_assessment) ? @assessment.attachments : @course.attachments

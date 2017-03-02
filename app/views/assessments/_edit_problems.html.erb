@@ -1,16 +1,28 @@
-<h3>Edit Problems for <%= current_assessment_link %></h3>
 <br>
-  <% for problem in @assessment.problems do %> 
-  	<div class="row">
-	  <div class="col-md-8"><b><%= problem.name %></b>
-	  [max score: <%= problem.max_score %>, optional: <%= problem.optional ? "yes" : "no" %>]
-	  </div>
-	  <div class="btn-group col-md-4" role="group">
-	  <%= link_to "Edit", [:edit, @course, @assessment, problem], { class: "btn small" } %>
-	  <%= link_to "Delete", [@course, @assessment, problem], method: :delete, class: "btn small", data: { confirm: "Are you sure you want to destroy this problem? It will also destroy all scores associated with this problem!!!" } %>
-	  </div>
-	</div>
-	<hr>
-  <% end %>
+
+<table class="bordered responsive-table">
+	<thead>
+	  <tr>
+	      <th data-field="problem_name">Problem</th>
+	      <th data-field="max_score">Max Score</th>
+	      <th data-field="optional">Optional?</th>      
+	      <th data-field="options">Options</th>
+	  </tr>
+	</thead>
+
+	<tbody>
+		<% for problem in @assessment.problems do %>
+			<tr>
+				<td><%= problem.name %></td>
+				<td><%= problem.max_score %></td>
+				<td><%= problem.optional ? "yes" : "no" %></td>
+				<td>
+					<%= link_to "<i class=\"material-icons left\">mode_edit</i>".html_safe, [:edit, @course, @assessment, problem], { class: "small" } %>
+	  				<%= link_to "<i class=\"material-icons left\">delete</i>".html_safe, [@course, @assessment, problem], method: :delete, class: "small", data: { confirm: "Are you sure you want to destroy this problem? It will also destroy all scores associated with this problem!!!" } %>
+				</td>
+			</tr>
+		<% end %>
+	</tbody>
+</table>
 <br>
-<%= link_to "Add Problem", new_course_assessment_problem_path(@course, @assessment), { :class=> "btn primary" } %>
+<%= link_to "Add Problem".html_safe, new_course_assessment_problem_path(@course, @assessment), { :class=> "btn" } %>

@@ -1,29 +1,30 @@
 <%= form_for [@course, @assessment, @scoreboard], builder: FormBuilderWithDateTimeInput do |f| %>
-  <%= f.error_messages %> 
-  <p>Use this page to configure the scoreboard. (<%= link_to "Learn More", [:help, @course, @assessment, :scoreboard] %>)</p>
+  <%= f.error_messages %>
+  <h3>Scoreboard Settings</h3> 
+  <p>
+    Learn more about how to configure <a href="https://autolab.github.io/docs/features/#scoreboards">custom scoreboards here</a>
+  </p>
+  <hr>
 
   <%= f.text_field :banner, size: 80,
-    help_text: "Optional HTML banner text. Leave blank for default." %>
+    placeholder: "Optional HTML banner text. Leave blank for default." %>
 
-  <%= f.text_area :colspec, display_name: "Column Specification",
+  <%= f.text_area :colspec, class: "materialize-textarea", placeholder: "Optional JSON string that describes your customized scoreboard columns. Leave blank for default.", display_name: "Column Specification",
     rows: 5, cols: 80 %></td>
   <p class="help-block">
-  Optional JSON string that describes your customized scoreboard columns. Leave blank for default.
-  </p>
-  <p class="help-block">
-  Example: For scoreboard with two cols: "Score" and "Props", with "Score" sorted descending, and "Props"
-  ascending:
-  <b><kbd>'{"scoreboard": [ {"hdr":"Score"}, {"hdr":"Props", "asc":1} ] }'</kbd></b> (inside the quotes).
+  <b>Example: </b>A scoreboard with two columns "Score" and "Ops" with "Ops" sorted in ascending order
+  <br>
+  <b>{"scoreboard": [ {"hdr":"Score"}, {"hdr":"Ops", "asc":1} ] }</b>
   </p>
   
-  <h2>Column summary</h2>
+  <h4>Column summary</h4>
   <p><%= @column_summary %></p>
   <p class="help-block">
-    <kbd>[desc]/[asc]</kbd>: break ties by sorting this column is descending or ascending order.
+    <b>[desc]/[asc]</b>: break ties by sorting this column is descending or ascending order.
   <p>
 
-  <%= f.submit "Save Settings", {class: "btn primary"} %>
-  <%= link_to "Delete Scoreboard", [@course, @assessment, :scoreboard], method: :delete, class: "btn danger",
+  <%= f.submit "Save", {class: "waves-effect waves-light btn primary"} %>
+  <%= link_to "Delete", [@course, @assessment, :scoreboard], method: :delete, class: "waves-effect waves-light btn danger",
               data: {confirm: "Are you sure you want to delete the Scoreboard for this assesssment?"} %>
 
 <% end %>

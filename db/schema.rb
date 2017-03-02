@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150602140535) do
+ActiveRecord::Schema.define(version: 20170101140555) do
 
   create_table "annotations", force: :cascade do |t|
     t.integer  "submission_id", limit: 4
@@ -63,34 +63,40 @@ ActiveRecord::Schema.define(version: 20150602140535) do
     t.datetime "end_at"
     t.datetime "visible_at"
     t.datetime "start_at"
-    t.string   "name",               limit: 255
-    t.text     "description",        limit: 65535
+    t.string   "name",                    limit: 255
+    t.text     "description",             limit: 65535
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.integer  "course_id",          limit: 4
-    t.string   "display_name",       limit: 255
-    t.string   "handin_filename",    limit: 255
-    t.string   "handin_directory",   limit: 255
-    t.integer  "max_grace_days",     limit: 4,     default: 0
-    t.string   "handout",            limit: 255
-    t.string   "writeup",            limit: 255
-    t.boolean  "allow_unofficial",   limit: 1
-    t.integer  "max_submissions",    limit: 4,     default: -1
-    t.boolean  "disable_handins",    limit: 1
-    t.boolean  "exam",               limit: 1,     default: false
-    t.integer  "max_size",           limit: 4,     default: 2
-    t.integer  "version_threshold",  limit: 4
-    t.integer  "late_penalty_id",    limit: 4
-    t.integer  "version_penalty_id", limit: 4
-    t.datetime "grading_deadline",                                 null: false
-    t.boolean  "has_autograde_old",  limit: 1
-    t.boolean  "has_scoreboard_old", limit: 1
-    t.boolean  "has_svn",            limit: 1
-    t.boolean  "quiz",               limit: 1,     default: false
-    t.text     "quizData",           limit: 65535
-    t.string   "remote_handin_path", limit: 255
-    t.string   "category_name",      limit: 255
-    t.integer  "group_size",         limit: 4,     default: 1
+    t.integer  "course_id",               limit: 4
+    t.string   "display_name",            limit: 255
+    t.string   "handin_filename",         limit: 255
+    t.string   "handin_directory",        limit: 255
+    t.integer  "max_grace_days",          limit: 4,     default: 0
+    t.string   "handout",                 limit: 255
+    t.string   "writeup",                 limit: 255
+    t.boolean  "allow_unofficial",        limit: 1
+    t.integer  "max_submissions",         limit: 4,     default: -1
+    t.boolean  "disable_handins",         limit: 1
+    t.boolean  "exam",                    limit: 1,     default: false
+    t.integer  "max_size",                limit: 4,     default: 2
+    t.integer  "version_threshold",       limit: 4
+    t.integer  "late_penalty_id",         limit: 4
+    t.integer  "version_penalty_id",      limit: 4
+    t.datetime "grading_deadline",                                      null: false
+    t.boolean  "has_autograde_old",       limit: 1
+    t.boolean  "has_scoreboard_old",      limit: 1
+    t.boolean  "has_svn",                 limit: 1
+    t.boolean  "quiz",                    limit: 1,     default: false
+    t.text     "quizData",                limit: 65535
+    t.string   "remote_handin_path",      limit: 255
+    t.string   "category_name",           limit: 255
+    t.integer  "group_size",              limit: 4,     default: 1
+    t.boolean  "has_custom_form",         limit: 1,     default: false
+    t.text     "languages",               limit: 65535
+    t.text     "textfields",              limit: 65535
+    t.text     "embedded_quiz_form_data", limit: 65535
+    t.boolean  "embedded_quiz",           limit: 1
+    t.binary   "embedded_quiz_form",      limit: 65535
   end
 
   create_table "attachments", force: :cascade do |t|
@@ -224,22 +230,24 @@ ActiveRecord::Schema.define(version: 20150602140535) do
   add_index "scores", ["submission_id"], name: "index_scores_on_submission_id", using: :btree
 
   create_table "submissions", force: :cascade do |t|
-    t.integer  "version",              limit: 4
-    t.integer  "course_user_datum_id", limit: 4
-    t.integer  "assessment_id",        limit: 4
-    t.string   "filename",             limit: 255
+    t.integer  "version",                   limit: 4
+    t.integer  "course_user_datum_id",      limit: 4
+    t.integer  "assessment_id",             limit: 4
+    t.string   "filename",                  limit: 255
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.string   "notes",                limit: 255,   default: ""
-    t.string   "mime_type",            limit: 255
-    t.integer  "special_type",         limit: 4,     default: 0
-    t.integer  "submitted_by_id",      limit: 4
-    t.text     "autoresult",           limit: 65535
-    t.string   "detected_mime_type",   limit: 255
-    t.string   "submitter_ip",         limit: 40
-    t.integer  "tweak_id",             limit: 4
-    t.boolean  "ignored",              limit: 1,     default: false, null: false
-    t.string   "dave",                 limit: 255
+    t.string   "notes",                     limit: 255,   default: ""
+    t.string   "mime_type",                 limit: 255
+    t.integer  "special_type",              limit: 4,     default: 0
+    t.integer  "submitted_by_id",           limit: 4
+    t.text     "autoresult",                limit: 65535
+    t.string   "detected_mime_type",        limit: 255
+    t.string   "submitter_ip",              limit: 40
+    t.integer  "tweak_id",                  limit: 4
+    t.boolean  "ignored",                   limit: 1,     default: false, null: false
+    t.string   "dave",                      limit: 255
+    t.text     "settings",                  limit: 65535
+    t.text     "embedded_quiz_form_answer", limit: 65535
   end
 
   add_index "submissions", ["assessment_id"], name: "index_submissions_on_assessment_id", using: :btree

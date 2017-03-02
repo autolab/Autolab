@@ -11,8 +11,8 @@ class FormBuilderWithDateTimeInput < ActionView::Helpers::FormBuilder
     define_method(method_name) do |name, *args|
       options = args.extract_options!
 
-      # add form-control class (for Bootstrap styling) and pass on to Rails
-      options[:class] = "form-control #{options[:class]}"
+      # DEPRECATED: add form-control class (for Bootstrap styling) and pass on to Rails
+      options[:class] = "#{options[:class]}"
       field = super name, *(args + [options])
 
       wrap_field name, field, options[:help_text], options[:display_name]
@@ -23,11 +23,11 @@ class FormBuilderWithDateTimeInput < ActionView::Helpers::FormBuilder
     options = args.extract_options!
 
     fields = fields_for name do |f|
-      @template.content_tag :div, class: "score-adjustment input-group" do
-        (f.vanilla_text_field :value, class: "form-control value") +
-        (@template.content_tag :div, class: "input-group-addon" do
+      @template.content_tag :div, class: "score-adjustment" do
+        (f.vanilla_text_field :value, class: "input-field score-box", placeholder: "10") +
+        (@template.content_tag :div, class: "" do
           f.select(:kind, { "points" => "points", "%" => "percent" }, {},
-                   class: "form-control kind input-group-addon")
+                   class: "input-field  carrot")
         end)
       end
     end
@@ -50,7 +50,7 @@ class FormBuilderWithDateTimeInput < ActionView::Helpers::FormBuilder
 
     field = super name, *(args + [options])
 
-    @template.content_tag :div, class: "form-group" do
+    @template.content_tag :div, class: "checkbox-input" do
       field + label(name, display_name, class: "control-label") +
         help_text(name, options[:help_text])
     end
@@ -66,14 +66,18 @@ class FormBuilderWithDateTimeInput < ActionView::Helpers::FormBuilder
 
   def date_select(name, options = {}, _html_options = {})
     strftime = "%F"
-    date_format = "YYYY-MM-DD"
-    date_helper name, options, strftime, date_format
+    date_format = "F j, Y"
+    alt_format = "F j, Y"
+    options[:picker_class] = "datepicker"
+    date_helper name, options, strftime, date_format, alt_format
   end
 
   def datetime_select(name, options = {}, _html_options = {})
-    strftime = "%F %I:%M %p %z"
-    date_format = "YYYY-MM-DD hh:mm A ZZ"
-    date_helper name, options, strftime, date_format
+    strftime = "%F %H:%M"
+    date_format = "F j, Y h:i K"
+    alt_format = "F j, Y h:i K"
+    options[:picker_class] = "datetimepicker"
+    date_helper name, options, strftime, date_format, alt_format
   end
 
 private
@@ -81,7 +85,7 @@ private
   # Pass space-delimited list of IDs of datepickers on the :less_than and
   # :greater_than properties to initialize relationships between datepicker
   # fields.
-  def date_helper(name, options, strftime, date_format)
+  def date_helper(name, options, strftime, date_format, alt_format)
     begin
       existing_time = @object.send(name)
     rescue
@@ -89,26 +93,28 @@ private
     end
 
     if existing_time.present?
-      formatted_datetime = existing_time.to_time.strftime(strftime)
+      formatted_datetime = existing_time.strftime(strftime)
     else
       formatted_datetime = ""
     end
-
     field = vanilla_text_field(
       name,
       :value => formatted_datetime,
-      :class => "form-control datetimepicker",
+      :class => "#{options[:picker_class]}",
       :"data-date-format" => date_format,
+      :"data-alt-format" => alt_format,
       :"data-date-less-than" => options[:less_than],
       :"data-date-greater-than" => options[:greater_than])
+
 
     wrap_field name, field, options[:help_text]
   end
 
   def wrap_field(name, field, help_text, display_name = nil)
-    @template.content_tag :div, class: "form-group" do
+
+    @template.content_tag :div, class: "input-field" do
       label(name, display_name, class: "control-label") +
-        field + help_text(name, help_text)
+         field + help_text(name, help_text)
     end
   end
 
