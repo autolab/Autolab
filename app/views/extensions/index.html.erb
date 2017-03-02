@@ -1,30 +1,38 @@
 <% @title = "Manage Extensions" %>
 
-<% content_for :stylesheets do %>
-  <%= stylesheet_link_tag 'chosen.min' %>
-<% end %>
-
 <% content_for :javascripts do %>
-  <%= javascript_include_tag 'chosen.jquery.min' %>
-  <%= javascript_include_tag "initialize_datetimepickers" %>
   
   <script type="application/javascript">
     jQuery(function() {
-      $('.chosen-select').chosen({search_contains: true});
+      /* match user name/email with cud_id */
+      userData = {
+        <% @users.each do |k,v| %>
+          "<%= k %>": "<%= v %>",
+        <% end %>
+      };
 
+      /* user autocomplete */
+      $studentAutocompleteField = $('#student_autocomplete');
+      $hiddenCUDField = $('#extension_course_user_datum_id');
+      $studentAutocompleteField.autocomplete({
+        data: {
+          <% @users.each do |k,v| %>
+            "<%= k %>": null,
+          <% end %>
+        }
+      });
 
+      /* track changes in student autocomplete field */
+      $studentAutocompleteField.on('change', function() {
+        $hiddenCUDField.val(userData[$studentAutocompleteField.val()]);
+      })
+
+      /* set up dates */
       $dueDate = moment("<%= @assessment.due_at.to_s %>", "YYYY-MM-DD hh:mm:ss ZZ").startOf('day');
 
       $extensionDaysField = $('#extension_days');
       $extensionNewDayField = $('#extension_due_at');
       $extensionDaysLabel = $('label[for="extension_days"]');
-
-      $('.chosen-select').chosen({width: '100%'});
-
-      $extensionNewDayField.datetimepicker({
-        format: 'YYYY-MM-DD'
-      });
-      $extensionNewDayField.data('DateTimePicker').minDate($dueDate);
 
       /* Enable/disable extension days options */
       $enableInfiniteExtension = $('#extension_infinite');
@@ -55,8 +63,12 @@
         $extensionDaysLabel.addClass("active");
       });
 
-      /* set initial value to original due date */
-      $extensionNewDayField.flatpickr().setDate($dueDate.toDate());
+      /* set up flatpickr */
+      $extensionNewDayField.flatpickr({
+        altInput: true,
+        defaultDate: $dueDate.valueOf(),
+        minDate: $dueDate.valueOf()
+      });
     });
   </script>
 
@@ -105,12 +117,16 @@
             </ul>
           </div>
         <% end %>
-        <%= f.select(:course_user_datum_id, @users, {prompt: 'select user'}, {class: ''}) %>
+        <div class="input-field">
+          <input type="text" size="3" id="student_autocomplete" class="autocomplete">
+          <label for="student_autocomplete">Start typing student name or email</label>
+        </div><br>
         <p>Select a new due date</p>
         <%= f.date_select :due_at, greater_than: @assessment.due_at, id: "extension_due_at" %><br>
         <p>-OR- Specify number of days to extend:</p>
         <%= f.text_field :days, :size=>3, :id => "extension_days" %>
         <p>-OR- Infinite Extension? <%= f.check_box :infinite, id: "extension_infinite" %></p>
+        <%= f.hidden_field(:course_user_datum_id)%>
         <%= f.hidden_field(:assessment_id)%>
         <%= f.submit "Create" , {:class=>"btn primary"} %>
       <% end %>
