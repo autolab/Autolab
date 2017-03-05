@@ -18,7 +18,7 @@
 <% content_for :javascripts do %>
   <%= external_javascript_include_tag "lodash", "3.3.1" %>
   <%= javascript_include_tag "sorttable" %>
-  <%= external_javascript_include_tag "jquery.dataTables", "1.10.5" %>
+  <%= external_javascript_include_tag "jquery.dataTables", "1.10.9" %>
 
   <%= javascript_include_tag "table_floating_header" %>
   <%= javascript_include_tag "manage_submissions" %>
@@ -114,19 +114,20 @@
       <td>
         <%= submission.submitter_ip %>
       </td>
-      <td><% if @autograded and submission.version > 0 then %>
-            <%= link_to "Regrade",
+      <td>
+          <% if @autograded and submission.version > 0 then %>
+            <%= link_to "<i class='material-icons'>autorenew</i>".html_safe,
                 [:regrade, @course, @assessment, submission_id: submission.id],
                 { method: :post,
                  :title=>"Rerun the autograder on this submission",
-                 :class=>"waves-effect waves-light btn small regrade-override"} %>
+                 :class=>"regrade-override"} %>
           <% end %>
-          <%= link_to "Edit", [:edit, @course, @assessment, submission],
+          <%= link_to "<i class='material-icons'>edit</i>".html_safe, [:edit, @course, @assessment, submission],
               {:title=>"Edit the grading properties of this submission",
-                :class=>"waves-effect waves-light btn small"} %>
-          <%= link_to "Destroy", destroyConfirm_course_assessment_submission_path(@course, @assessment, submission),
+                :class=>""} %>
+          <%= link_to "<i class='material-icons'>delete</i>".html_safe, destroyConfirm_course_assessment_submission_path(@course, @assessment, submission),
               {:title=>"Destroy this submission forever",
-                :class=>"waves-effect waves-light btn small"} %>
+                :class=>""} %>
       </td>
       <td><%= submission.latest? %>
       </td>
