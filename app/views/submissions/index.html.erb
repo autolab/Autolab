@@ -2,6 +2,13 @@
 
 <% content_for :stylesheets do %>
   <%= stylesheet_link_tag "datatable.adapter" %>
+
+  <style>
+    table [type="checkbox"] + label {
+      width: 18px;
+      padding: 0;
+    }
+  </style>
 <% end %>
 
 <% content_for :javascripts do %>
@@ -66,7 +73,10 @@
   <% end %>
   <thead>
     <tr>
-      <th><input type="checkbox" id="selectall"/></th>
+      <th>
+        <input type="checkbox" id="selectall"/>
+        <label for="selectall"></label>
+      </th>
     <% for header in headers %>
       <th><%= header %></th>
     <% end %>
@@ -75,7 +85,10 @@
   <tbody>
   <% for submission in @submissions %>
     <tr id="row-<%= submission.id %>" class="submission-row">
-      <td><input class="cbox" type="checkbox" id="cbox-<%= submission.id %>"></td>
+      <td>
+        <input class="cbox" type="checkbox" id="cbox-<%= submission.id %>">
+        <label for="cbox-<%= submission.id %>"></label>
+      </td>
       <td><%= "#{submission.course_user_datum.last_name}, #{submission.course_user_datum.first_name}" %>
       <%= link_to submission.course_user_datum.email,
                       history_course_assessment_path(@course, @assessment, cud_id: submission.course_user_datum_id, partial: true),
