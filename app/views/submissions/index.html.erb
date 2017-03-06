@@ -2,58 +2,74 @@
 
 <% content_for :stylesheets do %>
   <%= stylesheet_link_tag "datatable.adapter" %>
+
+  <style>
+    table [type="checkbox"] + label {
+      width: 18px;
+      padding: 0;
+    }
+
+    #floater {
+      z-index: 5;
+    }
+  </style>
 <% end %>
 
 <% content_for :javascripts do %>
   <%= external_javascript_include_tag "lodash", "3.3.1" %>
   <%= javascript_include_tag "sorttable" %>
-  <%= external_javascript_include_tag "jquery.dataTables", "1.10.5" %>
+  <%= external_javascript_include_tag "jquery.dataTables", "1.10.9" %>
 
   <%= javascript_include_tag "table_floating_header" %>
   <%= javascript_include_tag "manage_submissions" %>
 
 <% end %>
-
-<hr>
-<p>
-<%= link_to "Create New Submission", new_course_assessment_submission_path(@course, @assessment),
-    {:title=>"Create a new submission for a student, with an option to submit a handin file on their behalf",
-     :class=>"btn"} %>
-<%= link_to "Download All Submissions",
-    downloadAll_course_assessment_submissions_path(@course, @assessment),
-    {:title=>"Down all submissions from each student",
-     :class=>"btn"} %>
-<%= link_to "Download Final Submissions",
-    downloadAll_course_assessment_submissions_path(@course, @assessment, final: true),
-    {:title=>"Download the most recent submission from each student",
-     :class=>"btn"} %>
-<%= link_to "Missing Submissions",
-    missing_course_assessment_submissions_path(@course, @assessment),
-    {:title=>"List the students who have not submitted anything. You'll be given the option to create new submissions for the missing students",
-     :class=>"btn"} %>
-</p>
-<p>
-<% if @autograded then %>
-<%= link_to "Regrade All",
-    [:regradeAll, @course, @assessment],
-    { method: :post,
-     :title=>"Regrade the most recent submission from each student",
-     :confirm=>"Are you sure you want to do this? It will regrade the most recent submission from each student, which might take a while.",
-     :class=>"btn"} %>
-
-<%= link_to "Regrade 0 Submissions",
-    [:regradeBatch, @course, @assessment],
-    { method: :post,
-     :title=>"Regrade the most recent submission from each student",
-     :class=>"btn",
-     :id => "batch-regrade",
-     :style => "display:none;"} %>
-
-<% end %>
-</p>
+<h3>Manage Submissions</h3>
 <hr>
 
 <p>
+    <%= link_to "Create New Submission".html_safe, new_course_assessment_submission_path(@course, @assessment),
+        {:title=>"Create a new submission for a student, with an option to submit a handin file on their behalf",
+         :class=>""} %>
+         |
+    <%= link_to "Download All Submissions".html_safe,
+        downloadAll_course_assessment_submissions_path(@course, @assessment),
+        {:title=>"Down all submissions from each student",
+         :class=>""} %>
+         |
+    <%= link_to "Download Final Submissions".html_safe,
+        downloadAll_course_assessment_submissions_path(@course, @assessment, final: true),
+        {:title=>"Download the most recent submission from each student",
+         :class=>""} %>
+         |
+    <%= link_to "Missing Submissions".html_safe,
+        missing_course_assessment_submissions_path(@course, @assessment),
+        {:title=>"List the students who have not submitted anything. You'll be given the option to create new submissions for the missing students",
+         :class=>""} %>
+
+</p>
+<div class="row">
+  <% if @autograded then %>
+    <div class="col s3">
+    <%= link_to "Regrade All",
+        [:regradeAll, @course, @assessment],
+        { method: :post,
+         :title=>"Regrade the most recent submission from each student",
+         :confirm=>"Are you sure you want to do this? It will regrade the most recent submission from each student, which might take a while.",
+         :class=>"btn"} %>
+    </div>
+    <div class="col s3 offset-s6">
+
+    <%= link_to "Regrade 0",
+        [:regradeBatch, @course, @assessment],
+        { method: :post,
+         :title=>"Regrade the most recent submission from each student",
+         :class=>"btn float-right",
+         :id => "batch-regrade",
+         :style => "display:none;"} %>
+    </div>
+  <% end %>
+</div>
 <table class="prettyBorder" id="submissions">
   <% headers = ["Submitted By", "Version", "Submission Date (YYYY-MM-DD)", "File", "IP Address", "Actions", "isLatest"] %>
   <% if @assessment.has_custom_form then %>
@@ -66,7 +82,7 @@
   <% end %>
   <thead>
     <tr>
-      <th><input type="checkbox" id="selectall"/></th>
+      <th></th>
     <% for header in headers %>
       <th><%= header %></th>
     <% end %>
@@ -75,7 +91,10 @@
   <tbody>
   <% for submission in @submissions %>
     <tr id="row-<%= submission.id %>" class="submission-row">
-      <td><input class="cbox" type="checkbox" id="cbox-<%= submission.id %>"></td>
+      <td>
+        <input class="cbox" type="checkbox" id="cbox-<%= submission.id %>">
+        <label for="cbox-<%= submission.id %>"></label>
+      </td>
       <td><%= "#{submission.course_user_datum.last_name}, #{submission.course_user_datum.first_name}" %>
       <%= link_to submission.course_user_datum.email,
                       history_course_assessment_path(@course, @assessment, cud_id: submission.course_user_datum_id, partial: true),
@@ -97,19 +116,20 @@
       <td>
         <%= submission.submitter_ip %>
       </td>
-      <td><% if @autograded and submission.version > 0 then %>
-            <%= link_to "Regrade",
-                [:regrade, @course, @assessment, submission_id: submission.id],
-                { method: :post,
-                 :title=>"Rerun the autograder on this submission",
-                 :class=>"waves-effect waves-light btn small regrade-override"} %>
-          <% end %>
-          <%= link_to "Edit", [:edit, @course, @assessment, submission],
-              {:title=>"Edit the grading properties of this submission",
-                :class=>"btn small"} %>
-          <%= link_to "Destroy", destroyConfirm_course_assessment_submission_path(@course, @assessment, submission),
-              {:title=>"Destroy this submission forever",
-                :class=>"btn small"} %>
+      <td class="exclude-click">
+        <% if @autograded and submission.version > 0 then %>
+          <%= link_to "<i class='material-icons'>autorenew</i>".html_safe,
+              [:regrade, @course, @assessment, submission_id: submission.id],
+              { method: :post,
+               :title=>"Rerun the autograder on this submission",
+               :class=>"btn small regrade-override"} %>
+        <% end %>
+        <%= link_to "<i class='material-icons'>edit</i>".html_safe, [:edit, @course, @assessment, submission],
+            {:title=>"Edit the grading properties of this submission",
+              :class=>"btn small"} %>
+        <%= link_to "<i class='material-icons'>delete</i>".html_safe, destroyConfirm_course_assessment_submission_path(@course, @assessment, submission),
+            {:title=>"Destroy this submission forever",
+              :class=>"btn small"} %>
       </td>
       <td><%= submission.latest? %>
       </td>
