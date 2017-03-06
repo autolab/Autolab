@@ -35,14 +35,7 @@ jQuery(function($) {
     'sPaginationType': 'full_numbers',
     'iDisplayLength': 100,
     'oLanguage': {
-      'sLengthMenu': '<div class="input-field"><select>' +
-        '<option value="10">10</option>' +
-        '<option value="20">20</option>' +
-        '<option value="50">50</option>' +
-        '<option value="100">100</option>' +
-        '<option value="-1">All</option>' +
-        '</select><label>Display # records</label></div>' +
-        '<div class="row"><input type="checkbox" id="only-latest">' +
+      'sLengthMenu':'<div class="row"><input type="checkbox" id="only-latest">' +
         '<label for="only-latest">Show only latest</label></div>'
     },
     "columnDefs": [{
@@ -60,7 +53,7 @@ jQuery(function($) {
   });
 
   var ids = [];
-  $("input.checkbox:checked").each(function() {
+  $("input[type='checkbox']:checked").each(function() {
     ids.push($(this).val());
   });
 
