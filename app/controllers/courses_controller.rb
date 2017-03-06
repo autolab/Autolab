@@ -419,7 +419,7 @@ file, most likely a duplicate email.  The exact error was: #{e} "
     `~/Autolab/script/cleanMoss #{tmp_dir}`
 		# Now run the Moss command
     @mossCmdString = @mossCmd.join(" ")
-    @mossExit = $CHILD_STATUS
+    @mossExit = $?.exitstatus
     @mossOutput = `#{@mossCmdString} 2>&1`
 
     # Clean up after ourselves (droh: leave for dsebugging)
