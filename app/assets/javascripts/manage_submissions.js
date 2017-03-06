@@ -35,8 +35,8 @@ jQuery(function($) {
     'sPaginationType': 'full_numbers',
     'iDisplayLength': 100,
     'oLanguage': {
-      'sLengthMenu':'<div class="row"><input type="checkbox" id="only-latest">' +
-        '<label for="only-latest">Show only latest</label></div>'
+      'sLengthMenu':'<input type="checkbox" id="only-latest">' +
+        '<label for="only-latest">Show only latest</label>'
     },
     "columnDefs": [{
       "targets": [7],
