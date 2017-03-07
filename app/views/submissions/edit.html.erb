@@ -29,13 +29,13 @@
   </tr>
   <tr>
     <th>Notes:</th>
-    <td><%= f.text_area :notes, :rows=>5 %></td>
+    <td><%= f.text_area :notes, :rows=>5, class: 'materialize-textarea', placeholder: "Notes on submission"%></td>
   </tr>
   <tr>
     <th>Tweak:</th>
     <td>
     <%= f.fields_for :tweak, @submission.tweak do |t| %>
-      <%= t.text_field :value %>
+      <%= t.text_field :value, placeholder: "Number of points or percentage" %>
       <%= t.select :kind, options_for_select({"points" => "points", "%" => "percent"}, :selected => (@submission.tweak ? @submission.tweak.kind : "points")) %>
     <% end %>
     </td>
