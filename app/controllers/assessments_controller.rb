@@ -706,10 +706,11 @@ private
   end
 
   def tab_index
+    # Get the current tab's redirect path by checking the submit tag which tells us which submit button in the edit form was clicked
     tab_name = "basic"
     if params[:handin]
       tab_name = "handin"
-    else
+    elsif params[:penalties]
       tab_name = "penalties"
     end
 
