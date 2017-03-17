@@ -537,7 +537,7 @@ class AssessmentsController < ApplicationController
 
     flash[:success] = "Saved!" if @assessment.update!(edit_assessment_params)
 
-    redirect_to(action: :edit) && return
+    redirect_to(tab_index) && return
   end
 
   action_auth_level :releaseAllGrades, :instructor
@@ -704,4 +704,16 @@ private
     end
     [asmt_rb_exists && asmt_yml_exists && (!asmt_name.nil?), asmt_name]
   end
+
+  def tab_index
+    tab_name = "basic"
+    if params[:handin]
+      tab_name = "handin"
+    else
+      tab_name = "penalties"
+    end
+
+    edit_course_assessment_path(@course, @assessment) + "/#tab_"+tab_name
+  end
+
 end
