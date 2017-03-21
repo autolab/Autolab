@@ -7,7 +7,7 @@
       $(datetimeElts[i]).flatpickr({
         enableTime: true,
         altInput: true,
-        defaultDate: moment($(datetimeElts[i]).val()).format("MMMM D YYYY, h:mm A")
+        defaultDate: new Date(datetimeElts[i].getAttribute("value"))
       })
     }
 
