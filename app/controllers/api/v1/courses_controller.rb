@@ -19,7 +19,7 @@ class Api::V1::CoursesController < Api::V1::BaseApiController
     end
 
     # add auth level to the returned object
-    courses_for_user.map! { |course| course.attributes.symbolize_keys }
+    courses_for_user = courses_for_user.map { |course| course.attributes.symbolize_keys }
 
     uid = current_user.id
     courses_for_user.each do |course|
