@@ -12,6 +12,8 @@ Autolab3::Application.routes.draw do
           resources :submissions, only: [:index]
         end
       end
+
+      match "*path", to: "base_api#render_404", via: :all
     end
   end
 

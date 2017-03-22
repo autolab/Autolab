@@ -16,8 +16,12 @@ class Api::V1::BaseApiController < ActionController::Base
 
   before_action :doorkeeper_authorize! # OAuth2 token authentication for all actions
 
-  before_action :set_course
-  before_action :authorize_user_for_course
+  before_action :set_course, except: [:render_404]
+  before_action :authorize_user_for_course, except: [:render_404]
+
+  def render_404
+    raise ApiError.new("Invalid request path", :not_found)
+  end
 
   private
 
