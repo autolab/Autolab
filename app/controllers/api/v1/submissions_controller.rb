@@ -28,4 +28,25 @@ class Api::V1::SubmissionsController < Api::V1::BaseApiController
     respond_with results
   end
 
+  # endpoint for obtaining feedback of a particular submission.
+  def feedback
+    # param check
+    if !params.has_key?(:problem)
+      raise ApiError.new("Required parameter 'problem' not found", :bad_request)
+    end
+    problem = @assessment.problems.find_by(name: params[:problem])
+    raise ApiError.new("Problem named #{params[:problem]} does not exist for #{@assessment.name}", :not_found) unless problem
+
+    vers = params[:submission_version]
+    submission = @assessment.submissions.find_by(course_user_datum_id: @cud, version: vers)
+    raise ApiError.new("Submission version #{vers} does not exist for #{@assessment.name}", :not_found) unless submission
+
+    # Looks weird, but currently feedbacks are the same for each problem
+    score = submission.scores.find_by(problem_id: problem.id)
+    raise ApiError.new("Score for #{params[:problem]} of submission version #{vers} of #{@assessment.name} does not exist", :not_found) unless score
+
+    results = {:feedback => score.feedback}
+    respond_with results
+  end
+
 end
