@@ -146,6 +146,7 @@ pre code {
   padding: 6px;
   background-color: #fff;
   margin-top: 6px;
+  z-index: 5;
 }
 
 .annotation-edit-form {
