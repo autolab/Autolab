@@ -29,3 +29,4 @@ app/views/home/_topannounce.html.erb
 attachments/
 doc/
 out.txt
+.vscode/
