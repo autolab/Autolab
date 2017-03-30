@@ -7,17 +7,8 @@ env:
     - secure: Z6YE6NuDeuraasd5gFG+x7PU3rKxhLjL6VZ7HJfZJEVyxFucRz8Hv4xlxkQV3P61w6S0uyp/reXwKy8meYAQLzVZ4pBpK7sEeSZ5w00WRH8NCGeMJmwdQi2JLCYRZ/KdOc0o5l5bbND+JG1o/U9HtG2cHO2G8M6hVGbARn+ywLg=
 before_script:
 - AUTOLAB=`pwd`; echo $AUTOLAB;
-- cd ~
-- curl -L -o id_ci_github.enc "$CI_GITHUB_USER_PRIVATE_KEY_URL"
-- openssl aes-256-cbc -k "$CI_GITHUB_USER_PRIVATE_KEY_SECRET" -in id_ci_github.enc
-  -d -a -out id_ci_github
-- eval `ssh-agent`
-- ssh-add -D
-- chmod 600 id_ci_github
-- ssh-add ./id_ci_github
-- git clone git@github.com:autolab/cmu-prod.git
-- cp cmu-prod/frontend-configs/initializers/devise.rb $AUTOLAB/config/initializers/devise.rb
 - cd $AUTOLAB
+- cp config/initializers/devise.rb.template config/initializers/devise.rb
 - cp config/database.travis.yml config/database.yml
 - cp config/school.yml.template config/school.yml
 - cp config/autogradeConfig.rb.template config/autogradeConfig.rb
