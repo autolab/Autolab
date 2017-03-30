@@ -7,11 +7,8 @@ env:
     - secure: Z6YE6NuDeuraasd5gFG+x7PU3rKxhLjL6VZ7HJfZJEVyxFucRz8Hv4xlxkQV3P61w6S0uyp/reXwKy8meYAQLzVZ4pBpK7sEeSZ5w00WRH8NCGeMJmwdQi2JLCYRZ/KdOc0o5l5bbND+JG1o/U9HtG2cHO2G8M6hVGbARn+ywLg=
 before_script:
 - AUTOLAB=`pwd`; echo $AUTOLAB;
-- cd ~
 - cd $AUTOLAB
-- ls
-- pwd
-- cd config/initializers/devise.rb.template config/initializers/devise.rb
+- cp config/initializers/devise.rb.template config/initializers/devise.rb
 - cp config/database.travis.yml config/database.yml
 - cp config/school.yml.template config/school.yml
 - cp config/autogradeConfig.rb.template config/autogradeConfig.rb
