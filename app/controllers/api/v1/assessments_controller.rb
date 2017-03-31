@@ -29,4 +29,27 @@ class Api::V1::AssessmentsController < Api::V1::BaseApiController
     respond_with problems, only: [:name, :description, :max_score, :optional]
   end
 
+  # endpoint for submitting to assessments
+  # Potential Errors:
+  #   Submission Rejected:
+  #   - Handins disabled
+  #   - Submitting late without submit-late flag
+  #   - Past assessment end time
+  #   - Before assessment start time
+  #   - Exceeded max submission count
+  #   - Exceeded max handin file size
+  #   - Submission was blank
+  #   - Submission failed file type check
+  #   - Cannot submit until all group members confirm their group membership
+  #   - A member of your group has reached the submission limit for this assessment
+  #   Autograding Failed:
+  #   - No autograding properties
+  #   - Error submitting job
+  #   - Error uploading submission file
+  #   - Submission rejected by autograder
+  #   - One or more files in the Autograder module don't exist.
+  #   - Encountered unexpected exception
+  def submit
+  end
+
 end
