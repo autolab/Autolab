@@ -198,20 +198,20 @@ module AssessmentAutogradeHelper
     end
 
     # send the tango upload requests
-    status, upload_file_list = tango_upload(course, assessment, submissions[0], existing_files)
+    upload_file_list = tango_upload(course, assessment, submissions[0], existing_files)
 
-    status, dave = save_daves(submissions)
+    dave = save_daves(submissions)
 
     output_file = get_output_file(assessment, submissions[0])
     callback_url = get_callback_url(course, assessment, submissions[0], dave)
     job_name = get_job_name(course, assessment, submissions[0])
 
-    status, response_json = tango_add_job(course, assessment, upload_file_list,
+    response_json = tango_add_job(course, assessment, upload_file_list,
                                           callback_url, job_name, output_file)
 
     # If autolab user opts not to use a callback URL, we poll the job for 80 seconds
     if callback_url.blank?
-      status = tango_poll(course, assessment, submissions, output_file)
+      tango_poll(course, assessment, submissions, output_file)
     end
 
     response_json["jobId"].to_i
