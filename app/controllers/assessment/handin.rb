@@ -3,8 +3,7 @@
 #
 module AssessmentHandin
 
-  autolab_require Rails.root.join("app", "helpers", "assessment_handin_helper.rb")
-  include AssessmentHandin
+  include AssessmentHandinHelper
 
   # handin - The generic default handin function.
   # This function calls out to smaller helper functions which provide for
@@ -265,7 +264,7 @@ private
 
     validity = validateHandin(params[:submission]["file"].size,
                               params[:submission]["file"].content_type,
-                              params[:submission]["file"].original_filename))
+                              params[:submission]["file"].original_filename)
 
     case validity
     when :valid

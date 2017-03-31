@@ -8,6 +8,9 @@ require_relative Rails.root.join("config", "autogradeConfig.rb")
 # Gets imported into AssessmentsController
 #
 module AssessmentAutograde
+
+  include AssessmentAutogradeHelper
+
   # method called when Tango returns the output
   # action_no_auth :autograde_done
   def autograde_done
@@ -71,12 +74,16 @@ module AssessmentAutograde
     submission_ids.each do |submission_id|
       submission = @assessment.submissions.find_by_id(submission_id)
       if submission
-        job = autogradeSubmissions(@course, @assessment, [submission])
-        if job == -2 # no autograding properties for this assessment
-          redirect_to([@course, @assessment, :submissions]) && return
-        elsif job < 0 # autograding failed
-          failed_jobs += 1
-          failed_list += "#{@submission.filename}: autograding error.<br>"
+        begin
+          autogradeSubmissions(@course, @assessment, [submission])
+        rescue AssessmentAutogradeHelper::AutogradeError => e
+          if e.error_code == :missing_autograding_props
+            # no autograding properties for this assessment
+            redirect_to([@course, @assessment, :submissions]) && return
+          else # autograding failed
+            failed_jobs += 1
+            failed_list += "#{@submission.filename}: autograding error.<br>"
+          end
         end
       else
         failed_jobs += 1
@@ -114,12 +121,16 @@ module AssessmentAutograde
     failed_list = ""
     last_submissions.each do |submission|
       if submission
-        job = autogradeSubmissions(@course, @assessment, [submission])
-        if job == -2 # no autograding properties for this assessment
-          redirect_to([@course, @assessment, :submissions]) && return
-        elsif job < 0 # autograding failed
-          failed_jobs += 1
-          failed_list += "#{@submission.filename}: autograding error.<br>"
+        begin
+          autogradeSubmissions(@course, @assessment, [submission])
+        rescue AssessmentAutogradeHelper::AutogradeError => e
+          if e.error_code == :missing_autograding_props
+            # no autograding properties for this assessment
+            redirect_to([@course, @assessment, :submissions]) && return
+          else # autograding failed
+            failed_jobs += 1
+            failed_list += "#{@submission.filename}: autograding error.<br>"
+          end
         end
       else
         failed_jobs += 1
@@ -141,40 +152,47 @@ module AssessmentAutograde
   ##
   # autogradeSubmissions - submits an autograding job to Tango.
   # Called by assessments#handin, submissions#regrade and submissions#regradeAll
-  # returns the job status returned by sendJob
+  # returns the job id on success
   def autogradeSubmissions(course, assessment, submissions)
     # Check for nil first, since students should know about this
     flash[:error] = "Submission could not be autograded due to an error in creation" && return if submissions.blank?
 
-    job = sendJob(course, assessment, submissions, @cud)
-    if job == -2
-      flash[:error] = "Autograding failed because there are no autograding properties."
-      if @cud.instructor?
-        link = (view_context.link_to "Autograder Settings", [:edit, course, assessment, :autograder])
-        flash[:error] += " Visit #{link} to set the autograding properties."
+    begin
+      job = sendJob(course, assessment, submissions, @cud)
+    rescue AssessmentAutogradeHelper::AutogradeError => e
+      case e.error_code
+      when :missing_autograding_props
+        flash[:error] = "Autograding failed because there are no autograding properties."
+        if @cud.instructor?
+          link = (view_context.link_to "Autograder Settings", [:edit, course, assessment, :autograder])
+          flash[:error] += " Visit #{link} to set the autograding properties."
+        else
+          flash[:error] += " Please contact your instructor."
+        end
+      when :tango_open
+        link = "<a href=\"#{url_for(controller: 'jobs')}\">Jobs</a>"
+        flash[:error] = "There was an error submitting your autograding job. We are likely down for maintenance if issues persist, please contact #{Rails.configuration.school['support_email']}"
+      when :tango_upload
+        flash[:error] = "There was an error uploading the submission file. (Error #{job})"
+      when :tango_add_job
+        flash[:error] = "Submission was rejected by autograder."
+        if @cud.instructor?
+          link = (view_context.link_to "Autograder Settings", [:edit, course, assessment, :autograder])
+          flash[:error] += " (Verify the autograding properties at #{link}.)"
+        end
+      when :missing_autograder_file
+        flash[:error] = "One or more files in the Autograder module don't exist. Contact the instructor."
       else
-        flash[:error] += " Please contact your instructor."
+        flash[:error] = "Autograding failed because of an unexpected exception in the system."
       end
-    elsif job == -1
-      link = "<a href=\"#{url_for(controller: 'jobs')}\">Jobs</a>"
-      flash[:error] = "There was an error submitting your autograding job. We are likely down for maintenance if issues persist, please contact #{Rails.configuration.school['support_email']}"
-    elsif job == -3 || job == -4 || job == -6
-      flash[:error] = "There was an error uploading the submission file. (Error #{job})"
-    elsif job == -9
-      flash[:error] = "Submission was rejected by autograder."
-      if @cud.instructor?
-        link = (view_context.link_to "Autograder Settings", [:edit, course, assessment, :autograder])
-        flash[:error] += " (Verify the autograding properties at #{link}.)"
-      end
-		elsif job == -10
-			flash[:error] = "One or more files in the Autograder module don't exist. Contact the instructor."
-		elsif job < 0
-      flash[:error] = "Autograding failed because of an unexpected exception in the system."
-    else
-      link = "<a href=\"#{url_for(controller: 'jobs', action: 'getjob', id: job)}\">Job ID = #{job}</a>"
-      flash[:success] = ("Submitted file #{submissions[0].filename} (#{link}) for autograding." \
-        " Refresh the page to see the results.").html_safe
+
+      raise e # pass it on
     end
+
+    link = "<a href=\"#{url_for(controller: 'jobs', action: 'getjob', id: job)}\">Job ID = #{job}</a>"
+    flash[:success] = ("Submitted file #{submissions[0].filename} (#{link}) for autograding." \
+      " Refresh the page to see the results.").html_safe
+
     job
   end
 

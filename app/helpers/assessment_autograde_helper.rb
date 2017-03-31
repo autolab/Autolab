@@ -1,9 +1,11 @@
 module AssessmentAutogradeHelper
 
   class AutogradeError < StandardError
+    attr_reader :error_code
     attr_reader :additional_data # additional error data
     
-    def initialize(msg = "Autograding Failed", additional_data = "")
+    def initialize(msg = "Autograding Failed", error_code = :unexpected, additional_data = "")
+      @error_code = error_code
       @additional_data = additional_data
       super(msg)
     end
@@ -29,12 +31,12 @@ module AssessmentAutogradeHelper
     rescue StandardError => e
       COURSE_LOGGER.log("Error with getting files: #{e}")
       e.backtrace.each { |line| COURSE_LOGGER.log(line) }
-      raise AutogradeError.new("Error with getting files", e.message)
+      raise AutogradeError.new("Error with getting files", :tango_upload, e.message)
     end
     
     upload_file_list.each do |f|
       if !Pathname.new(f["localFile"]).file?
-        raise AutogradeError.new("Error while uploading autograding files")
+        raise AutogradeError.new("Error while uploading autograding files", :missing_autograder_file)
       end
     end
 
@@ -49,7 +51,7 @@ module AssessmentAutogradeHelper
                            File.basename(f["localFile"]),
                            File.open(f["localFile"], "rb").read)
       rescue TangoClient::TangoException => e
-        raise AutogradeError.new("Error while uploading autograding files", e.message)
+        raise AutogradeError.new("Error while uploading autograding files", :tango_upload, e.message)
       end
     end
 
@@ -74,7 +76,7 @@ module AssessmentAutogradeHelper
         end
       end
     rescue
-      raise AutogradeError.new("Error saving daves")
+      raise AutogradeError.new("Error saving daves", :save_daves)
     end
 
     dave
@@ -130,7 +132,7 @@ module AssessmentAutogradeHelper
     begin
       response = TangoClient.addjob("#{course.name}-#{assessment.name}", job_properties)
     rescue TangoClient::TangoException => e
-      raise AutogradeError.new("Error while adding job to the queue", e.message)
+      raise AutogradeError.new("Error while adding job to the queue", :tango_add_job, e.message)
     end
 
     response
@@ -154,13 +156,13 @@ module AssessmentAutogradeHelper
         end
       end
     rescue Timeout::Error
-      raise AutogradeError.new("Timed out while polling Tango")
+      raise AutogradeError.new("Timed out while polling Tango", :tango_poll)
     rescue TangoClient::TangoException => e
-      raise AutogradeError.new("Error while polling for job status", e.message)
+      raise AutogradeError.new("Error while polling for job status", :tango_poll, e.message)
     end
 
     if feedback.nil?
-      raise AutogradeError.new("Error getting response from polling Tango")
+      raise AutogradeError.new("Error getting response from polling Tango", :tango_poll)
     else
       if assessment.overwrites_method?(:autogradeDone)
         assessment.config_module.autogradeDone(submissions, feedback)
@@ -185,14 +187,14 @@ module AssessmentAutogradeHelper
 
     # Get the autograding properties for this assessment.
     @autograde_prop = assessment.autograder
-    raise AutogradeError.new("There are no autograding properties") unless @autograde_prop
+    raise AutogradeError.new("There are no autograding properties", :missing_autograding_props) unless @autograde_prop
 
     # send the tango open request
     begin
       existing_files = TangoClient.open("#{course.name}-#{assessment.name}")
     rescue TangoClient::TangoException => e
       COURSE_LOGGER.log("#{e.message}")
-      raise AutogradeError.new("Error with open request on Tango", e.message)
+      raise AutogradeError.new("Error with open request on Tango", :tango_open, e.message)
     end
 
     # send the tango upload requests
@@ -277,7 +279,7 @@ module AssessmentAutogradeHelper
   def saveAutograde(submissions, feedback)
     begin
       lines = feedback.lines
-      raise AutogradeError.new("The Autograder returned no output") if lines.nil?
+      raise AutogradeError.new("The Autograder returned no output", :autograde_no_output) if lines.nil?
 
       # The last line of the output is assumed to be the
       # autoresult string from the autograding driver
@@ -288,7 +290,7 @@ module AssessmentAutogradeHelper
       else
         scores = parseAutoresult(autoresult, true)
       end
-      raise AutogradeError.new("Empty autoresult string") if scores.keys.length == 0
+      raise AutogradeError.new("Empty autoresult string", :empty_autoresult) if scores.keys.length == 0
 
       # Grab the autograde config info
       @autograde_prop = @assessment.autograder
@@ -344,8 +346,8 @@ module AssessmentAutogradeHelper
   #
   def parseAutoresult(autoresult, _isOfficial)
     parsed = ActiveSupport::JSON.decode(autoresult.gsub(/([a-zA-Z0-9]+):/, '"\1":'))
-    raise AutogradeError.new("Empty autoresult") unless parsed
-    raise AutogradeError.new("Missing 'scores' object in the autoresult") unless parsed["scores"]
+    raise AutogradeError.new("Empty autoresult", :parse_autoresult) unless parsed
+    raise AutogradeError.new("Missing 'scores' object in the autoresult", :parse_autoresult) unless parsed["scores"]
     parsed["scores"]
   end
 
@@ -381,7 +383,7 @@ module AssessmentAutogradeHelper
       @port = req_port
       @submission = submission
 
-      raise AutogradeError.new("Assessment #{ass_name} does not exist!") unless @assessment
+      raise AutogradeError.new("Assessment #{ass_name} does not exist!", :nonexistent_assessment) unless @assessment
 
       @name = @assessment.name
       @description = @assessment.description
