@@ -1,0 +1,3 @@
+[submodule "app/assets/javascripts/SlickGrid"]
+	path = app/assets/javascripts/SlickGrid
+	url = git@github.com:mleibman/SlickGrid.git
