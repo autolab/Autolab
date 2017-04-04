@@ -10,5 +10,5 @@
 <%= f.score_adjustment_input :version_penalty, optional: true, help_text: "The penalty applied to submissions with version greater than the version threshold. It represents the number of points or the percentage of the total score removed per version above the threshold, and must be a non-negative number. For example, if this is set to 1 point and the version threshold to 3, the fifth version of a student's submissions would be docked 2 points. If left blank, the course default is used." %>
 
 <div class="action_buttons">
-  <%= submit_tag "Save" , {:class=>"waves-effect waves-light btn primary", :name=>"penalties", } %>
+  <%= f.submit "Save", :name=>"penalties" %>
 </div>
