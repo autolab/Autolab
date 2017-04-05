@@ -13,5 +13,5 @@
   <% end %>
 </ul>
 <% if @user.instructor? then %>
-  <%= link_to raw('<span class="waves-effect waves-light btn primary">Edit Information</span>'), edit_course_user_path(@course, @requestedUser), :id=>@requestedUser.id %>
+  <%= link_to raw('<span class="btn primary">Edit Information</span>'), edit_course_user_path(@course, @requestedUser), :id=>@requestedUser.id %>
 <% end %>
