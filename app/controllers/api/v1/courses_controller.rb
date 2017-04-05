@@ -19,26 +19,28 @@ class Api::V1::CoursesController < Api::V1::BaseApiController
     end
 
     # add auth level to the returned object
-    courses_for_user = courses_for_user.map { |course| course.attributes.symbolize_keys }
-
     uid = current_user.id
+    final_course_list = []
     courses_for_user.each do |course|
+      course_hash = course.as_json(only: [:name, :display_name, :semester, :late_slack, :grace_days, :auth_level])
+      final_course_list << course_hash
+
       if current_user.administrator?
-        course.merge!(:auth_level => "administrator")
+        course_hash.merge!(:auth_level => "administrator")
         next
       end
 
       cud = CourseUserDatum.find_cud_for_course(course, uid)
       if cud.instructor?
-        course.merge!(:auth_level => "instructor")
+        course_hash.merge!(:auth_level => "instructor")
       elsif cud.course_assistant?
-        course.merge!(:auth_level => "course_assistant")
+        course_hash.merge!(:auth_level => "course_assistant")
       else
-        course.merge!(:auth_level => "student")
+        course_hash.merge!(:auth_level => "student")
       end
     end
 
-    respond_with courses_for_user, only: [:name, :display_name, :semester, :late_slack, :grace_days, :auth_level]
+    respond_with final_course_list
   end
 
 end
