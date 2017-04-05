@@ -15,6 +15,7 @@ class Api::V1::BaseApiController < ActionController::Base
   respond_to :json
 
   before_action :doorkeeper_authorize! # OAuth2 token authentication for all actions
+  before_action :set_default_response_format
 
   before_action :set_course, except: [:render_404]
   before_action :authorize_user_for_course, except: [:render_404]
@@ -34,6 +35,10 @@ class Api::V1::BaseApiController < ActionController::Base
   end
 
   protected
+
+  def set_default_response_format
+    request.format = :json
+  end
 
   def set_course
     course_name = params[:course_name] ||
