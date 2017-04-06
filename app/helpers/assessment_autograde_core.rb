@@ -1,4 +1,4 @@
-module AssessmentAutogradeHelper
+module AssessmentAutogradeCore
 
   class AutogradeError < StandardError
     attr_reader :error_code

@@ -9,7 +9,7 @@ require_relative Rails.root.join("config", "autogradeConfig.rb")
 #
 module AssessmentAutograde
 
-  include AssessmentAutogradeHelper
+  include AssessmentAutogradeCore
 
   # method called when Tango returns the output
   # action_no_auth :autograde_done
@@ -76,7 +76,7 @@ module AssessmentAutograde
       if submission
         begin
           autogradeSubmissions(@course, @assessment, [submission])
-        rescue AssessmentAutogradeHelper::AutogradeError => e
+        rescue AssessmentAutogradeCore::AutogradeError => e
           if e.error_code == :missing_autograding_props
             # no autograding properties for this assessment
             redirect_to([@course, @assessment, :submissions]) && return
@@ -123,7 +123,7 @@ module AssessmentAutograde
       if submission
         begin
           autogradeSubmissions(@course, @assessment, [submission])
-        rescue AssessmentAutogradeHelper::AutogradeError => e
+        rescue AssessmentAutogradeCore::AutogradeError => e
           if e.error_code == :missing_autograding_props
             # no autograding properties for this assessment
             redirect_to([@course, @assessment, :submissions]) && return
@@ -159,7 +159,7 @@ module AssessmentAutograde
 
     begin
       job = sendJob(course, assessment, submissions, @cud)
-    rescue AssessmentAutogradeHelper::AutogradeError => e
+    rescue AssessmentAutogradeCore::AutogradeError => e
       case e.error_code
       when :missing_autograding_props
         flash[:error] = "Autograding failed because there are no autograding properties."

@@ -1,4 +1,4 @@
-module AssessmentHandinHelper
+module AssessmentHandinCore
 
   def validateHandin(size, content_type, filename)
     # Make sure that handins are allowed

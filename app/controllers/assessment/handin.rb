@@ -3,7 +3,7 @@
 #
 module AssessmentHandin
 
-  include AssessmentHandinHelper
+  include AssessmentHandinCore
 
   # handin - The generic default handin function.
   # This function calls out to smaller helper functions which provide for
