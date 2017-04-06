@@ -209,7 +209,15 @@ module AssessmentAutogradeCore
   # contains various info about the job, send submits it to the
   # Tango server via an REST API.
   #
-  # submissions must have at least one element
+  # Note on param submissions:
+  #   Although this is a list of submissions, it must only contain 
+  # submission objects corresponding to the same "logical submission",
+  # i.e. this list contains more than one submission ONLY when a
+  # student submits a job as a member of a group. In that case, each
+  # submission in this list corresponds to a unique submission record,
+  # one for each member of the group. Only the first in the list is
+  # submitted to tango, but the result is saved to all submissions,
+  # as they all have the same "dave".
   #
   def sendJob(course, assessment, submissions, cud)
     extend_config_module(assessment, submissions[0], cud)
