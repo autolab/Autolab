@@ -82,7 +82,7 @@ module AssessmentAutograde
 
     if failed_list.length > 0
       flash[:error] = "Warning: Could not regrade #{failed_list.length} submission(s):<br>"
-      for failed_list.each do |failure|
+      failed_list.each do |failure|
         if failure["error"].error_code == :nil_submission
           flash[:error] += "Unrecognized submission ID<br>"
         else
@@ -125,7 +125,7 @@ module AssessmentAutograde
 
     if failed_list.length > 0
       flash[:error] = "Warning: Could not regrade #{failed_list.length} submission(s):<br>"
-      for failed_list.each do |failure|
+      failed_list.each do |failure|
         if failure["error"].error_code == :nil_submission
           flash[:error] += "Unrecognized submission ID<br>"
         else
