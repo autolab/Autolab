@@ -68,32 +68,30 @@ module AssessmentAutograde
 
     # Now regrade only the most recent submissions. Keep track of
     # any handins that fail.
-    failed_jobs = 0
-    failed_list = ""
+    submissions = submission_ids.map {|sid| @assessment.submissions.find_by_id(sid)}
 
-    submission_ids.each do |submission_id|
-      submission = @assessment.submissions.find_by_id(submission_id)
-      if submission
-        begin
-          autogradeSubmissions(@course, @assessment, [submission])
-        rescue AssessmentAutogradeCore::AutogradeError => e
-          if e.error_code == :missing_autograding_props
-            # no autograding properties for this assessment
-            redirect_to([@course, @assessment, :submissions]) && return
-          else # autograding failed
-            failed_jobs += 1
-            failed_list += "#{@submission.filename}: autograding error.<br>"
-          end
-        end
-      else
-        failed_jobs += 1
-        failed_list += "#{submission.filename}: not found or not readable.<br>"
+    begin
+      failed_list = sendJob_batch(@course, @assessment, submissions, @cud)
+    rescue AssessmentAutogradeCore::AutogradeError => e
+      if e.error_code == :missing_autograding_props
+        # no autograding properties for this assessment
+        flash[:error] = "Autograding failed because there are no autograding properties."
+        redirect_to([@course, @assessment, :submissions]) && return
       end
     end
 
-    flash[:error] = "Warning: Could not regrade #{failed_jobs} submission(s):<br>" + failed_list if failed_jobs > 0
+    if failed_list.length > 0
+      flash[:error] = "Warning: Could not regrade #{failed_list.length} submission(s):<br>"
+      for failed_list.each do |failure|
+        if failure["error"].error_code == :nil_submission
+          flash[:error] += "Unrecognized submission ID<br>"
+        else
+          flash[:error] += "#{failure['submission'].filename}: #{failure['error'].msg}<br>"
+        end
+      end
+    end
 
-    success_jobs = submission_ids.size - failed_jobs
+    success_jobs = submission_ids.size - failed_list.length
     if success_jobs > 0
       link = "<a href=\"#{url_for(controller: 'jobs')}\">#{success_jobs} submission</a>"
       flash[:success] = ("Regrading #{link}").html_safe
@@ -115,32 +113,28 @@ module AssessmentAutograde
 
     last_submissions = @submissions.latest
 
-    # Now regrade only the most recent submissions. Keep track of
-    # any handins that fail.
-    failed_jobs = 0
-    failed_list = ""
-    last_submissions.each do |submission|
-      if submission
-        begin
-          autogradeSubmissions(@course, @assessment, [submission])
-        rescue AssessmentAutogradeCore::AutogradeError => e
-          if e.error_code == :missing_autograding_props
-            # no autograding properties for this assessment
-            redirect_to([@course, @assessment, :submissions]) && return
-          else # autograding failed
-            failed_jobs += 1
-            failed_list += "#{@submission.filename}: autograding error.<br>"
-          end
-        end
-      else
-        failed_jobs += 1
-        failed_list += "#{submission.filename}: not found or not readable.<br>"
+    begin
+      failed_list = sendJob_batch(@course, @assessment, last_submissions, @cud)
+    rescue AssessmentAutogradeCore::AutogradeError => e
+      if e.error_code == :missing_autograding_props
+        # no autograding properties for this assessment
+        flash[:error] = "Autograding failed because there are no autograding properties."
+        redirect_to([@course, @assessment, :submissions]) && return
       end
     end
 
-    flash[:error] = "Warning: Could not regrade #{failed_jobs} submission(s):<br>" + failed_list if failed_jobs > 0
+    if failed_list.length > 0
+      flash[:error] = "Warning: Could not regrade #{failed_list.length} submission(s):<br>"
+      for failed_list.each do |failure|
+        if failure["error"].error_code == :nil_submission
+          flash[:error] += "Unrecognized submission ID<br>"
+        else
+          flash[:error] += "#{failure['submission'].filename}: #{failure['error'].msg}<br>"
+        end
+      end
+    end
 
-    success_jobs = last_submissions.size - failed_jobs
+    success_jobs = last_submissions.size - failed_list.length
     if success_jobs > 0
       link = "<a href=\"#{url_for(controller: 'jobs')}\">#{success_jobs} students</a>"
       flash[:success] = ("Regrading the most recent submissions from #{link}").html_safe

@@ -175,6 +175,35 @@ module AssessmentAutogradeCore
   end
 
   ##
+  # sendJob_batch - Takes the same parameters as sendJob, except this runs sendJob on all
+  # submissions in the submissions list.
+  # 
+  # Returns a list of failed submissions with their corresponding errors
+  #
+  def sendJob_batch(course, assessment, submissions, cud)
+    failed_list = []
+
+    submissions.each do |submission|
+      if submission
+        begin
+          sendJob(course, assessment, [submission], cud)
+        rescue AssessmentAutogradeCore::AutogradeError => e
+          if e.error_code == :missing_autograding_props
+            # no autograding properties for this assessment
+            raise e
+          else # autograding failed
+            failed_list << {:submission => submission, :error => e}
+          end
+        end
+      else
+        failed_list << {:submission => submission, :error => AutogradeError.new("Invalid submission", :nil_submission)}
+      end
+    end
+
+    return failed_list
+  end
+
+  ##
   # sendJob - this scary-looking function initiates an autograding
   # job request on the backend. It builds a job structure that
   # contains various info about the job, send submits it to the
