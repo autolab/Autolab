@@ -64,7 +64,14 @@ module AssessmentHandin
     end
 
     # autograde the submissions
-    autogradeSubmissions(@course, @assessment, submissions) if @assessment.has_autograder?
+    if @assessment.has_autograder?
+      begin
+        autogradeSubmissions(@course, @assessment, submissions)
+      rescue AssessmentAutogradeCore::AutogradeError => e
+        # error message already filled in by autogradeSubmissions, and we
+        # don't intend to add custom messages, so don't need to do anything.
+      end
+    end
 
     redirect_to([:history, @course, @assessment]) && return
   end
