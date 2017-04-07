@@ -146,7 +146,12 @@ module AssessmentAutograde
   ##
   # autogradeSubmissions - submits an autograding job to Tango.
   # Called by assessments#handin, submissions#regrade and submissions#regradeAll
-  # returns the job id on success
+  #
+  # On success, returns the job id
+  # On failure, enters error message into flash[:error] and raises the original AutogradeError.
+  #   Therefore, the caller must be ready to handle AutogradeErrors. However, they need not do
+  #   anything after catching it if they don't intend on inspecting the error or adding custom
+  #   error messages.
   def autogradeSubmissions(course, assessment, submissions)
     # Check for nil first, since students should know about this
     flash[:error] = "Submission could not be autograded due to an error in creation" && return if submissions.blank?
