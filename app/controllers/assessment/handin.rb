@@ -9,12 +9,12 @@ module AssessmentHandin
   # This function calls out to smaller helper functions which provide for
   # specific functionality.
   #
-  # validateHandin_wrapper() : Returns true or false if the handin is valid.
+  # validateHandin_forHTML() : Returns true or false if the handin is valid.
   # saveHandin() : Does the actual process of saving the handin to the
   #     database and writing the handin file to Disk.
   # sendJob_AddHTMLMessages(course, assessment, submissions): Autogrades the submission.
   #
-  # validateHandin_wrapper() cannot modify the state of the world in any way. And it should
+  # validateHandin_forHTML() cannot modify the state of the world in any way. And it should
   # call super() to enable any other functionality.  The only reason to not call super()
   # is if you want to prevent other functionlity. You should be very careful about this.
   #
@@ -41,7 +41,7 @@ module AssessmentHandin
     else
 
       # validate the handin
-      redirect_to(action: :show) && return unless validateHandin_wrapper
+      redirect_to(action: :show) && return unless validateHandin_forHTML
 
     end
 
@@ -109,7 +109,7 @@ module AssessmentHandin
           end
         end
 
-        render(plain: flash[:error], status: :bad_request) && return unless validate_for_groups_wrapper
+        render(plain: flash[:error], status: :bad_request) && return unless validateHandinForGroups_forHTML
 
         # save the submissions
         begin
@@ -256,7 +256,7 @@ private
   # this function checks that now is a valid time to submit and that the
   # submission file is okay to submit.
   #
-  def validateHandin_wrapper
+  def validateHandin_forHTML
     # check for custom form first
 		if @assessment.has_custom_form
       for i in 0..@assessment.getTextfields.size-1
@@ -273,7 +273,7 @@ private
 
     case validity
     when :valid
-      return validate_for_groups_wrapper
+      return validateHandinForGroups_forHTML
     when :handin_disabled
       msg = "Sorry, handins are disabled for this assessment."
     when :submission_empty
@@ -296,8 +296,8 @@ private
   # this returns true.  Otherwise, it checks that everyone is confirmed
   # to be in the group and that no one is over the submission limit.
   #
-  def validate_for_groups_wrapper
-    validity = validate_for_groups
+  def validateHandinForGroups_forHTML
+    validity = validateHandinForGroups
 
     case validity
     when :valid

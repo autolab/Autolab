@@ -1,5 +1,10 @@
 module AssessmentHandinCore
 
+  ##
+  # validateHandin - makes sure the handin is valid according to the
+  #   assessment config.
+  # Note: this function does not automatically check for group handin
+  # validity. To check for that as well, run validateHandinForGroups.
   def validateHandin(size, content_type, filename)
     # Make sure that handins are allowed
     if @assessment.disable_handins?
@@ -23,12 +28,11 @@ module AssessmentHandinCore
   end
 
   ##
-  # this function makes sure that the submitter's group can submit.
+  # validateHandinForGroups - makes sure that the submitter's group can submit.
   # If the assessment does not have groups, or the user has no group,
   # this returns :valid. Otherwise, it checks that everyone is confirmed
   # to be in the group and that no one is over the submission limit.
-  #
-  def validate_for_groups
+  def validateHandinForGroups
     return :valid unless @assessment.has_groups?
 
     submitter_aud = @assessment.aud_for(@cud.id)
@@ -52,7 +56,9 @@ module AssessmentHandinCore
   end
 
   ##
-  # this function returns a list of the submissions created by this handin.
+  # saveHandin - saves the submission to database. If this submission is by a member of
+  # a group, it creates a submissions record for each person.
+  # Returns a list of the submissions created by this handin (aka a "logical submission")
   def saveHandin(sub)
     unless @assessment.has_groups?
       submission = @assessment.submissions.create(course_user_datum_id: @cud.id,
