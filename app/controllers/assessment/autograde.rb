@@ -54,7 +54,7 @@ module AssessmentAutograde
       redirect_to([:history, @course, @assessment, cud_id: @effective_cud.id]) && return
     end
 
-    autogradeSubmissions(@course, @assessment, [@submission])
+    sendJob_AddHTMLMessages(@course, @assessment, [@submission])
 
     redirect_to([:history, @course, @assessment, cud_id: @effective_cud.id]) && return
   end
@@ -144,15 +144,18 @@ module AssessmentAutograde
   end
 
   ##
-  # autogradeSubmissions - submits an autograding job to Tango.
+  # sendJob_AddHTMLMessages - A wrapper for AssessmentAutogradeCore::sendJob that adds error
+  #   or congratulatory messages to flash depending on the result of sendJob. Note that this
+  #   function does not "handle" the AutogradeError, it just adds messages depending on the
+  #   situation, so the caller of this function will still receive the original error from 
+  #   sendJob.
+  # 
   # Called by assessments#handin, submissions#regrade and submissions#regradeAll
   #
   # On success, returns the job id
   # On failure, enters error message into flash[:error] and raises the original AutogradeError.
-  #   Therefore, the caller must be ready to handle AutogradeErrors. However, they need not do
-  #   anything after catching it if they don't intend on inspecting the error or adding custom
-  #   error messages.
-  def autogradeSubmissions(course, assessment, submissions)
+  #
+  def sendJob_AddHTMLMessages(course, assessment, submissions)
     # Check for nil first, since students should know about this
     flash[:error] = "Submission could not be autograded due to an error in creation" && return if submissions.blank?
 

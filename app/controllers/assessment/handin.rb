@@ -12,10 +12,10 @@ module AssessmentHandin
   # validateHandin_wrapper() : Returns true or false if the handin is valid.
   # saveHandin() : Does the actual process of saving the handin to the
   #     database and writing the handin file to Disk.
-  # autogradeSubmissions(course, assessment, submissions): Does any post-handing-in actions.
+  # sendJob_AddHTMLMessages(course, assessment, submissions): Does any post-handing-in actions.
   #     arguments are the course object, assessment object, and a list of submissions objects
   #
-  # Both validateHandin_wrapper() and autogradeSubmissions() cannot modify the state of the
+  # Both validateHandin_wrapper() and sendJob_AddHTMLMessages() cannot modify the state of the
   # world in any way. And they both should call super() to enable any other
   # functionality.  The only reason to not call super() is if you want to
   # prevent other functionlity.  You should be very careful about this.
@@ -66,9 +66,9 @@ module AssessmentHandin
     # autograde the submissions
     if @assessment.has_autograder?
       begin
-        autogradeSubmissions(@course, @assessment, submissions)
+        sendJob_AddHTMLMessages(@course, @assessment, submissions)
       rescue AssessmentAutogradeCore::AutogradeError => e
-        # error message already filled in by autogradeSubmissions, and we
+        # error message already filled in by sendJob_AddHTMLMessages, and we
         # don't intend to add custom messages, so don't need to do anything.
       end
     end
@@ -131,7 +131,7 @@ module AssessmentHandin
         end
 
         # autograde the submissions
-        autogradeSubmissions(@course, @assessment, submissions) if @assessment.has_autograder?
+        sendJob_AddHTMLMessages(@course, @assessment, submissions) if @assessment.has_autograder?
 
       rescue StandardError => e
         COURSE_LOGGER.log(e.to_s)
