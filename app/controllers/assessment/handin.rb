@@ -12,13 +12,11 @@ module AssessmentHandin
   # validateHandin_wrapper() : Returns true or false if the handin is valid.
   # saveHandin() : Does the actual process of saving the handin to the
   #     database and writing the handin file to Disk.
-  # sendJob_AddHTMLMessages(course, assessment, submissions): Does any post-handing-in actions.
-  #     arguments are the course object, assessment object, and a list of submissions objects
+  # sendJob_AddHTMLMessages(course, assessment, submissions): Autogrades the submission.
   #
-  # Both validateHandin_wrapper() and sendJob_AddHTMLMessages() cannot modify the state of the
-  # world in any way. And they both should call super() to enable any other
-  # functionality.  The only reason to not call super() is if you want to
-  # prevent other functionlity.  You should be very careful about this.
+  # validateHandin_wrapper() cannot modify the state of the world in any way. And it should
+  # call super() to enable any other functionality.  The only reason to not call super()
+  # is if you want to prevent other functionlity. You should be very careful about this.
   #
   # Any errors should be added to flash[:error] and return false or nil.
   def handin
