@@ -152,7 +152,7 @@ div.main-header img {
   color: black;
 }
 
-.input-field label.active{
+.input-field label.active, [type="checkbox"] + label{
   color: #444;
   font-weight: 600;
 }
@@ -168,6 +168,10 @@ input:not([type]):disabled, input[type=text]:disabled, input[type=password]:disa
 
 ::-webkit-input-placeholder { /* Chrome/Opera/Safari */
   color: #b1b1b1;
+}
+
+.checkbox-input{
+  margin-bottom: 5vh;
 }
 
 
@@ -804,7 +808,7 @@ input[type=text] {
   color: #4e4e4e;
   font-size: 15px;
   margin-left: 8px;
-  /*margin-top: -18px;*/
+  margin-top: 2px;
   margin-bottom: 30px;
 }
 
