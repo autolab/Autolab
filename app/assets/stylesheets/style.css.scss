@@ -166,6 +166,9 @@ input:not([type]):disabled, input[type=text]:disabled, input[type=password]:disa
   overflow-x: hidden;
 }
 
+::-webkit-input-placeholder { /* Chrome/Opera/Safari */
+  color: #b1b1b1;
+}
 
 
 /* Further Styling */
