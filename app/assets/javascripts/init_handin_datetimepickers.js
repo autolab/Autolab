@@ -37,5 +37,3 @@ $(document).ready(function() {
 
 })
 
-function validateDates(e) {
-}
