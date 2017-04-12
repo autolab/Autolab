@@ -9,6 +9,7 @@ Autolab3::Application.routes.draw do
         resources :assessments, param: :name, only: [:index] do
           get 'problems'
           get 'writeup'
+          get 'handout'
           post 'submit'
           
           resources :submissions, param: :version, only: [:index] do

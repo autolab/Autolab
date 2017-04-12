@@ -49,6 +49,33 @@ class Api::V1::AssessmentsController < Api::V1::BaseApiController
     respond_with_hash({:msg => "There is no writeup for this assessment."})
   end
 
+  # endpoint for obtaining the handout
+  def handout
+    extend_config_module(@assessment, nil, @cud)
+
+    if @assessment.overwrites_method?(:handout)
+      hash = @assessment.config_module.handout
+      send_file(hash["fullpath"],
+                disposition: "inline",
+                filename: hash["filename"])
+      return
+    end
+
+    if @assessment.handout_is_url?
+      respond_with_hash({:url => @assessment.handout}) and return
+    end
+
+    if @assessment.handout_is_file?
+      filename = @assessment.handout_path
+      send_file(filename,
+                disposition: "inline",
+                file: File.basename(filename))
+      return
+    end
+
+    respond_with_hash({:msg => "There is no handout for this assessment."})
+  end
+
   # endpoint for submitting to assessments
   # Does not support embedded quizzes.
   # Potential Errors:
