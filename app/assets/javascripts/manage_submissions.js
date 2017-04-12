@@ -92,6 +92,11 @@ jQuery(function($) {
     updateBatchRegradeButton();
   }
 
+  $("#submissions").on("click", ".exclude-click i", function (e) {
+    e.stopPropagation();
+    return;
+  });
+
   $('#submissions').on("click", ".submission-row", function(e) {
     // Don't toggle row if we originally clicked on an anchor tag
     if(e.target.localName != 'a') {
