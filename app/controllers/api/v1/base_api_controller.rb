@@ -24,6 +24,14 @@ class Api::V1::BaseApiController < ActionController::Base
     raise ApiError.new("Invalid request path", :not_found)
   end
 
+  def doorkeeper_unauthorized_render_options(error: nil)
+    {:json => {:error => "OAuth2 authorization failed"}}
+  end
+
+  def doorkeeper_forbidden_render_options(error: nil)
+    {:json => {:error => "You do not have the required scope for this action"}}
+  end
+
   private
 
   def current_user

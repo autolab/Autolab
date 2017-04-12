@@ -1,5 +1,7 @@
 class Api::V1::CoursesController < Api::V1::BaseApiController
 
+  before_action -> {doorkeeper_authorize! :user_courses}
+
   skip_before_action :set_course, only: [:index]
   skip_before_action :authorize_user_for_course, only: [:index]
 

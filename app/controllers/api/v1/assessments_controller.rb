@@ -3,6 +3,9 @@ class Api::V1::AssessmentsController < Api::V1::BaseApiController
   include AssessmentHandinCore
   include AssessmentAutogradeCore
 
+  before_action -> {doorkeeper_authorize! :user_courses}, only: [:index, :problems, :writeup, :handout]
+  before_action -> {doorkeeper_authorize! :user_submit}, only: [:submit]
+
   before_action :set_assessment, except: [:index]
 
   def index

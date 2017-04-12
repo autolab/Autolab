@@ -7,6 +7,6 @@ en:
   doorkeeper:
     scopes:
       user_info: 'Access your basic info (e.g. name, email, school, year)'
-      user_courses: 'Access your courses and their problems'
+      user_courses: 'Access your courses and assessments'
       user_scores: 'Access your submissions, scores, and feedback'
       user_submit: 'Submit to assessments on your behalf'

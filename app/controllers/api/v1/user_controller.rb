@@ -1,5 +1,7 @@
 class Api::V1::UserController < Api::V1::BaseApiController
   
+  before_action -> {doorkeeper_authorize! :user_info}
+
   skip_before_action :set_course
   skip_before_action :authorize_user_for_course
   
