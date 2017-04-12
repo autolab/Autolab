@@ -1,3 +1,7 @@
+require "uri"
+require "tango_client"
+require_relative Rails.root.join("config", "autogradeConfig.rb")
+
 module AssessmentAutogradeCore
 
   class AutogradeError < StandardError
