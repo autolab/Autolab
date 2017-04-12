@@ -34,6 +34,10 @@ class Api::V1::BaseApiController < ActionController::Base
     render :json => {:error => error.message}.to_json, :status => error.status_code
   end
 
+  def respond_with_hash(h)
+    render :json => h.to_json
+  end
+
   protected
 
   def set_default_response_format

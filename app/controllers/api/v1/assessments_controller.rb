@@ -32,6 +32,23 @@ class Api::V1::AssessmentsController < Api::V1::BaseApiController
     respond_with problems, only: [:name, :description, :max_score, :optional]
   end
 
+  # endpoint for obtaining the writeup
+  def writeup
+    if @assessment.writeup_is_url?
+      respond_with_hash({:url => @assessment.writeup}) and return
+    end
+
+    if @assessment.writeup_is_file?
+      filename = @assessment.writeup_path
+      send_file(filename,
+                disposition: "inline",
+                file: File.basename(filename))
+      return
+    end
+
+    respond_with_hash({:msg => "There is no writeup for this assessment."})
+  end
+
   # endpoint for submitting to assessments
   # Does not support embedded quizzes.
   # Potential Errors:
