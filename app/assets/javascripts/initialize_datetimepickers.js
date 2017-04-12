@@ -1,4 +1,4 @@
-// Initialize all Bootstrap 3 Datetime Pickers on the page
+// Initialize all Flatpicker Datetime Pickers on the page
 ;(function() {
   
   $(document).ready(function() {
@@ -7,7 +7,7 @@
       $(datetimeElts[i]).flatpickr({
         enableTime: true,
         altInput: true,
-        defaultDate: new Date(datetimeElts[i].getAttribute("value"))
+        defaultDate: new Date(moment($(datetimeElts[i]).val()))
       })
     }
 
@@ -16,7 +16,7 @@
     for (var i = 0; i < dateElts.length; i++) {
       $(dateElts[i]).flatpickr({
         altInput: true,
-        defaultDate: moment($(dateElts[i]).val()).format("MMMM D YYYY")
+        defaultDate: new Date(moment($(dateElts[i]).val()).format("MMMM D YYYY"))
       })
     }
   });
