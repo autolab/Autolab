@@ -419,8 +419,8 @@ file, most likely a duplicate email.  The exact error was: #{e} "
     `~/Autolab/script/cleanMoss #{tmp_dir}`
 		# Now run the Moss command
     @mossCmdString = @mossCmd.join(" ")
-    @mossExit = $?.exitstatus
     @mossOutput = `#{@mossCmdString} 2>&1`
+    @mossExit = $?.exitstatus
 
     # Clean up after ourselves (droh: leave for dsebugging)
     `rm -rf #{tmp_dir}`
