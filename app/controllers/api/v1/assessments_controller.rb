@@ -129,7 +129,7 @@ class Api::V1::AssessmentsController < Api::V1::BaseApiController
       end
     end
 
-    render json: {:success => "Submitted file #{submissions[0].filename} for autograding"}.to_json
+    respond_with_hash({:success => "Submitted file #{submissions[0].filename} for autograding"})
   end
 
 end
