@@ -96,5 +96,8 @@ module Autolab3
 
     # School specific configuration (please edit config/school.yml)
     config.school = config_for(:school)
+
+    # configure throttling middleware rack-attack
+    config.middleware.use Rack::Attack
   end
 end
