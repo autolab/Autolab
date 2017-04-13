@@ -17,8 +17,8 @@ unchecked." %>
 <label for="problem_optional">Optional?</label><br>
 
 <div class="action_buttons">
-	<%= f.submit "Save Problem" , {:class=>"waves-effect waves-light btn primary"} %>
+	<%= f.submit "Save Problem" , {:class=>"btn primary"} %>
 	<% if @problem then %>
-	  <%= link_to "Delete this Problem", [@course, @assessment, @problem], method: :delete, class: 'waves-effect waves-light btn btn-danger', data: { confirm: "Deleting will delete all associated problem data and cannot be undone. Are you sure you want to delete this problem?" } %>
+	  <%= link_to "Delete this Problem", [@course, @assessment, @problem], method: :delete, class: 'btn btn-danger', data: { confirm: "Deleting will delete all associated problem data and cannot be undone. Are you sure you want to delete this problem?" } %>
 	<% end %>
 </div>
