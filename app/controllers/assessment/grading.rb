@@ -277,7 +277,6 @@ public
     score.grader_id = @cud.id
     score.feedback = params[:feedback]
     score.released = params[:released]
-    score.score = params[:score].to_f
 
     updateScore(score.submission.course_user_datum_id, score)
 
