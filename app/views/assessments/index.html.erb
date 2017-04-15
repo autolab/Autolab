@@ -12,7 +12,15 @@
   </script>
 <% end %>
 
-<%= render partial: "announcements/announcements_list", 
+<% content_for :stylesheets do %>
+  <style>
+    .collection-item {
+      overflow: auto;
+    }
+  </style>
+<% end %>
+
+<%= render partial: "announcements/announcements_list",
            locals: { announcements: @announcements } %>
 
 <% if @is_instructor and @course.exam_in_progress? %>
@@ -46,7 +54,7 @@
 
             <div class="collection red darken-4">
               <% asmts.each do |asmt| %>
-                <%= link_to course_assessment_url(@course, asmt), 
+                <%= link_to course_assessment_url(@course, asmt),
                     :class => "collection-item grey-text text-darken-4" do %>
                   <%= asmt.display_name %>
                   <% if !asmt.released? %>
