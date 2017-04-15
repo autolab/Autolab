@@ -11,6 +11,13 @@
     border: 1px solid #ddd;
   }
 
+  .annotationPane .btn {
+    padding: 0 1rem;
+    display: flex;
+    align-content: center;
+    align-items: center;
+    justify-content: space-between;
+  }
 </style>
 <% end %>
 
@@ -120,22 +127,22 @@
     <% if not (@submission.assessment.exam or @submission.assessment.course.exam_in_progress) %>
       <% if @preview_mode then %>
       <a style="width:100%;" href="?" title="Download Submission" class="btn">
-        <i class="material-icons left" aria-hidden="true">mode_edit</i>
-        Edit
+        <i class="material-icons" aria-hidden="true">mode_edit</i>
+        <span>Edit</span>
       </a>
       <% else %>
       <a style="width:100%;" href="?preview=true" title="Preview Submission" class="btn">
-        <i class="material-icons left" aria-hidden="true">zoom_out</i>
-        Preview
+        <i class="material-icons" aria-hidden="true">zoom_out</i>
+        <span>Preview</span>
       </a>
       <% end %>
       <a style="width:100%; margin-top: 6px;" href="<%= url_for [:download, @course, @assessment, @submission, header_position: params[:header_position]] %>" title="Original Submission" class="btn">
-        <i class="material-icons left" aria-hidden="true">file_download</i>
-        Original
+        <i class="material-icons" aria-hidden="true">file_download</i>
+        <span>Original</span>
       </a>
       <a style="width:100%; margin-top: 6px;" href="<%= url_for [:download, @course, @assessment, @submission, header_position: params[:header_position], annotated: true] %>" title="Annotated Submission" class="btn">
-        <i class="material-icons left" aria-hidden="true">file_download</i>
-        Annotated
+        <i class="material-icons" aria-hidden="true">file_download</i>
+        <span>Annotated</span>
       </a>
       <% if @assessment.has_custom_form then %>
         <% if @assessment.getLanguages.size > 0 then %>
