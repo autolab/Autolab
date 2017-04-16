@@ -29,8 +29,6 @@ $(document).ready(function() {
         end_at_pickr.setDate(cur_date, true);
       }
 
-      // Reinstall handler
-      flatpickr_inst.set('onClose', [onCloseHandler])
   }
   /* Add custom onClose handler for due at date picker */
   var due_at_pickr = createDatePicker('#assessment_due_at', {onClose : onCloseHandler})
