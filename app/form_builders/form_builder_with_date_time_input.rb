@@ -26,7 +26,7 @@ class FormBuilderWithDateTimeInput < ActionView::Helpers::FormBuilder
         (f.vanilla_text_field :value, class: "score-box", placeholder: "10") +
         (@template.content_tag :div, class: "" do
           f.select(:kind, { "points" => "points", "%" => "percent" }, {},
-                   class: "input-field  carrot")
+                   class: "carrot")
         end)
     end
 
