@@ -27,6 +27,7 @@ class CourseUserDatum < ActiveRecord::Base
   accepts_nested_attributes_for :tweak, allow_destroy: true
   accepts_nested_attributes_for :user, allow_destroy: false
   validate :valid_nickname?
+  validates_uniqueness_of :user_id, scope: :course_id
   after_create :create_AUDs_modulo_callbacks
 
   def self.conditions_by_like(value, *columns)
