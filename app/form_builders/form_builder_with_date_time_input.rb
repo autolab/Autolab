@@ -23,13 +23,11 @@ class FormBuilderWithDateTimeInput < ActionView::Helpers::FormBuilder
     options = args.extract_options!
 
     fields = fields_for name do |f|
-      @template.content_tag :div, class: "score-adjustment" do
-        (f.vanilla_text_field :value, class: "input-field score-box", placeholder: "10") +
+        (f.vanilla_text_field :value, class: "score-box", placeholder: "10") +
         (@template.content_tag :div, class: "" do
           f.select(:kind, { "points" => "points", "%" => "percent" }, {},
-                   class: "input-field  carrot")
+                   class: "carrot")
         end)
-      end
     end
 
     wrap_field name, fields, options[:help_text]

@@ -24,59 +24,13 @@
   help_text: "The total number of grace days for late submissions that students
   are allowed each semester. Example: 3" %>
 
-<%= f.fields_for :late_penalty, course.late_penalty do |p| %>
-  <%= content_tag :div, class: "input-field" do %>
-    <%= p.label :late_penalty, class: "control-label" %>
+<%= f.score_adjustment_input :late_penalty, optional: true, help_text: "The penalty applied to late submissions after a student runs out of grace days. It represents an amount of points or a percentage of the total score removed per day, and must be a non-negative number. This field can be overriden on a per-assessment basis.", placeholder: "E.g. 15%" %>
 
-    <%= content_tag :div, class: "row" do %>
-      <%= content_tag :div, class: "col s8" do %>
-        <%= p.vanilla_text_field :value, class: "score-box input-field" %>
-      <% end %>
-      <%= content_tag :div, class: "col s4" do %>
-        <%= p.select :kind, options_for_select({"points" => "points", "%" => "percent"},
-                                               :selected => (course.late_penalty ? course.late_penalty.kind : "points")),
-                            {}, {class: "input-field"} %>
-      <% end %>
-    <% end %>
 
-    <%= content_tag :p, class: "help-block" do %>
-      The penalty applied to late submissions after a student runs out of grace
-      days. It represents an amount of points or a percentage of the total score
-      removed per day, and must be a non-negative number. This field can be
-      overriden on a per-assessment basis.
-    <% end %>
-  <% end %>
-<% end %>
+<%= f.text_field :version_threshold, help_text: "If a submission's version is greater than this threshold, it is
+  penalized according to the version penalty. If set to -1, no submissions are penalized. This is required, but can be overridden on a per-assessment basis.", placeholder: "E.g. 10" %>
 
-<%= f.text_field :version_threshold,
-  help_text: "If a submission's version is greater than this threshold, it is
-  penalized according to the version penalty. If set to -1, no submissions are
-  penalized. This is required, but can be overridden on a per-assessment
-  basis." %>
-
-<%= f.fields_for :version_penalty, course.version_penalty do |p| %>
-  <%= content_tag :div, class: "input-field" do %>
-    <%= p.label :version_penalty, class: "control-label" %>
-
-    <%= content_tag :div, class: "row" do %>
-      <%= content_tag :div, class: "col s8" do %>
-        <%= p.vanilla_text_field :value, class: "score-box input-field" %>
-      <% end %>
-      <%= content_tag :div, class: "col s4" do %>
-        <%= p.select :kind, options_for_select({"points" => "points", "%" => "percent"},
-                                               :selected => (course.version_penalty ? course.version_penalty.kind : "points")),
-                            {}, {class: "input-field"} %>
-      <% end %>
-    <% end %>
-
-    <%= content_tag :p, class: "help-block" do %>
-      The penalty applied to submissions with versions greater than the <em>version
-      threshold</em> i.e. number of points or percentage of the total
-      score removed per version above the threshold. For example, if this is set to 1 point and the version threshold to 3,
-      the fifth version of a student's submissions would be docked 2 points.
-    <% end %>
-  <% end %>
-<% end %>
+<%= f.score_adjustment_input :version_penalty, optional: true, help_text: "The penalty applied to submissions with versions greater than the version threshold, i.e. number of points or percentage of the total score removed per version above the threshold. For example, if this is set to 1 point and the version threshold to 3, the fifth version of a student's submissions would be docked 2 points.", placeholder: "E.g. 15%" %>
 
 <%= f.date_select :start_date, help_text: "When the course becomes active.",
   less_than: "course_end_date" %>
@@ -94,4 +48,4 @@
 <%= f.text_area :gb_message, class: "materialize-textarea",
   help_text: "An optional message that is displayed to students at the top of
   their gradebooks.  It can be used to explain grading criteria.",
-  display_name: "Gradebook Message" %>
+  display_name: "Gradebook Message", placeholder: "Optional" %>

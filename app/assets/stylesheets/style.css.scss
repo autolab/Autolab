@@ -8,8 +8,7 @@
 *******************************************/
 
 /********************************************************
-* These colors have been changed to fit a UB aesthetic. *
-*            The var names have not											*
+* These colors have been changed to fit a CMU aesthetic.*
 ********************************************************/
 $autolab-red: rgba(153, 0, 0, 0.9);
 $autolab-subtle-red: #C87B7E;
@@ -57,7 +56,6 @@ div.main-header .logo {
   display: inline-block;
   vertical-align: top;
   line-height: 54px;
-  //margin-top:5px;
 }
 
 div.main-header h2 {
@@ -145,6 +143,40 @@ div.main-header img {
 	margin-left: -10px;
 }
 
+/* Custom Form Styling */
+.input-field{
+  padding-bottom: 4vh !important;
+}
+
+.input-field label{
+  color: black;
+}
+
+.input-field label.active, [type="checkbox"] + label{
+  color: #444;
+  font-weight: 600;
+}
+
+input:not([type]):disabled, input[type=text]:disabled, input[type=password]:disabled, input[type=email]:disabled, input[type=url]:disabled, input[type=time]:disabled, input[type=time][readonly="readonly"], input[type=date]:disabled, input[type=datetime]:disabled,input[type=datetime-local]:disabled, input[type=tel]:disabled, input[type=tel][readonly="readonly"], input[type=number]:disabled, input[type=search]:disabled,  textarea.materialize-textarea:disabled{
+  background: #f2f2f2;
+  color: #666;
+}
+
+.tabs{
+  overflow-x: hidden;
+}
+
+::-webkit-input-placeholder { /* Chrome/Opera/Safari */
+  color: #b1b1b1;
+}
+
+.checkbox-input{
+  margin-bottom: 5vh;
+}
+
+
+/* Further Styling */
+
 .caret {
 	border-color: transparent !important;
 }
@@ -191,6 +223,7 @@ input[type="file"].upload_embedded {
 }
 
 .main-header .dropdown-menu {
+  animation-duration: 0.2s;
   -webkit-animation-duration: 0.2s;
   -moz-animation-duration: 0.2s;
 }
@@ -262,13 +295,6 @@ input[type="file"].upload_embedded {
 
   div.main-header h2 {
     font-size: 16px;
-  }
-
-  div.main-header .logo {
-
-    img {
-      // width: 120px;
-    }
   }
 
 
@@ -474,14 +500,14 @@ div#publicCourse{
 div.autoCompleteDiv  {
   background-color:white;
   border: 1px solid black;
-  font-color:black;
+  color:black;
   margin-right:10px;
   padding: 2px;
 }
 div.autoCompleteDiv:hover, div.selectedAutoCompleteDiv {
   background-color:#d2d2d2;
   border: 1px solid black;
-  font-color:black;
+  color:black;
   margin-right:10px;
   padding: 2px;
 }
@@ -711,15 +737,6 @@ input[type="password"], {
 	box-shadow: 0 1px 0 0 #CCC;
 }
 
-input[type="text"]:disabled,
-input[type="email"]:disabled,
-input[type="password"]:disabled,
-input[type="text"]:read-only,
-input[type="email"]:read-only,
-input[type="password"]:read-only {
-  /*background-color: #eee;*/
-}
-
 input[type="text"]:focus,
 input[type="email"]:focus,
 input[type="password"]:focus {
@@ -770,11 +787,6 @@ textarea {
   box-sizing: border-box;
 }
 
-
-.checkbox-input {
-  //margin-top: 1rem;
-}
-
 .input-field {
 	margin-top: 2rem !important;
   label.control-label {
@@ -796,7 +808,7 @@ input[type=text] {
   color: #4e4e4e;
   font-size: 15px;
   margin-left: 8px;
-  /*margin-top: -18px;*/
+  margin-top: 2px;
   margin-bottom: 30px;
 }
 
@@ -832,10 +844,6 @@ input[type=text] {
 .page-wrapper:after {
   /* .push must be the same height as footer */
   height: 42px;
-}
-
-.score-box {
-	margin-top: 3rem !important;
 }
 
 
@@ -965,10 +973,6 @@ display: block;
 }
 
 /* Form Tables */
-
-.verticalTable {
-
-}
 
 .verticalTable tr {
   height: 48px;

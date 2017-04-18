@@ -57,7 +57,7 @@ private
   # creates a link to the problems page, which is a tab on assessments#edit
   #
   def problems_index
-    edit_course_assessment_path(@course, @assessment) + "/problems"
+    edit_course_assessment_path(@course, @assessment) + "/#tab_problems"
   end
 
   # this function says which problem attributes can be mass-assigned to, and which cannot

@@ -537,7 +537,7 @@ class AssessmentsController < ApplicationController
 
     flash[:success] = "Saved!" if @assessment.update!(edit_assessment_params)
 
-    redirect_to(action: :edit) && return
+    redirect_to(tab_index) && return
   end
 
   action_auth_level :releaseAllGrades, :instructor
@@ -668,10 +668,12 @@ private
   def edit_assessment_params
     ass = params.require(:assessment)
     ass[:category_name] = params[:new_category] unless params[:new_category].blank?
+
     if ass[:late_penalty_attributes] && ass[:late_penalty_attributes][:value].blank?
       ass.delete(:late_penalty_attributes)
       @assessment.late_penalty.destroy unless @assessment.late_penalty.nil?
     end
+
     if ass[:version_penalty_attributes] && ass[:version_penalty_attributes][:value].blank?
       ass.delete(:version_penalty_attributes)
       @assessment.version_penalty.destroy unless @assessment.version_penalty.nil?
@@ -704,4 +706,17 @@ private
     end
     [asmt_rb_exists && asmt_yml_exists && (!asmt_name.nil?), asmt_name]
   end
+
+  def tab_index
+    # Get the current tab's redirect path by checking the submit tag which tells us which submit button in the edit form was clicked
+    tab_name = "basic"
+    if params[:handin]
+      tab_name = "handin"
+    elsif params[:penalties]
+      tab_name = "penalties"
+    end
+
+    edit_course_assessment_path(@course, @assessment) + "/#tab_"+tab_name
+  end
+
 end
