@@ -10,6 +10,7 @@
 <div class="input-field">
   <%= f.label :category_name, { :class=>"control-label" } %>
   <%= f.collection_select :category_name, @course.assessment_categories, :to_s, :to_s, {selected: @assessment.category_name} %>
+  or
   <%= text_field_tag :new_category, nil, placeholder: "New Category" %>
   <p class="help-block">Select an existing category or enter a new category name <i>(you can always change it later)</i></p>
 </div>
@@ -17,12 +18,14 @@
 
 <%= f.text_field :group_size,
   display_name: "Group Size",
-  help_text: "Set the maximum size of groups for this assessment.  If group size is 1, the assessment is solo.  If the size is decreased, groups that are too large will not be broken up.  If the size is set to 1, groups will be saved, but the assessment will be solo." %>
+  help_text: "Set the maximum size of groups for this assessment.  If group size is 1, the assessment is solo.  If the size is decreased, groups that are too large will not be broken up.  If the size is set to 1, groups will be saved, but the assessment will be solo.", placeholder: "1" %>
 
 <div class="assessments-label">
 	<%= f.text_area  :description, class: "materialize-textarea", help_text: "", placeholder: "(Optional) Description of assessment" %>
-	<%= f.text_field :handout, help_text: "File in the assessment directory containing materials that the instructor hands out to students or URL to redirect to. E.g., 'malloclab-handout.tar', 'http://school.edu/class/malloclab.zip'" %>
-	<%= f.text_field :writeup, help_text: "File in the assessment directory or URL containing instructions to students. E.g., 'writeup/malloclab.pdf', 'http://school.edu/class/writeup.pdf'" %>
+
+	<%= f.text_field :handout, help_text: "File path from the assessment directory containing materials that the instructor hands out to students, or a URL to redirect to.", placeholder: "E.g.   malloclab.zip   or   http://school.edu/class/malloclab.zip" %>
+
+	<%= f.text_field :writeup, help_text: "File path from the assessment directory containing instructions to students, or a URL to redirect to.", placeholder: "E.g.   writeup.pdf   or   http://school.edu/class/writeup.pdf" %>
 </div>
 
 <div class="embedded-form" style="margin-top: 2rem;">
