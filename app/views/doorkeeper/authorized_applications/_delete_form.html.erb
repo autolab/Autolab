@@ -1,5 +1,7 @@
-<%- submit_btn_css ||= 'btn btn-link' %>
+
 <%= form_tag oauth_authorized_application_path(application) do %>
   <input type="hidden" name="_method" value="delete">
-  <%= submit_tag t('doorkeeper.authorized_applications.buttons.revoke'), onclick: "return confirm('#{ t('doorkeeper.authorized_applications.confirmations.revoke') }')", class: submit_btn_css %>
+  <%= button_tag type: "submit", class: "btn red", confirm: t('doorkeeper.authorized_applications.confirmations.revoke') do %>
+    <i class="material-icons left">delete</i>Revoke
+  <% end %>
 <% end %>
