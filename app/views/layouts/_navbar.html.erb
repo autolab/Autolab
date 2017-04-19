@@ -6,7 +6,9 @@
   <script>
     // Not using Jquery to bind the listener since it's not loaded at this point
     document.addEventListener("DOMContentLoaded", function(event) {
-      $('.button-collapse').sideNav();
+      $('.button-collapse').sideNav({
+        edge: 'right'
+      });
     });
   </script>
 
