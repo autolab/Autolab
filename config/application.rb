@@ -32,6 +32,7 @@ module Autolab3
       Devise::ConfirmationsController.layout "home"
       Devise::UnlocksController.layout "home"            
       Devise::PasswordsController.layout "home"        
+      Doorkeeper::AuthorizationsController.layout "home"
       Doorkeeper::AuthorizedApplicationsController.layout "home"
     end
 
