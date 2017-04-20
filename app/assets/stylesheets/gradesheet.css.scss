@@ -170,7 +170,7 @@ td.id {
     padding: 3px;
     background-color: #eee;
     display: none;
-    max-width: 360px;
+    max-width: inherit;
 }
 
 #grades td.id .popover span.filename {
@@ -243,8 +243,8 @@ td.id {
 
 
 #grades td .score_details .feedback {
-    width: 290px;
-    min-height: 75px;
+    width: 350px;
+    min-height: 350px;
 }
 
 #grades td .popover .score_details span.save_box {
