@@ -32,6 +32,8 @@
   </script>
 <% end %>
 
+<h2>Editing <%= @editCUD.user.email %>'s Enrollment in <%= @course.display_name %></h2>
+
 <%= form_for @editCUD, url: course_course_user_datum_path(@course, @editCUD) do |f| %>
 <% if @editCUD.errors.any? %>
 	<div id="error_explanation">
@@ -47,7 +49,6 @@
 <% end %>
 
   <table width=70% class="verticalTable" >
-  <tr><th>Course</th><td><%= @editCUD.course.display_name %></td></tr>
 
   <%= f.fields_for :user, @editCUD.user do |u| %>
     <tr><th>First name: </th><td><%= u.text_field :first_name %></td></tr>
@@ -82,7 +83,7 @@
       <%= t.text_field :value, :size => 18 %>
       <%= t.select :kind, options_for_select({"points" => "points", "%" => "percent"}, :selected => (@editCUD.tweak ? @editCUD.tweak.kind : "points")) %>
     <% end %>
-    </td>btn primary handin-btn
+    </td>
     <td class="smallText">A tweak is a positive or negative value that adjusts the student's course average.<br>Ex: A tweak of 5 points would increase the student's course average by 5 points. </td>
   </tr>
 
