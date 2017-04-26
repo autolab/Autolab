@@ -3,12 +3,21 @@ require 'rails_helper'
 RSpec.describe Api::V1::CoursesController, :type => :controller do
 	describe 'GET #index' do
     user = get_user
-    let!(:application) { Doorkeeper::Application.create! :name => "TestApp", :redirect_uri => "https://example.com" }
-    let!(:token) { Doorkeeper::AccessToken.create! :application_id => application.id, :resource_owner_id => user.id }
+    let!(:application) { Doorkeeper::Application.create! :name => "TestApp", :redirect_uri => "https://example.com", :scopes => "user_info user_courses" }
+    let!(:token) { Doorkeeper::AccessToken.create! :application_id => application.id, :resource_owner_id => user.id, :scopes => "user_info user_courses" }
+
+    # an application with insufficient scope
+    let!(:bad_application) { Doorkeeper::Application.create! :name => "BadApp", :redirect_uri => "https://bad-example.com", :scopes => "user_info" }
+    let!(:bad_token) { Doorkeeper::AccessToken.create! :application_id => bad_application.id, :resource_owner_id => user.id, :scopes => "user_info" }
 
     it 'fails to authenticate' do
       get :index, :access_token => token.token.length.times.map { (65 + rand(26)).chr }.join # a random token
       expect(response.response_code).to eq(401)
+    end
+
+    it 'fails scope test' do
+      get :index, :access_token => bad_token.token
+      expect(response.response_code).to eq(403)
     end
 
     it 'returns all the user\'s courses' do
