@@ -2,20 +2,21 @@
 # Handles different handin methods, including web form, local_submit and log_submit
 #
 module AssessmentHandin
+
+  include AssessmentHandinCore
+
   # handin - The generic default handin function.
   # This function calls out to smaller helper functions which provide for
   # specific functionality.
   #
-  # validateHandin() : Returns true or false if the handin is valid.
+  # validateHandin_forHTML() : Returns true or false if the handin is valid.
   # saveHandin() : Does the actual process of saving the handin to the
   #     database and writing the handin file to Disk.
-  # autogradeSubmissions(course, assessment, submissions): Does any post-handing-in actions.
-  #     arguments are the course object, assessment object, and a list of submissions objects
+  # sendJob_AddHTMLMessages(course, assessment, submissions): Autogrades the submission.
   #
-  # Both validateHandin() and autogradeSubmissions() cannot modify the state of the
-  # world in any way. And they both should call super() to enable any other
-  # functionality.  The only reason to not call super() is if you want to
-  # prevent other functionlity.  You should be very careful about this.
+  # validateHandin_forHTML() cannot modify the state of the world in any way. And it should
+  # call super() to enable any other functionality.  The only reason to not call super()
+  # is if you want to prevent other functionlity. You should be very careful about this.
   #
   # Any errors should be added to flash[:error] and return false or nil.
   def handin
@@ -40,7 +41,7 @@ module AssessmentHandin
     else
 
       # validate the handin
-      redirect_to(action: :show) && return unless validateHandin
+      redirect_to(action: :show) && return unless validateHandin_forHTML
 
     end
 
@@ -61,7 +62,14 @@ module AssessmentHandin
     end
 
     # autograde the submissions
-    autogradeSubmissions(@course, @assessment, submissions) if @assessment.has_autograder?
+    if @assessment.has_autograder?
+      begin
+        sendJob_AddHTMLMessages(@course, @assessment, submissions)
+      rescue AssessmentAutogradeCore::AutogradeError => e
+        # error message already filled in by sendJob_AddHTMLMessages, and we
+        # don't intend to add custom messages, so don't need to do anything.
+      end
+    end
 
     redirect_to([:history, @course, @assessment]) && return
   end
@@ -101,7 +109,7 @@ module AssessmentHandin
           end
         end
 
-        render(plain: flash[:error], status: :bad_request) && return unless validate_for_groups
+        render(plain: flash[:error], status: :bad_request) && return unless validateHandinForGroups_forHTML
 
         # save the submissions
         begin
@@ -121,7 +129,7 @@ module AssessmentHandin
         end
 
         # autograde the submissions
-        autogradeSubmissions(@course, @assessment, submissions) if @assessment.has_autograder?
+        sendJob_AddHTMLMessages(@course, @assessment, submissions) if @assessment.has_autograder?
 
       rescue StandardError => e
         COURSE_LOGGER.log(e.to_s)
@@ -248,7 +256,8 @@ private
   # this function checks that now is a valid time to submit and that the
   # submission file is okay to submit.
   #
-  def validateHandin
+  def validateHandin_forHTML
+    # check for custom form first
 		if @assessment.has_custom_form
       for i in 0..@assessment.getTextfields.size-1
           if params[:submission][("formfield" + (i+1).to_s).to_sym].blank?
@@ -257,34 +266,28 @@ private
           end
       end
     end
-    # Make sure that handins are allowed
-    if @assessment.disable_handins?
-      flash[:error] = "Sorry, handins are disabled for this assessment."
-      return false
-    end
 
-    # Check for if the submission is empty
-    if params[:submission].nil?
-      flash[:error] = "Submission was blank - please upload again."
-      return false
-    end
-    # Check if the file is too large
-    if params[:submission]["file"].size > @assessment.max_size * (2**20)
-      flash[:error] = "Your submission is larger than the max allowed " \
-      "size (#{@assessment.max_size} MB) - please remove any " \
-        "unnecessary logfiles and binaries."
-      return false
-    end
+    validity = validateHandin(params[:submission]["file"].size,
+                              params[:submission]["file"].content_type,
+                              params[:submission]["file"].original_filename)
 
-    if @assessment.overwrites_method?(:checkMimeType) && !(@assessment.config_module.checkMimeType(
-      params[:submission]["file"].content_type,
-      params[:submission]["file"].original_filename))
-
-      flash[:error] = "Submission failed Filetype Check. " + flash[:error]
-      return false
+    case validity
+    when :valid
+      return validateHandinForGroups_forHTML
+    when :handin_disabled
+      msg = "Sorry, handins are disabled for this assessment."
+    when :submission_empty
+      msg = "Submission was blank - please upload again."
+    when :file_too_large
+      msg = "Your submission is larger than the max allowed " \
+            "size (#{@assessment.max_size} MB) - please remove any " \
+            "unnecessary logfiles and binaries."
+    when :fail_type_check
+      msg = "Submission failed Filetype Check. " + flash[:error]
     end
-
-    validate_for_groups
+    
+    flash[:error] = msg
+    return false
   end
 
   ##
@@ -293,62 +296,20 @@ private
   # this returns true.  Otherwise, it checks that everyone is confirmed
   # to be in the group and that no one is over the submission limit.
   #
-  def validate_for_groups
-    return true unless @assessment.has_groups?
+  def validateHandinForGroups_forHTML
+    validity = validateHandinForGroups
 
-    submitter_aud = @assessment.aud_for(@cud.id)
-    return true unless submitter_aud
-    group = submitter_aud.group
-    return true unless group
-
-    group.assessment_user_data.each do |aud|
-      unless aud.group_confirmed
-        flash[:error] = "You cannot submit until all group members confirm their group membership"
-        return false
-      end
-
-      next unless @assessment.max_submissions != -1
-
-      submission_count = aud.course_user_datum.submissions.where(assessment: @assessment).size
-      next unless submission_count >= @assessment.max_submissions
-
-      flash[:error] = "A member of your group has reached the submission limit for this assessment"
-      return false
+    case validity
+    when :valid
+      return true
+    when :awaiting_member_confirmation
+      msg = "You cannot submit until all group members confirm their group membership"
+    when :group_submission_limit_exceeded
+      msg = "A member of your group has reached the submission limit for this assessment"
     end
 
-    true
-  end
-
-  ##
-  # this function returns a list of the submissions created by this handin.
-
-  def saveHandin(sub)
-    unless @assessment.has_groups?
-      submission = @assessment.submissions.create(course_user_datum_id: @cud.id,
-                                                  submitter_ip: request.remote_ip)
-      submission.save_file(sub)
-      return [submission]
-    end
-
-    aud = @assessment.aud_for @cud.id
-    group = aud.group
-    if group.nil?
-      submission = @assessment.submissions.create(course_user_datum_id: @cud.id,
-                                                  submitter_ip: request.remote_ip)
-      submission.save_file(sub)
-      return [submission]
-    end
-
-    submissions = []
-    ActiveRecord::Base.transaction do
-      group.course_user_data.each do |cud|
-        submission = @assessment.submissions.create(course_user_datum_id: cud.id,
-                                                    submitter_ip: request.remote_ip)
-        submission.save_file(sub)
-        submissions << submission
-      end
-    end
-    submissions
+    flash[:error] = msg
+    return false
   end
 
   def set_handin
