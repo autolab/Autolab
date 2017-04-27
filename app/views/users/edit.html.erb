@@ -19,10 +19,6 @@
 	<br>
 
   <%= render partial: "fields", locals: {f: f} %>
-
-  <% if current_user.administrator? then %>
-		<%= f.check_box :administrator, help_text: "Administrators have total access to change anything in the system." %>
-  <% end %>
   
 
   <%= f.submit 'Save Changes', { :class=>"btn primary"} %>
