@@ -19,11 +19,10 @@
 
   <div class="col l6">
     <%= f.text_field :display_name,
-      help_text: "Name that will be displayed on the course home page. E.g.,
-      'Malloc Lab'" %>
+      help_text: "Name that will be displayed on the course home page.", placeholder: "Malloc Lab" %>
 
 
-    <div class="form-group">
+    <div class="input-field">
       <%= f.label :category_name, { :class=>"control-label" } %>
       <%= f.collection_select :category_name, @course.assessment_categories, :to_s, :to_s, {selected: @assessment.category_name}  %>
       <p>or</p>
