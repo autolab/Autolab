@@ -20,7 +20,6 @@
 
 <%= f.score_adjustment_input :late_penalty, optional: true, help_text: "The penalty applied to late submissions after a student runs out of grace days. It represents an amount of points or a percentage of the total score removed per day, and must be a non-negative number. This field can be overriden on a per-assessment basis.", placeholder: "E.g. 15%" %>
 
-
 <%= f.text_field :version_threshold, help_text: "If a submission's version is greater than this threshold, it is
   penalized according to the version penalty. If set to -1, no submissions are penalized. This is required, but can be overridden on a per-assessment basis.", placeholder: "E.g. 10" %>
 
