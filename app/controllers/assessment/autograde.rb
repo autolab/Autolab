@@ -76,7 +76,7 @@ module AssessmentAutograde
           redirect_to([@course, @assessment, :submissions]) && return
         elsif job < 0 # autograding failed
           failed_jobs += 1
-          failed_list += "#{@submission.filename}: autograding error.<br>"
+          failed_list += "#{submission.filename}: autograding error.<br>"
         end
       else
         failed_jobs += 1
@@ -119,7 +119,7 @@ module AssessmentAutograde
           redirect_to([@course, @assessment, :submissions]) && return
         elsif job < 0 # autograding failed
           failed_jobs += 1
-          failed_list += "#{@submission.filename}: autograding error.<br>"
+          failed_list += "#{submission.filename}: autograding error.<br>"
         end
       else
         failed_jobs += 1

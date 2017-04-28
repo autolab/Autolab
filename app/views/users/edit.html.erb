@@ -1,5 +1,7 @@
+<br><br>
+
 <h2>Editing Account Details for <%= @user.email %></h2>
-<%= form_for @user, url: user_path(@user) do |f| %>
+<%= form_for @user, url: user_path(@user), builder: FormBuilderWithDateTimeInput do |f| %>
 
 <% if @user.errors.any? %>
 	<div id="error_explanation">
@@ -14,25 +16,16 @@
 	</div>
 <% end %>
 
-<table width=70% class="verticalTable" >
-  <tr><th>Email</th><td><%= f.email_field :email, readonly: true %></td></tr>
-	
-  <tr><th>First name: </th><td><%= f.text_field :first_name %></td></tr>
+	<br>
 
-  <tr><th>Last name: </th><td><%= f.text_field :last_name %></td></tr>
-
-  <% if current_user.administrator? then %>
-		<tr><th>Administrator?</th><td><%= f.check_box :administrator %><label for="user_administrator"></label>
-			    </p></td></tr>
-  <% end %>
+  <%= render partial: "fields", locals: {f: f} %>
   
-</table>
 
   <%= f.submit 'Save Changes', { :class=>"btn primary"} %>
 <% end %>
 
 <% if current_user.administrator? %>
-<hr>
+<br> <br><hr><br>
 <h3> Admin Only</h3>
   <%= link_to raw('<span class="btn">Delete User</span>'), user_path(@user), method: :delete, confirm: "Are you sure!?" %>
 <% end %> 

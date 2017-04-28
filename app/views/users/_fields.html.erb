@@ -1,0 +1,13 @@
+<%= f.email_field :email, disabled: true, placeholder: "johndoe@example.com" %>
+	
+<%= f.text_field :first_name, placeholder: "John" %>
+
+<%= f.text_field :last_name, placeholder: "Doe" %>
+
+<%= f.text_field :school, placeholder: "School of Computer Science" %>
+
+<%= f.text_field :major, placeholder: "Computer Science" %>
+
+<% if current_user.administrator? then %>
+	<%= f.check_box :administrator, help_text: "Administrators have total access to change anything in the system." %>
+<% end %>
