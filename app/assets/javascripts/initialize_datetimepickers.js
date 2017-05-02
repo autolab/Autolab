@@ -21,8 +21,8 @@
 
     for (var i = 0; i < dateElts.length; i++) {
       var defaultDate = new Date(moment())
-      if ($(datetimeElts[i]).val()) {
-        defaultDate = new Date(moment($(datetimeElts[i]).val()).format("MMMM D YYYY"))
+      if ($(dateElts[i]).val()) {
+        defaultDate = new Date(moment($(dateElts[i]).val()).format("MMMM D YYYY"))
       }
 
       $(dateElts[i]).flatpickr({
