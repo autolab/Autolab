@@ -541,7 +541,7 @@ class AssessmentsController < ApplicationController
 
       redirect_to(tab_index) && return
     rescue ActiveRecord::RecordInvalid => invalid
-      flash[:error] = invalid.message
+      flash[:error] = invalid.message.sub! "Validation failed: ", ""
 
       redirect_to(tab_index) && return
     end
