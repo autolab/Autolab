@@ -110,6 +110,10 @@ class Api::V1::AssessmentsController < Api::V1::BaseApiController
       raise ApiError.new("Required parameter 'submission' not found", :bad_request)
     end
 
+    if not params[:submission].has_key?("file")
+      raise ApiError.new("Required parameter 'submission['file']' not found", :bad_request)
+    end
+
     # validate Handin
     validity = validateHandin(params[:submission]["file"].size,
                               params[:submission]["file"].content_type,
