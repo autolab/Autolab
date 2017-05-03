@@ -151,7 +151,7 @@ class Api::V1::AssessmentsController < Api::V1::BaseApiController
       submissions = saveHandin(params[:submission])
     rescue StandardError => e
       # TODO: log error
-      raise ApiError.new("Unexpected error during submission handin", :internal_server_error)
+      raise ApiError.new("Unexpected error during submission handin.\nDetails: #{e.message}", :internal_server_error)
     end
 
     # autograde the submission
