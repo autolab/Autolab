@@ -535,9 +535,16 @@ class AssessmentsController < ApplicationController
       @assessment.save!
     end
 
-    flash[:success] = "Saved!" if @assessment.update!(edit_assessment_params)
 
-    redirect_to(tab_index) && return
+    begin
+      flash[:success] = "Saved!" if @assessment.update!(edit_assessment_params)
+
+      redirect_to(tab_index) && return
+    rescue ActiveRecord::RecordInvalid => invalid
+      flash[:error] = invalid.message.sub! "Validation failed: ", ""
+
+      redirect_to(tab_index) && return
+    end
   end
 
   action_auth_level :releaseAllGrades, :instructor

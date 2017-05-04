@@ -435,8 +435,9 @@ private
   end
 
   def verify_dates_order
-    errors.add :start_at, "must be before time assessment is due at" if start_at > due_at
-    errors.add :due_at, "must be before time assessment ends at" if due_at > end_at
+    errors.add :due_at, "must be after the start date" if start_at > due_at
+    errors.add :end_at, "must be after the due date" if due_at > end_at
+    errors.add :grading_deadline, "must be after the end date" if end_at > grading_deadline
   end
 
   def handin_directory_and_filename_or_disable_handins
