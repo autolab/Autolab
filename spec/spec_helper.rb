@@ -1,4 +1,5 @@
 require "factory_girl_rails"
+require "webmock/rspec"
 require 'simplecov'
 
 # Report to CodeClimate test coverage tool.
