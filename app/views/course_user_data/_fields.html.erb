@@ -1,8 +1,8 @@
 <%= f.fields_for :user, cud.user do |u| %>
-    <%= u.email_field :email, disabled: true, placeholder: "johndoe@example.com" %>
+    <%= u.email_field :email, disabled: false, placeholder: "johndoe@example.com" %>
 
-    <%= u.text_field :first_name, disabled: true, placeholder: "John" %>
-    <%= u.text_field :last_name, disabled: true, placeholder: "Doe" %>
+    <%= u.text_field :first_name, disabled: false, placeholder: "John" %>
+    <%= u.text_field :last_name, disabled: false, placeholder: "Doe" %>
 
   <% end %>
 
