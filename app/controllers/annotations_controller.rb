@@ -26,13 +26,6 @@ class AnnotationsController < ApplicationController
       end 
     end
 
-    findanno = Annotation.where('submission_id = ? AND problem_id = ?', params[:submission_id] , annotation_params[:problem_id])
-    if !findanno.blank?
-       render :status => 422, :text => "bad data"
-       return
-    end
-
-
 
     annotation = @submission.annotations.new(annotation_params)
 
