@@ -1,10 +1,16 @@
-![Welcome to Autolab](https://github.com/autolab/Autolab/blob/master/public/images/autolab_logo.png)
+<a href="https://autolab-slack.herokuapp.com">
+  <img src="http://svgshare.com/i/2Mf.svg" width="380px" height="100px">
+</a>
 
 Autolab is a course management service, initially developed by a team of students at Carnegie Mellon University, that enables instructors to offer autograded programming assignments to their students over the Web. The two key ideas in Autolab are *autograding*, that is, programs evaluating other programs, and *scoreboards*.
 
 Autolab also provides other services that instructors expect in a course management system, including gradebooks, rosters, handins/handouts, lab writeups, code annotation, manual grading, late penalties, grace days, cheat checking, meetings, partners, and bulk emails.
 
 Since 2010, Autolab has had a transformative impact on education at CMU. Each semester, it is used by about 3,000 CMU students in courses in Pittsburgh, Silicon Valley, Qatar, and Rwanda. In Fall, 2014, we are releasing Autolab as an open-source system, where it will be available to schools all over the world, and hopefully have the same impact it's had at CMU.
+
+<a href="https://autolab-slack.herokuapp.com">
+  <img src="http://svgshare.com/i/2Me.svg" width="170px" height="44px">
+</a>
 
 ## Installation
 
