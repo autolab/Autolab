@@ -1,4 +1,4 @@
-<a href="https://autolab-slack.herokuapp.com">
+<a href="http://autolabproject.com">
   <img src="http://svgshare.com/i/2Mf.svg" width="380px" height="100px">
 </a>
 
