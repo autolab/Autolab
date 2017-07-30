@@ -9,7 +9,7 @@ Autolab also provides other services that instructors expect in a course managem
 Since 2010, Autolab has had a transformative impact on education at CMU. Each semester, it is used by about 3,000 CMU students in courses in Pittsburgh, Silicon Valley, Qatar, and Rwanda. In Fall, 2014, we are releasing Autolab as an open-source system, where it will be available to schools all over the world, and hopefully have the same impact it's had at CMU.
 
 <a href="https://autolab-slack.herokuapp.com">
-  <img src="http://svgshare.com/i/2Me.svg" width="170px" height="44px">
+  <img src="http://svgshare.com/i/2Rm.svg" width="170px" height="44px">
 </a>
 
 ## Installation
