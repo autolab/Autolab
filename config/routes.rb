@@ -1,6 +1,11 @@
 Autolab3::Application.routes.draw do
   use_doorkeeper
 
+  namespace :oauth, { defaults: {format: :json} } do
+    get 'device_flow_init', to: 'device_flow#init'
+    get 'device_flow_authorize', to: 'device_flow#authorize'
+  end
+
   namespace :api, { defaults: {format: :json} } do
     namespace :v1 do
       get 'user', to: 'user#show'
