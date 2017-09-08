@@ -467,7 +467,6 @@ module AssessmentAutograde
       else
         scores = parseAutoresult(autoresult, true)
       end
-      fail "Empty autoresult string." if scores.keys.length == 0
 
       # Grab the autograde config info
       @autograde_prop = @assessment.autograder
