@@ -18,6 +18,29 @@ class AnnotationsController < ApplicationController
   action_auth_level :create, :course_assistant
   def create
     annotation = @submission.annotations.new(annotation_params)
+
+    if !annotation_params[:problem_id].blank?
+      findScore = Score.where('submission_id = ? AND problem_id = ?', params[:submission_id] , annotation_params[:problem_id])
+    else
+      annotation.save
+      respond_with(@course, @assessment, @submission, annotation)
+      return
+    end
+
+    if findScore.blank?
+      score = Score.new
+      score.submission_id =  params[:submission_id]
+      score.score = annotation_params[:value]
+      score.problem_id = annotation_params[:problem_id]
+      score.released = 0
+      score.grader_id = @cud.id
+      score.save
+    else
+      findScore.first.score += annotation_params[:value].to_f
+      findScore.first.grader_id = @cud.id
+      findScore.first.save
+    end
+
     annotation.save
     respond_with(@course, @assessment, @submission, annotation)
   end
@@ -25,6 +48,31 @@ class AnnotationsController < ApplicationController
   # PUT /:course/annotations/1.json
   action_auth_level :update, :course_assistant
   def update
+
+    if !annotation_params[:problem_id].blank?
+      findScore = Score.where('submission_id = ? AND problem_id = ?', params[:submission_id] , annotation_params[:problem_id])
+    else
+      annotation.save
+      respond_with(@course, @assessment, @submission, annotation)
+      return
+    end
+
+    if findScore.blank?
+      score = Score.new
+      score.submission_id =  params[:submission_id]
+      score.score = annotation_params[:value]
+      score.problem_id = annotation_params[:problem_id]
+      score.released = 0
+      score.grader_id = @cud.id
+      score.save
+    else
+      findScore.first.score -= @annotation.value.to_f
+      findScore.first.score += annotation_params[:value].to_f
+      findScore.first.grader_id = @cud.id
+      findScore.first.save
+    end
+
+
     @annotation.update(annotation_params)
     respond_with(@course, @assessment, @submission, @annotation) do |format|
       format.json { render json: @annotation }
@@ -34,6 +82,15 @@ class AnnotationsController < ApplicationController
   # DELETE /:course/annotations/1.json
   action_auth_level :destroy, :course_assistant
   def destroy
+<<<<<<< HEAD
+=======
+    # remove score entry and delete annoation
+    if !@annotation.problem_id.blank?
+      findScore = Score.where('submission_id = ? AND problem_id = ?', @annotation.submission_id , @annotation.problem_id)
+      findScore.first.score -= @annotation.value
+      findScore.first.save
+    end
+>>>>>>> Added point deductions on annotations
     @annotation.destroy
     head :no_content
   end
