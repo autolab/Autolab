@@ -52,13 +52,12 @@ class AnnotationsController < ApplicationController
     if !annotation_params[:problem_id].blank?
       findScore = Score.where('submission_id = ? AND problem_id = ?', params[:submission_id] , annotation_params[:problem_id])
     else
-
-        if annotation_params[:value].to_f != 0
-          findScore = Score.where('submission_id = ? AND problem_id = ?', params[:submission_id] , annotation_params[:problem_id])
-        else
-          @annotation.save
-          respond_with(@course, @assessment, @submission, @annotation)
-        end
+      if annotation_params[:value].to_f != 0
+        findScore = Score.where('submission_id = ? AND problem_id = ?', params[:submission_id] , annotation_params[:problem_id])
+      else
+        @annotation.save
+        respond_with(@course, @assessment, @submission, @annotation)
+      end
     end
 
 
