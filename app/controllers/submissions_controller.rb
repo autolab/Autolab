@@ -321,27 +321,6 @@ class SubmissionsController < ApplicationController
     @problemGrades = {}
 
 
-    @annotations.delete_if do |annotation|
-      problem = annotation.problem ? annotation.problem.name : "General"
-      if problem != "General" then
-        out = Score.where("submission_id = ? AND  problem_id = ?", @submission.id, Problem.where("assessment_id = ? AND name = ?", @assessment.id, problem).first.id).first.released
-        if out || (@cud.instructor || @cud.course_assistant) then
-          false
-        else
-          if(@assessment.grading_deadline.past?) then 
-            false
-          else
-            true
-          end
-        end
-      else
-        if(@assessment.grading_deadline.past? || (@cud.instructor || @cud.course_assistant)) then 
-          false
-        else
-          true
-        end
-      end 
-    end
     # extract information from annotations
     @annotations.each do |annotation|
       description = annotation.comment

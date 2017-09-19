@@ -47,12 +47,15 @@
     <h3 class="annotationHeader">Summary</h3>
     <% if @problemSummaries.empty? then %>
       <% if (@cud.instructor? or @cud.course_assistant?) then %>
-        <p>Hover over a line of code and click the green box to annotate.</p>
+        <p>Hover over a line of code and click the green box to annotate.<br><br>Note: Point tweaks here don't affect the gradebook.</p>
       <% else %>
         <p>Nothing to summarize yet.</p>
       <% end %>
     <% else %>
       <div id="summaryList">
+        <% if (@cud.instructor? or @cud.course_assistant?) then %>
+          <div class="problemListItem">Note: Point tweaks here don't affect the gradebook.</div>
+        <% end %>
         <% @problemSummaries.each do |problem, descriptTuples| %>
           <hr>
           <div class="problemListItem"> <%= "Problem: #{problem} [#{plus_fix(@problemGrades[problem])}]" %>
