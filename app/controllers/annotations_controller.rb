@@ -34,10 +34,6 @@ class AnnotationsController < ApplicationController
   # DELETE /:course/annotations/1.json
   action_auth_level :destroy, :course_assistant
   def destroy
-    # remove score entry and delete annoation
-    if !@annotation.problem_id.blank?
-      Score.where('submission_id = ? AND problem_id = ?', @annotation.submission_id , @annotation.problem_id).first.destroy
-    end
     @annotation.destroy
     head :no_content
   end

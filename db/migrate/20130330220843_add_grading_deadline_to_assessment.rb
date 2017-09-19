@@ -1,6 +1,6 @@
 class AddGradingDeadlineToAssessment < ActiveRecord::Migration
   def self.up
-    add_column :assessments, :grading_deadline, :datetime, :null => false
+    add_column :assessments, :grading_deadline, :datetime, :null => false, :default => Time.now
     Assessment.find_each do |asmt|
       asmt.update_attribute(:grading_deadline, asmt.submit_until)
     end
