@@ -82,7 +82,7 @@ ActiveRecord::Schema.define(version: 20170101140555) do
     t.integer  "version_threshold"
     t.integer  "late_penalty_id"
     t.integer  "version_penalty_id"
-    t.datetime "grading_deadline",                        null: false
+    t.datetime "grading_deadline",        default: '2017-09-19 02:44:52', null: false
     t.boolean  "has_autograde_old"
     t.boolean  "has_scoreboard_old"
     t.boolean  "has_svn"
@@ -139,7 +139,11 @@ ActiveRecord::Schema.define(version: 20170101140555) do
     t.string   "nickname"
     t.boolean  "course_assistant", default: false
     t.integer  "tweak_id"
+<<<<<<< HEAD
     t.integer  "user_id",                          null: false
+=======
+    t.integer  "user_id",          default: 0,     null: false
+>>>>>>> fixed annotation deletion also deleting score bug and added a note for instructors
   end
 
   create_table "courses", force: :cascade do |t|
