@@ -237,17 +237,15 @@ var initializeAnnotationsForCode = function() {
     var valueStr = annObj.value? annObj.value.toString() : "None";
     var commentStr = annObj.comment;
 
-    $('#ann-box-' + annObj.id).find('.edit').show();
-    $('#ann-box-' + annObj.id).find('.body').show();
     if (annotationMode === "PDF") {
       $('#ann-box-' + annObj.id).find('.score-box').html("<div>Problem: "+problemStr+"</div><div>Score: "+valueStr+"</div>");
-      $('#ann-box-' + annObj.id).find('.score-box').show();
     }
     else {
       $('#ann-box-' + annObj.id).find('.score-box').html("<span>"+problemStr+"</span><span>"+valueStr+"</span>");
     }
-
-    $('#ann-box-' + annObj.id).find('.body').html(commentStr);
+    $('#ann-box-' + annObj.id).find('.edit').show();
+    $('#ann-box-' + annObj.id).find('.body').show();
+    $('#ann-box-' + annObj.id).find('.score-box').show();
 
   }
 
