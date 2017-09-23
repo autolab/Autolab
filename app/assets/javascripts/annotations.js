@@ -435,7 +435,7 @@ var initializeAnnotationsForCode = function() {
       class: "col l6 comment",
       type: "text",
       name: "comment",
-      placeholder: "Comments Here",
+      placeholder: "Comments FLOOP FLAGG BOOP BOOP",
       maxlength: "255",
       value: commentStr
     });
@@ -458,7 +458,7 @@ var initializeAnnotationsForCode = function() {
       value: valueStr
     });
     var problemSelect = elt("select", {
-      class: "col l2",
+      class: "col l2 browser-default",
       name: "problem"
     }, elt("option", {
       value: ""
