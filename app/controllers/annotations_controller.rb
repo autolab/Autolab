@@ -67,13 +67,16 @@ class AnnotationsController < ApplicationController
     end
 
     if findScore.blank?
+      print("\n\nFlaglle\n\n")
       score = Score.new
       score.submission_id =  params[:submission_id]
       score.score = annotation_params[:value]
       score.problem_id = annotation_params[:problem_id]
       score.released = 0
       score.grader_id = @cud.id
+      print("\n\nFlag\n\n")
       score.save
+      print("\n\nFlag\n\n")
     else
       # If we didn't change the problem number, nothing to worry about
       if (annotation_params[:problem_id] == @annotation.problem_id)
