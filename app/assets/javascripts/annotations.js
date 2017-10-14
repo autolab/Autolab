@@ -272,7 +272,7 @@ var initializeAnnotationsForCode = function() {
       placeholder: "Score Here"
     });
     var problemSelect = elt("select", {
-      class: "col l2 browser-default",
+      class: "col l3 browser-default",
       name: "problem"
     }, elt("option", {
       value: ""
@@ -458,7 +458,7 @@ var initializeAnnotationsForCode = function() {
       value: valueStr
     });
     var problemSelect = elt("select", {
-      class: "col l2 browser-default",
+      class: "col l3 browser-default",
       name: "problem"
     }, elt("option", {
       value: ""
