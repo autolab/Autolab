@@ -52,27 +52,51 @@ class AnnotationsController < ApplicationController
     if !annotation_params[:problem_id].blank?
       findScore = Score.where('submission_id = ? AND problem_id = ?', params[:submission_id] , annotation_params[:problem_id])
     else
-      annotation.save
-      respond_with(@course, @assessment, @submission, annotation)
-      return
+
+        if annotation_params[:value].to_f != 0
+          print("\n\nFlag\n\n")
+          findScore = Score.where('submission_id = ? AND problem_id = ?', params[:submission_id] , annotation_params[:problem_id])
+          print("\n\nFlag\n\n")
+        else
+          @annotation.save
+          respond_with(@course, @assessment, @submission, @annotation)
+        end
+    end
+
+
+
+    if !@annotation.problem_id.blank?
+      oldScore = Score.where('submission_id = ? AND problem_id = ?', params[:submission_id] , @annotation.problem_id)
     end
 
     if findScore.blank?
+      print("\n\nFlaglle\n\n")
       score = Score.new
       score.submission_id =  params[:submission_id]
       score.score = annotation_params[:value]
       score.problem_id = annotation_params[:problem_id]
       score.released = 0
       score.grader_id = @cud.id
+      print("\n\nFlag\n\n")
       score.save
+      print("\n\nFlag\n\n")
     else
-      findScore.first.score -= @annotation.value.to_f
-      findScore.first.score += annotation_params[:value].to_f
-      findScore.first.grader_id = @cud.id
-      findScore.first.save
+      # If we didn't change the problem number, nothing to worry about
+      if (annotation_params[:problem_id] == @annotation.problem_id)
+        findScore.first.score -= @annotation.value.to_f
+        findScore.first.score += annotation_params[:value].to_f
+        findScore.first.grader_id = @cud.id
+        findScore.first.save
+      # But if we did, we need to credit the points back to the original problem
+      else
+        findScore.first.score += annotation_params[:value].to_f
+        findScore.first.grader_id = @cud.id
+        findScore.first.save
+        oldScore.first.score -= @annotation.value.to_f
+        oldScore.first.grader_id = @cud.id
+        oldScore.first.save
+      end
     end
-
-
     @annotation.update(annotation_params)
     respond_with(@course, @assessment, @submission, @annotation) do |format|
       format.json { render json: @annotation }
