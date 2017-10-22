@@ -34,7 +34,6 @@ pre code {
 }
 #code-list > li {
   position: relative;
-  width: 80ch;
   background: white;
   padding: 3px 1px;
   padding-left: 6px;
@@ -42,12 +41,11 @@ pre code {
 }
 
 #code-list > li > code {
-  width: 80ch;
   position: absolute;
   left: 0;
 }
 #code-list > li > div {
-  width: 80ch;
+
 }
 
 .add-annotation-btn {
