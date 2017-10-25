@@ -15,6 +15,10 @@ var highlightLines = function(highlight) {
   });
 };
 
+var reloadSummary = function() {
+  window.location.reload()
+};
+
 $("#highlightLongLines").click(function() {
   highlightLines(this.checked);
 });
@@ -107,6 +111,8 @@ var initializeAnnotationsForCode = function() {
     var valueStr = annObj.value? annObj.value.toString() : "None";
     var commentStr = annObj.comment;
 
+    var minimized = false
+
     var grader = elt("span", {
       class: "grader"
     }, annObj.submitted_by + " says:");
@@ -124,10 +130,14 @@ var initializeAnnotationsForCode = function() {
       class: "delete"
     }, elt("i", {class: "material-icons"}, "delete"));
 
+    var min = elt("span", {
+      class: "delete"
+    }, elt("i", {class: "material-icons"}, "delete"));
+
     if (isInstructor) {
       var header = elt("div", {
         class: "header"
-      }, grader, del, edit);
+      }, grader, del, edit, min);
     } else {
       var header = elt("div", {
         class: "header"
@@ -151,6 +161,26 @@ var initializeAnnotationsForCode = function() {
           $(box).remove();
         }
       });
+      return false;
+    });
+
+
+    $(box).on("click", function(e) {
+      $(body).show();
+      $(min).show();
+      $(score).show();
+      $(header).show();
+      minimized = false
+      return false;
+    });
+
+
+    $(min).on("click", function(e) {
+      $(body).hide();
+      $(min).hide();
+      $(score).hide();
+      $(header).hide();
+      minimized = true
       return false;
     });
 
@@ -188,10 +218,14 @@ var initializeAnnotationsForCode = function() {
       class: "delete"
     }, elt("i", {class: "material-icons"}, "delete"));
 
+    var min = elt("span", {
+      class: "delete"
+    }, elt("i", {class: "material-icons"}, "delete"));
+
     if (isInstructor) {
       var header = elt("div", {
         class: "header"
-      }, grader, del, edit);
+      }, grader, del, edit, min);
     } else {
       var header = elt("div", {
         class: "header"
@@ -215,6 +249,14 @@ var initializeAnnotationsForCode = function() {
           $(box).remove();
         }
       });
+      return false;
+    });
+
+    $(min).on("click", function(e) {
+      $(body).hide();
+      $(min).hide();
+      $(score).hide();
+      window.alert("Floop Dee Doodle!")
       return false;
     });
 
