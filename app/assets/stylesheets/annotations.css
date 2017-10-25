@@ -98,6 +98,7 @@ pre code {
 }
 
 .ann-box > .header > .delete,
+.ann-box > .header > .minimize,
  .ann-box > .header > .edit {
   border: 1px solid transparent;
   display: block;
