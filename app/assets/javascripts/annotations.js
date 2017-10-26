@@ -111,7 +111,7 @@ var initializeAnnotationsForCode = function() {
     var valueStr = annObj.value? annObj.value.toString() : "None";
     var commentStr = annObj.comment;
 
-    var minimized = false
+    var minimized = true
 
     var grader = elt("span", {
       class: "grader"
@@ -174,6 +174,10 @@ var initializeAnnotationsForCode = function() {
       return false;
     });
 
+    $(body).hide();
+    $(min).hide();
+    $(score).hide();
+    $(header).hide();
 
     $(min).on("click", function(e) {
       $(body).hide();
