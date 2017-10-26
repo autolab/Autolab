@@ -76,7 +76,7 @@ pre code {
 }
 
 .ann-box {
-  border: 1px solid #ddd;
+  border: 3px solid #ddd;
   border-radius: .25em;
   margin: .5em;
   font-family: 'Source Sans Pro', sans-serif;
@@ -85,7 +85,7 @@ pre code {
 }
 
 .ann-box:hover {
-  border: 1px solid #bbb;
+  border: 3px solid #bbb;
 }
 
 .ann-box > .header {

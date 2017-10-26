@@ -132,7 +132,7 @@ var initializeAnnotationsForCode = function() {
 
     var min = elt("span", {
       class: "delete"
-    }, elt("i", {class: "material-icons"}, "delete"));
+    }, elt("i", {class: "material-icons"}, "remove"));
 
     if (isInstructor) {
       var header = elt("div", {
