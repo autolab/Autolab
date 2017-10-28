@@ -60,14 +60,17 @@ namespace :autolab do
           a.handin_filename = "handin.c"
           a.course_id = course.id
 
-          assessment_dir = File.join(course_dir, a.name)
-          assessment_handin_dir = File.join(assessment_dir, a.handin_directory)
-          FileUtils.mkdir_p(assessment_handin_dir)
+          a.construct_folder
 
           # 1-5 day buffer between assessments (in this category)
           start = a.due_at + (1 + rand(5)).day
         end
       end
+    end
+
+    # load config files for each assessment now that they've been created
+    course.assessments.each do |a|
+      a.load_config_file
     end
   end
 
