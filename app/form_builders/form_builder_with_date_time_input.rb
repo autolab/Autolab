@@ -13,6 +13,11 @@ class FormBuilderWithDateTimeInput < ActionView::Helpers::FormBuilder
 
       # DEPRECATED: add form-control class (for Bootstrap styling) and pass on to Rails
       options[:class] = "#{options[:class]}"
+
+      unless options.include?(:placeholder)
+          options[:placeholder] = ""
+      end
+
       field = super name, *(args + [options])
 
       wrap_field name, field, options[:help_text], options[:display_name]
@@ -48,9 +53,9 @@ class FormBuilderWithDateTimeInput < ActionView::Helpers::FormBuilder
 
     field = super name, *(args + [options])
 
-    @template.content_tag :div, class: "checkbox-input" do
-      field + label(name, display_name, class: "control-label") +
-        help_text(name, options[:help_text])
+    @template.content_tag :p do
+          field + label(name, display_name, class: "control-label") +
+            help_text(name, options[:help_text])
     end
   end
 

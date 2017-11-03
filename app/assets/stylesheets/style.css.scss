@@ -741,14 +741,17 @@ body.autolab {
 
 input[type=text],
 input[type=email],
-input[type=password], {
+input[type=password],
+textarea {
   /*border: none;*/
   height: auto;
 	margin-top: 0.8rem;
 	margin-bottom: -0.8rem;
-  padding: 10px 8px;
-  border-bottom: 1px #CCC;
+  padding: 5px 0 5px 0;
+  border-color: #CCC;
 	box-shadow: 0 1px 0 0 #CCC;
+    outline: none;
+    font-weight: 400;
 }
 
 input[type=text]:focus,
@@ -766,11 +769,6 @@ input[type=checkbox] {
 input[type=search] {
 	border-bottom: 1px #CCC;
 	box-shadow: 0 1px 0 0 #CCC;
-}
-
-textarea {
-  border-bottom: 1px #CCC;
-	box-shadow: 0 1px 0 0 #CCC !important;
 }
 
 .flatpickr-input {
@@ -805,7 +803,6 @@ textarea {
 	margin-top: 2rem !important;
   label.control-label {
     font-size: 20px;
-    margin-left: 4px;
 	}
 
   label.active {
@@ -821,7 +818,6 @@ input[type=text], input[type=email] {
 .help-block {
   color: black;
   font-size: 15px;
-  margin-left: 8px;
   margin-top: 2px;
   margin-bottom: 30px;
 }
