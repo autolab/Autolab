@@ -24,14 +24,6 @@
   </head>
 
   <body class="autolab">
-    <div id="fb-root"></div>
-    <script>(function(d, s, id) {
-      var js, fjs = d.getElementsByTagName(s)[0];
-      if (d.getElementById(id)) return;
-      js = d.createElement(s); js.id = id;
-      js.src = "//connect.facebook.net/en_US/sdk.js#xfbml=1&version=v2.3&appId=259908887444831";
-      fjs.parentNode.insertBefore(js, fjs);
-    }(document, 'script', 'facebook-jssdk'));</script>
     <div class="page-wrapper">
       <%= render "layouts/navbar" %>
 
@@ -52,21 +44,21 @@
           <%= yield %>
         </div>
         <!-- End Content -->
-        <!-- Footer -->
-        <%= render "layouts/footer" %>
-        <!-- End Footer -->
       </div>
       <!-- End Page Body -->
-
     </div>
-
+    <!-- Footer -->
+    <div id="footer">
+          <a href="http://autolabproject.com">Autolab Project</a>
+          · <a href="/contact">Contact</a>
+          · <%= link_to "Logout", destroy_user_session_path, method: :delete %>
+    </div>
+    <!-- End Footer -->
 
     <%= external_javascript_include_tag "jquery", "2.1.1" %>
     <%= content_for :js_widget_patch %>
     <%= external_javascript_include_tag "bootstrap", "3.0.0" %>
     <%= javascript_include_tag 'application' %>
-    <!-- Place this tag right after the last button or just before your close body tag. -->
-    <script async defer id="github-bjs" src="https://buttons.github.io/buttons.js"></script>
     <%= content_for :javascripts %>
 
   </body>

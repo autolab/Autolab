@@ -396,29 +396,27 @@ input[type="file"].upload_embedded {
 }
 
 /* Footer - Information, About, etc. Should be in a <footer> tag. */
-div#footer {
+div#footer{
   clear: both;
-  font-size: 14px;
-  color: #888;
+  font-size: 12px;
+  color: #ccc;
   height: 42px;
   padding: 0 10px;
+<<<<<<< HEAD
   margin-top: 16px;
   border-top: 1px solid #fafafa;
 }
 
 div#footer .right {
   padding-top: 14px;
+=======
+>>>>>>> parent of 8b02a39... New footer with github and fb links
 }
 
 div#footer a {
   display: inline-block;
   padding: 12px;
   color: #666;
-}
-
-div#footer div.fb-like.fb_iframe_widget {
-  vertical-align: top;
-  margin-left: 8px;
 }
 
 div#footer a:hover {
