@@ -27,6 +27,7 @@
   </head>
 
   <body class="autolab">
+<<<<<<< HEAD
     <div id="fb-root"></div>
     <script>(function(d, s, id) {
       var js, fjs = d.getElementsByTagName(s)[0];
@@ -43,6 +44,8 @@
     <!-- Flatpickr Datetimepicker JS (lightweight file) -->
     <%= javascript_include_tag "https://unpkg.com/flatpickr" %>
 
+=======
+>>>>>>> parent of 8b02a39... New footer with github and fb links
     <div class="page-wrapper">
       <%= render "layouts/navbar" %>
 
@@ -72,15 +75,28 @@
           <%= yield %>
         </div>
         <!-- End Content -->
-        <%= render "layouts/footer" %>
+        <div id="footer">
+        <a href="http://autolabproject.com">Autolab Project</a>
+        · <a href="/contact">Contact</a>
+        <% if @course %>
+        · <%= link_to "Need Help?", [:report_bug, @course] %>
+        <% end %>
+        </div>
         <!-- End Footer -->
       </div>
       <!-- End Page Body -->
       <!-- Footer -->
     </div>
 
+<<<<<<< HEAD
 
     <script async defer id="github-bjs" src="https://buttons.github.io/buttons.js"></script>
+=======
+    <%= external_javascript_include_tag "jquery", "2.1.1" %>
+    <%= content_for :js_widget_patch %>
+    <%= external_javascript_include_tag "bootstrap", "3.0.0" %>
+    <%= javascript_include_tag 'application' %>
+>>>>>>> parent of 8b02a39... New footer with github and fb links
     <%= content_for :javascripts %>
 
   </body>
