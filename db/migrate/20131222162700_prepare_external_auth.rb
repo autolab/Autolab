@@ -66,7 +66,8 @@ class PrepareExternalAuth < ActiveRecord::Migration
     if column_exists? :course_user_data, :user_id_backup then
       rename_column :course_user_data, :user_id_backup, :user_id
     else
-      add_column :course_user_data, :user_id, :integer, null: false
+      add_column :course_user_data, :user_id, :integer
+      change_column :course_user_data, :user_id, :integer, null: false
     end
 
     rename_column :course_user_data, :first_name, :first_name_backup
