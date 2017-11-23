@@ -110,6 +110,7 @@ namespace :autolab do
 
       :lecture => "1",
       :section => "Instructor",
+      :dropped => false,
 
       :instructor => true,
       :course_assistant => true,
@@ -135,6 +136,7 @@ namespace :autolab do
 
         cud.lecture = "1"
         cud.section = "None"
+        cud.dropped = false
 
         cud.instructor = false
         cud.course_assistant = false
