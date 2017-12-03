@@ -38,6 +38,10 @@
           </span>
     </label>
 
+    <p class="file_name">
+        <span id="file_name"></span>
+    </p>
+
     <% if @assessment.embedded_quiz_form_data.nil? %>
         <p class="help-text">
             Select to Upload a File.
@@ -55,7 +59,7 @@
 
 <script>
     document.getElementById("assessment_embedded_quiz_form").onchange = function(e) {
-        document.getElementById("file_name").value = document.getElementById("assessment_embedded_quiz_form").value.split(/(\\|\/)/g).pop();
+        document.getElementById("file_name").textContent = "File Selected: " + document.getElementById("assessment_embedded_quiz_form").value.split(/(\\|\/)/g).pop();
     }
 </script>
 
