@@ -260,7 +260,6 @@ var initializeAnnotationsForCode = function() {
       $(body).hide();
       $(min).hide();
       $(score).hide();
-      window.alert("Floop Dee Doodle!")
       return false;
     });
 
@@ -472,7 +471,6 @@ var initializeAnnotationsForCode = function() {
 
 
   var newEditAnnotationForm = function(lineInd, annObj) {
-
     var problemStr = annObj.problem_id? getProblemNameWithId(annObj.problem_id) : "General";
     var valueStr = annObj.value? annObj.value.toString() : "None";
     var commentStr = annObj.comment;
@@ -548,6 +546,7 @@ var initializeAnnotationsForCode = function() {
       var comment = commentInput.value;
       var value = valueInput.value;
       var problem_id = problemSelect.value;
+
       if (!comment) {
         newForm.appendChild(elt("div", null, "The comment cannot be empty"));
       } else {

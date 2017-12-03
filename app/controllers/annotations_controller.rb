@@ -53,7 +53,7 @@ class AnnotationsController < ApplicationController
       findScore = Score.where('submission_id = ? AND problem_id = ?', params[:submission_id] , annotation_params[:problem_id])
     else
 
-        if annotation_params[:value].to_f != 0
+        if annotation_params[:value].to_f != 0 && annotation_params[:value].to_f != None
           findScore = Score.where('submission_id = ? AND problem_id = ?', params[:submission_id] , annotation_params[:problem_id])
         else
           @annotation.save
