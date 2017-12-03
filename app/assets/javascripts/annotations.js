@@ -363,6 +363,9 @@ var initializeAnnotationsForCode = function() {
 
       if (!comment) {
         newForm.appendChild(elt("div", null, "The comment cannot be empty"));
+      }
+      else if(value != 0 && problem_id == 0) {
+        newForm.appendChild(elt("div", null, "Cannot assign score to general problem"));
       } else {
         submitNewAnnotation(comment, value, problem_id, lineInd, newForm);
       }
@@ -442,6 +445,9 @@ var initializeAnnotationsForCode = function() {
 
       if (!comment) {
         newForm.appendChild(elt("div", null, "The comment cannot be empty"));
+      }
+      else if(value != 0 && problem_id == 0) {
+        newForm.appendChild(elt("div", null, "Cannot assign score to general problem"));
       } else {
         var xRatio = xCord / $("#page-canvas-" + pageInd).attr('width');
         var yRatio = yCord / $("#page-canvas-" + pageInd).attr('height');
@@ -480,7 +486,7 @@ var initializeAnnotationsForCode = function() {
       class: "col l6 comment",
       type: "text",
       name: "comment",
-      placeholder: "Comments FLOOP FLAGG BOOP BOOP",
+      placeholder: "Comments Here",
       maxlength: "255",
       value: commentStr
     });
@@ -512,7 +518,6 @@ var initializeAnnotationsForCode = function() {
       class: "row",
       style: "margin-left:4px;"
     }, commentInput, valueInput, problemSelect);
-
 
     var submitButton = elt("input", {
       type: "submit",
@@ -549,6 +554,9 @@ var initializeAnnotationsForCode = function() {
 
       if (!comment) {
         newForm.appendChild(elt("div", null, "The comment cannot be empty"));
+      }
+      else if(value != 0 && problem_id == 0) {
+        newForm.appendChild(elt("div", null, "Cannot assign score to general problem"));
       } else {
         annObj.comment = comment;
         annObj.value = value;
@@ -560,7 +568,13 @@ var initializeAnnotationsForCode = function() {
     $(cancelButton).on('click', function() {
       updateAnnotationBox(annObj);
       $(newForm).remove();
-    })
+    });
+
+    $(submitButton).on('click', function (e) {
+      $(newForm).submit();
+      e.preventDefault();
+      return false;
+    });
 
     return newForm;
   }
