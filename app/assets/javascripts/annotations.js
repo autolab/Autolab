@@ -564,7 +564,13 @@ var initializeAnnotationsForCode = function() {
     $(cancelButton).on('click', function() {
       updateAnnotationBox(annObj);
       $(newForm).remove();
-    })
+    });
+
+    $(submitButton).on('click', function (e) {
+      $(newForm).submit();
+      e.preventDefault();
+      return false;
+    });
 
     return newForm;
   }
