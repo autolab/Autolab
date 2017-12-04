@@ -222,14 +222,18 @@ var initializeAnnotationsForCode = function() {
       class: "delete"
     }, elt("i", {class: "material-icons"}, "delete"));
 
-    var min = elt("span", {
+    // I (tjjohans) am keeping the minimize feature commented out because I'd
+    // like to use it in the near future. Delete if it's convenient to you, or
+    // come complain to me about leaving dead code lying around
+    /*var min = elt("span", {
       class: "delete"
-    }, elt("i", {class: "material-icons"}, "delete"));
+    }, elt("i", {class: "material-icons"}, "remove"));*/
 
     if (isInstructor) {
       var header = elt("div", {
         class: "header"
-      }, grader, del, edit, min);
+      //}, grader, del, edit, min);
+      }, grader, del, edit);
     } else {
       var header = elt("div", {
         class: "header"
@@ -256,12 +260,12 @@ var initializeAnnotationsForCode = function() {
       return false;
     });
 
-    $(min).on("click", function(e) {
+    /*$(min).on("click", function(e) {
       $(body).hide();
       $(min).hide();
       $(score).hide();
       return false;
-    });
+    });*/
 
     $(edit).on("click", function(e) {
       $(body).hide();
@@ -363,9 +367,6 @@ var initializeAnnotationsForCode = function() {
 
       if (!comment) {
         newForm.appendChild(elt("div", null, "The comment cannot be empty"));
-      }
-      else if(value != 0 && problem_id == 0) {
-        newForm.appendChild(elt("div", null, "Cannot assign score to general problem"));
       } else {
         submitNewAnnotation(comment, value, problem_id, lineInd, newForm);
       }
@@ -445,9 +446,6 @@ var initializeAnnotationsForCode = function() {
 
       if (!comment) {
         newForm.appendChild(elt("div", null, "The comment cannot be empty"));
-      }
-      else if(value != 0 && problem_id == 0) {
-        newForm.appendChild(elt("div", null, "Cannot assign score to general problem"));
       } else {
         var xRatio = xCord / $("#page-canvas-" + pageInd).attr('width');
         var yRatio = yCord / $("#page-canvas-" + pageInd).attr('height');
@@ -477,6 +475,7 @@ var initializeAnnotationsForCode = function() {
 
 
   var newEditAnnotationForm = function(lineInd, annObj) {
+
     var problemStr = annObj.problem_id? getProblemNameWithId(annObj.problem_id) : "General";
     var valueStr = annObj.value? annObj.value.toString() : "None";
     var commentStr = annObj.comment;
@@ -486,7 +485,7 @@ var initializeAnnotationsForCode = function() {
       class: "col l6 comment",
       type: "text",
       name: "comment",
-      placeholder: "Comments Here",
+      placeholder: "Comments FLOOP FLAGG BOOP BOOP",
       maxlength: "255",
       value: commentStr
     });
@@ -518,6 +517,7 @@ var initializeAnnotationsForCode = function() {
       class: "row",
       style: "margin-left:4px;"
     }, commentInput, valueInput, problemSelect);
+
 
     var submitButton = elt("input", {
       type: "submit",
@@ -551,12 +551,8 @@ var initializeAnnotationsForCode = function() {
       var comment = commentInput.value;
       var value = valueInput.value;
       var problem_id = problemSelect.value;
-
       if (!comment) {
         newForm.appendChild(elt("div", null, "The comment cannot be empty"));
-      }
-      else if(value != 0 && problem_id == 0) {
-        newForm.appendChild(elt("div", null, "Cannot assign score to general problem"));
       } else {
         annObj.comment = comment;
         annObj.value = value;
@@ -568,13 +564,7 @@ var initializeAnnotationsForCode = function() {
     $(cancelButton).on('click', function() {
       updateAnnotationBox(annObj);
       $(newForm).remove();
-    });
-
-    $(submitButton).on('click', function (e) {
-      $(newForm).submit();
-      e.preventDefault();
-      return false;
-    });
+    })
 
     return newForm;
   }
