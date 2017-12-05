@@ -34,7 +34,6 @@ pre code {
 }
 #code-list > li {
   position: relative;
-  width: 80ch;
   background: white;
   padding: 3px 1px;
   padding-left: 6px;
@@ -42,12 +41,11 @@ pre code {
 }
 
 #code-list > li > code {
-  width: 80ch;
   position: absolute;
   left: 0;
 }
 #code-list > li > div {
-  width: 80ch;
+
 }
 
 .add-annotation-btn {
@@ -78,7 +76,7 @@ pre code {
 }
 
 .ann-box {
-  border: 1px solid #ddd;
+  border: 3px solid #ddd;
   border-radius: .25em;
   margin: .5em;
   font-family: 'Source Sans Pro', sans-serif;
@@ -87,7 +85,7 @@ pre code {
 }
 
 .ann-box:hover {
-  border: 1px solid #bbb;
+  border: 3px solid #bbb;
 }
 
 .ann-box > .header {
@@ -100,6 +98,7 @@ pre code {
 }
 
 .ann-box > .header > .delete,
+.ann-box > .header > .minimize,
  .ann-box > .header > .edit {
   border: 1px solid transparent;
   display: block;

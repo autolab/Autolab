@@ -17,34 +17,16 @@ class AnnotationsController < ApplicationController
   # POST /:course/annotations.json
   action_auth_level :create, :course_assistant
   def create
-     #check to see if given score is greater than max possible score for the problem 
-     if !annotation_params[:problem_id].blank? 
-      maxScore = Problem.find(annotation_params[:problem_id]).max_score.to_f
-      if annotation_params[:value].to_f > maxScore
-        render :status => 422, :text => "bad data"
-        return
-      end 
-    end
-
-    findanno = Annotation.where('submission_id = ? AND problem_id = ?', params[:submission_id] , annotation_params[:problem_id])
-    if !findanno.blank?
-       render :status => 422, :text => "bad data"
-       return
-    end
-
-
-
     annotation = @submission.annotations.new(annotation_params)
 
-    #check to see if a problem was selected in the select box or not
-    if !annotation_params[:problem_id].blank? 
+    if !annotation_params[:problem_id].blank?
       findScore = Score.where('submission_id = ? AND problem_id = ?', params[:submission_id] , annotation_params[:problem_id])
     else
       annotation.save
       respond_with(@course, @assessment, @submission, annotation)
       return
-    end    
-    # set all of the data and insert the score into the table if it doesnt already exists if it does update the entry
+    end
+
     if findScore.blank?
       score = Score.new
       score.submission_id =  params[:submission_id]
@@ -54,42 +36,37 @@ class AnnotationsController < ApplicationController
       score.grader_id = @cud.id
       score.save
     else
-      findScore.first.score = annotation_params[:value]
+      findScore.first.score += annotation_params[:value].to_f
       findScore.first.grader_id = @cud.id
       findScore.first.save
-    end 
-    annotation.save
+    end
 
+    annotation.save
     respond_with(@course, @assessment, @submission, annotation)
   end
 
   # PUT /:course/annotations/1.json
   action_auth_level :update, :course_assistant
   def update
-     #check to see if given score is greater than max possible score for the problem 
-    maxScore = Problem.find(annotation_params[:problem_id]).max_score.to_f
-    if annotation_params[:value].to_f > maxScore
-      render :status => 422, :text => "bad data"
-      return
-    end 
-    #  check to see if a problem was selected
+
     if !annotation_params[:problem_id].blank?
-      findScore = Score.where('submission_id = ? AND problem_id = ?', params[:submission_id], annotation_params[:problem_id])
-      @annotation.update(annotation_params)
+      findScore = Score.where('submission_id = ? AND problem_id = ?', params[:submission_id] , annotation_params[:problem_id])
     else
-      @annotation.update(annotation_params)
-      respond_with(@course, @assessment, @submission, @annotation) do |format|
-        format.json { render json: @annotation }
+      if annotation_params[:value].to_f != 0
+        findScore = Score.where('submission_id = ? AND problem_id = ?', params[:submission_id] , annotation_params[:problem_id])
+      else
+        @annotation.save
+        respond_with(@course, @assessment, @submission, @annotation)
       end
-      return
     end
-    # update the score if it exists.
-    if !findScore.blank?
-      findScore.first.problem_id = annotation_params[:problem_id]
-      findScore.first.grader_id = @cud.id
-      findScore.first.score = annotation_params[:value]
-      findScore.first.save
-    else
+
+
+
+    if !@annotation.problem_id.blank?
+      oldScore = Score.where('submission_id = ? AND problem_id = ?', params[:submission_id] , @annotation.problem_id)
+    end
+
+    if findScore.blank?
       score = Score.new
       score.submission_id =  params[:submission_id]
       score.score = annotation_params[:value]
@@ -97,8 +74,24 @@ class AnnotationsController < ApplicationController
       score.released = 0
       score.grader_id = @cud.id
       score.save
+    else
+      # If we didn't change the problem number, nothing to worry about
+      if (annotation_params[:problem_id] == @annotation.problem_id)
+        findScore.first.score -= @annotation.value.to_f
+        findScore.first.score += annotation_params[:value].to_f
+        findScore.first.grader_id = @cud.id
+        findScore.first.save
+      # But if we did, we need to credit the points back to the original problem
+      else
+        findScore.first.score += annotation_params[:value].to_f
+        findScore.first.grader_id = @cud.id
+        findScore.first.save
+        oldScore.first.score -= @annotation.value.to_f
+        oldScore.first.grader_id = @cud.id
+        oldScore.first.save
+      end
     end
-
+    @annotation.update(annotation_params)
     respond_with(@course, @assessment, @submission, @annotation) do |format|
       format.json { render json: @annotation }
     end
@@ -109,7 +102,9 @@ class AnnotationsController < ApplicationController
   def destroy
     # remove score entry and delete annoation
     if !@annotation.problem_id.blank?
-      Score.where('submission_id = ? AND problem_id = ?', @annotation.submission_id , @annotation.problem_id).first.destroy
+      findScore = Score.where('submission_id = ? AND problem_id = ?', @annotation.submission_id , @annotation.problem_id)
+      findScore.first.score -= @annotation.value
+      findScore.first.save
     end
     @annotation.destroy
     head :no_content
