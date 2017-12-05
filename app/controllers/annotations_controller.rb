@@ -35,8 +35,8 @@ class AnnotationsController < ApplicationController
   # DELETE /:course/annotations/1.json
   action_auth_level :destroy, :course_assistant
   def destroy
-    
     @annotation.destroy
+    head :no_content
   end
 
 private
