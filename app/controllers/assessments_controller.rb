@@ -202,8 +202,8 @@ class AssessmentsController < ApplicationController
     @assessment.visible_at = Time.now
     @assessment.start_at = Time.now
     @assessment.due_at = Time.now
-    @assessment.grading_deadline = Time.now
     @assessment.end_at = Time.now
+    @assessment.grading_deadline = Time.now
     @assessment.quiz = false
     @assessment.quizData = ""
     @assessment.max_submissions = params.include?(:max_submissions) ? params[:max_submissions] : -1

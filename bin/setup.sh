@@ -187,12 +187,12 @@ autolab_setup() {
     cp $AUTOLAB_PATH/config/database.yml.template $AUTOLAB_PATH/config/database.yml
     sed -i "s/<username>/$USER/g" $AUTOLAB_PATH/config/database.yml
 
+    cp $AUTOLAB_PATH/config/school.yml.template $AUTOLAB_PATH/config/school.yml
+
     cp $AUTOLAB_PATH/config/initializers/devise.rb.template $AUTOLAB_PATH/config/initializers/devise.rb
     sed -i "s/<YOUR-SECRET-KEY>/`bundle exec rake secret`/g" $AUTOLAB_PATH/config/initializers/devise.rb
 
     cp $AUTOLAB_PATH/config/autogradeConfig.rb.template $AUTOLAB_PATH/config/autogradeConfig.rb
-    
-    cp $AUTOLAB_PATH/config/school.yml.template $AUTOLAB_PATH/config/school.yml
 
     log "Granting MySQL database permissions..."
     mysql -uroot -p$MYSQL_ROOT_PSWD -e "GRANT ALL PRIVILEGES ON ""$USER""_autolab_development.* TO '$USER'@'%' IDENTIFIED BY '<password>'"

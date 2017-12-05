@@ -221,12 +221,14 @@ class SubmissionsController < ApplicationController
 
           comment = "#{annotation.comment}\n\nProblem: #{problem_name}\nScore:#{value}"
 
+          # + 1 since pages are indexed 1-based
+          pdf.go_to_page(page + 1)
+
+          # draw box
           pdf.stroke_color "ff0000"
           pdf.stroke_rectangle [xCord, yCord], width, height
           pdf.fill_color "000000"
-
-          # + 1 since pages are indexed 1-based
-          pdf.go_to_page(page + 1)
+          # draw text
           pdf.fill_color "ff0000"
           pdf.text_box comment,
                       { :at => [xCord + 3, yCord - 3],
