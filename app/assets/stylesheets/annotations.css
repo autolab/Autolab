@@ -228,3 +228,7 @@ pre {
 .header > .grader {
   flex: 2 0 0;
 }
+
+.collapse_expand{
+  margin-bottom:10px;
+}

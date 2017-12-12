@@ -76,7 +76,7 @@
 
   </div>
   <div class="col l9">
-    <h3 id="filename"><%= @displayFilename %></h3><button onclick="collapse_all();">Collapse All</button> <button onclick="expand_all();">Expand All</button>
+    <h3 id="filename"><%= @displayFilename %></h3><button class="btn collapse_expand" onclick="$('.minimize').click();">Collapse All</button> <button class="btn collapse_expand" onclick="$('.ann-box').click();">Expand All</button>
     <div id="code-box">
     <% # these lines can't have white space due to the styling for pre and code tages %>
     <% # anything wrapped in a <pre><code> will be highlighted by highlightsjs %>
