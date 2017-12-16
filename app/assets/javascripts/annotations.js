@@ -131,7 +131,7 @@ var initializeAnnotationsForCode = function() {
     }, elt("i", {class: "material-icons"}, "delete"));
 
     var min = elt("span", {
-      class: "delete"
+      class: "minimize"
     }, elt("i", {class: "material-icons"}, "remove"));
 
     if (isInstructor) {
