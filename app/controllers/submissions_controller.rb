@@ -221,12 +221,14 @@ class SubmissionsController < ApplicationController
 
           comment = "#{annotation.comment}\n\nProblem: #{problem_name}\nScore:#{value}"
 
+          # + 1 since pages are indexed 1-based
+          pdf.go_to_page(page + 1)
+
+          # draw box
           pdf.stroke_color "ff0000"
           pdf.stroke_rectangle [xCord, yCord], width, height
           pdf.fill_color "000000"
-
-          # + 1 since pages are indexed 1-based
-          pdf.go_to_page(page + 1)
+          # draw text
           pdf.fill_color "ff0000"
           pdf.text_box comment,
                       { :at => [xCord + 3, yCord - 3],
@@ -321,27 +323,6 @@ class SubmissionsController < ApplicationController
     @problemGrades = {}
 
 
-    @annotations.delete_if do |annotation|
-      problem = annotation.problem ? annotation.problem.name : "General"
-      if problem != "General" then
-        out = Score.where("submission_id = ? AND  problem_id = ?", @submission.id, Problem.where("assessment_id = ? AND name = ?", @assessment.id, problem).first.id).first.released
-        if out || (@cud.instructor || @cud.course_assistant) then
-          false
-        else
-          if(@assessment.grading_deadline.past?) then 
-            false
-          else
-            true
-          end
-        end
-      else
-        if(@assessment.grading_deadline.past? || (@cud.instructor || @cud.course_assistant)) then 
-          false
-        else
-          true
-        end
-      end 
-    end
     # extract information from annotations
     @annotations.each do |annotation|
       description = annotation.comment

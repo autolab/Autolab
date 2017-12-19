@@ -241,15 +241,6 @@ public
 
     updateScore(score.submission.course_user_datum_id, score)
 
-    findanno = Annotation.where('submission_id = ? AND problem_id = ?', sub_id, prob_id)
-    # update annotation if it exists
-    if !findanno.blank?
-      findanno.first.submitted_by = @cud.email
-      findanno.first.value = params[:score].to_f
-      findanno.first.save
-    end
-
-
     render text: score.score
 
   # see http://stackoverflow.com/questions/6163125/duplicate-records-created-by-find-or-create-by
@@ -279,15 +270,6 @@ public
     score.released = params[:released]
 
     updateScore(score.submission.course_user_datum_id, score)
-
-
-    findanno = Annotation.where('submission_id = ? AND problem_id = ?', sub_id, prob_id)
-    # update annotation if it exists
-    if !findanno.blank?
-      findanno.first.submitted_by = @cud.email
-      findanno.first.value = params[:score].to_f
-      findanno.first.save
-    end
 
     render text: score.id
 
