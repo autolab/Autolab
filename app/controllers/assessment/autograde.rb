@@ -33,8 +33,16 @@ module AssessmentAutograde
     end
 
     render(nothing: true) && return
-  rescue
-    Rails.logger.error "Exception in autograde_done"
+  rescue => exception
+    ExceptionNotifier.notify_exception(exception, env: request.env,
+                                       data: {
+                                         user: current_user,
+                                         course: @course,
+                                         assessment: @assessment,
+                                         submission: @submission
+                                       })
+    Rails.logger.error "Exception in autograde_done: #{exception.class} (#{exception.message})"
+    COURSE_LOGGER.log "Exception in autograde_done: #{exception.class} (#{exception.message})"
     render(nothing: true) && return
   end
 
