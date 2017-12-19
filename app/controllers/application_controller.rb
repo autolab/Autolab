@@ -153,6 +153,7 @@ protected
       flash[:error] = e.to_s
       redirect_to(controller: :home, action: :error) && return
     end
+    ASSESSMENT_LOGGER.setCourse(@course)
   end
 
   def authorize_user_for_course
@@ -226,6 +227,7 @@ protected
     redirect_to(action: :index) && return if @cud.student? && !@assessment.released?
 
     @breadcrumbs << (view_context.current_assessment_link)
+    ASSESSMENT_LOGGER.setAssessment(@assessment)
   end
 
   # Loads the submission from the DB

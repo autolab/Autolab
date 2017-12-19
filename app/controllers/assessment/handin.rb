@@ -191,8 +191,8 @@ module AssessmentHandin
     render(plain: "ERROR: No result!", status: :bad_request) && return unless @result
 
     # Everything looks OK, so append the autoresult to the log.txt file for this lab
-    @logger = Logger.new(Rails.root.join("courses", @course.name, @assessment.name, "log.txt"))
-    @logger.add(Logger::INFO) { "#{@user.email},0,#{@result}" }
+    ASSESSMENT_LOGGER.setAssessment(@assessment)
+    ASSESSMENT_LOGGER.log("#{@user.email},0,#{@result}")
 
     # Load up the lab.rb file
     mod_name = @assessment.name + (@course.name).gsub(/[^A-Za-z0-9]/, "")
