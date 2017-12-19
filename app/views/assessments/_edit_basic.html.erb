@@ -28,33 +28,38 @@
 	<%= f.text_field :writeup, help_text: "File path from the assessment directory containing instructions to students, or a URL to redirect to.", placeholder: "E.g.   writeup.pdf   or   http://school.edu/class/writeup.pdf" %>
 </div>
 
-<div class="embedded-form" style="margin-top: 2rem;">
+<div class="embedded-form">
   <%= f.check_box :embedded_quiz, display_name: "Embedded Form", style: "margin-top: 0.8rem;", onclick: "boxClicked();" %>
 
-  <div class="row">
     <label class="custom-file-upload">
-          <span class = "btn primary" id="upload_button">
+          <span class = "btn primary" id="upload_button" style="clear:both;">
             Embedded Form
-            <%= f.file_field :embedded_quiz_form, class: "upload_embedded" %>
+            <%= f.file_field_nowrap :embedded_quiz_form, class: "upload_embedded" %>
           </span>
     </label>
+
+    <p class="file_name">
+        <span id="file_name"></span>
+    </p>
+
     <% if @assessment.embedded_quiz_form_data.nil? %>
-        <input type="text" id="file_name" readonly value="Select to Upload a File.">
+        <p class="help-text">
+            Select to Upload a File.
+        </p>
     <% else %>
-        <input type="text" id="file_name" readonly value="Upload will replace existing file." class="red-text">
+        <p class="help-text red-text">
+            Upload will replace existing file.
+        </p>
     <% end %>
-
-  </div>
-
   <p class="help-block">
-    For more information on Embedded Forms, visit our new 
-    <a href="https://autolab.github.io/docs/features/#embedded-forms"> docs page.</a>
+    For more information on Embedded Forms, visit our new
+    <a href="https://autolab.github.io/docs/features/#embedded-forms" target="_blank"> docs page.</a>
     </p>
 </div>
 
 <script>
     document.getElementById("assessment_embedded_quiz_form").onchange = function(e) {
-        document.getElementById("file_name").value = document.getElementById("assessment_embedded_quiz_form").value.split(/(\\|\/)/g).pop();
+        document.getElementById("file_name").textContent = "File Selected: " + document.getElementById("assessment_embedded_quiz_form").value.split(/(\\|\/)/g).pop();
     }
 </script>
 

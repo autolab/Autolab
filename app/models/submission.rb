@@ -523,8 +523,8 @@ private
     # check if no due at (due to infinite extension)
     return 0 unless aud.due_at
 
-    # how late is the submission?
-    late_by = created_at - aud.due_at
+    # how late is the submission? (account for DST by offsetting difference in utc_offset)
+    late_by = created_at - aud.due_at + (created_at.utc_offset - aud.due_at.utc_offset);
     return 0 if late_by <= 0
 
     # if you're 2.5 days late, you're 3 days late
