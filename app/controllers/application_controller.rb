@@ -143,7 +143,7 @@ protected
     @course = Course.find_by(name: course_name) if course_name
 
     unless @course
-      render :file => "#{Rails.root}/public/404.html",  :status => 404
+      render :file => "#{Rails.root}/public/404.html",  :status => 404 and return
     end
 
     # set course logger
