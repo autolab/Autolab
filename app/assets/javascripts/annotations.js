@@ -1,17 +1,22 @@
 /* Highlights lines longer than 80 characters autolab red color */
 var highlightLines = function(highlight) {
+  var highlightColor = "rgba(200, 200, 0, 0.9)"
   $("#code-list > li > code").each(function() {
     var text = $(this).text();
     // To account for lines that have 80 characters and a line break
     var diff = text[text.length - 1] === "\n" ? 1 : 0;
     if (text.length - diff > 80 && highlight) {
-      $(this).css("background-color", "rgba(153, 0, 0, .9)");
-      $(this).prev().css("background-color", "rgba(153, 0, 0, .9)");
+      $(this).css("background-color", highlightColor);
+      $(this).prev().css("background-color", highlightColor);
     } else {
       $(this).css("background-color", "white");
       $(this).prev().css("background-color", "white");
     }
   });
+};
+
+var reloadSummary = function() {
+  window.location.reload()
 };
 
 $("#highlightLongLines").click(function() {
@@ -106,6 +111,8 @@ var initializeAnnotationsForCode = function() {
     var valueStr = annObj.value? annObj.value.toString() : "None";
     var commentStr = annObj.comment;
 
+    var minimized = true
+
     var grader = elt("span", {
       class: "grader"
     }, annObj.submitted_by + " says:");
@@ -123,10 +130,14 @@ var initializeAnnotationsForCode = function() {
       class: "delete"
     }, elt("i", {class: "material-icons"}, "delete"));
 
+    var min = elt("span", {
+      class: "minimize"
+    }, elt("i", {class: "material-icons"}, "remove"));
+
     if (isInstructor) {
       var header = elt("div", {
         class: "header"
-      }, grader, del, edit);
+      }, grader, del, edit, min);
     } else {
       var header = elt("div", {
         class: "header"
@@ -150,6 +161,30 @@ var initializeAnnotationsForCode = function() {
           $(box).remove();
         }
       });
+      return false;
+    });
+
+
+    $(box).on("click", function(e) {
+      $(body).show();
+      $(min).show();
+      $(score).show();
+      $(header).show();
+      minimized = false
+      return false;
+    });
+
+    $(body).hide();
+    $(min).hide();
+    $(score).hide();
+    $(header).hide();
+
+    $(min).on("click", function(e) {
+      $(body).hide();
+      $(min).hide();
+      $(score).hide();
+      $(header).hide();
+      minimized = true
       return false;
     });
 
@@ -187,9 +222,17 @@ var initializeAnnotationsForCode = function() {
       class: "delete"
     }, elt("i", {class: "material-icons"}, "delete"));
 
+    // I (tjjohans) am keeping the minimize feature commented out because I'd
+    // like to use it in the near future. Delete if it's convenient to you, or
+    // come complain to me about leaving dead code lying around
+    /*var min = elt("span", {
+      class: "delete"
+    }, elt("i", {class: "material-icons"}, "remove"));*/
+
     if (isInstructor) {
       var header = elt("div", {
         class: "header"
+      //}, grader, del, edit, min);
       }, grader, del, edit);
     } else {
       var header = elt("div", {
@@ -217,6 +260,13 @@ var initializeAnnotationsForCode = function() {
       return false;
     });
 
+    /*$(min).on("click", function(e) {
+      $(body).hide();
+      $(min).hide();
+      $(score).hide();
+      return false;
+    });*/
+
     $(edit).on("click", function(e) {
       $(body).hide();
       $(edit).hide();
@@ -237,17 +287,15 @@ var initializeAnnotationsForCode = function() {
     var valueStr = annObj.value? annObj.value.toString() : "None";
     var commentStr = annObj.comment;
 
-    $('#ann-box-' + annObj.id).find('.edit').show();
-    $('#ann-box-' + annObj.id).find('.body').show();
     if (annotationMode === "PDF") {
       $('#ann-box-' + annObj.id).find('.score-box').html("<div>Problem: "+problemStr+"</div><div>Score: "+valueStr+"</div>");
-      $('#ann-box-' + annObj.id).find('.score-box').show();
     }
     else {
       $('#ann-box-' + annObj.id).find('.score-box').html("<span>"+problemStr+"</span><span>"+valueStr+"</span>");
     }
-
-    $('#ann-box-' + annObj.id).find('.body').html(commentStr);
+    $('#ann-box-' + annObj.id).find('.edit').show();
+    $('#ann-box-' + annObj.id).find('.body').show();
+    $('#ann-box-' + annObj.id).find('.score-box').show();
 
   }
 
@@ -274,7 +322,7 @@ var initializeAnnotationsForCode = function() {
       placeholder: "Score Here"
     });
     var problemSelect = elt("select", {
-      class: "col l2 browser-default",
+      class: "col l3 browser-default",
       name: "problem"
     }, elt("option", {
       value: ""
@@ -437,7 +485,7 @@ var initializeAnnotationsForCode = function() {
       class: "col l6 comment",
       type: "text",
       name: "comment",
-      placeholder: "Comments Here",
+      placeholder: "Comments FLOOP FLAGG BOOP BOOP",
       maxlength: "255",
       value: commentStr
     });
@@ -460,7 +508,7 @@ var initializeAnnotationsForCode = function() {
       value: valueStr
     });
     var problemSelect = elt("select", {
-      class: "col l2",
+      class: "col l3 browser-default",
       name: "problem"
     }, elt("option", {
       value: ""
@@ -516,7 +564,13 @@ var initializeAnnotationsForCode = function() {
     $(cancelButton).on('click', function() {
       updateAnnotationBox(annObj);
       $(newForm).remove();
-    })
+    });
+
+    $(submitButton).on('click', function (e) {
+      $(newForm).submit();
+      e.preventDefault();
+      return false;
+    });
 
     return newForm;
   }
