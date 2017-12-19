@@ -47,12 +47,15 @@
     <h3 class="annotationHeader">Summary</h3>
     <% if @problemSummaries.empty? then %>
       <% if (@cud.instructor? or @cud.course_assistant?) then %>
-        <p>Hover over a line of code and click the green box to annotate.</p>
+        <p>Hover over a line of code and click the green box to annotate.<br><br><b>Note: Point tweaks here don't affect the gradebook.</b></p>
       <% else %>
         <p>Nothing to summarize yet.</p>
       <% end %>
     <% else %>
       <div id="summaryList">
+        <% if (@cud.instructor? or @cud.course_assistant?) then %>
+          <b><div class="problemListItem">Note: Point tweaks here don't affect the gradebook.</div></b>
+        <% end %>
         <% @problemSummaries.each do |problem, descriptTuples| %>
           <hr>
           <div class="problemListItem"> <%= "Problem: #{problem} [#{plus_fix(@problemGrades[problem])}]" %>
@@ -69,11 +72,11 @@
     <input type="checkbox" id="highlightLongLines">
     <label for="highlightLongLines">Highlight lines longer than 80 characters</label>
     <hr>
-    <input type="button" value="Reload Summary" class="btn primary" onclick="window.location.reload()">
+    <input type="button" value="Reload Summary" class="btn primary" onclick="reloadSummary()">
 
   </div>
   <div class="col l9">
-    <h3 id="filename"><%= @displayFilename %></h3>
+    <h3 id="filename"><%= @displayFilename %></h3><button class="btn collapse_expand" onclick="$('.minimize').click();">Collapse All</button> <button class="btn collapse_expand" onclick="$('.ann-box').click();">Expand All</button>
     <div id="code-box">
     <% # these lines can't have white space due to the styling for pre and code tages %>
     <% # anything wrapped in a <pre><code> will be highlighted by highlightsjs %>
