@@ -228,14 +228,14 @@ ActiveRecord::Schema.define(version: 20170815142532) do
   add_index "oauth_applications", ["uid"], name: "index_oauth_applications_on_uid", unique: true, using: :btree
 
   create_table "oauth_device_flow_requests", force: :cascade do |t|
-    t.integer  "resource_owner_id", limit: 4,                null: false
+    t.integer  "resource_owner_id", limit: 4
     t.integer  "application_id",    limit: 4,                null: false
     t.string   "scopes",            limit: 255, default: "", null: false
     t.string   "device_code",       limit: 255,              null: false
     t.string   "user_code",         limit: 255,              null: false
     t.integer  "resolution",        limit: 4,   default: 0,  null: false
     t.datetime "requested_at",                               null: false
-    t.datetime "resolved_at",                                null: false
+    t.datetime "resolved_at"
   end
 
   add_index "oauth_device_flow_requests", ["application_id"], name: "fk_rails_4035c6e0ed", using: :btree
