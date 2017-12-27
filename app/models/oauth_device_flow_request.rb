@@ -9,6 +9,11 @@ class OauthDeviceFlowRequest < ActiveRecord::Base
   # disallow others from instantiating requests on their own
   private_class_method :new, :create
 
+  # constants for 'resolution'
+  RES_PENDING = 0
+  RES_GRANTED = 1
+  RES_DENIED = -1
+
   # app is a Doorkeeper::Application
   def self.create_request(app)
     device_code = self.gen_device_code
@@ -38,8 +43,35 @@ class OauthDeviceFlowRequest < ActiveRecord::Base
     return nil
   end
 
+  def is_resolved
+    self.resolution != RES_PENDING
+  end
+
+  def is_granted
+    self.resolution == RES_GRANTED
+  end
+
+  # public methods to set resolution
+  # (each request can only be set once)
+  # returns true if set successfully
+  # returns false if failed to set
+  def grant_request(user_id)
+    return self.resolve(user_id, RES_GRANTED)
+  end
+
+  def deny_request
+    return self.resolve(user_id, RES_DENIED)
+  end
 
 private
+
+  def resolve(user_id, result)
+    return false if self.is_resolved
+    self.resource_owner_id = user_id
+    self.resolution = result
+    self.resolved_at = Time.now
+    return self.save
+  end
 
   def self.gen_device_code
     SecureRandom.hex(32)
