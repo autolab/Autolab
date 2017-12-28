@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170815142532) do
+ActiveRecord::Schema.define(version: 20171228095028) do
 
   create_table "annotations", force: :cascade do |t|
     t.integer  "submission_id", limit: 4
@@ -307,6 +307,7 @@ ActiveRecord::Schema.define(version: 20170815142532) do
     t.string   "dave",                      limit: 255
     t.text     "settings",                  limit: 65535
     t.text     "embedded_quiz_form_answer", limit: 65535
+    t.integer  "submitted_by_app_id",       limit: 4
   end
 
   add_index "submissions", ["assessment_id"], name: "index_submissions_on_assessment_id", using: :btree
