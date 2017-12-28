@@ -6,7 +6,8 @@ class OauthDeviceFlowRequest < ActiveRecord::Base
   validates_presence_of :requested_at,      on: :create
   validates_associated :oauth_application,  on: :create
 
-  # disallow others from instantiating requests on their own
+  # disallow others from instantiating requests on their own.
+  # Must use create_request to create new device flow requests.
   private_class_method :new, :create
 
   # constants for 'resolution'
@@ -55,12 +56,13 @@ class OauthDeviceFlowRequest < ActiveRecord::Base
   # (each request can only be set once)
   # returns true if set successfully
   # returns false if failed to set
-  def grant_request(user_id)
-    return self.resolve(user_id, RES_GRANTED)
+  def grant_request(user_id, access_code)
+    self.access_code = access_code
+    return resolve(user_id, RES_GRANTED)
   end
 
-  def deny_request
-    return self.resolve(user_id, RES_DENIED)
+  def deny_request(user_id)
+    return resolve(user_id, RES_DENIED)
   end
 
 private
