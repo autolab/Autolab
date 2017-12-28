@@ -44,6 +44,11 @@ Autolab3::Application.routes.draw do
     get "no_user"
   end
 
+  # device_flow-related
+  get "activate", to: "device_flow_activation#index"
+  get "device_flow_resolve", to: "device_flow_activation#resolve"
+  get "device_flow_auth_cb", to: "device_flow_activation#authorization_callback"
+
   resource :admin do
     match "email_instructors", via: [:get, :post]
   end

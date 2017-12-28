@@ -65,6 +65,17 @@ class OauthDeviceFlowRequest < ActiveRecord::Base
     return resolve(user_id, RES_DENIED)
   end
 
+  # upgrade user_code into a new identifier code
+  # (used after user has entered the code on the website)
+  def upgrade_user_code
+    # duplicate user_code is disallowed but it's
+    # impossible to get a duplicate new code here
+    new_code = SecureRandom.hex(32)
+    self.user_code = new_code
+    self.save
+    return new_code
+  end
+
 private
 
   def resolve(user_id, result)
