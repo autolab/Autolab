@@ -1,6 +1,11 @@
 Autolab3::Application.routes.draw do
   use_doorkeeper
 
+  namespace :oauth, { defaults: {format: :json} } do
+    get 'device_flow_init', to: 'device_flow#init'
+    get 'device_flow_authorize', to: 'device_flow#authorize'
+  end
+
   namespace :api, { defaults: {format: :json} } do
     namespace :v1 do
       get 'user', to: 'user#show'
@@ -38,6 +43,11 @@ Autolab3::Application.routes.draw do
     get "error_404"
     get "no_user"
   end
+
+  # device_flow-related
+  get "activate", to: "device_flow_activation#index"
+  get "device_flow_resolve", to: "device_flow_activation#resolve"
+  get "device_flow_auth_cb", to: "device_flow_activation#authorization_callback"
 
   resource :admin do
     match "email_instructors", via: [:get, :post]

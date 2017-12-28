@@ -1,0 +1,22 @@
+<% @title = "Activate Client" %>
+
+<% content_for :stylesheets do %>
+  <style type="text/css">
+    input[type="text"]#user_code_field {
+      font-family: monospace;
+      font-size: 24px;
+    }
+  </style>
+<% end %>
+
+<div class="row">
+  <div class="col s12">
+    <h2>Activate API Client</h2>
+
+    <%= form_for(device_flow_resolve_path, method: "get") do |f| %>
+      <p>Enter 6-digit code</p>
+      <%= f.text_field :user_code, {:max_length=>6, :id=>"user_code_field"} %>
+      <%= f.submit "Activate", {:class=>"btn primary"} %>
+    <% end %>
+  </div>
+</div>
