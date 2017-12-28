@@ -58,11 +58,18 @@ module AssessmentHandinCore
   ##
   # saveHandin - saves the submission to database. If this submission is by a member of
   # a group, it creates a submissions record for each person.
-  # Returns a list of the submissions created by this handin (aka a "logical submission")
-  def saveHandin(sub)
+  # 
+  # params:
+  #  - sub: submission file (to be saved by this method).
+  #  - app_id: [Optional] id of the application that made this submission.
+  #            default is nil, meaning no application was used (handed in directly from 
+  #            webpage, either by student or by an instructor).
+  # Returns a list of the submissions created by this handin (aka a "logical submission").
+  def saveHandin(sub, app_id = nil)
     unless @assessment.has_groups?
       submission = @assessment.submissions.create(course_user_datum_id: @cud.id,
-                                                  submitter_ip: request.remote_ip)
+                                                  submitter_ip: request.remote_ip,
+                                                  submitted_by_app_id: app_id)
       submission.save_file(sub)
       return [submission]
     end
@@ -71,7 +78,8 @@ module AssessmentHandinCore
     group = aud.group
     if group.nil?
       submission = @assessment.submissions.create(course_user_datum_id: @cud.id,
-                                                  submitter_ip: request.remote_ip)
+                                                  submitter_ip: request.remote_ip,
+                                                  submitted_by_app_id: app_id)
       submission.save_file(sub)
       return [submission]
     end
@@ -80,7 +88,8 @@ module AssessmentHandinCore
     ActiveRecord::Base.transaction do
       group.course_user_data.each do |cud|
         submission = @assessment.submissions.create(course_user_datum_id: cud.id,
-                                                    submitter_ip: request.remote_ip)
+                                                    submitter_ip: request.remote_ip,
+                                                    submitted_by_app_id: app_id)
         submission.save_file(sub)
         submissions << submission
       end

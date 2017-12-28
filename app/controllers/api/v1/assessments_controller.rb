@@ -148,7 +148,7 @@ class Api::V1::AssessmentsController < Api::V1::BaseApiController
 
     # attempt to save the submission
     begin
-      submissions = saveHandin(params[:submission])
+      submissions = saveHandin(params[:submission], current_app.id)
     rescue StandardError => e
       # TODO: log error
       raise ApiError.new("Unexpected error during submission handin.\nDetails: #{e.message}", :internal_server_error)

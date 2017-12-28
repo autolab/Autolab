@@ -38,6 +38,10 @@ class Api::V1::BaseApiController < ActionController::Base
     @current_user ||= User.find(doorkeeper_token[:resource_owner_id])
   end
 
+  def current_app
+    @current_app ||= Doorkeeper::Application.find(doorkeeper_token[:application_id])
+  end
+
   def respond_with_api_error(error)
     render :json => {:error => error.message}.to_json, :status => error.status_code
   end
