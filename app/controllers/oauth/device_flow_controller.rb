@@ -47,18 +47,13 @@ class Oauth::DeviceFlowController < ActionController::Base
       raise DeviceFlowError.new("authorization denied by user", :bad_request)
     end
 
-    # user granted access, create access token
-    token = Doorkeeper::AccessToken.create(:application_id => req.application_id,
-                                           :resource_owner_id => req.resource_owner_id,
-                                           :scopes => req.scopes)
+    # user granted access, give client the access code
+    access_code = req.access_code
 
-    # remove request record
+    # remove request record, no longer needed
     req.destroy
 
-    render :json => {access_token: token.token,
-                     token_type: "bearer",
-                     expires_in: token.expires_in,
-                     refresh_token: token.refresh_token}.to_json
+    render :json => {code: access_code}.to_json
   end
 
 private
