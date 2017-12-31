@@ -2,7 +2,7 @@
 
 <% content_for :stylesheets do %>
   <style type="text/css">
-    input[type="text"]#user_code_field {
+    input[type="text"]#user_code {
       font-family: monospace;
       font-size: 24px;
     }
@@ -13,10 +13,10 @@
   <div class="col s12">
     <h2>Activate API Client</h2>
 
-    <%= form_for(device_flow_resolve_path, method: "get") do |f| %>
+    <%= form_tag(device_flow_resolve_path, method: "get") do |f| %>
       <p>Enter 6-digit code</p>
-      <%= f.text_field :user_code, {:max_length=>6, :id=>"user_code_field"} %>
-      <%= f.submit "Activate", {:class=>"btn primary"} %>
+      <%= text_field_tag :user_code, nil, :max_length=>6 %>
+      <%= submit_tag "Activate", :class=>"btn primary" %>
     <% end %>
   </div>
 </div>
