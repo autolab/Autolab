@@ -6,7 +6,9 @@ class Rack::Attack
       return env["attack.user_id"] if env["attack.user_id"]
 
       token = params['access_token']
-      access_token = Doorkeeper::AccessToken.where(token: token).first
+      access_token = Doorkeeper::AccessToken.find_by(token: token)
+      return token if access_token.nil?
+
       user = User.find(access_token.resource_owner_id)
       env["attack.user_id"] = user.id
       return user.id
