@@ -10,3 +10,5 @@ en:
       user_courses: 'Access your courses and assessments'
       user_scores: 'Access your submissions, scores, and feedback'
       user_submit: 'Submit to assessments on your behalf'
+      instructor_all: 'Access admin options of courses where you are an instructor'
+      admin_all: 'Access admin options of Autolab'

@@ -56,7 +56,7 @@ Doorkeeper.configure do
   # For more information go to
   # https://github.com/doorkeeper-gem/doorkeeper/wiki/Using-Scopes
   default_scopes  :user_info
-  optional_scopes :user_courses, :user_scores, :user_submit
+  optional_scopes :user_courses, :user_scores, :user_submit, :instructor_all, :admin_all
 
   # Change the way client credentials are retrieved from the request object.
   # By default it retrieves first from the `HTTP_AUTHORIZATION` header, then
