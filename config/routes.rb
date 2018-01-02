@@ -11,6 +11,7 @@ Autolab3::Application.routes.draw do
       get 'user', to: 'user#show'
 
       resources :courses, param: :name, only: [:index] do
+          get 'create', on: :collection
         resources :assessments, param: :name, only: [:index] do
           get 'problems'
           get 'writeup'

@@ -1,9 +1,12 @@
 class Api::V1::CoursesController < Api::V1::BaseApiController
 
-  before_action -> {doorkeeper_authorize! :user_courses}
+  before_action -> {doorkeeper_authorize! :user_courses}, only: [:index]
+  before_action -> {doorkeeper_authorize! :admin_all}, only: [:create]
 
-  skip_before_action :set_course, only: [:index]
-  skip_before_action :authorize_user_for_course, only: [:index]
+  skip_before_action :set_course
+  skip_before_action :authorize_user_for_course
+
+  before_action :require_admin_privileges, only: [:create]
 
   def index
     courses_for_user = User.courses_for_user current_user
@@ -43,6 +46,20 @@ class Api::V1::CoursesController < Api::V1::BaseApiController
     end
 
     respond_with final_course_list
+  end
+
+  # requires admin_all scope and user to be admin
+  def create
+    require_params([:name, :semester, :instructor_email])
+    
+    begin
+      # name validation done during create
+      newCourse = Course.quick_create(params[:name], params[:semester], params[:instructor_email])
+    rescue => e
+      raise ApiError.new(e.message, :internal_server_error)
+    end
+
+    respond_with_string "Successfully created course #{newCourse.name}"
   end
 
 end

@@ -50,10 +50,37 @@ class Api::V1::BaseApiController < ActionController::Base
     render :json => h.to_json
   end
 
+  def respond_with_string(s)
+    respond_with_hash({:msg => s})
+  end
+
   protected
+
+  def require_params(reqs)
+    reqs.each do |item|
+      if not params.has_key?(item)
+        raise ApiError.new("Required parameter '#{item}' not found", :bad_request)
+      end
+    end
+  end
+
+  def set_default_params(defaults)
+    defaults.each_key do |key|
+      if params.has_key?(key)
+        defaults[key] = params[key]
+      end
+    end
+    return defaults
+  end
 
   def set_default_response_format
     request.format = :json
+  end
+
+  def require_admin_privileges
+    if not current_user.administrator?
+      raise ApiError.new("User does not have admin privileges", :forbidden)
+    end
   end
 
   def set_course
