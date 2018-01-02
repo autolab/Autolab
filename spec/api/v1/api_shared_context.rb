@@ -16,4 +16,10 @@ RSpec.shared_context "api shared context" do
   # device_flow app
   # The redirect_uri is just a stub. It is not involved in the test.
   let!(:df_application) { Doorkeeper::Application.create! :name => "CLIApp", :redirect_uri => "https://localhost:3000/device_flow_auth_cb", :scopes => "user_info user_courses" }
+
+  # admin-related
+  let(:admin_user) { User.where(administrator: true).first }
+  let!(:admin_application) { Doorkeeper::Application.create! :name => "AdminApp", :redirect_uri => "https://admin.example.com", :scopes => "user_info user_courses user_scores user_submit admin_all instructor_all" }
+  let!(:admin_token_for_admin) { Doorkeeper::AccessToken.create! :application_id => admin_application.id, :resource_owner_id => admin_user.id, :scopes => "user_info user_courses user_scores user_submit admin_all instructor_all" }
+  let!(:admin_token_for_user) { Doorkeeper::AccessToken.create! :application_id => admin_application.id, :resource_owner_id => user.id, :scopes => "user_info user_courses user_scores user_submit admin_all instructor_all" }
 end
