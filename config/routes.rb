@@ -45,7 +45,7 @@ Autolab3::Application.routes.draw do
   end
 
   # device_flow-related
-  get "activate", to: "device_flow_activation#index"
+  get "activate", to: "device_flow_activation#index", as: :device_flow_activation
   get "device_flow_resolve", to: "device_flow_activation#resolve"
   get "device_flow_auth_cb", to: "device_flow_activation#authorization_callback"
 
