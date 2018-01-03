@@ -16,11 +16,11 @@ RSpec.describe Api::V1::AssessmentsController, :type => :controller do
       expect(response.response_code).to eq(404)
     end
 
-    it 'returns all the assessments of a course' do
+    it 'returns all the released assessments of a course' do
       get :index, :access_token => token.token, :course_name => course.name
       expect(response.response_code).to eq(200)
       msg = JSON.parse(response.body)
-      expect(msg.length).to eq(course.assessments.count)
+      expect(msg.length).to eq(course.assessments.released.count)
     end
   end
 
