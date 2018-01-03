@@ -2,7 +2,7 @@ require Rails.root.join("config", "autogradeConfig.rb")
 
 RSpec.shared_context "tango mock" do
 
-  before(:each) do
+  before :each do
     base_uri = "#{RESTFUL_HOST}:#{RESTFUL_PORT}"
     
     default_resp_header = { 'Content-Type' => 'application/json' }

@@ -1,27 +1,10 @@
 require 'rails_helper'
 require_relative "tango_mock.rb"
+require_relative "api_shared_context.rb"
 
 RSpec.describe "API Submission Autograding Roundtrip Test", :type => :request do
   include_context "tango mock"
-  # Note: this test context does not use api_shared_context
-  before :each do
-    # The adder.py file to hand in
-    @handin_file = fixture_file_upload('handins/adder.py', 'text/plain')
-    # The AutoPopulate Course
-    @ap_course = Course.find_by(:name => 'AutoPopulated')
-    @ap_cud = CourseUserDatum.where(:course => @ap_course, :instructor => false, :course_assistant => false).first
-    @ap_student = @ap_cud.user
-    # The adder.py Assessment
-    @adder_asm = Assessment.find_by(:course => @ap_course, :name => 'labtemplate')
-    # make sure we can submit to this assessment
-    @adder_asm.due_at = Time.now + 1.hour
-    @adder_asm.end_at = Time.now + 1.hour
-    @adder_asm.grading_deadline = Time.now + 1.hour
-    @adder_asm.save!
-  end
-  
-  let!(:application) { Doorkeeper::Application.create! :name => "TestApp", :redirect_uri => "https://example.com", :scopes => "user_info user_submit" }
-  let!(:token) { Doorkeeper::AccessToken.create! :application_id => application.id, :resource_owner_id => @ap_student.id, :scopes => "user_info user_submit" }
+  include_context "api handin context"
 
   it "accepts handin and handles Tango callback correctly" do
     # count number of submissions before
