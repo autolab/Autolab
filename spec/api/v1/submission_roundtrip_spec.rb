@@ -3,7 +3,7 @@ require_relative "tango_mock.rb"
 
 RSpec.describe "API Submission Autograding Roundtrip Test", :type => :request do
   include_context "tango mock"
-  # Note: this test context does not use shared context
+  # Note: this test context does not use api_shared_context
   before :each do
     # The adder.py file to hand in
     @handin_file = fixture_file_upload('handins/adder.py', 'text/plain')
