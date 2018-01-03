@@ -159,7 +159,7 @@ class Api::V1::AssessmentsController < Api::V1::BaseApiController
       begin
         sendJob(@course, @assessment, submissions, @cud)
       rescue AssessmentAutogradeCore::AutogradeError => e
-        raise ApiError.new(e.msg, :internal_server_error)
+        raise ApiError.new(e.message, :internal_server_error)
       end
     end
 
