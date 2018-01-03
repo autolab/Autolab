@@ -14,6 +14,7 @@ RSpec.describe "API Submission Autograding Roundtrip Test", :type => :request do
     # make sure we can submit to this assessment
     @adder_asm.due_at = Time.now + 1.hour
     @adder_asm.end_at = Time.now + 1.hour
+    @adder_asm.grading_deadline = Time.now + 1.hour
     @adder_asm.save!
   end
   

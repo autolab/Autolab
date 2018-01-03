@@ -50,6 +50,11 @@ RSpec.describe Api::V1::AssessmentsController, :type => :controller do
       @ap_student = @ap_cud.user
       # The adder.py Assessment
       @adder_asm = Assessment.find_by(:course => @ap_course, :name => 'labtemplate')
+      # make sure we can submit to this assessment
+      @adder_asm.due_at = Time.now + 1.hour
+      @adder_asm.end_at = Time.now + 1.hour
+      @adder_asm.grading_deadline = Time.now + 1.hour
+      @adder_asm.save!
     end
 
     let!(:bad_application) { Doorkeeper::Application.create! :name => "TestApp", :redirect_uri => "https://example.com", :scopes => "user_info user_courses" }
