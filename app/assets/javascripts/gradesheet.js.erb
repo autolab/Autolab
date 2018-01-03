@@ -22,36 +22,22 @@ jQuery(function() {
           'X-CSRF-Token' : $('meta[name="csrf-token"]').attr('content')
       },
     });
-    // fast numeric-html sorts (but --'s aren't sorted correctly)
+
+    // fast numeric-html sorts, NaN treated as negative infinity
     jQuery.extend(jQuery.fn.dataTableExt.oSort, {
       "num-html-pre": function (a) {
-        return parseFloat(String(a).replace(/<[\s\S]*?>/g, ""));
+        var num = parseFloat(String(a).replace(/<[\s\S]*?>/g, ""));
+        return isNaN(num) ? Number.NEGATIVE_INFINITY : num
       },
    
       "num-html-asc": function ( a, b ) {
-        a_nan = isNaN(a);
-        b_nan = isNaN(b);
-        if (a_nan) {
-          if (b_nan) { return 0; } else { return -1; }
-        } else {
-          if (b_nan) { return 1; } else {
-            return ((a < b) ? -1 : ((a > b) ? 1 : 0));
-          }
-        }
+        return ((a < b) ? -1 : ((a > b) ? 1 : 0));
       },
    
       "num-html-desc": function ( a, b ) {
-        a_nan = isNaN(a);
-        b_nan = isNaN(b);
-        if (a_nan) {
-          if (b_nan) { return 0; } else { return 1; }
-        } else {
-          if (b_nan) { return -1; } else {
-            return ((a > b) ? -1 : ((a < b) ? 1 : 0));
-          }
-        }
+        return ((a > b) ? -1 : ((a < b) ? 1 : 0));
       }
-    } );
+    });
 
     // from http://www.datatables.net/plug-ins/api. ugly, but for now...
     jQuery.fn.dataTableExt.oApi.fnSetFilteringDelay = function ( oSettings, iDelay ) {

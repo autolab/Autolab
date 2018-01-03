@@ -4,7 +4,7 @@
 # custom datetimepicker. In reality, it's goal is to wrap common form builder
 # methods in Bootstrap boilerplate code.
 class FormBuilderWithDateTimeInput < ActionView::Helpers::FormBuilder
-  %w(text_field text_area).each do |method_name|
+  %w(text_field text_area email_field).each do |method_name|
     # retain access to default textfield, etc. helpers
     alias_method "vanilla_#{method_name}", method_name
 
@@ -13,6 +13,11 @@ class FormBuilderWithDateTimeInput < ActionView::Helpers::FormBuilder
 
       # DEPRECATED: add form-control class (for Bootstrap styling) and pass on to Rails
       options[:class] = "#{options[:class]}"
+
+      unless options.include?(:placeholder)
+          options[:placeholder] = ""
+      end
+
       field = super name, *(args + [options])
 
       wrap_field name, field, options[:help_text], options[:display_name]
@@ -23,13 +28,11 @@ class FormBuilderWithDateTimeInput < ActionView::Helpers::FormBuilder
     options = args.extract_options!
 
     fields = fields_for name do |f|
-      @template.content_tag :div, class: "score-adjustment" do
-        (f.vanilla_text_field :value, class: "input-field score-box", placeholder: "10") +
+        (f.vanilla_text_field :value, class: "score-box", placeholder: "10") +
         (@template.content_tag :div, class: "" do
           f.select(:kind, { "points" => "points", "%" => "percent" }, {},
-                   class: "input-field  carrot")
+                   class: "carrot")
         end)
-      end
     end
 
     wrap_field name, fields, options[:help_text]
@@ -50,9 +53,13 @@ class FormBuilderWithDateTimeInput < ActionView::Helpers::FormBuilder
 
     field = super name, *(args + [options])
 
-    @template.content_tag :div, class: "checkbox-input" do
-      field + label(name, display_name, class: "control-label") +
-        help_text(name, options[:help_text])
+    unless options.include?(:help_text)
+        options[:help_text] = " "
+    end
+
+    @template.content_tag :div do
+          field + label(name, display_name, class: "control-label") +
+            help_text(name, options[:help_text])
     end
   end
 
@@ -62,6 +69,14 @@ class FormBuilderWithDateTimeInput < ActionView::Helpers::FormBuilder
     field = super name, *(args + [options])
 
     wrap_field name, field, options[:help_text], options[:display_name]
+  end
+
+  def file_field_nowrap(name, *args)
+    options = args.extract_options!
+
+    field = method(:file_field).super_method.call name, *(args + [options])
+
+    field
   end
 
   def date_select(name, options = {}, _html_options = {})

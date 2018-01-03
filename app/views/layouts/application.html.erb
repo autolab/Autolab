@@ -3,10 +3,10 @@
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=0">
     <%= csrf_meta_tag %>
-    <%= favicon_link_tag 'favicon.ico?v=1' %>
+    <%= favicon_link_tag 'autolab.ico?v=3' %>
 
     <%= stylesheet_link_tag 'application' %>
-    <!-- Flatpickr Datepicker CSS (lightweight file) -->   
+    <!-- Flatpickr Datepicker CSS (lightweight file) -->
     <%= stylesheet_link_tag "https://unpkg.com/flatpickr/dist/flatpickr.min.css" %>
     <%= stylesheet_link_tag 'animate' %>
     <%= stylesheet_link_tag 'style' %>
@@ -59,6 +59,12 @@
           <%= content_tag :div, sanitize(msg), id: "flash_#{name}",
               class: "#{name}" %>
           <% end %>
+
+          <noscript>
+              <div id="flash_error" class="error">
+                  AutoLab requires Javascript to be enabled for all features to correctly function. Please enable Javascript.
+              </div>
+          </noscript>
         </div>
         <!-- End Flashes -->
 

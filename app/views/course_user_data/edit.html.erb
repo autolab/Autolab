@@ -1,4 +1,4 @@
-<% @title = "Editing Account Details for " + @editCUD.user.email %>
+<% @title = "Editing Enrollment for " + @editCUD.user.full_name %>
 
 <% content_for :javascripts do %>
   <script type="application/javascript">
@@ -32,7 +32,10 @@
   </script>
 <% end %>
 
-<%= form_for @editCUD, url: course_course_user_datum_path(@course, @editCUD) do |f| %>
+<br>
+<h2>Editing <%= @editCUD.user.full_name %>'s Enrollment in <%= @course.display_name %></h2>
+
+<%= form_for @editCUD, url: course_course_user_datum_path(@course, @editCUD), builder: FormBuilderWithDateTimeInput do |f| %>
 <% if @editCUD.errors.any? %>
 	<div id="error_explanation">
 		<h2><%= pluralize(@editCUD.errors.count, "error") %>
@@ -46,57 +49,9 @@
 	</div>
 <% end %>
 
-  <table width=70% class="verticalTable" >
-  <tr><th>Course</th><td><%= @editCUD.course.display_name %></td></tr>
+  <br><br>
+  <%= render partial: "fields", locals: {f: f, cud: @editCUD} %>
 
-  <%= f.fields_for :user, @editCUD.user do |u| %>
-    <tr><th>First name: </th><td><%= u.text_field :first_name %></td></tr>
-    <tr><th>Last name: </th><td><%= u.text_field :last_name %></td></tr>
-  	<tr><th>Email: </th><td><%= u.text_field :email %></td></tr>
-  <% end %>
-
-  <tr><th>Nickname: </th><td><%= f.text_field :nickname %></td>
-  <td class="smallText">Anonymizing nickname to display on the public scoreboards</td> </tr>
-
-  <tr><th>School</th><td><%= @editCUD.user.school or "N/A" %></td>
-  <td class="smallText">Ex: SCS/CIT</td></tr>
-
-  <tr><th>Major</th><td><%= @editCUD.user.major or "N/A"%></td>
-  <td class="smallText">Ex: CS/ECE</td></tr>
-
-  <tr><th>Year</th><td><%= @editCUD.user.year or "N/A" %></td>
-  <td class="smallText">Ex: 3</td></tr>
-
-  <tr><th>Lecture</th><td><%= if @cud.instructor? then f.text_field :lecture else @editCUD.lecture end %></td>
-  <td class="smallText">Ex: 15213/18213</td></tr>
-
-  <tr><th>Section</th><td><%= if (@cud.instructor?) or (@editCUD.course.name == "15213-s11") then f.text_field :section else @editCUD.section end%></td>
-  <td class="smallText">Ex: C<% if @cud.instructor? %>. A course assistant can see the gradebook and bulk-release grades for their assigned <em>lecture and section</em>.<% end %></td></tr>
-
-  <% if @cud.instructor? then %>
-
-  <tr>
-    <th>Course average tweak:</th>
-    <td>
-    <%= f.fields_for :tweak, @editCUD.tweak do |t| %>
-      <%= t.text_field :value, :size => 18 %>
-      <%= t.select :kind, options_for_select({"points" => "points", "%" => "percent"}, :selected => (@editCUD.tweak ? @editCUD.tweak.kind : "points")) %>
-    <% end %>
-    </td>btn primary handin-btn
-    <td class="smallText">A tweak is a positive or negative value that adjusts the student's course average.<br>Ex: A tweak of 5 points would increase the student's course average by 5 points. </td>
-  </tr>
-
-	<tr><th>Dropped?</th><td><%= f.check_box :dropped %><label for="course_user_datum_dropped"></label></td>
-  <td class="smallText">Dropping a student from a course prevents them from handing in submissions or downloading assessments. Additionally they do not appear in any gradebook. None of their account information or submissions are deleted.</td></tr>
-
-  <tr><th>Instructor?</th><td><%= f.check_box :instructor %><label for="course_user_datum_instructor"></label></td>
-  <td class="smallText">Instructors have full read/write access to the course. </td></tr>
-
-  <tr><th>Course assistant?</th><td><%= f.check_box :course_assistant %><label for="course_user_datum_course_assistant"></label></td>
-  <td class="smallText">Course assistants can assign scores to problems and nothing else.</td></tr>
-  <% end %>
-
-  </table>
   <br>
   <br>
   <input id="user_submit" name="commit" type="submit" class="btn primary" value="Save Changes" onclick="formvalidation(this.parentNode); return false;">

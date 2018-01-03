@@ -134,7 +134,7 @@ class ScoreboardsController < ApplicationController
 
   action_auth_level :update, :instructor
   def update
-    flash[:info] = "Saved!" if @scoreboard.update(scoreboard_params)
+    @scoreboard.update(scoreboard_params) ? flash[:notice] = "Saved!" : flash[:error] = @scoreboard.errors.full_messages.join('')
     redirect_to(action: :edit) && return
   end
 
@@ -166,7 +166,7 @@ private
   # emitColSpec - Emits a text summary of a column specification string.
   def emitColSpec(colspec)
     return "Empty column specification" if colspec.blank?
-
+    
     begin
       # Quote JSON keys and values if they are not already quoted
       quoted = colspec.gsub(/([a-zA-Z0-9]+):/, '"\1":').gsub(/:([a-zA-Z0-9]+)/, ':"\1"')

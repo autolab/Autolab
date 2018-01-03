@@ -10,6 +10,7 @@
 <div class="input-field">
   <%= f.label :category_name, { :class=>"control-label" } %>
   <%= f.collection_select :category_name, @course.assessment_categories, :to_s, :to_s, {selected: @assessment.category_name} %>
+  or
   <%= text_field_tag :new_category, nil, placeholder: "New Category" %>
   <p class="help-block">Select an existing category or enter a new category name <i>(you can always change it later)</i></p>
 </div>
@@ -17,41 +18,48 @@
 
 <%= f.text_field :group_size,
   display_name: "Group Size",
-  help_text: "Set the maximum size of groups for this assessment.  If group size is 1, the assessment is solo.  If the size is decreased, groups that are too large will not be broken up.  If the size is set to 1, groups will be saved, but the assessment will be solo." %>
+  help_text: "Set the maximum size of groups for this assessment.  If group size is 1, the assessment is solo.  If the size is decreased, groups that are too large will not be broken up.  If the size is set to 1, groups will be saved, but the assessment will be solo.", placeholder: "1" %>
 
 <div class="assessments-label">
 	<%= f.text_area  :description, class: "materialize-textarea", help_text: "", placeholder: "(Optional) Description of assessment" %>
-	<%= f.text_field :handout, help_text: "File in the assessment directory containing materials that the instructor hands out to students or URL to redirect to. E.g., 'malloclab-handout.tar', 'http://school.edu/class/malloclab.zip'" %>
-	<%= f.text_field :writeup, help_text: "File in the assessment directory or URL containing instructions to students. E.g., 'writeup/malloclab.pdf', 'http://school.edu/class/writeup.pdf'" %>
+
+	<%= f.text_field :handout, help_text: "File path from the assessment directory containing materials that the instructor hands out to students, or a URL to redirect to.", placeholder: "E.g.   malloclab.zip   or   http://school.edu/class/malloclab.zip" %>
+
+	<%= f.text_field :writeup, help_text: "File path from the assessment directory containing instructions to students, or a URL to redirect to.", placeholder: "E.g.   writeup.pdf   or   http://school.edu/class/writeup.pdf" %>
 </div>
 
-<div class="embedded-form" style="margin-top: 2rem;">
+<div class="embedded-form">
   <%= f.check_box :embedded_quiz, display_name: "Embedded Form", style: "margin-top: 0.8rem;", onclick: "boxClicked();" %>
 
-  <div class="row">
     <label class="custom-file-upload">
-          <span class = "btn primary" id="upload_button">
+          <span class = "btn primary" id="upload_button" style="clear:both;">
             Embedded Form
-            <%= f.file_field :embedded_quiz_form, class: "upload_embedded" %>
+            <%= f.file_field_nowrap :embedded_quiz_form, class: "upload_embedded" %>
           </span>
     </label>
+
+    <p class="file_name">
+        <span id="file_name"></span>
+    </p>
+
     <% if @assessment.embedded_quiz_form_data.nil? %>
-        <input type="text" id="file_name" readonly value="Select to Upload a File.">
+        <p class="help-text">
+            Select to Upload a File.
+        </p>
     <% else %>
-        <input type="text" id="file_name" readonly value="Upload will replace existing file." class="red-text">
+        <p class="help-text red-text">
+            Upload will replace existing file.
+        </p>
     <% end %>
-
-  </div>
-
   <p class="help-block">
-    For more information on Embedded Forms, visit our new 
-    <a href="https://autolab.github.io/docs/features/#embedded-forms"> docs page.</a>
+    For more information on Embedded Forms, visit our new
+    <a href="https://autolab.github.io/docs/features/#embedded-forms" target="_blank"> docs page.</a>
     </p>
 </div>
 
 <script>
     document.getElementById("assessment_embedded_quiz_form").onchange = function(e) {
-        document.getElementById("file_name").value = document.getElementById("assessment_embedded_quiz_form").value.split(/(\\|\/)/g).pop();
+        document.getElementById("file_name").textContent = "File Selected: " + document.getElementById("assessment_embedded_quiz_form").value.split(/(\\|\/)/g).pop();
     }
 </script>
 
@@ -93,5 +101,5 @@
 
 <div class="action_buttons">
   <%= f.submit "Save" %>
-  <%= link_to "Delete Assessment", course_assessment_path(@course, @assessment), method: :delete, class: 'waves-effect waves-light btn btn-danger', data: { confirm: " Deleting will delete all associated assessment data and cannot be undone. Are you sure you want to delete this assessment?" } %>
+  <%= link_to "Delete Assessment", course_assessment_path(@course, @assessment), method: :delete, class: 'btn btn-danger', data: { confirm: " Deleting will delete all associated assessment data and cannot be undone. Are you sure you want to delete this assessment?" } %>
 </div>

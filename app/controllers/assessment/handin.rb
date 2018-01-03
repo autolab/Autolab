@@ -48,7 +48,15 @@ module AssessmentHandin
     # save the submissions
     begin
       submissions = saveHandin(params[:submission])
-    rescue
+    rescue StandardError => exception
+      ExceptionNotifier.notify_exception(exception, env: request.env,
+                                         data: {
+                                           user: current_user,
+                                           course: @course,
+                                           assessment: @assessment
+                                         })
+
+      COURSE_LOGGER.log("could not save handin: #{exception.class} (#{exception.message})")
       submissions = nil
     end
 
@@ -115,6 +123,12 @@ module AssessmentHandin
         begin
           submissions = saveHandin("local_submit_file" => File.join(remote_handin_dir, handin_file))
         rescue StandardError => e
+          ExceptionNotifier.notify_exception(e, env: request.env,
+                                             data: {
+                                               user: current_user,
+                                               course: @course,
+                                               assessment: @assessment
+                                             })
           COURSE_LOGGER.log("Error Saving Submission:\n#{e}")
           submissions = nil
         end
@@ -132,6 +146,13 @@ module AssessmentHandin
         sendJob_AddHTMLMessages(@course, @assessment, submissions) if @assessment.has_autograder?
 
       rescue StandardError => e
+        ExceptionNotifier.notify_exception(e, env: request.env,
+                                           data: {
+                                             user: current_user,
+                                             course: @course,
+                                             assessment: @assessment,
+                                             submission: submissions[0]
+                                           })
         COURSE_LOGGER.log(e.to_s)
       end
 
@@ -158,7 +179,13 @@ module AssessmentHandin
       if Dir.exist?(remote_handin_dir)
         begin
           FileUtils.rm_rf(remote_handin_dir)
-        rescue SystemCallError
+        rescue SystemCallError => exception
+          ExceptionNotifier.notify_exception(exception, env: request.env,
+                                             data: {
+                                               user: current_user,
+                                               course: @course,
+                                               assessment: @assessment
+                                             })
           render(plain: "WARNING: could not clear previous handin directory, please") && return
         end
       end
@@ -166,6 +193,12 @@ module AssessmentHandin
       begin
         Dir.mkdir(remote_handin_dir)
       rescue SystemCallError
+        ExceptionNotifier.notify_exception(exception, env: request.env,
+                                           data: {
+                                             user: current_user,
+                                             course: @course,
+                                             assessment: @assessment
+                                           })
         COURSE_LOGGER.log("ERROR: Could not create handin directory. Please contact
         #{Rails.configuration.school['support_email']} with this error")
       end
@@ -244,6 +277,13 @@ module AssessmentHandin
         score.save!
       end
     rescue StandardError => e
+      ExceptionNotifier.notify_exception(e, env: request.env,
+                                         data: {
+                                           user: current_user,
+                                           course: @course,
+                                           assessment: @assessment,
+                                           submission: submission
+                                         })
       COURSE_LOGGER.log(e.to_s)
     end
 

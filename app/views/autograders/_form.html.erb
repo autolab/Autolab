@@ -35,7 +35,7 @@
     help_text: "Check to release autograded scores to students immediately after autograding (strongly recommended)." %>
 
 	<br />
-	<label class="waves-effect waves-light btn primary">
+	<label class="btn primary">
   	Autograder Makefile
 	  <span class="hide-all">
   	  <%= f.file_field :makefile, action: :upload %>
@@ -43,7 +43,7 @@
 	</label><br />
 	<input var id="makefile_name" value="autograde-Makefile" readonly>
 	
-	<label class="waves-effect waves-light btn primary">
+	<label class="btn primary">
   	Autograder Tar
 	  <span class="hide-all">
   	  <%= f.file_field :tar, action: :upload %>
@@ -56,6 +56,6 @@
 
   <%= f.submit "Save Settings", { class: "" } %>
   
-  <%= link_to "Delete Autograder", [@course, @assessment, :autograder], method: :delete, class: "waves-effect waves-light btn danger",
+  <%= link_to "Delete Autograder", [@course, @assessment, :autograder], method: :delete, class: "btn danger",
               data: {confirm: "Are you sure you want to delete the Autograder for this assesssment?"} %>
 <% end %>

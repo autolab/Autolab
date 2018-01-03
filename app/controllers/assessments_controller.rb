@@ -202,8 +202,8 @@ class AssessmentsController < ApplicationController
     @assessment.visible_at = Time.now
     @assessment.start_at = Time.now
     @assessment.due_at = Time.now
-    @assessment.grading_deadline = Time.now
     @assessment.end_at = Time.now
+    @assessment.grading_deadline = Time.now
     @assessment.quiz = false
     @assessment.quizData = ""
     @assessment.max_submissions = params.include?(:max_submissions) ? params[:max_submissions] : -1
@@ -535,9 +535,16 @@ class AssessmentsController < ApplicationController
       @assessment.save!
     end
 
-    flash[:success] = "Saved!" if @assessment.update!(edit_assessment_params)
 
-    redirect_to(tab_index) && return
+    begin
+      flash[:success] = "Saved!" if @assessment.update!(edit_assessment_params)
+
+      redirect_to(tab_index) && return
+    rescue ActiveRecord::RecordInvalid => invalid
+      flash[:error] = invalid.message.sub! "Validation failed: ", ""
+
+      redirect_to(tab_index) && return
+    end
   end
 
   action_auth_level :releaseAllGrades, :instructor
@@ -668,10 +675,12 @@ private
   def edit_assessment_params
     ass = params.require(:assessment)
     ass[:category_name] = params[:new_category] unless params[:new_category].blank?
+
     if ass[:late_penalty_attributes] && ass[:late_penalty_attributes][:value].blank?
       ass.delete(:late_penalty_attributes)
       @assessment.late_penalty.destroy unless @assessment.late_penalty.nil?
     end
+
     if ass[:version_penalty_attributes] && ass[:version_penalty_attributes][:value].blank?
       ass.delete(:version_penalty_attributes)
       @assessment.version_penalty.destroy unless @assessment.version_penalty.nil?
