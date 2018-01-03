@@ -15,6 +15,7 @@ class Api::V1::BaseApiController < ActionController::Base
   respond_to :json
 
   before_action :doorkeeper_authorize! # OAuth2 token authentication for all actions
+  before_action :set_up_logger         # Logger must be setup before everything else
   before_action :set_default_response_format
 
   before_action :set_course, except: [:render_404]
@@ -43,6 +44,7 @@ class Api::V1::BaseApiController < ActionController::Base
   end
 
   def respond_with_api_error(error)
+    ApiLogger.log(:warn, "#{error.status_code} Error: #{error.message}")
     render :json => {:error => error.message}.to_json, :status => error.status_code
   end
 
@@ -54,7 +56,25 @@ class Api::V1::BaseApiController < ActionController::Base
     respond_with_hash({:msg => s})
   end
 
-  protected
+protected
+
+  # Logger for API controllers
+  class ApiLogger
+    def self.setup(user_id, client_id, ip)
+      @user_id = user_id
+      @client_id = client_id
+      @ip = ip
+    end
+
+    def self.log(level, msg)
+      strTime = Time.now.strftime("%m/%d/%y %H:%M:%S")
+      Rails.logger.send(level) {"#{level.upcase} -- #{strTime} -- #{@ip} C#{@client_id} U#{@user_id} -- #{msg}"}
+    end
+  end
+
+  def set_up_logger
+    ApiLogger.setup(current_user.id, current_app.id, request.remote_ip)
+  end
 
   def require_params(reqs)
     reqs.each do |item|
