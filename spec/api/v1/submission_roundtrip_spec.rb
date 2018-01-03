@@ -1,8 +1,10 @@
 require 'rails_helper'
+require_relative "tango_mock.rb"
 
 RSpec.describe "API Submission Autograding Roundtrip Test", :type => :request do
+  include_context "tango mock"
   # Note: this test context does not use shared context
-  before :context do
+  before :each do
     # The adder.py file to hand in
     @handin_file = fixture_file_upload('handins/adder.py', 'text/plain')
     # The AutoPopulate Course
@@ -35,8 +37,7 @@ RSpec.describe "API Submission Autograding Roundtrip Test", :type => :request do
 
     # mock a Tango callback
     latest_sub = Submission.where(:course_user_datum_id => @ap_cud.id, :assessment => @adder_asm).order(:version).last
-    feedback_file = fixture_file_upload('feedback.txt', 'text/plain')
-    post "/courses/#{@ap_course.name}/assessments/#{@adder_asm.name}/autograde_done?dave=#{latest_sub.dave}&submission_id=#{latest_sub.id}", :file => feedback_file
+    mock_tango_callback(@ap_course.name, @adder_asm.name, latest_sub.dave, latest_sub.id, 'feedback.txt')
 
     # check score
     problem = @adder_asm.problems.find_by(:name => "autograded")
