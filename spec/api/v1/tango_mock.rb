@@ -19,9 +19,9 @@ RSpec.shared_context "tango mock" do
                    statusMsg: "Found directory",
                    files: files}
 
-    tango_stub_open = stub_request(:get, open_uri).
-                      to_return(status: 200, body: open_result.to_json,
-                        headers: default_resp_header)
+    @tango_stub_open = stub_request(:get, open_uri).
+                       to_return(status: 200, body: open_result.to_json,
+                         headers: default_resp_header)
 
     #--------#
     # upload #
@@ -31,9 +31,9 @@ RSpec.shared_context "tango mock" do
     upload_result = {statusId: 0,
                      statusMsg: "Uploaded file"}
 
-    tango_stub_upload = stub_request(:post, upload_uri).
-                        to_return(status: 200, body: upload_result.to_json,
-                        headers: default_resp_header)
+    @tango_stub_upload = stub_request(:post, upload_uri).
+                         to_return(status: 200, body: upload_result.to_json,
+                           headers: default_resp_header)
 
     #--------#
     # addJob #
@@ -44,9 +44,9 @@ RSpec.shared_context "tango mock" do
                      statusMsg: "Job added",
                      jobId: 42}
 
-    tango_stub_addjob = stub_request(:post, addjob_uri).
-                        to_return(status: 200, body: addjob_result.to_json,
-                        headers: default_resp_header)
+    @tango_stub_addjob = stub_request(:post, addjob_uri).
+                         to_return(status: 200, body: addjob_result.to_json,
+                           headers: default_resp_header)
 
     # Mock a tango callback when autograding is done
     # params:
@@ -59,6 +59,12 @@ RSpec.shared_context "tango mock" do
       feedback_file = fixture_file_upload(filename, 'text/plain')
       post "/courses/#{course_name}/assessments/#{asmt_name}/autograde_done?dave=#{dave}&submission_id=#{sub_id}", :file => feedback_file
     end
+  end
+
+  after :each do
+    remove_request_stub(@tango_stub_open)
+    remove_request_stub(@tango_stub_upload)
+    remove_request_stub(@tango_stub_addjob)
   end
 
 end
