@@ -73,8 +73,8 @@ RSpec.describe Api::V1::AssessmentsController, :type => :controller do
       post :submit, :access_token => token.token, :course_name => @ap_course.name, :assessment_name => @adder_asm.name, :submission => subm
       msg = JSON.parse(response.body)
       expect(response.response_code).to eq(200)
-      expect(msg).to include('success')
-      expect(msg['success']).to match(/Submitted file [^\s]+ for autograding/)
+      expect(msg).to include('version')
+      expect(msg['version']).to eq(sub_count + 1)
 
       # count submissions after
       sub_count_after = Submission.where(:course_user_datum_id => @ap_cud.id, :assessment => @adder_asm).count

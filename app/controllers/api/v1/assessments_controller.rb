@@ -49,7 +49,7 @@ class Api::V1::AssessmentsController < Api::V1::BaseApiController
       return
     end
 
-    respond_with_hash({:msg => "There is no writeup for this assessment."})
+    raise ApiError.new("no writeup", :not_found)
   end
 
   # endpoint for obtaining the handout
@@ -76,7 +76,7 @@ class Api::V1::AssessmentsController < Api::V1::BaseApiController
       return
     end
 
-    respond_with_hash({:msg => "There is no handout for this assessment."})
+    raise ApiError.new("no handout", :not_found)
   end
 
   # endpoint for submitting to assessments
@@ -163,7 +163,7 @@ class Api::V1::AssessmentsController < Api::V1::BaseApiController
       end
     end
 
-    respond_with_hash({:success => "Submitted file #{submissions[0].filename} for autograding"})
+    respond_with_hash({version: submissions[0].version, filename: submissions[0].filename})
   end
 
 end

@@ -59,7 +59,7 @@ class Api::V1::CoursesController < Api::V1::BaseApiController
       raise ApiError.new(e.message, :internal_server_error)
     end
 
-    respond_with_string "Successfully created course #{newCourse.name}"
+    respond_with_hash({name: newCourse.name})
   end
 
 end

@@ -52,11 +52,7 @@ class Api::V1::BaseApiController < ActionController::Base
     render :json => h.to_json
   end
 
-  def respond_with_string(s)
-    respond_with_hash({:msg => s})
-  end
-
-protected
+  protected
 
   # Logger for API controllers
   class ApiLogger

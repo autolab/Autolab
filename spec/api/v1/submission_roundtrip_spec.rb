@@ -16,8 +16,8 @@ RSpec.describe "API Submission Autograding Roundtrip Test", :type => :request do
     post "/api/v1/courses/#{@ap_course.name}/assessments/#{@adder_asm.name}/submit", :access_token => token.token, :submission => subm
     msg = JSON.parse(response.body)
     expect(response.response_code).to eq(200)
-    expect(msg).to include('success')
-    expect(msg['success']).to match(/Submitted file [^\s]+ for autograding/)
+    expect(msg).to include('version')
+    expect(msg['version']).to match(sub_count + 1)
 
     # count submissions after
     sub_count_after = Submission.where(:course_user_datum_id => @ap_cud.id, :assessment => @adder_asm).count
