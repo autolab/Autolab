@@ -10,7 +10,7 @@ class Api::V1::AssessmentsController < Api::V1::BaseApiController
 
   def index
     asmts = @course.assessments.ordered
-    allowed = [:name, :display_name, :description, :start_at, :due_at, :end_at, :updated_at, :max_grace_days, :handout, :writeup, :max_submissions, :disable_handins, :category_name, :group_size, :has_scoreboard, :has_autograder]
+    allowed = [:name, :display_name, :description, :start_at, :due_at, :end_at, :updated_at, :max_grace_days, :max_submissions, :disable_handins, :category_name, :group_size, :has_scoreboard, :has_autograder]
     if @cud.student?
       asmts = asmts.released
     else
