@@ -22,7 +22,7 @@ class Oauth::DeviceFlowController < ActionController::Base
     end
 
     # success!
-    render :json => {device_code: req.device_code, user_code: req.user_code}.to_json
+    render :json => {device_code: req.device_code, user_code: req.user_code, verification_uri: device_flow_activation_url}.to_json
   end
 
   # expects params: client_id, device_code
