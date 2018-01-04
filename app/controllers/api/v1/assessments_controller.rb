@@ -14,7 +14,7 @@ class Api::V1::AssessmentsController < Api::V1::BaseApiController
     if @cud.student?
       asmts = asmts.released
     else
-      allowed += [:visible_at, :grading_deadline]
+      allowed += [:grading_deadline]
     end
 
     results = []
