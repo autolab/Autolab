@@ -12,7 +12,7 @@ Autolab3::Application.routes.draw do
 
       resources :courses, param: :name, only: [:index] do
           get 'create', on: :collection
-        resources :assessments, param: :name, only: [:index] do
+        resources :assessments, param: :name, only: [:index, :show] do
           get 'problems'
           get 'writeup'
           get 'handout'

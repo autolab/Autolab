@@ -10,22 +10,42 @@ class Api::V1::AssessmentsController < Api::V1::BaseApiController
 
   def index
     asmts = @course.assessments.ordered
-    allowed = [:name, :display_name, :description, :start_at, :due_at, :end_at, :updated_at, :max_grace_days, :max_submissions, :disable_handins, :category_name, :group_size, :has_scoreboard, :has_autograder]
+    allowed = [:name, :display_name, :start_at, :due_at, :end_at, :category_name]
     if @cud.student?
       asmts = asmts.released
     else
       allowed += [:grading_deadline]
     end
 
-    results = []
-    asmts.each do |asmt|
-      result = asmt.attributes.symbolize_keys
-      result.merge!(:has_scoreboard => asmt.has_scoreboard?)
-      result.merge!(:has_autograder => asmt.has_autograder?)
-      results << result
+    respond_with asmts, only: allowed
+  end
+
+  def show
+    allowed = [:name, :display_name, :description, :start_at, :due_at, :end_at, :updated_at, :max_grace_days, :max_submissions,
+      :disable_handins, :category_name, :group_size, :writeup_format, :handout_format, :has_scoreboard, :has_autograder]
+    if not @cud.student?
+      allowed += [:grading_deadline]
     end
 
-    respond_with results, only: allowed
+    result = @assessment.attributes.symbolize_keys
+    result.merge!(:has_scoreboard => @assessment.has_scoreboard?)
+    result.merge!(:has_autograder => @assessment.has_autograder?)
+    if @assessment.writeup_is_file?
+      result.merge!(:writeup_format => "file")
+    elsif @assessment.writeup_is_url?
+      result.merge!(:writeup_format => "url")
+    else
+      result.merge!(:writeup_format => "none")
+    end
+    if @assessment.overwrites_method?(:handout) or @assessment.handout_is_file?
+      result.merge!(:handout_format => "file")
+    elsif @assessment.handout_is_url?
+      result.merge!(:handout_format => "url")
+    else
+      result.merge!(:handout_format => "none")
+    end
+
+    respond_with result, only: allowed
   end
 
   # endpoint for obtaining details about all problems of an assessment
