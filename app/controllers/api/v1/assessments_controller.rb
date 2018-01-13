@@ -69,7 +69,7 @@ class Api::V1::AssessmentsController < Api::V1::BaseApiController
       return
     end
 
-    raise ApiError.new("no writeup", :not_found)
+    respond_with_hash({:writeup => "none"})
   end
 
   # endpoint for obtaining the handout
@@ -96,7 +96,7 @@ class Api::V1::AssessmentsController < Api::V1::BaseApiController
       return
     end
 
-    raise ApiError.new("no handout", :not_found)
+    respond_with_hash({:handout => "none"})
   end
 
   # endpoint for submitting to assessments
