@@ -76,6 +76,10 @@ gem 'database_cleaner', group: [:development, :test]
 gem 'codeclimate-test-reporter', group: :test, require: nil
 gem 'newrelic_rpm'
 
+# Automatic Time Zone Management
+gem 'browser-timezone-rails'
+gem 'js_cookie_rails'
+
 # Use ActiveModel has_secure_password
 # gem 'bcrypt', '~> 3.1.7'
 
