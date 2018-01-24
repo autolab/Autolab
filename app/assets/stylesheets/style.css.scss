@@ -414,10 +414,15 @@ div#footer .right {
   padding-top: 14px;
 }
 
-div#footer a {
+div#footer a,
+div#footer span.site_version {
   display: inline-block;
   padding: 12px;
   color: #666;
+}
+
+div#footer span.site_version {
+  float: right;
 }
 
 div#footer div.fb-like.fb_iframe_widget {

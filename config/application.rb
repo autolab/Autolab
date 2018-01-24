@@ -101,5 +101,8 @@ module Autolab3
 
     # configure throttling middleware rack-attack
     config.middleware.use Rack::Attack
+
+    # site version
+    config.site_version = "2.1.1"
   end
 end
