@@ -96,5 +96,8 @@ module Autolab3
 
     # School specific configuration (please edit config/school.yml)
     config.school = config_for(:school)
+
+    # site version
+    config.site_version = "2.1.1"
   end
 end
