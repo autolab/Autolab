@@ -195,6 +195,7 @@ class SubmissionsController < ApplicationController
       @problems = @assessment.problems.to_a
       @problems.sort! { |a, b| a.id <=> b.id }
 
+      # Only show annotations if grades have been released or the user is an instructor
       @annotations = []
       if(!@assessment.before_grading_deadline? || @cud.instructor || @cud.course_assistant)
         @annotations = @submission.annotations.to_a
