@@ -195,7 +195,10 @@ class SubmissionsController < ApplicationController
       @problems = @assessment.problems.to_a
       @problems.sort! { |a, b| a.id <=> b.id }
 
-      @annotations = @submission.annotations.to_a
+      @annotations = []
+      if(!@assessment.before_grading_deadline? || @cud.instructor || @cud.course_assistant)
+        @annotations = @submission.annotations.to_a
+      end
 
       Prawn::Document.generate(@filename_annotated, :template => @filename) do |pdf|
 
@@ -322,6 +325,11 @@ class SubmissionsController < ApplicationController
     @problemSummaries = {}
     @problemGrades = {}
 
+
+    # Only show annotations if grades have been released or the user is an instructor
+    unless(!@assessment.before_grading_deadline? || @cud.instructor || @cud.course_assistant)
+      @annotations = []
+    end
 
     # extract information from annotations
     @annotations.each do |annotation|
