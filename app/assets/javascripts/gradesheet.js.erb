@@ -226,9 +226,18 @@ jQuery(function() {
         var targets = reverse ? tabPrev : tabNext;
 
         // set focus to the first visible target
-        for (var i = 0; i < targets.length; i++) { var t = jQuery(targets[i]);
+        for (var i = 0; i < targets.length; i++) { 
+            var t = jQuery(targets[i]);
             if (t.is(':visible')) {
-                t.focus();
+                // If next tab element is the feedback save button 
+                // then save and load next editor
+                if(t.hasClass("save btn small primary")) {
+                  var editor = current_editor;
+                  t.click();
+                  get_next_editor(editor).click();
+                } else {
+                  t.focus();
+                }
                 return;
             }
         }
@@ -237,6 +246,27 @@ jQuery(function() {
         // TODO#1: what if no one in the tab cycle is visible anymore?
         if (targets.length > 0)
             tabber(targets.eq(0), reverse);
+    }
+    
+    // given an editor this will return the next editor
+    // it will jump to the next row if the editor is at the end of the row
+    function get_next_editor(editor) {
+      if(editor == null) {
+        return;
+      }
+      var current_cell = $(editor).parent();
+      var current_cell_index = current_cell.index();
+      var next_cell;
+      
+      // If the current cell is at the end of the row then jump to the first cell of next row
+      if(current_cell_index >= first_problem_column + problem_count - 1) {
+        var current_row = current_cell.parent();
+        var next_row = current_row.next();
+        next_cell = next_row.children().eq(first_problem_column);
+      } else {
+        next_cell = current_cell.next();
+      }
+      return next_cell.find($("div.editable"));
     }
 
     // always called when editor's closed, the hub for which is current_editor.reset()
