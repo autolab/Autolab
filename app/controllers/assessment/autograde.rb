@@ -13,6 +13,7 @@ module AssessmentAutograde
   def autograde_done
     @assessment = @course.assessments.find_by(name: params[:name])
     render(nothing: true) && return unless @assessment && @assessment.has_autograder?
+    ASSESSMENT_LOGGER.setAssessment(@assessment)
 
     # there can be multiple submission with the same dave if this was a group submission
     submissions = Submission.where(dave: params[:dave]).all
@@ -183,6 +184,10 @@ module AssessmentAutograde
       flash[:success] = ("Submitted file #{submissions[0].filename} (#{link}) for autograding." \
         " Refresh the page to see the results.").html_safe
     end
+    if job < 0
+      COURSE_LOGGER.log("SendJob failed for #{submissions[0].id}: code #{job}")
+      COURSE_LOGGER.log("SendJob user error message #{flash[:error]}")
+    end
     job
   end
 
@@ -228,6 +233,7 @@ module AssessmentAutograde
                            File.open(f["localFile"], "rb").read)
       rescue TangoClient::TangoException => e
         flash[:error] = "Error while uploading autograding files: #{e.message}"
+        COURSE_LOGGER.log("Error while uploading autograding files for #{submission.id}: #{e.message}")
         return -4, nil
       end
     end
@@ -243,16 +249,21 @@ module AssessmentAutograde
     # Generate the dave number/string, this is used when autograding is done.
     # The key is not guaranteed to be unique, but it's gonna be unique.
     dave = (0...60).map { 65.+(rand(25)).chr }.join
-
-    begin
-      # save dave keys.  These let us know which submissions to save the autoresult for
-      ActiveRecord::Base.transaction do
-        submissions.each do |submission|
-          submission.dave = dave
-          submission.save!
+    failed = false
+    # save dave keys.  These let us know which submissions to save the autoresult for
+    ActiveRecord::Base.transaction do
+      submissions.each do |submission|
+        submission.dave = dave
+        if not submission.save
+           COURSE_LOGGER.log("Error while updating submission #{submission.id} callback key:")
+           submission.errors.full_messages.each do |msg|
+              COURSE_LOGGER.log("   (#{submission.id}): #{msg}")
+           end
+           failed = true
         end
       end
-    rescue
+    end
+    if failed
       return -13, nil
     end
 
@@ -310,6 +321,7 @@ module AssessmentAutograde
       response = TangoClient.addjob("#{course.name}-#{assessment.name}", job_properties)
     rescue TangoClient::TangoException => e
       flash[:error] = "Error while adding job to the queue: #{e.message}"
+      COURSE_LOGGER.log("Error while adding job to the queue: #{e.message}")
       return -9, nil
     end
     [0, response]
@@ -334,14 +346,17 @@ module AssessmentAutograde
         end
       end
     rescue Timeout::Error
+      COURSE_LOGGER.log("Error while polling for #{submissions[0].id} job status: Timeout")
       return -11
     rescue TangoClient::TangoException => e
       flash[:error] = "Error while polling for job status: #{e.message}"
+      COURSE_LOGGER.log("Error while polling for #{submissions[0].id} job status: #{e.message}")
       return -11
     end
 
     if feedback.nil?
       return -12
+      COURSE_LOGGER.log("Error while polling for #{submissions[0].id} job status: No feedback")
     else
       if assessment.overwrites_method?(:autogradeDone)
         assessment.config_module.autogradeDone(submissions, feedback)
@@ -374,7 +389,7 @@ module AssessmentAutograde
       existing_files = TangoClient.open("#{course.name}-#{assessment.name}")
     rescue TangoClient::TangoException => e
       flash[:error] = "Error with open request on Tango: #{e.message}"
-      COURSE_LOGGER.log("#{e.message}")
+      COURSE_LOGGER.log("Error with open request on Tango for submission #{submissions[0].id}: #{e.message}")
       return -1
     end
 
@@ -518,9 +533,8 @@ module AssessmentAutograde
       end
     end
 
-    logger = Logger.new(Rails.root.join("courses", @course.name, @assessment.name, "log.txt"))
     submissions.each do |submission|
-      logger.add(Logger::INFO) { "#{submission.course_user_datum.email}, #{submission.version}, #{autoresult}" }
+      ASSESSMENT_LOGGER.log("#{submission.course_user_datum.email}, #{submission.version}, #{autoresult}")
     end
   end
 
@@ -596,7 +610,7 @@ module AssessmentAutograde
 
   rescue StandardError => error
     COURSE_LOGGER.log(error)
-    COURSE_LOGGER.log(error.backtrace)
+    error.backtrace.each { |line| COURSE_LOGGER.log(line) }
     raise error
   end
 end
