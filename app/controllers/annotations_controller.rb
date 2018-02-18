@@ -19,6 +19,13 @@ class AnnotationsController < ApplicationController
   def create
     annotation = @submission.annotations.new(annotation_params)
 
+    # Handling errors, in case @sub.anns.new() threw an error
+    if !@submission.valid?
+      @submission.errors.full_messages.each do |msg|
+        flash[:error] += "<br>#{msg}"
+      end
+    end
+
     annotation.save
     respond_with(@course, @assessment, @submission, annotation)
   end
@@ -27,6 +34,14 @@ class AnnotationsController < ApplicationController
   action_auth_level :update, :course_assistant
   def update
     @annotation.update(annotation_params)
+
+    # Handling errors, in case @sub.anns.new() threw an error
+    if !@annotation.valid?
+      @annotation.errors.full_messages.each do |msg|
+        flash[:error] += "<br>#{msg}"
+      end
+    end
+
     respond_with(@course, @assessment, @submission, @annotation) do |format|
       format.json { render json: @annotation }
     end
@@ -36,6 +51,14 @@ class AnnotationsController < ApplicationController
   action_auth_level :destroy, :course_assistant
   def destroy
     @annotation.destroy
+
+    # Handling errors, in case @sub.anns.new() threw an error
+    if !@annotation.valid?
+      @annotation.errors.full_messages.each do |msg|
+        flash[:error] += "<br>#{msg}"
+      end
+    end
+
     head :no_content
   end
 
@@ -51,5 +74,12 @@ private
 
   def set_annotation
     @annotation = @submission.annotations.find(params[:id])
+
+    # Handling errors, in case @sub.anns.new() threw an error
+    if !@annotation.valid?
+      @annotation.errors.full_messages.each do |msg|
+        flash[:error] += "<br>#{msg}"
+      end
+    end
   end
 end
