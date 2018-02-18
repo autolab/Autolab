@@ -19,7 +19,7 @@ class AnnotationsController < ApplicationController
   def create
     annotation = @submission.annotations.new(annotation_params)
 
-    # Handling errors, in case @sub.anns.new() threw an error
+    # Handling errors
     if !@submission.valid?
       @submission.errors.full_messages.each do |msg|
         flash[:error] += "<br>#{msg}"
@@ -35,7 +35,7 @@ class AnnotationsController < ApplicationController
   def update
     @annotation.update(annotation_params)
 
-    # Handling errors, in case @sub.anns.new() threw an error
+    # Handling errors
     if !@annotation.valid?
       @annotation.errors.full_messages.each do |msg|
         flash[:error] += "<br>#{msg}"
@@ -52,7 +52,7 @@ class AnnotationsController < ApplicationController
   def destroy
     @annotation.destroy
 
-    # Handling errors, in case @sub.anns.new() threw an error
+    # Handling errors
     if !@annotation.valid?
       @annotation.errors.full_messages.each do |msg|
         flash[:error] += "<br>#{msg}"
@@ -75,7 +75,7 @@ private
   def set_annotation
     @annotation = @submission.annotations.find(params[:id])
 
-    # Handling errors, in case @sub.anns.new() threw an error
+    # Handling errors
     if !@annotation.valid?
       @annotation.errors.full_messages.each do |msg|
         flash[:error] += "<br>#{msg}"
