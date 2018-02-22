@@ -19,7 +19,8 @@ class ApplicationController < ActionController::Base
   before_action :authenticate_for_action
   before_action :update_persistent_announcements
   before_action :set_breadcrumbs
-    rescue_from ActionView::MissingTemplate do |exception|
+  
+  rescue_from ActionView::MissingTemplate do |exception|
       redirect_to("/home/error_404")
   end
 
@@ -224,7 +225,10 @@ protected
       redirect_to(action: :index) && return
     end
 
-    redirect_to(action: :index) && return if @cud.student? && !@assessment.released?
+    if @cud.student? && !@assessment.released?
+      flash[:error] = "You are not authorized to view this assessment."
+      redirect_to(action: :index) && return
+    end
 
     @breadcrumbs << (view_context.current_assessment_link)
     ASSESSMENT_LOGGER.setAssessment(@assessment)
