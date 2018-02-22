@@ -1,6 +1,6 @@
 class Api::V1::SubmissionsController < Api::V1::BaseApiController
 
-  before_action -> {doorkeeper_authorize! :user_scores}
+  before_action -> {require_privilege :user_scores}
 
   before_action :set_assessment
 

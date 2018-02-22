@@ -1,12 +1,10 @@
 class Api::V1::CoursesController < Api::V1::BaseApiController
 
-  before_action -> {doorkeeper_authorize! :user_courses}, only: [:index]
-  before_action -> {doorkeeper_authorize! :admin_all}, only: [:create]
+  before_action -> {require_privilege :user_courses}, only: [:index]
+  before_action -> {require_privilege :admin_all}, only: [:create]
 
   skip_before_action :set_course
   skip_before_action :authorize_user_for_course
-
-  before_action :require_admin_privileges, only: [:create]
 
   def index
     courses_for_user = User.courses_for_user current_user

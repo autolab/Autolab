@@ -93,9 +93,28 @@ class Api::V1::BaseApiController < ActionController::Base
     request.format = :json
   end
 
-  def require_admin_privileges
-    if not current_user.administrator?
-      raise ApiError.new("User does not have admin privileges", :forbidden)
+  # 2-in-1 checker that checks the client scope and user privileges.
+  # Descendants should use this method in before_actions instead of 
+  # doorkeeper_authorize!
+  #
+  # Should only be called by descendants of the BaseApiController
+  # to maintain the order of before_actions
+  def require_privilege(scope)
+    # check if client has the required scope
+    doorkeeper_authorize! scope
+    return if performed?
+
+    # check if user has heightened privileges
+    case scope
+    when :admin_all
+      if not current_user.administrator?
+        raise ApiError.new("User does not have admin privileges", :forbidden)
+      end
+    when :instructor_all
+      # @cud must have been set if the before_action order is correct
+      if not @cud.instructor
+        raise ApiError.new("User does not have instructor privileges for this course", :forbidden)
+      end
     end
   end
 
@@ -114,12 +133,14 @@ class Api::V1::BaseApiController < ActionController::Base
     uid = current_user.id
 
     @cud = CourseUserDatum.find_cud_for_course(@course, uid)
+    unless @cud
+      raise ApiError.new("User is not in this course", :forbidden)
+    end
   end
 
   def set_assessment
-    begin
-      @assessment = @course.assessments.find_by!(name: params[:assessment_name] || params[:name])
-    rescue
+    @assessment = @course.assessments.find_by(name: params[:assessment_name] || params[:name])
+    unless @assessment
       raise ApiError.new("Assessment does not exist", :not_found)
     end
 
