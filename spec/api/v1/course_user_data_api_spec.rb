@@ -5,12 +5,13 @@ require_relative "api_shared_context.rb"
 # requires "api shared context" to have been included
 RSpec.shared_examples "a CUD route" do |method, action|
   it 'fails to authenticate when the app does not have instructor scope' do
-    send method, action, :access_token => token.token, :course_name => course.name
+    send method, action, :access_token => token.token, :course_name => course.name, :email => user.email
     expect(response.response_code).to eq(403)
   end
 
   it 'fails to authenticate when the user is not an instructor' do
-    send method, action, :access_token => instructor_token_for_user.token, :course_name => course.name
+    send method, action, :access_token => instructor_token_for_user.token, :course_name => course.name,
+      :email => instructor.email
     expect(response.response_code).to eq(403)
   end
 end
@@ -58,6 +59,9 @@ RSpec.describe Api::V1::CourseUserDataController, :type => :controller do
         :course_name => course.name, :email => rand_user_email, :lecture => "1",
         :section => "A", :auth_level => "student"
       expect(response.response_code).to eq(400)
+
+      user = User.find_by(email: rand_user_email)
+      expect(user).to be_nil
     end
 
     it 'fails to create when user is already in course' do
@@ -132,6 +136,74 @@ RSpec.describe Api::V1::CourseUserDataController, :type => :controller do
           :course_name => course.name, :email => @newUser.email, :lecture => "1",
           :section => "A", :auth_level => "blah"
         expect(response.response_code).to eq(400)
+      end
+    end
+  end
+
+  describe 'PUT update' do
+    include_context "api shared context"
+
+    it_behaves_like "a CUD route", :put, :update
+
+    it 'fails to update when user does not exist' do
+      rand_user_email = 16.times.map { (65 + rand(26)).chr }.join
+      put :update, :access_token => instructor_token_for_instructor.token, 
+        :course_name => course.name, :email => rand_user_email, :lecture => "1",
+        :section => "A", :auth_level => "student"
+      expect(response.response_code).to eq(400)
+
+      no_user = User.find_by(email: rand_user_email)
+      expect(no_user).to be_nil
+    end
+
+    it 'fails to update when user is not in the course' do
+      email_name = 16.times.map { (65 + rand(26)).chr }.join
+      email_domain = 8.times.map { (65 + rand(26)).chr }.join
+      newUser = User.new(email: email_name + "@" + email_domain + ".com",
+        first_name: "hello", last_name: "there", password: "password")
+      newUser.save!
+
+      put :update, :access_token => instructor_token_for_instructor.token,
+        :course_name => course.name, :email => newUser.email, :lecture => "1",
+        :section => "A", :auth_level => "student"
+      expect(response.response_code).to eq(404)
+
+      no_cud = newUser.course_user_data.find_by(course: course)
+      expect(no_cud).to be_nil
+    end
+
+    context 'when user is valid' do
+      it 'updates the auth_level correctly' do
+        put :update, :access_token => instructor_token_for_instructor.token,
+          :course_name => course.name, :email => user.email, :lecture => "1",
+          :auth_level => "course_assistant"
+        expect(response.response_code).to eq(200)
+        msg = JSON.parse(response.body)
+
+        expect(msg['auth_level']).to eq('course_assistant')
+        cud = user.course_user_data.find_by(course: course)
+        expect(cud.course_assistant).to be_truthy
+        expect(cud.instructor).to be_falsey
+      end
+
+      it 'updates other info correctly' do
+        cud = user.course_user_data.find_by(course: course)
+        new_lecture = cud.lecture + "_24"
+        new_section = cud.section + "_42"
+        new_dropped = !cud.dropped
+        put :update, :access_token => instructor_token_for_instructor.token,
+          :course_name => course.name, :email => user.email,
+          :lecture => new_lecture, :section => new_section, :dropped => new_dropped
+        expect(response.response_code).to eq(200)
+        msg = JSON.parse(response.body)
+
+        expect(msg['lecture']).to eq(new_lecture)
+        expect(msg['section']).to eq(new_section)
+        expect(msg['dropped']).to eq(new_dropped)
+        cud = user.course_user_data.find_by(course: course)
+        expect(cud.lecture).to eq(new_lecture)
+        expect(cud.section).to eq(new_section)
+        expect(cud.dropped).to eq(new_dropped)
       end
     end
   end
