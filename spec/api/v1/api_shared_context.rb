@@ -22,6 +22,12 @@ RSpec.shared_context "api shared context" do
   let!(:admin_application) { Doorkeeper::Application.create! :name => "AdminApp", :redirect_uri => "https://admin.example.com", :scopes => "user_info user_courses user_scores user_submit admin_all instructor_all" }
   let!(:admin_token_for_admin) { Doorkeeper::AccessToken.create! :application_id => admin_application.id, :resource_owner_id => admin_user.id, :scopes => "user_info user_courses user_scores user_submit admin_all instructor_all" }
   let!(:admin_token_for_user) { Doorkeeper::AccessToken.create! :application_id => admin_application.id, :resource_owner_id => user.id, :scopes => "user_info user_courses user_scores user_submit admin_all instructor_all" }
+
+  # instructor-related
+  let(:instructor) {admin_user}
+  let!(:instructor_application) { Doorkeeper::Application.create! :name => "InstructorApp", :redirect_uri => "https://instructor.example.com", :scopes => "user_info user_courses user_scores user_submit instructor_all" }
+  let!(:instructor_token_for_instructor){ Doorkeeper::AccessToken.create! :application_id => instructor_application.id, :resource_owner_id => instructor.id, :scopes => "user_info user_courses user_scores user_submit instructor_all" }
+  let!(:instructor_token_for_user){ Doorkeeper::AccessToken.create! :application_id => instructor_application.id, :resource_owner_id => user.id, :scopes => "user_info user_courses user_scores user_submit instructor_all" }
 end
 
 RSpec.shared_context "api handin context" do
