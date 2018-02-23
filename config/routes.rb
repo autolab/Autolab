@@ -13,7 +13,7 @@ Autolab3::Application.routes.draw do
       resources :courses, param: :name, only: [:index] do
         get 'create', on: :collection
 
-        resources :course_user_data, only: [:index]
+        resources :course_user_data, only: [:index, :create]
 
         resources :assessments, param: :name, only: [:index, :show] do
           get 'problems'

@@ -26,21 +26,11 @@ class Api::V1::CoursesController < Api::V1::BaseApiController
     final_course_list = []
     courses_for_user.each do |course|
       course_hash = course.as_json(only: [:name, :display_name, :semester, :late_slack, :grace_days, :auth_level])
-      final_course_list << course_hash
-
-      if current_user.administrator?
-        course_hash.merge!(:auth_level => "administrator")
-        next
-      end
-
+      
       cud = CourseUserDatum.find_cud_for_course(course, uid)
-      if cud.instructor?
-        course_hash.merge!(:auth_level => "instructor")
-      elsif cud.course_assistant?
-        course_hash.merge!(:auth_level => "course_assistant")
-      else
-        course_hash.merge!(:auth_level => "student")
-      end
+      course_hash.merge!(:auth_level => cud.auth_level_string)
+
+      final_course_list << course_hash
     end
 
     respond_with final_course_list

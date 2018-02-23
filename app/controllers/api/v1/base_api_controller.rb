@@ -82,11 +82,10 @@ class Api::V1::BaseApiController < ActionController::Base
 
   def set_default_params(defaults)
     defaults.each_key do |key|
-      if params.has_key?(key)
-        defaults[key] = params[key]
+      if not params.has_key?(key)
+        params[key] = defaults[key]
       end
     end
-    return defaults
   end
 
   def set_default_response_format
