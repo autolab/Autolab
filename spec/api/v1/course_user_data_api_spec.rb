@@ -208,4 +208,79 @@ RSpec.describe Api::V1::CourseUserDataController, :type => :controller do
     end
   end
 
+  describe 'DELETE destroy' do
+    include_context "api shared context"
+
+    it_behaves_like "a CUD route", :delete, :destroy
+
+    it 'fails to delete when user does not exist' do
+      rand_user_email = 16.times.map { (65 + rand(26)).chr }.join
+      delete :destroy, :access_token => instructor_token_for_instructor.token, 
+        :course_name => course.name, :email => rand_user_email
+      expect(response.response_code).to eq(400)
+
+      no_user = User.find_by(email: rand_user_email)
+      expect(no_user).to be_nil
+    end
+
+    it 'fails to delete when user is not in the course' do
+      email_name = 16.times.map { (65 + rand(26)).chr }.join
+      email_domain = 8.times.map { (65 + rand(26)).chr }.join
+      newUser = User.new(email: email_name + "@" + email_domain + ".com",
+        first_name: "hello", last_name: "there", password: "password")
+      newUser.save!
+
+      delete :destroy, :access_token => instructor_token_for_instructor.token,
+        :course_name => course.name, :email => newUser.email
+      expect(response.response_code).to eq(404)
+
+      no_cud = newUser.course_user_data.find_by(course: course)
+      expect(no_cud).to be_nil
+    end
+
+    context 'when user is valid' do
+      it 'correctly drops the user' do
+        cud = user.course_user_data.find_by(course: course)
+        cud.dropped = false
+        cud.save!
+
+        delete :destroy, :access_token => instructor_token_for_instructor.token,
+          :course_name => course.name, :email => user.email
+        expect(response.response_code).to eq(200)
+
+        cud = user.course_user_data.find_by(course: course)
+        expect(cud).not_to be_nil
+        expect(cud.dropped).to be_truthy
+      end
+
+      it 'correctly drops the user even if the dropped arg is false' do
+        cud = user.course_user_data.find_by(course: course)
+        cud.dropped = false
+        cud.save!
+
+        delete :destroy, :access_token => instructor_token_for_instructor.token,
+          :course_name => course.name, :email => user.email, :dropped => false
+        expect(response.response_code).to eq(200)
+
+        cud = user.course_user_data.find_by(course: course)
+        expect(cud).not_to be_nil
+        expect(cud.dropped).to be_truthy
+      end
+
+      it 'does not update other attributes' do
+        cud = user.course_user_data.find_by(course: course)
+        old_lecture = cud.lecture
+        new_lecture = cud.lecture + "4242"
+
+        delete :destroy, :access_token => instructor_token_for_instructor.token,
+          :course_name => course.name, :email => user.email, :lecture => new_lecture
+        expect(response.response_code).to eq(200)
+
+        cud = user.course_user_data.find_by(course: course)
+        expect(cud).not_to be_nil
+        expect(cud.lecture).to eq(old_lecture)
+      end
+    end
+  end
+
 end
