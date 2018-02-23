@@ -34,6 +34,15 @@ class Api::V1::CourseUserDataController < Api::V1::BaseApiController
     respond_with_hash format_cud_response(cud)
   end
 
+  def show
+    cud = @user.course_user_data.find_by(course: @course)
+    if cud.nil?
+      raise ApiError.new("User is not in course", :not_found)
+    end
+
+    respond_with_hash format_cud_response(cud)
+  end
+
   def update
     cud = @user.course_user_data.find_by(course: @course)
     if cud.nil?
