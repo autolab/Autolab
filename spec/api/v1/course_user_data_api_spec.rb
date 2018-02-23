@@ -16,6 +16,37 @@ RSpec.shared_examples "a CUD route" do |method, action|
   end
 end
 
+# test cases common to all CUD member routes
+# requires "api shared context" to have been included
+RSpec.shared_examples "a CUD member route" do |method, action|
+  it "fails to #{action} when user does not exist" do
+    rand_user_email = 16.times.map { (65 + rand(26)).chr }.join
+    send method, action, :access_token => instructor_token_for_instructor.token, 
+      :course_name => course.name, :email => rand_user_email, :lecture => "1",
+      :section => "A", :auth_level => "student"
+    expect(response.response_code).to eq(400)
+
+    no_user = User.find_by(email: rand_user_email)
+    expect(no_user).to be_nil
+  end
+
+  it "fails to #{action} when user is not in the course" do
+    email_name = 16.times.map { (65 + rand(26)).chr }.join
+    email_domain = 8.times.map { (65 + rand(26)).chr }.join
+    newUser = User.new(email: email_name + "@" + email_domain + ".com",
+      first_name: "hello", last_name: "there", password: "password")
+    newUser.save!
+
+    send method, action, :access_token => instructor_token_for_instructor.token,
+      :course_name => course.name, :email => newUser.email, :lecture => "1",
+      :section => "A", :auth_level => "student"
+    expect(response.response_code).to eq(404)
+
+    no_cud = newUser.course_user_data.find_by(course: course)
+    expect(no_cud).to be_nil
+  end
+end
+
 RSpec.describe Api::V1::CourseUserDataController, :type => :controller do
 
   describe 'GET index' do
@@ -140,37 +171,36 @@ RSpec.describe Api::V1::CourseUserDataController, :type => :controller do
     end
   end
 
+  describe 'GET show' do
+    include_context "api shared context"
+
+    it_behaves_like "a CUD route", :get, :show
+
+    it_behaves_like "a CUD member route", :get, :show
+
+    context 'when user is valid' do
+      it 'returns the info correctly' do
+        get :show, :access_token => instructor_token_for_instructor.token, 
+          :course_name => course.name, :email => user.email
+        expect(response.response_code).to eq(200)
+        msg = JSON.parse(response.body)
+
+        cud = user.course_user_data.find_by(course: course)
+        expect(msg['nickname']).to eq(cud.nickname)
+        expect(msg['dropped']).to eq(cud.dropped)
+        expect(msg['lecture']).to eq(cud.lecture)
+        expect(msg['first_name']).to eq(user.first_name)
+        expect(msg['last_name']).to eq(user.last_name)
+      end
+    end
+  end
+
   describe 'PUT update' do
     include_context "api shared context"
 
     it_behaves_like "a CUD route", :put, :update
 
-    it 'fails to update when user does not exist' do
-      rand_user_email = 16.times.map { (65 + rand(26)).chr }.join
-      put :update, :access_token => instructor_token_for_instructor.token, 
-        :course_name => course.name, :email => rand_user_email, :lecture => "1",
-        :section => "A", :auth_level => "student"
-      expect(response.response_code).to eq(400)
-
-      no_user = User.find_by(email: rand_user_email)
-      expect(no_user).to be_nil
-    end
-
-    it 'fails to update when user is not in the course' do
-      email_name = 16.times.map { (65 + rand(26)).chr }.join
-      email_domain = 8.times.map { (65 + rand(26)).chr }.join
-      newUser = User.new(email: email_name + "@" + email_domain + ".com",
-        first_name: "hello", last_name: "there", password: "password")
-      newUser.save!
-
-      put :update, :access_token => instructor_token_for_instructor.token,
-        :course_name => course.name, :email => newUser.email, :lecture => "1",
-        :section => "A", :auth_level => "student"
-      expect(response.response_code).to eq(404)
-
-      no_cud = newUser.course_user_data.find_by(course: course)
-      expect(no_cud).to be_nil
-    end
+    it_behaves_like "a CUD member route", :put, :update
 
     context 'when user is valid' do
       it 'updates the auth_level correctly' do
@@ -213,30 +243,7 @@ RSpec.describe Api::V1::CourseUserDataController, :type => :controller do
 
     it_behaves_like "a CUD route", :delete, :destroy
 
-    it 'fails to delete when user does not exist' do
-      rand_user_email = 16.times.map { (65 + rand(26)).chr }.join
-      delete :destroy, :access_token => instructor_token_for_instructor.token, 
-        :course_name => course.name, :email => rand_user_email
-      expect(response.response_code).to eq(400)
-
-      no_user = User.find_by(email: rand_user_email)
-      expect(no_user).to be_nil
-    end
-
-    it 'fails to delete when user is not in the course' do
-      email_name = 16.times.map { (65 + rand(26)).chr }.join
-      email_domain = 8.times.map { (65 + rand(26)).chr }.join
-      newUser = User.new(email: email_name + "@" + email_domain + ".com",
-        first_name: "hello", last_name: "there", password: "password")
-      newUser.save!
-
-      delete :destroy, :access_token => instructor_token_for_instructor.token,
-        :course_name => course.name, :email => newUser.email
-      expect(response.response_code).to eq(404)
-
-      no_cud = newUser.course_user_data.find_by(course: course)
-      expect(no_cud).to be_nil
-    end
+    it_behaves_like "a CUD member route", :delete, :destroy
 
     context 'when user is valid' do
       it 'correctly drops the user' do
