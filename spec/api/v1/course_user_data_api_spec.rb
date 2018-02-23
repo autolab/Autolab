@@ -1,15 +1,16 @@
 require 'rails_helper'
 require_relative "api_shared_context.rb"
 
-# common test cases to all CUD routes
-RSpec.shared_examples "a CUD route" do
+# test cases common to all CUD routes
+# requires "api shared context" to have been included
+RSpec.shared_examples "a CUD route" do |method, action|
   it 'fails to authenticate when the app does not have instructor scope' do
-    get :index, :access_token => token.token, :course_name => course.name
+    send method, action, :access_token => token.token, :course_name => course.name
     expect(response.response_code).to eq(403)
   end
 
   it 'fails to authenticate when the user is not an instructor' do
-    get :index, :access_token => instructor_token_for_user.token, :course_name => course.name
+    send method, action, :access_token => instructor_token_for_user.token, :course_name => course.name
     expect(response.response_code).to eq(403)
   end
 end
@@ -19,7 +20,7 @@ RSpec.describe Api::V1::CourseUserDataController, :type => :controller do
   describe 'GET index' do
     include_context "api shared context"
 
-    it_behaves_like "a CUD route"
+    it_behaves_like "a CUD route", :get, :index
 
     it 'returns the correct number of users and have the correct fields' do
       get :index, :access_token => instructor_token_for_instructor.token, :course_name => course.name
@@ -46,14 +47,14 @@ RSpec.describe Api::V1::CourseUserDataController, :type => :controller do
     end
   end
 
-  describe 'GET create' do
+  describe 'POST create' do
     include_context "api shared context"
 
-    it_behaves_like "a CUD route"
+    it_behaves_like "a CUD route", :post, :create
 
     it 'fails to create when user does not exist' do
       rand_user_email = 16.times.map { (65 + rand(26)).chr }.join
-      get :create, :access_token => instructor_token_for_instructor.token, 
+      post :create, :access_token => instructor_token_for_instructor.token, 
         :course_name => course.name, :email => rand_user_email, :lecture => "1",
         :section => "A", :auth_level => "student"
       expect(response.response_code).to eq(400)
@@ -61,7 +62,7 @@ RSpec.describe Api::V1::CourseUserDataController, :type => :controller do
 
     it 'fails to create when user is already in course' do
       rand_user_email = 16.times.map { (65 + rand(26)).chr }.join
-      get :create, :access_token => instructor_token_for_instructor.token, 
+      post :create, :access_token => instructor_token_for_instructor.token, 
         :course_name => course.name, :email => user.email, :lecture => "1",
         :section => "A", :auth_level => "student"
       expect(response.response_code).to eq(400)
@@ -77,7 +78,7 @@ RSpec.describe Api::V1::CourseUserDataController, :type => :controller do
       end
 
       it 'creates a student CUD' do
-        get :create, :access_token => instructor_token_for_instructor.token, 
+        post :create, :access_token => instructor_token_for_instructor.token, 
           :course_name => course.name, :email => @newUser.email, :lecture => "1",
           :section => "A", :auth_level => "student"
         expect(response.response_code).to eq(200)
@@ -93,7 +94,7 @@ RSpec.describe Api::V1::CourseUserDataController, :type => :controller do
       end
 
       it 'creates a dropped student CUD' do
-        get :create, :access_token => instructor_token_for_instructor.token, 
+        post :create, :access_token => instructor_token_for_instructor.token, 
           :course_name => course.name, :email => @newUser.email, :lecture => "1",
           :section => "A", :auth_level => "student", :dropped => true
         expect(response.response_code).to eq(200)
@@ -104,7 +105,7 @@ RSpec.describe Api::V1::CourseUserDataController, :type => :controller do
       end
 
       it 'creates an instructor CUD' do
-        get :create, :access_token => instructor_token_for_instructor.token, 
+        post :create, :access_token => instructor_token_for_instructor.token, 
           :course_name => course.name, :email => @newUser.email, :lecture => "2",
           :section => "D", :auth_level => "instructor"
         expect(response.response_code).to eq(200)
@@ -120,14 +121,14 @@ RSpec.describe Api::V1::CourseUserDataController, :type => :controller do
       end
 
       it 'fails to create if missing parameter' do
-        get :create, :access_token => instructor_token_for_instructor.token, 
+        post :create, :access_token => instructor_token_for_instructor.token, 
           :course_name => course.name, :email => @newUser.email, :lecture => "1",
           :auth_level => "student" # no section
         expect(response.response_code).to eq(400)
       end
 
       it 'fails to create if auth_level is invalid' do
-        get :create, :access_token => instructor_token_for_instructor.token, 
+        post :create, :access_token => instructor_token_for_instructor.token, 
           :course_name => course.name, :email => @newUser.email, :lecture => "1",
           :section => "A", :auth_level => "blah"
         expect(response.response_code).to eq(400)
