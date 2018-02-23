@@ -51,6 +51,21 @@ class Api::V1::CourseUserDataController < Api::V1::BaseApiController
     respond_with_hash format_cud_response(cud)
   end
 
+  # completely deleting a user from a course is not supported over api.
+  # the destroy route is a shortcut for dropping a student via an update
+  def destroy
+    cud = @user.course_user_data.find_by(course: @course)
+    if cud.nil?
+      raise ApiError.new("User is not in course", :not_found)
+    end
+
+    if not cud.update(dropped: true)
+      raise ApiError.new("Update failed: " + cud.errors.full_messages.join(", "), :bad_request)
+    end
+
+    respond_with_hash format_cud_response(cud)
+  end
+
 private
 
   def set_user
@@ -82,7 +97,7 @@ private
 
   def update_cud_auth_level(cud, auth_level)
     return unless auth_level
-    
+
     case auth_level
     when "instructor"
       cud.instructor = true
