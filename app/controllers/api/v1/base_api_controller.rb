@@ -30,7 +30,7 @@ class Api::V1::BaseApiController < ActionController::Base
   end
 
   def doorkeeper_forbidden_render_options(error: nil)
-    {:json => {:error => "You do not have the required scope for this action"}}
+    {:json => {:error => "Your client does not have the required scope for this action"}}
   end
 
   private
