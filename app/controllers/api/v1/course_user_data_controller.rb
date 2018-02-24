@@ -91,7 +91,7 @@ private
   end
   
   def format_cud_response(cud)
-    cud_hash = cud.as_json(only: [:lecture, :section, :nickname, :dropped])
+    cud_hash = cud.as_json(only: [:lecture, :section, :grade_policy, :nickname, :dropped])
     user_hash = cud.user.as_json(only: [:first_name, :last_name, :email, :school, :major, :year])
     cud_hash.merge!(user_hash)
     cud_hash.merge!(:auth_level => cud.auth_level_string)

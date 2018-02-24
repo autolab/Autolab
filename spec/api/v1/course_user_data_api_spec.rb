@@ -115,7 +115,7 @@ RSpec.describe Api::V1::CourseUserDataController, :type => :controller do
       it 'creates a student CUD' do
         post :create, :access_token => instructor_token_for_instructor.token, 
           :course_name => course.name, :email => @newUser.email, :lecture => "1",
-          :section => "A", :auth_level => "student"
+          :section => "A", :auth_level => "student", :grade_policy => "letter"
         expect(response.response_code).to eq(200)
 
         cud = @newUser.course_user_data.find_by(course: course)
@@ -123,6 +123,7 @@ RSpec.describe Api::V1::CourseUserDataController, :type => :controller do
         expect(cud.user).to eq(@newUser)
         expect(cud.lecture).to eq("1")
         expect(cud.section).to eq("A")
+        expect(cud.grade_policy).to eq("letter")
         expect(cud.instructor).to be_falsey
         expect(cud.course_assistant).to be_falsey
         expect(cud.dropped).to be_falsey
@@ -221,19 +222,23 @@ RSpec.describe Api::V1::CourseUserDataController, :type => :controller do
         new_lecture = cud.lecture + "_24"
         new_section = cud.section + "_42"
         new_dropped = !cud.dropped
+        new_grade_policy = "pass_fail"
         put :update, :access_token => instructor_token_for_instructor.token,
           :course_name => course.name, :email => user.email,
-          :lecture => new_lecture, :section => new_section, :dropped => new_dropped
+          :lecture => new_lecture, :section => new_section,
+          :dropped => new_dropped, :grade_policy => new_grade_policy
         expect(response.response_code).to eq(200)
         msg = JSON.parse(response.body)
 
         expect(msg['lecture']).to eq(new_lecture)
         expect(msg['section']).to eq(new_section)
         expect(msg['dropped']).to eq(new_dropped)
+        expect(msg['grade_policy']).to eq(new_grade_policy)
         cud = user.course_user_data.find_by(course: course)
         expect(cud.lecture).to eq(new_lecture)
         expect(cud.section).to eq(new_section)
         expect(cud.dropped).to eq(new_dropped)
+        expect(cud.grade_policy).to eq(new_grade_policy)
       end
     end
   end
