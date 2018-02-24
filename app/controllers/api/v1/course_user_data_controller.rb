@@ -1,7 +1,7 @@
 class Api::V1::CourseUserDataController < Api::V1::BaseApiController
 
   before_action -> {require_privilege :instructor_all}
-  before_action :set_user, except: :index
+  before_action :set_user, except: [:index, :create]
 
   def index
     cuds = @course.course_user_data.joins(:user).order("users.email ASC")
@@ -18,8 +18,12 @@ class Api::V1::CourseUserDataController < Api::V1::BaseApiController
     require_params([:email, :lecture, :section, :auth_level])
     set_default_params({dropped: false})
 
+    # call set_user manually here since we need to first make sure the email
+    # param exists for this create request
+    set_user
+
     if not @user.course_user_data.where(course: @course).empty?
-      raise ApiError.new("User already in course", :bad_request)
+      raise ApiError.new("User is already in the course", :bad_request)
     end
 
     cud = @course.course_user_data.new(create_cud_params)
@@ -28,33 +32,27 @@ class Api::V1::CourseUserDataController < Api::V1::BaseApiController
     update_cud_auth_level(cud, params[:auth_level])
 
     if not cud.save
-      raise ApiError.new("Creation failed: " + cud.errors.full_messages.join(", "))
+      raise ApiError.new("Creation failed: " + validation_errors_for(cud), :bad_request)
     end
 
     respond_with_hash format_cud_response(cud)
   end
 
   def show
-    cud = @user.course_user_data.find_by(course: @course)
-    if cud.nil?
-      raise ApiError.new("User is not in course", :not_found)
-    end
+    cud = get_user_cud
 
     respond_with_hash format_cud_response(cud)
   end
 
   def update
-    cud = @user.course_user_data.find_by(course: @course)
-    if cud.nil?
-      raise ApiError.new("User is not in course", :not_found)
-    end
+    cud = get_user_cud
 
     update_cud_auth_level(cud, params[:auth_level])
 
     # the first save call is for saving the auth_level update
     # the second update call updates and saves the other params
     if not (cud.save && cud.update(update_cud_params))
-      raise ApiError.new("Update failed: " + cud.errors.full_messages.join(", "), :bad_request)
+      raise ApiError.new("Update failed: " + validation_errors_for(cud), :bad_request)
     end
 
     respond_with_hash format_cud_response(cud)
@@ -63,13 +61,10 @@ class Api::V1::CourseUserDataController < Api::V1::BaseApiController
   # completely deleting a user from a course is not supported over api.
   # the destroy route is a shortcut for dropping a student via an update
   def destroy
-    cud = @user.course_user_data.find_by(course: @course)
-    if cud.nil?
-      raise ApiError.new("User is not in course", :not_found)
-    end
+    cud = get_user_cud
 
     if not cud.update(dropped: true)
-      raise ApiError.new("Update failed: " + cud.errors.full_messages.join(", "), :bad_request)
+      raise ApiError.new("Update failed: " + validation_errors_for(cud), :bad_request)
     end
 
     respond_with_hash format_cud_response(cud)
@@ -85,6 +80,14 @@ private
     if @user.nil?
       raise ApiError.new("Nonexistent user", :bad_request)
     end
+  end
+
+  def get_user_cud
+    cud = @user.course_user_data.find_by(course: @course)
+    if cud.nil?
+      raise ApiError.new("User is not in course", :not_found)
+    end
+    return cud
   end
   
   def format_cud_response(cud)

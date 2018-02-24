@@ -4,7 +4,7 @@ class Api::V1::BaseApiController < ActionController::Base
   class ApiError < StandardError
     attr_reader :status_code # http error code
     
-    def initialize(msg = "Unrecognized request", status_code = :bad_request)
+    def initialize(msg, status_code = :bad_request)
       @status_code = status_code
       super(msg)
     end
@@ -148,6 +148,11 @@ class Api::V1::BaseApiController < ActionController::Base
       # that this assessment exists.
       raise ApiError.new("Assessment not released yet", :forbidden)
     end
+  end
+
+  # additional helpers
+  def validation_errors_for(model)
+    model.errors.full_messages.join(", ")
   end
 
 end
