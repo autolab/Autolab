@@ -14,13 +14,13 @@ class DeviceFlowActivationController < ApplicationController
   def resolve
     if not params.has_key?(:user_code)
       flash[:error] = "User code missing. Please enter user code."
-      redirect_to(action: :index)
+      redirect_to(action: :index) && return
     end
 
     req = OauthDeviceFlowRequest.find_by(user_code: params[:user_code])
     if req.nil?
       flash[:error] = "Invalid user code."
-      redirect_to(action: :index)
+      redirect_to(action: :index) && return
     end
 
     # update user_code to a new random string as identifier for after
@@ -45,12 +45,12 @@ class DeviceFlowActivationController < ApplicationController
       # encountered error
       req.deny_request(current_user.id)
       flash[:error] = "Access denied by user"
-      redirect_to(action: :index)
+      redirect_to(action: :index) && return
     end
 
     # no error, store access_code
     req.grant_request(current_user.id, params[:code])
     flash[:success] = "Access granted"
-    redirect_to(action: :index)
+    redirect_to(action: :index) && return
   end
 end
