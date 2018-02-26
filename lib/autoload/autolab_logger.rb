@@ -9,6 +9,7 @@ end
 # depending on what is currently set.
 #
 # Invariant: @logger is never nil. It is Rails.logger when not set.
+# When @logger is Rails.logger, its formatter should not be set.
 class AutolabLogger
   def initalize
     reset
@@ -19,23 +20,20 @@ class AutolabLogger
     @assessment = nil
     @formatter = nil
     @logger = Rails.logger
-    @logger.formatter = AutolabFormatter.new
   end
 
   def setLogPath(path)
-    begin
-      # if this can't grab the file, Autolab should still function by using the
-      # default logger
-      @logger = Logger.new(path, "monthly")
-    rescue
-      @logger = Rails.logger
-    end
+    # if this can't grab the file, Autolab should still function by using the
+    # default logger
+    @logger = Logger.new(path, "monthly")
     @logger.formatter = @formatter || AutolabFormatter.new
+  rescue
+    @logger = Rails.logger
   end
 
   def setFormatter(alt_formatter)
     @formatter = alt_formatter
-    @logger.formatter = @formatter
+    @logger.formatter = @formatter if @logger != Rails.logger
   end
 
   def updatePath
