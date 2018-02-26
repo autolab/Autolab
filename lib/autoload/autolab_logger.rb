@@ -45,9 +45,9 @@ class AutolabLogger
         # use course log
         setLogPath(Rails.root.join("courses", @course.name, "autolab.log"))
       end
+    else
+      @logger = Rails.logger
     end
-    # if @course is nil, don't need to do anything, just use the default
-    # Rails.logger output setting
   end
 
   def setCourse(course)
