@@ -40,7 +40,9 @@ module AssessmentAutogradeCore
     
     upload_file_list.each do |f|
       if !Pathname.new(f["localFile"]).file?
-        raise AutogradeError.new("Error while uploading autograding files", :missing_autograder_file)
+        name_of_file = f["localFile"]
+        COURSE_LOGGER.log("Error while uploading autograding files for #{submission.id}: missing file #{name_of_file}")
+        raise AutogradeError.new("Error while uploading autograding files", :missing_autograder_file, name_of_file)
       end
     end
 
@@ -55,6 +57,7 @@ module AssessmentAutogradeCore
                            File.basename(f["localFile"]),
                            File.open(f["localFile"], "rb").read)
       rescue TangoClient::TangoException => e
+        COURSE_LOGGER.log("Error while uploading autograding files for #{submission.id}: #{e.message}")
         raise AutogradeError.new("Error while uploading autograding files", :tango_upload, e.message)
       end
     end
@@ -71,16 +74,16 @@ module AssessmentAutogradeCore
     # The key is not guaranteed to be unique, but it's gonna be unique.
     dave = (0...60).map { 65.+(rand(25)).chr }.join
 
-    begin
-      # save dave keys.  These let us know which submissions to save the autoresult for
-      ActiveRecord::Base.transaction do
-        submissions.each do |submission|
-          submission.dave = dave
-          submission.save!
+    # save dave keys.  These let us know which submissions to save the autoresult for
+    ActiveRecord::Base.transaction do
+      submissions.each do |submission|
+        submission.dave = dave
+        if not submission.save
+          error_msg = submission.errors.full_messages.join(", ")
+          COURSE_LOGGER.log("Error while updating submission #{submission.id} callback key: #{error_msg}")
+          raise AutogradeError.new("Error saving daves", :save_daves, error_msg)
         end
       end
-    rescue
-      raise AutogradeError.new("Error saving daves", :save_daves)
     end
 
     dave
@@ -136,6 +139,7 @@ module AssessmentAutogradeCore
     begin
       response = TangoClient.addjob("#{course.name}-#{assessment.name}", job_properties)
     rescue TangoClient::TangoException => e
+      COURSE_LOGGER.log("Error while adding job to the queue: #{e.message}")
       raise AutogradeError.new("Error while adding job to the queue", :tango_add_job, e.message)
     end
 
@@ -160,12 +164,15 @@ module AssessmentAutogradeCore
         end
       end
     rescue Timeout::Error
+      COURSE_LOGGER.log("Error while polling for #{submissions[0].id} job status: Timeout")
       raise AutogradeError.new("Timed out while polling Tango", :tango_poll)
     rescue TangoClient::TangoException => e
+      COURSE_LOGGER.log("Error while polling for #{submissions[0].id} job status: #{e.message}")
       raise AutogradeError.new("Error while polling for job status", :tango_poll, e.message)
     end
 
     if feedback.nil?
+      COURSE_LOGGER.log("Error while polling for #{submissions[0].id} job status: No feedback")
       raise AutogradeError.new("Error getting response from polling Tango", :tango_poll)
     else
       if assessment.overwrites_method?(:autogradeDone)
@@ -234,7 +241,7 @@ module AssessmentAutogradeCore
     begin
       existing_files = TangoClient.open("#{course.name}-#{assessment.name}")
     rescue TangoClient::TangoException => e
-      COURSE_LOGGER.log("#{e.message}")
+      COURSE_LOGGER.log("Error with open request on Tango for submission #{submissions[0].id}: #{e.message}")
       raise AutogradeError.new("Error with open request on Tango", :tango_open, e.message)
     end
 
@@ -374,9 +381,8 @@ module AssessmentAutogradeCore
       end
     end
 
-    logger = Logger.new(Rails.root.join("courses", @course.name, @assessment.name, "log.txt"))
     submissions.each do |submission|
-      logger.add(Logger::INFO) { "#{submission.course_user_datum.email}, #{submission.version}, #{autoresult}" }
+      ASSESSMENT_LOGGER.log("#{submission.course_user_datum.email}, #{submission.version}, #{autoresult}")
     end
   end
 
@@ -447,7 +453,7 @@ module AssessmentAutogradeCore
 
   rescue StandardError => error
     COURSE_LOGGER.log(error)
-    COURSE_LOGGER.log(error.backtrace)
+    error.backtrace.each { |line| COURSE_LOGGER.log(line) }
     raise error
   end
 

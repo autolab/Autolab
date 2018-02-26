@@ -16,6 +16,7 @@ module AssessmentAutograde
   def autograde_done
     @assessment = @course.assessments.find_by(name: params[:name])
     render(nothing: true) && return unless @assessment && @assessment.has_autograder?
+    ASSESSMENT_LOGGER.setAssessment(@assessment)
 
     # there can be multiple submission with the same dave if this was a group submission
     submissions = Submission.where(dave: params[:dave]).all

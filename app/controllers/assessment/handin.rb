@@ -74,8 +74,12 @@ module AssessmentHandin
       begin
         sendJob_AddHTMLMessages(@course, @assessment, submissions)
       rescue AssessmentAutogradeCore::AutogradeError => e
-        # error message already filled in by sendJob_AddHTMLMessages, and we
-        # don't intend to add custom messages, so don't need to do anything.
+        # error message already filled in by sendJob_AddHTMLMessages, we just
+        # log the error message
+        COURSE_LOGGER.log("SendJob failed for #{submissions[0].id}\n
+          User error message: #{flash[:error]}\n
+          error name: #{e.error_code}\n
+          additional error data: #{e.additional_data}")
       end
     end
 
@@ -232,8 +236,8 @@ module AssessmentHandin
     render(plain: "ERROR: No result!", status: :bad_request) && return unless @result
 
     # Everything looks OK, so append the autoresult to the log.txt file for this lab
-    @logger = Logger.new(Rails.root.join("courses", @course.name, @assessment.name, "log.txt"))
-    @logger.add(Logger::INFO) { "#{@user.email},0,#{@result}" }
+    ASSESSMENT_LOGGER.setAssessment(@assessment)
+    ASSESSMENT_LOGGER.log("#{@user.email},0,#{@result}")
 
     # Load up the lab.rb file
     mod_name = @assessment.name + (@course.name).gsub(/[^A-Za-z0-9]/, "")
