@@ -19,7 +19,9 @@ class ApplicationController < ActionController::Base
   before_action :authenticate_for_action
   before_action :update_persistent_announcements
   before_action :set_breadcrumbs
-    rescue_from ActionView::MissingTemplate do |exception|
+
+  after_action -> { AUTOLAB_LOGGER.reset }
+  rescue_from ActionView::MissingTemplate do |exception|
       redirect_to("/home/error_404")
   end
 
