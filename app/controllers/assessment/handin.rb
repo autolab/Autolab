@@ -55,7 +55,7 @@ module AssessmentHandin
                                            assessment: @assessment
                                          })
 
-      COURSE_LOGGER.log("could not save handin: #{exception.class} (#{exception.message})")
+      AUTOLAB_LOGGER.log("could not save handin: #{exception.class} (#{exception.message})")
       submissions = nil
     end
 
@@ -121,7 +121,7 @@ module AssessmentHandin
                                                course: @course,
                                                assessment: @assessment
                                              })
-          COURSE_LOGGER.log("Error Saving Submission:\n#{e}")
+          AUTOLAB_LOGGER.log("Error Saving Submission:\n#{e}")
           submissions = nil
         end
 
@@ -145,11 +145,11 @@ module AssessmentHandin
                                              assessment: @assessment,
                                              submission: submissions[0]
                                            })
-        COURSE_LOGGER.log(e.to_s)
+        AUTOLAB_LOGGER.log(e.to_s)
       end
 
       if submissions
-        COURSE_LOGGER.log("Submission received, ID##{submissions[0].id}")
+        AUTOLAB_LOGGER.log("Submission received, ID##{submissions[0].id}")
       else
         err = "There was an error saving your submission. Please contact your course staff\n"
         render(plain: err, status: :bad_request) && return
@@ -191,7 +191,7 @@ module AssessmentHandin
                                              course: @course,
                                              assessment: @assessment
                                            })
-        COURSE_LOGGER.log("ERROR: Could not create handin directory. Please contact
+        AUTOLAB_LOGGER.log("ERROR: Could not create handin directory. Please contact
         #{Rails.configuration.school['support_email']} with this error")
       end
 
@@ -224,8 +224,8 @@ module AssessmentHandin
     render(plain: "ERROR: No result!", status: :bad_request) && return unless @result
 
     # Everything looks OK, so append the autoresult to the log.txt file for this lab
-    ASSESSMENT_LOGGER.setAssessment(@assessment)
-    ASSESSMENT_LOGGER.log("#{@user.email},0,#{@result}")
+    AUTOLAB_LOGGER.setAssessment(@assessment)
+    AUTOLAB_LOGGER.log("#{@user.email},0,#{@result}")
 
     # Load up the lab.rb file
     mod_name = @assessment.name + (@course.name).gsub(/[^A-Za-z0-9]/, "")
@@ -276,7 +276,7 @@ module AssessmentHandin
                                            assessment: @assessment,
                                            submission: submission
                                          })
-      COURSE_LOGGER.log(e.to_s)
+      AUTOLAB_LOGGER.log(e.to_s)
     end
 
     render(plain: "OK", status: 200) && return

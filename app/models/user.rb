@@ -52,11 +52,11 @@ class User < ActiveRecord::Base
   end
 
   def after_create
-    COURSE_LOGGER.log("User CREATED #{email}: #{full_name}")
+    AUTOLAB_LOGGER.log("User CREATED #{email}: #{full_name}")
   end
 
   def after_update
-    COURSE_LOGGER.log("User UPDATED #{email}: #{full_name}")
+    AUTOLAB_LOGGER.log("User UPDATED #{email}: #{full_name}")
   end
 
   # Reset user fields with LDAP lookup

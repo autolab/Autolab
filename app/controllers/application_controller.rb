@@ -32,7 +32,7 @@ class ApplicationController < ActionController::Base
     # going against all logic, handlers registered last get called first
     rescue_from Exception, with: :render_error
     rescue_from CourseUserDatum::AuthenticationFailed do |e|
-      COURSE_LOGGER.log("AUTHENTICATION FAILED: #{e.user_message}, #{e.dev_message}")
+      AUTOLAB_LOGGER.log("AUTHENTICATION FAILED: #{e.user_message}, #{e.dev_message}")
       respond_to do |format|
          format.html {
             flash[:error] = e.user_message
@@ -148,12 +148,12 @@ protected
 
     # set course logger
     begin
-      COURSE_LOGGER.setCourse(@course)
+      AUTOLAB_LOGGER.setCourse(@course)
     rescue StandardError => e
       flash[:error] = e.to_s
       redirect_to(controller: :home, action: :error) && return
     end
-    ASSESSMENT_LOGGER.setCourse(@course)
+    AUTOLAB_LOGGER.setCourse(@course)
   end
 
   def authorize_user_for_course
@@ -227,7 +227,7 @@ protected
     redirect_to(action: :index) && return if @cud.student? && !@assessment.released?
 
     @breadcrumbs << (view_context.current_assessment_link)
-    ASSESSMENT_LOGGER.setAssessment(@assessment)
+    AUTOLAB_LOGGER.setAssessment(@assessment)
   end
 
   # Loads the submission from the DB
@@ -266,7 +266,7 @@ protected
         pid = fork do
           # child process
           @course = action.course
-          COURSE_LOGGER.setCourse(@course)
+          AUTOLAB_LOGGER.setCourse(@course)
           mod_name = Rails.root.join(action.action)
           begin
             require mod_name

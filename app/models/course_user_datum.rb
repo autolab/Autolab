@@ -49,12 +49,12 @@ class CourseUserDatum < ActiveRecord::Base
   end
 
   def after_create
-    COURSE_LOGGER.log("CourseUserDatum CREATED for #{user.email}:" \
+    AUTOLAB_LOGGER.log("CourseUserDatum CREATED for #{user.email}:" \
       "{#{nickname},#{major},#{lecture},#{section}}")
   end
 
   def after_update
-    COURSE_LOGGER.log("CourseUserDatum UPDATED for #{user.email}:" \
+    AUTOLAB_LOGGER.log("CourseUserDatum UPDATED for #{user.email}:" \
       "{#{nickname},#{major},#{lecture},#{section}}")
   end
 
