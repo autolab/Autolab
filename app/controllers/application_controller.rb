@@ -148,13 +148,7 @@ protected
       render :file => "#{Rails.root}/public/404.html",  :status => 404 and return
     end
 
-    # set course logger
-    begin
-      AUTOLAB_LOGGER.setCourse(@course)
-    rescue StandardError => e
-      flash[:error] = e.to_s
-      redirect_to(controller: :home, action: :error) && return
-    end
+    # set logger
     AUTOLAB_LOGGER.setCourse(@course)
   end
 
