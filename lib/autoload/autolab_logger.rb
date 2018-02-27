@@ -8,6 +8,12 @@ end
 # Globally available logger that can be log to both courses and assessments
 # depending on what is currently set.
 #
+# Usage:
+#   - during each request, call setCourse() or setAssessment() to set the
+#     logging destination. Call log() to log a message.
+#   - after each request, must call reset() to restore all settings back to
+#     default for the next request.
+#
 # Invariant: @logger is never nil. It is Rails.logger when not set.
 # When @logger is Rails.logger, its formatter should not be set.
 class AutolabLogger
@@ -16,8 +22,6 @@ class AutolabLogger
   end
 
   def reset
-    @course = nil
-    @assessment = nil
     @formatter = nil
     @logger = Rails.logger
   end
@@ -36,28 +40,13 @@ class AutolabLogger
     @logger.formatter = @formatter if @logger != Rails.logger
   end
 
-  def updatePath
-    if @course
-      if @assessment
-        # use assessment log
-        setLogPath(Rails.root.join("courses", @course.name, @assessment.name, "log.txt"))
-      else
-        # use course log
-        setLogPath(Rails.root.join("courses", @course.name, "autolab.log"))
-      end
-    else
-      @logger = Rails.logger
-    end
-  end
-
   def setCourse(course)
-    @course = course
-    updatePath
+    setLogPath(Rails.root.join("courses", course.name, "autolab.log"))
   end
 
   def setAssessment(assessment)
-    @assessment = assessment
-    updatePath
+    course = assessment.course
+    setLogPath(Rails.root.join("courses", course.name, assessment.name, "log.txt"))
   end
 
   def log(message, severity = Logger::INFO)
