@@ -13,15 +13,15 @@ module AssessmentAutograde
   def autograde_done
     @assessment = @course.assessments.find_by(name: params[:name])
     render(nothing: true) && return unless @assessment && @assessment.has_autograder?
-    ASSESSMENT_LOGGER.setAssessment(@assessment)
+    AUTOLAB_LOGGER.setAssessment(@assessment)
 
     # there can be multiple submission with the same dave if this was a group submission
     submissions = Submission.where(dave: params[:dave]).all
 
     feedback_str = params[:file].read
 
-    COURSE_LOGGER.log("autograde_done")
-    COURSE_LOGGER.log("autograde_done hit: #{request.fullpath}")
+    AUTOLAB_LOGGER.log("autograde_done")
+    AUTOLAB_LOGGER.log("autograde_done hit: #{request.fullpath}")
 
     extend_config_module(@assessment, submissions[0], @cud)
 
@@ -43,7 +43,7 @@ module AssessmentAutograde
                                          submission: @submission
                                        })
     Rails.logger.error "Exception in autograde_done: #{exception.class} (#{exception.message})"
-    COURSE_LOGGER.log "Exception in autograde_done: #{exception.class} (#{exception.message})"
+    AUTOLAB_LOGGER.log "Exception in autograde_done: #{exception.class} (#{exception.message})"
     render(nothing: true) && return
   end
 
@@ -185,8 +185,8 @@ module AssessmentAutograde
         " Refresh the page to see the results.").html_safe
     end
     if job < 0
-      COURSE_LOGGER.log("SendJob failed for #{submissions[0].id}: code #{job}")
-      COURSE_LOGGER.log("SendJob user error message #{flash[:error]}")
+      AUTOLAB_LOGGER.log("SendJob failed for #{submissions[0].id}: code #{job}")
+      AUTOLAB_LOGGER.log("SendJob user error message #{flash[:error]}")
     end
     job
   end
@@ -199,7 +199,7 @@ module AssessmentAutograde
     # first, figure out which files need to get sent
     ass_dir = assessment.folder_path
     begin
-      COURSE_LOGGER.log("Dir: #{ass_dir}")
+      AUTOLAB_LOGGER.log("Dir: #{ass_dir}")
 
       if assessment.overwrites_method?(:autogradeInputFiles)
         upload_file_list = assessment.config_module.autogradeInputFiles(ass_dir)
@@ -207,10 +207,10 @@ module AssessmentAutograde
         upload_file_list = autogradeInputFiles(ass_dir, assessment, submission)
       end
 
-      COURSE_LOGGER.log("Upload File List: #{upload_file_list}")
+      AUTOLAB_LOGGER.log("Upload File List: #{upload_file_list}")
     rescue StandardError => e
-      COURSE_LOGGER.log("Error with getting files: #{e}")
-      e.backtrace.each { |line| COURSE_LOGGER.log(line) }
+      AUTOLAB_LOGGER.log("Error with getting files: #{e}")
+      e.backtrace.each { |line| AUTOLAB_LOGGER.log(line) }
       return -3, nil
     end
     
@@ -233,7 +233,7 @@ module AssessmentAutograde
                            File.open(f["localFile"], "rb").read)
       rescue TangoClient::TangoException => e
         flash[:error] = "Error while uploading autograding files: #{e.message}"
-        COURSE_LOGGER.log("Error while uploading autograding files for #{submission.id}: #{e.message}")
+        AUTOLAB_LOGGER.log("Error while uploading autograding files for #{submission.id}: #{e.message}")
         return -4, nil
       end
     end
@@ -255,9 +255,9 @@ module AssessmentAutograde
       submissions.each do |submission|
         submission.dave = dave
         if not submission.save
-           COURSE_LOGGER.log("Error while updating submission #{submission.id} callback key:")
+           AUTOLAB_LOGGER.log("Error while updating submission #{submission.id} callback key:")
            submission.errors.full_messages.each do |msg|
-              COURSE_LOGGER.log("   (#{submission.id}): #{msg}")
+              AUTOLAB_LOGGER.log("   (#{submission.id}): #{msg}")
            end
            failed = true
         end
@@ -291,7 +291,7 @@ module AssessmentAutograde
 
     callback_url = (RESTFUL_USE_POLLING) ? "" :
       "#{hostname}/courses/#{course.name}/assessments/#{assessment.name}/autograde_done?dave=#{dave}&submission_id=#{submission.id}"
-    COURSE_LOGGER.log("Callback: #{callback_url}")
+    AUTOLAB_LOGGER.log("Callback: #{callback_url}")
 
     callback_url
   end
@@ -321,7 +321,7 @@ module AssessmentAutograde
       response = TangoClient.addjob("#{course.name}-#{assessment.name}", job_properties)
     rescue TangoClient::TangoException => e
       flash[:error] = "Error while adding job to the queue: #{e.message}"
-      COURSE_LOGGER.log("Error while adding job to the queue: #{e.message}")
+      AUTOLAB_LOGGER.log("Error while adding job to the queue: #{e.message}")
       return -9, nil
     end
     [0, response]
@@ -346,17 +346,17 @@ module AssessmentAutograde
         end
       end
     rescue Timeout::Error
-      COURSE_LOGGER.log("Error while polling for #{submissions[0].id} job status: Timeout")
+      AUTOLAB_LOGGER.log("Error while polling for #{submissions[0].id} job status: Timeout")
       return -11
     rescue TangoClient::TangoException => e
       flash[:error] = "Error while polling for job status: #{e.message}"
-      COURSE_LOGGER.log("Error while polling for #{submissions[0].id} job status: #{e.message}")
+      AUTOLAB_LOGGER.log("Error while polling for #{submissions[0].id} job status: #{e.message}")
       return -11
     end
 
     if feedback.nil?
       return -12
-      COURSE_LOGGER.log("Error while polling for #{submissions[0].id} job status: No feedback")
+      AUTOLAB_LOGGER.log("Error while polling for #{submissions[0].id} job status: No feedback")
     else
       if assessment.overwrites_method?(:autogradeDone)
         assessment.config_module.autogradeDone(submissions, feedback)
@@ -389,7 +389,7 @@ module AssessmentAutograde
       existing_files = TangoClient.open("#{course.name}-#{assessment.name}")
     rescue TangoClient::TangoException => e
       flash[:error] = "Error with open request on Tango: #{e.message}"
-      COURSE_LOGGER.log("Error with open request on Tango for submission #{submissions[0].id}: #{e.message}")
+      AUTOLAB_LOGGER.log("Error with open request on Tango for submission #{submissions[0].id}: #{e.message}")
       return -1
     end
 
@@ -461,7 +461,7 @@ module AssessmentAutograde
       filename = submission.autograde_feedback_filename
 
       feedback_file = File.join(ass_dir, @assessment.handin_directory, filename)
-      COURSE_LOGGER.log("Looking for Feedbackfile:" + feedback_file)
+      AUTOLAB_LOGGER.log("Looking for Feedbackfile:" + feedback_file)
       File.open(feedback_file, "w") do |f|
         f.write(feedback)
       end
@@ -534,7 +534,7 @@ module AssessmentAutograde
     end
 
     submissions.each do |submission|
-      ASSESSMENT_LOGGER.log("#{submission.course_user_datum.email}, #{submission.version}, #{autoresult}")
+      AUTOLAB_LOGGER.log("#{submission.course_user_datum.email}, #{submission.version}, #{autoresult}")
     end
   end
 
@@ -609,8 +609,8 @@ module AssessmentAutograde
     end
 
   rescue StandardError => error
-    COURSE_LOGGER.log(error)
-    error.backtrace.each { |line| COURSE_LOGGER.log(line) }
+    AUTOLAB_LOGGER.log(error)
+    error.backtrace.each { |line| AUTOLAB_LOGGER.log(line) }
     raise error
   end
 end

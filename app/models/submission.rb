@@ -31,7 +31,7 @@ class Submission < ActiveRecord::Base
   after_save :update_latest_submission, if: :version_changed?
   after_save :update_latest_submission, if: :ignored_changed?
   after_save do |sub|
-    COURSE_LOGGER.log("Submission #{sub.id} SAVED for " \
+    AUTOLAB_LOGGER.log("Submission #{sub.id} SAVED for " \
       "#{sub.course_user_datum.user.email} on" \
       " #{sub.assessment.name}, file #{sub.filename} (#{sub.mime_type}),"\
       "version: #{sub.version}")
