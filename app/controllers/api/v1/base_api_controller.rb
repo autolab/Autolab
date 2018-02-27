@@ -125,6 +125,9 @@ class Api::V1::BaseApiController < ActionController::Base
     unless @course
       raise ApiError.new("Course does not exist", :not_found)
     end
+
+    COURSE_LOGGER.setCourse(@course)
+    ASSESSMENT_LOGGER.setCourse(@course)
   end
 
   def authorize_user_for_course
@@ -148,6 +151,8 @@ class Api::V1::BaseApiController < ActionController::Base
       # that this assessment exists.
       raise ApiError.new("Assessment not released yet", :forbidden)
     end
+
+    ASSESSMENT_LOGGER.setAssessment(@assessment)
   end
 
   # additional helpers
