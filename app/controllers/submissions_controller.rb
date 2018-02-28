@@ -14,6 +14,16 @@ class SubmissionsController < ApplicationController
   # this page loads.  links/functionality may be/are off
   action_auth_level :index, :instructor
   def index
+    if(@assessment.nil?)
+      flash[:error] = "Cannot index submissions for nil assessment"
+    end
+
+    if !@assessment.valid?
+      @assessment.errors.full_messages.each do |msg|
+        flash[:error] += "<br>#{msg}"
+      end
+    end
+
     @submissions = @assessment.submissions.order("created_at DESC")
 
     assign = @assessment.name.gsub(/\./, "")
@@ -24,6 +34,26 @@ class SubmissionsController < ApplicationController
   # this works
   action_auth_level :new, :instructor
   def new
+    if(@assessment.nil?)
+      flash[:error] = "Cannot index submissions for nil assessment"
+    end
+
+    if !@assessment.valid?
+      @assessment.errors.full_messages.each do |msg|
+        flash[:error] += "<br>#{msg}"
+      end
+    end
+
+    if(@course.nil?)
+      flash[:error] = "Cannot manage nil course"
+    end
+
+    if !@course.valid?
+      @course.errors.full_messages.each do |msg|
+        flash[:error] += "<br>#{msg}"
+      end
+    end
+
     @submission = @assessment.submissions.new(tweak: Tweak.new)
 
     if !params["course_user_datum_id"].nil?
@@ -47,6 +77,26 @@ class SubmissionsController < ApplicationController
   # this seems to work to.
   action_auth_level :create, :instructor
   def create
+    if(@assessment.nil?)
+      flash[:error] = "Cannot index submissions for nil assessment"
+    end
+
+    if !@assessment.valid?
+      @assessment.errors.full_messages.each do |msg|
+        flash[:error] += "<br>#{msg}"
+      end
+    end
+
+    if(@course.nil?)
+      flash[:error] = "Cannot manage nil course"
+    end
+
+    if !@course.valid?
+      @course.errors.full_messages.each do |msg|
+        flash[:error] += "<br>#{msg}"
+      end
+    end
+
     @submission = @assessment.submissions.new
 
     cud_ids = params[:submission][:course_user_datum_id].split(",")
@@ -84,12 +134,32 @@ class SubmissionsController < ApplicationController
   # this loads and looks good
   action_auth_level :edit, :instructor
   def edit
+    if(@submission.nil?)
+      flash[:error] = "Cannot index submissions for nil assessment"
+    end
+
+    if !@submission.valid?
+      @submission.errors.full_messages.each do |msg|
+        flash[:error] += "<br>#{msg}"
+      end
+    end
+
     @submission.tweak ||= Tweak.new
   end
 
   # this is good
   action_auth_level :update, :instructor
   def update
+    if(@submission.nil?)
+      flash[:error] = "Cannot index submissions for nil assessment"
+    end
+
+    if !@submission.valid?
+      @submission.errors.full_messages.each do |msg|
+        flash[:error] += "<br>#{msg}"
+      end
+    end
+
     if params[:submission][:tweak_attributes][:value].blank?
       params[:submission][:tweak_attributes][:_destroy] = true
     end
@@ -103,8 +173,22 @@ class SubmissionsController < ApplicationController
   # this is good
   action_auth_level :destroy, :instructor
   def destroy
+    if(@submission.nil?)
+      flash[:error] = "Cannot index submissions for nil assessment"
+    end
+
+    if !@submission.valid?
+      @submission.errors.full_messages.each do |msg|
+        flash[:error] += "<br>#{msg}"
+      end
+    end
+
     if params[:yes]
-      @submission.destroy!
+      if @submission.destroy
+        flash[:success] = "Submission successfully destroyed"
+      else
+        flash[:error] = "Submission failed to be destroyed"
+      end
     else
       flash[:error] = "There was an error deleting the submission."
     end
@@ -123,6 +207,26 @@ class SubmissionsController < ApplicationController
   # TODONE?  THIS MAY DELETE MOST OF YOUR USERS.  USE WITH CAUTION.
   action_auth_level :missing, :instructor
   def missing
+    if(@assessment.nil?)
+      flash[:error] = "Cannot index submissions for nil assessment"
+    end
+
+    if !@assessment.valid?
+      @assessment.errors.full_messages.each do |msg|
+        flash[:error] += "<br>#{msg}"
+      end
+    end
+
+    if(@course.nil?)
+      flash[:error] = "Cannot manage nil course"
+    end
+
+    if !@course.valid?
+      @course.errors.full_messages.each do |msg|
+        flash[:error] += "<br>#{msg}"
+      end
+    end
+
     @submissions = @assessment.submissions
 
     cuds = @course.students.to_a
@@ -143,6 +247,16 @@ class SubmissionsController < ApplicationController
   # should be okay, but untested
   action_auth_level :downloadAll, :course_assistant
   def downloadAll
+    if(@assessment.nil?)
+      flash[:error] = "Cannot index submissions for nil assessment"
+    end
+
+    if !@assessment.valid?
+      @assessment.errors.full_messages.each do |msg|
+        flash[:error] += "<br>#{msg}"
+      end
+    end
+
     if @assessment.disable_handins
       flash[:error] = "There are no submissions to download."
       redirect_to([@course, @assessment, :submissions]) && return
@@ -176,6 +290,36 @@ class SubmissionsController < ApplicationController
   # try to send the file at that position in the archive.
   action_auth_level :download, :student
   def download
+    if(@assessment.nil?)
+      flash[:error] = "Cannot index submissions for nil assessment"
+    end
+
+    if !@assessment.valid?
+      @assessment.errors.full_messages.each do |msg|
+        flash[:error] += "<br>#{msg}"
+      end
+    end
+
+    if(@course.nil?)
+      flash[:error] = "Cannot manage nil course"
+    end
+
+    if !@course.valid?
+      @course.errors.full_messages.each do |msg|
+        flash[:error] += "<br>#{msg}"
+      end
+    end
+
+    if(@submission.nil?)
+      flash[:error] = "Cannot index submissions for nil assessment"
+    end
+
+    if !@submission.valid?
+      @submission.errors.full_messages.each do |msg|
+        flash[:error] += "<br>#{msg}"
+      end
+    end
+
     if params[:header_position]
       file, pathname = Archive.get_nth_file(@filename, params[:header_position].to_i)
       unless file && pathname
@@ -259,6 +403,36 @@ class SubmissionsController < ApplicationController
   # archive.
   action_auth_level :view, :student
   def view
+    if(@assessment.nil?)
+      flash[:error] = "Cannot index submissions for nil assessment"
+    end
+
+    if !@assessment.valid?
+      @assessment.errors.full_messages.each do |msg|
+        flash[:error] += "<br>#{msg}"
+      end
+    end
+
+    if(@course.nil?)
+      flash[:error] = "Cannot manage nil course"
+    end
+
+    if !@course.valid?
+      @course.errors.full_messages.each do |msg|
+        flash[:error] += "<br>#{msg}"
+      end
+    end
+
+    if(@submission.nil?)
+      flash[:error] = "Cannot index submissions for nil assessment"
+    end
+
+    if !@submission.valid?
+      @submission.errors.full_messages.each do |msg|
+        flash[:error] += "<br>#{msg}"
+      end
+    end
+
     if params[:header_position]
       file, pathname = Archive.get_nth_file(@submission.handin_file_path, params[:header_position].to_i)
       unless file && pathname
@@ -385,6 +559,36 @@ private
   end
 
   def get_submission_file
+    if(@submission.nil?)
+      flash[:error] = "Cannot index submissions for nil assessment"
+    end
+
+    if !@submission.valid?
+      @submission.errors.full_messages.each do |msg|
+        flash[:error] += "<br>#{msg}"
+      end
+    end
+
+    if(@assessment.nil?)
+      flash[:error] = "Cannot index submissions for nil assessment"
+    end
+
+    if !@assessment.valid?
+      @assessment.errors.full_messages.each do |msg|
+        flash[:error] += "<br>#{msg}"
+      end
+    end
+
+    if(@course.nil?)
+      flash[:error] = "Cannot index submissions for nil assessment"
+    end
+
+    if !@course.valid?
+      @course.errors.full_messages.each do |msg|
+        flash[:error] += "<br>#{msg}"
+      end
+    end
+
     unless @submission.filename
       flash[:error] = "No file associated with submission."
       redirect_to [@course, @assessment] and return false
