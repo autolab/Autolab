@@ -16,7 +16,12 @@ class ScoreboardsController < ApplicationController
       s.banner = ""
       s.colspec = ""
     end
-    flash[:info] = "Scoreboard Created" if @scoreboard.save!
+    begin
+      @scoreboard.save!
+      flash[:info] = "Scoreboard Created"
+    rescue ActiveRecord::RecordInvalid => invalid
+      flash[:error] = "Unable to create scoreboard: " + invalid.message
+    end
     redirect_to(action: :edit) && return
   end
 
@@ -140,7 +145,11 @@ class ScoreboardsController < ApplicationController
 
   action_auth_level :destroy, :instructor
   def destroy
-    flash[:info] = "Destroyed!" if @scoreboard.destroy
+    if @scoreboard.destroy
+      flash[:info] = "Destroyed!"
+    else
+      flash[:error] = "Unable to destroy scoreboard"
+    end
     redirect_to([:edit, @course, @assessment]) && return
   end
 
