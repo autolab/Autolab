@@ -601,7 +601,7 @@ class AssessmentsController < ApplicationController
         begin
           updateScore(@assessment.course.course_user_data, score)
         rescue ActiveRecord::RecordInvalid => invalid
-          flash[:error] += "Unable to withdraw score for "+@assessment.course.course_user_data.user.email
+          flash[:error] += "Unable to withdraw score for "+@assessment.course.course_user_data.user.email+": " + invalid.message
         end
 
       end
