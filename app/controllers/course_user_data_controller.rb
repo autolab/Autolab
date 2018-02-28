@@ -198,24 +198,24 @@ class CourseUserDataController < ApplicationController
     sudo_user = User.where(email: params[:sudo_email]).first
     unless sudo_user
       flash[:error] = "User #{params[:sudo_email]} does not exist"
-      redirect_to([@cud.course]) && return
+      redirect_to(action: :sudo) && return
     end
 
     sudo_cud = @course.course_user_data.where(user_id: sudo_user.id).first
     unless sudo_cud
       flash[:error] = "User #{params[:sudo_email]} does not exist in the course"
-      redirect_to([@cud.course]) && return
+      redirect_to(action: :sudo) && return
     end
 
     unless @cud.can_sudo_to?(sudo_cud)
       flash[:error] = "You do not have the privileges to act as " \
               "#{sudo_cud.display_name}"
-      redirect_to([@cud.course]) && return
+      redirect_to(action: :sudo) && return
     end
 
     if @cud.id == sudo_cud.id
       flash[:error] = "There's no point in trying to act as yourself"
-      redirect_to([@cud.course]) && return
+      redirect_to(action: :sudo) && return
     end
 
     session[:sudo] = {}
@@ -225,6 +225,7 @@ class CourseUserDataController < ApplicationController
     # this was sudo_cud.display_name
     session[:sudo][:actual_name] = @cud.display_name
 
+    flash[:success] = "You are now acting as user #{sudo_user.email}"
     redirect_to([@cud.course]) && return
   end
 
