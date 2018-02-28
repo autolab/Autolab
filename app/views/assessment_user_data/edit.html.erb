@@ -4,23 +4,20 @@
   <%= form_for @aud, :url => { :action => :update } do |f| %>
     <%= f.error_messages %>
 
-    <fieldset>
-      <label class="radio">
+      <p>
         <%= f.radio_button :grade_type, AssessmentUserDatum::NORMAL %>
-        <%= grade_type_to_s AssessmentUserDatum::NORMAL %>
-      </label>
+        <%= f.label :grade_type, "Normal", :value => AssessmentUserDatum::NORMAL %>
+      </p>
 
-      <label class="radio">
+      <p>
         <%= f.radio_button :grade_type, AssessmentUserDatum::ZEROED %>
-        <%= grade_type_to_s AssessmentUserDatum::ZEROED %>
-      </label>
+        <%= f.label :grade_type, "Zeroed", :value => AssessmentUserDatum::ZEROED %>
+      </p>
 
-      <label class="radio">
+      <p>
         <%= f.radio_button :grade_type, AssessmentUserDatum::EXCUSED %>
-        <%= grade_type_to_s AssessmentUserDatum::EXCUSED %>
-      </label>
-
-    </fieldset>
+        <%= f.label :grade_type, "Excused", :value => AssessmentUserDatum::EXCUSED %>
+      </p>
 
     <%= f.submit "Save" , {:class=>"btn primary"} %>
   <% end %>

@@ -709,6 +709,10 @@ a.collection-item {
   transition: none;
 }
 
+.input-field label {
+    transition: none;
+}
+
 .collection
 div.collection-item:hover {
   background-color: #ddd;
@@ -1073,6 +1077,18 @@ div.center {
   border-radius: 3px;
   border: 1px solid #eee;
   border-left: 5px solid #ce4844;
+  font-weight: 500;
+}
+
+#flash_alert.success,
+#flash_success.success,
+#flash_notice.success {
+  color: green;
+  padding: 10px;
+  margin-bottom: 0px;
+  border-radius: 3px;
+  border: 1px solid #eee;
+  border-left: 5px solid green;
   font-weight: 500;
 }
 
