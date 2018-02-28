@@ -52,6 +52,8 @@ private
     @score = @submission.scores.find(params[:id])
     return if (@score.submission.course_user_datum_id == @cud.id) ||
               (@cud.has_auth_level? :course_assistant)
+
+    flash[:error] = "Action not allowed"
     redirect_to(action: "index") && return
   end
 end
