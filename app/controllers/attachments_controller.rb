@@ -38,7 +38,7 @@ class AttachmentsController < ApplicationController
   def show
     filename = Rails.root.join("attachments", @attachment.filename)
     unless File.exist?(filename)
-      ASSESSMENT_LOGGER.log("Cannot find the file '#{@attachment.filename}' for attachment #{@attachment.name}")
+      COURSE_LOGGER.log("Cannot find the file '#{@attachment.filename}' for attachment #{@attachment.name}")
       flash[:error] = "Error loading #{@attachment.name} from #{@attachment.filename}"
       redirect_to([@course, :attachments]) && return
     end
@@ -54,19 +54,20 @@ class AttachmentsController < ApplicationController
   def update
     if @attachment.update(attachment_params)
       # is successful
+      flash[:success] = "Attachment updated"
       redirect_to_attachment_list && return
     else
       # not successful, go back to edit page
-      error_msg = ""
+      error_msg = "Attachment update failed:"
       if not @attachment.valid?
         @attachment.errors.full_messages.each do |msg|
           error_msg += "<br>#{msg}"
         end
       else
-        error_msg = "Unknown error"
+        error_msg += "<br>Unknown error"
       end
       flash[:error] = error_msg
-      ASSESSMENT_LOGGER.log("Failed to update attachment: #{error_msg}")
+      COURSE_LOGGER.log("Failed to update attachment: #{error_msg}")
 
       if @is_assessment
         redirect_to([:edit, @course, @assessment, @attachment]) && return
@@ -79,6 +80,7 @@ class AttachmentsController < ApplicationController
   action_auth_level :destroy, :instructor
   def destroy
     @attachment.destroy
+    flash[:success] = "Attachment deleted"
     redirect_to_attachment_list && return
   end
 
@@ -96,7 +98,7 @@ private
     end
 
     if @attachment.nil?
-      ASSESSMENT_LOGGER.log("Cannot find attachment with id: #{params[:id]}")
+      COURSE_LOGGER.log("Cannot find attachment with id: #{params[:id]}")
       flash[:error] = "Could not find Attachment \# #{params[:id]}"
       redirect_to_attachment_list && return
     end
