@@ -1076,6 +1076,18 @@ div.center {
   font-weight: 500;
 }
 
+#flash_alert.success,
+#flash_success.success,
+#flash_notice.success {
+  color: green;
+  padding: 10px;
+  margin-bottom: 0px;
+  border-radius: 3px;
+  border: 1px solid #eee;
+  border-left: 5px solid green;
+  font-weight: 500;
+}
+
 #flash_notice {
   color: #1b809e;
   border-left: 5px solid #1b809e;
