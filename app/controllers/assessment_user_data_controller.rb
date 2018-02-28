@@ -18,7 +18,7 @@ class AssessmentUserDataController < ApplicationController
   action_auth_level :update, :instructor
   def update
     if @aud.update(edit_aud_params)
-      flash[:notice] = "Grade type updated!"
+      flash[:success] = "Grade type updated!"
     else
       flash[:error] = "Error updating grade type!"
     end
