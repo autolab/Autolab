@@ -30,6 +30,7 @@ class ExtensionsController < ApplicationController
         was found for this course."
       redirect_to(action: :index) && return
     end
+    flash[:success] = "Extension created successfully."
     ext = @assessment.extensions.create(extension_params)
     redirect_to(action: :index, errors: ext.errors.full_messages) && return
   end
@@ -38,6 +39,7 @@ class ExtensionsController < ApplicationController
   def destroy
     extension = @assessment.extensions.find(params[:id])
     extension.destroy
+    flash[:success] = "Extension deleted."
     redirect_to(action: :index) && return
   end
 
