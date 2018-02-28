@@ -709,6 +709,10 @@ a.collection-item {
   transition: none;
 }
 
+.input-field label {
+    transition: none;
+}
+
 .collection
 div.collection-item:hover {
   background-color: #ddd;
