@@ -25,7 +25,11 @@ Autolab3::Application.routes.draw do
   end
 
   resources :courses, param: :name do
-    resources :schedulers
+    resources :schedulers do
+        get "visualRun", action: :visual_run
+        get "run"
+    end
+
     resources :jobs, only: :index do
       get "getjob", on: :member
 
