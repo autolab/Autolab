@@ -19,10 +19,11 @@ class AssessmentUserDataController < ApplicationController
   def update
     if @aud.update(edit_aud_params)
       flash[:success] = "Grade type updated!"
+      redirect_to([:viewGradesheet, @course, @assessment]) and return
     else
       flash[:error] = "Error updating grade type!"
+      redirect_to action: :edit and return
     end
-    redirect_to action: :edit
   end
 
 private
