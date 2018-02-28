@@ -181,19 +181,19 @@ protected
       flash[:info] = "Administrator user added to course"
 
     when :admin_creation_error
-      flash[:error] = "Error adding user: #{current_user.email} to course"
-      redirect_to(controller: :home, action: :error) && return
+      flash[:error] = "Error adding administrator #{current_user.email} to course"
+      redirect_to(controller: :courses, action: :index) && return
 
     when :unauthorized
       flash[:error] = "User #{current_user.email} is not in this course"
-      redirect_to(controller: :home, action: :error) && return
+      redirect_to(controller: :courses, action: :index) && return
     end
 
     # check if course was disabled
     if @course.disabled? && !@cud.has_auth_level?(:instructor)
       flash[:error] = "Your course has been disabled by your instructor.
                        Please contact them directly if you have any questions"
-      redirect_to(controller: :home, action: :error) && return
+      redirect_to(controller: :courses, action: :index) && return
     end
 
     # should be able to unsudo from an invalid user and
