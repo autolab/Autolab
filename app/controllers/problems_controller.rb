@@ -19,13 +19,6 @@ class ProblemsController < ApplicationController
   def create
     @problem = @assessment.problems.new(problem_params)
 
-    # Handling errors
-    if !@problem.valid?
-      @problem.errors.full_messages.each do |msg|
-        flash[:error] += "<br>#{msg}"
-      end
-    end
-
     if @problem.save
       redirect_to(problems_index) && return
     else
@@ -74,13 +67,6 @@ private
 
   def set_problem
     @problem = @assessment.problems.find(params[:id])
-
-    # Handling errors
-    if !@problem.valid?
-      @problem.errors.full_messages.each do |msg|
-        flash[:error] += "<br>#{msg}"
-      end
-    end
 
     @breadcrumbs << (view_context.link_to "Problems", problems_index)
   end
