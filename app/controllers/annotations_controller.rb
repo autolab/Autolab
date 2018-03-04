@@ -19,13 +19,6 @@ class AnnotationsController < ApplicationController
   def create
     annotation = @submission.annotations.new(annotation_params)
 
-    # Handling errors
-    if !@submission.valid?
-      @submission.errors.full_messages.each do |msg|
-        flash[:error] += "<br>#{msg}"
-      end
-    end
-
     annotation.save
     respond_with(@course, @assessment, @submission, annotation)
   end
@@ -33,10 +26,7 @@ class AnnotationsController < ApplicationController
   # PUT /:course/annotations/1.json
   action_auth_level :update, :course_assistant
   def update
-    @annotation.update(annotation_params)
-
-    # Handling errors
-    if !@annotation.valid?
+    if !@annotation.update(annotation_params)
       @annotation.errors.full_messages.each do |msg|
         flash[:error] += "<br>#{msg}"
       end
@@ -50,10 +40,9 @@ class AnnotationsController < ApplicationController
   # DELETE /:course/annotations/1.json
   action_auth_level :destroy, :course_assistant
   def destroy
-    @annotation.destroy
-
-    # Handling errors
-    if !@annotation.valid?
+    if !@annotation.destroy
+      # We would have to reload the page to flash a success message, so
+      # we just do nothing if successful
       @annotation.errors.full_messages.each do |msg|
         flash[:error] += "<br>#{msg}"
       end
@@ -74,12 +63,5 @@ private
 
   def set_annotation
     @annotation = @submission.annotations.find(params[:id])
-
-    # Handling errors
-    if !@annotation.valid?
-      @annotation.errors.full_messages.each do |msg|
-        flash[:error] += "<br>#{msg}"
-      end
-    end
   end
 end
