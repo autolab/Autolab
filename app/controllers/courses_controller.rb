@@ -28,16 +28,6 @@ class CoursesController < ApplicationController
 
   action_auth_level :show, :student
   def show
-    if(@course.nil?)
-      flash[:error] = "Cannot show nil course"
-    end
-
-    if !@course.valid?
-      @course.errors.full_messages.each do |msg|
-        flash[:error] += "<br>#{msg}"
-      end
-    end
-
     redirect_to course_assessments_url(@course)
   end
 
@@ -46,25 +36,6 @@ class CoursesController < ApplicationController
 
   action_auth_level :manage, :instructor
   def manage
-    if(@course.nil?)
-      flash[:error] = "Cannot manage nil course"
-    end
-
-    if !@course.valid?
-      @course.errors.full_messages.each do |msg|
-        flash[:error] += "<br>#{msg}"
-      end
-    end
-
-    if(@cud.nil?)
-      flash[:error] = "Cannot manage nil course"
-    end
-
-    if !@cud.valid?
-      @cud.errors.full_messages.each do |msg|
-        flash[:error] += "<br>#{msg}"
-      end
-    end
 
     matrix = GradeMatrix.new @course, @cud
     cols = {}
@@ -115,9 +86,6 @@ class CoursesController < ApplicationController
     end
 
     @newCourse = Course.new(new_course_params)
-    if(@newCourse.nil?)
-      flash[:error] = "Cannot create nil course"
-    end
 
     @newCourse.display_name = @newCourse.name
 
@@ -184,14 +152,8 @@ class CoursesController < ApplicationController
 
   action_auth_level :update, :instructor
   def update
-    if(@course.nil?)
-      flash[:error] = "Cannot show nil course"
-    end
-
-    if !@course.valid?
-      @course.errors.full_messages.each do |msg|
-        flash[:error] += "<br>#{msg}"
-      end
+    if @course.nil?
+      flash[:error] = "Cannot update nil course"
     end
 
     if @course.update(edit_course_params)
@@ -199,6 +161,9 @@ class CoursesController < ApplicationController
       redirect_to edit_course_path(@course)
     else
       flash[:error] = "Error: There were errors editing the course."
+      @course.errors.full_messages.each do |msg|
+        flash[:error] += "<br>#{msg}"
+      end
     end
   end
 
@@ -208,7 +173,7 @@ class CoursesController < ApplicationController
     if @course.destroy
       flash[:success] = "Course destroyed."
     else
-      flash[:error] = "Error: course wasn't destroyed!"
+      flash[:error] = "Error: Course wasn't destroyed!"
     end
     redirect_to(courses_path) && return
   end
