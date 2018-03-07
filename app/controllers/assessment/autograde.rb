@@ -13,6 +13,7 @@ module AssessmentAutograde
   def autograde_done
     @assessment = @course.assessments.find_by(name: params[:name])
     render(nothing: true) && return unless @assessment && @assessment.has_autograder?
+    ASSESSMENT_LOGGER.setAssessment(@assessment)
 
     # there can be multiple submission with the same dave if this was a group submission
     submissions = Submission.where(dave: params[:dave]).all
@@ -524,9 +525,8 @@ module AssessmentAutograde
       end
     end
 
-    logger = Logger.new(Rails.root.join("courses", @course.name, @assessment.name, "log.txt"))
     submissions.each do |submission|
-      logger.add(Logger::INFO) { "#{submission.course_user_datum.email}, #{submission.version}, #{autoresult}" }
+      ASSESSMENT_LOGGER.log("#{submission.course_user_datum.email}, #{submission.version}, #{autoresult}")
     end
   end
 
