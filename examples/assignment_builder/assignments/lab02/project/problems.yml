@@ -1,0 +1,12 @@
+problem1:
+  score: 25
+  test:  test/test_main.py::test_get_difference1
+problem2:
+  score: 25
+  test:  test/test_main.py::test_get_difference2
+problem3:
+  score: 25
+  test:  test/test_main.py::test_get_sum1
+problem4:
+  score: 25
+  test:  test/test_main.py::test_get_sum2

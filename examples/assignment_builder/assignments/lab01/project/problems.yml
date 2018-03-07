@@ -1,0 +1,6 @@
+problem1:
+  score: 50
+  test:  test/test_main.py::test_get_name
+problem2:
+  score: 50
+  test:  test/test_main.py::test_get_age
