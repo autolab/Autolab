@@ -10,8 +10,7 @@ Autolab3::Application.routes.draw do
     namespace :v1 do
       get 'user', to: 'user#show'
 
-      resources :courses, param: :name, only: [:index] do
-        get 'create', on: :collection
+      resources :courses, param: :name, only: [:index, :create] do
 
         resources :course_user_data, only: [:index, :create, :show, :update, :destroy],
           param: :email, :constraints => { :email => /[^\/]+/ }
