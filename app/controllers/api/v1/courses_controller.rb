@@ -1,3 +1,5 @@
+require 'date'
+
 class Api::V1::CoursesController < Api::V1::BaseApiController
 
   before_action -> {require_privilege :user_courses}, only: [:index]
@@ -47,7 +49,28 @@ class Api::V1::CoursesController < Api::V1::BaseApiController
       raise ApiError.new(e.message, :internal_server_error)
     end
 
+    # set additional params
+    if params.has_key?(:start_date)
+      newCourse.start_date = safe_parse_date(params[:start_date])
+    end
+    if params.has_key?(:end_date)
+      newCourse.end_date = safe_parse_date(params[:end_date])
+    end
+
+    # attempt save
+    if not newCourse.save
+      raise ApiError.new("Failed to create course: #{validation_errors_for(newCourse)}", :bad_request)
+    end
+
     respond_with_hash({name: newCourse.name})
+  end
+
+private
+
+  def safe_parse_date(date_str)
+    Date.parse(date_str)
+  rescue ArgumentError
+    raise ApiError.new("Invalid date: #{date_str}", :bad_request)
   end
 
 end
