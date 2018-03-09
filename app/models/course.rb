@@ -50,7 +50,7 @@ class Course < ActiveRecord::Base
     newCourse.version_penalty.value = "0"
 
     if not newCourse.save
-      raise "Failed to create course #{@newCourse.name}. Double check name and semester."
+      raise "Failed to create course #{newCourse.name}: #{newCourse.errors.full_messages.join(", ")}"
     end
 
     # Check instructor
@@ -74,7 +74,7 @@ class Course < ActiveRecord::Base
     if not newCUD.save
       # roll back course creation
       newCourse.destroy
-      raise "Failed to create CUD for instructor of new course #{@newCourse.name}"
+      raise "Failed to create CUD for instructor of new course #{newCourse.name}"
     end
 
     # Load course config
@@ -82,7 +82,7 @@ class Course < ActiveRecord::Base
       # roll back course and CUD creation
       newCUD.destroy
       newCourse.destroy
-      raise "Failed to load course config for new course #{@newCourse.name}"
+      raise "Failed to load course config for new course #{newCourse.name}"
     end
 
     return newCourse
