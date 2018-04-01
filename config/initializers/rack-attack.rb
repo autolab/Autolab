@@ -94,6 +94,6 @@ class Rack::Attack
       'Content-Type' => 'application/json'
     }
 
-    return [429, headers, ['{"error": "Retry Later"}\n']]
+    return [429, headers, ['{"error": "Too Many Requests. Retry Later."}']]
   end
 end
