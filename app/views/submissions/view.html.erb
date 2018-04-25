@@ -43,7 +43,7 @@
 </h2>
 <hr>
 <div class="row">
-  <div class="annotationPane col l3">
+  <div class="annotationPane col l3" id="annotationPaneId">
     <h3 class="annotationHeader">Summary</h3>
     <% if @problemSummaries.empty? then %>
       <% if (@cud.instructor? or @cud.course_assistant?) then %>
@@ -75,8 +75,8 @@
     <input type="button" value="Reload Summary" class="btn primary" onclick="reloadSummary()">
 
   </div>
-  <div class="col l9">
-    <h3 id="filename"><%= @displayFilename %></h3><button class="btn collapse_expand" onclick="$('.minimize').click();">Collapse All</button> <button class="btn collapse_expand" onclick="$('.ann-box').click();">Expand All</button>
+  <div class="col l9" id ="codePaneId">
+    <h3 id="filename"><%= @displayFilename %></h3><button class="btn collapse_expand" onclick="$('.minimize').click();">Collapse All</button> <button class="btn collapse_expand" onclick="$('.ann-box').click();">Expand All</button> <button class="btn" onclick=toogleFullscreen()>Toggle Fullscreen</button>
     <div id="code-box">
     <% # these lines can't have white space due to the styling for pre and code tages %>
     <% # anything wrapped in a <pre><code> will be highlighted by highlightsjs %>
