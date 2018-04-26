@@ -15,16 +15,29 @@ module TangoClient
   # Exception for Tango API Client
   class TangoException < StandardError; end
 
+  # Number of retries for http operations
+  NUM_RETRIES = 3
+
   def self.handle_exceptions
-    resp = yield
+    begin
+      retries_remaining ||= NUM_RETRIES
+      resp = yield
+    rescue Net::OpenTimeout, Net::ReadTimeout, Timeout::Error,
+           Errno::ECONNRESET, Errno::ECONNABORTED, Errno::EPIPE => e
+      if retries_remaining > 0
+        retries_remaining -= 1
+        retry
+      else
+        raise TangoException, "Connection error with Tango (#{e})."
+      end
+    rescue StandardError => e
+      raise TangoException, "Unexpected error with Tango (#{e})."
+    end
+
     if resp.content_type == "application/json" && resp["statusId"] && resp["statusId"] < 0
-      fail TangoException, "Tango returned negative status code."
+      raise TangoException, "Tango returned negative status code: #{resp["statusId"]}"
     end
     return resp
-  rescue Net::OpenTimeout, Net::ReadTimeout
-    raise TangoException, "Connection timed out with Tango."
-  rescue StandardError => e
-    raise TangoException, "Unexpected error with Tango (#{e})."
   end
 
   def self.open(courselab)
