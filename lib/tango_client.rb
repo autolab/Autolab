@@ -15,8 +15,9 @@ module TangoClient
   # Exception for Tango API Client
   class TangoException < StandardError; end
 
-  # Number of retries for http operations
+  # Retries for http operations
   NUM_RETRIES = 3
+  RETRY_WAIT_TIME = 2 # seconds
 
   def self.handle_exceptions
     begin
@@ -26,6 +27,7 @@ module TangoClient
            Errno::ECONNRESET, Errno::ECONNABORTED, Errno::EPIPE => e
       if retries_remaining > 0
         retries_remaining -= 1
+        sleep RETRY_WAIT_TIME
         retry
       else
         raise TangoException, "Connection error with Tango (#{e})."
