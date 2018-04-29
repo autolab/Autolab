@@ -259,7 +259,7 @@ public
      # get submission and problem IDs
      sub_id = params[:submission_id].to_i
      prob_id = params[:problem_id].to_i
-     
+
 
     # find existing score for this problem, if there's one
     # otherwise, create it
@@ -314,7 +314,8 @@ end
 
   def statistics
     return unless load_course_config
-    latest_submissions = @assessment.submissions.latest.includes(:scores, :course_user_datum)
+    latest_submissions = @assessment.submissions.latest_for_statistics.includes(:scores, :course_user_datum)
+    #latest_submissions = @assessment.submissions.latest.includes(:scores, :course_user_datum)
 
     # Each value other than for :all is of the form
     # [[<group>, {:mean, :median, :max, :min, :stddev}]...]
@@ -408,7 +409,7 @@ private
     end
     problem_scores
   end
-  
+
 # Stats for grouping
   def stats_for_grouping(grouping)
     result = {}
