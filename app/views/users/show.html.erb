@@ -24,5 +24,10 @@
 
 <%= link_to raw('<span class="btn primary">Edit Information</span>'), edit_user_path(@user) %><br>
 <% if @user == current_user %>
-<%= link_to "Change your password", edit_user_registration_path %>
+<hr>
+<h4>Private Settings</h4>
+<%= link_to raw('<span class="btn primary">Change Password</span>'), edit_user_registration_path %> <br>
+<h4>API Settings</h4>
+<%= link_to raw('<span class="btn primary">New Activation</span>'), device_flow_activation_path %>
+<%= link_to raw('<span class="btn primary">Managed Authorized Clients</span>'), oauth_authorized_applications_path %>
 <% end %>
