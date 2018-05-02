@@ -63,7 +63,16 @@ module AssessmentAutograde
       redirect_to([:history, @course, @assessment, cud_id: @effective_cud.id]) && return
     end
 
-    sendJob_AddHTMLMessages(@course, @assessment, [@submission])
+    begin
+      sendJob_AddHTMLMessages(@course, @assessment, [@submission])
+    rescue AssessmentAutogradeCore::AutogradeError => e
+      # error message already filled in by sendJob_AddHTMLMessages, we just
+      # log the error message
+      COURSE_LOGGER.log("SendJob failed for #{@submission.id}\n
+        User error message: #{flash[:error]}\n
+        error name: #{e.error_code}\n
+        additional error data: #{e.additional_data}")
+    end
 
     redirect_to([:history, @course, @assessment, cud_id: @effective_cud.id]) && return
   end
@@ -92,10 +101,10 @@ module AssessmentAutograde
     if failed_list.length > 0
       flash[:error] = "Warning: Could not regrade #{failed_list.length} submission(s):<br>"
       failed_list.each do |failure|
-        if failure["error"].error_code == :nil_submission
+        if failure[:error].error_code == :nil_submission
           flash[:error] += "Unrecognized submission ID<br>"
         else
-          flash[:error] += "#{failure['submission'].filename}: #{failure['error'].msg}<br>"
+          flash[:error] += "#{failure[:submission].filename}: #{failure[:error].message}<br>"
         end
       end
     end
@@ -135,10 +144,10 @@ module AssessmentAutograde
     if failed_list.length > 0
       flash[:error] = "Warning: Could not regrade #{failed_list.length} submission(s):<br>"
       failed_list.each do |failure|
-        if failure["error"].error_code == :nil_submission
+        if failure[:error].error_code == :nil_submission
           flash[:error] += "Unrecognized submission ID<br>"
         else
-          flash[:error] += "#{failure['submission'].filename}: #{failure['error'].msg}<br>"
+          flash[:error] += "#{failure[:submission].filename}: #{failure[:error].message}<br>"
         end
       end
     end
@@ -184,7 +193,7 @@ module AssessmentAutograde
         link = "<a href=\"#{url_for(controller: 'jobs')}\">Jobs</a>"
         flash[:error] = "There was an error submitting your autograding job. We are likely down for maintenance if issues persist, please contact #{Rails.configuration.school['support_email']}"
       when :tango_upload
-        flash[:error] = "There was an error uploading the submission file. (Error #{job})"
+        flash[:error] = "There was an error uploading the submission file."
       when :tango_add_job
         flash[:error] = "Submission was rejected by autograder."
         if @cud.instructor?
