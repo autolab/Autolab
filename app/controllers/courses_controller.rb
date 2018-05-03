@@ -692,10 +692,18 @@ private
       # params[:isArchive] might be nil if no archive assessments are submitted
       isArchive = params[:isArchive] && params[:isArchive][ass.id.to_s]
 
+      visitedGroups = Set.new
+
       # For each student who submitted
       for sub in ass.submissions.latest do
         subFile = sub.handin_file_path
         next unless subFile && File.exist?(subFile)
+
+        if ass.has_groups?
+          group_id = sub.aud.group_id
+          next if visitedGroups.include?(group_id)
+          visitedGroups.add(group_id)
+        end
 
         # Create a directory for this student
         stuDir = File.join(assDir, sub.course_user_datum.email)
