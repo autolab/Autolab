@@ -90,6 +90,10 @@ class SubmissionsController < ApplicationController
   # this is good
   action_auth_level :update, :instructor
   def update
+    if @submission.nil?
+      flash[:error] = "Cannot update nil submission"
+    end
+
     if params[:submission][:tweak_attributes][:value].blank?
       params[:submission][:tweak_attributes][:_destroy] = true
     end
@@ -104,7 +108,11 @@ class SubmissionsController < ApplicationController
   action_auth_level :destroy, :instructor
   def destroy
     if params[:yes]
-      @submission.destroy!
+      if @submission.destroy
+        flash[:success] = "Submission successfully destroyed"
+      else
+        flash[:error] = "Submission failed to be destroyed"
+      end
     else
       flash[:error] = "There was an error deleting the submission."
     end
@@ -143,6 +151,16 @@ class SubmissionsController < ApplicationController
   # should be okay, but untested
   action_auth_level :downloadAll, :course_assistant
   def downloadAll
+    if @assessment.nil?
+      flash[:error] = "Cannot index submissions for nil assessment"
+    end
+
+    if !@assessment.valid?
+      @assessment.errors.full_messages.each do |msg|
+        flash[:error] += "<br>#{msg}"
+      end
+    end
+
     if @assessment.disable_handins
       flash[:error] = "There are no submissions to download."
       redirect_to([@course, @assessment, :submissions]) && return
@@ -259,6 +277,10 @@ class SubmissionsController < ApplicationController
   # archive.
   action_auth_level :view, :student
   def view
+    if(@course.nil?)
+      flash[:error] = "Cannot manage nil course"
+    end
+
     if params[:header_position]
       file, pathname = Archive.get_nth_file(@submission.handin_file_path, params[:header_position].to_i)
       unless file && pathname

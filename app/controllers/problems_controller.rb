@@ -18,10 +18,16 @@ class ProblemsController < ApplicationController
   action_auth_level :create, :instructor
   def create
     @problem = @assessment.problems.new(problem_params)
+
     if @problem.save
       redirect_to(problems_index) && return
     else
       flash[:error] = "An error occurred while creating the new problem"
+
+      @problem.errors.full_messages.each do |msg|
+        flash[:error] += "<br>#{msg}"
+      end
+
       redirect_to([:new, @course, @assessment, :problem]) && return
     end
   end
@@ -36,13 +42,24 @@ class ProblemsController < ApplicationController
       flash[:success] = "Success: Problem saved"
     else
       flash[:error] = "Error: Problem not saved"
+      @problem.errors.full_messages.each do |msg|
+        flash[:error] += "<br>#{msg}"
+      end
     end
     redirect_to(problems_index) && return
   end
 
   action_auth_level :destroy, :instructor
   def destroy
-    flash[:success] = "Problem successfully destroyed." if @problem.destroy
+    if @problem.destroy
+      flash[:success] = "Problem successfully destroyed."
+    else
+      flash[:success] = "Problem failed to destroy:"
+      @problem.errors.full_messages.each do |msg|
+        flash[:error] += "<br>#{msg}"
+      end
+    end
+
     redirect_to(problems_index) && return
   end
 
@@ -50,6 +67,7 @@ private
 
   def set_problem
     @problem = @assessment.problems.find(params[:id])
+
     @breadcrumbs << (view_context.link_to "Problems", problems_index)
   end
 
