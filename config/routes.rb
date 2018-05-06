@@ -1,4 +1,36 @@
 Autolab3::Application.routes.draw do
+  use_doorkeeper
+
+  namespace :oauth, { defaults: {format: :json} } do
+    get 'device_flow_init', to: 'device_flow#init'
+    get 'device_flow_authorize', to: 'device_flow#authorize'
+  end
+
+  namespace :api, { defaults: {format: :json} } do
+    namespace :v1 do
+      get 'user', to: 'user#show'
+
+      resources :courses, param: :name, only: [:index, :create] do
+
+        resources :course_user_data, only: [:index, :create, :show, :update, :destroy],
+          param: :email, :constraints => { :email => /[^\/]+/ }
+
+        resources :assessments, param: :name, only: [:index, :show] do
+          get 'problems'
+          get 'writeup'
+          get 'handout'
+          post 'submit'
+          
+          resources :submissions, param: :version, only: [:index] do
+            get 'feedback'
+          end
+        end
+      end
+
+      match "*path", to: "base_api#render_404", via: :all
+    end
+  end
+
   root "courses#index"
 
   devise_for :users, controllers: { omniauth_callbacks: "users/omniauth_callbacks",
@@ -16,6 +48,11 @@ Autolab3::Application.routes.draw do
     get "no_user"
   end
 
+  # device_flow-related
+  get "activate", to: "device_flow_activation#index", as: :device_flow_activation
+  get "device_flow_resolve", to: "device_flow_activation#resolve"
+  get "device_flow_auth_cb", to: "device_flow_activation#authorization_callback"
+
   resource :admin do
     match "email_instructors", via: [:get, :post]
   end
@@ -25,7 +62,11 @@ Autolab3::Application.routes.draw do
   end
 
   resources :courses, param: :name do
-    resources :schedulers
+    resources :schedulers do
+        get "visualRun", action: :visual_run
+        get "run"
+    end
+
     resources :jobs, only: :index do
       get "getjob", on: :member
 

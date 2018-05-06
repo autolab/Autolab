@@ -1,0 +1,52 @@
+<% @title = "Authorized Applications" %>
+
+<% content_for :javascripts do %>
+  <%= javascript_include_tag "initialize_tooltips" %>
+<% end %>
+
+<% is_admin = current_user.administrator? %>
+<% num_permissions = is_admin ? 6 : 5 %>
+
+<h3>Manage Authorized Applications</h3>
+<br>
+
+<table class="bordered centered">
+  <thead>
+    <tr style="border: none">
+      <th style="padding: 5px" rowspan="2">Name</th>
+      <th style="padding: 5px" colspan="<%= num_permissions %>">Permissions</th>
+      <th style="padding: 5px" rowspan="2">Authorized On</th>
+      <th style="padding: 5px" rowspan="2">Actions</th>
+    </tr>
+    <tr>
+      <th><i class="material-icons small tooltipped" data-tooltip="Acess your basic info (e.g. name, email, school, year)">contact_mail</i></th>
+      <th><i class="material-icons small tooltipped" data-tooltip="Access your courses and assessments">class</i></th>
+      <th><i class="material-icons small tooltipped" data-tooltip="Access your submissions, scores, and feedback">assessment</i></th>
+      <th><i class="material-icons small tooltipped" data-tooltip="Submit to assessments on your behalf">note_add</i></th>
+      <th><i class="material-icons small tooltipped" data-tooltip="Access admin options of courses where you are an instructor">verified_user</i></th>
+      <% if is_admin %>
+      <th><i class="material-icons small tooltipped" data-tooltip="Access admin options of Autolab">developer_board</i></th>
+      <% end %>
+    </tr>
+  </thead>
+  <tbody>
+    <% @applications.each do |application| %>
+      <% most_recent_grant = Doorkeeper::AccessGrant.where(:application_id => application.id,
+                                                           :resource_owner_id => current_user)
+                                                    .sort_by(&:created_at).last %>
+      <tr>
+        <td><%= application.name %></td>
+        <td><% if application.scopes.include? "user_info" %><i class="material-icons small">done</i><% end %></td>
+        <td><% if application.scopes.include? "user_courses" %><i class="material-icons small">done</i><% end %></td>
+        <td><% if application.scopes.include? "user_scores" %><i class="material-icons small">done</i><% end %></td>
+        <td><% if application.scopes.include? "user_submit" %><i class="material-icons small">done</i><% end %></td>
+        <td><% if application.scopes.include? "instructor_all" %><i class="material-icons small">done</i><% end %></td>
+        <% if is_admin %>
+        <td><% if application.scopes.include? "admin_all" %><i class="material-icons small">done</i><% end %></td>
+        <% end %>
+        <td><span class="moment-date-time"><%= most_recent_grant.created_at %></span></td>
+        <td><%= render 'delete_form', application: application %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>

@@ -38,6 +38,27 @@ class SchedulersController < ApplicationController
     @scheduler = Scheduler.find(params[:id])
   end
 
+  action_auth_level :run, :instructor
+  def run
+      @scheduler = Scheduler.find(params[:scheduler_id])
+  end
+
+  action_auth_level :visual_run, :instructor
+  def visual_run
+      action = Scheduler.find(params[:scheduler_id])
+      @log = "Executing #{Rails.root.join(action.action)}\n"
+      mod_name = Rails.root.join(action.action)
+      begin
+        require mod_name
+        Updater.update(action.course)
+      rescue ScriptError, StandardError => e
+        @log << ("Error in '#{@course.name}' updater: #{e.message}\n")
+        @log << (e.backtrace.join("\n\t"))
+      end
+      @log << "\nCompleted running action."
+      render :partial => 'visual_test'
+  end
+
   action_auth_level :update, :instructor
   def update
     @scheduler = Scheduler.find(params[:id])

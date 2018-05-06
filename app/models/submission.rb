@@ -45,6 +45,7 @@ class Submission < ActiveRecord::Base
 
   # latest (unignored) submissions
   scope :latest, -> { joins(:assessment_user_datum).joins(:course_user_datum) }
+  scope :latest_for_statistics, -> { joins(:assessment_user_datum).where.not(:assessment_user_data => { grade_type: AssessmentUserDatum::EXCUSED }).joins(:course_user_datum) }
 
   # constants for special submission types
   NORMAL = 0
@@ -275,7 +276,7 @@ class Submission < ActiveRecord::Base
 
   # NOTE: threshold  is no longer calculated using submission version,
   # but now using the number of submissions. This way, deleted submissions will
-  # not be accounted for in the version penalty. 
+  # not be accounted for in the version penalty.
   def version_over_threshold_by
     # version threshold of -1 allows infinite submissions without penalty
     return 0 if assessment.effective_version_threshold < 0
