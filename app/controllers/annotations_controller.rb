@@ -40,13 +40,7 @@ class AnnotationsController < ApplicationController
   # DELETE /:course/annotations/1.json
   action_auth_level :destroy, :course_assistant
   def destroy
-    if !@annotation.destroy
-      # We would have to reload the page to flash a success message, so
-      # we just do nothing if successful
-      @annotation.errors.full_messages.each do |msg|
-        flash[:error] += "<br>#{msg}"
-      end
-    end
+    @annotation.destroy
 
     head :no_content
   end

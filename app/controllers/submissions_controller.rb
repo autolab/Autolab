@@ -281,12 +281,6 @@ class SubmissionsController < ApplicationController
       flash[:error] = "Cannot manage nil course"
     end
 
-    if !@course.valid?
-      @course.errors.full_messages.each do |msg|
-        flash[:error] += "<br>#{msg}"
-      end
-    end
-
     if params[:header_position]
       file, pathname = Archive.get_nth_file(@submission.handin_file_path, params[:header_position].to_i)
       unless file && pathname
