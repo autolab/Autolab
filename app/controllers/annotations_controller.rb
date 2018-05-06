@@ -26,7 +26,12 @@ class AnnotationsController < ApplicationController
   # PUT /:course/annotations/1.json
   action_auth_level :update, :course_assistant
   def update
-    @annotation.update(annotation_params)
+    if !@annotation.update(annotation_params)
+      @annotation.errors.full_messages.each do |msg|
+        flash[:error] += "<br>#{msg}"
+      end
+    end
+
     respond_with(@course, @assessment, @submission, @annotation) do |format|
       format.json { render json: @annotation }
     end
@@ -36,6 +41,7 @@ class AnnotationsController < ApplicationController
   action_auth_level :destroy, :course_assistant
   def destroy
     @annotation.destroy
+
     head :no_content
   end
 

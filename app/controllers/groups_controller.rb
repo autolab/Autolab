@@ -114,6 +114,8 @@ class GroupsController < ApplicationController
       aud = @assessment.aud_for @cud.id
       if @group.is_member(aud) || @cud.instructor
         flash[:notice] = "Group was successfully updated." if @group.update(group_params)
+      else
+        flash[:error] = "Permission denied."
       end
     end
     respond_with(@course, @assessment, @group)

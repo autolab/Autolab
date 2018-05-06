@@ -26,10 +26,10 @@ class SchedulersController < ApplicationController
     @scheduler = @course.scheduler.new(scheduler_params)
     if @scheduler.save
       flash[:success] = "Scheduler created!"
-      redirect_to(course_schedulers_path(@course)) && return
+      redirect_to(course_schedulers_path(@course)) and return
     else
-      flash[:error] = "Create failed! Pleaes check all fields."
-      redirect_to(action: "new") && return
+      flash[:error] = "Create failed. Pleaes check all fields."
+      redirect_to(action: "new") and return
     end
   end
 
@@ -64,18 +64,23 @@ class SchedulersController < ApplicationController
     @scheduler = Scheduler.find(params[:id])
     if @scheduler.update(scheduler_params)
       flash[:success] = "Edit success!"
-      redirect_to(course_schedulers_path(@course)) && return
+      redirect_to(course_schedulers_path(@course)) and return
     else
-      flash[:error] = "Schedular Edit failed! Please check your fields."
-      redirect_to(action: "edit") && return
+      flash[:error] = "Scheduler edit failed! Please check your fields."
+      redirect_to(action: "edit") and return
     end
   end
 
   action_auth_level :destroy, :instructor
   def destroy
     @scheduler = Scheduler.find(params[:id])
-    @scheduler.destroy # boo
-    redirect_to(action: "index") && return
+    if @scheduler.destroy
+      flash[:success] = "Scheduler destroyed."
+    else
+      flash[:error] = "Scheduler destroy failed! Please check your fields."
+      redirect_to(action: "edit") and return
+    end
+    redirect_to(action: "index") and return
   end
 
 private

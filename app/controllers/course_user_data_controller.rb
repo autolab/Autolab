@@ -27,6 +27,7 @@ class CourseUserDataController < ApplicationController
     email = cud_parameters[:user_attributes][:email]
     user = User.where(email: email).first
     if user.nil?
+      # user is new
       user = User.roster_create(email,
                                 cud_parameters[:user_attributes][:first_name],
                                 cud_parameters[:user_attributes][:last_name],
@@ -42,12 +43,22 @@ class CourseUserDataController < ApplicationController
           flash[:error] = "All required fields must be filled"
           redirect_to(action: "new") && return
         else
-          flash[:error] = "The user with email #{email} could not be created"
+          error_msg = "The user with email #{email} could not be created:"
+          if not user.valid?
+            user.errors.full_messages.each do |msg|
+              error_msg += "<br>#{msg}"
+            end
+          else
+            error_msg += "<br>Unknown error"
+          end
+          COURSE_LOGGER.log(error_msg)
+          flash[:error] = error_msg
           redirect_to(action: "new") && return
         end
       end
 
     else
+      # user exists
       unless user.course_user_data.where(course: @course).empty?
         flash[:error] = "User #{email} is already in #{@course.full_name}"
         redirect_to(action: "new") && return
@@ -63,7 +74,16 @@ class CourseUserDataController < ApplicationController
         redirect_to(action: "new") && return
       end
     else
-      flash[:error] = "Adding user failed. Check all fields"
+      error_msg = "Adding user failed:"
+      if not @newCUD.valid?
+        @newCUD.errors.full_messages.each do |msg|
+          error_msg += "<br>#{msg}"
+        end
+      else
+        error_msg += "<br>Unknown error"
+      end
+      COURSE_LOGGER.log(error_msg)
+      flash[:error] = error_msg
       redirect_to(action: "new") && return
     end
   end
@@ -85,13 +105,13 @@ class CourseUserDataController < ApplicationController
   def edit
     @editCUD = @course.course_user_data.find(params[:id])
     if @editCUD.nil?
-      flash[:error] = "Can't find user in the course."
+      flash[:error] = "Can't find user in the course"
       redirect_to(action: "index") && return
     end
 
     if (@editCUD.id != @cud.id) && (!@cud.instructor?) &&
        (!@cud.user.administrator?)
-      flash[:error] = "Permission denied."
+      flash[:error] = "Permission denied"
       redirect_to(action: "index") && return
     end
 
@@ -108,10 +128,12 @@ class CourseUserDataController < ApplicationController
 
     if @cud.student?
       if (@editCUD.id != @cud.id)
+        flash[:error] = "Permission denied"
         redirect_to(action: :index) && return
       else
         @editCUD.nickname = params[:course_user_datum][:nickname]
         if @editCUD.save
+          flash[:success] = "Success: Your info has been saved"
           redirect_to(action: :show) && return
         else
           flash[:error] = "Please complete all of your account information before continuing:"
@@ -135,6 +157,8 @@ class CourseUserDataController < ApplicationController
       flash[:success] = "Success: Updated user #{@editCUD.email}"
       redirect_to([@course, @editCUD]) && return
     else
+      COURSE_LOGGER.log(@editCUD.errors.full_messages.join(", "))
+      # error details are shown separately in the view
       flash[:error] = "Update failed. Check all fields"
       redirect_to(action: :edit) && return
     end
@@ -146,6 +170,7 @@ class CourseUserDataController < ApplicationController
     if @destroyCUD && @destroyCUD != @cud && params[:yes1] && params[:yes2] && params[:yes3]
       @destroyCUD.destroy # awwww!!!
     end
+    flash[:success] = "Success: User #{@editCUD.email} has been deleted from the course"
     redirect_to([:users, @course]) && return
   end
 
@@ -155,35 +180,42 @@ class CourseUserDataController < ApplicationController
   action_auth_level :destroyConfirm, :instructor
   def destroyConfirm
     @destroyCUD = @course.course_user_data.find(params[:id])
+    if @destroyCUD.nil?
+      flash[:error] = "The user to be deleted is not in the course"
+      redirect_to(action: :index) && return
+    end
   end
 
   action_auth_level :sudo, :instructor
   def sudo
-    redirect_to([@cud.course]) && return unless @cud.can_sudo? || session[:sudo]
+    unless @cud.can_sudo? || session[:sudo]
+      flash[:error] = "Permission denied"
+      redirect_to([@cud.course]) && return
+    end
 
     return unless request.post?
 
     sudo_user = User.where(email: params[:sudo_email]).first
     unless sudo_user
-      flash[:error] = "User #{params[:sudo_email]} does not exist."
-      redirect_to([@cud.course]) && return
+      flash[:error] = "User #{params[:sudo_email]} does not exist"
+      redirect_to(action: :sudo) && return
     end
 
     sudo_cud = @course.course_user_data.where(user_id: sudo_user.id).first
     unless sudo_cud
-      flash[:error] = "User #{params[:sudo_email]} does not exist."
-      redirect_to([@cud.course]) && return
+      flash[:error] = "User #{params[:sudo_email]} does not exist in the course"
+      redirect_to(action: :sudo) && return
     end
 
     unless @cud.can_sudo_to?(sudo_cud)
       flash[:error] = "You do not have the privileges to act as " \
-              "#{sudo_cud.display_name}."
-      redirect_to([@cud.course]) && return
+              "#{sudo_cud.display_name}"
+      redirect_to(action: :sudo) && return
     end
 
     if @cud.id == sudo_cud.id
-      flash[:error] = "There's no point in trying to act as yourself."
-      redirect_to([@cud.course]) && return
+      flash[:error] = "There's no point in trying to act as yourself"
+      redirect_to(action: :sudo) && return
     end
 
     session[:sudo] = {}
@@ -193,12 +225,14 @@ class CourseUserDataController < ApplicationController
     # this was sudo_cud.display_name
     session[:sudo][:actual_name] = @cud.display_name
 
+    flash[:success] = "You are now acting as user #{sudo_user.email}"
     redirect_to([@cud.course]) && return
   end
 
   action_auth_level :unsudo, :student
   def unsudo
     session[:sudo] = nil
+    flash[:success] = "You are yourself again"
     redirect_to([@cud.course]) && return
   end
 
