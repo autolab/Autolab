@@ -1,0 +1,24 @@
+---
+general:
+  name: lab02
+  description: ''
+  display_name: Lab 02
+  handin_filename: main.py
+  handin_directory: handin
+  max_grace_days: 0
+  handout: handout.tar
+  writeup: writeup/lab02.html
+  max_submissions: -1
+  disable_handins: false
+  max_size: 2
+  has_svn: false
+  category_name: Lab
+problems:
+- name: Correctness
+  description: ''
+  max_score: 100.0
+  optional: false
+autograder:
+  autograde_timeout: 180
+  autograde_image: rhel.img
+  release_score: true
