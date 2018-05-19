@@ -26,11 +26,7 @@ class AnnotationsController < ApplicationController
   # PUT /:course/annotations/1.json
   action_auth_level :update, :course_assistant
   def update
-    if !@annotation.update(annotation_params)
-      @annotation.errors.full_messages.each do |msg|
-        flash[:error] += "<br>#{msg}"
-      end
-    end
+    @annotation.update(annotation_params)
 
     respond_with(@course, @assessment, @submission, @annotation) do |format|
       format.json { render json: @annotation }
