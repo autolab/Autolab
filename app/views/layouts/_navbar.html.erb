@@ -18,7 +18,7 @@
   <ul id="dropdown1" class="dropdown-content">
     <% unless current_user.nil? %>
       <li role="presentation">
-        <%= link_to "Account", edit_user_path(current_user), :title => "View your account info" %>
+        <%= link_to "Account", user_path(current_user), :title => "View your account info" %>
       </li>
     <% end %>
     <% if @cud %>
@@ -81,7 +81,7 @@
           </div>
         <% unless current_user.nil? %>
           <li role="presentation">
-            <%= link_to "<i class='material-icons left'>account_circle</i> Account".html_safe, edit_user_path(current_user), :title => "View your account info" %>
+            <%= link_to "<i class='material-icons left'>account_circle</i> Account".html_safe, user_path(current_user), :title => "View your account info" %>
           </li>
         <% end %>
         <% if @cud %>

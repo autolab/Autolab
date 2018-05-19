@@ -1,0 +1,15 @@
+<% content_for :javascripts do %>
+    <script type="text/javascript">
+        $(function () {
+            $.get("visualRun", function (returned) {
+                $(".output").html(returned)
+            })
+        })
+    </script>
+<% end %>
+
+<h3>Running scheduler</h3>
+
+<div class="output">
+    Running script...
+</div>

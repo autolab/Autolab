@@ -36,6 +36,7 @@ class CoursesController < ApplicationController
 
   action_auth_level :manage, :instructor
   def manage
+
     matrix = GradeMatrix.new @course, @cud
     cols = {}
 
@@ -85,6 +86,7 @@ class CoursesController < ApplicationController
     end
 
     @newCourse = Course.new(new_course_params)
+
     @newCourse.display_name = @newCourse.name
 
     # fill temporary values in other fields
@@ -150,19 +152,29 @@ class CoursesController < ApplicationController
 
   action_auth_level :update, :instructor
   def update
+    if @course.nil?
+      flash[:error] = "Cannot update nil course"
+    end
+
     if @course.update(edit_course_params)
       flash[:success] = "Success: Course info updated."
       redirect_to edit_course_path(@course)
     else
       flash[:error] = "Error: There were errors editing the course."
+      @course.errors.full_messages.each do |msg|
+        flash[:error] += "<br>#{msg}"
+      end
     end
   end
 
   # DELETE courses/:id/
   action_auth_level :destroy, :administrator
   def destroy
-    @course.destroy
-    flash[:success] = "Course destroyed."
+    if @course.destroy
+      flash[:success] = "Course destroyed."
+    else
+      flash[:error] = "Error: Course wasn't destroyed!"
+    end
     redirect_to(courses_path) && return
   end
 
@@ -349,7 +361,7 @@ file, most likely a duplicate email.  The exact error was: #{e} "
         assessments << assessment
       end
     end
-		
+
 		# Create a temporary directory
     @failures = []
     tmp_dir = Dir.mktmpdir("#{@cud.user.email}Moss", Rails.root.join("tmp"))
@@ -372,10 +384,10 @@ file, most likely a duplicate email.  The exact error was: #{e} "
 		end
 		if not language.nil?
 			moss_params = [moss_params, "-l", params[:language_selection]].join(" ")
-		end				
+		end
 
 		# Create a temporary directory
-		# Get moss flags from text field 	
+		# Get moss flags from text field
 		moss_flags = ["mossnet" + moss_params + " -d"].join(" ")
     @mossCmd = [Rails.root.join("vendor", moss_flags)]
 
@@ -402,9 +414,9 @@ file, most likely a duplicate email.  The exact error was: #{e} "
 		end
 		if not language.nil?
 			moss_params = [moss_params, "-l", params[:language_selection]].join(" ")
-		end				
+		end
 
-		# Get moss flags from text field 	
+		# Get moss flags from text field
 		moss_flags = ["mossnet" + moss_params + " -d"].join(" ")
     @mossCmd = [Rails.root.join("vendor", moss_flags)]
 
@@ -745,7 +757,7 @@ private
 
   def extract_tar_for_moss(tmp_dir, external_tar, archive)
     return unless external_tar
-    
+
 			# Directory to hold tar ball and all individual files.
 	    extTarDir = File.join(tmp_dir, "external_input")
 	 		baseFilesDir = File.join(tmp_dir, "basefiles")
@@ -763,7 +775,7 @@ private
 
 	    # Directory to hold all external individual submission.
 	    extFilesDir = File.join(extTarDir, "submissions")
-		
+
 		begin
 			Dir.mkdir(extFilesDir) # To hold all submissions
 	    Dir.chdir(extFilesDir)

@@ -19,7 +19,8 @@ class ApplicationController < ActionController::Base
   before_action :authenticate_for_action
   before_action :update_persistent_announcements
   before_action :set_breadcrumbs
-    rescue_from ActionView::MissingTemplate do |exception|
+  
+  rescue_from ActionView::MissingTemplate do |exception|
       redirect_to("/home/error_404")
   end
 
@@ -143,7 +144,7 @@ protected
     @course = Course.find_by(name: course_name) if course_name
 
     unless @course
-      render :file => "#{Rails.root}/public/404.html",  :status => 404
+      render :file => "#{Rails.root}/public/404.html",  :status => 404 and return
     end
 
     # set course logger
@@ -180,19 +181,19 @@ protected
       flash[:info] = "Administrator user added to course"
 
     when :admin_creation_error
-      flash[:error] = "Error adding user: #{current_user.email} to course"
-      redirect_to(controller: :home, action: :error) && return
+      flash[:error] = "Error adding administrator #{current_user.email} to course"
+      redirect_to(controller: :courses, action: :index) && return
 
     when :unauthorized
       flash[:error] = "User #{current_user.email} is not in this course"
-      redirect_to(controller: :home, action: :error) && return
+      redirect_to(controller: :courses, action: :index) && return
     end
 
     # check if course was disabled
     if @course.disabled? && !@cud.has_auth_level?(:instructor)
       flash[:error] = "Your course has been disabled by your instructor.
                        Please contact them directly if you have any questions"
-      redirect_to(controller: :home, action: :error) && return
+      redirect_to(controller: :courses, action: :index) && return
     end
 
     # should be able to unsudo from an invalid user and
@@ -224,7 +225,10 @@ protected
       redirect_to(action: :index) && return
     end
 
-    redirect_to(action: :index) && return if @cud.student? && !@assessment.released?
+    if @cud.student? && !@assessment.released?
+      flash[:error] = "You are not authorized to view this assessment."
+      redirect_to(action: :index) && return
+    end
 
     @breadcrumbs << (view_context.current_assessment_link)
     ASSESSMENT_LOGGER.setAssessment(@assessment)

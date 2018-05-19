@@ -58,6 +58,12 @@ gem 'omniauth-facebook', '>=2.0.0'
 gem 'omniauth-google-oauth2', '>=0.2.5'
 gem 'omniauth-shibboleth', '>=1.1.2'
 
+# Autolab API OAuth Service
+gem 'doorkeeper'
+
+# For block and throttling abusive requests
+gem 'rack-attack'
+
 # Adds It also adds f.error_messages and f.error_message_on to form builders
 gem 'dynamic_form'
 
@@ -73,8 +79,13 @@ gem 'rack-test'
 gem 'capybara', group: [:development, :test]
 gem 'factory_girl_rails', group: [:development, :test]
 gem 'database_cleaner', group: [:development, :test]
+gem 'webmock', group: [:development, :test]
 gem 'codeclimate-test-reporter', group: :test, require: nil
 gem 'newrelic_rpm'
+
+# Automatic Time Zone Management
+gem 'browser-timezone-rails'
+gem 'js_cookie_rails'
 
 # Use ActiveModel has_secure_password
 # gem 'bcrypt', '~> 3.1.7'

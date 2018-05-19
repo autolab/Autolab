@@ -26,10 +26,10 @@ class SchedulersController < ApplicationController
     @scheduler = @course.scheduler.new(scheduler_params)
     if @scheduler.save
       flash[:success] = "Scheduler created!"
-      redirect_to(course_schedulers_path(@course)) && return
+      redirect_to(course_schedulers_path(@course)) and return
     else
-      flash[:error] = "Create failed! Pleaes check all fields."
-      redirect_to(action: "new") && return
+      flash[:error] = "Create failed. Pleaes check all fields."
+      redirect_to(action: "new") and return
     end
   end
 
@@ -38,23 +38,49 @@ class SchedulersController < ApplicationController
     @scheduler = Scheduler.find(params[:id])
   end
 
+  action_auth_level :run, :instructor
+  def run
+      @scheduler = Scheduler.find(params[:scheduler_id])
+  end
+
+  action_auth_level :visual_run, :instructor
+  def visual_run
+      action = Scheduler.find(params[:scheduler_id])
+      @log = "Executing #{Rails.root.join(action.action)}\n"
+      mod_name = Rails.root.join(action.action)
+      begin
+        require mod_name
+        Updater.update(action.course)
+      rescue ScriptError, StandardError => e
+        @log << ("Error in '#{@course.name}' updater: #{e.message}\n")
+        @log << (e.backtrace.join("\n\t"))
+      end
+      @log << "\nCompleted running action."
+      render :partial => 'visual_test'
+  end
+
   action_auth_level :update, :instructor
   def update
     @scheduler = Scheduler.find(params[:id])
     if @scheduler.update(scheduler_params)
       flash[:success] = "Edit success!"
-      redirect_to(course_schedulers_path(@course)) && return
+      redirect_to(course_schedulers_path(@course)) and return
     else
-      flash[:error] = "Schedular Edit failed! Please check your fields."
-      redirect_to(action: "edit") && return
+      flash[:error] = "Scheduler edit failed! Please check your fields."
+      redirect_to(action: "edit") and return
     end
   end
 
   action_auth_level :destroy, :instructor
   def destroy
     @scheduler = Scheduler.find(params[:id])
-    @scheduler.destroy # boo
-    redirect_to(action: "index") && return
+    if @scheduler.destroy
+      flash[:success] = "Scheduler destroyed."
+    else
+      flash[:error] = "Scheduler destroy failed! Please check your fields."
+      redirect_to(action: "edit") and return
+    end
+    redirect_to(action: "index") and return
   end
 
 private

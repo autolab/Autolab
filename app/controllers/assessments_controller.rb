@@ -89,9 +89,16 @@ class AssessmentsController < ApplicationController
     ass_dir = Rails.root.join("courses", @course.name)
     @unused_config_files = []
     Dir.foreach(ass_dir) do |filename|
-      next unless File.exist?(File.join(ass_dir, filename, "#{filename}.yml"))
+      # assessment's yaml file must exist
+      if !File.exist?(File.join(ass_dir, filename, "#{filename}.yml"))
+        flash[:error] += "Yml does not exist"
+        next
+      end
       # names must be only lowercase letters and digits
-      next if filename =~ /[^a-z0-9]/
+      if filename =~ /[^a-z0-9]/
+        flash[:error] += "Name must be only lowercase letters and digits: "+filename
+        next
+      end
 
       # Only list assessments that aren't installed yet
       assessment_exists = @course.assessments.exists?(name: filename)
@@ -116,7 +123,7 @@ class AssessmentsController < ApplicationController
       is_valid_tar, asmt_name = valid_asmt_tar(tar_extract)
       tar_extract.close
       unless is_valid_tar
-        flash[:error] = "Invalid tarball. Please verify the existence of configuration files."
+        flash[:error] = "Invalid tarball. A valid assessment tar has a single root directory that's named after the assessment, containing an assessment yaml file and an assessment ruby file."
         redirect_to(action: "installAssessment")
         return
       end
@@ -186,7 +193,7 @@ class AssessmentsController < ApplicationController
       ass_name = @assessment.display_name.downcase.gsub(/[^a-z0-9]/, "")
 
       if ass_name.blank?
-        flash[:error] = "Assessment name cannot be blank!"
+        flash[:error] = "Assessment name is blank or contains characters that are not lowercase letters or digits"
         redirect_to(action: :installAssessment)
         return
       end
@@ -317,7 +324,7 @@ class AssessmentsController < ApplicationController
                                 @submission.filename)
       @submissionData = File.read(subFile)
     rescue
-      @submissionData = "Could not read #{subFile}"
+      flash[:error] = "Could not read #{subFile}"
     end
     @score = @submission.scores.where(problem_id: @problem.id).first
   end
@@ -495,7 +502,10 @@ class AssessmentsController < ApplicationController
     # User requested to view feedback on a score
     @score = @submission.scores.find_by(problem_id: params[:feedback])
 
-    redirect_to(action: "index") && return unless @score
+    if !@score
+      flash[:error] = "No feedback for requested score"
+      redirect_to(action: "index") && return
+    end
 
     if Archive.archive? @submission.handin_file_path
       @files = Archive.get_files @submission.handin_file_path
@@ -537,11 +547,12 @@ class AssessmentsController < ApplicationController
 
 
     begin
-      flash[:success] = "Saved!" if @assessment.update!(edit_assessment_params)
+      @assessment.update!(edit_assessment_params)
+      flash[:success] = "Saved!"
 
       redirect_to(tab_index) && return
     rescue ActiveRecord::RecordInvalid => invalid
-      flash[:error] = invalid.message.sub! "Validation failed: ", ""
+      flash[:error] = invalid.message.sub!("Validation failed: ", "")
 
       redirect_to(tab_index) && return
     end
@@ -586,7 +597,13 @@ class AssessmentsController < ApplicationController
       scores = submission.scores.where(released: true)
       scores.each do |score|
         score.released = false
-        updateScore(@assessment.course.course_user_data, score)
+        
+        begin
+          updateScore(@assessment.course.course_user_data, score)
+        rescue ActiveRecord::RecordInvalid => invalid
+          flash[:error] += "Unable to withdraw score for "+@assessment.course.course_user_data.user.email+": " + invalid.message
+        end
+
       end
     end
 
@@ -615,7 +632,10 @@ class AssessmentsController < ApplicationController
 
   # uninstall - uninstalls an assessment
   def uninstall(name)
-    return if name.blank?
+    if name.blank?
+      flash[:error] = "Name cannot be blank"
+      return
+    end
     @assessment.destroy
     f = Rails.root.join("assessmentConfig", "#{@course.name}-#{name}.rb")
     File.delete(f)

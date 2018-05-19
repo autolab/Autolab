@@ -414,10 +414,15 @@ div#footer .right {
   padding-top: 14px;
 }
 
-div#footer a {
+div#footer a,
+div#footer span.site_version {
   display: inline-block;
   padding: 12px;
   color: #666;
+}
+
+div#footer span.site_version {
+  float: right;
 }
 
 div#footer div.fb-like.fb_iframe_widget {
@@ -707,6 +712,10 @@ table.navigatable tr:hover {
 .collection
 a.collection-item {
   transition: none;
+}
+
+.input-field label {
+    transition: none;
 }
 
 .collection
@@ -1073,6 +1082,18 @@ div.center {
   border-radius: 3px;
   border: 1px solid #eee;
   border-left: 5px solid #ce4844;
+  font-weight: 500;
+}
+
+#flash_alert.success,
+#flash_success.success,
+#flash_notice.success {
+  color: green;
+  padding: 10px;
+  margin-bottom: 0px;
+  border-radius: 3px;
+  border: 1px solid #eee;
+  border-left: 5px solid green;
   font-weight: 500;
 }
 

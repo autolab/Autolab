@@ -18,11 +18,12 @@ class AssessmentUserDataController < ApplicationController
   action_auth_level :update, :instructor
   def update
     if @aud.update(edit_aud_params)
-      flash[:notice] = "Grade type updated!"
+      flash[:success] = "Grade type updated!"
+      redirect_to([:viewGradesheet, @course, @assessment]) and return
     else
       flash[:error] = "Error updating grade type!"
+      redirect_to action: :edit and return
     end
-    redirect_to action: :edit
   end
 
 private

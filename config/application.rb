@@ -32,6 +32,8 @@ module Autolab3
       Devise::ConfirmationsController.layout "home"
       Devise::UnlocksController.layout "home"            
       Devise::PasswordsController.layout "home"        
+      Doorkeeper::AuthorizationsController.layout "home"
+      Doorkeeper::AuthorizedApplicationsController.layout "home"
     end
 
     # TODO: this should be a macro
@@ -96,5 +98,11 @@ module Autolab3
 
     # School specific configuration (please edit config/school.yml)
     config.school = config_for(:school)
+
+    # configure throttling middleware rack-attack
+    config.middleware.use Rack::Attack
+
+    # site version
+    config.site_version = "2.2.0"
   end
 end

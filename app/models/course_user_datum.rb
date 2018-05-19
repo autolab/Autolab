@@ -152,6 +152,16 @@ class CourseUserDatum < ActiveRecord::Base
     end
   end
 
+  def auth_level_string
+    if instructor?
+      return "instructor"
+    elsif course_assistant?
+      return "course_assistant"
+    else
+      return "student"
+    end
+  end
+
   #
   # User Attribute Wrappers - these functions get attributes from the CUD's
   #   associated User object, in an attempt to hide the User object
