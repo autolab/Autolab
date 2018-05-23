@@ -90,8 +90,9 @@ class AssessmentsController < ApplicationController
     @unused_config_files = []
     Dir.foreach(ass_dir) do |filename|
       # assessment's yaml file must exist
+      flash[:error] = ""
       if !File.exist?(File.join(ass_dir, filename, "#{filename}.yml"))
-        flash[:error] += "Yml does not exist"
+        flash[:error] += "Yml does not exist: " + filename
         next
       end
       # names must be only lowercase letters and digits
