@@ -213,7 +213,7 @@ protected
     unless @cud.user.administrator?
       if !@cud.instructor?
         # Students can see only their own job names
-        job[:name] = "*" unless job[:name].ends_with? @cud.user.email
+        job[:name] = "*" unless job[:name].ends_with? "_#{@cud.user.email}"
       else
         # Instructors can see only their course's job names
         job[:name] = "*" if !rjob["notifyURL"] || !(job[:course].eql? @cud.course.id.to_s)
