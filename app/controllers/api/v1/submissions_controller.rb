@@ -7,7 +7,7 @@ class Api::V1::SubmissionsController < Api::V1::BaseApiController
   # endpoint for obtaining all submissions of the current user (student's view).
   # If a score is not released, it is not returned, regardless of user authorization.
   def index
-    submissions = @assessment.submissions.where(course_user_datum_id: @cud, submitted_by_app_id: current_app.id).order("version DESC")
+    submissions = @assessment.submissions.where(course_user_datum_id: @cud).order("version DESC")
     
     problems = {}
     @assessment.problems.each do |prob|
@@ -42,10 +42,6 @@ class Api::V1::SubmissionsController < Api::V1::BaseApiController
     vers = params[:submission_version]
     submission = @assessment.submissions.find_by(course_user_datum_id: @cud, version: vers)
     raise ApiError.new("Submission version #{vers} does not exist for #{@assessment.name}", :not_found) unless submission
-
-    if current_app.id != submission.submitted_by_app_id
-      raise ApiError.new("Submission not made by this client. Cannot provide feedback.", :forbidden)
-    end
 
     # Looks weird, but currently feedbacks are the same for each problem
     score = submission.scores.find_by(problem_id: problem.id)
