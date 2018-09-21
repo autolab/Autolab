@@ -95,11 +95,9 @@ class AssessmentsController < ApplicationController
         flash[:error] += "Yml does not exist: " + filename +"     -     "
         next
       end
+      
       # names must be only lowercase letters and digits
-      if filename =~ /[^a-z0-9]/
-        flash[:error] += "Name must be only lowercase letters and digits: "+filename
-        next
-      end
+      next if filename =~ /[^a-z0-9]/
 
       # Only list assessments that aren't installed yet
       assessment_exists = @course.assessments.exists?(name: filename)
