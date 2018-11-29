@@ -1147,3 +1147,23 @@ div.center {
 .btn:hover {
   background-color: rgba(140,0,0,0.95) !important;
 }
+
+
+.drag-drop-handin {
+  height: 120px;
+  border: 3px dashed grey;
+  border-radius: 10px;
+  cursor: pointer;
+  margin-top: 10px;
+  align-items: center;
+  justify-content: center;
+}
+
+.drag-drop-handin:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+#remove-handed-in {
+  color: grey;
+  cursor: pointer;
+}
