@@ -51,7 +51,7 @@
               <script>
                 function dropHandler(e) {
                   e.preventDefault();
-                  e.target.style = undefined;
+                  $(".drag-drop-handin").get(0).style = undefined;
                   handleFiles(e.dataTransfer.files);
                 }
 
@@ -60,11 +60,11 @@
                 }
 
                 function dragEnter(e) {
-                  e.target.style = "background:rgba(0,0,0,0.05);";
+                  $(".drag-drop-handin").get(0).style = "background:rgba(0,0,0,0.05);";
                 }
 
                 function dragExit(e) {
-                  e.target.style = undefined;
+                  $(".drag-drop-handin").get(0).style = undefined;
                 }
 
                 function clickDrag() {
@@ -149,7 +149,7 @@
             <% end %>
             <div class="row handin-row">
               <div class="valign-wrapper drag-drop-handin" onclick="clickDrag();" ondrop="dropHandler(event);" ondragover="dragOverHandler(event);" ondragenter="dragEnter(event);" ondragexit="dragExit(event);">
-                <p style="color:grey;"><b>Drag a file here to hand in. Click to select a file.</b></p>
+                <p class="center-align" style="color:grey;" onclick="clickDrag();" ondrop="dropHandler(event);" ondragover="dragOverHandler(event);" ondragenter="dragEnter(event);" ondragexit="dragExit(event);"><b>Drag a file here to hand in. Click to select a file.</b> <br /> <span style="font-size: 10px;">Files do not submit automatically.</span></p>
               </div>
             </div>
 
