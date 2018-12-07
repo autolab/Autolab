@@ -332,7 +332,9 @@ file, most likely a duplicate email.  The exact error was: #{e} "
 
   action_auth_level :moss, :instructor
   def moss
-    @courses = Course.all
+    @courses = Course.all.select{ |course|
+        @cud.user.administrator ||
+        course.course_user_data.joins(:user).find_by(users: { email: @cud.user.email }, instructor: true) != nil }
   end
 
   action_auth_level :runMoss, :instructor
