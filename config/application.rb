@@ -103,6 +103,6 @@ module Autolab3
     config.middleware.use Rack::Attack
 
     # site version
-    config.site_version = "2.2.1"
+    config.site_version = "2.3.0"
   end
 end
