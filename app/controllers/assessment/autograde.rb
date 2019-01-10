@@ -198,7 +198,7 @@ module AssessmentAutograde
         flash[:error] = "Submission was rejected by autograder."
         if @cud.instructor?
           link = (view_context.link_to "Autograder Settings", [:edit, course, assessment, :autograder])
-          flash[:error] += " (Verify the autograding properties at #{link}.)"
+          flash[:error] += " (Verify the autograding properties at #{link}.)\nErrorMsg: " + e.additional_data
         end
       when :missing_autograder_file
         flash[:error] = "One or more files in the Autograder module don't exist. Contact the instructor."
