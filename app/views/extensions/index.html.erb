@@ -1,12 +1,12 @@
 <% @title = "Manage Extensions" %>
 
 <% content_for :javascripts do %>
-  
+
   <script type="application/javascript">
     jQuery(function() {
       /* match user name/email with cud_id */
       userData = {
-        <% @users.each do |k,v| %>
+        <% @usersEncoded.each do |k,v| %>
           "<%= k %>": "<%= v %>",
         <% end %>
       };
@@ -24,7 +24,7 @@
 
       /* track changes in student autocomplete field */
       $studentAutocompleteField.on('change', function() {
-        $hiddenCUDField.val(userData[$studentAutocompleteField.val()]);
+        $hiddenCUDField.val(userData[window.btoa($studentAutocompleteField.val())]);
       })
 
       /* set up dates */
@@ -75,17 +75,9 @@
 
 <% end %>
 
-<% if params[:errors] then %>
-  <br><i>Errors:<%= params[:errors] %></i><br>
-  <p></p>
-<% end %>
-
-<p> Current Due: <span class="moment-date-time"><%= @assessment.due_at.to_s %></span> </p>
-
 <div class="row">
   <div class="col s12 m6">
-    <p><b>Current Extensions</b></p>
-    Size:<%= @extensions.size %>
+    <p><b>Current Extensions (<%= @extensions.size %>)</b></p>
     <table class="verticalTable">
       <thead>
         <tr>
@@ -109,24 +101,17 @@
   <div class="col s12 m6">
     <p><b>Create New Extension</b></p>
       <%= form_for @new_extension, :as=>"extension", :url=>{:action=>"create"}, builder: FormBuilderWithDateTimeInput do |f| %>
-        <% if @new_extension.errors.any? %>
-          <div>
-            <ul>
-              <% @new_extension.errors.full_messages.each do |msg| %>
-                <li><%= msg %></li>
-              <% end %>
-            </ul>
-          </div>
-        <% end %>
         <div class="input-field">
-          <input type="text" size="3" id="student_autocomplete" class="autocomplete" autocomplete="off">
-          <label for="student_autocomplete">Start typing student name or email</label>
-        </div><br>
-        <p>Select a new due date</p>
+          <label class="control-label active" for="student_autocomplete">Student Name/Email</label>
+          <input type="text" id="student_autocomplete" placeholder="Start typing student name or email" class="autocomplete" autocomplete="off">
+          <p class="help-block"></p>
+        </div>
+        <p>Select a new due date (Currently due at: <span class="moment-date-time"><%= @assessment.due_at.to_s %></span>)</p>
         <%= f.date_select :due_at, greater_than: @assessment.due_at, id: "extension_due_at" %><br>
         <p>-OR- Specify number of days to extend:</p>
         <%= f.text_field :days, :size=>3, :id => "extension_days" %>
-        <p>-OR- Infinite Extension? <%= f.check_box :infinite, id: "extension_infinite" %></p>
+        <p>-OR- Infinite Extension?</p>
+        <%= f.check_box :infinite, id: "extension_infinite" %>
         <%= f.hidden_field(:course_user_datum_id)%>
         <%= f.hidden_field(:assessment_id)%>
         <%= f.submit "Create" , {:class=>"btn primary"} %>
