@@ -1147,3 +1147,31 @@ div.center {
 .btn:hover {
   background-color: rgba(140,0,0,0.95) !important;
 }
+
+
+.drag-drop-handin {
+  height: 120px;
+  border: 3px dashed grey;
+  border-radius: 10px;
+  cursor: pointer;
+  margin-top: 10px;
+  align-items: center;
+  justify-content: center;
+
+  -webkit-touch-callout: none; /* iOS Safari */
+  -webkit-user-select: none; /* Safari */
+   -khtml-user-select: none; /* Konqueror HTML */
+     -moz-user-select: none; /* Firefox */
+      -ms-user-select: none; /* Internet Explorer/Edge */
+          user-select: none; /* Non-prefixed version, currently
+                                supported by Chrome and Opera */
+}
+
+.drag-drop-handin:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+#remove-handed-in {
+  color: grey;
+  cursor: pointer;
+}
