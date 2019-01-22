@@ -88,12 +88,13 @@ class AssessmentsController < ApplicationController
   def installAssessment
     ass_dir = Rails.root.join("courses", @course.name)
     @unused_config_files = []
+    invalid_assessments=[]
     Dir.foreach(ass_dir) do |filename|
       # skip if not directory in folder
       next if !File.directory?(File.join(ass_dir, filename)) or filename == ".." or filename == "."
       # assessment's yaml file must exist
       if !File.exist?(File.join(ass_dir, filename, "#{filename}.yml"))
-        flash[:error] += "Yml does not exist: " + filename +"     -     "
+        invalid_assessments += "#{filename} is not a valid assessment directory: Control file #{filename} does not exist"
         next
       end
 
@@ -103,6 +104,9 @@ class AssessmentsController < ApplicationController
       # Only list assessments that aren't installed yet
       assessment_exists = @course.assessments.exists?(name: filename)
       @unused_config_files << filename unless assessment_exists
+    end
+    if invalid_assessments.length > 0
+      flash[:error] = invalid_assessments.join("     -     ")
     end
     @unused_config_files.sort!
   end
