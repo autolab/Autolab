@@ -94,6 +94,7 @@
                 document.querySelector("#handin_show_assessment input[type='file']").addEventListener(
                   "change",
                   function (e) {
+                    console.log("files changed");
                     showFiles();
                   },
                   false
@@ -178,7 +179,7 @@
             <% end %>
             <div class="row handin-row">
               <div class="valign-wrapper drag-drop-handin" onclick="clickDrag();" ondrop="dropHandler(event);" ondragover="dragOverHandler(event);" ondragenter="dragEnter(event);" ondragexit="dragExit(event);">
-                <p class="center-align" style="color:grey;" onclick="clickDrag();" ondrop="dropHandler(event);" ondragover="dragOverHandler(event);" ondragenter="dragEnter(event);" ondragexit="dragExit(event);"><b>Drag a file here to hand in. Click to select a file.</b> <br /> <span style="font-size: 10px;">Files do not submit automatically.</span></p>
+                <p class="center-align" style="color:grey;" ondrop="dropHandler(event);" ondragover="dragOverHandler(event);" ondragenter="dragEnter(event);" ondragexit="dragExit(event);"><b>Drag a file here to hand in. Click to select a file.</b> <br /> <span style="font-size: 10px;">Files do not submit automatically.</span></p>
               </div>
             </div>
 
