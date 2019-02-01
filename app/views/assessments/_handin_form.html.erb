@@ -52,14 +52,7 @@
                 var submittedFile = false;
 
                 function flashError(message) {
-                  const elem = $("<div />").prop("id", "flash_error").addClass("error").text(message);
-                  $("#flashes").append(
-                    elem
-                  );
-
-                  setTimeout(() => {
-                    elem.hide(500);
-                  }, 3000);
+                  const elem = $(".file-error").text(message).show();
                 }
 
                 function dropHandler(e) {
@@ -94,7 +87,6 @@
                 document.querySelector("#handin_show_assessment input[type='file']").addEventListener(
                   "change",
                   function (e) {
-                    console.log("files changed");
                     showFiles();
                   },
                   false
@@ -128,7 +120,9 @@
                   }
 
                   if (fileSelector.files.length === 1) {
-                      $(".handin-row").hide();
+                      $(".handin-row").hide(0, function () {
+                        $(".file-error").hide();
+                      });
                       $(".handedin-row").show();
                       enableSubmit();
                   }
@@ -178,6 +172,9 @@
               </script>
             <% end %>
             <div class="row handin-row">
+              <div class="error file-error" id="flash_error" style="background: white;display: none;">
+                There was an error processing your file, please try adding it again.
+              </div>
               <div class="valign-wrapper drag-drop-handin" onclick="clickDrag();" ondrop="dropHandler(event);" ondragover="dragOverHandler(event);" ondragenter="dragEnter(event);" ondragexit="dragExit(event);">
                 <p class="center-align" style="color:grey;" ondrop="dropHandler(event);" ondragover="dragOverHandler(event);" ondragenter="dragEnter(event);" ondragexit="dragExit(event);"><b>Drag a file here to hand in. Click to select a file.</b> <br /> <span style="font-size: 10px;">Files do not submit automatically.</span></p>
               </div>
