@@ -93,6 +93,7 @@ class AssessmentsController < ApplicationController
       next if !File.directory?(File.join(ass_dir, filename)) or filename == ".." or filename == "."
       # assessment's yaml file must exist
       if !File.exist?(File.join(ass_dir, filename, "#{filename}.yml"))
+        flash[:error] = flash[:error] || ""
         flash[:error] += "Yml does not exist: " + filename +"     -     "
         next
       end
@@ -601,6 +602,7 @@ class AssessmentsController < ApplicationController
         begin
           updateScore(@assessment.course.course_user_data, score)
         rescue ActiveRecord::RecordInvalid => invalid
+          flash[:error] = flash[:error] || ""
           flash[:error] += "Unable to withdraw score for "+@assessment.course.course_user_data.user.email+": " + invalid.message
         end
 
