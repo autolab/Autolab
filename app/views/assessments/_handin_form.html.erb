@@ -49,10 +49,23 @@
             <% end %>
             <% content_for :javascripts do %>
               <script>
+                var submittedFile = false;
+
+                function flashError(message) {
+                  const elem = $(".file-error").text(message).show();
+                }
+
                 function dropHandler(e) {
                   e.preventDefault();
                   $(".drag-drop-handin").get(0).style = undefined;
-                  handleFiles(e.dataTransfer.files);
+                  if (e.dataTransfer.files.length === 1) {
+                    var fileSelector = $("#handin_show_assessment input[type='file']").get(0);
+                    fileSelector.files = e.dataTransfer.files;
+                    if (fileSelector.files.length === 1) {
+                      showFiles();
+                      enableSubmit();
+                    }
+                  }
                 }
 
                 function dragOverHandler(e) {
@@ -79,22 +92,12 @@
                   false
                 );
 
-                function handleFiles(fileList) {
-                  if (fileList.length === 1) {
-                    var fileSelector = $("#handin_show_assessment input[type='file']").get(0);
-                    fileSelector.files = fileList;
-                    showFiles();
-                  } else {
-                    // invalid number of files alert
-                  }
-                }
-
                 function showFiles() {
                   var fileSelector = $("#handin_show_assessment input[type='file']").get(0);
                   var file = fileSelector.files[0];
-                  console.log(file);
                   $("#handin-file-name").text(file.name);
                   $("#handin-modify-date").text(moment(file.lastModified).format("MMMM Do YYYY, h:mm a"));
+                  submittedFile = false;
 
                   var sOutput = file.size + " bytes";
                   for (var aMultiples = ["kb", "mb", "gb", "tb", "pb", "eb", "zb", "yb"], nMultiple = 0, nApprox = file.size / 1024; nApprox > 1; nApprox /= 1024, nMultiple++) {
@@ -116,9 +119,13 @@
                     }
                   }
 
-                  $(".handin-row").hide();
-                  $(".handedin-row").show();
-                  enableSubmit();
+                  if (fileSelector.files.length === 1) {
+                      $(".handin-row").hide(0, function () {
+                        $(".file-error").hide();
+                      });
+                      $(".handedin-row").show();
+                      enableSubmit();
+                  }
                 }
 
                 $("#integrity_checkbox").change(function (e) {
@@ -129,9 +136,10 @@
                   e.preventDefault();
                   var fileSelector = $("#handin_show_assessment input[type='file']").get(0);
                   fileSelector.value = null;
-                  $(".handin-row").show();
+                  $(".handin-row").show(function () {
+                    enableSubmit();
+                  });
                   $(".handedin-row").hide();
-                  enableSubmit();
                 });
 
                 function enableSubmit() {
@@ -144,12 +152,31 @@
                   } else {
                     $("#fake-submit").removeClass("disabled");
                   }
+
+                  if (checkbox.checked && $(".handin-row").is(":hidden") && $("#fake-submit").hasClass("disabled") && fileSelector.files.length === 0) {
+                    // theres an issue
+                    $(".handin-row").show();
+                    $(".handedin-row").hide();
+                    flashError("There was an error processing your file, please try again.");
+                  }
                 }
+
+                $("#fake-submit").click(function (e) {
+                  if (submittedFile) {
+                    e.preventDefault();
+                    return;
+                  }
+                  $("#fake-submit").addClass("disabled");
+                  submittedFile = true;
+                });
               </script>
             <% end %>
             <div class="row handin-row">
+              <div class="error file-error" id="flash_error" style="background: white;display: none;">
+                There was an error processing your file, please try adding it again.
+              </div>
               <div class="valign-wrapper drag-drop-handin" onclick="clickDrag();" ondrop="dropHandler(event);" ondragover="dragOverHandler(event);" ondragenter="dragEnter(event);" ondragexit="dragExit(event);">
-                <p class="center-align" style="color:grey;" onclick="clickDrag();" ondrop="dropHandler(event);" ondragover="dragOverHandler(event);" ondragenter="dragEnter(event);" ondragexit="dragExit(event);"><b>Drag a file here to hand in. Click to select a file.</b> <br /> <span style="font-size: 10px;">Files do not submit automatically.</span></p>
+                <p class="center-align" style="color:grey;" ondrop="dropHandler(event);" ondragover="dragOverHandler(event);" ondragenter="dragEnter(event);" ondragexit="dragExit(event);"><b>Drag a file here to hand in. Click to select a file.</b> <br /> <span style="font-size: 10px;">Files do not submit automatically.</span></p>
               </div>
             </div>
 
