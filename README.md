@@ -8,9 +8,19 @@ Autolab also provides other services that instructors expect in a course managem
 
 Since 2010, Autolab has had a transformative impact on education at CMU. Each semester, it is used by about 5,000 CMU students in courses in Pittsburgh, Silicon Valley, Qatar, and Rwanda. In Fall, 2014, we are releasing Autolab as an open-source system, where it will be available to schools all over the world, and hopefully have the same impact it's had at CMU.
 
-<a href="https://autolab-slack.herokuapp.com">
+
+<p>
+<a href="https://autolab-slack.herokuapp.com" style="float:left">
   <img src="http://svgshare.com/i/2Rm.svg" width="170px" height="44px">
 </a>
+
+<a href="https://autolab.github.io/docs/" style="float:left">
+  <img src="https://svgshare.com/i/B4h.svg" width="170px" height="44px">
+</a>
+
+</p>
+
+[![Build Status](https://travis-ci.org/autolab/Autolab.svg)](https://travis-ci.org/autolab/Autolab)
 
 ## Installation
 
@@ -43,9 +53,6 @@ After setting up the test environment, simply run spec by:
 ```sh
 bundle exec rake spec
 ```
-
-
-[![Build Status](https://travis-ci.org/autolab/Autolab.svg)](https://travis-ci.org/autolab/Autolab) [![Code Climate](https://codeclimate.com/github/autolab/Autolab/badges/gpa.svg)](https://codeclimate.com/github/autolab/Autolab) [![Test Coverage](https://codeclimate.com/github/autolab/Autolab/badges/coverage.svg)](https://codeclimate.com/github/autolab/Autolab)
 
 ## Contributing
 
