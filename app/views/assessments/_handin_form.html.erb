@@ -212,17 +212,20 @@
               <% end %>
             </div>
             <div class="row">
-              <% if @assessment.max_submissions != -1 then %>
-                <% numSubmissions = @submissions.size %>
-                <% if numSubmissions > @assessment.max_submissions then %>
-                  <% numSubmissions = 0 %>
-                <% else %>
-                  <% numSubmissions = @assessment.max_submissions - numSubmissions %>
-                <% end %>
-                <div class="smallText col s6 offset-s6 m4 offset-m8 center-align" style="padding-top: 6px">&nbsp;&nbsp;(<%= numSubmissions %> submissions left)</div>
-              <% else %>
-                <div class="smallText col s6 offset-s6 m4 offset-m8 center-align" style="padding-top: 6px">(&nbsp;&#x221e;&nbsp;&nbsp;submissions left)</div>
-              <% end %>
+              <% numSubmissions = @submissions.size
+                 maxSubmit = @assessment.max_submissions
+                 versionThresh = (@assessment.version_threshold || -1)
+                 if maxSubmit == -1 and versionThresh == -1
+                   remaining_submissions_str = "(unlimited submissions left)"
+                 elsif maxSubmit != -1 and versionThresh == -1
+                   remaining_submissions_str = "(#{[@assessment.max_submissions - numSubmissions, 0].max} submissions left)"
+                 elsif versionThresh != -1 and maxSubmit == -1
+                   remaining_submissions_str = "(#{[@assessment.version_threshold - numSubmissions, 0].max} unpenalized submissions left)"
+                 else
+                   remaining_submissions_str = "(#{[@assessment.version_threshold - numSubmissions, 0].max} unpenalized, #{[@assessment.max_submissions - numSubmissions, 0].max} total submissions left)"
+                 end
+              %>
+              <div class="smallText col s6 offset-s6 m4 offset-m8 center-align" style="padding-top: 6px"> <%= remaining_submissions_str %>  </div>
             </div>
           <% end %>
         <% end %>
