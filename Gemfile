@@ -1,7 +1,7 @@
 source 'https://rubygems.org'
 ruby '2.6.1'
 
-gem 'rails', '=4.2.1'
+gem 'rails', '=5.0.7'
 
 # Use SCSS for stylesheets
 gem 'sass-rails', '>= 4.0.3'
@@ -52,7 +52,7 @@ gem 'mysql2', '~>0.4.10'
 gem 'thin'
 
 # External authentication
-gem 'devise', '=3.4.0'
+gem 'devise', '>=4.5.0'
 gem 'omniauth', '>=1.2.2'
 gem 'omniauth-facebook', '>=2.0.0'
 gem 'omniauth-google-oauth2', '>=0.2.5'
@@ -74,7 +74,7 @@ gem 'rubyzip'
 gem 'httparty'
 
 # Enables RSpec testing framework with Capybara and Factory Girl.
-gem 'rspec-rails'
+gem 'rspec-rails', '>=3.5.0'
 gem 'rack-test'
 gem 'capybara', group: [:development, :test]
 gem 'factory_girl_rails', group: [:development, :test]
@@ -131,4 +131,4 @@ gem 'prawn', '0.13.0'
 # LDAP Lookup
 gem 'net-ldap'
 
-gem 'sprockets-rails', '2.3.3'
+gem 'sprockets-rails', '>=3.2.1'
