@@ -46,7 +46,6 @@ gem 'populator', '>=1.0.0'
 
 # To communicate with MySQL database
 gem 'mysql2', '=0.3.18'
-gem 'sqlite3'
 
 # Development server
 gem 'thin'
@@ -116,6 +115,9 @@ group :development do
 
   # documentation generator
   gem 'yard'
+
+  # sqlite3 adapter
+  gem 'sqlite3'
 
 end
 
