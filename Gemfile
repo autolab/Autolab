@@ -1,4 +1,5 @@
 source 'https://rubygems.org'
+ruby '2.6.1'
 
 gem 'rails', '=4.2.1'
 
@@ -45,7 +46,7 @@ gem 'rake', '>=10.3.2'
 gem 'populator', '>=1.0.0'
 
 # To communicate with MySQL database
-gem 'mysql2', '=0.3.18'
+gem 'mysql2', '~>0.4.10'
 
 # Development server
 gem 'thin'
