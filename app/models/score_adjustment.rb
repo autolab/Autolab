@@ -1,4 +1,4 @@
-class ScoreAdjustment < ActiveRecord::Base
+class ScoreAdjustment < ApplicationRecord
   # attr_accessible :kind, :value
 
   validates_presence_of :value, :kind

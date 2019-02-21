@@ -1,4 +1,4 @@
-class Extension < ActiveRecord::Base
+class Extension < ApplicationRecord
   belongs_to :assessment
   belongs_to :course_user_datum
   validates_presence_of :course_user_datum_id

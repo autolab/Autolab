@@ -1,4 +1,4 @@
-class Score < ActiveRecord::Base
+class Score < ApplicationRecord
   belongs_to :submission
   belongs_to :problem
   belongs_to :grader, class_name: "CourseUserDatum"
