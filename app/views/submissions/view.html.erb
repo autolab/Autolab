@@ -7,6 +7,7 @@
 <% end %>
 
 <% content_for :javascripts do %>
+  <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
   <%= external_javascript_include_tag "lodash", "3.3.1" %>
   <%= javascript_include_tag "highlight.pack.js" %>
   <script type="application/javascript">
@@ -29,7 +30,7 @@
     <% else %>
     var headerPositionStr = null;
     <% end %>
-
+    hljs.initHighlightingOnLoad();
   </script>
   <%= javascript_include_tag "annotations.js" %>
   <script type="text/javascript">
@@ -38,12 +39,61 @@
 
 <% end %>
 
-<h2>Submission Version <%=@submission.version%> for
+<!-- force end the container -->
+</div></div>
+
+<%
+=begin%>
+ <h2>Submission Version <%=@submission.version%> for
 <%= current_assessment_link %> (<%= @submission.course_user_datum.email %>)
 </h2>
 <hr>
+<%
+=end%>
 <div class="row">
-  <div class="annotationPane col l3">
+  <div class="col l2">
+    <div class="file-explorer">
+      <div class="title">
+        <p><i class="material-icons">folder_open</i> <%= @submission.course_user_datum.email %> (v<%=@submission.version%>)</p>
+      </div>
+      <div class="file-list">
+        <ul>
+          <li>Item 1</li>
+          <li>Item 2</li>
+          <li>Item 3</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="col l8">
+    <div id="code-box">
+
+      <div class="code-table">
+          <div class="file-header">
+            <div class="file-name">
+              <i class="material-icons">insert_drive_file</i> <span><%= @displayFilename %></span>
+            </div>
+
+            <div class="file-button">
+              <span>Collapse Comments</span>
+            </div>
+            <div class="file-button">
+              <span>Expand Comments</span>
+            </div>
+          </div>
+          <% @data.each_with_index do |(code, annotation), index| %>
+            <div class="code-line">
+              <div class="line-number"><%= index+1 %></div>
+              <div class="add-comment">
+                <% if @cud.instructor? or @cud.course_assistant? then %><div class="add-button-container"><button class="add-button" id="add-btn-<%= index+1 %>"><i class="material-icons">add_comment</i></button></div><% end %>
+              </div>
+              <div class="code"><pre><code><%= code %></code></pre></div>
+            </div>
+          <% end %>
+      </div>
+    </div>
+  </div>
+  <div class="annotationPane col l2">
     <h3 class="annotationHeader">Summary</h3>
     <% if @problemSummaries.empty? then %>
       <% if (@cud.instructor? or @cud.course_assistant?) then %>
@@ -73,19 +123,9 @@
     <label for="highlightLongLines">Highlight lines longer than 80 characters</label>
     <hr>
     <input type="button" value="Reload Summary" class="btn primary" onclick="reloadSummary()">
-
-  </div>
-  <div class="col l9">
-    <h3 id="filename"><%= @displayFilename %></h3><button class="btn collapse_expand" onclick="$('.minimize').click();">Collapse All</button> <button class="btn collapse_expand" onclick="$('.ann-box').click();">Expand All</button>
-    <div id="code-box">
-    <% # these lines can't have white space due to the styling for pre and code tages %>
-    <% # anything wrapped in a <pre><code> will be highlighted by highlightsjs %>
-    <pre><code id="code-block"><ol id="code-list"><%
-      @data.each_with_index do |(code, annotation), index|
-        %><li id="line-<%= index+1 %>"><code><%=
-          code
-        %></code><% if @cud.instructor? or @cud.course_assistant? then %><span class="add-annotation-btn" id="add-btn-<%= index+1 %>"><i class="material-icons">add</i></span><% end %><div class="annotations-container"></div></li><%
-      end %></ol></code></pre>
-  </div>
   </div>
 </div>
+
+<!-- restart the container -->
+<div>
+<div>

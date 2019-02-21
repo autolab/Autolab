@@ -1,7 +1,123 @@
 @charset "utf-8";
 
-pre code {
-  font-size: 12px;
+.row {
+  max-height: calc(100vh - 205px);
+  overflow: hidden;
+}
+
+.code-table {
+  background: #fcfcfc;
+  border: 1px solid #ccc;
+  max-height: calc(100vh - 230px);
+  overflow: scroll;
+}
+
+.code-table .code-line:hover {
+  background: #d5d5d5;
+}
+
+.code-table .code-line pre {
+  padding: 0;
+  margin: 0;
+}
+
+.code-table .code-line {
+  display: flex;
+  align-items: center;
+  height: 28px;
+  min-width: 100%;
+  background: inherit;
+}
+
+.code-table .line-number {
+  position: sticky;
+  left: 0;
+
+  text-align: left;
+  margin: 0 5px 0 5px;
+  padding-right: 5px;
+  font-family: 'Courier New', Courier, monospace;
+
+  border-right: 1px #ccc solid;
+
+  user-select: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+
+  min-width: 36px;
+  background: inherit;
+}
+
+.code-table .file-header {
+  border-bottom: 2px #ccc solid;
+
+  position: sticky;
+  top: 0;
+  left: 0;
+  z-index: 999;
+
+  background: inherit;
+
+  display: flex;
+}
+
+.code-table .file-header .file-name {
+  border-right: 1px #ccc solid;
+  padding: 5px;
+  display: flex;
+  align-items: center;
+  margin-right: auto;
+}
+
+.code-table .file-button {
+  border-left: 1px #ccc solid;
+  padding: 5px;
+  display: flex;
+  align-items: center;
+}
+
+.code-table .file-button span {
+  background: #cbcbcb;
+  padding: 2px;
+  border-radius: 1px;
+  user-select: none;
+  -ms-user-select: none;
+  -moz-user-select: none;
+  cursor: pointer;
+}
+
+
+
+.code-table .code-line:hover .add-button {
+  visibility: visible;
+}
+
+.code-table .add-button-container {
+  display: flex;
+  align-items: center;
+  justify-items: center;
+  width: 30px;
+}
+
+.code-table .add-button {
+  background: #090;
+  outline: none;
+  border: none;
+  margin: 1px;
+  padding: 0;
+  color: #fff;
+  border-radius: 5px;
+  text-align: center;
+  width: 24px;
+  height: 24px;
+  visibility: hidden;
+}
+
+.code-table .add-button:hover {
+  position: absolute;
+  width: 28px;
+  height: 28px;
 }
 
 #code-list {
@@ -51,18 +167,9 @@ pre code {
 .add-annotation-btn {
   background: #090;
   color: #fff;
-  display: none;
-  left: 0;
-  margin-left: -16px;
-  position: absolute;
-  font-size: 8px;
-  line-height: 18px;
-  text-align: center;
-  height: 20px;
-  width: 20px;
+  visibility: hidden;
   border-radius: 4px;
   box-shadow: 0 1px 4px rgba(0,0,0,0.15);
-  z-index: 999;
 }
 
 .add-annotation-btn:hover {
@@ -212,7 +319,7 @@ pre code {
   left: -2px;
 }
 
-pre {
+/* pre {
     display: block;
     padding: 9.5px;
     margin: 0 0 10px;
@@ -224,7 +331,7 @@ pre {
     background-color: #f5f5f5;
     border: 1px solid #ccc;
     border-radius: 4px;
-}
+} */
 
 .header > .grader {
   flex: 2 0 0;
