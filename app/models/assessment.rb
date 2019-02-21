@@ -2,7 +2,7 @@ require "association_cache"
 require "fileutils"
 require "utilities"
 
-class Assessment < ActiveRecord::Base
+class Assessment < ApplicationRecord
   # Mass-assignment
   # attr_protected :name
 

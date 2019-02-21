@@ -1,4 +1,4 @@
-class OauthDeviceFlowRequest < ActiveRecord::Base
+class OauthDeviceFlowRequest < ApplicationRecord
   belongs_to :oauth_application
 
   validates_uniqueness_of :device_code,     on: :create

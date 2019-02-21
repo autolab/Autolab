@@ -6,7 +6,7 @@ require "association_cache"
 # status (excused or whatever) on an assessment.  It's also used by Groups, and tracks the latest
 # submission of the user for an assessment.
 #
-class AssessmentUserDatum < ActiveRecord::Base
+class AssessmentUserDatum < ApplicationRecord
   belongs_to :course_user_datum
   belongs_to :assessment
   belongs_to :latest_submission, class_name: "Submission"

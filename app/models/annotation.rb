@@ -3,7 +3,7 @@
 # Currently, they are just text, but it would be nice if they could be used in
 # score calculations in the future.
 #
-class Annotation < ActiveRecord::Base
+class Annotation < ApplicationRecord
   belongs_to :submission
   belongs_to :problem
 
