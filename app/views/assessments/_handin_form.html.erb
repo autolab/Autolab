@@ -212,20 +212,9 @@
               <% end %>
             </div>
             <div class="row">
-              <% numSubmissions = @submissions.size
-                 maxSubmit = (@assessment.max_submissions || -1)
-                 versionThresh = (@assessment.effective_version_threshold || -1)
-                 if maxSubmit == -1 and versionThresh == -1
-                   remaining_submissions_str = "(unlimited submissions left)"
-                 elsif maxSubmit != -1 and versionThresh == -1
-                   remaining_submissions_str = "(#{[maxSubmit - numSubmissions, 0].max} submissions left)"
-                 elsif versionThresh != -1 and maxSubmit == -1
-                   remaining_submissions_str = "(#{[versionThresh - numSubmissions, 0].max} unpenalized submissions left)"
-                 else
-                   remaining_submissions_str = "(#{[versionThresh - numSubmissions, 0].max} unpenalized, #{[maxSubmit - numSubmissions, 0].max} total submissions left)"
-                 end
-              %>
-              <div class="smallText col s6 offset-s6 m4 offset-m8 center-align" style="padding-top: 6px"> <%= remaining_submissions_str %>  </div>
+              <div class="smallText col s6 offset-s6 m4 offset-m8 center-align" style="padding-top: 6px">
+                <%= remainingSubmissionsMsg(@submissions, @assessment) %>  
+              </div>
             </div>
           <% end %>
         <% end %>
