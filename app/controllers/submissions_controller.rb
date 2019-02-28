@@ -285,7 +285,19 @@ class SubmissionsController < ApplicationController
       flash[:error] = "Cannot manage nil course"
     end
     
-    @files = Archive.get_file_hierarchy(@filename).sort! { |a, b| a[:pathname] <=> b[:pathname] }
+    # Pull the files with their hierarchy info for the file tree
+    if Archive.archive? @filename
+      @files = Archive.get_file_hierarchy(@filename).sort! { |a, b| a[:pathname] <=> b[:pathname] }
+    else
+      @files = [{
+        pathname: @filename,
+        header_position: 0,
+        mac_bs_file: @filename.include?("__MACOSX") ||
+          @filename.include?(".DS_Store") ||
+          @filename.include?(".metadata"),
+        directory: Archive.looks_like_directory?(@filename)
+      }]
+    end
 
     if params[:header_position]
       file, pathname = Archive.get_nth_file(@submission.handin_file_path, params[:header_position].to_i)
