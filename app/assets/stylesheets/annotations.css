@@ -340,3 +340,28 @@
 .collapse_expand{
   margin-bottom:10px;
 }
+
+/* File Tree Styling CSS */
+.folder-contents{
+  margin-left:10px;
+}
+
+.file{
+  margin-left:5px;
+}
+
+.folder-name{
+  cursor: pointer;
+}
+
+.folder-name.active .closed-icon{
+  display:none;
+}
+
+.folder-name:not(.active) .open-icon{
+  display:none;
+}
+
+.folder-name:not(.active) + .folder-contents{
+  display: none;
+}

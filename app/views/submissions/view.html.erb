@@ -31,6 +31,16 @@
     var headerPositionStr = null;
     <% end %>
     hljs.initHighlightingOnLoad();
+
+    // Lets us open and close file folders
+    function switchFolderState(folderElement) {
+      if(folderElement.classList.contains('active')){
+        folderElement.classList.remove('active')
+      } else{
+        folderElement.classList.add('active')
+      }
+    }
+
   </script>
   <%= javascript_include_tag "annotations.js" %>
   <script type="text/javascript">
@@ -42,32 +52,56 @@
 <!-- force end the container -->
 </div></div>
 
+<!-- A helper function to recursively create the file directory -->
 <%
-=begin%>
- <h2>Submission Version <%=@submission.version%> for
-<%= current_assessment_link %> (<%= @submission.course_user_datum.email %>)
-</h2>
-<hr>
+def renderFile(file, isRoot: false)
+  if(file[:mac_bs_file])
+    return ""
+  end
+
+  if(!file[:directory]) %>
+    <div class="file">
+      <i class="material-icons md_18 closed-icon">insert_drive_file</i>
+      <%= file[:pathname].split("/").last %>
+    </div>
 <%
-=end%>
+  else %>
+    <div class="folder">
+      <div class="folder-name <%= "active" if isRoot %>  " onclick="switchFolderState(this)">
+        <i class="material-icons md_18 closed-icon">folder</i>
+        <i class="material-icons md_18 open-icon">folder_open</i> 
+        <%= file[:pathname].split("/").last %>
+      </div>
+      <div class="folder-contents">
+        <% for subFile in file[:subfiles] %>
+              <% renderFile(subFile) %>
+        <% end %>
+      </div>
+    </div>
+<%
+  end
+end
+%>
+
 <div class="row">
   <div class="col l2">
     <div class="file-explorer">
       <div class="title">
-        <p><i class="material-icons">folder_open</i> <%= @submission.course_user_datum.email %> (v<%=@submission.version%>)</p>
+        <%= @submission.course_user_datum.email %> (v<%=@submission.version%>)
       </div>
       <div class="file-list">
-        <ul>
-          <li>Item 1</li>
-          <li>Item 2</li>
-          <li>Item 3</li>
-        </ul>
+        <% @files.each do |file| %>
+            <%
+              if(!file[:mac_bs_file])
+                renderFile(file, isRoot: true)
+              end
+            %>
+        <% end %>
       </div>
     </div>
   </div>
   <div class="col l8">
     <div id="code-box">
-
       <div class="code-table">
           <div class="file-header">
             <div class="file-name">

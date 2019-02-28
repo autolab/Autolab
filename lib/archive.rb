@@ -35,6 +35,32 @@ module Archive
     files
   end
 
+  def self.recoverHierarchy(files, root)
+    depth = root[:pathname].chomp("/").count "/"
+    if(root[:pathname] == "")
+      depth = -1
+    end
+    if(!root[:directory])
+      return root
+    end
+    subFiles = []
+    filesNestedSomewhere = files.select{|entry| entry[:pathname].start_with?(root[:pathname]) && !(entry[:pathname] == root[:pathname])}
+    for file in filesNestedSomewhere
+      fileDepth = file[:pathname].chomp("/").count "/"
+      if(fileDepth == depth+1)
+        subFiles << recoverHierarchy(filesNestedSomewhere, file)
+      end
+    end
+    root[:subfiles] = subFiles
+    return root
+  end
+
+  def self.get_file_hierarchy(archive_path)
+    files = get_files(archive_path)
+    res = recoverHierarchy(files, {pathname: "", directory: true})
+    return res[:subfiles]
+  end
+
   def self.get_nth_file(archive_path, n)
     archive_type = get_archive_type(archive_path)
     archive_extract = get_archive(archive_path, archive_type)

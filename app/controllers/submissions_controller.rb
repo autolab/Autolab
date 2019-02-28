@@ -284,6 +284,8 @@ class SubmissionsController < ApplicationController
     if(@course.nil?)
       flash[:error] = "Cannot manage nil course"
     end
+    
+    @files = Archive.get_file_hierarchy(@filename).sort! { |a, b| a[:pathname] <=> b[:pathname] }
 
     if params[:header_position]
       file, pathname = Archive.get_nth_file(@submission.handin_file_path, params[:header_position].to_i)
@@ -305,7 +307,6 @@ class SubmissionsController < ApplicationController
     return unless file
 
     filename = @submission.handin_file_path
-
 
     if !PDF.pdf?(file)
       begin
@@ -383,16 +384,16 @@ class SubmissionsController < ApplicationController
 
       render(:viewPDF) && return
     else
-      begin
+      # begin
         render(:view) && return
-      rescue
-        flash[:error] = "Autolab cannot display this file"
-        if params[:header_position]
-          redirect_to([:list_archive, @course, @assessment, @submission]) && return
-        else
-          redirect_to([:history, @course, @assessment, cud_id: @submission.course_user_datum_id]) && return
-        end
-      end
+      # rescue
+      #   flash[:error] = "Autolab cannot display this file"
+      #   if params[:header_position]
+      #     redirect_to([:list_archive, @course, @assessment, @submission]) && return
+      #   else
+      #     redirect_to([:history, @course, @assessment, cud_id: @submission.course_user_datum_id]) && return
+      #   end
+      # end
     end
   end
 
