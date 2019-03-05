@@ -133,6 +133,9 @@ class Submission < ActiveRecord::Base
       if params["formfield3"]
           form_hash[assessment.getTextfields[2]] = params["formfield3"]
       end
+      if params["callback_url"]
+          self.callback_url = params["callback_url"]
+      end
       self.settings = form_hash.to_json
       self.save!
   end

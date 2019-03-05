@@ -362,6 +362,8 @@ module AssessmentAutogradeCore
           submission.autoresult = autoresult
           submission.dave = nil
           submission.save!
+
+          notify_callback(submission)
         end
       end
     rescue StandardError => e
@@ -384,6 +386,13 @@ module AssessmentAutogradeCore
     submissions.each do |submission|
       ASSESSMENT_LOGGER.log("#{submission.course_user_datum.email}, #{submission.version}, #{autoresult}")
     end
+  end
+
+  # Notify to optional callback url
+  def notify_callback(submission)
+    HTTParty.post submission.callback_url if submission.callback_url.present?
+  rescue StandardError => e
+    Rails.logger.error e.message
   end
 
   ##
