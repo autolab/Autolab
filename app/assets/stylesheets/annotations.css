@@ -348,6 +348,7 @@
 
 .file{
   margin-left:5px;
+  display: block;
 }
 
 .folder-name{

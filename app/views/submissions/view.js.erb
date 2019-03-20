@@ -1,0 +1,10 @@
+// console.log("Updating to file <%= params[:header_position] %>...")
+// Update the code viewer and annotations with the new data
+$('#code-box').replaceWith('<%= j render("submissions/code_viewer") %>');
+$('#annotationPane').replaceWith('<%= j render("submissions/annotation_pane") %>');
+
+// Add syntax highlighting to the new code viewer
+$('pre code').each(function(){hljs.highlightBlock(this)})
+
+// Update the page URL
+history.pushState(null, null, '<%= url_for(params) %>');

@@ -1,0 +1,25 @@
+<div id="code-box">
+  <div class="code-table">
+      <div class="file-header">
+        <div class="file-name">
+          <i class="material-icons">insert_drive_file</i> <span><%= @displayFilename %></span>
+        </div>
+
+        <div class="file-button">
+          <span>Collapse Comments</span>
+        </div>
+        <div class="file-button">
+          <span>Expand Comments</span>
+        </div>
+      </div>
+      <% @data.each_with_index do |(code, annotation), index| %>
+        <div class="code-line">
+          <div class="line-number"><%= index+1 %></div>
+          <div class="add-comment">
+            <% if @cud.instructor? or @cud.course_assistant? then %><div class="add-button-container"><button class="add-button" id="add-btn-<%= index+1 %>"><i class="material-icons">add_comment</i></button></div><% end %>
+          </div>
+          <div class="code"><pre><code><%= code %></code></pre></div>
+        </div>
+      <% end %>
+  </div>
+</div>

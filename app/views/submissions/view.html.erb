@@ -11,7 +11,6 @@
   <%= external_javascript_include_tag "lodash", "3.3.1" %>
   <%= javascript_include_tag "highlight.pack.js" %>
   <script type="application/javascript">
-
     <% if @cud.instructor || @cud.course_assistant then %>
       var isInstructor = true;
     <% else %>
@@ -26,9 +25,9 @@
     var basePath = "<%= course_assessment_submission_annotations_path(@course, @assessment, @submission) %>";
 
     <% if params[:header_position] %>
-    var headerPositionStr = "<%= params[:header_position] %>";
+      var headerPositionStr = "<%= params[:header_position] %>";
     <% else %>
-    var headerPositionStr = null;
+      var headerPositionStr = null;
     <% end %>
     hljs.initHighlightingOnLoad();
 
@@ -43,6 +42,7 @@
 
   </script>
   <%= javascript_include_tag "annotations.js" %>
+  <%= javascript_include_tag "submission_view.js" %>
   <script type="text/javascript">
     initializeAnnotationsForCode();
   </script>
@@ -52,111 +52,15 @@
 <!-- force end the container -->
 </div></div>
 
-<!-- A helper function to recursively create the file directory -->
-<%
-def renderFile(file, isRoot: false)
-  if(file[:mac_bs_file])
-    return ""
-  end
-
-  if(!file[:directory]) %>
-    <div class="file">
-      <i class="material-icons md_18 closed-icon">insert_drive_file</i>
-      <%= file[:pathname].split("/").last %>
-    </div>
-<%
-  else %>
-    <div class="folder">
-      <div class="folder-name <%= "active" if isRoot %>  " onclick="switchFolderState(this)">
-        <i class="material-icons md_18 closed-icon">folder</i>
-        <i class="material-icons md_18 open-icon">folder_open</i> 
-        <%= file[:pathname].split("/").last %>
-      </div>
-      <div class="folder-contents">
-        <% for subFile in file[:subfiles] %>
-              <% renderFile(subFile) %>
-        <% end %>
-      </div>
-    </div>
-<%
-  end
-end
-%>
-
 <div class="row">
   <div class="col l2">
-    <div class="file-explorer">
-      <div class="title">
-        <%= @submission.course_user_datum.email %> (v<%=@submission.version%>)
-      </div>
-      <div class="file-list">
-        <% @files.each do |file| %>
-            <%
-              if(!file[:mac_bs_file])
-                renderFile(file, isRoot: true)
-              end
-            %>
-        <% end %>
-      </div>
-    </div>
+    <%= render "file_tree" %>
   </div>
   <div class="col l8">
-    <div id="code-box">
-      <div class="code-table">
-          <div class="file-header">
-            <div class="file-name">
-              <i class="material-icons">insert_drive_file</i> <span><%= @displayFilename %></span>
-            </div>
-
-            <div class="file-button">
-              <span>Collapse Comments</span>
-            </div>
-            <div class="file-button">
-              <span>Expand Comments</span>
-            </div>
-          </div>
-          <% @data.each_with_index do |(code, annotation), index| %>
-            <div class="code-line">
-              <div class="line-number"><%= index+1 %></div>
-              <div class="add-comment">
-                <% if @cud.instructor? or @cud.course_assistant? then %><div class="add-button-container"><button class="add-button" id="add-btn-<%= index+1 %>"><i class="material-icons">add_comment</i></button></div><% end %>
-              </div>
-              <div class="code"><pre><code><%= code %></code></pre></div>
-            </div>
-          <% end %>
-      </div>
-    </div>
+    <%= render "code_viewer" %>
   </div>
-  <div class="annotationPane col l2">
-    <h3 class="annotationHeader">Summary</h3>
-    <% if @problemSummaries.empty? then %>
-      <% if (@cud.instructor? or @cud.course_assistant?) then %>
-        <p>Hover over a line of code and click the green box to annotate.<br><br><b>Note: Point tweaks here don't affect the gradebook.</b></p>
-      <% else %>
-        <p>Nothing to summarize yet.</p>
-      <% end %>
-    <% else %>
-      <div id="summaryList">
-        <% if (@cud.instructor? or @cud.course_assistant?) then %>
-          <b><div class="problemListItem">Note: Point tweaks here don't affect the gradebook.</div></b>
-        <% end %>
-        <% @problemSummaries.each do |problem, descriptTuples| %>
-          <hr>
-          <div class="problemListItem"> <%= "Problem: #{problem} [#{plus_fix(@problemGrades[problem])}]" %>
-            <ul id="problem-list-<%= problem %>">
-            <% descriptTuples.each do |descript, value, line, user, id| %>
-              <li class="descript" id="li-annotation-<%= id %>"><%= (user ? "line: #{line}, #{descript} [#{plus_fix(value)}] (#{user})" : "line: #{line}, #{descript} [#{plus_fix(value)}]") %></li>
-            <% end %>
-            </ul>
-          </div>
-        <% end %>
-      </div>
-    <% end %>
-    <hr>
-    <input type="checkbox" id="highlightLongLines">
-    <label for="highlightLongLines">Highlight lines longer than 80 characters</label>
-    <hr>
-    <input type="button" value="Reload Summary" class="btn primary" onclick="reloadSummary()">
+  <div class="col l2">
+    <%= render "annotation_pane" %>
   </div>
 </div>
 

@@ -396,16 +396,19 @@ class SubmissionsController < ApplicationController
 
       render(:viewPDF) && return
     else
-      # begin
-        render(:view) && return
-      # rescue
-      #   flash[:error] = "Autolab cannot display this file"
-      #   if params[:header_position]
-      #     redirect_to([:list_archive, @course, @assessment, @submission]) && return
-      #   else
-      #     redirect_to([:history, @course, @assessment, cud_id: @submission.course_user_datum_id]) && return
-      #   end
-      # end
+      begin
+        respond_to do |format|
+          format.html { render(:view) }
+          format.js
+        end
+      rescue
+        flash[:error] = "Autolab cannot display this file"
+        if params[:header_position]
+          redirect_to([:list_archive, @course, @assessment, @submission]) && return
+        else
+          redirect_to([:history, @course, @assessment, cud_id: @submission.course_user_datum_id]) && return
+        end
+      end
     end
   end
 
