@@ -53,6 +53,26 @@
 </div></div>
 
 <div class="row">
+  <div class="col s3">
+    <% if @prevSubmission != nil %>
+      <%= link_to(url_for([:view, @course, @assessment, @prevSubmission])) do %>
+        <i class="material-icons">arrow_back</i> <%= @prevSubmission.course_user_datum.user.email %>
+      <% end %>
+    <% end %>
+  </div>
+  <div class="col s6">
+    <%= @submission.course_user_datum.user.email %>
+  </div>
+  <div class="col s3">
+    <% if @nextSubmission != nil %>
+      <%= link_to(url_for([:view, @course, @assessment, @nextSubmission])) do %>
+        <%= @nextSubmission.course_user_datum.user.email %> <i class="material-icons">arrow_forward</i>
+      <% end %>
+    <% end %>
+  </div>
+</div>
+
+<div class="row">
   <div class="col l2">
     <%= render "file_tree" %>
   </div>

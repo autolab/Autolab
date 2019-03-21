@@ -385,6 +385,14 @@ class SubmissionsController < ApplicationController
 
     @problems = @assessment.problems.to_a
     @problems.sort! { |a, b| a.id <=> b.id }
+    
+    @latestSubmissions = @assessment.assessment_user_data
+                          .map{|aud| aud.latest_submission}
+                          .select{|submission| submission != nil}
+                          .sort_by{|submission| submission.course_user_datum.user.email}
+    curSubmissionIndex = @latestSubmissions.index{|submission| submission.id == @submission.id}
+    @prevSubmission = curSubmissionIndex > 0 ? @latestSubmissions[curSubmissionIndex-1] : nil
+    @nextSubmission = curSubmissionIndex < (@latestSubmissions.size-1) ? @latestSubmissions[curSubmissionIndex+1] : nil
 
     # Rendering this page fails. Often. Mostly due to PDFs.
     # So if it fails, redirect, instead of showing an error page.
@@ -396,19 +404,19 @@ class SubmissionsController < ApplicationController
 
       render(:viewPDF) && return
     else
-      begin
+      # begin
         respond_to do |format|
           format.html { render(:view) }
           format.js
         end
-      rescue
-        flash[:error] = "Autolab cannot display this file"
-        if params[:header_position]
-          redirect_to([:list_archive, @course, @assessment, @submission]) && return
-        else
-          redirect_to([:history, @course, @assessment, cud_id: @submission.course_user_datum_id]) && return
-        end
-      end
+      # rescue
+      #   flash[:error] = "Autolab cannot display this file"
+      #   if params[:header_position]
+      #     redirect_to([:list_archive, @course, @assessment, @submission]) && return
+      #   else
+      #     redirect_to([:history, @course, @assessment, cud_id: @submission.course_user_datum_id]) && return
+      #   end
+      # end
     end
   end
 
