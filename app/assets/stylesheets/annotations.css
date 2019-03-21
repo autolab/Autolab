@@ -351,6 +351,12 @@
   display: block;
 }
 
+.active_file{
+  background: #009ff5;
+  color: white;
+  padding: 5px;
+}
+
 .folder-name{
   cursor: pointer;
 }

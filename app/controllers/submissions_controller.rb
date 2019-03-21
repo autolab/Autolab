@@ -5,8 +5,8 @@ require "prawn"
 class SubmissionsController < ApplicationController
   # inherited from ApplicationController
   before_action :set_assessment
-  before_action :set_submission, only: [:destroy, :destroyConfirm, :download, :edit, :listArchive, :update, :view]
-  before_action :get_submission_file, only: [:download, :listArchive, :view]
+  before_action :set_submission, only: [:destroy, :destroyConfirm, :download, :edit, :update, :view]
+  before_action :get_submission_file, only: [:download, :view]
   rescue_from ActionView::MissingTemplate do |exception|
       redirect_to("/home/error_404")
   end
@@ -302,15 +302,18 @@ class SubmissionsController < ApplicationController
     if params[:header_position]
       file, pathname = Archive.get_nth_file(@submission.handin_file_path, params[:header_position].to_i)
       unless file && pathname
+        puts(0/0)
         flash[:error] = "Could not read archive."
         redirect_to [@course, @assessment] and return false
       end
 
       @displayFilename = pathname
-      @breadcrumbs << (view_context.link_to "View Archive", [:list_archive, @course, @assessment, @submission])
     else
-      # redirect on archives
-      redirect_to(action: :listArchive) && return if Archive.archive?(@submission.handin_file_path)
+      # auto-set header position for archives
+      if Archive.archive?(@submission.handin_file_path)
+        firstFile = Archive.get_files(@submission.handin_file_path).find{|file| file[:mac_bs_file] == false and file[:directory] == false}
+        redirect_to(url_for([:view, @course, @assessment, @submission, header_position: firstFile[:header_position]])) && return
+      end
 
       file = @submission.handin_file.read
 
@@ -404,27 +407,16 @@ class SubmissionsController < ApplicationController
 
       render(:viewPDF) && return
     else
-      # begin
+      begin
         respond_to do |format|
           format.html { render(:view) }
           format.js
         end
-      # rescue
-      #   flash[:error] = "Autolab cannot display this file"
-      #   if params[:header_position]
-      #     redirect_to([:list_archive, @course, @assessment, @submission]) && return
-      #   else
-      #     redirect_to([:history, @course, @assessment, cud_id: @submission.course_user_datum_id]) && return
-      #   end
-      # end
+      rescue
+        flash[:error] = "Autolab cannot display this file"
+        redirect_to([:history, @course, @assessment, cud_id: @submission.course_user_datum_id]) && return
+      end
     end
-  end
-
-  # Action to be taken when the user wants to get a listing of all
-  # files in a submission that is an archive file.
-  action_auth_level :listArchive, :student
-  def listArchive
-    @files = Archive.get_files(@filename).sort! { |a, b| a[:pathname] <=> b[:pathname] }
   end
 
 private

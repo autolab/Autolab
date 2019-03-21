@@ -51,6 +51,7 @@ module Archive
         subFiles << recoverHierarchy(filesNestedSomewhere, file)
       end
     end
+    subFiles.sort! { |a, b| a[:pathname] <=> b[:pathname] }
     root[:subfiles] = subFiles
     return root
   end
