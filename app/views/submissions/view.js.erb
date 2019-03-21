@@ -7,8 +7,7 @@ $('#annotationPane').replaceWith('<%= j render("submissions/annotation_pane") %>
 $('pre code').each(function(){hljs.highlightBlock(this)})
 
 // Set the new active file
-console.log("calling with headerPos: ", <%= @header_position %>)
 setActiveFilePos(<%= @header_position %>)
 
 // Update the page URL
-history.pushState(null, null, '<%= url_for(params) %>');
+history.replaceState(null, null, '<%= url_for(params) %>');
