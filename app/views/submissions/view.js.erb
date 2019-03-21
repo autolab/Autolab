@@ -6,5 +6,9 @@ $('#annotationPane').replaceWith('<%= j render("submissions/annotation_pane") %>
 // Add syntax highlighting to the new code viewer
 $('pre code').each(function(){hljs.highlightBlock(this)})
 
+// Set the new active file
+console.log("calling with headerPos: ", <%= @header_position %>)
+setActiveFilePos(<%= @header_position %>)
+
 // Update the page URL
 history.pushState(null, null, '<%= url_for(params) %>');

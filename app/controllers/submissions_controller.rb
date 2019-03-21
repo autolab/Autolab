@@ -288,6 +288,7 @@ class SubmissionsController < ApplicationController
     # Pull the files with their hierarchy info for the file tree
     if Archive.archive? @filename
       @files = Archive.get_file_hierarchy(@filename).sort! { |a, b| a[:pathname] <=> b[:pathname] }
+      @header_position = params[:header_position].to_i
     else
       @files = [{
         pathname: @filename,
@@ -297,12 +298,12 @@ class SubmissionsController < ApplicationController
           @filename.include?(".metadata"),
         directory: Archive.looks_like_directory?(@filename)
       }]
+      @header_position = 0 
     end
 
     if params[:header_position]
       file, pathname = Archive.get_nth_file(@submission.handin_file_path, params[:header_position].to_i)
       unless file && pathname
-        puts(0/0)
         flash[:error] = "Could not read archive."
         redirect_to [@course, @assessment] and return false
       end
@@ -407,15 +408,15 @@ class SubmissionsController < ApplicationController
 
       render(:viewPDF) && return
     else
-      begin
+      # begin
         respond_to do |format|
           format.html { render(:view) }
           format.js
         end
-      rescue
-        flash[:error] = "Autolab cannot display this file"
-        redirect_to([:history, @course, @assessment, cud_id: @submission.course_user_datum_id]) && return
-      end
+      # rescue
+      #   flash[:error] = "Autolab cannot display this file"
+      #   redirect_to([:history, @course, @assessment, cud_id: @submission.course_user_datum_id]) && return
+      # end
     end
   end
 

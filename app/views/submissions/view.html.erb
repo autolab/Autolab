@@ -33,18 +33,39 @@
 
     // Lets us open and close file folders
     function switchFolderState(folderElement) {
-      if(folderElement.classList.contains('active')){
-        folderElement.classList.remove('active')
-      } else{
-        folderElement.classList.add('active')
-      }
+      folderElement.toggleClass('active')
     }
-
+    
+    // Updates active tags to set the specified file
+    function setActiveFilePos(headerPos){
+      $('.file.active').removeClass("active")
+      const rootFiles = $('.file-list').children()
+      rootFiles.each(function(_, file) {
+        setActiveFilePosHelper($(file), headerPos);
+      })
+    }
+    function setActiveFilePosHelper(elem, headerPos){
+      console.log("elem data is: ", elem.data("header_position"))
+      if(elem.data("header_position") !== 'undefined' && elem.data("header_position") == headerPos){
+        elem.addClass("active")
+        return true
+      }
+      if ((elem.children().filter(function() {
+            return setActiveFilePosHelper($(this), headerPos)
+          })).size() > 0){
+        elem.children(".folder-name").addClass("active")
+        return true
+      }
+      return false
+    }
   </script>
   <%= javascript_include_tag "annotations.js" %>
   <%= javascript_include_tag "submission_view.js" %>
   <script type="text/javascript">
-    initializeAnnotationsForCode();
+    $(function() {
+      setActiveFilePos(<%= @header_position %>)
+      initializeAnnotationsForCode();
+    });
   </script>
 
 <% end %>
