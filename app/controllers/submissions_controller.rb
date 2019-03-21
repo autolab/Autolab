@@ -289,6 +289,7 @@ class SubmissionsController < ApplicationController
     if Archive.archive? @filename
       @files = Archive.get_file_hierarchy(@filename).sort! { |a, b| a[:pathname] <=> b[:pathname] }
       @header_position = params[:header_position].to_i
+      @maxHeaderPos = getMaxHeaderPos(@files)
     else
       @files = [{
         pathname: @filename,
@@ -471,5 +472,17 @@ private
     secondUnderscoreInd = filename.index("_", firstUnderscoreInd + 1)
     return nil if secondUnderscoreInd.nil?
     filename[firstUnderscoreInd + 1...secondUnderscoreInd].to_i
+  end
+  
+  # Recursively gets the max header position given a list of files with hierarchy
+  def getMaxHeaderPos(files)
+    maxPos = -1
+    if (files == nil)
+      return maxPos
+    end
+    for file in files
+      maxPos = [maxPos, file[:header_position], getMaxHeaderPos(file[:subfiles])].max
+    end
+    return maxPos
   end
 end

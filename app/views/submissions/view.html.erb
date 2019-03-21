@@ -17,6 +17,10 @@
       var isInstructor = false;
     <% end %>
 
+    var submissionID = <%= @submission.id %>
+    var maxHeaderPos = <%= @maxHeaderPos %>
+    var curHeaderPos = <%= params[:header_position] %>
+    
     var annotations = <%=raw @annotations.to_json %>;
     var fileNameStr = "<%= @filename %>";
     var cudEmailStr = "<%= @cud.email %>";
@@ -45,7 +49,7 @@
       })
     }
     function setActiveFilePosHelper(elem, headerPos){
-      if(elem.data("header_position") !== 'undefined' && elem.data("header_position") == headerPos){
+      if(elem.data("header_position") == headerPos){
         elem.addClass("active")
         return true
       }
@@ -57,11 +61,59 @@
       }
       return false
     }
+    
+    var allFilesFolders = $('.file-list').find("*")
+    $(document).keydown(function(e) {
+        switch(e.which) {
+            case 37: // left - navigate to the previous submission
+            $('#prev_submission_link')[0].click()
+            break;
+
+            case 38: // up - navigate to the previous file by header position
+              var testPos = curHeaderPos-1
+              while(testPos > -1){
+                var matchingFiles = allFilesFolders.filter(function(){
+                  var elem = $(this)
+                  return elem.data("header_position") == testPos
+                })
+                if(matchingFiles.length > 0){
+                  matchingFiles[0].click()
+                  curHeaderPos = testPos
+                  break
+                }
+                testPos -= 1
+              }
+            break;
+
+            case 39: // right - navigate to the next submission
+            $('#next_submission_link')[0].click()
+            break;
+
+            case 40: // down - navigate to the next file by header position
+              var testPos = curHeaderPos+1
+              while(testPos < maxHeaderPos+1){
+                var matchingFiles = allFilesFolders.filter(function(){
+                  var elem = $(this)
+                  return elem.data("header_position") == testPos
+                })
+                if(matchingFiles.length > 0){
+                  matchingFiles[0].click()
+                  curHeaderPos = testPos
+                  break
+                }
+                testPos += 1
+              }
+            break;
+
+            default: return; // exit this handler for other keys
+        }
+        e.preventDefault(); // prevent the default action (scroll / move caret)
+    });
   </script>
   <%= javascript_include_tag "annotations.js" %>
   <%= javascript_include_tag "submission_view.js" %>
   <script type="text/javascript">
-    setActiveFilePos(<%= @header_position %>)
+    setActiveFilePos(curHeaderPos)
     initializeAnnotationsForCode();
   </script>
 
@@ -75,7 +127,7 @@
   <div class="row">
     <div class="col s2 center-align">
       <% if @prevSubmission != nil %>
-        <%= link_to(url_for([:view, @course, @assessment, @prevSubmission]), class: "valign-wrapper") do %>
+        <%= link_to(url_for([:view, @course, @assessment, @prevSubmission]), class: "valign-wrapper", id: "prev_submission_link") do %>
           <i class="material-icons" style="margin-right: 3px">arrow_back</i> <%= @prevSubmission.course_user_datum.user.email %>
         <% end %>
       <% end %>
@@ -85,7 +137,7 @@
     </div>
     <div class="col s2 center-align">
       <% if @nextSubmission != nil %>
-        <%= link_to(url_for([:view, @course, @assessment, @nextSubmission]), class: "valign-wrapper") do %>
+        <%= link_to(url_for([:view, @course, @assessment, @nextSubmission]), class: "valign-wrapper", id: "next_submission_link") do %>
           <%= @nextSubmission.course_user_datum.user.email %> <i class="material-icons" style="margin-left: 3px">arrow_forward</i>
         <% end %>
       <% end %>
