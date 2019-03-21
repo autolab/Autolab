@@ -32,9 +32,6 @@ end
 
 <!-- Actual file tree column -->
 <div class="file-explorer">
-  <div class="title">
-    <%= @submission.course_user_datum.email %> (v<%=@submission.version%>)
-  </div>
   <div class="file-list">
     <% @files.each do |file| %>
         <%
