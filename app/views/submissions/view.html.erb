@@ -69,7 +69,7 @@ def renderFile(file, isRoot: false)
     <div class="folder">
       <div class="folder-name <%= "active" if isRoot %>  " onclick="switchFolderState(this)">
         <i class="material-icons md_18 closed-icon">folder</i>
-        <i class="material-icons md_18 open-icon">folder_open</i> 
+        <i class="material-icons md_18 open-icon">folder_open</i>
         <%= file[:pathname].split("/").last %>
       </div>
       <div class="folder-contents">
