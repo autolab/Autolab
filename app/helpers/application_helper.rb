@@ -82,15 +82,15 @@ module ApplicationHelper
     end
   end
 
-  def list_archive_files(submission, title)
+  def view_archive_files(submission, title)
     if Archive.archive? submission.handin_file_path
-      link_to title, list_archive_course_assessment_submission_path(@course, @assessment, submission),
-              tabindex: -1, target: "_blank"
+      link_to title, url_for([:view, @course, @assessment, submission]),
+        tabindex: -1, target: "_blank"
     end
   end
 
-  def view_file(submission, list_archive_title, view_source_title, download_title = nil)
-    if (link = list_archive_files(submission, list_archive_title))
+  def view_file(submission, view_archive_title, view_source_title, download_title = nil)
+    if (link = view_archive_files(submission, view_archive_title))
       link
     elsif (link = view_syntax_highlighted_source(submission, view_source_title))
       link

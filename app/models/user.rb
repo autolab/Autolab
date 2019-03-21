@@ -139,6 +139,9 @@ class User < ActiveRecord::Base
     user.password = temp_pass
     user.password_confirmation = temp_pass
     user.skip_confirmation!
+    
+    puts("user email: ", user.email)
+    puts("user pswd: ", user.password)
 
     if user.save
       # user.send_reset_password_instructions
