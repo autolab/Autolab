@@ -350,7 +350,7 @@
   margin-left:5px;
   padding: 3px;
 }
-.file:not(.active):hover{
+.file:not(.active):hover, .folder-name:hover{
   background: #eee;
 }
 
@@ -377,4 +377,15 @@
 
 .folder-name:not(.active) + .folder-contents{
   display: none;
+}
+
+/* Helper class to make text unselectable */
+.noselect {
+  -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+     -khtml-user-select: none; /* Konqueror HTML */
+       -moz-user-select: none; /* Firefox */
+        -ms-user-select: none; /* Internet Explorer/Edge */
+            user-select: none; /* Non-prefixed version, currently
+                                  supported by Chrome and Opera */
 }
