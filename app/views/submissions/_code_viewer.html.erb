@@ -18,7 +18,7 @@
           <div class="add-comment">
             <% if @cud.instructor? or @cud.course_assistant? then %><div class="add-button-container"><button class="add-button" id="add-btn-<%= index+1 %>"><i class="material-icons">add_comment</i></button></div><% end %>
           </div>
-          <div class="code"><pre><code><%= code %></code></pre></div>
+          <div class="code"><pre><code class="<%= @displayFilename.split(".")[-1].downcase %>"><%= code %></code></pre></div>
         </div>
       <% end %>
   </div>
