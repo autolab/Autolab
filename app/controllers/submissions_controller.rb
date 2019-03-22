@@ -197,6 +197,7 @@ class SubmissionsController < ApplicationController
     if params[:header_position]
       file, pathname = Archive.get_nth_file(@filename, params[:header_position].to_i)
       unless file && pathname
+        puts 0/0
         flash[:error] = "Could not read archive."
         redirect_to [@course, @assessment] and return false
       end
@@ -289,7 +290,6 @@ class SubmissionsController < ApplicationController
     if Archive.archive? @filename
       @files = Archive.get_file_hierarchy(@filename).sort! { |a, b| a[:pathname] <=> b[:pathname] }
       @header_position = params[:header_position].to_i
-      @maxHeaderPos = getMaxHeaderPos(@files)
     else
       @files = [{
         pathname: @filename,
@@ -305,6 +305,7 @@ class SubmissionsController < ApplicationController
     if params[:header_position]
       file, pathname = Archive.get_nth_file(@submission.handin_file_path, params[:header_position].to_i)
       unless file && pathname
+        puts 0/0
         flash[:error] = "Could not read archive."
         redirect_to [@course, @assessment] and return false
       end
@@ -395,9 +396,9 @@ class SubmissionsController < ApplicationController
                           .map{|aud| aud.latest_submission}
                           .select{|submission| submission != nil}
                           .sort_by{|submission| submission.course_user_datum.user.email}
-    curSubmissionIndex = @latestSubmissions.index{|submission| submission.id == @submission.id}
-    @prevSubmission = curSubmissionIndex > 0 ? @latestSubmissions[curSubmissionIndex-1] : nil
-    @nextSubmission = curSubmissionIndex < (@latestSubmissions.size-1) ? @latestSubmissions[curSubmissionIndex+1] : nil
+    @curSubmissionIndex = @latestSubmissions.index{|submission| submission.id == @submission.id}
+    @prevSubmission = @curSubmissionIndex > 0 ? @latestSubmissions[@curSubmissionIndex-1] : nil
+    @nextSubmission = @curSubmissionIndex < (@latestSubmissions.size-1) ? @latestSubmissions[@curSubmissionIndex+1] : nil
 
     # Rendering this page fails. Often. Mostly due to PDFs.
     # So if it fails, redirect, instead of showing an error page.
@@ -472,17 +473,5 @@ private
     secondUnderscoreInd = filename.index("_", firstUnderscoreInd + 1)
     return nil if secondUnderscoreInd.nil?
     filename[firstUnderscoreInd + 1...secondUnderscoreInd].to_i
-  end
-  
-  # Recursively gets the max header position given a list of files with hierarchy
-  def getMaxHeaderPos(files)
-    maxPos = -1
-    if (files == nil)
-      return maxPos
-    end
-    for file in files
-      maxPos = [maxPos, file[:header_position], getMaxHeaderPos(file[:subfiles])].max
-    end
-    return maxPos
   end
 end

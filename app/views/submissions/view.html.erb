@@ -7,9 +7,9 @@
 <% end %>
 
 <% content_for :javascripts do %>
-  <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
   <%= external_javascript_include_tag "lodash", "3.3.1" %>
   <%= javascript_include_tag "highlight.pack.js" %>
+  <%= javascript_include_tag "jquery.scrollIntoView.min.js" %>
   <script type="application/javascript">
     <% if @cud.instructor || @cud.course_assistant then %>
       var isInstructor = true;
@@ -18,8 +18,6 @@
     <% end %>
 
     var submissionID = <%= @submission.id %>
-    var maxHeaderPos = <%= @maxHeaderPos %>
-    var curHeaderPos = <%= params[:header_position] %>
     
     var annotations = <%=raw @annotations.to_json %>;
     var fileNameStr = "<%= @filename %>";
@@ -51,6 +49,7 @@
     function setActiveFilePosHelper(elem, headerPos){
       if(elem.data("header_position") == headerPos){
         elem.addClass("active")
+        elem.scrollIntoView();
         return true
       }
       if ((elem.children().filter(function() {
@@ -69,16 +68,12 @@
             $('#prev_submission_link')[0].click()
             break;
 
-            case 38: // up - navigate to the previous file by header position
-              var testPos = curHeaderPos-1
+            case 38: // up - navigate to the previous file by DOM position
+              var testPos = allFilesFolders.index($('.file.active')) - 1
               while(testPos > -1){
-                var matchingFiles = allFilesFolders.filter(function(){
-                  var elem = $(this)
-                  return elem.data("header_position") == testPos
-                })
-                if(matchingFiles.length > 0){
-                  matchingFiles[0].click()
-                  curHeaderPos = testPos
+                var testElem = $(allFilesFolders.get(testPos))
+                if(testElem.data("header_position") != undefined){
+                  testElem.click()
                   break
                 }
                 testPos -= 1
@@ -89,16 +84,12 @@
             $('#next_submission_link')[0].click()
             break;
 
-            case 40: // down - navigate to the next file by header position
-              var testPos = curHeaderPos+1
-              while(testPos < maxHeaderPos+1){
-                var matchingFiles = allFilesFolders.filter(function(){
-                  var elem = $(this)
-                  return elem.data("header_position") == testPos
-                })
-                if(matchingFiles.length > 0){
-                  matchingFiles[0].click()
-                  curHeaderPos = testPos
+            case 40: // down - navigate to the next file by DOM position
+              var testPos = allFilesFolders.index($('.file.active')) + 1
+              while(testPos < allFilesFolders.length){
+                var testElem = $(allFilesFolders.get(testPos))
+                if(testElem.data("header_position") != undefined){
+                  testElem.click()
                   break
                 }
                 testPos += 1
@@ -113,7 +104,7 @@
   <%= javascript_include_tag "annotations.js" %>
   <%= javascript_include_tag "submission_view.js" %>
   <script type="text/javascript">
-    setActiveFilePos(curHeaderPos)
+    setActiveFilePos(<%= params[:header_position] %>)
     initializeAnnotationsForCode();
   </script>
 
@@ -133,7 +124,7 @@
       <% end %>
     </div>
     <div class="col s8 center-align">
-      <%= @submission.course_user_datum.email %> (v<%=@submission.version%>)
+      <%= @submission.course_user_datum.email %> (v<%= @submission.version %>) [<%= @curSubmissionIndex+1 %>/<%= @latestSubmissions.length %>]
     </div>
 
     <div class="col s2 center-align">

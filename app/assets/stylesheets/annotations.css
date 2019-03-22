@@ -342,6 +342,11 @@
 }
 
 /* File Tree Styling CSS */
+.file-list{
+  max-height: 70vh;
+  overflow-y: scroll;
+}
+
 .folder-contents{
   margin-left:10px;
 }
