@@ -1,5 +1,22 @@
 <div class="annotationPane">
-  <h3 class="annotationHeader">Summary</h3>
+  <div class="problemGrades">
+    <h4>Problems</h4>
+    <div class="collection">
+    <%# TODO: Hide unreleased scores for non-instructors %>
+      <% p_scores = @submission.problems_to_scores %>
+      <% @assessment.problems.each_with_index do |p,i| %>
+        <% p_score = p_scores[p.id] %>
+        <div class="problem-grade-item collection-item">
+          <div class="problem_name"> <%= p.name.capitalize %>: </div>
+          <div class="problem_score">
+            <a href="#!"> <%= p_score && p_score.score ? p_score.score : raw("&ndash;") %> </a>
+            <b>/ <%= p.max_score %> </b>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
   <% if @problemSummaries.empty? then %>
     <% if (@cud.instructor? or @cud.course_assistant?) then %>
       <p>Hover over a line of code and click the green box to annotate.<br><br><b>Note: Point tweaks here don't affect the gradebook.</b></p>

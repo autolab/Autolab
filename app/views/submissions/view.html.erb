@@ -17,13 +17,16 @@
       var isInstructor = false;
     <% end %>
 
+    const rootFiles = $('.file-list').children()
+    const allFilesFolders = $('.file-list').find("*")
+    var currentHeaderPos = <%= params[:header_position] || 0 %>
+
     var submissionID = <%= @submission.id %>
-    
     var annotations = <%=raw @annotations.to_json %>;
     var fileNameStr = "<%= @filename %>";
     var cudEmailStr = "<%= @cud.email %>";
     // a json list of problems for this assessment
-    var problems = <%=raw @problems.to_json %>;
+    var problems = <%= raw @problems.to_json %>;
     var basePath = "<%= course_assessment_submission_annotations_path(@course, @assessment, @submission) %>";
 
     <% if params[:header_position] %>
@@ -40,16 +43,16 @@
 
     // Updates active tags to set the specified file
     function setActiveFilePos(headerPos){
+      currentHeaderPos = headerPos
       $('.file.active').removeClass("active")
-      const rootFiles = $('.file-list').children()
       rootFiles.each(function(_, file) {
         setActiveFilePosHelper($(file), headerPos);
       })
+      $('.file.active').scrollIntoView();
     }
     function setActiveFilePosHelper(elem, headerPos){
       if(elem.data("header_position") == headerPos){
         elem.addClass("active")
-        elem.scrollIntoView();
         return true
       }
       if ((elem.children().filter(function() {
@@ -61,7 +64,6 @@
       return false
     }
     
-    var allFilesFolders = $('.file-list').find("*")
     $(document).keydown(function(e) {
         switch(e.which) {
             case 37: // left - navigate to the previous submission
@@ -104,7 +106,7 @@
   <%= javascript_include_tag "annotations.js" %>
   <%= javascript_include_tag "submission_view.js" %>
   <script type="text/javascript">
-    setActiveFilePos(<%= params[:header_position] %>)
+    setActiveFilePos(currentHeaderPos)
     initializeAnnotationsForCode();
   </script>
 
@@ -138,15 +140,28 @@
 <% end %>
 
 <div class="row">
-  <div class="col l2">
-    <%= render "file_tree" %>
-  </div>
-  <div class="col l8">
-    <%= render "code_viewer" %>
-  </div>
-  <div class="col l2">
-    <%= render "annotation_pane" %>
-  </div>
+  <%# If there are multiple files, we have a header position and need a file tree %>
+  <% if (params[:header_position]) %>
+    <div class="col l2">
+      <%= render "file_tree" %>
+    </div>
+    <div class="col l8">
+      <%= render "code_viewer" %>
+    </div>
+    <div class="col l2">
+      <%= render "annotation_pane" %>
+    </div>
+  <% else %>
+  <%# Else center the code and annotations %>
+    <div class="col l1"> </div>
+    <div class="col l8">
+      <%= render "code_viewer" %>
+    </div>
+    <div class="col l2">
+      <%= render "annotation_pane" %>
+    </div>
+    <div class="col l1"> </div>
+  <% end %>
 </div>
 
 <!-- restart the container -->

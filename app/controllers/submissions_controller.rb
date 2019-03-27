@@ -396,7 +396,7 @@ class SubmissionsController < ApplicationController
                           .map{|aud| aud.latest_submission}
                           .select{|submission| submission != nil}
                           .sort_by{|submission| submission.course_user_datum.user.email}
-    @curSubmissionIndex = @latestSubmissions.index{|submission| submission.id == @submission.id}
+    @curSubmissionIndex = @latestSubmissions.index{|submission| submission.course_user_datum.user.email == @submission.course_user_datum.user.email}
     @prevSubmission = @curSubmissionIndex > 0 ? @latestSubmissions[@curSubmissionIndex-1] : nil
     @nextSubmission = @curSubmissionIndex < (@latestSubmissions.size-1) ? @latestSubmissions[@curSubmissionIndex+1] : nil
 
