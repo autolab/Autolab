@@ -22,8 +22,7 @@
     var currentHeaderPos = <%= params[:header_position] || 0 %>
 
     var submissionID = <%= @submission.id %>
-    var maxHeaderPos = <%= @maxHeaderPos %>
-    var curHeaderPos = <%= params[:header_position] %>
+    var curHeaderPos = <%= params[:header_position] || 0 %>
     
     var annotations = <%=raw @annotations.to_json %>;
     var fileNameStr = "<%= @filename %>";
@@ -67,7 +66,6 @@
       return false
     }
 
-    var allFilesFolders = $('.file-list').find("*")
     $(document).keydown(function(e) {
         switch(e.which) {
             case 37: // left - navigate to the previous submission
@@ -106,6 +104,7 @@
         }
         e.preventDefault(); // prevent the default action (scroll / move caret)
     });
+
   </script>
   <%= javascript_include_tag "annotations.js" %>
   <%= javascript_include_tag "submission_view.js" %>

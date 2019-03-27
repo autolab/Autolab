@@ -1,6 +1,30 @@
 <div class="annotationPane">
+
+  <div class="annotationSummary">
+    <h1>Annotations</h1>
+    <ul class="collapsible expandable">
+      <%# TODO: Confirm that unreleased annotations are hidden for non-instructors %>
+        <% @problemSummaries.each do |problem, descriptTuples| %>
+          <li>
+            <div class="collapsible-header active">
+              <h4> <%= problem.capitalize %>
+                  <span class="summary_score"> <%= plus_fix(@problemGrades[problem]) %> </span>
+              </h4>
+            </div>
+            <div class="collapsible-body">
+              <% descriptTuples.each do |description, value, line, user, id| %>
+                <div class="descript" id="li-annotation-<%= id %>">
+                  <span class="point_badge"> <%= plus_fix(value) %> </span> <%= description %>
+                </div>
+              <% end %>
+            </div>
+          </li>
+        <% end %>
+    </ul>
+  </div>
+
   <div class="problemGrades">
-    <h4>Problems</h4>
+    <h1>Problems</h1>
     <div class="collection">
     <%# TODO: Hide unreleased scores for non-instructors %>
       <% p_scores = @submission.problems_to_scores %>
