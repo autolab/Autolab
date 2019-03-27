@@ -22,6 +22,9 @@
     var currentHeaderPos = <%= params[:header_position] || 0 %>
 
     var submissionID = <%= @submission.id %>
+    var maxHeaderPos = <%= @maxHeaderPos %>
+    var curHeaderPos = <%= params[:header_position] %>
+    
     var annotations = <%=raw @annotations.to_json %>;
     var fileNameStr = "<%= @filename %>";
     var cudEmailStr = "<%= @cud.email %>";
@@ -63,7 +66,8 @@
       }
       return false
     }
-    
+
+    var allFilesFolders = $('.file-list').find("*")
     $(document).keydown(function(e) {
         switch(e.which) {
             case 37: // left - navigate to the previous submission
