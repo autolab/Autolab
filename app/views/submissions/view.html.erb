@@ -158,6 +158,15 @@
   </div>
 </div>
 
+<h5>Functions</h5>
+<div style="border: 1px solid gray; width: 17%; border-style: dashed; position: relative; left: 1%;">
+  <% @ctag_obj.each do |fdef| %>
+    &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;&nbsp;<%= fdef["line_num"] %>: <%= fdef["kind"] %> -- <%= fdef["name"] %> -> <%= fdef["typeref"].split(":")[1] %><br>
+  <% end %>
+</div>
+
+
+
 <!-- restart the container -->
 <div>
 <div>
