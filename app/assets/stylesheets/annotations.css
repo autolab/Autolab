@@ -9,7 +9,7 @@
   background: #fcfcfc;
   border: 1px solid #ccc;
   max-height: calc(100vh - 230px);
-  overflow: scroll;
+  overflow: auto;
 }
 
 .code-table .code-line:hover {
@@ -61,20 +61,16 @@
   padding: 0;
 }
 
-.code-table .file-header {
-  border-bottom: 2px #ccc solid;
-
-  position: sticky;
+#code-box .file-header {
+  border: 1px #ccc solid;
   top: 0;
   left: 0;
   z-index: 999;
-
   background: inherit;
-
   display: flex;
 }
 
-.code-table .file-header .file-name {
+#code-box .file-header .file-name {
   border-right: 1px #ccc solid;
   padding: 5px;
   display: flex;
@@ -82,14 +78,14 @@
   margin-right: auto;
 }
 
-.code-table .file-button {
+#code-box .file-button {
   border-left: 1px #ccc solid;
   padding: 5px;
   display: flex;
   align-items: center;
 }
 
-.code-table .file-button span {
+#code-box .file-button span {
   background: #cbcbcb;
   padding: 2px;
   border-radius: 1px;

@@ -9,7 +9,7 @@
 <% content_for :javascripts do %>
   <%= external_javascript_include_tag "lodash", "3.3.1" %>
   <%= javascript_include_tag "highlight.pack.js" %>
-  <%= javascript_include_tag "jquery.scrollIntoView.min.js" %>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/jquery-scrollTo/2.1.2/jquery.scrollTo.min.js"></script>
   <script type="application/javascript">
     <% if @cud.instructor || @cud.course_assistant then %>
       var isInstructor = true;
@@ -37,74 +37,6 @@
       var headerPositionStr = null;
     <% end %>
     hljs.initHighlightingOnLoad();
-
-    // Lets us open and close file folders
-    function switchFolderState(folderElement) {
-      folderElement.toggleClass('active')
-    }
-
-    // Updates active tags to set the specified file
-    function setActiveFilePos(headerPos){
-      currentHeaderPos = headerPos
-      $('.file.active').removeClass("active")
-      rootFiles.each(function(_, file) {
-        setActiveFilePosHelper($(file), headerPos);
-      })
-      $('.file.active').scrollIntoView();
-    }
-    function setActiveFilePosHelper(elem, headerPos){
-      if(elem.data("header_position") == headerPos){
-        elem.addClass("active")
-        return true
-      }
-      if ((elem.children().filter(function() {
-            return setActiveFilePosHelper($(this), headerPos)
-          })).size() > 0){
-        elem.children(".folder-name").addClass("active")
-        return true
-      }
-      return false
-    }
-
-    $(document).keydown(function(e) {
-        switch(e.which) {
-            case 37: // left - navigate to the previous submission
-            $('#prev_submission_link')[0].click()
-            break;
-
-            case 38: // up - navigate to the previous file by DOM position
-              var testPos = allFilesFolders.index($('.file.active')) - 1
-              while(testPos > -1){
-                var testElem = $(allFilesFolders.get(testPos))
-                if(testElem.data("header_position") != undefined){
-                  testElem.click()
-                  break
-                }
-                testPos -= 1
-              }
-            break;
-
-            case 39: // right - navigate to the next submission
-            $('#next_submission_link')[0].click()
-            break;
-
-            case 40: // down - navigate to the next file by DOM position
-              var testPos = allFilesFolders.index($('.file.active')) + 1
-              while(testPos < allFilesFolders.length){
-                var testElem = $(allFilesFolders.get(testPos))
-                if(testElem.data("header_position") != undefined){
-                  testElem.click()
-                  break
-                }
-                testPos += 1
-              }
-            break;
-
-            default: return; // exit this handler for other keys
-        }
-        e.preventDefault(); // prevent the default action (scroll / move caret)
-    });
-
   </script>
   <%= javascript_include_tag "annotations.js" %>
   <%= javascript_include_tag "submission_view.js" %>

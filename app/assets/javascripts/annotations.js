@@ -1,3 +1,80 @@
+/* File Tree and Code Viewer Helper Functions */
+
+// Lets us open and close file folders
+function switchFolderState(folderElement) {
+  folderElement.toggleClass('active')
+}
+
+// Updates active tags to set the specified file
+function setActiveFilePos(headerPos){
+  currentHeaderPos = headerPos
+  $('.file.active').removeClass("active")
+  rootFiles.each(function(_, file) {
+    setActiveFilePosHelper($(file), headerPos);
+  })
+  $('.file-list').scrollTo($('.file.active'))
+}
+
+function setActiveFilePosHelper(elem, headerPos){
+  if(elem.data("header_position") == headerPos){
+    elem.addClass("active")
+    return true
+  }
+  if ((elem.children().filter(function() {
+        return setActiveFilePosHelper($(this), headerPos)
+      })).size() > 0){
+    elem.children(".folder-name").addClass("active")
+    return true
+  }
+  return false
+}
+
+// Scroll to a specific line in the codeviewer
+function scrollToLine(n){
+  $('.code-table').scrollTo($('#line-'+(n-1)), {duration: "fast"})
+}
+
+// Sets up the keybindings
+$(document).keydown(function(e) {
+    switch(e.which) {
+        case 37: // left - navigate to the previous submission
+        $('#prev_submission_link')[0].click()
+        break;
+
+        case 38: // up - navigate to the previous file by DOM position
+          var testPos = allFilesFolders.index($('.file.active')) - 1
+          while(testPos > -1){
+            var testElem = $(allFilesFolders.get(testPos))
+            if(testElem.data("header_position") != undefined){
+              testElem.click()
+              break
+            }
+            testPos -= 1
+          }
+        break;
+
+        case 39: // right - navigate to the next submission
+        $('#next_submission_link')[0].click()
+        break;
+
+        case 40: // down - navigate to the next file by DOM position
+          var testPos = allFilesFolders.index($('.file.active')) + 1
+          while(testPos < allFilesFolders.length){
+            var testElem = $(allFilesFolders.get(testPos))
+            if(testElem.data("header_position") != undefined){
+              testElem.click()
+              break
+            }
+            testPos += 1
+          }
+        break;
+
+        default: return; // exit this handler for other keys
+    }
+    e.preventDefault(); // prevent the default action (scroll / move caret)
+});
+
+
 /* Highlights lines longer than 80 characters autolab red color */
 var highlightLines = function(highlight) {
   var highlightColor = "rgba(200, 200, 0, 0.9)"
