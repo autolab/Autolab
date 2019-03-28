@@ -1,4 +1,6 @@
-<div class="annotationPane">
+<div id="annotationPane">
+  <input type="checkbox" id="highlightLongLines">
+  <label for="highlightLongLines">Highlight lines longer than 80 characters</label>
 
   <div class="annotationSummary">
     <h1>Annotations</h1>
@@ -8,13 +10,13 @@
           <li>
             <div class="collapsible-header active">
               <h4> <%= problem.capitalize %>
-                  <span class="summary_score"> <%= plus_fix(@problemGrades[problem]) %> </span>
+                  <div class="summary_score"> <%= plus_fix(@problemGrades[problem]) %></div>
               </h4>
             </div>
             <div class="collapsible-body">
               <% descriptTuples.each do |description, value, line, user, id| %>
                 <div class="descript" id="li-annotation-<%= id %>">
-                  <span class="point_badge"> <%= plus_fix(value) %> </span> <%= description %>
+                  <span class="point_badge <%= value > 0 ? "positive" : value < 0 ? "negative" : "neutral" %>"><%= plus_fix(value) %></span> <%= description %>
                 </div>
               <% end %>
             </div>
@@ -24,7 +26,7 @@
   </div>
 
   <div class="problemGrades">
-    <h1>Problems</h1>
+    <h1>Grades</h1>
     <div class="collection">
     <%# TODO: Hide unreleased scores for non-instructors %>
       <% p_scores = @submission.problems_to_scores %>
@@ -40,33 +42,4 @@
       <% end %>
     </div>
   </div>
-
-  <% if @problemSummaries.empty? then %>
-    <% if (@cud.instructor? or @cud.course_assistant?) then %>
-      <p>Hover over a line of code and click the green box to annotate.<br><br><b>Note: Point tweaks here don't affect the gradebook.</b></p>
-    <% else %>
-      <p>Nothing to summarize yet.</p>
-    <% end %>
-  <% else %>
-    <div id="summaryList">
-      <% if (@cud.instructor? or @cud.course_assistant?) then %>
-        <b><div class="problemListItem">Note: Point tweaks here don't affect the gradebook.</div></b>
-      <% end %>
-      <% @problemSummaries.each do |problem, descriptTuples| %>
-        <hr>
-        <div class="problemListItem"> <%= "Problem: #{problem} [#{plus_fix(@problemGrades[problem])}]" %>
-          <ul id="problem-list-<%= problem %>">
-          <% descriptTuples.each do |descript, value, line, user, id| %>
-            <li class="descript" id="li-annotation-<%= id %>"><%= (user ? "line: #{line}, #{descript} [#{plus_fix(value)}] (#{user})" : "line: #{line}, #{descript} [#{plus_fix(value)}]") %></li>
-          <% end %>
-          </ul>
-        </div>
-      <% end %>
-    </div>
-  <% end %>
-  <hr>
-  <input type="checkbox" id="highlightLongLines">
-  <label for="highlightLongLines">Highlight lines longer than 80 characters</label>
-  <hr>
-  <input type="button" value="Reload Summary" class="btn primary" onclick="reloadSummary()">
 </div>

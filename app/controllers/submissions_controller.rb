@@ -346,11 +346,11 @@ class SubmissionsController < ApplicationController
       end
 
       # fix for tar files
-      if params[:header_position]
-        @annotations = @submission.annotations.where(position: params[:header_position]).to_a
-      else
+      # if params[:header_position]
+      #   @annotations = @submission.annotations.where(position: params[:header_position]).to_a
+      # else
         @annotations = @submission.annotations.to_a
-      end
+      # end
 
       @annotations.sort! { |a, b| a.line <=> b.line }
 

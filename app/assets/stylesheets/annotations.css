@@ -427,14 +427,34 @@
   font-size: 1.1em;
 }
 
+.annotationSummary .collapsible-header .dropdown-arrow{
+  
+}
+
 .annotationSummary .collapsible-body{
   padding: 0 1rem;
   border: none;
 }
 
-.summary_score {
+.annotationSummary .summary_score {
   float: right;
   font-weight: normal;
+}
+.annotationSummary .point_badge {
+  padding: 0 8px;
+  border-radius: 100vw;
+  margin-right: 5px;
+  color: white;
+  font-weight: bold;
+}
+.annotationSummary .point_badge.positive {
+  background: #57d66a;
+}
+.annotationSummary .point_badge.negative {
+  background: #ec612a;
+}
+.annotationSummary .point_badge.neutral {
+  background: #818181;
 }
 
 .problemGrades{
@@ -480,7 +500,7 @@
 .file-list{
   max-height: 70vh;
   color: #333;
-  overflow-y: scroll;
+  overflow-y: auto;
 }
 
 .folder-contents{

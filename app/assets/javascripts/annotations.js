@@ -15,10 +15,6 @@ var highlightLines = function(highlight) {
   });
 };
 
-var reloadSummary = function() {
-  window.location.reload()
-};
-
 $("#highlightLongLines").click(function() {
   highlightLines(this.checked);
 });
