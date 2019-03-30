@@ -67,11 +67,7 @@ class ApplicationController < ActionController::Base
     end
 
     controller_whitelist = (@@global_whitelist[controller_name.to_sym] ||= {})
-    # {byebug; fail ArgumentError, "#{action} already specified."} if controller_whitelist[action]
-    if controller_whitelist[action] then
-      byebug
-      fail ArgumentError, "#{action} already specified."
-    end
+    fail ArgumentError, "#{action} already specified." if controller_whitelist[action]
 
     controller_whitelist[action] = level
   end
