@@ -123,7 +123,7 @@ protected
   end
 
   protect_from_forgery
-  def verify_authenticity_token
+  def self.verify_authenticity_token
     msg = "Invalid request! Please go back, reload the " \
         "page and try again.  If you continue to see this error. " \
         " please contact the Autolab Development team at the " \
