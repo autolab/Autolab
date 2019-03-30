@@ -67,20 +67,25 @@ class ApplicationController < ActionController::Base
     end
 
     controller_whitelist = (@@global_whitelist[controller_name.to_sym] ||= {})
-    fail ArgumentError, "#{action} already specified." if controller_whitelist[action]
+    # {byebug; fail ArgumentError, "#{action} already specified."} if controller_whitelist[action]
+    if controller_whitelist[action] then
+      byebug
+      fail ArgumentError, "#{action} already specified."
+    end
 
     controller_whitelist[action] = level
   end
 
   def self.action_no_auth(action)
-    skip_before_action :verify_authenticity_token, :authenticate_user!
-    skip_filter configure_permitted_paramters: [action]
-    skip_filter maintenance_mode: [action]
-    skip_filter run_scheduler: [action]
+    skip_before_action :verify_authenticity_token, raise: false
+    skip_before_action :authenticate_user!, raise: false
+    skip_before_action configure_permitted_paramters: [action]
+    skip_before_action maintenance_mode: [action]
+    skip_before_action run_scheduler: [action]
 
-    skip_filter authenticate_user: [action]
+    skip_before_action authenticate_user: [action]
     skip_before_action :authorize_user_for_course, only: [action]
-    skip_filter authenticate_for_action: [action]
+    skip_before_action authenticate_for_action: [action]
     skip_before_action :update_persistent_announcements, only: [action]
   end
 
