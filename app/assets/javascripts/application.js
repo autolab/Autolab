@@ -11,6 +11,7 @@
 // GO AFTER THE REQUIRES BELOW.
 //
 //
+//= require_tree .
 //= require jquery_ujs
 //= require moment
 //= require bootstrap-datetimepicker
