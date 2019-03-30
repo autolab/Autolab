@@ -212,17 +212,9 @@
               <% end %>
             </div>
             <div class="row">
-              <% if @assessment.max_submissions != -1 then %>
-                <% numSubmissions = @submissions.size %>
-                <% if numSubmissions > @assessment.max_submissions then %>
-                  <% numSubmissions = 0 %>
-                <% else %>
-                  <% numSubmissions = @assessment.max_submissions - numSubmissions %>
-                <% end %>
-                <div class="smallText col s6 offset-s6 m4 offset-m8 center-align" style="padding-top: 6px">&nbsp;&nbsp;(<%= numSubmissions %> submissions left)</div>
-              <% else %>
-                <div class="smallText col s6 offset-s6 m4 offset-m8 center-align" style="padding-top: 6px">(&nbsp;&#x221e;&nbsp;&nbsp;submissions left)</div>
-              <% end %>
+              <div class="smallText col s6 offset-s6 m4 offset-m8 center-align" style="padding-top: 6px">
+                <%= remainingSubmissionsMsg(@submissions, @assessment) %>  
+              </div>
             </div>
           <% end %>
         <% end %>
