@@ -131,6 +131,7 @@
   display: flex;
   height: 100%;
   align-items: stretch;
+  margin-bottom: 5px;
 }
 
 .code-table .annotation-line .annotation-box {
@@ -148,6 +149,10 @@
 
 .code-table .annotation-line .annotation-box .annotation-header {
   display: flex;
+}
+
+.code-table .annotation-line .annotation-box .annotation-header .annotation-tools {
+  margin-left: auto;
 }
 
 .code-table .annotation-line .annotation-box .annotation-body p {
@@ -424,7 +429,7 @@
 }
 
 .annotationSummary .collapsible-header .dropdown-arrow{
-  
+
 }
 
 .annotationSummary .collapsible-body{
