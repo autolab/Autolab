@@ -9,6 +9,7 @@
 <% content_for :javascripts do %>
   <%= external_javascript_include_tag "lodash", "3.3.1" %>
   <%= javascript_include_tag "highlight.pack.js" %>
+  <%= javascript_include_tag "jquery.jeditable" %>
   <script src="//cdnjs.cloudflare.com/ajax/libs/jquery-scrollTo/2.1.2/jquery.scrollTo.min.js"></script>
   <script type="application/javascript">
     <% if @cud.instructor || @cud.course_assistant then %>
@@ -17,6 +18,7 @@
       var isInstructor = false;
     <% end %>
 
+    const editableUrl = "<%= url_for ([:quickSetScore, @course, @assessment]) %>"
     const rootFiles = $('.file-list').children()
     const allFilesFolders = $('.file-list').find("*")
     var currentHeaderPos = <%= params[:header_position] || 0 %>
@@ -41,6 +43,7 @@
   <%= javascript_include_tag "annotations.js" %>
   <%= javascript_include_tag "submission_view.js" %>
   <script type="text/javascript">
+    make_editable($('.problem_score a'))
     setActiveFilePos(currentHeaderPos)
     initializeAnnotationsForCode();
   </script>
