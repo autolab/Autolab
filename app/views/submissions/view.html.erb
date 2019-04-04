@@ -23,7 +23,7 @@
 
     var submissionID = <%= @submission.id %>
     var curHeaderPos = <%= params[:header_position] || 0 %>
-    
+
     var annotations = <%=raw @annotations.to_json %>;
     var fileNameStr = "<%= @filename %>";
     var cudEmailStr = "<%= @cud.email %>";
@@ -102,7 +102,7 @@
 <h5>Functions</h5>
 <div style="border: 1px solid gray; width: 17%; border-style: dashed; position: relative; left: 1%;">
   <% @ctag_obj.each do |fdef| %>
-    &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;&nbsp;<%= fdef["line_num"] %>: <%= fdef["kind"] %> -- <%= fdef["name"] %> -> <%= fdef["typeref"].split(":")[1] %><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;&nbsp;<span onclick="scrollToLine(<%=fdef['line_num']%>)"><%= fdef["line_num"] %>: <%= fdef["kind"] %> -- <%= fdef["name"] %> -> <%= fdef["typeref"].split(":")[1] %></span><br>
   <% end %>
 </div>
 
