@@ -369,6 +369,9 @@ class SubmissionsController < ApplicationController
             line_num = line_num + 1
           end
         end
+
+        # The functions are in some arbitrary order, so sort them
+        @ctag_obj = @ctag_obj.sort_by { |obj| obj["line_num"].to_i }
       rescue
         flash[:error] = "Sorry, we could not display your file because it contains non-ASCII characters. Please remove these characters and resubmit your work."
         redirect_to(:back) && return
