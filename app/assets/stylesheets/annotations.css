@@ -9,7 +9,7 @@
   background: #fcfcfc;
   border: 1px solid #ccc;
   max-height: calc(100vh - 230px);
-  overflow: scroll;
+  overflow: auto;
 }
 
 .code-table .code-line:hover {
@@ -61,20 +61,16 @@
   padding: 0;
 }
 
-.code-table .file-header {
-  border-bottom: 2px #ccc solid;
-
-  position: sticky;
+#code-box .file-header {
+  border: 1px #ccc solid;
   top: 0;
   left: 0;
   z-index: 999;
-
   background: inherit;
-
   display: flex;
 }
 
-.code-table .file-header .file-name {
+#code-box .file-header .file-name {
   border-right: 1px #ccc solid;
   padding: 5px;
   display: flex;
@@ -82,14 +78,14 @@
   margin-right: auto;
 }
 
-.code-table .file-button {
+#code-box .file-button {
   border-left: 1px #ccc solid;
   padding: 5px;
   display: flex;
   align-items: center;
 }
 
-.code-table .file-button span {
+#code-box .file-button span {
   background: #cbcbcb;
   padding: 2px;
   border-radius: 1px;
@@ -224,9 +220,6 @@
 #code-list > li > code {
   position: absolute;
   left: 0;
-}
-#code-list > li > div {
-
 }
 
 .add-annotation-btn {
@@ -384,20 +377,6 @@
   left: -2px;
 }
 
-/* pre {
-    display: block;
-    padding: 9.5px;
-    margin: 0 0 10px;
-    font-size: 13px;
-    line-height: 1.42857143;
-    word-break: break-all;
-    word-wrap: break-word;
-    color: #333333;
-    background-color: #f5f5f5;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-} */
-
 .header > .grader {
   flex: 2 0 0;
 }
@@ -406,7 +385,120 @@
   margin-bottom:10px;
 }
 
+/* Annotation Pane Styling CSS */
+.annotationSummary{
+  border: solid 2px #569ff7;
+  margin-bottom: 15px;
+  color: #4f4f4f;
+}
+.annotationSummary h1{
+  margin: 0px;
+  background-color: #569ff7;
+  padding: 8px;
+  border-right: none;
+  border-left: none;
+  font-weight: normal !important;
+  font-size: 1em !important;
+  color: white;
+  white-space: nowrap;
+  overflow: hidden;
+  padding-left: 10px;
+  padding-right: 15px;
+  text-align: left;
+}
+.annotationSummary ul {
+  box-shadow: none;
+  border: none;
+  margin: 10px 0;
+}
+
+.annotationSummary .collapsible-header{
+  min-height: inherit;
+  line-height: inherit;
+  border: none;
+}
+
+.annotationSummary .collapsible-header h4{
+  margin: 3px;
+  font-size: 1.1em;
+}
+
+.annotationSummary .collapsible-header .dropdown-arrow{
+  
+}
+
+.annotationSummary .collapsible-body{
+  padding: 0 1rem;
+  border: none;
+}
+
+.annotationSummary .summary_score {
+  float: right;
+  font-weight: normal;
+}
+.annotationSummary .point_badge {
+  padding: 0 8px;
+  border-radius: 100vw;
+  margin-right: 5px;
+  color: white;
+  font-weight: bold;
+}
+.annotationSummary .point_badge.positive {
+  background: #57d66a;
+}
+.annotationSummary .point_badge.negative {
+  background: #ec612a;
+}
+.annotationSummary .point_badge.neutral {
+  background: #818181;
+}
+
+.problemGrades{
+  border: solid 2px #ebebeb;
+}
+.problemGrades h1{
+  margin: 0px;
+  background-color: #ebebeb;
+  padding: 8px;
+  border-right: none;
+  border-left: none;
+  font-weight: normal !important;
+  font-size: 1em !important;
+  color: #909090;
+  white-space: nowrap;
+  overflow: hidden;
+  padding-left: 10px;
+  padding-right: 15px;
+  text-align: left;
+}
+.problemGrades ul{
+  margin: 5px 10px;
+}
+
+.collection{
+  margin: 0;
+  border: none;
+}
+
+.problem-grade-item{
+  cursor: pointer;
+  background-color: #fff;
+  line-height: 1.5rem;
+  padding: 2px 10px;
+  margin: 0;
+  border-bottom: 1px solid #e0e0e0;
+  font-weight: bold;
+  font-size: 0.9em;
+  color: #909090;
+}
+
 /* File Tree Styling CSS */
+.file-list{
+  max-height: 70vh;
+  color: #333;
+  overflow-y: auto;
+}
+
 .folder-contents{
   margin-left:10px;
 }

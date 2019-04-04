@@ -11,6 +11,7 @@ def renderFileTree(file, isRoot: false)
             url_for([:view, @course, @assessment, @submission, header_position: file[:header_position]]),
             class: 'file valign-wrapper noselect' + ((file[:header_position] == params[:header_position]) ? ' active' : ""),
             "data-header_position": file[:header_position],
+            onclick: "setActiveFilePos(#{file[:header_position]})",
             remote: true) do %>
         <i class="material-icons md_18 closed-icon">insert_drive_file</i>
         <%= file[:pathname].split("/").last %>

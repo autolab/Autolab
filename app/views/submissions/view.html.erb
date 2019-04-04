@@ -7,9 +7,9 @@
 <% end %>
 
 <% content_for :javascripts do %>
-  <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
   <%= external_javascript_include_tag "lodash", "3.3.1" %>
   <%= javascript_include_tag "highlight.pack.js" %>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/jquery-scrollTo/2.1.2/jquery.scrollTo.min.js"></script>
   <script type="application/javascript">
     <% if @cud.instructor || @cud.course_assistant then %>
       var isInstructor = true;
@@ -17,15 +17,18 @@
       var isInstructor = false;
     <% end %>
 
-    var submissionID = <%= @submission.id %>
-    var maxHeaderPos = <%= @maxHeaderPos %>
-    var curHeaderPos = <%= params[:header_position] %>
+    const rootFiles = $('.file-list').children()
+    const allFilesFolders = $('.file-list').find("*")
+    var currentHeaderPos = <%= params[:header_position] || 0 %>
 
+    var submissionID = <%= @submission.id %>
+    var curHeaderPos = <%= params[:header_position] || 0 %>
+    
     var annotations = <%=raw @annotations.to_json %>;
     var fileNameStr = "<%= @filename %>";
     var cudEmailStr = "<%= @cud.email %>";
     // a json list of problems for this assessment
-    var problems = <%=raw @problems.to_json %>;
+    var problems = <%= raw @problems.to_json %>;
     var basePath = "<%= course_assessment_submission_annotations_path(@course, @assessment, @submission) %>";
 
     <% if params[:header_position] %>
@@ -34,86 +37,11 @@
       var headerPositionStr = null;
     <% end %>
     hljs.initHighlightingOnLoad();
-
-    // Lets us open and close file folders
-    function switchFolderState(folderElement) {
-      folderElement.toggleClass('active')
-    }
-
-    // Updates active tags to set the specified file
-    function setActiveFilePos(headerPos){
-      $('.file.active').removeClass("active")
-      const rootFiles = $('.file-list').children()
-      rootFiles.each(function(_, file) {
-        setActiveFilePosHelper($(file), headerPos);
-      })
-    }
-    function setActiveFilePosHelper(elem, headerPos){
-      if(elem.data("header_position") == headerPos){
-        elem.addClass("active")
-        return true
-      }
-      if ((elem.children().filter(function() {
-            return setActiveFilePosHelper($(this), headerPos)
-          })).size() > 0){
-        elem.children(".folder-name").addClass("active")
-        return true
-      }
-      return false
-    }
-
-    var allFilesFolders = $('.file-list').find("*")
-    $(document).keydown(function(e) {
-        switch(e.which) {
-            case 37: // left - navigate to the previous submission
-            $('#prev_submission_link')[0].click()
-            break;
-
-            case 38: // up - navigate to the previous file by header position
-              var testPos = curHeaderPos-1
-              while(testPos > -1){
-                var matchingFiles = allFilesFolders.filter(function(){
-                  var elem = $(this)
-                  return elem.data("header_position") == testPos
-                })
-                if(matchingFiles.length > 0){
-                  matchingFiles[0].click()
-                  curHeaderPos = testPos
-                  break
-                }
-                testPos -= 1
-              }
-            break;
-
-            case 39: // right - navigate to the next submission
-            $('#next_submission_link')[0].click()
-            break;
-
-            case 40: // down - navigate to the next file by header position
-              var testPos = curHeaderPos+1
-              while(testPos < maxHeaderPos+1){
-                var matchingFiles = allFilesFolders.filter(function(){
-                  var elem = $(this)
-                  return elem.data("header_position") == testPos
-                })
-                if(matchingFiles.length > 0){
-                  matchingFiles[0].click()
-                  curHeaderPos = testPos
-                  break
-                }
-                testPos += 1
-              }
-            break;
-
-            default: return; // exit this handler for other keys
-        }
-        e.preventDefault(); // prevent the default action (scroll / move caret)
-    });
   </script>
   <%= javascript_include_tag "annotations.js" %>
   <%= javascript_include_tag "submission_view.js" %>
   <script type="text/javascript">
-    setActiveFilePos(curHeaderPos)
+    setActiveFilePos(currentHeaderPos)
     initializeAnnotationsForCode();
   </script>
 
@@ -133,7 +61,7 @@
       <% end %>
     </div>
     <div class="col s8 center-align">
-      <%= @submission.course_user_datum.email %> (v<%=@submission.version%>)
+      <%= @submission.course_user_datum.email %> (v<%= @submission.version %>) [<%= @curSubmissionIndex+1 %>/<%= @latestSubmissions.length %>]
     </div>
 
     <div class="col s2 center-align">
@@ -147,15 +75,28 @@
 <% end %>
 
 <div class="row">
-  <div class="col l2">
-    <%= render "file_tree" %>
-  </div>
-  <div class="col l8">
-    <%= render "code_viewer" %>
-  </div>
-  <div class="col l2">
-    <%= render "annotation_pane" %>
-  </div>
+  <%# If there are multiple files, we have a header position and need a file tree %>
+  <% if (params[:header_position]) %>
+    <div class="col l2">
+      <%= render "file_tree" %>
+    </div>
+    <div class="col l8">
+      <%= render "code_viewer" %>
+    </div>
+    <div class="col l2">
+      <%= render "annotation_pane" %>
+    </div>
+  <% else %>
+  <%# Else center the code and annotations %>
+    <div class="col l1"> </div>
+    <div class="col l8">
+      <%= render "code_viewer" %>
+    </div>
+    <div class="col l2">
+      <%= render "annotation_pane" %>
+    </div>
+    <div class="col l1"> </div>
+  <% end %>
 </div>
 
 <h5>Functions</h5>
