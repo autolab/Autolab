@@ -342,7 +342,10 @@ class SubmissionsController < ApplicationController
         @ctag_obj = []
         i = 0
         while i < @ctags_json.length
-          @ctag_obj.push(JSON.parse(@ctags_json[i]))
+          obj_temp = JSON.parse(@ctags_json[i])
+          if(obj_temp["kind"] == "function")
+            @ctag_obj.push(obj_temp)
+          end
           i = i + 1
         end
 
@@ -357,10 +360,7 @@ class SubmissionsController < ApplicationController
             tag_idx = 0;
             @ctag_obj.each do |tag|
               pattern = tag["pattern"][2...tag["pattern"].length-2]
-              print("\n\n\n" + pattern + "\n")
-              print(file_line + "\n\n\n")
               if(file_line == pattern + "\n")
-                print("Found!!\n")
                 @ctag_obj[tag_idx]["line_num"] = line_num
               end
               tag_idx = tag_idx + 1
