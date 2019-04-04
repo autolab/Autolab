@@ -99,42 +99,44 @@ $("#highlightLongLines").click(function() {
 var initializeAnnotationsForCode = function() {
   window.annotationMode = "Code";
 
-  var block = document.getElementById('code-block');
-  hljs.highlightBlock(block);
-
   // annotationsByLine: { 'lineNumber': [annotations_array ]}
-  annotationsByLine = {};
+  // annotationsByFilenameByLine
+
+  annotationsByFilenameByLine = {};
   _.each(annotations, function(annotationObj, ind) {
-    var lineInd = annotationObj.line
-    if (!annotationsByLine[lineInd]) {
-      annotationsByLine[lineInd] = [];
+    var lineNumber = annotationObj.line;
+    var fileName = annotationObj.filename;
+
+    if (!annotationsByFilenameByLine[fileName]) {
+      annotationsByFilenameByLine[fileName] = {};
     }
-    annotationsByLine[lineInd].push(annotationObj);
+
+    var annotationsByLine = annotationsByFilenameByLine[fileName];
+
+    if (!annotationsByLine[lineNumber]) {
+      annotationsByLine[lineNumber] = [];
+    }
+
+    annotationsByLine[lineNumber].push(annotationObj);
   });
 
-  var lines = document.querySelector("#code-list").children,
-    ann;
-
-  _.each(annotationsByLine, function(arr_annotations, lineInd) {
+  _.each(annotationsByFilenameByLine[fileNameStr], function(arr_annotations, line) {
     _.each(arr_annotations, function(annotationObj, ind) {
-      $(lines[lineInd - 1]).find(".annotations-container").append(newAnnotationBox(annotationObj));
+      $("#annotation-line-" + line).append(newAnnotationBox(annotationObj));
     });
   });
 
   /* if you click a line, clean up any '.annotating's and
    * call annotate to set up the annotation.
    */
-  $(".add-annotation-btn").on("click", function(e) {
-    var btn = e.currentTarget;
-    var lineInd = parseInt(btn.id.replace('add-btn-', ''), 10);
-    if ($('#annotation-form-' + lineInd).length) {
-      $('#annotation-form-' + lineInd).find('.comment').focus();
-    } else {
-      showAnnotationForm(lineInd);
-    }
-    e.stopPropagation();
-  });
+  $(".add-button").on("click", function(e) {
+    e.preventDefault();
+    var line = $(this).parent().parent().parent();
+    var annotationContainer = line.data("lineId");
+    $("#annotation-line-" + annotationContainer).append(newAnnotationFormCode());
 
+    refreshAnnotations();
+  });
 }
 
 
@@ -177,97 +179,45 @@ var initializeAnnotationsForCode = function() {
     return annObj;
   }
 
+  function newAnnotationFormCode() {
+    var box = $(".base-annotation-line").clone();
+    box.removeClass("base-annotation-line");
+
+    box.find('.annotation-form').show();
+
+    return box;
+  }
+
   // this creates the HTML to display an annotation.
-  function newAnnotationBox(annObj) {
+  function newAnnotationBox(annotation) {
 
-    var problemStr = annObj.problem_id? getProblemNameWithId(annObj.problem_id) : "General";
-    var valueStr = annObj.value? annObj.value.toString() : "None";
-    var commentStr = annObj.comment;
+    var box = $(".base-annotation-line").clone();
+    box.removeClass("base-annotation-line");
 
-    var minimized = true
+    var problemStr = annotation.problem_id? getProblemNameWithId(annotation.problem_id) : "General";
+    var valueStr = annotation.value ? annotation.value.toString() : "0";
+    var commentStr = annotation.comment;
 
-    var grader = elt("span", {
-      class: "grader"
-    }, annObj.submitted_by + " says:");
+    box.find('.submitted_by').text(annotation.submitted_by);
+    box.find('.comment').text(commentStr);
+    box.find('.problem_id').text(problemStr);
+    box.find('.value').text(valueStr);
 
-    var edit = elt("span", {
-      class: "edit",
-      id: "edit-ann-" + annObj.id
-    }, elt("i", {class: "material-icons"}, "edit"));
+    box.find('.annotation-preview').show();
 
-    var score = elt("span", {
-      class: "score-box"
-    }, elt("span", {}, problemStr), elt("span", {}, valueStr));
-
-    var del = elt("span", {
-      class: "delete"
-    }, elt("i", {class: "material-icons"}, "delete"));
-
-    var min = elt("span", {
-      class: "minimize"
-    }, elt("i", {class: "material-icons"}, "remove"));
-
-    if (isInstructor) {
-      var header = elt("div", {
-        class: "header"
-      }, grader, del, edit, min);
-    } else {
-      var header = elt("div", {
-        class: "header"
-      }, grader);
-    }
-
-    var body = elt("div", {
-      class: "body"
-    }, score, commentStr);
-
-    var box = elt("div", {
-      class: "ann-box",
-      id: "ann-box-" + annObj.id
-    }, header, body)
-
-    $(del).on("click", function(e) {
-      $.ajax({
-        url: deletePath(annObj),
-        type: 'DELETE',
-        complete: function() {
-          $(box).remove();
-        }
-      });
-      return false;
+    box.find('.annotation-expand').click(function (e) {
+      e.preventDefault();
+      $(this).parent().parent().hide();
+      $(this).parent().parent().parent().find('.annotation-box').show().css('width', '100%');
+      refreshAnnotations();
     });
 
-
-    $(box).on("click", function(e) {
-      $(body).show();
-      $(min).show();
-      $(score).show();
-      $(header).show();
-      minimized = false
-      return false;
-    });
-
-    $(body).hide();
-    $(min).hide();
-    $(score).hide();
-    $(header).hide();
-
-    $(min).on("click", function(e) {
-      $(body).hide();
-      $(min).hide();
-      $(score).hide();
-      $(header).hide();
-      minimized = true
-      return false;
-    });
-
-    $(edit).on("click", function(e) {
-      $(body).hide();
-      $(edit).hide();
-      var form = newEditAnnotationForm(annObj.line, annObj);
-      $(box).append(form);
-      //var updateAnnotation = function(annotationObj, lineInd, formEl) {
-
+    box.find('.annotation-collapse').click(function (e) {
+      e.preventDefault();
+      $(this).parent().parent().parent().hide();
+      $(".annotation-line .line-sticky").css('height', '0px');
+      $(this).parent().parent().parent().parent().find('.annotation-preview').show().css('width', '100%');
+      refreshAnnotations();
     });
 
     return box;
@@ -377,6 +327,7 @@ var initializeAnnotationsForCode = function() {
   var currentAnnotation = null;
   // the currently examined li
   var currentLine = null;
+
 
   var newAnnotationForm = function(lineInd) {
 
