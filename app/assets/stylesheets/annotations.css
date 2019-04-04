@@ -134,25 +134,55 @@
   margin-bottom: 5px;
 }
 
+.code-table .annotation-line .point_badge {
+  padding: 0 8px;
+  border-radius: 100vw;
+  margin-right: 5px;
+  color: white;
+  font-weight: bold;
+}
+.code-table .annotation-line .point_badge.positive {
+  background: #57d66a;
+}
+.code-table .annotation-line .point_badge.negative {
+  background: #ec612a;
+}
+.code-table .annotation-line .point_badge.neutral {
+  background: #818181;
+}
+
+.code-table .annotation-line .problem {
+  background: #818181;
+  margin-left: -8px;
+  border-top-left-radius: 100vw;
+  padding-left: 8px;
+  border-bottom-left-radius: 100vw;
+}
+
 .code-table .annotation-line .annotation-box {
   border: 1px solid #ccc;
-  padding: 5px;
+  background: white;
   margin: 0 10px;
 }
 
 .code-table .annotation-line .annotation-box .annotation-separator {
-  margin-left: -5px;
-  margin-right: -5px;
   height: 1px;
   background: #ccc;
 }
 
 .code-table .annotation-line .annotation-box .annotation-header {
   display: flex;
+  background: #ccc;
+  padding: 5px;
+  font-weight: bold;
 }
 
 .code-table .annotation-line .annotation-box .annotation-header .annotation-tools {
   margin-left: auto;
+}
+
+.code-table .annotation-line .annotation-box .annotation-body {
+  padding: 5px;
 }
 
 .code-table .annotation-line .annotation-box .annotation-body p {

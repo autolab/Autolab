@@ -203,22 +203,7 @@ var initializeAnnotationsForCode = function() {
     box.find('.problem_id').text(problemStr);
     box.find('.value').text(valueStr);
 
-    box.find('.annotation-preview').show();
-
-    box.find('.annotation-expand').click(function (e) {
-      e.preventDefault();
-      $(this).parent().parent().hide();
-      $(this).parent().parent().parent().find('.annotation-box').show().css('width', '100%');
-      refreshAnnotations();
-    });
-
-    box.find('.annotation-collapse').click(function (e) {
-      e.preventDefault();
-      $(this).parent().parent().parent().hide();
-      $(".annotation-line .line-sticky").css('height', '0px');
-      $(this).parent().parent().parent().parent().find('.annotation-preview').show().css('width', '100%');
-      refreshAnnotations();
-    });
+    box.find('.annotation-box').show().css('width', '100%');
 
     return box;
   }
