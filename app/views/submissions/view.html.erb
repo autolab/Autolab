@@ -80,7 +80,7 @@
   <% if (params[:header_position]) %>
     <div class="col l2">
       <%= render "file_tree" %>
-      <% unless @ctag_obj.nil? %>
+      <% unless @ctag_obj.empty? %>
         <div class="col l2">
           <h5>Functions</h5>
           <div style="font-family:Arial; font-size:12pt; color: gray;">
@@ -99,7 +99,7 @@
     </div>
   <% else %>
   <%# Else center the code and annotations %>
-    <% unless @ctag_obj.nil? %>
+    <% unless @ctag_obj.empty? %>
       <div class="col l2">
         <h5>Functions</h5>
         <div style="font-family:Arial; font-size:12pt; color: gray;">
