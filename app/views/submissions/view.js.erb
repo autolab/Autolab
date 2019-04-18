@@ -1,5 +1,5 @@
 // If we've navigated to another file, do nothing
-if (currentHeaderPos == <%= params[:header_position] %>){
+if (currentHeaderPos == <%= params[:header_position] %>) {
     // Update the code viewer and annotations with the new data
     $('#code-box').replaceWith('<%= j render("submissions/code_viewer") %>');
 
