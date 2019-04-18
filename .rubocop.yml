@@ -11,7 +11,8 @@ AllCops:
     - 'db/**/*'
     - 'script/**/*'
     - 'tmp/**/*'
-  RunRailsCops: true
+  Rails:
+    Enabled: true
 
 Metrics/LineLength:
   Max: 100
