@@ -80,11 +80,16 @@
   <% if (params[:header_position]) %>
     <div class="col l2">
       <%= render "file_tree" %>
-      <div style="border: 1px solid gray; border-style: dashed; position: relative;">
-        <% @ctag_obj.each do |fdef| %>
-          &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;&nbsp;<span onclick="scrollToLine(<%=fdef['line_num']%>)"><%= fdef["line_num"] %>: <%= fdef["kind"] %> -- <%= fdef["name"] %> -> <%= fdef["typeref"].split(":")[1] %></span><br>
-        <% end %>
-      </div>
+      <% unless @ctag_obj.nil? %>
+        <div class="col l2">
+          <h5>Functions</h5>
+          <div style="font-family:Arial; font-size:12pt; color: gray;">
+            <% @ctag_obj.each do |fdef| %>
+              <span onclick="scrollToLine(<%=fdef['line_num']%>)" style="cursor: pointer"><span style="color: darkgray"><%= fdef["line_num"] %></span>: <%= fdef["name"] %></span><br>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
     </div>
     <div class="col l8">
       <%= render "code_viewer" %>
