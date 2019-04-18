@@ -73,11 +73,11 @@ gem 'rubyzip'
 # Helper gem for Ruby JSON API client
 gem 'httparty'
 
-# Enables RSpec testing framework with Capybara and Factory Girl.
+# Enables RSpec testing framework with Capybara and FactoryBot.
 gem 'rspec-rails', '>=3.5.0'
 gem 'rack-test'
 gem 'capybara', group: [:development, :test]
-gem 'factory_girl_rails', group: [:development, :test]
+gem 'factory_bot_rails', group: [:development, :test]
 gem 'database_cleaner', group: [:development, :test]
 gem 'webmock', group: [:development, :test]
 gem 'codeclimate-test-reporter', group: :test, require: nil
