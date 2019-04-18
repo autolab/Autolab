@@ -25,6 +25,7 @@
     var curHeaderPos = <%= params[:header_position] || 0 %>
 
     var annotations = <%=raw @annotations.to_json %>;
+    var annotationsByPositionByLine = {};
     var fileNameStr = "<%= @filename %>";
     var cudEmailStr = "<%= @cud.email %>";
     // a json list of problems for this assessment
@@ -112,6 +113,8 @@
     <div class="col l1"> </div>
   <% end %>
 </div>
+
+<%= render "annotation" %>
 
 <!-- restart the container -->
 <div>
