@@ -1,4 +1,4 @@
-FactoryGirl.define do
+FactoryBot.define do
   factory :assessment do
     due_at { 2.weeks.from_now.to_s(:db) }
     end_at { (2.weeks.from_now + 2.days).to_s(:db) }

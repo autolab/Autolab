@@ -1,4 +1,4 @@
-FactoryGirl.define do
+FactoryBot.define do
   factory :course do
     sequence(:name) { |n| "test_course_#{n}" }
     sequence(:display_name) { |n| "Test Course #{n}" }
