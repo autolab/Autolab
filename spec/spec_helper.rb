@@ -1,4 +1,4 @@
-require "factory_girl_rails"
+require "factory_bot_rails"
 require "webmock/rspec"
 require 'simplecov'
 
