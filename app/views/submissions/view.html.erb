@@ -77,9 +77,11 @@
 
 <div class="row">
   <%# If there are multiple files, we have a header position and need a file tree %>
-  <% if (params[:header_position] && !@ctag_obj.empty?) %>
+  <% if (params[:header_position] || !@ctag_obj.empty?) %>
     <div class="col l2">
-      <%= render "file_tree" %>
+      <% if (params[:header_position]) %>
+        <%= render "file_tree" %>
+      <% end %>
       <% unless @ctag_obj.empty? %>
         <div class="col l2">
           <h5>Functions</h5>
