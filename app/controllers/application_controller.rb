@@ -61,9 +61,9 @@ class ApplicationController < ActionController::Base
     end
 
     if level == :administrator
-      skip_before_action :authorize_user_for_course, only: [action]
+      skip_before_action :authorize_user_for_course, only: [action], raise: false
       skip_before_action authenticate_for_action: [action]
-      skip_before_action :update_persistent_announcements, only: [action]
+      skip_before_action :update_persistent_announcements, only: [action], raise: false
     end
 
     controller_whitelist = (@@global_whitelist[controller_name.to_sym] ||= {})
@@ -79,10 +79,10 @@ class ApplicationController < ActionController::Base
     skip_before_action maintenance_mode: [action]
     skip_before_action run_scheduler: [action]
 
-    skip_before_action authenticate_user: [action]
+    skip_before_action authenticate_user: [action], raise: false
     skip_before_action :authorize_user_for_course, only: [action]
-    skip_before_action authenticate_for_action: [action]
-    skip_before_action :update_persistent_announcements, only: [action]
+    skip_before_action authenticate_for_action: [action], raise: false
+    skip_before_action :update_persistent_announcements, only: [action], raise: false
   end
 
 protected
@@ -124,7 +124,7 @@ protected
   end
 
   protect_from_forgery
-  def self.verify_authenticity_token
+  def verify_authenticity_token
     msg = "Invalid request! Please go back, reload the " \
         "page and try again.  If you continue to see this error. " \
         " please contact the Autolab Development team at the " \
