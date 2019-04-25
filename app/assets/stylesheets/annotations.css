@@ -85,6 +85,10 @@
   align-items: center;
 }
 
+#code-box .file-button:hover{
+  background: #eee;
+}
+
 #code-box .file-button span {
   background: #cbcbcb;
   padding: 2px;
@@ -229,6 +233,11 @@
 
 .code-table .float-left {
   clear: both;
+}
+
+#code_error {
+  padding: 2% 5%;
+  background: #eee;
 }
 
 #code-list {

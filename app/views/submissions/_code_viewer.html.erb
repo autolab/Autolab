@@ -5,6 +5,14 @@
     </div>
 
     <div class="file-button">
+      <%= link_to [:download, @course, @assessment, @submission, header_position: @header_position ],
+                    data: {toggle: "tooltip", placement:"top"},
+                    title: "Download Submission" do %>
+          Download File
+      <% end %>
+    </div>
+
+    <div class="file-button">
       <a href="#" onclick="copyFileToClipboard()">Copy Code</a>
     </div>
   </div>
@@ -32,7 +40,12 @@
         <% end %>
     </div>
   <% if success == false %>
-    <div id="code_error"> Unable to render file </div>
+    <div id="code_error"> Sorry, we could not parse your file because it contains non-ASCII characters. Please <%= link_to [:download, @course, @assessment, @submission, header_position: @header_position ],
+                    data: {toggle: "tooltip", placement:"top"},
+                    title: "Download Submission" do %>
+          download the file
+      <% end %> to view the source. </div>
+    <script> $('.code-table').hide() </script>
   <% end %>
 </div>
 
