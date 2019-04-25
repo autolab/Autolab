@@ -44,17 +44,21 @@ function plusFix(n) {
   n = parseInt(n)
 
   if (n > 0) {
-    return "+" + n.toFixed(1)
+    return "+" + n.toFixed(1);
   }
 
-  return n.toFixed(1)
+  return n.toFixed(1);
 }
 
 // Sets up the keybindings
 $(document).keydown(function(e) {
+    if (!$(e.target).is('body')){
+      return true;
+    }
+
     switch(e.which) {
         case 37: // left - navigate to the previous submission
-        $('#prev_submission_link')[0].click()
+        $('#prev_submission_link')[0].click();
         break;
 
         case 38: // up - navigate to the previous file by DOM position
@@ -62,26 +66,26 @@ $(document).keydown(function(e) {
           while(testPos > -1){
             var testElem = $(allFilesFolders.get(testPos))
             if(testElem.data("header_position") != undefined){
-              testElem.click()
-              break
+              testElem.click();
+              break;
             }
-            testPos -= 1
+            testPos -= 1;
           }
         break;
 
         case 39: // right - navigate to the next submission
-        $('#next_submission_link')[0].click()
+        $('#next_submission_link')[0].click();
         break;
 
         case 40: // down - navigate to the next file by DOM position
-          var testPos = allFilesFolders.index($('.file.active')) + 1
+          var testPos = allFilesFolders.index($('.file.active')) + 1;
           while(testPos < allFilesFolders.length){
-            var testElem = $(allFilesFolders.get(testPos))
+            var testElem = $(allFilesFolders.get(testPos));
             if(testElem.data("header_position") != undefined){
-              testElem.click()
-              break
+              testElem.click();
+              break;
             }
-            testPos += 1
+            testPos += 1;
           }
         break;
 
