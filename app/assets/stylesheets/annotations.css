@@ -126,6 +126,11 @@
   height: 28px;
 }
 
+.code-table .annotation-container {
+  position: sticky;
+  left: 0;
+}
+
 .code-table .annotation-line {
   width: 100%;
   display: flex;

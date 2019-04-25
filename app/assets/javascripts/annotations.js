@@ -325,7 +325,6 @@ var initializeAnnotationsForCode = function() {
         var annotation = null;
         var annotationId = -1;
 
-        console.log(annotationIdData);
         for (var i = 0; i < annotations.length; i++) {
           if (annotations[i].id == annotationIdData) {
             annotation = annotations[i];
@@ -750,6 +749,7 @@ var submitNewAnnotation = function(comment, value, problem_id, lineInd, form) {
       }
 
       annotationsByLine[lineInd].push(data);
+      annotations.push(data);
     },
     error: function(result, type) {
       $(form).find('.error').text("Could not save annotation. Please refresh the page and try again.").show();

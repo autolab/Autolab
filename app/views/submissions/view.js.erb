@@ -4,8 +4,11 @@ if (currentHeaderPos == <%= params[:header_position] %>) {
     $('#code-box').replaceWith('<%= j render("submissions/code_viewer") %>');
 
     // Add syntax highlighting to the new code viewer
-    $('pre code').each(function(){hljs.highlightBlock(this)})
+    $('pre code').each(function(){hljs.highlightBlock(this)});
 
     // Update the page URL
-    history.replaceState(null, null, '<%= url_for(params) %>')
+    history.replaceState(null, null, '<%= url_for(params) %>');
+
+    displayAnnotations();
+    attachEvents();
 }
