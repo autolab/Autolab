@@ -64,8 +64,11 @@
         <% end %>
       <% end %>
     </div>
-    <div class="col s8 center-align">
-      <%= @submission.course_user_datum.email %> (v<%= @submission.version %>) [<%= @curSubmissionIndex+1 %>/<%= @latestSubmissions.length %>]
+    <div class="col s8 center-align valign-wrapper">
+      <div style="display: inline-block">
+      <%= @submission.course_user_datum.email %> (v<%= @submission.version %>) [<%= @curSubmissionIndex+1 %>/<%= @latestSubmissions.length %>]</div>
+
+      <a href="<%= download_file_url(@submission) %>" class="tooltipped" data-placement="top" data-tooltip="Download Submission" title="Download Submission" ><i class="material-icons" aria-hidden="true" style="margin-left:6px; font-size: 20px;">file_download</i></a>
     </div>
 
     <div class="col s2 center-align">
