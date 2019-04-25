@@ -50,6 +50,77 @@ function plusFix(n) {
   return n.toFixed(1);
 }
 
+function fillAnnotationBox() {
+  var annotationsByProblem = {}
+  $(".collapsible.expandable").find('li').remove();
+  for (var i = 0; i < annotations.length; i++) {
+    var problem = getProblemNameWithId(annotations[i].problem_id)
+    if (!annotationsByProblem[problem]) {
+      annotationsByProblem[problem] = []
+    }
+    annotations[i].problem = problem;
+    annotationsByProblem[problem].push(annotations[i])
+  }
+
+  for (var problem in annotationsByProblem) {
+    var problemElement = $("#li-problem-" + problem);
+    var score = 0;
+    for (var i = 0; i < annotationsByProblem[problem].length; i++) {
+      var annotation = annotationsByProblem[problem][i];
+      score += parseInt(annotation.value);
+    }
+
+    var annotationsSummary = $(".annotationSummary");
+
+    if (problemElement) {
+      problemElement.remove();
+    }
+
+    var newLi = $("<li />");
+    newLi.addClass('active');
+    annotationsSummary.find("ul").append(newLi)
+    newLi.attr("id", "li-problem-"+problem);
+    var collapsible = $('<div />');
+    collapsible.addClass('collapsible-header');
+    collapsible.addClass('active');
+    collapsible.append(
+      '<h4 style="text-transform:capitalize;">'+ problem + '<div class="summary_score">'+plusFix(score)+'</div>' +
+      '</h4>'
+    )
+    newLi.append(collapsible);
+
+    var listing = $('<div />');
+    newLi.append(listing);
+    listing.addClass("collapsible-body");
+    listing.addClass("active");
+    listing.css('display', 'block')
+    for (var i = 0; i < annotationsByProblem[problem].length; i++) {
+      var annotation = annotationsByProblem[problem][i];
+      var annotationElement = $('<div />');
+      annotationElement.addClass('descript');
+      annotationElement.attr('id', 'li-annotation-' + annotation.id);
+      annotationElement.click(function (e) {
+        e.preventDefault();
+        scrollToLine(annotation.line);
+      });
+      var pointBadge = $('<span />');
+      pointBadge.addClass('point_badge');
+      if (annotation.value > 0) {
+        pointBadge.addClass('positive');
+      } else if (annotation.value < 0) {
+        pointBadge.addClass('negative');
+      } else {
+        pointBadge.addClass('neutral');
+      }
+      pointBadge.text(plusFix(annotation.value));
+      annotationElement.append(pointBadge);
+      annotationElement.append(annotation.comment);
+      listing.append(annotationElement);
+
+    }
+  }
+}
+
 // Sets up the keybindings
 $(document).keydown(function(e) {
     if (!$(e.target).is('body')){
@@ -128,9 +199,9 @@ function make_editable($editable) {
   // click/enter to edit cells
 
   /* Calls the Jquery plugin Jeditable to set up the element for in-place editing.
-   * When done editing, a request to quickSetScore (on server) is called with the 
+   * When done editing, a request to quickSetScore (on server) is called with the
    * following parameters.
-   * 
+   *
    * Note: Expects editableUrl to be set in javascript already and map to
    * something like url_for ([:quickSetScore, @course, @assessment])
    */
@@ -184,7 +255,7 @@ function make_editable($editable) {
           // jQuery.ajax("quickGetTotal", {
           //     data: {
           //         submission_id: editor.data('submission-id')
-          //     }, 
+          //     },
           //     success: function(data, status, jqXHR) {
           //         // TODO: wtf
           //         total.html(data == " " ? "&ndash;" : data);
@@ -452,6 +523,7 @@ var initializeAnnotationsForCode = function() {
           complete: function() {
             annotations.splice(annotationId, 1);
             initializeAnnotationsForCode();
+            fillAnnotationBox();
           }
         });
     });
@@ -861,6 +933,7 @@ var submitNewAnnotation = function(comment, value, problem_id, lineInd, form) {
 
       annotationsByLine[lineInd].push(data);
       annotations.push(data);
+      fillAnnotationBox()
     },
     error: function(result, type) {
       $(form).find('.error').text("Could not save annotation. Please refresh the page and try again.").show();
@@ -883,6 +956,7 @@ var submitNewAnnotation = function(comment, value, problem_id, lineInd, form) {
       success: function(data, type) {
         $(box).remove();
         displayAnnotations();
+        fillAnnotationBox();
       },
       error: function(result, type) {
         $(box).find('.error').text("Failed to save changes to the annotation. Please refresh the page and try again.").show();

@@ -6,7 +6,7 @@
     <ul class="collapsible expandable">
       <%# TODO: Confirm that unreleased annotations are hidden for non-instructors %>
         <% @problemSummaries.each do |problem, descriptTuples| %>
-          <li>
+          <li id="li-problem-<%= problem %>">
             <div class="collapsible-header active">
               <h4> <%= problem.capitalize %>
                   <div class="summary_score"> <%= plus_fix(@problemGrades[problem]) %></div>
