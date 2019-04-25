@@ -7,17 +7,17 @@ function switchFolderState(folderElement) {
 
 function refreshAnnotations() {
   $(".annotation-line .line-sticky").each(function () {
-    $(this).height($(this).parent().height())
-  })
+    $(this).height($(this).parent().height());
+  });
 }
 
 // Updates active tags to set the specified file
 function setActiveFilePos(headerPos){
   currentHeaderPos = headerPos;
-  $('.file.active').removeClass("active")
+  $('.file.active').removeClass("active");
   rootFiles.each(function(_, file) {
     setActiveFilePosHelper($(file), headerPos);
-  })
+  });
   $('.file-list').scrollTo($('.file.active'))
 }
 
@@ -44,17 +44,21 @@ function plusFix(n) {
   n = parseInt(n)
 
   if (n > 0) {
-    return "+" + n.toFixed(1)
+    return "+" + n.toFixed(1);
   }
 
-  return n.toFixed(1)
+  return n.toFixed(1);
 }
 
 // Sets up the keybindings
 $(document).keydown(function(e) {
+    if (!$(e.target).is('body')){
+      return true;
+    }
+
     switch(e.which) {
         case 37: // left - navigate to the previous submission
-        $('#prev_submission_link')[0].click()
+        $('#prev_submission_link')[0].click();
         break;
 
         case 38: // up - navigate to the previous file by DOM position
@@ -62,26 +66,26 @@ $(document).keydown(function(e) {
           while(testPos > -1){
             var testElem = $(allFilesFolders.get(testPos))
             if(testElem.data("header_position") != undefined){
-              testElem.click()
-              break
+              testElem.click();
+              break;
             }
-            testPos -= 1
+            testPos -= 1;
           }
         break;
 
         case 39: // right - navigate to the next submission
-        $('#next_submission_link')[0].click()
+        $('#next_submission_link')[0].click();
         break;
 
         case 40: // down - navigate to the next file by DOM position
-          var testPos = allFilesFolders.index($('.file.active')) + 1
+          var testPos = allFilesFolders.index($('.file.active')) + 1;
           while(testPos < allFilesFolders.length){
-            var testElem = $(allFilesFolders.get(testPos))
+            var testElem = $(allFilesFolders.get(testPos));
             if(testElem.data("header_position") != undefined){
-              testElem.click()
-              break
+              testElem.click();
+              break;
             }
-            testPos += 1
+            testPos += 1;
           }
         break;
 
@@ -89,6 +93,113 @@ $(document).keydown(function(e) {
     }
     e.preventDefault(); // prevent the default action (scroll / move caret)
 });
+
+/* Some Helper functions */
+function copyToClipboard(str) {
+  let el = document.createElement('textarea'); // Create a <textarea> element
+  el.value = str; // Set its value to the string that you want copied
+  el.setAttribute('readonly', ''); // Make it readonly to be tamper-proof
+  el.style.position = 'absolute';
+  el.style.left = '-9999px'; // Move outside the screen to make it invisible
+  document.body.appendChild(el); // Append the <textarea> element to the HTML document
+  let selected =
+    document.getSelection().rangeCount > 0 // Check if there is any content selected previously
+    ?
+    document.getSelection().getRangeAt(0) // Store selection if found
+    :
+    false; // Mark as false to know no selection existed before
+  el.select(); // Select the <textarea> content
+  document.execCommand('copy'); // Copy - only works as a result of a user action (e.g. click events)
+  document.body.removeChild(el); // Remove the <textarea> element
+  if (selected) { // If a selection existed before copying
+    document.getSelection().removeAllRanges(); // Unselect everything on the HTML document
+    document.getSelection().addRange(selected); // Restore the original selection
+  }
+}
+
+function copyFileToClipboard(){
+  copyToClipboard($('code').text())
+}
+
+/* Annotation-specific JS */
+
+// Make the grades in the mini tab editable
+function make_editable($editable) {
+  // click/enter to edit cells
+
+  /* Calls the Jquery plugin Jeditable to set up the element for in-place editing.
+   * When done editing, a request to quickSetScore (on server) is called with the 
+   * following parameters.
+   * 
+   * Note: Expects editableUrl to be set in javascript already and map to
+   * something like url_for ([:quickSetScore, @course, @assessment])
+   */
+  $editable.editable(editableUrl, {
+      name: 'score',
+      event: 'click',
+      placeholder: "&ndash;",
+      select: true, // select all text in score editor on click/enter
+      onblur: function() {
+        console.log("grade change onBlur")
+      },
+      onreset: function(event) {
+        console.log("grade change onReset")
+      },
+      onerror: function() {
+        // TODO: Display a message on save error
+        console.log("grade change onError")
+      },
+      onsubmit: function() {
+          // TODO: Don't submit a score chance if we have it in the cache
+          console.log("grade change onSubmit")
+
+          // // check if score changed (submit to server only if diff from cache)
+          // var sub_id = editor.data("submission-id");
+          // var prob_id = editor.data("problem-id");
+
+          // var old_score = cache_get_item(sub_id, prob_id, 'score');
+          // var curr_score = $('input',this).val();
+          // if (curr_score != old_score) {
+          //   // update cache
+          //   cache_insert(sub_id, prob_id, 'score', curr_score);
+          //   console.log("submitting changes to score");
+          //   return true;
+          // }
+          // close_current_editor();
+          return true;
+      },
+      submitdata: function(value, settings) {
+        console.log("grade change submitData")
+        requestData = {
+          submission_id: $editable.data('submission-id'),
+          problem_id: $editable.data('problem-id')
+        }
+        console.log("data is: ", requestData)
+        return requestData
+      },
+      callback: function(value, settings) {
+          // TODO: Display a success message
+          console.log("grade change callback")
+
+          // jQuery.ajax("quickGetTotal", {
+          //     data: {
+          //         submission_id: editor.data('submission-id')
+          //     }, 
+          //     success: function(data, status, jqXHR) {
+          //         // TODO: wtf
+          //         total.html(data == " " ? "&ndash;" : data);
+          //         total.effect("highlight", {}, 1000);
+          //     },
+          //     error: function() {
+          //         total.text("?");
+          //     }
+          // });
+
+      }
+
+  });
+
+}
 
 
 /* Highlights lines longer than 80 characters autolab red color */

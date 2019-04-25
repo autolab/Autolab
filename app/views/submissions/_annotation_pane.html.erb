@@ -1,6 +1,5 @@
 <div id="annotationPane">
-  <input type="checkbox" id="highlightLongLines">
-  <label for="highlightLongLines">Highlight lines longer than 80 characters</label>
+  <%# TODO: Bring back highlight lines longer than 80 characters %>
 
   <div class="annotationSummary">
     <h1>Annotations</h1>
@@ -15,7 +14,7 @@
             </div>
             <div class="collapsible-body">
               <% descriptTuples.each do |description, value, line, user, id| %>
-                <div class="descript" id="li-annotation-<%= id %>">
+                <div class="descript" id="li-annotation-<%= id %>" onclick="scrollToLine(<%= line %>)">
                   <span class="point_badge <%= value > 0 ? "positive" : value < 0 ? "negative" : "neutral" %>"><%= plus_fix(value) %></span> <%= description %>
                 </div>
               <% end %>
@@ -35,7 +34,7 @@
         <div class="problem-grade-item collection-item">
           <div class="problem_name"> <%= p.name.capitalize %>: </div>
           <div class="problem_score">
-            <a href="#!"> <%= p_score && p_score.score ? p_score.score : raw("&ndash;") %> </a>
+            <a href="#!" data-problem-id="<%= p.id %>" data-submission-id="<%= @submission.id %>"> <%= p_score && p_score.score ? p_score.score : raw("&ndash;") %> </a>
             <b>/ <%= p.max_score %> </b>
           </div>
         </div>
