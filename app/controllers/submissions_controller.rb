@@ -1,6 +1,7 @@
 require "archive"
 require "pdf"
 require "prawn"
+require "json"
 
 class SubmissionsController < ApplicationController
   # inherited from ApplicationController
@@ -197,7 +198,6 @@ class SubmissionsController < ApplicationController
     if params[:header_position]
       file, pathname = Archive.get_nth_file(@filename, params[:header_position].to_i)
       unless file && pathname
-        puts 0/0
         flash[:error] = "Could not read archive."
         redirect_to [@course, @assessment] and return false
       end
@@ -285,7 +285,7 @@ class SubmissionsController < ApplicationController
     if(@course.nil?)
       flash[:error] = "Cannot manage nil course"
     end
-    
+
     # Pull the files with their hierarchy info for the file tree
     if Archive.archive? @filename
       @files = Archive.get_file_hierarchy(@filename).sort! { |a, b| a[:pathname] <=> b[:pathname] }
@@ -299,7 +299,7 @@ class SubmissionsController < ApplicationController
           @filename.include?(".metadata"),
         directory: Archive.looks_like_directory?(@filename)
       }]
-      @header_position = 0 
+      @header_position = 0
     end
 
     if params[:header_position]
@@ -328,6 +328,53 @@ class SubmissionsController < ApplicationController
     if !PDF.pdf?(file)
       begin
         @data = @submission.annotated_file(file, @filename, params[:header_position])
+        # Special case -- we're using a CMU-specific language, and we need to
+        # force the language interpretation
+        begin
+          if(@filename.last(3) == ".c0" or @filename.last(3) == ".c1")
+            @ctags_json = %x[ctags --output-format=json --language-force=C #{@filename}].split("\n")
+          else
+            # General case -- language can be inferred from file extension
+            @ctags_json = %x[ctags --output-format=json #{@filename}].split("\n")
+          end
+
+          @ctag_obj = []
+          i = 0
+          while i < @ctags_json.length
+            obj_temp = JSON.parse(@ctags_json[i])
+            if(obj_temp["kind"] == "function")
+              @ctag_obj.push(obj_temp)
+            end
+            i = i + 1
+          end
+
+          # Now that we have the tags, we need to get the line number of each function.
+          # We can do this by searching for the line in the file that matches each
+          # function's pattern variable.
+          File.open(@filename, "r") do |fd|
+            line_num = 1
+            fd.each_line do |file_line|
+              # If this line matches a pattern, add it to the json obj
+
+              tag_idx = 0;
+              @ctag_obj.each do |tag|
+                pattern = tag["pattern"][2...tag["pattern"].length-2]
+                if(file_line == pattern + "\n")
+                  @ctag_obj[tag_idx]["line_num"] = line_num
+                end
+                tag_idx = tag_idx + 1
+              end
+
+              line_num = line_num + 1
+            end
+          end
+
+          # The functions are in some arbitrary order, so sort them
+          @ctag_obj = @ctag_obj.sort_by { |obj| obj["line_num"].to_i }
+
+        rescue
+
+        end
       rescue
         flash[:error] = "Sorry, we could not display your file because it contains non-ASCII characters. Please remove these characters and resubmit your work."
         redirect_to(:back) && return
@@ -390,7 +437,7 @@ class SubmissionsController < ApplicationController
 
     @problems = @assessment.problems.to_a
     @problems.sort! { |a, b| a.id <=> b.id }
-    
+
     @latestSubmissions = @assessment.assessment_user_data
                           .map{|aud| aud.latest_submission}
                           .select{|submission| submission != nil}

@@ -5,10 +5,7 @@
     </div>
 
     <div class="file-button">
-      <span>Collapse Comments</span>
-    </div>
-    <div class="file-button">
-      <span>Expand Comments</span>
+      <span>Copy Code</span>
     </div>
   </div>
   <div class="code-table">
@@ -23,79 +20,15 @@
           </div>
           <div class="code"><pre><code class="<%= @displayFilename.split(".")[-1].downcase %>"><%= code %></code></pre></div>
         </div>
-        <div class="annotation-container" id="annotation-line-<%=index%>">
+        <div class="annotation-container" id="annotation-line-<%=index%>" data-line-id="<%=index%>">
         </div>
       <% end %>
   </div>
 </div>
 
-
-<div class="base-annotation-line annotation-line">
-  <div class="line-sticky">
-    <div class="line-number"></div>
-    <div class="code-separator"></div>
-  </div>
-  <div class="annotation-preview" style="display: none;">
-    <span class="float-left"><b>From:</b> <span class="submitted_by"></span> | <b><span class="problem_id"></span>:</b> <span class="value"></span></span>
-    <span class="float-right"><a class="annotation-expand" href="#">Expand &plus;</a></span>
-    <span class="float-clear"></span>
-  </div>
-  <div class="annotation-form" style="display: none;">
-    <form>
-      <div class="input-field">
-        <textarea id="comment-textarea" placeholder="" class="materialize-textarea"></textarea>
-        <label for="comment-textarea">Comment</label>
-      </div>
-
-      <div class="row">
-        <div class="input-field col s6">
-          <input type="text" placeholder="" id="comment-score">
-          <label for="comment-score">Score</label>
-        </div>
-
-        <div class="input-field col s6">
-          <select>
-            <option>Problem 1</option>
-            <option>Problem 2</option>
-            <option>Problem 3</option>
-            <option>Problem 4</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="input-field">
-        <input type="submit" class="btn" value="Add annotation">
-      </div>
-    </form>
-  </div>
-  <div class="annotation-box" style="display: none;">
-    <div class="annotation-header">
-      <div class="annotation-from"><b>From:</b> <span class="submitted_by"></span></div>
-      <div class="annotation-tools">
-        <a class="annotation-collapse" href="#">Collapse &minus;</a>
-      </div>
-    </div>
-    <div class="annotation-separator"></div>
-    <div class="annotation-body">
-      <p class="comment"></p>
-    </div>
-    <div class="annotation-separator"></div>
-    <div class="annotation-footer">
-      <div class="annotation-score">
-        <b><span class="problem_id"></span>:</b> <span class="value"></span>
-      </div>
-    </div>
-  </div>
-</div>
-
 <script>
-  function refreshAnnotations() {
-    $(".annotation-line .line-sticky").each(function () {
-      $(this).height($(this).parent().height())
-    })
-  }
-
-  $(window).load(function () {
-    refreshAnnotations();
-  })
+  $(document).ready(function () {
+    displayAnnotations();
+    attachEvents();
+  });
 </script>

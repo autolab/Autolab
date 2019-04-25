@@ -25,8 +25,9 @@
 
     var submissionID = <%= @submission.id %>
     var curHeaderPos = <%= params[:header_position] || 0 %>
-    
+
     var annotations = <%=raw @annotations.to_json %>;
+    var annotationsByPositionByLine = {};
     var fileNameStr = "<%= @filename %>";
     var cudEmailStr = "<%= @cud.email %>";
     // a json list of problems for this assessment
@@ -79,9 +80,21 @@
 
 <div class="row">
   <%# If there are multiple files, we have a header position and need a file tree %>
-  <% if (params[:header_position]) %>
+  <% if (params[:header_position] || !@ctag_obj.empty?) %>
     <div class="col l2">
-      <%= render "file_tree" %>
+      <% if (params[:header_position]) %>
+        <%= render "file_tree" %>
+      <% end %>
+      <% unless @ctag_obj.empty? %>
+        <div class="col l2">
+          <h5>Functions</h5>
+          <div style="font-family:Arial; font-size:12pt; color: gray;">
+            <% @ctag_obj.each do |fdef| %>
+              <span onclick="scrollToLine(<%=fdef['line_num']%>)" style="cursor: pointer"><span style="color: darkgray"><%= fdef["line_num"] %></span>: <%= fdef["name"] %></span><br>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
     </div>
     <div class="col l8">
       <%= render "code_viewer" %>
@@ -91,16 +104,16 @@
     </div>
   <% else %>
   <%# Else center the code and annotations %>
-    <div class="col l1"> </div>
-    <div class="col l8">
+    <div class="col l10">
       <%= render "code_viewer" %>
     </div>
     <div class="col l2">
       <%= render "annotation_pane" %>
     </div>
-    <div class="col l1"> </div>
   <% end %>
 </div>
+
+<%= render "annotation" %>
 
 <!-- restart the container -->
 <div>

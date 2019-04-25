@@ -32,14 +32,14 @@ LOG_FILE=`mktemp`
 log()  { printf "${_green}%b${_reset}\n" "$*"; printf "\n%b\n" "$*" >> $LOG_FILE; }
 logstdout() { printf "${_green}%b${_reset}\n" "$*" 2>&1 ; }
 warn() { printf "${_orange}%b${_reset}\n" "$*"; printf "%b\n" "$*" >> $LOG_FILE; }
-fail() { printf "\n${_red}ERROR: $*${_reset}\n"; printf "\nERROR: $*\n" >> $LOG_FILE; } 
+fail() { printf "\n${_red}ERROR: $*${_reset}\n"; printf "\nERROR: $*\n" >> $LOG_FILE; }
 
 # Confirm prompt defaulting to 'no'
 confirm () {
     # call with a prompt string or use a default
     read -r -p "${1:-Are you sure?} [y/N] " response
     case $response in
-        [yY][eE][sS]|[yY]) 
+        [yY][eE][sS]|[yY])
             true
             ;;
         *)
@@ -53,7 +53,7 @@ confirm_yes() {
     # call with a prompt string or use a default
     read -r -p "${1:-Are you sure?} [Y/n] " response
     case $response in
-        [nN][oO]|[nN]) 
+        [nN][oO]|[nN])
             false
             ;;
         *)
@@ -63,7 +63,7 @@ confirm_yes() {
 
 }
 
-# Traps for completion and error 
+# Traps for completion and error
 cleanup() {
     ERR_CODE=$?
     log "\nThank you for trying out Autolab! For questions and comments, email us at $OUR_EMAIL.\n"
@@ -100,9 +100,9 @@ trap 'err_report $LINENO' ERR
 environment_setup() {
     clear
     log "Upgrading system packages and installing prerequisites..."
-    sudo apt-get -y -qq update 
+    sudo apt-get -y -qq update
     sudo apt-get -y -qq upgrade
-    sudo apt-get -y -qq install build-essential git libffi-dev zlib1g-dev autoconf bison build-essential libssl-dev libyaml-dev libreadline6-dev libncurses5-dev libgdbm3 libgdbm-dev libmysqlclient-dev
+    sudo apt-get -y -qq install build-essential git libffi-dev zlib1g-dev autoconf bison build-essential libssl-dev libyaml-dev libreadline6-dev libncurses5-dev libgdbm3 libgdbm-dev libmysqlclient-dev libjansson-dev ctags
 
     log "Cloning Autolab repo from Github to ~/Autolab..."
     if [[ -d "$AUTOLAB_PATH" ]]; then
@@ -249,4 +249,3 @@ autolab_setup
 autolab_init
 autolab_populate
 congrats
-
