@@ -2,6 +2,7 @@ require "archive"
 require "pdf"
 require "prawn"
 require "json"
+require 'tempfile'
 
 class SubmissionsController < ApplicationController
   # inherited from ApplicationController
@@ -313,7 +314,7 @@ class SubmissionsController < ApplicationController
     else
       # auto-set header position for archives
       if Archive.archive?(@submission.handin_file_path)
-        firstFile = Archive.get_files(@submission.handin_file_path).find{|file| file[:mac_bs_file] == false and file[:directory] == false}
+        firstFile = Archive.get_files(@submission.handin_file_path).find{|file| file[:mac_bs_file] == false and file[:directory] == false} || {header_position: 0}
         redirect_to(url_for([:view, @course, @assessment, @submission, header_position: firstFile[:header_position]])) && return
       end
 
@@ -323,19 +324,25 @@ class SubmissionsController < ApplicationController
     end
     return unless file
 
-    filename = @submission.handin_file_path
-
     if !PDF.pdf?(file)
-      begin
+      # begin
         @data = @submission.annotated_file(file, @filename, params[:header_position])
         # Special case -- we're using a CMU-specific language, and we need to
         # force the language interpretation
+        codePath = @filename
+        if Archive.archive?(@submission.handin_file_path)
+          # If the submission is an archive, write the open file's code to a temp file so we can pass it into ctags
+          ctagFile = Tempfile.new(['autolab_ctag', File.extname(pathname)])
+          ctagFile.write(file)
+          ctagFile.close
+          codePath = ctagFile.path
+        end
         begin
           if(@filename.last(3) == ".c0" or @filename.last(3) == ".c1")
-            @ctags_json = %x[ctags --output-format=json --language-force=C #{@filename}].split("\n")
+            @ctags_json = %x[ctags --output-format=json --language-force=C #{codePath}].split("\n")
           else
             # General case -- language can be inferred from file extension
-            @ctags_json = %x[ctags --output-format=json #{@filename}].split("\n")
+            @ctags_json = %x[ctags --output-format=json #{codePath}].split("\n")
           end
 
           @ctag_obj = []
@@ -351,7 +358,7 @@ class SubmissionsController < ApplicationController
           # Now that we have the tags, we need to get the line number of each function.
           # We can do this by searching for the line in the file that matches each
           # function's pattern variable.
-          File.open(@filename, "r") do |fd|
+          File.open(codePath, "r") do |fd|
             line_num = 1
             fd.each_line do |file_line|
               # If this line matches a pattern, add it to the json obj
@@ -373,12 +380,16 @@ class SubmissionsController < ApplicationController
           @ctag_obj = @ctag_obj.sort_by { |obj| obj["line_num"].to_i }
 
         rescue
-
+          puts("Ctags not installed or failed")
+        ensure
+          if defined?(ctagFile) && !ctagFile.nil?
+            ctagFile.unlink
+          end
         end
-      rescue
-        flash[:error] = "Sorry, we could not display your file because it contains non-ASCII characters. Please remove these characters and resubmit your work."
-        redirect_to(:back) && return
-      end
+      # rescue
+        # flash[:error] = "Sorry, we could not display your file because it contains non-ASCII characters. Please remove these characters and resubmit your work."
+        # redirect_to(:back) && return
+      # end
 
       begin
         # replace tabs with 4 spaces
