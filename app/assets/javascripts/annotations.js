@@ -11,6 +11,11 @@ function refreshAnnotations() {
   });
 }
 
+function changeFile(headerPos){
+  $('#code-box').addClass('loading');
+  setActiveFilePos(headerPos);
+}
+
 // Updates active tags to set the specified file
 function setActiveFilePos(headerPos){
   currentHeaderPos = headerPos;
