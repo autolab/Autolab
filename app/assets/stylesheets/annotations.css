@@ -1,5 +1,12 @@
 @charset "utf-8";
 
+/* Overarching Rules */
+
+.page-wrapper {
+  height: 100vh;
+  overflow: hidden;
+}
+
 .row {
   max-height: calc(100vh - 205px);
   overflow: hidden;
@@ -367,17 +374,6 @@
   padding: .5em;
 }
 
-/* .annotation-form {
-  width: 94%;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  font-family: 'Source Sans Pro', sans-serif;
-  padding: 6px;
-  background-color: #fff;
-  margin-top: 6px;
-  z-index: 5;
-} */
-
 .annotation-edit-form {
   border-radius: 4px;
   font-family: 'Source Sans Pro', sans-serif;
@@ -557,10 +553,14 @@
 }
 
 /* File Tree Styling CSS */
+.file-explorer{
+  height: 70%;
+}
+
 .file-list{
-  max-height: 70vh;
   color: #333;
   overflow-y: auto;
+  height: 100%;
 }
 
 .folder-contents{
@@ -609,4 +609,29 @@
         -ms-user-select: none; /* Internet Explorer/Edge */
             user-select: none; /* Non-prefixed version, currently
                                   supported by Chrome and Opera */
+}
+
+/* Symbol Tree Styling */
+#symbol-tree-container {
+  height: 30%;
+}
+
+#symbol-tree-box {
+  /* overflow: auto; */
+}
+
+#symbol-tree-box ul {
+  font-weight: bold;
+  color: gray;
+  overflow-y: scroll;
+  margin-top: 0;
+  height: calc(100% - 3.5rem);
+}
+
+#symbol-tree-box li {
+
+}
+
+#symbol-tree-box li img {
+  height:15px;
 }

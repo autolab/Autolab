@@ -82,23 +82,18 @@
   </div>
 <% end %>
 
-<div class="row">
+<div class="row" style="height: 100%">
   <%# If there are multiple files, we have a header position and need a file tree %>
   <% if (params[:header_position] || !@ctag_obj.empty?) %>
-    <div class="col l2">
+    <div class="col l2" style="height: 100%">
       <% if (params[:header_position]) %>
         <%= render "file_tree" %>
       <% end %>
-      <% unless @ctag_obj.empty? %>
-        <div class="col l2">
-          <h5>Functions</h5>
-          <div style="font-family:Arial; font-size:12pt; color: gray;">
-            <% @ctag_obj.each do |fdef| %>
-              <span onclick="scrollToLine(<%=fdef['line_num']%>)" style="cursor: pointer"><span style="color: darkgray"><%= fdef["line_num"] %></span>: <%= fdef["name"] %></span><br>
-            <% end %>
-          </div>
-        </div>
+      <div id="symbol-tree-container">
+      <% unless @ctag_obj.nil? || @ctag_obj.empty? %>
+        <%= render "code_symbol_tree", ctag_obj: @ctag_obj %>
       <% end %>
+      </div>
     </div>
     <div class="col l8">
       <%= render "code_viewer" %>

@@ -1,7 +1,13 @@
 // If we've navigated to another file, do nothing
 if (currentHeaderPos == <%= params[:header_position] %>) {
-    // Update the code viewer and annotations with the new data
+    // Update the code viewer and symbol tree with the new data
     $('#code-box').replaceWith('<%= j render("submissions/code_viewer") %>');
+
+    <% if @ctag_obj.nil? || @ctag_obj.empty? %>
+    $('#symbol-tree-box').hide();
+    <% else %>
+    $('#symbol-tree-container').html('<%= j render("submissions/code_symbol_tree", ctag_obj: @ctag_obj) %>');
+    <% end %>
 
     // Add syntax highlighting to the new code viewer
     $('pre code').each(function(){hljs.highlightBlock(this)});

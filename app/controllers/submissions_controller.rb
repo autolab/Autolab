@@ -327,18 +327,19 @@ class SubmissionsController < ApplicationController
     if !PDF.pdf?(file)
       # begin
         @data = @submission.annotated_file(file, @filename, params[:header_position])
-        # Special case -- we're using a CMU-specific language, and we need to
-        # force the language interpretation
-        codePath = @filename
-        if Archive.archive?(@submission.handin_file_path)
-          # If the submission is an archive, write the open file's code to a temp file so we can pass it into ctags
-          ctagFile = Tempfile.new(['autolab_ctag', File.extname(pathname)])
-          ctagFile.write(file)
-          ctagFile.close
-          codePath = ctagFile.path
-        end
+        # Try extracting a symbol tree
         begin
-          if(@filename.last(3) == ".c0" or @filename.last(3) == ".c1")
+          codePath = @filename
+          if Archive.archive?(@submission.handin_file_path)
+            # If the submission is an archive, write the open file's code to a temp file so we can pass it into ctags
+            ctagFile = Tempfile.new(['autolab_ctag', File.extname(pathname)])
+            ctagFile.write(file)
+            ctagFile.close
+            codePath = ctagFile.path
+          end
+          # Special case -- we're using a CMU-specific language, and we need to
+          # force the language interpretation
+          if(codePath.last(3) == ".c0" or codePath.last(3) == ".c1")
             @ctags_json = %x[ctags --output-format=json --language-force=C #{codePath}].split("\n")
           else
             # General case -- language can be inferred from file extension
