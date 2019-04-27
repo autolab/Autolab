@@ -12,6 +12,12 @@
   overflow: hidden;
 }
 
+.left_sidebar{
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
 #code-loader {
   height: 50vh;
   display: flex;
@@ -568,7 +574,7 @@
 
 /* File Tree Styling CSS */
 .file-explorer{
-  max-height: 60%;
+  flex-basis: 70%;
   overflow: auto;
 }
 
@@ -626,7 +632,8 @@
 
 /* Symbol Tree Styling */
 #symbol-tree-container {
-  height: 30%;
+  flex-basis: 30%;
+  overflow: scroll;
 }
 
 #symbol-tree-box {
@@ -636,9 +643,7 @@
 #symbol-tree-box ul {
   font-weight: bold;
   color: gray;
-  overflow-y: scroll;
   margin-top: 0;
-  height: calc(100% - 3.5rem);
 }
 
 #symbol-tree-box li {
