@@ -568,13 +568,12 @@
 
 /* File Tree Styling CSS */
 .file-explorer{
-  
+  max-height: 60%;
+  overflow: auto;
 }
 
 .file-list{
   color: #333;
-  overflow-y: auto;
-  height: 100%;
 }
 
 .folder-contents{

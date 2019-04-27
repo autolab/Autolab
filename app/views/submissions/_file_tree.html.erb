@@ -36,7 +36,7 @@ end
 %>
 
 <!-- Actual file tree column -->
-<div class="file-explorer" style="height: <%[60, 10*@files.length].min=%>%">
+<div class="file-explorer">
   <div class="file-list">
     <% @files.sort { |a, b| a[:header_position] <=> b[:header_position] }.each do |file| %>
         <%
