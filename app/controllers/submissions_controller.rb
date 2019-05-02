@@ -340,10 +340,10 @@ class SubmissionsController < ApplicationController
           # Special case -- we're using a CMU-specific language, and we need to
           # force the language interpretation
           if(codePath.last(3) == ".c0" or codePath.last(3) == ".c1")
-            @ctags_json = %x[ctags --output-format=json --language-force=C #{codePath}].split("\n")
+            @ctags_json = %x[ctags --output-format=json --language-force=C --fields="Nnk" #{codePath}].split("\n")
           else
             # General case -- language can be inferred from file extension
-            @ctags_json = %x[ctags --output-format=json #{codePath}].split("\n")
+            @ctags_json = %x[ctags --output-format=json --fields="Nnk" #{codePath}].split("\n")
           end
 
           @ctag_obj = []
@@ -356,29 +356,8 @@ class SubmissionsController < ApplicationController
             i = i + 1
           end
 
-          # Now that we have the tags, we need to get the line number of each function.
-          # We can do this by searching for the line in the file that matches each
-          # function's pattern variable.
-          File.open(codePath, "r") do |fd|
-            line_num = 1
-            fd.each_line do |file_line|
-              # If this line matches a pattern, add it to the json obj
-
-              tag_idx = 0;
-              @ctag_obj.each do |tag|
-                pattern = tag["pattern"][2...tag["pattern"].length-2]
-                if(file_line == pattern + "\n")
-                  @ctag_obj[tag_idx]["line_num"] = line_num
-                end
-                tag_idx = tag_idx + 1
-              end
-
-              line_num = line_num + 1
-            end
-          end
-
           # The functions are in some arbitrary order, so sort them
-          @ctag_obj = @ctag_obj.sort_by { |obj| obj["line_num"].to_i }
+          @ctag_obj = @ctag_obj.sort_by { |obj| obj["line"].to_i }
 
         rescue
           puts("Ctags not installed or failed")

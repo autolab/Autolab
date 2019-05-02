@@ -627,6 +627,7 @@
 /* Symbol Tree Styling */
 #symbol-tree-container {
   height: 30%;
+  overflow: auto;
 }
 
 #symbol-tree-box {
@@ -636,13 +637,15 @@
 #symbol-tree-box ul {
   font-weight: bold;
   color: gray;
-  overflow-y: scroll;
   margin-top: 0;
-  height: calc(100% - 3.5rem);
 }
 
-#symbol-tree-box li {
+#symbol-tree-box ul li {
+  cursor: pointer;
+}
 
+#symbol-tree-box ul li:hover {
+  background: #eee;
 }
 
 #symbol-tree-box li img {

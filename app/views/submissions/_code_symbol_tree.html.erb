@@ -2,7 +2,7 @@
     <h5>Symbol Tree</h5>
     <ul>
     <% ctag_obj.each do |fdef| %>
-        <li onclick="scrollToLine(<%=fdef['line_num']%>)" style="cursor: pointer">
+        <li onclick="scrollToLine(<%=fdef['line']%>)">
             <%= image_tag "function_icon.svg" %>
             <%= fdef["name"] %>
         </li>
