@@ -216,61 +216,25 @@ function make_editable($editable) {
       placeholder: "&ndash;",
       select: true, // select all text in score editor on click/enter
       onblur: function() {
-        console.log("grade change onBlur")
       },
       onreset: function(event) {
-        console.log("grade change onReset")
       },
       onerror: function() {
         // TODO: Display a message on save error
-        console.log("grade change onError")
       },
       onsubmit: function() {
           // TODO: Don't submit a score chance if we have it in the cache
-          console.log("grade change onSubmit")
-
-          // // check if score changed (submit to server only if diff from cache)
-          // var sub_id = editor.data("submission-id");
-          // var prob_id = editor.data("problem-id");
-
-          // var old_score = cache_get_item(sub_id, prob_id, 'score');
-          // var curr_score = $('input',this).val();
-          // if (curr_score != old_score) {
-          //   // update cache
-          //   cache_insert(sub_id, prob_id, 'score', curr_score);
-          //   console.log("submitting changes to score");
-          //   return true;
-          // }
-          // close_current_editor();
           return true;
       },
       submitdata: function(value, settings) {
-        console.log("grade change submitData")
         requestData = {
           submission_id: $editable.data('submission-id'),
           problem_id: $editable.data('problem-id')
-        }
-        console.log("data is: ", requestData)
-        return requestData
+        };
+        return requestData;
       },
       callback: function(value, settings) {
           // TODO: Display a success message
-          console.log("grade change callback")
-
-          // jQuery.ajax("quickGetTotal", {
-          //     data: {
-          //         submission_id: editor.data('submission-id')
-          //     },
-          //     success: function(data, status, jqXHR) {
-          //         // TODO: wtf
-          //         total.html(data == " " ? "&ndash;" : data);
-          //         total.effect("highlight", {}, 1000);
-          //     },
-          //     error: function() {
-          //         total.text("?");
-          //     }
-          // });
-
       }
 
   });
