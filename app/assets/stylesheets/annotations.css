@@ -145,12 +145,6 @@
   visibility: hidden;
 }
 
-.code-table .add-button:hover {
-  position: absolute;
-  width: 28px;
-  height: 28px;
-}
-
 .code-table .annotation-container {
   position: sticky;
   left: 0;
