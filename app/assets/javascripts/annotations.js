@@ -18,27 +18,29 @@ function changeFile(headerPos){
 
   // If we've cached this file locally, just get it
   if(localCache[headerPos] != undefined){
-    newFile = localCache[headerPos];
-    // Update the code viewer and symbol tree with the cached data
-    $('#code-box').replaceWith(newFile.codeBox);
+    // Perform the DOM update in the background to keep things snappy
+    setTimeout(function () {
+      newFile = localCache[headerPos];
+      // Update the code viewer and symbol tree with the cached data
+      $('#code-box').replaceWith(newFile.codeBox);
 
-    if (newFile.symbolTree == null) {
-      $('#symbol-tree-box').hide();
-    } else {
-      $('#symbol-tree-container').html(newFile.symbolTree);
-    }
+      if (newFile.symbolTree == null) {
+        $('#symbol-tree-box').hide();
+      } else {
+        $('#symbol-tree-container').html(newFile.symbolTree);
+      }
 
-    // Add syntax highlighting to the new code viewer
-    $('pre code').each(function () {
-      hljs.highlightBlock(this);
+      // Add syntax highlighting to the new code viewer
+      $('pre code').each(function () {
+        hljs.highlightBlock(this);
+      });
+
+      // Update the page URL
+      history.replaceState(null, null, newFile.url);
+
+      displayAnnotations();
+      attachEvents();
     });
-
-    // Update the page URL
-    history.replaceState(null, null, newFile.url);
-
-    displayAnnotations();
-    attachEvents();
-    
     return true;
   }
   return false;
