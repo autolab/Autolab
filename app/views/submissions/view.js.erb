@@ -7,7 +7,20 @@ newFile.symbolTree = '<%= j render("submissions/code_symbol_tree", ctag_obj: @ct
 <% end %>
 newFile.url = '<%= url_for(params) %>'
 
-localCache[<%= params[:header_position] %>] = newFile
+<% if @is_pdf %>
+newFile.pdf = true;
+newFile.pdfUrl = "<%= url_for [:download, @course, @assessment, @submission, header_position: params[:header_position]] %>";
+newFile.annotatedPdfUrl = "<%= url_for [:download, @course, @assessment, @submission, header_position: params[:header_position], annotated: true] %>";
+newFile.previewMode = false;
+<% if @preview_mode %>
+    newFile.previewMode = true;
+<% end %>
+<% else %>
+newFile.pdf = false;
+<% end %>
+
+
+if (!newFile.pdf) localCache[<%= params[:header_position] %>] = newFile;
 
 // If we've navigated to another file, don't update the page
 if (currentHeaderPos == <%= params[:header_position] %>) {

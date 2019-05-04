@@ -381,25 +381,10 @@ class SubmissionsController < ApplicationController
         flash[:error] = "Sorry, we could not parse your file because it contains non-ASCII characters. Please download file to view the source."
         redirect_to(:back) && return
       end
-
-      # fix for tar files
-      # if params[:header_position]
-      #   @annotations = @submission.annotations.where(position: params[:header_position]).to_a
-      # else
-        @annotations = @submission.annotations.to_a
-      # end
-
-      @annotations.sort! { |a, b| a.line <=> b.line }
-
-    else
-      # fix for tar files
-      if params[:header_position]
-        @annotations = @submission.annotations.where(position: params[:header_position]).to_a
-      else
-        @annotations = @submission.annotations.to_a
-      end
-
     end
+
+    @annotations = @submission.annotations.to_a
+    @annotations.sort! { |a, b| a.line <=> b.line }
 
     @problemSummaries = {}
     @problemGrades = {}
@@ -440,22 +425,18 @@ class SubmissionsController < ApplicationController
     # Rendering this page fails. Often. Mostly due to PDFs.
     # So if it fails, redirect, instead of showing an error page.
     if PDF.pdf?(file)
+      @is_pdf = true
       @preview_mode = false
       if params[:preview] then
         @preview_mode = true
       end
-
-      render(:viewPDF) && return
     else
-      # begin
-        respond_to do |format|
-          format.html { render(:view) }
-          format.js
-        end
-      # rescue
-      #   flash[:error] = "Autolab cannot display this file"
-      #   redirect_to([:history, @course, @assessment, cud_id: @submission.course_user_datum_id]) && return
-      # end
+      @is_pdf = false
+    end
+
+    respond_to do |format|
+      format.html { render(:view) }
+      format.js
     end
   end
 
