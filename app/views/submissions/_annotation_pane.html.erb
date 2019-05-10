@@ -1,0 +1,44 @@
+<div id="annotationPane">
+  <%# TODO: Bring back highlight lines longer than 80 characters %>
+
+  <div class="annotationSummary">
+    <h1>Annotations</h1>
+    <ul class="collapsible expandable">
+      <%# TODO: Confirm that unreleased annotations are hidden for non-instructors %>
+        <% @problemSummaries.each do |problem, descriptTuples| %>
+          <li id="li-problem-<%= problem %>">
+            <div class="collapsible-header active">
+              <h4> <%= problem.capitalize %>
+                  <div class="summary_score"> <%= plus_fix(@problemGrades[problem]) %></div>
+              </h4>
+            </div>
+            <div class="collapsible-body">
+              <% descriptTuples.each do |description, value, line, user, id| %>
+                <div class="descript" id="li-annotation-<%= id %>" onclick="scrollToLine(<%= line %>)">
+                  <span class="point_badge <%= value > 0 ? "positive" : value < 0 ? "negative" : "neutral" %>"><%= plus_fix(value) %></span> <%= description %>
+                </div>
+              <% end %>
+            </div>
+          </li>
+        <% end %>
+    </ul>
+  </div>
+
+  <div class="problemGrades">
+    <h1>Grades</h1>
+    <div class="collection">
+    <%# TODO: Hide unreleased scores for non-instructors %>
+      <% p_scores = @submission.problems_to_scores %>
+      <% @assessment.problems.each_with_index do |p,i| %>
+        <% p_score = p_scores[p.id] %>
+        <div class="problem-grade-item collection-item">
+          <div class="problem_name"> <%= p.name.capitalize %>: </div>
+          <div class="problem_score">
+            <a href="#!" data-problem-id="<%= p.id %>" data-submission-id="<%= @submission.id %>"> <%= p_score && p_score.score ? p_score.score : raw("&ndash;") %> </a>
+            <b>/ <%= p.max_score %> </b>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

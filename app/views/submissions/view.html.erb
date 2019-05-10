@@ -4,88 +4,149 @@
   <%= stylesheet_link_tag "annotations" %>
   <% # highlightjs - change the style sheet for different styles %>
   <%= stylesheet_link_tag "highlightjs-styles/vs.css" %>
+  <%= external_stylesheet_link_tag "jquery-ui", "1.11.4" %>
 <% end %>
 
 <% content_for :javascripts do %>
+  <%= javascript_include_tag "pdf.js" %>
   <%= external_javascript_include_tag "lodash", "3.3.1" %>
   <%= javascript_include_tag "highlight.pack.js" %>
+  <%= javascript_include_tag "jquery.jeditable" %>
+  <%= external_javascript_include_tag "jquery-ui", "1.11.4" %>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/jquery-scrollTo/2.1.2/jquery.scrollTo.min.js"></script>
   <script type="application/javascript">
-
     <% if @cud.instructor || @cud.course_assistant then %>
       var isInstructor = true;
     <% else %>
       var isInstructor = false;
     <% end %>
 
+    const editableUrl = "<%= url_for ([:quickSetScore, @course, @assessment]) %>"
+    const rootFiles = $('.file-list').children()
+    const allFilesFolders = $('.file-list').find("*")
+    var currentHeaderPos = <%= params[:header_position] || 0 %>
+
+    var submissionID = <%= @submission.id %>
+    var curHeaderPos = <%= params[:header_position] || 0 %>
+
     var annotations = <%=raw @annotations.to_json %>;
+    var annotationsByPositionByLine = {};
     var fileNameStr = "<%= @filename %>";
     var cudEmailStr = "<%= @cud.email %>";
     // a json list of problems for this assessment
-    var problems = <%=raw @problems.to_json %>;
+    var problems = <%= raw @problems.to_json %>;
     var basePath = "<%= course_assessment_submission_annotations_path(@course, @assessment, @submission) %>";
 
-    <% if params[:header_position] %>
-    var headerPositionStr = "<%= params[:header_position] %>";
-    <% else %>
-    var headerPositionStr = null;
-    <% end %>
+    var localCache = {};
 
+    <% if params[:header_position] %>
+      var headerPositionStr = "<%= params[:header_position] %>";
+    <% else %>
+      var headerPositionStr = null;
+    <% end %>
+    hljs.initHighlightingOnLoad();
+    PDFJS.workerSrc = "<%= asset_url 'pdf.worker.js' %>";
   </script>
   <%= javascript_include_tag "annotations.js" %>
+  <%= javascript_include_tag "submission_view.js" %>
   <script type="text/javascript">
+    $('.problem_score a').each( function( index, element ){
+        make_editable($(element));
+    });
+    setActiveFilePos(currentHeaderPos)
     initializeAnnotationsForCode();
+    attachEvents();
+    // Set up file switching to use the local cache
+    $(".file").on("click", function(e) {
+    wasCachedLocally = changeFile($(this).data("header_position"));
+    if (wasCachedLocally) {
+      e.preventDefault();
+      return false;
+    }
+    return true;
+  });
   </script>
 
+  <script>
+    var newFile = {};
+    newFile.url = '<%= url_for(params) %>'
+
+    <% if @is_pdf %>
+    newFile.pdf = true;
+    newFile.pdfUrl = "<%= url_for [:download, @course, @assessment, @submission, header_position: params[:header_position]] %>";
+    newFile.annotatedPdfUrl = "<%= url_for [:download, @course, @assessment, @submission, header_position: params[:header_position], annotated: true] %>";
+    newFile.previewMode = false;
+    <% if @preview_mode %>
+        newFile.previewMode = true;
+    <% end %>
+    <% else %>
+    newFile.pdf = false;
+    <% end %>
+  </script>
 <% end %>
 
-<h2>Submission Version <%=@submission.version%> for
-<%= current_assessment_link %> (<%= @submission.course_user_datum.email %>)
-</h2>
-<hr>
-<div class="row">
-  <div class="annotationPane col l3">
-    <h3 class="annotationHeader">Summary</h3>
-    <% if @problemSummaries.empty? then %>
-      <% if (@cud.instructor? or @cud.course_assistant?) then %>
-        <p>Hover over a line of code and click the green box to annotate.<br><br><b>Note: Point tweaks here don't affect the gradebook.</b></p>
-      <% else %>
-        <p>Nothing to summarize yet.</p>
-      <% end %>
-    <% else %>
-      <div id="summaryList">
-        <% if (@cud.instructor? or @cud.course_assistant?) then %>
-          <b><div class="problemListItem">Note: Point tweaks here don't affect the gradebook.</div></b>
-        <% end %>
-        <% @problemSummaries.each do |problem, descriptTuples| %>
-          <hr>
-          <div class="problemListItem"> <%= "Problem: #{problem} [#{plus_fix(@problemGrades[problem])}]" %>
-            <ul id="problem-list-<%= problem %>">
-            <% descriptTuples.each do |descript, value, line, user, id| %>
-              <li class="descript" id="li-annotation-<%= id %>"><%= (user ? "line: #{line}, #{descript} [#{plus_fix(value)}] (#{user})" : "line: #{line}, #{descript} [#{plus_fix(value)}]") %></li>
-            <% end %>
-            </ul>
-          </div>
-        <% end %>
-      </div>
-    <% end %>
-    <hr>
-    <input type="checkbox" id="highlightLongLines">
-    <label for="highlightLongLines">Highlight lines longer than 80 characters</label>
-    <hr>
-    <input type="button" value="Reload Summary" class="btn primary" onclick="reloadSummary()">
+<!-- force end the container -->
+</div></div>
 
+<!-- Header to navigate between student submissions for instructors -->
+<% if @cud.instructor || @cud.course_assistant then %>
+  <div class="row">
+    <div class="col s2 center-align">
+      <% if @prevSubmission != nil %>
+        <%= link_to(url_for([:view, @course, @assessment, @prevSubmission]), class: "valign-wrapper", id: "prev_submission_link") do %>
+          <i class="material-icons" style="margin-right: 3px">arrow_back</i> <%= @prevSubmission.course_user_datum.user.email %>
+        <% end %>
+      <% end %>
+    </div>
+    <div class="col s8 center-align valign-wrapper">
+      <div style="display: inline-block">
+      <%= @submission.course_user_datum.email %> (v<%= @submission.version %>) [<%= @curSubmissionIndex+1 %>/<%= @latestSubmissions.length %>]</div>
+
+      <a href="<%= download_file_url(@submission) %>" class="tooltipped" data-placement="top" data-tooltip="Download Submission" title="Download Submission" ><i class="material-icons" aria-hidden="true" style="margin-left:6px; font-size: 20px;">file_download</i></a>
+    </div>
+
+    <div class="col s2 center-align">
+      <% if @nextSubmission != nil %>
+        <%= link_to(url_for([:view, @course, @assessment, @nextSubmission]), class: "valign-wrapper", id: "next_submission_link") do %>
+          <%= @nextSubmission.course_user_datum.user.email %> <i class="material-icons" style="margin-left: 3px">arrow_forward</i>
+        <% end %>
+      <% end %>
+    </div>
   </div>
-  <div class="col l9">
-    <h3 id="filename"><%= @displayFilename %></h3><button class="btn collapse_expand" onclick="$('.minimize').click();">Collapse All</button> <button class="btn collapse_expand" onclick="$('.ann-box').click();">Expand All</button>
-    <div id="code-box">
-    <% # these lines can't have white space due to the styling for pre and code tages %>
-    <% # anything wrapped in a <pre><code> will be highlighted by highlightsjs %>
-    <pre><code id="code-block"><ol id="code-list"><%
-      @data.each_with_index do |(code, annotation), index|
-        %><li id="line-<%= index+1 %>"><code><%=
-          code
-        %></code><% if @cud.instructor? or @cud.course_assistant? then %><span class="add-annotation-btn" id="add-btn-<%= index+1 %>"><i class="material-icons">add</i></span><% end %><div class="annotations-container"></div></li><%
-      end %></ol></code></pre>
-  </div>
-  </div>
+<% end %>
+
+<div class="row" style="height: 100%">
+  <%# If there are multiple files, we have a header position and need a file tree %>
+  <% if (params[:header_position] || !@ctag_obj.empty?) %>
+    <div class="col l2" style="height: 100%">
+      <% if (params[:header_position]) %>
+        <%= render "file_tree" %>
+      <% end %>
+      <div id="symbol-tree-container">
+      <% unless @ctag_obj.nil? || @ctag_obj.empty? %>
+        <%= render "code_symbol_tree", ctag_obj: @ctag_obj %>
+      <% end %>
+      </div>
+    </div>
+    <div class="col l8">
+      <%= render "code_viewer" %>
+    </div>
+    <div class="col l2">
+      <%= render "annotation_pane" %>
+    </div>
+  <% else %>
+  <%# Else center the code and annotations %>
+    <div class="col l10">
+      <%= render "code_viewer" %>
+    </div>
+    <div class="col l2">
+      <%= render "annotation_pane" %>
+    </div>
+  <% end %>
 </div>
+
+<%= render "annotation" %>
+
+<!-- restart the container -->
+<div>
+<div>

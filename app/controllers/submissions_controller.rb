@@ -1,12 +1,14 @@
 require "archive"
 require "pdf"
 require "prawn"
+require "json"
+require 'tempfile'
 
 class SubmissionsController < ApplicationController
   # inherited from ApplicationController
   before_action :set_assessment
-  before_action :set_submission, only: [:destroy, :destroyConfirm, :download, :edit, :listArchive, :update, :view]
-  before_action :get_submission_file, only: [:download, :listArchive, :view]
+  before_action :set_submission, only: [:destroy, :destroyConfirm, :download, :edit, :update, :view]
+  before_action :get_submission_file, only: [:download, :view]
   rescue_from ActionView::MissingTemplate do |exception|
       redirect_to("/home/error_404")
   end
@@ -285,6 +287,22 @@ class SubmissionsController < ApplicationController
       flash[:error] = "Cannot manage nil course"
     end
 
+    # Pull the files with their hierarchy info for the file tree
+    if Archive.archive? @filename
+      @files = Archive.get_file_hierarchy(@filename).sort! { |a, b| a[:pathname] <=> b[:pathname] }
+      @header_position = params[:header_position].to_i
+    else
+      @files = [{
+        pathname: @filename,
+        header_position: 0,
+        mac_bs_file: @filename.include?("__MACOSX") ||
+          @filename.include?(".DS_Store") ||
+          @filename.include?(".metadata"),
+        directory: Archive.looks_like_directory?(@filename)
+      }]
+      @header_position = 0
+    end
+
     if params[:header_position]
       file, pathname = Archive.get_nth_file(@submission.handin_file_path, params[:header_position].to_i)
       unless file && pathname
@@ -293,10 +311,12 @@ class SubmissionsController < ApplicationController
       end
 
       @displayFilename = pathname
-      @breadcrumbs << (view_context.link_to "View Archive", [:list_archive, @course, @assessment, @submission])
     else
-      # redirect on archives
-      redirect_to(action: :listArchive) && return if Archive.archive?(@submission.handin_file_path)
+      # auto-set header position for archives
+      if Archive.archive?(@submission.handin_file_path)
+        firstFile = Archive.get_files(@submission.handin_file_path).find{|file| file[:mac_bs_file] == false and file[:directory] == false} || {header_position: 0}
+        redirect_to(url_for([:view, @course, @assessment, @submission, header_position: firstFile[:header_position]])) && return
+      end
 
       file = @submission.handin_file.read
 
@@ -304,16 +324,52 @@ class SubmissionsController < ApplicationController
     end
     return unless file
 
-    filename = @submission.handin_file_path
-
-
     if !PDF.pdf?(file)
-      begin
+      # begin
         @data = @submission.annotated_file(file, @filename, params[:header_position])
-      rescue
-        flash[:error] = "Sorry, we could not display your file because it contains non-ASCII characters. Please remove these characters and resubmit your work."
-        redirect_to(:back) && return
-      end
+        # Try extracting a symbol tree
+        begin
+          codePath = @filename
+          if Archive.archive?(@submission.handin_file_path)
+            # If the submission is an archive, write the open file's code to a temp file so we can pass it into ctags
+            ctagFile = Tempfile.new(['autolab_ctag', File.extname(pathname)])
+            ctagFile.write(file)
+            ctagFile.close
+            codePath = ctagFile.path
+          end
+          # Special case -- we're using a CMU-specific language, and we need to
+          # force the language interpretation
+          if(codePath.last(3) == ".c0" or codePath.last(3) == ".c1")
+            @ctags_json = %x[ctags --output-format=json --language-force=C --fields="Nnk" #{codePath}].split("\n")
+          else
+            # General case -- language can be inferred from file extension
+            @ctags_json = %x[ctags --output-format=json --fields="Nnk" #{codePath}].split("\n")
+          end
+
+          @ctag_obj = []
+          i = 0
+          while i < @ctags_json.length
+            obj_temp = JSON.parse(@ctags_json[i])
+            if(obj_temp["kind"] == "function")
+              @ctag_obj.push(obj_temp)
+            end
+            i = i + 1
+          end
+
+          # The functions are in some arbitrary order, so sort them
+          @ctag_obj = @ctag_obj.sort_by { |obj| obj["line"].to_i }
+
+        rescue
+          puts("Ctags not installed or failed")
+        ensure
+          if defined?(ctagFile) && !ctagFile.nil?
+            ctagFile.unlink
+          end
+        end
+      # rescue
+        # flash[:error] = "Sorry, we could not display your file because it contains non-ASCII characters. Please remove these characters and resubmit your work."
+        # redirect_to(:back) && return
+      # end
 
       begin
         # replace tabs with 4 spaces
@@ -325,25 +381,10 @@ class SubmissionsController < ApplicationController
         flash[:error] = "Sorry, we could not parse your file because it contains non-ASCII characters. Please download file to view the source."
         redirect_to(:back) && return
       end
-
-      # fix for tar files
-      if params[:header_position]
-        @annotations = @submission.annotations.where(position: params[:header_position]).to_a
-      else
-        @annotations = @submission.annotations.to_a
-      end
-
-      @annotations.sort! { |a, b| a.line <=> b.line }
-
-    else
-      # fix for tar files
-      if params[:header_position]
-        @annotations = @submission.annotations.where(position: params[:header_position]).to_a
-      else
-        @annotations = @submission.annotations.to_a
-      end
-
     end
+
+    @annotations = @submission.annotations.to_a
+    @annotations.sort! { |a, b| a.line <=> b.line }
 
     @problemSummaries = {}
     @problemGrades = {}
@@ -373,34 +414,30 @@ class SubmissionsController < ApplicationController
     @problems = @assessment.problems.to_a
     @problems.sort! { |a, b| a.id <=> b.id }
 
+    @latestSubmissions = @assessment.assessment_user_data
+                          .map{|aud| aud.latest_submission}
+                          .select{|submission| submission != nil}
+                          .sort_by{|submission| submission.course_user_datum.user.email}
+    @curSubmissionIndex = @latestSubmissions.index{|submission| submission.course_user_datum.user.email == @submission.course_user_datum.user.email}
+    @prevSubmission = @curSubmissionIndex > 0 ? @latestSubmissions[@curSubmissionIndex-1] : nil
+    @nextSubmission = @curSubmissionIndex < (@latestSubmissions.size-1) ? @latestSubmissions[@curSubmissionIndex+1] : nil
+
     # Rendering this page fails. Often. Mostly due to PDFs.
     # So if it fails, redirect, instead of showing an error page.
     if PDF.pdf?(file)
+      @is_pdf = true
       @preview_mode = false
       if params[:preview] then
         @preview_mode = true
       end
-
-      render(:viewPDF) && return
     else
-      begin
-        render(:view) && return
-      rescue
-        flash[:error] = "Autolab cannot display this file"
-        if params[:header_position]
-          redirect_to([:list_archive, @course, @assessment, @submission]) && return
-        else
-          redirect_to([:history, @course, @assessment, cud_id: @submission.course_user_datum_id]) && return
-        end
-      end
+      @is_pdf = false
     end
-  end
 
-  # Action to be taken when the user wants to get a listing of all
-  # files in a submission that is an archive file.
-  action_auth_level :listArchive, :student
-  def listArchive
-    @files = Archive.get_files(@filename).sort! { |a, b| a[:pathname] <=> b[:pathname] }
+    respond_to do |format|
+      format.html { render(:view) }
+      format.js
+    end
   end
 
 private
