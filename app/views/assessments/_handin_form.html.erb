@@ -11,8 +11,10 @@
           <%= form_for @submission, url: {action: :handin}, :html => {:name => "submissionForm", :onclick => "return validateIntegrity();"}, method: :post do |f| %>
 
             <!-- Academic integrity checkbox -->
-            <%= check_box_tag(:integrity_checkbox) %>
-            <%= label_tag(:integrity_checkbox, "I affirm that I have complied with this course's academic integrity policy as defined in the syllabus.") %>
+						<%= label_tag(:integrity_checkbox) do %>
+							<%= check_box_tag(:integrity_checkbox) %>
+							<%= content_tag("span", "I affirm that I have complied with this course's academic integrity policy as defined in the syllabus.") %>
+						<% end %>
 
             <% if @aud.past_due_at? then %>
               <table style = "width:100%">
@@ -199,8 +201,10 @@
               </div>
             </div>
 
-            <%= check_box_tag(:integrity_checkbox) %>
-            <%= label_tag(:integrity_checkbox, "I affirm that I have complied with this course's academic integrity policy as defined in the syllabus.") %>
+						<%= label_tag(:integrity_checkbox) do %>
+							<%= check_box_tag(:integrity_checkbox) %>
+							<%= content_tag("span", "I affirm that I have complied with this course's academic integrity policy as defined in the syllabus.") %>
+						<% end %>
 
             <%= f.file_field :file %>
             <div class="row" style="padding-top: 10px">
@@ -213,7 +217,7 @@
             </div>
             <div class="row">
               <div class="smallText col s6 offset-s6 m4 offset-m8 center-align" style="padding-top: 6px">
-                <%= remainingSubmissionsMsg(@submissions, @assessment) %>  
+                <%= remainingSubmissionsMsg(@submissions, @assessment) %>
               </div>
             </div>
           <% end %>
