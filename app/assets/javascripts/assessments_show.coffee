@@ -8,4 +8,3 @@
 # $("input[type='file']").change (e)->
 # 	$('#handin_show_assessment #new_submission').submit()
 # 	$("#handin_show_assessment input[type='file']").val("")  # clear for re-selecting the same file
-

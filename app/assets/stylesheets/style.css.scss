@@ -1175,3 +1175,13 @@ div.center {
   color: grey;
   cursor: pointer;
 }
+
+/* Remove padding around collapsible of action links in handin page */
+.collapsible-menu-link > .collapsible-body {
+  padding: 0 0 0 0;
+}
+
+.collapsible-menu-link > .collapsible-header {
+  padding: 0 0 5px 15px;
+}
+
