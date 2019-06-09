@@ -54,6 +54,12 @@ After setting up the test environment, simply run spec by:
 bundle exec rake spec
 ```
 
+## Rails 5 Upgrade
+We are currently in the process of migrating Autolab to Rails 5.1 and Ruby
+2.6.1. The relevant branch is `rails-5-upgrade`. All discovered UI breakages have been
+fixed and preliminary integration testing with Tango has been successful. If
+there are any discovered issues, please file an issue.
+
 ## Contributing
 
 We encourage you to contribute to Autolab! Please check out the
