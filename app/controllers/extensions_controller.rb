@@ -1,7 +1,7 @@
 ##
 # Extensions can be for a finite amount of time or infinite.
 #
-require 'Base64'
+require 'base64'
 
 class ExtensionsController < ApplicationController
   # inherited from ApplicationController
