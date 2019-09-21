@@ -1,12 +1,10 @@
 # MySQL Configuration
 development:
- adapter: mysql2
- database: <username>_autolab_development
+ adapter: sqlite3
+ database: db/development.sqlite3
  pool: 5
- username: <username>
- password: '<password>'
- socket: /var/run/mysqld/mysqld.sock
- host: localhost
+ timeout:5000
+
 
 # SQLite Configuration
 # development:
