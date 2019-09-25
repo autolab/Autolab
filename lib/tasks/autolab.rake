@@ -1,5 +1,21 @@
 require "fileutils"
 
+# This "monkey-patch" for Populator is needed due to a bug in populator which calls
+# a non-existent function "sanitize"
+# See: https://github.com/ryanb/populator/issues/30
+# REMOVE IF THE POPULATOR GEM IS UPDATED!
+module Populator
+  # Builds multiple Populator::Record instances and saves them to the database
+  class Factory
+    def rows_sql_arr
+      @records.map do |record|
+        quoted_attributes = record.attribute_values.map { |v| @model_class.connection.quote(v) }
+        "(#{quoted_attributes.join(', ')})"
+      end
+    end
+  end
+end
+
 namespace :autolab do
   COURSE_NAME = "AutoPopulated"
   USER_COUNT = 50
@@ -164,7 +180,7 @@ namespace :autolab do
 
   def load_auds course
     # delete grader's AUDs (create_AUDs_module_callbacks insists on creating them)
-    AssessmentUserDatum.delete_all(:course_user_datum_id => @grader_cud.id)
+    AssessmentUserDatum.delete_all()
 
     course.assessments.each do |asmt|
       # create all auds
