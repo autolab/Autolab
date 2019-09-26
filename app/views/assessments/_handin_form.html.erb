@@ -11,10 +11,10 @@
           <%= form_for @submission, url: {action: :handin}, :html => {:name => "submissionForm", :onclick => "return validateIntegrity();"}, method: :post do |f| %>
 
             <!-- Academic integrity checkbox -->
-						<%= label_tag(:integrity_checkbox) do %>
-							<%= check_box_tag(:integrity_checkbox) %>
-							<%= content_tag("span", "I affirm that I have complied with this course's academic integrity policy as defined in the syllabus.") %>
-						<% end %>
+            <%= label_tag(:integrity_checkbox) do %>
+                <%= check_box_tag(:integrity_checkbox) %>
+                <%= content_tag("span", "I affirm that I have complied with this course's academic integrity policy as defined in the syllabus.") %>
+            <% end %>
 
             <% if @aud.past_due_at? then %>
               <table style = "width:100%">
