@@ -117,7 +117,7 @@
 
 <div class="row" style="height: 100%">
   <%# If there are multiple files, we have a header position and need a file tree %>
-  <% if (params[:header_position] || !@ctag_obj.empty?) %>
+  <% if (params[:header_position] || (!@ctag_obj.nil? && !@ctag_obj.empty?)) %>
     <div class="col l2" style="height: 100%">
       <% if (params[:header_position]) %>
         <%= render "file_tree" %>
