@@ -305,6 +305,11 @@ class SubmissionsController < ApplicationController
 
     if params[:header_position]
       file, pathname = Archive.get_nth_file(@submission.handin_file_path, params[:header_position].to_i)
+
+      if(file.nil?)
+        file = ""
+      end
+
       unless file && pathname
         flash[:error] = "Could not read archive."
         redirect_to [@course, @assessment] and return false
