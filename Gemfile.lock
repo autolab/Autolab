@@ -191,7 +191,7 @@ GEM
       ruby-rc4
       ttfunk (~> 1.0.3)
     public_suffix (2.0.5)
-    rack (1.6.5)
+    rack (1.6.11)
     rack-attack (5.0.1)
       rack
     rack-ssl-enforcer (0.2.9)
