@@ -30,7 +30,6 @@
         $li = $("<li />").appendTo($menu);
         $input = $("<input type='checkbox' />").data("column-id", columns[i].id);
         columnCheckboxes.push($input);
-
         if (grid.getColumnIndex(columns[i].id) != null) {
           $input.attr("checked", "checked");
         }
