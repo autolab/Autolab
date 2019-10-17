@@ -108,9 +108,6 @@ group :development do
   gem 'better_errors'
   gem 'binding_of_caller' # enhances better_errors
 
-  # Useful debugger
-  gem 'byebug', '>=3.5.1'
-
   # static code analyzer
   gem 'rubocop', require: false
 
@@ -121,6 +118,9 @@ group :development do
   gem 'sqlite3', '~> 1.3.6'
 
 end
+
+# Useful debugger
+gem 'byebug', '>=3.5.1'
 
 # for PDF annotations
 # This is an outdate version however support for
