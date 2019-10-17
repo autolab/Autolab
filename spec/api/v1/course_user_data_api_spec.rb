@@ -5,13 +5,13 @@ require_relative "api_shared_context.rb"
 # requires "api shared context" to have been included
 RSpec.shared_examples "a CUD route" do |method, action|
   it 'fails to authenticate when the app does not have instructor scope' do
-    send method, action, :access_token => token.token, :course_name => course.name, :email => user.email
+    send method, action, params: {:access_token => token.token, :course_name => course.name, :email => user.email}
     expect(response.response_code).to eq(403)
   end
 
   it 'fails to authenticate when the user is not an instructor' do
-    send method, action, :access_token => instructor_token_for_user.token, :course_name => course.name,
-      :email => instructor.email
+    send method, action, params: {:access_token => instructor_token_for_user.token, :course_name => course.name,
+      :email => instructor.email}
     expect(response.response_code).to eq(403)
   end
 end
@@ -21,9 +21,9 @@ end
 RSpec.shared_examples "a CUD member route" do |method, action|
   it "fails to #{action} when user does not exist" do
     rand_user_email = 16.times.map { (65 + rand(26)).chr }.join
-    send method, action, :access_token => instructor_token_for_instructor.token, 
+    send method, action, params: {:access_token => instructor_token_for_instructor.token,
       :course_name => course.name, :email => rand_user_email, :lecture => "1",
-      :section => "A", :auth_level => "student"
+      :section => "A", :auth_level => "student"}
     expect(response.response_code).to eq(400)
 
     no_user = User.find_by(email: rand_user_email)
@@ -37,9 +37,9 @@ RSpec.shared_examples "a CUD member route" do |method, action|
       first_name: "hello", last_name: "there", password: "password")
     newUser.save!
 
-    send method, action, :access_token => instructor_token_for_instructor.token,
+    send method, action, params: {:access_token => instructor_token_for_instructor.token,
       :course_name => course.name, :email => newUser.email, :lecture => "1",
-      :section => "A", :auth_level => "student"
+      :section => "A", :auth_level => "student"}
     expect(response.response_code).to eq(404)
 
     no_cud = newUser.course_user_data.find_by(course: course)
