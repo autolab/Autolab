@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2017_12_28_095028) do
+ActiveRecord::Schema.define(version: 2019_10_17_045404) do
 
   create_table "annotations", force: :cascade do |t|
     t.integer "submission_id"
@@ -216,6 +216,7 @@ ActiveRecord::Schema.define(version: 2017_12_28_095028) do
     t.string "scopes", default: "", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "confidential", default: true, null: false
     t.index ["uid"], name: "index_oauth_applications_on_uid", unique: true
   end
 
