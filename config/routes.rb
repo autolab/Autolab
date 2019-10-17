@@ -42,7 +42,7 @@ Rails.application.routes.draw do
   get "contact", to: "home#contact"
 
   namespace :home do
-    if Rails.env == "development"
+    if Rails.env == "development" || Rails.env == "test"
       match "developer_login", via: [:get, :post]
     end
     get "error"
