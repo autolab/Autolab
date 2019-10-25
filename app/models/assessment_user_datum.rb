@@ -171,7 +171,7 @@ class AssessmentUserDatum < ActiveRecord::Base
 
   # Check if user can submit at given date/time; provide reason, if not
   def can_submit?(at, submitter = course_user_datum)
-    if submitter.instructor?
+    if submitter.instructor? || submitter.course_assistant?
       [true, nil]
     elsif course_user_datum.dropped? # TODO: why not submitter?
       [false, :user_dropped]
