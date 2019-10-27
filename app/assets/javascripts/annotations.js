@@ -712,7 +712,7 @@ var newAnnotationFormForPDF = function(pageInd, xCord, yCord) {
       var yRatio = yCord / $("#page-canvas-" + pageInd).attr('height');
 
       var widthRatio = 200 / $("#page-canvas-" + pageInd).attr('width');
-      var heightRatio = 110 / $("#page-canvas-" + pageInd).attr('height');
+      var heightRatio = 135 / $("#page-canvas-" + pageInd).attr('height');
 
       submitNewPDFAnnotation(comment, value, problem_id, pageInd, xRatio, yRatio, widthRatio, heightRatio, newForm);
     }
@@ -1020,6 +1020,7 @@ var makeAnnotationMovable = function(annotationEl, annotationObj) {
     var curWidth = (positionArr[3] || 120);
     var curHeight = (positionArr[4] || 60);
 
+    /** 
     $(annotationEl).draggable({
       stop: function( event, ui ) {
         var xRatio = ui.position.left / $page.attr('width');
@@ -1028,20 +1029,24 @@ var makeAnnotationMovable = function(annotationEl, annotationObj) {
         updateLegacyAnnotation(annotationObj, null, null);
       }
     });
+    **/
 
     $(annotationEl).resizable({
       stop: function( event, ui ) {
-        var widthRatio = ui.size.width / $page.attr('width');
-        var heightRatio = ui.size.height / $page.attr('height');
-        annotationObj.coordinate = [curXCord, curYCord, curPageInd, widthRatio, heightRatio].join(',');
-        updateLegacyAnnotation(annotationObj, null, null);
-      }
+            var widthRatio = ui.size.width / $page.attr('width');
+            var heightRatio = ui.size.height / $page.attr('height');
+            annotationObj.coordinate = [curXCord, curYCord, curPageInd, widthRatio, heightRatio].join(',');
+            updateLegacyAnnotation(annotationObj, null, null);
+      },
+      minHeight:135,
+      minWidth:200
     });
 
 }
 
 var initializeAnnotationsForPDF = function() {
   window.annotationMode = "PDF";
+  console.log("Here");
 
   _.each(annotations, function(annotationObj, ind) {
 
@@ -1049,7 +1054,8 @@ var initializeAnnotationsForPDF = function() {
       return;
     }
 
-    if (annotationObj.position != currentHeaderPos) {
+    var position = annotationObj.position || 0
+    if (position != currentHeaderPos) {
       return;
     }
 
@@ -1059,7 +1065,12 @@ var initializeAnnotationsForPDF = function() {
     var xCord = parseFloat(positionArr[0]) * $("#page-canvas-" + pageInd).attr('width');
     var yCord = parseFloat(positionArr[1]) * $("#page-canvas-" + pageInd).attr('height');
     var width = (positionArr[3] || 0.4) * $("#page-canvas-" + pageInd).attr('width');
-    var height = (positionArr[4] || 0.2) * $("#page-canvas-" + pageInd).attr('height');
+    var height = (positionArr[4] || 0.4) * $("#page-canvas-" + pageInd).attr('height');
+    console.log(positionArr[3]);
+    console.log(positionArr[4]);
+    
+    console.log(width);
+    console.log(height);
 
     var annotationEl = newAnnotationBoxForPDF(annotationObj);
 
