@@ -1046,7 +1046,6 @@ var makeAnnotationMovable = function(annotationEl, annotationObj) {
 
 var initializeAnnotationsForPDF = function() {
   window.annotationMode = "PDF";
-  console.log("Here");
 
   _.each(annotations, function(annotationObj, ind) {
 
@@ -1066,12 +1065,7 @@ var initializeAnnotationsForPDF = function() {
     var yCord = parseFloat(positionArr[1]) * $("#page-canvas-" + pageInd).attr('height');
     var width = (positionArr[3] || 0.4) * $("#page-canvas-" + pageInd).attr('width');
     var height = (positionArr[4] || 0.4) * $("#page-canvas-" + pageInd).attr('height');
-    console.log(positionArr[3]);
-    console.log(positionArr[4]);
     
-    console.log(width);
-    console.log(height);
-
     var annotationEl = newAnnotationBoxForPDF(annotationObj);
 
     $(annotationEl).css({ "left": xCord + "px",  "top" : yCord + "px", "position" : "absolute",
