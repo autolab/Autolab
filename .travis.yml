@@ -17,7 +17,7 @@ before_script:
     - cp config/autogradeConfig.rb.template config/autogradeConfig.rb
     - mkdir attachments/ tmp/
     - bundle install --quiet
-    - mysql -e "SET GLOBAL sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));"
+#    - mysql -e "SET GLOBAL sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));"
     - RAILS_ENV=test bundle exec rails generate devise:install --skip --quiet
     - RAILS_ENV=test bundle exec rake db:create --trace
     - RAILS_ENV=test bundle exec rake db:setup --trace
