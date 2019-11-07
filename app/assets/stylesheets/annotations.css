@@ -737,3 +737,7 @@
   max-height: 50vh;
   overflow: auto;
 }
+
+.descript {
+  cursor: pointer;
+}
