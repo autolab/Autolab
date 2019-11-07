@@ -12,7 +12,7 @@ before_script:
     - AUTOLAB=`pwd`; echo $AUTOLAB;
     - cd $AUTOLAB
     - cp config/initializers/devise.rb.template config/initializers/devise.rb
-    - cp config/database.travis.yml config/database.yml
+    - mv config/database.travis.yml config/database.yml
     - cp config/school.yml.template config/school.yml
     - cp config/autogradeConfig.rb.template config/autogradeConfig.rb
     - mkdir attachments/ tmp/
