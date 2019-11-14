@@ -14,7 +14,7 @@
             </div>
             <div class="collapsible-body">
               <% descriptTuples.each do |description, value, line, user, id| %>
-                <div class="descript" id="li-annotation-<%= id %>" onclick="scrollToLine(<%= line %>)">
+                <div class="descript" id="li-annotation-<%= id %>" onclick="scrollToLine(<%= line + 1 %>)"> <!-- Line + 1 because the code line numbers starts with 1 not 0. -->
                   <span class="point_badge <%= value > 0 ? "positive" : value < 0 ? "negative" : "neutral" %>"><%= plus_fix(value) %></span> <%= description %>
                 </div>
               <% end %>

@@ -131,16 +131,22 @@ function fillAnnotationBox() {
     newLi.append(listing);
     listing.addClass("collapsible-body");
     listing.addClass("active");
-    listing.css('display', 'block')
+    listing.css('display', 'block');
+
+    // sorts the annotation by line order
+    annotationsByProblem[problem].sort(function(a, b){return a.line - b.line});
+
     for (var i = 0; i < annotationsByProblem[problem].length; i++) {
       var annotation = annotationsByProblem[problem][i];
+
       var annotationElement = $('<div />');
       annotationElement.addClass('descript');
       annotationElement.attr('id', 'li-annotation-' + annotation.id);
-      annotationElement.click(function (e) {
-        e.preventDefault();
-        scrollToLine(annotation.line);
-      });
+      
+      // Standardized scrollToLine behavior
+      // annotation.line + 1 because the line numbers on editor starts with 1 not 0
+      annotationElement.attr('onclick',"scrollToLine("+(annotation.line + 1)+")");
+      
       var pointBadge = $('<span />');
       pointBadge.addClass('point_badge');
       if (annotation.value > 0) {
@@ -150,6 +156,7 @@ function fillAnnotationBox() {
       } else {
         pointBadge.addClass('neutral');
       }
+      
       pointBadge.text(plusFix(annotation.value));
       annotationElement.append(pointBadge);
       annotationElement.append(annotation.comment);
