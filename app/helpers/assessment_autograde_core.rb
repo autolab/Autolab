@@ -353,6 +353,7 @@ module AssessmentAutogradeCore
           score.feedback = lines.join
           score.released = @autograde_prop.release_score
           score.grader_id = 0
+          score.is_autograded = true
           score.save!
         end
       end
