@@ -10,7 +10,7 @@ class AnnotationsController < ApplicationController
   before_action :set_annotation, except: [:create]
     rescue_from ActionView::MissingTemplate do |exception|
       redirect_to("/home/error_404")
-  end
+    end
 
   respond_to :json
 
@@ -19,14 +19,21 @@ class AnnotationsController < ApplicationController
   def create
     annotation = @submission.annotations.new(annotation_params)
 
-    annotation.save
+    ActiveRecord::Base.transaction do
+      annotation.save
+      update_non_autograded_score(annotation)
+    end
+
     respond_with(@course, @assessment, @submission, annotation)
   end
 
   # PUT /:course/annotations/1.json
   action_auth_level :update, :course_assistant
   def update
-    @annotation.update(annotation_params)
+    ActiveRecord::Base.transaction do
+      @annotation.update(annotation_params)
+      update_non_autograded_score(@annotation)
+    end
 
     respond_with(@course, @assessment, @submission, @annotation) do |format|
       format.json { render json: @annotation }
@@ -36,7 +43,10 @@ class AnnotationsController < ApplicationController
   # DELETE /:course/annotations/1.json
   action_auth_level :destroy, :course_assistant
   def destroy
-    @annotation.destroy
+    ActiveRecord::Base.transaction do
+      @annotation.destroy
+      update_non_autograded_score(@annotation)
+    end
 
     head :no_content
   end
@@ -53,5 +63,29 @@ private
 
   def set_annotation
     @annotation = @submission.annotations.find(params[:id])
+  end
+
+  # Update all non-autograded scores with the following formula:
+  # score_p = max_score_p + sum of annotations for problem
+  def update_non_autograded_score(annotation)
+    # Get score for submission
+    score = Score.where(problem_id: annotation.problem_id,
+                submission_id: annotation.submission_id).first
+
+    # Ensure that problem is non-autograded
+    if score.is_autograded
+      return
+    end
+
+    # Obtain sum of all annotations for this score
+    annotation_delta = Annotation.
+        where(submission_id: annotation.submission_id,
+              problem_id: annotation.problem_id).
+        map(&:value).sum{|v| v.nil? ? 0 : v}
+
+    new_score = score.problem.max_score + annotation_delta
+
+    # Update score
+    score.update!(score: new_score)
   end
 end
