@@ -134,7 +134,7 @@ function fillAnnotationBox() {
     listing.css('display', 'block');
 
     // sorts the annotation by line order
-    annotationsByProblem[problem].sort(function(a, b){return a.line - b.line});
+    annotationsByProblem[problem].sort(function(annotation1, annotation2){return annotation1.line - annotation2.line});
 
     for (var i = 0; i < annotationsByProblem[problem].length; i++) {
       var annotation = annotationsByProblem[problem][i];
