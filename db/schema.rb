@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20191017045404) do
+ActiveRecord::Schema.define(version: 20171228095028) do
 
   create_table "annotations", force: :cascade do |t|
     t.integer  "submission_id"
@@ -40,14 +40,6 @@ ActiveRecord::Schema.define(version: 20191017045404) do
     t.boolean  "persistent",           default: false, null: false
     t.boolean  "system",               default: false, null: false
   end
-
-  create_table "ar_internal_metadata", primary_key: "key", force: :cascade do |t|
-    t.string   "value"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-  end
-
-  add_index "ar_internal_metadata", ["key"], name: "sqlite_autoindex_ar_internal_metadata_1", unique: true
 
   create_table "assessment_user_data", force: :cascade do |t|
     t.integer  "course_user_datum_id",                         null: false
@@ -222,14 +214,13 @@ ActiveRecord::Schema.define(version: 20191017045404) do
   add_index "oauth_access_tokens", ["token"], name: "index_oauth_access_tokens_on_token", unique: true
 
   create_table "oauth_applications", force: :cascade do |t|
-    t.string   "name",                        null: false
-    t.string   "uid",                         null: false
-    t.string   "secret",                      null: false
-    t.text     "redirect_uri",                null: false
-    t.string   "scopes",       default: "",   null: false
-    t.datetime "created_at",                  null: false
-    t.datetime "updated_at",                  null: false
-    t.boolean  "confidential", default: true, null: false
+    t.string   "name",                      null: false
+    t.string   "uid",                       null: false
+    t.string   "secret",                    null: false
+    t.text     "redirect_uri",              null: false
+    t.string   "scopes",       default: "", null: false
+    t.datetime "created_at",                null: false
+    t.datetime "updated_at",                null: false
   end
 
   add_index "oauth_applications", ["uid"], name: "index_oauth_applications_on_uid", unique: true
