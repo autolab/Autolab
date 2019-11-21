@@ -157,6 +157,8 @@ function fillAnnotationBox() {
 
     }
   }
+  // Reloads the grades part upon update
+  $('.problemGrades').load(document.URL +  ' .problemGrades');
 }
 
 // Sets up the keybindings
@@ -632,7 +634,7 @@ var updateAnnotationBox = function(annObj) {
   $('#ann-box-' + annObj.id).find('.edit').show();
   $('#ann-box-' + annObj.id).find('.body').show();
   $('#ann-box-' + annObj.id).find('.score-box').show();
-
+  
 }
 
 
@@ -687,9 +689,11 @@ var newAnnotationFormForPDF = function(pageInd, xCord, yCord) {
   var hr = elt("hr");
 
   _.each(problems, function(problem) {
-    problemSelect.appendChild(elt("option", {
-      value: problem.id
-    }, problem.name));
+      if(problem.grader != 0 ){ // Because grader == 0 is autograder
+      problemSelect.appendChild(elt("option", {
+        value: problem.id
+      }, problem.name));
+    }
   })
 
   var newForm = elt("form", {
@@ -792,9 +796,11 @@ var newEditAnnotationForm = function(lineInd, annObj) {
   });
 
   _.each(problems, function(problem) {
-    problemSelect.appendChild(elt("option", {
-      value: problem.id
-    }, problem.name));
+    if(problem.grader !=0 ){ // grader == 0 is autograder
+      problemSelect.appendChild(elt("option", {
+        value: problem.id
+      }, problem.name));
+    }
   })
 
   $(problemSelect).val(annObj.problem_id);
