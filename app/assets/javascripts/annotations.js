@@ -628,6 +628,7 @@ var updateAnnotationBox = function(annObj) {
   var problemStr = annObj.problem_id? getProblemNameWithId(annObj.problem_id) : "General";
   var valueStr = annObj.value? annObj.value.toString() : "None";
   var commentStr = annObj.comment;
+  
   if (annotationMode === "PDF") {
     $('#ann-box-' + annObj.id).find('.score-box').html("<div>Problem: "+problemStr+"</div><div>Score: "+valueStr+"</div>");
   }
