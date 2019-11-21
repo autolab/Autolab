@@ -68,13 +68,21 @@ private
   # Update all non-autograded scores with the following formula:
   # score_p = max_score_p + sum of annotations for problem
   def update_non_autograded_score(annotation)
-    # Get score for submission
-    score = Score.where(problem_id: annotation.problem_id,
-                submission_id: annotation.submission_id).first
+    # Get score for submission, or create one if it does not already exist
+    # Previously, scores would be created when instructors add a score
+    # and save on the gradebook
+    score = Score.find_or_initialize_by_submission_id_and_problem_id(
+        annotation.submission_id, annotation.problem_id)
 
     # Ensure that problem is non-autograded
-    if score.is_autograded
+    if score.grader_id == 0
       return
+    end
+
+    # If score was newly-created, we need to add a grader_id to score
+    if score.grader.nil?
+      score.grader_id = CourseUserDatum.find_by(user_id: User.find_by_email(annotation.submitted_by).id,
+                                          course_id: @course.id).id
     end
 
     # Obtain sum of all annotations for this score
