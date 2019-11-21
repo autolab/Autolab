@@ -132,6 +132,12 @@ function fillAnnotationBox() {
     listing.addClass("collapsible-body");
     listing.addClass("active");
     listing.css('display', 'block')
+
+    // sorts annotations by line number instead of order of appearance
+    annotationsByProblem[problem].sort(function(annotation1, annotation2) {
+       return annotation1.line - annotation2.line;
+    });
+
     for (var i = 0; i < annotationsByProblem[problem].length; i++) {
       var annotation = annotationsByProblem[problem][i];
       var annotationElement = $('<div />');
@@ -622,7 +628,6 @@ var updateAnnotationBox = function(annObj) {
   var problemStr = annObj.problem_id? getProblemNameWithId(annObj.problem_id) : "General";
   var valueStr = annObj.value? annObj.value.toString() : "None";
   var commentStr = annObj.comment;
-
   if (annotationMode === "PDF") {
     $('#ann-box-' + annObj.id).find('.score-box').html("<div>Problem: "+problemStr+"</div><div>Score: "+valueStr+"</div>");
   }
