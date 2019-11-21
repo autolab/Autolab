@@ -611,11 +611,11 @@ table.prettyBorder,
 table.prettyBorder tr,
 table.prettyBorder th,
 table.prettyBorder td {
-  border: 1px solid #ddd;
   text-align: left;
 }
 table.prettyBorder {
   border-collapse:collapse;
+  box-shadow: 0 0 5px 0px #eee;
   font-size:15px;
   width: 100%;
   // keep track of what row this is
@@ -623,6 +623,7 @@ table.prettyBorder {
 
   tr {
     background-color: #fff;
+    border: 1px solid #d0d0d0;
     &:hover {
       background-color:#abcdef;
     }
@@ -640,7 +641,6 @@ table.prettyBorder {
 
   th {
     background-color:#EBEBEB;
-    border: 1px solid #ccc;
     color:#909090;
     cursor:pointer;
     font-family: Source Sans Pro, sans-serif;
