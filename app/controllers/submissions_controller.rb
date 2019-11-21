@@ -300,7 +300,6 @@ class SubmissionsController < ApplicationController
           @filename.include?(".metadata"),
         directory: Archive.looks_like_directory?(@filename)
       }]
-      @header_position = 0
     end
 
     if params[:header_position]
