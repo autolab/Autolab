@@ -639,15 +639,14 @@ table.prettyBorder {
   }
 
   th {
-    background-color:#E5E5E5;
-    background: linear-gradient(to bottom, #EFEFEF, #E5E5E5);
+    background-color:#EBEBEB;
     border: 1px solid #ccc;
-    color:#888;
+    color:#909090;
     cursor:pointer;
-    font-family: Helvetica, sans-serif;
-    font-size: 12px;
+    font-family: Source Sans Pro, sans-serif;
+    font-size: 0.8em;
     font-weight: bold;
-    padding: 5px;
+    padding: 8px;
     text-align:left;
     text-transform:uppercase;
   }
@@ -664,6 +663,8 @@ table.prettyBorder {
   tr .btn.small {
     margin-top: 3px;
     margin-bottom: 3px;
+    width: 38px;
+    padding-left: 10px;
   }
 }
 
