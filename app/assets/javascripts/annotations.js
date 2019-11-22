@@ -389,11 +389,18 @@ function newAnnotationFormCode() {
   var box = $(".base-annotation-line").clone();
   box.removeClass("base-annotation-line");
 
+  var autogradedproblems = {}
+  _.each(scores,function(score){
+    autogradedproblems[score.problem_id] = score.grader_id;
+  })
+
   _.each(problems, function(problem) {
-    box.find("select").append(
-      $("<option />").val(problem.id).text(problem.name)
-    )
-  });
+      if(autogradedproblems[problem.id] != 0 ){ // Because grader == 0 is autograder
+        box.find("select").append(
+          $("<option />").val(problem.id).text(problem.name)
+        )
+    }
+  })
 
   box.find('.annotation-form').show();
   box.find('.annotation-cancel-button').click(function (e) {
@@ -637,7 +644,6 @@ var updateAnnotationBox = function(annObj) {
   
 }
 
-
 // the current Annotation instance
 var currentAnnotation = null;
 // the currently examined li
@@ -688,8 +694,13 @@ var newAnnotationFormForPDF = function(pageInd, xCord, yCord) {
   });
   var hr = elt("hr");
 
+  var autogradedproblems = {}
+  _.each(scores,function(score){
+    autogradedproblems[score.problem_id] = score.grader_id;
+  })
+
   _.each(problems, function(problem) {
-      if(problem.grader != 0 ){ // Because grader == 0 is autograder
+      if(autogradedproblems[problem.id] != 0 ){ // Because grader == 0 is autograder
       problemSelect.appendChild(elt("option", {
         value: problem.id
       }, problem.name));
@@ -795,14 +806,19 @@ var newEditAnnotationForm = function(lineInd, annObj) {
     class: "btn small"
   });
 
+  var autogradedproblems = {}
+  _.each(scores,function(score){
+    autogradedproblems[score.problem_id] = score.grader_id;
+  })
+
   _.each(problems, function(problem) {
-    if(problem.grader !=0 ){ // grader == 0 is autograder
+      if(autogradedproblems[problem.id] != 0 ){ // Because grader == 0 is autograder
       problemSelect.appendChild(elt("option", {
         value: problem.id
       }, problem.name));
     }
   })
-
+  
   $(problemSelect).val(annObj.problem_id);
 
   var newForm = elt("form", {
