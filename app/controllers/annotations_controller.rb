@@ -21,7 +21,7 @@ class AnnotationsController < ApplicationController
 
     ActiveRecord::Base.transaction do
       annotation.save
-      update_non_autograded_score(annotation)
+      annotation.update_non_autograded_score()
     end
 
     respond_with(@course, @assessment, @submission, annotation)
@@ -32,7 +32,7 @@ class AnnotationsController < ApplicationController
   def update
     ActiveRecord::Base.transaction do
       @annotation.update(annotation_params)
-      update_non_autograded_score(@annotation)
+      @annotation.update_non_autograded_score()
     end
 
     respond_with(@course, @assessment, @submission, @annotation) do |format|
@@ -45,7 +45,7 @@ class AnnotationsController < ApplicationController
   def destroy
     ActiveRecord::Base.transaction do
       @annotation.destroy
-      update_non_autograded_score(@annotation)
+      @annotation.update_non_autograded_score()
     end
 
     head :no_content
@@ -65,35 +65,35 @@ private
     @annotation = @submission.annotations.find(params[:id])
   end
 
-  # Update all non-autograded scores with the following formula:
-  # score_p = max_score_p + sum of annotations for problem
-  def update_non_autograded_score(annotation)
-    # Get score for submission, or create one if it does not already exist
-    # Previously, scores would be created when instructors add a score
-    # and save on the gradebook
-    score = Score.find_or_initialize_by_submission_id_and_problem_id(
-        annotation.submission_id, annotation.problem_id)
-
-    # Ensure that problem is non-autograded
-    if score.grader_id == 0
-      return
-    end
-
-    # If score was newly-created, we need to add a grader_id to score
-    if score.grader.nil?
-      score.grader_id = CourseUserDatum.find_by(user_id: User.find_by_email(annotation.submitted_by).id,
-                                          course_id: @course.id).id
-    end
-
-    # Obtain sum of all annotations for this score
-    annotation_delta = Annotation.
-        where(submission_id: annotation.submission_id,
-              problem_id: annotation.problem_id).
-        map(&:value).sum{|v| v.nil? ? 0 : v}
-
-    new_score = score.problem.max_score + annotation_delta
-
-    # Update score
-    score.update!(score: new_score)
-  end
+  # # Update all non-autograded scores with the following formula:
+  # # score_p = max_score_p + sum of annotations for problem
+  # def update_non_autograded_score(annotation)
+  #   # Get score for submission, or create one if it does not already exist
+  #   # Previously, scores would be created when instructors add a score
+  #   # and save on the gradebook
+  #   score = Score.find_or_initialize_by_submission_id_and_problem_id(
+  #       annotation.submission_id, annotation.problem_id)
+  #
+  #   # Ensure that problem is non-autograded
+  #   if score.grader_id == 0
+  #     return
+  #   end
+  #
+  #   # If score was newly-created, we need to add a grader_id to score
+  #   if score.grader.nil?
+  #     score.grader_id = CourseUserDatum.find_by(user_id: User.find_by_email(annotation.submitted_by).id,
+  #                                         course_id: @course.id).id
+  #   end
+  #
+  #   # Obtain sum of all annotations for this score
+  #   annotation_delta = Annotation.
+  #       where(submission_id: annotation.submission_id,
+  #             problem_id: annotation.problem_id).
+  #       map(&:value).sum{|v| v.nil? ? 0 : v}
+  #
+  #   new_score = score.problem.max_score + annotation_delta
+  #
+  #   # Update score
+  #   score.update!(score: new_score)
+  # end
 end
