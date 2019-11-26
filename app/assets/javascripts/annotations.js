@@ -389,6 +389,7 @@ function newAnnotationFormCode() {
   var box = $(".base-annotation-line").clone();
   box.removeClass("base-annotation-line");
 
+  // Creates a dictionary of problem and grader_id
   var autogradedproblems = {}
   _.each(scores,function(score){
     autogradedproblems[score.problem_id] = score.grader_id;
@@ -694,6 +695,7 @@ var newAnnotationFormForPDF = function(pageInd, xCord, yCord) {
   });
   var hr = elt("hr");
 
+  // Creates a dictionary of problem and grader_id
   var autogradedproblems = {}
   _.each(scores,function(score){
     autogradedproblems[score.problem_id] = score.grader_id;
@@ -805,7 +807,8 @@ var newEditAnnotationForm = function(lineInd, annObj) {
     value: "Cancel",
     class: "btn small"
   });
-
+  
+  // Creates a dictionary of problem and grader_id
   var autogradedproblems = {}
   _.each(scores,function(score){
     autogradedproblems[score.problem_id] = score.grader_id;

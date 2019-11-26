@@ -35,6 +35,7 @@
     var cudEmailStr = "<%= @cud.email %>";
     // a json list of problems for this assessment
     var problems = <%= raw @problems.to_json %>;
+    // a json list of scores for this assessment
     var scores = <%=raw @scores.to_json %>;
     var basePath = "<%= course_assessment_submission_annotations_path(@course, @assessment, @submission) %>";
 
