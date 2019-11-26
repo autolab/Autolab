@@ -23,7 +23,7 @@ class CustomLogger
   end
 
   def log(message, severity = Logger::INFO)
-    unless Rails.env == "test"
+    unless Rails.env == "test" || Rails.env == "development"
       @logger.add(severity) { message }
     end
   end
