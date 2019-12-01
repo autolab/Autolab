@@ -120,7 +120,7 @@
 <div class="row" style="height: 100%">
   <%# If there are multiple files, we have a header position and need a file tree %>
   <% if (params[:header_position] || (!@ctag_obj.nil? && !@ctag_obj.empty?)) %>
-    <div class="col l2" style="height: 100%">
+    <div class="col s2" style="height: 100%">
       <% if (params[:header_position]) %>
         <%= render "file_tree" %>
       <% end %>
@@ -130,18 +130,18 @@
       <% end %>
       </div>
     </div>
-    <div class="col l8">
+    <div class="col s8">
       <%= render "code_viewer" %>
     </div>
-    <div class="col l2">
+    <div class="col s2">
       <%= render "annotation_pane" %>
     </div>
   <% else %>
   <%# Else center the code and annotations %>
-    <div class="col l10">
+    <div class="col s10">
       <%= render "code_viewer" %>
     </div>
-    <div class="col l2">
+    <div class="col s2">
       <%= render "annotation_pane" %>
     </div>
   <% end %>
