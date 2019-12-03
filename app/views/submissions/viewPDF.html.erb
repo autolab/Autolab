@@ -43,8 +43,12 @@
     var fileLink    = "<%= url_for [:download, @course, @assessment, @submission, header_position: params[:header_position]] %>";
     <% end %>
     var cudEmailStr = "<%= @cud.email %>";
+    
     // a json list of problems for this assessment
     var problems = <%=raw @problems.to_json %>;
+
+    // a json list of scores for this assessment
+    var scores = <%=raw @scores.to_json %>;
     var basePath = "<%= course_assessment_submission_annotations_path(@course, @assessment, @submission) %>";
 
     <% if params[:header_position] %>
