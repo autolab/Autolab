@@ -163,6 +163,8 @@ function fillAnnotationBox() {
 
     }
   }
+  // Reloads the grades part upon update
+  $('.problemGrades').load(document.URL +  ' .problemGrades');
 }
 
 // Sets up the keybindings
@@ -393,11 +395,19 @@ function newAnnotationFormCode() {
   var box = $(".base-annotation-line").clone();
   box.removeClass("base-annotation-line");
 
+  // Creates a dictionary of problem and grader_id
+  var autogradedproblems = {}
+  _.each(scores,function(score){
+    autogradedproblems[score.problem_id] = score.grader_id;
+  })
+
   _.each(problems, function(problem) {
-    box.find("select").append(
-      $("<option />").val(problem.id).text(problem.name)
-    )
-  });
+      if(autogradedproblems[problem.id] != 0 ){ // Because grader == 0 is autograder
+        box.find("select").append(
+          $("<option />").val(problem.id).text(problem.name)
+        )
+    }
+  })
 
   box.find('.annotation-form').show();
   box.find('.annotation-cancel-button').click(function (e) {
@@ -638,9 +648,8 @@ var updateAnnotationBox = function(annObj) {
   $('#ann-box-' + annObj.id).find('.edit').show();
   $('#ann-box-' + annObj.id).find('.body').show();
   $('#ann-box-' + annObj.id).find('.score-box').show();
-
+  
 }
-
 
 // the current Annotation instance
 var currentAnnotation = null;
@@ -692,10 +701,18 @@ var newAnnotationFormForPDF = function(pageInd, xCord, yCord) {
   });
   var hr = elt("hr");
 
+  // Creates a dictionary of problem and grader_id
+  var autogradedproblems = {}
+  _.each(scores,function(score){
+    autogradedproblems[score.problem_id] = score.grader_id;
+  })
+
   _.each(problems, function(problem) {
-    problemSelect.appendChild(elt("option", {
-      value: problem.id
-    }, problem.name));
+      if(autogradedproblems[problem.id] != 0 ){ // Because grader == 0 is autograder
+      problemSelect.appendChild(elt("option", {
+        value: problem.id
+      }, problem.name));
+    }
   })
 
   var newForm = elt("form", {
@@ -796,13 +813,21 @@ var newEditAnnotationForm = function(lineInd, annObj) {
     value: "Cancel",
     class: "btn small"
   });
-
-  _.each(problems, function(problem) {
-    problemSelect.appendChild(elt("option", {
-      value: problem.id
-    }, problem.name));
+  
+  // Creates a dictionary of problem and grader_id
+  var autogradedproblems = {}
+  _.each(scores,function(score){
+    autogradedproblems[score.problem_id] = score.grader_id;
   })
 
+  _.each(problems, function(problem) {
+      if(autogradedproblems[problem.id] != 0 ){ // Because grader == 0 is autograder
+      problemSelect.appendChild(elt("option", {
+        value: problem.id
+      }, problem.name));
+    }
+  })
+  
   $(problemSelect).val(annObj.problem_id);
 
   var newForm = elt("form", {

@@ -300,7 +300,6 @@ class SubmissionsController < ApplicationController
           @filename.include?(".metadata"),
         directory: Archive.looks_like_directory?(@filename)
       }]
-      @header_position = 0
     end
 
     if params[:header_position]
@@ -427,6 +426,9 @@ class SubmissionsController < ApplicationController
     @prevSubmission = @curSubmissionIndex > 0 ? @latestSubmissions[@curSubmissionIndex-1] : nil
     @nextSubmission = @curSubmissionIndex < (@latestSubmissions.size-1) ? @latestSubmissions[@curSubmissionIndex+1] : nil
 
+    # Adding allowing scores to be assessed by the view
+    @scores = Score.where(submission_id: @submission.id)
+    
     # Rendering this page fails. Often. Mostly due to PDFs.
     # So if it fails, redirect, instead of showing an error page.
     if PDF.pdf?(file)

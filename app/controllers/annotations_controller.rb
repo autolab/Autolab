@@ -10,7 +10,7 @@ class AnnotationsController < ApplicationController
   before_action :set_annotation, except: [:create]
     rescue_from ActionView::MissingTemplate do |exception|
       redirect_to("/home/error_404")
-  end
+    end
 
   respond_to :json
 
@@ -19,14 +19,21 @@ class AnnotationsController < ApplicationController
   def create
     annotation = @submission.annotations.new(annotation_params)
 
-    annotation.save
+    ActiveRecord::Base.transaction do
+      annotation.save
+      annotation.update_non_autograded_score()
+    end
+
     respond_with(@course, @assessment, @submission, annotation)
   end
 
   # PUT /:course/annotations/1.json
   action_auth_level :update, :course_assistant
   def update
-    @annotation.update(annotation_params)
+    ActiveRecord::Base.transaction do
+      @annotation.update(annotation_params)
+      @annotation.update_non_autograded_score()
+    end
 
     respond_with(@course, @assessment, @submission, @annotation) do |format|
       format.json { render json: @annotation }
@@ -36,7 +43,10 @@ class AnnotationsController < ApplicationController
   # DELETE /:course/annotations/1.json
   action_auth_level :destroy, :course_assistant
   def destroy
-    @annotation.destroy
+    ActiveRecord::Base.transaction do
+      @annotation.destroy
+      @annotation.update_non_autograded_score()
+    end
 
     head :no_content
   end
