@@ -650,7 +650,7 @@ function newAnnotationBoxForPDF(annObj) {
     $(box).resizable( 'disable' );
     $(box).append(form);
     $(box).width("300px");
-    $(box).height("250px");
+    $(box).height("auto");
   });
 
   $(edit).on("mousedown", function(e) {
@@ -868,6 +868,7 @@ var newEditAnnotationForm = function(lineInd, annObj) {
   if (annotationMode === "PDF") {
     var commentInput = elt("textarea", {
       class: "col l12 comment",
+      style: "max-width: 280px",
       type: "text",
       name: "comment",
       placeholder: "Comments Here",
@@ -890,23 +891,37 @@ var newEditAnnotationForm = function(lineInd, annObj) {
     value: ""
   }, "None"));
 
+  var scoreDiv = elt("div",{
+    class:"col"
+  },valueInput,problemSelect);
+
+
   var rowDiv = elt("div", {
     class: "row",
     style: "margin-left:4px;"
-  }, commentInput, valueInput, problemSelect);
+  }, commentInput,scoreDiv);
 
+
+  var horizontalrule = elt("hr");
 
   var submitButton = elt("input", {
     type: "submit",
-    value: "Save Changes",
-    class: "btn primary small"
+    value: "Update",
+    class: "btn primary small s6"
   });
+
   var cancelButton = elt("input", {
     style: "margin-left: 4px;",
     type: "button",
     value: "Cancel",
-    class: "btn small"
+    class: "btn small s6"
   });
+
+  var buttonsCol = elt("div",
+  {
+    class: "col"
+  },submitButton,cancelButton);
+
   
   // Creates a dictionary of problem and grader_id
   var autogradedproblems = {}
@@ -928,7 +943,7 @@ var newEditAnnotationForm = function(lineInd, annObj) {
     title: "Press <Enter> to Submit",
     class: "annotation-edit-form",
     id: "edit-annotation-form-" + lineInd
-  }, rowDiv, submitButton, cancelButton);
+  }, rowDiv,horizontalrule, buttonsCol);
 
   newForm.onsubmit = function(e) {
     e.preventDefault();
