@@ -248,18 +248,6 @@ class SubmissionsController < ApplicationController
           # + 1 since pages are indexed 1-based
           pdf.go_to_page(page + 1)
           
-          # Below is old code for drawing boxes and adding text to pdf
-          # draw box
-          # pdf.stroke_color "ff0000"
-          # pdf.stroke_rectangle [xCord, yCord], width, height
-          # pdf.fill_color "000000"
-          # draw text
-          # pdf.fill_color "ff0000"
-          # pdf.text_box comment,
-          #            { :at => [xCord + 3, yCord - 3],
-          #              :height => height,
-          #              :width => width }
-          
           # Creates a text annotation/pdf comment on the pdf itself.
           # 10 and 55 numbers in this case to shift the comment
           # to where the cursor was clicked by the annotator
