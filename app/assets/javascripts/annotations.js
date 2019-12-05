@@ -644,7 +644,10 @@ function newAnnotationBoxForPDF(annObj) {
     $(body).hide();
     $(edit).hide();
     $(score).hide();
+    $(minimize).hide();
     var form = newEditAnnotationForm(annObj.line, annObj);
+    $(box).draggable( 'disable' );
+    $(box).resizable( 'disable' );
     $(box).append(form);
     $(box).width("300px");
     $(box).height("250px");
@@ -707,7 +710,11 @@ var updateAnnotationBox = function(annObj) {
   $('#ann-box-' + annObj.id).find('.edit').show();
   $('#ann-box-' + annObj.id).find('.body').show();
   $('#ann-box-' + annObj.id).find('.score-box').show();
-  
+  $('#ann-box-' + annObj.id).find('.minimize').show();
+  $('#ann-box-' + annObj.id).width("200px");
+  $('#ann-box-' + annObj.id).height("145px");
+  $('#ann-box-' + annObj.id).draggable( 'enable' );
+  $('#ann-box-' + annObj.id).resizable( 'enable' );
 }
 
 // the current Annotation instance
@@ -811,9 +818,10 @@ var newAnnotationFormForPDF = function(pageInd, xCord, yCord) {
     var comment = commentInput.value;
     var value = scoreInput.value;
     var problem_id = problemSelect.value;
-
+    
     if (!comment) {
-      newForm.appendChild(elt("div", null, "The comment cannot be empty"));
+      if(document.getElementsByClassName("form-warning").length == 0)
+        newForm.appendChild(elt("div",{class:"form-warning"}, "The comment cannot be empty"));
     } else {
       var xRatio = xCord / $("#page-canvas-" + pageInd).attr('width');
       var yRatio = yCord / $("#page-canvas-" + pageInd).attr('height');
@@ -868,18 +876,20 @@ var newEditAnnotationForm = function(lineInd, annObj) {
   }
 
   var valueInput = elt("input", {
-    class: "col l2",
+    class: "col s6",
     type: "text",
     name: "score",
     placeholder: "Score Here",
     value: valueStr
   });
+
   var problemSelect = elt("select", {
-    class: "col l3 browser-default",
+    class: "col s6 browser-default",
     name: "problem"
   }, elt("option", {
     value: ""
   }, "None"));
+
   var rowDiv = elt("div", {
     class: "row",
     style: "margin-left:4px;"
