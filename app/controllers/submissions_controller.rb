@@ -344,10 +344,10 @@ class SubmissionsController < ApplicationController
           # Special case -- we're using a CMU-specific language, and we need to
           # force the language interpretation
           if(codePath.last(3) == ".c0" or codePath.last(3) == ".c1")
-            @ctags_json = %x[ctags --output-format=json --language-force=C --fields="Nnk" #{codePath}].split("\n")
+            @ctags_json = %x[ctags --output-format=json --extras=+q --language-force=C --fields="Nnk" #{codePath}].split("\n")
           else
             # General case -- language can be inferred from file extension
-            @ctags_json = %x[ctags --output-format=json --fields="Nnk" #{codePath}].split("\n")
+            @ctags_json = %x[ctags --output-format=json --extras=+q --fields="Nnk" #{codePath}].split("\n")
           end
 
           @ctag_obj = []
@@ -358,6 +358,17 @@ class SubmissionsController < ApplicationController
               @ctag_obj.push(obj_temp)
             end
             i = i + 1
+
+            if(obj_temp["kind"] == "class")
+              obj_temp = JSON.parse(@ctags_json[i])
+              while i + 1 < @ctags_json.length and obj_temp["kind"] == "member"
+                if ((@ctag_obj.select{|f| f["line"] == obj_temp["line"] }).empty?)
+                   @ctag_obj.push(obj_temp)
+                end
+                i = i + 1
+                obj_temp = JSON.parse(@ctags_json[i])
+              end
+            end
           end
 
           # The functions are in some arbitrary order, so sort them
