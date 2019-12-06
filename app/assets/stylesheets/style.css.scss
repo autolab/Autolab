@@ -611,11 +611,11 @@ table.prettyBorder,
 table.prettyBorder tr,
 table.prettyBorder th,
 table.prettyBorder td {
-  border: 1px solid #ddd;
   text-align: left;
 }
 table.prettyBorder {
   border-collapse:collapse;
+  box-shadow: 0 0 5px 0px #eee;
   font-size:15px;
   width: 100%;
   // keep track of what row this is
@@ -623,6 +623,7 @@ table.prettyBorder {
 
   tr {
     background-color: #fff;
+    border: 1px solid #d0d0d0;
     &:hover {
       background-color:#abcdef;
     }
@@ -639,15 +640,13 @@ table.prettyBorder {
   }
 
   th {
-    background-color:#E5E5E5;
-    background: linear-gradient(to bottom, #EFEFEF, #E5E5E5);
-    border: 1px solid #ccc;
-    color:#888;
+    background-color:#EBEBEB;
+    color:#909090;
     cursor:pointer;
-    font-family: Helvetica, sans-serif;
-    font-size: 12px;
+    font-family: Source Sans Pro, sans-serif;
+    font-size: 0.8em;
     font-weight: bold;
-    padding: 5px;
+    padding: 8px;
     text-align:left;
     text-transform:uppercase;
   }
@@ -664,6 +663,8 @@ table.prettyBorder {
   tr .btn.small {
     margin-top: 3px;
     margin-bottom: 3px;
+    width: 38px;
+    padding-left: 10px;
   }
 }
 
