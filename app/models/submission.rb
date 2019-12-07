@@ -205,7 +205,11 @@ class Submission < ActiveRecord::Base
     result = file.lines.map { |line| [line.force_encoding("UTF-8"), nil] }
 
     # annotation lines are one-indexed, so adjust for the zero-indexed array
-    annotations.each { |a| result[a.line - 1][1] = a }
+    annotations.each do |a|
+      # If a.line is nil, this becomes -1 so take max of this and 0
+      idx = [a.line.to_i - 1, 0].max
+      result[idx][1] = a
+    end
 
     result
   end

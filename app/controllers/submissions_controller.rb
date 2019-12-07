@@ -388,7 +388,7 @@ class SubmissionsController < ApplicationController
     end
 
     @annotations = @submission.annotations.to_a
-    @annotations.sort! { |a, b| a.line <=> b.line }
+    @annotations.sort! { |a, b| a.line.to_i <=> b.line.to_i }
 
     @problemSummaries = {}
     @problemGrades = {}
