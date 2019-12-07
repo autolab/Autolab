@@ -49,10 +49,8 @@ class Annotation < ActiveRecord::Base
               problem_id: self.problem_id).
         map(&:value).sum{|v| v.nil? ? 0 : v}
 
-    # Default score to 0 if problem doesn't exist or problem.max_score is nil
-    # The possibility of a problem not existing is due to legacy data and
-    # now we validate that an annotation should always have a problem
-    max_score = score.problem ? score.problem.max_score || 0 : 0;
+    # Default score to 0 if problem.max_score is nil
+    max_score = score.problem.max_score || 0;
     new_score = max_score + annotation_delta
 
     # Update score
