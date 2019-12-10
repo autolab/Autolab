@@ -131,17 +131,22 @@ function fillAnnotationBox() {
     newLi.append(listing);
     listing.addClass("collapsible-body");
     listing.addClass("active");
-    listing.css('display', 'block')
+    listing.css('display', 'block');
+
+    // sorts the annotation by line order
+    annotationsByProblem[problem].sort(function(annotation1, annotation2){return annotation1.line - annotation2.line});
 
     for (var i = 0; i < annotationsByProblem[problem].length; i++) {
       var annotation = annotationsByProblem[problem][i];
+
       var annotationElement = $('<div />');
       annotationElement.addClass('descript');
       annotationElement.attr('id', 'li-annotation-' + annotation.id);
-      annotationElement.click(function (e) {
-        e.preventDefault();
-        scrollToLine(annotation.line);
-      });
+      
+      // Standardized scrollToLine behavior
+      // annotation.line + 1 because the line numbers on editor starts with 1 not 0
+      annotationElement.attr('onclick',"scrollToLine("+(annotation.line + 1)+")");
+      
       var pointBadge = $('<span />');
       pointBadge.addClass('point_badge');
       if (annotation.value > 0) {
@@ -151,6 +156,7 @@ function fillAnnotationBox() {
       } else {
         pointBadge.addClass('neutral');
       }
+      
       pointBadge.text(plusFix(annotation.value));
       annotationElement.append(pointBadge);
       annotationElement.append(annotation.comment);
@@ -556,6 +562,7 @@ function newAnnotationBoxForPDF(annObj) {
   var grader = elt("span", {
     class: "grader"
   }, annObj.submitted_by + " says:");
+
   var edit = elt("span", {
     class: "edit",
     id: "edit-ann-" + annObj.id
@@ -563,22 +570,32 @@ function newAnnotationBoxForPDF(annObj) {
 
   var score = elt("div", {
     class: "score-box"
-  }, elt("div", {}, "Problem: " + problemStr), elt("div", {}, "Score: " + valueStr));
+  }, 
+  elt("div", {}, "Problem: " + problemStr), 
+  elt("div", {} , "Score: " + valueStr));
 
   var del = elt("span", {
     class: "delete"
   }, elt("i", {class: "material-icons"}, "delete"));
 
+  var minimize = elt("span", {
+    class: "minimize"
+  }, elt("i", {class: "material-icons"}, "minimize"));
+
+  var maximize = elt("span", {
+    class: "maximize"
+  }, elt("i", {class: "material-icons"}, "all_out"));
+ 
   if (isInstructor) {
     var header = elt("div", {
       class: "header"
-    }, grader, del, edit);
+    }, grader, minimize, del, edit);
   } else {
     var header = elt("div", {
       class: "header"
-    }, grader);
+    }, grader, minimize);
   }
-
+  
   var body = elt("div", {
     class: "body"
   }, commentStr);
@@ -586,8 +603,11 @@ function newAnnotationBoxForPDF(annObj) {
   var box = elt("div", {
     class: "ann-box",
     id: "ann-box-" + annObj.id
-  }, header, body, score);
+  }, header, body, score, maximize);
 
+  $(maximize).hide(); // Hides the maximize button at the start
+
+  // Delete button
   $(del).on("click", function(e) {
     var annotationIdData = annObj.id;
     var annotation = null;
@@ -615,15 +635,62 @@ function newAnnotationBoxForPDF(annObj) {
     return false;
   });
 
+  $(del).on("mousedown", function(e) {
+    return false;
+  }); // Prevents dragging and deleting
+
+  // Edit Button
   $(edit).on("click", function(e) {
     $(body).hide();
     $(edit).hide();
     $(score).hide();
+    $(minimize).hide();
     var form = newEditAnnotationForm(annObj.line, annObj);
+    $(box).draggable( 'disable' );
+    $(box).resizable( 'disable' );
     $(box).append(form);
     $(box).width("300px");
-    $(box).height("250px");
+    $(box).height("auto");
   });
+
+  $(edit).on("mousedown", function(e) {
+    return false;
+  }); // Prevents dragging and edting
+
+  // Maximize On Click
+  // Shows everything and returns everything to size
+  $(maximize).on("click", function(e) {
+    $(header).show();
+    $(body).show();
+    $(edit).show();
+    $(score).show();
+    $(box).width("200px");
+    $(box).height("145px");
+    $(box).draggable( 'enable' );
+    $(box).resizable( 'enable' );
+    $(box).css({ 'opacity' : 1 , 'cursor':'default'});
+    $(this).hide();
+  });
+
+  // Minimize On Click
+  // Hides everything, and set opacity to translucent
+  // Makes it not draggable and resizable as well
+  $(minimize).on("click", function(e) {
+    $(header).hide();
+    $(body).hide();
+    $(edit).hide();
+    $(score).hide();
+    $(box).width("25px");
+    $(box).height("25px");
+    $(maximize).show();
+    $(box).draggable( 'disable' );
+    $(box).resizable( 'disable' );
+    $(box).css({ 'opacity' : 0.4 , 'cursor':'pointer'});
+  });
+
+  $(minimize).on("mousedown", function(e) {
+    return false;
+  }); // Prevents dragging and minimizing
 
   return box;
 };
@@ -634,7 +701,7 @@ var updateAnnotationBox = function(annObj) {
   var valueStr = annObj.value? annObj.value.toString() : "None";
   var commentStr = annObj.comment;
   if (annotationMode === "PDF") {
-    $('#ann-box-' + annObj.id).find('.score-box').html("<div>Problem: "+problemStr+"</div><div>Score: "+valueStr+"</div>");
+    $('#ann-box-' + annObj.id).find('.score-box').html("<div>Problem: " + problemStr + "</div><div> Score: "+valueStr+"</div>");
   }
   else {
     $('#ann-box-' + annObj.id).find('.score-box').html("<span>"+problemStr+"</span><span>"+valueStr+"</span>");
@@ -642,7 +709,11 @@ var updateAnnotationBox = function(annObj) {
   $('#ann-box-' + annObj.id).find('.edit').show();
   $('#ann-box-' + annObj.id).find('.body').show();
   $('#ann-box-' + annObj.id).find('.score-box').show();
-  
+  $('#ann-box-' + annObj.id).find('.minimize').show();
+  $('#ann-box-' + annObj.id).width("200px");
+  $('#ann-box-' + annObj.id).height("145px");
+  $('#ann-box-' + annObj.id).draggable( 'enable' );
+  $('#ann-box-' + annObj.id).resizable( 'enable' );
 }
 
 // the current Annotation instance
@@ -653,46 +724,71 @@ var currentLine = null;
 var newAnnotationFormForPDF = function(pageInd, xCord, yCord) {
 
   // this section creates the new/edit annotation form that's used everywhere
+
+  var commentLabel = elt("label",{
+    for: "comment-textarea",
+    class: "active"
+  },"Comment")
+
   var commentInput = elt("textarea", {
-    class: "col l11 comment",
+    class: "col comment",
     name: "comment",
-    placeholder: "Explanation Here",
     maxlength: "255"
   });
-  var valueInput = elt("input", {
-    class: "col l4",
+  
+  var rowDiv1 = elt("div", {
+    class: "row"
+  },  commentInput);
+
+  var scoreLabel = elt("label",{
+    for: "comment-textarea",
+    class: "active"
+  },"Score")
+
+  var scoreInput = elt("input", {
     type: "text",
     name: "score",
-    placeholder: "Score Here"
   });
+
+  var scoreDiv = elt("div",{
+    class: "col s5"
+  },scoreInput);
+
+  var space = elt("div", {
+    class: "col s1"
+  });
+
   var problemSelect = elt("select", {
-    class: "col l4 browser-default",
-    name: "problem"
+    class: "col s6 browser-default",
+    name: "problem",
   }, elt("option", {
     value: ""
   }, "None"));
+  
+  _.each(problems, function(problem) {
+    problemSelect.appendChild(elt("option", {
+      value: problem.id
+    }, problem.name));
+  })
 
-  var rowDiv1 = elt("div", {
-    class: "row",
-    style: "margin-left:4px;"
-  }, commentInput);
+  var colDiv2 = elt("div", {
+    class: "col",
+    style: "width: 100%;"
+  },scoreDiv, space, problemSelect);
 
-  var rowDiv2 = elt("div", {
-    class: "row",
-    style: "margin-left:4px; width: 100%;"
-  }, valueInput, problemSelect);
+  var hr = elt("hr");
 
   var submitButton = elt("input", {
     type: "submit",
-    value: "Save",
+    value: "Add Annotation",
     class: "btn primary small"
   });
   var cancelButton = elt("input", {
-    style: "margin-left: 4px;",
     type: "button",
     value: "Cancel",
-    class: "btn small"
+    class: "btn grey small"
   });
+  
   var hr = elt("hr");
 
   // Creates a dictionary of problem and grader_id
@@ -713,23 +809,24 @@ var newAnnotationFormForPDF = function(pageInd, xCord, yCord) {
     title: "Press <Enter> to Submit",
     class: "annotation-form",
     id: "annotation-form-" + pageInd
-  }, rowDiv1, rowDiv2, hr, submitButton, cancelButton);
+  }, commentLabel, rowDiv1, scoreLabel, colDiv2, hr, submitButton, cancelButton);
 
   newForm.onsubmit = function(e) {
     e.preventDefault();
 
     var comment = commentInput.value;
-    var value = valueInput.value;
+    var value = scoreInput.value;
     var problem_id = problemSelect.value;
-
+    
     if (!comment) {
-      newForm.appendChild(elt("div", null, "The comment cannot be empty"));
+      if(document.getElementsByClassName("form-warning").length == 0)
+        newForm.appendChild(elt("div",{class:"form-warning"}, "The comment cannot be empty"));
     } else {
       var xRatio = xCord / $("#page-canvas-" + pageInd).attr('width');
       var yRatio = yCord / $("#page-canvas-" + pageInd).attr('height');
 
       var widthRatio = 200 / $("#page-canvas-" + pageInd).attr('width');
-      var heightRatio = 110 / $("#page-canvas-" + pageInd).attr('height');
+      var heightRatio = 145 / $("#page-canvas-" + pageInd).attr('height');
 
       submitNewPDFAnnotation(comment, value, problem_id, pageInd, xRatio, yRatio, widthRatio, heightRatio, newForm);
     }
@@ -770,6 +867,7 @@ var newEditAnnotationForm = function(lineInd, annObj) {
   if (annotationMode === "PDF") {
     var commentInput = elt("textarea", {
       class: "col l12 comment",
+      style: "max-width: 280px",
       type: "text",
       name: "comment",
       placeholder: "Comments Here",
@@ -778,35 +876,51 @@ var newEditAnnotationForm = function(lineInd, annObj) {
   }
 
   var valueInput = elt("input", {
-    class: "col l2",
+    class: "col s6",
     type: "text",
     name: "score",
     placeholder: "Score Here",
     value: valueStr
   });
+
   var problemSelect = elt("select", {
-    class: "col l3 browser-default",
+    class: "col s6 browser-default",
     name: "problem"
   }, elt("option", {
     value: ""
   }, "None"));
+
+  var scoreDiv = elt("div",{
+    class:"col"
+  },valueInput,problemSelect);
+
+
   var rowDiv = elt("div", {
     class: "row",
     style: "margin-left:4px;"
-  }, commentInput, valueInput, problemSelect);
+  }, commentInput,scoreDiv);
 
+
+  var horizontalrule = elt("hr");
 
   var submitButton = elt("input", {
     type: "submit",
-    value: "Save Changes",
-    class: "btn primary small"
+    value: "Update",
+    class: "btn primary small s6"
   });
+
   var cancelButton = elt("input", {
     style: "margin-left: 4px;",
     type: "button",
     value: "Cancel",
-    class: "btn small"
+    class: "btn small s6"
   });
+
+  var buttonsCol = elt("div",
+  {
+    class: "col"
+  },submitButton,cancelButton);
+
   
   // Creates a dictionary of problem and grader_id
   var autogradedproblems = {}
@@ -828,7 +942,7 @@ var newEditAnnotationForm = function(lineInd, annObj) {
     title: "Press <Enter> to Submit",
     class: "annotation-edit-form",
     id: "edit-annotation-form-" + lineInd
-  }, rowDiv, submitButton, cancelButton);
+  }, rowDiv,horizontalrule, buttonsCol);
 
   newForm.onsubmit = function(e) {
     e.preventDefault();
@@ -1056,11 +1170,13 @@ var makeAnnotationMovable = function(annotationEl, annotationObj) {
 
     $(annotationEl).resizable({
       stop: function( event, ui ) {
-        var widthRatio = ui.size.width / $page.attr('width');
-        var heightRatio = ui.size.height / $page.attr('height');
-        annotationObj.coordinate = [curXCord, curYCord, curPageInd, widthRatio, heightRatio].join(',');
-        updateLegacyAnnotation(annotationObj, null, null);
-      }
+            var widthRatio = ui.size.width / $page.attr('width');
+            var heightRatio = ui.size.height / $page.attr('height');
+            annotationObj.coordinate = [curXCord, curYCord, curPageInd, widthRatio, heightRatio].join(',');
+            updateLegacyAnnotation(annotationObj, null, null);
+      },
+      minHeight:145,
+      minWidth:200
     });
 
 }
@@ -1074,7 +1190,8 @@ var initializeAnnotationsForPDF = function() {
       return;
     }
 
-    if (annotationObj.position != currentHeaderPos) {
+    var position = annotationObj.position || 0
+    if (position != currentHeaderPos) {
       return;
     }
 
@@ -1084,8 +1201,8 @@ var initializeAnnotationsForPDF = function() {
     var xCord = parseFloat(positionArr[0]) * $("#page-canvas-" + pageInd).attr('width');
     var yCord = parseFloat(positionArr[1]) * $("#page-canvas-" + pageInd).attr('height');
     var width = (positionArr[3] || 0.4) * $("#page-canvas-" + pageInd).attr('width');
-    var height = (positionArr[4] || 0.2) * $("#page-canvas-" + pageInd).attr('height');
-
+    var height = (positionArr[4] || 0.4) * $("#page-canvas-" + pageInd).attr('height');
+    
     var annotationEl = newAnnotationBoxForPDF(annotationObj);
 
     $(annotationEl).css({ "left": xCord + "px",  "top" : yCord + "px", "position" : "absolute",

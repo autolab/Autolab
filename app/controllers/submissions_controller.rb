@@ -243,21 +243,16 @@ class SubmissionsController < ApplicationController
           problem_name = "General"
           if !problem.nil? then problem_name = problem.name end
 
-          comment = "#{annotation.comment}\n\nProblem: #{problem_name}\nScore:#{value}"
+          comment = "#{annotation.comment}\n\nProblem: #{problem_name}\nScore: #{value}"
 
           # + 1 since pages are indexed 1-based
           pdf.go_to_page(page + 1)
-
-          # draw box
-          pdf.stroke_color "ff0000"
-          pdf.stroke_rectangle [xCord, yCord], width, height
-          pdf.fill_color "000000"
-          # draw text
-          pdf.fill_color "ff0000"
-          pdf.text_box comment,
-                      { :at => [xCord + 3, yCord - 3],
-                        :height => height,
-                        :width => width }
+          
+          # Creates a text annotation/pdf comment on the pdf itself.
+          # 10 and 55 numbers in this case to shift the comment
+          # to where the cursor was clicked by the annotator
+          ary = [xCord + 10,yCord + 55, width, height]
+          pdf.text_annotation(ary,comment)
 
         end
 
