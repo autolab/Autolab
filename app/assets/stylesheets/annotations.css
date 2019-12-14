@@ -665,6 +665,7 @@
 
 #symbol-tree-box ul li {
   cursor: pointer;
+  display: flex;
 }
 
 #symbol-tree-box ul li:hover {

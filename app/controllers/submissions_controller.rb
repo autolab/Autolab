@@ -342,17 +342,35 @@ class SubmissionsController < ApplicationController
             @ctags_json = %x[ctags --output-format=json --language-force=C --fields="Nnk" #{codePath}].split("\n")
           else
             # General case -- language can be inferred from file extension
-            @ctags_json = %x[ctags --output-format=json --fields="Nnk" #{codePath}].split("\n")
+            @ctags_json = %x[ctags --extras=+q --output-format=json --fields="Nnk" #{codePath}].split("\n")
           end
 
           @ctag_obj = []
           i = 0
           while i < @ctags_json.length
             obj_temp = JSON.parse(@ctags_json[i])
-            if(obj_temp["kind"] == "function")
-              @ctag_obj.push(obj_temp)
+            if(obj_temp["kind"] == "function" or obj_temp["kind"] == "method")
+              # check that obj_temp does not exist in array
+              if ((@ctag_obj.select{|ctag| ctag["line"] == obj_temp["line"] }).empty?)
+                @ctag_obj.push(obj_temp)
+              end
             end
             i = i + 1
+
+            if(obj_temp["kind"] == "class")
+              obj_temp = JSON.parse(@ctags_json[i])
+              while i + 1 < @ctags_json.length and (obj_temp["kind"] == "member" or obj_temp["kind"] == "method")
+                obj_exists = @ctag_obj.select{|ctag| ctag["line"] == obj_temp["line"]}
+                if (obj_exists.empty?)
+                  @ctag_obj.push(obj_temp)
+                # we want the obj with the extra class-qualified tag entry, 'class.function'
+                elsif (obj_temp["name"].length > obj_exists[0]["name"].length)
+                  @ctag_obj[@ctag_obj.index(obj_exists[0])] = obj_temp
+                end
+                i = i + 1
+                obj_temp = JSON.parse(@ctags_json[i])
+              end
+            end
           end
 
           # The functions are in some arbitrary order, so sort them
