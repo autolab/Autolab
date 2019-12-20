@@ -310,13 +310,20 @@ function displayAnnotations() {
 }
 
 function attachEvents() {
-  $(".add-button").on("click", function(e) {
-    e.preventDefault();
-    var line = $(this).parent().parent().parent();
-    var annotationContainer = line.data("lineId");
-    $("#annotation-line-" + annotationContainer).append(newAnnotationFormCode());
 
-    refreshAnnotations();
+  $(".add-button").on("click", function(e) {
+
+    if(problems.length > 0){
+      e.preventDefault();
+      var line = $(this).parent().parent().parent();
+      var annotationContainer = line.data("lineId");
+      $("#annotation-line-" + annotationContainer).append(newAnnotationFormCode());
+      refreshAnnotations();
+    }
+    else{
+      alert("Please create a problem for the assessment prior to annotating. (Edit Assessment > Problems) ")
+    }
+
   });
 }
 
@@ -1097,10 +1104,16 @@ var initializeAnnotationsForPDF = function() {
 
   $(".page-canvas").on("click", function(e) {
     if ($(e.target).hasClass("page-canvas")) {
-      var pageCanvas = e.currentTarget;
-      var pageInd = parseInt(pageCanvas.id.replace('page-canvas-',''), 10);
-      $('.annotation-form').remove();
-      showAnnotationFormAtCoord(pageInd, e.offsetX, e.offsetY);
+      
+      if(problems.length > 0){
+        var pageCanvas = e.currentTarget;
+        var pageInd = parseInt(pageCanvas.id.replace('page-canvas-',''), 10);
+        $('.annotation-form').remove();
+        showAnnotationFormAtCoord(pageInd, e.offsetX, e.offsetY);
+      }
+      else{
+        alert("Please create a problem for the assessment prior to annotating. (Edit Assessment > Problems) ")
+      }
     }
 
   });
