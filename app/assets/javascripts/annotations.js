@@ -437,10 +437,10 @@ function newAnnotationFormCode() {
     }
 
     if (problem_id == undefined) {
-      if(problems.length > 0)
-        box.find('.error').text("No Problem Selected").show();
+      if($('.select').children('option').length > 0)
+        box.find('.error').text("Problem not selected");
       else
-        box.find('.error').text("Problems must be created before annotating (Edit Assessment > Problems)").show();
+        box.find('.error').text("There are no non-autograded problems. Create a new one at Edit Assessment > Problems");
       return;
     }
 
@@ -813,6 +813,8 @@ var newAnnotationFormForPDF = function(pageInd, xCord, yCord) {
       }, problem.name));
     }
   })
+  
+  
 
   var newForm = elt("form", {
     title: "Press <Enter> to Submit",
@@ -838,10 +840,10 @@ var newAnnotationFormForPDF = function(pageInd, xCord, yCord) {
     }
 
     if (!problem_id) {
-      if(problems.length > 0)
+      if($('#problem').children('option').length > 0)
         $(newForm).find('.form-warning').text("Problem not selected");
       else
-        $(newForm).find('.form-warning').text("Problem must be created before annotation (Edit Assessment > Problems)");
+        $(newForm).find('.form-warning').text("There are no non-autograded problems. Create a new one at Edit Assessment > Problems");
       return;
     }
     
@@ -986,7 +988,10 @@ var newEditAnnotationForm = function(lineInd, annObj) {
     }
 
     if (!problem_id) {
-      $(newForm).find('.form-warning').text("Problem not selected");
+      if($('#problem').children('option').length > 0)
+        $(newForm).find('.form-warning').text("Problem not selected");
+      else
+        $(newForm).find('.form-warning').text("There are no non-autograded problems. Create a new one at Edit Assessment > Problems");
       return;
     }
 
