@@ -320,10 +320,6 @@ function attachEvents() {
 
   $(".add-button").on("click", function(e) {
 
-    // allow annotations only the assessment has a problem
-    // else creates an alert to ask user to create a problem
-    if(problems.length > 0){
-
       e.preventDefault();
       var line = $(this).parent().parent().parent();
       var annotationContainer = line.data("lineId");
@@ -334,11 +330,6 @@ function attachEvents() {
         
         refreshAnnotations();
       }
-
-    }
-    else{
-      alert("Please create a problem for the assessment prior to annotating. (Edit Assessment > Problems) ")
-    }
 
   });
 }
@@ -444,6 +435,15 @@ function newAnnotationFormCode() {
       box.find('.error').text("Annotation comment can not be blank!").show();
       return;
     }
+
+    if (problem_id == undefined) {
+      if(problems.length > 0)
+        box.find('.error').text("No Problem Selected").show();
+      else
+        box.find('.error').text("Problems must be created before annotating (Edit Assessment > Problems)").show();
+      return;
+    }
+
 
     submitNewAnnotation(comment, score, problem_id, line, $(this));
   });
@@ -777,15 +777,7 @@ var newAnnotationFormForPDF = function(pageInd, xCord, yCord) {
   var problemSelect = elt("select", {
     class: "col s6 browser-default",
     name: "problem",
-  }, elt("option", {
-    value: ""
-  }, "None"));
-  
-  _.each(problems, function(problem) {
-    problemSelect.appendChild(elt("option", {
-      value: problem.id
-    }, problem.name));
-  })
+  }, elt("option"));
 
   var colDiv2 = elt("div", {
     class: "col",
@@ -809,6 +801,7 @@ var newAnnotationFormForPDF = function(pageInd, xCord, yCord) {
 
   // Creates a dictionary of problem and grader_id
   var autogradedproblems = {}
+
   _.each(scores,function(score){
     autogradedproblems[score.problem_id] = score.grader_id;
   })
@@ -834,18 +827,32 @@ var newAnnotationFormForPDF = function(pageInd, xCord, yCord) {
     var value = scoreInput.value;
     var problem_id = problemSelect.value;
     
-    if (!comment) {
+    if(!comment || !problem_id){
       if(document.getElementsByClassName("form-warning").length == 0)
-        newForm.appendChild(elt("div",{class:"form-warning"}, "The comment cannot be empty"));
-    } else {
-      var xRatio = xCord / $("#page-canvas-" + pageInd).attr('width');
-      var yRatio = yCord / $("#page-canvas-" + pageInd).attr('height');
-
-      var widthRatio = 200 / $("#page-canvas-" + pageInd).attr('width');
-      var heightRatio = 145 / $("#page-canvas-" + pageInd).attr('height');
-
-      submitNewPDFAnnotation(comment, value, problem_id, pageInd, xRatio, yRatio, widthRatio, heightRatio, newForm);
+      newForm.appendChild(elt("div",{class:"form-warning"}));
     }
+
+    if (!comment) {
+      $(newForm).find('.form-warning').text("The comment cannot be empty");
+      return;
+    }
+
+    if (!problem_id) {
+      if(problems.length > 0)
+        $(newForm).find('.form-warning').text("Problem not selected");
+      else
+        $(newForm).find('.form-warning').text("Problem must be created before annotation (Edit Assessment > Problems)");
+      return;
+    }
+    
+    var xRatio = xCord / $("#page-canvas-" + pageInd).attr('width');
+    var yRatio = yCord / $("#page-canvas-" + pageInd).attr('height');
+
+    var widthRatio = 200 / $("#page-canvas-" + pageInd).attr('width');
+    var heightRatio = 145 / $("#page-canvas-" + pageInd).attr('height');
+
+    submitNewPDFAnnotation(comment, value, problem_id, pageInd, xRatio, yRatio, widthRatio, heightRatio, newForm);
+  
     return false;
   };
 
@@ -940,6 +947,7 @@ var newEditAnnotationForm = function(lineInd, annObj) {
   
   // Creates a dictionary of problem and grader_id
   var autogradedproblems = {}
+  
   _.each(scores,function(score){
     autogradedproblems[score.problem_id] = score.grader_id;
   })
@@ -966,14 +974,27 @@ var newEditAnnotationForm = function(lineInd, annObj) {
     var comment = commentInput.value;
     var value = valueInput.value;
     var problem_id = problemSelect.value;
-    if (!comment) {
-      newForm.appendChild(elt("div", null, "The comment cannot be empty"));
-    } else {
-      annObj.comment = comment;
-      annObj.value = value;
-      annObj.problem_id = problem_id
-      updateLegacyAnnotation(annObj, lineInd, newForm);
+
+    if(!comment || !problem_id){
+      if(document.getElementsByClassName("form-warning").length == 0)
+      newForm.appendChild(elt("div",{class:"form-warning"}));
     }
+
+    if (!comment) {
+      $(newForm).find('.form-warning').text("The comment cannot be empty");
+      return;
+    }
+
+    if (!problem_id) {
+      $(newForm).find('.form-warning').text("Problem not selected");
+      return;
+    }
+
+    annObj.comment = comment;
+    annObj.value = value;
+    annObj.problem_id = problem_id
+    updateLegacyAnnotation(annObj, lineInd, newForm);
+    
   };
 
   $(cancelButton).on('click', function() {
@@ -1230,18 +1251,10 @@ var initializeAnnotationsForPDF = function() {
 
   $(".page-canvas").on("click", function(e) {
     if ($(e.target).hasClass("page-canvas")) {
-      
-      // allow annotations only the assessment has a problem
-      // else creates an alert to ask user to create a problem
-      if(problems.length > 0){
-        var pageCanvas = e.currentTarget;
-        var pageInd = parseInt(pageCanvas.id.replace('page-canvas-',''), 10);
-        $('.annotation-form').remove();
-        showAnnotationFormAtCoord(pageInd, e.offsetX, e.offsetY);
-      }
-      else{
-        alert("Please create a problem for the assessment prior to annotating. (Edit Assessment > Problems) ")
-      }
+      var pageCanvas = e.currentTarget;
+      var pageInd = parseInt(pageCanvas.id.replace('page-canvas-',''), 10);
+      $('.annotation-form').remove();
+      showAnnotationFormAtCoord(pageInd, e.offsetX, e.offsetY);
     }
 
   });
