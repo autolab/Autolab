@@ -243,21 +243,16 @@ class SubmissionsController < ApplicationController
           problem_name = "General"
           if !problem.nil? then problem_name = problem.name end
 
-          comment = "#{annotation.comment}\n\nProblem: #{problem_name}\nScore:#{value}"
+          comment = "#{annotation.comment}\n\nProblem: #{problem_name}\nScore: #{value}"
 
           # + 1 since pages are indexed 1-based
           pdf.go_to_page(page + 1)
-
-          # draw box
-          pdf.stroke_color "ff0000"
-          pdf.stroke_rectangle [xCord, yCord], width, height
-          pdf.fill_color "000000"
-          # draw text
-          pdf.fill_color "ff0000"
-          pdf.text_box comment,
-                      { :at => [xCord + 3, yCord - 3],
-                        :height => height,
-                        :width => width }
+          
+          # Creates a text annotation/pdf comment on the pdf itself.
+          # 10 and 55 numbers in this case to shift the comment
+          # to where the cursor was clicked by the annotator
+          ary = [xCord + 10,yCord + 55, width, height]
+          pdf.text_annotation(ary,comment)
 
         end
 
@@ -347,17 +342,35 @@ class SubmissionsController < ApplicationController
             @ctags_json = %x[ctags --output-format=json --language-force=C --fields="Nnk" #{codePath}].split("\n")
           else
             # General case -- language can be inferred from file extension
-            @ctags_json = %x[ctags --output-format=json --fields="Nnk" #{codePath}].split("\n")
+            @ctags_json = %x[ctags --extras=+q --output-format=json --fields="Nnk" #{codePath}].split("\n")
           end
 
           @ctag_obj = []
           i = 0
           while i < @ctags_json.length
             obj_temp = JSON.parse(@ctags_json[i])
-            if(obj_temp["kind"] == "function")
-              @ctag_obj.push(obj_temp)
+            if(obj_temp["kind"] == "function" or obj_temp["kind"] == "method")
+              # check that obj_temp does not exist in array
+              if ((@ctag_obj.select{|ctag| ctag["line"] == obj_temp["line"] }).empty?)
+                @ctag_obj.push(obj_temp)
+              end
             end
             i = i + 1
+
+            if(obj_temp["kind"] == "class")
+              obj_temp = JSON.parse(@ctags_json[i])
+              while i + 1 < @ctags_json.length and (obj_temp["kind"] == "member" or obj_temp["kind"] == "method")
+                obj_exists = @ctag_obj.select{|ctag| ctag["line"] == obj_temp["line"]}
+                if (obj_exists.empty?)
+                  @ctag_obj.push(obj_temp)
+                # we want the obj with the extra class-qualified tag entry, 'class.function'
+                elsif (obj_temp["name"].length > obj_exists[0]["name"].length)
+                  @ctag_obj[@ctag_obj.index(obj_exists[0])] = obj_temp
+                end
+                i = i + 1
+                obj_temp = JSON.parse(@ctags_json[i])
+              end
+            end
           end
 
           # The functions are in some arbitrary order, so sort them

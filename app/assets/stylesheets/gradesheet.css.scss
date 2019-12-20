@@ -159,7 +159,6 @@ td.id {
 #grades .popover {
     cursor: auto;
     display: none;
-    font-size: 0.8em;
     color: #666;
     position: absolute;
     top: 0;
@@ -239,12 +238,18 @@ td.id {
 #grades td .popover .score_details {
     font-weight: normal;
     border-collapse: collapse;
+    white-space: initial;
 }
 
 
 #grades td .score_details .feedback {
     width: 290px;
+    max-width: 350px;
+    min-width:290px;
     min-height: 75px;
+    max-height: 300px;
+    background-color: white; 
+    font-family: 'Source Sans Pro', sans-serif;
 }
 
 #grades td .popover .score_details span.save_box {
