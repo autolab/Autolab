@@ -438,9 +438,9 @@ function newAnnotationFormCode() {
 
     if (problem_id == undefined) {
       if($('.select').children('option').length > 0)
-        box.find('.error').text("Problem not selected");
+        box.find('.error').text("Problem not selected").show();
       else
-        box.find('.error').text("There are no non-autograded problems. Create a new one at Edit Assessment > Problems");
+        box.find('.error').text("There are no non-autograded problems. Create a new one at Edit Assessment > Problems").show();
       return;
     }
 
