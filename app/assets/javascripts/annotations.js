@@ -321,9 +321,13 @@ function attachEvents() {
     e.preventDefault();
     var line = $(this).parent().parent().parent();
     var annotationContainer = line.data("lineId");
-    $("#annotation-line-" + annotationContainer).append(newAnnotationFormCode());
-
-    refreshAnnotations();
+    
+    // append an annotation form only if there is none currently
+    if($("#annotation-line-"+ annotationContainer).find(".annotation-line").length == 0){
+      $("#annotation-line-" + annotationContainer).append(newAnnotationFormCode());
+      
+      refreshAnnotations();
+    }
   });
 }
 
