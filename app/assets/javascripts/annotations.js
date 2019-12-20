@@ -317,17 +317,20 @@ function displayAnnotations() {
 }
 
 function attachEvents() {
+
   $(".add-button").on("click", function(e) {
-    e.preventDefault();
-    var line = $(this).parent().parent().parent();
-    var annotationContainer = line.data("lineId");
-    
-    // append an annotation form only if there is none currently
-    if($("#annotation-line-"+ annotationContainer).find(".annotation-line").length == 0){
-      $("#annotation-line-" + annotationContainer).append(newAnnotationFormCode());
+
+      e.preventDefault();
+      var line = $(this).parent().parent().parent();
+      var annotationContainer = line.data("lineId");
       
-      refreshAnnotations();
-    }
+      // append an annotation form only if there is none currently
+      if($("#annotation-line-"+ annotationContainer).find(".annotation-line").length == 0){
+        $("#annotation-line-" + annotationContainer).append(newAnnotationFormCode());
+        
+        refreshAnnotations();
+      }
+
   });
 }
 
@@ -432,6 +435,15 @@ function newAnnotationFormCode() {
       box.find('.error').text("Annotation comment can not be blank!").show();
       return;
     }
+
+    if (problem_id == undefined) {
+      if($('.select').children('option').length > 0)
+        box.find('.error').text("Problem not selected").show();
+      else
+        box.find('.error').text("There are no non-autograded problems. Create a new one at Edit Assessment > Problems").show();
+      return;
+    }
+
 
     submitNewAnnotation(comment, score, problem_id, line, $(this));
   });
@@ -765,15 +777,7 @@ var newAnnotationFormForPDF = function(pageInd, xCord, yCord) {
   var problemSelect = elt("select", {
     class: "col s6 browser-default",
     name: "problem",
-  }, elt("option", {
-    value: ""
-  }, "None"));
-  
-  _.each(problems, function(problem) {
-    problemSelect.appendChild(elt("option", {
-      value: problem.id
-    }, problem.name));
-  })
+  }, elt("option"));
 
   var colDiv2 = elt("div", {
     class: "col",
@@ -797,6 +801,7 @@ var newAnnotationFormForPDF = function(pageInd, xCord, yCord) {
 
   // Creates a dictionary of problem and grader_id
   var autogradedproblems = {}
+
   _.each(scores,function(score){
     autogradedproblems[score.problem_id] = score.grader_id;
   })
@@ -808,6 +813,8 @@ var newAnnotationFormForPDF = function(pageInd, xCord, yCord) {
       }, problem.name));
     }
   })
+  
+  
 
   var newForm = elt("form", {
     title: "Press <Enter> to Submit",
@@ -822,18 +829,32 @@ var newAnnotationFormForPDF = function(pageInd, xCord, yCord) {
     var value = scoreInput.value;
     var problem_id = problemSelect.value;
     
-    if (!comment) {
+    if(!comment || !problem_id){
       if(document.getElementsByClassName("form-warning").length == 0)
-        newForm.appendChild(elt("div",{class:"form-warning"}, "The comment cannot be empty"));
-    } else {
-      var xRatio = xCord / $("#page-canvas-" + pageInd).attr('width');
-      var yRatio = yCord / $("#page-canvas-" + pageInd).attr('height');
-
-      var widthRatio = 200 / $("#page-canvas-" + pageInd).attr('width');
-      var heightRatio = 145 / $("#page-canvas-" + pageInd).attr('height');
-
-      submitNewPDFAnnotation(comment, value, problem_id, pageInd, xRatio, yRatio, widthRatio, heightRatio, newForm);
+      newForm.appendChild(elt("div",{class:"form-warning"}));
     }
+
+    if (!comment) {
+      $(newForm).find('.form-warning').text("The comment cannot be empty");
+      return;
+    }
+
+    if (!problem_id) {
+      if($('#problem').children('option').length > 0)
+        $(newForm).find('.form-warning').text("Problem not selected");
+      else
+        $(newForm).find('.form-warning').text("There are no non-autograded problems. Create a new one at Edit Assessment > Problems");
+      return;
+    }
+    
+    var xRatio = xCord / $("#page-canvas-" + pageInd).attr('width');
+    var yRatio = yCord / $("#page-canvas-" + pageInd).attr('height');
+
+    var widthRatio = 200 / $("#page-canvas-" + pageInd).attr('width');
+    var heightRatio = 145 / $("#page-canvas-" + pageInd).attr('height');
+
+    submitNewPDFAnnotation(comment, value, problem_id, pageInd, xRatio, yRatio, widthRatio, heightRatio, newForm);
+  
     return false;
   };
 
@@ -928,6 +949,7 @@ var newEditAnnotationForm = function(lineInd, annObj) {
   
   // Creates a dictionary of problem and grader_id
   var autogradedproblems = {}
+  
   _.each(scores,function(score){
     autogradedproblems[score.problem_id] = score.grader_id;
   })
@@ -954,14 +976,30 @@ var newEditAnnotationForm = function(lineInd, annObj) {
     var comment = commentInput.value;
     var value = valueInput.value;
     var problem_id = problemSelect.value;
-    if (!comment) {
-      newForm.appendChild(elt("div", null, "The comment cannot be empty"));
-    } else {
-      annObj.comment = comment;
-      annObj.value = value;
-      annObj.problem_id = problem_id
-      updateLegacyAnnotation(annObj, lineInd, newForm);
+
+    if(!comment || !problem_id){
+      if(document.getElementsByClassName("form-warning").length == 0)
+      newForm.appendChild(elt("div",{class:"form-warning"}));
     }
+
+    if (!comment) {
+      $(newForm).find('.form-warning').text("The comment cannot be empty");
+      return;
+    }
+
+    if (!problem_id) {
+      if($('#problem').children('option').length > 0)
+        $(newForm).find('.form-warning').text("Problem not selected");
+      else
+        $(newForm).find('.form-warning').text("There are no non-autograded problems. Create a new one at Edit Assessment > Problems");
+      return;
+    }
+
+    annObj.comment = comment;
+    annObj.value = value;
+    annObj.problem_id = problem_id
+    updateLegacyAnnotation(annObj, lineInd, newForm);
+    
   };
 
   $(cancelButton).on('click', function() {

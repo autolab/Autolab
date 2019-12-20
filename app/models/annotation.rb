@@ -7,7 +7,7 @@ class Annotation < ActiveRecord::Base
   belongs_to :submission
   belongs_to :problem
 
-  validates :comment, :filename, :submission_id, presence: true
+  validates :comment, :filename, :submission_id, :problem_id, presence: true
 
   def as_text
     if value
@@ -49,7 +49,9 @@ class Annotation < ActiveRecord::Base
               problem_id: self.problem_id).
         map(&:value).sum{|v| v.nil? ? 0 : v}
 
-    new_score = score.problem.max_score + annotation_delta
+    # Default score to 0 if problem.max_score is nil
+    max_score = score.problem.max_score || 0;
+    new_score = max_score + annotation_delta
 
     # Update score
     score.update!(score: new_score)

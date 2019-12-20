@@ -37,6 +37,9 @@ module Utilities
   end
 end
 
+class InvalidScoreException < StandardError
+end
+
 class ScoreComputationException < StandardError
 end
 
