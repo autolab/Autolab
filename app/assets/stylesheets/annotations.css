@@ -393,8 +393,13 @@
 .annotation-edit-form {
   border-radius: 4px;
   font-family: 'Source Sans Pro', sans-serif;
-  padding: 6px;
+  padding-bottom: 5px;
   background-color: #fff;
+  text-align:left;
+  font-size: 14px;
+  -webkit-box-shadow: rgba(0, 0, 0, 0.137255) 0px 0px 4px 0px, rgba(0, 0, 0, 0.278431) 0px 4px 8px 0px;
+  box-shadow: rgba(0, 0, 0, 0.137255) 0px 0px 4px 0px, rgba(0, 0, 0, 0.278431) 0px 4px 8px 0px;
+  z-index: 3;
 }
 
 .annotation-form hr {
@@ -407,7 +412,7 @@
   padding-bottom: 0;
 }
 
-#pdf-doc .annotation-form {
+#pdf-doc .annotation-form  {
   position: absolute;
   width: 400px;
   text-align:left;
@@ -418,19 +423,20 @@
   z-index: 3;
 }
 
-#pdf-doc .annotation-form > label {
+#pdf-doc .annotation-form > label , #pdf-doc .annotation-edit-form > label {
   font-size: 16px;
   color: #444;
   font-weight: bold;
-  padding:10px;
+  padding-left:10px;
+  padding-right:10px;
 }
 
-#pdf-doc .annotation-form > div{
+#pdf-doc .annotation-form > div, #pdf-doc .annotation-edit-form > div{
   padding-right:10px;
   padding-left:10px;
 }
 
-#pdf-doc .annotation-form > .btn {
+#pdf-doc .annotation-form > .btn, #pdf-doc .annotation-edit-form > .btn {
   margin-left: 10px;
 }
 
