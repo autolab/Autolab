@@ -1,3 +1,9 @@
+/* Document On Ready Initializations */
+
+$(document).ready(function(){
+  $(".collapsible-body").show(); //expands all collapsible initially 
+});
+
 /* File Tree and Code Viewer Helper Functions */
 
 // Lets us open and close file folders
