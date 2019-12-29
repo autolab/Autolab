@@ -1,3 +1,9 @@
+/* Document On Ready Initializations */
+
+$(document).ready(function(){
+  $(".collapsible-body").show(); //expands all collapsible initially 
+});
+
 /* File Tree and Code Viewer Helper Functions */
 
 // Lets us open and close file folders
@@ -665,7 +671,7 @@ function newAnnotationBoxForPDF(annObj) {
     $(box).draggable( 'disable' );
     $(box).resizable( 'disable' );
     $(box).append(form);
-    $(box).width("300px");
+    $(box).width("auto");
     $(box).height("auto");
   });
 
@@ -716,8 +722,10 @@ var updateAnnotationBox = function(annObj) {
   var problemStr = annObj.problem_id? getProblemNameWithId(annObj.problem_id) : "General";
   var valueStr = annObj.value? annObj.value.toString() : "None";
   var commentStr = annObj.comment;
+  
   if (annotationMode === "PDF") {
     $('#ann-box-' + annObj.id).find('.score-box').html("<div>Problem: " + problemStr + "</div><div> Score: "+valueStr+"</div>");
+    $("#ann-box-"+ annObj.id).find('.body').html(commentStr);
   }
   else {
     $('#ann-box-' + annObj.id).find('.score-box').html("<span>"+problemStr+"</span><span>"+valueStr+"</span>");
@@ -726,8 +734,6 @@ var updateAnnotationBox = function(annObj) {
   $('#ann-box-' + annObj.id).find('.body').show();
   $('#ann-box-' + annObj.id).find('.score-box').show();
   $('#ann-box-' + annObj.id).find('.minimize').show();
-  $('#ann-box-' + annObj.id).width("200px");
-  $('#ann-box-' + annObj.id).height("145px");
   $('#ann-box-' + annObj.id).draggable( 'enable' );
   $('#ann-box-' + annObj.id).resizable( 'enable' );
 }
@@ -737,97 +743,113 @@ var currentAnnotation = null;
 // the currently examined li
 var currentLine = null;
 
+/** this function creates a new/edit annotation form
+ * the names of the elements are
+ * comment for the comment textarea
+ * score for the score field
+ * problem for the problem dropdown
+ * submit for the submit button
+ * cancel for the cancel button
+*/
+var newAnnotationFormTemplatePDF = function(name,pageInd) {
+    
+    var commentLabel = elt("label",{
+      for: "comment-textarea",
+      class: "active"
+    },"Comment")
+  
+    var commentInput = elt("textarea", {
+      class: "comment",
+      name: "comment",
+      maxlength: "255"
+    });
+    
+    var rowDiv1 = elt("div", {}, commentInput);
+  
+    var scoreLabel = elt("label",{
+      for: "comment-textarea",
+      class: "active"
+    },"Score")
+  
+    var scoreInput = elt("input", {
+      type: "text",
+      name: "score",
+    });
+  
+    var scoreDiv = elt("div",{
+      class: "col s5"
+    },scoreInput);
+  
+    var space = elt("div", {
+      class: "col s1"
+    });
+  
+    var problemSelect = elt("select", {
+      class: "col s6 browser-default",
+      name: "problem",
+    }, elt("option"));
+  
+    var colDiv2 = elt("div", {
+      class: "col",
+      style: "width: 100%;"
+    },scoreDiv, space, problemSelect);
+  
+    var hr = elt("hr");
+  
+    var submitButton = elt("input", {
+      type: "submit",
+      value: "Add Annotation",
+      class: "btn primary small",
+      name: "submit"
+    });
+
+    var cancelButton = elt("input", {
+      type: "button",
+      value: "Cancel",
+      class: "btn grey small",
+      name:"cancel"
+    });
+    
+    var hr = elt("hr");
+  
+    // Creates a dictionary of problem and grader_id
+    var autogradedproblems = {}
+  
+    _.each(scores,function(score){
+      autogradedproblems[score.problem_id] = score.grader_id;
+    })
+  
+    _.each(problems, function(problem) {
+        if(autogradedproblems[problem.id] != 0 ){ // Because grader == 0 is autograder
+        problemSelect.appendChild(elt("option", {
+          value: problem.id
+        }, problem.name));
+      }
+    })
+    
+    var newForm = elt("form", {
+      title: "Press <Enter> to Submit",
+      class: name,
+      id: name + "-" + pageInd
+    }, commentLabel, rowDiv1, scoreLabel, colDiv2, hr, submitButton, cancelButton);
+  
+    return newForm;
+}
+
 var newAnnotationFormForPDF = function(pageInd, xCord, yCord) {
 
-  // this section creates the new/edit annotation form that's used everywhere
+  var newForm = newAnnotationFormTemplatePDF("annotation-form",pageInd);
 
-  var commentLabel = elt("label",{
-    for: "comment-textarea",
-    class: "active"
-  },"Comment")
-
-  var commentInput = elt("textarea", {
-    class: "col comment",
-    name: "comment",
-    maxlength: "255"
-  });
+  // Accessing the elements of the form
+  var cancelButton = newForm.elements.cancel;
+  var submitButton = newForm.elements.submit;
   
-  var rowDiv1 = elt("div", {
-    class: "row"
-  },  commentInput);
-
-  var scoreLabel = elt("label",{
-    for: "comment-textarea",
-    class: "active"
-  },"Score")
-
-  var scoreInput = elt("input", {
-    type: "text",
-    name: "score",
-  });
-
-  var scoreDiv = elt("div",{
-    class: "col s5"
-  },scoreInput);
-
-  var space = elt("div", {
-    class: "col s1"
-  });
-
-  var problemSelect = elt("select", {
-    class: "col s6 browser-default",
-    name: "problem",
-  }, elt("option"));
-
-  var colDiv2 = elt("div", {
-    class: "col",
-    style: "width: 100%;"
-  },scoreDiv, space, problemSelect);
-
-  var hr = elt("hr");
-
-  var submitButton = elt("input", {
-    type: "submit",
-    value: "Add Annotation",
-    class: "btn primary small"
-  });
-  var cancelButton = elt("input", {
-    type: "button",
-    value: "Cancel",
-    class: "btn grey small"
-  });
-  
-  var hr = elt("hr");
-
-  // Creates a dictionary of problem and grader_id
-  var autogradedproblems = {}
-
-  _.each(scores,function(score){
-    autogradedproblems[score.problem_id] = score.grader_id;
-  })
-
-  _.each(problems, function(problem) {
-      if(autogradedproblems[problem.id] != 0 ){ // Because grader == 0 is autograder
-      problemSelect.appendChild(elt("option", {
-        value: problem.id
-      }, problem.name));
-    }
-  })
-  
-  
-
-  var newForm = elt("form", {
-    title: "Press <Enter> to Submit",
-    class: "annotation-form",
-    id: "annotation-form-" + pageInd
-  }, commentLabel, rowDiv1, scoreLabel, colDiv2, hr, submitButton, cancelButton);
-
   newForm.onsubmit = function(e) {
     e.preventDefault();
 
-    var comment = commentInput.value;
-    var value = scoreInput.value;
-    var problem_id = problemSelect.value;
+    var comment = newForm.elements.comment.value;
+    var value = newForm.elements.score.value;
+    var problem_id = newForm.elements.problem.value;
     
     if(!comment || !problem_id){
       if(document.getElementsByClassName("form-warning").length == 0)
@@ -840,7 +862,7 @@ var newAnnotationFormForPDF = function(pageInd, xCord, yCord) {
     }
 
     if (!problem_id) {
-      if($('#problem').children('option').length > 0)
+      if(newForm.elements.problem.children.length > 1)
         $(newForm).find('.form-warning').text("Problem not selected");
       else
         $(newForm).find('.form-warning').text("There are no non-autograded problems. Create a new one at Edit Assessment > Problems");
@@ -873,110 +895,27 @@ var newAnnotationFormForPDF = function(pageInd, xCord, yCord) {
   return newForm;
 }
 
-
-var newEditAnnotationForm = function(lineInd, annObj) {
-  var problemStr = annObj.problem_id? getProblemNameWithId(annObj.problem_id) : "General";
+var newEditAnnotationForm = function(pageInd, annObj) {
   var valueStr = annObj.value? annObj.value.toString() : "None";
   var commentStr = annObj.comment;
 
-  // this section creates the new/edit annotation form that's used everywhere
-  var commentInput = elt("input", {
-    class: "col l6 comment",
-    type: "text",
-    name: "comment",
-    placeholder: "Comments FLOOP FLAGG BOOP BOOP",
-    maxlength: "255",
-    value: commentStr
-  });
-
-  if (annotationMode === "PDF") {
-    var commentInput = elt("textarea", {
-      class: "col l12 comment",
-      style: "max-width: 280px",
-      type: "text",
-      name: "comment",
-      placeholder: "Comments Here",
-      maxlength: "255"
-    }, commentStr);
-  }
-
-  var valueInput = elt("input", {
-    class: "col s6",
-    type: "text",
-    name: "score",
-    placeholder: "Score Here",
-    value: valueStr
-  });
-
-  var problemSelect = elt("select", {
-    class: "col s6 browser-default",
-    name: "problem"
-  }, elt("option", {
-    value: ""
-  }, "None"));
-
-  var scoreDiv = elt("div",{
-    class:"col"
-  },valueInput,problemSelect);
-
-
-  var rowDiv = elt("div", {
-    class: "row",
-    style: "margin-left:4px;"
-  }, commentInput,scoreDiv);
-
-
-  var horizontalrule = elt("hr");
-
-  var submitButton = elt("input", {
-    type: "submit",
-    value: "Update",
-    class: "btn primary small s6"
-  });
-
-  var cancelButton = elt("input", {
-    style: "margin-left: 4px;",
-    type: "button",
-    value: "Cancel",
-    class: "btn small s6"
-  });
-
-  var buttonsCol = elt("div",
-  {
-    class: "col"
-  },submitButton,cancelButton);
-
+  var newForm = newAnnotationFormTemplatePDF("annotation-edit-form",pageInd);
   
-  // Creates a dictionary of problem and grader_id
-  var autogradedproblems = {}
+  newForm.elements.comment.value = commentStr;
+  newForm.elements.score.value = valueStr;
+  newForm.elements.problem.value = annObj.problem_id;
   
-  _.each(scores,function(score){
-    autogradedproblems[score.problem_id] = score.grader_id;
-  })
-
-  _.each(problems, function(problem) {
-      if(autogradedproblems[problem.id] != 0 ){ // Because grader == 0 is autograder
-      problemSelect.appendChild(elt("option", {
-        value: problem.id
-      }, problem.name));
-    }
-  })
-  
-  $(problemSelect).val(annObj.problem_id);
-
-  var newForm = elt("form", {
-    title: "Press <Enter> to Submit",
-    class: "annotation-edit-form",
-    id: "edit-annotation-form-" + lineInd
-  }, rowDiv,horizontalrule, buttonsCol);
+  var cancelButton = newForm.elements.cancel;
+  var submitButton = newForm.elements.submit;
+  submitButton.value = "Update"; //Changing the name of the submit button
 
   newForm.onsubmit = function(e) {
     e.preventDefault();
 
-    var comment = commentInput.value;
-    var value = valueInput.value;
-    var problem_id = problemSelect.value;
-
+    var comment = newForm.elements.comment.value;
+    var value = newForm.elements.score.value;
+    var problem_id = newForm.elements.problem.value;
+    
     if(!comment || !problem_id){
       if(document.getElementsByClassName("form-warning").length == 0)
       newForm.appendChild(elt("div",{class:"form-warning"}));
@@ -988,7 +927,7 @@ var newEditAnnotationForm = function(lineInd, annObj) {
     }
 
     if (!problem_id) {
-      if($('#problem').children('option').length > 0)
+      if(newForm.elements.problem.children.length > 1)
         $(newForm).find('.form-warning').text("Problem not selected");
       else
         $(newForm).find('.form-warning').text("There are no non-autograded problems. Create a new one at Edit Assessment > Problems");
@@ -998,8 +937,8 @@ var newEditAnnotationForm = function(lineInd, annObj) {
     annObj.comment = comment;
     annObj.value = value;
     annObj.problem_id = problem_id
-    updateLegacyAnnotation(annObj, lineInd, newForm);
-    
+    updateLegacyAnnotation(annObj, pageInd, newForm); //ajax function to update the old boxes
+        
   };
 
   $(cancelButton).on('click', function() {
