@@ -1193,16 +1193,16 @@ var initializeAnnotationsForPDF = function() {
     makeAnnotationMovable(annotationEl, annotationObj, pageInd);
   });
 
-  $(".page-canvas").on("click", function(e) {
-    if ($(e.target).hasClass("page-canvas")) {
-      var pageCanvas = e.currentTarget;
-      var pageInd = parseInt(pageCanvas.id.replace('page-canvas-',''), 10);
-      $('.annotation-form').remove();
-      showAnnotationFormAtCoord(pageInd, e.offsetX, e.offsetY);
-    }
-
-  });
-
+  if(isInstructor){
+    $(".page-canvas").on("click", function(e) {
+        if ($(e.target).hasClass("page-canvas")) {
+          var pageCanvas = e.currentTarget;
+          var pageInd = parseInt(pageCanvas.id.replace('page-canvas-',''), 10);
+          $('.annotation-form').remove();
+          showAnnotationFormAtCoord(pageInd, e.offsetX, e.offsetY);
+        }
+    });
+  }
 }
 
 function renderPdf() {
