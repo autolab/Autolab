@@ -69,6 +69,12 @@ module Archive
 
     # add pre-existing directories to the set
     for file in files
+
+      # edge case for removing "./" from pathnames
+      if file[:pathname].include?("./")
+        file[:pathname] = file[:pathname].split("./")[1]
+      end
+
       if(file[:directory])
         file_path_set.add(file[:pathname])
       end
@@ -93,7 +99,11 @@ module Archive
           end
         end 
       end
-      cleaned_files.append(file)
+      
+      # excludes "./" paths
+      if(file[:pathname]!=nil)
+        cleaned_files.append(file)
+      end
     end
 
     cleaned_files
