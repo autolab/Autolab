@@ -442,7 +442,7 @@ class AssessmentsController < ApplicationController
         score: result["score"].to_f,
         feedback: result["feedback"],
         score_id: result["score_id"].to_i,
-        released: result["released"].to_i
+        released: result["released"] == "t" ? 1 : 0
       }
     end
 
