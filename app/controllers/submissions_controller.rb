@@ -400,6 +400,8 @@ class SubmissionsController < ApplicationController
       end
     end
 
+    @problemReleased = @submission.scores.pluck(:released).all?
+
     @annotations = @submission.annotations.to_a
     @annotations.sort! { |a, b| a.line.to_i <=> b.line.to_i }
 
@@ -418,7 +420,6 @@ class SubmissionsController < ApplicationController
       value = annotation.value || 0
       line = annotation.line
       problem = annotation.problem ? annotation.problem.name : "General"
-      isReleased = @submission.scores.pluck(:released).all?
 
       @problemSummaries[problem] ||= []
       @problemSummaries[problem] << [description, value, line, annotation.submitted_by, annotation.id]
@@ -426,7 +427,6 @@ class SubmissionsController < ApplicationController
       @problemGrades[problem] ||= 0
       @problemGrades[problem] += value
 
-      @problemReleased = isReleased
     end
 
 
