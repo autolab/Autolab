@@ -27,15 +27,18 @@
   <div class="problemGrades">
     <h1>Grades</h1>
     <div class="collection">
-    <%# TODO: Hide unreleased scores for non-instructors %>
       <% p_scores = @submission.problems_to_scores %>
       <% @assessment.problems.each_with_index do |p,i| %>
         <% p_score = p_scores[p.id] %>
         <div class="problem-grade-item collection-item">
           <div class="problem_name"> <%= p.name.capitalize %>: </div>
           <div class="problem_score">
-            <a href="#!" data-problem-id="<%= p.id %>" data-submission-id="<%= @submission.id %>"> <%= p_score && p_score.score ? p_score.score : raw("&ndash;") %> </a>
-            <b>/ <%= p.max_score %> </b>
+            <% if @cud.instructor? or @cud.course_assistant? %>
+              <a href="#!" data-problem-id="<%= p.id %>" data-submission-id="<%= @submission.id %>"> <%= p_score && p_score.score ? p_score.score : raw("&ndash;") %> </a>
+            <% else %>
+              <b><%= if p_score.released then p_score.score else raw("&ndash;") end %></b>
+            <% end %>
+            <b> / <%= p.max_score %></b>
           </div>
         </div>
       <% end %>
