@@ -292,17 +292,17 @@ function make_editable($editable) {
 
 /* Highlights lines longer than 80 characters autolab red color */
 var highlightLines = function(highlight) {
-  var highlightColor = "rgba(200, 200, 0, 0.9)"
-  $("#code-list > li > code").each(function() {
+  var highlightColor = "rgba(255, 255, 0, 0.3)"
+  $("#code-box > .code-table > .code-line > .code").each(function() {
     var text = $(this).text();
     // To account for lines that have 80 characters and a line break
     var diff = text[text.length - 1] === "\n" ? 1 : 0;
     if (text.length - diff > 80 && highlight) {
-      $(this).css("background-color", highlightColor);
-      $(this).prev().css("background-color", highlightColor);
+      $(this).css("background", highlightColor);
+      $(this).prev().css("background", highlightColor);
     } else {
-      $(this).css("background-color", "white");
-      $(this).prev().css("background-color", "white");
+      $(this).css("background", "inherit");
+      $(this).prev().css("background", "inherit");
     }
   });
 };
@@ -323,6 +323,8 @@ function displayAnnotations() {
 }
 
 function attachEvents() {
+  var status = $('#highlightLongLines')[0].checked;
+  highlightLines(status);
 
   $(".add-button").on("click", function(e) {
 
