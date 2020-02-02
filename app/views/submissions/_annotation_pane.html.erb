@@ -43,7 +43,7 @@
             <% if @cud.instructor? or @cud.course_assistant? %>
               <a href="#!" data-problem-id="<%= p.id %>" data-submission-id="<%= @submission.id %>"> <%= p_score && p_score.score ? p_score.score : raw("&ndash;") %> </a>
             <% else %>
-              <b><%= if p_score.released then p_score.score else raw("&ndash;") end %></b>
+              <b><%= if p_score && p_score.released then p_score.score else raw("&ndash;") end %></b>
             <% end %>
             <b> / <%= p.max_score %></b>
           </div>
