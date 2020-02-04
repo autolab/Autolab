@@ -513,6 +513,7 @@
   box-shadow: none;
   border: none;
   margin: 10px 0;
+  max-height: 350px;
 }
 
 .annotationSummary .collapsible-header{
