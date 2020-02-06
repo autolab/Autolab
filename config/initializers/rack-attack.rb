@@ -24,7 +24,7 @@ class Rack::Attack
   # whitelisting). It must implement .increment and .write like
   # ActiveSupport::Cache::Store
 
-  # Rack::Attack.cache.store = ActiveSupport::Cache::MemoryStore.new 
+  # Rack::Attack.cache.store = ActiveSupport::Cache::MemoryStore.new
 
   ### Safelist Requests ###
 
@@ -38,6 +38,15 @@ class Rack::Attack
   end
 
   ### Throttle Requests ###
+
+  # Throttle setup requests by user id
+  #
+  # Key: "rack::attack:#{Time.now.to_i/:period}:api/general:#{req.user_id}"
+  throttle('api/setup', :limit => 1500, :period => 0.seconds) do |req|
+    if req.path.start_with?("/api/")
+      req.user_id
+    end
+  end
 
   # Throttle all requests by user id
   #
