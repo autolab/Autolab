@@ -388,7 +388,7 @@ DEPENDENCIES
   sprockets-rails (>= 3.2.1)
   sqlite3 (~> 1.3.6)
   thin
-  turbolinks
+  turbolinks (~> 5.2.0)
   uglifier (>= 1.3.0)
   webmock
   yard
