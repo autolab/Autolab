@@ -1,4 +1,4 @@
-class AddProblemValueToAnnotation < ActiveRecord::Migration
+class AddProblemValueToAnnotation < ActiveRecord::Migration[4.2]
   def self.up
     add_column :annotations, :comment, :text
     add_column :annotations, :value, :float

@@ -1,4 +1,4 @@
-class AddCgdubDependenciesUpdatedAtToCourse < ActiveRecord::Migration
+class AddCgdubDependenciesUpdatedAtToCourse < ActiveRecord::Migration[4.2]
   def self.up
     # default to now for easy prepopulation
     add_column :courses, :cgdub_dependencies_updated_at, :datetime, :default => Time.now

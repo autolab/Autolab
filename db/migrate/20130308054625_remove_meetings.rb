@@ -1,4 +1,4 @@
-class RemoveMeetings < ActiveRecord::Migration
+class RemoveMeetings < ActiveRecord::Migration[4.2]
   def self.up
     drop_table :meeting_signups
     drop_table :meetings

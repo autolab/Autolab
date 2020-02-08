@@ -1,4 +1,4 @@
-class CreateProblems < ActiveRecord::Migration
+class CreateProblems < ActiveRecord::Migration[4.2]
   def self.up
     create_table :problems do |t|
       t.string :name

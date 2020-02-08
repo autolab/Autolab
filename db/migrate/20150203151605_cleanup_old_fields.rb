@@ -1,4 +1,4 @@
-class CleanupOldFields < ActiveRecord::Migration
+class CleanupOldFields < ActiveRecord::Migration[4.2]
   def change
 
     remove_column :assessments, :late_penalty_old, :float

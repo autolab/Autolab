@@ -1,4 +1,4 @@
-class CreateAssessmentUserData < ActiveRecord::Migration
+class CreateAssessmentUserData < ActiveRecord::Migration[4.2]
   def self.initialize_AUDs_modulo_callbacks(asmt)
     # create all AUDs
     Rails.logger.info "Creating AUDs for #{asmt.course.name}/#{asmt.name}..."

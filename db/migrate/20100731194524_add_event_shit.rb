@@ -1,4 +1,4 @@
-class AddEventShit < ActiveRecord::Migration
+class AddEventShit < ActiveRecord::Migration[4.2]
   def self.up
     create_table :event_schemas do |t|  
       t.references :category

@@ -1,4 +1,4 @@
-class ChangeAvailableDateToStartDate < ActiveRecord::Migration
+class ChangeAvailableDateToStartDate < ActiveRecord::Migration[4.2]
   def self.up
   rename_column :assessments, :available_date, :start_date
   end

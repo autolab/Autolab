@@ -1,4 +1,4 @@
-class AddAssessmentRefToAttachments < ActiveRecord::Migration
+class AddAssessmentRefToAttachments < ActiveRecord::Migration[4.2]
   def change
     add_reference :attachments, :assessment, index: true
 
