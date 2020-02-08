@@ -15,8 +15,8 @@
             </div>
             <div class="collapsible-body">
               <% if @cud.instructor? or @cud.course_assistant? or @problemReleased%>
-                <% descriptTuples.each do |description, value, line, user, id, position| %>
-                  <div class="descript" id="li-annotation-<%= id %>" onclick="scrollToFileLine(<%= (position.nil? ? 0 : position) %>, <%= (line.nil? ? nil : line+1) %>)"> <!-- Line + 1 because the code line numbers starts with 1 not 0. -->
+                <% descriptTuples.each do |description, value, line, user, id| %>
+                  <div class="descript" id="li-annotation-<%= id %>" onclick="scrollToLine(<%= (line.nil? ? nil : line+1) %>)"> <!-- Line + 1 because the code line numbers starts with 1 not. -->
                     <span class="point_badge <%= value > 0 ? "positive" : value < 0 ? "negative" : "neutral" %>"><%= plus_fix(value) %></span> <%= description %>
                   </div>
                 <% end %>
