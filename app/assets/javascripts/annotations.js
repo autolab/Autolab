@@ -1,7 +1,13 @@
 /* Document On Ready Initializations */
 
 $(document).ready(function () {
-  $(".collapsible-body").show(); //expands all collapsible initially 
+  $(".collapsible-body").show(); //expands all collapsible initially
+
+  //get line number in URL, if it exists
+  var urlParams = new URLSearchParams(location.search);
+  if (urlParams.has("line")) {
+    scrollToLine(urlParams.get("line"));
+  }
 });
 
 /* File Tree and Code Viewer Helper Functions */
@@ -85,9 +91,9 @@ function scrollToFileLine(f, n) {
   else {
     if (!changeFile(f)) {
       // file not chached, go to page
-      window.location = `./view?header_position=${f}`;
+      window.location = `./view?header_position=${f}&line=${n}`;
     }
-    //TODO: go to correct code line
+    scrollToLine(n);
   }
 }
 
