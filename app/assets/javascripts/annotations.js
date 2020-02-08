@@ -83,9 +83,9 @@ function scrollToFileLine(f, n) {
     scrollToLine(n)
   }
   else {
-    if (!changeFile(f)) {
-      // file not chached, go to page
-      window.location = `./view?header_position=${f}`;
+    var testElem = $(allFilesFolders.get(f));
+    if (testElem.data("header_position") != undefined) {
+      testElem.click();
     }
     //TODO: go to correct code line
   }
