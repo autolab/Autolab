@@ -71,7 +71,7 @@
 
   <script>
     var newFile = {};
-    newFile.url = '<%= url_for(params) %>'
+    newFile.url = '<%= url_for(params.to_unsafe_h) %>'
 
     <% if @is_pdf %>
     newFile.pdf = true;
