@@ -422,7 +422,7 @@ class SubmissionsController < ApplicationController
       problem = annotation.problem ? annotation.problem.name : "General"
 
       @problemSummaries[problem] ||= []
-      @problemSummaries[problem] << [description, value, line, annotation.submitted_by, annotation.id]
+      @problemSummaries[problem] << [description, value, line, annotation.submitted_by, annotation.id, annotation.position]
 
       @problemGrades[problem] ||= 0
       @problemGrades[problem] += value
