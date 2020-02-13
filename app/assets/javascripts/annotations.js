@@ -85,7 +85,7 @@ function setActiveFilePosHelper(elem, headerPos) {
 // Go to a specific file and a specific line in the codeviewer
 // Where f is the file's header_position value, and n is the line number
 function scrollToFileLine(f, n) {
-  if (currentHeaderPos && currentHeaderPos == f) {
+  if (currentHeaderPos == f) {
     scrollToLine(n)
   }
   else {
