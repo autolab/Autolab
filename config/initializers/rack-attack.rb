@@ -51,7 +51,7 @@ class Rack::Attack
   # Throttle requests for device_flow_init
   #
   # Key: "rack::attack:#{Time.now.to_i/:period}:oauth/device_flow_init:#{req.user_id}"
-  throttle("oauth/device_flow_init", :limit => 1, :period => 30.seconds) do |req|
+  throttle("oauth/device_flow_init", :limit => 1000, :period => 30.seconds) do |req|
     if req.path.start_with?("/oauth/device_flow_init")
       req.ip
     end
@@ -60,7 +60,7 @@ class Rack::Attack
   # Throttle requests for device_flow_authorize
   #
   # Key: "rack::attack:#{Time.now.to_i/:period}:oauth/device_flow_authorize:#{req.user_id}"
-  throttle("oauth/device_flow_authorize", :limit => 1, :period => 5.seconds) do |req|
+  throttle("oauth/device_flow_authorize", :limit => 1000, :period => 5.seconds) do |req|
     if req.path.start_with?("/oauth/device_flow_authorize")
       req.ip
     end
