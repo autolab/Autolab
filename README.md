@@ -60,6 +60,10 @@ We are currently in the process of migrating Autolab to Rails 5.1 and Ruby
 fixed and preliminary integration testing with Tango has been successful. If
 there are any discovered issues, please file an issue.
 
+[Update 2020/02/13]: We are almost done with the upgrade, and the new master soon will be running on Rails 5. 
+We will continue to maintain a separate rails-4-master branch, which may still receive bug fixes 
+but no new features.
+
 ## Contributing
 
 We encourage you to contribute to Autolab! Please check out the
