@@ -39,24 +39,6 @@ class Rack::Attack
 
   ### Throttle Requests ###
 
-  # Throttle setup requests by user id
-  #
-  # Key: "rack::attack:#{Time.now.to_i/:period}:api/general:#{req.user_id}"
-  throttle('api/setup', :limit => 1500, :period => 0.seconds) do |req|
-    if req.path.start_with?("/api/")
-      req.user_id
-    end
-  end
-
-  # Throttle all requests by user id
-  #
-  # Key: "rack::attack:#{Time.now.to_i/:period}:api/general:#{req.user_id}"
-  throttle('api/general', :limit => 10, :period => 30.seconds) do |req|
-    if req.path.start_with?("/api/")
-      req.user_id
-    end
-  end
-
   # Throttle requests for assessment submission endpoint
   #
   # Key: "rack::attack:#{Time.now.to_i/:period}:api/submit:#{req.user_id}"
