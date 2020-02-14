@@ -241,7 +241,7 @@ public
 
     updateScore(score.submission.course_user_datum_id, score)
 
-    render text: score.score
+    render plain: score.score
 
   # see http://stackoverflow.com/questions/6163125/duplicate-records-created-by-find-or-create-by
   # and http://barelyenough.org/blog/2007/11/activerecord-race-conditions/
@@ -271,7 +271,7 @@ public
 
     updateScore(score.submission.course_user_datum_id, score)
 
-    render text: score.id
+    render plain: score.id
 
   # see http://stackoverflow.com/questions/6163125/duplicate-records-created-by-find-or-create-by
   # and http://barelyenough.org/blog/2007/11/activerecord-race-conditions/
@@ -309,7 +309,7 @@ end
     # get submission and problem IDs
     sub_id = params[:submission_id].to_i
 
-    render text: Submission.find(sub_id).final_score(@cud)
+    render plain: Submission.find(sub_id).final_score(@cud)
   end
 
   def statistics
