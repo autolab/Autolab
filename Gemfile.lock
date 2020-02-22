@@ -317,9 +317,6 @@ GEM
     thread_safe (0.3.6)
     tilt (2.0.9)
     ttfunk (1.0.3)
-    turbolinks (5.2.0)
-      turbolinks-source (~> 5.2)
-    turbolinks-source (5.2.0)
     tzinfo (1.2.5)
       thread_safe (~> 0.1)
     uglifier (4.1.20)
@@ -388,7 +385,6 @@ DEPENDENCIES
   sprockets-rails (>= 3.2.1)
   sqlite3 (~> 1.3.6)
   thin
-  turbolinks
   uglifier (>= 1.3.0)
   webmock
   yard
