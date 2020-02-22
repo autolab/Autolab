@@ -778,3 +778,7 @@
 .descript {
   cursor: pointer;
 }
+
+.summary_score{
+  padding-left: 10px;
+}
