@@ -8,6 +8,9 @@ $(document).ready(function () {
   if (urlParams.has("line")) {
     scrollToLine(urlParams.get("line"));
   }
+  if (!newFile.pdf) {
+    purgeCurrentPageCache();
+  }
 });
 
 /* File Tree and Code Viewer Helper Functions */
@@ -30,32 +33,44 @@ function changeFile(headerPos) {
 
   // If we've cached this file locally, just get it
   if (localCache[headerPos] != undefined) {
-    // Perform the DOM update in the background to keep things snappy
-    setTimeout(function () {
-      newFile = localCache[headerPos];
-      // Update the code viewer and symbol tree with the cached data
-      $('#code-box').replaceWith(newFile.codeBox);
+    newFile = localCache[headerPos];
+    // Update the code viewer and symbol tree with the cached data
+    $('#code-box').replaceWith(newFile.codeBox);
 
-      if (newFile.symbolTree == null) {
-        $('#symbol-tree-box').hide();
-      } else {
-        $('#symbol-tree-container').html(newFile.symbolTree);
-      }
+    if (newFile.symbolTree == null) {
+      $('#symbol-tree-box').hide();
+    } else {
+      $('#symbol-tree-container').html(newFile.symbolTree);
+    }
 
-      // Add syntax highlighting to the new code viewer
-      $('pre code').each(function () {
-        hljs.highlightBlock(this);
-      });
-
-      // Update the page URL
-      history.replaceState(null, null, newFile.url);
-
-      displayAnnotations();
-      attachEvents();
+    // Add syntax highlighting to the new code viewer
+    $('pre code').each(function () {
+      hljs.highlightBlock(this);
     });
+
+    // Update the page URL
+    history.replaceState(null, null, newFile.url);
+
+    displayAnnotations();
+    attachEvents();
     return true;
   }
   return false;
+}
+
+function purgeCurrentPageCache() {
+  var symbolTree = $("#symbol-tree-box").html();
+  if (symbolTree) {
+    symbolTree = `<div id="symbol-tree-box">${symbolTree}</div>`
+  }
+  else {
+    symbolTree = null;
+  }
+  localCache[curHeaderPos] = {
+    codeBox: `<div id="code-box">${$('#code-box').html()}</div>`,
+    pdf: false,
+    symbolTree
+  };
 }
 
 // Updates active tags to set the specified file
@@ -1083,7 +1098,8 @@ var submitNewAnnotation = function (comment, value, problem_id, lineInd, form) {
 
       annotationsByLine[lineInd].push(data);
       annotations.push(data);
-      fillAnnotationBox()
+      fillAnnotationBox();
+      purgeCurrentPageCache();
     },
     error: function (result, type) {
       $(form).find('.error').text("Could not save annotation. Please refresh the page and try again.").show();
@@ -1107,6 +1123,7 @@ var updateAnnotation = function (annotationObj, box) {
       $(box).remove();
       displayAnnotations();
       fillAnnotationBox();
+      purgeCurrentPageCache();
     },
     error: function (result, type) {
       $(box).find('.error').text("Failed to save changes to the annotation. Please refresh the page and try again.").show();
@@ -1144,6 +1161,7 @@ var updateLegacyAnnotation = function (annotationObj, lineInd, formEl) {
       updateAnnotationBox(annotationObj);
       $(formEl).remove();
       fillAnnotationBox();
+      purgeCurrentPageCache();
     },
     error: function (result, type) {
       $(formEl).append(elt("div", null, "Failed to Save Annotation!!!"));
