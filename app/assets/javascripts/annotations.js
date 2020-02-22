@@ -2,7 +2,7 @@
 
 $(document).ready(function () {
   $(".collapsible-body").show(); //expands all collapsible initially
-
+  $('.collapsible').collapsible();
   //get line number in URL, if it exists
   var urlParams = new URLSearchParams(location.search);
   if (urlParams.has("line")) {
