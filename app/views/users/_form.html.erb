@@ -28,8 +28,11 @@
   </div>
   <% if current_user.administrator? %>
     <div class="field">
-      <%= f.check_box :administrator %>
-			<%= f.label :administrator %><br>
+        <label>
+              <%= f.check_box :administrator %>
+            <span> <%= f.label :administrator %> <span> <br>
+        </label>
+
     </div>
   <% end %>
 
