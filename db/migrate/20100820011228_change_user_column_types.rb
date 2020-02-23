@@ -1,4 +1,4 @@
-class ChangeUserColumnTypes < ActiveRecord::Migration
+class ChangeUserColumnTypes < ActiveRecord::Migration[4.2]
   def self.up
     change_column :users, :lecture, :string
     change_column :users, :year, :string

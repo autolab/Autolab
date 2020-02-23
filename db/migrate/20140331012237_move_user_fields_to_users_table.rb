@@ -1,4 +1,4 @@
-class MoveUserFieldsToUsersTable < ActiveRecord::Migration
+class MoveUserFieldsToUsersTable < ActiveRecord::Migration[4.2]
   def change
     change_table :users do |u|
       u.string :school

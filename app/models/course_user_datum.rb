@@ -1,6 +1,6 @@
 require "association_cache"
 
-class CourseUserDatum < ActiveRecord::Base
+class CourseUserDatum < ApplicationRecord
   class AuthenticationFailed < Exception
     attr_reader :user_message, :dev_message
     def initialize(user_message, dev_message)

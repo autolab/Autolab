@@ -1,4 +1,4 @@
-class SetMaxGraceDaysDefault < ActiveRecord::Migration
+class SetMaxGraceDaysDefault < ActiveRecord::Migration[4.2]
   def self.up
     change_column :assessments, :max_grace_days, :integer, :default=>0
   assessments = Assessment.all

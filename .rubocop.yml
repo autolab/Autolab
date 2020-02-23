@@ -2,6 +2,7 @@ AllCops:
   Include:
     - '**/Rakefile'
     - '**/config.ru'
+    - 'spec/factories/*.rb'
   Exclude:
     - 'assessmentConfig/**/*'
     - 'attachments/**/*'
@@ -11,7 +12,9 @@ AllCops:
     - 'db/**/*'
     - 'script/**/*'
     - 'tmp/**/*'
-  RunRailsCops: true
+
+Rails:
+  Enabled: true
 
 Metrics/LineLength:
   Max: 100
@@ -27,7 +30,7 @@ Metrics/MethodLength:
   Max: 20
 
 # Indent private/protected/public as deep as method definitions
-Style/AccessModifierIndentation:
+Layout/AccessModifierIndentation:
   EnforcedStyle: outdent
   SupportedStyles:
     - outdent

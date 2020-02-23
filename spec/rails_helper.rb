@@ -24,7 +24,7 @@ RSpec.configure do |config|
 
   # Helper configuration for rspec.
   config.infer_spec_type_from_file_location!
-  config.include Devise::TestHelpers, type: :controller
+  config.include Devise::Test::ControllerHelpers, type: :controller
   config.extend ControllerMacros, type: :controller
 
   # Before hooks for initialization

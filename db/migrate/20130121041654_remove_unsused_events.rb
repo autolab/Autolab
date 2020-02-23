@@ -1,4 +1,4 @@
-class RemoveUnsusedEvents < ActiveRecord::Migration
+class RemoveUnsusedEvents < ActiveRecord::Migration[4.2]
   def self.up
     drop_table :event_categories
     drop_table :event_exceptions

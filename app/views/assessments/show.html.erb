@@ -30,12 +30,13 @@
 <hr>
 <div class="row">
   <div class="col s12 m4">
+
     <%# Display any optional instructor admin options %>
     <% if @cud.instructor? then %>
       <ul class="collapsible" data-collapsible="accordion">
-        <li>
-          <div class="collapsible-header"><i class="material-icons"></i><h5>Admin Options</h5></div>
-          <div class="collapsible-body">
+        <li class="collapsible-menu-link">
+          <div class="collapsible-header"><h5>Admin Options</h5></div>
+          <div class="collapsible-body" style="display: block">
             <ul class="options">
               <li> <%= link_to "Edit assessment", {:action => "edit" }, {:title=> "View and modify the properties for this assessment, including its problems", :class=>""} %></li>
               <li> <%= link_to "Grade submissions", {:action => "viewGradesheet" }, {:title=> "View and enter grades on the gradesheet" } %></li>
@@ -74,8 +75,8 @@
     <%# Display the optional CA admin options %>
     <% if @cud.course_assistant? or @cud.instructor? then %>
       <ul class="collapsible" data-collapsible="accordion">
-        <li>
-          <div class="collapsible-header"><i class="material-icons"></i><h5>CA Options</h5></div>
+        <li class="collapsible-menu-link">
+          <div class="collapsible-header"><h5>CA Options</h5></div>
           <div class="collapsible-body">
             <ul class="options">
               <li><%= link_to "Grade section #{@cud.section} submissions", url_for(:action => 'viewGradesheet', :section => '1', :escape => false),
@@ -100,8 +101,8 @@
     <% end %>
 
     <ul class="collapsible" data-collapsible="accordion">
-      <li>
-        <div class="collapsible-header active"><i class="material-icons"></i><h5>Options</h5></div>
+      <li class="collapsible-menu-link">
+        <div class="collapsible-header active"><h5>Options</h5></div>
         <div class="collapsible-body">
           <ul class="options">
             <li> <%= link_to "View handin history", {:action => 'history'}, {:title=> "View your submissions, scores, and feedback from the course staff" } %> </li>
@@ -278,15 +279,23 @@
       <% end %>
   <% end %>
 
-    <% if @submissions.size == 0 then %>
-      No Submissions yet!
-    <% else %>
-      <% for submission in @submissions.first(limit=3) do %>
-        <%= render partial: "submission_summary_row",
-          locals: { submission: submission,
-          download_access: download_access } %>
-      <% end %>
-      <%= link_to "See all submissions", {:action => "history"} %></li>
-
+  <% if @submissions.size == 0 then %>
+    No Submissions yet!
+  <% else %>
+    <% for submission in @submissions.first(limit=3) do %>
+      <%= render partial: "submission_summary_row",
+        locals: { submission: submission,
+        download_access: download_access } %>
     <% end %>
-  </div>
+    <%= link_to "See all submissions", {:action => "history"} %></li>
+
+  <% end %>
+</div>
+
+<% content_for :javascripts do %>
+  <script>
+     $(document).ready(function(){
+       $('.collapsible').collapsible();
+     });
+  </script>
+<% end %>

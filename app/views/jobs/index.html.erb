@@ -3,8 +3,10 @@
 <% end %>
 
 <p>
-This page shows you the status of current and recent autograding jobs.<br />
-<%= link_to "Click here", tango_status_course_jobs_path %> to view the overall status of Tango VMs.
+  This page shows you the status of current and recent autograding jobs.<br />
+  <% if @cud.user.administrator? or @cud.instructor? %>
+    <%= link_to "Click here", tango_status_course_jobs_path %> to view the overall status of Tango VMs.
+  <% end %>
 </p>
 
 <h2>Currently Running Jobs</h2>

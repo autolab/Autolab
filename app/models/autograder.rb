@@ -2,7 +2,7 @@
 # This model has nothing to do with actually autograding assessments, and instead deals
 # with autograding properties for an assessment
 #
-class Autograder < ActiveRecord::Base
+class Autograder < ApplicationRecord
   belongs_to :assessment
 
   trim_field :autograde_image

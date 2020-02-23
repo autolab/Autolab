@@ -5,7 +5,7 @@ newFile.symbolTree = null
 <% if !@ctag_obj.nil? && !@ctag_obj.empty? %>
 newFile.symbolTree = '<%= j render("submissions/code_symbol_tree", ctag_obj: @ctag_obj) %>'
 <% end %>
-newFile.url = '<%= url_for(params) %>'
+newFile.url = '<%= url_for(params.to_unsafe_h) %>'
 
 <% if @is_pdf %>
 newFile.pdf = true;

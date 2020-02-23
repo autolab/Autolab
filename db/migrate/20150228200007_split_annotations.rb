@@ -1,4 +1,4 @@
-class SplitAnnotations < ActiveRecord::Migration
+class SplitAnnotations < ActiveRecord::Migration[4.2]
   def up
     require 'uri'
     Annotation.find_each do |annotation|

@@ -71,7 +71,7 @@
 
   <script>
     var newFile = {};
-    newFile.url = '<%= url_for(params) %>'
+    newFile.url = '<%= url_for(params.to_unsafe_h) %>'
 
     <% if @is_pdf %>
     newFile.pdf = true;
@@ -86,7 +86,6 @@
     <% end %>
   </script>
 <% end %>
-
 <!-- force end the container -->
 </div></div>
 
@@ -131,8 +130,11 @@
       </div>
     </div>
     <div class="col s8">
-        <input type="checkbox" id="highlightLongLines" checked>
-        <label for="highlightLongLines">Highlight lines longer than 80 characters</label>
+        <label>
+          <input type="checkbox" id="highlightLongLines" checked>
+          <span>Highlight lines longer than 80 characters</span>
+        </label>
+        <br>
       <%= render "code_viewer" %>
     </div>
     <div class="col s2">

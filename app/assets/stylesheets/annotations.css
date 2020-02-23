@@ -520,6 +520,8 @@
   min-height: inherit;
   line-height: inherit;
   border: none;
+  padding: 5px;
+  padding-left: 10px;
 }
 
 .annotationSummary .collapsible-header h4{
@@ -777,4 +779,8 @@
 
 .descript {
   cursor: pointer;
+}
+
+.summary_score{
+  padding-left: 10px;
 }

@@ -20,5 +20,5 @@ problems:
   optional: false
 autograder:
   autograde_timeout: 180
-  autograde_image: rhel.img
+  autograde_image: autograding_image
   release_score: true

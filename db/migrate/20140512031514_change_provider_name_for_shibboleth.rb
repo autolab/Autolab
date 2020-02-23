@@ -1,4 +1,4 @@
-class ChangeProviderNameForShibboleth < ActiveRecord::Migration
+class ChangeProviderNameForShibboleth < ActiveRecord::Migration[4.2]
   # In migration 20131222162700_prepare_external_auth.rb, Shibboelth are
   # given provider name "CMU-Shibboleth" but it should just be "shibboleth"
   def up

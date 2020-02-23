@@ -1,4 +1,4 @@
-class AddNicknameToUsers < ActiveRecord::Migration
+class AddNicknameToUsers < ActiveRecord::Migration[4.2]
   def self.up
     add_column :users, :nickname, :string
   end

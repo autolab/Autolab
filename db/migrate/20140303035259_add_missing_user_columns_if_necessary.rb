@@ -1,4 +1,4 @@
-class AddMissingUserColumnsIfNecessary < ActiveRecord::Migration
+class AddMissingUserColumnsIfNecessary < ActiveRecord::Migration[4.2]
   def up
     if (!column_exists?(:users, :confirmation_token))
       add_column :users, :confirmation_token, :string

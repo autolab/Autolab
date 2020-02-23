@@ -19,7 +19,7 @@ class ApplicationController < ActionController::Base
   before_action :authenticate_for_action
   before_action :update_persistent_announcements
   before_action :set_breadcrumbs
-  
+
   rescue_from ActionView::MissingTemplate do |exception|
       redirect_to("/home/error_404")
   end
@@ -61,9 +61,9 @@ class ApplicationController < ActionController::Base
     end
 
     if level == :administrator
-      skip_before_action :authorize_user_for_course, only: [action]
-      skip_filter authenticate_for_action: [action]
-      skip_before_action :update_persistent_announcements, only: [action]
+      skip_before_action :authorize_user_for_course, only: [action], raise: false
+      skip_before_action authenticate_for_action: [action]
+      skip_before_action :update_persistent_announcements, only: [action], raise: false
     end
 
     controller_whitelist = (@@global_whitelist[controller_name.to_sym] ||= {})
@@ -73,25 +73,26 @@ class ApplicationController < ActionController::Base
   end
 
   def self.action_no_auth(action)
-    skip_before_action :verify_authenticity_token, :authenticate_user!
-    skip_filter configure_permitted_paramters: [action]
-    skip_filter maintenance_mode: [action]
-    skip_filter run_scheduler: [action]
+    skip_before_action :verify_authenticity_token, raise: false
+    skip_before_action :authenticate_user!, raise: false
+    skip_before_action configure_permitted_paramters: [action]
+    skip_before_action maintenance_mode: [action]
+    skip_before_action run_scheduler: [action]
 
-    skip_filter authenticate_user: [action]
+    skip_before_action authenticate_user: [action], raise: false
     skip_before_action :authorize_user_for_course, only: [action]
-    skip_filter authenticate_for_action: [action]
-    skip_before_action :update_persistent_announcements, only: [action]
+    skip_before_action authenticate_for_action: [action], raise: false
+    skip_before_action :update_persistent_announcements, only: [action], raise: false
   end
 
 protected
 
   def configure_permitted_paramters
-    devise_parameter_sanitizer.for(:sign_in) { |u| u.permit(:email) }
-    devise_parameter_sanitizer.for(:sign_up) do |u|
+    devise_parameter_sanitizer.permit(:sign_in) { |u| u.permit(:email) }
+    devise_parameter_sanitizer.permit(:sign_up) do |u|
       u.permit(:email, :first_name, :last_name, :password, :password_confirmation)
     end
-    devise_parameter_sanitizer.for(:account_update) do |u|
+    devise_parameter_sanitizer.permit(:account_update) do |u|
       u.permit(:email, :password, :password_confirmation, :current_password)
     end
   end
