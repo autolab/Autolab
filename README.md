@@ -26,6 +26,7 @@ Since 2010, Autolab has had a transformative impact on education at CMU. Each se
 
 We released new documentation! Check it out [here](https://autolab.github.io/docs).
 
+We are currently in the process of updating our documentation to work with our newest release of Autolab, v2.5.0, which has been upgraded to Rails 5 from Rails 4
 
 ## Testing
 
