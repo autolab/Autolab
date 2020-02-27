@@ -143,6 +143,10 @@
   <% else %>
   <%# Else center the code and annotations %>
     <div class="col s10">
+      <label>
+        <input type="checkbox" id="highlightLongLines" checked>
+        <span>Highlight lines longer than 80 characters</span>
+      </label>
       <%= render "code_viewer" %>
     </div>
     <div class="col s2">
