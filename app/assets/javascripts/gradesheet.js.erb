@@ -369,7 +369,6 @@ jQuery(function() {
                       submission_id: editor.data('submission-id')
                   }, 
                   success: function(data, status, jqXHR) {
-                      // TODO: wtf
                       total.html(data == " " ? "&ndash;" : data);
                       total.effect("highlight", {}, 1000);
                   },

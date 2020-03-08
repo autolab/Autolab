@@ -305,11 +305,7 @@ function make_editable($editable) {
     onreset: function (event) {
     },
     onerror: function () {
-      // TODO: Display a message on save error
-    },
-    onsubmit: function () {
-      // TODO: Don't submit a score chance if we have it in the cache
-      return true;
+      $editable.parent().parent().effect('highlight', { color: 'red' }, 400);
     },
     submitdata: function (value, settings) {
       requestData = {
@@ -319,7 +315,7 @@ function make_editable($editable) {
       return requestData;
     },
     callback: function (value, settings) {
-      // TODO: Display a success message
+      $editable.parent().parent().effect("highlight",1000);
     }
 
   });
