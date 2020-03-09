@@ -63,11 +63,6 @@ Autolab is now running on Rails 5. However, we may still work on important bug f
  
  We will not be backporting new features from `master` to `master-rails-4`.
 
-
-[Update 2020/02/13]: We are almost done with the upgrade, and the new master soon will be running on Rails 5. 
-We will continue to maintain a separate rails-4-master branch, which may still receive bug fixes 
-but no new features.
-
 ## Contributing
 
 We encourage you to contribute to Autolab! Please check out the
