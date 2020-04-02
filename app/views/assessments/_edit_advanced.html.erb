@@ -1,0 +1,50 @@
+<%= f.text_field :group_size,
+  display_name: "Group Size",
+  help_text: "Set the maximum size of groups for this assessment.  If group size is 1, the assessment is solo.  If the size is decreased, groups that are too large will not be broken up.  If the size is set to 1, groups will be saved, but the assessment will be solo.", placeholder: "1" %>
+
+<div class="embedded-form">
+  <%= f.check_box :embedded_quiz, display_name: "Embedded Form", style: "margin-top: 0.8rem;", onclick: "boxClicked();" %>
+
+    <label class="custom-file-upload">
+          <span class = "btn primary" id="upload_button" style="clear:both;">
+            Embedded Form
+            <%= f.file_field_nowrap :embedded_quiz_form, class: "upload_embedded" %>
+          </span>
+    </label>
+
+    <p class="file_name">
+        <span id="file_name"></span>
+    </p>
+
+    <% if @assessment.embedded_quiz_form_data.nil? %>
+        <p class="help-text">
+            Select to Upload a File.
+        </p>
+    <% else %>
+        <p class="help-text red-text">
+            Upload will replace existing file.
+        </p>
+    <% end %>
+  <p class="help-block">
+    For more information on Embedded Forms, visit our new
+    <a href="https://autolab.github.io/docs/features/#embedded-forms" target="_blank"> docs page.</a>
+    </p>
+</div>
+
+<script>
+    document.getElementById("assessment_embedded_quiz_form").onchange = function(e) {
+        document.getElementById("file_name").textContent = "File Selected: " + document.getElementById("assessment_embedded_quiz_form").value.split(/(\\|\/)/g).pop();
+    }
+</script>
+
+<%= f.check_box :allow_unofficial, help_text: "Allow unofficial submission. Unless you know what you're doing, leave this unchecked." %>
+
+<% unless f.object.disable_handins %>
+<%= f.text_field :handin_directory, help_text: "The subdirectory in the assessment directory where student submissions will be store. You generally shouldn't need to change this.", placeholder: "Default: handin" %>
+
+      <%= f.text_field :remote_handin_path, placeholder: "(Optional)", help_text: "The directory outside the assessment directory where student submissions directly from local machines will be copied." %>
+      <% end %>
+
+<div class="action_buttons">
+  <%= f.submit "Save", :name=>"advanced" %>
+</div>
