@@ -2,13 +2,15 @@
 
 <ul class="gray-box">
   <li>
-    <b>Contact</b><br>
+    <h4>Contact</h4>
     <a href="mailto:<%= @user.email %>"><%= @user.email %></a>
     </li>
-  <li> <b>About</b><br>
-    First name <strong><%= @user.first_name %></strong><br>
-    Last name <strong><%= @user.last_name %></strong><br>
-    Courses 
+  <li> <h4>About</h4>
+    <p>
+    First name:&ensp;<strong><%= @user.first_name %></strong><br>
+    Last name:&ensp;<strong><%= @user.last_name %></strong><br>
+    </p> 
+    <h4>Courses</h4>
     <% if @cuds.empty? %>
     <strong> None </strong>
     <% else %>
@@ -25,6 +27,13 @@
 <%= link_to raw('<span class="btn primary">Edit Information</span>'), edit_user_path(@user) %><br>
 <% if @user == current_user %>
 <hr>
+<h4>Themes <span class="new badge beta padded-badge" style="float:unset;" data-badge-caption="BETA"></span></h4> 
+<ul class="theme-list">
+  <li><%= link_to 'Default', theme_path( :theme=>'light'), id: "default", remote: true, :onClick => "document.body.classList.value='autolab light';" %></li>
+  <li><%= link_to 'Dark', theme_path( :theme=>'dark'), id: "dark", remote: true, :onClick => "document.body.classList.value='autolab dark';" %></li>
+</ul>
+<br>
+<br>
 <h4>Private Settings</h4>
 <%= link_to raw('<span class="btn primary">Change Password</span>'), edit_user_registration_path %> <br>
 <h4>API Settings</h4>

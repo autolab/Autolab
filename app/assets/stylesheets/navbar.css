@@ -1,5 +1,6 @@
+@import "_theme.css";
 nav {
-  background: #a31919;
+  background: var(--C-990000);
   line-height: 50px;
   height: 50px;
 }
@@ -11,7 +12,7 @@ nav i, nav [class^="mdi-"], nav [class*="mdi-"], nav i.material-icons {
 
 nav a, nav a:hover, nav a:focus{
   text-decoration: none;
-  color:white;
+  color: #ffffff;
 }
 nav ul li{
   cursor:pointer;
@@ -19,28 +20,40 @@ nav ul li{
 .dropdown-target{
   font-weight: 500;
 }
+.dropdown-content {
+  background-color: var(--application-background);
+}
 .dropdown-content li>a{
-  color: #a31919;
+  color: var(--C-990000);
   font-weight:500;
+}
+.dropdown-content li:hover {
+  background-color: var(--C-f3f0f0-L2);
 }
 
 .sidenav-trigger{
   margin-right:20px;
 }
 #mobile-demo #dropdownMenu1{
-  color:white;
+  color:var(--headers-color);
   text-align:center;
   cursor:default;
-  background:#a31919;
+  background:var(--C-990000);
 }
 #mobile-demo li{
   cursor:pointer;
 }
 #mobile-demo a:hover{
-  color:black;
+  color:inherit;
   background:transparent;
 }
-
+.sidenav, .sidenav > .nav-user {
+  color: var(--headers-color) !important;
+  background-color: var(--application-background) !important;
+}
+.sidenav li > a, .sidenav li > a > i.material-icons {
+  color: var(--headers-color);
+}
 .side-nav li > a > i.material-icons{
   margin: 0 12px 0 0;
   height:48px;

@@ -12,7 +12,7 @@
 <h2>Currently Running Jobs</h2>
 
 <% if @running_jobs.blank? or @running_jobs == [] then %>
-  None
+  <p>None</p>
 <% else %>
   <table class='prettyBorder sortable'>
   <tr><th>Job ID</th><th>Job Name</th><th>Submitted At</th>
@@ -41,7 +41,7 @@
 <h2>Jobs Waiting to Run</h2>
 
 <% if @waiting_jobs.blank? or @waiting_jobs == [] then %>
-  None
+  <p>None</p>
 <% else %>
   <table class='prettyBorder sortable'>
   <tr><th>Job ID</th><th>Job Name</th><th>Submitted At</th><th>Elapsed (s)</th><th>Status</th></tr>

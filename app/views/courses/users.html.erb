@@ -47,7 +47,10 @@
 </p>
 
 <hr>
-Search: <%= text_field_tag 'search', nil, onkeyup:'filterRows(this.value)' %>
+<h5 style="display: inline-block;">Search: </h5>
+<div style="display: inline-block; margin-left: 25px; width: 75%;">
+<%= text_field_tag 'search', nil, onkeyup:'filterRows(this.value)' %>
+</div>
 <br>
 
 <div id='ajaxTable'>

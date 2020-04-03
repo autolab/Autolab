@@ -12,6 +12,7 @@ class HomeController < ApplicationController
   end
 
   def developer_login
+    current_user
     return unless request.post?
 
     user = User.find_by(email: params[:email])
@@ -55,11 +56,12 @@ class HomeController < ApplicationController
   end
 
   def contact
+    @user = current_user
     # --- empty ---
     # This route just renders the home#contact page, nothing special
   end
 
   def error_404
-    
+    @user = current_user
   end
 end

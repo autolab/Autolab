@@ -14,7 +14,7 @@
   </script>
 <% end %>
 
-Choose one of the following methods to install an assessment
+<h6>Choose one of the following methods to install an assessment</h6>
 
 <div class="section">
   <h4><li>Create from scratch</h4>
@@ -27,20 +27,18 @@ Choose one of the following methods to install an assessment
   <h5>You can import an existing assessment from file system.</h5>
 
   <% if @unused_config_files.empty? then %>
-    <i>There are no uninstalled assessments available for importing.</i>
+    <p>There are no uninstalled assessments available for importing.</p>
   <% else %>
     <p>If you have an existing Autolab assessment from a previous course offering,
     then you can import it into your current course:</p>
 
     <ul>
-      <li> Step 1: Copy the assessment from the previous course directory to the current course directory (<%= File.join(Rails.root, "courses", @course.name) %>).
+      <li><p>Step 1: Copy the assessment from the previous course directory to the current course directory (<%= File.join(Rails.root, "courses", @course.name) %>).</p></li>
 
-      <li>Step 2: Refresh this page to cause your new assessment to appear 
-      in the list below. 
+      <li><p>Step 2: Refresh this page to cause your new assessment to appear in the list below. </p></li>
 
-      <li>Step 3: Click the link on the uninstalled assessment you want to import:
+      <li><p>Step 3: Click the link on the uninstalled assessment you want to import:</p></li>
       <ul>
-
       <% @unused_config_files.each do |ass_file| %>
         <li><%= link_to ass_file, {action: :importAssessment, assessment_name: ass_file}, method: :post %></li>
       <% end %>         

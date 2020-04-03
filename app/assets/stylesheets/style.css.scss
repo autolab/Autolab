@@ -1,3 +1,4 @@
+@import "_theme.css";
 /******************************************************************************
  * RULE ORDER - keep CSS rules in alphabetical order                          *
  *  keep browser prefix (-webkit-, -moz-, etc) rules with the standard rule   *
@@ -10,22 +11,22 @@
 /********************************************************
 * These colors have been changed to fit a CMU aesthetic.*
 ********************************************************/
-$autolab-red: rgba(153, 0, 0, 0.9);
-$autolab-subtle-red: #C87B7E;
-$autolab-subtle-gray: #eee;
-$autolab-highlight-gray: #ccc;
-#F2EFEF
+
+a {
+  color: var(--C-569ff7);
+}
 
 html, body {
+  background-color: var(--application-background);
   height: 100%;
 }
 
 /* Error Classes - for elements that display error/status messages */
 .error {
-  color: red;
+  color: var(--error);
 }
 .success {
-  color: green;
+  color: var(--success);
 }
 .fieldWithErrors {
   display:inline;
@@ -35,7 +36,7 @@ html, body {
 
 .autolab .btn {
   font-weight: normal;
-  background-color: $autolab-red;
+  background-color: var(--C-990000);
 }
 
 .autocomplete-content {
@@ -51,9 +52,9 @@ html, body {
 /* Navbar Styling */
 
 div.main-header {
-  background-color: $autolab-red;
+  background-color: var(--C-8c0000);
   width: 100%;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.9);
+  border-bottom: 1px solid var(--C-000-L6);
 }
 
 div.main-header .logo {
@@ -66,7 +67,7 @@ div.main-header h2 {
 
   font-size: 22px;
   line-height: 54px;
-  color:#fff;
+  color:var(--C-fff);
 
   vertical-align: top;
   margin:0 4px;
@@ -74,11 +75,11 @@ div.main-header h2 {
 
   a {
     text-decoration: none;
-    color: #fff;
+    color: var(--C-fff);
     line-height: 32px;
     margin-top: 11px;
     margin-left: 2px;
-    border-left: 1px solid rgba(255, 255, 255, 0.7);
+    border-left: 1px solid var(--C-f3f0f0-L1);
     padding-left: 10px;
     display: inline-block;
   }
@@ -106,18 +107,18 @@ div.main-header img {
 
 .action-links.navbar-nav li a {
   padding: 6px 10px;
-  background-color: #fff;
+  background-color: var(--C-fff);
   font-size: 14px;
   line-height: 14px;
   border-radius: 18px;
   font-weight: normal;
-  color: $autolab-red;
-  border: 2px solid #fff;
+  color: var(--C-8c0000);
+  border: 2px solid var(--C-fff);
 }
 
 .action-links.navbar-nav li a:hover {
   text-decoration:none;
-  color: #fff;
+  color: var(--C-fff);
   background-color: transparent;
 }
 
@@ -126,7 +127,7 @@ div.main-header img {
 }
 
 .action-links.navbar-nav .dropdown li:hover {
-  background-color: #eee;
+  background-color: var(--C-eee);
 }
 
 .action-links.navbar-nav li.dropdown a {
@@ -134,7 +135,7 @@ div.main-header img {
 }
 
 .action-links.navbar-nav li.dropdown a:hover {
-  color: $autolab-red;
+  color: var(--C-8c0000);
 }
 
 .action-links .dropdown-menu .divider {
@@ -157,30 +158,31 @@ form#edit_editCourse {
 }
 
 .input-field label{
-  color: black;
+  color: var(--C-000);
 }
 
 .input-field label.active, [type="checkbox"] + label{
-  color: #444;
+  color: var(--C-444);
   font-weight: 600;
 }
 
-input:not([type]):disabled, input[type=text]:disabled, input[type=password]:disabled, input[type=email]:disabled, input[type=url]:disabled, input[type=time]:disabled, input[type=time][readonly="readonly"], input[type=date]:disabled, input[type=datetime]:disabled,input[type=datetime-local]:disabled, input[type=tel]:disabled, input[type=tel][readonly="readonly"], input[type=number]:disabled, input[type=search]:disabled,  textarea.materialize-textarea:disabled{
-  background: #f2f2f2;
-  color: #666;
+input:not([type]):disabled, input[type=text]:disabled, input[type=text]:not(.browser-default):disabled, input[type=password]:disabled, input[type=email]:disabled, input[type=url]:disabled, input[type=time]:disabled, input[type=time][readonly="readonly"], input[type=date]:disabled, input[type=datetime]:disabled,input[type=datetime-local]:disabled, input[type=tel]:disabled, input[type=tel][readonly="readonly"], input[type=number]:disabled, input[type=search]:disabled,  textarea.materialize-textarea:disabled{
+  background: var(--C-f2f2f2);
+  color: var(--C-666);
 }
 
-input[type=text], input[type=email]{
-  color: black;
+input[type=text], input[type=email], input[type=text]:not(.browser-default)[readonly="readonly"]{
+  color: var(--headers-color);
   font-weight: 400;
 }
 
 .tabs{
   overflow-x: hidden;
+  background-color: var(--application-background);
 }
 
 ::-webkit-input-placeholder { /* Chrome/Opera/Safari */
-  color: #b1b1b1;
+  color: var(--C-b1b1b1);
 }
 
 .checkbox-input{
@@ -213,8 +215,22 @@ input[type="file"].upload_embedded {
   display: none;
 }
 
+#upload_file {
+  color: var(--C-444);
+}
+
 .hide-all {
   display: none;
+}
+
+table.highlight {
+  color: var(--headers-color);
+  a {
+    color: var(--C-569ff7);
+  }
+  tbody > tr:hover {
+    background-color: var(--C-f3f0f0-L2);
+  }
 }
 
 .navbar-nav.action-links > li > .dropdown-menu {
@@ -231,13 +247,13 @@ input[type="file"].upload_embedded {
 }
 
 .main-header .dropdown-toggle {
-  color: #fff;
+  color: var(--C-fff);
   font-weight: normal ;
   cursor:pointer;
 }
 
 .main-header .dropdown-toggle .caret {
-  border-top: 4px solid #fff;
+  border-top: 4px solid var(--C-fff);
 }
 
 .main-header .dropdown-menu {
@@ -247,13 +263,14 @@ input[type="file"].upload_embedded {
 }
 
 .navbar-toggle .icon-bar {
-  background-color: #fff;
+  background-color: var(--C-fff);
 }
 
 .sub-navigation {
-  background-color: rgba(243, 240, 240, 0.9);
+  background-color: var(--C-f3f0f0-L2);
   width: 100%;
-  border-bottom: 1px solid rgba(223, 220, 220, 1);
+  border-bottom: 1px solid;
+  border-color: inherit;
   margin-bottom: 15px;
   padding: 0 15px;
 }
@@ -263,7 +280,7 @@ input[type="file"].upload_embedded {
 }
 
 .sub-navigation .item {
-  color: rgb(183, 180, 180);
+  color: var(--C-b7b4b4);
   font-size: 16px;
   line-height: 22px;
   cursor: pointer;
@@ -278,7 +295,7 @@ input[type="file"].upload_embedded {
 }
 
 .sub-navigation .left-nav .item:last-child {
-  color: rgb(103, 100, 100);
+  color: var(--C-676464);
   font-weight: bold;
 }
 
@@ -299,12 +316,12 @@ input[type="file"].upload_embedded {
 
 
 .sub-navigation .item:hover {
-  color: rgb(103, 100, 100);
+  color: var(--C-676464);
 }
 
 .sub-navigation .item + .item:before, /* IE8 *sigh* */
 .sub-navigation .item + .item::before {
-  color: #999696;
+  color: var(--C-999696);
   content: "»";
   font-size: 24px;
 }
@@ -323,7 +340,7 @@ input[type="file"].upload_embedded {
 
   .action-links.navbar-nav li {
     display: block;
-    border-bottom: 1px solid #fff;
+    border-bottom: 1px solid var(--C-fff);
     margin: 0;
   }
 
@@ -335,7 +352,7 @@ input[type="file"].upload_embedded {
     background-color: transparent;
     width: 100%;
     line-height: 36px;
-    color: #fff;
+    color: var(--C-fff);
     border: none;
   }
 
@@ -359,10 +376,13 @@ input[type="file"].upload_embedded {
 }
 
 /* Handin Panel */
+#handin_show_assessment {
+  color: var(--headers-color);
+}
 
 .handin-panel {
-  background-color: rgba(243, 240, 240, 0.7);
-  border: 1px solid #ddd;
+  background-color: var(--C-f3f0f0-L1);
+  border: 1px solid var(--C-ddd);
   border-radius: 4px;
   /*padding: 18px;*/
   top: -2.8rem;
@@ -388,7 +408,7 @@ input[type="file"].upload_embedded {
 }
 
 .handin-btn {
-  background-color: $autolab-red;
+  background-color: var(--C-8c0000);
   box-shadow: none;
 }
 .handin-btn-small {
@@ -403,11 +423,10 @@ input[type="file"].upload_embedded {
 div#footer {
   clear: both;
   font-size: 14px;
-  color: #888;
   height: 42px;
   padding: 0 10px;
   margin-top: 16px;
-  border-top: 1px solid #fafafa;
+  border-top: 1px solid var(--C-FAFAFA);
 }
 
 div#footer .right {
@@ -418,7 +437,7 @@ div#footer a,
 div#footer span.site_version {
   display: inline-block;
   padding: 12px;
-  color: #666;
+  color: var(--headers-color);
 }
 
 div#footer span.site_version {
@@ -432,14 +451,14 @@ div#footer div.fb-like.fb_iframe_widget {
 
 div#footer a:hover {
   text-decoration: none;
-  color: #428bca;
+  color: var(--C-428bca);
 }
 
 
 /* used for the submission history popup on submissions#index */
 #floater{
-  background-color: #fff;
-  border:1px solid black;
+  background-color: var(--C-fff);
+  border:1px solid var(--C-000);
   display: none;
   height:80%;
   left:15%;
@@ -458,9 +477,9 @@ ul.gray-box {
   padding: 0;
 }
 ul.gray-box > li {
-  background-color: #FAFAFA;
-  border: 1px solid #EEE;
-  color: #666;
+  background-color: var(--C-FAFAFA);
+  border: 1px solid var(--C-eee);
+  color: var(--C-666);
   margin: 0;
   padding: 10px;
 }
@@ -477,7 +496,7 @@ ul.gray-box a {
   text-decoration: none;
 }
 ul.gray-box b {
-  color:#555;
+  color:var(--C-555);
 }
 ul.gray-box.small {
   margin: 8px 0;
@@ -506,7 +525,7 @@ ul.gray-box.small > li + li {
 
 /*This is the one that we're (I'm) using for required-field indicators.*/
 .redText {
-  color: red;
+  color: var(--C-c00);
 }
 
 /**
@@ -514,23 +533,23 @@ ul.gray-box.small > li + li {
 **/
 
 div#publicCourse{
-  border: 2px dotted #000;
+  border: 2px dotted var(--C-000);
   margin-right:10%;
   padding:15px;
 }
 
 /* For autocompleting something. Not sure that these are in use anymore... */
 div.autoCompleteDiv  {
-  background-color:white;
-  border: 1px solid black;
-  color:black;
+  background-color:var(--C-fff);
+  border: 1px solid var(--C-000);
+  color:var(--C-000);
   margin-right:10px;
   padding: 2px;
 }
 div.autoCompleteDiv:hover, div.selectedAutoCompleteDiv {
-  background-color:#d2d2d2;
-  border: 1px solid black;
-  color:black;
+  background-color:var(--C-d2d2d2);
+  border: 1px solid var(--C-000);
+  color:var(--C-000);
   margin-right:10px;
   padding: 2px;
 }
@@ -539,7 +558,7 @@ div.autoCompleteDiv:hover, div.selectedAutoCompleteDiv {
  * For announcing Exams
  */
 p.attention {
-  color: green;
+  color: var(--C-57d66a);
   font-style: italic;
 }
 
@@ -556,14 +575,14 @@ ul.moss-list {
   padding: 0;
 }
 ul.moss-list > li {
-  background: #eee;
-  border: 1px solid #ccc;
+  background: var(--C-eee);
+  border: 1px solid var(--C-ccc);
   cursor: pointer;
   margin: 5px;
   padding: 4px;
 }
 ul.moss-list > li > h5 {
-  color: #00A;
+  color: var(--C-00A);
   font-weight: bold;
   margin: 0;
 }
@@ -572,8 +591,8 @@ ul.moss-inner-list {
   padding: 0;
 }
 ul.moss-inner-list > li {
-  background: linear-gradient(to top, #eee, #fff);
-  border: 1px solid #ccc;
+  background: linear-gradient(to top, var(--C-eee), var(--C-fff));
+  border: 1px solid var(--C-ccc);
   cursor: default;
   padding: 2px;
 }
@@ -591,7 +610,7 @@ ul.moss-inner-list > li > input[type="checkbox"]:checked ~ div {
  * Spans that behave as links.  Used for LDAP lookup on Create User Page
  **/
 .spanLink {
-  color: #c90;
+  color: var(--C-c90);
   cursor: pointer;
   text-decoration: underline;
 }
@@ -604,6 +623,48 @@ div.field_with_errors {
   display: inline;
 }
 
+div.scroll { 
+  margin:4px, 4px; 
+  padding:4px; 
+  background-color: var(--C-f3f0f0-L2);
+  width: 500px; 
+  height: 150px; 
+  overflow-x: hidden; 
+  overflow-x: auto; 
+  text-align:left; 
+  code {
+    color:var(--C-444);
+  }
+} 
+
+
+table, .category {
+  background-color: var(--C-F8F8F8) !important;
+  box-shadow: 0 0 5px 0px var(--C-eee) !important;
+  border: 1px solid var(--C-ccc) !important;
+  th {
+    background-color: var(--C-ebebeb) !important;
+    color: var(--C-909090) !important;
+  }
+  td {
+    color: var(--C-555) !important;
+    background-color: var(--C-F8F8F8) !important;
+    border-bottom: 1px solid var(--C-eee) !important;
+  }
+  td:hover {
+    color: var(--C-8c0000) !important; // Text color for table when hovering over
+  }
+  .id a {
+    color: var(--C-555) !important;
+  }
+}
+
+.category {
+  padding: 0 !important;
+  td:first-child, th:first-child {
+    padding-left: 10px;
+  }
+}
 
 /* TABLE STYLES.  Styles for the multiple tables that we have for some reason */
 /* Pretty Border Tables. I vote we make this the generic table style. */
@@ -615,17 +676,21 @@ table.prettyBorder td {
 }
 table.prettyBorder {
   border-collapse:collapse;
-  box-shadow: 0 0 5px 0px #eee;
+  box-shadow: 0 0 5px 0px var(--C-eee);
   font-size:15px;
   width: 100%;
   // keep track of what row this is
   counter-reset: rowNumber;
 
+  a {
+    color: var(--C-569ff7);
+  }
+
   tr {
-    background-color: #fff;
-    border: 1px solid #d0d0d0;
+    background-color: var(--C-fff);
+    border: 1px solid var(--C-d0d0d0);
     &:hover {
-      background-color:#abcdef;
+      background-color:var(--C-abcdef);
     }
   }
 
@@ -640,8 +705,8 @@ table.prettyBorder {
   }
 
   th {
-    background-color:#EBEBEB;
-    color:#909090;
+    // background-color:var(--C-ebebeb); // Comment out since the table css already set this color value
+    // color:var(--headers-color);
     cursor:pointer;
     font-family: Source Sans Pro, sans-serif;
     font-size: 0.8em;
@@ -652,12 +717,13 @@ table.prettyBorder {
   }
 
   td {
-    border: 1px solid #ddd;
+    border: 1px solid var(--C-d0d0d0);
     padding: 0 5px;
+    // color: var(--headers-color); // already set in table {}
   }
 
   tr.selected {
-    background-color: #eee;
+    background-color: var(--C-eee);
   }
 
   tr .btn.small {
@@ -670,21 +736,32 @@ table.prettyBorder {
 
 table.navigatable tr {
   height: 30px;
-  border-bottom:1px solid #f3f3f3;
+  border-bottom:1px solid var(--C-f3f3f3);
 }
 
 table.navigatable tr:hover {
-  background-color: #f3f3f3;
+  background-color: var(--C-f3f3f3);
+}
+
+table.striped {
+  tr {
+    color: var(--headers-color);
+  }
 }
 
 /* Card Styling */
 
 .card {
   font-weight: normal;
+  background-color: var(--C-fff);
 
   .collection,
   .card-action {
     border-radius: initial;
+    border-color: none;
+    .text-darken-3{
+      color: var(--C-c00) !important;
+    }
   }
 
   .row {
@@ -702,18 +779,39 @@ table.navigatable tr:hover {
     border-right: 0;
     border-bottom: 0;
   }
+  .card-content{
+    background-color: var(--C-990000);
+    color: var(--C-d5d5d5);
+  }
 }
 
 /* badge */
 .badge.padded-badge {
   padding: 2px 10px;
 }
+span.badge.new {
+  background-color: var(--C-dd2222);
+}
+.badge.beta {
+  background-color: var(--C-990000) !important;
+}
 
 /* collections */
-.collection
-a.collection-item {
-  transition: none;
+.collection{
+  border: 0;
+  a.collection-item {
+    transition: none;
+    color: var(--headers-color) !important;
+  }
+  a.collection-item:not(.active):hover {
+    background-color: var(--C-ddd);
+  }
+  .collection-item {
+    background-color: inherit;
+    border-bottom: none;
+  }
 }
+
 
 .input-field label {
     transition: none;
@@ -730,6 +828,7 @@ body.autolab {
 
   h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
     font-family: 'Source Sans Pro', sans-serif;
+    color: var(--headers-color);
   }
 
   h3 {
@@ -756,10 +855,11 @@ textarea {
     margin-top: 0.2rem;
     margin-bottom: 0.2rem;
     padding: 5px 0 5px 0;
-    border-color: #CCC;
-    box-shadow: 0 1px 0 0 #CCC;
+    border-color: var(--C-ccc);
+    box-shadow: 0 1px 0 0 var(--C-ccc);
     outline: none;
     font-weight: 400;
+    color: var(--headers-color);
 }
 
 input[type=text], input[type=email] {
@@ -778,12 +878,12 @@ input[type=checkbox] {
 }
 
 input[type=search] {
-	border-bottom: 1px #CCC;
-	box-shadow: 0 1px 0 0 #CCC;
+	border-bottom: 1px var(--C-ccc);
+	box-shadow: 0 1px 0 0 var(--C-ccc);
 }
 
 .flatpickr-input {
-  color: black !important;
+  color: var(--C-000) !important;
 }
 
 .file-path-wrapper input[type="text"] {
@@ -791,7 +891,7 @@ input[type=search] {
 }
 
 .flatpickr-input.form-control.input {
-  color: black;
+  color: var(--C-000);
 }
 
 .flatpickr-hour {
@@ -826,7 +926,7 @@ input[type=search] {
 }
 
 .help-block, form p:last-child {
-  color: black;
+  color: var(--headers-color);
   font-size: 15px;
   margin-top: 0;
   margin-bottom: 30px;
@@ -856,6 +956,7 @@ input[type=search] {
   min-height: 100%;
   /* equal to footer height */
   margin-bottom: -42px;
+  background-color: var(--application-background);
 }
 .page-wrapper:after {
   content: "";
@@ -878,7 +979,7 @@ input[type=search] {
   top:50%;
   left:0;
   width:100%;
-  border-bottom:4px solid #dddddd;
+  border-bottom:4px solid var(--C-ddd)ddd;
 }
 
 .section-title span {
@@ -912,8 +1013,8 @@ input[type=search] {
   height: 24px;
   top: -2px;
   left: -2px;
-  background: #eee;
-  border:1px solid #ddd;
+  background: var(--C-eee);
+  border:1px solid var(--C-ddd);
   content: '';
   border-radius: 2px;
 }
@@ -927,7 +1028,7 @@ input[type=search] {
   background: transparent;
   top: 5px;
   left: 4px;
-  border: 3px solid #666;
+  border: 3px solid var(--C-666);
   border-top: none;
   border-right: none;
 
@@ -947,7 +1048,7 @@ input[type=search] {
 }
 
 .checkbox input[type=checkbox]:checked + label::before {
-  border:1px solid #bbb;
+  border:1px solid var(--C-bbb);
 }
 
 .new_submission {
@@ -957,16 +1058,16 @@ input[type=search] {
 .options {
 line-height: 36px;
 list-style: none;
-border-top: 1px solid #eee;
+border-top: 1px solid var(--C-eee);
 padding-left: 0;
 }
 
 .options li:hover {
-background-color: #eee;
+background-color: var(--C-eee);
 }
 
 .options li {
-border-bottom: 1px solid #eee;
+border-bottom: 1px solid var(--C-eee);
 }
 
 .options li a {
@@ -979,13 +1080,13 @@ display: block;
 }
 
 .options .danger-side {
-  border-left: 6px solid #e53935;
-  border-right: 1px solid #e53935;
+  border-left: 6px solid var(--C-e53935);
+  border-right: 1px solid var(--C-e53935);
 }
 
 
 .options .danger-bottom {
-  border-bottom: 1px solid #e53935;
+  border-bottom: 1px solid var(--C-e53935);
 }
 
 .options .collection-item {
@@ -995,6 +1096,7 @@ display: block;
 /* Form Tables */
 
 .verticalTable tr {
+  color: var(--headers-color);
   height: 48px;
   padding-top:2px;
   padding-bottom: 2px;
@@ -1076,30 +1178,30 @@ div.center {
 #flash_alert.alert,
 #flash_error.error,
 #flash_notice {
-  color: #ce4844;
+  color: var(--C-ce4844);
   padding: 10px;
   margin-bottom: 0px;
   border-radius: 3px;
-  border: 1px solid #eee;
-  border-left: 5px solid #ce4844;
+  border: 1px solid var(--C-eee);
+  border-left: 5px solid var(--C-ce4844);
   font-weight: 500;
 }
 
 #flash_alert.success,
 #flash_success.success,
 #flash_notice.success {
-  color: green;
+  color: var(--success);
   padding: 10px;
   margin-bottom: 0px;
   border-radius: 3px;
-  border: 1px solid #eee;
-  border-left: 5px solid green;
+  border: 1px solid var(--C-eee);
+  border-left: 5px solid var(--success);
   font-weight: 500;
 }
 
 #flash_notice {
-  color: #1b809e;
-  border-left: 5px solid #1b809e;
+  color: var(--success);
+  border-left: 5px solid var(--success);
 }
 
 .attachments {
@@ -1109,8 +1211,8 @@ div.center {
 .attachment {
 
   font-weight: bold;
-  color:  #eee;
-  border: 2px solid #eee;
+  color:  var(--C-eee);
+  border: 2px solid var(--C-eee);
   border-radius: 6px;
   list-style:none;
   padding: 8px;
@@ -1127,8 +1229,8 @@ div.center {
   }
 
   &:hover {
-    color: $autolab-highlight-gray;
-    border-color: $autolab-highlight-gray;
+    color: var(--C-ccc);
+    border-color: var(--C-ccc);
   }
 
   &.add {
@@ -1145,13 +1247,13 @@ div.center {
 
 /* Restore hover functionality on Materialize buttons with color classes */
 .btn:hover {
-  background-color: rgba(140,0,0,0.95) !important;
+  background-color: var(--C-8c0000) !important;
 }
 
 
 .drag-drop-handin {
   height: 120px;
-  border: 3px dashed grey;
+  border: 3px dashed var(--C-b7b4b4);
   border-radius: 10px;
   cursor: pointer;
   margin-top: 10px;
@@ -1168,20 +1270,110 @@ div.center {
 }
 
 .drag-drop-handin:hover {
-  background: rgba(0, 0, 0, 0.05);
+  background: var(--C-000-L1);
 }
 
 #remove-handed-in {
-  color: grey;
+  color: var(--C-b7b4b4);
   cursor: pointer;
 }
 
 /* Remove padding around collapsible of action links in handin page */
 .collapsible-menu-link > .collapsible-body {
   padding: 0 0 0 0;
+  a, a:hover {
+    color: var(--C-569ff7);
+  }
 }
+
+
 
 .collapsible-menu-link > .collapsible-header {
   padding: 0 0 5px 15px;
+  background-color: var(--C-f3f0f0-L2);
 }
 
+.options li:hover {
+  background-color: var(--C-f3f0f0-L2);
+}
+
+p, b {
+  color: var(--headers-color);
+  a {
+    color: var(--C-569ff7);
+  }
+}
+
+.material-icons {
+  color: #ffffff;
+}
+
+li > a {
+  color: var(--C-569ff7);
+}
+
+ul.theme-list > li {
+  display:inline-block;
+  float:left;
+  a::before, p::before {
+    content: ' ';
+    border-radius: 50%;
+    width: 2rem;
+    height: 2rem;
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 10px;
+    margin-left: 10px;
+    cursor: pointer;
+
+  }
+  #default::before { // circle 
+    border: 2px solid var(--theme-option-default-border) !important;
+    background-color: var(--theme-option-default-fill);
+  }
+  #dark::before {
+    border: 2px solid var(--theme-option-dark-border) !important;
+    background-color: var(--theme-option-dark-fill);
+  }
+}
+
+.table-of-contents {
+  li > a {
+    color: var(--C-444);
+  }
+}
+span {
+  color: var(--headers-color);
+}
+pre {
+  color: var(--C-444);
+  code {
+    overflow-x: auto;
+    white-space: pre-wrap;
+    background-color: var(--C-f3f0f0-L2);
+    border: 1px solid var(--C-eee);
+    display: block;
+    padding: 20px;
+  }
+}
+
+#gradebook {
+  background-color: var(--C-F8F8F8) !important;
+  box-shadow: 0 0 5px 0px var(--C-eee) !important;
+  border: 1px solid var(--C-ccc) !important;
+  .slick-header-columns {
+    background-color: var(--C-ebebeb) !important;
+    color: var(--C-909090) !important;
+  }
+  .slick-cell{
+    color: var(--C-555) !important;
+    border-bottom: 1px solid var(--C-eee) !important;
+  }
+  .slick-cell.assessment_final_score,  .slick-cell.course_average{
+    background-color: var(--C-ddd) !important;
+  }
+}
+
+li {
+  color: var(--headers-color);
+}

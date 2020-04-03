@@ -1,0 +1,177 @@
+
+:root {
+  /*
+    The names are just the hex values it holds. I didn't bother 
+    giving them identifiable names since there are a bunch of similar
+    colors with different hues. All of these colors are scraped from all
+    *.*css file in this directory (app > assets > stylesheets) and not
+    the children's directory (e.g. slickgrid). So, style.css.scss will
+    not be using all of these variables. 
+  */
+  --application-background: #fff;
+  --error: red;
+  --headers-color: var(--C-000);
+  --success: green;
+  --C-00A: #00A;
+  --C-000-L1: rgba(0, 0, 0, 0.05);
+  --C-000-L2: rgba(0, 0, 0, 0.137255);
+  --C-000-L3: rgba(0, 0, 0, 0.278431);
+  --C-000-L4: rgba(0,0,0,0.15);
+  --C-000-L5: rgba(0, 0, 0, 0.3);
+  --C-000-L6: rgba(0, 0, 0, 0.9);
+  --C-000: #000;
+  --C-0000FF: #0000FF;
+  --C-000080: #000080;
+  --C-008000: #008000;
+  --C-009ff5: #009ff5;
+  --C-05b378: #05b378;
+  --C-08c: #08c;
+  --C-090: #090;
+  --C-1b809e: #1b809e;
+  --C-3a87ad: #3a87ad;
+  --C-4f4f4f: #4f4f4f;
+  --C-5b5b5b: #5b5b5b;
+  --C-5c5c5c: #5c5c5c;
+  --C-8A0000: #8A0000;
+  --C-8c0000: rgba(140,0,0,0.95); /*8c0000*/
+  --C-9e9efc: #9e9efc;
+  --C-9E3636: #9E3636;
+  --C-57d66a: #57d66a;
+  --C-97D9E9: #97D9E9;
+  --C-99B3FF: #99B3FF;
+  --C-111: #111;
+  --C-222: #222;
+  --C-333: #333;
+  --C-400: #400;
+  --C-428bca: #428bca;
+  --C-444: #444;
+  --C-555: #555;
+  --C-569ff7: #569ff7;
+  --C-600: #600;
+  --C-666: #666;
+  --C-700: #700;
+  --C-800: #800;
+  --C-888: #888;
+  --C-900: #900;
+  --C-999: #999;
+  --C-1874cd: #1874cd;
+  --C-4040e8: #4040e8;
+  --C-22579B: #22579B;
+  --C-408080: #408080;
+  --C-424545: #424545;
+  --C-676464: rgb(103, 100, 100); /*#676464*/
+  --C-770000: #770000;
+  --C-800080: #800080;
+  --C-818181: #818181;
+  --C-888888: #888888;
+  --C-909090: #909090;
+  --C-936241: #936241;
+  --C-990000: #990000;/*990000   Autolab red Primary color!!!!*/
+  --C-999696: #999696;
+  --C-999999: #999999;
+  --C-a31919: #a31919;
+  --C-AA22FF: #AA22FF;
+  --C-AAA: #AAA;
+  --C-abcdef: #abcdef;
+  --C-b1b1b1: #b1b1b1;
+  --C-b3b2b2: #b3b2b2;
+  --C-b6b6fc: #b6b6fc;
+  --C-b7b4b4: rgb(183, 180, 180); /*b7b4b4*/
+  --C-BA2121: #BA2121;
+  --C-BB6622: #BB6622;
+  --C-BB6688: #BB6688;
+  --C-bbb: #bbb;
+  --C-c00: #c00;
+  --C-C3E9F2: #C3E9F2;
+  --C-C87B7E: #C87B7E;
+  --C-c90: #c90;
+  --C-c94a48: #c94a48;
+  --C-C90000: #C90000;
+  --C-cbcbcb: #cbcbcb;
+  --C-ccc: #ccc;
+  --C-ccccff: #ccccff;
+  --C-ce4844: #ce4844;
+  --C-d0d0d0: #d0d0d0;
+  --C-d2d2d2: #d2d2d2;
+  --C-D3D6FF: #D3D6FF;
+  --C-d5d5d5: #d5d5d5;
+  --C-D2413A: #D2413A;
+  --C-D17702: #D17702;
+  --C-DADCFF: #DADCFF;
+  --C-db4437: #db4437;
+  --C-ddd: #ddd;
+  --C-dd2222: #dd2222; /* badge color */
+  --C-dfdcdc: rgba(223, 220, 220, 1); /*dfdcdc*/
+  --C-e0e0e0: #e0e0e0;
+  --C-E0E2FF: #E0E2FF;
+  --C-e1e1e1: #e1e1e1;
+  --C-E2E4FF: #E2E4FF;
+  --C-e4e4e4: #e4e4e4;
+  --C-E5E5E5: #E5E5E5;
+  --C-e8e8e8: #e8e8e8;
+  --C-e22a2a: #e22a2a;
+  --C-e53935: #e53935;
+  --C-eaeaea: #eaeaea;
+  --C-EAEBED: #EAEBED;
+  --C-EAEBFF: #EAEBFF;
+  --C-ebebeb: #ebebeb;
+  --C-ec612a: #ec612a;
+  --C-eee: #eee;
+  --C-EFEFEF: #EFEFEF;
+  --C-f0f0f0: #f0f0f0;
+  --C-F2F1DF: #F2F1DF;
+  --C-f2f2f2: #f2f2f2;
+  --C-F2F3FF: #F2F3FF;
+  --C-f3f0f0-L1: rgba(243, 240, 240, 0.7); /*f3f0f0*/
+  --C-f3f0f0-L2: rgba(243, 240, 240, 0.9);
+  --C-f3f3f3: #f3f3f3;
+  --C-f4f4f4: #f4f4f4;
+  --C-F5F5F5: #F5F5F5;
+  --C-f8b128: #f8b128;
+  --C-F8F8F8: #F8F8F8;
+  --C-F9F9FF: #F9F9FF;
+  --C-F58484: #F58484;
+  --C-f89406: #f89406;
+  --C-FAFAFA: #FAFAFA;
+  --C-FCF310: #FCF310;
+  --C-fcfcfc: #fcfcfc;
+  --C-FFF-L1: rgba(255, 255, 255, 0.7);
+  --C-fff: #fff;
+  --C-FFFDE3: #FFFDE3;
+  --C-FFFFC9: #FFFFC9;
+  --theme-option-dark-border: #666;
+  --theme-option-dark-fill: #000;
+  --theme-option-default-border: #666;
+  --theme-option-default-fill: #fff;
+}
+
+.dark {
+  /* To make new themes, it's better to copy and paste this class.
+  These variables are the one that are visible on the UX */
+
+  --application-background: #313131;
+  --error: #d32f2f;
+  --success: #388e3c;
+  --headers-color: rgb(230, 230, 230); /* Primary text color */
+  --C-00A: rgb(170, 0, 79); /* moss cheat checker font color */
+  --C-990000: #ca3e47; /* autolab color */
+  --C-8c0000: #ac343c; /* hover cover (for buttons */
+  --C-fff: #525252; /* includes card collection and some tables*/
+  --C-ddd: #414141; 
+  --C-c00: var(--C-990000); /* Red Text */
+  --C-f3f0f0-L2: rgba(37, 37, 37, 0.9); /* subnav, including hover bg */
+  --C-569ff7: #00a8cc; /* some 'a' links color */
+  --C-444: rgb(173, 173, 173); /* some lighted out text color */
+  --C-eee: var(--C-000-L1); /* often borders properties */
+  --C-ccc: var(--C-eee); /* also this */
+  --C-f2f2f2: var(--application-background); /* Can be seen on assessment edit page (the tabs) */
+  --C-666: rgb(165, 165, 165); /* .gray-box's text */
+  --C-FAFAFA: rgb(53, 53, 53); /* .gray-box bg */
+
+  /* TABLES proprerties */
+  --C-abcdef: rgba(43, 43, 43, 0.9); /* prettytable's cell bg (can be seen in manage submission in an assignment)*/
+  --C-F8F8F8: var(--C-abcdef); /* Can be seen on gradebook slick grid body */
+  --C-ebebeb: #242424; /* ^ header color */
+  --C-909090: #c0c0c0; /* can be seen in slickgrid header font color */
+  --C-555: rgb(172, 172, 172); /* can be seen on table's cell's font color */
+}

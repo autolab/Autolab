@@ -36,6 +36,16 @@
       </li>
     <% end %>
     <li role="presentation" class="divider"></li>
+    <% unless @current_user.nil? %>
+      <li role="presentation">
+        <% if @current_user.theme == 'dark' %>
+          <%= link_to 'Flip Theme', theme_path(:id=>@current_user.id, :theme=>'light'), id: "default", remote: true, :onClick => "document.body.classList.value='autolab light';" %>
+        <% else %>
+          <%= link_to 'Flip Theme', theme_path(:id=>@current_user.id, :theme=>'dark'), id: "dark", remote: true, :onClick => "document.body.classList.value='autolab dark';" %>
+        <%end%>
+        
+      </li>
+    <% end %>
     <li role="presentation">
       <%= link_to "Log out", destroy_user_session_path, :method => :delete  %>
     </li>
@@ -66,7 +76,7 @@
           <% end %>
         <% end %>
 
-        <% if current_user && current_user.administrator? %>
+        <% if @current_user && @current_user.administrator? %>
           <li><%= link_to "<i class='material-icons left'>lock</i> Manage Autolab".html_safe, admin_path, title: "Perform system-wide administrative actions" %></li>
         <% end %>
 
@@ -78,7 +88,7 @@
       <!-- Responsive Sidebar -->
       <ul class="sidenav" id="mobile-demo">
         <!-- User -->
-        <div id="nav-user" class="red lighten-5">
+        <div id="nav-user">
         <% if user_signed_in? %>
           <div class="dropdown-toggle" id="dropdownMenu1">
             <%= current_user.display_name %>
