@@ -335,7 +335,7 @@ DEPENDENCIES
   better_errors
   binding_of_caller
   bootstrap-sass (>= 3.3.6)
-  bootstrap3-datetimepicker-rails (>= 4.0.0)
+  bootstrap3-datetimepicker-rails (>= 4.17.47)
   browser-timezone-rails
   byebug (>= 3.5.1)
   capybara
