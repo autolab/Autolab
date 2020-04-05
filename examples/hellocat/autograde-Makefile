@@ -1,0 +1,16 @@
+
+
+
+
+
+
+
+all:
+	@echo "-- autograder-Makefile (all) --"
+	tar xf autograde.tar
+	cp hello hellocat/
+	echo "-- hello --"
+	@(cd hellocat; cat ./hello)
+
+clean:
+	rm -rf *~ hellocat

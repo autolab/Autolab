@@ -503,15 +503,69 @@ class AssessmentsController < ApplicationController
   def viewFeedback
     # User requested to view feedback on a score
     @score = @submission.scores.find_by(problem_id: params[:feedback])
-
+    @jsonFeedback = parseFeedback(@score.feedback)
     if !@score
       flash[:error] = "No feedback for requested score"
       redirect_to(action: "index") && return
     end
-
+    if @jsonFeedback != nil
+      @scoreHash = parseScore(@score.feedback)
+    end
     if Archive.archive? @submission.handin_file_path
       @files = Archive.get_files @submission.handin_file_path
     end
+  end
+
+  def parseScore(feedback)
+    lines = feedback.lines
+    feedback = lines[lines.length - 1].chomp
+    if valid_json?(feedback)
+      score_hash = JSON.parse(feedback)
+      score_hash = score_hash["scores"]
+      if @jsonFeedback.key?("_scores_order") == false
+        @jsonFeedback["_scores_order"] = score_hash.keys
+      end
+      @total = 0
+      for k in score_hash.keys
+        @total  = @total + score_hash[k]
+      end
+      score_hash["_total"] = @total
+      score_hash
+    else
+      nil
+    end
+  end
+  def parse_stages(jsonFeedbackHash)
+    @result = true
+    if jsonFeedbackHash.key?("stages")
+      for stage in jsonFeedbackHash["stages"]
+        if jsonFeedbackHash[stage].key?("_order") == false
+          jsonFeedbackHash[stage]["_order"] = jsonFeedbackHash[stage].keys
+        end
+      end
+    end
+    @result
+  end
+
+  def parseFeedback(feedback)
+    lines = feedback.lines
+    feedback = lines[lines.length - 2].chomp
+    if valid_json?(feedback)
+      jsonFeedbackHash = JSON.parse(feedback)
+      if jsonFeedbackHash.key?("_presentation") == false
+        return nil
+      elsif jsonFeedbackHash["_presentation"] == "semantic" && parse_stages(jsonFeedbackHash) != nil
+        jsonFeedbackHash
+      end
+    else
+      nil
+    end
+  end
+
+  def valid_json?(json)
+    hash = JSON.parse(json)
+  rescue JSON::ParserError => e
+    return false
   end
 
   action_auth_level :reload, :instructor

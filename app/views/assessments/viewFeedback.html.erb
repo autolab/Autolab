@@ -1,4 +1,6 @@
-<h2>Feedback for 
+<% if @jsonFeedback.nil? %>
+
+<h2>Feedback for
 <%= "#{@assessment.display_name} - #{@score.problem.name}" %>
 (<%=@score.submission.course_user_datum.user.email %>)
 </h2>
@@ -9,6 +11,10 @@ Score for this problem: <%= @score.score.to_f().round(1) %>
 Graded by: <%= if @score.grader && @score.grader.user then @score.grader.user.email end %>
 </pre>
 
+<% else %>
+<%= render "semantic" %>
+
+<% end %>
 <!--
 Yes, feedback if per problem but we show all annotations for this submission anyway. While this is not semantically correct, it offers a better UX than we had before. If we just show annotations attached to this problem, then where would we show annotations not attached to a problem at all?
 -->
