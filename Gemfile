@@ -10,7 +10,7 @@ gem 'sass-rails', '>= 4.0.3'
 gem 'materialize-sass'
 
 # Use for some of the glypicons on the site
-gem 'bootstrap-sass', '~> 3.3.6'
+gem 'bootstrap-sass', '>= 3.3.6'
 
 # Use Uglifier as compressor for JavaScript assets
 gem 'uglifier', '>= 1.3.0'
@@ -95,7 +95,7 @@ gem 'js_cookie_rails'
 
 # Dates and times
 gem 'momentjs-rails', '>= 2.9.0'
-gem 'bootstrap3-datetimepicker-rails', '~> 4.0.0'
+gem 'bootstrap3-datetimepicker-rails', '>= 4.17.47'
 
 # Force SSL on certain routes
 gem 'rack-ssl-enforcer'
@@ -129,3 +129,5 @@ gem 'prawn', '0.13.0'
 gem 'net-ldap'
 
 gem 'sprockets-rails', '>=3.2.1'
+
+gem "jstz-rails3-plus", ">= 1.0"
