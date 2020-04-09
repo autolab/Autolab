@@ -25,8 +25,6 @@ module AssessmentHandin
 
       contents = params[:submission]["embedded_quiz_form_answer"].to_s
 
-      contents = params[:submission]["embedded_quiz_form_answer"].to_s
-
       out_filename = Rails.root.join("courses", @assessment.course.name,
                                      @assessment.name, @assessment.handin_directory,
                                      "out.txt")
