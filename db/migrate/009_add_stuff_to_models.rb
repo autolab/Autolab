@@ -1,4 +1,4 @@
-class AddStuffToModels < ActiveRecord::Migration
+class AddStuffToModels < ActiveRecord::Migration[4.2]
   def self.up
     add_column :users, :administrator, :boolean, :options=>{:default=>false}
     add_column :assignments, :category, :string

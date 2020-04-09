@@ -25,7 +25,8 @@ module Archive
         header_position: i,
         mac_bs_file: pathname.include?("__MACOSX") ||
           pathname.include?(".DS_Store") ||
-          pathname.include?(".metadata"),
+          pathname.include?(".metadata") ||
+          File.basename(pathname).start_with?('.'),
         directory: looks_like_directory?(pathname)
       }
     end
@@ -33,6 +34,86 @@ module Archive
     archive_extract.close
 
     files
+  end
+
+  def self.recoverHierarchy(files, root)
+    depth = root[:pathname].chomp("/").count "/"
+    if(root[:pathname] == "")
+      depth = -1
+    end
+    if(!root[:directory])
+      return root
+    end
+    subFiles = []
+    filesNestedSomewhere = files.select{|entry| entry[:pathname].start_with?(root[:pathname]) && !(entry[:pathname] == root[:pathname])}
+    for file in filesNestedSomewhere
+      fileDepth = file[:pathname].chomp("/").count "/"
+      if(fileDepth == depth+1)
+        subFiles << recoverHierarchy(filesNestedSomewhere, file)
+      end
+    end
+    subFiles.sort! { |a, b| a[:header_position] <=> b[:header_position] }
+    root[:subfiles] = subFiles
+    return root
+  end
+
+  # given a list of files, sanitize and create
+  # missing file directories
+  def self.sanitize_directories(files)
+
+    cleaned_files = []
+    file_path_set = Set[]
+    
+    # arbitrary header positions for the new directories
+    starting_header = -1
+
+    # add pre-existing directories to the set
+    for file in files
+
+      # edge case for removing "./" from pathnames
+      if file[:pathname].include?("./")
+        file[:pathname] = file[:pathname].split("./")[1]
+      end
+
+      if(file[:directory])
+        file_path_set.add(file[:pathname])
+      end
+    end
+
+    for file in files
+      # for each file, check if each of its directories and subdir
+      # exist. If it does not, create and add them
+      if(!file[:directory])
+        paths = file[:pathname].split("/")
+        for i in 1..(paths.size - 1) do
+          new_path = paths[0,paths.size-i].join("/") + "/"
+          if(!file_path_set.include?(new_path))
+            cleaned_files.append({
+              :pathname=>new_path,
+              :header_position=>starting_header,
+              :mac_bs_file=>false,
+              :directory=>true
+            })
+            starting_header = starting_header - 1
+            file_path_set.add(new_path)
+          end
+        end 
+      end
+      
+      # excludes "./" paths
+      if(file[:pathname]!=nil)
+        cleaned_files.append(file)
+      end
+    end
+
+    cleaned_files
+  end
+
+  def self.get_file_hierarchy(archive_path)
+    files = get_files(archive_path)
+    files = sanitize_directories(files)
+    res = recoverHierarchy(files, {pathname: "", directory: true})
+    return res[:subfiles]
   end
 
   def self.get_nth_file(archive_path, n)

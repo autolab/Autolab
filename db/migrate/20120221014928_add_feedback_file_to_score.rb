@@ -1,4 +1,4 @@
-class AddFeedbackFileToScore < ActiveRecord::Migration
+class AddFeedbackFileToScore < ActiveRecord::Migration[4.2]
   def self.up
     add_column :scores, :feedback_file, :binary, :null=>true
     add_column :scores, :feedback_file_type, :string, :null=>true

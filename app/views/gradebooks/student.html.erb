@@ -58,7 +58,8 @@
                       <a class="history_icon" href="<%= history_url(@_cud, asmt) %>">
                         <i title="Handin history" class="icon-list tip"></i>
                       </a>
-                  <% end %>
+                    <% end %>
+                    </span>
                 </td>
                 <% if @course.grace_days > 0 %>
                   <td><%= aud.grace_days_used %></td>
@@ -77,7 +78,8 @@
 
                   <% when AssessmentUserDatum::EXCUSED %>
                     <% pronoun = @cud == @_cud ? "You" : @_cud.email %>
-                    <% tip = "#{pronoun} has been excused from #{asmt.display_name}." %>
+                    <% havehas = @cud == @_cud ? "have" : "has" %>
+                    <% tip = "#{pronoun} #{havehas} been excused from #{asmt.display_name}." %>
                     <span class="excused label label-info tooltipped" data-html="true" data-tooltip="<%= tip %>">
                       Excused
                     </span>

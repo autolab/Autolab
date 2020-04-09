@@ -1,4 +1,4 @@
-class CreateScores < ActiveRecord::Migration
+class CreateScores < ActiveRecord::Migration[4.2]
   def self.up
     create_table :scores do |t|
       t.references :submission

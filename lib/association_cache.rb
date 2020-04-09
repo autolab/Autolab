@@ -92,7 +92,9 @@ end
 
 module CUDAssociationCache
   def self.included(base)
-    base.alias_method_chain :course, :cache
+    # base.alias_method_chain :course, :cache
+    base.alias_method :course_without_cache, :course
+    base.alias_method :course, :course_with_cache
   end
 
   def course_with_cache
@@ -108,8 +110,12 @@ end
 
 module CourseAssociationCache
   def self.included(base)
-    base.alias_method_chain :course_user_data, :cache
-    base.alias_method_chain :assessments, :cache
+
+    base.alias_method :course_user_data_without_cache, :course_user_data
+    base.alias_method :course_user_data, :course_user_data_with_cache
+
+    base.alias_method :assessments_without_cache, :assessments
+    base.alias_method :assessments, :assessments_with_cache
   end
 
   def course_user_data_with_cache
@@ -130,9 +136,12 @@ end
 
 module AssessmentAssociationCache
   def self.included(base)
-    base.alias_method_chain :assessment_before, :cache
-    base.alias_method_chain :aud_for, :cache
-    base.alias_method_chain :course, :cache
+    base.alias_method :assessment_before_without_cache, :assessment_before
+    base.alias_method :assessment_before, :assessment_before_with_cache
+    base.alias_method :aud_for_without_cache, :aud_for
+    base.alias_method :aud_for, :aud_for_with_cache
+    base.alias_method :course_without_cache, :course
+    base.alias_method :course, :course_with_cache
   end
 
   def assessment_before_with_cache
@@ -158,9 +167,12 @@ end
 
 module AUDAssociationCache
   def self.included(base)
-    base.alias_method_chain :assessment, :cache
-    base.alias_method_chain :course_user_datum, :cache
-    base.alias_method_chain :latest_submission, :cache
+    base.alias_method :assessment_without_cache, :assessment
+    base.alias_method :assessment, :assessment_with_cache
+    base.alias_method :course_user_datum_without_cache, :course_user_datum
+    base.alias_method :course_user_datum, :course_user_datum_with_cache
+    base.alias_method :latest_submission_without_cache, :latest_submission
+    base.alias_method :latest_submission, :latest_submission_with_cache
   end
 
   def latest_submission_with_cache
@@ -186,10 +198,14 @@ end
 
 module LatestSubmissionAssociationCache
   def self.included(base)
-    base.alias_method_chain :assessment, :cache
-    base.alias_method_chain :course_user_datum, :cache
-    base.alias_method_chain :aud, :cache
-    base.alias_method_chain :scores, :cache
+    base.alias_method :assessment_without_cache, :assessment
+    base.alias_method :assessment, :assessment_with_cache
+    base.alias_method :course_user_datum_without_cache, :course_user_datum
+    base.alias_method :course_user_datum, :course_user_datum_with_cache
+    base.alias_method :aud_without_cache, :aud
+    base.alias_method :aud, :aud_with_cache
+    base.alias_method :scores_without_cache, :scores
+    base.alias_method :scores, :scores_with_cache
   end
 
   def aud_with_cache

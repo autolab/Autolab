@@ -13,6 +13,11 @@ class FormBuilderWithDateTimeInput < ActionView::Helpers::FormBuilder
 
       # DEPRECATED: add form-control class (for Bootstrap styling) and pass on to Rails
       options[:class] = "#{options[:class]}"
+
+      unless options.include?(:placeholder)
+          options[:placeholder] = ""
+      end
+
       field = super name, *(args + [options])
 
       wrap_field name, field, options[:help_text], options[:display_name]
@@ -44,13 +49,19 @@ class FormBuilderWithDateTimeInput < ActionView::Helpers::FormBuilder
   def check_box(name, *args)
     options = args.extract_options!
 
-    display_name = options[:display_name]
-
+    # display_name = options[:display_name]
+    
+    display_span = "<span>" + name.to_s.humanize + "</span>"
+    # Materalize requires the label to be in a span
     field = super name, *(args + [options])
 
-    @template.content_tag :div, class: "checkbox-input" do
-      field + label(name, display_name, class: "control-label") +
-        help_text(name, options[:help_text])
+    unless options.include?(:help_text)
+        options[:help_text] = " "
+    end
+
+    @template.content_tag :div do
+           label(name, field + display_span.html_safe, class: "control-label") +
+            help_text(name, options[:help_text])
     end
   end
 
@@ -60,6 +71,14 @@ class FormBuilderWithDateTimeInput < ActionView::Helpers::FormBuilder
     field = super name, *(args + [options])
 
     wrap_field name, field, options[:help_text], options[:display_name]
+  end
+
+  def file_field_nowrap(name, *args)
+    options = args.extract_options!
+
+    field = method(:file_field).super_method.call name, *(args + [options])
+
+    field
   end
 
   def date_select(name, options = {}, _html_options = {})

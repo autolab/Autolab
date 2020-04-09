@@ -2,7 +2,7 @@
 # An Assessment can have many Problems, each one creates a score for each Submission
 # for the Assessment.
 #
-class Problem < ActiveRecord::Base
+class Problem < ApplicationRecord
   trim_field :name
 
   # don't need :dependent => :destroy as of 2/18/13

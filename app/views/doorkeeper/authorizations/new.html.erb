@@ -1,0 +1,97 @@
+<% @title = "Authorize @pre_auth.client.name" %>
+
+<% content_for :stylesheets do %>
+  <style type="text/css">
+    #oauth-permissions li i {
+      padding-right: 10px;
+    }
+  </style>
+<% end %>
+
+<% is_admin = current_user.administrator? %>
+
+<h3>Authorization Required</h3>
+
+<p class="h4">
+  <%= raw t('.prompt', client_name: "<strong class=\"text-info\">#{ @pre_auth.client.name }</strong>") %>
+</p>
+
+<% if @pre_auth.scopes.count > 0 %>
+  <div id="oauth-permissions">
+    <p><%= t('.able_to') %>:</p>
+
+    <ul class="collection">
+      <% if @pre_auth.scopes.include? "user_info" %>
+        <li class="collection-item valign-wrapper">
+          <i class="material-icons small">person_pin</i>
+          Acess your basic info (e.g. name, email, school, year)
+        </li>
+      <% end %>
+
+      <% if @pre_auth.scopes.include? "user_courses" %>
+        <li class="collection-item valign-wrapper">
+          <i class="material-icons small">class</i>
+          Access your courses and assessments
+        </li>
+      <% end %>
+
+      <% if @pre_auth.scopes.include? "user_scores" %>
+        <li class="collection-item valign-wrapper">
+          <i class="material-icons small">assessment</i>
+          Access your submissions, scores, and feedback
+        </li>
+      <% end %>
+
+      <% if @pre_auth.scopes.include? "user_submit" %>
+        <li class="collection-item valign-wrapper">
+          <i class="material-icons small">note_add</i>
+          Submit to assessments on your behalf
+        </li>
+      <% end %>
+
+      <% if @pre_auth.scopes.include? "instructor_all" %>
+        <li class="collection-item valign-wrapper">
+          <i class="material-icons small">verified_user</i>
+          Access admin options of courses where you are an instructor
+        </li>
+      <% end %>
+
+      <% if is_admin and @pre_auth.scopes.include? "admin_all" %>
+        <li class="collection-item valign-wrapper">
+          <i class="material-icons small">developer_board</i>
+          Access admin options of Autolab
+        </li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>
+
+<div class="actions">
+<table>
+  <tbody>
+    <tr>
+      <td>
+        <%= form_tag oauth_authorization_path, method: :post do %>
+          <%= hidden_field_tag :client_id, @pre_auth.client.uid %>
+          <%= hidden_field_tag :redirect_uri, @pre_auth.redirect_uri %>
+          <%= hidden_field_tag :state, @pre_auth.state %>
+          <%= hidden_field_tag :response_type, @pre_auth.response_type %>
+          <%= hidden_field_tag :scope, @pre_auth.scope %>
+          <%= submit_tag t('doorkeeper.authorizations.buttons.authorize'), class: "btn" %>
+        <% end %>
+      </td>
+      <td class="right-align">
+        <%= form_tag oauth_authorization_path, method: :delete do %>
+          <%= hidden_field_tag :client_id, @pre_auth.client.uid %>
+          <%= hidden_field_tag :redirect_uri, @pre_auth.redirect_uri %>
+          <%= hidden_field_tag :state, @pre_auth.state %>
+          <%= hidden_field_tag :response_type, @pre_auth.response_type %>
+          <%= hidden_field_tag :scope, @pre_auth.scope %>
+          <%= submit_tag t('doorkeeper.authorizations.buttons.deny'), class: "btn" %>
+        <% end %>
+      </td>
+    </tr>
+  </tbody>
+</table>
+</div>
+

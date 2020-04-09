@@ -1,0 +1,11 @@
+<div id="symbol-tree-box">
+    <h5>Symbol Tree</h5>
+    <ul>
+    <% ctag_obj.each do |fdef| %>
+        <li onclick="scrollToLine(<%=fdef['line']%>)">
+            <%= image_tag "function_icon.svg" %>
+            <%= fdef["name"] %>
+        </li>
+    <% end %>
+    </ul>
+</div>

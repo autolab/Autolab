@@ -1,10 +1,36 @@
-test:
-  adapter: mysql2
-  database: autolab_test
-  pool: 5
-  username: root
-  password: ''
-  socket: /var/run/mysqld/mysqld.sock
-  host: localhost
-  reconnect: true
+# MySQL Configuration
+#development:
+# adapter: mysql2
+# database: <username>_autolab_development
+# pool: 5
+# username: <username>
+# password: '<password>'
+# socket: /var/run/mysqld/mysqld.sock
+# host: localhost
 
+# SQLite Configuration
+default: &default
+  adapter: sqlite3
+  pool: 5
+  timeout: 5000
+
+test:
+  <<: *default
+  database: db/autolab_test.sqlite3
+
+development:
+  <<: *default
+  database: db/autolab_dev.sqlite3
+
+production:
+  <<: *default
+  database: db/autolab_prod.sqlite3
+
+#test:
+#  adapter: mysql2
+#  database: <username>_autolab_test
+#  pool: 5
+#  username: <username>
+#  password: '<password>'
+#  socket: /var/run/mysqld/mysqld.sock
+#  host: localhost

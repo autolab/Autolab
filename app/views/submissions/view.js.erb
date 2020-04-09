@@ -1,0 +1,45 @@
+// First cache the new html elements in our local cache
+newFile = {};
+newFile.codeBox = '<%= j render("submissions/code_viewer") %>'
+newFile.symbolTree = null
+<% if !@ctag_obj.nil? && !@ctag_obj.empty? %>
+newFile.symbolTree = '<%= j render("submissions/code_symbol_tree", ctag_obj: @ctag_obj) %>'
+<% end %>
+newFile.url = '<%= url_for(params.to_unsafe_h) %>'
+
+<% if @is_pdf %>
+newFile.pdf = true;
+newFile.pdfUrl = "<%= url_for [:download, @course, @assessment, @submission, header_position: params[:header_position]] %>";
+newFile.annotatedPdfUrl = "<%= url_for [:download, @course, @assessment, @submission, header_position: params[:header_position], annotated: true] %>";
+newFile.previewMode = false;
+<% if @preview_mode %>
+    newFile.previewMode = true;
+<% end %>
+<% else %>
+newFile.pdf = false;
+<% end %>
+
+
+if (!newFile.pdf) localCache[<%= params[:header_position] %>] = newFile;
+
+// If we've navigated to another file, don't update the page
+if (currentHeaderPos == <%= params[:header_position] %>) {
+    // Update the code viewer and symbol tree with the new data
+
+    $('#code-box').replaceWith(newFile.codeBox);
+
+    if (newFile.symbolTree == null){
+        $('#symbol-tree-box').hide();
+    } else {
+        $('#symbol-tree-container').html(newFile.symbolTree);
+    }
+
+    // Add syntax highlighting to the new code viewer
+    $('pre code').each(function(){hljs.highlightBlock(this)});
+
+    // Update the page URL
+    history.replaceState(null, null, newFile.url);
+
+    displayAnnotations();
+    attachEvents();
+}

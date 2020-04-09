@@ -22,7 +22,7 @@ $(document).ready(function() {
 	$('.tooltipped').tooltip({delay: 50});
     
     /* Materialize Initializations */
-    $('select').material_select();
+    $('select').formSelect();
 });
 
 

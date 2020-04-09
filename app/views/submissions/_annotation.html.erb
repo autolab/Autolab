@@ -1,0 +1,53 @@
+<% if @cud.instructor? or @cud.course_assistant? or @problemReleased %>
+<div class="base-annotation-line annotation-line">
+  <div class="line-sticky">
+    <div class="line-number"></div>
+    <div class="code-separator"></div>
+  </div>
+  <div class="annotation-form" style="display: none;">
+    <div class="error" style="display: none;"></div>
+
+    <form>
+      <div class="input-field">
+        <textarea class="comment" id="comment-textarea" placeholder="" class="materialize-textarea"></textarea>
+        <label for="comment-textarea">Comment</label>
+      </div>
+
+      <div class="row">
+        <div class="input-field col s6">
+          <input class="score" type="text" placeholder="" id="comment-score">
+          <label for="comment-score">Score</label>
+        </div>
+
+        <div class="input-field col s6">
+          <select class="browser-default problem-id">
+          </select>
+        </div>
+      </div>
+
+      <div class="input-field">
+        <input type="submit" class="btn" value="Add annotation">
+        <button class="btn grey annotation-cancel-button">Cancel</button>
+      </div>
+    </form>
+  </div>
+  <div class="annotation-box" style="display: none;">
+    <div class="annotation-header">
+      <div class="annotation-from">
+      <span class="submitted_by"></span> says:
+      </div>
+      <div class="annotation-tools">
+        <span class="instructors-only" style="display: none;">
+            <a class="annotation-edit-button" href="#"><i class="material-icons">edit</i></a>
+            <a class="annotation-delete-button" href="#"><i class="material-icons">delete</i></a>
+        </span>
+        <span class="point_badge positive"><span class="problem"><span class="problem_id"></span>:</span> <span class="value"></span></span>
+      </div>
+    </div>
+    <div class="annotation-separator"></div>
+    <div class="annotation-body">
+      <p class="comment"></p>
+    </div>
+  </div>
+</div>
+<% end %>

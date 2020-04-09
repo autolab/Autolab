@@ -38,6 +38,10 @@ html, body {
   background-color: $autolab-red;
 }
 
+.autocomplete-content {
+    margin-top: 0;
+}
+
 /* Helper Styles */
 
 .full-width {
@@ -148,8 +152,8 @@ form#edit_editCourse {
   margin-top: 80px;
 }
 
-.input-field{
-  padding-bottom: 3vh !important;
+.input-field, form > div {
+  padding-bottom: 1rem !important;
 }
 
 .input-field label{
@@ -410,10 +414,15 @@ div#footer .right {
   padding-top: 14px;
 }
 
-div#footer a {
+div#footer a,
+div#footer span.site_version {
   display: inline-block;
   padding: 12px;
   color: #666;
+}
+
+div#footer span.site_version {
+  float: right;
 }
 
 div#footer div.fb-like.fb_iframe_widget {
@@ -602,11 +611,11 @@ table.prettyBorder,
 table.prettyBorder tr,
 table.prettyBorder th,
 table.prettyBorder td {
-  border: 1px solid #ddd;
   text-align: left;
 }
 table.prettyBorder {
   border-collapse:collapse;
+  box-shadow: 0 0 5px 0px #eee;
   font-size:15px;
   width: 100%;
   // keep track of what row this is
@@ -614,6 +623,7 @@ table.prettyBorder {
 
   tr {
     background-color: #fff;
+    border: 1px solid #d0d0d0;
     &:hover {
       background-color:#abcdef;
     }
@@ -630,15 +640,13 @@ table.prettyBorder {
   }
 
   th {
-    background-color:#E5E5E5;
-    background: linear-gradient(to bottom, #EFEFEF, #E5E5E5);
-    border: 1px solid #ccc;
-    color:#888;
+    background-color:#EBEBEB;
+    color:#909090;
     cursor:pointer;
-    font-family: Helvetica, sans-serif;
-    font-size: 12px;
+    font-family: Source Sans Pro, sans-serif;
+    font-size: 0.8em;
     font-weight: bold;
-    padding: 5px;
+    padding: 8px;
     text-align:left;
     text-transform:uppercase;
   }
@@ -655,6 +663,8 @@ table.prettyBorder {
   tr .btn.small {
     margin-top: 3px;
     margin-bottom: 3px;
+    width: 38px;
+    padding-left: 10px;
   }
 }
 
@@ -705,6 +715,10 @@ a.collection-item {
   transition: none;
 }
 
+.input-field label {
+    transition: none;
+}
+
 .collection
 div.collection-item:hover {
   background-color: #ddd;
@@ -741,20 +755,25 @@ body.autolab {
 
 input[type=text],
 input[type=email],
-input[type=password], {
-  /*border: none;*/
-  height: auto;
-	margin-top: 0.8rem;
-	margin-bottom: -0.8rem;
-  padding: 10px 8px;
-  border-bottom: 1px #CCC;
-	box-shadow: 0 1px 0 0 #CCC;
+input[type=password],
+textarea {
+    height: auto;
+    margin-top: 0.2rem;
+    margin-bottom: 0.2rem;
+    padding: 5px 0 5px 0;
+    border-color: #CCC;
+    box-shadow: 0 1px 0 0 #CCC;
+    outline: none;
+    font-weight: 400;
+}
+
+input[type=text], input[type=email] {
+	box-sizing: border-box;
 }
 
 input[type=text]:focus,
 input[type=email]:focus,
 input[type=password]:focus {
-  /*border: 1px solid rgba(133, 0, 0, 1);*/
   outline: none;
 }
 
@@ -766,11 +785,6 @@ input[type=checkbox] {
 input[type=search] {
 	border-bottom: 1px #CCC;
 	box-shadow: 0 1px 0 0 #CCC;
-}
-
-textarea {
-  border-bottom: 1px #CCC;
-	box-shadow: 0 1px 0 0 #CCC !important;
 }
 
 .flatpickr-input {
@@ -804,25 +818,18 @@ textarea {
 .input-field {
 	margin-top: 2rem !important;
   label.control-label {
-    font-size: 20px;
-    margin-left: 4px;
+    font-size: 18px;
 	}
 
   label.active {
-    font-size: 20px;
+    font-size: 18px;
   }
 }
 
-input[type=text], input[type=email] {
-	box-sizing: border-box;
-	margin-bottom: 10px;
-}
-
-.help-block {
+.help-block, form p:last-child {
   color: black;
   font-size: 15px;
-  margin-left: 8px;
-  margin-top: 2px;
+  margin-top: 0;
   margin-bottom: 30px;
 }
 
@@ -1079,6 +1086,18 @@ div.center {
   font-weight: 500;
 }
 
+#flash_alert.success,
+#flash_success.success,
+#flash_notice.success {
+  color: green;
+  padding: 10px;
+  margin-bottom: 0px;
+  border-radius: 3px;
+  border: 1px solid #eee;
+  border-left: 5px solid green;
+  font-weight: 500;
+}
+
 #flash_notice {
   color: #1b809e;
   border-left: 5px solid #1b809e;
@@ -1129,3 +1148,41 @@ div.center {
 .btn:hover {
   background-color: rgba(140,0,0,0.95) !important;
 }
+
+
+.drag-drop-handin {
+  height: 120px;
+  border: 3px dashed grey;
+  border-radius: 10px;
+  cursor: pointer;
+  margin-top: 10px;
+  align-items: center;
+  justify-content: center;
+
+  -webkit-touch-callout: none; /* iOS Safari */
+  -webkit-user-select: none; /* Safari */
+   -khtml-user-select: none; /* Konqueror HTML */
+     -moz-user-select: none; /* Firefox */
+      -ms-user-select: none; /* Internet Explorer/Edge */
+          user-select: none; /* Non-prefixed version, currently
+                                supported by Chrome and Opera */
+}
+
+.drag-drop-handin:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+#remove-handed-in {
+  color: grey;
+  cursor: pointer;
+}
+
+/* Remove padding around collapsible of action links in handin page */
+.collapsible-menu-link > .collapsible-body {
+  padding: 0 0 0 0;
+}
+
+.collapsible-menu-link > .collapsible-header {
+  padding: 0 0 5px 15px;
+}
+

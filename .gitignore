@@ -30,3 +30,5 @@ attachments/
 doc/
 out.txt
 .vscode/
+.byebug_history
+.env

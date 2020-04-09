@@ -2,7 +2,7 @@
 # Users are specific to a real-world person.  Each User is enrolled in a course using
 # the CourseUserData join table.
 #
-class User < ActiveRecord::Base
+class User < ApplicationRecord
   # Include default devise modules. Others available are:
   # :confirmable, :lockable, :timeoutable and :omniauthable
   devise :database_authenticatable, :registerable,
@@ -139,6 +139,9 @@ class User < ActiveRecord::Base
     user.password = temp_pass
     user.password_confirmation = temp_pass
     user.skip_confirmation!
+    
+    puts("user email: ", user.email)
+    puts("user pswd: ", user.password)
 
     if user.save
       # user.send_reset_password_instructions

@@ -6,7 +6,7 @@ require "association_cache"
 # status (excused or whatever) on an assessment.  It's also used by Groups, and tracks the latest
 # submission of the user for an assessment.
 #
-class AssessmentUserDatum < ActiveRecord::Base
+class AssessmentUserDatum < ApplicationRecord
   belongs_to :course_user_datum
   belongs_to :assessment
   belongs_to :latest_submission, class_name: "Submission"
@@ -171,7 +171,7 @@ class AssessmentUserDatum < ActiveRecord::Base
 
   # Check if user can submit at given date/time; provide reason, if not
   def can_submit?(at, submitter = course_user_datum)
-    if submitter.instructor?
+    if submitter.instructor? || submitter.course_assistant?
       [true, nil]
     elsif course_user_datum.dropped? # TODO: why not submitter?
       [false, :user_dropped]

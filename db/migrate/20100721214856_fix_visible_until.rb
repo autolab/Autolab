@@ -1,4 +1,4 @@
-class FixVisibleUntil < ActiveRecord::Migration
+class FixVisibleUntil < ActiveRecord::Migration[4.2]
   def self.up
     rename_column :assignments , :visable_until, :visible_at
   end

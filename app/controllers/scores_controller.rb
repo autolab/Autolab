@@ -13,14 +13,8 @@ class ScoresController < ApplicationController
   action_auth_level :create, :course_assistant
   def create
     score = Score.new
-    score.update_attributes(score: params[:score],
-                            feedback: params[:feedback],
-                            grader_id: params[:grader_id],
-                            released: params[:released],
-                            problem_id: params[:problem_id],
-                            submission_id: params[:submission_id])
     respond_to do |format|
-      if score.save
+      if score.update_attributes(create_params)
         format.js { render json: score.to_json(include: :grader) }
       else
         format.js { head :bad_request }
@@ -35,10 +29,7 @@ class ScoresController < ApplicationController
   action_auth_level :update, :course_assistant
   def update
     respond_to do |format|
-      if @score && @score.update_attributes(score: params[:score],
-                                            feedback: params[:feedback],
-                                            grader_id: params[:grader_id],
-                                            released: params[:released])
+      if @score && @score.update_attributes(update_params)
         format.js { render json: @score.to_json(include: :grader) }
       else
         format.js { head :bad_request }
@@ -52,6 +43,16 @@ private
     @score = @submission.scores.find(params[:id])
     return if (@score.submission.course_user_datum_id == @cud.id) ||
               (@cud.has_auth_level? :course_assistant)
+
+    flash[:error] = "Action not allowed"
     redirect_to(action: "index") && return
+  end
+
+  def create_params
+    params.permit(:score, :feedback, :grader_id, :released, :problem_id, :submission_id)
+  end
+
+  def update_params
+    params.permit(:score, :feedback, :grader_id, :released)
   end
 end

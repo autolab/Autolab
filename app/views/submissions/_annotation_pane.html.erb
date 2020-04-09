@@ -1,0 +1,52 @@
+<div id="annotationPane">
+  <div class="annotationSummary">
+    <h1>Annotations</h1>
+    <ul class="collapsible expandable">
+        <% @problemSummaries.each do |problem, descriptTuples| %>
+          <li id="li-problem-<%= problem %>">
+            <div class="collapsible-header active">
+              <h4> <%= problem.capitalize %>
+                  <div class="summary_score">
+                    <% if @cud.instructor? or @cud.course_assistant? or @problemReleased%>
+                      <%= plus_fix(@problemGrades[problem]) %>
+                    <% end %>
+                  </div>
+              </h4>
+            </div>
+            <div class="collapsible-body">
+              <% if @cud.instructor? or @cud.course_assistant? or @problemReleased%>
+                <% descriptTuples.each do |description, value, line, user, id, position| %>
+                  <div class="descript" id="li-annotation-<%= id %>" onclick="scrollToFileLine(<%= (position.nil? ? 0 : position) %>, <%= (line.nil? ? nil : line+1) %>)"> <!-- Line + 1 because the code line numbers starts with 1 not 0. -->
+                    <span class="point_badge <%= value > 0 ? "positive" : value < 0 ? "negative" : "neutral" %>"><%= plus_fix(value) %></span> <%= description %>
+                  </div>
+                <% end %>
+                <% else %>
+                <i>Unreleased</i>
+              <% end %>
+            </div>
+          </li>
+        <% end %>
+    </ul>
+  </div>
+
+  <div class="problemGrades">
+    <h1>Grades</h1>
+    <div class="collection">
+      <% p_scores = @submission.problems_to_scores %>
+      <% @assessment.problems.each_with_index do |p,i| %>
+        <% p_score = p_scores[p.id] %>
+        <div class="problem-grade-item collection-item">
+          <div class="problem_name"> <%= p.name.capitalize %>: </div>
+          <div class="problem_score">
+            <% if @cud.instructor? or @cud.course_assistant? %>
+              <a data-problem-id="<%= p.id %>" data-submission-id="<%= @submission.id %>"> <%= p_score && p_score.score ? p_score.score : raw("&ndash;") %> </a>
+            <% else %>
+              <b><%= if p_score && p_score.released then p_score.score else raw("&ndash;") end %></b>
+            <% end %>
+            <b> / <%= p.max_score %></b>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

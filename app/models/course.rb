@@ -1,7 +1,7 @@
 require "association_cache"
 require "fileutils"
 
-class Course < ActiveRecord::Base
+class Course < ApplicationRecord
   trim_field :name, :semester, :display_name
   validates_uniqueness_of :name
   validates_presence_of :display_name, :start_date, :end_date
@@ -28,6 +28,65 @@ class Course < ActiveRecord::Base
   before_save :cgdub_dependencies_updated, if: :late_slack_changed?
   before_create :cgdub_dependencies_updated
   after_create :init_course_folder
+
+  # Create a course with name, semester, and instructor email
+  # all other fields are filled in automatically
+  def self.quick_create(unique_name, semester, instructor_email)
+    newCourse = Course.new(name: unique_name, semester: semester)
+    newCourse.display_name = newCourse.name
+
+    # fill temporary values in other fields
+    newCourse.late_slack = 0
+    newCourse.grace_days = 0
+    newCourse.start_date = Time.now
+    newCourse.end_date = Time.now
+
+    newCourse.late_penalty = Penalty.new
+    newCourse.late_penalty.kind = "points"
+    newCourse.late_penalty.value = "0"
+
+    newCourse.version_penalty = Penalty.new
+    newCourse.version_penalty.kind = "points"
+    newCourse.version_penalty.value = "0"
+
+    if not newCourse.save
+      raise "Failed to create course #{newCourse.name}: #{newCourse.errors.full_messages.join(", ")}"
+    end
+
+    # Check instructor
+    instructor = User.where(email: instructor_email).first
+    # create a new user as instructor if didn't exist
+    if instructor.nil?
+      begin
+        instructor = User.instructor_create(instructor_email,
+                                            newCourse.name)
+      rescue Exception => e
+        # roll back course creation
+        newCourse.destroy
+        raise "Failed to create instructor for course: #{e}"
+      end
+    end
+
+    # Create CUD
+    newCUD = newCourse.course_user_data.new
+    newCUD.user = instructor
+    newCUD.instructor = true
+    if not newCUD.save
+      # roll back course creation
+      newCourse.destroy
+      raise "Failed to create CUD for instructor of new course #{newCourse.name}"
+    end
+
+    # Load course config
+    if not newCourse.reload_course_config
+      # roll back course and CUD creation
+      newCUD.destroy
+      newCourse.destroy
+      raise "Failed to load course config for new course #{newCourse.name}"
+    end
+
+    return newCourse
+  end
 
   # generate course folder
   def init_course_folder

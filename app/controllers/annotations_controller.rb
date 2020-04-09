@@ -10,55 +10,19 @@ class AnnotationsController < ApplicationController
   before_action :set_annotation, except: [:create]
     rescue_from ActionView::MissingTemplate do |exception|
       redirect_to("/home/error_404")
-  end
+    end
 
   respond_to :json
 
   # POST /:course/annotations.json
   action_auth_level :create, :course_assistant
   def create
-     #check to see if given score is greater than max possible score for the problem 
-     if !annotation_params[:problem_id].blank? 
-      maxScore = Problem.find(annotation_params[:problem_id]).max_score.to_f
-      if annotation_params[:value].to_f > maxScore
-        render :status => 422, :text => "bad data"
-        return
-      end 
-    end
-
-    findanno = Annotation.where('submission_id = ? AND problem_id = ?', params[:submission_id] , annotation_params[:problem_id])
-    if !findanno.blank?
-       render :status => 422, :text => "bad data"
-       return
-    end
-
-
-
     annotation = @submission.annotations.new(annotation_params)
 
-    #check to see if a problem was selected in the select box or not
-    if !annotation_params[:problem_id].blank? 
-      findScore = Score.where('submission_id = ? AND problem_id = ?', params[:submission_id] , annotation_params[:problem_id])
-    else
+    ActiveRecord::Base.transaction do
       annotation.save
-      respond_with(@course, @assessment, @submission, annotation)
-      return
-    end    
-    # set all of the data and insert the score into the table if it doesnt already exists if it does update the entry
-    if findScore.blank?
-      score = Score.new
-      score.submission_id =  params[:submission_id]
-      score.score = annotation_params[:value]
-      score.problem_id = annotation_params[:problem_id]
-      score.released = 0
-      score.grader_id = @cud.id
-      score.save
-    else
-      findScore.first.score = annotation_params[:value]
-      findScore.first.grader_id = @cud.id
-      findScore.first.save
-    end 
-    annotation.save
+      annotation.update_non_autograded_score()
+    end
 
     respond_with(@course, @assessment, @submission, annotation)
   end
@@ -66,37 +30,9 @@ class AnnotationsController < ApplicationController
   # PUT /:course/annotations/1.json
   action_auth_level :update, :course_assistant
   def update
-     #check to see if given score is greater than max possible score for the problem 
-    maxScore = Problem.find(annotation_params[:problem_id]).max_score.to_f
-    if annotation_params[:value].to_f > maxScore
-      render :status => 422, :text => "bad data"
-      return
-    end 
-    #  check to see if a problem was selected
-    if !annotation_params[:problem_id].blank?
-      findScore = Score.where('submission_id = ? AND problem_id = ?', params[:submission_id], annotation_params[:problem_id])
+    ActiveRecord::Base.transaction do
       @annotation.update(annotation_params)
-    else
-      @annotation.update(annotation_params)
-      respond_with(@course, @assessment, @submission, @annotation) do |format|
-        format.json { render json: @annotation }
-      end
-      return
-    end
-    # update the score if it exists.
-    if !findScore.blank?
-      findScore.first.problem_id = annotation_params[:problem_id]
-      findScore.first.grader_id = @cud.id
-      findScore.first.score = annotation_params[:value]
-      findScore.first.save
-    else
-      score = Score.new
-      score.submission_id =  params[:submission_id]
-      score.score = annotation_params[:value]
-      score.problem_id = annotation_params[:problem_id]
-      score.released = 0
-      score.grader_id = @cud.id
-      score.save
+      @annotation.update_non_autograded_score()
     end
 
     respond_with(@course, @assessment, @submission, @annotation) do |format|
@@ -107,11 +43,11 @@ class AnnotationsController < ApplicationController
   # DELETE /:course/annotations/1.json
   action_auth_level :destroy, :course_assistant
   def destroy
-    # remove score entry and delete annoation
-    if !@annotation.problem_id.blank?
-      Score.where('submission_id = ? AND problem_id = ?', @annotation.submission_id , @annotation.problem_id).first.destroy
+    ActiveRecord::Base.transaction do
+      @annotation.destroy
+      @annotation.update_non_autograded_score()
     end
-    @annotation.destroy
+
     head :no_content
   end
 

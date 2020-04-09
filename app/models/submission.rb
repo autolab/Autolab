@@ -4,7 +4,7 @@ require "json"
 ##
 # Submissions jointly belong to Assessments and CourseUserData
 #
-class Submission < ActiveRecord::Base
+class Submission < ApplicationRecord
   attr_accessor :lang, :formfield1, :formfield2, :formfield3
   trim_field :filename, :notes, :mime_type
 
@@ -45,6 +45,7 @@ class Submission < ActiveRecord::Base
 
   # latest (unignored) submissions
   scope :latest, -> { joins(:assessment_user_datum).joins(:course_user_datum) }
+  scope :latest_for_statistics, -> { joins(:assessment_user_datum).where.not(:assessment_user_data => { grade_type: AssessmentUserDatum::EXCUSED }).joins(:course_user_datum) }
 
   # constants for special submission types
   NORMAL = 0
@@ -204,7 +205,11 @@ class Submission < ActiveRecord::Base
     result = file.lines.map { |line| [line.force_encoding("UTF-8"), nil] }
 
     # annotation lines are one-indexed, so adjust for the zero-indexed array
-    annotations.each { |a| result[a.line - 1][1] = a }
+    annotations.each do |a|
+      # If a.line is nil, this becomes -1 so take max of this and 0
+      idx = [a.line.to_i - 1, 0].max
+      result[idx][1] = a
+    end
 
     result
   end
@@ -275,7 +280,7 @@ class Submission < ActiveRecord::Base
 
   # NOTE: threshold  is no longer calculated using submission version,
   # but now using the number of submissions. This way, deleted submissions will
-  # not be accounted for in the version penalty. 
+  # not be accounted for in the version penalty.
   def version_over_threshold_by
     # version threshold of -1 allows infinite submissions without penalty
     return 0 if assessment.effective_version_threshold < 0
@@ -523,8 +528,8 @@ private
     # check if no due at (due to infinite extension)
     return 0 unless aud.due_at
 
-    # how late is the submission?
-    late_by = created_at - aud.due_at
+    # how late is the submission? (account for DST by offsetting difference in utc_offset)
+    late_by = created_at - aud.due_at + (created_at.utc_offset - aud.due_at.utc_offset);
     return 0 if late_by <= 0
 
     # if you're 2.5 days late, you're 3 days late

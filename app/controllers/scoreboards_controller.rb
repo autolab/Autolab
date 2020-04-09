@@ -16,7 +16,12 @@ class ScoreboardsController < ApplicationController
       s.banner = ""
       s.colspec = ""
     end
-    flash[:info] = "Scoreboard Created" if @scoreboard.save!
+    begin
+      @scoreboard.save!
+      flash[:info] = "Scoreboard Created"
+    rescue ActiveRecord::RecordInvalid => invalid
+      flash[:error] = "Unable to create scoreboard: " + invalid.message
+    end
     redirect_to(action: :edit) && return
   end
 
@@ -41,6 +46,7 @@ class ScoreboardsController < ApplicationController
       uid = row["course_user_datum_id"].to_i
       unless @grades.key?(uid)
         user = @course.course_user_data.find(uid)
+        next unless user.student?
         @grades[uid] = {}
         @grades[uid][:nickname] = user.nickname
         @grades[uid][:andrewID] = user.email
@@ -134,13 +140,17 @@ class ScoreboardsController < ApplicationController
 
   action_auth_level :update, :instructor
   def update
-    flash[:info] = "Saved!" if @scoreboard.update(scoreboard_params)
+    @scoreboard.update(scoreboard_params) ? flash[:notice] = "Saved!" : flash[:error] = @scoreboard.errors.full_messages.join('')
     redirect_to(action: :edit) && return
   end
 
   action_auth_level :destroy, :instructor
   def destroy
-    flash[:info] = "Destroyed!" if @scoreboard.destroy
+    if @scoreboard.destroy
+      flash[:info] = "Destroyed!"
+    else
+      flash[:error] = "Unable to destroy scoreboard"
+    end
     redirect_to([:edit, @course, @assessment]) && return
   end
 
@@ -166,7 +176,7 @@ private
   # emitColSpec - Emits a text summary of a column specification string.
   def emitColSpec(colspec)
     return "Empty column specification" if colspec.blank?
-
+    
     begin
       # Quote JSON keys and values if they are not already quoted
       quoted = colspec.gsub(/([a-zA-Z0-9]+):/, '"\1":').gsub(/:([a-zA-Z0-9]+)/, ':"\1"')

@@ -1,4 +1,4 @@
-class RemoveUnusedGradebookCaching < ActiveRecord::Migration
+class RemoveUnusedGradebookCaching < ActiveRecord::Migration[4.2]
   def self.up
     drop_table :gradebook_cache
     drop_table :gradebook_cache_averages

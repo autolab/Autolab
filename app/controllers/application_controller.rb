@@ -19,7 +19,8 @@ class ApplicationController < ActionController::Base
   before_action :authenticate_for_action
   before_action :update_persistent_announcements
   before_action :set_breadcrumbs
-    rescue_from ActionView::MissingTemplate do |exception|
+
+  rescue_from ActionView::MissingTemplate do |exception|
       redirect_to("/home/error_404")
   end
 
@@ -60,9 +61,9 @@ class ApplicationController < ActionController::Base
     end
 
     if level == :administrator
-      skip_before_action :authorize_user_for_course, only: [action]
-      skip_filter authenticate_for_action: [action]
-      skip_before_action :update_persistent_announcements, only: [action]
+      skip_before_action :authorize_user_for_course, only: [action], raise: false
+      skip_before_action authenticate_for_action: [action]
+      skip_before_action :update_persistent_announcements, only: [action], raise: false
     end
 
     controller_whitelist = (@@global_whitelist[controller_name.to_sym] ||= {})
@@ -72,25 +73,26 @@ class ApplicationController < ActionController::Base
   end
 
   def self.action_no_auth(action)
-    skip_before_action :verify_authenticity_token, :authenticate_user!
-    skip_filter configure_permitted_paramters: [action]
-    skip_filter maintenance_mode: [action]
-    skip_filter run_scheduler: [action]
+    skip_before_action :verify_authenticity_token, raise: false
+    skip_before_action :authenticate_user!, raise: false
+    skip_before_action configure_permitted_paramters: [action]
+    skip_before_action maintenance_mode: [action]
+    skip_before_action run_scheduler: [action]
 
-    skip_filter authenticate_user: [action]
+    skip_before_action authenticate_user: [action], raise: false
     skip_before_action :authorize_user_for_course, only: [action]
-    skip_filter authenticate_for_action: [action]
-    skip_before_action :update_persistent_announcements, only: [action]
+    skip_before_action authenticate_for_action: [action], raise: false
+    skip_before_action :update_persistent_announcements, only: [action], raise: false
   end
 
 protected
 
   def configure_permitted_paramters
-    devise_parameter_sanitizer.for(:sign_in) { |u| u.permit(:email) }
-    devise_parameter_sanitizer.for(:sign_up) do |u|
+    devise_parameter_sanitizer.permit(:sign_in) { |u| u.permit(:email) }
+    devise_parameter_sanitizer.permit(:sign_up) do |u|
       u.permit(:email, :first_name, :last_name, :password, :password_confirmation)
     end
-    devise_parameter_sanitizer.for(:account_update) do |u|
+    devise_parameter_sanitizer.permit(:account_update) do |u|
       u.permit(:email, :password, :password_confirmation, :current_password)
     end
   end
@@ -143,7 +145,7 @@ protected
     @course = Course.find_by(name: course_name) if course_name
 
     unless @course
-      render :file => "#{Rails.root}/public/404.html",  :status => 404
+      render :file => "#{Rails.root}/public/404.html",  :status => 404 and return
     end
 
     # set course logger
@@ -153,6 +155,7 @@ protected
       flash[:error] = e.to_s
       redirect_to(controller: :home, action: :error) && return
     end
+    ASSESSMENT_LOGGER.setCourse(@course)
   end
 
   def authorize_user_for_course
@@ -179,19 +182,19 @@ protected
       flash[:info] = "Administrator user added to course"
 
     when :admin_creation_error
-      flash[:error] = "Error adding user: #{current_user.email} to course"
-      redirect_to(controller: :home, action: :error) && return
+      flash[:error] = "Error adding administrator #{current_user.email} to course"
+      redirect_to(controller: :courses, action: :index) && return
 
     when :unauthorized
       flash[:error] = "User #{current_user.email} is not in this course"
-      redirect_to(controller: :home, action: :error) && return
+      redirect_to(controller: :courses, action: :index) && return
     end
 
     # check if course was disabled
     if @course.disabled? && !@cud.has_auth_level?(:instructor)
       flash[:error] = "Your course has been disabled by your instructor.
                        Please contact them directly if you have any questions"
-      redirect_to(controller: :home, action: :error) && return
+      redirect_to(controller: :courses, action: :index) && return
     end
 
     # should be able to unsudo from an invalid user and
@@ -223,9 +226,13 @@ protected
       redirect_to(action: :index) && return
     end
 
-    redirect_to(action: :index) && return if @cud.student? && !@assessment.released?
+    if @cud.student? && !@assessment.released?
+      flash[:error] = "You are not authorized to view this assessment."
+      redirect_to(action: :index) && return
+    end
 
     @breadcrumbs << (view_context.current_assessment_link)
+    ASSESSMENT_LOGGER.setAssessment(@assessment)
   end
 
   # Loads the submission from the DB

@@ -1,4 +1,5 @@
-require "factory_girl_rails"
+require "factory_bot_rails"
+require "webmock/rspec"
 require 'simplecov'
 
 # Report to CodeClimate test coverage tool.
@@ -81,5 +82,8 @@ RSpec.configure do |config|
   # Enforce random ordering of tests
   config.order = :random
   # Configuration for testing
-  config.include FactoryGirl::Syntax::Methods
+  config.include FactoryBot::Syntax::Methods
+
+  # Allow all unstubbed requests
+  WebMock.allow_net_connect!
 end

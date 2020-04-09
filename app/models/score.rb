@@ -1,4 +1,4 @@
-class Score < ActiveRecord::Base
+class Score < ApplicationRecord
   belongs_to :submission
   belongs_to :problem
   belongs_to :grader, class_name: "CourseUserDatum"
@@ -25,7 +25,11 @@ class Score < ActiveRecord::Base
     with_exclusive_scope { find(*args) }
   end
 
+  # Requires submission_id, problem_id not null
   def self.find_or_initialize_by_submission_id_and_problem_id(submission_id, problem_id)
+    if submission_id.nil? || problem_id.nil?
+      raise InvalidScoreException.new, "submission_id and problem_id cannot be empty"
+    end
     score = Score.find_by(submission_id: submission_id, problem_id: problem_id)
 
     if !score
@@ -41,6 +45,7 @@ class Score < ActiveRecord::Base
     else
       setter = "Autograder"
     end
+
     # Some scores don't have submissions, probably if they're deleted ones
     unless submission.nil?
       COURSE_LOGGER.log("Score #{id} UPDATED for " \

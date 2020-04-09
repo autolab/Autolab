@@ -1,5 +1,21 @@
 require "fileutils"
 
+# This "monkey-patch" for Populator is needed due to a bug in populator which calls
+# a non-existent function "sanitize"
+# See: https://github.com/ryanb/populator/issues/30
+# REMOVE IF THE POPULATOR GEM IS UPDATED!
+module Populator
+  # Builds multiple Populator::Record instances and saves them to the database
+  class Factory
+    def rows_sql_arr
+      @records.map do |record|
+        quoted_attributes = record.attribute_values.map { |v| @model_class.connection.quote(v) }
+        "(#{quoted_attributes.join(', ')})"
+      end
+    end
+  end
+end
+
 namespace :autolab do
   COURSE_NAME = "AutoPopulated"
   USER_COUNT = 50
@@ -60,14 +76,17 @@ namespace :autolab do
           a.handin_filename = "handin.c"
           a.course_id = course.id
 
-          assessment_dir = File.join(course_dir, a.name)
-          assessment_handin_dir = File.join(assessment_dir, a.handin_directory)
-          FileUtils.mkdir_p(assessment_handin_dir)
+          a.construct_folder
 
           # 1-5 day buffer between assessments (in this category)
           start = a.due_at + (1 + rand(5)).day
         end
       end
+    end
+
+    # load config files for each assessment now that they've been created
+    course.assessments.each do |a|
+      a.load_config_file
     end
   end
 
@@ -110,6 +129,7 @@ namespace :autolab do
 
       :lecture => "1",
       :section => "Instructor",
+      :dropped => false,
 
       :instructor => true,
       :course_assistant => true,
@@ -135,6 +155,7 @@ namespace :autolab do
 
         cud.lecture = "1"
         cud.section = "None"
+        cud.dropped = false
 
         cud.instructor = false
         cud.course_assistant = false
@@ -159,7 +180,7 @@ namespace :autolab do
 
   def load_auds course
     # delete grader's AUDs (create_AUDs_module_callbacks insists on creating them)
-    AssessmentUserDatum.delete_all(:course_user_datum_id => @grader_cud.id)
+    AssessmentUserDatum.delete_all()
 
     course.assessments.each do |asmt|
       # create all auds

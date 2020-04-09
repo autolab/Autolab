@@ -241,16 +241,7 @@ public
 
     updateScore(score.submission.course_user_datum_id, score)
 
-    findanno = Annotation.where('submission_id = ? AND problem_id = ?', sub_id, prob_id)
-    # update annotation if it exists
-    if !findanno.blank?
-      findanno.first.submitted_by = @cud.email
-      findanno.first.value = params[:score].to_f
-      findanno.first.save
-    end
-
-
-    render text: score.score
+    render plain: score.score
 
   # see http://stackoverflow.com/questions/6163125/duplicate-records-created-by-find-or-create-by
   # and http://barelyenough.org/blog/2007/11/activerecord-race-conditions/
@@ -268,7 +259,7 @@ public
      # get submission and problem IDs
      sub_id = params[:submission_id].to_i
      prob_id = params[:problem_id].to_i
-     
+
 
     # find existing score for this problem, if there's one
     # otherwise, create it
@@ -280,16 +271,7 @@ public
 
     updateScore(score.submission.course_user_datum_id, score)
 
-
-    findanno = Annotation.where('submission_id = ? AND problem_id = ?', sub_id, prob_id)
-    # update annotation if it exists
-    if !findanno.blank?
-      findanno.first.submitted_by = @cud.email
-      findanno.first.value = params[:score].to_f
-      findanno.first.save
-    end
-
-    render text: score.id
+    render plain: score.id
 
   # see http://stackoverflow.com/questions/6163125/duplicate-records-created-by-find-or-create-by
   # and http://barelyenough.org/blog/2007/11/activerecord-race-conditions/
@@ -327,12 +309,13 @@ end
     # get submission and problem IDs
     sub_id = params[:submission_id].to_i
 
-    render text: Submission.find(sub_id).final_score(@cud)
+    render plain: Submission.find(sub_id).final_score(@cud)
   end
 
   def statistics
     return unless load_course_config
-    latest_submissions = @assessment.submissions.latest.includes(:scores, :course_user_datum)
+    latest_submissions = @assessment.submissions.latest_for_statistics.includes(:scores, :course_user_datum)
+    #latest_submissions = @assessment.submissions.latest.includes(:scores, :course_user_datum)
 
     # Each value other than for :all is of the form
     # [[<group>, {:mean, :median, :max, :min, :stddev}]...]
@@ -426,7 +409,7 @@ private
     end
     problem_scores
   end
-  
+
 # Stats for grouping
   def stats_for_grouping(grouping)
     result = {}

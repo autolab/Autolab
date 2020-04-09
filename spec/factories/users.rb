@@ -1,16 +1,16 @@
-FactoryGirl.define do
+FactoryBot.define do
   factory :user do
-    first_name "Test"
+    first_name { "Test" }
     sequence (:last_name) { |n| "User #{n}" }
     sequence (:email) { |n| "test#{n}@andrew.cmu.edu" }
-    password "testPassword"
+    password { "testPassword" }
 
-    confirmed_at Time.now
+    confirmed_at { Time.now }
 
     factory :instructor do
-      instructor true
-      administrator true
-      course_assistant false
+      instructor { true }
+      administrator { true }
+      course_assistant { false }
     end
   end
 end
