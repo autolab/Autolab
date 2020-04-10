@@ -8,7 +8,7 @@
 }
 
 .row {
-  max-height: calc(100vh - 205px);
+  max-height: calc(100vh - 190px);
 }
 
 #code-loader {
