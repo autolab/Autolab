@@ -9,13 +9,13 @@
     <%   days_late = (days_late / 1.day).ceil %>
     <%   grace_days_left = @aud.grace_days_usable %>
     <%   if grace_days_left >= days_late %>
-    <%     grace_late_info = "using #{pluralize(days_late, "grace day")}" %>
+    <%     grace_late_info = "submitting #{pluralize(days_late, "day")} late using #{pluralize(days_late, "grace day")}" %>
     <%   elsif grace_days_left > 0 %>
-    <%     grace_late_info = "using #{pluralize(grace_days_left, "grace day")} with #{pluralize(days_late - grace_days_left, "additional late day")}" %>
+    <%     grace_late_info = "submitting #{pluralize(days_late, "day")} late using #{pluralize(grace_days_left, "grace day")} with #{pluralize(days_late - grace_days_left, "penalty late day")}" %>
     <%   else %>
-    <%     grace_late_info = "using #{pluralize(days_late, "late day")}" %>
+    <%     grace_late_info = "submitting #{pluralize(days_late, "day")} late using #{pluralize(days_late, "penalty late day")}" %>
     <%   end %>
-    <%   late_confirm = " and that I'm submitting #{grace_late_info} under the late policy as defined in the syllabus" %>
+    <%   late_confirm = " and that I'm #{grace_late_info} under the late policy as defined in the syllabus" %>
       <p><b>Warning:</b> Submitting late may result in the usage of a grace day or a grade penalty!</p>
     <% end %>
 
