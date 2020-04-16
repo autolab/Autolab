@@ -8,8 +8,7 @@
 }
 
 .row {
-  max-height: calc(100vh - 205px);
-  overflow: hidden;
+  max-height: calc(100vh - 190px);
 }
 
 #code-loader {
@@ -489,6 +488,11 @@
 }
 
 /* Annotation Pane Styling CSS */
+#annotationPane{
+  display: flex;
+  flex-flow: column;
+  height: 100%;
+}
 .annotationSummary{
   border: solid 2px #569ff7;
   margin-bottom: 15px;
@@ -561,6 +565,7 @@
 
 .problemGrades{
   border: solid 2px #ebebeb;
+  overflow: auto;
 }
 .problemGrades h1{
   margin: 0px;
