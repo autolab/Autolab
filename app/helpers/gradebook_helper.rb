@@ -15,7 +15,11 @@ module GradebookHelper
         sortable: true, width: 100, cssClass: "last_name",
         headerCssClass: "last_name" },
       { id: "section", name: "Sec", field: "section",
-        sortable: true, width: 50 }
+        sortable: true, width: 50 },
+      { id: "grace_days", name: "Grace Days Used", field: "grace_days",
+        sortable: true, width: 50},
+      { id: "late_days", name: "Penalty Late Days", field: "late_days",
+        sortable: true, width: 50},
     ]
 
     course.assessment_categories.each do |cat|
@@ -64,6 +68,8 @@ module GradebookHelper
       sgb_link = url_for controller: :gradebooks, action: :student, id: cud.id
 
       row = {}
+      grace_days_used = 0
+      penalty_late_days = 0
 
       row["id"] = cud.id
       row["email"] = cud.user.email
@@ -81,6 +87,9 @@ module GradebookHelper
         row["#{a.name}_submission_status"] = cell["submission_status"]
         row["#{a.name}_grade_type"] = cell["grade_type"]
         row["#{a.name}_end_at"] = cell["end_at"]
+
+        grace_days_used += cell["grace_days"]
+        penalty_late_days += cell["late_days"]
       end
 
       course.assessment_categories.each do |cat|
@@ -91,6 +100,8 @@ module GradebookHelper
       end
 
       row["course_average"] = round matrix.course_average(cud.id)
+      row["grace_days"] = grace_days_used
+      row["late_days"] = penalty_late_days
 
       rows << row
     end
