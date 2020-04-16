@@ -19,7 +19,7 @@ module GradebookHelper
       { id: "grace_days", name: "Grace Days Used", field: "grace_days",
         sortable: true, width: 50},
       { id: "late_days", name: "Penalty Late Days", field: "late_days",
-        sortable: true, width: 50},
+        sortable: true, width: 50}
     ]
 
     course.assessment_categories.each do |cat|
