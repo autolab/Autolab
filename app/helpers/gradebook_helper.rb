@@ -68,8 +68,8 @@ module GradebookHelper
       sgb_link = url_for controller: :gradebooks, action: :student, id: cud.id
 
       row = {}
-      grace_days_used = 0
-      penalty_late_days = 0
+      grace_days = 0
+      late_days = 0
 
       row["id"] = cud.id
       row["email"] = cud.user.email
@@ -88,8 +88,8 @@ module GradebookHelper
         row["#{a.name}_grade_type"] = cell["grade_type"]
         row["#{a.name}_end_at"] = cell["end_at"]
 
-        grace_days_used += cell["grace_days"]
-        penalty_late_days += cell["late_days"]
+        grace_days += cell["grace_days"]
+        late_days += cell["late_days"]
       end
 
       course.assessment_categories.each do |cat|
@@ -100,8 +100,8 @@ module GradebookHelper
       end
 
       row["course_average"] = round matrix.course_average(cud.id)
-      row["grace_days"] = grace_days_used
-      row["late_days"] = penalty_late_days
+      row["grace_days"] = grace_days
+      row["late_days"] = late_days
 
       rows << row
     end
@@ -114,7 +114,7 @@ module GradebookHelper
   end
 
   def csv_header(matrix, course)
-    header = %w(Email first_name last_name Lecture Section School Major Year)
+    header = %w(Email first_name last_name Lecture Section School Major Year grace_days_used penalty_late_days)
     course.assessment_categories.each do |cat|
       next unless matrix.has_category? cat
       course.assessments_with_category(cat).each do |asmt|
@@ -146,16 +146,22 @@ module GradebookHelper
       course.course_user_data.each do |cud|
         next unless matrix.has_cud? cud.id
 
+        grace_days = 0
+        late_days = 0
+
         # general info
-        row = [cud.user.email, cud.user.first_name, cud.user.last_name, cud.lecture, cud.section, cud.school, cud.major, cud.year]
+        row = [cud.user.email, cud.user.first_name, cud.user.last_name, cud.lecture, cud.section, cud.school, cud.major, cud.year, grace_days, late_days]
 
         # assessment status (see AssessmentUserDatum.status), category averages
         course.assessment_categories.each do |cat|
           next unless matrix.has_category? cat
           course.assessments_with_category(cat).each do |asmt|
             next unless matrix.has_assessment? asmt.id
+            cell = matrix.cell(asmt.id, cud.id)
 
-            row << formatted_status(matrix.cell(asmt.id, cud.id)["status"])
+            row << formatted_status(cell["status"])
+            grace_days += cell["grace_days"]
+            late_days += cell["late_days"]
           end
 
           row << round(matrix.category_average(cat, cud.id))
@@ -163,6 +169,10 @@ module GradebookHelper
 
         # course average
         row << round(matrix.course_average(cud.id))
+
+        # update grace_days and late_days data
+        row[8] = grace_days
+        row[9] = late_days
 
         # add to csv
         csv << row
