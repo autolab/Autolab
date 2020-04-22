@@ -1,20 +1,24 @@
 <h2>Import Course Roster</h2>
 <% if params[:upload] then %>
+  <!-- Latest compiled and minified CSS -->
+  <!-- Latest Sortable -->
+  <script src="https://raw.githack.com/SortableJS/Sortable/master/Sortable.js"></script>
+
   Existing accounts in <b>Black</b>.  New accounts in <b><font
   color=green>Green</font></b>.  Dropped accounts in <b><font
   color=red>Red</font></b>. Instructors are not shown. <br>
   <%= form_for :doIt, :url=>{:action=>"uploadRoster",:doIt=>"true"} do |f| %>
   <table class='prettyBorder sortable' >
     <thead>
-    <tr>
-      <th>email</th><th>first_name</th><th>last_name</th>
-      <th>lecture</th><th>section</th><th>school</th><th>major</th><th>year</th>
-      <th>grading_policy</th>
+    <tr id="tableHeaders" class="list-group">
+      <th class="list-group-item">email</th><th class="list-group-item">first_name</th><th class="list-group-item">last_name</th>
+      <th class="list-group-item">lecture</th><th class="list-group-item">section</th><th class="list-group-item">school</th><th class="list-group-item">major</th><th class="list-group-item">year</th>
+      <th class="list-group-item">grading_policy</th>
     </tr>
     </thead>
     <% rowNum = 0 %>
     <% for cud in @cuds do %>
-      <tr style="color:<%= cud[:color] %>" >
+      <tr style="color:<%= cud[:color] %>">
         <input type="hidden" name="cuds[<%= rowNum %>][color]"
           value="<%= cud[:color] %>" />
         <td><%= cud[:email] %>
@@ -59,6 +63,7 @@
   </table>
   <br>
   <%= f.submit "Confirm", {:class => "btn primary"} %>
+  <script>Sortable.create(tableHeaders, { /* options */ });</script>
 	<% end %>
 <% else %>
 <p>
