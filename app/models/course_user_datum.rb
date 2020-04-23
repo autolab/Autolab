@@ -162,6 +162,15 @@ class CourseUserDatum < ApplicationRecord
     end
   end
 
+  def global_grace_days_left
+    # find course max grace days
+    # TODO: check if instance variables work or not
+    # find latest submission
+    # latest_submission = Submission.where(course_user_datum_id: id).order("created_at DESC").first
+    latest_aud = AssessmentUserDatum.where(course_user_datum_id: id).order("latest_submission_id DESC").first
+    return latest_aud.grace_days_usable
+  end
+
   #
   # User Attribute Wrappers - these functions get attributes from the CUD's
   #   associated User object, in an attempt to hide the User object
