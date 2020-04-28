@@ -301,6 +301,14 @@ private
   # submission file is okay to submit.
   #
   def validateHandin_forHTML
+    if params[:submission].blank?
+        flash[:error] = "Submission was blank - please upload again."
+        return false
+    end
+    if params[:submission]["file"].blank?
+        flash[:error] = "Submission was blank (file upload missing) - please upload again."
+        return false
+    end
     # check for custom form first
 		if @assessment.has_custom_form
       for i in 0..@assessment.getTextfields.size-1
