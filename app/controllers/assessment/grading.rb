@@ -112,7 +112,8 @@ private
             sub = asmt.submissions.create!(
               course_user_datum_id: user.id,
               assessment_id: asmt.id,
-              submitted_by_id: @cud.id
+              submitted_by_id: @cud.id,
+              created_at: asmt.due_at
             )
           end
 
