@@ -602,6 +602,11 @@
   color: #7a7a7a;
 }
 
+.student_score{
+  color: #090;
+}
+
+
 /* File Tree Styling CSS */
 .file-explorer{
   max-height: 60%;
