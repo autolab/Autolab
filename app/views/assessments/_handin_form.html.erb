@@ -1,7 +1,21 @@
 <div id="<%= id %>" data-cansubmit="<%= @can_submit %> " class="card-action">
   <% if @can_submit %>
+    <% late_confirm ="" %>
+    <% grace_late_info = "" %>
 
     <% if @aud.past_due_at? %>
+    <%   currentTime = Time.zone.now %>
+    <%   days_late = currentTime - @aud.due_at + (currentTime.utc_offset - @aud.due_at.utc_offset) %>
+    <%   days_late = (days_late / 1.day).ceil %>
+    <%   grace_days_left = @aud.grace_days_usable %>
+    <%   if grace_days_left >= days_late %>
+    <%     grace_late_info = "submitting #{pluralize(days_late, "day")} late using #{pluralize(days_late, "grace day")}" %>
+    <%   elsif grace_days_left > 0 %>
+    <%     grace_late_info = "submitting #{pluralize(days_late, "day")} late using #{pluralize(grace_days_left, "grace day")} with #{pluralize(days_late - grace_days_left, "penalty late day")}" %>
+    <%   else %>
+    <%     grace_late_info = "submitting #{pluralize(days_late, "day")} late using #{pluralize(days_late, "penalty late day")}" %>
+    <%   end %>
+    <%   late_confirm = " and that I am #{grace_late_info} under the late policy as defined in the syllabus" %>
       <p><b>Warning:</b> Submitting late may result in the usage of a grace day or a grade penalty!</p>
     <% end %>
 
@@ -13,7 +27,7 @@
             <!-- Academic integrity checkbox -->
             <%= label_tag(:integrity_checkbox) do %>
                 <%= check_box_tag(:integrity_checkbox) %>
-                <%= content_tag("span", "I affirm that I have complied with this course's academic integrity policy as defined in the syllabus.") %>
+                <%= content_tag("span", "I affirm that I have complied with this course's academic integrity policy as defined in the syllabus#{late_confirm}.") %>
             <% end %>
 
             <% if @aud.past_due_at? then %>
@@ -203,7 +217,7 @@
 
 						<%= label_tag(:integrity_checkbox) do %>
 							<%= check_box_tag(:integrity_checkbox) %>
-							<%= content_tag("span", "I affirm that I have complied with this course's academic integrity policy as defined in the syllabus.") %>
+							<%= content_tag("span", "I affirm that I have complied with this course's academic integrity policy as defined in the syllabus#{late_confirm}.") %>
 						<% end %>
 
             <%= f.file_field :file %>
@@ -217,7 +231,8 @@
             </div>
             <div class="row">
               <div class="smallText col s6 offset-s6 m4 offset-m8 center-align" style="padding-top: 6px">
-                <%= remainingSubmissionsMsg(@submissions, @assessment) %>
+                <%= remainingSubmissionsMsg(@submissions, @assessment) %><br>
+                <b><%= grace_late_info %></b>
               </div>
             </div>
           <% end %>

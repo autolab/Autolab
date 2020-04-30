@@ -248,8 +248,11 @@
               </p>
 
               <!-- Academic integrity checkbox -->
-              <%= check_box_tag(:integrity_checkbox) %>
-              <%= label_tag(:integrity_checkbox, "I affirm that I have complied with this course's academic integrity policy as defined in the syllabus.") %>
+              
+              <%= label_tag(:integrity_checkbox) do %>
+                <%= check_box_tag(:integrity_checkbox) %>
+                <%= content_tag("span", "I affirm that I have complied with this course's academic integrity policy as defined in the syllabus.") %>
+              <% end %>
 
               <div class = "row" style = "margin-top: 10px !important">
                 <input type="submit" class = "btn primary handin-btn" onclick = "setSubmitClicked()">

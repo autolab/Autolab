@@ -46,6 +46,7 @@ class ScoreboardsController < ApplicationController
       uid = row["course_user_datum_id"].to_i
       unless @grades.key?(uid)
         user = @course.course_user_data.find(uid)
+        next unless user.student?
         @grades[uid] = {}
         @grades[uid][:nickname] = user.nickname
         @grades[uid][:andrewID] = user.email
