@@ -161,6 +161,15 @@ class CourseUserDatum < ApplicationRecord
       return "student"
     end
   end
+  
+  def global_grace_days_left
+    course = Course.find_by(id: course_id)
+    latest_asmt = course.assessments.ordered.last
+    return course.grace_days if latest_asmt.nil?
+    cur_aud = AssessmentUserDatum.where(course_user_datum_id: id, assessment_id: latest_asmt.id).first
+    return course.grace_days if cur_aud.nil?
+    return (course.grace_days - cur_aud.global_cumulative_grace_days_used)
+  end
 
   #
   # User Attribute Wrappers - these functions get attributes from the CUD's
