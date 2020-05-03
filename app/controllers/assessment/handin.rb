@@ -310,7 +310,7 @@ private
         return false
     end
     # check for custom form first
-		if @assessment.has_custom_form
+    if @assessment.has_custom_form
       for i in 0..@assessment.getTextfields.size-1
           if params[:submission][("formfield" + (i+1).to_s).to_sym].blank?
             flash[:error] = @assessment.getTextfields[i] + " is a required field."
