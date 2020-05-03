@@ -15,7 +15,8 @@ Autolab3::Application.configure do
 
   config.assets.enabled = true
   # Compress JavaScripts and CSS
-  config.assets.js_compressor = :uglifier
+  config.assets.js_compressor = :uglify
+  # config.assets.js_compressor = Uglifier.new(harmony: true)
   config.assets.css_compressor = :sass
 
   # Don't fallback to assets pipeline if a precompiled asset is missed
@@ -52,6 +53,7 @@ Autolab3::Application.configure do
   # config.action_controller.asset_host = "http://assets.example.com"
 
   # Precompile additional assets (application.js, application.css, and all non-JS/CSS are already added)
+  byebug
   config.assets.precompile << /(^[^_\/]|\/[^_])[^\/]*$/
 
   # Disable delivery errors, bad email addresses will be ignored
