@@ -10,6 +10,9 @@
   help_text: "Descriptive course name for displaying. Example: 15-213: Intro to
   Computer Systems" %>
 
+<%= f.text_field :website,
+  help_text: "Official course website. Example: https://www.cs.cmu.edu/~213/" %>
+
 <%= f.text_field :late_slack,
   help_text: "This is the number of seconds after a deadline that the server
   will still accept a submission and not count it as late. Example: 3600" %>

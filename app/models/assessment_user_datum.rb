@@ -224,6 +224,10 @@ class AssessmentUserDatum < ApplicationRecord
     connection.execute insert_sql
   end
 
+  def global_cumulative_grace_days_used
+    cumulative_grace_days_used
+  end
+
 protected
 
   def cumulative_grace_days_used
