@@ -327,7 +327,7 @@ module AssessmentAutogradeCore
   def saveAutograde(submissions, feedback)
     begin
       lines = feedback.lines
-      raise AutogradeError.new("The Autograder returned no output", :autograde_no_output) if lines.nil?
+      raise AutogradeError.new("The Autograder returned no output", :autograde_no_output) if lines.empty?
 
       # The last line of the output is assumed to be the
       # autoresult string from the autograding driver
