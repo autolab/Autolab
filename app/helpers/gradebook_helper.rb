@@ -88,8 +88,8 @@ module GradebookHelper
         row["#{a.name}_grade_type"] = cell["grade_type"]
         row["#{a.name}_end_at"] = cell["end_at"]
 
-        grace_days += cell["grace_days"]
-        late_days += cell["late_days"]
+        grace_days += cell["grace_days"] || 0
+        late_days += cell["late_days"] || 0
       end
 
       course.assessment_categories.each do |cat|
