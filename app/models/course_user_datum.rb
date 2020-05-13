@@ -162,13 +162,26 @@ class CourseUserDatum < ApplicationRecord
     end
   end
   
+  # caching scheme same as aud calculating cgdub
   def global_grace_days_left
-    course = Course.find_by(id: course_id)
-    latest_asmt = course.assessments.ordered.last
-    return course.grace_days if latest_asmt.nil?
-    cur_aud = AssessmentUserDatum.where(course_user_datum_id: id, assessment_id: latest_asmt.id).first
-    return course.grace_days if cur_aud.nil?
-    return (course.grace_days - cur_aud.global_cumulative_grace_days_used)
+    return @ggl if @ggl
+
+    cache_key = ggl_cache_key
+
+    unless (ggl = Rails.cache.read cache_key)
+      # TODO: Potential race condition
+
+      ggl = global_grace_days_left!
+      CourseUserDatum.transaction do
+        # acquire lock on user
+        CourseUserDatum.lock(true).find(id)
+        # cache
+        Rails.cache.write(cache_key, ggl)
+      end # release lock
+    end
+
+    @ggl = ggl
+
   end
 
   #
@@ -227,6 +240,14 @@ class CourseUserDatum < ApplicationRecord
         return [nil, :unauthorized]
       end
     end
+  end
+  
+  # global grace left cache key
+  def ggl_cache_key
+    # gets it into the YYYYMMDDHHMMSS form
+    dua = course.cgdub_dependencies_updated_at.utc.to_s(:number)
+
+    "ggl/dua-#{dua}/u-#{id}"
   end
 
 private
@@ -311,6 +332,14 @@ private
 
   def compact_hash(h)
     h.delete_if { |_, v| !v }
+  end
+
+  def global_grace_days_left!
+    latest_asmt = course.assessments.ordered.last
+    return course.grace_days if latest_asmt.nil?
+    cur_aud = AssessmentUserDatum.get(latest_asmt.id, id)
+    return course.grace_days if cur_aud.nil?
+    return (course.grace_days - cur_aud.global_cumulative_grace_days_used)
   end
 
   include CUDAssociationCache

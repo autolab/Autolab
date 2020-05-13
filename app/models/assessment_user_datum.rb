@@ -143,6 +143,7 @@ class AssessmentUserDatum < ApplicationRecord
 
   # TODO
   # Refer to https://github.com/autolab/autolab-src/wiki/Caching
+  # invalidate ggl for cud as well
   def invalidate_cgdubs_for_assessments_after
     CourseUserDatum.transaction do
       # acquire lock
@@ -152,6 +153,9 @@ class AssessmentUserDatum < ApplicationRecord
       auds_for_assessments_after.each do |aud|
         Rails.cache.delete aud.cgdub_cache_key
       end
+
+      cud = CourseUserDatum.find_by(id: course_user_datum_id)
+      Rails.cache.delete cud.ggl_cache_key
     end # release lock
   end
 
