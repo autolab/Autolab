@@ -143,7 +143,6 @@ class AssessmentUserDatum < ApplicationRecord
 
   # TODO
   # Refer to https://github.com/autolab/autolab-src/wiki/Caching
-  # invalidate ggl for cud as well
   def invalidate_cgdubs_for_assessments_after
     CourseUserDatum.transaction do
       # acquire lock
@@ -227,7 +226,7 @@ class AssessmentUserDatum < ApplicationRecord
     insert_sql = "INSERT INTO #{table_name} (#{columns_sql}) VALUES (#{values_sql})"
     connection.execute insert_sql
   end
-
+  
   def global_cumulative_grace_days_used
     cumulative_grace_days_used
   end
@@ -261,6 +260,7 @@ private
     return @cgdub if @cgdub
 
     cache_key = cgdub_cache_key
+    
     unless (cgdub = Rails.cache.read cache_key)
       CourseUserDatum.transaction do
         # acquire lock on user
@@ -271,6 +271,17 @@ private
 
         # cache
         Rails.cache.write(cache_key, cgdub)
+
+        # cache associated cud's global grace days left as well
+        ggl_cache_key = course_user_datum.ggl_cache_key
+        cgd = course_user_datum.course.grace_days
+        gdu = grace_days_used
+        ggl = cgd - gdu - cgdub
+        # There shouldn't be any ggl_cache_key value available but just in case
+        if Rails.cache.read ggl_cache_key
+          Rails.cache.delete ggl_cache_key
+        end
+        Rails.cache.write(ggl_cache_key, ggl)
       end # release lock
     end
 

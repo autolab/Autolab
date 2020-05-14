@@ -162,22 +162,13 @@ class CourseUserDatum < ApplicationRecord
     end
   end
   
-  # caching scheme same as aud calculating cgdub
   def global_grace_days_left
     return @ggl if @ggl
 
     cache_key = ggl_cache_key
 
     unless (ggl = Rails.cache.read cache_key)
-      # TODO: Potential race condition
-
       ggl = global_grace_days_left!
-      CourseUserDatum.transaction do
-        # acquire lock on user
-        CourseUserDatum.lock(true).find(id)
-        # cache
-        Rails.cache.write(cache_key, ggl)
-      end # release lock
     end
 
     @ggl = ggl
@@ -336,10 +327,16 @@ private
 
   def global_grace_days_left!
     latest_asmt = course.assessments.ordered.last
-    return course.grace_days if latest_asmt.nil?
-    cur_aud = AssessmentUserDatum.get(latest_asmt.id, id)
-    return course.grace_days if cur_aud.nil?
-    return (course.grace_days - cur_aud.global_cumulative_grace_days_used)
+
+    if latest_asmt.nil?
+      # Just don't cache any stuff since no database query is necessary anyways
+      return course.grace_days
+    else
+      # do the usual data base query and let aud handle cud's caching
+      cur_aud = AssessmentUserDatum.get(latest_asmt.id, id)
+      return course.grace_days if cur_aud.nil?
+      return (course.grace_days - cur_aud.global_cumulative_grace_days_used)
+    end
   end
 
   include CUDAssociationCache
