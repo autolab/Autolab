@@ -309,15 +309,6 @@ class SubmissionsController < ApplicationController
         redirect_to [@course, @assessment] and return false
       end
 
-      filetype = FileMagic.open(:mime) { |fm|
-        fm.buffer(file)
-      }
-
-      # Do not display binary files
-      if not (filetype =~ /(binary|executable)/).nil?
-        file = "Binary file not displayed"
-      end
-
       @displayFilename = pathname
     else
       # auto-set header position for archives
@@ -330,6 +321,16 @@ class SubmissionsController < ApplicationController
 
       @displayFilename = @submission.filename
     end
+
+    filetype = FileMagic.open(:mime) { |fm|
+      fm.buffer(file)
+    }
+
+    # Do not display binary files, unless if they are PDF
+    if (filetype =~ /pdf/).nil? and (filetype =~ /(binary|executable)/).present?
+        file = "Binary file not displayed"
+    end
+
     return unless file
 
     if !PDF.pdf?(file)
