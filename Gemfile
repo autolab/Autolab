@@ -133,4 +133,4 @@ gem 'sprockets-rails', '>=3.2.1'
 gem "jstz-rails3-plus", ">= 1.0"
 
 # For getting file types 
-gem 'ruby-filemagic', '>= 0.7.2'
+gem 'mimemagic', '>= 0.3.5'
