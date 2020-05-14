@@ -322,12 +322,8 @@ class SubmissionsController < ApplicationController
       @displayFilename = @submission.filename
     end
 
-    filetype = FileMagic.open(:mime) { |fm|
-      fm.buffer(file)
-    }
-
-    # Do not display binary files, unless if they are PDF
-    if (filetype =~ /pdf/).nil? and (filetype =~ /(binary|executable)/).present?
+    mm = MimeMagic.by_magic(file)
+    if not mm.text? and not mm.subtype == "pdf"
         file = "Binary file not displayed"
     end
 
