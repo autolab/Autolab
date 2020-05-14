@@ -321,7 +321,15 @@ class SubmissionsController < ApplicationController
 
       @displayFilename = @submission.filename
     end
+
     return unless file
+
+    mm = MimeMagic.by_magic(file)
+    if mm.present?
+      if not mm.text? and not mm.subtype == "pdf"
+        file = "Binary file not displayed"
+      end
+    end
 
     if !PDF.pdf?(file)
       # begin
