@@ -169,6 +169,9 @@ class CourseUserDatum < ApplicationRecord
 
     unless (ggl = Rails.cache.read cache_key)
       ggl = global_grace_days_left!
+      # puts "FRESHLY CALCULATED"
+    else
+      # puts "READ FROM CACHE"
     end
 
     @ggl = ggl

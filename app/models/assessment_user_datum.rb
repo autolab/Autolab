@@ -144,6 +144,7 @@ class AssessmentUserDatum < ApplicationRecord
   # TODO
   # Refer to https://github.com/autolab/autolab-src/wiki/Caching
   def invalidate_cgdubs_for_assessments_after
+    # puts "INVALIDATING CGDUBS"
     CourseUserDatum.transaction do
       # acquire lock
       CourseUserDatum.lock(true).find(course_user_datum_id)
@@ -153,8 +154,7 @@ class AssessmentUserDatum < ApplicationRecord
         Rails.cache.delete aud.cgdub_cache_key
       end
 
-      cud = CourseUserDatum.find_by(id: course_user_datum_id)
-      Rails.cache.delete cud.ggl_cache_key
+      Rails.cache.delete course_user_datum.ggl_cache_key
     end # release lock
   end
 
@@ -262,6 +262,7 @@ private
     cache_key = cgdub_cache_key
     
     unless (cgdub = Rails.cache.read cache_key)
+      # puts "FRESHLY CALCULATED CGDUB"
       CourseUserDatum.transaction do
         # acquire lock on user
         CourseUserDatum.lock(true).find(course_user_datum_id)
@@ -283,6 +284,8 @@ private
         end
         Rails.cache.write(ggl_cache_key, ggl)
       end # release lock
+    # else
+      # puts "READ FROM CACHE CGDUB"
     end
 
     @cgdub = cgdub
