@@ -168,9 +168,15 @@ class CourseUserDatum < ApplicationRecord
     cache_key = ggl_cache_key
 
     unless (ggl = Rails.cache.read cache_key)
-      ggl = global_grace_days_left!
-      # puts "FRESHLY CALCULATED"
-    else
+      CourseUserDatum.transaction do
+        reload(lock: true)
+
+        ggl = global_grace_days_left!
+        # puts "FRESHLY CALCULATED"
+
+        Rails.cache.write(ggl_cache_key, ggl)
+      end # release lock
+    # else
       # puts "READ FROM CACHE"
     end
 

@@ -59,6 +59,7 @@ class AssessmentUserDatum < ApplicationRecord
   #   6. A: aud.save    (but then submission 1 is saved as aud.latest_submission)
   # by making sure (2 and 6) and (4 and 5) each occur atomically.
   def update_latest_submission
+
     AssessmentUserDatum.transaction do
       # acquire lock on AUD
       reload(lock: true)
@@ -68,6 +69,13 @@ class AssessmentUserDatum < ApplicationRecord
       save!
     end # release lock on AUD
     # see: http://dev.mysql.com/doc/refman/5.0/en/innodb-locking-reads.html
+
+    CourseUserDatum.transaction do
+      CourseUserDatum.lock(true).find(course_user_datum_id)
+
+      Rails.cache.delete course_user_datum.ggl_cache_key
+    end # release lock on CUD
+
   end
 
   # Calculate latest unignored submission (i.e. with max version and unignored)
@@ -153,8 +161,6 @@ class AssessmentUserDatum < ApplicationRecord
       auds_for_assessments_after.each do |aud|
         Rails.cache.delete aud.cgdub_cache_key
       end
-
-      Rails.cache.delete course_user_datum.ggl_cache_key
     end # release lock
   end
 
@@ -262,7 +268,6 @@ private
     cache_key = cgdub_cache_key
     
     unless (cgdub = Rails.cache.read cache_key)
-      # puts "FRESHLY CALCULATED CGDUB"
       CourseUserDatum.transaction do
         # acquire lock on user
         CourseUserDatum.lock(true).find(course_user_datum_id)
@@ -272,20 +277,7 @@ private
 
         # cache
         Rails.cache.write(cache_key, cgdub)
-
-        # cache associated cud's global grace days left as well
-        ggl_cache_key = course_user_datum.ggl_cache_key
-        cgd = course_user_datum.course.grace_days
-        gdu = grace_days_used
-        ggl = cgd - gdu - cgdub
-        # There shouldn't be any ggl_cache_key value available but just in case
-        if Rails.cache.read ggl_cache_key
-          Rails.cache.delete ggl_cache_key
-        end
-        Rails.cache.write(ggl_cache_key, ggl)
       end # release lock
-    # else
-      # puts "READ FROM CACHE CGDUB"
     end
 
     @cgdub = cgdub
