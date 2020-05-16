@@ -61,6 +61,10 @@ class HomeController < ApplicationController
     # This route just renders the home#contact page, nothing special
   end
 
+  def no_user
+    @user = current_user
+  end
+
   def error_404
     @user = current_user
   end

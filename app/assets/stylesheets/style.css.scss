@@ -16,8 +16,8 @@ a {
   color: var(--C-569ff7);
 }
 
-html, body {
-  background-color: var(--application-background);
+html, body, .match-bg {
+  background-color: var(--application-background) !important;
   height: 100%;
 }
 
@@ -36,7 +36,7 @@ html, body {
 
 .autolab .btn {
   font-weight: normal;
-  background-color: var(--C-990000);
+  background-color: var(--card-header-bg);
 }
 
 .autocomplete-content {
@@ -269,8 +269,7 @@ table.highlight {
 .sub-navigation {
   background-color: var(--C-f3f0f0-L2);
   width: 100%;
-  border-bottom: 1px solid;
-  border-color: inherit;
+  border-bottom: 1px solid var(--C-dfdcdc);
   margin-bottom: 15px;
   padding: 0 15px;
 }
@@ -753,7 +752,7 @@ table.striped {
 
 .card {
   font-weight: normal;
-  background-color: var(--C-fff);
+  background-color: inherit;
 
   .collection,
   .card-action {
@@ -780,7 +779,7 @@ table.striped {
     border-bottom: 0;
   }
   .card-content{
-    background-color: var(--C-990000);
+    background-color: var(--card-header-bg);
     color: var(--C-d5d5d5);
   }
 }
@@ -979,7 +978,7 @@ input[type=search] {
   top:50%;
   left:0;
   width:100%;
-  border-bottom:4px solid var(--C-ddd)ddd;
+  border-bottom:4px solid var(--C-ddd);
 }
 
 .section-title span {
@@ -1249,6 +1248,12 @@ div.center {
 .btn:hover {
   background-color: var(--C-8c0000) !important;
 }
+.btn.disabled, .disabled.btn-large, .disabled.btn-small, .btn-floating.disabled, .btn-large.disabled, .btn-small.disabled, 
+.btn-flat.disabled, .btn:disabled, .btn-large:disabled, .btn-small:disabled, .btn-floating:disabled, .btn-large:disabled, 
+.btn-small:disabled, .btn-flat:disabled, .btn[disabled], .btn-large[disabled], .btn-small[disabled], .btn-floating[disabled], 
+.btn-large[disabled], .btn-small[disabled], .btn-flat[disabled] {
+  background-color: var(--C-DFDFDF) !important;
+}
 
 
 .drag-drop-handin {
@@ -1305,7 +1310,7 @@ p, b {
 }
 
 .material-icons {
-  color: #ffffff;
+  color: inherit;
 }
 
 li > a {

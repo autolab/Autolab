@@ -12,6 +12,7 @@
   --error: red;
   --headers-color: var(--C-000);
   --success: green;
+  --card-header-bg: #C62828;
   --C-00A: #00A;
   --C-000-L1: rgba(0, 0, 0, 0.05);
   --C-000-L2: rgba(0, 0, 0, 0.137255);
@@ -101,7 +102,8 @@
   --C-db4437: #db4437;
   --C-ddd: #ddd;
   --C-dd2222: #dd2222; /* badge color */
-  --C-dfdcdc: rgba(223, 220, 220, 1); /*dfdcdc*/
+  --C-dfdcdc: #dfdcdc;
+  --C-DFDFDF: #DFDFDF; /* disabled button color */
   --C-e0e0e0: #e0e0e0;
   --C-E0E2FF: #E0E2FF;
   --C-e1e1e1: #e1e1e1;
@@ -122,7 +124,7 @@
   --C-F2F1DF: #F2F1DF;
   --C-f2f2f2: #f2f2f2;
   --C-F2F3FF: #F2F3FF;
-  --C-f3f0f0-L1: rgba(243, 240, 240, 0.7); /*f3f0f0*/
+  --C-f3f0f0-L1: rgba(243, 240, 240, 0.7); /*Handin panel*/
   --C-f3f0f0-L2: rgba(243, 240, 240, 0.9);
   --C-f3f3f3: #f3f3f3;
   --C-f4f4f4: #f4f4f4;
@@ -153,13 +155,17 @@
   --error: #d32f2f;
   --success: #388e3c;
   --headers-color: rgb(230, 230, 230); /* Primary text color */
+  --card-header-bg: #C62828; /* color for the card's header and buttons */
   --C-00A: rgb(170, 0, 79); /* moss cheat checker font color */
   --C-990000: #ca3e47; /* autolab color */
   --C-8c0000: #ac343c; /* hover cover (for buttons */
   --C-fff: #525252; /* includes card collection and some tables*/
-  --C-ddd: #414141; 
+  --C-ddd: #4d4d4d; 
+  --C-DFDFDF: rgb(117, 117, 117); /* disabled button color */
   --C-c00: var(--C-990000); /* Red Text */
+  --C-f3f0f0-L1: rgba(49,49,49, 0.7); /*Handin panel*/
   --C-f3f0f0-L2: rgba(37, 37, 37, 0.9); /* subnav, including hover bg */
+  --C-dfdcdc: #6d6d6d; /* subnav bottom border color */
   --C-569ff7: #00a8cc; /* some 'a' links color */
   --C-444: rgb(173, 173, 173); /* some lighted out text color */
   --C-eee: var(--C-000-L1); /* often borders properties */

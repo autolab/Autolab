@@ -33,11 +33,11 @@
 <div class="row" style="margin-bottom: 0; padding-top: 20px">
   <div class="col s12 m12" style="margin-bottom: 0">
     <div class="card" style="margin-bottom: 0">
-      <div class="card-content white">
+      <div class="card-content match-bg">
        <span class="card-title black-text" style="font-size: 40px"><b><%= "#{@course.display_name} (#{@course.semester})" %></b></span>
        <h3 style="border-bottom: 4px solid #dddddd"></h3>
           <p style="font-size: 18px">Section: <b><%= "#{@cud.section}" %></b></p>
-          <p style="font-size: 18px">Number of grace days remaining: <b><%="#{@cud.global_grace_days_left}"%></b></p></br>
+          <p style="font-size: 18px">Number of grace days remaining: <b><%="#{@cud.global_grace_days_left}"%></b></p><br/>
           <% if @course.website.nil? || @course.website.eql?("") %>
           <span class="btn btn-large disabled"><%= "<i class='material-icons left'>web</i> Course Website".html_safe %></span>
           <% else %>
@@ -54,7 +54,7 @@
 
 <% if @is_instructor %>
 <div class="section">
-  <h3 class="section-title"><span class="white">Instructor Actions</span></h4>
+  <h3 class="section-title"><span class="match-bg">Instructor Actions</span></h4>
   <span style="padding-left: 10px"><%= link_to 'Install Assessment',
                     {:action=>"installAssessment"},
                     {:title=>"Install Assessment", :class => "btn btn-large darken-3" } %></span>
@@ -62,7 +62,7 @@
 <% end %>
 
 <div class="section">
-  <h3 class="section-title"><span >Assignments</span></h3>
+  <h3 class="section-title"><span class="match-bg">Assignments</span></h3>
 
   <div class="row">
     <% @course.assessment_categories.each_with_index do |cat, idx| %>
