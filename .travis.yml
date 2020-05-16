@@ -22,8 +22,8 @@ before_script:
 #    - mysql -e "SET GLOBAL sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));"
     - RAILS_ENV=test bundle exec rails generate devise:install --skip --quiet
     - RAILS_ENV=test bundle exec rake db:create --trace
-    - RAILS_ENV=test bundle exec rake db:setup --trace
     - RAILS_ENV=test bundle exec rake db:migrate --trace
+    - RAILS_ENV=test bundle exec rake db:setup --trace
     - RAILS_ENV=test bundle exec rake autolab:populate
 script:
     - RAILS_ENV=test CODECLIMATE_REPO_TOKEN=d37a8b9e09642cb73cfcf4ecfb4115fc3d6a55a7714110187ac59856ae4ab5ad
