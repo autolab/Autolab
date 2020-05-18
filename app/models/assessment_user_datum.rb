@@ -145,7 +145,6 @@ class AssessmentUserDatum < ApplicationRecord
   # TODO
   # Refer to https://github.com/autolab/autolab-src/wiki/Caching
   def invalidate_cgdubs_for_assessments_after
-    puts "INVALIDATING CGDUBS"
     CourseUserDatum.transaction do
       # acquire lock
       CourseUserDatum.lock(true).find(course_user_datum_id)
