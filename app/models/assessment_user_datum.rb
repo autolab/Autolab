@@ -22,8 +22,6 @@ class AssessmentUserDatum < ApplicationRecord
   #   submissions associated with AUDs with Zeroed and Excused grade types aren't counted as late
   #   even if they were submitted past the due date whereas Normal grade type AUD submissions are.
   after_save :invalidate_cgdubs_for_assessments_after, if: :saved_change_to_latest_submission_id? or :saved_change_to_grade_type?
-  # after_save :invalidate_cgdubs_for_assessments_after, if: :latest_submission_id_changed?
-  # after_save :invalidate_cgdubs_for_assessments_after, if: :grade_type_changed?
 
   NORMAL = 0
   ZEROED = 1
