@@ -169,15 +169,13 @@ class CourseUserDatum < ApplicationRecord
 
     unless (ggl = Rails.cache.read cache_key)
       CourseUserDatum.transaction do
+      	# acquire lock on CUD
         reload(lock: true)
 
         ggl = global_grace_days_left!
-        # puts "FRESHLY CALCULATED"
 
         Rails.cache.write(ggl_cache_key, ggl)
       end # release lock
-    # else
-      # puts "READ FROM CACHE"
     end
 
     @ggl = ggl
@@ -247,7 +245,7 @@ class CourseUserDatum < ApplicationRecord
     # gets it into the YYYYMMDDHHMMSS form
     dua = course.cgdub_dependencies_updated_at.utc.to_s(:number)
 
-    "ggl/dua-#{dua}/u-#{id}"
+    "ggl/dua-#{dua}/u-#{self.id}"
   end
 
 private
@@ -338,11 +336,11 @@ private
     latest_asmt = course.assessments.ordered.last
 
     if latest_asmt.nil?
-      # Just don't cache any stuff since no database query is necessary anyways
+      # Just don't cache anything since no database query is necessary
       return course.grace_days
     else
-      # do the usual data base query and let aud handle cud's caching
-      cur_aud = AssessmentUserDatum.get(latest_asmt.id, id)
+      # do the usual database query and calculate
+      cur_aud = AssessmentUserDatum.get(latest_asmt.id, self.id)
       return course.grace_days if cur_aud.nil?
       return (course.grace_days - cur_aud.global_cumulative_grace_days_used)
     end

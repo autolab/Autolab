@@ -21,8 +21,9 @@ class AssessmentUserDatum < ApplicationRecord
   # * similarly, when the grade type is updated, the number of grace days used could change.
   #   submissions associated with AUDs with Zeroed and Excused grade types aren't counted as late
   #   even if they were submitted past the due date whereas Normal grade type AUD submissions are.
-  after_save :invalidate_cgdubs_for_assessments_after, if: :latest_submission_id_changed?
-  after_save :invalidate_cgdubs_for_assessments_after, if: :grade_type_changed?
+  after_save :invalidate_cgdubs_for_assessments_after, if: :saved_change_to_latest_submission_id? or :saved_change_to_grade_type?
+  # after_save :invalidate_cgdubs_for_assessments_after, if: :latest_submission_id_changed?
+  # after_save :invalidate_cgdubs_for_assessments_after, if: :grade_type_changed?
 
   NORMAL = 0
   ZEROED = 1
@@ -69,12 +70,6 @@ class AssessmentUserDatum < ApplicationRecord
       save!
     end # release lock on AUD
     # see: http://dev.mysql.com/doc/refman/5.0/en/innodb-locking-reads.html
-
-    CourseUserDatum.transaction do
-      CourseUserDatum.lock(true).find(course_user_datum_id)
-
-      Rails.cache.delete course_user_datum.ggl_cache_key
-    end # release lock on CUD
 
   end
 
@@ -152,7 +147,7 @@ class AssessmentUserDatum < ApplicationRecord
   # TODO
   # Refer to https://github.com/autolab/autolab-src/wiki/Caching
   def invalidate_cgdubs_for_assessments_after
-    # puts "INVALIDATING CGDUBS"
+    puts "INVALIDATING CGDUBS"
     CourseUserDatum.transaction do
       # acquire lock
       CourseUserDatum.lock(true).find(course_user_datum_id)
@@ -161,6 +156,8 @@ class AssessmentUserDatum < ApplicationRecord
       auds_for_assessments_after.each do |aud|
         Rails.cache.delete aud.cgdub_cache_key
       end
+
+      Rails.cache.delete course_user_datum.ggl_cache_key
     end # release lock
   end
 
