@@ -364,74 +364,44 @@ file, most likely a duplicate email.  The exact error was: #{e} "
       end
     end
 
-		# Create a temporary directory
-    @failures = []
-    tmp_dir = Dir.mktmpdir("#{@cud.user.email}Moss", Rails.root.join("tmp"))
-
-		base_file = params[:box_basefile]
-		max_lines = params[:box_max]
-		language = params[:box_language]
-
-		moss_params = ""
-
-		if not base_file.nil?
-			extract_tar_for_moss(tmp_dir, params[:base_tar], false)
-			moss_params = [moss_params, "-b", @basefiles].join(" ")
-		end
-		if not max_lines.nil?
-			if params[:max_lines] == ""
-				params[:max_lines] = 10
-			end
-			moss_params = [moss_params, "-m", params[:max_lines]].join(" ")
-		end
-		if not language.nil?
-			moss_params = [moss_params, "-l", params[:language_selection]].join(" ")
-		end
-
-		# Create a temporary directory
-		# Get moss flags from text field
-		moss_flags = ["mossnet" + moss_params + " -d"].join(" ")
-    @mossCmd = [Rails.root.join("vendor", moss_flags)]
-
     # Create a temporary directory
-
     @failures = []
     tmp_dir = Dir.mktmpdir("#{@cud.user.email}Moss", Rails.root.join("tmp"))
 
-		base_file = params[:box_basefile]
-		max_lines = params[:box_max]
-		language = params[:box_language]
+    base_file = params[:box_basefile]
+    max_lines = params[:box_max]
+    language = params[:box_language]
 
-		moss_params = ""
+    moss_params = ""
 
-		if not base_file.nil?
-			extract_tar_for_moss(tmp_dir, params[:base_tar], false)
-			moss_params = [moss_params, "-b", @basefiles].join(" ")
-		end
-		if not max_lines.nil?
-			if params[:max_lines] == ""
-				params[:max_lines] = 10
-			end
-			moss_params = [moss_params, "-m", params[:max_lines]].join(" ")
-		end
-		if not language.nil?
-			moss_params = [moss_params, "-l", params[:language_selection]].join(" ")
-		end
+    if not base_file.nil?
+      extract_tar_for_moss(tmp_dir, params[:base_tar], false)
+      moss_params = [moss_params, "-b", @basefiles].join(" ")
+    end
+    if not max_lines.nil?
+      if params[:max_lines] == ""
+        params[:max_lines] = 10
+      end
+      moss_params = [moss_params, "-m", params[:max_lines]].join(" ")
+    end
+    if not language.nil?
+      moss_params = [moss_params, "-l", params[:language_selection]].join(" ")
+    end
 
-		# Get moss flags from text field
-		moss_flags = ["mossnet" + moss_params + " -d"].join(" ")
+    # Get moss flags from text field
+    moss_flags = ["mossnet" + moss_params + " -d"].join(" ")
     @mossCmd = [Rails.root.join("vendor", moss_flags)]
 
 
-		extract_asmt_for_moss(tmp_dir, assessments)
+    extract_asmt_for_moss(tmp_dir, assessments)
     extract_tar_for_moss(tmp_dir, params[:external_tar], true)
 
-		# Ensure that all files in Moss tmp dir are readable
+    # Ensure that all files in Moss tmp dir are readable
     system("chmod -R a+r #{tmp_dir}")
     ActiveRecord::Base.clear_active_connections!
     # Remove non text files when making a moss run
     `~/Autolab/script/cleanMoss #{tmp_dir}`
-		# Now run the Moss command
+    # Now run the Moss command
     @mossCmdString = @mossCmd.join(" ")
     @mossOutput = `#{@mossCmdString} 2>&1`
     @mossExit = $?.exitstatus
