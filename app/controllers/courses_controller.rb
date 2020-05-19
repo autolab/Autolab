@@ -364,7 +364,7 @@ file, most likely a duplicate email.  The exact error was: #{e} "
       end
     end
 
-		# Create a temporary directory
+    # Create a temporary directory
     @failures = []
     tmp_dir = Dir.mktmpdir("#{@cud.user.email}Moss", Rails.root.join("tmp"))
 
