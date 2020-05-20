@@ -69,10 +69,11 @@ module AssessmentHandin
       redirect_to(action: :show) && return
     end
 
+    @curr_jobID = 0
     # autograde the submissions
     if @assessment.has_autograder?
       begin
-        sendJob_AddHTMLMessages(@course, @assessment, submissions)
+        @curr_jobID = sendJob_AddHTMLMessages(@course, @assessment, submissions)
       rescue AssessmentAutogradeCore::AutogradeError => e
         # error message already filled in by sendJob_AddHTMLMessages, we just
         # log the error message
@@ -82,8 +83,8 @@ module AssessmentHandin
           additional error data: #{e.additional_data}")
       end
     end
-
-    redirect_to([:history, @course, @assessment]) && return
+   
+    redirect_to([:history, @course, @assessment, job_id: @curr_jobID]) && return
   end
 
   # method called when student makes

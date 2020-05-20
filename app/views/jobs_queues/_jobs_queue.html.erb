@@ -1,0 +1,38 @@
+<script>
+  var curr_jobID = JSON.parse($('#curr_jobID').text());
+  var waiting_jobs = JSON.parse(<%= jobs_queue.waiting_jobs.inspect.html_safe %>);
+  var running_jobs = JSON.parse(<%= jobs_queue.running_jobs.inspect.html_safe %>);
+ 
+  $('#in_queue').css('display', 'none');
+  $('#autograding').css('display', 'none');
+
+  // current job is running
+  if (running_jobs.includes(curr_jobID)){
+  	$('#autograding').css('display', 'block')
+  }
+
+  // current job is in queue
+  if (waiting_jobs.includes(curr_jobID)){
+  	$('#in_queue').css('display', 'block');
+
+  	// get queue number
+  	$('#in_queue p').html(waiting_jobs.indexOf(curr_jobID) + 1);
+  }
+
+</script>
+
+<div class='jobs_queue'>
+  <p>Waitings jobs: <%= jobs_queue.waiting_jobs  %></p>
+  <p>Running jobs: <%= jobs_queue.running_jobs %></p>
+  <p>Time Created: <%= jobs_queue.created_at %></p> 
+</div>
+
+<div id='autograding'>
+	Your assignment is currently being graded!
+</div>
+
+
+<div id='in_queue'>
+	Your assignment is currently in the queue!
+	<br> You're in position: <p style="display: inline"> </p>
+</div>

@@ -56,6 +56,7 @@ module AssessmentAutograde
   def regrade
     @submission = @assessment.submissions.find(params[:submission_id])
     @effective_cud = @submission.course_user_datum
+    @curr_jobID = 0
 
     unless @assessment.has_autograder?
       # Not an error, this behavior was specified!
@@ -64,7 +65,7 @@ module AssessmentAutograde
     end
 
     begin
-      sendJob_AddHTMLMessages(@course, @assessment, [@submission])
+      @curr_jobID = sendJob_AddHTMLMessages(@course, @assessment, [@submission])
     rescue AssessmentAutogradeCore::AutogradeError => e
       # error message already filled in by sendJob_AddHTMLMessages, we just
       # log the error message
@@ -74,7 +75,7 @@ module AssessmentAutograde
         additional error data: #{e.additional_data}")
     end
 
-    redirect_to([:history, @course, @assessment, cud_id: @effective_cud.id]) && return
+    redirect_to([:history, @course, @assessment, cud_id: @effective_cud.id, job_id: @curr_jobID]) && return
   end
 
   #

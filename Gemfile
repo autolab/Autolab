@@ -46,7 +46,7 @@ gem 'populator', '>=1.0.0'
 gem 'mysql2', '~>0.4.10'
 
 # Development server
-gem 'thin'
+gem 'puma', '~> 3.0'
 
 # External authentication
 gem 'devise', '>=4.5.0'
@@ -69,6 +69,10 @@ gem 'rubyzip'
 
 # Helper gem for Ruby JSON API client
 gem 'httparty'
+
+# For deploying scheduled jobs
+gem 'rufus-scheduler'
+
 
 # Enables RSpec testing framework with Capybara and FactoryBot.
 gem 'rspec-rails', '>=3.5.0'
@@ -114,6 +118,8 @@ group :development do
   # sqlite3 adapter
   gem 'sqlite3', '~> 1.3.6'
 
+  # for WebSockets
+  gem 'listen'
 end
 
 # Useful debugger

@@ -49,3 +49,11 @@
 <% end %>
 <p>
 <%= "Page loaded in " + (Time.now() - @startTime).to_s + " seconds" %>
+
+<% content_for :javascripts do %>
+  <%= javascript_include_tag 'cable' %>
+ <% end %>
+
+ <h1>Jobs</h1>
+ Job ID: <div id='curr_jobID' style="display: inline"> <%= @curr_jobID %> </div>
+ <div id='jobs_queue'></div>

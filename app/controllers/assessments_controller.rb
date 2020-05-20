@@ -5,6 +5,8 @@ require "rubygems/package"
 require "statistics"
 require "yaml"
 require "utilities"
+require "tango_client"
+require "rufus-scheduler"
 
 class AssessmentsController < ApplicationController
   include ActiveSupport::Callbacks
@@ -451,10 +453,42 @@ class AssessmentsController < ApplicationController
     @autograded = @assessment.has_autograder?
   end
 
+  # Get the complete lists of live jobs from the server and send to channel
+  def send_jobs_queue
+    s = Rufus::Scheduler.singleton
+    s.every '5s' do
+      running_jobs = []
+      waiting_jobs = []
+      
+      begin
+        raw_live_jobs = TangoClient.jobs
+      rescue TangoClient::TangoException => e
+        flash[:error] = "Error while getting job list: #{e.message}"
+      end
+
+      # Build formatted lists of the running, waiting
+      unless raw_live_jobs.nil?
+        raw_live_jobs.each do |rjob|
+          if rjob["assigned"] == true
+            running_jobs << rjob["id"]
+          else
+            waiting_jobs << rjob["id"]
+          end
+        end
+      end
+
+      # Call speak from AssessmentChannel
+      AssessmentChannel.speak(running_jobs, waiting_jobs)      
+    end
+  end
+
   action_auth_level :history, :student
   def history
     # Remember the student ID in case the user wants visit the gradesheet
     session["gradeUser#{@assessment.id}"] = params[:cud_id] if params[:cud_id]
+   
+    @jobs_queues = JobsQueue.all
+    send_jobs_queue
 
     @startTime = Time.now
     if @cud.instructor? && params[:cud_id]
@@ -465,6 +499,11 @@ class AssessmentsController < ApplicationController
     @submissions = @assessment.submissions.where(course_user_datum_id: @effectiveCud.id).order("version DESC")
     @extension = @assessment.extensions.find_by(course_user_datum_id: @effectiveCud.id)
     @problems = @assessment.problems
+    @curr_jobID = 0
+
+    if params[:job_id]
+      @curr_jobID = params[:job_id]
+    end
 
     results = @submissions.select("submissions.id AS submission_id",
                                   "problems.id AS problem_id",
@@ -479,7 +518,7 @@ class AssessmentsController < ApplicationController
     # Process them to get into a format we want.
     @scores = {}
     for result in results do
-      subId = result["submission_id"].to_i
+      subId = result["submission_id"].to_i 
       @scores[subId] = {} unless @scores.key?(subId)
 
       @scores[subId][result["problem_id"].to_i] = {
