@@ -730,29 +730,27 @@ private
   def extract_tar_for_moss(tmp_dir, external_tar, archive)
     return unless external_tar
 
-			# Directory to hold tar ball and all individual files.
-	    extTarDir = File.join(tmp_dir, "external_input")
-	 		baseFilesDir = File.join(tmp_dir, "basefiles")
-			begin
-				Dir.mkdir(extTarDir)
-			  Dir.mkdir(baseFilesDir) # To hold all basefiles
-				Dir.chdir(baseFilesDir)
-			rescue
-			end
+    # Directory to hold tar ball and all individual files.
+    extTarDir = File.join(tmp_dir, "external_input")
+    baseFilesDir = File.join(tmp_dir, "basefiles")
+    begin
+	Dir.mkdir(extTarDir)
+	Dir.mkdir(baseFilesDir) # To hold all basefiles
+    rescue
+    end
 
-			# Read in the tarfile from the given source.
-	    extTarPath = File.join(extTarDir, "input_file")
-	    external_tar.rewind
-	    File.open(extTarPath, "wb") { |f| f.write(external_tar.read) } # Write tar file.
+    # Read in the tarfile from the given source.
+    extTarPath = File.join(extTarDir, "input_file")
+    external_tar.rewind
+    File.open(extTarPath, "wb") { |f| f.write(external_tar.read) } # Write tar file.
 
-	    # Directory to hold all external individual submission.
-	    extFilesDir = File.join(extTarDir, "submissions")
+    # Directory to hold all external individual submission.
+    extFilesDir = File.join(extTarDir, "submissions")
 
-		begin
-			Dir.mkdir(extFilesDir) # To hold all submissions
-	    Dir.chdir(extFilesDir)
-		rescue
-		end
+    begin
+	Dir.mkdir(extFilesDir) # To hold all submissions
+    rescue
+    end
 
     # Untar the given Tar file.
     begin
@@ -762,7 +760,7 @@ private
       archive_extract.each do |entry|
         pathname = Archive.get_entry_name(entry)
         unless Archive.looks_like_directory?(pathname)
-					destination = archive ? File.join(extFilesDir, pathname) : File.join(baseFilesDir, pathname)
+	  destination = archive ? File.join(extFilesDir, pathname) : File.join(baseFilesDir, pathname)
           pathname.gsub!(/\//, "-")
           # make sure all subdirectories are there
           File.open(destination, "wb") do |out|
@@ -776,10 +774,10 @@ private
     end
 
     # Feed the uploaded files to MOSS.
-		if archive
-	    @mossCmd << File.join(extFilesDir, "*")
-		else
-			@basefiles = File.join(baseFilesDir, "*")
-		end
+    if archive
+	@mossCmd << File.join(extFilesDir, "*")
+    else
+	@basefiles = File.join(baseFilesDir, "*")
+    end
   end
 end
