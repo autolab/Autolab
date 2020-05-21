@@ -467,7 +467,7 @@ class AssessmentsController < ApplicationController
     end
 
     # Build formatted lists of the running, waiting
-    unless raw_live_jobs.nil? or raw_live_jobs.empty
+    unless raw_live_jobs.nil? or raw_live_jobs.empty?
       raw_live_jobs.each do |rjob|
         if rjob["assigned"] == true
           running_jobs << rjob["id"]
@@ -515,7 +515,7 @@ class AssessmentsController < ApplicationController
     # Process them to get into a format we want.
     @scores = {}
     for result in results do
-      subId = result["submission_id"].to_i 
+      subId = result["submission_id"].to_i
       @scores[subId] = {} unless @scores.key?(subId)
 
       @scores[subId][result["problem_id"].to_i] = {

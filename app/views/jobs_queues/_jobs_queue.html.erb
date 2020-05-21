@@ -15,7 +15,8 @@
   if (waiting_jobs.includes(curr_jobID)){
   	$('#in_queue').css('display', 'block');
 
-  	// get queue number
+	 // get queue number
+        waiting_jobs.sort();
   	$('#in_queue p').html(waiting_jobs.indexOf(curr_jobID) + 1);
   }
 
