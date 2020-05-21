@@ -43,7 +43,7 @@ gem 'rake', '>=10.3.2'
 gem 'populator', '>=1.0.0'
 
 # To communicate with MySQL database
-gem 'mysql2', '~>0.4.10'
+# gem 'mysql2', '~>0.4.10'
 
 # Development server
 gem 'puma', '~> 3.0'
@@ -72,7 +72,6 @@ gem 'httparty'
 
 # For deploying scheduled jobs
 gem 'rufus-scheduler'
-
 
 # Enables RSpec testing framework with Capybara and FactoryBot.
 gem 'rspec-rails', '>=3.5.0'

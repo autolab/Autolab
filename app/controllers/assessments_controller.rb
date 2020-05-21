@@ -453,33 +453,32 @@ class AssessmentsController < ApplicationController
     @autograded = @assessment.has_autograder?
   end
 
-  # Get the complete lists of live jobs from the server and send to channel
-  def send_jobs_queue
-    s = Rufus::Scheduler.singleton
-    s.every '5s' do
-      running_jobs = []
-      waiting_jobs = []
+  # Get the complete lists of live jobs from tango and send to channel 
+  # every 5 seconds
+  s = Rufus::Scheduler.singleton
+  s.every '5s' do
+    running_jobs = []
+    waiting_jobs = []
       
-      begin
-        raw_live_jobs = TangoClient.jobs
-      rescue TangoClient::TangoException => e
-        flash[:error] = "Error while getting job list: #{e.message}"
-      end
+    begin
+      raw_live_jobs = TangoClient.jobs
+    rescue TangoClient::TangoException => e
+      puts "Error while getting job list: #{e.message}"
+    end
 
-      # Build formatted lists of the running, waiting
-      unless raw_live_jobs.nil?
-        raw_live_jobs.each do |rjob|
-          if rjob["assigned"] == true
-            running_jobs << rjob["id"]
-          else
-            waiting_jobs << rjob["id"]
-          end
+    # Build formatted lists of the running, waiting
+    unless raw_live_jobs.nil? or raw_live_jobs.empty
+      raw_live_jobs.each do |rjob|
+        if rjob["assigned"] == true
+          running_jobs << rjob["id"]
+        else
+          waiting_jobs << rjob["id"]
         end
       end
-
-      # Call speak from AssessmentChannel
-      AssessmentChannel.speak(running_jobs, waiting_jobs)      
     end
+
+    # Call speak from AssessmentChannel
+    AssessmentChannel.speak(running_jobs, waiting_jobs)      
   end
 
   action_auth_level :history, :student
@@ -488,8 +487,6 @@ class AssessmentsController < ApplicationController
     session["gradeUser#{@assessment.id}"] = params[:cud_id] if params[:cud_id]
    
     @jobs_queues = JobsQueue.all
-    send_jobs_queue
-
     @startTime = Time.now
     if @cud.instructor? && params[:cud_id]
       @effectiveCud = @course.course_user_data.find(params[:cud_id])
