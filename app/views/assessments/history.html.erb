@@ -1,8 +1,30 @@
+
+<%= javascript_include_tag('handinhistory.js') %>
+<%= stylesheet_link_tag "handinhistory" %>
+<script>
+  var assignment_name = "<%= @assessment.name %>"
+</script>
+
 <% @title = "Handin History" %>
 <% if @partial then %>
   <a onclick="hideStudent()">Exit</a>
 <% end %>
 <% download_access = (@cud.instructor?) %>
+
+<div id="loading_modal" class="modal">
+  <div class="modal-content">
+    <div class ="row">
+      <div class="col s4 cbox" id="loading_area">
+      </div>
+      <div class="col s8" id="information_area">
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <a href="#!" class="modal-close waves-effect waves-green btn-flat">Close</a>
+  </div>
+</div>
+
 
 <% if @extension then %>
   <i>
