@@ -1,8 +1,9 @@
 <script>
-  var curr_jobID = JSON.parse($('#curr_jobID').text());
+  //var curr_jobID = JSON.parse($('#curr_jobID').text());
   var waiting_jobs = JSON.parse(<%= jobs_queue.waiting_jobs.inspect.html_safe %>);
   var running_jobs = JSON.parse(<%= jobs_queue.running_jobs.inspect.html_safe %>);
- 
+  var created_at = Date.parse("<%= jobs_queue.created_at %>");
+
   $('#in_queue').css('display', 'none');
   $('#autograding').css('display', 'none');
 
@@ -16,9 +17,17 @@
   	$('#in_queue').css('display', 'block');
 
 	 // get queue number
-        waiting_jobs.sort();
+  waiting_jobs.sort();
   	$('#in_queue p').html(waiting_jobs.indexOf(curr_jobID) + 1);
   }
+  console.log(curr_jobID);
+  console.log(running_jobs);
+  var queueInfo = {onqueue: waiting_jobs.includes(curr_jobID),
+                   number: waiting_jobs.indexOf(curr_jobID) + 1,
+                   grading: running_jobs.includes(curr_jobID),
+                   created_at: created_at/1000};
+
+  state = on_change(state,queueInfo);
 
 </script>
 

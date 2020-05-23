@@ -511,7 +511,7 @@ class AssessmentsController < ApplicationController
               .joins("LEFT JOIN scores ON
         (submissions.id = scores.submission_id
         AND problems.id = scores.problem_id)")
-
+    
     # Process them to get into a format we want.
     @scores = {}
     for result in results do
@@ -525,10 +525,10 @@ class AssessmentsController < ApplicationController
         released: result["released"].to_i
       }
     end
-
+    
     # Check if we should include regrade as a function
     @autograded = @assessment.has_autograder?
-
+    
     if params[:partial]
       @partial = true
       render("history", layout: false) && return

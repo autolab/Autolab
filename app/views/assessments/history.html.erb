@@ -1,9 +1,4 @@
-
-<%= javascript_include_tag('handinhistory.js') %>
 <%= stylesheet_link_tag "handinhistory" %>
-<script>
-  var assignment_name = "<%= @assessment.name %>"
-</script>
 
 <% @title = "Handin History" %>
 <% if @partial then %>
@@ -11,33 +6,34 @@
 <% end %>
 <% download_access = (@cud.instructor?) %>
 
-<<<<<<< HEAD
 <% if @assessment.has_autograder? then %>
-  <% content_for :javascripts do %>
+   <script>
+     var assignment_name = "<%= @assessment.name %>";
+     var curr_jobID = <%= @curr_jobID %>;
+     console.log(curr_jobID);
+   </script>
+
+   <% content_for :javascripts do %>
     <%= javascript_include_tag 'cable' %>
+    <%= javascript_include_tag 'handinhistory' %>
    <% end %>
-
-   <h1>Jobs</h1>
-   Job ID: <div id='curr_jobID' style="display: inline"> <%= @curr_jobID %> </div>
-   <div id='jobs_queue'></div>
-
-  <div id="loading_modal" class="modal">
-    <div class="modal-content">
-      <div class ="row">
-        <div class="col s4 cbox" id="loading_area">
-        </div>
-        <div class="col s8" id="information_area">
+   
+  <div id="autograding_box" class="row" style="display:block">
+    <div class="col s12 ">
+      <div class="card-panel spacer">
+        <div class ="row nopad" id="bigger_area">
+          <div class="col s4 cbox" id="loading_area">
+            <b>Connecting to Autograding Service </b>
+          </div>
+          <div class="col s8 vbox" id="information_area">
+            <div class="progress "><div class="indeterminate" ></div></div>
+          </div>
         </div>
       </div>
     </div>
-    <div class="modal-footer">
-      <a href="#!" class="modal-close waves-effect waves-green btn-flat">Close</a>
-    </div>
   </div>
-<% end %>
-=======
 
->>>>>>> origin/autograding_loader
+<% end %>
 
 <% if @extension then %>
   <i>

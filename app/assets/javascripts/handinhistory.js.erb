@@ -1,31 +1,4 @@
-
-document.addEventListener('DOMContentLoaded', function() {
-    var elem = document.querySelector('#loading_modal');
-    instance = M.Modal.init(elem);
-    instance.options.dismissible = false;
-
-    var queueInfo = {onqueue : "true",number: 1};
-    var queueInfo = {onqueue : "false",number: 0, grading:"true", seconds: 100};
-    
-    generateModal(queueInfo,instance);
-
-    var queueInfo = {onqueue : "false",number: 0, grading:"false", seconds: 100};
-    var queueInfo = {onqueue : "true",number: 1};
-    generateModal(queueInfo,instance);
-    
-});
-
-App.room = App.cable.subscriptions.create({
-    channel : "handinChannel"
-    },{
-    connected: function(){},
-    disconnected: function(){},
-    received: function(data){
-        generateModel(data,instance);
-    },
-    speak: function(message){},
-});
-
+var state = {onqueue:false, grading:false};
 
 function ordinal_suffix_of(i) {
     var j = i % 10,
@@ -45,43 +18,93 @@ function ordinal_suffix_of(i) {
     return i + "th";
 }
 
-function generateModal(queueInformation,instance){
-    if(queueInformation.onqueue == "true")
-    {   
-        document.getElementById("loading_area").innerHTML =
-        "<center><img class='loader' src = <%= asset_path('loader.gif')%> />" +
-        "<div class='centered'><h3 class='nopad'>"+  ordinal_suffix_of(queueInformation.number)  +"</h3> in queue</div>"+
-        "<center>"
-        document.getElementById("information_area").innerHTML = 
-        "<h3> Waiting to be Autograded </h3>"+
-        "<p><b>" + assignment_name + "</b> has been succussfully submitted<br>" +
-        "The submission is currently on the queue to be autograded </p>"+
-        "<p> (It's okay to close this screen, just remember to check your score later )</p>";   
-        instance.open();
+function on_change(queueInfo=null){
+    
+    let change = -1;
+    let new_state = state;
+    console.log(state);
+    console.log(queueInfo);
+
+    if(!state.onqueue && queueInfo.onqueue){
+      change = 0;
+      new_state.onqueue = true;
     }
-    if(queueInformation.grading == "true")
-    {
-        document.getElementById("loading_area").innerHTML =
-        "<center><img class='loader' src = <%= asset_path('loader.gif')%> />" +
-        "<center>"
-        document.getElementById("information_area").innerHTML = 
-        "<h3> Autograding in process... </h3>"+
-        "<p>"+Math.floor(queueInformation.seconds/60)+" mins "+(queueInformation.seconds%60) + " secs have elapsed</p>"+
-        "Your submission of <b>" + assignment_name + "</b> is currently being autograded </p>";  
-        instance.open();
+    else if (!state.grading && queueInfo.grading){
+      change = 1;
+      new_state.start_time = queueInfo.created_at;
+      new_state.grading = true;
+    }
+    else if (state.grading && queueInfo.grading){
+      change = 2;
+    }
+    else if(state.grading && !queueInfo.grading){ 
+      change = 3;
+      new_state.end_time = queueInfo.created_at;
+      new_state.grading = false;
     }
 
-    if(queueInformation.grading == "false")
-    {
-        document.getElementById("loading_area").innerHTML =
-        "<center><img class='fade-in' src = <%= asset_path('logo.svg')%> /><center>";
-        document.getElementById("information_area").innerHTML = 
-        "<h3> Autograding complete </h3>"+
-        "<p> Completed in " + Math.floor(queueInformation.seconds/60)+" mins "+(queueInformation.seconds%60) + " secs.</p>"+
-        "Your submission of <b>" + assignment_name + "</b> has been succussfully autograded</p>" +
-        "<p> This window will close by itself</p>";   
-        setTimeout(function(){ instance.close()}, 3000);
+    let seconds = 0;
+    switch(change){
+
+        case 0: // becoming on queue
+
+            document.getElementById("loading_area").innerHTML =
+            "<center><img class='loader' src = <%= asset_path('loader.gif')%> />" +
+            "<div class='centered'><h3 class='nopad'>"+  ordinal_suffix_of(queueInfo.number) + "</h3> in queue</div>"+
+            "<center>";
+            
+            document.getElementById("information_area").innerHTML = 
+            "<h3> Waiting to be Autograded </h3>"+
+            "<p><b>" + assignment_name + "</b> has been succussfully submitted<br>" +
+            "The submission is currently on the queue to be autograded </p>"+
+            "<p> (It's okay to leave and come back to check your score later! )</p>";
+            break;
+
+        case 1:
+            seconds = Date.now()/1000 - new_state.start_time;
+            if(seconds < 0) seconds = 0;
+
+            document.getElementById("loading_area").innerHTML =
+            "<center><img class='loader' src = <%= asset_path('loader.gif')%> />" +
+            "<center>";
+
+            document.getElementById("information_area").innerHTML = 
+            "<h3> Autograding in process... </h3>" +
+            "Your submission of <b>" + assignment_name + "</b> is currently being autograded </p>" +
+            "<p><b>"+ Math.floor(seconds/60)+" mins "+ Math.floor(seconds%60) + " secs </b> has elapsed</p>" +
+            "<p> Please wait for your autograded score! </p>";
+            break;
+
+        case 2:
+            seconds = Date.now()/1000 - new_state.start_time;
+            if(seconds < 0) seconds = 0;
+
+            document.getElementById("information_area").innerHTML = 
+            "<h3> Autograding in process... </h3>" +
+            "Your submission of <b>" + assignment_name + "</b> is currently being autograded </p>" +
+            "<p><b>"+ Math.floor(seconds/60)+" mins "+ Math.floor(seconds%60) + " secs </b> has elapsed</p>" +
+            "<p> Please wait for your autograded score! </p>";
+            break;
+        
+        case 3:
+            seconds = new_state.end_time - new_state.start_time;
+            document.getElementById("loading_area").innerHTML =
+            "<center><img class='fade-in' src = <%= asset_path('logo.svg')%> /><center>";
+
+            document.getElementById("information_area").innerHTML = 
+            "<h3> Autograding complete </h3>"+
+            "<p> Completed in <b>" + Math.floor(seconds/60)+" mins "+ Math.floor(seconds%60) + "</b> secs.</p>"+
+            "Your submission of <b>" + assignment_name + "</b> has been succussfully autograded</p>" +
+            "<p> This page will refresh by itself </p>";
+            setTimeout(function(){ location.reload() }, 2500);
+            break;
+        default:
+            document.getElementById("loading_area").innerHTML = "<b> Nothing left to autograde! </b>";
+            document.getElementById("information_area").innerHTML = "";
+            break;
+
     }
 
+    state =  new_state
 }
 

@@ -3,7 +3,7 @@ class JobsQueueBroadcastJob < ApplicationJob
   
     def perform(jobs_queue)
       # broadcast jobs_queue so that all subscribers can have access to the jobs_queue.
-      ActionCable.server.broadcast 'assessment_channel', jobs_queue: render_jobs_queue(jobs_queue)
+      ActionCable.server.broadcast 'assessment_channel', jobs_queue: jobs_queue
     end
   
     private
