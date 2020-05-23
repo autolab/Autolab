@@ -32,3 +32,5 @@ out.txt
 .vscode/
 .byebug_history
 .env
+db/autolab_development
+db/autolab_test

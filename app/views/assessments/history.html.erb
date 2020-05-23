@@ -4,6 +4,17 @@
 <% end %>
 <% download_access = (@cud.instructor?) %>
 
+<% if @assessment.has_autograder? then %>
+  <% content_for :javascripts do %>
+    <%= javascript_include_tag 'cable' %>
+   <% end %>
+
+   <h1>Jobs</h1>
+   Job ID: <div id='curr_jobID' style="display: inline"> <%= @curr_jobID %> </div>
+   <div id='jobs_queue'></div>
+
+<% end %>
+
 <% if @extension then %>
   <i>
   You have a <%=@extension.days %> day extension on this assessment
@@ -50,13 +61,3 @@
 <p>
 <%= "Page loaded in " + (Time.now() - @startTime).to_s + " seconds" %>
 
-<% if @assessment.has_autograder? then %>
-  <% content_for :javascripts do %>
-    <%= javascript_include_tag 'cable' %>
-   <% end %>
-
-   <h1>Jobs</h1>
-   Job ID: <div id='curr_jobID' style="display: inline"> <%= @curr_jobID %> </div>
-   <div id='jobs_queue'></div>
-
-<% end %>
