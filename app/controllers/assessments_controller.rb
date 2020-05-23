@@ -566,7 +566,7 @@ class AssessmentsController < ApplicationController
     params[:active_tab] ||= "basic"
 
     # make sure the 'active_tab' is a real tab
-    unless %w(basic handin penalties problems).include? params[:active_tab]
+    unless %w(basic handin penalties problems advanced).include? params[:active_tab]
       params[:active_tab] = "basic"
     end
 
@@ -780,6 +780,8 @@ private
       tab_name = "handin"
     elsif params[:penalties]
       tab_name = "penalties"
+    elsif params[:advanced]
+      tab_name = "advanced"
     end
 
     edit_course_assessment_path(@course, @assessment) + "/#tab_"+tab_name

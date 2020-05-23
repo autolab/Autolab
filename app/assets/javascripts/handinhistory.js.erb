@@ -1,0 +1,87 @@
+
+document.addEventListener('DOMContentLoaded', function() {
+    var elem = document.querySelector('#loading_modal');
+    instance = M.Modal.init(elem);
+    instance.options.dismissible = false;
+
+    var queueInfo = {onqueue : "true",number: 1};
+    var queueInfo = {onqueue : "false",number: 0, grading:"true", seconds: 100};
+    
+    generateModal(queueInfo,instance);
+
+    var queueInfo = {onqueue : "false",number: 0, grading:"false", seconds: 100};
+    var queueInfo = {onqueue : "true",number: 1};
+    generateModal(queueInfo,instance);
+    
+});
+
+App.room = App.cable.subscriptions.create({
+    channel : "handinChannel"
+    },{
+    connected: function(){},
+    disconnected: function(){},
+    received: function(data){
+        generateModel(data,instance);
+    },
+    speak: function(message){},
+});
+
+
+function ordinal_suffix_of(i) {
+    var j = i % 10,
+        k = i % 100;
+    if (i == 1)
+        return "next"
+
+    if (j == 1 && k != 11) {
+        return i + "st";
+    }
+    if (j == 2 && k != 12) {
+        return i + "nd";
+    }
+    if (j == 3 && k != 13) {
+        return i + "rd";
+    }
+    return i + "th";
+}
+
+function generateModal(queueInformation,instance){
+    if(queueInformation.onqueue == "true")
+    {   
+        document.getElementById("loading_area").innerHTML =
+        "<center><img class='loader' src = <%= asset_path('loader.gif')%> />" +
+        "<div class='centered'><h3 class='nopad'>"+  ordinal_suffix_of(queueInformation.number)  +"</h3> in queue</div>"+
+        "<center>"
+        document.getElementById("information_area").innerHTML = 
+        "<h3> Waiting to be Autograded </h3>"+
+        "<p><b>" + assignment_name + "</b> has been succussfully submitted<br>" +
+        "The submission is currently on the queue to be autograded </p>"+
+        "<p> (It's okay to close this screen, just remember to check your score later )</p>";   
+        instance.open();
+    }
+    if(queueInformation.grading == "true")
+    {
+        document.getElementById("loading_area").innerHTML =
+        "<center><img class='loader' src = <%= asset_path('loader.gif')%> />" +
+        "<center>"
+        document.getElementById("information_area").innerHTML = 
+        "<h3> Autograding in process... </h3>"+
+        "<p>"+Math.floor(queueInformation.seconds/60)+" mins "+(queueInformation.seconds%60) + " secs have elapsed</p>"+
+        "Your submission of <b>" + assignment_name + "</b> is currently being autograded </p>";  
+        instance.open();
+    }
+
+    if(queueInformation.grading == "false")
+    {
+        document.getElementById("loading_area").innerHTML =
+        "<center><img class='fade-in' src = <%= asset_path('logo.svg')%> /><center>";
+        document.getElementById("information_area").innerHTML = 
+        "<h3> Autograding complete </h3>"+
+        "<p> Completed in " + Math.floor(queueInformation.seconds/60)+" mins "+(queueInformation.seconds%60) + " secs.</p>"+
+        "Your submission of <b>" + assignment_name + "</b> has been succussfully autograded</p>" +
+        "<p> This window will close by itself</p>";   
+        setTimeout(function(){ instance.close()}, 3000);
+    }
+
+}
+

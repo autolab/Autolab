@@ -15,7 +15,7 @@ module AssessmentAutograde
   # action_no_auth :autograde_done
   def autograde_done
     @assessment = @course.assessments.find_by(name: params[:name])
-    render(nothing: true) && return unless @assessment && @assessment.has_autograder?
+    head(:no_content) && return unless @assessment && @assessment.has_autograder?
     ASSESSMENT_LOGGER.setAssessment(@assessment)
 
     # there can be multiple submission with the same dave if this was a group submission
@@ -36,7 +36,7 @@ module AssessmentAutograde
       autogradeDone(submissions, feedback_str)
     end
 
-    render(nothing: true) && return
+    head(:no_content) && return
   rescue => exception
     ExceptionNotifier.notify_exception(exception, env: request.env,
                                        data: {
@@ -47,7 +47,7 @@ module AssessmentAutograde
                                        })
     Rails.logger.error "Exception in autograde_done: #{exception.class} (#{exception.message})"
     COURSE_LOGGER.log "Exception in autograde_done: #{exception.class} (#{exception.message})"
-    render(nothing: true) && return
+    head(:no_content) && return
   end
 
   # RESTfully speaking, this belongs in submissions controller,

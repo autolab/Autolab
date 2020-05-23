@@ -27,15 +27,9 @@
   greater_than: "assessment_start_at assessment_due_at assessment_end_at", placeholder: Date.current %>
 
   <%= f.check_box :disable_handins,
-    help_text: "Check this to disallow handins through Autolab." %>
-
-  <%= f.check_box :allow_unofficial, help_text: "Allow unofficial submission. Unless you know what you're doing, leave this unchecked." %>
+    help_text: "Check this to disallow handins through Autolab. This option can be used to track scores for assignments that are not submitted through Autolab such as midterms and written assignments." %>
 
   <% unless f.object.disable_handins %>
-      <%= f.text_field :handin_directory, help_text: "The subdirectory in the assessment directory where student submissions will be store. You generally shouldn't need to change this.", placeholder: "Default: handin" %>
-
-      <%= f.text_field :remote_handin_path, placeholder: "(Optional)", help_text: "The directory outside the assessment directory where student submissions directly from local machines will be copied." %>
-
       <%= f.text_field :handin_filename, help_text: "The suffix that is appended to student submission files. Autolab stores submission files in the handin directory as email_version_fname", placeholder: "E.g. mm.c" %>
   <% end %>
 

@@ -15,11 +15,6 @@
   <p class="help-block">Select an existing category or enter a new category name <i>(you can always change it later)</i></p>
 </div>
 
-
-<%= f.text_field :group_size,
-  display_name: "Group Size",
-  help_text: "Set the maximum size of groups for this assessment.  If group size is 1, the assessment is solo.  If the size is decreased, groups that are too large will not be broken up.  If the size is set to 1, groups will be saved, but the assessment will be solo.", placeholder: "1" %>
-
 <div class="assessments-label">
 	<%= f.text_area  :description, class: "materialize-textarea", help_text: "", placeholder: "(Optional) Description of assessment" %>
 
@@ -27,41 +22,6 @@
 
 	<%= f.text_field :writeup, help_text: "File path from the assessment directory containing instructions to students, or a URL to redirect to.", placeholder: "E.g.   writeup.pdf   or   http://school.edu/class/writeup.pdf" %>
 </div>
-
-<div class="embedded-form">
-  <%= f.check_box :embedded_quiz, display_name: "Embedded Form", style: "margin-top: 0.8rem;", onclick: "boxClicked();" %>
-
-    <label class="custom-file-upload">
-          <span class = "btn primary" id="upload_button" style="clear:both;">
-            Embedded Form
-            <%= f.file_field_nowrap :embedded_quiz_form, class: "upload_embedded" %>
-          </span>
-    </label>
-
-    <p class="file_name">
-        <span id="file_name"></span>
-    </p>
-
-    <% if @assessment.embedded_quiz_form_data.nil? %>
-        <p class="help-text">
-            Select to Upload a File.
-        </p>
-    <% else %>
-        <p class="help-text red-text">
-            Upload will replace existing file.
-        </p>
-    <% end %>
-  <p class="help-block">
-    For more information on Embedded Forms, visit our new
-    <a href="https://autolab.github.io/docs/features/#embedded-forms" target="_blank"> docs page.</a>
-    </p>
-</div>
-
-<script>
-    document.getElementById("assessment_embedded_quiz_form").onchange = function(e) {
-        document.getElementById("file_name").textContent = "File Selected: " + document.getElementById("assessment_embedded_quiz_form").value.split(/(\\|\/)/g).pop();
-    }
-</script>
 
 <!--
 <h4>Additional Submission Form</h4>
