@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_10_17_045404) do
+ActiveRecord::Schema.define(version: 2020_04_23_012337) do
 
   create_table "annotations", force: :cascade do |t|
     t.integer "submission_id"
@@ -154,6 +154,7 @@ ActiveRecord::Schema.define(version: 2019_10_17_045404) do
     t.integer "version_penalty_id"
     t.datetime "cgdub_dependencies_updated_at"
     t.text "gb_message"
+    t.string "website"
   end
 
   create_table "extensions", force: :cascade do |t|
@@ -161,6 +162,17 @@ ActiveRecord::Schema.define(version: 2019_10_17_045404) do
     t.integer "assessment_id"
     t.integer "days"
     t.boolean "infinite", default: false, null: false
+  end
+
+  create_table "grade_csv_map", force: :cascade do |t|
+    t.string "name"
+    t.integer "emailcol"
+    t.integer "typecol"
+  end
+
+  create_table "grade_csv_problem", force: :cascade do |t|
+    t.integer "grade_map_id"
+    t.integer "grade"
   end
 
   create_table "groups", force: :cascade do |t|
@@ -244,6 +256,21 @@ ActiveRecord::Schema.define(version: 2019_10_17_045404) do
     t.boolean "optional", default: false
   end
 
+  create_table "roster_csv_map", force: :cascade do |t|
+    t.string "name"
+    t.integer "semestercol"
+    t.integer "emailcol"
+    t.integer "lastnamecol"
+    t.integer "firstnamecol"
+    t.integer "schoolcol"
+    t.integer "majorcol"
+    t.integer "yearcol"
+    t.integer "gradingpolicycol"
+    t.integer "coursenumbercol"
+    t.integer "courselecturecol"
+    t.integer "sectioncol"
+  end
+
   create_table "scheduler", force: :cascade do |t|
     t.string "action"
     t.datetime "next"
@@ -274,6 +301,7 @@ ActiveRecord::Schema.define(version: 2019_10_17_045404) do
     t.datetime "updated_at"
     t.boolean "released", default: false
     t.integer "grader_id"
+    t.boolean "is_autograded", default: false
     t.index ["problem_id", "submission_id"], name: "problem_submission_unique", unique: true
     t.index ["submission_id"], name: "index_scores_on_submission_id"
   end
