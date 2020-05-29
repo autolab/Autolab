@@ -91,6 +91,8 @@
 
   <% if @course.grace_days >= 0 then %>
     <td title="Submitted <%= submission.days_late %> days late" >
+      <nobr>
+      <%= "Submitted #{submission.days_late} days late" %>
       </nobr>
     </td>
   <% end %>
