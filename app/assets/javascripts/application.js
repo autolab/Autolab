@@ -15,7 +15,6 @@
 //= require moment
 //= require bootstrap-datetimepicker
 //= require app-level
-//= require materialize
 //= require materialize-sprockets
 //= require js.cookie
 //= require jstz
