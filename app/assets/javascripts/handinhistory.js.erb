@@ -29,16 +29,19 @@ function on_change(queueInfo=null){
       change = 0;
       new_state.onqueue = true;
     }
-    else if (!state.grading && queueInfo.grading){
+    else if(state.onqueue && queueInfo.onqueue){
       change = 1;
+    }
+    else if (!state.grading && queueInfo.grading){
+      change = 2;
       new_state.start_time = queueInfo.created_at;
       new_state.grading = true;
     }
     else if (state.grading && queueInfo.grading){
-      change = 2;
+      change = 3;
     }
     else if(state.grading && !queueInfo.grading){ 
-      change = 3;
+      change = 4;
       new_state.end_time = queueInfo.created_at;
       new_state.grading = false;
     }
@@ -55,12 +58,21 @@ function on_change(queueInfo=null){
             
             document.getElementById("information_area").innerHTML = 
             "<h3> Waiting to be Autograded </h3>"+
-            "<p><b>" + assignment_name + "</b> has been succussfully submitted<br>" +
-            "The submission is currently on the queue to be autograded </p>"+
+            "<p><b>" + assignment_name + "</b> has been succussfully submitted</p>" +
+            "<p>The submission is currently on the queue to be autograded </p>"+
             "<p> (It's okay to leave and come back to check your score later! )</p>";
             break;
 
-        case 1:
+        case 1: // staying on queue
+
+            document.getElementById("loading_area").innerHTML =
+            "<center><img class='loader' src = <%= asset_path('loader.gif')%> />" +
+            "<div class='centered'><h3 class='nopad'>"+  ordinal_suffix_of(queueInfo.number) + "</h3> in queue</div>"+
+            "<center>";
+
+            break;
+        case 2: // getting autograded
+        
             seconds = Date.now()/1000 - new_state.start_time;
             if(seconds < 0) seconds = 0;
 
@@ -75,7 +87,8 @@ function on_change(queueInfo=null){
             "<p> Please wait for your autograded score! </p>";
             break;
 
-        case 2:
+        case 3: // still autograding
+
             seconds = Date.now()/1000 - new_state.start_time;
             if(seconds < 0) seconds = 0;
 
@@ -86,7 +99,8 @@ function on_change(queueInfo=null){
             "<p> Please wait for your autograded score! </p>";
             break;
         
-        case 3:
+        case 4: // finish autograding 
+
             seconds = new_state.end_time - new_state.start_time;
             document.getElementById("loading_area").innerHTML =
             "<center><img class='fade-in' src = <%= asset_path('logo.svg')%> /><center>";
@@ -98,7 +112,9 @@ function on_change(queueInfo=null){
             "<p> This page will refresh by itself </p>";
             setTimeout(function(){ location.reload() }, 2500);
             break;
+
         default:
+
             document.getElementById("loading_area").innerHTML = "<b> Nothing left to autograde! </b>";
             document.getElementById("information_area").innerHTML = "";
             break;
