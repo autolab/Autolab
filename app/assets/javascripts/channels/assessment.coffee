@@ -11,6 +11,8 @@ App.assessment = App.cable.subscriptions.create "AssessmentChannel",
     waiting_jobs = JSON.parse(data.jobs_queue.waiting_jobs);
     running_jobs = JSON.parse(data.jobs_queue.running_jobs);
     created_at = Date.parse(data.jobs_queue.created_at);
+    
+    waiting_jobs.sort();
 
     queueInfo = 
       onqueue: waiting_jobs.includes(curr_jobID)
