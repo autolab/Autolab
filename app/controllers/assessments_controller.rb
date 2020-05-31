@@ -475,7 +475,7 @@ class AssessmentsController < ApplicationController
               .joins("LEFT JOIN scores ON
         (submissions.id = scores.submission_id
         AND problems.id = scores.problem_id)")
-
+    
     # Process them to get into a format we want.
     @scores = {}
     for result in results do
@@ -486,7 +486,7 @@ class AssessmentsController < ApplicationController
         score: result["score"].to_f,
         feedback: result["feedback"],
         score_id: result["score_id"].to_i,
-        released: result["released"].to_i
+        released: Utilities.is_truthy?(result["released"]) ? 1 : 0 # converts 't' to 1, "f" to 0
       }
     end
 
