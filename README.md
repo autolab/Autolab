@@ -21,6 +21,9 @@ Since 2010, Autolab has had a transformative impact on education at CMU. Each se
 </p>
 
 [![Build Status](https://travis-ci.org/autolab/Autolab.svg)](https://travis-ci.org/autolab/Autolab)
+![GitHub last commit](https://img.shields.io/github/last-commit/autolab/Autolab)
+
+Subscribe to our [mailing list](https://groups.google.com/forum/#!forum/autolabproject/join) to recieve emails about major releases and important updates to the Autolab Project.
 
 ## Installation
 
