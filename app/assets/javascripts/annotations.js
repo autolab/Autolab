@@ -66,7 +66,7 @@ function purgeCurrentPageCache() {
   else {
     symbolTree = null;
   }
-  localCache[curHeaderPos] = {
+  localCache[currentHeaderPos] = {
     codeBox: `<div id="code-box">${$('#code-box').html()}</div>`,
     pdf: false,
     symbolTree

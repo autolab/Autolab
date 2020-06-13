@@ -24,17 +24,17 @@
     const editableUrl = "<%= url_for ([:quickSetScore, @course, @assessment]) %>"
     const rootFiles = $('.file-list').children()
     const allFilesFolders = $('.file-list').find("*")
+
     var currentHeaderPos = <%= params[:header_position] || 0 %>
-
     var submissionID = <%= @submission.id %>
-    var curHeaderPos = <%= params[:header_position] || 0 %>
-
     var annotations = <%=raw @annotations.to_json %>;
     var annotationsByPositionByLine = {};
     var fileNameStr = "<%= @filename %>";
     var cudEmailStr = "<%= @cud.email %>";
+
     // a json list of problems for this assessment
     var problems = <%= raw @problems.to_json %>;
+
     // a json list of scores for this assessment
     var scores = <%=raw @scores.to_json %>;
     var basePath = "<%= course_assessment_submission_annotations_path(@course, @assessment, @submission) %>";
