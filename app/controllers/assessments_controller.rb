@@ -514,20 +514,34 @@ class AssessmentsController < ApplicationController
     
     # Process them to get into a format we want.
     @scores = {}
+    
     for result in results do
       subId = result["submission_id"].to_i
+      
       @scores[subId] = {} unless @scores.key?(subId)
 
       @scores[subId][result["problem_id"].to_i] = {
         score: result["score"].to_f,
         feedback: result["feedback"],
         score_id: result["score_id"].to_i,
-        released: result["released"].to_i
+        released: Utilities.is_truthy?(result["released"]) ? 1 : 0 # converts 't' to 1, "f" to 0
       }
     end
     
     # Check if we should include regrade as a function
     @autograded = @assessment.has_autograder?
+    
+    @lastest_submission_graded = false
+    
+    # Checks if the lastest submission has been autograded by checking if a any scores of it exist
+    if @autograded && @submissions.present?
+      last_id = @submissions[0].id # this is correct because submissions is ordered by version
+      for problem in @problems do
+        if @scores[last_id] and @scores[last_id][problem.id]
+          @lastest_submission_graded = true
+        end
+      end
+    end
     
     if params[:partial]
       @partial = true

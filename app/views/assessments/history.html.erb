@@ -6,11 +6,11 @@
 <% end %>
 <% download_access = (@cud.instructor?) %>
 
-<% if @assessment.has_autograder? then %>
+<% if @autograded && @submissions.present? && !@lastest_submission_graded then %>
+
    <script>
      var assignment_name = "<%= @assessment.name %>";
      var curr_jobID = <%= @curr_jobID %>;
-     console.log(curr_jobID);
    </script>
 
    <% content_for :javascripts do %>
