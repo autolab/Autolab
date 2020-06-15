@@ -150,6 +150,25 @@ class Course < ApplicationRecord
 
   def reload_config_file
     course = name.gsub(/[^A-Za-z0-9]/, "")
+
+    # remove previously defined methods ... if the new
+    # config file doesn't define them, we want to fall
+    # back to default behavior, not behavior from prior config
+    begin
+      Rails.logger.info("SWLOG -- rcf -- removing old module methods")
+      mod = eval("Course#{course.camelize}")
+      q = mod.instance_methods(true)
+      Rails.logger.info("SWLOG -- rcf -- beginning removal of old module methods -- methods are now :: #{q}")
+      mod.instance_methods(false).each do |m|
+        Rails.logger.info("SWLOG -- rcf -- removing? #{m}")
+        mod.instance_eval("remove_method :#{m}")
+      end
+      q = mod.instance_methods(true)
+      Rails.logger.info("SWLOG -- rcf -- done removing old module methods -- methods are now :: #{q}")
+    rescue StandardError
+      Rails.logger.info("SWLOG -- rcf --failed?")
+    end
+    
     src = Rails.root.join("courses", name, "course.rb")
     dest = Rails.root.join("courseConfig/", "#{course}.rb")
     s = File.open(src, "r")
@@ -171,7 +190,11 @@ class Course < ApplicationRecord
     d.close
 
     load(dest)
-    eval("Course#{course.camelize}")
+    mod = eval("Course#{course.camelize}")
+    q = mod.instance_methods(true)
+    Rails.logger.info("SWLOG -- rcf -- after loading new config, module methods are now :: #{q}")
+    
+    mod
   end
 
   # reload_course_config
@@ -184,7 +207,10 @@ class Course < ApplicationRecord
     rescue Exception => @error
       return false
     end
-
+    z = mod.instance_methods(false)
+    Rails.logger.info("SWLOG rcc --  mod methods are :: #{z}")
+    q = AdminsController.singleton_methods(true)
+    Rails.logger.info("SWLOG rcc --  AdminsController  #{q}")
     AdminsController.extend(mod)
     true
   end
