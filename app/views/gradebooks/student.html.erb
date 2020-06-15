@@ -116,10 +116,10 @@
               </tr>
             <% end %>
             <tr class="footer">
-              <th>Category Average</th>
+              <th>Category <%= @_cud.category_aggregate_hash(cat, @cud)[:name] %></th>
               <% if @course.grace_days > 0 %><th></th><% end %>
               <th></th>
-              <th class="cat_avg"><%= computed_score { @_cud.category_average cat, @cud } %></td>
+              <th class="cat_avg"><%= computed_score { @_cud.category_aggregate_hash(cat, @cud)[:value] } %></td>
             </tr>
           </table>
         </div>
@@ -143,8 +143,8 @@
         </tr>
         <% end %>
         <tr>
-          <th>Course Average</th>
-          <td><%== computed_score { @_cud.average @cud } %></td>
+          <th>Course <%= @_cud.aggregate_hash(@cud)[:name] %></th>
+          <td><%= computed_score { @_cud.aggregate_hash(@cud)[:value] } %></td>
         </tr>
       </table>
     </div>
