@@ -127,15 +127,17 @@ class CourseUserDatum < ApplicationRecord
     user.administrator? || instructor_of?(student) || CA_of?(student)
   end
 
-  def average(as_seen_by)
-    @average ||= {}
-    @average[as_seen_by] ||= average! as_seen_by
+  # now we're storing a hash instead of a scalar...
+  def aggregate_hash(as_seen_by)
+    @aggregate ||= {}
+    @aggregate[as_seen_by] ||= aggregate_hash! as_seen_by
   end
 
-  def category_average(category, as_seen_by)
-    @category_average ||= {}
-    @category_average[category] ||= {}
-    @category_average[category][as_seen_by] ||= category_average! category, as_seen_by
+  # now we're storing a hash per category instead of a scalar...
+  def category_aggregate_hash(category, as_seen_by)
+    @category_aggregate_hash ||= {}
+    @category_aggregate_hash[category] ||= {}
+    @category_aggregate_hash[category][as_seen_by] ||= category_aggregate_hash! category, as_seen_by
   end
 
   def has_auth_level?(level)
@@ -162,7 +164,7 @@ class CourseUserDatum < ApplicationRecord
       return "student"
     end
   end
-  
+
   def global_grace_days_left
     return @ggl if @ggl
 
@@ -240,7 +242,7 @@ class CourseUserDatum < ApplicationRecord
       end
     end
   end
-  
+
   # global grace left cache key
   def ggl_cache_key
     # gets it into the YYYYMMDDHHMMSS form
@@ -268,47 +270,60 @@ private
     end
   end
 
-  def average!(as_seen_by)
-    input = average_input as_seen_by
-    v = Utilities.execute_instructor_code(:courseAverage) do
-      course.config.courseAverage input
-    end
-    avg = Utilities.validated_score_value(v, :courseAverage, true)
-
-    # apply tweak
-    Tweak.apply_tweak tweak, avg
-  end
-
-  def category_average!(category, as_seen_by)
-    input = category_average_input(category, as_seen_by)
-    method_name = "#{category}Average".to_sym
+  def aggregate_hash!(as_seen_by)
 
     config = course.config
-    average = if config.respond_to? method_name
+    agghash = if config.respond_to? :courseAggregate
+                inputs = aggregate_inputs as_seen_by
+                v = Utilities.execute_instructor_code(:courseAggregate) do
+                  config.courseAggregate inputs[0], inputs[1]
+                end
+                Utilities.validated_score_hash(v, :courseAggregate, true)
+	      else # backward compatibility
+                input = aggregate_input as_seen_by
+                avg = Utilities.execute_instructor_code(:courseAverage) do
+                  config.courseAverage input
+                end
+                v = {:name => "Average", :value => avg}
+                Utilities.validated_score_hash(v, :courseAggregate, true)
+              end
+    # apply tweak
+    agghash[:value] = Tweak.apply_tweak tweak, agghash[:value]
+    agghash
+  end
+
+  def category_aggregate_hash!(category, as_seen_by)
+    input = category_aggregate_input(category, as_seen_by)
+    method_name = "#{category}Aggregate".to_sym
+    old_method_name = "#{category}Average".to_sym  # backward compatibility
+
+    config = course.config
+    agghash = if config.respond_to? method_name
                 v = Utilities.execute_instructor_code(method_name) do
                   config.send method_name, input
                 end
-                Utilities.validated_score_value(v, method_name, true)
+                Utilities.validated_score_hash(v, method_name, true)
+              elsif config.respond_to? old_method_name
+                avg = Utilities.execute_instructor_code(old_method_name) do
+                  config.send old_method_name, input
+                end
+                v = {name: "Average", value: avg}
+                Utilities.validated_score_hash(v, method_name, true)
               else
-                default_category_average input
+                v = Utilities.execute_instructor_code(:defaultCategoryAggregate) do
+                  config.send :defaultCategoryAggregate, input
+                end
+                Utilities.validated_score_hash(v, :defaultCategoryAggregate, true)
+
     end
 
-    average
+    agghash
   end
 
-  def default_category_average(input)
-    final_scores = input.values
-    if final_scores.size > 0
-      final_scores.reduce(:+) / final_scores.size
-    else
-      nil
-    end
-  end
-
-  def category_average_input(category, as_seen_by)
-    @category_average_input ||= {}
-    @category_average_input[as_seen_by] ||= {}
-    input = (@category_average_input[as_seen_by][category] ||= {})
+  def category_aggregate_input(category, as_seen_by)
+    @category_aggregate_input ||= {}
+    @category_aggregate_input[as_seen_by] ||= {}
+    input = (@category_aggregate_input[as_seen_by][category] ||= {})
 
     user_id = id
     course.assessments.each do |a|
@@ -320,9 +335,9 @@ private
     compact_hash input
   end
 
-  def average_input(as_seen_by)
-    @average_input ||= {}
-    input = (@average_input[as_seen_by] ||= {})
+  def aggregate_input(as_seen_by)
+    @aggregate_input ||= {}
+    input = (@aggregate_input[as_seen_by] ||= {})
 
     user_id = id
     course.assessments.each do |a|
@@ -330,11 +345,36 @@ private
     end
 
     course.assessment_categories.each do |cat|
-      input["cat#{cat}"] ||= category_average cat, as_seen_by
+      input["cat#{cat}"] ||= category_aggregate_hash(cat, as_seen_by)[:value]
+    end
+
+    Rails.logger.info("**SWLOG** Getting aggregate input: #{input}")
+    # remove nil computed scores -- instructors shouldn't have to deal with nils
+    compact_hash input
+
+  end
+
+  # new version of aggregate_input, returns list of two hashes
+  # assessment scores and category aggregates to avoid name collisions
+  def aggregate_inputs(as_seen_by)
+    @newstyle_aggregate_input ||= {}
+    inputs = (@newstyle_aggregate_input[as_seen_by] ||= [{}, {}])
+
+    user_id = id
+    course.assessments.each do |a|
+      inputs[0][a.name] ||= a.aud_for(id).final_score as_seen_by
+    end
+
+    course.assessment_categories.each do |cat|
+      # here, we don't use the 'cat' prefix, since we'll pass these separately
+      inputs[1]["#{cat}"] ||= category_aggregate_hash(cat, as_seen_by)[:value]
     end
 
     # remove nil computed scores -- instructors shouldn't have to deal with nils
-    compact_hash input
+    compact_hash inputs[0]
+    compact_hash inputs[1]
+
+    inputs
   end
 
   def compact_hash(h)

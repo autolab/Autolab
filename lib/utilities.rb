@@ -36,6 +36,19 @@ module Utilities
     score
   end
 
+  def self.validated_score_hash(scorehash, invoked_method_name, allow_nil = false)
+    message = "Error executing #{invoked_method_name}"
+
+    if !scorehash.key?(:name)
+      fail InvalidComputedScoreException.new("#{message}: doesn't have a 'name' key")
+    elsif !scorehash.key?(:value)
+      fail InvalidComputedScoreException.new("#{message}: doesn't have a 'value' key")
+    end
+
+    validated_score_value scorehash[:value], invoked_method_name, allow_nil
+    scorehash
+  end
+
   def self.is_truthy?(val)
     val == true || val == "True" || val == "true" || val == "t" || val == 1 || val == "1" || val == "T"
   end
