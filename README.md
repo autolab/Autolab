@@ -19,7 +19,7 @@ Since 2010, Autolab has had a transformative impact on education at CMU. Each se
 </a>
 
 <a href="https://groups.google.com/forum/#!forum/autolabproject/join" style="float:left">
- <img src="https://svgshare.com/i/M3N" width="170px" height="44px">
+ <img src="https://svgshare.com/i/M5J.svg" width="170px" height="44px">
 </a>
 
 </p>
