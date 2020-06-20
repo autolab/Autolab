@@ -475,7 +475,7 @@ class AssessmentsController < ApplicationController
               .joins("LEFT JOIN scores ON
         (submissions.id = scores.submission_id
         AND problems.id = scores.problem_id)")
-
+    
     # Process them to get into a format we want.
     @scores = {}
     for result in results do
@@ -486,7 +486,7 @@ class AssessmentsController < ApplicationController
         score: result["score"].to_f,
         feedback: result["feedback"],
         score_id: result["score_id"].to_i,
-        released: result["released"].to_i
+        released: Utilities.is_truthy?(result["released"]) ? 1 : 0 # converts 't' to 1, "f" to 0
       }
     end
 
@@ -530,7 +530,7 @@ class AssessmentsController < ApplicationController
     params[:active_tab] ||= "basic"
 
     # make sure the 'active_tab' is a real tab
-    unless %w(basic handin penalties problems).include? params[:active_tab]
+    unless %w(basic handin penalties problems advanced).include? params[:active_tab]
       params[:active_tab] = "basic"
     end
 
@@ -744,6 +744,8 @@ private
       tab_name = "handin"
     elsif params[:penalties]
       tab_name = "penalties"
+    elsif params[:advanced]
+      tab_name = "advanced"
     end
 
     edit_course_assessment_path(@course, @assessment) + "/#tab_"+tab_name
