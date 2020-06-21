@@ -92,9 +92,12 @@
   <% for submission in @submissions %>
     <tr id="row-<%= submission.id %>" class="submission-row">
       <td>
-        <label>
-        <input class="cbox" type="checkbox" id="cbox-<%= submission.id %>">
-        </label>
+        <p>
+          <label>
+            <input class="cbox" type="checkbox" id="cbox-<%= submission.id %>">
+            <span/>
+          </label>
+        </p>
       </td>
       <td><%= "#{submission.course_user_datum.last_name}, #{submission.course_user_datum.first_name}" %>
       <%= link_to submission.course_user_datum.email,
