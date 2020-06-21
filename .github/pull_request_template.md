@@ -22,7 +22,7 @@
 
 ## Checklist:
 <!--- Go over all the following points, and put an `x` in all the boxes that apply. -->
-- [ ] My change requires a change to the documentation.
-- [ ] I have updated the documentation accordingly.
+- [ ] My change requires a change to the documentation, which is located at [Autolab Docs](https://github.com/autolab/docs)
+- [ ] I have updated the documentation accordingly, and here is the corresponding pull request to Autolab Docs -> 
 
 If unsure, feel free to submit first and we'll help you along.
