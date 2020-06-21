@@ -9,6 +9,9 @@ assignees: ''
 
 **Describe the bug**
 
+**Your environment**
+If you think this is relevant, let us know
+
 **Steps To Reproduce**
 Steps to reproduce the behavior:
 1. Go to '...'
@@ -22,6 +25,3 @@ Steps to reproduce the behavior:
 
 **Screenshots**
 If applicable, add screenshots to help explain your problem.
-
-**Your environment**
-If you think this is relevant, let us know
