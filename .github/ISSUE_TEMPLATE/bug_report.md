@@ -7,8 +7,6 @@ assignees: ''
 
 ---
 
-**Describe the bug**
-
 **Your environment**
 If you think this is relevant, let us know
 
