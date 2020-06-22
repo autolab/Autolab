@@ -1,0 +1,15 @@
+This example shows the a JSON string with test data and multiple stages invoking the semantic
+feedback layout. The hint provided is very long and designed to help test wrapping.
+
+Feedback will have five sections:
+ * Raw Output (showing the contents of this file)
+ * Build (showing two 'tests': 'compile' and 'link'--both will have a green check)
+ * Test (showing two 'tests'): 'Add Things' and 'Return Values'
+   Add Things will have a green check
+   Return Values will have a red X and display a hint
+ * Timing (showing two scalar values) 'Stage 1 (ms)' and 'Stage 2 (ms)' with values 10 and 20 
+ * Score (showing a table with point for "Correctness", "TA/Design/Readability", and their sum)
+
+
+{"_presentation": "semantic", "stages": ["Build", "Test", "Timing"], "Test": {"Add Things": {"passed": true}, "Return Values": {"passed": false, "hint": "You need to return the integer value 1. Please consult the assignment README for more details...this behavior is specified in Section 3, paragraph 2."}}, "Build": {"compile" : {"passed": true}, "link": {"passed": true}}, "Timing": {"Stage 1 (ms)": 10, "Stage 2 (ms)": 20}}
+{"scores": {"Correctness": 20, "TA/Design/Readability": 40}}

@@ -1,0 +1,59 @@
+
+Hello Cat is an example assignment that renders the "semantic" format which is provided in the examples directory. 
+
+In order for JSON formatting of output to occur, a valid JSON string is expected to be added as one line at the second to last line of the output.
+
+
+JSON String Format:
+
+A) Customizable headers, and ordering via json 'stages' sequence key. ex:  "stages": ["Test Results", "Summary"]
+
+B) REQUIRED "_presentation" key to the main json dictionary that specifies how the json should be rendered.  This is currently not necessary, but adds future extendibility. We need some value for this... perhaps: "semantic"?
+
+C) "Raw Output" is a stage that is always added to the start of the page; "Scores" is a stage that always is added to the end (no need to explicitly specify it) -- data for the "Scores" section is directly read from the "scores" JSON object on the last line of output (not in the 2nd to last line)
+
+D) Data from each stage is then represented as a json dict with a key corresponding to the stage name.(json split across lines for easier reading):
+
+{"_presentation": "semantic",
+ "stages": ["Test Results", "Summary"],
+  "Test Results": {"make": {"passed": false}},
+  "Summary": {"Tests Count": 2, "Tests Passed": 0,
+              "Tests Failed": 1, "Tests Ignored": 1},
+{"scores": {"Correctness": 0}} 
+
+E) Stage entries are dictionaries with values that are either: a primitive (e.g., as in the "Summary" stage), OR a key with a testResult class (as in the "Test Results" stage). Primitives will be rendered in regular table format and Test Results will be rendered in a table with color highlighting representing passed/failed tests.
+
+class TestResult {
+    boolean passed
+    String hint (optional)
+}
+
+F) Stage ordering is optionally specified with a "_order" key
+within each stage. Keys with leading underscore are reserved for future internal use. If "_order" is missing, reults are listed in the order that keys are listed in the json string.
+
+{"_presentation": "semantic",
+ "stages": ["Test Results", "Summary"],
+  "Test Results": {"make": {"passed": false}},
+  "Summary": {"_order": ["Tests Count", "Tests Passed", "Tests Failed", "Tests Ignored"],
+              "Tests Count": 2, "Tests Passed": 0,
+              "Tests Failed": 1, "Tests Ignored": 1},
+{"scores": {"Correctness": 0}} 
+
+G) Stage ordering of the "scores" stage is optionally specified at the top level of the json object with the key "_scores_order"; if _scores_order is missing, scores are presented in the order that keys are listed in the json string.
+
+{"_presentation": "semantic",
+ "stages": ["Test Results", "Summary"],
+ "_scores_order": ["Correctness", "Extra Credit"],
+  "Test Results": {"make": {"passed": false}},
+  "Summary": {"_order": ["Tests Count", "Tests Passed", "Tests Failed", "Tests Ignored"],
+              "Tests Count": 2, "Tests Passed": 0,
+              "Tests Failed": 1, "Tests Ignored": 1},
+{"scores": {"Correctness": 0, "Extra Credit": 4}} 
+
+H) When more than one "scores" field is given, a total is computed and presented with the sum of all scores listed as "Autograding Total" 
+
+I) The minimal parseable JSON object compliant with the above is sufficient to invoke the feedbackUI.  Thus the final two lines:
+{"_presentation": "semantic"}
+{"scores": {"Correctness": 0, "Extra Credit": 4}}
+
+would invoke the feedbackUI with only the "Raw Output" and "Scores" sections.

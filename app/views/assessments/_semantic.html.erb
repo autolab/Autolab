@@ -1,0 +1,106 @@
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.13/semantic.min.css">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/components/accordion.min.js"></script>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('.ui.accordion').accordion();
+    });
+</script>
+
+<div class="ui container">
+
+  <h2 class="ui header">
+    Feedback
+    <div class="sub header right floated"> <%= @score.submission.course_user_datum.user.email %></div>
+  </h2>
+
+
+  <div class="ui accordion">
+    <div class="title">
+      <h4 class="ui clearing segment">
+        <i class="dropdown icon"></i>
+        Raw Output
+      </h4>
+    </div>
+    <div class="content" style="overflow-y:auto;white-space:nowrap;">
+      <p class="transition hidden">
+      <pre><%= @score.feedback %> </pre>
+      </p>
+    </div>
+  </div>
+  <% if @jsonFeedback.key?("stages") %>
+    <% @jsonFeedback["stages"].each do |stage| %>
+      <% if @jsonFeedback[stage].keys.all? { |k| @jsonFeedback[stage][k].is_a? Hash or k[0] == '_' } %>
+        <h2><%= stage %></h2>
+        <table class="ui unstackable celled table">
+          <thead>
+          <tr>
+            <th>Status</th>
+          </tr>
+          </thead>
+          <tbody>
+          <% @jsonFeedback[stage]["_order"].each do |key| %>
+            <% test = @jsonFeedback[stage][key] %>
+            <% if key[0] != '_' %>
+              <% if test["passed"] %>
+                <tr class="positive">
+                  <td><i class="icon checkmark"></i> <%= key %></td>
+                </tr>
+              <% else %>
+                <tr class="negative">
+                  <td><i class="attention icon"></i> <%= key %>
+                    <% if test.key?("hint") %>
+                      <br>Hint: <%= test["hint"] %></td>
+                    <% end %>
+                    </tr>
+              <% end %>
+            <% end %>
+          <% end %>
+          </tbody>
+        </table>
+
+      <% else %>
+        <h2><%= stage %></h2>
+        <table class="ui unstackable table">
+          <tbody>
+          <% @jsonFeedback[stage]["_order"].each do |key| %>
+            <% if key[0] != '_' %>
+              <tr>
+                <td><%= key %>:</td>
+                <td><%= @jsonFeedback[stage][key] %></td>
+              </tr>
+            <% end %>
+          <% end %>
+          </tbody>
+        </table>
+      <% end %>
+    <% end %>
+
+  <% end %>
+
+  <h2>Score</h2>
+  <table class="ui unstackable table">
+    <tbody>
+    <% @jsonFeedback["_scores_order"].each do |key| %>
+      <% if key[0] != '_' %>
+        <tr>
+          <td><%= key %>:</td>
+          <td><%= @scoreHash[key] %></td>
+        </tr>
+      <% end %>
+    <% end %>
+    <tr>
+      <td>Autograding Total:</td>
+      <td><%= @scoreHash["_total"] %></td>
+    </tr>
+    <% if @score.grader && @score.grader.user%>
+      <tr>
+        <td>Graded By:</td>
+        <td><%= @score.grader.user.email %></td>
+      </tr>
+    <% end %>
+    </tbody>
+  </table>
+</div>
+
