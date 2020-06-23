@@ -8,7 +8,7 @@ development:
   socket: /var/run/mysqld/mysqld.sock
   host: localhost
   variables:
-    sql_mode: ''
+    sql_mode: NO_ENGINE_SUBSTITUTION
 
 test:
   adapter: mysql2
@@ -19,5 +19,5 @@ test:
   socket: /var/run/mysqld/mysqld.sock
   host: localhost
   variables:
-    sql_mode: ''
+    sql_mode: NO_ENGINE_SUBSTITUTION
   
