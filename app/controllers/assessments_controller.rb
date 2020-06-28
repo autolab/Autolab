@@ -179,6 +179,7 @@ class AssessmentsController < ApplicationController
   def importAssessment
     @assessment = @course.assessments.new(name: params[:assessment_name])
     @assessment.load_yaml # this will save the assessment
+    @assessment.load_embedded_quiz # this will check and load embedded quiz
     @assessment.construct_folder # make sure there's a handin folder, just in case
     @assessment.load_config_file # only call this on saved assessments
     redirect_to([@course, @assessment])
@@ -216,7 +217,7 @@ class AssessmentsController < ApplicationController
     @assessment.quiz = false
     @assessment.quizData = ""
     @assessment.max_submissions = params.include?(:max_submissions) ? params[:max_submissions] : -1
-
+    
     if @assessment.embedded_quiz
       begin
         @assessment.embedded_quiz_form_data = params[:assessment][:embedded_quiz_form].read
@@ -348,6 +349,8 @@ class AssessmentsController < ApplicationController
     begin
       # Update the assessment config YAML file.
       @assessment.dump_yaml
+      # Save embedded_quiz
+      @assessment.dump_embedded_quiz
       # Pack assessment directory into a tarball.
       tarStream = StringIO.new("")
       Gem::Package::TarWriter.new(tarStream) do |tar|
