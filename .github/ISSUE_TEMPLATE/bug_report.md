@@ -8,7 +8,11 @@ assignees: ''
 ---
 
 **Your environment**
-If you think this is relevant, let us know
+If you think this is relevant, let us know details such as 
+- Operating system
+- Commit hash
+- Ruby version
+- Rails version
 
 **Steps To Reproduce**
 Steps to reproduce the behavior:
