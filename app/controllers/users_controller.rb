@@ -35,6 +35,23 @@ class UsersController < ApplicationController
       redirect_to(users_path) && return
     end
 
+    # Changing theme
+    if params.has_key?(:theme) && current_user == user
+      user.theme = params[:theme]
+      saved = user.save
+      if !saved
+        flash[:error] = "Uh oh, couldn't save your theme to the DB. Try again later, but in the mean while your theme is saved to the cookie."
+      else
+        flash[:success] = "Theme saved."
+      end
+      respond_to do |format|
+        unless params.has_key?(:norefresh) && params[:norefresh] # we technically don't need to check the value of norefresh, but it's fine.
+          format.js {render inline: "location.reload();" }
+        end
+      end
+    end
+
+
     if current_user.administrator?
       # if current user is admin, show whatever he requests
       @user = user

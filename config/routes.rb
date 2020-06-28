@@ -36,9 +36,10 @@ Rails.application.routes.draw do
   root "courses#index"
 
   devise_for :users, controllers: { omniauth_callbacks: "users/omniauth_callbacks",
-                                    registrations:      "registrations" },
+                                    registrations:      "registrations",
+                                    home: "home" },
                      path_prefix: "auth"
-
+                
   get "contact", to: "home#contact"
 
   namespace :home do
@@ -62,6 +63,7 @@ Rails.application.routes.draw do
   resources :users do
     get "admin"
   end
+  get '/users/:id' => 'users#show', as:'theme'
 
   resources :courses, param: :name do
     resources :schedulers do

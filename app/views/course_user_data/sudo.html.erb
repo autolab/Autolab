@@ -4,7 +4,8 @@
 
 <p>
 <%= form_tag do %>
-  Act as user (email): <%= email_field_tag :sudo_email %>
+  <span>Act as user (email): </span>
+  <%= email_field_tag :sudo_email %>
   <%= submit_tag "Sudo", {:value=>"Sudo", :class=> "btn primary"} %>
 <% end %>
 </p>

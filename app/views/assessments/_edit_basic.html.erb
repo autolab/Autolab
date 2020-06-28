@@ -10,7 +10,7 @@
 <div class="input-field">
   <%= f.label :category_name, { :class=>"control-label" } %>
   <%= f.collection_select :category_name, @course.assessment_categories, :to_s, :to_s, {selected: @assessment.category_name} %>
-  or
+  <p>or</p>
   <%= text_field_tag :new_category, nil, placeholder: "New Category" %>
   <p class="help-block">Select an existing category or enter a new category name <i>(you can always change it later)</i></p>
 </div>

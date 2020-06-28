@@ -59,7 +59,7 @@
               <li> <%= link_to "Bulk import grades", {:action => "bulkGrade" }, {:title=> "Upload scores or feedback for multiple students from a CSV file" } %></li>
               <li> <%= link_to "Bulk export grades", {:action => "bulkExport" }, {:title=> "Export grades (with sub-scores) \nfor all students to a CSV file" } %></li>
 
-              <li class="collection-item red-text danger-bottom no-hover"><h4>Danger Zone</h4></li>
+              <li class="collection-item red-text danger-bottom no-hover"><h4 style="color:inherit;">Danger Zone</h4></li>
 
               <li class="danger-side">
                 <%= link_to "Release all grades", {:action => "releaseAllGrades" }, {:title=>  "Make all scores for this assessment visible to students", :class=>"", data: {confirm: "Are you sure you want to release all grades?"}} %>
@@ -134,7 +134,7 @@
     <br>
     <br>
     <div class="handin-panel card z-depth-0">
-      <div class="card-content">
+      <div class="card-content" style="background-color: transparent;">
         <p class="valign-wrapper">
           <i class="material-icons valign">access_time</i>
             &nbsp;&nbsp;Due<% if @extension then %>&nbsp;(with <%=@extension.days %> day extension)<% end %>:&nbsp;
