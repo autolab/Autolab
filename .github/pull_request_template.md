@@ -25,4 +25,9 @@
 - [ ] My change requires a change to the documentation, which is located at [Autolab Docs](https://github.com/autolab/docs)
 - [ ] I have updated the documentation accordingly, and here is the corresponding pull request to Autolab Docs -> 
 
+## Other issues / help required
+<!--- Do you have any other relevant issues / questions? --->
+<!--- For example, if you require assistance for a certain part of your PR --->
+<!--- or are facing specific issues while creating the pull request that you would like to highlight --->
+
 If unsure, feel free to submit first and we'll help you along.
