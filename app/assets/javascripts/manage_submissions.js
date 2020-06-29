@@ -1,7 +1,6 @@
 var hideStudent;
 
-jQuery(function($) {
-
+$(document).ready(function() {
 
   $.fn.dataTable.ext.search.push(
     function(settings, data, dataIndex) {
@@ -15,7 +14,6 @@ jQuery(function($) {
       }
     }
   );
-
 
   var $floater = $("#floater"),
     $backdrop = $("#gradeBackdrop");
@@ -102,6 +100,7 @@ jQuery(function($) {
     if(e.target.localName != 'a') {
       // e.target: tightest element that triggered the event
       // e.currentTarget: element the event has bubbled up to currently
+      console.log("hello");
       var submissionId = parseInt(e.currentTarget.id.replace("row-", ""), 10);
       toggleRow(submissionId);
       return false;
@@ -114,6 +113,11 @@ jQuery(function($) {
     e.stopPropagation();
   });
 
+  $('#submissions').on("click", function(e) {
+    console.log("hello");
+  });
+
+
   $('.regrade-override').click(function(e) {
     // Because regrade requests are sent with `data-method="post"`, we need to
     // trick the link into behaving... like a link. When holding down Ctrl or
@@ -122,5 +126,4 @@ jQuery(function($) {
       $(this).attr('target', '_blank');
     }
   });
-
 });
