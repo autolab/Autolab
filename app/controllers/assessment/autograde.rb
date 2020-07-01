@@ -201,7 +201,7 @@ module AssessmentAutograde
           flash[:error] += " (Verify the autograding properties at #{link}.)\nErrorMsg: " + e.additional_data
         end
       when :missing_autograder_file
-        flash[:error] = "One or more files in the Autograder module don't exist. Contact the instructor."
+        flash[:error] = "One or more files are missing in the server. Please contact the instructor. The missing files are: " + e.additional_data
       else
         flash[:error] = "Autograding failed because of an unexpected exception in the system."
       end
