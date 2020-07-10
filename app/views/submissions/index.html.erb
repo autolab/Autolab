@@ -92,9 +92,12 @@
   <% for submission in @submissions %>
     <tr id="row-<%= submission.id %>" class="submission-row">
       <td>
-        <label>
-        <input class="cbox" type="checkbox" id="cbox-<%= submission.id %>">
-        </label>
+        <p>
+          <label>
+            <input class="cbox" type="checkbox" id="cbox-<%= submission.id %>">
+            <span/>
+          </label>
+        </p>
       </td>
       <td><%= "#{submission.course_user_datum.last_name}, #{submission.course_user_datum.first_name}" %>
       <%= link_to submission.course_user_datum.email,
@@ -119,11 +122,12 @@
       </td>
       <td class="exclude-click" style="text-align:center;">
         <% if @autograded and submission.version > 0 then %>
-          <%= link_to "<i class='material-icons'>autorenew</i>".html_safe,
-              [:regrade, @course, @assessment, submission_id: submission.id],
-              { method: :post,
+          <%= button_to [:regrade, @course, @assessment, submission_id: submission.id],
+               :method => :post,
                :title=>"Rerun the autograder on this submission",
-               :class=>"btn small regrade-override"} %>
+               :class=>"btn small" do %>
+               <i class='material-icons'>autorenew</i>
+        <% end %>
         <% end %>
         <%= link_to "<i class='material-icons'>edit</i>".html_safe, [:edit, @course, @assessment, submission],
             {:title=>"Edit the grading properties of this submission",
