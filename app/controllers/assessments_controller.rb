@@ -451,6 +451,19 @@ class AssessmentsController < ApplicationController
 
     # Check if we should include regrade as a function
     @autograded = @assessment.has_autograder?
+
+    @lastest_submission_graded = false
+    
+    # Checks if the lastest submission has been autograded by checking if any scores of it exist
+    if @autograded && @submissions.present?
+      last_id = @submissions[0].id # this is correct because submissions is ordered by version
+      for problem in @problems do
+        if @scores[last_id] and @scores[last_id][problem.id]
+          @lastest_submission_graded = true
+        end
+      end
+    end
+    
   end
 
   # Get the complete lists of live jobs from tango and send to channel 
@@ -533,14 +546,22 @@ class AssessmentsController < ApplicationController
     
     @lastest_submission_graded = false
     
-    # Checks if the lastest submission has been autograded by checking if a any scores of it exist
+    # Checks if the lastest submission has been autograded by checking if any scores of it exist
     if @autograded && @submissions.present?
+      
       last_id = @submissions[0].id # this is correct because submissions is ordered by version
+      
       for problem in @problems do
         if @scores[last_id] and @scores[last_id][problem.id]
           @lastest_submission_graded = true
         end
       end
+
+      # Set jobID if latest submission has not been graded and there are no JobID in url params 
+      if(!@lastest_submission_graded && @curr_jobID == 0) 
+        @curr_jobID = @submissions[0].tango_job_id 
+      end
+    
     end
     
     if params[:partial]

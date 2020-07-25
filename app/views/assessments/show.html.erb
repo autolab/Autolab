@@ -18,6 +18,14 @@
 <% @list.delete("submission") %>
 <% @list.delete("reload") %>
 
+<% if @autograded && @submissions.present? && !@lastest_submission_graded then %>
+  <div id="flashes">
+    <div id="flash_notice" class='success'>
+     You have an assignment that is being autograded. View autograding process at <%= link_to "handin history", {:action => 'history'}, {:title=> "View your submissions, scores, and feedback from the course staff" } %>
+    </div>
+  </div>
+<% end %>
+
 <div class="">
 <div class="row">
   <div class="col s12 m12">
