@@ -11,17 +11,22 @@ $(document).ready(function () {
   if (!newFile.pdf) {
     purgeCurrentPageCache();
   }
-  if($(".annoucement.gray-box")){
-      $('.code-table').css("max-height", $(window).height() - $(".annoucement.gray-box").height() - 250);
-  }
+  
+  resizeCodeTable();
   });
 
+/* On Window Reisze */ 
 $(window).on('resize', function(){
-  if($(".annoucement.gray-box")){
-      $('.code-table').css("max-height", $(window).height() - $(".annoucement.gray-box").height() - 250);
-  }
+  resizeCodeTable();
 });
 
+
+function resizeCodeTable(){
+  // Resize code table if announcements are shown
+  if($(".annoucement.gray-box")){
+    $('.code-table').css("max-height", $(window).height() - $(".annoucement.gray-box").height() - 250);
+  }
+}
 
 /* File Tree and Code Viewer Helper Functions */
 
