@@ -11,7 +11,17 @@ $(document).ready(function () {
   if (!newFile.pdf) {
     purgeCurrentPageCache();
   }
+  if($(".annoucement.gray-box")){
+      $('.code-table').css("max-height", $(window).height() - $(".annoucement.gray-box").height() - 250);
+  }
+  });
+
+$(window).on('resize', function(){
+  if($(".annoucement.gray-box")){
+      $('.code-table').css("max-height", $(window).height() - $(".annoucement.gray-box").height() - 250);
+  }
 });
+
 
 /* File Tree and Code Viewer Helper Functions */
 
