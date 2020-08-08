@@ -8,26 +8,10 @@
 <% content_for :javascripts do %>
   <%= javascript_include_tag "confirm_discard_changes" %>
   <script type="text/javascript">
-    function validate(){
-        var checkbox = document.getElementById('assessment_has_custom_form');
-        var moreOptions = document.getElementById('moreOptions');
-        var showMoreOptions = function(){
-          if(checkbox.checked) {
-              moreOptions.style['display'] = 'block';
-          } else {
-              moreOptions.style['display'] = 'none';
-          }
-        }
-        checkbox.onclick = showMoreOptions;
-        showMoreOptions();
-    };
-    
     // Initializes Materialize JS's tabs
     $(document).ready(function(){
       $('.tabs').tabs();
     });
-    
-    validate();
   </script>
 <% end %>
 

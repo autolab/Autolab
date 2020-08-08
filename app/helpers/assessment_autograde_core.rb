@@ -289,7 +289,7 @@ module AssessmentAutogradeCore
     autograde = { "localFile" => local_autograde, "destFile" => "autograde.tar" }
     settings_config = { "localFile" => local_settings_config, "destFile" => "settings.json" }
 
-    if assessment.has_custom_form.to_s == "true"
+    if assessment.has_custom_form
         [handin, makefile, autograde, settings_config]
     else
         [handin, makefile, autograde]
