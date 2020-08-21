@@ -1,11 +1,11 @@
+# SQLite Configuration
 development: &common
-  adapter: mysql2
-  database: app_autolab_development
+  adapter: sqlite3
+  database: db/db.sqlite3
   pool: 5
-  username: root
-  password:
-  socket: /var/run/mysqld/mysqld.sock
-  host: db
+  timeout: 5000
 
+# SQLite Configuration
 production:
   <<: *common
+
