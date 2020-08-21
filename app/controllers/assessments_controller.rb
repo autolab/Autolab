@@ -217,7 +217,7 @@ class AssessmentsController < ApplicationController
     @assessment.quiz = false
     @assessment.quizData = ""
     @assessment.max_submissions = params.include?(:max_submissions) ? params[:max_submissions] : -1
-    
+
     if @assessment.embedded_quiz
       begin
         @assessment.embedded_quiz_form_data = params[:assessment][:embedded_quiz_form].read
