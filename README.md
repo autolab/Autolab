@@ -1,5 +1,5 @@
 <a href="http://autolabproject.com">
-  <img src="public/images/readme/autolab_banner.svg" width="380px" height="100px">
+  <img src="public/images/autolab_banner.svg" width="380px" height="100px">
 </a>
 
 Autolab is a course management service, initially developed by a team of students at Carnegie Mellon University, that enables instructors to offer autograded programming assignments to their students over the Web. The two key ideas in Autolab are *autograding*, that is, programs evaluating other programs, and *scoreboards*.
@@ -11,15 +11,15 @@ Since 2010, Autolab has had a transformative impact on education at CMU. Each se
 
 <p>
 <a href="https://autolab-slack.herokuapp.com" style="float:left">
-  <img src="public/images/readme/join_slack.svg" width="170px" height="44px">
+  <img src="public/images/join_slack.svg" width="170px" height="44px">
 </a>
 
 <a href="https://autolab.github.io/docs/" style="float:left">
-  <img src="public/images/readme/read_the_docs.svg" width="170px" height="44px">
+  <img src="public/images/read_the_docs.svg" width="170px" height="44px">
 </a>
 
 <a href="https://groups.google.com/forum/#!forum/autolabproject/join" style="float:left">
- <img src="public/images/readme/mailing_list.svg" width="170px" height="44px">
+ <img src="public/images/mailing_list.svg" width="170px" height="44px">
 </a>
 
 </p>
