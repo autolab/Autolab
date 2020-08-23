@@ -1,9 +1,3 @@
-// Adds addDays function to Date prototype
-Date.prototype.addDays = function(days) {
-  var date = new Date(this.valueOf());
-  date.setDate(date.getDate() + days);
-  return date;
-}
 
 // Initialize all Flatpicker Datetime Pickers on the page
 
@@ -47,22 +41,20 @@ $(document).ready(function() {
 
   /* Add custom onClose handler for due at date picker */
   var due_at_pickr = createDatePicker('#assessment_due_at', {onClose : dueAtOnCloseHandler});
-  
-  /* Adds 7 days between start_at and end_at */
-  const daysBetweenStartEnd = 7;
+
   function startAtPickronCloseHandler(selected_dates, date_str, flatpickr_inst){
     var cur_date = selected_dates[0];
     
     if (due_at_pickr.selectedDates[0].getTime() < cur_date.getTime()) {
-      due_at_pickr.setDate(cur_date.addDays(daysBetweenStartEnd), true);
+      due_at_pickr.setDate(cur_date, true);
     }
 
     if (grading_deadline_pickr.selectedDates[0].getTime() < cur_date.getTime()) {
-      grading_deadline_pickr.setDate(cur_date.addDays(daysBetweenStartEnd), true);
+      grading_deadline_pickr.setDate(cur_date, true);
     }
 
     if (end_at_pickr.selectedDates[0].getTime() < cur_date.getTime()) {
-      end_at_pickr.setDate(cur_date.addDays(daysBetweenStartEnd), true);
+      end_at_pickr.setDate(cur_date, true);
     }
   }
 
