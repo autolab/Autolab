@@ -1,5 +1,10 @@
+# tmp files
 log/
 tmp/cache/
+tmp/
+!tmp/restart.txt
+
+# autolab configs
 config/autogradeConfig.rb
 assessmentConfig/
 courseConfig/
@@ -11,24 +16,32 @@ coverage/
 /gradebooks/
 config/database.yml
 config/school.yml
+
+# autolab user documents
+app/views/home/_topannounce.html.erb
+attachments/
+doc/
+out.txt
+
+# compiled assets
 public/images/CourseSubmissions.png
 public/images/HourlySubmissions.png
 public/assets/
 public/stylesheets/
 vendor/
-tmp/
-!tmp/restart.txt
-*.swp
+
+# sqlite databases
+db/autolab_development
+db/autolab_test
 db/*.sqlite3
+
+# misc
+*.swp
 tags
 .DS_Store
 .idea/
 .yardoc
 /docker/nginx.conf
-app/views/home/_topannounce.html.erb
-attachments/
-doc/
-out.txt
 .vscode/
 .byebug_history
 .env

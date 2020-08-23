@@ -1,4 +1,3 @@
-
 // Initialize all Flatpicker Datetime Pickers on the page
 
 $(document).ready(function() {
@@ -20,6 +19,7 @@ $(document).ready(function() {
   
   function endAtOnCloseHandler(selected_dates, date_str, flatpickr_inst) {
     var cur_date = selected_dates[0];
+    
     if (grading_deadline_pickr.selectedDates[0].getTime() < cur_date.getTime()) {
       grading_deadline_pickr.setDate(cur_date, true);
     }
@@ -30,6 +30,7 @@ $(document).ready(function() {
 
   function dueAtOnCloseHandler(selected_dates, date_str, flatpickr_inst) {
       var cur_date = selected_dates[0];
+      
       if (grading_deadline_pickr.selectedDates[0].getTime() < cur_date.getTime()) {
         grading_deadline_pickr.setDate(cur_date, true);
       }
