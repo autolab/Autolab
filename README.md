@@ -73,9 +73,7 @@ Autolab is now running on Rails 5. However, we may still work on important bug f
 ## Contributing
 
 We encourage you to contribute to Autolab! Please check out the
-[Contributing to Autolab Guide](https://github.com/autolab/Autolab/blob/master/CONTRIBUTING.md) for guidelines about how to proceed. [Join us!](http://contributors.autolabproject.org)
-
-
+[Contributing to Autolab Guide](https://github.com/autolab/Autolab/blob/master/CONTRIBUTING.md) for guidelines about how to proceed. You can also reach out to us on [Slack](https://autolab-slack.herokuapp.com) as well.
 
 ## License
 
