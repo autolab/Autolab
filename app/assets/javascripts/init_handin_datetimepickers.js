@@ -46,10 +46,10 @@ $(document).ready(function() {
   }
 
   /* Add custom onClose handler for due at date picker */
-  /* Adds 7 days between start_at and end_at */
   var due_at_pickr = createDatePicker('#assessment_due_at', {onClose : dueAtOnCloseHandler});
+  
+  /* Adds 7 days between start_at and end_at */
   const daysBetweenStartEnd = 7;
-
   function startAtPickronCloseHandler(selected_dates, date_str, flatpickr_inst){
     var cur_date = selected_dates[0];
     
