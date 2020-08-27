@@ -11,7 +11,23 @@ $(document).ready(function () {
   if (!newFile.pdf) {
     purgeCurrentPageCache();
   }
+  
+  resizeCodeTable();
+  });
+
+/* On Window Reisze */ 
+$(window).on('resize', function(){
+  resizeCodeTable();
 });
+
+
+function resizeCodeTable(){
+  // Resize code table if announcements are shown
+  if($(".annoucement.gray-box")){
+    $('.code-table').css("max-height", $(window).height() - $(".annoucement.gray-box").height() - 250);
+    $('#annotationPane').css("max-height", $(window).height() - $(".annoucement.gray-box").height() - 200);
+  }
+}
 
 /* File Tree and Code Viewer Helper Functions */
 
