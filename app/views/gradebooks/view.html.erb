@@ -60,7 +60,6 @@
 
 
 <% content_for :js_widget_patch do %>
-  <%= external_javascript_include_tag "jquery-ui", "1.10.2" %>
   <%# jQuery UI is required for SlickGrid, but Bootstrap provides a tooltip plugin %>
   <%# The following must come after jQuery UI but before Bootstrap 3 is loaded %>
   <%# to resolve namespace issues %>
@@ -70,10 +69,11 @@
 <% end %>
 
 <% content_for :javascripts do %>
-  <%= javascript_include_tag "jquery.event.drag-2.2.js" %>
-  <%= javascript_include_tag "SlickGrid/2.02/slick.core.js" %>
-  <%= javascript_include_tag "SlickGrid/2.02/slick.grid.js" %>
-  <%= javascript_include_tag "SlickGrid/2.02/slick.dataview.js" %>
+  <%= external_javascript_include_tag "jquery-ui", "1.11.4" %>
+  <%= javascript_include_tag "jquery.event.drag-2.2.js"%>
+  <%= javascript_include_tag "SlickGrid/2.02/slick.core.js"  %>
+  <%= javascript_include_tag "SlickGrid/2.02/slick.grid.js"  %>
+  <%= javascript_include_tag "SlickGrid/2.02/slick.dataview.js"  %>
   <%= javascript_include_tag "SlickGrid/2.02/controls/slick.columnpicker.js" %>
 
   <script type="text/javascript">
@@ -82,7 +82,7 @@
     var options = <%== @options.to_json %>
   </script>
 
-  <%= javascript_include_tag "gradebook" %>
+  <%= javascript_include_tag "gradebook" ,:async => true %>
 <% end %>
 
 <% if not @course.gb_message.blank? %>
