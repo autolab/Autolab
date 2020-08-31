@@ -45,6 +45,7 @@ We are currently in the process of updating our documentation to work with our n
 	```sh
 	RAILS_ENV=test bundle exec rake db:create
 	RAILS_ENV=test bundle exec rake db:migrate
+	RAILS_ENV=test bundle exec rake autolab:populate
 	```
    Do not forget to use `RAILS_ENV=test bundle exec` in front of every rake/rails command.
 
