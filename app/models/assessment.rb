@@ -38,8 +38,9 @@ class Assessment < ApplicationRecord
   # Callbacks
   trim_field :name, :display_name, :handin_filename, :handin_directory, :handout, :writeup
   after_save :dump_yaml
-  after_save :invalidate_course_cgdubs, if: :due_at_changed?
-  after_save :invalidate_course_cgdubs, if: :max_grace_days_changed?
+  after_save :dump_embedded_quiz, if: :saved_change_to_embedded_quiz_form_data?
+  after_save :invalidate_course_cgdubs, if: :saved_change_to_due_at?
+  after_save :invalidate_course_cgdubs, if: :saved_change_to_max_grace_days?
   after_create :create_AUDs_modulo_callbacks
 
   # Constants
@@ -318,6 +319,22 @@ class Assessment < ApplicationRecord
     name
   end
 
+  def dump_embedded_quiz
+    if embedded_quiz
+      File.open(path("#{name}_embedded_quiz.html"), "w") { |f| f.write(embedded_quiz_form_data) }
+    end
+  end
+
+  def load_embedded_quiz
+    if embedded_quiz
+      if(File.file?(path("#{name}_embedded_quiz.html")))
+        quiz = File.open(path("#{name}_embedded_quiz.html"), "r") { |f| f.read }
+        update(embedded_quiz_form_data: quiz)
+      end
+    end
+  end
+
+
 private
 
   def path(filename)
@@ -387,7 +404,7 @@ private
     s
   end
 
-  GENERAL_SERIALIZABLE = Set.new %w(name display_name category_name description handin_filename handin_directory has_svn has_lang max_grace_days handout writeup max_submissions disable_handins max_size version_threshold)
+  GENERAL_SERIALIZABLE = Set.new %w(name display_name category_name description handin_filename handin_directory has_svn has_lang max_grace_days handout writeup max_submissions disable_handins max_size version_threshold embedded_quiz)
 
   def serialize_general
     Utilities.serializable attributes, GENERAL_SERIALIZABLE

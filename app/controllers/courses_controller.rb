@@ -33,6 +33,7 @@ class CoursesController < ApplicationController
 
   ROSTER_COLUMNS_S15 = 29
   ROSTER_COLUMNS_F16 = 32
+  ROSTER_COLUMNS_F20 = 34
 
   action_auth_level :manage, :instructor
   def manage
@@ -608,10 +609,31 @@ private
 
   # detectAndConvertRoster - Detect the type of a roster based on roster
   # column matching and convert to default roster
+
+  # map fields:
+  # map[0]: semester
+  # map[1]: email
+  # map[2]: last_name
+  # map[3]: first_name
+  # map[4]: school
+  # map[5]: major
+  # map[6]: year
+  # map[7]: grade_policy
+  # map[8]: unused
+  # map[9]: lecture
+  # map[10]: section
   def detectAndConvertRoster(roster)
     parsedRoster = CSV.parse(roster)
     if parsedRoster[0][0].nil?
       fail "Roster cannot be recognized"
+    elsif (parsedRoster[0].length == ROSTER_COLUMNS_F20)
+      # In CMU S3 roster. Columns are:
+      # Semester(0), Course(1), Section(2), (Lecture)(3), (Mini-skip)(4),
+      # Last Name(5), Preferred/First Name(6), (MI-skip)(7), Andrew ID(8),
+      # (Email-skip)(9), College(10), (Department-skip)(11), Major(12),
+      # Class(13), Graduation Semester(skip)(14), Units(skip)(15), Grade Option(16), ...
+      map=[0, 8, 5, 6, 10, 12, 13, 16, -1, 1, 2]
+      select_columns=ROSTER_COLUMNS_F20
     elsif (parsedRoster[0].length == ROSTER_COLUMNS_F16)
       # In CMU S3 roster. Columns are:
       # Semester(0), Course(1), Section(2), (Lecture-skip)(3), (Mini-skip)(4),

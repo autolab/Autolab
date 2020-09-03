@@ -41,6 +41,11 @@ class DeviceFlowActivationController < ApplicationController
   def authorization_callback
     req = OauthDeviceFlowRequest.find_by(user_code: params[:state])
 
+    if req.nil?
+      flash[:error] = "Invalid request"
+      redirect_to(action: :index) && return
+    end
+
     if params.has_key?(:error)
       # encountered error
       req.deny_request(current_user.id)
