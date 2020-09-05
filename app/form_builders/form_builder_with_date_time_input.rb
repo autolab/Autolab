@@ -49,19 +49,18 @@ class FormBuilderWithDateTimeInput < ActionView::Helpers::FormBuilder
   def check_box(name, *args)
     options = args.extract_options!
 
-    # display_name = options[:display_name]
+    display_name = options[:display_name].nil? ? name : options[:display_name]
     
-    display_span = "<span>" + name.to_s.humanize + "</span>"
+    display_span = "<span>" + display_name.to_s.humanize + "</span>"
     # Materalize requires the label to be in a span
     field = super name, *(args + [options])
 
-    unless options.include?(:help_text)
-        options[:help_text] = " "
-    end
-
     @template.content_tag :div do
-           label(name, field + display_span.html_safe, class: "control-label") +
-            help_text(name, options[:help_text])
+      if options.include?(:help_text)
+        label(name, field + display_span.html_safe, class: "control-label") + help_text(name, options[:help_text])
+      else
+        label(name, field + display_span.html_safe, class: "control-label") 
+      end 
     end
   end
 
