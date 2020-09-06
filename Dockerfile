@@ -11,9 +11,14 @@ FROM phusion/passenger-ruby26
 
 MAINTAINER Autolab Development Team "autolab-dev@andrew.cmu.edu"
 
+# Change to your time zone here
+RUN ln -fs /usr/share/zoneinfo/America/New_York /etc/localtime
+
 # Install dependencies
+ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y \
-  sqlite3
+  sqlite3 \
+  tzdata
 
 # Install gems
 WORKDIR /tmp
@@ -24,6 +29,7 @@ RUN bundle install
 
 # Set correct environment variables.
 ENV HOME /root
+ENV DEPLOY_METHOD docker
 
 # Use baseimage-docker's init system.
 CMD ["/sbin/my_init"]
@@ -38,23 +44,25 @@ ADD docker/nginx.conf /etc/nginx/sites-enabled/webapp.conf
 # Prepare folders
 RUN mkdir /home/app/webapp
 
-
 # Add the rails app
 ADD . /home/app/webapp
 
 # Move the database configuration into place
 ADD config/database.docker.yml /home/app/webapp/config/database.yml
 
-# # Create the log files
-# RUN mkdir -p /home/app/webapp/log && \
-#   touch /home/app/webapp/log/production.log && \
-#   chown -R app:app /home/app/webapp/log && \
-#   chmod 0664 /home/app/webapp/log/production.log
+# Move other configs
+ADD docker/school.yml /home/app/webapp/config/school.yml
+ADD docker/production.rb /home/app/webapp/config/environments/production.rb
 
-# # precompile the Rails assets
-# WORKDIR /home/app/webapp
-# RUN RAILS_ENV=production bundle exec rake assets:precompile
+# Create the log files
+RUN mkdir -p /home/app/webapp/log && \
+  touch /home/app/webapp/log/production.log && \
+  chown -R app:app /home/app/webapp/log && \
+  chmod 0664 /home/app/webapp/log/production.log
 
-# # Clean up APT when done.
-# RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+# precompile the Rails assets
+WORKDIR /home/app/webapp
+RUN RAILS_ENV=production bundle exec rake assets:precompile
 
+# Clean up APT when done.
+RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*

@@ -1,0 +1,17 @@
+production:
+  school_name: "My School"
+  school_short_name: "MS"
+  support_email: "autolab@myschool.edu"
+  tech_email: "autolab-tech@myschool.edu"
+
+development:
+  school_name: "Carnegie Mellon University"
+  school_short_name: "CMU"
+  support_email: "autolab@myschool.edu"
+  tech_email: "autolab-tech@myschool.edu"
+
+test:
+  school_name: "Carnegie Mellon University"
+  school_short_name: "CMU"
+  support_email: "autolab@myschool.edu"
+  tech_email: "autolab-tech@myschool.edu"
