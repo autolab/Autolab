@@ -11,6 +11,17 @@ FROM phusion/passenger-ruby26
 
 MAINTAINER Autolab Development Team "autolab-dev@andrew.cmu.edu"
 
+# Install dependencies
+RUN apt-get update && apt-get install -y \
+  sqlite3
+
+# Install gems
+WORKDIR /tmp
+ADD Gemfile /tmp/
+ADD Gemfile.lock /tmp/
+
+RUN bundle install
+
 # Set correct environment variables.
 ENV HOME /root
 
@@ -27,18 +38,12 @@ ADD docker/nginx.conf /etc/nginx/sites-enabled/webapp.conf
 # Prepare folders
 RUN mkdir /home/app/webapp
 
-# Run Bundle in a cache efficient way
-WORKDIR /tmp
-ADD Gemfile /tmp/
-ADD Gemfile.lock /tmp/
 
-RUN bundle install
+# Add the rails app
+ADD . /home/app/webapp
 
-# # Add the rails app
-# ADD . /home/app/webapp
-
-# # Move the database configuration into place
-# ADD config/database.docker.yml /home/app/webapp/config/database.yml
+# Move the database configuration into place
+ADD config/database.docker.yml /home/app/webapp/config/database.yml
 
 # # Create the log files
 # RUN mkdir -p /home/app/webapp/log && \
