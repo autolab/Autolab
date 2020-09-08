@@ -57,7 +57,7 @@ private
     params[:annotation].delete(:id)
     params[:annotation].delete(:created_at)
     params[:annotation].delete(:updated_at)
-    params.require(:annotation).permit(:filename, :position, :line, :text, :submitted_by,
+    params.require(:annotation).permit(:filename, :position, :line, :submitted_by,
                                        :comment, :value, :problem_id,:submission_id, :coordinate)
   end
 
