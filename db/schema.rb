@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_10_17_045404) do
+ActiveRecord::Schema.define(version: 2020_07_25_133754) do
 
   create_table "annotations", force: :cascade do |t|
     t.integer "submission_id"
@@ -154,6 +154,7 @@ ActiveRecord::Schema.define(version: 2019_10_17_045404) do
     t.integer "version_penalty_id"
     t.datetime "cgdub_dependencies_updated_at"
     t.text "gb_message"
+    t.string "website"
   end
 
   create_table "extensions", force: :cascade do |t|
@@ -165,6 +166,13 @@ ActiveRecord::Schema.define(version: 2019_10_17_045404) do
 
   create_table "groups", force: :cascade do |t|
     t.string "name"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "jobs_queues", force: :cascade do |t|
+    t.text "running_jobs"
+    t.text "waiting_jobs"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
@@ -298,6 +306,7 @@ ActiveRecord::Schema.define(version: 2019_10_17_045404) do
     t.text "settings"
     t.text "embedded_quiz_form_answer"
     t.integer "submitted_by_app_id"
+    t.integer "tango_job_id"
     t.index ["assessment_id"], name: "index_submissions_on_assessment_id"
     t.index ["course_user_datum_id"], name: "index_submissions_on_course_user_datum_id"
   end

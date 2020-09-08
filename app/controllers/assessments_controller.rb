@@ -5,6 +5,8 @@ require "rubygems/package"
 require "statistics"
 require "yaml"
 require "utilities"
+require "tango_client"
+require "rufus-scheduler"
 
 class AssessmentsController < ApplicationController
   include ActiveSupport::Callbacks
@@ -452,13 +454,55 @@ class AssessmentsController < ApplicationController
 
     # Check if we should include regrade as a function
     @autograded = @assessment.has_autograder?
+
+    @lastest_submission_graded = false
+    
+    # Checks if the lastest submission has been autograded by checking if any scores of it exist
+    if @autograded && @submissions.present?
+      last_id = @submissions[0].id # this is correct because submissions is ordered by version
+      for problem in @problems do
+        if @scores[last_id] and @scores[last_id][problem.id]
+          @lastest_submission_graded = true
+        end
+      end
+    end
+    
+  end
+
+  # Get the complete lists of live jobs from tango and send to channel 
+  # every 5 seconds
+  s = Rufus::Scheduler.singleton
+  s.every '5s' do
+    running_jobs = []
+    waiting_jobs = []
+      
+    begin
+      raw_live_jobs = TangoClient.jobs
+    rescue TangoClient::TangoException => e
+      puts "Error while getting job list: #{e.message}"
+    end
+
+    # Build formatted lists of the running, waiting
+    unless raw_live_jobs.nil? or raw_live_jobs.empty?
+      raw_live_jobs.each do |rjob|
+        if rjob["assigned"] == true
+          running_jobs << rjob["id"]
+        else
+          waiting_jobs << rjob["id"]
+        end
+      end
+    end
+
+    # Call speak from AssessmentChannel
+    AssessmentChannel.speak(running_jobs, waiting_jobs)      
   end
 
   action_auth_level :history, :student
   def history
     # Remember the student ID in case the user wants visit the gradesheet
     session["gradeUser#{@assessment.id}"] = params[:cud_id] if params[:cud_id]
-
+   
+    @jobs_queues = JobsQueue.all
     @startTime = Time.now
     if @cud.instructor? && params[:cud_id]
       @effectiveCud = @course.course_user_data.find(params[:cud_id])
@@ -468,6 +512,11 @@ class AssessmentsController < ApplicationController
     @submissions = @assessment.submissions.where(course_user_datum_id: @effectiveCud.id).order("version DESC")
     @extension = @assessment.extensions.find_by(course_user_datum_id: @effectiveCud.id)
     @problems = @assessment.problems
+    @curr_jobID = 0
+
+    if params[:job_id]
+      @curr_jobID = params[:job_id]
+    end
 
     results = @submissions.select("submissions.id AS submission_id",
                                   "problems.id AS problem_id",
@@ -481,8 +530,10 @@ class AssessmentsController < ApplicationController
     
     # Process them to get into a format we want.
     @scores = {}
+    
     for result in results do
       subId = result["submission_id"].to_i
+      
       @scores[subId] = {} unless @scores.key?(subId)
 
       @scores[subId][result["problem_id"].to_i] = {
@@ -492,10 +543,30 @@ class AssessmentsController < ApplicationController
         released: Utilities.is_truthy?(result["released"]) ? 1 : 0 # converts 't' to 1, "f" to 0
       }
     end
-
+    
     # Check if we should include regrade as a function
     @autograded = @assessment.has_autograder?
+    
+    @lastest_submission_graded = false
+    
+    # Checks if the lastest submission has been autograded by checking if any scores of it exist
+    if @autograded && @submissions.present?
+      
+      last_id = @submissions[0].id # this is correct because submissions is ordered by version
+      
+      for problem in @problems do
+        if @scores[last_id] and @scores[last_id][problem.id]
+          @lastest_submission_graded = true
+        end
+      end
 
+      # Set jobID if latest submission has not been graded and there are no JobID in url params 
+      if(!@lastest_submission_graded && @curr_jobID == 0) 
+        @curr_jobID = @submissions[0].tango_job_id 
+      end
+    
+    end
+    
     if params[:partial]
       @partial = true
       render("history", layout: false) && return

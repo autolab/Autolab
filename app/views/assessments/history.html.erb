@@ -1,8 +1,39 @@
+<%= stylesheet_link_tag "handinhistory" %>
+
 <% @title = "Handin History" %>
 <% if @partial then %>
   <a onclick="hideStudent()">Exit</a>
 <% end %>
 <% download_access = (@cud.instructor?) %>
+
+<% if @autograded && @submissions.present? && !@lastest_submission_graded then %>
+
+   <script>
+     var assignment_name = "<%= @assessment.name %>";
+     var curr_jobID = <%= @curr_jobID %>;
+   </script>
+
+   <% content_for :javascripts do %>
+    <%= javascript_include_tag 'cable' %>
+    <%= javascript_include_tag 'handinhistory' %>
+   <% end %>
+   
+  <div id="autograding_box" class="row" style="display:block">
+    <div class="col s12 ">
+      <div class="card-panel spacer">
+        <div class ="row nopad" id="bigger_area">
+          <div class="col s4 cbox" id="loading_area">
+            <b>Connecting to Autograding Service </b>
+          </div>
+          <div class="col s8 vbox" id="information_area">
+            <div class="progress "><div class="indeterminate" ></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<% end %>
 
 <% if @extension then %>
   <i>
@@ -49,3 +80,4 @@
 <% end %>
 <p>
 <%= "Page loaded in " + (Time.now() - @startTime).to_s + " seconds" %>
+

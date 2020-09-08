@@ -367,6 +367,11 @@ class Submission < ApplicationRecord
     assessment.aud_for course_user_datum_id
   end
 
+  def add_jobID(jobID)
+    self.tango_job_id = jobID
+    self.save!
+  end
+
 private
 
   # NOTE: remember to update cache_key if additional options are added

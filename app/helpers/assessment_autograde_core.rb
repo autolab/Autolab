@@ -261,8 +261,12 @@ module AssessmentAutogradeCore
     if callback_url.blank?
       tango_poll(course, assessment, submissions, output_file)
     end
+    
+    # adds jobID to the submission
+    jobID = response_json["jobId"].to_i
+    submissions[0].add_jobID(jobID) 
 
-    response_json["jobId"].to_i
+    jobID
   end
 
   #
