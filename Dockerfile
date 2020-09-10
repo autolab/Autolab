@@ -53,6 +53,8 @@ ADD config/database.docker.yml /home/app/webapp/config/database.yml
 # Move other configs
 ADD docker/school.yml /home/app/webapp/config/school.yml
 ADD docker/production.rb /home/app/webapp/config/environments/production.rb
+ADD docker/devise.rb /home/app/webapp/config/initializers/devise.rb
+ADD docker/autogradeConfig.rb /home/app/webapp/config/autogradeConfig.rb
 
 # Create the log files
 RUN mkdir -p /home/app/webapp/log && \
