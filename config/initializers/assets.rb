@@ -36,6 +36,7 @@ Rails.application.config.assets.precompile += %w( style.css.scss )
 Rails.application.config.assets.precompile += %w( eventdrops.css )
 Rails.application.config.assets.precompile += %w( metricsgraphics.css )
 Rails.application.config.assets.precompile += %w( users.css.scss )
+Rails.application.config.assets.precompile += %w( bootstrap-datetimepicker.css )
 
 Rails.application.config.assets.precompile += %w( annotations.js )
 Rails.application.config.assets.precompile += %w( chroma.min.js )
@@ -71,3 +72,4 @@ Rails.application.config.assets.precompile += %w( initialize_datetimepickers.js 
 Rails.application.config.assets.precompile += %w( jquery.stickytableheaders.js )
 Rails.application.config.assets.precompile += %w( pdf.js )
 Rails.application.config.assets.precompile += %w( table_floating_header.js )
+Rails.application.config.assets.precompile += %w( bootstrap-datetimepicker.js )
