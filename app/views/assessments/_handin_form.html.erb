@@ -191,7 +191,7 @@
               <div class="error file-error" id="flash_error" style="background: white;display: none;">
                 There was an error processing your file, please try adding it again.
               </div>
-              <div class="valign-wrapper drag-drop-handin" onclick="clickDrag();" ondrop="dropHandler(event);" ondragover="dragOverHandler(event);" ondragenter="dragEnter(event);" ondragexit="dragExit(event);">
+              <div class="valign-wrapper drag-drop-handin" tabindex="0" onclick="clickDrag();" onkeypress="clickDrag()" ondrop="dropHandler(event);" ondragover="dragOverHandler(event);" ondragenter="dragEnter(event);" ondragexit="dragExit(event);">
                 <p class="center-align" style="color:grey;" ondrop="dropHandler(event);" ondragover="dragOverHandler(event);" ondragenter="dragEnter(event);" ondragexit="dragExit(event);"><b>Drag a file here to hand in. Click to select a file.</b> <br /> <span style="font-size: 10px;">Files do not submit automatically.</span></p>
               </div>
             </div>
