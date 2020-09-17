@@ -32,8 +32,9 @@ Autolab3::Application.configure do
   # config.action_dispatch.x_sendfile_header = 'X-Accel-Redirect' # for nginx
 
   # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
-  # config.force_ssl = true
-  config.middleware.use Rack::SslEnforcer, :except => [ /log_submit/, /local_submit/ ]
+  # TODO: Re-enable this once SSL is working
+  config.force_ssl = false
+  # config.middleware.use Rack::SslEnforcer, :except => [ /log_submit/, /local_submit/ ]
 
 
   # See everything in the log (default is :info)
