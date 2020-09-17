@@ -190,7 +190,7 @@ autolab_setup() {
     cp $AUTOLAB_PATH/config/school.yml.template $AUTOLAB_PATH/config/school.yml
 
     cp $AUTOLAB_PATH/config/initializers/devise.rb.template $AUTOLAB_PATH/config/initializers/devise.rb
-    sed -i "s/<YOUR-SECRET-KEY>/`bundle exec rake secret`/g" $AUTOLAB_PATH/config/initializers/devise.rb
+    sed -i "s/<YOUR-SECRET-KEY>/`sh generate_secret.sh 128`/g" $AUTOLAB_PATH/config/initializers/devise.rb
 
     cp $AUTOLAB_PATH/config/autogradeConfig.rb.template $AUTOLAB_PATH/config/autogradeConfig.rb
 
