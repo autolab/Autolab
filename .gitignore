@@ -41,7 +41,10 @@ tags
 .DS_Store
 .idea/
 .yardoc
-/docker/nginx.conf
+app/views/home/_topannounce.html.erb
+attachments/
+doc/
+out.txt
 .vscode/
 .byebug_history
 .env
