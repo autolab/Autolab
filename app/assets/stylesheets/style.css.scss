@@ -1171,6 +1171,10 @@ div.center {
   background: rgba(0, 0, 0, 0.05);
 }
 
+.drag-drop-handin:focus {
+  background: rgba(0, 0, 0, 0.05);
+}
+
 #remove-handed-in {
   color: grey;
   cursor: pointer;
