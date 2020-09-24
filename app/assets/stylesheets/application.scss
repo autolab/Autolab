@@ -3,6 +3,4 @@ $primary-color: #dd2222 !default;
 $secondary-color: #dd2222 !default;
 @import "materialize";
 @import "bootstrap-sprockets";
-
-/* Deviation from official README due to https://github.com/TrevorS/bootstrap3-datetimepicker-rails/issues/48 */
-@import "bootstrap-datetimepicker.css";
+@import "bootstrap-datetimepicker";

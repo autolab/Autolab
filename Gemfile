@@ -1,5 +1,5 @@
 source 'https://rubygems.org'
-ruby '2.6.3'
+ruby '2.6.6'
 
 gem 'rails', '=5.2.0'
 
@@ -113,8 +113,14 @@ group :development do
 
   # sqlite3 adapter
   gem 'sqlite3', '~> 1.3.6'
-
 end
+
+# Also install sqlite3 for docker installations
+if ENV['DEPLOY_METHOD'] == "docker"
+  gem 'sqlite3', '~> 1.3.6'
+end
+
+gem 'tzinfo-data'
 
 # Useful debugger
 gem 'byebug', '>=3.5.1'
