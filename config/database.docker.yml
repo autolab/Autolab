@@ -1,4 +1,4 @@
-# SQLite Configuration
+# SQLite Configuration used for Autolab Docker Deployments
 development: &common
   adapter: sqlite3
   database: db/db.sqlite3
@@ -8,4 +8,3 @@ development: &common
 # SQLite Configuration
 production:
   <<: *common
-
