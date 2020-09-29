@@ -25,17 +25,19 @@ RUN rm -f /etc/service/nginx/down
 # Remove the default site
 RUN rm /etc/nginx/sites-enabled/default
 
-USER app
-
 # Install gems
 WORKDIR /tmp
-ADD Gemfile /tmp/
-ADD Gemfile.lock /tmp/
+ADD Gemfile .
+ADD Gemfile.lock .
 
-RUN bundle install
+RUN chown app:app Gemfile Gemfile.lock
 
 # Prepare folders
+USER app
+RUN bundle install
+
 RUN mkdir /home/app/webapp
+WORKDIR /home/app/webapp
 
 # Add the rails app
 ADD . /home/app/webapp
@@ -46,11 +48,15 @@ RUN mkdir -p /home/app/webapp/log && \
   chown -R app:app /home/app/webapp/log && \
   chmod 0664 /home/app/webapp/log/production.log
 
+USER root
+RUN chown -R app:app .
+USER app
+
 # precompile the Rails assets
-WORKDIR /home/app/webapp
 RUN RAILS_ENV=production bundle exec rake assets:precompile
 
 # Clean up APT when done.
+USER root
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Use baseimage-docker's init system.
