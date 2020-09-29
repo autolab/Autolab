@@ -38,23 +38,12 @@ CMD ["/sbin/my_init"]
 RUN rm -f /etc/service/nginx/down
 # Remove the default site
 RUN rm /etc/nginx/sites-enabled/default
-# Add the nginx info
-ADD docker/nginx.conf /etc/nginx/sites-enabled/webapp.conf
 
 # Prepare folders
 RUN mkdir /home/app/webapp
 
 # Add the rails app
 ADD . /home/app/webapp
-
-# Move the database configuration into place
-ADD config/database.docker.yml /home/app/webapp/config/database.yml
-
-# Move other configs
-ADD docker/school.yml /home/app/webapp/config/school.yml
-ADD docker/production.rb /home/app/webapp/config/environments/production.rb
-ADD docker/devise.rb /home/app/webapp/config/initializers/devise.rb
-ADD docker/autogradeConfig.rb /home/app/webapp/config/autogradeConfig.rb
 
 # Create the log files
 RUN mkdir -p /home/app/webapp/log && \

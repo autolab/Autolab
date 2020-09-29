@@ -33,7 +33,7 @@ Autolab3::Application.configure do
 
   # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
   # Default to true, unless false explitcitly specified in DOCKER_SSL env var
-  config.force_ssl = (not ENV["DOCKER_SSL"] == "false") || true
+  config.force_ssl = ENV["DOCKER_SSL"] ? not (ENV["DOCKER_SSL"] == "false") : true
   config.middleware.use Rack::SslEnforcer, :except => [ /log_submit/, /local_submit/ ]
 
 
