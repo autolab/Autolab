@@ -32,7 +32,8 @@ Autolab3::Application.configure do
   # config.action_dispatch.x_sendfile_header = 'X-Accel-Redirect' # for nginx
 
   # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
-  # config.force_ssl = true
+  # Default to true, unless false explitcitly specified in DOCKER_SSL env var
+  config.force_ssl = (not ENV["DOCKER_SSL"] == "false") || true
   config.middleware.use Rack::SslEnforcer, :except => [ /log_submit/, /local_submit/ ]
 
 
