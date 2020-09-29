@@ -20,24 +20,19 @@ RUN apt-get update && apt-get install -y \
   sqlite3 \
   tzdata
 
+# Start Nginx / Passenger
+RUN rm -f /etc/service/nginx/down
+# Remove the default site
+RUN rm /etc/nginx/sites-enabled/default
+
+USER app
+
 # Install gems
 WORKDIR /tmp
 ADD Gemfile /tmp/
 ADD Gemfile.lock /tmp/
 
 RUN bundle install
-
-# Set correct environment variables.
-ENV HOME /root
-ENV DEPLOY_METHOD docker
-
-# Use baseimage-docker's init system.
-CMD ["/sbin/my_init"]
-
-# Start Nginx / Passenger
-RUN rm -f /etc/service/nginx/down
-# Remove the default site
-RUN rm /etc/nginx/sites-enabled/default
 
 # Prepare folders
 RUN mkdir /home/app/webapp
@@ -57,3 +52,7 @@ RUN RAILS_ENV=production bundle exec rake assets:precompile
 
 # Clean up APT when done.
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# Use baseimage-docker's init system.
+CMD ["/sbin/my_init"]
+
