@@ -55,6 +55,7 @@ ADD docker/school.yml /home/app/webapp/config/school.yml
 ADD docker/production.rb /home/app/webapp/config/environments/production.rb
 ADD docker/devise.rb /home/app/webapp/config/initializers/devise.rb
 ADD docker/autogradeConfig.rb /home/app/webapp/config/autogradeConfig.rb
+ADD docker/initialize_user.sh /home/app/webapp/docker/initialize_user.sh
 
 # Create the log files
 RUN mkdir -p /home/app/webapp/log && \
