@@ -2,7 +2,7 @@
 
 add_a_user()
 {
-  echo "Initializing root user...."
+  echo "############## Initialize a new root user ##############"
   read -p 'User Email: ' email
   read -sp 'Password: ' password
   echo
