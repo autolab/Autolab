@@ -13,7 +13,7 @@ $(document).ready(function () {
   }
   
   resizeCodeTable();
-  });
+});
 
 /* On Window Reisze */ 
 $(window).on('resize', function(){
@@ -204,7 +204,7 @@ function fillAnnotationBox() {
 
       // Standardized scrollToFileLine behavior
       // annotation.line + 1 because the line numbers on editor starts with 1 not 0
-      annotationElement.attr('onclick', `scrollToFileLine(${annotation.position}, ${annotation.line + 1})`);
+      annotationElement.attr('onclick', `scrollToFileLine(${annotation.position ? annotation.position : 0}, ${annotation.line + 1})`);
 
       var pointBadge = $('<span />');
       pointBadge.addClass('point_badge');
@@ -453,7 +453,7 @@ function createAnnotation() {
     submitted_by: cudEmailStr,
   };
 
-  if (currentHeaderPos) {
+  if (currentHeaderPos || currentHeaderPos === 0) {
     annObj.position = currentHeaderPos
   }
 
