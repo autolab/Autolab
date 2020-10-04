@@ -22,6 +22,4 @@ done
   bundle exec rake admin:create_root_user[$email,"$password","$first_name","$last_name"]
 }
 
-bundle install
-bundle exec rake db:migrate
 add_a_user
