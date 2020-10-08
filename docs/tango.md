@@ -20,7 +20,7 @@ For more information about the different Tango components, go to the following p
 
 -   [REST API docs](/tango-rest/)
 -   [VMMS API docs](/tango-vmms/)
--   [Tango Architecture Overview](http://autolab.github.io/2015/04/making-backend-scalable/)
+-   [Tango Architecture Overview](https://docs.autolabproject.com/2015/04/making-backend-scalable/)
 -   [Deploying Tango](/tango-deploy/)
 
 ### Installation
@@ -32,7 +32,7 @@ This guide shows how to setup Tango in a **development environment**. Use the [d
         :::bash
         git clone https://github.com/autolab/Tango.git; cd Tango
 
-2.  Install Redis following [this guide](http://redis.io/topics/quickstart). By default, Tango uses Redis as a stateless job queue. Learn more [here](http://autolab.github.io/2015/04/making-backend-scalable/).
+2.  Install Redis following [this guide](http://redis.io/topics/quickstart). By default, Tango uses Redis as a stateless job queue. Learn more [here](https://docs.autolabproject.com/2015/04/making-backend-scalable/).
 
 3.  Create a `config.py` file from the given template.
 
@@ -84,7 +84,7 @@ This guide shows how to setup Tango in a **development environment**. Use the [d
         :::bash
         python jobManager.py
 
-    For more information on the job producer/consumer model check out our [blog post](http://autolab.github.io/2015/04/making-backend-scalable/)
+    For more information on the job producer/consumer model check out our [blog post](https://docs.autolabproject.com/2015/04/making-backend-scalable/)
 
 10.  Ensure Tango is running:
 
