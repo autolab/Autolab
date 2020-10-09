@@ -14,7 +14,7 @@ A brief overview of the Tango respository:
 -   `vmms/` - VMMS library implementations
 -   `restful-tango/` - HTTP server layer on the main Tango
 
-Tango runs jobs in VMs using a high level Virtual Memory Management System (VMMS) API. Tango currently has support for running jobs in [Docker](https://www.docker.com/) containers (**recommended**), [Tashi VMs](http://opencirrus.intel-research.net/tashi/), or [Amazon EC2](https://aws.amazon.com/ec2).
+Tango runs jobs in VMs using a high level Virtual Memory Management System (VMMS) API. Tango currently has support for running jobs in [Docker](https://www.docker.com/) containers (**recommended**) or [Amazon EC2](https://aws.amazon.com/ec2).
 
 For more information about the different Tango components, go to the following pages:
 

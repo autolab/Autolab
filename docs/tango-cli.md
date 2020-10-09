@@ -1,6 +1,6 @@
 # Tango Command Line Client
 
-This is a guide to use the command-line client (`clients/tango-cli.py`) to test and collect other valuable information from Tango. Please [setup Tango](tango/#installation) before moving forward. This guide assumes an instance of Tango is already up and running.
+This is a guide to use the command-line client (`clients/tango-cli.py`) to test and collect other valuable information from Tango. Please [setup Tango](/tango/#installation) before moving forward. This guide assumes an instance of Tango is already up and running.
 
 ## Running a Sample Job
 
