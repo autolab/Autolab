@@ -35,6 +35,9 @@ db/autolab_development
 db/autolab_test
 db/*.sqlite3
 
+# Mkdocs generated site
+site/
+
 # misc
 *.swp
 tags
