@@ -85,7 +85,8 @@ function purgeCurrentPageCache() {
   localCache[currentHeaderPos] = {
     codeBox: `<div id="code-box">${$('#code-box').html()}</div>`,
     pdf: false,
-    symbolTree
+    symbolTree,
+    url: window.location.href,
   };
 }
 
