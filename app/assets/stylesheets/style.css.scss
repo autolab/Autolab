@@ -14,6 +14,7 @@ $autolab-red: rgba(153, 0, 0, 0.9);
 $autolab-subtle-red: #C87B7E;
 $autolab-subtle-gray: #eee;
 $autolab-highlight-gray: #ccc;
+$autolab-black-text: #212121;
 #F2EFEF
 
 html, body {
@@ -403,7 +404,7 @@ input[type="file"].upload_embedded {
 div#footer {
   clear: both;
   font-size: 14px;
-  color: #888;
+  color: $autolab-black-text;
   height: 42px;
   padding: 0 10px;
   margin-top: 16px;
@@ -418,7 +419,7 @@ div#footer a,
 div#footer span.site_version {
   display: inline-block;
   padding: 12px;
-  color: #666;
+  color: $autolab-black-text;
 }
 
 div#footer span.site_version {

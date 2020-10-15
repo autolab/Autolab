@@ -14,7 +14,7 @@ Since 2010, Autolab has had a transformative impact on education at CMU. Each se
   <img src="public/images/join_slack.svg" width="170px" height="44px">
 </a>
 
-<a href="https://autolab.github.io/docs/" style="float:left">
+<a href="https://docs.autolabproject.com/" style="float:left">
   <img src="public/images/read_the_docs.svg" width="170px" height="44px">
 </a>
 
@@ -31,7 +31,7 @@ Subscribe to our [mailing list](https://groups.google.com/forum/#!forum/autolabp
 
 ## Installation
 
-We released new documentation! Check it out [here](https://autolab.github.io/docs).
+We released new documentation! Check it out [here](https://docs.autolabproject.com).
 
 We are currently in the process of updating our documentation to work with our newest release of Autolab, v2.5.0, which has been upgraded to Rails 5 from Rails 4
 
