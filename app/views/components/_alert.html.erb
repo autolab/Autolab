@@ -1,0 +1,19 @@
+<%# This is a simple flash component
+    It uses local_assigns.fetch to get variables.
+    
+    Example usage: (the % are removed from the < and >)
+    < render "components/alert", type:"success" do >
+        This is a success alert with <a href="#" class="alert-link">an example link</a>.
+    < end >
+
+    It has the following types:
+    alert,success,notice
+%>
+
+<% message = yield.presence || local_assigns.fetch(:message) %>
+
+<% type = local_assigns.fetch(:type,:notice) %>
+
+<%= content_tag :div, id: "flash_#{type}", class: "#{type}" do %>
+    <%= message %>
+<% end %>
