@@ -69,7 +69,7 @@ Rails.application.routes.draw do
         get "run"
     end
 
-    resources :analytics, only: :index do
+    resources :metrics, only: :index do
     end
 
     resources :jobs, only: :index do
