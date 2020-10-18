@@ -12,7 +12,7 @@ gem 'materialize-sass'
 # Use for some of the glypicons on the site
 gem 'bootstrap-sass', '>= 3.4.1'
 
-# Use for Analytics page
+# Use for Metrics page
 gem 'semantic-ui-sass'
 
 # Use Uglifier as compressor for JavaScript assets
