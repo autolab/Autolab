@@ -23,6 +23,8 @@ class Course < ApplicationRecord
   belongs_to :version_penalty, class_name: "Penalty"
   has_many :assessment_user_data, through: :assessments
   has_many :submissions, through: :assessments
+  has_many :watchlist_instances, dependent: :destroy
+  has_many :risk_conditions, dependent: :destroy
 
   accepts_nested_attributes_for :late_penalty, :version_penalty
 
