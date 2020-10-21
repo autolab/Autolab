@@ -69,6 +69,9 @@ Rails.application.routes.draw do
         get "run"
     end
 
+    resources :metrics, only: :index do
+    end
+
     resources :jobs, only: :index do
       get "getjob", on: :member
 
