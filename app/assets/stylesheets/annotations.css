@@ -790,6 +790,11 @@
   cursor: pointer;
 }
 
+.descript-link {
+  color: inherit;
+  text-decoration: inherit;
+}
+
 .summary_score{
   padding-left: 10px;
 }
