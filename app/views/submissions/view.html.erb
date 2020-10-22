@@ -55,22 +55,7 @@
     setActiveFilePos(currentHeaderPos)
     initializeAnnotationsForCode();
     attachEvents();
-    // Set up file switching to use the local cache
-    function changeFileClickHandler(e) {
-      wasCachedLocally = changeFile($(this).data("header_position"));
-      if (wasCachedLocally) {
-        e.preventDefault();
-        if ($(this).data("line")) {
-          console.log("called")
-          scrollToLine($(this).data("line"));
-        }
-        return false;
-      }
-      return true;
-    }
-
-    $(".file").on("click", changeFileClickHandler);
-    $(".descript-link").on("click", changeFileClickHandler);
+    attachChangeFileEvents();
   </script>
 
   <script>
