@@ -6,6 +6,6 @@ production:
   username: user
   password: password
   socket: /var/run/mysqld/mysqld.sock
-  host: localhost
+  host: mysql
   variables:
     sql_mode: NO_ENGINE_SUBSTITUTION
