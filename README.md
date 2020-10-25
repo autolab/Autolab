@@ -18,7 +18,7 @@ Since 2010, Autolab has had a transformative impact on education at CMU. Each se
   <img src="public/images/read_the_docs.svg" width="170px" height="44px">
 </a>
 
-<a href="https://groups.google.com/forum/#!forum/autolabproject/join" style="float:left">
+<a href="https://groups.google.com/g/autolabproject" style="float:left">
  <img src="public/images/mailing_list.svg" width="170px" height="44px">
 </a>
 
@@ -27,7 +27,7 @@ Since 2010, Autolab has had a transformative impact on education at CMU. Each se
 [![Build Status](https://travis-ci.org/autolab/Autolab.svg)](https://travis-ci.org/autolab/Autolab)
 ![GitHub last commit](https://img.shields.io/github/last-commit/autolab/Autolab)
 
-Subscribe to our [mailing list](https://groups.google.com/forum/#!forum/autolabproject/join) to recieve announcements about major releases and updates to the Autolab Project.
+Subscribe to our [mailing list](https://groups.google.com/g/autolabproject) to recieve announcements about major releases and updates to the Autolab Project.
 
 ## Installation
 
