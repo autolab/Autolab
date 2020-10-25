@@ -1,10 +1,11 @@
-# SQLite Configuration used for Autolab Docker Deployments
-development: &common
-  adapter: sqlite3
-  database: db/db.sqlite3
-  pool: 5
-  timeout: 5000
-
-# SQLite Configuration
+# MySQL Configuration used for Autolab Docker Deployments
 production:
-  <<: *common
+  adapter: mysql2
+  database: autolab_development
+  pool: 5
+  username: user
+  password: password
+  socket: /var/run/mysqld/mysqld.sock
+  host: mysql
+  variables:
+    sql_mode: NO_ENGINE_SUBSTITUTION
