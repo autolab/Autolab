@@ -9,6 +9,8 @@ class RiskCondition < ApplicationRecord
   NO_SUBMISSIONS = 3 # :no_submissions_threshold
   LOW_GRADES = 4 # :grade_threshold, :count_threshold
 
+  types = [GRACE_DAY_USAGE, GRADE_DROP, NO_SUBMISSIONS, LOW_GRADES]
+
   def self.create_condition_for_course_with_type(course_id, type, params)
   	# parameter check shouldn't surface to user and is for debug only
     if (type == GRACE_DAY_USAGE && (params[:grace_day_threshold].nil? || params[:date].nil? || params.length != 2)) ||
@@ -24,6 +26,18 @@ class RiskCondition < ApplicationRecord
     if not newRiskCondition.save
       raise "Fail to create new risk condition with type #{type} for course #{course_id}"
     end
+  end
+
+  def self.get_current_for_course(course_id)
+    conditions = {}
+    conditions_for_course = RiskCondition.where(course_id: course_id)
+    for type in types do
+      condition = conditions_for_course.where(type: type).order("version DESC").first
+      if not condition.nil?
+        conditions[type] = condition
+      end
+    end
+    return conditions
   end
 
 private
