@@ -27,13 +27,13 @@ class RiskCondition < ApplicationRecord
   end
 
   def self.get_current_for_course(course_id)
-    conditions = {}
+    conditions = []
     conditions_for_course = RiskCondition.where(course_id: course_id)
     types = [GRACE_DAY_USAGE, GRADE_DROP, NO_SUBMISSIONS, LOW_GRADES]
     for type in types do
       condition = conditions_for_course.where(condition_type: type).order("version DESC").first
       if not condition.nil?
-        conditions[type] = condition
+        conditions << condition
       end
     end
     return conditions
