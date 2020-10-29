@@ -9,8 +9,6 @@ class RiskCondition < ApplicationRecord
   NO_SUBMISSIONS = 3 # :no_submissions_threshold
   LOW_GRADES = 4 # :grade_threshold, :count_threshold
 
-  types = [GRACE_DAY_USAGE, GRADE_DROP, NO_SUBMISSIONS, LOW_GRADES]
-
   def self.create_condition_for_course_with_type(course_id, type, params)
   	# parameter check shouldn't surface to user and is for debug only
     if (type == GRACE_DAY_USAGE && (params[:grace_day_threshold].nil? || params[:date].nil? || params.length != 2)) ||
@@ -21,7 +19,7 @@ class RiskCondition < ApplicationRecord
     end
 
     version = RiskCondition.get_version(course_id, type)
-    options = { type: type, parameters: params, version: version }
+    options = { course_id: course_id, condition_type: type, parameters: params, version: version }
     newRiskCondition = RiskCondition.new(options)
     if not newRiskCondition.save
       raise "Fail to create new risk condition with type #{type} for course #{course_id}"
@@ -31,8 +29,9 @@ class RiskCondition < ApplicationRecord
   def self.get_current_for_course(course_id)
     conditions = {}
     conditions_for_course = RiskCondition.where(course_id: course_id)
+    types = [GRACE_DAY_USAGE, GRADE_DROP, NO_SUBMISSIONS, LOW_GRADES]
     for type in types do
-      condition = conditions_for_course.where(type: type).order("version DESC").first
+      condition = conditions_for_course.where(condition_type: type).order("version DESC").first
       if not condition.nil?
         conditions[type] = condition
       end
@@ -43,7 +42,7 @@ class RiskCondition < ApplicationRecord
 private
 
   def self.get_version(course_id, type)
-    previous = RiskCondition.where(course_id: course_id, type: type).order("version DESC")
+    previous = RiskCondition.where(course_id: course_id, condition_type: type).order("version DESC")
     if previous.first
       return previous.first.version + 1
     else
