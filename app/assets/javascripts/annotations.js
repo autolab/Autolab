@@ -85,7 +85,8 @@ function purgeCurrentPageCache() {
   localCache[currentHeaderPos] = {
     codeBox: `<div id="code-box">${$('#code-box').html()}</div>`,
     pdf: false,
-    symbolTree
+    symbolTree,
+    url: window.location.href,
   };
 }
 
@@ -111,21 +112,6 @@ function setActiveFilePosHelper(elem, headerPos) {
     return true
   }
   return false
-}
-
-// Go to a specific file and a specific line in the codeviewer
-// Where f is the file's header_position value, and n is the line number
-function scrollToFileLine(f, n) {
-  if (currentHeaderPos == f) {
-    scrollToLine(n)
-  }
-  else {
-    if (!changeFile(f)) {
-      // file not chached, go to page
-      window.location = `./view?header_position=${f}&line=${n}`;
-    }
-    scrollToLine(n);
-  }
 }
 
 // Go to a specific line in the codeviewer
@@ -202,9 +188,14 @@ function fillAnnotationBox() {
       annotationElement.addClass('descript');
       annotationElement.attr('id', 'li-annotation-' + annotation.id);
 
-      // Standardized scrollToFileLine behavior
-      // annotation.line + 1 because the line numbers on editor starts with 1 not 0
-      annotationElement.attr('onclick', `scrollToFileLine(${annotation.position ? annotation.position : 0}, ${annotation.line + 1})`);
+      var pos = annotation.position ? annotation.position : 0;
+      var line = annotation.line + 1;
+      var link = $('<a />');
+      link.addClass('descript-link');
+      link.attr('data-header_position', pos);
+      link.attr('data-line', line);
+      link.attr('data-remote', true);
+      link.attr('href', `./view?header_position=${pos}&line=${line}`);
 
       var pointBadge = $('<span />');
       pointBadge.addClass('point_badge');
@@ -217,10 +208,12 @@ function fillAnnotationBox() {
       }
 
       pointBadge.text(plusFix(annotation.value));
-      annotationElement.append(pointBadge);
-      annotationElement.append(annotation.comment);
+      link.append(pointBadge);
+      link.append(annotation.comment);
+      annotationElement.append(link);
       listing.append(annotationElement);
 
+      attachChangeFileEvents();
     }
   }
   // Reloads the grades part upon update
@@ -393,6 +386,27 @@ function attachEvents() {
     }
 
   });
+}
+
+function attachChangeFileEvents() {
+  // Set up file switching to use the local cache
+  function changeFileClickHandler(e) {
+    wasCachedLocally = changeFile($(this).data("header_position"));
+    if (wasCachedLocally) {
+      e.preventDefault();
+      if ($(this).data("line")) {
+        console.log("called")
+        scrollToLine($(this).data("line"));
+      }
+      return false;
+    }
+    return true;
+  }
+  $(".file").off();
+  $(".descript-link").off();
+
+  $(".file").on("click", changeFileClickHandler);
+  $(".descript-link").on("click", changeFileClickHandler);
 }
 
 var initializeAnnotationsForCode = function () {

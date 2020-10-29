@@ -5,7 +5,7 @@ Autolab is a course management platform that enables instructors to offer autogr
 For information on how to use Autolab for your course see the [Guide for Instructors](/instructors). To learn how to write an autograded lab see the [Guide for Lab Authors](/lab). To get straight to an installation, go to [Getting Started](#getting-started)
 
 ## Demonstration Site
-If you would like to check out Autolab prior to installation, go over to our <a href="http://autolab.ml" target="_blank">Demo Site</a>! Login through `Developer Login` with the email: `admin@foo.bar`. 
+If you would like to check out Autolab prior to installation, go over to our <a href="https://demo.autolabproject.com" target="_blank">Demo Site</a>! Login through `Developer Login` with the email: `admin@foo.bar`. 
 
 This is a demonstration website. It refreshes at 0,6,12,18 Hours (UTC) daily, and it is publicly accessible, so please only use it for your exploration. Do not use this site to store important information.
 
