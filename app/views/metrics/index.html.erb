@@ -7,221 +7,60 @@
   <%= javascript_include_tag "metrics" %>
 <% end %>
 
+<% @define_metrics = false %>
+
 <div class="ui pointing secondary tabular menu">
   <a class="item active" data-tab="watchlist">Watchlist</a>
   <a class="item" data-tab="risk metrics">Risk Metrics</a>
 </div>
 <div class="ui tab active" data-tab="watchlist">
-
-  <div class="top-bar">
-	<div class="ui checkbox"><input type="checkbox" name="select_all"/></div>
-	<button class="ui submit small button"><i class="mail outline icon"></i>CONTACT</button>
-	<button class="ui submit small button"><i class="ok circle icon"></i>RESOLVE</button>
-
-	<div class="last-updated">
-  	  <h5> Last Updated 10/20/2020 at 11:50pm <i class="repeat link icon"></i></h5>
+  <% if @define_metrics then %>
+    <div class="top-bar">
+      <div class="ui checkbox"><input type="checkbox" name="select_all"/></div>
+      <button class="ui submit small button"><i class="mail outline icon"></i>CONTACT</button>
+      <button class="ui submit small button"><i class="check circle icon"></i>RESOLVE</button>
+      <div class="last-updated">
+        <h5> Last Updated 10/20/2020 at 11:50pm <i class="repeat link icon"></i></h5>
+      </div>
     </div>
-  </div>
+  <% end %>
   <br>
   <div class="ui grid">
-	<div class="three wide column">
-	  <div class="ui vertical fluid tabular menu">
-	    <a class="item active" data-tab="first">New (4)</a>
-	    <a class="item" data-tab="second">Contacted</a>
-		<a class="item" data-tab="third">Resolved</a>
-	    <a class="item" data-tab="fourth">Archived</a>
-	  </div>
-	</div>
-
-    <div class="thirteen wide column">
-      <div class="ui tab segments active" data-tab="first">
-        <div class="ui segment">
-          <div class="ui checkbox">
-          	<input type="checkbox" name="select_all"/>
-          	<label> <p>Jane Doe</p></label>
-          </div>
-
-          <div class="ui circular label">2 late days used</div>
-          <div class="ui circular label">1 no submission</div>
-          <div class="ui circular label">Downward trend</div>
-          <div class="ui circular label">2 low scores</div>
-         
-          <div class="students-buttons-right"> 
-		  	<button class="ui submit tiny button"><i class="mail outline icon"></i>CONTACT</button>
-	      	<button class="ui submit tiny button"><i class="ok circle icon"></i>RESOLVE</button>
-          </div>
-        </div>
-
-        <div class="ui segment">
-          <div class="ui checkbox">
-          	<input type="checkbox" name="select_all"/>
-          	<label> <p>Emily Lee</p></label>
-          </div>
-         
-          <div class="students-buttons-right"> 
-		  	<button class="ui submit tiny button"><i class="mail outline icon"></i>CONTACT</button>
-	      	<button class="ui submit tiny button"><i class="ok circle icon"></i>RESOLVE</button>
-          </div>
-        </div>
-
-        <div class="ui segment">
-          <div class="ui checkbox">
-          	<input type="checkbox" name="select_all"/>
-          	<label> <p>John Smith</p></label>
-          </div>
-         
-          <div class="students-buttons-right"> 
-		  	<button class="ui submit tiny button"><i class="mail outline icon"></i>CONTACT</button>
-	      	<button class="ui submit tiny button"><i class="ok circle icon"></i>RESOLVE</button>
-          </div>
-        </div>
-
+    <div class="three wide column">
+      <div class="ui vertical fluid tabular menu">
+        <a class="item active" data-tab="new_tab">New</a>
+        <a class="item" data-tab="contacted_tab">Contacted</a>
+        <a class="item" data-tab="resolved_tab">Resolved</a>
+        <a class="item" data-tab="archived_tab">Archived</a>
       </div>
-
-        <div class="ui tab segments" data-tab="second">
-            <div class="ui segment"><p>Second, row 1</p></div>
-            <div class="ui segment"><p>Second, row 2</p></div>
-            <div class="ui segment"><p>Second, row 3</p></div>
-        </div>
-
-        <div class="ui tab segments" data-tab="third">
-            <div class="ui segment"><p>Third, row 1</p></div>
-            <div class="ui segment"><p>Third, row 2</p></div>
-            <div class="ui segment"><p>Third, row 3</p></div>
-        </div>
-
-        <div class="ui tab segments" data-tab="fourth">
-            <div class="ui segment"><p>Fourth, row 1</p></div>
-            <div class="ui segment"><p>Fourth, row 2</p></div>
-            <div class="ui segment"><p>Fourth, row 3</p></div>
-        </div>
     </div>
-
-
+    <div class="thirteen wide column">
+      <% if @define_metrics then %>
+        <div class="ui tab segments active" data-tab="new_tab">
+          <%= render partial: 'student_row', locals: {student_name: "Jane Doe", grace_days: 3, low_scores: 2} %>
+          <%= render partial: 'student_row', locals: {student_name: "Emily Lee", missing_submissions: 2} %>
+          <%= render partial: 'student_row', locals: {student_name: "John Smith", downward_trend: 1} %>
+        </div>
+        <div class="ui tab segments" data-tab="contacted_tab">
+           <%= render partial: 'student_row', locals: {student_name: "student3"} %>
+        </div>
+        <div class="ui tab segments" data-tab="resolved_tab">
+          <%= render partial: 'student_row', locals: {student_name: "student4"} %>
+        </div>
+        <div class="ui tab segments" data-tab="archived_tab">
+           <%= render partial: 'student_row', locals: {student_name: "student5"} %>
+        </div>
+      <% else %>
+        <div class="ui tab segments active" id="undefined_metrics">
+          <center>
+            <i class="massive inbox icon"></i> 
+            <h3> You have not defined your risk metrics </h3>
+            Set up identification conditions at in the <b>Risk Metrics</b> tab.  <br> 
+            Identified possible at-risk students will appear here. 
+          </center>
+        </div>
+      <% end %>
+    </div>
   </div>
 </div>
-
-
-<div class="ui tab" data-tab="risk metrics">
-  <h6> 
-  	Select one or more of the following risk conditions you want to apply. 
-  </h6>
-  <h6>
-  	<i> 
-  		These conditions will make up your risk metrics, which will be used to identify students who are at risk in this course. 
-  	</i>
-  </h6>
-  <br>
-  <div class="ui form">
-  	<div class="metric">
-		<div class="inline field">
-		  <div class="ui checkbox">
-		    <input type="checkbox" tabindex="0" class="hidden">
-		  </div>
-	      Students who have used
-	      <span>
-		      <div class="ui selection dropdown">
-		        <input type="hidden" name="late days">
-		        <i class="dropdown icon"></i>
-		        <div class="default text">#</div>
-		        <div class="menu">
-		          <div class="item" data-value="1">1</div>
-		          <div class="item" data-value="2">2</div>
-		          <div class="item" data-value="3">3</div>
-		        </div>
-		  	  </div>
-	  	  </span>
-	  	  late days by
-	  	  <span>
-		  	  <div class="ui selection dropdown">
-		        <input type="hidden" name="date">
-		        <i class="dropdown icon"></i>
-		        <div class="default text">Date</div>
-		        <div class="menu">
-		          <div class="item" data-value="1">Day 1</div>
-		          <div class="item" data-value="2">Day 2</div>
-		        </div>
-		  	  </div>
-	  	  </span>
-		</div>
-
-		<div class="metric">
-		<div class="inline field">
-		  <div class="ui checkbox">
-		    <input type="checkbox" tabindex="0" class="hidden">
-		  </div>
-	      Students whose grades have dropped by
-	      <span>
-		    <input type="text" placeholder="%" name="percentage">
-	  	  </span>
-	  	  percent within
-	  	  <span>
-		  	  <div class="ui selection dropdown">
-		        <input type="hidden" name="number">
-		        <i class="dropdown icon"></i>
-		        <div class="default text">#</div>
-		        <div class="menu">
-		          <div class="item" data-value="2">2</div>
-		          <div class="item" data-value="3">3</div>
-		          <div class="item" data-value="4">4</div>
-		        </div>
-		  	  </div>
-	  	  </span>
-	  	  consecutive assignments
-		</div>
-
-		<div class="metric">
-		<div class="inline field">
-		  <div class="ui checkbox">
-		    <input type="checkbox" tabindex="0" class="hidden">
-		  </div>
-	      Students who did not submit
-	      <span>
-		      <div class="ui selection dropdown">
-		        <input type="hidden" name="number">
-		        <i class="dropdown icon"></i>
-		        <div class="default text">#</div>
-		        <div class="menu">
-		          <div class="item" data-value="1">1</div>
-		          <div class="item" data-value="2">2</div>
-		          <div class="item" data-value="3">3</div>
-		        </div>
-		  	  </div>
-	  	  </span>
-	  	  assignments
-		</div>
-
-		<div class="metric">
-		<div class="inline field">
-		  <div class="ui checkbox">
-		    <input type="checkbox" tabindex="0" class="hidden">
-		  </div>
-	      Students with
-	      <span>
-		      <div class="ui selection dropdown">
-		        <input type="hidden" name="number">
-		        <i class="dropdown icon"></i>
-		        <div class="default text">#</div>
-		        <div class="menu">
-		          <div class="item" data-value="1">1</div>
-		          <div class="item" data-value="2">2</div>
-		          <div class="item" data-value="3">3</div>
-		        </div>
-		  	  </div>
-	  	  </span>
-	  	  submitted assignments below a percentage of
-	  	  <span>
-		    <input type="text" placeholder="%">
-	  	  </span>
-		</div>
-	</div>
-	<br>
-	<button class="ui submit button">SAVE</button>
-	<div class="ui error message"></div>
-  </div>
-
-</div>
-</div>
-  </div>
-</div>
-
+<div class="ui tab" data-tab="risk metrics"></div>
