@@ -16,19 +16,19 @@ $autolab-subtle-red: #C87B7E;
 }
 
 .dropdown {
-     min-width: 20px !important;
+  min-width: 20px !important;
 }
 
 span:before {
-    content:" "; 
-    display:inline-block; 
-    width:10px;
+  content:" "; 
+  display:inline-block; 
+  width:10px;
 }
 
 span:after {
-    content:" "; 
-    display:inline-block; 
-    width:10px;
+  content:" "; 
+  display:inline-block; 
+  width:10px;
 }
 
 .checkbox label::after {
@@ -53,5 +53,9 @@ input[type="text"] {
 }
 
 .success {
-    color: black;
+  color: black;
+}
+
+.error {
+  color: black;
 }

@@ -6,9 +6,10 @@ $(document).ready(function(){
     $('.ui.checkbox').checkbox();
     $('.ui.form')
 	  .form({
+			inline: true,
 	    fields: {
-	      percentage: {
-	        identifier: 'percentage',
+	      percentage1: {
+	        identifier: 'percentage1',
 	        optional: 'true',
 	        rules: [
 	          {
@@ -16,8 +17,21 @@ $(document).ready(function(){
 	            prompt : 'Please enter an integer from 0 to 100 for percentages'
 	          }
 	        ]
-      	  }
+				},
+				percentage2: {
+	        identifier: 'percentage2',
+	        optional: 'true',
+	        rules: [
+	          {
+	            type   : 'integer[0..100]',
+	            prompt : 'Please enter an integer from 0 to 100 for percentages'
+	          }
+	        ]
+				},
 	    }
-	  })
-	;
+		});
+
+		$('[type="checkbox"]').change(function() {
+			$('#save').removeClass('disabled');
+		});
 });
