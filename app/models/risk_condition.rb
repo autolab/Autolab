@@ -5,13 +5,14 @@ class RiskCondition < ApplicationRecord
   has_many :watchlist_instances, dependent: :destroy
   belongs_to :course
 
-  # GRACE_DAY_USAGE = 1 # :grace_day_threshold, :date
-  # GRADE_DROP = 2 # :percentage_drop, :consecutive_counts
-  # NO_SUBMISSIONS = 3 # :no_submissions_threshold
-  # LOW_GRADES = 4 # :grade_threshold, :count_threshold
+  # parameter correspondence:
+  # :grace_day_usage => :grace_day_threshold, :date
+  # :grade_drop => :percentage_drop, :consecutive_counts
+  # :no_submissions => :no_submissions_threshold
+  # :low_grades => :grade_threshold, :count_threshold
 
   def self.create_condition_for_course_with_type(course_id, type, params)
-  	# parameter check shouldn't surface to user and is for debug only
+  	# parameter check shouldn't surface to user and is for sanity check during development only
     if (type == :grace_day_usage && (params[:grace_day_threshold].nil? || params[:date].nil? || params.length != 2)) ||
        (type == :grade_drop && (params[:percentage_drop].nil? || params[:consecutive_counts].nil? || params.length != 2)) ||
        (type == :no_submissions && (params[:no_submissions_threshold].nil? || params.length != 1)) ||
@@ -27,8 +28,9 @@ class RiskCondition < ApplicationRecord
     end
   end
 
-  def self.get_current_for_course(course_id)
+  def self.get_current_for_course(course_name)
     conditions = []
+    course_id = Course.find_by(name: course_name).id
     conditions_for_course = RiskCondition.where(course_id: course_id)
     for type in RiskCondition.condition_types do
       condition = conditions_for_course.where(condition_type: type[1]).order("version DESC").first
