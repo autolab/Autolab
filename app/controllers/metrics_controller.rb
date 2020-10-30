@@ -3,6 +3,7 @@ class MetricsController < ApplicationController
 	def index
 	end
 
+	action_auth_level :get_current_metrics, :instructor
 	def get_current_metrics
 		# This API endpoint aims to retrieve the current/latest risk conditions for a particular course
 		# User is expected to include in the parameters the course's ID with :id being the key
