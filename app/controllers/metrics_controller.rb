@@ -14,28 +14,10 @@ class MetricsController < ApplicationController
 		begin
 			course_id = params[:id]
 			conditions = RiskCondition.get_current_for_course(course_id)
-			conditions_json_string = conditions.to_json
-			conditions_json = JSON.parse(conditions_json_string)
-			conditions_json.map! { |c| c["condition_type"] = type_string_of_enum(c["condition_type"]); c }
-			render json: conditions_json
+			render json: conditions
 		rescue => error
 			flash[:error] = error.message
 			return
-		end
-	end
-
-private
-	def type_string_of_enum(t)
-		if t == 1
-			return "GRACE_DAY_USAGE"
-		elsif t == 2
-			return "GRADE_DROP"
-		elsif t == 3
-			return "NO_SUBMISSIONS"
-		elsif t == 4
-			return "LOW_GRADES"
-		else
-			raise "Condition retrieval failed! Got invalid condition type for metric conditions!"
 		end
 	end
 end
