@@ -7,18 +7,23 @@
   <%= javascript_include_tag "metrics" %>
 <% end %>
 
-<% @define_metrics = false %>
+<!-- TODO: Remove hard coded values  -->
+<% @defined_metrics = true %>
+<% @new_students = 3 %>
+<% @contacted_students = 0 %>
+<% @resolved_students = 0 %>
+<% @archived_students = 0 %>
 
 <div class="ui pointing secondary tabular menu">
   <a class="item active" data-tab="watchlist">Watchlist</a>
   <a class="item" data-tab="risk metrics">Risk Metrics</a>
 </div>
 <div class="ui tab active" data-tab="watchlist">
-  <% if @define_metrics then %>
+  <% if @defined_metrics and @new_students > 0 then %>
     <div class="top-bar">
       <div class="ui checkbox"><input type="checkbox" name="select_all"/></div>
-      <button class="ui submit small button"><i class="mail outline icon"></i>CONTACT</button>
-      <button class="ui submit small button"><i class="check circle icon"></i>RESOLVE</button>
+        <button class="ui submit small button" id="contact_button"><i class="mail outline icon"></i>CONTACT</button>
+        <button class="ui submit small button" id="resolve_button"><i class="check circle icon"></i>RESOLVE</button>
       <div class="last-updated">
         <h5> Last Updated 10/20/2020 at 11:50pm <i class="repeat link icon"></i></h5>
       </div>
@@ -35,20 +40,54 @@
       </div>
     </div>
     <div class="thirteen wide column">
-      <% if @define_metrics then %>
+      <% if @defined_metrics then %>
         <div class="ui tab segments active" data-tab="new_tab">
-          <%= render partial: 'student_row', locals: {student_name: "Jane Doe", grace_days: 3, low_scores: 2} %>
-          <%= render partial: 'student_row', locals: {student_name: "Emily Lee", missing_submissions: 2} %>
-          <%= render partial: 'student_row', locals: {student_name: "John Smith", downward_trend: 1} %>
+          <% if @new_students > 0 then %>
+            <!-- TODO: Remove rendering -->
+            <%= render partial: 'student_row', locals: {student_name: "Jane Doe", grace_days: 3, low_scores: 2} %>
+            <%= render partial: 'student_row', locals: {student_name: "Emily Lee", missing_submissions: 2} %>
+            <%= render partial: 'student_row', locals: {student_name: "John Smith", downward_trend: 1} %>
+          <% else %>
+            <div id="undefined_metrics">
+              <center>
+                <i class="massive inbox icon"></i> 
+                <h3> There are no new students at risk </h3>
+              </center>
+            </div>
+          <% end %>
         </div>
         <div class="ui tab segments" data-tab="contacted_tab">
-           <%= render partial: 'student_row', locals: {student_name: "student3"} %>
+          <% if @contacted_students > 0 then %>
+          <% else %>
+            <div id="undefined_metrics">
+              <center>
+                <i class="massive inbox icon"></i> 
+                <h3> You have not contacted any students </h3>
+              </center>
+            </div>
+          <% end %>
         </div>
         <div class="ui tab segments" data-tab="resolved_tab">
-          <%= render partial: 'student_row', locals: {student_name: "student4"} %>
+          <% if @resolved_students > 0 then %>
+          <% else %>
+            <div id="undefined_metrics">
+              <center>
+                <i class="massive inbox icon"></i> 
+                <h3> You have not resolved any students </h3>
+              </center>
+            </div>
+          <% end %>
         </div>
         <div class="ui tab segments" data-tab="archived_tab">
-           <%= render partial: 'student_row', locals: {student_name: "student5"} %>
+          <% if @archived_students > 0 then %>
+          <% else %>
+            <div id="undefined_metrics">
+              <center>
+                <i class="massive inbox icon"></i> 
+                <h3> You have not archived any students </h3>
+              </center>
+            </div>
+          <% end %>
         </div>
       <% else %>
         <div class="ui tab segments active" id="undefined_metrics">
