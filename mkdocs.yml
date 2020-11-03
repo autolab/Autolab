@@ -17,7 +17,8 @@ nav:
           - REST API: tango-rest.md
           - VMMS Docs: tango-vmms.md
           - Deploying Tango: tango-deploy.md
-    - OneClick Install: one-click.md
+    - Docker Compose Install: docker-compose.md
+    - (Legacy) OneClick Install: one-click.md
 theme:
     name: material
     palette:
