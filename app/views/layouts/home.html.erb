@@ -16,6 +16,17 @@
       </script>
     <% end %>
 
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <% if Rails.configuration.x.google_analytics_id %>
+      <script async src="https://www.googletagmanager.com/gtag/js?id=<%= Rails.configuration.x.google_analytics_id %>"></script>
+      <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', "<%= Rails.configuration.x.google_analytics_id %>");
+      </script>
+    <% end %>
+
     <%= content_for :head %>
     <link href='//fonts.googleapis.com/css?family=Source+Sans+Pro:300,400' rel='stylesheet' type='text/css'>
     <%= content_for :stylesheets %>
