@@ -21,4 +21,17 @@ class MetricsController < ApplicationController
 			return
 		end
 	end
+
+	action_auth_level :update_current_metrics, :instructor
+	def update_current_metrics
+		# The code below assumes the post data is consistent with the type/parameter relation as is defined in risk_condition.rb
+		begin
+			course_name = params[:course_name]
+			conditions = RiskCondition.update_current_for_course(course_name, params)
+			render json: conditions
+		rescue => error
+			flash[:error] = error.message
+			return
+		end
+	end
 end
