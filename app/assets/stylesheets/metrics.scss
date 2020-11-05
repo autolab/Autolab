@@ -59,3 +59,11 @@ input[type="text"] {
 .error {
   color: black;
 }
+
+.ui.form .inline.fields .field .calendar:not(.popup), .ui.form .inline.field .calendar:not(.popup) {
+  display: inline-flex;
+}
+
+.ui.form .inline.fields .field:not(.wide) .ui.input, .ui.form .inline.field:not(.wide) .ui.input {
+  min-width: 200px !important;
+}

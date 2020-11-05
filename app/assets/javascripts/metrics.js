@@ -2,8 +2,9 @@
 //= require semantic-ui
 $(document).ready(function(){
     $('.tabular.menu .item').tab();
-    $('.ui.dropdown').dropdown();
-    $('.ui.checkbox').checkbox();
+		$('.ui.dropdown').dropdown();
+		$('.ui.checkbox').checkbox();
+		$('.ui.calendar').calendar({type: 'date'});
     $('.ui.form')
 	  .form({
 			inline: true,
@@ -33,5 +34,12 @@ $(document).ready(function(){
 
 		$('[type="checkbox"]').change(function() {
 			$('#save').removeClass('disabled');
+		});
+
+		
+		$(window).bind('beforeunload', function(){
+			if (!$('#save').hasClass('disabled')) {
+				return 'Make sure to save your changes';
+			}
 		});
 });
