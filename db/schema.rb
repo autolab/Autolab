@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_10_29_085256) do
+ActiveRecord::Schema.define(version: 2020_11_01_022133) do
 
   create_table "annotations", force: :cascade do |t|
     t.integer "submission_id"
@@ -348,6 +348,7 @@ ActiveRecord::Schema.define(version: 2020_10_29_085256) do
     t.boolean "archived", default: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.json "violation_info"
     t.index ["course_id"], name: "index_watchlist_instances_on_course_id"
     t.index ["course_user_datum_id"], name: "index_watchlist_instances_on_course_user_datum_id"
     t.index ["risk_condition_id"], name: "index_watchlist_instances_on_risk_condition_id"
