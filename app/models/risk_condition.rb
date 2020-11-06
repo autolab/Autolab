@@ -33,15 +33,6 @@ class RiskCondition < ApplicationRecord
     course_id = Course.find_by(name: course_name).id
     max_version = RiskCondition.get_max_version(course_id)
     conditions_for_course = RiskCondition.where(course_id: course_id, :version => max_version)
-    # for type in RiskCondition.condition_types do
-    #   condition = conditions_for_course.where(condition_type: type[1]).order("version DESC").first
-    #   if not condition.nil?
-    #     conditions << condition
-    #   end
-    # end
-    # condition_versions = conditions.map { |h| h.version }
-    # max_version = condition_versions.max()
-    # conditions = conditions.select { |c| c.version == max_version }
     return conditions_for_course
   end
 
@@ -61,29 +52,16 @@ class RiskCondition < ApplicationRecord
 
 private
 
-  def self.get_version(course_id, type)
-    previous = RiskCondition.where(course_id: course_id, condition_type: type).order("version DESC")
-    if previous.first
-      return previous.first.version + 1
-    else
-      return 1
-    end
-  end
-
   def self.get_max_version(course_id)
     conditions = []
     conditions_for_course = RiskCondition.where(course_id: course_id)
-    max_version = 0
-    for type in RiskCondition.condition_types do
-      condition = conditions_for_course.where(condition_type: type[1]).order("version DESC").first
-      if not condition.nil?
-        if condition.version > max_version
-          max_version = condition.version
-        end
-      end
+    versions = conditions_for_course.map { |each| each.version }
+    max_version = versions.max
+    if max_version.nil?
+      return 0
+    else
+      return max_version
     end
-    
-    return max_version
   end
 
 end
