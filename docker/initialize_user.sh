@@ -19,7 +19,7 @@ done
   read -p 'First Name: ' first_name
   read -p 'Last Name: ' last_name
 
-  RAILS_ENV=production bundle exec rake admin:create_root_user[$email,"$password","$first_name","$last_name"]
+  RAILS_ENV=production bundle exec rails admin:create_root_user[$email,"$password","$first_name","$last_name"]
 }
 
 add_a_user
