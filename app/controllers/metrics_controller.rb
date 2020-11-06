@@ -21,4 +21,24 @@ class MetricsController < ApplicationController
 			return
 		end
 	end
+
+	action_auth_level :get_watchlist_instances, :instructor
+	def get_watchlist_instances
+		# This API endpoint retrieves the watchlist instances for a particular course
+		# On success, a JSON list of watchlist instances will be returned
+		# params required would be the course name
+		# each watchlist instance will contain course_user_datum, course_id, risk_condition_id
+		# status (new, resolved, contacted), archived or not, and violation info 
+		# (a json containing more info pertaining to violation)
+		# On error, a 404 error is returned
+		begin
+			course_name = params[:course_name]
+			conditions = WatchlistInstance.get_instances_for_course(course_name)
+			render json: conditions
+		rescue => error
+			render :text => 'Not Found', :status => '404'
+			return
+		end
+	end
+
 end

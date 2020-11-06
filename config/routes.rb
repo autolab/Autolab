@@ -71,6 +71,7 @@ Rails.application.routes.draw do
     
     get "metrics", to: 'metrics#index'
     get 'metrics/get_current_metrics', to: 'metrics#get_current_metrics'
+    get 'metrics/get_watchlist_instances', to: 'metrics#get_watchlist_instances'
 
     resources :jobs, only: :index do
       get "getjob", on: :member
