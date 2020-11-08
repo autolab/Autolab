@@ -35,7 +35,6 @@ $(document).ready(function(){
 		$('[type="checkbox"]').change(function() {
 			$('#save').removeClass('disabled');
 		});
-
 		
 		$(window).bind('beforeunload', function(){
 			if (!$('#save').hasClass('disabled')) {
