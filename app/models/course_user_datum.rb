@@ -21,6 +21,7 @@ class CourseUserDatum < ApplicationRecord
   has_many :extensions, dependent: :destroy
   has_many :scores, through: :submissions
   has_many :assessment_user_data, dependent: :destroy
+  has_many :watchlist_instances, dependent: :destroy
 
   attr_readonly :course_id
   before_save :strip_html
