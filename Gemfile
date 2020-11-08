@@ -13,7 +13,7 @@ gem 'materialize-sass'
 gem 'bootstrap-sass', '>= 3.4.1'
 
 # Use for Metrics page
-gem 'semantic-ui-sass'
+gem 'fomantic-ui-sass'
 
 # Use Uglifier as compressor for JavaScript assets
 gem 'uglifier', '>= 1.3.0'
