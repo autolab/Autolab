@@ -1,0 +1,29 @@
+<% if local_assigns[:student_name] then %>
+<div class="ui segment">
+  <div class="ui checkbox">
+    <input type="checkbox" name="select_all"/>
+    <label>
+      <p> <%= student_name %> </p>
+    </label>
+  </div>
+  <% if local_assigns[:grace_days] then %>
+  <div class="ui circular label"> <%= grace_days %> grace days used</div>
+  <% end %>
+
+  <% if local_assigns[:missing_submissions] then %>
+  <div class="ui circular label"> <%= missing_submissions %> missing submission</div>
+  <% end %>
+
+  <% if local_assigns[:downward_trend] then %>
+  <div class="ui circular label">Downward trend</div>
+  <% end %>
+  <% if local_assigns[:low_scores] then %>
+  <div class="ui circular label"> <%= low_scores %> low scores</div>
+  <% end %>
+
+  <div class="students-buttons-right"> 
+    <button class="ui submit tiny button"><i class="mail outline icon"></i>CONTACT</button>
+    <button class="ui submit tiny button"><i class="check circle icon"></i>RESOLVE</button>
+  </div>
+</div>
+<% end %>

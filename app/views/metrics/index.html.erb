@@ -4,134 +4,221 @@
 <% end %>
 
 <% content_for :javascripts do %>
-	<%= javascript_include_tag "metrics" %>
+  <%= javascript_include_tag "metrics" %>
 <% end %>
+
+<!-- TODO: Remove hard coded values  -->
+<% @defined_metrics = true %>
+<% @new_students = 3 %>
+<% @contacted_students = 0 %>
+<% @resolved_students = 0 %>
+<% @archived_students = 0 %>
 
 <div class="ui pointing secondary tabular menu">
   <a class="item active" data-tab="watchlist">Watchlist</a>
   <a class="item" data-tab="risk metrics">Risk Metrics</a>
 </div>
 <div class="ui tab active" data-tab="watchlist" id="watchlist_tab">
-  Watchlist goes here
+  <% if @defined_metrics and @new_students > 0 then %>
+    <div class="top-bar">
+      <div class="ui checkbox"><input type="checkbox" name="select_all"/></div>
+        <button class="ui submit small button" id="contact_button"><i class="mail outline icon"></i>CONTACT</button>
+        <button class="ui submit small button" id="resolve_button"><i class="check circle icon"></i>RESOLVE</button>
+      <div class="last-updated">
+        <h5> Last Updated 10/20/2020 at 11:50pm <i class="repeat link icon"></i></h5>
+      </div>
+    </div>
+  <% end %>
+  <br>
+  <div class="ui grid">
+    <div class="three wide column">
+      <div class="ui vertical fluid tabular menu">
+        <a class="item active" data-tab="new_tab">New</a>
+        <a class="item" data-tab="contacted_tab">Contacted</a>
+        <a class="item" data-tab="resolved_tab">Resolved</a>
+        <a class="item" data-tab="archived_tab">Archived</a>
+      </div>
+    </div>
+    <div class="thirteen wide column">
+      <% if @defined_metrics then %>
+        <div class="ui tab segments active" data-tab="new_tab">
+          <% if @new_students > 0 then %>
+            <!-- TODO: Remove rendering -->
+            <%= render partial: 'student_row', locals: {student_name: "Jane Doe", grace_days: 3, low_scores: 2} %>
+            <%= render partial: 'student_row', locals: {student_name: "Emily Lee", missing_submissions: 2} %>
+            <%= render partial: 'student_row', locals: {student_name: "John Smith", downward_trend: 1} %>
+          <% else %>
+            <div id="undefined_metrics">
+              <center>
+                <i class="huge inbox icon"></i> 
+                <h3> There are no new students at risk </h3>
+              </center>
+            </div>
+          <% end %>
+        </div>
+        <div class="ui tab segments" data-tab="contacted_tab">
+          <% if @contacted_students > 0 then %>
+          <% else %>
+            <div id="undefined_metrics">
+              <center>
+                <i class="huge inbox icon"></i> 
+                <h3> You have not contacted any students </h3>
+              </center>
+            </div>
+          <% end %>
+        </div>
+        <div class="ui tab segments" data-tab="resolved_tab">
+          <% if @resolved_students > 0 then %>
+          <% else %>
+            <div id="undefined_metrics">
+              <center>
+                <i class="huge inbox icon"></i> 
+                <h3> You have not resolved any students </h3>
+              </center>
+            </div>
+          <% end %>
+        </div>
+        <div class="ui tab segments" data-tab="archived_tab">
+          <% if @archived_students > 0 then %>
+          <% else %>
+            <div id="undefined_metrics">
+              <center>
+                <i class="huge inbox icon"></i> 
+                <h3> You have not archived any students </h3>
+              </center>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <div class="ui tab segments active" id="undefined_metrics">
+          <center>
+            <i class="huge inbox icon"></i> 
+            <h3> You have not defined your risk metrics </h3>
+            Set up identification conditions at in the <b>Risk Metrics</b> tab.  <br> 
+            Identified possible at-risk students will appear here. 
+          </center>
+        </div>
+      <% end %>
+    </div>
+  </div>
 </div>
 <div class="ui tab" data-tab="risk metrics">
   <h6> 
-  	Select one or more of the following risk conditions you want to apply. 
+    Select one or more of the following risk conditions you want to apply. 
   </h6>
   <h6>
     <i> 
-  	  These conditions will make up your risk metrics, which will be used to identify students who are at risk in this course. 
-  	</i>
+      These conditions will make up your risk metrics, which will be used to identify students who are at risk in this course. 
+    </i>
   </h6>
   <br>
   <div class="ui form">
-  	<div class="metric">
-			<div class="inline field">
-				<div class="ui checkbox">
-					<input type="checkbox" tabindex="0" class="hidden" name="checkbox1">
-				</div>
-				Students who have used
-				<span>
-					<div class="ui selection dropdown">
-						<input type="hidden" name="grace_days">
-						<i class="dropdown icon"></i>
-						<div class="default text">0</div>
-						<div class="menu">
-							<div class="item" data-value="1">1</div>
-							<div class="item" data-value="2">2</div>
-							<div class="item" data-value="3">3</div>
-						</div>
-					</div>
-				</span>
-				grace days by
-				<span>
-					<div class="ui calendar" id="date">
-						<div class="ui input left icon">
-							<i class="calendar icon"></i>
-							<input type="text" placeholder="Date">
-						</div>
-					</div>
-				</span>
-			</div>
-		</div>
-		<br>
+    <div class="metric">
+      <div class="inline field">
+        <div class="ui checkbox">
+          <input type="checkbox" tabindex="0" class="hidden" name="metrics-checkbox-1">
+        </div>
+        Students who have used
+        <span>
+          <div class="ui selection dropdown">
+            <input type="hidden" name="grace_days">
+            <i class="dropdown icon"></i>
+            <div class="default text">0</div>
+            <div class="menu">
+              <div class="item" data-value="1">1</div>
+              <div class="item" data-value="2">2</div>
+              <div class="item" data-value="3">3</div>
+            </div>
+          </div>
+        </span>
+        grace days by
+        <span>
+          <div class="ui calendar" id="date">
+            <div class="ui input left icon">
+              <i class="calendar icon"></i>
+              <input type="text" placeholder="Date">
+            </div>
+          </div>
+        </span>
+      </div>
+    </div>
+    <br>
 
-		<div class="metric">
-			<div class="inline field">
-				<div class="ui checkbox">
-					<input type="checkbox" tabindex="0" class="hidden" name="checkbox2">
-				</div>
-				Students whose grades have dropped by
-				<span>
-					<input type="text" placeholder="0" name="percentage1">
-				</span>
-				percent within
-				<span>
-					<div class="ui selection dropdown">
-						<input type="hidden" name="number">
-						<i class="dropdown icon"></i>
-						<div class="default text">0</div>
-						<div class="menu">
-							<div class="item" data-value="2">2</div>
-							<div class="item" data-value="3">3</div>
-							<div class="item" data-value="4">4</div>
-						</div>
-					</div>
-				</span>
-				consecutive assignments
-			</div>
-		</div>
-		<br>
+    <div class="metric">
+      <div class="inline field">
+        <div class="ui checkbox">
+          <input type="checkbox" tabindex="0" class="hidden" name="metrics-checkbox-2">
+        </div>
+        Students whose grades have dropped by
+        <span>
+          <input type="text" placeholder="0" name="percentage1">
+        </span>
+        percent within
+        <span>
+          <div class="ui selection dropdown">
+            <input type="hidden" name="number">
+            <i class="dropdown icon"></i>
+            <div class="default text">0</div>
+            <div class="menu">
+              <div class="item" data-value="2">2</div>
+              <div class="item" data-value="3">3</div>
+              <div class="item" data-value="4">4</div>
+            </div>
+          </div>
+        </span>
+        consecutive assignments
+      </div>
+    </div>
+    <br>
 
-		<div class="metric">
-			<div class="inline field">
-				<div class="ui checkbox">
-					<input type="checkbox" tabindex="0" class="hidden" name="checkbox3">
-				</div>
-				Students who did not submit
-				<span>
-					<div class="ui selection dropdown">
-						<input type="hidden" name="number">
-						<i class="dropdown icon"></i>
-						<div class="default text">0</div>
-						<div class="menu">
-							<div class="item" data-value="1">1</div>
-							<div class="item" data-value="2">2</div>
-							<div class="item" data-value="3">3</div>
-						</div>
-					</div>
-				</span>
-				assignments
-			</div>
-		</div>
-		<br>
+    <div class="metric">
+      <div class="inline field">
+        <div class="ui checkbox">
+          <input type="checkbox" tabindex="0" class="hidden" name="metrics-checkbox-3">
+        </div>
+        Students who did not submit
+        <span>
+          <div class="ui selection dropdown">
+            <input type="hidden" name="number">
+            <i class="dropdown icon"></i>
+            <div class="default text">0</div>
+            <div class="menu">
+              <div class="item" data-value="1">1</div>
+              <div class="item" data-value="2">2</div>
+              <div class="item" data-value="3">3</div>
+            </div>
+          </div>
+        </span>
+        assignments
+      </div>
+    </div>
+    <br>
 
-		<div class="metric">
-			<div class="inline field">
-				<div class="ui checkbox">
-					<input type="checkbox" tabindex="0" class="hidden" name="checkbox4">
-				</div>
-				Students with
-				<span>
-					<div class="ui selection dropdown">
-						<input type="hidden" name="number">
-						<i class="dropdown icon"></i>
-						<div class="default text">0</div>
-						<div class="menu">
-							<div class="item" data-value="1">1</div>
-							<div class="item" data-value="2">2</div>
-							<div class="item" data-value="3">3</div>
-						</div>
-					</div>
-				</span>
-				submitted assignments below a percentage of
-				<span>
-					<input type="text" placeholder="0" name="percentage2">
-				</span>
-			</div>
-		</div>
-		<br>
-	
-		<button class="ui disabled submit button" id="save">SAVE</button>
-	</div>
+    <div class="metric">
+      <div class="inline field">
+        <div class="ui checkbox">
+          <input type="checkbox" tabindex="0" class="hidden" name="metrics-checkbox-4">
+        </div>
+        Students with
+        <span>
+          <div class="ui selection dropdown">
+            <input type="hidden" name="number">
+            <i class="dropdown icon"></i>
+            <div class="default text">0</div>
+            <div class="menu">
+              <div class="item" data-value="1">1</div>
+              <div class="item" data-value="2">2</div>
+              <div class="item" data-value="3">3</div>
+            </div>
+          </div>
+        </span>
+        submitted assignments below a percentage of
+        <span>
+          <input type="text" placeholder="0" name="percentage2">
+        </span>
+      </div>
+    </div>
+    <br>
+    <button class="ui disabled submit button" id="save">SAVE</button>
+  </div>
 </div>

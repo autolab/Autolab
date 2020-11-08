@@ -32,19 +32,21 @@ span:after {
 }
 
 .checkbox label::after {
-	border:none;
-	transform:none;
+  border:none;
+  transform:none;
 }
 
 .ui.checkbox .box, .ui.checkbox label {
-	border-top-width:2px;
-	border-left-width:2px;
-	border-bottom-width:2px;
-	border-right-width:2px;
+  border-top-width:2px;
+  border-left-width:2px;
+  border-bottom-width:2px;
+  border-right-width:2px;
 }
 
 div.metric {
-	font-size:16px;
+  font-size:16px;
+  border:none;
+  transform:none;
 }
 
 input[type="text"] {
@@ -72,4 +74,29 @@ input[type="text"] {
   z-index: 0 !important;
   width: 0 !important;
   height: 0 !important;
+}
+
+.ui.tab.segments {
+  margin-bottom: 0em;
+  margin-top: 0em;
+}
+
+.top-bar {
+  padding-left: 21%;
+}
+
+.last-updated{
+  float: right;
+  margin-top: 15px;
+}
+
+.students-buttons-right{
+  display: initial;
+  float: right;
+  margin-top: -4px;
+}
+
+#undefined_metrics{
+  background: rgba(243, 240, 240, 0.9);
+  padding: 10px;
 }
