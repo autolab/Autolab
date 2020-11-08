@@ -32,7 +32,19 @@ $(document).ready(function(){
 	    }
 		});
 
-		$('[type="checkbox"]').change(function() {
+		$('[name="metrics-checkbox-1"]').change(function() {
+			$('#save').removeClass('disabled');
+		});
+
+		$('[name="metrics-checkbox-2"]').change(function() {
+			$('#save').removeClass('disabled');
+		});
+
+		$('[name="metrics-checkbox-3"]').change(function() {
+			$('#save').removeClass('disabled');
+		});
+
+		$('[name="metrics-checkbox-4"]').change(function() {
 			$('#save').removeClass('disabled');
 		});
 		
