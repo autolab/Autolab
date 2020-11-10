@@ -46,36 +46,33 @@ class RiskCondition < ApplicationRecord
 
   def self.update_current_for_course(course_name, params)
     # The code below assumes params[type] contains a hash of the parameters needed for the type
-    # where type is the actual enumeration number
-    # params should also be stripped off of the course_name key for ease of process
-
+    # where type is a string corresponding to the four types defined at the top of this file
     course_id = Course.find_by(name: course_name).id
     max_version = RiskCondition.get_max_version(course_id)
     # Is params empty?
     if params.length == 0 and max_version == 0
-      puts "case 1: max_version = 0 (no previous conditons have been set) and instructor doesn't want any at this point"
+      # puts "case 1: max_version = 0 (no previous conditons have been set) and instructor doesn't want any at this point"
       return []
     elsif max_version > 0
       previous_conditions = RiskCondition.where(course_id: course_id, version: max_version)
-      previous_types = previous_conditions.map { |c| c.condition_type.to_sym }
+      previous_types = previous_conditions.map { |c| c.condition_type }
       if params.length == 0
-        unless previous_types.any? { |t| t == :no_condition_selected }
-          puts "case 2: previous conditions set to something and instructor doesn't want any this time"
+        unless previous_types.any? { |t| t == "no_condition_selected" }
+          # puts "case 2: previous conditions set to something and instructor doesn't want any this time"
           create_condition_for_course_with_type(course_id, 0, {}, max_version + 1)
-        else
-          puts "case 3: previous conditions set to nothing selected and instructor doesn't want any this time either"
+        # else
+        #   puts "case 3: previous conditions set to nothing selected and instructor doesn't want any this time either"
         end
         # indicator row for "currently no conditions selected" that user doesn't need to access
         return []
       else
         conditions = []
         no_change = true
-        condition_types = self.condition_types
         if params.length == previous_types.length
           previous_conditions.map do |c|
-            type_num = condition_types[c.condition_type]
-            unless params[type_num] == c.parameters
+            unless params[c.condition_type] == c.parameters
               no_change = false
+              break
             end
           end
         else
@@ -83,21 +80,21 @@ class RiskCondition < ApplicationRecord
         end
 
         unless no_change
-          puts "case 4: instructor changed conditions this time; previous conditions were either unset, or different from current parameters"
+          # puts "case 4: instructor changed conditions this time; previous conditions were either unset, or different from current parameters"
           params.map do |k, v|
-            new_condition = create_condition_for_course_with_type(course_id, k, v, max_version + 1)
+            new_condition = create_condition_for_course_with_type(course_id, self.condition_types[k], v, max_version + 1)
             conditions << new_condition
           end
-        else
-          puts "case 5: previous conditions and current conditions match and no update is needed"
+        # else
+        #   puts "case 5: previous conditions and current conditions match and no update is needed"
         end
         return conditions
       end
     else
-      puts "case 6: previous conditions were not set (i.e. max_version == 0) and instructor wants to set it to something"
+      # puts "case 6: previous conditions were not set (i.e. max_version == 0) and instructor wants to set it to something"
       conditions = []
       params.map do |k, v|
-        new_condition = create_condition_for_course_with_type(course_id, k, v, max_version + 1)
+        new_condition = create_condition_for_course_with_type(course_id, self.condition_types[k], v, max_version + 1)
         conditions << new_condition
       end
       return conditions

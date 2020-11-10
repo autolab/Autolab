@@ -48,23 +48,35 @@ class MetricsController < ApplicationController
 		# The request parameters must take on the following format:
 		# params[type_a] is nil if instructor does not want to include a risk condition of type_a during update
 		# params[type_a] is an object satisfying the parameter requirement for type_a condition
-		# e.g. params[1] should have form { :grace_day_threshold => 3, :date => "2020-03-05" }
+		# e.g. params["grace_day_usage"] should have form { "grace_day_threshold" => 3, "date" => "2020-03-05" }
 		# Currently, four types of risk conditions are supported:
-		# 1 for :grace_day_usage with parameters :grace_day_threshold, :date
-		# 2 for :grade_drop with parameters :percentage_drop, :consecutive_counts
-		# 3 for :no_submission with parameter :no_submissions_threshold
-		# 4 for :low_grades with parameters :grade_threshold, :count_threshold
-		# 0 is reserved for when a course assistant deselects all conditions; user of this endpoint doesn't need to account for this
-		# On error, a flash error message will be shown and nil gets returned
+		# "grace_day_usage" with parameters "grace_day_threshold", "date"
+		# "grade_drop" with parameters "percentage_drop", "consecutive_counts"
+		# "no_submissions" with parameter "no_submissions_threshold"
+		# "low_grades" with parameters "grade_threshold", "count_threshold"
+		# On error, a flash error message will be rendered and nil gets returned
 		begin
 			course_name = params[:course_name]
-			# TODO: need to further investigate what form data passed in takes on
-			conditions = RiskCondition.update_current_for_course(course_name, params.except(:course_name))
-			# TODO: what exactly does render do?
+			params_filtered = new_metrics_params
+			if params_filtered.nil?
+				params_filtered = {}
+			else
+				params_filtered = params_filtered.to_h
+			end
+			conditions = RiskCondition.update_current_for_course(course_name, params_filtered)
 			render json: conditions
 		rescue => error
-			flash[:error] => error.message
-			return
+			flash[:error] = error.message
+			render json: {}
 		end
+	end
+
+private
+	
+	def new_metrics_params
+		return params.require(:metric).permit(:grace_day_usage => [:grace_day_threshold, :date],
+											  :grade_drop => [:percentage_drop, :consecutive_counts],
+											  :no_submissions => [:no_submissions_threshold],
+											  :low_grades => [:grade_threshold, :count_threshold]) if params[:metric].present?
 	end
 end
