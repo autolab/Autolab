@@ -35,13 +35,19 @@ db/autolab_development
 db/autolab_test
 db/*.sqlite3
 
+# Mkdocs generated site
+site/
+
 # misc
 *.swp
 tags
 .DS_Store
 .idea/
 .yardoc
-/docker/nginx.conf
+app/views/home/_topannounce.html.erb
+attachments/
+doc/
+out.txt
 .vscode/
 .byebug_history
 .env

@@ -55,15 +55,7 @@
     setActiveFilePos(currentHeaderPos)
     initializeAnnotationsForCode();
     attachEvents();
-    // Set up file switching to use the local cache
-    $(".file").on("click", function(e) {
-    wasCachedLocally = changeFile($(this).data("header_position"));
-    if (wasCachedLocally) {
-      e.preventDefault();
-      return false;
-    }
-    return true;
-  });
+    attachChangeFileEvents();
   </script>
 
   <script>
