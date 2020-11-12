@@ -41,4 +41,16 @@ class MetricsController < ApplicationController
 		end
 	end
 
+	action_auth_level :refresh_watchlist_instances, :instructor
+	def refresh_watchlist_instances
+		begin
+			course_name = params[:course_name]
+			new_instances = WatchlistInstance.refresh_instances_for_course(course_name)
+			render json: new_instances
+		rescue => error
+			flash[:error] = error.message
+			return
+		end
+	end
+
 end
