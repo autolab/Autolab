@@ -43,15 +43,12 @@ class MetricsController < ApplicationController
 
 	action_auth_level :update_watchlist_instances, :instructor
 	def update_watchlist_instances
-		# This API endpoint retrieves the watchlist instances for a particular course
-		# On success, a JSON list of watchlist instances will be returned
+		# This API endpoint updates watchlist instances for a particular course
+		# On success, the watchlist instance will be updated appropriately
 		# params required would be the course name
-		# each watchlist instance will contain course_user_datum, course_id, risk_condition_id
-		# status (new, resolved, contacted), archived or not, and violation info 
-		# (a json containing more info pertaining to violation)
-		# On course not found, a 404 error is returned
-		# {'action':'contact',ids:[ids]}
-		# 
+		# example json body {"method":"resolve","ids":[1,2,3]}
+		# method: update, resolve
+		# ids: [1,2,3...] list of ids to be updated
 		
 		begin
 			course_name = params[:course_name]
