@@ -160,6 +160,7 @@ GEM
     mini_racer (0.2.9)
       libv8 (>= 6.9.411)
     minitest (5.14.0)
+    moment_timezone-rails (0.5.0)
     momentjs-rails (2.20.1)
       railties (>= 3.1)
     multi_json (1.14.1)
@@ -357,6 +358,7 @@ DEPENDENCIES
   materialize-sass
   mimemagic (>= 0.3.5)
   mini_racer
+  moment_timezone-rails
   momentjs-rails (>= 2.9.0)
   mysql2 (~> 0.4.10)
   net-ldap
