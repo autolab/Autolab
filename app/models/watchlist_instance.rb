@@ -15,6 +15,10 @@ class WatchlistInstance < ApplicationRecord
 
   def self.contact_many_watchlist_instances(instance_ids)
     instances = WatchlistInstance.where(id:instance_ids)
+    if instance_ids.length() != instances.length()
+      found_instance_ids = instances.map{|instance| instance.id}
+      raise "Instance ids #{instance_ids - found_instance_ids} cannot be found"
+    end
     ActiveRecord::Base.transaction do
       instances.each do |instance|
         instance.contact_watchlist_instance
@@ -24,6 +28,10 @@ class WatchlistInstance < ApplicationRecord
   
   def self.resolve_many_watchlist_instances(instance_ids)
     instances = WatchlistInstance.where(id:instance_ids)
+    if instance_ids.length() != instances.length()
+      found_instance_ids = instances.map{|instance| instance.id}
+      raise "Instance ids #{instance_ids - found_instance_ids} cannot be found"
+    end
     ActiveRecord::Base.transaction do
       instances.each do |instance|
         instance.resolve_watchlist_instance
