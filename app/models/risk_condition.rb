@@ -17,15 +17,15 @@ class RiskCondition < ApplicationRecord
        (type == 2 && (params[:percentage_drop].nil? || params[:consecutive_counts].nil? || params.length != 2)) ||
        (type == 3 && (params[:no_submissions_threshold].nil? || params.length != 1)) ||
        (type == 4 && (params[:grade_threshold].nil? || params[:count_threshold].nil? || params.length != 2))
-      raise "Parameters for risk condition does not match type!"
+      raise "Invalid update parameters for risk conditions! Make sure your request body fits the criteria!"
     end
 
     options = { course_id: course_id, condition_type: type, parameters: params, version: version }
-    newRiskCondition = RiskCondition.new(options)
-    if not newRiskCondition.save
+    new_risk_condition = RiskCondition.new(options)
+    if not new_risk_condition.save
       raise "Fail to create new risk condition with type #{type} for course #{course_id}"
     end
-    return newRiskCondition
+    return new_risk_condition
   end
 
   def self.get_current_for_course(course_name)
@@ -53,49 +53,41 @@ class RiskCondition < ApplicationRecord
     if params.length == 0 and max_version == 0
       # puts "case 1: max_version = 0 (no previous conditons have been set) and instructor doesn't want any at this point"
       return []
-    elsif max_version > 0
-      previous_conditions = RiskCondition.where(course_id: course_id, version: max_version)
-      previous_types = previous_conditions.map { |c| c.condition_type }
-      if params.length == 0
-        unless previous_types.any? { |t| t == "no_condition_selected" }
-          # puts "case 2: previous conditions set to something and instructor doesn't want any this time"
-          create_condition_for_course_with_type(course_id, 0, {}, max_version + 1)
-        # else
-        #   puts "case 3: previous conditions set to nothing selected and instructor doesn't want any this time either"
-        end
-        # indicator row for "currently no conditions selected" that user doesn't need to access
-        return []
-      else
-        conditions = []
-        no_change = true
-        if params.length == previous_types.length
-          previous_conditions.map do |c|
-            unless params[c.condition_type] == c.parameters
-              no_change = false
-              break
-            end
-          end
-        else
-          no_change = false
-        end
-
-        unless no_change
-          # puts "case 4: instructor changed conditions this time; previous conditions were either unset, or different from current parameters"
-          params.map do |k, v|
-            new_condition = create_condition_for_course_with_type(course_id, self.condition_types[k], v, max_version + 1)
-            conditions << new_condition
-          end
-        # else
-        #   puts "case 5: previous conditions and current conditions match and no update is needed"
-        end
-        return conditions
+    end
+    
+    previous_conditions = RiskCondition.where(course_id: course_id, version: max_version)
+    previous_types = previous_conditions.map { |c| c.condition_type }
+    if params.length == 0
+      if previous_types.length > 0 and not previous_types.any? { |t| t == "no_condition_selected" }
+        # puts "case 2: previous conditions set to something and instructor doesn't want any this time"
+        create_condition_for_course_with_type(course_id, 0, {}, max_version + 1)
+      # else
+      #   puts "case 3: previous conditions set to nothing selected and instructor doesn't want any this time either"
       end
+      # indicator row for "currently no conditions selected" that user doesn't need to access
+      return []
     else
-      # puts "case 6: previous conditions were not set (i.e. max_version == 0) and instructor wants to set it to something"
       conditions = []
-      params.map do |k, v|
-        new_condition = create_condition_for_course_with_type(course_id, self.condition_types[k], v, max_version + 1)
-        conditions << new_condition
+      no_change = true
+      if params.length == previous_types.length
+        previous_conditions.map do |c|
+          unless params[c.condition_type] == c.parameters
+            no_change = false
+            break
+          end
+        end
+      else
+        no_change = false
+      end
+
+      unless no_change
+        # puts "case 4: instructor changed conditions this time; previous conditions were either unset, or different from current parameters"
+        params.map do |k, v|
+          new_condition = create_condition_for_course_with_type(course_id, self.condition_types[k], v, max_version + 1)
+          conditions << new_condition
+        end
+      # else
+      #   puts "case 5: previous conditions and current conditions match and no update is needed"
       end
       return conditions
     end

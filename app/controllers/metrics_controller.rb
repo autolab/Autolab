@@ -17,7 +17,7 @@ class MetricsController < ApplicationController
 			conditions = RiskCondition.get_current_for_course(course_name)
 			render json: conditions
 		rescue => error
-			flash[:error] = error.message
+			render :text => 'Not Found', :status => '404'
 			return
 		end
 	end
@@ -63,11 +63,14 @@ class MetricsController < ApplicationController
 			else
 				params_filtered = params_filtered.to_h
 			end
+			if params_filtered != params[:metric]
+				raise "Invalid update parameters for risk conditions! Make sure your request body fits the criteria!"
+			end
 			conditions = RiskCondition.update_current_for_course(course_name, params_filtered)
 			render json: conditions
 		rescue => error
-			flash[:error] = error.message
-			render json: {}
+			render json: { error: error.message }, status: :bad_request
+			return
 		end
 	end
 
