@@ -69,10 +69,12 @@ Rails.application.routes.draw do
         get "run"
     end
     
-    get "metrics", to: 'metrics#index'
-    get 'metrics/get_current_metrics', to: 'metrics#get_current_metrics'
-    get 'metrics/get_watchlist_instances', to: 'metrics#get_watchlist_instances'
-    post 'metrics/update_watchlist_instances', to: 'metrics#update_watchlist_instances'
+    resource :metrics, only: :index do
+      get "index"
+      get 'get_current_metrics'
+      get 'get_watchlist_instances'
+      post 'update_watchlist_instances'
+    end
     
     resources :jobs, only: :index do
       get "getjob", on: :member

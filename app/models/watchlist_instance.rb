@@ -13,6 +13,24 @@ class WatchlistInstance < ApplicationRecord
     return WatchlistInstance.where(course_id:course_id)
   end 
 
+  def self.contact_many_watchlist_instances(instance_ids)
+    instances = WatchlistInstance.where(id:instance_ids)
+    ActiveRecord::Base.transaction do
+      instances.each do |instance|
+        instance.contact_watchlist_instance
+      end
+    end
+  end
+  
+  def self.resolve_many_watchlist_instances(instance_ids)
+    instances = WatchlistInstance.where(id:instance_ids)
+    ActiveRecord::Base.transaction do
+      instances.each do |instance|
+        instance.resolve_watchlist_instance
+      end
+    end
+  end
+
   def archive_watchlist_instance
     if self.new_watchlist?
       self.destroy

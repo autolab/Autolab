@@ -36,7 +36,7 @@ class MetricsController < ApplicationController
 			instances = WatchlistInstance.get_instances_for_course(course_name)
 			render json: instances
 		rescue => error
-			render :text => 'Not Found', :status => '404'
+			render json: {error:error.message}, status: :not_found
 			return
 		end
 	end
@@ -49,31 +49,39 @@ class MetricsController < ApplicationController
 		# each watchlist instance will contain course_user_datum, course_id, risk_condition_id
 		# status (new, resolved, contacted), archived or not, and violation info 
 		# (a json containing more info pertaining to violation)
-		# On error, a 404 error is returned
+		# On course not found, a 404 error is returned
+		# {'action':'contact',ids:[ids]}
+		# 
 		
 		begin
 			course_name = params[:course_name]
 		rescue => error
-			render :text => "Not Found", :status => '404'
+			render json:  {error:"Course Not Found"}, :status => :not_found
 			return
 		end
-
+		
 		begin
-		update = params[:update]
-			instances = WatchlistInstance.get_instances_for_course(course_name)
-			instances.each do |instance|
-				case update[instance.risk_condition_id]
-				when "contact"
-					instance.contact_watchlist_instance
-				when "resolve"
-					instance.resolve_watchlist_instance
-				end
+			if params[:method].nil?
+				raise "Method not defined"
+			end
+
+			if params[:ids].nil?
+				raise "No ids given"
+			end
+
+			case params[:method]
+			when "contact"
+				WatchlistInstance.contact_many_watchlist_instances(params[:ids])
+			when "resolve"
+				WatchlistInstance.resolve_many_watchlist_instances(params[:ids])
+			else
+				raise "Method #{params[:method]} not allowed"  
 			end
 		rescue => error
-			render :text=> error, :status => '403'
+			render json: {error:error.message}, status: :method_not_allowed
 			return
 		end
 
-		return :text => "Successfully updated instances", :status=>"200"
+		render json: {message:"Successfully updated instances"}, :status => :ok
 	end
 end
