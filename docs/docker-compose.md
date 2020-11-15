@@ -1,19 +1,74 @@
 # Autolab + Tango Docker Compose Installation
 
-The Autolab Docker Compose installation is a production-ready installation and deployment method. It uses a MySQL database for the Autolab deployment, and comes with SSL support. This is now the preferred way of installing Autolab.
+The Autolab Docker Compose installation is a fast and easy production-ready installation and deployment method. It uses a MySQL database for the Autolab deployment, and comes with SSL support. This is now the preferred way of installing Autolab.
 
 The Docker Compose installation method is relatively new and so you may likely run into issues. If you are stuck or find issues with the installation process please join our Slack [here](https://autolab-slack.herokuapp.com/) and let us know and we will try our best to help. Also see the [debugging](#debugging) section for tips on how to diagnose problems.
 
 ## Installation
-Under Construction
+First ensure that you have Docker and Docker Compose installed on your machine. See the official [Docker docs](See https://docs.docker.com/install/) for the installation steps.
 
-## Configuring SSL
-Under Construction
+1. Clone this repository and its submodules: `git clone --recurse-submodules -j8 git://github.com/autolab/docker.git autolab-docker`
+2. Enter the project directory: `cd autolab-docker`
+3. Update submodules: `make update`
+4. Create initial configs: `make`
+5. Build the Dockerfiles: `docker-compose build`
+6. Run the containers: `docker-compose up -d`. Note at this point Nginx will still be crash-looping in the Autolab container because SSL has not been configuired/disabled yet.
+7. Ensure that the newly created config files have the right permissions: `make set-perms`
+8. Perform migrations: `make db-migrate`
+9. Create initial root user: `make create-user`
+10. Stop all containers: `docker-compose stop`
+11. Continue with TLS setup as outlined in the next section
 
-## Updating
-Under Construction
+## Configuring SSL/TLS
+There are three options for TLS: using Let's Encrypt (for free TLS certificates), using your own certificate, and not using TLS (not recommended for production deployment).
 
-## Debugging
+### Option 1: Let's Encrypt
+1. Ensure that your DNS record points towards the IP address of your server
+2. Ensure that port 443 is exposed on your server (i.e checking your firewall, AWS security group settings, etc)
+3.  Get initial SSL setup script: `make ssl`
+4. In `ssl/init-letsencrypt.sh`, change `domains=(example.com)` to the list of domains that your host is associated with, and change `email` to be your email address so that Let's Encrypt will be able to email you when your certificate is about to expire
+5. If necessary, change `staging=0` to `staging=1` to avoid being rate-limited by Let's Encrypt since there is a limit of 20 certificates/week. Setting this is helpful if you have an experimental setup.
+6. Run your modified script: `sudo sh ./ssl/init-letsencrypt.sh`
+
+### Option 2: Using your own TLS certificate
+1. Copy your private key to ./ssl/privkey.pem
+2. Copy your certificate to ./ssl/fullchain.pem
+3. Generate your dhparams, i.e `openssl dhparam -out ./ssl/ssl-dhparams.pem 4096`
+4. Uncomment the following lines in `docker-compose.yml`:
+```
+    # - ./ssl/fullchain.pem:/etc/letsencrypt/live/test.autolab.io/fullchain.pem;
+    # - ./ssl/privkey.pem:/etc/letsencrypt/live/test.autolab.io/privkey.pem;
+    # - ./ssl/ssl-dhparams.pem:/etc/letsencrypt/ssl-dhparams.pem
+```
+
+### Option 3: No TLS (not recommended, only for local development/testing)
+1. In `docker-compose.yml` (for all the subsequent steps), comment out the following:
+
+``` 
+    # Comment the below out to disable SSL (not recommended)
+    - ./nginx/app.conf:/etc/nginx/sites-enabled/webapp.conf
+```
+    
+Also uncomment the following:
+
+```
+   # Uncomment the below to disable SSL (not recommended)
+   # - ./nginx/no-ssl-app.conf:/etc/nginx/sites-enabled/webapp.conf
+```
+    
+Lastly set `DOCKER_SSL=false`:
+```
+    environment:
+      - DOCKER_SSL=true                         # set to false for no SSL (not recommended)
+```
+
+## Updating Autolab/Tango Deployment
+1. Stop your running instances: `docker-compose stop`
+2. Run `make update` to update your Autolab and Tango repositories
+3. Run `docker-compose build` to rebuild the images with the latest code
+4. Re-deploy your containers with `docker-compose up`
+
+## Debugging your Deployment
 In the (very likely) event that you run into problems during setup, hopefully these steps will help you to help identify and diagnose the issue. If you continue to face difficulties or believe you discovered issues with the setup process please join our Slack [here](https://autolab-slack.herokuapp.com/) and let us know and we will try our best to help.
 
 ### Better logging output for Docker Compose

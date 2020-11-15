@@ -2,7 +2,9 @@
 
 Autolab is a course management platform that enables instructors to offer autograded programming assignments to their students. The two key ideas in Autolab are _autograding_ that is, programs evaluating other programs, and _scoreboards_ that display the latest autograded scores for each student. Autolab also provides gradebooks, rosters, handins/handouts, lab writeups, code annotation, manual grading, late penalties, grace days, cheat checking, meetings, partners, and bulk emails.
 
-For information on how to use Autolab for your course see the [Guide for Instructors](/instructors). To learn how to write an autograded lab see the [Guide for Lab Authors](/lab). To get straight to an installation, go to [Getting Started](#getting-started)
+You can install Autolab easily by using our recommended [Docker Compose installation](/docker-compose) guide, or by following the steps from a manual install at [Getting Started](#getting-started).
+
+For information on how to use Autolab for your course see the [Guide for Instructors](/instructors). To learn how to write an autograded lab see the [Guide for Lab Authors](/lab). 
 
 ## Demonstration Site
 If you would like to check out Autolab prior to installation, go over to our <a href="https://demo.autolabproject.com" target="_blank">Demo Site</a>! Login through `Developer Login` with the email: `admin@foo.bar`. 
@@ -59,6 +61,8 @@ Click on `Grade Submissions`, and then the arrow button to open up student submi
 Autolab consists of two services: (1) the Ruby on Rails frontend, and (2) [Tango](/tango), the RESTful Python autograding server. Either service can run independently without the other. But in order to use all features of Autolab, we highly recommend installing both services.
 
 Currently, we have support for installing Autolab on [Ubuntu 18.04+](#ubuntu-1804), and [Mac OSX](#mac-osx-1011).
+
+The following instructions are for manual installation of Autolab. We strongly encourage you to try out the [Docker Compose](/docker-compose) installation method which is much faster and easier. It is production ready and comes deployed with MySQL and TLS.
 
 ### Mac OSX 10.11+
 
