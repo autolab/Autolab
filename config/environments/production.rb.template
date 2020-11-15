@@ -104,4 +104,6 @@ Autolab3::Application.configure do
   # ID for Heap Analytics
   config.x.analytics_id = nil
 
+  # ID for Google Analytics
+  config.x.google_analytics_id = nil
 end

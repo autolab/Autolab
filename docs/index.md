@@ -136,22 +136,22 @@ Follow the step-by-step instructions below:
 
         :::bash
         cp config/initializers/devise.rb.template config/initializers/devise.rb
-        sed -i "s/<YOUR-SECRET-KEY>/`bundle exec rake secret`/g" config/initializers/devise.rb
+        sed -i "s/<YOUR-SECRET-KEY>/`bundle exec rails secret`/g" config/initializers/devise.rb
 
     Fill in `<YOUR_WEBSITE>` in the `config/initializers/devise.rb` file. To skip this step for now, fill with `foo.bar`.
 
 11. Create and initialize the database tables:
 
         :::bash
-        bundle exec rake db:create
-        bundle exec rake db:migrate
+        bundle exec rails db:create
+        bundle exec rails db:migrate
 
     Do not forget to use `bundle exec` in front of every rake/rails command.
 
 12. Populate dummy data (development only):
 
         :::bash
-        bundle exec rake autolab:populate
+        bundle exec rails autolab:populate
 
 13. Start the rails server:
 
@@ -246,7 +246,7 @@ Following instructions from [How to Install MySQL on Ubuntu](https://www.digital
         cp config/database.yml.template config/database.yml
         cp config/school.yml.template config/school.yml
         cp config/initializers/devise.rb.template config/initializers/devise.rb
-        sed -i "s/<YOUR-SECRET-KEY>/`bundle exec rake secret`/g" config/initializers/devise.rb
+        sed -i "s/<YOUR-SECRET-KEY>/`bundle exec rails secret`/g" config/initializers/devise.rb
         cp config/autogradeConfig.rb.template config/autogradeConfig.rb
 
 10. (Using MySQL) Editing Database YML.
@@ -304,15 +304,15 @@ Comment out the configurations meant for MySQL in config/database.yml, and inser
 
         :::bash
         cd Autolab
-        bundle exec rake db:create
-        bundle exec rake db:reset
-        bundle exec rake db:migrate
+        bundle exec rails db:create
+        bundle exec rails db:reset
+        bundle exec rails db:migrate
 
 13. Populating sample course & students
 
         :::bash
         cd Autolab
-        bundle exec rake autolab:populate
+        bundle exec rails autolab:populate
 
 14. Run Autolab!
 
