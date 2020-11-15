@@ -7,7 +7,13 @@ $(document).ready(function() {
     var defaults = {
       enableTime: true,
       altInput: true,
-      defaultDate: new Date(moment(elt.val()))
+      defaultDate: moment(elt.val(), elt.data("date-format")).toDate(),
+      parseDate: (datestr, format) => {
+        return moment(datestr, format, true).toDate();
+      },
+      formatDate: (date, format) => {
+        return moment(date).format(format);
+      },
     }
     Object.assign(defaults, config);
     /* Invoke flatpickr library */

@@ -95,6 +95,7 @@ gem 'js_cookie_rails'
 
 # Dates and times
 gem 'momentjs-rails', '>= 2.9.0'
+gem 'moment_timezone-rails'
 gem 'bootstrap3-datetimepicker-rails', '>= 4.17.47'
 
 # Force SSL on certain routes

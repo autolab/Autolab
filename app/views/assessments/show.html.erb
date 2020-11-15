@@ -153,11 +153,11 @@
         <p class="valign-wrapper">
           <i class="material-icons valign">access_time</i>
             &nbsp;&nbsp;Due<% if @extension then %>&nbsp;(with <%=@extension.days %> day extension)<% end %>:&nbsp;
-            <b><span class="moment-date-time" data-format="MMMM Do YYYY, h:mm a"> <%= due_at_display @aud.due_at %></span></b>
+            <b><span class="moment-date-time" data-format="MMMM Do YYYY, h:mm a z"> <%= due_at_display @aud.due_at %></span></b>
         </p>
 
         <p class="valign-wrapper">
-          <i class="valign material-icons">today</i>&nbsp;&nbsp;Last day to handin:&nbsp;&nbsp;<b><span class="moment-date-time" data-format="MMMM Do YYYY, h:mm a"> <%= end_at_display(@aud.end_at false) %></span></b>
+          <i class="valign material-icons">today</i>&nbsp;&nbsp;Last day to handin:&nbsp;&nbsp;<b><span class="moment-date-time" data-format="MMMM Do YYYY, h:mm a z"> <%= end_at_display(@aud.end_at false) %></span></b>
         </p>
 
         <% if @cud.instructor? and @assessment.exam? %>
