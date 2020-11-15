@@ -48,7 +48,10 @@ class MetricsController < ApplicationController
 			new_instances = WatchlistInstance.refresh_instances_for_course(course_name)
 			render json: new_instances
 		rescue => error
-			flash[:error] = error.message
+			render json: { error: error.message }, status: :bad_request
+			return
+		end
+	end
 
 	action_auth_level :update_current_metrics, :instructor
 	def update_current_metrics
@@ -91,5 +94,5 @@ private
 											  :no_submissions => [:no_submissions_threshold],
 											  :low_grades => [:grade_threshold, :count_threshold]) if params[:metric].present?
 	end
->>>>>>> metrics-feature
+
 end
