@@ -17,7 +17,8 @@ nav:
           - REST API: tango-rest.md
           - VMMS Docs: tango-vmms.md
           - Deploying Tango: tango-deploy.md
-    - OneClick Install: one-click.md
+    - Docker Compose Install: docker-compose.md
+    - (Legacy) OneClick Install: one-click.md
 theme:
     name: material
     palette:
@@ -28,9 +29,9 @@ repo_name: "Autolab"
 repo_url: "https://github.com/Autolab/autolab"
 extra:
     social:
-        - type: "github"
-          link: "https://github.com/Autolab"
-        - type: "facebook"
+        - icon: fontawesome/brands/github-alt
+          link: https://github.com/Autolab
+        - icon: fontawesome/brands/facebook
           link: "https://facebook.com/autolabproject"
 google_analytics:
     - "UA-79424729-3"
