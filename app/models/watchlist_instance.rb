@@ -118,140 +118,149 @@ class WatchlistInstance < ApplicationRecord
 private
   
   def self.add_new_instances_for_conditions(conditions, course)
-    # grace_day_usage: grace_day_threshold x and date y
-    # grade_drop => percentage_drop x, consecutive_counts y
-    # no_submissions => no_submissions_threshold x
-    # low_grades => grade_threshold x, count_threshold y
     new_instances = []
     course_user_data = CourseUserDatum.where(course_id: course.id, instructor: false, course_assistant: false)
-    for condition in conditions
-      puts "#{condition.condition_type} with params #{condition.parameters}"
-      case condition.condition_type
-      
-      when "grace_day_usage"
-        grace_day_threshold = condition.parameters[:grace_day_threshold]
-        date = condition.parameters[:date]
-        asmts = course.assessments.ordered
-        for cud in course_user_data
-          asmts_before_date = asmts.where("updated_at < ?", date)
-          latest_asmt = asmts_before_date.last
-          next if latest_asmt.nil?
-          auds_before_date = asmts_before_date.map { |asmt| AssessmentUserDatum.find_by(course_user_datum_id: cud.id, assessment_id: asmt.id) }
-          # select as an assertion
-          auds_before_date.select! { |aud| not aud.nil? }
-          latest_aud_before_date = auds_before_date.last
-          if latest_aud_before_date.global_cumulative_grace_days_used >= grace_day_threshold
-            violation_info = {}
-            auds_before_date.map do |aud|
-              violation_info[aud.assessment.display_name] = aud.grace_days_used if aud.grace_days_used > 0
-            end
-            puts "Course user datum #{cud.id} with violation info #{violation_info}"
-            new_instance = WatchlistInstance.new(course_user_datum_id: cud.id, course_id: course.id,
-                                                 risk_condition_id: condition.id,
-                                                 violation_info: violation_info)
-            if not new_instance.save
-              raise "Fail to create new watchlist instance for CUD #{cud.id} in course #{course.name} with violation info #{violation_info}"
-            end
-            new_instances << new_instance;
-          end
-        end
-
-      when "grade_drop"
-        percentage_drop = (condition.parameters[:percentage_drop]).to_f
-        consecutive_counts = condition.parameters[:consecutive_counts]
+    # HUGE TRANSACTION AHEAD
+    ActiveRecord::Base.transaction do
+      for condition in conditions
+        case condition.condition_type
         
-        categories = course.assessment_categories
-        asmt_arrs = categories.map { |category| course.assessments_with_category(category).ordered }
-        asmt_arrs.select! { |asmts| asmts.length >= consecutive_counts}
-        for cud in course_user_data
-          violation_info = {}
-          for asmts in asmt_arrs
-            auds = asmts.map { |asmt| AssessmentUserDatum.find_by(course_user_datum_id: cud.id, assessment_id: asmt.id) }
-            puts "category #{asmts[0].display_name}"
-            # select as an assertion
-            auds.select! { |aud| not aud.nil? }
-            violating_pairs = []
-            i = 0
-            while i+consecutive_counts-1 < auds.length
-              puts i
-              begin_aud = auds[i]
-              end_aud = auds[i+consecutive_counts-1]
-              begin_grade = begin_aud.final_score(cud)
-              end_grade = end_aud.final_score(cud)
-              if end_grade >= begin_grade
+        when "grace_day_usage"
+          grace_day_threshold = condition.parameters[:grace_day_threshold]
+          date = condition.parameters[:date]
+          asmts = course.assessments.ordered
+          for cud in course_user_data
+            asmts_before_date = asmts.where("updated_at < ?", date)
+            latest_asmt = asmts_before_date.last
+            next if latest_asmt.nil?
+            auds_before_date = asmts_before_date.map { |asmt| AssessmentUserDatum.find_by(course_user_datum_id: cud.id, assessment_id: asmt.id) }
+            auds_before_date_filtered = auds_before_date.select { |aud| not aud.nil? }
+            if auds_before_date_filtered.count < auds_before_date.count
+              raise "Assessment user datum does not exist for some assessments for course user datum #{cud.id}"
+            end
+            latest_aud_before_date = auds_before_date.last
+            if latest_aud_before_date.global_cumulative_grace_days_used >= grace_day_threshold
+              violation_info = {}
+              auds_before_date.each do |aud|
+                violation_info[aud.assessment.display_name] = aud.grace_days_used if aud.grace_days_used > 0
+              end
+              new_instance = WatchlistInstance.new(course_user_datum_id: cud.id, course_id: course.id,
+                                                   risk_condition_id: condition.id,
+                                                   violation_info: violation_info)
+              if not new_instance.save
+                raise "Fail to create new watchlist instance for CUD #{cud.id} in course #{course.name} with violation info #{violation_info}"
+              end
+              new_instances << new_instance;
+            end
+          end
+
+        when "grade_drop"
+          percentage_drop = (condition.parameters[:percentage_drop]).to_f
+          consecutive_counts = condition.parameters[:consecutive_counts]
+          
+          categories = course.assessment_categories
+          asmt_arrs = categories.map { |category| course.assessments_with_category(category).ordered }
+          asmt_arrs.select! { |asmts| asmts.count >= consecutive_counts}
+          for cud in course_user_data
+            violation_info = {}
+            for asmts in asmt_arrs
+              auds = asmts.map { |asmt| AssessmentUserDatum.find_by(course_user_datum_id: cud.id, assessment_id: asmt.id) }
+              auds_filtered = auds.select { |aud| not aud.nil? }
+              if auds_filtered.count < auds.count
+                raise "Assessment user datum does not exist for some assessments for course user datum #{cud.id}"
+              end
+              violating_pairs = []
+              i = 0
+              while i+consecutive_counts-1 < auds.count
+                begin_aud = auds[i]
+                end_aud = auds[i+consecutive_counts-1]
+                begin_grade = begin_aud.final_score(cud)
+                end_grade = end_aud.final_score(cud)
+                # - Grading deadline has not passed yet
+                # - Score is not finalized and released to student yet
+                if end_grade.nil? or begin_grade.nil?
+                  i = i + 1
+                  next
+                end
+                begin_total = begin_aud.assessment.default_total_score
+                end_total = end_aud.assessment.default_total_score
+                begin_grade_percent = begin_grade * 100.0 / begin_total
+                end_grade_percent = end_grade * 100.0 / end_total
+                if end_grade_percent >= begin_grade_percent
+                  i = i + 1
+                  next
+                end
+                diff = (begin_grade_percent - end_grade_percent) * 100.0 / begin_grade_percent
+                if diff >= percentage_drop
+                  pair = {}
+                  pair[begin_aud.assessment.display_name] = "#{begin_grade}/#{begin_total}"
+                  pair[end_aud.assessment.display_name] = "#{end_grade}/#{end_total}"
+                  violating_pairs << pair
+                end
                 i = i + 1
-                next
               end
-              diff = (begin_grade - end_grade) * 100.0 / begin_grade
-              if diff >= percentage_drop
-                pair = {}
-                pair[begin_aud.assessment.display_name] = begin_grade
-                pair[end_aud.assessment.display_name] = end_grade
-                violating_pairs << pair
+              violation_info[asmts[0].category_name] = violating_pairs if violating_pairs.length > 0
+            end
+            if violation_info.length > 0
+              new_instance = WatchlistInstance.new(course_user_datum_id: cud.id, course_id: course.id,
+                                                   risk_condition_id: condition.id,
+                                                   violation_info: violation_info)
+              if not new_instance.save
+                raise "Fail to create new watchlist instance for CUD #{cud.id} in course #{course.name} with violation info #{violation_info}"
               end
-              i = i + 1
-            end
-            violation_info[asmts[0].category_name] = violating_pairs if violating_pairs.length > 0
-          end
-          if violation_info.length > 0
-            puts "Course user datum #{cud.id} with violation info #{violation_info}"
-            new_instance = WatchlistInstance.new(course_user_datum_id: cud.id, course_id: course.id,
-                                                 risk_condition_id: condition.id,
-                                                 violation_info: violation_info)
-            if not new_instance.save
-              raise "Fail to create new watchlist instance for CUD #{cud.id} in course #{course.name} with violation info #{violation_info}"
-            end
-            new_instances << new_instance
-          end
-        end
-
-      when "no_submissions"
-        no_submissions_threshold = condition.parameters[:no_submissions_threshold]
-
-        for cud in course_user_data
-          auds = AssessmentUserDatum.where(course_user_datum_id: cud.id)
-          no_submissions_asmt_names = []
-          auds.map { |aud| no_submissions_asmt_names << aud.assessment.display_name if aud.latest_submission.nil? }
-          if no_submissions_asmt_names.length >= no_submissions_threshold
-            puts "Course user datum #{cud.id} with violation info #{violation_info}"
-            new_instance = WatchlistInstance.new(course_user_datum_id: cud.id, course_id: course.id,
-                                                 risk_condition_id: condition.id,
-                                                 violation_info: { :no_submissions_asmt_names => no_submissions_asmt_names })
-            if not new_instance.save
-              raise "Fail to create new watchlist instance for CUD #{cud.id} in course #{course.name} with violation info #{violation_info}"
-            end
-            new_instances << new_instance
-          end
-        end
-
-      when "low_grades"
-        grade_threshold = condition.parameters[:grade_threshold].to_f
-        count_threshold = condition.parameters[:count_threshold]
-
-        for cud in course_user_data
-          auds = AssessmentUserDatum.where(course_user_datum_id: cud.id)
-          violation_info = {}
-          auds.map do |aud|
-            aud_score = aud.final_score(cud)
-            total = aud.assessment.default_total_score
-            score_percent = aud_score * 100.0 / total
-            if score_percent < grade_threshold
-              violation_info[aud.assessment.display_name] = "#{aud_score}/#{total}"
+              new_instances << new_instance
             end
           end
-          if violation_info.length >= count_threshold
-            puts "Course user datum #{cud.id} with violation info #{violation_info}"
-            new_instance = WatchlistInstance.new(course_user_datum_id: cud.id, course_id: course_id,
-                                                 risk_condition_id: condition.id,
-                                                 violation_info: violation_info)
-            if not new_instance.save
-              raise "Fail to create new watchlist instance for CUD #{cud.id} in course #{course.name} with violation info #{violation_info}"
+
+        when "no_submissions"
+          no_submissions_threshold = condition.parameters[:no_submissions_threshold]
+
+          for cud in course_user_data
+            auds = AssessmentUserDatum.where(course_user_datum_id: cud.id)
+            no_submissions_asmt_names = []
+            auds.each do |aud|
+              no_submissions_asmt_names << aud.assessment.display_name if aud.latest_submission.nil?
             end
-            new_instances << new_instance
+            if no_submissions_asmt_names.length >= no_submissions_threshold
+              new_instance = WatchlistInstance.new(course_user_datum_id: cud.id, course_id: course.id,
+                                                   risk_condition_id: condition.id,
+                                                   violation_info: { :no_submissions_asmt_names => no_submissions_asmt_names })
+              if not new_instance.save
+                raise "Fail to create new watchlist instance for CUD #{cud.id} in course #{course.name} with violation info #{violation_info}"
+              end
+              new_instances << new_instance
+            end
+          end
+
+        when "low_grades"
+          grade_threshold = condition.parameters[:grade_threshold].to_f
+          count_threshold = condition.parameters[:count_threshold]
+
+          for cud in course_user_data
+            auds = AssessmentUserDatum.where(course_user_datum_id: cud.id)
+            violation_info = {}
+            auds.each do |aud|
+              aud_score = aud.final_score(cud)
+              # score not out yet
+              next if aud_score.nil?
+              total = aud.assessment.default_total_score
+              score_percent = aud_score * 100.0 / total
+              if score_percent < grade_threshold
+                violation_info[aud.assessment.display_name] = "#{aud_score}/#{total}"
+              end
+            end
+            if violation_info.length >= count_threshold
+              new_instance = WatchlistInstance.new(course_user_datum_id: cud.id, course_id: course.id,
+                                                   risk_condition_id: condition.id,
+                                                   violation_info: violation_info)
+              if not new_instance.save
+                raise "Fail to create new watchlist instance for CUD #{cud.id} in course #{course.name} with violation info #{violation_info}"
+              end
+              new_instances << new_instance
+            end
           end
         end
       end
-      puts ""
     end
 
     return new_instances
