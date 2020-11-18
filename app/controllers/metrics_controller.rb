@@ -15,9 +15,9 @@ class MetricsController < ApplicationController
 		begin
 			course_name = params[:course_name]
 			conditions = RiskCondition.get_current_for_course(course_name)
-			render json: conditions
+			render json: conditions, status: :ok
 		rescue => error
-			flash[:error] = error.message
+			render json: {error:error.message}, status: :not_found
 			return
 		end
 	end
@@ -34,7 +34,7 @@ class MetricsController < ApplicationController
 		begin
 			course_name = params[:course_name]
 			instances = WatchlistInstance.get_instances_for_course(course_name)
-			render json: instances
+			render json: instances, status: :ok
 		rescue => error
 			render json: {error:error.message}, status: :not_found
 			return
@@ -49,7 +49,7 @@ class MetricsController < ApplicationController
 		begin
 			course_name = params[:course_name]
 			number = WatchlistInstance.get_num_new_instance_for_course(course_name)
-			render json: {"num_new":number}, :status=> :ok
+			render json: {"num_new":number}, status: :ok
 		rescue => error
 			render json: {error:error.message}, status: :not_found
 			return
