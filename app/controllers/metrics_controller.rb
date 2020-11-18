@@ -89,6 +89,48 @@ class MetricsController < ApplicationController
 		end
 	end
 
+	action_auth_level :update_watchlist_instances, :instructor
+	def update_watchlist_instances
+		# This API endpoint updates watchlist instances for a particular course
+		# On success, the watchlist instance will be updated appropriately
+		# params required would be the course name
+		# example json body {"method":"resolve","ids":[1,2,3]}
+		# method: update, resolve
+		# ids: [1,2,3...] list of ids to be updated
+		
+		begin
+			course_name = params[:course_name]
+			if course_name.blank?
+				raise "Course name cannot be blank"
+		rescue => error
+			render json:  {error:error.message}, :status => :not_found
+			return
+		end
+		
+		begin
+			if params[:method].nil?
+				raise "Method not defined"
+			end
+
+			if params[:ids].nil?
+				raise "No ids given"
+			end
+
+			case params[:method]
+			when "contact"
+				WatchlistInstance.contact_many_watchlist_instances(params[:ids])
+			when "resolve"
+				WatchlistInstance.resolve_many_watchlist_instances(params[:ids])
+			else
+				raise "Method #{params[:method]} not allowed"  
+			end
+		rescue => error
+			render json: {error:error.message}, status: :method_not_allowed
+			return
+		end
+
+		render json: {message:"Successfully updated instances"}, :status => :ok
+
 private
 	
 	def new_metrics_params

@@ -22,6 +22,32 @@ class WatchlistInstance < ApplicationRecord
     return WatchlistInstance.where(course_id:course_id,status: :new).count()
   end 
 
+  def self.contact_many_watchlist_instances(instance_ids)
+    instances = WatchlistInstance.where(id:instance_ids)
+    if instance_ids.length() != instances.length()
+      found_instance_ids = instances.map{|instance| instance.id}
+      raise "Instance ids #{instance_ids - found_instance_ids} cannot be found"
+    end
+    ActiveRecord::Base.transaction do
+      instances.each do |instance|
+        instance.contact_watchlist_instance
+      end
+    end
+  end
+  
+  def self.resolve_many_watchlist_instances(instance_ids)
+    instances = WatchlistInstance.where(id:instance_ids)
+    if instance_ids.length() != instances.length()
+      found_instance_ids = instances.map{|instance| instance.id}
+      raise "Instance ids #{instance_ids - found_instance_ids} cannot be found"
+    end
+    ActiveRecord::Base.transaction do
+      instances.each do |instance|
+        instance.resolve_watchlist_instance
+      end
+    end
+  end
+
   def archive_watchlist_instance
     if self.new_watchlist?
       self.destroy
