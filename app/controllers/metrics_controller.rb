@@ -15,9 +15,9 @@ class MetricsController < ApplicationController
 		begin
 			course_name = params[:course_name]
 			conditions = RiskCondition.get_current_for_course(course_name)
-			render json: conditions
+			render json: conditions, status: :ok
 		rescue => error
-			render :text => 'Not Found', :status => '404'
+			render json: {error:error.message}, status: :not_found
 			return
 		end
 	end
@@ -33,10 +33,25 @@ class MetricsController < ApplicationController
 		# On error, a 404 error is returned
 		begin
 			course_name = params[:course_name]
-			conditions = WatchlistInstance.get_instances_for_course(course_name)
-			render json: conditions
+			instances = WatchlistInstance.get_instances_for_course(course_name)
+			render json: instances, status: :ok
 		rescue => error
-			render :text => 'Not Found', :status => '404'
+			render json: {error:error.message}, status: :not_found
+			return
+		end
+	end
+
+	action_auth_level :get_num_new_instances, :instructor
+	def get_num_new_instances
+		# This API endpoint retrieves the number of new watchlist instances for a particular course
+		# On success, a JSON containing num_new will be returned
+		# On error, a 404 error is returned
+		begin
+			course_name = params[:course_name]
+			number = WatchlistInstance.get_num_new_instance_for_course(course_name)
+			render json: {"num_new":number}, status: :ok
+		rescue => error
+			render json: {error:error.message}, status: :not_found
 			return
 		end
 	end
@@ -94,6 +109,48 @@ class MetricsController < ApplicationController
 			return
 		end
 	end
+
+	action_auth_level :update_watchlist_instances, :instructor
+	def update_watchlist_instances
+		# This API endpoint updates watchlist instances for a particular course
+		# On success, the watchlist instance will be updated appropriately
+		# params required would be the course name
+		# example json body {"method":"resolve","ids":[1,2,3]}
+		# method: update, resolve
+		# ids: [1,2,3...] list of ids to be updated
+		
+		begin
+			course_name = params[:course_name]
+			if course_name.blank?
+				raise "Course name cannot be blank"
+		rescue => error
+			render json:  {error:error.message}, :status => :not_found
+			return
+		end
+		
+		begin
+			if params[:method].nil?
+				raise "Method not defined"
+			end
+
+			if params[:ids].nil?
+				raise "No ids given"
+			end
+
+			case params[:method]
+			when "contact"
+				WatchlistInstance.contact_many_watchlist_instances(params[:ids])
+			when "resolve"
+				WatchlistInstance.resolve_many_watchlist_instances(params[:ids])
+			else
+				raise "Method #{params[:method]} not allowed"  
+			end
+		rescue => error
+			render json: {error:error.message}, status: :method_not_allowed
+			return
+		end
+
+		render json: {message:"Successfully updated instances"}, :status => :ok
 
 private
 	

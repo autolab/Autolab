@@ -11,6 +11,15 @@ class WatchlistInstance < ApplicationRecord
       raise "Course #{course_name} cannot be found"
     end 
     return WatchlistInstance.where(course_id:course_id)
+  end
+  
+  def self.get_num_new_instance_for_course(course_name)
+    begin
+      course_id = Course.find_by(name:course_name).id
+    rescue NoMethodError
+      raise "Course #{course_name} cannot be found"
+    end 
+    return WatchlistInstance.where(course_id:course_id,status: :new).count()
   end 
 
   def self.refresh_instances_for_course(course_name)
@@ -41,6 +50,32 @@ class WatchlistInstance < ApplicationRecord
         # case 2: current risk conditions exist
         new_instances = self.add_new_instances_for_conditions(current_conditions, course)
         return new_instances
+      end
+    end
+  end
+
+  def self.contact_many_watchlist_instances(instance_ids)
+    instances = WatchlistInstance.where(id:instance_ids)
+    if instance_ids.length() != instances.length()
+      found_instance_ids = instances.map{|instance| instance.id}
+      raise "Instance ids #{instance_ids - found_instance_ids} cannot be found"
+    end
+    ActiveRecord::Base.transaction do
+      instances.each do |instance|
+        instance.contact_watchlist_instance
+      end
+    end
+  end
+  
+  def self.resolve_many_watchlist_instances(instance_ids)
+    instances = WatchlistInstance.where(id:instance_ids)
+    if instance_ids.length() != instances.length()
+      found_instance_ids = instances.map{|instance| instance.id}
+      raise "Instance ids #{instance_ids - found_instance_ids} cannot be found"
+    end
+    ActiveRecord::Base.transaction do
+      instances.each do |instance|
+        instance.resolve_watchlist_instance
       end
     end
   end
