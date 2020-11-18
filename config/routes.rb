@@ -76,6 +76,7 @@ Rails.application.routes.draw do
       get 'get_num_new_instances'
       post 'update_watchlist_instances'
     end
+
     resources :jobs, only: :index do
       get "getjob", on: :member
 
