@@ -52,8 +52,10 @@ class MetricsController < ApplicationController
 		
 		begin
 			course_name = params[:course_name]
+			if course_name.blank?
+				raise "Course name cannot be blank"
 		rescue => error
-			render json:  {error:"Course Not Found"}, :status => :not_found
+			render json:  {error:error.message}, :status => :not_found
 			return
 		end
 		
