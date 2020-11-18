@@ -43,6 +43,15 @@ class MetricsController < ApplicationController
 
 	action_auth_level :refresh_watchlist_instances, :instructor
 	def refresh_watchlist_instances
+		# This API endpoint refreshes the watchlist instances for a particular course from scratch
+		# Any previously added watchlist instances will be archived
+		# Any current watchlist instances whose risk conditions match the latest conditions will be destroyed
+		# On success, a JSON list of watchlist instances will be returned
+		# params required would be the course name
+		# each watchlist instance will contain course_user_datum, course_id, risk_condition_id
+		# status (new, resolved, contacted), archived or not, and violation info 
+		# (a json containing more info pertaining to violation)
+		# On error, a 404 error is returned
 		begin
 			course_name = params[:course_name]
 			new_instances = WatchlistInstance.refresh_instances_for_course(course_name)
