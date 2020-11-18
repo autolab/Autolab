@@ -494,13 +494,13 @@
   height: 100%;
 }
 .annotationSummary{
-  border: solid 2px #569ff7;
+  border: solid 2px #0882af;
   margin-bottom: 15px;
   color: #4f4f4f;
 }
 .annotationSummary h1{
   margin: 0px;
-  background-color: #569ff7;
+  background-color: #0882af;
   padding: 8px;
   border-right: none;
   border-left: none;
