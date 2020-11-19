@@ -8,6 +8,10 @@ form.new_assessment {
     margin: 25px 0 15px 0;
   }
 
+  button.delete_btn {
+    display: contents;
+  }
+
   input.datepicker,
   input.time_input {
     display: inline;
