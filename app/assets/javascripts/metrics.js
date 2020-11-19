@@ -1,9 +1,19 @@
 // Loads all Semantic javascripts
 //= require semantic-ui
 
+const metrics_endpoints = {
+	update: 'update_current_metrics',
+	get: 'get_current_metrics'
+}
+
+// prevents enumerator from being changed
+Object.freeze(metrics_endpoints);
+
+
 $(document).ready(function(){
-    $('.tabular.menu .item').tab();
-	
+
+	// Initializing Fomantic UI elements
+    $('.tabular.menu .item').tab();	
 	$('.ui.dropdown').dropdown();
 	$('.ui.checkbox').checkbox();
 	$('.ui.calendar').calendar({type: 'date'});
@@ -37,7 +47,7 @@ $(document).ready(function(){
 
 });
 
-$.getJSON("get_current_metrics",function(data,status){
+$.getJSON(metrics_endpoints['get'],function(data,status){
 	
 	console.log(status);
 	
@@ -60,13 +70,13 @@ $.getJSON("get_current_metrics",function(data,status){
 					$('#grace_days_value')
 					.dropdown('set selected',condition?.parameters?.grace_day_threshold ?? 1);
 					$('#grace_days_by_date')
-					.calendar(condition?.parameters?.date, fireChange=false);
+					.calendar('set date', new Date(condition?.parameters?.date));
 					break;
 				case "grade_drop":
-					$('#grades_drop_checkbox').checkbox('check');
-					$('#grades_drop_percentage')
+					$('#grade_drop_checkbox').checkbox('check');
+					$('#grade_drop_percentage')
 					.val(condition?.parameters?.percentage_drop);
-					$('#grades_drop_consecutive_counts')
+					$('#grade_drop_consecutive_counts')
 					.dropdown('set selected',condition?.parameters?.consecutive_counts ?? 1);
 					break;
 				case "low_grades":
@@ -86,22 +96,99 @@ $.getJSON("get_current_metrics",function(data,status){
 	$('[name="metrics-checkbox-1"]').change(function() {
 		$('#save').removeClass('disabled');
 	});
-
 	$('[name="metrics-checkbox-2"]').change(function() {
 		$('#save').removeClass('disabled');
 	});
-
 	$('[name="metrics-checkbox-3"]').change(function() {
 		$('#save').removeClass('disabled');
 	});
-
 	$('[name="metrics-checkbox-4"]').change(function() {
 		$('#save').removeClass('disabled');
 	});
-	
+
 	$(window).bind('beforeunload', function(){
 		if (!$('#save').hasClass('disabled')) {
 			return 'Make sure to save your changes';
 		}
 	});
 });
+
+$('#save').click(function(){
+	
+	$('#save').addClass('loading');
+
+	let new_conditions = {};
+	console.log($('#grace_days_by_date').calendar('get date'));
+	if($('#no_submit_checkbox').checkbox('is checked')){
+		new_conditions['no_submissions'] = {
+			no_submissions_threshold: $("#no_submit_value").dropdown('get value')
+		};
+	}
+
+	if($('#grace_days_checkbox').checkbox('is checked')){
+		new_conditions['grace_day_usage'] = {
+			grace_day_threshold: $("#grace_days_value").dropdown('get value'),
+			date: $('#grace_days_by_date').calendar('get date')
+		};
+	}
+
+	if($('#grade_drop_checkbox').checkbox('is checked')){
+		new_conditions['grade_drop'] = {
+			percentage_drop: $("#grade_drop_percentage").val(),
+			consecutive_counts: $('#grade_drop_consecutive_counts').dropdown('get value')
+		};
+	}
+
+	if($('#low_grades').checkbox('is checked')){
+		new_conditions['low_grades'] = {
+			grade_threshold: $("#low_grades_percentage").val(),
+			count_threshold: $('#low_grades_count').dropdown('get value')
+		};
+	}
+
+	$.ajax({
+		url:metrics_endpoints['update'],
+		dataType: "json",
+		contentType:'application/json',
+		data: JSON.stringify(new_conditions),
+		type: "POST",
+		success:function(data,type){
+			console.log(data);
+			$('#save').removeClass('loading');
+			$('#save').addClass('disabled');
+			display_banner({
+				type:"positive",
+				header:"You have successfully saved your conditions",
+				message:"You're watchlist should reflect based on your new conditions"
+			});
+		}
+	});
+})
+
+var message_count = 0;
+
+const display_banner = (params) => {
+	
+	const message_html = `
+						<div class="ui ${params.type} message" 
+							id="message_${message_count}">
+							<i class="close icon"></i>
+							<div class="header">
+							${params.header}
+							</div>
+							${params.message}
+						</div>
+						`;
+	
+	$('#message_area').append(message_html);
+	
+	$(`#message_${message_count} .close`)
+	.on('click', function() {
+		$(this)
+		.closest('.message')
+		.transition('fade')
+		;
+	});
+
+	message_count++;
+}

@@ -82,6 +82,7 @@ class MetricsController < ApplicationController
 			else
 				params_filtered = params_filtered.to_h
 			end
+			
 			if params_filtered != params[:metric]
 				raise "Invalid update parameters for risk conditions! Make sure your request body fits the criteria!"
 			end
