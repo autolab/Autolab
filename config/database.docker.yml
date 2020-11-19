@@ -3,8 +3,8 @@ production:
   adapter: mysql2
   database: autolab_development
   pool: 5
-  username: user
-  password: password
+  username: <MYSQL_USERNAME>
+  password: <MYSQL_PASSWORD>
   socket: /var/run/mysqld/mysqld.sock
   host: mysql
   variables:
