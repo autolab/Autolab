@@ -7,6 +7,13 @@
   <%= javascript_include_tag "metrics" %>
 <% end %>
 
+<script>
+  console.log("Hello");
+  console.log("<%=@course_grace_days%>");
+  console.log("<%=@num_assessments%>");
+  console.log("<%=@max_consecutive_assessments%>");
+</script>
+
 <!-- TODO: Remove hard coded values  -->
 <% @defined_metrics = true %>
 <% @new_students = 3 %>
@@ -94,7 +101,7 @@
           <center>
             <i class="huge inbox icon"></i> 
             <h3> You have not defined your risk metrics </h3>
-            Set up identification conditions at in the <b>Risk Metrics</b> tab.  <br> 
+            Set up identification conditions at in the <b>Risk Metrics</b> tab. <br> 
             Identified possible at-risk students will appear here. 
           </center>
         </div>
@@ -115,25 +122,25 @@
   <div class="ui form">
     <div class="metric">
       <div class="inline field">
-        <div class="ui checkbox">
+        <div class="ui checkbox" id='grace_days_checkbox'>
           <input type="checkbox" tabindex="0" class="hidden" name="metrics-checkbox-1">
         </div>
         Students who have used
         <span>
-          <div class="ui selection dropdown">
+          <div class="ui selection dropdown" id="grace_days_value">
             <input type="hidden" name="grace_days">
             <i class="dropdown icon"></i>
             <div class="default text">0</div>
             <div class="menu">
-              <div class="item" data-value="1">1</div>
-              <div class="item" data-value="2">2</div>
-              <div class="item" data-value="3">3</div>
+              <% for i in 1..@course_grace_days do%>
+                <div class="item" data-value="<%=i%>"><%=i%></div>
+              <% end %>
             </div>
           </div>
         </span>
         grace days by
         <span>
-          <div class="ui calendar" id="date">
+          <div class="ui calendar" id="date" id="grace_days_by_date">
             <div class="ui input left icon">
               <i class="calendar icon"></i>
               <input type="text" placeholder="Date">
@@ -146,46 +153,46 @@
 
     <div class="metric">
       <div class="inline field">
-        <div class="ui checkbox">
+        <div class="ui checkbox" id="grades_drop_checkbox">
           <input type="checkbox" tabindex="0" class="hidden" name="metrics-checkbox-2">
         </div>
         Students whose grades have dropped by
         <span>
-          <input type="text" placeholder="0" name="percentage1">
+          <input type="text" placeholder="0" name="percentage1" id='grades_drop_percentage'>
         </span>
         percent within
         <span>
-          <div class="ui selection dropdown">
+          <div class="ui selection dropdown" id='grades_drop_consecutive_counts'>
             <input type="hidden" name="number">
             <i class="dropdown icon"></i>
             <div class="default text">0</div>
             <div class="menu">
-              <div class="item" data-value="2">2</div>
-              <div class="item" data-value="3">3</div>
-              <div class="item" data-value="4">4</div>
+              <% for i in 2..@max_consecutive_assessments do%>
+                <div class="item" data-value="<%=i%>"><%=i%></div>
+              <% end %>
             </div>
           </div>
         </span>
-        consecutive assignments
+        consecutive assignments within a category
       </div>
     </div>
     <br>
 
     <div class="metric">
       <div class="inline field">
-        <div class="ui checkbox">
+        <div class="ui checkbox" id='no_submit_checkbox'>
           <input type="checkbox" tabindex="0" class="hidden" name="metrics-checkbox-3">
         </div>
         Students who did not submit
         <span>
-          <div class="ui selection dropdown">
+          <div class="ui selection dropdown" id="no_submit_value">
             <input type="hidden" name="number">
             <i class="dropdown icon"></i>
             <div class="default text">0</div>
-            <div class="menu">
-              <div class="item" data-value="1">1</div>
-              <div class="item" data-value="2">2</div>
-              <div class="item" data-value="3">3</div>
+            <div class="menu" >
+              <% for i in 1..@num_assessments do%>
+                <div class="item" data-value="<%=i%>"><%=i%></div>
+              <% end %>
             </div>
           </div>
         </span>
@@ -196,19 +203,19 @@
 
     <div class="metric">
       <div class="inline field">
-        <div class="ui checkbox">
+        <div class="ui checkbox" id='low_grades_checkbox'>
           <input type="checkbox" tabindex="0" class="hidden" name="metrics-checkbox-4">
         </div>
         Students with
         <span>
-          <div class="ui selection dropdown">
+          <div class="ui selection dropdown" id="low_grades_count">
             <input type="hidden" name="number">
             <i class="dropdown icon"></i>
             <div class="default text">0</div>
             <div class="menu">
-              <div class="item" data-value="1">1</div>
-              <div class="item" data-value="2">2</div>
-              <div class="item" data-value="3">3</div>
+              <% for i in 1..@num_assessments do%>
+                <div class="item" data-value="<%=i%>"><%=i%></div>
+              <% end %>
             </div>
           </div>
         </span>
