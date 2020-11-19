@@ -61,5 +61,7 @@
 
 <div class="action_buttons">
   <%= f.submit "Save" %>
-  <%= link_to "Delete Assessment", course_assessment_path(@course, @assessment), method: :delete, class: 'btn btn-danger', data: { confirm: " Deleting will delete all associated assessment data and cannot be undone. Are you sure you want to delete this assessment?" } %>
+  <button class="delete_btn"> 
+    <%= link_to "Delete Assessment", course_assessment_path(@course, @assessment), method: :delete, class: 'btn btn-danger', data: { confirm: " Deleting will delete all associated assessment data and cannot be undone. Are you sure you want to delete this assessment?" } %>
+  </button>
 </div>
