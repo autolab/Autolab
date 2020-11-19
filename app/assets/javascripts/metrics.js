@@ -16,36 +16,45 @@ $(document).ready(function(){
     $('.tabular.menu .item').tab();	
 	$('.ui.dropdown').dropdown();
 	$('.ui.checkbox').checkbox();
-	$('.ui.calendar').calendar({type: 'date'});
+	$('.ui.calendar').calendar({type: 'date', initialDate: new Date()});
+	$('.ui.dropdown').dropdown('set selected',1);
+	$('#grade_drop_consecutive_counts').dropdown('set selected',2);
 	
-    $('.ui.form')
-	  .form({
-			inline: true,
-	    fields: {
-	      percentage1: {
-	        identifier: 'percentage1',
-	        optional: 'true',
-	        rules: [
-	          {
-	            type   : 'integer[0..100]',
-	            prompt : 'Please enter an integer from 0 to 100 for percentages'
-	          }
-	        ]
-				},
-				percentage2: {
-	        identifier: 'percentage2',
-	        optional: 'true',
-	        rules: [
-	          {
-	            type   : 'integer[0..100]',
-	            prompt : 'Please enter an integer from 0 to 100 for percentages'
-	          }
-	        ]
-				},
-	    }
-		});
+});
+
+$('.checkbox').change(function(){
+	console.log("checkbox change");
+
+	let fields = {};
+
+	if($('#grade_drop_checkbox').checkbox('is checked')){
+		fields['grade_drop_percentage'] = {
+			identifier: 'grade_drop_percentage',
+			rules: [
+			  {
+				type   : 'integer[1..100]',
+				prompt : 'Please enter an integer from 1 to 100 for percentages'
+			  }
+			]
+		};
+	}
+
+	if($('#low_grades_checkbox').checkbox('is checked')){
+		fields['low_grades_percentage'] = {
+			identifier: 'low_grades_percentage',
+			rules: [
+			  {
+				type   : 'integer[1..100]',
+				prompt : 'Please enter an integer from 1 to 100 for percentages'
+			  }
+			]
+		};
+	}
+	
+	$('.ui.form').form({inline: true, fields});
 
 });
+
 
 $.getJSON(metrics_endpoints['get'],function(data,status){
 	
@@ -93,16 +102,7 @@ $.getJSON(metrics_endpoints['get'],function(data,status){
 		})
 	}
 
-	$('[name="metrics-checkbox-1"]').change(function() {
-		$('#save').removeClass('disabled');
-	});
-	$('[name="metrics-checkbox-2"]').change(function() {
-		$('#save').removeClass('disabled');
-	});
-	$('[name="metrics-checkbox-3"]').change(function() {
-		$('#save').removeClass('disabled');
-	});
-	$('[name="metrics-checkbox-4"]').change(function() {
+	$('.ui.form').change(function() {
 		$('#save').removeClass('disabled');
 	});
 
@@ -114,21 +114,24 @@ $.getJSON(metrics_endpoints['get'],function(data,status){
 });
 
 $('#save').click(function(){
+
+	if(!$('.ui.form').form('is valid'))
+		return;
 	
 	$('#save').addClass('loading');
-
 	let new_conditions = {};
-	console.log($('#grace_days_by_date').calendar('get date'));
-	if($('#no_submit_checkbox').checkbox('is checked')){
-		new_conditions['no_submissions'] = {
-			no_submissions_threshold: $("#no_submit_value").dropdown('get value')
-		};
-	}
 
 	if($('#grace_days_checkbox').checkbox('is checked')){
+		
 		new_conditions['grace_day_usage'] = {
 			grace_day_threshold: $("#grace_days_value").dropdown('get value'),
 			date: $('#grace_days_by_date').calendar('get date')
+		};
+	}
+
+	if($('#no_submit_checkbox').checkbox('is checked')){
+		new_conditions['no_submissions'] = {
+			no_submissions_threshold: $("#no_submit_value").dropdown('get value')
 		};
 	}
 
@@ -139,7 +142,7 @@ $('#save').click(function(){
 		};
 	}
 
-	if($('#low_grades').checkbox('is checked')){
+	if($('#low_grades_checkbox').checkbox('is checked')){
 		new_conditions['low_grades'] = {
 			grade_threshold: $("#low_grades_percentage").val(),
 			count_threshold: $('#low_grades_count').dropdown('get value')
@@ -152,15 +155,24 @@ $('#save').click(function(){
 		contentType:'application/json',
 		data: JSON.stringify(new_conditions),
 		type: "POST",
-		success:function(data,type){
+		success:function(data){
 			console.log(data);
-			$('#save').removeClass('loading');
-			$('#save').addClass('disabled');
 			display_banner({
 				type:"positive",
 				header:"You have successfully saved your conditions",
-				message:"You're watchlist should reflect based on your new conditions"
+				message:"Your watchlist should reflect your new conditions"
 			});
+		},
+		error:function(result, type){
+			display_banner({
+				type:"negative",
+				header:"Currently unable to update conditions",
+				message: result.error
+			});
+		},
+		complete:function(){
+			$('#save').removeClass('loading');
+			$('#save').addClass('disabled');
 		}
 	});
 })
