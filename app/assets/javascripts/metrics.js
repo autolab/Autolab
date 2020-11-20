@@ -1,6 +1,7 @@
 // Loads all Semantic javascripts
 //= require semantic-ui
 
+// metrics api endpoints
 const metrics_endpoints = {
 	update: 'update_current_metrics',
 	get: 'get_current_metrics'
@@ -8,7 +9,6 @@ const metrics_endpoints = {
 
 // prevents enumerator from being changed
 Object.freeze(metrics_endpoints);
-
 
 $(document).ready(function(){
 
@@ -22,6 +22,7 @@ $(document).ready(function(){
 	
 });
 
+// Updates form validation based on checked
 $('.checkbox').change(function(){
 	console.log("checkbox change");
 
@@ -56,9 +57,7 @@ $('.checkbox').change(function(){
 });
 
 
-$.getJSON(metrics_endpoints['get'],function(data,status){
-	
-	console.log(status);
+$.getJSON(metrics_endpoints['get'],function(data, status){
 	
 	if(status=='success'){
 		console.log(data);
@@ -67,6 +66,7 @@ $.getJSON(metrics_endpoints['get'],function(data,status){
 		if(data.length == 1 && data[0]['condition_type'] == "no_condition_selected")
 			return;
 
+		// switch case to check each checkbox field
 		data.forEach(condition => {
 			switch(condition?.condition_type){
 				case "no_submissions":
@@ -115,6 +115,7 @@ $.getJSON(metrics_endpoints['get'],function(data,status){
 
 $('#save').click(function(){
 
+	// Checks form validity
 	if(!$('.ui.form').form('is valid'))
 		return;
 	
@@ -122,16 +123,9 @@ $('#save').click(function(){
 	let new_conditions = {};
 
 	if($('#grace_days_checkbox').checkbox('is checked')){
-		
 		new_conditions['grace_day_usage'] = {
 			grace_day_threshold: $("#grace_days_value").dropdown('get value'),
 			date: $('#grace_days_by_date').calendar('get date')
-		};
-	}
-
-	if($('#no_submit_checkbox').checkbox('is checked')){
-		new_conditions['no_submissions'] = {
-			no_submissions_threshold: $("#no_submit_value").dropdown('get value')
 		};
 	}
 
@@ -139,6 +133,12 @@ $('#save').click(function(){
 		new_conditions['grade_drop'] = {
 			percentage_drop: $("#grade_drop_percentage").val(),
 			consecutive_counts: $('#grade_drop_consecutive_counts').dropdown('get value')
+		};
+	}
+
+	if($('#no_submit_checkbox').checkbox('is checked')){
+		new_conditions['no_submissions'] = {
+			no_submissions_threshold: $("#no_submit_value").dropdown('get value')
 		};
 	}
 
@@ -167,7 +167,8 @@ $('#save').click(function(){
 			display_banner({
 				type:"negative",
 				header:"Currently unable to update conditions",
-				message: result.error
+				message: "Do try again later",
+				timeout: -1
 			});
 		},
 		complete:function(){
@@ -177,12 +178,20 @@ $('#save').click(function(){
 	});
 })
 
+// variable to keep track of the different banners
 var message_count = 0;
 
+/**
+ * Creates a display banner given parameters
+ * @param {Object} params Parameters of the banner
+ * @param {string} params.type type of the banner, positive, negative, or warning
+ * @param {string} params.header html string header of the banner
+ * @param {string} params.message html string body of the banner
+ * @param {number} params.timeout timeout of banner in milleseconds. -1 for no timeout. 
+ */
 const display_banner = (params) => {
 	
-	const message_html = `
-						<div class="ui ${params.type} message" 
+	const message_html = `<div class="ui ${params.type} message" 
 							id="message_${message_count}">
 							<i class="close icon"></i>
 							<div class="header">
@@ -194,13 +203,20 @@ const display_banner = (params) => {
 	
 	$('#message_area').append(message_html);
 	
-	$(`#message_${message_count} .close`)
+	const current_count = message_count;
+
+	$(`#message_${current_count} .close`)
 	.on('click', function() {
-		$(this)
-		.closest('.message')
-		.transition('fade')
-		;
+		$(this).closest('.message').transition('fade');
 	});
+	
+	// Disappear after set number of seconds
+	if(!params['timeout'] || ['timeout'] >= 0){
+		setTimeout(function(){
+			console.log('1');
+			$(`#message_${current_count} .close`).click();
+		},params['timeout']?? 5000);
+	}
 
 	message_count++;
 }
