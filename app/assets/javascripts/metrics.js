@@ -188,29 +188,33 @@ var message_count = 0;
  */
 const display_banner = (params) => {
 	
-	const message_html = `<div class="ui ${params.type} message" 
-							id="message_${message_count}">
-							<i class="close icon"></i>
-							<div class="header">
-							${params.header}
-							</div>
-							${params.message}
-						</div>
-						`;
-	
-	$('#message_area').append(message_html);
-	
-	const current_count = message_count;
+	const message_id = message_count; // using a count as id
 
-	$(`#message_${current_count} .close`)
+	// templating the html
+	// important to give each element an unique id
+	const message_html = `
+	<div class="ui ${params.type} message" id="message_${message_id}">
+		<i class="close icon"></i>
+		<div class="header">
+		${params.header}
+		</div>
+		${params.message}
+	</div>
+	`;
+	
+	// adding the html to a particular div
+	$('#message_area').append(message_html);
+
+	// logic handling
+	$(`#message_${message_id} .close`)
 	.on('click', function() {
 		$(this).closest('.message').transition('fade');
 	});
-	
-	// Disappear after set number of seconds
+
+	// disappear after set number of seconds
 	if(!params['timeout'] || ['timeout'] >= 0){
 		setTimeout(function(){
-			$(`#message_${current_count} .close`).click();
+			$(`#message_${message_id} .close`).click();
 		},params['timeout']?? 5000);
 	}
 
