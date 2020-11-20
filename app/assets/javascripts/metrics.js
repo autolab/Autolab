@@ -24,7 +24,6 @@ $(document).ready(function(){
 
 // Updates form validation based on checked
 $('.checkbox').change(function(){
-	console.log("checkbox change");
 
 	let fields = {};
 
@@ -60,7 +59,6 @@ $('.checkbox').change(function(){
 $.getJSON(metrics_endpoints['get'],function(data, status){
 	
 	if(status=='success'){
-		console.log(data);
 
 		// situation when no conditions have been selected
 		if(data.length == 1 && data[0]['condition_type'] == "no_condition_selected")
@@ -156,7 +154,6 @@ $('#save').click(function(){
 		data: JSON.stringify(new_conditions),
 		type: "POST",
 		success:function(data){
-			console.log(data);
 			display_banner({
 				type:"positive",
 				header:"You have successfully saved your conditions",
@@ -213,7 +210,6 @@ const display_banner = (params) => {
 	// Disappear after set number of seconds
 	if(!params['timeout'] || ['timeout'] >= 0){
 		setTimeout(function(){
-			console.log('1');
 			$(`#message_${current_count} .close`).click();
 		},params['timeout']?? 5000);
 	}

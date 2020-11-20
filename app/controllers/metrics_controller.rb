@@ -102,7 +102,7 @@ class MetricsController < ApplicationController
 		# example json body {"method":"resolve","ids":[1,2,3]}
 		# method: update, resolve
 		# ids: [1,2,3...] list of ids to be updated
-		
+	
 		begin
 			course_name = params[:course_name]
 			if course_name.blank?
