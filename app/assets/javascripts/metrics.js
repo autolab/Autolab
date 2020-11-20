@@ -154,14 +154,14 @@ $('#save').click(function(){
 		data: JSON.stringify(new_conditions),
 		type: "POST",
 		success:function(data){
-			display_banner({
+			render_banner({
 				type:"positive",
 				header:"You have successfully saved your conditions",
 				message:"Your watchlist should reflect your new conditions"
 			});
 		},
 		error:function(result, type){
-			display_banner({
+			render_banner({
 				type:"negative",
 				header:"Currently unable to update conditions",
 				message: "Do try again later",
@@ -179,14 +179,14 @@ $('#save').click(function(){
 var message_count = 0;
 
 /**
- * Creates a display banner given parameters
+ * Renders a banner given parameters
  * @param {Object} params Parameters of the banner
  * @param {string} params.type type of the banner, positive, negative, or warning
  * @param {string} params.header html string header of the banner
  * @param {string} params.message html string body of the banner
  * @param {number} params.timeout timeout of banner in milleseconds. -1 for no timeout. 
  */
-const display_banner = (params) => {
+const render_banner = (params) => {
 	
 	const message_id = message_count; // using a count as id
 
