@@ -157,7 +157,7 @@ $('#save').click(function(){
 			render_banner({
 				type:"positive",
 				header:"You have successfully saved your conditions",
-				message:"Your watchlist should reflect your new conditions"
+				message:"Your watchlist should reflect your new conditions",
 			});
 		},
 		error:function(result, type){
@@ -211,10 +211,14 @@ const render_banner = (params) => {
 		$(this).closest('.message').transition('fade');
 	});
 
-	// disappear after set number of seconds
+	// close after set number of seconds
+	// if not closed yet
 	if(!params['timeout'] || ['timeout'] >= 0){
 		setTimeout(function(){
-			$(`#message_${message_id} .close`).click();
+			const message_box = 
+				$(`#message_${message_id} .close`).closest('.message');
+			if(!message_box.hasClass('hidden'))
+				message_box.transition('fade');
 		},params['timeout']?? 5000);
 	}
 
