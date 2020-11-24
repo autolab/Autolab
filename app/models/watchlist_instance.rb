@@ -31,26 +31,19 @@ class WatchlistInstance < ApplicationRecord
       raise "Course #{course_name} cannot be found"
     end
 
-    # check whether the watchlist instances are up-to-date
-    current_instances_condition_ids = (current_instances.map { |inst| inst.risk_condition_id }).uniq.to_set
-    current_condition_ids = (current_conditions.map { |c| c.id }).uniq.to_set # should be unique by design but add the suffix to ensure
-    if current_instances_condition_ids == current_condition_ids
-      return current_instances
+    # update!
+    # archive previous watchlist instances first
+    for instance in current_instances
+      instance.archive_watchlist_instance
+    end
+    # now check current conditions
+    if current_conditions.length == 0
+      # case 1: no current risk conditions exist
+      return []
     else
-      # update!
-      # archive previous watchlist instances first
-      for instance in current_instances
-        instance.archive_watchlist_instance
-      end
-      # now check current conditions
-      if current_conditions.length == 0
-        # case 1: no current risk conditions exist
-        return []
-      else
-        # case 2: current risk conditions exist
-        new_instances = self.add_new_instances_for_conditions(current_conditions, course)
-        return new_instances
-      end
+      # case 2: current risk conditions exist
+      new_instances = self.add_new_instances_for_conditions(current_conditions, course)
+      return new_instances
     end
   end
 
@@ -126,7 +119,7 @@ private
         case condition.condition_type
         
         when "grace_day_usage"
-          grace_day_threshold = condition.parameters[:grace_day_threshold]
+          grace_day_threshold = condition.parameters[:grace_day_threshold].to_i
           date = condition.parameters[:date]
           asmts = course.assessments.ordered
           for cud in course_user_data
@@ -139,7 +132,7 @@ private
 
         when "grade_drop"
           percentage_drop = (condition.parameters[:percentage_drop]).to_f
-          consecutive_counts = condition.parameters[:consecutive_counts]
+          consecutive_counts = condition.parameters[:consecutive_counts].to_i
           
           categories = course.assessment_categories
           asmt_arrs = categories.map { |category| course.assessments_with_category(category).ordered }
@@ -150,7 +143,7 @@ private
           end
 
         when "no_submissions"
-          no_submissions_threshold = condition.parameters[:no_submissions_threshold]
+          no_submissions_threshold = condition.parameters[:no_submissions_threshold].to_i
 
           for cud in course_user_data
             new_instance = self.add_new_instance_for_cud_no_submissions(course, condition.id, cud, no_submissions_threshold)
@@ -159,7 +152,7 @@ private
 
         when "low_grades"
           grade_threshold = condition.parameters[:grade_threshold].to_f
-          count_threshold = condition.parameters[:count_threshold]
+          count_threshold = condition.parameters[:count_threshold].to_i
 
           for cud in course_user_data
             new_instance = self.add_new_instance_for_cud_low_grades(course, condition.id, cud, grade_threshold, count_threshold)
@@ -250,7 +243,7 @@ private
     auds = AssessmentUserDatum.where(course_user_datum_id: cud.id)
     no_submissions_asmt_names = []
     auds.each do |aud|
-      no_submissions_asmt_names << aud.assessment.display_name if aud.latest_submission.nil?
+      no_submissions_asmt_names << aud.assessment.display_name if aud.submission_status == :not_submitted
     end
     if no_submissions_asmt_names.length >= no_submissions_threshold
       new_instance = WatchlistInstance.new(course_user_datum_id: cud.id, course_id: course.id,
@@ -268,8 +261,13 @@ private
     violation_info = {}
     auds.each do |aud|
       aud_score = aud.final_score(cud)
-      # score not out yet
+      # DDL not passed yet
       next if aud_score.nil?
+      # Score has not been released yet
+      if aud.latest_submission and not aud.latest_submission.all_scores_released?
+        puts "Score has not been released yet."
+        next
+      end
       total = aud.assessment.default_total_score
       score_percent = aud_score * 100.0 / total
       if score_percent < grade_threshold
