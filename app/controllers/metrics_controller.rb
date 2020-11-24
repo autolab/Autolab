@@ -1,6 +1,10 @@
 class MetricsController < ApplicationController
 	action_auth_level :index, :instructor
 	def index
+		course = Course.find_by(name: params[:course_name])
+		@course_grace_days = course.grace_days
+		@num_assessments = course.assessments.count()
+		@max_consecutive_assessments = course.assessments.group("category_name").count().max()[1] - 1
 	end
 
 	action_auth_level :get_current_metrics, :instructor
@@ -8,7 +12,7 @@ class MetricsController < ApplicationController
 		# This API endpoint aims to retrieve the current/latest risk conditions for a particular course
 		# On success, a JSON list of condition objects will be returned
 		# The type of each object is specified in a field called "condition_type"
-		# Possible types include: grace_day_usage, grade_drop, no_submission, low_grades
+		# Possible types include: no_condition_selected, grace_day_usage, grade_drop, no_submission, low_grades
 		# Other fields for a risk condition object include parameters, version, created_at, updated_at, and course_id
 		# In particular, the parameters field includes specific information of the condition corresponding to its type
 		# On error, a flash error message will be shown and nil gets returned
@@ -78,6 +82,7 @@ class MetricsController < ApplicationController
 			else
 				params_filtered = params_filtered.to_h
 			end
+			
 			if params_filtered != params[:metric]
 				raise "Invalid update parameters for risk conditions! Make sure your request body fits the criteria!"
 			end
@@ -97,7 +102,7 @@ class MetricsController < ApplicationController
 		# example json body {"method":"resolve","ids":[1,2,3]}
 		# method: update, resolve
 		# ids: [1,2,3...] list of ids to be updated
-		
+	
 		begin
 			course_name = params[:course_name]
 			if course_name.blank?
