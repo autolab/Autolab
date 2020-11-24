@@ -247,9 +247,6 @@ GEM
       thor (>= 0.18.1, < 2.0)
     rainbow (3.0.0)
     rake (13.0.1)
-    rb-fsevent (0.10.4)
-    rb-inotify (0.10.1)
-      ffi (~> 1.0)
     rdoc (6.2.1)
     regexp_parser (1.7.0)
     responders (3.0.0)
@@ -285,11 +282,6 @@ GEM
     ruby-rc4 (0.1.5)
     rubyzip (2.3.0)
     safe_yaml (1.0.5)
-    sass (3.7.4)
-      sass-listen (~> 4.0.0)
-    sass-listen (4.0.0)
-      rb-fsevent (~> 0.9, >= 0.9.4)
-      rb-inotify (~> 0.9, >= 0.9.7)
     sass-rails (6.0.0)
       sassc-rails (~> 2.1, >= 2.1.1)
     sassc (2.2.1)
@@ -302,8 +294,6 @@ GEM
       tilt
     sdoc (1.1.0)
       rdoc (>= 5.0)
-    semantic-ui-sass (2.4.2.0)
-      sass (>= 3.2)
     simplecov (0.13.0)
       docile (~> 1.1.0)
       json (>= 1.8, < 3)
@@ -396,7 +386,6 @@ DEPENDENCIES
   rubyzip
   sass-rails (>= 4.0.3)
   sdoc (>= 0.4.0)
-  semantic-ui-sass
   slack-notifier
   spring
   sprockets-rails (>= 3.2.1)
