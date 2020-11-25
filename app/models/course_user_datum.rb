@@ -249,6 +249,86 @@ class CourseUserDatum < ApplicationRecord
     "ggl/dua-#{dua}/u-#{self.id}"
   end
 
+  # This method call is used specifically for the purpose of callback style update to watchlist
+  # Need to archive old instances and also add new instances
+  def update_cud_gdu_watchlist_instances
+    # At this point, all relevant previously cached grace day usage information should be invalidated
+    # Calls to calculate grace day usage should be from scratch
+    
+    # Get current grace day condition
+    puts "Updating course user datum #{self.id}'s watchlist instances."
+    current_conditions = RiskCondition.get_current_for_course(self.course.name)
+    return if current_conditions.count == 0
+    
+    # Check for whether there exists one of type :grace_day_usage
+    grace_day_usage_condition = current_conditions.select { |c| c.condition_type.to_sym == :grace_day_usage }
+    return if grace_day_usage_condition.count != 1
+    grace_day_usage_condition = grace_day_usage_condition[0]
+    
+    # Get :grace_day_threshold and :date
+    condition_id = grace_day_usage_condition.id
+    grace_day_threshold = grace_day_usage_condition.parameters[:grace_day_threshold].to_i
+    date = grace_day_usage_condition.parameters[:date]
+    
+    # Archive old ones if there exist some
+    old_instances = self.watchlist_instances.where(risk_condition_id: condition_id)
+    
+    # Do the usual stuff as in refresh watchlist instances
+    # Create a new instance if criteria are fit
+    new_instance = self.new_gdu_watchlist_instance(grace_day_threshold, date, condition_id)
+    
+    # Make sure to use transaction
+    ActiveRecord::Base.transaction do
+      old_instances.each do |inst|
+        inst.archive_watchlist_instance
+      end
+
+      unless new_instance.nil?
+        if not new_instance.save
+          raise "Fail to create new watchlist instance for CUD #{self.id} in course #{self.course.name} with violation info #{new_instance.violation_info}"
+        end
+      end
+    end
+  end
+
+  # This returns an unsaved watchlist instance if current course user datum qualifies for
+  # being put onto the watchlist. The caller of this method needs to save it on their own if necessary
+  # This can be called from:
+  # - Watchlist's bulk refreshing
+  # - Callback style update within course user datum (see above)
+  # - Callback style update on a course level (see course.rb)
+  def new_gdu_watchlist_instance(grace_day_threshold, date, condition_id)
+    # Select assessments that end before the specified date because
+    # students shouldn't be able to turn anything in after that
+    asmts_before_date = self.course.assessments.ordered.where("end_at < ?", date)
+    latest_asmt = asmts_before_date.last
+    return nil if latest_asmt.nil?
+    
+    auds_before_date = asmts_before_date.map { |asmt| asmt.aud_for(self.id) }
+    auds_before_date_filtered = auds_before_date.select { |aud| not aud.nil? }
+    
+    if auds_before_date_filtered.count < auds_before_date.count
+      raise "Assessment user datum does not exist for some assessments for course user datum #{cud.id}"
+    end
+
+    latest_aud_before_date = auds_before_date.last
+    return nil if latest_aud_before_date.nil?
+
+    new_instance = nil
+    
+    if latest_aud_before_date.global_cumulative_grace_days_used >= grace_day_threshold
+      violation_info = {}
+      auds_before_date.each do |aud|
+        violation_info[aud.assessment.display_name] = aud.grace_days_used if aud.grace_days_used > 0
+      end
+      new_instance = WatchlistInstance.new(course_user_datum_id: self.id, course_id: self.course_id,
+                                           risk_condition_id: condition_id,
+                                           violation_info: violation_info)
+    end
+
+    return new_instance
+  end
+
 private
 
   # Need to create AUDs for all assessments when new user is created
