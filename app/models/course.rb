@@ -28,10 +28,8 @@ class Course < ApplicationRecord
 
   accepts_nested_attributes_for :late_penalty, :version_penalty
 
-  before_save :cgdub_dependencies_updated, if: :grace_days_changed?
-  before_save :cgdub_dependencies_updated, if: :late_slack_changed?
-  after_save :update_course_gdu_watchlist_instances, if: :saved_change_to_grace_days?
-  after_save :update_course_gdu_watchlist_instances, if: :saved_change_to_late_slack?
+  before_save :cgdub_dependencies_updated, if: :grace_days_or_late_slack_changed?
+  after_save :update_course_gdu_watchlist_instances, if: :saved_change_to_grace_days_or_late_slack?
   before_create :cgdub_dependencies_updated
   after_create :init_course_folder
 
@@ -206,7 +204,6 @@ class Course < ApplicationRecord
   # - Grace days or late slack have been changed and the record is saved
   # - invalidate_cgdubs are somehow incurred
   def update_course_gdu_watchlist_instances
-    puts "UPDATING SHIT!!!!!!!"
     current_conditions = RiskCondition.get_current_for_course(self.name)
     return if current_conditions.count == 0
     
@@ -223,7 +220,8 @@ class Course < ApplicationRecord
     old_instances = self.watchlist_instances.where(risk_condition_id: condition_id)
 
     new_instances = []
-    self.course_user_data.each do |cud|
+    course_user_data = self.course_user_data.where(instructor: false, course_assistant: false)
+    course_user_data.each do |cud|
       new_instance = cud.new_gdu_watchlist_instance(grace_day_threshold, date, condition_id)
       new_instances << new_instance unless new_instance.nil?
     end
@@ -285,8 +283,15 @@ class Course < ApplicationRecord
 
 private
 
+  def grace_days_or_late_slack_changed?
+    return (:grace_days_changed? or :late_slack_changed?)
+  end
+
+  def saved_change_to_grace_days_or_late_slack?
+    return (:saved_change_to_grace_days? or :saved_change_to_late_slack?)
+  end
+
   def cgdub_dependencies_updated
-    puts "CALLING BACKKKKKKKK!!!!!!!!"
     self.cgdub_dependencies_updated_at = Time.now
   end
 

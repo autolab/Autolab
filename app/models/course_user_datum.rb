@@ -255,8 +255,10 @@ class CourseUserDatum < ApplicationRecord
     # At this point, all relevant previously cached grace day usage information should be invalidated
     # Calls to calculate grace day usage should be from scratch
     
+    # Ignore if this CUD is an instructor or CA
+    return unless self.student?
+    
     # Get current grace day condition
-    puts "Updating course user datum #{self.id}'s watchlist instances."
     current_conditions = RiskCondition.get_current_for_course(self.course.name)
     return if current_conditions.count == 0
     
@@ -300,7 +302,7 @@ class CourseUserDatum < ApplicationRecord
   def new_gdu_watchlist_instance(grace_day_threshold, date, condition_id)
     # Select assessments that end before the specified date because
     # students shouldn't be able to turn anything in after that
-    asmts_before_date = self.course.assessments.ordered.where("end_at < ?", date)
+    asmts_before_date = self.course.assessments.ordered.where("due_at < ?", date)
     latest_asmt = asmts_before_date.last
     return nil if latest_asmt.nil?
     
