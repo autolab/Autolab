@@ -123,7 +123,9 @@ private
           date = condition.parameters[:date]
           asmts = course.assessments.ordered
           for cud in course_user_data
-            asmts_before_date = asmts.where("updated_at < ?", date)
+            # Because students couldn't submit after the end date, we can use that instead of updated_at
+            # to be more accurate in our consideration.
+            asmts_before_date = asmts.where("end_at < ?", date)
             latest_asmt = asmts_before_date.last
             next if latest_asmt.nil?
             new_instance = self.add_new_instance_for_cud_grace_day_usage(course, condition.id, cud, asmts_before_date, grace_day_threshold)
@@ -202,9 +204,17 @@ private
         end_aud = auds[i+consecutive_counts-1]
         begin_grade = begin_aud.final_score(cud)
         end_grade = end_aud.final_score(cud)
-        # - Grading deadline has not passed yet
-        # - Score is not finalized and released to student yet
-        if end_grade.nil? or begin_grade.nil?
+        if begin_grade.nil? or end_grade.nil?
+          # - Grading deadline for either has not passed yet
+          i = i + 1
+          next
+        elsif (begin_aud.latest_submission and not begin_aud.latest_submission.all_scores_released?) or
+              (end_aud.latest_submission and not end_aud.latest_submission.all_scores_released?)
+          # - Score for either is not finalized and released to student yet
+          i = i + 1
+          next
+        elsif begin_aud.latest_submission.nil? or end_aud.latest_submission.nil?
+          # - Student didn't make any submission for either
           i = i + 1
           next
         end
