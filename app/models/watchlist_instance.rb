@@ -261,11 +261,12 @@ private
     violation_info = {}
     auds.each do |aud|
       aud_score = aud.final_score(cud)
-      # DDL not passed yet
-      next if aud_score.nil?
-      # Score has not been released yet
-      if aud.latest_submission and not aud.latest_submission.all_scores_released?
-        puts "Score has not been released yet."
+      # - DDL not passed yet
+      # - Score has not been released yet
+      # - Student did not make any submissions at all
+      if aud_score.nil? or
+         aud.latest_submission.nil? or
+         (aud.latest_submission and not aud.latest_submission.all_scores_released?)
         next
       end
       total = aud.assessment.default_total_score
