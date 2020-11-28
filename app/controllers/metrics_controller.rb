@@ -60,6 +60,32 @@ class MetricsController < ApplicationController
 		end
 	end
 
+	action_auth_level :refresh_watchlist_instances, :instructor
+	def refresh_watchlist_instances
+
+		# This API endpoint refreshes the watchlist instances for a particular course from scratch
+		# Any previously added watchlist instances will be archived
+		# Any current watchlist instances whose risk conditions match the latest conditions will be destroyed
+		# On success, a JSON list of watchlist instances will be returned
+		# params required would be the course name
+		# each watchlist instance will contain course_user_datum, course_id, risk_condition_id
+		# status (new, resolved, contacted), archived or not, and violation info 
+		# Specifically, violation info for each condition category takes on the following form (examples):
+		# grace_day_usage: { "Homework 1" => 2, "Homework 3" => 2 }
+		# grade_drop: { "Homework" => [{ "Homework 1" => "100/100", "Homework 3" => "80/100"}, ...], "Lab" => [{"Lab 1" => "10/10", "Lab 3" => "8/10" }] }
+		# no_submissions: { "no_submissions_asmt_names" => [ "Homework 1", "Quiz 2", ... ] }
+		# low_grades: { "Homework 1" => "70/100", ... }
+		# On error, an error json is rendered and status is set to :bad_request
+		begin
+			course_name = params[:course_name]
+			new_instances = WatchlistInstance.refresh_instances_for_course(course_name)
+			render json: new_instances, status: :ok
+		rescue => error
+			render json: { error: error.message }, status: :bad_request
+			return
+		end
+	end
+
 	action_auth_level :update_current_metrics, :instructor
 	def update_current_metrics
 		# This API endpoint aims to update current/latest risk conditions for a particular course
@@ -73,7 +99,7 @@ class MetricsController < ApplicationController
 		# "grade_drop" with parameters "percentage_drop", "consecutive_counts"
 		# "no_submissions" with parameter "no_submissions_threshold"
 		# "low_grades" with parameters "grade_threshold", "count_threshold"
-		# On error, a flash error message will be rendered and nil gets returned
+		# On error, an error json will be rendered
 		begin
 			course_name = params[:course_name]
 			params_filtered = new_metrics_params
@@ -87,7 +113,7 @@ class MetricsController < ApplicationController
 				raise "Invalid update parameters for risk conditions! Make sure your request body fits the criteria!"
 			end
 			conditions = RiskCondition.update_current_for_course(course_name, params_filtered)
-			render json: conditions
+			render json: conditions, status: :ok
 		rescue => error
 			render json: { error: error.message }, status: :bad_request
 			return
@@ -136,7 +162,7 @@ class MetricsController < ApplicationController
 		end
 
 		render json: {message:"Successfully updated instances"}, :status => :ok
-	end 
+	end
 
 private
 	
@@ -146,4 +172,5 @@ private
 											  :no_submissions => [:no_submissions_threshold],
 											  :low_grades => [:grade_threshold, :count_threshold]) if params[:metric].present?
 	end
+
 end

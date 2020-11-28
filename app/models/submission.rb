@@ -278,6 +278,10 @@ class Submission < ApplicationRecord
     final_score_opts o
   end
 
+  def all_scores_released?
+    return self.scores.inject(true) { |result, score| result and score.released? }
+  end
+
   # NOTE: threshold  is no longer calculated using submission version,
   # but now using the number of submissions. This way, deleted submissions will
   # not be accounted for in the version penalty.
