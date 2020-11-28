@@ -239,6 +239,10 @@ class Course < ApplicationRecord
     name
   end
 
+  def update_course_grade_watchlist_instances
+    # TODO: update all related course user data regarding grades related conditions
+  end
+
 private
 
   def cgdub_dependencies_updated

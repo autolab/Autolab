@@ -41,7 +41,10 @@ class Assessment < ApplicationRecord
   after_save :dump_embedded_quiz, if: :saved_change_to_embedded_quiz_form_data?
   after_save :invalidate_course_cgdubs, if: :saved_change_to_due_at?
   after_save :invalidate_course_cgdubs, if: :saved_change_to_max_grace_days?
+  after_save :update_course_grade_watchlist_instances, if: :saved_change_to_grade_related_fields?
   after_create :create_AUDs_modulo_callbacks
+
+  delegate :update_course_grade_watchlist_instances, to: :course
 
   # Constants
   ORDERING = "due_at ASC, name ASC"
@@ -334,8 +337,13 @@ class Assessment < ApplicationRecord
     end
   end
 
-
 private
+
+  def saved_change_to_grade_related_fields?
+    return (:saved_change_to_due_at? or :saved_change_to_late_penalty? or
+            :saved_change_to_max_grace_days? or :saved_change_to_version_threshold?
+            :saved_change_to_version_penalty?)
+  end
 
   def path(filename)
     Rails.root.join("courses", course.name, name, filename)

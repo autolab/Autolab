@@ -249,6 +249,10 @@ class CourseUserDatum < ApplicationRecord
     "ggl/dua-#{dua}/u-#{self.id}"
   end
 
+  def update_cud_grade_watchlist_instance
+    # TODO: update all related course user data regarding grades related conditions
+  end
+
 private
 
   # Need to create AUDs for all assessments when new user is created

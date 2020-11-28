@@ -4,7 +4,9 @@ class Score < ApplicationRecord
   belongs_to :grader, class_name: "CourseUserDatum"
 
   after_save :invalidate_raw_score
+  after_save :grade_conditions_watchlist_instance_update_if_latest
   after_destroy :invalidate_raw_score
+  after_destroy :update_cud_grade_watchlist_instance_if_latest
 
   scope :on_latest_submissions, -> { where(submissions: { ignored: false }).joins(submission: :assessment_user_datum) }
 
@@ -13,6 +15,7 @@ class Score < ApplicationRecord
   end
 
   delegate :invalidate_raw_score, to: :submission
+  delegate :update_cud_grade_watchlist_instance_if_latest, to: :submission
 
   # Verifies that we will only ever have one score per problem per submission
   # This is what allows us to use submission.scores.maximum(:score,:group=>:problem_id) later on
