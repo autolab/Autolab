@@ -334,6 +334,10 @@ class Assessment < ApplicationRecord
     end
   end
 
+  # to be able to calculate total score for an assessment from another model
+  def default_total_score
+    problems.sum :max_score
+  end
 
 private
 
