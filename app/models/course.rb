@@ -204,39 +204,7 @@ class Course < ApplicationRecord
   # - Grace days or late slack have been changed and the record is saved
   # - invalidate_cgdubs are somehow incurred
   def update_course_gdu_watchlist_instances
-    current_conditions = RiskCondition.get_current_for_course(self.name)
-    return if current_conditions.count == 0
-    
-    # Check for whether there exists one of type :grace_day_usage
-    grace_day_usage_condition = current_conditions.select { |c| c.condition_type.to_sym == :grace_day_usage }
-    return if grace_day_usage_condition.count != 1
-    grace_day_usage_condition = grace_day_usage_condition[0]
-    
-    # Get :grace_day_threshold and :date
-    condition_id = grace_day_usage_condition.id
-    grace_day_threshold = grace_day_usage_condition.parameters[:grace_day_threshold].to_i
-    date = grace_day_usage_condition.parameters[:date]
-
-    old_instances = self.watchlist_instances.where(risk_condition_id: condition_id)
-
-    new_instances = []
-    course_user_data = self.course_user_data.where(instructor: false, course_assistant: false)
-    course_user_data.each do |cud|
-      new_instance = cud.new_gdu_watchlist_instance(grace_day_threshold, date, condition_id)
-      new_instances << new_instance unless new_instance.nil?
-    end
-
-    ActiveRecord::Base.transaction do
-      old_instances.each do |inst|
-        inst.archive_watchlist_instance
-      end
-
-      new_instances.each do |inst|
-        if not inst.save
-          raise "Fail to create new watchlist instance for CUD #{inst.course_user_datum_id} in course #{self.name} with violation info #{inst.violation_info}"
-        end
-      end
-    end
+    WatchlistInstance.update_course_gdu_watchlist_instances(self)
   end
 
   # NOTE: Needs to be updated as new items are cached
@@ -279,6 +247,12 @@ class Course < ApplicationRecord
 
   def to_param
     name
+  end
+
+  def asmts_before_date(date)
+    asmts = self.assessments.ordered
+    asmts_before_date = asmts.where("due_at < ?", date)
+    return asmts_before_date
   end
 
 private
