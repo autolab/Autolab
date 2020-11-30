@@ -52,6 +52,7 @@ class RiskCondition < ApplicationRecord
     # Is params empty?
     if params.length == 0 and max_version == 0
       # puts "case 1: max_version = 0 (no previous conditons have been set) and instructor doesn't want any at this point"
+      WatchlistInstance.refresh_instances_for_course(course_name)
       return []
     end
     
@@ -67,6 +68,7 @@ class RiskCondition < ApplicationRecord
       #   puts "case 3: previous conditions set to nothing selected and instructor doesn't want any this time either"
       end
       # indicator row for "currently no conditions selected" that user doesn't need to access
+      WatchlistInstance.refresh_instances_for_course(course_name)
       return []
     else
       conditions = []
@@ -93,8 +95,24 @@ class RiskCondition < ApplicationRecord
       # else
       #   puts "case 5: previous conditions and current conditions match and no update is needed"
       end
+      WatchlistInstance.refresh_instances_for_course(course_name)
       return conditions
     end
+  end
+
+  # return nil if course doesn't have any current gdu condition
+  # return condition_id, grace_day_threshold, date otherwise
+  def self.get_gdu_condition_for_course(course_name)
+    current_conditions = self.get_current_for_course(course_name)
+    return nil if current_conditions.count == 0
+    
+    # Check for whether there exists one of type :grace_day_usage
+    grace_day_usage_condition = current_conditions.select { |c| c.condition_type.to_sym == :grace_day_usage }
+    return nil if grace_day_usage_condition.count != 1
+    grace_day_usage_condition = grace_day_usage_condition[0]
+    return grace_day_usage_condition.id,
+           grace_day_usage_condition.parameters[:grace_day_threshold].to_i,
+           grace_day_usage_condition.parameters[:date]
   end
 
 private

@@ -47,6 +47,88 @@ class WatchlistInstance < ApplicationRecord
     end
   end
 
+  # Update the grace day usage condition watchlist instances for each course user datum of a particular course
+  # This is called when:
+  # - Grace days or late slack has been changed and the course record is saved
+  # - invalidate_cgdubs are somehow incurred
+  def self.update_course_gdu_watchlist_instances(course)
+    parameters = RiskCondition.get_gdu_condition_for_course(course.name)
+    return if parameters.nil?
+    
+    condition_id, grace_day_threshold, date = parameters
+
+    old_instances = course.watchlist_instances.where(risk_condition_id: condition_id)
+
+    new_instances = []
+    course_user_data = course.students
+    asmts_before_date = course.asmts_before_date(date)
+    if asmts_before_date.count == 0
+      ActiveRecord::Base.transaction do
+        old_instances.each do |inst|
+          inst.archive_watchlist_instance
+        end
+      end
+      return
+    end
+    course_user_data.each do |cud|
+      new_instance = self.add_new_instance_for_cud_grace_day_usage(course, condition_id, cud, asmts_before_date, grace_day_threshold)
+      new_instances << new_instance unless new_instance.nil?
+    end
+
+    ActiveRecord::Base.transaction do
+      old_instances.each do |inst|
+        inst.archive_watchlist_instance
+      end
+
+      new_instances.each do |inst|
+        if not inst.save
+          raise "Fail to create new watchlist instance for CUD #{inst.course_user_datum_id} in course #{course.name} with violation info #{inst.violation_info}"
+        end
+      end
+    end
+  end
+
+  def self.update_cud_gdu_watchlist_instances(cud)
+
+    # Ignore if this CUD is an instructor or CA or dropped
+    return unless (cud.student? and (cud.dropped == false or cud.dropped.nil?))
+    
+    # Get current grace day condition
+    parameters = RiskCondition.get_gdu_condition_for_course(cud.course.name)
+    return if parameters.nil?
+
+    condition_id, grace_day_threshold, date = parameters
+    
+    # Archive old ones if there exist some
+    old_instances = cud.watchlist_instances.where(risk_condition_id: condition_id)
+
+    asmts_before_date = cud.course.asmts_before_date(date)
+    if asmts_before_date.count == 0
+      ActiveRecord::Base.transaction do
+        old_instances.each do |inst|
+          inst.archive_watchlist_instance
+        end
+      end
+      return
+    end
+    
+    # Do the usual stuff as in refresh watchlist instances
+    # Create a new instance if criteria are fit
+    new_instance = self.add_new_instance_for_cud_grace_day_usage(cud.course, condition_id, cud, asmts_before_date, grace_day_threshold)
+    
+    ActiveRecord::Base.transaction do
+      old_instances.each do |inst|
+        inst.archive_watchlist_instance
+      end
+
+      unless new_instance.nil?
+        if not new_instance.save
+          raise "Fail to create new watchlist instance for CUD #{cud.id} in course #{cud.course.name} with violation info #{new_instance.violation_info}"
+        end
+      end
+    end
+  end
+
   def self.contact_many_watchlist_instances(instance_ids)
     instances = WatchlistInstance.where(id:instance_ids)
     if instance_ids.length() != instances.length()
@@ -113,53 +195,55 @@ private
   def self.add_new_instances_for_conditions(conditions, course)
     new_instances = []
     course_user_data = CourseUserDatum.where(course_id: course.id, instructor: false, course_assistant: false)
-    # HUGE TRANSACTION AHEAD
-    ActiveRecord::Base.transaction do
-      conditions.each do |condition|
-        case condition.condition_type
+    
+    conditions.each do |condition|
+      case condition.condition_type
+      
+      when "grace_day_usage"
+        grace_day_threshold = condition.parameters[:grace_day_threshold].to_i
+        date = condition.parameters[:date]
+        asmts_before_date = course.asmts_before_date(date)
+        next if asmts_before_date.count == 0 # go to the next condition loop if there is no latest assessment
+        for cud in course_user_data
+          new_instance = self.add_new_instance_for_cud_grace_day_usage(course, condition.id, cud, asmts_before_date, grace_day_threshold)
+          new_instances << new_instance unless new_instance.nil?
+        end
+
+      when "grade_drop"
+        percentage_drop = (condition.parameters[:percentage_drop]).to_f
+        consecutive_counts = condition.parameters[:consecutive_counts].to_i
         
-        when "grace_day_usage"
-          grace_day_threshold = condition.parameters[:grace_day_threshold].to_i
-          date = condition.parameters[:date]
-          asmts = course.assessments.ordered
-          for cud in course_user_data
-            # Because students couldn't submit after the end date, we can use that instead of updated_at
-            # to be more accurate in our consideration.
-            asmts_before_date = asmts.where("end_at < ?", date)
-            latest_asmt = asmts_before_date.last
-            next if latest_asmt.nil?
-            new_instance = self.add_new_instance_for_cud_grace_day_usage(course, condition.id, cud, asmts_before_date, grace_day_threshold)
-            new_instances << new_instance unless new_instance.nil?
-          end
+        categories = course.assessment_categories
+        asmt_arrs = categories.map { |category| course.assessments_with_category(category).ordered }
+        asmt_arrs.select! { |asmts| asmts.count >= consecutive_counts}
+        for cud in course_user_data
+          new_instance = self.add_new_instance_for_cud_grade_drop(course, condition.id, cud, asmt_arrs, consecutive_counts, percentage_drop)
+          new_instances << new_instance unless new_instance.nil?
+        end
 
-        when "grade_drop"
-          percentage_drop = (condition.parameters[:percentage_drop]).to_f
-          consecutive_counts = condition.parameters[:consecutive_counts].to_i
-          
-          categories = course.assessment_categories
-          asmt_arrs = categories.map { |category| course.assessments_with_category(category).ordered }
-          asmt_arrs.select! { |asmts| asmts.count >= consecutive_counts}
-          for cud in course_user_data
-            new_instance = self.add_new_instance_for_cud_grade_drop(course, condition.id, cud, asmt_arrs, consecutive_counts, percentage_drop)
-            new_instances << new_instance unless new_instance.nil?
-          end
+      when "no_submissions"
+        no_submissions_threshold = condition.parameters[:no_submissions_threshold].to_i
 
-        when "no_submissions"
-          no_submissions_threshold = condition.parameters[:no_submissions_threshold].to_i
+        for cud in course_user_data
+          new_instance = self.add_new_instance_for_cud_no_submissions(course, condition.id, cud, no_submissions_threshold)
+          new_instances << new_instance unless new_instance.nil?
+        end
 
-          for cud in course_user_data
-            new_instance = self.add_new_instance_for_cud_no_submissions(course, condition.id, cud, no_submissions_threshold)
-            new_instances << new_instance unless new_instance.nil?
-          end
+      when "low_grades"
+        grade_threshold = condition.parameters[:grade_threshold].to_f
+        count_threshold = condition.parameters[:count_threshold].to_i
 
-        when "low_grades"
-          grade_threshold = condition.parameters[:grade_threshold].to_f
-          count_threshold = condition.parameters[:count_threshold].to_i
+        for cud in course_user_data
+          new_instance = self.add_new_instance_for_cud_low_grades(course, condition.id, cud, grade_threshold, count_threshold)
+          new_instances << new_instance unless new_instance.nil?
+        end
+      end
+    end
 
-          for cud in course_user_data
-            new_instance = self.add_new_instance_for_cud_low_grades(course, condition.id, cud, grade_threshold, count_threshold)
-            new_instances << new_instance unless new_instance.nil?
-          end
+    ActiveRecord::Base.transaction do
+      new_instances.each do |inst|
+        if not inst.save
+          raise "Fail to create new watchlist instance for CUD #{inst.course_user_datum_id} in course #{course.name} with violation info #{inst.violation_info}"
         end
       end
     end
@@ -167,8 +251,11 @@ private
     return new_instances
   end
 
+  # The following 4 methods that create a watchlist instance for a course user datum does not
+  # save a new instance itself. Whoever calls them are responsible for doing so!
+
   def self.add_new_instance_for_cud_grace_day_usage(course, condition_id, cud, asmts_before_date, grace_day_threshold)
-    auds_before_date = asmts_before_date.map { |asmt| AssessmentUserDatum.find_by(course_user_datum_id: cud.id, assessment_id: asmt.id) }
+    auds_before_date = asmts_before_date.map { |asmt| asmt.aud_for(cud.id) }
     auds_before_date_filtered = auds_before_date.select { |aud| not aud.nil? }
     if auds_before_date_filtered.count < auds_before_date.count
       raise "Assessment user datum does not exist for some assessments for course user datum #{cud.id}"
@@ -182,9 +269,6 @@ private
       new_instance = WatchlistInstance.new(course_user_datum_id: cud.id, course_id: course.id,
                                            risk_condition_id: condition_id,
                                            violation_info: violation_info)
-      if not new_instance.save
-        raise "Fail to create new watchlist instance for CUD #{cud.id} in course #{course.name} with violation info #{violation_info}"
-      end
       return new_instance
     end
   end
@@ -242,9 +326,6 @@ private
       new_instance = WatchlistInstance.new(course_user_datum_id: cud.id, course_id: course.id,
                                            risk_condition_id: condition_id,
                                            violation_info: violation_info)
-      if not new_instance.save
-        raise "Fail to create new watchlist instance for CUD #{cud.id} in course #{course.name} with violation info #{violation_info}"
-      end
       return new_instance
     end
   end
@@ -259,9 +340,6 @@ private
       new_instance = WatchlistInstance.new(course_user_datum_id: cud.id, course_id: course.id,
                                            risk_condition_id: condition_id,
                                            violation_info: { :no_submissions_asmt_names => no_submissions_asmt_names })
-      if not new_instance.save
-        raise "Fail to create new watchlist instance for CUD #{cud.id} in course #{course.name} with violation info #{violation_info}"
-      end
       return new_instance
     end
   end
@@ -289,9 +367,6 @@ private
       new_instance = WatchlistInstance.new(course_user_datum_id: cud.id, course_id: course.id,
                                            risk_condition_id: condition_id,
                                            violation_info: violation_info)
-      if not new_instance.save
-        raise "Fail to create new watchlist instance for CUD #{cud.id} in course #{course.name} with violation info #{violation_info}"
-      end
       return new_instance
     end
   end
