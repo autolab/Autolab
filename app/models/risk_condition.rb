@@ -60,7 +60,9 @@ class RiskCondition < ApplicationRecord
     if params.length == 0
       if previous_types.length > 0 and not previous_types.any? { |t| t == "no_condition_selected" }
         # puts "case 2: previous conditions set to something and instructor doesn't want any this time"
-        create_condition_for_course_with_type(course_id, 0, {}, max_version + 1)
+        ActiveRecord::Base.transaction do
+          create_condition_for_course_with_type(course_id, 0, {}, max_version + 1)
+        end
       # else
       #   puts "case 3: previous conditions set to nothing selected and instructor doesn't want any this time either"
       end
@@ -82,9 +84,11 @@ class RiskCondition < ApplicationRecord
 
       unless no_change
         # puts "case 4: instructor changed conditions this time; previous conditions were either unset, or different from current parameters"
-        params.map do |k, v|
-          new_condition = create_condition_for_course_with_type(course_id, self.condition_types[k], v, max_version + 1)
-          conditions << new_condition
+        ActiveRecord::Base.transaction do
+          params.map do |k, v|
+            new_condition = create_condition_for_course_with_type(course_id, self.condition_types[k], v, max_version + 1)
+            conditions << new_condition
+          end
         end
       # else
       #   puts "case 5: previous conditions and current conditions match and no update is needed"

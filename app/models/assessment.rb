@@ -337,6 +337,11 @@ class Assessment < ApplicationRecord
     end
   end
 
+  # to be able to calculate total score for an assessment from another model
+  def default_total_score
+    problems.sum :max_score
+  end
+
 private
 
   def saved_change_to_grade_related_fields?
