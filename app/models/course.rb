@@ -30,6 +30,7 @@ class Course < ApplicationRecord
 
   before_save :cgdub_dependencies_updated, if: :grace_days_changed?
   before_save :cgdub_dependencies_updated, if: :late_slack_changed?
+  after_save :update_course_grade_watchlist_instances, if: :saved_change_to_grade_related_fields?
   before_create :cgdub_dependencies_updated
   after_create :init_course_folder
 
@@ -240,10 +241,16 @@ class Course < ApplicationRecord
   end
 
   def update_course_grade_watchlist_instances
-    # TODO: update all related course user data regarding grades related conditions
+    WatchlistInstance.update_course_grade_watchlist_instances(self)
   end
 
 private
+
+  def saved_change_to_grade_related_fields?
+    return (:saved_change_to_late_slack? or :saved_change_to_grace_days? or
+            :saved_change_to_version_threshold? or :saved_change_to_late_penalty? or
+            :saved_change_to_version_penalty?)
+  end
 
   def cgdub_dependencies_updated
     self.cgdub_dependencies_updated_at = Time.now

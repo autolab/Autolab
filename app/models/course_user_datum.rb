@@ -249,8 +249,8 @@ class CourseUserDatum < ApplicationRecord
     "ggl/dua-#{dua}/u-#{self.id}"
   end
 
-  def update_cud_grade_watchlist_instance
-    # TODO: update all related course user data regarding grades related conditions
+  def update_cud_grade_watchlist_instances
+    WatchlistInstance.update_cud_grade_watchlist_instances(self)
   end
 
 private

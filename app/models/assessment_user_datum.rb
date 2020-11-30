@@ -156,7 +156,7 @@ class AssessmentUserDatum < ApplicationRecord
 
       Rails.cache.delete course_user_datum.ggl_cache_key
 
-      # TODO: update cud's grade watchlist instance
+      course_user_datum.update_cud_grade_watchlist_instances
     end # release lock
   end
 
