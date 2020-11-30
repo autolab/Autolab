@@ -28,8 +28,8 @@ class Course < ApplicationRecord
 
   accepts_nested_attributes_for :late_penalty, :version_penalty
 
-  before_save :cgdub_dependencies_updated, if: :grace_days_changed?
-  before_save :cgdub_dependencies_updated, if: :late_slack_changed?
+  before_save :cgdub_dependencies_updated, if: :grace_days_or_late_slack_changed?
+  after_save :update_course_gdu_watchlist_instances, if: :saved_change_to_grace_days_or_late_slack?
   after_save :update_course_grade_watchlist_instances, if: :saved_change_to_grade_related_fields?
   before_create :cgdub_dependencies_updated
   after_create :init_course_folder
@@ -196,6 +196,16 @@ class Course < ApplicationRecord
   def invalidate_cgdubs
     cgdub_dependencies_updated
     save!
+
+    update_course_gdu_watchlist_instances
+  end
+
+  # Update the grace day usage condition watchlist instances for each course user datum
+  # This is called when:
+  # - Grace days or late slack have been changed and the record is saved
+  # - invalidate_cgdubs are somehow incurred
+  def update_course_gdu_watchlist_instances
+    WatchlistInstance.update_course_gdu_watchlist_instances(self)
   end
 
   # NOTE: Needs to be updated as new items are cached
@@ -244,12 +254,26 @@ class Course < ApplicationRecord
     WatchlistInstance.update_course_grade_watchlist_instances(self)
   end
 
+  def asmts_before_date(date)
+    asmts = self.assessments.ordered
+    asmts_before_date = asmts.where("due_at < ?", date)
+    return asmts_before_date
+  end
+
 private
 
   def saved_change_to_grade_related_fields?
     return (:saved_change_to_late_slack? or :saved_change_to_grace_days? or
             :saved_change_to_version_threshold? or :saved_change_to_late_penalty? or
             :saved_change_to_version_penalty?)
+  end
+
+  def grace_days_or_late_slack_changed?
+    return (:grace_days_changed? or :late_slack_changed?)
+  end
+
+  def saved_change_to_grace_days_or_late_slack?
+    return (:saved_change_to_grace_days? or :saved_change_to_late_slack?)
   end
 
   def cgdub_dependencies_updated

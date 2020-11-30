@@ -253,6 +253,14 @@ class CourseUserDatum < ApplicationRecord
     WatchlistInstance.update_cud_grade_watchlist_instances(self)
   end
 
+  # This method call is used specifically for the purpose of callback style update to watchlist
+  # Need to archive old instances and also add new instances
+  def update_cud_gdu_watchlist_instances
+    # At this point, all relevant previously cached grace day usage information should be invalidated
+    # Calls to calculate grace day usage should be from scratch
+    WatchlistInstance.update_cud_gdu_watchlist_instances(self)
+  end
+
 private
 
   # Need to create AUDs for all assessments when new user is created
