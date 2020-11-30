@@ -39,8 +39,7 @@ class Assessment < ApplicationRecord
   trim_field :name, :display_name, :handin_filename, :handin_directory, :handout, :writeup
   after_save :dump_yaml
   after_save :dump_embedded_quiz, if: :saved_change_to_embedded_quiz_form_data?
-  after_save :invalidate_course_cgdubs, if: :saved_change_to_due_at?
-  after_save :invalidate_course_cgdubs, if: :saved_change_to_max_grace_days?
+  after_save :invalidate_course_cgdubs, if: :saved_change_to_due_at_or_max_grace_days?
   after_create :create_AUDs_modulo_callbacks
 
   # Constants
@@ -340,6 +339,10 @@ class Assessment < ApplicationRecord
   end
 
 private
+
+  def saved_change_to_due_at_or_max_grace_days?
+    return (:saved_change_to_due_at? or :saved_change_to_max_grace_days?)
+  end
 
   def path(filename)
     Rails.root.join("courses", course.name, name, filename)

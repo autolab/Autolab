@@ -21,7 +21,7 @@ class AssessmentUserDatum < ApplicationRecord
   # * similarly, when the grade type is updated, the number of grace days used could change.
   #   submissions associated with AUDs with Zeroed and Excused grade types aren't counted as late
   #   even if they were submitted past the due date whereas Normal grade type AUD submissions are.
-  after_save :invalidate_cgdubs_for_assessments_after, if: :saved_change_to_latest_submission_id? or :saved_change_to_grade_type?
+  after_save :invalidate_cgdubs_for_assessments_after, if: :saved_change_to_latest_submission_id_or_grade_type?
 
   NORMAL = 0
   ZEROED = 1
@@ -155,6 +155,8 @@ class AssessmentUserDatum < ApplicationRecord
       end
 
       Rails.cache.delete course_user_datum.ggl_cache_key
+
+      course_user_datum.update_cud_gdu_watchlist_instances
     end # release lock
   end
 
@@ -246,6 +248,10 @@ protected
 
 private
 
+  def saved_change_to_latest_submission_id_or_grade_type?
+    return (:saved_change_to_latest_submission_id? or :saved_change_to_grade_type?)
+  end
+  
   # Applies given extension to given date limit (due date or end_at).
   # Returns nil, if extension is infinite and thus the date limit is void.
   def apply_extension(original_date, ext)
