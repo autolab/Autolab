@@ -15,6 +15,7 @@ class Problem < ApplicationRecord
 
   after_save -> { assessment.dump_yaml }
   after_save :update_course_grade_watchlist_instances, if: :saved_change_to_max_score?
+  after_create :update_course_grade_watchlist_instances
   after_destroy :update_course_grade_watchlist_instances
 
   # TODO: confirm working double delegate

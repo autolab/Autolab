@@ -212,7 +212,7 @@ class WatchlistInstance < ApplicationRecord
 
       new_instances.each do |inst|
         if not inst.save
-          raise "Fail to create new watchlist instance for CUD #{inst.course_user_datum_id} in course #{course.name} with violation info #{inst.violation_info}"
+          raise "Fail to create new watchlist instance for CUD #{inst.course_user_datum_id} in course #{cud.course.name} with violation info #{inst.violation_info}"
         end
       end
     end

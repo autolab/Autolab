@@ -40,6 +40,7 @@ class Submission < ApplicationRecord
 
   after_create :update_latest_submission
   after_destroy :update_latest_submission
+  after_destroy :update_cud_grade_watchlist_instances_if_latest
 
   # allow stuff to get updated by mass assign
   # attr_accessible :notes, :tweak_attributes
