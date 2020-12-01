@@ -30,7 +30,7 @@ class Submission < ApplicationRecord
   # keep track of latest submission
   after_save :update_latest_submission, if: :version_changed?
   after_save :update_latest_submission, if: :ignored_changed?
-  after_save :update_cud_grade_watchlist_instances_if_latest, if: :saved_change_to_tweak_or_ignored?
+  after_save :update_cud_grade_watchlist_instances_if_latest, if: :saved_change_to_tweak?
   after_save do |sub|
     COURSE_LOGGER.log("Submission #{sub.id} SAVED for " \
       "#{sub.course_user_datum.user.email} on" \
@@ -40,7 +40,6 @@ class Submission < ApplicationRecord
 
   after_create :update_latest_submission
   after_destroy :update_latest_submission
-  after_destroy :update_cud_grade_watchlist_instances_if_latest
 
   # allow stuff to get updated by mass assign
   # attr_accessible :notes, :tweak_attributes
@@ -380,10 +379,6 @@ class Submission < ApplicationRecord
   end
 
 private
-
-  def saved_change_to_tweak_or_ignored?
-    return (:saved_change_to_tweak? or :saved_change_to_ignored?)
-  end
 
   # NOTE: remember to update cache_key if additional options are added
   def raw_score_cache_key(options)
