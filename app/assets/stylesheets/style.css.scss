@@ -15,10 +15,15 @@ $autolab-subtle-red: #C87B7E;
 $autolab-subtle-gray: #eee;
 $autolab-highlight-gray: #ccc;
 $autolab-black-text: #212121;
+$autolab-blue-text: #0882af;
 #F2EFEF
 
 html, body {
   height: 100%;
+}
+
+a {
+  color: $autolab-blue-text;
 }
 
 /* Error Classes - for elements that display error/status messages */

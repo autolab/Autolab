@@ -21,7 +21,6 @@
 
 #last_updated a {
   font: inherit;
-  color: #1874cd;
 }
 
 #last_updated a.regenerate {
@@ -105,7 +104,7 @@
 }
 
 #gradebook .slick-cell.andrew a {
-  color: #1874cd;
+  color: #0882af;
   text-decoration: none;
   font: inherit;
 }
