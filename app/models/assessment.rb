@@ -228,6 +228,8 @@ class Assessment < ApplicationRecord
     # config file might have an updated custom raw score function: clear raw score cache
     invalidate_raw_scores
 
+    update_course_grade_watchlist_instances
+
     logger.info "Loaded #{config_file_path}"
   end
 
