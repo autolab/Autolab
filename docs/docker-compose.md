@@ -194,9 +194,7 @@ Run `make set-perms` again
 ### Restarting Autolab Passenger Server
 This is useful when you might want to test out some code change within the Autolab container without having to rebuild everything again. These changes can be applied by just restarting the Passenger service that is serving Autolab.
 
-First navigate to the app directory `/home/app/webapp`.
-
-Then run `passenger-config restart-app`:
+Run `passenger-config restart-app`:
 
 ```
 root@8b56488b3fb6:/home/app/webapp# passenger-config restart-app
