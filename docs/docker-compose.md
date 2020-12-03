@@ -190,3 +190,20 @@ root@a5b77b5267b1:/opt/TangoService/Tango# curl autolab
 
 ### Permission issues in Autolab
 Run `make set-perms` again
+
+### Restarting Autolab Passenger Server
+First navigate to the app directory `/home/app/webapp`.
+
+Then run `passenger-config restart-app`:
+
+```
+root@8b56488b3fb6:/home/app/webapp# passenger-config restart-app
+Please select the application to restart.
+Tip: re-run this command with --help to learn how to automate it.
+If the menu doesn't display correctly, press '!'
+
+ ‣   /home/app/webapp (production)
+     Cancel
+
+Restarting /home/app/webapp (production)
+```
