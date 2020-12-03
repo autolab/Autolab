@@ -192,6 +192,8 @@ root@a5b77b5267b1:/opt/TangoService/Tango# curl autolab
 Run `make set-perms` again
 
 ### Restarting Autolab Passenger Server
+This is useful when you might want to test out some code change within the Autolab container without having to rebuild everything again. These changes can be applied by just restarting the Passenger service that is serving Autolab.
+
 First navigate to the app directory `/home/app/webapp`.
 
 Then run `passenger-config restart-app`:
