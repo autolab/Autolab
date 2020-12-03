@@ -30,7 +30,7 @@ class Submission < ApplicationRecord
   # keep track of latest submission
   after_save :update_latest_submission, if: :version_changed?
   after_save :update_latest_submission, if: :ignored_changed?
-  after_save :update_cud_grade_watchlist_instances_if_latest, if: :saved_change_to_tweak?
+  after_save :update_cud_grade_watchlist_instances_if_latest, if: :saved_change_to_tweak_id?
   after_save do |sub|
     COURSE_LOGGER.log("Submission #{sub.id} SAVED for " \
       "#{sub.course_user_datum.user.email} on" \
@@ -280,6 +280,10 @@ class Submission < ApplicationRecord
   end
 
   def all_scores_released?
+    if self.scores.count != self.assessment.problems.count
+      return false
+    end
+    
     return self.scores.inject(true) { |result, score| result and score.released? }
   end
 
@@ -373,7 +377,7 @@ class Submission < ApplicationRecord
   end
 
   def update_cud_grade_watchlist_instances_if_latest
-    if aud.latest_submission_id == self.id
+    if self.aud.latest_submission_id == self.id
       self.course_user_datum.update_cud_grade_watchlist_instances
     end
   end

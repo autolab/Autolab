@@ -40,10 +40,8 @@ class Assessment < ApplicationRecord
   after_save :dump_yaml
   after_save :dump_embedded_quiz, if: :saved_change_to_embedded_quiz_form_data?
   after_save :invalidate_course_cgdubs, if: :saved_change_to_due_at_or_max_grace_days?
-  after_save :update_course_grade_watchlist_instances, if: :saved_change_to_grade_related_fields?
+  after_save :update_course_grade_watchlist_instances_if_past_end_at, if: :saved_change_to_grade_related_fields?
   after_create :create_AUDs_modulo_callbacks
-
-  delegate :update_course_grade_watchlist_instances, to: :course
 
   # Constants
   ORDERING = "due_at ASC, name ASC"
@@ -228,7 +226,7 @@ class Assessment < ApplicationRecord
     # config file might have an updated custom raw score function: clear raw score cache
     invalidate_raw_scores
 
-    update_course_grade_watchlist_instances
+    update_course_grade_watchlist_instances_if_past_end_at
 
     logger.info "Loaded #{config_file_path}"
   end
@@ -343,16 +341,22 @@ class Assessment < ApplicationRecord
     problems.sum :max_score
   end
 
+  def update_course_grade_watchlist_instances_if_past_end_at
+    if Time.now >= self.end_at
+      self.course.update_course_grade_watchlist_instances
+    end
+  end
+
 private
 
   def saved_change_to_grade_related_fields?
-    return (:saved_change_to_due_at? or :saved_change_to_late_penalty? or
-            :saved_change_to_max_grace_days? or :saved_change_to_version_threshold?
-            :saved_change_to_version_penalty?)
+    return (saved_change_to_due_at? or saved_change_to_late_penalty_id? or
+            saved_change_to_max_grace_days? or saved_change_to_version_threshold? or
+            saved_change_to_version_penalty_id?)
   end
 
   def saved_change_to_due_at_or_max_grace_days?
-    return (:saved_change_to_due_at? or :saved_change_to_max_grace_days?)
+    return (saved_change_to_due_at? or saved_change_to_max_grace_days?)
   end
 
   def path(filename)

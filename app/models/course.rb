@@ -203,9 +203,17 @@ class Course < ApplicationRecord
   # Update the grace day usage condition watchlist instances for each course user datum
   # This is called when:
   # - Grace days or late slack have been changed and the record is saved
-  # - invalidate_cgdubs are somehow incurred
+  # - invalidate_cgdubs is somehow incurred
   def update_course_gdu_watchlist_instances
     WatchlistInstance.update_course_gdu_watchlist_instances(self)
+  end
+
+  # Update the grade related condition watchlist instances for each course user datum
+  # This is called when:
+  # - Fields related to grades are changed in the course setting 
+  # - Assessment setting is changed and assessment has passed end_at
+  def update_course_grade_watchlist_instances
+    WatchlistInstance.update_course_grade_watchlist_instances(self)
   end
 
   # NOTE: Needs to be updated as new items are cached
@@ -250,10 +258,6 @@ class Course < ApplicationRecord
     name
   end
 
-  def update_course_grade_watchlist_instances
-    WatchlistInstance.update_course_grade_watchlist_instances(self)
-  end
-
   def asmts_before_date(date)
     asmts = self.assessments.ordered
     asmts_before_date = asmts.where("due_at < ?", date)
@@ -263,17 +267,17 @@ class Course < ApplicationRecord
 private
 
   def saved_change_to_grade_related_fields?
-    return (:saved_change_to_late_slack? or :saved_change_to_grace_days? or
-            :saved_change_to_version_threshold? or :saved_change_to_late_penalty? or
-            :saved_change_to_version_penalty?)
+    return (saved_change_to_late_slack? or saved_change_to_grace_days? or
+            saved_change_to_version_threshold? or saved_change_to_late_penalty_id? or
+            saved_change_to_version_penalty_id?)
   end
 
   def grace_days_or_late_slack_changed?
-    return (:grace_days_changed? or :late_slack_changed?)
+    return (grace_days_changed? or late_slack_changed?)
   end
 
   def saved_change_to_grace_days_or_late_slack?
-    return (:saved_change_to_grace_days? or :saved_change_to_late_slack?)
+    return (saved_change_to_grace_days? or saved_change_to_late_slack?)
   end
 
   def cgdub_dependencies_updated

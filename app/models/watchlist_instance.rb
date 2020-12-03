@@ -375,10 +375,10 @@ private
       while i+consecutive_counts-1 < auds.count
         begin_aud = auds[i]
         end_aud = auds[i+consecutive_counts-1]
-        begin_grade = begin_aud.final_score(cud)
-        end_grade = end_aud.final_score(cud)
+        begin_grade = begin_aud.final_score_ignore_grading_deadline(cud)
+        end_grade = end_aud.final_score_ignore_grading_deadline(cud)
         if begin_grade.nil? or end_grade.nil?
-          # - Grading deadline for either has not passed yet
+          # - Either is excused
           i = i + 1
           next
         elsif (begin_aud.latest_submission and not begin_aud.latest_submission.all_scores_released?) or
@@ -437,8 +437,8 @@ private
     auds = AssessmentUserDatum.where(course_user_datum_id: cud.id)
     violation_info = {}
     auds.each do |aud|
-      aud_score = aud.final_score(cud)
-      # - DDL not passed yet
+      aud_score = aud.final_score_ignore_grading_deadline(cud)
+      # - Score is excused
       # - Score has not been released yet
       # - Student did not make any submissions at all
       if aud_score.nil? or
