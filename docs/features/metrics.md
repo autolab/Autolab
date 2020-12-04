@@ -62,7 +62,7 @@ Once instructors have set up risk metrics for their course, students that are id
 
 ### Watchlist Instance
 
-[Watchlist Instance](/images/watchlist_instance.png)
+![Watchlist Instance](/images/watchlist_instance.png)
 
 Every row in the watchlist represents a particular instance of a student who meets one or more of the risk conditions. A single student can appear in multiple watchlist instances if they are identified for new risk conditions on separate occassions of loading the watchlist. 
 
@@ -82,7 +82,7 @@ There are four categories that watchlist instances can fall into: new, contacted
 
 The `new` tab contains identified students who have not yet been contacted or resolved. The number of `new` instances will appear in a notification badge on the main course page, as shown below. 
 
-[Metrics Notification](/images/metrics_notification.png)
+![Metrics Notification](/images/metrics_notification.png)
 
 #### Contacted
 
