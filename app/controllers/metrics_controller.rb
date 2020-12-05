@@ -29,16 +29,55 @@ class MetricsController < ApplicationController
 	action_auth_level :get_watchlist_instances, :instructor
 	def get_watchlist_instances
 		# This API endpoint retrieves the watchlist instances for a particular course
-		# On success, a JSON list of watchlist instances will be returned
-		# params required would be the course name
+		# On success, a JSON that contains the following will be returned
+		#
+		# instances: list of watchlist instances will be returned
 		# each watchlist instance will contain course_user_datum, course_id, risk_condition_id
 		# status (new, resolved, contacted), archived or not, and violation info 
 		# (a json containing more info pertaining to violation)
+		# 
+		# risk_conditions: dictionary of risk conditions found in watchlist instances, key being the risk_conditon_id
+		# each entry contains the condition_type
+		# 
+		# users: dicitonary of users found in watchlist instances, key being the course_user_datum_id
+		# each entry contains the first name, last name and email
+		#
+		# params required would be the course name
 		# On error, a 404 error is returned
 		begin
 			course_name = params[:course_name]
 			instances = WatchlistInstance.get_instances_for_course(course_name)
-			render json: instances, status: :ok
+			
+			course_user_data_ids = instances.map{ |instance| 
+				instance.course_user_datum_id }
+				.select{|elem| not elem.nil?}.uniq
+
+			user_data = User.joins(:course_user_data)
+							.where(course_user_data:{id:course_user_data_ids})
+							.select('users.id as user_id, 
+								     users.first_name, 
+									 users.last_name,users.email, 
+									 course_user_data.id as course_user_datum_id')
+							.as_json()
+			
+			user_hash = user_data.inject({}) do |hash,entry|
+				hash[entry["course_user_datum_id"]] = entry
+				hash
+			end
+
+			risk_condition_ids = instances.map{ |instance| 
+					instance.risk_condition_id}
+					.select{|elem| not elem.nil?}.uniq
+
+			risk_condition_data = RiskCondition.where(id:risk_condition_ids)
+									.select("id,condition_type").as_json()
+			
+			risk_hash = risk_condition_data.inject({}) do |hash,entry|
+				hash[entry["id"]] = entry
+				hash
+			end
+
+			render json: {:risk_conditions=>risk_hash,:users=> user_hash,:instances=>instances}, status: :ok
 		rescue => error
 			render json: {error:error.message}, status: :not_found
 			return
