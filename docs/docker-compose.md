@@ -18,6 +18,8 @@ First ensure that you have Docker and Docker Compose installed on your machine. 
 9. Create initial root user: `make create-user`
 10. Stop all containers: `docker-compose stop`
 11. Continue with TLS setup as outlined in the next section
+12. Build the autograding image(s) that you want to use in Tango (see [the docs](https://docs.autolabproject.com/tango-vmms/#docker-vmms-setup) for more information). For this setup we will stick to the default Ubuntu 14.04 autograding image: `docker build -t autograding_image Tango/vmms/`. Note that we can just run this directly on the host because we are mapping the Docker socket to the Tango container (i.e they are using the same Docker server).
+13. Start up everything: `docker-compose up -d`. Autolab should now be accessible on port 80 (and 443 if you configured SSL)!
 
 ## Configuring SSL/TLS
 There are three options for TLS: using Let's Encrypt (for free TLS certificates), using your own certificate, and not using TLS (not recommended for production deployment).
