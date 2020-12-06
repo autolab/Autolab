@@ -106,14 +106,12 @@ class AssessmentUserDatum < ApplicationRecord
 
   def final_score(as_seen_by)
     @final_score ||= {}
-    @final_score[as_seen_by] ||= {}
-    @final_score[as_seen_by][:consider_grading_deadline] ||= final_score! as_seen_by
+    @final_score[as_seen_by] ||= final_score! as_seen_by
   end
 
   def final_score_ignore_grading_deadline(as_seen_by)
-    @final_score ||= {}
-    @final_score[as_seen_by] ||= {}
-    @final_score[as_seen_by][:ignore_grading_deadline] ||= final_score_ignore_grading_deadline! as_seen_by
+    @final_score_ignore_grading_deadline ||= {}
+    @final_score_ignore_grading_deadline[as_seen_by] ||= final_score_ignore_grading_deadline! as_seen_by
   end
 
   def status(as_seen_by)

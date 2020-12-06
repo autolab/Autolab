@@ -174,7 +174,7 @@ class WatchlistInstance < ApplicationRecord
     end
   end
 
-  def self.update_cud_grade_watchlist_instances(cud)
+  def self.update_individual_grade_watchlist_instances(cud)
     # Ignore if this CUD is an instructor or CA or dropped
     return unless (cud.student? and (cud.dropped == false or cud.dropped.nil?))
 

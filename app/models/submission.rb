@@ -30,7 +30,7 @@ class Submission < ApplicationRecord
   # keep track of latest submission
   after_save :update_latest_submission, if: :version_changed?
   after_save :update_latest_submission, if: :ignored_changed?
-  after_save :update_cud_grade_watchlist_instances_if_latest, if: :saved_change_to_tweak_id?
+  after_save :update_individual_grade_watchlist_instances_if_latest, if: :saved_change_to_tweak_id?
   after_save do |sub|
     COURSE_LOGGER.log("Submission #{sub.id} SAVED for " \
       "#{sub.course_user_datum.user.email} on" \
@@ -376,9 +376,9 @@ class Submission < ApplicationRecord
     assessment.aud_for course_user_datum_id
   end
 
-  def update_cud_grade_watchlist_instances_if_latest
+  def update_individual_grade_watchlist_instances_if_latest
     if self.aud.latest_submission_id == self.id
-      self.course_user_datum.update_cud_grade_watchlist_instances
+      WatchlistInstance.update_individual_grade_watchlist_instances(self.course_user_datum)
     end
   end
 

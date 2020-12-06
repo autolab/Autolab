@@ -249,10 +249,6 @@ class CourseUserDatum < ApplicationRecord
     "ggl/dua-#{dua}/u-#{self.id}"
   end
 
-  def update_cud_grade_watchlist_instances
-    WatchlistInstance.update_cud_grade_watchlist_instances(self)
-  end
-
   # This method call is used specifically for the purpose of callback style update to watchlist
   # Need to archive old instances and also add new instances
   def update_cud_gdu_watchlist_instances

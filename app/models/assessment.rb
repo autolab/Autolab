@@ -42,6 +42,7 @@ class Assessment < ApplicationRecord
   after_save :invalidate_course_cgdubs, if: :saved_change_to_due_at_or_max_grace_days?
   after_save :update_course_grade_watchlist_instances_if_past_end_at, if: :saved_change_to_grade_related_fields?
   after_create :create_AUDs_modulo_callbacks
+  after_destroy :update_course_grade_watchlist_instances_if_past_end_at
 
   # Constants
   ORDERING = "due_at ASC, name ASC"
@@ -350,9 +351,7 @@ class Assessment < ApplicationRecord
 private
 
   def saved_change_to_grade_related_fields?
-    return (saved_change_to_due_at? or saved_change_to_late_penalty_id? or
-            saved_change_to_max_grace_days? or saved_change_to_version_threshold? or
-            saved_change_to_version_penalty_id?)
+    return (saved_change_to_due_at? or saved_change_to_max_grace_days? or saved_change_to_version_threshold?)
   end
 
   def saved_change_to_due_at_or_max_grace_days?
