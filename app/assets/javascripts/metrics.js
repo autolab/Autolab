@@ -68,11 +68,10 @@ $.getJSON(metrics_endpoints['get'],function(data, status){
 	if(status=='success'){
 		// situation when instructors have not set up any risk metrics
 		if(data.length == 0){
-      		$("#undefined_metrics").css("display", "inherit");
-      		$("#defined_metrics").css("display", "None");
+			$("#undefined_metrics").show();
+      		$("#defined_metrics").hide();
+      		$('.top-bar').hide();
 		}else{
-			$("#undefined_metrics").css("display", "None");
-      		$("#defined_metrics").css("display", "inherit");
 			get_watchlist_function();
 		}
 		// situation when no conditions have been selected
@@ -189,12 +188,20 @@ $('#save').click(function(){
 		}
 	});
 
-	refresh_watchlist();
+	// nothing was checked
+	if($.isEmptyObject(new_conditions)) {
+		$("#undefined_metrics").show();
+      	$("#defined_metrics").hide();
+      	$('.top-bar').hide();
+	}
+	else{
+		refresh_watchlist();
+	}
 })
 
 function get_html_empty_message(message){
 	return `
-    	<div id="undefined_metrics">
+    	<div id="empty_tabs">
              <center>
                 <i class="huge inbox icon"></i> 
                 <h3> ${message} </h3>
@@ -209,6 +216,9 @@ function get_watchlist_function(){
 	    	var contacted_empty = 0;
 	    	var resolved_empty = 0;
 	    	var archived_empty = 0;
+	    	
+	    	$("#undefined_metrics").hide();
+      		$("#defined_metrics").show();
 
 	    	$('#new_tab').empty();
 	    	$('#contacted_tab').empty();
@@ -251,10 +261,10 @@ function get_watchlist_function(){
 	    	if (!new_empty){
 	    		html_empty_message = get_html_empty_message("There are no new students at risk");
 	    		$('#new_tab').html(html_empty_message);
-	    		$('.top-bar').css("display", "None");
+	    		$('.top-bar').hide();
 	    	} 
 	    	else {
-	    		$('.top-bar').css("display", "inherit");
+	    		$('.top-bar').show();
 	    	}
 	    	if (!contacted_empty){
 	    		html_empty_message = get_html_empty_message("You have not contacted any students");
