@@ -109,6 +109,11 @@ class AssessmentUserDatum < ApplicationRecord
     @final_score[as_seen_by] ||= final_score! as_seen_by
   end
 
+  def final_score_ignore_grading_deadline(as_seen_by)
+    @final_score_ignore_grading_deadline ||= {}
+    @final_score_ignore_grading_deadline[as_seen_by] ||= final_score_ignore_grading_deadline! as_seen_by
+  end
+
   def status(as_seen_by)
     @status ||= {}
     @status[as_seen_by] ||= status! as_seen_by
@@ -249,7 +254,7 @@ protected
 private
 
   def saved_change_to_latest_submission_id_or_grade_type?
-    return (:saved_change_to_latest_submission_id? or :saved_change_to_grade_type?)
+    return (saved_change_to_latest_submission_id? or saved_change_to_grade_type?)
   end
   
   # Applies given extension to given date limit (due date or end_at).
@@ -291,6 +296,24 @@ private
                     if Time.now <= assessment.grading_deadline
                       nil
                     elsif latest_submission
+                      latest_submission.final_score as_seen_by
+                    else
+                      0.0
+                    end
+                  when ZEROED
+                    0.0
+                  when EXCUSED
+                    nil
+                  end
+
+    # TODO: final_score = apply_tweak(final_score) if final_score
+    final_score
+  end
+
+  def final_score_ignore_grading_deadline!(as_seen_by)
+    final_score = case grade_type
+                  when NORMAL
+                    if latest_submission
                       latest_submission.final_score as_seen_by
                     else
                       0.0

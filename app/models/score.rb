@@ -4,7 +4,9 @@ class Score < ApplicationRecord
   belongs_to :grader, class_name: "CourseUserDatum"
 
   after_save :invalidate_raw_score
+  after_save :update_individual_grade_watchlist_instances_if_submission_latest, if: :saved_change_to_score_or_released?
   after_destroy :invalidate_raw_score
+  after_destroy :update_individual_grade_watchlist_instances_if_submission_latest
 
   scope :on_latest_submissions, -> { where(submissions: { ignored: false }).joins(submission: :assessment_user_datum) }
 
@@ -53,5 +55,18 @@ class Score < ApplicationRecord
       "#{score} on #{submission.assessment.name}:#{problem.name} by" \
       " #{setter}")
     end
+  end
+
+  def update_individual_grade_watchlist_instances_if_submission_latest
+    # check whether score has been released
+    if self.released
+      self.submission.update_individual_grade_watchlist_instances_if_latest
+    end
+  end
+
+private
+
+  def saved_change_to_score_or_released?
+    return (saved_change_to_score? or saved_change_to_released?)
   end
 end
