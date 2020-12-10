@@ -52,3 +52,46 @@ Identify students who have not been submitting assignments. We made this a flexi
 #### Students with *number* submitted assignments below a percentage of *number*
 
 Identify weaker students. We expect this condition to be useful earlier in the course, as it looks at all submitted assignments. It does not consider students who have not submitted an assignment.
+
+
+## Watchlist
+
+![Watchlist](/images/watchlist.png)
+
+Once instructors have set up risk metrics for their course, students that are identified as at-risk students based on these metrics will appear in the watchlist.
+
+### Watchlist Instance
+
+![Watchlist Instance](/images/watchlist_instance.png)
+
+Every row in the watchlist represents a particular instance of a student who meets one or more of the risk conditions. A single student can appear in multiple watchlist instances if they are identified for new risk conditions on separate occassions of loading the watchlist. 
+
+For example, let's look at Jane Doe in the image above. Upon loading the watchlist, Jane appears in a watchlist instance for using `3 grace days` before the instructor-specified date and for having `2 low scores` below the instructor-specified threshold. If Jane later receives another score below the threshold, a new instance will appear for Jane when the instructor reloads the watchlist. Jane now appears twice in the watchlist, once in an instance with `3 grace days` and `2 low scores`, and once in an instance with `3 grace days` and `3 low scores`.
+
+#### Actions
+
+The instructor can act on a watchlist instance by either contacting the student or resolving the student. Clicking the `contact` button on the watchlist instance directs the instructor to a mailto link and moves the instance into the `contacted` tab. Clicking the `resolve` button moves the instance into the `resolved` tab. The `contacted` and `resolved` tabs are discussed in the next section. To perform a "resolve" or "contact" in bulk, an instructor can click on multiple checkboxes and use the buttons located above the watchlist, or the instructor can select all by using the checkbox located above the watchlist.
+
+An instructor can also hover over the condition tags to view the specific submissions and/or scores that led to the student being identified.
+
+### Tabs
+
+There are four categories that watchlist instances can fall into: new, contacted, resolved, and archived.
+
+#### New
+
+The `new` tab contains identified students who have not yet been contacted or resolved. The number of `new` instances will appear in a notification badge on the main course page, as shown below. 
+
+![Metrics Notification](/images/metrics_notification.png)
+
+#### Contacted
+
+The `contacted` tab contains all instances for which the instructor has contacted the student. Note: this does *not* mean that the student has been contacted for *all* associated watchlist instances.
+
+#### Resolved
+
+The `resolved` tab contains all instances that the instructor has marked as resolved. Note: this does *not* mean that the student has been marked as resolved for *all* associated watchlist instances.
+
+#### Archived
+
+When an instructor adjusts the risk metrics for a course, all instances that were in `contacted` or `resolved` for the outdated risk metrics are placed into `archived`. All `new` instances for the outdated risk metrics are dropped. As such, all instances in `new`, `contacted`, and `resolved` are consistent with the most up-to-date risk metrics.
