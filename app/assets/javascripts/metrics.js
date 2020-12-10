@@ -13,7 +13,7 @@ Object.freeze(metrics_endpoints);
 $(document).ready(function(){
 
 	// Initializing Fomantic UI elements
-    $('.tabular.menu .item').tab();	
+	$('.tabular.menu .item').tab();	
 	$('.ui.dropdown').dropdown();
 	$('.ui.checkbox').checkbox();
 	$('.ui.calendar').calendar({type: 'date', initialDate: new Date()});

@@ -100,6 +100,32 @@ class RiskCondition < ApplicationRecord
     end
   end
 
+  def self.get_grade_drop_condition_for_course(course_name)
+    current_conditions = self.get_current_for_course(course_name)
+    return nil if current_conditions.count == 0
+
+    # Check for whether there exists one of type :grade_drop
+    grade_drop_condition = current_conditions.select { |c| c.condition_type.to_sym == :grade_drop }
+    return nil if grade_drop_condition.count != 1
+    grade_drop_condition = grade_drop_condition[0]
+    return grade_drop_condition.id,
+           grade_drop_condition.parameters[:percentage_drop].to_f,
+           grade_drop_condition.parameters[:consecutive_counts].to_i
+  end
+
+  def self.get_low_grades_condition_for_course(course_name)
+    current_conditions = self.get_current_for_course(course_name)
+    return nil if current_conditions.count == 0
+
+    # Check for whether there exists one of type :low_grades
+    low_grades_condition = current_conditions.select { |c| c.condition_type.to_sym == :low_grades }
+    return nil if low_grades_condition.count != 1
+    low_grades_condition = low_grades_condition[0]
+    return low_grades_condition.id,
+           low_grades_condition.parameters[:grade_threshold].to_f,
+           low_grades_condition.parameters[:count_threshold].to_i
+  end
+
   # return nil if course doesn't have any current gdu condition
   # return condition_id, grace_day_threshold, date otherwise
   def self.get_gdu_condition_for_course(course_name)

@@ -33,9 +33,9 @@ Identify students who have been slipping in their grades. Below are the underlyi
 
 - windowed based on the *number* consecutive 
 - decrease must be consecutive
-- skips over no submissions
+- skips over no-submissions
 
-For example, given 4 assignments and we are looking 20 percent grade drop over 3 consecutive assignments  
+For example, given 4 assignments and we are looking for 20 percent grade drop over 3 consecutive assignments  
 
 | Assignment | 1  | 2  | 3         | 4  | Grade Dropping?                                       |
 |------------|----|----|-----------|----|-------------------------------------------------------|
