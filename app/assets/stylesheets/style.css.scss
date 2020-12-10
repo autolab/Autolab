@@ -1219,3 +1219,26 @@ div.center {
 .nobr {
   white-space: nowrap;
 }
+
+/* For skipping to main content button */
+a.skip-main {
+  position:absolute;
+  top:auto;
+  left:-100px;
+  width:1px;
+  height:1px;
+  overflow:hidden;
+  z-index:-999;
+}
+
+a.skip-main:focus, a.skip-main:active {
+  background-color:#fff;
+  left: auto;
+  top: auto;
+  width: 30%;
+  height: auto;
+  overflow:auto;
+  padding:5px;
+  font-size:1em;
+  z-index:999;
+} 
