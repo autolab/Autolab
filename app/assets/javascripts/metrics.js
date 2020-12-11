@@ -72,7 +72,7 @@ $.getJSON(metrics_endpoints['get'],function(data, status){
       		$("#defined_metrics").hide();
       		$('.top-bar').hide();
 		}else{
-			get_watchlist_function();
+			refresh_watchlist();
 		}
 		// situation when no conditions have been selected
 		if(data.length == 1 && data[0]['condition_type'] == "no_condition_selected")
@@ -116,6 +116,13 @@ $.getJSON(metrics_endpoints['get'],function(data, status){
 
 	$('.ui.form').change(function() {
 		$('#save').removeClass('disabled');
+	});
+
+	$('.ui.calendar').calendar({
+		type: 'date',
+ 		onChange: function () {
+     		$('#save').removeClass('disabled');
+    	},
 	});
 
 	$(window).bind('beforeunload', function(){
@@ -209,7 +216,7 @@ function get_html_empty_message(message){
         </div>`;
 }
 
-function get_watchlist_function(){
+function refresh_watchlist(){
 	$.getJSON(watchlist_endpoints['get'],function(data, status){
 	    if(status=='success'){
 	    	var new_empty = 0;
@@ -227,17 +234,18 @@ function get_watchlist_function(){
 
 	    	data["instances"].forEach(watchlist_instance => {
 	    		var user_id = watchlist_instance?.course_user_datum_id;
+	    		var instance_id = watchlist_instance?.id;
 		    	var user_name = data["users"][user_id]?.first_name + " " + data["users"][user_id]?.last_name; 
 		    	var user_email = data["users"][user_id]?.email;
 		    	var condition_type = data["risk_conditions"][watchlist_instance?.risk_condition_id]?.condition_type;
 
 	    		if (watchlist_instance?.archived) {
 	    			archived_empty = 1;
-	    			var html_code = `<div class="ui segment"> ${user_name}, ${user_email}, ${condition_type}, ${watchlist_instance?.status} </div>`;
+	    			var html_code = `<div class="ui segment"> ${user_name}, ${user_email}, ${condition_type}, ${instance_id}, ${watchlist_instance?.status} </div>`;
 	    			$('#archived_tab').append(html_code);
 
 	    		} else {
-	    			var html_code = `<div class="ui segment"> ${user_name}, ${user_email}, ${condition_type} </div>`;
+	    			var html_code = `<div class="ui segment"> ${user_name}, ${user_email}, ${condition_type}, ${instance_id}</div>`;
 		    		switch(watchlist_instance?.status){
 		    			case "new":
 		    				new_empty = 1;
@@ -283,19 +291,40 @@ function get_watchlist_function(){
 
 }
 
-// TODO: update logic here when contacting / resolving students
-function update_watchlist(conditions){
+// TODO: obtain correct instance_id to update watchlist instance
+$('#contact_button').click(function(){
+	method = "contact";
+	ids = []
+	update_watchlist(method, ids);
+})
+
+$('#resolve_button').click(function(){
+	method = "resolve";
+	ids = []
+	update_watchlist(method, ids);
+})
+
+function update_watchlist(method, ids){
+	let students_selected = {};
+	students_selected['method'] = method;
+	students_selected['ids'] = ids;
+
 	$.ajax({
 		url:watchlist_endpoints['update'],
 		dataType: "json",
 		contentType:'application/json',
-		data: JSON.stringify(conditions),
+		data: JSON.stringify(students_selected),
 		type: "POST",
 		success:function(data){
-			console.log(data);
+			refresh_watchlist();
 		},
 		error:function(result, type){
-			console.log(result, type);
+			render_banner({
+				type:"negative",
+				header:"Currently unable to " + method + " students",
+				message: "Do try again later",
+				timeout: -1
+			});
 		},
 		complete:function(){
 		}
@@ -306,14 +335,6 @@ function update_watchlist(conditions){
 $('#refresh_btn').click(function(){
 	refresh_watchlist();
 })
-
-function refresh_watchlist(){
-	$.getJSON(watchlist_endpoints['get'],function(data, status){
-    	if(status=='success'){
-    		get_watchlist_function();
-    	}
-    });
-}
 
 
 // variable to keep track of the different banners
