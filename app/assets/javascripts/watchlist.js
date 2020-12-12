@@ -164,7 +164,7 @@ function get_watchlist_function(){
 	    	$('#new_tab').empty();
 	    	$('#contacted_tab').empty();
 	    	$('#resolved_tab').empty();
-				$('#archived_tab').empty();
+        $('#archived_tab').empty();
 
         data["instances"].forEach(watchlist_instance => {
           var id = watchlist_instance?.id;
@@ -207,10 +207,10 @@ function get_watchlist_function(){
           new_html += get_row_html(user_id, instance, false, archived_instances);
         });
         $.each(contacted_instances, function( user_id, instance ) {
-          resolved_html += get_row_html(user_id, instance, false, archived_instances);
+          contacted_html += get_row_html(user_id, instance, false, archived_instances);
         });
         $.each(resolved_instances, function( user_id, instance ) {
-          contacted_html += get_row_html(user_id, instance, false, archived_instances);
+          resolved_html += get_row_html(user_id, instance, false, archived_instances);
         });
         $.each(archived_instances, function( user_id, instance ) {
           archived_html += get_row_html(user_id, instance, true, archived_instances);
@@ -257,6 +257,7 @@ function get_watchlist_function(){
           }
         }
       });
+
       $('.ui.icon').popup();
       $('.ui.circular.label.condition').popup();
 
@@ -275,7 +276,8 @@ function get_watchlist_function(){
         var user_id = $(this).parent().parent().attr('id');
         var instances = get_active_instances(
           new_instances, contacted_instances, resolved_instances, archived_instances);
-
+        
+        console.log(instances);
         update_watchlist(method, instances[user_id]["instance_ids"]);
       })
   });
