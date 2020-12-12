@@ -318,7 +318,7 @@ function get_watchlist_function(){
 }
 
 // Uncheck all checkboxes when moving to another tab
-$('.ui.menu .item').on('click', function() {
+$('.ui.vertical.fluid.tabular.menu .item').on('click', function() {
   $('.ui.tab.segments.active .ui.checkbox').checkbox('uncheck');
   $('.ui.checkbox.select_all').checkbox('uncheck');
   $('.ui.menu .item').removeClass('active');
