@@ -46,7 +46,7 @@ class WatchlistInstance < ApplicationRecord
       return new_instances
     end
   end
-
+  
   # Update the grace day usage condition watchlist instances for each course user datum of a particular course
   # This is called when:
   # - Grace days or late slack has been changed and the course record is saved
@@ -115,7 +115,7 @@ class WatchlistInstance < ApplicationRecord
     # Do the usual stuff as in refresh watchlist instances
     # Create a new instance if criteria are fit
     new_instance = self.add_new_instance_for_cud_grace_day_usage(cud.course, condition_id, cud, asmts_before_date, grace_day_threshold)
-    
+
     ActiveRecord::Base.transaction do
       old_instances.each do |inst|
         inst.archive_watchlist_instance
@@ -124,6 +124,95 @@ class WatchlistInstance < ApplicationRecord
       unless new_instance.nil?
         if not new_instance.save
           raise "Fail to create new watchlist instance for CUD #{cud.id} in course #{cud.course.name} with violation info #{new_instance.violation_info}"
+        end
+      end
+    end
+  end
+
+  def self.update_course_grade_watchlist_instances(course)
+    parameters_grade_drop = RiskCondition.get_grade_drop_condition_for_course(course.name)
+    parameters_low_grades = RiskCondition.get_low_grades_condition_for_course(course.name)
+    return if parameters_grade_drop.nil? and parameters_low_grades.nil?
+
+    old_instances = []
+    new_instances = []
+    course_user_data = course.students
+    
+    unless parameters_grade_drop.nil?
+      grade_drop_condition_id, percentage_drop, consecutive_counts = parameters_grade_drop
+      old_instances += course.watchlist_instances.where(risk_condition_id: grade_drop_condition_id)
+      categories = course.assessment_categories
+      asmt_arrs = categories.map { |category| course.assessments_with_category(category).ordered }
+      asmt_arrs.select! { |asmts| asmts.count >= consecutive_counts }
+
+      course_user_data.each do |cud|
+        new_instance = self.add_new_instance_for_cud_grade_drop(course, grade_drop_condition_id, cud, asmt_arrs, consecutive_counts, percentage_drop)
+        new_instances << new_instance unless new_instance.nil?
+      end
+    end
+
+    unless parameters_low_grades.nil?
+      low_grades_condition_id, grade_threshold, count_threshold = parameters_low_grades
+      old_instances += course.watchlist_instances.where(risk_condition_id: low_grades_condition_id)
+
+      course_user_data.each do |cud|
+        new_instance = self.add_new_instance_for_cud_low_grades(course, low_grades_condition_id, cud, grade_threshold, count_threshold)
+        new_instances << new_instance unless new_instance.nil?
+      end
+    end
+
+    ActiveRecord::Base.transaction do
+      old_instances.each do |inst|
+        inst.archive_watchlist_instance
+      end
+
+      new_instances.each do |inst|
+        if not inst.save
+          raise "Fail to create new watchlist instance for CUD #{inst.course_user_datum_id} in course #{course.name} with violation info #{inst.violation_info}"
+        end
+      end
+    end
+  end
+
+  def self.update_individual_grade_watchlist_instances(cud)
+    # Ignore if this CUD is an instructor or CA or dropped
+    return unless (cud.student? and (cud.dropped == false or cud.dropped.nil?))
+
+    # Get current grade condition
+    parameters_grade_drop = RiskCondition.get_grade_drop_condition_for_course(cud.course.name)
+    parameters_low_grades = RiskCondition.get_low_grades_condition_for_course(cud.course.name)
+    return if parameters_grade_drop.nil? and parameters_low_grades.nil?
+
+    old_instances = []
+    new_instances = []
+
+    unless parameters_grade_drop.nil?
+      grade_drop_condition_id, percentage_drop, consecutive_counts = parameters_grade_drop
+      old_instances += cud.watchlist_instances.where(risk_condition_id: grade_drop_condition_id)
+      categories = cud.course.assessment_categories
+      asmt_arrs = categories.map { |category| cud.course.assessments_with_category(category).ordered }
+      asmt_arrs.select! { |asmts| asmts.count >= consecutive_counts }
+
+      new_instance = self.add_new_instance_for_cud_grade_drop(cud.course, grade_drop_condition_id, cud, asmt_arrs, consecutive_counts, percentage_drop)
+      new_instances << new_instance unless new_instance.nil?
+    end
+
+    unless parameters_low_grades.nil?
+      low_grades_condition_id, grade_threshold, count_threshold = parameters_low_grades
+      old_instances += cud.watchlist_instances.where(risk_condition_id: low_grades_condition_id)
+
+      new_instance = self.add_new_instance_for_cud_low_grades(cud.course, low_grades_condition_id, cud, grade_threshold, count_threshold)
+      new_instances << new_instance unless new_instance.nil?
+    end
+
+    ActiveRecord::Base.transaction do
+      old_instances.each do |inst|
+        inst.archive_watchlist_instance
+      end
+
+      new_instances.each do |inst|
+        if not inst.save
+          raise "Fail to create new watchlist instance for CUD #{inst.course_user_datum_id} in course #{cud.course.name} with violation info #{inst.violation_info}"
         end
       end
     end
@@ -286,10 +375,10 @@ private
       while i+consecutive_counts-1 < auds.count
         begin_aud = auds[i]
         end_aud = auds[i+consecutive_counts-1]
-        begin_grade = begin_aud.final_score(cud)
-        end_grade = end_aud.final_score(cud)
+        begin_grade = begin_aud.final_score_ignore_grading_deadline(cud)
+        end_grade = end_aud.final_score_ignore_grading_deadline(cud)
         if begin_grade.nil? or end_grade.nil?
-          # - Grading deadline for either has not passed yet
+          # - Either is excused
           i = i + 1
           next
         elsif (begin_aud.latest_submission and not begin_aud.latest_submission.all_scores_released?) or
@@ -348,8 +437,8 @@ private
     auds = AssessmentUserDatum.where(course_user_datum_id: cud.id)
     violation_info = {}
     auds.each do |aud|
-      aud_score = aud.final_score(cud)
-      # - DDL not passed yet
+      aud_score = aud.final_score_ignore_grading_deadline(cud)
+      # - Score is excused
       # - Score has not been released yet
       # - Student did not make any submissions at all
       if aud_score.nil? or
