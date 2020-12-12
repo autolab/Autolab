@@ -277,7 +277,6 @@ function get_watchlist_function(){
         var instances = get_active_instances(
           new_instances, contacted_instances, resolved_instances, archived_instances);
         
-        console.log(instances);
         update_watchlist(method, instances[user_id]["instance_ids"]);
       })
   });
