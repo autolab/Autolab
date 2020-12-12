@@ -7,12 +7,6 @@
   <%= javascript_include_tag "metrics" %>
 <% end %>
 
-<!-- TODO: Remove hard coded values  -->
-<% @defined_metrics = true %>
-<% @new_students = 3 %>
-<% @contacted_students = 0 %>
-<% @resolved_students = 0 %>
-<% @archived_students = 0 %>
 <div id="message_area">
 </div>
 <div class="ui pointing secondary tabular menu">
@@ -20,16 +14,14 @@
   <a class="item" data-tab="risk metrics">Risk Metrics</a>
 </div>
 <div class="ui tab active" data-tab="watchlist" id="watchlist_tab">
-  <% if @defined_metrics and @new_students > 0 then %>
-    <div class="top-bar">
-      <div class="ui checkbox"><input type="checkbox" name="select_all"/></div>
-        <button class="ui submit small button" id="contact_button"><i class="mail outline icon"></i>CONTACT</button>
-        <button class="ui submit small button" id="resolve_button"><i class="check circle icon"></i>RESOLVE</button>
-      <div class="last-updated">
-        <h5> Last Updated 10/20/2020 at 11:50pm <i class="repeat link icon"></i></h5>
-      </div>
+  <div class="top-bar">
+    <div class="ui checkbox"><input type="checkbox" name="select_all"/></div>
+    <button class="ui submit small button" id="contact_button"><i class="mail outline icon"></i>CONTACT</button>
+    <button class="ui submit small button" id="resolve_button"><i class="check circle icon"></i>RESOLVE</button>
+    <div class="last-updated">
+      <h5> Last Updated 10/20/2020 at 11:50pm <i class="repeat link icon" id="refresh_btn"></i></h5>
     </div>
-  <% end %>
+  </div>
   <br>
   <div class="ui grid">
     <div class="three wide column">
@@ -41,65 +33,20 @@
       </div>
     </div>
     <div class="thirteen wide column">
-      <% if @defined_metrics then %>
-        <div class="ui tab segments active" data-tab="new_tab">
-          <% if @new_students > 0 then %>
-            <!-- TODO: Remove rendering -->
-            <%= render partial: 'student_row', locals: {student_name: "Jane Doe", grace_days: 3, low_scores: 2} %>
-            <%= render partial: 'student_row', locals: {student_name: "Emily Lee", missing_submissions: 2} %>
-            <%= render partial: 'student_row', locals: {student_name: "John Smith", downward_trend: 1} %>
-          <% else %>
-            <div id="undefined_metrics">
-              <center>
-                <i class="huge inbox icon"></i> 
-                <h3> There are no new students at risk </h3>
-              </center>
-            </div>
-          <% end %>
-        </div>
-        <div class="ui tab segments" data-tab="contacted_tab">
-          <% if @contacted_students > 0 then %>
-          <% else %>
-            <div id="undefined_metrics">
-              <center>
-                <i class="huge inbox icon"></i> 
-                <h3> You have not contacted any students </h3>
-              </center>
-            </div>
-          <% end %>
-        </div>
-        <div class="ui tab segments" data-tab="resolved_tab">
-          <% if @resolved_students > 0 then %>
-          <% else %>
-            <div id="undefined_metrics">
-              <center>
-                <i class="huge inbox icon"></i> 
-                <h3> You have not resolved any students </h3>
-              </center>
-            </div>
-          <% end %>
-        </div>
-        <div class="ui tab segments" data-tab="archived_tab">
-          <% if @archived_students > 0 then %>
-          <% else %>
-            <div id="undefined_metrics">
-              <center>
-                <i class="huge inbox icon"></i> 
-                <h3> You have not archived any students </h3>
-              </center>
-            </div>
-          <% end %>
-        </div>
-      <% else %>
-        <div class="ui tab segments active" id="undefined_metrics">
-          <center>
-            <i class="huge inbox icon"></i> 
+      <div id="defined_metrics">
+        <div class="ui tab segments active" data-tab="new_tab" id="new_tab"></div>
+        <div class="ui tab segments" data-tab="contacted_tab", id="contacted_tab"></div>
+        <div class="ui tab segments" data-tab="resolved_tab", id="resolved_tab"></div>
+        <div class="ui tab segments" data-tab="archived_tab", id="archived_tab"></div>
+      </div>
+      <div class="ui tab segments active" id="undefined_metrics">
+        <center>
+          <i class="huge inbox icon"></i> 
             <h3> You have not defined your risk metrics </h3>
             Set up identification conditions at in the <b>Risk Metrics</b> tab. <br> 
             Identified possible at-risk students will appear here. 
-          </center>
-        </div>
-      <% end %>
+        </center>
+      </div>
     </div>
   </div>
 </div>

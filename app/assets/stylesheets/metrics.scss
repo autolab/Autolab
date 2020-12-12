@@ -83,6 +83,7 @@ input[type="text"] {
 
 .top-bar {
   padding-left: 21%;
+  display: none;
 }
 
 .last-updated{
@@ -97,6 +98,12 @@ input[type="text"] {
 }
 
 #undefined_metrics{
+  background: rgba(243, 240, 240, 0.9);
+  padding: 10px;
+  display: none;
+}
+
+#empty_tabs{
   background: rgba(243, 240, 240, 0.9);
   padding: 10px;
 }
