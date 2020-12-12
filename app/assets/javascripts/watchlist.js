@@ -321,7 +321,7 @@ function get_watchlist_function(){
 $('.ui.vertical.fluid.tabular.menu .item').on('click', function() {
   $('.ui.tab.segments.active .ui.checkbox').checkbox('uncheck');
   $('.ui.checkbox.select_all').checkbox('uncheck');
-  $('.ui.menu .item').removeClass('active');
+  $('.ui.vertical.fluid.tabular.menu .item').removeClass('active');
   $(this).addClass('active');
 });
 
