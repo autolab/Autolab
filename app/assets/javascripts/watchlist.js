@@ -91,25 +91,40 @@ function get_condition_html(condition_types) {
   return conditions_html;
 }
 
-function get_buttons_html(user_id, archived, archived_instances) {
-  if (!archived && user_id in archived_instances) {
-    return `
+function get_buttons_html(user_id, tab, archived_instances) {
+  var archived_icon = (user_id in archived_instances) ? 
+      `<div class="left ui icon" data-content="Student also appears in archived">
+        <i class="exclamation circle icon"></i>
+      </div>` : "";
+
+  switch(tab) {
+    case "new":
+      return `
         <div class="students-buttons-right"> 
-          <div class="left ui icon" data-content="Student also appears in archived">
-            <i class="exclamation circle icon"></i>
-          </div>
+          ${archived_icon}
           <button class="ui submit tiny button contact_single"><i class="mail outline icon"></i>CONTACT</button>
           <button class="ui submit tiny button resolve_single"><i class="check circle icon"></i>RESOLVE</button>
         </div>`
+    case "contacted":
+      return `
+        <div class="students-buttons-right"> 
+          ${archived_icon}
+          <button class="ui submit tiny button resolve_single"><i class="check circle icon"></i>RESOLVE</button>
+        </div>`
+    case "resolved":
+      return `
+        <div class="students-buttons-right"> 
+          ${archived_icon}
+        </div>`
+    case "archived":
+      return "";
+    default:
+      console.log(`${tab} is not a valid tab`);
+      return;
   }
-  return `
-      <div class="students-buttons-right"> 
-        <button class="ui submit tiny button contact_single"><i class="mail outline icon"></i>CONTACT</button>
-        <button class="ui submit tiny button resolve_single"><i class="check circle icon"></i>RESOLVE</button>
-      </div>`
 }
 
-function get_row_html(user_id, instance, archived, archived_instances) {
+function get_row_html(user_id, instance, tab, archived_instances) {
   var name = instance["name"];
   var condition_types = instance["conditions"];
   var course_id = instance["course_id"];
@@ -117,7 +132,7 @@ function get_row_html(user_id, instance, archived, archived_instances) {
   var name_html = get_name_html(name);
   var gradebook_link_html = get_gradebook_link_html(course_id, user_id);
   var conditions_html = get_condition_html(condition_types);
-  var buttons_html = get_buttons_html(user_id, archived, archived_instances);
+  var buttons_html = get_buttons_html(user_id, tab, archived_instances);
   return `
       <div class="ui segment" id=${user_id}>
         ${name_html}
@@ -204,16 +219,16 @@ function get_watchlist_function(){
         archived_html = "";
 
 	    	$.each(new_instances, function( user_id, instance ) {
-          new_html += get_row_html(user_id, instance, false, archived_instances);
+          new_html += get_row_html(user_id, instance, "new", archived_instances);
         });
         $.each(contacted_instances, function( user_id, instance ) {
-          contacted_html += get_row_html(user_id, instance, false, archived_instances);
+          contacted_html += get_row_html(user_id, instance, "contacted", archived_instances);
         });
         $.each(resolved_instances, function( user_id, instance ) {
-          resolved_html += get_row_html(user_id, instance, false, archived_instances);
+          resolved_html += get_row_html(user_id, instance, "resolved", archived_instances);
         });
         $.each(archived_instances, function( user_id, instance ) {
-          archived_html += get_row_html(user_id, instance, true, archived_instances);
+          archived_html += get_row_html(user_id, instance, "archived", archived_instances);
         });
         
 
@@ -264,36 +279,31 @@ function get_watchlist_function(){
       $('.ui.button.contact_single').click(function() {
         method = "contact";
         var user_id = $(this).parent().parent().attr('id');
-        var instances = get_active_instances(
-          new_instances, contacted_instances, resolved_instances, archived_instances);
 
-        window.open(`mailto: ${instances[user_id]["email"]}`, "_blank");
-        update_watchlist(method, instances[user_id]["instance_ids"]);
+        window.open(`mailto: ${new_instances[user_id]["email"]}`, "_blank");
+        console.log(new_instances[user_id]["instance_ids"]);
+        update_watchlist(method, new_instances[user_id]["instance_ids"]);
       })
 
       $('.ui.button.resolve_single').click(function() {
         method = "resolve";
         var user_id = $(this).parent().parent().attr('id');
-        var instances = get_active_instances(
-          new_instances, contacted_instances, resolved_instances, archived_instances);
-        
+        var instances = get_active_instances(new_instances, contacted_instances);
         update_watchlist(method, instances[user_id]["instance_ids"]);
       })
   });
 
   $('#contact_button').click(function(){
     method = "contact";
-    var instances = get_active_instances(
-      new_instances, contacted_instances, resolved_instances, archived_instances);
 
     var emails = [];
     selected_user_ids.forEach(user_id => {
-      emails.push(instances[user_id]["email"]);
+      emails.push(new_instances[user_id]["email"]);
     });
 
     var instance_ids = [];
     selected_user_ids.forEach(user_id => {
-      instance_ids = instance_ids.concat(instances[user_id]["instance_ids"]);
+      instance_ids = instance_ids.concat(new_instances[user_id]["instance_ids"]);
     });
   
     if (instance_ids.length > 0) {
@@ -304,8 +314,7 @@ function get_watchlist_function(){
 
   $('#resolve_button').click(function(){
     method = "resolve";
-    var instances = get_active_instances(
-      new_instances, contacted_instances, resolved_instances, archived_instances);
+    var instances = get_active_instances(new_instances, contacted_instances);
 
     var instance_ids = [];
     selected_user_ids.forEach(user_id => {
@@ -324,9 +333,31 @@ $('.ui.vertical.fluid.tabular.menu .item').on('click', function() {
   $('.ui.checkbox.select_all').checkbox('uncheck');
   $('.ui.vertical.fluid.tabular.menu .item').removeClass('active');
   $(this).addClass('active');
+
+  switch ($(this).attr("data-tab")) {
+    case "new_tab":
+      $("#contact_button").removeClass("disabled");
+      $("#resolve_button").removeClass("disabled");
+      break;
+    case "contacted_tab":
+      $("#contact_button").addClass("disabled");
+      $("#resolve_button").removeClass("disabled");
+      break;
+    case "resolved_tab":
+      $("#contact_button").addClass("disabled");
+      $("#resolve_button").addClass("disabled");
+      break;
+    case "archived_tab":
+      $("#contact_button").addClass("disabled");
+      $("#resolve_button").addClass("disabled");
+      break;
+    default:
+      console.log(`${$(this).attr("data-tab")} is not a valid tab`);
+      return;
+  }
 });
 
-function get_active_instances(new_instances, contacted_instances, resolved_instances, archived_instances) {
+function get_active_instances(new_instances, contacted_instances) {
   var tab = $(".ui.tab.segments.active").attr('id');
   
   switch(tab){
@@ -334,12 +365,8 @@ function get_active_instances(new_instances, contacted_instances, resolved_insta
       return new_instances;
     case "contacted_tab":
       return contacted_instances;
-    case "resolved_tab":
-      return resolved_instances;
-    case "archived_tab":
-      return archived_instances;
     default:
-      console.log(`${tab} is not a valid tab`)
+      console.log(`${tab} is not a valid tab for this action`)
       return;
   }
 }
