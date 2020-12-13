@@ -453,3 +453,6 @@ Mysql2::Error: You have an error in your SQL syntax
 ```
 
 this may be an issue with using an incompatible version of MySQL. Try switching to MySQL 5.7 if you are currently using a different version.
+
+### Undefined method 'devise' for User
+You most likely missed the step of copying 'config/initializers/devise.rb.template' to 'config/initializers/devise.rb' and setting your secret key in the setup instructions.
