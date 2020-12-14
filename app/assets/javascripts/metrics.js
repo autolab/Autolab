@@ -15,6 +15,7 @@ $(document).ready(function(){
 	// Initializing Fomantic UI elements
 	$('.tabular.menu .item').tab();	
 	$('.ui.dropdown').dropdown();
+	$('.ui.checkbox.conditions').checkbox();
 	$('.ui.checkbox.select_all').checkbox({
 		onChecked: function () { $('.ui.tab.segments.active .ui.checkbox.select_single').checkbox('check') },
 		onUnchecked: function () { $('.ui.tab.segments.active .ui.checkbox.select_single').checkbox('uncheck')  }
@@ -25,7 +26,7 @@ $(document).ready(function(){
 });
 
 // Updates form validation based on checked
-$('.checkbox').change(function(){
+$('.checkbox.conditions').change(function(){
 
 	let fields = {};
 
@@ -193,15 +194,6 @@ $('#save').click(function(){
 		refresh_watchlist();
 	}
 })
-
-function refresh_watchlist(){
-	$.getJSON(watchlist_endpoints['get'],function(data, status){
-    	if(status=='success'){
-    		get_watchlist_function();
-    	}
-    });
-}
-
 
 // variable to keep track of the different banners
 var message_count = 0;

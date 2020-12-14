@@ -44,19 +44,19 @@ function get_condition_html(condition_types) {
       case "grade_drop":
         condition_string = "downward trend";
         var violation_list = [];
-        $.each(violations, function( _, vals ) {
+        $.each(violations, function( assessmentType, vals ) {
           var inner_list = []
-          vals.forEach(dict => {
+          vals?.forEach(dict => {
             $.each(dict, function( lab, val ) {
               inner_list.push(`${lab}: ${val}`);
             });
           });
-          violation_list.push(`${inner_list.join(" | ")}`);
+          violation_list.push(`${assessmentType} - ${inner_list.join(" | ")}`);
         });
-        violation_string = violation_list.join(" | ");
+        violation_string = violation_list.join(" <br /><br /> ");
         break;
       case "low_grades":
-        condition_string = `${Object.keys(violations).length} low score`;
+        condition_string = `${Object.keys(violations ?? {})?.length} low score`;
         var violation_list = [];
         $.each(violations, function( lab, val ) {
           violation_list.push(`${lab}: ${val}`);
@@ -64,15 +64,15 @@ function get_condition_html(condition_types) {
         violation_string = violation_list.join(" | ");
         break;
       case "no_submissions":
-        condition_string = `${Object.keys(violations).length} no submission`;
+        condition_string = `${Object.keys(violations?.no_submissions_asmt_names ?? {})?.length} no submission`;
         var violation_list = [];
-        violations.no_submissions_asmt_names.forEach(val => {
+        violations?.no_submissions_asmt_names?.forEach(val => {
           violation_list.push(val);
         });
         violation_string = violation_list.join(" | ");
         break;
       case "grace_day_usage":
-        condition_string = `${Object.keys(violations).length} low score`;
+        condition_string = `${Object.keys(violations ?? {})?.length} grace days used`;
         var violation_list = [];
         $.each(violations, function( lab, val ) {
           violation_list.push(`${lab}: ${val}`);
@@ -84,7 +84,7 @@ function get_condition_html(condition_types) {
         return;
     }
     conditions_html += `
-        <div class="ui circular label condition" data-content="${violation_string}" data-variation="wide"> 
+        <div class="ui circular label condition" data-html="${violation_string}" data-variation="wide"> 
           ${condition_string}
         </div>`
   });
@@ -257,7 +257,15 @@ function get_watchlist_function(){
 	    	} else {
           $('#archived_tab').html(archived_html);
         }
+      } else {
+        render_banner({
+          type:"negative",
+          header:"Currently unable to load students",
+          message: "Do try again later",
+          timeout: -1
+        });
       }
+
       $('.ui.checkbox.select_single').checkbox({
         onChecked: function () { 
           selected_user_ids.push($(this).parent().parent().attr('id'));
@@ -369,25 +377,6 @@ function get_active_instances(new_instances, contacted_instances) {
       console.log(`${tab} is not a valid tab for this action`)
       return;
   }
-}
-
-// TODO: update logic here when contacting / resolving students
-function update_watchlist(conditions){
-	$.ajax({
-		url:watchlist_endpoints['update'],
-		dataType: "json",
-		contentType:'application/json',
-		data: JSON.stringify(conditions),
-		type: "POST",
-		success:function(data){
-			console.log(data);
-		},
-		error:function(result, type){
-			console.log(result, type);
-		},
-		complete:function(){
-		}
-	});
 }
 
 function update_watchlist(method, ids){
