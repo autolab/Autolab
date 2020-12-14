@@ -625,6 +625,7 @@ class AssessmentsController < ApplicationController
     num_released = releaseMatchingGrades { |_| true }
 
     if num_released > 0
+      @course.update_course_no_submissions_watchlist_instances
       flash[:success] = "%d %s released." % [num_released, (num_released > 1 ? "grades were" : "grade was")]
     else
       flash[:error] = "No grades were released. They might have all already been released."
@@ -643,6 +644,7 @@ class AssessmentsController < ApplicationController
     num_released = releaseMatchingGrades { |submission, _| @cud.CA_of? submission.course_user_datum }
 
     if num_released > 0
+      @course.update_course_no_submissions_watchlist_instances(@cud)
       flash[:success] = "%d %s released." % [num_released, (num_released > 1 ? "grades were" : "grade was")]
     else
       flash[:error] = "No grades were released. " \

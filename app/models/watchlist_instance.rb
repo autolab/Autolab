@@ -218,6 +218,39 @@ class WatchlistInstance < ApplicationRecord
     end
   end
 
+  def self.update_course_no_submissions_watchlist_instances(course, course_assistant)
+    parameters_no_submissions = RiskCondition.get_no_submissions_condition_for_course(course.name)
+    return if parameters_no_submissions.nil?
+
+    condition_id, no_submissions_threshold = parameters_no_submissions
+
+    course_user_data = course.students
+    unless course_assistant.nil?
+      course_user_data = course_user_data.select { |cud| course_assistant.CA_of? cud }
+    end
+
+    old_instances = []
+    new_instances = []
+
+    course_user_data.each do |cud|
+      old_instances += cud.watchlist_instances.where(risk_condition_id: condition_id)
+      new_instance = add_new_instance_for_cud_no_submissions(course, condition_id, cud, no_submissions_threshold)
+      new_instances << new_instance unless new_instance.nil?
+    end
+
+    ActiveRecord::Base.transaction do
+      old_instances.each do |inst|
+        inst.archive_watchlist_instance
+      end
+
+      new_instances.each do |inst|
+        if not inst.save
+          raise "Fail to create new watchlist instance for CUD #{inst.course_user_datum_id} in course #{course.name} with violation info #{inst.violation_info}"
+        end
+      end
+    end
+  end
+
   def self.contact_many_watchlist_instances(instance_ids)
     instances = WatchlistInstance.where(id:instance_ids)
     if instance_ids.length() != instances.length()

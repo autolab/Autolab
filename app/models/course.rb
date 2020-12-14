@@ -216,6 +216,10 @@ class Course < ApplicationRecord
     WatchlistInstance.update_course_grade_watchlist_instances(self)
   end
 
+  def update_course_no_submissions_watchlist_instances(course_assistant=nil)
+    WatchlistInstance.update_course_no_submissions_watchlist_instances(self, course_assistant)
+  end
+
   # NOTE: Needs to be updated as new items are cached
   def invalidate_caches
     # cgdubs
