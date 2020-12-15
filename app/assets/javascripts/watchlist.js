@@ -391,7 +391,7 @@ function update_watchlist(method, ids){
 		data: JSON.stringify(students_selected),
 		type: "POST",
 		success:function(data){
-			refresh_watchlist();
+			get_watchlist_function();
 		},
 		error:function(result, type){
 			render_banner({
@@ -412,7 +412,7 @@ $('#refresh_btn').click(function(){
 });
 
 function refresh_watchlist(){
-	$.getJSON(watchlist_endpoints['get'],function(data, status){
+	$.getJSON(watchlist_endpoints['refresh'],function(data, status){
 		if(status=='success'){
       get_watchlist_function();
     }
