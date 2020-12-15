@@ -412,7 +412,7 @@ $('#refresh_btn').click(function(){
 });
 
 function refresh_watchlist(){
-	$.getJSON(watchlist_endpoints['get'],function(data, status){
+	$.getJSON(watchlist_endpoints['refresh'],function(data, status){
 		if(status=='success'){
       get_watchlist_function();
     }
