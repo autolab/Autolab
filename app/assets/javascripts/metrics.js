@@ -114,6 +114,13 @@ $.getJSON(metrics_endpoints['get'],function(data, status){
 		$('#save').removeClass('disabled');
 	});
 
+	$('.ui.calendar').calendar({
+		type: 'date',
+ 		onChange: function () {
+     		$('#save').removeClass('disabled');
+    	},
+	});
+
 	$(window).bind('beforeunload', function(){
 		if (!$('#save').hasClass('disabled')) {
 			return 'Make sure to save your changes';
@@ -194,6 +201,7 @@ $('#save').click(function(){
 		refresh_watchlist();
 	}
 })
+
 
 // variable to keep track of the different banners
 var message_count = 0;

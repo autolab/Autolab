@@ -141,6 +141,18 @@ class RiskCondition < ApplicationRecord
            grace_day_usage_condition.parameters[:date]
   end
 
+  def self.get_no_submissions_condition_for_course(course_name)
+    current_conditions = self.get_current_for_course(course_name)
+    return nil if current_conditions.count == 0
+    
+    # Check for whether there exists one of type :no_submissions
+    no_submissions_condition = current_conditions.select { |c| c.condition_type.to_sym == :no_submissions }
+    return nil if no_submissions_condition.count != 1
+    no_submissions_condition = no_submissions_condition[0]
+    return no_submissions_condition.id,
+           no_submissions_condition.parameters[:no_submissions_threshold].to_i
+  end
+
 private
 
   def self.get_max_version(course_id)
