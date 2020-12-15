@@ -172,9 +172,10 @@ function get_watchlist_function(){
 	    	var contacted_empty = 1;
 	    	var resolved_empty = 1;
         var archived_empty = 1;
-	    	
+
+        $(".top-bar").show();
 	    	$("#undefined_metrics").hide();
-      	$("#defined_metrics").show();
+        $("#defined_metrics").show();
 
 	    	$('#new_tab').empty();
 	    	$('#contacted_tab').empty();
