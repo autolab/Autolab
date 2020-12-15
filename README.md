@@ -46,8 +46,8 @@ We are currently in the process of updating our documentation to work with our n
 
 2. Create and migrate the database.
 	```sh
-	RAILS_ENV=test bundle exec rake db:create
-	RAILS_ENV=test bundle exec rake db:migrate
+	RAILS_ENV=test bundle exec rails db:create
+	RAILS_ENV=test bundle exec rails db:migrate
 	```
    Do not forget to use `RAILS_ENV=test bundle exec` in front of every rake/rails command.
 
@@ -62,7 +62,7 @@ We are currently in the process of updating our documentation to work with our n
 After setting up the test environment, simply run spec by:
 
 ```sh
-bundle exec rake spec
+bundle exec rails spec
 ```
 
 ## Rails 4 Support

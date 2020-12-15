@@ -53,7 +53,7 @@ RUN chown -R app:app .
 USER app
 
 # precompile the Rails assets
-RUN RAILS_ENV=production bundle exec rake assets:precompile
+RUN RAILS_ENV=production bundle exec rails assets:precompile
 
 # Clean up APT when done.
 USER root

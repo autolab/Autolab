@@ -2,7 +2,9 @@
 
 Autolab is a course management platform that enables instructors to offer autograded programming assignments to their students. The two key ideas in Autolab are _autograding_ that is, programs evaluating other programs, and _scoreboards_ that display the latest autograded scores for each student. Autolab also provides gradebooks, rosters, handins/handouts, lab writeups, code annotation, manual grading, late penalties, grace days, cheat checking, meetings, partners, and bulk emails.
 
-For information on how to use Autolab for your course see the [Guide for Instructors](/instructors). To learn how to write an autograded lab see the [Guide for Lab Authors](/lab). To get straight to an installation, go to [Getting Started](#getting-started)
+You can install Autolab easily by using our recommended [Docker Compose installation](/docker-compose) guide, or by following the steps from a manual install at [Getting Started](#getting-started).
+
+For information on how to use Autolab for your course see the [Guide for Instructors](/instructors). To learn how to write an autograded lab see the [Guide for Lab Authors](/lab). 
 
 ## Demonstration Site
 If you would like to check out Autolab prior to installation, go over to our <a href="https://demo.autolabproject.com" target="_blank">Demo Site</a>! Login through `Developer Login` with the email: `admin@foo.bar`. 
@@ -59,6 +61,8 @@ Click on `Grade Submissions`, and then the arrow button to open up student submi
 Autolab consists of two services: (1) the Ruby on Rails frontend, and (2) [Tango](/tango), the RESTful Python autograding server. Either service can run independently without the other. But in order to use all features of Autolab, we highly recommend installing both services.
 
 Currently, we have support for installing Autolab on [Ubuntu 18.04+](#ubuntu-1804), and [Mac OSX](#mac-osx-1011).
+
+The following instructions are for manual installation of Autolab. We strongly encourage you to try out the [Docker Compose](/docker-compose) installation method which is much faster and easier. It is production ready and comes deployed with MySQL and TLS.
 
 ### Mac OSX 10.11+
 
@@ -136,22 +140,22 @@ Follow the step-by-step instructions below:
 
         :::bash
         cp config/initializers/devise.rb.template config/initializers/devise.rb
-        sed -i "s/<YOUR-SECRET-KEY>/`bundle exec rake secret`/g" config/initializers/devise.rb
+        sed -i "s/<YOUR-SECRET-KEY>/`bundle exec rails secret`/g" config/initializers/devise.rb
 
     Fill in `<YOUR_WEBSITE>` in the `config/initializers/devise.rb` file. To skip this step for now, fill with `foo.bar`.
 
 11. Create and initialize the database tables:
 
         :::bash
-        bundle exec rake db:create
-        bundle exec rake db:migrate
+        bundle exec rails db:create
+        bundle exec rails db:migrate
 
     Do not forget to use `bundle exec` in front of every rake/rails command.
 
 12. Populate dummy data (development only):
 
         :::bash
-        bundle exec rake autolab:populate
+        bundle exec rails autolab:populate
 
 13. Start the rails server:
 
@@ -246,7 +250,7 @@ Following instructions from [How to Install MySQL on Ubuntu](https://www.digital
         cp config/database.yml.template config/database.yml
         cp config/school.yml.template config/school.yml
         cp config/initializers/devise.rb.template config/initializers/devise.rb
-        sed -i "s/<YOUR-SECRET-KEY>/`bundle exec rake secret`/g" config/initializers/devise.rb
+        sed -i "s/<YOUR-SECRET-KEY>/`bundle exec rails secret`/g" config/initializers/devise.rb
         cp config/autogradeConfig.rb.template config/autogradeConfig.rb
 
 10. (Using MySQL) Editing Database YML.
@@ -304,15 +308,15 @@ Comment out the configurations meant for MySQL in config/database.yml, and inser
 
         :::bash
         cd Autolab
-        bundle exec rake db:create
-        bundle exec rake db:reset
-        bundle exec rake db:migrate
+        bundle exec rails db:create
+        bundle exec rails db:reset
+        bundle exec rails db:migrate
 
 13. Populating sample course & students
 
         :::bash
         cd Autolab
-        bundle exec rake autolab:populate
+        bundle exec rails autolab:populate
 
 14. Run Autolab!
 
@@ -449,3 +453,6 @@ Mysql2::Error: You have an error in your SQL syntax
 ```
 
 this may be an issue with using an incompatible version of MySQL. Try switching to MySQL 5.7 if you are currently using a different version.
+
+### Undefined method 'devise' for User
+You most likely missed the step of copying 'config/initializers/devise.rb.template' to 'config/initializers/devise.rb' and setting your secret key in the setup instructions.
