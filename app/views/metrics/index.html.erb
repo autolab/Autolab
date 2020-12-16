@@ -4,6 +4,7 @@
 <% end %>
 
 <% content_for :javascripts do %>
+  <%= javascript_include_tag "watchlist" %>
   <%= javascript_include_tag "metrics" %>
 <% end %>
 
@@ -15,7 +16,7 @@
 </div>
 <div class="ui tab active" data-tab="watchlist" id="watchlist_tab">
   <div class="top-bar">
-    <div class="ui checkbox"><input type="checkbox" name="select_all"/></div>
+    <div class="ui checkbox select_all"><input type="checkbox"/></div>
     <button class="ui submit small button" id="contact_button"><i class="mail outline icon"></i>CONTACT</button>
     <button class="ui submit small button" id="resolve_button"><i class="check circle icon"></i>RESOLVE</button>
     <div class="last-updated">
@@ -39,7 +40,7 @@
         <div class="ui tab segments" data-tab="resolved_tab", id="resolved_tab"></div>
         <div class="ui tab segments" data-tab="archived_tab", id="archived_tab"></div>
       </div>
-      <div class="ui tab segments active" id="undefined_metrics">
+      <div class="ui tab segments active" id="undefined_metrics" style="display:none">
         <center>
           <i class="huge inbox icon"></i> 
             <h3> You have not defined your risk metrics </h3>
@@ -63,7 +64,7 @@
   <div class="ui form">
     <div class="metric">
       <div class="inline field">
-        <div class="ui checkbox" id='grace_days_checkbox'>
+        <div class="ui checkbox conditions" id='grace_days_checkbox'>
           <input type="checkbox" tabindex="0" class="hidden" name="metrics-checkbox-1">
         </div>
         Students who have used
@@ -94,7 +95,7 @@
 
     <div class="metric">
       <div class="inline field">
-        <div class="ui checkbox" id="grade_drop_checkbox">
+        <div class="ui checkbox conditions" id="grade_drop_checkbox">
           <input type="checkbox" tabindex="0" class="hidden" name="metrics-checkbox-2">
         </div>
         Students whose grades have dropped by
@@ -121,7 +122,7 @@
 
     <div class="metric">
       <div class="inline field">
-        <div class="ui checkbox" id='no_submit_checkbox'>
+        <div class="ui checkbox conditions" id='no_submit_checkbox'>
           <input type="checkbox" tabindex="0" class="hidden" name="metrics-checkbox-3">
         </div>
         Students who did not submit
@@ -144,7 +145,7 @@
 
     <div class="metric">
       <div class="inline field">
-        <div class="ui checkbox" id='low_grades_checkbox'>
+        <div class="ui checkbox conditions" id='low_grades_checkbox'>
           <input type="checkbox" tabindex="0" class="hidden" name="metrics-checkbox-4">
         </div>
         Students with

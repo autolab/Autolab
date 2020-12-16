@@ -7,13 +7,6 @@ const metrics_endpoints = {
 	get: 'get_current_metrics'
 }
 
-// watchlist api endpoints
-const watchlist_endpoints = {
-	update: 'update_watchlist_instances',
-	refresh: 'refresh_watchlist_instances',
-	get: 'get_watchlist_instances'
-}
-
 // prevents enumerator from being changed
 Object.freeze(metrics_endpoints);
 
@@ -22,15 +15,18 @@ $(document).ready(function(){
 	// Initializing Fomantic UI elements
 	$('.tabular.menu .item').tab();	
 	$('.ui.dropdown').dropdown();
-	$('.ui.checkbox').checkbox();
+	$('.ui.checkbox.conditions').checkbox();
+	$('.ui.checkbox.select_all').checkbox({
+		onChecked: function () { $('.ui.tab.segments.active .ui.checkbox.select_single').checkbox('check') },
+		onUnchecked: function () { $('.ui.tab.segments.active .ui.checkbox.select_single').checkbox('uncheck')  }
+	});
 	$('.ui.calendar').calendar({type: 'date', initialDate: new Date()});
 	$('.ui.dropdown').dropdown('set selected',1);
 	$('#grade_drop_consecutive_counts').dropdown('set selected',2);
-	
 });
 
 // Updates form validation based on checked
-$('.checkbox').change(function(){
+$('.checkbox.conditions').change(function(){
 
 	let fields = {};
 
@@ -72,7 +68,7 @@ $.getJSON(metrics_endpoints['get'],function(data, status){
       		$("#defined_metrics").hide();
       		$('.top-bar').hide();
 		}else{
-			refresh_watchlist();
+			get_watchlist_function();
 		}
 		// situation when no conditions have been selected
 		if(data.length == 1 && data[0]['condition_type'] == "no_condition_selected")
@@ -204,136 +200,6 @@ $('#save').click(function(){
 	else{
 		refresh_watchlist();
 	}
-})
-
-function get_html_empty_message(message){
-	return `
-    	<div id="empty_tabs">
-             <center>
-                <i class="huge inbox icon"></i> 
-                <h3> ${message} </h3>
-             </center>
-        </div>`;
-}
-
-function refresh_watchlist(){
-	$.getJSON(watchlist_endpoints['get'],function(data, status){
-	    if(status=='success'){
-	    	var new_empty = 0;
-	    	var contacted_empty = 0;
-	    	var resolved_empty = 0;
-	    	var archived_empty = 0;
-	    	
-	    	$("#undefined_metrics").hide();
-      		$("#defined_metrics").show();
-
-	    	$('#new_tab').empty();
-	    	$('#contacted_tab').empty();
-	    	$('#resolved_tab').empty();
-	    	$('#archived_tab').empty();
-
-	    	data["instances"].forEach(watchlist_instance => {
-	    		var user_id = watchlist_instance?.course_user_datum_id;
-	    		var instance_id = watchlist_instance?.id;
-		    	var user_name = data["users"][user_id]?.first_name + " " + data["users"][user_id]?.last_name; 
-		    	var user_email = data["users"][user_id]?.email;
-		    	var condition_type = data["risk_conditions"][watchlist_instance?.risk_condition_id]?.condition_type;
-
-	    		if (watchlist_instance?.archived) {
-	    			archived_empty = 1;
-	    			var html_code = `<div class="ui segment"> ${user_name}, ${user_email}, ${condition_type}, ${instance_id}, ${watchlist_instance?.status} </div>`;
-	    			$('#archived_tab').append(html_code);
-
-	    		} else {
-	    			var html_code = `<div class="ui segment"> ${user_name}, ${user_email}, ${condition_type}, ${instance_id}</div>`;
-		    		switch(watchlist_instance?.status){
-		    			case "new":
-		    				new_empty = 1;
-		    				$('#new_tab').append(html_code);
-							break;
-						case "contacted":
-							contacted_empty = 1;
-							$('#contacted_tab').append(html_code);
-							break;
-						case "resolved":
-							resolved_empty = 1;
-							$('#resolved_tab').append(html_code);
-							break;
-						default:
-							console.error(watchlist_instance?.status + " is not valid");
-							return;
-		    		}
-		    	}
-	    	})
-	    	// show empty messages
-	    	if (!new_empty){
-	    		html_empty_message = get_html_empty_message("There are no new students at risk");
-	    		$('#new_tab').html(html_empty_message);
-	    		$('.top-bar').hide();
-	    	} 
-	    	else {
-	    		$('.top-bar').show();
-	    	}
-	    	if (!contacted_empty){
-	    		html_empty_message = get_html_empty_message("You have not contacted any students");
-	    		$('#contacted_tab').html(html_empty_message);
-	    	}
-	    	if (!resolved_empty){
-	    		html_empty_message = get_html_empty_message("You have not resolved any students");
-	    		$('#resolved_tab').html(html_empty_message);
-	    	}
-	    	if (!archived_empty){
-	    		html_empty_message = get_html_empty_message("You have not archived any students ");
-	    		$('#archived_tab').html(html_empty_message);
-	    	}
-	    }
-	});
-
-}
-
-// TODO: obtain correct instance_id to update watchlist instance
-$('#contact_button').click(function(){
-	method = "contact";
-	ids = []
-	update_watchlist(method, ids);
-})
-
-$('#resolve_button').click(function(){
-	method = "resolve";
-	ids = []
-	update_watchlist(method, ids);
-})
-
-function update_watchlist(method, ids){
-	let students_selected = {};
-	students_selected['method'] = method;
-	students_selected['ids'] = ids;
-
-	$.ajax({
-		url:watchlist_endpoints['update'],
-		dataType: "json",
-		contentType:'application/json',
-		data: JSON.stringify(students_selected),
-		type: "POST",
-		success:function(data){
-			refresh_watchlist();
-		},
-		error:function(result, type){
-			render_banner({
-				type:"negative",
-				header:"Currently unable to " + method + " students",
-				message: "Do try again later",
-				timeout: -1
-			});
-		},
-		complete:function(){
-		}
-	});
-}
-
-// instructor clicks on 'refresh' button
-$('#refresh_btn').click(function(){
-	refresh_watchlist();
 })
 
 
