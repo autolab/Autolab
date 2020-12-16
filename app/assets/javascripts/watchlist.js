@@ -401,8 +401,6 @@ function update_watchlist(method, ids){
 				message: "Do try again later",
 				timeout: -1
 			});
-		},
-		complete:function(){
 		}
 	});
 }
