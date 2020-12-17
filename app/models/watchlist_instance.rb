@@ -19,7 +19,7 @@ class WatchlistInstance < ApplicationRecord
     rescue NoMethodError
       raise "Course #{course_name} cannot be found"
     end 
-    return WatchlistInstance.where(course_id:course_id,status: :new).count()
+    return WatchlistInstance.where(course_id:course_id, status: :new).distinct.count(:course_user_datum_id)
   end 
 
   def self.refresh_instances_for_course(course_name)
