@@ -425,27 +425,24 @@ function refresh_watchlist(){
 
   // uses formantic ui loading class 
   $("#refresh_btn").addClass('loading');
-  $.getJSON(watchlist_endpoints['refresh'],function(status){
-    
+  $.getJSON(watchlist_endpoints['refresh'],function(){
+    get_watchlist_function();
+    render_banner({
+      type:"positive",
+      header:"Successfully refreshed watchlist instances",
+      message: "The latest instances should be showing now",
+    });
+  }).fail(function(){
+    render_banner({
+      type:"negative",
+      header:"Currently unable to refresh students",
+      message: "Do try again later",
+      timeout: -1
+    });
+  })
+  .always(function(){
     $("#refresh_btn").removeClass('loading');
-    
-    if(status=='success'){
-      get_watchlist_function();
-      render_banner({
-				type:"positive",
-				header:"Successfully refreshed watchlist instances",
-				message: "The latest instances should be showing now",
-			});
-    }
-    else{
-      render_banner({
-				type:"negative",
-				header:"Currently unable to refresh students",
-				message: "Do try again later",
-				timeout: -1
-			});
-    }
-  });
-  
+  })
+
 }
 
