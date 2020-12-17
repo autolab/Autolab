@@ -172,6 +172,7 @@ function get_watchlist_function(){
 	    	var contacted_empty = 1;
 	    	var resolved_empty = 1;
         var archived_empty = 1;
+        let last_updated_date = "";
 
         $(".top-bar").show();
 	    	$("#undefined_metrics").hide();
@@ -191,6 +192,9 @@ function get_watchlist_function(){
           var condition_type = data["risk_conditions"][watchlist_instance?.risk_condition_id]?.condition_type;
           var violation_info = watchlist_instance?.violation_info;
           
+          if(watchlist_instance.updated_at > last_updated_date)
+            last_updated_date = watchlist_instance.updated_at;
+
           if (watchlist_instance?.archived) {
             archived_empty = 0;
             addInstanceToDict(archived_instances, id, user_id, course_id, user_name, user_email, condition_type, violation_info);
@@ -258,6 +262,10 @@ function get_watchlist_function(){
 	    	} else {
           $('#archived_tab').html(archived_html);
         }
+
+        // displays last refreshed time in local time zone
+        $('#last-updated-time').text(`Last Updated ${(new Date(last_updated_date)).toLocaleString()}`);
+
       } else {
         render_banner({
           type:"negative",
@@ -406,14 +414,35 @@ function update_watchlist(method, ids){
 }
 
 // instructor clicks on 'refresh' button
+// only activates if it is not already loading
 $('#refresh_btn').click(function(){
-	refresh_watchlist();
+  
+  if(!$('#refresh_btn').hasClass("loading"))
+	  refresh_watchlist();
 });
 
 function refresh_watchlist(){
-	$.getJSON(watchlist_endpoints['refresh'],function(data, status){
-		if(status=='success'){
-      get_watchlist_function();
-    }
-  });
+
+  // uses formantic ui loading class 
+  $("#refresh_btn").addClass('loading');
+  $.getJSON(watchlist_endpoints['refresh'],function(){
+    get_watchlist_function();
+    render_banner({
+      type:"positive",
+      header:"Successfully refreshed watchlist instances",
+      message: "The latest instances should be showing now",
+    });
+  }).fail(function(){
+    render_banner({
+      type:"negative",
+      header:"Currently unable to refresh students",
+      message: "Do try again later",
+      timeout: -1
+    });
+  })
+  .always(function(){
+    $("#refresh_btn").removeClass('loading');
+  })
+
 }
+

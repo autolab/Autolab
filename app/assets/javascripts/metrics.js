@@ -176,6 +176,7 @@ $('#save').click(function(){
 				header:"You have successfully saved your conditions",
 				message:"Your watchlist should reflect your new conditions",
 			});
+			get_watchlist_function();
 		},
 		error:function(result, type){
 			render_banner({
@@ -196,9 +197,6 @@ $('#save').click(function(){
 		$("#undefined_metrics").show();
       	$("#defined_metrics").hide();
       	$('.top-bar').hide();
-	}
-	else{
-		refresh_watchlist();
 	}
 })
 
