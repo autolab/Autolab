@@ -1,7 +1,6 @@
 # Metrics
 
-Traditional approaches of identifying students who are
-struggling with class is reactive; course staff wait for students to come to them to provide help, which can often be too late. 
+Traditional approaches of identifying students who are struggling with class is reactive; course staff wait for students to come to them to provide help, which can often be too late.
 
 The metrics feature seeks to be an proactive approach by actively identifying students who might be struggling in class through tracking of metrics that signify possible risks. Identifying at-risk students early would provide a better chance of getting them back on track in the course.
 
