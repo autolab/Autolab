@@ -1,6 +1,9 @@
 # Metrics
 
-The metrics feature seeks to identify students who might be struggling in class by tracking metrics that signify possible risks. The feature is developed partially in response to the increasing number of classes done remotely in 2020, to help instructors find at risk students whom they should reach out to earlier in the course. Identifying at-risk students early would provide a better chance of getting them back on track in the course.
+Traditional approaches of identifying students who are
+struggling with class is reactive; course staff wait for students to come to them to provide help, which can often be too late. 
+
+The metrics feature seeks to be an proactive approach by actively identifying students who might be struggling in class through tracking of metrics that signify possible risks. Identifying at-risk students early would provide a better chance of getting them back on track in the course.
 
 
 ## Usage Flow
