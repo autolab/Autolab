@@ -1,0 +1,120 @@
+// Place all the styles related to the metrics controller here.
+// They will automatically be included in application.css.
+// You can use Sass (SCSS) here: https://sass-lang.com/
+@import "semantic-ui";
+$autolab-red: rgba(153, 0, 0, 0.9);
+$autolab-subtle-red: #C87B7E;
+
+.button.submit {
+  color: #FFFFFF !important;
+  background-color: $autolab-red !important;
+}
+
+.button.submit:hover {
+  color: #FFFFFF !important;
+  background-color: $autolab-subtle-red !important;
+}
+
+.dropdown {
+  min-width: 20px !important;
+}
+
+span:before {
+  content:" "; 
+  display:inline-block; 
+  width:10px;
+}
+
+span:after {
+  content:" "; 
+  display:inline-block; 
+  width:10px;
+}
+
+.checkbox label::after {
+  border:none;
+  transform:none;
+}
+
+.ui.checkbox .box, .ui.checkbox label {
+  border-top-width:2px;
+  border-left-width:2px;
+  border-bottom-width:2px;
+  border-right-width:2px;
+}
+
+div.metric {
+  font-size:16px;
+  border:none;
+  transform:none;
+}
+
+input[type="text"] {
+  height: 20px !important;
+  width: 30px !important;
+}
+
+.success {
+  color: black;
+}
+
+.error {
+  color: black;
+}
+
+.ui.form .inline.fields .field .calendar:not(.popup), .ui.form .inline.field .calendar:not(.popup) {
+  display: inline-flex;
+}
+
+.ui.form .inline.fields .field:not(.wide) .ui.input, .ui.form .inline.field:not(.wide) .ui.input {
+  min-width: 200px !important;
+}
+
+.ui.pointing.label:before {
+  z-index: 0 !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+.ui.tab.segments {
+  margin-bottom: 0em;
+  margin-top: 0em;
+}
+
+.top-bar {
+  padding-left: 21%;
+  display: none;
+}
+
+.last-updated{
+  float: right;
+  margin-top: 15px;
+}
+
+.students-buttons-right{
+  display: initial;
+  float: right;
+  margin-top: -4px;
+}
+
+#undefined_metrics{
+  background: rgba(243, 240, 240, 0.9);
+  padding: 10px;
+  display: none;
+}
+
+#empty_tabs{
+  background: rgba(243, 240, 240, 0.9);
+  padding: 10px;
+}
+
+i.external.alternate {
+  margin-left: 5px;
+  margin-right: 10px;
+  color: black !important;
+}
+
+#empty_tabs{
+  background: rgba(243, 240, 240, 0.9);
+  padding: 10px;
+}

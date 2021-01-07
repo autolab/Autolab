@@ -715,6 +715,27 @@ table.navigatable tr:hover {
   padding: 2px 10px;
 }
 
+.badge.metrics-badge {
+  background-color: #008FCC !important;
+  border-radius: 10px !important;
+  padding: 0px 1px;
+  margin-left: -5px;
+  margin-right: -8px;
+  margin-top: 6px;
+  line-height: 16px;
+  height: 16px;
+  font-size: 0.65rem !important;
+}
+
+.row.metrics .col.metrics {
+  padding: 0px 0px;
+}
+
+h7.metrics {
+  margin-left: -15px;
+  margin-right: -10px;
+}
+
 /* collections */
 .collection
 a.collection-item {

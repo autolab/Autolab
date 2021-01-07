@@ -39,9 +39,10 @@ class Assessment < ApplicationRecord
   trim_field :name, :display_name, :handin_filename, :handin_directory, :handout, :writeup
   after_save :dump_yaml
   after_save :dump_embedded_quiz, if: :saved_change_to_embedded_quiz_form_data?
-  after_save :invalidate_course_cgdubs, if: :saved_change_to_due_at?
-  after_save :invalidate_course_cgdubs, if: :saved_change_to_max_grace_days?
+  after_save :invalidate_course_cgdubs, if: :saved_change_to_due_at_or_max_grace_days?
+  after_save :update_course_grade_watchlist_instances_if_past_end_at, if: :saved_change_to_grade_related_fields?
   after_create :create_AUDs_modulo_callbacks
+  after_destroy :update_course_grade_watchlist_instances_if_past_end_at
 
   # Constants
   ORDERING = "due_at ASC, name ASC"
@@ -334,8 +335,27 @@ class Assessment < ApplicationRecord
     end
   end
 
+  # to be able to calculate total score for an assessment from another model
+  def default_total_score
+    problems.sum :max_score
+  end
+
+  def update_course_grade_watchlist_instances_if_past_end_at
+    if Time.now >= self.end_at
+      self.course.update_course_grade_watchlist_instances
+    end
+  end
 
 private
+
+  def saved_change_to_grade_related_fields?
+    return (saved_change_to_due_at? or saved_change_to_max_grace_days? or saved_change_to_version_threshold? or
+            saved_change_to_late_penalty_id? or saved_change_to_version_penalty_id?)
+  end
+
+  def saved_change_to_due_at_or_max_grace_days?
+    return (saved_change_to_due_at? or saved_change_to_max_grace_days?)
+  end
 
   def path(filename)
     Rails.root.join("courses", course.name, name, filename)
