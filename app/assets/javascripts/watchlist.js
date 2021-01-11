@@ -46,17 +46,19 @@ function get_condition_html(condition_types) {
         var violation_list = [];
         $.each(violations, function( assessmentType, vals ) {
           var inner_list = []
-          vals?.forEach(dict => {
-            $.each(dict, function( lab, val ) {
-              inner_list.push(`${lab}: ${val}`);
+          if(vals){
+            vals.forEach(dict => {
+              $.each(dict, function( lab, val ) {
+                inner_list.push(`${lab}: ${val}`);
+              });
             });
-          });
+          }
           violation_list.push(`${assessmentType} - ${inner_list.join(" | ")}`);
         });
         violation_string = violation_list.join(" <br /><br /> ");
         break;
       case "low_grades":
-        condition_string = `${Object.keys(violations ?? {})?.length} low score`;
+        condition_string = `${Object.keys(violations || {}).length} low score`;
         var violation_list = [];
         $.each(violations, function( lab, val ) {
           violation_list.push(`${lab}: ${val}`);
@@ -64,15 +66,15 @@ function get_condition_html(condition_types) {
         violation_string = violation_list.join(" | ");
         break;
       case "no_submissions":
-        condition_string = `${Object.keys(violations?.no_submissions_asmt_names ?? {})?.length} no submission`;
+        condition_string = `${Object.keys(_.get(violations,'no_submissions_asmt_names',{})).length} no submission`;
         var violation_list = [];
-        violations?.no_submissions_asmt_names?.forEach(val => {
+        _.get(violations,'no_submissions_asmt_names',[]).forEach(val => {
           violation_list.push(val);
         });
         violation_string = violation_list.join(" | ");
         break;
       case "grace_day_usage":
-        condition_string = `${Object.keys(violations ?? {})?.length} grace days used`;
+        condition_string = `${Object.keys(violations || {}).length} grace days used`;
         var violation_list = [];
         $.each(violations, function( lab, val ) {
           violation_list.push(`${lab}: ${val}`);
@@ -184,22 +186,23 @@ function get_watchlist_function(){
         $('#archived_tab').empty();
 
         data["instances"].forEach(watchlist_instance => {
-          var id = watchlist_instance?.id;
-          var course_id = watchlist_instance?.course_id;
-          var user_id = watchlist_instance?.course_user_datum_id;
-		    	var user_name = data["users"][user_id]?.first_name + " " + data["users"][user_id]?.last_name; 
-          var user_email = data["users"][user_id]?.email;
-          var condition_type = data["risk_conditions"][watchlist_instance?.risk_condition_id]?.condition_type;
-          var violation_info = watchlist_instance?.violation_info;
-          
+          var id = _.get(watchlist_instance,'id');
+          var course_id = _.get(watchlist_instance,'course_id');
+          var user_id = _.get(watchlist_instance,'course_user_datum_id');
+          var user_name = _.get(data,`["users"][${user_id}].first_name`) + " " + _.get(data,`["users"][${user_id}].last_name`); 
+          var user_email = _.get(data,`["users"][${user_id}].email`);
+          var risk_condition_id = _.get(watchlist_instance,'risk_condition_id');
+          var condition_type = _.get(data,`["risk_conditions"][${risk_condition_id}].condition_type`);
+          var violation_info = _.get(watchlist_instance,'violation_info');
+
           if(watchlist_instance.updated_at > last_updated_date)
             last_updated_date = watchlist_instance.updated_at;
 
-          if (watchlist_instance?.archived) {
+          if (_.get(watchlist_instance,'archived')) {
             archived_empty = 0;
             addInstanceToDict(archived_instances, id, user_id, course_id, user_name, user_email, condition_type, violation_info);
           }
-          switch(watchlist_instance?.status){
+          switch(_.get(watchlist_instance,'status')){
             case "new":
               new_empty = 0;
               addInstanceToDict(new_instances, id, user_id, course_id, user_name, user_email, condition_type, violation_info);
@@ -213,11 +216,11 @@ function get_watchlist_function(){
               addInstanceToDict(resolved_instances, id, user_id, course_id, user_name, user_email, condition_type, violation_info);
               break;
             default:
-              console.error(watchlist_instance?.status + " is not valid");
+              console.error(_.get(watchlist_instance,'status') + " is not valid");
               return;
           }
         });
-
+        
         new_html = "";
         contacted_html = "";
         resolved_html = "";
