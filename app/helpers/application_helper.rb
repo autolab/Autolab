@@ -176,8 +176,6 @@ module ApplicationHelper
       javascript_include_tag "#{cloudflare}/handlebars.js/#{version}/handlebars.min.js"
     when "bootstrap"
       javascript_include_tag "#{cloudflare}/twitter-bootstrap/#{version}/js/bootstrap.js"
-    when "lodash"
-      javascript_include_tag "#{cloudflare}/lodash.js/#{version}/lodash.min.js"
     end
   end
 
