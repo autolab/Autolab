@@ -76,35 +76,35 @@ $.getJSON(metrics_endpoints['get'],function(data, status){
 
 		// switch case to check each checkbox field
 		data.forEach(condition => {
-			switch(condition?.condition_type){
+			switch(_.get(condition,'condition_type')){
 				case "no_submissions":
 					$('#no_submit_checkbox').checkbox('check');
 					$("#no_submit_value")
-					.dropdown("set selected", condition?.parameters?.no_submissions_threshold ?? 1);
+					.dropdown("set selected", _.get(condition,'parameters.no_submissions_threshold',1));
 					break;
 				case "grace_day_usage":
 					$('#grace_days_checkbox').checkbox('check');
 					$('#grace_days_value')
-					.dropdown('set selected',condition?.parameters?.grace_day_threshold ?? 1);
+					.dropdown('set selected',_.get(condition,'parameters.grace_day_threshold',1));
 					$('#grace_days_by_date')
-					.calendar('set date', new Date(condition?.parameters?.date));
+					.calendar('set date', new Date(_.get(condition,'parameters.date',null)));
 					break;
 				case "grade_drop":
 					$('#grade_drop_checkbox').checkbox('check');
 					$('#grade_drop_percentage')
-					.val(condition?.parameters?.percentage_drop);
+					.val(_.get(condition,'parameters.percentage_drop',null));
 					$('#grade_drop_consecutive_counts')
-					.dropdown('set selected',condition?.parameters?.consecutive_counts ?? 1);
+					.dropdown('set selected',_.get(condition,'parameters.consecutive_counts',1));
 					break;
 				case "low_grades":
 					$('#low_grades_checkbox').checkbox('check');
 					$('#low_grades_count')
-					.dropdown('set selected',condition?.parameters?.count_threshold ?? 1);
+					.dropdown('set selected',_.get(condition,'parameters.count_threshold',1));
 					$('#low_grades_percentage')
-					.val(condition?.parameters?.grade_threshold);
+					.val(_.get(condition,'parameters.grade_threshold',1));
 					break;
 				default:
-					console.error(condition?.condition_type +" is not valid");
+					console.error(_.get(condition,'condition_type') +" is not valid");
 					return;
 			}
 		})
@@ -245,7 +245,7 @@ const render_banner = (params) => {
 				$(`#message_${message_id} .close`).closest('.message');
 			if(!message_box.hasClass('hidden'))
 				message_box.transition('fade');
-		},params['timeout']?? 5000);
+		},params['timeout'] || 5000 );
 	}
 
 	message_count++;
