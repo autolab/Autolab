@@ -42,14 +42,14 @@ WORKDIR /home/app/webapp
 # Add the rails app
 ADD . /home/app/webapp
 
+USER root
+
 # Create the log files
 RUN mkdir -p /home/app/webapp/log && \
   touch /home/app/webapp/log/production.log && \
-  chown -R app:app /home/app/webapp/log && \
-  chmod 0664 /home/app/webapp/log/production.log
+  chmod 0664 /home/app/webapp/log/production.log && \
+  chown -R app:app .
 
-USER root
-RUN chown -R app:app .
 USER app
 
 # precompile the Rails assets
