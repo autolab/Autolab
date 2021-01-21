@@ -10,14 +10,13 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_10_17_045404) do
+ActiveRecord::Schema.define(version: 2020_11_01_022133) do
 
   create_table "annotations", force: :cascade do |t|
     t.integer "submission_id"
     t.string "filename"
     t.integer "position"
     t.integer "line"
-    t.string "text"
     t.datetime "created_at"
     t.datetime "updated_at"
     t.string "submitted_by"
@@ -154,6 +153,7 @@ ActiveRecord::Schema.define(version: 2019_10_17_045404) do
     t.integer "version_penalty_id"
     t.datetime "cgdub_dependencies_updated_at"
     t.text "gb_message"
+    t.string "website"
   end
 
   create_table "extensions", force: :cascade do |t|
@@ -244,6 +244,15 @@ ActiveRecord::Schema.define(version: 2019_10_17_045404) do
     t.boolean "optional", default: false
   end
 
+  create_table "risk_conditions", force: :cascade do |t|
+    t.integer "condition_type"
+    t.text "parameters"
+    t.integer "version"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.integer "course_id"
+  end
+
   create_table "scheduler", force: :cascade do |t|
     t.string "action"
     t.datetime "next"
@@ -325,9 +334,24 @@ ActiveRecord::Schema.define(version: 2019_10_17_045404) do
     t.string "school"
     t.string "major"
     t.string "year"
+    t.string "theme", default: "default"
     t.index ["confirmation_token"], name: "index_users_on_confirmation_token", unique: true
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
+  end
+
+  create_table "watchlist_instances", force: :cascade do |t|
+    t.integer "course_user_datum_id"
+    t.integer "course_id"
+    t.integer "risk_condition_id"
+    t.integer "status", default: 0
+    t.boolean "archived", default: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.json "violation_info"
+    t.index ["course_id"], name: "index_watchlist_instances_on_course_id"
+    t.index ["course_user_datum_id"], name: "index_watchlist_instances_on_course_user_datum_id"
+    t.index ["risk_condition_id"], name: "index_watchlist_instances_on_risk_condition_id"
   end
 
 end

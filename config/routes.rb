@@ -68,6 +68,17 @@ Rails.application.routes.draw do
         get "visualRun", action: :visual_run
         get "run"
     end
+    
+    resource :metrics, only: :index do
+      get "index"
+      get 'get_current_metrics'
+      get 'get_watchlist_instances'
+      get 'get_num_new_instances'
+      get 'refresh_watchlist_instances'
+      post 'update_current_metrics'
+      post 'update_watchlist_instances'
+      post 'update_current_metrics'
+    end
 
     resources :jobs, only: :index do
       get "getjob", on: :member

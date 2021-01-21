@@ -66,9 +66,11 @@ class AssessmentsController < ApplicationController
 
   def index
     @is_instructor = @cud.has_auth_level? :instructor
-    @announcements = Announcement.where("start_date < :now AND end_date > :now", now: Time.now)
-                                 .where("course_id = ? OR system = ?", @course.id, true)
-                                 .where(persistent: false).order(:start_date)
+    announcements_tmp = Announcement.where("start_date < :now AND end_date > :now",
+       now: Time.now)
+      .where(persistent: false)
+    @announcements = announcements_tmp.where(course_id: @course.id)
+      .or(announcements_tmp.where(system: true)).order(:start_date)
     @attachments = (@cud.instructor?) ? @course.attachments : @course.attachments.where(released: true)
   end
 
@@ -623,6 +625,7 @@ class AssessmentsController < ApplicationController
     num_released = releaseMatchingGrades { |_| true }
 
     if num_released > 0
+      @course.update_course_no_submissions_watchlist_instances
       flash[:success] = "%d %s released." % [num_released, (num_released > 1 ? "grades were" : "grade was")]
     else
       flash[:error] = "No grades were released. They might have all already been released."
@@ -641,6 +644,7 @@ class AssessmentsController < ApplicationController
     num_released = releaseMatchingGrades { |submission, _| @cud.CA_of? submission.course_user_datum }
 
     if num_released > 0
+      @course.update_course_no_submissions_watchlist_instances(@cud)
       flash[:success] = "%d %s released." % [num_released, (num_released > 1 ? "grades were" : "grade was")]
     else
       flash[:error] = "No grades were released. " \

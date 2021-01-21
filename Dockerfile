@@ -1,16 +1,21 @@
 FROM phusion/passenger-ruby26
 
-# Set correct environment variables.
-ENV HOME /root
+# Change to your time zone here
+RUN ln -fs /usr/share/zoneinfo/America/Los_Angeles /etc/localtime
+
+# Install gems
+WORKDIR /tmp
+ADD Gemfile .
+ADD Gemfile.lock .
+
+RUN chown app:app Gemfile Gemfile.lock
 
 # Prepare folders
-RUN mkdir /home/app/webapp
-
-# Run Bundle in a cache efficient way
-WORKDIR /tmp
-ADD Gemfile /tmp/
-ADD Gemfile.lock /tmp/
+USER app
 RUN bundle install
+
+RUN mkdir /home/app/webapp
+WORKDIR /home/app/webapp
 
 # Add the rails app
 ADD . /home/app/webapp
@@ -21,8 +26,11 @@ RUN mkdir -p /home/app/webapp/log && \
   chown -R app:app /home/app/webapp/log && \
   chmod 0664 /home/app/webapp/log/production.log
 
-# precompile the Rails assets
+USER root
+RUN chown -R app:app .
+
 WORKDIR /home/app/webapp
 
 # Clean up APT when done.
+USER root
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*

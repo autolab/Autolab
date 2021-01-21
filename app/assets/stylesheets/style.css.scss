@@ -14,10 +14,16 @@ $autolab-red: rgba(153, 0, 0, 0.9);
 $autolab-subtle-red: #C87B7E;
 $autolab-subtle-gray: #eee;
 $autolab-highlight-gray: #ccc;
+$autolab-black-text: #212121;
+$autolab-blue-text: #0882af;
 #F2EFEF
 
 html, body {
   height: 100%;
+}
+
+a {
+  color: $autolab-blue-text;
 }
 
 /* Error Classes - for elements that display error/status messages */
@@ -403,7 +409,7 @@ input[type="file"].upload_embedded {
 div#footer {
   clear: both;
   font-size: 14px;
-  color: #888;
+  color: $autolab-black-text;
   height: 42px;
   padding: 0 10px;
   margin-top: 16px;
@@ -418,7 +424,7 @@ div#footer a,
 div#footer span.site_version {
   display: inline-block;
   padding: 12px;
-  color: #666;
+  color: $autolab-black-text;
 }
 
 div#footer span.site_version {
@@ -707,6 +713,27 @@ table.navigatable tr:hover {
 /* badge */
 .badge.padded-badge {
   padding: 2px 10px;
+}
+
+.badge.metrics-badge {
+  background-color: #008FCC !important;
+  border-radius: 10px !important;
+  padding: 0px 1px;
+  margin-left: -5px;
+  margin-right: -8px;
+  margin-top: 6px;
+  line-height: 16px;
+  height: 16px;
+  font-size: 0.65rem !important;
+}
+
+.row.metrics .col.metrics {
+  padding: 0px 0px;
+}
+
+h7.metrics {
+  margin-left: -15px;
+  margin-right: -10px;
 }
 
 /* collections */
@@ -1168,6 +1195,10 @@ div.center {
 }
 
 .drag-drop-handin:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.drag-drop-handin:focus {
   background: rgba(0, 0, 0, 0.05);
 }
 

@@ -21,7 +21,7 @@ class AssessmentUserDatum < ApplicationRecord
   # * similarly, when the grade type is updated, the number of grace days used could change.
   #   submissions associated with AUDs with Zeroed and Excused grade types aren't counted as late
   #   even if they were submitted past the due date whereas Normal grade type AUD submissions are.
-  after_save :invalidate_cgdubs_for_assessments_after, if: :saved_change_to_latest_submission_id? or :saved_change_to_grade_type?
+  after_save :invalidate_cgdubs_for_assessments_after, if: :saved_change_to_latest_submission_id_or_grade_type?
 
   NORMAL = 0
   ZEROED = 1
@@ -109,6 +109,11 @@ class AssessmentUserDatum < ApplicationRecord
     @final_score[as_seen_by] ||= final_score! as_seen_by
   end
 
+  def final_score_ignore_grading_deadline(as_seen_by)
+    @final_score_ignore_grading_deadline ||= {}
+    @final_score_ignore_grading_deadline[as_seen_by] ||= final_score_ignore_grading_deadline! as_seen_by
+  end
+
   def status(as_seen_by)
     @status ||= {}
     @status[as_seen_by] ||= status! as_seen_by
@@ -155,6 +160,8 @@ class AssessmentUserDatum < ApplicationRecord
       end
 
       Rails.cache.delete course_user_datum.ggl_cache_key
+
+      course_user_datum.update_cud_gdu_watchlist_instances
     end # release lock
   end
 
@@ -246,6 +253,10 @@ protected
 
 private
 
+  def saved_change_to_latest_submission_id_or_grade_type?
+    return (saved_change_to_latest_submission_id? or saved_change_to_grade_type?)
+  end
+  
   # Applies given extension to given date limit (due date or end_at).
   # Returns nil, if extension is infinite and thus the date limit is void.
   def apply_extension(original_date, ext)
@@ -285,6 +296,24 @@ private
                     if Time.now <= assessment.grading_deadline
                       nil
                     elsif latest_submission
+                      latest_submission.final_score as_seen_by
+                    else
+                      0.0
+                    end
+                  when ZEROED
+                    0.0
+                  when EXCUSED
+                    nil
+                  end
+
+    # TODO: final_score = apply_tweak(final_score) if final_score
+    final_score
+  end
+
+  def final_score_ignore_grading_deadline!(as_seen_by)
+    final_score = case grade_type
+                  when NORMAL
+                    if latest_submission
                       latest_submission.final_score as_seen_by
                     else
                       0.0

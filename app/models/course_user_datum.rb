@@ -21,6 +21,7 @@ class CourseUserDatum < ApplicationRecord
   has_many :extensions, dependent: :destroy
   has_many :scores, through: :submissions
   has_many :assessment_user_data, dependent: :destroy
+  has_many :watchlist_instances, dependent: :destroy
 
   attr_readonly :course_id
   before_save :strip_html
@@ -246,6 +247,14 @@ class CourseUserDatum < ApplicationRecord
     dua = course.cgdub_dependencies_updated_at.utc.to_s(:number)
 
     "ggl/dua-#{dua}/u-#{self.id}"
+  end
+
+  # This method call is used specifically for the purpose of callback style update to watchlist
+  # Need to archive old instances and also add new instances
+  def update_cud_gdu_watchlist_instances
+    # At this point, all relevant previously cached grace day usage information should be invalidated
+    # Calls to calculate grace day usage should be from scratch
+    WatchlistInstance.update_cud_gdu_watchlist_instances(self)
   end
 
 private
