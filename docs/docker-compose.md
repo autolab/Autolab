@@ -18,8 +18,8 @@ First ensure that you have Docker and Docker Compose installed on your machine. 
 9. Create initial root user: `make create-user`
 10. Change `DOCKER_TANGO_HOST_VOLUME_PATH` in `docker-compose.yml` to be the absolute path to the Tango `volumes` directory, i.e `/<path-to-docker-compose-installation>/Tango/volumes`
 11. Stop all containers: `docker-compose stop`
-12. Continue with TLS setup as outlined in the next section
-13. Modify the appropriate Nginx config (either `app.conf` or `no-ssl-app.conf`) by replacing the placeholders with your real domain
+12. Modify the appropriate Nginx config (either `app.conf` or `no-ssl-app.conf` depending on whether you want to use SSL for the next step) by replacing the placeholders with your real domain
+13. Continue with TLS setup as outlined in the next section
 14. Build the autograding image(s) that you want to use in Tango (see [the docs](https://docs.autolabproject.com/tango-vmms/#docker-vmms-setup) for more information). For this setup we will stick to the default Ubuntu 18.04 autograding image: `docker build -t autograding_image Tango/vmms/`. Note that we can just run this directly on the host because we are mapping the Docker socket to the Tango container (i.e they are using the same Docker server).
 15. Start up everything: `docker-compose up -d`. Autolab should now be accessible on port 80 (and 443 if you configured SSL)!
 
