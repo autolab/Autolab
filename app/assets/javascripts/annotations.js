@@ -1,6 +1,7 @@
 /* Document On Ready Initializations */
 
 $(document).ready(function () {
+  $('.skip-main').remove(); // removes skip main anchor tag
   $(".collapsible-body").show(); //expands all collapsible initially
   $('.collapsible').collapsible();
   //get line number in URL, if it exists
