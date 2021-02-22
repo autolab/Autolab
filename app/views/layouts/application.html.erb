@@ -56,6 +56,7 @@
     <%= javascript_include_tag "https://unpkg.com/flatpickr" %>
 
     <div class="page-wrapper">
+      <a class="skip-main" href="#content">Skip to main content</a>
       <%= render "layouts/navbar" %>
 
       <!-- Page Body -->
@@ -86,7 +87,7 @@
         <!-- End Persistent Announcements -->
 
         <!-- Content -->
-        <div id="content">
+        <div id="content" role="main">
           <%= yield %>
         </div>
         <!-- End Content -->
