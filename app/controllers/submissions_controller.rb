@@ -297,7 +297,7 @@ class SubmissionsController < ApplicationController
       }]
     end
 
-    if params[:header_position]
+    if Archive.archive? @filename && params[:header_position]
       file, pathname = Archive.get_nth_file(@submission.handin_file_path, params[:header_position].to_i)
 
       if(file.nil?)
