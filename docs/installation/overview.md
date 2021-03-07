@@ -6,4 +6,4 @@ There are 2 different ways to install Autolab and Tango:
   2. You can also [install Autolab and Tango manually](/installation/manual), where we have instructions for Ubuntu 18.04 and Mac OSX 10.11+. 
 
 
-Most of our users use the Docker Compose installation method as it is simpler and does not require knowledge of Ruby on Rails.
+Most of our users use the Docker Compose installation method as it is simpler, production-ready, and comes deployed with MySQL and TLS. 
