@@ -1,8 +1,8 @@
 # Autolab + Tango Docker Compose Installation
 
-The Autolab Docker Compose installation is a fast and easy production-ready installation and deployment method. It uses a MySQL database for the Autolab deployment, and comes with SSL support. This is now the preferred way of installing Autolab.
+The Autolab Docker Compose installation is a fast and easy production-ready installation and deployment method. It uses a MySQL database for the Autolab deployment, and comes with TLS support. This is now the preferred way of installing Autolab.
 
-If you are stuck or find issues with the installation process you can either file an issue on our Github repository, or join our Slack [here](https://autolab-slack.herokuapp.com/) and let us know and we will try our best to help. Also see the [debugging](#debugging) section for tips on how to diagnose problems.
+If you are stuck or find issues with the installation process you can either file an issue on our Github repository, or join our Slack [here](https://autolab-slack.herokuapp.com/) and let us know and we will try our best to help. Also see the [debugging](#debugging-your-deployment) section for tips on how to diagnose problems.
 
 ## Installation
 First ensure that you have Docker and Docker Compose installed on your machine. See the official [Docker docs](See https://docs.docker.com/install/) for the installation steps.
