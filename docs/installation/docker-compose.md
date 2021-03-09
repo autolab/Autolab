@@ -195,111 +195,104 @@ If the Autolab instance is not working properly, taking a look at both the appli
 
 First, find the name of the container. This should be just `autolab` by default:
 
-```
-$ docker ps
-CONTAINER ID        IMAGE                       COMMAND                  CREATED             STATUS                    PORTS                                      NAMES
-765d35962f52        autolab-docker_autolab      "/sbin/my_init"          31 minutes ago      Up 22 minutes             0.0.0.0:80->80/tcp, 0.0.0.0:443->443/tcp   autolab
-a5b77b5267b1        autolab-docker_tango        "/usr/bin/supervisor…"   7 days ago          Up 22 minutes             0.0.0.0:3000->3000/tcp                     tango
-438d8e9f73e2        redis:latest                "docker-entrypoint.s…"   7 days ago          Up 22 minutes             6379/tcp                                   redis
-da86acc5a4c3        mysql/mysql-server:latest   "/entrypoint.sh mysq…"   7 days ago          Up 22 minutes (healthy)   3306/tcp, 33060-33061/tcp                  mysql
-88032e85d669        a2eb12050715                "/bin/bash"              9 days ago          Up 2 days                                                            compiler
-```
+    :::bash
+    $ docker ps
+    CONTAINER ID        IMAGE                       COMMAND                  CREATED             STATUS                    PORTS                                      NAMES
+    765d35962f52        autolab-docker_autolab      "/sbin/my_init"          31 minutes ago      Up 22 minutes             0.0.0.0:80->80/tcp, 0.0.0.0:443->443/tcp   autolab
+    a5b77b5267b1        autolab-docker_tango        "/usr/bin/supervisor…"   7 days ago          Up 22 minutes             0.0.0.0:3000->3000/tcp                     tango
+    438d8e9f73e2        redis:latest                "docker-entrypoint.s…"   7 days ago          Up 22 minutes             6379/tcp                                   redis
+    da86acc5a4c3        mysql/mysql-server:latest   "/entrypoint.sh mysq…"   7 days ago          Up 22 minutes (healthy)   3306/tcp, 33060-33061/tcp                  mysql
+    88032e85d669        a2eb12050715                "/bin/bash"              9 days ago          Up 2 days                                                            compiler
 
 Next get a shell inside the container:
 
-```
-$ docker exec -it autolab bash
-root@be56be775428:/home/app/webapp# 
-```
+    :::bash
+    $ docker exec -it autolab bash
+    root@be56be775428:/home/app/webapp# 
 
 By default we are in the project directory. Navigate to the `logs` directory and `cat` or `tail` `production.log`. This contains logs from the Autolab application itself.
 
-```
-root@be56be775428:/home/app/webapp# cd log
-root@be56be775428:/home/app/webapp/log# tail -f -n +1 production.log 
-```
+    :::bash
+    root@be56be775428:/home/app/webapp# cd log
+    root@be56be775428:/home/app/webapp/log# tail -f -n +1 production.log 
 
 We can also check out our Nginx logs in `/var/log/nginx/`:
 
-```
-root@be56be775428:/home/app/webapp/log# cd /var/log/nginx/
-root@be56be775428:/var/log/nginx# ls
-access.log  error.log
-```
+    :::bash
+    root@be56be775428:/home/app/webapp/log# cd /var/log/nginx/
+    root@be56be775428:/var/log/nginx# ls
+    access.log  error.log
 
 ### Accessing the Rails console
 Obtain a shell in the `autolab` container as described [previously](#checking-autolab-logs), and do `RAILS_ENV=production bundle exec rails c`:
 
-```
-root@be56be775428:/home/app/webapp# RAILS_ENV=production bundle exec rails c
-Loading production environment (Rails 5.2.0)
-2.6.6 :001 > User.all.count
- => 1
-```
+    :::bash
+    root@be56be775428:/home/app/webapp# RAILS_ENV=production bundle exec rails c
+    Loading production environment (Rails 5.2.0)
+    2.6.6 :001 > User.all.count
+    => 1
 
 In the example above, if you performed `make create-user` you should have at least one user in your database. If there are errors connecting to a database here it is likely that the database was misconfigured.
 
 ### Checking Tango Logs
 Get a shell in the Tango instance, similar to the instructions mentioned [previously](#checking-autolab-logs). The logs are stored in the parent folder (`/opt/TangoService`) of the project directory:
 
-```
-$ docker exec -it tango bash
-root@a5b77b5267b1:/opt/TangoService/Tango# cd ..
-root@a5b77b5267b1:/opt/TangoService# ls
-Tango  tango_job_manager_log.log  tango_log.log
-root@a5b77b5267b1:/opt/TangoService# tail -f -n +1 tango_job_manager_log.log tango_log.log 
-```
+    :::bash
+    $ docker exec -it tango bash
+    root@a5b77b5267b1:/opt/TangoService/Tango# cd ..
+    root@a5b77b5267b1:/opt/TangoService# ls
+    Tango  tango_job_manager_log.log  tango_log.log
+    root@a5b77b5267b1:/opt/TangoService# tail -f -n +1 tango_job_manager_log.log tango_log.log 
 
 ### Troubleshooting Autolab/Tango Connection
 In the Autolab container, try to curl Tango:
 
-```
-root@be56be775428:/home/app/webapp# curl tango:3000
-Hello, world! RESTful Tango here!
-```
+    :::bash
+    root@be56be775428:/home/app/webapp# curl tango:3000
+    Hello, world! RESTful Tango here!
 
 In the Tango container, try to curl Autolab:
 
-```
-root@a5b77b5267b1:/opt/TangoService/Tango# curl autolab
-<html>
-<head><title>301 Moved Permanently</title></head>
-<body bgcolor="white">
-<center><h1>301 Moved Permanently</h1></center>
-<hr><center>nginx/1.14.0 (Ubuntu)</center>
-</body>
-</html>
-```
+    :::bash
+    root@a5b77b5267b1:/opt/TangoService/Tango# curl autolab
+    <html>
+    <head><title>301 Moved Permanently</title></head>
+    <body bgcolor="white">
+    <center><h1>301 Moved Permanently</h1></center>
+    <hr><center>nginx/1.14.0 (Ubuntu)</center>
+    </body>
+    </html>
 
 ### Permission issues in Autolab
-Run `make set-perms` again
+Run the following again:
+
+    :::bash
+    make set-perms
 
 ### Restarting Autolab Passenger Server
 This is useful when you might want to test out some code change within the Autolab container without having to rebuild everything again. These changes can be applied by just restarting the Passenger service that is serving Autolab.
 
 Run `passenger-config restart-app`:
 
-```
-root@8b56488b3fb6:/home/app/webapp# passenger-config restart-app
-Please select the application to restart.
-Tip: re-run this command with --help to learn how to automate it.
-If the menu doesn't display correctly, press '!'
+    :::bash
+    root@8b56488b3fb6:/home/app/webapp# passenger-config restart-app
+    Please select the application to restart.
+    Tip: re-run this command with --help to learn how to automate it.
+    If the menu doesn't display correctly, press '!'
 
- ‣   /home/app/webapp (production)
-     Cancel
+    ‣   /home/app/webapp (production)
+    Cancel
 
-Restarting /home/app/webapp (production)
-```
+    Restarting /home/app/webapp (production)
 
 ## FAQ
 ### error: unable to unlink old 'db/schema.rb': Permission denied
 
 If you obtain the following error when attempting to perform `make update`:
 
-```
-error: unable to unlink old 'db/schema.rb': Permission denied
-fatal: Could not reset index file to revision 'HEAD'.
-```
+    :::bash
+    error: unable to unlink old 'db/schema.rb': Permission denied
+    fatal: Could not reset index file to revision 'HEAD'.
 
 This is due to the fact that `db/schema.rb` is updated whenever migrations are performed. `db/schema.rb` documents the database schema, which depends on the database that you are using, its version, and when the migrations were run. It is likely that your `db/schema.rb` will diverge from the one generated by the devs.
 
