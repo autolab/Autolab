@@ -7,21 +7,85 @@ If you are stuck or find issues with the installation process you can either fil
 ## Installation
 First ensure that you have Docker and Docker Compose installed on your machine. See the official [Docker docs](See https://docs.docker.com/install/) for the installation steps.
 
-1. Clone this repository and its submodules: `git clone --recurse-submodules -j8 git://github.com/autolab/docker.git autolab-docker`
-2. Enter the project directory: `cd autolab-docker`
-3. Update submodules: `make update`
-4. Create initial configs: `make`
-5. Build the Dockerfiles: `docker-compose build`
-6. Run the containers: `docker-compose up -d`. Note at this point Nginx will still be crash-looping in the Autolab container because SSL has not been configuired/disabled yet.
-7. Ensure that the newly created config files have the right permissions: `make set-perms`
-8. Perform migrations: `make db-migrate`
-9. Create initial root user: `make create-user`
-10. Change `DOCKER_TANGO_HOST_VOLUME_PATH` in `docker-compose.yml` to be the absolute path to the Tango `volumes` directory, i.e `/<path-to-docker-compose-installation>/Tango/volumes`
-11. Stop all containers: `docker-compose stop`
-12. Modify the appropriate Nginx config (either `app.conf` or `no-ssl-app.conf` depending on whether you want to use SSL for the next step) by replacing the placeholders with your real domain
+1. Clone this repository and its Autolab and Tango submodules: 
+
+        :::bash
+        git clone --recurse-submodules -j8 git://github.com/autolab/docker.git autolab-docker
+
+
+2. Enter the project directory:
+
+        :::bash
+        cd autolab-docker
+
+3. Update our Autolab and Tango submodules to ensure that you are getting the latest versions:
+
+        :::bash
+        make update
+
+4. Create initial default configs:
+
+        :::bash
+        make
+
+5. Build the Dockerfiles for both Autolab and Tango:
+
+        :::bash
+        docker-compose build
+
+6. Run the Docker containers:
+
+        :::bash
+        docker-compose up -d
+
+    Note at this point Nginx will still be crash-looping in the Autolab container because SSL has not been configuired/disabled yet.
+
+7. Ensure that the newly created config files have the right permissions, as it may have been modified during the building process:
+
+        :::bash
+        make set-perms
+
+8. Perform database migrations for Autolab, which will initialize your database schema:
+
+        :::bash
+        make db-migrate
+
+9. Create administrative user for Autolab:
+
+        :::bash
+        make create-user
+
+    This user has full permissions on Autolab and will be able to create other users and designate other admins.
+
+10. Change `DOCKER_TANGO_HOST_VOLUME_PATH` in `docker-compose.yml` to be the absolute path to the Tango `volumes` directory, i.e `/<path-to-docker-compose-installation>/Tango/volumes`. This is so that Tango knows where to put the output files of its autograded jobs.
+
+        :::bash 
+        # in docker-compose.yml
+
+        # Modify the below to be the path to volumes on your host machine
+        - DOCKER_TANGO_HOST_VOLUME_PATH=/home/your-user/autolab-docker/Tango/volumes # example path
+
+11. Stop all containers, as we are going to setup/disable TLS:
+
+        :::bash 
+        docker-compose stop
+
+12. If you intend to use TLS later, in `nginx/app.conf`, change instances of `<REPLACE_WITH_YOUR_DOMAIN>` to your real domain name. Otherwise, if you are not using TLS, in `nginx/no-ssl-app.conf`, change `server_name` to your real domain name.
+
 13. Continue with TLS setup as outlined in the next section
-14. Build the autograding image(s) that you want to use in Tango (see [the docs](https://docs.autolabproject.com/tango-vmms/#docker-vmms-setup) for more information). For this setup we will stick to the default Ubuntu 18.04 autograding image: `docker build -t autograding_image Tango/vmms/`. Note that we can just run this directly on the host because we are mapping the Docker socket to the Tango container (i.e they are using the same Docker server).
-15. Start up everything: `docker-compose up -d`. Autolab should now be accessible on port 80 (and 443 if you configured SSL)!
+14. Build the autograding image(s) that you want to use in Tango (see [the docs](https://docs.autolabproject.com/tango-vmms/#docker-vmms-setup) for more information). For this setup we will stick to the default Ubuntu 18.04 autograding image: 
+
+        :::bash
+        docker build -t autograding_image Tango/vmms/
+        
+Note that we can just run this directly on the host because we are mapping the Docker socket to the Tango container (i.e they are using the same Docker server).
+
+15. Start up everything: 
+
+        :::bash
+        docker-compose up -d
+        
+Autolab should now be accessible on port 80 (and 443 if you configured TLS)!
 
 ## Configuring SSL/TLS
 There are three options for TLS: using Let's Encrypt (for free TLS certificates), using your own certificate, and not using TLS (not recommended for production deployment).
@@ -35,42 +99,59 @@ There are three options for TLS: using Let's Encrypt (for free TLS certificates)
 6. Run your modified script: `sudo sh ./ssl/init-letsencrypt.sh`
 
 ### Option 2: Using your own TLS certificate
-1. Copy your private key to ./ssl/privkey.pem
-2. Copy your certificate to ./ssl/fullchain.pem
-3. Generate your dhparams, i.e `openssl dhparam -out ./ssl/ssl-dhparams.pem 4096`
+1. Copy your private key to `ssl/privkey.pem`
+2. Copy your certificate to `ssl/fullchain.pem`
+3. Generate your dhparams:
+
+        :::bash
+        openssl dhparam -out ssl/ssl-dhparams.pem 4096
+
 4. Uncomment the following lines in `docker-compose.yml`:
-```
-    # - ./ssl/fullchain.pem:/etc/letsencrypt/live/test.autolab.io/fullchain.pem;
-    # - ./ssl/privkey.pem:/etc/letsencrypt/live/test.autolab.io/privkey.pem;
-    # - ./ssl/ssl-dhparams.pem:/etc/letsencrypt/ssl-dhparams.pem
-```
+
+        :::bash
+        # - ./ssl/fullchain.pem:/etc/letsencrypt/live/test.autolab.io/fullchain.pem;
+        # - ./ssl/privkey.pem:/etc/letsencrypt/live/test.autolab.io/privkey.pem;
+        # - ./ssl/ssl-dhparams.pem:/etc/letsencrypt/ssl-dhparams.pem
 
 ### Option 3: No TLS (not recommended, only for local development/testing)
 1. In `docker-compose.yml` (for all the subsequent steps), comment out the following:
 
-``` 
-    # Comment the below out to disable SSL (not recommended)
-    - ./nginx/app.conf:/etc/nginx/sites-enabled/webapp.conf
-```
+        :::bash
+        # Comment the below out to disable SSL (not recommended)
+        - ./nginx/app.conf:/etc/nginx/sites-enabled/webapp.conf
     
-Also uncomment the following:
+    Also uncomment the following:
 
-```
-   # Uncomment the below to disable SSL (not recommended)
-   # - ./nginx/no-ssl-app.conf:/etc/nginx/sites-enabled/webapp.conf
-```
+        :::bash
+        # Uncomment the below to disable SSL (not recommended)
+        # - ./nginx/no-ssl-app.conf:/etc/nginx/sites-enabled/webapp.conf
     
-Lastly set `DOCKER_SSL=false`:
-```
-    environment:
-      - DOCKER_SSL=true                         # set to false for no SSL (not recommended)
-```
+    Lastly set `DOCKER_SSL=false`:
+
+        :::bash
+        environment:
+        - DOCKER_SSL=true                         # set to false for no SSL (not recommended)
 
 ## Updating Autolab/Tango Deployment
-1. Stop your running instances: `docker-compose stop`
-2. Run `make update` to update your Autolab and Tango repositories
-3. Run `docker-compose build` to rebuild the images with the latest code
-4. Re-deploy your containers with `docker-compose up`
+1. Stop your running instances:
+
+        :::bash
+        docker-compose stop
+
+2. Update your Autolab and Tango repositories:
+
+        :::bash
+        make update
+
+3. Rebuild the images with the latest code:
+
+        :::bash
+        docker-compose build
+
+4. Re-deploy your containers:
+
+        :::bash
+        docker-compose up
 
 ## Debugging your Deployment
 In the (very likely) event that you run into problems during setup, hopefully these steps will help you to help identify and diagnose the issue. If you continue to face difficulties or believe you discovered issues with the setup process please join our Slack [here](https://autolab-slack.herokuapp.com/) and let us know and we will try our best to help.
@@ -78,38 +159,36 @@ In the (very likely) event that you run into problems during setup, hopefully th
 ### Better logging output for Docker Compose
 By default, `docker-compose up -d` runs in detached state and it is not easy to immediately see errors:
 
-```
-$ docker-compose up -d
-Starting certbot ... done
-Starting redis   ... done
-Starting mysql   ... done
-Starting tango     ... done
-Recreating autolab ... done
-```
+    :::bash
+    $ docker-compose up -d
+    Starting certbot ... done
+    Starting redis   ... done
+    Starting mysql   ... done
+    Starting tango     ... done
+    Recreating autolab ... done
 
 Use `docker-compose up` instead to get output from all the containers in real time:
 
-```
-$ docker-compose up
-Starting certbot ... done
-Starting mysql   ... done
-Starting redis   ... done
-Starting tango   ... done
-Starting autolab ... done
-Attaching to redis, mysql, certbot, tango, autolab
-mysql      | [Entrypoint] MySQL Docker Image 8.0.22-1.1.18
-tango      | 2020-11-11 04:33:19,533 CRIT Supervisor running as root (no user in config file)
-redis      | 1:C 11 Nov 2020 04:33:19.032 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
-redis      | 1:C 11 Nov 2020 04:33:19.032 # Redis version=6.0.9, bits=64, commit=00000000, modified=0, pid=1, just started
-redis      | 1:C 11 Nov 2020 04:33:19.032 # Warning: no config file specified, using the default config. In order to specify a config file use redis-server /path/to/redis.conf
-mysql      | [Entrypoint] Starting MySQL 8.0.22-1.1.18
-redis      | 1:M 11 Nov 2020 04:33:19.033 * Running mode=standalone, port=6379.
-redis      | 1:M 11 Nov 2020 04:33:19.033 # Server initialized
-tango      | 2020-11-11 04:33:19,539 INFO RPC interface 'supervisor' initialized
-tango      | 2020-11-11 04:33:19,539 CRIT Server 'unix_http_server' running without any HTTP authentication checking
-mysql      | 2020-11-11T04:33:19.476749Z 0 [System] [MY-010116] [Server] /usr/sbin/mysqld (mysqld 8.0.22) starting as process 22
---- output truncated ---
-```
+    :::bash
+    $ docker-compose up
+    Starting certbot ... done
+    Starting mysql   ... done
+    Starting redis   ... done
+    Starting tango   ... done
+    Starting autolab ... done
+    Attaching to redis, mysql, certbot, tango, autolab
+    mysql      | [Entrypoint] MySQL Docker Image 8.0.22-1.1.18
+    tango      | 2020-11-11 04:33:19,533 CRIT Supervisor running as root (no user in config file)
+    redis      | 1:C 11 Nov 2020 04:33:19.032 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+    redis      | 1:C 11 Nov 2020 04:33:19.032 # Redis version=6.0.9, bits=64, commit=00000000, modified=0, pid=1, just started
+    redis      | 1:C 11 Nov 2020 04:33:19.032 # Warning: no config file specified, using the default config. In order to specify a config file use redis-server /path/to/redis.conf
+    mysql      | [Entrypoint] Starting MySQL 8.0.22-1.1.18
+    redis      | 1:M 11 Nov 2020 04:33:19.033 * Running mode=standalone, port=6379.
+    redis      | 1:M 11 Nov 2020 04:33:19.033 # Server initialized
+    tango      | 2020-11-11 04:33:19,539 INFO RPC interface 'supervisor' initialized
+    tango      | 2020-11-11 04:33:19,539 CRIT Server 'unix_http_server' running without any HTTP authentication checking
+    mysql      | 2020-11-11T04:33:19.476749Z 0 [System] [MY-010116] [Server] /usr/sbin/mysqld (mysqld 8.0.22) starting as process 22
+    --- output truncated ---
 
 ### Checking Autolab logs
 If the Autolab instance is not working properly, taking a look at both the application logs as well as the Nginx logs in the container will be helpful.
