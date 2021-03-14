@@ -1,11 +1,10 @@
 # Tango Installation
 
-This guide provides separate instructions for installing Tango on either a development environment or a production environment.
-
+This guide provides instructions for installing Tango on either a [development environment](#development-installation) or a [production environment](#production-installation).
 
 # Development Installation
 
-This guide shows how to setup Tango in a **development environment**. Use the [deploying Tango](/tango-deploy/) guide for installing in a **production environment**.
+This guide shows how to setup Tango in a **development environment**. Use the [production installation](#production-installation) guide for installing in a **production environment**.
 
 1.  Obtain the source code.
 
@@ -96,7 +95,7 @@ This guide shows how to setup Tango in a **development environment**. Use the [d
 
 
 
-# Deploying Standalone Tango
+# Production Installation
 
 This is a guide to setup a fully self-sufficient Tango deployment environment out-of-the-box using Docker. The suggested deployment pattern for Tango uses Nginx as a proxy and Supervisor as a process manager for Tango and all its dependencies. All requests to Nginx are rerouted to a Tango process.
 
