@@ -519,6 +519,7 @@ class AssessmentsController < ApplicationController
     if Archive.archive? @submission.handin_file_path
       @files = Archive.get_files @submission.handin_file_path
     end
+    @problemReleased = @submission.scores.pluck(:released).all?
   end
 
   def parseScore(feedback)
