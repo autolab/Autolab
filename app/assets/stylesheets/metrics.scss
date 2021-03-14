@@ -114,7 +114,7 @@ i.external.alternate {
   color: black !important;
 }
 
-#empty_tabs{
-  background: rgba(243, 240, 240, 0.9);
-  padding: 10px;
+// for resizing window
+.wide.column{
+  min-width: max-content;
 }
