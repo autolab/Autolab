@@ -1,11 +1,13 @@
 site_name: Autolab Documentation
 site_url: "https://docs.autolabproject.com/"
+extra_css:
+    - stylesheets/extra.css
 nav:
     - Autolab:
-          - Getting Started: index.md
-          - Guide for Instructors: instructors.md
-          - Guide for Lab Authors: lab.md
-          - Features:
+        - Getting Started: index.md
+        - Guide for Instructors: instructors.md
+        - Guide for Lab Authors: lab.md
+        - Features:
             - Formatted Feedback: features/formatted-feedback.md
             - Scoreboards: features/scoreboards.md
             - Embedded Forms: features/embedded-forms.md
@@ -13,24 +15,26 @@ nav:
             - MOSS Plagiarism Detection: features/moss.md
             - Metrics: features/metrics.md
     - Autolab API:
-          - Overview: api-overview.md
-          - Reference: api-interface.md
-          - Command Line Interface: command-line-interface.md
-          - Managing Authorized Apps: api-managing-authorized-apps.md
+        - Overview: api-overview.md
+        - Reference: api-interface.md
+        - Command Line Interface: command-line-interface.md
+        - Managing Authorized Apps: api-managing-authorized-apps.md
     - Tango:
-          - Getting Started: tango.md
-          - Tango CLI: tango-cli.md
-          - REST API: tango-rest.md
-          - VMMS Docs: tango-vmms.md
-          - Deploying Tango: tango-deploy.md
+        - Getting Started: tango.md
+        - Tango CLI: tango-cli.md
+        - REST API: tango-rest.md
+        - VMMS Docs: tango-vmms.md
+        - Deploying Tango: tango-deploy.md
     - Docker Compose Install: docker-compose.md
     - (Legacy) OneClick Install: one-click.md
 theme:
     name: material
-    palette:
-        primary: "red"
-        accent: "blue"
     logo: "images/logo.svg"
+    palette:
+        scheme: autolab
+    features:
+        - navigation.tabs
+        - toc.integrate
 repo_name: "Autolab"
 repo_url: "https://github.com/Autolab/autolab"
 extra:
@@ -47,3 +51,5 @@ markdown_extensions:
     - codehilite
       #linenums: true
 strict: true
+plugins:
+  - search
