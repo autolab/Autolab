@@ -1,6 +1,6 @@
 ### Ubuntu 18.04+ 
 
-This set of instruction is meant to install of AutoLab v2.40 on Ubuntu 18.04 LTS.
+This page provides instructions on installing Autolab on Ubuntu 18.04 LTS.
 
 1. Upgrade system packages and installing prerequisites
 
@@ -155,7 +155,7 @@ Comment out the configurations meant for MySQL in config/database.yml, and inser
 
         Email: "admin@foo.bar"
 
-16. Install [Tango](/tango), the backend autograding service.
+16. Install [Tango](/tango#installation), the backend autograding service.
 
 17. If you would like to deploy the server, you can try out [Phusion Passenger](https://www.phusionpassenger.com/library/walkthroughs/start/ruby.html)
 

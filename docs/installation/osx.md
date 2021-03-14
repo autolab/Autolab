@@ -101,6 +101,6 @@ Follow the step-by-step instructions below:
         :::bash
         Email: "admin@foo.bar".
 
-15. Install [Tango](/tango), the backend autograding service.
+15. Install [Tango](/tango#installation), the backend autograding service.
 
 16. Now you are all set to start using Autolab! Visit the [Guide for Instructors](/instructors) and [Guide for Lab Authors](/lab) pages for more info.

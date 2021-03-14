@@ -1,6 +1,6 @@
 # Autolab + Tango Docker Compose Installation
 
-The Autolab Docker Compose installation is a fast and easy production-ready installation and deployment method. It uses a MySQL database for the Autolab deployment, and comes with TLS support. This is now the preferred way of installing Autolab.
+The Autolab Docker Compose installation is a fast and easy production-ready installation and deployment method. It uses a MySQL database for the Autolab deployment, and comes with TLS/SSL support. This is now the preferred way of installing Autolab.
 
 If you are stuck or find issues with the installation process you can either file an issue on our Github repository, or join our Slack [here](https://autolab-slack.herokuapp.com/) and let us know and we will try our best to help. Also see the [debugging](#debugging-your-deployment) section for tips on how to diagnose problems.
 
@@ -72,7 +72,7 @@ First ensure that you have Docker and Docker Compose installed on your machine. 
 
 12. If you intend to use TLS later, in `nginx/app.conf`, change instances of `<REPLACE_WITH_YOUR_DOMAIN>` to your real domain name. Otherwise, if you are not using TLS, in `nginx/no-ssl-app.conf`, change `server_name` to your real domain name.
 
-13. Continue with TLS setup as outlined in the next section
+13. Continue with TLS setup as outlined in the [next section](#configuring-tlsssl)
 14. Build the autograding image(s) that you want to use in Tango (see [the docs](https://docs.autolabproject.com/tango-vmms/#docker-vmms-setup) for more information). For this setup we will stick to the default Ubuntu 18.04 autograding image: 
 
         :::bash
@@ -87,8 +87,10 @@ Note that we can just run this directly on the host because we are mapping the D
         
 Autolab should now be accessible on port 80 (and 443 if you configured TLS)!
 
-## Configuring SSL/TLS
-There are three options for TLS: using Let's Encrypt (for free TLS certificates), using your own certificate, and not using TLS (not recommended for production deployment).
+## Configuring TLS/SSL
+Having TLS/SSL configured is important as it helps to ensure that sensitive information like user credentials and submission information are encrypted instead of being sent over in plaintext across the network when users are using Autolab. We have made setting up TLS as easy and pain-free as possible. Using TLS is strongly recommended if you are using Autolab in a production environment with real students and instructors.
+
+There are three options for TLS: using Let's Encrypt (for free TLS certificates), using your own certificate, and not using TLS (suitable for local testing/development, but not recommended for production deployment).
 
 ### Option 1: Let's Encrypt
 1. Ensure that your DNS record points towards the IP address of your server
@@ -132,7 +134,7 @@ There are three options for TLS: using Let's Encrypt (for free TLS certificates)
         environment:
         - DOCKER_SSL=true                         # set to false for no SSL (not recommended)
 
-## Updating Autolab/Tango Deployment
+## Updating Your Docker Compose Deployment
 1. Stop your running instances:
 
         :::bash

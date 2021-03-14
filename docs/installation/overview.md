@@ -6,4 +6,4 @@ There are 2 different ways to install Autolab and Tango:
   2. You can also install Autolab manually. There are instructions for installing Autolab on [Ubuntu 18.04](/installation/ubuntu) and on [Mac OSX 10.11+](/installation/osx). The instructions for [installation Tango manually](/tango/#installation) are the same for both environments.
 
 
-Most of our users use the Docker Compose installation method as it is simpler, production-ready, and comes deployed with MySQL and TLS. 
+Most of our users use the Docker Compose installation method as it is simpler, production-ready, and comes deployed with MySQL and TLS/SSL. 
