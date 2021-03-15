@@ -161,6 +161,7 @@ function addInstanceToDict(instancesDict, id, user_id, course_id, user_name, use
 }
 
 function get_watchlist_function(){
+
   var new_instances = {}
   var contacted_instances = {}
   var resolved_instances = {}
@@ -297,22 +298,25 @@ function get_watchlist_function(){
       $('.ui.circular.label.condition').popup();
 
       $('.ui.button.contact_single').click(function() {
+        $(this).prop('disabled', true);
         method = "contact";
         var user_id = $(this).parent().parent().attr('id');
-
         window.open(`mailto: ${new_instances[user_id]["email"]}`, "_blank");
         console.log(new_instances[user_id]["instance_ids"]);
-        update_watchlist(method, new_instances[user_id]["instance_ids"]);
+        update_watchlist(method, new_instances[user_id]["instance_ids"],this);
       })
 
       $('.ui.button.resolve_single').click(function() {
+        $(this).prop('disabled', true);
         method = "resolve";
         var user_id = $(this).parent().parent().attr('id');
         var instances = get_active_instances(new_instances, contacted_instances);
-        update_watchlist(method, instances[user_id]["instance_ids"]);
+        update_watchlist(method, instances[user_id]["instance_ids"],this);
       })
   });
 
+  // Removes previous click function binded to contact button
+  $('#contact_button').off('click');
   $('#contact_button').click(function(){
     method = "contact";
 
@@ -332,6 +336,8 @@ function get_watchlist_function(){
     }
   });
 
+  // Removes previous click function binded to resolve button
+  $('#resolve_button').off('click');
   $('#resolve_button').click(function(){
     method = "resolve";
     var instances = get_active_instances(new_instances, contacted_instances);
@@ -391,7 +397,7 @@ function get_active_instances(new_instances, contacted_instances) {
   }
 }
 
-function update_watchlist(method, ids){
+function update_watchlist(method, ids, update_button = null){
 	let students_selected = {};
 	students_selected['method'] = method;
 	students_selected['ids'] = ids;
@@ -412,7 +418,12 @@ function update_watchlist(method, ids){
 				message: "Do try again later",
 				timeout: -1
 			});
-		}
+
+      // enable single button on failure
+      if(update_button!=null){
+        $(update_button).removeAttr("disabled");
+      }
+		},
 	});
 }
 
