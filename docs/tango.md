@@ -2,7 +2,7 @@
 
 Tango is a standalone RESTful Web service that runs jobs in virtual machines or containers. It was developed as a distributed grading system for [Autolab](/) and has been extensively used for autograding programming assignments. It is also open source and hosted on [Github](https://www.github.com/autolab/Tango).
 
-## Getting Started
+<!-- ## Getting Started -->
 
 A brief overview of the Tango respository:
 
@@ -20,10 +20,10 @@ For more information about the different Tango components, go to the following p
 
 -   [REST API docs](/tango-rest/)
 -   [VMMS API docs](/tango-vmms/)
--   [Tango Architecture Overview](https://docs.autolabproject.com/2015/04/making-backend-scalable/)
+-   [Tango Architecture Overview](https://autolab.github.io/2015/04/making-backend-scalable/)
 -   [Deploying Tango](/tango-deploy/)
 
-### Installation
+<!-- ### Installation
 
 This guide shows how to setup Tango in a **development environment**. Use the [deploying Tango](/tango-deploy/) guide for installing in a **production environment**.
 
@@ -112,3 +112,4 @@ This guide shows how to setup Tango in a **development environment**. Use the [d
         RESTFUL_KEY = "test"
 
 13. To deploy Tango in a standalone production environment, use this [guide](/tango-deploy/)
+ -->

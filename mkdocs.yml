@@ -22,13 +22,13 @@ nav:
             - Annotations: features/annotations.md
             - MOSS Plagiarism Detection: features/moss.md
             - Metrics: features/metrics.md
+        - Tango Basics: tango.md
     - Autolab API:
         - Overview: api-overview.md
         - Reference: api-interface.md
         - Command Line Interface: command-line-interface.md
         - Managing Authorized Apps: api-managing-authorized-apps.md
     - Tango:
-        - Getting Started: tango.md
         - Tango CLI: tango-cli.md
         - REST API: tango-rest.md
         - VMMS Docs: tango-vmms.md
