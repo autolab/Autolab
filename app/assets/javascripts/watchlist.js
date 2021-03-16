@@ -74,11 +74,13 @@ function get_condition_html(condition_types) {
         violation_string = violation_list.join(" | ");
         break;
       case "grace_day_usage":
-        condition_string = `${Object.keys(violations || {}).length} grace days used`;
+        var num_grace_days_used = 0;
         var violation_list = [];
         $.each(violations, function( lab, val ) {
           violation_list.push(`${lab}: ${val}`);
+          num_grace_days_used += val;
         });
+        condition_string = `${num_grace_days_used} grace days used`;
         violation_string = violation_list.join(" | ");
         break;
       default:
