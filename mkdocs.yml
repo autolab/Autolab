@@ -3,8 +3,16 @@ site_url: "https://docs.autolabproject.com/"
 extra_css:
     - stylesheets/extra.css
 nav:
-    - Autolab:
-        - Getting Started: index.md
+    - Overview: index.md
+    - Installation:
+        - Installation Overview: installation/overview.md
+        - Docker Compose Install: installation/docker-compose.md
+        - Autolab:
+            - Ubuntu 18.04: installation/ubuntu.md
+            - Mac OSX 10.11+: installation/osx.md
+        - Tango: installation/tango.md
+        # - (Legacy) OneClick Install: installation/one-click.md
+    - Getting Started:
         - Guide for Instructors: instructors.md
         - Guide for Lab Authors: lab.md
         - Features:
@@ -14,15 +22,6 @@ nav:
             - Annotations: features/annotations.md
             - MOSS Plagiarism Detection: features/moss.md
             - Metrics: features/metrics.md
-    - Installation:
-        - Installation Overview: installation/overview.md
-        - Docker Compose Install: installation/docker-compose.md
-        - Autolab:
-            - Ubuntu 18.04: installation/ubuntu.md
-            - Mac OSX 10.11+: installation/osx.md
-        - Tango: installation/tango.md
-        # - (Legacy) OneClick Install: installation/one-click.md
-
     - Autolab API:
         - Overview: api-overview.md
         - Reference: api-interface.md
