@@ -31,7 +31,7 @@ function get_name_html(name) {
 function get_gradebook_link_html(course_id, user_id) {
   return `
       <a href="../course_user_data/${course_id}/gradebook/student?id=${user_id}" title="Gradebook" target="_blank">
-        <i class="material-icons" id="gradebook-link">grading</i>
+        <i class="external alternate icon"></i>
       </a>`
 }
 
