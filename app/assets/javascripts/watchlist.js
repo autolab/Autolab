@@ -171,7 +171,7 @@ function get_watchlist_function(){
   var selected_user_ids = []
 
 	$.getJSON(watchlist_endpoints['get'],function(data, status){
-	    if(status=='success') {
+	    if (status=='success') {
 	    	var new_empty = 1;
 	    	var contacted_empty = 1;
 	    	var resolved_empty = 1;
@@ -267,7 +267,9 @@ function get_watchlist_function(){
 	    	} else {
           $('#archived_tab').html(archived_html);
         }
-
+        
+        updateButtonVisibility($('.ui.vertical.fluid.tabular.menu .item.active'));
+        
         // displays last refreshed time in local time zone
         $('#last-updated-time').text(`Last Updated ${(new Date(last_updated_date)).toLocaleString()}`);
 
@@ -355,15 +357,27 @@ $('.ui.vertical.fluid.tabular.menu .item').on('click', function() {
   $('.ui.checkbox.select_all').checkbox('uncheck');
   $('.ui.vertical.fluid.tabular.menu .item').removeClass('active');
   $(this).addClass('active');
+  updateButtonVisibility(this);
+});
 
-  switch ($(this).attr("data-tab")) {
+function updateButtonVisibility(item){
+  switch ($(item).attr("data-tab")) {
     case "new_tab":
-      $("#contact_button").removeClass("disabled");
-      $("#resolve_button").removeClass("disabled");
+      if ($("#new_tab #empty_tabs").length > 0) {
+        $("#contact_button").addClass("disabled");
+        $("#resolve_button").addClass("disabled");
+      } else {
+        $("#contact_button").removeClass("disabled");
+        $("#resolve_button").removeClass("disabled");
+      }
       break;
     case "contacted_tab":
       $("#contact_button").addClass("disabled");
-      $("#resolve_button").removeClass("disabled");
+      if ($("#contacted_tab #empty_tabs").length > 0) {
+        $("#resolve_button").addClass("disabled");
+      } else {
+        $("#resolve_button").removeClass("disabled");
+      }
       break;
     case "resolved_tab":
       $("#contact_button").addClass("disabled");
@@ -377,7 +391,7 @@ $('.ui.vertical.fluid.tabular.menu .item').on('click', function() {
       console.log(`${$(this).attr("data-tab")} is not a valid tab`);
       return;
   }
-});
+}
 
 function get_active_instances(new_instances, contacted_instances) {
   var tab = $(".ui.tab.segments.active").attr('id');
