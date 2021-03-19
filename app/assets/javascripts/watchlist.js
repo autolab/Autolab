@@ -298,20 +298,40 @@ function get_watchlist_function(){
       $('.ui.circular.label.condition').popup();
 
       $('.ui.button.contact_single').click(function() {
-        $(this).prop('disabled', true);
+
+        // disable all action buttons
+        var button_group = $(this).parent().find('button');
+        button_group.prop('disabled', true);
+
         method = "contact";
         var user_id = $(this).parent().parent().attr('id');
         window.open(`mailto: ${new_instances[user_id]["email"]}`, "_blank");
         console.log(new_instances[user_id]["instance_ids"]);
-        update_watchlist(method, new_instances[user_id]["instance_ids"],this);
+        
+        // re-enabling buttons on failure
+        function enable_buttons () {
+          button_group.removeAttr("disabled");
+        } 
+
+        update_watchlist(method, new_instances[user_id]["instance_ids"], enable_buttons);
       })
 
       $('.ui.button.resolve_single').click(function() {
-        $(this).prop('disabled', true);
+
+        // disable all action buttons
+        var button_group = $(this).parent().find('button');
+        button_group.prop('disabled', true);
+        
         method = "resolve";
         var user_id = $(this).parent().parent().attr('id');
         var instances = get_active_instances(new_instances, contacted_instances);
-        update_watchlist(method, instances[user_id]["instance_ids"],this);
+        
+        // re-enabling buttons on failure
+        function enable_buttons () {
+          button_group.removeAttr("disabled");
+        } 
+
+        update_watchlist(method, instances[user_id]["instance_ids"], enable_buttons);
       })
   });
 
@@ -397,7 +417,7 @@ function get_active_instances(new_instances, contacted_instances) {
   }
 }
 
-function update_watchlist(method, ids, update_button = null){
+function update_watchlist(method, ids, on_error = null){
 	let students_selected = {};
 	students_selected['method'] = method;
 	students_selected['ids'] = ids;
@@ -419,9 +439,9 @@ function update_watchlist(method, ids, update_button = null){
 				timeout: -1
 			});
 
-      // enable single button on failure
-      if(update_button!=null){
-        $(update_button).removeAttr("disabled");
+      // call on_error if exists
+      if(on_error!=null){ 
+        on_error();
       }
 		},
 	});
