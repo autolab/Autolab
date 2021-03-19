@@ -14,6 +14,15 @@ nav:
             - Annotations: features/annotations.md
             - MOSS Plagiarism Detection: features/moss.md
             - Metrics: features/metrics.md
+    - Installation:
+        - Installation Overview: installation/overview.md
+        - Docker Compose Install: installation/docker-compose.md
+        - Autolab:
+            - Ubuntu 18.04: installation/ubuntu.md
+            - Mac OSX 10.11+: installation/osx.md
+        - Tango: installation/tango.md
+        # - (Legacy) OneClick Install: installation/one-click.md
+
     - Autolab API:
         - Overview: api-overview.md
         - Reference: api-interface.md
@@ -24,9 +33,6 @@ nav:
         - Tango CLI: tango-cli.md
         - REST API: tango-rest.md
         - VMMS Docs: tango-vmms.md
-        - Deploying Tango: tango-deploy.md
-    - Docker Compose Install: docker-compose.md
-    - (Legacy) OneClick Install: one-click.md
 theme:
     name: material
     logo: "images/logo.svg"
