@@ -330,7 +330,10 @@ function get_watchlist_function(){
       instance_ids = instance_ids.concat(new_instances[user_id]["instance_ids"]);
     });
   
-    if (instance_ids.length > 0) {
+    if (instance_ids.length > 1) {
+      window.open(`mailto: ?bcc=${emails}`, "_blank");
+      update_watchlist(method, instance_ids);
+    } else if (instance_ids.length > 0) {
       window.open(`mailto: ${emails}`, "_blank");
       update_watchlist(method, instance_ids);
     }
