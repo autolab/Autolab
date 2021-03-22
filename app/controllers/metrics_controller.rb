@@ -165,7 +165,7 @@ class MetricsController < ApplicationController
 		# On success, the watchlist instance will be updated appropriately
 		# params required would be the course name
 		# example json body {"method":"resolve","ids":[1,2,3]}
-		# method: update, resolve
+		# method: contact, resolve
 		# ids: [1,2,3...] list of ids to be updated
 	
 		begin
