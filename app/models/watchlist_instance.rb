@@ -270,6 +270,7 @@ class WatchlistInstance < ApplicationRecord
       found_instance_ids = instances.map{|instance| instance.id}
       raise "Instance ids #{instance_ids - found_instance_ids} cannot be found"
     end
+    
     ActiveRecord::Base.transaction do
       instances.each do |instance|
         instance.resolve_watchlist_instance
@@ -301,6 +302,7 @@ class WatchlistInstance < ApplicationRecord
   end
 
   def resolve_watchlist_instance
+    
     if (self.new_watchlist? || self.contacted_watchlist?)
       self.resolved_watchlist!
 
