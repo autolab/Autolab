@@ -2,11 +2,11 @@
 
 ##Rationale
 
-Autolab is a course management platform that enables instructors to offer autograded programming assignments to their students. The two key ideas in Autolab are _autograding_ that is, programs evaluating other programs, and _scoreboards_ that display the latest autograded scores for each student.
+Autolab is a course management platform that enables instructors to offer autograded programming assignments to their students. The two key ideas in Autolab are _autograding_–that is, programs evaluating other programs, and _scoreboards_ that display the latest autograded scores for each student.
 
-<b>Autograding</b>: The model for a traditional programming class is that students work on their code, hand it in once, and then get feedback a week or two later, at which point they've already moved on to the next assignment. Autograding, on the other hand, allows students to get immediate feedback on their performance and becomes more motivated to refine their coursework.
+<b>Autograding</b>: The model for a traditional programming class is that students work on their code, hand it in once, and then get feedback a week or two later, at which point they've already moved on to the next assignment. Autograding, on the other hand, allows students to get immediate feedback on their performance and become more motivated to refine their coursework.
 
-<b>Scoreboard</b>: The scoreboard is a fun and powerful motivation for students. When coupled with autograding, it creates a sense of community and a healthy competition that benefits everyone. Students anonymize themselves on the scoreboard by giving themselves nicknames. A mix of curiosity and competitiveness drives the stronger students to be at the top of the scoreboard, and all students have a clear idea of what they need for full credit.
+<b>Scoreboard</b>: The scoreboard is a fun and powerful motivation for students. When coupled with autograding, it creates a sense of community and healthy competition that benefits everyone. Students anonymize themselves on the scoreboard by giving themselves nicknames. A mix of curiosity and competitiveness drives the stronger students to be at the top of the scoreboard, and all students have a clear idea of what they need for full credit.
 
 Autolab also provides gradebooks, rosters, handins/handouts, lab writeups, code annotation, manual grading, late penalties, grace days, cheat checking, meetings, partners, and bulk emails.
 
