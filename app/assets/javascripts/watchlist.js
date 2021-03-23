@@ -74,11 +74,13 @@ function get_condition_html(condition_types) {
         violation_string = violation_list.join(" | ");
         break;
       case "grace_day_usage":
-        condition_string = `${Object.keys(violations || {}).length} grace days used`;
+        var num_grace_days_used = 0;
         var violation_list = [];
         $.each(violations, function( lab, val ) {
           violation_list.push(`${lab}: ${val}`);
+          num_grace_days_used += val;
         });
+        condition_string = `${num_grace_days_used} grace days used`;
         violation_string = violation_list.join(" | ");
         break;
       default:
@@ -161,6 +163,7 @@ function addInstanceToDict(instancesDict, id, user_id, course_id, user_name, use
 }
 
 function get_watchlist_function(){
+
   var new_instances = {}
   var contacted_instances = {}
   var resolved_instances = {}
@@ -169,7 +172,7 @@ function get_watchlist_function(){
   var selected_user_ids = []
 
 	$.getJSON(watchlist_endpoints['get'],function(data, status){
-	    if(status=='success') {
+	    if (status=='success') {
 	    	var new_empty = 1;
 	    	var contacted_empty = 1;
 	    	var resolved_empty = 1;
@@ -201,23 +204,24 @@ function get_watchlist_function(){
           if (_.get(watchlist_instance,'archived')) {
             archived_empty = 0;
             addInstanceToDict(archived_instances, id, user_id, course_id, user_name, user_email, condition_type, violation_info);
-          }
-          switch(_.get(watchlist_instance,'status')){
-            case "new":
-              new_empty = 0;
-              addInstanceToDict(new_instances, id, user_id, course_id, user_name, user_email, condition_type, violation_info);
-              break;
-            case "contacted":
-              contacted_empty = 0;
-              addInstanceToDict(contacted_instances, id, user_id, course_id, user_name, user_email, condition_type, violation_info);
-              break;
-            case "resolved":
-              resolved_empty = 0;
-              addInstanceToDict(resolved_instances, id, user_id, course_id, user_name, user_email, condition_type, violation_info);
-              break;
-            default:
-              console.error(_.get(watchlist_instance,'status') + " is not valid");
-              return;
+          } else {
+            switch(_.get(watchlist_instance,'status')){
+              case "new":
+                new_empty = 0;
+                addInstanceToDict(new_instances, id, user_id, course_id, user_name, user_email, condition_type, violation_info);
+                break;
+              case "contacted":
+                contacted_empty = 0;
+                addInstanceToDict(contacted_instances, id, user_id, course_id, user_name, user_email, condition_type, violation_info);
+                break;
+              case "resolved":
+                resolved_empty = 0;
+                addInstanceToDict(resolved_instances, id, user_id, course_id, user_name, user_email, condition_type, violation_info);
+                break;
+              default:
+                console.error(_.get(watchlist_instance,'status') + " is not valid");
+                return;
+            }
           }
         });
         
@@ -265,7 +269,9 @@ function get_watchlist_function(){
 	    	} else {
           $('#archived_tab').html(archived_html);
         }
-
+        
+        updateButtonVisibility($('.ui.vertical.fluid.tabular.menu .item.active'));
+        
         // displays last refreshed time in local time zone
         $('#last-updated-time').text(`Last Updated ${(new Date(last_updated_date)).toLocaleString()}`);
 
@@ -297,22 +303,45 @@ function get_watchlist_function(){
       $('.ui.circular.label.condition').popup();
 
       $('.ui.button.contact_single').click(function() {
+
+        // disable all action buttons
+        var button_group = $(this).parent().find('button');
+        button_group.prop('disabled', true);
+
         method = "contact";
         var user_id = $(this).parent().parent().attr('id');
-
         window.open(`mailto: ${new_instances[user_id]["email"]}`, "_blank");
         console.log(new_instances[user_id]["instance_ids"]);
-        update_watchlist(method, new_instances[user_id]["instance_ids"]);
+        
+        // re-enabling buttons on failure
+        function enable_buttons () {
+          button_group.removeAttr("disabled");
+        } 
+
+        update_watchlist(method, new_instances[user_id]["instance_ids"], enable_buttons);
       })
 
       $('.ui.button.resolve_single').click(function() {
+
+        // disable all action buttons
+        var button_group = $(this).parent().find('button');
+        button_group.prop('disabled', true);
+        
         method = "resolve";
         var user_id = $(this).parent().parent().attr('id');
         var instances = get_active_instances(new_instances, contacted_instances);
-        update_watchlist(method, instances[user_id]["instance_ids"]);
+        
+        // re-enabling buttons on failure
+        function enable_buttons () {
+          button_group.removeAttr("disabled");
+        } 
+
+        update_watchlist(method, instances[user_id]["instance_ids"], enable_buttons);
       })
   });
 
+  // Removes previous click function binded to contact button
+  $('#contact_button').off('click');
   $('#contact_button').click(function(){
     method = "contact";
 
@@ -326,12 +355,17 @@ function get_watchlist_function(){
       instance_ids = instance_ids.concat(new_instances[user_id]["instance_ids"]);
     });
   
-    if (instance_ids.length > 0) {
+    if (instance_ids.length > 1) {
+      window.open(`mailto: ?bcc=${emails}`, "_blank");
+      update_watchlist(method, instance_ids);
+    } else if (instance_ids.length > 0) {
       window.open(`mailto: ${emails}`, "_blank");
       update_watchlist(method, instance_ids);
     }
   });
 
+  // Removes previous click function binded to resolve button
+  $('#resolve_button').off('click');
   $('#resolve_button').click(function(){
     method = "resolve";
     var instances = get_active_instances(new_instances, contacted_instances);
@@ -353,15 +387,27 @@ $('.ui.vertical.fluid.tabular.menu .item').on('click', function() {
   $('.ui.checkbox.select_all').checkbox('uncheck');
   $('.ui.vertical.fluid.tabular.menu .item').removeClass('active');
   $(this).addClass('active');
+  updateButtonVisibility(this);
+});
 
-  switch ($(this).attr("data-tab")) {
+function updateButtonVisibility(item){
+  switch ($(item).attr("data-tab")) {
     case "new_tab":
-      $("#contact_button").removeClass("disabled");
-      $("#resolve_button").removeClass("disabled");
+      if ($("#new_tab #empty_tabs").length > 0) {
+        $("#contact_button").addClass("disabled");
+        $("#resolve_button").addClass("disabled");
+      } else {
+        $("#contact_button").removeClass("disabled");
+        $("#resolve_button").removeClass("disabled");
+      }
       break;
     case "contacted_tab":
       $("#contact_button").addClass("disabled");
-      $("#resolve_button").removeClass("disabled");
+      if ($("#contacted_tab #empty_tabs").length > 0) {
+        $("#resolve_button").addClass("disabled");
+      } else {
+        $("#resolve_button").removeClass("disabled");
+      }
       break;
     case "resolved_tab":
       $("#contact_button").addClass("disabled");
@@ -375,7 +421,7 @@ $('.ui.vertical.fluid.tabular.menu .item').on('click', function() {
       console.log(`${$(this).attr("data-tab")} is not a valid tab`);
       return;
   }
-});
+}
 
 function get_active_instances(new_instances, contacted_instances) {
   var tab = $(".ui.tab.segments.active").attr('id');
@@ -391,7 +437,7 @@ function get_active_instances(new_instances, contacted_instances) {
   }
 }
 
-function update_watchlist(method, ids){
+function update_watchlist(method, ids, on_error = null){
 	let students_selected = {};
 	students_selected['method'] = method;
 	students_selected['ids'] = ids;
@@ -412,7 +458,12 @@ function update_watchlist(method, ids){
 				message: "Do try again later",
 				timeout: -1
 			});
-		}
+
+      // call on_error if exists
+      if(on_error!=null){ 
+        on_error();
+      }
+		},
 	});
 }
 
