@@ -204,23 +204,24 @@ function get_watchlist_function(){
           if (_.get(watchlist_instance,'archived')) {
             archived_empty = 0;
             addInstanceToDict(archived_instances, id, user_id, course_id, user_name, user_email, condition_type, violation_info);
-          }
-          switch(_.get(watchlist_instance,'status')){
-            case "new":
-              new_empty = 0;
-              addInstanceToDict(new_instances, id, user_id, course_id, user_name, user_email, condition_type, violation_info);
-              break;
-            case "contacted":
-              contacted_empty = 0;
-              addInstanceToDict(contacted_instances, id, user_id, course_id, user_name, user_email, condition_type, violation_info);
-              break;
-            case "resolved":
-              resolved_empty = 0;
-              addInstanceToDict(resolved_instances, id, user_id, course_id, user_name, user_email, condition_type, violation_info);
-              break;
-            default:
-              console.error(_.get(watchlist_instance,'status') + " is not valid");
-              return;
+          } else {
+            switch(_.get(watchlist_instance,'status')){
+              case "new":
+                new_empty = 0;
+                addInstanceToDict(new_instances, id, user_id, course_id, user_name, user_email, condition_type, violation_info);
+                break;
+              case "contacted":
+                contacted_empty = 0;
+                addInstanceToDict(contacted_instances, id, user_id, course_id, user_name, user_email, condition_type, violation_info);
+                break;
+              case "resolved":
+                resolved_empty = 0;
+                addInstanceToDict(resolved_instances, id, user_id, course_id, user_name, user_email, condition_type, violation_info);
+                break;
+              default:
+                console.error(_.get(watchlist_instance,'status') + " is not valid");
+                return;
+            }
           }
         });
         
