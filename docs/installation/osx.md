@@ -1,5 +1,7 @@
 ### Mac OSX 10.11+
 
+This page provides instructions on installing Autolab for development on Mac OSX 10.11+.
+
 Follow the step-by-step instructions below:
 
 1.  Install [rbenv](https://github.com/sstephenson/rbenv) (use the Basic GitHub Checkout method)
@@ -86,21 +88,26 @@ Follow the step-by-step instructions below:
 
     Do not forget to use `bundle exec` in front of every rake/rails command.
 
-12. Populate dummy data (development only):
+12. Create initial root user
+
+        :::bash
+        ./bin/initialize_user.sh
+
+13. Populate dummy data (for development only):
 
         :::bash
         bundle exec rails autolab:populate
 
-13. Start the rails server:
+14. Start the rails server:
 
         :::bash
         bundle exec rails s -p 3000
 
-14. Go to localhost:3000 and login with `Developer Login`:
+15. Go to localhost:3000 and login with either the credentials of the root user you just created, or choose `Developer Login` with:
 
         :::bash
         Email: "admin@foo.bar".
 
-15. Install [Tango](/tango#installation), the backend autograding service.
+16. Install [Tango](/tango#installation), the backend autograding service.
 
-16. Now you are all set to start using Autolab! Visit the [Guide for Instructors](/instructors) and [Guide for Lab Authors](/lab) pages for more info.
+17. Now you are all set to start using Autolab! Visit the [Guide for Instructors](/instructors) and [Guide for Lab Authors](/lab) pages for more info.

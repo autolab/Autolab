@@ -1,6 +1,6 @@
 ### Ubuntu 18.04+ 
 
-This page provides instructions on installing Autolab on Ubuntu 18.04 LTS.
+This page provides instructions on installing Autolab for development on Ubuntu 18.04 LTS.
 
 1. Upgrade system packages and installing prerequisites
 
@@ -139,24 +139,29 @@ Comment out the configurations meant for MySQL in config/database.yml, and inser
         bundle exec rails db:reset
         bundle exec rails db:migrate
 
-13. Populating sample course & students
+13. Create initial root user
+
+        :::bash
+        ./bin/initialize_user.sh
+
+14. If you are just testing Autolab, you can populate the database with sample course & students
 
         :::bash
         cd Autolab
         bundle exec rails autolab:populate
 
-14. Run Autolab!
+15. Run Autolab!
 
         :::bash
         cd Autolab
         bundle exec rails s -p 3000 --binding=0.0.0.0
 
-15. Visit localhost:3000 on your browser to view your local deployment of Autolab, and login with `Developer Login`
+16. Visit localhost:3000 on your browser to view your local deployment of Autolab, and login with either the credentials of the root user you just created, or choose `Developer Login` with
 
         Email: "admin@foo.bar"
 
-16. Install [Tango](/tango#installation), the backend autograding service.
+17. Install [Tango](/tango#installation), the backend autograding service.
 
-17. If you would like to deploy the server, you can try out [Phusion Passenger](https://www.phusionpassenger.com/library/walkthroughs/start/ruby.html)
+18. If you would like to deploy the server, you can try out [Phusion Passenger](https://www.phusionpassenger.com/library/walkthroughs/start/ruby.html)
 
-18. Now you are all set to start using Autolab! Visit the [Guide for Instructors](/instructors) and [Guide for Lab Authors](/lab) pages for more info.
+19. Now you are all set to start using Autolab! Visit the [Guide for Instructors](/instructors) and [Guide for Lab Authors](/lab) pages for more info.
