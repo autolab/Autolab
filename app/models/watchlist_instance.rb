@@ -32,19 +32,22 @@ class WatchlistInstance < ApplicationRecord
     end
 
     # update!
-    # archive previous watchlist instances first
-    for instance in current_instances
-      instance.archive_watchlist_instance
-    end
+    new_instances = []
     # now check current conditions
     if current_conditions.length == 0
       # case 1: no current risk conditions exist
-      return []
+      # no-op
     else
       # case 2: current risk conditions exist
-      new_instances = self.add_new_instances_for_conditions(current_conditions, course)
-      return new_instances
+      new_instances, deprecated_instances = self.add_new_instances_for_conditions(current_conditions, course, current_instances)
     end
+
+    # archive previous watchlist instances
+    for instance in deprecated_instances
+      instance.archive_watchlist_instance
+    end
+
+    return new_instances
   end
   
   # Update the grace day usage condition watchlist instances for each course user datum of a particular course
@@ -316,50 +319,80 @@ class WatchlistInstance < ApplicationRecord
 
 private
   
-  def self.add_new_instances_for_conditions(conditions, course)
+  def self.add_new_instances_for_conditions(conditions, course, current_instances)
     new_instances = []
     course_user_data = CourseUserDatum.where(course_id: course.id, instructor: false, course_assistant: false)
+
+    # new
+    criteria2 = current_instances.where(status: :new)
+    # contacted or resolved
+    criteria1 = current_instances - criteria2
+    deprecated_instances = current_instances
     
-    conditions.each do |condition|
-      case condition.condition_type
-      
-      when "grace_day_usage"
-        grace_day_threshold = condition.parameters[:grace_day_threshold].to_i
-        date = condition.parameters[:date]
-        asmts_before_date = course.asmts_before_date(date)
-        next if asmts_before_date.count == 0 # go to the next condition loop if there is no latest assessment
-        for cud in course_user_data
-          new_instance = self.add_new_instance_for_cud_grace_day_usage(course, condition.id, cud, asmts_before_date, grace_day_threshold)
-          new_instances << new_instance unless new_instance.nil?
-        end
-
-      when "grade_drop"
-        percentage_drop = (condition.parameters[:percentage_drop]).to_f
-        consecutive_counts = condition.parameters[:consecutive_counts].to_i
+    for cud in course_user_data
+      cur_instances = []
+      conditions.each do |condition|
+        case condition.condition_type
         
-        categories = course.assessment_categories
-        asmt_arrs = categories.map { |category| course.assessments_with_category(category).ordered }
-        asmt_arrs.select! { |asmts| asmts.count >= consecutive_counts}
-        for cud in course_user_data
+        when "grace_day_usage"
+          grace_day_threshold = condition.parameters[:grace_day_threshold].to_i
+          date = condition.parameters[:date]
+          asmts_before_date = course.asmts_before_date(date)
+          next if asmts_before_date.count == 0 # go to the next condition loop if there is no latest assessment
+          new_instance = self.add_new_instance_for_cud_grace_day_usage(course, condition.id, cud, asmts_before_date, grace_day_threshold)
+          cur_instances << new_instance unless new_instance.nil?
+        
+        when "grade_drop"
+          percentage_drop = (condition.parameters[:percentage_drop]).to_f
+          consecutive_counts = condition.parameters[:consecutive_counts].to_i
+          
+          categories = course.assessment_categories
+          asmt_arrs = categories.map { |category| course.assessments_with_category(category).ordered }
+          asmt_arrs.select! { |asmts| asmts.count >= consecutive_counts}
           new_instance = self.add_new_instance_for_cud_grade_drop(course, condition.id, cud, asmt_arrs, consecutive_counts, percentage_drop)
-          new_instances << new_instance unless new_instance.nil?
-        end
+          cur_instances << new_instance unless new_instance.nil?
 
-      when "no_submissions"
-        no_submissions_threshold = condition.parameters[:no_submissions_threshold].to_i
+        when "no_submissions"
+          no_submissions_threshold = condition.parameters[:no_submissions_threshold].to_i
 
-        for cud in course_user_data
           new_instance = self.add_new_instance_for_cud_no_submissions(course, condition.id, cud, no_submissions_threshold)
-          new_instances << new_instance unless new_instance.nil?
-        end
+          cur_instances << new_instance unless new_instance.nil?
 
-      when "low_grades"
-        grade_threshold = condition.parameters[:grade_threshold].to_f
-        count_threshold = condition.parameters[:count_threshold].to_i
+        when "low_grades"
+          grade_threshold = condition.parameters[:grade_threshold].to_f
+          count_threshold = condition.parameters[:count_threshold].to_i
 
-        for cud in course_user_data
           new_instance = self.add_new_instance_for_cud_low_grades(course, condition.id, cud, grade_threshold, count_threshold)
-          new_instances << new_instance unless new_instance.nil?
+          cur_instances << new_instance unless new_instance.nil?
+        end
+      end
+      # check for duplication
+      all_dup = true
+      cur_instances.each do |inst|
+        # contact or resolved
+        cr_dup = criteria1.select { |inst1|
+          inst1.course_user_datum_id == inst.course_user_datum_id and
+          inst1.risk_condition_id == inst.risk_condition_id and
+          inst1.violation_info == inst.violation_info
+        }
+        if cr_dup.count == 0
+          all_dup = false
+        end
+      end
+
+      if not all_dup
+        cur_instances.each do |inst|
+          # new
+          new_dup = criteria2.where(
+            course_user_datum_id: inst.course_user_datum_id,
+            risk_condition_id: inst.risk_condition_id,
+            violation_info: inst.violation_info
+          )
+          if new_dup.count == 0
+            new_instances << inst;
+          else
+            deprecated_instances = deprecated_instances - new_dup
+          end
         end
       end
     end
@@ -372,7 +405,7 @@ private
       end
     end
 
-    return new_instances
+    return new_instances, deprecated_instances
   end
 
   # The following 4 methods that create a watchlist instance for a course user datum does not
