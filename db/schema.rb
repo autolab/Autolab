@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_11_01_022133) do
+ActiveRecord::Schema.define(version: 2021_03_24_223858) do
 
   create_table "annotations", force: :cascade do |t|
     t.integer "submission_id"
@@ -94,6 +94,7 @@ ActiveRecord::Schema.define(version: 2020_11_01_022133) do
     t.text "embedded_quiz_form_data"
     t.boolean "embedded_quiz"
     t.binary "embedded_quiz_form"
+    t.string "git_assignment_prefix"
   end
 
   create_table "attachments", force: :cascade do |t|
@@ -154,6 +155,8 @@ ActiveRecord::Schema.define(version: 2020_11_01_022133) do
     t.datetime "cgdub_dependencies_updated_at"
     t.text "gb_message"
     t.string "website"
+    t.string "git_access_key"
+    t.string "classroom_name"
   end
 
   create_table "extensions", force: :cascade do |t|
@@ -334,7 +337,6 @@ ActiveRecord::Schema.define(version: 2020_11_01_022133) do
     t.string "school"
     t.string "major"
     t.string "year"
-    t.string "theme", default: "default"
     t.index ["confirmation_token"], name: "index_users_on_confirmation_token", unique: true
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
