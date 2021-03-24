@@ -272,8 +272,10 @@ function get_watchlist_function(){
         
         updateButtonVisibility($('.ui.vertical.fluid.tabular.menu .item.active'));
         
-        // displays last refreshed time in local time zone
-        $('#last-updated-time').text(`Last Updated ${(new Date(last_updated_date)).toLocaleString()}`);
+        // displays latest updated time based on item with latest time
+        if(last_updated_date != "")
+          $('#last-updated-time')
+          .text(`Last Updated ${(new Date(last_updated_date)).toLocaleString()}`);
 
       } else {
         render_banner({
@@ -480,12 +482,18 @@ function refresh_watchlist(){
   // uses formantic ui loading class 
   $("#refresh_btn").addClass('loading');
   $.getJSON(watchlist_endpoints['refresh'],function(){
+    
+    // set last updated time to now on success
+    $('#last-updated-time')
+    .text(`Last Updated ${(new Date()).toLocaleString()}`);
+
     get_watchlist_function();
     render_banner({
       type:"positive",
       header:"Successfully refreshed watchlist instances",
       message: "The latest instances should be showing now",
     });
+    
   }).fail(function(){
     render_banner({
       type:"negative",
