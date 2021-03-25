@@ -54,13 +54,18 @@
        <h3 style="border-bottom: 4px solid #dddddd"></h3>
           <p style="font-size: 18px">Section: <b><%= "#{@cud.section}" %></b></p>
           <p style="font-size: 18px">Number of grace days remaining: <b><%="#{@cud.global_grace_days_left}"%></b></p></br>
+
           <% if @course.website.nil? || @course.website.eql?("") %>
-          <span class="btn btn-large disabled"><%= "<i class='material-icons left'>web</i> Course Website".html_safe %></span>
+            <span class="btn btn-large disabled"><%= "<i class='material-icons left'>web</i> Course Website".html_safe %></span>
           <% else %>
-          <%= link_to "<i class='material-icons left'>web</i> Course Website".html_safe, @course.website, target: "_blank", title: "Go to course website", :class => "btn btn-large red darken-3" %>
+            <%= link_to "<i class='material-icons left'>web</i> Course Website".html_safe, @course.website, target: "_blank", title: "Go to course website", :class => "btn btn-large red darken-3" %>
           <% end %>
-          <% if @cud.instructor? || !(@cud.course_assistant? && !@cud.section.blank?) %>
-           <%= link_to "<i class='material-icons left'>grading</i> Gradebook".html_safe, [@course, @cud, :gradebook], title: "View your gradebook", :class => "btn btn-large red darken-3" %>
+
+          <% if !(@cud.course_assistant? && @cud.section.blank?) %>
+            <%= link_to "<i class='material-icons left'>grading</i> Gradebook".html_safe, [@course, @cud, :gradebook], title: "View your gradebook", :class => "btn btn-large red darken-3" %>
+          <% end %>
+
+          <% if @cud.instructor? %>
            <%= link_to "<div class='row metrics'><i class='material-icons left'>assessment</i> Metrics</div>".html_safe, course_metrics_path, title: "View student metrics", :class => "btn btn-large red darken-3" %>
           <% end %>
       </div>
