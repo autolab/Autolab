@@ -1,20 +1,29 @@
 # Welcome to the Autolab Docs
 
-Autolab is a course management platform that enables instructors to offer autograded programming assignments to their students. The two key ideas in Autolab are _autograding_ that is, programs evaluating other programs, and _scoreboards_ that display the latest autograded scores for each student. Autolab also provides gradebooks, rosters, handins/handouts, lab writeups, code annotation, manual grading, late penalties, grace days, cheat checking, meetings, partners, and bulk emails.
+##Rationale
 
-For information on how to use Autolab for your course see the [Guide for Instructors](/instructors). To learn how to write an autograded lab see the [Guide for Lab Authors](/lab). 
+Autolab is a course management platform that enables instructors to offer autograded programming assignments to their students. The two key ideas in Autolab are _autograding_–that is, programs evaluating other programs, and _scoreboards_ that display the latest autograded scores for each student.
 
+<b>Autograding</b>: The model for a traditional programming class is that students work on their code, hand it in once, and then get feedback a week or two later, at which point they've already moved on to the next assignment. Autograding, on the other hand, allows students to get immediate feedback on their performance and become more motivated to refine their coursework.
 
-## Installation
+<b>Scoreboard</b>: The scoreboard is a fun and powerful motivation for students. When coupled with autograding, it creates a sense of community and healthy competition that benefits everyone. Students anonymize themselves on the scoreboard by giving themselves nicknames. A mix of curiosity and competitiveness drives the stronger students to be at the top of the scoreboard, and all students have a clear idea of what they need for full credit.
 
-Autolab consists of two services: (1) the Ruby on Rails frontend, and (2) [Tango](/tango), the RESTful Python autograding server. Either service can run independently without the other. But in order to use all features of Autolab, we highly recommend installing both services.
+Autolab also provides gradebooks, rosters, handins/handouts, lab writeups, code annotation, manual grading, late penalties, grace days, cheat checking, meetings, partners, and bulk emails.
 
-Installation instructions can be found in our comprehensive [installation guide](/installation/overview)
+For more of the rationale behind Autolab, please check out <a href="https://autolab.github.io/2015/03/autolab-autograding-for-all/" target="_blank">this blog post</a>.
 
-## Demonstration Site
-If you would like to check out Autolab prior to installation, go over to our <a href="https://demo.autolabproject.com" target="_blank">Demo Site</a>! Login through `Developer Login` with the email: `admin@foo.bar`. 
+<!-- For information on how to use Autolab for your course see the [Guide for Instructors](/instructors). To learn how to write an autograded lab see the [Guide for Lab Authors](/lab). 
+ -->
+##Components
 
-This is a demonstration website. It refreshes at 0,6,12,18 Hours (UTC) daily, and it is publicly accessible, so please only use it for your exploration. Do not use this site to store important information.
+Autolab consists of two services: (1) the Ruby on Rails frontend, and (2) [Tango](/tango), the RESTful Python autograding server. <b>Either service can run independently without the other</b>. But in order to use all features of Autolab, we highly recommend installing both services.
+
+While the Ruby on Rails frontend supports Autolab's web application framework, the backend Tango is responsible for distributing and completing autograding jobs and runs in virtual machines or containers. When Tango is done running a job, it then sends the autograded result back to the frontend. See below for a visualization of this system.
+
+![Autolab System](/images/autolab_system.png)
+
+##Demonstration Website
+Installation instructions can be found in our comprehensive [installation guide](/installation/overview). However, if this is your first experience with Autolab, we encourage you to try out some key features on Autolab's <a href="https://demo.autolabproject.com" target="_blank">Demo Site</a>. You can login through `Developer Login` with the email: `admin@foo.bar`. The demonstration website refreshes at 0,6,12,18 Hours (UTC) daily, and it is publicly accessible, so please only use it for your exploration. Do not use this site to store important information.
 
 Try the following in order:
 
@@ -62,7 +71,7 @@ Because it defaults to accepting `.c` files, we would like to change it to `*.pd
 Click on `Grade Submissions`, and then the arrow button to open up student submissions. For details on the relevant features for an Instructor, go to [Guide for Instructor](/instructors)
 
 
-## FAQ
+<!-- ## FAQ
 
 This is a general list of questions that we get often. If you find a solution to an issue not mentioned here,
 please contact us at <autolab-dev@andrew.cmu.edu>
@@ -152,4 +161,4 @@ Mysql2::Error: You have an error in your SQL syntax
 this may be an issue with using an incompatible version of MySQL. Try switching to MySQL 5.7 if you are currently using a different version.
 
 ### Undefined method 'devise' for User
-You most likely missed the step of copying 'config/initializers/devise.rb.template' to 'config/initializers/devise.rb' and setting your secret key in the setup instructions.
+You most likely missed the step of copying 'config/initializers/devise.rb.template' to 'config/initializers/devise.rb' and setting your secret key in the setup instructions. -->

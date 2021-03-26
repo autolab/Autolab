@@ -3,17 +3,7 @@ site_url: "https://docs.autolabproject.com/"
 extra_css:
     - stylesheets/extra.css
 nav:
-    - Autolab:
-        - Getting Started: index.md
-        - Guide for Instructors: instructors.md
-        - Guide for Lab Authors: lab.md
-        - Features:
-            - Formatted Feedback: features/formatted-feedback.md
-            - Scoreboards: features/scoreboards.md
-            - Embedded Forms: features/embedded-forms.md
-            - Annotations: features/annotations.md
-            - MOSS Plagiarism Detection: features/moss.md
-            - Metrics: features/metrics.md
+    - Overview: index.md
     - Installation:
         - Installation Overview: installation/overview.md
         - Docker Compose Install: installation/docker-compose.md
@@ -22,14 +12,24 @@ nav:
             - Mac OSX 10.11+: installation/osx.md
         - Tango: installation/tango.md
         # - (Legacy) OneClick Install: installation/one-click.md
-
+    - Getting Started:
+        - Autolab Frontend:
+            - Guide for Instructors: instructors.md
+            - Guide for Lab Authors: lab.md
+            - Features:
+                - Formatted Feedback: features/formatted-feedback.md
+                - Scoreboards: features/scoreboards.md
+                - Embedded Forms: features/embedded-forms.md
+                - Annotations: features/annotations.md
+                - MOSS Plagiarism Detection: features/moss.md
+                - Metrics: features/metrics.md
+        - Tango Basics: tango.md
     - Autolab API:
         - Overview: api-overview.md
         - Reference: api-interface.md
         - Command Line Interface: command-line-interface.md
         - Managing Authorized Apps: api-managing-authorized-apps.md
     - Tango:
-        - Getting Started: tango.md
         - Tango CLI: tango-cli.md
         - REST API: tango-rest.md
         - VMMS Docs: tango-vmms.md
