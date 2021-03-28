@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_03_24_223858) do
+ActiveRecord::Schema.define(version: 2021_03_28_201958) do
 
   create_table "annotations", force: :cascade do |t|
     t.integer "submission_id"
@@ -94,7 +94,6 @@ ActiveRecord::Schema.define(version: 2021_03_24_223858) do
     t.text "embedded_quiz_form_data"
     t.boolean "embedded_quiz"
     t.binary "embedded_quiz_form"
-    t.string "git_assignment_prefix"
   end
 
   create_table "attachments", force: :cascade do |t|
@@ -122,6 +121,8 @@ ActiveRecord::Schema.define(version: 2021_03_24_223858) do
     t.integer "autograde_timeout"
     t.string "autograde_image"
     t.boolean "release_score"
+    t.boolean "git_enabled"
+    t.string "git_assignment_name"
   end
 
   create_table "course_user_data", force: :cascade do |t|
