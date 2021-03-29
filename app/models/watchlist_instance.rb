@@ -22,7 +22,7 @@ class WatchlistInstance < ApplicationRecord
     return WatchlistInstance.where(course_id:course_id, status: :new).distinct.count(:course_user_datum_id)
   end 
 
-  def self.refresh_instances_for_course(course_name)
+  def self.refresh_instances_for_course(course_name, metrics_update=false)
     begin
       course = Course.find_by(name: course_name)
       current_conditions = RiskCondition.get_current_for_course(course_name)
@@ -43,8 +43,10 @@ class WatchlistInstance < ApplicationRecord
     end
 
     # archive previous watchlist instances
-    for instance in deprecated_instances
-      instance.archive_watchlist_instance
+    if metrics_update
+      for instance in deprecated_instances
+        instance.archive_watchlist_instance
+      end
     end
 
     return new_instances
