@@ -173,8 +173,8 @@ $('#save').click(function(){
 		success:function(data){
 			render_banner({
 				type:"positive",
-				header:"You have successfully saved your conditions",
-				message:"Your watchlist should reflect your new conditions",
+				header:"You have successfully saved your risk metrics",
+				message:"Your watchlist should reflect your new risk metrics",
 			});
 			get_watchlist_function();
 		},

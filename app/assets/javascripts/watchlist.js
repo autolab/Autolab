@@ -246,25 +246,25 @@ function get_watchlist_function(){
 
 	    	// show empty messages
 	    	if (new_empty){
-	    		html_empty_message = get_html_empty_message("There are no new students at risk");
+	    		html_empty_message = get_html_empty_message("There are no unresolved at-risk students");
 	    		$('#new_tab').html(html_empty_message);
 	    	} else {
           $('#new_tab').html(new_html);
         }
 	    	if (contacted_empty){
-	    		html_empty_message = get_html_empty_message("You have not contacted any students");
+	    		html_empty_message = get_html_empty_message("You have not contacted any at-risk students");
 	    		$('#contacted_tab').html(html_empty_message);
 	    	} else {
           $('#contacted_tab').html(contacted_html);
         }
 	    	if (resolved_empty){
-	    		html_empty_message = get_html_empty_message("You have not resolved any students");
+	    		html_empty_message = get_html_empty_message("You have not resolved any at-risk students");
 	    		$('#resolved_tab').html(html_empty_message);
 	    	} else {
           $('#resolved_tab').html(resolved_html);
         }
 	    	if (archived_empty){
-	    		html_empty_message = get_html_empty_message("You have not archived any students ");
+	    		html_empty_message = get_html_empty_message("You have no archived at-risk students ");
 	    		$('#archived_tab').html(html_empty_message);
 	    	} else {
           $('#archived_tab').html(archived_html);
