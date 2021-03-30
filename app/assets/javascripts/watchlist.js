@@ -235,7 +235,7 @@ function get_watchlist_function(){
                           <b> Resolved at-risk students </b>
                         </div>`;
         archived_html = `<div class="ui segment" >
-                          <h5> Archived at-risk students </h5> <b>Resolved and contacted students gets archived when risk metrics are changed </b>
+                          <h5> Archived at-risk students </h5> <b>Resolved and contacted students becomes archived when risk metrics are changed </b>
                          </div>`;
 
 	    	$.each(new_instances, function( user_id, instance ) {
