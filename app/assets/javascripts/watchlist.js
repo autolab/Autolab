@@ -225,10 +225,18 @@ function get_watchlist_function(){
           }
         });
         
-        new_html = "";
-        contacted_html = "";
-        resolved_html = "";
-        archived_html = "";
+        new_html = `<div class="ui segment" >
+                     <h5> Unresolved at-risk students </h5>
+                    </div>`;
+        contacted_html = `<div class="ui segment" >
+                          <b> Contacted at-risk students </b>
+                        </div>`;
+        resolved_html = `<div class="ui segment" >
+                          <b> Resolved at-risk students </b>
+                        </div>`;
+        archived_html = `<div class="ui segment" >
+                          <h5> Archived at-risk students </h5> <b>Resolved and contacted students gets archived when risk metrics are changed </b>
+                         </div>`;
 
 	    	$.each(new_instances, function( user_id, instance ) {
           new_html += get_row_html(user_id, instance, "new", archived_instances);
