@@ -225,16 +225,16 @@ function get_watchlist_function(){
           }
         });
         
-        new_html = `<div class="ui segment" >
-                     <h5> Unresolved at-risk students </h5>
+        new_html = `<div class="ui secondary segment" >
+                     <h5> Pending at-risk students </h5>
                     </div>`;
-        contacted_html = `<div class="ui segment" >
+        contacted_html = `<div class="ui secondary segment" >
                           <b> Contacted at-risk students </b>
                         </div>`;
-        resolved_html = `<div class="ui segment" >
+        resolved_html = `<div class="ui secondary segment" >
                           <b> Resolved at-risk students </b>
                         </div>`;
-        archived_html = `<div class="ui segment" >
+        archived_html = `<div class="ui secondary segment" >
                           <h5> Archived at-risk students </h5> <b>Resolved and contacted students becomes archived when risk metrics are changed </b>
                          </div>`;
 
@@ -254,7 +254,7 @@ function get_watchlist_function(){
 
 	    	// show empty messages
 	    	if (new_empty){
-	    		html_empty_message = get_html_empty_message("There are no unresolved at-risk students");
+	    		html_empty_message = get_html_empty_message("There are no pending at-risk students");
 	    		$('#new_tab').html(html_empty_message);
 	    	} else {
           $('#new_tab').html(new_html);
