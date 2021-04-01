@@ -28,7 +28,7 @@
   <div class="ui grid">
     <div class="three wide column">
       <div class="ui vertical fluid tabular menu">
-        <a class="item active" data-tab="new_tab">New</a>
+        <a class="item active" data-tab="new_tab">Pending</a>
         <a class="item" data-tab="contacted_tab">Contacted</a>
         <a class="item" data-tab="resolved_tab">Resolved</a>
         <a class="item" data-tab="archived_tab">Archived</a>
@@ -45,8 +45,7 @@
         <center>
           <i class="huge inbox icon"></i> 
             <h3> You have not defined your risk metrics </h3>
-            Set up identification conditions at in the <b>Risk Metrics</b> tab. <br> 
-            Identified possible at-risk students will appear here. 
+            You can define metrics to identify at-risk students using the <b>Risk Metrics</b> tab. <br>
         </center>
       </div>
     </div>
@@ -54,12 +53,7 @@
 </div>
 <div class="ui tab" data-tab="risk metrics">
   <h6> 
-    Select one or more of the following risk conditions you want to apply. 
-  </h6>
-  <h6>
-    <i> 
-      These conditions will make up your risk metrics, which will be used to identify students who are at risk in this course. 
-    </i>
+    Select one or more of the following risk metrics that you want to use to identify at-risk students.
   </h6>
   <br>
   <div class="ui form">
@@ -126,7 +120,7 @@
         <div class="ui checkbox conditions" id='no_submit_checkbox'>
           <input type="checkbox" tabindex="0" class="hidden" name="metrics-checkbox-3">
         </div>
-        Students who did not submit
+        Students who did not submit at least
         <span>
           <div class="ui selection dropdown" id="no_submit_value">
             <input type="hidden" name="number">
@@ -149,7 +143,7 @@
         <div class="ui checkbox conditions" id='low_grades_checkbox'>
           <input type="checkbox" tabindex="0" class="hidden" name="metrics-checkbox-4">
         </div>
-        Students with
+        Students with at least
         <span>
           <div class="ui selection dropdown" id="low_grades_count">
             <input type="hidden" name="number">

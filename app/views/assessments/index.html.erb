@@ -16,10 +16,10 @@
               <i class='material-icons left metrics'>assessment</i>
             </div>
             <div class='col s4 metrics'>
-              <span class='new badge metrics-badge' data-badge-caption='${data["num_new"]} new'></span>
+              <span class='new badge metrics-badge' data-badge-caption='${data["num_new"]}'></span>
             </div>
             <h7 class='metrics'>
-              Metrics
+              Risk Metrics
             </h7>`;
           $('.row.metrics').empty().append(new_instances_str);
         }
@@ -66,7 +66,7 @@
           <% end %>
 
           <% if @cud.instructor? %>
-           <%= link_to "<div class='row metrics'><i class='material-icons left'>assessment</i> Metrics</div>".html_safe, course_metrics_path, title: "View student metrics", :class => "btn btn-large red darken-3" %>
+           <%= link_to "<div class='row metrics'><i class='material-icons left'>assessment</i> Risk Metrics</div>".html_safe, course_metrics_path, title: "View student metrics", :class => "btn btn-large red darken-3" %>
           <% end %>
       </div>
       </div>

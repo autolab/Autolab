@@ -720,11 +720,12 @@ table.navigatable tr:hover {
   border-radius: 10px !important;
   padding: 0px 1px;
   margin-left: -5px;
-  margin-right: -8px;
+  margin-right: 20px;
   margin-top: 6px;
   line-height: 16px;
   height: 16px;
-  font-size: 0.65rem !important;
+  min-width: 1.8rem;
+  font-size: 0.75rem !important;
 }
 
 .row.metrics .col.metrics {
@@ -732,7 +733,7 @@ table.navigatable tr:hover {
 }
 
 h7.metrics {
-  margin-left: -15px;
+  margin-left: -27px;
   margin-right: -10px;
 }
 
