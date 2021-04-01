@@ -229,10 +229,10 @@ function get_watchlist_function(){
                      <h5> Pending at-risk students </h5>
                     </div>`;
         contacted_html = `<div class="ui secondary segment" >
-                          <b> Contacted at-risk students </b>
+                          <h5> Contacted at-risk students </h5>
                         </div>`;
         resolved_html = `<div class="ui secondary segment" >
-                          <b> Resolved at-risk students </b>
+                          <h5> Resolved at-risk students </h5>
                         </div>`;
         archived_html = `<div class="ui secondary segment" >
                           <h5> Archived at-risk students </h5> <b>Resolved and contacted students becomes archived when risk metrics are changed </b>
