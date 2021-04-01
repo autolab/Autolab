@@ -53,9 +53,7 @@
         <% if @cud %>
           <% if !@cud.instructor? && @cud.course_assistant? && !@cud.section.blank? %>
             <li><%= link_to "<i class='material-icons left'>grading</i> Section #{@cud.section} Gradebook".html_safe, [:view, @course, @cud, :gradebook, section: @cud.section], title: "View your gradebook" %></li>
-          <% end %>
-
-          <% if @cud.instructor? || @cud.student? %>
+          <% elsif @cud.instructor? || @cud.student? %>
             <li><%= link_to "<i class='material-icons left'>grading</i> Gradebook".html_safe, [@course, @cud, :gradebook], title: "View your gradebook" %></li>
           <% end %>
 
@@ -112,9 +110,7 @@
         <% if @cud %>
           <% if !@cud.instructor? && @cud.course_assistant? && !@cud.section.blank? %>
             <li><%= link_to "<i class='material-icons left'>grading</i> Section #{@cud.section} Gradebook".html_safe, [:view, @course, @cud, :gradebook, section: @cud.section], title: "View your gradebook" %></li>
-          <% end %>
-
-          <% if @cud.instructor? || @cud.student? %>
+          <% elsif @cud.instructor? || @cud.student? %>
             <li><%= link_to "<i class='material-icons left'>grading</i> Gradebook".html_safe, [@course, @cud, :gradebook], title: "View your gradebook" %></li>
           <% end %>
 
