@@ -26,13 +26,14 @@ class WatchlistInstance < ApplicationRecord
     begin
       course = Course.find_by(name: course_name)
       current_conditions = RiskCondition.get_current_for_course(course_name)
-      current_instances = WatchlistInstance.where(course_id: course.id)
+      current_instances = WatchlistInstance.where(course_id: course.id, archived: false)
     rescue NoMethodError
       raise "Course #{course_name} cannot be found"
     end
 
     # update!
     new_instances = []
+    deprecated_instances = current_instances
     # now check current conditions
     if current_conditions.length == 0
       # case 1: no current risk conditions exist
