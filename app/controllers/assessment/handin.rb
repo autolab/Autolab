@@ -20,6 +20,66 @@ module AssessmentHandin
   #
   # Any errors should be added to flash[:error] and return false or nil.
   def handin
+    if @assessment.git_enabled?
+      # Clone repository
+      git_key = @assessment.course.git_access_key
+      git_username = "fanpu" # TODO should be a new column
+      classroom_name = @assessment.course.classroom_name
+      assignment_name = @assessment.autograder.git_assignment_name
+
+      # TODO: need the following from frontend:
+      student_name = "fanpu" # should be passed in from submission
+      # should be passed in from submission
+      commit_hash = "81ce289d9861694ec0aa4d1bcef2cd92f9dc1142"
+
+      if git_key.blank? or classroom_name.blank? or assignment_name.blank?
+        flash[:error] = "Git integration misconfigured - please contact your instructor"
+        redirect_to(action: :show)
+        return
+      end
+
+      if student_name.blank? or commit_hash.blank?
+        flash[:error] = "Invalid Git username/hash provided"
+        redirect_to(action: :show)
+      end
+
+      # Avoid guesses
+      if commit_hash.squish == "main" or commit_hash.squish == "master" 
+        flash[:error] = "Please specify a valid commit hash"
+        redirect_to(action: :show)
+      end
+
+      repo_name = "#{assignment_name}-#{student_name}"
+
+      # Slap on random 8 bytes at the end
+      destination = "/tmp/#{repo_name}_#{(0...8).map { (65 + rand(26)).chr }.join}"
+
+      clone_cmd = "git clone https://#{git_username}:#{git_key}@github.com/#{classroom_name}/#{repo_name} #{destination}"
+      commit_cmd = "cd #{destination} && git checkout #{commit_hash}"
+
+      # Strip dangerous stuff
+      forbidden = [';', '&', '|', '`', '\"', '\'', '{', '}', '(', ')']
+      for badchar in forbidden
+        clone_cmd.tr(badchar, '')
+        commit_cmd.tr(badchar, '')
+      end
+
+      byebug
+
+      if not system(clone_cmd) 
+        flash[:error] = "Cloning repo failed"
+        redirect_to(action: :show)
+      end
+
+      # Ensure that valid commit was given 
+      if not system(commit_cmd) 
+        flash[:error] = "Bad commit hash provided"
+        redirect_to(action: :show)
+      end
+
+      # Extract code
+
+    end
 
     if @assessment.embedded_quiz
 
@@ -36,7 +96,7 @@ module AssessmentHandin
       if @assessment.disable_handins?
         flash[:error] = "Sorry, handins are disabled for this assessment."
         redirect_to(action: :show)
-        return false
+        return
       end
     else
 

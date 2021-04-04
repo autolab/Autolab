@@ -346,6 +346,10 @@ class Assessment < ApplicationRecord
     end
   end
 
+  def git_enabled?
+    autograder.present? && autograder.git_enabled?
+  end
+
 private
 
   def saved_change_to_grade_related_fields?
