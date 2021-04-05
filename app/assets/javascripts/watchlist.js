@@ -101,6 +101,11 @@ function get_buttons_html(user_id, tab, archived_instances) {
         <i class="exclamation circle icon"></i>
       </div>` : "";
 
+  var archived_tags = (user_id in archived_instances) ? 
+      `<div class="ui circular label condition" data-variation="wide">
+        Resolved
+      </div>` : "";
+
   switch(tab) {
     case "new":
       return `
@@ -108,20 +113,23 @@ function get_buttons_html(user_id, tab, archived_instances) {
           ${archived_icon}
           <button class="ui submit tiny button contact_single"><i class="mail outline icon"></i>CONTACT</button>
           <button class="ui submit tiny button resolve_single"><i class="check circle icon"></i>RESOLVE</button>
-        </div>`
+        </div>`;
     case "contacted":
       return `
         <div class="students-buttons-right"> 
           ${archived_icon}
           <button class="ui submit tiny button resolve_single"><i class="check circle icon"></i>RESOLVE</button>
-        </div>`
+        </div>`;
     case "resolved":
       return `
         <div class="students-buttons-right"> 
           ${archived_icon}
-        </div>`
+        </div>`;
     case "archived":
-      return "";
+      return `
+        <div class="students-buttons-right"> 
+          ${archived_tags}
+        </div>`;
     default:
       console.log(`${tab} is not a valid tab`);
       return;
