@@ -158,6 +158,7 @@ ActiveRecord::Schema.define(version: 2021_03_28_201958) do
     t.string "website"
     t.string "git_access_key"
     t.string "git_classroom_name"
+    t.string "git_username"
   end
 
   create_table "extensions", force: :cascade do |t|

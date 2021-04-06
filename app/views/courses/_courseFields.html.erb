@@ -45,3 +45,15 @@
   help_text: "An optional message that is displayed to students at the top of
   their gradebooks.  It can be used to explain grading criteria.",
   display_name: "Gradebook Message", placeholder: "Optional" %>
+
+<%= f.text_field :git_access_key,
+  help_text: "Git access key used for Git submissions. Only required if using Git submissions.",
+  display_name: "Git Access Key", placeholder: "Optional" %>
+
+<%= f.text_field :git_username,
+  help_text: "Git username to be used with access key. Only required if using Git submissions.",
+  display_name: "Git Username", placeholder: "Optional" %>
+
+<%= f.text_field :git_classroom_name,
+  help_text: "Name of the GitHub Classroom for Git submissions. Only required if using Git submissions.",
+  display_name: "GitHub Classroom Name", placeholder: "Optional" %>
