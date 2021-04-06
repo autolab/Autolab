@@ -24,15 +24,18 @@ nav:
                 - MOSS Plagiarism Detection: features/moss.md
                 - Metrics: features/metrics.md
         - Tango Basics: tango.md
-    - Autolab API:
-        - Overview: api-overview.md
-        - Reference: api-interface.md
-        - Command Line Interface: command-line-interface.md
-        - Managing Authorized Apps: api-managing-authorized-apps.md
-    - Tango:
+    - Reference: 
+        - Reference Documentation: reference.md
+        - Autolab Frontend API:
+            - Overview: api-overview.md
+            - Endpoints: api-interface.md
+            - Managing Authorized Apps: api-managing-authorized-apps.md
+        - Autolab Frontend CLI: command-line-interface.md
+        - Tango API: tango-rest.md
         - Tango CLI: tango-cli.md
-        - REST API: tango-rest.md
-        - VMMS Docs: tango-vmms.md
+        - Tango VMMS API: tango-vmms.md
+    - Tango:
+        - Getting Started: tango.md
 theme:
     name: material
     logo: "images/logo.svg"
