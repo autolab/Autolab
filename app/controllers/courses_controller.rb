@@ -419,7 +419,8 @@ private
 
   def edit_course_params
     params.require(:editCourse).permit(:name, :semester, :website, :late_slack, :grace_days, :display_name, :start_date, :end_date,
-                                       :disabled, :exam_in_progress, :version_threshold, :gb_message, :git_access_key, :git_classroom_name,
+                                       :disabled, :exam_in_progress, :version_threshold, :gb_message, 
+                                       :git_access_key, :git_classroom_name, :git_username,
                                        late_penalty_attributes: [:kind, :value],
                                        version_penalty_attributes: [:kind, :value])
   end
