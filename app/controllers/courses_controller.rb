@@ -432,7 +432,7 @@ private
     listing[:completed] = []
     listing[:upcoming] = []
 
-	listing[:disabled] = []
+    listing[:disabled] = []
     # categorize
     courses.each do |course|
       if course.disabled?
