@@ -101,11 +101,6 @@ function get_buttons_html(user_id, tab, archived_instances) {
         <i class="exclamation circle icon"></i>
       </div>` : "";
 
-  var archived_tags = (user_id in archived_instances) ? 
-      `<div class="ui circular label condition" data-variation="wide">
-        Resolved
-      </div>` : "";
-
   switch(tab) {
     case "new":
       return `
@@ -128,7 +123,9 @@ function get_buttons_html(user_id, tab, archived_instances) {
     case "archived":
       return `
         <div class="students-buttons-right"> 
-          ${archived_tags}
+          <div class="ui circular label condition" data-variation="wide">
+          ${archived_instances[user_id]["status"]}
+          </div>
         </div>`;
     default:
       console.log(`${tab} is not a valid tab`);
@@ -154,17 +151,19 @@ function get_row_html(user_id, instance, tab, archived_instances) {
       </div>`;
 }
 
-function addInstanceToDict(instancesDict, id, user_id, course_id, user_name, user_email, condition_type, violation_info) {
+function addInstanceToDict(instancesDict, id, user_id, course_id, user_name, user_email, condition_type, violation_info, watchlist_status) {
   if (user_id in instancesDict) {
     instancesDict[user_id]["conditions"][condition_type] = violation_info;
     instancesDict[user_id]["instance_ids"].push(id);
+    instancesDict[user_id]["status"] = watchlist_status;
   } else {
     instancesDict[user_id] = {
       "name": user_name, 
       "email": user_email,
       "course_id": course_id,
       "conditions": {},
-      "instance_ids": [id]
+      "instance_ids": [id],
+      "status": watchlist_status
     };
     instancesDict[user_id]["conditions"][condition_type] = violation_info;
   }
@@ -203,6 +202,7 @@ function get_watchlist_function(){
           var user_name = _.get(data,`["users"][${user_id}].first_name`) + " " + _.get(data,`["users"][${user_id}].last_name`); 
           var user_email = _.get(data,`["users"][${user_id}].email`);
           var risk_condition_id = _.get(watchlist_instance,'risk_condition_id');
+          var watchlist_status = _.get(watchlist_instance,'status');
           var condition_type = _.get(data,`["risk_conditions"][${risk_condition_id}].condition_type`);
           var violation_info = _.get(watchlist_instance,'violation_info');
 
@@ -211,20 +211,20 @@ function get_watchlist_function(){
 
           if (_.get(watchlist_instance,'archived')) {
             archived_empty = 0;
-            addInstanceToDict(archived_instances, id, user_id, course_id, user_name, user_email, condition_type, violation_info);
+            addInstanceToDict(archived_instances, id, user_id, course_id, user_name, user_email, condition_type, violation_info, watchlist_status);
           } else {
-            switch(_.get(watchlist_instance,'status')){
+            switch(watchlist_status){
               case "new":
                 new_empty = 0;
-                addInstanceToDict(new_instances, id, user_id, course_id, user_name, user_email, condition_type, violation_info);
+                addInstanceToDict(new_instances, id, user_id, course_id, user_name, user_email, condition_type, violation_info, watchlist_status);
                 break;
               case "contacted":
                 contacted_empty = 0;
-                addInstanceToDict(contacted_instances, id, user_id, course_id, user_name, user_email, condition_type, violation_info);
+                addInstanceToDict(contacted_instances, id, user_id, course_id, user_name, user_email, condition_type, violation_info, watchlist_status);
                 break;
               case "resolved":
                 resolved_empty = 0;
-                addInstanceToDict(resolved_instances, id, user_id, course_id, user_name, user_email, condition_type, violation_info);
+                addInstanceToDict(resolved_instances, id, user_id, course_id, user_name, user_email, condition_type, violation_info, watchlist_status);
                 break;
               default:
                 console.error(_.get(watchlist_instance,'status') + " is not valid");
