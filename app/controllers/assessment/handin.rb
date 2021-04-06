@@ -23,13 +23,13 @@ module AssessmentHandin
     if @assessment.git_enabled?
       # Clone repository
       git_key = @assessment.course.git_access_key
-      git_username = "fanpu" # TODO should be a new column
+      git_username = @assessment.course.git_username
       classroom_name = @assessment.course.classroom_name
       assignment_name = @assessment.autograder.git_assignment_name
 
       # TODO: need the following from frontend:
-      student_name = "fanpu" # should be passed in from submission
-      # should be passed in from submission
+      student_name = "fanpu" # TODO should be passed in from submission
+      # TODO should be passed in from submission
       commit_hash = "81ce289d9861694ec0aa4d1bcef2cd92f9dc1142"
 
       if git_key.blank? or classroom_name.blank? or assignment_name.blank?
@@ -50,12 +50,15 @@ module AssessmentHandin
       end
 
       repo_name = "#{assignment_name}-#{student_name}"
-
       # Slap on random 8 bytes at the end
-      destination = "/tmp/#{repo_name}_#{(0...8).map { (65 + rand(26)).chr }.join}"
+      repo_unique_name = "#{repo_name}_#{(0...8).map { (65 + rand(26)).chr }.join}"
+      tarfile_name = "#{repo_unique_name}.tgz"
+      destination = "/tmp/#{repo_unique_name}"
+      tarfile_dest = "/tmp/#{tarfile_name}"
 
       clone_cmd = "git clone https://#{git_username}:#{git_key}@github.com/#{classroom_name}/#{repo_name} #{destination}"
       commit_cmd = "cd #{destination} && git checkout #{commit_hash}"
+      tar_cmd = "tar --exclude='./git' -cvzf #{tarfile_dest} #{destination}/*"
 
       # Strip dangerous stuff
       forbidden = [';', '&', '|', '`', '\"', '\'', '{', '}', '(', ')']
@@ -77,8 +80,13 @@ module AssessmentHandin
         redirect_to(action: :show)
       end
 
-      # Extract code
+      # Create compressed tarball
+      if not system(tar_cmd) 
+        flash[:error] = "Creation of archive failed"
+        redirect_to(action: :show)
+      end
 
+      params[:submission]["local_submit_file"] = tarfile_dest
     end
 
     if @assessment.embedded_quiz
@@ -104,6 +112,7 @@ module AssessmentHandin
       redirect_to(action: :show) && return unless validateHandin_forHTML
 
     end
+
 
     # save the submissions
     begin
