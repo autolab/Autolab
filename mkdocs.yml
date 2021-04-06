@@ -28,7 +28,7 @@ nav:
         - Reference Documentation: reference.md
         - Autolab Frontend API:
             - Overview: api-overview.md
-            - Reference: api-interface.md
+            - Endpoints: api-interface.md
             - Managing Authorized Apps: api-managing-authorized-apps.md
         - Autolab Frontend CLI: command-line-interface.md
         - Tango API: tango-rest.md
