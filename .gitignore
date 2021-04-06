@@ -51,5 +51,3 @@ out.txt
 .vscode/
 .byebug_history
 .env
-Gemfile.lock
-db/schema.rb
