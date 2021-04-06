@@ -1,3 +1,4 @@
+require: rubocop-rails
 AllCops:
   Include:
     - '**/Rakefile'
@@ -16,7 +17,7 @@ AllCops:
 Rails:
   Enabled: true
 
-Metrics/LineLength:
+Layout/LineLength:
   Max: 100
   # To make it possible to copy or click on URIs in the code, we allow lines
   # contaning a URI to be longer than Max.
