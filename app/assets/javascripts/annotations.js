@@ -122,7 +122,7 @@ function scrollToLine(n) {
 }
 
 function plusFix(n) {
-  n = parseInt(n)
+  n = parseFloat(n)
   if (isNaN(n)) n = 0;
 
   if (n > 0) {
@@ -207,7 +207,6 @@ function fillAnnotationBox() {
       } else {
         pointBadge.addClass('neutral');
       }
-
       pointBadge.text(plusFix(annotation.value));
       link.append(pointBadge);
       link.append(annotation.comment);
