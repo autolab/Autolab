@@ -1,6 +1,6 @@
 # Reference documentation
 
-This section includes all the references for the Autolab platform's various Application Programming Interfaces (APIs) and Command Line Interfaces (CLIs).
+This section includes all the references for Autolab's Application Programming Interfaces (APIs) and Command Line Interfaces (CLIs)
 
 **Autolab Frontend**
 
