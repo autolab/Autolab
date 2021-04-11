@@ -1,5 +1,5 @@
 class WatchlistInstance < ApplicationRecord
-  enum status: [:new ,:contacted,:resolved], _suffix:"watchlist"
+  enum status: [:new, :contacted, :resolved], _suffix:"watchlist"
   belongs_to :course_user_datum
   belongs_to :course
   belongs_to :risk_condition
@@ -284,6 +284,20 @@ class WatchlistInstance < ApplicationRecord
     end
   end
 
+  def self.delete_many_watchlist_instances(instance_ids)
+    instances = WatchlistInstance.where(id:instance_ids)
+    if instance_ids.length() != instances.length()
+      found_instance_ids = instances.map{|instance| instance.id}
+      raise "Instance ids #{instance_ids - found_instance_ids} cannot be found"
+    end
+    
+    ActiveRecord::Base.transaction do
+      instances.each do |instance|
+        instance.delete_watchlist_instance
+      end
+    end
+  end
+
   def archive_watchlist_instance
     if self.new_watchlist?
       self.destroy
@@ -303,12 +317,11 @@ class WatchlistInstance < ApplicationRecord
         raise "Failed to update watchlist instance #{self.id} to contacted" unless self.save
       end
     else
-      raise "Unable to contact a watchlist instance that is not new #{self.id}"
+      raise "Unable to contact a watchlist instance that is not pending #{self.id}"
     end
   end
 
   def resolve_watchlist_instance
-    
     if (self.new_watchlist? || self.contacted_watchlist?)
       self.resolved_watchlist!
 
@@ -316,7 +329,15 @@ class WatchlistInstance < ApplicationRecord
         raise "Failed to update watchlist instance #{self.id} to resolved" unless self.save
       end
     else
-      raise "Unable to resolve a watchlist instance that is not new or contacted #{self.id}"
+      raise "Unable to resolve a watchlist instance that is not pending or contacted #{self.id}"
+    end
+  end
+
+   def delete_watchlist_instance
+    if (self.archived?)
+      self.destroy
+    else
+      raise "Unable to delete a watchlist instance that is not pending or archived #{self.id}"
     end
   end
 

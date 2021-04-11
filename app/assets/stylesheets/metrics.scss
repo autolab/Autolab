@@ -15,6 +15,16 @@ $autolab-subtle-red: #C87B7E;
   background-color: $autolab-subtle-red !important;
 }
 
+.icon.button {
+  color: #FFFFFF !important;
+  background-color: #5d5d5d !important;
+}
+
+.icon.button:hover{
+  color: #FFFFFF !important;
+  background-color: #919191 !important;
+}
+
 .dropdown {
   min-width: 20px !important;
 }
