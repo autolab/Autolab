@@ -390,7 +390,7 @@ function get_watchlist_function(){
     }
   });
 
-   // Removes previous click function binded to resolve button
+   // Removes previous click function binded to delete button
   $('#delete_button').off('click');
   $('#delete_button').click(function(){
     method = "delete";
