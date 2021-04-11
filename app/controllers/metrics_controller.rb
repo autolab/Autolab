@@ -192,6 +192,8 @@ class MetricsController < ApplicationController
 				WatchlistInstance.contact_many_watchlist_instances(params[:ids])
 			when "resolve"
 				WatchlistInstance.resolve_many_watchlist_instances(params[:ids])
+			when "delete"
+				WatchlistInstance.delete_many_watchlist_instances(params[:ids])
 			else
 				raise "Method #{params[:method]} not allowed"  
 			end

@@ -337,7 +337,7 @@ function get_watchlist_function(){
         } 
 
         update_watchlist(method, new_instances[user_id]["instance_ids"], enable_buttons);
-      })
+      });
 
       $('.ui.button.resolve_single').click(function() {
 
@@ -347,7 +347,7 @@ function get_watchlist_function(){
         
         method = "resolve";
         var user_id = $(this).parent().parent().attr('id');
-        var instances = get_active_instances(new_instances, contacted_instances);
+        var instances = get_active_instances(new_instances, contacted_instances, archived_instances);
         
         // re-enabling buttons on failure
         function enable_buttons () {
@@ -355,7 +355,7 @@ function get_watchlist_function(){
         } 
 
         update_watchlist(method, instances[user_id]["instance_ids"], enable_buttons);
-      })
+      });
   });
 
   // Removes previous click function binded to contact button
@@ -386,7 +386,23 @@ function get_watchlist_function(){
   $('#resolve_button').off('click');
   $('#resolve_button').click(function(){
     method = "resolve";
-    var instances = get_active_instances(new_instances, contacted_instances);
+    var instances = get_active_instances(new_instances, contacted_instances, archived_instances);
+
+    var instance_ids = [];
+    selected_user_ids.forEach(user_id => {
+      instance_ids = instance_ids.concat(instances[user_id]["instance_ids"]);
+    });
+
+    if (instance_ids.length > 0) {
+      update_watchlist(method, instance_ids);
+    }
+  });
+
+   // Removes previous click function binded to delete button
+  $('#delete_button').off('click');
+  $('#delete_button').click(function(){
+    method = "delete";
+    var instances = get_active_instances(new_instances, contacted_instances, archived_instances);
 
     var instance_ids = [];
     selected_user_ids.forEach(user_id => {
@@ -409,6 +425,8 @@ $('.ui.vertical.fluid.tabular.menu .item').on('click', function() {
 });
 
 function updateButtonVisibility(item){
+  // Deleting instances only avilable in archive tab
+  $("#delete_button").addClass("disabled");
   switch ($(item).attr("data-tab")) {
     case "new_tab":
       if ($("#new_tab #empty_tabs").length > 0) {
@@ -434,6 +452,7 @@ function updateButtonVisibility(item){
     case "archived_tab":
       $("#contact_button").addClass("disabled");
       $("#resolve_button").addClass("disabled");
+      $("#delete_button").removeClass("disabled");
       break;
     default:
       console.log(`${$(this).attr("data-tab")} is not a valid tab`);
@@ -441,7 +460,7 @@ function updateButtonVisibility(item){
   }
 }
 
-function get_active_instances(new_instances, contacted_instances) {
+function get_active_instances(new_instances, contacted_instances, archived_instances) {
   var tab = $(".ui.tab.segments.active").attr('id');
   
   switch(tab){
@@ -449,6 +468,8 @@ function get_active_instances(new_instances, contacted_instances) {
       return new_instances;
     case "contacted_tab":
       return contacted_instances;
+    case "archived_tab":
+      return archived_instances;
     default:
       console.log(`${tab} is not a valid tab for this action`)
       return;
