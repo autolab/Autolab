@@ -1,0 +1,8 @@
+This directory contains the autograded files
+
+Files:
+
+# Autograder and solution files
+Makefile                Makefile and ...
+README                  ... README for this directory
+driver.sh*              Autograder
