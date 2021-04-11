@@ -20,25 +20,20 @@ module AssessmentHandin
   #
   # Any errors should be added to flash[:error] and return false or nil.
   def handin
+    if @assessment.disable_handins?
+      flash[:error] = "Sorry, handins are disabled for this assessment."
+      redirect_to(action: :show)
+      return false
+    end
 
     if @assessment.embedded_quiz
-
       contents = params[:submission]["embedded_quiz_form_answer"].to_s
 
       out_file = File.new("out.txt", "w+")
       out_file.puts(contents)
 
       params[:submission]["file"] = out_file
-
     end
-
-    if @assessment.embedded_quiz
-      if @assessment.disable_handins?
-        flash[:error] = "Sorry, handins are disabled for this assessment."
-        redirect_to(action: :show)
-        return false
-      end
-    else
 
       # validate the handin
       redirect_to(action: :show) && return unless validateHandin_forHTML
