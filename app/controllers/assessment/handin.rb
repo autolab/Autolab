@@ -38,12 +38,22 @@ module AssessmentHandin
       # TODO: need the following from frontend:
       student_name = "fanpu" # TODO should be passed in from submission
       # TODO should be passed in from submission
-      commit_hash = "81ce289d9861694ec0aa4d1bcef2cd92f9dc1142"
+      commit_hash = "b6e019a2f17c9b3f7333f2bf8dde6c004dbeca0e"
 
-      tarfile_path = Git.clone_repo(git_key, git_username, classroom_name,
+      begin
+      @tarfile_path = Git.clone_repo(git_key, git_username, classroom_name,
         assignment_name, student_name, commit_hash)
+      rescue StandardError => msg
+        flash[:error] = msg
+        redirect_to(action: :show)
+        return
+      end
+
+      # Populate submission field for validation
+      params[:submission] = { "tar" => @tarfile_path}
 
       redirect_to(action: :show) && return unless validateHandin_forGit
+
     elsif @assessment.embedded_quiz
       # Create out.txt with info from embedded form
       contents = params[:submission]["embedded_quiz_form_answer"].to_s
@@ -56,7 +66,6 @@ module AssessmentHandin
       # validate the handin
       redirect_to(action: :show) && return unless validateHandin_forHTML
     end
-
 
     # save the submissions
     begin
@@ -308,7 +317,6 @@ module AssessmentHandin
   end
 
 private
-
   ##
   # this function checks that now is a valid time to submit and that the
   # submission file is okay to submit.
@@ -322,39 +330,33 @@ private
         flash[:error] = "Submission was blank (file upload missing) - please upload again."
         return false
     end
-    # check for custom form first
-    if @assessment.has_custom_form
-      for i in 0..@assessment.getTextfields.size-1
-          if params[:submission][("formfield" + (i+1).to_s).to_sym].blank?
-            flash[:error] = @assessment.getTextfields[i] + " is a required field."
-            return false
-          end
-      end
-    end
+
+    validate_custom_form
 
     validity = validateHandin(params[:submission]["file"].size,
                               params[:submission]["file"].content_type,
                               params[:submission]["file"].original_filename)
 
-    case validity
-    when :valid
-      return validateHandinForGroups_forHTML
-    when :handin_disabled
-      msg = "Sorry, handins are disabled for this assessment."
-    when :submission_empty
-      msg = "Submission was blank - please upload again."
-    when :file_too_large
-      msg = "Your submission is larger than the max allowed " \
-            "size (#{@assessment.max_size} MB) - please remove any " \
-            "unnecessary logfiles and binaries."
-    when :fail_type_check
-      msg = "Submission failed Filetype Check. " + flash[:error]
-    end
-    
-    flash[:error] = msg
-    return false
+    return handle_validity(validity)
   end
 
+  ##
+  # Validates Git tarfile
+  #
+  def validateHandin_forGit
+    if @tarfile_path.blank?
+        flash[:error] = "Git submission error"
+        return false
+    end
+
+    validate_custom_form
+
+    validity = validateHandin(File.size(@tarfile_path),
+                              MimeMagic.by_magic(File.open(@tarfile_path)).type,
+                              @tarfile_path) # TODO probably want filename instead of path
+
+    return handle_validity(validity)
+  end
 
   ##
   # this function makes sure that the submitter's group can submit.
@@ -374,6 +376,38 @@ private
       msg = "A member of your group has reached the submission limit for this assessment"
     end
 
+    flash[:error] = msg
+    return false
+  end
+
+  def validate_custom_form
+    # check if custom form exists
+    if @assessment.has_custom_form
+      for i in 0..@assessment.getTextfields.size-1
+          if params[:submission][("formfield" + (i+1).to_s).to_sym].blank?
+            flash[:error] = @assessment.getTextfields[i] + " is a required field."
+            return false
+          end
+      end
+    end
+  end
+
+  def handle_validity(validity)
+    case validity
+    when :valid
+      return validateHandinForGroups_forHTML
+    when :handin_disabled
+      msg = "Sorry, handins are disabled for this assessment."
+    when :submission_empty
+      msg = "Submission was blank - please upload again."
+    when :file_too_large
+      msg = "Your submission is larger than the max allowed " \
+            "size (#{@assessment.max_size} MB) - please remove any " \
+            "unnecessary logfiles and binaries."
+    when :fail_type_check
+      msg = "Submission failed Filetype Check. " + flash[:error]
+    end
+    
     flash[:error] = msg
     return false
   end
