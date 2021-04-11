@@ -426,7 +426,7 @@ $('.ui.vertical.fluid.tabular.menu .item').on('click', function() {
 
 function updateButtonVisibility(item){
   // Deleting instances only avilable in archive tab
-  $("#delete_button").addClass("disabled");
+  $("#delete_button").hide();
   switch ($(item).attr("data-tab")) {
     case "new_tab":
       if ($("#new_tab #empty_tabs").length > 0) {
@@ -452,7 +452,7 @@ function updateButtonVisibility(item){
     case "archived_tab":
       $("#contact_button").addClass("disabled");
       $("#resolve_button").addClass("disabled");
-      $("#delete_button").removeClass("disabled");
+      $("#delete_button").show();
       break;
     default:
       console.log(`${$(this).attr("data-tab")} is not a valid tab`);
