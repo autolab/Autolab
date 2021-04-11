@@ -48,8 +48,8 @@ module Git
     # https://stackoverflow.com/questions/4650636/forming-sanitary-shell-commands-or-system-calls-in-ruby
     # and make call go to execve of base command directly
     clone_cmd = "git clone https://#{git_username}:#{git_key}@github.com/#{classroom_name}/#{repo_name} #{destination}"
-    commit_cmd = "cd #{destination} && git checkout #{commit_hash}"
-    tar_cmd = "tar --exclude='./git' -cvzf #{tarfile_dest} #{destination}/*"
+    commit_cmd = "git checkout #{commit_hash}"
+    tar_cmd = "tar --exclude='./git' -cvzf #{tarfile_dest} *"
 
 
     clone_cmd = sanitize_cmd(clone_cmd)
@@ -58,21 +58,20 @@ module Git
 
 
     if not system(clone_cmd) 
-      flash[:error] = "Cloning repo failed"
-      redirect_to(action: :show)
+      raise "Cloning repo failed"
     end
 
-    # Ensure that valid commit was given 
-    if not system(commit_cmd) 
-      flash[:error] = "Bad commit hash provided"
-      redirect_to(action: :show)
-    end
+    Dir.chdir(destination) {
+      # Ensure that valid commit was given 
+      if not system(commit_cmd) 
+        raise "Bad commit hash provided"
+      end
 
-    # Create compressed tarball
-    if not system(tar_cmd) 
-      flash[:error] = "Creation of archive failed"
-      redirect_to(action: :show)
-    end
+      # Create compressed tarball
+      if not system(tar_cmd) 
+        raise "Creation of archive from Git submission failed"
+      end
+    }
 
     return tarfile_dest 
    end
