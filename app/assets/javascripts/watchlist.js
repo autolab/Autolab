@@ -426,7 +426,7 @@ $('.ui.vertical.fluid.tabular.menu .item').on('click', function() {
 
 function updateButtonVisibility(item){
   // Deleting instances only avilable in archive tab
-   $("#delete_button").hide();
+  $("#delete_button").hide();
   switch ($(item).attr("data-tab")) {
     case "new_tab":
       if ($("#new_tab #empty_tabs").length > 0) {
