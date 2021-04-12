@@ -30,15 +30,12 @@ module AssessmentHandin
     if @assessment.git_enabled?
       git_key = @assessment.course.git_access_key
       # username of instructor's admin Git account
-      git_username = @assessment.course.git_username 
-      classroom_name = @assessment.course.classroom_name
+      git_username = @assessment.course.git_username
+      classroom_name = @assessment.course.git_classroom_name
       assignment_name = @assessment.autograder.git_assignment_name
 
-
-      # TODO: need the following from frontend:
-      student_name = "fanpu" # TODO should be passed in from submission
-      # TODO should be passed in from submission
-      commit_hash = "b6e019a2f17c9b3f7333f2bf8dde6c004dbeca0e"
+      student_name = params[:submission]["git_student_username"]
+      commit_hash = params[:submission]["git_commit_hash"]
 
       begin
       @tarfile_path = Git.clone_repo(git_key, git_username, classroom_name,
