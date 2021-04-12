@@ -148,6 +148,13 @@
                   enableSubmit();
                 });
 
+                $("#git_username").on('keydown keyup change', function() {
+                  enableSubmit();
+                });
+                $("#commit_hash").on('keydown keyup change', function() {
+                  enableSubmit();
+                });
+
                 $("#remove-handed-in").click(function (e) {
                   e.preventDefault();
                   var fileSelector = $("#handin_show_assessment input[type='file']").get(0);
@@ -161,7 +168,12 @@
                 function enableSubmit() {
                   var checkbox = document.getElementById("integrity_checkbox");
                   var fileSelector = $("#handin_show_assessment input[type='file']").get(0);
-                  if (fileSelector.files.length !== 1) {
+                  var gitUsernameFilled = $("#git_username").val() !== '';
+                  var gitCommitHashFilled = $("#commit_hash").val() !== '';
+                  console.log(gitCommitHashFilled);
+                  if (gitUsernameFilled && gitCommitHashFilled && checkbox.checked) {
+                    $("#fake-submit").removeClass("disabled");
+                  } else if (fileSelector.files.length !== 1 && checkbox.checked) {
                     $("#fake-submit").addClass("disabled");
                   } else if (!checkbox.checked) {
                     $("#fake-submit").addClass("disabled");
@@ -188,12 +200,19 @@
               </script>
             <% end %>
             <div class="row handin-row">
-              <div class="error file-error" id="flash_error" style="background: white;display: none;">
-                There was an error processing your file, please try adding it again.
-              </div>
-              <div class="valign-wrapper drag-drop-handin" tabindex="0" onclick="clickDrag();" onkeypress="clickDrag()" ondrop="dropHandler(event);" ondragover="dragOverHandler(event);" ondragenter="dragEnter(event);" ondragexit="dragExit(event);">
-                <p class="center-align" style="color:grey;" ondrop="dropHandler(event);" ondragover="dragOverHandler(event);" ondragenter="dragEnter(event);" ondragexit="dragExit(event);"><b>Drag a file here to hand in. Click to select a file.</b> <br /> <span style="font-size: 10px;">Files do not submit automatically.</span></p>
-              </div>
+              <% if @assessment.autograder && @assessment.autograder.git_enabled? then %>
+                <p><%= f.label :git_student_username, "Git Username" %>
+                <%= f.text_field :git_student_username, display_name: "Git Username", id: "git_username" %></p>
+                <p><%= f.label :git_commit_hash, "Commit Hash" %>
+                <%= f.text_field :git_commit_hash, display_name: "Commit Hash", id: "commit_hash" %></p>
+              <% else %>
+                <div class="error file-error" id="flash_error" style="background: white;display: none;">
+                  There was an error processing your file, please try adding it again.
+                </div>
+                <div class="valign-wrapper drag-drop-handin" tabindex="0" onclick="clickDrag();" onkeypress="clickDrag()" ondrop="dropHandler(event);" ondragover="dragOverHandler(event);" ondragenter="dragEnter(event);" ondragexit="dragExit(event);">
+                  <p class="center-align" style="color:grey;" ondrop="dropHandler(event);" ondragover="dragOverHandler(event);" ondragenter="dragEnter(event);" ondragexit="dragExit(event);"><b>Drag a file here to hand in. Click to select a file.</b> <br /> <span style="font-size: 10px;">Files do not submit automatically.</span></p>
+                </div>
+              <% end %>
             </div>
 
             <div class="row handedin-row" style="display: none;margin-top: 10px;">

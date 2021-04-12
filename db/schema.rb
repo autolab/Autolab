@@ -312,6 +312,8 @@ ActiveRecord::Schema.define(version: 2021_03_28_201958) do
     t.text "settings"
     t.text "embedded_quiz_form_answer"
     t.integer "submitted_by_app_id"
+    t.string "git_student_username"
+    t.string "git_commit_hash"
     t.index ["assessment_id"], name: "index_submissions_on_assessment_id"
     t.index ["course_user_datum_id"], name: "index_submissions_on_course_user_datum_id"
   end
