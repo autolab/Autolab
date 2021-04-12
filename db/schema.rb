@@ -121,7 +121,7 @@ ActiveRecord::Schema.define(version: 2021_03_28_201958) do
     t.integer "autograde_timeout"
     t.string "autograde_image"
     t.boolean "release_score"
-    t.boolean "git_enabled"
+    t.boolean "git_enabled", default: false
     t.string "git_assignment_name"
   end
 
@@ -156,6 +156,7 @@ ActiveRecord::Schema.define(version: 2021_03_28_201958) do
     t.datetime "cgdub_dependencies_updated_at"
     t.text "gb_message"
     t.string "website"
+    t.string "classroom_name"
     t.string "git_access_key"
     t.string "git_classroom_name"
     t.string "git_username"

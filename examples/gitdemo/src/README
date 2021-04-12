@@ -1,0 +1,16 @@
+This directory contains all of the code files for the Hello Lab,
+including the files that are handed out to students.
+
+Files:
+
+# Autograder and solution files
+Makefile                Makefile and ...
+README                  ... README for this directory
+driver.sh*              Autograder
+hello.c                 Solution hello.c file
+
+# Files that are handed out to students
+Makefile-handout        Makefile and ...
+README-handout          ... README handed out to students
+hello.c-handout         Blank hello.c file handed out to students
+
