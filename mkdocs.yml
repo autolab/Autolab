@@ -34,8 +34,6 @@ nav:
         - Tango API: tango-rest.md
         - Tango CLI: tango-cli.md
         - Tango VMMS API: tango-vmms.md
-    - Tango:
-        - Getting Started: tango.md
 theme:
     name: material
     logo: "images/logo.svg"
