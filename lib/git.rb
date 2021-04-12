@@ -16,24 +16,20 @@ module Git
   #
   def self.clone_repo(git_key, git_username, classroom_name, assignment_name, 
         student_name, commit_hash)
-    if git_key.blank? or classroom_name.blank? or assignment_name.blank?
-      flash[:error] = "Git integration misconfigured - please contact your instructor"
-      redirect_to(action: :show)
-      return
+    if git_key.blank? or classroom_name.blank? or assignment_name.blank? then
+      raise "Git integration misconfigured - please contact your instructor"
     end
 
     student_name.squish!
     commit_hash.squish!
 
-    if student_name.blank? or commit_hash.blank?
-      flash[:error] = "Invalid Git username/hash provided"
-      redirect_to(action: :show)
+    if student_name.blank? or commit_hash.blank? then
+      raise "Invalid Git username/hash provided"
     end
 
     # Avoid guessing other people's branch names
-    if FORBIDDEN_BRANCHES.include?(commit_hash)
-      flash[:error] = "Please specify a valid commit hash"
-      redirect_to(action: :show)
+    if FORBIDDEN_BRANCHES.include?(commit_hash) then
+      raise "Please specify a valid commit hash"
     end
 
     repo_name = "#{assignment_name}-#{student_name}"
