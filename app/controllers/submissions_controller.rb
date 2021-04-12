@@ -284,8 +284,13 @@ class SubmissionsController < ApplicationController
 
     # Pull the files with their hierarchy info for the file tree
     if Archive.archive? @filename
-      @files = Archive.get_file_hierarchy(@filename).sort! { |a, b| a[:pathname] <=> b[:pathname] }
-      @header_position = params[:header_position].to_i
+      begin
+        @files = Archive.get_file_hierarchy(@filename).sort! { |a, b| a[:pathname] <=> b[:pathname] }
+        @header_position = params[:header_position].to_i
+      rescue
+        flash[:error] = "Could not read archive."
+        redirect_to [@course, @assessment] and return false
+      end
     else
       @files = [{
         pathname: @filename,
