@@ -134,7 +134,12 @@ i.external.alternate {
   margin-top: -15px;
 }
 
-.select_single label, .checkbox.select_single {
+.select_single label {
   display: inline-block !important; 
-  vertical-align: middle;
+  vertical-align: middle !important;
+}
+
+.ui.checkbox.select_single label:before, 
+.ui.checkbox.select_single label:after {
+  top: 6.5px;
 }
