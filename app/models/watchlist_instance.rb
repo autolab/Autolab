@@ -1,5 +1,5 @@
 class WatchlistInstance < ApplicationRecord
-  enum status: [:new, :contacted, :resolved], _suffix:"watchlist"
+  enum status: [:pending, :contacted, :resolved], _suffix:"watchlist"
   belongs_to :course_user_datum
   belongs_to :course
   belongs_to :risk_condition
@@ -19,7 +19,7 @@ class WatchlistInstance < ApplicationRecord
     rescue NoMethodError
       raise "Course #{course_name} cannot be found"
     end 
-    return WatchlistInstance.where(course_id:course_id, status: :new).distinct.count(:course_user_datum_id)
+    return WatchlistInstance.where(course_id:course_id, status: :pending).distinct.count(:course_user_datum_id)
   end 
 
   def self.refresh_instances_for_course(course_name, metrics_update=false)
@@ -299,7 +299,7 @@ class WatchlistInstance < ApplicationRecord
   end
 
   def archive_watchlist_instance
-    if self.new_watchlist?
+    if self.pending_watchlist?
       self.destroy
     else
       self.archived = true
@@ -310,7 +310,7 @@ class WatchlistInstance < ApplicationRecord
   end
 
   def contact_watchlist_instance
-    if self.new_watchlist?
+    if self.pending_watchlist?
       self.contacted_watchlist!
       
       if not self.save
@@ -322,7 +322,7 @@ class WatchlistInstance < ApplicationRecord
   end
 
   def resolve_watchlist_instance
-    if (self.new_watchlist? || self.contacted_watchlist?)
+    if (self.pending_watchlist? || self.contacted_watchlist?)
       self.resolved_watchlist!
 
       if not self.save
@@ -348,7 +348,7 @@ private
     course_user_data = CourseUserDatum.where(course_id: course.id, instructor: false, course_assistant: false)
 
     # new
-    criteria2 = current_instances.where(status: :new)
+    criteria2 = current_instances.where(status: :pending)
     # contacted or resolved
     criteria1 = current_instances - criteria2
     deprecated_instances = current_instances
