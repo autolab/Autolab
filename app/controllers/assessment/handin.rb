@@ -33,7 +33,7 @@ module AssessmentHandin
       git_username = @assessment.course.git_username
       classroom_name = @assessment.course.git_classroom_name
       assignment_name = @assessment.autograder.git_assignment_name
-
+      
       student_name = params[:submission]["git_student_username"]
       commit_hash = params[:submission]["git_commit_hash"]
 
