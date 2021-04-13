@@ -18,12 +18,13 @@ function get_html_empty_message(message){
       </div>`;
 }
 
-function get_name_html(name) {
+function get_name_email_html(name, email) {
   return `
       <div class="ui checkbox select_single">
         <input type="checkbox"/>
         <label>
           <p class="name_label"> ${name} </p>
+          <p class="email_label"> ${email} </p>
         </label>
       </div>`;
 }
@@ -135,16 +136,17 @@ function get_buttons_html(user_id, tab, archived_instances) {
 
 function get_row_html(user_id, instance, tab, archived_instances) {
   var name = instance["name"];
+  var email = instance["email"];
   var condition_types = instance["conditions"];
   var course_id = instance["course_id"];
 
-  var name_html = get_name_html(name);
+  var name_email_html = get_name_email_html(name, email);
   var gradebook_link_html = get_gradebook_link_html(course_id, user_id);
   var conditions_html = get_condition_html(condition_types);
   var buttons_html = get_buttons_html(user_id, tab, archived_instances);
   return `
       <div class="ui segment" id=${user_id}>
-        ${name_html}
+        ${name_email_html}
         ${gradebook_link_html}
         ${conditions_html}
         ${buttons_html}

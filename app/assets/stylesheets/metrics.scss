@@ -104,7 +104,6 @@ input[type="text"] {
 .students-buttons-right{
   display: initial;
   float: right;
-  margin-top: -4px;
 }
 
 #undefined_metrics{
@@ -125,6 +124,22 @@ i.external.alternate {
 }
 
 // for resizing window
-.wide.column{
+.wide.column {
   min-width: max-content;
+}
+
+.email_label {
+  color: grey;
+  font-size: 10px;
+  margin-top: -15px;
+}
+
+.select_single label {
+  display: inline-block !important; 
+  vertical-align: middle !important;
+}
+
+.ui.checkbox.select_single label:before, 
+.ui.checkbox.select_single label:after {
+  top: 6.5px;
 }
