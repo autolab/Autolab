@@ -1,5 +1,14 @@
 <% content_for :javascripts do %>
 	<script>
+		function toggleGitAssignmentName(checkbox) {
+			var $checkbox = $(checkbox);
+			if($checkbox.is(':checked')) {
+				$('#git_assignment_name').css("display", "block");
+			} else {
+				$('#git_assignment_name').css("display", "none");
+			}
+		}
+
 		$(function() {
 		  $(document).on('change', ':file', function() {
 		    var input = $(this),
@@ -16,13 +25,10 @@
 						$('#tar_name').val(label);
 		    });
 				$("input[type='checkbox']#autograder_git_enabled").on('change', function(){
-  				if(this.checked) {
-						$('#git_assignment_name').css("display", "block");
-					} else {
-						$('#git_assignment_name').css("display", "none");
-					}
+  				toggleGitAssignmentName(this);
 				});
 		  });
+			toggleGitAssignmentName($("input[type='checkbox']#autograder_git_enabled"))
 		});
 	</script>
 <% end %>
