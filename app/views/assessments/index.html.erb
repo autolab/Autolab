@@ -8,15 +8,15 @@
           return false;  // prevent click propagation
         });
       });
-      $.getJSON('metrics/get_num_new_instances',function(data, status){
-        if(status=='success' && data['num_new'] != 0){
+      $.getJSON('metrics/get_num_pending_instances',function(data, status){
+        if(status=='success' && data['num_pending'] != 0){
           // when there is a non-zero number of new instances
           var new_instances_str = 
             `<div class='col s1 metrics'>
               <i class='material-icons left metrics'>assessment</i>
             </div>
             <div class='col s4 metrics'>
-              <span class='new badge metrics-badge' data-badge-caption='${data["num_new"]}'></span>
+              <span class='new badge metrics-badge' data-badge-caption='${data["num_pending"]}'></span>
             </div>
             <h7 class='metrics'>
               Risk Metrics

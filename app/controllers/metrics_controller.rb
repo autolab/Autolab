@@ -87,12 +87,12 @@ class MetricsController < ApplicationController
 	action_auth_level :get_num_pending_instances, :instructor
 	def get_num_pending_instances
 		# This API endpoint retrieves the number of pending watchlist instances for a particular course
-		# On success, a JSON containing num_new will be returned
+		# On success, a JSON containing num_pending will be returned
 		# On error, a 404 error is returned
 		begin
 			course_name = params[:course_name]
-			number = WatchlistInstance.get_num_new_instance_for_course(course_name)
-			render json: {"num_new":number}, status: :ok
+			number = WatchlistInstance.get_num_pending_instance_for_course(course_name)
+			render json: {"num_pending":number}, status: :ok
 		rescue => error
 			render json: {error:error.message}, status: :not_found
 			return

@@ -13,7 +13,7 @@ class WatchlistInstance < ApplicationRecord
     return WatchlistInstance.where(course_id:course_id)
   end
   
-  def self.get_num_new_instance_for_course(course_name)
+  def self.get_num_pending_instance_for_course(course_name)
     begin
       course_id = Course.find_by(name:course_name).id
     rescue NoMethodError
