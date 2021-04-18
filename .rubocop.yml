@@ -4,6 +4,8 @@ AllCops:
     - '**/Rakefile'
     - '**/config.ru'
     - 'spec/factories/*.rb'
+    - 'app/controllers/*.rb'
+    - 'app/models/*.rb'
   Exclude:
     - 'assessmentConfig/**/*'
     - 'attachments/**/*'
