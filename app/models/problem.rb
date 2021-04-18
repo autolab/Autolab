@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 ##
 # An Assessment can have many Problems, each one creates a score for each Submission
 # for the Assessment.
@@ -15,7 +17,7 @@ class Problem < ApplicationRecord
 
   after_save -> { assessment.dump_yaml }
 
-  SERIALIZABLE = Set.new %w(name description max_score optional)
+  SERIALIZABLE = Set.new %w[name description max_score optional]
   def serialize
     Utilities.serializable attributes, SERIALIZABLE
   end

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "utilities"
 require "association_cache"
 require "json"
@@ -18,7 +20,7 @@ class Submission < ApplicationRecord
 
   validate :allowed?, on: :create
   validates_associated :assessment
-  validates :version, uniqueness: { scope: [:course_user_datum_id, :assessment_id] }
+  validates :version, uniqueness: { scope: %i[course_user_datum_id assessment_id] }
   validate :user_and_assessment_in_same_course
 
   has_many :annotations, dependent: :destroy
@@ -45,7 +47,7 @@ class Submission < ApplicationRecord
 
   # latest (unignored) submissions
   scope :latest, -> { joins(:assessment_user_datum).joins(:course_user_datum) }
-  scope :latest_for_statistics, -> { joins(:assessment_user_datum).where.not(:assessment_user_data => { grade_type: AssessmentUserDatum::EXCUSED }).joins(:course_user_datum) }
+  scope :latest_for_statistics, -> { joins(:assessment_user_datum).where.not(assessment_user_data: { grade_type: AssessmentUserDatum::EXCUSED }).joins(:course_user_datum) }
 
   # constants for special submission types
   NORMAL = 0
@@ -86,7 +88,7 @@ class Submission < ApplicationRecord
     elsif upload["local_submit_file"]
       # local_submit_file is a path string to the temporary handin
       # directory we create for local submissions
-      File.open(path, "wb") { |f| f.write(IO.read(upload["local_submit_file"], mode: File::RDONLY|File::NOFOLLOW)) }
+      File.open(path, "wb") { |f| f.write(IO.read(upload["local_submit_file"], mode: File::RDONLY | File::NOFOLLOW)) }
     elsif upload["tar"]
       src = upload["tar"]
       `mv #{src} #{path}`
@@ -97,7 +99,7 @@ class Submission < ApplicationRecord
     if upload["file"]
       begin
         self.mime_type = upload["file"].content_type
-      rescue
+      rescue StandardError
         self.mime_type = nil
       end
       self.mime_type = "text/plain" unless mime_type
@@ -107,42 +109,34 @@ class Submission < ApplicationRecord
       self.mime_type = "application/x-tgz"
     end
     save_additional_form_fields(upload)
-    self.save!
+    save!
     settings_file = course_user_datum.user.email + "_" +
-               version.to_s + "_" + assessment.handin_filename +
-               ".settings.json"
+                    version.to_s + "_" + assessment.handin_filename +
+                    ".settings.json"
 
-		settings_path = File.join(Rails.root, "courses",
-                     course_user_datum.course.name,
-                     assessment.name, directory, settings_file)
+    settings_path = File.join(Rails.root, "courses",
+                              course_user_datum.course.name,
+                              assessment.name, directory, settings_file)
 
-		File.open(settings_path, "wb") { |f| f.write(self.settings) }
+    File.open(settings_path, "wb") { |f| f.write(settings) }
   end
 
   def save_additional_form_fields(params)
-      form_hash = Hash.new
-      if params["lang"]
-          form_hash["Language"] = params["lang"]
-      end
-      if params["formfield1"]
-          form_hash[assessment.getTextfields[0]] = params["formfield1"]
-      end
-      if params["formfield2"]
-          form_hash[assessment.getTextfields[1]] = params["formfield2"]
-      end
-      if params["formfield3"]
-          form_hash[assessment.getTextfields[2]] = params["formfield3"]
-      end
-      self.settings = form_hash.to_json
-      self.save!
+    form_hash = {}
+    form_hash["Language"] = params["lang"] if params["lang"]
+    form_hash[assessment.getTextfields[0]] = params["formfield1"] if params["formfield1"]
+    form_hash[assessment.getTextfields[1]] = params["formfield2"] if params["formfield2"]
+    form_hash[assessment.getTextfields[2]] = params["formfield3"] if params["formfield3"]
+    self.settings = form_hash.to_json
+    save!
   end
 
   def getSettings
-      if self.settings
-          return JSON.parse(self.settings)
-      else
-          return Hash.new
-      end
+    if settings
+      JSON.parse(settings)
+    else
+      {}
+    end
   end
 
   def archive_handin
@@ -162,6 +156,7 @@ class Submission < ApplicationRecord
 
   def archive_autograder_feedback(archive)
     return unless assessment.has_autograder?
+
     feedback_path = autograde_feedback_path
     return unless File.exist?(feedback_path)
 
@@ -171,11 +166,13 @@ class Submission < ApplicationRecord
 
   def handin_file_path
     return nil unless filename
+
     File.join(assessment.handin_directory_path, filename)
   end
 
   def handin_annotated_file_path
     return nil unless filename
+
     File.join(assessment.handin_directory_path, "annotated_#{filename}")
   end
 
@@ -190,10 +187,11 @@ class Submission < ApplicationRecord
   def handin_file
     path = handin_file_path
     return nil unless path
+
     if !File.exist?(path) || !File.readable?(path)
-      return nil
+      nil
     else
-      return File.open path, "r"
+      File.open path, "r"
     end
   end
 
@@ -215,7 +213,8 @@ class Submission < ApplicationRecord
   end
 
   def user_and_assessment_in_same_course
-    return if (course_user_datum.course_id == assessment.course_id)
+    return if course_user_datum.course_id == assessment.course_id
+
     errors.add(:course_user_datum, "Invalid CourseUserDatum or Assessment")
   end
 
@@ -269,7 +268,7 @@ class Submission < ApplicationRecord
   end
 
   def final_score(as_seen_by)
-    fail "FATAL: authorization error" if as_seen_by.student? && as_seen_by != course_user_datum
+    raise "FATAL: authorization error" if as_seen_by.student? && as_seen_by != course_user_datum
 
     o = {}
     o[:include_unreleased] = true unless as_seen_by.student?
@@ -319,7 +318,7 @@ class Submission < ApplicationRecord
 
     path = File.join(assessment.handin_directory_path, filename)
     file_output = `file -ib #{path}`
-    self.detected_mime_type = file_output[/^(\w)+\/([\w-])+/]
+    self.detected_mime_type = file_output[%r{^(\w)+/([\w-])+}]
   end
 
   def syntax?
@@ -350,11 +349,13 @@ class Submission < ApplicationRecord
   end
 
   def scores_status
-    all_complete, all_released = true, true
+    all_complete = true
+    all_released = true
 
     problems_to_scores.each do |problem, score|
       next if problem.optional?
       return false unless score
+
       all_complete &&= false unless score.score
       all_released &&= score.released?
     end
@@ -473,7 +474,7 @@ private
   end
 
   def allowed?
-    submitted_at = created_at || Time.now
+    submitted_at = created_at || Time.zone.now
     can, why_not = aud.can_submit? submitted_at, (submitted_by || course_user_datum)
 
     if can
@@ -489,7 +490,7 @@ private
       when :at_submission_limit
         errors[:base] << "You you have already reached the submission limit."
       else
-        fail "FATAL: unknown reason for submission denial"
+        raise "FATAL: unknown reason for submission denial"
       end
       false
     end
@@ -499,7 +500,7 @@ private
     days_late = self.days_late
 
     # grace_days_usable_by potentially expensive and most people aren't late
-    if (days_late == 0)
+    if days_late == 0
       0
     else
       [days_late - aud.grace_days_usable, 0].max
@@ -529,7 +530,7 @@ private
     return 0 unless aud.due_at
 
     # how late is the submission? (account for DST by offsetting difference in utc_offset)
-    late_by = created_at - aud.due_at + (created_at.utc_offset - aud.due_at.utc_offset);
+    late_by = created_at - aud.due_at + (created_at.utc_offset - aud.due_at.utc_offset)
     return 0 if late_by <= 0
 
     # if you're 2.5 days late, you're 3 days late

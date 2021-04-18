@@ -1,15 +1,17 @@
+# frozen_string_literal: true
+
 require "association_cache"
 require "fileutils"
 
 class Course < ApplicationRecord
   trim_field :name, :semester, :display_name
-  validates_uniqueness_of :name
-  validates_presence_of :display_name, :start_date, :end_date
-  validates_presence_of :late_slack, :grace_days, :late_penalty, :version_penalty
-  validates_numericality_of :grace_days, greater_than_or_equal_to: 0
-  validates_numericality_of :version_threshold, only_integer: true, greater_than_or_equal_to: -1
+  validates :name, uniqueness: true
+  validates :display_name, :start_date, :end_date, presence: true
+  validates :late_slack, :grace_days, :late_penalty, :version_penalty, presence: true
+  validates :grace_days, numericality: { greater_than_or_equal_to: 0 }
+  validates :version_threshold, numericality: { only_integer: true, greater_than_or_equal_to: -1 }
   validate :order_of_dates
-  validates_format_of :name, with: /\A(\w|-)+\z/, on: :create
+  validates :name, format: { with: /\A(\w|-)+\z/, on: :create }
   # validates course website format if there exists one
   validate :valid_website?
 
@@ -40,8 +42,8 @@ class Course < ApplicationRecord
     # fill temporary values in other fields
     newCourse.late_slack = 0
     newCourse.grace_days = 0
-    newCourse.start_date = Time.now
-    newCourse.end_date = Time.now
+    newCourse.start_date = Time.zone.now
+    newCourse.end_date = Time.zone.now
 
     newCourse.late_penalty = Penalty.new
     newCourse.late_penalty.kind = "points"
@@ -51,8 +53,8 @@ class Course < ApplicationRecord
     newCourse.version_penalty.kind = "points"
     newCourse.version_penalty.value = "0"
 
-    if not newCourse.save
-      raise "Failed to create course #{newCourse.name}: #{newCourse.errors.full_messages.join(", ")}"
+    unless newCourse.save
+      raise "Failed to create course #{newCourse.name}: #{newCourse.errors.full_messages.join(', ')}"
     end
 
     # Check instructor
@@ -73,21 +75,21 @@ class Course < ApplicationRecord
     newCUD = newCourse.course_user_data.new
     newCUD.user = instructor
     newCUD.instructor = true
-    if not newCUD.save
+    unless newCUD.save
       # roll back course creation
       newCourse.destroy
       raise "Failed to create CUD for instructor of new course #{newCourse.name}"
     end
 
     # Load course config
-    if not newCourse.reload_course_config
+    unless newCourse.reload_course_config
       # roll back course and CUD creation
       newCUD.destroy
       newCourse.destroy
       raise "Failed to load course config for new course #{newCourse.name}"
     end
 
-    return newCourse
+    newCourse
   end
 
   # generate course folder
@@ -112,13 +114,13 @@ class Course < ApplicationRecord
 
   def valid_website?
     if website.nil? || website.eql?("")
-      return true
+      true
     else
       if website[0..7].eql?("https://")
-        return true
+        true
       else
         errors.add("website", "needs to start with https://")
-        return false
+        false
       end
     end
   end
@@ -138,7 +140,7 @@ class Course < ApplicationRecord
   end
 
   def full_name
-    if semester.to_s.size > 0
+    if !semester.to_s.empty?
       display_name + " (" + semester + ")"
     else
       display_name
@@ -157,8 +159,8 @@ class Course < ApplicationRecord
     d.write("require 'CourseBase.rb'\n\n")
     d.write("module Course" + course.camelize + "\n")
     d.write("\tinclude CourseBase\n\n")
-    for line in lines do
-      if line.length > 0
+    lines.each do |line|
+      if !line.empty?
         d.write("\t" + line)
       else
         d.write(line)
@@ -178,7 +180,7 @@ class Course < ApplicationRecord
     mod = nil
     begin
       mod = reload_config_file
-    rescue Exception => @error
+    rescue Exception => e
       return false
     end
 
@@ -202,7 +204,7 @@ class Course < ApplicationRecord
 
     # raw_scores
     # NOTE: keep in sync with assessment#invalidate_raw_scores
-    assessments.update_all(updated_at: Time.now)
+    assessments.update_all(updated_at: Time.zone.now)
   end
 
   def config
@@ -240,7 +242,7 @@ class Course < ApplicationRecord
 private
 
   def cgdub_dependencies_updated
-    self.cgdub_dependencies_updated_at = Time.now
+    self.cgdub_dependencies_updated_at = Time.zone.now
   end
 
   def config!

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Score < ApplicationRecord
   belongs_to :submission
   belongs_to :problem
@@ -16,8 +18,8 @@ class Score < ApplicationRecord
 
   # Verifies that we will only ever have one score per problem per submission
   # This is what allows us to use submission.scores.maximum(:score,:group=>:problem_id) later on
-  validates_uniqueness_of(:problem_id, scope: :submission_id)
-  validates_presence_of :grader_id
+  validates(:problem_id, uniqueness: { scope: :submission_id })
+  validates :grader_id, presence: true
 
   after_save :log_entry
 
@@ -30,21 +32,22 @@ class Score < ApplicationRecord
     if submission_id.nil? || problem_id.nil?
       raise InvalidScoreException.new, "submission_id and problem_id cannot be empty"
     end
+
     score = Score.find_by(submission_id: submission_id, problem_id: problem_id)
 
     if !score
-      return Score.new(submission_id: submission_id, problem_id: problem_id)
+      Score.new(submission_id: submission_id, problem_id: problem_id)
     else
-      return score
+      score
     end
   end
 
   def log_entry
-    if grader_id != 0
-      setter = grader.user.email
-    else
-      setter = "Autograder"
-    end
+    setter = if grader_id != 0
+               grader.user.email
+             else
+               "Autograder"
+             end
 
     # Some scores don't have submissions, probably if they're deleted ones
     unless submission.nil?

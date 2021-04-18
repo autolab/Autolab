@@ -1,11 +1,13 @@
+# frozen_string_literal: true
+
 ##
 # Schedulers are used by like buflab and bomblab and that's it.  Tasks don't actually
 # get accurately scheduled, but with each request, we check all schedulers, and if one
 # hasn't ran in more than its period's time, it's function is run.  This is awful.
 #
 class SchedulersController < ApplicationController
-    rescue_from ActionView::MissingTemplate do |exception|
-      redirect_to("/home/error_404")
+  rescue_from ActionView::MissingTemplate do |_exception|
+    redirect_to("/home/error_404")
   end
   action_auth_level :index, :instructor
   def index
@@ -18,18 +20,17 @@ class SchedulersController < ApplicationController
   end
 
   action_auth_level :new, :instructor
-  def new
-  end
+  def new; end
 
   action_auth_level :create, :instructor
   def create
     @scheduler = @course.scheduler.new(scheduler_params)
     if @scheduler.save
       flash[:success] = "Scheduler created!"
-      redirect_to(course_schedulers_path(@course)) and return
+      redirect_to(course_schedulers_path(@course)) && return
     else
       flash[:error] = "Create failed. Pleaes check all fields."
-      redirect_to(action: "new") and return
+      redirect_to(action: "new") && return
     end
   end
 
@@ -40,23 +41,23 @@ class SchedulersController < ApplicationController
 
   action_auth_level :run, :instructor
   def run
-      @scheduler = Scheduler.find(params[:scheduler_id])
+    @scheduler = Scheduler.find(params[:scheduler_id])
   end
 
   action_auth_level :visual_run, :instructor
   def visual_run
-      action = Scheduler.find(params[:scheduler_id])
-      @log = "Executing #{Rails.root.join(action.action)}\n"
-      mod_name = Rails.root.join(action.action)
-      begin
-        require mod_name
-        Updater.update(action.course)
-      rescue ScriptError, StandardError => e
-        @log << ("Error in '#{@course.name}' updater: #{e.message}\n")
-        @log << (e.backtrace.join("\n\t"))
-      end
-      @log << "\nCompleted running action."
-      render :partial => 'visual_test'
+    action = Scheduler.find(params[:scheduler_id])
+    @log = "Executing #{Rails.root.join(action.action)}\n"
+    mod_name = Rails.root.join(action.action)
+    begin
+      require mod_name
+      Updater.update(action.course)
+    rescue ScriptError, StandardError => e
+      @log << "Error in '#{@course.name}' updater: #{e.message}\n"
+      @log << e.backtrace.join("\n\t")
+    end
+    @log << "\nCompleted running action."
+    render partial: "visual_test"
   end
 
   action_auth_level :update, :instructor
@@ -64,10 +65,10 @@ class SchedulersController < ApplicationController
     @scheduler = Scheduler.find(params[:id])
     if @scheduler.update(scheduler_params)
       flash[:success] = "Edit success!"
-      redirect_to(course_schedulers_path(@course)) and return
+      redirect_to(course_schedulers_path(@course)) && return
     else
       flash[:error] = "Scheduler edit failed! Please check your fields."
-      redirect_to(action: "edit") and return
+      redirect_to(action: "edit") && return
     end
   end
 
@@ -78,9 +79,9 @@ class SchedulersController < ApplicationController
       flash[:success] = "Scheduler destroyed."
     else
       flash[:error] = "Scheduler destroy failed! Please check your fields."
-      redirect_to(action: "edit") and return
+      redirect_to(action: "edit") && return
     end
-    redirect_to(action: "index") and return
+    redirect_to(action: "index") && return
   end
 
 private

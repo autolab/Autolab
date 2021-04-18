@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "archive"
 require "csv"
 require "fileutils"
@@ -9,8 +11,8 @@ require "utilities"
 class AssessmentsController < ApplicationController
   include ActiveSupport::Callbacks
 
-    rescue_from ActionView::MissingTemplate do |exception|
-      redirect_to("/home/error_404")
+  rescue_from ActionView::MissingTemplate do |_exception|
+    redirect_to("/home/error_404")
   end
 
   autolab_require Rails.root.join("app", "controllers", "assessment", "handin.rb")
@@ -26,9 +28,9 @@ class AssessmentsController < ApplicationController
   include AssessmentAutograde
 
   # this is inherited from ApplicationController
-  before_action :set_assessment, except: [:index, :new, :create, :installAssessment,
-                                          :importAsmtFromTar, :importAssessment,
-                                          :log_submit, :local_submit, :autograde_done]
+  before_action :set_assessment, except: %i[index new create installAssessment
+                                            importAsmtFromTar importAssessment
+                                            log_submit local_submit autograde_done]
   before_action :set_submission, only: [:viewFeedback]
 
   # We have to do this here, because the modules don't inherit ApplicationController.
@@ -66,10 +68,10 @@ class AssessmentsController < ApplicationController
 
   def index
     @is_instructor = @cud.has_auth_level? :instructor
-    @announcements = Announcement.where("start_date < :now AND end_date > :now", now: Time.now)
+    @announcements = Announcement.where("start_date < :now AND end_date > :now", now: Time.zone.now)
                                  .where("course_id = ? OR system = ?", @course.id, true)
                                  .where(persistent: false).order(:start_date)
-    @attachments = (@cud.instructor?) ? @course.attachments : @course.attachments.where(released: true)
+    @attachments = @cud.instructor? ? @course.attachments : @course.attachments.where(released: true)
   end
 
   # GET /assessments/new
@@ -91,11 +93,14 @@ class AssessmentsController < ApplicationController
     @unused_config_files = []
     Dir.foreach(ass_dir) do |filename|
       # skip if not directory in folder
-      next if !File.directory?(File.join(ass_dir, filename)) or filename == ".." or filename == "."
+      if !File.directory?(File.join(ass_dir, filename)) || (filename == "..") || (filename == ".")
+        next
+      end
+
       # assessment's yaml file must exist
-      if !File.exist?(File.join(ass_dir, filename, "#{filename}.yml"))
+      unless File.exist?(File.join(ass_dir, filename, "#{filename}.yml"))
         flash[:error] = flash[:error] || ""
-        flash[:error] += "Yml does not exist: " + filename +"     -     "
+        flash[:error] += "Yml does not exist: " + filename + "     -     "
         next
       end
 
@@ -209,11 +214,11 @@ class AssessmentsController < ApplicationController
     @assessment.course = @course
     @assessment.handin_directory = "handin"
     @assessment.handin_filename = "handin.c"
-    @assessment.visible_at = Time.now
-    @assessment.start_at = Time.now
-    @assessment.due_at = Time.now
-    @assessment.end_at = Time.now
-    @assessment.grading_deadline = Time.now
+    @assessment.visible_at = Time.zone.now
+    @assessment.start_at = Time.zone.now
+    @assessment.due_at = Time.zone.now
+    @assessment.end_at = Time.zone.now
+    @assessment.grading_deadline = Time.zone.now
     @assessment.quiz = false
     @assessment.quizData = ""
     @assessment.max_submissions = params.include?(:max_submissions) ? params[:max_submissions] : -1
@@ -221,7 +226,7 @@ class AssessmentsController < ApplicationController
     if @assessment.embedded_quiz
       begin
         @assessment.embedded_quiz_form_data = params[:assessment][:embedded_quiz_form].read
-      rescue
+      rescue StandardError
         flash[:error] = "Embedded quiz form cannot be empty!"
         redirect_to(action: :installAssessment)
         return
@@ -235,8 +240,8 @@ class AssessmentsController < ApplicationController
       flash[:error] = e.to_s
       begin
         FileUtils.remove_dir(@assessment.folder_path)
-      rescue StandardError => e2
-        flash[:error] += "An error occurred (#{e2}} " \
+      rescue StandardError => e
+        flash[:error] += "An error occurred (#{e}} " \
           " while recovering from a previous error (#{flash[:error]})"
         redirect_to(action: :installAssessment)
         return
@@ -262,7 +267,7 @@ class AssessmentsController < ApplicationController
 
   def assessmentInitialize(assignName)
     @assessment = @course.assessments.find_by(name: assignName)
-    fail "Assessment #{assignName} does not exist!" unless @assessment
+    raise "Assessment #{assignName} does not exist!" unless @assessment
 
     if @assessment.nil?
       flash[:error] = "Error: Invalid assessment"
@@ -290,6 +295,7 @@ class AssessmentsController < ApplicationController
     redirect_to(action: "index") && return unless @cud.instructor?
 
     return unless @assessment.problems.count == 0
+
     @problems.each do |problem|
       @assessment.problems.create do |p|
         p.name = problem["name"]
@@ -311,7 +317,7 @@ class AssessmentsController < ApplicationController
       sum = @assessment.config_module.raw_score(scores)
     else
       sum = 0.0
-      scores.each_value { |value| sum += (value.to_f) }
+      scores.each_value { |value| sum += value.to_f }
     end
 
     sum
@@ -326,18 +332,14 @@ class AssessmentsController < ApplicationController
                                 @assessment.handin_directory,
                                 @submission.filename)
       @submissionData = File.read(subFile)
-    rescue
+    rescue StandardError
       flash[:error] = "Could not read #{subFile}"
     end
     @score = @submission.scores.where(problem_id: @problem.id).first
   end
 
   def getAssessmentVariable(key)
-    if @assessmentVariables
-      return @assessmentVariables.key(key)
-    else
-      return nil
-    end
+    @assessmentVariables&.key(key)
   end
 
   # export - export an assessment by saving its persistent
@@ -357,7 +359,7 @@ class AssessmentsController < ApplicationController
         tar.mkdir asmt_dir, File.stat(File.join(base_path, asmt_dir)).mode
         Dir[File.join(base_path, asmt_dir, "**")].each do |file|
           mode = File.stat(file).mode
-          relative_path = file.sub((/^#{Regexp.escape base_path}\/?/), "")
+          relative_path = file.sub(%r{^#{Regexp.escape base_path}/?}, "")
 
           if File.directory?(file)
             tar.mkdir relative_path, mode
@@ -370,7 +372,7 @@ class AssessmentsController < ApplicationController
       end
       tarStream.rewind
       tarStream.close
-      send_data tarStream.string.force_encoding("binary"), filename: "#{@assessment.name}_#{Time.now.strftime('%Y%m%d')}.tar", content_type: "application/x-tar"
+      send_data tarStream.string.force_encoding("binary"), filename: "#{@assessment.name}_#{Time.zone.now.strftime('%Y%m%d')}.tar", content_type: "application/x-tar"
     rescue SystemCallError => e
       flash[:error] = "Unable to update the config YAML file: #{e}"
       redirect_to action: "index"
@@ -384,13 +386,9 @@ class AssessmentsController < ApplicationController
 
   action_auth_level :destroy, :instructor
   def destroy
-    for submission in @assessment.submissions do
-      submission.destroy
-    end
+    @assessment.submissions.each(&:destroy)
 
-    for attachment in @assessment.attachments do
-      attachment.destroy
-    end
+    @assessment.attachments.each(&:destroy)
 
     name = @assessment.display_name
     @assessment.destroy # awwww!!!!
@@ -416,12 +414,12 @@ class AssessmentsController < ApplicationController
     # Remember the student ID in case the user wants visit the gradesheet
     session["gradeUser#{@assessment.id}"] = params[:cud_id] if params[:cud_id]
 
-    @startTime = Time.now
-    if @cud.instructor? && params[:cud_id]
-      @effectiveCud = @course.course_user_data.find(params[:cud_id])
-    else
-      @effectiveCud = @cud
-    end
+    @startTime = Time.zone.now
+    @effectiveCud = if @cud.instructor? && params[:cud_id]
+                      @course.course_user_data.find(params[:cud_id])
+                    else
+                      @cud
+                    end
     @submissions = @assessment.submissions.where(course_user_datum_id: @effectiveCud.id).order("version DESC")
     @extension = @assessment.extensions.find_by(course_user_datum_id: @effectiveCud.id)
     @problems = @assessment.problems
@@ -430,15 +428,15 @@ class AssessmentsController < ApplicationController
                                   "problems.id AS problem_id",
                                   "scores.id AS score_id",
                                   "scores.*")
-              .joins("LEFT JOIN problems ON
+                          .joins("LEFT JOIN problems ON
         submissions.assessment_id = problems.assessment_id")
-              .joins("LEFT JOIN scores ON
+                          .joins("LEFT JOIN scores ON
         (submissions.id = scores.submission_id
         AND problems.id = scores.problem_id)")
 
     # Process them to get into a format we want.
     @scores = {}
-    for result in results do
+    results.each do |result|
       subId = result["submission_id"].to_i
       @scores[subId] = {} unless @scores.key?(subId)
 
@@ -459,12 +457,12 @@ class AssessmentsController < ApplicationController
     # Remember the student ID in case the user wants visit the gradesheet
     session["gradeUser#{@assessment.id}"] = params[:cud_id] if params[:cud_id]
 
-    @startTime = Time.now
-    if @cud.instructor? && params[:cud_id]
-      @effectiveCud = @course.course_user_data.find(params[:cud_id])
-    else
-      @effectiveCud = @cud
-    end
+    @startTime = Time.zone.now
+    @effectiveCud = if @cud.instructor? && params[:cud_id]
+                      @course.course_user_data.find(params[:cud_id])
+                    else
+                      @cud
+                    end
     @submissions = @assessment.submissions.where(course_user_datum_id: @effectiveCud.id).order("version DESC")
     @extension = @assessment.extensions.find_by(course_user_datum_id: @effectiveCud.id)
     @problems = @assessment.problems
@@ -473,15 +471,15 @@ class AssessmentsController < ApplicationController
                                   "problems.id AS problem_id",
                                   "scores.id AS score_id",
                                   "scores.*")
-              .joins("LEFT JOIN problems ON
+                          .joins("LEFT JOIN problems ON
         submissions.assessment_id = problems.assessment_id")
-              .joins("LEFT JOIN scores ON
+                          .joins("LEFT JOIN scores ON
         (submissions.id = scores.submission_id
         AND problems.id = scores.problem_id)")
-    
+
     # Process them to get into a format we want.
     @scores = {}
-    for result in results do
+    results.each do |result|
       subId = result["submission_id"].to_i
       @scores[subId] = {} unless @scores.key?(subId)
 
@@ -507,13 +505,11 @@ class AssessmentsController < ApplicationController
     # User requested to view feedback on a score
     @score = @submission.scores.find_by(problem_id: params[:feedback])
     @jsonFeedback = parseFeedback(@score.feedback)
-    if !@score
+    unless @score
       flash[:error] = "No feedback for requested score"
       redirect_to(action: "index") && return
     end
-    if @jsonFeedback != nil
-      @scoreHash = parseScore(@score.feedback)
-    end
+    @scoreHash = parseScore(@score.feedback) unless @jsonFeedback.nil?
     if Archive.archive? @submission.handin_file_path
       @files = Archive.get_files @submission.handin_file_path
     end
@@ -529,19 +525,18 @@ class AssessmentsController < ApplicationController
         @jsonFeedback["_scores_order"] = score_hash.keys
       end
       @total = 0
-      for k in score_hash.keys
-        @total  = @total + score_hash[k]
+      score_hash.keys.each do |k|
+        @total += score_hash[k]
       end
       score_hash["_total"] = @total
       score_hash
-    else
-      nil
     end
   end
+
   def parse_stages(jsonFeedbackHash)
     @result = true
     if jsonFeedbackHash.key?("stages")
-      for stage in jsonFeedbackHash["stages"]
+      jsonFeedbackHash["stages"].each do |stage|
         if jsonFeedbackHash[stage].key?("_order") == false
           jsonFeedbackHash[stage]["_order"] = jsonFeedbackHash[stage].keys
         end
@@ -556,25 +551,23 @@ class AssessmentsController < ApplicationController
     if valid_json?(feedback)
       jsonFeedbackHash = JSON.parse(feedback)
       if jsonFeedbackHash.key?("_presentation") == false
-        return nil
-      elsif jsonFeedbackHash["_presentation"] == "semantic" && parse_stages(jsonFeedbackHash) != nil
+        nil
+      elsif jsonFeedbackHash["_presentation"] == "semantic" && !parse_stages(jsonFeedbackHash).nil?
         jsonFeedbackHash
       end
-    else
-      nil
     end
   end
 
   def valid_json?(json)
     hash = JSON.parse(json)
   rescue JSON::ParserError => e
-    return false
+    false
   end
 
   action_auth_level :reload, :instructor
   def reload
     @assessment.load_config_file
-  rescue StandardError => @error
+  rescue StandardError => e
     # let the reload view render
   else
     flash[:success] = "Success: Assessment config file reloaded!"
@@ -587,7 +580,7 @@ class AssessmentsController < ApplicationController
     params[:active_tab] ||= "basic"
 
     # make sure the 'active_tab' is a real tab
-    unless %w(basic handin penalties problems advanced).include? params[:active_tab]
+    unless %w[basic handin penalties problems advanced].include? params[:active_tab]
       params[:active_tab] = "basic"
     end
 
@@ -598,20 +591,18 @@ class AssessmentsController < ApplicationController
 
   action_auth_level :update, :instructor
   def update
-
-    if not params[:assessment][:embedded_quiz_form].nil?
+    unless params[:assessment][:embedded_quiz_form].nil?
       @assessment.embedded_quiz_form_data = params[:assessment][:embedded_quiz_form].read
       @assessment.save!
     end
-
 
     begin
       @assessment.update!(edit_assessment_params)
       flash[:success] = "Saved!"
 
       redirect_to(tab_index) && return
-    rescue ActiveRecord::RecordInvalid => invalid
-      flash[:error] = invalid.message.sub!("Validation failed: ", "")
+    rescue ActiveRecord::RecordInvalid => e
+      flash[:error] = e.message.sub!("Validation failed: ", "")
 
       redirect_to(tab_index) && return
     end
@@ -623,7 +614,7 @@ class AssessmentsController < ApplicationController
     num_released = releaseMatchingGrades { |_| true }
 
     if num_released > 0
-      flash[:success] = "%d %s released." % [num_released, (num_released > 1 ? "grades were" : "grade was")]
+      flash[:success] = format("%d %s released.", num_released, (num_released > 1 ? "grades were" : "grade was"))
     else
       flash[:error] = "No grades were released. They might have all already been released."
     end
@@ -641,7 +632,7 @@ class AssessmentsController < ApplicationController
     num_released = releaseMatchingGrades { |submission, _| @cud.CA_of? submission.course_user_datum }
 
     if num_released > 0
-      flash[:success] = "%d %s released." % [num_released, (num_released > 1 ? "grades were" : "grade was")]
+      flash[:success] = format("%d %s released.", num_released, (num_released > 1 ? "grades were" : "grade was"))
     else
       flash[:error] = "No grades were released. " \
                       "Either they were all already released or you might be assigned to a lecture " \
@@ -659,11 +650,10 @@ class AssessmentsController < ApplicationController
 
         begin
           updateScore(@assessment.course.course_user_data, score)
-        rescue ActiveRecord::RecordInvalid => invalid
+        rescue ActiveRecord::RecordInvalid => e
           flash[:error] = flash[:error] || ""
-          flash[:error] += "Unable to withdraw score for "+@assessment.course.course_user_data.user.email+": " + invalid.message
+          flash[:error] += "Unable to withdraw score for " + @assessment.course.course_user_data.user.email + ": " + e.message
         end
-
       end
     end
 
@@ -710,8 +700,7 @@ protected
   end
 
   # This does nothing on purpose
-  def loadHandinPage
-  end
+  def loadHandinPage; end
 
   def releaseMatchingGrades
     num_released = 0
@@ -748,22 +737,22 @@ private
 
   def new_assessment_params
     ass = params.require(:assessment)
-    ass[:category_name] = params[:new_category] unless params[:new_category].blank?
+    ass[:category_name] = params[:new_category] if params[:new_category].present?
     ass.permit(:name, :display_name, :category_name, :has_svn, :has_lang, :group_size, :embedded_quiz, :embedded_quiz_form_data)
   end
 
   def edit_assessment_params
     ass = params.require(:assessment)
-    ass[:category_name] = params[:new_category] unless params[:new_category].blank?
+    ass[:category_name] = params[:new_category] if params[:new_category].present?
 
     if ass[:late_penalty_attributes] && ass[:late_penalty_attributes][:value].blank?
       ass.delete(:late_penalty_attributes)
-      @assessment.late_penalty.destroy unless @assessment.late_penalty.nil?
+      @assessment.late_penalty&.destroy
     end
 
     if ass[:version_penalty_attributes] && ass[:version_penalty_attributes][:value].blank?
       ass.delete(:version_penalty_attributes)
-      @assessment.version_penalty.destroy unless @assessment.version_penalty.nil?
+      @assessment.version_penalty&.destroy
     end
 
     ass.permit!
@@ -780,18 +769,21 @@ private
     tar_extract.each do |entry|
       pathname = entry.full_name
       next if pathname.start_with? "."
+
       pathname.chomp!("/") if entry.directory?
       # nested directories are okay
       if entry.directory? && pathname.count("/") == 0
         return false if asmt_name
+
         asmt_name = pathname
       else
         return false unless asmt_name
+
         asmt_rb_exists = true if pathname == "#{asmt_name}/#{asmt_name}.rb"
         asmt_yml_exists = true if pathname == "#{asmt_name}/#{asmt_name}.yml"
       end
     end
-    [asmt_rb_exists && asmt_yml_exists && (!asmt_name.nil?), asmt_name]
+    [asmt_rb_exists && asmt_yml_exists && !asmt_name.nil?, asmt_name]
   end
 
   def tab_index
@@ -805,7 +797,6 @@ private
       tab_name = "advanced"
     end
 
-    edit_course_assessment_path(@course, @assessment) + "/#tab_"+tab_name
+    edit_course_assessment_path(@course, @assessment) + "/#tab_" + tab_name
   end
-
 end

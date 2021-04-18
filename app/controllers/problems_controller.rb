@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 ##
 # An Assessment can have any number of Problems, which are basically just a name,
 # and a think for Scores to join with.
@@ -5,9 +7,9 @@
 class ProblemsController < ApplicationController
   # inherited from ApplicationController
   before_action :set_assessment
-  before_action :set_problem, only: [:edit, :update, :destroy]
-    rescue_from ActionView::MissingTemplate do |exception|
-      redirect_to("/home/error_404")
+  before_action :set_problem, only: %i[edit update destroy]
+  rescue_from ActionView::MissingTemplate do |_exception|
+    redirect_to("/home/error_404")
   end
 
   action_auth_level :new, :instructor
@@ -33,8 +35,7 @@ class ProblemsController < ApplicationController
   end
 
   action_auth_level :edit, :instructor
-  def edit
-  end
+  def edit; end
 
   action_auth_level :update, :instructor
   def update

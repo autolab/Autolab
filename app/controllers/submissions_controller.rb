@@ -1,16 +1,18 @@
+# frozen_string_literal: true
+
 require "archive"
 require "pdf"
 require "prawn"
 require "json"
-require 'tempfile'
+require "tempfile"
 
 class SubmissionsController < ApplicationController
   # inherited from ApplicationController
   before_action :set_assessment
-  before_action :set_submission, only: [:destroy, :destroyConfirm, :download, :edit, :update, :view]
-  before_action :get_submission_file, only: [:download, :view]
-  rescue_from ActionView::MissingTemplate do |exception|
-      redirect_to("/home/error_404")
+  before_action :set_submission, only: %i[destroy destroyConfirm download edit update view]
+  before_action :get_submission_file, only: %i[download view]
+  rescue_from ActionView::MissingTemplate do |_exception|
+    redirect_to("/home/error_404")
   end
 
   # this page loads.  links/functionality may be/are off
@@ -19,7 +21,7 @@ class SubmissionsController < ApplicationController
     @submissions = @assessment.submissions.order("created_at DESC")
 
     assign = @assessment.name.gsub(/\./, "")
-    modName = (assign + (@course.name).gsub(/[^A-Za-z0-9]/, "")).camelize
+    modName = (assign + @course.name.gsub(/[^A-Za-z0-9]/, "")).camelize
     @autograded = @assessment.has_autograder?
   end
 
@@ -40,7 +42,7 @@ class SubmissionsController < ApplicationController
     else
       @cuds = {}
       # TODO: change order
-      for cud in @course.course_user_data.joins(:user).order("email ASC") do
+      @course.course_user_data.joins(:user).order("email ASC").each do |cud|
         @cuds[cud.full_name_with_email] = cud.id
       end
     end
@@ -54,25 +56,22 @@ class SubmissionsController < ApplicationController
     cud_ids = params[:submission][:course_user_datum_id].split(",")
     # Validate all users before we start
     @cuds = @course.course_user_data.find(cud_ids)
-    if (@cuds.size != cud_ids.size)
+    if @cuds.size != cud_ids.size
       @errorMessage = "Invalid CourseUserDatum ID in #{cud_ids}"
       render([@course, @assessment, :submissions]) && return
     end
-    for cud_id in cud_ids do
+    cud_ids.each do |cud_id|
       @submission = Submission.new(assessment_id: @assessment.id)
       @submission.course_user_datum_id = cud_id
       @submission.notes = params[:submission]["notes"]
-      unless params[:submission][:tweak_attributes][:value].blank?
-        @submission.tweak = Tweak.new(params[:submission][:tweak_attributes].permit([:value, :kind, :_destroy]))
+      if params[:submission][:tweak_attributes][:value].present?
+        @submission.tweak = Tweak.new(params[:submission][:tweak_attributes].permit(%i[value kind _destroy]))
       end
       @submission.special_type = params[:submission]["special_type"]
       @submission.submitted_by_id = @cud.id
-      if @submission.save!  # Now we have a version number!
-        if params[:submission]["file"] &&
-           (!params[:submission]["file"].blank?)
-          @submission.save_file(params[:submission])
-        end
-      end
+      next unless @submission.save! # Now we have a version number!
+
+      @submission.save_file(params[:submission]) if params[:submission]["file"]&.present?
     end
     flash[:success] = pluralize(cud_ids.size, "Submission") + " Created"
     redirect_to course_assessment_submissions_path(@course, @assessment)
@@ -92,9 +91,7 @@ class SubmissionsController < ApplicationController
   # this is good
   action_auth_level :update, :instructor
   def update
-    if @submission.nil?
-      flash[:error] = "Cannot update nil submission"
-    end
+    flash[:error] = "Cannot update nil submission" if @submission.nil?
 
     if params[:submission][:tweak_attributes][:value].blank?
       params[:submission][:tweak_attributes][:_destroy] = true
@@ -123,8 +120,7 @@ class SubmissionsController < ApplicationController
 
   # this is good
   action_auth_level :destroyConfirm, :instructor
-  def destroyConfirm
-  end
+  def destroyConfirm; end
 
   ##
   ## THIS MARKS THE END OF RESTful ROUTES
@@ -138,7 +134,7 @@ class SubmissionsController < ApplicationController
     cuds = @course.students.to_a
     @missing = []
 
-    for submission in @submissions do
+    @submissions.each do |submission|
       cuds.delete(submission.course_user_datum)
     end
 
@@ -153,11 +149,9 @@ class SubmissionsController < ApplicationController
   # should be okay, but untested
   action_auth_level :downloadAll, :course_assistant
   def downloadAll
-    if @assessment.nil?
-      flash[:error] = "Cannot index submissions for nil assessment"
-    end
+    flash[:error] = "Cannot index submissions for nil assessment" if @assessment.nil?
 
-    if !@assessment.valid?
+    unless @assessment.valid?
       @assessment.errors.full_messages.each do |msg|
         flash[:error] += "<br>#{msg}"
       end
@@ -168,11 +162,11 @@ class SubmissionsController < ApplicationController
       redirect_to([@course, @assessment, :submissions]) && return
     end
 
-    if params[:final]
-      submissions = @assessment.submissions.latest.includes(:course_user_datum)
-    else
-      submissions = @assessment.submissions.includes(:course_user_datum)
-    end
+    submissions = if params[:final]
+                    @assessment.submissions.latest.includes(:course_user_datum)
+                  else
+                    @assessment.submissions.includes(:course_user_datum)
+                  end
 
     submissions = submissions.select { |s| @cud.can_administer?(s.course_user_datum) }
     paths = submissions.collect(&:handin_file_path)
@@ -200,7 +194,7 @@ class SubmissionsController < ApplicationController
       file, pathname = Archive.get_nth_file(@filename, params[:header_position].to_i)
       unless file && pathname
         flash[:error] = "Could not read archive."
-        redirect_to [@course, @assessment] and return false
+        redirect_to([@course, @assessment]) && (return false)
       end
 
       send_data file,
@@ -217,18 +211,16 @@ class SubmissionsController < ApplicationController
 
       # Only show annotations if grades have been released or the user is an instructor
       @annotations = []
-      if(!@assessment.before_grading_deadline? || @cud.instructor || @cud.course_assistant)
+      if !@assessment.before_grading_deadline? || @cud.instructor || @cud.course_assistant
         @annotations = @submission.annotations.to_a
       end
 
-      Prawn::Document.generate(@filename_annotated, :template => @filename) do |pdf|
-
+      Prawn::Document.generate(@filename_annotated, template: @filename) do |pdf|
         @annotations.each do |annotation|
-
           return if annotation.coordinate.nil?
 
-          position = annotation.coordinate.split(',')
-          page  = position[2].to_i
+          position = annotation.coordinate.split(",")
+          page = position[2].to_i
 
           width = position[3].to_f * pdf.bounds.width
           height = position[4].to_f * pdf.bounds.height
@@ -237,25 +229,23 @@ class SubmissionsController < ApplicationController
           yCord = pdf.bounds.height - (position[1].to_f * pdf.bounds.height)
 
           value = "N/A"
-          if !annotation.value.blank? then value = annotation.value end
+          value = annotation.value if annotation.value.present?
 
-          if annotation.problem then problem = annotation.problem end
+          problem = annotation.problem if annotation.problem
           problem_name = "General"
-          if !problem.nil? then problem_name = problem.name end
+          problem_name = problem.name unless problem.nil?
 
           comment = "#{annotation.comment}\n\nProblem: #{problem_name}\nScore: #{value}"
 
           # + 1 since pages are indexed 1-based
           pdf.go_to_page(page + 1)
-          
+
           # Creates a text annotation/pdf comment on the pdf itself.
           # 10 and 55 numbers in this case to shift the comment
           # to where the cursor was clicked by the annotator
-          ary = [xCord + 10,yCord + 55, width, height]
-          pdf.text_annotation(ary,comment)
-
+          ary = [xCord + 10, yCord + 55, width, height]
+          pdf.text_annotation(ary, comment)
         end
-
       end
 
       send_file @filename_annotated,
@@ -278,9 +268,7 @@ class SubmissionsController < ApplicationController
   # archive.
   action_auth_level :view, :student
   def view
-    if(@course.nil?)
-      flash[:error] = "Cannot manage nil course"
-    end
+    flash[:error] = "Cannot manage nil course" if @course.nil?
 
     # Pull the files with their hierarchy info for the file tree
     if Archive.archive? @filename
@@ -300,20 +288,18 @@ class SubmissionsController < ApplicationController
     if params[:header_position]
       file, pathname = Archive.get_nth_file(@submission.handin_file_path, params[:header_position].to_i)
 
-      if(file.nil?)
-        file = ""
-      end
+      file = "" if file.nil?
 
       unless file && pathname
         flash[:error] = "Could not read archive."
-        redirect_to [@course, @assessment] and return false
+        redirect_to([@course, @assessment]) && (return false)
       end
 
       @displayFilename = pathname
     else
       # auto-set header position for archives
       if Archive.archive?(@submission.handin_file_path)
-        firstFile = Archive.get_files(@submission.handin_file_path).find{|file| file[:mac_bs_file] == false and file[:directory] == false} || {header_position: 0}
+        firstFile = Archive.get_files(@submission.handin_file_path).find { |file| (file[:mac_bs_file] == false) && (file[:directory] == false) } || { header_position: 0 }
         redirect_to(url_for([:view, @course, @assessment, @submission, header_position: firstFile[:header_position]])) && return
       end
 
@@ -326,83 +312,79 @@ class SubmissionsController < ApplicationController
 
     mm = MimeMagic.by_magic(file)
     if mm.present?
-      if not mm.text? and not mm.subtype == "pdf"
-        file = "Binary file not displayed"
-      end
+      file = "Binary file not displayed" if !mm.text? && (mm.subtype != "pdf")
     end
 
-    if !PDF.pdf?(file)
+    unless PDF.pdf?(file)
       # begin
-        @data = @submission.annotated_file(file, @filename, params[:header_position])
-        # Try extracting a symbol tree
-        begin
-          codePath = @filename
-          if Archive.archive?(@submission.handin_file_path)
-            # If the submission is an archive, write the open file's code to a temp file so we can pass it into ctags
-            ctagFile = Tempfile.new(['autolab_ctag', File.extname(pathname)])
-            ctagFile.write(file)
-            ctagFile.close
-            codePath = ctagFile.path
-          end
-          # Special case -- we're using a CMU-specific language, and we need to
-          # force the language interpretation
-          if(codePath.last(3) == ".c0" or codePath.last(3) == ".c1")
-            @ctags_json = %x[ctags --output-format=json --language-force=C --fields="Nnk" #{codePath}].split("\n")
-          else
-            # General case -- language can be inferred from file extension
-            @ctags_json = %x[ctags --extras=+q --output-format=json --fields="Nnk" #{codePath}].split("\n")
-          end
+      @data = @submission.annotated_file(file, @filename, params[:header_position])
+      # Try extracting a symbol tree
+      begin
+        codePath = @filename
+        if Archive.archive?(@submission.handin_file_path)
+          # If the submission is an archive, write the open file's code to a temp file so we can pass it into ctags
+          ctagFile = Tempfile.new(["autolab_ctag", File.extname(pathname)])
+          ctagFile.write(file)
+          ctagFile.close
+          codePath = ctagFile.path
+        end
+        # Special case -- we're using a CMU-specific language, and we need to
+        # force the language interpretation
+        @ctags_json = if (codePath.last(3) == ".c0") || (codePath.last(3) == ".c1")
+                        `ctags --output-format=json --language-force=C --fields="Nnk" #{codePath}`.split("\n")
+                      else
+                        # General case -- language can be inferred from file extension
+                        `ctags --extras=+q --output-format=json --fields="Nnk" #{codePath}`.split("\n")
+                      end
 
-          @ctag_obj = []
-          i = 0
-          while i < @ctags_json.length
+        @ctag_obj = []
+        i = 0
+        while i < @ctags_json.length
+          obj_temp = JSON.parse(@ctags_json[i])
+          if (obj_temp["kind"] == "function") || (obj_temp["kind"] == "method")
+            # check that obj_temp does not exist in array
+            if (@ctag_obj.select { |ctag| ctag["line"] == obj_temp["line"] }).empty?
+              @ctag_obj.push(obj_temp)
+            end
+          end
+          i += 1
+
+          next unless obj_temp["kind"] == "class"
+
+          obj_temp = JSON.parse(@ctags_json[i])
+          while (i + 1 < @ctags_json.length) && ((obj_temp["kind"] == "member") || (obj_temp["kind"] == "method"))
+            obj_exists = @ctag_obj.select { |ctag| ctag["line"] == obj_temp["line"] }
+            if obj_exists.empty?
+              @ctag_obj.push(obj_temp)
+            # we want the obj with the extra class-qualified tag entry, 'class.function'
+            elsif obj_temp["name"].length > obj_exists[0]["name"].length
+              @ctag_obj[@ctag_obj.index(obj_exists[0])] = obj_temp
+            end
+            i += 1
             obj_temp = JSON.parse(@ctags_json[i])
-            if(obj_temp["kind"] == "function" or obj_temp["kind"] == "method")
-              # check that obj_temp does not exist in array
-              if ((@ctag_obj.select{|ctag| ctag["line"] == obj_temp["line"] }).empty?)
-                @ctag_obj.push(obj_temp)
-              end
-            end
-            i = i + 1
-
-            if(obj_temp["kind"] == "class")
-              obj_temp = JSON.parse(@ctags_json[i])
-              while i + 1 < @ctags_json.length and (obj_temp["kind"] == "member" or obj_temp["kind"] == "method")
-                obj_exists = @ctag_obj.select{|ctag| ctag["line"] == obj_temp["line"]}
-                if (obj_exists.empty?)
-                  @ctag_obj.push(obj_temp)
-                # we want the obj with the extra class-qualified tag entry, 'class.function'
-                elsif (obj_temp["name"].length > obj_exists[0]["name"].length)
-                  @ctag_obj[@ctag_obj.index(obj_exists[0])] = obj_temp
-                end
-                i = i + 1
-                obj_temp = JSON.parse(@ctags_json[i])
-              end
-            end
-          end
-
-          # The functions are in some arbitrary order, so sort them
-          @ctag_obj = @ctag_obj.sort_by { |obj| obj["line"].to_i }
-
-        rescue
-          puts("Ctags not installed or failed")
-        ensure
-          if defined?(ctagFile) && !ctagFile.nil?
-            ctagFile.unlink
           end
         end
+
+        # The functions are in some arbitrary order, so sort them
+        @ctag_obj = @ctag_obj.sort_by { |obj| obj["line"].to_i }
+      rescue StandardError
+        puts("Ctags not installed or failed")
+      ensure
+        ctagFile.unlink if defined?(ctagFile) && !ctagFile.nil?
+      end
       # rescue
-        # flash[:error] = "Sorry, we could not display your file because it contains non-ASCII characters. Please remove these characters and resubmit your work."
-        # redirect_to(:back) && return
+      # flash[:error] = "Sorry, we could not display your file because it contains non-ASCII characters. Please remove these characters and resubmit your work."
+      # redirect_to(:back) && return
       # end
 
       begin
         # replace tabs with 4 spaces
-        for i in 0...@data.length do
+        (0...@data.length).each do |i|
           @data[i][0].gsub!("\t", " " * 4)
         end
       rescue ArgumentError => e
         raise e unless e.message == "invalid byte sequence in UTF-8"
+
         flash[:error] = "Sorry, we could not parse your file because it contains non-ASCII characters. Please download file to view the source."
         redirect_to(:back) && return
       end
@@ -416,9 +398,8 @@ class SubmissionsController < ApplicationController
     @problemSummaries = {}
     @problemGrades = {}
 
-
     # Only show annotations if grades have been released or the user is an instructor
-    unless(!@assessment.before_grading_deadline? || @cud.instructor || @cud.course_assistant)
+    unless !@assessment.before_grading_deadline? || @cud.instructor || @cud.course_assistant
       @annotations = []
     end
 
@@ -434,32 +415,28 @@ class SubmissionsController < ApplicationController
 
       @problemGrades[problem] ||= 0
       @problemGrades[problem] += value
-
     end
-
 
     @problems = @assessment.problems.to_a
     @problems.sort! { |a, b| a.id <=> b.id }
 
     @latestSubmissions = @assessment.assessment_user_data
-                          .map{|aud| aud.latest_submission}
-                          .select{|submission| submission != nil}
-                          .sort_by{|submission| submission.course_user_datum.user.email}
-    @curSubmissionIndex = @latestSubmissions.index{|submission| submission.course_user_datum.user.email == @submission.course_user_datum.user.email}
-    @prevSubmission = @curSubmissionIndex > 0 ? @latestSubmissions[@curSubmissionIndex-1] : nil
-    @nextSubmission = @curSubmissionIndex < (@latestSubmissions.size-1) ? @latestSubmissions[@curSubmissionIndex+1] : nil
+                                    .map(&:latest_submission)
+                                    .reject(&:nil?)
+                                    .sort_by { |submission| submission.course_user_datum.user.email }
+    @curSubmissionIndex = @latestSubmissions.index { |submission| submission.course_user_datum.user.email == @submission.course_user_datum.user.email }
+    @prevSubmission = @curSubmissionIndex > 0 ? @latestSubmissions[@curSubmissionIndex - 1] : nil
+    @nextSubmission = @curSubmissionIndex < (@latestSubmissions.size - 1) ? @latestSubmissions[@curSubmissionIndex + 1] : nil
 
     # Adding allowing scores to be assessed by the view
     @scores = Score.where(submission_id: @submission.id)
-    
+
     # Rendering this page fails. Often. Mostly due to PDFs.
     # So if it fails, redirect, instead of showing an error page.
     if PDF.pdf?(file)
       @is_pdf = true
       @preview_mode = false
-      if params[:preview] then
-        @preview_mode = true
-      end
+      @preview_mode = true if params[:preview]
     else
       @is_pdf = false
     end
@@ -474,18 +451,18 @@ private
 
   def new_submission_params
     params.require(:submission).permit(:course_used_datum_id, :notes, :file,
-                                       tweak_attributes: [:_destroy, :kind, :value])
+                                       tweak_attributes: %i[_destroy kind value])
   end
 
   def edit_submission_params
     params.require(:submission).permit(:notes,
-                                       tweak_attributes: [:_destroy, :kind, :value])
+                                       tweak_attributes: %i[_destroy kind value])
   end
 
   def get_submission_file
     unless @submission.filename
       flash[:error] = "No file associated with submission."
-      redirect_to [@course, @assessment] and return false
+      redirect_to([@course, @assessment]) && (return false)
     end
 
     @filename = @submission.handin_file_path
@@ -498,7 +475,7 @@ private
 
     unless File.exist? @filename
       flash[:error] = "Could not find submission file."
-      redirect_to [@course, @assessment] and return false
+      redirect_to([@course, @assessment]) && (return false)
     end
 
     true
@@ -509,6 +486,7 @@ private
   def extractAndrewID(filename)
     underscoreInd = filename.index("_")
     return filename[0...underscoreInd] unless underscoreInd.nil?
+
     nil
   end
 
@@ -520,6 +498,7 @@ private
 
     secondUnderscoreInd = filename.index("_", firstUnderscoreInd + 1)
     return nil if secondUnderscoreInd.nil?
+
     filename[firstUnderscoreInd + 1...secondUnderscoreInd].to_i
   end
 end

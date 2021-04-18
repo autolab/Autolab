@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "association_cache"
 require "fileutils"
 require "utilities"
@@ -20,20 +22,20 @@ class Assessment < ApplicationRecord
   has_one :scoreboard, dependent: :destroy
 
   # Validations
-  validates_uniqueness_of :name, scope: :course_id
+  validates :name, uniqueness: { scope: :course_id }
   validates :name, format: { with: /\A[^0-9].*/, message: "can't have leading numeral" }
-  validates_length_of :display_name, minimum: 1
+  validates :display_name, length: { minimum: 1 }
   validate :verify_dates_order
   validate :handin_directory_and_filename_or_disable_handins, if: :active?
   validate :handin_directory_exists_or_disable_handins, if: :active?
-  validates_numericality_of :max_size, :max_submissions
-  validates_numericality_of :version_threshold, only_integer: true,
-                                                greater_than_or_equal_to: -1, allow_nil: true
-  validates_numericality_of :max_grace_days, only_integer: true,
-                                             greater_than_or_equal_to: 0, allow_nil: true
-  validates_numericality_of :group_size, only_integer: true, greater_than_or_equal_to: 1, allow_nil: true
-  validates_presence_of :name, :display_name, :due_at, :end_at, :start_at,
-                        :grading_deadline, :category_name, :max_size, :max_submissions
+  validates :max_size, :max_submissions, numericality: true
+  validates :version_threshold, numericality: { only_integer: true,
+                                                greater_than_or_equal_to: -1, allow_nil: true }
+  validates :max_grace_days, numericality: { only_integer: true,
+                                             greater_than_or_equal_to: 0, allow_nil: true }
+  validates :group_size, numericality: { only_integer: true, greater_than_or_equal_to: 1, allow_nil: true }
+  validates :name, :display_name, :due_at, :end_at, :start_at,
+            :grading_deadline, :category_name, :max_size, :max_submissions, presence: true
 
   # Callbacks
   trim_field :name, :display_name, :handin_filename, :handin_directory, :handout, :writeup
@@ -49,8 +51,8 @@ class Assessment < ApplicationRecord
 
   # Scopes
   scope :ordered, -> { order(ORDERING) }
-  scope :released, ->(as_of = Time.now) { where(RELEASED, as_of) }
-  scope :unreleased, ->(as_of = Time.now) { where.not(RELEASED, as_of) }
+  scope :released, ->(as_of = Time.zone.now) { where(RELEASED, as_of) }
+  scope :unreleased, ->(as_of = Time.zone.now) { where.not(RELEASED, as_of) }
 
   # Misc.
   accepts_nested_attributes_for :late_penalty, :version_penalty, allow_destroy: true
@@ -71,7 +73,7 @@ class Assessment < ApplicationRecord
   def update_latest_submissions_modulo_callbacks
     calculate_latest_submissions.each do |s|
       AssessmentUserDatum.where(assessment_id: id, course_user_datum_id: s.course_user_datum_id)
-        .update_all(latest_submission_id: s.id)
+                         .update_all(latest_submission_id: s.id)
     end
   end
 
@@ -85,15 +87,15 @@ class Assessment < ApplicationRecord
   end
 
   def before_grading_deadline?
-    Time.now <= grading_deadline
+    Time.zone.now <= grading_deadline
   end
 
   def getLanguages
-      return self.languages.split(/\s*,\s*/)
+    languages.split(/\s*,\s*/)
   end
 
   def getTextfields
-      return self.textfields.split(/\s*,\s*/)
+    textfields.split(/\s*,\s*/)
   end
 
   def folder_path
@@ -112,7 +114,7 @@ class Assessment < ApplicationRecord
     path writeup
   end
 
-  def released?(as_of = Time.now)
+  def released?(as_of = Time.zone.now)
     start_at < as_of
   end
 
@@ -192,7 +194,7 @@ class Assessment < ApplicationRecord
 
     # Open and read the default assessment config file
     default_config_file_path = Rails.root.join("lib", "__defaultAssessment.rb")
-    config_source = File.open(default_config_file_path, "r") { |f| f.read }
+    config_source = File.open(default_config_file_path, "r", &:read)
 
     # Update with this assessment information
     config_source.gsub!("##NAME_CAMEL##", name.camelize)
@@ -214,7 +216,7 @@ class Assessment < ApplicationRecord
   #
   def load_config_file
     # read from source
-    config_source = File.open(source_config_file_path, "r") { |f| f.read }
+    config_source = File.open(source_config_file_path, "r", &:read)
 
     # uniquely rename module (so that it's unique among all assessment modules loaded in Autolab)
     config = config_source.gsub("module #{source_config_module_name}",
@@ -244,7 +246,7 @@ class Assessment < ApplicationRecord
   # writes the properties of the assessment in YAML format to the assessment's yaml file
   #
   def dump_yaml
-    File.open(path("#{name}.yml"), "w") { |f| f.write(YAML.dump serialize) }
+    File.open(path("#{name}.yml"), "w") { |f| f.write(YAML.dump(serialize)) }
   end
 
   ##
@@ -253,7 +255,8 @@ class Assessment < ApplicationRecord
   #
   def load_yaml
     return unless new_record?
-    props = YAML.load(File.open(path("#{name}.yml"), "r") { |f| f.read })
+
+    props = YAML.safe_load(File.open(path("#{name}.yml"), "r", &:read))
     backwards_compatibility(props)
     deserialize(props)
   end
@@ -327,13 +330,12 @@ class Assessment < ApplicationRecord
 
   def load_embedded_quiz
     if embedded_quiz
-      if(File.file?(path("#{name}_embedded_quiz.html")))
-        quiz = File.open(path("#{name}_embedded_quiz.html"), "r") { |f| f.read }
+      if File.file?(path("#{name}_embedded_quiz.html"))
+        quiz = File.open(path("#{name}_embedded_quiz.html"), "r", &:read)
         update(embedded_quiz_form_data: quiz)
       end
     end
   end
-
 
 private
 
@@ -359,7 +361,7 @@ private
     load config_file_path
 
     # updated last loaded time
-    @@CONFIG_FILE_LAST_LOADED[config_file_path] = Time.now
+    @@CONFIG_FILE_LAST_LOADED[config_file_path] = Time.zone.now
 
     logger.info "Reloaded #{config_file_path}"
   end
@@ -404,24 +406,20 @@ private
     s
   end
 
-  GENERAL_SERIALIZABLE = Set.new %w(name display_name category_name description handin_filename handin_directory has_svn has_lang max_grace_days handout writeup max_submissions disable_handins max_size version_threshold embedded_quiz)
+  GENERAL_SERIALIZABLE = Set.new %w[name display_name category_name description handin_filename handin_directory has_svn has_lang max_grace_days handout writeup max_submissions disable_handins max_size version_threshold embedded_quiz]
 
   def serialize_general
     Utilities.serializable attributes, GENERAL_SERIALIZABLE
   end
 
   def deserialize(s)
-    self.due_at = self.end_at = self.visible_at = self.start_at = self.grading_deadline = Time.now
+    self.due_at = self.end_at = self.visible_at = self.start_at = self.grading_deadline = Time.zone.now
     self.quiz = false
     self.quizData = ""
     update!(s["general"])
     Problem.deserialize_list(self, s["problems"]) if s["problems"]
-    if s["autograder"]
-      Autograder.find_or_initialize_by(assessment_id: id).update(s["autograder"])
-    end
-    if s["scoreboard"]
-      Scoreboard.find_or_initialize_by(assessment_id: id).update(s["scoreboard"])
-    end
+    Autograder.find_or_initialize_by(assessment_id: id).update(s["autograder"]) if s["autograder"]
+    Scoreboard.find_or_initialize_by(assessment_id: id).update(s["scoreboard"]) if s["scoreboard"]
     if s["late_penalty"]
       late_penalty ||= Penalty.new
       late_penalty.update(s["late_penalty"])
@@ -448,7 +446,7 @@ private
   end
 
   def is_file?(name)
-    !name.blank? && File.file?(path name)
+    name.present? && File.file?(path(name))
   end
 
   def verify_dates_order
@@ -497,7 +495,7 @@ private
   end
 
   def active?
-    Time.now <= course.end_date
+    Time.zone.now <= course.end_date
   end
 
   ##
@@ -508,17 +506,19 @@ private
                  "handout_filename" => "handout",
                  "writeup_filename" => "writeup",
                  "has_autograde" => nil,
-                 "has_scoreboard" => nil }
+                 "has_scoreboard" => nil }.freeze
   BACKWORDS_COMPATIBILITY = { "autograding_setup" => "autograder",
-                              "scoreboard_setup" => "scoreboard" }
+                              "scoreboard_setup" => "scoreboard" }.freeze
   def backwards_compatibility(props)
     GENERAL_BC.each do |old, new|
       next unless props["general"].key?(old)
+
       props["general"][new] = props["general"][old] unless new.nil?
       props["general"].delete(old)
     end
     BACKWORDS_COMPATIBILITY.each do |old, new|
       next unless props.key?(old)
+
       props[new] = props[old]
       props.delete(old)
     end
