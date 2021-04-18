@@ -84,9 +84,9 @@ class MetricsController < ApplicationController
 		end
 	end
 
-	action_auth_level :get_num_new_instances, :instructor
-	def get_num_new_instances
-		# This API endpoint retrieves the number of new watchlist instances for a particular course
+	action_auth_level :get_num_pending_instances, :instructor
+	def get_num_pending_instances
+		# This API endpoint retrieves the number of pending watchlist instances for a particular course
 		# On success, a JSON containing num_new will be returned
 		# On error, a 404 error is returned
 		begin
