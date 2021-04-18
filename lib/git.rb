@@ -10,6 +10,10 @@ module Git
     return cmd
   end
 
+  def self.validate_git_un(un)
+    not un.match(/^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}$/i).nil?
+  end
+
 
   ##
   # Clones a repository, and returns location of the tarfile containing the repo
@@ -23,7 +27,7 @@ module Git
     student_name.squish!
     commit_hash.squish!
 
-    if student_name.blank? or commit_hash.blank? then
+    if student_name.blank? or not validate_git_un(student_name) or commit_hash.blank? then
       raise "Invalid Git username/hash provided"
     end
 
@@ -40,31 +44,23 @@ module Git
     destination = "/tmp/#{repo_unique_name}"
     tarfile_dest = "/tmp/#{tarfile_name}"
 
-    # TODO look at
-    # https://stackoverflow.com/questions/4650636/forming-sanitary-shell-commands-or-system-calls-in-ruby
-    # and make call go to execve of base command directly
-    clone_cmd = "git clone https://#{git_username}:#{git_key}@github.com/#{classroom_name}/#{repo_name} #{destination}"
-    commit_cmd = "git checkout #{commit_hash}"
-    tar_cmd = "tar --exclude='./git' -cvzf #{tarfile_dest} *"
+    if not system("git --version") 
+      raise "git not installed on system"
+    end
 
-
-    clone_cmd = sanitize_cmd(clone_cmd)
-    commit_cmd= sanitize_cmd(commit_cmd)
-    tar_cmd= sanitize_cmd(tar_cmd)
-
-
-    if not system(clone_cmd) 
+    if not system *%W(git clone https://#{git_username}:#{git_key}@github.com/#{classroom_name}/#{repo_name} #{destination})
       raise "Cloning repo failed"
     end
 
+    # Change to repo dir
     Dir.chdir(destination) {
       # Ensure that valid commit was given 
-      if not system(commit_cmd) 
+      if not system *%W(git checkout #{commit_hash})
         raise "Bad commit hash provided"
       end
 
       # Create compressed tarball
-      if not system(tar_cmd) 
+      if not system *%W(tar -cvzf #{tarfile_dest} --exclude=.git .)
         raise "Creation of archive from Git submission failed"
       end
     }
