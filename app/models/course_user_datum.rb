@@ -348,7 +348,6 @@ private
       input["cat#{cat}"] ||= category_aggregate_hash(cat, as_seen_by)[:value]
     end
 
-    Rails.logger.info("**SWLOG** Getting aggregate input: #{input}")
     # remove nil computed scores -- instructors shouldn't have to deal with nils
     compact_hash input
 

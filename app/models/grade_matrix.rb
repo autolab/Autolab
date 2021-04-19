@@ -79,7 +79,6 @@ class GradeMatrix
   end
 
   def self.invalidate(course)
-    Rails.logger.info("**SWLOG** invalidating grade matrix")
     Rails.cache.delete cache_key(course.id)
   end
 
@@ -121,7 +120,6 @@ private
       ca = cud.aggregate_hash @as_seen_by
       course_agg_by_user["#{cud.id}"] = ca[:value]
       course_aggname = ca[:name]  # inefficient ... set for each user, which is unnecessary
-      Rails.logger.info("**SWLOG** course_aggname is #{ca[:name]}")
     end
 
     {
