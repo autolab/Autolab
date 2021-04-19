@@ -272,7 +272,6 @@ private
 
   def aggregate_hash!(as_seen_by)
 
-    Rails.logger.info("**SWLOG** aggregate_hash! invoked")
     config = course.config
     agghash = if config.respond_to? :courseAggregate
                 inputs = aggregate_inputs as_seen_by
@@ -290,13 +289,11 @@ private
               end
     # apply tweak
     agghash[:value] = Tweak.apply_tweak tweak, agghash[:value]
-    Rails.logger.info("**SWLOG aggregate_hash! invoked: #{agghash}")
     agghash
   end
 
   def category_aggregate_hash!(category, as_seen_by)
     input = category_aggregate_input(category, as_seen_by)
-    Rails.logger.info("**SWLOG** category_aggregate_hash! invoked")
     method_name = "#{category}Aggregate".to_sym
     old_method_name = "#{category}Average".to_sym  # backward compatibility
 
@@ -373,7 +370,6 @@ private
       inputs[1]["#{cat}"] ||= category_aggregate_hash(cat, as_seen_by)[:value]
     end
 
-    Rails.logger.info("**SWLOG** Getting aggregate inputs: #{inputs}")
     # remove nil computed scores -- instructors shouldn't have to deal with nils
     compact_hash inputs[0]
     compact_hash inputs[1]

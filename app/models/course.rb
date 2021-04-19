@@ -155,18 +155,13 @@ class Course < ApplicationRecord
     # config file doesn't define them, we want to fall
     # back to default behavior, not behavior from prior config
     begin
-      Rails.logger.info("SWLOG -- rcf -- removing old module methods")
       mod = eval("Course#{course.camelize}")
       q = mod.instance_methods(true)
-      Rails.logger.info("SWLOG -- rcf -- beginning removal of old module methods -- methods are now :: #{q}")
       mod.instance_methods(false).each do |m|
-        Rails.logger.info("SWLOG -- rcf -- removing? #{m}")
         mod.instance_eval("remove_method :#{m}")
       end
       q = mod.instance_methods(true)
-      Rails.logger.info("SWLOG -- rcf -- done removing old module methods -- methods are now :: #{q}")
     rescue StandardError
-      Rails.logger.info("SWLOG -- rcf --failed?")
     end
     
     src = Rails.root.join("courses", name, "course.rb")
@@ -192,7 +187,6 @@ class Course < ApplicationRecord
     load(dest)
     mod = eval("Course#{course.camelize}")
     q = mod.instance_methods(true)
-    Rails.logger.info("SWLOG -- rcf -- after loading new config, module methods are now :: #{q}")
     
     mod
   end
@@ -208,9 +202,7 @@ class Course < ApplicationRecord
       return false
     end
     z = mod.instance_methods(false)
-    Rails.logger.info("SWLOG rcc --  mod methods are :: #{z}")
     q = AdminsController.singleton_methods(true)
-    Rails.logger.info("SWLOG rcc --  AdminsController  #{q}")
     AdminsController.extend(mod)
     true
   end
