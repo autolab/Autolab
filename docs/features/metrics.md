@@ -11,7 +11,7 @@ We envision the feature to be used by the instructors in this order. They would:
 
 1. Set up their course and assignments as per usual
 1. Set up [Risk Metrics](#risk-metrics) at the start of the course
-1. Be notified of new at risk students in their [Watchlist](#watchlist) on their course page
+1. Be notified of pending at risk students in their [Watchlist](#watchlist) on their course page
 1. Visit the [Watchlist](#watchlist), contact students if necessary, using it as a work list at the same time
 1. Refine the [Risk Metrics](#risk-metrics) as the course progresses
 
@@ -68,7 +68,7 @@ Once instructors have set up risk metrics for their course, students that are id
 
 Every row in the watchlist represents a particular instance of a student who meets one or more of the risk conditions. A single student can appear in multiple watchlist instances if they are identified for new risk conditions on separate occassions of loading the watchlist. 
 
-For example, let's look at Jane Doe in the image above. Upon loading the watchlist, Jane appears in a watchlist instance for using `3 grace days` before the instructor-specified date and for having `2 low scores` below the instructor-specified threshold. If Jane later receives another score below the threshold, a new instance will appear for Jane when the instructor reloads the watchlist. Jane now appears twice in the watchlist, once in an instance with `3 grace days` and `2 low scores`, and once in an instance with `3 grace days` and `3 low scores`.
+For example, let's look at Jane Doe in the image above. Upon loading the watchlist, Jane appears in a watchlist instance for using `3 grace days` before the instructor-specified date and for having `2 low score` below the instructor-specified threshold. If Jane later receives another score below the threshold, a new instance will appear for Jane when the instructor reloads the watchlist. Jane now appears twice in the watchlist, once in an instance with `3 grace days` and `2 low score`, and once in an instance with `3 grace days` and `3 low score`.
 
 #### Actions
 
@@ -78,11 +78,11 @@ An instructor can also hover over the condition tags to view the specific submis
 
 ### Tabs
 
-There are four categories that watchlist instances can fall into: new, contacted, resolved, and archived.
+There are four categories that watchlist instances can fall into: pending, contacted, resolved, and archived.
 
-#### New
+#### Pending
 
-The `new` tab contains identified students who have not yet been contacted or resolved. The number of `new` instances will appear in a notification badge on the main course page, as shown below. 
+The `pending` tab contains identified students who have not yet been contacted or resolved. The number of `pending` instances will appear in a notification badge on the main course page, as shown below. 
 
 ![Metrics Notification](/images/metrics_notification.png)
 
@@ -96,4 +96,4 @@ The `resolved` tab contains all instances that the instructor has marked as reso
 
 #### Archived
 
-When an instructor adjusts the risk metrics for a course, all instances that were in `contacted` or `resolved` for the outdated risk metrics are placed into `archived`. All `new` instances for the outdated risk metrics are dropped. As such, all instances in `new`, `contacted`, and `resolved` are consistent with the most up-to-date risk metrics.
+When an instructor adjusts the risk metrics for a course, all instances that were in `contacted` or `resolved` for the outdated risk metrics are placed into `archived`. All `pending` instances for the outdated risk metrics are dropped. As such, all instances in `pending`, `contacted`, and `resolved` are consistent with the most up-to-date risk metrics.
