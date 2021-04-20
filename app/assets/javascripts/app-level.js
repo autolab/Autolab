@@ -20,9 +20,7 @@ $(document).ready(function() {
 
 	/* Activating Tooltips */
 	$('.tooltipped').tooltip({delay: 50});
-    
+
     /* Materialize Initializations */
     $('select').formSelect();
 });
-
-

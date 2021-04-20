@@ -9,4 +9,3 @@ namespace :user do
     Rails.cache.clear
   end
 end
-

@@ -3,7 +3,7 @@
 
   <%= form_for @aud, :url => { :action => :update } do |f| %>
     <%= f.error_messages %>
-      
+
       <p>
         <%= f.label(:grade_type, :value => AssessmentUserDatum::NORMAL) do %>
           <%= f.radio_button :grade_type, AssessmentUserDatum::NORMAL %>

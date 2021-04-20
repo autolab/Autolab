@@ -50,7 +50,7 @@ class FormBuilderWithDateTimeInput < ActionView::Helpers::FormBuilder
     options = args.extract_options!
 
     display_name = options[:display_name].nil? ? name : options[:display_name]
-    
+
     display_span = "<span>" + display_name.to_s.humanize + "</span>"
     # Materalize requires the label to be in a span
     field = super name, *(args + [options])
@@ -59,8 +59,8 @@ class FormBuilderWithDateTimeInput < ActionView::Helpers::FormBuilder
       if options.include?(:help_text)
         label(name, field + display_span.html_safe, class: "control-label") + help_text(name, options[:help_text])
       else
-        label(name, field + display_span.html_safe, class: "control-label") 
-      end 
+        label(name, field + display_span.html_safe, class: "control-label")
+      end
     end
   end
 

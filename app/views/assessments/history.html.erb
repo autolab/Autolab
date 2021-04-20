@@ -19,7 +19,7 @@
   <% else %>
     <% numSubmissions = @assessment.max_submissions - numSubmissions %>
   <% end %>
-  <i>You have <%= numSubmissions %> <%= (numSubmissions == 1) ? "submission" : "submissions" %> left.</i> 
+  <i>You have <%= numSubmissions %> <%= (numSubmissions == 1) ? "submission" : "submissions" %> left.</i>
 <% end %>
 
 <% if @cud.instructor? then %>

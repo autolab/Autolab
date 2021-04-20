@@ -19,15 +19,15 @@
   <th>Elapsed (s)</th><th>Status</th></tr>
   <% for @job in @running_jobs do %>
     <tr>
-    <td> <%= @job[:id] %> </td> 
-    <td> <%= @job[:name] %> </td> 
-    <td> <span class="moment-date-time"><%= DateTime.parse(@job[:first]).to_time.in_time_zone.to_s %></span> </td> 
+    <td> <%= @job[:id] %> </td>
+    <td> <%= @job[:name] %> </td>
+    <td> <span class="moment-date-time"><%= DateTime.parse(@job[:first]).to_time.in_time_zone.to_s %></span> </td>
     <td> <%= @job[:elapsed] %> </td>
 
     <% if @job[:name] == "*" then %>
       <td> <%= @job[:state] %> </td>
     <% elsif @cud.user.administrator? or @cud.instructor? %>
-      <td> <%= link_to @job[:status] , 
+      <td> <%= link_to @job[:status] ,
       {:controller=>"jobs", :action=>"getjob", :id=>@job[:id]}%> </td>
     <% else %>
       <td><%= @job[:status] %></td>
@@ -47,15 +47,15 @@
   <tr><th>Job ID</th><th>Job Name</th><th>Submitted At</th><th>Elapsed (s)</th><th>Status</th></tr>
   <% for @job in @waiting_jobs do %>
     <tr>
-    <td> <%= @job[:id] %> </td> 
-    <td> <%= @job[:name] %> </td> 
-    <td> <span class="moment-date-time"><%= DateTime.parse(@job[:first]).to_time.in_time_zone.to_s %></span> </td> 
+    <td> <%= @job[:id] %> </td>
+    <td> <%= @job[:name] %> </td>
+    <td> <span class="moment-date-time"><%= DateTime.parse(@job[:first]).to_time.in_time_zone.to_s %></span> </td>
     <td> <%= @job[:elapsed] %> </td>
 
     <% if @job[:name] == "*" then %>
       <td> <%= @job[:state] %> </td>
     <% elsif @cud.user.administrator? or @cud.instructor? %>
-      <td> <%= link_to @job[:state] , 
+      <td> <%= link_to @job[:state] ,
       {:controller=>"jobs", :action=>"getjob", :id=>@job[:id]}%> </td>
     <% else %>
       <td> <%= @job[:state] %></td>
@@ -67,11 +67,11 @@
 <% end %>
 
 
-<% 
+<%
 since = ""
-if @dead_jobs_view and 
-  @dead_jobs_view[-1] and 
-  @dead_jobs_view[-1][:first] and 
+if @dead_jobs_view and
+  @dead_jobs_view[-1] and
+  @dead_jobs_view[-1][:first] and
   @dead_jobs_view[-1][:first] != "" then
     since = DateTime.parse(@dead_jobs_view[-1][:first]).to_time.in_time_zone.to_s
 end
@@ -93,8 +93,8 @@ end
   <th>Elapsed (s)</th><th>Status</th></tr>
   <% for @job in @dead_jobs_view do %>
     <tr <% if @job[:state] == "Failed" then %> style="background-color:#ce4844; color:#fff"<% end %>>    <td> <%= @job[:id] %> </td>
-    <td> <%= @job[:name] %> </td> 
-    <td> <span class="moment-date-time"><%= DateTime.parse(@job[:first]).to_time.in_time_zone.to_s %></span> </td> 
+    <td> <%= @job[:name] %> </td>
+    <td> <span class="moment-date-time"><%= DateTime.parse(@job[:first]).to_time.in_time_zone.to_s %></span> </td>
     <td> <%= @job[:elapsed] %> </td>
     <td> <%= link_to @job[:state], {:controller => "jobs", :action => "getjob", :id=>@job[:id]} %> </td>
     </tr>
@@ -103,12 +103,11 @@ end
 
   <p>
   <% if @dead_jobs_view.size <= AUTOCONFIG_DEF_DEAD_JOBS then %>
-    <%= link_to "View long list of recently completed jobs", 
+    <%= link_to "View long list of recently completed jobs",
       {:controller=>"jobs", :id=>AUTOCONFIG_MAX_DEAD_JOBS} %>
   <% else %>
-    <%= link_to "View short list of recently completed jobs", 
+    <%= link_to "View short list of recently completed jobs",
       {:controller=>"jobs", :id=>nil} %>
   <% end %>
   </p>
 <% end %>
-

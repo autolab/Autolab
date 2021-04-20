@@ -7,12 +7,12 @@ LAB = $(notdir $(PWD))
 
 all: handout handout-tarfile
 
-handout: 
+handout:
 	# Rebuild the handout directory that students download
 	(rm -rf $(LAB)-handout; mkdir $(LAB)-handout)
 	cp -p src/Makefile-handout $(LAB)-handout/Makefile
 	cp -p src/README-handout $(LAB)-handout/README
-	cp -p src/hello.c-handout $(LAB)-handout/hello.c 
+	cp -p src/hello.c-handout $(LAB)-handout/hello.c
 	cp -p src/driver.sh $(LAB)-handout
 
 handout-tarfile: handout
@@ -41,4 +41,3 @@ cleanallfiles:
 	make clean
 	rm -f log.txt
 	rm -rf handin/*
-

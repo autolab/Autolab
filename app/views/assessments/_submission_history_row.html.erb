@@ -52,7 +52,7 @@
   <% if @assessment.version_penalty? %>
     <td><%== submission.version_penalty(@effectiveCud) %> <i>(<%= submission.version_over_threshold_by %>)</i></td>
   <% end %>
-  
+
   <td>
     <% if (submission.special_type == Submission::NG) then %>
       NG

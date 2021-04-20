@@ -5,27 +5,27 @@ Autolab is a course management platform that enables instructors to offer autogr
 For information on how to use Autolab for your course see the [Guide for Instructors](/instructors). To learn how to write an autograded lab see the [Guide for Lab Authors](/lab). To get straight to an installation, go to [Getting Started](#getting-started)
 
 ## Demonstration Site
-If you would like to check out Autolab prior to installation, go over to our <a href="https://demo.autolabproject.com" target="_blank">Demo Site</a>! Login through `Developer Login` with the email: `admin@foo.bar`. 
+If you would like to check out Autolab prior to installation, go over to our <a href="https://demo.autolabproject.com" target="_blank">Demo Site</a>! Login through `Developer Login` with the email: `admin@foo.bar`.
 
 This is a demonstration website. It refreshes at 0,6,12,18 Hours (UTC) daily, and it is publicly accessible, so please only use it for your exploration. Do not use this site to store important information.
 
 Try the following in order:
 
-### Create a new course 
+### Create a new course
 Click on `Manage Autolab` (top-right navigation bar) > `Create New Course`. Fill in the name and semester, and then create to see your course on the homepage.
 
 (NOTE: the email doesn't need to be real here)
 
-### Create an Autograded Lab Assessment. 
+### Create an Autograded Lab Assessment.
 Go into the course you have just created, click on `Install Assessment`. You can install a simple autograded lab, called hello lab.
-[Download hello.tar](https://github.com/autolab/Autolab/raw/master/examples/hello.tar) and install it using the `Import from Tarball` option. 
+[Download hello.tar](https://github.com/autolab/Autolab/raw/master/examples/hello.tar) and install it using the `Import from Tarball` option.
 
-In the `hello` lab, students are asked to write a file called `hello.c`. The autograder checks that the submitted hello.c program compiles and runs with an exit status of zero. If so, the submission gets 100 points. Otherwise it gets 0 points. 
+In the `hello` lab, students are asked to write a file called `hello.c`. The autograder checks that the submitted hello.c program compiles and runs with an exit status of zero. If so, the submission gets 100 points. Otherwise it gets 0 points.
 
 **Try submitting to the autograded hello lab**
 
-1. Create and submit a `hello.c` file. 
-       
+1. Create and submit a `hello.c` file.
+
         //hello.c
         #include <stdio.h>
         int main()
@@ -37,12 +37,12 @@ In the `hello` lab, students are asked to write a file called `hello.c`. The aut
 2. Refresh the submitted entries page to see the autograded score appear
 3. Click on a sub score, in this case the `100.0` under the `Correctness` heading, to see the output from the autograder.
 
-For more information on `hello` lab, or how to create your own lab, go to [Guide for Lab Authors](/lab)! 
+For more information on `hello` lab, or how to create your own lab, go to [Guide for Lab Authors](/lab)!
 
 ### Create a PDF homework assessment
 Autolab can also handle pdf submissions as well!
 
-Click on `Install Assessment`, then on `Assessment Builder`. Name your assessment, and give it a category and click `Create Assessment`!. 
+Click on `Install Assessment`, then on `Assessment Builder`. Name your assessment, and give it a category and click `Create Assessment`!.
 
 Because it defaults to accepting `.c` files, we would like to change it to `*.pdf`. Click on `Edit Assessment` > `Handin` and then change the `Handin filename` to `handin.pdf` instead of `handin.c` and save the changes
 
@@ -94,7 +94,7 @@ Follow the step-by-step instructions below:
         ~/.rbenv/shims/rake
     Note that Mac OSX comes with its own installation of ruby. You might need to switch your ruby from
     the system version to the rbenv installed version. One option is to add the following lines to ~/.bash_profile:
-    
+
         :::bash
         export RBENV_ROOT=<rbenv folder path on your local machine>
         eval "$(rbenv init -)"
@@ -167,7 +167,7 @@ Follow the step-by-step instructions below:
 
 16. Now you are all set to start using Autolab! Visit the [Guide for Instructors](/instructors) and [Guide for Lab Authors](/lab) pages for more info.
 
-### Ubuntu 18.04+ 
+### Ubuntu 18.04+
 
 This set of instruction is meant to install of AutoLab v2.40 on Ubuntu 18.04 LTS.
 

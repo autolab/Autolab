@@ -4,7 +4,7 @@ class CreateAnnotations < ActiveRecord::Migration[4.2]
       t.integer :submission_id
       t.string :filename
       t.integer :position
-      
+
       t.integer :line
       t.string :text
 

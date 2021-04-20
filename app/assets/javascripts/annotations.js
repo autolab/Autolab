@@ -11,11 +11,11 @@ $(document).ready(function () {
   if (!newFile.pdf) {
     purgeCurrentPageCache();
   }
-  
+
   resizeCodeTable();
 });
 
-/* On Window Reisze */ 
+/* On Window Reisze */
 $(window).on('resize', function(){
   resizeCodeTable();
 });

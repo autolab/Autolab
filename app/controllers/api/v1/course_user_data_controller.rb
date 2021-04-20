@@ -89,7 +89,7 @@ private
     end
     return cud
   end
-  
+
   def format_cud_response(cud)
     cud_hash = cud.as_json(only: [:lecture, :section, :grade_policy, :nickname, :dropped])
     user_hash = cud.user.as_json(only: [:first_name, :last_name, :email, :school, :major, :year])

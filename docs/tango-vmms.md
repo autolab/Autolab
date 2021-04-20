@@ -73,7 +73,7 @@ Returns a complete list of VMs associated with this Tango system.
 This is a guide to set up Tango to run jobs inside Docker containers.
 
 1.  Install docker on host machine by following instructions on the [docker installation page](https://docs.docker.com/installation/). Ensure docker is running:
-      
+
     	:::bash
     	$ docker ps # CONTAINER ID IMAGE COMMAND CREATED STATUS PORTS NAMES
 

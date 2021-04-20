@@ -1,6 +1,6 @@
 class AddEventShit < ActiveRecord::Migration[4.2]
   def self.up
-    create_table :event_schemas do |t|  
+    create_table :event_schemas do |t|
       t.references :category
       t.references :course
       t.string :title, :null=>false
@@ -12,7 +12,7 @@ class AddEventShit < ActiveRecord::Migration[4.2]
       t.boolean :saturday, :default=>false
       t.boolean :sunday, :default=>false
     end
-  
+
     create_table :event_specifications do |t|
       t.references :event_schema
       t.references :instructor
@@ -21,9 +21,9 @@ class AddEventShit < ActiveRecord::Migration[4.2]
       t.string :location, :null=>false
       t.string :title, :default=>""
     end
-  
+
     create_table :event_exceptions do |t|
-      t.references :event_specification 
+      t.references :event_specification
       t.string :action, :null=>false
       t.references :instructor
       t.timestamp :start_time, :null=>false

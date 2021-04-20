@@ -25,12 +25,12 @@ class CleanupOldFields < ActiveRecord::Migration[4.2]
     if column_exists? :submissions, :tweak_old
         remove_column :submissions, :tweak_old, :float
     end
-    
+
     if column_exists? :submissions, :ignored_old
         remove_column :submissions, :ignored_old, :boolean
     end
 
-    if column_exists? :submissions, :absolute_tweak  
+    if column_exists? :submissions, :absolute_tweak
         remove_column :submissions, :absolute_tweak, :boolean
     end
 

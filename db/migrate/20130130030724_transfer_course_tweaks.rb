@@ -5,7 +5,7 @@ class TransferCourseTweaks < ActiveRecord::Migration[4.2]
     add_column :courses, :late_penalty_id, :integer, :null => true, :default => nil
     add_column :courses, :version_penalty_id, :integer, :null => true, :default => nil
 
-  	courses = Course.all 
+  	courses = Course.all
 
 	  courses.each do |c|
       late_penalty_old = c.late_penalty_old || 0.0

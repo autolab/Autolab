@@ -337,7 +337,7 @@ private
     when :fail_type_check
       msg = "Submission failed Filetype Check. " + flash[:error]
     end
-    
+
     flash[:error] = msg
     return false
   end

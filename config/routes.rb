@@ -22,7 +22,7 @@ Rails.application.routes.draw do
           get 'writeup'
           get 'handout'
           post 'submit'
-          
+
           resources :submissions, param: :version, only: [:index] do
             get 'feedback'
           end

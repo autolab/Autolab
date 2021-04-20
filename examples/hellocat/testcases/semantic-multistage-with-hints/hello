@@ -7,7 +7,7 @@ Feedback will have five sections:
  * Test (showing two 'tests'): 'Add Things' and 'Return Values'
    Add Things will have a green check
    Return Values will have a red X and display a hint
- * Timing (showing two scalar values) 'Stage 1 (ms)' and 'Stage 2 (ms)' with values 10 and 20 
+ * Timing (showing two scalar values) 'Stage 1 (ms)' and 'Stage 2 (ms)' with values 10 and 20
  * Score (showing a table with point for "Correctness", "TA/Design/Readability", and their sum)
 
 

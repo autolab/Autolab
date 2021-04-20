@@ -7,7 +7,7 @@ module AssessmentAutogradeCore
   class AutogradeError < StandardError
     attr_reader :error_code
     attr_reader :additional_data # additional error data
-    
+
     def initialize(msg = "Autograding Failed", error_code = :unexpected, additional_data = "")
       @error_code = error_code
       @additional_data = additional_data
@@ -37,7 +37,7 @@ module AssessmentAutogradeCore
       e.backtrace.each { |line| COURSE_LOGGER.log(line) }
       raise AutogradeError.new("Error with getting files", :tango_upload, e.message)
     end
-    
+
     upload_file_list.each do |f|
       if !Pathname.new(f["localFile"]).file?
         name_of_file = f["localFile"]
@@ -188,7 +188,7 @@ module AssessmentAutogradeCore
   ##
   # sendJob_batch - Takes the same parameters as sendJob, except this runs sendJob on all
   # submissions in the submissions list.
-  # 
+  #
   # Returns a list of failed submissions with their corresponding errors
   #
   def sendJob_batch(course, assessment, submissions, cud)
@@ -221,7 +221,7 @@ module AssessmentAutogradeCore
   # Tango server via an REST API.
   #
   # Note on param submissions:
-  #   Although this is a list of submissions, it must only contain 
+  #   Although this is a list of submissions, it must only contain
   # submission objects corresponding to the same "logical submission",
   # i.e. this list contains more than one submission ONLY when a
   # student submits a job as a member of a group. In that case, each
@@ -294,7 +294,7 @@ module AssessmentAutogradeCore
     else
         [handin, makefile, autograde]
     end
-    
+
   end
 
   ##

@@ -5,7 +5,7 @@ class Oauth::DeviceFlowController < ActionController::Base
   # For errors encountered during device flow requests
   class DeviceFlowError < StandardError
     attr_reader :status_code # http error code
-    
+
     def initialize(msg = "Unrecognized request", status_code = :bad_request)
       @status_code = status_code
       super(msg)

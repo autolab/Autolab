@@ -8,7 +8,7 @@ class Api::V1::SubmissionsController < Api::V1::BaseApiController
   # If a score is not released, it is not returned, regardless of user authorization.
   def index
     submissions = @assessment.submissions.where(course_user_datum_id: @cud).order("version DESC")
-    
+
     problems = {}
     @assessment.problems.each do |prob|
       problems[prob.id] = prob.name

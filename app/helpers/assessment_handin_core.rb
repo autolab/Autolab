@@ -19,7 +19,7 @@ module AssessmentHandinCore
       return :file_too_large
     end
     # Check if mimetype is correct (if overwritten by assessment config)
-    if @assessment.overwrites_method?(:checkMimeType) and 
+    if @assessment.overwrites_method?(:checkMimeType) and
        not @assessment.config_module.checkMimeType(content_type, filename)
        return :fail_type_check
     end
@@ -58,11 +58,11 @@ module AssessmentHandinCore
   ##
   # saveHandin - saves the submission to database. If this submission is by a member of
   # a group, it creates a submissions record for each person.
-  # 
+  #
   # params:
   #  - sub: submission file (to be saved by this method).
   #  - app_id: [Optional] id of the application that made this submission.
-  #            default is nil, meaning no application was used (handed in directly from 
+  #            default is nil, meaning no application was used (handed in directly from
   #            webpage, either by student or by an instructor).
   # Returns a list of the submissions created by this handin (aka a "logical submission").
   def saveHandin(sub, app_id = nil)

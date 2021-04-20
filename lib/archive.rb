@@ -63,7 +63,7 @@ module Archive
 
     cleaned_files = []
     file_path_set = Set[]
-    
+
     # arbitrary header positions for the new directories
     starting_header = -1
 
@@ -97,9 +97,9 @@ module Archive
             starting_header = starting_header - 1
             file_path_set.add(new_path)
           end
-        end 
+        end
       end
-      
+
       # excludes "./" paths
       if(file[:pathname]!=nil)
         cleaned_files.append(file)

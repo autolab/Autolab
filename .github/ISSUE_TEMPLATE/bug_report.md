@@ -8,7 +8,7 @@ assignees: ''
 ---
 
 **Your environment**
-If you think this is relevant, let us know details such as 
+If you think this is relevant, let us know details such as
 - Operating system
 - Commit hash
 - Ruby version

@@ -37,8 +37,8 @@
       <tr><td colspan="400">No Submissions yet!</td></tr><!-- Sure! -->
     <% else %>
       <% for submission in @submissions do %>
-        <%= render partial: "submission_history_row", 
-          locals: { submission: submission, 
+        <%= render partial: "submission_history_row",
+          locals: { submission: submission,
           download_access: download_access } %>
       <% end %>
     <% end %>

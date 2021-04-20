@@ -94,9 +94,9 @@ Autolab expects to find the `autograde-Makefile`and `autograde.tar` files in the
 # Basic files created by the lab author
 
 Makefile Builds the lab from src/
-README  
+README
 autograde-Makefile Makefile that runs the autograder
-src/ Contains all src files and solutions  
+src/ Contains all src files and solutions
 test-autograder/ For testing autograder offline
 writeup/ Lab writeup that students view from Autolab
 
@@ -343,4 +343,4 @@ Autolab always shows the stdout output of running make, even when the program cr
 
 #### Is there a way to formatting the feedback provided to the students
 
-Yes there is, by using the [formatted feedback feature](/features/#formatted-feedback). 
+Yes there is, by using the [formatted feedback feature](/features/#formatted-feedback).

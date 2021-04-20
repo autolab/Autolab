@@ -39,8 +39,8 @@ Autolab3::Application.configure do
     config.force_ssl = true
     config.middleware.use Rack::SslEnforcer, :except => [ /log_submit/, /local_submit/ ]
   end
-    
-    
+
+
 
 
   # See everything in the log (default is :info)

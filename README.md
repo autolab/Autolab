@@ -69,8 +69,8 @@ bundle exec rails spec
 Autolab is now running on Rails 5. However, we may still work on important bug fixes on the Rails 4 branch,
  partially because the deployment on CMU is currently still on Rails 4. Please file an issue
   if you believe that you have found a severe bug. The Rails 4 branch
- can be found on `master-rails-4`. 
- 
+ can be found on `master-rails-4`.
+
  We will not be backporting new features from `master` to `master-rails-4`.
 
 ## Contributing
@@ -95,28 +95,28 @@ bugs to be fixed, but it should not affect the core functionality of Autolab. Pl
 you have found a bug.
 
 
-### [v2.4.0](https://github.com/autolab/Autolab/releases/tag/v2.4.0) (2020/02/08) Speedgrader - The new code viewer 
-- The File Tree shows file hierarchy of student’s submission 
-  - Click on a file to open 
-  - Click on a folder to expand 
-- The Symbol Tree allows you to jump quickly to functions in the student’s code 
-  - Click on a function to jump 
-- You can easily switch between submissions and files 
-  - Up/down arrow keys change file 
-  - Right/left arrow keys change submission 
-- How to use new annotation system: 
-  - Make annotations with grade adjustments 
-  - Important: annotations can only be made for non-autograded problems (to preserve the original autograded score of the autograded problem) 
-  - Annotations grade changes summarized by the Annotations table on the right 
-- New: Score for problem automatically updates after annotation score changes based on the following formula (this no longer has to be done manually on the Gradebook): 
+### [v2.4.0](https://github.com/autolab/Autolab/releases/tag/v2.4.0) (2020/02/08) Speedgrader - The new code viewer
+- The File Tree shows file hierarchy of student’s submission
+  - Click on a file to open
+  - Click on a folder to expand
+- The Symbol Tree allows you to jump quickly to functions in the student’s code
+  - Click on a function to jump
+- You can easily switch between submissions and files
+  - Up/down arrow keys change file
+  - Right/left arrow keys change submission
+- How to use new annotation system:
+  - Make annotations with grade adjustments
+  - Important: annotations can only be made for non-autograded problems (to preserve the original autograded score of the autograded problem)
+  - Annotations grade changes summarized by the Annotations table on the right
+- New: Score for problem automatically updates after annotation score changes based on the following formula (this no longer has to be done manually on the Gradebook):
 
  `score = max_score + ∑(annotation score changes) `
-- For example, a way to grade style in a deductive manner would be to set the max score for the Style problem, and make annotations with negative score for style violations and zero score for good style 
+- For example, a way to grade style in a deductive manner would be to set the max score for the Style problem, and make annotations with negative score for style violations and zero score for good style
 
-UI Enhancements 
-- Tables are more standardized 
-- Fixed text overflowing issues on Gradebook modals 
-- Improved standardization and UI for annotations on PDF submissions 
+UI Enhancements
+- Tables are more standardized
+- Fixed text overflowing issues on Gradebook modals
+- Improved standardization and UI for annotations on PDF submissions
 
-Others 
-- Course assistants are now able to submit assignments early 
+Others
+- Course assistants are now able to submit assignments early

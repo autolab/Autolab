@@ -13,7 +13,7 @@ class AddGradebookCaching < ActiveRecord::Migration[4.2]
       t.float :average
       t.integer :expired
     end
-    #add_index :gradebook_cache_averages, 
+    #add_index :gradebook_cache_averages,
     #      [:field,:field_id,:user_id],
     #      {:unique=>true}
 

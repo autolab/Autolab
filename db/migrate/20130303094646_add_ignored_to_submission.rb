@@ -3,7 +3,7 @@ class AddIgnoredToSubmission < ActiveRecord::Migration[4.2]
     # NG => ignored
     add_column :submissions, :ignored, :boolean, :default => false, :null => false
     #Submission.update_all({ :ignored => true }, { :special_type => Submission::NG })
-    
+
     say_with_time "update AUDs with latest *unignored* submissions" do
       Assessment.find_each { |asmt| update_latest_submissions_modulo_callbacks(asmt.id, false) }
     end

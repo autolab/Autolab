@@ -12,7 +12,7 @@ class SplitAnnotations < ActiveRecord::Migration[4.2]
       end
 
       res = text.split("[")
-      
+
       comment = text
 
       if res.size > 1 then
@@ -22,7 +22,7 @@ class SplitAnnotations < ActiveRecord::Migration[4.2]
 
         comment = res.join("[")
 
-        points = points.split(":") 
+        points = points.split(":")
         if points.size == 1 then
           annotation.value = points[0].delete("]").to_f
         else
@@ -32,7 +32,7 @@ class SplitAnnotations < ActiveRecord::Migration[4.2]
             annotation.value = 0;
           else
             annotation.value = points[0].to_f
-          end 
+          end
         end
       end
 

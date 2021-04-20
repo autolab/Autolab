@@ -3,7 +3,7 @@ class ChangeProviderNameForShibboleth < ActiveRecord::Migration[4.2]
   # given provider name "CMU-Shibboleth" but it should just be "shibboleth"
   def up
     Authentication.find_each do |auth|
-      if auth.provider == "CMU-Shibboleth" 
+      if auth.provider == "CMU-Shibboleth"
         auth.provider = "shibboleth"
         auth.save!
       end
@@ -12,7 +12,7 @@ class ChangeProviderNameForShibboleth < ActiveRecord::Migration[4.2]
 
   def down
     Authentication.find_each do |auth|
-      if auth.provider == "shibboleth" 
+      if auth.provider == "shibboleth"
         auth.provider = "CMU-Shibboleth"
         auth.save!
       end

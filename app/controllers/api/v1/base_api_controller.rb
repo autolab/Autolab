@@ -3,7 +3,7 @@ class Api::V1::BaseApiController < ActionController::Base
   # Error type for APIs
   class ApiError < StandardError
     attr_reader :status_code # http error code
-    
+
     def initialize(msg, status_code = :bad_request)
       @status_code = status_code
       super(msg)
@@ -93,7 +93,7 @@ class Api::V1::BaseApiController < ActionController::Base
   end
 
   # 2-in-1 checker that checks the client scope and user privileges.
-  # Descendants should use this method in before_actions instead of 
+  # Descendants should use this method in before_actions instead of
   # doorkeeper_authorize!
   #
   # Should only be called by descendants of the BaseApiController
@@ -152,7 +152,7 @@ class Api::V1::BaseApiController < ActionController::Base
     end
 
     if @cud.student? && !@assessment.released?
-      # we can let the client know this assessment isn't released yet. No harm in telling them 
+      # we can let the client know this assessment isn't released yet. No harm in telling them
       # that this assessment exists.
       raise ApiError.new("Assessment not released yet", :forbidden)
     end

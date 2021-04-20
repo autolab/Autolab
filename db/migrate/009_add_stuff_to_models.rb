@@ -6,7 +6,7 @@ class AddStuffToModels < ActiveRecord::Migration[4.2]
     add_column :scores, :released, :boolean, :options=>{:default=>false}
     add_column :submissions, :notes, :text
     add_column :submissions, :notesPoints, :integer
-  
+
     User.update_all({:administrator=>false,:dropped=>false})
     Score.update_all({:released=>false})
 
