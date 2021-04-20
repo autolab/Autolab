@@ -73,7 +73,7 @@ Rails.application.routes.draw do
       get "index"
       get 'get_current_metrics'
       get 'get_watchlist_instances'
-      get 'get_num_new_instances'
+      get 'get_num_pending_instances'
       get 'refresh_watchlist_instances'
       post 'update_current_metrics'
       post 'update_watchlist_instances'
