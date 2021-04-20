@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 class AutolabFormatter < ::Logger::Formatter
   def call(level, time, _progname, msg)
     strTime = time.strftime("%m/%d/%y %H:%M:%S")

@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 ##
 # Annotations are Submission and Problem specific.
 # Currently, they are just text, but it would be nice if they could be used in

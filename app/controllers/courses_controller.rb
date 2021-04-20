@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 require "archive"
 require "csv"
 require "fileutils"

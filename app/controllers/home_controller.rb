@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 ##
 # The Home Controller houses (ha) any action that's available to the general public.
 #

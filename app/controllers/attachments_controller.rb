@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 ##
 # Attachments can be either assessment or course-specific.
 # This controller handles both types, setting @is_assessment to distinguish the two

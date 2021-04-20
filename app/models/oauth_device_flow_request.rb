@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 class OauthDeviceFlowRequest < ApplicationRecord
   belongs_to :oauth_application
 

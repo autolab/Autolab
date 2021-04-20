@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 class Tweak < ScoreAdjustment
   def self.applied_tweak(tweak, score)
     superclass.applied_value(tweak, score, 1)

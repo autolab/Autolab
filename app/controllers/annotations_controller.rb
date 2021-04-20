@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 # All modifications to the annotations are meant to be asynchronous and
 # thus this contorller only exposes javascript interfaces.
 #

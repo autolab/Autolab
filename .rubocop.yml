@@ -45,6 +45,10 @@ Style/StringLiterals:
     - single_quotes
     - double_quotes
 
+# Frozen string literals will introduce breaking changes to existing ruby files.
+Style/FrozenStringLiteralComment:
+  EnforcedStyle: never
+
 Lint/RaiseException:
   Enabled: false
 

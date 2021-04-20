@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 ##
 # There's a score for each problem and each submission in every assessment.
 # That is A LOT OF SCORES.

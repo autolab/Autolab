@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 ##
 # An Assessment can have many Problems, each one creates a score for each Submission
 # for the Assessment.

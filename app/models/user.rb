@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 ##
 # Users are specific to a real-world person.  Each User is enrolled in a course using
 # the CourseUserData join table.

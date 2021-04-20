@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 # controls the page that allows users to grant api access to clients
 # that use device flow
 class DeviceFlowActivationController < ApplicationController

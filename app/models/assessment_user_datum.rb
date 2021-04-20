@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 # Read https://github.com/autolab/autolab-src/wiki/Caching
 require "association_cache"
 

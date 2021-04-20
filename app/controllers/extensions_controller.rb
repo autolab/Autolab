@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 ##
 # Extensions can be for a finite amount of time or infinite.
 #

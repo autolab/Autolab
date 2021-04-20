@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 class GradeMatrix
   attr_reader :course, :as_seen_by
 

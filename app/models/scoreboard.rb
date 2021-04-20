@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 ##
 # Scoreboards belong to Assessments, and basically specify how the scoreboard should display
 #

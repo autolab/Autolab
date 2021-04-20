@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 class ScoreAdjustment < ApplicationRecord
   # attr_accessible :kind, :value
 

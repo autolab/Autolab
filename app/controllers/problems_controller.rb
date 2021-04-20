@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 ##
 # An Assessment can have any number of Problems, which are basically just a name,
 # and a think for Scores to join with.

@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 class CourseUserDataController < ApplicationController
   before_action :add_users_breadcrumb
 

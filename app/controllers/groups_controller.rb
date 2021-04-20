@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 class GroupsController < ApplicationController
   # inherited from ApplicationController
   before_action :set_assessment

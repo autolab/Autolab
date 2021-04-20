@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 class Extension < ApplicationRecord
   belongs_to :assessment
   belongs_to :course_user_datum

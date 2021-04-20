@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 ##
 # this controller contains methods for system-wise
 # admin functionality

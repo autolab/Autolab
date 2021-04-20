@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 # Extend the Rails ApplicationController to define some RESTful endpoints for
 # dealing with Announcements.
 class AnnouncementsController < ApplicationController

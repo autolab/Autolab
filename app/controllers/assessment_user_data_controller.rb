@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 ##
 # AssessmentUserData are joins between Assessments and CourseUserData.
 # This basically lets you update grade types for a student for an assessment.

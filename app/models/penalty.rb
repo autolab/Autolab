@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 class Penalty < ScoreAdjustment
   # penalties should always be positive
   validates :value, numericality: { greater_than_or_equal_to: 0 }

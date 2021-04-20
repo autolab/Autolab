@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 ##
 # Each Assessment can have a scoreboard, which is modified with this controller
 #

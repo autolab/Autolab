@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 ##
 # Schedulers are used by like buflab and bomblab and that's it.  Tasks don't actually
 # get accurately scheduled, but with each request, we check all schedulers, and if one

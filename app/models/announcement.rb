@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 ##
 # Announcements get made by Instructors and Autolab Admins, and get displayed
 # to everyone who uses the site, until they expire.
