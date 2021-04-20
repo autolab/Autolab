@@ -22,7 +22,7 @@ class Api::V1::AssessmentsController < Api::V1::BaseApiController
 
   def show
     allowed = [:name, :display_name, :description, :start_at, :due_at, :end_at, :updated_at, :max_grace_days, :max_submissions,
-      :disable_handins, :category_name, :group_size, :writeup_format, :handout_format, :has_scoreboard, :has_autograder]
+      :disable_handins, :category_name, :group_size, :writeup_format, :handout_format, :has_scoreboard, :has_autograder, :max_unpenalized_submissions]
     if not @cud.student?
       allowed += [:grading_deadline]
     end
@@ -30,6 +30,7 @@ class Api::V1::AssessmentsController < Api::V1::BaseApiController
     result = @assessment.attributes.symbolize_keys
     result.merge!(:has_scoreboard => @assessment.has_scoreboard?)
     result.merge!(:has_autograder => @assessment.has_autograder?)
+    result.merge!(:max_unpenalized_submissions => @assessment.effective_version_threshold)
     if @assessment.writeup_is_file?
       result.merge!(:writeup_format => "file")
     elsif @assessment.writeup_is_url?
