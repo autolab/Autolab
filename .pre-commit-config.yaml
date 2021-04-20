@@ -10,3 +10,10 @@ repos:
 #  rev: 2.1.5
 #  hooks:
 #    - id: rubocop
+
+# Alternatively, replace/add .git/hooks/pre-commit with the following code:
+
+#!/bin/bash
+#files=$(git status -s | grep -E 'A|M' | awk '{print $2}')
+#files="$files $(git status -s | grep -E 'R' | awk '{print $4}')"
+#echo $files | xargs rubocop --display-cop-names --extra-details --parallel --force-exclusion
