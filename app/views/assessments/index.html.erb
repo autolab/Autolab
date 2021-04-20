@@ -10,8 +10,8 @@
       });
       $.getJSON('metrics/get_num_pending_instances',function(data, status){
         if(status=='success' && data['num_pending'] != 0){
-          // when there is a non-zero number of new instances
-          var new_instances_str = 
+          // when there is a non-zero number of pending instances
+          var pending_instances_str = 
             `<div class='col s1 metrics'>
               <i class='material-icons left metrics'>assessment</i>
             </div>
@@ -21,7 +21,7 @@
             <h7 class='metrics'>
               Risk Metrics
             </h7>`;
-          $('.row.metrics').empty().append(new_instances_str);
+          $('.row.metrics').empty().append(pending_instances_str);
         }
       });
     });
