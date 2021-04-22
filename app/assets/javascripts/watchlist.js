@@ -197,6 +197,8 @@ function get_watchlist_function(){
 	    	$('#resolved_tab').empty();
         $('#archived_tab').empty();
 
+        var categoryContent = [];
+
         data["instances"].forEach(watchlist_instance => {
           var id = _.get(watchlist_instance,'id');
           var course_id = _.get(watchlist_instance,'course_id');
@@ -219,6 +221,8 @@ function get_watchlist_function(){
               case "new":
                 new_empty = 0;
                 addInstanceToDict(new_instances, id, user_id, course_id, user_name, user_email, condition_type, violation_info, watchlist_status);
+                categoryContent.push({category: "name", title: user_name});
+                categoryContent.push({category: "email", title: user_email});
                 break;
               case "contacted":
                 contacted_empty = 0;
@@ -236,7 +240,14 @@ function get_watchlist_function(){
         });
         
         new_html = `<div class="ui secondary segment" >
-                     <h5> Pending at-risk students </h5>
+                      <div class="ui search">
+                        <div class="ui icon input">
+                          <input class="prompt" type="text" placeholder="Search students...">
+                          <i class="search icon"></i>
+                        </div>
+                        <div class="results"></div>
+                      </div>
+                      <h5> Pending at-risk students </h5>
                     </div>`;
         contacted_html = `<div class="ui secondary segment" >
                           <h5> Contacted at-risk students </h5>
@@ -321,6 +332,14 @@ function get_watchlist_function(){
 
       $('.ui.icon').popup();
       $('.ui.circular.label.condition').popup();
+
+      console.log(categoryContent);
+      $('.ui.search')
+        .search({
+          type: 'category',
+          source: categoryContent
+        })
+      ;
 
       $('.ui.button.contact_single').click(function() {
 

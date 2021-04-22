@@ -143,3 +143,18 @@ i.external.alternate {
 .ui.checkbox.select_single label:after {
   top: 6.5px;
 }
+
+.ui.search .ui.input {
+  width: 230px;
+  float: right;
+  margin-top: -9px;
+}
+
+.ui.input > input {
+  padding: 0.5rem;
+  padding-left: 15px;
+}
+
+h5 {
+  margin-top: 0;
+}
