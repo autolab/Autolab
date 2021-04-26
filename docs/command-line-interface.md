@@ -1,6 +1,6 @@
 # Autolab Command Line Interface
 
-To help showcase the capabilities of the API, we developed autolab-cli: A first-party command line client that serves as both a practical tool for users of Autolab, as well as a reference design for developers intending to use the API in their own programs. The cli includes features like downloading and submitting assignments from the terminal, viewing problems, and getting submission feedback.
+To help showcase the capabilities of the [API](/api-overview), we developed autolab-cli: A first-party command line client that serves as both a practical tool for users of Autolab, as well as a reference design for developers intending to use the API in their own programs. The cli includes features like downloading and submitting assignments from the terminal, viewing problems, and getting submission feedback.
 
 !!! info "Note to CMU Students:"
     This cli binary has already been installed on the andrew machines as `autolab`.
