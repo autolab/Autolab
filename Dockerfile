@@ -34,7 +34,7 @@ ADD Gemfile.lock .
 RUN chown app:app Gemfile Gemfile.lock
 
 # Prepare folders
-USER appg
+USER app
 RUN bundle update mimemagic
 RUN bundle install
 
