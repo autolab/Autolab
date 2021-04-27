@@ -1,8 +1,5 @@
 # Autolab + Tango OneClick Installation
 
-!!! bug "Attention"
-    The OneClick installation is currently broken. We are in the midst of migrating to Docker for installation. Please treat this page as legacy reference.
-
 OneClick is the fastest way to install Autolab and Tango on an Ubuntu VM. The installation uses packages Autolab, MySQL, and Tango into seperate Docker containers with specific exposed ports for communication.
 
 There are two types of installations. A local development setup and a real-world ready setup that requires SSL certificates, email service configuration, and domain name registration. Use the local setup for experimentation before deploying in a real-world scenario on such apps like Heroku, EC2, or DigitalOcean, among others.
