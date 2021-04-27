@@ -68,7 +68,7 @@ Once instructors have set up risk metrics for their course, students that are id
 
 Every row in the watchlist represents a particular instance of a student who meets one or more of the risk conditions. A single student can appear in multiple watchlist instances if they are identified for new risk conditions on separate occassions of loading the watchlist. 
 
-For example, let's look at Jane Doe in the image above. Upon loading the watchlist, Jane appears in a watchlist instance for using `3 grace days` before the instructor-specified date and for having `2 low score` below the instructor-specified threshold. If Jane later receives another score below the threshold, a new instance will appear for Jane when the instructor reloads the watchlist. Jane now appears twice in the watchlist, once in an instance with `3 grace days` and `2 low score`, and once in an instance with `3 grace days` and `3 low score`.
+For example, let's look at Jane Doe in the image above. Upon loading the watchlist, Jane appears in a watchlist instance for using `3 grace days` before the instructor-specified date and for having `2 low scores` below the instructor-specified threshold. If Jane later receives another score below the threshold, a new instance will appear for Jane when the instructor reloads the watchlist. Jane now appears twice in the watchlist, once in an instance with `3 grace days` and `2 low scores`, and once in an instance with `3 grace days` and `3 low scores`.
 
 #### Actions
 
