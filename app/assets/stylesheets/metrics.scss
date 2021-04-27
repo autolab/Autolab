@@ -155,6 +155,11 @@ i.external.alternate {
   padding-left: 15px;
 }
 
-h5 {
+.ui.secondary.segment h5 {
   margin-top: 0;
+}
+
+.ui.search > .results {
+  top: 30px;
+  left: 525px;
 }

@@ -240,7 +240,7 @@ function get_watchlist_function(){
         });
         
         new_html = `<div class="ui secondary segment" >
-                      <div class="ui search">
+                      <div class="ui search" id="pending_search">
                         <div class="ui icon input">
                           <input class="prompt" type="text" placeholder="Search students...">
                           <i class="search icon"></i>
@@ -250,12 +250,33 @@ function get_watchlist_function(){
                       <h5> Pending at-risk students </h5>
                     </div>`;
         contacted_html = `<div class="ui secondary segment" >
-                          <h5> Contacted at-risk students </h5>
-                        </div>`;
+                            <div class="ui search" id="contacted_search">
+                              <div class="ui icon input">
+                                <input class="prompt" type="text" placeholder="Search students...">
+                                <i class="search icon"></i>
+                              </div>
+                              <div class="results"></div>
+                            </div>
+                            <h5> Contacted at-risk students </h5>
+                          </div>`;
         resolved_html = `<div class="ui secondary segment" >
+                          <div class="ui search" id="resolved_search">
+                            <div class="ui icon input">
+                              <input class="prompt" type="text" placeholder="Search students...">
+                              <i class="search icon"></i>
+                            </div>
+                            <div class="results"></div>
+                          </div>
                           <h5> Resolved at-risk students </h5>
                         </div>`;
         archived_html = `<div class="ui secondary segment" >
+                            <div class="ui search" id="archived_search">
+                              <div class="ui icon input">
+                                <input class="prompt" type="text" placeholder="Search students...">
+                                <i class="search icon"></i>
+                              </div>
+                              <div class="results"></div>
+                            </div>
                           <h5> Archived at-risk students </h5> <b>Resolved and contacted students becomes archived when risk metrics are changed </b>
                          </div>`;
 
