@@ -88,6 +88,8 @@ module Archive
         for path in paths do
           # note that __MACOSX is actually a folder
           # need to check whether the path includes that
+          # for the completeness of cleaned_files
+          # mac_bs_file folder paths will still be added
           if path.include?("__MACOSX") || path.include?(".DS_Store") ||
              path.include?(".metadata")
              mac_bs_file = true
