@@ -18,7 +18,8 @@ RUN ln -fs /usr/share/zoneinfo/America/New_York /etc/localtime
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y \
   sqlite3 \
-  tzdata
+  tzdata  \
+  shared-mime-info
 
 # Start Nginx / Passenger
 RUN rm -f /etc/service/nginx/down
@@ -33,7 +34,8 @@ ADD Gemfile.lock .
 RUN chown app:app Gemfile Gemfile.lock
 
 # Prepare folders
-USER app
+USER appg
+RUN bundle update mimemagic
 RUN bundle install
 
 RUN mkdir /home/app/webapp
