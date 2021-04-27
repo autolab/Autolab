@@ -1,6 +1,7 @@
 /* Document On Ready Initializations */
 
 $(document).ready(function () {
+  $('.skip-main').remove(); // removes skip main anchor tag
   $(".collapsible-body").show(); //expands all collapsible initially
   $('.collapsible').collapsible();
   //get line number in URL, if it exists
@@ -121,7 +122,7 @@ function scrollToLine(n) {
 }
 
 function plusFix(n) {
-  n = parseInt(n)
+  n = parseFloat(n)
   if (isNaN(n)) n = 0;
 
   if (n > 0) {
@@ -206,7 +207,6 @@ function fillAnnotationBox() {
       } else {
         pointBadge.addClass('neutral');
       }
-
       pointBadge.text(plusFix(annotation.value));
       link.append(pointBadge);
       link.append(annotation.comment);
@@ -589,6 +589,8 @@ function newAnnotationBox(annotation) {
 
   if (annotation.value < 0) {
     box.find('.value').parent().removeClass('positive').addClass('negative');
+  } else if (!annotation.value > 0) { // I am a little hesitant about using == 1 here -> what if it's negative 0?
+    box.find('.value').parent().removeClass('positive').addClass('neutral');
   }
 
   box.find('.submitted_by').text(annotation.submitted_by);

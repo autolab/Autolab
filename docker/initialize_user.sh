@@ -13,7 +13,7 @@ do
     echo "Inconsistent password, please try again"
     read -sp "Password: " password
     echo
-    read -sp "Password (again): " $password2_confirm
+    read -sp "Password (again): " password2_confirm
 done
   echo
   read -p 'First Name: ' first_name

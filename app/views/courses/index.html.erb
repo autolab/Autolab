@@ -36,10 +36,10 @@
               <%= link_to 'Course Page', course_path(course), class: "red-text text-darken-3", title: "Go to course page" %>
 
               <% if course_cud %>
-                <% if not_student && !course_cud.section.blank? %>
+                <% if !course_cud.instructor? && course_cud.course_assistant? && !course_cud.section.blank? %>
                   <hr>
                   <%= link_to "Grade Section", [:view, course, course_cud, :gradebook, section: course_cud.section], title: "Grade your section", class: "red-text text-darken-3", style: "white-space: nowrap" %>
-                <% elsif !not_student %>
+                <% elsif course_cud.instructor? || course_cud.student? %>
                   <%= link_to "Gradebook", [course, course_cud, :gradebook], title: "View your gradebook", class: "red-text text-darken-3" %>
                 <% end %>
               <% end %>

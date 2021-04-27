@@ -93,27 +93,27 @@ Autolab expects to find the `autograde-Makefile`and `autograde.tar` files in the
 ```md
 # Basic files created by the lab author
 
-Makefile Builds the lab from src/
-README  
-autograde-Makefile Makefile that runs the autograder
-src/ Contains all src files and solutions  
-test-autograder/ For testing autograder offline
-writeup/ Lab writeup that students view from Autolab
+Makefile              Builds the lab from src/
+README
+autograde-Makefile    Makefile that runs the autograder
+src/                  Contains all src files and solutions  
+test-autograder/      For testing autograder offline
+writeup/              Lab writeup that students view from Autolab
 
 # Files created by running make
 
-hello-handout/ The directory that is handed out to students, created
-using files from src/.
-hello-handout.tar Archive of hello-handout directory
-autograde.tar File that is copied to the autograding instance
-(along with autograde-Makefile and student handin file)
+hello-handout/        The directory that is handed out to students, created
+                      using files from src/.
+hello-handout.tar     Archive of hello-handout directory
+autograde.tar         File that is copied to the autograding instance
+                      (along with autograde-Makefile and student handin file)
 
 # Files created and managed by Autolab
 
-handin/ All students handin files
-hello.rb Config file
-hello.yml Database properties that persist from semester to semester
-log.txt Log of autograded submissions
+handin/               All students handin files
+hello.rb              Config file
+hello.yml             Database properties that persist from semester to semester
+log.txt               Log of autograded submissions
 ```
 
 The key idea with this directory structure is to place _all_ code for the lab in the `src` directory, including the autograding code and any starter code handed out to students in the handout directory (`hello-handout.tar` in this example). Keeping all hard state in the `src` directory helps limit inconsistencies.

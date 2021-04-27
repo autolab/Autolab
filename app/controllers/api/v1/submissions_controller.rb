@@ -43,8 +43,8 @@ class Api::V1::SubmissionsController < Api::V1::BaseApiController
     submission = @assessment.submissions.find_by(course_user_datum_id: @cud, version: vers)
     raise ApiError.new("Submission version #{vers} does not exist for #{@assessment.name}", :not_found) unless submission
 
-    # Looks weird, but currently feedbacks are the same for each problem
-    score = submission.scores.find_by(problem_id: problem.id)
+    # Looks weird, but currently feedbacks are the same for each problem, so we disregard the problem key and just return the first problem with feedback
+    score = submission.scores.where.not(feedback: nil).first
     raise ApiError.new("Score for #{params[:problem]} of submission version #{vers} of #{@assessment.name} does not exist", :not_found) unless score
 
     results = {:feedback => score.feedback}

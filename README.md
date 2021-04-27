@@ -73,6 +73,33 @@ Autolab is now running on Rails 5. However, we may still work on important bug f
  
  We will not be backporting new features from `master` to `master-rails-4`.
 
+## Updating Docs
+To install mkdocs, run
+```bash
+pip install --user mkdocs
+```
+
+We rely on the `mkdocs-material` theme, which can be installed with
+```bash
+pip install --user mkdocs-material
+```
+
+To run and preview this locally, run:
+
+```bash
+mkdocs serve
+```
+
+Once your updated documentation is in `master`, run:
+
+```bash
+mkdocs gh-deploy
+```
+
+This will build the site using the branch you are currently in (hopefully `master`), place the built HTML files into the `gh-pages` branch, and push to GitHub. GitHub will then automatically deploy the new content in `gh-pages`.
+
+Finally, go to the repository Settings page, and set `docs.autolabproject.com` under the `Custom domain` field.
+
 ## Contributing
 
 We encourage you to contribute to Autolab! Please check out the

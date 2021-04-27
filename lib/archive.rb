@@ -25,8 +25,7 @@ module Archive
         header_position: i,
         mac_bs_file: pathname.include?("__MACOSX") ||
           pathname.include?(".DS_Store") ||
-          pathname.include?(".metadata") ||
-          File.basename(pathname).start_with?('.'),
+          pathname.include?(".metadata"),
         directory: looks_like_directory?(pathname)
       }
     end

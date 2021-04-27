@@ -37,6 +37,7 @@
 
   <body class="autolab">
     <div class="page-wrapper">
+      <a class="skip-main" href="#content">Skip to main content</a>
       <%= render "layouts/navbar" %>
 
       <!-- Page Body -->
@@ -58,7 +59,7 @@
         <!-- End Flashes -->
 
         <!-- Content -->
-        <div id="content">
+        <div id="content" role="main" >
           <%= yield %>
         </div>
         <!-- End Content -->

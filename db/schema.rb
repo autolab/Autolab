@@ -10,7 +10,11 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
+<<<<<<< HEAD
 ActiveRecord::Schema.define(version: 2020_07_06_130211) do
+=======
+ActiveRecord::Schema.define(version: 2020_11_01_022133) do
+>>>>>>> 101cc427d437404f7c317bab788a366f023d55cd
 
   create_table "annotations", id: :integer, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.integer "submission_id"
@@ -247,7 +251,17 @@ ActiveRecord::Schema.define(version: 2020_07_06_130211) do
     t.boolean "optional", default: false
   end
 
-  create_table "scheduler", id: :integer, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci", force: :cascade do |t|
+
+  create_table "risk_conditions", force: :cascade do |t|
+    t.integer "condition_type"
+    t.text "parameters"
+    t.integer "version"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.integer "course_id"
+  end
+
+  create_table "scheduler", force: :cascade do |t|
     t.string "action"
     t.timestamp "next"
     t.integer "interval"
@@ -328,12 +342,30 @@ ActiveRecord::Schema.define(version: 2020_07_06_130211) do
     t.string "school"
     t.string "major"
     t.string "year"
+    t.string "theme", default: "default"
     t.index ["confirmation_token"], name: "index_users_on_confirmation_token", unique: true
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 
+<<<<<<< HEAD
   add_foreign_key "oauth_access_grants", "oauth_applications", column: "application_id"
   add_foreign_key "oauth_access_tokens", "oauth_applications", column: "application_id"
   add_foreign_key "oauth_device_flow_requests", "oauth_applications", column: "application_id"
+=======
+  create_table "watchlist_instances", force: :cascade do |t|
+    t.integer "course_user_datum_id"
+    t.integer "course_id"
+    t.integer "risk_condition_id"
+    t.integer "status", default: 0
+    t.boolean "archived", default: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.json "violation_info"
+    t.index ["course_id"], name: "index_watchlist_instances_on_course_id"
+    t.index ["course_user_datum_id"], name: "index_watchlist_instances_on_course_user_datum_id"
+    t.index ["risk_condition_id"], name: "index_watchlist_instances_on_risk_condition_id"
+  end
+
+>>>>>>> 101cc427d437404f7c317bab788a366f023d55cd
 end
