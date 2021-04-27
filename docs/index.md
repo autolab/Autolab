@@ -16,11 +16,15 @@ For more of the rationale behind Autolab, please check out <a href="https://auto
  -->
 ##Components
 
-Autolab consists of two services: (1) the Ruby on Rails frontend, and (2) [Tango](/tango), the RESTful Python autograding server. <b>Either service can run independently without the other</b>. But in order to use all features of Autolab, we highly recommend installing both services.
+Autolab consists of two services: (1) the Autolab frontend which is implemented using Ruby on Rails, and (2) Tango, the RESTful Python autograding server. <b>Either service can run independently without the other.</b> But in order to use all features of Autolab, we highly recommend installing both services.
 
-While the Ruby on Rails frontend supports Autolab's web application framework, the backend Tango is responsible for distributing and completing autograding jobs and runs in virtual machines or containers. When Tango is done running a job, it then sends the autograded result back to the frontend. See below for a visualization of this system.
+While the Autolab frontend supports Autolab's web application framework, the backend Tango is responsible for distributing and completing autograding jobs, which run in virtual machines or containers (we currently support Docker and AWS virtual machines). When Tango is done running a job, it then sends the autograded result back to the frontend. Below is a visualization of the typical workflow of the Autolab system.
 
 ![Autolab System](/images/autolab_system.png)
+
+As you can see on the left, the Autolab frontend receives handin files from the clients through either traditional browser interaction or [the command line interface (CLI)](/command-line-interface). The frontend then sends the files through http requests to Tango. Tango adds them to a job queue, assigns them to available containers/virtual machines for grading through ssh, and shepherds the jobs through the process. On the right, inside the domain box for Docker at CMU, we show 3 VM pools - rhel, rhel122, and rhel411 - each with potentially different software packages. At the bottom right, we show an example of an AWS VM domain with VM pools rhelPKU and ubuntu. Tango assigns jobs only to the virtual machine instances from their corresponding course’s VM pool. For example, jobs with handin files for the course 122 would only go to rhel122’s instances. Once a job is done, the feedback is copied back to Tango through ssh and sent back to the Autolab frontend through http. The frontend then displays the feedback in the browser or through the CLI. It also updates the scoreboard if applicable and stores the feedback into the database, which is displayed at the bottom left.
+
+Apart from client usage, both the Autolab frontend and Tango provide application programming interfaces (API) for developers. The specific guides are included in the [Reference](/reference) section.
 
 ##Demonstration Website
 Installation instructions can be found in our comprehensive [installation guide](/installation/overview). However, if this is your first experience with Autolab, we encourage you to try out some key features on Autolab's <a href="https://demo.autolabproject.com" target="_blank">Demo Site</a>. You can login through `Developer Login` with the email: `admin@foo.bar`. The demonstration website refreshes at 0,6,12,18 Hours (UTC) daily, and it is publicly accessible, so please only use it for your exploration. Do not use this site to store important information.
