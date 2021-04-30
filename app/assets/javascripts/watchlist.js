@@ -153,13 +153,24 @@ function get_row_html(user_id, instance, tab, archived_instances) {
       </div>`;
 }
 
-function addInstanceToDict(instancesDict, id, user_id, course_id, user_name, user_email, condition_type, violation_info, watchlist_status) {
-  if (user_id in instancesDict) {
-    instancesDict[user_id]["conditions"][condition_type] = violation_info;
-    instancesDict[user_id]["instance_ids"].push(id);
-    instancesDict[user_id]["status"] = watchlist_status;
+function add_instance_to_dict(
+  search_content, 
+  instances_dict, 
+  id, 
+  user_id, 
+  course_id, 
+  user_name, 
+  user_email, 
+  condition_type, 
+  violation_info, 
+  watchlist_status
+) {
+  if (user_id in instances_dict) {
+    instances_dict[user_id]["conditions"][condition_type] = violation_info;
+    instances_dict[user_id]["instance_ids"].push(id);
+    instances_dict[user_id]["status"] = watchlist_status;
   } else {
-    instancesDict[user_id] = {
+    instances_dict[user_id] = {
       "name": user_name, 
       "email": user_email,
       "course_id": course_id,
@@ -167,7 +178,9 @@ function addInstanceToDict(instancesDict, id, user_id, course_id, user_name, use
       "instance_ids": [id],
       "status": watchlist_status
     };
-    instancesDict[user_id]["conditions"][condition_type] = violation_info;
+    instances_dict[user_id]["conditions"][condition_type] = violation_info;
+    search_content.push({category: "email", title: user_email});
+    search_content.push({category: "name", title: user_name});
   }
 }
 
@@ -197,7 +210,16 @@ function get_watchlist_function(){
 	    	$('#resolved_tab').empty();
         $('#archived_tab').empty();
 
-        var categoryContent = [];
+        var metrics_search_content = [
+          {category: "metric", title: "late days"},
+          {category: "metric", title: "downward trend"},
+          {category: "metric", title: "no submissions"},
+          {category: "metric", title: "low scores"},
+        ]
+        var pending_search_content = [...metrics_search_content];
+        var contacted_search_content = [...metrics_search_content];
+        var resolved_search_content = [...metrics_search_content];
+        var archived_search_content = [...metrics_search_content];
 
         data["instances"].forEach(watchlist_instance => {
           var id = _.get(watchlist_instance,'id');
@@ -215,22 +237,20 @@ function get_watchlist_function(){
 
           if (_.get(watchlist_instance,'archived')) {
             archived_empty = 0;
-            addInstanceToDict(archived_instances, id, user_id, course_id, user_name, user_email, condition_type, violation_info, watchlist_status);
+            add_instance_to_dict(archived_search_content, archived_instances, id, user_id, course_id, user_name, user_email, condition_type, violation_info, watchlist_status);
           } else {
             switch(watchlist_status){
               case "new":
                 new_empty = 0;
-                addInstanceToDict(new_instances, id, user_id, course_id, user_name, user_email, condition_type, violation_info, watchlist_status);
-                categoryContent.push({category: "name", title: user_name});
-                categoryContent.push({category: "email", title: user_email});
+                add_instance_to_dict(pending_search_content, new_instances, id, user_id, course_id, user_name, user_email, condition_type, violation_info, watchlist_status);
                 break;
               case "contacted":
                 contacted_empty = 0;
-                addInstanceToDict(contacted_instances, id, user_id, course_id, user_name, user_email, condition_type, violation_info, watchlist_status);
+                add_instance_to_dict(contacted_search_content, contacted_instances, id, user_id, course_id, user_name, user_email, condition_type, violation_info, watchlist_status);
                 break;
               case "resolved":
                 resolved_empty = 0;
-                addInstanceToDict(resolved_instances, id, user_id, course_id, user_name, user_email, condition_type, violation_info, watchlist_status);
+                add_instance_to_dict(resolved_search_content, resolved_instances, id, user_id, course_id, user_name, user_email, condition_type, violation_info, watchlist_status);
                 break;
               default:
                 console.error(_.get(watchlist_instance,'status') + " is not valid");
@@ -239,8 +259,8 @@ function get_watchlist_function(){
           }
         });
         
-        new_html = `<div class="ui secondary segment" >
-                      <div class="ui search" id="pending_search">
+        pending_header = `<div class="ui secondary segment" >
+                      <div class="ui right aligned scrolling search" id="pending_search">
                         <div class="ui icon input">
                           <input class="prompt" type="text" placeholder="Search students...">
                           <i class="search icon"></i>
@@ -249,8 +269,8 @@ function get_watchlist_function(){
                       </div>
                       <h5> Pending at-risk students </h5>
                     </div>`;
-        contacted_html = `<div class="ui secondary segment" >
-                            <div class="ui search" id="contacted_search">
+        contacted_header = `<div class="ui secondary segment" >
+                            <div class="ui right aligned scrolling search" id="contacted_search">
                               <div class="ui icon input">
                                 <input class="prompt" type="text" placeholder="Search students...">
                                 <i class="search icon"></i>
@@ -259,8 +279,8 @@ function get_watchlist_function(){
                             </div>
                             <h5> Contacted at-risk students </h5>
                           </div>`;
-        resolved_html = `<div class="ui secondary segment" >
-                          <div class="ui search" id="resolved_search">
+        resolved_header = `<div class="ui secondary segment" >
+                          <div class="ui right aligned scrolling search" id="resolved_search">
                             <div class="ui icon input">
                               <input class="prompt" type="text" placeholder="Search students...">
                               <i class="search icon"></i>
@@ -269,8 +289,8 @@ function get_watchlist_function(){
                           </div>
                           <h5> Resolved at-risk students </h5>
                         </div>`;
-        archived_html = `<div class="ui secondary segment" >
-                            <div class="ui search" id="archived_search">
+        archived_header = `<div class="ui secondary segment" >
+                            <div class="ui right aligned scrolling search" id="archived_search">
                               <div class="ui icon input">
                                 <input class="prompt" type="text" placeholder="Search students...">
                                 <i class="search icon"></i>
@@ -279,6 +299,10 @@ function get_watchlist_function(){
                             </div>
                           <h5> Archived at-risk students </h5> <b>Resolved and contacted students becomes archived when risk metrics are changed </b>
                          </div>`;
+        new_html = pending_header;
+        contacted_html = contacted_header;
+        resolved_html = resolved_header;
+        archived_html = archived_header;
 
 	    	$.each(new_instances, function( user_id, instance ) {
           new_html += get_row_html(user_id, instance, "new", archived_instances);
@@ -354,13 +378,35 @@ function get_watchlist_function(){
       $('.ui.icon').popup();
       $('.ui.circular.label.condition').popup();
 
-      console.log(categoryContent);
-      $('.ui.search')
-        .search({
-          type: 'category',
-          source: categoryContent
-        })
-      ;
+      $('#pending_search').search({
+        type: 'category',
+        source: pending_search_content,
+        maxResults: 100
+      });
+      $('#contacted_search').search({
+        type: 'category',
+        source: contacted_search_content,
+        maxResults: 100
+      });
+      $('#resolved_search').search({
+        type: 'category',
+        source: resolved_search_content,
+        maxResults: 100
+      });
+      $('#archived_search').search({
+        type: 'category',
+        source: archived_search_content,
+        maxResults: 100
+      });
+
+      $(function () {
+        $("#pending_search").keypress(function (e) {
+            var code = (e.keyCode ? e.keyCode : e.which);
+            if (code == 13) {
+                
+            }
+        });
+      });
 
       $('.ui.button.contact_single').click(function() {
 
