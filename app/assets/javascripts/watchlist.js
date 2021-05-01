@@ -103,7 +103,7 @@ function get_buttons_html(user_id, tab, archived_instances) {
       </div>` : "";
 
   switch(tab) {
-    case "new":
+    case "pending":
       return `
         <div class="students-buttons-right"> 
           ${archived_icon}
@@ -186,7 +186,7 @@ function add_instance_to_dict(
 
 function get_watchlist_function(){
 
-  var new_instances = {}
+  var pending_instances = {}
   var contacted_instances = {}
   var resolved_instances = {}
   var archived_instances = {}
@@ -195,7 +195,7 @@ function get_watchlist_function(){
 
 	$.getJSON(watchlist_endpoints['get'],function(data, status){
 	    if (status=='success') {
-	    	var new_empty = 1;
+	    	var pending_empty = 1;
 	    	var contacted_empty = 1;
 	    	var resolved_empty = 1;
         var archived_empty = 1;
@@ -205,7 +205,7 @@ function get_watchlist_function(){
 	    	$("#undefined_metrics").hide();
         $("#defined_metrics").show();
 
-	    	$('#new_tab').empty();
+	    	$('#pending_tab').empty();
 	    	$('#contacted_tab').empty();
 	    	$('#resolved_tab').empty();
         $('#archived_tab').empty();
@@ -240,8 +240,8 @@ function get_watchlist_function(){
             add_instance_to_dict(archived_search_content, archived_instances, id, user_id, course_id, user_name, user_email, condition_type, violation_info, watchlist_status);
           } else {
             switch(watchlist_status){
-              case "new":
-                new_empty = 0;
+              case "pending":
+                pending_empty = 0;
                 add_instance_to_dict(pending_search_content, new_instances, id, user_id, course_id, user_name, user_email, condition_type, violation_info, watchlist_status);
                 break;
               case "contacted":
@@ -299,13 +299,13 @@ function get_watchlist_function(){
                             </div>
                           <h5> Archived at-risk students </h5> <b>Resolved and contacted students becomes archived when risk metrics are changed </b>
                          </div>`;
-        new_html = pending_header;
+        pending_html = pending_header;
         contacted_html = contacted_header;
         resolved_html = resolved_header;
         archived_html = archived_header;
 
-	    	$.each(new_instances, function( user_id, instance ) {
-          new_html += get_row_html(user_id, instance, "new", archived_instances);
+	    	$.each(pending_instances, function( user_id, instance ) {
+          pending_html += get_row_html(user_id, instance, "pending", archived_instances);
         });
         $.each(contacted_instances, function( user_id, instance ) {
           contacted_html += get_row_html(user_id, instance, "contacted", archived_instances);
@@ -319,11 +319,11 @@ function get_watchlist_function(){
         
 
 	    	// show empty messages
-	    	if (new_empty){
+	    	if (pending_empty){
 	    		html_empty_message = get_html_empty_message("There are no pending at-risk students");
-	    		$('#new_tab').html(html_empty_message);
+	    		$('#pending_tab').html(html_empty_message);
 	    	} else {
-          $('#new_tab').html(new_html);
+          $('#pending_tab').html(pending_html);
         }
 	    	if (contacted_empty){
 	    		html_empty_message = get_html_empty_message("You have not contacted any at-risk students");
@@ -416,15 +416,15 @@ function get_watchlist_function(){
 
         method = "contact";
         var user_id = $(this).parent().parent().attr('id');
-        window.open(`mailto: ${new_instances[user_id]["email"]}`, "_blank");
-        console.log(new_instances[user_id]["instance_ids"]);
+        window.open(`mailto: ${pending_instances[user_id]["email"]}`, "_blank");
+        console.log(pending_instances[user_id]["instance_ids"]);
         
         // re-enabling buttons on failure
         function enable_buttons () {
           button_group.removeAttr("disabled");
         } 
 
-        update_watchlist(method, new_instances[user_id]["instance_ids"], enable_buttons);
+        update_watchlist(method, pending_instances[user_id]["instance_ids"], enable_buttons);
       });
 
       $('.ui.button.resolve_single').click(function() {
@@ -435,7 +435,7 @@ function get_watchlist_function(){
         
         method = "resolve";
         var user_id = $(this).parent().parent().attr('id');
-        var instances = get_active_instances(new_instances, contacted_instances, archived_instances);
+        var instances = get_active_instances(pending_instances, contacted_instances, archived_instances);
         
         // re-enabling buttons on failure
         function enable_buttons () {
@@ -453,12 +453,12 @@ function get_watchlist_function(){
 
     var emails = [];
     selected_user_ids.forEach(user_id => {
-      emails.push(new_instances[user_id]["email"]);
+      emails.push(pending_instances[user_id]["email"]);
     });
 
     var instance_ids = [];
     selected_user_ids.forEach(user_id => {
-      instance_ids = instance_ids.concat(new_instances[user_id]["instance_ids"]);
+      instance_ids = instance_ids.concat(pending_instances[user_id]["instance_ids"]);
     });
   
     if (instance_ids.length > 1) {
@@ -474,7 +474,7 @@ function get_watchlist_function(){
   $('#resolve_button').off('click');
   $('#resolve_button').click(function(){
     method = "resolve";
-    var instances = get_active_instances(new_instances, contacted_instances, archived_instances);
+    var instances = get_active_instances(pending_instances, contacted_instances, archived_instances);
 
     var instance_ids = [];
     selected_user_ids.forEach(user_id => {
@@ -490,7 +490,7 @@ function get_watchlist_function(){
   $('#delete_button').off('click');
   $('#delete_button').click(function(){
     method = "delete";
-    var instances = get_active_instances(new_instances, contacted_instances, archived_instances);
+    var instances = get_active_instances(pending_instances, contacted_instances, archived_instances);
 
     var instance_ids = [];
     selected_user_ids.forEach(user_id => {
@@ -516,8 +516,8 @@ function updateButtonVisibility(item){
   // Deleting instances only avilable in archive tab
   $("#delete_button").hide();
   switch ($(item).attr("data-tab")) {
-    case "new_tab":
-      if ($("#new_tab #empty_tabs").length > 0) {
+    case "pending_tab":
+      if ($("#pending_tab #empty_tabs").length > 0) {
         $("#contact_button").addClass("disabled");
         $("#resolve_button").addClass("disabled");
       } else {
@@ -548,12 +548,12 @@ function updateButtonVisibility(item){
   }
 }
 
-function get_active_instances(new_instances, contacted_instances, archived_instances) {
+function get_active_instances(pending_instances, contacted_instances, archived_instances) {
   var tab = $(".ui.tab.segments.active").attr('id');
   
   switch(tab){
-    case "new_tab":
-      return new_instances;
+    case "pending_tab":
+      return pending_instances;
     case "contacted_tab":
       return contacted_instances;
     case "archived_tab":
