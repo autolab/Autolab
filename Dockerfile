@@ -18,7 +18,8 @@ RUN ln -fs /usr/share/zoneinfo/America/New_York /etc/localtime
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y \
   sqlite3 \
-  tzdata
+  tzdata  \
+  shared-mime-info
 
 # Start Nginx / Passenger
 RUN rm -f /etc/service/nginx/down
