@@ -242,7 +242,7 @@ function get_watchlist_function(){
             switch(watchlist_status){
               case "pending":
                 pending_empty = 0;
-                add_instance_to_dict(pending_search_content, new_instances, id, user_id, course_id, user_name, user_email, condition_type, violation_info, watchlist_status);
+                add_instance_to_dict(pending_search_content, pending_instances, id, user_id, course_id, user_name, user_email, condition_type, violation_info, watchlist_status);
                 break;
               case "contacted":
                 contacted_empty = 0;
@@ -398,14 +398,19 @@ function get_watchlist_function(){
         source: archived_search_content,
         maxResults: 100
       });
-
-      $(function () {
-        $("#pending_search").keypress(function (e) {
-            var code = (e.keyCode ? e.keyCode : e.which);
-            if (code == 13) {
-                
-            }
-        });
+      
+      $("#pending_search").keypress(function (e) {
+          var code = (e.keyCode ? e.keyCode : e.which);
+          if (code == 13) {
+              console.log(pending_instances);
+              var search_input = $("#pending_search .input .prompt").val();
+              var pending_instances = Object.keys(pending_instances).reduce(function (filtered, key) {
+                if (pending_instances[key].includes(search_input)) {
+                  filtered[key] = pending_instances[key];
+                } 
+                return filtered;
+              }, {});
+          }
       });
 
       $('.ui.button.contact_single').click(function() {
