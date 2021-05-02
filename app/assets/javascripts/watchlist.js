@@ -236,7 +236,7 @@ function get_watchlist_function(){
         });
         
         pending_html = `<div class="ui secondary segment" >
-                     <h5> Pending students in need of help </h5>
+                     <h5> Pending students in need of attention</h5>
                     </div>`;
         contacted_html = `<div class="ui secondary segment" >
                           <h5> Contacted students </h5>
