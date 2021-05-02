@@ -264,7 +264,7 @@ function get_watchlist_function(){
 
 	    	// show empty messages
 	    	if (pending_empty){
-	    		html_empty_message = get_html_empty_message("There are no pending students in need of help");
+	    		html_empty_message = get_html_empty_message("There are no pending students in need of attention");
 	    		$('#pending_tab').html(html_empty_message);
 	    	} else {
           $('#pending_tab').html(pending_html);
