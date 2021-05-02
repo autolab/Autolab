@@ -35,7 +35,6 @@ RUN chown app:app Gemfile Gemfile.lock
 
 # Prepare folders
 USER app
-#RUN bundle update mimemagic
 RUN bundle install
 
 RUN mkdir /home/app/webapp
