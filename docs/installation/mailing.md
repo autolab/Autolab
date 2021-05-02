@@ -2,7 +2,7 @@
 
 Autolab requires mailing to allow users to register accounts and reset passwords. You will also be able to make announcements through Autolab as well. The recommended approach is to setup Autolab to use a SMTP server, such as [mailgun](https://mailgun.com), [SendGrid](https://sendgrid.com), [Amazon SES](https://aws.amazon.com/ses/) or any other valid SMTP mail servers to send out email.
 
-We intend this instructions mainly for production usage. To set Autolab up to use a custom SMTP Server, edit the following in `production.rb` that you have created. (If you would like to test it in development, add the following settings into `development.rb`).
+We intend this instructions mainly for production usage. To set Autolab up to use a custom SMTP Server, edit the following in `production.rb` that you have created. (If you would like to test it in development, add the following settings into `development.rb`). Both `production.rb` and `development.rb` are located at `config/environments`
 
 1. Update the host domain of your Autolab frontend instance
 
