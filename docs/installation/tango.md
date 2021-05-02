@@ -63,7 +63,7 @@ This guide shows how to setup Tango in a **development environment**. Use the [p
         :::bash
         python jobManager.py
 
-    For more information on the job producer/consumer model check out our [blog post](https://autolab.github.io/2015/04/making-backend-scalable/)
+    For more information on the job producer/consumer model check out our <a href="https://autolab.github.io/2015/04/making-backend-scalable/" target="_blank">blog post</a>.
 
 10.  Ensure Tango is running:
 
