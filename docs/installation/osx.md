@@ -4,9 +4,9 @@ This page provides instructions on installing Autolab for development on Mac OSX
 
 Follow the step-by-step instructions below:
 
-1.  Install [rbenv](https://github.com/sstephenson/rbenv) (use the Basic GitHub Checkout method)
+1.  Install <a href="https://github.com/sstephenson/rbenv" target="_blank">rbenv</a> (use the Basic GitHub Checkout method)
 
-2.  Install [ruby-build](https://github.com/sstephenson/ruby-build) as an rbenv plugin:
+2.  Install <a href="https://github.com/sstephenson/ruby-build" target="_blank">ruby-build</a> as an rbenv plugin:
 
         :::bash
         git clone https://github.com/sstephenson/ruby-build.git ~/.rbenv/plugins/ruby-build
@@ -55,8 +55,8 @@ Follow the step-by-step instructions below:
 
 7.  Install one of two database options
 
-    -   [SQLite](https://www.tutorialspoint.com/sqlite/sqlite_installation.htm) should **only** be used in development
-    -   [MySQL](https://dev.mysql.com/doc/refman/5.7/en/osx-installation-pkg.html) can be used in development or production
+    -   <a href="https://www.tutorialspoint.com/sqlite/sqlite_installation.htm" target="_blank">SQLite</a> should **only** be used in development
+    -   <a href="https://dev.mysql.com/doc/refman/5.7/en/osx-installation-pkg.html" target="_blank">MySQL</a> can be used in development or production
 
 8.  Configure your database:
 
@@ -108,6 +108,6 @@ Follow the step-by-step instructions below:
         :::bash
         Email: "admin@foo.bar".
 
-16. Install [Tango](/tango#installation), the backend autograding service.
+16. Install [Tango](/installation/tango), the backend autograding service.
 
 17. Now you are all set to start using Autolab! Visit the [Guide for Instructors](/instructors) and [Guide for Lab Authors](/lab) pages for more info.

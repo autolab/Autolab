@@ -1,10 +1,10 @@
 # Formatted Feedback
 
-Autograding feedback plays an important role in a student's Autolab experience. Good feedback provided by autograders can really enhance a student's learning. As of Summer 2020, Autolab includes the formatted feedback feature by [Jala Alamin](https://github.com/alamijal). The feature was originally introduced in Washington State University Vancouver's version of Autolab.
+Autograding feedback plays an important role in a student's Autolab experience. Good feedback provided by autograders can really enhance a student's learning. As of Summer 2020, Autolab includes the formatted feedback feature by <a href="https://github.com/alamijal" target="_blank">Jala Alamin</a>. The feature was originally introduced in Washington State University Vancouver's version of Autolab.
 
 Using formatted feedback requires a prior understanding of how Autolab's autograders work, as per the [Guide for Lab Authors](/lab/#writing-autograders). The formatted feedback feature is an **optional extension** of the default feedback. It comes in a staged fashion, allowing differing levels of adoption.
 
-The next few sections are meant to be read in order, with each following section introducing a more complex usage of the formatted feedback feature than the previous. Experimenting the [hellocat](https://github.com/autolab/Autolab/tree/master/examples/hellocat) example code is another way to familiarize with the formatted feedback.
+The next few sections are meant to be read in order, with each following section introducing a more complex usage of the formatted feedback feature than the previous. Experimenting with the <a href="https://github.com/autolab/Autolab/tree/master/examples/hellocat" target="_blank">hellocat</a> example code is another way to familiarize with the formatted feedback.
 
 ### Default Feedback
 

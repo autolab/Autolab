@@ -2,10 +2,10 @@
 
 The Autolab Docker Compose installation is a fast and easy production-ready installation and deployment method. It uses a MySQL database for the Autolab deployment, and comes with TLS/SSL support. This is now the preferred way of installing Autolab.
 
-If you are stuck or find issues with the installation process you can either file an issue on our Github repository, or join our Slack [here](https://autolab-slack.herokuapp.com/) and let us know and we will try our best to help. Also see the [debugging](#debugging-your-deployment) section for tips on how to diagnose problems.
+If you are stuck or find issues with the installation process you can either file an issue on our Github repository, or join our Slack <a href="https://autolab-slack.herokuapp.com/" target="_blank">here</a> and let us know so we can try our best to help. Also see the [debugging](#debugging-your-deployment) section for tips on how to diagnose problems.
 
 ## Installation
-First ensure that you have Docker and Docker Compose installed on your machine. See the official [Docker docs](See https://docs.docker.com/install/) for the installation steps.
+First ensure that you have Docker and Docker Compose installed on your machine. See the official <a href="https://docs.docker.com/install/" target="_blank">Docker docs</a> for the installation steps.
 
 1. Clone this repository and its Autolab and Tango submodules: 
 
@@ -73,7 +73,7 @@ First ensure that you have Docker and Docker Compose installed on your machine. 
 12. If you intend to use TLS later, in `nginx/app.conf`, change instances of `<REPLACE_WITH_YOUR_DOMAIN>` to your real domain name. Otherwise, if you are not using TLS, in `nginx/no-ssl-app.conf`, change `server_name` to your real domain name.
 
 13. Continue with TLS setup as outlined in the [next section](#configuring-tlsssl)
-14. Build the autograding image(s) that you want to use in Tango (see [the docs](https://docs.autolabproject.com/tango-vmms/#docker-vmms-setup) for more information). For this setup we will stick to the default Ubuntu 18.04 autograding image: 
+14. Build the autograding image(s) that you want to use in Tango (see [the docs](/installation/tango/#docker-vmms-setup) for more information). For this setup we will stick to the default Ubuntu 18.04 autograding image: 
 
         :::bash
         docker build -t autograding_image Tango/vmms/

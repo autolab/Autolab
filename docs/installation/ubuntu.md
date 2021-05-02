@@ -40,7 +40,7 @@ This page provides instructions on installing Autolab for development on Ubuntu 
         sudo apt-get install sqlite3 libsqlite3-dev
 
 6. Installing MySQL. (If you would just like to test Autolab, then you can skip this step by using SQLite)
-Following instructions from [How to Install MySQL on Ubuntu](https://www.digitalocean.com/community/tutorials/how-to-install-mysql-on-ubuntu-18-04).
+Following instructions from <a href="https://www.digitalocean.com/community/tutorials/how-to-install-mysql-on-ubuntu-18-04" target="_blank">How to Install MySQL on Ubuntu</a>.
 
         :::bash
         sudo apt install mysql-server
@@ -160,8 +160,8 @@ Comment out the configurations meant for MySQL in config/database.yml, and inser
 
         Email: "admin@foo.bar"
 
-17. Install [Tango](/tango#installation), the backend autograding service.
+17. Install [Tango](/installation/tango), the backend autograding service.
 
-18. If you would like to deploy the server, you can try out [Phusion Passenger](https://www.phusionpassenger.com/library/walkthroughs/start/ruby.html)
+18. If you would like to deploy the server, you can try out <a href="https://www.phusionpassenger.com/library/walkthroughs/start/ruby.html" target="_blank">Phusion Passenger</a>.
 
 19. Now you are all set to start using Autolab! Visit the [Guide for Instructors](/instructors) and [Guide for Lab Authors](/lab) pages for more info.

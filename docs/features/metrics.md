@@ -19,7 +19,7 @@ We envision the feature to be used by the instructors in this order. They would:
 
 ![Metrics](/images/risk_metrics.png)
 
-From our interviews with instructors, we understand that different courses have different measures of whether a student is at risk. As such, a set of risk conditions together will define the course's risk metrics. We intend to add more conditions to the risk metrics in the future. Feel free to suggest them via our [GitHub Issues](https://github.com/autolab/Autolab/issues) page.
+From our interviews with instructors, we understand that different courses have different measures of whether a student is at risk. As such, a set of risk conditions together will define the course's risk metrics. We intend to add more conditions to the risk metrics in the future. Feel free to suggest them via our <a href="https://github.com/autolab/Autolab/issues" target="_blank">GitHub Issues</a> page.
 
 ### Risk Condition Rationale
 
