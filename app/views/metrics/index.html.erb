@@ -1,4 +1,4 @@
-<% @title = "Metrics"%>
+<% @title = "Student Metrics"%>
 <% content_for :stylesheets do %>
   <%= stylesheet_link_tag "metrics" %>
 <% end %>
@@ -13,7 +13,7 @@
 </div>
 <div class="ui pointing secondary tabular menu">
   <a class="item active" data-tab="watchlist">Watchlist</a>
-  <a class="item" data-tab="risk metrics">Risk Metrics</a>
+  <a class="item" data-tab="student metrics">Student Metrics</a>
 </div>
 <div class="ui tab active" data-tab="watchlist" id="watchlist_tab">
   <div class="top-bar">
@@ -45,16 +45,16 @@
       <div class="ui tab segments active" id="undefined_metrics" style="display:none">
         <center>
           <i class="huge inbox icon"></i> 
-            <h3> You have not defined your risk metrics </h3>
-            You can define metrics to identify at-risk students using the <b>Risk Metrics</b> tab. <br>
+            <h3> You have not defined your student metrics </h3>
+            You can define metrics to identify students in need of help using the <b>Student Metrics</b> tab. <br>
         </center>
       </div>
     </div>
   </div>
 </div>
-<div class="ui tab" data-tab="risk metrics">
+<div class="ui tab" data-tab="student metrics">
   <h6> 
-    Select one or more of the following risk metrics that you want to use to identify at-risk students.
+    Select one or more of the following metrics that you want to use to identify students in need of help.
   </h6>
   <br>
   <div class="ui form">

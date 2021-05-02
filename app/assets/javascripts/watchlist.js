@@ -236,16 +236,16 @@ function get_watchlist_function(){
         });
         
         pending_html = `<div class="ui secondary segment" >
-                     <h5> Pending at-risk students </h5>
+                     <h5> Pending students in need of help </h5>
                     </div>`;
         contacted_html = `<div class="ui secondary segment" >
-                          <h5> Contacted at-risk students </h5>
+                          <h5> Contacted students </h5>
                         </div>`;
         resolved_html = `<div class="ui secondary segment" >
-                          <h5> Resolved at-risk students </h5>
+                          <h5> Resolved students </h5>
                         </div>`;
         archived_html = `<div class="ui secondary segment" >
-                          <h5> Archived at-risk students </h5> <b>Resolved and contacted students becomes archived when risk metrics are changed </b>
+                          <h5> Archived students </h5> <b>Resolved and contacted students becomes archived when student metrics are changed </b>
                          </div>`;
 
 	    	$.each(pending_instances, function( user_id, instance ) {
@@ -264,25 +264,25 @@ function get_watchlist_function(){
 
 	    	// show empty messages
 	    	if (pending_empty){
-	    		html_empty_message = get_html_empty_message("There are no pending at-risk students");
+	    		html_empty_message = get_html_empty_message("There are no pending students in need of help");
 	    		$('#pending_tab').html(html_empty_message);
 	    	} else {
           $('#pending_tab').html(pending_html);
         }
 	    	if (contacted_empty){
-	    		html_empty_message = get_html_empty_message("You have not contacted any at-risk students");
+	    		html_empty_message = get_html_empty_message("You have not contacted any students");
 	    		$('#contacted_tab').html(html_empty_message);
 	    	} else {
           $('#contacted_tab').html(contacted_html);
         }
 	    	if (resolved_empty){
-	    		html_empty_message = get_html_empty_message("You have not resolved any at-risk students");
+	    		html_empty_message = get_html_empty_message("You have not resolved any students");
 	    		$('#resolved_tab').html(html_empty_message);
 	    	} else {
           $('#resolved_tab').html(resolved_html);
         }
 	    	if (archived_empty){
-	    		html_empty_message = get_html_empty_message("You have no archived at-risk students ");
+	    		html_empty_message = get_html_empty_message("You have no archived students");
 	    		$('#archived_tab').html(html_empty_message);
 	    	} else {
           $('#archived_tab').html(archived_html);
