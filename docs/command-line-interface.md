@@ -7,7 +7,7 @@ To help showcase the capabilities of the [API](/api-overview), we developed auto
 
 ## Obtaining authorization
 
-Make sure you have the cli installed by running `autolab` in your terminal. If you see the usage instructions you're good to go. Otherwise, ask your school admin to install the cli from the [Autolab CLI Repository](https://github.com/autolab/autolab-cli).
+Make sure you have the cli installed by running `autolab` in your terminal. If you see the usage instructions you're good to go. Otherwise, ask your school admin to install the cli from the <a href="https://github.com/autolab/autolab-cli" target="_blank">Autolab CLI Repository</a>.
 
 To setup autolab-cli with your Autolab account, run `autolab setup`. This will initiate a manual activation.
 
@@ -96,4 +96,4 @@ $ autolab <sub-command> -h
 
 This will reveal other flags you may be able to use with each command. For example, you can call all of the context-dependent commands outside of an assessment directory by providing the `<course_unique_name>:<asmt_unique_name>` pair.
 
-We hope this speeds up your workflow! If you find any problems, please file an issue on the [Autolab CLI Repository](https://github.com/autolab/autolab-cli).
+We hope this speeds up your workflow! If you find any problems, please file an issue on the <a href="https://github.com/autolab/autolab-cli" target="_blank">Autolab CLI Repository</a>.

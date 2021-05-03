@@ -1,8 +1,8 @@
 # MOSS Plagiarism Detection Installation
 
-[MOSS (Measure Of Software Similarity)](https://theory.stanford.edu/~aiken/moss/) is a system for checking for plagiarism. MOSS can be setup on Autolab as follows:
+<a href="https://theory.stanford.edu/~aiken/moss/" target="_blank">MOSS (Measure Of Software Similarity)</a> is a system for checking for plagiarism. MOSS can be setup on Autolab as follows:
 
-1. Obtain the script for MOSS based on the instructions given in [https://theory.stanford.edu/~aiken/moss/](https://theory.stanford.edu/~aiken/moss/).
+1. Obtain the script for MOSS based on the instructions given <a href="https://theory.stanford.edu/~aiken/moss/" target="_blank">here</a>.
 
 2. Create a directory called `vendor` at the root of your Autolab installation, i.e
 

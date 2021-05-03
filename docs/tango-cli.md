@@ -1,10 +1,10 @@
 # Tango Command Line Client
 
-This is a guide to use the command-line client (`clients/tango-cli.py`) to test and collect other valuable information from Tango. Please [setup Tango](/tango/#installation) before moving forward. This guide assumes an instance of Tango is already up and running.
+This is a guide to use the command-line client (`clients/tango-cli.py`) to test and collect other valuable information from Tango. Please [setup Tango](/installation/tango) before moving forward. This guide assumes an instance of Tango is already up and running.
 
 ## Running a Sample Job
 
-The CLI supports two ways to run a sample job, [individual steps](/tango-cli/#indivdual-steps) or in a [single all-in-one command](/tango-cli/#single-command). The first option is better for debugging each individual API call, whereas the second option is best for quickly running a job. Other Tango CLI commands are also discussed [below](/tango-cli/#miscallaneous-commands).
+The CLI supports two ways to run a sample job, [individual steps](/tango-cli/#individual-steps) or in a [single all-in-one command](/tango-cli/#single-command). The first option is better for debugging each individual API call, whereas the second option is best for quickly running a job. Other Tango CLI commands are also discussed [below](/tango-cli/#miscellaneous-commands).
 
 The Tango directory contains various different jobs in the `clients/` directory; `clients/README.md` discusses the function of each job.
 
