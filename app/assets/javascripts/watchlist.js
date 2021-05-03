@@ -153,6 +153,19 @@ function get_row_html(user_id, instance, tab, archived_instances) {
       </div>`;
 }
 
+function set_tab_html(header, instances, is_empty, tab_name, archived_instances) {
+  html = header;
+  $.each(instances, function( user_id, instance ) {
+    html += get_row_html(user_id, instance, tab_name, archived_instances);
+  });
+  if (is_empty){
+    html_empty_message = get_html_empty_message("There are no pending at-risk students");
+    $('#pending_tab').html(html_empty_message);
+  } else {
+    $('#pending_tab').html(pending_html);
+  }
+}
+
 function add_instance_to_dict(
   search_content, 
   instances_dict, 
@@ -375,6 +388,24 @@ function get_watchlist_function(){
         }
       });
 
+      $("#pending_search").keypress(function (e) {
+        var code = (e.keyCode ? e.keyCode : e.which);
+        if (code == 13) {
+            var search_input = $("#pending_search .input .prompt").val();
+            var filtered_instances = Object.keys(pending_instances).reduce(function (filtered, key) {
+              if (pending_instances[key]["name"]?.includes(search_input)
+                || pending_instances[key]["email"]?.includes(search_input)) {
+                filtered[key] = pending_instances[key];
+              } 
+              return filtered;
+            }, {});
+            pending_html = "";
+            $.each(filtered_instances, function( user_id, instance ) {
+              pending_html += get_row_html(user_id, instance, "pending", archived_instances);
+            });
+          }
+      });
+
       $('.ui.icon').popup();
       $('.ui.circular.label.condition').popup();
 
@@ -397,20 +428,6 @@ function get_watchlist_function(){
         type: 'category',
         source: archived_search_content,
         maxResults: 100
-      });
-      
-      $("#pending_search").keypress(function (e) {
-          var code = (e.keyCode ? e.keyCode : e.which);
-          if (code == 13) {
-              console.log(pending_instances);
-              var search_input = $("#pending_search .input .prompt").val();
-              var pending_instances = Object.keys(pending_instances).reduce(function (filtered, key) {
-                if (pending_instances[key].includes(search_input)) {
-                  filtered[key] = pending_instances[key];
-                } 
-                return filtered;
-              }, {});
-          }
       });
 
       $('.ui.button.contact_single').click(function() {
