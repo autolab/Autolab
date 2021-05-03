@@ -1,6 +1,4 @@
-### Mac OSX 10.11+
-
-This page provides instructions on installing Autolab for development on Mac OSX 10.11+.
+This page provides instructions on installing Autolab for development on Mac OSX 10.11+. If you encounter any issue along the way, check out [Troubleshooting](/installation/troubleshoot).
 
 Follow the step-by-step instructions below:
 
@@ -51,7 +49,7 @@ Follow the step-by-step instructions below:
         cd bin
         bundle install
 
-    Refer to the [FAQ](#faq) for issues installing gems
+    Refer to [Troubleshooting](/installation/troubleshoot) for issues installing gems
 
 7.  Install one of two database options
 
@@ -63,7 +61,7 @@ Follow the step-by-step instructions below:
         :::bash
         cp config/database.yml.template config/database.yml
 
-    Edit `database.yml` with the correct credentials for your chosen database. Refer to the [FAQ](#faq) for any issues.
+    Edit `database.yml` with the correct credentials for your chosen database. Refer to [Troubleshooting](/installation/troubleshoot) for any issues.
 
 9.  Configure school/organization specific information (new feature):
 

@@ -25,6 +25,8 @@ By convention, an autograder accepts an optional `-A` command line argument that
 
 One of the nice properties of Autolab autograders is that they can be written and tested offline, without requiring any interaction with Autolab. Writing autograders is not easy, but the fact that they can be developed offline allows you to develop and test them in your own familiar computing environment.
 
+To format your autoresult feedback provided to the students, use the [formatted feedback feature](/features/formatted-feedback).
+
 ## Installing Autograded Labs
 
 After you've written and tested the autograder, you then use the Autolab web site to create the autograded lab. Autolab supports creating new labs from scratch, or reusing labs from previous semesters. We'll describe each of these in turn.
@@ -333,12 +335,8 @@ $ cd test-autograder && make clean && make
 
 The `hello/writeup` contains the detailed lab writeup, either html or pdf file, that students can download from the Autolab front end.
 
-## FAQ
+## Troubleshooting
 
 #### Why is Autolab not displaying my stdout output?
 
 Autolab always shows the stdout output of running make, even when the program crashed or timed out. However, when it does crash and the expected autoresult json string is not appended to the output, parsing of the last line will fail. If this happens, any stdout output that is longer than 10,000 lines will be discarded (Note that this limit does not apply when the autoresult json is valid).
-
-#### Is there a way to formatting the feedback provided to the students
-
-Yes there is, by using the [formatted feedback feature](/features/#formatted-feedback). 

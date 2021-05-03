@@ -1,6 +1,4 @@
-### Ubuntu 18.04+ 
-
-This page provides instructions on installing Autolab for development on Ubuntu 18.04 LTS.
+This page provides instructions on installing Autolab for development on Ubuntu 18.04 LTS. If you encounter any issue along the way, check out [Troubleshooting](/installation/troubleshoot).
 
 1. Upgrade system packages and installing prerequisites
 
