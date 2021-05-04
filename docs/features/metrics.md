@@ -2,7 +2,7 @@
 
 Traditional approaches of identifying students who are struggling with class is reactive; course staff wait for students to come to them to provide help, which can often be too late.
 
-The metrics feature seeks to be an proactive approach by actively identifying students who might be struggling in class through tracking of metrics that signify possible risks. Identifying at-risk students early would provide a better chance of getting them back on track in the course.
+The metrics feature seeks to be an proactive approach by actively identifying students who might be struggling in class through tracking of metrics that signify possible risks. Identifying students in need of attention early in the course would provide a better chance of getting them back on track in the course.
 
 
 ## Usage Flow
@@ -10,20 +10,20 @@ The metrics feature seeks to be an proactive approach by actively identifying st
 We envision the feature to be used by the instructors in this order. They would:
 
 1. Set up their course and assignments as per usual
-1. Set up [Risk Metrics](#risk-metrics) at the start of the course
-1. Be notified of new at risk students in their [Watchlist](#watchlist) on their course page
+1. Set up [Student Metrics](#student-metrics) at the start of the course
+1. Be notified of pending students in need of attention in their [Watchlist](#watchlist) on the course page
 1. Visit the [Watchlist](#watchlist), contact students if necessary, using it as a work list at the same time
-1. Refine the [Risk Metrics](#risk-metrics) as the course progresses
+1. Refine the [Student Metrics](#student-metrics) as the course progresses
 
-## Risk Metrics
+## Student Metrics
 
-![Metrics](/images/risk_metrics.png)
+![Student Metrics](/images/student_metrics.png)
 
-From our interviews with instructors, we understand that different courses have different measures of whether a student is at risk. As such, a set of risk conditions together will define the course's risk metrics. We intend to add more conditions to the risk metrics in the future. Feel free to suggest them via our [GitHub Issues](https://github.com/autolab/Autolab/issues) page.
+From our interviews with instructors, we understand that different courses have different measures of whether a student is in need of attention. As such, a set of conditions together will define the course's student metrics. We intend to add more conditions to the metrics in the future. Feel free to suggest them via our <a href="https://github.com/autolab/Autolab/issues" target="_blank">GitHub Issues</a> page.
 
-### Risk Condition Rationale
+### Student Metrics Condition Rationale
 
-The conditions are designed to capture different characteristics of a possibly at risk student. In the sections that follow we attempt to explain the rationale behind each condition to aid with selecting the risk conditions.
+The conditions are designed to capture different characteristics of a possible student in need of attention. In the sections that follow we attempt to explain the rationale behind each condition to aid with selecting the conditions.
 
 #### Students who have used *number* grace days by *date*.
 
@@ -60,13 +60,13 @@ Identify weaker students. We expect this condition to be useful earlier in the c
 
 ![Watchlist](/images/watchlist.png)
 
-Once instructors have set up risk metrics for their course, students that are identified as at-risk students based on these metrics will appear in the watchlist.
+Once instructors have set up student metrics for their course, students that are identified as in need of attention based on these metrics will appear in the watchlist.
 
 ### Watchlist Instance
 
 ![Watchlist Instance](/images/watchlist_instance.png)
 
-Every row in the watchlist represents a particular instance of a student who meets one or more of the risk conditions. A single student can appear in multiple watchlist instances if they are identified for new risk conditions on separate occassions of loading the watchlist. 
+Every row in the watchlist represents a particular instance of a student who meets one or more of the metrics conditions. A single student can appear in multiple watchlist instances if they are identified for new metrics conditions on separate occassions of loading the watchlist. 
 
 For example, let's look at Jane Doe in the image above. Upon loading the watchlist, Jane appears in a watchlist instance for using `3 grace days` before the instructor-specified date and for having `2 low scores` below the instructor-specified threshold. If Jane later receives another score below the threshold, a new instance will appear for Jane when the instructor reloads the watchlist. Jane now appears twice in the watchlist, once in an instance with `3 grace days` and `2 low scores`, and once in an instance with `3 grace days` and `3 low scores`.
 
@@ -78,11 +78,11 @@ An instructor can also hover over the condition tags to view the specific submis
 
 ### Tabs
 
-There are four categories that watchlist instances can fall into: new, contacted, resolved, and archived.
+There are four categories that watchlist instances can fall into: pending, contacted, resolved, and archived.
 
-#### New
+#### Pending
 
-The `new` tab contains identified students who have not yet been contacted or resolved. The number of `new` instances will appear in a notification badge on the main course page, as shown below. 
+The `pending` tab contains identified students who have not yet been contacted or resolved. The number of `pending` instances will appear in a notification badge on the main course page, as shown below. 
 
 ![Metrics Notification](/images/metrics_notification.png)
 
@@ -96,4 +96,4 @@ The `resolved` tab contains all instances that the instructor has marked as reso
 
 #### Archived
 
-When an instructor adjusts the risk metrics for a course, all instances that were in `contacted` or `resolved` for the outdated risk metrics are placed into `archived`. All `new` instances for the outdated risk metrics are dropped. As such, all instances in `new`, `contacted`, and `resolved` are consistent with the most up-to-date risk metrics.
+When an instructor adjusts the student metrics for a course, all instances that were in `contacted` or `resolved` for the outdated student metrics are placed into `archived`. All `pending` instances for the outdated student metrics are dropped. As such, all instances in `pending`, `contacted`, and `resolved` are consistent with the most up-to-date student metrics.

@@ -49,7 +49,7 @@ Labs can be _autograded_ or not, at your disrcretion. When a student submits to 
 
 A lab has a _start date_, _due date_, _end date_ and _grading deadline_. The link to a lab becomes visible to students after the start date (it's always visible to instructors). Students can submit until the due date without penalty or consuming grace days. Submission is turned off after the end date. Grades are included in the gradebook's category and course averages only after the grading deadline.
 
-## Handins
+## Handins/Submissions
 
 Once an assessment is live (past the start date), students can begin submitting handins, where each handin is a single file, which can be either a text file or an archive file (e.g., `mm.c`, `handin.tar`).
 
@@ -65,10 +65,6 @@ Autolab provides support for a late handin policy based on _grace days_. Each st
 ## Problems
 
 Each lab contains at least one _problem_, defined by the instructor, with some point value. Each problem has a name (e.g., "Prob1", "Style") that is unique for the lab (although different labs can have the same problem names).
-
-## Submissions
-
-Once an assessment is live (past the start date), students can begin making submissions (handins), where each submission is a single file.
 
 ## Grades
 

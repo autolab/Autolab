@@ -1,13 +1,13 @@
 # Autolab Command Line Interface
 
-To help showcase the capabilities of the API, we developed autolab-cli: A first-party command line client that serves as both a practical tool for users of Autolab, as well as a reference design for developers intending to use the API in their own programs. The cli includes features like downloading and submitting assignments from the terminal, viewing problems, and getting submission feedback.
+To help showcase the capabilities of the [API](/api-overview), we developed autolab-cli: A first-party command line client that serves as both a practical tool for users of Autolab, as well as a reference design for developers intending to use the API in their own programs. The cli includes features like downloading and submitting assignments from the terminal, viewing problems, and getting submission feedback.
 
 !!! info "Note to CMU Students:"
     This cli binary has already been installed on the andrew machines as `autolab`.
 
 ## Obtaining authorization
 
-Make sure you have the cli installed by running `autolab` in your terminal. If you see the usage instructions you're good to go. Otherwise, ask your school admin to install the cli from the [Autolab CLI Repository](https://github.com/autolab/autolab-cli).
+Make sure you have the cli installed by running `autolab` in your terminal. If you see the usage instructions you're good to go. Otherwise, ask your school admin to install the cli from the <a href="https://github.com/autolab/autolab-cli" target="_blank">Autolab CLI Repository</a>.
 
 To setup autolab-cli with your Autolab account, run `autolab setup`. This will initiate a manual activation.
 
@@ -96,4 +96,4 @@ $ autolab <sub-command> -h
 
 This will reveal other flags you may be able to use with each command. For example, you can call all of the context-dependent commands outside of an assessment directory by providing the `<course_unique_name>:<asmt_unique_name>` pair.
 
-We hope this speeds up your workflow! If you find any problems, please file an issue on the [Autolab CLI Repository](https://github.com/autolab/autolab-cli).
+We hope this speeds up your workflow! If you find any problems, please file an issue on the <a href="https://github.com/autolab/autolab-cli" target="_blank">Autolab CLI Repository</a>.
