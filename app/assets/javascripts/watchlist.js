@@ -153,16 +153,19 @@ function get_row_html(user_id, instance, tab, archived_instances) {
       </div>`;
 }
 
-function set_tab_html(header, instances, is_empty, tab_name, archived_instances, empty_message) {
-  html = header;
-  $.each(instances, function( user_id, instance ) {
-    html += get_row_html(user_id, instance, tab_name, archived_instances);
-  });
-  if (is_empty){
+function set_tab_html(is_search, instances, tab_name, archived_instances, empty_message) {
+  is_empty = Object.keys(instances).length === 0;
+  if (is_empty && !is_search){
+    $(`#${tab_name}_header`).hide();
     html_empty_message = get_html_empty_message(empty_message);
     $(`#${tab_name}_tab`).html(html_empty_message);
   } else {
-    $(`#${tab_name}_tab`).html(html);
+    $(`#${tab_name}_header`).show();
+    html = "";
+    $.each(instances, function( user_id, instance ) {
+      html += get_row_html(user_id, instance, tab_name, archived_instances);
+    });
+    $(`#${tab_name}_instances`).html(html);
   }
 }
 
@@ -197,6 +200,38 @@ function add_instance_to_dict(
   }
 }
 
+function instance_passes_condition_search(instance, search_input) {
+  var convert_conditions = {
+    "grace day used": "grace_day_usage", 
+    "downward trend": "grade_drop", 
+    "no submission": "no_submissions", 
+    "low score": "low_grades"};
+  var violated_conditions = Object.keys(instance["conditions"]);
+  return violated_conditions.includes(convert_conditions[search_input]);
+}
+
+function search_enter_action(tab_name, instances, archived_instances, empty_message) {
+  var search_input = $(`#${tab_name}_search .input .prompt`).val().toLowerCase().trim();
+  if (search_input === "") {
+    return;
+  }
+  var filtered_instances = Object.keys(instances).reduce(function (filtered, key) {
+    if (instances[key]["name"]?.toLowerCase()?.includes(search_input)
+      || instances[key]["email"]?.toLowerCase()?.includes(search_input)
+      || instance_passes_condition_search(instances[key], search_input)) {
+      filtered[key] = instances[key];
+    } 
+    return filtered;
+  }, {});
+  set_tab_html(
+    true,
+    filtered_instances,
+    tab_name,
+    archived_instances,
+    empty_message,
+  );
+}
+
 function get_watchlist_function(){
 
   var pending_instances = {}
@@ -208,26 +243,22 @@ function get_watchlist_function(){
 
 	$.getJSON(watchlist_endpoints['get'],function(data, status){
 	    if (status=='success') {
-	    	var pending_empty = 1;
-	    	var contacted_empty = 1;
-	    	var resolved_empty = 1;
-        var archived_empty = 1;
         let last_updated_date = "";
 
         $(".top-bar").show();
 	    	$("#undefined_metrics").hide();
         $("#defined_metrics").show();
 
-	    	$('#pending_tab').empty();
-	    	$('#contacted_tab').empty();
-	    	$('#resolved_tab').empty();
-        $('#archived_tab').empty();
+	    	$('#pending_instances').empty();
+	    	$('#contacted_instances').empty();
+	    	$('#resolved_instances').empty();
+        $('#archived_instances').empty();
 
         var metrics_search_content = [
-          {category: "metric", title: "late days"},
+          {category: "metric", title: "grace day used"},
           {category: "metric", title: "downward trend"},
-          {category: "metric", title: "no submissions"},
-          {category: "metric", title: "low scores"},
+          {category: "metric", title: "no submission"},
+          {category: "metric", title: "low score"},
         ]
         var pending_search_content = [...metrics_search_content];
         var contacted_search_content = [...metrics_search_content];
@@ -249,20 +280,16 @@ function get_watchlist_function(){
             last_updated_date = watchlist_instance.updated_at;
 
           if (_.get(watchlist_instance,'archived')) {
-            archived_empty = 0;
             add_instance_to_dict(archived_search_content, archived_instances, id, user_id, course_id, user_name, user_email, condition_type, violation_info, watchlist_status);
           } else {
             switch(watchlist_status){
               case "pending":
-                pending_empty = 0;
                 add_instance_to_dict(pending_search_content, pending_instances, id, user_id, course_id, user_name, user_email, condition_type, violation_info, watchlist_status);
                 break;
               case "contacted":
-                contacted_empty = 0;
                 add_instance_to_dict(contacted_search_content, contacted_instances, id, user_id, course_id, user_name, user_email, condition_type, violation_info, watchlist_status);
                 break;
               case "resolved":
-                resolved_empty = 0;
                 add_instance_to_dict(resolved_search_content, resolved_instances, id, user_id, course_id, user_name, user_email, condition_type, violation_info, watchlist_status);
                 break;
               default:
@@ -272,79 +299,35 @@ function get_watchlist_function(){
           }
         });
         
-        pending_header = `<div class="ui secondary segment" >
-                      <div class="ui right aligned scrolling search" id="pending_search">
-                        <div class="ui icon input">
-                          <input class="prompt" type="text" placeholder="Search students...">
-                          <i class="search icon"></i>
-                        </div>
-                        <div class="results"></div>
-                      </div>
-                      <h5> Pending students in need of attention </h5>
-                    </div>`;
-        contacted_header = `<div class="ui secondary segment" >
-                            <div class="ui right aligned scrolling search" id="contacted_search">
-                              <div class="ui icon input">
-                                <input class="prompt" type="text" placeholder="Search students...">
-                                <i class="search icon"></i>
-                              </div>
-                              <div class="results"></div>
-                            </div>
-                            <h5> Contacted students </h5>
-                          </div>`;
-        resolved_header = `<div class="ui secondary segment" >
-                          <div class="ui right aligned scrolling search" id="resolved_search">
-                            <div class="ui icon input">
-                              <input class="prompt" type="text" placeholder="Search students...">
-                              <i class="search icon"></i>
-                            </div>
-                            <div class="results"></div>
-                          </div>
-                          <h5> Resolved students </h5>
-                        </div>`;
-        archived_header = `<div class="ui secondary segment" >
-                            <div class="ui right aligned scrolling search" id="archived_search">
-                              <div class="ui icon input">
-                                <input class="prompt" type="text" placeholder="Search students...">
-                                <i class="search icon"></i>
-                              </div>
-                              <div class="results"></div>
-                            </div>
-                          <h5> Archived students </h5> <b>Resolved and contacted students becomes archived when student metrics are changed </b>
-                         </div>`;
         pending_empty_message = "There are no pending students in need of attention";
         contacted_empty_message = "You have not contacted any students";
         resolved_empty_message = "You have not resolved any students";
         archived_empty_message = "You have no archived students";
 
         set_tab_html(
-          pending_header,
+          false,
           pending_instances,
-          pending_empty,
           "pending",
           archived_instances,
           pending_empty_message,
         );
         set_tab_html(
-          contacted_header,
+          false,
           contacted_instances,
-          contacted_empty,
           "contacted",
           archived_instances,
           contacted_empty_message,
         );
         set_tab_html(
-          resolved_header,
+          false,
           resolved_instances,
-          resolved_empty,
           "resolved",
           archived_instances,
           resolved_empty_message,
         );
         set_tab_html(
-          archived_header,
+          false,
           archived_instances,
-          archived_empty,
           "archived",
           archived_instances,
           archived_empty_message,
@@ -384,23 +367,25 @@ function get_watchlist_function(){
       $("#pending_search").keypress(function (e) {
         var code = (e.keyCode ? e.keyCode : e.which);
         if (code == 13) {
-          console.log("hello");
-          var search_input = $("#pending_search .input .prompt").val().toLowerCase();
-          var filtered_instances = Object.keys(pending_instances).reduce(function (filtered, key) {
-            if (pending_instances[key]["name"]?.toLowerCase()?.includes(search_input)
-              || pending_instances[key]["email"]?.toLowerCase()?.includes(search_input)) {
-              filtered[key] = pending_instances[key];
-            } 
-            return filtered;
-          }, {});
-          set_tab_html(
-            pending_header,
-            filtered_instances,
-            pending_empty,
-            "pending",
-            archived_instances,
-            pending_empty_message,
-          );
+          search_enter_action("pending", pending_instances, archived_instances, pending_empty_message);
+        }
+      });
+      $("#contacted_search").keypress(function (e) {
+        var code = (e.keyCode ? e.keyCode : e.which);
+        if (code == 13) {
+          search_enter_action("contacted", contacted_instances, archived_instances, contacted_empty_message);
+        }
+      });
+      $("#resolved_search").keypress(function (e) {
+        var code = (e.keyCode ? e.keyCode : e.which);
+        if (code == 13) {
+          search_enter_action("resolved", resolved_instances, archived_instances, resolved_empty_message);
+        }
+      });
+      $("#archived_search").keypress(function (e) {
+        var code = (e.keyCode ? e.keyCode : e.which);
+        if (code == 13) {
+          search_enter_action("archived", archived_instances, archived_instances, archived_empty_message);
         }
       });
 

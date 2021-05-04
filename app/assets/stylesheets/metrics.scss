@@ -162,3 +162,20 @@ i.external.alternate {
 .ui.search > .results {
   top: 30px;
 }
+
+span.instances:before {
+  width: 0;
+  display: inline;
+}
+
+span.instances:after {
+  width: 0;
+  display: inline;
+}
+
+span.instances .segment {
+  margin: 0;
+  border-radius: 0;
+  border: none;
+  border-top: 1px solid rgba(34,36,38,0.15);
+}
