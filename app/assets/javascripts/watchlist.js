@@ -153,16 +153,16 @@ function get_row_html(user_id, instance, tab, archived_instances) {
       </div>`;
 }
 
-function set_tab_html(header, instances, is_empty, tab_name, archived_instances) {
+function set_tab_html(header, instances, is_empty, tab_name, archived_instances, empty_message) {
   html = header;
   $.each(instances, function( user_id, instance ) {
     html += get_row_html(user_id, instance, tab_name, archived_instances);
   });
   if (is_empty){
-    html_empty_message = get_html_empty_message("There are no pending at-risk students");
-    $('#pending_tab').html(html_empty_message);
+    html_empty_message = get_html_empty_message(empty_message);
+    $(`#${tab_name}_tab`).html(html_empty_message);
   } else {
-    $('#pending_tab').html(pending_html);
+    $(`#${tab_name}_tab`).html(html);
   }
 }
 
@@ -280,7 +280,7 @@ function get_watchlist_function(){
                         </div>
                         <div class="results"></div>
                       </div>
-                      <h5> Pending at-risk students </h5>
+                      <h5> Pending students in need of attention </h5>
                     </div>`;
         contacted_header = `<div class="ui secondary segment" >
                             <div class="ui right aligned scrolling search" id="contacted_search">
@@ -290,7 +290,7 @@ function get_watchlist_function(){
                               </div>
                               <div class="results"></div>
                             </div>
-                            <h5> Contacted at-risk students </h5>
+                            <h5> Contacted students </h5>
                           </div>`;
         resolved_header = `<div class="ui secondary segment" >
                           <div class="ui right aligned scrolling search" id="resolved_search">
@@ -300,7 +300,7 @@ function get_watchlist_function(){
                             </div>
                             <div class="results"></div>
                           </div>
-                          <h5> Resolved at-risk students </h5>
+                          <h5> Resolved students </h5>
                         </div>`;
         archived_header = `<div class="ui secondary segment" >
                             <div class="ui right aligned scrolling search" id="archived_search">
@@ -310,52 +310,45 @@ function get_watchlist_function(){
                               </div>
                               <div class="results"></div>
                             </div>
-                          <h5> Archived at-risk students </h5> <b>Resolved and contacted students becomes archived when risk metrics are changed </b>
+                          <h5> Archived students </h5> <b>Resolved and contacted students becomes archived when student metrics are changed </b>
                          </div>`;
-        pending_html = pending_header;
-        contacted_html = contacted_header;
-        resolved_html = resolved_header;
-        archived_html = archived_header;
+        pending_empty_message = "There are no pending students in need of attention";
+        contacted_empty_message = "You have not contacted any students";
+        resolved_empty_message = "You have not resolved any students";
+        archived_empty_message = "You have no archived students";
 
-	    	$.each(pending_instances, function( user_id, instance ) {
-          pending_html += get_row_html(user_id, instance, "pending", archived_instances);
-        });
-        $.each(contacted_instances, function( user_id, instance ) {
-          contacted_html += get_row_html(user_id, instance, "contacted", archived_instances);
-        });
-        $.each(resolved_instances, function( user_id, instance ) {
-          resolved_html += get_row_html(user_id, instance, "resolved", archived_instances);
-        });
-        $.each(archived_instances, function( user_id, instance ) {
-          archived_html += get_row_html(user_id, instance, "archived", archived_instances);
-        });
-        
-
-	    	// show empty messages
-	    	if (pending_empty){
-	    		html_empty_message = get_html_empty_message("There are no pending at-risk students");
-	    		$('#pending_tab').html(html_empty_message);
-	    	} else {
-          $('#pending_tab').html(pending_html);
-        }
-	    	if (contacted_empty){
-	    		html_empty_message = get_html_empty_message("You have not contacted any at-risk students");
-	    		$('#contacted_tab').html(html_empty_message);
-	    	} else {
-          $('#contacted_tab').html(contacted_html);
-        }
-	    	if (resolved_empty){
-	    		html_empty_message = get_html_empty_message("You have not resolved any at-risk students");
-	    		$('#resolved_tab').html(html_empty_message);
-	    	} else {
-          $('#resolved_tab').html(resolved_html);
-        }
-	    	if (archived_empty){
-	    		html_empty_message = get_html_empty_message("You have no archived at-risk students ");
-	    		$('#archived_tab').html(html_empty_message);
-	    	} else {
-          $('#archived_tab').html(archived_html);
-        }
+        set_tab_html(
+          pending_header,
+          pending_instances,
+          pending_empty,
+          "pending",
+          archived_instances,
+          pending_empty_message,
+        );
+        set_tab_html(
+          contacted_header,
+          contacted_instances,
+          contacted_empty,
+          "contacted",
+          archived_instances,
+          contacted_empty_message,
+        );
+        set_tab_html(
+          resolved_header,
+          resolved_instances,
+          resolved_empty,
+          "resolved",
+          archived_instances,
+          resolved_empty_message,
+        );
+        set_tab_html(
+          archived_header,
+          archived_instances,
+          archived_empty,
+          "archived",
+          archived_instances,
+          archived_empty_message,
+        );
         
         updateButtonVisibility($('.ui.vertical.fluid.tabular.menu .item.active'));
         
@@ -391,19 +384,24 @@ function get_watchlist_function(){
       $("#pending_search").keypress(function (e) {
         var code = (e.keyCode ? e.keyCode : e.which);
         if (code == 13) {
-            var search_input = $("#pending_search .input .prompt").val();
-            var filtered_instances = Object.keys(pending_instances).reduce(function (filtered, key) {
-              if (pending_instances[key]["name"]?.includes(search_input)
-                || pending_instances[key]["email"]?.includes(search_input)) {
-                filtered[key] = pending_instances[key];
-              } 
-              return filtered;
-            }, {});
-            pending_html = "";
-            $.each(filtered_instances, function( user_id, instance ) {
-              pending_html += get_row_html(user_id, instance, "pending", archived_instances);
-            });
-          }
+          console.log("hello");
+          var search_input = $("#pending_search .input .prompt").val().toLowerCase();
+          var filtered_instances = Object.keys(pending_instances).reduce(function (filtered, key) {
+            if (pending_instances[key]["name"]?.toLowerCase()?.includes(search_input)
+              || pending_instances[key]["email"]?.toLowerCase()?.includes(search_input)) {
+              filtered[key] = pending_instances[key];
+            } 
+            return filtered;
+          }, {});
+          set_tab_html(
+            pending_header,
+            filtered_instances,
+            pending_empty,
+            "pending",
+            archived_instances,
+            pending_empty_message,
+          );
+        }
       });
 
       $('.ui.icon').popup();
