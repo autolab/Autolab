@@ -10,10 +10,10 @@ The metrics feature seeks to be an proactive approach by actively identifying st
 We envision the feature to be used by the instructors in this order. They would:
 
 1. Set up their course and assignments as per usual
-1. Set up [Student Metrics](#Student-Metrics) at the start of the course
+1. Set up [Student Metrics](#student-metrics) at the start of the course
 1. Be notified of pending students in need of attention in their [Watchlist](#watchlist) on the course page
 1. Visit the [Watchlist](#watchlist), contact students if necessary, using it as a work list at the same time
-1. Refine the [Student Metrics](#Student-Metrics) as the course progresses
+1. Refine the [Student Metrics](#student-metrics) as the course progresses
 
 ## Student Metrics
 
