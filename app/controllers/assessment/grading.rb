@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "csv"
 require "utilities"
 
@@ -85,11 +87,11 @@ private
   def valid_entry?(entry)
     entry.values.reduce true do |acc, v|
       acc && (case v
-      when Hash
-        !v.include?(:error) && valid_entry?(v)
-      else
-        true
-      end)
+              when Hash
+                !v.include?(:error) && valid_entry?(v)
+              else
+                true
+              end)
     end
   end
 
@@ -100,7 +102,7 @@ private
       User.transaction do
         entries.each do |entry|
           user = CourseUserDatum.joins(:user)
-                 .find_by(users: { email: entry[:email] }, course: asmt.course)
+                                .find_by(users: { email: entry[:email] }, course: asmt.course)
 
           aud = AssessmentUserDatum.get asmt.id, user.id
           if entry[:grade_type]
@@ -123,12 +125,10 @@ private
             problem = asmt.problems.find_by_name problem_name
 
             score = sub.scores.find_by_problem_id problem.id
-            unless score
-              score = sub.scores.new(
-                grader_id: @cud.id,
-                problem_id: problem.id
-              )
-            end
+            score ||= sub.scores.new(
+              grader_id: @cud.id,
+              problem_id: problem.id
+            )
 
             case data_type
             when :scores
@@ -139,11 +139,11 @@ private
 
             updateScore user.id, score
           end
-        end # entries.each
-      end # User.transaction
+        end
+      end
 
       true
-    rescue => e
+    rescue StandardError => e
       flash[:error] = "An error occurred: #{e}"
 
       false
@@ -153,7 +153,7 @@ private
   def parse_csv(csv, data_type)
     # inputs for parse_csv_row
     problems = @assessment.problems
-    emails = Set.new(CourseUserDatum.joins(:user).where(course: @assessment.course).map &:email)
+    emails = Set.new(CourseUserDatum.joins(:user).where(course: @assessment.course).map(&:email))
 
     # process CSV
     entries = []
@@ -179,7 +179,7 @@ private
 
     # to be returned
     processed = {}
-    processed[:extra_cells] = row if row.length > 0 # currently unused
+    processed[:extra_cells] = row if row.length.positive? # currently unused
 
     # Checking that emails are valid
     processed[:email] = if email.blank?
@@ -188,7 +188,7 @@ private
                           email
                         else
                           { error: email }
-    end
+                        end
 
     # data
     data.map! do |datum|
@@ -197,7 +197,11 @@ private
       else
         case kind
         when :scores
-          Float(datum) rescue({ error: datum })
+          begin
+            Float(datum)
+          rescue StandardError
+            ({ error: datum })
+          end
         when :feedback
           datum
         end
@@ -217,7 +221,7 @@ private
                                grade_type.to_sym
                              else
                                { error: grade_type }
-    end
+                             end
 
     processed
   end
@@ -247,20 +251,20 @@ public
   # see http://stackoverflow.com/questions/6163125/duplicate-records-created-by-find-or-create-by
   # and http://barelyenough.org/blog/2007/11/activerecord-race-conditions/
   # and http://stackoverflow.com/questions/5917355/find-or-create-race-conditions
-  rescue ActiveRecord::StatementInvalid, ActiveRecord::RecordInvalid => error
+  rescue ActiveRecord::StatementInvalid, ActiveRecord::RecordInvalid => e
     @retries_left ||= 2
-    retry unless (@retries_left -= 1) < 0
-    raise error
+    retry unless (@retries_left -= 1).negative?
+    raise e
   end
 
   def quickSetScoreDetails
     return unless request.post?
     return unless params[:submission_id]
     return unless params[:problem_id]
-     # get submission and problem IDs
-     sub_id = params[:submission_id].to_i
-     prob_id = params[:problem_id].to_i
 
+    # get submission and problem IDs
+    sub_id = params[:submission_id].to_i
+    prob_id = params[:problem_id].to_i
 
     # find existing score for this problem, if there's one
     # otherwise, create it
@@ -277,11 +281,11 @@ public
   # see http://stackoverflow.com/questions/6163125/duplicate-records-created-by-find-or-create-by
   # and http://barelyenough.org/blog/2007/11/activerecord-race-conditions/
   # and http://stackoverflow.com/questions/5917355/find-or-create-race-conditions
-rescue ActiveRecord::StatementInvalid, ActiveRecord::RecordInvalid => error
-  @retries_left ||= 2
-  retry unless (@retries_left -= 1) < 0
-  raise error
-end
+  rescue ActiveRecord::StatementInvalid, ActiveRecord::RecordInvalid => e
+    @retries_left ||= 2
+    retry unless (@retries_left -= 1).negative?
+    raise e
+  end
 
   def submission_popover
     render partial: "popover", locals: { s: Submission.find(params[:submission_id].to_i) }
@@ -289,14 +293,12 @@ end
 
   def score_grader_info
     score = Score.find(params[:score_id])
-    grader = (if score then score.grader else nil end)
+    grader = (score ? score.grader : nil)
     grader_info = ""
-    if grader
-      grader_info = "#{grader.first_name} #{grader.last_name} (#{grader.email})"
-    end
+    grader_info = "#{grader.first_name} #{grader.last_name} (#{grader.email})" if grader
 
     feedback = score.feedback
-    response = {"grader" => grader_info, "feedback" => feedback, "score" => score.score}
+    response = { "grader" => grader_info, "feedback" => feedback, "score" => score.score }
     render json: response
   end
 
@@ -315,8 +317,10 @@ end
 
   def statistics
     return unless load_course_config
-    latest_submissions = @assessment.submissions.latest_for_statistics.includes(:scores, :course_user_datum)
-    #latest_submissions = @assessment.submissions.latest.includes(:scores, :course_user_datum)
+
+    latest_submissions = @assessment.submissions.latest_for_statistics.includes(:scores,
+                                                                                :course_user_datum)
+    # latest_submissions = @assessment.submissions.latest.includes(:scores, :course_user_datum)
 
     # Each value other than for :all is of the form
     # [[<group>, {:mean, :median, :max, :min, :stddev}]...]
@@ -375,7 +379,7 @@ private
     true
   end
 
-# Scores for grouping
+  # Scores for grouping
   def scores_for_grouping(grouping)
     result = {}
     grouping.keys.compact.sort.each do |group|
@@ -400,8 +404,9 @@ private
 
     grouping[group].each do |submission|
       next unless submission.course_user_datum.student?
+
       # TODO(jezimmer): Find a more permanent fix (see #529)
-      #next unless submission.special_type == Submission::NORMAL
+      # next unless submission.special_type == Submission::NORMAL
 
       submission.scores.each do |score|
         problem_scores[score.problem_id] << score.score
@@ -411,7 +416,7 @@ private
     problem_scores
   end
 
-# Stats for grouping
+  # Stats for grouping
   def stats_for_grouping(grouping)
     result = {}
     problem_id_to_name = @assessment.problem_id_to_name
@@ -420,17 +425,17 @@ private
     # values we group by are nullable in the DB. We
     # shouldn't show those.
     grouping.keys.compact.sort.each do |group|
-      problem_scores = problem_scores_for_group(grouping,group)
+      problem_scores = problem_scores_for_group(grouping, group)
       # Need the problems to be in the right order.
       problem_stats = {}
       # seems like we always index with 1
       @assessment.problems.each do |problem|
-        problem_stats[problem.name] =  stats.stats(problem_scores[problem.id])
+        problem_stats[problem.name] = stats.stats(problem_scores[problem.id])
       end
       problem_stats[:Total] = stats.stats(problem_scores[:total])
       result[group] = {}
       result[group][:data] = problem_stats
-      result[group][:total_students] =problem_scores[ problem_scores.keys[1]].length
+      result[group][:total_students] = problem_scores[problem_scores.keys[1]].length
     end
     # raise result.inspect
     result
@@ -450,6 +455,7 @@ private
 
       submission.scores.each do |score|
         next if score.grader_id.nil?
+
         if grader_scores.key? score.grader_id
           grader_scores[score.grader_id] << score
         else
@@ -460,16 +466,15 @@ private
 
     grader_ids = grader_scores.keys
     def find_user(i)
-      if i == 0
-        autograder = Hash["full_name", "Autograder",
-                          "id", 0,
-                          "full_name_with_email", "Autograder"]
+      if i.zero?
+        autograder = { "full_name" => "Autograder", "id" => 0,
+                       "full_name_with_email" => "Autograder" }
         def autograder.method_missing(m)
           self[m.to_s]
         end
-        return autograder
+        autograder
       else
-        return @course.course_user_data.find(i)
+        @course.course_user_data.find(i)
       end
     end
     graders = grader_ids.map(&method(:find_user))
@@ -504,11 +509,15 @@ private
     id = @assessment.id
 
     # section filter
-    o = params[:section] ? {
-      conditions: { assessment_id: id, course_user_data: { section: @cud.section } }
-    } : {
-      conditions: { assessment_id: id }
-    }
+    o = if params[:section]
+          {
+            conditions: { assessment_id: id, course_user_data: { section: @cud.section } }
+          }
+        else
+          {
+            conditions: { assessment_id: id }
+          }
+        end
 
     # currently loads *all* assessment AUDs, scores in spite of the section filter
     # but that's okay, it only takes a couple 10ms

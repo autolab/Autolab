@@ -1,8 +1,10 @@
+# frozen_string_literal: true
+
 class CourseUserDataController < ApplicationController
   before_action :add_users_breadcrumb
 
-    rescue_from ActionView::MissingTemplate do |exception|
-      redirect_to("/home/error_404")
+  rescue_from ActionView::MissingTemplate do |_exception|
+    redirect_to("/home/error_404")
   end
 
   action_auth_level :index, :student
@@ -35,26 +37,24 @@ class CourseUserDataController < ApplicationController
 
       if user
         @newCUD.user = user
-      else
-        if cud_parameters[:user_attributes][:email] == "" or
-           cud_parameters[:user_attributes][:first_name] == "" or
-           cud_parameters[:user_attributes][:last_name] == ""
+      elsif (cud_parameters[:user_attributes][:email] == "") ||
+            (cud_parameters[:user_attributes][:first_name] == "") ||
+            (cud_parameters[:user_attributes][:last_name] == "")
+        flash[:error] = "All required fields must be filled"
+        redirect_to(action: "new") && return
 
-          flash[:error] = "All required fields must be filled"
-          redirect_to(action: "new") && return
+      else
+        error_msg = "The user with email #{email} could not be created:"
+        if user.valid?
+          error_msg += "<br>Unknown error"
         else
-          error_msg = "The user with email #{email} could not be created:"
-          if not user.valid?
-            user.errors.full_messages.each do |msg|
-              error_msg += "<br>#{msg}"
-            end
-          else
-            error_msg += "<br>Unknown error"
+          user.errors.full_messages.each do |msg|
+            error_msg += "<br>#{msg}"
           end
-          COURSE_LOGGER.log(error_msg)
-          flash[:error] = error_msg
-          redirect_to(action: "new") && return
         end
+        COURSE_LOGGER.log(error_msg)
+        flash[:error] = error_msg
+        redirect_to(action: "new") && return
       end
 
     else
@@ -75,12 +75,12 @@ class CourseUserDataController < ApplicationController
       end
     else
       error_msg = "Adding user failed:"
-      if not @newCUD.valid?
+      if @newCUD.valid?
+        error_msg += "<br>Unknown error"
+      else
         @newCUD.errors.full_messages.each do |msg|
           error_msg += "<br>#{msg}"
         end
-      else
-        error_msg += "<br>Unknown error"
       end
       COURSE_LOGGER.log(error_msg)
       flash[:error] = error_msg
@@ -109,8 +109,8 @@ class CourseUserDataController < ApplicationController
       redirect_to(action: "index") && return
     end
 
-    if (@editCUD.id != @cud.id) && (!@cud.instructor?) &&
-       (!@cud.user.administrator?)
+    if (@editCUD.id != @cud.id) && !@cud.instructor? &&
+       !@cud.user.administrator?
       flash[:error] = "Permission denied"
       redirect_to(action: "index") && return
     end
@@ -127,10 +127,7 @@ class CourseUserDataController < ApplicationController
     redirect_to(action: "index") && return if @editCUD.nil?
 
     if @cud.student?
-      if (@editCUD.id != @cud.id)
-        flash[:error] = "Permission denied"
-        redirect_to(action: :index) && return
-      else
+      if @editCUD.id == @cud.id
         @editCUD.nickname = params[:course_user_datum][:nickname]
         if @editCUD.save
           flash[:success] = "Success: Your info has been saved"
@@ -142,6 +139,9 @@ class CourseUserDataController < ApplicationController
           end
           redirect_to(action: :edit) && return
         end
+      else
+        flash[:error] = "Permission denied"
+        redirect_to(action: :index) && return
       end
     end
 
@@ -239,22 +239,20 @@ class CourseUserDataController < ApplicationController
 private
 
   def add_users_breadcrumb
-    if @cud.instructor
-      @breadcrumbs << (view_context.link_to "Users", [:users, @course])
-    end
+    @breadcrumbs << (view_context.link_to "Users", [:users, @course]) if @cud.instructor
   end
 
   def cud_params
     if @cud.administrator?
       params.require(:course_user_datum).permit(:school, :major, :year,
                                                 :lecture, :section, :instructor, :dropped, :nickname, :course_assistant,
-                                                user_attributes: [:first_name, :last_name, :email],
-                                                tweak_attributes: [:_destroy, :kind, :value])
+                                                user_attributes: %i[first_name last_name email],
+                                                tweak_attributes: %i[_destroy kind value])
     elsif @cud.instructor?
       params.require(:course_user_datum).permit(:school, :major, :year,
                                                 :lecture, :section, :instructor, :dropped, :nickname, :course_assistant,
-                                                user_attributes: [:email, :first_name, :last_name],
-                                                tweak_attributes: [:_destroy, :kind, :value])
+                                                user_attributes: %i[email first_name last_name],
+                                                tweak_attributes: %i[_destroy kind value])
     else
       params.require(:course_user_datum).permit(:nickname) # ,
       #        user_attributes: [:first_name, :last_name])
@@ -265,13 +263,13 @@ private
     if @cud.administrator?
       params.require(:course_user_datum).permit(:school, :major, :year,
                                                 :lecture, :section, :instructor, :dropped, :nickname, :course_assistant,
-                                                user_attributes: [:id, :email, :first_name, :last_name],
-                                                tweak_attributes: [:_destroy, :kind, :value])
+                                                user_attributes: %i[id email first_name last_name],
+                                                tweak_attributes: %i[_destroy kind value])
     elsif @cud.instructor?
       params.require(:course_user_datum).permit(:school, :major, :year,
                                                 :lecture, :section, :instructor, :dropped, :nickname, :course_assistant,
-                                                user_attributes: [:id, :email, :first_name, :last_name],
-                                                tweak_attributes: [:_destroy, :kind, :value])
+                                                user_attributes: %i[id email first_name last_name],
+                                                tweak_attributes: %i[_destroy kind value])
     else
       params.require(:course_user_datum).permit(:nickname) # user_attributes: [:first_name, :last_name])
     end

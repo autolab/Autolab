@@ -96,7 +96,7 @@ Autolab expects to find the `autograde-Makefile`and `autograde.tar` files in the
 Makefile              Builds the lab from src/
 README
 autograde-Makefile    Makefile that runs the autograder
-src/                  Contains all src files and solutions  
+src/                  Contains all src files and solutions
 test-autograder/      For testing autograder offline
 writeup/              Lab writeup that students view from Autolab
 

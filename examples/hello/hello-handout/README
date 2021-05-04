@@ -2,7 +2,7 @@ For this lab, you should write a tiny C program, called "hello.c",
 that prints "hello, world" to stdout and then indicates success by
 exiting with a status of zero.
 
-To test your work: 
+To test your work:
 linux> make clean; make; ./hello
 
 To run the same autograder that Autolab will use when you submit:

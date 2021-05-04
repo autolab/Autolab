@@ -1,11 +1,13 @@
+# frozen_string_literal: true
+
 class GroupsController < ApplicationController
   # inherited from ApplicationController
   before_action :set_assessment
   before_action :check_assessment_for_groups
-  before_action :set_group, only: [:show, :edit, :update, :destroy, :add, :join, :leave]
+  before_action :set_group, only: %i[show edit update destroy add join leave]
   respond_to :html
-    rescue_from ActionView::MissingTemplate do |exception|
-      redirect_to("/home/error_404")
+  rescue_from ActionView::MissingTemplate do |_exception|
+    redirect_to("/home/error_404")
   end
 
   ##
@@ -25,7 +27,7 @@ class GroupsController < ApplicationController
 
     @groups = @assessment.groups
     @groupAssessments = @course.assessments
-                        .where("`group_size` > 1 AND `group_size` <= ?", @assessment.group_size).where.not(id: @assessment.id)
+                               .where("`group_size` > 1 AND `group_size` <= ?", @assessment.group_size).where.not(id: @assessment.id)
     @grouplessCUDs = @assessment.grouplessCUDs
     respond_with(@course, @assessment, @groups)
   end
@@ -57,13 +59,13 @@ class GroupsController < ApplicationController
   action_auth_level :new, :student
   def new
     aud = @assessment.aud_for(@cud)
-    unless @cud.instructor
-      redirect_to([@course, @assessment, aud.group]) && return if aud.group
-    end
+    redirect_to([@course, @assessment, aud.group]) && return if !@cud.instructor && aud.group
 
     @group = Group.new
     @grouplessCUDs = @assessment.grouplessCUDs
-    @unfullGroups = @assessment.groups.all.select { |g| g.assessment_user_data.size < @assessment.group_size }
+    @unfullGroups = @assessment.groups.all.select do |g|
+      g.assessment_user_data.size < @assessment.group_size
+    end
 
     respond_with(@course, @assessment, @group)
   end
@@ -84,7 +86,7 @@ class GroupsController < ApplicationController
       flash[:error] = "You have already selected a group."
       redirect_to(action: :new) && return
     elsif aud2.group_confirmed(AssessmentUserDatum::MEMBER_CONFIRMED)
-      flash[:error] = cud2.email + " has already selected a group."
+      flash[:error] = "#{cud2.email} has already selected a group."
       redirect_to(action: :new) && return
     end
 
@@ -160,13 +162,13 @@ class GroupsController < ApplicationController
       g.assessment_user_data.each do |a|
         cud = a.course_user_datum
         aud = @assessment.aud_for cud.id
-        if aud.group_confirmed(AssessmentUserDatum::UNCONFIRMED)
-          aud.group = group
-          aud.membership_status = a.membership_status
-          count += 1 if aud.save!
-        end
+        next unless aud.group_confirmed(AssessmentUserDatum::UNCONFIRMED)
+
+        aud.group = group
+        aud.membership_status = a.membership_status
+        count += 1 if aud.save!
       end
-      group.save! if count > 0
+      group.save! if count.positive?
     end
 
     flash[:success] = "Groups Successfully Imported"
@@ -188,6 +190,7 @@ class GroupsController < ApplicationController
     unless cud = get_member_cud
       redirect_to([@course, @assessment, @group]) && return
     end
+
     newMemberAUD = @assessment.aud_for cud.id
 
     # if we're adding a new member, and not group-confirming someone, make sure that the group is not too large
@@ -252,14 +255,13 @@ class GroupsController < ApplicationController
       end
     else
       leaver = @assessment.aud_for(@cud.id)
-      unless leaver.group_id == @group.id
-        redirect_to([@course, @assessment, @group]) && return
-      end
+      redirect_to([@course, @assessment, @group]) && return unless leaver.group_id == @group.id
+
       leaver.group = nil
       leaver.membership_status = AssessmentUserDatum::UNCONFIRMED
       ActiveRecord::Base.transaction do
         leaver.save!
-        @group.destroy! if @group.assessment_user_data.size == 0
+        @group.destroy! if @group.assessment_user_data.size.zero?
       end
     end
     respond_with(@course, @assessment, @group)
@@ -291,9 +293,7 @@ private
             @course.course_user_data.find(params[:member_id].to_i)
           elsif params[:member_email]
             @course.course_user_data.joins(:user).find_by(users: { email: params[:member_email] })
-          else
-            nil
-    end
+          end
     if !cud
       flash[:error] = "The given student was not found in this course."
       return nil

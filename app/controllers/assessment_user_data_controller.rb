@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 ##
 # AssessmentUserData are joins between Assessments and CourseUserData.
 # This basically lets you update grade types for a student for an assessment.
@@ -6,8 +8,8 @@ class AssessmentUserDataController < ApplicationController
   # inherited from ApplicationController
   before_action :set_assessment
   before_action :set_aud
-    rescue_from ActionView::MissingTemplate do |exception|
-      redirect_to("/home/error_404")
+  rescue_from ActionView::MissingTemplate do |_exception|
+    redirect_to("/home/error_404")
   end
 
   action_auth_level :edit, :instructor

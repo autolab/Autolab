@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class AddWriteupToAssessment < ActiveRecord::Migration[4.2]
   def self.up
     add_column :assessments, :writeup_filename, :string

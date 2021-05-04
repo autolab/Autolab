@@ -1,6 +1,6 @@
 <%= form_for [@course, @assessment, @scoreboard], builder: FormBuilderWithDateTimeInput do |f| %>
   <%= f.error_messages %>
-  <h3>Scoreboard Settings</h3> 
+  <h3>Scoreboard Settings</h3>
   <p>
     Learn more about how to configure <a href="https://docs.autolabproject.com/features/#scoreboards">custom scoreboards here</a>
   </p>
@@ -16,7 +16,7 @@
   <br>
   <b>{"scoreboard": [ {"hdr":"Score"}, {"hdr":"Ops", "asc":1} ] }</b>
   </p>
-  
+
   <h4>Column summary</h4>
   <p><%= @column_summary %></p>
   <p class="help-block">
@@ -28,4 +28,3 @@
               data: {confirm: "Are you sure you want to delete the Scoreboard for this assesssment?"} %>
 
 <% end %>
-

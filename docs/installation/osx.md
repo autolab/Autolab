@@ -32,7 +32,7 @@ Follow the step-by-step instructions below:
         ~/.rbenv/shims/rake
     Note that Mac OSX comes with its own installation of ruby. You might need to switch your ruby from
     the system version to the rbenv installed version. One option is to add the following lines to ~/.bash_profile:
-    
+
         :::bash
         export RBENV_ROOT=<rbenv folder path on your local machine>
         eval "$(rbenv init -)"

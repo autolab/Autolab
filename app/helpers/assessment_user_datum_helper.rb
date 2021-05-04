@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module AssessmentUserDatumHelper
   def grade_type_to_s(type)
     case type

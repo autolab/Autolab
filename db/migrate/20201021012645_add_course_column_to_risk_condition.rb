@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class AddCourseColumnToRiskCondition < ActiveRecord::Migration[5.2]
   def up
     add_column :risk_conditions, :course_id, :integer

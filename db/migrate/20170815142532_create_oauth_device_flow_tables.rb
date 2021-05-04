@@ -1,8 +1,10 @@
+# frozen_string_literal: true
+
 class CreateOauthDeviceFlowTables < ActiveRecord::Migration[4.2]
   def change
     create_table :oauth_device_flow_requests do |t|
       t.references :application,     null: false
-      t.string   :scopes,            null: false, default: ''
+      t.string   :scopes,            null: false, default: ""
       t.string   :device_code,       null: false
       t.string   :user_code,         null: false
       t.datetime :requested_at,      null: false

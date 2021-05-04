@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class AddDetectedMimeTypeToSubmissions < ActiveRecord::Migration[4.2]
   def self.up
     add_column :submissions, :detected_mime_type, :string

@@ -27,7 +27,7 @@ body{
 
 #userWelcome{
 	color:#FFFFFF;
-	padding: 5px 5px 0px 0px; 
+	padding: 5px 5px 0px 0px;
 	position:absolute;
 	top:5px;
 	right:5px;
@@ -48,38 +48,38 @@ body{
 }
 
 h1{
-	font-family:Helvetica, sans-serif; 
-	font-size:19px; 
+	font-family:Helvetica, sans-serif;
+	font-size:19px;
 	font-weight:bold;
-	color:#990000; 
-	padding:0px; 
+	color:#990000;
+	padding:0px;
 	margin:10px 0px 10px 0px;
 }
 h2{
-	font-family:Helvetica, sans-serif; 
-	font-size:16px; 
+	font-family:Helvetica, sans-serif;
+	font-size:16px;
 	font-weight:normal;
-	color:#990000; 
-	padding:0px; 
+	color:#990000;
+	padding:0px;
 	margin:10px 0;
 	max-width:600px;
 	display:block;
-	
+
 }
 h3{
-	font-family:Helvetica, sans-serif; 
-	font-size:14px; 
+	font-family:Helvetica, sans-serif;
+	font-size:14px;
 	font-weight:normal;
-	color:#424545; 
-	padding:0px; 
+	color:#424545;
+	padding:0px;
 	margin:10px 0px 10px 0px;
 }
 h4{
-	font-family:Helvetica, sans-serif; 
-	font-size:12px; 
+	font-family:Helvetica, sans-serif;
+	font-size:12px;
 	font-weight:bold;
-	color:#424545; 
-	padding:0px; 
+	color:#424545;
+	padding:0px;
 	margin:10px 0px 10px 0px;
 }
 
@@ -89,10 +89,10 @@ ul{
 	list-style-image:url(https://www.cmu.edu/common/images/bullet_content.gif);
 }
 li{
-	font-family:Verdana, Arial, Helvetica, sans-serif; 
+	font-family:Verdana, Arial, Helvetica, sans-serif;
 	color:#424545;
-	text-decoration:none; 
-	font-weight:normal; 
+	text-decoration:none;
+	font-weight:normal;
 	padding:0px 0px 2px 0px;
 	margin-top:4px;
 }
@@ -103,21 +103,21 @@ li{
 }
 
 a{
-	font-family:Verdana, Arial, Helvetica, sans-serif; 
+	font-family:Verdana, Arial, Helvetica, sans-serif;
 	color:#D17702;
-	text-decoration:underline; 
+	text-decoration:underline;
 	font-weight:normal;
 }
 a:hover {
-	font-family:Verdana, Arial, Helvetica, sans-serif; 
+	font-family:Verdana, Arial, Helvetica, sans-serif;
 	color:#936241;
-	text-decoration:underline; 
+	text-decoration:underline;
 	font-weight:normal;
 }
 a:visited {
-	font-family:Verdana, Arial, Helvetica, sans-serif; 
+	font-family:Verdana, Arial, Helvetica, sans-serif;
 	color:#936241;
-	text-decoration:underline; 
+	text-decoration:underline;
 	font-weight:normal;
 }
 
@@ -134,13 +134,13 @@ table.prettyBorder td , .sortable td{
 }
 table.prettyBorder th, .sortable th{
 	background-color:#dddddd;
-	font-family:Helvetica, sans-serif; 
+	font-family:Helvetica, sans-serif;
 	/*text-transform:lowercase;
 	font-variant:small-caps;*/
 	font-weight:normal;
 	border: 1px solid black;
 	border-collapse:collapse;
-	font-size:13px; 
+	font-size:13px;
 	margin:5px 0px 5px 0px;
 	padding:4px;
 
@@ -210,14 +210,14 @@ a{cursor:pointer;}
 	right:0;
 	top:0;
 	height:100%;
-	max-height:100%;	
+	max-height:100%;
 	padding:60px 30px 30px 30px;
 	background-color:#EEE;
 	overflow:scroll;
-	
+
 	-webkit-transition: all .3s ease-out;
 	transition: all .3s ease-out;
-	
+
 	/*visibility:hidden; */
 }
 
@@ -271,13 +271,13 @@ table.verticalTable table td{
 }
 table.verticalTable th{
 	background-color:#dddddd;
-	font-family:Helvetica, sans-serif; 
+	font-family:Helvetica, sans-serif;
 	/*text-transform:lowercase;
 	font-variant:small-caps;*/
 	font-weight:normal;
 	border: 1px solid black;
 	border-collapse:collapse;
-	font-size:13px; 
+	font-size:13px;
 	margin:5px 0px 5px 0px;
 	padding:4px;
 	text-align:right;
@@ -303,9 +303,9 @@ ul.panel{
 	border:1px solid #EEE;
 	overflow:hidden;
 }
-ul.panel li{ 
-	margin:0px; 
-	padding:8px 15px; 
+ul.panel li{
+	margin:0px;
+	padding:8px 15px;
 	box-shadow: 0px -1px 0px #EEE;
 	-webkit-box-shadow: 0px -1px 0px #EEE;
 }
@@ -372,7 +372,7 @@ div.devlist{
 	z-index:9001;
 	opacity:0.0;
 	filter:alpha(opacity=0);
-	
+
 	-webkit-transition: all .3s ease-out;
 	transition: all .3s ease-out;
 }
@@ -394,7 +394,7 @@ div.dev{
 	float:right;
 	line-height:25px;
 	-webkit-border-radius: 5px; border-radius:5px; -moz-border-radius: 5px;
-	
+
 	-webkit-transition: all .3s ease-out;
 	transition: all .3s ease-out;
 }
@@ -477,10 +477,10 @@ div.navLinks .navbutton , #coursetitle{
 	display:block;
 	padding:10px 15px;
 	float:left;
-	margin: 0; 
+	margin: 0;
 	text-decoration:none;
 	border-right:1px solid #800;
-	
+
 	background-color:#990000;
 	background: -webkit-gradient(linear, left top, left bottom, from(#AA0000), to(#990000));
 	background: -moz-linear-gradient(top,  #AA0000,  #990000);
@@ -526,16 +526,16 @@ li:hover .half{visibility:visible;}
 	float:left;
 
 }
-#content{	
-	
+#content{
+
 
 }
 
 #ajaxTable table, .ajaxTable table{
-	background:#F8F8F8; 
+	background:#F8F8F8;
 	margin-bottom:30px;
 	border:1px solid #DDD;
-	-webkit-border-radius: 5px; 
+	-webkit-border-radius: 5px;
 	border-radius:5px;
 }
 #ajaxTable tr:nth-child(odd), .ajaxTable tr:nth-child(odd)  { background:#FFF; }
@@ -549,7 +549,7 @@ li:hover .half{visibility:visible;}
 
 }
 #ajaxTable th, .ajaxTable th  {
-	
+
 	cursor:pointer;
 	text-align:left;
 	border:none;
@@ -561,7 +561,7 @@ li:hover .half{visibility:visible;}
 	background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#EFEFEF), to(#E5E5E5));
 	text-transform:uppercase;
 	font-weight:bold;
-	
+
 }
 #ajaxTable table:hover td, .ajaxTable table:hover td{
 	color:#666;
@@ -578,8 +578,8 @@ li:hover .half{visibility:visible;}
 
 #copyrow{position:relative;
 	top:0px; left:2%;}
-	
-.highlighted{ 
+
+.highlighted{
 	color:#000;
 	-webkit-border-radius: 5px; border-radius:5px; -moz-border-radius: 5px;
 	padding:5px;
@@ -612,7 +612,7 @@ table.verticalTable input{
 table.verticalTable tr{
 	border-bottom:1px solid #CCC;
 }
-table.verticalTable th{ 
+table.verticalTable th{
 	width:10px;
 	padding:0px;
 	text-align:left;
@@ -656,7 +656,7 @@ input.button{
 	border: 1px solid #DDD;
 }
 
-input[type=submit]{ 
+input[type=submit]{
 	display:inline-block;
 	min-width:70px;
 	font-size:12px;
@@ -670,7 +670,7 @@ input[type=submit]{
 	background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#F8F8F8), to(#E8E8E8));
 	color:#888;
 	border:1px solid #CCC;
-	
+
 }
 input[type=submit]:hover{
 	background-color:#F5F5F5;
@@ -682,7 +682,7 @@ input[type=submit]:active{
 
 }
 
-input[type=text], textarea{ 
+input[type=text], textarea{
 	display:inline-block;
 	width:200px;
 	font-size:12px;
@@ -697,13 +697,13 @@ input[type=text], textarea{
 }
 
 
-textarea{ 
+textarea{
 	width:350px;
 	height:100px;
 }
 
 
-input[type=text]:focus{ 
+input[type=text]:focus{
 	background-color:#FFFDE3;
 	border-color:#F2F1DF;
 
@@ -743,7 +743,7 @@ form p{
 	display:inline-block;
 	border-top:1px solid #EEE;
 	border-bottom:1px solid #EEE;
-	
+
 }
 
 div.checkbox span.formtext{
@@ -777,7 +777,7 @@ div.warning{
 	border: 1px solid #C90000;
 	box-shadow: 0px 1px 0px #22579B;
 	-webkit-box-shadow: inset 0px 1px 0px #F58484, inset 0px -1px 0px #F58484;
-	
+
 	padding:15px;
 	width:400px;
 	margin:15px 0px;
@@ -803,7 +803,7 @@ div#chart{
 	width:310px;
 	/*margin-bottom:30px;*/
 	padding:8px;
-	
+
 	border:1px solid #DDD;
 	background-color:#FFF;
 }
@@ -836,10 +836,10 @@ a.graphme{
 	text-decoration:none;
 	opacity:0.0;
 	filter:alpha(opacity=0);
-	
+
 	-webkit-transition: all .3s ease-out;
 	transition: all .3s ease-out;
-	
+
 	z-index:10000;
 }
 
@@ -848,7 +848,7 @@ th:hover a.graphme{
 	padding:3px 0px;
 	opacity:1.0;
 	filter:alpha(opacity=100);
-	
+
 	-webkit-transition: all .3s ease-out;
 	transition: all .3s ease-out;
 }
@@ -857,7 +857,7 @@ th:hover a.graphme:hover{
 	color:#444;
 	opacity:1.0;
 	filter:alpha(opacity=100);
-	
+
 	-webkit-transition: all .3s ease-out;
 	transition: all .3s ease-out;
 }
@@ -880,7 +880,7 @@ th:hover a.graphme:hover{
 	opacity:0.8;filter:alpha(opacity=80);
 	background-color:#000;
 	overflow-x:hidden;
-	
+
 	-webkit-transition: all .3s ease-out;
 	transition: all .3s ease-out;
 }
@@ -897,7 +897,7 @@ th:hover a.graphme:hover{
 	left:100px;
 	margin:50px auto;
 	opacity:1.0;filter:alpha(opacity=100);
-	
+
 	-webkit-transition: all .3s ease-out;
 	transition: all .3s ease-out;
 }
@@ -908,10 +908,10 @@ div.sidetable{
 }
 
 #ajaxTable table, .ajaxTable table{
-	background:#F8F8F8; 
+	background:#F8F8F8;
 	margin-bottom:30px;
 	border:1px solid #DDD;
-	-webkit-border-radius: 5px; 
+	-webkit-border-radius: 5px;
 	border-radius:5px;
 }
 #ajaxTable tr:nth-child(odd), .ajaxTable tr:nth-child(odd)  { background:#EEE; }
@@ -937,7 +937,7 @@ div.sidetable{
 	background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#EFEFEF), to(#E5E5E5));
 	text-transform:uppercase;
 	font-weight:bold;
-	
+
 }
 #ajaxTable table:hover td, .ajaxTable table:hover td{
 	color:#666;

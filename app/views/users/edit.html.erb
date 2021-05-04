@@ -7,7 +7,7 @@
 	<div id="error_explanation">
 		<h2><%= pluralize(@user.errors.count, "error") %>
       prohibited this user from being saved:</h2>
-			
+
 		<ul>
 			<% @user.errors.full_messages.each do |msg| %>
 			<li><%= msg %></li>
@@ -19,7 +19,7 @@
 	<br>
 
   <%= render partial: "fields", locals: {f: f} %>
-  
+
 
   <%= f.submit 'Save Changes', { :class=>"btn primary"} %>
 <% end %>
@@ -28,4 +28,4 @@
 <br> <br><hr><br>
 <h3> Admin Only</h3>
   <%= link_to raw('<span class="btn">Delete User</span>'), user_path(@user), method: :delete, confirm: "Are you sure!?" %>
-<% end %> 
+<% end %>

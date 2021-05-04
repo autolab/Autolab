@@ -1,30 +1,31 @@
+# frozen_string_literal: true
+
 Rails.application.routes.draw do
   # For details on the DSL available within this file, see http://guides.rubyonrails.org/routing.html
 
   use_doorkeeper
 
-  namespace :oauth, { defaults: {format: :json} } do
-    get 'device_flow_init', to: 'device_flow#init'
-    get 'device_flow_authorize', to: 'device_flow#authorize'
+  namespace :oauth, { defaults: { format: :json } } do
+    get "device_flow_init", to: "device_flow#init"
+    get "device_flow_authorize", to: "device_flow#authorize"
   end
 
-  namespace :api, { defaults: {format: :json} } do
+  namespace :api, { defaults: { format: :json } } do
     namespace :v1 do
-      get 'user', to: 'user#show'
+      get "user", to: "user#show"
 
-      resources :courses, param: :name, only: [:index, :create] do
+      resources :courses, param: :name, only: %i[index create] do
+        resources :course_user_data, only: %i[index create show update destroy],
+                                     param: :email, constraints: { email: %r{[^/]+} }
 
-        resources :course_user_data, only: [:index, :create, :show, :update, :destroy],
-          param: :email, :constraints => { :email => /[^\/]+/ }
+        resources :assessments, param: :name, only: %i[index show] do
+          get "problems"
+          get "writeup"
+          get "handout"
+          post "submit"
 
-        resources :assessments, param: :name, only: [:index, :show] do
-          get 'problems'
-          get 'writeup'
-          get 'handout'
-          post 'submit'
-          
           resources :submissions, param: :version, only: [:index] do
-            get 'feedback'
+            get "feedback"
           end
         end
       end
@@ -36,15 +37,13 @@ Rails.application.routes.draw do
   root "courses#index"
 
   devise_for :users, controllers: { omniauth_callbacks: "users/omniauth_callbacks",
-                                    registrations:      "registrations" },
+                                    registrations: "registrations" },
                      path_prefix: "auth"
 
   get "contact", to: "home#contact"
 
   namespace :home do
-    if Rails.env == "development" || Rails.env == "test"
-      match "developer_login", via: [:get, :post]
-    end
+    match "developer_login", via: %i[get post] if Rails.env == "development" || Rails.env == "test"
     get "error"
     get "error_404"
     get "no_user"
@@ -56,7 +55,7 @@ Rails.application.routes.draw do
   get "device_flow_auth_cb", to: "device_flow_activation#authorization_callback"
 
   resource :admin do
-    match "email_instructors", via: [:get, :post]
+    match "email_instructors", via: %i[get post]
   end
 
   resources :users do
@@ -65,19 +64,19 @@ Rails.application.routes.draw do
 
   resources :courses, param: :name do
     resources :schedulers do
-        get "visualRun", action: :visual_run
-        get "run"
+      get "visualRun", action: :visual_run
+      get "run"
     end
-    
+
     resource :metrics, only: :index do
       get "index"
-      get 'get_current_metrics'
-      get 'get_watchlist_instances'
-      get 'get_num_pending_instances'
-      get 'refresh_watchlist_instances'
-      post 'update_current_metrics'
-      post 'update_watchlist_instances'
-      post 'update_current_metrics'
+      get "get_current_metrics"
+      get "get_watchlist_instances"
+      get "get_num_pending_instances"
+      get "refresh_watchlist_instances"
+      post "update_current_metrics"
+      post "update_watchlist_instances"
+      post "update_current_metrics"
     end
 
     resources :jobs, only: :index do
@@ -92,10 +91,10 @@ Rails.application.routes.draw do
     resources :attachments
 
     resources :assessments, param: :name, except: :update do
-      resource :autograder, except: [:new, :show]
-      resources :assessment_user_data, only: [:edit, :update]
+      resource :autograder, except: %i[new show]
+      resources :assessment_user_data, only: %i[edit update]
       resources :attachments
-      resources :extensions, only: [:index, :create, :destroy]
+      resources :extensions, only: %i[index create destroy]
       resources :groups, except: :edit do
         member do
           post "add"
@@ -105,13 +104,13 @@ Rails.application.routes.draw do
 
         post "import", on: :collection
       end
-      resources :problems, except: [:index, :show]
+      resources :problems, except: %i[index show]
       resource :scoreboard, except: [:new] do
         get "help", on: :member
       end
       resources :submissions do
-        resources :annotations, only: [:create, :update, :destroy]
-        resources :scores, only: [:create, :show, :update]
+        resources :annotations, only: %i[create update destroy]
+        resources :scores, only: %i[create show update]
 
         member do
           get "destroyConfirm"
@@ -126,7 +125,7 @@ Rails.application.routes.draw do
       end
 
       member do
-        match "bulkGrade", via: [:get, :post]
+        match "bulkGrade", via: %i[get post]
         post "bulkGrade_complete"
         get "bulkExport"
         get "releaseAllGrades"
@@ -163,7 +162,7 @@ Rails.application.routes.draw do
         get "submission_popover"
 
         # remote calls
-        match "local_submit", via: [:get, :post]
+        match "local_submit", via: %i[get post]
         get "log_submit"
       end
 
@@ -186,7 +185,7 @@ Rails.application.routes.draw do
 
       member do
         get "destroyConfirm"
-        match "sudo", via: [:get, :post]
+        match "sudo", via: %i[get post]
         get "unsudo"
       end
     end
@@ -194,14 +193,14 @@ Rails.application.routes.draw do
     member do
       get "bulkRelease"
       get "downloadRoster"
-      match "email", via: [:get, :post]
+      match "email", via: %i[get post]
       get "manage"
       get "moss"
       get "reload"
-      match "report_bug", via: [:get, :post]
+      match "report_bug", via: %i[get post]
       post "runMoss"
       get "sudo"
-      match "uploadRoster", via: [:get, :post]
+      match "uploadRoster", via: %i[get post]
       get "userLookup"
       get "users"
     end

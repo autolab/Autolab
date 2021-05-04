@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "association_cache"
 require "fileutils"
 
@@ -54,8 +56,8 @@ class Course < ApplicationRecord
     newCourse.version_penalty.kind = "points"
     newCourse.version_penalty.value = "0"
 
-    if not newCourse.save
-      raise "Failed to create course #{newCourse.name}: #{newCourse.errors.full_messages.join(", ")}"
+    unless newCourse.save
+      raise "Failed to create course #{newCourse.name}: #{newCourse.errors.full_messages.join(', ')}"
     end
 
     # Check instructor
@@ -76,21 +78,21 @@ class Course < ApplicationRecord
     newCUD = newCourse.course_user_data.new
     newCUD.user = instructor
     newCUD.instructor = true
-    if not newCUD.save
+    unless newCUD.save
       # roll back course creation
       newCourse.destroy
       raise "Failed to create CUD for instructor of new course #{newCourse.name}"
     end
 
     # Load course config
-    if not newCourse.reload_course_config
+    unless newCourse.reload_course_config
       # roll back course and CUD creation
       newCUD.destroy
       newCourse.destroy
       raise "Failed to load course config for new course #{newCourse.name}"
     end
 
-    return newCourse
+    newCourse
   end
 
   # generate course folder
@@ -115,14 +117,12 @@ class Course < ApplicationRecord
 
   def valid_website?
     if website.nil? || website.eql?("")
-      return true
+      true
+    elsif website[0..7].eql?("https://")
+      true
     else
-      if website[0..7].eql?("https://")
-        return true
-      else
-        errors.add("website", "needs to start with https://")
-        return false
-      end
+      errors.add("website", "needs to start with https://")
+      false
     end
   end
 
@@ -141,8 +141,8 @@ class Course < ApplicationRecord
   end
 
   def full_name
-    if semester.to_s.size > 0
-      display_name + " (" + semester + ")"
+    if semester.to_s.size.positive?
+      "#{display_name} (#{semester})"
     else
       display_name
     end
@@ -158,11 +158,11 @@ class Course < ApplicationRecord
 
     d = File.open(dest, "w")
     d.write("require 'CourseBase.rb'\n\n")
-    d.write("module Course" + course.camelize + "\n")
+    d.write("module Course#{course.camelize}\n")
     d.write("\tinclude CourseBase\n\n")
-    for line in lines do
-      if line.length > 0
-        d.write("\t" + line)
+    lines.each do |line|
+      if line.length.positive?
+        d.write("\t#{line}")
       else
         d.write(line)
       end
@@ -181,7 +181,7 @@ class Course < ApplicationRecord
     mod = nil
     begin
       mod = reload_config_file
-    rescue Exception => @error
+    rescue Exception => e
       return false
     end
 
@@ -210,13 +210,13 @@ class Course < ApplicationRecord
 
   # Update the grade related condition watchlist instances for each course user datum
   # This is called when:
-  # - Fields related to grades are changed in the course setting 
+  # - Fields related to grades are changed in the course setting
   # - Assessment setting is changed and assessment has passed end_at
   def update_course_grade_watchlist_instances
     WatchlistInstance.update_course_grade_watchlist_instances(self)
   end
 
-  def update_course_no_submissions_watchlist_instances(course_assistant=nil)
+  def update_course_no_submissions_watchlist_instances(course_assistant = nil)
     WatchlistInstance.update_course_no_submissions_watchlist_instances(self, course_assistant)
   end
 
@@ -263,25 +263,24 @@ class Course < ApplicationRecord
   end
 
   def asmts_before_date(date)
-    asmts = self.assessments.ordered
-    asmts_before_date = asmts.where("due_at < ?", date)
-    return asmts_before_date
+    asmts = assessments.ordered
+    asmts.where("due_at < ?", date)
   end
 
 private
 
   def saved_change_to_grade_related_fields?
-    return (saved_change_to_late_slack? or saved_change_to_grace_days? or
+    (saved_change_to_late_slack? or saved_change_to_grace_days? or
             saved_change_to_version_threshold? or saved_change_to_late_penalty_id? or
             saved_change_to_version_penalty_id?)
   end
 
   def grace_days_or_late_slack_changed?
-    return (grace_days_changed? or late_slack_changed?)
+    (grace_days_changed? or late_slack_changed?)
   end
 
   def saved_change_to_grace_days_or_late_slack?
-    return (saved_change_to_grace_days? or saved_change_to_late_slack?)
+    (saved_change_to_grace_days? or saved_change_to_late_slack?)
   end
 
   def cgdub_dependencies_updated

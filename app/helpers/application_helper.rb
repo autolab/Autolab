@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Methods added to this helper will be available to all templates in the application.
 module ApplicationHelper
   # Helpers for Rails 4 REST API Paths
@@ -12,7 +14,7 @@ module ApplicationHelper
   # Older Helpers
   def sort_td_class_helper(param)
     result = 'class="sortup"' if params[:sort] == param
-    result = 'class="sortdown"' if params[:sort] == param + " DESC"
+    result = 'class="sortdown"' if params[:sort] == "#{param} DESC"
     result
   end
 
@@ -24,11 +26,11 @@ module ApplicationHelper
 
   def roundValue(val)
     if val.is_a?(Float) && val.nan?
-      return val
+      val
     elsif val.is_a? Numeric
-      return val.to_f.round(1)
+      val.to_f.round(1)
     else
-      return val
+      val
     end
   end
 
@@ -48,21 +50,21 @@ module ApplicationHelper
     [
       ["C/C++", "c_cpp"],
       ["C#", "csharp"],
-      %w(CSS css),
-      %w(HTML html),
-      %w(Java java),
-      %w(JavaScript javascript),
-      %w(LaTeX latex),
-      %w(Lisp clojure),
-      %w(Perl perl),
-      %w(PHP php),
-      %w(Python python),
-      %w(Ruby ruby),
-      %w(Scala scala),
+      %w[CSS css],
+      %w[HTML html],
+      %w[Java java],
+      %w[JavaScript javascript],
+      %w[LaTeX latex],
+      %w[Lisp clojure],
+      %w[Perl perl],
+      %w[PHP php],
+      %w[Python python],
+      %w[Ruby ruby],
+      %w[Scala scala],
       ["SML/OCaml", "ocaml"],
-      %w(SQL sql),
-      %w(Text text),
-      %w(XML xml)
+      %w[SQL sql],
+      %w[Text text],
+      %w[XML xml]
     ]
   end
 
@@ -85,7 +87,7 @@ module ApplicationHelper
   def view_archive_files(submission, title)
     if Archive.archive? submission.handin_file_path
       link_to title, url_for([:view, @course, @assessment, submission]),
-        tabindex: -1, target: "_blank"
+              tabindex: -1, target: "_blank"
     end
   end
 
@@ -111,10 +113,10 @@ module ApplicationHelper
   def computed_score(link = nil, nil_to_dash = true)
     value = yield
     value = value ? value.round(1) : value
-    nil_to_dash && (value.nil?) ? raw("&ndash;") : value
+    nil_to_dash && value.nil? ? raw("&ndash;") : value
   rescue ScoreComputationException => e
     image = image_tag("score_error.png", style: "width: 1.3em; height: 1.3em")
-    (@cud.instructor? && link) ? link_to(image, link) : image
+    @cud.instructor? && link ? link_to(image, link) : image
   end
 
   def round(v)
@@ -126,19 +128,19 @@ module ApplicationHelper
     asmt = aud.assessment
 
     fs = computed_score(history_url(@_cud, asmt), false) { aud.final_score @cud }
-    fail "FATAL: can't be nil" unless fs
+    raise "FATAL: can't be nil" unless fs
 
     link = link_to fs, history_url(@_cud, asmt)
 
     max_score = computed_score { asmt.max_score }
-    max_score_s = '<span class="max_score">' + max_score.to_s + "</span>"
+    max_score_s = "<span class=\"max_score\">#{max_score}</span>"
 
     raw("#{link}/#{max_score_s}")
   end
 
   # TODO: fix when rewriting handin history/student gradebook
   def ignored_submission_style(s)
-    "text-decoration: " + (s.ignored? ? "line-through" : "none") + ";"
+    "text-decoration: #{s.ignored? ? 'line-through' : 'none'};"
   end
 
   def external_stylesheet_link_tag(library, version)

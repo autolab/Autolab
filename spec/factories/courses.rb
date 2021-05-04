@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 FactoryBot.define do
   factory :course do
     sequence(:name) { |n| "test_course_#{n}" }
@@ -8,7 +10,7 @@ FactoryBot.define do
     association :late_penalty, factory: :penalty
     version_threshold { 5 }
     association :version_penalty, factory: :penalty
-    start_date { 1.days.ago.to_s(:db) }
+    start_date { 1.day.ago.to_s(:db) }
     end_date { 100.days.from_now.to_s(:db) }
     disabled { false }
   end

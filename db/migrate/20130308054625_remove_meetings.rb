@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class RemoveMeetings < ActiveRecord::Migration[4.2]
   def self.up
     drop_table :meeting_signups
@@ -5,7 +7,7 @@ class RemoveMeetings < ActiveRecord::Migration[4.2]
   end
 
   def self.down
-    create_table "meetings", :force => true do |t|
+    create_table "meetings", force: true do |t|
       t.integer  "course_id"
       t.string   "name"
       t.boolean  "open"
@@ -13,10 +15,10 @@ class RemoveMeetings < ActiveRecord::Migration[4.2]
       t.datetime "created_at"
       t.datetime "updated_at"
       t.integer  "preregistry_time"
-      t.boolean  "grader_visible",   :default => true
+      t.boolean  "grader_visible", default: true
     end
 
-    create_table "meeting_signups", :force => true do |t|
+    create_table "meeting_signups", force: true do |t|
       t.integer  "meeting_id"
       t.integer  "instructor_id"
       t.integer  "user_id"

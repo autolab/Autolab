@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # This file is auto-generated from the current state of the database. Instead
 # of editing this file, please use the migrations feature of Active Record to
 # incrementally modify your database, and then regenerate this schema definition.
@@ -10,8 +12,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_11_01_022133) do
-
+ActiveRecord::Schema.define(version: 20_201_101_022_133) do
   create_table "annotations", force: :cascade do |t|
     t.integer "submission_id"
     t.string "filename"
@@ -50,9 +51,11 @@ ActiveRecord::Schema.define(version: 2020_11_01_022133) do
     t.integer "group_id"
     t.integer "membership_status", limit: 1, default: 0
     t.index ["assessment_id"], name: "index_assessment_user_data_on_assessment_id"
-    t.index ["course_user_datum_id", "assessment_id"], name: "index_AUDs_on_CUD_id_and_assessment_id"
+    t.index %w[course_user_datum_id assessment_id],
+            name: "index_AUDs_on_CUD_id_and_assessment_id"
     t.index ["course_user_datum_id"], name: "index_assessment_user_data_on_course_user_datum_id"
-    t.index ["latest_submission_id"], name: "index_assessment_user_data_on_latest_submission_id", unique: true
+    t.index ["latest_submission_id"], name: "index_assessment_user_data_on_latest_submission_id",
+                                      unique: true
   end
 
   create_table "assessments", force: :cascade do |t|
@@ -270,20 +273,20 @@ ActiveRecord::Schema.define(version: 2020_11_01_022133) do
 
   create_table "scoreboards", force: :cascade do |t|
     t.integer "assessment_id"
-    t.text "banner", limit: 65535
-    t.text "colspec", limit: 65535
+    t.text "banner", limit: 65_535
+    t.text "colspec", limit: 65_535
   end
 
   create_table "scores", force: :cascade do |t|
     t.integer "submission_id"
     t.float "score"
-    t.text "feedback", limit: 16777215
+    t.text "feedback", limit: 16_777_215
     t.integer "problem_id"
     t.datetime "created_at"
     t.datetime "updated_at"
     t.boolean "released", default: false
     t.integer "grader_id"
-    t.index ["problem_id", "submission_id"], name: "problem_submission_unique", unique: true
+    t.index %w[problem_id submission_id], name: "problem_submission_unique", unique: true
     t.index ["submission_id"], name: "index_scores_on_submission_id"
   end
 
@@ -353,5 +356,4 @@ ActiveRecord::Schema.define(version: 2020_11_01_022133) do
     t.index ["course_user_datum_id"], name: "index_watchlist_instances_on_course_user_datum_id"
     t.index ["risk_condition_id"], name: "index_watchlist_instances_on_risk_condition_id"
   end
-
 end

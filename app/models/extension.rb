@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Extension < ApplicationRecord
   belongs_to :assessment
   belongs_to :course_user_datum
@@ -20,7 +22,7 @@ class Extension < ApplicationRecord
   end
 
   def after_create
-    if self.infinite?
+    if infinite?
       COURSE_LOGGER.log("Extension #{id}: CREATED for " \
       "#{course_user_datum.user.email} on" \
       " #{assessment.name} for unlimited days")

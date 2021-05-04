@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class AddAutogradeAndScoreboardSettingsToAssessment < ActiveRecord::Migration[4.2]
   def change
     rename_table :autograde_props, :autograding_setups

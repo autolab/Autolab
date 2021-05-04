@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 Doorkeeper.configure do
   # Change the ORM that doorkeeper will use (needs plugins)
   orm :active_record
@@ -7,15 +9,15 @@ Doorkeeper.configure do
     # Put your resource owner authentication logic here.
     # Example implementation:
     #   User.find_by_id(session[:user_id]) || redirect_to(new_user_session_url)
-    current_user || warden.authenticate!(:scope => :user)  # configured with Devise
+    current_user || warden.authenticate!(scope: :user) # configured with Devise
   end
 
   # If you want to restrict access to the web interface for adding oauth authorized applications, you need to declare the block below.
   admin_authenticator do
-  #   # Put your admin authentication logic here.
-  #   # Example implementation:
-  #   Admin.find_by_id(session[:admin_id]) || redirect_to(new_admin_session_url)
-    (!current_user && warden.authenticate!(:scope => :user)) || current_user.administrator? || redirect_to("/404.html")
+    #   # Put your admin authentication logic here.
+    #   # Example implementation:
+    #   Admin.find_by_id(session[:admin_id]) || redirect_to(new_admin_session_url)
+    (!current_user && warden.authenticate!(scope: :user)) || current_user.administrator? || redirect_to("/404.html")
   end
 
   # Authorization Code expiration time (default 10 minutes).
@@ -99,7 +101,7 @@ Doorkeeper.configure do
   #   http://tools.ietf.org/html/rfc6819#section-4.4.2
   #   http://tools.ietf.org/html/rfc6819#section-4.4.3
   #
-  grant_flows %w(authorization_code)
+  grant_flows %w[authorization_code]
 
   # Under some circumstances you might want to have applications auto-approved,
   # so that the user skips the authorization step.

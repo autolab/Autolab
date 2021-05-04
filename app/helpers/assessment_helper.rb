@@ -1,7 +1,9 @@
+# frozen_string_literal: true
+
 module AssessmentHelper
   def stats_table(data)
     out =
-    '<table class="striped">
+      '<table class="striped">
        <thead>
          <tr class="red darken-3 white-text">
            <th class="red darken-3 white-text">Problem</th>
@@ -24,14 +26,13 @@ module AssessmentHelper
       out += "</tr>"
     end
     out +=
-    '  </tbody>
+      '  </tbody>
      </table>'
     out
   end
 
   def stats_graph(graph_name, type)
-    out = "<div id='#{graph_name + type}Div'></div>"
-    out
+    "<div id='#{graph_name + type}Div'></div>"
   end
 
   def aud_special_grade_type?(aud)
@@ -43,11 +44,10 @@ module AssessmentHelper
             action: :editCourse
   end
 
-
   def gradesheet_csv(asmt, as_seen_by)
     CSV.generate do |csv|
       # title row with the column names:
-      title = ["Submission Time:","Email:"]
+      title = ["Submission Time:", "Email:"]
       asmt.problems.each { |problem| title << "#{problem.name}:" }
       title << "Total:"
       csv << title
@@ -86,11 +86,11 @@ private
                     # produce ordered list of scores
                     asmt.problems.map do |p|
                       score = problem_scores_map[p.id]
-                      score && score.score ? score.score : nil
+                      score&.score ? score.score : nil
                     end
                   else
                     Array.new asmt.problems.count
-    end
+                  end
 
     # add scores to csv row (for scores columns)
     row.concat score_cells
@@ -98,11 +98,11 @@ private
     # add AUD status (see AUD.status method) as final column
     final = aud.status as_seen_by
     row << case final
-      when Symbol
-        final
-      when Float
-        round final
-    end
+           when Symbol
+             final
+           when Float
+             round final
+           end
 
     row
   end
@@ -110,7 +110,7 @@ private
   def bulkGrade_cell(cell)
     case cell
     when Hash
-      cell[:error] ? cell[:error] : '<i class="material-icons">search</i>'.html_safe
+      cell[:error] || '<i class="material-icons">search</i>'.html_safe
     when NilClass
       '<i class="material-icons">bookmark_border</i>'.html_safe
     else

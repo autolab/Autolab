@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class AutolabFormatter < ::Logger::Formatter
   def call(level, time, _progname, msg)
     strTime = time.strftime("%m/%d/%y %H:%M:%S")
@@ -14,7 +16,7 @@ class CustomLogger
     # if this can't grab the file, Autolab should still function
     @logger = Logger.new(path, "monthly")
     @logger.formatter = AutolabFormatter.new
-  rescue
+  rescue StandardError
     @logger = Rails.logger
   end
 
@@ -23,11 +25,10 @@ class CustomLogger
   end
 
   def log(message, severity = Logger::INFO)
-    unless Rails.env == "test" || Rails.env == "development"
-      @logger.add(severity) { message }
-    end
+    @logger.add(severity) { message } unless Rails.env == "test" || Rails.env == "development"
   end
 end
+
 class CourseLogger < CustomLogger
   def setCourse(course)
     setLogPath(Rails.root.join("courses", course.name, "autolab.log"))
@@ -39,11 +40,13 @@ class AssessmentLogger < CustomLogger
     @course = nil
     @assessment = nil
   end
+
   def setCourse(course)
     @course = course
     @assessment = nil
     resetPath
   end
+
   def setAssessment(assessment)
     @assessment = assessment
     setLogPath(Rails.root.join("courses", @course.name, @assessment.name, "log.txt"))

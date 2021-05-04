@@ -6,7 +6,7 @@
 <% else%>
   <% rowNum = 0 %>
   <% for u in @users do %>
-    <% if u.class == Hash then 
+    <% if u.class == Hash then
       u = u[:word]
     end %>
     <% if first then

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class AddCourseIdToCache < ActiveRecord::Migration[4.2]
   def self.up
     add_column :gradebook_cache, :course_id, :integer

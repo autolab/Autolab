@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "uri"
 require "tango_client"
 require_relative Rails.root.join("config", "autogradeConfig.rb")
@@ -8,14 +10,14 @@ require_relative Rails.root.join("config", "autogradeConfig.rb")
 # Gets imported into AssessmentsController
 #
 module AssessmentAutograde
-
   include AssessmentAutogradeCore
 
   # method called when Tango returns the output
   # action_no_auth :autograde_done
   def autograde_done
     @assessment = @course.assessments.find_by(name: params[:name])
-    head(:no_content) && return unless @assessment && @assessment.has_autograder?
+    head(:no_content) && return unless @assessment&.has_autograder?
+
     ASSESSMENT_LOGGER.setAssessment(@assessment)
 
     # there can be multiple submission with the same dave if this was a group submission
@@ -37,16 +39,16 @@ module AssessmentAutograde
     end
 
     head(:no_content) && return
-  rescue => exception
-    ExceptionNotifier.notify_exception(exception, env: request.env,
-                                       data: {
-                                         user: current_user,
-                                         course: @course,
-                                         assessment: @assessment,
-                                         submission: @submission
-                                       })
-    Rails.logger.error "Exception in autograde_done: #{exception.class} (#{exception.message})"
-    COURSE_LOGGER.log "Exception in autograde_done: #{exception.class} (#{exception.message})"
+  rescue StandardError => e
+    ExceptionNotifier.notify_exception(e, env: request.env,
+                                          data: {
+                                            user: current_user,
+                                            course: @course,
+                                            assessment: @assessment,
+                                            submission: @submission
+                                          })
+    Rails.logger.error "Exception in autograde_done: #{e.class} (#{e.message})"
+    COURSE_LOGGER.log "Exception in autograde_done: #{e.class} (#{e.message})"
     head(:no_content) && return
   end
 
@@ -60,7 +62,7 @@ module AssessmentAutograde
     unless @assessment.has_autograder?
       # Not an error, this behavior was specified!
       flash[:info] = "This submission is not autogradable"
-      redirect_to([:history, @course, @assessment, cud_id: @effective_cud.id]) && return
+      redirect_to([:history, @course, @assessment, { cud_id: @effective_cud.id }]) && return
     end
 
     begin
@@ -74,7 +76,7 @@ module AssessmentAutograde
         additional error data: #{e.additional_data}")
     end
 
-    redirect_to([:history, @course, @assessment, cud_id: @effective_cud.id]) && return
+    redirect_to([:history, @course, @assessment, { cud_id: @effective_cud.id }]) && return
   end
 
   #
@@ -86,7 +88,7 @@ module AssessmentAutograde
 
     # Now regrade only the most recent submissions. Keep track of
     # any handins that fail.
-    submissions = submission_ids.map {|sid| @assessment.submissions.find_by_id(sid)}
+    submissions = submission_ids.map { |sid| @assessment.submissions.find_by_id(sid) }
 
     begin
       failed_list = sendJob_batch(@course, @assessment, submissions, @cud)
@@ -98,21 +100,21 @@ module AssessmentAutograde
       end
     end
 
-    if failed_list.length > 0
+    if failed_list.length.positive?
       flash[:error] = "Warning: Could not regrade #{failed_list.length} submission(s):<br>"
       failed_list.each do |failure|
-        if failure[:error].error_code == :nil_submission
-          flash[:error] += "Unrecognized submission ID<br>"
-        else
-          flash[:error] += "#{failure[:submission].filename}: #{failure[:error].message}<br>"
-        end
+        flash[:error] += if failure[:error].error_code == :nil_submission
+                           "Unrecognized submission ID<br>"
+                         else
+                           "#{failure[:submission].filename}: #{failure[:error].message}<br>"
+                         end
       end
     end
 
     success_jobs = submission_ids.size - failed_list.length
-    if success_jobs > 0
+    if success_jobs.positive?
       link = "<a href=\"#{url_for(controller: 'jobs')}\">#{success_jobs} submission</a>"
-      flash[:success] = ("Regrading #{link}").html_safe
+      flash[:success] = "Regrading #{link}".html_safe
     end
 
     redirect_to([@course, @assessment, :submissions]) && return
@@ -127,7 +129,7 @@ module AssessmentAutograde
   def regradeAll
     # Grab all of the submissions for this assessment
     @submissions = @assessment.submissions.where(special_type: Submission::NORMAL)
-                   .order("version DESC")
+                              .order("version DESC")
 
     last_submissions = @submissions.latest
 
@@ -141,21 +143,21 @@ module AssessmentAutograde
       end
     end
 
-    if failed_list.length > 0
+    if failed_list.length.positive?
       flash[:error] = "Warning: Could not regrade #{failed_list.length} submission(s):<br>"
       failed_list.each do |failure|
-        if failure[:error].error_code == :nil_submission
-          flash[:error] += "Unrecognized submission ID<br>"
-        else
-          flash[:error] += "#{failure[:submission].filename}: #{failure[:error].message}<br>"
-        end
+        flash[:error] += if failure[:error].error_code == :nil_submission
+                           "Unrecognized submission ID<br>"
+                         else
+                           "#{failure[:submission].filename}: #{failure[:error].message}<br>"
+                         end
       end
     end
 
     success_jobs = last_submissions.size - failed_list.length
-    if success_jobs > 0
+    if success_jobs.positive?
       link = "<a href=\"#{url_for(controller: 'jobs')}\">#{success_jobs} students</a>"
-      flash[:success] = ("Regrading the most recent submissions from #{link}").html_safe
+      flash[:success] = "Regrading the most recent submissions from #{link}".html_safe
     end
 
     redirect_to([@course, @assessment, :submissions]) && return
@@ -165,9 +167,9 @@ module AssessmentAutograde
   # sendJob_AddHTMLMessages - A wrapper for AssessmentAutogradeCore::sendJob that adds error
   #   or congratulatory messages to flash depending on the result of sendJob. Note that this
   #   function does not "handle" the AutogradeError, it just adds messages depending on the
-  #   situation, so the caller of this function will still receive the original error from 
+  #   situation, so the caller of this function will still receive the original error from
   #   sendJob.
-  # 
+  #
   # Called by assessments#handin, submissions#regrade and submissions#regradeAll
   #
   # On success, returns the job id
@@ -175,7 +177,10 @@ module AssessmentAutograde
   #
   def sendJob_AddHTMLMessages(course, assessment, submissions)
     # Check for nil first, since students should know about this
-    flash[:error] = "Submission could not be autograded due to an error in creation" && return if submissions.blank?
+    if submissions.blank?
+      flash[:error] =
+        "Submission could not be autograded due to an error in creation" && return
+    end
 
     begin
       job = sendJob(course, assessment, submissions, @cud)
@@ -184,24 +189,28 @@ module AssessmentAutograde
       when :missing_autograding_props
         flash[:error] = "Autograding failed because there are no autograding properties."
         if @cud.instructor?
-          link = (view_context.link_to "Autograder Settings", [:edit, course, assessment, :autograder])
+          link = (view_context.link_to "Autograder Settings",
+                                       [:edit, course, assessment, :autograder])
           flash[:error] += " Visit #{link} to set the autograding properties."
         else
           flash[:error] += " Please contact your instructor."
         end
       when :tango_open
         link = "<a href=\"#{url_for(controller: 'jobs')}\">Jobs</a>"
-        flash[:error] = "There was an error submitting your autograding job. We are likely down for maintenance if issues persist, please contact #{Rails.configuration.school['support_email']}"
+        flash[:error] =
+          "There was an error submitting your autograding job. We are likely down for maintenance if issues persist, please contact #{Rails.configuration.school['support_email']}"
       when :tango_upload
         flash[:error] = "There was an error uploading the submission file."
       when :tango_add_job
         flash[:error] = "Submission was rejected by autograder."
         if @cud.instructor?
-          link = (view_context.link_to "Autograder Settings", [:edit, course, assessment, :autograder])
+          link = (view_context.link_to "Autograder Settings",
+                                       [:edit, course, assessment, :autograder])
           flash[:error] += " (Verify the autograding properties at #{link}.)\nErrorMsg: " + e.additional_data
         end
       when :missing_autograder_file
-        flash[:error] = "One or more files are missing in the server. Please contact the instructor. The missing files are: " + e.additional_data
+        flash[:error] =
+          "One or more files are missing in the server. Please contact the instructor. The missing files are: #{e.additional_data}"
       else
         flash[:error] = "Autograding failed because of an unexpected exception in the system."
       end
@@ -209,11 +218,11 @@ module AssessmentAutograde
       raise e # pass it on
     end
 
-    link = "<a href=\"#{url_for(controller: 'jobs', action: 'getjob', id: job)}\">Job ID = #{job}</a>"
-    flash[:success] = ("Submitted file #{submissions[0].filename} (#{link}) for autograding." \
-      " Refresh the page to see the results.").html_safe
+    link = "<a href=\"#{url_for(controller: 'jobs', action: 'getjob',
+                                id: job)}\">Job ID = #{job}</a>"
+    flash[:success] = "Submitted file #{submissions[0].filename} (#{link}) for autograding." \
+      " Refresh the page to see the results.".html_safe
 
     job
   end
-
 end

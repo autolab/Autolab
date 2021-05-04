@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class RemovePartnersAndUserModule < ActiveRecord::Migration[4.2]
   def change
     drop_table :user_modules

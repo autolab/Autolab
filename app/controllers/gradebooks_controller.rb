@@ -1,11 +1,13 @@
+# frozen_string_literal: true
+
 require "association_cache"
 require "csv"
 require "statistics"
 require "utilities"
 
 class GradebooksController < ApplicationController
-    rescue_from ActionView::MissingTemplate do |exception|
-      redirect_to("/home/error_404")
+  rescue_from ActionView::MissingTemplate do |_exception|
+    redirect_to("/home/error_404")
   end
   action_auth_level :show, :student
   def show
@@ -39,8 +41,11 @@ class GradebooksController < ApplicationController
 
   action_auth_level :student, :student
   def student
-    @_cud = params[:id] ?
-              CourseUserDatum.find_by_id(params[:id]) : @cud
+    @_cud = if params[:id]
+              CourseUserDatum.find_by_id(params[:id])
+            else
+              @cud
+            end
 
     if @_cud.nil?
       flash[:error] = "Can't find requested user course data."
@@ -48,11 +53,11 @@ class GradebooksController < ApplicationController
     end
 
     unless @cud == @_cud || (@cud.instructor? && @cud.course == @_cud.course)
-      if (@cud != @_cud)
-        flash[:error] = "You can't view other students' gradebooks."
-      else
-        flash[:error] = "You can't view other classes' gradebooks."
-      end
+      flash[:error] = if @cud == @_cud
+                        "You can't view other classes' gradebooks."
+                      else
+                        "You can't view other students' gradebooks."
+                      end
       redirect_to(course_course_user_datum_gradebook_path) && return
     end
 
@@ -107,10 +112,10 @@ class GradebooksController < ApplicationController
 
   action_auth_level :bulkRelease, :instructor
   def bulkRelease
-    for assessment in @course.assessments do
-      for problem in assessment.problems do
+    @course.assessments.each do |assessment|
+      assessment.problems.each do |problem|
         scores = problem.scores.where(released: false)
-        for score in scores do
+        scores.each do |score|
           score.released = true
           score.save
         end

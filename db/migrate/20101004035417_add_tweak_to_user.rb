@@ -1,6 +1,8 @@
+# frozen_string_literal: true
+
 class AddTweakToUser < ActiveRecord::Migration[4.2]
   def self.up
-    add_column :users, :tweak, :float, :default=>0, :null=>false
+    add_column :users, :tweak, :float, default: 0, null: false
   end
 
   def self.down

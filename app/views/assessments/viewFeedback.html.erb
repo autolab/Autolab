@@ -26,7 +26,7 @@ Yes, feedback if per problem but we show all annotations for this submission any
   <% @submission.annotations.each do |annotation| %>
     <li>
       <%= link_to annotation.as_text, [:view, @course, @assessment, @submission, header_position: annotation.position] %>
-      <% 
+      <%
         # if the submission is an archive, use filename in archive; otherwise, use submission filename
         filename = @files && annotation.position ? Archive.get_nth_filename(@files, annotation.position) : @submission.filename
       %>

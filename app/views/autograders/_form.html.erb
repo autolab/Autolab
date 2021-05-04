@@ -20,7 +20,7 @@
 	</script>
 <% end %>
 
-<%= form_for [@course, @assessment, @autograder], 
+<%= form_for [@course, @assessment, @autograder],
 	builder: FormBuilderWithDateTimeInput,
 	html: { multipart: true } do |f| %>
   <%= f.error_messages %>
@@ -42,7 +42,7 @@
 	  </span>
 	</label><br />
 	<input var id="makefile_name" value="autograde-Makefile" readonly>
-	
+
 	<label class="btn primary">
   	Autograder Tar
 	  <span class="hide-all">
@@ -55,7 +55,7 @@
 	</p>
 
   <%= f.submit "Save Settings", { class: "" } %>
-  
+
   <%= link_to "Delete Autograder", [@course, @assessment, :autograder], method: :delete, class: "btn danger",
               data: {confirm: "Are you sure you want to delete the Autograder for this assesssment?"} %>
 <% end %>

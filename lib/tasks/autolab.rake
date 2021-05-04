@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "fileutils"
 
 # This "monkey-patch" for Populator is needed due to a bug in populator which calls
@@ -19,9 +21,9 @@ end
 namespace :autolab do
   COURSE_NAME = "AutoPopulated"
   USER_COUNT = 50
-  ASSESSMENT_CATEGORIES = ["Homework", "Lab", "Quiz"]
+  ASSESSMENT_CATEGORIES = %w[Homework Lab Quiz].freeze
   ASSESSMENT_COUNT = 6
-  PROBLEM_COUNT = 3 
+  PROBLEM_COUNT = 3
   SUBMISSION_MAX = 3
   PROBLEM_MAX_SCORE = 100.0
   COURSE_START = Time.now - 80.days
@@ -29,9 +31,9 @@ namespace :autolab do
 
   AUTOGRADE_CATEGORY_NAME = "CategoryAutograde"
   AUTOGRADE_TEMPLATE_DIR_PATH =
-          Rails.root.join("templates", "labtemplate")
+    Rails.root.join("templates", "labtemplate")
   AUTOGRADE_TEMPLATE_CONFIG_PATH =
-          Rails.root.join("templates", "AutoPopulated-labtemplate.rb")
+    Rails.root.join("templates", "AutoPopulated-labtemplate.rb")
   AUTOGRADE_TEMPLATE_NAME = "labtemplate"
   AUTOGRADE_TEMPLATE_DISPLAY_NAME = "Lab Template"
   AUTOGRADE_TEMPLATE_MAX_SCORE = 100.0
@@ -39,39 +41,38 @@ namespace :autolab do
   AUTOGRADE_TEMPLATE_HANDIN_DIRECTORY = "handin"
   AUTOGRADE_TEMPLATE_HANDIN_FILENAME = "handin.py"
 
-  def load_course name
+  def load_course(name)
     Course.create do |c|
       c.name = name
       c.semester = "SEM"
       c.late_slack = 0
-      c.grace_days = 3 
-      c.late_penalty = Penalty.new(:value => 5, :kind => "points")
-      c.version_penalty = Penalty.new(:value => 5, :kind => "points")
+      c.grace_days = 3
+      c.late_penalty = Penalty.new(value: 5, kind: "points")
+      c.version_penalty = Penalty.new(value: 5, kind: "points")
       c.display_name = name
       c.start_date = COURSE_START
       c.end_date = COURSE_END
     end
   end
 
-  def load_assessments course
+  def load_assessments(course)
     course_dir = Rails.root.join("courses", course.name)
     ASSESSMENT_CATEGORIES.each do |cat|
-
       # start date for this category
       start = COURSE_START + rand(20).day
 
       ASSESSMENT_COUNT.times do |i|
         course.assessments.create do |a|
           a.category_name = cat
-          
-          a.visible_at = start 
-          a.start_at = start
-          a.due_at = start + (5 + rand(11)).days          # 5-15d after start date
-          a.end_at = a.due_at + (1 + rand(7)).day   # 1d-1w after the due date
-          a.grading_deadline = a.end_at + (1 + rand(7)).day   # 1-7d after submit deadline 
 
-          a.name = "#{cat}#{i.to_s}".downcase
-          a.display_name = "#{cat} #{i.to_s}"
+          a.visible_at = start
+          a.start_at = start
+          a.due_at = start + rand(5..15).days # 5-15d after start date
+          a.end_at = a.due_at + rand(1..7).day # 1d-1w after the due date
+          a.grading_deadline = a.end_at + rand(1..7).day # 1-7d after submit deadline
+
+          a.name = "#{cat}#{i}".downcase
+          a.display_name = "#{cat} #{i}"
           a.handin_directory = "handin"
           a.handin_filename = "handin.c"
           a.course_id = course.id
@@ -79,75 +80,72 @@ namespace :autolab do
           a.construct_folder
 
           # 1-5 day buffer between assessments (in this category)
-          start = a.due_at + (1 + rand(5)).day
+          start = a.due_at + rand(1..5).day
         end
       end
     end
 
     # load config files for each assessment now that they've been created
-    course.assessments.each do |a|
-      a.load_config_file
-    end
+    course.assessments.each(&:load_config_file)
   end
 
-  def load_problems course
+  def load_problems(course)
     course.assessments.each do |a|
       PROBLEM_COUNT.times do |i|
         a.problems.create do |p|
-          p.name = "problem#{i.to_s}"
+          p.name = "problem#{i}"
           p.max_score = PROBLEM_MAX_SCORE
         end
       end
     end
   end
 
-  def load_users course
-    
-    if User.where(:email => "admin@foo.bar").first then
-      @grader = User.where(:email => "admin@foo.bar").first
+  def load_users(course)
+    if User.where(email: "admin@foo.bar").first
+      @grader = User.where(email: "admin@foo.bar").first
     else
       @grader = User.new({
-        first_name: "Autolab",
-        last_name: "Administrator",
+                           first_name: "Autolab",
+                           last_name: "Administrator",
 
-        password: 'adminfoobar',
+                           password: "adminfoobar",
 
-        school: "SCS",
-        major: "CS",
-        year: "4",
-        email: "admin@foo.bar",
+                           school: "SCS",
+                           major: "CS",
+                           year: "4",
+                           email: "admin@foo.bar",
 
-        administrator: true
-      })
+                           administrator: true
+                         })
       @grader.skip_confirmation!
       @grader.save
     end
 
     @grader_cud = CourseUserDatum.create!({
-      :user => @grader,
-      :course => course,
+                                            user: @grader,
+                                            course: course,
 
-      :lecture => "1",
-      :section => "Instructor",
-      :dropped => false,
+                                            lecture: "1",
+                                            section: "Instructor",
+                                            dropped: false,
 
-      :instructor => true,
-      :course_assistant => true,
+                                            instructor: true,
+                                            course_assistant: true,
 
-      :nickname => "admin_#{course.name}"
-    })
+                                            nickname: "admin_#{course.name}"
+                                          })
 
     i = 0
-    User.populate(USER_COUNT, :per_query => 10000) do |u| 
+    User.populate(USER_COUNT, per_query: 10_000) do |u|
       u.attributes = @default_user
 
       u.first_name = "User"
       u.last_name = i.to_s
-      u.email = "user#{i.to_s}_#{course.name}@foo.bar"
+      u.email = "user#{i}_#{course.name}@foo.bar"
 
       u.school = "SCS"
       u.major = "CS"
-      u.year = (1 + rand(4)).to_s
+      u.year = rand(1..4).to_s
 
       CourseUserDatum.populate(1) do |cud|
         cud.course_id = course.id
@@ -160,7 +158,7 @@ namespace :autolab do
         cud.instructor = false
         cud.course_assistant = false
 
-        cud.nickname = "user#{i.to_s}_#{course.name}"
+        cud.nickname = "user#{i}_#{course.name}"
       end
 
       i += 1
@@ -172,15 +170,15 @@ namespace :autolab do
     end
   end
 
-  def load_submissions course
+  def load_submissions(course)
     course.course_user_data.find_each do |cud|
       load_submissions_for course, cud
     end
   end
 
-  def load_auds course
+  def load_auds(course)
     # delete grader's AUDs (create_AUDs_module_callbacks insists on creating them)
-    AssessmentUserDatum.delete_all()
+    AssessmentUserDatum.delete_all
 
     course.assessments.each do |asmt|
       # create all auds
@@ -198,7 +196,6 @@ namespace :autolab do
     user = cud.user
 
     course.assessments.each do |a|
-
       sub_count = 1 + rand(SUBMISSION_MAX)
       assessment_dir = File.join(course_dir, a.name)
       assessment_handin_dir = File.join(assessment_dir, a.handin_directory)
@@ -207,21 +204,21 @@ namespace :autolab do
       submission_window = a.end_at - a.start_at
 
       i = 0
-      Submission.populate(sub_count, :per_query => 10000) do |s|
+      Submission.populate(sub_count, per_query: 10_000) do |s|
         s.attributes = @default_submission
 
         s.created_at = s.updated_at = a.end_at - rand(submission_window)
         s.version = i + 1
         s.course_user_datum_id = cud.id
         s.submitted_by_id = cud.id
-        s.filename = "#{user.email}_#{i.to_s}_#{a.handin_filename}"
+        s.filename = "#{user.email}_#{i}_#{a.handin_filename}"
         s.assessment_id = a.id
         s.tweak_id = nil
 
         # create a fake submission file
         submission_path = File.join(assessment_handin_dir, s.filename)
         FileUtils.mkdir_p(assessment_handin_dir)
-        File.open(submission_path,'w+') do |f|
+        File.open(submission_path, "w+") do |f|
           f.write("int main() {\n  printf(\"Hello Dave!\\n\");\n  return 0;\n}")
         end
 
@@ -232,11 +229,11 @@ namespace :autolab do
     end
   end
 
-  def load_scores_for submission
+  def load_scores_for(submission)
     assessment = Assessment.find(submission.assessment_id)
 
     assessment.problems.each do |p|
-      Score.populate(1, :per_query => 10000) do |score|
+      Score.populate(1, per_query: 10_000) do |score|
         score.attributes = @default_score
 
         score.score = rand(PROBLEM_MAX_SCORE.to_i).to_f
@@ -248,7 +245,7 @@ namespace :autolab do
     end
   end
 
-  def add_assessment_files course
+  def add_assessment_files(course)
     course_dir = Rails.root.join("courses", course.name)
 
     course.assessments.each do |a|
@@ -276,24 +273,23 @@ namespace :autolab do
         f.write config_file_string
       end
 
-      # TODO (tabraham): figure this out
+      # TODO: (tabraham): figure this out
       # Assessment.reload_config_file(course, a.name)
     end
   end
 
-  def load_autograde_assessment course
-
+  def load_autograde_assessment(course)
     course_dir = Rails.root.join("courses", course.name)
 
     # Create assessment
     asmt = course.assessments.create! do |a|
       a.category_name = AUTOGRADE_CATEGORY_NAME
-      
+
       a.visible_at = COURSE_START
       a.start_at = COURSE_START
-      a.due_at = COURSE_START + (5 + rand(11)).days
-      a.end_at = a.due_at + (1 + rand(7)).day
-      a.grading_deadline = a.end_at + (1 + rand(7)).day
+      a.due_at = COURSE_START + rand(5..15).days
+      a.end_at = a.due_at + rand(1..7).day
+      a.grading_deadline = a.end_at + rand(1..7).day
 
       a.name = AUTOGRADE_TEMPLATE_NAME
       a.display_name = AUTOGRADE_TEMPLATE_DISPLAY_NAME
@@ -327,18 +323,19 @@ namespace :autolab do
     asmt.load_config_file
   end
 
-  task :populate, [:name] => :environment do |t, args|
-    require "populator" 
-  
-    args.with_defaults(:name => COURSE_NAME)
-    abort("Only use this task in development or test.") unless ["development", "test"].include? Rails.env
+  task :populate, [:name] => :environment do |_t, args|
+    require "populator"
+
+    args.with_defaults(name: COURSE_NAME)
+    abort("Only use this task in development or test.") unless %w[development
+                                                                  test].include? Rails.env
     # If course exists, in `dev` aborts; in `test` overwrites.
-    if Course.where(:name => args.name).first
+    if Course.where(name: args.name).first
       if Rails.env == "development"
         abort("Course name #{args.name} alread in use. Depopulate or change name.")
       else
         Rake::Task["autolab:depopulate"].invoke(args.name)
-        Rake::Task["db:reset"].invoke()
+        Rake::Task["db:reset"].invoke
       end
     end
 
@@ -346,12 +343,12 @@ namespace :autolab do
     srand 1234
 
     # to get defaults
-    unwanted = lambda { |key, _| key == "created_at" || key == "updated_at" || key == "id" }
-    @default_submission = Submission.new.attributes.delete_if &unwanted
-    @default_score = Score.new.attributes.delete_if &unwanted
-    @default_user = User.new.attributes.delete_if &unwanted
+    unwanted = ->(key, _) { %w[created_at updated_at id].include?(key) }
+    @default_submission = Submission.new.attributes.delete_if(&unwanted)
+    @default_score = Score.new.attributes.delete_if(&unwanted)
+    @default_user = User.new.attributes.delete_if(&unwanted)
 
-    puts "Creating Course #{args.name} and config file" 
+    puts "Creating Course #{args.name} and config file"
     course = load_course args.name
 
     puts "Creating Assessments"
@@ -380,7 +377,7 @@ namespace :autolab do
     puts "Population Successful"
   end
 
-  def delete_course course
+  def delete_course(course)
     if course
       course_dir = Rails.root.join("courses", course.name)
       course_config_dir = Rails.root.join("courseConfig")
@@ -388,18 +385,19 @@ namespace :autolab do
 
       course.destroy
 
-      FileUtils.rm_r(course_dir) if File.exists?(course_dir)
-      FileUtils.rm(course_config_path) if File.exists?(course_config_path)
+      FileUtils.rm_r(course_dir) if File.exist?(course_dir)
+      FileUtils.rm(course_config_path) if File.exist?(course_config_path)
     else
       puts "No course to delete!"
     end
   end
 
-  task :depopulate, [:name] => :environment do |t, args|
-    args.with_defaults(:name => COURSE_NAME)
-    abort("Only use this task in development or test.") unless ["development", "test"].include? Rails.env
+  task :depopulate, [:name] => :environment do |_t, args|
+    args.with_defaults(name: COURSE_NAME)
+    abort("Only use this task in development or test.") unless %w[development
+                                                                  test].include? Rails.env
 
-    course = Course.where(:name => args.name).first
+    course = Course.where(name: args.name).first
 
     if course
       puts "Deleting Course along with all associated data (might take a while)"
@@ -414,4 +412,3 @@ namespace :autolab do
     end
   end
 end
-

@@ -1,6 +1,8 @@
+# frozen_string_literal: true
+
 class FixVisibleUntil < ActiveRecord::Migration[4.2]
   def self.up
-    rename_column :assignments , :visable_until, :visible_at
+    rename_column :assignments, :visable_until, :visible_at
   end
 
   def self.down

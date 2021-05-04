@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # This is a module to allow you to specify fields in the ActiveRecord
 # object that should always have leading and trailing whitespace
 # stripped. Useful for situations where an unintended space

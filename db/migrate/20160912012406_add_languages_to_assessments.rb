@@ -1,9 +1,11 @@
+# frozen_string_literal: true
+
 class AddLanguagesToAssessments < ActiveRecord::Migration[4.2]
   def up
-      add_column :assessments, :languages, :text
+    add_column :assessments, :languages, :text
   end
 
   def down
-      remove_column :assessments, :languages
+    remove_column :assessments, :languages
   end
 end

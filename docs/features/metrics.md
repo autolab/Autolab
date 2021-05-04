@@ -33,11 +33,11 @@ For courses that provides grace days, students who use many grace days early in 
 
 Identify students who have been slipping in their grades. Below are the underlying properties
 
-- windowed based on the *number* consecutive 
+- windowed based on the *number* consecutive
 - decrease must be consecutive
 - skips over no-submissions
 
-For example, given 4 assignments and we are looking for 20 percent grade drop over 3 consecutive assignments  
+For example, given 4 assignments and we are looking for 20 percent grade drop over 3 consecutive assignments
 
 | Assignment | 1  | 2  | 3         | 4  | Grade Dropping?                                       |
 |------------|----|----|-----------|----|-------------------------------------------------------|
@@ -66,7 +66,7 @@ Once instructors have set up student metrics for their course, students that are
 
 ![Watchlist Instance](/images/watchlist_instance.png)
 
-Every row in the watchlist represents a particular instance of a student who meets one or more of the metrics conditions. A single student can appear in multiple watchlist instances if they are identified for new metrics conditions on separate occassions of loading the watchlist. 
+Every row in the watchlist represents a particular instance of a student who meets one or more of the metrics conditions. A single student can appear in multiple watchlist instances if they are identified for new metrics conditions on separate occassions of loading the watchlist.
 
 For example, let's look at Jane Doe in the image above. Upon loading the watchlist, Jane appears in a watchlist instance for using `3 grace days` before the instructor-specified date and for having `2 low scores` below the instructor-specified threshold. If Jane later receives another score below the threshold, a new instance will appear for Jane when the instructor reloads the watchlist. Jane now appears twice in the watchlist, once in an instance with `3 grace days` and `2 low scores`, and once in an instance with `3 grace days` and `3 low scores`.
 
@@ -82,7 +82,7 @@ There are four categories that watchlist instances can fall into: pending, conta
 
 #### Pending
 
-The `pending` tab contains identified students who have not yet been contacted or resolved. The number of `pending` instances will appear in a notification badge on the main course page, as shown below. 
+The `pending` tab contains identified students who have not yet been contacted or resolved. The number of `pending` instances will appear in a notification badge on the main course page, as shown below.
 
 ![Metrics Notification](/images/metrics_notification.png)
 

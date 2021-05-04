@@ -1,11 +1,14 @@
+# frozen_string_literal: true
+
 # Statistics Module: Computes basic statistics
 class Statistics
   def mean(a)
     if a.nil? || a.empty?
       return "--"
     else
-      result = (a.inject(0) { |sum, el| sum + el }.to_f) / a.to_a.length
+      result = a.inject(0) { |sum, el| sum + el }.to_f / a.to_a.length
     end
+
     result.round(1)
   end
 
@@ -55,18 +58,18 @@ class Statistics
 
     a = a.sort
     len = a.size
-    if len.even?
-      result = (a[len / 2 - 1] + a[len / 2]) / 2.0
-    else
-      result = a[len / 2].to_f
-    end
+    result = if len.even?
+               (a[len / 2 - 1] + a[len / 2]) / 2.0
+             else
+               a[len / 2].to_f
+             end
     result.round(1)
   end
 
   def stats(pop)
     pop = pop.compact
     result = {}
-    [:median, :min, :max, :mean, :stddev].each do |stat|
+    %i[median min max mean stddev].each do |stat|
       result[stat] = send(stat, pop)
     end
     result

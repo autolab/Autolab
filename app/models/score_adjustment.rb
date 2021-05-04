@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class ScoreAdjustment < ApplicationRecord
   # attr_accessible :kind, :value
 
@@ -15,7 +17,7 @@ class ScoreAdjustment < ApplicationRecord
   # @return The applied adjustment (float)
   def self.applied_value(adj, score, multiplier)
     if score.nil?
-      fail ArgumentError.new("ScoreAdjustment.applied_value: score was nil")
+      raise ArgumentError, "ScoreAdjustment.applied_value: score was nil"
     elsif adj.nil?
       0.0
     else
@@ -25,13 +27,13 @@ class ScoreAdjustment < ApplicationRecord
       when PERCENT
         # applying % adjustments to -ve scores makes no semantic sense
         # e.g.: +10% adjustment to -100 points is -110 points
-        if score < 0
+        if score.negative?
           0.0
         else
           score * multiplier * (adj.value / 100)
         end
       else
-        fail ArgumentError
+        raise ArgumentError
       end
     end
   end
@@ -48,7 +50,7 @@ class ScoreAdjustment < ApplicationRecord
     when PERCENT
       self[:kind] = PERCENT
     else
-      fail ArgumentError
+      raise ArgumentError
     end
   end
 
@@ -68,9 +70,9 @@ class ScoreAdjustment < ApplicationRecord
     when PERCENT
       type_str = "%"
     else
-      fail ArgumentError
+      raise ArgumentError
     end
 
-    sprintf("%+g", value) + " " + type_str
+    "#{format('%+g', value)} #{type_str}"
   end
 end

@@ -29,11 +29,11 @@ jQuery(function() {
         var num = parseFloat(String(a).replace(/<[\s\S]*?>/g, ""));
         return isNaN(num) ? Number.NEGATIVE_INFINITY : num
       },
-   
+
       "num-html-asc": function ( a, b ) {
         return ((a < b) ? -1 : ((a > b) ? 1 : 0));
       },
-   
+
       "num-html-desc": function ( a, b ) {
         return ((a > b) ? -1 : ((a < b) ? 1 : 0));
       }
@@ -42,11 +42,11 @@ jQuery(function() {
     // from http://www.datatables.net/plug-ins/api. ugly, but for now...
     jQuery.fn.dataTableExt.oApi.fnSetFilteringDelay = function ( oSettings, iDelay ) {
         var _that = this;
-     
+
         if ( iDelay === undefined ) {
             iDelay = 250;
         }
-          
+
         this.each( function ( i ) {
             jQuery.fn.dataTableExt.iApiIndex = i;
             var
@@ -54,20 +54,20 @@ jQuery(function() {
                 oTimerId = null,
                 sPreviousSearch = null,
                 anControl = jQuery( 'input', _that.fnSettings().aanFeatures.f );
-              
+
                 anControl.unbind( 'keyup' ).bind( 'keyup', function() {
                 var $$this = $this;
-      
+
                 if (sPreviousSearch === null || sPreviousSearch != anControl.val()) {
                     window.clearTimeout(oTimerId);
-                    sPreviousSearch = anControl.val(); 
+                    sPreviousSearch = anControl.val();
                     oTimerId = window.setTimeout(function() {
                         jQuery.fn.dataTableExt.iApiIndex = i;
                         _that.fnFilter( anControl.val() );
                     }, iDelay);
                 }
             });
-              
+
             return this;
         } );
         return this;
@@ -113,7 +113,7 @@ jQuery(function() {
         $prob_col.children().appendTo($td_prob);
       }
     }
-    
+
     // main score table
     var oTable = jQuery("#grades").dataTable({
         'data' : table_data,
@@ -129,7 +129,7 @@ jQuery(function() {
           { "bSortable": false, "aTargets": [ 0 ] },
           { "bSearchable": false, "aTargets": non_searchable_columns },
           { "sType": "html", "aTargets": [ email_col ] },
-          { "sType": "num-html", "aTargets": numeric_columns }, 
+          { "sType": "num-html", "aTargets": numeric_columns },
         ],
         'columns' : columns,
         'createdRow' : completeRow,
@@ -208,7 +208,7 @@ jQuery(function() {
 
     /* Tabs to next (previous, if reverse is true) tab object if it's visible.
      * If it isn't, tab to *its* next/previous tab object.
-     * 
+     *
      * If the target is an array, it tabs to the first visible element.
      *
      * @param from      The object to tab from
@@ -232,7 +232,7 @@ jQuery(function() {
                 return;
             }
         }
-    
+
         // none of the targets are visible, tab *from* the first target
         // TODO#1: what if no one in the tab cycle is visible anymore?
         if (targets.length > 0)
@@ -276,7 +276,7 @@ jQuery(function() {
      * @param f Function to be executed
      */
     function asap(f) {
-        setTimeout(f, 0); 
+        setTimeout(f, 0);
     }
 
     /* opens the score editor and feedback popover for a particular score
@@ -314,7 +314,7 @@ jQuery(function() {
       // click/enter to edit cells
 
       /* Calls the Jquery plugin Jeditable to set up the element for in-place editing.
-       * When done editing, a request to quickSetScore (on server) is called with the 
+       * When done editing, a request to quickSetScore (on server) is called with the
        * following parameters.
        */
       $editable.editable('quickSetScore', {
@@ -358,16 +358,16 @@ jQuery(function() {
                   problem_id: get_enclosing_editor(this).data("problem-id")
               }
           },
-          /* This function is called after the feedback form has been submitted. 
+          /* This function is called after the feedback form has been submitted.
            * Updates the total score (last column) for this student. */
           callback: function(value, settings) {
               var editor = get_enclosing_editor(this);
               var total = editor.siblings(".total");
-        
+
               jQuery.ajax("quickGetTotal", {
                   data: {
                       submission_id: editor.data('submission-id')
-                  }, 
+                  },
                   success: function(data, status, jqXHR) {
                       // TODO: wtf
                       total.html(data == " " ? "&ndash;" : data);
@@ -386,7 +386,7 @@ jQuery(function() {
 
     function register_editor_events($editable) {
       var editor = get_enclosing_editor($editable);
-      
+
       $editable.data('tabNext', jQuery('textarea.feedback', editor));
       $editable.data('tabPrev', jQuery('.save_box .save, .save_box .error', editor));
 
@@ -397,7 +397,7 @@ jQuery(function() {
           }
       });
 
-      var feedback = jQuery("textarea.feedback", editor) 
+      var feedback = jQuery("textarea.feedback", editor)
       feedback.data('tabNext', jQuery('.save_box .save, .save_box .error', editor));
       feedback.data('tabPrev', { selector: "div.editable input", selector_context: editor });
 
@@ -458,7 +458,7 @@ jQuery(function() {
               success: function(data, status, jqXHR) {
                   // update cache
                   cache_insert(sub_id, prob_id, 'feedback', curr_feedback);
-          
+
                   // update score id
                   editor.data('score-id', data)
 
@@ -641,9 +641,9 @@ jQuery(function() {
             jQuery(".error", editor).focus();
         } else {
             throw "score_details_dirty: come on, bro";
-        } 
+        }
     }
-    
+
     var dirty = function(event) {
         score_details_dirty(get_enclosing_editor(event.target), "dirty");
     }

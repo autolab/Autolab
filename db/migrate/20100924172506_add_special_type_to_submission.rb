@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class AddSpecialTypeToSubmission < ActiveRecord::Migration[4.2]
   def self.up
     add_column :submissions, :special_type, :integer

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 ##
 # Provided for BC with old assesments that might be importing this
 #

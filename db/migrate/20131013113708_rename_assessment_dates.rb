@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class RenameAssessmentDates < ActiveRecord::Migration[4.2]
   def change
     rename_column :assessments, :due_date, :due_at

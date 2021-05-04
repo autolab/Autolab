@@ -22,7 +22,7 @@
         $(this).toggle(toShow);
       });
     }
-  
+
   </script>
 <% end %>
 
@@ -39,22 +39,22 @@
   <ul class="moss-list">
   <% for course in @courses %>
     <li class="filterableCourse" id="<%= course.display_name %>">
-      <h5 onclick="toggleOptions('<%= course.id %>Assessments')"> 
+      <h5 onclick="toggleOptions('<%= course.id %>Assessments')">
         <%= course.full_name %>
       </h5>
       <ul id="<%= course.id %>Assessments" class="moss-inner-list" style="display:none" >
       <% for a in course.assessments do %>
 		<li>
 		  <label>
-          	<%= check_box_tag "assessments[#{a.id}]","1",false, :class => "filled-in" %> 
+          	<%= check_box_tag "assessments[#{a.id}]","1",false, :class => "filled-in" %>
           	<span> <%= a.display_name %> </span>
-		  </label> 
+		  </label>
 		  <br>
           <div id='<%= a.id %>OptionsDiv' style="padding-left:10px;" >
 			<!-- <b>Is Archive:</b> -->
 			<label>
 				<%= check_box_tag "isArchive[#{a.id}]", :class => "filled-in" %>
-				<span>Is Archive: </span> 
+				<span>Is Archive: </span>
 			</label>
 			</br>
             <i>Check this if the submissions will need to be extracted. (The handin filename was: <%= a.handin_filename %>)</i>
@@ -77,20 +77,20 @@
 	<p>(Optional) Add flags that will be run with moss.</p>
   <ul class="moss-list">
     <li class="filterableCourse" id="Moss Flags">
-    <h5 onclick="toggleOptions('flags')"> 
+    <h5 onclick="toggleOptions('flags')">
 	  	Moss Flags
 	  </h5>
       <ul id="flags" class="moss-inner-list" style="display:none" >
         <li>
 					<label>
-					<%= check_box_tag "box_language","1",false, :class => "filled-in" %> 
+					<%= check_box_tag "box_language","1",false, :class => "filled-in" %>
 					<span> Language </span>
 					</label>
 					<br>
 					<div id='<%= a.id %>OptionsDiv' style="margin-right: 10px;" >
 						<div class="input-field">
 							<%= select_tag :language_selection, options_for_select([
-								["C", "c"], 
+								["C", "c"],
 								["C++", "cc"],
 								["Java", "java"],
 								["C#", "csharp"],
@@ -120,7 +120,7 @@
 				</li>
 				<li>
 					<label>
-					<%= check_box_tag "box_max","1",false, :class => "filled-in" %> 
+					<%= check_box_tag "box_max","1",false, :class => "filled-in" %>
 					<span>Max Lines </span>
 					</label>
 					<br>
@@ -130,7 +130,7 @@
 				</li>
 				<li>
 					<label>
-						<%= check_box_tag "box_basefile", "1",false, :class => "filled-in" %> 
+						<%= check_box_tag "box_basefile", "1",false, :class => "filled-in" %>
 						<span>Base File Tar </span>
 					</label>
 					<div id='<%= a.id %>OptionsDiv' style="padding-left:10px;" >
@@ -156,7 +156,7 @@
 	<h4>Step 3:</h4>
 	<p> (Optional) Upload an archive containing additional files you'd like Moss to compare against.</p>
   <p>(Note: the archive must contain only regular files.  Nested archives wil not be extracted.)</p>
-   
+
   <div class="file-field input-field">
     <div class="btn">
       <span>Archive</span>
@@ -165,7 +165,7 @@
     <div class="file-path-wrapper">
       <input class="file-path validate" type="text" placeholder="Additional files archive">
     </div>
-  </div> 
+  </div>
   <br>
 
 	<h4>Step 4:</h4>

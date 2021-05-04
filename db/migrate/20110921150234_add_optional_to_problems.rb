@@ -1,6 +1,8 @@
+# frozen_string_literal: true
+
 class AddOptionalToProblems < ActiveRecord::Migration[4.2]
   def self.up
-    add_column :problems, :optional, :boolean, :default => false
+    add_column :problems, :optional, :boolean, default: false
   end
 
   def self.down

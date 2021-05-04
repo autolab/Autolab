@@ -1,21 +1,21 @@
+# frozen_string_literal: true
+
 ##
 # This module, which is inherited by all modules, organizes how methods are overridden.
 # I'm pretty sure this is obsolete.
 #
 module ModuleBase
   def updateModules
-    @allModules = %w(Autograde Scoreboard Partners Svn)
+    @allModules = %w[Autograde Scoreboard Partners Svn]
     @modulesUsed = []
     assign = @assessment.name.gsub(/\./, "")
-    modName = (assign + (@course.name).gsub(/[^A-Za-z0-9]/, "")).camelize
+    modName = (assign + @course.name.gsub(/[^A-Za-z0-9]/, "")).camelize
 
-    for mod in @allModules do
-      begin
-        modUsed = eval("#{modName}.include?(#{mod})")
-        @modulesUsed << mod if modUsed
-      rescue Exception
-        # do nothing
-      end
+    @allModules.each do |mod|
+      modUsed = eval("#{modName}.include?(#{mod})")
+      @modulesUsed << mod if modUsed
+    rescue Exception
+      # do nothing
     end
   end
 
@@ -45,9 +45,7 @@ module ModuleBase
   def validateHandin
     updateModules
     # Partners stand alone, they don't affect others
-    if @modulesUsed.include?("Partners")
-      return false unless partnersValidateHandin
-    end
+    return false if @modulesUsed.include?("Partners") && !partnersValidateHandin
 
     # If we're validating for svn, we don't have a file to check
     if @modulesUsed.include?("Svn")
@@ -62,9 +60,9 @@ module ModuleBase
   # If you need to combine two saves, write a new function
   def saveHandin
     if @modulesUsed.include?("Svn")
-      return svn_save_handin
+      svn_save_handin
     else
-      return super()
+      super()
     end
   end
 end

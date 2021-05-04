@@ -12,7 +12,7 @@ Autolab also provides gradebooks, rosters, handins/handouts, lab writeups, code 
 
 For more of the rationale behind Autolab, please check out <a href="https://autolab.github.io/2015/03/autolab-autograding-for-all/" target="_blank">this blog post</a>.
 
-<!-- For information on how to use Autolab for your course see the [Guide for Instructors](/instructors). To learn how to write an autograded lab see the [Guide for Lab Authors](/lab). 
+<!-- For information on how to use Autolab for your course see the [Guide for Instructors](/instructors). To learn how to write an autograded lab see the [Guide for Lab Authors](/lab).
  -->
 ##Components
 
@@ -31,21 +31,21 @@ Installation instructions can be found in our comprehensive [installation guide]
 
 Try the following in order:
 
-### Create a new course 
+### Create a new course
 Click on `Manage Autolab` (top-right navigation bar) > `Create New Course`. Fill in the name and semester, and then create to see your course on the homepage.
 
 (NOTE: the email doesn't need to be real here)
 
-### Create an Autograded Lab Assessment. 
+### Create an Autograded Lab Assessment.
 Go into the course you have just created, click on `Install Assessment`. You can install a simple autograded lab, called hello lab.
-[Download hello.tar](https://github.com/autolab/Autolab/raw/master/examples/hello.tar) and install it using the `Import from Tarball` option. 
+[Download hello.tar](https://github.com/autolab/Autolab/raw/master/examples/hello.tar) and install it using the `Import from Tarball` option.
 
-In the `hello` lab, students are asked to write a file called `hello.c`. The autograder checks that the submitted hello.c program compiles and runs with an exit status of zero. If so, the submission gets 100 points. Otherwise it gets 0 points. 
+In the `hello` lab, students are asked to write a file called `hello.c`. The autograder checks that the submitted hello.c program compiles and runs with an exit status of zero. If so, the submission gets 100 points. Otherwise it gets 0 points.
 
 **Try submitting to the autograded hello lab**
 
-1. Create and submit a `hello.c` file. 
-       
+1. Create and submit a `hello.c` file.
+
         //hello.c
         #include <stdio.h>
         int main()
@@ -57,12 +57,12 @@ In the `hello` lab, students are asked to write a file called `hello.c`. The aut
 2. Refresh the submitted entries page to see the autograded score appear
 3. Click on a sub score, in this case the `100.0` under the `Correctness` heading, to see the output from the autograder.
 
-For more information on `hello` lab, or how to create your own lab, go to [Guide for Lab Authors](/lab)! 
+For more information on `hello` lab, or how to create your own lab, go to [Guide for Lab Authors](/lab)!
 
 ### Create a PDF homework assessment
 Autolab can also handle pdf submissions as well!
 
-Click on `Install Assessment`, then on `Assessment Builder`. Name your assessment, and give it a category and click `Create Assessment`!. 
+Click on `Install Assessment`, then on `Assessment Builder`. Name your assessment, and give it a category and click `Create Assessment`!.
 
 Because it defaults to accepting `.c` files, we would like to change it to `*.pdf`. Click on `Edit Assessment` > `Handin` and then change the `Handin filename` to `handin.pdf` instead of `handin.c` and save the changes
 

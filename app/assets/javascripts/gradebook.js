@@ -39,7 +39,7 @@ var slickgrid_options = {
       switch (data[submission_status_key]) {
       case "submitted":
         if (columnDef.before_grading_deadline) {
-          tip = 'Grading is in-progress. <br>'  
+          tip = 'Grading is in-progress. <br>'
           tip += 'Final scores will be visible here after the grading deadline (specified as an assessment property). <br>'
           tip += 'Meanwhile, check the assessment gradesheet for updates.<br>';
           value = '<a data-tooltip="' + tip + '" class="tooltipped past-grading-deadline icon-time"></a>';
@@ -81,7 +81,7 @@ function filter(item, args) {
   var filter = args.filter_string.toLowerCase();
 
   if (filter == "") {
-    return true 
+    return true
   } else if (item["email"].toLowerCase().indexOf(filter) != -1 ||
              item["first_name"].toLowerCase().indexOf(filter) != -1 ||
              item["last_name"].toLowerCase().indexOf(filter) != -1) {

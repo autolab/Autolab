@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class AddHandoutFilenameToAssessment < ActiveRecord::Migration[4.2]
   def self.up
     add_column :assessments, :handout_filename, :string

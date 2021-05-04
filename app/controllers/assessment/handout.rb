@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 ##
 # Defines handout method, so students can get handout
 #

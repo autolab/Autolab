@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Utilities
   def self.serializable(attributes, serializable)
     attributes.keep_if { |f, _| serializable.include? f }
@@ -9,35 +11,42 @@ module Utilities
     require "uri"
     uri = URI.parse(name)
     return false if uri.nil? || uri.scheme.nil? || uri.scheme.empty?
-    return true
+
+    true
   rescue URI::InvalidURIError
-    return false
+    false
   end
 
   def self.execute_instructor_code(invoked_method_name)
     yield
   rescue Exception => e
-    raise InstructorException.new("Error executing #{invoked_method_name}: #{e}")
+    raise InstructorException, "Error executing #{invoked_method_name}: #{e}"
   end
 
   def self.validated_score_value(score, invoked_method_name, allow_nil = false)
     message = "Error executing #{invoked_method_name}"
 
     if score
-      if (score = Float(score) rescue nil)
-        fail InvalidComputedScoreException.new("#{message}: returned infinite number") unless score.finite?
+      if (score = begin
+        Float(score)
+      rescue StandardError
+        nil
+      end)
+        unless score.finite?
+          raise InvalidComputedScoreException, "#{message}: returned infinite number"
+        end
       else
-        fail InvalidComputedScoreException.new("#{message}: error converting to float")
+        raise InvalidComputedScoreException, "#{message}: error converting to float"
       end
     else
-      fail InvalidComputedScoreException.new("#{message}: returned nil") unless allow_nil
+      raise InvalidComputedScoreException, "#{message}: returned nil" unless allow_nil
     end
 
     score
   end
 
   def self.is_truthy?(val)
-    val == true || val == "True" || val == "true" || val == "t" || val == 1 || val == "1" || val == "T"
+    [true, "True", "true", "t", 1, "1", "T"].include?(val)
   end
 end
 
