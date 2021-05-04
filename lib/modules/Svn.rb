@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 ##
 # This is mostly a reminder that SVN still doesn't work
 #

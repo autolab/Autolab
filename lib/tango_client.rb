@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "httparty"
 require "cgi"
 require Rails.root.join("config", "autogradeConfig.rb")
@@ -25,7 +27,7 @@ module TangoClient
       resp = yield
     rescue Net::OpenTimeout, Net::ReadTimeout, Timeout::Error,
            Errno::ECONNRESET, Errno::ECONNABORTED, Errno::EPIPE => e
-      if retries_remaining > 0
+      if retries_remaining.positive?
         retries_remaining -= 1
         sleep RETRY_WAIT_TIME
         retry
@@ -36,10 +38,11 @@ module TangoClient
       raise TangoException, "Unexpected error with Tango (#{e})."
     end
 
-    if resp.content_type == "application/json" && resp["statusId"] && resp["statusId"] < 0
-      raise TangoException, "Tango returned negative status code: #{resp["statusMsg"]}"
+    if resp.content_type == "application/json" && resp["statusId"] && (resp["statusId"]).negative?
+      raise TangoException, "Tango returned negative status code: #{resp['statusMsg']}"
     end
-    return resp
+
+    resp
   end
 
   def self.open(courselab)

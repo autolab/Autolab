@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "rubygems"
 require "rubygems/package"
 require "tempfile"
@@ -24,8 +26,8 @@ module Archive
         pathname: pathname,
         header_position: i,
         mac_bs_file: pathname.include?("__MACOSX") ||
-          pathname.include?(".DS_Store") ||
-          pathname.include?(".metadata"),
+                     pathname.include?(".DS_Store") ||
+                     pathname.include?(".metadata"),
         directory: looks_like_directory?(pathname)
       }
     end
@@ -37,84 +39,73 @@ module Archive
 
   def self.recoverHierarchy(files, root)
     depth = root[:pathname].chomp("/").count "/"
-    if(root[:pathname] == "")
-      depth = -1
-    end
-    if(!root[:directory])
-      return root
-    end
+    depth = -1 if root[:pathname] == ""
+    return root unless root[:directory]
+
     subFiles = []
-    filesNestedSomewhere = files.select{|entry| entry[:pathname].start_with?(root[:pathname]) && !(entry[:pathname] == root[:pathname])}
-    for file in filesNestedSomewhere
+    filesNestedSomewhere = files.select do |entry|
+      entry[:pathname].start_with?(root[:pathname]) && entry[:pathname] != root[:pathname]
+    end
+    filesNestedSomewhere.each do |file|
       fileDepth = file[:pathname].chomp("/").count "/"
-      if(fileDepth == depth+1)
-        subFiles << recoverHierarchy(filesNestedSomewhere, file)
-      end
+      subFiles << recoverHierarchy(filesNestedSomewhere, file) if fileDepth == depth + 1
     end
     subFiles.sort! { |a, b| a[:header_position] <=> b[:header_position] }
     root[:subfiles] = subFiles
-    return root
+    root
   end
 
   # given a list of files, sanitize and create
   # missing file directories
   def self.sanitize_directories(files)
-
     cleaned_files = []
     file_path_set = Set[]
-    
+
     # arbitrary header positions for the new directories
     starting_header = -1
 
     # add pre-existing directories to the set
-    for file in files
-
+    files.each do |file|
       # edge case for removing "./" from pathnames
-      if file[:pathname].include?("./")
-        file[:pathname] = file[:pathname].split("./")[1]
-      end
+      file[:pathname] = file[:pathname].split("./")[1] if file[:pathname].include?("./")
 
-      if(file[:directory])
-        file_path_set.add(file[:pathname])
-      end
+      file_path_set.add(file[:pathname]) if file[:directory]
     end
 
-    for file in files
+    files.each do |file|
       # for each file, check if each of its directories and subdir
       # exist. If it does not, create and add them
-      if(!file[:directory])
+      unless file[:directory]
         paths = file[:pathname].split("/")
         mac_bs_file = false
-        for path in paths do
-          # note that __MACOSX is actually a folder
+        paths.each do |path|
+          # NOTE: that __MACOSX is actually a folder
           # need to check whether the path includes that
           # for the completeness of cleaned_files
           # mac_bs_file folder paths will still be added
-          if path.include?("__MACOSX") || path.include?(".DS_Store") ||
-             path.include?(".metadata")
-             mac_bs_file = true
-             break
-          end
+          next unless path.include?("__MACOSX") || path.include?(".DS_Store") ||
+                      path.include?(".metadata")
+
+          mac_bs_file = true
+          break
         end
-        for i in 1..(paths.size - 1) do
-          new_path = paths[0,paths.size-i].join("/") + "/"
-          if(!file_path_set.include?(new_path))
-            cleaned_files.append({
-              :pathname=>new_path,
-              :header_position=>starting_header,
-              :mac_bs_file=>mac_bs_file,
-              :directory=>true
-            })
-            starting_header = starting_header - 1
-            file_path_set.add(new_path)
-          end
-        end 
+        (1..(paths.size - 1)).each do |i|
+          new_path = "#{paths[0, paths.size - i].join('/')}/"
+          next if file_path_set.include?(new_path)
+
+          cleaned_files.append({
+                                 pathname: new_path,
+                                 header_position: starting_header,
+                                 mac_bs_file: mac_bs_file,
+                                 directory: true
+                               })
+          starting_header -= 1
+          file_path_set.add(new_path)
+        end
       end
-      
+
       # excludes "./" paths
-      if(file[:pathname]!=nil)
-        cleaned_files.append(file)
-      end
+      cleaned_files.append(file) unless file[:pathname].nil?
     end
 
     cleaned_files
@@ -123,8 +114,8 @@ module Archive
   def self.get_file_hierarchy(archive_path)
     files = get_files(archive_path)
     files = sanitize_directories(files)
-    res = recoverHierarchy(files, {pathname: "", directory: true})
-    return res[:subfiles]
+    res = recoverHierarchy(files, { pathname: "", directory: true })
+    res[:subfiles]
   end
 
   def self.get_nth_file(archive_path, n)
@@ -142,11 +133,11 @@ module Archive
               pathname.include?(".metadata") ||
               i != n
 
-      if looks_like_directory?(pathname)
-        res = nil, pathname
-      else
-        res = read_entry_file(entry), get_entry_name(entry)
-      end
+      res = if looks_like_directory?(pathname)
+              [nil, pathname]
+            else
+              [read_entry_file(entry), get_entry_name(entry)]
+            end
       break
     end
 
@@ -167,6 +158,7 @@ module Archive
 
   def self.archive?(filename)
     return nil unless filename
+
     archive_type = get_archive_type(filename)
     (archive_type.include?("tar") || archive_type.include?("gzip") || archive_type.include?("zip"))
   end
@@ -183,7 +175,7 @@ module Archive
     elsif archive_type.include? "zip"
       archive_extract = Zip::File.open(filename)
     else
-      fail "Unrecognized archive type!"
+      raise "Unrecognized archive type!"
     end
     archive_extract
   end
@@ -191,14 +183,14 @@ module Archive
   def self.get_entry_name(entry)
     # tar/tgz vs zip
     name = entry.respond_to?(:full_name) ? entry.full_name : entry.name
-    if ! name.ascii_only?
+    unless name.ascii_only?
       name = String.new(name)
       name.force_encoding("UTF-8")
-      if ! name.valid_encoding?
+      unless name.valid_encoding?
         # not utf-8. Assume single byte and choose windows western, since
         # iso8859-1 printables are a subset
         name.force_encoding("Windows-1252")
-        name.encode!()
+        name.encode!
       end
     end
     name

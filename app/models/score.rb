@@ -1,14 +1,19 @@
+# frozen_string_literal: true
+
 class Score < ApplicationRecord
   belongs_to :submission
   belongs_to :problem
   belongs_to :grader, class_name: "CourseUserDatum"
 
   after_save :invalidate_raw_score
-  after_save :update_individual_grade_watchlist_instances_if_submission_latest, if: :saved_change_to_score_or_released?
+  after_save :update_individual_grade_watchlist_instances_if_submission_latest,
+             if: :saved_change_to_score_or_released?
   after_destroy :invalidate_raw_score
   after_destroy :update_individual_grade_watchlist_instances_if_submission_latest
 
-  scope :on_latest_submissions, -> { where(submissions: { ignored: false }).joins(submission: :assessment_user_datum) }
+  scope :on_latest_submissions, lambda {
+                                  where(submissions: { ignored: false }).joins(submission: :assessment_user_datum)
+                                }
 
   def self.for_course(course_id)
     where(assessments: { course_id: course_id }).joins(submission: :assessment)
@@ -32,21 +37,18 @@ class Score < ApplicationRecord
     if submission_id.nil? || problem_id.nil?
       raise InvalidScoreException.new, "submission_id and problem_id cannot be empty"
     end
+
     score = Score.find_by(submission_id: submission_id, problem_id: problem_id)
 
-    if !score
-      return Score.new(submission_id: submission_id, problem_id: problem_id)
-    else
-      return score
-    end
+    score || Score.new(submission_id: submission_id, problem_id: problem_id)
   end
 
   def log_entry
-    if grader_id != 0
-      setter = grader.user.email
-    else
-      setter = "Autograder"
-    end
+    setter = if grader_id.zero?
+               "Autograder"
+             else
+               grader.user.email
+             end
 
     # Some scores don't have submissions, probably if they're deleted ones
     unless submission.nil?
@@ -59,14 +61,12 @@ class Score < ApplicationRecord
 
   def update_individual_grade_watchlist_instances_if_submission_latest
     # check whether score has been released
-    if self.released
-      self.submission.update_individual_grade_watchlist_instances_if_latest
-    end
+    submission.update_individual_grade_watchlist_instances_if_latest if released
   end
 
 private
 
   def saved_change_to_score_or_released?
-    return (saved_change_to_score? or saved_change_to_released?)
+    (saved_change_to_score? or saved_change_to_released?)
   end
 end

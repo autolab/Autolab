@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class AddGbMessageToCourse < ActiveRecord::Migration[4.2]
   def self.up
     add_column :courses, :gb_message, :text

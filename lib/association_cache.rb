@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class AssociationCache
   attr_reader :course,
               :course_user_data,
@@ -50,7 +52,10 @@ class AssociationCache
   def load_latest_submission_scores(find_options = {})
     @latest_submission_scores = {}
     Score.on_latest_submissions.for_course(@course).where(find_options[:conditions]).each do |score|
-      @latest_submission_scores[score.submission_id] = [] unless @latest_submission_scores[score.submission_id]
+      unless @latest_submission_scores[score.submission_id]
+        @latest_submission_scores[score.submission_id] =
+          []
+      end
       @latest_submission_scores[score.submission_id] << score
     end
     @latest_submission_scores.default = []
@@ -59,29 +64,33 @@ class AssociationCache
 private
 
   def setup_associations
-    @assessments.each_value do |asmt|
+    @assessments&.each_value do |asmt|
       asmt.association_cache = self
-    end if @assessments
+    end
 
-    (@auds.each_value do |aud|
-      aud.association_cache = self
-    end) if @auds
+    if @auds
+      (@auds.each_value do |aud|
+        aud.association_cache = self
+      end)
+    end
 
-    (@latest_submissions.each_value do |ls|
-      ls.association_cache = self
-    end) if @latest_submissions
+    if @latest_submissions
+      (@latest_submissions.each_value do |ls|
+        ls.association_cache = self
+      end)
+    end
 
     @course.association_cache = self
 
-    @course_user_data.each_value do |cud|
+    @course_user_data&.each_value do |cud|
       cud.association_cache = self
-    end if @course_user_data
+    end
   end
 
   def setup_assessments_before(sorted_assessments)
     @assessments_before = {}
     sorted_assessments.each_with_index do |asmt, i|
-      @assessments_before[asmt.id] = sorted_assessments[i - 1] if i > 0
+      @assessments_before[asmt.id] = sorted_assessments[i - 1] if i.positive?
     end
   end
 end
@@ -110,7 +119,6 @@ end
 
 module CourseAssociationCache
   def self.included(base)
-
     base.alias_method :course_user_data_without_cache, :course_user_data
     base.alias_method :course_user_data, :course_user_data_with_cache
 
@@ -145,12 +153,12 @@ module AssessmentAssociationCache
   end
 
   def assessment_before_with_cache
-    asmt_before_cache = @ass_cache && @ass_cache.assessments_before
+    asmt_before_cache = @ass_cache&.assessments_before
     asmt_before_cache ? asmt_before_cache[id] : assessment_before_without_cache
   end
 
   def aud_for_with_cache(cud_id)
-    aud_cache = @ass_cache && @ass_cache.auds
+    aud_cache = @ass_cache&.auds
     aud_cache ? aud_cache[au_key id, cud_id] : aud_for_without_cache(cud_id)
   end
 
@@ -192,7 +200,10 @@ module AUDAssociationCache
 
     @assessment = cache.assessments[assessment_id] if cache.assessments
     @cud = cache.course_user_data[course_user_datum_id] if cache.course_user_data
-    @latest_submission = cache.latest_submissions[au_key assessment_id, course_user_datum_id] if cache.latest_submissions
+    if cache.latest_submissions
+      @latest_submission = cache.latest_submissions[au_key assessment_id,
+                                                           course_user_datum_id]
+    end
   end
 end
 

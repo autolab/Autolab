@@ -1,21 +1,18 @@
+# frozen_string_literal: true
+
 class AddAssessmentRefToAttachments < ActiveRecord::Migration[4.2]
   def change
     add_reference :attachments, :assessment, index: true
 
     reversible do |dir|
-      dir.up {
+      dir.up do
         Attachment.all.find_each do |a|
-          if a.type == "AssessmentAttachment" then
-            a.assessment_id = a.foreign_key
-          else
-            a.assessment_id = nil
-          end
+          a.assessment_id = (a.foreign_key if a.type == "AssessmentAttachment")
           a.save!
         end
-      }
-      dir.down {
-
-      }
+      end
+      dir.down do
+      end
     end
 
     rename_column :attachments, :type, :type_old

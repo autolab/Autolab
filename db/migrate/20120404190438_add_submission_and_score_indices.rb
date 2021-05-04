@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class AddSubmissionAndScoreIndices < ActiveRecord::Migration[4.2]
   def self.up
     add_index :submissions, :user_id

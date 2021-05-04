@@ -1,6 +1,8 @@
-require_relative 'boot'
+# frozen_string_literal: true
 
-require 'rails/all'
+require_relative "boot"
+
+require "rails/all"
 
 # Require the gems listed in Gemfile, including any gems
 # you've limited to :test, :development, or :production.
@@ -30,7 +32,9 @@ module Autolab3
       Devise::OmniauthCallbacksController.skip_before_action :authenticate_for_action
       Devise::OmniauthCallbacksController.skip_before_action :update_persistent_announcements
       Devise::SessionsController.layout "home"
-      Devise::RegistrationsController.layout proc{ |controller| user_signed_in? ? "application"   : "home" }
+      Devise::RegistrationsController.layout proc { |_controller|
+                                               user_signed_in? ? "application" : "home"
+                                             }
       Devise::ConfirmationsController.layout "home"
       Devise::UnlocksController.layout "home"
       Devise::PasswordsController.layout "home"
@@ -39,7 +43,7 @@ module Autolab3
     end
 
     # TODO: this should be a macro
-    config.action_mailer.default_url_options = {protocol: 'https', host: 'YOUR_APP_URL' }
+    config.action_mailer.default_url_options = { protocol: "https", host: "YOUR_APP_URL" }
 
     # Settings in config/environments/* take precedence over those specified here.
     # Application configuration should go into files in config/initializers
@@ -80,7 +84,6 @@ module Autolab3
     # Don't fall back to assets pipeline if a precompiled asset is missed
     config.assets.compile = true
 
-
     # Generate digests for assets URLs
     config.assets.digest = false
     config.serve_static_files = false
@@ -89,15 +92,15 @@ module Autolab3
     config.assets.enabled = true
 
     # Version of your assets, change this if you want to expire all your assets
-    config.assets.version = '1.0'
+    config.assets.version = "1.0"
 
     # Customize form control error state: controls with erroneous input get wrapped with this
-    config.action_view.field_error_proc = Proc.new { |html_tag, instance|
+    config.action_view.field_error_proc = proc do |html_tag, _instance|
       "<div class=\"field_with_errors has-error\">#{html_tag}</div>".html_safe
-    }
+    end
 
     # Allow embedding as iFrame on external sites
-    config.action_dispatch.default_headers.merge!({'X-Frame-Options' => 'ALLOWALL'})
+    config.action_dispatch.default_headers.merge!({ "X-Frame-Options" => "ALLOWALL" })
 
     # Allow MOSS to work with as many files as it wants
     Rack::Utils.multipart_part_limit = 0

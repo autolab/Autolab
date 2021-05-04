@@ -1,5 +1,7 @@
-require "AssessmentBase.rb"
-require "modules/Autograde.rb"
+# frozen_string_literal: true
+
+require "AssessmentBase"
+require "modules/Autograde"
 
 module Labtemplate
   include AssessmentBase

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class CreateUsers < ActiveRecord::Migration[4.2]
   def self.up
     create_table :users do |t|
@@ -18,7 +20,7 @@ class CreateUsers < ActiveRecord::Migration[4.2]
     create_table :courses do |t|
       t.string :name
       t.string :semester
-    end   
+    end
   end
 
   def self.down

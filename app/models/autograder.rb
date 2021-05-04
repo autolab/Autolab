@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 ##
 # This model has nothing to do with actually autograding assessments, and instead deals
 # with autograding properties for an assessment
@@ -14,7 +16,7 @@ class Autograder < ApplicationRecord
 
   after_save -> { assessment.dump_yaml }
 
-  SERIALIZABLE = Set.new %w(autograde_image autograde_timeout release_score)
+  SERIALIZABLE = Set.new %w[autograde_image autograde_timeout release_score]
   def serialize
     Utilities.serializable attributes, SERIALIZABLE
   end

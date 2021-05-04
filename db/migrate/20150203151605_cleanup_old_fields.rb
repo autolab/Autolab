@@ -1,6 +1,7 @@
+# frozen_string_literal: true
+
 class CleanupOldFields < ActiveRecord::Migration[4.2]
   def change
-
     remove_column :assessments, :late_penalty_old, :float
     remove_column :assessments, :version_penalty_old, :float
 
@@ -18,21 +19,15 @@ class CleanupOldFields < ActiveRecord::Migration[4.2]
     remove_column :course_user_data, :email_backup, :string
     remove_column :course_user_data, :administrator_backup, :boolean
 
-
     remove_column :courses, :late_penalty_old, :float
     remove_column :courses, :version_penalty_old, :float
 
-    if column_exists? :submissions, :tweak_old
-        remove_column :submissions, :tweak_old, :float
-    end
-    
-    if column_exists? :submissions, :ignored_old
-        remove_column :submissions, :ignored_old, :boolean
-    end
+    remove_column :submissions, :tweak_old, :float if column_exists? :submissions, :tweak_old
 
-    if column_exists? :submissions, :absolute_tweak  
-        remove_column :submissions, :absolute_tweak, :boolean
-    end
+    remove_column :submissions, :ignored_old, :boolean if column_exists? :submissions, :ignored_old
 
+    if column_exists? :submissions, :absolute_tweak
+      remove_column :submissions, :absolute_tweak, :boolean
+    end
   end
 end

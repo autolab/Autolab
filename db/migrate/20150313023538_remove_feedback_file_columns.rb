@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class RemoveFeedbackFileColumns < ActiveRecord::Migration[4.2]
   def change
     change_table :scores do |t|

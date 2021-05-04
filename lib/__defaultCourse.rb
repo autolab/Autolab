@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 #
 # course.rb - Autolab Course Configuration File
 #

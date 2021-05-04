@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "rails_helper"
 
 RSpec.describe Annotation, type: :model do
@@ -15,9 +17,9 @@ RSpec.describe Annotation, type: :model do
                                     submission_id: submission.id,
                                     problem_id: problem.id,
                                     value: 20,
-                                    submitted_by: 'admin@foo.bar')
+                                    submitted_by: "admin@foo.bar")
 
-    annotation.update_non_autograded_score()
+    annotation.update_non_autograded_score
 
     # need to force reload lookup of score to avoid caching
     expect(Score.find(score.id).score).to eq(max_score + 20)

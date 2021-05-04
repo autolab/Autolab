@@ -1,6 +1,8 @@
+# frozen_string_literal: true
+
 require "factory_bot_rails"
 require "webmock/rspec"
-require 'simplecov'
+require "simplecov"
 
 # Report to CodeClimate test coverage tool.
 SimpleCov.start

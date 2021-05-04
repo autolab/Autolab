@@ -1,6 +1,8 @@
+# frozen_string_literal: true
+
 class AddInstructorToUsers < ActiveRecord::Migration[4.2]
   def self.up
-    add_column :users, :instructor, :boolean, {:default=>false}
+    add_column :users, :instructor, :boolean, { default: false }
   end
 
   def self.down

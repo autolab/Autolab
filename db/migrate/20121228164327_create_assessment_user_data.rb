@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class CreateAssessmentUserData < ActiveRecord::Migration[4.2]
   def self.initialize_AUDs_modulo_callbacks(asmt)
     # create all AUDs
@@ -10,21 +12,21 @@ class CreateAssessmentUserData < ActiveRecord::Migration[4.2]
   end
 
   def self.create_AUDs_modulo_callbacks(asmt)
-    asmt.course.users.find_each { |user|
+    asmt.course.users.find_each do |user|
       create_AUD_modulo_callbacks(asmt.id, user.id)
-    }
+    end
   end
 
   def self.create_AUD_modulo_callbacks(asmt_id, user_id)
-    insert_sql = "INSERT INTO #{AssessmentUserDatum.table_name} 
+    insert_sql = "INSERT INTO #{AssessmentUserDatum.table_name}
                   (assessment_id, user_id) VALUES (#{asmt_id}, #{user_id})"
     AssessmentUserDatum.connection.execute insert_sql
   end
 
   def self.update_latest_submissions_modulo_callbacks(asmt)
     calculate_latest_submissions(asmt.id).each do |s|
-      AssessmentUserDatum.update_all({ :latest_submission_id => s.id },
-                                     { :assessment_id => asmt.id, :user_id => s.user_id })
+      AssessmentUserDatum.update_all({ latest_submission_id: s.id },
+                                     { assessment_id: asmt.id, user_id: s.user_id })
     end
   end
 
@@ -38,25 +40,25 @@ class CreateAssessmentUserData < ActiveRecord::Migration[4.2]
 
     Submission.find(
       :all,
-      :select => "submissions.*",
-      :conditions => [ "(version, user_id) IN (#{subquery_speed_hack})
-                        AND assessment_id = ?", asmt_id ]
+      select: "submissions.*",
+      conditions: ["(version, user_id) IN (#{subquery_speed_hack})
+                        AND assessment_id = ?", asmt_id]
     )
   end
 
   def self.up
     create_table :assessment_user_data do |t|
-      t.integer :user_id, :null => false
-      t.integer :assessment_id, :null => false
+      t.integer :user_id, null: false
+      t.integer :assessment_id, null: false
       t.integer :latest_submission_id
-      
+
       t.timestamps
     end
 
     add_index :assessment_user_data, :user_id
     add_index :assessment_user_data, :assessment_id
-    add_index :assessment_user_data, :latest_submission_id, :unique => true
-    add_index :assessment_user_data, [ :user_id, :assessment_id ], :unique => true
+    add_index :assessment_user_data, :latest_submission_id, unique: true
+    add_index :assessment_user_data, %i[user_id assessment_id], unique: true
 
     Assessment.find_each { |asmt| initialize_AUDs_modulo_callbacks asmt }
   end

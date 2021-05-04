@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class AddHasAutogradeKeyToAssessment < ActiveRecord::Migration[4.2]
   def change
     add_column :assessments, :has_autograde, :boolean

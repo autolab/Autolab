@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 RSpec.describe "home page", type: :feature do
   it "allows registered user to log in" do
     user = FactoryBot.create(:user)

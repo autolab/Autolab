@@ -1,5 +1,7 @@
+# frozen_string_literal: true
+
 class AddEmbeddedQuizFormDataToAssessments < ActiveRecord::Migration[4.2]
   def change
-  	 add_column :assessments, :embedded_quiz_form_data, :text
+    add_column :assessments, :embedded_quiz_form_data, :text
   end
 end

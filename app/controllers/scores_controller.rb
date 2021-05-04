@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 ##
 # There's a score for each problem and each submission in every assessment.
 # That is A LOT OF SCORES.
@@ -6,8 +8,8 @@ class ScoresController < ApplicationController
   before_action :set_assessment
   before_action :set_submission
   before_action :set_score, except: [:create]
-  rescue_from ActionView::MissingTemplate do |exception|
-      redirect_to("/home/error_404")
+  rescue_from ActionView::MissingTemplate do |_exception|
+    redirect_to("/home/error_404")
   end
 
   action_auth_level :create, :course_assistant
@@ -23,13 +25,12 @@ class ScoresController < ApplicationController
   end
 
   action_auth_level :show, :course_assistant
-  def show
-  end
+  def show; end
 
   action_auth_level :update, :course_assistant
   def update
     respond_to do |format|
-      if @score && @score.update_attributes(update_params)
+      if @score&.update_attributes(update_params)
         format.js { render json: @score.to_json(include: :grader) }
       else
         format.js { head :bad_request }

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 ##
 # An Assessment can have any number of Problems, which are basically just a name,
 # and a think for Scores to join with.
@@ -5,9 +7,9 @@
 class ProblemsController < ApplicationController
   # inherited from ApplicationController
   before_action :set_assessment
-  before_action :set_problem, only: [:edit, :update, :destroy]
-    rescue_from ActionView::MissingTemplate do |exception|
-      redirect_to("/home/error_404")
+  before_action :set_problem, only: %i[edit update destroy]
+  rescue_from ActionView::MissingTemplate do |_exception|
+    redirect_to("/home/error_404")
   end
 
   action_auth_level :new, :instructor
@@ -33,8 +35,7 @@ class ProblemsController < ApplicationController
   end
 
   action_auth_level :edit, :instructor
-  def edit
-  end
+  def edit; end
 
   action_auth_level :update, :instructor
   def update
@@ -75,7 +76,7 @@ private
   # creates a link to the problems page, which is a tab on assessments#edit
   #
   def problems_index
-    edit_course_assessment_path(@course, @assessment) + "/#tab_problems"
+    "#{edit_course_assessment_path(@course, @assessment)}/#tab_problems"
   end
 
   # this function says which problem attributes can be mass-assigned to, and which cannot

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class UnignoreAllSubmissions < ActiveRecord::Migration[4.2]
   def self.up
     # backup to ignored_old
@@ -5,7 +7,7 @@ class UnignoreAllSubmissions < ActiveRecord::Migration[4.2]
 
     # new ignored column (will be removed once dependent code is removed)
     # where *no* submissions are ignored
-    add_column :submissions, :ignored, :boolean, :default => false, :null => false
+    add_column :submissions, :ignored, :boolean, default: false, null: false
 
     say_with_time "update AUDs to include previously ignored submissions" do
       Assessment.find_each { |asmt| update_latest_submissions_modulo_callbacks(asmt.id, true) }
@@ -14,8 +16,8 @@ class UnignoreAllSubmissions < ActiveRecord::Migration[4.2]
 
   def self.update_latest_submissions_modulo_callbacks(asmt_id, include_ignored)
     calculate_latest_submissions(asmt_id, include_ignored).each do |s|
-      AssessmentUserDatum.update_all({ :latest_submission_id => s.id },
-                                     { :assessment_id => asmt_id, :user_id => s.user_id })
+      AssessmentUserDatum.update_all({ latest_submission_id: s.id },
+                                     { assessment_id: asmt_id, user_id: s.user_id })
     end
   end
 
@@ -28,8 +30,9 @@ class UnignoreAllSubmissions < ActiveRecord::Migration[4.2]
                             GROUP BY user_id) AS x"
     Submission.find(
       :all,
-      :select => "submissions.*",
-      :conditions => [ "(version, user_id) IN (#{max_version_subquery}) AND assessment_id = ?", asmt_id ],
+      select: "submissions.*",
+      conditions: ["(version, user_id) IN (#{max_version_subquery}) AND assessment_id = ?",
+                   asmt_id]
     )
   end
 

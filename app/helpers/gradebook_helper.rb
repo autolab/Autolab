@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "utilities"
 
 module GradebookHelper
@@ -17,9 +19,9 @@ module GradebookHelper
       { id: "section", name: "Sec", field: "section",
         sortable: true, width: 50 },
       { id: "grace_days", name: "Grace Days Used", field: "grace_days",
-        sortable: true, width: 50},
+        sortable: true, width: 50 },
       { id: "late_days", name: "Penalty Late Days", field: "late_days",
-        sortable: true, width: 50}
+        sortable: true, width: 50 }
     ]
 
     course.assessment_categories.each do |cat|
@@ -36,7 +38,7 @@ module GradebookHelper
       end
 
       # category average column
-      columns << { id: cat, name: cat + " Average",
+      columns << { id: cat, name: "#{cat} Average",
                    field: "#{cat}_category_average",
                    sortable: true, cssClass: "computed category_average",
                    headerCssClass: "category_average", width: 100 }
@@ -61,9 +63,9 @@ module GradebookHelper
       next unless matrix.has_cud? cud.id
 
       # if this is a section gradebook
-      next unless cud.section == section if section
+      next if section && cud.section != section
 
-      next unless cud.lecture == lecture if lecture
+      next if lecture && cud.lecture != lecture
 
       sgb_link = url_for controller: :gradebooks, action: :student, id: cud.id
 
@@ -117,11 +119,14 @@ module GradebookHelper
   end
 
   def csv_header(matrix, course)
-    header = %w(Email first_name last_name Lecture Section School Major Year grace_days_used penalty_late_days)
+    header = %w[Email first_name last_name Lecture Section School Major Year grace_days_used
+                penalty_late_days]
     course.assessment_categories.each do |cat|
       next unless matrix.has_category? cat
+
       course.assessments_with_category(cat).each do |asmt|
         next unless matrix.has_assessment? asmt.id
+
         header << asmt.name
       end
       header << "#{cat} Average"
@@ -133,12 +138,12 @@ module GradebookHelper
 
   def formatted_status(status)
     case status
-      when Float
-        round status
-      when String
-        status
-      else
-        throw "FATAL: AUD status must be Float or String; was #{status.class}"
+    when Float
+      round status
+    when String
+      status
+    else
+      throw "FATAL: AUD status must be Float or String; was #{status.class}"
     end
   end
 
@@ -153,13 +158,16 @@ module GradebookHelper
         late_days = 0
 
         # general info
-        row = [cud.user.email, cud.user.first_name, cud.user.last_name, cud.lecture, cud.section, cud.school, cud.major, cud.year, grace_days, late_days]
+        row = [cud.user.email, cud.user.first_name, cud.user.last_name, cud.lecture, cud.section,
+               cud.school, cud.major, cud.year, grace_days, late_days]
 
         # assessment status (see AssessmentUserDatum.status), category averages
         course.assessment_categories.each do |cat|
           next unless matrix.has_category? cat
+
           course.assessments_with_category(cat).each do |asmt|
             next unless matrix.has_assessment? asmt.id
+
             cell = matrix.cell(asmt.id, cud.id)
 
             row << formatted_status(cell["status"])

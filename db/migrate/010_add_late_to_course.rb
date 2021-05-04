@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class AddLateToCourse < ActiveRecord::Migration[4.2]
   def self.up
     add_column :courses, :late_slack, :integer

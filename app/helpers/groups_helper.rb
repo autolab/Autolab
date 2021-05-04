@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module GroupsHelper
   def groups_back_link
     if @cud.instructor

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class PopulateUserFields < ActiveRecord::Migration[4.2]
   def up
     User.find_each do |u|

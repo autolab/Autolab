@@ -1,3 +1,5 @@
+inherit_from: .rubocop_todo.yml
+
 AllCops:
   Include:
     - '**/Rakefile'
@@ -12,11 +14,11 @@ AllCops:
     - 'db/**/*'
     - 'script/**/*'
     - 'tmp/**/*'
+  NewCops: enable
 
-Rails:
-  Enabled: true
+require: rubocop-rails
 
-Metrics/LineLength:
+Layout/LineLength:
   Max: 100
   # To make it possible to copy or click on URIs in the code, we allow lines
   # contaning a URI to be longer than Max.

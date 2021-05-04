@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "tempfile"
 
 module ControllerMacros
@@ -73,8 +75,9 @@ module ControllerMacros
                          released: true)
 
     att.file = Rack::Test::UploadedFile.new(
-        path=Rails.root.join("attachments", File.basename(course_att_file)), content_type="text/plain",
-        tempfile=Tempfile.new("attach.tmp"))
+      path = Rails.root.join("attachments", File.basename(course_att_file)), content_type = "text/plain",
+      tempfile = Tempfile.new("attach.tmp")
+    )
     att.save
     att
   end

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class CourseMailer < ActionMailer::Base
   def system_announcement(sender, to, subject, text)
     @text = text
@@ -29,7 +31,7 @@ class CourseMailer < ActionMailer::Base
     @text = text
 
     mail(
-      to: Rails.configuration.school['tech_email'],
+      to: Rails.configuration.school["tech_email"],
       subject: subject,
       from: @user.email,
       sent_on: Time.now

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class AddModuleTable < ActiveRecord::Migration[4.2]
   def self.up
     create_table :module_data do |t|

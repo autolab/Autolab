@@ -1,7 +1,9 @@
+# frozen_string_literal: true
+
 class AddInfiniteToExtension < ActiveRecord::Migration[4.2]
   def self.up
     add_column :extensions, :infinite, :boolean,
-      :default => false, :null => false
+               default: false, null: false
   end
 
   def self.down
