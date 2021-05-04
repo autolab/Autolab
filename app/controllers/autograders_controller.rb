@@ -81,6 +81,6 @@ private
   end
 
   def autograder_params
-    params[:autograder].permit(:autograde_timeout, :autograde_image, :release_score)
+    params[:autograder].permit(:autograde_timeout, :autograde_image, :release_score, :git_enabled, :git_assignment_name)
   end
 end

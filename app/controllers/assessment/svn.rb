@@ -1,4 +1,7 @@
 ##
+# Legacy dead code - check git.rb instead
+#
+# 
 # This module defines functions for using SVN in an Assessment.
 # We may want this to work with generic VCS some day
 #

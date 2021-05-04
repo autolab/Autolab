@@ -1,0 +1,8 @@
+all:
+	tar xvf autograde.tar
+	tar xvf handin.tgz
+	cp hello.c gitdemo-handout
+	(cd gitdemo-handout; ./driver.sh)
+
+clean:
+	rm -rf *~ gitdemo-handout
