@@ -11,6 +11,7 @@ nav:
             - Ubuntu 18.04: installation/ubuntu.md
             - Mac OSX 10.11+: installation/osx.md
             - Troubleshooting: installation/troubleshoot.md
+            - Mailing Setup: installation/mailing.md
         - Tango: installation/tango.md
         # - (Legacy) OneClick Install: installation/one-click.md
     - Getting Started:
