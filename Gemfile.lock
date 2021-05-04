@@ -214,6 +214,9 @@ GEM
     omniauth-facebook (8.0.0)
       omniauth-oauth2 (~> 1.2)
     omniauth-google-oauth2 (1.0.0)
+    omniauth-github (1.4.0)
+      omniauth (~> 1.5)
+      omniauth-oauth2 (>= 1.4.0, < 2.0)
       jwt (>= 2.0)
       oauth2 (~> 1.1)
       omniauth (~> 2.0)
@@ -403,6 +406,7 @@ DEPENDENCIES
   newrelic_rpm
   omniauth (>= 1.2.2)
   omniauth-facebook (>= 2.0.0)
+  omniauth-github
   omniauth-google-oauth2 (>= 0.2.5)
   omniauth-shibboleth (>= 1.1.2)
   populator (>= 1.0.0)

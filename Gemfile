@@ -54,9 +54,10 @@ gem 'thin'
 # External authentication
 gem 'devise', '>=4.5.0'
 gem 'omniauth', '>=1.2.2'
-gem 'omniauth-facebook', '>=2.0.0'
-gem 'omniauth-google-oauth2', '>=0.2.5'
+# gem 'omniauth-facebook', '>=2.0.0'
+# gem 'omniauth-google-oauth2', '>=0.2.5'
 gem 'omniauth-shibboleth', '>=1.1.2'
+gem 'omniauth-github'
 
 # Autolab API OAuth Service
 gem 'doorkeeper'

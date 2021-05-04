@@ -177,6 +177,12 @@ class UsersController < ApplicationController
     end
   end
 
+
+  def update_oauth
+    p "In update_gh"
+    byebug
+  end
+
   # DELETE users/:id/
   action_auth_level :destroy, :administrator
   def destroy
