@@ -1,4 +1,4 @@
-<%= if request.post? then 
+<%= if request.post? then
   @jobs.inspect
 end %>
 <h2>Autograder Development Handin</h2>
@@ -23,8 +23,8 @@ end %>
   <td><%= file_field_tag("file") %></td>
 </tr>
 <tr>
-  <% regradeOptions = @submissions.collect{ |s| 
-    ["#{s.user.andrewID} - v#{s.version}", s.id] 
+  <% regradeOptions = @submissions.collect{ |s|
+    ["#{s.user.andrewID} - v#{s.version}", s.id]
   } %>
   <th>Select Previous <br>Submissions to Regrade:</th>
   <td><%= select(:regrade,:submission_id,regradeOptions, {},{:multiple=>"multiple"})
@@ -35,5 +35,3 @@ end %>
 </tr>
 </table>
 </form>
-
-

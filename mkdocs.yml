@@ -27,7 +27,7 @@ nav:
                 - Metrics: features/metrics.md
         - Autolab Frontend CLI: command-line-interface.md
         - Tango CLI: tango-cli.md
-    - Reference: 
+    - Reference:
         - Reference Overview: reference.md
         - Autolab Frontend API:
             - Overview: api-overview.md

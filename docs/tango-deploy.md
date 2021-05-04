@@ -16,13 +16,13 @@ This is a guide to setup a fully self-sufficient Tango deployment environment ou
         :::sh
         $ git clone https://github.com/autolab/Tango.git; cd Tango
 
-2.  Create a `config.py` file from the given template.  
-      
+2.  Create a `config.py` file from the given template.
+
         :::sh
         $ cp config.template.py config.py
 
-3.  Modify `DOCKER_VOLUME_PATH` in `config.py` as follows: 
-	
+3.  Modify `DOCKER_VOLUME_PATH` in `config.py` as follows:
+
         :::sh
         DOCKER_VOLUME_PATH = '/opt/TangoService/Tango/volumes/'
 
@@ -46,7 +46,7 @@ This is a guide to setup a fully self-sufficient Tango deployment environment ou
         # ubuntu              15.04               d1b55fd07600        4 minutes ago       131.3 MB
 
 7.  Run the following command to access the image in a container with a bash shell. The `-p` flag will map `nginxPort` on the docker container to `localPort` (8610 recommended) on your local machine (or on the VM that docker is running in on the local machine) so that Tango is accessible from outside the docker container.
-      
+
         :::sh
         $ docker run --privileged -p <localPort>:<nginxPort> -it tango_deployment /bin/bash
 
@@ -61,7 +61,7 @@ This is a guide to setup a fully self-sufficient Tango deployment environment ou
         $ service supervisor start
 
 10.  Check to see if Tango is responding to requests
-      
+
         :::sh
         $ curl localhost:8610 # Hello, world! RESTful Tango here!
 

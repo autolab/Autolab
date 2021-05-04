@@ -21,7 +21,7 @@
 
 en:
   hello: "Hello world"
-  
+
   doorkeeper:
     scopes:
       user_info: 'Access your basic info (e.g. name, email, school, year)'

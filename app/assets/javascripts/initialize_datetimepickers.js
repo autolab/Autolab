@@ -1,6 +1,6 @@
 // Initialize all Flatpicker Datetime Pickers on the page
 ;(function() {
-  
+
   $(document).ready(function() {
     var datetimeElts = $('.datetimepicker');
 

@@ -7,7 +7,7 @@ If you are stuck or find issues with the installation process you can either fil
 ## Installation
 First ensure that you have Docker and Docker Compose installed on your machine. See the official <a href="https://docs.docker.com/install/" target="_blank">Docker docs</a> for the installation steps.
 
-1. Clone this repository and its Autolab and Tango submodules: 
+1. Clone this repository and its Autolab and Tango submodules:
 
         :::bash
         git clone --recurse-submodules -j8 git://github.com/autolab/docker.git autolab-docker
@@ -59,7 +59,7 @@ First ensure that you have Docker and Docker Compose installed on your machine. 
 
 10. Change `DOCKER_TANGO_HOST_VOLUME_PATH` in `docker-compose.yml` to be the absolute path to the Tango `volumes` directory, i.e `/<path-to-docker-compose-installation>/Tango/volumes`. This is so that Tango knows where to put the output files of its autograded jobs.
 
-        :::bash 
+        :::bash
         # in docker-compose.yml
 
         # Modify the below to be the path to volumes on your host machine
@@ -67,24 +67,24 @@ First ensure that you have Docker and Docker Compose installed on your machine. 
 
 11. Stop all containers, as we are going to setup/disable TLS:
 
-        :::bash 
+        :::bash
         docker-compose stop
 
 12. If you intend to use TLS later, in `nginx/app.conf`, change instances of `<REPLACE_WITH_YOUR_DOMAIN>` to your real domain name. Otherwise, if you are not using TLS, in `nginx/no-ssl-app.conf`, change `server_name` to your real domain name.
 
 13. Continue with TLS setup as outlined in the [next section](#configuring-tlsssl)
-14. Build the autograding image(s) that you want to use in Tango (see [the docs](/installation/tango/#docker-vmms-setup) for more information). For this setup we will stick to the default Ubuntu 18.04 autograding image: 
+14. Build the autograding image(s) that you want to use in Tango (see [the docs](/installation/tango/#docker-vmms-setup) for more information). For this setup we will stick to the default Ubuntu 18.04 autograding image:
 
         :::bash
         docker build -t autograding_image Tango/vmms/
-        
+
 Note that we can just run this directly on the host because we are mapping the Docker socket to the Tango container (i.e they are using the same Docker server).
 
-15. Start up everything: 
+15. Start up everything:
 
         :::bash
         docker-compose up -d
-        
+
 Autolab should now be accessible on port 80 (and 443 if you configured TLS)!
 
 ## Configuring TLS/SSL
@@ -121,13 +121,13 @@ There are three options for TLS: using Let's Encrypt (for free TLS certificates)
         :::bash
         # Comment the below out to disable SSL (not recommended)
         - ./nginx/app.conf:/etc/nginx/sites-enabled/webapp.conf
-    
+
     Also uncomment the following:
 
         :::bash
         # Uncomment the below to disable SSL (not recommended)
         # - ./nginx/no-ssl-app.conf:/etc/nginx/sites-enabled/webapp.conf
-    
+
     Lastly set `DOCKER_SSL=false`:
 
         :::bash
@@ -210,13 +210,13 @@ Next get a shell inside the container:
 
     :::bash
     $ docker exec -it autolab bash
-    root@be56be775428:/home/app/webapp# 
+    root@be56be775428:/home/app/webapp#
 
 By default we are in the project directory. Navigate to the `logs` directory and `cat` or `tail` `production.log`. This contains logs from the Autolab application itself.
 
     :::bash
     root@be56be775428:/home/app/webapp# cd log
-    root@be56be775428:/home/app/webapp/log# tail -f -n +1 production.log 
+    root@be56be775428:/home/app/webapp/log# tail -f -n +1 production.log
 
 We can also check out our Nginx logs in `/var/log/nginx/`:
 
@@ -244,7 +244,7 @@ Get a shell in the Tango instance, similar to the instructions mentioned [previo
     root@a5b77b5267b1:/opt/TangoService/Tango# cd ..
     root@a5b77b5267b1:/opt/TangoService# ls
     Tango  tango_job_manager_log.log  tango_log.log
-    root@a5b77b5267b1:/opt/TangoService# tail -f -n +1 tango_job_manager_log.log tango_log.log 
+    root@a5b77b5267b1:/opt/TangoService# tail -f -n +1 tango_job_manager_log.log tango_log.log
 
 ### Troubleshooting Autolab/Tango Connection
 In the Autolab container, try to curl Tango:

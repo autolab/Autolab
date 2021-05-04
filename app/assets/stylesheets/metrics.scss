@@ -30,14 +30,14 @@ $autolab-subtle-red: #C87B7E;
 }
 
 span:before {
-  content:" "; 
-  display:inline-block; 
+  content:" ";
+  display:inline-block;
   width:10px;
 }
 
 span:after {
-  content:" "; 
-  display:inline-block; 
+  content:" ";
+  display:inline-block;
   width:10px;
 }
 
@@ -135,11 +135,11 @@ i.external.alternate {
 }
 
 .select_single label {
-  display: inline-block !important; 
+  display: inline-block !important;
   vertical-align: middle !important;
 }
 
-.ui.checkbox.select_single label:before, 
+.ui.checkbox.select_single label:before,
 .ui.checkbox.select_single label:after {
   top: 6.5px;
 }

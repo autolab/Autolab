@@ -1,6 +1,6 @@
-This page documents the interface for Tango's Virtual Machine Management Systems' (VMMSs) API and instructions for setting up VMMSs. 
+This page documents the interface for Tango's Virtual Machine Management Systems' (VMMSs) API and instructions for setting up VMMSs.
 
-See <a href="https://github.com/autolab/Tango/tree/master/vmms" target="_blank">the vmms directory</a> in Tango for example implementations. 
+See <a href="https://github.com/autolab/Tango/tree/master/vmms" target="_blank">the vmms directory</a> in Tango for example implementations.
 
 We currently provide [Docker VMMS](/installation/tango/#docker-vmms-setup) and the [Amazon EC2 VMMS](/installation/tango/#amazon-ec2-vmms-setup) interfaces. The following API is for developers who intend to use a different kind of VMMS for Tango's autograding purposes.
 

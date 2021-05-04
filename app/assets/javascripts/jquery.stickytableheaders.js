@@ -1,4 +1,4 @@
-/*! Copyright (c) 2011 by Jonas Mosbech - https://github.com/jmosbech/StickyTableHeaders 
+/*! Copyright (c) 2011 by Jonas Mosbech - https://github.com/jmosbech/StickyTableHeaders
     MIT license info: https://github.com/jmosbech/StickyTableHeaders/blob/master/license.txt */
 
 (function ($) {
@@ -42,7 +42,7 @@
 				});
 
 				base.$originalHeader.addClass('tableFloatingHeaderOriginal');
-				
+
 				base.$originalHeader.before(base.$clonedHeader);
 
 				// enabling support for jquery.tablesorter plugin

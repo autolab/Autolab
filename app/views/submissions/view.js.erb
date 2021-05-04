@@ -42,7 +42,7 @@ if (currentHeaderPos == <%= params[:header_position] %>) {
 
     displayAnnotations();
     attachEvents();
-    
+
     <% if params[:line] # note: line numbers are non-zero %>
         scrollToLine(<%= params[:line] %>);
     <% end %>

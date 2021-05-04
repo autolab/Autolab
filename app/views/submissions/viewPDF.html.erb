@@ -43,7 +43,7 @@
     var fileLink    = "<%= url_for [:download, @course, @assessment, @submission, header_position: params[:header_position]] %>";
     <% end %>
     var cudEmailStr = "<%= @cud.email %>";
-    
+
     // a json list of problems for this assessment
     var problems = <%=raw @problems.to_json %>;
 

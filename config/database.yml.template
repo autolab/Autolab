@@ -20,4 +20,3 @@ test:
   host: localhost
   variables:
     sql_mode: NO_ENGINE_SUBSTITUTION
-  

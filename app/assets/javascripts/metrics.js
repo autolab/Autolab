@@ -13,7 +13,7 @@ Object.freeze(metrics_endpoints);
 $(document).ready(function(){
 
 	// Initializing Fomantic UI elements
-	$('.tabular.menu .item').tab();	
+	$('.tabular.menu .item').tab();
 	$('.ui.dropdown').dropdown();
 	$('.ui.checkbox.conditions').checkbox();
 	$('.ui.checkbox.select_all').checkbox({
@@ -53,7 +53,7 @@ $('.checkbox.conditions').change(function(){
 			]
 		};
 	}
-	
+
 	$('.ui.form').form({inline: true, fields});
 
 });
@@ -133,7 +133,7 @@ $('#save').click(function(){
 	// Checks form validity
 	if(!$('.ui.form').form('is valid'))
 		return;
-	
+
 	$('#save').addClass('loading');
 	let new_conditions = {};
 
@@ -210,10 +210,10 @@ var message_count = 0;
  * @param {string} params.type type of the banner, positive, negative, or warning
  * @param {string} params.header html string header of the banner
  * @param {string} params.message html string body of the banner
- * @param {number} params.timeout timeout of banner in milleseconds. -1 for no timeout. 
+ * @param {number} params.timeout timeout of banner in milleseconds. -1 for no timeout.
  */
 const render_banner = (params) => {
-	
+
 	const message_id = message_count; // using a count as id
 
 	// templating the html
@@ -227,7 +227,7 @@ const render_banner = (params) => {
 		${params.message}
 	</div>
 	`;
-	
+
 	// adding the html to a particular div
 	$('#message_area').append(message_html);
 
@@ -241,7 +241,7 @@ const render_banner = (params) => {
 	// if not closed yet
 	if(!params['timeout'] || ['timeout'] >= 0){
 		setTimeout(function(){
-			const message_box = 
+			const message_box =
 				$(`#message_${message_id} .close`).closest('.message');
 			if(!message_box.hasClass('hidden'))
 				message_box.transition('fade');

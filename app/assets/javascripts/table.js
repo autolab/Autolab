@@ -19,8 +19,8 @@ function updatenum(table){
 /*	Enumerates a table	*/
 function enumerate(table){
 	table.setAttribute('onclick','updatenum(this);');
-	var rows = table.getElementsByTagName("tr");	
-	
+	var rows = table.getElementsByTagName("tr");
+
 	/*Defines style for enumerated cells*/
 	var style = "style='background-color:#DDD; padding:1px; text-align:center; font-size:10px; color:#444;'";
 	for (var i=0; i<rows.length; i++){rows[i].innerHTML = "<th class='enum'" + style + ">"+i+"</td>"+rows[i].innerHTML;}
@@ -32,7 +32,7 @@ function reapply(){
 	function brokentable(table){
 		var el = table.getElementsByTagName("th")[0];
 		return (el && !hasClass(el, 'enum'));}
-		
+
 	/* 	Iterate through all sortable tables, and check if
 		they are enumerated.  If not, enumerate. */
 	var tables = document.getElementsByTagName("table");
@@ -41,7 +41,7 @@ function reapply(){
 			if (brokentable(tables[j])==true){enumerate(tables[j]);}
 		}
 	}
-	
+
 	/* Check again in case content has changed */
 	setTimeout("reapply()",1000);
 }

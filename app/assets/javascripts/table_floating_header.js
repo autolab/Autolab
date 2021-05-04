@@ -31,7 +31,7 @@ this.setheader = function() {
         var screenpos = body && ( ! result || ( result > body ) ) ? body : result;
         var theady_max = this.getXY(this.table_obj.getElementsByTagName('THEAD')[0]).y + this.table_obj.offsetHeight - this.header_height;
         if ( screenpos > this.theady && screenpos < theady_max ) {
-			this.header.style.top=Math.round(screenpos) + 'px'; 
+			this.header.style.top=Math.round(screenpos) + 'px';
 			this.header.style.display = 'block';
             this.header_height = header.offsetHeight;
         }
@@ -144,4 +144,3 @@ window.onscroll=this.setheader;
 
 };
 floating_header();
-

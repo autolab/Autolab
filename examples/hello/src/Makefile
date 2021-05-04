@@ -1,7 +1,6 @@
 # Makefile for the Hello Lab
-all: 
+all:
 	gcc hello.c -o hello
 
 clean:
 	rm -rf *~ hello
-

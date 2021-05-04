@@ -18,7 +18,7 @@ Choose one of the following methods to install an assessment
 
 <div class="section">
   <h4><li>Create from scratch</h4>
-  <h5>You can create a new assessment from scratch using our 
+  <h5>You can create a new assessment from scratch using our
   	<%= link_to "Assessment Builder", new_course_assessment_path %>. </h5>
 </div>
 
@@ -35,15 +35,15 @@ Choose one of the following methods to install an assessment
     <ul>
       <li> Step 1: Copy the assessment from the previous course directory to the current course directory (<%= File.join(Rails.root, "courses", @course.name) %>).
 
-      <li>Step 2: Refresh this page to cause your new assessment to appear 
-      in the list below. 
+      <li>Step 2: Refresh this page to cause your new assessment to appear
+      in the list below.
 
       <li>Step 3: Click the link on the uninstalled assessment you want to import:
       <ul>
 
       <% @unused_config_files.each do |ass_file| %>
         <li><%= link_to ass_file, {action: :importAssessment, assessment_name: ass_file}, method: :post %></li>
-      <% end %>         
+      <% end %>
 
       </ul>
     </ul>

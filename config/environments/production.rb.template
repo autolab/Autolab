@@ -39,7 +39,7 @@ Autolab3::Application.configure do
     config.force_ssl = true
     config.middleware.use Rack::SslEnforcer, :except => [ /log_submit/, /local_submit/ ]
   end
-  
+
   # See everything in the log (default is :info)
   config.log_level = :info
 
@@ -89,7 +89,7 @@ Autolab3::Application.configure do
     domain:               'example.com',
   }
 
-  # default from 
+  # default from
   ActionMailer::Base.default :from => 'something@example.com'
 
   # option for using sendmail

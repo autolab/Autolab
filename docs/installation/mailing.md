@@ -8,11 +8,11 @@ We intend this instructions mainly for production usage. To set Autolab up to us
 
         :::ruby
         config.action_mailer.default_url_options = {protocol: 'http', host: 'yourhost.com' }
-    
+
     Host here should be the domain in which Autolab is hosted on. (e.g. `autolab.andrew.cmu.edu`)
 
 2. Update the custom smtp server settings
-   
+
         :::ruby
         config.action_mailer.smtp_settings = {
                 address:              'smtp.example.com',
@@ -23,14 +23,14 @@ We intend this instructions mainly for production usage. To set Autolab up to us
                 password:             'example',
                 domain:               'example.com',
         }
-        
+
       Refer to the SMTP settings instructions that your selected service provides you such as [SendGrid SMTP for Ruby on Rails](https://sendgrid.com/docs/for-developers/sending-email/rubyonrails/), [Amazon SES](https://docs.aws.amazon.com/ses/latest/DeveloperGuide/send-email-smtp.html).
 
 3. Update the "from" setting
-   
+
         :::ruby
         ActionMailer::Base.default :from => 'something@example.com'
-  
+
       Here the from address **must** be a address that your SMTP service permits you to send from. Oftentimes it is the same as your user_name in the smtp settings.
 
-Make sure to restart your Autolab client to see the changes 
+Make sure to restart your Autolab client to see the changes

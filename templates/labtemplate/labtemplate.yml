@@ -15,7 +15,7 @@ general:
   category: CategoryAutograde
 problems: []
 scoreboard: {}
-autograde: 
+autograde:
   autograde_image: rhel.img
   autograde_timeout: 180
   release_score: false

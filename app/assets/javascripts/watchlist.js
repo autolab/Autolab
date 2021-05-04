@@ -12,7 +12,7 @@ function get_html_empty_message(message){
 	return `
     	<div id="empty_tabs">
             <center>
-              <i class="huge inbox icon"></i> 
+              <i class="huge inbox icon"></i>
               <h3> ${message} </h3>
             </center>
       </div>`;
@@ -89,7 +89,7 @@ function get_condition_html(condition_types) {
         return;
     }
     conditions_html += `
-        <div class="ui circular label condition" data-html="${violation_string}" data-variation="wide"> 
+        <div class="ui circular label condition" data-html="${violation_string}" data-variation="wide">
           ${condition_string}
         </div>`
   });
@@ -97,7 +97,7 @@ function get_condition_html(condition_types) {
 }
 
 function get_buttons_html(user_id, tab, archived_instances) {
-  var archived_icon = (user_id in archived_instances) ? 
+  var archived_icon = (user_id in archived_instances) ?
       `<div class="left ui icon" data-content="Student also appears in archived">
         <i class="exclamation circle icon"></i>
       </div>` : "";
@@ -105,25 +105,25 @@ function get_buttons_html(user_id, tab, archived_instances) {
   switch(tab) {
     case "pending":
       return `
-        <div class="students-buttons-right"> 
+        <div class="students-buttons-right">
           ${archived_icon}
           <button class="ui submit tiny button contact_single"><i class="mail outline icon"></i>CONTACT</button>
           <button class="ui submit tiny button resolve_single"><i class="check circle icon"></i>RESOLVE</button>
         </div>`;
     case "contacted":
       return `
-        <div class="students-buttons-right"> 
+        <div class="students-buttons-right">
           ${archived_icon}
           <button class="ui submit tiny button resolve_single"><i class="check circle icon"></i>RESOLVE</button>
         </div>`;
     case "resolved":
       return `
-        <div class="students-buttons-right"> 
+        <div class="students-buttons-right">
           ${archived_icon}
         </div>`;
     case "archived":
       return `
-        <div class="students-buttons-right"> 
+        <div class="students-buttons-right">
           <div class="ui circular label condition" data-variation="wide">
           ${archived_instances[user_id]["status"]}
           </div>
@@ -160,7 +160,7 @@ function addInstanceToDict(instancesDict, id, user_id, course_id, user_name, use
     instancesDict[user_id]["status"] = watchlist_status;
   } else {
     instancesDict[user_id] = {
-      "name": user_name, 
+      "name": user_name,
       "email": user_email,
       "course_id": course_id,
       "conditions": {},
@@ -201,7 +201,7 @@ function get_watchlist_function(){
           var id = _.get(watchlist_instance,'id');
           var course_id = _.get(watchlist_instance,'course_id');
           var user_id = _.get(watchlist_instance,'course_user_datum_id');
-          var user_name = _.get(data,`["users"][${user_id}].first_name`) + " " + _.get(data,`["users"][${user_id}].last_name`); 
+          var user_name = _.get(data,`["users"][${user_id}].first_name`) + " " + _.get(data,`["users"][${user_id}].last_name`);
           var user_email = _.get(data,`["users"][${user_id}].email`);
           var risk_condition_id = _.get(watchlist_instance,'risk_condition_id');
           var watchlist_status = _.get(watchlist_instance,'status');
@@ -234,7 +234,7 @@ function get_watchlist_function(){
             }
           }
         });
-        
+
         pending_html = `<div class="ui secondary segment" >
                      <h5> Pending students in need of attention</h5>
                     </div>`;
@@ -260,7 +260,7 @@ function get_watchlist_function(){
         $.each(archived_instances, function( user_id, instance ) {
           archived_html += get_row_html(user_id, instance, "archived", archived_instances);
         });
-        
+
 
 	    	// show empty messages
 	    	if (pending_empty){
@@ -287,9 +287,9 @@ function get_watchlist_function(){
 	    	} else {
           $('#archived_tab').html(archived_html);
         }
-        
+
         updateButtonVisibility($('.ui.vertical.fluid.tabular.menu .item.active'));
-        
+
         // displays latest updated time based on item with latest time
         if(last_updated_date != "")
           $('#last-updated-time')
@@ -305,10 +305,10 @@ function get_watchlist_function(){
       }
 
       $('.ui.checkbox.select_single').checkbox({
-        onChecked: function () { 
+        onChecked: function () {
           selected_user_ids.push($(this).parent().parent().attr('id'));
         },
-        onUnchecked: function () { 
+        onUnchecked: function () {
           var user_id = $(this).parent().parent().attr('id');
           var index = selected_user_ids.indexOf(user_id);
           if (index > -1) {
@@ -332,11 +332,11 @@ function get_watchlist_function(){
         var user_id = $(this).parent().parent().attr('id');
         window.open(`mailto: ${pending_instances[user_id]["email"]}`, "_blank");
         console.log(pending_instances[user_id]["instance_ids"]);
-        
+
         // re-enabling buttons on failure
         function enable_buttons () {
           button_group.removeAttr("disabled");
-        } 
+        }
 
         update_watchlist(method, pending_instances[user_id]["instance_ids"], enable_buttons);
       });
@@ -346,15 +346,15 @@ function get_watchlist_function(){
         // disable all action buttons
         var button_group = $(this).parent().find('button');
         button_group.prop('disabled', true);
-        
+
         method = "resolve";
         var user_id = $(this).parent().parent().attr('id');
         var instances = get_active_instances(pending_instances, contacted_instances, archived_instances);
-        
+
         // re-enabling buttons on failure
         function enable_buttons () {
           button_group.removeAttr("disabled");
-        } 
+        }
 
         update_watchlist(method, instances[user_id]["instance_ids"], enable_buttons);
       });
@@ -374,7 +374,7 @@ function get_watchlist_function(){
     selected_user_ids.forEach(user_id => {
       instance_ids = instance_ids.concat(pending_instances[user_id]["instance_ids"]);
     });
-  
+
     if (instance_ids.length > 1) {
       window.open(`mailto: ?bcc=${emails}`, "_blank");
       update_watchlist(method, instance_ids);
@@ -464,7 +464,7 @@ function updateButtonVisibility(item){
 
 function get_active_instances(pending_instances, contacted_instances, archived_instances) {
   var tab = $(".ui.tab.segments.active").attr('id');
-  
+
   switch(tab){
     case "pending_tab":
       return pending_instances;
@@ -501,7 +501,7 @@ function update_watchlist(method, ids, on_error = null){
 			});
 
       // call on_error if exists
-      if(on_error!=null){ 
+      if(on_error!=null){
         on_error();
       }
 		},
@@ -511,17 +511,17 @@ function update_watchlist(method, ids, on_error = null){
 // instructor clicks on 'refresh' button
 // only activates if it is not already loading
 $('#refresh_btn').click(function(){
-  
+
   if(!$('#refresh_btn').hasClass("loading"))
 	  refresh_watchlist();
 });
 
 function refresh_watchlist(){
 
-  // uses formantic ui loading class 
+  // uses formantic ui loading class
   $("#refresh_btn").addClass('loading');
   $.getJSON(watchlist_endpoints['refresh'],function(){
-    
+
     // set last updated time to now on success
     $('#last-updated-time')
     .text(`Last Updated ${(new Date()).toLocaleString()}`);
@@ -532,7 +532,7 @@ function refresh_watchlist(){
       header:"Successfully refreshed watchlist instances",
       message: "The latest instances should be showing now",
     });
-    
+
   }).fail(function(){
     render_banner({
       type:"negative",
@@ -546,4 +546,3 @@ function refresh_watchlist(){
   })
 
 }
-

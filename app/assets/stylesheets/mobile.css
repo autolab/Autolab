@@ -14,8 +14,8 @@ body {
 	line-height:25px;
 }
 p{font-size:15px;}
-h1{ 
-	font-size:20px; 
+h1{
+	font-size:20px;
 	color:#000;
 }
 th, h2 {
@@ -29,14 +29,14 @@ th, h2 {
 	background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#999), to(#BBB));
 	border-top:1px solid #999;
 	border-bottom:1px solid #999;
-	
-	
+
+
 	padding: 5px 20px;
 	padding-left:15px;
 }
 h3{	font-size:17px;}
 
-a{	/*background-color:#F3F3F3; 
+a{	/*background-color:#F3F3F3;
 	color:#000;
 	text-decoration:none;
 	padding:1px;
@@ -78,7 +78,7 @@ li b{color:#000;}
 	color:#111;
 	position:absolute; top:0px; left:0px;
 	width:100%;
-	padding:3px 0px; 
+	padding:3px 0px;
 	padding-top:30px;
 	height:25px;
 	font-size:12px;
@@ -135,7 +135,7 @@ li b{color:#000;}
 	display:inline-block;
 	color:#FFF;
 	/*background-color:#999;
-	
+
 	-moz-border-radius: 5px 5px 0px 0px;
 	border-radius: 5px 5px 0px 0px;*/
 }
@@ -193,7 +193,7 @@ img.select{
 }
 .half {
 	margin: 10px auto;
-	display:inline-block; 
+	display:inline-block;
 	width:45%;
 	padding:5px
 }
