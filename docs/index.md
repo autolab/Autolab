@@ -29,6 +29,10 @@ Apart from client usage, both the Autolab frontend and Tango provide application
 ##Demonstration Website
 Installation instructions can be found in our comprehensive [installation guide](/installation/overview). However, if this is your first experience with Autolab, we encourage you to try out some key features on Autolab's <a href="https://demo.autolabproject.com" target="_blank">Demo Site</a>. You can login through `Developer Login` with the email: `admin@foo.bar`. The demonstration website refreshes at 0,6,12,18 Hours (UTC) daily, and it is publicly accessible, so please only use it for your exploration. Do not use this site to store important information.
 
+!!! info "Demonstration Website Currently Unavailable"
+    As of June 2021, we are looking for a new web hosting service to host our demonstration site. In the meantime, you can still install Autolab easily using [installation guide](/installation/overview) to test it out.
+
+
 Try the following in order:
 
 ### Create a new course 
