@@ -13,8 +13,13 @@
       $(datetimeElts[i]).flatpickr({
         enableTime: true,
         altInput: true,
-        altFormat: "Y-m-d H:i",
         defaultDate: defaultDate,
+        formatDate: (date, format) => {
+          return moment(date).format(format);
+        },
+        parseDate: (datestr, format) => {
+          return moment(datestr, format, true).toDate();
+        },
       })
     }
 
@@ -28,8 +33,13 @@
 
       $(dateElts[i]).flatpickr({
         altInput: true,
-        altFormat: "Y-m-d H:i",
         defaultDate: defaultDate,
+        formatDate: (date, format) => {
+          return moment(date).format(format);
+        },
+        parseDate: (datestr, format) => {
+          return moment(datestr, format, true).toDate();
+        },
       })
     }
   });
