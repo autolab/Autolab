@@ -13,7 +13,8 @@
       $(datetimeElts[i]).flatpickr({
         enableTime: true,
         altInput: true,
-        defaultDate: defaultDate
+        altFormat: "Y-m-d H:i",
+        defaultDate: defaultDate,
       })
     }
 
@@ -27,7 +28,8 @@
 
       $(dateElts[i]).flatpickr({
         altInput: true,
-        defaultDate: defaultDate
+        altFormat: "Y-m-d H:i",
+        defaultDate: defaultDate,
       })
     }
   });
