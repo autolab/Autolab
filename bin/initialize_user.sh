@@ -21,7 +21,6 @@ done
   read -p 'First Name: ' first_name
   read -p 'Last Name: ' last_name
 
-  echo $1
   RAILS_ENV=$1 bundle exec rails admin:create_root_user[$email,"$password","$first_name","$last_name"]
 }
 
