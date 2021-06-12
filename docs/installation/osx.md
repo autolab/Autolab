@@ -86,7 +86,7 @@ Follow the step-by-step instructions below:
 
     Do not forget to use `bundle exec` in front of every rake/rails command.
 
-12. Create initial root user. (Flag is required for differentiating the environment because this affects the database (prod or dev) in which the user is created.)
+12. Create initial root user, pass the `-d` flag for developmental deployments:
 
         :::bash
         # For production:

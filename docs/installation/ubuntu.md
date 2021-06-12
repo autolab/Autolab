@@ -137,7 +137,7 @@ Comment out the configurations meant for MySQL in config/database.yml, and inser
         bundle exec rails db:reset
         bundle exec rails db:migrate
 
-13. Create initial root user. (Flag is required for differentiating the environment because this affects the database (prod or dev) in which the user is created.)
+13. Create initial root user, pass the `-d` flag for developmental deployments:
 
         :::bash
         # For production:
