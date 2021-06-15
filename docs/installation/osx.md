@@ -86,10 +86,14 @@ Follow the step-by-step instructions below:
 
     Do not forget to use `bundle exec` in front of every rake/rails command.
 
-12. Create initial root user
+12. Create initial root user, pass the `-d` flag for developmental deployments:
 
         :::bash
+        # For production:
         ./bin/initialize_user.sh
+
+        # For development:
+        ./bin/initialize_user.sh -d
 
 13. Populate dummy data (for development only):
 

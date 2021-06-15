@@ -137,10 +137,14 @@ Comment out the configurations meant for MySQL in config/database.yml, and inser
         bundle exec rails db:reset
         bundle exec rails db:migrate
 
-13. Create initial root user
+13. Create initial root user, pass the `-d` flag for developmental deployments:
 
         :::bash
+        # For production:
         ./bin/initialize_user.sh
+
+        # For development:
+        ./bin/initialize_user.sh -d
 
 14. If you are just testing Autolab, you can populate the database with sample course & students
 
