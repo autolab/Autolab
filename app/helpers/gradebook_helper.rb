@@ -35,15 +35,17 @@ module GradebookHelper
                      before_grading_deadline: matrix.before_grading_deadline?(asmt.id) }
       end
 
-      # category average column
-      columns << { id: cat, name: cat + " Average",
-                   field: "#{cat}_category_average",
-                   sortable: true, cssClass: "computed category_average",
-                   headerCssClass: "category_average", width: 100 }
+      # category aggregate column -- ignore those with a name that's nil
+      if not matrix.category_aggregate_name(cat).nil?
+        columns << { id: cat, name: cat + " #{matrix.category_aggregate_name(cat)}",
+                     field: "#{cat}_category_aggregate",
+                     sortable: true, cssClass: "computed category_average",
+                     headerCssClass: "category_average", width: 100 }
+      end
     end
 
-    # course average column
-    columns << { id: "average", name: "Average", field: "course_average",
+    # course aggregate column
+    columns << { id: "aggregate", name: "#{matrix.course_aggregate_name}", field: "course_aggregate",
                  sortable: true, width: 100, cssClass: "computed course_average",
                  headerCssClass: "course_average" }
 
@@ -98,11 +100,11 @@ module GradebookHelper
       course.assessment_categories.each do |cat|
         next unless matrix.has_category? cat
 
-        key = "#{cat}_category_average"
-        row[key] = round matrix.category_average(cat, cud.id)
+        key = "#{cat}_category_aggregate"
+        row[key] = round matrix.category_aggregate(cat, cud.id)
       end
 
-      row["course_average"] = round matrix.course_average(cud.id)
+      row["course_aggregate"] = round matrix.course_aggregate(cud.id)
       row["grace_days"] = grace_days
       row["late_days"] = late_days
 
@@ -124,9 +126,9 @@ module GradebookHelper
         next unless matrix.has_assessment? asmt.id
         header << asmt.name
       end
-      header << "#{cat} Average"
+      header << "#{cat} #{matrix.category_aggregate_name(cat)}"
     end
-    header << "Course Average"
+    header << "Course #{matrix.course_aggregate_name}"
 
     header
   end
@@ -155,7 +157,7 @@ module GradebookHelper
         # general info
         row = [cud.user.email, cud.user.first_name, cud.user.last_name, cud.lecture, cud.section, cud.school, cud.major, cud.year, grace_days, late_days]
 
-        # assessment status (see AssessmentUserDatum.status), category averages
+        # assessment status (see AssessmentUserDatum.status), category aggregates
         course.assessment_categories.each do |cat|
           next unless matrix.has_category? cat
           course.assessments_with_category(cat).each do |asmt|
@@ -167,11 +169,11 @@ module GradebookHelper
             late_days += cell["late_days"]
           end
 
-          row << round(matrix.category_average(cat, cud.id))
+          row << round(matrix.category_aggregate(cat, cud.id))
         end
 
-        # course average
-        row << round(matrix.course_average(cud.id))
+        # course aggregate
+        row << round(matrix.course_aggregate(cud.id))
 
         # update grace_days and late_days data
         row[8] = grace_days

@@ -87,15 +87,15 @@ class GradebooksController < ApplicationController
       cols[asmt.name] = final_scores
     end
 
-    # category averages
+    # category aggregates
     @course.assessment_categories.each do |cat|
       next unless matrix.has_category? cat
 
-      cols["#{cat} Average"] = matrix.averages_for_category cat
+      cols["#{cat} #{matrix.category_aggregate_name(cat)}"] = matrix.aggregates_for_category cat
     end
 
-    # course averages
-    cols["Course Average"] = matrix.course_averages
+    # course aggregates
+    cols["Course #{matrix.course_aggregate_name}"] = matrix.course_aggregates
 
     # calculate statistics
     @course_stats = {}
