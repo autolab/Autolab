@@ -153,13 +153,40 @@ function get_row_html(user_id, instance, tab, archived_instances) {
       </div>`;
 }
 
-function addInstanceToDict(instancesDict, id, user_id, course_id, user_name, user_email, condition_type, violation_info, watchlist_status) {
-  if (user_id in instancesDict) {
-    instancesDict[user_id]["conditions"][condition_type] = violation_info;
-    instancesDict[user_id]["instance_ids"].push(id);
-    instancesDict[user_id]["status"] = watchlist_status;
+function set_tab_html(is_search, instances, tab_name, archived_instances, empty_message) {
+  is_empty = Object.keys(instances).length === 0;
+  if (is_empty && !is_search){
+    $(`#${tab_name}_header`).hide();
+    html_empty_message = get_html_empty_message(empty_message);
+    $(`#${tab_name}_tab`).html(html_empty_message);
   } else {
-    instancesDict[user_id] = {
+    $(`#${tab_name}_header`).show();
+    html = "";
+    $.each(instances, function( user_id, instance ) {
+      html += get_row_html(user_id, instance, tab_name, archived_instances);
+    });
+    $(`#${tab_name}_instances`).html(html);
+  }
+}
+
+function add_instance_to_dict(
+  search_content, 
+  instances_dict, 
+  id, 
+  user_id, 
+  course_id, 
+  user_name, 
+  user_email, 
+  condition_type, 
+  violation_info, 
+  watchlist_status
+) {
+  if (user_id in instances_dict) {
+    instances_dict[user_id]["conditions"][condition_type] = violation_info;
+    instances_dict[user_id]["instance_ids"].push(id);
+    instances_dict[user_id]["status"] = watchlist_status;
+  } else {
+    instances_dict[user_id] = {
       "name": user_name, 
       "email": user_email,
       "course_id": course_id,
@@ -167,8 +194,42 @@ function addInstanceToDict(instancesDict, id, user_id, course_id, user_name, use
       "instance_ids": [id],
       "status": watchlist_status
     };
-    instancesDict[user_id]["conditions"][condition_type] = violation_info;
+    instances_dict[user_id]["conditions"][condition_type] = violation_info;
+    search_content.push({category: "email", title: user_email});
+    search_content.push({category: "name", title: user_name});
   }
+}
+
+function instance_passes_condition_search(instance, search_input) {
+  var convert_conditions = {
+    "grace day used": "grace_day_usage", 
+    "downward trend": "grade_drop", 
+    "no submission": "no_submissions", 
+    "low score": "low_grades"};
+  var violated_conditions = Object.keys(instance["conditions"]);
+  return violated_conditions.includes(convert_conditions[search_input]);
+}
+
+function search_enter_action(tab_name, instances, archived_instances, empty_message) {
+  var search_input = $(`#${tab_name}_search .input .prompt`).val().toLowerCase().trim();
+  if (search_input === "") {
+    return;
+  }
+  var filtered_instances = Object.keys(instances).reduce(function (filtered, key) {
+    if (instances[key]["name"]?.toLowerCase()?.includes(search_input)
+      || instances[key]["email"]?.toLowerCase()?.includes(search_input)
+      || instance_passes_condition_search(instances[key], search_input)) {
+      filtered[key] = instances[key];
+    } 
+    return filtered;
+  }, {});
+  set_tab_html(
+    true,
+    filtered_instances,
+    tab_name,
+    archived_instances,
+    empty_message,
+  );
 }
 
 function get_watchlist_function(){
@@ -182,20 +243,27 @@ function get_watchlist_function(){
 
 	$.getJSON(watchlist_endpoints['get'],function(data, status){
 	    if (status=='success') {
-	    	var pending_empty = 1;
-	    	var contacted_empty = 1;
-	    	var resolved_empty = 1;
-        var archived_empty = 1;
         let last_updated_date = "";
 
         $(".top-bar").show();
 	    	$("#undefined_metrics").hide();
         $("#defined_metrics").show();
 
-	    	$('#pending_tab').empty();
-	    	$('#contacted_tab').empty();
-	    	$('#resolved_tab').empty();
-        $('#archived_tab').empty();
+	    	$('#pending_instances').empty();
+	    	$('#contacted_instances').empty();
+	    	$('#resolved_instances').empty();
+        $('#archived_instances').empty();
+
+        var metrics_search_content = [
+          {category: "metric", title: "grace day used"},
+          {category: "metric", title: "downward trend"},
+          {category: "metric", title: "no submission"},
+          {category: "metric", title: "low score"},
+        ]
+        var pending_search_content = [...metrics_search_content];
+        var contacted_search_content = [...metrics_search_content];
+        var resolved_search_content = [...metrics_search_content];
+        var archived_search_content = [...metrics_search_content];
 
         data["instances"].forEach(watchlist_instance => {
           var id = _.get(watchlist_instance,'id');
@@ -212,21 +280,17 @@ function get_watchlist_function(){
             last_updated_date = watchlist_instance.updated_at;
 
           if (_.get(watchlist_instance,'archived')) {
-            archived_empty = 0;
-            addInstanceToDict(archived_instances, id, user_id, course_id, user_name, user_email, condition_type, violation_info, watchlist_status);
+            add_instance_to_dict(archived_search_content, archived_instances, id, user_id, course_id, user_name, user_email, condition_type, violation_info, watchlist_status);
           } else {
             switch(watchlist_status){
               case "pending":
-                pending_empty = 0;
-                addInstanceToDict(pending_instances, id, user_id, course_id, user_name, user_email, condition_type, violation_info, watchlist_status);
+                add_instance_to_dict(pending_search_content, pending_instances, id, user_id, course_id, user_name, user_email, condition_type, violation_info, watchlist_status);
                 break;
               case "contacted":
-                contacted_empty = 0;
-                addInstanceToDict(contacted_instances, id, user_id, course_id, user_name, user_email, condition_type, violation_info, watchlist_status);
+                add_instance_to_dict(contacted_search_content, contacted_instances, id, user_id, course_id, user_name, user_email, condition_type, violation_info, watchlist_status);
                 break;
               case "resolved":
-                resolved_empty = 0;
-                addInstanceToDict(resolved_instances, id, user_id, course_id, user_name, user_email, condition_type, violation_info, watchlist_status);
+                add_instance_to_dict(resolved_search_content, resolved_instances, id, user_id, course_id, user_name, user_email, condition_type, violation_info, watchlist_status);
                 break;
               default:
                 console.error(_.get(watchlist_instance,'status') + " is not valid");
@@ -235,58 +299,39 @@ function get_watchlist_function(){
           }
         });
         
-        pending_html = `<div class="ui secondary segment" >
-                     <h5> Pending students in need of attention</h5>
-                    </div>`;
-        contacted_html = `<div class="ui secondary segment" >
-                          <h5> Contacted students </h5>
-                        </div>`;
-        resolved_html = `<div class="ui secondary segment" >
-                          <h5> Resolved students </h5>
-                        </div>`;
-        archived_html = `<div class="ui secondary segment" >
-                          <h5> Archived students </h5> <b>Resolved and contacted students becomes archived when student metrics are changed </b>
-                         </div>`;
+        pending_empty_message = "There are no pending students in need of attention";
+        contacted_empty_message = "You have not contacted any students";
+        resolved_empty_message = "You have not resolved any students";
+        archived_empty_message = "You have no archived students";
 
-	    	$.each(pending_instances, function( user_id, instance ) {
-          pending_html += get_row_html(user_id, instance, "pending", archived_instances);
-        });
-        $.each(contacted_instances, function( user_id, instance ) {
-          contacted_html += get_row_html(user_id, instance, "contacted", archived_instances);
-        });
-        $.each(resolved_instances, function( user_id, instance ) {
-          resolved_html += get_row_html(user_id, instance, "resolved", archived_instances);
-        });
-        $.each(archived_instances, function( user_id, instance ) {
-          archived_html += get_row_html(user_id, instance, "archived", archived_instances);
-        });
-        
-
-	    	// show empty messages
-	    	if (pending_empty){
-	    		html_empty_message = get_html_empty_message("There are no pending students in need of attention");
-	    		$('#pending_tab').html(html_empty_message);
-	    	} else {
-          $('#pending_tab').html(pending_html);
-        }
-	    	if (contacted_empty){
-	    		html_empty_message = get_html_empty_message("You have not contacted any students");
-	    		$('#contacted_tab').html(html_empty_message);
-	    	} else {
-          $('#contacted_tab').html(contacted_html);
-        }
-	    	if (resolved_empty){
-	    		html_empty_message = get_html_empty_message("You have not resolved any students");
-	    		$('#resolved_tab').html(html_empty_message);
-	    	} else {
-          $('#resolved_tab').html(resolved_html);
-        }
-	    	if (archived_empty){
-	    		html_empty_message = get_html_empty_message("You have no archived students");
-	    		$('#archived_tab').html(html_empty_message);
-	    	} else {
-          $('#archived_tab').html(archived_html);
-        }
+        set_tab_html(
+          false,
+          pending_instances,
+          "pending",
+          archived_instances,
+          pending_empty_message,
+        );
+        set_tab_html(
+          false,
+          contacted_instances,
+          "contacted",
+          archived_instances,
+          contacted_empty_message,
+        );
+        set_tab_html(
+          false,
+          resolved_instances,
+          "resolved",
+          archived_instances,
+          resolved_empty_message,
+        );
+        set_tab_html(
+          false,
+          archived_instances,
+          "archived",
+          archived_instances,
+          archived_empty_message,
+        );
         
         updateButtonVisibility($('.ui.vertical.fluid.tabular.menu .item.active'));
         
@@ -319,8 +364,54 @@ function get_watchlist_function(){
         }
       });
 
+      $("#pending_search").keypress(function (e) {
+        var code = (e.keyCode ? e.keyCode : e.which);
+        if (code == 13) {
+          search_enter_action("pending", pending_instances, archived_instances, pending_empty_message);
+        }
+      });
+      $("#contacted_search").keypress(function (e) {
+        var code = (e.keyCode ? e.keyCode : e.which);
+        if (code == 13) {
+          search_enter_action("contacted", contacted_instances, archived_instances, contacted_empty_message);
+        }
+      });
+      $("#resolved_search").keypress(function (e) {
+        var code = (e.keyCode ? e.keyCode : e.which);
+        if (code == 13) {
+          search_enter_action("resolved", resolved_instances, archived_instances, resolved_empty_message);
+        }
+      });
+      $("#archived_search").keypress(function (e) {
+        var code = (e.keyCode ? e.keyCode : e.which);
+        if (code == 13) {
+          search_enter_action("archived", archived_instances, archived_instances, archived_empty_message);
+        }
+      });
+
       $('.ui.icon').popup();
       $('.ui.circular.label.condition').popup();
+
+      $('#pending_search').search({
+        type: 'category',
+        source: pending_search_content,
+        maxResults: 100
+      });
+      $('#contacted_search').search({
+        type: 'category',
+        source: contacted_search_content,
+        maxResults: 100
+      });
+      $('#resolved_search').search({
+        type: 'category',
+        source: resolved_search_content,
+        maxResults: 100
+      });
+      $('#archived_search').search({
+        type: 'category',
+        source: archived_search_content,
+        maxResults: 100
+      });
 
       $('.ui.button.contact_single').click(function() {
 
