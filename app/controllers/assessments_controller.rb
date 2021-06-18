@@ -555,7 +555,7 @@ class AssessmentsController < ApplicationController
 
   def parseFeedback(feedback)
     lines = feedback.lines
-    feedback = lines[lines.length - 2].chomp
+    feedback = lines[lines.length - 2]&.chomp
     if valid_json?(feedback)
       jsonFeedbackHash = JSON.parse(feedback)
       if jsonFeedbackHash.key?("_presentation") == false
