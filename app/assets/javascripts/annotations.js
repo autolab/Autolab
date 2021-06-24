@@ -149,7 +149,7 @@ function fillAnnotationBox() {
     var score = 0;
     for (var i = 0; i < annotationsByProblem[problem].length; i++) {
       var annotation = annotationsByProblem[problem][i];
-      var points = parseInt(annotation.value);
+      var points = parseFloat(annotation.value);
       if (isNaN(points)) points = 0;
       score += points;
     }
