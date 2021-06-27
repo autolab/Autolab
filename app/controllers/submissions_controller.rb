@@ -286,7 +286,7 @@ class SubmissionsController < ApplicationController
     if Archive.archive? @filename
       begin
         @files = Archive.get_file_hierarchy(@filename).sort! { |a, b| a[:pathname] <=> b[:pathname] }
-        @header_position = params[:header_position].to_i
+        
       rescue
         flash[:error] = "Could not read archive."
         redirect_to [@course, @assessment] and return false
@@ -302,7 +302,18 @@ class SubmissionsController < ApplicationController
       }]
     end
 
-    if Archive.archive?(@submission.handin_file_path) && params.include?(:header_position)
+    if(!@submission.autograde_file.nil?)
+      @header_position = params[:header_position].to_i
+      @files.prepend({pathname:"Autograder Output",
+                      header_position: -1, 
+                      mac_bs_file: false, 
+                      directory: false})
+      end
+    
+    if (params.include?(:header_position) && (params[:header_position].to_i == -1) && !@submission.autograde_file.nil? )
+      file = @submission.autograde_file.read || "Empty Autograder Output"
+      @displayFilename = "Autograder Output"
+    elsif Archive.archive?(@submission.handin_file_path) && params.include?(:header_position)
       file, pathname = Archive.get_nth_file(@submission.handin_file_path, params[:header_position].to_i)
 
       if(file.nil?)
@@ -441,7 +452,6 @@ class SubmissionsController < ApplicationController
       @problemGrades[problem] += value
 
     end
-
 
     @problems = @assessment.problems.to_a
     @problems.sort! { |a, b| a.id <=> b.id }

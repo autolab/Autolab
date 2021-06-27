@@ -188,6 +188,16 @@ class Submission < ApplicationRecord
     File.join(assessment.handin_directory_path, autograde_feedback_filename)
   end
 
+  def autograde_file
+    path = autograde_feedback_path
+    return nil unless path
+    if !File.exist?(path) || !File.readable?(path)
+      return nil
+    else
+      return File.open path, "r"
+    end
+  end 
+  
   def handin_file
     path = handin_file_path
     return nil unless path
