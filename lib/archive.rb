@@ -215,14 +215,18 @@ module Archive
   def self.create_zip(paths)
     return nil if paths.nil? || paths.empty?
 
-    Tempfile.open(["submissions", ".zip"]) do |t|
-      Zip::File.open(t.path, Zip::File::CREATE) do |z|
-        paths.each { |p| z.add(File.basename(p), p) }
-        z
+    # don't create a tempfile, just stream it to client for download
+    zip_stream = Zip::OutputStream.write_buffer do |zos|
+      paths.each do |filepath|
+        ctimestamp = Zip::DOSTime.at(File.open(filepath,"r").ctime) # use creation time of submitted file
+        zip_entry = Zip::Entry.new(zos, "#{File.basename(filepath)}", nil, nil, nil, nil, nil, nil,
+                    ctimestamp)
+        zos.put_next_entry(zip_entry)
+        zos.print IO.read(filepath)
       end
-      t
     end
-    # the return value should be the return value of the outer block, which is the tempfile
+    zip_stream.rewind
+    zip_stream
   end
 
   def self.looks_like_directory?(pathname)
