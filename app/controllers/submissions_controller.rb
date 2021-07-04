@@ -332,6 +332,7 @@ class SubmissionsController < ApplicationController
         firstFile = Archive.get_files(@submission.handin_file_path).find{|file| file[:mac_bs_file] == false and file[:directory] == false} || {header_position: 0}
         redirect_to(url_for([:view, @course, @assessment, @submission, header_position: firstFile[:header_position]])) && return
       end
+      # TODO: Redirect to header 0 if autograder output exists 
 
       file = @submission.handin_file.read
 
