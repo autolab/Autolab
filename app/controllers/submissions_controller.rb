@@ -301,7 +301,7 @@ class SubmissionsController < ApplicationController
         directory: Archive.looks_like_directory?(@filename)
       }]
     end
-
+    
     if(!@submission.autograde_file.nil?)
       @header_position = params[:header_position].to_i
       @files.prepend({pathname:"Autograder Output",
@@ -331,11 +331,12 @@ class SubmissionsController < ApplicationController
       if Archive.archive?(@submission.handin_file_path)
         firstFile = Archive.get_files(@submission.handin_file_path).find{|file| file[:mac_bs_file] == false and file[:directory] == false} || {header_position: 0}
         redirect_to(url_for([:view, @course, @assessment, @submission, header_position: firstFile[:header_position]])) && return
+      # redirect to header_pos = 0, if there's autograder and no header_position
+      elsif (!@submission.autograde_file.nil? && !params.include?(:header_position))
+        redirect_to(url_for([:view, @course, @assessment, @submission, header_position:0 ])) && return
       end
-      # TODO: Redirect to header 0 if autograder output exists 
 
       file = @submission.handin_file.read
-
       @displayFilename = @submission.filename
     end
 
