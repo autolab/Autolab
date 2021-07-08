@@ -22,7 +22,7 @@ Rails.application.routes.draw do
           get 'writeup'
           get 'handout'
           post 'submit'
-          
+
           resources :submissions, param: :version, only: [:index] do
             get 'feedback'
           end
@@ -194,7 +194,6 @@ Rails.application.routes.draw do
     member do
       get "bulkRelease"
       get "downloadRoster"
-      match "email", via: [:get, :post]
       get "manage"
       get "moss"
       get "reload"
