@@ -24,7 +24,7 @@ class Rack::Attack
   # whitelisting). It must implement .increment and .write like
   # ActiveSupport::Cache::Store
 
-  # Rack::Attack.cache.store = ActiveSupport::Cache::MemoryStore.new 
+  # Rack::Attack.cache.store = ActiveSupport::Cache::MemoryStore.new
 
   ### Safelist Requests ###
 
@@ -39,15 +39,6 @@ class Rack::Attack
 
   ### Throttle Requests ###
 
-  # Throttle all requests by user id
-  #
-  # Key: "rack::attack:#{Time.now.to_i/:period}:api/general:#{req.user_id}"
-  throttle('api/general', :limit => 10, :period => 30.seconds) do |req|
-    if req.path.start_with?("/api/")
-      req.user_id
-    end
-  end
-
   # Throttle requests for assessment submission endpoint
   #
   # Key: "rack::attack:#{Time.now.to_i/:period}:api/submit:#{req.user_id}"
@@ -60,7 +51,7 @@ class Rack::Attack
   # Throttle requests for device_flow_init
   #
   # Key: "rack::attack:#{Time.now.to_i/:period}:oauth/device_flow_init:#{req.user_id}"
-  throttle("oauth/device_flow_init", :limit => 1, :period => 30.seconds) do |req|
+  throttle("oauth/device_flow_init", :limit => 1000, :period => 30.seconds) do |req|
     if req.path.start_with?("/oauth/device_flow_init")
       req.ip
     end
@@ -69,7 +60,7 @@ class Rack::Attack
   # Throttle requests for device_flow_authorize
   #
   # Key: "rack::attack:#{Time.now.to_i/:period}:oauth/device_flow_authorize:#{req.user_id}"
-  throttle("oauth/device_flow_authorize", :limit => 1, :period => 5.seconds) do |req|
+  throttle("oauth/device_flow_authorize", :limit => 1000, :period => 5.seconds) do |req|
     if req.path.start_with?("/oauth/device_flow_authorize")
       req.ip
     end
