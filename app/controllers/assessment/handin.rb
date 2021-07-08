@@ -25,7 +25,12 @@ module AssessmentHandin
 
       contents = params[:submission]["embedded_quiz_form_answer"].to_s
 
-      out_file = File.new("out.txt", "w+")
+      out_filename = Rails.root.join("courses", @assessment.course.name,
+                                     @assessment.name, @assessment.handin_directory,
+                                     "out.txt")
+
+      out_file = File.new(out_filename, "w+")
+
       out_file.puts(contents)
 
       params[:submission]["file"] = out_file
@@ -337,7 +342,7 @@ private
     when :fail_type_check
       msg = "Submission failed Filetype Check. " + flash[:error]
     end
-    
+
     flash[:error] = msg
     return false
   end
