@@ -286,7 +286,6 @@ class SubmissionsController < ApplicationController
     if Archive.archive? @filename
       begin
         @files = Archive.get_file_hierarchy(@filename).sort! { |a, b| a[:pathname] <=> b[:pathname] }
-        
       rescue
         flash[:error] = "Could not read archive."
         redirect_to [@course, @assessment] and return false
@@ -302,6 +301,8 @@ class SubmissionsController < ApplicationController
       }]
     end
     
+    # Adds autograded file as first option if it exist
+    # We are mapping Autograder to header_position -1
     if(!@submission.autograde_file.nil?)
       @header_position = params[:header_position].to_i
       @files.prepend({pathname:"Autograder Output",
@@ -313,9 +314,8 @@ class SubmissionsController < ApplicationController
     if (params.include?(:header_position) && (params[:header_position].to_i == -1) && !@submission.autograde_file.nil? )
       file = @submission.autograde_file.read || "Empty Autograder Output"
       @displayFilename = "Autograder Output"
-    elsif Archive.archive?(@submission.handin_file_path) && params.include?(:header_position)
+    elsif params.include?(:header_position) && Archive.archive?(@submission.handin_file_path)
       file, pathname = Archive.get_nth_file(@submission.handin_file_path, params[:header_position].to_i)
-
       if(file.nil?)
         file = ""
       end
@@ -331,9 +331,11 @@ class SubmissionsController < ApplicationController
       if Archive.archive?(@submission.handin_file_path)
         firstFile = Archive.get_files(@submission.handin_file_path).find{|file| file[:mac_bs_file] == false and file[:directory] == false} || {header_position: 0}
         redirect_to(url_for([:view, @course, @assessment, @submission, header_position: firstFile[:header_position]])) && return
-      # redirect to header_pos = 0, if there's autograder and no header_position
+      
+      # redirect to header_pos = 0, which is the first file, 
+      # if there's autograder and no header_position
       elsif (!@submission.autograde_file.nil? && !params.include?(:header_position))
-        redirect_to(url_for([:view, @course, @assessment, @submission, header_position:0 ])) && return
+        redirect_to(url_for([:view, @course, @assessment, @submission, header_position: 0 ])) && return
       end
 
       file = @submission.handin_file.read
