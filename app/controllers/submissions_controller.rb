@@ -286,6 +286,7 @@ class SubmissionsController < ApplicationController
     if Archive.archive? @filename
       begin
         @files = Archive.get_file_hierarchy(@filename).sort! { |a, b| a[:pathname] <=> b[:pathname] }
+        @header_position = params[:header_position].to_i
       rescue
         flash[:error] = "Could not read archive."
         redirect_to [@course, @assessment] and return false
@@ -304,7 +305,6 @@ class SubmissionsController < ApplicationController
     # Adds autograded file as first option if it exist
     # We are mapping Autograder to header_position -1
     if(!@submission.autograde_file.nil?)
-      @header_position = params[:header_position].to_i
       @files.prepend({pathname:"Autograder Output",
                       header_position: -1, 
                       mac_bs_file: false, 
