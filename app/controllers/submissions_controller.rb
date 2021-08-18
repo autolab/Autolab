@@ -301,10 +301,21 @@ class SubmissionsController < ApplicationController
         directory: Archive.looks_like_directory?(@filename)
       }]
     end
-
-    if Archive.archive?(@submission.handin_file_path) && params.include?(:header_position)
+    
+    # Adds autograded file as first option if it exist
+    # We are mapping Autograder to header_position -1
+    if(!@submission.autograde_file.nil?)
+      @files.prepend({pathname:"Autograder Output",
+                      header_position: -1, 
+                      mac_bs_file: false, 
+                      directory: false})
+      end
+    
+    if (params.include?(:header_position) && (params[:header_position].to_i == -1) && !@submission.autograde_file.nil? )
+      file = @submission.autograde_file.read || "Empty Autograder Output"
+      @displayFilename = "Autograder Output"
+    elsif params.include?(:header_position) && Archive.archive?(@submission.handin_file_path)
       file, pathname = Archive.get_nth_file(@submission.handin_file_path, params[:header_position].to_i)
-
       if(file.nil?)
         file = ""
       end
@@ -320,10 +331,14 @@ class SubmissionsController < ApplicationController
       if Archive.archive?(@submission.handin_file_path)
         firstFile = Archive.get_files(@submission.handin_file_path).find{|file| file[:mac_bs_file] == false and file[:directory] == false} || {header_position: 0}
         redirect_to(url_for([:view, @course, @assessment, @submission, header_position: firstFile[:header_position]])) && return
+      
+      # redirect to header_pos = 0, which is the first file, 
+      # if there's autograder and no header_position
+      elsif (!@submission.autograde_file.nil? && !params.include?(:header_position))
+        redirect_to(url_for([:view, @course, @assessment, @submission, header_position: 0 ])) && return
       end
 
       file = @submission.handin_file.read
-
       @displayFilename = @submission.filename
     end
 
@@ -441,7 +456,6 @@ class SubmissionsController < ApplicationController
       @problemGrades[problem] += value
 
     end
-
 
     @problems = @assessment.problems.to_a
     @problems.sort! { |a, b| a.id <=> b.id }
