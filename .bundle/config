@@ -1,0 +1,2 @@
+---
+BUNDLE_BUILD__MYSQL2: "--with-ldflags=-L/usr/local/opt/libmysqlclient/lib --with-cppflags=-I/usr/local/opt/libmysqlclient/include"
