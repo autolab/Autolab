@@ -33,7 +33,7 @@ class MetricsController < ApplicationController
 		#
 		# instances: list of watchlist instances will be returned
 		# each watchlist instance will contain course_user_datum, course_id, risk_condition_id
-		# status (new, resolved, contacted), archived or not, and violation info 
+		# status (pending, resolved, contacted), archived or not, and violation info 
 		# (a json containing more info pertaining to violation)
 		# 
 		# risk_conditions: dictionary of risk conditions found in watchlist instances, key being the risk_conditon_id
@@ -84,15 +84,15 @@ class MetricsController < ApplicationController
 		end
 	end
 
-	action_auth_level :get_num_new_instances, :instructor
-	def get_num_new_instances
-		# This API endpoint retrieves the number of new watchlist instances for a particular course
-		# On success, a JSON containing num_new will be returned
+	action_auth_level :get_num_pending_instances, :instructor
+	def get_num_pending_instances
+		# This API endpoint retrieves the number of pending watchlist instances for a particular course
+		# On success, a JSON containing num_pending will be returned
 		# On error, a 404 error is returned
 		begin
 			course_name = params[:course_name]
-			number = WatchlistInstance.get_num_new_instance_for_course(course_name)
-			render json: {"num_new":number}, status: :ok
+			number = WatchlistInstance.get_num_pending_instance_for_course(course_name)
+			render json: {"num_pending":number}, status: :ok
 		rescue => error
 			render json: {error:error.message}, status: :not_found
 			return
@@ -108,7 +108,7 @@ class MetricsController < ApplicationController
 		# On success, a JSON list of watchlist instances will be returned
 		# params required would be the course name
 		# each watchlist instance will contain course_user_datum, course_id, risk_condition_id
-		# status (new, resolved, contacted), archived or not, and violation info 
+		# status (pending, resolved, contacted), archived or not, and violation info 
 		# Specifically, violation info for each condition category takes on the following form (examples):
 		# grace_day_usage: { "Homework 1" => 2, "Homework 3" => 2 }
 		# grade_drop: { "Homework" => [{ "Homework 1" => "100/100", "Homework 3" => "80/100"}, ...], "Lab" => [{"Lab 1" => "10/10", "Lab 3" => "8/10" }] }
@@ -165,7 +165,7 @@ class MetricsController < ApplicationController
 		# On success, the watchlist instance will be updated appropriately
 		# params required would be the course name
 		# example json body {"method":"resolve","ids":[1,2,3]}
-		# method: update, resolve
+		# method: contact, resolve
 		# ids: [1,2,3...] list of ids to be updated
 	
 		begin
@@ -192,6 +192,8 @@ class MetricsController < ApplicationController
 				WatchlistInstance.contact_many_watchlist_instances(params[:ids])
 			when "resolve"
 				WatchlistInstance.resolve_many_watchlist_instances(params[:ids])
+			when "delete"
+				WatchlistInstance.delete_many_watchlist_instances(params[:ids])
 			else
 				raise "Method #{params[:method]} not allowed"  
 			end

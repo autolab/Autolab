@@ -18,7 +18,7 @@ V1 of the API allows clients to:
 
 All endpoints of the Autolab API requires client authentication in the form of an access token. To obtain this access token, clients must obtain authorization from the user.
 
-Autolab API uses the standard [OAuth2](https://tools.ietf.org/html/rfc6749) [Authorization Code Grant](https://tools.ietf.org/html/rfc6749#section-4.1) for user authorization. For clients with no easy access to web browsers (e.g. console apps), an alternative [device flow](https://tools.ietf.org/html/draft-ietf-oauth-device-flow-07)-based authorization method is provided as well.
+Autolab API uses the standard <a href="https://tools.ietf.org/html/rfc6749" target="_blank">OAuth2</a> <a href="https://tools.ietf.org/html/rfc6749#section-4.1" target="_blank">Authorization Code Grant</a> for user authorization. For clients with no easy access to web browsers (e.g. console apps), an alternative <a href="https://tools.ietf.org/html/draft-ietf-oauth-device-flow-07" target="_blank">device flow</a>-based authorization method is provided as well.
 
 To understand how to authorize and unauthorize clients as a user, go to [Managing Authorized Apps](/api-managing-authorized-apps/)
 
@@ -38,9 +38,9 @@ The endpoint for obtaining user authorization is
 The endpoint for obtaning access tokens and refresh tokens is
 `oauth/token`
 
-[Section 4.1 of RFC 6749](https://tools.ietf.org/html/rfc6749#section-4.1) details the parameters required and the response clients can expect from these endpoints.
+<a href="https://tools.ietf.org/html/rfc6749#section-4.1" target="_blank">Section 4.1 of RFC 6749</a> details the parameters required and the response clients can expect from these endpoints.
 
-Autolab API provides a refresh token with every new access token. Once the access token has expired, the client can use the refresh token to obtain a new access token, refresh token pair. Details are also provided in RFC 6749 [here](https://tools.ietf.org/html/rfc6749#section-6).
+Autolab API provides a refresh token with every new access token. Once the access token has expired, the client can use the refresh token to obtain a new access token, refresh token pair. Details are also provided in RFC 6749 <a href="https://tools.ietf.org/html/rfc6749#section-6" target="_blank">here</a>.
 
 ### Device Flow
 

@@ -25,8 +25,7 @@ module Archive
         header_position: i,
         mac_bs_file: pathname.include?("__MACOSX") ||
           pathname.include?(".DS_Store") ||
-          pathname.include?(".metadata") ||
-          File.basename(pathname).start_with?('.'),
+          pathname.include?(".metadata"),
         directory: looks_like_directory?(pathname)
       }
     end
@@ -85,13 +84,25 @@ module Archive
       # exist. If it does not, create and add them
       if(!file[:directory])
         paths = file[:pathname].split("/")
+        mac_bs_file = false
+        for path in paths do
+          # note that __MACOSX is actually a folder
+          # need to check whether the path includes that
+          # for the completeness of cleaned_files
+          # mac_bs_file folder paths will still be added
+          if path.include?("__MACOSX") || path.include?(".DS_Store") ||
+             path.include?(".metadata")
+             mac_bs_file = true
+             break
+          end
+        end
         for i in 1..(paths.size - 1) do
           new_path = paths[0,paths.size-i].join("/") + "/"
           if(!file_path_set.include?(new_path))
             cleaned_files.append({
               :pathname=>new_path,
               :header_position=>starting_header,
-              :mac_bs_file=>false,
+              :mac_bs_file=>mac_bs_file,
               :directory=>true
             })
             starting_header = starting_header - 1

@@ -519,6 +519,7 @@ class AssessmentsController < ApplicationController
     if Archive.archive? @submission.handin_file_path
       @files = Archive.get_files @submission.handin_file_path
     end
+    @problemReleased = @submission.scores.pluck(:released).all?
   end
 
   def parseScore(feedback)
@@ -554,7 +555,7 @@ class AssessmentsController < ApplicationController
 
   def parseFeedback(feedback)
     lines = feedback.lines
-    feedback = lines[lines.length - 2].chomp
+    feedback = lines[lines.length - 2]&.chomp
     if valid_json?(feedback)
       jsonFeedbackHash = JSON.parse(feedback)
       if jsonFeedbackHash.key?("_presentation") == false

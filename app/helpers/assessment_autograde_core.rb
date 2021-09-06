@@ -97,15 +97,21 @@ module AssessmentAutogradeCore
   # Returns the callback_url for the given submission/dave key
   #
   def get_callback_url(course, assessment, submission, dave)
+    # Use https, unless explicitly specified not to
+    prefix = "https://"
+    if ENV["DOCKER_SSL"] == "false"
+      prefix = "http://"
+    end
+
     begin
       if Rails.env.development?
         hostname = request.base_url
       else
-        hostname = "https://" + request.host
+        hostname = prefix + request.host
       end
     rescue
       hostname = `hostname`
-      hostname = "https://" + hostname.strip
+      hostname = prefix + hostname.strip
     end
 
     callback_url = (RESTFUL_USE_POLLING) ? "" :

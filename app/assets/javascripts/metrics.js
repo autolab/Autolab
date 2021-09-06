@@ -62,7 +62,7 @@ $('.checkbox.conditions').change(function(){
 $.getJSON(metrics_endpoints['get'],function(data, status){
 
 	if(status=='success'){
-		// situation when instructors have not set up any risk metrics
+		// situation when instructors have not set up any student metrics
 		if(data.length == 0){
 			$("#undefined_metrics").show();
       		$("#defined_metrics").hide();
@@ -173,8 +173,8 @@ $('#save').click(function(){
 		success:function(data){
 			render_banner({
 				type:"positive",
-				header:"You have successfully saved your conditions",
-				message:"Your watchlist should reflect your new conditions",
+				header:"You have successfully saved your student metrics",
+				message:"Your watchlist should reflect your new student metrics",
 			});
 			get_watchlist_function();
 		},

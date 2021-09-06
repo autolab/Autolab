@@ -52,7 +52,7 @@ class RiskCondition < ApplicationRecord
     # Is params empty?
     if params.length == 0 and max_version == 0
       # puts "case 1: max_version = 0 (no previous conditons have been set) and instructor doesn't want any at this point"
-      WatchlistInstance.refresh_instances_for_course(course_name)
+      WatchlistInstance.refresh_instances_for_course(course_name, true)
       return []
     end
     
@@ -68,7 +68,7 @@ class RiskCondition < ApplicationRecord
       #   puts "case 3: previous conditions set to nothing selected and instructor doesn't want any this time either"
       end
       # indicator row for "currently no conditions selected" that user doesn't need to access
-      WatchlistInstance.refresh_instances_for_course(course_name)
+      WatchlistInstance.refresh_instances_for_course(course_name, true)
       return []
     else
       conditions = []
@@ -95,7 +95,7 @@ class RiskCondition < ApplicationRecord
       # else
       #   puts "case 5: previous conditions and current conditions match and no update is needed"
       end
-      WatchlistInstance.refresh_instances_for_course(course_name)
+      WatchlistInstance.refresh_instances_for_course(course_name, true)
       return conditions
     end
   end

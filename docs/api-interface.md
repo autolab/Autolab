@@ -1,6 +1,6 @@
 This page details all the endpoints of the Autolab REST API.
 
-The client's access token should be included as a parameter to all endpoints. For details on obtaining access tokens, please see the [API Overview](/api-overview/)
+The client's access token should be included as a parameter to all endpoints. For details on obtaining access tokens, please see the [API Overview](/api-overview/).
 
 ## Routing
 
@@ -130,6 +130,7 @@ Show detailed information of an assessment.
 | updated_at       | datetime | The last time an update was made to the assessment.                                                       |
 | max_grace_days   | integer  | Maximum number of grace days that a student can spend on this assessment.                                 |
 | max_submissions  | integer  | The maximum number of times a student can submit the assessment.<br>-1 means unlimited submissions.       |
+| max_unpenalized_submissions  | integer  | The maximum number of times the assessment can be submitted without incurring a penalty.<br>-1 means unlimited submissions.|
 | disable_handins  | boolean  | Are handins disallowed by students?                                                                       |
 | category_name    | string   | Name of the category this assessment belongs to.                                                          |
 | group_size       | integer  | The maximum size of groups for this assessment.                                                           |

@@ -1,5 +1,5 @@
 class WatchlistInstance < ApplicationRecord
-  enum status: [:new ,:contacted,:resolved], _suffix:"watchlist"
+  enum status: [:pending, :contacted, :resolved], _suffix:"watchlist"
   belongs_to :course_user_datum
   belongs_to :course
   belongs_to :risk_condition
@@ -13,38 +13,44 @@ class WatchlistInstance < ApplicationRecord
     return WatchlistInstance.where(course_id:course_id)
   end
   
-  def self.get_num_new_instance_for_course(course_name)
+  def self.get_num_pending_instance_for_course(course_name)
     begin
       course_id = Course.find_by(name:course_name).id
     rescue NoMethodError
       raise "Course #{course_name} cannot be found"
     end 
-    return WatchlistInstance.where(course_id:course_id, status: :new).distinct.count(:course_user_datum_id)
+    return WatchlistInstance.where(course_id:course_id, status: :pending).distinct.count(:course_user_datum_id)
   end 
 
-  def self.refresh_instances_for_course(course_name)
+  def self.refresh_instances_for_course(course_name, metrics_update=false)
     begin
       course = Course.find_by(name: course_name)
       current_conditions = RiskCondition.get_current_for_course(course_name)
-      current_instances = WatchlistInstance.where(course_id: course.id)
+      current_instances = WatchlistInstance.where(course_id: course.id, archived: false)
     rescue NoMethodError
       raise "Course #{course_name} cannot be found"
     end
 
     # update!
-    # archive previous watchlist instances first
-    for instance in current_instances
-      instance.archive_watchlist_instance
-    end
+    new_instances = []
+    deprecated_instances = current_instances
     # now check current conditions
     if current_conditions.length == 0
       # case 1: no current risk conditions exist
-      return []
+      # no-op
     else
       # case 2: current risk conditions exist
-      new_instances = self.add_new_instances_for_conditions(current_conditions, course)
-      return new_instances
+      new_instances, deprecated_instances = self.add_new_instances_for_conditions(current_conditions, course, current_instances)
     end
+
+    # archive previous watchlist instances
+    if metrics_update
+      for instance in deprecated_instances
+        instance.archive_watchlist_instance
+      end
+    end
+
+    return new_instances
   end
   
   # Update the grace day usage condition watchlist instances for each course user datum of a particular course
@@ -270,6 +276,7 @@ class WatchlistInstance < ApplicationRecord
       found_instance_ids = instances.map{|instance| instance.id}
       raise "Instance ids #{instance_ids - found_instance_ids} cannot be found"
     end
+    
     ActiveRecord::Base.transaction do
       instances.each do |instance|
         instance.resolve_watchlist_instance
@@ -277,8 +284,22 @@ class WatchlistInstance < ApplicationRecord
     end
   end
 
+  def self.delete_many_watchlist_instances(instance_ids)
+    instances = WatchlistInstance.where(id:instance_ids)
+    if instance_ids.length() != instances.length()
+      found_instance_ids = instances.map{|instance| instance.id}
+      raise "Instance ids #{instance_ids - found_instance_ids} cannot be found"
+    end
+    
+    ActiveRecord::Base.transaction do
+      instances.each do |instance|
+        instance.delete_watchlist_instance
+      end
+    end
+  end
+
   def archive_watchlist_instance
-    if self.new_watchlist?
+    if self.pending_watchlist?
       self.destroy
     else
       self.archived = true
@@ -289,75 +310,113 @@ class WatchlistInstance < ApplicationRecord
   end
 
   def contact_watchlist_instance
-    if self.new_watchlist?
+    if self.pending_watchlist?
       self.contacted_watchlist!
       
       if not self.save
         raise "Failed to update watchlist instance #{self.id} to contacted" unless self.save
       end
     else
-      raise "Unable to contact a watchlist instance that is not new #{self.id}"
+      raise "Unable to contact a watchlist instance that is not pending #{self.id}"
     end
   end
 
   def resolve_watchlist_instance
-    if (self.new_watchlist? || self.contacted_watchlist?)
+    if (self.pending_watchlist? || self.contacted_watchlist?)
       self.resolved_watchlist!
 
       if not self.save
         raise "Failed to update watchlist instance #{self.id} to resolved" unless self.save
       end
     else
-      raise "Unable to resolve a watchlist instance that is not new or contacted #{self.id}"
+      raise "Unable to resolve a watchlist instance that is not pending or contacted #{self.id}"
+    end
+  end
+
+   def delete_watchlist_instance
+    if (self.archived?)
+      self.destroy
+    else
+      raise "Unable to delete a watchlist instance that is not pending or archived #{self.id}"
     end
   end
 
 private
   
-  def self.add_new_instances_for_conditions(conditions, course)
+  def self.add_new_instances_for_conditions(conditions, course, current_instances)
     new_instances = []
     course_user_data = CourseUserDatum.where(course_id: course.id, instructor: false, course_assistant: false)
+
+    # new
+    criteria2 = current_instances.where(status: :pending)
+    # contacted or resolved
+    criteria1 = current_instances - criteria2
+    deprecated_instances = current_instances
     
-    conditions.each do |condition|
-      case condition.condition_type
-      
-      when "grace_day_usage"
-        grace_day_threshold = condition.parameters[:grace_day_threshold].to_i
-        date = condition.parameters[:date]
-        asmts_before_date = course.asmts_before_date(date)
-        next if asmts_before_date.count == 0 # go to the next condition loop if there is no latest assessment
-        for cud in course_user_data
-          new_instance = self.add_new_instance_for_cud_grace_day_usage(course, condition.id, cud, asmts_before_date, grace_day_threshold)
-          new_instances << new_instance unless new_instance.nil?
-        end
-
-      when "grade_drop"
-        percentage_drop = (condition.parameters[:percentage_drop]).to_f
-        consecutive_counts = condition.parameters[:consecutive_counts].to_i
+    for cud in course_user_data
+      cur_instances = []
+      conditions.each do |condition|
+        case condition.condition_type
         
-        categories = course.assessment_categories
-        asmt_arrs = categories.map { |category| course.assessments_with_category(category).ordered }
-        asmt_arrs.select! { |asmts| asmts.count >= consecutive_counts}
-        for cud in course_user_data
+        when "grace_day_usage"
+          grace_day_threshold = condition.parameters[:grace_day_threshold].to_i
+          date = condition.parameters[:date]
+          asmts_before_date = course.asmts_before_date(date)
+          next if asmts_before_date.count == 0 # go to the next condition loop if there is no latest assessment
+          new_instance = self.add_new_instance_for_cud_grace_day_usage(course, condition.id, cud, asmts_before_date, grace_day_threshold)
+          cur_instances << new_instance unless new_instance.nil?
+        
+        when "grade_drop"
+          percentage_drop = (condition.parameters[:percentage_drop]).to_f
+          consecutive_counts = condition.parameters[:consecutive_counts].to_i
+          
+          categories = course.assessment_categories
+          asmt_arrs = categories.map { |category| course.assessments_with_category(category).ordered }
+          asmt_arrs.select! { |asmts| asmts.count >= consecutive_counts}
           new_instance = self.add_new_instance_for_cud_grade_drop(course, condition.id, cud, asmt_arrs, consecutive_counts, percentage_drop)
-          new_instances << new_instance unless new_instance.nil?
-        end
+          cur_instances << new_instance unless new_instance.nil?
 
-      when "no_submissions"
-        no_submissions_threshold = condition.parameters[:no_submissions_threshold].to_i
+        when "no_submissions"
+          no_submissions_threshold = condition.parameters[:no_submissions_threshold].to_i
 
-        for cud in course_user_data
           new_instance = self.add_new_instance_for_cud_no_submissions(course, condition.id, cud, no_submissions_threshold)
-          new_instances << new_instance unless new_instance.nil?
-        end
+          cur_instances << new_instance unless new_instance.nil?
 
-      when "low_grades"
-        grade_threshold = condition.parameters[:grade_threshold].to_f
-        count_threshold = condition.parameters[:count_threshold].to_i
+        when "low_grades"
+          grade_threshold = condition.parameters[:grade_threshold].to_f
+          count_threshold = condition.parameters[:count_threshold].to_i
 
-        for cud in course_user_data
           new_instance = self.add_new_instance_for_cud_low_grades(course, condition.id, cud, grade_threshold, count_threshold)
-          new_instances << new_instance unless new_instance.nil?
+          cur_instances << new_instance unless new_instance.nil?
+        end
+      end
+      # check for duplication
+      all_dup = true
+      cur_instances.each do |inst|
+        # contact or resolved
+        cr_dup = criteria1.select { |inst1|
+          inst1.course_user_datum_id == inst.course_user_datum_id and
+          inst1.risk_condition_id == inst.risk_condition_id and
+          inst1.violation_info == inst.violation_info
+        }
+        if cr_dup.count == 0
+          all_dup = false
+        end
+      end
+
+      if not all_dup
+        cur_instances.each do |inst|
+          # new
+          new_dup = criteria2.where(
+            course_user_datum_id: inst.course_user_datum_id,
+            risk_condition_id: inst.risk_condition_id,
+            violation_info: inst.violation_info
+          )
+          if new_dup.count == 0
+            new_instances << inst;
+          else
+            deprecated_instances = deprecated_instances - new_dup
+          end
         end
       end
     end
@@ -370,7 +429,7 @@ private
       end
     end
 
-    return new_instances
+    return new_instances, deprecated_instances
   end
 
   # The following 4 methods that create a watchlist instance for a course user datum does not

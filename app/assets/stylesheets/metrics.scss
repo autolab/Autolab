@@ -15,6 +15,16 @@ $autolab-subtle-red: #C87B7E;
   background-color: $autolab-subtle-red !important;
 }
 
+.icon.button {
+  color: #FFFFFF !important;
+  background-color: #5d5d5d !important;
+}
+
+.icon.button:hover{
+  color: #FFFFFF !important;
+  background-color: #919191 !important;
+}
+
 .dropdown {
   min-width: 20px !important;
 }
@@ -94,7 +104,6 @@ input[type="text"] {
 .students-buttons-right{
   display: initial;
   float: right;
-  margin-top: -4px;
 }
 
 #undefined_metrics{
@@ -114,7 +123,23 @@ i.external.alternate {
   color: black !important;
 }
 
-#empty_tabs{
-  background: rgba(243, 240, 240, 0.9);
-  padding: 10px;
+// for resizing window
+.wide.column {
+  min-width: max-content;
+}
+
+.email_label {
+  color: grey;
+  font-size: 10px;
+  margin-top: -15px;
+}
+
+.select_single label {
+  display: inline-block !important; 
+  vertical-align: middle !important;
+}
+
+.ui.checkbox.select_single label:before, 
+.ui.checkbox.select_single label:after {
+  top: 6.5px;
 }

@@ -3,7 +3,7 @@
 This feature allows an instructor to create an assessment which does not require a file submission on the part of the student. Instead, when an assessment is created, the hand-in page for that assessment will display an HTML form of the instructor’s design. When the student submits the form, the information is sent directly in JSON format to the Tango grading server for evaluation.
 
 !!! attention "Tango Required"
-	Tango is needed to use this feature. Please install [Tango](/tango/) and connect it to Autolab before proceeding.
+	Tango is needed to use this feature. Please install [Tango](/installation/tango/) and connect it to Autolab before proceeding.
 
 ![Embedded Form](/images/embedded_form_example.png)
 
@@ -103,7 +103,7 @@ Navigate to the Basic section of editing an assessment (`/courses/<course>/asses
 
 ### Grading an Embedded Form
 
-When a student submits a form, the form data is sent to [Tango](/tango/) in the form of a JSON string in the file `out.txt.` In your grading script, parse the contents of `out.txt` as a JSON object. The JSON object will be a key-value pair data structure, so you can access the students response string (`value`) by its unique key (the `name` attribute).
+When a student submits a form, the form data is sent to [Tango](/installation/tango/) in the form of a JSON string in the file `out.txt.` In your grading script, parse the contents of `out.txt` as a JSON object. The JSON object will be a key-value pair data structure, so you can access the students response string (`value`) by its unique key (the `name` attribute).
 
 For the example form shown above, the JSON object will be as follows:
 
@@ -119,4 +119,4 @@ For the example form shown above, the JSON object will be as follows:
 }
 ```
 
-Use this information to do any processing you need in Tango.If you find any problems, please file an issue on the [Autolab Github](https://github.com/autolab/Autolab).
+Use this information to do any processing you need in Tango.If you find any problems, please file an issue on the <a href="https://github.com/autolab/Autolab" target="_blank">Autolab Github</a>.

@@ -426,13 +426,13 @@ private
 
   def categorize_courses_for_listing(courses)
     listing = {}
-    listing[:disabled] = []
 
     # temporal
     listing[:current] = []
     listing[:completed] = []
     listing[:upcoming] = []
 
+    listing[:disabled] = []
     # categorize
     courses.each do |course|
       if course.disabled?

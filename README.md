@@ -30,7 +30,11 @@ Since 2010, Autolab has had a transformative impact on education at CMU. Each se
 Subscribe to our [mailing list](https://groups.google.com/g/autolabproject) to recieve announcements about major releases and updates to the Autolab Project.
 
 ## Try It Out
+
+**NOTE:** As of June 2021, we are looking for a new web hosting service to host our demonstration site. In the meantime, you can still install Autolab easily using [installation guide](https://docs.autolabproject.com/installation/overview) to test it out.
+
 We have a demo site running at https://demo.autolabproject.com/. See the [docs](https://docs.autolabproject.com/#demonstration-site) for more information on how to login and suggestions on things to try.
+
 
 ## Installation
 
@@ -72,6 +76,33 @@ Autolab is now running on Rails 5. However, we may still work on important bug f
  can be found on `master-rails-4`. 
  
  We will not be backporting new features from `master` to `master-rails-4`.
+
+## Updating Docs
+To install mkdocs, run
+```bash
+pip install --user mkdocs
+```
+
+We rely on the `mkdocs-material` theme, which can be installed with
+```bash
+pip install --user mkdocs-material
+```
+
+To run and preview this locally, run:
+
+```bash
+mkdocs serve
+```
+
+Once your updated documentation is in `master`, run:
+
+```bash
+mkdocs gh-deploy
+```
+
+This will build the site using the branch you are currently in (hopefully `master`), place the built HTML files into the `gh-pages` branch, and push to GitHub. GitHub will then automatically deploy the new content in `gh-pages`.
+
+Finally, go to the repository Settings page, and set `docs.autolabproject.com` under the `Custom domain` field.
 
 ## Contributing
 

@@ -1,36 +1,48 @@
 site_name: Autolab Documentation
 site_url: "https://docs.autolabproject.com/"
+extra_css:
+    - stylesheets/extra.css
 nav:
-    - Autolab:
-          - Getting Started: index.md
-          - Guide for Instructors: instructors.md
-          - Guide for Lab Authors: lab.md
-          - Features:
-            - Formatted Feedback: features/formatted-feedback.md
-            - Scoreboards: features/scoreboards.md
-            - Embedded Forms: features/embedded-forms.md
-            - Annotations: features/annotations.md
-            - MOSS Plagiarism Detection: features/moss.md
-            - Metrics: features/metrics.md
-    - Autolab API:
-          - Overview: api-overview.md
-          - Reference: api-interface.md
-          - Command Line Interface: command-line-interface.md
-          - Managing Authorized Apps: api-managing-authorized-apps.md
-    - Tango:
-          - Getting Started: tango.md
-          - Tango CLI: tango-cli.md
-          - REST API: tango-rest.md
-          - VMMS Docs: tango-vmms.md
-          - Deploying Tango: tango-deploy.md
-    - Docker Compose Install: docker-compose.md
-    - (Legacy) OneClick Install: one-click.md
+    - Overview: index.md
+    - Installation:
+        - Installation Overview: installation/overview.md
+        - Docker Compose Install: installation/docker-compose.md
+        - Autolab:
+            - Ubuntu 18.04: installation/ubuntu.md
+            - Mac OSX 10.11+: installation/osx.md
+            - Troubleshooting: installation/troubleshoot.md
+            - Mailing Setup: installation/mailing.md
+        - Tango: installation/tango.md
+        # - (Legacy) OneClick Install: installation/one-click.md
+    - Getting Started:
+        - Autolab Frontend:
+            - Guide for Instructors: instructors.md
+            - Guide for Lab Authors: lab.md
+            - Features:
+                - Formatted Feedback: features/formatted-feedback.md
+                - Scoreboards: features/scoreboards.md
+                - Embedded Forms: features/embedded-forms.md
+                - Annotations: features/annotations.md
+                - MOSS Plagiarism Detection: features/moss.md
+                - Metrics: features/metrics.md
+        - Autolab Frontend CLI: command-line-interface.md
+        - Tango CLI: tango-cli.md
+    - Reference: 
+        - Reference Overview: reference.md
+        - Autolab Frontend API:
+            - Overview: api-overview.md
+            - Endpoints: api-interface.md
+            - Managing Authorized Apps: api-managing-authorized-apps.md
+        - Tango API: tango-rest.md
+        - Tango VMMS API: tango-vmms.md
 theme:
     name: material
-    palette:
-        primary: "red"
-        accent: "blue"
     logo: "images/logo.svg"
+    palette:
+        scheme: autolab
+    features:
+        - navigation.tabs
+        - toc.integrate
 repo_name: "Autolab"
 repo_url: "https://github.com/Autolab/autolab"
 extra:
@@ -47,3 +59,5 @@ markdown_extensions:
     - codehilite
       #linenums: true
 strict: true
+plugins:
+  - search

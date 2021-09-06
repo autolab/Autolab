@@ -1,4 +1,4 @@
-<% @title = "Metrics"%>
+<% @title = "Student Metrics"%>
 <% content_for :stylesheets do %>
   <%= stylesheet_link_tag "metrics" %>
 <% end %>
@@ -13,13 +13,14 @@
 </div>
 <div class="ui pointing secondary tabular menu">
   <a class="item active" data-tab="watchlist">Watchlist</a>
-  <a class="item" data-tab="risk metrics">Risk Metrics</a>
+  <a class="item" data-tab="student metrics">Student Metrics</a>
 </div>
 <div class="ui tab active" data-tab="watchlist" id="watchlist_tab">
   <div class="top-bar">
     <div class="ui checkbox select_all"><input type="checkbox"/></div>
     <button class="ui submit small button" id="contact_button"><i class="mail outline icon"></i>CONTACT</button>
     <button class="ui submit small button" id="resolve_button"><i class="check circle icon"></i>RESOLVE</button>
+    <button class="ui icon small button" id="delete_button" data-content="Removing selected student(s)"><i class="trash alternate icon"></i></button>
     <div class="last-updated">
       <b id="last-updated-time"></b> <i class="repeat link icon" id="refresh_btn"></i>
     </div>
@@ -28,7 +29,7 @@
   <div class="ui grid">
     <div class="three wide column">
       <div class="ui vertical fluid tabular menu">
-        <a class="item active" data-tab="new_tab">New</a>
+        <a class="item active" data-tab="pending_tab">Pending</a>
         <a class="item" data-tab="contacted_tab">Contacted</a>
         <a class="item" data-tab="resolved_tab">Resolved</a>
         <a class="item" data-tab="archived_tab">Archived</a>
@@ -36,7 +37,7 @@
     </div>
     <div class="thirteen wide column">
       <div id="defined_metrics">
-        <div class="ui tab segments active" data-tab="new_tab" id="new_tab"></div>
+        <div class="ui tab segments active" data-tab="pending_tab" id="pending_tab"></div>
         <div class="ui tab segments" data-tab="contacted_tab", id="contacted_tab"></div>
         <div class="ui tab segments" data-tab="resolved_tab", id="resolved_tab"></div>
         <div class="ui tab segments" data-tab="archived_tab", id="archived_tab"></div>
@@ -44,22 +45,16 @@
       <div class="ui tab segments active" id="undefined_metrics" style="display:none">
         <center>
           <i class="huge inbox icon"></i> 
-            <h3> You have not defined your risk metrics </h3>
-            Set up identification conditions at in the <b>Risk Metrics</b> tab. <br> 
-            Identified possible at-risk students will appear here. 
+            <h3> You have not defined your student metrics </h3>
+            You can define metrics to identify students in need of attention using the <b>Student Metrics</b> tab. <br>
         </center>
       </div>
     </div>
   </div>
 </div>
-<div class="ui tab" data-tab="risk metrics">
+<div class="ui tab" data-tab="student metrics">
   <h6> 
-    Select one or more of the following risk conditions you want to apply. 
-  </h6>
-  <h6>
-    <i> 
-      These conditions will make up your risk metrics, which will be used to identify students who are at risk in this course. 
-    </i>
+    Select one or more of the following metrics that you want to use to identify students in need of attention.
   </h6>
   <br>
   <div class="ui form">
@@ -81,7 +76,7 @@
             </div>
           </div>
         </span>
-        grace days by
+        grace day(s) by
         <span>
           <div class="ui calendar" id="grace_days_by_date">
             <div class="ui input left icon">
@@ -126,7 +121,7 @@
         <div class="ui checkbox conditions" id='no_submit_checkbox'>
           <input type="checkbox" tabindex="0" class="hidden" name="metrics-checkbox-3">
         </div>
-        Students who did not submit
+        Students who did not submit at least
         <span>
           <div class="ui selection dropdown" id="no_submit_value">
             <input type="hidden" name="number">
@@ -139,7 +134,7 @@
             </div>
           </div>
         </span>
-        assignments
+        assignment(s)
       </div>
     </div>
     <br>
@@ -149,7 +144,7 @@
         <div class="ui checkbox conditions" id='low_grades_checkbox'>
           <input type="checkbox" tabindex="0" class="hidden" name="metrics-checkbox-4">
         </div>
-        Students with
+        Students with at least
         <span>
           <div class="ui selection dropdown" id="low_grades_count">
             <input type="hidden" name="number">
@@ -162,7 +157,7 @@
             </div>
           </div>
         </span>
-        submitted assignments below a percentage of
+        submitted assignment(s) below a percentage of
         <span>
           <input type="text" placeholder="0" id='low_grades_percentage'>
         </span>

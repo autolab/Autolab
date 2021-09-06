@@ -160,9 +160,11 @@ GEM
     mime-types (3.3.1)
       mime-types-data (~> 3.2015)
     mime-types-data (3.2019.1009)
-    mimemagic (0.3.5)
+    mimemagic (0.4.2)
+      nokogiri (~> 1)
+      rake
     mini_mime (1.0.2)
-    mini_portile2 (2.4.0)
+    mini_portile2 (2.5.0)
     mini_racer (0.2.9)
       libv8 (>= 6.9.411)
     minitest (5.14.0)
@@ -176,8 +178,9 @@ GEM
     net-ldap (0.16.2)
     newrelic_rpm (6.9.0.363)
     nio4r (2.5.2)
-    nokogiri (1.10.9)
-      mini_portile2 (~> 2.4.0)
+    nokogiri (1.11.1)
+      mini_portile2 (~> 2.5.0)
+      racc (~> 1.4)
     oauth2 (1.4.4)
       faraday (>= 0.8, < 2.0)
       jwt (>= 1.0, < 3.0)
@@ -215,6 +218,7 @@ GEM
       ruby-rc4
       ttfunk (~> 1.0.3)
     public_suffix (4.0.3)
+    racc (1.5.2)
     rack (2.2.3)
     rack-attack (6.2.2)
       rack (>= 1.0, < 3)
@@ -363,7 +367,7 @@ DEPENDENCIES
   js_cookie_rails
   jstz-rails3-plus (>= 1.0)
   materialize-sass
-  mimemagic (>= 0.3.5)
+  mimemagic (>= 0.4.2)
   mini_racer
   moment_timezone-rails
   momentjs-rails (>= 2.9.0)

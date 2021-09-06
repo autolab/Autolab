@@ -19,19 +19,19 @@ Graded by: <%= if @score.grader && @score.grader.user then @score.grader.user.em
 Yes, feedback if per problem but we show all annotations for this submission anyway. While this is not semantically correct, it offers a better UX than we had before. If we just show annotations attached to this problem, then where would we show annotations not attached to a problem at all?
 -->
 
-<% if @submission.annotations.count > 0 %>
+<% if @submission.annotations.count > 0 and @problemReleased %>
   <h2 style="margin-top: 1em">Remarks</h2>
-<% end %>
 
-<ul>
-<% @submission.annotations.each do |annotation| %>
-  <li>
-    <%= link_to annotation.as_text, [:view, @course, @assessment, @submission, header_position: annotation.position] %>
-    <% 
-      # if the submission is an archive, use filename in archive; otherwise, use submission filename
-      filename = @files && annotation.position ? Archive.get_nth_filename(@files, annotation.position) : @submission.filename
-    %>
-    (<%= filename %>: <%= annotation.line %>)
-  </li>
+  <ul>
+  <% @submission.annotations.each do |annotation| %>
+    <li>
+      <%= link_to annotation.as_text, [:view, @course, @assessment, @submission, header_position: annotation.position] %>
+      <% 
+        # if the submission is an archive, use filename in archive; otherwise, use submission filename
+        filename = @files && annotation.position ? Archive.get_nth_filename(@files, annotation.position) : @submission.filename
+      %>
+      (<%= filename %>: <%= annotation.line %>)
+    </li>
+  <% end %>
+  </ul>
 <% end %>
-</ul>
