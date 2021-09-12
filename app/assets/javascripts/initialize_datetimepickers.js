@@ -34,12 +34,6 @@
       $(dateElts[i]).flatpickr({
         altInput: true,
         defaultDate: defaultDate,
-        formatDate: (date, format) => {
-          return moment(date).format(format);
-        },
-        parseDate: (datestr, format) => {
-          return moment(datestr, format, true).toDate();
-        },
       })
     }
   });
