@@ -95,6 +95,7 @@
               <% # TODO: RESTORE LINKS %>
               <%= name %>
               <% # TODO: BAD! FIX! %>
+	      <% # Below will no longer work -- ' Average' can't be an assumed suffix %>
               <% # name.end_with?(' Average') ? name : (link_to name, { :controller => name }, :class => :asmt_link) %>
             </td>
             <td><%= stats[:mean] %></td>

@@ -33,24 +33,32 @@ class GradeMatrix
     @matrix["cell_by_asmt"]["#{asmt_id}"]["#{cud_id}"]
   end
 
-  def category_average(cat, cud_id)
-    @matrix["cat_avg_by_cat"]["#{cat}"]["#{cud_id}"]
+  def category_aggregate(cat, cud_id)
+    @matrix["cat_agg_by_cat"]["#{cat}"]["#{cud_id}"]
   end
 
-  def course_average(cud_id)
-    @matrix["course_avg_by_user"]["#{cud_id}"]
+  def category_aggregate_name(cat)
+    @matrix["cat_aggname_by_cat"]["#{cat}"]
+  end
+
+  def course_aggregate(cud_id)
+    @matrix["course_agg_by_user"]["#{cud_id}"]
+  end
+
+  def course_aggregate_name
+    @matrix["course_aggname"]
   end
 
   def cells_for_assessment(asmt_id)
     @matrix["cell_by_asmt"]["#{asmt_id}"].values
   end
 
-  def averages_for_category(cat)
-    @matrix["cat_avg_by_cat"]["#{cat}"].values
+  def aggregates_for_category(cat)
+    @matrix["cat_agg_by_cat"]["#{cat}"].values
   end
 
-  def course_averages
-    @matrix["course_avg_by_user"].values
+  def course_aggregates
+    @matrix["course_agg_by_user"].values
   end
 
   # Check whether the specified assessment is included in the GradeMatrix cache
@@ -62,12 +70,12 @@ class GradeMatrix
 
   # Check whether the specified user is included in the GradeMatrix cache
   def has_cud?(cud_id)
-    @matrix["course_avg_by_user"]["#{cud_id}"] != nil
+    @matrix["course_agg_by_user"]["#{cud_id}"] != nil
   end
 
   # Check whether the specified category is included in the GradeMatrix cache
   def has_category?(cat)
-    @matrix["cat_avg_by_cat"]["#{cat}"] != nil
+    @matrix["cat_agg_by_cat"]["#{cat}"] != nil
   end
 
   def self.invalidate(course)
@@ -82,9 +90,11 @@ private
 
   def matrix!
     cell_by_asmt = {}
-    cat_avg_by_cat = {}
-    course_avg_by_user = {}
+    cat_agg_by_cat = {}
+    cat_aggname_by_cat = {}
+    course_agg_by_user = {}
     asmt_before_grading_deadline = {}
+    course_aggname = nil
 
     @course.assessments.each do |a|
       asmt_before_grading_deadline["#{a.id}"] = a.before_grading_deadline?
@@ -101,18 +111,23 @@ private
       end
 
       @course.assessment_categories.each do |cat|
-        a = cud.category_average(cat, @as_seen_by)
-        cat_avg_by_cat[cat] ||= {}
-        cat_avg_by_cat[cat]["#{cud.id}"] = a
+        a = cud.category_aggregate_hash(cat, @as_seen_by)
+        cat_agg_by_cat[cat] ||= {}
+        cat_aggname_by_cat[cat] = a[:name]
+        cat_agg_by_cat[cat]["#{cud.id}"] = a[:value]
       end
 
-      course_avg_by_user["#{cud.id}"] = cud.average @as_seen_by
+      ca = cud.aggregate_hash @as_seen_by
+      course_agg_by_user["#{cud.id}"] = ca[:value]
+      course_aggname = ca[:name]  # inefficient ... set for each user, which is unnecessary
     end
 
     {
       "cell_by_asmt" => cell_by_asmt,
-      "cat_avg_by_cat" => cat_avg_by_cat,
-      "course_avg_by_user" => course_avg_by_user,
+      "cat_agg_by_cat" => cat_agg_by_cat,
+      "cat_aggname_by_cat" => cat_aggname_by_cat,
+      "course_agg_by_user" => course_agg_by_user,
+      "course_aggname" => course_aggname,
       "asmt_before_grading_deadline" => asmt_before_grading_deadline,
       "last_updated" => Time.now
     }
