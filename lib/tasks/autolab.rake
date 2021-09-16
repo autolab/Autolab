@@ -331,7 +331,6 @@ namespace :autolab do
     require "populator" 
   
     args.with_defaults(:name => COURSE_NAME)
-    abort("Only use this task in development or test.") unless ["development", "test"].include? Rails.env
     # If course exists, in `dev` aborts; in `test` overwrites.
     if Course.where(:name => args.name).first
       if Rails.env == "development"
@@ -397,7 +396,6 @@ namespace :autolab do
 
   task :depopulate, [:name] => :environment do |t, args|
     args.with_defaults(:name => COURSE_NAME)
-    abort("Only use this task in development or test.") unless ["development", "test"].include? Rails.env
 
     course = Course.where(:name => args.name).first
 
