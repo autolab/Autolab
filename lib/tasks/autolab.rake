@@ -143,6 +143,7 @@ namespace :autolab do
       u.first_name = "User"
       u.last_name = i.to_s
       u.email = "user#{i.to_s}_#{course.name}@foo.bar"
+      u.password = "userfoobar"
 
       u.school = "SCS"
       u.major = "CS"
