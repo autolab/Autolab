@@ -166,6 +166,7 @@ namespace :autolab do
       end
 
       i += 1
+    end
   end
 
   def load_submissions course
