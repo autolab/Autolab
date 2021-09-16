@@ -138,9 +138,8 @@ namespace :autolab do
     })
 
     i = 0
-    User.populate(USER_COUNT, :per_query => 10000) do |u| 
-      u.attributes = @default_user
-
+    USER_COUNT.times do |i|
+      u = User.new
       u.first_name = "User"
       u.last_name = i.to_s
       u.email = "user#{i.to_s}_#{course.name}@foo.bar"
@@ -148,6 +147,9 @@ namespace :autolab do
       u.school = "SCS"
       u.major = "CS"
       u.year = (1 + rand(4)).to_s
+
+      u.skip_confirmation!
+      u.save!
 
       CourseUserDatum.populate(1) do |cud|
         cud.course_id = course.id
@@ -164,12 +166,6 @@ namespace :autolab do
       end
 
       i += 1
-    end
-
-    User.all.each do |u|
-      u.skip_confirmation!
-      u.save!
-    end
   end
 
   def load_submissions course
