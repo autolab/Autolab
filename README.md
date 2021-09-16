@@ -30,9 +30,6 @@ Since 2010, Autolab has had a transformative impact on education at CMU. Each se
 Subscribe to our [mailing list](https://groups.google.com/g/autolabproject) to recieve announcements about major releases and updates to the Autolab Project.
 
 ## Try It Out
-
-**NOTE:** As of June 2021, we are looking for a new web hosting service to host our demonstration site. In the meantime, you can still install Autolab easily using [installation guide](https://docs.autolabproject.com/installation/overview) to test it out.
-
 We have a demo site running at https://demo.autolabproject.com/. See the [docs](https://docs.autolabproject.com/#demonstration-site) for more information on how to login and suggestions on things to try.
 
 
