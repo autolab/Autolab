@@ -33,4 +33,7 @@ We intend this instructions mainly for production usage. To set Autolab up to us
   
       Here the from address **must** be a address that your SMTP service permits you to send from. Oftentimes it is the same as your user_name in the smtp settings.
 
-Make sure to restart your Autolab client to see the changes 
+Make sure to restart your Autolab client to see the changes.
+
+# I don't have a domain name, will mailing work?
+Mailing has been tested to work with SendGrid without a domain name (using the IP of the server as the domain name for the purposes of the configuration above), although the absence of a domain name will likely result in the email to be flagged as spam.

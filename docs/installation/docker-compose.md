@@ -85,7 +85,7 @@ Note that we can just run this directly on the host because we are mapping the D
         :::bash
         docker-compose up -d
         
-Autolab should now be accessible on port 80 (and 443 if you configured TLS)!
+Autolab should now be accessible on port 80 (and 443 if you configured TLS)! You can now go on to configure mailing, [follow the instructions for setting up mailing](/installation/mailing/) with the only difference being that the paths mentioned are relative to the directory `Autolab/`.
 
 ## Configuring TLS/SSL
 Having TLS/SSL configured is important as it helps to ensure that sensitive information like user credentials and submission information are encrypted instead of being sent over in plaintext across the network when users are using Autolab. We have made setting up TLS as easy and pain-free as possible. Using TLS is strongly recommended if you are using Autolab in a production environment with real students and instructors.
