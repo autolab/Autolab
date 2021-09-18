@@ -52,8 +52,8 @@ extra:
         - icon: fontawesome/brands/facebook
           link: "https://facebook.com/autolabproject"
     analytics:
-        - provider: "google"
-        - property: "UA-79424729-3"
+        - provider: google
+        - property: G-PH5EYTKBNQ
 markdown_extensions:
     - admonition
     - codehilite
