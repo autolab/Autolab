@@ -253,7 +253,7 @@ class CoursesController < ApplicationController
         flash[:success] = "Success!"
       rescue Exception => e
         flash[:error] = "There was an error uploading the roster
-file, most likely a duplicate email.  The exact error was: #{e} "
+file.  The exact error was: #{e} "
         redirect_to(action: "uploadRoster") && return
       end
     else
@@ -466,7 +466,7 @@ private
             # Create a new user
             user = User.roster_create(email, first_name, last_name, school,
                                       major, year)
-            fail "New user cannot be created in uploadRoster." if user.nil?
+            fail "New user at line #{rowNum + 2} of the CSV cannot be created in uploadRoster." if user.nil?
           else
             # Override current user
             user.first_name = first_name
