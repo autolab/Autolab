@@ -316,8 +316,8 @@ module AssessmentAutogradeCore
 
       feedback_file = File.join(ass_dir, @assessment.handin_directory, filename)
       COURSE_LOGGER.log("Looking for Feedbackfile:" + feedback_file)
-      File.open(feedback_file, "w") do |f|
-        f.write(feedback)
+      File.open(feedback_file, "wb") do |f|
+        f.write(feedback.force_encoding("utf-8"))
       end
     end
 
