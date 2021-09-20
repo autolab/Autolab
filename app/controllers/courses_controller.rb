@@ -527,7 +527,12 @@ private
           user.school = newCUD[:school]
           user.major = newCUD[:major]
           user.year = newCUD[:year]
-          user.save!
+
+          begin
+            user.save!
+          rescue Exception => e
+            fail "#{e} at line #{rowNum + 2} of the CSV."
+          end
 
           # Delete unneeded data
           newCUD.delete(:color)
