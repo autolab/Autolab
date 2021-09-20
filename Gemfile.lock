@@ -313,7 +313,7 @@ GEM
       activesupport (>= 4.0)
       sprockets (>= 3.0.0)
     sqlite3 (1.3.13)
-    thin (1.7.2)
+    thin (1.8.1)
       daemons (~> 1.0, >= 1.0.9)
       eventmachine (~> 1.0, >= 1.0.4)
       rack (>= 1, < 3)

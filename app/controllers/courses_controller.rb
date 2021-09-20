@@ -252,8 +252,7 @@ class CoursesController < ApplicationController
         save_uploaded_roster
         flash[:success] = "Success!"
       rescue Exception => e
-        flash[:error] = "There was an error uploading the roster
-file.  The exact error was: #{e} "
+        flash[:error] = "There was an error uploading the roster file. #{e} "
         redirect_to(action: "uploadRoster") && return
       end
     else
@@ -463,10 +462,13 @@ private
           year = newCUD[:year]
 
           if (user = User.where(email: email).first).nil?
-            # Create a new user
-            user = User.roster_create(email, first_name, last_name, school,
-                                      major, year)
-            fail "New user at line #{rowNum + 2} of the CSV cannot be created in uploadRoster." if user.nil?
+            begin
+              # Create a new user
+              user = User.roster_create(email, first_name, last_name, school,
+              major, year)
+            rescue Exception => e
+              fail "#{e} at line #{rowNum + 2} of the CSV."
+            end
           else
             # Override current user
             user.first_name = first_name
