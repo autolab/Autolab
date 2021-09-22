@@ -102,6 +102,10 @@ class SubmissionsController < ApplicationController
     if @submission.update(edit_submission_params)
       redirect_to(history_course_assessment_path(@submission.course_user_datum.course, @assessment)) && return
     else
+      flash[:error] = "Error: There were errors editing the submission."
+      @submission.errors.full_messages.each do |msg|
+        flash[:error] += "<br>#{msg}"
+      end
       redirect_to(edit_course_assessment_submission_path(@submission.course_user_datum.course, @assessment, @submission)) && return
     end
   end
