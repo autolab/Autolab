@@ -621,6 +621,8 @@ private
         @cuds << newCUD
       end
     end
+    # TODO: set to @sorted_cuds instead and add a checkbox option to determine whether to display @cuds or @sorted_cuds
+    @cuds = @cuds.sort_by { |cud| cud[:color] || "z"}
   end
 
   # detectAndConvertRoster - Detect the type of a roster based on roster
