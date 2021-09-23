@@ -213,17 +213,10 @@ GEM
       rack-protection
     omniauth-facebook (8.0.0)
       omniauth-oauth2 (~> 1.2)
-<<<<<<< HEAD
     omniauth-google-oauth2 (1.0.0)
     omniauth-github (1.4.0)
       omniauth (~> 1.5)
       omniauth-oauth2 (>= 1.4.0, < 2.0)
-=======
-    omniauth-github (1.4.0)
-      omniauth (~> 1.5)
-      omniauth-oauth2 (>= 1.4.0, < 2.0)
-    omniauth-google-oauth2 (0.8.0)
->>>>>>> a0d6e6f (oauth experimental - wip)
       jwt (>= 2.0)
       oauth2 (~> 1.1)
       omniauth (~> 2.0)
