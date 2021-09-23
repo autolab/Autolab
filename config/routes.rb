@@ -35,15 +35,15 @@ Rails.application.routes.draw do
 
   root "courses#index"
 
-  devise_for :users, controllers: { omniauth_callbacks: "users/omniauth_callbacks",
-                                    registrations:      "registrations" },
-                     path_prefix: "auth"
+  # devise_for :users, controllers: { omniauth_callbacks: "users/omniauth_callbacks",
+  #                                   registrations:      "registrations" },
+  #                    path_prefix: "auth"
   
   # Omniauth
-  get '/omniauth/github', as: "github_login"
-  get '/omniauth/github/callback', to: "users#update_oauth"
-  post '/omniauth/github/callback', to: "users#update_oauth"
-  # post '/auth/github/callback', to: "users/omniauth_callbacks"
+  # get '/omniauth/github', as: "github_login"
+  # get '/omniauth/github/callback', to: "users#update_oauth"
+  # post '/omniauth/github/callback', to: "users#update_oauth"
+  # # post '/auth/github/callback', to: "users/omniauth_callbacks"
 
   get "contact", to: "home#contact"
 

@@ -108,6 +108,10 @@ module Autolab3
     # configure throttling middleware rack-attack
     config.middleware.use Rack::Attack
 
+    config.middleware.use OmniAuth::Builder do
+      provider :github, ENV['GITHUB_KEY'], ENV['GITHUB_SECRET']
+    end
+
     # site version
     config.site_version = "2.7.0"
   end
