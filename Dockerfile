@@ -54,7 +54,7 @@ RUN mkdir -p /home/app/webapp/log && \
 USER app
 
 # precompile the Rails assets
-RUN RAILS_ENV=development bundle exec rails assets:precompile
+RUN RAILS_ENV=production bundle exec rails assets:precompile
 
 # Clean up APT when done.
 USER root
