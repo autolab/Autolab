@@ -6,6 +6,7 @@ class UsersController < ApplicationController
     rescue_from ActionView::MissingTemplate do |exception|
       redirect_to("/home/error_404")
   end
+  before_action :set_gh_oauth_client, only: [:github_oauth, :github_oauth_callback]
 
   # GET /users
   action_auth_level :index, :student
@@ -198,6 +199,23 @@ class UsersController < ApplicationController
     redirect_to(users_path) && return
   end
 
+  action_auth_level :github_oauth, :student
+  def github_oauth
+    authorize_url_params = {
+      redirect_uri: "http://localhost:3000/users/github_oauth_callback",
+      scope: "repo",
+    }
+    # TODO: add a state and gh token column to users model
+    redirect_to @gh_client.auth_code.authorize_url(authorize_url_params)
+  end
+
+  def github_oauth_callback
+    token = @gh_client.auth_code.get_token(params["code"],
+                                          )
+    access_token = token.to_hash[:access_token]
+  end
+
+
 private
 
   def new_user_params
@@ -215,5 +233,15 @@ private
   # user params that admin is allowed to edit
   def admin_user_params
     params.require(:user).permit(:first_name, :last_name, :administrator)
+  end
+
+  def set_gh_oauth_client
+    gh_options = {
+      :authorize_url => "https://github.com/login/oauth/authorize",
+      :token_url => "https://github.com/login/oauth/access_token",
+      :site => "https://github.com",
+    }
+    @gh_client = OAuth2::Client.new(ENV["GITHUB_KEY"], ENV["GITHUB_SECRET"],
+                                    gh_options)
   end
 end

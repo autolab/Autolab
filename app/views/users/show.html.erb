@@ -23,6 +23,7 @@
 </ul>
 
 <%= link_to raw('<span class="btn primary">Edit Information</span>'), edit_user_path(@user) %><br>
+
 <% if @user == current_user %>
 <hr>
 <h4>Private Settings</h4>
@@ -31,3 +32,7 @@
 <%= link_to raw('<span class="btn primary">New Activation</span>'), device_flow_activation_path %>
 <%= link_to raw('<span class="btn primary">Managed Authorized Clients</span>'), oauth_authorized_applications_path %>
 <% end %>
+
+<!-- this is just for testing, make a proper button next time, or maybe we could just 
+have it on the submission page -->
+<%= link_to "Connect with Github", github_oauth_user_path(@user) %>
