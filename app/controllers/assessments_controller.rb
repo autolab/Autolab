@@ -508,11 +508,11 @@ class AssessmentsController < ApplicationController
   def viewFeedback
     # User requested to view feedback on a score
     @score = @submission.scores.find_by(problem_id: params[:feedback])
-    @jsonFeedback = parseFeedback(@score.feedback)
     if !@score
       flash[:error] = "No feedback for requested score"
       redirect_to(action: "index") && return
     end
+    @jsonFeedback = parseFeedback(@score.feedback)
     if @jsonFeedback != nil
       @scoreHash = parseScore(@score.feedback)
     end
