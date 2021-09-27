@@ -53,7 +53,7 @@ extra:
           link: "https://facebook.com/autolabproject"
     analytics:
         - provider: google
-        - property: G-286912665
+        - property: G-PH5EYTKBNQ
 markdown_extensions:
     - admonition
     - codehilite
