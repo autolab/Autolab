@@ -316,10 +316,10 @@ module AssessmentAutogradeCore
 
       feedback_file = File.join(ass_dir, @assessment.handin_directory, filename)
       COURSE_LOGGER.log("Looking for Feedbackfile:" + feedback_file)
-      feedback.force_encoding("UTF-8")
 
+      feedback.force_encoding("UTF-8")
       if not feedback.valid_encoding?
-        feedback.force_encoding("Windows-1252")
+        feedback.force_encoding("ASCII-8BIT")
         hexify = Proc.new {|c| "\\x" + c.bytes[0].to_s(16) }
         feedback = feedback.encode("UTF-8", invalid: :replace, fallback: hexify)
       end
@@ -327,10 +327,6 @@ module AssessmentAutogradeCore
       File.open(feedback_file, "w") do |f|
         f.write(feedback)
       end
-
-      # File.open(feedback_file, "wb") do |f|
-      #   f.write(feedback.force_encoding("utf-8"))
-      # end
     end
 
     saveAutograde(submissions, feedback)
