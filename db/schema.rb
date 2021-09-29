@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_11_01_022133) do
+ActiveRecord::Schema.define(version: 2021_09_29_205504) do
 
   create_table "annotations", force: :cascade do |t|
     t.integer "submission_id"
@@ -334,7 +334,8 @@ ActiveRecord::Schema.define(version: 2020_11_01_022133) do
     t.string "school"
     t.string "major"
     t.string "year"
-    t.string "theme", default: "default"
+    t.string "oauth_state"
+    t.string "github_access_token"
     t.index ["confirmation_token"], name: "index_users_on_confirmation_token", unique: true
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true

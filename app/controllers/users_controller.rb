@@ -7,6 +7,7 @@ class UsersController < ApplicationController
       redirect_to("/home/error_404")
   end
   before_action :set_gh_oauth_client, only: [:github_oauth, :github_oauth_callback]
+  before_action :set_user, only: [:github_oauth]
 
   # GET /users
   action_auth_level :index, :student
@@ -201,18 +202,46 @@ class UsersController < ApplicationController
 
   action_auth_level :github_oauth, :student
   def github_oauth
+    state = SecureRandom.alphanumeric(128)
+    @user.update!(oauth_state: state)
+
     authorize_url_params = {
-      redirect_uri: "http://localhost:3000/users/github_oauth_callback",
+      redirect_uri: "http://#{request.host}:#{request.port}/users/github_oauth_callback",
       scope: "repo",
+      state: state
     }
-    # TODO: add a state and gh token column to users model
     redirect_to @gh_client.auth_code.authorize_url(authorize_url_params)
   end
 
   def github_oauth_callback
-    token = @gh_client.auth_code.get_token(params["code"],
-                                          )
+    # If state not recognized, this request may not have been generated from Autolab
+    if params["state"].nil? || params["state"].empty?
+      flash[:error] = "Invalid callback"
+      redirect_to(root_path) && return
+    end
+
+    oauth_users = User.where(oauth_state: params["state"])
+    if oauth_users.length != 1
+      # Collision - invalidate for all
+      oauth_users.update_all(oauth_state: nil)
+      flash[:error] = "Error with Github OAuth, please try again."
+      redirect_to(root_path) && return
+    end
+
+    oauth_user = oauth_users.first
+
+    begin
+      # Results in exception if invalid
+      token = @gh_client.auth_code.get_token(params["code"])
+    rescue StandardError => e
+      flash[:error] = "Error with Github OAuth, please try again."
+      (redirect_to user_path(id: oauth_user.id)) && return
+    end
+
     access_token = token.to_hash[:access_token]
+    oauth_user.update!(github_access_token: access_token, oauth_state: nil)
+    flash[:info] = "Successfully connected with Github."
+    (redirect_to user_path(id: oauth_user.id)) && return
   end
 
 
@@ -243,5 +272,13 @@ private
     }
     @gh_client = OAuth2::Client.new(ENV["GITHUB_KEY"], ENV["GITHUB_SECRET"],
                                     gh_options)
+  end
+
+  def set_user
+    @user = User.find(params[:id])
+    if @user.nil?
+      flash[:error] = "User doesn't exist."
+      redirect_to(user_path) && return
+    end
   end
 end
