@@ -51,13 +51,13 @@ extra:
           link: https://github.com/Autolab
         - icon: fontawesome/brands/facebook
           link: "https://facebook.com/autolabproject"
-    analytics:
-        - provider: google
-        - property: G-PH5EYTKBNQ
+google_analytics:
+    - "G-PH5EYTKBNQ"
+    - "auto"
 markdown_extensions:
     - admonition
     - codehilite
       #linenums: true
-strict: true
+strict: false
 plugins:
   - search
