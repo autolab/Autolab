@@ -202,8 +202,13 @@ class UsersController < ApplicationController
 
   action_auth_level :github_oauth, :student
   def github_oauth
+    github_integration = GithubIntegration.find_by_user_id(user_id: @user.id)
     state = SecureRandom.alphanumeric(128)
-    @user.update!(oauth_state: state)
+    if github_integration.nil?
+      github_integration = GithubIntegration.create!(oauth_state: state, user: @user)
+    else
+      github_integration.update!(oauth_state: state)
+    end
 
     authorize_url_params = {
       redirect_uri: "http://#{request.host}:#{request.port}/users/github_oauth_callback",
@@ -220,28 +225,25 @@ class UsersController < ApplicationController
       redirect_to(root_path) && return
     end
 
-    oauth_users = User.where(oauth_state: params["state"])
-    if oauth_users.length != 1
-      # Collision - invalidate for all
-      oauth_users.update_all(oauth_state: nil)
-      flash[:error] = "Error with Github OAuth, please try again."
+    github_integration = GithubIntegration.find_by_id(oauth_state: params["state"])
+    if github_integration.nil?
+      flash[:error] = "Error with Github OAuth (invalid state), please try again."
       redirect_to(root_path) && return
     end
-
-    oauth_user = oauth_users.first
 
     begin
       # Results in exception if invalid
       token = @gh_client.auth_code.get_token(params["code"])
     rescue StandardError => e
-      flash[:error] = "Error with Github OAuth, please try again."
+      flash[:error] = "Error with Github OAuth (invalid code), please try again."
+      github_integration.update!(oauth_state: nil)
       (redirect_to user_path(id: oauth_user.id)) && return
     end
 
     access_token = token.to_hash[:access_token]
-    oauth_user.update!(github_access_token: access_token, oauth_state: nil)
+    github_integration.update!(access_token: access_token, oauth_state: nil)
     flash[:info] = "Successfully connected with Github."
-    (redirect_to user_path(id: oauth_user.id)) && return
+    (redirect_to user_path(id: github_integration.user.id)) && return
   end
 
 

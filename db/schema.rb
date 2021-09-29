@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_09_29_205504) do
+ActiveRecord::Schema.define(version: 2021_09_29_220050) do
 
   create_table "annotations", force: :cascade do |t|
     t.integer "submission_id"
@@ -161,6 +161,16 @@ ActiveRecord::Schema.define(version: 2021_09_29_205504) do
     t.integer "assessment_id"
     t.integer "days"
     t.boolean "infinite", default: false, null: false
+  end
+
+  create_table "github_integrations", force: :cascade do |t|
+    t.string "oauth_state"
+    t.string "access_token"
+    t.integer "user_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["oauth_state"], name: "index_github_integrations_on_oauth_state", unique: true
+    t.index ["user_id"], name: "index_github_integrations_on_user_id"
   end
 
   create_table "groups", force: :cascade do |t|
@@ -334,8 +344,6 @@ ActiveRecord::Schema.define(version: 2021_09_29_205504) do
     t.string "school"
     t.string "major"
     t.string "year"
-    t.string "oauth_state"
-    t.string "github_access_token"
     t.index ["confirmation_token"], name: "index_users_on_confirmation_token", unique: true
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
