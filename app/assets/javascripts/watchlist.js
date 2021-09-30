@@ -170,16 +170,18 @@ function set_tab_html(is_search, instances, tab_name, archived_instances, empty_
 }
 
 function add_instance_to_dict(
-  search_content, 
-  instances_dict, 
-  id, 
-  user_id, 
-  course_id, 
-  user_name, 
-  user_email, 
-  condition_type, 
-  violation_info, 
-  watchlist_status
+  {
+    search_content, 
+    instances_dict, 
+    id, 
+    user_id, 
+    course_id, 
+    user_name, 
+    user_email, 
+    condition_type, 
+    violation_info, 
+    watchlist_status
+  }
 ) {
   if (user_id in instances_dict) {
     instances_dict[user_id]["conditions"][condition_type] = violation_info;
@@ -213,7 +215,13 @@ function instance_passes_condition_search(instance, search_input) {
 function search_enter_action(tab_name, instances, archived_instances, empty_message) {
   var search_input = $(`#${tab_name}_search .input .prompt`).val().toLowerCase().trim();
   if (search_input === "") {
-    return;
+    set_tab_html(
+      true,
+      instances,
+      tab_name,
+      archived_instances,
+      empty_message,
+    );
   }
   var filtered_instances = Object.keys(instances).reduce(function (filtered, key) {
     if (instances[key]["name"]?.toLowerCase()?.includes(search_input)
@@ -264,6 +272,18 @@ function get_watchlist_function(){
         var contacted_search_content = [...metrics_search_content];
         var resolved_search_content = [...metrics_search_content];
         var archived_search_content = [...metrics_search_content];
+        var status_search_content = {
+          "archived": archived_search_content,
+          "pending": pending_search_content,
+          "contacted": contacted_search_content,
+          "resolved": resolved_search_content,
+        }
+        var status_instances = {
+          "archived": archived_instances,
+          "pending": pending_instances,
+          "contacted": contacted_instances,
+          "resolved": resolved_instances,
+        }
 
         data["instances"].forEach(watchlist_instance => {
           var id = _.get(watchlist_instance,'id');
@@ -279,59 +299,51 @@ function get_watchlist_function(){
           if(watchlist_instance.updated_at > last_updated_date)
             last_updated_date = watchlist_instance.updated_at;
 
-          if (_.get(watchlist_instance,'archived')) {
-            add_instance_to_dict(archived_search_content, archived_instances, id, user_id, course_id, user_name, user_email, condition_type, violation_info, watchlist_status);
+          var search_content;
+          var instances_dict;
+          if (_.get(watchlist_instance, "archived")) {
+            search_content = status_search_content["archived"];
+            instances_dict = status_instances["archived"];
           } else {
-            switch(watchlist_status){
-              case "pending":
-                add_instance_to_dict(pending_search_content, pending_instances, id, user_id, course_id, user_name, user_email, condition_type, violation_info, watchlist_status);
-                break;
-              case "contacted":
-                add_instance_to_dict(contacted_search_content, contacted_instances, id, user_id, course_id, user_name, user_email, condition_type, violation_info, watchlist_status);
-                break;
-              case "resolved":
-                add_instance_to_dict(resolved_search_content, resolved_instances, id, user_id, course_id, user_name, user_email, condition_type, violation_info, watchlist_status);
-                break;
-              default:
-                console.error(_.get(watchlist_instance,'status') + " is not valid");
-                return;
-            }
+            search_content = status_search_content[watchlist_status];
+            instances_dict = status_instances[watchlist_status];
           }
+          var instance_info = {
+            search_content,
+            instances_dict,
+            id, 
+            user_id, 
+            course_id, 
+            user_name, 
+            user_email, 
+            condition_type, 
+            violation_info, 
+            watchlist_status,
+          };
+          add_instance_to_dict(instance_info);
         });
         
         pending_empty_message = "There are no pending students in need of attention";
         contacted_empty_message = "You have not contacted any students";
         resolved_empty_message = "You have not resolved any students";
         archived_empty_message = "You have no archived students";
+        status_empty_message = {
+          "pending": pending_empty_message,
+          "contacted": contacted_empty_message,
+          "resolved": resolved_empty_message,
+          "archived": archived_empty_message,
+        }
 
-        set_tab_html(
-          false,
-          pending_instances,
-          "pending",
-          archived_instances,
-          pending_empty_message,
-        );
-        set_tab_html(
-          false,
-          contacted_instances,
-          "contacted",
-          archived_instances,
-          contacted_empty_message,
-        );
-        set_tab_html(
-          false,
-          resolved_instances,
-          "resolved",
-          archived_instances,
-          resolved_empty_message,
-        );
-        set_tab_html(
-          false,
-          archived_instances,
-          "archived",
-          archived_instances,
-          archived_empty_message,
-        );
+        for (var status in status_instances) {
+          instances_dict = status_instances[status];
+          set_tab_html(
+            false,
+            instances_dict,
+            status,
+            archived_instances,
+            status_empty_message[status]
+          )
+        }
         
         updateButtonVisibility($('.ui.vertical.fluid.tabular.menu .item.active'));
         
@@ -364,11 +376,18 @@ function get_watchlist_function(){
         }
       });
 
+      $("#pending_search .results").click(function (e) {
+        search_enter_action("pending", pending_instances, archived_instances, pending_empty_message);
+      });
       $("#pending_search").keypress(function (e) {
         var code = (e.keyCode ? e.keyCode : e.which);
         if (code == 13) {
           search_enter_action("pending", pending_instances, archived_instances, pending_empty_message);
         }
+      });
+
+      $("#contacted_search .results").click(function (e) {
+        search_enter_action("contacted", contacted_instances, archived_instances, contacted_empty_message);
       });
       $("#contacted_search").keypress(function (e) {
         var code = (e.keyCode ? e.keyCode : e.which);
@@ -376,11 +395,19 @@ function get_watchlist_function(){
           search_enter_action("contacted", contacted_instances, archived_instances, contacted_empty_message);
         }
       });
+
+      $("#resolved_search .results").click(function (e) {
+        search_enter_action("resolved", resolved_instances, archived_instances, resolved_empty_message);
+      });
       $("#resolved_search").keypress(function (e) {
         var code = (e.keyCode ? e.keyCode : e.which);
         if (code == 13) {
           search_enter_action("resolved", resolved_instances, archived_instances, resolved_empty_message);
         }
+      });
+
+      $("#archived_search .results").click(function (e) {
+        search_enter_action("archived", archived_instances, archived_instances, archived_empty_message);
       });
       $("#archived_search").keypress(function (e) {
         var code = (e.keyCode ? e.keyCode : e.which);
