@@ -9,7 +9,7 @@ class MetricsController < ApplicationController
 		if (course_max == nil)
 			@max_consecutive_assessments = 0
 		else
-			@max_consecutive_assessments = course.assessments.group("category_name").count().max()[1] - 1
+			@max_consecutive_assessments = course_max[1] - 1
 		end
 	end
 
