@@ -202,7 +202,7 @@ class UsersController < ApplicationController
 
   action_auth_level :github_oauth, :student
   def github_oauth
-    github_integration = GithubIntegration.find_by_user_id(user_id: @user.id)
+    github_integration = GithubIntegration.find_by_user_id(@user.id)
     state = SecureRandom.alphanumeric(128)
     if github_integration.nil?
       github_integration = GithubIntegration.create!(oauth_state: state, user: @user)
@@ -225,7 +225,7 @@ class UsersController < ApplicationController
       redirect_to(root_path) && return
     end
 
-    github_integration = GithubIntegration.find_by_id(oauth_state: params["state"])
+    github_integration = GithubIntegration.find_by_oauth_state(params["state"])
     if github_integration.nil?
       flash[:error] = "Error with Github OAuth (invalid state), please try again."
       redirect_to(root_path) && return
