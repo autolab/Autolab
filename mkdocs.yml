@@ -58,6 +58,6 @@ markdown_extensions:
     - admonition
     - codehilite
       #linenums: true
-strict: false
+strict: true
 plugins:
   - search
