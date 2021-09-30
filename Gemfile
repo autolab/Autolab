@@ -58,7 +58,11 @@ gem 'omniauth-facebook', '>=2.0.0'
 gem 'omniauth-google-oauth2', '>=0.2.5'
 gem 'omniauth-shibboleth', '>=1.1.2'
 
+# OAuth2 authentication
 gem 'oauth2'
+
+# Github API
+gem "octokit", "~> 4.0"
 
 # Autolab API OAuth Service
 gem 'doorkeeper'
