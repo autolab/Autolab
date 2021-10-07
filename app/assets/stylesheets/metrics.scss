@@ -143,3 +143,39 @@ i.external.alternate {
 .ui.checkbox.select_single label:after {
   top: 6.5px;
 }
+
+.ui.search .ui.input {
+  width: 230px;
+  float: right;
+  margin-top: -9px;
+}
+
+.ui.input > input {
+  padding: 0.5rem;
+  padding-left: 15px;
+}
+
+.ui.secondary.segment h5 {
+  margin-top: 0;
+}
+
+.ui.search > .results {
+  top: 30px;
+}
+
+span.instances:before {
+  width: 0;
+  display: inline;
+}
+
+span.instances:after {
+  width: 0;
+  display: inline;
+}
+
+span.instances .segment {
+  margin: 0;
+  border-radius: 0;
+  border: none;
+  border-top: 1px solid rgba(34,36,38,0.15);
+}
