@@ -1,19 +1,19 @@
 # Extend the Rails ApplicationController to define some RESTful endpoints for
 # dealing with Announcements.
 class AnnouncementsController < ApplicationController
-  before_action :set_announcement, except: [:index, :new, :create]
+  before_action :set_announcement, except: %i[index new create]
 
-    rescue_from ActionView::MissingTemplate do |exception|
-      redirect_to("/home/error_404")
+  rescue_from ActionView::MissingTemplate do |_exception|
+    redirect_to("/home/error_404")
   end
 
   action_auth_level :index, :instructor
   def index
-    if @cud.user.administrator?
-      @announcements = Announcement.where("course_id=? or system", @course.id)
-    else
-      @announcements = @course.announcements
-    end
+    @announcements = if @cud.user.administrator?
+                       Announcement.where("course_id=? or system", @course.id)
+                     else
+                       @course.announcements
+                     end
   end
 
   action_auth_level :new, :instructor
@@ -35,8 +35,7 @@ class AnnouncementsController < ApplicationController
   end
 
   action_auth_level :edit, :instructor
-  def edit
-  end
+  def edit; end
 
   action_auth_level :update, :instructor
   def update
@@ -63,9 +62,9 @@ class AnnouncementsController < ApplicationController
 private
 
   def set_announcement
-    @announcement = @course.announcements.find_by_id(params[:id])
-    if @announcement.nil?   # May be system announcement / from another course
-      @announcement = Announcement.find_by_id(params[:id])
+    @announcement = @course.announcements.find_by(id: params[:id])
+    if @announcement.nil? # May be system announcement / from another course
+      @announcement = Announcement.find_by(id: params[:id])
       if @announcement.nil?
         flash[:error] = "Announcement not found."
         redirect_to(action: :index) && return
@@ -76,6 +75,7 @@ private
     end
     # Sanity check
     return unless @announcement.system && !@cud.user.administrator?
+
     flash[:error] = "You don't have permission to access system announcements."
     redirect_to(action: :index) && return
   end

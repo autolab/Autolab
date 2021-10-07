@@ -3,8 +3,8 @@ class UsersController < ApplicationController
   skip_before_action :authorize_user_for_course
   skip_before_action :authenticate_for_action
   skip_before_action :update_persistent_announcements
-    rescue_from ActionView::MissingTemplate do |exception|
-      redirect_to("/home/error_404")
+  rescue_from ActionView::MissingTemplate do |_exception|
+    redirect_to("/home/error_404")
   end
 
   # GET /users
@@ -45,11 +45,11 @@ class UsersController < ApplicationController
       user_cuds = []
 
       cuds.each do |cud|
-        if cud.instructor?
-          user_cud =
-            cud.course.course_user_data.where(user: user).first
-          user_cuds << user_cud unless user_cud.nil?
-        end
+        next unless cud.instructor?
+
+        user_cud =
+          cud.course.course_user_data.where(user: user).first
+        user_cuds << user_cud unless user_cud.nil?
       end
 
       if !user_cuds.empty?
@@ -95,23 +95,21 @@ class UsersController < ApplicationController
       redirect_to(users_path) && return
     end
 
-    temp_pass = Devise.friendly_token[0, 20]    # generate a random token
+    temp_pass = Devise.friendly_token[0, 20] # generate a random token
     @user.password = temp_pass
     @user.password_confirmation = temp_pass
     @user.skip_confirmation!
     save_worked = false
     begin
       save_worked = @user.save
-      if !save_worked
-        flash[:error] = "User creation failed"
-      end
-    rescue => error
-      error_message = error.message
-      if error_message.include? "Duplicate entry" and error_message.include? "@"
-        flash[:error] = "User with email #{@user.email} already exists"
-      else
-        flash[:error] = "User creation failed"
-      end
+      flash[:error] = "User creation failed" unless save_worked
+    rescue StandardError => e
+      error_message = e.message
+      flash[:error] = if error_message.include? "Duplicate entry" and error_message.include? "@"
+                        "User with email #{@user.email} already exists"
+                      else
+                        "User creation failed"
+                      end
       save_worked = false
     end
     if save_worked
@@ -134,14 +132,12 @@ class UsersController < ApplicationController
 
     if current_user.administrator?
       @user = user
-    else
+    elsif user != current_user
       # current user can only edit himself if he's neither role
-      if user != current_user
-        flash[:error] = "Permission denied"
-        redirect_to(users_path) && return
-      else
-        @user = current_user
-      end
+      flash[:error] = "Permission denied"
+      redirect_to(users_path) && return
+    else
+      @user = current_user
     end
   end
 
@@ -157,18 +153,19 @@ class UsersController < ApplicationController
     if current_user.administrator? ||
        current_user.instructor_of?(user)
       @user = user
-    else
+    elsif user != current_user
       # current user can only edit himself if he's neither role
-      if user != current_user
-        flash[:error] = "Permission denied"
-        redirect_to(users_path) && return
-      else
-        @user = current_user
-      end
+      flash[:error] = "Permission denied"
+      redirect_to(users_path) && return
+    else
+      @user = current_user
     end
 
-    if user.update(current_user.administrator? ?
-                    admin_user_params : user_params)
+    if user.update(if current_user.administrator?
+                     admin_user_params
+                   else
+                     user_params
+                   end)
       flash[:success] = "User was successfully updated."
       redirect_to(users_path) && return
     else
@@ -191,7 +188,7 @@ class UsersController < ApplicationController
       redirect_to(users_path) && return
     end
 
-    # TODO Need to cleanup user resources here
+    # TODO: Need to cleanup user resources here
 
     user.destroy
     flash[:success] = "User destroyed."

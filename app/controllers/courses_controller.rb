@@ -4,14 +4,14 @@ require "fileutils"
 require "statistics"
 
 class CoursesController < ApplicationController
-  skip_before_action :set_course, only: [:index, :new, :create]
+  skip_before_action :set_course, only: %i[index new create]
   # you need to be able to pick a course to be authorized for it
-  skip_before_action :authorize_user_for_course, only: [:index, :new, :create]
+  skip_before_action :authorize_user_for_course, only: %i[index new create]
   # if there's no course, there are no persistent announcements for that course
-  skip_before_action :update_persistent_announcements, only: [:index, :new, :create]
+  skip_before_action :update_persistent_announcements, only: %i[index new create]
 
-    rescue_from ActionView::MissingTemplate do |exception|
-      redirect_to("/home/error_404")
+  rescue_from ActionView::MissingTemplate do |_exception|
+    redirect_to("/home/error_404")
   end
 
   def index
@@ -37,7 +37,6 @@ class CoursesController < ApplicationController
 
   action_auth_level :manage, :instructor
   def manage
-
     matrix = GradeMatrix.new @course, @cud
     cols = {}
 
@@ -148,14 +147,11 @@ class CoursesController < ApplicationController
   end
 
   action_auth_level :edit, :instructor
-  def edit
-  end
+  def edit; end
 
   action_auth_level :update, :instructor
   def update
-    if @course.nil?
-      flash[:error] = "Cannot update nil course"
-    end
+    flash[:error] = "Cannot update nil course" if @course.nil?
 
     if @course.update(edit_course_params)
       flash[:success] = "Success: Course info updated."
@@ -242,6 +238,7 @@ class CoursesController < ApplicationController
   action_auth_level :uploadRoster, :instructor
   def uploadRoster
     return unless request.post?
+
     # Check if any file is attached
     if params["upload"] && params["upload"]["file"].nil?
       flash[:error] = "Please attach a roster!"
@@ -268,7 +265,7 @@ file, most likely a duplicate email.  The exact error was: #{e} "
                                            course_assistant: false,
                                            dropped: false)
     output = ""
-    for cud in @cuds do
+    @cuds.each do |cud|
       user = cud.user
       output += "#{@course.semester},#{cud.user.email},#{user.last_name},#{user.first_name}," \
                 "#{cud.school},#{cud.major},#{cud.year},#{cud.grade_policy}," \
@@ -296,8 +293,8 @@ file, most likely a duplicate email.  The exact error was: #{e} "
         end
       end
       @availableAssessments = @availableAssessments.sort
-    rescue Exception => error
-      render(text: "<h3>#{error}</h3>", layout: true) && return
+    rescue Exception => e
+      render(text: "<h3>#{e}</h3>", layout: true) && return
     end
   end
 
@@ -306,18 +303,14 @@ file, most likely a duplicate email.  The exact error was: #{e} "
   action_auth_level :email, :instructor
   def email
     if request.post?
-      if params[:section].length > 0
-        section = params[:section]
-      else
-        section = nil
-      end
+      section = (params[:section] if params[:section].length > 0)
 
       # don't email kids who dropped!
-      if section
-        @cuds = @course.course_user_data.where(dropped: false, section: section)
-      else
-        @cuds = @course.course_user_data.where(dropped: false)
-      end
+      @cuds = if section
+                @course.course_user_data.where(dropped: false, section: section)
+              else
+                @course.course_user_data.where(dropped: false)
+              end
 
       bccString = make_dlist(@cuds)
 
@@ -327,21 +320,24 @@ file, most likely a duplicate email.  The exact error was: #{e} "
         params[:subject],
         params[:body],
         @cud,
-        @course)
+        @course
+      )
       @email.deliver
     end
   end
 
   action_auth_level :moss, :instructor
   def moss
-    @courses = Course.all.select{ |course|
-        @cud.user.administrator ||
-        course.course_user_data.joins(:user).find_by(users: { email: @cud.user.email }, instructor: true) != nil }
+    @courses = Course.all.select do |course|
+      @cud.user.administrator ||
+        course.course_user_data.joins(:user).find_by(users: { email: @cud.user.email },
+                                                     instructor: true) != nil
+    end
   end
 
   action_auth_level :runMoss, :instructor
   def runMoss
-  	# Return if we have no files to process.
+    # Return if we have no files to process.
     unless params[:assessments] || params[:external_tar]
       flash[:error] = "No input files provided for MOSS."
       redirect_to(action: :moss) && return
@@ -351,14 +347,16 @@ file, most likely a duplicate email.  The exact error was: #{e} "
 
     # First, validate access on each of the requested assessments
     if assessmentIDs
-      for aID in assessmentIDs.keys do
+      assessmentIDs.keys.each do |aID|
         assessment = Assessment.find(aID)
         unless assessment
           flash[:error] = "Invalid Assessment ID: #{aID}"
           redirect_to(action: :moss) && return
         end
-        assessmentCUD = assessment.course.course_user_data.joins(:user).find_by(users: { email: current_user.email }, instructor: true)
-        if !assessmentCUD && (!@cud.user.administrator?)
+        assessmentCUD = assessment.course.course_user_data.joins(:user).find_by(
+          users: { email: current_user.email }, instructor: true
+        )
+        if !assessmentCUD && !@cud.user.administrator?
           flash[:error] = "Invalid User"
           redirect_to(action: :moss) && return
         end
@@ -376,24 +374,19 @@ file, most likely a duplicate email.  The exact error was: #{e} "
 
     moss_params = ""
 
-    if not base_file.nil?
+    unless base_file.nil?
       extract_tar_for_moss(tmp_dir, params[:base_tar], false)
       moss_params = [moss_params, "-b", @basefiles].join(" ")
     end
-    if not max_lines.nil?
-      if params[:max_lines] == ""
-        params[:max_lines] = 10
-      end
+    unless max_lines.nil?
+      params[:max_lines] = 10 if params[:max_lines] == ""
       moss_params = [moss_params, "-m", params[:max_lines]].join(" ")
     end
-    if not language.nil?
-      moss_params = [moss_params, "-l", params[:language_selection]].join(" ")
-    end
+    moss_params = [moss_params, "-l", params[:language_selection]].join(" ") unless language.nil?
 
     # Get moss flags from text field
     moss_flags = ["mossnet" + moss_params + " -d"].join(" ")
     @mossCmd = [Rails.root.join("vendor", moss_flags)]
-
 
     extract_asmt_for_moss(tmp_dir, assessments)
     extract_tar_for_moss(tmp_dir, params[:external_tar], true)
@@ -421,8 +414,8 @@ private
   def edit_course_params
     params.require(:editCourse).permit(:name, :semester, :website, :late_slack, :grace_days, :display_name, :start_date, :end_date,
                                        :disabled, :exam_in_progress, :version_threshold, :gb_message,
-                                       late_penalty_attributes: [:kind, :value],
-                                       version_penalty_attributes: [:kind, :value])
+                                       late_penalty_attributes: %i[kind value],
+                                       version_penalty_attributes: %i[kind value])
   end
 
   def categorize_courses_for_listing(courses)
@@ -467,7 +460,7 @@ private
             # Create a new user
             user = User.roster_create(email, first_name, last_name, school,
                                       major, year)
-            fail "New user cannot be created in uploadRoster." if user.nil?
+            raise "New user cannot be created in uploadRoster." if user.nil?
           else
             # Override current user
             user.first_name = first_name
@@ -480,7 +473,7 @@ private
 
           # Make sure this user doesn't have a cud in the course
           if @course.course_user_data.where(user: user).first
-            fail "Green CUD doesn't exist in the database."
+            raise "Green CUD doesn't exist in the database."
           end
 
           # Delete unneeded data
@@ -504,7 +497,7 @@ private
           # Drop this user from the course
           existing = @course.course_user_data.includes(:user).where(users: { email: newCUD[:email] }).first
 
-          fail "Red CUD doesn't exist in the database." if existing.nil?
+          raise "Red CUD doesn't exist in the database." if existing.nil?
 
           existing.dropped = true
           existing.save(validate: false)
@@ -513,12 +506,10 @@ private
           # Update this user's attributes.
           existing = @course.course_user_data.includes(:user).where(users: { email: newCUD[:email] }).first
 
-          fail "Black CUD doesn't exist in the database." if existing.nil?
+          raise "Black CUD doesn't exist in the database." if existing.nil?
 
           user = existing.user
-          if user.nil?
-            fail "User associated to black CUD doesn't exist in the database."
-          end
+          raise "User associated to black CUD doesn't exist in the database." if user.nil?
 
           # Update user data
           user.first_name = newCUD[:first_name]
@@ -557,6 +548,7 @@ private
       csv = detectAndConvertRoster(params["upload"]["file"].read)
       csv.each do |row|
         next if row[1].nil? || row[1].chomp.size == 0
+
         newCUD = { email: row[1].to_s,
                    last_name: row[2].to_s.chomp(" "),
                    first_name: row[3].to_s.chomp(" "),
@@ -576,8 +568,8 @@ private
         end
         @cuds << newCUD
       end
-    rescue CSV::MalformedCSVError => error
-      flash[:error] = "Error parsing CSV file: #{error}"
+    rescue CSV::MalformedCSVError => e
+      flash[:error] = "Error parsing CSV file: #{e}"
       redirect_to(action: "uploadRoster") && return
     rescue Exception => e
       raise e
@@ -592,7 +584,7 @@ private
       @currentCUDs.delete_if do |cud|
         cud.instructor? || cud.user.administrator? || cud.course_assistant?
       end
-      for cud in @currentCUDs do # These are the drops
+      @currentCUDs.each do |cud| # These are the drops
         newCUD = { email: cud.user.email,
                    last_name: cud.user.last_name,
                    first_name: cud.user.first_name,
@@ -626,30 +618,30 @@ private
   def detectAndConvertRoster(roster)
     parsedRoster = CSV.parse(roster)
     if parsedRoster[0][0].nil?
-      fail "Roster cannot be recognized"
-    elsif (parsedRoster[0].length == ROSTER_COLUMNS_F20)
+      raise "Roster cannot be recognized"
+    elsif parsedRoster[0].length == ROSTER_COLUMNS_F20
       # In CMU S3 roster. Columns are:
       # Semester(0), Course(1), Section(2), (Lecture)(3), (Mini-skip)(4),
       # Last Name(5), Preferred/First Name(6), (MI-skip)(7), Andrew ID(8),
       # (Email-skip)(9), College(10), (Department-skip)(11), Major(12),
       # Class(13), Graduation Semester(skip)(14), Units(skip)(15), Grade Option(16), ...
-      map=[0, 8, 5, 6, 10, 12, 13, 16, -1, 1, 2]
-      select_columns=ROSTER_COLUMNS_F20
-    elsif (parsedRoster[0].length == ROSTER_COLUMNS_F16)
+      map = [0, 8, 5, 6, 10, 12, 13, 16, -1, 1, 2]
+      select_columns = ROSTER_COLUMNS_F20
+    elsif parsedRoster[0].length == ROSTER_COLUMNS_F16
       # In CMU S3 roster. Columns are:
       # Semester(0), Course(1), Section(2), (Lecture-skip)(3), (Mini-skip)(4),
       # Last Name(5), First Name(6), (MI-skip)(7), Andrew ID(8),
       # (Email-skip)(9), School(10), (Department-skip)(11), Major(12),
       # Year(13), (skip)(14), Grade Policy(15), ...
-      map=[0, 8, 5, 6, 10, 12, 13, 15, -1, 1, 2]
-      select_columns=ROSTER_COLUMNS_F16
-    elsif (parsedRoster[0].length == ROSTER_COLUMNS_S15)
+      map = [0, 8, 5, 6, 10, 12, 13, 15, -1, 1, 2]
+      select_columns = ROSTER_COLUMNS_F16
+    elsif parsedRoster[0].length == ROSTER_COLUMNS_S15
       # In CMU S3 roster. Columns are:
       # Semester(0), Lecture(1), Section(2), (skip)(3), (skip)(4), Last Name(5),
       # First Name(6), (skip)(7), Andrew ID(8), (skip)(9), School(10),
       # Major(11), Year(12), (skip)(13), Grade Policy(14), ...
-      map=[0, 8, 5, 6, 10, 11, 12, 14, -1, 1, 2]
-      select_columns=ROSTER_COLUMNS_S15
+      map = [0, 8, 5, 6, 10, 11, 12, 14, -1, 1, 2]
+      select_columns = ROSTER_COLUMNS_S15
     else
       # No header row. Columns are:
       # Semester(0), Email(1), Last Name(2), First Name(3), School(4),
@@ -660,38 +652,38 @@ private
 
     # Sanitize roster input, ignoring empty / incomplete lines.
     # Also requires each line to have an andrewID, else ignores it
-    parsedRoster.select! { |row| row.length == select_columns && row[map[1]] != nil}
+    parsedRoster.select! { |row| row.length == select_columns && !row[map[1]].nil? }
     # Detect if there is a header row
-    if (parsedRoster[0][0] == "Semester")
-      offset = 1
-    else
-      offset = 0
-    end
+    offset = if parsedRoster[0][0] == "Semester"
+               1
+             else
+               0
+             end
     numRows = parsedRoster.length - offset
     convertedRoster = Array.new(numRows) { Array.new(11) }
 
-    if (Rails.env == "production")
-       domain="andrew.cmu.edu"
-    else
-       domain="foo.bar"
-    end
-    for i in 0..(numRows - 1)
-      for j in 0..10
-        if map[j] >= 0
-          if j == 1
-            convertedRoster[i][j] = parsedRoster[i + offset][map[j]] + "@" + domain
-          else
-            convertedRoster[i][j] = parsedRoster[i + offset][map[j]]
-          end
-        end
+    domain = if Rails.env.production?
+               "andrew.cmu.edu"
+             else
+               "foo.bar"
+             end
+    (0..(numRows - 1)).each do |i|
+      (0..10).each do |j|
+        next unless map[j] >= 0
+
+        convertedRoster[i][j] = if j == 1
+                                  parsedRoster[i + offset][map[j]] + "@" + domain
+                                else
+                                  parsedRoster[i + offset][map[j]]
+                                end
       end
     end
-    return convertedRoster
+    convertedRoster
   end
 
   def extract_asmt_for_moss(tmp_dir, assessments)
     # for each assessment
-    for ass in assessments do
+    assessments.each do |ass|
       # Create a directory for ths assessment
       assDir = File.join(tmp_dir, "#{ass.name}-#{ass.course.name}")
       Dir.mkdir(assDir)
@@ -702,13 +694,14 @@ private
       visitedGroups = Set.new
 
       # For each student who submitted
-      for sub in ass.submissions.latest do
+      ass.submissions.latest.each do |sub|
         subFile = sub.handin_file_path
         next unless subFile && File.exist?(subFile)
 
         if ass.has_groups?
           group_id = sub.aud.group_id
           next if visitedGroups.include?(group_id)
+
           visitedGroups.add(group_id)
         end
 
@@ -720,28 +713,32 @@ private
         FileUtils.cp(subFile, stuDir)
 
         # Read archive files
-        if isArchive
-          # If we need to unarchive this file, then create archive reader
-          archive_path = File.join(stuDir, sub.filename)
-          begin
-            archive_extract = Archive.get_archive(archive_path)
+        next unless isArchive
 
-            archive_extract.each do |entry|
-              pathname = Archive.get_entry_name(entry)
-              unless Archive.looks_like_directory?(pathname)
-                pathname.gsub!(/\//, "-")
-                destination = File.join(stuDir, pathname)
-                # make sure all subdirectories are there
-                FileUtils.mkdir_p(File.dirname destination)
-                File.open(destination, "wb") do |out|
-                  out.write Archive.read_entry_file(entry)
-                  out.fsync rescue nil # for filesystems without fsync(2)
-                end
-              end
+        # If we need to unarchive this file, then create archive reader
+        archive_path = File.join(stuDir, sub.filename)
+        begin
+          archive_extract = Archive.get_archive(archive_path)
+
+          archive_extract.each do |entry|
+            pathname = Archive.get_entry_name(entry)
+            next if Archive.looks_like_directory?(pathname)
+
+            pathname.gsub!(%r{/}, "-")
+            destination = File.join(stuDir, pathname)
+            # make sure all subdirectories are there
+            FileUtils.mkdir_p(File.dirname(destination))
+            File.open(destination, "wb") do |out|
+              out.write Archive.read_entry_file(entry)
+              begin
+                out.fsync
+              rescue StandardError
+                nil
+              end # for filesystems without fsync(2)
             end
-          rescue
-            @failures << sub.filename
           end
+        rescue StandardError
+          @failures << sub.filename
         end
       end
 
@@ -757,9 +754,9 @@ private
     extTarDir = File.join(tmp_dir, "external_input")
     baseFilesDir = File.join(tmp_dir, "basefiles")
     begin
-	Dir.mkdir(extTarDir)
-	Dir.mkdir(baseFilesDir) # To hold all basefiles
-    rescue
+      Dir.mkdir(extTarDir)
+      Dir.mkdir(baseFilesDir) # To hold all basefiles
+    rescue StandardError
     end
 
     # Read in the tarfile from the given source.
@@ -771,8 +768,8 @@ private
     extFilesDir = File.join(extTarDir, "submissions")
 
     begin
-	Dir.mkdir(extFilesDir) # To hold all submissions
-    rescue
+      Dir.mkdir(extFilesDir) # To hold all submissions
+    rescue StandardError
     end
 
     # Untar the given Tar file.
@@ -782,25 +779,34 @@ private
       # write each file, renaming nested files
       archive_extract.each do |entry|
         pathname = Archive.get_entry_name(entry)
-        unless Archive.looks_like_directory?(pathname)
-	  destination = archive ? File.join(extFilesDir, pathname) : File.join(baseFilesDir, pathname)
-          pathname.gsub!(/\//, "-")
-          # make sure all subdirectories are there
-          File.open(destination, "wb") do |out|
-            out.write Archive.read_entry_file(entry)
-            out.fsync rescue nil # for filesystems without fsync(2)
-          end
+        next if Archive.looks_like_directory?(pathname)
+
+        destination = if archive
+                        File.join(extFilesDir,
+                                  pathname)
+                      else
+                        File.join(baseFilesDir, pathname)
+                      end
+        pathname.gsub!(%r{/}, "-")
+        # make sure all subdirectories are there
+        File.open(destination, "wb") do |out|
+          out.write Archive.read_entry_file(entry)
+          begin
+            out.fsync
+          rescue StandardError
+            nil
+          end # for filesystems without fsync(2)
         end
       end
-    rescue
+    rescue StandardError
       @failures << "External Tar"
     end
 
     # Feed the uploaded files to MOSS.
     if archive
-	@mossCmd << File.join(extFilesDir, "*")
+      @mossCmd << File.join(extFilesDir, "*")
     else
-	@basefiles = File.join(baseFilesDir, "*")
+      @basefiles = File.join(baseFilesDir, "*")
     end
   end
 end

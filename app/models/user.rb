@@ -48,7 +48,7 @@ class User < ApplicationRecord
   end
 
   def display_name
-    (first_name && last_name) ? full_name : email
+    first_name && last_name ? full_name : email
   end
 
   def after_create
@@ -112,7 +112,7 @@ class User < ApplicationRecord
         user.authentications.new(provider: data["provider"],
                                  uid: data["uid"])
       elsif (data = session["devise.shibboleth_data"])
-        user.email = data["uid"]  # email is uid in our case
+        user.email = data["uid"] # email is uid in our case
         user.authentications.new(provider: "CMU-Shibboleth",
                                  uid: data["uid"])
       end
@@ -135,19 +135,17 @@ class User < ApplicationRecord
     user.year = year
     user.authentications << auth
 
-    temp_pass = Devise.friendly_token[0, 20]    # generate a random token
+    temp_pass = Devise.friendly_token[0, 20] # generate a random token
     user.password = temp_pass
     user.password_confirmation = temp_pass
     user.skip_confirmation!
-    
+
     puts("user email: ", user.email)
     puts("user pswd: ", user.password)
 
     if user.save
       # user.send_reset_password_instructions
-      return user
-    else
-      return nil
+      user
     end
   end
 
@@ -158,7 +156,7 @@ class User < ApplicationRecord
     user.first_name = "Instructor"
     user.last_name = course_name
 
-    temp_pass = Devise.friendly_token[0, 20]    # generate a random token
+    temp_pass = Devise.friendly_token[0, 20] # generate a random token
     user.password = temp_pass
     user.password_confirmation = temp_pass
     user.skip_confirmation!
@@ -172,15 +170,16 @@ class User < ApplicationRecord
   # list all courses if he's an admin
   def self.courses_for_user(user)
     if user.administrator?
-      return Course.order("display_name ASC")
+      Course.order("display_name ASC")
     else
-      return user.courses.order("display_name ASC")
+      user.courses.order("display_name ASC")
     end
   end
 
   # use LDAP to look up a user
   def self.ldap_lookup(andrewID)
     return unless andrewID
+
     require "rubygems"
     require "net/ldap"
 
@@ -190,6 +189,7 @@ class User < ApplicationRecord
                        filter: "cmuAndrewId=" + andrewID)[0]
 
     return unless user
+
     # Create result hash and parse ldap response
     result = {}
     result[:first_name] = user[:givenname][-1]
