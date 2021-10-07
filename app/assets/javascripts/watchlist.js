@@ -153,7 +153,7 @@ function get_row_html(user_id, instance, tab, archived_instances) {
       </div>`;
 }
 
-function set_tab_html(is_search, instances, tab_name, archived_instances, empty_message) {
+function set_tab_html(is_search, instances, tab_name, archived_instances, empty_message, selected_user_ids) {
   is_empty = Object.keys(instances).length === 0;
   if (is_empty && !is_search){
     $(`#${tab_name}_header`).hide();
@@ -167,6 +167,80 @@ function set_tab_html(is_search, instances, tab_name, archived_instances, empty_
     });
     $(`#${tab_name}_instances`).html(html);
   }
+
+  $('.ui.icon').popup();
+  $('.ui.circular.label.condition').popup();
+
+  $('.ui.checkbox.select_single').checkbox({
+    onChecked: function () { 
+      selected_user_ids.push($(this).parent().parent().attr('id'));
+    },
+    onUnchecked: function () { 
+      var user_id = $(this).parent().parent().attr('id');
+      var index = selected_user_ids.indexOf(user_id);
+      if (index > -1) {
+        selected_user_ids.splice(index, 1);
+      } else {
+        console.log(`User #${user_id} was never checked`)
+      }
+    }
+  });
+  
+  if (tab_name === "pending") {
+    $('.ui.button.contact_single').click(function() {
+
+      // disable all action buttons
+      var button_group = $(this).parent().find('button');
+      button_group.prop('disabled', true);
+  
+      method = "contact";
+      var user_id = $(this).parent().parent().attr('id');
+      window.open(`mailto: ${instances[user_id]["email"]}`, "_blank");
+      
+      // re-enabling buttons on failure
+      function enable_buttons () {
+        button_group.removeAttr("disabled");
+      } 
+  
+      update_watchlist(method, instances[user_id]["instance_ids"], enable_buttons);
+    });
+  }
+
+  $('.ui.button.resolve_single').click(function() {
+
+    // disable all action buttons
+    var button_group = $(this).parent().find('button');
+    button_group.prop('disabled', true);
+    
+    method = "resolve";
+    var user_id = $(this).parent().parent().attr('id');
+    
+    // re-enabling buttons on failure
+    function enable_buttons () {
+      button_group.removeAttr("disabled");
+    } 
+    console.log(user_id)
+    console.log(instances)
+    update_watchlist(method, instances[user_id]["instance_ids"], enable_buttons);
+  });
+}
+
+function set_search_action(instances, tab_name, archived_instances, empty_message, search_content, selected_user_ids) {
+  $(`#${tab_name}_search`).search({
+    type: 'category',
+    source: search_content,
+    maxResults: 100,
+    onSearchQuery: function(query) {
+      search_enter_action(query, tab_name, instances, archived_instances, empty_message, selected_user_ids);
+    },
+    onSelect: function(result, _) {
+      search_enter_action(result["title"], "pending", instances, archived_instances, empty_message, selected_user_ids);
+    },
+    onResultsClose: function() {
+      query = $(`#${tab_name}_search .input .prompt`).val().toLowerCase().trim();
+      search_enter_action(query, tab_name, instances, archived_instances, empty_message, selected_user_ids);
+    }
+  });
 }
 
 function add_instance_to_dict(
@@ -212,8 +286,8 @@ function instance_passes_condition_search(instance, search_input) {
   return violated_conditions.includes(convert_conditions[search_input]);
 }
 
-function search_enter_action(tab_name, instances, archived_instances, empty_message) {
-  var search_input = $(`#${tab_name}_search .input .prompt`).val().toLowerCase().trim();
+function search_enter_action(query, tab_name, instances, archived_instances, empty_message, selected_user_ids) {
+  var search_input = query.toLowerCase().trim();
   if (search_input === "") {
     set_tab_html(
       true,
@@ -221,6 +295,7 @@ function search_enter_action(tab_name, instances, archived_instances, empty_mess
       tab_name,
       archived_instances,
       empty_message,
+      selected_user_ids,
     );
   }
   var filtered_instances = Object.keys(instances).reduce(function (filtered, key) {
@@ -237,6 +312,7 @@ function search_enter_action(tab_name, instances, archived_instances, empty_mess
     tab_name,
     archived_instances,
     empty_message,
+    selected_user_ids,
   );
 }
 
@@ -341,7 +417,8 @@ function get_watchlist_function(){
             instances_dict,
             status,
             archived_instances,
-            status_empty_message[status]
+            status_empty_message[status],
+            selected_user_ids,
           )
         }
         
@@ -361,121 +438,38 @@ function get_watchlist_function(){
         });
       }
 
-      $('.ui.checkbox.select_single').checkbox({
-        onChecked: function () { 
-          selected_user_ids.push($(this).parent().parent().attr('id'));
-        },
-        onUnchecked: function () { 
-          var user_id = $(this).parent().parent().attr('id');
-          var index = selected_user_ids.indexOf(user_id);
-          if (index > -1) {
-            selected_user_ids.splice(index, 1);
-          } else {
-            console.log(`User #${user_id} was never checked`)
-          }
-        }
-      });
-
-      $("#pending_search .results").click(function (e) {
-        search_enter_action("pending", pending_instances, archived_instances, pending_empty_message);
-      });
-      $("#pending_search").keypress(function (e) {
-        var code = (e.keyCode ? e.keyCode : e.which);
-        if (code == 13) {
-          search_enter_action("pending", pending_instances, archived_instances, pending_empty_message);
-        }
-      });
-
-      $("#contacted_search .results").click(function (e) {
-        search_enter_action("contacted", contacted_instances, archived_instances, contacted_empty_message);
-      });
-      $("#contacted_search").keypress(function (e) {
-        var code = (e.keyCode ? e.keyCode : e.which);
-        if (code == 13) {
-          search_enter_action("contacted", contacted_instances, archived_instances, contacted_empty_message);
-        }
-      });
-
-      $("#resolved_search .results").click(function (e) {
-        search_enter_action("resolved", resolved_instances, archived_instances, resolved_empty_message);
-      });
-      $("#resolved_search").keypress(function (e) {
-        var code = (e.keyCode ? e.keyCode : e.which);
-        if (code == 13) {
-          search_enter_action("resolved", resolved_instances, archived_instances, resolved_empty_message);
-        }
-      });
-
-      $("#archived_search .results").click(function (e) {
-        search_enter_action("archived", archived_instances, archived_instances, archived_empty_message);
-      });
-      $("#archived_search").keypress(function (e) {
-        var code = (e.keyCode ? e.keyCode : e.which);
-        if (code == 13) {
-          search_enter_action("archived", archived_instances, archived_instances, archived_empty_message);
-        }
-      });
-
-      $('.ui.icon').popup();
-      $('.ui.circular.label.condition').popup();
-
-      $('#pending_search').search({
-        type: 'category',
-        source: pending_search_content,
-        maxResults: 100
-      });
-      $('#contacted_search').search({
-        type: 'category',
-        source: contacted_search_content,
-        maxResults: 100
-      });
-      $('#resolved_search').search({
-        type: 'category',
-        source: resolved_search_content,
-        maxResults: 100
-      });
-      $('#archived_search').search({
-        type: 'category',
-        source: archived_search_content,
-        maxResults: 100
-      });
-
-      $('.ui.button.contact_single').click(function() {
-
-        // disable all action buttons
-        var button_group = $(this).parent().find('button');
-        button_group.prop('disabled', true);
-
-        method = "contact";
-        var user_id = $(this).parent().parent().attr('id');
-        window.open(`mailto: ${pending_instances[user_id]["email"]}`, "_blank");
-        console.log(pending_instances[user_id]["instance_ids"]);
-        
-        // re-enabling buttons on failure
-        function enable_buttons () {
-          button_group.removeAttr("disabled");
-        } 
-
-        update_watchlist(method, pending_instances[user_id]["instance_ids"], enable_buttons);
-      });
-
-      $('.ui.button.resolve_single').click(function() {
-
-        // disable all action buttons
-        var button_group = $(this).parent().find('button');
-        button_group.prop('disabled', true);
-        
-        method = "resolve";
-        var user_id = $(this).parent().parent().attr('id');
-        var instances = get_active_instances(pending_instances, contacted_instances, archived_instances);
-        
-        // re-enabling buttons on failure
-        function enable_buttons () {
-          button_group.removeAttr("disabled");
-        } 
-
-        update_watchlist(method, instances[user_id]["instance_ids"], enable_buttons);
-      });
+      set_search_action(
+        pending_instances, 
+        "pending", 
+        archived_instances, 
+        pending_empty_message, 
+        pending_search_content,
+        selected_user_ids,
+      );
+      set_search_action(
+        contacted_instances, 
+        "contacted", 
+        archived_instances, 
+        contacted_empty_message, 
+        contacted_search_content,
+        selected_user_ids,
+      );
+      set_search_action(
+        resolved_instances, 
+        "resolved", 
+        archived_instances, 
+        resolved_empty_message, 
+        resolved_search_content,
+        selected_user_ids,
+      );
+      set_search_action(
+        archived_instances, 
+        "archived", 
+        archived_instances, 
+        archived_empty_message, 
+        archived_search_content,
+        selected_user_ids,
+      );
   });
 
   // Removes previous click function binded to contact button
