@@ -20,6 +20,7 @@ class Submission < ApplicationRecord
   validates_associated :assessment
   validates :version, uniqueness: { scope: [:course_user_datum_id, :assessment_id] }
   validate :user_and_assessment_in_same_course
+  validates_length_of :notes, :maximum => 255
 
   has_many :annotations, dependent: :destroy
 

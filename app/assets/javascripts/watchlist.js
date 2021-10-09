@@ -153,13 +153,116 @@ function get_row_html(user_id, instance, tab, archived_instances) {
       </div>`;
 }
 
-function addInstanceToDict(instancesDict, id, user_id, course_id, user_name, user_email, condition_type, violation_info, watchlist_status) {
-  if (user_id in instancesDict) {
-    instancesDict[user_id]["conditions"][condition_type] = violation_info;
-    instancesDict[user_id]["instance_ids"].push(id);
-    instancesDict[user_id]["status"] = watchlist_status;
+function set_tab_html(is_search, instances, tab_name, archived_instances, empty_message, selected_user_ids) {
+  is_empty = Object.keys(instances).length === 0;
+  if (is_empty && !is_search){
+    $(`#${tab_name}_header`).hide();
+    html_empty_message = get_html_empty_message(empty_message);
+    $(`#${tab_name}_tab`).html(html_empty_message);
   } else {
-    instancesDict[user_id] = {
+    $(`#${tab_name}_header`).show();
+    html = "";
+    $.each(instances, function( user_id, instance ) {
+      html += get_row_html(user_id, instance, tab_name, archived_instances);
+    });
+    $(`#${tab_name}_instances`).html(html);
+  }
+
+  $('.ui.icon').popup();
+  $('.ui.circular.label.condition').popup();
+
+  $('.ui.checkbox.select_single').checkbox({
+    onChecked: function () { 
+      selected_user_ids.push($(this).parent().parent().attr('id'));
+    },
+    onUnchecked: function () { 
+      var user_id = $(this).parent().parent().attr('id');
+      var index = selected_user_ids.indexOf(user_id);
+      if (index > -1) {
+        selected_user_ids.splice(index, 1);
+      } else {
+        console.log(`User #${user_id} was never checked`)
+      }
+    }
+  });
+  
+  if (tab_name === "pending") {
+    $('.ui.button.contact_single').click(function() {
+
+      // disable all action buttons
+      var button_group = $(this).parent().find('button');
+      button_group.prop('disabled', true);
+  
+      method = "contact";
+      var user_id = $(this).parent().parent().attr('id');
+      window.open(`mailto: ${instances[user_id]["email"]}`, "_blank");
+      
+      // re-enabling buttons on failure
+      function enable_buttons () {
+        button_group.removeAttr("disabled");
+      } 
+  
+      update_watchlist(method, instances[user_id]["instance_ids"], enable_buttons);
+    });
+  }
+
+  $('.ui.button.resolve_single').click(function() {
+
+    // disable all action buttons
+    var button_group = $(this).parent().find('button');
+    button_group.prop('disabled', true);
+    
+    method = "resolve";
+    var user_id = $(this).parent().parent().attr('id');
+    
+    // re-enabling buttons on failure
+    function enable_buttons () {
+      button_group.removeAttr("disabled");
+    } 
+    console.log(user_id)
+    console.log(instances)
+    update_watchlist(method, instances[user_id]["instance_ids"], enable_buttons);
+  });
+}
+
+function set_search_action(instances, tab_name, archived_instances, empty_message, search_content, selected_user_ids) {
+  $(`#${tab_name}_search`).search({
+    type: 'category',
+    source: search_content,
+    maxResults: 100,
+    onSearchQuery: function(query) {
+      search_enter_action(query, tab_name, instances, archived_instances, empty_message, selected_user_ids);
+    },
+    onSelect: function(result, _) {
+      search_enter_action(result["title"], "pending", instances, archived_instances, empty_message, selected_user_ids);
+    },
+    onResultsClose: function() {
+      query = $(`#${tab_name}_search .input .prompt`).val().toLowerCase().trim();
+      search_enter_action(query, tab_name, instances, archived_instances, empty_message, selected_user_ids);
+    }
+  });
+}
+
+function add_instance_to_dict(
+  {
+    search_content, 
+    instances_dict, 
+    id, 
+    user_id, 
+    course_id, 
+    user_name, 
+    user_email, 
+    condition_type, 
+    violation_info, 
+    watchlist_status
+  }
+) {
+  if (user_id in instances_dict) {
+    instances_dict[user_id]["conditions"][condition_type] = violation_info;
+    instances_dict[user_id]["instance_ids"].push(id);
+    instances_dict[user_id]["status"] = watchlist_status;
+  } else {
+    instances_dict[user_id] = {
       "name": user_name, 
       "email": user_email,
       "course_id": course_id,
@@ -167,8 +270,50 @@ function addInstanceToDict(instancesDict, id, user_id, course_id, user_name, use
       "instance_ids": [id],
       "status": watchlist_status
     };
-    instancesDict[user_id]["conditions"][condition_type] = violation_info;
+    instances_dict[user_id]["conditions"][condition_type] = violation_info;
+    search_content.push({category: "email", title: user_email});
+    search_content.push({category: "name", title: user_name});
   }
+}
+
+function instance_passes_condition_search(instance, search_input) {
+  var convert_conditions = {
+    "grace day used": "grace_day_usage", 
+    "downward trend": "grade_drop", 
+    "no submission": "no_submissions", 
+    "low score": "low_grades"};
+  var violated_conditions = Object.keys(instance["conditions"]);
+  return violated_conditions.includes(convert_conditions[search_input]);
+}
+
+function search_enter_action(query, tab_name, instances, archived_instances, empty_message, selected_user_ids) {
+  var search_input = query.toLowerCase().trim();
+  if (search_input === "") {
+    set_tab_html(
+      true,
+      instances,
+      tab_name,
+      archived_instances,
+      empty_message,
+      selected_user_ids,
+    );
+  }
+  var filtered_instances = Object.keys(instances).reduce(function (filtered, key) {
+    if (instances[key]["name"]?.toLowerCase()?.includes(search_input)
+      || instances[key]["email"]?.toLowerCase()?.includes(search_input)
+      || instance_passes_condition_search(instances[key], search_input)) {
+      filtered[key] = instances[key];
+    } 
+    return filtered;
+  }, {});
+  set_tab_html(
+    true,
+    filtered_instances,
+    tab_name,
+    archived_instances,
+    empty_message,
+    selected_user_ids,
+  );
 }
 
 function get_watchlist_function(){
@@ -182,20 +327,39 @@ function get_watchlist_function(){
 
 	$.getJSON(watchlist_endpoints['get'],function(data, status){
 	    if (status=='success') {
-	    	var pending_empty = 1;
-	    	var contacted_empty = 1;
-	    	var resolved_empty = 1;
-        var archived_empty = 1;
         let last_updated_date = "";
 
         $(".top-bar").show();
 	    	$("#undefined_metrics").hide();
         $("#defined_metrics").show();
 
-	    	$('#pending_tab').empty();
-	    	$('#contacted_tab').empty();
-	    	$('#resolved_tab').empty();
-        $('#archived_tab').empty();
+	    	$('#pending_instances').empty();
+	    	$('#contacted_instances').empty();
+	    	$('#resolved_instances').empty();
+        $('#archived_instances').empty();
+
+        var metrics_search_content = [
+          {category: "metric", title: "grace day used"},
+          {category: "metric", title: "downward trend"},
+          {category: "metric", title: "no submission"},
+          {category: "metric", title: "low score"},
+        ]
+        var pending_search_content = [...metrics_search_content];
+        var contacted_search_content = [...metrics_search_content];
+        var resolved_search_content = [...metrics_search_content];
+        var archived_search_content = [...metrics_search_content];
+        var status_search_content = {
+          "archived": archived_search_content,
+          "pending": pending_search_content,
+          "contacted": contacted_search_content,
+          "resolved": resolved_search_content,
+        }
+        var status_instances = {
+          "archived": archived_instances,
+          "pending": pending_instances,
+          "contacted": contacted_instances,
+          "resolved": resolved_instances,
+        }
 
         data["instances"].forEach(watchlist_instance => {
           var id = _.get(watchlist_instance,'id');
@@ -211,81 +375,51 @@ function get_watchlist_function(){
           if(watchlist_instance.updated_at > last_updated_date)
             last_updated_date = watchlist_instance.updated_at;
 
-          if (_.get(watchlist_instance,'archived')) {
-            archived_empty = 0;
-            addInstanceToDict(archived_instances, id, user_id, course_id, user_name, user_email, condition_type, violation_info, watchlist_status);
+          var search_content;
+          var instances_dict;
+          if (_.get(watchlist_instance, "archived")) {
+            search_content = status_search_content["archived"];
+            instances_dict = status_instances["archived"];
           } else {
-            switch(watchlist_status){
-              case "pending":
-                pending_empty = 0;
-                addInstanceToDict(pending_instances, id, user_id, course_id, user_name, user_email, condition_type, violation_info, watchlist_status);
-                break;
-              case "contacted":
-                contacted_empty = 0;
-                addInstanceToDict(contacted_instances, id, user_id, course_id, user_name, user_email, condition_type, violation_info, watchlist_status);
-                break;
-              case "resolved":
-                resolved_empty = 0;
-                addInstanceToDict(resolved_instances, id, user_id, course_id, user_name, user_email, condition_type, violation_info, watchlist_status);
-                break;
-              default:
-                console.error(_.get(watchlist_instance,'status') + " is not valid");
-                return;
-            }
+            search_content = status_search_content[watchlist_status];
+            instances_dict = status_instances[watchlist_status];
           }
+          var instance_info = {
+            search_content,
+            instances_dict,
+            id, 
+            user_id, 
+            course_id, 
+            user_name, 
+            user_email, 
+            condition_type, 
+            violation_info, 
+            watchlist_status,
+          };
+          add_instance_to_dict(instance_info);
         });
         
-        pending_html = `<div class="ui secondary segment" >
-                     <h5> Pending students in need of attention</h5>
-                    </div>`;
-        contacted_html = `<div class="ui secondary segment" >
-                          <h5> Contacted students </h5>
-                        </div>`;
-        resolved_html = `<div class="ui secondary segment" >
-                          <h5> Resolved students </h5>
-                        </div>`;
-        archived_html = `<div class="ui secondary segment" >
-                          <h5> Archived students </h5> <b>Resolved and contacted students becomes archived when student metrics are changed </b>
-                         </div>`;
+        pending_empty_message = "There are no pending students in need of attention";
+        contacted_empty_message = "You have not contacted any students";
+        resolved_empty_message = "You have not resolved any students";
+        archived_empty_message = "You have no archived students";
+        status_empty_message = {
+          "pending": pending_empty_message,
+          "contacted": contacted_empty_message,
+          "resolved": resolved_empty_message,
+          "archived": archived_empty_message,
+        }
 
-	    	$.each(pending_instances, function( user_id, instance ) {
-          pending_html += get_row_html(user_id, instance, "pending", archived_instances);
-        });
-        $.each(contacted_instances, function( user_id, instance ) {
-          contacted_html += get_row_html(user_id, instance, "contacted", archived_instances);
-        });
-        $.each(resolved_instances, function( user_id, instance ) {
-          resolved_html += get_row_html(user_id, instance, "resolved", archived_instances);
-        });
-        $.each(archived_instances, function( user_id, instance ) {
-          archived_html += get_row_html(user_id, instance, "archived", archived_instances);
-        });
-        
-
-	    	// show empty messages
-	    	if (pending_empty){
-	    		html_empty_message = get_html_empty_message("There are no pending students in need of attention");
-	    		$('#pending_tab').html(html_empty_message);
-	    	} else {
-          $('#pending_tab').html(pending_html);
-        }
-	    	if (contacted_empty){
-	    		html_empty_message = get_html_empty_message("You have not contacted any students");
-	    		$('#contacted_tab').html(html_empty_message);
-	    	} else {
-          $('#contacted_tab').html(contacted_html);
-        }
-	    	if (resolved_empty){
-	    		html_empty_message = get_html_empty_message("You have not resolved any students");
-	    		$('#resolved_tab').html(html_empty_message);
-	    	} else {
-          $('#resolved_tab').html(resolved_html);
-        }
-	    	if (archived_empty){
-	    		html_empty_message = get_html_empty_message("You have no archived students");
-	    		$('#archived_tab').html(html_empty_message);
-	    	} else {
-          $('#archived_tab').html(archived_html);
+        for (var status in status_instances) {
+          instances_dict = status_instances[status];
+          set_tab_html(
+            false,
+            instances_dict,
+            status,
+            archived_instances,
+            status_empty_message[status],
+            selected_user_ids,
+          )
         }
         
         updateButtonVisibility($('.ui.vertical.fluid.tabular.menu .item.active'));
@@ -304,60 +438,38 @@ function get_watchlist_function(){
         });
       }
 
-      $('.ui.checkbox.select_single').checkbox({
-        onChecked: function () { 
-          selected_user_ids.push($(this).parent().parent().attr('id'));
-        },
-        onUnchecked: function () { 
-          var user_id = $(this).parent().parent().attr('id');
-          var index = selected_user_ids.indexOf(user_id);
-          if (index > -1) {
-            selected_user_ids.splice(index, 1);
-          } else {
-            console.log(`User #${user_id} was never checked`)
-          }
-        }
-      });
-
-      $('.ui.icon').popup();
-      $('.ui.circular.label.condition').popup();
-
-      $('.ui.button.contact_single').click(function() {
-
-        // disable all action buttons
-        var button_group = $(this).parent().find('button');
-        button_group.prop('disabled', true);
-
-        method = "contact";
-        var user_id = $(this).parent().parent().attr('id');
-        window.open(`mailto: ${pending_instances[user_id]["email"]}`, "_blank");
-        console.log(pending_instances[user_id]["instance_ids"]);
-        
-        // re-enabling buttons on failure
-        function enable_buttons () {
-          button_group.removeAttr("disabled");
-        } 
-
-        update_watchlist(method, pending_instances[user_id]["instance_ids"], enable_buttons);
-      });
-
-      $('.ui.button.resolve_single').click(function() {
-
-        // disable all action buttons
-        var button_group = $(this).parent().find('button');
-        button_group.prop('disabled', true);
-        
-        method = "resolve";
-        var user_id = $(this).parent().parent().attr('id');
-        var instances = get_active_instances(pending_instances, contacted_instances, archived_instances);
-        
-        // re-enabling buttons on failure
-        function enable_buttons () {
-          button_group.removeAttr("disabled");
-        } 
-
-        update_watchlist(method, instances[user_id]["instance_ids"], enable_buttons);
-      });
+      set_search_action(
+        pending_instances, 
+        "pending", 
+        archived_instances, 
+        pending_empty_message, 
+        pending_search_content,
+        selected_user_ids,
+      );
+      set_search_action(
+        contacted_instances, 
+        "contacted", 
+        archived_instances, 
+        contacted_empty_message, 
+        contacted_search_content,
+        selected_user_ids,
+      );
+      set_search_action(
+        resolved_instances, 
+        "resolved", 
+        archived_instances, 
+        resolved_empty_message, 
+        resolved_search_content,
+        selected_user_ids,
+      );
+      set_search_action(
+        archived_instances, 
+        "archived", 
+        archived_instances, 
+        archived_empty_message, 
+        archived_search_content,
+        selected_user_ids,
+      );
   });
 
   // Removes previous click function binded to contact button

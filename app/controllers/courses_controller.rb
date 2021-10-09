@@ -165,6 +165,7 @@ class CoursesController < ApplicationController
       @course.errors.full_messages.each do |msg|
         flash[:error] += "<br>#{msg}"
       end
+      redirect_to edit_course_path(@course)
     end
   end
 

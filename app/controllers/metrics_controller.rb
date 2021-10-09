@@ -4,7 +4,13 @@ class MetricsController < ApplicationController
 		course = Course.find_by(name: params[:course_name])
 		@course_grace_days = course.grace_days
 		@num_assessments = course.assessments.count()
-		@max_consecutive_assessments = course.assessments.group("category_name").count().max()[1] - 1
+		
+		course_max = course.assessments.group("category_name").count().max()
+		if (course_max == nil)
+			@max_consecutive_assessments = 0
+		else
+			@max_consecutive_assessments = course_max[1] - 1
+		end
 	end
 
 	action_auth_level :get_current_metrics, :instructor
