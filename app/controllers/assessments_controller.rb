@@ -454,6 +454,8 @@ class AssessmentsController < ApplicationController
 
     # Check if we should include regrade as a function
     @autograded = @assessment.has_autograder?
+
+    @repos = GithubIntegration.find_by_user_id(@cud.user.id)&.repositories
   end
 
   action_auth_level :history, :student
