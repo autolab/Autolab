@@ -105,7 +105,7 @@ GEM
       warden (~> 1.2.3)
     diff-lcs (1.4.4)
     docile (1.1.5)
-    doorkeeper (5.5.4)
+    doorkeeper (5.5.2)
       railties (>= 5)
     dynamic_form (1.1.4)
     erubi (1.10.0)
@@ -150,7 +150,7 @@ GEM
     hashdiff (1.0.1)
     hashery (2.1.2)
     hashie (4.1.0)
-    httparty (0.20.0)
+    httparty (0.19.0)
       mime-types (~> 3.0)
       multi_xml (>= 0.5.2)
     i18n (1.8.10)
@@ -166,8 +166,8 @@ GEM
     json (2.5.1)
     jstz-rails3-plus (1.0.5)
       railties (>= 3.1)
-    jwt (2.3.0)
-    libv8-node (15.14.0.1-x86_64-darwin-20)
+    jwt (2.2.3)
+    libv8-node (15.14.0.1)
     loofah (2.12.0)
       crass (~> 1.0.2)
       nokogiri (>= 1.5.9)
@@ -185,6 +185,7 @@ GEM
       nokogiri (~> 1)
       rake
     mini_mime (1.1.1)
+    mini_portile2 (2.6.1)
     mini_racer (0.4.0)
       libv8-node (~> 15.14.0.0)
     minitest (5.14.4)
@@ -197,9 +198,10 @@ GEM
     multipart-post (2.1.1)
     mysql2 (0.4.10)
     net-ldap (0.17.0)
-    newrelic_rpm (8.0.0)
+    newrelic_rpm (7.2.0)
     nio4r (2.5.8)
-    nokogiri (1.12.5-x86_64-darwin)
+    nokogiri (1.12.5)
+      mini_portile2 (~> 2.6.1)
       racc (~> 1.4)
     oauth2 (1.4.7)
       faraday (>= 0.8, < 2.0)
@@ -298,16 +300,16 @@ GEM
       rspec-mocks (~> 3.10)
       rspec-support (~> 3.10)
     rspec-support (3.10.2)
-    rubocop (1.22.1)
+    rubocop (1.21.0)
       parallel (~> 1.10)
       parser (>= 3.0.0.0)
       rainbow (>= 2.2.2, < 4.0)
       regexp_parser (>= 1.8, < 3.0)
       rexml
-      rubocop-ast (>= 1.12.0, < 2.0)
+      rubocop-ast (>= 1.9.1, < 2.0)
       ruby-progressbar (~> 1.7)
       unicode-display_width (>= 1.4.0, < 3.0)
-    rubocop-ast (1.12.0)
+    rubocop-ast (1.11.0)
       parser (>= 3.0.1.1)
     ruby-progressbar (1.11.0)
     ruby-rc4 (0.1.5)
@@ -350,7 +352,7 @@ GEM
     ttfunk (1.0.3)
     tzinfo (1.2.9)
       thread_safe (~> 0.1)
-    tzinfo-data (1.2021.3)
+    tzinfo-data (1.2021.1)
       tzinfo (>= 1.0.0)
     uglifier (4.2.0)
       execjs (>= 0.3.0, < 3)
@@ -369,7 +371,7 @@ GEM
     yard (0.9.26)
 
 PLATFORMS
-  x86_64-darwin-20
+  ruby
 
 DEPENDENCIES
   better_errors
@@ -431,4 +433,4 @@ RUBY VERSION
    ruby 2.6.6p146
 
 BUNDLED WITH
-   2.2.29
+   1.17.3
