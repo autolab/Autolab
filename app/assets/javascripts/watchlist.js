@@ -299,8 +299,10 @@ function search_enter_action(query, tab_name, instances, archived_instances, emp
     );
   }
   var filtered_instances = Object.keys(instances).reduce(function (filtered, key) {
-    if (instances[key]["name"]?.toLowerCase()?.includes(search_input)
-      || instances[key]["email"]?.toLowerCase()?.includes(search_input)
+    var instance_name = instances[key]["name"] || "";
+    var instance_email = instances[key]["email"] || "";
+    if (instance_name.toLowerCase().includes(search_input)
+      || instance_email.toLowerCase().includes(search_input)
       || instance_passes_condition_search(instances[key], search_input)) {
       filtered[key] = instances[key];
     } 
