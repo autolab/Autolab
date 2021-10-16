@@ -1,8 +1,18 @@
 <h2>Import Course Roster</h2>
 <% if params[:upload] then %>
-  Existing accounts in <b>Black</b>.  New accounts in <b><font
-  color=green>Green</font></b>.  Dropped accounts in <b><font
-  color=red>Red</font></b>. Instructors are not shown. <br>
+  <div class="table-info">
+    <div>
+      Existing accounts in <b>Black</b>.  New accounts in <b><font
+      color=green>Green</font></b>.  Dropped accounts in <b><font
+      color=red>Red</font></b>. Instructors are not shown. <br>
+    </div>
+    <div>
+      <label>
+        <input type="checkbox" id="sortStatus" name="sortStatus" class="filled-in" checked="checked" />
+        <span>Sort by account status</span>
+      </label>
+    </div>
+  </div>
   <%= form_for :doIt, :url=>{:action=>"uploadRoster",:doIt=>"true"} do |f| %>
   <table class='prettyBorder sortable' >
     <thead>
