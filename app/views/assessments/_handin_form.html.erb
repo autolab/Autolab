@@ -218,9 +218,9 @@
             <!-- fanpu for ashley: help I can't do UI please make this look better -->
             <div class="row" style="margin-top: 10px;">
               <% if @repos.present? %>
-                <select name="repository" id="repository">
+                <select name="repo" id="repo">
                   <% for repo in @repos do %>
-                  <option value="<%= repo %>""> <%= "#{repo[:full_name]} (#{repo[:default_branch]})" %> </option>
+                  <option value="<%= repo[:repo_name] %>""> <%= "#{repo[:repo_name]} (#{repo[:default_branch]})" %> </option>
                   <% end %>
                 </select>
               <% end %>

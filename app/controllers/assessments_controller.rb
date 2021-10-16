@@ -9,8 +9,8 @@ require "utilities"
 class AssessmentsController < ApplicationController
   include ActiveSupport::Callbacks
 
-    rescue_from ActionView::MissingTemplate do |exception|
-      redirect_to("/home/error_404")
+  rescue_from ActionView::MissingTemplate do |exception|
+    redirect_to("/home/error_404")
   end
 
   autolab_require Rails.root.join("app", "controllers", "assessment", "handin.rb")
@@ -67,7 +67,7 @@ class AssessmentsController < ApplicationController
   def index
     @is_instructor = @cud.has_auth_level? :instructor
     announcements_tmp = Announcement.where("start_date < :now AND end_date > :now",
-       now: Time.now)
+                                           now: Time.now)
       .where(persistent: false)
     @announcements = announcements_tmp.where(course_id: @course.id)
       .or(announcements_tmp.where(system: true)).order(:start_date)
@@ -79,6 +79,7 @@ class AssessmentsController < ApplicationController
   # creating it from scratch, or importing it from an existing
   # assessment directory.
   action_auth_level :new, :instructor
+
   def new
     @assessment = @course.assessments.new
   end
@@ -88,6 +89,7 @@ class AssessmentsController < ApplicationController
   # assessment directory on file system, or from an uploaded
   # tar file with the assessment directory.
   action_auth_level :installAssessment, :instructor
+
   def installAssessment
     ass_dir = Rails.root.join("courses", @course.name)
     @unused_config_files = []
@@ -97,7 +99,7 @@ class AssessmentsController < ApplicationController
       # assessment's yaml file must exist
       if !File.exist?(File.join(ass_dir, filename, "#{filename}.yml"))
         flash[:error] = flash[:error] || ""
-        flash[:error] += "Yml does not exist: " + filename +"     -     "
+        flash[:error] += "Yml does not exist: " + filename + "     -     "
         next
       end
 
@@ -112,6 +114,7 @@ class AssessmentsController < ApplicationController
   end
 
   action_auth_level :importAsmtFromTar, :instructor
+
   def importAsmtFromTar
     tarFile = params["tarFile"]
     if tarFile.nil?
@@ -178,6 +181,7 @@ class AssessmentsController < ApplicationController
   # The main task of this function is to decide what category a newly
   # installed assessment should be assigned to.
   action_auth_level :importAssessment, :instructor
+
   def importAssessment
     @assessment = @course.assessments.new(name: params[:assessment_name])
     @assessment.load_yaml # this will save the assessment
@@ -190,6 +194,7 @@ class AssessmentsController < ApplicationController
   # create - Creates an assessment from an assessment directory
   # residing in the course directory.
   action_auth_level :create, :instructor
+
   def create
     @assessment = @course.assessments.new(new_assessment_params)
 
@@ -239,7 +244,7 @@ class AssessmentsController < ApplicationController
         FileUtils.remove_dir(@assessment.folder_path)
       rescue StandardError => e2
         flash[:error] += "An error occurred (#{e2}} " \
-          " while recovering from a previous error (#{flash[:error]})"
+        " while recovering from a previous error (#{flash[:error]})"
         redirect_to(action: :installAssessment)
         return
       end
@@ -345,6 +350,7 @@ class AssessmentsController < ApplicationController
   # export - export an assessment by saving its persistent
   # properties in a yaml properties file.
   action_auth_level :export, :instructor
+
   def export
     base_path = Rails.root.join("courses", @course.name).to_s
     asmt_dir = @assessment.name
@@ -372,7 +378,7 @@ class AssessmentsController < ApplicationController
       end
       tarStream.rewind
       tarStream.close
-      send_data tarStream.string.force_encoding("binary"), filename: "#{@assessment.name}_#{Time.now.strftime('%Y%m%d')}.tar", content_type: "application/x-tar"
+      send_data tarStream.string.force_encoding("binary"), filename: "#{@assessment.name}_#{Time.now.strftime("%Y%m%d")}.tar", content_type: "application/x-tar"
     rescue SystemCallError => e
       flash[:error] = "Unable to update the config YAML file: #{e}"
       redirect_to action: "index"
@@ -385,12 +391,13 @@ class AssessmentsController < ApplicationController
   end
 
   action_auth_level :destroy, :instructor
+
   def destroy
-    for submission in @assessment.submissions do
+    for submission in @assessment.submissions
       submission.destroy
     end
 
-    for attachment in @assessment.attachments do
+    for attachment in @assessment.attachments
       attachment.destroy
     end
 
@@ -401,6 +408,7 @@ class AssessmentsController < ApplicationController
   end
 
   action_auth_level :show, :student
+
   def show
     set_handin
     extend_config_module(@assessment, @submission, @cud)
@@ -432,15 +440,15 @@ class AssessmentsController < ApplicationController
                                   "problems.id AS problem_id",
                                   "scores.id AS score_id",
                                   "scores.*")
-              .joins("LEFT JOIN problems ON
+      .joins("LEFT JOIN problems ON
         submissions.assessment_id = problems.assessment_id")
-              .joins("LEFT JOIN scores ON
+      .joins("LEFT JOIN scores ON
         (submissions.id = scores.submission_id
         AND problems.id = scores.problem_id)")
 
     # Process them to get into a format we want.
     @scores = {}
-    for result in results do
+    for result in results
       subId = result["submission_id"].to_i
       @scores[subId] = {} unless @scores.key?(subId)
 
@@ -448,7 +456,7 @@ class AssessmentsController < ApplicationController
         score: result["score"].to_f,
         feedback: result["feedback"],
         score_id: result["score_id"].to_i,
-        released: Utilities.is_truthy?(result["released"]) ? 1 : 0
+        released: Utilities.is_truthy?(result["released"]) ? 1 : 0,
       }
     end
 
@@ -459,6 +467,7 @@ class AssessmentsController < ApplicationController
   end
 
   action_auth_level :history, :student
+
   def history
     # Remember the student ID in case the user wants visit the gradesheet
     session["gradeUser#{@assessment.id}"] = params[:cud_id] if params[:cud_id]
@@ -477,15 +486,15 @@ class AssessmentsController < ApplicationController
                                   "problems.id AS problem_id",
                                   "scores.id AS score_id",
                                   "scores.*")
-              .joins("LEFT JOIN problems ON
+      .joins("LEFT JOIN problems ON
         submissions.assessment_id = problems.assessment_id")
-              .joins("LEFT JOIN scores ON
+      .joins("LEFT JOIN scores ON
         (submissions.id = scores.submission_id
         AND problems.id = scores.problem_id)")
-    
+
     # Process them to get into a format we want.
     @scores = {}
-    for result in results do
+    for result in results
       subId = result["submission_id"].to_i
       @scores[subId] = {} unless @scores.key?(subId)
 
@@ -493,7 +502,7 @@ class AssessmentsController < ApplicationController
         score: result["score"].to_f,
         feedback: result["feedback"],
         score_id: result["score_id"].to_i,
-        released: Utilities.is_truthy?(result["released"]) ? 1 : 0 # converts 't' to 1, "f" to 0
+        released: Utilities.is_truthy?(result["released"]) ? 1 : 0, # converts 't' to 1, "f" to 0
       }
     end
 
@@ -507,6 +516,7 @@ class AssessmentsController < ApplicationController
   end
 
   action_auth_level :viewFeedback, :student
+
   def viewFeedback
     # User requested to view feedback on a score
     @score = @submission.scores.find_by(problem_id: params[:feedback])
@@ -535,7 +545,7 @@ class AssessmentsController < ApplicationController
       end
       @total = 0
       for k in score_hash.keys
-        @total  = @total + score_hash[k]
+        @total = @total + score_hash[k]
       end
       score_hash["_total"] = @total
       score_hash
@@ -543,6 +553,7 @@ class AssessmentsController < ApplicationController
       nil
     end
   end
+
   def parse_stages(jsonFeedbackHash)
     @result = true
     if jsonFeedbackHash.key?("stages")
@@ -577,6 +588,7 @@ class AssessmentsController < ApplicationController
   end
 
   action_auth_level :reload, :instructor
+
   def reload
     @assessment.load_config_file
   rescue StandardError => @error
@@ -587,6 +599,7 @@ class AssessmentsController < ApplicationController
   end
 
   action_auth_level :edit, :instructor
+
   def edit
     # default to the basic tab
     params[:active_tab] ||= "basic"
@@ -602,13 +615,12 @@ class AssessmentsController < ApplicationController
   end
 
   action_auth_level :update, :instructor
-  def update
 
+  def update
     if not params[:assessment][:embedded_quiz_form].nil?
       @assessment.embedded_quiz_form_data = params[:assessment][:embedded_quiz_form].read
       @assessment.save!
     end
-
 
     begin
       @assessment.update!(edit_assessment_params)
@@ -623,6 +635,7 @@ class AssessmentsController < ApplicationController
   end
 
   action_auth_level :releaseAllGrades, :instructor
+
   def releaseAllGrades
     # release all grades
     num_released = releaseMatchingGrades { |_| true }
@@ -637,6 +650,7 @@ class AssessmentsController < ApplicationController
   end
 
   action_auth_level :releaseSectionGrades, :course_assistant
+
   def releaseSectionGrades
     unless @cud.section? && !@cud.section.empty? && @cud.lecture && !@cud.lecture.empty?
       flash[:error] = "You haven't been assigned to a lecture and/or section. Please contact your instructor."
@@ -658,6 +672,7 @@ class AssessmentsController < ApplicationController
   end
 
   action_auth_level :withdrawAllGrades, :instructor
+
   def withdrawAllGrades
     @assessment.submissions.each do |submission|
       scores = submission.scores.where(released: true)
@@ -668,9 +683,8 @@ class AssessmentsController < ApplicationController
           updateScore(@assessment.course.course_user_data, score)
         rescue ActiveRecord::RecordInvalid => invalid
           flash[:error] = flash[:error] || ""
-          flash[:error] += "Unable to withdraw score for "+@assessment.course.course_user_data.user.email+": " + invalid.message
+          flash[:error] += "Unable to withdraw score for " + @assessment.course.course_user_data.user.email + ": " + invalid.message
         end
-
       end
     end
 
@@ -679,6 +693,7 @@ class AssessmentsController < ApplicationController
   end
 
   action_auth_level :writeup, :student
+
   def writeup
     if @assessment.writeup_is_url?
       redirect_to @assessment.writeup
@@ -708,7 +723,7 @@ class AssessmentsController < ApplicationController
     File.delete(f)
   end
 
-protected
+  protected
 
   # We only do this so that it can be overwritten by modules
   def updateScore(_user, score)
@@ -751,7 +766,7 @@ protected
     num_released
   end
 
-private
+  private
 
   def new_assessment_params
     ass = params.require(:assessment)
@@ -812,7 +827,6 @@ private
       tab_name = "advanced"
     end
 
-    edit_course_assessment_path(@course, @assessment) + "/#tab_"+tab_name
+    edit_course_assessment_path(@course, @assessment) + "/#tab_" + tab_name
   end
-
 end
