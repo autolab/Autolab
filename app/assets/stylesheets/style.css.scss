@@ -620,6 +620,20 @@ div.field_with_errors {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
+
+  label {
+    color: inherit;
+    font-size: inherit;
+  }
+
+  [type="checkbox"] + span {
+    color: inherit;
+    font-size: inherit;
+  }
+}
+
+#unsorted_cuds {
+  display: none;
 }
 
 /* TABLE STYLES.  Styles for the multiple tables that we have for some reason */
@@ -822,11 +836,6 @@ input[type="password"]:focus {
 input[type="checkbox"] {
   // For spacing between this and an adjacent label
   margin-right: 10px;
-}
-
-[type="checkbox"] + span:not(.lever) {
-  font-size: 16px;
-  color: inherit;
 }
 
 input[type="search"] {

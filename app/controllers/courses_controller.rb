@@ -562,6 +562,14 @@ private
     end
   end
 
+  def change_view(is_sorted)
+    if (is_sorted)
+      @cud_view = @sorted_cuds
+    else
+      @cud_view = @cuds
+    end
+  end
+
   def parse_roster_csv
     # generate doIt form from the upload
     @cuds = []
@@ -621,8 +629,8 @@ private
         @cuds << newCUD
       end
     end
-    # TODO: set to @sorted_cuds instead and add a checkbox option to determine whether to display @cuds or @sorted_cuds
-    @cuds = @cuds.sort_by { |cud| cud[:color] || "z"}
+    @sorted_cuds = @cuds.sort_by { |cud| cud[:color] || "z"}
+    @cud_view = @sorted_cuds
   end
 
   # detectAndConvertRoster - Detect the type of a roster based on roster
