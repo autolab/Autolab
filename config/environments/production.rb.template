@@ -76,21 +76,24 @@ Autolab3::Application.configure do
   config.action_mailer.raise_delivery_errors = true
 
   # Provide context to the email generator about the host
-  config.action_mailer.default_url_options = {protocol: 'http', host: 'yourhost.com' }
+  config.action_mailer.default_url_options = {
+    protocol: ENV.fetch('HOST_PROTOCOL','http'), 
+    host: ENV.fetch('HOST_DOMAIN','yourhost.com') 
+  }
 
   # Use a custom smtp server, such as gmail, mailgun, sendgrid
   config.action_mailer.smtp_settings = {
-    address:              'smtp.example.com',
-    port:                 25,
-    enable_starttls_auto: true,
-    authentication:       'login',
-    user_name:            'example',
-    password:             'example',
-    domain:               'example.com',
+    address:              ENV.fetch('SMTP_SETTINGS_ADDRESS','smtp.example.com'),
+    port:                 ENV.fetch('SMTP_SETTINGS_PORT',25),
+    enable_starttls_auto: ENV.fetch('SMTP_SETTINGS_ENABLE_STARTTLS_AUTO',true),
+    authentication:       ENV.fetch('SMTP_SETTINGS_AUTHENTICATION','login'),
+    user_name:            ENV.fetch('SMTP_SETTINGS_USER_NAME','example'),
+    password:             ENV.fetch('SMTP_SETTINGS_PASSWORD','example'),
+    domain:               ENV.fetch('SMTP_SETTINGS_DOMAIN','example.com'),
   }
 
   # default from 
-  ActionMailer::Base.default :from => 'something@example.com'
+  ActionMailer::Base.default :from => ENV.fetch('SMTP_DEFAULT_FROM','something@example.com') 
 
   # option for using sendmail
   # config.action_mailer.delivery_method = :sendmail
