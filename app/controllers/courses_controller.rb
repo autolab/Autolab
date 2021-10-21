@@ -440,100 +440,102 @@ private
   end
 
   def save_uploaded_roster
-    CourseUserDatum.transaction do
-      rowNum = 0
+    if !params["cuds"].nil?
+      CourseUserDatum.transaction do
+        rowNum = 0
 
-      until params["cuds"][rowNum.to_s].nil?
-        newCUD = params["cuds"][rowNum.to_s]
+        until params["cuds"][rowNum.to_s].nil?
+          newCUD = params["cuds"][rowNum.to_s]
 
-        if newCUD["color"] == "green"
-          # Add this user to the course
-          # Look for this user
-          email = newCUD[:email]
-          first_name = newCUD[:first_name]
-          last_name = newCUD[:last_name]
-          school = newCUD[:school]
-          major = newCUD[:major]
-          year = newCUD[:year]
+          if newCUD["color"] == "green"
+            # Add this user to the course
+            # Look for this user
+            email = newCUD[:email]
+            first_name = newCUD[:first_name]
+            last_name = newCUD[:last_name]
+            school = newCUD[:school]
+            major = newCUD[:major]
+            year = newCUD[:year]
 
-          if (user = User.where(email: email).first).nil?
-            # Create a new user
-            user = User.roster_create(email, first_name, last_name, school,
-                                      major, year)
-            raise "New user cannot be created in uploadRoster." if user.nil?
+            if (user = User.where(email: email).first).nil?
+              # Create a new user
+              user = User.roster_create(email, first_name, last_name, school,
+                                        major, year)
+              raise "Line #{rowNum + 1}: New user cannot be created in uploadRoster." if user.nil?
+            else
+              # Override current user
+              user.first_name = first_name
+              user.last_name = last_name
+              user.school = school
+              user.major = major
+              user.year = year
+              user.save
+            end
+
+            # Make sure this user doesn't have a cud in the course
+            if @course.course_user_data.where(user: user).first
+              raise "Line #{rowNum + 1}: User to be created already exists in the database."
+            end
+
+            # Delete unneeded data
+            newCUD.delete(:color)
+            newCUD.delete(:email)
+            newCUD.delete(:first_name)
+            newCUD.delete(:last_name)
+            newCUD.delete(:school)
+            newCUD.delete(:major)
+            newCUD.delete(:year)
+
+            # Build cud
+            cud = @course.course_user_data.new
+            cud.user = user
+            cud.assign_attributes(newCUD.permit(:lecture, :section, :grade_policy))
+
+            # Save without validations
+            cud.save(validate: false)
+
+          elsif newCUD["color"] == "red"
+            # Drop this user from the course
+            existing = @course.course_user_data.includes(:user).where(users: { email: newCUD[:email] }).first
+
+            raise "Line #{rowNum + 1}: User to be deleted doesn't exist in the database." if existing.nil?
+
+            existing.dropped = true
+            existing.save(validate: false)
+
           else
-            # Override current user
-            user.first_name = first_name
-            user.last_name = last_name
-            user.school = school
-            user.major = major
-            user.year = year
-            user.save
+            # Update this user's attributes.
+            existing = @course.course_user_data.includes(:user).where(users: { email: newCUD[:email] }).first
+
+            raise "Line #{rowNum + 1}: User to be updated doesn't exist in the database." if existing.nil?
+
+            user = existing.user
+            raise "Line #{rowNum + 1}: User to be updated doesn't exist in the database." if user.nil?
+
+            # Update user data
+            user.first_name = newCUD[:first_name]
+            user.last_name = newCUD[:last_name]
+            user.school = newCUD[:school]
+            user.major = newCUD[:major]
+            user.year = newCUD[:year]
+            user.save!
+
+            # Delete unneeded data
+            newCUD.delete(:color)
+            newCUD.delete(:email)
+            newCUD.delete(:first_name)
+            newCUD.delete(:last_name)
+            newCUD.delete(:school)
+            newCUD.delete(:major)
+            newCUD.delete(:year)
+
+            # assign attributes
+            existing.assign_attributes(newCUD.permit(:lecture, :section, :grade_policy))
+            existing.save(validate: false) # Save without validations.
           end
 
-          # Make sure this user doesn't have a cud in the course
-          if @course.course_user_data.where(user: user).first
-            raise "Green CUD doesn't exist in the database."
-          end
-
-          # Delete unneeded data
-          newCUD.delete(:color)
-          newCUD.delete(:email)
-          newCUD.delete(:first_name)
-          newCUD.delete(:last_name)
-          newCUD.delete(:school)
-          newCUD.delete(:major)
-          newCUD.delete(:year)
-
-          # Build cud
-          cud = @course.course_user_data.new
-          cud.user = user
-          cud.assign_attributes(newCUD.permit(:lecture, :section, :grade_policy))
-
-          # Save without validations
-          cud.save(validate: false)
-
-        elsif newCUD["color"] == "red"
-          # Drop this user from the course
-          existing = @course.course_user_data.includes(:user).where(users: { email: newCUD[:email] }).first
-
-          raise "Red CUD doesn't exist in the database." if existing.nil?
-
-          existing.dropped = true
-          existing.save(validate: false)
-
-        else
-          # Update this user's attributes.
-          existing = @course.course_user_data.includes(:user).where(users: { email: newCUD[:email] }).first
-
-          raise "Black CUD doesn't exist in the database." if existing.nil?
-
-          user = existing.user
-          raise "User associated to black CUD doesn't exist in the database." if user.nil?
-
-          # Update user data
-          user.first_name = newCUD[:first_name]
-          user.last_name = newCUD[:last_name]
-          user.school = newCUD[:school]
-          user.major = newCUD[:major]
-          user.year = newCUD[:year]
-          user.save!
-
-          # Delete unneeded data
-          newCUD.delete(:color)
-          newCUD.delete(:email)
-          newCUD.delete(:first_name)
-          newCUD.delete(:last_name)
-          newCUD.delete(:school)
-          newCUD.delete(:major)
-          newCUD.delete(:year)
-
-          # assign attributes
-          existing.assign_attributes(newCUD.permit(:lecture, :section, :grade_policy))
-          existing.save(validate: false) # Save without validations.
+          rowNum += 1
         end
-
-        rowNum += 1
       end
     end
   end
