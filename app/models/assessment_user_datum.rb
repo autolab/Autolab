@@ -302,8 +302,6 @@ private
     when EXCUSED
       nil
     end
-
-    # TODO: final_score = apply_tweak(final_score) if final_score
   end
 
   def final_score_ignore_grading_deadline!(as_seen_by)
@@ -319,8 +317,6 @@ private
     when EXCUSED
       nil
     end
-
-    # TODO: final_score = apply_tweak(final_score) if final_score
   end
 
   # the consolidated status of a student on an assessment
