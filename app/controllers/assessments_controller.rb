@@ -9,11 +9,7 @@ require "utilities"
 class AssessmentsController < ApplicationController
   include ActiveSupport::Callbacks
 
-<<<<<<< HEAD
-  rescue_from ActionView::MissingTemplate do |exception|
-=======
   rescue_from ActionView::MissingTemplate do |_exception|
->>>>>>> git-submission-ui
     redirect_to("/home/error_404")
   end
 
@@ -72,11 +68,7 @@ class AssessmentsController < ApplicationController
     @is_instructor = @cud.has_auth_level? :instructor
     announcements_tmp = Announcement.where("start_date < :now AND end_date > :now",
                                            now: Time.now)
-<<<<<<< HEAD
-      .where(persistent: false)
-=======
                                     .where(persistent: false)
->>>>>>> git-submission-ui
     @announcements = announcements_tmp.where(course_id: @course.id)
                                       .or(announcements_tmp.where(system: true)).order(:start_date)
     @attachments = @cud.instructor? ? @course.attachments : @course.attachments.where(released: true)
@@ -388,12 +380,8 @@ class AssessmentsController < ApplicationController
       end
       tarStream.rewind
       tarStream.close
-<<<<<<< HEAD
-      send_data tarStream.string.force_encoding("binary"), filename: "#{@assessment.name}_#{Time.now.strftime("%Y%m%d")}.tar", content_type: "application/x-tar"
-=======
       send_data tarStream.string.force_encoding("binary"),
                 filename: "#{@assessment.name}_#{Time.now.strftime('%Y%m%d')}.tar", content_type: "application/x-tar"
->>>>>>> git-submission-ui
     rescue SystemCallError => e
       flash[:error] = "Unable to update the config YAML file: #{e}"
       redirect_to action: "index"
@@ -408,19 +396,11 @@ class AssessmentsController < ApplicationController
   action_auth_level :destroy, :instructor
 
   def destroy
-<<<<<<< HEAD
-    for submission in @assessment.submissions
-      submission.destroy
-    end
-
-    for attachment in @assessment.attachments
-=======
     @assessment.submissions.each do |submission|
       submission.destroy
     end
 
     @assessment.attachments.each do |attachment|
->>>>>>> git-submission-ui
       attachment.destroy
     end
 
@@ -463,25 +443,15 @@ class AssessmentsController < ApplicationController
                                   "problems.id AS problem_id",
                                   "scores.id AS score_id",
                                   "scores.*")
-<<<<<<< HEAD
-      .joins("LEFT JOIN problems ON
-        submissions.assessment_id = problems.assessment_id")
-      .joins("LEFT JOIN scores ON
-=======
                           .joins("LEFT JOIN problems ON
         submissions.assessment_id = problems.assessment_id")
                           .joins("LEFT JOIN scores ON
->>>>>>> git-submission-ui
         (submissions.id = scores.submission_id
         AND problems.id = scores.problem_id)")
 
     # Process them to get into a format we want.
     @scores = {}
-<<<<<<< HEAD
-    for result in results
-=======
     results.each do |result|
->>>>>>> git-submission-ui
       subId = result["submission_id"].to_i
       @scores[subId] = {} unless @scores.key?(subId)
 
@@ -519,25 +489,15 @@ class AssessmentsController < ApplicationController
                                   "problems.id AS problem_id",
                                   "scores.id AS score_id",
                                   "scores.*")
-<<<<<<< HEAD
-      .joins("LEFT JOIN problems ON
-        submissions.assessment_id = problems.assessment_id")
-      .joins("LEFT JOIN scores ON
-=======
                           .joins("LEFT JOIN problems ON
         submissions.assessment_id = problems.assessment_id")
                           .joins("LEFT JOIN scores ON
->>>>>>> git-submission-ui
         (submissions.id = scores.submission_id
         AND problems.id = scores.problem_id)")
 
     # Process them to get into a format we want.
     @scores = {}
-<<<<<<< HEAD
-    for result in results
-=======
     results.each do |result|
->>>>>>> git-submission-ui
       subId = result["submission_id"].to_i
       @scores[subId] = {} unless @scores.key?(subId)
 
@@ -585,13 +545,8 @@ class AssessmentsController < ApplicationController
         @jsonFeedback["_scores_order"] = score_hash.keys
       end
       @total = 0
-<<<<<<< HEAD
-      for k in score_hash.keys
-        @total = @total + score_hash[k]
-=======
       score_hash.keys.each do |k|
         @total += score_hash[k]
->>>>>>> git-submission-ui
       end
       score_hash["_total"] = @total
       score_hash
@@ -657,14 +612,8 @@ class AssessmentsController < ApplicationController
   end
 
   action_auth_level :update, :instructor
-<<<<<<< HEAD
-
-  def update
-    if not params[:assessment][:embedded_quiz_form].nil?
-=======
   def update
     unless params[:assessment][:embedded_quiz_form].nil?
->>>>>>> git-submission-ui
       @assessment.embedded_quiz_form_data = params[:assessment][:embedded_quiz_form].read
       @assessment.save!
     end
@@ -735,11 +684,7 @@ class AssessmentsController < ApplicationController
           updateScore(@assessment.course.course_user_data, score)
         rescue ActiveRecord::RecordInvalid => e
           flash[:error] = flash[:error] || ""
-<<<<<<< HEAD
-          flash[:error] += "Unable to withdraw score for " + @assessment.course.course_user_data.user.email + ": " + invalid.message
-=======
           flash[:error] += "Unable to withdraw score for " + @assessment.course.course_user_data.user.email + ": " + e.message
->>>>>>> git-submission-ui
         end
       end
     end
