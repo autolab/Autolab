@@ -21,7 +21,7 @@
         <label>Repository</label>
         <select name="repo" id="repo">
           <% for repo in repos do %>
-            <option value="<%= repo %>""> <%= "#{repo} (default branch for repo)" %> </option>
+            <option value="<%= repo[:repo_name] %>""> <%= "#{repo[:repo_name]} (#{repo[:default_branch]})" %> </option>
           <% end %>
         </select>
       <% end %>

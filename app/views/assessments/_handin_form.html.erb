@@ -68,7 +68,7 @@
             <% end %>
             
             <!-- just putting in a dummy value for repos -->
-            <%= render partial: "submission_panel", locals: {repos: ["dummyrepo1", "dummyrepo2"]}%>
+            <%= render partial: "submission_panel", locals: {repos: @repos}%>
 
             <div class="row handedin-row" style="display: none;margin-top: 10px;">
               <div class="col s2 center-align">
@@ -87,17 +87,6 @@
               <div class="col s1 right-align">
                 <i id="remove-handed-in" class="material-icons small">close</i>
               </div>
-            </div>
-
-            <!-- fanpu for ashley: help I can't do UI please make this look better -->
-            <div class="row" style="margin-top: 10px;">
-              <% if @repos.present? %>
-                <select name="repo" id="repo">
-                  <% for repo in @repos do %>
-                  <option value="<%= repo[:repo_name] %>""> <%= "#{repo[:repo_name]} (#{repo[:default_branch]})" %> </option>
-                  <% end %>
-                </select>
-              <% end %>
             </div>
 
 						<%= label_tag(:integrity_checkbox) do %>
