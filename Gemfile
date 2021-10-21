@@ -1,5 +1,5 @@
 source 'https://rubygems.org'
-ruby '2.6.6'
+ruby '2.6.8'
 
 gem 'rails', '=5.2.0'
 
@@ -16,7 +16,7 @@ gem 'bootstrap-sass', '>= 3.4.1'
 gem 'fomantic-ui-sass'
 
 # Use Uglifier as compressor for JavaScript assets
-gem 'uglifier', '>= 1.3.0'
+gem 'terser', '>= 1.1.7'
 
 # Use CoffeeScript for .js.coffee assets and views
 gem 'coffee-rails', '>= 4.0.0'

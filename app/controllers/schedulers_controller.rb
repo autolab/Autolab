@@ -4,8 +4,8 @@
 # hasn't ran in more than its period's time, it's function is run.  This is awful.
 #
 class SchedulersController < ApplicationController
-    rescue_from ActionView::MissingTemplate do |exception|
-      redirect_to("/home/error_404")
+  rescue_from ActionView::MissingTemplate do |_exception|
+    redirect_to("/home/error_404")
   end
   action_auth_level :index, :instructor
   def index
@@ -18,8 +18,7 @@ class SchedulersController < ApplicationController
   end
 
   action_auth_level :new, :instructor
-  def new
-  end
+  def new; end
 
   action_auth_level :create, :instructor
   def create
@@ -40,23 +39,23 @@ class SchedulersController < ApplicationController
 
   action_auth_level :run, :instructor
   def run
-      @scheduler = Scheduler.find(params[:scheduler_id])
+    @scheduler = Scheduler.find(params[:scheduler_id])
   end
 
   action_auth_level :visual_run, :instructor
   def visual_run
-      action = Scheduler.find(params[:scheduler_id])
-      @log = "Executing #{Rails.root.join(action.action)}\n"
-      mod_name = Rails.root.join(action.action)
-      begin
-        require mod_name
-        Updater.update(action.course)
-      rescue ScriptError, StandardError => e
-        @log << ("Error in '#{@course.name}' updater: #{e.message}\n")
-        @log << (e.backtrace.join("\n\t"))
-      end
-      @log << "\nCompleted running action."
-      render :partial => 'visual_test'
+    action = Scheduler.find(params[:scheduler_id])
+    @log = "Executing #{Rails.root.join(action.action)}\n"
+    mod_name = Rails.root.join(action.action)
+    begin
+      require mod_name
+      Updater.update(action.course)
+    rescue ScriptError, StandardError => e
+      @log << ("Error in '#{@course.name}' updater: #{e.message}\n")
+      @log << (e.backtrace.join("\n\t"))
+    end
+    @log << "\nCompleted running action."
+    render partial: "visual_test"
   end
 
   action_auth_level :update, :instructor

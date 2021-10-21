@@ -1,0 +1,24 @@
+// Place all the styles related to Git submission here.
+// They will automatically be included in application.css.
+// You can use Sass (SCSS) here: https://sass-lang.com/
+$autolab-red: rgba(153, 0, 0, 0.9);
+$autolab-subtle-red: #C87B7E;
+
+.submission-panel {
+  @import "semantic-ui";
+}
+
+.submission-panel .item {
+  width: 50%;
+  justify-content: center;
+  margin-right: 0 !important;
+  color: $autolab-red !important;
+}
+
+.submission-panel .dropdown-content li > span {
+  color: black !important;
+}
+
+.submission-panel label {
+  font-size: 1.2rem;
+}

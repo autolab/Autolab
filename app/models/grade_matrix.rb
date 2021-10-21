@@ -26,27 +26,27 @@ class GradeMatrix
   end
 
   def before_grading_deadline?(asmt_id)
-    @matrix["asmt_before_grading_deadline"]["#{asmt_id}"]
+    @matrix["asmt_before_grading_deadline"][asmt_id.to_s]
   end
 
   def cell(asmt_id, cud_id)
-    @matrix["cell_by_asmt"]["#{asmt_id}"]["#{cud_id}"]
+    @matrix["cell_by_asmt"][asmt_id.to_s][cud_id.to_s]
   end
 
   def category_average(cat, cud_id)
-    @matrix["cat_avg_by_cat"]["#{cat}"]["#{cud_id}"]
+    @matrix["cat_avg_by_cat"][cat.to_s][cud_id.to_s]
   end
 
   def course_average(cud_id)
-    @matrix["course_avg_by_user"]["#{cud_id}"]
+    @matrix["course_avg_by_user"][cud_id.to_s]
   end
 
   def cells_for_assessment(asmt_id)
-    @matrix["cell_by_asmt"]["#{asmt_id}"].values
+    @matrix["cell_by_asmt"][asmt_id.to_s].values
   end
 
   def averages_for_category(cat)
-    @matrix["cat_avg_by_cat"]["#{cat}"].values
+    @matrix["cat_avg_by_cat"][cat.to_s].values
   end
 
   def course_averages
@@ -57,17 +57,17 @@ class GradeMatrix
   # This is necessary when clients are using a cached GradeMatrix that might not
   # be up to date with the current course (e.g.: an assessment was added since)
   def has_assessment?(asmt_id)
-    @matrix["cell_by_asmt"]["#{asmt_id}"] != nil
+    @matrix["cell_by_asmt"][asmt_id.to_s] != nil
   end
 
   # Check whether the specified user is included in the GradeMatrix cache
   def has_cud?(cud_id)
-    @matrix["course_avg_by_user"]["#{cud_id}"] != nil
+    @matrix["course_avg_by_user"][cud_id.to_s] != nil
   end
 
   # Check whether the specified category is included in the GradeMatrix cache
   def has_category?(cat)
-    @matrix["cat_avg_by_cat"]["#{cat}"] != nil
+    @matrix["cat_avg_by_cat"][cat.to_s] != nil
   end
 
   def self.invalidate(course)
@@ -87,7 +87,7 @@ private
     asmt_before_grading_deadline = {}
 
     @course.assessments.each do |a|
-      asmt_before_grading_deadline["#{a.id}"] = a.before_grading_deadline?
+      asmt_before_grading_deadline[a.id.to_s] = a.before_grading_deadline?
     end
 
     @course.course_user_data.each do |cud|
@@ -96,17 +96,17 @@ private
 
       @course.assessments.each do |a|
         s = summarize a.aud_for(cud.id)
-        cell_by_asmt["#{a.id}"] ||= {}
-        cell_by_asmt["#{a.id}"]["#{cud.id}"] = s
+        cell_by_asmt[a.id.to_s] ||= {}
+        cell_by_asmt[a.id.to_s][cud.id.to_s] = s
       end
 
       @course.assessment_categories.each do |cat|
         a = cud.category_average(cat, @as_seen_by)
         cat_avg_by_cat[cat] ||= {}
-        cat_avg_by_cat[cat]["#{cud.id}"] = a
+        cat_avg_by_cat[cat][cud.id.to_s] = a
       end
 
-      course_avg_by_user["#{cud.id}"] = cud.average @as_seen_by
+      course_avg_by_user[cud.id.to_s] = cud.average @as_seen_by
     end
 
     {
@@ -131,9 +131,9 @@ private
 
     # TODO: need to convert this to local time on *client*
     # TODO: convert to 12-hour time
-    if aud.end_at.nil?    # Infinite extension.
+    if aud.end_at.nil? # Infinite extension.
       info["end_at"] = end_at_display(aud.end_at)
-    else                        # Finite (or zero) extension.
+    else # Finite (or zero) extension.
       # Convert the format from "to_s" to "to_formatted_s :long".
       end_at = end_at_display(aud.end_at).to_datetime
       info["end_at"] = end_at.to_formatted_s :long
