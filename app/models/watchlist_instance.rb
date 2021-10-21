@@ -322,7 +322,7 @@ class WatchlistInstance < ApplicationRecord
     if pending_watchlist?
       contacted_watchlist!
 
-      raise "Failed to update watchlist instance #{id} to contacted" if !save && !save
+      raise "Failed to update watchlist instance #{id} to contacted" if !save
     else
       raise "Unable to contact a watchlist instance that is not pending #{id}"
     end
@@ -332,7 +332,7 @@ class WatchlistInstance < ApplicationRecord
     if pending_watchlist? || contacted_watchlist?
       resolved_watchlist!
 
-      raise "Failed to update watchlist instance #{id} to resolved" if !save && !save
+      raise "Failed to update watchlist instance #{id} to resolved" if !save
     else
       raise "Unable to resolve a watchlist instance that is not pending or contacted #{id}"
     end
