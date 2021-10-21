@@ -7,8 +7,8 @@ class HomeController < ApplicationController
   skip_before_action :authorize_user_for_course
   skip_before_action :authenticate_for_action
   skip_before_action :update_persistent_announcements
-  rescue_from ActionView::MissingTemplate do |exception|
-      redirect_to("/home/error_404")
+  rescue_from ActionView::MissingTemplate do |_exception|
+    redirect_to("/home/error_404")
   end
 
   def developer_login
@@ -59,7 +59,5 @@ class HomeController < ApplicationController
     # This route just renders the home#contact page, nothing special
   end
 
-  def error_404
-    
-  end
+  def error_404; end
 end

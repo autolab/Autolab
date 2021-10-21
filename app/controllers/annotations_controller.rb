@@ -8,9 +8,9 @@ class AnnotationsController < ApplicationController
   before_action :set_assessment
   before_action :set_submission
   before_action :set_annotation, except: [:create]
-    rescue_from ActionView::MissingTemplate do |exception|
-      redirect_to("/home/error_404")
-    end
+  rescue_from ActionView::MissingTemplate do |_exception|
+    redirect_to("/home/error_404")
+  end
 
   respond_to :json
 
@@ -21,7 +21,7 @@ class AnnotationsController < ApplicationController
 
     ActiveRecord::Base.transaction do
       annotation.save
-      annotation.update_non_autograded_score()
+      annotation.update_non_autograded_score
     end
 
     respond_with(@course, @assessment, @submission, annotation)
@@ -32,7 +32,7 @@ class AnnotationsController < ApplicationController
   def update
     ActiveRecord::Base.transaction do
       @annotation.update(annotation_params)
-      @annotation.update_non_autograded_score()
+      @annotation.update_non_autograded_score
     end
 
     respond_with(@course, @assessment, @submission, @annotation) do |format|
@@ -45,7 +45,7 @@ class AnnotationsController < ApplicationController
   def destroy
     ActiveRecord::Base.transaction do
       @annotation.destroy
-      @annotation.update_non_autograded_score()
+      @annotation.update_non_autograded_score
     end
 
     head :no_content
@@ -58,7 +58,7 @@ private
     params[:annotation].delete(:created_at)
     params[:annotation].delete(:updated_at)
     params.require(:annotation).permit(:filename, :position, :line, :submitted_by,
-                                       :comment, :value, :problem_id,:submission_id, :coordinate)
+                                       :comment, :value, :problem_id, :submission_id, :coordinate)
   end
 
   def set_annotation

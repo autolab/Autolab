@@ -15,58 +15,59 @@ class AutogradersController < ApplicationController
       a.release_score = true
     end
     if @autograder.save
-        flash[:success] = "Autograder Created"
-        redirect_to([:edit, @course, @assessment, :autograder]) and return
+      flash[:success] = "Autograder Created"
+      redirect_to([:edit, @course, @assessment, :autograder]) and return
     else
-        flash[:error] = "Autograder could not be created"
-        redirect_to([:edit, @course, @assessment]) and return
+      flash[:error] = "Autograder could not be created"
+      redirect_to([:edit, @course, @assessment]) and return
     end
   end
 
   action_auth_level :edit, :instructor
-  def edit
-  end
+  def edit; end
 
   action_auth_level :update, :instructor
   def update
-      if @autograder.update(autograder_params)
-          flash[:success] = "Autograder saved!"
-          begin
-              upload
-          rescue
-              flash[:error] = "Autograder could not be uploaded."
-          end
-      else
-          flash[:error] = "Autograder could not be saved."
+    if @autograder.update(autograder_params)
+      flash[:success] = "Autograder saved!"
+      begin
+        upload
+      rescue StandardError
+        flash[:error] = "Autograder could not be uploaded."
       end
+    else
+      flash[:error] = "Autograder could not be saved."
+    end
     redirect_to([:edit, @course, @assessment, :autograder]) and return
   end
 
   action_auth_level :destroy, :instructor
   def destroy
     if @autograder.destroy
-        flash[:success] = "Autograder destroyed."
-        redirect_to([:edit, @course, @assessment]) and return
+      flash[:success] = "Autograder destroyed."
+      redirect_to([:edit, @course, @assessment]) and return
     else
-        flash[:error] = "Autograder could not be destroyed."
-        redirect_to([:edit, @course, @assessment, :autograder]) and return
+      flash[:error] = "Autograder could not be destroyed."
+      redirect_to([:edit, @course, @assessment, :autograder]) and return
     end
   end
 
   action_auth_level :upload, :instructor
   def upload
     uploaded_makefile = params[:autograder][:makefile]
-	  uploaded_tar = params[:autograder][:tar]
-	  if not uploaded_makefile.nil?
-		File.open(Rails.root.join('courses', @course.name, @assessment.name, 'autograde-Makefile'), 'wb') do |file|
-		  file.write(uploaded_makefile.read) unless uploaded_makefile.nil?
-		end
-	  end
-	  if not uploaded_tar.nil?
-		 File.open(Rails.root.join('courses', @course.name, @assessment.name, 'autograde.tar'), 'wb') do |file|
-		   file.write(uploaded_tar.read) unless uploaded_tar.nil?
-		 end
-	  end
+    uploaded_tar = params[:autograder][:tar]
+    unless uploaded_makefile.nil?
+      File.open(Rails.root.join("courses", @course.name, @assessment.name, "autograde-Makefile"),
+                "wb") do |file|
+        file.write(uploaded_makefile.read) unless uploaded_makefile.nil?
+      end
+    end
+    unless uploaded_tar.nil?
+      File.open(Rails.root.join("courses", @course.name, @assessment.name, "autograde.tar"),
+                "wb") do |file|
+        file.write(uploaded_tar.read) unless uploaded_tar.nil?
+      end
+    end
   end
 
 private
