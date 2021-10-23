@@ -240,7 +240,7 @@ class UsersController < ApplicationController
     access_token = token.to_hash[:access_token]
     github_integration.update!(access_token: access_token, oauth_state: nil)
     flash[:info] = "Successfully connected with Github."
-    (redirect_to user_path(id: github_integration.user.id)) && return
+    redirect_to (root_path) && return
   end
 
 

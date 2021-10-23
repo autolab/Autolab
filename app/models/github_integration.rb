@@ -5,6 +5,10 @@ class GithubIntegration < ApplicationRecord
   # Reasonably if a user wants to submit code, it should be among
   # the most recent repos updated...
   def repositories
+    if not self.access_token
+      return nil
+    end
+
     client = Octokit::Client.new(:access_token => access_token)
     repos = client.repos({},
                          query: {

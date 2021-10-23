@@ -66,8 +66,10 @@
             <% content_for :javascripts do %>
               <%= javascript_include_tag "handin" %>
             <% end %>
+
+            <!-- TODO for Ashley: make a proper connect with Github button, move to right place -->
+            <%= link_to "Connect with Github", github_oauth_user_path(@cud.user) %>
             
-            <!-- just putting in a dummy value for repos -->
             <%= render partial: "submission_panel", locals: {repos: @repos}%>
 
             <div class="row handedin-row" style="display: none;margin-top: 10px;">

@@ -459,7 +459,7 @@ class AssessmentsController < ApplicationController
         score: result["score"].to_f,
         feedback: result["feedback"],
         score_id: result["score_id"].to_i,
-        released: Utilities.is_truthy?(result["released"]) ? 1 : 0,
+        released: Utilities.is_truthy?(result["released"]) ? 1 : 0
       }
     end
 
