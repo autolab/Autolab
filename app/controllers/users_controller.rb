@@ -7,7 +7,7 @@ class UsersController < ApplicationController
     redirect_to("/home/error_404")
   end
   before_action :set_gh_oauth_client, only: [:github_oauth, :github_oauth_callback]
-  before_action :set_user, only: [:github_oauth]
+  before_action :set_user, only: [:github_oauth, :github_revoke]
 
   # GET /users
   action_auth_level :index, :student
@@ -215,17 +215,18 @@ class UsersController < ApplicationController
     redirect_to @gh_client.auth_code.authorize_url(authorize_url_params)
   end
 
+  action_auth_level :github_oauth_callback, :student
   def github_oauth_callback
     # If state not recognized, this request may not have been generated from Autolab
     if params["state"].nil? || params["state"].empty?
       flash[:error] = "Invalid callback"
-      redirect_to(root_path) && return
+      (redirect_to(root_path)) && return
     end
 
     github_integration = GithubIntegration.find_by_oauth_state(params["state"])
     if github_integration.nil?
       flash[:error] = "Error with Github OAuth (invalid state), please try again."
-      redirect_to(root_path) && return
+      (redirect_to(root_path)) && return
     end
 
     begin
@@ -240,9 +241,21 @@ class UsersController < ApplicationController
     access_token = token.to_hash[:access_token]
     github_integration.update!(access_token: access_token, oauth_state: nil)
     flash[:info] = "Successfully connected with Github."
-    redirect_to (root_path) && return
+    (redirect_to (root_path)) && return
   end
 
+  action_auth_level :github_revoke, :student
+  def github_revoke
+    gh_integration = @user.github_integration
+    if gh_integration
+      gh_integration.revoke
+      gh_integration.destroy
+      flash[:info] = "Successfully disconnected from Github"
+    elsif
+      flash[:info] = "Github not connected, revocation unnecessary"
+    end
+    (redirect_to user_path(id: @user.id)) && return
+  end
 
 private
 

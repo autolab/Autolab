@@ -64,4 +64,13 @@ class GithubIntegration < ApplicationRecord
 
     return tarfile_dest
   end
+
+  ##
+  # Revokes Github access token
+  def revoke
+    if self.access_token
+      client = Octokit::Client.new(:client_id => ENV["GITHUB_KEY"], :client_secret => ENV["GITHUB_SECRET"])
+      client.revoke_application_authorization(self.access_token)
+    end
+  end
 end
