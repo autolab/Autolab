@@ -46,16 +46,6 @@ assignments or download new assignments</font>
 <% end %>
 
 <script src="//cdnjs.cloudflare.com/ajax/libs/jquery-scrollTo/2.1.2/jquery.scrollTo.min.js"></script>
-<script>
-  $('#sort-status').change(function() {
-  var checked = $(this).is(':checked'); 
-  console.log(checked);
-  if (checked) {
-    $("#unsorted_cuds").hide();
-    $("#sorted_cuds").show();
-  } else {
-    $("#sorted_cuds").hide();
-    $("#unsorted_cuds").show();
-  }     
-});
-</script>
+<% content_for :javascripts do %>
+  <%= javascript_include_tag "sort-toggle" %>
+<% end %>
