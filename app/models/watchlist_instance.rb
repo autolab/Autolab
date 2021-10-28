@@ -562,8 +562,8 @@ class WatchlistInstance < ApplicationRecord
         violation_info[aud.assessment.display_name] = "#{aud_score}/#{total}"
       end
     end
-    if violation_info.length >= count_threshold
-      WatchlistInstance.new(course_user_datum_id: cud.id, course_id: course.id,
+    return unless (violation_info.length >= count_threshold)
+    WatchlistInstance.new(course_user_datum_id: cud.id, course_id: course.id,
                             risk_condition_id: condition_id,
                             violation_info: violation_info)
 
