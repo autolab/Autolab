@@ -550,9 +550,9 @@ class WatchlistInstance < ApplicationRecord
       # - Score is excused
       # - Score has not been released yet
       # - Student did not make any submissions at all
-      if aud_score.nil? or
-         aud.latest_submission.nil? or
-         (aud.latest_submission and !aud.latest_submission.all_scores_released?)
+      if aud_score.nil? ||
+         aud.latest_submission.nil? ||
+         (aud.latest_submission && !aud.latest_submission.all_scores_released?)
         next
       end
 
