@@ -526,7 +526,11 @@ class WatchlistInstance < ApplicationRecord
     end
   end
 
-  def self.add_new_instance_for_cud_no_submissions(course, condition_id, cud, no_submissions_threshold)
+  def self.add_new_instance_for_cud_no_submissions(course, 
+                                                   condition_id, 
+                                                   cud, 
+                                                   no_submissions_threshold)
+                                                   
     auds = AssessmentUserDatum.where(course_user_datum_id: cud.id)
     no_submissions_asmt_names = []
     auds.each do |aud|
@@ -537,12 +541,20 @@ class WatchlistInstance < ApplicationRecord
     if no_submissions_asmt_names.length >= no_submissions_threshold
       WatchlistInstance.new(course_user_datum_id: cud.id, course_id: course.id,
                             risk_condition_id: condition_id,
-                            violation_info: { no_submissions_asmt_names: no_submissions_asmt_names })
+                            violation_info: { 
+                              no_submissions_asmt_names: no_submissions_asmt_names 
+                              }
+                            )
 
     end
   end
 
-  def self.add_new_instance_for_cud_low_grades(course, condition_id, cud, grade_threshold, count_threshold)
+  def self.add_new_instance_for_cud_low_grades(course, 
+                                               condition_id, 
+                                               cud, 
+                                               grade_threshold, 
+                                               count_threshold)
+
     auds = AssessmentUserDatum.where(course_user_datum_id: cud.id)
     violation_info = {}
     auds.each do |aud|
