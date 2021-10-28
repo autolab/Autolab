@@ -251,8 +251,8 @@ class CoursesController < ApplicationController
         flash[:success] = "Success!"
       rescue Exception => e
         flash[:error] = "There was an error uploading the roster
-file, most likely a duplicate email.  The exact error was: #{e}"
-        redirect_to(action: :uploadRoster) && return
+file, most likely a duplicate email.  The exact error was: #{e} "
+        redirect_to(action: "uploadRoster") && return
       end
     else
       parse_roster_csv
@@ -439,33 +439,6 @@ private
     listing
   end
 
-  def validate_cud(newCUD)
-    email = newCUD[:email]
-    first_name = newCUD[:first_name]
-    last_name = newCUD[:last_name]
-    school = newCUD[:school]
-    major = newCUD[:major]
-    year = newCUD[:year]
-
-    if newCUD["color"] == "green"
-      # Make sure this user doesn't have a cud in the course
-      if @course.course_user_data.where(user: user).first
-        raise "User to be created already exists in the database."
-      end
-    elsif newCUD["color"] == "red"
-      existing = @course.course_user_data.includes(:user).where(users: { email: email }).first
-
-      raise "User to be deleted doesn't exist in the database." if existing.nil?
-    else
-      existing = @course.course_user_data.includes(:user).where(users: { email: email }).first
-
-      raise "User to be updated doesn't exist in the database." if existing.nil?
-
-      user = existing.user
-      raise "User to be updated doesn't exist in the database." if user.nil?
-    end
-  end
-
   def save_uploaded_roster
     if !params["cuds"].nil?
       CourseUserDatum.transaction do
@@ -473,12 +446,6 @@ private
 
         until params["cuds"][rowNum.to_s].nil?
           newCUD = params["cuds"][rowNum.to_s]
-
-          begin
-            validate_cud(newCUD)
-          rescue Exception => e
-            raise "Line #{rowNum + 1}: #{e}"
-          end
 
           if newCUD["color"] == "green"
             # Add this user to the course
@@ -503,6 +470,11 @@ private
               user.major = major
               user.year = year
               user.save
+            end
+
+            # Make sure this user doesn't have a cud in the course
+            if @course.course_user_data.where(user: user).first
+              raise "Line #{rowNum + 1}: User to be created already exists in the database."
             end
 
             # Delete unneeded data
@@ -573,6 +545,7 @@ private
     @cuds = []
     @currentCUDs = @course.course_user_data.all.to_a
     @newCUDs = []
+
     begin
       csv = detectAndConvertRoster(params["upload"]["file"].read)
       csv.each do |row|
@@ -626,16 +599,6 @@ private
                    color: "red" }
         @cuds << newCUD
       end
-    end
-
-    rowNum = 0
-    @cuds.each do |newCUD|
-      begin
-        validate_cud(newCUD)
-      rescue Exception => e
-        flash[:error] = "Line #{rowNum + 1}: #{e}"
-      end
-      rowNum += 1
     end
   end
 
