@@ -548,7 +548,9 @@ private
 
     begin
       csv = detectAndConvertRoster(params["upload"]["file"].read)
+      rowNum = 0
       csv.each do |row|
+        rowNum += 1
         next if row[1].nil? || row[1].chomp.size == 0
 
         newCUD = { email: row[1].to_s,
@@ -562,7 +564,36 @@ private
                    section: row[10].to_s.chomp(" ") }
         cud = @currentCUDs.find do |cud|
           cud.user && cud.user.email == newCUD[:email]
+
+        if newCUD[:email].nil? || newCUD[:email].size == 0
+          flash[:error] = "Line #{rowNum}: Email is required."
+          redirect_to(action: "uploadRoster") && return
+        elsif newCUD[:last_name].nil? || newCUD[:last_name].size == 0
+          flash[:error] = "Line #{rowNum}: Last name is required."
+          redirect_to(action: "uploadRoster") && return
+        elsif newCUD[:first_name].nil? || newCUD[:first_name].size == 0
+          flash[:error] = "Line #{rowNum}: First name is required."
+          redirect_to(action: "uploadRoster") && return
+        elsif newCUD[:school].nil? || newCUD[:school].size == 0
+          flash[:error] = "Line #{rowNum}: School is required."
+          redirect_to(action: "uploadRoster") && return
+        elsif newCUD[:major].nil? || newCUD[:major].size == 0
+          flash[:error] = "Line #{rowNum}: Major is required."
+          redirect_to(action: "uploadRoster") && return
+        elsif newCUD[:year].nil? || newCUD[:year].size == 0
+          flash[:error] = "Line #{rowNum}: Year is required."
+          redirect_to(action: "uploadRoster") && return
+        elsif newCUD[:grade_policy].nil? || newCUD[:grade_policy].size == 0
+          flash[:error] = "Line #{rowNum}: Grade policy is required."
+          redirect_to(action: "uploadRoster") && return
+        elsif newCUD[:lecture].nil? || newCUD[:lecture].size == 0
+          flash[:error] = "Line #{rowNum}: Lecture is required."
+          redirect_to(action: "uploadRoster") && return
+        elsif newCUD[:section].nil? || newCUD[:section].size == 0
+          flash[:error] = "Line #{rowNum}: Section is required."
+          redirect_to(action: "uploadRoster") && return
         end
+
         if !cud
           newCUD[:color] = "green"
         else
@@ -570,6 +601,7 @@ private
         end
         @cuds << newCUD
       end
+    end
     rescue CSV::MalformedCSVError => e
       flash[:error] = "Error parsing CSV file: #{e}"
       redirect_to(action: "uploadRoster") && return
