@@ -5,7 +5,7 @@ FactoryBot.define do
     sequence(:email) { |n| "test#{n}@andrew.cmu.edu" }
     password { "testPassword" }
 
-    confirmed_at { Time.now }
+    confirmed_at { Time.zone.now }
 
     factory :instructor do
       instructor { true }
