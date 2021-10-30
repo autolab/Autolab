@@ -219,7 +219,13 @@ class AssessmentsController < ApplicationController
     # fill in other fields
     @assessment.course = @course
     @assessment.handin_directory = "handin"
-    @assessment.handin_filename = "handin.c"
+
+    if @assessment.github_submission_enabled
+      @assessment.handin_filename = "handin.tar"
+    else
+      @assessment.handin_filename = "handin.c"
+    end
+
     @assessment.visible_at = Time.now
     @assessment.start_at = Time.now
     @assessment.due_at = Time.now
@@ -772,7 +778,7 @@ class AssessmentsController < ApplicationController
     ass = params.require(:assessment)
     ass[:category_name] = params[:new_category] if params[:new_category].present?
     ass.permit(:name, :display_name, :category_name, :has_svn, :has_lang, :group_size,
-               :embedded_quiz, :embedded_quiz_form_data)
+               :embedded_quiz, :embedded_quiz_form_data, :github_submission_enabled)
   end
 
   def edit_assessment_params
