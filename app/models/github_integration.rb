@@ -22,6 +22,10 @@ class GithubIntegration < ApplicationRecord
     }
   end
 
+  def is_connected
+    self.access_token.present?
+  end
+
   ##
   # Clones a repository, and returns location of the tarfile containing the repo
   #
