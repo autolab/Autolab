@@ -1,19 +1,27 @@
 <% content_for :stylesheets do %>
   <%= stylesheet_link_tag "git_submission" %>
 <% end %>
-
 <div class="submission-panel">
   <div class="error file-error" id="flash_error" style="background: white;display: none;">
     There was an error processing your file, please try adding it again.
   </div>
-  <div class="ui pointing secondary tabular menu">
-    <a class="item active" data-tab="upload">Upload</a>
-    <a class="item" data-tab="github">Github</a>
-  </div>
+  <% if @assessment.github_submission_enabled %>
+    <div class="ui pointing secondary tabular menu">
+      <a class="item active" data-tab="upload">Upload</a>
+      <a class="item" data-tab="github">Github</a>
+    </div>
+  <% end %>
   <div class="row handin-row">
     <div class="ui tab active" data-tab="upload" id="upload_tab">
-      <div class="valign-wrapper drag-drop-handin" tabindex="0" onclick="clickDrag();" onkeypress="clickDrag()" ondrop="dropHandler(event);" ondragover="dragOverHandler(event);" ondragenter="dragEnter(event);" ondragexit="dragExit(event);">
-        <p class="center-align" style="color:grey;" ondrop="dropHandler(event);" ondragover="dragOverHandler(event);" ondragenter="dragEnter(event);" ondragexit="dragExit(event);"><b>Drag a file here to hand in. Click to select a file.</b> <br /> <span style="font-size: 10px;">Files do not submit automatically.</span></p>
+      <div class="valign-wrapper drag-drop-handin" tabindex="0"
+          onclick="clickDrag();" onkeypress="clickDrag()" ondrop="dropHandler(event);" 
+          ondragover="dragOverHandler(event);" ondragenter="dragEnter(event);" ondragexit="dragExit(event);">
+        <p class="center-align" style="color:grey;" ondrop="dropHandler(event);" 
+          ondragover="dragOverHandler(event);" ondragenter="dragEnter(event);" 
+          ondragexit="dragExit(event);">
+          <b>Drag a file here to hand in. Click to select a file.</b>
+          <br />
+          <span style="font-size: 10px;">Files do not submit automatically.</span></p>
       </div>
     </div>
     <div class="ui tab" data-tab="github" id="github_tab">
