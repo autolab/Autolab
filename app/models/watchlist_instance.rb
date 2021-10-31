@@ -23,7 +23,7 @@ class WatchlistInstance < ApplicationRecord
                             status: :pending).distinct.count(:course_user_datum_id)
   end
 
-  def self.refresh_instances_for_course(course_name, metrics_update: false)
+  def self.refresh_instances_for_course(course_name, metrics_update = false)
     begin
       course = Course.find_by(name: course_name)
       current_conditions = RiskCondition.get_current_for_course(course_name)
@@ -444,7 +444,7 @@ class WatchlistInstance < ApplicationRecord
   def self.add_new_instance_for_cud_grace_day_usage(course, condition_id,
                                                     cud, asmts_before_date, grace_day_threshold)
     auds_before_date = asmts_before_date.map { |asmt| asmt.aud_for(cud.id) }
-    auds_before_date_filtered = auds_before_date.reject(&method(:aud.nil?))
+    auds_before_date_filtered = auds_before_date.reject(&:nil?)
     if auds_before_date_filtered.count < auds_before_date.count
       raise "Assessment user datum does not exist for some"\
             " assessments for course user datum #{cud.id}"
@@ -471,7 +471,7 @@ class WatchlistInstance < ApplicationRecord
       auds = asmts.map do |asmt|
         AssessmentUserDatum.find_by(course_user_datum_id: cud.id, assessment_id: asmt.id)
       end
-      auds_filtered = auds.reject(aud: nil?)
+      auds_filtered = auds.reject(&:nil?)
       if auds_filtered.count < auds.count
         raise "Assessment user datum does not exist for some assessments "\
               "for course user datum #{cud.id}"
@@ -518,7 +518,7 @@ class WatchlistInstance < ApplicationRecord
       violation_info[asmts[0].category_name] = violating_pairs if !violating_pairs.empty?
     end
 
-    return if violation_info.length.empty?
+    return if violation_info.empty?
 
     WatchlistInstance.new(course_user_datum_id: cud.id, course_id: course.id,
                           risk_condition_id: condition_id,

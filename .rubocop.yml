@@ -61,6 +61,9 @@ Style/MixinUsage:
 Naming/VariableName:
   Enabled: false
 
+Style/OptionalBooleanParameter:
+  Enabled: false
+
 Style/Alias:
   Enabled: false
   StyleGuide: https://relaxed.ruby.style/#stylealias
