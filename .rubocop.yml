@@ -60,6 +60,9 @@ Style/HashTransformKeys:
 Style/HashTransformValues:
   Enabled: false
 
+Style/MixinUsage:
+  Enabled: false
+
 Naming/VariableName:
   Enabled: false
 
