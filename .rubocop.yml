@@ -15,6 +15,7 @@ AllCops:
     - 'db/**/*'
     - 'script/**/*'
     - 'tmp/**/*'
+  NewCops: disable
 
 Rails:
   Enabled: true
