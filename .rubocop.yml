@@ -35,12 +35,6 @@ Layout/AccessModifierIndentation:
     - outdent
     - indent
 
-Style/StringLiterals:
-  EnforcedStyle: double_quotes
-  SupportedStyles:
-    - single_quotes
-    - double_quotes
-
 # Frozen string literals will introduce breaking changes to existing ruby files.
 Style/FrozenStringLiteralComment:
   EnforcedStyle: never
