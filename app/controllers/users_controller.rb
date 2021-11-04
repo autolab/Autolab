@@ -240,7 +240,7 @@ class UsersController < ApplicationController
 
     access_token = token.to_hash[:access_token]
     github_integration.update!(access_token: access_token, oauth_state: nil)
-    flash[:info] = "Successfully connected with Github."
+    flash[:success] = "Successfully connected with Github."
     (redirect_to (root_path)) && return
   end
 
@@ -250,7 +250,7 @@ class UsersController < ApplicationController
     if gh_integration
       gh_integration.revoke
       gh_integration.destroy
-      flash[:info] = "Successfully disconnected from Github"
+      flash[:success] = "Successfully disconnected from Github"
     elsif
       flash[:info] = "Github not connected, revocation unnecessary"
     end

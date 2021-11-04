@@ -66,30 +66,8 @@
             <% content_for :javascripts do %>
               <%= javascript_include_tag "handin" %>
             <% end %>
-
-            <!-- TODO for Ashley: make a proper connect with Github button, move to right place -->
-            <%= link_to "Connect with Github", github_oauth_user_path(@cud.user) %>
             
             <%= render partial: "submission_panel", locals: {repos: @repos}%>
-
-            <div class="row handedin-row" style="display: none;margin-top: 10px;">
-              <div class="col s2 center-align">
-                <i class="material-icons" style="font-size: 5rem;">insert_drive_file</i>
-              </div>
-              <div class="col s8">
-                <p>
-                  <b id="handin-file-name"></b><br />
-                  Last modified: <span id="handin-modify-date"></span><br />
-                  <span id="handin-text">
-                    Lines of code: <span id="handin-loc">Calculating...</span><br />
-                  </span>
-                    File size: <span id="handin-size"></span><br />
-                </p>
-              </div>
-              <div class="col s1 right-align">
-                <i id="remove-handed-in" class="material-icons small">close</i>
-              </div>
-            </div>
 
 						<%= label_tag(:integrity_checkbox) do %>
 							<%= check_box_tag(:integrity_checkbox) %>

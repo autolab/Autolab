@@ -22,3 +22,22 @@ $autolab-subtle-red: #C87B7E;
 .submission-panel label {
   font-size: 1.2rem;
 }
+
+.submission-panel a {
+  margin-right: 0 !important;
+  color: white !important;
+}
+
+.submission-panel button {
+  background-color: $autolab-red !important;
+}
+
+.submission-panel .connect-github-account label {
+  color: black;
+}
+
+.submission-panel .connect-github-account {
+  display: grid;
+  justify-content: center;
+  justify-items: center;
+}
