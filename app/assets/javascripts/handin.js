@@ -108,7 +108,13 @@ function enableSubmit() {
         $("#fake-submit").removeClass("disabled");
       }  
     } else if (tab === "github_tab") {
-      $("#fake-submit").removeClass("disabled");
+      var dropdown = $(".submission-panel .select-dropdown")
+      // if there's no repos
+      if (dropdown.length === 0) {
+        $("#fake-submit").addClass("disabled");
+      } else {
+        $("#fake-submit").removeClass("disabled");
+      }
     }
   }
 
