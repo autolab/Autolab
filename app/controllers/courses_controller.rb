@@ -2,7 +2,6 @@ require "archive"
 require "csv"
 require "fileutils"
 require "statistics"
-require "active_support/hash_with_indifferent_access"
 
 class CoursesController < ApplicationController
   skip_before_action :set_course, only: [:index, :new, :create]
