@@ -73,8 +73,25 @@ class GithubIntegration < ApplicationRecord
   # Revokes Github access token
   def revoke
     if self.access_token
-      client = Octokit::Client.new(:client_id => ENV["GITHUB_KEY"], :client_secret => ENV["GITHUB_SECRET"])
+      client = Octokit::Client.new(:client_id => Rails.configuration.x.github.client_id, :client_secret => Rails.configuration.x.github.client_secret)
       client.revoke_application_authorization(self.access_token)
     end
+  end
+
+
+  ##
+  # Checks whether a valid Github client ID and secret is passed in
+  # If so, current rate limit information is returned; else 
+  # nil is returned
+  def self.check_github_authorization
+    client = Octokit::Client.new(:client_id => Rails.configuration.x.github.client_id, 
+      :client_secret => Rails.configuration.x.github.client_secret)
+
+
+      begin
+        client.rate_limit
+      rescue
+        return nil
+      end
   end
 end

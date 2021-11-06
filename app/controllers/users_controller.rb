@@ -282,7 +282,7 @@ private
       :token_url => "https://github.com/login/oauth/access_token",
       :site => "https://github.com",
     }
-    @gh_client = OAuth2::Client.new(ENV["GITHUB_KEY"], ENV["GITHUB_SECRET"],
+    @gh_client = OAuth2::Client.new(Rails.configuration.x.github.client_id, Rails.configuration.x.github.client_secret,
                                     gh_options)
   end
 
