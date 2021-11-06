@@ -1,6 +1,7 @@
 <p>There was an error uploading the roster file. Please fix the following error(s) and try again: </p>
-<% local_assigns[:roster_errors].each do |i, error| %>
-  <p><%= error %></p>
+<% local_assigns[:roster_errors].each do |msg, errorRow| %>
+  <br />
+  <p><%= msg %></p>
   <table class="prettyBorder sortable" >
     <thead>
       <tr>
@@ -20,20 +21,20 @@
     </thead>
     <!-- Row index is set using CSS. -->
     <tr class="user-row">
-      <td class="row-index"></td>
-      <td><%= @cuds[i].user.first_name %></td>
-      <td><%= @cuds[i].user.last_name %></td>
-      <td><%= link_to @cuds[i].user.email, course_course_user_datum_path(@course, cud) %></td>
-      <td><%= @cuds[i].lecture %></td>
-      <td><%= @cuds[i].section %></td>
-      <td><%= @cuds[i].user.school %></td>
-      <td><%= @cuds[i].user.major %></td>
-      <td><%= @cuds[i].user.year %></td>
-      <td><%= @cuds[i].nickname %></td>
-      <td><%= @cuds[i].dropped %></td>
-      <td><%= if @cuds[i].instructor? then
+      <td><%= errorRow["row_num"] %></td>
+      <td><%= errorRow["first_name"] %></td>
+      <td><%= errorRow["last_name"] %></td>
+      <td><%= errorRow["email"] %></td>
+      <td><%= errorRow["lecture"] %></td>
+      <td><%= errorRow["section"] %></td>
+      <td><%= errorRow["school"] %></td>
+      <td><%= errorRow["major"] %></td>
+      <td><%= errorRow["year"] %></td>
+      <td><%= errorRow["nickname"] %></td>
+      <td><%= errorRow["dropped"] %></td>
+      <td><%= if errorRow["instructor"] then
         "Instructor"
-      elsif @cuds[i].course_assistant? then
+      elsif errorRow["instructor"] then
         "Course Assistant"
       else
         "Student"

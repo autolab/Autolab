@@ -252,7 +252,6 @@ class CoursesController < ApplicationController
         save_uploaded_roster
         flash[:success] = "Success!"
       rescue Exception => e
-        flash[:roster_error] = e
         redirect_to(action: "uploadRoster") && return
       end
     else
@@ -468,7 +467,8 @@ private
               user = User.roster_create(email, first_name, last_name, school,
               major, year)
             rescue Exception => e
-              rosterErrors[rowNum] = "#{e.to_s.downcase.sub!("validation failed: ", "")} at line #{rowNum + 2} of the CSV"
+              newCUD[:row_num] = rowNum + 2
+              rosterErrors["#{e.to_s} at line #{rowNum + 2} of the CSV"] = newCUD.clone
             end
           else
             # Override current user
@@ -483,7 +483,8 @@ private
           existing = @course.course_user_data.where(user: user).first
           # Make sure this user doesn't have a cud in the course
           if existing
-            rosterErrors[rowNum] = "duplicate email #{user.email} at line #{rowNum + 2} of the CSV"
+            newCUD[:row_num] = rowNum + 2
+            rosterErrors["duplicate email #{user.email} at line #{rowNum + 2} of the CSV"] = newCUD.clone
           end
 
           # Delete unneeded data
@@ -535,7 +536,8 @@ private
           begin
             user.save!
           rescue Exception => e
-            rosterErrors[rowNum] = "#{e.to_s.downcase.sub!("validation failed: ", "")} at line #{rowNum + 2} of the CSV"
+            newCUD[:row_num] = rowNum + 2
+            rosterErrors["#{e.to_s} at line #{rowNum + 2} of the CSV"] = newCUD.clone
           end
 
           # Delete unneeded data
@@ -555,7 +557,8 @@ private
         rowNum += 1
       end
       if rosterErrors.length > 0
-        fail rosterErrors
+        flash[:roster_error] = rosterErrors
+        fail "Roster validation error"
       end
     end
   end

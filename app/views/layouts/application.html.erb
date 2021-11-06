@@ -71,7 +71,7 @@
           <% flash.each do |name, msg| %>
             <% if name == "roster_error" %>
               <div class="error" id="flash_error">
-                <%= render :partial=>'courses/_errorRow',
+                <%= render :partial=>'courses/uploadError',
                             locals: {roster_errors: msg} %>
               </div>
             <% else %>
