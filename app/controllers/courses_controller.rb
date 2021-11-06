@@ -252,7 +252,7 @@ class CoursesController < ApplicationController
         save_uploaded_roster
         flash[:success] = "Success!"
       rescue Exception => e
-        flash[:error] = "There was an error uploading the roster file. Please fix the following error(s) and try again: #{e} "
+        flash[:roster_error] = e
         redirect_to(action: "uploadRoster") && return
       end
     else
@@ -447,7 +447,7 @@ private
   def save_uploaded_roster
     CourseUserDatum.transaction do
       rowNum = 0
-      rosterErrors = Array.new
+      rosterErrors = Hash.new
 
       until params["cuds"][rowNum.to_s].nil?
         newCUD = params["cuds"][rowNum.to_s]
@@ -468,9 +468,7 @@ private
               user = User.roster_create(email, first_name, last_name, school,
               major, year)
             rescue Exception => e
-              # fail "#{e} at line #{rowNum + 2} of the CSV."
-              rosterErrors.push("#{e.to_s.downcase.sub!("validation failed: ", "")} at line #{rowNum + 2} of the CSV")
-              # rosterErrors.push("#{e} at line #{rowNum + 2} of the CSV")
+              rosterErrors[rowNum] = "#{e.to_s.downcase.sub!("validation failed: ", "")} at line #{rowNum + 2} of the CSV"
             end
           else
             # Override current user
@@ -485,7 +483,7 @@ private
           existing = @course.course_user_data.where(user: user).first
           # Make sure this user doesn't have a cud in the course
           if existing
-            rosterErrors.push("duplicate email #{user.email} at line #{rowNum + 2} of the CSV")
+            rosterErrors[rowNum] = "duplicate email #{user.email} at line #{rowNum + 2} of the CSV"
           end
 
           # Delete unneeded data
@@ -537,7 +535,7 @@ private
           begin
             user.save!
           rescue Exception => e
-            rosterErrors.push("#{e.to_s.downcase.sub!("validation failed: ", "")} at line #{rowNum + 2} of the CSV")
+            rosterErrors[rowNum] = "#{e.to_s.downcase.sub!("validation failed: ", "")} at line #{rowNum + 2} of the CSV"
           end
 
           # Delete unneeded data
@@ -557,7 +555,7 @@ private
         rowNum += 1
       end
       if rosterErrors.length > 0
-        fail "#{rosterErrors.join("; ")}."
+        fail rosterErrors
       end
     end
   end
