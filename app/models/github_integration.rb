@@ -87,11 +87,10 @@ class GithubIntegration < ApplicationRecord
     client = Octokit::Client.new(:client_id => Rails.configuration.x.github.client_id, 
       :client_secret => Rails.configuration.x.github.client_secret)
 
-
-      begin
-        client.rate_limit
-      rescue
-        return nil
-      end
+    begin
+      client.rate_limit
+    rescue
+      return nil
+    end
   end
 end
