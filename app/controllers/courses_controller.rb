@@ -494,7 +494,11 @@ private
         if !user.nil?
           cud = @course.course_user_data.new
           cud.user = user
-          cud.assign_attributes(newCUD.permit(:lecture, :section, :grade_policy))
+          params = ActionController::Parameters.new(section: newCUD["section"],
+                                                    grade_policy: newCUD[:grade_policy],
+                                                    lecture: newCUD[:lecture])
+          puts params
+          cud.assign_attributes(params.permit(:lecture, :section, :grade_policy))
 
           # Save without validations
           cud.save(validate: false)
@@ -545,7 +549,11 @@ private
         newCUD.delete(:year)
 
         # assign attributes
-        existing.assign_attributes(newCUD.permit(:lecture, :section, :grade_policy))
+        params = ActionController::Parameters.new(section: newCUD["section"],
+                                                  grade_policy: newCUD[:grade_policy],
+                                                  lecture: newCUD[:lecture])
+        puts params
+        existing.assign_attributes(params.permit(:lecture, :section, :grade_policy))
         existing.save(validate: false) # Save without validations.
       end
       rowNum += 1
@@ -646,6 +654,7 @@ private
       begin
         write_cuds(cloned_cuds)
       rescue Exception => e
+        flash[:error] = e
         redirect_to(action: "uploadRoster")
       ensure
         raise ActiveRecord::Rollback
