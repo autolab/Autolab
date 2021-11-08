@@ -250,6 +250,7 @@ class CoursesController < ApplicationController
         save_uploaded_roster
         flash[:success] = "Success!"
       rescue Exception => e
+        flash[:error] = e
         redirect_to(action: "uploadRoster") && return
       end
     else
@@ -493,7 +494,7 @@ private
         if !user.nil?
           cud = @course.course_user_data.new
           cud.user = user
-          cud.assign_attributes(newCUD)
+          cud.assign_attributes(newCUD.permit(:lecture, :section, :grade_policy))
 
           # Save without validations
           cud.save(validate: false)
@@ -544,7 +545,7 @@ private
         newCUD.delete(:year)
 
         # assign attributes
-        existing.assign_attributes(newCUD)
+        existing.assign_attributes(newCUD.permit(:lecture, :section, :grade_policy))
         existing.save(validate: false) # Save without validations.
       end
       rowNum += 1
