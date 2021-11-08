@@ -117,6 +117,9 @@ Please feel free to use Autolab at your school/organization. If you run into any
 
 ## Changelog
 
+### (2021/10/12) Moved from Uglifier to Terser
+- Autolab has migrated from Uglifier to Terser for our Javascript compressor in order to support the latest Javascript syntax. Please change `Uglifier.new(harmony: true)` to `:terser` in your `production.rb`
+
 ### v2.5.0 (2020/02/22) Upgrade from Rails 4 Rails 5
 - Autolab has been upgraded from Rails 4 to Rails 5 after almost a year of effort! There are still some small
 bugs to be fixed, but it should not affect the core functionality of Autolab. Please file an issue if you believe

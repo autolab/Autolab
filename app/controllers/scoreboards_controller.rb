@@ -5,8 +5,8 @@ class ScoreboardsController < ApplicationController
   before_action :set_assessment
   before_action :set_assessment_breadcrumb, only: [:edit]
   before_action :set_scoreboard, except: [:create]
-  rescue_from ActionView::MissingTemplate do |exception|
-      redirect_to("/home/error_404")
+  rescue_from ActionView::MissingTemplate do |_exception|
+    redirect_to("/home/error_404")
   end
 
   action_auth_level :create, :instructor
@@ -19,8 +19,8 @@ class ScoreboardsController < ApplicationController
     begin
       @scoreboard.save!
       flash[:info] = "Scoreboard Created"
-    rescue ActiveRecord::RecordInvalid => invalid
-      flash[:error] = "Unable to create scoreboard: " + invalid.message
+    rescue ActiveRecord::RecordInvalid => e
+      flash[:error] = "Unable to create scoreboard: " + e.message
     end
     redirect_to(action: :edit) && return
   end
@@ -47,6 +47,7 @@ class ScoreboardsController < ApplicationController
       unless @grades.key?(uid)
         user = @course.course_user_data.find(uid)
         next unless user.student?
+
         @grades[uid] = {}
         @grades[uid][:nickname] = user.nickname
         @grades[uid][:andrewID] = user.email
@@ -70,28 +71,28 @@ class ScoreboardsController < ApplicationController
 
     # Build the scoreboard entries for each student
     @grades.values.each do |grade|
-      begin
-        if @assessment.overwrites_method?(:createScoreboardEntry)
-          grade[:entry] = @assessment.config_module.createScoreboardEntry(
-            grade[:problems],
-            grade[:autoresult])
-        else
-          grade[:entry] = createScoreboardEntry(
-            grade[:problems],
-            grade[:autoresult])
-        end
-      rescue StandardError => e
-        # Screw 'em! usually this means the grader failed.
-        grade[:entry] = {}
-        # But, if this was an instructor, we want them to know about
-        # this.
-        if @cud.instructor?
-          @errorMessage = "An error occurred while calling " \
-            "createScoreboardEntry(#{grade[:problems].inspect},"\
-            "#{grade[:autoresult]})"
-          @error = e
-          render([@course, @assessment]) && return
-        end
+      grade[:entry] = if @assessment.overwrites_method?(:createScoreboardEntry)
+                        @assessment.config_module.createScoreboardEntry(
+                          grade[:problems],
+                          grade[:autoresult]
+                        )
+                      else
+                        createScoreboardEntry(
+                          grade[:problems],
+                          grade[:autoresult]
+                        )
+                      end
+    rescue StandardError => e
+      # Screw 'em! usually this means the grader failed.
+      grade[:entry] = {}
+      # But, if this was an instructor, we want them to know about
+      # this.
+      if @cud.instructor?
+        @errorMessage = "An error occurred while calling " \
+          "createScoreboardEntry(#{grade[:problems].inspect},"\
+          "#{grade[:autoresult]})"
+        @error = e
+        render([@course, @assessment]) && return
       end
     end
 
@@ -105,28 +106,25 @@ class ScoreboardsController < ApplicationController
     # Catch errors along the way. An instructor will get the errors, a
     # student will simply see an unsorted scoreboard.
     @sortedGrades = @grades.values.sort do |a, b|
-      begin
-
-        if @assessment.overwrites_method?(:scoreboardOrderSubmissions)
-          @assessment.config_module.scoreboardOrderSubmissions(a, b)
-        else
-          scoreboardOrderSubmissions(a, b)
-        end
-
-      rescue StandardError => e
-        if @cud.instructor?
-          @errorMessage = "An error occurred while calling "\
-            "scoreboardOrderSubmissions(#{a.inspect},"\
-            "#{b.inspect})"
-          @error = e
-          render([@course, @assessment]) && return
-        end
-        0 # Just say they're equal!
+      if @assessment.overwrites_method?(:scoreboardOrderSubmissions)
+        @assessment.config_module.scoreboardOrderSubmissions(a, b)
+      else
+        scoreboardOrderSubmissions(a, b)
       end
+
+    rescue StandardError => e
+      if @cud.instructor?
+        @errorMessage = "An error occurred while calling "\
+          "scoreboardOrderSubmissions(#{a.inspect},"\
+          "#{b.inspect})"
+        @error = e
+        render([@course, @assessment]) && return
+      end
+      0 # Just say they're equal!
     end
 
     @colspec = nil
-    unless @scoreboard.colspec.blank?
+    if @scoreboard.colspec.present?
       # our scoreboard validations should ensure this will always work
       @colspec = ActiveSupport::JSON.decode(@scoreboard.colspec)["scoreboard"]
     end
@@ -140,7 +138,13 @@ class ScoreboardsController < ApplicationController
 
   action_auth_level :update, :instructor
   def update
-    @scoreboard.update(scoreboard_params) ? flash[:notice] = "Saved!" : flash[:error] = @scoreboard.errors.full_messages.join('')
+    if @scoreboard.update(scoreboard_params)
+      flash[:notice] =
+        "Saved!"
+    else
+      flash[:error] =
+        @scoreboard.errors.full_messages.join("")
+    end
     redirect_to(action: :edit) && return
   end
 
@@ -155,8 +159,7 @@ class ScoreboardsController < ApplicationController
   end
 
   action_auth_level :help, :instructor
-  def help
-  end
+  def help; end
 
 private
 
@@ -176,7 +179,7 @@ private
   # emitColSpec - Emits a text summary of a column specification string.
   def emitColSpec(colspec)
     return "Empty column specification" if colspec.blank?
-    
+
     begin
       # Quote JSON keys and values if they are not already quoted
       quoted = colspec.gsub(/([a-zA-Z0-9]+):/, '"\1":').gsub(/:([a-zA-Z0-9]+)/, ':"\1"')
@@ -231,14 +234,14 @@ private
 
       # First we need to get the total score
       total = 0.0
-      for problem in @assessment.problems do
+      @assessment.problems.each do |problem|
         total += scores[problem.name].to_f
       end
 
       # Now build the array of scores
       entry = []
       entry << total.round(1).to_s
-      for problem in @assessment.problems do
+      @assessment.problems.each do |problem|
         entry << scores[problem.name]
       end
       return entry
@@ -249,21 +252,22 @@ private
     # from the scoreboard array object in the JSON autoresult.
     begin
       parsed = ActiveSupport::JSON.decode(autoresult)
-      fail if !parsed || !parsed["scoreboard"]
-    rescue
+      raise if !parsed || !parsed["scoreboard"]
+    rescue StandardError
       # If there is no autoresult for this student (typically
       # because their code did not compile or it segfaulted and
       # the intructor's autograder did not catch it) then
       # return a nicely formatted nil result.
       begin
         parsed = ActiveSupport::JSON.decode(@scoreboard.colspec)
-        fail if !parsed || !parsed["scoreboard"]
+        raise if !parsed || !parsed["scoreboard"]
+
         entry = []
-        for item in parsed["scoreboard"] do
+        parsed["scoreboard"].each do |_item|
           entry << "-"
         end
         return entry
-      rescue
+      rescue StandardError
         # Give up and bail
         return ["-"]
       end
@@ -294,14 +298,15 @@ private
     # which sorts by total problem, then by submission time.
     if !@assessment.has_autograder? ||
        !@scoreboard || @scoreboard.colspec.blank?
-      aSum = 0; bSum = 0
+      aSum = 0
+      bSum = 0
       a[:problems].keys.each do |key|
         aSum += a[:problems][key].to_f
       end
       b[:problems].keys.each do |key|
         bSum += b[:problems][key].to_f
       end
-      if (bSum != aSum)
+      if bSum != aSum
         bSum <=> aSum # descending
       else
         a[:time] <=> b[:time]
@@ -322,7 +327,7 @@ private
 
       begin
         parsed = ActiveSupport::JSON.decode(@scoreboard.colspec)
-      rescue
+      rescue StandardError
       end
 
       if a0 != b0

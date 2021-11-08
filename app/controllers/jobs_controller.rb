@@ -10,8 +10,8 @@ class JobsController < ApplicationController
 
   # index - This is the default action that generates lists of the
   # running, waiting, and completed jobs.
-    rescue_from ActionView::MissingTemplate do |exception|
-      redirect_to("/home/error_404")
+  rescue_from ActionView::MissingTemplate do |_exception|
+    redirect_to("/home/error_404")
   end
   action_auth_level :index, :student
   def index
@@ -88,6 +88,7 @@ class JobsController < ApplicationController
     if raw_live_jobs && raw_dead_jobs
       raw_live_jobs.each do |item|
         next unless item["id"] == job_id
+
         rjob = item
         is_live = true
         break
@@ -95,6 +96,7 @@ class JobsController < ApplicationController
       if rjob.nil?
         raw_dead_jobs.each do |item|
           next unless item["id"] == job_id
+
           rjob = item
           break
         end
@@ -116,7 +118,7 @@ class JobsController < ApplicationController
       uri = URI(rjob["notifyURL"])
 
       # Parse the notify URL from the autograder
-      path_parts =  uri.path.split("/")
+      path_parts = uri.path.split("/")
       url_course = path_parts[2]
       url_assessment = path_parts[4]
 
@@ -126,7 +128,7 @@ class JobsController < ApplicationController
       # Grab all of the scores for this submission
       begin
         submission = Submission.find(params["submission_id"][0])
-      rescue # submission not found, tar tar sauce!
+      rescue StandardError # submission not found, tar tar sauce!
         return
       end
       scores = submission.scores
@@ -140,6 +142,7 @@ class JobsController < ApplicationController
       scores.each do |score|
         i += 1
         next unless score.feedback && score.feedback["Autograder"]
+
         @feedback_str = score.feedback
         feedback_num = i
         break
@@ -214,10 +217,10 @@ protected
       if !@cud.instructor?
         # Students can see only their own job names
         job[:name] = "*" unless job[:name].ends_with? "_#{@cud.user.email}"
-      else
-        # Instructors can see only their course's job names
-        job[:name] = "*" if !rjob["notifyURL"] || !(job[:course].eql? @cud.course.id.to_s)
+      elsif !rjob["notifyURL"] || !(job[:course].eql? @cud.course.id.to_s)
+        job[:name] = "*"
       end
+      # Instructors can see only their course's job names
     end
 
     # Extract timestamps of first and last trace records
@@ -242,11 +245,11 @@ protected
     end
 
     if is_live
-      if job[:status]["Added job"]
-        job[:state] = "Waiting"
-      else
-        job[:state] = "Running"
-      end
+      job[:state] = if job[:status]["Added job"]
+                      "Waiting"
+                    else
+                      "Running"
+                    end
     else
       job[:state] = "Completed"
       job[:state] = "Failed" if rjob["trace"][-1].split("|")[1].include? "Error"
@@ -266,6 +269,7 @@ protected
                                   vm_pool: [], vm_id: [], duration: [] } }
     live_jobs.each do |j|
       next if j["trace"].nil? || j["trace"].length == 0
+
       tstamp = j["trace"][0].split("|")[0]
       name = j["name"]
       pool = j["vm"]["name"]
@@ -278,6 +282,7 @@ protected
         status = "Running (error occured)"
         j["trace"].each do |tr|
           next unless tr.include?("fail") || tr.include?("error")
+
           @plot_data[:job_errors][:dates] << tr.split("|")[0]
           @plot_data[:job_errors][:job_name] << name
           @plot_data[:job_errors][:vm_pool] << pool
@@ -297,6 +302,7 @@ protected
     end
     dead_jobs.each do |j|
       next if j["trace"].nil? || j["trace"].length == 0
+
       tstamp = j["trace"][0].split("|")[0]
       name = j["name"]
       jid = j["id"]
@@ -308,6 +314,7 @@ protected
       if j["retries"] > 0 || trace.include?("fail") || trace.include?("error")
         j["trace"].each do |tr|
           next unless tr.include?("fail") || tr.include?("error")
+
           @plot_data[:job_errors][:dates] << tr.split("|")[0]
           @plot_data[:job_errors][:job_name] << name
           @plot_data[:job_errors][:vm_pool] << pool
