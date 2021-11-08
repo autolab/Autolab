@@ -250,8 +250,7 @@ class CoursesController < ApplicationController
         save_uploaded_roster
         flash[:success] = "Success!"
       rescue Exception => e
-        flash[:error] = "There was an error uploading the roster
-file, most likely a duplicate email.  The exact error was: #{e} "
+        flash[:error] = "There was an error uploading the roster file. Please fix the following error(s) and try again: #{e} "
         redirect_to(action: "uploadRoster") && return
       end
     else
@@ -439,102 +438,139 @@ private
     listing
   end
 
-  def save_uploaded_roster
-    CourseUserDatum.transaction do
-      rowNum = 0
+  def write_cuds(cuds)
+    rowNum = 0
+    rosterErrors = Array.new
 
-      until params["cuds"][rowNum.to_s].nil?
-        newCUD = params["cuds"][rowNum.to_s]
+    cuds.each do |newCUD|
+      if newCUD[:color] == "green"
+        # Add this user to the course
+        # Look for this user
+        email = newCUD[:email]
+        first_name = newCUD[:first_name]
+        last_name = newCUD[:last_name]
+        school = newCUD[:school]
+        major = newCUD[:major]
+        year = newCUD[:year]
 
-        if newCUD["color"] == "green"
-          # Add this user to the course
-          # Look for this user
-          email = newCUD[:email]
-          first_name = newCUD[:first_name]
-          last_name = newCUD[:last_name]
-          school = newCUD[:school]
-          major = newCUD[:major]
-          year = newCUD[:year]
-
-          if (user = User.where(email: email).first).nil?
+        if (user = User.where(email: email).first).nil?
+          begin
             # Create a new user
             user = User.roster_create(email, first_name, last_name, school,
-                                      major, year)
-            raise "New user cannot be created in uploadRoster." if user.nil?
-          else
-            # Override current user
-            user.first_name = first_name
-            user.last_name = last_name
-            user.school = school
-            user.major = major
-            user.year = year
-            user.save
+            major, year)
+          rescue Exception => e
+            # fail "#{e} at line #{rowNum + 2} of the CSV."
+            rosterErrors.push("#{e.to_s.downcase.sub!("validation failed: ", "")} at line #{rowNum + 2} of the CSV")
+            # rosterErrors.push("#{e} at line #{rowNum + 2} of the CSV")
           end
+        else
+          # Override current user
+          user.first_name = first_name
+          user.last_name = last_name
+          user.school = school
+          user.major = major
+          user.year = year
+          user.save
+        end
+        
+        existing = @course.course_user_data.where(user: user).first
+        # Make sure this user doesn't have a cud in the course
+        if existing
+          rosterErrors.push("duplicate email #{user.email} at line #{rowNum + 2} of the CSV")
+        end
 
-          # Make sure this user doesn't have a cud in the course
-          if @course.course_user_data.where(user: user).first
-            raise "Green CUD doesn't exist in the database."
-          end
+        # Delete unneeded data
+        newCUD.delete(:color)
+        newCUD.delete(:email)
+        newCUD.delete(:first_name)
+        newCUD.delete(:last_name)
+        newCUD.delete(:school)
+        newCUD.delete(:major)
+        newCUD.delete(:year)
 
-          # Delete unneeded data
-          newCUD.delete(:color)
-          newCUD.delete(:email)
-          newCUD.delete(:first_name)
-          newCUD.delete(:last_name)
-          newCUD.delete(:school)
-          newCUD.delete(:major)
-          newCUD.delete(:year)
-
-          # Build cud
+        # Build cud
+        if !user.nil?
           cud = @course.course_user_data.new
           cud.user = user
-          cud.assign_attributes(newCUD.permit(:lecture, :section, :grade_policy))
+          cud.assign_attributes(newCUD)
 
           # Save without validations
           cud.save(validate: false)
-
-        elsif newCUD["color"] == "red"
-          # Drop this user from the course
-          existing = @course.course_user_data.includes(:user).where(users: { email: newCUD[:email] }).first
-
-          raise "Red CUD doesn't exist in the database." if existing.nil?
-
-          existing.dropped = true
-          existing.save(validate: false)
-
-        else
-          # Update this user's attributes.
-          existing = @course.course_user_data.includes(:user).where(users: { email: newCUD[:email] }).first
-
-          raise "Black CUD doesn't exist in the database." if existing.nil?
-
-          user = existing.user
-          raise "User associated to black CUD doesn't exist in the database." if user.nil?
-
-          # Update user data
-          user.first_name = newCUD[:first_name]
-          user.last_name = newCUD[:last_name]
-          user.school = newCUD[:school]
-          user.major = newCUD[:major]
-          user.year = newCUD[:year]
-          user.save!
-
-          # Delete unneeded data
-          newCUD.delete(:color)
-          newCUD.delete(:email)
-          newCUD.delete(:first_name)
-          newCUD.delete(:last_name)
-          newCUD.delete(:school)
-          newCUD.delete(:major)
-          newCUD.delete(:year)
-
-          # assign attributes
-          existing.assign_attributes(newCUD.permit(:lecture, :section, :grade_policy))
-          existing.save(validate: false) # Save without validations.
         end
 
-        rowNum += 1
+      elsif newCUD[:color] == "red"
+        # Drop this user from the course
+        existing = @course.course_user_data.includes(:user).where(users: { email: newCUD[:email] }).first
+
+        fail "Red CUD doesn't exist in the database." if existing.nil?
+
+        existing.dropped = true
+        existing.save(validate: false)
+
+      else
+        # Update this user's attributes.
+        existing = @course.course_user_data.includes(:user).where(users: { email: newCUD[:email] }).first
+
+        fail "Black CUD doesn't exist in the database." if existing.nil?
+
+        user = existing.user
+        if user.nil?
+          fail "User associated to black CUD doesn't exist in the database."
+        end
+
+        # Update user data
+        user.first_name = newCUD[:first_name]
+        user.last_name = newCUD[:last_name]
+        user.school = newCUD[:school]
+        user.major = newCUD[:major]
+        user.year = newCUD[:year]
+
+        begin
+          user.save!
+        rescue Exception => e
+          rosterErrors.push("#{e.to_s.downcase.sub!("validation failed: ", "")} at line #{rowNum + 2} of the CSV")
+        end
+
+        # Delete unneeded data
+        newCUD.delete(:color)
+        newCUD.delete(:email)
+        newCUD.delete(:first_name)
+        newCUD.delete(:last_name)
+        newCUD.delete(:school)
+        newCUD.delete(:major)
+        newCUD.delete(:year)
+
+        # assign attributes
+        existing.assign_attributes(newCUD)
+        existing.save(validate: false) # Save without validations.
       end
+
+      rowNum += 1
+    end
+    if rosterErrors.length > 0
+      fail "#{rosterErrors.join("; ")}."
+    end
+  end
+
+  def save_uploaded_roster
+    cuds = Array.new
+
+    rowNum = 0
+    until params["cuds"][rowNum.to_s].nil?
+      cuds.push(params["cuds"][rowNum.to_s])
+      rowNum += 1
+    end
+
+    CourseUserDatum.transaction do
+      write_cuds(cuds)
+    end
+  end
+
+  def change_view(is_sorted)
+    if (is_sorted)
+      @cud_view = @sorted_cuds
+    else
+      @cud_view = @cuds
     end
   end
 
@@ -598,6 +634,24 @@ private
         @cuds << newCUD
       end
     end
+
+    # do dry run for error checking
+    CourseUserDatum.transaction do
+      cloned_cuds = Marshal.load(Marshal.dump(@cuds))
+      begin
+        write_cuds(cloned_cuds)
+      rescue Exception => e
+        flash[:error] = "Error uploading the CSV file: " +
+                      e.to_s
+        
+        redirect_to(action: "uploadRoster")
+      ensure
+        raise ActiveRecord::Rollback
+      end
+    end
+
+    @sorted_cuds = @cuds.sort_by { |cud| cud[:color] || "z"}
+    @cud_view = @sorted_cuds
   end
 
   # detectAndConvertRoster - Detect the type of a roster based on roster
