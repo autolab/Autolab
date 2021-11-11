@@ -441,8 +441,13 @@ private
   def write_cuds(cuds)
     rowNum = 0
     rosterErrors = Hash.new
+    rowCUDs = Array.new
+    duplicates = Set.new
 
     cuds.each do |newCUD|
+      cloneCUD = newCUD.clone
+      cloneCUD[:row_num] = rowNum + 2
+
       if newCUD[:color] == "green"
         # Add this user to the course
         # Look for this user
@@ -459,8 +464,6 @@ private
             user = User.roster_create(email, first_name, last_name, school,
             major, year)
           rescue Exception => e
-            cloneCUD = newCUD.clone
-            cloneCUD[:row_num] = rowNum + 2
             rosterErrors["#{e.to_s} at line #{rowNum + 2} of the CSV"] = cloneCUD
           end
         else
@@ -476,9 +479,8 @@ private
         existing = @course.course_user_data.where(user: user).first
         # Make sure this user doesn't have a cud in the course
         if existing
-          cloneCUD = newCUD.clone
-          cloneCUD[:row_num] = rowNum + 2
-          rosterErrors["Validation failed: duplicate email #{user.email} at line #{rowNum + 2} of the CSV"] = cloneCUD
+          duplicates.add(newCUD[:email])
+          # rosterErrors["Validation failed: duplicate email #{user.email} at line #{rowNum + 2} of the CSV"] = cloneCUD
         end
 
         # Delete unneeded data
@@ -502,6 +504,7 @@ private
 
           # Save without validations
           cud.save(validate: false)
+          rowCUDs.push(cloneCUD)
         end
 
       elsif newCUD[:color] == "red"
@@ -512,7 +515,6 @@ private
 
         existing.dropped = true
         existing.save(validate: false)
-
       else
         # Update this user's attributes.
         existing = @course.course_user_data.includes(:user).where(users: { email: newCUD[:email] }).first
@@ -533,9 +535,8 @@ private
 
         begin
           user.save!
+          rowCUDs.push(cloneCUD)
         rescue Exception => e
-          cloneCUD = newCUD.clone
-          cloneCUD[:row_num] = rowNum + 2
           rosterErrors["#{e.to_s} at line #{rowNum + 2} of the CSV"] = cloneCUD
         end
 
@@ -552,11 +553,19 @@ private
         params = ActionController::Parameters.new(section: newCUD["section"],
                                                   grade_policy: newCUD[:grade_policy],
                                                   lecture: newCUD[:lecture])
-        puts params
         existing.assign_attributes(params.permit(:lecture, :section, :grade_policy))
         existing.save(validate: false) # Save without validations.
       end
       rowNum += 1
+    end
+
+    puts "---ROWCUDS"
+    puts rowCUDs
+    rowCUDs.each do |cud|
+      puts duplicates.include?(cud[:email])
+      if duplicates.include?(cud[:email])
+        rosterErrors["Validation failed: Duplicate email #{cud[:email]} at line #{cud[:row_num]}"] = cud
+      end
     end
 
     if rosterErrors.length > 0
