@@ -177,8 +177,8 @@ class User < ApplicationRecord
   end
 
   # use LDAP to look up a user
-  def self.ldap_lookup(andrewID)
-    return unless andrewID
+  def self.ldap_lookup(andrew_id)
+    return unless andrew_id
 
     require "rubygems"
     require "net/ldap"
@@ -186,7 +186,7 @@ class User < ApplicationRecord
     host = "ldap.andrew.cmu.edu"
     ldap = Net::LDAP.new(host: host, port: 389)
     user = ldap.search(base: "ou=Person,dc=cmu,dc=edu",
-                       filter: "cmuAndrewId=" + andrewID)[0]
+                       filter: "cmuAndrewId=" + andrew_id)[0]
 
     return unless user
 
