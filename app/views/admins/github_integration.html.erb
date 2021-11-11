@@ -4,9 +4,9 @@
 <% if @github_integration && @github_integration.limit > 1000 %>
   Autolab is connected to Github!
   <ul>
-    <li>Rate limit: <%= "#{@github_integration.remaining}/#{@github_integration.limit}" %></li>
-    <li>Resets: <%= @github_integration.resets_at %></li>
-    <li>Resets in: <%= @github_integration.resets_in %></li>
+    <li><b>Rate limit:</b> <%= "#{@github_integration.remaining}/#{@github_integration.limit}" %></li>
+    <li><b>Resets: </b><%= @github_integration.resets_at %></li>
+    <li><b>Resets in:</b> <%= @github_integration.resets_in %></li>
   </ul>
 <%else%>
   <b>Github integration is not configured or misconfigured, or Github is down. </b>
