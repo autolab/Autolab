@@ -93,4 +93,10 @@ class GithubIntegration < ApplicationRecord
       return nil
     end
   end
+
+  ##
+  # Returns whether Autolab is connected to Github
+  def self.connected
+    not self.check_github_authorization.nil?
+  end
 end

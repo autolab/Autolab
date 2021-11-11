@@ -1,6 +1,9 @@
 <% @title = "Github Integration"%>
 <% GithubIntegration.check_github_authorization %>
 <h2>Github Integration</h2>
+<!-- If Github application secrets are not configured correctly, the default unauthenticated 
+limit is 60 as of writing, and it is 5000 if configured, so we just check for
+a large enough value -->
 <% if @github_integration && @github_integration.limit > 1000 %>
   Autolab is connected to Github!
   <ul>

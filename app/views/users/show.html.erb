@@ -25,10 +25,12 @@
   <hr>
   <h4>Private Settings</h4>
   <%= link_to raw('<span class="btn primary">Change Password</span>'), edit_user_registration_path %>
-  <% if @user.github_integration && @user.github_integration.is_connected %>
-    <%= link_to raw('<span class="btn primary">Revoke Github Token</span>'), github_revoke_user_path(@user) %>
-  <% else %>
-    <%= link_to raw('<span class="btn primary">Connect to Github</span>'), github_oauth_user_path(@user) %>
+  <% if GithubIntegration.connected %>
+    <% if @user.github_integration && @user.github_integration.is_connected %>
+      <%= link_to raw('<span class="btn primary">Revoke Github Token</span>'), github_revoke_user_path(@user) %>
+    <% else %>
+      <%= link_to raw('<span class="btn primary">Connect to Github</span>'), github_oauth_user_path(@user) %>
+    <% end %>
   <% end %>
   <h4>API Settings</h4>
   <%= link_to raw('<span class="btn primary">New Activation</span>'), device_flow_activation_path %>
