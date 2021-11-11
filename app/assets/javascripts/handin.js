@@ -98,6 +98,11 @@ function enableSubmit() {
   var checkbox = document.getElementById("integrity_checkbox");
   var tab = $(".submission-panel .ui.tab.active").attr('id');
   var fileSelector = $("#handin_show_assessment input[type='file']").get(0);
+  if (tab === "github_tab") {
+    fileSelector.value = null;
+    $(".handin-row").show();
+    $(".handedin-row").hide();
+  }
   if (!checkbox.checked) {
     $("#fake-submit").addClass("disabled");
   } else {
