@@ -447,7 +447,8 @@ private
     cuds.each do |newCUD|
       cloneCUD = newCUD.clone
       cloneCUD[:row_num] = rowNum + 2
-
+      rowCUDs.push(cloneCUD)
+      
       if newCUD[:color] == "green"
         # Add this user to the course
         # Look for this user
@@ -507,7 +508,6 @@ private
 
           # Save without validations
           cud.save(validate: false)
-          rowCUDs.push(cloneCUD)
         end
 
       elsif newCUD[:color] == "red"
@@ -538,7 +538,6 @@ private
 
         begin
           user.save!
-          rowCUDs.push(cloneCUD)
         rescue Exception => e
           msg = "#{e.to_s} at line #{rowNum + 2} of the CSV"
           if !rosterErrors.has_key?(msg)
@@ -569,7 +568,6 @@ private
     puts "---ROWCUDS"
     puts rowCUDs
     rowCUDs.each do |cud|
-      puts duplicates.include?(cud[:email])
       if duplicates.include?(cud[:email])
         msg = "Validation failed: Duplicate email #{cud[:email]}"
         if !rosterErrors.has_key?(msg)
