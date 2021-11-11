@@ -53,11 +53,18 @@
     <%= f.text_field :group_size,
       display_name: "Group Size",
       help_text: "Set the maximum size of groups for this assessment.  If group size is 1, the assessment is solo.  If the size is decreased, groups that are too large will not be broken up.  If the size is set to 1, groups will be saved, but the assessment will be solo." %>
-    <!-- 
-    TODO: make this more pronounced/visible
-      -->
-    <%= f.check_box :github_submission_enabled, display_name: "Github submission",
-    help_text: "Allow submissions through Github. If enabled, handin filenames must end in .tar/.tgz and autograder (if applicable) should expect a tarfile." %>
+    <!-- TODO update helptext to link to docs once we have docs -->
+    <% if GithubIntegration.connected %>
+      <%= f.check_box :github_submission_enabled, 
+    display_name: "Allow Github submissions",
+    help_text: "Check to enable submissions through Github. Handin filename must end in .tgz and autograder should expect a compressed .tgz tarfile if Github submission is enabled." %>
+    <% else %>
+      <%= f.check_box :github_submission_enabled, 
+    disabled: "disabled",
+    display_name: "Allow Github submissions (Disabled)",
+    help_text: "Autolab has not been configured to use Github integration. Please contact your Autolab admin to perform the necessary setup and configuration based on the instructions on our docs." 
+  %>
+    <% end %>
     <br>
     <%= f.submit "Create assessment", class: "btn primary"  %>
   </div>

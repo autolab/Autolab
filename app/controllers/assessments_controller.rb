@@ -82,6 +82,9 @@ class AssessmentsController < ApplicationController
 
   def new
     @assessment = @course.assessments.new
+    if not GithubIntegration.connected
+      @assessment.github_submission_enabled = false
+    end
   end
 
   # installAssessment - Installs a new assessment, either by
