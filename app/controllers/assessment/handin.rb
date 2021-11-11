@@ -30,7 +30,7 @@ module AssessmentHandin
       out_file = File.new("out.txt", "w+")
       out_file.puts(contents)
       params[:submission]["file"] = out_file
-    elsif params[:repo]
+    elsif params[:submission].nil?
       # get code from Github
       github_integration = current_user.github_integration
 
