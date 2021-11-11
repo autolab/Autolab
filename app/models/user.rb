@@ -143,10 +143,9 @@ class User < ApplicationRecord
     puts("user email: ", user.email)
     puts("user pswd: ", user.password)
 
-    if user.save
-      # user.send_reset_password_instructions
-      user
-    end
+    return unless user.save
+
+    user
   end
 
   # user (instructor) created by building a course
