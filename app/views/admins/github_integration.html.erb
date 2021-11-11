@@ -1,0 +1,18 @@
+<% @title = "Github Integration"%>
+<% GithubIntegration.check_github_authorization %>
+<h2>Github Integration</h2>
+<% if @github_integration && @github_integration.limit > 1000 %>
+  Autolab is connected to Github!
+  <ul>
+    <li>Rate limit: <%= "#{@github_integration.remaining}/#{@github_integration.limit}" %></li>
+    <li>Resets: <%= @github_integration.resets_at %></li>
+    <li>Resets in: <%= @github_integration.resets_in %></li>
+  </ul>
+<%else%>
+  <b>Github integration is not configured or misconfigured, or Github is down. </b>
+  <br>
+  To configure Github integration, please check our docs here. <!-- TODO update with documentation link -->
+  <br>
+  Please set GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET environment variables to refer to 
+  your Github application's client ID and secret respectively.
+<% end %>

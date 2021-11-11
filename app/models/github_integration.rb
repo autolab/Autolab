@@ -88,7 +88,7 @@ class GithubIntegration < ApplicationRecord
       :client_secret => Rails.configuration.x.github.client_secret)
 
     begin
-      client.rate_limit
+      client.rate_limit!
     rescue
       return nil
     end

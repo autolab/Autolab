@@ -57,6 +57,7 @@ Rails.application.routes.draw do
 
   resource :admin do
     match "email_instructors", via: [:get, :post]
+    match "github_integration", via: [:get]
   end
 
   resources :users do
