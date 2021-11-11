@@ -20,6 +20,8 @@
   style: "margin-top: 0 !important;",
   help_text: "Time after which final scores are included in the gradebook",
   greater_than: "assessment_start_at assessment_due_at assessment_end_at", placeholder: Date.current %>
+<!-- TODO this should be disabled if GithubIntegration.connected does not hold, and it should
+link to docs -->
 <%= f.check_box :github_submission_enabled, display_name: "Allow Github submissions",
     help_text: "Check to enable submissions through Github. Handin filename must end in .tgz and autograder should expect a compressed .tgz tarfile if Github submission is enabled." %>
 <% unless f.object.disable_handins %>

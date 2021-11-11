@@ -8,6 +8,7 @@
   <% if @assessment.github_submission_enabled %>
     <div class="ui pointing secondary tabular menu">
       <a class="item active" data-tab="upload">Upload</a>
+      <!-- TODO should only show if GithubIntegration.connected is true -->
       <a class="item" data-tab="github">Github</a>
     </div>
   <% end %>
@@ -24,7 +25,6 @@
           <span style="font-size: 10px;">Files do not submit automatically.</span></p>
       </div>
     </div>
-    
     <div class="row handedin-row" style="display: none;margin-top: 10px;">
       <div class="col s2 center-align">
         <i class="material-icons" style="font-size: 5rem;">insert_drive_file</i>
@@ -36,7 +36,7 @@
           <span id="handin-text">
             Lines of code: <span id="handin-loc">Calculating...</span><br />
           </span>
-            File size: <span id="handin-size"></span><br />
+          File size: <span id="handin-size"></span><br />
         </p>
       </div>
       <div class="col s1 right-align">
@@ -54,13 +54,15 @@
           <% end %>
         </select>
       <% else %>
-        <h5> No repositories found! Create a repository in your Github account in order to submit your work via Git submission. </h5><br />
+        <h5> No repositories found! Create a repository in your Github account in order to submit your work via Git submission. </h5>
+        <br />
       <% end %>
     <% else %>
-    <div class="connect-github-account">
-      <br /><label> Click below to connect your Github account </label> <br />
-      <%= link_to raw('<span class="btn primary">Connect</span>'), github_oauth_user_path(@cud.user) %> </br>
+      <div class="connect-github-account">
+        <br />
+        <label> Click below to connect your Github account </label> <br />
+        <%= link_to raw('<span class="btn primary">Connect</span>'), github_oauth_user_path(@cud.user) %> </br>
     </div>
-    <% end %>
-  </div>
+  <% end %>
+</div>
 </div>
