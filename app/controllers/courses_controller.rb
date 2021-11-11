@@ -464,7 +464,11 @@ private
             user = User.roster_create(email, first_name, last_name, school,
             major, year)
           rescue Exception => e
-            rosterErrors["#{e.to_s} at line #{rowNum + 2} of the CSV"] = cloneCUD
+            msg = "#{e.to_s} at line #{rowNum + 2} of the CSV"
+            if !rosterErrors.has_key?(msg)
+              rosterErrors[msg] = Array.new
+            end
+            rosterErrors[msg].push(cloneCUD)
           end
         else
           # Override current user
@@ -480,7 +484,6 @@ private
         # Make sure this user doesn't have a cud in the course
         if existing
           duplicates.add(newCUD[:email])
-          # rosterErrors["Validation failed: duplicate email #{user.email} at line #{rowNum + 2} of the CSV"] = cloneCUD
         end
 
         # Delete unneeded data
@@ -537,7 +540,11 @@ private
           user.save!
           rowCUDs.push(cloneCUD)
         rescue Exception => e
-          rosterErrors["#{e.to_s} at line #{rowNum + 2} of the CSV"] = cloneCUD
+          msg = "#{e.to_s} at line #{rowNum + 2} of the CSV"
+          if !rosterErrors.has_key?(msg)
+            rosterErrors[msg] = Array.new
+          end
+          rosterErrors[msg].push(cloneCUD)
         end
 
         # Delete unneeded data
@@ -564,7 +571,11 @@ private
     rowCUDs.each do |cud|
       puts duplicates.include?(cud[:email])
       if duplicates.include?(cud[:email])
-        rosterErrors["Validation failed: Duplicate email #{cud[:email]} at line #{cud[:row_num]}"] = cud
+        msg = "Validation failed: Duplicate email #{cud[:email]}"
+        if !rosterErrors.has_key?(msg)
+          rosterErrors[msg] = Array.new
+        end
+        rosterErrors[msg].push(cud)
       end
     end
 

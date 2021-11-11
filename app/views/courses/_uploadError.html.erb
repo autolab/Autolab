@@ -1,5 +1,5 @@
 <p>There was an error uploading the roster file. Please fix the following error(s) and try again: </p>
-<% local_assigns[:roster_errors].each do |msg, errorRow| %>
+<% local_assigns[:roster_errors].each do |msg, rowList| %>
   <br />
   <p><%= msg %></p>
   <table class="prettyBorder sortable" >
@@ -20,26 +20,28 @@
       </tr>
     </thead>
     <!-- Row index is set using CSS. -->
-    <tr class="user-row">
-      <td><%= errorRow["row_num"] %></td>
-      <td><%= errorRow["first_name"] %></td>
-      <td><%= errorRow["last_name"] %></td>
-      <td><%= errorRow["email"] %></td>
-      <td><%= errorRow["lecture"] %></td>
-      <td><%= errorRow["section"] %></td>
-      <td><%= errorRow["school"] %></td>
-      <td><%= errorRow["major"] %></td>
-      <td><%= errorRow["year"] %></td>
-      <td><%= errorRow["nickname"] %></td>
-      <td><%= errorRow["dropped"] %></td>
-      <td><%= if errorRow["instructor"] then
-        "Instructor"
-      elsif errorRow["instructor"] then
-        "Course Assistant"
-      else
-        "Student"
-      end
-      %></td>
-    </tr>
+    <% rowList.each do |errorRow| %>
+      <tr class="user-row">
+        <td><%= errorRow["row_num"] %></td>
+        <td><%= errorRow["first_name"] %></td>
+        <td><%= errorRow["last_name"] %></td>
+        <td><%= errorRow["email"] %></td>
+        <td><%= errorRow["lecture"] %></td>
+        <td><%= errorRow["section"] %></td>
+        <td><%= errorRow["school"] %></td>
+        <td><%= errorRow["major"] %></td>
+        <td><%= errorRow["year"] %></td>
+        <td><%= errorRow["nickname"] %></td>
+        <td><%= errorRow["dropped"] %></td>
+        <td><%= if errorRow["instructor"] then
+          "Instructor"
+        elsif errorRow["instructor"] then
+          "Course Assistant"
+        else
+          "Student"
+        end
+        %></td>
+      </tr>
+    <% end %>
   </table>
 <% end %>
