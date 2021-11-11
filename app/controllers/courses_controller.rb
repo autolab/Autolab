@@ -654,7 +654,6 @@ private
       begin
         write_cuds(cloned_cuds)
       rescue Exception => e
-        flash[:error] = e
         redirect_to(action: "uploadRoster")
       ensure
         raise ActiveRecord::Rollback
