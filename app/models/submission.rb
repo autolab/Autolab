@@ -49,7 +49,9 @@ class Submission < ApplicationRecord
   # latest (unignored) submissions
   scope :latest, -> { joins(:assessment_user_datum).joins(:course_user_datum) }
   scope :latest_for_statistics, lambda {
-                                  joins(:assessment_user_datum).where.not(assessment_user_data: { grade_type: AssessmentUserDatum::EXCUSED }).joins(:course_user_datum)
+                                  joins(:assessment_user_datum).where.not(assessment_user_data:
+                                    { grade_type:
+                                      AssessmentUserDatum::EXCUSED }).joins(:course_user_datum)
                                 }
 
   # constants for special submission types
@@ -113,7 +115,8 @@ class Submission < ApplicationRecord
     end
     save_additional_form_fields(upload)
     save!
-    settings_file = "#{course_user_datum.user.email}_#{version}_#{assessment.handin_filename}.settings.json"
+    settings_file = "#{course_user_datum.user.email}_#{version}" \
+                    "_#{assessment.handin_filename}.settings.json"
 
     settings_path = Rails.root.join("courses",
                                     course_user_datum.course.name,
