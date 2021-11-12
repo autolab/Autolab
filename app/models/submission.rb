@@ -77,9 +77,7 @@ class Submission < ApplicationRecord
   delegate :update_latest_submission, to: :aud
 
   def save_file(upload)
-    filename = course_user_datum.user.email + "_" +
-               version.to_s + "_" +
-               assessment.handin_filename
+    filename = "#{course_user_datum.user.email}_#{version}_#{assessment.handin_filename}"
     directory = assessment.handin_directory
     path = Rails.root.join("courses", course_user_datum.course.name,
                            assessment.name, directory, filename)
@@ -115,9 +113,7 @@ class Submission < ApplicationRecord
     end
     save_additional_form_fields(upload)
     save!
-    settings_file = course_user_datum.user.email + "_" +
-                    version.to_s + "_" + assessment.handin_filename +
-                    ".settings.json"
+    settings_file = "#{course_user_datum.user.email}_#{version}_#{assessment.handin_filename}.settings.json"
 
     settings_path = File.join(Rails.root, "courses",
                               course_user_datum.course.name,
@@ -323,7 +319,8 @@ class Submission < ApplicationRecord
       # invalidate
       Rails.cache.delete(raw_score_cache_key(include_unreleased: true))
       Rails.cache.delete(raw_score_cache_key(include_unreleased: false))
-    end # release lock
+      # release lock
+    end
   end
 
   # fall back to UA-reported mime_type, if not detected
@@ -501,7 +498,7 @@ private
   end
 
   def allowed?
-    submitted_at = created_at || Time.now
+    submitted_at = created_at || Time.zone.now
     can, why_not = aud.can_submit? submitted_at, (submitted_by || course_user_datum)
 
     if can
