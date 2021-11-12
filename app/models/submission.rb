@@ -132,7 +132,7 @@ class Submission < ApplicationRecord
     save!
   end
 
-  def getSettings
+  def get_settings
     if settings
       JSON.parse(settings)
     else
