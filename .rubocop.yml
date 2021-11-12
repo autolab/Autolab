@@ -61,6 +61,9 @@ Style/MixinUsage:
 Naming/VariableName:
   Enabled: false
 
+Naming/AccessorMethodName:
+  Enabled: false
+
 Style/OptionalBooleanParameter:
   Enabled: false
 
