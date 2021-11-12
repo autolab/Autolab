@@ -478,7 +478,15 @@ private
           user.school = school
           user.major = major
           user.year = year
-          user.save
+          begin
+            user.save!
+          rescue Exception => e
+            msg = "#{e.to_s} at line #{rowNum + 2} of the CSV"
+            if !rosterErrors.has_key?(msg)
+              rosterErrors[msg] = Array.new
+            end
+            rosterErrors[msg].push(cloneCUD)
+          end
         end
         
         existing = @course.course_user_data.where(user: user).first
