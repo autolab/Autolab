@@ -17,11 +17,9 @@ class CoursesController < ApplicationController
   def index
     courses_for_user = User.courses_for_user current_user
 
-    if courses_for_user.any?
-      @listing = categorize_courses_for_listing courses_for_user
-    else
-      redirect_to(home_no_user_path) && return
-    end
+    redirect_to(home_no_user_path) && return unless courses_for_user.any?
+
+    @listing = categorize_courses_for_listing courses_for_user
 
     render layout: "home"
   end
@@ -92,8 +90,8 @@ class CoursesController < ApplicationController
     # fill temporary values in other fields
     @newCourse.late_slack = 0
     @newCourse.grace_days = 0
-    @newCourse.start_date = Time.now
-    @newCourse.end_date = Time.now
+    @newCourse.start_date = Time.zone.now
+    @newCourse.end_date = Time.zone.now
 
     @newCourse.late_penalty = Penalty.new
     @newCourse.late_penalty.kind = "points"
@@ -111,7 +109,7 @@ class CoursesController < ApplicationController
         begin
           instructor = User.instructor_create(params[:instructor_email],
                                               @newCourse.name)
-        rescue Exception => e
+        rescue StandardError => e
           flash[:error] = "Can't create instructor for the course: #{e}"
           render(action: "new") && return
         end
@@ -155,14 +153,13 @@ class CoursesController < ApplicationController
 
     if @course.update(edit_course_params)
       flash[:success] = "Success: Course info updated."
-      redirect_to edit_course_path(@course)
     else
       flash[:error] = "Error: There were errors editing the course."
       @course.errors.full_messages.each do |msg|
         flash[:error] += "<br>#{msg}"
       end
-      redirect_to edit_course_path(@course)
     end
+    redirect_to edit_course_path(@course)
   end
 
   # DELETE courses/:id/
@@ -179,21 +176,21 @@ class CoursesController < ApplicationController
   # Non-RESTful Routes Below
 
   def report_bug
-    if request.post?
-      CourseMailer.bug_report(
-        params[:title],
-        params[:summary],
-        current_user,
-        @course
-      ).deliver
-    end
+    return unless request.post?
+
+    CourseMailer.bug_report(
+      params[:title],
+      params[:summary],
+      current_user,
+      @course
+    ).deliver
   end
 
   # Only instructor (and above) can use this feature
   # to look up user accounts and fill in cud fields
-  action_auth_level :userLookup, :instructor
-  def userLookup
-    if params[:email].length == 0
+  action_auth_level :user_lookup, :instructor
+  def user_lookup
+    if params[:email].empty?
       flash[:error] = "No email supplied for LDAP Lookup"
       render(action: :new, layout: false) && return
     end
@@ -212,22 +209,23 @@ class CoursesController < ApplicationController
 
   action_auth_level :users, :instructor
   def users
-    if params[:search]
-      # left over from when AJAX was used to find users on the admin users list
-      @cuds = @course.course_user_data.joins(:user).order("users.email ASC").where(CourseUserDatum.conditions_by_like(params[:search]))
-    else
-      @cuds = @course.course_user_data.joins(:user).order("users.email ASC")
-    end
+    @cuds = if params[:search]
+              # left over from when AJAX was used to find users on the admin users list
+              @course.course_user_data.joins(:user)
+                     .order("users.email ASC")
+                     .where(CourseUserDatum
+                                .conditions_by_like(params[:search]))
+            else
+              @course.course_user_data.joins(:user).order("users.email ASC")
+            end
   end
 
   action_auth_level :reload, :instructor
   def reload
-    if @course.reload_course_config
-      flash[:success] = "Success: Course config file reloaded!"
-      redirect_to([@course]) && return
-    else
-      render && return
-    end
+    render && return unless @course.reload_course_config
+
+    flash[:success] = "Success: Course config file reloaded!"
+    redirect_to([@course]) && return
   end
 
   # Upload a CSV roster and import the users into the course
@@ -235,33 +233,33 @@ class CoursesController < ApplicationController
   #   green - User doesn't exist in the course, and is going to be added
   #   red - User is going to be dropped from the course
   #   black - User exists in the course
-  action_auth_level :uploadRoster, :instructor
-  def uploadRoster
+  action_auth_level :upload_roster, :instructor
+  def upload_roster
     return unless request.post?
 
     # Check if any file is attached
     if params["upload"] && params["upload"]["file"].nil?
       flash[:error] = "Please attach a roster!"
-      redirect_to(action: :uploadRoster) && return
+      redirect_to(action: :upload_roster) && return
     end
 
     if params[:doIt]
       begin
         save_uploaded_roster
         flash[:success] = "Success!"
-      rescue Exception => e
+      rescue StandardError => e
         if e != "Roster validation error"
           flash[:error] = e
         end
-        redirect_to(action: "uploadRoster") && return
+        redirect_to(action: "upload_roster") && return
       end
     else
       parse_roster_csv
     end
   end
 
-  action_auth_level :downloadRoster, :instructor
-  def downloadRoster
+  action_auth_level :download_roster, :instructor
+  def download_roster
     @cuds = @course.course_user_data.where(instructor: false,
                                            course_assistant: false,
                                            dropped: false)
@@ -275,11 +273,11 @@ class CoursesController < ApplicationController
     send_data output, filename: "roster.csv", type: "text/csv", disposition: "inline"
   end
 
-  # installAssessment - Installs a new assessment, either by
+  # install_assessment - Installs a new assessment, either by
   # creating it from scratch, or importing it from an existing
   # assessment directory.
-  action_auth_level :installAssessment, :instructor
-  def installAssessment
+  action_auth_level :install_assessment, :instructor
+  def install_assessment
     @assignDir = Rails.root.join("courses", @course.name)
     @availableAssessments = []
     begin
@@ -294,7 +292,7 @@ class CoursesController < ApplicationController
         end
       end
       @availableAssessments = @availableAssessments.sort
-    rescue Exception => e
+    rescue StandardError => e
       render(text: "<h3>#{e}</h3>", layout: true) && return
     end
   end
@@ -303,41 +301,41 @@ class CoursesController < ApplicationController
   # a single section at a time.  Sections are passed via params[:section].
   action_auth_level :email, :instructor
   def email
-    if request.post?
-      section = (params[:section] if params[:section].length > 0)
+    return unless request.post?
 
-      # don't email kids who dropped!
-      @cuds = if section
-                @course.course_user_data.where(dropped: false, section: section)
-              else
-                @course.course_user_data.where(dropped: false)
-              end
+    section = (params[:section] if !params[:section].empty?)
 
-      bccString = make_dlist(@cuds)
+    # don't email kids who dropped!
+    @cuds = if section
+              @course.course_user_data.where(dropped: false, section: section)
+            else
+              @course.course_user_data.where(dropped: false)
+            end
 
-      @email = CourseMailer.course_announcement(
-        params[:from],
-        bccString,
-        params[:subject],
-        params[:body],
-        @cud,
-        @course
-      )
-      @email.deliver
-    end
+    bccString = make_dlist(@cuds)
+
+    @email = CourseMailer.course_announcement(
+      params[:from],
+      bccString,
+      params[:subject],
+      params[:body],
+      @cud,
+      @course
+    )
+    @email.deliver
   end
 
   action_auth_level :moss, :instructor
   def moss
     @courses = Course.all.select do |course|
       @cud.user.administrator ||
-        course.course_user_data.joins(:user).find_by(users: { email: @cud.user.email },
-                                                     instructor: true) != nil
+        !course.course_user_data.joins(:user).find_by(users: { email: @cud.user.email },
+                                                      instructor: true).nil?
     end
   end
 
-  action_auth_level :runMoss, :instructor
-  def runMoss
+  action_auth_level :run_moss, :instructor
+  def run_moss
     # Return if we have no files to process.
     unless params[:assessments] || params[:external_tar]
       flash[:error] = "No input files provided for MOSS."
@@ -347,22 +345,20 @@ class CoursesController < ApplicationController
     assessments = []
 
     # First, validate access on each of the requested assessments
-    if assessmentIDs
-      assessmentIDs.keys.each do |aID|
-        assessment = Assessment.find(aID)
-        unless assessment
-          flash[:error] = "Invalid Assessment ID: #{aID}"
-          redirect_to(action: :moss) && return
-        end
-        assessmentCUD = assessment.course.course_user_data.joins(:user).find_by(
-          users: { email: current_user.email }, instructor: true
-        )
-        if !assessmentCUD && !@cud.user.administrator?
-          flash[:error] = "Invalid User"
-          redirect_to(action: :moss) && return
-        end
-        assessments << assessment
+    assessmentIDs&.keys&.each do |aid|
+      assessment = Assessment.find(aid)
+      unless assessment
+        flash[:error] = "Invalid Assessment ID: #{aid}"
+        redirect_to(action: :moss) && return
       end
+      assessmentCUD = assessment.course.course_user_data.joins(:user).find_by(
+        users: { email: current_user.email }, instructor: true
+      )
+      if !assessmentCUD && !@cud.user.administrator?
+        flash[:error] = "Invalid User"
+        redirect_to(action: :moss) && return
+      end
+      assessments << assessment
     end
 
     # Create a temporary directory
@@ -386,7 +382,7 @@ class CoursesController < ApplicationController
     moss_params = [moss_params, "-l", params[:language_selection]].join(" ") unless language.nil?
 
     # Get moss flags from text field
-    moss_flags = ["mossnet" + moss_params + " -d"].join(" ")
+    moss_flags = ["mossnet#{moss_params} -d"].join(" ")
     @mossCmd = [Rails.root.join("vendor", moss_flags)]
 
     extract_asmt_for_moss(tmp_dir, assessments)
@@ -413,10 +409,11 @@ private
   end
 
   def edit_course_params
-    params.require(:editCourse).permit(:name, :semester, :website, :late_slack, :grace_days, :display_name, :start_date, :end_date,
-                                       :disabled, :exam_in_progress, :version_threshold, :gb_message,
-                                       late_penalty_attributes: %i[kind value],
-                                       version_penalty_attributes: %i[kind value])
+    params.require(:editCourse).permit(:name, :semester, :website, :late_slack,
+                                       :grace_days, :display_name, :start_date, :end_date,
+                                       :disabled, :exam_in_progress, :version_threshold,
+                                       :gb_message, late_penalty_attributes: %i[kind value],
+                                                    version_penalty_attributes: %i[kind value])
   end
 
   def categorize_courses_for_listing(courses)
@@ -451,7 +448,8 @@ private
       cloneCUD[:row_num] = rowNum + 2
       rowCUDs.push(cloneCUD)
 
-      if newCUD[:color] == "green"
+      case newCUD[:color]
+      when "green"
         # Add this user to the course
         # Look for this user
         email = newCUD[:email]
@@ -466,9 +464,9 @@ private
             # Create a new user
             user = User.roster_create(email, first_name, last_name, school,
                                       major, year)
-          rescue Exception => e
+          rescue StandardError => e
             msg = "#{e} at line #{rowNum + 2} of the CSV"
-            if !rosterErrors.has_key?(msg)
+            if !rosterErrors.key?(msg)
               rosterErrors[msg] = []
             end
             rosterErrors[msg].push(cloneCUD)
@@ -482,9 +480,9 @@ private
           user.year = year
           begin
             user.save!
-          rescue Exception => e
+          rescue StandardError => e
             msg = "#{e} at line #{rowNum + 2} of the CSV"
-            if !rosterErrors.has_key?(msg)
+            if !rosterErrors.key?(msg)
               rosterErrors[msg] = []
             end
             rosterErrors[msg].push(cloneCUD)
@@ -513,16 +511,17 @@ private
           params = ActionController::Parameters.new(section: newCUD["section"],
                                                     grade_policy: newCUD[:grade_policy],
                                                     lecture: newCUD[:lecture])
-          puts params
+          Rails.logger.debug params
           cud.assign_attributes(params.permit(:lecture, :section, :grade_policy))
 
           # Save without validations
           cud.save(validate: false)
         end
 
-      elsif newCUD[:color] == "red"
+      when "red"
         # Drop this user from the course
-        existing = @course.course_user_data.includes(:user).where(users: { email: newCUD[:email] }).first
+        existing = @course.course_user_data.includes(:user)
+                          .where(users: { email: newCUD[:email] }).first
 
         fail "Red CUD doesn't exist in the database." if existing.nil?
 
@@ -530,7 +529,8 @@ private
         existing.save(validate: false)
       else
         # Update this user's attributes.
-        existing = @course.course_user_data.includes(:user).where(users: { email: newCUD[:email] }).first
+        existing = @course.course_user_data.includes(:user)
+                          .where(users: { email: newCUD[:email] }).first
 
         fail "Black CUD doesn't exist in the database." if existing.nil?
 
@@ -548,9 +548,9 @@ private
 
         begin
           user.save!
-        rescue Exception => e
+        rescue StandardError => e
           msg = "#{e} at line #{rowNum + 2} of the CSV"
-          if !rosterErrors.has_key?(msg)
+          if !rosterErrors.key?(msg)
             rosterErrors[msg] = []
           end
           rosterErrors[msg].push(cloneCUD)
@@ -575,19 +575,19 @@ private
       rowNum += 1
     end
 
-    puts "---ROWCUDS"
-    puts rowCUDs
+    Rails.logger.debug "---ROWCUDS"
+    Rails.logger.debug rowCUDs
     rowCUDs.each do |cud|
       next unless duplicates.include?(cud[:email])
 
       msg = "Validation failed: Duplicate email #{cud[:email]}"
-      if !rosterErrors.has_key?(msg)
+      if !rosterErrors.key?(msg)
         rosterErrors[msg] = []
       end
       rosterErrors[msg].push(cud)
     end
 
-    if rosterErrors.length > 0
+    if !rosterErrors.empty?
       flash[:roster_error] = rosterErrors
       fail "Roster validation error"
     end
@@ -622,9 +622,9 @@ private
     @newCUDs = []
 
     begin
-      csv = detectAndConvertRoster(params["upload"]["file"].read)
+      csv = detect_and_convert_roster(params["upload"]["file"].read)
       csv.each do |row|
-        next if row[1].nil? || row[1].chomp.size == 0
+        next if row[1].nil? || row[1].chomp.empty?
 
         newCUD = { email: row[1].to_s,
                    last_name: row[2].to_s.chomp(" "),
@@ -635,8 +635,8 @@ private
                    grade_policy: row[7].to_s.chomp(" "),
                    lecture: row[9].to_s.chomp(" "),
                    section: row[10].to_s.chomp(" ") }
-        cud = @currentCUDs.find do |cud|
-          cud.user && cud.user.email == newCUD[:email]
+        cud = @currentCUDs.find do |current|
+          current.user && current.user.email == newCUD[:email]
         end
         if !cud
           newCUD[:color] = "green"
@@ -647,12 +647,11 @@ private
       end
     rescue CSV::MalformedCSVError => e
       flash[:error] = "Error parsing CSV file: #{e}"
-      redirect_to(action: "uploadRoster") && return
-    rescue Exception => e
+      redirect_to(action: "upload_roster") && return
+    rescue StandardError => e
+      flash[:error] = "Error uploading the CSV file!: #{e}#{e.backtrace.join('<br>')}"
       raise e
-      flash[:error] = "Error uploading the CSV file!: " +
-                      e.to_s + e.backtrace.join("<br>")
-      redirect_to(action: "uploadRoster") && return
+      redirect_to(action: "upload_roster") && return
     end
 
     # drop the rest if indicated
@@ -682,7 +681,7 @@ private
       begin
         write_cuds(cloned_cuds)
       rescue Exception => e
-        redirect_to(action: "uploadRoster")
+        redirect_to(action: "upload_roster")
       ensure
         raise ActiveRecord::Rollback
       end
@@ -692,7 +691,7 @@ private
     @cud_view = @sorted_cuds
   end
 
-  # detectAndConvertRoster - Detect the type of a roster based on roster
+  # detect_and_convert_roster - Detect the type of a roster based on roster
   # column matching and convert to default roster
 
   # map fields:
@@ -707,11 +706,11 @@ private
   # map[8]: unused
   # map[9]: lecture
   # map[10]: section
-  def detectAndConvertRoster(roster)
+  def detect_and_convert_roster(roster)
     parsedRoster = CSV.parse(roster)
-    if parsedRoster[0][0].nil?
-      raise "Roster cannot be recognized"
-    elsif parsedRoster[0].length == ROSTER_COLUMNS_F20
+    raise "Roster cannot be recognized" if parsedRoster[0][0].nil?
+
+    if parsedRoster[0].length == ROSTER_COLUMNS_F20
       # In CMU S3 roster. Columns are:
       # Semester(0), Course(1), Section(2), (Lecture)(3), (Mini-skip)(4),
       # Last Name(5), Preferred/First Name(6), (MI-skip)(7), Andrew ID(8),
@@ -764,7 +763,7 @@ private
         next unless map[j] >= 0
 
         convertedRoster[i][j] = if j == 1
-                                  parsedRoster[i + offset][map[j]] + "@" + domain
+                                  "#{parsedRoster[i + offset][map[j]]}@#{domain}"
                                 else
                                   parsedRoster[i + offset][map[j]]
                                 end
@@ -826,7 +825,7 @@ private
                 out.fsync
               rescue StandardError
                 nil
-              end # for filesystems without fsync(2)
+              end
             end
           end
         rescue StandardError
@@ -887,7 +886,7 @@ private
             out.fsync
           rescue StandardError
             nil
-          end # for filesystems without fsync(2)
+          end
         end
       end
     rescue StandardError

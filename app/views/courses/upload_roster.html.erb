@@ -13,7 +13,7 @@
       </label>
     </div>
   </div>
-  <%= form_for :doIt, :url=>{:action=>"uploadRoster",:doIt=>"true"} do |f| %>
+  <%= form_for :doIt, :url=>{:action=>"upload_roster",:doIt=>"true"} do |f| %>
     <%= render partial: 'uploadTable', locals: {cud_view:@cuds, sort_status:"unsorted_cuds"} %>
     <%= render partial: 'uploadTable', locals: {cud_view:@sorted_cuds, sort_status:"sorted_cuds"} %>
   <br>
@@ -33,7 +33,7 @@ The file should be in the following formats: <br><br>
 
 <p>
 The CMU Roster file should include a header.  Editing accounts will occur as a <a href="http://en.wikipedia.org/wiki/Database_transaction#Transactional_databases">transaction</a>, if there is an error we will cancel all changes and allow you to correct the error and re-submit. </p>
-<%= form_for :upload, :url=>{:action=>"uploadRoster"}, :html=>{:multipart=>true} do |f| %>
+<%= form_for :upload, :url=>{:action=>"upload_roster"}, :html=>{:multipart=>true} do |f| %>
 <%= f.file_field :file %>
 <p></p>
 <label for="upload_dropMissing">
