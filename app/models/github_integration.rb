@@ -47,10 +47,14 @@ class GithubIntegration < ApplicationRecord
   # repo_name is of the form user/repo
   # clone_url is of the form https://github.com/user/repo.git
   #
-  def clone_repo(repo_name)
+  def clone_repo(repo_name, max_size)
     client = Octokit::Client.new(:access_token => access_token)
     repo_info = client.repo(repo_name)
     clone_url = repo_info[:clone_url]
+
+    if repo_info[:size] * 1000 > max_size
+      raise "Repository size exceeded limits"
+    end
 
     if self.access_token.nil? or self.access_token.empty?
       raise "Account not connected to Github"

@@ -35,7 +35,7 @@ module AssessmentHandin
       github_integration = current_user.github_integration
 
       begin
-        @tarfile_path = github_integration.clone_repo(params[:repo])
+        @tarfile_path = github_integration.clone_repo(params[:repo], @assessment.max_size * (2 ** 20))
       rescue StandardError => msg
         flash[:error] = msg
         redirect_to(action: :show)
