@@ -3,7 +3,7 @@ class CreateGithubIntegrations < ActiveRecord::Migration[5.2]
     create_table :github_integrations do |t|
       t.string :oauth_state
       t.string :access_token
-      t.references :user, foreign_key: true
+      t.references :user, foreign_key: true, index: { unique: true }
 
       t.timestamps
     end

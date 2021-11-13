@@ -217,6 +217,11 @@ class UsersController < ApplicationController
 
   action_auth_level :github_oauth_callback, :student
   def github_oauth_callback
+    if params["error"] 
+      flash[:error] = "User cancelled OAuth"
+      (redirect_to(root_path)) && return
+    end
+
     # If state not recognized, this request may not have been generated from Autolab
     if params["state"].nil? || params["state"].empty?
       flash[:error] = "Invalid callback"
