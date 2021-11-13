@@ -22,6 +22,21 @@ class GithubIntegration < ApplicationRecord
     }
   end
 
+  # Returns all the branches for a repository
+  # repo should be of the form `github_user/repo_name`
+  def branches(repo)
+    if not self.access_token
+      return nil
+    end
+
+    client = Octokit::Client.new(:access_token => access_token)
+    branches = client.branches(repo)
+    branches.map { |branch|
+      { name: branch[:name],
+        url: branch[:commit][:url] }
+    }
+  end
+
   def is_connected
     self.access_token.present?
   end
@@ -78,14 +93,13 @@ class GithubIntegration < ApplicationRecord
     end
   end
 
-
   ##
   # Checks whether a valid Github client ID and secret is passed in
-  # If so, current rate limit information is returned; else 
+  # If so, current rate limit information is returned; else
   # nil is returned
   def self.check_github_authorization
-    client = Octokit::Client.new(:client_id => Rails.configuration.x.github.client_id, 
-      :client_secret => Rails.configuration.x.github.client_secret)
+    client = Octokit::Client.new(:client_id => Rails.configuration.x.github.client_id,
+                                 :client_secret => Rails.configuration.x.github.client_secret)
 
     begin
       client.rate_limit!
