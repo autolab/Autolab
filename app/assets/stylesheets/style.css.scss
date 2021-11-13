@@ -632,6 +632,19 @@ div.field_with_errors {
   }
 }
 
+.green_cud {
+  color: green;
+}
+
+.red_cud {
+  color: red;
+}
+
+.green_cud,
+.red_cud {
+  font-weight: 400;
+}
+
 #unsorted_cuds {
   display: none;
 }

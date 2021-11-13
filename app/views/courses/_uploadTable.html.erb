@@ -8,7 +8,7 @@
   </thead>
   <% rowNum = 0 %>
   <% for cud in cud_view do %>
-    <tr style="color:<%= cud[:color] %>" >
+    <tr class="<%= cud[:color] %>_cud" >
       <input type="hidden" name="cuds[<%= rowNum %>][color]"
         value="<%= cud[:color] %>" />
       <td><%= cud[:email] %>

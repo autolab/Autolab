@@ -575,8 +575,6 @@ private
       rowNum += 1
     end
 
-    Rails.logger.debug "---ROWCUDS"
-    Rails.logger.debug rowCUDs
     rowCUDs.each do |cud|
       next unless duplicates.include?(cud[:email])
 
@@ -635,9 +633,11 @@ private
                     grade_policy: row[7].to_s.chomp(" "),
                     lecture: row[9].to_s.chomp(" "),
                     section: row[10].to_s.chomp(" ") }
+
         cud = @currentCUDs.find do |current|
-          current.user && current.user.email == new_cud[:email]
+          current.user && current.user.email.downcase == new_cud[:email].downcase
         end
+
         if !cud
           new_cud[:color] = "green"
         else
