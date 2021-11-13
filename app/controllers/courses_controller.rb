@@ -250,7 +250,9 @@ class CoursesController < ApplicationController
         save_uploaded_roster
         flash[:success] = "Success!"
       rescue Exception => e
-        flash[:error] = e
+        if e != "Roster validation error"
+          flash[:error] = e
+        end
         redirect_to(action: "uploadRoster") && return
       end
     else
@@ -440,15 +442,15 @@ private
 
   def write_cuds(cuds)
     rowNum = 0
-    rosterErrors = Hash.new
-    rowCUDs = Array.new
+    rosterErrors = {}
+    rowCUDs = []
     duplicates = Set.new
 
     cuds.each do |newCUD|
       cloneCUD = newCUD.clone
       cloneCUD[:row_num] = rowNum + 2
       rowCUDs.push(cloneCUD)
-      
+
       if newCUD[:color] == "green"
         # Add this user to the course
         # Look for this user
@@ -463,11 +465,11 @@ private
           begin
             # Create a new user
             user = User.roster_create(email, first_name, last_name, school,
-            major, year)
+                                      major, year)
           rescue Exception => e
-            msg = "#{e.to_s} at line #{rowNum + 2} of the CSV"
+            msg = "#{e} at line #{rowNum + 2} of the CSV"
             if !rosterErrors.has_key?(msg)
-              rosterErrors[msg] = Array.new
+              rosterErrors[msg] = []
             end
             rosterErrors[msg].push(cloneCUD)
           end
@@ -481,14 +483,14 @@ private
           begin
             user.save!
           rescue Exception => e
-            msg = "#{e.to_s} at line #{rowNum + 2} of the CSV"
+            msg = "#{e} at line #{rowNum + 2} of the CSV"
             if !rosterErrors.has_key?(msg)
-              rosterErrors[msg] = Array.new
+              rosterErrors[msg] = []
             end
             rosterErrors[msg].push(cloneCUD)
           end
         end
-        
+
         existing = @course.course_user_data.where(user: user).first
         # Make sure this user doesn't have a cud in the course
         if existing
@@ -547,9 +549,9 @@ private
         begin
           user.save!
         rescue Exception => e
-          msg = "#{e.to_s} at line #{rowNum + 2} of the CSV"
+          msg = "#{e} at line #{rowNum + 2} of the CSV"
           if !rosterErrors.has_key?(msg)
-            rosterErrors[msg] = Array.new
+            rosterErrors[msg] = []
           end
           rosterErrors[msg].push(cloneCUD)
         end
@@ -576,13 +578,13 @@ private
     puts "---ROWCUDS"
     puts rowCUDs
     rowCUDs.each do |cud|
-      if duplicates.include?(cud[:email])
-        msg = "Validation failed: Duplicate email #{cud[:email]}"
-        if !rosterErrors.has_key?(msg)
-          rosterErrors[msg] = Array.new
-        end
-        rosterErrors[msg].push(cud)
+      next unless duplicates.include?(cud[:email])
+
+      msg = "Validation failed: Duplicate email #{cud[:email]}"
+      if !rosterErrors.has_key?(msg)
+        rosterErrors[msg] = []
       end
+      rosterErrors[msg].push(cud)
     end
 
     if rosterErrors.length > 0
@@ -592,7 +594,7 @@ private
   end
 
   def save_uploaded_roster
-    cuds = Array.new
+    cuds = []
 
     rowNum = 0
     until params["cuds"][rowNum.to_s].nil?
@@ -606,11 +608,11 @@ private
   end
 
   def change_view(is_sorted)
-    if (is_sorted)
-      @cud_view = @sorted_cuds
-    else
-      @cud_view = @cuds
-    end
+    @cud_view = if is_sorted
+                  @sorted_cuds
+                else
+                  @cuds
+                end
   end
 
   def parse_roster_csv
@@ -686,7 +688,7 @@ private
       end
     end
 
-    @sorted_cuds = @cuds.sort_by { |cud| cud[:color] || "z"}
+    @sorted_cuds = @cuds.sort_by { |cud| cud[:color] || "z" }
     @cud_view = @sorted_cuds
   end
 
