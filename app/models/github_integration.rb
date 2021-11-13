@@ -53,7 +53,7 @@ class GithubIntegration < ApplicationRecord
     clone_url = repo_info[:clone_url]
 
     if repo_info[:size] * 1000 > max_size
-      raise "Repository size exceeded limits"
+      raise "Repository size too large, please ensure that you are not checking in unnecessary files"
     end
 
     if self.access_token.nil? or self.access_token.empty?
