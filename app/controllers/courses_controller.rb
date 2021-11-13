@@ -116,17 +116,17 @@ class CoursesController < ApplicationController
 
       end
 
-      newCUD = @newCourse.course_user_data.new
-      newCUD.user = instructor
-      newCUD.instructor = true
+      new_cud = @newCourse.course_user_data.new
+      new_cud.user = instructor
+      new_cud.instructor = true
 
-      if newCUD.save
+      if new_cud.save
         if @newCourse.reload_course_config
           flash[:success] = "New Course #{@newCourse.name} successfully created!"
           redirect_to(edit_course_path(@newCourse)) && return
         else
           # roll back course creation and instruction creation
-          newCUD.destroy
+          new_cud.destroy
           @newCourse.destroy
           flash[:error] = "Can't load course config for #{@newCourse.name}."
           render(action: "new") && return
@@ -443,21 +443,21 @@ private
     rowCUDs = []
     duplicates = Set.new
 
-    cuds.each do |newCUD|
-      cloneCUD = newCUD.clone
+    cuds.each do |new_cud|
+      cloneCUD = new_cud.clone
       cloneCUD[:row_num] = rowNum + 2
       rowCUDs.push(cloneCUD)
 
-      case newCUD[:color]
+      case new_cud[:color]
       when "green"
         # Add this user to the course
         # Look for this user
-        email = newCUD[:email]
-        first_name = newCUD[:first_name]
-        last_name = newCUD[:last_name]
-        school = newCUD[:school]
-        major = newCUD[:major]
-        year = newCUD[:year]
+        email = new_cud[:email]
+        first_name = new_cud[:first_name]
+        last_name = new_cud[:last_name]
+        school = new_cud[:school]
+        major = new_cud[:major]
+        year = new_cud[:year]
 
         if (user = User.where(email: email).first).nil?
           begin
@@ -492,25 +492,25 @@ private
         existing = @course.course_user_data.where(user: user).first
         # Make sure this user doesn't have a cud in the course
         if existing
-          duplicates.add(newCUD[:email])
+          duplicates.add(new_cud[:email])
         end
 
         # Delete unneeded data
-        newCUD.delete(:color)
-        newCUD.delete(:email)
-        newCUD.delete(:first_name)
-        newCUD.delete(:last_name)
-        newCUD.delete(:school)
-        newCUD.delete(:major)
-        newCUD.delete(:year)
+        new_cud.delete(:color)
+        new_cud.delete(:email)
+        new_cud.delete(:first_name)
+        new_cud.delete(:last_name)
+        new_cud.delete(:school)
+        new_cud.delete(:major)
+        new_cud.delete(:year)
 
         # Build cud
         if !user.nil?
           cud = @course.course_user_data.new
           cud.user = user
-          params = ActionController::Parameters.new(section: newCUD["section"],
-                                                    grade_policy: newCUD[:grade_policy],
-                                                    lecture: newCUD[:lecture])
+          params = ActionController::Parameters.new(section: new_cud["section"],
+                                                    grade_policy: new_cud[:grade_policy],
+                                                    lecture: new_cud[:lecture])
           Rails.logger.debug params
           cud.assign_attributes(params.permit(:lecture, :section, :grade_policy))
 
@@ -521,7 +521,7 @@ private
       when "red"
         # Drop this user from the course
         existing = @course.course_user_data.includes(:user)
-                          .where(users: { email: newCUD[:email] }).first
+                          .where(users: { email: new_cud[:email] }).first
 
         fail "Red CUD doesn't exist in the database." if existing.nil?
 
@@ -530,7 +530,7 @@ private
       else
         # Update this user's attributes.
         existing = @course.course_user_data.includes(:user)
-                          .where(users: { email: newCUD[:email] }).first
+                          .where(users: { email: new_cud[:email] }).first
 
         fail "Black CUD doesn't exist in the database." if existing.nil?
 
@@ -540,11 +540,11 @@ private
         end
 
         # Update user data
-        user.first_name = newCUD[:first_name]
-        user.last_name = newCUD[:last_name]
-        user.school = newCUD[:school]
-        user.major = newCUD[:major]
-        user.year = newCUD[:year]
+        user.first_name = new_cud[:first_name]
+        user.last_name = new_cud[:last_name]
+        user.school = new_cud[:school]
+        user.major = new_cud[:major]
+        user.year = new_cud[:year]
 
         begin
           user.save!
@@ -557,18 +557,18 @@ private
         end
 
         # Delete unneeded data
-        newCUD.delete(:color)
-        newCUD.delete(:email)
-        newCUD.delete(:first_name)
-        newCUD.delete(:last_name)
-        newCUD.delete(:school)
-        newCUD.delete(:major)
-        newCUD.delete(:year)
+        new_cud.delete(:color)
+        new_cud.delete(:email)
+        new_cud.delete(:first_name)
+        new_cud.delete(:last_name)
+        new_cud.delete(:school)
+        new_cud.delete(:major)
+        new_cud.delete(:year)
 
         # assign attributes
-        params = ActionController::Parameters.new(section: newCUD["section"],
-                                                  grade_policy: newCUD[:grade_policy],
-                                                  lecture: newCUD[:lecture])
+        params = ActionController::Parameters.new(section: new_cud["section"],
+                                                  grade_policy: new_cud[:grade_policy],
+                                                  lecture: new_cud[:lecture])
         existing.assign_attributes(params.permit(:lecture, :section, :grade_policy))
         existing.save(validate: false) # Save without validations.
       end
@@ -587,10 +587,10 @@ private
       rosterErrors[msg].push(cud)
     end
 
-    if !rosterErrors.empty?
-      flash[:roster_error] = rosterErrors
-      fail "Roster validation error"
-    end
+    return if rosterErrors.empty?
+
+    flash[:roster_error] = rosterErrors
+    fail "Roster validation error"
   end
 
   def save_uploaded_roster
@@ -619,39 +619,39 @@ private
     # generate doIt form from the upload
     @cuds = []
     @currentCUDs = @course.course_user_data.all.to_a
-    @newCUDs = []
+    @new_cuds = []
 
     begin
       csv = detect_and_convert_roster(params["upload"]["file"].read)
       csv.each do |row|
         next if row[1].nil? || row[1].chomp.empty?
 
-        newCUD = { email: row[1].to_s,
-                   last_name: row[2].to_s.chomp(" "),
-                   first_name: row[3].to_s.chomp(" "),
-                   school: row[4].to_s.chomp(" "),
-                   major: row[5].to_s.chomp(" "),
-                   year: row[6].to_s.chomp(" "),
-                   grade_policy: row[7].to_s.chomp(" "),
-                   lecture: row[9].to_s.chomp(" "),
-                   section: row[10].to_s.chomp(" ") }
+        new_cud = { email: row[1].to_s,
+                    last_name: row[2].to_s.chomp(" "),
+                    first_name: row[3].to_s.chomp(" "),
+                    school: row[4].to_s.chomp(" "),
+                    major: row[5].to_s.chomp(" "),
+                    year: row[6].to_s.chomp(" "),
+                    grade_policy: row[7].to_s.chomp(" "),
+                    lecture: row[9].to_s.chomp(" "),
+                    section: row[10].to_s.chomp(" ") }
         cud = @currentCUDs.find do |current|
-          current.user && current.user.email == newCUD[:email]
+          current.user && current.user.email == new_cud[:email]
         end
         if !cud
-          newCUD[:color] = "green"
+          new_cud[:color] = "green"
         else
           @currentCUDs.delete(cud)
         end
-        @cuds << newCUD
+        @cuds << new_cud
       end
     rescue CSV::MalformedCSVError => e
       flash[:error] = "Error parsing CSV file: #{e}"
       redirect_to(action: "upload_roster") && return
     rescue StandardError => e
       flash[:error] = "Error uploading the CSV file!: #{e}#{e.backtrace.join('<br>')}"
-      raise e
       redirect_to(action: "upload_roster") && return
+      raise e
     end
 
     # drop the rest if indicated
@@ -661,17 +661,17 @@ private
         cud.instructor? || cud.user.administrator? || cud.course_assistant?
       end
       @currentCUDs.each do |cud| # These are the drops
-        newCUD = { email: cud.user.email,
-                   last_name: cud.user.last_name,
-                   first_name: cud.user.first_name,
-                   school: cud.school,
-                   major: cud.major,
-                   year: cud.year,
-                   grade_policy: cud.grade_policy,
-                   lecture: cud.lecture,
-                   section: cud.section,
-                   color: "red" }
-        @cuds << newCUD
+        new_cud = { email: cud.user.email,
+                    last_name: cud.user.last_name,
+                    first_name: cud.user.first_name,
+                    school: cud.school,
+                    major: cud.major,
+                    year: cud.year,
+                    grade_policy: cud.grade_policy,
+                    lecture: cud.lecture,
+                    section: cud.section,
+                    color: "red" }
+        @cuds << new_cud
       end
     end
 
@@ -680,7 +680,7 @@ private
       cloned_cuds = Marshal.load(Marshal.dump(@cuds))
       begin
         write_cuds(cloned_cuds)
-      rescue Exception => e
+      rescue StandardError => e
         redirect_to(action: "upload_roster")
       ensure
         raise ActiveRecord::Rollback
@@ -710,7 +710,8 @@ private
     parsedRoster = CSV.parse(roster)
     raise "Roster cannot be recognized" if parsedRoster[0][0].nil?
 
-    if parsedRoster[0].length == ROSTER_COLUMNS_F20
+    case parsedRoster[0].length
+    when ROSTER_COLUMNS_F20
       # In CMU S3 roster. Columns are:
       # Semester(0), Course(1), Section(2), (Lecture)(3), (Mini-skip)(4),
       # Last Name(5), Preferred/First Name(6), (MI-skip)(7), Andrew ID(8),
@@ -718,7 +719,7 @@ private
       # Class(13), Graduation Semester(skip)(14), Units(skip)(15), Grade Option(16), ...
       map = [0, 8, 5, 6, 10, 12, 13, 16, -1, 1, 2]
       select_columns = ROSTER_COLUMNS_F20
-    elsif parsedRoster[0].length == ROSTER_COLUMNS_F16
+    when ROSTER_COLUMNS_F16
       # In CMU S3 roster. Columns are:
       # Semester(0), Course(1), Section(2), (Lecture-skip)(3), (Mini-skip)(4),
       # Last Name(5), First Name(6), (MI-skip)(7), Andrew ID(8),
@@ -726,7 +727,7 @@ private
       # Year(13), (skip)(14), Grade Policy(15), ...
       map = [0, 8, 5, 6, 10, 12, 13, 15, -1, 1, 2]
       select_columns = ROSTER_COLUMNS_F16
-    elsif parsedRoster[0].length == ROSTER_COLUMNS_S15
+    when ROSTER_COLUMNS_S15
       # In CMU S3 roster. Columns are:
       # Semester(0), Lecture(1), Section(2), (skip)(3), (skip)(4), Last Name(5),
       # First Name(6), (skip)(7), Andrew ID(8), (skip)(9), School(10),
