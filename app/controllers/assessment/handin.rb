@@ -35,6 +35,7 @@ module AssessmentHandin
       github_integration = current_user.github_integration
 
       begin
+        # TODO update based on selected repo/branch
         @tarfile_path = github_integration.clone_repo(params[:repo])
       rescue StandardError => msg
         flash[:error] = msg

@@ -30,7 +30,7 @@ class GithubIntegration < ApplicationRecord
     end
 
     client = Octokit::Client.new(:access_token => access_token)
-    branches = client.branches(repo)
+    branches = client.branches(repo, query: { per_page: 100 })
     branches.map { |branch|
       { name: branch[:name],
         url: branch[:commit][:url] }
@@ -45,9 +45,8 @@ class GithubIntegration < ApplicationRecord
   # Clones a repository, and returns location of the tarfile containing the repo
   #
   # repo_name is of the form user/repo
-  # clone_url is of the form https://github.com/user/repo.git
-  #
-  def clone_repo(repo_name)
+  # repo_branch should be a valid branch of repo_name
+  def clone_repo(repo_name, repo_branch)
     client = Octokit::Client.new(:access_token => access_token)
     repo_info = client.repo(repo_name)
     clone_url = repo_info[:clone_url]
@@ -69,7 +68,7 @@ class GithubIntegration < ApplicationRecord
     destination = "/tmp/#{repo_unique_name}"
     tarfile_dest = "/tmp/#{tarfile_name}"
 
-    if not system *%W(git clone #{clone_url} #{destination})
+    if not system *%W(git clone --branch #{repo_branch} #{clone_url} #{destination})
       raise "Cloning repo failed"
     end
 
