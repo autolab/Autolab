@@ -29,11 +29,39 @@
         alert(formlog);
       }
     }
+
+    function disable_dropped(){
+      $('#course_user_datum_dropped').prop("checked",false);
+      $('#course_user_datum_dropped').prop("disabled",true);
+    }
+
+    function enable_dropped(){
+      $('#course_user_datum_dropped').prop("disabled",false);
+    }
+
+    function prevent_dropping_instructor_ca(){
+        if($('#course_user_datum_instructor').is(':checked') || 
+          $('#course_user_datum_course_assistant').is(':checked')){
+            disable_dropped();
+        }
+        else{
+          enable_dropped();
+        }
+    }
+
+    $(document).ready(prevent_dropping_instructor_ca);
+
+    $('#course_user_datum_instructor').on( "click", 
+        prevent_dropping_instructor_ca);
+    
+    $('#course_user_datum_course_assistant').on( "click", 
+        prevent_dropping_instructor_ca);
+
   </script>
 <% end %>
 
 <br>
-<h2>Editing <%= @editCUD.user.full_name %>'s Enrollment in <%= @course.display_name %></h2>
+<h4>Editing <%= @editCUD.user.full_name %>'s Enrollment in <%= @course.display_name %></h4>
 
 <%= form_for @editCUD, url: course_course_user_datum_path(@course, @editCUD), builder: FormBuilderWithDateTimeInput do |f| %>
 <% if @editCUD.errors.any? %>
