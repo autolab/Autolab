@@ -464,6 +464,7 @@ private
             # Create a new user
             user = User.roster_create(email, first_name, last_name, school,
                                       major, year)
+            
           rescue StandardError => e
             msg = "#{e} at line #{rowNum + 2} of the CSV"
             if !rosterErrors.key?(msg)
@@ -530,10 +531,11 @@ private
       else
         # Update this user's attributes.
         existing = @course.course_user_data.includes(:user)
-                          .where(users: { email: new_cud[:email] }).first
-
+                          .where("lower(users.email) = ?", new_cud[:email].downcase)
+                          .references(:users).first
+        # existing = @course.course_user_data.includes(:user).where(users[:email].matches("%#{new_cud[:email]}%")).first
+        
         fail "Black CUD doesn't exist in the database." if existing.nil?
-
         user = existing.user
         if user.nil?
           fail "User associated to black CUD doesn't exist in the database."
