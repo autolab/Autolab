@@ -183,10 +183,9 @@ class User < ApplicationRecord
     require "rubygems"
     require "net/ldap"
 
-    host = "ldap.andrew.cmu.edu"
+    host = "ldap.cmu.edu"
     ldap = Net::LDAP.new(host: host, port: 389)
-    user = ldap.search(base: "ou=Person,dc=cmu,dc=edu",
-                       filter: "cmuAndrewId=" + andrewID)[0]
+    user = ldap.search(base: "uid=" + andrewID + ",ou=AndrewPerson,dc=andrew,dc=cmu,dc=edu")[0]
 
     return unless user
 
@@ -226,6 +225,8 @@ class User < ApplicationRecord
 
     result[:year] = case user[:cmustudentclass][0]
                     when "Freshman" then "1"
+                    when "First-Year student" then "1"
+                    when "First-Year Student" then "1"
                     when "Sophomore" then "2"
                     when "Junior" then "3"
                     when "Senior" then "4"
