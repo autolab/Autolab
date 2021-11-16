@@ -335,6 +335,7 @@ private
             "size (#{@assessment.max_size} MB) - please remove any " \
             "unnecessary logfiles and binaries."
     when :fail_type_check
+      flash[:error] = "" if flash[:error].nil?
       msg = "Submission failed Filetype Check. " + flash[:error]
     end
     
