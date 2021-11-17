@@ -15,6 +15,7 @@ AllCops:
     - 'db/**/*'
     - 'script/**/*'
     - 'tmp/**/*'
+  NewCops: disable
 
 Rails:
   Enabled: true
@@ -35,12 +36,6 @@ Layout/AccessModifierIndentation:
     - outdent
     - indent
 
-Style/StringLiterals:
-  EnforcedStyle: double_quotes
-  SupportedStyles:
-    - single_quotes
-    - double_quotes
-
 # Frozen string literals will introduce breaking changes to existing ruby files.
 Style/FrozenStringLiteralComment:
   EnforcedStyle: never
@@ -60,7 +55,13 @@ Style/HashTransformKeys:
 Style/HashTransformValues:
   Enabled: false
 
+Style/MixinUsage:
+  Enabled: false
+
 Naming/VariableName:
+  Enabled: false
+
+Style/OptionalBooleanParameter:
   Enabled: false
 
 Style/Alias:
