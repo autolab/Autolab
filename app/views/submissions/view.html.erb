@@ -86,6 +86,7 @@
         <%= link_to(url_for([:view, @course, @assessment, @prevSubmission]), class: "valign-wrapper", id: "prev_submission_link") do %>
           <i class="material-icons" style="margin-right: 3px">arrow_back</i> <%= @prevSubmission.course_user_datum.user.email %>
         <% end %>
+         <link rel="prerender" href= <%= url_for([:view, @course, @assessment, @prevSubmission])%> />
       <% end %>
     </div>
     <div class="col s8 center-align valign-wrapper">
@@ -100,6 +101,7 @@
         <%= link_to(url_for([:view, @course, @assessment, @nextSubmission]), class: "valign-wrapper", id: "next_submission_link") do %>
           <%= @nextSubmission.course_user_datum.user.email %> <i class="material-icons" style="margin-left: 3px">arrow_forward</i>
         <% end %>
+        <link rel="prerender" href= <%= url_for([:view, @course, @assessment, @nextSubmission])%> />
       <% end %>
     </div>
   </div>
