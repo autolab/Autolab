@@ -624,8 +624,6 @@ private
     begin
       csv = detect_and_convert_roster(params["upload"]["file"].read)
       csv.each do |row|
-        next if row[1].nil? || row[1].chomp.empty?
-
         new_cud = { email: row[1].to_s,
                     last_name: row[2].to_s.chomp(" "),
                     first_name: row[3].to_s.chomp(" "),
@@ -635,7 +633,6 @@ private
                     grade_policy: row[7].to_s.chomp(" "),
                     lecture: row[9].to_s.chomp(" "),
                     section: row[10].to_s.chomp(" ") }
-
         cud = @currentCUDs.find do |current|
           current.user && current.user.email.downcase == new_cud[:email].downcase
         end
@@ -709,7 +706,7 @@ private
   # map[9]: lecture
   # map[10]: section
   def detect_and_convert_roster(roster)
-    parsedRoster = CSV.parse(roster)
+    parsedRoster = CSV.parse(roster, skip_blanks: true)
     raise "Roster cannot be recognized" if parsedRoster[0][0].nil?
 
     case parsedRoster[0].length
@@ -744,9 +741,6 @@ private
       return parsedRoster
     end
 
-    # Sanitize roster input, ignoring empty / incomplete lines.
-    # Also requires each line to have an andrewID, else ignores it
-    parsedRoster.select! { |row| row.length == select_columns && !row[map[1]].nil? }
     # Detect if there is a header row
     offset = if parsedRoster[0][0] == "Semester"
                1
