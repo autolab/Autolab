@@ -334,7 +334,7 @@ module AssessmentHandin
   def validateHandin_forGit
     if @tarfile_path.blank?
       flash[:error] = "Git submission error"
-      return false      flash[:error] = "" if flash[:error].nil?
+      return false
     end
 
     validity = validateHandin(File.size(@tarfile_path),
