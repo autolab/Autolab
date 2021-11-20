@@ -220,5 +220,8 @@ Lint/AssignmentInCondition:
   Enabled: false
   StyleGuide: https://relaxed.ruby.style/#lintassignmentincondition
 
+Lint/NonLocalExitFromIterator:
+  Enabled: false
+
 Metrics:
   Enabled: false
