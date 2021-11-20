@@ -35,7 +35,7 @@
 <div class="input-field">
 	<input placeholder="Course Name" type="text" onkeyup="filterCourses(this.value.toLowerCase())" style="margin-bottom: 10px;">
 </div>
-<%= form_tag([:runMoss, @course], multipart: true) do %>
+<%= form_tag([:run_moss, @course], multipart: true) do %>
   <ul class="moss-list">
   <% for course in @courses %>
     <li class="filterableCourse" id="<%= course.display_name %>">

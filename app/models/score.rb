@@ -24,7 +24,7 @@ class Score < ApplicationRecord
   validates(:problem_id, uniqueness: { scope: :submission_id })
   validates :grader_id, presence: true
 
-  after_save :log_entry
+  after_commit :log_entry
 
   def self.find_with_feedback(*args)
     with_exclusive_scope { find(*args) }

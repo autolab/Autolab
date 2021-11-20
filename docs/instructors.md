@@ -157,6 +157,44 @@ In this course, the course average is the sum of the category averages for "Lab"
 
 Note: To make these changes live, you must select "Reload course config file" on the "Manage course" page.
 
+## Customizing Submision File MIME Type Check
+
+By default, Autolab does not perform MIME type check for submission files. However, it allows instructors to define their own MIME type check method in the assessment config file. The corresponding function is `checkMimeType` in `<labname>.rb` file. For example, to prevent students from submitting a binary file to the assessment `malloclab`, you might add the following `checkMimeType` function to `malloclab/malloclab.rb`:
+
+```ruby
+# In malloclab/malloclab.rb file
+def checkMimeType(contentType, fileName)
+    return contentType != "application/octet-stream"
+end
+```
+
+As of now, the only way to provide a more informative message to student is to raise an error:
+
+```ruby
+# In malloclab/malloclab.rb file
+def checkMimeType(contentType, fileName)
+    raise "Do not submit binary files!" if contentType == "application/octet-stream"
+    
+    return true
+end
+```
+
+This results in the following error message to students when they attempt to submit binary files.
+
+![MIME Type Check](/images/mime_type_check.png)
+
+Alternatively, you can use the file name to do file type check. The following snippet prevents students from submitting python files:
+
+```ruby
+def checkMimeType(contentType, fileName)
+    return fileName.split(".")[-1] != "py"
+end
+```
+
+Note that this function does not have access to Rails controller attributes such as `flash` or `params`. Attempts to access what's beyond the arguments passed to the function will result in an error.
+
+Note: To make this change live, you must select the "Reload config file" option on the `malloclab` page.
+
 ## Handin History
 
 For each lab, students can view all of their submissions, including any source code, and the problem scores, penalties, and total scores associated with those submissions, via the _handin history_ page.

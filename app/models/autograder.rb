@@ -12,7 +12,7 @@ class Autograder < ApplicationRecord
   validates :autograde_image, :autograde_timeout, presence: true
   validates :autograde_image, length: { maximum: 64 }
 
-  after_save -> { assessment.dump_yaml }
+  after_commit -> { assessment.dump_yaml }
 
   SERIALIZABLE = Set.new %w[autograde_image autograde_timeout release_score]
   def serialize

@@ -19,9 +19,14 @@ module AssessmentHandinCore
       return :file_too_large
     end
     # Check if mimetype is correct (if overwritten by assessment config)
-    if @assessment.overwrites_method?(:checkMimeType) and 
-       not @assessment.config_module.checkMimeType(content_type, filename)
-       return :fail_type_check
+    begin
+      if @assessment.overwrites_method?(:checkMimeType) and 
+        not @assessment.config_module.checkMimeType(content_type, filename)
+        return :fail_type_check
+      end
+    rescue RuntimeError => e
+      flash[:error] = e.message
+      return :fail_type_check
     end
 
     return :valid

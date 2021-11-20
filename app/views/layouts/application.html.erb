@@ -69,10 +69,16 @@
         <!-- Flashes -->
         <div id="flashes">
           <% flash.each do |name, msg| %>
-          <%= content_tag :div, sanitize(msg), id: "flash_#{name}",
-              class: "#{name}" %>
+            <% if name == "roster_error" %>
+              <div class="error" id="flash_error">
+                <%= render :partial=>'courses/uploadError',
+                            locals: {roster_errors: msg} %>
+              </div>
+            <% else %>
+              <%= content_tag :div, sanitize(msg), id: "flash_#{name}",
+                  class: "#{name}" %>
+            <% end %>
           <% end %>
-
           <noscript>
               <div id="flash_error" class="error">
                   AutoLab requires Javascript to be enabled for all features to correctly function. Please enable Javascript.
