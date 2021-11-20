@@ -8,7 +8,7 @@ class Scoreboard < ApplicationRecord
 
   validate :colspec_is_well_formed
 
-  after_save -> { assessment.dump_yaml }
+  after_commit -> { assessment.dump_yaml }
 
   SERIALIZABLE = Set.new %w[banner colspec]
   def serialize

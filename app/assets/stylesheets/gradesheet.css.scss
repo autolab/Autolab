@@ -1,290 +1,298 @@
 td.focus {
-    background-color: #666666 !important;
-    color: white !important;
+  background-color: #666666 !important;
+  color: white !important;
 }
 
 #grades_wrapper .tools {
-    margin-top: 15px;
-    margin-bottom: 20px;
+  margin-top: 15px;
+  margin-bottom: 20px;
 }
 
-#grades_wrapper .tools div{
-    display: inline;
-    margin-right: 7px;
+#grades_wrapper .tools div {
+  display: inline;
+  margin-right: 7px;
 }
 
 #grades td.edit {
-    text-align: center;
-    color: #666666;
-    cursor: pointer;
+  text-align: center;
+  color: #666666;
+  cursor: pointer;
 }
 
 #grades td.edit div.editable.error {
-    color: red;
+  color: red;
 }
 
 #grades td.edit:hover {
-    color: #e1e1e1;
+  color: #e1e1e1;
 }
 
 #grades tr.sortable th {
-    cursor: pointer;
+  cursor: pointer;
 }
 
 #grades th {
-    padding-left: 7px;
-    padding-right: 7px;
-    white-space: nowrap;
+  padding-left: 7px;
+  padding-right: 7px;
+  white-space: nowrap;
 }
 
 #grades_filter {
-    margin-bottom: 10px;
+  margin-bottom: 10px;
 }
 
 #grades_filter label {
-    width: 100%
+  width: 100%;
 }
 
 #grades_filter input {
-    border: 1px solid #d0d0d0;
-    border-radius: 3px;
-    box-shadow: 0 0 2px #CCC;
-    font-size: 18px;
-    padding: 6px 12px;
-    width: 100%;
-    max-width: 400px;
+  border: 1px solid #d0d0d0;
+  border-radius: 3px;
+  box-shadow: 0 0 2px #ccc;
+  font-size: 18px;
+  padding: 6px 12px;
+  width: 100%;
+  max-width: 400px;
 }
 
 #grades td.edit input {
-    border: 0px solid #ccc;
-    color: #e1e1e1;
-    font: inherit;
-    text-align: inherit;
+  border: 0px solid #ccc;
+  color: #e1e1e1;
+  font: inherit;
+  text-align: inherit;
 }
 
 #grades td.edit input:hover {
-    color: #e1e1e1;
+  color: #e1e1e1;
 }
 
 #grades {
-    box-shadow: 0 0 5px 0px #eee;
-    font-size: 16px;
-    border: 1px solid #ccc;
-    border-radius: 2px;
-    border-collapse: collapse;
-    margin: 0 auto 0 auto;
+  box-shadow: 0 0 5px 0px #eee;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 2px;
+  border-collapse: collapse;
+  margin: 0 auto 0 auto;
 }
 
 #grades td {
-    background-color: #f8f8f8;
-    padding: 10px;
-    border: 1px solid #e8e8e8;
-    border-right: none;
-    border-left: none;
-    border-spacing: 0;
-    text-align: left;
-    white-space: nowrap;
-    color: #555;
+  background-color: #f8f8f8;
+  padding: 10px;
+  border: 1px solid #e8e8e8;
+  border-right: none;
+  border-left: none;
+  border-spacing: 0;
+  text-align: left;
+  white-space: nowrap;
+  color: #555;
 }
 
 #grades td.edit {
-    text-align: center;
-    background-color: white;
+  text-align: center;
+  background-color: white;
 }
 
 #grades th {
-    background-color: #ebebeb;
-    padding: 8px;
-    border-right: none;
-    border-left: none;
-    text-transform: uppercase;
-    font-size: 0.8em;
-    color: #909090;
-    white-space: nowrap;
-    overflow: hidden;
-    padding-left: 10px;
-    padding-right: 15px;
-    text-align: left;
+  background-color: #ebebeb;
+  padding: 8px;
+  border-right: none;
+  border-left: none;
+  text-transform: uppercase;
+  font-size: 0.8em;
+  color: #909090;
+  white-space: nowrap;
+  overflow: hidden;
+  padding-left: 10px;
+  padding-right: 15px;
+  text-align: left;
 }
 
 #grades th.problem {
-    background-color: #f2f2f2;
-    font-size: 0.7em;
-    white-space: normal;
-    text-align: center;
+  background-color: #f2f2f2;
+  font-size: 0.7em;
+  white-space: normal;
+  text-align: center;
 }
 
 #grades th span.max_score {
-    line-height: 1.5em;
-    font-style: italic;
-    font-weight: normal;
-    display: block;
+  line-height: 1.5em;
+  font-style: italic;
+  font-weight: normal;
+  display: block;
 }
 
 #grades .sec {
-    padding-right: 15px;
+  padding-right: 15px;
 }
 
-#grades .sec, #grades .lec, #grades .total, #grades .tweak, #grades .late_penalty, #grades .version_penalty {
-    text-align: center;
+#grades .sec,
+#grades .lec,
+#grades .total,
+#grades .tweak,
+#grades .late_penalty,
+#grades .version_penalty {
+  text-align: center;
 }
 
-#grades .tweak a, #grades .id a {
-    color: #666666;
-    text-decoration: none;
-    font: inherit;
+#grades .tweak a,
+#grades .id a {
+  color: #666666;
+  text-decoration: none;
+  font: inherit;
 }
 
 #grades td.id > a.email {
-    margin-right: 4px;
+  margin-right: 4px;
 }
 
 #grades .tweak a:hover {
-    color: #e1e1e1;
+  color: #e1e1e1;
 }
 
 #grades .released {
-    font-weight: bold;
+  font-weight: bold;
 }
 
 td.id {
-    overflow: visible;
+  overflow: visible;
 }
 
-#grades th.enumerator, #grades td.enumerator {
+#grades th.enumerator,
+#grades td.enumerator {
   text-align: right;
   padding-right: 10px;
 }
 
 #grades .popover {
-    cursor: auto;
-    display: none;
-    color: #666;
-    position: absolute;
-    top: 0;
-    left: 0;
-    box-shadow: 1px 1px 4px 1px #ccc;
-    border-radius: 5px;
-    z-index: 100000;
-    padding: 3px;
-    background-color: #eee;
-    display: none;
-    max-width: 360px;
+  cursor: auto;
+  display: none;
+  color: #666;
+  position: absolute;
+  top: 0;
+  left: 0;
+  box-shadow: 1px 1px 4px 1px #ccc;
+  border-radius: 5px;
+  z-index: 100000;
+  padding: 3px;
+  background-color: #eee;
+  display: none;
+  max-width: 360px;
 }
 
 #grades td.id .popover span.filename {
-    padding-left: 3px;
-    line-height: 1.8em;
+  padding-left: 3px;
+  line-height: 1.8em;
 }
 
 #grades td.id .popover span.filename span.links {
-    float: right;
-    padding-right: 3px;
-    text-transform: uppercase;
-    font-weight: bold;
-    font-size: 0.9em;
+  float: right;
+  padding-right: 3px;
+  text-transform: uppercase;
+  font-weight: bold;
+  font-size: 0.9em;
 }
 
 #grades td.id .popover table.sub_info {
-    border-collapse: collapse;
-    font-family: Helvetica;
+  border-collapse: collapse;
+  font-family: Helvetica;
 }
 
-#grades td.id .popover td, #grades td.id .popover th {
-    padding: 5px;
-    border: none;
+#grades td.id .popover td,
+#grades td.id .popover th {
+  padding: 5px;
+  border: none;
 }
 
 #grades tr.special_submission td.id > a {
-    font-style: italic;
+  font-style: italic;
 }
 
 #grades td.id .popover th {
-    font-size: 0.9em;
-    text-transform: uppercase;
-    text-align: right;
-    padding-right: 7px;
-    padding-left: 10px;
+  font-size: 0.9em;
+  text-transform: uppercase;
+  text-align: right;
+  padding-right: 7px;
+  padding-left: 10px;
 }
 
 #grades td.id .popover table.subinfo td.version a {
-    font-weight: normal;
+  font-weight: normal;
 }
 
 #grades td.id .popover div.file_download {
-    background: #f8f8f8;
-    padding: 5px;
-    margin: 3px 0 0px 0;
-    font-size: 0.9em;
-    text-transform: uppercase;
-    padding-right: 7px;
-    padding-left: 10px;
-    font-weight: bold;
+  background: #f8f8f8;
+  padding: 5px;
+  margin: 3px 0 0px 0;
+  font-size: 0.9em;
+  text-transform: uppercase;
+  padding-right: 7px;
+  padding-left: 10px;
+  font-weight: bold;
 }
 
 #grades td.id .popover div.file_download a {
-    /*color: #909090;*/
+  /*color: #909090;*/
 }
 
 .popover .arrow {
-    position: absolute;
-    height: 12px;
-    width: 5px;
-    background-image: image-url('popover-arrow.png');
-    background-repeat: no-repeat;
-    border-width: 0;
+  position: absolute;
+  height: 12px;
+  width: 5px;
+  background-image: image-url("popover-arrow.png");
+  background-repeat: no-repeat;
+  border-width: 0;
 }
 
 #grades td .popover .score_details {
-    font-weight: normal;
-    border-collapse: collapse;
-    white-space: initial;
+  font-weight: normal;
+  border-collapse: collapse;
+  white-space: initial;
 }
 
-
 #grades td .score_details .feedback {
-    width: 290px;
-    max-width: 350px;
-    min-width:290px;
-    min-height: 75px;
-    max-height: 300px;
-    background-color: white; 
-    font-family: 'Source Sans Pro', sans-serif;
+  width: 290px;
+  max-width: 350px;
+  min-width: 290px;
+  min-height: 75px;
+  max-height: 300px;
+  background-color: white;
+  font-family: "Source Sans Pro", sans-serif;
 }
 
 #grades td .popover .score_details span.save_box {
-    margin: 2px;
-    float: right;
-    font-weight: 600;
+  margin: 2px;
+  float: right;
+  font-weight: 600;
 }
 
 #grades td .popover .score_details span.save_box * {
 }
 
 #grades td .popover .score_details span.save_box span.saving {
-    display: none;
-    color: #555;
+  display: none;
+  color: #555;
 }
 
 #grades td .popover .score_details span.save_box span.error {
-    display: none;
-    color: red;
+  display: none;
+  color: red;
 }
 
 .template {
-    display: none;
+  display: none;
 }
 
-[type="checkbox"]:not(:checked), [type="checkbox"]:checked {
-    position: static;
-    left: auto;
-    opacity: 1;
+input[type="checkbox"]:not(:checked),
+[type="checkbox"]:checked {
+  position: static;
+  left: auto;
+  opacity: 1;
 }
 
 #interaction_banner {
-    color: rgba(0, 0, 0, 0.795)
+  color: rgba(0, 0, 0, 0.795);
 }
 
-#interaction_badge{
-    color: #0882af;
+#interaction_badge {
+  color: #0882af;
 }

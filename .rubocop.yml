@@ -15,9 +15,19 @@ AllCops:
     - 'db/**/*'
     - 'script/**/*'
     - 'tmp/**/*'
+  NewCops: disable
 
 Rails:
   Enabled: true
+
+Rails/UniqueValidationWithoutIndex:
+  Enabled: false
+
+Rails/InverseOf:
+  Enabled: false
+
+Rails/HasManyOrHasOneDependent:
+  Enabled: false
 
 Layout/LineLength:
   Max: 100
@@ -34,12 +44,6 @@ Layout/AccessModifierIndentation:
   SupportedStyles:
     - outdent
     - indent
-
-Style/StringLiterals:
-  EnforcedStyle: double_quotes
-  SupportedStyles:
-    - single_quotes
-    - double_quotes
 
 # Frozen string literals will introduce breaking changes to existing ruby files.
 Style/FrozenStringLiteralComment:
@@ -60,7 +64,16 @@ Style/HashTransformKeys:
 Style/HashTransformValues:
   Enabled: false
 
+Style/MixinUsage:
+  Enabled: false
+
 Naming/VariableName:
+  Enabled: false
+
+Naming/AccessorMethodName:
+  Enabled: false
+
+Style/OptionalBooleanParameter:
   Enabled: false
 
 Style/Alias:

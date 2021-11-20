@@ -8,7 +8,6 @@ class GithubIntegrationsController < ApplicationController
   # This API endpoint retrives the 30 most recently pushed repositories of the user
   # if the user has connected their account to Github
   action_auth_level :get_repositories, :student
-
   def get_repositories
     return fail_with_reason("User not connected to Github") unless @github_integration
     repositories = @github_integration.repositories
@@ -18,6 +17,7 @@ class GithubIntegrationsController < ApplicationController
     nil
   end
 
+  action_auth_level :get_branches, :student
   def get_branches
     return fail_with_reason("User not connected to Github") unless @github_integration
     return fail_with_reason("Repository not provided") unless params["repository"]

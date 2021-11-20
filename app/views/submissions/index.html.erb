@@ -71,7 +71,7 @@
   <% end %>
 </div>
 <table class="prettyBorder" id="submissions">
-  <% headers = ["Submitted By", "Version", "Submission Date (YYYY-MM-DD)", "File", "IP Address", "Actions", "isLatest"] %>
+  <% headers = ["Submitted By", "Version", "Score", "Submission Date (YYYY-MM-DD)", "File", "IP Address", "Actions", "isLatest"] %>
   <% if @assessment.has_custom_form then %>
     <% if @assessment.getLanguages.size > 0 then %>
         <% headers.push("Language") %>
@@ -107,6 +107,9 @@
           %></td>
       <!-- TODO: for now, until rewrite -->
       <td style="<%= ignored_submission_style submission %>"><%= submission.version %></td>
+
+      <td><%= computed_score { submission.final_score(@cud) } %></td>
+
       <td><span class="moment-date-time"><%= submission.created_at.in_time_zone.to_s %></span></td>
       <!-- TODO: for now, until rewrite -->
       <td style="<%= ignored_submission_style submission %>">
@@ -140,10 +143,10 @@
       </td>
       <% if @assessment.has_custom_form then %>
         <% if @assessment.getLanguages.size > 0 then %>
-            <td><%= submission.getSettings["Language"] %></td>
+            <td><%= submission.get_settings["Language"] %></td>
         <% end %>
         <% for i in 0..@assessment.getTextfields.size-1 do %>
-            <td><%= submission.getSettings[@assessment.getTextfields[i]] %></td>
+            <td><%= submission.get_settings[@assessment.getTextfields[i]] %></td>
         <% end %>
      <% end %>
     </tr>

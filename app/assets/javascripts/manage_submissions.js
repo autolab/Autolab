@@ -9,7 +9,7 @@ $(document).ready(function() {
         // if not filtered, return all the rows
         return true;
       } else {
-        var isSubmissionLatest = data[7]; // use data for the age column
+        var isSubmissionLatest = data[8]; // use data for the age column
         return (isSubmissionLatest == "true");
       }
     }
@@ -37,12 +37,12 @@ $(document).ready(function() {
         '<span>Show only latest</span></label>'
     },
     "columnDefs": [{
-      "targets": [7],
+      "targets": [8],
       "visible": false,
       // "searchable": false
     }],
     "aaSorting": [
-      [3, "desc"]
+      [4, "desc"]
     ]
   });
 

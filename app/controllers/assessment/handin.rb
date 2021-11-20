@@ -35,7 +35,7 @@ module AssessmentHandin
       github_integration = current_user.github_integration
 
       begin
-        @tarfile_path = github_integration.clone_repo(params["repo"], params["branch"])
+        @tarfile_path = github_integration.clone_repo(params["repo"], params["branch"], @assessment.max_size * (2 ** 20))
       rescue StandardError => msg
         flash[:error] = msg
         redirect_to(action: :show)
@@ -75,8 +75,10 @@ module AssessmentHandin
       redirect_to(action: :show) && return
     end
 
-    # autograde the submissions
-    if @assessment.has_autograder?
+    # autograde the submissions only if there are problems defined
+    if @assessment.problems.length == 0
+      flash[:error] = "There are no problems in this assessment."
+    elsif @assessment.has_autograder?
       begin
         sendJob_AddHTMLMessages(@course, @assessment, submissions)
       rescue AssessmentAutogradeCore::AutogradeError => e
@@ -332,7 +334,7 @@ module AssessmentHandin
   def validateHandin_forGit
     if @tarfile_path.blank?
       flash[:error] = "Git submission error"
-      return false
+      return false      flash[:error] = "" if flash[:error].nil?
     end
 
     validity = validateHandin(File.size(@tarfile_path),
@@ -389,6 +391,7 @@ module AssessmentHandin
             "size (#{@assessment.max_size} MB) - please remove any " \
             "unnecessary logfiles and binaries."
     when :fail_type_check
+      flash[:error] = "" if flash[:error].nil?
       msg = "Submission failed Filetype Check. " + flash[:error]
     end
 

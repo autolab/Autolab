@@ -1,5 +1,6 @@
 class GithubIntegration < ApplicationRecord
   belongs_to :user
+  encrypts :access_token
 
   # Returns the top 30 most recently pushed repos
   # Reasonably if a user wants to submit code, it should be among
@@ -46,10 +47,15 @@ class GithubIntegration < ApplicationRecord
   #
   # repo_name is of the form user/repo
   # repo_branch should be a valid branch of repo_name
-  def clone_repo(repo_name, repo_branch)
+  # max_size is in MB
+  def clone_repo(repo_name, repo_branch, max_size)
     client = Octokit::Client.new(:access_token => access_token)
     repo_info = client.repo(repo_name)
     clone_url = repo_info[:clone_url]
+
+    if repo_info[:size] * 1000 > max_size
+      raise "Repository size too large, please ensure that you are not checking in unnecessary files"
+    end
 
     if self.access_token.nil? or self.access_token.empty?
       raise "Account not connected to Github"
