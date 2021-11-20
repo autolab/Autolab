@@ -150,3 +150,7 @@ gem "jstz-rails3-plus", ">= 1.0"
 
 # For getting file types 
 gem 'mimemagic', '>= 0.3.7'
+
+# For encrypting API tokens
+gem 'lockbox'
+

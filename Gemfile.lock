@@ -168,6 +168,7 @@ GEM
       railties (>= 3.1)
     jwt (2.2.3)
     libv8-node (15.14.0.1)
+    lockbox (0.6.6)
     loofah (2.12.0)
       crass (~> 1.0.2)
       nokogiri (>= 1.5.9)
@@ -401,6 +402,7 @@ DEPENDENCIES
   jquery-rails
   js_cookie_rails
   jstz-rails3-plus (>= 1.0)
+  lockbox
   materialize-sass
   mimemagic (>= 0.3.7)
   mini_racer
