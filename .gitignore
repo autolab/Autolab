@@ -50,4 +50,7 @@ doc/
 out.txt
 .vscode/
 .byebug_history
+
+# Credentials
 .env
+
