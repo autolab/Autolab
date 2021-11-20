@@ -26,7 +26,7 @@ protected
     begin
       # Quote JSON keys and values if they are not already quoted
       quoted = colspec.gsub(/([a-zA-Z0-9]+):/, '"\1":').gsub(/:([a-zA-Z0-9]+)/, ':"\1"')
-      parsed = ActiveSupport::JSON.decode(colspec)
+      parsed = ActiveSupport::JSON.decode(quoted)
     rescue StandardError => e
       errors.add "colspec", e.to_s
       return
@@ -61,10 +61,11 @@ protected
           return
         end
 
-        if k == "asc" && i > 2
-          errors.add "colspec",
-                     "'asc' key in col #{i} ignored because only the first three columns are sorted."
-        end
+        next unless k == "asc" && i > 2
+
+        errors.add "colspec",
+                   "'asc' key in col #{i} ignored because only the first",
+                   "three columns are sorted."
       end
     end
   end
