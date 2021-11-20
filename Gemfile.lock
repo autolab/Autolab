@@ -108,6 +108,10 @@ GEM
     docile (1.1.5)
     doorkeeper (5.5.4)
       railties (>= 5)
+    dotenv (2.7.6)
+    dotenv-rails (2.7.6)
+      dotenv (= 2.7.6)
+      railties (>= 3.2)
     dynamic_form (1.1.4)
     erubi (1.10.0)
     eventmachine (1.2.7)
@@ -169,6 +173,7 @@ GEM
       railties (>= 3.1)
     jwt (2.3.0)
     libv8-node (15.14.0.1)
+    lockbox (0.6.6)
     loofah (2.12.0)
       crass (~> 1.0.2)
       nokogiri (>= 1.5.9)
@@ -394,6 +399,7 @@ DEPENDENCIES
   database_cleaner
   devise (>= 4.5.0)
   doorkeeper
+  dotenv-rails
   dynamic_form
   exception_notification (>= 4.1.0)
   factory_bot_rails
@@ -403,6 +409,7 @@ DEPENDENCIES
   jquery-rails
   js_cookie_rails
   jstz-rails3-plus (>= 1.0)
+  lockbox
   materialize-sass
   mimemagic (>= 0.3.7)
   mini_racer (<= 0.4.0)
