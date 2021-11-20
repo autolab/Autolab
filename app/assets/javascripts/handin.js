@@ -113,9 +113,10 @@ function enableSubmit() {
         $("#fake-submit").removeClass("disabled");
       }  
     } else if (tab === "github_tab") {
-      var dropdown = $(".submission-panel .select-dropdown")
+      var repoSelected = $("#repo-dropdown .noselection").length === 0;
+      var branchSelected = $("#branch-dropdown .noselection").length === 0;
       // if there's no repos
-      if (dropdown.length === 0) {
+      if (!repoSelected || !branchSelected) {
         $("#fake-submit").addClass("disabled");
       } else {
         $("#fake-submit").removeClass("disabled");
@@ -123,7 +124,7 @@ function enableSubmit() {
     }
   }
 
-  if (checkbox.checked && $(".handin-row").is(":hidden") && $("#fake-submit").hasClass("disabled") && fileSelector.files.length === 0) {
+  if (tab === "upload_tab" && checkbox.checked && $(".handin-row").is(":hidden") && $("#fake-submit").hasClass("disabled") && fileSelector.files.length === 0) {
     // theres an issue
     $(".handin-row").show();
     $(".handedin-row").hide();

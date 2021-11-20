@@ -48,11 +48,17 @@
     <% if GithubIntegration.find_by_user_id(@cud.user.id)&.is_connected %>
       <% if repos.present? %>
         <label>Repository</label>
-        <select name="repo" id="repo">
-          <% for repo in repos do %>
-            <option value="<%= repo[:repo_name] %>""> <%= "#{repo[:repo_name]} (#{repo[:default_branch]})" %> </option>
-          <% end %>
-        </select>
+        <div class="ui fluid search selection dropdown" id="repo-dropdown">
+          <input type="hidden" name="repo">
+          <div class="default text">Select repo</div>
+          <div class="menu"></div>
+        </div>
+        <label>Branch</label>
+        <div class="ui fluid search selection dropdown" id="branch-dropdown">
+          <input type="hidden" name="branch">
+          <div class="default text">Select branch</div>
+          <div class="menu"></div>
+        </div>
       <% else %>
         <h5> No repositories found! Create a repository in your Github account in order to submit your work via Git submission. </h5>
         <br />
