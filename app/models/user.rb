@@ -184,7 +184,7 @@ class User < ApplicationRecord
     host = "ldap.cmu.edu"
     ldap = Net::LDAP.new(host: host, port: 389)
 
-    user = ldap.search(base: "uid=" + andrewID + ",ou=AndrewPerson,dc=andrew,dc=cmu,dc=edu")[0]
+    user = ldap.search(base: "uid=#{andrew_id},ou=AndrewPerson,dc=andrew,dc=cmu,dc=edu")[0]
 
     return unless user
 
