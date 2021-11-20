@@ -65,9 +65,10 @@
             <% end %>
             <% content_for :javascripts do %>
               <%= javascript_include_tag "handin" %>
+              <%= javascript_include_tag "git_submission" %>
             <% end %>
             
-            <%= render partial: "submission_panel", locals: {repos: @repos}%>
+            <%= render partial: "submission_panel", locals: {repos: @repos, f: f}%>
 
 						<%= label_tag(:integrity_checkbox) do %>
 							<%= check_box_tag(:integrity_checkbox) %>
