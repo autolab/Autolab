@@ -176,7 +176,7 @@ GEM
       mini_mime (>= 0.1.1)
     marcel (0.3.3)
       mimemagic (~> 0.3.2)
-    materialize-sass (1.0.0.1)
+    materialize-sass (1.0.0)
       autoprefixer-rails (>= 6.0.3)
     matrix (0.4.2)
     method_source (1.0.0)
@@ -397,7 +397,7 @@ DEPENDENCIES
   jquery-rails
   js_cookie_rails
   jstz-rails3-plus (>= 1.0)
-  materialize-sass
+  materialize-sass (= 1.0.0)
   mimemagic (>= 0.3.7)
   mini_racer (<= 0.4.0)
   moment_timezone-rails
