@@ -143,10 +143,10 @@
       </td>
       <% if @assessment.has_custom_form then %>
         <% if @assessment.getLanguages.size > 0 then %>
-            <td><%= submission.getSettings["Language"] %></td>
+            <td><%= submission.get_settings["Language"] %></td>
         <% end %>
         <% for i in 0..@assessment.getTextfields.size-1 do %>
-            <td><%= submission.getSettings[@assessment.getTextfields[i]] %></td>
+            <td><%= submission.get_settings[@assessment.getTextfields[i]] %></td>
         <% end %>
      <% end %>
     </tr>

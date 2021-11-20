@@ -20,6 +20,15 @@ AllCops:
 Rails:
   Enabled: true
 
+Rails/UniqueValidationWithoutIndex:
+  Enabled: false
+
+Rails/InverseOf:
+  Enabled: false
+
+Rails/HasManyOrHasOneDependent:
+  Enabled: false
+
 Layout/LineLength:
   Max: 100
   # To make it possible to copy or click on URIs in the code, we allow lines
@@ -59,6 +68,9 @@ Style/MixinUsage:
   Enabled: false
 
 Naming/VariableName:
+  Enabled: false
+
+Naming/AccessorMethodName:
   Enabled: false
 
 Style/OptionalBooleanParameter:

@@ -13,7 +13,7 @@ class User < ApplicationRecord
 
   has_many :course_user_data, dependent: :destroy
   has_many :courses, through: :course_user_data
-  has_many :authentications
+  has_many :authentications, dependent: :destroy
 
   trim_field :school
   validates :first_name, :last_name, :email, presence: true
@@ -82,19 +82,19 @@ class User < ApplicationRecord
   def self.find_for_facebook_oauth(auth, _signed_in_resource = nil)
     authentication = Authentication.find_by(provider: auth.provider,
                                             uid: auth.uid)
-    return authentication.user if authentication && authentication.user
+    return authentication.user if authentication&.user
   end
 
   def self.find_for_google_oauth2_oauth(auth, _signed_in_resource = nil)
     authentication = Authentication.find_by(provider: auth.provider,
                                             uid: auth.uid)
-    return authentication.user if authentication && authentication.user
+    return authentication.user if authentication&.user
   end
 
   def self.find_for_shibboleth_oauth(auth, _signed_in_resource = nil)
     authentication = Authentication.find_by(provider: "CMU-Shibboleth",
                                             uid: auth.uid)
-    return authentication.user if authentication && authentication.user
+    return authentication.user if authentication&.user
   end
 
   def self.new_with_session(params, session)
@@ -140,11 +140,11 @@ class User < ApplicationRecord
     user.password_confirmation = temp_pass
     user.skip_confirmation!
 
-    puts("user email: ", user.email)
-    puts("user pswd: ", user.password)
+    Rails.logger.debug("user email: ", user.email)
+    Rails.logger.debug("user pswd: ", user.password)
 
     user.save!
-    return user
+    user
   end
 
   # user (instructor) created by building a course
@@ -175,14 +175,15 @@ class User < ApplicationRecord
   end
 
   # use LDAP to look up a user
-  def self.ldap_lookup(andrewID)
-    return unless andrewID
+  def self.ldap_lookup(andrew_id)
+    return unless andrew_id
 
     require "rubygems"
     require "net/ldap"
 
     host = "ldap.cmu.edu"
     ldap = Net::LDAP.new(host: host, port: 389)
+
     user = ldap.search(base: "uid=" + andrewID + ",ou=AndrewPerson,dc=andrew,dc=cmu,dc=edu")[0]
 
     return unless user

@@ -49,7 +49,9 @@ class Submission < ApplicationRecord
   # latest (unignored) submissions
   scope :latest, -> { joins(:assessment_user_datum).joins(:course_user_datum) }
   scope :latest_for_statistics, lambda {
-                                  joins(:assessment_user_datum).where.not(assessment_user_data: { grade_type: AssessmentUserDatum::EXCUSED }).joins(:course_user_datum)
+                                  joins(:assessment_user_datum).where.not(assessment_user_data:
+                                    { grade_type:
+                                      AssessmentUserDatum::EXCUSED }).joins(:course_user_datum)
                                 }
 
   # constants for special submission types
@@ -77,9 +79,7 @@ class Submission < ApplicationRecord
   delegate :update_latest_submission, to: :aud
 
   def save_file(upload)
-    filename = course_user_datum.user.email + "_" +
-               version.to_s + "_" +
-               assessment.handin_filename
+    filename = "#{course_user_datum.user.email}_#{version}_#{assessment.handin_filename}"
     directory = assessment.handin_directory
     path = Rails.root.join("courses", course_user_datum.course.name,
                            assessment.name, directory, filename)
@@ -115,13 +115,12 @@ class Submission < ApplicationRecord
     end
     save_additional_form_fields(upload)
     save!
-    settings_file = course_user_datum.user.email + "_" +
-                    version.to_s + "_" + assessment.handin_filename +
-                    ".settings.json"
+    settings_file = "#{course_user_datum.user.email}_#{version}" \
+                    "_#{assessment.handin_filename}.settings.json"
 
-    settings_path = File.join(Rails.root, "courses",
-                              course_user_datum.course.name,
-                              assessment.name, directory, settings_file)
+    settings_path = Rails.root.join("courses",
+                                    course_user_datum.course.name,
+                                    assessment.name, directory, settings_file)
 
     File.open(settings_path, "wb") { |f| f.write(settings) }
   end
@@ -136,7 +135,7 @@ class Submission < ApplicationRecord
     save!
   end
 
-  def getSettings
+  def get_settings
     if settings
       JSON.parse(settings)
     else
@@ -323,7 +322,8 @@ class Submission < ApplicationRecord
       # invalidate
       Rails.cache.delete(raw_score_cache_key(include_unreleased: true))
       Rails.cache.delete(raw_score_cache_key(include_unreleased: false))
-    end # release lock
+      # release lock
+    end
   end
 
   # fall back to UA-reported mime_type, if not detected
@@ -391,9 +391,9 @@ class Submission < ApplicationRecord
   end
 
   def update_individual_grade_watchlist_instances_if_latest
-    if aud.latest_submission_id == id
-      WatchlistInstance.update_individual_grade_watchlist_instances(course_user_datum)
-    end
+    return unless aud.latest_submission_id == id
+
+    WatchlistInstance.update_individual_grade_watchlist_instances(course_user_datum)
   end
 
 private
@@ -488,20 +488,20 @@ private
     apply_tweak score
   end
 
-  def apply_late_penalty(v, include_unreleased_opt)
-    [v - late_penalty_opts(include_unreleased_opt), 0].max
+  def apply_late_penalty(value, include_unreleased_opt)
+    [value - late_penalty_opts(include_unreleased_opt), 0].max
   end
 
-  def apply_tweak(v)
-    Tweak.apply_tweak(tweak, v)
+  def apply_tweak(value)
+    Tweak.apply_tweak(tweak, value)
   end
 
-  def apply_version_penalty(v, include_unreleased_opt)
-    [v - version_penalty_opts(include_unreleased_opt), 0].max
+  def apply_version_penalty(value, include_unreleased_opt)
+    [value - version_penalty_opts(include_unreleased_opt), 0].max
   end
 
   def allowed?
-    submitted_at = created_at || Time.now
+    submitted_at = created_at || Time.zone.now
     can, why_not = aud.can_submit? submitted_at, (submitted_by || course_user_datum)
 
     if can
