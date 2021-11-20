@@ -59,5 +59,7 @@ $(document).on("click", "input[type='submit']", function (e) {
 });
 
 $(document).ready(function () {
-  $('.ui.dropdown').dropdown();
+  $('.ui.dropdown').dropdown({
+    fullTextSearch: true,
+  });
 });
