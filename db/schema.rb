@@ -171,7 +171,7 @@ ActiveRecord::Schema.define(version: 2021_10_23_185328) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["oauth_state"], name: "index_github_integrations_on_oauth_state", unique: true
-    t.index ["user_id"], name: "index_github_integrations_on_user_id"
+    t.index ["user_id"], name: "index_github_integrations_on_user_id", unique: true
   end
 
   create_table "groups", force: :cascade do |t|
