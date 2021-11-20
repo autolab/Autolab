@@ -30,7 +30,7 @@ Since 2010, Autolab has had a transformative impact on education at CMU. Each se
 Subscribe to our [mailing list](https://groups.google.com/g/autolabproject) to recieve announcements about major releases and updates to the Autolab Project.
 
 ## Try It Out
-We have a demo site running at https://demo.autolabproject.com/. See the [docs](https://docs.autolabproject.com/#demonstration-site) for more information on how to login and suggestions on things to try.
+We have a demo site running at https://nightly.autolabproject.com/. See the [docs](https://docs.autolabproject.com/#demonstration-site) for more information on how to login and suggestions on things to try.
 
 
 ## Installation
