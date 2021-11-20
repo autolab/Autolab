@@ -1,0 +1,74 @@
+<script>
+  var config = {
+    content: [
+      {
+        type: "row",
+        content: [
+          {
+            type: "column",
+            width: 20,
+            content: [
+              {
+                type: "component",
+                componentName: "file_tree",
+                title: "File Outline",
+                height: 25,
+              },
+              {
+                type: "component",
+                componentName: "code_symbol_tree",
+                title: "Symbol Tree",
+              },
+            ],
+          },
+          {
+            type: "component",
+            componentName: "code_viewer",
+            title: "Code",
+          },
+          {
+            type: "column",
+            width: 20,
+            content: [
+              {
+                type: "component",
+                componentName: "annotation_pane",
+                title: "Annotations",
+                height: 57,
+              },
+              {
+                type: "component",
+                componentName: "annotation",
+                title: "Grades",
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  };
+
+  console.log("golden layout");
+
+  var myLayout = new GoldenLayout(config, "#speedgrader");
+  // var myLayout = new GoldenLayout(config);
+  myLayout._isFullPage = true;
+
+  myLayout.registerComponent("file_tree", function (container, state) {
+      container.getElement().html("<%= j render(:partial => 'file_tree') %>");
+  });
+  myLayout.registerComponent("code_symbol_tree", function (container, state) {
+      container.getElement().html("<%= j render(:partial => 'file_tree') %>");
+  });
+  myLayout.registerComponent("code_viewer", function (container, state) {
+      container.getElement().html("<%= j render(:partial => 'code_viewer') %>");
+  });
+  myLayout.registerComponent("annotation_pane", function (container, state) {
+      container.getElement().html("<%= j render(:partial => 'annotation_pane') %>");
+  });
+  myLayout.registerComponent("annotation", function (container, state) {
+      container.getElement().html("<%= j render(:partial => 'annotation') %>");
+  });
+
+  myLayout.init();
+</script>

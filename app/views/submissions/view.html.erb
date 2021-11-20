@@ -1,6 +1,8 @@
 <% @title = (@cud.instructor || @cud.course_assistant) ? "Annotate Submission" : "View Submission" %>
 
 <% content_for :stylesheets do %>
+  <link type="text/css" rel="stylesheet" href="https://golden-layout.com/files/latest/css/goldenlayout-base.css" />
+  <link type="text/css" rel="stylesheet" href="https://golden-layout.com/files/latest/css/goldenlayout-light-theme.css" />
   <%= stylesheet_link_tag "annotations" %>
   <% # highlightjs - change the style sheet for different styles %>
   <%= stylesheet_link_tag "highlightjs-styles/vs.css" %>
@@ -14,6 +16,9 @@
   <%= javascript_include_tag "jquery.jeditable" %>
   <%= external_javascript_include_tag "jquery-ui", "1.11.4" %>
   <script src="//cdnjs.cloudflare.com/ajax/libs/jquery-scrollTo/2.1.2/jquery.scrollTo.min.js"></script>
+  <script type="text/javascript" src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
+  <script type="text/javascript" src="https://golden-layout.com/files/latest/js/goldenlayout.min.js"></script>
+  
   <script type="application/javascript">
     <% if @cud.instructor || @cud.course_assistant then %>
       var isInstructor = true;
@@ -49,6 +54,7 @@
     hljs.initHighlightingOnLoad();
     PDFJS.workerSrc = "<%= asset_url 'pdf.worker.js' %>";
   </script>
+  <%= render :partial => "golden-layout" %>
   <%= javascript_include_tag "annotations.js" %>
   <%= javascript_include_tag "submission_view.js" %>
   <script type="text/javascript">
@@ -74,6 +80,7 @@
     newFile.pdf = false;
     <% end %>
   </script>
+
 <% end %>
 <!-- force end the container -->
 </div></div>
@@ -107,10 +114,10 @@
   </div>
 <% end %>
 
-<div class="row" style="height: 100%">
+<div class="row" id="speedgrader">
   <%# If there are multiple files, we have a header position and need a file tree %>
   <% if (params[:header_position] || (!@ctag_obj.nil? && !@ctag_obj.empty?)) %>
-    <div class="col s2" style="height: 100%">
+    <div class="col s2">
       <% if (params[:header_position]) %>
         <%= render "file_tree" %>
       <% end %>
@@ -119,29 +126,6 @@
         <%= render "code_symbol_tree", ctag_obj: @ctag_obj %>
       <% end %>
       </div>
-    </div>
-    <div class="col s8">
-        <label>
-          <input type="checkbox" id="highlightLongLines" checked>
-          <span>Highlight lines longer than 80 characters</span>
-        </label>
-        <br>
-      <%= render "code_viewer" %>
-    </div>
-    <div class="col s2" style="height: 100%;">
-      <%= render "annotation_pane" %>
-    </div>
-  <% else %>
-  <%# Else center the code and annotations %>
-    <div class="col s10">
-      <label>
-        <input type="checkbox" id="highlightLongLines" checked>
-        <span>Highlight lines longer than 80 characters</span>
-      </label>
-      <%= render "code_viewer" %>
-    </div>
-    <div class="col s2" style="height: 100%;">
-      <%= render "annotation_pane" %>
     </div>
   <% end %>
 </div>
