@@ -43,7 +43,8 @@ $(document).on("click", "input[type='submit']", function (e) {
   if (tab === "github_tab" && !$(this).is(":disabled")) {
     e.preventDefault();
     var repo_name = $("#repo-dropdown input[name='repo']").val();
-    var params = {repo: repo_name};
+    var branch_name = $("#branch-dropdown input[name='branch']").val();
+    var params = {repo: repo_name, branch: branch_name};
     var assessment_nav = $(".sub-navigation").find(".item").last();
     var assessment_url = assessment_nav.find("a").attr("href");
     var url = assessment_url + "/handin"
