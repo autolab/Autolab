@@ -70,13 +70,10 @@ Follow the step-by-step instructions below:
 
     Edit `school.yml` with your school/organization specific names and emails
 
-10. Configure the Devise Auth System with a unique key (run these commands exactly - leave `<YOUR-SECRET-KEY>` as it is):
+10. Initialize application secrets.
 
         :::bash
-        cp config/initializers/devise.rb.template config/initializers/devise.rb
-        sed -i "s/<YOUR-SECRET-KEY>/`bundle exec rails secret`/g" config/initializers/devise.rb
-
-    Fill in `<YOUR_WEBSITE>` in the `config/initializers/devise.rb` file. To skip this step for now, fill with `foo.bar`.
+        ./bin/initialize_secrets.sh
 
 11. Create and initialize the database tables:
 
@@ -112,4 +109,6 @@ Follow the step-by-step instructions below:
 
 16. Install [Tango](/installation/tango), the backend autograding service.
 
-17. Now you are all set to start using Autolab! Visit the [Guide for Instructors](/instructors) and [Guide for Lab Authors](/lab) pages for more info.
+17. If you would like to configure Github integration to allow students to submit via Github, please follow the [Github integration setup instructions](/installation/github_integration).
+
+18. Now you are all set to start using Autolab! Visit the [Guide for Instructors](/instructors) and [Guide for Lab Authors](/lab) pages for more info.
