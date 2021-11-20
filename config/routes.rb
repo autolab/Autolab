@@ -168,7 +168,7 @@ Rails.application.routes.draw do
       end
 
       collection do
-        get "installAssessment"
+        get "install_assessment"
         post "importAssessment"
         post "importAsmtFromTar"
       end
@@ -193,16 +193,16 @@ Rails.application.routes.draw do
 
     member do
       get "bulkRelease"
-      get "downloadRoster"
+      get "download_roster"
       match "email", via: [:get, :post]
       get "manage"
       get "moss"
       get "reload"
       match "report_bug", via: [:get, :post]
-      post "runMoss"
+      post "run_moss"
       get "sudo"
-      match "uploadRoster", via: [:get, :post]
-      get "userLookup"
+      match "upload_roster", via: [:get, :post]
+      get "user_lookup"
       get "users"
     end
   end

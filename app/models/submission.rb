@@ -33,7 +33,7 @@ class Submission < ApplicationRecord
   after_save :update_latest_submission, if: :version_changed?
   after_save :update_latest_submission, if: :ignored_changed?
   after_save :update_individual_grade_watchlist_instances_if_latest, if: :saved_change_to_tweak_id?
-  after_save do |sub|
+  after_commit do |sub|
     COURSE_LOGGER.log("Submission #{sub.id} SAVED for " \
       "#{sub.course_user_datum.user.email} on" \
       " #{sub.assessment.name}, file #{sub.filename} (#{sub.mime_type}),"\

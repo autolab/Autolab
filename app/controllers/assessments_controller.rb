@@ -26,7 +26,7 @@ class AssessmentsController < ApplicationController
   include AssessmentAutograde
 
   # this is inherited from ApplicationController
-  before_action :set_assessment, except: %i[index new create installAssessment
+  before_action :set_assessment, except: %i[index new create install_assessment
                                             importAsmtFromTar importAssessment
                                             log_submit local_submit autograde_done]
   before_action :set_submission, only: [:viewFeedback]
@@ -83,12 +83,12 @@ class AssessmentsController < ApplicationController
     @assessment = @course.assessments.new
   end
 
-  # installAssessment - Installs a new assessment, either by
+  # install_assessment - Installs a new assessment, either by
   # creating it from scratch, or importing it from an existing
   # assessment directory on file system, or from an uploaded
   # tar file with the assessment directory.
-  action_auth_level :installAssessment, :instructor
-  def installAssessment
+  action_auth_level :install_assessment, :instructor
+  def install_assessment
     ass_dir = Rails.root.join("courses", @course.name)
     @unused_config_files = []
     Dir.foreach(ass_dir) do |filename|
@@ -117,7 +117,7 @@ class AssessmentsController < ApplicationController
     tarFile = params["tarFile"]
     if tarFile.nil?
       flash[:error] = "Please select an assessment tarball for uploading."
-      redirect_to(action: "installAssessment")
+      redirect_to(action: "install_assessment")
       return
     end
 
@@ -130,12 +130,12 @@ class AssessmentsController < ApplicationController
       unless is_valid_tar
         flash[:error] =
           "Invalid tarball. A valid assessment tar has a single root directory that's named after the assessment, containing an assessment yaml file and an assessment ruby file."
-        redirect_to(action: "installAssessment")
+        redirect_to(action: "install_assessment")
         return
       end
     rescue StandardError => e
       flash[:error] = "Error while reading the tarball -- #{e.message}."
-      redirect_to(action: "installAssessment")
+      redirect_to(action: "install_assessment")
       return
     end
 
@@ -143,7 +143,7 @@ class AssessmentsController < ApplicationController
     unless @course.assessments.find_by(name: asmt_name).nil?
       flash[:error] =
         "An assessment with the same name already exists for the course. Please use a different name."
-      redirect_to(action: "installAssessment") && return
+      redirect_to(action: "install_assessment") && return
     end
 
     # If all requirements are satisfied, extract assessment files.
@@ -170,7 +170,7 @@ class AssessmentsController < ApplicationController
       tar_extract.close
     rescue StandardError => e
       flash[:error] = "Error while extracting tarball to server -- #{e.message}."
-      redirect_to(action: "installAssessment") && return
+      redirect_to(action: "install_assessment") && return
     end
 
     params[:assessment_name] = asmt_name
@@ -203,7 +203,7 @@ class AssessmentsController < ApplicationController
       if ass_name.blank?
         flash[:error] =
           "Assessment name is blank or contains characters that are not lowercase letters or digits"
-        redirect_to(action: :installAssessment)
+        redirect_to(action: :install_assessment)
         return
       end
 
@@ -229,7 +229,7 @@ class AssessmentsController < ApplicationController
         @assessment.embedded_quiz_form_data = params[:assessment][:embedded_quiz_form].read
       rescue StandardError
         flash[:error] = "Embedded quiz form cannot be empty!"
-        redirect_to(action: :installAssessment)
+        redirect_to(action: :install_assessment)
         return
       end
     end
@@ -244,7 +244,7 @@ class AssessmentsController < ApplicationController
       rescue StandardError => e2
         flash[:error] += "An error occurred (#{e2}} " \
           " while recovering from a previous error (#{flash[:error]})"
-        redirect_to(action: :installAssessment)
+        redirect_to(action: :install_assessment)
         return
       end
     end
@@ -254,7 +254,7 @@ class AssessmentsController < ApplicationController
       @assessment.save!
     rescue StandardError => e
       flash[:error] = "Error saving #{@assessment.name}: #{e}"
-      redirect_to(action: :installAssessment)
+      redirect_to(action: :install_assessment)
       return
     end
 
