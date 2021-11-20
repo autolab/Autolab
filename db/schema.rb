@@ -166,7 +166,7 @@ ActiveRecord::Schema.define(version: 2021_10_23_185328) do
 
   create_table "github_integrations", force: :cascade do |t|
     t.string "oauth_state"
-    t.string "access_token"
+    t.text "access_token_ciphertext"
     t.integer "user_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
