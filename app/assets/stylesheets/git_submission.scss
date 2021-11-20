@@ -23,6 +23,10 @@ $autolab-subtle-red: #C87B7E;
   font-size: 1.2rem;
 }
 
+.submission-panel #github_tab label {
+  margin-left: 0.15rem;
+}
+
 .submission-panel a {
   margin-right: 0 !important;
   color: white !important;
@@ -40,4 +44,17 @@ $autolab-subtle-red: #C87B7E;
   display: grid;
   justify-content: center;
   justify-items: center;
+}
+
+.submission-panel .ui.dropdown {
+  margin-bottom: 1rem;
+  margin-top: 0.2rem;
+}
+
+.submission-panel .ui.dropdown .item {
+  width: 100%;
+}
+
+.submission-panel .ui.search.dropdown > input.search {
+  height: 50%;
 }
