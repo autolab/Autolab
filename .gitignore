@@ -54,3 +54,5 @@ out.txt
 # Credentials
 .env
 
+# Rails credentials
+config/master.key
