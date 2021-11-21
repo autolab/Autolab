@@ -30,7 +30,7 @@ module AssessmentHandin
       out_file = File.new("out.txt", "w+")
       out_file.puts(contents)
       params[:submission]["file"] = out_file
-    elsif params[:submission].nil?
+    elsif @assessment.github_submission_enabled && params["repo"].present? && params["branch"].present? 
       # get code from Github
       github_integration = current_user.github_integration
 
