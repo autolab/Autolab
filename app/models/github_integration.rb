@@ -11,6 +11,8 @@ class GithubIntegration < ApplicationRecord
     end
 
     client = Octokit::Client.new(:access_token => access_token)
+
+    begin
     repos = client.repos({},
                          query: {
                            sort: "pushed",
@@ -21,6 +23,13 @@ class GithubIntegration < ApplicationRecord
         clone_url: repo[:clone_url],
         default_branch: repo[:default_branch] }
     }
+    rescue Exception => e
+      if e.response_status == 401 # unauthorized
+        # User revoked permissions via Github UI, destroy it
+        self.destroy!
+      end
+      nil
+    end
   end
 
   # Returns all the branches for a repository
@@ -51,6 +60,11 @@ class GithubIntegration < ApplicationRecord
   def clone_repo(repo_name, repo_branch, max_size)
     client = Octokit::Client.new(:access_token => access_token)
     repo_info = client.repo(repo_name)
+
+    if not repo_info
+      raise "Querying repository information failed"
+    end
+
     clone_url = repo_info[:clone_url]
 
     if repo_info[:size] * 1000 > max_size
@@ -68,13 +82,17 @@ class GithubIntegration < ApplicationRecord
     clone_url.sub! "https://", "https://#{self.access_token}@"
     repo_name.gsub! "/", "-"
 
+    if not check_allowed_chars(repo_name) or not check_allowed_chars(repo_branch)
+      raise "Bad repository name"
+    end
+
     # Slap on random 8 bytes at the end
     repo_unique_name = "#{repo_name}_#{(0...8).map { (65 + rand(26)).chr }.join}"
     tarfile_name = "#{repo_unique_name}.tgz"
     destination = "/tmp/#{repo_unique_name}"
     tarfile_dest = "/tmp/#{tarfile_name}"
 
-    if not system *%W(git clone --branch #{repo_branch} #{clone_url} #{destination})
+    if not system *%W(git clone --depth=1 --branch #{repo_branch} #{clone_url} #{destination})
       raise "Cloning repo failed"
     end
 
@@ -85,6 +103,11 @@ class GithubIntegration < ApplicationRecord
         raise "Creation of archive from Git submission failed"
       end
     }
+
+    # Clean
+    if not system *%W(rm -rf #{destination})
+      raise "Cleaning temporary files failed"
+    end
 
     return tarfile_dest
   end
@@ -118,4 +141,18 @@ class GithubIntegration < ApplicationRecord
   def self.connected
     not self.check_github_authorization.nil?
   end
+
+private
+  ALLOWED_CHARS = ('a'..'z').to_a + ('A'..'Z').to_a + (0..9).to_a + ['.' , '-']
+
+  def check_allowed_chars(user_input)
+    user_input.each_char { |c|
+      if not ALLOWED_CHARS.include?(c)
+        p c
+        return false
+      end
+    }
+    return true
+  end
+
 end
