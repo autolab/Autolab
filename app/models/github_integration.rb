@@ -148,7 +148,6 @@ private
   def check_allowed_chars(user_input)
     user_input.each_char { |c|
       if not ALLOWED_CHARS.include?(c)
-        p c
         return false
       end
     }
