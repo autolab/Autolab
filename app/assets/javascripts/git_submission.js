@@ -38,6 +38,27 @@ $("#repo-dropdown").change(function() {
   update_branches(repo_name);
 });
 
+// https://stackoverflow.com/questions/5524045/jquery-non-ajax-post
+function submit(action, method, input) {
+  'use strict';
+  var form;
+  form = $('<form />', {
+      action: action,
+      method: method,
+      style: 'display: none;'
+  });
+  if (typeof input !== 'undefined' && input !== null) {
+      $.each(input, function (name, value) {
+          $('<input />', {
+              type: 'hidden',
+              name: name,
+              value: value
+          }).appendTo(form);
+      });
+  }
+  form.appendTo('body').submit();
+}
+
 $(document).on("click", "input[type='submit']", function (e) {
   var tab = $(".submission-panel .ui.tab.active").attr('id');
   if (tab === "github_tab" && !$(this).is(":disabled")) {
@@ -48,14 +69,7 @@ $(document).on("click", "input[type='submit']", function (e) {
     var assessment_nav = $(".sub-navigation").find(".item").last();
     var assessment_url = assessment_nav.find("a").attr("href");
     var url = assessment_url + "/handin"
-    $.ajax({
-      type: 'POST',
-      url: url,
-      data: params, 
-      success: function(data){
-        window.location.replace(assessment_url + "/history");
-      },
-    });
+    submit(url, 'post', params);
   }
 });
 
