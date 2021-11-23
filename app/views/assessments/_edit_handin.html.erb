@@ -1,40 +1,43 @@
-
 <% content_for :javascripts do %>
   <%= javascript_include_tag "init_handin_datetimepickers" %>
 <% end %>
-
 <%# Initialize datepickers by defining linked relationships (using IDs) %>
 <%= f.datetime_select :start_at,
   style: "margin-top: 0 !important;",
   help_text: "The time this assessment is released to students.",
   less_than: "assessment_due_at assessment_end_at assessment_grading_deadline" %>
-
 <%= f.datetime_select :due_at,
   style: "margin-top: 0 !important;",
   help_text: "Students can submit before this time without being penalized or using grace days.",
   greater_than: "assessment_start_at",
   less_than: "assessment_end_at assessment_grading_deadline" %>
-
 <%= f.datetime_select :end_at,
   style: "margin-top: 0 !important;",
   help_text: "Last possible time that students can submit (except those granted extensions.)",
   greater_than: "assessment_start_at assessment_due_at",
   less_than: "assessment_grading_deadline" %>
-
 <%= f.datetime_select :grading_deadline,
   style: "margin-top: 0 !important;",
   help_text: "Time after which final scores are included in the gradebook",
   greater_than: "assessment_start_at assessment_due_at assessment_end_at", placeholder: Date.current %>
-
-<% unless f.object.disable_handins %>
-    <%= f.text_field :handin_filename, help_text: "The suffix that is appended to student submission files. Autolab stores submission files in the handin directory as email_version_fname", placeholder: "E.g. mm.c" %>
+<!-- TODO update helptext to link to docs once we have docs -->
+<% if GithubIntegration.connected %>
+  <%= f.check_box :github_submission_enabled, 
+    display_name: "Allow Github submissions",
+    help_text: "Check to enable submissions through Github. Handin filename must end in .tgz and autograder should expect a compressed .tgz tarfile if Github submission is enabled." %>
+<% else %>
+  <%= f.check_box :github_submission_enabled, 
+  disabled: "disabled",
+    display_name: "Allow Github submissions (Disabled)",
+    help_text: "Autolab has not been configured to use Github integration. Please contact your Autolab admin to perform the necessary setup and configuration based on the instructions on our docs." 
+  %>
 <% end %>
-
+<% unless f.object.disable_handins %>
+  <%= f.text_field :handin_filename, help_text: "The suffix that is appended to student submission files. Autolab stores submission files in the handin directory as email_version_fname", placeholder: "E.g. mm.c" %>
+<% end %>
 <%= f.text_field :max_size, help_text: "The maximum size that a handin file can have in megabytes (MB)." %>
-
 <%= f.check_box :disable_handins,
   help_text: "Check this to disallow handins through Autolab. This option can be used to track scores for assignments that are not submitted through Autolab such as midterms and written assignments." %>
-
 <div class="action_buttons">
   <%= f.submit "Save", :name=>"handin" %>
 </div>

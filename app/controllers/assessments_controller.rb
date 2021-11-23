@@ -79,8 +79,12 @@ class AssessmentsController < ApplicationController
   # creating it from scratch, or importing it from an existing
   # assessment directory.
   action_auth_level :new, :instructor
+
   def new
     @assessment = @course.assessments.new
+    if not GithubIntegration.connected
+      @assessment.github_submission_enabled = false
+    end
   end
 
   # install_assessment - Installs a new assessment, either by
@@ -113,6 +117,7 @@ class AssessmentsController < ApplicationController
   end
 
   action_auth_level :importAsmtFromTar, :instructor
+
   def importAsmtFromTar
     tarFile = params["tarFile"]
     if tarFile.nil?
@@ -181,6 +186,7 @@ class AssessmentsController < ApplicationController
   # The main task of this function is to decide what category a newly
   # installed assessment should be assigned to.
   action_auth_level :importAssessment, :instructor
+
   def importAssessment
     @assessment = @course.assessments.new(name: params[:assessment_name])
     @assessment.load_yaml # this will save the assessment
@@ -193,6 +199,7 @@ class AssessmentsController < ApplicationController
   # create - Creates an assessment from an assessment directory
   # residing in the course directory.
   action_auth_level :create, :instructor
+
   def create
     @assessment = @course.assessments.new(new_assessment_params)
 
@@ -214,7 +221,13 @@ class AssessmentsController < ApplicationController
     # fill in other fields
     @assessment.course = @course
     @assessment.handin_directory = "handin"
-    @assessment.handin_filename = "handin.c"
+
+    if @assessment.github_submission_enabled
+      @assessment.handin_filename = "handin.tar"
+    else
+      @assessment.handin_filename = "handin.c"
+    end
+
     @assessment.visible_at = Time.now
     @assessment.start_at = Time.now
     @assessment.due_at = Time.now
@@ -346,6 +359,7 @@ class AssessmentsController < ApplicationController
   # export - export an assessment by saving its persistent
   # properties in a yaml properties file.
   action_auth_level :export, :instructor
+
   def export
     base_path = Rails.root.join("courses", @course.name).to_s
     asmt_dir = @assessment.name
@@ -388,6 +402,7 @@ class AssessmentsController < ApplicationController
   end
 
   action_auth_level :destroy, :instructor
+
   def destroy
     @assessment.submissions.each do |submission|
       submission.destroy
@@ -404,6 +419,7 @@ class AssessmentsController < ApplicationController
   end
 
   action_auth_level :show, :student
+
   def show
     set_handin
     extend_config_module(@assessment, @submission, @cud)
@@ -457,9 +473,12 @@ class AssessmentsController < ApplicationController
 
     # Check if we should include regrade as a function
     @autograded = @assessment.has_autograder?
+
+    @repos = GithubIntegration.find_by_user_id(@cud.user.id)&.repositories
   end
 
   action_auth_level :history, :student
+
   def history
     # Remember the student ID in case the user wants visit the gradesheet
     session["gradeUser#{@assessment.id}"] = params[:cud_id] if params[:cud_id]
@@ -494,7 +513,7 @@ class AssessmentsController < ApplicationController
         score: result["score"].to_f,
         feedback: result["feedback"],
         score_id: result["score_id"].to_i,
-        released: Utilities.is_truthy?(result["released"]) ? 1 : 0 # converts 't' to 1, "f" to 0
+        released: Utilities.is_truthy?(result["released"]) ? 1 : 0, # converts 't' to 1, "f" to 0
       }
     end
 
@@ -508,6 +527,7 @@ class AssessmentsController < ApplicationController
   end
 
   action_auth_level :viewFeedback, :student
+
   def viewFeedback
     # User requested to view feedback on a score
     @score = @submission.scores.find_by(problem_id: params[:feedback])
@@ -573,6 +593,7 @@ class AssessmentsController < ApplicationController
   end
 
   action_auth_level :reload, :instructor
+
   def reload
     @assessment.load_config_file
   rescue StandardError => e
@@ -583,6 +604,7 @@ class AssessmentsController < ApplicationController
   end
 
   action_auth_level :edit, :instructor
+
   def edit
     # default to the basic tab
     params[:active_tab] ||= "basic"
@@ -617,6 +639,7 @@ class AssessmentsController < ApplicationController
   end
 
   action_auth_level :releaseAllGrades, :instructor
+
   def releaseAllGrades
     # release all grades
     num_released = releaseMatchingGrades { |_| true }
@@ -632,6 +655,7 @@ class AssessmentsController < ApplicationController
   end
 
   action_auth_level :releaseSectionGrades, :course_assistant
+
   def releaseSectionGrades
     unless @cud.section? && !@cud.section.empty? && @cud.lecture && !@cud.lecture.empty?
       flash[:error] =
@@ -657,6 +681,7 @@ class AssessmentsController < ApplicationController
   end
 
   action_auth_level :withdrawAllGrades, :instructor
+
   def withdrawAllGrades
     @assessment.submissions.each do |submission|
       scores = submission.scores.where(released: true)
@@ -677,6 +702,7 @@ class AssessmentsController < ApplicationController
   end
 
   action_auth_level :writeup, :student
+
   def writeup
     if @assessment.writeup_is_url?
       redirect_to @assessment.writeup
@@ -706,7 +732,7 @@ class AssessmentsController < ApplicationController
     File.delete(f)
   end
 
-protected
+  protected
 
   # We only do this so that it can be overwritten by modules
   def updateScore(_user, score)
@@ -748,13 +774,13 @@ protected
     num_released
   end
 
-private
+  private
 
   def new_assessment_params
     ass = params.require(:assessment)
     ass[:category_name] = params[:new_category] if params[:new_category].present?
     ass.permit(:name, :display_name, :category_name, :has_svn, :has_lang, :group_size,
-               :embedded_quiz, :embedded_quiz_form_data)
+               :embedded_quiz, :embedded_quiz_form_data, :github_submission_enabled)
   end
 
   def edit_assessment_params

@@ -36,6 +36,9 @@ gem 'sdoc', '>= 0.4.0', group: :doc
 # Spring speeds up development by keeping your application running in the background. Read more: https://github.com/rails/spring
 gem 'spring', group: :development
 
+# Sourcing environment variables from .env
+gem 'dotenv-rails'
+
 # Enables Slack notifications
 gem 'slack-notifier'
 # E-mail autolab-dev on exceptions in production
@@ -57,6 +60,12 @@ gem 'omniauth', '>=1.2.2'
 gem 'omniauth-facebook', '>=2.0.0'
 gem 'omniauth-google-oauth2', '>=0.2.5'
 gem 'omniauth-shibboleth', '>=1.1.2'
+
+# OAuth2 authentication
+gem 'oauth2'
+
+# Github API
+gem "octokit", "~> 4.0"
 
 # Autolab API OAuth Service
 gem 'doorkeeper'
@@ -144,3 +153,7 @@ gem "jstz-rails3-plus", ">= 1.0"
 
 # For getting file types 
 gem 'mimemagic', '>= 0.3.7'
+
+# For encrypting API tokens
+gem 'lockbox'
+

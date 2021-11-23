@@ -14,6 +14,7 @@ class User < ApplicationRecord
   has_many :course_user_data, dependent: :destroy
   has_many :courses, through: :course_user_data
   has_many :authentications, dependent: :destroy
+  has_one :github_integration
 
   trim_field :school
   validates :first_name, :last_name, :email, presence: true

@@ -2,7 +2,6 @@
 # Handles different handin methods, including web form, local_submit and log_submit
 #
 module AssessmentHandin
-
   include AssessmentHandinCore
 
   # handin - The generic default handin function.
@@ -20,41 +19,52 @@ module AssessmentHandin
   #
   # Any errors should be added to flash[:error] and return false or nil.
   def handin
-
-    if @assessment.embedded_quiz
-
-      contents = params[:submission]["embedded_quiz_form_answer"].to_s
-
-      out_file = File.new("out.txt", "w+")
-      out_file.puts(contents)
-
-      params[:submission]["file"] = out_file
-
+    if @assessment.disable_handins?
+      flash[:error] = "Sorry, handins are disabled for this assessment."
+      redirect_to(action: :show)
+      return false
     end
 
     if @assessment.embedded_quiz
-      if @assessment.disable_handins?
-        flash[:error] = "Sorry, handins are disabled for this assessment."
-        redirect_to(action: :show)
-        return false
-      end
-    else
+      contents = params[:submission]["embedded_quiz_form_answer"].to_s
+      out_file = File.new("out.txt", "w+")
+      out_file.puts(contents)
+      params[:submission]["file"] = out_file
+    elsif @assessment.github_submission_enabled && params["repo"].present? && params["branch"].present? 
+      # get code from Github
+      github_integration = current_user.github_integration
 
+      begin
+        @tarfile_path = github_integration.clone_repo(params["repo"], params["branch"], @assessment.max_size * (2 ** 20))
+      rescue StandardError => msg
+        flash[:error] = msg
+        redirect_to(action: :show)
+        return
+      end
+
+      # Populate submission field for validation
+      params[:submission] = { "tar" => @tarfile_path }
+      git_tarfile_cleanup_path = @tarfile_path
+
+      redirect_to(action: :show) && return unless validateHandin_forGit
+    else
       # validate the handin
       redirect_to(action: :show) && return unless validateHandin_forHTML
-
     end
 
     # save the submissions
     begin
       submissions = saveHandin(params[:submission])
+      if git_tarfile_cleanup_path
+        system *%W(rm #{git_tarfile_cleanup_path})
+      end
     rescue StandardError => exception
       ExceptionNotifier.notify_exception(exception, env: request.env,
-                                         data: {
-                                           user: current_user,
-                                           course: @course,
-                                           assessment: @assessment
-                                         })
+                                                    data: {
+                                                      user: current_user,
+                                                      course: @course,
+                                                      assessment: @assessment,
+                                                    })
 
       COURSE_LOGGER.log("could not save handin: #{exception.class} (#{exception.message})")
       submissions = nil
@@ -130,11 +140,11 @@ module AssessmentHandin
           submissions = saveHandin("local_submit_file" => File.join(remote_handin_dir, handin_file))
         rescue StandardError => e
           ExceptionNotifier.notify_exception(e, env: request.env,
-                                             data: {
-                                               user: current_user,
-                                               course: @course,
-                                               assessment: @assessment
-                                             })
+                                                data: {
+                                                  user: current_user,
+                                                  course: @course,
+                                                  assessment: @assessment,
+                                                })
           COURSE_LOGGER.log("Error Saving Submission:\n#{e}")
           submissions = nil
         end
@@ -150,15 +160,14 @@ module AssessmentHandin
 
         # autograde the submissions
         sendJob_AddHTMLMessages(@course, @assessment, submissions) if @assessment.has_autograder?
-
       rescue StandardError => e
         ExceptionNotifier.notify_exception(e, env: request.env,
-                                           data: {
-                                             user: current_user,
-                                             course: @course,
-                                             assessment: @assessment,
-                                             submission: submissions[0]
-                                           })
+                                              data: {
+                                                user: current_user,
+                                                course: @course,
+                                                assessment: @assessment,
+                                                submission: submissions[0],
+                                              })
         COURSE_LOGGER.log(e.to_s)
       end
 
@@ -187,11 +196,11 @@ module AssessmentHandin
           FileUtils.rm_rf(remote_handin_dir)
         rescue SystemCallError => exception
           ExceptionNotifier.notify_exception(exception, env: request.env,
-                                             data: {
-                                               user: current_user,
-                                               course: @course,
-                                               assessment: @assessment
-                                             })
+                                                        data: {
+                                                          user: current_user,
+                                                          course: @course,
+                                                          assessment: @assessment,
+                                                        })
           render(plain: "WARNING: could not clear previous handin directory, please") && return
         end
       end
@@ -200,13 +209,13 @@ module AssessmentHandin
         Dir.mkdir(remote_handin_dir)
       rescue SystemCallError
         ExceptionNotifier.notify_exception(exception, env: request.env,
-                                           data: {
-                                             user: current_user,
-                                             course: @course,
-                                             assessment: @assessment
-                                           })
+                                                      data: {
+                                                        user: current_user,
+                                                        course: @course,
+                                                        assessment: @assessment,
+                                                      })
         COURSE_LOGGER.log("ERROR: Could not create handin directory. Please contact
-        #{Rails.configuration.school['support_email']} with this error")
+        #{Rails.configuration.school["support_email"]} with this error")
       end
 
       system("fs sa #{remote_handin_dir} #{@user.email} rlidw")
@@ -263,7 +272,8 @@ module AssessmentHandin
           version: 0,
           autoresult: @result,
           user_id: @cud.id,
-          submitted_by_id: 0)
+          submitted_by_id: 0,
+        )
         submission.save!
       else
         # update this one
@@ -284,19 +294,19 @@ module AssessmentHandin
       end
     rescue StandardError => e
       ExceptionNotifier.notify_exception(e, env: request.env,
-                                         data: {
-                                           user: current_user,
-                                           course: @course,
-                                           assessment: @assessment,
-                                           submission: submission
-                                         })
+                                            data: {
+                                              user: current_user,
+                                              course: @course,
+                                              assessment: @assessment,
+                                              submission: submission,
+                                            })
       COURSE_LOGGER.log(e.to_s)
     end
 
     render(plain: "OK", status: 200) && return
   end
 
-private
+  private
 
   ##
   # this function checks that now is a valid time to submit and that the
@@ -304,45 +314,38 @@ private
   #
   def validateHandin_forHTML
     if params[:submission].blank?
-        flash[:error] = "Submission was blank - please upload again."
-        return false
+      flash[:error] = "Submission was blank - please upload again."
+      return false
     end
-    if params[:submission]["file"].blank?
-        flash[:error] = "Submission was blank (file upload missing) - please upload again."
-        return false
+
+    if params[:submission]["file"].blank? and params["repo"].blank?
+      flash[:error] = "Submission was blank (file upload/Github repository missing) - please try again."
+      return false
     end
-    # check for custom form first
-    if @assessment.has_custom_form
-      for i in 0..@assessment.getTextfields.size-1
-          if params[:submission][("formfield" + (i+1).to_s).to_sym].blank?
-            flash[:error] = @assessment.getTextfields[i] + " is a required field."
-            return false
-          end
-      end
-    end
+
+    validate_custom_form
 
     validity = validateHandin(params[:submission]["file"].size,
                               params[:submission]["file"].content_type,
                               params[:submission]["file"].original_filename)
 
-    case validity
-    when :valid
-      return validateHandinForGroups_forHTML
-    when :handin_disabled
-      msg = "Sorry, handins are disabled for this assessment."
-    when :submission_empty
-      msg = "Submission was blank - please upload again."
-    when :file_too_large
-      msg = "Your submission is larger than the max allowed " \
-            "size (#{@assessment.max_size} MB) - please remove any " \
-            "unnecessary logfiles and binaries."
-    when :fail_type_check
-      flash[:error] = "" if flash[:error].nil?
-      msg = "Submission failed Filetype Check. " + flash[:error]
+    return handle_validity(validity)
+  end
+
+  ##
+  # Validates Git tarfile
+  #
+  def validateHandin_forGit
+    if @tarfile_path.blank?
+      flash[:error] = "Git submission error"
+      return false
     end
-    
-    flash[:error] = msg
-    return false
+
+    validity = validateHandin(File.size(@tarfile_path),
+                              MimeMagic.by_magic(File.open(@tarfile_path)).type,
+                              @tarfile_path) # TODO probably want filename instead of path
+
+    return handle_validity(validity)
   end
 
   ##
@@ -361,6 +364,39 @@ private
       msg = "You cannot submit until all group members confirm their group membership"
     when :group_submission_limit_exceeded
       msg = "A member of your group has reached the submission limit for this assessment"
+    end
+
+    flash[:error] = msg
+    return false
+  end
+
+  def validate_custom_form
+    # check if custom form exists
+    if @assessment.has_custom_form
+      for i in 0..@assessment.getTextfields.size - 1
+        if params[:submission][("formfield" + (i + 1).to_s).to_sym].blank?
+          flash[:error] = @assessment.getTextfields[i] + " is a required field."
+          return false
+        end
+      end
+    end
+  end
+
+  def handle_validity(validity)
+    case validity
+    when :valid
+      return validateHandinForGroups_forHTML
+    when :handin_disabled
+      msg = "Sorry, handins are disabled for this assessment."
+    when :submission_empty
+      msg = "Submission was blank - please upload again."
+    when :file_too_large
+      msg = "Your submission is larger than the max allowed " \
+            "size (#{@assessment.max_size} MB) - please remove any " \
+            "unnecessary logfiles and binaries."
+    when :fail_type_check
+      flash[:error] = "" if flash[:error].nil?
+      msg = "Submission failed Filetype Check. " + flash[:error]
     end
 
     flash[:error] = msg

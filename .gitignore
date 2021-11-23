@@ -9,7 +9,6 @@ config/autogradeConfig.rb
 assessmentConfig/
 courseConfig/
 config/environments/production.rb
-config/initializers/devise.rb
 coverage/
 /courses/
 /courses
@@ -50,4 +49,10 @@ doc/
 out.txt
 .vscode/
 .byebug_history
+
+# Credentials
 .env
+
+# Rails credentials
+config/master.key
+config/credentials.yml.enc
