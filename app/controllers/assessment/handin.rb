@@ -30,7 +30,7 @@ module AssessmentHandin
       out_file = File.new("out.txt", "w+")
       out_file.puts(contents)
       params[:submission]["file"] = out_file
-    elsif params[:submission].nil?
+    elsif @assessment.github_submission_enabled && params["repo"].present? && params["branch"].present? 
       # get code from Github
       github_integration = current_user.github_integration
 
@@ -44,6 +44,7 @@ module AssessmentHandin
 
       # Populate submission field for validation
       params[:submission] = { "tar" => @tarfile_path }
+      git_tarfile_cleanup_path = @tarfile_path
 
       redirect_to(action: :show) && return unless validateHandin_forGit
     else
@@ -54,6 +55,9 @@ module AssessmentHandin
     # save the submissions
     begin
       submissions = saveHandin(params[:submission])
+      if git_tarfile_cleanup_path
+        system *%W(rm #{git_tarfile_cleanup_path})
+      end
     rescue StandardError => exception
       ExceptionNotifier.notify_exception(exception, env: request.env,
                                                     data: {
