@@ -206,9 +206,25 @@ class UsersController < ApplicationController
     else
       github_integration.update!(oauth_state: state)
     end
+    # Use https, unless explicitly specified not to
+    prefix = "https://"
+    if ENV["DOCKER_SSL"] == "false"
+      prefix = "http://"
+    end
+
+    begin
+      if Rails.env.development?
+        hostname = request.base_url
+      else
+        hostname = prefix + request.host
+      end
+    rescue
+      hostname = `hostname`
+      hostname = prefix + hostname.strip
+    end
 
     authorize_url_params = {
-      redirect_uri: "http://#{request.host}:#{request.port}/users/github_oauth_callback",
+      redirect_uri: "#{hostname}/users/github_oauth_callback",
       scope: "repo",
       state: state
     }
