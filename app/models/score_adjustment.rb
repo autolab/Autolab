@@ -14,9 +14,9 @@ class ScoreAdjustment < ApplicationRecord
   #
   # @return The applied adjustment (float)
   def self.applied_value(adj, score, multiplier)
-    if score.nil?
-      raise ArgumentError, "ScoreAdjustment.applied_value: score was nil"
-    elsif adj.nil?
+    raise ArgumentError, "ScoreAdjustment.applied_value: score was nil" if score.nil?
+
+    if adj.nil?
       0.0
     else
       case adj.read_attribute(:kind)
@@ -71,6 +71,6 @@ class ScoreAdjustment < ApplicationRecord
       raise ArgumentError
     end
 
-    format("%+g", value) + " " + type_str
+    "#{format('%+g', value)} #{type_str}"
   end
 end
