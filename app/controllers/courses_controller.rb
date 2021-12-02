@@ -572,6 +572,7 @@ private
                                                   grade_policy: new_cud[:grade_policy],
                                                   lecture: new_cud[:lecture])
         existing.assign_attributes(params.permit(:lecture, :section, :grade_policy))
+        existing.dropped = false
         existing.save(validate: false) # Save without validations.
       end
       rowNum += 1
