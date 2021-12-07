@@ -20,6 +20,7 @@
 
 ## Checklist:
 <!--- Go over all the following points, and put an `x` in all the boxes that apply. -->
+- [ ] My PR involves changes to Ruby code and I have run `rubocop` from the Autolab directory
 - [ ] My change requires a change to the documentation, which is located at [Autolab Docs](https://github.com/autolab/docs)
 - [ ] I have updated the documentation accordingly, included in this PR
 
