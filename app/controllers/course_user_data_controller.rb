@@ -191,6 +191,11 @@ class CourseUserDataController < ApplicationController
       redirect_to([@cud.course]) && return
     end
 
+    @users = {}
+    @course.course_user_data.each do |cud|
+      @users[cud.full_name_with_email] = cud.email
+    end
+
     return unless request.post?
 
     sudo_user = User.where(email: params[:sudo_email]).first

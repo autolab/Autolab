@@ -1,10 +1,43 @@
+<% content_for :javascripts do %>
+  <script type="application/javascript">
+    jQuery(function() {
+      userData = {
+        <% @users.each do |k,v| %>
+          "<%= k %>": "<%= v %>",
+        <% end %>
+      };
+
+      /* user autocomplete */
+      $studentAutocompleteField = $('#student_autocomplete');
+      $hiddenCUDField = $('#sudo_email');
+      $studentAutocompleteField.autocomplete({
+        data: {
+          <% @users.each do |k,v| %>
+            "<%= k %>": null,
+          <% end %>
+        }
+      });
+
+      /* track changes in student autocomplete field */
+      $studentAutocompleteField.on('change', function() {
+        $hiddenCUDField.val(userData[$studentAutocompleteField.val()]);
+      })
+    });
+  </script>
+<% end %>
+
 <h2>Act as User</h2>
 
 <p>You can use sudo to examine how Autolab appears to other users. You can also change your permission levels to see what your course assistants or students generically see.</p>
 
-<p>
+<div>
 <%= form_tag do %>
-  Act as user (email): <%= email_field_tag :sudo_email %>
+  Act as user (email):
+  <div class="input-field">
+    <input type="text" size="3" id="student_autocomplete" class="autocomplete" autocomplete="off"/>
+    <label for="student_autocomplete">Start typing student name or email</label>
+  </div><br>
+  <%= hidden_field_tag(:sudo_email)%>
   <%= submit_tag "Sudo", {:value=>"Sudo", :class=> "btn primary"} %>
 <% end %>
-</p>
+</div>
