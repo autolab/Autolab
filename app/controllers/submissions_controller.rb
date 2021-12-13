@@ -303,14 +303,14 @@ class SubmissionsController < ApplicationController
 
     # Adds autograded file as first option if it exist
     # We are mapping Autograder to header_position -1
-    unless @submission.autograde_file.nil?
-      @files.prepend({ pathname: "Autograder Output",
-                       header_position: -1,
-                       mac_bs_file: false,
-                       directory: false })
-    end
-
-    if params.include?(:header_position) && (params[:header_position].to_i == -1) && !@submission.autograde_file.nil?
+    if(!@submission.autograde_file.nil? && (!@assessment.before_grading_deadline? || @cud.instructor || @cud.course_assistant))
+      @files.prepend({pathname:"Autograder Output",
+                      header_position: -1,
+                      mac_bs_file: false,
+                      directory: false})
+      end
+    
+    if (params.include?(:header_position) && (params[:header_position].to_i == -1) && !@submission.autograde_file.nil? && (!@assessment.before_grading_deadline? || @cud.instructor || @cud.course_assistant))
       file = @submission.autograde_file.read || "Empty Autograder Output"
       @displayFilename = "Autograder Output"
     elsif params.include?(:header_position) && Archive.archive?(@submission.handin_file_path)
