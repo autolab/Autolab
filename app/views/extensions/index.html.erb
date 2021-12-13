@@ -6,7 +6,7 @@
     jQuery(function() {
       /* match user name/email with cud_id */
       userData = {
-        <% @usersEncoded.each do |k,v| %>
+        <% @users.each do |k,v| %>
           "<%= k %>": "<%= v %>",
         <% end %>
       };
@@ -24,7 +24,7 @@
 
       /* track changes in student autocomplete field */
       $studentAutocompleteField.on('change', function() {
-        $hiddenCUDField.val(userData[window.btoa($studentAutocompleteField.val())]);
+        $hiddenCUDField.val(userData[$studentAutocompleteField.val()]);
       })
 
       /* set up dates */
