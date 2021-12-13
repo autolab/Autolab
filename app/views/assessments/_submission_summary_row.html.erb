@@ -129,7 +129,10 @@
       <%= link_to 'Destroy', [:destroyConfirm, @course, @assessment, submission], {:class=>"btn small"} %>
       <%= link_to 'Edit', [:edit, @course, @assessment, submission], {:class=>"btn small"} %>
   <% end %>
-
+  <% if @scores[submission.id] and @scores[submission.id][problem.id] and @scores[submission.id][problem.id][:released] == 1 and @scores[submission.id][problem.id][:feedback] then %>
+      <%= link_to "Feedback", {action: :viewFeedback, submission_id: submission.id, feedback: problem.id}, {:class=>"btn small"} %>
+      <br>
+  <% end %>
     <% if @cud.instructor? %>
       <div style="color: red;"><%= submission.errors.full_messages.join("<br />") %></div>
     <% end %>
