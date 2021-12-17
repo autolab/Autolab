@@ -35,6 +35,8 @@ RUN chown app:app Gemfile Gemfile.lock
 
 # Prepare folders
 USER app
+# Specify bundler version
+RUN gem install bundler -v $(tail -n1 Gemfile.lock)
 RUN bundle install
 
 RUN mkdir /home/app/webapp
