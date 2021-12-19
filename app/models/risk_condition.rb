@@ -14,11 +14,15 @@ class RiskCondition < ApplicationRecord
 
   def self.create_condition_for_course_with_type(course_id, type, params, version)
     # parameter check shouldn't surface to user and is for sanity check during development only
-    if (type == 1 && (params[:grace_day_threshold].nil? || params[:date].nil? || params.length != 2)) ||
-       (type == 2 && (params[:percentage_drop].nil? || params[:consecutive_counts].nil? || params.length != 2)) ||
+    if (type == 1 && (params[:grace_day_threshold].nil? ||
+                      params[:date].nil? || params.length != 2)) ||
+       (type == 2 && (params[:percentage_drop].nil? ||
+                      params[:consecutive_counts].nil? || params.length != 2)) ||
        (type == 3 && (params[:no_submissions_threshold].nil? || params.length != 1)) ||
-       (type == 4 && (params[:grade_threshold].nil? || params[:count_threshold].nil? || params.length != 2))
-      raise "Invalid update parameters for risk conditions! Make sure your request body fits the criteria!"
+       (type == 4 && (params[:grade_threshold].nil? ||
+                      params[:count_threshold].nil? || params.length != 2))
+      raise "Invalid update parameters for risk conditions! "\
+            "Make sure your request body fits the criteria!"
     end
 
     options = { course_id: course_id, condition_type: type, parameters: params, version: version }
@@ -31,7 +35,6 @@ class RiskCondition < ApplicationRecord
   end
 
   def self.get_current_for_course(course_name)
-    conditions = []
     course_id = Course.find_by(name: course_name).id
     max_version = RiskCondition.get_max_version(course_id)
 
@@ -52,22 +55,25 @@ class RiskCondition < ApplicationRecord
     course_id = Course.find_by(name: course_name).id
     max_version = RiskCondition.get_max_version(course_id)
     # Is params empty?
-    if params.length == 0 and max_version == 0
-      # puts "case 1: max_version = 0 (no previous conditons have been set) and instructor doesn't want any at this point"
+    if params.empty? && (max_version == 0)
+      # puts "case 1: max_version = 0 (no previous conditons have been set)
+      # and instructor doesn't want any at this point"
       WatchlistInstance.refresh_instances_for_course(course_name, true)
       return []
     end
 
     previous_conditions = RiskCondition.where(course_id: course_id, version: max_version)
-    previous_types = previous_conditions.map { |c| c.condition_type }
-    if params.length == 0
-      if previous_types.length > 0 and !previous_types.any? { |t| t == "no_condition_selected" }
-        # puts "case 2: previous conditions set to something and instructor doesn't want any this time"
+    previous_types = previous_conditions.map(&:condition_type)
+    if params.empty?
+      if !previous_types.empty? && previous_types.none? { |t| t == "no_condition_selected" }
+        # puts "case 2: previous conditions set to something
+        # and instructor doesn't want any this time"
         ActiveRecord::Base.transaction do
           create_condition_for_course_with_type(course_id, 0, {}, max_version + 1)
         end
         # else
-        #   puts "case 3: previous conditions set to nothing selected and instructor doesn't want any this time either"
+        #   puts "case 3: previous conditions set to nothing selected and
+        #   instructor doesn't want any this time either"
       end
       # indicator row for "currently no conditions selected" that user doesn't need to access
       WatchlistInstance.refresh_instances_for_course(course_name, true)
@@ -87,11 +93,14 @@ class RiskCondition < ApplicationRecord
       end
 
       unless no_change
-        # puts "case 4: instructor changed conditions this time; previous conditions were either unset, or different from current parameters"
+        # puts "case 4: instructor changed conditions this time;
+        # previous conditions were either unset, or different from current parameters"
         ActiveRecord::Base.transaction do
           params.map do |k, v|
             new_condition = create_condition_for_course_with_type(course_id,
-                                                                  condition_types[k], v, max_version + 1)
+                                                                  condition_types[k],
+                                                                  v,
+                                                                  max_version + 1)
             conditions << new_condition
           end
         end
@@ -165,9 +174,8 @@ class RiskCondition < ApplicationRecord
   end
 
   def self.get_max_version(course_id)
-    conditions = []
     conditions_for_course = RiskCondition.where(course_id: course_id)
-    versions = conditions_for_course.map { |each| each.version }
+    versions = conditions_for_course.map(&:version)
     max_version = versions.max
     if max_version.nil?
       0
