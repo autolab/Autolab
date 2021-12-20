@@ -51,7 +51,7 @@ A lab has a _start date_, _due date_, _end date_ and _grading deadline_. The lin
 
 ## Handins/Submissions
 
-Once an assessment is live (past the start date), students can begin submitting handins, where each handin is a single file, which can be either a text file or an archive file (e.g., `mm.c`, `handin.tar`).
+Once an assessment is live (past the start date), students can begin submitting handins, where each handin is a single file, which can be either a text file or an archive file (e.g., `mm.c`, `handin.tar`). Alternatively, instructors can enable GitHub submission for an assessment in its settings and students can directly link their GitHub account and submit from their repo's corresponding branch. Check [here](/installation/github_integration) for how to set up and try our [demo site](https://nightly.autolabproject.com/) for a feel of its usage.
 
 ## Penalties and Extensions
 
