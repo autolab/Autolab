@@ -27,8 +27,7 @@ module AssessmentHandin
 
     if @assessment.embedded_quiz
       contents = params[:submission]["embedded_quiz_form_answer"].to_s
-      require 'tempfile'
-      out_file = Tempfile.new('out.txt')
+      out_file = Tempfile.new('out.txt-')
       out_file.puts(contents)
       params[:submission]["file"] = out_file
     elsif @assessment.github_submission_enabled && params["repo"].present? && params["branch"].present?
