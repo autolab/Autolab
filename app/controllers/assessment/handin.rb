@@ -27,10 +27,10 @@ module AssessmentHandin
 
     if @assessment.embedded_quiz
       contents = params[:submission]["embedded_quiz_form_answer"].to_s
-      out_file = File.new("out.txt", "w+")
+      out_file = Tempfile.new('out.txt-')
       out_file.puts(contents)
       params[:submission]["file"] = out_file
-    elsif @assessment.github_submission_enabled && params["repo"].present? && params["branch"].present? 
+    elsif @assessment.github_submission_enabled && params["repo"].present? && params["branch"].present?
       # get code from Github
       github_integration = current_user.github_integration
 
@@ -68,6 +68,11 @@ module AssessmentHandin
 
       COURSE_LOGGER.log("could not save handin: #{exception.class} (#{exception.message})")
       submissions = nil
+    end
+
+    if @assessment.embedded_quiz
+      out_file.close
+      out_file.unlink
     end
 
     # make sure submission was correctly constructed and saved
