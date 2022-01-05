@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_11_01_022133) do
+ActiveRecord::Schema.define(version: 2021_10_23_185328) do
 
   create_table "annotations", force: :cascade do |t|
     t.integer "submission_id"
@@ -94,6 +94,7 @@ ActiveRecord::Schema.define(version: 2020_11_01_022133) do
     t.text "embedded_quiz_form_data"
     t.boolean "embedded_quiz"
     t.binary "embedded_quiz_form"
+    t.boolean "github_submission_enabled", default: true
   end
 
   create_table "attachments", force: :cascade do |t|
@@ -161,6 +162,16 @@ ActiveRecord::Schema.define(version: 2020_11_01_022133) do
     t.integer "assessment_id"
     t.integer "days"
     t.boolean "infinite", default: false, null: false
+  end
+
+  create_table "github_integrations", force: :cascade do |t|
+    t.string "oauth_state"
+    t.text "access_token_ciphertext"
+    t.integer "user_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["oauth_state"], name: "index_github_integrations_on_oauth_state", unique: true
+    t.index ["user_id"], name: "index_github_integrations_on_user_id", unique: true
   end
 
   create_table "groups", force: :cascade do |t|
@@ -334,7 +345,6 @@ ActiveRecord::Schema.define(version: 2020_11_01_022133) do
     t.string "school"
     t.string "major"
     t.string "year"
-    t.string "theme", default: "default"
     t.index ["confirmation_token"], name: "index_users_on_confirmation_token", unique: true
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true

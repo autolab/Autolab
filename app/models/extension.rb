@@ -1,10 +1,10 @@
 class Extension < ApplicationRecord
   belongs_to :assessment
   belongs_to :course_user_datum
-  validates_presence_of :course_user_datum_id
+  validates :course_user_datum_id, presence: true
   validate :days_or_infinite
-  validates_uniqueness_of :course_user_datum_id, scope: :assessment_id,
-                                                 message: "already has an extension."
+  validates :course_user_datum_id, uniqueness: { scope: :assessment_id,
+                                                 message: "already has an extension." }
 
   after_save :invalidate_cgdubs_for_assessments_after
   after_destroy :invalidate_cgdubs_for_assessments_after
@@ -20,7 +20,7 @@ class Extension < ApplicationRecord
   end
 
   def after_create
-    if self.infinite?
+    if infinite?
       COURSE_LOGGER.log("Extension #{id}: CREATED for " \
       "#{course_user_datum.user.email} on" \
       " #{assessment.name} for unlimited days")

@@ -1,6 +1,6 @@
 # Guide for Lab Authors
 
-This guide explains how to create autograded programming assignments (labs) for the Autolab system.
+This guide explains how to create autograded programming assignments (labs) for the Autolab system. While **reading through the documentation is recommended**, for a quick start, here's a <a href="https://youtu.be/GQ2EkBcRH4k" target="_blank">short video</a> that gives a brief introduction of autograders.
 
 ## Writing Autograders
 

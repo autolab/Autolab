@@ -51,4 +51,9 @@ Rails.application.configure do
   # Use an evented file watcher to asynchronously detect changes in source code,
   # routes, locales, etc. This feature depends on the listen gem.
   # config.file_watcher = ActiveSupport::EventedFileUpdateChecker
+
+  # OAuth2 Application Configuration for Github
+  # See (TODO replace with doc link)
+  config.x.github.client_id = ENV['GITHUB_CLIENT_ID']
+  config.x.github.client_secret = ENV['GITHUB_CLIENT_SECRET']
 end

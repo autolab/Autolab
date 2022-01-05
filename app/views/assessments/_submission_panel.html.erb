@@ -1,0 +1,74 @@
+<% content_for :stylesheets do %>
+  <%= stylesheet_link_tag "git_submission" %>
+<% end %>
+<div class="submission-panel">
+  <div class="error file-error" id="flash_error" style="background: white;display: none;">
+    There was an error processing your file, please try adding it again.
+  </div>
+  <% if @assessment.github_submission_enabled %>
+    <div class="ui pointing secondary tabular menu">
+      <a class="item active" data-tab="upload">Upload</a>
+      <!-- TODO should only show if GithubIntegration.connected is true -->
+      <a class="item" data-tab="github">Github</a>
+    </div>
+  <% end %>
+  <div class="ui tab active" data-tab="upload" id="upload_tab">
+    <div class="row handin-row">
+      <div class="valign-wrapper drag-drop-handin" tabindex="0"
+          onclick="clickDrag();" onkeypress="clickDrag()" ondrop="dropHandler(event);" 
+          ondragover="dragOverHandler(event);" ondragenter="dragEnter(event);" ondragexit="dragExit(event);">
+        <p class="center-align" style="color:grey;" ondrop="dropHandler(event);" 
+          ondragover="dragOverHandler(event);" ondragenter="dragEnter(event);" 
+          ondragexit="dragExit(event);">
+          <b>Drag a file here to hand in. Click to select a file.</b>
+          <br />
+          <span style="font-size: 10px;">Files do not submit automatically.</span></p>
+      </div>
+    </div>
+    <div class="row handedin-row" style="display: none;margin-top: 10px;">
+      <div class="col s2 center-align">
+        <i class="material-icons" style="font-size: 5rem;">insert_drive_file</i>
+      </div>
+      <div class="col s8">
+        <p>
+          <b id="handin-file-name"></b><br />
+          Last modified: <span id="handin-modify-date"></span><br />
+          <span id="handin-text">
+            Lines of code: <span id="handin-loc">Calculating...</span><br />
+          </span>
+          File size: <span id="handin-size"></span><br />
+        </p>
+      </div>
+      <div class="col s1 right-align">
+        <i id="remove-handed-in" class="material-icons small">close</i>
+      </div>
+    </div>
+  </div>
+  <div class="ui tab" data-tab="github" id="github_tab">
+    <% if GithubIntegration.find_by_user_id(@cud.user.id)&.is_connected %>
+      <% if repos.present? %>
+        <label>Repository</label>
+        <div class="ui fluid search selection dropdown" id="repo-dropdown">
+          <input type="hidden" name="repo">
+          <div class="default text">Select repo</div>
+          <div class="menu"></div>
+        </div>
+        <label>Branch</label>
+        <div class="ui fluid search selection dropdown" id="branch-dropdown">
+          <input type="hidden" name="branch">
+          <div class="default text">Select branch</div>
+          <div class="menu"></div>
+        </div>
+      <% else %>
+        <h5> No repositories found! Create a repository in your Github account in order to submit your work via Git submission.</h5>
+        <br />
+      <% end %>
+    <% else %>
+      <div class="connect-github-account">
+        <br />
+        <label> Click below to connect your Github account </label> <br />
+        <%= link_to raw('<span class="btn primary">Connect</span>'), github_oauth_user_path(@cud.user) %> </br>
+    </div>
+  <% end %>
+</div>
+</div>

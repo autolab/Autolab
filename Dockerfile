@@ -1,4 +1,13 @@
-FROM phusion/passenger-ruby26:1.0.13
+# Dockerfile from
+#
+#     https://intercityup.com/blog/how-i-build-a-docker-image-for-my-rails-app.html
+#
+# See more documentation at the passenger-docker GitHub repo:
+#
+#     https://github.com/phusion/passenger-docker
+#
+#
+FROM phusion/passenger-ruby26:2.0.0
 
 # Change to your time zone here
 RUN ln -fs /usr/share/zoneinfo/America/Los_Angeles /etc/localtime
@@ -24,6 +33,8 @@ RUN chown app:app Gemfile Gemfile.lock
 
 # Prepare folders
 USER app
+# Specify bundler version
+RUN gem install bundler -v $(tail -n1 Gemfile.lock)
 RUN bundle install
 
 RUN mkdir /home/app/webapp

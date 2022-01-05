@@ -3,9 +3,11 @@ class UsersController < ApplicationController
   skip_before_action :authorize_user_for_course
   skip_before_action :authenticate_for_action
   skip_before_action :update_persistent_announcements
-    rescue_from ActionView::MissingTemplate do |exception|
-      redirect_to("/home/error_404")
+  rescue_from ActionView::MissingTemplate do |_exception|
+    redirect_to("/home/error_404")
   end
+  before_action :set_gh_oauth_client, only: [:github_oauth, :github_oauth_callback]
+  before_action :set_user, only: [:github_oauth, :github_revoke]
 
   # GET /users
   action_auth_level :index, :student
@@ -45,11 +47,11 @@ class UsersController < ApplicationController
       user_cuds = []
 
       cuds.each do |cud|
-        if cud.instructor?
-          user_cud =
-            cud.course.course_user_data.where(user: user).first
-          user_cuds << user_cud unless user_cud.nil?
-        end
+        next unless cud.instructor?
+
+        user_cud =
+          cud.course.course_user_data.where(user: user).first
+        user_cuds << user_cud unless user_cud.nil?
       end
 
       if !user_cuds.empty?
@@ -95,23 +97,21 @@ class UsersController < ApplicationController
       redirect_to(users_path) && return
     end
 
-    temp_pass = Devise.friendly_token[0, 20]    # generate a random token
+    temp_pass = Devise.friendly_token[0, 20] # generate a random token
     @user.password = temp_pass
     @user.password_confirmation = temp_pass
     @user.skip_confirmation!
     save_worked = false
     begin
       save_worked = @user.save
-      if !save_worked
-        flash[:error] = "User creation failed"
-      end
-    rescue => error
-      error_message = error.message
-      if error_message.include? "Duplicate entry" and error_message.include? "@"
-        flash[:error] = "User with email #{@user.email} already exists"
-      else
-        flash[:error] = "User creation failed"
-      end
+      flash[:error] = "User creation failed" unless save_worked
+    rescue StandardError => e
+      error_message = e.message
+      flash[:error] = if error_message.include? "Duplicate entry" and error_message.include? "@"
+                        "User with email #{@user.email} already exists"
+                      else
+                        "User creation failed"
+                      end
       save_worked = false
     end
     if save_worked
@@ -134,14 +134,12 @@ class UsersController < ApplicationController
 
     if current_user.administrator?
       @user = user
-    else
+    elsif user != current_user
       # current user can only edit himself if he's neither role
-      if user != current_user
-        flash[:error] = "Permission denied"
-        redirect_to(users_path) && return
-      else
-        @user = current_user
-      end
+      flash[:error] = "Permission denied"
+      redirect_to(users_path) && return
+    else
+      @user = current_user
     end
   end
 
@@ -157,18 +155,19 @@ class UsersController < ApplicationController
     if current_user.administrator? ||
        current_user.instructor_of?(user)
       @user = user
-    else
+    elsif user != current_user
       # current user can only edit himself if he's neither role
-      if user != current_user
-        flash[:error] = "Permission denied"
-        redirect_to(users_path) && return
-      else
-        @user = current_user
-      end
+      flash[:error] = "Permission denied"
+      redirect_to(users_path) && return
+    else
+      @user = current_user
     end
 
-    if user.update(current_user.administrator? ?
-                    admin_user_params : user_params)
+    if user.update(if current_user.administrator?
+                     admin_user_params
+                   else
+                     user_params
+                   end)
       flash[:success] = "User was successfully updated."
       redirect_to(users_path) && return
     else
@@ -191,11 +190,92 @@ class UsersController < ApplicationController
       redirect_to(users_path) && return
     end
 
-    # TODO Need to cleanup user resources here
+    # TODO: Need to cleanup user resources here
 
     user.destroy
     flash[:success] = "User destroyed."
     redirect_to(users_path) && return
+  end
+
+  action_auth_level :github_oauth, :student
+  def github_oauth
+    github_integration = GithubIntegration.find_by_user_id(@user.id)
+    state = SecureRandom.alphanumeric(128)
+    if github_integration.nil?
+      github_integration = GithubIntegration.create!(oauth_state: state, user: @user)
+    else
+      github_integration.update!(oauth_state: state)
+    end
+    # Use https, unless explicitly specified not to
+    prefix = "https://"
+    if ENV["DOCKER_SSL"] == "false"
+      prefix = "http://"
+    end
+
+    begin
+      if Rails.env.development?
+        hostname = request.base_url
+      else
+        hostname = prefix + request.host
+      end
+    rescue
+      hostname = `hostname`
+      hostname = prefix + hostname.strip
+    end
+
+    authorize_url_params = {
+      redirect_uri: "#{hostname}/users/github_oauth_callback",
+      scope: "repo",
+      state: state
+    }
+    redirect_to @gh_client.auth_code.authorize_url(authorize_url_params)
+  end
+
+  action_auth_level :github_oauth_callback, :student
+  def github_oauth_callback
+    if params["error"] 
+      flash[:error] = "User cancelled OAuth"
+      (redirect_to(root_path)) && return
+    end
+
+    # If state not recognized, this request may not have been generated from Autolab
+    if params["state"].nil? || params["state"].empty?
+      flash[:error] = "Invalid callback"
+      (redirect_to(root_path)) && return
+    end
+
+    github_integration = GithubIntegration.find_by_oauth_state(params["state"])
+    if github_integration.nil?
+      flash[:error] = "Error with Github OAuth (invalid state), please try again."
+      (redirect_to(root_path)) && return
+    end
+
+    begin
+      # Results in exception if invalid
+      token = @gh_client.auth_code.get_token(params["code"])
+    rescue StandardError => e
+      flash[:error] = "Error with Github OAuth (invalid code), please try again."
+      github_integration.update!(oauth_state: nil)
+      (redirect_to user_path(id: oauth_user.id)) && return
+    end
+
+    access_token = token.to_hash[:access_token]
+    github_integration.update!(access_token: access_token, oauth_state: nil)
+    flash[:success] = "Successfully connected with Github."
+    (redirect_to (root_path)) && return
+  end
+
+  action_auth_level :github_revoke, :student
+  def github_revoke
+    gh_integration = @user.github_integration
+    if gh_integration
+      gh_integration.revoke
+      gh_integration.destroy
+      flash[:success] = "Successfully disconnected from Github"
+    elsif
+      flash[:info] = "Github not connected, revocation unnecessary"
+    end
+    (redirect_to user_path(id: @user.id)) && return
   end
 
 private
@@ -215,5 +295,23 @@ private
   # user params that admin is allowed to edit
   def admin_user_params
     params.require(:user).permit(:first_name, :last_name, :administrator)
+  end
+
+  def set_gh_oauth_client
+    gh_options = {
+      :authorize_url => "https://github.com/login/oauth/authorize",
+      :token_url => "https://github.com/login/oauth/access_token",
+      :site => "https://github.com",
+    }
+    @gh_client = OAuth2::Client.new(Rails.configuration.x.github.client_id, Rails.configuration.x.github.client_secret,
+                                    gh_options)
+  end
+
+  def set_user
+    @user = User.find(params[:id])
+    if @user.nil?
+      flash[:error] = "User doesn't exist."
+      redirect_to(user_path) && return
+    end
   end
 end

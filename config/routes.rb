@@ -3,28 +3,27 @@ Rails.application.routes.draw do
 
   use_doorkeeper
 
-  namespace :oauth, { defaults: {format: :json} } do
-    get 'device_flow_init', to: 'device_flow#init'
-    get 'device_flow_authorize', to: 'device_flow#authorize'
+  namespace :oauth, { defaults: { format: :json } } do
+    get "device_flow_init", to: "device_flow#init"
+    get "device_flow_authorize", to: "device_flow#authorize"
   end
 
-  namespace :api, { defaults: {format: :json} } do
+  namespace :api, { defaults: { format: :json } } do
     namespace :v1 do
-      get 'user', to: 'user#show'
+      get "user", to: "user#show"
 
       resources :courses, param: :name, only: [:index, :create] do
-
         resources :course_user_data, only: [:index, :create, :show, :update, :destroy],
-          param: :email, :constraints => { :email => /[^\/]+/ }
+                                     param: :email, :constraints => { :email => /[^\/]+/ }
 
         resources :assessments, param: :name, only: [:index, :show] do
-          get 'problems'
-          get 'writeup'
-          get 'handout'
-          post 'submit'
-          
+          get "problems"
+          get "writeup"
+          get "handout"
+          post "submit"
+
           resources :submissions, param: :version, only: [:index] do
-            get 'feedback'
+            get "feedback"
           end
         end
       end
@@ -36,7 +35,7 @@ Rails.application.routes.draw do
   root "courses#index"
 
   devise_for :users, controllers: { omniauth_callbacks: "users/omniauth_callbacks",
-                                    registrations:      "registrations" },
+                                    registrations: "registrations" },
                      path_prefix: "auth"
 
   get "contact", to: "home#contact"
@@ -57,27 +56,31 @@ Rails.application.routes.draw do
 
   resource :admin do
     match "email_instructors", via: [:get, :post]
+    match "github_integration", via: [:get]
   end
 
   resources :users do
     get "admin"
+    get "github_oauth", on: :member
+    get "github_revoke", on: :member
+    get "github_oauth_callback", on: :collection
   end
 
   resources :courses, param: :name do
     resources :schedulers do
-        get "visualRun", action: :visual_run
-        get "run"
+      get "visualRun", action: :visual_run
+      get "run"
     end
-    
+
     resource :metrics, only: :index do
       get "index"
-      get 'get_current_metrics'
-      get 'get_watchlist_instances'
-      get 'get_num_pending_instances'
-      get 'refresh_watchlist_instances'
-      post 'update_current_metrics'
-      post 'update_watchlist_instances'
-      post 'update_current_metrics'
+      get "get_current_metrics"
+      get "get_watchlist_instances"
+      get "get_num_pending_instances"
+      get "refresh_watchlist_instances"
+      post "update_current_metrics"
+      post "update_watchlist_instances"
+      post "update_current_metrics"
     end
 
     resources :jobs, only: :index do
@@ -168,7 +171,7 @@ Rails.application.routes.draw do
       end
 
       collection do
-        get "installAssessment"
+        get "install_assessment"
         post "importAssessment"
         post "importAsmtFromTar"
       end
@@ -193,17 +196,22 @@ Rails.application.routes.draw do
 
     member do
       get "bulkRelease"
-      get "downloadRoster"
+      get "download_roster"
       match "email", via: [:get, :post]
       get "manage"
       get "moss"
       get "reload"
       match "report_bug", via: [:get, :post]
-      post "runMoss"
+      post "run_moss"
       get "sudo"
-      match "uploadRoster", via: [:get, :post]
-      get "userLookup"
+      match "upload_roster", via: [:get, :post]
+      get "user_lookup"
       get "users"
     end
+  end
+
+  resource :github_integration, only: [] do
+    get "get_repositories"
+    get "get_branches"
   end
 end

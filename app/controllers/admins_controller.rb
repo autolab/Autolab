@@ -2,21 +2,20 @@
 # this controller contains methods for system-wise
 # admin functionality
 class AdminsController < ApplicationController
-  rescue_from ActionView::MissingTemplate do |exception|
+  rescue_from ActionView::MissingTemplate do |_exception|
     redirect_to("/home/error_404")
   end
 
   skip_before_action :set_course
 
   action_auth_level :show, :administrator
-  def show
-  end
+  def show; end
 
   action_auth_level :email_instructors, :administrator
   def email_instructors
     @cuds = CourseUserDatum.select(:user_id).distinct.joins(:course).joins(:user)
-            .where(instructor: true)
-            .order("users.email ASC")
+                           .where(instructor: true)
+                           .order("users.email ASC")
 
     return unless request.post?
 
@@ -24,7 +23,14 @@ class AdminsController < ApplicationController
       params[:from],
       make_dlist(@cuds),
       params[:subject],
-      params[:body])
+      params[:body]
+    )
     @email.deliver
   end
+
+  action_auth_level :github_integration, :administrator
+  def github_integration
+    @github_integration = GithubIntegration.check_github_authorization
+  end
+
 end

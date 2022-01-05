@@ -11,14 +11,13 @@
 * These colors have been changed to fit a CMU aesthetic.*
 ********************************************************/
 $autolab-red: rgba(153, 0, 0, 0.9);
-$autolab-subtle-red: #C87B7E;
+$autolab-subtle-red: #c87b7e;
 $autolab-subtle-gray: #eee;
 $autolab-highlight-gray: #ccc;
 $autolab-black-text: #212121;
 $autolab-blue-text: #0882af;
-#F2EFEF
-
-html, body {
+#F2EFEF html,
+body {
   height: 100%;
 }
 
@@ -34,7 +33,7 @@ a {
   color: green;
 }
 .fieldWithErrors {
-  display:inline;
+  display: inline;
 }
 
 /* Button Styles */
@@ -45,7 +44,7 @@ a {
 }
 
 .autocomplete-content {
-    margin-top: 0;
+  margin-top: 0;
 }
 
 /* Helper Styles */
@@ -69,13 +68,12 @@ div.main-header .logo {
 }
 
 div.main-header h2 {
-
   font-size: 22px;
   line-height: 54px;
-  color:#fff;
+  color: #fff;
 
   vertical-align: top;
-  margin:0 4px;
+  margin: 0 4px;
   font-weight: lighter;
 
   a {
@@ -88,7 +86,6 @@ div.main-header h2 {
     padding-left: 10px;
     display: inline-block;
   }
-
 }
 
 div.main-header img {
@@ -97,10 +94,9 @@ div.main-header img {
   margin-bottom: 11px;
 }
 
-
-.action-links.navbar-nav  {
+.action-links.navbar-nav {
   list-style: none;
-  display:inline-block;
+  display: inline-block;
   margin-right: 14px;
   margin-top: 12px;
 }
@@ -122,7 +118,7 @@ div.main-header img {
 }
 
 .action-links.navbar-nav li a:hover {
-  text-decoration:none;
+  text-decoration: none;
   color: #fff;
   background-color: transparent;
 }
@@ -149,8 +145,8 @@ div.main-header img {
 }
 
 .annotationPane .left {
-	float: none !important;
-	margin-left: -10px;
+  float: none !important;
+  margin-left: -10px;
 }
 
 /* Custom Form Styling */
@@ -158,51 +154,66 @@ form#edit_editCourse {
   margin-top: 80px;
 }
 
-.input-field, form > div {
+.input-field,
+form > div {
   padding-bottom: 1rem !important;
 }
 
-.input-field label{
+.input-field label {
   color: black;
 }
 
-.input-field label.active, [type="checkbox"] + label{
+.input-field label.active,
+[type="checkbox"] + label,
+label.control-label[for=assessment_github_submission_enabled],
+label.control-label[for=assessment_disable_handins] {
   color: #444;
   font-weight: 600;
 }
 
-input:not([type]):disabled, input[type=text]:disabled, input[type=password]:disabled, input[type=email]:disabled, input[type=url]:disabled, input[type=time]:disabled, input[type=time][readonly="readonly"], input[type=date]:disabled, input[type=datetime]:disabled,input[type=datetime-local]:disabled, input[type=tel]:disabled, input[type=tel][readonly="readonly"], input[type=number]:disabled, input[type=search]:disabled,  textarea.materialize-textarea:disabled{
+input:not([type]):disabled,
+input[type="text"]:disabled,
+input[type="password"]:disabled,
+input[type="email"]:disabled,
+input[type="url"]:disabled,
+input[type="time"]:disabled,
+input[type="time"][readonly="readonly"],
+input[type="date"]:disabled,
+input[type="datetime"]:disabled,
+input[type="datetime-local"]:disabled,
+input[type="tel"]:disabled,
+input[type="tel"][readonly="readonly"],
+input[type="number"]:disabled,
+input[type="search"]:disabled,
+textarea.materialize-textarea:disabled {
   background: #f2f2f2;
   color: #666;
 }
 
-input[type=text], input[type=email]{
+input[type="text"],
+input[type="email"] {
   color: black;
   font-weight: 400;
 }
 
-.tabs{
+.tabs {
   overflow-x: hidden;
 }
 
-::-webkit-input-placeholder { /* Chrome/Opera/Safari */
+::-webkit-input-placeholder {
+  /* Chrome/Opera/Safari */
   color: #b1b1b1;
 }
 
-.checkbox-input{
+.checkbox-input {
   // margin-bottom: 5vh;
   margin-top: 2vh;
 }
 
-.btn-primary{
-  //margin-top:3vh;
-}
-
-
 /* Further Styling */
 
 .caret {
-	border-color: transparent !important;
+  border-color: transparent !important;
 }
 
 /* embedded-form */
@@ -212,7 +223,7 @@ input[type=text], input[type=email]{
 }
 
 input[type="file"].upload_embedded {
-    display: none;
+  display: none;
 }
 
 #upload_button .control-label {
@@ -230,7 +241,7 @@ input[type="file"].upload_embedded {
 }
 
 .main-header .dropdown {
-  display:inline-block;
+  display: inline-block;
   margin-right: 18px;
   line-height: 30px;
   margin-left: 10px;
@@ -238,8 +249,8 @@ input[type="file"].upload_embedded {
 
 .main-header .dropdown-toggle {
   color: #fff;
-  font-weight: normal ;
-  cursor:pointer;
+  font-weight: normal;
+  cursor: pointer;
 }
 
 .main-header .dropdown-toggle .caret {
@@ -278,7 +289,7 @@ input[type="file"].upload_embedded {
 .sub-navigation .item a,
 .sub-navigation .item .title {
   padding: 14px;
-  display:inline-block;
+  display: inline-block;
   color: inherit;
   text-decoration: none;
 }
@@ -303,7 +314,6 @@ input[type="file"].upload_embedded {
   }
 }
 
-
 .sub-navigation .item:hover {
   color: rgb(103, 100, 100);
 }
@@ -316,11 +326,9 @@ input[type="file"].upload_embedded {
 }
 
 @media (max-width: 768px) {
-
   div.main-header h2 {
     font-size: 16px;
   }
-
 
   .action-links.navbar-nav {
     width: 100%;
@@ -361,7 +369,6 @@ input[type="file"].upload_embedded {
     -webkit-box-shadow: none;
     box-shadow: none;
   }
-
 }
 
 /* Handin Panel */
@@ -380,9 +387,9 @@ input[type="file"].upload_embedded {
 
 .handin-panel .card-action {
   padding-right: 20px;
-    padding-left: 20px;
-    padding-top: 3px;
-    padding-bottom: 10px;
+  padding-left: 20px;
+  padding-top: 3px;
+  padding-bottom: 10px;
 }
 
 .handin-panel #submission_file {
@@ -441,31 +448,30 @@ div#footer a:hover {
   color: #428bca;
 }
 
-
 /* used for the submission history popup on submissions#index */
-#floater{
+#floater {
   background-color: #fff;
-  border:1px solid black;
+  border: 1px solid black;
   display: none;
-  height:80%;
-  left:15%;
-  overflow:auto;
+  height: 80%;
+  left: 15%;
+  overflow: auto;
   padding: 5px 10px;
-  position:fixed;
-  top:10%;
-  width:70%;
+  position: fixed;
+  top: 10%;
+  width: 70%;
 }
 
 /* Gray Box Lists - for announcements and user accounts */
 ul.gray-box {
-  list-style-image:none;
-  list-style-type:none;
+  list-style-image: none;
+  list-style-type: none;
   margin: 16px 0;
   padding: 0;
 }
 ul.gray-box > li {
-  background-color: #FAFAFA;
-  border: 1px solid #EEE;
+  background-color: #fafafa;
+  border: 1px solid #eee;
   color: #666;
   margin: 0;
   padding: 10px;
@@ -483,7 +489,7 @@ ul.gray-box a {
   text-decoration: none;
 }
 ul.gray-box b {
-  color:#555;
+  color: #555;
 }
 ul.gray-box.small {
   margin: 8px 0;
@@ -496,8 +502,8 @@ ul.gray-box.small > li + li {
 }
 
 /* This one is actually in use.  Just so we're clear. */
-.smallText{
-  font-size:12px;
+.smallText {
+  font-size: 12px;
 }
 
 .center-align {
@@ -519,25 +525,26 @@ ul.gray-box.small > li + li {
 * Displayed on the home page
 **/
 
-div#publicCourse{
+div#publicCourse {
   border: 2px dotted #000;
-  margin-right:10%;
-  padding:15px;
+  margin-right: 10%;
+  padding: 15px;
 }
 
 /* For autocompleting something. Not sure that these are in use anymore... */
-div.autoCompleteDiv  {
-  background-color:white;
+div.autoCompleteDiv {
+  background-color: white;
   border: 1px solid black;
-  color:black;
-  margin-right:10px;
+  color: black;
+  margin-right: 10px;
   padding: 2px;
 }
-div.autoCompleteDiv:hover, div.selectedAutoCompleteDiv {
-  background-color:#d2d2d2;
+div.autoCompleteDiv:hover,
+div.selectedAutoCompleteDiv {
+  background-color: #d2d2d2;
   border: 1px solid black;
-  color:black;
-  margin-right:10px;
+  color: black;
+  margin-right: 10px;
   padding: 2px;
 }
 
@@ -550,8 +557,8 @@ p.attention {
 }
 
 .autolab .tooltip-inner {
-    white-space:pre;
-    max-width:none;
+  white-space: pre;
+  max-width: none;
 }
 
 /**
@@ -569,7 +576,7 @@ ul.moss-list > li {
   padding: 4px;
 }
 ul.moss-list > li > h5 {
-  color: #00A;
+  color: #00a;
   font-weight: bold;
   margin: 0;
 }
@@ -610,6 +617,39 @@ div.field_with_errors {
   display: inline;
 }
 
+.table-info {
+  margin-bottom: auto;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+
+  label {
+    color: inherit;
+    font-size: inherit;
+  }
+
+  [type="checkbox"] + span {
+    color: inherit;
+    font-size: inherit;
+  }
+}
+
+.green_cud {
+  color: green;
+}
+
+.red_cud {
+  color: red;
+}
+
+.green_cud,
+.red_cud {
+  font-weight: 400;
+}
+
+#unsorted_cuds {
+  display: none;
+}
 
 /* TABLE STYLES.  Styles for the multiple tables that we have for some reason */
 /* Pretty Border Tables. I vote we make this the generic table style. */
@@ -620,9 +660,9 @@ table.prettyBorder td {
   text-align: left;
 }
 table.prettyBorder {
-  border-collapse:collapse;
+  border-collapse: collapse;
   box-shadow: 0 0 5px 0px #eee;
-  font-size:15px;
+  font-size: 15px;
   width: 100%;
   // keep track of what row this is
   counter-reset: rowNumber;
@@ -631,7 +671,7 @@ table.prettyBorder {
     background-color: #fff;
     border: 1px solid #d0d0d0;
     &:hover {
-      background-color:#abcdef;
+      background-color: #abcdef;
     }
   }
 
@@ -646,15 +686,15 @@ table.prettyBorder {
   }
 
   th {
-    background-color:#EBEBEB;
-    color:#909090;
-    cursor:pointer;
+    background-color: #ebebeb;
+    color: #909090;
+    cursor: pointer;
     font-family: Source Sans Pro, sans-serif;
     font-size: 0.8em;
     font-weight: bold;
     padding: 8px;
-    text-align:left;
-    text-transform:uppercase;
+    text-align: left;
+    text-transform: uppercase;
   }
 
   td {
@@ -676,7 +716,7 @@ table.prettyBorder {
 
 table.navigatable tr {
   height: 30px;
-  border-bottom:1px solid #f3f3f3;
+  border-bottom: 1px solid #f3f3f3;
 }
 
 table.navigatable tr:hover {
@@ -716,7 +756,7 @@ table.navigatable tr:hover {
 }
 
 .badge.metrics-badge {
-  background-color: #008FCC !important;
+  background-color: #008fcc !important;
   border-radius: 10px !important;
   padding: 0px 1px;
   margin-left: -6px;
@@ -738,26 +778,34 @@ h7.metrics {
 }
 
 /* collections */
-.collection
-a.collection-item {
+.collection a.collection-item {
   transition: none;
 }
 
 .input-field label {
-    transition: none;
+  transition: none;
 }
-
 
 /* General Styling */
 
 body.autolab {
-
-  font-family: 'Source Sans Pro', sans-serif;
+  font-family: "Source Sans Pro", sans-serif;
   font-weight: 300;
   font-size: 16px;
 
-  h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
-    font-family: 'Source Sans Pro', sans-serif;
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  .h1,
+  .h2,
+  .h3,
+  .h4,
+  .h5,
+  .h6 {
+    font-family: "Source Sans Pro", sans-serif;
   }
 
   h3 {
@@ -767,7 +815,6 @@ body.autolab {
     font-size: 22px;
     font-weight: bold;
   }
-
 }
 
 @media (min-width: 1200px) {
@@ -776,38 +823,39 @@ body.autolab {
   }
 }
 
-input[type=text],
-input[type=email],
-input[type=password],
+input[type="text"],
+input[type="email"],
+input[type="password"],
 textarea {
-    height: auto;
-    margin-top: 0.2rem;
-    margin-bottom: 0.2rem;
-    padding: 5px 0 5px 0;
-    border-color: #CCC;
-    box-shadow: 0 1px 0 0 #CCC;
-    outline: none;
-    font-weight: 400;
+  height: auto;
+  margin-top: 0.2rem;
+  margin-bottom: 0.2rem;
+  padding: 5px 0 5px 0;
+  border-color: #ccc;
+  box-shadow: 0 1px 0 0 #ccc;
+  outline: none;
+  font-weight: 400;
 }
 
-input[type=text], input[type=email] {
-	box-sizing: border-box;
+input[type="text"],
+input[type="email"] {
+  box-sizing: border-box;
 }
 
-input[type=text]:focus,
-input[type=email]:focus,
-input[type=password]:focus {
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus {
   outline: none;
 }
 
-input[type=checkbox] {
+input[type="checkbox"] {
   // For spacing between this and an adjacent label
   margin-right: 10px;
 }
 
-input[type=search] {
-	border-bottom: 1px #CCC;
-	box-shadow: 0 1px 0 0 #CCC;
+input[type="search"] {
+  border-bottom: 1px #ccc;
+  box-shadow: 0 1px 0 0 #ccc;
 }
 
 .flatpickr-input {
@@ -824,13 +872,13 @@ input[type=search] {
 
 .flatpickr-hour {
   margin-top: 0 !important;
-  margin-bottom: .8rem;
+  margin-bottom: 0.8rem;
   padding-top: 0 !important;
 }
 
 .flatpickr-minute {
   margin-top: 0 !important;
-  margin-bottom: .8rem;
+  margin-bottom: 0.8rem;
   padding-top: 0 !important;
 }
 
@@ -839,17 +887,18 @@ input[type=search] {
 }
 
 .input-field {
-	margin-top: 2rem !important;
+  margin-top: 2rem !important;
   label.control-label {
     font-size: 18px;
-	}
+  }
 
   label.active {
     font-size: 18px;
   }
 }
 
-.help-block, form p:last-child {
+.help-block,
+form p:last-child {
   color: black;
   font-size: 15px;
   margin-top: 0;
@@ -890,19 +939,18 @@ input[type=search] {
   height: 42px;
 }
 
-
 .section-title {
-  position:relative;
-  text-align:left;
+  position: relative;
+  text-align: left;
 }
 
 .section-title:before {
-  content:"";
-  position:absolute;
-  top:50%;
-  left:0;
-  width:100%;
-  border-bottom:4px solid #dddddd;
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  border-bottom: 4px solid #dddddd;
 }
 
 .section-title span {
@@ -921,7 +969,7 @@ input[type=search] {
   text-align: left;
 }
 
-.checkbox input[type=checkbox] {
+.checkbox input[type="checkbox"] {
   visibility: hidden;
 }
 
@@ -931,20 +979,20 @@ input[type=search] {
 .checkbox label::before {
   cursor: pointer;
   position: absolute;
-  display:inline-block;
+  display: inline-block;
   width: 24px;
   height: 24px;
   top: -2px;
   left: -2px;
   background: #eee;
-  border:1px solid #ddd;
-  content: '';
+  border: 1px solid #ddd;
+  content: "";
   border-radius: 2px;
 }
 
 .checkbox label::after {
   opacity: 0.1;
-  content: '';
+  content: "";
   position: absolute;
   width: 12px;
   height: 7px;
@@ -966,36 +1014,36 @@ input[type=search] {
   opacity: 0.5;
 }
 
-.checkbox input[type=checkbox]:checked + label::after {
+.checkbox input[type="checkbox"]:checked + label::after {
   opacity: 1;
 }
 
-.checkbox input[type=checkbox]:checked + label::before {
-  border:1px solid #bbb;
+.checkbox input[type="checkbox"]:checked + label::before {
+  border: 1px solid #bbb;
 }
 
 .new_submission {
-	margin-top: 1rem;
+  margin-top: 1rem;
 }
 
 .options {
-line-height: 36px;
-list-style: none;
-border-top: 1px solid #eee;
-padding-left: 0;
+  line-height: 36px;
+  list-style: none;
+  border-top: 1px solid #eee;
+  padding-left: 0;
 }
 
 .options li:hover {
-background-color: #eee;
+  background-color: #eee;
 }
 
 .options li {
-border-bottom: 1px solid #eee;
+  border-bottom: 1px solid #eee;
 }
 
 .options li a {
-padding-left: 14px;
-display: block;
+  padding-left: 14px;
+  display: block;
 }
 
 .options .no-hover:hover {
@@ -1006,7 +1054,6 @@ display: block;
   border-left: 6px solid #e53935;
   border-right: 1px solid #e53935;
 }
-
 
 .options .danger-bottom {
   border-bottom: 1px solid #e53935;
@@ -1020,13 +1067,12 @@ display: block;
 
 .verticalTable tr {
   height: 48px;
-  padding-top:2px;
+  padding-top: 2px;
   padding-bottom: 2px;
 }
 
-
 #sudo_email {
-	margin-bottom: 2rem;
+  margin-bottom: 2rem;
 }
 
 /* Homepage Styling */
@@ -1065,7 +1111,6 @@ display: block;
   h2 {
     margin-bottom: 20px;
   }
-
 }
 
 /* Login Panel */
@@ -1075,7 +1120,6 @@ display: block;
 }
 
 @media (max-width: 768px) {
-
   .login-logo {
     width: 15%;
   }
@@ -1088,7 +1132,7 @@ display: block;
 
 /* Header content for graphics */
 div.center {
-    text-align: center;
+  text-align: center;
 }
 
 /*  Warnings  */
@@ -1109,6 +1153,15 @@ div.center {
   font-weight: 500;
 }
 
+#flash_error table {
+  color: rgba(0, 0, 0, 0.87);
+  font-weight: 300;
+}
+
+#flash_error p {
+  margin: 0px;
+}
+
 #flash_alert.success,
 #flash_success.success,
 #flash_notice.success {
@@ -1126,24 +1179,24 @@ div.center {
   border-left: 5px solid #1b809e;
 }
 
-.attachments {
+.attachments,
+.padding-none {
   padding: 0;
 }
 
 .attachment {
-
   font-weight: bold;
-  color:  #eee;
+  color: #eee;
   border: 2px solid #eee;
   border-radius: 6px;
-  list-style:none;
+  list-style: none;
   padding: 8px;
   padding-left: 12px;
   margin-bottom: 5px;
   line-height: 30px;
 
   .right a {
-  vertical-align: top;
+    vertical-align: top;
   }
 
   .material-icons {
@@ -1156,22 +1209,19 @@ div.center {
   }
 
   &.add {
-    border:none;
+    border: none;
   }
 }
-
 
 .page-canvas-wrapper {
   position: relative;
   display: inline-block;
 }
 
-
 /* Restore hover functionality on Materialize buttons with color classes */
 .btn:hover {
-  background-color: rgba(140,0,0,0.95) !important;
+  background-color: rgba(140, 0, 0, 0.95) !important;
 }
-
 
 .drag-drop-handin {
   height: 120px;
@@ -1184,10 +1234,10 @@ div.center {
 
   -webkit-touch-callout: none; /* iOS Safari */
   -webkit-user-select: none; /* Safari */
-   -khtml-user-select: none; /* Konqueror HTML */
-     -moz-user-select: none; /* Firefox */
-      -ms-user-select: none; /* Internet Explorer/Edge */
-          user-select: none; /* Non-prefixed version, currently
+  -khtml-user-select: none; /* Konqueror HTML */
+  -moz-user-select: none; /* Firefox */
+  -ms-user-select: none; /* Internet Explorer/Edge */
+  user-select: none; /* Non-prefixed version, currently
                                 supported by Chrome and Opera */
 }
 
@@ -1219,23 +1269,24 @@ div.center {
 
 /* For skipping to main content button */
 a.skip-main {
-  position:absolute;
-  top:auto;
-  left:-100px;
-  width:1px;
-  height:1px;
-  overflow:hidden;
-  z-index:-999;
+  position: absolute;
+  top: auto;
+  left: -100px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  z-index: -999;
 }
 
-a.skip-main:focus, a.skip-main:active {
-  background-color:#fff;
+a.skip-main:focus,
+a.skip-main:active {
+  background-color: #fff;
   left: auto;
   top: auto;
   width: 30%;
   height: auto;
-  overflow:auto;
-  padding:5px;
-  font-size:1em;
-  z-index:999;
-} 
+  overflow: auto;
+  padding: 5px;
+  font-size: 1em;
+  z-index: 999;
+}

@@ -1,13 +1,13 @@
 ##
 # Extensions can be for a finite amount of time or infinite.
 #
-require 'base64'
+require "base64"
 
 class ExtensionsController < ApplicationController
   # inherited from ApplicationController
   before_action :set_assessment
-    rescue_from ActionView::MissingTemplate do |exception|
-      redirect_to("/home/error_404")
+  rescue_from ActionView::MissingTemplate do |_exception|
+    redirect_to("/home/error_404")
   end
 
   # TODO
@@ -27,7 +27,7 @@ class ExtensionsController < ApplicationController
   def create
     # Do some verifications to make sure an instructor of one course is not
     # giving themselves an extension in another course!
-    unless @course.course_user_data.find_by_id(params[:extension][:course_user_datum_id])
+    unless @course.course_user_data.find_by(id: params[:extension][:course_user_datum_id])
       flash[:error] = "No student with id #{params[:extension][:course_user_datum_id]}
         was found for this course."
       redirect_to(action: :index)

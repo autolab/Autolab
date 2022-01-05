@@ -74,11 +74,14 @@ Following instructions from <a href="https://www.digitalocean.com/community/tuto
         cd Autolab
         cp config/database.yml.template config/database.yml
         cp config/school.yml.template config/school.yml
-        cp config/initializers/devise.rb.template config/initializers/devise.rb
-        sed -i "s/<YOUR-SECRET-KEY>/`bundle exec rails secret`/g" config/initializers/devise.rb
         cp config/autogradeConfig.rb.template config/autogradeConfig.rb
 
-10. (Using MySQL) Editing Database YML.
+10. Initialize application secrets.
+
+        :::bash
+        ./bin/initialize_secrets.sh
+
+11. (Using MySQL) Editing Database YML.
 Change the <username> and <password> fields in config/database.yml to the username and password that has been set up for the mysql. For example if your username is `user1`, and your password is `123456`, then your yml would be
 
         :::yml
@@ -104,7 +107,7 @@ Change the <username> and <password> fields in config/database.yml to the userna
             variables:
                 sql_mode: NO_ENGINE_SUBSTITUTION
 
-11. (Using SQLite) Editing Database YML.
+12. (Using SQLite) Editing Database YML.
 Comment out the configurations meant for MySQL in config/database.yml, and insert the following
 
         :::yml
@@ -120,7 +123,7 @@ Comment out the configurations meant for MySQL in config/database.yml, and inser
             pool: 5
             timeout: 5000
 
-12. Granting permissions on the databases. Setting global sql mode is important to relax the rules of mysql when it comes to group by mode
+13. Granting permissions on the databases. Setting global sql mode is important to relax the rules of mysql when it comes to group by mode
 
         :::bash
         (access mysql using your root first to grant permissions)
@@ -129,7 +132,7 @@ Comment out the configurations meant for MySQL in config/database.yml, and inser
         mysql> SET GLOBAL sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));
         mysql> exit
 
-12. Initializing Autolab Database
+14. Initializing Autolab Database
 
         :::bash
         cd Autolab
@@ -137,7 +140,7 @@ Comment out the configurations meant for MySQL in config/database.yml, and inser
         bundle exec rails db:reset
         bundle exec rails db:migrate
 
-13. Create initial root user, pass the `-d` flag for developmental deployments:
+15. Create initial root user, pass the `-d` flag for developmental deployments:
 
         :::bash
         # For production:
@@ -146,24 +149,26 @@ Comment out the configurations meant for MySQL in config/database.yml, and inser
         # For development:
         ./bin/initialize_user.sh -d
 
-14. If you are just testing Autolab, you can populate the database with sample course & students
+16. If you are just testing Autolab, you can populate the database with sample course & students
 
         :::bash
         cd Autolab
         bundle exec rails autolab:populate
 
-15. Run Autolab!
+17. Run Autolab!
 
         :::bash
         cd Autolab
         bundle exec rails s -p 3000 --binding=0.0.0.0
 
-16. Visit localhost:3000 on your browser to view your local deployment of Autolab, and login with either the credentials of the root user you just created, or choose `Developer Login` with
+18. Visit localhost:3000 on your browser to view your local deployment of Autolab, and login with either the credentials of the root user you just created, or choose `Developer Login` with
 
         Email: "admin@foo.bar"
 
-17. Install [Tango](/installation/tango), the backend autograding service.
+19. Install [Tango](/installation/tango), the backend autograding service.
 
-18. If you would like to deploy the server, you can try out <a href="https://www.phusionpassenger.com/library/walkthroughs/start/ruby.html" target="_blank">Phusion Passenger</a>.
+20. If you would like to deploy the server, you can try out <a href="https://www.phusionpassenger.com/library/walkthroughs/start/ruby.html" target="_blank">Phusion Passenger</a>.
 
-19. Now you are all set to start using Autolab! Visit the [Guide for Instructors](/instructors) and [Guide for Lab Authors](/lab) pages for more info.
+21. If you would like to configure Github integration to allow students to submit via Github, please follow the [Github integration setup instructions](/installation/github_integration).
+
+22. Now you are all set to start using Autolab! Visit the [Guide for Instructors](/instructors) and [Guide for Lab Authors](/lab) pages for more info.

@@ -1,33 +1,38 @@
 <h3>Showing user <%= @user.display_name %></h3>
-
 <ul class="gray-box">
   <li>
     <b>Contact</b><br>
     <a href="mailto:<%= @user.email %>"><%= @user.email %></a>
-    </li>
+  </li>
   <li> <b>About</b><br>
     First name <strong><%= @user.first_name %></strong><br>
     Last name <strong><%= @user.last_name %></strong><br>
     Courses 
     <% if @cuds.empty? %>
-    <strong> None </strong>
+      <strong> None </strong>
     <% else %>
-    <ul>
-            <% @cuds.each do |cud| %>
-            <li><%= link_to cud.course.display_name, edit_course_course_user_datum_path(cud.course, cud) %>
-            </li>
-            <% end %>
-    </ul>
+      <ul>
+        <% @cuds.each do |cud| %>
+          <li><%= link_to cud.course.display_name, edit_course_course_user_datum_path(cud.course, cud) %>
+          </li>
+        <% end %>
+      </ul>
     <% end %>
   </li>
 </ul>
-
 <%= link_to raw('<span class="btn primary">Edit Information</span>'), edit_user_path(@user) %><br>
 <% if @user == current_user %>
-<hr>
-<h4>Private Settings</h4>
-<%= link_to raw('<span class="btn primary">Change Password</span>'), edit_user_registration_path %> <br>
-<h4>API Settings</h4>
-<%= link_to raw('<span class="btn primary">New Activation</span>'), device_flow_activation_path %>
-<%= link_to raw('<span class="btn primary">Managed Authorized Clients</span>'), oauth_authorized_applications_path %>
+  <hr>
+  <h4>Private Settings</h4>
+  <%= link_to raw('<span class="btn primary">Change Password</span>'), edit_user_registration_path %>
+  <% if GithubIntegration.connected %>
+    <% if @user.github_integration && @user.github_integration.is_connected %>
+      <%= link_to raw('<span class="btn primary">Revoke Github Token</span>'), github_revoke_user_path(@user) %>
+    <% else %>
+      <%= link_to raw('<span class="btn primary">Connect to Github</span>'), github_oauth_user_path(@user) %>
+    <% end %>
+  <% end %>
+  <h4>API Settings</h4>
+  <%= link_to raw('<span class="btn primary">New Activation</span>'), device_flow_activation_path %>
+  <%= link_to raw('<span class="btn primary">Managed Authorized Clients</span>'), oauth_authorized_applications_path %>
 <% end %>

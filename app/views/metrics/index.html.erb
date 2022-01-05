@@ -37,10 +37,58 @@
     </div>
     <div class="thirteen wide column">
       <div id="defined_metrics">
-        <div class="ui tab segments active" data-tab="pending_tab" id="pending_tab"></div>
-        <div class="ui tab segments" data-tab="contacted_tab", id="contacted_tab"></div>
-        <div class="ui tab segments" data-tab="resolved_tab", id="resolved_tab"></div>
-        <div class="ui tab segments" data-tab="archived_tab", id="archived_tab"></div>
+        <div class="ui tab segments active" data-tab="pending_tab" id="pending_tab">
+          <div class="ui secondary segment" id="pending_header" hidden>
+            <div class="ui right aligned scrolling search" id="pending_search">
+              <div class="ui icon input">
+                <input class="prompt" type="text" placeholder="Search students...">
+                <i class="search icon"></i>
+              </div>
+              <div class="results"></div>
+            </div>
+            <h5> Pending students in need of attention </h5>
+          </div>
+          <span class="instances" id="pending_instances"></span>
+        </div>
+        <div class="ui tab segments" data-tab="contacted_tab", id="contacted_tab">
+          <div class="ui secondary segment" id="contacted_header" hidden>
+            <div class="ui right aligned scrolling search" id="contacted_search">
+              <div class="ui icon input">
+                <input class="prompt" type="text" placeholder="Search students...">
+                <i class="search icon"></i>
+              </div>
+              <div class="results"></div>
+            </div>
+            <h5> Contacted students </h5>
+          </div>
+          <span class="instances" id="contacted_instances"></span>
+        </div>
+        <div class="ui tab segments" data-tab="resolved_tab", id="resolved_tab">
+          <div class="ui secondary segment" id="resolved_header" hidden>
+            <div class="ui right aligned scrolling search" id="resolved_search">
+              <div class="ui icon input">
+                <input class="prompt" type="text" placeholder="Search students...">
+                <i class="search icon"></i>
+              </div>
+              <div class="results"></div>
+            </div>
+            <h5> Resolved students </h5>
+          </div>
+          <span class="instances" id="resolved_instances"></span>
+        </div>
+        <div class="ui tab segments" data-tab="archived_tab", id="archived_tab">
+          <div class="ui secondary segment" id="archived_header" hidden>
+            <div class="ui right aligned scrolling search" id="archived_search">
+              <div class="ui icon input">
+                <input class="prompt" type="text" placeholder="Search students...">
+                <i class="search icon"></i>
+              </div>
+              <div class="results"></div>
+            </div>
+          <h5> Archived students </h5> <b>Resolved and contacted students becomes archived when student metrics are changed </b>
+        </div>
+        <span class="instances" id="archived_instances"></span>
+        </div>
       </div>
       <div class="ui tab segments active" id="undefined_metrics" style="display:none">
         <center>

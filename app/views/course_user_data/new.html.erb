@@ -1,14 +1,14 @@
 <% content_for :javascripts do %>
   <script type="application/javascript">
-    $("#course_user_datum_user_attributes_email").on('change', userLookup);
-    $("#course_user_datum_user_attributes_email").on('input', userLookup);
+    $("#course_user_datum_user_attributes_email").on('change', user_lookup);
+    $("#course_user_datum_user_attributes_email").on('input', user_lookup);
     /**
      * this AJAX function does an LDAP lookup on the partially-entered user email.
      **/
-    function userLookup() {
+    function user_lookup() {
       var email_input = document.getElementById("course_user_datum_user_attributes_email").value;
       if (!email_input || email_input == "") return;
-      $.get('<%= url_for [:userLookup, @course, remote: true]  %>',  { email: email_input }, function( data ) {
+      $.get('<%= url_for [:user_lookup, @course, remote: true]  %>',  { email: email_input }, function( data ) {
         if (!data)  {
           $('#course_user_datum_user_attributes_first_name').prop('disabled', false);
           $('#course_user_datum_user_attributes_last_name').prop('disabled', false);
