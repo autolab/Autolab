@@ -152,9 +152,7 @@ gem 'sprockets-rails', '>=3.2.1'
 gem "jstz-rails3-plus", ">= 1.0"
 
 # For getting file types 
-gem 'mimemagic', '>= 0.4.2'
-
-gem 'tzinfo-data'
+gem 'mimemagic', '>= 0.3.7'
 
 # For encrypting API tokens
 gem 'lockbox'
