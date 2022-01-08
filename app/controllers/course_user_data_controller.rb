@@ -35,9 +35,9 @@ class CourseUserDataController < ApplicationController
 
       if user
         @newCUD.user = user
-      elsif cud_parameters[:user_attributes][:email] == "" or
-            cud_parameters[:user_attributes][:first_name] == "" or
-            cud_parameters[:user_attributes][:last_name] == ""
+      elsif (cud_parameters[:user_attributes][:email] == "") ||
+            (cud_parameters[:user_attributes][:first_name] == "") ||
+            (cud_parameters[:user_attributes][:last_name] == "")
         flash[:error] = "All required fields must be filled"
         redirect_to(action: "new") && return
 
@@ -81,7 +81,7 @@ class CourseUserDataController < ApplicationController
       COURSE_LOGGER.log(error_msg)
       flash[:error] = error_msg
     end
-    
+
     redirect_to(action: "new") && return
   end
 
