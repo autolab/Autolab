@@ -79,6 +79,9 @@ Naming/VariableName:
 Naming/AccessorMethodName:
   Enabled: false
 
+Naming/MethodName:
+  Enabled: false
+
 Naming/PredicateName:
   Enabled: false
 
