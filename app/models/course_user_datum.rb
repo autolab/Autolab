@@ -3,7 +3,7 @@ require "association_cache"
 class CourseUserDatum < ApplicationRecord
   class AuthenticationFailed < RuntimeError
     attr_reader :user_message, :dev_message
-    
+
     # rubocop:disable Lint/MissingSuper
     def initialize(user_message, dev_message)
       @user_message = user_message
@@ -12,7 +12,7 @@ class CourseUserDatum < ApplicationRecord
     # rubocop:enable Lint/MissingSuper
   end
 
-  AUTH_LEVELS = %i[student course_assistant instructor administrator]
+  AUTH_LEVELS = %i[student course_assistant instructor administrator].freeze
 
   # Don't want to trim the nickname.
   trim_field :school, :major, :year, :lecture, :section, :grade_policy, :email
@@ -34,7 +34,7 @@ class CourseUserDatum < ApplicationRecord
   after_create :create_AUDs_modulo_callbacks
 
   def self.conditions_by_like(value, *columns)
-    columns = self.columns if columns.size == 0
+    columns = self.columns if columns.empty?
     columns = columns[0] if columns[0].is_a?(Array)
     # rubocop:disable Lint/UselessAssignment
     conditions = columns.map do |c|
@@ -300,7 +300,7 @@ private
 
   def default_category_average(input)
     final_scores = input.values
-    final_scores.reduce(:+) / final_scores.size if final_scores.size > 0
+    final_scores.reduce(:+) / final_scores.size if !final_scores.empty?
   end
 
   def category_average_input(category, as_seen_by)
