@@ -533,7 +533,8 @@ private
         existing = @course.course_user_data.includes(:user)
                           .where("lower(users.email) = ?", new_cud[:email].downcase)
                           .references(:users).first
-        # existing = @course.course_user_data.includes(:user).where(users[:email].matches("%#{new_cud[:email]}%")).first
+        # existing = @course.course_user_data.includes(:user).
+        # where(users[:email].matches("%#{new_cud[:email]}%")).first
         
         fail "Black CUD doesn't exist in the database." if existing.nil?
         user = existing.user
@@ -706,6 +707,7 @@ private
   # map[8]: unused
   # map[9]: lecture
   # map[10]: section
+  # rubocop:disable Lint/UselessAssignment
   def detect_and_convert_roster(roster)
     parsedRoster = CSV.parse(roster, skip_blanks: true)
     raise "Roster cannot be recognized" if parsedRoster[0][0].nil?
@@ -741,6 +743,7 @@ private
       # Section(10), ...
       return parsedRoster
     end
+    # rubocop:enable Lint/UselessAssignment
 
     # Detect if there is a header row
     offset = if parsedRoster[0][0] == "Semester"
@@ -846,6 +849,7 @@ private
       Dir.mkdir(extTarDir)
       Dir.mkdir(baseFilesDir) # To hold all basefiles
     rescue StandardError
+      nil
     end
 
     # Read in the tarfile from the given source.
@@ -859,6 +863,7 @@ private
     begin
       Dir.mkdir(extFilesDir) # To hold all submissions
     rescue StandardError
+      nil
     end
 
     # Untar the given Tar file.
