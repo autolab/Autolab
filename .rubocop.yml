@@ -32,6 +32,9 @@ Rails/HasManyOrHasOneDependent:
 Rails/LexicallyScopedActionFilter:
   Enabled: false
 
+Rails/Blank:
+  Enabled: false
+
 Layout/LineLength:
   Max: 100
   # To make it possible to copy or click on URIs in the code, we allow lines
