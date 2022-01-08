@@ -33,10 +33,9 @@ class GithubIntegrationsController < ApplicationController
 private
 
   def set_github_integration
-    gi = current_user.github_integration
-    if gi && gi.is_connected
-      @github_integration = current_user.github_integration
-    end
+    return if !current_user&.github_integration&.is_connected
+
+    @github_integration = current_user.github_integration
   end
 
   def fail_with_reason(reason)
