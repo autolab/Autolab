@@ -10,7 +10,7 @@ class AnnouncementsController < ApplicationController
   action_auth_level :index, :instructor
   def index
     @announcements = if @cud.user.administrator?
-                       Announcement.where("course_id=? or system", @course.id)
+                       Announcement.where("course_id=? or `system`", @course.id)
                      else
                        @course.announcements
                      end
