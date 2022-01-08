@@ -186,9 +186,12 @@ class Course < ApplicationRecord
     mod = nil
     begin
       mod = reload_config_file
+
+    # rubocop:disable Lint/RescueException
     rescue Exception
       return false
     end
+    # rubocop:enable Lint/RescueException
 
     AdminsController.extend(mod)
     true
