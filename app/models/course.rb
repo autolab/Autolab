@@ -43,8 +43,8 @@ class Course < ApplicationRecord
     # fill temporary values in other fields
     newCourse.late_slack = 0
     newCourse.grace_days = 0
-    newCourse.start_date = Time.now
-    newCourse.end_date = Time.now
+    newCourse.start_date = Time.zone.now
+    newCourse.end_date = Time.zone.now
 
     newCourse.late_penalty = Penalty.new
     newCourse.late_penalty.kind = "points"
@@ -55,7 +55,8 @@ class Course < ApplicationRecord
     newCourse.version_penalty.value = "0"
 
     unless newCourse.save
-      raise "Failed to create course #{newCourse.name}: #{newCourse.errors.full_messages.join(', ')}"
+      raise "Failed to create course #{newCourse.name}: "\
+            "#{newCourse.errors.full_messages.join(', ')}"
     end
 
     # Check instructor
@@ -65,7 +66,7 @@ class Course < ApplicationRecord
       begin
         instructor = User.instructor_create(instructor_email,
                                             newCourse.name)
-      rescue Exception => e
+      rescue StandardError => e
         # roll back course creation
         newCourse.destroy
         raise "Failed to create instructor for course: #{e}"
@@ -101,7 +102,11 @@ class Course < ApplicationRecord
     FileUtils.touch File.join(course_dir, "autolab.log")
 
     course_rb = File.join(course_dir, "course.rb")
+
+    # rubocop:disable Rails/FilePath
     default_course_rb = Rails.root.join("lib", "__defaultCourse.rb")
+    # rubocop:enable Rails/FilePath
+
     FileUtils.cp default_course_rb, course_rb
 
     FileUtils.mkdir_p Rails.root.join("assessmentConfig")
@@ -169,7 +174,9 @@ class Course < ApplicationRecord
     d.close
 
     load(dest)
+    # rubocop:disable Style/EvalWithLocation, Security/Eval
     eval("Course#{course.camelize}")
+    # rubocop:enable Style/EvalWithLocation, Security/Eval
   end
 
   # reload_course_config
@@ -179,7 +186,7 @@ class Course < ApplicationRecord
     mod = nil
     begin
       mod = reload_config_file
-    rescue Exception => e
+    rescue Exception
       return false
     end
 
@@ -225,7 +232,9 @@ class Course < ApplicationRecord
 
     # raw_scores
     # NOTE: keep in sync with assessment#invalidate_raw_scores
-    assessments.update_all(updated_at: Time.now)
+    # rubocop:disable Rails/SkipsModelValidations
+    assessments.update_all(updated_at: Time.zone.now)
+    # rubocop:enable Rails/SkipsModelValidations
   end
 
   def config
@@ -248,8 +257,8 @@ class Course < ApplicationRecord
     assessments.pluck("DISTINCT category_name").sort
   end
 
-  def assessments_with_category(cat_name, isStudent = false)
-    if isStudent
+  def assessments_with_category(cat_name, is_student = false)
+    if is_student
       assessments.where(category_name: cat_name).ordered.released
     else
       assessments.where(category_name: cat_name).ordered
@@ -282,14 +291,16 @@ private
   end
 
   def cgdub_dependencies_updated
-    self.cgdub_dependencies_updated_at = Time.now
+    self.cgdub_dependencies_updated_at = Time.zone.now
   end
 
   def config!
     source = "#{name}_course_config".to_sym
     Utilities.execute_instructor_code(source) do
       require config_file_path
+      # rubocop:disable Security/Eval
       Class.new.extend eval(config_module_name)
+      # rubocop:enable Security/Eval
     end
   end
 
