@@ -68,10 +68,11 @@ class GithubIntegration < ApplicationRecord
     clone_url = repo_info[:clone_url]
 
     if repo_info[:size] * 1000 > max_size
-      raise "Repository size too large, please ensure that you are not checking in unnecessary files"
+      raise "Repository size too large, please ensure that you are "\
+            "not checking in unnecessary files"
     end
 
-    if access_token.nil? or access_token.empty?
+    if access_token.nil? || access_token.empty?
       raise "Account not connected to Github"
     end
 
@@ -82,7 +83,7 @@ class GithubIntegration < ApplicationRecord
     clone_url.sub! "https://", "https://#{access_token}@"
     repo_name.gsub! "/", "-"
 
-    if !check_allowed_chars(repo_name) or !check_allowed_chars(repo_branch)
+    if !check_allowed_chars(repo_name) || !check_allowed_chars(repo_branch)
       raise "Bad repository name"
     end
 
@@ -115,11 +116,11 @@ class GithubIntegration < ApplicationRecord
   ##
   # Revokes Github access token
   def revoke
-    if access_token
-      client = Octokit::Client.new(client_id: Rails.configuration.x.github.client_id,
-                                   client_secret: Rails.configuration.x.github.client_secret)
-      client.revoke_application_authorization(access_token)
-    end
+    return if !access_token
+
+    client = Octokit::Client.new(client_id: Rails.configuration.x.github.client_id,
+                                 client_secret: Rails.configuration.x.github.client_secret)
+    client.revoke_application_authorization(access_token)
   end
 
   ##
