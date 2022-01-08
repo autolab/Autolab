@@ -144,8 +144,8 @@ class Course < ApplicationRecord
   end
 
   def full_name
-    if semester.to_s.size > 0
-      display_name + " (" + semester + ")"
+    if !semester.to_s.empty?
+      "#{display_name} (#{semester})"
     else
       display_name
     end
@@ -161,11 +161,11 @@ class Course < ApplicationRecord
 
     d = File.open(dest, "w")
     d.write("require 'CourseBase.rb'\n\n")
-    d.write("module Course" + course.camelize + "\n")
+    d.write("module Course#{course.camelize}\n")
     d.write("\tinclude CourseBase\n\n")
     lines.each do |line|
-      if line.length > 0
-        d.write("\t" + line)
+      if !line.empty?
+        d.write("\t#{line}")
       else
         d.write(line)
       end
