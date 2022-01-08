@@ -77,7 +77,7 @@ class OauthDeviceFlowRequest < ApplicationRecord
   end
 
   def resolve(user_id, result)
-    return false if is_resolved
+    return false if resolved?
 
     self.resource_owner_id = user_id
     self.resolution = result
