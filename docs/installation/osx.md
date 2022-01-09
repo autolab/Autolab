@@ -56,26 +56,22 @@ Follow the step-by-step instructions below:
     -   <a href="https://www.tutorialspoint.com/sqlite/sqlite_installation.htm" target="_blank">SQLite</a> should **only** be used in development
     -   <a href="https://dev.mysql.com/doc/refman/5.7/en/osx-installation-pkg.html" target="_blank">MySQL</a> can be used in development or production
 
-8.  Configure your database:
+8.  Initialize Autolab Configs
 
         :::bash
         cp config/database.yml.template config/database.yml
-
-    Edit `database.yml` with the correct credentials for your chosen database. Refer to [Troubleshooting](/installation/troubleshoot) for any issues.
-
-9.  Configure school/organization specific information (new feature):
-
-        :::bash
         cp config/school.yml.template config/school.yml
+        cp config/autogradeConfig.rb.template config/autogradeConfig.rb
 
     Edit `school.yml` with your school/organization specific names and emails
+    Edit `database.yml` with the correct credentials for your chosen database. Refer to [Troubleshooting](/installation/troubleshoot) for any issues and suggested development [configurations](/installation/troubleshoot/#suggested-development-configuration-for-configdatabaseyml).
 
-10. Initialize application secrets.
+9. Initialize application secrets.
 
         :::bash
         ./bin/initialize_secrets.sh
 
-11. Create and initialize the database tables:
+10. Create and initialize the database tables:
 
         :::bash
         bundle exec rails db:create
@@ -83,7 +79,7 @@ Follow the step-by-step instructions below:
 
     Do not forget to use `bundle exec` in front of every rake/rails command.
 
-12. Create initial root user, pass the `-d` flag for developmental deployments:
+11. Create initial root user, pass the `-d` flag for developmental deployments:
 
         :::bash
         # For production:
@@ -92,23 +88,23 @@ Follow the step-by-step instructions below:
         # For development:
         ./bin/initialize_user.sh -d
 
-13. Populate dummy data (for development only):
+12. Populate dummy data (for development only):
 
         :::bash
         bundle exec rails autolab:populate
 
-14. Start the rails server:
+13. Start the rails server:
 
         :::bash
         bundle exec rails s -p 3000
 
-15. Go to localhost:3000 and login with either the credentials of the root user you just created, or choose `Developer Login` with:
+14. Go to localhost:3000 and login with either the credentials of the root user you just created, or choose `Developer Login` with:
 
         :::bash
         Email: "admin@foo.bar".
 
-16. Install [Tango](/installation/tango), the backend autograding service.
+15. Install [Tango](/installation/tango), the backend autograding service.
 
-17. If you would like to configure Github integration to allow students to submit via Github, please follow the [Github integration setup instructions](/installation/github_integration).
+16. If you would like to configure Github integration to allow students to submit via Github, please follow the [Github integration setup instructions](/installation/github_integration).
 
-18. Now you are all set to start using Autolab! Visit the [Guide for Instructors](/instructors) and [Guide for Lab Authors](/lab) pages for more info.
+17. Now you are all set to start using Autolab! Visit the [Guide for Instructors](/instructors) and [Guide for Lab Authors](/lab) pages for more info.
