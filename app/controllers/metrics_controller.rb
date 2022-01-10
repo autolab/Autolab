@@ -215,7 +215,7 @@ class MetricsController < ApplicationController
 private
 
   def new_metrics_params
-    return unless params[:metric].present?
+    return if params[:metric].blank?
 
     params.require(:metric).permit(grace_day_usage: %i[grace_day_threshold date],
                                    grade_drop: %i[
