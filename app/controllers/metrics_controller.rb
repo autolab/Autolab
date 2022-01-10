@@ -57,10 +57,8 @@ class MetricsController < ApplicationController
     course_name = params[:course_name]
     instances = WatchlistInstance.get_instances_for_course(course_name)
 
-    course_user_data_ids = instances.map do |instance|
-                             instance.course_user_datum_id
-                           end
-                                    .select { |elem| !elem.nil? }.uniq
+    course_user_data_ids = instances.map(&:course_user_datum_id)
+                                    .reject(&:nil?).uniq
 
     user_data = User.joins(:course_user_data)
                     .where(course_user_data: { id: course_user_data_ids })
@@ -74,10 +72,8 @@ class MetricsController < ApplicationController
       entry["course_user_datum_id"]
     end
 
-    risk_condition_ids = instances.map do |instance|
-                           instance.risk_condition_id
-                         end
-                                  .select { |elem| !elem.nil? }.uniq
+    risk_condition_ids = instances.map(&:risk_condition_id)
+                                  .reject(&:nil?).uniq
 
     risk_condition_data = RiskCondition.where(id: risk_condition_ids)
                                        .select("id,condition_type").as_json
@@ -219,15 +215,15 @@ class MetricsController < ApplicationController
 private
 
   def new_metrics_params
-    if params[:metric].present?
-      params.require(:metric).permit(grace_day_usage: %i[grace_day_threshold date],
-                                     grade_drop: %i[
-                                       percentage_drop consecutive_counts
-                                     ],
-                                     no_submissions: [:no_submissions_threshold],
-                                     low_grades: %i[
-                                       grade_threshold count_threshold
-                                     ])
-    end
+    return unless params[:metric].present?
+
+    params.require(:metric).permit(grace_day_usage: %i[grace_day_threshold date],
+                                   grade_drop: %i[
+                                     percentage_drop consecutive_counts
+                                   ],
+                                   no_submissions: [:no_submissions_threshold],
+                                   low_grades: %i[
+                                     grade_threshold count_threshold
+                                   ])
   end
 end
