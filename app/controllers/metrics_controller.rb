@@ -18,9 +18,13 @@ class MetricsController < ApplicationController
     # This API endpoint aims to retrieve the current/latest risk conditions for a particular course
     # On success, a JSON list of condition objects will be returned
     # The type of each object is specified in a field called "condition_type"
-    # Possible types include: no_condition_selected, grace_day_usage, grade_drop, no_submission, low_grades
-    # Other fields for a risk condition object include parameters, version, created_at, updated_at, and course_id
-    # In particular, the parameters field includes specific information of the condition corresponding to its type
+    # Possible types include: no_condition_selected, grace_day_usage,
+    #                         grade_drop, no_submission, low_grades
+    # Other fields for a risk condition object include:
+    #                         parameters, version, created_at,
+    #                         updated_at, and course_id
+    # In particular, the parameters field includes specific information
+    # of the condition corresponding to its type
     # On error, a flash error message will be shown and nil gets returned
 
     course_name = params[:course_name]
@@ -41,8 +45,8 @@ class MetricsController < ApplicationController
     # status (pending, resolved, contacted), archived or not, and violation info
     # (a json containing more info pertaining to violation)
     #
-    # risk_conditions: dictionary of risk conditions found in watchlist instances, key being the risk_conditon_id
-    # each entry contains the condition_type
+    # risk_conditions: dictionary of risk conditions found in watchlist instances,
+    # key being the risk_conditon_id each entry contains the condition_type
     #
     # users: dicitonary of users found in watchlist instances, key being the course_user_datum_id
     # each entry contains the first name, last name and email
@@ -107,14 +111,18 @@ class MetricsController < ApplicationController
   def refresh_watchlist_instances
     # This API endpoint refreshes the watchlist instances for a particular course from scratch
     # Any previously added watchlist instances will be archived
-    # Any current watchlist instances whose risk conditions match the latest conditions will be destroyed
+    # Any current watchlist instances whose risk conditions
+    # match the latest conditions will be destroyed
     # On success, a JSON list of watchlist instances will be returned
     # params required would be the course name
     # each watchlist instance will contain course_user_datum, course_id, risk_condition_id
-    # status (pending, resolved, contacted), archived or not, and violation info
-    # Specifically, violation info for each condition category takes on the following form (examples):
+    # status (pending, resolved, contacted), archived or not,
+    # and violation info
+    # Specifically, violation info for each condition category
+    # takes on the following form (examples):
     # grace_day_usage: { "Homework 1" => 2, "Homework 3" => 2 }
-    # grade_drop: { "Homework" => [{ "Homework 1" => "100/100", "Homework 3" => "80/100"}, ...], "Lab" => [{"Lab 1" => "10/10", "Lab 3" => "8/10" }] }
+    # grade_drop: { "Homework" => [{ "Homework 1" => "100/100", "Homework 3" => "80/100"}, ...],
+    #               "Lab" => [{"Lab 1" => "10/10", "Lab 3" => "8/10" }] }
     # no_submissions: { "no_submissions_asmt_names" => [ "Homework 1", "Quiz 2", ... ] }
     # low_grades: { "Homework 1" => "70/100", ... }
     # On error, an error json is rendered and status is set to :bad_request
@@ -130,11 +138,17 @@ class MetricsController < ApplicationController
   action_auth_level :update_current_metrics, :instructor
   def update_current_metrics
     # This API endpoint aims to update current/latest risk conditions for a particular course
-    # On success, a JSON list of condition objects that are freshly created out of the request parameters will be returned
+    # On success, a JSON list of condition objects that are freshly
+    # created out of the request parameters will be returned
     # The request parameters must take on the following format:
-    # params[type_a] is nil if instructor does not want to include a risk condition of type_a during update
-    # params[type_a] is an object satisfying the parameter requirement for type_a condition
-    # e.g. params["grace_day_usage"] should have form { "grace_day_threshold" => 3, "date" => "2020-03-05" }
+    #
+    # params[type_a] is nil if instructor does not want
+    # to include a risk condition of type_a during update
+    # params[type_a] is an object satisfying the parameter
+    # requirement for type_a condition
+    #
+    # e.g. params["grace_day_usage"] should have form
+    # { "grace_day_threshold" => 3, "date" => "2020-03-05" }
     # Currently, four types of risk conditions are supported:
     # "grace_day_usage" with parameters "grace_day_threshold", "date"
     # "grade_drop" with parameters "percentage_drop", "consecutive_counts"
@@ -151,7 +165,8 @@ class MetricsController < ApplicationController
                       end
 
     if params_filtered != params[:metric]
-      raise "Invalid update parameters for risk conditions! Make sure your request body fits the criteria!"
+      raise "Invalid update parameters for risk conditions!"\
+            " Make sure your request body fits the criteria!"
     end
 
     conditions = RiskCondition.update_current_for_course(course_name, params_filtered)
