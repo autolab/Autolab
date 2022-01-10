@@ -25,7 +25,8 @@ class GroupsController < ApplicationController
 
     @groups = @assessment.groups
     @groupAssessments = @course.assessments
-                               .where("`group_size` > 1 AND `group_size` <= ?", @assessment.group_size).where.not(id: @assessment.id)
+                               .where("`group_size` > 1 AND `group_size` <= ?",
+                                      @assessment.group_size).where.not(id: @assessment.id)
     @grouplessCUDs = @assessment.grouplessCUDs
     respond_with(@course, @assessment, @groups)
   end
@@ -191,14 +192,18 @@ class GroupsController < ApplicationController
 
     newMemberAUD = @assessment.aud_for cud.id
 
-    # if we're adding a new member, and not group-confirming someone, make sure that the group is not too large
+    # if we're adding a new member, and not group-confirming someone,
+    # make sure that the group is not too large
     unless @group.enough_room_for(newMemberAUD, @assessment.group_size)
       flash[:error] = "This group is at the maximum size for this assessment."
       redirect_to([@course, @assessment, :groups]) && return
     end
 
-    # if the new member has no previous group or was already in this group, group-confirm the new member
-    if newMemberAUD.membership_status == AssessmentUserDatum::UNCONFIRMED || newMemberAUD.group_id == @group.id
+    # if the new member has no previous group or was already in this group,
+    # group-confirm the new member
+    if newMemberAUD.membership_status == AssessmentUserDatum::UNCONFIRMED ||
+       newMemberAUD.group_id == @group.id
+
       newMemberAUD.group = @group
       newMemberAUD.membership_status |= AssessmentUserDatum::GROUP_CONFIRMED
       newMemberAUD.save!
@@ -222,8 +227,11 @@ class GroupsController < ApplicationController
       redirect_to([@course, @assessment, :groups]) && return
     end
 
-    # if the new member has no previous group or was already in this group, group-confirm the new member
-    if newMemberAUD.membership_status == AssessmentUserDatum::UNCONFIRMED || newMemberAUD.group_id == @group.id
+    # if the new member has no previous group or was already in this group,
+    # group-confirm the new member
+    if newMemberAUD.membership_status == AssessmentUserDatum::UNCONFIRMED ||
+       newMemberAUD.group_id == @group.id
+
       newMemberAUD.group = @group
       newMemberAUD.membership_status |= AssessmentUserDatum::MEMBER_CONFIRMED
       newMemberAUD.save!
