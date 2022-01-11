@@ -107,7 +107,7 @@ class UsersController < ApplicationController
       flash[:error] = "User creation failed" unless save_worked
     rescue StandardError => e
       error_message = e.message
-      flash[:error] = if error_message.include? "Duplicate entry" and error_message.include? "@"
+      flash[:error] = if error_message.include?("Duplicate entry") && error_message.include?("@")
                         "User with email #{@user.email} already exists"
                       else
                         "User creation failed"
@@ -199,7 +199,7 @@ class UsersController < ApplicationController
 
   action_auth_level :github_oauth, :student
   def github_oauth
-    github_integration = GithubIntegration.find_by_user_id(@user.id)
+    github_integration = GithubIntegration.find_by(user_id: @user.id)
     state = SecureRandom.alphanumeric(128)
     if github_integration.nil?
       # rubocop:disable Lint/UselessAssignment
@@ -241,12 +241,12 @@ class UsersController < ApplicationController
     end
 
     # If state not recognized, this request may not have been generated from Autolab
-    if params["state"].nil? || params["state"].empty?
+    if params["state"].blank?
       flash[:error] = "Invalid callback"
       redirect_to(root_path) && return
     end
 
-    github_integration = GithubIntegration.find_by_oauth_state(params["state"])
+    github_integration = GithubIntegration.find_by(oauth_state: params["state"])
     if github_integration.nil?
       flash[:error] = "Error with Github OAuth (invalid state), please try again."
       redirect_to(root_path) && return
