@@ -202,7 +202,9 @@ class UsersController < ApplicationController
     github_integration = GithubIntegration.find_by_user_id(@user.id)
     state = SecureRandom.alphanumeric(128)
     if github_integration.nil?
+      # rubocop:disable Lint/UselessAssignment
       github_integration = GithubIntegration.create!(oauth_state: state, user: @user)
+      # rubocop:enable Lint/UselessAssignment
     else
       github_integration.update!(oauth_state: state)
     end
@@ -253,7 +255,7 @@ class UsersController < ApplicationController
     begin
       # Results in exception if invalid
       token = @gh_client.auth_code.get_token(params["code"])
-    rescue StandardError => e
+    rescue StandardError
       flash[:error] = "Error with Github OAuth (invalid code), please try again."
       github_integration.update!(oauth_state: nil)
       (redirect_to user_path(id: oauth_user.id)) && return
@@ -272,7 +274,8 @@ class UsersController < ApplicationController
       gh_integration.revoke
       gh_integration.destroy
       flash[:success] = "Successfully disconnected from Github"
-    elsif flash[:info] = "Github not connected, revocation unnecessary"
+    else
+      flash[:info] = "Github not connected, revocation unnecessary"
     end
     (redirect_to user_path(id: @user.id)) && return
   end
@@ -309,9 +312,9 @@ private
 
   def set_user
     @user = User.find(params[:id])
-    if @user.nil?
-      flash[:error] = "User doesn't exist."
-      redirect_to(user_path) && return
-    end
+    return unless @user.nil?
+
+    flash[:error] = "User doesn't exist."
+    redirect_to(user_path) && return
   end
 end
