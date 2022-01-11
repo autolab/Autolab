@@ -213,12 +213,12 @@ class UsersController < ApplicationController
     end
 
     begin
-      if Rails.env.development?
-        hostname = request.base_url
-      else
-        hostname = prefix + request.host
-      end
-    rescue
+      hostname = if Rails.env.development?
+                   request.base_url
+                 else
+                   prefix + request.host
+                 end
+    rescue StandardError
       hostname = `hostname`
       hostname = prefix + hostname.strip
     end
@@ -233,21 +233,21 @@ class UsersController < ApplicationController
 
   action_auth_level :github_oauth_callback, :student
   def github_oauth_callback
-    if params["error"] 
+    if params["error"]
       flash[:error] = "User cancelled OAuth"
-      (redirect_to(root_path)) && return
+      redirect_to(root_path) && return
     end
 
     # If state not recognized, this request may not have been generated from Autolab
     if params["state"].nil? || params["state"].empty?
       flash[:error] = "Invalid callback"
-      (redirect_to(root_path)) && return
+      redirect_to(root_path) && return
     end
 
     github_integration = GithubIntegration.find_by_oauth_state(params["state"])
     if github_integration.nil?
       flash[:error] = "Error with Github OAuth (invalid state), please try again."
-      (redirect_to(root_path)) && return
+      redirect_to(root_path) && return
     end
 
     begin
@@ -262,7 +262,7 @@ class UsersController < ApplicationController
     access_token = token.to_hash[:access_token]
     github_integration.update!(access_token: access_token, oauth_state: nil)
     flash[:success] = "Successfully connected with Github."
-    (redirect_to (root_path)) && return
+    redirect_to(root_path) && return
   end
 
   action_auth_level :github_revoke, :student
@@ -272,8 +272,7 @@ class UsersController < ApplicationController
       gh_integration.revoke
       gh_integration.destroy
       flash[:success] = "Successfully disconnected from Github"
-    elsif
-      flash[:info] = "Github not connected, revocation unnecessary"
+    elsif flash[:info] = "Github not connected, revocation unnecessary"
     end
     (redirect_to user_path(id: @user.id)) && return
   end
@@ -299,11 +298,12 @@ private
 
   def set_gh_oauth_client
     gh_options = {
-      :authorize_url => "https://github.com/login/oauth/authorize",
-      :token_url => "https://github.com/login/oauth/access_token",
-      :site => "https://github.com",
+      authorize_url: "https://github.com/login/oauth/authorize",
+      token_url: "https://github.com/login/oauth/access_token",
+      site: "https://github.com",
     }
-    @gh_client = OAuth2::Client.new(Rails.configuration.x.github.client_id, Rails.configuration.x.github.client_secret,
+    @gh_client = OAuth2::Client.new(Rails.configuration.x.github.client_id,
+                                    Rails.configuration.x.github.client_secret,
                                     gh_options)
   end
 
