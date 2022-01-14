@@ -18,14 +18,15 @@ class GroupsController < ApplicationController
       aud = @assessment.aud_for @cud.id
       if aud.group
         redirect_to([@course, @assessment, aud.group]) && return
-      else
-        redirect_to(action: :new) && return
       end
+
+      redirect_to(action: :new) && return
     end
 
     @groups = @assessment.groups
     @groupAssessments = @course.assessments
-                               .where("`group_size` > 1 AND `group_size` <= ?", @assessment.group_size).where.not(id: @assessment.id)
+                               .where("`group_size` > 1 AND `group_size` <= ?",
+                                      @assessment.group_size).where.not(id: @assessment.id)
     @grouplessCUDs = @assessment.grouplessCUDs
     respond_with(@course, @assessment, @groups)
   end
@@ -38,9 +39,9 @@ class GroupsController < ApplicationController
   def show
     @aud = @assessment.aud_for @cud.id
     unless @cud.instructor
-      if @aud.group_id.nil?
-        redirect_to(action: :new) && return
-      elsif @aud.group_id != params[:id].to_i
+      (redirect_to(action: :new) && return) if @aud.group_id.nil?
+
+      if @aud.group_id != params[:id].to_i
         redirect_to([@course, @assessment, @aud.group]) && return
       end
     end
@@ -84,7 +85,7 @@ class GroupsController < ApplicationController
       flash[:error] = "You have already selected a group."
       redirect_to(action: :new) && return
     elsif aud2.group_confirmed(AssessmentUserDatum::MEMBER_CONFIRMED)
-      flash[:error] = cud2.email + " has already selected a group."
+      flash[:error] = "#{cud2.email} has already selected a group."
       redirect_to(action: :new) && return
     end
 
@@ -191,14 +192,18 @@ class GroupsController < ApplicationController
 
     newMemberAUD = @assessment.aud_for cud.id
 
-    # if we're adding a new member, and not group-confirming someone, make sure that the group is not too large
+    # if we're adding a new member, and not group-confirming someone,
+    # make sure that the group is not too large
     unless @group.enough_room_for(newMemberAUD, @assessment.group_size)
       flash[:error] = "This group is at the maximum size for this assessment."
       redirect_to([@course, @assessment, :groups]) && return
     end
 
-    # if the new member has no previous group or was already in this group, group-confirm the new member
-    if newMemberAUD.membership_status == AssessmentUserDatum::UNCONFIRMED || newMemberAUD.group_id == @group.id
+    # if the new member has no previous group or was already in this group,
+    # group-confirm the new member
+    if newMemberAUD.membership_status == AssessmentUserDatum::UNCONFIRMED ||
+       newMemberAUD.group_id == @group.id
+
       newMemberAUD.group = @group
       newMemberAUD.membership_status |= AssessmentUserDatum::GROUP_CONFIRMED
       newMemberAUD.save!
@@ -222,8 +227,11 @@ class GroupsController < ApplicationController
       redirect_to([@course, @assessment, :groups]) && return
     end
 
-    # if the new member has no previous group or was already in this group, group-confirm the new member
-    if newMemberAUD.membership_status == AssessmentUserDatum::UNCONFIRMED || newMemberAUD.group_id == @group.id
+    # if the new member has no previous group or was already in this group,
+    # group-confirm the new member
+    if newMemberAUD.membership_status == AssessmentUserDatum::UNCONFIRMED ||
+       newMemberAUD.group_id == @group.id
+
       newMemberAUD.group = @group
       newMemberAUD.membership_status |= AssessmentUserDatum::MEMBER_CONFIRMED
       newMemberAUD.save!
@@ -259,7 +267,7 @@ class GroupsController < ApplicationController
       leaver.membership_status = AssessmentUserDatum::UNCONFIRMED
       ActiveRecord::Base.transaction do
         leaver.save!
-        @group.destroy! if @group.assessment_user_data.size == 0
+        @group.destroy! if @group.assessment_user_data.empty?
       end
     end
     respond_with(@course, @assessment, @group)
@@ -268,10 +276,10 @@ class GroupsController < ApplicationController
 private
 
   def check_assessment_for_groups
-    unless @assessment.has_groups?
-      flash[:error] = "This is a solo assessment."
-      redirect_to([@course, @assessment]) && return
-    end
+    return if @assessment.has_groups?
+
+    flash[:error] = "This is a solo assessment."
+    redirect_to([@course, @assessment]) && return
   end
 
   def set_group
