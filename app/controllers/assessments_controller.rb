@@ -82,7 +82,7 @@ class AssessmentsController < ApplicationController
 
   def new
     @assessment = @course.assessments.new
-    if not GithubIntegration.connected
+    if !GithubIntegration.connected
       @assessment.github_submission_enabled = false
     end
   end
@@ -222,11 +222,11 @@ class AssessmentsController < ApplicationController
     @assessment.course = @course
     @assessment.handin_directory = "handin"
 
-    if @assessment.github_submission_enabled
-      @assessment.handin_filename = "handin.tar"
-    else
-      @assessment.handin_filename = "handin.c"
-    end
+    @assessment.handin_filename = if @assessment.github_submission_enabled
+                                    "handin.tar"
+                                  else
+                                    "handin.c"
+                                  end
 
     @assessment.visible_at = Time.now
     @assessment.start_at = Time.now
@@ -732,7 +732,7 @@ class AssessmentsController < ApplicationController
     File.delete(f)
   end
 
-  protected
+protected
 
   # We only do this so that it can be overwritten by modules
   def updateScore(_user, score)
@@ -774,7 +774,7 @@ class AssessmentsController < ApplicationController
     num_released
   end
 
-  private
+private
 
   def new_assessment_params
     ass = params.require(:assessment)
@@ -829,7 +829,8 @@ class AssessmentsController < ApplicationController
   end
 
   def tab_index
-    # Get the current tab's redirect path by checking the submit tag which tells us which submit button in the edit form was clicked
+    # Get the current tab's redirect path by checking the submit tag
+    # which tells us which submit button in the edit form was clicked
     tab_name = "basic"
     if params[:handin]
       tab_name = "handin"
