@@ -33,7 +33,7 @@ class GithubIntegrationsController < ApplicationController
 private
 
   def set_github_integration
-    return if !current_user&.github_integration&.is_connected
+    return unless current_user&.github_integration&.is_connected
 
     @github_integration = current_user.github_integration
   end
