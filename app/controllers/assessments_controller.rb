@@ -67,12 +67,15 @@ class AssessmentsController < ApplicationController
   def index
     @is_instructor = @cud.has_auth_level? :instructor
     announcements_tmp = Announcement.where("start_date < :now AND end_date > :now",
-                                           now: Time.now)
+                                           now: Time.current)
                                     .where(persistent: false)
     @announcements = announcements_tmp.where(course_id: @course.id)
                                       .or(announcements_tmp.where(system: true)).order(:start_date)
-    @attachments = @cud.instructor? ? @course.attachments : @course.attachments
-                                                                   .where(released: true)
+    @attachments = if @cud.instructor?
+                     @course.attachments
+                   else
+                     @course.attachments.where(released: true)
+                   end
   end
 
   # GET /assessments/new
@@ -98,12 +101,13 @@ class AssessmentsController < ApplicationController
     @unused_config_files = []
     Dir.foreach(ass_dir) do |filename|
       # skip if not directory in folder
-      next if !File.directory?(File.join(ass_dir, filename)) or filename == ".." or filename == "."
+      next if !File.directory?(File.join(ass_dir,
+                                         filename)) || (filename == "..") || (filename == ".")
 
       # assessment's yaml file must exist
       unless File.exist?(File.join(ass_dir, filename, "#{filename}.yml"))
         flash[:error] = flash[:error] || ""
-        flash[:error] += "Yml does not exist: " + filename + "     -     "
+        flash[:error] += "Yml does not exist: #{filename}     -     "
         next
       end
 
@@ -232,11 +236,11 @@ class AssessmentsController < ApplicationController
                                     "handin.c"
                                   end
 
-    @assessment.visible_at = Time.now
-    @assessment.start_at = Time.now
-    @assessment.due_at = Time.now
-    @assessment.end_at = Time.now
-    @assessment.grading_deadline = Time.now
+    @assessment.visible_at = Time.current
+    @assessment.start_at = Time.current
+    @assessment.due_at = Time.current
+    @assessment.end_at = Time.current
+    @assessment.grading_deadline = Time.current
     @assessment.quiz = false
     @assessment.quizData = ""
     @assessment.max_submissions = params.include?(:max_submissions) ? params[:max_submissions] : -1
@@ -357,7 +361,7 @@ class AssessmentsController < ApplicationController
   end
 
   def getAssessmentVariable(key)
-    @assessmentVariables.key(key) if @assessmentVariables
+    @assessmentVariables&.key(key)
   end
 
   # export - export an assessment by saving its persistent
@@ -393,7 +397,7 @@ class AssessmentsController < ApplicationController
       tarStream.rewind
       tarStream.close
       send_data tarStream.string.force_encoding("binary"),
-                filename: "#{@assessment.name}_#{Time.now.strftime('%Y%m%d')}.tar", 
+                filename: "#{@assessment.name}_#{Time.current.strftime('%Y%m%d')}.tar",
                 content_type: "application/x-tar"
     rescue SystemCallError => e
       flash[:error] = "Unable to update the config YAML file: #{e}"
@@ -409,13 +413,9 @@ class AssessmentsController < ApplicationController
   action_auth_level :destroy, :instructor
 
   def destroy
-    @assessment.submissions.each do |submission|
-      submission.destroy
-    end
+    @assessment.submissions.each(&:destroy)
 
-    @assessment.attachments.each do |attachment|
-      attachment.destroy
-    end
+    @assessment.attachments.each(&:destroy)
 
     name = @assessment.display_name
     @assessment.destroy # awwww!!!!
@@ -442,14 +442,14 @@ class AssessmentsController < ApplicationController
     # Remember the student ID in case the user wants visit the gradesheet
     session["gradeUser#{@assessment.id}"] = params[:cud_id] if params[:cud_id]
 
-    @startTime = Time.now
+    @startTime = Time.zone.now
     @effectiveCud = if @cud.instructor? && params[:cud_id]
                       @course.course_user_data.find(params[:cud_id])
                     else
                       @cud
                     end
     @submissions = @assessment.submissions.where(course_user_datum_id: @effectiveCud.id)
-                                          .order("version DESC")
+                              .order("version DESC")
     @extension = @assessment.extensions.find_by(course_user_datum_id: @effectiveCud.id)
     @problems = @assessment.problems
 
@@ -480,7 +480,7 @@ class AssessmentsController < ApplicationController
     # Check if we should include regrade as a function
     @autograded = @assessment.has_autograder?
 
-    @repos = GithubIntegration.find_by_user_id(@cud.user.id)&.repositories
+    @repos = GithubIntegration.find_by(user_id: @cud.user.id)&.repositories
   end
 
   action_auth_level :history, :student
@@ -489,14 +489,14 @@ class AssessmentsController < ApplicationController
     # Remember the student ID in case the user wants visit the gradesheet
     session["gradeUser#{@assessment.id}"] = params[:cud_id] if params[:cud_id]
 
-    @startTime = Time.now
+    @startTime = Time.current
     @effectiveCud = if @cud.instructor? && params[:cud_id]
                       @course.course_user_data.find(params[:cud_id])
                     else
                       @cud
                     end
     @submissions = @assessment.submissions.where(course_user_datum_id: @effectiveCud.id)
-                                          .order("version DESC")
+                              .order("version DESC")
     @extension = @assessment.extensions.find_by(course_user_datum_id: @effectiveCud.id)
     @problems = @assessment.problems
 
@@ -700,7 +700,7 @@ class AssessmentsController < ApplicationController
           updateScore(@assessment.course.course_user_data, score)
         rescue ActiveRecord::RecordInvalid => e
           flash[:error] = flash[:error] || ""
-          flash[:error] += "Unable to withdraw score for " + @assessment.course.course_user_data.user.email + ": " + e.message
+          flash[:error] += "Unable to withdraw score for #{@assessment.course.course_user_data.user.email}: #{e.message}"
         end
       end
     end
@@ -797,12 +797,12 @@ private
 
     if ass[:late_penalty_attributes] && ass[:late_penalty_attributes][:value].blank?
       ass.delete(:late_penalty_attributes)
-      @assessment.late_penalty.destroy unless @assessment.late_penalty.nil?
+      @assessment.late_penalty&.destroy
     end
 
     if ass[:version_penalty_attributes] && ass[:version_penalty_attributes][:value].blank?
       ass.delete(:version_penalty_attributes)
-      @assessment.version_penalty.destroy unless @assessment.version_penalty.nil?
+      @assessment.version_penalty&.destroy
     end
 
     ass.permit!
@@ -848,6 +848,6 @@ private
       tab_name = "advanced"
     end
 
-    edit_course_assessment_path(@course, @assessment) + "/#tab_" + tab_name
+    "#{edit_course_assessment_path(@course, @assessment)}/#tab_#{tab_name}"
   end
 end
