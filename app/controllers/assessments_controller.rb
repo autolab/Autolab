@@ -71,7 +71,8 @@ class AssessmentsController < ApplicationController
                                     .where(persistent: false)
     @announcements = announcements_tmp.where(course_id: @course.id)
                                       .or(announcements_tmp.where(system: true)).order(:start_date)
-    @attachments = @cud.instructor? ? @course.attachments : @course.attachments.where(released: true)
+    @attachments = @cud.instructor? ? @course.attachments : @course.attachments
+                                                                   .where(released: true)
   end
 
   # GET /assessments/new
@@ -134,7 +135,9 @@ class AssessmentsController < ApplicationController
       tar_extract.close
       unless is_valid_tar
         flash[:error] =
-          "Invalid tarball. A valid assessment tar has a single root directory that's named after the assessment, containing an assessment yaml file and an assessment ruby file."
+          "Invalid tarball. A valid assessment tar has a single root "\
+          "directory that's named after the assessment, containing an "\
+          "assessment yaml file and an assessment ruby file."
         redirect_to(action: "install_assessment")
         return
       end
@@ -147,7 +150,8 @@ class AssessmentsController < ApplicationController
     # Check if the assessment already exists.
     unless @course.assessments.find_by(name: asmt_name).nil?
       flash[:error] =
-        "An assessment with the same name already exists for the course. Please use a different name."
+        "An assessment with the same name already exists for the course. "\
+        "Please use a different name."
       redirect_to(action: "install_assessment") && return
     end
 
@@ -389,7 +393,8 @@ class AssessmentsController < ApplicationController
       tarStream.rewind
       tarStream.close
       send_data tarStream.string.force_encoding("binary"),
-                filename: "#{@assessment.name}_#{Time.now.strftime('%Y%m%d')}.tar", content_type: "application/x-tar"
+                filename: "#{@assessment.name}_#{Time.now.strftime('%Y%m%d')}.tar", 
+                content_type: "application/x-tar"
     rescue SystemCallError => e
       flash[:error] = "Unable to update the config YAML file: #{e}"
       redirect_to action: "index"
@@ -443,7 +448,8 @@ class AssessmentsController < ApplicationController
                     else
                       @cud
                     end
-    @submissions = @assessment.submissions.where(course_user_datum_id: @effectiveCud.id).order("version DESC")
+    @submissions = @assessment.submissions.where(course_user_datum_id: @effectiveCud.id)
+                                          .order("version DESC")
     @extension = @assessment.extensions.find_by(course_user_datum_id: @effectiveCud.id)
     @problems = @assessment.problems
 
@@ -489,7 +495,8 @@ class AssessmentsController < ApplicationController
                     else
                       @cud
                     end
-    @submissions = @assessment.submissions.where(course_user_datum_id: @effectiveCud.id).order("version DESC")
+    @submissions = @assessment.submissions.where(course_user_datum_id: @effectiveCud.id)
+                                          .order("version DESC")
     @extension = @assessment.extensions.find_by(course_user_datum_id: @effectiveCud.id)
     @problems = @assessment.problems
 
@@ -587,8 +594,8 @@ class AssessmentsController < ApplicationController
   end
 
   def valid_json?(json)
-    hash = JSON.parse(json)
-  rescue JSON::ParserError, TypeError => e
+    JSON.parse(json)
+  rescue JSON::ParserError, TypeError
     false
   end
 
@@ -596,7 +603,7 @@ class AssessmentsController < ApplicationController
 
   def reload
     @assessment.load_config_file
-  rescue StandardError => e
+  rescue StandardError
     # let the reload view render
   else
     flash[:success] = "Success: Assessment config file reloaded!"
@@ -674,7 +681,8 @@ class AssessmentsController < ApplicationController
         format("%d %s released.", num_released, (num_released > 1 ? "grades were" : "grade was"))
     else
       flash[:error] = "No grades were released. " \
-                      "Either they were all already released or you might be assigned to a lecture " \
+                      "Either they were all already released or you "\
+                      "might be assigned to a lecture " \
                       "and/or section that doesn't exist. Please contact an instructor."
     end
     redirect_to action: "viewGradesheet"
