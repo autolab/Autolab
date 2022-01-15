@@ -23,7 +23,7 @@ class GithubIntegration < ApplicationRecord
           clone_url: repo[:clone_url],
           default_branch: repo[:default_branch] }
       }
-    rescue Exception => e
+    rescue StandardError => e
       if e.response_status == 401 # unauthorized
         # User revoked permissions via Github UI, destroy it
         destroy!
