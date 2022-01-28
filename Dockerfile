@@ -35,6 +35,8 @@ RUN chown app:app Gemfile Gemfile.lock
 
 # Prepare folders
 USER app
+# Update rubygem to latest version
+RUN gem update --system
 # Specify bundler version
 RUN gem install bundler -v $(tail -n1 Gemfile.lock)
 RUN bundle install
