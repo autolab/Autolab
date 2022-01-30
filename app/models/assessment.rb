@@ -47,8 +47,8 @@ class Assessment < ApplicationRecord
   after_destroy :update_course_grade_watchlist_instances_if_past_end_at
 
   # Constants
-  ORDERING = "due_at ASC, name ASC"
-  RELEASED = "start_at < ?"
+  ORDERING = "due_at ASC, name ASC".freeze
+  RELEASED = "start_at < ?".freeze
 
   # Scopes
   scope :ordered, -> { order(ORDERING) }
@@ -197,7 +197,7 @@ class Assessment < ApplicationRecord
 
     # Open and read the default assessment config file
     default_config_file_path = Rails.root.join("lib/__defaultAssessment.rb")
-    config_source = File.open(default_config_file_path, "r") { |f| f.read }
+    config_source = File.open(default_config_file_path, "r", &:read)
 
     # Update with this assessment information
     config_source.gsub!("##NAME_CAMEL##", name.camelize)
@@ -219,7 +219,7 @@ class Assessment < ApplicationRecord
   #
   def load_config_file
     # read from source
-    config_source = File.open(source_config_file_path, "r") { |f| f.read }
+    config_source = File.open(source_config_file_path, "r", &:read)
 
     # uniquely rename module (so that it's unique among all assessment modules loaded in Autolab)
     config = config_source.gsub("module #{source_config_module_name}",
@@ -262,7 +262,7 @@ class Assessment < ApplicationRecord
   def load_yaml
     return unless new_record?
 
-    props = YAML.load(File.open(path("#{name}.yml"), "r") { |f| f.read })
+    props = YAML.safe_load(File.open(path("#{name}.yml"), "r", &:read))
     backwards_compatibility(props)
     deserialize(props)
   end
@@ -341,7 +341,7 @@ class Assessment < ApplicationRecord
   def load_embedded_quiz
     return unless embedded_quiz && File.file?(path("#{name}_embedded_quiz.html"))
 
-    quiz = File.open(path("#{name}_embedded_quiz.html"), "r") { |f| f.read }
+    quiz = File.open(path("#{name}_embedded_quiz.html"), "r", &:read)
     update(embedded_quiz_form_data: quiz)
   end
 
@@ -545,9 +545,9 @@ private
                  "handout_filename" => "handout",
                  "writeup_filename" => "writeup",
                  "has_autograde" => nil,
-                 "has_scoreboard" => nil }
+                 "has_scoreboard" => nil }.freeze
   BACKWORDS_COMPATIBILITY = { "autograding_setup" => "autograder",
-                              "scoreboard_setup" => "scoreboard" }
+                              "scoreboard_setup" => "scoreboard" }.freeze
   def backwards_compatibility(props)
     GENERAL_BC.each do |old, new|
       next unless props["general"].key?(old)
