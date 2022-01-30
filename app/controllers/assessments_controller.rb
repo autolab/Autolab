@@ -13,16 +13,16 @@ class AssessmentsController < ApplicationController
     redirect_to("/home/error_404")
   end
 
-  autolab_require Rails.root.join("app", "controllers", "assessment", "handin.rb")
+  autolab_require Rails.root.join("app/controllers/assessment/handin.rb")
   include AssessmentHandin
 
-  autolab_require Rails.root.join("app", "controllers", "assessment", "handout.rb")
+  autolab_require Rails.root.join("app/controllers/assessment/handout.rb")
   include AssessmentHandout
 
-  autolab_require Rails.root.join("app", "controllers", "assessment", "grading.rb")
+  autolab_require Rails.root.join("app/controllers/assessment/grading.rb")
   include AssessmentGrading
 
-  autolab_require Rails.root.join("app", "controllers", "assessment", "autograde.rb")
+  autolab_require Rails.root.join("app/controllers/assessment/autograde.rb")
   include AssessmentAutograde
 
   # this is inherited from ApplicationController
@@ -58,7 +58,7 @@ class AssessmentsController < ApplicationController
   action_no_auth :local_submit
 
   # SVN
-  autolab_require Rails.root.join("app", "controllers", "assessment", "svn.rb")
+  autolab_require Rails.root.join("app/controllers/assessment/svn.rb")
   include AssessmentSVN
   action_auth_level :admin_svn, :instructor
   action_auth_level :set_repo, :instructor
@@ -86,9 +86,9 @@ class AssessmentsController < ApplicationController
 
   def new
     @assessment = @course.assessments.new
-    if !GithubIntegration.connected
-      @assessment.github_submission_enabled = false
-    end
+    return if GithubIntegration.connected
+
+    @assessment.github_submission_enabled = false
   end
 
   # install_assessment - Installs a new assessment, either by
@@ -527,10 +527,10 @@ class AssessmentsController < ApplicationController
     # Check if we should include regrade as a function
     @autograded = @assessment.has_autograder?
 
-    if params[:partial]
-      @partial = true
-      render("history", layout: false) && return
-    end
+    return unless params[:partial]
+
+    @partial = true
+    render("history", layout: false) && return
   end
 
   action_auth_level :viewFeedback, :student
@@ -553,19 +553,20 @@ class AssessmentsController < ApplicationController
   def parseScore(feedback)
     lines = feedback.lines
     feedback = lines[lines.length - 1].chomp
-    if valid_json?(feedback)
-      score_hash = JSON.parse(feedback)
-      score_hash = score_hash["scores"]
-      if @jsonFeedback.key?("_scores_order") == false
-        @jsonFeedback["_scores_order"] = score_hash.keys
-      end
-      @total = 0
-      score_hash.keys.each do |k|
-        @total += score_hash[k]
-      end
-      score_hash["_total"] = @total
-      score_hash
+
+    return unless valid_json?(feedback)
+
+    score_hash = JSON.parse(feedback)
+    score_hash = score_hash["scores"]
+    if @jsonFeedback.key?("_scores_order") == false
+      @jsonFeedback["_scores_order"] = score_hash.keys
     end
+    @total = 0
+    score_hash.keys.each do |k|
+      @total += score_hash[k]
+    end
+    score_hash["_total"] = @total
+    score_hash
   end
 
   def parse_stages(jsonFeedbackHash)
@@ -583,13 +584,14 @@ class AssessmentsController < ApplicationController
   def parseFeedback(feedback)
     lines = feedback.lines
     feedback = lines[lines.length - 2]&.chomp
-    if valid_json?(feedback)
-      jsonFeedbackHash = JSON.parse(feedback)
-      if jsonFeedbackHash.key?("_presentation") == false
-        nil
-      elsif jsonFeedbackHash["_presentation"] == "semantic" && !parse_stages(jsonFeedbackHash).nil?
-        jsonFeedbackHash
-      end
+
+    return unless valid_json?(feedback)
+
+    jsonFeedbackHash = JSON.parse(feedback)
+    if jsonFeedbackHash.key?("_presentation") == false
+      nil
+    elsif jsonFeedbackHash["_presentation"] == "semantic" && !parse_stages(jsonFeedbackHash).nil?
+      jsonFeedbackHash
     end
   end
 
@@ -654,7 +656,9 @@ class AssessmentsController < ApplicationController
     if num_released > 0
       @course.update_course_no_submissions_watchlist_instances
       flash[:success] =
-        format("%d %s released.", num_released, (num_released > 1 ? "grades were" : "grade was"))
+        format("%<num_released>d %<plurality>s released.",
+               num_released: num_released,
+               plurality: (num_released > 1 ? "grades were" : "grade was"))
     else
       flash[:error] = "No grades were released. They might have all already been released."
     end
@@ -678,7 +682,9 @@ class AssessmentsController < ApplicationController
     if num_released > 0
       @course.update_course_no_submissions_watchlist_instances(@cud)
       flash[:success] =
-        format("%d %s released.", num_released, (num_released > 1 ? "grades were" : "grade was"))
+        format("%<num_released>d %<plurality>s released.",
+               num_released: num_released,
+               plurality: (num_released > 1 ? "grades were" : "grade was"))
     else
       flash[:error] = "No grades were released. " \
                       "Either they were all already released or you "\
@@ -700,7 +706,8 @@ class AssessmentsController < ApplicationController
           updateScore(@assessment.course.course_user_data, score)
         rescue ActiveRecord::RecordInvalid => e
           flash[:error] = flash[:error] || ""
-          flash[:error] += "Unable to withdraw score for #{@assessment.course.course_user_data.user.email}: #{e.message}"
+          flash[:error] += "Unable to withdraw score for "\
+                           "#{@assessment.course.course_user_data.user.email}: #{e.message}"
         end
       end
     end
