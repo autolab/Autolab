@@ -74,12 +74,11 @@ class SubmissionsController < ApplicationController
       @submission.submitted_by_id = @cud.id
       next unless @submission.save! # Now we have a version number!
 
-      if params[:submission]["file"] &&
-         params[:submission]["file"].present?
+      if params[:submission]["file"]&.present?
         @submission.save_file(params[:submission])
       end
     end
-    flash[:success] = pluralize(cud_ids.size, "Submission") + " Created"
+    flash[:success] = "#{pluralize(cud_ids.size, 'Submission')} Created"
     redirect_to course_assessment_submissions_path(@course, @assessment)
   end
 
@@ -364,7 +363,7 @@ class SubmissionsController < ApplicationController
     return unless file
 
     mm = MimeMagic.by_magic(file)
-    file = "Binary file not displayed" if mm.present? && (!mm.text? and mm.subtype != "pdf")
+    file = "Binary file not displayed" if mm.present? && (!mm.text? && (mm.subtype != "pdf"))
 
     unless PDF.pdf?(file)
       # begin
@@ -384,7 +383,7 @@ class SubmissionsController < ApplicationController
         # Special case -- we're using a CMU-specific language, and we need to
         # force the language interpretation
         @ctags_json =
-          if codePath.last(3) == ".c0" or codePath.last(3) == ".c1"
+          if (codePath.last(3) == ".c0") || (codePath.last(3) == ".c1")
             `ctags --output-format=json --language-force=C --fields="Nnk" #{codePath}`.split("\n")
           else
             # General case -- language can be inferred from file extension
@@ -395,8 +394,8 @@ class SubmissionsController < ApplicationController
         i = 0
         while i < @ctags_json.length
           obj_temp = JSON.parse(@ctags_json[i])
-          if (obj_temp["kind"] == "function" or
-            obj_temp["kind"] == "method") &&
+          if ((obj_temp["kind"] == "function") ||
+            (obj_temp["kind"] == "method")) &&
              (@ctag_obj.select do |ctag|
                 ctag["line"] == obj_temp["line"]
               end).empty?
@@ -408,8 +407,8 @@ class SubmissionsController < ApplicationController
           next unless obj_temp["kind"] == "class"
 
           obj_temp = JSON.parse(@ctags_json[i])
-          while i + 1 < @ctags_json.length and
-                (obj_temp["kind"] == "member" or obj_temp["kind"] == "method")
+          while (i + 1 < @ctags_json.length) &&
+                ((obj_temp["kind"] == "member") || (obj_temp["kind"] == "method"))
 
             obj_exists = @ctag_obj.select { |ctag| ctag["line"] == obj_temp["line"] }
             if obj_exists.empty?
