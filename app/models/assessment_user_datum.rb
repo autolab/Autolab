@@ -32,7 +32,7 @@ class AssessmentUserDatum < ApplicationRecord
     normal: NORMAL,
     zeroed: ZEROED,
     excused: EXCUSED
-  }
+  }.freeze
 
   # Different statuses for group membership
   UNCONFIRMED = 0x0
@@ -66,7 +66,9 @@ class AssessmentUserDatum < ApplicationRecord
       # update
       self.latest_submission = latest_submission!
       save!
-    end # release lock on AUD
+
+      # release lock on AUD
+    end
     # see: http://dev.mysql.com/doc/refman/5.0/en/innodb-locking-reads.html
   end
 
@@ -108,7 +110,8 @@ class AssessmentUserDatum < ApplicationRecord
 
   def final_score_ignore_grading_deadline(as_seen_by)
     @final_score_ignore_grading_deadline ||= {}
-    @final_score_ignore_grading_deadline[as_seen_by] ||= final_score_ignore_grading_deadline! as_seen_by
+    @final_score_ignore_grading_deadline[as_seen_by] ||=
+      final_score_ignore_grading_deadline! as_seen_by
   end
 
   def status(as_seen_by)
@@ -159,7 +162,9 @@ class AssessmentUserDatum < ApplicationRecord
       Rails.cache.delete course_user_datum.ggl_cache_key
 
       course_user_datum.update_cud_gdu_watchlist_instances
-    end # release lock
+
+      # release lock
+    end
   end
 
   # Due date for user
@@ -279,7 +284,9 @@ private
 
         # cache
         Rails.cache.write(cache_key, cgdub)
-      end # release lock
+
+        # release lock
+      end
     end
 
     @cgdub = cgdub
@@ -355,9 +362,9 @@ private
   end
 
   def aud_for_assessment_before
-    if (assessment_before = assessment.assessment_before)
-      assessment_before.aud_for course_user_datum_id
-    end
+    return unless (assessment_before = assessment.assessment_before)
+
+    assessment_before.aud_for course_user_datum_id
   end
 
   def auds_for_assessments_after
