@@ -72,10 +72,12 @@ class Assessment < ApplicationRecord
   #
   # Can be used manually if AUD.latest_submission goes out of sync (emergency!)
   def update_latest_submissions_modulo_callbacks
+    # rubocop:disable Rails/SkipsModelValidations
     calculate_latest_submissions.each do |s|
       AssessmentUserDatum.where(assessment_id: id, course_user_datum_id: s.course_user_datum_id)
                          .update_all(latest_submission_id: s.id)
     end
+    # rubocop:enable Rails/SkipsModelValidations
   end
 
   # Uniquely identify the previous assessment
@@ -168,7 +170,7 @@ class Assessment < ApplicationRecord
   # If version_threshold == -1 (i.e. unlimited submissions without penalty)
   # or version_penalty == 0.0, no version penalty needs to be applied.
   def version_penalty?
-    effective_version_threshold > -1 && effective_version_penalty.value != 0.0
+    effective_version_threshold > -1 && effective_version_penalty.value.to_d != 0.0.to_d
   end
 
   def aud_for(cud_id)
@@ -194,7 +196,7 @@ class Assessment < ApplicationRecord
     return false if File.file?(assessment_config_file_path)
 
     # Open and read the default assessment config file
-    default_config_file_path = Rails.root.join("lib", "__defaultAssessment.rb")
+    default_config_file_path = Rails.root.join("lib/__defaultAssessment.rb")
     config_source = File.open(default_config_file_path, "r") { |f| f.read }
 
     # Update with this assessment information
