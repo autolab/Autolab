@@ -242,7 +242,10 @@ class Assessment < ApplicationRecord
     reload_config_file if config_file_updated?
 
     # return config module
+
+    # rubocop:disable Security/Eval
     eval config_module_name
+    # rubocop:enable Security/Eval
   end
 
   ##
@@ -318,9 +321,11 @@ class Assessment < ApplicationRecord
   end
 
   def grouplessCUDs
-    course.course_user_data.joins(:assessment_user_data).where(assessment_user_data: {
-                                                                 assessment_id: id, membership_status: AssessmentUserDatum::UNCONFIRMED
-                                                               })
+    course.course_user_data.joins(:assessment_user_data).
+                                  where(assessment_user_data: {
+                                    assessment_id: id, 
+                                    membership_status: AssessmentUserDatum::UNCONFIRMED
+                                  })
   end
 
   def to_param
@@ -328,16 +333,16 @@ class Assessment < ApplicationRecord
   end
 
   def dump_embedded_quiz
-    if embedded_quiz
-      File.open(path("#{name}_embedded_quiz.html"), "w") { |f| f.write(embedded_quiz_form_data) }
-    end
+    return unless embedded_quiz
+
+    File.open(path("#{name}_embedded_quiz.html"), "w") { |f| f.write(embedded_quiz_form_data) }
   end
 
   def load_embedded_quiz
-    if embedded_quiz && File.file?(path("#{name}_embedded_quiz.html"))
-      quiz = File.open(path("#{name}_embedded_quiz.html"), "r") { |f| f.read }
-      update(embedded_quiz_form_data: quiz)
-    end
+    return unless embedded_quiz && File.file?(path("#{name}_embedded_quiz.html"))
+
+    quiz = File.open(path("#{name}_embedded_quiz.html"), "r") { |f| f.read }
+    update(embedded_quiz_form_data: quiz)
   end
 
   # to be able to calculate total score for an assessment from another model
@@ -352,8 +357,10 @@ class Assessment < ApplicationRecord
 private
 
   def saved_change_to_grade_related_fields?
-    (saved_change_to_due_at? or saved_change_to_max_grace_days? or saved_change_to_version_threshold? or
-            saved_change_to_late_penalty_id? or saved_change_to_version_penalty_id?)
+    (saved_change_to_due_at? or saved_change_to_max_grace_days? or 
+            saved_change_to_version_threshold? or
+            saved_change_to_late_penalty_id? or 
+            saved_change_to_version_penalty_id?)
   end
 
   def saved_change_to_due_at_or_max_grace_days?
@@ -372,7 +379,9 @@ private
     sanitized_name.camelize
   end
 
+  # rubocop:disable Style/ClassVars
   @@CONFIG_FILE_LAST_LOADED = {}
+  # rubocop:enable Style/ClassVars
 
   def reload_config_file
     # remove the previously loaded config module
@@ -428,20 +437,25 @@ private
   end
 
   GENERAL_SERIALIZABLE = Set.new %w[name display_name category_name description handin_filename
-                                    handin_directory has_svn has_lang max_grace_days handout writeup max_submissions disable_handins max_size version_threshold embedded_quiz]
+                                    handin_directory has_svn has_lang max_grace_days handout 
+                                    writeup max_submissions disable_handins max_size 
+                                    version_threshold embedded_quiz]
 
   def serialize_general
     Utilities.serializable attributes, GENERAL_SERIALIZABLE
   end
 
   def deserialize(s)
-    self.due_at = self.end_at = self.visible_at = self.start_at = self.grading_deadline = Time.current
+    self.due_at = self.end_at = self.visible_at = 
+                  self.start_at = self.grading_deadline = Time.current
     self.quiz = false
     self.quizData = ""
     update!(s["general"])
     Problem.deserialize_list(self, s["problems"]) if s["problems"]
     Autograder.find_or_initialize_by(assessment_id: id).update(s["autograder"]) if s["autograder"]
     Scoreboard.find_or_initialize_by(assessment_id: id).update(s["scoreboard"]) if s["scoreboard"]
+
+    # rubocop:disable Style/GuardClause
     if s["late_penalty"]
       late_penalty ||= Penalty.new
       late_penalty.update(s["late_penalty"])
@@ -450,6 +464,7 @@ private
       version_penalty ||= Penalty.new
       version_penalty.update(s["version_penalty"])
     end
+    # rubocop:enable Style/GuardClause
   end
 
   def default_max_score
@@ -509,7 +524,9 @@ private
 
   def invalidate_raw_scores
     # key-based invalidation (see submission.raw_score)
+    # rubocop:disable Rails/SkipsModelValidations
     touch
+    # rubocop:enable Rails/SkipsModelValidations
   end
 
   def sanitized_name
