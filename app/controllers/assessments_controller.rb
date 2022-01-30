@@ -442,7 +442,7 @@ class AssessmentsController < ApplicationController
     # Remember the student ID in case the user wants visit the gradesheet
     session["gradeUser#{@assessment.id}"] = params[:cud_id] if params[:cud_id]
 
-    @startTime = Time.zone.now
+    @startTime = Time.current
     @effectiveCud = if @cud.instructor? && params[:cud_id]
                       @course.course_user_data.find(params[:cud_id])
                     else
