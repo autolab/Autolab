@@ -52,8 +52,8 @@ class Assessment < ApplicationRecord
 
   # Scopes
   scope :ordered, -> { order(ORDERING) }
-  scope :released, ->(as_of = Time.now) { where(RELEASED, as_of) }
-  scope :unreleased, ->(as_of = Time.now) { where.not(RELEASED, as_of) }
+  scope :released, ->(as_of = Time.current) { where(RELEASED, as_of) }
+  scope :unreleased, ->(as_of = Time.current) { where.not(RELEASED, as_of) }
 
   # Misc.
   accepts_nested_attributes_for :late_penalty, :version_penalty, allow_destroy: true
@@ -88,7 +88,7 @@ class Assessment < ApplicationRecord
   end
 
   def before_grading_deadline?
-    Time.now <= grading_deadline
+    Time.current <= grading_deadline
   end
 
   def getLanguages
@@ -115,7 +115,7 @@ class Assessment < ApplicationRecord
     path writeup
   end
 
-  def released?(as_of = Time.now)
+  def released?(as_of = Time.current)
     start_at < as_of
   end
 
@@ -344,7 +344,7 @@ class Assessment < ApplicationRecord
   end
 
   def update_course_grade_watchlist_instances_if_past_end_at
-    course.update_course_grade_watchlist_instances if Time.now >= end_at
+    course.update_course_grade_watchlist_instances if Time.current >= end_at
   end
 
 private
@@ -380,7 +380,7 @@ private
     load config_file_path
 
     # updated last loaded time
-    @@CONFIG_FILE_LAST_LOADED[config_file_path] = Time.now
+    @@CONFIG_FILE_LAST_LOADED[config_file_path] = Time.current
 
     logger.info "Reloaded #{config_file_path}"
   end
@@ -433,7 +433,7 @@ private
   end
 
   def deserialize(s)
-    self.due_at = self.end_at = self.visible_at = self.start_at = self.grading_deadline = Time.now
+    self.due_at = self.end_at = self.visible_at = self.start_at = self.grading_deadline = Time.current
     self.quiz = false
     self.quizData = ""
     update!(s["general"])
@@ -515,7 +515,7 @@ private
   end
 
   def active?
-    Time.now <= course.end_date
+    Time.current <= course.end_date
   end
 
   ##
