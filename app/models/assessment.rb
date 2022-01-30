@@ -322,10 +322,10 @@ class Assessment < ApplicationRecord
 
   def grouplessCUDs
     course.course_user_data.joins(:assessment_user_data).
-                                  where(assessment_user_data: {
-                                    assessment_id: id, 
-                                    membership_status: AssessmentUserDatum::UNCONFIRMED
-                                  })
+      where(assessment_user_data: {
+              assessment_id: id,
+              membership_status: AssessmentUserDatum::UNCONFIRMED
+            })
   end
 
   def to_param
@@ -357,9 +357,9 @@ class Assessment < ApplicationRecord
 private
 
   def saved_change_to_grade_related_fields?
-    (saved_change_to_due_at? or saved_change_to_max_grace_days? or 
+    (saved_change_to_due_at? or saved_change_to_max_grace_days? or
             saved_change_to_version_threshold? or
-            saved_change_to_late_penalty_id? or 
+            saved_change_to_late_penalty_id? or
             saved_change_to_version_penalty_id?)
   end
 
@@ -437,8 +437,8 @@ private
   end
 
   GENERAL_SERIALIZABLE = Set.new %w[name display_name category_name description handin_filename
-                                    handin_directory has_svn has_lang max_grace_days handout 
-                                    writeup max_submissions disable_handins max_size 
+                                    handin_directory has_svn has_lang max_grace_days handout
+                                    writeup max_submissions disable_handins max_size
                                     version_threshold embedded_quiz]
 
   def serialize_general
@@ -446,8 +446,8 @@ private
   end
 
   def deserialize(s)
-    self.due_at = self.end_at = self.visible_at = 
-                  self.start_at = self.grading_deadline = Time.current
+    self.due_at = self.end_at = self.visible_at =
+                    self.start_at = self.grading_deadline = Time.current
     self.quiz = false
     self.quizData = ""
     update!(s["general"])
