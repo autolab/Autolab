@@ -203,11 +203,11 @@ class AssessmentUserDatum < ApplicationRecord
     end
   end
 
-  def past_due_at?(as_of = Time.now)
+  def past_due_at?(as_of = Time.current)
     due_at && due_at < as_of
   end
 
-  def past_end_at?(as_of = Time.now)
+  def past_end_at?(as_of = Time.current)
     end_at && end_at < as_of
   end
 
@@ -290,7 +290,7 @@ private
   def final_score!(as_seen_by)
     case grade_type
     when NORMAL
-      if Time.now <= assessment.grading_deadline
+      if Time.current <= assessment.grading_deadline
         nil
       elsif latest_submission
         latest_submission.final_score as_seen_by
