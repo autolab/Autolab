@@ -43,8 +43,8 @@ class Course < ApplicationRecord
     # fill temporary values in other fields
     newCourse.late_slack = 0
     newCourse.grace_days = 0
-    newCourse.start_date = Time.zone.now
-    newCourse.end_date = Time.zone.now
+    newCourse.start_date = Time.current
+    newCourse.end_date = Time.current
 
     newCourse.late_penalty = Penalty.new
     newCourse.late_penalty.kind = "points"
@@ -236,7 +236,7 @@ class Course < ApplicationRecord
     # raw_scores
     # NOTE: keep in sync with assessment#invalidate_raw_scores
     # rubocop:disable Rails/SkipsModelValidations
-    assessments.update_all(updated_at: Time.zone.now)
+    assessments.update_all(updated_at: Time.current)
     # rubocop:enable Rails/SkipsModelValidations
   end
 
@@ -294,7 +294,7 @@ private
   end
 
   def cgdub_dependencies_updated
-    self.cgdub_dependencies_updated_at = Time.zone.now
+    self.cgdub_dependencies_updated_at = Time.current
   end
 
   def config!
