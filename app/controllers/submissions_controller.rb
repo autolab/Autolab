@@ -17,13 +17,6 @@ class SubmissionsController < ApplicationController
   action_auth_level :index, :instructor
   def index
     @submissions = @assessment.submissions.order("created_at DESC")
-
-    # Unsure whether this is actually useless. Keeping just-in-case
-    # rubocop:disable Lint/UselessAssignment
-    assign = @assessment.name.gsub(/\./, "")
-    modName = (assign + @course.name.gsub(/[^A-Za-z0-9]/, "")).camelize
-    # rubocop:enable Lint/UselessAssignment
-
     @autograded = @assessment.has_autograder?
   end
 
@@ -83,12 +76,7 @@ class SubmissionsController < ApplicationController
   end
 
   action_auth_level :show, :student
-  def show
-    # Unsure whether this is actually useless. Keeping just-in-case
-    # rubocop:disable Lint/UselessAssignment
-    submission = Submission.find(params[:id])
-    # rubocop:enable Lint/UselessAssignment
-  end
+  def show; end
 
   # this loads and looks good
   action_auth_level :edit, :instructor
@@ -270,11 +258,6 @@ class SubmissionsController < ApplicationController
                 disposition: "inline"
 
     else
-      # Unsure whether this is actually useless. Keeping just-in-case
-      # rubocop:disable Lint/UselessAssignment
-      mime = params[:forceMime] || @submission.detected_mime_type
-      # rubocop:enable Lint/UselessAssignment
-
       send_file @filename,
                 filename: @basename,
                 disposition: "inline"
