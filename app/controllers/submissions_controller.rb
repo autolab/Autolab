@@ -17,9 +17,6 @@ class SubmissionsController < ApplicationController
   action_auth_level :index, :instructor
   def index
     @submissions = @assessment.submissions.order("created_at DESC")
-
-    assign = @assessment.name.gsub(/\./, "")
-    modName = (assign + @course.name.gsub(/[^A-Za-z0-9]/, "")).camelize
     @autograded = @assessment.has_autograder?
   end
 
@@ -70,19 +67,16 @@ class SubmissionsController < ApplicationController
       @submission.submitted_by_id = @cud.id
       next unless @submission.save! # Now we have a version number!
 
-      if params[:submission]["file"] &&
-         params[:submission]["file"].present?
+      if params[:submission]["file"]&.present?
         @submission.save_file(params[:submission])
       end
     end
-    flash[:success] = pluralize(cud_ids.size, "Submission") + " Created"
+    flash[:success] = "#{pluralize(cud_ids.size, 'Submission')} Created"
     redirect_to course_assessment_submissions_path(@course, @assessment)
   end
 
   action_auth_level :show, :student
-  def show
-    submission = Submission.find(params[:id])
-  end
+  def show; end
 
   # this loads and looks good
   action_auth_level :edit, :instructor
@@ -98,17 +92,19 @@ class SubmissionsController < ApplicationController
     if params[:submission][:tweak_attributes][:value].blank?
       params[:submission][:tweak_attributes][:_destroy] = true
     end
+
     if @submission.update(edit_submission_params)
       redirect_to(history_course_assessment_path(@submission.course_user_datum.course,
                                                  @assessment)) && return
-    else
-      flash[:error] = "Error: There were errors editing the submission."
-      @submission.errors.full_messages.each do |msg|
-        flash[:error] += "<br>#{msg}"
-      end
-      redirect_to(edit_course_assessment_submission_path(@submission.course_user_datum.course,
-                                                         @assessment, @submission)) && return
     end
+
+    # Error case
+    flash[:error] = "Error: There were errors editing the submission."
+    @submission.errors.full_messages.each do |msg|
+      flash[:error] += "<br>#{msg}"
+    end
+    redirect_to(edit_course_assessment_submission_path(@submission.course_user_datum.course,
+                                                       @assessment, @submission)) && return
   end
 
   # this is good
@@ -262,8 +258,6 @@ class SubmissionsController < ApplicationController
                 disposition: "inline"
 
     else
-      mime = params[:forceMime] || @submission.detected_mime_type
-
       send_file @filename,
                 filename: @basename,
                 disposition: "inline"
@@ -310,7 +304,10 @@ class SubmissionsController < ApplicationController
                        directory: false })
     end
 
-    if params.include?(:header_position) && (params[:header_position].to_i == -1) && !@submission.autograde_file.nil?
+    if params.include?(:header_position) &&
+       (params[:header_position].to_i == -1) &&
+       @submission.autograde_file.nil?
+
       file = @submission.autograde_file.read || "Empty Autograder Output"
       @displayFilename = "Autograder Output"
     elsif params.include?(:header_position) && Archive.archive?(@submission.handin_file_path)
@@ -327,8 +324,8 @@ class SubmissionsController < ApplicationController
     else
       # auto-set header position for archives
       if Archive.archive?(@submission.handin_file_path)
-        firstFile = Archive.get_files(@submission.handin_file_path).find do |file|
-          file[:mac_bs_file] == false and file[:directory] == false
+        firstFile = Archive.get_files(@submission.handin_file_path).find do |archive_file|
+          archive_file[:mac_bs_file] == false and archive_file[:directory] == false
         end || { header_position: 0 }
         redirect_to(url_for([:view, @course, @assessment, @submission, {
                               header_position: firstFile[:header_position]
@@ -349,7 +346,7 @@ class SubmissionsController < ApplicationController
     return unless file
 
     mm = MimeMagic.by_magic(file)
-    file = "Binary file not displayed" if mm.present? && (!mm.text? and mm.subtype != "pdf")
+    file = "Binary file not displayed" if mm.present? && (!mm.text? && (mm.subtype != "pdf"))
 
     unless PDF.pdf?(file)
       # begin
@@ -358,7 +355,9 @@ class SubmissionsController < ApplicationController
       begin
         codePath = @filename
         if Archive.archive?(@submission.handin_file_path)
-          # If the submission is an archive, write the open file's code to a temp file so we can pass it into ctags
+          # If the submission is an archive, write the open file's code
+          # to a temp file so we can pass it into ctags
+
           ctagFile = Tempfile.new(["autolab_ctag", File.extname(pathname)])
           ctagFile.write(file)
           ctagFile.close
@@ -366,20 +365,24 @@ class SubmissionsController < ApplicationController
         end
         # Special case -- we're using a CMU-specific language, and we need to
         # force the language interpretation
-        @ctags_json = if codePath.last(3) == ".c0" or codePath.last(3) == ".c1"
-                        `ctags --output-format=json --language-force=C --fields="Nnk" #{codePath}`.split("\n")
-                      else
-                        # General case -- language can be inferred from file extension
-                        `ctags --extras=+q --output-format=json --fields="Nnk" #{codePath}`.split("\n")
-                      end
+        @ctags_json =
+          if (codePath.last(3) == ".c0") || (codePath.last(3) == ".c1")
+            `ctags --output-format=json --language-force=C --fields="Nnk" #{codePath}`.split("\n")
+          else
+            # General case -- language can be inferred from file extension
+            `ctags --extras=+q --output-format=json --fields="Nnk" #{codePath}`.split("\n")
+          end
 
         @ctag_obj = []
         i = 0
         while i < @ctags_json.length
           obj_temp = JSON.parse(@ctags_json[i])
-          if (obj_temp["kind"] == "function" or obj_temp["kind"] == "method") && (@ctag_obj.select do |ctag|
-                                                                                    ctag["line"] == obj_temp["line"]
-                                                                                  end).empty?
+          if ((obj_temp["kind"] == "function") ||
+            (obj_temp["kind"] == "method")) &&
+             (@ctag_obj.select do |ctag|
+                ctag["line"] == obj_temp["line"]
+              end).empty?
+
             @ctag_obj.push(obj_temp)
           end
           i += 1
@@ -387,7 +390,9 @@ class SubmissionsController < ApplicationController
           next unless obj_temp["kind"] == "class"
 
           obj_temp = JSON.parse(@ctags_json[i])
-          while i + 1 < @ctags_json.length and (obj_temp["kind"] == "member" or obj_temp["kind"] == "method")
+          while (i + 1 < @ctags_json.length) &&
+                ((obj_temp["kind"] == "member") || (obj_temp["kind"] == "method"))
+
             obj_exists = @ctag_obj.select { |ctag| ctag["line"] == obj_temp["line"] }
             if obj_exists.empty?
               @ctag_obj.push(obj_temp)
@@ -403,25 +408,28 @@ class SubmissionsController < ApplicationController
         # The functions are in some arbitrary order, so sort them
         @ctag_obj = @ctag_obj.sort_by { |obj| obj["line"].to_i }
       rescue StandardError
-        puts("Ctags not installed or failed")
+        Rails.logger.error("Ctags not installed or failed")
       ensure
         ctagFile.unlink if defined?(ctagFile) && !ctagFile.nil?
       end
       # rescue
-      # flash[:error] = "Sorry, we could not display your file because it contains non-ASCII characters. Please remove these characters and resubmit your work."
+      # flash[:error] =
+      # "Sorry, we could not display your file because it contains non-ASCII characters.
+      # Please remove these characters and resubmit your work."
       # redirect_to(:back) && return
       # end
 
       begin
         # replace tabs with 4 spaces
-        (0...@data.length).each do |i|
-          @data[i][0].gsub!("\t", " " * 4)
+        (0...@data.length).each do |k|
+          @data[k][0].gsub!("\t", " " * 4)
         end
       rescue ArgumentError => e
         raise e unless e.message == "invalid byte sequence in UTF-8"
 
         flash[:error] =
-          "Sorry, we could not parse your file because it contains non-ASCII characters. Please download file to view the source."
+          "Sorry, we could not parse your file because it contains non-ASCII characters."\
+          " Please download file to view the source."
         redirect_to(:back) && return
       end
     end
@@ -458,14 +466,17 @@ class SubmissionsController < ApplicationController
     @problems.sort! { |a, b| a.id <=> b.id }
 
     @latestSubmissions = @assessment.assessment_user_data
-                                    .map { |aud| aud.latest_submission }
-                                    .select { |submission| !submission.nil? }
-                                    .sort_by { |submission| submission.course_user_datum.user.email }
+                                    .map(&:latest_submission)
+                                    .reject(&:nil?)
+                                    .sort_by{ |submission| submission.course_user_datum.user.email }
+
     @curSubmissionIndex = @latestSubmissions.index do |submission|
       submission.course_user_datum.user.email == @submission.course_user_datum.user.email
     end
     @prevSubmission = @curSubmissionIndex > 0 ? @latestSubmissions[@curSubmissionIndex - 1] : nil
-    @nextSubmission = @curSubmissionIndex < (@latestSubmissions.size - 1) ? @latestSubmissions[@curSubmissionIndex + 1] : nil
+    @nextSubmission = if @curSubmissionIndex < (@latestSubmissions.size - 1)
+                        @latestSubmissions[@curSubmissionIndex + 1]
+                      end
 
     # Adding allowing scores to be assessed by the view
     @scores = Score.where(submission_id: @submission.id)
