@@ -100,7 +100,6 @@ class OauthDeviceFlowRequest < ApplicationRecord
     req.errors[attr].first == "has already been taken"
   end
 
-  private_class_method :resolve
   private_class_method :gen_device_code
   private_class_method :gen_user_code
   private_class_method :uniqueness_failed
