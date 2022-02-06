@@ -10,9 +10,9 @@ class Extension < ApplicationRecord
   after_destroy :invalidate_cgdubs_for_assessments_after
 
   def days_or_infinite
-    if days.blank? && !infinite?
-      errors.add(:base, "Please enter days of extension, or mark as infinite.")
-    end
+    return unless days.blank? && !infinite?
+
+    errors.add(:base, "Please enter days of extension, or mark as infinite.")
   end
 
   def invalidate_cgdubs_for_assessments_after
