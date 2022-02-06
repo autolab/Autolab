@@ -36,11 +36,10 @@ class ExtensionsController < ApplicationController
     ext = @assessment.extensions.create(extension_params)
     if !ext.errors.empty?
       flash[:error] = ext.errors.full_messages[0]
-      redirect_to(action: :index) && return
     else
       flash[:success] = "Extension created successfully."
-      redirect_to(action: :index) && return
     end
+    redirect_to(action: :index) && return
   end
 
   action_auth_level :destroy, :instructor
