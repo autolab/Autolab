@@ -87,3 +87,47 @@ this may be an issue with using an incompatible version of MySQL. Try switching 
 
 #### Undefined method 'devise' for User
 You most likely missed the step of copying 'config/initializers/devise.rb.template' to 'config/initializers/devise.rb' and setting your secret key in the setup instructions.
+
+#### Suggested Development Configuration for config/database.yml
+
+**MySQL**  
+Change the <username> and <password> fields in config/database.yml to the username and password that has been set up for the mysql. For example if your username is `user1`, and your password is `123456`, then your yml would be
+
+    :::yml
+    development:
+        adapter: mysql2
+        database: autolab_development
+        pool: 5
+        username: user1
+        password: '123456'
+        socket: /var/run/mysqld/mysqld.sock
+        host: localhost
+        variables:
+            sql_mode: NO_ENGINE_SUBSTITUTION
+
+    test:
+        adapter: mysql2
+        database: autolab_test
+        pool: 5
+        username: user1
+        password: '123456'
+        socket: /var/run/mysqld/mysqld.sock
+        host: localhost
+        variables:
+            sql_mode: NO_ENGINE_SUBSTITUTION
+
+**SQLite**  
+Comment out the configurations meant for MySQL in config/database.yml, and insert the following
+
+    :::yml
+    development:
+        adapter: sqlite3
+        database: db/autolab_development
+        pool: 5
+        timeout: 5000
+
+    test:
+        adapter: sqlite3
+        database: db/autolab_test
+        pool: 5
+        timeout: 5000

@@ -10,7 +10,8 @@ class Score < ApplicationRecord
   after_destroy :update_individual_grade_watchlist_instances_if_submission_latest
 
   scope :on_latest_submissions, lambda {
-                                  where(submissions: { ignored: false }).joins(submission: :assessment_user_datum)
+                                  where(submissions: { ignored: false })
+                                    .joins(submission: :assessment_user_datum)
                                 }
 
   def self.for_course(course_id)
@@ -53,12 +54,12 @@ class Score < ApplicationRecord
              end
 
     # Some scores don't have submissions, probably if they're deleted ones
-    unless submission.nil?
-      COURSE_LOGGER.log("Score #{id} UPDATED for " \
-      "#{submission.course_user_datum.user.email} set to " \
-      "#{score} on #{submission.assessment.name}:#{problem.name} by" \
-      " #{setter}")
-    end
+    return if submission.nil?
+
+    COURSE_LOGGER.log("Score #{id} UPDATED for " \
+    "#{submission.course_user_datum.user.email} set to " \
+    "#{score} on #{submission.assessment.name}:#{problem.name} by" \
+    " #{setter}")
   end
 
   def update_individual_grade_watchlist_instances_if_submission_latest

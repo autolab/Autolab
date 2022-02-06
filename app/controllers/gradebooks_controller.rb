@@ -31,10 +31,10 @@ class GradebooksController < ApplicationController
       show_actions: permission
     }
 
-    unless @cud.has_auth_level?(:instructor) || @section == @cud.section
-      flash[:error] = "You can't view other section gradebooks."
-      redirect_to([@course]) && return
-    end
+    return if @cud.has_auth_level?(:instructor) || @section == @cud.section
+
+    flash[:error] = "You can't view other section gradebooks."
+    redirect_to([@course]) && return
   end
 
   action_auth_level :student, :student
@@ -108,8 +108,8 @@ class GradebooksController < ApplicationController
     end
   end
 
-  action_auth_level :bulkRelease, :instructor
-  def bulkRelease
+  action_auth_level :bulk_release, :instructor
+  def bulk_release
     @course.assessments.each do |assessment|
       assessment.problems.each do |problem|
         scores = problem.scores.where(released: false)

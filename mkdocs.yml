@@ -12,6 +12,7 @@ nav:
             - Mac OSX 10.11+: installation/osx.md
             - Troubleshooting: installation/troubleshoot.md
             - Mailing Setup: installation/mailing.md
+            - Github Integration Setup: installation/github_integration.md
         - Tango: installation/tango.md
         # - (Legacy) OneClick Install: installation/one-click.md
     - Getting Started:

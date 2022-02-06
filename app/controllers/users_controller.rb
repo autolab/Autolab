@@ -6,6 +6,8 @@ class UsersController < ApplicationController
   rescue_from ActionView::MissingTemplate do |_exception|
     redirect_to("/home/error_404")
   end
+  before_action :set_gh_oauth_client, only: [:github_oauth, :github_oauth_callback]
+  before_action :set_user, only: [:github_oauth, :github_revoke]
 
   # GET /users
   action_auth_level :index, :student
@@ -105,7 +107,7 @@ class UsersController < ApplicationController
       flash[:error] = "User creation failed" unless save_worked
     rescue StandardError => e
       error_message = e.message
-      flash[:error] = if error_message.include? "Duplicate entry" and error_message.include? "@"
+      flash[:error] = if error_message.include?("Duplicate entry") && error_message.include?("@")
                         "User with email #{@user.email} already exists"
                       else
                         "User creation failed"
@@ -195,6 +197,89 @@ class UsersController < ApplicationController
     redirect_to(users_path) && return
   end
 
+  action_auth_level :github_oauth, :student
+  def github_oauth
+    github_integration = GithubIntegration.find_by(user_id: @user.id)
+    state = SecureRandom.alphanumeric(128)
+    if github_integration.nil?
+      # rubocop:disable Lint/UselessAssignment
+      github_integration = GithubIntegration.create!(oauth_state: state, user: @user)
+      # rubocop:enable Lint/UselessAssignment
+    else
+      github_integration.update!(oauth_state: state)
+    end
+    # Use https, unless explicitly specified not to
+    prefix = "https://"
+    if ENV["DOCKER_SSL"] == "false"
+      prefix = "http://"
+    end
+
+    begin
+      hostname = if Rails.env.development?
+                   request.base_url
+                 else
+                   prefix + request.host
+                 end
+    rescue StandardError
+      hostname = `hostname`
+      hostname = prefix + hostname.strip
+    end
+
+    authorize_url_params = {
+      redirect_uri: "#{hostname}/users/github_oauth_callback",
+      scope: "repo",
+      state: state
+    }
+    redirect_to @gh_client.auth_code.authorize_url(authorize_url_params)
+  end
+
+  action_auth_level :github_oauth_callback, :student
+  def github_oauth_callback
+    if params["error"]
+      flash[:error] = "User cancelled OAuth"
+      redirect_to(root_path) && return
+    end
+
+    # If state not recognized, this request may not have been generated from Autolab
+    if params["state"].blank?
+      flash[:error] = "Invalid callback"
+      redirect_to(root_path) && return
+    end
+
+    github_integration = GithubIntegration.find_by(oauth_state: params["state"])
+    if github_integration.nil?
+      flash[:error] = "Error with Github OAuth (invalid state), please try again."
+      redirect_to(root_path) && return
+    end
+
+    begin
+      # Results in exception if invalid
+      token = @gh_client.auth_code.get_token(params["code"])
+    rescue StandardError
+      flash[:error] = "Error with Github OAuth (invalid code), please try again."
+      github_integration.update!(oauth_state: nil)
+      (redirect_to user_path(id: oauth_user.id)) && return
+    end
+
+    access_token = token.to_hash[:access_token]
+    github_integration.update!(access_token: access_token, oauth_state: nil)
+    flash[:success] = "Successfully connected with Github."
+    redirect_to(root_path) && return
+  end
+
+  action_auth_level :github_revoke, :student
+  def github_revoke
+    gh_integration = @user.github_integration
+    if gh_integration
+      gh_integration.revoke
+      gh_integration.destroy
+      flash[:success] = "Successfully disconnected from Github"
+    else
+      flash[:info] = "Github not connected, revocation unnecessary"
+    end
+    (redirect_to user_path(id: @user.id)) && return
+  end
+
 private
 
   def new_user_params
@@ -212,5 +297,24 @@ private
   # user params that admin is allowed to edit
   def admin_user_params
     params.require(:user).permit(:first_name, :last_name, :administrator)
+  end
+
+  def set_gh_oauth_client
+    gh_options = {
+      authorize_url: "https://github.com/login/oauth/authorize",
+      token_url: "https://github.com/login/oauth/access_token",
+      site: "https://github.com",
+    }
+    @gh_client = OAuth2::Client.new(Rails.configuration.x.github.client_id,
+                                    Rails.configuration.x.github.client_secret,
+                                    gh_options)
+  end
+
+  def set_user
+    @user = User.find(params[:id])
+    return unless @user.nil?
+
+    flash[:error] = "User doesn't exist."
+    redirect_to(user_path) && return
   end
 end

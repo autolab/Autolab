@@ -29,6 +29,12 @@ Rails/InverseOf:
 Rails/HasManyOrHasOneDependent:
   Enabled: false
 
+Rails/LexicallyScopedActionFilter:
+  Enabled: false
+
+Rails/Blank:
+  Enabled: false
+
 Layout/LineLength:
   Max: 100
   # To make it possible to copy or click on URIs in the code, we allow lines
@@ -71,6 +77,24 @@ Naming/VariableName:
   Enabled: false
 
 Naming/AccessorMethodName:
+  Enabled: false
+
+Naming/MethodName:
+  Enabled: false
+
+Naming/PredicateName:
+  Enabled: false
+  
+Naming/MethodName:
+  Enabled: false
+
+Naming/BlockParameterName:
+  Enabled: false
+
+Naming/MethodParameterName:
+  Enabled: false
+
+Naming/MethodParameterName:
   Enabled: false
 
 Style/OptionalBooleanParameter:
@@ -219,6 +243,9 @@ Lint/AmbiguousRegexpLiteral:
 Lint/AssignmentInCondition:
   Enabled: false
   StyleGuide: https://relaxed.ruby.style/#lintassignmentincondition
+
+Lint/NonLocalExitFromIterator:
+  Enabled: false
 
 Metrics:
   Enabled: false

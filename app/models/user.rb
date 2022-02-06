@@ -14,6 +14,7 @@ class User < ApplicationRecord
   has_many :course_user_data, dependent: :destroy
   has_many :courses, through: :course_user_data
   has_many :authentications, dependent: :destroy
+  has_one :github_integration
 
   trim_field :school
   validates :first_name, :last_name, :email, presence: true
@@ -140,8 +141,8 @@ class User < ApplicationRecord
     user.password_confirmation = temp_pass
     user.skip_confirmation!
 
-    Rails.logger.debug("user email: ", user.email)
-    Rails.logger.debug("user pswd: ", user.password)
+    Rails.logger.debug("user email: #{user.email}")
+    Rails.logger.debug("user pswd: #{user.password}")
 
     user.save!
     user
