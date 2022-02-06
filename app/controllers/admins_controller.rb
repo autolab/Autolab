@@ -32,5 +32,4 @@ class AdminsController < ApplicationController
   def github_integration
     @github_integration = GithubIntegration.check_github_authorization
   end
-
 end
