@@ -38,7 +38,9 @@ class AttachmentsController < ApplicationController
   def show
     filename = Rails.root.join("attachments", @attachment.filename)
     unless File.exist?(filename)
-      COURSE_LOGGER.log("Cannot find the file '#{@attachment.filename}' for attachment #{@attachment.name}")
+      COURSE_LOGGER.log("Cannot find the file '#{@attachment.filename}' for"\
+                        " attachment #{@attachment.name}")
+
       flash[:error] = "Error loading #{@attachment.name} from #{@attachment.filename}"
       redirect_to([@course, :attachments]) && return
     end
@@ -70,9 +72,9 @@ class AttachmentsController < ApplicationController
 
       if @is_assessment
         redirect_to([:edit, @course, @assessment, @attachment]) && return
-      else
-        redirect_to([:edit, @course, @attachment]) && return
       end
+
+      redirect_to([:edit, @course, @attachment]) && return
     end
   end
 
@@ -96,19 +98,19 @@ private
                     @course.attachments.find(params[:id])
                   end
 
-    if @attachment.nil?
-      COURSE_LOGGER.log("Cannot find attachment with id: #{params[:id]}")
-      flash[:error] = "Could not find Attachment \# #{params[:id]}"
-      redirect_to_attachment_list && return
-    end
+    return unless @attachment.nil?
+
+    COURSE_LOGGER.log("Cannot find attachment with id: #{params[:id]}")
+    flash[:error] = "Could not find Attachment \# #{params[:id]}"
+    redirect_to_attachment_list && return
   end
 
   def redirect_to_attachment_list
     if @is_assessment
-      redirect_to([@course, @assessment]) && return
-    else
-      redirect_to([@course, :attachments]) && return
+      (redirect_to([@course, @assessment]) && return)
     end
+
+    redirect_to([@course, :attachments]) && return
   end
 
   def add_attachments_breadcrumb

@@ -42,8 +42,7 @@ class HomeController < ApplicationController
     # allows user to be an instructor for demo course only
     cud.instructor = params[:isInstructor] if course_id == PUBLIC_COURSE_ID
     if cud.save
-      flash[:success] = "You have successfully registered for " +
-                        @course.full_name
+      flash[:success] = "You have successfully registered for #{@course.full_name}"
       redirect_to(controller: "course", course: @course.name,
                   action: "index") && return
     else
