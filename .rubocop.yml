@@ -84,6 +84,15 @@ Naming/MethodName:
 
 Naming/PredicateName:
   Enabled: false
+  
+Naming/MethodName:
+  Enabled: false
+
+Naming/BlockParameterName:
+  Enabled: false
+
+Naming/MethodParameterName:
+  Enabled: false
 
 Naming/MethodParameterName:
   Enabled: false
