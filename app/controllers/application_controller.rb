@@ -50,7 +50,10 @@ class ApplicationController < ActionController::Base
     require(path)
   end
 
+  # rubocop:disable Style/ClassVars
   @@global_whitelist = {}
+  # rubocop:enable Style/ClassVars
+
   def self.action_auth_level(action, level)
     raise ArgumentError, "The action must be specified." if action.nil?
     raise ArgumentError, "The action must be symbol." unless action.is_a? Symbol
@@ -144,7 +147,7 @@ protected
                   (params[:controller] == "courses" ? params[:name] : nil)
     @course = Course.find_by(name: course_name) if course_name
 
-    render file: "#{Rails.root}/public/404.html", status: :not_found and return unless @course
+    render file: Rails.root.join("public/404.html"), status: :not_found and return unless @course
 
     # set course logger
     begin
@@ -260,9 +263,9 @@ protected
   end
 
   def run_scheduler
-    actions = Scheduler.where("next < ?", Time.now)
+    actions = Scheduler.where("next < ?", Time.current)
     actions.each do |action|
-      action.next = Time.now + action.interval
+      action.next = Time.current + action.interval
       action.save
       Rails.logger.info("Executing #{Rails.root.join(action.action)}")
       begin
