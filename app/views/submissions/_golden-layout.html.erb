@@ -38,7 +38,7 @@
               },
               {
                 type: "component",
-                componentName: "annotation",
+                componentName: "grades",
                 title: "Grades",
               },
             ],
@@ -66,8 +66,8 @@
   myLayout.registerComponent("annotation_pane", function (container, state) {
       container.getElement().html("<%= j render(:partial => 'annotation_pane') %>");
   });
-  myLayout.registerComponent("annotation", function (container, state) {
-      container.getElement().html("<%= j render(:partial => 'annotation') %>");
+  myLayout.registerComponent("grades", function (container, state) {
+      container.getElement().html("<%= j render(:partial => 'grades') %>");
   });
 
   myLayout.init();
