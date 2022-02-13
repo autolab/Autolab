@@ -4,8 +4,10 @@ $(document).ready(function () {
   $('.skip-main').remove(); // removes skip main anchor tag
   $(".collapsible-body").show(); //expands all collapsible initially
   $('.collapsible').collapsible();
+  console.log("hi");
   //get line number in URL, if it exists
   var urlParams = new URLSearchParams(location.search);
+
   if (urlParams.has("line")) {
     scrollToLine(urlParams.get("line"));
   }
@@ -373,7 +375,6 @@ function attachEvents() {
   highlightLines(status);
 
   $(".add-button").on("click", function (e) {
-
     e.preventDefault();
     var line = $(this).parent().parent().parent();
     var annotationContainer = line.data("lineId");
