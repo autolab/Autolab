@@ -14,7 +14,7 @@ class ScoresController < ApplicationController
   def create
     score = Score.new
     respond_to do |format|
-      if score.update_attributes(create_params)
+      if score.update(create_params)
         format.js { render json: score.to_json(include: :grader) }
       else
         format.js { head :bad_request }
@@ -28,7 +28,7 @@ class ScoresController < ApplicationController
   action_auth_level :update, :course_assistant
   def update
     respond_to do |format|
-      if @score && @score.update_attributes(update_params)
+      if @score&.update(update_params)
         format.js { render json: @score.to_json(include: :grader) }
       else
         format.js { head :bad_request }

@@ -24,13 +24,15 @@ class OauthDeviceFlowRequest < ApplicationRecord
     (0..2).each do |_iter|
       req = new(application_id: app.id,
                 scopes: app.scopes,
-                requested_at: Time.now,
+                requested_at: Time.current,
                 device_code: device_code,
                 user_code: user_code)
-      if req.save
-        # success!
-        return req
-      elsif uniqueness_failed(req, :device_code)
+
+      # success
+      return req if req.save
+
+      # check failure
+      if uniqueness_failed(req, :device_code)
         device_code = gen_device_code
       elsif uniqueness_failed(req, :user_code)
         user_code = gen_user_code
@@ -76,14 +78,12 @@ class OauthDeviceFlowRequest < ApplicationRecord
     new_code
   end
 
-private
-
   def resolve(user_id, result)
     return false if is_resolved
 
     self.resource_owner_id = user_id
     self.resolution = result
-    self.resolved_at = Time.now
+    self.resolved_at = Time.current
     save
   end
 
@@ -99,4 +99,8 @@ private
   def self.uniqueness_failed(req, attr)
     req.errors[attr].first == "has already been taken"
   end
+
+  private_class_method :gen_device_code
+  private_class_method :gen_user_code
+  private_class_method :uniqueness_failed
 end

@@ -85,13 +85,10 @@ Naming/MethodName:
 Naming/PredicateName:
   Enabled: false
   
-Naming/MethodName:
+Naming/VariableNumber:
   Enabled: false
 
 Naming/BlockParameterName:
-  Enabled: false
-
-Naming/MethodParameterName:
   Enabled: false
 
 Naming/MethodParameterName:
