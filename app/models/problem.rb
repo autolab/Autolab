@@ -14,12 +14,6 @@ class Problem < ApplicationRecord
   validates_associated :assessment
 
   after_commit -> { assessment.dump_yaml }
-  after_save :update_course_grade_watchlist_instances_if_past_end_at,
-             if: :saved_change_to_max_score?
-  after_create :update_course_grade_watchlist_instances_if_past_end_at
-  after_destroy :update_course_grade_watchlist_instances_if_past_end_at
-
-  delegate :update_course_grade_watchlist_instances_if_past_end_at, to: :assessment
 
   SERIALIZABLE = Set.new %w[name description max_score optional]
   def serialize

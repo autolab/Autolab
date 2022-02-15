@@ -654,7 +654,6 @@ class AssessmentsController < ApplicationController
     num_released = releaseMatchingGrades { |_| true }
 
     if num_released > 0
-      @course.update_course_no_submissions_watchlist_instances
       flash[:success] =
         format("%<num_released>d %<plurality>s released.",
                num_released: num_released,
@@ -680,7 +679,6 @@ class AssessmentsController < ApplicationController
     end
 
     if num_released > 0
-      @course.update_course_no_submissions_watchlist_instances(@cud)
       flash[:success] =
         format("%<num_released>d %<plurality>s released.",
                num_released: num_released,
