@@ -29,8 +29,6 @@ class Course < ApplicationRecord
   accepts_nested_attributes_for :late_penalty, :version_penalty
 
   before_save :cgdub_dependencies_updated, if: :grace_days_or_late_slack_changed?
-  after_save :update_course_gdu_watchlist_instances, if: :saved_change_to_grace_days_or_late_slack?
-  after_save :update_course_grade_watchlist_instances, if: :saved_change_to_grade_related_fields?
   before_create :cgdub_dependencies_updated
   after_create :init_course_folder
 
@@ -204,28 +202,6 @@ class Course < ApplicationRecord
   def invalidate_cgdubs
     cgdub_dependencies_updated
     save!
-
-    update_course_gdu_watchlist_instances
-  end
-
-  # Update the grace day usage condition watchlist instances for each course user datum
-  # This is called when:
-  # - Grace days or late slack have been changed and the record is saved
-  # - invalidate_cgdubs is somehow incurred
-  def update_course_gdu_watchlist_instances
-    WatchlistInstance.update_course_gdu_watchlist_instances(self)
-  end
-
-  # Update the grade related condition watchlist instances for each course user datum
-  # This is called when:
-  # - Fields related to grades are changed in the course setting
-  # - Assessment setting is changed and assessment has passed end_at
-  def update_course_grade_watchlist_instances
-    WatchlistInstance.update_course_grade_watchlist_instances(self)
-  end
-
-  def update_course_no_submissions_watchlist_instances(course_assistant = nil)
-    WatchlistInstance.update_course_no_submissions_watchlist_instances(self, course_assistant)
   end
 
   # NOTE: Needs to be updated as new items are cached

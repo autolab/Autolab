@@ -41,10 +41,7 @@ class Assessment < ApplicationRecord
   after_commit :dump_yaml
   after_commit :dump_embedded_quiz, if: :saved_change_to_embedded_quiz_form_data?
   after_save :invalidate_course_cgdubs, if: :saved_change_to_due_at_or_max_grace_days?
-  after_save :update_course_grade_watchlist_instances_if_past_end_at,
-             if: :saved_change_to_grade_related_fields?
   after_create :create_AUDs_modulo_callbacks
-  after_destroy :update_course_grade_watchlist_instances_if_past_end_at
 
   # Constants
   ORDERING = "due_at ASC, name ASC".freeze
@@ -348,10 +345,6 @@ class Assessment < ApplicationRecord
   # to be able to calculate total score for an assessment from another model
   def default_total_score
     problems.sum :max_score
-  end
-
-  def update_course_grade_watchlist_instances_if_past_end_at
-    course.update_course_grade_watchlist_instances if Time.current >= end_at
   end
 
 private
