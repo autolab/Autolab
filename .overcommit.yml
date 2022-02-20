@@ -1,3 +1,5 @@
+# run `overcommit --install && overcommit --sign` under Autolab/ before using pre-commit hook for the first time!
+
 # Use this file to configure the Overcommit hooks you wish to use. This will
 # extend the default configuration defined in:
 # https://github.com/sds/overcommit/blob/master/config/default.yml
