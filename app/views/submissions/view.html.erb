@@ -54,7 +54,7 @@
     hljs.initHighlightingOnLoad();
     PDFJS.workerSrc = "<%= asset_url 'pdf.worker.js' %>";
   </script>
-  <%= render :partial => "golden-layout" %>
+  <%= render partial: "golden-layout" %>
   <%= javascript_include_tag "annotations.js" %>
   <%= javascript_include_tag "submission_view.js" %>
   <script type="text/javascript">
@@ -115,19 +115,6 @@
 <% end %>
 
 <div class="row" id="speedgrader">
-  <%# If there are multiple files, we have a header position and need a file tree %>
-  <% if (params[:header_position] || (!@ctag_obj.nil? && !@ctag_obj.empty?)) %>
-    <div class="col s2">
-      <% if (params[:header_position]) %>
-        <%= render "file_tree" %>
-      <% end %>
-      <div id="symbol-tree-container">
-      <% unless @ctag_obj.nil? || @ctag_obj.empty? %>
-        <%= render "code_symbol_tree", ctag_obj: @ctag_obj %>
-      <% end %>
-      </div>
-    </div>
-  <% end %>
 </div>
 
 <%= render "annotation" %>
