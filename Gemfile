@@ -121,6 +121,9 @@ group :development do
   # static code analyzer
   gem 'rubocop', require: false
 
+  # pre-commit hook for rubocop
+  gem overcommit 
+
   # documentation generator
   gem 'yard'
 
