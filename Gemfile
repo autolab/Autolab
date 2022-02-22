@@ -122,7 +122,7 @@ group :development do
   gem 'rubocop', require: false
 
   # pre-commit hook for rubocop
-  gem overcommit 
+  gem 'overcommit' 
 
   # documentation generator
   gem 'yard'
