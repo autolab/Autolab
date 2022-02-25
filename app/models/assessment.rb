@@ -440,7 +440,7 @@ private
 
   def deserialize(s)
     self.due_at = self.end_at = self.visible_at =
-                    self.start_at = self.grading_deadline = Time.current
+                    self.start_at = self.grading_deadline = Time.current + 1.day
     self.quiz = false
     self.quizData = ""
     update!(s["general"])
