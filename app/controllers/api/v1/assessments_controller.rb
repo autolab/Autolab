@@ -5,6 +5,7 @@ class Api::V1::AssessmentsController < Api::V1::BaseApiController
 
   before_action -> {require_privilege :user_courses}, only: [:index, :problems, :writeup, :handout]
   before_action -> {require_privilege :user_submit}, only: [:submit]
+  before_action -> {require_privilege :instructor_all}, only: [:set_group_size]
 
   before_action :set_assessment, except: [:index]
 
@@ -185,6 +186,13 @@ class Api::V1::AssessmentsController < Api::V1::BaseApiController
     end
 
     respond_with_hash({version: submissions[0].version, filename: submissions[0].filename})
+  end
+
+  def set_group_size
+    require_params([:group_size])
+    @assessment.group_size = params[:group_size].to_i
+    @assessment.save!
+    respond_with_hash({group_size: @assessment.group_size})
   end
 
 end
