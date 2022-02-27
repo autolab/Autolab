@@ -55,8 +55,6 @@
     PDFJS.workerSrc = "<%= asset_url 'pdf.worker.js' %>";
   </script>
   <%= render partial: "golden-layout" %>
-  <%= javascript_include_tag "annotations.js" %>
-  <%= javascript_include_tag "submission_view.js" %>
   <script type="text/javascript">
     setActiveFilePos(currentHeaderPos)
     initializeAnnotationsForCode();
