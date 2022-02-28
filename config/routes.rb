@@ -23,7 +23,7 @@ Rails.application.routes.draw do
           post "submit"
           post "set_group_size"
           
-          resources :groups, only: [:index, :create]
+          resources :groups, only: [:index, :create, :destroy]
 
           resources :submissions, param: :version, only: [:index] do
             get "feedback"
