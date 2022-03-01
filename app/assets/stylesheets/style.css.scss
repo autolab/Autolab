@@ -651,6 +651,10 @@ div.field_with_errors {
   display: none;
 }
 
+#sorted_cuds, #unsorted_cuds {
+  margin-top: 10px;
+}
+
 /* TABLE STYLES.  Styles for the multiple tables that we have for some reason */
 /* Pretty Border Tables. I vote we make this the generic table style. */
 table.prettyBorder,
