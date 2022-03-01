@@ -236,11 +236,11 @@ class AssessmentsController < ApplicationController
                                     "handin.c"
                                   end
 
-    @assessment.visible_at = Time.current
-    @assessment.start_at = Time.current
-    @assessment.due_at = Time.current
-    @assessment.end_at = Time.current
-    @assessment.grading_deadline = Time.current
+    @assessment.visible_at = Time.current + 1.day
+    @assessment.start_at = Time.current + 1.day
+    @assessment.due_at = Time.current + 1.day
+    @assessment.end_at = Time.current + 1.day
+    @assessment.grading_deadline = Time.current + 1.day
     @assessment.quiz = false
     @assessment.quizData = ""
     @assessment.max_submissions = params.include?(:max_submissions) ? params[:max_submissions] : -1
