@@ -193,6 +193,8 @@ GEM
       railties (>= 3.1)
     jwt (2.3.0)
     libv8-node (15.14.0.1)
+    libv8-node (15.14.0.1-x86_64-darwin-19)
+    libv8-node (15.14.0.1-x86_64-linux)
     lockbox (0.6.8)
     loofah (2.14.0)
       crass (~> 1.0.2)
@@ -229,6 +231,10 @@ GEM
     nio4r (2.5.8)
     nokogiri (1.13.3)
       mini_portile2 (~> 2.8.0)
+      racc (~> 1.4)
+    nokogiri (1.13.3-x86_64-darwin)
+      racc (~> 1.4)
+    nokogiri (1.13.3-x86_64-linux)
       racc (~> 1.4)
     oauth2 (1.4.9)
       faraday (>= 0.17.3, < 3.0)
@@ -415,6 +421,7 @@ GEM
 PLATFORMS
   ruby
   x86_64-darwin-19
+  x86_64-linux
 
 DEPENDENCIES
   better_errors
@@ -481,4 +488,4 @@ RUBY VERSION
    ruby 2.6.8p205
 
 BUNDLED WITH
-   2.3.6
+   2.3.8
