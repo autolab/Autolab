@@ -4,10 +4,10 @@ $(document).ready(function () {
   $('.skip-main').remove(); // removes skip main anchor tag
   $(".collapsible-body").show(); //expands all collapsible initially
   $('.collapsible').collapsible();
-  console.log("annotations loaded");
   //get line number in URL, if it exists
   var urlParams = new URLSearchParams(location.search);
-
+  
+  console.log("annotations loaded");
   if (urlParams.has("line")) {
     scrollToLine(urlParams.get("line"));
   }

@@ -1,19 +1,21 @@
 <script>
   let observer = new MutationObserver((mutations) => {
     mutations.forEach((mutation) => {
-      if (!mutation.addedNodes || mutation.addedNodes.length == 0) return
+      if (!mutation.addedNodes
+          || mutation.addedNodes.length == 0
+          || !mutation.addedNodes[0].className) return
 
-      if (mutation.addedNodes[0].className.includes("lm_goldenlayout")) {
-        $('#hidden-js').html("<%= j javascript_include_tag("annotations.js") %><%= j javascript_include_tag("submission_view.js") %>")
-        console.log(mutation.addedNodes.length);
+      var container_divs = Array.from(mutation.addedNodes)
+                                .filter(node => node.className 
+                                             && node.className.includes("lm_item_container"));
+      if (container_divs.length > 0) {
+        $('body').append("<%= j render(:partial => 'annotations_js') %>");
       }
     })
   })
 
   observer.observe($('#speedgrader')[0], {
-      childList: true
-    , attributes: false
-    , characterData: false
+      childList: true, attributes: false, characterData: false, subtree: true
   })
   var fileComponents = [];
   <% if (params[:header_position] || (!@ctag_obj.nil? && !@ctag_obj.empty?)) %>
@@ -55,6 +57,10 @@
             componentName: "grades",
             title: "Grades",
           },
+          // {
+          //   type: "component",
+          //   componentName: "js",
+          // },
         ],
       },
     ];
@@ -94,8 +100,10 @@
   myLayout.registerComponent("grades", function (container, state) {
       container.getElement().html("<%= j render(:partial => 'grades') %>");
   });
+  // myLayout.registerComponent("js", function(container, state) {
+  //     // container.getElement().html("<%= j render(:partial => 'annotations_js') %>");
+  //     document.body.appendChild("<%= j render(:partial => 'annotations_js') %>");
+  // });
   myLayout.init();
 
 </script>
-<div id="hidden-js" style="display: none">
-</div>
