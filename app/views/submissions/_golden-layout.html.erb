@@ -1,21 +1,12 @@
 <script>
   let observer = new MutationObserver((mutations) => {
     mutations.forEach((mutation) => {
-      if (!mutation.addedNodes
-          || mutation.addedNodes.length == 0
-          || !mutation.addedNodes[0].className) return
-
-      var container_divs = Array.from(mutation.addedNodes)
-                                .filter(node => node.className 
-                                             && node.className.includes("lm_item_container"));
-      if (container_divs.length > 0) {
         $('body').append("<%= j render(:partial => 'annotations_js') %>");
-      }
     })
   })
 
   observer.observe($('#speedgrader')[0], {
-      childList: true, attributes: false, characterData: false, subtree: true
+      childList: true, attributes: false, characterData: false
   })
   var fileComponents = [];
   <% if (params[:header_position] || (!@ctag_obj.nil? && !@ctag_obj.empty?)) %>
