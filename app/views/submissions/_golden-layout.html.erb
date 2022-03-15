@@ -1,14 +1,4 @@
 <script>
-  // let observer = new MutationObserver((mutations) => {
-  //   mutations.forEach((mutation) => {
-  //       $('body').append("<%= j render(:partial => 'annotations_js') %>");
-  //   })
-  // })
-
-  // observer.observe($('#speedgrader')[0], {
-  //     childList: true, attributes: false, characterData: false
-  // })
-
   var fileComponents = [];
   <% if (params[:header_position] || (!@ctag_obj.nil? && !@ctag_obj.empty?)) %>
       <% if (params[:header_position]) %>
@@ -69,8 +59,6 @@
   };
 
   var myLayout = new GoldenLayout(config, "#speedgrader");
-  
-  // myLayout._isFullPage = true;
 
   myLayout.registerComponent("file_tree", function (container, state) {
       container.getElement().html("<%= j render(:partial => 'file_tree') %>");
@@ -87,10 +75,7 @@
   myLayout.registerComponent("grades", function (container, state) {
       container.getElement().html("<%= j render(:partial => 'grades') %>");
   });
-  // myLayout.registerComponent("js", function(container, state) {
-  //     // container.getElement().html("<%= j render(:partial => 'annotations_js') %>");
-  //     document.body.appendChild("<%= j render(:partial => 'annotations_js') %>");
-  // });
+
   myLayout.init();
 
   // figure out how many components are loaded in the layout
@@ -115,6 +100,11 @@
     componentsLoaded += 1;
     if (componentsLoaded === numComponents)
       $('body').append("<%= j render(:partial => 'annotations_js') %>");
-  })
+  });
+
+
+  $(window).resize(function () {
+    myLayout.updateSize(document.body.clientWidth - $.position.scrollbarWidth(), myLayout.height);
+  });
 
 </script>
