@@ -327,6 +327,10 @@ GEM
       unicode-display_width (>= 1.4.0, < 3.0)
     rubocop-ast (1.13.0)
       parser (>= 3.0.1.1)
+    rubocop-rails (2.14.0)
+      activesupport (>= 4.2.0)
+      rack (>= 1.1)
+      rubocop (>= 1.7.0, < 2.0)
     ruby-progressbar (1.11.0)
     ruby-rc4 (0.1.5)
     ruby2_keywords (0.0.5)
@@ -439,7 +443,7 @@ DEPENDENCIES
   rails (= 5.2.0)
   rake (>= 10.3.2)
   rspec-rails (>= 3.5.0)
-  rubocop
+  rubocop-rails
   rubyzip
   sass-rails (>= 4.0.3)
   sdoc (>= 0.4.0)
@@ -457,4 +461,4 @@ RUBY VERSION
    ruby 2.6.8p205
 
 BUNDLED WITH
-   2.2.31
+   2.3.8

@@ -12,19 +12,21 @@ class Attachment < ApplicationRecord
   belongs_to :assessment
 
   ALLOWED_MIMES = [
-      "application/pdf",
-      "application/x-tar",
-      "application/zip",
-      "application/gzip",
-      "application/x-7z-compressed",
-      "application/vnd.rar",
-      "application/msword",
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-  ]
+    "application/pdf",
+    "application/x-tar",
+    "application/zip",
+    "application/gzip",
+    "application/x-7z-compressed",
+    "application/vnd.rar",
+    "application/msword",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  ].freeze
 
   def file=(upload)
-    if not validate_mime(upload.content_type)
-        raise "Only the following attachment types allowed: plaintext files (including code), PDF, .doc, .docx, most compressed archives (.tar, .zip, .gzip, .7z). Received #{upload.content_type}"
+    unless validate_mime(upload.content_type)
+      raise "Only the following attachment types allowed: "\
+      "plaintext files (including code), PDF, .doc, .docx, most compressed "\
+      "archives (.tar, .zip, .gzip, .7z). Received #{upload.content_type}"
     end
     directory = "attachments"
     filename = File.basename(upload.original_filename)
@@ -52,6 +54,6 @@ class Attachment < ApplicationRecord
   # Whitelist allowed attachments
   #
   def validate_mime(content_type)
-    return (ALLOWED_MIMES.include?(content_type) or content_type.starts_with?("text/"))
+    ALLOWED_MIMES.include?(content_type) or content_type.starts_with?("text/")
   end
 end
