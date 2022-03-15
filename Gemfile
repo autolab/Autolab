@@ -121,15 +121,15 @@ group :development do
   # pre-commit hook for rubocop
   gem 'overcommit' 
 
+  # static code analyzer
+  gem 'rubocop-rails', require: false
+
   # documentation generator
   gem 'yard'
 
   # sqlite3 adapter
   gem 'sqlite3', '~> 1.3.6'
 end
-
-# static code analyzer
-gem 'rubocop-rails', require: false
 
 # Also install sqlite3 for docker installations
 if ENV['DEPLOY_METHOD'] == "docker"
