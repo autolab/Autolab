@@ -53,7 +53,16 @@ class AttachmentsController < ApplicationController
 
   action_auth_level :update, :instructor
   def update
-    if @attachment.update(attachment_params)
+    begin
+      attachment_update_status = @attachment.update(attachment_params)
+    rescue StandardError => error_msg
+      flash[:error] = error_msg
+      COURSE_LOGGER.log("Disallowed filetype for attachment: #{error_msg}")
+      redirect_to_attachment_list
+      return
+    end
+
+    if attachment_update_status
       # is successful
       flash[:success] = "Attachment updated"
       redirect_to_attachment_list && return
