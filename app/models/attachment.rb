@@ -12,6 +12,9 @@ class Attachment < ApplicationRecord
   belongs_to :assessment
 
   def file=(upload)
+    if not validate_mime(upload.content_type):
+        raise "Only the following attachment types allowed: plaintext, PDF, .doc, most compressed archives (.tar, .zip, .gzip, .7z)"
+    end
     directory = "attachments"
     filename = File.basename(upload.original_filename)
     dir_path = Rails.root.join(directory)
@@ -32,5 +35,25 @@ class Attachment < ApplicationRecord
 
   def after_create
     COURSE_LOGGER.log("Created Attachment #{id}:#{filename} (#{mime_type}) as \"#{name}\")")
+  end
+
+  ##
+  # Whitelist allowed attachments
+  #
+  def validate_mime(content_type)
+    p "Received content type:"
+    p content_type
+    return content_type in [
+        "text/plain", 
+        "text/csv", 
+        "application/pdf", 
+        "application/x-tar", 
+        "application/zip", 
+        "application/gzip", 
+        "application/x-7z-compressed", 
+        "application/vnd.rar",
+        "application/msword", 
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ]
   end
 end
