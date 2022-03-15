@@ -1,13 +1,14 @@
 <script>
-  let observer = new MutationObserver((mutations) => {
-    mutations.forEach((mutation) => {
-        $('body').append("<%= j render(:partial => 'annotations_js') %>");
-    })
-  })
+  // let observer = new MutationObserver((mutations) => {
+  //   mutations.forEach((mutation) => {
+  //       $('body').append("<%= j render(:partial => 'annotations_js') %>");
+  //   })
+  // })
 
-  observer.observe($('#speedgrader')[0], {
-      childList: true, attributes: false, characterData: false
-  })
+  // observer.observe($('#speedgrader')[0], {
+  //     childList: true, attributes: false, characterData: false
+  // })
+
   var fileComponents = [];
   <% if (params[:header_position] || (!@ctag_obj.nil? && !@ctag_obj.empty?)) %>
       <% if (params[:header_position]) %>
@@ -48,10 +49,6 @@
             componentName: "grades",
             title: "Grades",
           },
-          // {
-          //   type: "component",
-          //   componentName: "js",
-          // },
         ],
       },
     ];
@@ -71,10 +68,9 @@
     ],
   };
 
-  console.log("golden layout");
-
   var myLayout = new GoldenLayout(config, "#speedgrader");
-  myLayout._isFullPage = true;
+  
+  // myLayout._isFullPage = true;
 
   myLayout.registerComponent("file_tree", function (container, state) {
       container.getElement().html("<%= j render(:partial => 'file_tree') %>");
@@ -96,5 +92,29 @@
   //     document.body.appendChild("<%= j render(:partial => 'annotations_js') %>");
   // });
   myLayout.init();
+
+  // figure out how many components are loaded in the layout
+  function countComponents (content) {
+    var numComponents = 0;
+    for (var i = 0; i < content.length; i++) {
+      var item = content[i];
+      if (item.type === "component") {
+        numComponents += 1;
+      } else if (item.content) {
+        numComponents += countComponents(item.content);
+      }
+    }
+    return numComponents;
+  }
+
+  var numComponents = countComponents(content);
+  var componentsLoaded = 0;
+
+  myLayout.on('componentCreated', function() {
+    // if all components have been loaded, load the annotations js files
+    componentsLoaded += 1;
+    if (componentsLoaded === numComponents)
+      $('body').append("<%= j render(:partial => 'annotations_js') %>");
+  })
 
 </script>
