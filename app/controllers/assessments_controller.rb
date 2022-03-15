@@ -231,7 +231,7 @@ class AssessmentsController < ApplicationController
     @assessment.handin_directory = "handin"
 
     @assessment.handin_filename = if @assessment.github_submission_enabled
-                                    "handin.tar"
+                                    "handin.tgz"
                                   else
                                     "handin.c"
                                   end
