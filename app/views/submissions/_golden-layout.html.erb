@@ -32,7 +32,7 @@
             type: "component",
             componentName: "annotation_pane",
             title: "Annotations",
-            height: 57,
+            height: 50,
           },
           {
             type: "component",
@@ -73,7 +73,7 @@
       container.getElement().html("<%= j render(:partial => 'annotation_pane') %>");
   });
   myLayout.registerComponent("grades", function (container, state) {
-      container.getElement().html("<%= j render(:partial => 'grades') %>");
+    container.getElement().html("<%= j render(:partial => 'grades') %>");
   });
 
   myLayout.init();

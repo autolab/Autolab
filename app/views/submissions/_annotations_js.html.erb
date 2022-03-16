@@ -1,3 +1,12 @@
+<%= javascript_include_tag "annotations.js" %>
+<%= javascript_include_tag "submission_view.js" %>
+<script type="text/javascript">
+  setActiveFilePos(currentHeaderPos)
+  initializeAnnotationsForCode();
+  attachEvents();
+  attachChangeFileEvents();
+</script>
+
 <script>
   var newFile = {};
   newFile.url = '<%= url_for(params.permit(:header_position, :action, :controller).to_h) %>'
@@ -15,12 +24,3 @@
   <% end %>
 </script>
 
-<%= javascript_include_tag "annotations" %>
-<%= javascript_include_tag "submission_view" %>
-
-<script type="text/javascript">
-  setActiveFilePos(currentHeaderPos);
-  initializeAnnotationsForCode();
-  attachEvents();
-  attachChangeFileEvents();
-</script>

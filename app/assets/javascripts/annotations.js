@@ -7,7 +7,6 @@ $(document).ready(function () {
   //get line number in URL, if it exists
   var urlParams = new URLSearchParams(location.search);
   
-  console.log("annotations loaded");
   if (urlParams.has("line")) {
     scrollToLine(urlParams.get("line"));
   }
@@ -143,7 +142,7 @@ function fillAnnotationBox() {
       annotationsByProblem[problem] = []
     }
     annotations[i].problem = problem;
-    annotationsByProblem[problem].push(annotations[i])
+    annotationsByProblem[problem].push(annotations[i]);
   }
 
   for (var problem in annotationsByProblem) {
@@ -183,7 +182,6 @@ function fillAnnotationBox() {
 
     // sorts the annotation by line order
     annotationsByProblem[problem].sort(function (annotation1, annotation2) { return annotation1.line - annotation2.line });
-
     for (var i = 0; i < annotationsByProblem[problem].length; i++) {
       var annotation = annotationsByProblem[problem][i];
 
@@ -219,7 +217,7 @@ function fillAnnotationBox() {
     }
   }
   // Reloads the grades part upon update
-  $('.problemGrades').load(document.URL + ' .problemGrades');
+  $('.problemGrades').load(document.URL + ' .problemGrades')
 }
 
 // Sets up the keybindings
@@ -396,7 +394,6 @@ function attachChangeFileEvents() {
     if (wasCachedLocally) {
       e.preventDefault();
       if ($(this).data("line")) {
-        console.log("called")
         scrollToLine($(this).data("line"));
       }
       return false;

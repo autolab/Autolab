@@ -8,7 +8,7 @@
 }
 
 .row {
-  max-height: calc(100vh - 190px);
+  max-height: calc(100vh - 173px);
 }
 
 #code-loader {
@@ -564,7 +564,6 @@
 }
 
 .problemGrades{
-  border: solid 2px #ebebeb;
   overflow: auto;
 }
 .problemGrades h1{
