@@ -1,4 +1,22 @@
 <script>
+  function registerComponents(myLayout) {
+    myLayout.registerComponent("file_tree", function (container, state) {
+        container.getElement().html("<%= j render(:partial => 'file_tree') %>");
+    });
+    myLayout.registerComponent("code_symbol_tree", function (container, state) {
+        container.getElement().html("<%= j render(:partial => 'code_symbol_tree', :locals => {ctag_obj: @ctag_obj}) %>");
+    });
+    myLayout.registerComponent("code_viewer", function (container, state) {
+        container.getElement().html("<%= j render(:partial => 'code_viewer') %>");
+    });
+    myLayout.registerComponent("annotation_pane", function (container, state) {
+        container.getElement().html("<%= j render(:partial => 'annotation_pane') %>");
+    });
+    myLayout.registerComponent("grades", function (container, state) {
+      container.getElement().html("<%= j render(:partial => 'grades') %>");
+    });
+  }
+
   var fileComponents = [];
   <% if (params[:header_position] || (!@ctag_obj.nil? && !@ctag_obj.empty?)) %>
       <% if (params[:header_position]) %>
@@ -18,6 +36,7 @@
                 });
       <% end %>
   <% end %>
+
   var content = [
       {
         type: "component",
@@ -58,24 +77,18 @@
     ],
   };
 
-  var myLayout = new GoldenLayout(config, "#speedgrader");
+  // golden layout component registrations
+  var myLayout,
+    savedState = localStorage.getItem( 'savedState' );
 
-  myLayout.registerComponent("file_tree", function (container, state) {
-      container.getElement().html("<%= j render(:partial => 'file_tree') %>");
-  });
-  myLayout.registerComponent("code_symbol_tree", function (container, state) {
-      container.getElement().html("<%= j render(:partial => 'code_symbol_tree', :locals => {ctag_obj: @ctag_obj}) %>");
-  });
-  myLayout.registerComponent("code_viewer", function (container, state) {
-      container.getElement().html("<%= j render(:partial => 'code_viewer') %>");
-  });
-  myLayout.registerComponent("annotation_pane", function (container, state) {
-      container.getElement().html("<%= j render(:partial => 'annotation_pane') %>");
-  });
-  myLayout.registerComponent("grades", function (container, state) {
-    container.getElement().html("<%= j render(:partial => 'grades') %>");
-  });
+  // if savedState exists in localStorage already, used savedState
+  if( savedState !== null ) {
+      myLayout = new GoldenLayout( JSON.parse( savedState ), "#speedgrader" );
+  } else {
+      var myLayout = new GoldenLayout(config, "#speedgrader");
+  }
 
+  registerComponents(myLayout);
   myLayout.init();
 
   // figure out how many components are loaded in the layout
@@ -95,6 +108,7 @@
   var numComponents = countComponents(content);
   var componentsLoaded = 0;
 
+  // Golden layout event listeners
   myLayout.on('componentCreated', function() {
     // if all components have been loaded, load the annotations js files
     componentsLoaded += 1;
@@ -102,7 +116,12 @@
       $('body').append("<%= j render(:partial => 'annotations_js') %>");
   });
 
+  myLayout.on( 'stateChanged', function(){
+      var state = JSON.stringify( myLayout.toConfig() );
+      localStorage.setItem( 'savedState', state );
+  });
 
+  // Dynamically resize golden layout on client window resize
   $(window).resize(function () {
     myLayout.updateSize(document.body.clientWidth - $.position.scrollbarWidth(), myLayout.height);
   });
