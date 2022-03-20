@@ -238,6 +238,9 @@ Delete a certain group of an assessment given the id
 **Response:**
 
 Success message if deleted. 
+
+---
+
 ### problems
 
 Get all problems of an assessment.
