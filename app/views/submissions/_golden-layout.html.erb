@@ -118,4 +118,11 @@
     myLayout.updateSize(document.body.clientWidth - $.position.scrollbarWidth(), myLayout.height);
   });
 
+  function resetLayout() {
+    if( localStorage.getItem('savedState') !== null ) {
+      localStorage.removeItem('savedState');
+      window.location.reload();
+    }
+  }
+
 </script>
