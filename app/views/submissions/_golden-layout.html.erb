@@ -17,27 +17,25 @@
     });
   }
 
-  var fileComponents = [];
-  <% if (params[:header_position] || (!@ctag_obj.nil? && !@ctag_obj.empty?)) %>
-      <% if (params[:header_position]) %>
-        fileComponents.push({
-                  type: "component",
-                  componentName: "file_tree",
-                  title: "File Outline",
-                  height: 25,
-                });
-      <% end %>
-      <% unless @ctag_obj.nil? || @ctag_obj.empty? %>
-        fileComponents.push({
-                  type: "component",
-                  componentName: "code_symbol_tree",
-                  title: "Symbol Tree",
-                  height: 25,
-                });
-      <% end %>
-  <% end %>
-
   var content = [
+      {
+        type: "column",
+        width: 20,
+        content: [
+          {
+            type: "component",
+            componentName: "file_tree",
+            title: "File Outline",
+            height: 25,
+          },
+          {
+            type: "component",
+            componentName: "code_symbol_tree",
+            title: "Symbol Tree",
+            height: 25,
+          }
+        ],
+      },
       {
         type: "component",
         componentName: "code_viewer",
@@ -61,13 +59,7 @@
         ],
       },
     ];
-  if (fileComponents.length > 0) {
-    content.unshift({
-      type: "column",
-            width: 20,
-            content: fileComponents,
-          })
-  }
+
   var config = {
     content: [
       {
