@@ -608,7 +608,7 @@
 
 /* File Tree Styling CSS */
 .file-explorer{
-  max-height: 60%;
+  max-height: 100%;
   overflow: auto;
 }
 
@@ -666,12 +666,8 @@
 
 /* Symbol Tree Styling */
 #symbol-tree-container {
-  height: 30%;
+  max-height: 100%;
   overflow: auto;
-}
-
-#symbol-tree-box {
-  /* overflow: auto; */
 }
 
 #symbol-tree-box ul {
