@@ -17,25 +17,41 @@
     });
   }
 
+  // Check if file tree & symbol tree are necessary in the layout
+  var fileComponents = [];
+  var hasFileTree = false;
+  <% if (params[:header_position]) %>
+    hasFileTree = true;
+    fileComponents.push({
+      type: "component",
+      componentName: "file_tree",
+      title: "File Outline",
+      height: 25,
+    });
+  <% end %>
+  var hasSymbolTree = false;
+  <% if !@ctag_obj.nil? && !@ctag_obj.empty? %>
+    hasSymbolTree = true;
+    fileComponents.push({
+      type: "component",
+      componentName: "code_symbol_tree",
+      title: "Symbol Tree",
+      height: 25,
+    });
+  <% end %>
+
+  // Check if old localStorage value is the same as the new value, then updates localStorage
+  function layoutStateChanged(stateType, newState) {
+    var old = localStorage.getItem(stateType);
+    
+    var changed = JSON.parse(old) != newState;
+    console.log(stateType, JSON.parse(old), newState, changed);
+    localStorage.setItem(stateType, newState);
+    
+    return changed;
+  }
+
   var content = [
-      {
-        type: "column",
-        width: 20,
-        content: [
-          {
-            type: "component",
-            componentName: "file_tree",
-            title: "File Outline",
-            height: 25,
-          },
-          {
-            type: "component",
-            componentName: "code_symbol_tree",
-            title: "Symbol Tree",
-            height: 25,
-          }
-        ],
-      },
       {
         type: "component",
         componentName: "code_viewer",
@@ -60,6 +76,14 @@
       },
     ];
 
+  // if there are any fileComponents, add column
+  if (fileComponents.length > 0) {
+    content.unshift({
+      type: "column",
+        width: 20,
+        content: fileComponents,
+      })
+  }
   var config = {
     content: [
       {
@@ -74,7 +98,8 @@
     savedState = localStorage.getItem( 'savedState' );
 
   // if savedState exists in localStorage already, used savedState
-  if( savedState !== null ) {
+  var newTrees = layoutStateChanged('hasFileTree', hasFileTree) || layoutStateChanged('hasSymbolTree', hasSymbolTree);
+  if( savedState !== null && !newTrees) { // no saved state, OR need for file tree & symbol tree has changed
       myLayout = new GoldenLayout( JSON.parse( savedState ), "#speedgrader" );
   } else {
       var myLayout = new GoldenLayout(config, "#speedgrader");
