@@ -863,7 +863,7 @@ var newAnnotationFormTemplatePDF = function (name, pageInd) {
     style: "width: 100%;"
   }, scoreDiv, space, problemSelect);
 
-  var hr = elt("hr");
+  var br = elt("br");
 
   var submitButton = elt("input", {
     type: "submit",
@@ -878,8 +878,6 @@ var newAnnotationFormTemplatePDF = function (name, pageInd) {
     class: "btn grey small",
     name: "cancel"
   });
-
-  var hr = elt("hr");
 
   // Creates a dictionary of problem and grader_id
   var autogradedproblems = {}
@@ -900,7 +898,7 @@ var newAnnotationFormTemplatePDF = function (name, pageInd) {
     title: "Press <Enter> to Submit",
     class: name,
     id: name + "-" + pageInd
-  }, commentLabel, rowDiv1, scoreLabel, colDiv2, hr, submitButton, cancelButton);
+  }, commentLabel, rowDiv1, scoreLabel, colDiv2, br, submitButton, cancelButton);
 
   return newForm;
 }
