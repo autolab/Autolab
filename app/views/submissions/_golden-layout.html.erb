@@ -22,23 +22,21 @@
   var hasFileTree = false;
   <% if (params[:header_position]) %>
     hasFileTree = true;
-    fileComponents.push({
-      type: "component",
-      componentName: "file_tree",
-      title: "File Outline",
-      height: 25,
-    });
   <% end %>
   var hasSymbolTree = false;
   <% if !@ctag_obj.nil? && !@ctag_obj.empty? %>
     hasSymbolTree = true;
-    fileComponents.push({
+  <% end %>
+  fileComponents.push({
+      type: "component",
+      componentName: "file_tree",
+      title: "File Outline",
+    });
+  fileComponents.push({
       type: "component",
       componentName: "code_symbol_tree",
       title: "Symbol Tree",
-      height: 25,
     });
-  <% end %>
 
   // Check if old localStorage value is the same as the new value, then updates localStorage
   function layoutStateChanged(stateType, newState) {
@@ -65,7 +63,7 @@
             type: "component",
             componentName: "annotation_pane",
             title: "Annotations",
-            height: 50,
+            height: 30,
           },
           {
             type: "component",
@@ -77,7 +75,8 @@
     ];
 
   // if there are any fileComponents, add column
-  if (fileComponents.length > 0) {
+  var hasThirdCol = hasFileTree || hasSymbolTree;
+  if (hasThirdCol) {
     content.unshift({
       type: "column",
         width: 20,
@@ -98,7 +97,7 @@
     savedState = localStorage.getItem( 'savedState' );
 
   // if savedState exists in localStorage already, used savedState
-  var newTrees = layoutStateChanged('hasFileTree', hasFileTree) || layoutStateChanged('hasSymbolTree', hasSymbolTree);
+  var newTrees = layoutStateChanged('hasThirdCol', hasThirdCol);
   if( savedState !== null && !newTrees) { // no saved state, OR need for file tree & symbol tree has changed
       myLayout = new GoldenLayout( JSON.parse( savedState ), "#speedgrader" );
   } else {
