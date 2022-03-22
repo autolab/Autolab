@@ -233,7 +233,7 @@ class Course < ApplicationRecord
   end
 
   def assessment_categories
-    assessments.pluck("DISTINCT category_name").sort
+    assessments.distinct.pluck(:category_name).sort
   end
 
   def assessments_with_category(cat_name, is_student = false)
