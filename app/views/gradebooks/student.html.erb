@@ -87,7 +87,7 @@
                   <% when AssessmentUserDatum::NORMAL %>
                     <% case aud.submission_status
                        when :submitted %>
-                      <% if Time.now <= aud.assessment.grading_deadline %>
+                      <% if Time.now <= aud.assessment.grading_deadline || !aud.latest_submission.all_scores_released? %>
                         <i class="material-icons tooltipped" data-tooltip="Final score will be visible once grading is complete.">access_time</i>
                       <% else %>
                         <%= render_final_score aud %>

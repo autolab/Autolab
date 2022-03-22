@@ -231,16 +231,16 @@ class AssessmentsController < ApplicationController
     @assessment.handin_directory = "handin"
 
     @assessment.handin_filename = if @assessment.github_submission_enabled
-                                    "handin.tar"
+                                    "handin.tgz"
                                   else
                                     "handin.c"
                                   end
 
-    @assessment.visible_at = Time.current
-    @assessment.start_at = Time.current
-    @assessment.due_at = Time.current
-    @assessment.end_at = Time.current
-    @assessment.grading_deadline = Time.current
+    @assessment.visible_at = Time.current + 1.day
+    @assessment.start_at = Time.current + 1.day
+    @assessment.due_at = Time.current + 1.day
+    @assessment.end_at = Time.current + 1.day
+    @assessment.grading_deadline = Time.current + 1.day
     @assessment.quiz = false
     @assessment.quizData = ""
     @assessment.max_submissions = params.include?(:max_submissions) ? params[:max_submissions] : -1
@@ -654,7 +654,6 @@ class AssessmentsController < ApplicationController
     num_released = releaseMatchingGrades { |_| true }
 
     if num_released > 0
-      @course.update_course_no_submissions_watchlist_instances
       flash[:success] =
         format("%<num_released>d %<plurality>s released.",
                num_released: num_released,
@@ -680,7 +679,6 @@ class AssessmentsController < ApplicationController
     end
 
     if num_released > 0
-      @course.update_course_no_submissions_watchlist_instances(@cud)
       flash[:success] =
         format("%<num_released>d %<plurality>s released.",
                num_released: num_released,
