@@ -188,7 +188,6 @@ class SubmissionsController < ApplicationController
               type: "application/zip",
               disposition: "attachment", # tell browser to download
               filename: "#{@course.name}_#{@course.semester}_#{@assessment.name}_submissions.zip")
-    # return
   end
 
   # Action to be taken when the user wants do download a submission but
