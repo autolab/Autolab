@@ -20,9 +20,9 @@ jobs:
       
       - name: Install Ruby
         uses: ruby/setup-ruby@v1.100.0
+        with:
+          bundler: latest
+          bundler-cache: true
         
       - name: Lint Ruby files
-        run: |
-            gem install rubocop
-            gem install rubocop-rails
-            bin/rubocop --parallel
+        run: bin/rubocop --parallel
