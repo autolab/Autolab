@@ -54,12 +54,7 @@ function changeFile(headerPos) {
     newFile = localCache[headerPos];
     // Update the code viewer and symbol tree with the cached data
     $('#code-box').replaceWith(newFile.codeBox);
-
-    if (newFile.symbolTree == null) {
-      $('#symbol-tree-box').hide();
-    } else {
-      $('#symbol-tree-container').html(newFile.symbolTree);
-    }
+    $('#symbol-tree-container').replaceWith(newFile.symbolTree);
 
     // Add syntax highlighting to the new code viewer
     $('pre code').each(function () {
@@ -77,17 +72,10 @@ function changeFile(headerPos) {
 }
 
 function purgeCurrentPageCache() {
-  var symbolTree = $("#symbol-tree-box").html();
-  if (symbolTree) {
-    symbolTree = `<div id="symbol-tree-box">${symbolTree}</div>`
-  }
-  else {
-    symbolTree = null;
-  }
   localCache[currentHeaderPos] = {
     codeBox: `<div id="code-box">${$('#code-box').html()}</div>`,
     pdf: false,
-    symbolTree,
+    symbolTree: `<div id="symbol-tree-box">${$('#symbol-tree-box').html()}</div>`,
     url: window.location.href,
   };
 }
