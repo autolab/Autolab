@@ -32,6 +32,9 @@ class WatchlistConfiguration < ApplicationRecord
   # Update watchlist configuration for course with the given course name
   # course_name: string, the name of the course
   # allowlist_update: { :category => ["A", "B", ...], :assessment => ["A", "B", ...]}
+  # This method expects that even if the allowlist is updated to be blank, the caller
+  # would still provide an empty array as an argument.
+  # nil would be interpreted as no change.
   def self.update_watchlist_configuration_for_course(course_name, allowlist_update)
     # Make sure the course exists
     course = Course.find_by(name: course_name)
