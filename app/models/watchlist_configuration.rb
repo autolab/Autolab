@@ -16,7 +16,7 @@ class WatchlistConfiguration < ApplicationRecord
     assessment_allowlist = allowlist_update[:assessment]
 
     config.assessment_category_allowlist = category_allowlist unless category_allowlist.nil?
-    config.assessment_allowlist = assessment_allowlist unless category_allowlist.nil?
+    config.assessment_allowlist = assessment_allowlist unless assessment_allowlist.nil?
 
     raise "Failed to update watchlist configuration for course #{course_name}" unless config.save
   end
