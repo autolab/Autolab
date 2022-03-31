@@ -40,6 +40,8 @@ class WatchlistConfiguration < ApplicationRecord
     course = Course.find_by(name: course_name)
     raise "Course #{course_name} cannot be found" if course.nil?
 
+    raise "No allowlist update provided." if allowlist_update.nil?
+
     config = WatchlistConfiguration.find_by(course_id: course.id)
     config ||= WatchlistConfiguration.new(course_id: course.id)
 

@@ -83,7 +83,6 @@ Rails.application.routes.draw do
       get "refresh_watchlist_instances"
       post "update_current_metrics"
       post "update_watchlist_instances"
-      post "update_current_metrics"
     end
 
     resources :jobs, only: :index do
