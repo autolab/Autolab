@@ -212,6 +212,21 @@ class MetricsController < ApplicationController
     render json: { message: "Successfully updated instances" }, status: :ok
   end
 
+  action_auth_level :get_watchlist_category_allowlist, :instructor
+  def get_watchlist_category_allowlist
+    begin
+      course_name = params[:course_name]
+      raise "Course name cannot be blank" if course_name.blank?
+
+      category_allowlist = WathclistConfiguration.get_category_allowlist_for_course(course_name)
+    rescue StandardError => e
+      render json: { error: e.message }, status: :not_found
+      return
+    end
+
+    render json: category_allowlist, status: :ok
+  end
+
   action_auth_level :update_watchlist_configuration, :instructor
   def update_watchlist_configuration
     # This API endpoint updates a course's watchlist configuration

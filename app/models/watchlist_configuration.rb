@@ -10,9 +10,9 @@ class WatchlistConfiguration < ApplicationRecord
 
     return [] if config.nil?
 
-    return [] if config.assessment_category_allowlist.nil?
+    return [] if config.category_allowlist.nil?
 
-    config.assessment_category_allowlist
+    config.category_allowlist
   end
 
   def self.get_assessment_allowlist_for_course(course_name)
@@ -48,7 +48,7 @@ class WatchlistConfiguration < ApplicationRecord
     category_allowlist = allowlist_update[:category]
     assessment_allowlist = allowlist_update[:assessment]
 
-    config.assessment_category_allowlist = category_allowlist unless category_allowlist.nil?
+    config.category_allowlist = category_allowlist unless category_allowlist.nil?
     config.assessment_allowlist = assessment_allowlist unless assessment_allowlist.nil?
 
     raise "Failed to update watchlist configuration for course #{course_name}" unless config.save

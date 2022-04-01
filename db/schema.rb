@@ -351,7 +351,7 @@ ActiveRecord::Schema.define(version: 2022_03_30_160300) do
   end
 
   create_table "watchlist_configurations", force: :cascade do |t|
-    t.json "assessment_category_allowlist"
+    t.json "category_allowlist"
     t.json "assessment_allowlist"
     t.integer "course_id"
     t.datetime "created_at", precision: 6, null: false
@@ -373,4 +373,8 @@ ActiveRecord::Schema.define(version: 2022_03_30_160300) do
     t.index ["risk_condition_id"], name: "index_watchlist_instances_on_risk_condition_id"
   end
 
+  add_foreign_key "github_integrations", "users"
+  add_foreign_key "oauth_access_grants", "oauth_applications", column: "application_id"
+  add_foreign_key "oauth_access_tokens", "oauth_applications", column: "application_id"
+  add_foreign_key "oauth_device_flow_requests", "oauth_applications", column: "application_id"
 end
