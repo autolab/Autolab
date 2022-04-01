@@ -218,7 +218,7 @@ class MetricsController < ApplicationController
       course_name = params[:course_name]
       raise "Course name cannot be blank" if course_name.blank?
 
-      category_allowlist = WathclistConfiguration.get_category_allowlist_for_course(course_name)
+      category_allowlist = WatchlistConfiguration.get_category_allowlist_for_course(course_name)
     rescue StandardError => e
       render json: { error: e.message }, status: :not_found
       return
@@ -245,10 +245,11 @@ class MetricsController < ApplicationController
 
     begin
       # handle nil allowlist in models
-      config = WathclistConfiguration.update_watchlist_configuration_for_course(course_name,
+      config = WatchlistConfiguration.update_watchlist_configuration_for_course(course_name,
                                                                                 params[:allowlist])
     rescue StandardError => e
       render json: { error: e.message }, status: :bad_request
+      return
     end
 
     render json: config, status: :ok
