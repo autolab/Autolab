@@ -214,6 +214,9 @@ class MetricsController < ApplicationController
 
   action_auth_level :get_watchlist_category_allowlist, :instructor
   def get_watchlist_category_allowlist
+    # This API endpoint aims to retrieve the current/latest category allowlist for a course
+    # On success, a JSON list of category names will be returned
+    # On error, an error message in JSON will be rendered
     begin
       course_name = params[:course_name]
       raise "Course name cannot be blank" if course_name.blank?
