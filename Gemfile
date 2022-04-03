@@ -121,6 +121,8 @@ group :development do
   # static code analyzer
   gem 'rubocop', require: false
   gem 'rubocop-rails', require: false
+  gem 'rubocop-rspec', require: false
+  gem 'rubocop-performance', require: false
 
   # pre-commit hook for rubocop
   gem 'overcommit' 
