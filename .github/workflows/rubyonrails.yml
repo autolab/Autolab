@@ -25,4 +25,4 @@ jobs:
           cache-version: 3
           
       - name: Rubocop
-        run: bin/rubocop
+        run: bundle exec rubocop -c .rubocop.yml
