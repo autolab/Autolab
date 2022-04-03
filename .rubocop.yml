@@ -6,6 +6,7 @@ AllCops:
     - 'spec/factories/*.rb'
     - 'app/controllers/*.rb'
     - 'app/models/*.rb'
+    - 'vendor/bundle/**/*'
   Exclude:
     - 'assessmentConfig/**/*'
     - 'attachments/**/*'
@@ -16,7 +17,7 @@ AllCops:
     - 'script/**/*'
     - 'tmp/**/*'
   NewCops: disable
-
+   
 Rails:
   Enabled: true
 
