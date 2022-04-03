@@ -20,10 +20,8 @@ jobs:
       
       - name: Install Ruby
         uses: ruby/setup-ruby@v1.100.0
+        with:
+          bundler-cache: true
           
       - name: Rubocop
-        run: |
-             gem install activesupport -v 6.1.5
-             gem install rubocop -v 1.25.1
-             gem install rubocop-rails -v 2.14.2
-             bundle exec rubocop
+        run: bundle exec rubocop
