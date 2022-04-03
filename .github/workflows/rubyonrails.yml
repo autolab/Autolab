@@ -25,6 +25,4 @@ jobs:
           bundler-cache: true
           
       - name: Rubocop
-        run: |
-            overcommit -i
-            overcommit -r
+        run: bundle exec rubocop
