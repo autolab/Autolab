@@ -24,7 +24,7 @@ jobs:
           bundler: latest
           bundler-cache: true
           
-      - name: RuboCop Linter Action
-        uses: andrewmcodes/rubocop-linter-action@v3.3.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Rubocop
+        run: |
+            overcommit -i
+            overcommit -r
