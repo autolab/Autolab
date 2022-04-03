@@ -22,7 +22,7 @@ jobs:
         uses: ruby/setup-ruby@v1.100.0
         with:
           bundler-cache: true
-          cache-version: 2
+          cache-version: 3
           
       - name: Rubocop
         run: bundle exec rubocop
