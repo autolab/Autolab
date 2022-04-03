@@ -21,8 +21,7 @@ jobs:
       - name: Install Ruby
         uses: ruby/setup-ruby@v1.100.0
         with:
-          bundler: latest
-          bundler-cache: true
+          bundler-cache: false
           
       - name: Rubocop
         run: bundle exec rubocop
