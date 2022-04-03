@@ -21,7 +21,8 @@ jobs:
       - name: Install Ruby
         uses: ruby/setup-ruby@v1.100.0
         with:
-          bundler-cache: false
+          bundler: 'Gemfile.lock'
+          bundler-cache: true
           
       - name: Rubocop
         run: bundle exec rubocop
