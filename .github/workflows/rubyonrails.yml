@@ -25,9 +25,4 @@ jobs:
           bundler-cache: true
         
       - name: Lint Ruby files
-        run: |
-           gem install activesupport -v 6.1.5
-           gem install rubocop
-           gem install rubocop-rails
-           gem install rubocop-rspec
-           rubocop --parallel
+        run: bin/rubocop --parallel
