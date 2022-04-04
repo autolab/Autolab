@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_10_23_185328) do
+ActiveRecord::Schema.define(version: 2022_04_04_193451) do
 
   create_table "annotations", force: :cascade do |t|
     t.integer "submission_id"
@@ -95,6 +95,7 @@ ActiveRecord::Schema.define(version: 2021_10_23_185328) do
     t.boolean "embedded_quiz"
     t.binary "embedded_quiz_form"
     t.boolean "github_submission_enabled", default: true
+    t.boolean "allow_student_assign_group", default: true
   end
 
   create_table "attachments", force: :cascade do |t|
@@ -350,6 +351,15 @@ ActiveRecord::Schema.define(version: 2021_10_23_185328) do
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 
+  create_table "watchlist_configurations", force: :cascade do |t|
+    t.json "category_allowlist"
+    t.json "assessment_allowlist"
+    t.integer "course_id"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["course_id"], name: "index_watchlist_configurations_on_course_id"
+  end
+
   create_table "watchlist_instances", force: :cascade do |t|
     t.integer "course_user_datum_id"
     t.integer "course_id"
@@ -364,4 +374,8 @@ ActiveRecord::Schema.define(version: 2021_10_23_185328) do
     t.index ["risk_condition_id"], name: "index_watchlist_instances_on_risk_condition_id"
   end
 
+  add_foreign_key "github_integrations", "users"
+  add_foreign_key "oauth_access_grants", "oauth_applications", column: "application_id"
+  add_foreign_key "oauth_access_tokens", "oauth_applications", column: "application_id"
+  add_foreign_key "oauth_device_flow_requests", "oauth_applications", column: "application_id"
 end
