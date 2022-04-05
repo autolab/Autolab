@@ -3,7 +3,7 @@ please let us know on our [Slack](https://autolab-slack.herokuapp.com).
 
 ## Clearing Tango job queue
 Due to faulty configs or other reasons, you may have a large backlog of jobs waiting to run that are stuck. 
-Restarting Tango does not solve this issue as the jobs are persisted on a Redis queue. You can flush the jobs using `redis-cli` as follows:
+Restarting Tango does not solve this issue as the jobs are persisted on a Redis queue. You can drop everything in Redis using the `redis-cli` client as follows:
 
 ```bash
 $ redis-cli
