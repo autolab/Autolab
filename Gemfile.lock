@@ -193,7 +193,7 @@ GEM
       railties (>= 3.1)
     jwt (2.3.0)
     libv8-node (15.14.0.1)
-    libv8-node (15.14.0.1-x86_64-darwin-19)
+    libv8-node (15.14.0.1-x86_64-darwin-20)
     libv8-node (15.14.0.1-x86_64-linux)
     lockbox (0.6.8)
     loofah (2.14.0)
@@ -424,7 +424,7 @@ GEM
 
 PLATFORMS
   ruby
-  x86_64-darwin-19
+  x86_64-darwin-20
   x86_64-linux
 
 DEPENDENCIES
