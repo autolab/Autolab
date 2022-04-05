@@ -119,7 +119,6 @@ group :development do
   gem 'binding_of_caller' # enhances better_errors
 
   # static code analyzer
-  gem 'rubocop', require: false
   gem 'rubocop-rails', require: false
 
   # pre-commit hook for rubocop

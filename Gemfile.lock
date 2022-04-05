@@ -474,7 +474,6 @@ DEPENDENCIES
   rails (= 6.0.0)
   rake (>= 10.3.2)
   rspec-rails (>= 3.5.0)
-  rubocop
   rubocop-rails
   rubyzip
   sass-rails (>= 4.0.3)
