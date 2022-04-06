@@ -193,7 +193,7 @@ GEM
       railties (>= 3.1)
     jwt (2.3.0)
     libv8-node (15.14.0.1)
-    libv8-node (15.14.0.1-x86_64-darwin-19)
+    libv8-node (15.14.0.1-x86_64-darwin-20)
     libv8-node (15.14.0.1-x86_64-linux)
     lockbox (0.6.8)
     loofah (2.14.0)
@@ -353,6 +353,10 @@ GEM
       unicode-display_width (>= 1.4.0, < 3.0)
     rubocop-ast (1.16.0)
       parser (>= 3.1.1.0)
+    rubocop-rails (2.14.2)
+      activesupport (>= 4.2.0)
+      rack (>= 1.1)
+      rubocop (>= 1.7.0, < 2.0)
     ruby-progressbar (1.11.0)
     ruby-rc4 (0.1.5)
     ruby2_keywords (0.0.5)
@@ -420,7 +424,7 @@ GEM
 
 PLATFORMS
   ruby
-  x86_64-darwin-19
+  x86_64-darwin-20
   x86_64-linux
 
 DEPENDENCIES
@@ -471,6 +475,7 @@ DEPENDENCIES
   rake (>= 10.3.2)
   rspec-rails (>= 3.5.0)
   rubocop
+  rubocop-rails
   rubyzip
   sass-rails (>= 4.0.3)
   sdoc (>= 0.4.0)

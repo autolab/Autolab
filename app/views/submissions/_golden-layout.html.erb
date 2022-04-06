@@ -1,0 +1,155 @@
+<script>
+  function registerComponents(myLayout) {
+    myLayout.registerComponent("file_tree", function (container, state) {
+        container.getElement().html("<%= j render(:partial => 'file_tree') %>");
+    });
+    myLayout.registerComponent("code_symbol_tree", function (container, state) {
+        container.getElement().html("<%= j render(:partial => 'code_symbol_tree', :locals => {ctag_obj: @ctag_obj}) %>");
+    });
+    myLayout.registerComponent("code_viewer", function (container, state) {
+        container.getElement().html("<%= j render(:partial => 'code_viewer') %>");
+    });
+    myLayout.registerComponent("annotation_pane", function (container, state) {
+        container.getElement().html("<%= j render(:partial => 'annotation_pane') %>");
+    });
+    myLayout.registerComponent("grades", function (container, state) {
+      container.getElement().html("<%= j render(:partial => 'grades') %>");
+    });
+  }
+
+  // Check if file tree & symbol tree are necessary in the layout
+  var fileComponents = [];
+  var hasFileTree = false;
+  <% if (params[:header_position]) %>
+    hasFileTree = true;
+  <% end %>
+  var hasSymbolTree = false;
+  <% if !@ctag_obj.nil? && !@ctag_obj.empty? %>
+    hasSymbolTree = true;
+  <% end %>
+  fileComponents.push({
+      type: "component",
+      componentName: "file_tree",
+      title: "File Outline",
+    });
+  fileComponents.push({
+      type: "component",
+      componentName: "code_symbol_tree",
+      title: "Symbol Tree",
+    });
+
+  // Check if old localStorage value is the same as the new value, then updates localStorage
+  function layoutStateChanged(stateType, newState) {
+    var old = localStorage.getItem(stateType);
+    
+    var changed = JSON.parse(old) != newState;
+    console.log(stateType, JSON.parse(old), newState, changed);
+    localStorage.setItem(stateType, newState);
+    
+    return changed;
+  }
+
+  var content = [
+      {
+        type: "component",
+        componentName: "code_viewer",
+        title: "Code",
+      },
+      {
+        type: "column",
+        width: 20,
+        content: [
+          {
+            type: "component",
+            componentName: "annotation_pane",
+            title: "Annotations",
+            height: 30,
+          },
+          {
+            type: "component",
+            componentName: "grades",
+            title: "Grades",
+          },
+        ],
+      },
+    ];
+
+  // if there are any fileComponents, add column
+  var hasThirdCol = hasFileTree || hasSymbolTree;
+  if (hasThirdCol) {
+    content.unshift({
+      type: "column",
+        width: 20,
+        content: fileComponents,
+      })
+  }
+  var config = {
+    settings: {
+      showPopoutIcon: false
+    },
+    content: [
+      {
+        type: "row",
+        content: content,
+      },
+    ],
+  };
+
+  // golden layout component registrations
+  var myLayout,
+    savedState = localStorage.getItem( 'savedState' );
+
+  // if savedState exists in localStorage already, used savedState
+  var newTrees = layoutStateChanged('hasThirdCol', hasThirdCol);
+  if( savedState !== null && !newTrees) { // no saved state, OR need for file tree & symbol tree has changed
+      myLayout = new GoldenLayout( JSON.parse( savedState ), "#speedgrader" );
+  } else {
+      var myLayout = new GoldenLayout(config, "#speedgrader");
+  }
+
+  registerComponents(myLayout);
+  myLayout.init();
+
+  // figure out how many components are loaded in the layout
+  function countComponents (content) {
+    var numComponents = 0;
+    for (var i = 0; i < content.length; i++) {
+      var item = content[i];
+      if (item.type === "component") {
+        numComponents += 1;
+      } else if (item.content) {
+        numComponents += countComponents(item.content);
+      }
+    }
+    return numComponents;
+  }
+
+  var numComponents = countComponents(myLayout.config.content);
+  var componentsLoaded = 0;
+
+  // Golden layout event listeners
+  myLayout.on('componentCreated', function() {
+    // if all components have been loaded, load the annotations js files
+    componentsLoaded += 1;
+    if (componentsLoaded === numComponents)
+      $('body').append("<%= j render(:partial => 'annotations_js') %>");
+  });
+
+  myLayout.on( 'stateChanged', function(){
+      var state = JSON.stringify( myLayout.toConfig() );
+      localStorage.setItem( 'savedState', state );
+  });
+
+  // Dynamically resize golden layout on client window resize
+  $(window).resize(function () {
+    myLayout.updateSize(document.body.clientWidth - $.position.scrollbarWidth(), myLayout.height);
+  });
+
+  function resetLayout() {
+    if( localStorage.getItem('savedState') !== null ) {
+      localStorage.removeItem('savedState');
+      window.location.reload();
+    }
+  }
+
+</script>

@@ -120,6 +120,7 @@ group :development do
 
   # static code analyzer
   gem 'rubocop', require: false
+  gem 'rubocop-rails', require: false
 
   # pre-commit hook for rubocop
   gem 'overcommit' 
