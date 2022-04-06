@@ -745,6 +745,23 @@ class AssessmentsController < ApplicationController
     File.delete(f)
   end
 
+  action_auth_level :update_assessment_group_setting, :instructor
+  def update_assessment_group_setting
+    allow_student_assign_group = params[:allow_student_assign_group]
+    if allow_student_assign_group.nil?
+      raise "Parameter not found for updating assessment group setting"
+    end
+
+    @assessment.allow_student_assign_group = allow_student_assign_group
+    if !@assessment.save
+      raise "Failed to update group setting for assessment #{@assessment.display_name}"
+    end
+
+    render json: @assessment, status: :ok && return
+  rescue StandardError => e
+    render json: { error: e.message }, status: :bad_request && return
+  end
+
 protected
 
   # We only do this so that it can be overwritten by modules
