@@ -53,6 +53,8 @@ class WatchlistConfiguration < ApplicationRecord
 
     raise "Failed to update watchlist configuration for course #{course_name}" unless config.save
 
+    WatchlistInstance.refresh_instances_for_course(course_name, true)
+
     config
   end
 end

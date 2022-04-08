@@ -360,10 +360,10 @@ class WatchlistInstance < ApplicationRecord
         case condition.condition_type
 
         when "grace_day_usage"
-          # TODO: Do we want to consider allowlisted categories for this condition?
           grace_day_threshold = condition.parameters[:grace_day_threshold].to_i
           date = condition.parameters[:date]
           asmts_before_date = course.asmts_before_date(date)
+          asmts_before_date.reject! { |asmt| category_allowlist.include?(asmt.category_name) }
 
           if asmts_before_date.count == 0
             next # go to the next condition loop if there is no latest assessment
@@ -406,6 +406,7 @@ class WatchlistInstance < ApplicationRecord
           cur_instances << new_instance unless new_instance.nil?
         end
       end
+
       # check for duplication
       all_dup = true
       cur_instances.each do |inst|
@@ -540,10 +541,8 @@ class WatchlistInstance < ApplicationRecord
                                                    condition_id,
                                                    cud,
                                                    no_submissions_threshold)
-    # TODO
-    asmts_ids = Assessment.where(category_name: category_allowlist).pluck(:id)
+    asmts_ids = Assessment.where.not(category_name: category_allowlist).pluck(:id)
     auds = AssessmentUserDatum.where(assessment_id: asmts_ids, course_user_datum_id: cud.id)
-    # auds.select! { |aud| aud.assessment.category_name not in category_allowlist }
     no_submissions_asmt_names = []
     auds.each do |aud|
       if aud.submission_status == :not_submitted && aud.assessment
@@ -559,14 +558,14 @@ class WatchlistInstance < ApplicationRecord
                           })
   end
 
-  # TODO: add category_allowlist
   def self.add_new_instance_for_cud_low_grades(course,
+                                               category_allowlist,
                                                condition_id,
                                                cud,
                                                grade_threshold,
                                                count_threshold)
-
-    auds = AssessmentUserDatum.where(course_user_datum_id: cud.id)
+    asmts_ids = Assessment.where.not(category_name: category_allowlist)
+    auds = AssessmentUserDatum.where(assessment_id: asmts_ids, course_user_datum_id: cud.id)
     violation_info = {}
     auds.each do |aud|
       aud_score = aud.final_score_ignore_grading_deadline(cud)
