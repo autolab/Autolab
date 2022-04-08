@@ -363,7 +363,9 @@ class WatchlistInstance < ApplicationRecord
           grace_day_threshold = condition.parameters[:grace_day_threshold].to_i
           date = condition.parameters[:date]
           asmts_before_date = course.asmts_before_date(date)
-          asmts_before_date.reject! { |asmt| category_allowlist.include?(asmt.category_name) }
+          asmts_before_date = asmts_before_date.reject do |asmt|
+            category_allowlist.include?(asmt.category_name)
+          end
 
           if asmts_before_date.count == 0
             next # go to the next condition loop if there is no latest assessment
