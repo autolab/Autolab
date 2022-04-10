@@ -188,11 +188,13 @@ class Api::V1::AssessmentsController < Api::V1::BaseApiController
     respond_with_hash({version: submissions[0].version, filename: submissions[0].filename})
   end
 
-  def set_group_size
-    require_params([:group_size])
+  def set_group_settings
+    require_params([:group_size, :allow_student_assign_group])
     @assessment.group_size = params[:group_size].to_i
+    @assessment.allow_student_assign_group = (params[:allow_student_assign_group].to_s == "true")
     @assessment.save!
-    respond_with_hash({group_size: @assessment.group_size})
+    respond_with_hash({ group_size: @assessment.group_size, 
+      allow_student_assign_group: @assessment.allow_student_assign_group })
   end
 
 end
