@@ -100,7 +100,7 @@ Change the <username> and <password> fields in config/database.yml to the userna
         pool: 5
         username: user1
         password: '123456'
-        socket: /var/run/mysqld/mysqld.sock
+        socket: /var/run/mysqld/mysqld.sock # /tmp/mysql.sock on Mac OSX
         host: localhost
         variables:
             sql_mode: NO_ENGINE_SUBSTITUTION
@@ -111,7 +111,7 @@ Change the <username> and <password> fields in config/database.yml to the userna
         pool: 5
         username: user1
         password: '123456'
-        socket: /var/run/mysqld/mysqld.sock
+        socket: /var/run/mysqld/mysqld.sock # /tmp/mysql.sock on Mac OSX
         host: localhost
         variables:
             sql_mode: NO_ENGINE_SUBSTITUTION

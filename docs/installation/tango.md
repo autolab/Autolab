@@ -55,7 +55,7 @@ This guide shows how to setup Tango in a **development environment**. Use the [p
 9.  Run the following command to start the server (producer). If no port is given, the server will run on the port specified in `config.py` (default: 3000):
 
         :::bash
-        python restful-tango/server.py <port>
+        python restful_tango/server.py <port>
 
     Open another terminal window and start the job manager (consumer):
 
@@ -87,7 +87,7 @@ This guide shows how to setup Tango in a **development environment**. Use the [p
         RESTFUL_PORT = "3000"
 
         # Key for Tango RESTful API
-        RESTFUL_KEY = "test"
+        RESTFUL_KEY = "test" # change this in production to a secret phrase
 
 13. See below for instructions on how to deploy Tango in a standalone production environment.
 
