@@ -88,7 +88,7 @@ This guide shows how to setup Tango in a **development environment**. Use the [p
         RESTFUL_PORT = "3000"
 
         # Key for Tango RESTful API
-        RESTFUL_KEY = "test" #(change this in production to a secret phrase)
+        RESTFUL_KEY = "test" # change this in production to a secret phrase
 
 13. See below for instructions on how to deploy Tango in a standalone production environment.
 

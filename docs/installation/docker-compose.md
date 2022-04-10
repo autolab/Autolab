@@ -301,7 +301,7 @@ This is due to the fact that `db/schema.rb` is updated whenever migrations are p
 
 You can resolve this by changing the owner of the files to be your current user, and then running `make set-perms` afterwards when you start the containers again.
 
-### autograder logs not appearing
+### Autograder logs not appearing
 
 This happens when you are accessing Autolab via localhost, as Tango will attempt to send the autograder logs to its own localhost instead.
 
