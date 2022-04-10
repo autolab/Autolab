@@ -1,8 +1,7 @@
 # Tango Installation
-
 This guide provides instructions for installing Tango on either a [development environment](#development-installation) or a [production environment](#production-installation).
 
-# Development Installation
+## Development Installation
 
 This guide shows how to setup Tango in a **development environment**. Use the [production installation](#production-installation) guide for installing in a **production environment**.
 
@@ -92,22 +91,17 @@ This guide shows how to setup Tango in a **development environment**. Use the [p
 
 13. See below for instructions on how to deploy Tango in a standalone production environment.
 
-
-
-
-# Production Installation
+## Production Installation
 
 This is a guide to setup a fully self-sufficient Tango deployment environment out-of-the-box using Docker. The suggested deployment pattern for Tango uses Nginx as a proxy and Supervisor as a process manager for Tango and all its dependencies. All requests to Nginx are rerouted to a Tango process.
 
-## Details
-
+### Details
 -   Nginx default port - 8600
 -   Tango ports - 8610, 8611
 -   Redis port - 6379
 -   You can change any of these in the respective config files in `deployment/config/` before you build the `tango_deployment` image.
 
-## Steps
-
+### Steps
 1.  Clone the Tango repo
 
         :::sh
@@ -239,7 +233,7 @@ This is a guide to setup a fully self-sufficient Tango deployment environment ou
         # (Server Reboots)
         $ service erwin status
 
-# Docker VMMS Setup
+## Docker VMMS Setup
 
 This is a guide to set up Tango to run jobs inside Docker containers.
 
@@ -261,7 +255,7 @@ This is a guide to set up Tango to run jobs inside Docker containers.
         # in config.py
         VMMS_NAME = "localDocker"
 
-# Amazon EC2 VMMS Setup
+## Amazon EC2 VMMS Setup
 
 This is a guide to set up Tango to run jobs on an Amazon EC2 VM.
 
