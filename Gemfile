@@ -160,3 +160,4 @@ gem 'mimemagic', '>= 0.3.7'
 
 # For encrypting API tokens
 gem 'lockbox'
+
