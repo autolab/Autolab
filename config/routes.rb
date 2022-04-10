@@ -149,7 +149,6 @@ Rails.application.routes.draw do
         get "viewGradesheet"
         get "writeup"
         get "handout"
-        post "update_assessment_group_setting"
 
         # autograde actions
         post "autograde_done"
