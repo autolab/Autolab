@@ -21,7 +21,7 @@ Rails.application.routes.draw do
           get "writeup"
           get "handout"
           post "submit"
-          post "set_group_size"
+          post "set_group_settings"
           
           resources :groups, only: [:index, :create, :destroy]
 
