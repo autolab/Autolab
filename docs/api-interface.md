@@ -144,21 +144,27 @@ Show detailed information of an assessment.
 
 ---
 
-#### set group size
+#### set group settings
 
 set the group size of the assessment.
 
 **Scope:** 'user_courses'
 
-**Endpoint:** `POST /courses/{course_name}/assessments/{assessment_name}`
+**Endpoint:** `POST /courses/{course_name}/assessments/{assessment_name}/set_group_settings`
 
-**Parameters:** [none]
+**Parameters:** 
+
+| key              | type     | description                                                                                               |
+| ---------------- | -------- | --------------------------------------------------------------------------------------------------------- |
+| group_size       | integer  | the number of people in a group                                                                           |
+| allow_student_assign_group       | boolean  | whether students are allowed to edit and self-assign groups                               |
 
 **Response:**
 
 | key              | type     | description                                                                                               |
 | ---------------- | -------- | --------------------------------------------------------------------------------------------------------- |
 | group_size       | integer  | the number of people in a group                                                                           |
+| allow_student_assign_group       | boolean  | whether students are allowed to edit and self-assign groups                               |
 
 ---
 

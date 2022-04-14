@@ -75,6 +75,12 @@ class GroupsController < ApplicationController
   #
   action_auth_level :create, :student
   def create
+    if !@assessment.allow_student_assign_group && @cud.student?
+      flash[:error] = "You are not allowed to self-assign group for this assessment. "\
+        "Contact your instructor for group assignment."
+      redirect_to(action: :new) && return
+    end
+
     unless cud2 = get_member_cud
       redirect_to(action: :new) && return
     end
@@ -97,7 +103,13 @@ class GroupsController < ApplicationController
       aud1.membership_status = AssessmentUserDatum::CONFIRMED
       aud1.save!
       aud2.group_id = group.id
-      aud2.membership_status = AssessmentUserDatum::GROUP_CONFIRMED
+      if !@assessment.allow_student_assign_group && !@cud.student?
+        # Student self-assignment disabled and instructor/CA assigning group
+        # No need for students to confirm membership
+        aud2.membership_status = AssessmentUserDatum::CONFIRMED
+      else
+        aud2.membership_status = AssessmentUserDatum::GROUP_CONFIRMED
+      end
       aud2.save!
     end
 
@@ -183,6 +195,12 @@ class GroupsController < ApplicationController
   #
   action_auth_level :add, :student
   def add
+    if !@assessment.allow_student_assign_group && @cud.student?
+      flash[:error] = "You are not allowed to add members to your group for this assessment. "\
+        "Contact your instructor for group assignment."
+      redirect_to(action: :index) && return
+    end
+
     unless @group.is_member(@assessment.aud_for(@cud.id)) || @cud.instructor
       redirect_to([@course, @assessment, :groups]) && return
     end
@@ -205,7 +223,13 @@ class GroupsController < ApplicationController
        newMemberAUD.group_id == @group.id
 
       newMemberAUD.group = @group
-      newMemberAUD.membership_status |= AssessmentUserDatum::GROUP_CONFIRMED
+      if !@assessment.allow_student_assign_group && !@cud.student?
+        # Student self-assignment disabled and instructor/CA assigning group
+        # No need for students to confirm membership
+        newMemberAUD.membership_status = AssessmentUserDatum::CONFIRMED
+      else
+        newMemberAUD.membership_status |= AssessmentUserDatum::GROUP_CONFIRMED
+      end
       newMemberAUD.save!
       flash[:success] = "Group confirmed!"
     end
@@ -219,6 +243,12 @@ class GroupsController < ApplicationController
   #
   action_auth_level :join, :student
   def join
+    if !@assessment.allow_student_assign_group && @cud.student?
+      flash[:error] = "You are not allowed to join another group for this assessment. "\
+        "Contact your instructor for group assignment."
+      redirect_to(action: :new) && return
+    end
+
     newMemberAUD = @assessment.aud_for(@cud.id)
 
     # make sure that the group is not too large
@@ -249,6 +279,12 @@ class GroupsController < ApplicationController
   #
   action_auth_level :leave, :student
   def leave
+    if !@assessment.allow_student_assign_group && @cud.student?
+      flash[:error] = "You are not allowed to change your group for this assessment. "\
+        "Contact your instructor for group assignment."
+      redirect_to(action: :index) && return
+    end
+
     cud = get_member_cud
     if cud
       leaver = @assessment.aud_for(cud.id)
