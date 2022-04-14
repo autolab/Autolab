@@ -149,6 +149,13 @@ div.main-header img {
   margin-left: -10px;
 }
 
+#speedgrader {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  overflow: hidden;
+}
+
 /* Custom Form Styling */
 form#edit_editCourse {
   margin-top: 80px;

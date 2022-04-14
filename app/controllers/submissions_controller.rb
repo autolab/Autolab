@@ -372,7 +372,6 @@ class SubmissionsController < ApplicationController
             # General case -- language can be inferred from file extension
             `ctags --extras=+q --output-format=json --fields="Nnk" #{codePath}`.split("\n")
           end
-
         @ctag_obj = []
         i = 0
         while i < @ctags_json.length

@@ -6,6 +6,7 @@ $(document).ready(function () {
   $('.collapsible').collapsible();
   //get line number in URL, if it exists
   var urlParams = new URLSearchParams(location.search);
+  
   if (urlParams.has("line")) {
     scrollToLine(urlParams.get("line"));
   }
@@ -53,12 +54,7 @@ function changeFile(headerPos) {
     newFile = localCache[headerPos];
     // Update the code viewer and symbol tree with the cached data
     $('#code-box').replaceWith(newFile.codeBox);
-
-    if (newFile.symbolTree == null) {
-      $('#symbol-tree-box').hide();
-    } else {
-      $('#symbol-tree-container').html(newFile.symbolTree);
-    }
+    $('#symbol-tree-container').replaceWith(newFile.symbolTree);
 
     // Add syntax highlighting to the new code viewer
     $('pre code').each(function () {
@@ -76,17 +72,10 @@ function changeFile(headerPos) {
 }
 
 function purgeCurrentPageCache() {
-  var symbolTree = $("#symbol-tree-box").html();
-  if (symbolTree) {
-    symbolTree = `<div id="symbol-tree-box">${symbolTree}</div>`
-  }
-  else {
-    symbolTree = null;
-  }
   localCache[currentHeaderPos] = {
     codeBox: `<div id="code-box">${$('#code-box').html()}</div>`,
     pdf: false,
-    symbolTree,
+    symbolTree: `<div id="symbol-tree-box">${$('#symbol-tree-box').html()}</div>`,
     url: window.location.href,
   };
 }
@@ -141,7 +130,7 @@ function fillAnnotationBox() {
       annotationsByProblem[problem] = []
     }
     annotations[i].problem = problem;
-    annotationsByProblem[problem].push(annotations[i])
+    annotationsByProblem[problem].push(annotations[i]);
   }
 
   for (var problem in annotationsByProblem) {
@@ -181,7 +170,6 @@ function fillAnnotationBox() {
 
     // sorts the annotation by line order
     annotationsByProblem[problem].sort(function (annotation1, annotation2) { return annotation1.line - annotation2.line });
-
     for (var i = 0; i < annotationsByProblem[problem].length; i++) {
       var annotation = annotationsByProblem[problem][i];
 
@@ -217,7 +205,7 @@ function fillAnnotationBox() {
     }
   }
   // Reloads the grades part upon update
-  $('.problemGrades').load(document.URL + ' .problemGrades');
+  $('.problemGrades').load(document.URL + ' .problemGrades')
 }
 
 // Sets up the keybindings
@@ -373,7 +361,6 @@ function attachEvents() {
   highlightLines(status);
 
   $(".add-button").on("click", function (e) {
-
     e.preventDefault();
     var line = $(this).parent().parent().parent();
     var annotationContainer = line.data("lineId");
@@ -395,7 +382,6 @@ function attachChangeFileEvents() {
     if (wasCachedLocally) {
       e.preventDefault();
       if ($(this).data("line")) {
-        console.log("called")
         scrollToLine($(this).data("line"));
       }
       return false;
@@ -865,7 +851,7 @@ var newAnnotationFormTemplatePDF = function (name, pageInd) {
     style: "width: 100%;"
   }, scoreDiv, space, problemSelect);
 
-  var hr = elt("hr");
+  var br = elt("br");
 
   var submitButton = elt("input", {
     type: "submit",
@@ -880,8 +866,6 @@ var newAnnotationFormTemplatePDF = function (name, pageInd) {
     class: "btn grey small",
     name: "cancel"
   });
-
-  var hr = elt("hr");
 
   // Creates a dictionary of problem and grader_id
   var autogradedproblems = {}
@@ -902,7 +886,7 @@ var newAnnotationFormTemplatePDF = function (name, pageInd) {
     title: "Press <Enter> to Submit",
     class: name,
     id: name + "-" + pageInd
-  }, commentLabel, rowDiv1, scoreLabel, colDiv2, hr, submitButton, cancelButton);
+  }, commentLabel, rowDiv1, scoreLabel, colDiv2, br, submitButton, cancelButton);
 
   return newForm;
 }
