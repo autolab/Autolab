@@ -177,17 +177,17 @@ class SubmissionsController < ApplicationController
     paths = submissions.collect(&:handin_file_path)
     paths = paths.select { |p| !p.nil? && File.exist?(p) && File.readable?(p) }
 
-    result = Archive.create_zip paths
+    result = Archive.create_zip paths # result is stringIO to be sent
 
     if result.nil?
       flash[:error] = "There are no submissions to download."
       redirect_to([@course, @assessment, :submissions]) && return
     end
 
-    send_file(result.path,
+    send_data(result.read, # to read from stringIO object returned by create_zip
               type: "application/zip",
-              stream: false, # So we can delete the file immediately.
-              filename: File.basename(result.path)) && return
+              disposition: "attachment", # tell browser to download
+              filename: "#{@course.name}_#{@course.semester}_#{@assessment.name}_submissions.zip")
   end
 
   # Action to be taken when the user wants do download a submission but
