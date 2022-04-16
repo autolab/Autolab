@@ -485,6 +485,13 @@ function newAnnotationFormCode() {
     refreshAnnotations();
   })
 
+  box.find('#comment-textarea').autocomplete({
+    source: ["apple","google"],
+    minLength: 0
+  }).focus(function() {
+      $(this).autocomplete('search', $(this).val())
+  });
+
   box.find('.annotation-form').submit(function (e) {
     e.preventDefault();
     var comment = $(this).find(".comment").val();
