@@ -794,3 +794,8 @@
 .summary_score{
   padding-left: 10px;
 }
+
+/* Style dropdown */
+.ui-menu .ui-menu-item {
+  min-height: 10px;
+}
