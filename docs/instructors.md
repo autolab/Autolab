@@ -53,6 +53,10 @@ A lab has a _start date_, _due date_, _end date_ and _grading deadline_. The lin
 
 Once an assessment is live (past the start date), students can begin submitting handins, where each handin is a single file, which can be either a text file or an archive file (e.g., `mm.c`, `handin.tar`). Alternatively, instructors can enable GitHub submission for an assessment in its settings and students can directly link their GitHub account and submit from their repo's corresponding branch. Check [here](/installation/github_integration) for how to set up and try our [demo site](https://nightly.autolabproject.com/) for a feel of its usage.
 
+## Groups
+
+Instructors can enable groups by setting the group size to be greater than 1. By default, students are allowed to form groups on their own. In that case, students can create their own group, ask to join an unsaturated group, or leave their existing group. When a student is in a group, any one member's submission counts towards the group's submission. Alternatively, when instructors disallow students to self-assign, it's best practice for instructors to assign groups through the [Autolab Frontend API](/api-overview).
+
 ## Penalties and Extensions
 
 You can set penalties for late handins, set hard limits on the number of handins, or set soft limits that penalize excessive handins on a sliding scale. You can also give a student an _extension_ that
