@@ -13,7 +13,13 @@ $(document).ready(function () {
   if (!newFile.pdf) {
     purgeCurrentPageCache();
   }
-  
+
+  // retrieve and initialize shared comments
+  // also retrieves annotation id to allow easy deletion in the future
+  $.getJSON(sharedCommentsPath, function( data ) {
+    localCache['shared_comments'] = data.map(i => i.comment);
+  });
+
   resizeCodeTable();
 });
 
@@ -21,7 +27,6 @@ $(document).ready(function () {
 $(window).on('resize', function(){
   resizeCodeTable();
 });
-
 
 function resizeCodeTable(){
   // Resize code table if announcements are shown
@@ -486,8 +491,9 @@ function newAnnotationFormCode() {
   })
 
   box.find('#comment-textarea').autocomplete({
-    source: ["apple","google"],
-    minLength: 0
+    minLength: 0,
+    delay: 0,
+    source: localCache["shared_comments"] 
   }).focus(function() {
       $(this).autocomplete('search', $(this).val())
   });
@@ -1023,6 +1029,7 @@ var newEditAnnotationForm = function (pageInd, annObj) {
 }
 
 /* following paths/functions for annotations */
+var sharedCommentsPath = basePath + "/shared_comments";
 var createPath = basePath + ".json";
 var updatePath = function (ann) {
   return [basePath, "/", ann.id, ".json"].join("");

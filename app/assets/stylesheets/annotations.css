@@ -564,6 +564,22 @@
   background: #818181;
 }
 
+.annotation-comment {
+  margin-bottom:0; 
+  padding-bottom:0 !important;
+}
+
+.annotation-problem-score {
+  margin-bottom:0; 
+  margin-top:0 !important; 
+  padding-bottom:0 !important;
+}
+
+.annotation-buttons {
+  margin-top:0 !important; 
+  margin-bottom:0 !important;
+}
+
 .problemGrades{
   overflow: auto;
 }
@@ -797,5 +813,22 @@
 
 /* Style dropdown */
 .ui-menu .ui-menu-item {
-  min-height: 10px;
+  font-family: "Source Sans Pro", sans-serif;
+  font-size: 16px;
+  padding-top: 0.5rem !important;
+  padding-bottom: 0.5rem !important;
+
+}
+
+.ui-menu-item.ui-state-focus{
+  background: rgba(211, 211, 211, 0.526) !important;
+  background-image: none !important;
+}
+
+.ui-autocomplete {
+  max-height: 15rem;
+  max-width: 60%;
+  overflow-y: auto;
+  /* prevent horizontal scrollbar */
+  overflow-x: hidden;
 }
