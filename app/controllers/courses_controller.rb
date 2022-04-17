@@ -710,6 +710,7 @@ private
   # rubocop:disable Lint/UselessAssignment
   def detect_and_convert_roster(roster)
     raise "Roster is empty" if roster.empty?
+
     parsedRoster = CSV.parse(roster, skip_blanks: true)
     raise "Roster cannot be recognized" if parsedRoster[0][0].nil?
 
