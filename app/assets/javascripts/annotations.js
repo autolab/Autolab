@@ -495,6 +495,7 @@ function newAnnotationFormCode() {
   box.find('.annotation-form').submit(function (e) {
     e.preventDefault();
     var comment = $(this).find(".comment").val();
+    var shared_comment = $(this).find("#shared-comment").is(":checked");
     var score = $(this).find(".score").val();
     var problem_id = $(this).find(".problem-id").val();
     var line = $(this).parent().parent().data("lineId");
@@ -513,7 +514,7 @@ function newAnnotationFormCode() {
     }
 
 
-    submitNewAnnotation(comment, score, problem_id, line, $(this));
+    submitNewAnnotation(comment, shared_comment, score, problem_id, line, $(this));
   });
 
   return box;
@@ -1081,13 +1082,14 @@ var submitNewPDFAnnotation = function (comment, value, problem_id, pageInd, xRat
 }
 
 /* sets up and calls $.ajax to submit an annotation */
-var submitNewAnnotation = function (comment, value, problem_id, lineInd, form) {
+var submitNewAnnotation = function (comment, shared_comment, value, problem_id, lineInd, form) {
   var newAnnotation = createAnnotation();
   newAnnotation.line = parseInt(lineInd);
   newAnnotation.comment = comment;
   newAnnotation.value = value;
   newAnnotation.problem_id = problem_id;
   newAnnotation.filename = fileNameStr;
+  newAnnotation.shared_comment = shared_comment;
 
   if (comment == undefined || comment == "") {
     $(form).find('.error').text("Could not save annotation. Please refresh the page and try again.").show();
