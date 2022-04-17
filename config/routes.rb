@@ -116,7 +116,12 @@ Rails.application.routes.draw do
         get "help", on: :member
       end
       resources :submissions do
-        resources :annotations, only: [:create, :update, :destroy]
+        resources :annotations, only: [:create, :update, :destroy] do
+          collection do
+            get "shared_comments"
+          end
+        end
+
         resources :scores, only: [:create, :show, :update]
 
         member do

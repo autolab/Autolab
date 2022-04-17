@@ -7,7 +7,7 @@
 class AnnotationsController < ApplicationController
   before_action :set_assessment
   before_action :set_submission
-  before_action :set_annotation, except: [:create]
+  before_action :set_annotation, except: [:create, :shared_comments]
   rescue_from ActionView::MissingTemplate do |_exception|
     redirect_to("/home/error_404")
   end
@@ -49,6 +49,15 @@ class AnnotationsController < ApplicationController
     end
 
     head :no_content
+  end
+
+  # GET /assessments/shared_comments
+  # Gets all shared_comments of annotations
+  action_auth_level :shared_comments, :course_assistant
+  def shared_comments
+    result = Annotation.select("annotations.id, annotations.comment")
+                       .joins(@submissions).where(shared_comment: true).as_json
+    render json: result, status: :ok
   end
 
 private
