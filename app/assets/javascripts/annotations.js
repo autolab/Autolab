@@ -14,12 +14,6 @@ $(document).ready(function () {
     purgeCurrentPageCache();
   }
 
-  // retrieve and initialize shared comments
-  // also retrieves annotation id to allow easy deletion in the future
-  $.getJSON(sharedCommentsPath, function( data ) {
-    localCache['shared_comments'] = data.map(i => i.comment);
-  });
-
   resizeCodeTable();
 });
 
@@ -126,7 +120,15 @@ function plusFix(n) {
   return n.toFixed(1);
 }
 
+// function called after create, update & delete of annotations
 function fillAnnotationBox() {
+
+  // retrieve and initialize shared comments
+  // also retrieves annotation id to allow easy deletion in the future
+  $.getJSON(sharedCommentsPath, function( data ) {
+    localCache['shared_comments'] = data.map(i => i.comment);
+  });
+
   var annotationsByProblem = {}
   $(".collapsible.expandable").find('li').remove();
   for (var i = 0; i < annotations.length; i++) {
@@ -351,6 +353,7 @@ $("#highlightLongLines").click(function () {
 });
 
 function displayAnnotations() {
+
   $(".annotation-line").not(".base-annotation-line").remove();
 
   _.each(annotationsByPositionByLine[currentHeaderPos], function (arr_annotations, line) {
