@@ -555,7 +555,8 @@ function initializeBoxForm(box, annotation) {
     var comment = $(this).find(".comment").val();
     var score = $(this).find(".score").val();
     var problem_id = $(this).find(".problem-id").val();
-
+    var shared_comment = $(this).find("#shared-comment").is(":checked");
+    
     if (comment == undefined || comment == "") {
       box.find('.error').text("Annotation comment can not be blank!").show();
       return;
@@ -565,6 +566,7 @@ function initializeBoxForm(box, annotation) {
     annotationObject.comment = comment;
     annotationObject.value = score;
     annotationObject.problem_id = problem_id;
+    annotationObject.shared_comment = shared_comment;
 
     updateAnnotation(annotationObject, box);
   });
@@ -580,6 +582,7 @@ function newAnnotationBox(annotation) {
   var valueStr = annotation.value ? annotation.value.toString() : "0";
   valueStr = plusFix(valueStr);
   var commentStr = annotation.comment;
+  var shared_comment = annotation.shared_comment;
 
   if (annotation.value < 0) {
     box.find('.value').parent().removeClass('positive').addClass('negative');
@@ -591,6 +594,7 @@ function newAnnotationBox(annotation) {
   box.find('.comment').text(commentStr);
   box.find('.problem_id').text(problemStr);
   box.find('.value').text(valueStr);
+  box.find('#shared-comment').prop("checked",shared_comment);
 
   if (isInstructor) {
     box.find('.instructors-only').show();
