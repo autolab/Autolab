@@ -650,7 +650,7 @@ private
       flash[:error] = "Error parsing CSV file: #{e}"
       redirect_to(action: "upload_roster") && return
     rescue StandardError => e
-      flash[:error] = "Error uploading the CSV file!: #{e}#{e.backtrace.join('<br>')}"
+      flash[:error] = "Error uploading the CSV file: #{e}"
       redirect_to(action: "upload_roster") && return
       raise e
     end
@@ -709,6 +709,8 @@ private
   # map[10]: section
   # rubocop:disable Lint/UselessAssignment
   def detect_and_convert_roster(roster)
+    raise "Roster is empty" if roster.empty?
+
     parsedRoster = CSV.parse(roster, skip_blanks: true)
     raise "Roster cannot be recognized" if parsedRoster[0][0].nil?
 
