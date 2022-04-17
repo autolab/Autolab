@@ -13,7 +13,8 @@ $(document).ready(function () {
   if (!newFile.pdf) {
     purgeCurrentPageCache();
   }
-
+  
+  retrieveSharedComments();
   resizeCodeTable();
 });
 
@@ -21,6 +22,14 @@ $(document).ready(function () {
 $(window).on('resize', function(){
   resizeCodeTable();
 });
+
+// retrieve shared comments
+// also retrieves annotation id to allow easy deletion in the future
+function retrieveSharedComments(){
+  $.getJSON(sharedCommentsPath, function( data ) {
+    localCache['shared_comments'] = data.map(i => i.comment);
+  });
+}
 
 function resizeCodeTable(){
   // Resize code table if announcements are shown
@@ -123,12 +132,8 @@ function plusFix(n) {
 // function called after create, update & delete of annotations
 function fillAnnotationBox() {
 
-  // retrieve and initialize shared comments
-  // also retrieves annotation id to allow easy deletion in the future
-  $.getJSON(sharedCommentsPath, function( data ) {
-    localCache['shared_comments'] = data.map(i => i.comment);
-  });
-
+  retrieveSharedComments();
+  
   var annotationsByProblem = {}
   $(".collapsible.expandable").find('li').remove();
   for (var i = 0; i < annotations.length; i++) {
