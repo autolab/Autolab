@@ -126,7 +126,7 @@ function plusFix(n) {
     return "+" + n.toFixed(1);
   }
 
-  return n.toFixed(1);ß
+  return n.toFixed(1);
 }
 
 // function called after create, update & delete of annotations
