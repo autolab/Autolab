@@ -6,34 +6,34 @@ $(document).ready(function () {
   $('.collapsible').collapsible();
   //get line number in URL, if it exists
   var urlParams = new URLSearchParams(location.search);
-  
+
   if (urlParams.has("line")) {
     scrollToLine(urlParams.get("line"));
   }
   if (!newFile.pdf) {
     purgeCurrentPageCache();
   }
-  
+
   retrieveSharedComments();
   resizeCodeTable();
 });
 
-/* On Window Reisze */ 
-$(window).on('resize', function(){
+/* On Window Reisze */
+$(window).on('resize', function () {
   resizeCodeTable();
 });
 
 // retrieve shared comments
 // also retrieves annotation id to allow easy deletion in the future
-function retrieveSharedComments(){
-  $.getJSON(sharedCommentsPath, function( data ) {
+function retrieveSharedComments() {
+  $.getJSON(sharedCommentsPath, function (data) {
     localCache['shared_comments'] = data.map(i => i.comment);
   });
 }
 
-function resizeCodeTable(){
+function resizeCodeTable() {
   // Resize code table if announcements are shown
-  if($(".annoucement.gray-box")){
+  if ($(".annoucement.gray-box")) {
     $('.code-table').css("max-height", $(window).height() - $(".annoucement.gray-box").height() - 250);
     $('#annotationPane').css("max-height", $(window).height() - $(".annoucement.gray-box").height() - 200);
   }
@@ -126,14 +126,14 @@ function plusFix(n) {
     return "+" + n.toFixed(1);
   }
 
-  return n.toFixed(1);
+  return n.toFixed(1);ß
 }
 
 // function called after create, update & delete of annotations
 function fillAnnotationBox() {
 
   retrieveSharedComments();
-  
+
   var annotationsByProblem = {}
   $(".collapsible.expandable").find('li').remove();
   for (var i = 0; i < annotations.length; i++) {
@@ -501,9 +501,9 @@ function newAnnotationFormCode() {
   box.find('#comment-textarea').autocomplete({
     minLength: 0,
     delay: 0,
-    source: localCache["shared_comments"] 
-  }).focus(function() {
-      $(this).autocomplete('search', $(this).val())
+    source: localCache["shared_comments"]
+  }).focus(function () {
+    $(this).autocomplete('search', $(this).val())
   });
 
   box.find('.annotation-form').submit(function (e) {
@@ -570,7 +570,7 @@ function initializeBoxForm(box, annotation) {
     var score = $(this).find(".score").val();
     var problem_id = $(this).find(".problem-id").val();
     var shared_comment = $(this).find("#shared-comment").is(":checked");
-    
+
     if (comment == undefined || comment == "") {
       box.find('.error').text("Annotation comment can not be blank!").show();
       return;
@@ -608,7 +608,7 @@ function newAnnotationBox(annotation) {
   box.find('.comment').text(commentStr);
   box.find('.problem_id').text(problemStr);
   box.find('.value').text(valueStr);
-  box.find('#shared-comment').prop("checked",shared_comment);
+  box.find('#shared-comment').prop("checked", shared_comment);
 
   if (isInstructor) {
     box.find('.instructors-only').show();
