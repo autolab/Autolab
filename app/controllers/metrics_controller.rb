@@ -212,6 +212,52 @@ class MetricsController < ApplicationController
     render json: { message: "Successfully updated instances" }, status: :ok
   end
 
+  action_auth_level :get_watchlist_category_allowlist, :instructor
+  def get_watchlist_category_allowlist
+    # This API endpoint aims to retrieve the current/latest category allowlist for a course
+    # On success, a JSON list of category names will be returned
+    # On error, an error message in JSON will be rendered
+    begin
+      course_name = params[:course_name]
+      raise "Course name cannot be blank" if course_name.blank?
+
+      category_allowlist = WatchlistConfiguration.get_category_allowlist_for_course(course_name)
+    rescue StandardError => e
+      render json: { error: e.message }, status: :not_found
+      return
+    end
+
+    render json: category_allowlist, status: :ok
+  end
+
+  action_auth_level :update_watchlist_configuration, :instructor
+  def update_watchlist_configuration
+    # This API endpoint updates a course's watchlist configuration
+    # On success, a JSON object of watchlist configuration will be returned
+    # params required include course_name and allowlist
+    # allowlist should be a hash in the following form:
+    # { "category": ["Lab", "Homework"], "assessment": ["homework1", "homework2"] }
+    # Note: The assessment names ARE NOT the display names.
+    begin
+      course_name = params[:course_name]
+      raise "Course name cannot be blank" if course_name.blank?
+    rescue StandardError => e
+      render json: { error: e.message }, status: :not_found
+      return
+    end
+
+    begin
+      # handle nil allowlist in models
+      config = WatchlistConfiguration.update_watchlist_configuration_for_course(course_name,
+                                                                                params[:allowlist])
+    rescue StandardError => e
+      render json: { error: e.message }, status: :bad_request
+      return
+    end
+
+    render json: config, status: :ok
+  end
+
 private
 
   def new_metrics_params
