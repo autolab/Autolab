@@ -12,7 +12,7 @@
 
 ActiveRecord::Schema.define(version: 2022_04_04_193451) do
 
-  create_table "annotations", force: :cascade do |t|
+  create_table "annotations", id: :integer, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|
     t.integer "submission_id"
     t.string "filename"
     t.integer "position"
@@ -26,11 +26,11 @@ ActiveRecord::Schema.define(version: 2022_04_04_193451) do
     t.string "coordinate"
   end
 
-  create_table "announcements", force: :cascade do |t|
+  create_table "announcements", id: :integer, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|
     t.string "title"
     t.text "description"
-    t.datetime "start_date"
-    t.datetime "end_date"
+    t.timestamp "start_date"
+    t.timestamp "end_date"
     t.integer "course_user_datum_id"
     t.integer "course_id"
     t.datetime "created_at"
@@ -39,14 +39,14 @@ ActiveRecord::Schema.define(version: 2022_04_04_193451) do
     t.boolean "system", default: false, null: false
   end
 
-  create_table "assessment_user_data", force: :cascade do |t|
+  create_table "assessment_user_data", id: :integer, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|
     t.integer "course_user_datum_id", null: false
     t.integer "assessment_id", null: false
     t.integer "latest_submission_id"
     t.datetime "created_at"
     t.datetime "updated_at"
     t.integer "grade_type", default: 0, null: false
-    t.string "repository", limit: 255
+    t.string "repository"
     t.integer "group_id"
     t.integer "membership_status", limit: 1, default: 0
     t.index ["assessment_id"], name: "index_assessment_user_data_on_assessment_id"
@@ -55,11 +55,11 @@ ActiveRecord::Schema.define(version: 2022_04_04_193451) do
     t.index ["latest_submission_id"], name: "index_assessment_user_data_on_latest_submission_id", unique: true
   end
 
-  create_table "assessments", force: :cascade do |t|
-    t.datetime "due_at"
-    t.datetime "end_at"
-    t.datetime "visible_at"
-    t.datetime "start_at"
+  create_table "assessments", id: :integer, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|
+    t.timestamp "due_at"
+    t.timestamp "end_at"
+    t.timestamp "visible_at"
+    t.timestamp "start_at"
     t.string "name"
     t.text "description"
     t.datetime "created_at"
@@ -98,7 +98,7 @@ ActiveRecord::Schema.define(version: 2022_04_04_193451) do
     t.boolean "allow_student_assign_group", default: true
   end
 
-  create_table "attachments", force: :cascade do |t|
+  create_table "attachments", id: :integer, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|
     t.string "filename"
     t.string "mime_type"
     t.boolean "released"
@@ -110,7 +110,7 @@ ActiveRecord::Schema.define(version: 2022_04_04_193451) do
     t.index ["assessment_id"], name: "index_attachments_on_assessment_id"
   end
 
-  create_table "authentications", force: :cascade do |t|
+  create_table "authentications", id: :integer, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|
     t.string "provider", null: false
     t.string "uid", null: false
     t.integer "user_id"
@@ -118,14 +118,14 @@ ActiveRecord::Schema.define(version: 2022_04_04_193451) do
     t.datetime "updated_at"
   end
 
-  create_table "autograders", force: :cascade do |t|
+  create_table "autograders", id: :integer, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|
     t.integer "assessment_id"
     t.integer "autograde_timeout"
     t.string "autograde_image"
     t.boolean "release_score"
   end
 
-  create_table "course_user_data", force: :cascade do |t|
+  create_table "course_user_data", id: :integer, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|
     t.string "lecture"
     t.string "section", default: ""
     t.string "grade_policy", default: ""
@@ -140,7 +140,7 @@ ActiveRecord::Schema.define(version: 2022_04_04_193451) do
     t.integer "user_id", null: false
   end
 
-  create_table "courses", force: :cascade do |t|
+  create_table "courses", id: :integer, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|
     t.string "name"
     t.string "semester"
     t.integer "late_slack"
@@ -158,14 +158,14 @@ ActiveRecord::Schema.define(version: 2022_04_04_193451) do
     t.string "website"
   end
 
-  create_table "extensions", force: :cascade do |t|
+  create_table "extensions", id: :integer, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|
     t.integer "course_user_datum_id"
     t.integer "assessment_id"
     t.integer "days"
     t.boolean "infinite", default: false, null: false
   end
 
-  create_table "github_integrations", force: :cascade do |t|
+  create_table "github_integrations", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|
     t.string "oauth_state"
     t.text "access_token_ciphertext"
     t.integer "user_id"
@@ -175,25 +175,25 @@ ActiveRecord::Schema.define(version: 2022_04_04_193451) do
     t.index ["user_id"], name: "index_github_integrations_on_user_id", unique: true
   end
 
-  create_table "groups", force: :cascade do |t|
+  create_table "groups", id: :integer, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|
     t.string "name"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
 
-  create_table "module_data", force: :cascade do |t|
+  create_table "module_data", id: :integer, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|
     t.integer "field_id"
     t.integer "data_id"
     t.binary "data"
   end
 
-  create_table "module_fields", force: :cascade do |t|
+  create_table "module_fields", id: :integer, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|
     t.integer "user_module_id"
     t.string "name"
     t.string "data_type"
   end
 
-  create_table "oauth_access_grants", force: :cascade do |t|
+  create_table "oauth_access_grants", id: :integer, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|
     t.integer "resource_owner_id", null: false
     t.integer "application_id", null: false
     t.string "token", null: false
@@ -202,10 +202,11 @@ ActiveRecord::Schema.define(version: 2022_04_04_193451) do
     t.datetime "created_at", null: false
     t.datetime "revoked_at"
     t.string "scopes"
+    t.index ["application_id"], name: "fk_rails_b4b53e07b8"
     t.index ["token"], name: "index_oauth_access_grants_on_token", unique: true
   end
 
-  create_table "oauth_access_tokens", force: :cascade do |t|
+  create_table "oauth_access_tokens", id: :integer, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|
     t.integer "resource_owner_id"
     t.integer "application_id"
     t.string "token", null: false
@@ -215,12 +216,13 @@ ActiveRecord::Schema.define(version: 2022_04_04_193451) do
     t.datetime "created_at", null: false
     t.string "scopes"
     t.string "previous_refresh_token", default: "", null: false
+    t.index ["application_id"], name: "fk_rails_732cb83ab7"
     t.index ["refresh_token"], name: "index_oauth_access_tokens_on_refresh_token", unique: true
     t.index ["resource_owner_id"], name: "index_oauth_access_tokens_on_resource_owner_id"
     t.index ["token"], name: "index_oauth_access_tokens_on_token", unique: true
   end
 
-  create_table "oauth_applications", force: :cascade do |t|
+  create_table "oauth_applications", id: :integer, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|
     t.string "name", null: false
     t.string "uid", null: false
     t.string "secret", null: false
@@ -232,7 +234,7 @@ ActiveRecord::Schema.define(version: 2022_04_04_193451) do
     t.index ["uid"], name: "index_oauth_applications_on_uid", unique: true
   end
 
-  create_table "oauth_device_flow_requests", force: :cascade do |t|
+  create_table "oauth_device_flow_requests", id: :integer, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|
     t.integer "application_id", null: false
     t.string "scopes", default: "", null: false
     t.string "device_code", null: false
@@ -242,11 +244,12 @@ ActiveRecord::Schema.define(version: 2022_04_04_193451) do
     t.datetime "resolved_at"
     t.integer "resource_owner_id"
     t.string "access_code"
+    t.index ["application_id"], name: "fk_rails_4035c6e0ed"
     t.index ["device_code"], name: "index_oauth_device_flow_requests_on_device_code", unique: true
     t.index ["user_code"], name: "index_oauth_device_flow_requests_on_user_code", unique: true
   end
 
-  create_table "problems", force: :cascade do |t|
+  create_table "problems", id: :integer, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|
     t.string "name"
     t.text "description"
     t.integer "assessment_id"
@@ -256,7 +259,7 @@ ActiveRecord::Schema.define(version: 2022_04_04_193451) do
     t.boolean "optional", default: false
   end
 
-  create_table "risk_conditions", force: :cascade do |t|
+  create_table "risk_conditions", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|
     t.integer "condition_type"
     t.text "parameters"
     t.integer "version"
@@ -265,31 +268,31 @@ ActiveRecord::Schema.define(version: 2022_04_04_193451) do
     t.integer "course_id"
   end
 
-  create_table "scheduler", force: :cascade do |t|
+  create_table "scheduler", id: :integer, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|
     t.string "action"
-    t.datetime "next"
+    t.timestamp "next"
     t.integer "interval"
     t.integer "course_id"
     t.datetime "created_at"
     t.datetime "updated_at"
   end
 
-  create_table "score_adjustments", force: :cascade do |t|
+  create_table "score_adjustments", id: :integer, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|
     t.integer "kind", null: false
     t.float "value", null: false
     t.string "type", default: "Tweak", null: false
   end
 
-  create_table "scoreboards", force: :cascade do |t|
+  create_table "scoreboards", id: :integer, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|
     t.integer "assessment_id"
-    t.text "banner", limit: 65535
-    t.text "colspec", limit: 65535
+    t.text "banner"
+    t.text "colspec"
   end
 
-  create_table "scores", force: :cascade do |t|
+  create_table "scores", id: :integer, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|
     t.integer "submission_id"
     t.float "score"
-    t.text "feedback", limit: 16777215
+    t.text "feedback", size: :medium
     t.integer "problem_id"
     t.datetime "created_at"
     t.datetime "updated_at"
@@ -299,7 +302,7 @@ ActiveRecord::Schema.define(version: 2022_04_04_193451) do
     t.index ["submission_id"], name: "index_scores_on_submission_id"
   end
 
-  create_table "submissions", force: :cascade do |t|
+  create_table "submissions", id: :integer, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|
     t.integer "version"
     t.integer "course_user_datum_id"
     t.integer "assessment_id"
@@ -315,7 +318,7 @@ ActiveRecord::Schema.define(version: 2022_04_04_193451) do
     t.string "submitter_ip", limit: 40
     t.integer "tweak_id"
     t.boolean "ignored", default: false, null: false
-    t.string "dave", limit: 255
+    t.string "dave"
     t.text "settings"
     t.text "embedded_quiz_form_answer"
     t.integer "submitted_by_app_id"
@@ -323,7 +326,7 @@ ActiveRecord::Schema.define(version: 2022_04_04_193451) do
     t.index ["course_user_datum_id"], name: "index_submissions_on_course_user_datum_id"
   end
 
-  create_table "users", force: :cascade do |t|
+  create_table "users", id: :integer, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|
     t.string "email", default: "", null: false
     t.string "first_name", default: "", null: false
     t.string "last_name", default: "", null: false
@@ -374,4 +377,8 @@ ActiveRecord::Schema.define(version: 2022_04_04_193451) do
     t.index ["risk_condition_id"], name: "index_watchlist_instances_on_risk_condition_id"
   end
 
+  add_foreign_key "github_integrations", "users"
+  add_foreign_key "oauth_access_grants", "oauth_applications", column: "application_id"
+  add_foreign_key "oauth_access_tokens", "oauth_applications", column: "application_id"
+  add_foreign_key "oauth_device_flow_requests", "oauth_applications", column: "application_id"
 end

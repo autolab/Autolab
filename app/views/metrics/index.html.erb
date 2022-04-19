@@ -6,7 +6,8 @@
 <% content_for :javascripts do %>
   <%= external_javascript_include_tag "lodash", "3.10.1" %>
   <%= javascript_include_tag "watchlist" %>
-  <%= javascript_include_tag "metrics"%>
+  <%= javascript_include_tag "metrics" %>
+  <%= javascript_include_tag "metrics_config"%>
 <% end %>
 
 <div id="message_area">
@@ -14,6 +15,7 @@
 <div class="ui pointing secondary tabular menu">
   <a class="item active" data-tab="watchlist">Watchlist</a>
   <a class="item" data-tab="student metrics">Student Metrics</a>
+  <a class="item" data-tab="configurations">Configurations</a>
 </div>
 <div class="ui tab active" data-tab="watchlist" id="watchlist_tab">
   <div class="top-bar">
@@ -213,5 +215,26 @@
     </div>
     <br>
     <button class="ui disabled submit button" id="save">SAVE</button>
+  </div>
+</div>
+<div class="ui tab" data-tab="configurations">
+  <h3> Considered Categories </h3>
+  <h7>
+    All categories are selected by default. Modify this list to change which assessment categories are included in student metrics analysis.
+  </h7>
+
+  <div class="ui grid">
+    <div class="five wide column">
+      <h3> Included </h3>
+      <h6>hi</h6>
+    </div>
+    <div class="three wide column">
+      <br /><br />
+      <i class="exchange alternate icon"></i>
+    </div>
+    <div class="three wide column">
+      <h3> Not Included </h3>
+      <h6>hi</h6>
+    </div>
   </div>
 </div>
