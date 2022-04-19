@@ -335,6 +335,9 @@ $ cd test-autograder && make clean && make
 
 The `hello/writeup` contains the detailed lab writeup, either html or pdf file, that students can download from the Autolab front end.
 
+## Other sample autograders
+We have a [repository for sample autograders](https://github.com/autolab/autograders-examples) written for popular languages, which includes Python, Java, C++, Golang, and Javascript.
+
 ## Troubleshooting
 
 #### Why is Autolab not displaying my stdout output?

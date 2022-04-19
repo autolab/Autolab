@@ -59,7 +59,7 @@ In the `hello` lab, students are asked to write a file called `hello.c`. The aut
 2. Refresh the submitted entries page to see the autograded score appear
 3. Click on a sub score, in this case the `100.0` under the `Correctness` heading, to see the output from the autograder.
 
-For more information on `hello` lab, or how to create your own lab, go to [Guide for Lab Authors](/lab)! 
+For more information on `hello` lab, or how to create your own lab, go to [Guide for Lab Authors](/lab)! You can also check out other sample autograders on our [Autograders repository](https://github.com/autolab/autograders-examples).
 
 ### 3. Create a PDF homework assessment
 Autolab can also handle pdf submissions as well!
