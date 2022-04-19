@@ -116,6 +116,21 @@ Please feel free to use Autolab at your school/organization. If you run into any
 
 
 ## Changelog
+### [v2.8.0](https://github.com/autolab/Autolab/releases/tag/v2.8.0) (2021/12/20) GitHub Integration and Roster Upload Improvement
+- Students can now submit code via GitHub
+- Improved Roster Upload with better error reporting
+- Numerous bug fixes
+
+### [v2.7.0](https://github.com/autolab/Autolab/releases/tag/v2.7.0) (2021/05/29) Autolab Docker Compose, Student Metrics, Redesigned Documentation
+- Integration with new Docker Compose [installation method](https://github.com/autolab/docker)
+- Student Metrics Feature, which allows instructors to identify students who may be in need of attention
+- Redesigned Autolab documentation
+- Numerous bug fixes
+
+### [v2.6.0](https://github.com/autolab/Autolab/releases/tag/v2.6.0) (2020/10/24) Formatted Feedbacks, Course Dashboard, Accessibility
+- Formatted Feedback feature
+- Introduction of Course Dashboards
+- Numerous bug fixes
 
 ### (2021/10/12) Moved from Uglifier to Terser
 - Autolab has migrated from Uglifier to Terser for our Javascript compressor in order to support the latest Javascript syntax. Please change `Uglifier.new(harmony: true)` to `:terser` in your `production.rb`
