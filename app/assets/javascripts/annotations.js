@@ -622,6 +622,15 @@ function newAnnotationBox(annotation) {
     e.preventDefault();
     box.find('.annotation-box').hide();
     box.find('.annotation-form').show().css('width', '100%');
+    
+    box.find('#comment-textarea').autocomplete({
+      minLength: 0,
+      delay: 0,
+      source: localCache["shared_comments"],
+    }).focus(function () {
+      $(this).autocomplete('search', $(this).val())
+    });
+
     refreshAnnotations();
   })
 
