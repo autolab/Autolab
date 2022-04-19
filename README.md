@@ -37,8 +37,6 @@ We have a demo site running at https://nightly.autolabproject.com/. See the [doc
 
 We released new documentation! Check it out [here](https://docs.autolabproject.com).
 
-We are currently in the process of updating our documentation to work with our newest release of Autolab, v2.5.0, which has been upgraded to Rails 5 from Rails 4
-
 ## Testing
 
 ### Setting up Tests
@@ -67,12 +65,8 @@ bundle exec rails spec
 ```
 
 ## Rails 4 Support
-Autolab is now running on Rails 5. However, we may still work on important bug fixes on the Rails 4 branch,
- partially because the deployment on CMU is currently still on Rails 4. Please file an issue
-  if you believe that you have found a severe bug. The Rails 4 branch
- can be found on `master-rails-4`. 
- 
- We will not be backporting new features from `master` to `master-rails-4`.
+Autolab is now running on Rails 5. The Rails 4 branch can be found on `master-rails-4`. 
+We will not be backporting any new features from `master` to `master-rails-4`, and we have discontinued Rails 4 support.
 
 ## Updating Docs
 To install mkdocs, run
