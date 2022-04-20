@@ -506,6 +506,8 @@ function newAnnotationFormCode() {
     $(this).autocomplete('search', $(this).val())
   });
 
+  box.tooltip();
+
   box.find('.annotation-form').submit(function (e) {
     e.preventDefault();
     var comment = $(this).find(".comment").val();
@@ -630,7 +632,8 @@ function newAnnotationBox(annotation) {
     }).focus(function () {
       $(this).autocomplete('search', $(this).val())
     });
-
+    box.tooltip();
+    
     refreshAnnotations();
   })
 

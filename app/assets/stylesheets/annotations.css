@@ -849,3 +849,16 @@
   font-weight: bold;
 }
 
+/* Tooltip */
+span > .material-icons {
+  vertical-align: middle;
+  color: grey;
+}
+
+.ui-tooltip {
+  font-family: 'Source Sans Pro', sans-serif !important;
+  font-size: 14px !important;
+  box-shadow: 0.5px 0.5px 0.5px 0.5px grey !important;
+  border-color: white !important;
+} 
+
