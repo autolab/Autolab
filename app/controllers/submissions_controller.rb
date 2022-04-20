@@ -468,7 +468,9 @@ class SubmissionsController < ApplicationController
                                     .map(&:latest_submission)
                                     .reject(&:nil?)
                                     .sort_by{ |submission| submission.course_user_datum.user.email }
-
+    @userSubmissions = @assessment.submissions
+                                  .where(course_user_datum_id: @submission.course_user_datum_id)
+                                  .order("version DESC")
     @curSubmissionIndex = @latestSubmissions.index do |submission|
       submission.course_user_datum.user.email == @submission.course_user_datum.user.email
     end
