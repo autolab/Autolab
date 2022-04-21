@@ -828,7 +828,7 @@
 
 .ui-autocomplete {
   max-height: 15rem;
-  max-width: 60%;
+  max-width: 97%;
   overflow-y: auto;
   /* prevent horizontal scrollbar */
   overflow-x: hidden;

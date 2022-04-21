@@ -499,6 +499,7 @@ function newAnnotationFormCode() {
   })
 
   box.find('#comment-textarea').autocomplete({
+    appendTo: box.find('#comment-textarea').parent(),
     minLength: 0,
     delay: 0,
     source: localCache["shared_comments"]
@@ -626,6 +627,7 @@ function newAnnotationBox(annotation) {
     box.find('.annotation-form').show().css('width', '100%');
     
     box.find('#comment-textarea').autocomplete({
+      appendTo: box.find('#comment-textarea').parent(),
       minLength: 0,
       delay: 0,
       source: localCache["shared_comments"],
