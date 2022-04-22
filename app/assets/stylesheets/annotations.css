@@ -216,8 +216,10 @@
   padding: 5px;
 }
 
-.code-table .annotation-line .annotation-box .annotation-body p {
+.code-table .annotation-line .annotation-box .annotation-body div {
   margin: 5px 0;
+  font-family: 'Source Sans Pro', sans-serif;
+  white-space: pre-line;
 }
 
 
@@ -564,6 +566,22 @@
   background: #818181;
 }
 
+.annotation-comment {
+  margin-bottom:0; 
+  padding-bottom:0 !important;
+}
+
+.annotation-problem-score {
+  margin-bottom:0; 
+  margin-top:0 !important; 
+  padding-bottom:0 !important;
+}
+
+.annotation-buttons {
+  margin-top:0 !important; 
+  margin-bottom:0 !important;
+}
+
 .problemGrades{
   overflow: auto;
 }
@@ -794,3 +812,53 @@
 .summary_score{
   padding-left: 10px;
 }
+
+/* Autocomplete dropdown */
+.ui-menu .ui-menu-item {
+  font-family: "Source Sans Pro", sans-serif;
+  font-size: 16px;
+  padding-top: 0.5rem !important;
+  padding-bottom: 0.5rem !important;
+
+}
+.ui-menu-item.ui-state-focus{
+  background: rgba(211, 211, 211, 0.526) !important;
+  background-image: none !important;
+}
+
+.ui-autocomplete {
+  max-height: 15rem;
+  max-width: 97%;
+  overflow-y: auto;
+  /* prevent horizontal scrollbar */
+  overflow-x: hidden;
+}
+
+/* Golden Layout */
+
+.lm_content {
+  background: #fff;
+}
+
+.lm_header {
+  background: #f9f9f9 !important;
+}
+
+.lm_title {
+  font-family: 'Source Sans Pro', sans-serif;
+  font-weight: bold;
+}
+
+/* Tooltip */
+span > .material-icons {
+  vertical-align: middle;
+  color: grey;
+}
+
+.ui-tooltip {
+  font-family: 'Source Sans Pro', sans-serif !important;
+  font-size: 14px !important;
+  box-shadow: 0.5px 0.5px 0.5px 0.5px grey !important;
+  border-color: white !important;
+} 
+

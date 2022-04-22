@@ -7,7 +7,7 @@
 class AnnotationsController < ApplicationController
   before_action :set_assessment
   before_action :set_submission
-  before_action :set_annotation, except: [:create]
+  before_action :set_annotation, except: [:create, :shared_comments]
   rescue_from ActionView::MissingTemplate do |_exception|
     redirect_to("/home/error_404")
   end
@@ -51,6 +51,18 @@ class AnnotationsController < ApplicationController
     head :no_content
   end
 
+  # GET /assessments/shared_comments
+  # Gets all shared_comments of annotations
+  action_auth_level :shared_comments, :course_assistant
+  def shared_comments
+    result = Annotation.select("annotations.id, annotations.comment")
+                       .joins(:submission).where(shared_comment: true)
+                       .where("submissions.assessment_id = ?", @assessment.id)
+                       .order(updated_at: :desc).limit(50).as_json
+
+    render json: result, status: :ok
+  end
+
 private
 
   def annotation_params
@@ -58,7 +70,8 @@ private
     params[:annotation].delete(:created_at)
     params[:annotation].delete(:updated_at)
     params.require(:annotation).permit(:filename, :position, :line, :submitted_by,
-                                       :comment, :value, :problem_id, :submission_id, :coordinate)
+                                       :comment, :shared_comment, :value, :problem_id,
+                                       :submission_id, :coordinate)
   end
 
   def set_annotation
