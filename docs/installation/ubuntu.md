@@ -165,7 +165,8 @@ Comment out the configurations meant for MySQL in config/database.yml, and inser
 
         Email: "admin@foo.bar"
 
-19. Install [Tango](/installation/tango), the backend autograding service.
+19. Install [Tango](/installation/tango), the backend autograding service. Information on linking Autolab to Tango can be found on this page
+as well.
 
 20. If you would like to deploy the server, you can try out <a href="https://www.phusionpassenger.com/library/walkthroughs/start/ruby.html" target="_blank">Phusion Passenger</a>.
 

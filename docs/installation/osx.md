@@ -103,7 +103,8 @@ Follow the step-by-step instructions below:
         :::bash
         Email: "admin@foo.bar".
 
-15. Install [Tango](/installation/tango), the backend autograding service.
+15. Install [Tango](/installation/tango), the backend autograding service. Information on linking Autolab to Tango can be found on this page
+as well.
 
 16. If you would like to configure Github integration to allow students to submit via Github, please follow the [Github integration setup instructions](/installation/github_integration).
 

@@ -95,7 +95,7 @@ This guide shows how to setup Tango in a **development environment**. Use the [p
         # Key for Tango RESTful API
         RESTFUL_KEY = "test" # change this in production to a secret phrase
 
-    Note that by default Autolab also uses a default port of `3000`, so be sure to change the port if you are developing on `localhost`. 
+    Note that by default Autolab also uses a default port of `3000`, so be sure to change the port if you are developing on `localhost`.
 
     
 
