@@ -464,20 +464,34 @@ class SubmissionsController < ApplicationController
     @problems = @assessment.problems.to_a
     @problems.sort! { |a, b| a.id <=> b.id }
 
+    # Previous and next student
     @latestSubmissions = @assessment.assessment_user_data
                                     .map(&:latest_submission)
                                     .reject(&:nil?)
                                     .sort_by{ |submission| submission.course_user_datum.user.email }
-    @userSubmissions = @assessment.submissions
-                                  .where(course_user_datum_id: @submission.course_user_datum_id)
-                                  .order("version DESC")
     @curSubmissionIndex = @latestSubmissions.index do |submission|
       submission.course_user_datum.user.email == @submission.course_user_datum.user.email
     end
-    @prevSubmission = @curSubmissionIndex > 0 ? @latestSubmissions[@curSubmissionIndex - 1] : nil
+    @prevSubmission = if @curSubmissionIndex > 0
+                        @latestSubmissions[@curSubmissionIndex - 1]
+                      end
     @nextSubmission = if @curSubmissionIndex < (@latestSubmissions.size - 1)
                         @latestSubmissions[@curSubmissionIndex + 1]
                       end
+
+    # Previous and next user submission
+    @userSubmissions = @assessment.submissions
+                                  .where(course_user_datum_id: @submission.course_user_datum_id)
+                                  .order("version ASC")
+    @curUserSubmissionIndex = @userSubmissions.index do |submission|
+      submission.version == @submission.version
+    end
+    @prevUserSubmission = if @curUserSubmissionIndex > 0
+                            @userSubmissions[@curUserSubmissionIndex - 1]
+                          end
+    @nextUserSubmission = if @curUserSubmissionIndex < (@userSubmissions.size - 1)
+                            @userSubmissions[@curUserSubmissionIndex + 1]
+                          end
 
     # Adding allowing scores to be assessed by the view
     @scores = Score.where(submission_id: @submission.id)
