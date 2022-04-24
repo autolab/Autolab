@@ -1,6 +1,11 @@
 # This file defines manifest constants related to the Autolab
 # backend. If you change anything here you'll need to restart the
 # server for the changes to take effect.
+# It is advised to use environment variables as the current
+# template uses environment variables to define the Autolab constants
+# Please make a copy of .env.template in the Autolab directory
+# by doing cp .env.template .env
+# and assign your desired constants in the .env file
 
 # Hostname for Tango RESTful API
 RESTFUL_HOST = ENV["RESTFUL_HOST"]

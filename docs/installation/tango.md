@@ -77,7 +77,13 @@ This guide shows how to setup Tango in a **development environment**. Use the [p
         :::bash
         cp config/autogradeConfig.rb.template config/autogradeConfig.rb
 
-    Fill in the correct info for your Tango deployment, mainly the following:
+    This file contains declarations to autograder constants. However, many of these constants by default reference an
+    environment file for thir declaration. To make an environment variable for your Autolab configuration, make a copy of the environment file template.
+
+        :::bash
+        cp .env.template .env
+    
+    Then in your newly created `.env` file or in `config/autogradeConfig.rb`, fill in the correct info for your Tango deployment, mainly the following:
 
         :::ruby
         # Hostname for Tango RESTful API
@@ -88,6 +94,10 @@ This guide shows how to setup Tango in a **development environment**. Use the [p
 
         # Key for Tango RESTful API
         RESTFUL_KEY = "test" # change this in production to a secret phrase
+
+    Note that by default Autolab also uses a default port of `3000`, so be sure to change the port if you are developing on `localhost`. 
+
+    
 
 13. See below for instructions on how to deploy Tango in a standalone production environment.
 
