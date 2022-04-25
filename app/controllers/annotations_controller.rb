@@ -17,14 +17,39 @@ class AnnotationsController < ApplicationController
   # POST /:course/annotations.json
   action_auth_level :create, :course_assistant
   def create
-    annotation = @submission.annotations.new(annotation_params)
+    # primary annotation
+    primary_annotation = @submission.annotations.new(annotation_params)
 
-    ActiveRecord::Base.transaction do
-      annotation.save
-      annotation.update_non_autograded_score
+    if @submission.group_key.empty?
+      # When the group key is empty, no group is involved
+      ActiveRecord::Base.transaction do
+        primary_annotation.save
+        primary_annotation.update_non_autograded_score
+      end
+      respond_with(@course, @assessment, @submission, primary_annotation)
     end
 
-    respond_with(@course, @assessment, @submission, annotation)
+    # All submissions of the iteration in the group, excluding the current one
+    group_submissions = @submission.group_associated_submissions
+
+    # Set shared comment to false to avoid duplicates in shared comment pool
+    tweaked_params = annotation_params
+    tweaked_params[:shared_comment] = false
+
+    annotations = [primary_annotation]
+
+    group_submissions.each do |group_submission|
+      group_annotations.append(group_submission.annotations.new(tweaked_params))
+    end
+
+    ActiveRecord::Base.transaction do
+      annotations.each do |annotation|
+        annotation.save
+        annotation.update_non_autograded_score
+      end
+    end
+
+    respond_with(@course, @assessment, @submission, annotations)
   end
 
   # PUT /:course/annotations/1.json
