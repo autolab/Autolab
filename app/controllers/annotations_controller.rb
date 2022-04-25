@@ -29,12 +29,18 @@ class AnnotationsController < ApplicationController
       respond_with(@course, @assessment, @submission, primary_annotation)
     end
 
-    # All submissions of the iteration in the group, excluding the current one
-    group_submissions = @submission.group_associated_submissions
-
     # Set shared comment to false to avoid duplicates in shared comment pool
     tweaked_params = annotation_params
     tweaked_params[:shared_comment] = false
+
+    # All submissions of the iteration in the group, excluding the current one
+    group_submissions = @submission.group_associated_submissions
+
+    # Set up annotation group key
+    submission_group_key = @submission.group_key
+    annotation_group_key = "#{submission_group_key} + #{tweaked_params[:problem_id]}"
+    annotation_group_key += Time.current.utc.to_s(:number)
+    tweaked_params[:group_key] = annotation_group_key
 
     annotations = [primary_annotation]
 
