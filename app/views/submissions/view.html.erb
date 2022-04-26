@@ -71,7 +71,7 @@
       <% end %>
     </div>
 
-    <div class="col s8 center-align submission-controls valign-wrapper">
+    <div class="col s8 center-align submission-controls">
       <div class="row no-margin">
         <div class="col s5">
           <%= @submission.course_user_datum.email %> [<%= @curSubmissionIndex+1 %>/<%= @latestSubmissions.length %>]
@@ -88,19 +88,19 @@
           <strong>/<%= @userVersions.length %></strong>
         </div>
         <div class="col s5">
-          <% if !@nextVersion.nil? %>
-            <%= link_to(url_for([:view, @course, @assessment, @nextVersion]), class: "btn small", title: "Next version", id: "next_version_link") do %>
-              <i class="material-icons">north</i>
-            <% end %>
-          <% else %>
-            <a class="btn disabled"><i class="material-icons">north</i></a>
-          <% end %>
           <% if !@prevVersion.nil? %>
             <%= link_to(url_for([:view, @course, @assessment, @prevVersion]), class: "btn small", title: "Prev version", id: "prev_version_link") do %>
               <i class="material-icons">south</i>
             <% end %>
           <% else %>
             <a class="btn disabled"><i class="material-icons">south</i></a>
+          <% end %>
+          <% if !@nextVersion.nil? %>
+            <%= link_to(url_for([:view, @course, @assessment, @nextVersion]), class: "btn small", title: "Next version", id: "next_version_link") do %>
+              <i class="material-icons">north</i>
+            <% end %>
+          <% else %>
+            <a class="btn disabled"><i class="material-icons">north</i></a>
           <% end %>
           <a href="<%= download_file_url(@submission) %>" class="btn small" title="Download" >Download</a>
           <button class="btn small" onclick="resetLayout()">Reset Layout</button>
