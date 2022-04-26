@@ -3,6 +3,7 @@ class MetricsController < ApplicationController
   def index
     course = Course.find_by(name: params[:course_name])
     @course_grace_days = course.grace_days
+    @course_assessment_categories = course.assessment_categories
     @num_assessments = course.assessments.count
 
     course_max = course.assessments.group("category_name").count.max
