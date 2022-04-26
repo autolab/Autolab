@@ -392,7 +392,7 @@ class Submission < ApplicationRecord
   def group_associated_submissions
     raise "Submission is not associated with a group" if group_key.empty?
 
-    Submission.where(group_key: group_key)
+    Submission.where(group_key: group_key).where.not(id: id)
   end
 
 private
