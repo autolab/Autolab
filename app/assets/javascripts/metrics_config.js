@@ -43,11 +43,11 @@ $('.exchange.icon').click(function(){
 });
 
 $('#save_configs_btn').click(function(){
-	var new_blocklist = {"category": [], "assessment": []};
+	var new_blocklist = {"allowlist": {"category": [], "assessment": []}};
 
 	$('#excluded_categories').children("div").each(function () {
 		if($(this).css('visibility') == 'visible') {
-			new_blocklist["category"].push($(this).text());
+			new_blocklist["allowlist"]["category"].push($(this).text());
 		}
 	});
 
