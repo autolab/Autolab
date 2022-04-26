@@ -479,19 +479,19 @@ class SubmissionsController < ApplicationController
                         @latestSubmissions[@curSubmissionIndex + 1]
                       end
 
-    # Previous and next user submission
-    @userSubmissions = @assessment.submissions
-                                  .where(course_user_datum_id: @submission.course_user_datum_id)
-                                  .order("version ASC")
-    @curUserSubmissionIndex = @userSubmissions.index do |submission|
+    # Previous and next versions
+    @userVersions = @assessment.submissions
+                               .where(course_user_datum_id: @submission.course_user_datum_id)
+                               .order("version DESC")
+    @curVersionIndex = @userVersions.index do |submission|
       submission.version == @submission.version
     end
-    @prevUserSubmission = if @curUserSubmissionIndex > 0
-                            @userSubmissions[@curUserSubmissionIndex - 1]
-                          end
-    @nextUserSubmission = if @curUserSubmissionIndex < (@userSubmissions.size - 1)
-                            @userSubmissions[@curUserSubmissionIndex + 1]
-                          end
+    @prevVersion = if @curVersionIndex < (@userVersions.size - 1)
+                     @userVersions[@curVersionIndex + 1]
+                   end
+    @nextVersion = if @curVersionIndex > 0
+                     @userVersions[@curVersionIndex - 1]
+                   end
 
     # Adding allowing scores to be assessed by the view
     @scores = Score.where(submission_id: @submission.id)

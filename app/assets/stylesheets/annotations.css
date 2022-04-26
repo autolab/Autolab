@@ -11,6 +11,21 @@
   max-height: calc(100vh - 173px);
 }
 
+.submission-controls .row {
+  margin-bottom: 0;
+}
+
+.submission-controls select {
+  height: 2rem;
+  width: 50%;
+}
+
+.submission-controls .btn {
+  height: 2rem;
+  display: inline-flex;
+  align-items: center;
+}
+
 #code-loader {
   height: 50vh;
   display: flex;
