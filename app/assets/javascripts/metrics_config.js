@@ -51,6 +51,7 @@ $('#save_configs_btn').click(function(){
 		}
 	});
 
+	$("#save_configs_btn").addClass('loading');
 	$.ajax({
 		url:metrics_config_endpoints['update'],
 		dataType: "json",
@@ -74,7 +75,8 @@ $('#save_configs_btn').click(function(){
 			});
 		},
 		complete:function(){
-			$('#save').addClass('disabled');
+			$('#save_configs_btn').addClass('disabled');
+			$('#save_configs_btn').removeClass('loading');
 		}
 	});
 })
