@@ -73,10 +73,10 @@
 
     <div class="col s8 center-align submission-controls valign-wrapper">
       <div class="row no-margin">
-        <div class="col s3 offset-s2">
+        <div class="col s5">
           <%= @submission.course_user_datum.email %> [<%= @curSubmissionIndex+1 %>/<%= @latestSubmissions.length %>]
         </div>
-        <div class="col s1 valign-wrapper">
+        <div class="col s2 valign-wrapper">
           <strong>ver.</strong>
           <select class="browser-default" onchange="location = this.value">
             <% for submission in @userVersions do %>
@@ -87,7 +87,7 @@
           </select>
           <strong>/<%= @userVersions.length %></strong>
         </div>
-        <div class="col s4">
+        <div class="col s5">
           <% if !@nextVersion.nil? %>
             <%= link_to(url_for([:view, @course, @assessment, @nextVersion]), class: "btn small", title: "Next version", id: "next_version_link") do %>
               <i class="material-icons">north</i>
