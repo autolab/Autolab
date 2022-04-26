@@ -259,6 +259,14 @@ $(document).keydown(function (e) {
       }
       break;
 
+    case 219: // left bracket - navigate to older version
+      $('#prev_version_link')[0].click();
+      break;
+
+    case 221: // right bracket - navigate to newer version
+      $('#next_version_link')[0].click();
+      break;
+
     default: return; // exit this handler for other keys
   }
   e.preventDefault(); // prevent the default action (scroll / move caret)
