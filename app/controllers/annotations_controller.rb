@@ -46,7 +46,7 @@ class AnnotationsController < ApplicationController
       annotations = [primary_annotation]
 
       group_submissions.each do |group_submission|
-        group_annotations.append(group_submission.annotations.new(tweaked_params))
+        annotations.append(group_submission.annotations.new(tweaked_params))
       end
 
       ActiveRecord::Base.transaction do
@@ -63,7 +63,7 @@ class AnnotationsController < ApplicationController
   # PUT /:course/annotations/1.json
   action_auth_level :update, :course_assistant
   def update
-    if annotation.group_key.empty?
+    if @annotation.group_key.empty?
       ActiveRecord::Base.transaction do
         @annotation.update(annotation_params)
         @annotation.update_non_autograded_score
@@ -72,8 +72,12 @@ class AnnotationsController < ApplicationController
       annotations = @annotation.group_associated_annotations
 
       # Set shared comment to false to avoid duplicate shared comments
+      # Delete submission_id and filename to avoid association with the
+      # wrong submission
       tweaked_params = annotation_params
       tweaked_params[:shared_comment] = false
+      tweaked_params.delete(:submission_id)
+      tweaked_params.delete(:filename)
 
       ActiveRecord::Base.transaction do
         # Update "primary" annotation with native parameters
