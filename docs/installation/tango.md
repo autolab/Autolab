@@ -76,14 +76,8 @@ This guide shows how to setup Tango in a **development environment**. Use the [p
 
         :::bash
         cp config/autogradeConfig.rb.template config/autogradeConfig.rb
-
-    This file contains declarations to autograder constants. However, many of these constants by default reference an
-    environment file for thir declaration. To make an environment variable for your Autolab configuration, make a copy of the environment file template.
-
-        :::bash
-        cp .env.template .env
     
-    Then in your newly created `.env` file or in `config/autogradeConfig.rb`, fill in the correct info for your Tango deployment, mainly the following:
+    Then in your Autolab installation's `.env` file, fill in the correct info for your Tango deployment, mainly the following:
 
         :::ruby
         # Hostname for Tango RESTful API
