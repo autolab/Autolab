@@ -472,10 +472,25 @@ class SubmissionsController < ApplicationController
     @curSubmissionIndex = @latestSubmissions.index do |submission|
       submission.course_user_datum.user.email == @submission.course_user_datum.user.email
     end
-    @prevSubmission = @curSubmissionIndex > 0 ? @latestSubmissions[@curSubmissionIndex - 1] : nil
+    @prevSubmission = if @curSubmissionIndex > 0
+                        @latestSubmissions[@curSubmissionIndex - 1]
+                      end
     @nextSubmission = if @curSubmissionIndex < (@latestSubmissions.size - 1)
                         @latestSubmissions[@curSubmissionIndex + 1]
                       end
+
+    @userVersions = @assessment.submissions
+                               .where(course_user_datum_id: @submission.course_user_datum_id)
+                               .order("version DESC")
+    @curVersionIndex = @userVersions.index do |submission|
+      submission.version == @submission.version
+    end
+    @prevVersion = if @curVersionIndex < (@userVersions.size - 1)
+                     @userVersions[@curVersionIndex + 1]
+                   end
+    @nextVersion = if @curVersionIndex > 0
+                     @userVersions[@curVersionIndex - 1]
+                   end
 
     # Adding allowing scores to be assessed by the view
     @scores = Score.where(submission_id: @submission.id)
