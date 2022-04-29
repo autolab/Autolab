@@ -70,42 +70,33 @@
          <link rel="prerender" href= <%= url_for([:view, @course, @assessment, @prevSubmission])%> />
       <% end %>
     </div>
-
-    <div class="col s8 center-align submission-controls">
-      <div class="row no-margin">
-        <div class="col s5">
-          <%= @submission.course_user_datum.email %> [<%= @curSubmissionIndex+1 %>/<%= @latestSubmissions.length %>]
-        </div>
-        <div class="col s2 valign-wrapper">
-          <strong>ver.</strong>
-          <select class="browser-default" onchange="location = this.value">
-            <% for submission in @userVersions do %>
-              <option <% if @submission.version == submission.version %> selected <% end %> value=<%= url_for([:view, @course, @assessment, submission]) %>>
-                <%= submission.version %>
-              </option>
-            <% end %>
-          </select>
-          <strong>/<%= @userVersions.length %></strong>
-        </div>
-        <div class="col s5">
-          <% if !@prevVersion.nil? %>
-            <%= link_to(url_for([:view, @course, @assessment, @prevVersion]), class: "btn small", title: "Prev version", id: "prev_version_link") do %>
-              <i class="material-icons">south</i>
-            <% end %>
-          <% else %>
-            <a class="btn disabled"><i class="material-icons">south</i></a>
+    <div class="col s8 center-align valign-wrapper submission-controls">
+        <span>[<%= @curSubmissionIndex+1 %>/<%= @latestSubmissions.length %>] <%= @submission.course_user_datum.email %>,</span>
+        <strong>version:</strong>
+        <select class="browser-default" onchange="location = this.value">
+          <% for submission in @userVersions do %>
+            <option <% if @submission.version == submission.version %> selected <% end %> value=<%= url_for([:view, @course, @assessment, submission]) %>>
+              <%= submission.version %>
+            </option>
           <% end %>
-          <% if !@nextVersion.nil? %>
-            <%= link_to(url_for([:view, @course, @assessment, @nextVersion]), class: "btn small", title: "Next version", id: "next_version_link") do %>
-              <i class="material-icons">north</i>
-            <% end %>
-          <% else %>
-            <a class="btn disabled"><i class="material-icons">north</i></a>
-          <% end %>
-          <a href="<%= download_file_url(@submission) %>" class="btn small" title="Download" >Download</a>
-          <button class="btn small" onclick="resetLayout()">Reset Layout</button>
-        </div>
-      </div>
+        </select>
+        <strong>/<%= @userVersions.length %>
+      <% if !@prevVersion.nil? %>
+        <%= link_to(url_for([:view, @course, @assessment, @prevVersion]), class: "btn small", title: "Prev version", id: "prev_version_link") do %>
+          <i class="material-icons">south</i>
+        <% end %>
+      <% else %>
+        <a class="btn disabled"><i class="material-icons">south</i></a>
+      <% end %>
+      <% if !@nextVersion.nil? %>
+        <%= link_to(url_for([:view, @course, @assessment, @nextVersion]), class: "btn small", title: "Next version", id: "next_version_link") do %>
+          <i class="material-icons">north</i>
+        <% end %>
+      <% else %>
+        <a class="btn disabled"><i class="material-icons">north</i></a>
+      <% end %>
+      <a href="<%= download_file_url(@submission) %>" class="btn small" title="Download" >Download</a>
+      <button class="btn small" onclick="resetLayout()">Reset Layout</button>
     </div>
 
     <div class="col s2 center-align">

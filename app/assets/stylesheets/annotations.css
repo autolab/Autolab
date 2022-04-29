@@ -11,13 +11,10 @@
   max-height: calc(100vh - 173px);
 }
 
-.submission-controls .row {
-  margin-bottom: 0;
-}
-
 .submission-controls select {
   height: 2rem;
-  width: 50%;
+  display: inline-block;
+  width: 50px;
 }
 
 .submission-controls .btn {
