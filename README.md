@@ -37,8 +37,6 @@ We have a demo site running at https://nightly.autolabproject.com/. See the [doc
 
 We released new documentation! Check it out [here](https://docs.autolabproject.com).
 
-We are currently in the process of updating our documentation to work with our newest release of Autolab, v2.5.0, which has been upgraded to Rails 5 from Rails 4
-
 ## Testing
 
 ### Setting up Tests
@@ -67,12 +65,8 @@ bundle exec rails spec
 ```
 
 ## Rails 4 Support
-Autolab is now running on Rails 5. However, we may still work on important bug fixes on the Rails 4 branch,
- partially because the deployment on CMU is currently still on Rails 4. Please file an issue
-  if you believe that you have found a severe bug. The Rails 4 branch
- can be found on `master-rails-4`. 
- 
- We will not be backporting new features from `master` to `master-rails-4`.
+Autolab is now running on Rails 5. The Rails 4 branch can be found on `master-rails-4`. 
+We will not be backporting any new features from `master` to `master-rails-4`, and we have discontinued Rails 4 support.
 
 ## Updating Docs
 To install mkdocs, run
@@ -116,6 +110,21 @@ Please feel free to use Autolab at your school/organization. If you run into any
 
 
 ## Changelog
+### [v2.8.0](https://github.com/autolab/Autolab/releases/tag/v2.8.0) (2021/12/20) GitHub Integration and Roster Upload Improvement
+- Students can now submit code via GitHub
+- Improved Roster Upload with better error reporting
+- Numerous bug fixes
+
+### [v2.7.0](https://github.com/autolab/Autolab/releases/tag/v2.7.0) (2021/05/29) Autolab Docker Compose, Student Metrics, Redesigned Documentation
+- Integration with new Docker Compose [installation method](https://github.com/autolab/docker)
+- Student Metrics Feature, which allows instructors to identify students who may be in need of attention
+- Redesigned Autolab documentation
+- Numerous bug fixes
+
+### [v2.6.0](https://github.com/autolab/Autolab/releases/tag/v2.6.0) (2020/10/24) Formatted Feedbacks, Course Dashboard, Accessibility
+- Formatted Feedback feature
+- Introduction of Course Dashboards
+- Numerous bug fixes
 
 ### (2021/10/12) Moved from Uglifier to Terser
 - Autolab has migrated from Uglifier to Terser for our Javascript compressor in order to support the latest Javascript syntax. Please change `Uglifier.new(harmony: true)` to `:terser` in your `production.rb`
