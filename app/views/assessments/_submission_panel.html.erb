@@ -15,7 +15,7 @@
   <div class="ui tab active" data-tab="upload" id="upload_tab">
     <div class="row handin-row">
       <div class="valign-wrapper drag-drop-handin" tabindex="0"
-          onclick="clickDrag();" onkeypress="clickDrag()" ondrop="dropHandler(event);" 
+          onclick="clickDrag(event);" onkeydown="clickDrag(event);" ondrop="dropHandler(event);"
           ondragover="dragOverHandler(event);" ondragenter="dragEnter(event);" ondragexit="dragExit(event);">
         <p class="center-align" style="color:grey;" ondrop="dropHandler(event);" 
           ondragover="dragOverHandler(event);" ondragenter="dragEnter(event);" 
