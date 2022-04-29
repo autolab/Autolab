@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2022_03_30_160300) do
+ActiveRecord::Schema.define(version: 2022_04_17_023837) do
 
   create_table "annotations", force: :cascade do |t|
     t.integer "submission_id"
@@ -24,6 +24,7 @@ ActiveRecord::Schema.define(version: 2022_03_30_160300) do
     t.float "value"
     t.integer "problem_id"
     t.string "coordinate"
+    t.boolean "shared_comment", default: false
   end
 
   create_table "announcements", force: :cascade do |t|
@@ -95,6 +96,7 @@ ActiveRecord::Schema.define(version: 2022_03_30_160300) do
     t.boolean "embedded_quiz"
     t.binary "embedded_quiz_form"
     t.boolean "github_submission_enabled", default: true
+    t.boolean "allow_student_assign_group", default: true
   end
 
   create_table "attachments", force: :cascade do |t|
