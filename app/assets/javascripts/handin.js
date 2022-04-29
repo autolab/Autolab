@@ -34,7 +34,7 @@ function dragExit(e) {
 
 function clickDrag(e) {
   // Ignore shift and tab
-  if (e.key === 9 || e.key === 16) return;
+  if (e.key === "Shift" || e.key === "Tab") return;
   $("#handin_show_assessment input[type='file']").trigger('click');
 }
 
