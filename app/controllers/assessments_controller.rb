@@ -64,6 +64,8 @@ class AssessmentsController < ApplicationController
   action_auth_level :set_repo, :instructor
   action_auth_level :import_svn, :instructor
 
+  protect_from_forgery with: :exception
+
   def index
     @is_instructor = @cud.has_auth_level? :instructor
     announcements_tmp = Announcement.where("start_date < :now AND end_date > :now",
@@ -649,7 +651,6 @@ class AssessmentsController < ApplicationController
 
   action_auth_level :releaseAllGrades, :instructor
 
-  protect_from_forgery
   def releaseAllGrades
     # release all grades
     num_released = releaseMatchingGrades { |_| true }
@@ -667,7 +668,6 @@ class AssessmentsController < ApplicationController
 
   action_auth_level :releaseSectionGrades, :course_assistant
 
-  protect_from_forgery
   def releaseSectionGrades
     unless @cud.section? && !@cud.section.empty? && @cud.lecture && !@cud.lecture.empty?
       flash[:error] =
@@ -696,7 +696,6 @@ class AssessmentsController < ApplicationController
 
   action_auth_level :withdrawAllGrades, :instructor
 
-  protect_from_forgery
   def withdrawAllGrades
     @assessment.submissions.each do |submission|
       scores = submission.scores.where(released: true)
