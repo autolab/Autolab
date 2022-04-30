@@ -1,8 +1,8 @@
 class CreateWatchlistConfigurations < ActiveRecord::Migration[6.0]
   def up
     create_table :watchlist_configurations do |t|
-      t.json :category_allowlist
-      t.json :assessment_allowlist
+      t.json :category_blocklist
+      t.json :assessment_blocklist
       t.references :course
       
       t.timestamps

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2022_04_17_023837) do
+ActiveRecord::Schema.define(version: 2022_04_24_202745) do
 
   create_table "annotations", force: :cascade do |t|
     t.integer "submission_id"
@@ -25,6 +25,7 @@ ActiveRecord::Schema.define(version: 2022_04_17_023837) do
     t.integer "problem_id"
     t.string "coordinate"
     t.boolean "shared_comment", default: false
+    t.string "group_key", default: ""
   end
 
   create_table "announcements", force: :cascade do |t|
@@ -95,8 +96,8 @@ ActiveRecord::Schema.define(version: 2022_04_17_023837) do
     t.text "embedded_quiz_form_data"
     t.boolean "embedded_quiz"
     t.binary "embedded_quiz_form"
-    t.boolean "github_submission_enabled", default: true
     t.boolean "allow_student_assign_group", default: true
+    t.boolean "github_submission_enabled", default: true
   end
 
   create_table "attachments", force: :cascade do |t|
@@ -320,6 +321,7 @@ ActiveRecord::Schema.define(version: 2022_04_17_023837) do
     t.text "settings"
     t.text "embedded_quiz_form_answer"
     t.integer "submitted_by_app_id"
+    t.string "group_key", default: ""
     t.index ["assessment_id"], name: "index_submissions_on_assessment_id"
     t.index ["course_user_datum_id"], name: "index_submissions_on_course_user_datum_id"
   end
@@ -353,8 +355,8 @@ ActiveRecord::Schema.define(version: 2022_04_17_023837) do
   end
 
   create_table "watchlist_configurations", force: :cascade do |t|
-    t.json "category_allowlist"
-    t.json "assessment_allowlist"
+    t.json "category_blocklist"
+    t.json "assessment_blocklist"
     t.integer "course_id"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
