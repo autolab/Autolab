@@ -26,7 +26,7 @@ class WatchlistInstance < ApplicationRecord
   def self.refresh_instances_for_course(course_name, metrics_update = false)
     begin
       course = Course.find_by(name: course_name)
-      category_allowlist = WatchlistConfiguration.get_category_allowlist_for_course(course_name)
+      category_blocklist = WatchlistConfiguration.get_category_blocklist_for_course(course_name)
       current_conditions = RiskCondition.get_current_for_course(course_name)
       current_instances = WatchlistInstance.where(course_id: course.id, archived: false)
     rescue NoMethodError
@@ -42,9 +42,9 @@ class WatchlistInstance < ApplicationRecord
       # no-op
     else
       # case 2: current risk conditions exist
-      # take category allowlist into consideration
+      # take category blocklist into consideration
       new_instances, deprecated_instances = add_new_instances_for_conditions(
-        current_conditions, course, category_allowlist, current_instances
+        current_conditions, course, category_blocklist, current_instances
       )
     end
 
@@ -342,7 +342,7 @@ class WatchlistInstance < ApplicationRecord
   end
   # rubocop:enable Style/GuardClause
 
-  def self.add_new_instances_for_conditions(conditions, course, category_allowlist,
+  def self.add_new_instances_for_conditions(conditions, course, category_blocklist,
                                             current_instances)
     new_instances = []
     course_user_data = CourseUserDatum.where(course_id: course.id, instructor: false,
@@ -364,7 +364,7 @@ class WatchlistInstance < ApplicationRecord
           date = condition.parameters[:date]
           asmts_before_date = course.asmts_before_date(date)
           asmts_before_date = asmts_before_date.reject do |asmt|
-            category_allowlist.include?(asmt.category_name)
+            category_blocklist.include?(asmt.category_name)
           end
 
           if asmts_before_date.count == 0
@@ -380,7 +380,7 @@ class WatchlistInstance < ApplicationRecord
           percentage_drop = condition.parameters[:percentage_drop].to_f
           consecutive_counts = condition.parameters[:consecutive_counts].to_i
 
-          categories = course.assessment_categories - category_allowlist
+          categories = course.assessment_categories - category_blocklist
           asmt_arrs = categories.map do |category|
             course.assessments_with_category(category).ordered
           end
@@ -393,7 +393,7 @@ class WatchlistInstance < ApplicationRecord
         when "no_submissions"
           no_submissions_threshold = condition.parameters[:no_submissions_threshold].to_i
 
-          new_instance = add_new_instance_for_cud_no_submissions(course, category_allowlist,
+          new_instance = add_new_instance_for_cud_no_submissions(course, category_blocklist,
                                                                  condition.id, cud,
                                                                  no_submissions_threshold)
           cur_instances << new_instance unless new_instance.nil?
@@ -402,7 +402,7 @@ class WatchlistInstance < ApplicationRecord
           grade_threshold = condition.parameters[:grade_threshold].to_f
           count_threshold = condition.parameters[:count_threshold].to_i
 
-          new_instance = add_new_instance_for_cud_low_grades(course, category_allowlist,
+          new_instance = add_new_instance_for_cud_low_grades(course, category_blocklist,
                                                              condition.id, cud,
                                                              grade_threshold, count_threshold)
           cur_instances << new_instance unless new_instance.nil?
@@ -539,11 +539,11 @@ class WatchlistInstance < ApplicationRecord
   end
 
   def self.add_new_instance_for_cud_no_submissions(course,
-                                                   category_allowlist,
+                                                   category_blocklist,
                                                    condition_id,
                                                    cud,
                                                    no_submissions_threshold)
-    asmts_ids = Assessment.where.not(category_name: category_allowlist).pluck(:id)
+    asmts_ids = Assessment.where.not(category_name: category_blocklist).pluck(:id)
     auds = AssessmentUserDatum.where(assessment_id: asmts_ids, course_user_datum_id: cud.id)
     no_submissions_asmt_names = []
     auds.each do |aud|
@@ -561,12 +561,12 @@ class WatchlistInstance < ApplicationRecord
   end
 
   def self.add_new_instance_for_cud_low_grades(course,
-                                               category_allowlist,
+                                               category_blocklist,
                                                condition_id,
                                                cud,
                                                grade_threshold,
                                                count_threshold)
-    asmts_ids = Assessment.where.not(category_name: category_allowlist)
+    asmts_ids = Assessment.where.not(category_name: category_blocklist)
     auds = AssessmentUserDatum.where(assessment_id: asmts_ids, course_user_datum_id: cud.id)
     violation_info = {}
     auds.each do |aud|

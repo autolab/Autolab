@@ -3,7 +3,7 @@
 
 // metrics api endpoints
 const metrics_config_endpoints = {
-	get_category: 'get_watchlist_category_allowlist',
+	get_category: 'get_watchlist_category_blocklist',
 	update: 'update_watchlist_configuration',
 }
 
@@ -43,11 +43,11 @@ $('.exchange.icon').click(function(){
 });
 
 $('#save_configs_btn').click(function(){
-	var new_blocklist = {"allowlist": {"category": [], "assessment": []}};
+	var new_blocklist = {"blocklist": {"category": [], "assessment": []}};
 
 	$('#excluded_categories').children("div").each(function () {
 		if($(this).css('visibility') == 'visible') {
-			new_blocklist["allowlist"]["category"].push($(this).text());
+			new_blocklist["blocklist"]["category"].push($(this).text());
 		}
 	});
 
