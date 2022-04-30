@@ -140,12 +140,12 @@ Rails.application.routes.draw do
         match "bulkGrade", via: [:get, :post]
         post "bulkGrade_complete"
         get "bulkExport"
-        get "releaseAllGrades"
-        get "releaseSectionGrades"
+        post "releaseAllGrades"
+        post "releaseSectionGrades"
         get "viewFeedback"
         get "reload"
         get "statistics"
-        get "withdrawAllGrades"
+        post "withdrawAllGrades"
         get "export"
         patch "edit/*active_tab", action: :update
         get "edit/*active_tab", action: :edit

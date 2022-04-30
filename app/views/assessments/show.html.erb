@@ -76,9 +76,11 @@
               <li class="collection-item red-text danger-bottom no-hover"><h4>Danger Zone</h4></li>
 
               <li class="danger-side">
-                <%= link_to "Release all grades", {:action => "releaseAllGrades" }, {:title=>  "Make all scores for this assessment visible to students", :class=>"", data: {confirm: "Are you sure you want to release all grades?"}} %>
-                </li>
-              <li class="danger-side"> <%= link_to "Withdraw all grades", {:action => "withdrawAllGrades" }, {:title=>  "Hide all scores for this assessment from students", data: {confirm: "Are you sure you want to withdraw all grades?"}} %></li>
+                <%= button_to "Release all grades", { :action => "releaseAllGrades" }, { :title=> "Make all scores for this assessment visible to students", data: {confirm: "Are you sure you want to release all grades?"}} %>
+              </li>
+              <li class="danger-side">
+                <%= button_to "Withdraw all grades", { :action => "withdrawAllGrades" }, {:title=> "Hide all scores for this assessment from students", data: {confirm: "Are you sure you want to withdraw all grades?"}} %>
+              </li>
               <li class="danger-side danger-bottom"> <%= link_to "Reload config file", {:action => "reload" }, {:title=> "Reload the assessment config file (provided for backward compatibility with legacy assessments)", data: {confirm: "Are you sure you want to reload the config file?"}} %></li>
             </ul>
           </div>
@@ -104,10 +106,9 @@
               <li class="collection-item red-text danger-bottom no-hover"><h4>Danger Zone</h4></li>
               <li class="danger-side"><%= link_to "Reload config file", url_for(:action => 'reload'),
                 :title=> "Reload the assessment configuration file (provided for backward compatibility with legacy assessments)", data: {confirm: "Are you sure you want to reload the config file?"} %></li>
-              <li class="danger-side danger-bottom"><%= link_to "Release section grades", url_for(:action => 'releaseSectionGrades'),
-                :title=> "Make all scores visible to the students in your section. This will work only if your instructor has assigned you to a lecture and section in your Autolab account.", data: {confirm: "Are you sure you want to release section grades?"} %></li>
-
-
+              <li class="danger-side danger-bottom">
+                <%= button_to "Release section grades", { :action => "releaseSectionGrades" }, { :title=> "Make all scores visible to the students in your section. This will work only if your instructor has assigned you to a lecture and section in your Autolab account.", data: {confirm: "Are you sure you want to release section grades?"}} %>
+              </li>
             </ul>
           </div>
         </li>
