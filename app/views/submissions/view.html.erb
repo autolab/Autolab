@@ -70,9 +70,17 @@
          <link rel="prerender" href= <%= url_for([:view, @course, @assessment, @prevSubmission])%> />
       <% end %>
     </div>
-    <div class="col s8 center-align valign-wrapper">
-      <div style="display: inline-block">
-      <%= @submission.course_user_datum.email %> (v<%= @submission.version %>) [<%= @curSubmissionIndex+1 %>/<%= @latestSubmissions.length %>]</div>
+    <div class="col s8 center-align valign-wrapper submission-controls">
+        <span>[<%= @curSubmissionIndex+1 %>/<%= @latestSubmissions.length %>] <%= @submission.course_user_datum.email %>,</span>
+        <strong>version:</strong>
+        <select class="browser-default" onchange="location = this.value">
+          <% for submission in @userVersions do %>
+            <option <% if @submission.version == submission.version %> selected <% end %> value=<%= url_for([:view, @course, @assessment, submission]) %>>
+              <%= submission.version %>
+            </option>
+          <% end %>
+        </select>
+        <strong>/<%= @userVersions.length %>
       <a href="<%= download_file_url(@submission) %>" class="btn small" title="Download" >Download</a>
       <button class="btn small" onclick="resetLayout()">Reset Layout</button>
     </div>
