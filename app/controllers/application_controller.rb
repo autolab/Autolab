@@ -19,9 +19,9 @@ class ApplicationController < ActionController::Base
   before_action :authenticate_for_action
   before_action :update_persistent_announcements
   before_action :set_breadcrumbs
-  
-  rescue_from ActionView::MissingTemplate do |exception|
-      redirect_to("/home/error_404")
+
+  rescue_from ActionView::MissingTemplate do |_exception|
+    redirect_to("/home/error_404")
   end
 
   # this is where Error Handling is configured. this routes exceptions to
@@ -35,63 +35,67 @@ class ApplicationController < ActionController::Base
     rescue_from CourseUserDatum::AuthenticationFailed do |e|
       COURSE_LOGGER.log("AUTHENTICATION FAILED: #{e.user_message}, #{e.dev_message}")
       respond_to do |format|
-         format.html {
-            flash[:error] = e.user_message
-            redirect_to root_path
-         }
-         format.json { head :forbidden }
-         format.js { head :forbidden }
+        format.html do
+          flash[:error] = e.user_message
+          redirect_to root_path
+        end
+        format.json { head :forbidden }
+        format.js { head :forbidden }
       end
     end
   end
 
   def self.autolab_require(path)
-    $LOADED_FEATURES.delete(path) if (Rails.env == "development")
+    $LOADED_FEATURES.delete(path) if Rails.env.development?
     require(path)
   end
 
+  # rubocop:disable Style/ClassVars
   @@global_whitelist = {}
+  # rubocop:enable Style/ClassVars
+
   def self.action_auth_level(action, level)
-    fail ArgumentError, "The action must be specified." if action.nil?
-    fail ArgumentError, "The action must be symbol." unless action.is_a? Symbol
-    fail ArgumentError, "The level must be specified." if level.nil?
-    fail ArgumentError, "The level must be symbol." unless level.is_a? Symbol
+    raise ArgumentError, "The action must be specified." if action.nil?
+    raise ArgumentError, "The action must be symbol." unless action.is_a? Symbol
+    raise ArgumentError, "The level must be specified." if level.nil?
+    raise ArgumentError, "The level must be symbol." unless level.is_a? Symbol
     unless CourseUserDatum::AUTH_LEVELS.include?(level)
-      fail ArgumentError, "#{level} is not an auth level"
+      raise ArgumentError, "#{level} is not an auth level"
     end
 
     if level == :administrator
-      skip_before_action :authorize_user_for_course, only: [action]
-      skip_filter authenticate_for_action: [action]
-      skip_before_action :update_persistent_announcements, only: [action]
+      skip_before_action :authorize_user_for_course, only: [action], raise: false
+      skip_before_action authenticate_for_action: [action]
+      skip_before_action :update_persistent_announcements, only: [action], raise: false
     end
 
     controller_whitelist = (@@global_whitelist[controller_name.to_sym] ||= {})
-    fail ArgumentError, "#{action} already specified." if controller_whitelist[action]
+    raise ArgumentError, "#{action} already specified." if controller_whitelist[action]
 
     controller_whitelist[action] = level
   end
 
   def self.action_no_auth(action)
-    skip_before_action :verify_authenticity_token, :authenticate_user!
-    skip_filter configure_permitted_paramters: [action]
-    skip_filter maintenance_mode: [action]
-    skip_filter run_scheduler: [action]
+    skip_before_action :verify_authenticity_token, raise: false
+    skip_before_action :authenticate_user!, raise: false
+    skip_before_action configure_permitted_paramters: [action]
+    skip_before_action maintenance_mode: [action]
+    skip_before_action run_scheduler: [action]
 
-    skip_filter authenticate_user: [action]
+    skip_before_action authenticate_user: [action], raise: false
     skip_before_action :authorize_user_for_course, only: [action]
-    skip_filter authenticate_for_action: [action]
-    skip_before_action :update_persistent_announcements, only: [action]
+    skip_before_action authenticate_for_action: [action], raise: false
+    skip_before_action :update_persistent_announcements, only: [action], raise: false
   end
 
 protected
 
   def configure_permitted_paramters
-    devise_parameter_sanitizer.for(:sign_in) { |u| u.permit(:email) }
-    devise_parameter_sanitizer.for(:sign_up) do |u|
+    devise_parameter_sanitizer.permit(:sign_in) { |u| u.permit(:email) }
+    devise_parameter_sanitizer.permit(:sign_up) do |u|
       u.permit(:email, :first_name, :last_name, :password, :password_confirmation)
     end
-    devise_parameter_sanitizer.for(:account_update) do |u|
+    devise_parameter_sanitizer.permit(:account_update) do |u|
       u.permit(:email, :password, :password_confirmation, :current_password)
     end
   end
@@ -99,13 +103,13 @@ protected
   def authentication_failed(user_message = nil, dev_message = nil)
     user_message ||= "You are not authorized to view this page"
 
-    if user_signed_in?
-      dev_message ||= "For user #{current_user.email}"
-    else
-      dev_message ||= "Before initial user authentication."
-    end
+    dev_message ||= if user_signed_in?
+                      "For user #{current_user.email}"
+                    else
+                      "Before initial user authentication."
+                    end
 
-    fail CourseUserDatum::AuthenticationFailed.new(user_message, dev_message)
+    raise CourseUserDatum::AuthenticationFailed.new(user_message, dev_message)
   end
 
   def authenticate_for_action
@@ -143,9 +147,7 @@ protected
                   (params[:controller] == "courses" ? params[:name] : nil)
     @course = Course.find_by(name: course_name) if course_name
 
-    unless @course
-      render :file => "#{Rails.root}/public/404.html",  :status => 404 and return
-    end
+    render file: Rails.root.join("public/404.html"), status: :not_found and return unless @course
 
     # set course logger
     begin
@@ -163,7 +165,7 @@ protected
     uid = current_user.id
     # don't allow sudoing across courses
     if session[:sudo]
-      if (@course.id == session[:sudo]["course_id"])
+      if @course.id == session[:sudo]["course_id"]
         uid = session[:sudo]["user_id"]
       else
         session[:sudo] = nil
@@ -220,7 +222,7 @@ protected
   def set_assessment
     begin
       @assessment = @course.assessments.find_by!(name: params[:assessment_name] || params[:name])
-    rescue
+    rescue StandardError
       flash[:error] = "The assessment was not found for this course."
       redirect_to(action: :index) && return
     end
@@ -240,7 +242,7 @@ protected
   def set_submission
     begin
       @submission = @assessment.submissions.find(params[:submission_id] || params[:id])
-    rescue
+    rescue StandardError
       flash[:error] = "Could not find submission with id #{params[:submission_id] || params[:id]}."
       redirect_to([@course, @assessment]) && return
     end
@@ -261,9 +263,9 @@ protected
   end
 
   def run_scheduler
-    actions = Scheduler.where("next < ?", Time.now)
+    actions = Scheduler.where("next < ?", Time.current)
     actions.each do |action|
-      action.next = Time.now + action.interval
+      action.next = Time.current + action.interval
       action.save
       Rails.logger.info("Executing #{Rails.root.join(action.action)}")
       begin
@@ -278,7 +280,9 @@ protected
           rescue ScriptError, StandardError => e
             Rails.logger.error("Error in '#{@course.name}' updater: #{e.message}")
             Rails.logger.error(e.backtrace.inspect)
-            ExceptionNotifier.notify_exception(e, data: {action_script: action.action, course: @course})
+            ExceptionNotifier.notify_exception(e,
+                                               data: { action_script: action.action,
+                                                       course: @course })
           end
         end
 
@@ -291,25 +295,26 @@ protected
   end
 
   def update_persistent_announcements
-    @persistent_announcements = Announcement.where(persistent: true)
-                                            .where("course_id = ? OR system = ?", @course.id, true)
+    @persistent_announcements = Announcement
+                                .where(persistent: true, course_id: @course.id)
+                                .or(Announcement.where(persistent: true, system: true))
   end
 
   def set_breadcrumbs
     @breadcrumbs = []
     return unless @course
 
-    if @course.disabled?
-      @breadcrumbs << (view_context.link_to "#{@course.full_name} (Course Disabled)",
+    @breadcrumbs << if @course.disabled?
+                      (view_context.link_to "#{@course.full_name} (Course Disabled)",
                                             [@course], id: "courseTitle")
-    else
-      @breadcrumbs << (view_context.link_to @course.full_name, [@course], id: "courseTitle")
-    end
+                    else
+                      (view_context.link_to @course.full_name, [@course], id: "courseTitle")
+                    end
   end
 
   def pluralize(count, singular, plural = nil)
     "#{count || 0} " +
-      ((count == 1 || count =~ /^1(\.0+)?$/) ? singular : (plural || singular.pluralize))
+      (count == 1 || count =~ /^1(\.0+)?$/ ? singular : (plural || singular.pluralize))
   end
 
   # make_dlist - Creates a string of emails that can be added as b/cc field.
@@ -320,7 +325,7 @@ protected
     emails = []
 
     cuds.each do |cud|
-      emails << "#{cud.user.email}"
+      emails << cud.user.email.to_s
     end
 
     emails.join(",")
@@ -334,34 +339,34 @@ private
     # use the exception_notifier gem to send out an e-mail
     # to the notification list specified in config/environment.rb
     ExceptionNotifier.notify_exception(exception, env: request.env,
-                                       data: {
-                                         user: current_user,
-                                         course: @course,
-                                         assessment: @assessment,
-                                         submission: @submission
-                                       })
+                                                  data: {
+                                                    user: current_user,
+                                                    course: @course,
+                                                    assessment: @assessment,
+                                                    submission: @submission
+                                                  })
 
     respond_to do |format|
-       format.html {
-          # stack traces are only shown to instructors and administrators
-          # by leaving @error undefined, students and CAs do not see stack traces
-          if (!current_user.nil?) && (current_user.instructor? || current_user.administrator?)
-            @error = exception
+      format.html do
+        # stack traces are only shown to instructors and administrators
+        # by leaving @error undefined, students and CAs do not see stack traces
+        if !current_user.nil? && (current_user.instructor? || current_user.administrator?)
+          @error = exception
 
-            # Generate course id and assesssment id objects
-            @course_name = params[:course_name] ||
-                           (params[:controller] == "courses" ? params[:name] : nil)
-            if @course_name
-              @assessment_name = params[:assessment_name] ||
-                                 (params[:controller] == "assessments" ? params[:name] : nil)
+          # Generate course id and assesssment id objects
+          @course_name = params[:course_name] ||
+                         (params[:controller] == "courses" ? params[:name] : nil)
+          if @course_name
+            @assessment_name = params[:assessment_name] ||
+                               (params[:controller] == "assessments" ? params[:name] : nil)
 
-            end
           end
+        end
 
-          render "home/error"
-       }
-       format.json { head :internal_server_error }
-       format.js { head :internal_server_error }
+        render "home/error"
+      end
+      format.json { head :internal_server_error }
+      format.js { head :internal_server_error }
     end
   end
 end

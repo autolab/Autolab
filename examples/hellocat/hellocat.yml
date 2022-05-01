@@ -1,0 +1,35 @@
+
+
+
+
+
+
+
+---
+general:
+  name: hellocat
+  description: ''
+  display_name: Hello Cat
+  handin_filename: hello
+  handin_directory: handin
+  max_grace_days: 0
+  handout: hellocat-handout.tar
+  writeup: writeup/hellocat.html
+  max_submissions: -1
+  disable_handins: false
+  max_size: 2
+  has_svn: false
+  category_name: Lab
+problems:
+- name: Correctness
+  description: ''
+  max_score: 20
+  optional: false
+- name: TA/Design/Readability
+  description: ''
+  max_score: 40
+  optional: false
+autograder:
+  autograde_timeout: 180
+  autograde_image: autograding_image
+  release_score: true

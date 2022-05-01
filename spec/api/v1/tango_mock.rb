@@ -57,7 +57,7 @@ RSpec.shared_context "tango mock" do
     #  - filename: name of fixture file to send back as feedback
     def mock_tango_callback(course_name, asmt_name, dave, sub_id, filename)
       feedback_file = fixture_file_upload(filename, 'text/plain')
-      post "/courses/#{course_name}/assessments/#{asmt_name}/autograde_done?dave=#{dave}&submission_id=#{sub_id}", :file => feedback_file
+      post "/courses/#{course_name}/assessments/#{asmt_name}/autograde_done?dave=#{dave}&submission_id=#{sub_id}", params: {:file => feedback_file}
     end
   end
 

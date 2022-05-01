@@ -1,4 +1,4 @@
-class CreateAssignments < ActiveRecord::Migration
+class CreateAssignments < ActiveRecord::Migration[4.2]
   def self.up
     create_table :assignments do |t|
       t.timestamp :due_date

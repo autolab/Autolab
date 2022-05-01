@@ -97,15 +97,21 @@ module AssessmentAutogradeCore
   # Returns the callback_url for the given submission/dave key
   #
   def get_callback_url(course, assessment, submission, dave)
+    # Use https, unless explicitly specified not to
+    prefix = "https://"
+    if ENV["DOCKER_SSL"] == "false"
+      prefix = "http://"
+    end
+
     begin
       if Rails.env.development?
         hostname = request.base_url
       else
-        hostname = "https://" + request.host
+        hostname = prefix + request.host
       end
     rescue
       hostname = `hostname`
-      hostname = "https://" + hostname.strip
+      hostname = prefix + hostname.strip
     end
 
     callback_url = (RESTFUL_USE_POLLING) ? "" :
@@ -289,7 +295,7 @@ module AssessmentAutogradeCore
     autograde = { "localFile" => local_autograde, "destFile" => "autograde.tar" }
     settings_config = { "localFile" => local_settings_config, "destFile" => "settings.json" }
 
-    if assessment.has_custom_form.to_s == "true"
+    if assessment.has_custom_form
         [handin, makefile, autograde, settings_config]
     else
         [handin, makefile, autograde]
@@ -310,6 +316,14 @@ module AssessmentAutogradeCore
 
       feedback_file = File.join(ass_dir, @assessment.handin_directory, filename)
       COURSE_LOGGER.log("Looking for Feedbackfile:" + feedback_file)
+
+      feedback.force_encoding("UTF-8")
+      if not feedback.valid_encoding?
+        feedback.force_encoding("ASCII-8BIT")
+        hexify = Proc.new {|c| "\\x" + c.bytes[0].to_s(16) }
+        feedback = feedback.encode("UTF-8", invalid: :replace, fallback: hexify)
+      end
+
       File.open(feedback_file, "w") do |f|
         f.write(feedback)
       end
@@ -327,7 +341,7 @@ module AssessmentAutogradeCore
   def saveAutograde(submissions, feedback)
     begin
       lines = feedback.lines
-      raise AutogradeError.new("The Autograder returned no output", :autograde_no_output) if lines.nil?
+      raise AutogradeError.new("The Autograder returned no output", :autograde_no_output) if lines.empty?
 
       # The last line of the output is assumed to be the
       # autoresult string from the autograding driver

@@ -5,9 +5,9 @@
 class ProblemsController < ApplicationController
   # inherited from ApplicationController
   before_action :set_assessment
-  before_action :set_problem, only: [:edit, :update, :destroy]
-    rescue_from ActionView::MissingTemplate do |exception|
-      redirect_to("/home/error_404")
+  before_action :set_problem, only: %i[edit update destroy]
+  rescue_from ActionView::MissingTemplate do |_exception|
+    redirect_to("/home/error_404")
   end
 
   action_auth_level :new, :instructor
@@ -19,22 +19,18 @@ class ProblemsController < ApplicationController
   def create
     @problem = @assessment.problems.new(problem_params)
 
-    if @problem.save
-      redirect_to(problems_index) && return
-    else
-      flash[:error] = "An error occurred while creating the new problem"
+    redirect_to(problems_index) && return if @problem.save
 
-      @problem.errors.full_messages.each do |msg|
-        flash[:error] += "<br>#{msg}"
-      end
-
-      redirect_to([:new, @course, @assessment, :problem]) && return
+    # error case
+    flash[:error] = "An error occurred while creating the new problem"
+    @problem.errors.full_messages.each do |msg|
+      flash[:error] += "<br>#{msg}"
     end
+    redirect_to([:new, @course, @assessment, :problem]) && return
   end
 
   action_auth_level :edit, :instructor
-  def edit
-  end
+  def edit; end
 
   action_auth_level :update, :instructor
   def update
@@ -75,7 +71,7 @@ private
   # creates a link to the problems page, which is a tab on assessments#edit
   #
   def problems_index
-    edit_course_assessment_path(@course, @assessment) + "/#tab_problems"
+    "#{edit_course_assessment_path(@course, @assessment)}/#tab_problems"
   end
 
   # this function says which problem attributes can be mass-assigned to, and which cannot

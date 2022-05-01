@@ -6,16 +6,16 @@ class AttachmentsController < ApplicationController
   # inherited from ApplicationController
   # this will also set an @is_assessment variable based on the result of is_assessment?
   before_action :set_assessment, if: :assessment?
-  before_action :set_attachment, except: [:index, :new, :create]
+  before_action :set_attachment, except: %i[index new create]
   before_action :add_attachments_breadcrumb
 
-    rescue_from ActionView::MissingTemplate do |exception|
-      redirect_to("/home/error_404")
+  rescue_from ActionView::MissingTemplate do |_exception|
+    redirect_to("/home/error_404")
   end
 
   action_auth_level :index, :instructor
   def index
-    @attachments = (@is_assessment) ? @assessment.attachments : @course.attachments
+    @attachments = @is_assessment ? @assessment.attachments : @course.attachments
   end
 
   action_auth_level :new, :instructor
@@ -25,11 +25,11 @@ class AttachmentsController < ApplicationController
 
   action_auth_level :create, :instructor
   def create
-    if @is_assessment
-      @attachment = @course.attachments.new(assessment_id: @assessment.id)
-    else
-      @attachment = @course.attachments.new
-    end
+    @attachment = if @is_assessment
+                    @course.attachments.new(assessment_id: @assessment.id)
+                  else
+                    @course.attachments.new
+                  end
 
     update
   end
@@ -38,17 +38,19 @@ class AttachmentsController < ApplicationController
   def show
     filename = Rails.root.join("attachments", @attachment.filename)
     unless File.exist?(filename)
-      COURSE_LOGGER.log("Cannot find the file '#{@attachment.filename}' for attachment #{@attachment.name}")
+      COURSE_LOGGER.log("Cannot find the file '#{@attachment.filename}' for"\
+                        " attachment #{@attachment.name}")
+
       flash[:error] = "Error loading #{@attachment.name} from #{@attachment.filename}"
       redirect_to([@course, :attachments]) && return
     end
+    # Set to application/octet-stream to force download
     send_file(filename, disposition: "inline",
-                        type: @attachment.mime_type, filename: @attachment.filename) && return
+                        type: "application/octet-stream", filename: @attachment.filename) && return
   end
 
   action_auth_level :edit, :instructor
-  def edit
-  end
+  def edit; end
 
   action_auth_level :update, :instructor
   def update
@@ -59,7 +61,7 @@ class AttachmentsController < ApplicationController
     else
       # not successful, go back to edit page
       error_msg = "Attachment update failed:"
-      if not @attachment.valid?
+      if !@attachment.valid?
         @attachment.errors.full_messages.each do |msg|
           error_msg += "<br>#{msg}"
         end
@@ -71,9 +73,9 @@ class AttachmentsController < ApplicationController
 
       if @is_assessment
         redirect_to([:edit, @course, @assessment, @attachment]) && return
-      else
-        redirect_to([:edit, @course, @attachment]) && return
       end
+
+      redirect_to([:edit, @course, @attachment]) && return
     end
   end
 
@@ -91,34 +93,34 @@ private
   end
 
   def set_attachment
-    if @is_assessment
-      @attachment = @course.attachments.find_by(assessment_id: @assessment.id, id: params[:id])
-    else
-      @attachment = @course.attachments.find(params[:id])
-    end
+    @attachment = if @is_assessment
+                    @course.attachments.find_by(assessment_id: @assessment.id, id: params[:id])
+                  else
+                    @course.attachments.find(params[:id])
+                  end
 
-    if @attachment.nil?
-      COURSE_LOGGER.log("Cannot find attachment with id: #{params[:id]}")
-      flash[:error] = "Could not find Attachment \# #{params[:id]}"
-      redirect_to_attachment_list && return
-    end
+    return unless @attachment.nil?
+
+    COURSE_LOGGER.log("Cannot find attachment with id: #{params[:id]}")
+    flash[:error] = "Could not find Attachment \# #{params[:id]}"
+    redirect_to_attachment_list && return
   end
 
   def redirect_to_attachment_list
     if @is_assessment
-      redirect_to([@course, @assessment]) && return
-    else
-      redirect_to([@course, :attachments]) && return
+      (redirect_to([@course, @assessment]) && return)
     end
+
+    redirect_to([@course, :attachments]) && return
   end
 
   def add_attachments_breadcrumb
-    if @is_assessment
-      @breadcrumbs << (view_context.link_to "Assessment Attachments",
+    @breadcrumbs << if @is_assessment
+                      (view_context.link_to "Assessment Attachments",
                                             [@course, @assessment, :attachments])
-    else
-      @breadcrumbs << (view_context.link_to "Course Attachments", [@course, :attachments])
-    end
+                    else
+                      (view_context.link_to "Course Attachments", [@course, :attachments])
+                    end
   end
 
   def attachment_params

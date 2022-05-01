@@ -47,7 +47,7 @@ module AssessmentHelper
   def gradesheet_csv(asmt, as_seen_by)
     CSV.generate do |csv|
       # title row with the column names:
-      title = ["Email:"]
+      title = ["Submission Time:","Email:"]
       asmt.problems.each { |problem| title << "#{problem.name}:" }
       title << "Total:"
       csv << title
@@ -69,8 +69,10 @@ private
     aud = AssessmentUserDatum.get asmt.id, cud.id
     throw "csv_row_for: no AUD for (#{asmt.id}, #{cud.id})" unless aud
 
-    # create csv row with user email (first column)
-    row = [cud.user.email]
+    # create csv row with latest submission time and user email (first and second columns)
+    submission = aud.latest_submission
+    submission_time = submission.nil? ? nil : submission.created_at.in_time_zone.to_s
+    row = [submission_time, cud.user.email]
 
     grade_type = aud.grade_type
     submission_status = aud.submission_status

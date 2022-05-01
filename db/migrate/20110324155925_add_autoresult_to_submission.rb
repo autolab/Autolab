@@ -1,4 +1,4 @@
-class AddAutoresultToSubmission < ActiveRecord::Migration
+class AddAutoresultToSubmission < ActiveRecord::Migration[4.2]
   def self.up
     add_column :submissions, :autoresult, :text
   end

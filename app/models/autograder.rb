@@ -2,7 +2,7 @@
 # This model has nothing to do with actually autograding assessments, and instead deals
 # with autograding properties for an assessment
 #
-class Autograder < ActiveRecord::Base
+class Autograder < ApplicationRecord
   belongs_to :assessment
 
   trim_field :autograde_image
@@ -12,9 +12,9 @@ class Autograder < ActiveRecord::Base
   validates :autograde_image, :autograde_timeout, presence: true
   validates :autograde_image, length: { maximum: 64 }
 
-  after_save -> { assessment.dump_yaml }
+  after_commit -> { assessment.dump_yaml }
 
-  SERIALIZABLE = Set.new %w(autograde_image autograde_timeout release_score)
+  SERIALIZABLE = Set.new %w[autograde_image autograde_timeout release_score]
   def serialize
     Utilities.serializable attributes, SERIALIZABLE
   end

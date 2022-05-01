@@ -1,4 +1,4 @@
-class ChangeFeedbackType < ActiveRecord::Migration
+class ChangeFeedbackType < ActiveRecord::Migration[4.2]
   def self.up
     change_column :scores, :feedback, :text
   end

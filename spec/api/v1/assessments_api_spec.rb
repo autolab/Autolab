@@ -7,17 +7,17 @@ RSpec.describe Api::V1::AssessmentsController, :type => :controller do
     include_context "api shared context"
 
     it 'fails scope test' do
-      get :index, :access_token => user_info_token.token, :course_name => course.name
+      get :index, params: {:access_token => user_info_token.token, :course_name => course.name}
       expect(response.response_code).to eq(403)
     end
 
     it 'fails to find the course' do
-      get :index, :access_token => token.token, :course_name => 8.times.map { (65 + rand(26)).chr }.join # random course name
+      get :index, params: {:access_token => token.token, :course_name => 8.times.map { (65 + rand(26)).chr }.join} # random course name
       expect(response.response_code).to eq(404)
     end
 
     it 'returns all the released assessments of a course' do
-      get :index, :access_token => token.token, :course_name => course.name
+      get :index, params: {:access_token => token.token, :course_name => course.name}
       expect(response.response_code).to eq(200)
       msg = JSON.parse(response.body)
       expect(msg.length).to eq(course.assessments.released.count)
@@ -28,12 +28,12 @@ RSpec.describe Api::V1::AssessmentsController, :type => :controller do
     include_context "api shared context"
 
     it 'fails to find the course' do
-      get :index, :access_token => token.token, :course_name => 8.times.map { (65 + rand(26)).chr }.join # random course name
+      get :index, params: {:access_token => token.token, :course_name => 8.times.map { (65 + rand(26)).chr }.join} # random course name
       expect(response.response_code).to eq(404)
     end
 
     it 'returns all the problems of an assignment' do
-      get :problems, :access_token => token.token, :course_name => course.name, :assessment_name => assessment.name
+      get :problems, params: {:access_token => token.token, :course_name => course.name, :assessment_name => assessment.name}
       expect(response.response_code).to eq(200)
       msg = JSON.parse(response.body)
       expect(msg.length).to eq(assessment.problems.count)
@@ -47,7 +47,7 @@ RSpec.describe Api::V1::AssessmentsController, :type => :controller do
     it 'fails scope test' do
       subm = Hash.new
       subm['file'] = @handin_file
-      post :submit, :access_token => bad_token.token, :course_name => @ap_course.name, :assessment_name => @adder_asm.name, :submission => subm
+      post :submit, params: {:access_token => bad_token.token, :course_name => @ap_course.name, :assessment_name => @adder_asm.name, :submission => subm}
       expect(response.response_code).to eq(403)
       msg = JSON.parse(response.body)
       expect(msg).to include('error')
@@ -56,7 +56,7 @@ RSpec.describe Api::V1::AssessmentsController, :type => :controller do
 
     it 'rejects invalid handin with no submission[file] param' do
       subm = Hash.new
-      post :submit, :access_token => token.token, :course_name => @ap_course.name, :assessment_name => @adder_asm.name, :submission => subm
+      post :submit, params: {:access_token => token.token, :course_name => @ap_course.name, :assessment_name => @adder_asm.name, :submission => subm}
       expect(response.response_code).to eq(400)
       msg = JSON.parse(response.body)
       expect(msg).to include('error')
@@ -70,7 +70,7 @@ RSpec.describe Api::V1::AssessmentsController, :type => :controller do
       # perform submission
       subm = Hash.new
       subm['file'] = @handin_file
-      post :submit, :access_token => token.token, :course_name => @ap_course.name, :assessment_name => @adder_asm.name, :submission => subm
+      post :submit, params: {:access_token => token.token, :course_name => @ap_course.name, :assessment_name => @adder_asm.name, :submission => subm}
       msg = JSON.parse(response.body)
       expect(response.response_code).to eq(200)
       expect(msg).to include('version')

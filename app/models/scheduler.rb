@@ -1,9 +1,9 @@
-class Scheduler < ActiveRecord::Base
+class Scheduler < ApplicationRecord
   trim_field :action
   self.table_name = :scheduler
   belongs_to :course
 
-  validates_numericality_of :interval
-  validates_presence_of :action
+  validates :interval, numericality: true
+  validates :action, presence: true
   validates_associated :course
 end

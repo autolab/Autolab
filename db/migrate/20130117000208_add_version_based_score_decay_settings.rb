@@ -1,4 +1,4 @@
-class AddVersionBasedScoreDecaySettings < ActiveRecord::Migration
+class AddVersionBasedScoreDecaySettings < ActiveRecord::Migration[4.2]
   def self.up
     add_column :assessments, :version_threshold, :integer
     add_column :assessments, :version_penalty, :float

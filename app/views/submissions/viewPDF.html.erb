@@ -1,4 +1,4 @@
-<% @title = "Annotate Submission" %>
+<% @title = (@cud.instructor || @cud.course_assistant) ? "Annotate Submission" : "View Submission" %>
 
 <% content_for :stylesheets do %>
 <%= stylesheet_link_tag "annotations" %>
@@ -43,8 +43,12 @@
     var fileLink    = "<%= url_for [:download, @course, @assessment, @submission, header_position: params[:header_position]] %>";
     <% end %>
     var cudEmailStr = "<%= @cud.email %>";
+    
     // a json list of problems for this assessment
     var problems = <%=raw @problems.to_json %>;
+
+    // a json list of scores for this assessment
+    var scores = <%=raw @scores.to_json %>;
     var basePath = "<%= course_assessment_submission_annotations_path(@course, @assessment, @submission) %>";
 
     <% if params[:header_position] %>
@@ -146,10 +150,10 @@
       </a>
       <% if @assessment.has_custom_form then %>
         <% if @assessment.getLanguages.size > 0 then %>
-            <p><b>Language:</b> <%= @submission.getSettings["Language"] %></p>
+            <p><b>Language:</b> <%= @submission.get_settings["Language"] %></p>
         <% end %>
         <% for i in 0..@assessment.getTextfields.size-1 do %>
-            <p><b><%= @assessment.getTextfields[i] %>:</b> <%= @submission.getSettings[@assessment.getTextfields[i]] %></p>
+            <p><b><%= @assessment.getTextfields[i] %>:</b> <%= @submission.get_settings[@assessment.getTextfields[i]] %></p>
         <% end %>
      <% end %>
     <% end %>

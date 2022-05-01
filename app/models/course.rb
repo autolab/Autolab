@@ -1,15 +1,17 @@
 require "association_cache"
 require "fileutils"
 
-class Course < ActiveRecord::Base
+class Course < ApplicationRecord
   trim_field :name, :semester, :display_name
-  validates_uniqueness_of :name
-  validates_presence_of :display_name, :start_date, :end_date
-  validates_presence_of :late_slack, :grace_days, :late_penalty, :version_penalty
-  validates_numericality_of :grace_days, greater_than_or_equal_to: 0
-  validates_numericality_of :version_threshold, only_integer: true, greater_than_or_equal_to: -1
+  validates :name, uniqueness: true
+  validates :display_name, :start_date, :end_date, presence: true
+  validates :late_slack, :grace_days, :late_penalty, :version_penalty, presence: true
+  validates :grace_days, numericality: { greater_than_or_equal_to: 0 }
+  validates :version_threshold, numericality: { only_integer: true, greater_than_or_equal_to: -1 }
   validate :order_of_dates
-  validates_format_of :name, with: /\A(\w|-)+\z/, on: :create
+  validates :name, format: { with: /\A(\w|-)+\z/, on: :create }
+  # validates course website format if there exists one
+  validate :valid_website?
 
   has_many :course_user_data, dependent: :destroy
   has_many :assessments, dependent: :destroy
@@ -21,11 +23,12 @@ class Course < ActiveRecord::Base
   belongs_to :version_penalty, class_name: "Penalty"
   has_many :assessment_user_data, through: :assessments
   has_many :submissions, through: :assessments
+  has_many :watchlist_instances, dependent: :destroy
+  has_many :risk_conditions, dependent: :destroy
 
   accepts_nested_attributes_for :late_penalty, :version_penalty
 
-  before_save :cgdub_dependencies_updated, if: :grace_days_changed?
-  before_save :cgdub_dependencies_updated, if: :late_slack_changed?
+  before_save :cgdub_dependencies_updated, if: :grace_days_or_late_slack_changed?
   before_create :cgdub_dependencies_updated
   after_create :init_course_folder
 
@@ -38,8 +41,8 @@ class Course < ActiveRecord::Base
     # fill temporary values in other fields
     newCourse.late_slack = 0
     newCourse.grace_days = 0
-    newCourse.start_date = Time.now
-    newCourse.end_date = Time.now
+    newCourse.start_date = Time.current
+    newCourse.end_date = Time.current
 
     newCourse.late_penalty = Penalty.new
     newCourse.late_penalty.kind = "points"
@@ -49,8 +52,9 @@ class Course < ActiveRecord::Base
     newCourse.version_penalty.kind = "points"
     newCourse.version_penalty.value = "0"
 
-    if not newCourse.save
-      raise "Failed to create course #{newCourse.name}: #{newCourse.errors.full_messages.join(", ")}"
+    unless newCourse.save
+      raise "Failed to create course #{newCourse.name}: "\
+            "#{newCourse.errors.full_messages.join(', ')}"
     end
 
     # Check instructor
@@ -60,7 +64,7 @@ class Course < ActiveRecord::Base
       begin
         instructor = User.instructor_create(instructor_email,
                                             newCourse.name)
-      rescue Exception => e
+      rescue StandardError => e
         # roll back course creation
         newCourse.destroy
         raise "Failed to create instructor for course: #{e}"
@@ -71,21 +75,21 @@ class Course < ActiveRecord::Base
     newCUD = newCourse.course_user_data.new
     newCUD.user = instructor
     newCUD.instructor = true
-    if not newCUD.save
+    unless newCUD.save
       # roll back course creation
       newCourse.destroy
       raise "Failed to create CUD for instructor of new course #{newCourse.name}"
     end
 
     # Load course config
-    if not newCourse.reload_course_config
+    unless newCourse.reload_course_config
       # roll back course and CUD creation
       newCUD.destroy
       newCourse.destroy
       raise "Failed to load course config for new course #{newCourse.name}"
     end
 
-    return newCourse
+    newCourse
   end
 
   # generate course folder
@@ -96,7 +100,11 @@ class Course < ActiveRecord::Base
     FileUtils.touch File.join(course_dir, "autolab.log")
 
     course_rb = File.join(course_dir, "course.rb")
+
+    # rubocop:disable Rails/FilePath
     default_course_rb = Rails.root.join("lib", "__defaultCourse.rb")
+    # rubocop:enable Rails/FilePath
+
     FileUtils.cp default_course_rb, course_rb
 
     FileUtils.mkdir_p Rails.root.join("assessmentConfig")
@@ -106,6 +114,17 @@ class Course < ActiveRecord::Base
 
   def order_of_dates
     errors.add(:start_date, "must come before end date") if start_date > end_date
+  end
+
+  def valid_website?
+    if website.nil? || website.eql?("")
+      true
+    elsif website[0..7].eql?("https://")
+      true
+    else
+      errors.add("website", "needs to start with https://")
+      false
+    end
   end
 
   def temporal_status(now = DateTime.now)
@@ -123,8 +142,8 @@ class Course < ActiveRecord::Base
   end
 
   def full_name
-    if semester.to_s.size > 0
-      display_name + " (" + semester + ")"
+    if !semester.to_s.empty?
+      "#{display_name} (#{semester})"
     else
       display_name
     end
@@ -140,11 +159,11 @@ class Course < ActiveRecord::Base
 
     d = File.open(dest, "w")
     d.write("require 'CourseBase.rb'\n\n")
-    d.write("module Course" + course.camelize + "\n")
+    d.write("module Course#{course.camelize}\n")
     d.write("\tinclude CourseBase\n\n")
-    for line in lines do
-      if line.length > 0
-        d.write("\t" + line)
+    lines.each do |line|
+      if !line.empty?
+        d.write("\t#{line}")
       else
         d.write(line)
       end
@@ -153,7 +172,9 @@ class Course < ActiveRecord::Base
     d.close
 
     load(dest)
+    # rubocop:disable Style/EvalWithLocation, Security/Eval
     eval("Course#{course.camelize}")
+    # rubocop:enable Style/EvalWithLocation, Security/Eval
   end
 
   # reload_course_config
@@ -163,9 +184,12 @@ class Course < ActiveRecord::Base
     mod = nil
     begin
       mod = reload_config_file
-    rescue Exception => @error
+
+    # rubocop:disable Lint/RescueException
+    rescue Exception
       return false
     end
+    # rubocop:enable Lint/RescueException
 
     AdminsController.extend(mod)
     true
@@ -187,7 +211,9 @@ class Course < ActiveRecord::Base
 
     # raw_scores
     # NOTE: keep in sync with assessment#invalidate_raw_scores
-    assessments.update_all(updated_at: Time.now)
+    # rubocop:disable Rails/SkipsModelValidations
+    assessments.update_all(updated_at: Time.current)
+    # rubocop:enable Rails/SkipsModelValidations
   end
 
   def config
@@ -207,11 +233,11 @@ class Course < ActiveRecord::Base
   end
 
   def assessment_categories
-    assessments.pluck("DISTINCT category_name").sort
+    assessments.distinct.pluck(:category_name).sort
   end
 
-  def assessments_with_category(cat_name, isStudent = false)
-    if isStudent
+  def assessments_with_category(cat_name, is_student = false)
+    if is_student
       assessments.where(category_name: cat_name).ordered.released
     else
       assessments.where(category_name: cat_name).ordered
@@ -222,17 +248,38 @@ class Course < ActiveRecord::Base
     name
   end
 
+  def asmts_before_date(date)
+    asmts = assessments.ordered
+    asmts.where("due_at < ?", date)
+  end
+
 private
 
+  def saved_change_to_grade_related_fields?
+    (saved_change_to_late_slack? or saved_change_to_grace_days? or
+            saved_change_to_version_threshold? or saved_change_to_late_penalty_id? or
+            saved_change_to_version_penalty_id?)
+  end
+
+  def grace_days_or_late_slack_changed?
+    (grace_days_changed? or late_slack_changed?)
+  end
+
+  def saved_change_to_grace_days_or_late_slack?
+    (saved_change_to_grace_days? or saved_change_to_late_slack?)
+  end
+
   def cgdub_dependencies_updated
-    self.cgdub_dependencies_updated_at = Time.now
+    self.cgdub_dependencies_updated_at = Time.current
   end
 
   def config!
     source = "#{name}_course_config".to_sym
     Utilities.execute_instructor_code(source) do
       require config_file_path
+      # rubocop:disable Security/Eval
       Class.new.extend eval(config_module_name)
+      # rubocop:enable Security/Eval
     end
   end
 

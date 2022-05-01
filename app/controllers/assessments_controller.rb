@@ -4,30 +4,31 @@ require "fileutils"
 require "rubygems/package"
 require "statistics"
 require "yaml"
+require "utilities"
 
 class AssessmentsController < ApplicationController
   include ActiveSupport::Callbacks
 
-    rescue_from ActionView::MissingTemplate do |exception|
-      redirect_to("/home/error_404")
+  rescue_from ActionView::MissingTemplate do |_exception|
+    redirect_to("/home/error_404")
   end
 
-  autolab_require Rails.root.join("app", "controllers", "assessment", "handin.rb")
+  autolab_require Rails.root.join("app/controllers/assessment/handin.rb")
   include AssessmentHandin
 
-  autolab_require Rails.root.join("app", "controllers", "assessment", "handout.rb")
+  autolab_require Rails.root.join("app/controllers/assessment/handout.rb")
   include AssessmentHandout
 
-  autolab_require Rails.root.join("app", "controllers", "assessment", "grading.rb")
+  autolab_require Rails.root.join("app/controllers/assessment/grading.rb")
   include AssessmentGrading
 
-  autolab_require Rails.root.join("app", "controllers", "assessment", "autograde.rb")
+  autolab_require Rails.root.join("app/controllers/assessment/autograde.rb")
   include AssessmentAutograde
 
   # this is inherited from ApplicationController
-  before_action :set_assessment, except: [:index, :new, :create, :installAssessment,
-                                          :importAsmtFromTar, :importAssessment,
-                                          :log_submit, :local_submit, :autograde_done]
+  before_action :set_assessment, except: %i[index new create install_assessment
+                                            importAsmtFromTar importAssessment
+                                            log_submit local_submit autograde_done]
   before_action :set_submission, only: [:viewFeedback]
 
   # We have to do this here, because the modules don't inherit ApplicationController.
@@ -57,18 +58,26 @@ class AssessmentsController < ApplicationController
   action_no_auth :local_submit
 
   # SVN
-  autolab_require Rails.root.join("app", "controllers", "assessment", "svn.rb")
+  autolab_require Rails.root.join("app/controllers/assessment/svn.rb")
   include AssessmentSVN
   action_auth_level :admin_svn, :instructor
   action_auth_level :set_repo, :instructor
   action_auth_level :import_svn, :instructor
 
+  protect_from_forgery with: :exception
+
   def index
     @is_instructor = @cud.has_auth_level? :instructor
-    @announcements = Announcement.where("start_date < :now AND end_date > :now", now: Time.now)
-                                 .where("course_id = ? OR system = ?", @course.id, true)
-                                 .where(persistent: false).order(:start_date)
-    @attachments = (@cud.instructor?) ? @course.attachments : @course.attachments.where(released: true)
+    announcements_tmp = Announcement.where("start_date < :now AND end_date > :now",
+                                           now: Time.current)
+                                    .where(persistent: false)
+    @announcements = announcements_tmp.where(course_id: @course.id)
+                                      .or(announcements_tmp.where(system: true)).order(:start_date)
+    @attachments = if @cud.instructor?
+                     @course.attachments
+                   else
+                     @course.attachments.where(released: true)
+                   end
   end
 
   # GET /assessments/new
@@ -76,26 +85,34 @@ class AssessmentsController < ApplicationController
   # creating it from scratch, or importing it from an existing
   # assessment directory.
   action_auth_level :new, :instructor
+
   def new
     @assessment = @course.assessments.new
+    return if GithubIntegration.connected
+
+    @assessment.github_submission_enabled = false
   end
 
-  # installAssessment - Installs a new assessment, either by
+  # install_assessment - Installs a new assessment, either by
   # creating it from scratch, or importing it from an existing
   # assessment directory on file system, or from an uploaded
   # tar file with the assessment directory.
-  action_auth_level :installAssessment, :instructor
-  def installAssessment
+  action_auth_level :install_assessment, :instructor
+  def install_assessment
     ass_dir = Rails.root.join("courses", @course.name)
     @unused_config_files = []
-    flash[:error] = ""
     Dir.foreach(ass_dir) do |filename|
+      # skip if not directory in folder
+      next if !File.directory?(File.join(ass_dir,
+                                         filename)) || (filename == "..") || (filename == ".")
+
       # assessment's yaml file must exist
-      if !File.exist?(File.join(ass_dir, filename, "#{filename}.yml"))
-        flash[:error] += "Yml does not exist: " + filename +"     -     "
+      unless File.exist?(File.join(ass_dir, filename, "#{filename}.yml"))
+        flash[:error] = flash[:error] || ""
+        flash[:error] += "Yml does not exist: #{filename}     -     "
         next
       end
-      
+
       # names must be only lowercase letters and digits
       next if filename =~ /[^a-z0-9]/
 
@@ -107,11 +124,12 @@ class AssessmentsController < ApplicationController
   end
 
   action_auth_level :importAsmtFromTar, :instructor
+
   def importAsmtFromTar
     tarFile = params["tarFile"]
     if tarFile.nil?
       flash[:error] = "Please select an assessment tarball for uploading."
-      redirect_to(action: "installAssessment")
+      redirect_to(action: "install_assessment")
       return
     end
 
@@ -122,20 +140,25 @@ class AssessmentsController < ApplicationController
       is_valid_tar, asmt_name = valid_asmt_tar(tar_extract)
       tar_extract.close
       unless is_valid_tar
-        flash[:error] = "Invalid tarball. A valid assessment tar has a single root directory that's named after the assessment, containing an assessment yaml file and an assessment ruby file."
-        redirect_to(action: "installAssessment")
+        flash[:error] =
+          "Invalid tarball. A valid assessment tar has a single root "\
+          "directory that's named after the assessment, containing an "\
+          "assessment yaml file and an assessment ruby file."
+        redirect_to(action: "install_assessment")
         return
       end
     rescue StandardError => e
       flash[:error] = "Error while reading the tarball -- #{e.message}."
-      redirect_to(action: "installAssessment")
+      redirect_to(action: "install_assessment")
       return
     end
 
     # Check if the assessment already exists.
     unless @course.assessments.find_by(name: asmt_name).nil?
-      flash[:error] = "An assessment with the same name already exists for the course. Please use a different name."
-      redirect_to(action: "installAssessment") && return
+      flash[:error] =
+        "An assessment with the same name already exists for the course. "\
+        "Please use a different name."
+      redirect_to(action: "install_assessment") && return
     end
 
     # If all requirements are satisfied, extract assessment files.
@@ -162,7 +185,7 @@ class AssessmentsController < ApplicationController
       tar_extract.close
     rescue StandardError => e
       flash[:error] = "Error while extracting tarball to server -- #{e.message}."
-      redirect_to(action: "installAssessment") && return
+      redirect_to(action: "install_assessment") && return
     end
 
     params[:assessment_name] = asmt_name
@@ -173,9 +196,11 @@ class AssessmentsController < ApplicationController
   # The main task of this function is to decide what category a newly
   # installed assessment should be assigned to.
   action_auth_level :importAssessment, :instructor
+
   def importAssessment
     @assessment = @course.assessments.new(name: params[:assessment_name])
     @assessment.load_yaml # this will save the assessment
+    @assessment.load_embedded_quiz # this will check and load embedded quiz
     @assessment.construct_folder # make sure there's a handin folder, just in case
     @assessment.load_config_file # only call this on saved assessments
     redirect_to([@course, @assessment])
@@ -184,6 +209,7 @@ class AssessmentsController < ApplicationController
   # create - Creates an assessment from an assessment directory
   # residing in the course directory.
   action_auth_level :create, :instructor
+
   def create
     @assessment = @course.assessments.new(new_assessment_params)
 
@@ -192,8 +218,9 @@ class AssessmentsController < ApplicationController
       ass_name = @assessment.display_name.downcase.gsub(/[^a-z0-9]/, "")
 
       if ass_name.blank?
-        flash[:error] = "Assessment name is blank or contains characters that are not lowercase letters or digits"
-        redirect_to(action: :installAssessment)
+        flash[:error] =
+          "Assessment name is blank or contains characters that are not lowercase letters or digits"
+        redirect_to(action: :install_assessment)
         return
       end
 
@@ -204,12 +231,18 @@ class AssessmentsController < ApplicationController
     # fill in other fields
     @assessment.course = @course
     @assessment.handin_directory = "handin"
-    @assessment.handin_filename = "handin.c"
-    @assessment.visible_at = Time.now
-    @assessment.start_at = Time.now
-    @assessment.due_at = Time.now
-    @assessment.end_at = Time.now
-    @assessment.grading_deadline = Time.now
+
+    @assessment.handin_filename = if @assessment.github_submission_enabled
+                                    "handin.tgz"
+                                  else
+                                    "handin.c"
+                                  end
+
+    @assessment.visible_at = Time.current + 1.day
+    @assessment.start_at = Time.current + 1.day
+    @assessment.due_at = Time.current + 1.day
+    @assessment.end_at = Time.current + 1.day
+    @assessment.grading_deadline = Time.current + 1.day
     @assessment.quiz = false
     @assessment.quizData = ""
     @assessment.max_submissions = params.include?(:max_submissions) ? params[:max_submissions] : -1
@@ -217,9 +250,9 @@ class AssessmentsController < ApplicationController
     if @assessment.embedded_quiz
       begin
         @assessment.embedded_quiz_form_data = params[:assessment][:embedded_quiz_form].read
-      rescue
+      rescue StandardError
         flash[:error] = "Embedded quiz form cannot be empty!"
-        redirect_to(action: :installAssessment)
+        redirect_to(action: :install_assessment)
         return
       end
     end
@@ -234,7 +267,7 @@ class AssessmentsController < ApplicationController
       rescue StandardError => e2
         flash[:error] += "An error occurred (#{e2}} " \
           " while recovering from a previous error (#{flash[:error]})"
-        redirect_to(action: :installAssessment)
+        redirect_to(action: :install_assessment)
         return
       end
     end
@@ -244,7 +277,7 @@ class AssessmentsController < ApplicationController
       @assessment.save!
     rescue StandardError => e
       flash[:error] = "Error saving #{@assessment.name}: #{e}"
-      redirect_to(action: :installAssessment)
+      redirect_to(action: :install_assessment)
       return
     end
 
@@ -258,7 +291,7 @@ class AssessmentsController < ApplicationController
 
   def assessmentInitialize(assignName)
     @assessment = @course.assessments.find_by(name: assignName)
-    fail "Assessment #{assignName} does not exist!" unless @assessment
+    raise "Assessment #{assignName} does not exist!" unless @assessment
 
     if @assessment.nil?
       flash[:error] = "Error: Invalid assessment"
@@ -286,6 +319,7 @@ class AssessmentsController < ApplicationController
     redirect_to(action: "index") && return unless @cud.instructor?
 
     return unless @assessment.problems.count == 0
+
     @problems.each do |problem|
       @assessment.problems.create do |p|
         p.name = problem["name"]
@@ -307,7 +341,7 @@ class AssessmentsController < ApplicationController
       sum = @assessment.config_module.raw_score(scores)
     else
       sum = 0.0
-      scores.each_value { |value| sum += (value.to_f) }
+      scores.each_value { |value| sum += value.to_f }
     end
 
     sum
@@ -322,40 +356,40 @@ class AssessmentsController < ApplicationController
                                 @assessment.handin_directory,
                                 @submission.filename)
       @submissionData = File.read(subFile)
-    rescue
+    rescue StandardError
       flash[:error] = "Could not read #{subFile}"
     end
     @score = @submission.scores.where(problem_id: @problem.id).first
   end
 
   def getAssessmentVariable(key)
-    if @assessmentVariables
-      return @assessmentVariables.key(key)
-    else
-      return nil
-    end
+    @assessmentVariables&.key(key)
   end
 
   # export - export an assessment by saving its persistent
   # properties in a yaml properties file.
   action_auth_level :export, :instructor
+
   def export
     base_path = Rails.root.join("courses", @course.name).to_s
     asmt_dir = @assessment.name
     begin
       # Update the assessment config YAML file.
       @assessment.dump_yaml
+      # Save embedded_quiz
+      @assessment.dump_embedded_quiz
       # Pack assessment directory into a tarball.
       tarStream = StringIO.new("")
       Gem::Package::TarWriter.new(tarStream) do |tar|
         tar.mkdir asmt_dir, File.stat(File.join(base_path, asmt_dir)).mode
         Dir[File.join(base_path, asmt_dir, "**")].each do |file|
           mode = File.stat(file).mode
-          relative_path = file.sub((/^#{Regexp.escape base_path}\/?/), "")
+          relative_path = file.sub(%r{^#{Regexp.escape base_path}/?}, "")
 
           if File.directory?(file)
             tar.mkdir relative_path, mode
-          elsif !relative_path.starts_with? File.join(@assessment.name, @assessment.handin_directory)
+          elsif !relative_path.starts_with? File.join(@assessment.name,
+                                                      @assessment.handin_directory)
             tar.add_file relative_path, mode do |tarFile|
               File.open(file, "rb") { |f| tarFile.write f.read }
             end
@@ -364,7 +398,9 @@ class AssessmentsController < ApplicationController
       end
       tarStream.rewind
       tarStream.close
-      send_data tarStream.string.force_encoding("binary"), filename: "#{@assessment.name}_#{Time.now.strftime('%Y%m%d')}.tar", content_type: "application/x-tar"
+      send_data tarStream.string.force_encoding("binary"),
+                filename: "#{@assessment.name}_#{Time.current.strftime('%Y%m%d')}.tar",
+                content_type: "application/x-tar"
     rescue SystemCallError => e
       flash[:error] = "Unable to update the config YAML file: #{e}"
       redirect_to action: "index"
@@ -377,14 +413,11 @@ class AssessmentsController < ApplicationController
   end
 
   action_auth_level :destroy, :instructor
-  def destroy
-    for submission in @assessment.submissions do
-      submission.destroy
-    end
 
-    for attachment in @assessment.attachments do
-      attachment.destroy
-    end
+  def destroy
+    @assessment.submissions.each(&:destroy)
+
+    @assessment.attachments.each(&:destroy)
 
     name = @assessment.display_name
     @assessment.destroy # awwww!!!!
@@ -393,6 +426,7 @@ class AssessmentsController < ApplicationController
   end
 
   action_auth_level :show, :student
+
   def show
     set_handin
     extend_config_module(@assessment, @submission, @cud)
@@ -410,13 +444,14 @@ class AssessmentsController < ApplicationController
     # Remember the student ID in case the user wants visit the gradesheet
     session["gradeUser#{@assessment.id}"] = params[:cud_id] if params[:cud_id]
 
-    @startTime = Time.now
-    if @cud.instructor? && params[:cud_id]
-      @effectiveCud = @course.course_user_data.find(params[:cud_id])
-    else
-      @effectiveCud = @cud
-    end
-    @submissions = @assessment.submissions.where(course_user_datum_id: @effectiveCud.id).order("version DESC")
+    @startTime = Time.current
+    @effectiveCud = if @cud.instructor? && params[:cud_id]
+                      @course.course_user_data.find(params[:cud_id])
+                    else
+                      @cud
+                    end
+    @submissions = @assessment.submissions.where(course_user_datum_id: @effectiveCud.id)
+                              .order("version DESC")
     @extension = @assessment.extensions.find_by(course_user_datum_id: @effectiveCud.id)
     @problems = @assessment.problems
 
@@ -424,15 +459,15 @@ class AssessmentsController < ApplicationController
                                   "problems.id AS problem_id",
                                   "scores.id AS score_id",
                                   "scores.*")
-              .joins("LEFT JOIN problems ON
+                          .joins("LEFT JOIN problems ON
         submissions.assessment_id = problems.assessment_id")
-              .joins("LEFT JOIN scores ON
+                          .joins("LEFT JOIN scores ON
         (submissions.id = scores.submission_id
         AND problems.id = scores.problem_id)")
 
     # Process them to get into a format we want.
     @scores = {}
-    for result in results do
+    results.each do |result|
       subId = result["submission_id"].to_i
       @scores[subId] = {} unless @scores.key?(subId)
 
@@ -440,26 +475,30 @@ class AssessmentsController < ApplicationController
         score: result["score"].to_f,
         feedback: result["feedback"],
         score_id: result["score_id"].to_i,
-        released: result["released"].to_i
+        released: Utilities.is_truthy?(result["released"]) ? 1 : 0
       }
     end
 
     # Check if we should include regrade as a function
     @autograded = @assessment.has_autograder?
+
+    @repos = GithubIntegration.find_by(user_id: @cud.user.id)&.repositories
   end
 
   action_auth_level :history, :student
+
   def history
     # Remember the student ID in case the user wants visit the gradesheet
     session["gradeUser#{@assessment.id}"] = params[:cud_id] if params[:cud_id]
 
-    @startTime = Time.now
-    if @cud.instructor? && params[:cud_id]
-      @effectiveCud = @course.course_user_data.find(params[:cud_id])
-    else
-      @effectiveCud = @cud
-    end
-    @submissions = @assessment.submissions.where(course_user_datum_id: @effectiveCud.id).order("version DESC")
+    @startTime = Time.current
+    @effectiveCud = if @cud.instructor? && params[:cud_id]
+                      @course.course_user_data.find(params[:cud_id])
+                    else
+                      @cud
+                    end
+    @submissions = @assessment.submissions.where(course_user_datum_id: @effectiveCud.id)
+                              .order("version DESC")
     @extension = @assessment.extensions.find_by(course_user_datum_id: @effectiveCud.id)
     @problems = @assessment.problems
 
@@ -467,15 +506,15 @@ class AssessmentsController < ApplicationController
                                   "problems.id AS problem_id",
                                   "scores.id AS score_id",
                                   "scores.*")
-              .joins("LEFT JOIN problems ON
+                          .joins("LEFT JOIN problems ON
         submissions.assessment_id = problems.assessment_id")
-              .joins("LEFT JOIN scores ON
+                          .joins("LEFT JOIN scores ON
         (submissions.id = scores.submission_id
         AND problems.id = scores.problem_id)")
 
     # Process them to get into a format we want.
     @scores = {}
-    for result in results do
+    results.each do |result|
       subId = result["submission_id"].to_i
       @scores[subId] = {} unless @scores.key?(subId)
 
@@ -483,38 +522,92 @@ class AssessmentsController < ApplicationController
         score: result["score"].to_f,
         feedback: result["feedback"],
         score_id: result["score_id"].to_i,
-        released: result["released"].to_i
+        released: Utilities.is_truthy?(result["released"]) ? 1 : 0, # converts 't' to 1, "f" to 0
       }
     end
 
     # Check if we should include regrade as a function
     @autograded = @assessment.has_autograder?
 
-    if params[:partial]
-      @partial = true
-      render("history", layout: false) && return
-    end
+    return unless params[:partial]
+
+    @partial = true
+    render("history", layout: false) && return
   end
 
   action_auth_level :viewFeedback, :student
+
   def viewFeedback
     # User requested to view feedback on a score
     @score = @submission.scores.find_by(problem_id: params[:feedback])
-
-    if !@score
+    unless @score
       flash[:error] = "No feedback for requested score"
       redirect_to(action: "index") && return
     end
-
+    @jsonFeedback = parseFeedback(@score.feedback)
+    @scoreHash = parseScore(@score.feedback) unless @jsonFeedback.nil?
     if Archive.archive? @submission.handin_file_path
       @files = Archive.get_files @submission.handin_file_path
     end
+    @problemReleased = @submission.scores.pluck(:released).all?
+  end
+
+  def parseScore(feedback)
+    lines = feedback.lines
+    feedback = lines[lines.length - 1].chomp
+
+    return unless valid_json?(feedback)
+
+    score_hash = JSON.parse(feedback)
+    score_hash = score_hash["scores"]
+    if @jsonFeedback.key?("_scores_order") == false
+      @jsonFeedback["_scores_order"] = score_hash.keys
+    end
+    @total = 0
+    score_hash.keys.each do |k|
+      @total += score_hash[k]
+    end
+    score_hash["_total"] = @total
+    score_hash
+  end
+
+  def parse_stages(jsonFeedbackHash)
+    @result = true
+    if jsonFeedbackHash.key?("stages")
+      jsonFeedbackHash["stages"].each do |stage|
+        if jsonFeedbackHash[stage].key?("_order") == false
+          jsonFeedbackHash[stage]["_order"] = jsonFeedbackHash[stage].keys
+        end
+      end
+    end
+    @result
+  end
+
+  def parseFeedback(feedback)
+    lines = feedback.lines
+    feedback = lines[lines.length - 2]&.chomp
+
+    return unless valid_json?(feedback)
+
+    jsonFeedbackHash = JSON.parse(feedback)
+    if jsonFeedbackHash.key?("_presentation") == false
+      nil
+    elsif jsonFeedbackHash["_presentation"] == "semantic" && !parse_stages(jsonFeedbackHash).nil?
+      jsonFeedbackHash
+    end
+  end
+
+  def valid_json?(json)
+    JSON.parse(json)
+  rescue JSON::ParserError, TypeError
+    false
   end
 
   action_auth_level :reload, :instructor
+
   def reload
     @assessment.load_config_file
-  rescue StandardError => @error
+  rescue StandardError
     # let the reload view render
   else
     flash[:success] = "Success: Assessment config file reloaded!"
@@ -522,12 +615,13 @@ class AssessmentsController < ApplicationController
   end
 
   action_auth_level :edit, :instructor
+
   def edit
     # default to the basic tab
     params[:active_tab] ||= "basic"
 
     # make sure the 'active_tab' is a real tab
-    unless %w(basic handin penalties problems).include? params[:active_tab]
+    unless %w[basic handin penalties problems advanced].include? params[:active_tab]
       params[:active_tab] = "basic"
     end
 
@@ -538,32 +632,34 @@ class AssessmentsController < ApplicationController
 
   action_auth_level :update, :instructor
   def update
-
-    if not params[:assessment][:embedded_quiz_form].nil?
+    unless params[:assessment][:embedded_quiz_form].nil?
       @assessment.embedded_quiz_form_data = params[:assessment][:embedded_quiz_form].read
       @assessment.save!
     end
-
 
     begin
       @assessment.update!(edit_assessment_params)
       flash[:success] = "Saved!"
 
       redirect_to(tab_index) && return
-    rescue ActiveRecord::RecordInvalid => invalid
-      flash[:error] = invalid.message.sub!("Validation failed: ", "")
+    rescue ActiveRecord::RecordInvalid => e
+      flash[:error] = e.message.sub!("Validation failed: ", "")
 
       redirect_to(tab_index) && return
     end
   end
 
   action_auth_level :releaseAllGrades, :instructor
+
   def releaseAllGrades
     # release all grades
     num_released = releaseMatchingGrades { |_| true }
 
     if num_released > 0
-      flash[:success] = "%d %s released." % [num_released, (num_released > 1 ? "grades were" : "grade was")]
+      flash[:success] =
+        format("%<num_released>d %<plurality>s released.",
+               num_released: num_released,
+               plurality: (num_released > 1 ? "grades were" : "grade was"))
     else
       flash[:error] = "No grades were released. They might have all already been released."
     end
@@ -571,38 +667,48 @@ class AssessmentsController < ApplicationController
   end
 
   action_auth_level :releaseSectionGrades, :course_assistant
+
   def releaseSectionGrades
     unless @cud.section? && !@cud.section.empty? && @cud.lecture && !@cud.lecture.empty?
-      flash[:error] = "You haven't been assigned to a lecture and/or section. Please contact your instructor."
+      flash[:error] =
+        "You haven't been assigned to a lecture and/or section. Please contact your instructor."
       redirect_to action: "index"
       return
     end
 
-    num_released = releaseMatchingGrades { |submission, _| @cud.CA_of? submission.course_user_datum }
+    num_released = releaseMatchingGrades do |submission, _|
+      @cud.CA_of? submission.course_user_datum
+    end
 
     if num_released > 0
-      flash[:success] = "%d %s released." % [num_released, (num_released > 1 ? "grades were" : "grade was")]
+      flash[:success] =
+        format("%<num_released>d %<plurality>s released.",
+               num_released: num_released,
+               plurality: (num_released > 1 ? "grades were" : "grade was"))
     else
       flash[:error] = "No grades were released. " \
-                      "Either they were all already released or you might be assigned to a lecture " \
+                      "Either they were all already released or you "\
+                      "might be assigned to a lecture " \
                       "and/or section that doesn't exist. Please contact an instructor."
     end
     redirect_to action: "viewGradesheet"
   end
 
   action_auth_level :withdrawAllGrades, :instructor
+
   def withdrawAllGrades
     @assessment.submissions.each do |submission|
       scores = submission.scores.where(released: true)
       scores.each do |score|
         score.released = false
-        
+
         begin
           updateScore(@assessment.course.course_user_data, score)
-        rescue ActiveRecord::RecordInvalid => invalid
-          flash[:error] += "Unable to withdraw score for "+@assessment.course.course_user_data.user.email+": " + invalid.message
+        rescue ActiveRecord::RecordInvalid => e
+          flash[:error] = flash[:error] || ""
+          flash[:error] += "Unable to withdraw score for "\
+                           "#{@assessment.course.course_user_data.user.email}: #{e.message}"
         end
-
       end
     end
 
@@ -611,6 +717,7 @@ class AssessmentsController < ApplicationController
   end
 
   action_auth_level :writeup, :student
+
   def writeup
     if @assessment.writeup_is_url?
       redirect_to @assessment.writeup
@@ -649,8 +756,7 @@ protected
   end
 
   # This does nothing on purpose
-  def loadHandinPage
-  end
+  def loadHandinPage; end
 
   def releaseMatchingGrades
     num_released = 0
@@ -687,22 +793,23 @@ private
 
   def new_assessment_params
     ass = params.require(:assessment)
-    ass[:category_name] = params[:new_category] unless params[:new_category].blank?
-    ass.permit(:name, :display_name, :category_name, :has_svn, :has_lang, :group_size, :embedded_quiz, :embedded_quiz_form_data)
+    ass[:category_name] = params[:new_category] if params[:new_category].present?
+    ass.permit(:name, :display_name, :category_name, :has_svn, :has_lang, :group_size,
+               :embedded_quiz, :embedded_quiz_form_data, :github_submission_enabled)
   end
 
   def edit_assessment_params
     ass = params.require(:assessment)
-    ass[:category_name] = params[:new_category] unless params[:new_category].blank?
+    ass[:category_name] = params[:new_category] if params[:new_category].present?
 
     if ass[:late_penalty_attributes] && ass[:late_penalty_attributes][:value].blank?
       ass.delete(:late_penalty_attributes)
-      @assessment.late_penalty.destroy unless @assessment.late_penalty.nil?
+      @assessment.late_penalty&.destroy
     end
 
     if ass[:version_penalty_attributes] && ass[:version_penalty_attributes][:value].blank?
       ass.delete(:version_penalty_attributes)
-      @assessment.version_penalty.destroy unless @assessment.version_penalty.nil?
+      @assessment.version_penalty&.destroy
     end
 
     ass.permit!
@@ -719,30 +826,35 @@ private
     tar_extract.each do |entry|
       pathname = entry.full_name
       next if pathname.start_with? "."
+
       pathname.chomp!("/") if entry.directory?
       # nested directories are okay
       if entry.directory? && pathname.count("/") == 0
         return false if asmt_name
+
         asmt_name = pathname
       else
         return false unless asmt_name
+
         asmt_rb_exists = true if pathname == "#{asmt_name}/#{asmt_name}.rb"
         asmt_yml_exists = true if pathname == "#{asmt_name}/#{asmt_name}.yml"
       end
     end
-    [asmt_rb_exists && asmt_yml_exists && (!asmt_name.nil?), asmt_name]
+    [asmt_rb_exists && asmt_yml_exists && !asmt_name.nil?, asmt_name]
   end
 
   def tab_index
-    # Get the current tab's redirect path by checking the submit tag which tells us which submit button in the edit form was clicked
+    # Get the current tab's redirect path by checking the submit tag
+    # which tells us which submit button in the edit form was clicked
     tab_name = "basic"
     if params[:handin]
       tab_name = "handin"
     elsif params[:penalties]
       tab_name = "penalties"
+    elsif params[:advanced]
+      tab_name = "advanced"
     end
 
-    edit_course_assessment_path(@course, @assessment) + "/#tab_"+tab_name
+    "#{edit_course_assessment_path(@course, @assessment)}/#tab_#{tab_name}"
   end
-
 end

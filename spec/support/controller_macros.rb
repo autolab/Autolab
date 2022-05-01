@@ -71,9 +71,10 @@ module ControllerMacros
     att = Attachment.new(course_id: cid, assessment_id: nil,
                          name: "att#{cid}",
                          released: true)
-    att.file = ActionDispatch::Http::UploadedFile.new(
-      filename: File.basename(course_att_file), type: "text/plain",
-      tempfile: Tempfile.new("attach.tmp"))
+
+    att.file = Rack::Test::UploadedFile.new(
+        path=Rails.root.join("attachments", File.basename(course_att_file)), content_type="text/plain",
+        tempfile=Tempfile.new("attach.tmp"))
     att.save
     att
   end

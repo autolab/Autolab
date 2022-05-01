@@ -18,6 +18,8 @@ unchecked." %>
 <div class="action_buttons">
 	<%= f.submit "Save Problem" , {:class=>"btn primary"} %>
 	<% if @problem then %>
+	<button class="delete_btn"> 
 	  <%= link_to "Delete this Problem", [@course, @assessment, @problem], method: :delete, class: 'btn btn-danger', data: { confirm: "Deleting will delete all associated problem data and cannot be undone. Are you sure you want to delete this problem?" } %>
+	</button>
 	<% end %>
 </div>

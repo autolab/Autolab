@@ -1,6 +1,6 @@
 <% @title = "Handin History" %>
 <% if @partial then %>
-  <a onclick="hideStudent()">Exit</a>
+  <a class="clickable" onclick="hideStudent()">Exit</a>
 <% end %>
 <% download_access = (@cud.instructor?) %>
 
@@ -45,7 +45,7 @@
 <%= render partial: "submission_history_table", locals: {download_access: download_access} %>
 
 <% if @partial then %>
-  <a onclick="hideStudent()">Exit</a>
+  <a class="clickable" onclick="hideStudent()">Exit</a>
 <% end %>
 <p>
 <%= "Page loaded in " + (Time.now() - @startTime).to_s + " seconds" %>

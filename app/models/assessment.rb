@@ -2,7 +2,7 @@ require "association_cache"
 require "fileutils"
 require "utilities"
 
-class Assessment < ActiveRecord::Base
+class Assessment < ApplicationRecord
   # Mass-assignment
   # attr_protected :name
 
@@ -20,36 +20,37 @@ class Assessment < ActiveRecord::Base
   has_one :scoreboard, dependent: :destroy
 
   # Validations
-  validates_uniqueness_of :name, scope: :course_id
+  validates :name, uniqueness: { scope: :course_id }
   validates :name, format: { with: /\A[^0-9].*/, message: "can't have leading numeral" }
-  validates_length_of :display_name, minimum: 1
+  validates :display_name, length: { minimum: 1 }
   validate :verify_dates_order
   validate :handin_directory_and_filename_or_disable_handins, if: :active?
   validate :handin_directory_exists_or_disable_handins, if: :active?
-  validates_numericality_of :max_size, :max_submissions
-  validates_numericality_of :version_threshold, only_integer: true,
-                                                greater_than_or_equal_to: -1, allow_nil: true
-  validates_numericality_of :max_grace_days, only_integer: true,
-                                             greater_than_or_equal_to: 0, allow_nil: true
-  validates_numericality_of :group_size, only_integer: true, greater_than_or_equal_to: 1, allow_nil: true
-  validates_presence_of :name, :display_name, :due_at, :end_at, :start_at,
-                        :grading_deadline, :category_name, :max_size, :max_submissions
+  validates :max_size, :max_submissions, numericality: true
+  validates :version_threshold, numericality: { only_integer: true,
+                                                greater_than_or_equal_to: -1, allow_nil: true }
+  validates :max_grace_days, numericality: { only_integer: true,
+                                             greater_than_or_equal_to: 0, allow_nil: true }
+  validates :group_size, numericality: { only_integer: true, greater_than_or_equal_to: 1,
+                                         allow_nil: true }
+  validates :name, :display_name, :due_at, :end_at, :start_at,
+            :grading_deadline, :category_name, :max_size, :max_submissions, presence: true
 
   # Callbacks
   trim_field :name, :display_name, :handin_filename, :handin_directory, :handout, :writeup
-  after_save :dump_yaml
-  after_save :invalidate_course_cgdubs, if: :due_at_changed?
-  after_save :invalidate_course_cgdubs, if: :max_grace_days_changed?
+  after_commit :dump_yaml
+  after_commit :dump_embedded_quiz, if: :saved_change_to_embedded_quiz_form_data?
+  after_save :invalidate_course_cgdubs, if: :saved_change_to_due_at_or_max_grace_days?
   after_create :create_AUDs_modulo_callbacks
 
   # Constants
-  ORDERING = "due_at ASC, name ASC"
-  RELEASED = "start_at < ?"
+  ORDERING = "due_at ASC, name ASC".freeze
+  RELEASED = "start_at < ?".freeze
 
   # Scopes
   scope :ordered, -> { order(ORDERING) }
-  scope :released, ->(as_of = Time.now) { where(RELEASED, as_of) }
-  scope :unreleased, ->(as_of = Time.now) { where.not(RELEASED, as_of) }
+  scope :released, ->(as_of = Time.current) { where(RELEASED, as_of) }
+  scope :unreleased, ->(as_of = Time.current) { where.not(RELEASED, as_of) }
 
   # Misc.
   accepts_nested_attributes_for :late_penalty, :version_penalty, allow_destroy: true
@@ -68,10 +69,12 @@ class Assessment < ActiveRecord::Base
   #
   # Can be used manually if AUD.latest_submission goes out of sync (emergency!)
   def update_latest_submissions_modulo_callbacks
+    # rubocop:disable Rails/SkipsModelValidations
     calculate_latest_submissions.each do |s|
       AssessmentUserDatum.where(assessment_id: id, course_user_datum_id: s.course_user_datum_id)
-        .update_all(latest_submission_id: s.id)
+                         .update_all(latest_submission_id: s.id)
     end
+    # rubocop:enable Rails/SkipsModelValidations
   end
 
   # Uniquely identify the previous assessment
@@ -84,15 +87,15 @@ class Assessment < ActiveRecord::Base
   end
 
   def before_grading_deadline?
-    Time.now <= grading_deadline
+    Time.current <= grading_deadline
   end
 
   def getLanguages
-      return self.languages.split(/\s*,\s*/)
+    languages.split(/\s*,\s*/)
   end
 
   def getTextfields
-      return self.textfields.split(/\s*,\s*/)
+    textfields.split(/\s*,\s*/)
   end
 
   def folder_path
@@ -111,7 +114,7 @@ class Assessment < ActiveRecord::Base
     path writeup
   end
 
-  def released?(as_of = Time.now)
+  def released?(as_of = Time.current)
     start_at < as_of
   end
 
@@ -164,7 +167,7 @@ class Assessment < ActiveRecord::Base
   # If version_threshold == -1 (i.e. unlimited submissions without penalty)
   # or version_penalty == 0.0, no version penalty needs to be applied.
   def version_penalty?
-    effective_version_threshold > -1 && effective_version_penalty.value != 0.0
+    effective_version_threshold > -1 && effective_version_penalty.value.to_d != 0.0.to_d
   end
 
   def aud_for(cud_id)
@@ -190,8 +193,8 @@ class Assessment < ActiveRecord::Base
     return false if File.file?(assessment_config_file_path)
 
     # Open and read the default assessment config file
-    default_config_file_path = Rails.root.join("lib", "__defaultAssessment.rb")
-    config_source = File.open(default_config_file_path, "r") { |f| f.read }
+    default_config_file_path = Rails.root.join("lib/__defaultAssessment.rb")
+    config_source = File.open(default_config_file_path, "r", &:read)
 
     # Update with this assessment information
     config_source.gsub!("##NAME_CAMEL##", name.camelize)
@@ -213,7 +216,7 @@ class Assessment < ActiveRecord::Base
   #
   def load_config_file
     # read from source
-    config_source = File.open(source_config_file_path, "r") { |f| f.read }
+    config_source = File.open(source_config_file_path, "r", &:read)
 
     # uniquely rename module (so that it's unique among all assessment modules loaded in Autolab)
     config = config_source.gsub("module #{source_config_module_name}",
@@ -236,14 +239,17 @@ class Assessment < ActiveRecord::Base
     reload_config_file if config_file_updated?
 
     # return config module
+
+    # rubocop:disable Security/Eval
     eval config_module_name
+    # rubocop:enable Security/Eval
   end
 
   ##
   # writes the properties of the assessment in YAML format to the assessment's yaml file
   #
   def dump_yaml
-    File.open(path("#{name}.yml"), "w") { |f| f.write(YAML.dump serialize) }
+    File.open(path("#{name}.yml"), "w") { |f| f.write(YAML.dump(serialize)) }
   end
 
   ##
@@ -252,7 +258,8 @@ class Assessment < ActiveRecord::Base
   #
   def load_yaml
     return unless new_record?
-    props = YAML.load(File.open(path("#{name}.yml"), "r") { |f| f.read })
+
+    props = YAML.safe_load(File.open(path("#{name}.yml"), "r", &:read))
     backwards_compatibility(props)
     deserialize(props)
   end
@@ -311,14 +318,47 @@ class Assessment < ActiveRecord::Base
   end
 
   def grouplessCUDs
-    course.course_user_data.joins(:assessment_user_data).where(assessment_user_data: { assessment_id: id, membership_status: AssessmentUserDatum::UNCONFIRMED })
+    course.course_user_data.joins(:assessment_user_data).
+      where(assessment_user_data: {
+              assessment_id: id,
+              membership_status: AssessmentUserDatum::UNCONFIRMED
+            })
   end
 
   def to_param
     name
   end
 
+  def dump_embedded_quiz
+    return unless embedded_quiz
+
+    File.open(path("#{name}_embedded_quiz.html"), "w") { |f| f.write(embedded_quiz_form_data) }
+  end
+
+  def load_embedded_quiz
+    return unless embedded_quiz && File.file?(path("#{name}_embedded_quiz.html"))
+
+    quiz = File.open(path("#{name}_embedded_quiz.html"), "r", &:read)
+    update(embedded_quiz_form_data: quiz)
+  end
+
+  # to be able to calculate total score for an assessment from another model
+  def default_total_score
+    problems.sum :max_score
+  end
+
 private
+
+  def saved_change_to_grade_related_fields?
+    (saved_change_to_due_at? or saved_change_to_max_grace_days? or
+            saved_change_to_version_threshold? or
+            saved_change_to_late_penalty_id? or
+            saved_change_to_version_penalty_id?)
+  end
+
+  def saved_change_to_due_at_or_max_grace_days?
+    (saved_change_to_due_at? or saved_change_to_max_grace_days?)
+  end
 
   def path(filename)
     Rails.root.join("courses", course.name, name, filename)
@@ -332,7 +372,9 @@ private
     sanitized_name.camelize
   end
 
+  # rubocop:disable Style/ClassVars
   @@CONFIG_FILE_LAST_LOADED = {}
+  # rubocop:enable Style/ClassVars
 
   def reload_config_file
     # remove the previously loaded config module
@@ -342,7 +384,7 @@ private
     load config_file_path
 
     # updated last loaded time
-    @@CONFIG_FILE_LAST_LOADED[config_file_path] = Time.now
+    @@CONFIG_FILE_LAST_LOADED[config_file_path] = Time.current
 
     logger.info "Reloaded #{config_file_path}"
   end
@@ -387,24 +429,26 @@ private
     s
   end
 
-  GENERAL_SERIALIZABLE = Set.new %w(name display_name category_name description handin_filename handin_directory has_svn has_lang max_grace_days handout writeup max_submissions disable_handins max_size version_threshold)
+  GENERAL_SERIALIZABLE = Set.new %w[name display_name category_name description handin_filename
+                                    handin_directory has_svn has_lang max_grace_days handout
+                                    writeup max_submissions disable_handins max_size
+                                    version_threshold embedded_quiz]
 
   def serialize_general
     Utilities.serializable attributes, GENERAL_SERIALIZABLE
   end
 
   def deserialize(s)
-    self.due_at = self.end_at = self.visible_at = self.start_at = self.grading_deadline = Time.now
+    self.due_at = self.end_at = self.visible_at =
+                    self.start_at = self.grading_deadline = Time.current + 1.day
     self.quiz = false
     self.quizData = ""
     update!(s["general"])
     Problem.deserialize_list(self, s["problems"]) if s["problems"]
-    if s["autograder"]
-      Autograder.find_or_initialize_by(assessment_id: id).update(s["autograder"])
-    end
-    if s["scoreboard"]
-      Scoreboard.find_or_initialize_by(assessment_id: id).update(s["scoreboard"])
-    end
+    Autograder.find_or_initialize_by(assessment_id: id).update(s["autograder"]) if s["autograder"]
+    Scoreboard.find_or_initialize_by(assessment_id: id).update(s["scoreboard"]) if s["scoreboard"]
+
+    # rubocop:disable Style/GuardClause
     if s["late_penalty"]
       late_penalty ||= Penalty.new
       late_penalty.update(s["late_penalty"])
@@ -413,6 +457,7 @@ private
       version_penalty ||= Penalty.new
       version_penalty.update(s["version_penalty"])
     end
+    # rubocop:enable Style/GuardClause
   end
 
   def default_max_score
@@ -431,7 +476,7 @@ private
   end
 
   def is_file?(name)
-    !name.blank? && File.file?(path name)
+    name.present? && File.file?(path(name))
   end
 
   def verify_dates_order
@@ -472,7 +517,9 @@ private
 
   def invalidate_raw_scores
     # key-based invalidation (see submission.raw_score)
+    # rubocop:disable Rails/SkipsModelValidations
     touch
+    # rubocop:enable Rails/SkipsModelValidations
   end
 
   def sanitized_name
@@ -480,7 +527,7 @@ private
   end
 
   def active?
-    Time.now <= course.end_date
+    Time.current <= course.end_date
   end
 
   ##
@@ -491,17 +538,19 @@ private
                  "handout_filename" => "handout",
                  "writeup_filename" => "writeup",
                  "has_autograde" => nil,
-                 "has_scoreboard" => nil }
+                 "has_scoreboard" => nil }.freeze
   BACKWORDS_COMPATIBILITY = { "autograding_setup" => "autograder",
-                              "scoreboard_setup" => "scoreboard" }
+                              "scoreboard_setup" => "scoreboard" }.freeze
   def backwards_compatibility(props)
     GENERAL_BC.each do |old, new|
       next unless props["general"].key?(old)
+
       props["general"][new] = props["general"][old] unless new.nil?
       props["general"].delete(old)
     end
     BACKWORDS_COMPATIBILITY.each do |old, new|
       next unless props.key?(old)
+
       props[new] = props[old]
       props.delete(old)
     end
