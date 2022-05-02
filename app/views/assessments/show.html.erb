@@ -178,7 +178,7 @@
   <% if @assessment.attachments.length > 0 or @cud.instructor? %>
     <h2>Handouts</h2>
     <ul class="collection with-header attachments">
-      <%= render @assessment.attachments %>
+      <%= render @attachments %>
 
       <% # this code is temporarily "commented out" because Dan wants to preserve the logic for future changes to _attachment.html.erb %>
       <% if false then %>
