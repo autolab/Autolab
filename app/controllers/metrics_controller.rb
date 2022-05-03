@@ -3,6 +3,7 @@ class MetricsController < ApplicationController
   def index
     course = Course.find_by(name: params[:course_name])
     @course_grace_days = course.grace_days
+    @course_assessment_categories = course.assessment_categories
     @num_assessments = course.assessments.count
 
     course_max = course.assessments.group("category_name").count.max
@@ -210,6 +211,52 @@ class MetricsController < ApplicationController
     end
 
     render json: { message: "Successfully updated instances" }, status: :ok
+  end
+
+  action_auth_level :get_watchlist_category_blocklist, :instructor
+  def get_watchlist_category_blocklist
+    # This API endpoint aims to retrieve the current/latest category blocklist for a course
+    # On success, a JSON list of category names will be returned
+    # On error, an error message in JSON will be rendered
+    begin
+      course_name = params[:course_name]
+      raise "Course name cannot be blank" if course_name.blank?
+
+      category_blocklist = WatchlistConfiguration.get_category_blocklist_for_course(course_name)
+    rescue StandardError => e
+      render json: { error: e.message }, status: :not_found
+      return
+    end
+
+    render json: category_blocklist, status: :ok
+  end
+
+  action_auth_level :update_watchlist_configuration, :instructor
+  def update_watchlist_configuration
+    # This API endpoint updates a course's watchlist configuration
+    # On success, a JSON object of watchlist configuration will be returned
+    # params required include course_name and blocklist
+    # blocklist should be a hash in the following form:
+    # { "category": ["Lab", "Homework"], "assessment": ["homework1", "homework2"] }
+    # Note: The assessment names ARE NOT the display names.
+    begin
+      course_name = params[:course_name]
+      raise "Course name cannot be blank" if course_name.blank?
+    rescue StandardError => e
+      render json: { error: e.message }, status: :not_found
+      return
+    end
+
+    begin
+      # handle nil blocklist in models
+      config = WatchlistConfiguration.update_watchlist_configuration_for_course(course_name,
+                                                                                params[:blocklist])
+    rescue StandardError => e
+      render json: { error: e.message }, status: :bad_request
+      return
+    end
+
+    render json: config, status: :ok
   end
 
 private

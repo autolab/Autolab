@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2022_04_17_023837) do
+ActiveRecord::Schema.define(version: 2022_04_24_202745) do
 
   create_table "annotations", force: :cascade do |t|
     t.integer "submission_id"
@@ -95,8 +95,8 @@ ActiveRecord::Schema.define(version: 2022_04_17_023837) do
     t.text "embedded_quiz_form_data"
     t.boolean "embedded_quiz"
     t.binary "embedded_quiz_form"
-    t.boolean "github_submission_enabled", default: true
     t.boolean "allow_student_assign_group", default: true
+    t.boolean "github_submission_enabled", default: true
   end
 
   create_table "attachments", force: :cascade do |t|
@@ -350,6 +350,15 @@ ActiveRecord::Schema.define(version: 2022_04_17_023837) do
     t.index ["confirmation_token"], name: "index_users_on_confirmation_token", unique: true
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
+  end
+
+  create_table "watchlist_configurations", force: :cascade do |t|
+    t.json "category_blocklist"
+    t.json "assessment_blocklist"
+    t.integer "course_id"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["course_id"], name: "index_watchlist_configurations_on_course_id"
   end
 
   create_table "watchlist_instances", force: :cascade do |t|
