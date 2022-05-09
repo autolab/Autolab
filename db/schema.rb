@@ -25,8 +25,6 @@ ActiveRecord::Schema.define(version: 2022_04_24_202745) do
     t.integer "problem_id"
     t.string "coordinate"
     t.boolean "shared_comment", default: false
-    t.integer "group_id"
-    t.index ["group_id"], name: "index_annotations_on_group_id"
   end
 
   create_table "announcements", force: :cascade do |t|

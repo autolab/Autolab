@@ -55,12 +55,4 @@ class Annotation < ApplicationRecord
     # Update score
     score.update!(score: new_score)
   end
-
-  # This only applies when an annotation is for a group submission
-  # Returns all annotations shared across one iteration of group submissions
-  def group_associated_annotations
-    raise "Annotation is not for a group submission!" if group_key.empty?
-
-    Annotation.where(group_key: group_key).where.not(id: id)
-  end
 end
