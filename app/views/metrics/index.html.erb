@@ -6,7 +6,8 @@
 <% content_for :javascripts do %>
   <%= external_javascript_include_tag "lodash", "3.10.1" %>
   <%= javascript_include_tag "watchlist" %>
-  <%= javascript_include_tag "metrics"%>
+  <%= javascript_include_tag "metrics" %>
+  <%= javascript_include_tag "metrics_config"%>
 <% end %>
 
 <div id="message_area">
@@ -14,6 +15,7 @@
 <div class="ui pointing secondary tabular menu">
   <a class="item active" data-tab="watchlist">Watchlist</a>
   <a class="item" data-tab="student metrics">Student Metrics</a>
+  <a class="item" data-tab="configurations">Configurations</a>
 </div>
 <div class="ui tab active" data-tab="watchlist" id="watchlist_tab">
   <div class="top-bar">
@@ -214,4 +216,37 @@
     <br>
     <button class="ui disabled submit button" id="save">SAVE</button>
   </div>
+</div>
+<div class="ui tab configs" data-tab="configurations">
+  <h4> Considered Categories </h4>
+  <h6>
+    All categories are selected by default. Modify this list to change which assessment categories are included in student metrics analysis.
+  </h6>
+
+  <div class="ui grid">
+    <div class="five wide column">
+      <h3> Included </h3>
+      <div id="included_categories">
+        <% for category in @course_assessment_categories do%>
+          <div class="item" id="included_<%=category%>" style="visibility: hidden;"><%=category%></div><br />
+        <% end %>
+      </div>
+    </div>
+    <div class="four wide column">
+      <h3><br /></h3>
+      <% for category in @course_assessment_categories do%>
+        <i class="exchange alternate icon" data-value="<%=category%>"></i><br /><br />
+      <% end %>
+    </div>
+    <div class="five wide column">
+      <h3> Excluded </h3>
+      <div id="excluded_categories">
+        <% for category in @course_assessment_categories do%>
+          <div class="item" id="excluded_<%=category%>" style="visibility: hidden;"><%=category%></div><br />
+        <% end %>
+      </div>
+    </div>
+  </div>
+  <br />
+  <button class="ui disabled submit button" id="save_configs_btn">SAVE</button>
 </div>

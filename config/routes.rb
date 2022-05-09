@@ -81,9 +81,10 @@ Rails.application.routes.draw do
       get "get_watchlist_instances"
       get "get_num_pending_instances"
       get "refresh_watchlist_instances"
+      get "get_watchlist_category_blocklist"
       post "update_current_metrics"
       post "update_watchlist_instances"
-      post "update_current_metrics"
+      post "update_watchlist_configuration"
     end
 
     resources :jobs, only: :index do
@@ -140,12 +141,12 @@ Rails.application.routes.draw do
         match "bulkGrade", via: [:get, :post]
         post "bulkGrade_complete"
         get "bulkExport"
-        get "releaseAllGrades"
-        get "releaseSectionGrades"
+        post "releaseAllGrades"
+        post "releaseSectionGrades"
         get "viewFeedback"
         get "reload"
         get "statistics"
-        get "withdrawAllGrades"
+        post "withdrawAllGrades"
         get "export"
         patch "edit/*active_tab", action: :update
         get "edit/*active_tab", action: :edit

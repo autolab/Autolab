@@ -25,6 +25,7 @@ class Course < ApplicationRecord
   has_many :submissions, through: :assessments
   has_many :watchlist_instances, dependent: :destroy
   has_many :risk_conditions, dependent: :destroy
+  has_one :watchlist_configuration, dependent: :destroy
 
   accepts_nested_attributes_for :late_penalty, :version_penalty
 

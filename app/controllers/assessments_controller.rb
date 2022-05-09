@@ -64,6 +64,8 @@ class AssessmentsController < ApplicationController
   action_auth_level :set_repo, :instructor
   action_auth_level :import_svn, :instructor
 
+  protect_from_forgery with: :exception
+
   def index
     @is_instructor = @cud.has_auth_level? :instructor
     announcements_tmp = Announcement.where("start_date < :now AND end_date > :now",
