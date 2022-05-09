@@ -27,7 +27,7 @@ class AnnotationsController < ApplicationController
         primary_annotation.update_non_autograded_score
       end
     else
-      # Set up annotation group key = submission group key + problem id + timestamp
+      # Set up annotation group id
       tweaked_params = annotation_params
       submission_group_key = @submission.group_key
       annotation_group_key = "#{submission_group_key}_#{tweaked_params[:problem_id]}_"

@@ -25,7 +25,8 @@ ActiveRecord::Schema.define(version: 2022_04_24_202745) do
     t.integer "problem_id"
     t.string "coordinate"
     t.boolean "shared_comment", default: false
-    t.string "group_key", default: ""
+    t.integer "group_id"
+    t.index ["group_id"], name: "index_annotations_on_group_id"
   end
 
   create_table "announcements", force: :cascade do |t|
@@ -96,8 +97,8 @@ ActiveRecord::Schema.define(version: 2022_04_24_202745) do
     t.text "embedded_quiz_form_data"
     t.boolean "embedded_quiz"
     t.binary "embedded_quiz_form"
-    t.boolean "github_submission_enabled", default: true
     t.boolean "allow_student_assign_group", default: true
+    t.boolean "github_submission_enabled", default: true
   end
 
   create_table "attachments", force: :cascade do |t|
@@ -354,6 +355,15 @@ ActiveRecord::Schema.define(version: 2022_04_24_202745) do
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 
+  create_table "watchlist_configurations", force: :cascade do |t|
+    t.json "category_blocklist"
+    t.json "assessment_blocklist"
+    t.integer "course_id"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["course_id"], name: "index_watchlist_configurations_on_course_id"
+  end
+
   create_table "watchlist_instances", force: :cascade do |t|
     t.integer "course_user_datum_id"
     t.integer "course_id"
@@ -368,4 +378,8 @@ ActiveRecord::Schema.define(version: 2022_04_24_202745) do
     t.index ["risk_condition_id"], name: "index_watchlist_instances_on_risk_condition_id"
   end
 
+  add_foreign_key "github_integrations", "users"
+  add_foreign_key "oauth_access_grants", "oauth_applications", column: "application_id"
+  add_foreign_key "oauth_access_tokens", "oauth_applications", column: "application_id"
+  add_foreign_key "oauth_device_flow_requests", "oauth_applications", column: "application_id"
 end
