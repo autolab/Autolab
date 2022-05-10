@@ -69,13 +69,17 @@ class Annotation < ApplicationRecord
       group_submissions = submission.group_associated_submissions
       scores = [score]
       group_submissions.each do |group_submission|
-        scores.append(Score
+        group_score = Score
                       .find_or_initialize_by_submission_id_and_problem_id(
                         group_submission.id, problem_id
-                      ))
+                      )
+        group_score.grader_id = score.grader_id
+        scores.append(group_score)
       end
+      x = 1
       scores.each do |group_score|
         group_score.update!(score: new_score)
+        x += 1
       end
     end
   end
