@@ -21,7 +21,7 @@ class AnnotationsController < ApplicationController
 
     ActiveRecord::Base.transaction do
       annotation.save
-      annotation.update_non_autograded_score # TODO: consider associated submissions
+      annotation.update_non_autograded_score
     end
 
     respond_with(@course, @assessment, @submission, annotation)
