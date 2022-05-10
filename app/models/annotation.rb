@@ -76,10 +76,8 @@ class Annotation < ApplicationRecord
         group_score.grader_id = score.grader_id
         scores.append(group_score)
       end
-      x = 1
       scores.each do |group_score|
         group_score.update!(score: new_score)
-        x += 1
       end
     end
   end
