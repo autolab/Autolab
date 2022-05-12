@@ -53,7 +53,7 @@
                 { title: "Use the Stanford Moss server to detect copying" } %></li>
 
             <li class="collection-item red-text danger-bottom no-hover"><h4>Danger Zone</h4></li>
-            <li class="danger-side"><%= link_to "Release all grades", [:bulkRelease, @course, @cud, :gradebook],
+            <li class="danger-side"><%= link_to "Release all grades", [:bulk_release, @course, @cud, :gradebook],
                 { title: "Release all grades for all assessments", data: {confirm: "Are you sure you want to release all grades?"}} %></li>
             <li class="danger-side danger-bottom"><%= link_to "Reload course config file", [:reload, @course],
                 { title: "Do this each time your modify the course.rb file", data: {confirm: "Are you sure you want to reload the course config file?"}}%></li>
