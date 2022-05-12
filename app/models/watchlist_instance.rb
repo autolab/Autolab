@@ -471,6 +471,11 @@ class WatchlistInstance < ApplicationRecord
     auds_before_date.each do |aud|
       violation_info[aud.assessment.display_name] = aud.grace_days_used if aud.grace_days_used > 0
     end
+
+    # The logic might fall through if the grace days were used on blocklisted assessments
+    # This ensures no funky "0 grace day used" instance is added
+    return if violation_info.empty?
+
     WatchlistInstance.new(course_user_datum_id: cud.id, course_id: course.id,
                           risk_condition_id: condition_id,
                           violation_info: violation_info)
