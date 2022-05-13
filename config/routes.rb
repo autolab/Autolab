@@ -144,7 +144,7 @@ Rails.application.routes.draw do
         post "releaseAllGrades"
         post "releaseSectionGrades"
         get "viewFeedback"
-        get "reload"
+        post "reload"
         get "statistics"
         post "withdrawAllGrades"
         get "export"
@@ -209,7 +209,7 @@ Rails.application.routes.draw do
       match "email", via: [:get, :post]
       get "manage"
       get "moss"
-      get "reload"
+      post "reload"
       match "report_bug", via: [:get, :post]
       post "run_moss"
       get "sudo"
