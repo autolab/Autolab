@@ -199,7 +199,7 @@ Rails.application.routes.draw do
       member do
         get "destroyConfirm"
         match "sudo", via: [:get, :post]
-        get "unsudo"
+        post "unsudo"
       end
     end
 
