@@ -71,8 +71,8 @@ Rails.application.routes.draw do
 
   resources :courses, param: :name do
     resources :schedulers do
-      get "visualRun", action: :visual_run
-      get "run"
+      post "visualRun", action: :visual_run
+      post "run"
     end
 
     resource :metrics, only: :index do
