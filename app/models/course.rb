@@ -158,6 +158,12 @@ class Course < ApplicationRecord
     lines = s.readlines
     s.close
 
+    # read from source
+    config_source = File.open(src, "r", &:read)
+
+    # validate syntax of config
+    RubyVM::InstructionSequence.compile(config_source)
+
     d = File.open(dest, "w")
     d.write("require 'CourseBase.rb'\n\n")
     d.write("module Course#{course.camelize}\n")
