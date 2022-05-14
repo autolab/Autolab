@@ -182,18 +182,9 @@ class Course < ApplicationRecord
   # Reload the course config file and extend the loaded methods
   # to AdminsController
   def reload_course_config
-    mod = nil
-    begin
-      mod = reload_config_file
-
-    # rubocop:disable Lint/RescueException
-    rescue Exception
-      return false
-    end
-    # rubocop:enable Lint/RescueException
+    mod = reload_config_file
 
     AdminsController.extend(mod)
-    true
   end
 
   def sanitized_name
