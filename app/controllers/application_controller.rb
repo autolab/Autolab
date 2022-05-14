@@ -65,7 +65,7 @@ class ApplicationController < ActionController::Base
 
     if level == :administrator
       skip_before_action :authorize_user_for_course, only: [action], raise: false
-      skip_before_action authenticate_for_action: [action]
+      skip_before_action :authenticate_for_action, only: [action]
       skip_before_action :update_persistent_announcements, only: [action], raise: false
     end
 
@@ -78,13 +78,13 @@ class ApplicationController < ActionController::Base
   def self.action_no_auth(action)
     skip_before_action :verify_authenticity_token, only: [action], raise: false
     skip_before_action :authenticate_user!, only: [action], raise: false
-    skip_before_action configure_permitted_paramters, only: [action]
-    skip_before_action maintenance_mode, only: [action]
-    skip_before_action run_scheduler, only: [action]
+    skip_before_action :configure_permitted_paramters, only: [action]
+    skip_before_action :maintenance_mode?, only: [action]
+    skip_before_action :run_scheduler, only: [action]
 
-    skip_before_action authenticate_user, only: [action], raise: false
+    skip_before_action :authenticate_user, only: [action], raise: false
     skip_before_action :authorize_user_for_course, only: [action]
-    skip_before_action authenticate_for_action, only: [action], raise: false
+    skip_before_action :authenticate_for_action, only: [action], raise: false
     skip_before_action :update_persistent_announcements, only: [action], raise: false
   end
 
