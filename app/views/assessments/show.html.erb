@@ -159,7 +159,7 @@
             &nbsp;&nbsp;Due
             <% if @extension %>(with <% if @extension.infinite? %> infinite <% else %> <%= pluralize(@extension.days, "day") %> <% end %> extension)<% end %>:&nbsp;
             <b>
-              <% if @extension and @extension.infinite? %>
+              <% if @extension&.infinite? %>
                 <%= due_at_display @aud.due_at %>
               <% else %>
                 <span class="moment-date-time" data-format="MMMM Do YYYY, h:mm a z"><%= due_at_display @aud.due_at %></span>
@@ -171,10 +171,10 @@
           <i class="valign material-icons">today</i>
           &nbsp;&nbsp;Last day to handin:&nbsp;
           <b>
-            <% if @extension and @extension.infinite? %>
+            <% if @extension&.infinite? %>
               <%= end_at_display(@aud.end_at false) %>
             <% else %>
-            <span class="moment-date-time" data-format="MMMM Do YYYY, h:mm a z"><%= end_at_display(@aud.end_at false) %></span>
+              <span class="moment-date-time" data-format="MMMM Do YYYY, h:mm a z"><%= end_at_display(@aud.end_at false) %></span>
             <% end %>
           </b>
         </p>
