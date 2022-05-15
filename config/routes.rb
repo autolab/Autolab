@@ -190,7 +190,7 @@ Rails.application.routes.draw do
       resource :gradebook, only: :show do
         post "bulk_release"
         get "csv"
-        get "invalidate"
+        post "invalidate"
         get "statistics"
         get "student"
         get "view"
