@@ -65,7 +65,7 @@ Rails.application.routes.draw do
   resources :users do
     get "admin"
     get "github_oauth", on: :member
-    get "github_revoke", on: :member
+    post "github_revoke", on: :member
     get "github_oauth_callback", on: :collection
   end
 
