@@ -632,7 +632,7 @@ function refresh_watchlist(){
 
   // uses formantic ui loading class 
   $("#refresh_btn").addClass('loading');
-  $.getJSON(watchlist_endpoints['refresh'],function(){
+  $.post(watchlist_endpoints['refresh'],function(){
     
     // set last updated time to now on success
     $('#last-updated-time')
@@ -643,7 +643,7 @@ function refresh_watchlist(){
       type:"positive",
       header:"Successfully refreshed watchlist instances",
       message: "The latest instances should be showing now",
-    });
+    }, "json");
     
   }).fail(function(){
     render_banner({
