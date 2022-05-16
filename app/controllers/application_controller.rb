@@ -9,7 +9,7 @@
 class ApplicationController < ActionController::Base
   helper :all # include all helpers, all the time
 
-  before_action :configure_permitted_paramters, if: :devise_controller?
+  before_action :configure_permitted_parameters, if: :devise_controller?
   before_action :maintenance_mode?
   before_action :run_scheduler
 
@@ -78,7 +78,7 @@ class ApplicationController < ActionController::Base
   def self.action_no_auth(action)
     skip_before_action :verify_authenticity_token, raise: false
     skip_before_action :authenticate_user!, raise: false
-    skip_before_action configure_permitted_paramters: [action]
+    skip_before_action configure_permitted_parameters: [action]
     skip_before_action maintenance_mode: [action]
     skip_before_action run_scheduler: [action]
 
@@ -90,7 +90,7 @@ class ApplicationController < ActionController::Base
 
 protected
 
-  def configure_permitted_paramters
+  def configure_permitted_parameters
     devise_parameter_sanitizer.permit(:sign_in) { |u| u.permit(:email) }
     devise_parameter_sanitizer.permit(:sign_up) do |u|
       u.permit(:email, :first_name, :last_name, :password, :password_confirmation)

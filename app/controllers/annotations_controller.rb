@@ -1,5 +1,5 @@
 # All modifications to the annotations are meant to be asynchronous and
-# thus this contorller only exposes javascript interfaces.
+# thus this controller only exposes javascript interfaces.
 #
 # Only people acting as instructors or CA's should be able to do anything
 # but view the annotations and since all of these mutate them, they are

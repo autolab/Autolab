@@ -21,7 +21,6 @@
     <% [ "basic", "handin", "penalties", "problems", "advanced" ].each do |tab_name| %>
       <%= (tab_name == params[:active_tab]) ? tag(:li, {:class => "active tab"}) : tag(:li, class: :tab) %>
         <%= link_to tab_name.titleize, "#tab_#{tab_name}" %>
-      </li>
     <% end %>
     </ul>
   </div>

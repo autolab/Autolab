@@ -70,7 +70,7 @@ class UsersController < ApplicationController
   end
 
   # GET users/new
-  # only adminstrator and instructors are allowed
+  # only administrator and instructors are allowed
   action_auth_level :new, :instructor
   def new
     if current_user.administrator? || current_user.instructor?

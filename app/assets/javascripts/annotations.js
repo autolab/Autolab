@@ -18,7 +18,7 @@ $(document).ready(function () {
   resizeCodeTable();
 });
 
-/* On Window Reisze */
+/* On Window Resize */
 $(window).on('resize', function () {
   resizeCodeTable();
 });
