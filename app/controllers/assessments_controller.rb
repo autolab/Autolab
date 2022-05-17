@@ -450,6 +450,11 @@ class AssessmentsController < ApplicationController
                     else
                       @cud
                     end
+    @attachments = if @cud.instructor?
+                     @assessment.attachments
+                   else
+                     @assessment.attachments.where(released: true)
+                   end
     @submissions = @assessment.submissions.where(course_user_datum_id: @effectiveCud.id)
                               .order("version DESC")
     @extension = @assessment.extensions.find_by(course_user_datum_id: @effectiveCud.id)
