@@ -451,9 +451,9 @@ class AssessmentsController < ApplicationController
                       @cud
                     end
     @attachments = if @cud.instructor?
-                     @course.attachments
+                     @assessment.attachments
                    else
-                     @course.attachments.where(released: true)
+                     @assessment.attachments.where(released: true)
                    end
     @submissions = @assessment.submissions.where(course_user_datum_id: @effectiveCud.id)
                               .order("version DESC")
