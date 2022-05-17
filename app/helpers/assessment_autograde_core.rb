@@ -340,12 +340,12 @@ module AssessmentAutogradeCore
   #
   def saveAutograde(submissions, feedback)
     begin
-      lines = feedback.lines
+      lines = feedback.chomp.lines
       raise AutogradeError.new("The Autograder returned no output", :autograde_no_output) if lines.empty?
 
       # The last line of the output is assumed to be the
       # autoresult string from the autograding driver
-      autoresult = lines[lines.length - 1].chomp
+      autoresult = lines[lines.length - 1]
 
       if @assessment.overwrites_method?(:parseAutoresult)
         scores = @assessment.config_module.parseAutoresult(autoresult, true)
