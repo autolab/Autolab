@@ -607,11 +607,9 @@ class AssessmentsController < ApplicationController
 
   def reload
     @assessment.load_config_file
-    # rubocop:disable Lint/RescueException
-  rescue Exception => e
+  rescue StandardError, SyntaxError => e
     @error = e
     # let the reload view render
-    # rubocop:enable Lint/RescueException
   else
     flash[:success] = "Success: Assessment config file reloaded!"
     redirect_to(action: :show) && return
