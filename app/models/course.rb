@@ -164,6 +164,9 @@ class Course < ApplicationRecord
     # validate syntax of config
     RubyVM::InstructionSequence.compile(config_source)
 
+    # backup old config
+    File.rename(dest, dest.sub_ext(".rb.bak"))
+
     d = File.open(dest, "w")
     d.write("require 'CourseBase.rb'\n\n")
     d.write("module Course#{course.camelize}\n")

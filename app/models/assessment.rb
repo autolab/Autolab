@@ -225,6 +225,9 @@ class Assessment < ApplicationRecord
     config = config_source.gsub("module #{source_config_module_name}",
                                 "module #{config_module_name}")
 
+    # backup old config
+    File.rename(config_file_path, config_file_path.sub_ext(".rb.bak"))
+
     # write to config_file_path
     File.open(config_file_path, "w") { |f| f.write config }
 
