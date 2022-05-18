@@ -364,7 +364,7 @@ module AssessmentAutogradeCore
         submissions.each do |submission|
           score = submission.scores.find_or_initialize_by(problem_id: problem.id)
           score.score = scores[key]
-          score.feedback = lines.join
+          score.feedback = feedback
           score.released = @autograde_prop.release_score
           score.grader_id = 0
           score.save!
