@@ -7,7 +7,7 @@
       /* match user name/email with cud_id */
       userData = {
         <% @usersEncoded.each do |k,v| %>
-          "<%= k %>": "<%= v %>",
+          "<%= j k.html_safe %>": "<%= v %>",
         <% end %>
       };
 
@@ -17,7 +17,7 @@
       $studentAutocompleteField.autocomplete({
         data: {
           <% @users.each do |k,v| %>
-            "<%= k %>": null,
+            "<%= j k.html_safe %>": null,
           <% end %>
         }
       });
