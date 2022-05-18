@@ -56,7 +56,7 @@
             <li class="danger-side"><%= link_to "Release all grades", [:bulk_release, @course, @cud, :gradebook],
                 { title: "Release all grades for all assessments", data: {confirm: "Are you sure you want to release all grades?", method: "post"}} %></li>
             <li class="danger-side danger-bottom"><%= link_to "Reload course config file", [:reload, @course],
-                { title: "Do this each time your modify the course.rb file", data: {confirm: "Are you sure you want to reload the course config file?", method: "post"}}%></li>
+                { title: "Reload each time you modify the course.rb file", data: {confirm: "Are you sure you want to reload the course config file?", method: "post"}}%></li>
           </ul>
         </div>
       </li>
