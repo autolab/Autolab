@@ -340,7 +340,7 @@ module AssessmentAutogradeCore
   #
   def saveAutograde(submissions, feedback)
     begin
-      lines = feedback.chomp.lines
+      lines = feedback.rstrip.lines
       raise AutogradeError.new("The Autograder returned no output", :autograde_no_output) if lines.empty?
 
       # The last line of the output is assumed to be the
