@@ -3,7 +3,7 @@
     jQuery(function() {
       userData = {
         <% @cuds.each do |k,v| %>
-          "<%= j k.html_safe %>": "<%= v %>",
+          "<%= j k %>": "<%= v %>",
         <% end %>
       };
 
@@ -13,7 +13,7 @@
       $studentAutocompleteField.autocomplete({
         data: {
           <% @cuds.each do |k,v| %>
-            "<%= j k.html_safe %>": null,
+            "<%= j k %>": null,
           <% end %>
         }
       });

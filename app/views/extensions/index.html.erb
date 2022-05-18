@@ -5,9 +5,10 @@
   <script type="application/javascript">
     jQuery(function() {
       /* match user name/email with cud_id */
+      /* escape_javascript prevents issues with backslashes in names, etc. */
       userData = {
         <% @usersEncoded.each do |k,v| %>
-          "<%= j k.html_safe %>": "<%= v %>",
+          "<%= j k %>": "<%= v %>",
         <% end %>
       };
 
@@ -17,7 +18,7 @@
       $studentAutocompleteField.autocomplete({
         data: {
           <% @users.each do |k,v| %>
-            "<%= j k.html_safe %>": null,
+            "<%= j k %>": null,
           <% end %>
         }
       });
