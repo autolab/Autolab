@@ -17,7 +17,9 @@ class ExtensionsController < ApplicationController
     @users = {}
     @usersEncoded = {}
     @course.course_user_data.each do |cud|
-      @users[cud.full_name_with_email] = cud.id
+      # Prevent XSS inside autocomplete
+      @users[CGI.escapeHTML cud.full_name_with_email] = cud.id
+      # Why base64? See issue 931
       @usersEncoded[Base64.urlsafe_encode64(cud.full_name_with_email.strip).strip] = cud.id
     end
     @new_extension = @assessment.extensions.new
