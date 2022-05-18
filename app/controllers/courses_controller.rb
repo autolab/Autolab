@@ -222,8 +222,11 @@ class CoursesController < ApplicationController
 
   action_auth_level :reload, :instructor
   def reload
-    render && return unless @course.reload_course_config
-
+    @course.reload_course_config
+  rescue StandardError, SyntaxError => e
+    @error = e
+    # let the reload view render
+  else
     flash[:success] = "Success: Course config file reloaded!"
     redirect_to([@course]) && return
   end

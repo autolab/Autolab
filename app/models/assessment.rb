@@ -218,9 +218,15 @@ class Assessment < ApplicationRecord
     # read from source
     config_source = File.open(source_config_file_path, "r", &:read)
 
+    # validate syntax of config
+    RubyVM::InstructionSequence.compile(config_source)
+
     # uniquely rename module (so that it's unique among all assessment modules loaded in Autolab)
     config = config_source.gsub("module #{source_config_module_name}",
                                 "module #{config_module_name}")
+
+    # backup old config
+    File.rename(config_file_path, config_file_path.sub_ext(".rb.bak"))
 
     # write to config_file_path
     File.open(config_file_path, "w") { |f| f.write config }

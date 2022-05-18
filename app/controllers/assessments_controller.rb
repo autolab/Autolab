@@ -612,7 +612,8 @@ class AssessmentsController < ApplicationController
 
   def reload
     @assessment.load_config_file
-  rescue StandardError
+  rescue StandardError, SyntaxError => e
+    @error = e
     # let the reload view render
   else
     flash[:success] = "Success: Assessment config file reloaded!"

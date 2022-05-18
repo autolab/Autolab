@@ -158,6 +158,15 @@ class Course < ApplicationRecord
     lines = s.readlines
     s.close
 
+    # read from source
+    config_source = File.open(src, "r", &:read)
+
+    # validate syntax of config
+    RubyVM::InstructionSequence.compile(config_source)
+
+    # backup old config
+    File.rename(dest, dest.sub_ext(".rb.bak"))
+
     d = File.open(dest, "w")
     d.write("require 'CourseBase.rb'\n\n")
     d.write("module Course#{course.camelize}\n")
@@ -182,18 +191,9 @@ class Course < ApplicationRecord
   # Reload the course config file and extend the loaded methods
   # to AdminsController
   def reload_course_config
-    mod = nil
-    begin
-      mod = reload_config_file
-
-    # rubocop:disable Lint/RescueException
-    rescue Exception
-      return false
-    end
-    # rubocop:enable Lint/RescueException
+    mod = reload_config_file
 
     AdminsController.extend(mod)
-    true
   end
 
   def sanitized_name
