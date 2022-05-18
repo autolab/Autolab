@@ -18,7 +18,7 @@ class ExtensionsController < ApplicationController
     @usersEncoded = {}
     @course.course_user_data.each do |cud|
       @users[cud.full_name_with_email] = cud.id
-      @usersEncoded[Base64.encode64(cud.full_name_with_email.strip).strip] = cud.id
+      @usersEncoded[Base64.urlsafe_encode64(cud.full_name_with_email.strip).strip] = cud.id
     end
     @new_extension = @assessment.extensions.new
   end
