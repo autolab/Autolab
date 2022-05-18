@@ -65,7 +65,7 @@ class ApplicationController < ActionController::Base
 
     if level == :administrator
       skip_before_action :authorize_user_for_course, only: [action], raise: false
-      skip_before_action :authenticate_for_action, only: [action]
+      skip_before_action :authenticate_for_action, only: [action], raise: false
       skip_before_action :update_persistent_announcements, only: [action], raise: false
     end
 
