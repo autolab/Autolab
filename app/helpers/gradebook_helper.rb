@@ -72,7 +72,7 @@ module GradebookHelper
       late_days = 0
 
       row["id"] = cud.id
-      row["email"] = cud.user.email
+      row["email"] = CGI.escapeHTML cud.user.email
       row["student_gradebook_link"] = sgb_link
       row["first_name"] = CGI.escapeHTML cud.user.first_name
       row["last_name"] = CGI.escapeHTML cud.user.last_name
