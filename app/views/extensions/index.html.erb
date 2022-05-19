@@ -31,7 +31,7 @@
         encoded = encoded.replace("+", "-")
         encoded = encoded.replace("/", "_")
         $hiddenCUDField.val(userData[encoded]);
-      })
+      });
 
       /* set up dates */
       $dueDate = moment("<%= @assessment.due_at.to_s %>", "YYYY-MM-DD hh:mm:ss ZZ").startOf('day');
