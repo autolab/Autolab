@@ -194,24 +194,20 @@ class CourseUserDataController < ApplicationController
     @usersEncoded = {}
     @course.course_user_data.each do |cud|
       # Prevent XSS inside autocomplete
-      @users[CGI.escapeHTML cud.full_name_with_email] = cud.email
+      @users[CGI.escapeHTML cud.full_name_with_email] = cud.id
       # Why base64? See issue 931
-      @usersEncoded[Base64.urlsafe_encode64(cud.full_name_with_email.strip).strip] = cud.email
+      @usersEncoded[Base64.urlsafe_encode64(cud.full_name_with_email.strip).strip] = cud.id
     end
 
     return unless request.post?
 
-    sudo_user = User.where(email: params[:sudo_email]).first
-    unless sudo_user
-      flash[:error] = "User #{params[:sudo_email]} does not exist"
+    sudo_cud = @course.course_user_data.where(id: params[:sudo_id]).first
+    unless sudo_cud
+      flash[:error] = "User does not exist in the course"
       redirect_to(action: :sudo) && return
     end
 
-    sudo_cud = @course.course_user_data.where(user_id: sudo_user.id).first
-    unless sudo_cud
-      flash[:error] = "User #{params[:sudo_email]} does not exist in the course"
-      redirect_to(action: :sudo) && return
-    end
+    sudo_user = User.where(id: sudo_cud.user_id).first
 
     unless @cud.can_sudo_to?(sudo_cud)
       flash[:error] = "You do not have the privileges to act as " \
