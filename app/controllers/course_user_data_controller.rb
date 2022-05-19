@@ -190,6 +190,15 @@ class CourseUserDataController < ApplicationController
       redirect_to([@cud.course]) && return
     end
 
+    @users = {}
+    @usersEncoded = {}
+    @course.course_user_data.each do |cud|
+      # Prevent XSS inside autocomplete
+      @users[CGI.escapeHTML cud.full_name_with_email] = cud.email
+      # Why base64? See issue 931
+      @usersEncoded[Base64.urlsafe_encode64(cud.full_name_with_email.strip).strip] = cud.email
+    end
+
     return unless request.post?
 
     sudo_user = User.where(email: params[:sudo_email]).first
