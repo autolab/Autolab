@@ -331,6 +331,19 @@ protected
     emails.join(",")
   end
 
+  # Retrieves necessary data for autocompletion purposes
+  # Currently used by manage extensions and create submission
+  def retrieve_autocompletion_data!
+    @users = {}
+    @usersEncoded = {}
+    @course.course_user_data.each do |cud|
+      # Prevent XSS inside autocomplete
+      @users[CGI.escapeHTML cud.full_name_with_email] = cud.id
+      # Why base64? See issue 931
+      @usersEncoded[Base64.urlsafe_encode64(cud.full_name_with_email.strip).strip] = cud.id
+    end
+  end
+
 private
 
   # called on Exceptions.  Shows a stack trace to course assistants, and above.

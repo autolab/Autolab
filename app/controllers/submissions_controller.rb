@@ -35,14 +35,7 @@ class SubmissionsController < ApplicationController
         render([@course, @assessment, :submissions]) && return
       end
     else
-      @users = {}
-      @usersEncoded = {}
-      @course.course_user_data.each do |cud|
-        # Prevent XSS inside autocomplete
-        @users[CGI.escapeHTML cud.full_name_with_email] = cud.id
-        # Why base64? See issue 931
-        @usersEncoded[Base64.urlsafe_encode64(cud.full_name_with_email.strip).strip] = cud.id
-      end
+      retrieve_autocompletion_data!
     end
   end
 
