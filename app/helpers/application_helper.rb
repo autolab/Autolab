@@ -153,29 +153,33 @@ module ApplicationHelper
     end
   end
 
-  def external_javascript_include_tag(library, version)
+  def external_javascript_include_tag(library)
     cloudflare = "//cdnjs.cloudflare.com/ajax/libs"
     google = "//ajax.googleapis.com/ajax/libs"
 
+    # Update versions manually
     case library
     when "jquery"
+      version = "3.6.0"
       javascript_include_tag "#{google}/jquery/#{version}/jquery.min.js"
     when "jquery-ui"
+      version = "1.13.1"
       javascript_include_tag "#{google}/jqueryui/#{version}/jquery-ui.min.js"
-    when "prototype"
-      javascript_include_tag "#{google}/prototype/#{version}/prototype.js"
     when "lodash"
+      version = "4.17.21"
       javascript_include_tag "#{cloudflare}/lodash.js/#{version}/lodash.min.js"
-    when "backbone"
-      javascript_include_tag "#{cloudflare}/backbone.js/#{version}/backbone-min.js"
-    when "backbone-relational"
-      javascript_include_tag "#{cloudflare}/backbone-relational/#{version}/backbone-relational.min.js"
     when "jquery.dataTables"
+      version = "1.12.0"
       javascript_include_tag "#{cloudflare}/datatables/#{version}/js/jquery.dataTables.min.js"
-    when "handlebars"
-      javascript_include_tag "#{cloudflare}/handlebars.js/#{version}/handlebars.min.js"
-    when "bootstrap"
-      javascript_include_tag "#{cloudflare}/twitter-bootstrap/#{version}/js/bootstrap.js"
+    when "plotly"
+      version = "2.12.1"
+      javascript_include_tag "https://cdn.plot.ly/plotly-#{version}.min.js"
+    when "materialize"
+      version = "1.0.0"
+      javascript_include_tag "#{cloudflare}/materialize/#{version}/js/materialize.min.js"
+    when "flatpickr"
+      version = "4.6.13"
+      javascript_include_tag "#{cloudflare}/flatpickr/#{version}/flatpickr.min.js"
     end
   end
 
