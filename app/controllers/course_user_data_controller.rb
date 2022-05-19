@@ -229,7 +229,7 @@ class CourseUserDataController < ApplicationController
   action_auth_level :unsudo, :student
   def unsudo
     session[:sudo] = nil
-    flash[:success] = "You are yourself again"
+    flash[:success] = "You are no longer acting as user #{@cud.email}"
     redirect_to([@cud.course]) && return
   end
 

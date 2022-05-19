@@ -27,7 +27,7 @@
   <%= link_to raw('<span class="btn primary">Change Password</span>'), edit_user_registration_path %>
   <% if GithubIntegration.connected %>
     <% if @user.github_integration && @user.github_integration.is_connected %>
-      <%= link_to raw('<span class="btn primary">Revoke Github Token</span>'), github_revoke_user_path(@user) %>
+      <%= link_to raw('<span class="btn primary">Revoke Github Token</span>'), github_revoke_user_path(@user), data: {method: "post"} %>
     <% else %>
       <%= link_to raw('<span class="btn primary">Connect to Github</span>'), github_oauth_user_path(@user) %>
     <% end %>

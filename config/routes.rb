@@ -65,7 +65,7 @@ Rails.application.routes.draw do
   resources :users do
     get "admin"
     get "github_oauth", on: :member
-    get "github_revoke", on: :member
+    post "github_revoke", on: :member
     get "github_oauth_callback", on: :collection
   end
 
@@ -144,7 +144,7 @@ Rails.application.routes.draw do
         post "releaseAllGrades"
         post "releaseSectionGrades"
         get "viewFeedback"
-        get "reload"
+        post "reload"
         get "statistics"
         post "withdrawAllGrades"
         get "export"
@@ -188,9 +188,9 @@ Rails.application.routes.draw do
 
     resources :course_user_data do
       resource :gradebook, only: :show do
-        get "bulk_release"
+        post "bulk_release"
         get "csv"
-        get "invalidate"
+        post "invalidate"
         get "statistics"
         get "student"
         get "view"
@@ -199,17 +199,17 @@ Rails.application.routes.draw do
       member do
         get "destroyConfirm"
         match "sudo", via: [:get, :post]
-        get "unsudo"
+        post "unsudo"
       end
     end
 
     member do
-      get "bulk_release"
+      post "bulk_release"
       get "download_roster"
       match "email", via: [:get, :post]
       get "manage"
       get "moss"
-      get "reload"
+      post "reload"
       match "report_bug", via: [:get, :post]
       post "run_moss"
       get "sudo"
