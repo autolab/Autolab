@@ -110,7 +110,6 @@
         <div class="input-field">
           <label class="control-label active" for="student_autocomplete">Student Name/Email</label>
           <input type="text" id="student_autocomplete" placeholder="Start typing student name or email" class="autocomplete" autocomplete="off">
-          <p class="help-block"></p>
         </div>
         <p>Select a new due date (Currently due at: <span class="moment-date-time"><%= @assessment.due_at.to_s %></span>)</p>
         <%= f.date_select :due_at, greater_than: @assessment.due_at, id: "extension_due_at" %><br>
