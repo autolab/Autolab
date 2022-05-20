@@ -141,45 +141,63 @@ module ApplicationHelper
     "text-decoration: " + (s.ignored? ? "line-through" : "none") + ";"
   end
 
-  def external_stylesheet_link_tag(library, version)
+  def external_stylesheet_link_tag(library)
     cloudflare = "//cdnjs.cloudflare.com/ajax/libs"
-    google = "//ajax.googleapis.com/ajax/libs"
 
+    # Update versions manually as-and-when newer versions become available on the CDN
     case library
-    when "bootstrap"
-      stylesheet_link_tag "#{cloudflare}/twitter-bootstrap/#{version}/css/bootstrap.css"
     when "jquery-ui"
-      stylesheet_link_tag "#{google}/jqueryui/#{version}/themes/smoothness/jquery-ui.css"
+      version = "1.12.1"
+      # Note specificity
+      stylesheet_link_tag "#{cloudflare}/jqueryui/#{version}/themes/smoothness/jquery-ui.min.css"
+    when "golden-layout"
+      version = "2.5.0"
+      # Note specificity
+      stylesheet_link_tag "#{cloudflare}/golden-layout/#{version}/css/goldenlayout-base.css"
+      stylesheet_link_tag "#{cloudflare}/golden-layout/#{version}/css/goldenlayout-light-theme.css"
+    when "semantic-ui"
+      version = "2.4.1"
+      stylesheet_link_tag "#{cloudflare}/semantic-ui/#{version}/semantic.min.css"
     end
   end
 
   def external_javascript_include_tag(library)
     cloudflare = "//cdnjs.cloudflare.com/ajax/libs"
-    google = "//ajax.googleapis.com/ajax/libs"
 
-    # Update versions manually
+    # Update versions manually as-and-when newer versions become available on the CDN
     case library
     when "jquery"
       version = "3.6.0"
-      javascript_include_tag "#{google}/jquery/#{version}/jquery.min.js"
+      javascript_include_tag "#{cloudflare}/jquery/#{version}/jquery.min.js"
     when "jquery-ui"
-      version = "1.13.1"
-      javascript_include_tag "#{google}/jqueryui/#{version}/jquery-ui.min.js"
+      version = "1.12.1"
+      javascript_include_tag "#{cloudflare}/jqueryui/#{version}/jquery-ui.min.js"
     when "lodash"
       version = "4.17.21"
       javascript_include_tag "#{cloudflare}/lodash.js/#{version}/lodash.min.js"
     when "jquery.dataTables"
-      version = "1.12.0"
+      version = "1.10.21"
       javascript_include_tag "#{cloudflare}/datatables/#{version}/js/jquery.dataTables.min.js"
     when "plotly"
       version = "2.12.1"
-      javascript_include_tag "https://cdn.plot.ly/plotly-#{version}.min.js"
+      javascript_include_tag "#{cloudflare}/plotly.js/#{version}/plotly.min.js"
     when "materialize"
       version = "1.0.0"
       javascript_include_tag "#{cloudflare}/materialize/#{version}/js/materialize.min.js"
     when "flatpickr"
       version = "4.6.13"
       javascript_include_tag "#{cloudflare}/flatpickr/#{version}/flatpickr.min.js"
+    when "scrollTo"
+      version = "2.1.3"
+      javascript_include_tag "#{cloudflare}/jquery-scrollTo/#{version}/jquery.scrollTo.min.js"
+    when "golden-layout"
+      # cloudflare only stores the typescript file
+      javascript_include_tag "//golden-layout.com/files/latest/js/goldenlayout.min.js"
+    when "semantic-ui"
+      version = "2.4.1"
+      # note specificity
+      javascript_include_tag "//#{cloudflare}/semantic-ui/#{version}/components/accordion.min.js"
+
     end
   end
 
