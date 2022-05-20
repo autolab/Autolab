@@ -153,8 +153,8 @@ module ApplicationHelper
     when "golden-layout"
       version = "2.5.0"
       # Note specificity
-      stylesheet_link_tag "#{cloudflare}/golden-layout/#{version}/css/goldenlayout-base.css"
-      stylesheet_link_tag "#{cloudflare}/golden-layout/#{version}/css/goldenlayout-light-theme.css"
+      stylesheet_link_tag "#{cloudflare}/golden-layout/#{version}/css/goldenlayout-base.min.css"
+      stylesheet_link_tag "#{cloudflare}/golden-layout/#{version}/css/themes/goldenlayout-light-theme.min.css"
     when "semantic-ui"
       version = "2.4.1"
       stylesheet_link_tag "#{cloudflare}/semantic-ui/#{version}/semantic.min.css"
