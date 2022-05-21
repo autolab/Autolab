@@ -190,9 +190,8 @@ module ApplicationHelper
     when "golden-layout"
       # cloudflare only stores the typescript file
       javascript_include_tag "//golden-layout.com/files/latest/js/goldenlayout.min.js"
-    when "semantic-ui"
+    when "semantic-ui-accordion"
       version = "2.4.1"
-      # note specificity
       javascript_include_tag "//#{cloudflare}/semantic-ui/#{version}/components/accordion.min.js"
 
     end
