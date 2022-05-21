@@ -148,15 +148,13 @@ module ApplicationHelper
     case library
     when "jquery-ui"
       version = "1.12.1"
-      # Note specificity
       stylesheet_link_tag "#{cloudflare}/jqueryui/#{version}/themes/smoothness/jquery-ui.min.css"
     when "golden-layout-base"
-      version = "2.5.0"
-      # Note specificity
-      stylesheet_link_tag "#{cloudflare}/golden-layout/#{version}/css/goldenlayout-base.min.css"
+      # The version on cdnjs is subtly different
+      # also not sure why the website displays v1.5.9 when the latest is v2.5.0
+      stylesheet_link_tag "//golden-layout.com/files/latest/css/goldenlayout-base.css"
     when "golden-layout-theme"
       version = "2.5.0"
-      # Note specificity
       stylesheet_link_tag "#{cloudflare}/golden-layout/#{version}/css/themes/goldenlayout-light-theme.min.css"
     when "semantic-ui"
       version = "2.4.1"
