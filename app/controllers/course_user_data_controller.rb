@@ -42,7 +42,7 @@ class CourseUserDataController < ApplicationController
         redirect_to(action: "new") && return
 
       else
-        error_msg = "The user with email #{CGI.escapeHTML email} could not be created:"
+        error_msg = "The user with email #{email} could not be created:"
         if !user.valid?
           user.errors.full_messages.each do |msg|
             error_msg += "<br>#{msg}"
@@ -58,14 +58,14 @@ class CourseUserDataController < ApplicationController
     else
       # user exists
       unless user.course_user_data.where(course: @course).empty?
-        flash[:error] = "User #{CGI.escapeHTML email} is already in #{@course.full_name}"
+        flash[:error] = "User #{email} is already in #{@course.full_name}"
         redirect_to(action: "new") && return
       end
       @newCUD.user = user
     end
 
     if @newCUD.save
-      flash[:success] = "Success: added user #{CGI.escapeHTML email} in #{@course.full_name}"
+      flash[:success] = "Success: added user #{email} in #{@course.full_name}"
       if @cud.user.administrator?
         redirect_to([:users, @course]) && return
       end
