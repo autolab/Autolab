@@ -75,7 +75,7 @@
                             locals: {roster_errors: msg} %>
               </div>
             <% else %>
-              <%= content_tag :div, sanitize(h msg), id: "flash_#{name}",
+              <%= content_tag :div, msg, id: "flash_#{name}",
                   class: "#{name}" %>
             <% end %>
           <% end %>
