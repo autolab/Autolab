@@ -22,11 +22,7 @@
 
     /* track changes in student autocomplete field */
     $studentAutocompleteField.on('change', function() {
-      // urlsafe_encode64 uses '-' instead of '+' and '_' instead of '/'
-      // so we have to replace the corresponding characters
       encoded = window.btoa($studentAutocompleteField.val())
-      encoded = encoded.replace("+", "-")
-      encoded = encoded.replace("/", "_")
       $hiddenCUDField.val(userData[encoded]);
     });
   });
