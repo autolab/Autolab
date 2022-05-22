@@ -337,9 +337,10 @@ protected
     @users = {}
     @usersEncoded = {}
     @course.course_user_data.each do |cud|
-      # Prevent XSS inside autocomplete
+      # Escape once here, and another time in _autocomplete.html.erb (see comments)
       @users[CGI.escapeHTML cud.full_name_with_email] = cud.id
-      # Why base64? See issue 931
+      # base64 to avoid issues where leading / trailing whitespaces are stripped (see #931)
+      # strict_encode64 to avoid line feeds
       @usersEncoded[Base64.strict_encode64(cud.full_name_with_email.strip).strip] = cud.id
     end
   end

@@ -68,6 +68,7 @@
 
         <!-- Flashes -->
         <div id="flashes">
+          <!-- Ruby escapes msg by default, no need for sanitization -->
           <% flash.each do |name, msg| %>
             <% if name == "roster_error" %>
               <div class="error" id="flash_error">

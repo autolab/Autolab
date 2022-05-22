@@ -71,6 +71,7 @@ module GradebookHelper
       grace_days = 0
       late_days = 0
 
+      # CGI.escapeHTML to avoid XSS
       row["id"] = cud.id
       row["email"] = CGI.escapeHTML cud.user.email
       row["student_gradebook_link"] = sgb_link
