@@ -284,7 +284,7 @@ GEM
       ttfunk (~> 1.0.3)
     public_suffix (4.0.6)
     racc (1.6.0)
-    rack (2.2.3)
+    rack (2.2.3.1)
     rack-attack (6.6.0)
       rack (>= 1.0, < 3)
     rack-protection (2.2.0)
