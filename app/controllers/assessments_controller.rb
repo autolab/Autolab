@@ -284,7 +284,9 @@ class AssessmentsController < ApplicationController
 
     flash[:success] = "Successfully installed #{@assessment.name}."
     # reload the course config file
-    redirect_to([:reload, @course, @assessment]) && return
+    @course.reload_course_config
+
+    redirect_to([@course, @assessment]) && return
   end
 
   def assessmentInitialize(assignName)
