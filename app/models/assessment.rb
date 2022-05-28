@@ -133,6 +133,10 @@ class Assessment < ApplicationRecord
     Rails.root.join("assessmentConfig", "#{course.name}-#{sanitized_name}.rb")
   end
 
+  def config_backup_file_path
+    config_file_path.sub_ext(".rb.bak")
+  end
+
   def config_module_name
     (sanitized_name + course.sanitized_name).camelize
   end
@@ -226,7 +230,9 @@ class Assessment < ApplicationRecord
                                 "module #{config_module_name}")
 
     # backup old config
-    File.rename(config_file_path, config_file_path.sub_ext(".rb.bak"))
+    if File.exist?(config_file_path)
+      File.rename(config_file_path, config_backup_file_path)
+    end
 
     # write to config_file_path
     File.open(config_file_path, "w") { |f| f.write config }
