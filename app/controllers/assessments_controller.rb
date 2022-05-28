@@ -417,6 +417,14 @@ class AssessmentsController < ApplicationController
 
     @assessment.attachments.each(&:destroy)
 
+    # Delete config file copy in assessmentConfig
+    if File.exist? @assessment.config_file_path
+      File.delete @assessment.config_file_path
+    end
+    if File.exist? @assessment.config_backup_file_path
+      File.delete @assessment.config_backup_file_path
+    end
+
     name = @assessment.display_name
     @assessment.destroy # awwww!!!!
     flash[:success] = "The assessment #{name} has been deleted."
