@@ -33,6 +33,14 @@ class Course < ApplicationRecord
   before_create :cgdub_dependencies_updated
   after_create :init_course_folder
 
+  def config_file_path
+    Rails.root.join("courseConfig", "#{sanitized_name}.rb")
+  end
+
+  def config_backup_file_path
+    config_file_path.sub_ext(".rb.bak")
+  end
+
   # Create a course with name, semester, and instructor email
   # all other fields are filled in automatically
   def self.quick_create(unique_name, semester, instructor_email)
@@ -150,26 +158,29 @@ class Course < ApplicationRecord
     end
   end
 
+  def source_config_file_path
+    Rails.root.join("courses", name, "course.rb")
+  end
+
   def reload_config_file
-    course = name.gsub(/[^A-Za-z0-9]/, "")
-    src = Rails.root.join("courses", name, "course.rb")
-    dest = Rails.root.join("courseConfig/", "#{course}.rb")
-    s = File.open(src, "r")
+    s = File.open(source_config_file_path, "r")
     lines = s.readlines
     s.close
 
     # read from source
-    config_source = File.open(src, "r", &:read)
+    config_source = File.open(source_config_file_path, "r", &:read)
 
     # validate syntax of config
     RubyVM::InstructionSequence.compile(config_source)
 
     # backup old config
-    File.rename(dest, dest.sub_ext(".rb.bak"))
+    if File.exist? config_file_path
+      File.rename(config_file_path, config_backup_file_path)
+    end
 
-    d = File.open(dest, "w")
+    d = File.open(config_file_path, "w")
     d.write("require 'CourseBase.rb'\n\n")
-    d.write("module Course#{course.camelize}\n")
+    d.write("module #{config_module_name}\n")
     d.write("\tinclude CourseBase\n\n")
     lines.each do |line|
       if !line.empty?
@@ -181,10 +192,10 @@ class Course < ApplicationRecord
     d.write("end")
     d.close
 
-    load(dest)
-    # rubocop:disable Style/EvalWithLocation, Security/Eval
-    eval("Course#{course.camelize}")
-    # rubocop:enable Style/EvalWithLocation, Security/Eval
+    load(config_file_path)
+    # rubocop:disable Security/Eval
+    eval(config_module_name)
+    # rubocop:enable Security/Eval
   end
 
   # reload_course_config
@@ -282,10 +293,6 @@ private
       Class.new.extend eval(config_module_name)
       # rubocop:enable Security/Eval
     end
-  end
-
-  def config_file_path
-    Rails.root.join("courseConfig", "#{sanitized_name}.rb")
   end
 
   def config_module_name

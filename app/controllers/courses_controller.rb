@@ -165,6 +165,14 @@ class CoursesController < ApplicationController
   # DELETE courses/:id/
   action_auth_level :destroy, :administrator
   def destroy
+    # Delete config file copy in courseConfig
+    if File.exist? @course.config_file_path
+      File.delete @course.config_file_path
+    end
+    if File.exist? @course.config_backup_file_path
+      File.delete @course.config_backup_file_path
+    end
+
     if @course.destroy
       flash[:success] = "Course destroyed."
     else
