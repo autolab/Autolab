@@ -5,7 +5,7 @@
 </div>
 
 <div>
-  <%= link_to "Click here once you have fixed the above error", [:reload, @course, @assessment] %>
+  <%= link_to "Click here once you have fixed the above error", [:reload, @course, @assessment], data: {method: "post"} %>
 </div>
 
 <% # this rails function returns a <pre> containing the error as YAML %>
