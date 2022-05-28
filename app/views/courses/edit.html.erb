@@ -27,10 +27,8 @@
 
 	<br>
 	<div class="row">
-		<div class="col s2 ">
-			<%= f.submit 'Save', { :class=> "btn primary" } %>
-		</div>
 		<div class="col s3">
+			<%= f.submit 'Save', { :class=> "btn primary" } %>
 			<% if current_user.administrator? %>
 			<%= link_to "Delete Course", course_path(@course), method: :delete,
 				data: {confirm: "Are you sure to destroy #{@course.full_name}?"}, class: "btn" %>
