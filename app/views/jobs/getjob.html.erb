@@ -26,7 +26,7 @@
 <th>Filename on VM (<kbd>destFile</kbd>)</th></tr>
 <% for item in @job[:rjob]["input"] do %>
   <tr>
-  <td><font size=-1><kbd><%= item["localFile"].sub(/\/afs\/cs.cmu.edu\/academic\/autolab\/autolab2\/courses/, "[autolab courses]")%></kbd></font></td>
+  <td><font size=-1><kbd><%= item["localFile"].sub(/\/afs\/cs\.cmu\.edu\/academic\/autolab\/autolab2\/courses/, "[autolab courses]")%></kbd></font></td>
   <td><font size=-1><kbd><%= item["destFile"] %></kbd></font></td>
   </tr>
 <% end %>
@@ -36,7 +36,7 @@
 <li><kbd>notifyURL</kbd>: <%= @job[:rjob]["notifyURL"] %>
 <% end %>
 
-<li>Output File: <%= @job[:rjob]["outputFile"].sub(/\/afs\/cs.cmu.edu\/academic\/autolab\/autolab2/, "[autolab]") %>
+<li>Output File: <%= @job[:rjob]["outputFile"].sub(/\/afs\/cs\.cmu\.edu\/academic\/autolab\/autolab2/, "[autolab]") %>
 </ul>
 
 <h2>Runtime Trace</h2>
