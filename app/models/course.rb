@@ -91,7 +91,9 @@ class Course < ApplicationRecord
     end
 
     # Load course config
-    unless newCourse.reload_course_config
+    begin
+      newCourse.reload_course_config
+    rescue StandardError, SyntaxError
       # roll back course and CUD creation
       newCUD.destroy
       newCourse.destroy

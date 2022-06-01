@@ -121,15 +121,17 @@ class CoursesController < ApplicationController
       new_cud.instructor = true
 
       if new_cud.save
-        if @newCourse.reload_course_config
-          flash[:success] = "New Course #{@newCourse.name} successfully created!"
-          redirect_to(edit_course_path(@newCourse)) && return
-        else
+        begin
+          @newCourse.reload_course_config
+        rescue StandardError, SyntaxError
           # roll back course creation and instruction creation
           new_cud.destroy
           @newCourse.destroy
           flash[:error] = "Can't load course config for #{@newCourse.name}."
           render(action: "new") && return
+        else
+          flash[:success] = "New Course #{@newCourse.name} successfully created!"
+          redirect_to(edit_course_path(@newCourse)) && return
         end
       else
         # roll back course creation
