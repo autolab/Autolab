@@ -132,17 +132,17 @@ class GithubIntegration < ApplicationRecord
                                  client_secret: Rails.configuration.x.github.client_secret)
 
     begin
-      limit = client.rate_limit!.limit
+      limit = client.rate_limit!
     rescue StandardError
-      limit = 0
+      limit = { limit: 0 }
     end
-    limit >= 1000
+    limit
   end
 
   ##
   # Returns whether Autolab is connected to Github
   def self.connected
-    check_github_authorization
+    check_github_authorization.limit > 1000
   end
 
 private
