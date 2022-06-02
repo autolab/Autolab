@@ -1,6 +1,14 @@
 // Loads all Semantic javascripts
 //= require semantic-ui
 
+const escapeHtml = (unsafe) => {
+  return unsafe.replaceAll('&', '&amp;')
+               .replaceAll('<', '&lt;')
+               .replaceAll('>', '&gt;')
+               .replaceAll('"', '&quot;')
+               .replaceAll("'", '&#039;');
+}
+
 // watchlist api endpoints
 const watchlist_endpoints = {
 	update: 'update_watchlist_instances',
@@ -23,8 +31,8 @@ function get_name_email_html(name, email) {
       <div class="ui checkbox select_single">
         <input type="checkbox"/>
         <label>
-          <p class="name_label"> ${name} </p>
-          <p class="email_label"> ${email} </p>
+          <p class="name_label"> ${escapeHtml(name)} </p>
+          <p class="email_label"> ${escapeHtml(email)} </p>
         </label>
       </div>`;
 }
