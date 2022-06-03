@@ -25,14 +25,14 @@ In order to setup Github submission, you will first need to create a Github Appl
 
 2. If you do not have a `.env` file in your Autolab root yet (it may not be present on older installations), create it by running the following script from the Autolab root directory:
 
-    :::bash
-    ./bin/initialize_secrets.sh
+        :::bash
+    	./bin/initialize_secrets.sh
 
 3. Open up `.env` in your favorite editor, and update `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET` to use the client ID and client secrets generated previously:
 
-    :::bash
-	GITHUB_CLIENT_ID=replace_with_your_client_ID
-	GITHUB_CLIENT_SECRET=replace_with_your_client_secret
+        :::bash
+        GITHUB_CLIENT_ID=replace_with_your_client_ID
+        GITHUB_CLIENT_SECRET=replace_with_your_client_secret
 
 ## Verifying Github Integration
 In order to verify whether your deployment has been setup correctly,
