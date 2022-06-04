@@ -1,7 +1,7 @@
 <% @title = "Manage Extensions" %>
 
 <% content_for :javascripts do %>
-  <%= render partial: "common/autocomplete", locals: { hiddenCUDField: "#extension_course_user_datum_id" } %>
+  <%= render partial: "components/autocomplete", locals: { hiddenCUDField: "#extension_course_user_datum_id" } %>
   <script type="application/javascript">
     jQuery(function() {
       /* set up dates */

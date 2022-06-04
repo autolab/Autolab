@@ -1,5 +1,5 @@
 <% content_for :javascripts do %>
-  <%= render partial: "common/autocomplete", locals: { hiddenCUDField: "#submission_course_user_datum_id" } %>
+  <%= render partial: "components/autocomplete", locals: { hiddenCUDField: "#submission_course_user_datum_id" } %>
 <% end %>
 
 <h2>Create Submission for <%= link_to @assessment.display_name, [@course, @assessment] %> </h2>
