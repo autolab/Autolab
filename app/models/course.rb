@@ -267,6 +267,20 @@ class Course < ApplicationRecord
     asmts.where("due_at < ?", date)
   end
 
+  # Used by manage extensions and create submission
+  def get_autocomplete_data
+    users = {}
+    usersEncoded = {}
+    course_user_data.each do |cud|
+      # Escape once here, and another time in _autocomplete.html.erb (see comments)
+      users[CGI.escapeHTML cud.full_name_with_email] = cud.id
+      # base64 to avoid issues where leading / trailing whitespaces are stripped (see #931)
+      # strict_encode64 to avoid line feeds
+      usersEncoded[Base64.strict_encode64(cud.full_name_with_email.strip).strip] = cud.id
+    end
+    [users, usersEncoded]
+  end
+
 private
 
   def saved_change_to_grade_related_fields?
