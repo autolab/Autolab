@@ -1,37 +1,5 @@
 <% content_for :javascripts do %>
-
-  <script type="application/javascript">
-    jQuery(function() {
-      /* match user name/email with cud_email */
-      /* escape_javascript prevents issues with backslashes in names, etc. */
-      userData = {
-          <% @usersEncoded.each do |k,v| %>
-            "<%= j k %>": "<%= v %>",
-          <% end %>
-      };
-
-      /* user autocomplete */
-      $studentAutocompleteField = $('#student_autocomplete');
-      $hiddenCUDField = $('#sudo_id');
-      $studentAutocompleteField.autocomplete({
-        data: {
-          <% @users.each do |k,v| %>
-            "<%= j k %>": null,
-          <% end %>
-        }
-      });
-
-      /* track changes in student autocomplete field */
-      $studentAutocompleteField.on('change', function () {
-          // urlsafe_encode64 uses '-' instead of '+' and '_' instead of '/'
-          // so we have to replace the corresponding characters
-          encoded = window.btoa($studentAutocompleteField.val())
-          encoded = encoded.replace("+", "-")
-          encoded = encoded.replace("/", "_")
-          $hiddenCUDField.val(userData[encoded]);
-      });
-    });
-  </script>
+  <%= render partial: "components/autocomplete", locals: { hiddenCUDField: "#sudo_id" } %>
 <% end %>
 
 <h2>Act as User</h2>
