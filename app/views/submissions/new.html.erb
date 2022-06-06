@@ -1,29 +1,5 @@
 <% content_for :javascripts do %>
-  <script type="application/javascript">
-    jQuery(function() {
-      userData = {
-        <% @cuds.each do |k,v| %>
-          "<%= k %>": "<%= v %>",
-        <% end %>
-      };
-
-      /* user autocomplete */
-      $studentAutocompleteField = $('#student_autocomplete');
-      $hiddenCUDField = $('#submission_course_user_datum_id');
-      $studentAutocompleteField.autocomplete({
-        data: {
-          <% @cuds.each do |k,v| %>
-            "<%= k %>": null,
-          <% end %>
-        }
-      });
-
-      /* track changes in student autocomplete field */
-      $studentAutocompleteField.on('change', function() {
-        $hiddenCUDField.val(userData[$studentAutocompleteField.val()]);
-      })
-    });
-  </script>
+  <%= render partial: "components/autocomplete", locals: { hiddenCUDField: "#submission_course_user_datum_id" } %>
 <% end %>
 
 <h2>Create Submission for <%= link_to @assessment.display_name, [@course, @assessment] %> </h2>

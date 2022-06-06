@@ -64,8 +64,6 @@ class AssessmentsController < ApplicationController
   action_auth_level :set_repo, :instructor
   action_auth_level :import_svn, :instructor
 
-  protect_from_forgery with: :exception
-
   def index
     @is_instructor = @cud.has_auth_level? :instructor
     announcements_tmp = Announcement.where("start_date < :now AND end_date > :now",
@@ -286,7 +284,9 @@ class AssessmentsController < ApplicationController
 
     flash[:success] = "Successfully installed #{@assessment.name}."
     # reload the course config file
-    redirect_to([:reload, @course, @assessment]) && return
+    @course.reload_course_config
+
+    redirect_to([@course, @assessment]) && return
   end
 
   def assessmentInitialize(assignName)
@@ -418,6 +418,14 @@ class AssessmentsController < ApplicationController
     @assessment.submissions.each(&:destroy)
 
     @assessment.attachments.each(&:destroy)
+
+    # Delete config file copy in assessmentConfig
+    if File.exist? @assessment.config_file_path
+      File.delete @assessment.config_file_path
+    end
+    if File.exist? @assessment.config_backup_file_path
+      File.delete @assessment.config_backup_file_path
+    end
 
     name = @assessment.display_name
     @assessment.destroy # awwww!!!!

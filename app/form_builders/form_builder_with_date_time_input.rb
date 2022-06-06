@@ -126,8 +126,7 @@ private
     wrap_field name, field, options[:help_text]
   end
 
-  def wrap_field(name, field, help_text, display_name = nil)
-
+  def wrap_field(name, field, help_text = nil, display_name = nil)
     @template.content_tag :div, class: "input-field" do
       label(name, display_name, class: "control-label") +
          field + help_text(name, help_text)
@@ -135,7 +134,11 @@ private
   end
 
   def help_text(_name, help_text)
-    @template.content_tag :p, help_text, class: "help-block"
+    if help_text.nil?
+      ""
+    else
+      @template.content_tag :p, help_text, class: "help-block"
+    end
   end
 
   def objectify_options(options)
