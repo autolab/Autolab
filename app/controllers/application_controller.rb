@@ -331,20 +331,6 @@ protected
     emails.join(",")
   end
 
-  # Retrieves necessary data for autocompletion purposes
-  # Currently used by manage extensions and create submission
-  def retrieve_autocompletion_data!
-    @users = {}
-    @usersEncoded = {}
-    @course.course_user_data.each do |cud|
-      # Escape once here, and another time in _autocomplete.html.erb (see comments)
-      @users[CGI.escapeHTML cud.full_name_with_email] = cud.id
-      # base64 to avoid issues where leading / trailing whitespaces are stripped (see #931)
-      # strict_encode64 to avoid line feeds
-      @usersEncoded[Base64.strict_encode64(cud.full_name_with_email.strip).strip] = cud.id
-    end
-  end
-
 private
 
   # called on Exceptions.  Shows a stack trace to course assistants, and above.

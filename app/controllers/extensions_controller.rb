@@ -14,7 +14,7 @@ class ExtensionsController < ApplicationController
   action_auth_level :index, :instructor
   def index
     @extensions = @assessment.extensions.includes(:course_user_datum)
-    retrieve_autocompletion_data!
+    @users, @usersEncoded = @course.get_autocomplete_data
     @new_extension = @assessment.extensions.new
   end
 

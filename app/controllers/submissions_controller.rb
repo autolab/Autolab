@@ -35,7 +35,7 @@ class SubmissionsController < ApplicationController
         render([@course, @assessment, :submissions]) && return
       end
     else
-      retrieve_autocompletion_data!
+      @users, @usersEncoded = @course.get_autocomplete_data
     end
   end
 
