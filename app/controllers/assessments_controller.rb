@@ -74,7 +74,16 @@ class AssessmentsController < ApplicationController
     @attachments = if @cud.instructor?
                      @course.attachments
                    else
-                     @course.attachments.where(released: true)
+                     # Attachments that are released, and whose related assessment is also released
+                     course_attachments = @course.attachments
+                                                 .where(released: true)
+                                                 .left_outer_joins(:assessment)
+
+                     # Either assessment_id is nil (i.e. course attachment)
+                     # Or the assessment has started
+                     course_attachments.where(assessment_id: nil)
+                                       .or(course_attachments.where("assessments.start_at < ?",
+                                                                    Time.current))
                    end
   end
 
