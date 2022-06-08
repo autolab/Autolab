@@ -267,7 +267,7 @@ class Course < ApplicationRecord
     asmts.where("due_at < ?", date)
   end
 
-  # Used by manage extensions and create submission
+  # Used by manage extensions, create submission, and sudo
   def get_autocomplete_data
     users = {}
     usersEncoded = {}
