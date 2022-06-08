@@ -194,6 +194,7 @@ module AssessmentAutograde
         if @cud.instructor?
           link = (view_context.link_to "Autograder Settings", [:edit, course, assessment, :autograder])
           flash[:error] += " Visit #{link} to set the autograding properties."
+          flash[:html_safe] = true
         else
           flash[:error] += " Please contact your instructor."
         end
@@ -207,6 +208,7 @@ module AssessmentAutograde
         if @cud.instructor?
           link = (view_context.link_to "Autograder Settings", [:edit, course, assessment, :autograder])
           flash[:error] += " (Verify the autograding properties at #{link}.)\nErrorMsg: " + e.additional_data
+          flash[:html_safe] = true
         end
       when :missing_autograder_file
         flash[:error] = "One or more files are missing in the server. Please contact the instructor. The missing files are: " + e.additional_data
@@ -219,8 +221,8 @@ module AssessmentAutograde
 
     link = "<a href=\"#{url_for(controller: 'jobs', action: 'getjob', id: job)}\">Job ID = #{job}</a>"
     flash[:success] = ("Submitted file #{submissions[0].filename} (#{link}) for autograding." \
-      " Refresh the page to see the results.").html_safe
-
+      " Refresh the page to see the results.")
+    flash[:html_safe] = true
     job
   end
 
