@@ -116,6 +116,9 @@ module AssessmentAutograde
       flash[:success] = ("Regrading #{link}")
     end
 
+    # For both :success and :failure
+    flash[:html_safe] = true
+
     redirect_to([@course, @assessment, :submissions]) && return
   end
 
@@ -159,6 +162,9 @@ module AssessmentAutograde
       link = "<a href=\"#{url_for(controller: 'jobs')}\">#{pluralize(success_jobs, "student")}</a>"
       flash[:success] = ("Regrading the most recent submissions from #{link}")
     end
+
+    # For both :success and :failure
+    flash[:html_safe] = true
 
     redirect_to([@course, @assessment, :submissions]) && return
   end
