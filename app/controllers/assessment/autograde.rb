@@ -98,8 +98,9 @@ module AssessmentAutograde
       end
     end
 
-    if failed_list.length > 0
-      flash[:error] = "Warning: Could not regrade #{failed_list.length} submission(s):<br>"
+    failure_jobs = failed_list.length
+    if failure_jobs > 0
+      flash[:error] = "Warning: Could not regrade #{pluralize(failure_jobs, "submission")}:<br>"
       failed_list.each do |failure|
         if failure[:error].error_code == :nil_submission
           flash[:error] += "Unrecognized submission ID<br>"
@@ -109,10 +110,10 @@ module AssessmentAutograde
       end
     end
 
-    success_jobs = submission_ids.size - failed_list.length
+    success_jobs = submission_ids.size - failure_jobs
     if success_jobs > 0
-      link = "<a href=\"#{url_for(controller: 'jobs')}\">#{success_jobs} submission</a>"
-      flash[:success] = ("Regrading #{link}").html_safe
+      link = "<a href=\"#{url_for(controller: 'jobs')}\">#{pluralize(success_jobs, "submission")}</a>"
+      flash[:success] = ("Regrading #{link}")
     end
 
     redirect_to([@course, @assessment, :submissions]) && return
@@ -141,8 +142,9 @@ module AssessmentAutograde
       end
     end
 
-    if failed_list.length > 0
-      flash[:error] = "Warning: Could not regrade #{failed_list.length} submission(s):<br>"
+    failure_jobs = failed_list.length
+    if failure_jobs > 0
+      flash[:error] = "Warning: Could not regrade #{pluralize(failure_jobs, "submission")}:<br>"
       failed_list.each do |failure|
         if failure[:error].error_code == :nil_submission
           flash[:error] += "Unrecognized submission ID<br>"
@@ -152,10 +154,10 @@ module AssessmentAutograde
       end
     end
 
-    success_jobs = last_submissions.size - failed_list.length
+    success_jobs = last_submissions.size - failure_jobs
     if success_jobs > 0
-      link = "<a href=\"#{url_for(controller: 'jobs')}\">#{success_jobs} students</a>"
-      flash[:success] = ("Regrading the most recent submissions from #{link}").html_safe
+      link = "<a href=\"#{url_for(controller: 'jobs')}\">#{pluralize(success_jobs, "student")}</a>"
+      flash[:success] = ("Regrading the most recent submissions from #{link}")
     end
 
     redirect_to([@course, @assessment, :submissions]) && return
