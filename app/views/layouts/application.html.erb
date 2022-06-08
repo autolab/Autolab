@@ -68,7 +68,6 @@
 
         <!-- Flashes -->
         <div id="flashes">
-          <!-- Ruby escapes msg by default, no need for sanitization -->
           <% flash.each do |name, msg| %>
             <% if name == "roster_error" %>
               <div class="error" id="flash_error">
@@ -76,6 +75,8 @@
                             locals: {roster_errors: msg} %>
               </div>
             <% else %>
+              <%# msg is escaped by default %>
+              <%# if you must output raw html, set flash[:html_safe] = true in controller %>
               <%= content_tag :div, msg, id: "flash_#{name}",
                   class: "#{name}" %>
             <% end %>
