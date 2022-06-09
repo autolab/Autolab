@@ -20,8 +20,6 @@ class CoursesController < ApplicationController
     redirect_to(home_no_user_path) && return unless courses_for_user.any?
 
     @listing = categorize_courses_for_listing courses_for_user
-
-    render layout: "home"
   end
 
   action_auth_level :show, :student
