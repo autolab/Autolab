@@ -19,7 +19,6 @@ class ApplicationController < ActionController::Base
   before_action :authenticate_for_action
   before_action :update_persistent_announcements
   before_action :set_breadcrumbs
-  before_action :mark_flash_html_safe
 
   rescue_from ActionView::MissingTemplate do |_exception|
     redirect_to("/home/error_404")
@@ -310,19 +309,6 @@ protected
                     else
                       (view_context.link_to @course.full_name, [@course], id: "courseTitle")
                     end
-  end
-
-  # To display flash messages verbatim, set flash[:html_safe] = true
-  # Might want to consider separate flags for different flash types
-  def mark_flash_html_safe
-    return unless flash[:html_safe]
-
-    flash.delete(:html_safe)
-    flash.each do |name, _|
-      # rubocop:disable Rails/OutputSafety
-      flash.now[name] = flash[name].html_safe
-      # rubocop:enable Rails/OutputSafety
-    end
   end
 
   def pluralize(count, singular, plural = nil)
