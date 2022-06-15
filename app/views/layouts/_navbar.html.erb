@@ -10,9 +10,9 @@
         edge: 'right'
       });
 
-      $('.dropdown-trigger').dropdown({
-        coverTrigger: false
-      });
+      // Using this over jQuery approach to avoid any issues when other libraries override .dropdown()
+      var elems = document.querySelectorAll('.dropdown-trigger');
+      M.Dropdown.init(elems, { coverTrigger: false });
     });
   </script>
 
@@ -47,7 +47,7 @@
 
       <ul class="right hide-on-med-and-down">
         <% if session[:sudo] && @cud then %>
-          <li><%= link_to "(#{@cud.display_name}) Reset user", [:unsudo, @course, @cud] %></li>
+          <li><%= link_to "(#{@cud.display_name}) Return to instructor view", [:unsudo, @course, @cud], data: {method: "post"} %></li>
         <% end %>
 
         <% if @cud %>
@@ -104,7 +104,7 @@
       </div>
         <!-- Usual Navbar Items -->
         <% if session[:sudo] && @cud then %>
-          <li><%= link_to "(#{@cud.display_name}) Reset user", [:unsudo, @course, @cud] %></li>
+          <li><%= link_to "(#{@cud.display_name}) Return to instructor view", [:unsudo, @course, @cud], data: {method: "post"} %></li>
         <% end %>
 
         <% if @cud %>

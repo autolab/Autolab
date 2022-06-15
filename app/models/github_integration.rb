@@ -125,23 +125,24 @@ class GithubIntegration < ApplicationRecord
 
   ##
   # Checks whether a valid Github client ID and secret is passed in
-  # If so, current rate limit information is returned; else
-  # nil is returned
+  # If so, current rate limit should be in the order of thousands;
+  # else it is 60 (as of June 2022)
   def self.check_github_authorization
     client = Octokit::Client.new(client_id: Rails.configuration.x.github.client_id,
                                  client_secret: Rails.configuration.x.github.client_secret)
 
     begin
-      client.rate_limit!
+      limit = client.rate_limit!
     rescue StandardError
-      nil
+      limit = { limit: 0 }
     end
+    limit
   end
 
   ##
   # Returns whether Autolab is connected to Github
   def self.connected
-    !check_github_authorization.nil?
+    check_github_authorization.limit > 1000
   end
 
 private

@@ -468,9 +468,18 @@ class WatchlistInstance < ApplicationRecord
     return unless latest_aud_before_date.global_cumulative_grace_days_used >= grace_day_threshold
 
     violation_info = {}
+    allowlist_asmt_cumulative_gdu = 0
     auds_before_date.each do |aud|
-      violation_info[aud.assessment.display_name] = aud.grace_days_used if aud.grace_days_used > 0
+      if aud.grace_days_used > 0
+        allowlist_asmt_cumulative_gdu += aud.grace_days_used
+        violation_info[aud.assessment.display_name] = aud.grace_days_used
+      end
     end
+
+    # The logic might fall through if the grace days were used on blocklisted assessments
+    # This ensures no funky "0 grace day used" instance is added
+    return if allowlist_asmt_cumulative_gdu < grace_day_threshold
+
     WatchlistInstance.new(course_user_datum_id: cud.id, course_id: course.id,
                           risk_condition_id: condition_id,
                           violation_info: violation_info)
