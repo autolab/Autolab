@@ -1,6 +1,14 @@
 // Loads all Semantic javascripts
 //= require semantic-ui
 
+const escapeHtml = (unsafe) => {
+  return unsafe.replaceAll('&', '&amp;')
+               .replaceAll('<', '&lt;')
+               .replaceAll('>', '&gt;')
+               .replaceAll('"', '&quot;')
+               .replaceAll("'", '&#039;');
+}
+
 // watchlist api endpoints
 const watchlist_endpoints = {
 	update: 'update_watchlist_instances',
@@ -23,8 +31,8 @@ function get_name_email_html(name, email) {
       <div class="ui checkbox select_single">
         <input type="checkbox"/>
         <label>
-          <p class="name_label"> ${name} </p>
-          <p class="email_label"> ${email} </p>
+          <p class="name_label"> ${escapeHtml(name)} </p>
+          <p class="email_label"> ${escapeHtml(email)} </p>
         </label>
       </div>`;
 }
@@ -632,7 +640,7 @@ function refresh_watchlist(){
 
   // uses formantic ui loading class 
   $("#refresh_btn").addClass('loading');
-  $.getJSON(watchlist_endpoints['refresh'],function(){
+  $.post(watchlist_endpoints['refresh'],function(){
     
     // set last updated time to now on success
     $('#last-updated-time')
@@ -643,7 +651,7 @@ function refresh_watchlist(){
       type:"positive",
       header:"Successfully refreshed watchlist instances",
       message: "The latest instances should be showing now",
-    });
+    }, "json");
     
   }).fail(function(){
     render_banner({

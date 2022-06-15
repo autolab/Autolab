@@ -10,9 +10,9 @@
         edge: 'right'
       });
 
-      $('.dropdown-trigger').dropdown({
-        coverTrigger: false
-      });
+      // Using this over jQuery approach to avoid any issues when other libraries override .dropdown()
+      var elems = document.querySelectorAll('.dropdown-trigger');
+      M.Dropdown.init(elems, { coverTrigger: false });
     });
   </script>
 

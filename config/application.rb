@@ -29,13 +29,13 @@ module Autolab3
       Devise::OmniauthCallbacksController.skip_before_action :authorize_user_for_course
       Devise::OmniauthCallbacksController.skip_before_action :authenticate_for_action
       Devise::OmniauthCallbacksController.skip_before_action :update_persistent_announcements
-      Devise::SessionsController.layout "home"
-      Devise::RegistrationsController.layout proc{ |controller| user_signed_in? ? "application"   : "home" }
-      Devise::ConfirmationsController.layout "home"
-      Devise::UnlocksController.layout "home"
-      Devise::PasswordsController.layout "home"
-      Doorkeeper::AuthorizationsController.layout "home"
-      Doorkeeper::AuthorizedApplicationsController.layout "home"
+      Devise::SessionsController.layout "application"
+      Devise::RegistrationsController.layout "application"
+      Devise::ConfirmationsController.layout "application"
+      Devise::UnlocksController.layout "application"
+      Devise::PasswordsController.layout "application"
+      Doorkeeper::AuthorizationsController.layout "application"
+      Doorkeeper::AuthorizedApplicationsController.layout "application"
     end
 
     # TODO: this should be a macro
