@@ -11,7 +11,6 @@
     <%= stylesheet_link_tag 'animate' %>
     <%= stylesheet_link_tag 'style' %>
 
-
     <% if Rails.configuration.x.analytics_id %>
       <!-- Heap Analytics -->
       <script type="text/javascript">
@@ -34,22 +33,13 @@
     <%= content_for :head %>
     <link href='//fonts.googleapis.com/css?family=Source+Sans+Pro:300,400' rel='stylesheet' type='text/css'>
     <%= content_for :stylesheets %>
-    <title><%= if @title then @title elsif @course then @course.display_name else "Autolab" end %></title>
+    <title><%= if @title then @title elsif @course then @course.display_name else "Autolab Home" end %></title>
 
   </head>
 
   <body class="autolab">
-    <!-- <div id="fb-root"></div>
-    <script>(function(d, s, id) {
-      var js, fjs = d.getElementsByTagName(s)[0];
-      if (d.getElementById(id)) return;
-      js = d.createElement(s); js.id = id;
-      js.src = "//connect.facebook.net/en_US/sdk.js#xfbml=1&version=v2.3&appId=259908887444831";
-      fjs.parentNode.insertBefore(js, fjs);
-    }(document, 'script', 'facebook-jssdk'));</script>  -->
     <%= external_javascript_include_tag "jquery", "2.1.4" %>
     <%= content_for :js_widget_patch %>
-    <!--<%= external_javascript_include_tag "bootstrap", "3.0.0" %>-->
     <%= javascript_include_tag 'application' %>
 
     <!-- Flatpickr Datetimepicker JS (lightweight file) -->
