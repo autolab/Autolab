@@ -133,6 +133,10 @@ class Assessment < ApplicationRecord
     Rails.root.join("assessmentConfig", "#{course.name}-#{sanitized_name}.rb")
   end
 
+  def config_backup_file_path
+    config_file_path.sub_ext(".rb.bak")
+  end
+
   def config_module_name
     (sanitized_name + course.sanitized_name).camelize
   end
@@ -218,9 +222,17 @@ class Assessment < ApplicationRecord
     # read from source
     config_source = File.open(source_config_file_path, "r", &:read)
 
+    # validate syntax of config
+    RubyVM::InstructionSequence.compile(config_source)
+
     # uniquely rename module (so that it's unique among all assessment modules loaded in Autolab)
     config = config_source.gsub("module #{source_config_module_name}",
                                 "module #{config_module_name}")
+
+    # backup old config
+    if File.exist?(config_file_path)
+      File.rename(config_file_path, config_backup_file_path)
+    end
 
     # write to config_file_path
     File.open(config_file_path, "w") { |f| f.write config }

@@ -94,7 +94,7 @@
     <a class="tip link" title="Course Statistics" href="<%= url_for :action => :statistics %>">
       Statistics
     </a> /
-    <a class="tip regenerate" title="Regenerate (~10 seconds)" href="<%= url_for :action => :invalidate %>">
+    <a class="tip regenerate" title="Regenerate (~10 seconds)" href="<%= url_for :action => :invalidate %>" data-method="post">
       <i class="icon-refresh"></i>
       <%= time_ago_in_words(DateTime.parse @matrix.last_updated) %> old
     </a>

@@ -25,12 +25,21 @@ class Course < ApplicationRecord
   has_many :submissions, through: :assessments
   has_many :watchlist_instances, dependent: :destroy
   has_many :risk_conditions, dependent: :destroy
+  has_one :watchlist_configuration, dependent: :destroy
 
   accepts_nested_attributes_for :late_penalty, :version_penalty
 
   before_save :cgdub_dependencies_updated, if: :grace_days_or_late_slack_changed?
   before_create :cgdub_dependencies_updated
   after_create :init_course_folder
+
+  def config_file_path
+    Rails.root.join("courseConfig", "#{sanitized_name}.rb")
+  end
+
+  def config_backup_file_path
+    config_file_path.sub_ext(".rb.bak")
+  end
 
   # Create a course with name, semester, and instructor email
   # all other fields are filled in automatically
@@ -82,7 +91,9 @@ class Course < ApplicationRecord
     end
 
     # Load course config
-    unless newCourse.reload_course_config
+    begin
+      newCourse.reload_course_config
+    rescue StandardError, SyntaxError
       # roll back course and CUD creation
       newCUD.destroy
       newCourse.destroy
@@ -149,17 +160,29 @@ class Course < ApplicationRecord
     end
   end
 
+  def source_config_file_path
+    Rails.root.join("courses", name, "course.rb")
+  end
+
   def reload_config_file
-    course = name.gsub(/[^A-Za-z0-9]/, "")
-    src = Rails.root.join("courses", name, "course.rb")
-    dest = Rails.root.join("courseConfig/", "#{course}.rb")
-    s = File.open(src, "r")
+    s = File.open(source_config_file_path, "r")
     lines = s.readlines
     s.close
 
-    d = File.open(dest, "w")
+    # read from source
+    config_source = File.open(source_config_file_path, "r", &:read)
+
+    # validate syntax of config
+    RubyVM::InstructionSequence.compile(config_source)
+
+    # backup old config
+    if File.exist? config_file_path
+      File.rename(config_file_path, config_backup_file_path)
+    end
+
+    d = File.open(config_file_path, "w")
     d.write("require 'CourseBase.rb'\n\n")
-    d.write("module Course#{course.camelize}\n")
+    d.write("module #{config_module_name}\n")
     d.write("\tinclude CourseBase\n\n")
     lines.each do |line|
       if !line.empty?
@@ -171,28 +194,19 @@ class Course < ApplicationRecord
     d.write("end")
     d.close
 
-    load(dest)
-    # rubocop:disable Style/EvalWithLocation, Security/Eval
-    eval("Course#{course.camelize}")
-    # rubocop:enable Style/EvalWithLocation, Security/Eval
+    load(config_file_path)
+    # rubocop:disable Security/Eval
+    eval(config_module_name)
+    # rubocop:enable Security/Eval
   end
 
   # reload_course_config
   # Reload the course config file and extend the loaded methods
   # to AdminsController
   def reload_course_config
-    mod = nil
-    begin
-      mod = reload_config_file
-
-    # rubocop:disable Lint/RescueException
-    rescue Exception
-      return false
-    end
-    # rubocop:enable Lint/RescueException
+    mod = reload_config_file
 
     AdminsController.extend(mod)
-    true
   end
 
   def sanitized_name
@@ -253,6 +267,20 @@ class Course < ApplicationRecord
     asmts.where("due_at < ?", date)
   end
 
+  # Used by manage extensions, create submission, and sudo
+  def get_autocomplete_data
+    users = {}
+    usersEncoded = {}
+    course_user_data.each do |cud|
+      # Escape once here, and another time in _autocomplete.html.erb (see comments)
+      users[CGI.escapeHTML cud.full_name_with_email] = cud.id
+      # base64 to avoid issues where leading / trailing whitespaces are stripped (see #931)
+      # strict_encode64 to avoid line feeds
+      usersEncoded[Base64.strict_encode64(cud.full_name_with_email.strip).strip] = cud.id
+    end
+    [users, usersEncoded]
+  end
+
 private
 
   def saved_change_to_grade_related_fields?
@@ -281,10 +309,6 @@ private
       Class.new.extend eval(config_module_name)
       # rubocop:enable Security/Eval
     end
-  end
-
-  def config_file_path
-    Rails.root.join("courseConfig", "#{sanitized_name}.rb")
   end
 
   def config_module_name

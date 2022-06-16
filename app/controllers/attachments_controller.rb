@@ -44,9 +44,15 @@ class AttachmentsController < ApplicationController
       flash[:error] = "Error loading #{@attachment.name} from #{@attachment.filename}"
       redirect_to([@course, :attachments]) && return
     end
-    # Set to application/octet-stream to force download
-    send_file(filename, disposition: "inline",
-                        type: "application/octet-stream", filename: @attachment.filename) && return
+    if @cud.instructor? || @attachment.released?
+      # Set to application/octet-stream to force download
+      send_file(filename, disposition: "inline",
+                          type: "application/octet-stream",
+                          filename: @attachment.filename) && return
+    end
+
+    flash[:error] = "You are unauthorized to view this attachment"
+    redirect_to([@course, @assessment])
   end
 
   action_auth_level :edit, :instructor

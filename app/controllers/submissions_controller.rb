@@ -35,11 +35,7 @@ class SubmissionsController < ApplicationController
         render([@course, @assessment, :submissions]) && return
       end
     else
-      @cuds = {}
-      # TODO: change order
-      @course.course_user_data.joins(:user).order("email ASC").each do |cud|
-        @cuds[cud.full_name_with_email] = cud.id
-      end
+      @users, @usersEncoded = @course.get_autocomplete_data
     end
   end
 
