@@ -93,8 +93,6 @@ mkdocs gh-deploy
 
 This will build the site using the branch you are currently in (hopefully `master`), place the built HTML files into the `gh-pages` branch, and push to GitHub. GitHub will then automatically deploy the new content in `gh-pages`.
 
-Finally, go to the repository Settings page, and set `docs.autolabproject.com` under the `Custom domain` field.
-
 ## Contributing
 
 We encourage you to contribute to Autolab! Please check out the
