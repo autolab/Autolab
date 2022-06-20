@@ -164,6 +164,7 @@ private
     rescue CSV::MalformedCSVError => e
       flash[:error] = "Failed to parse CSV -- make sure the grades " \
                       "are formatted correctly: <pre>#{e}</pre>"
+      flash[:html_safe] = true
       return false, []
     end
 
