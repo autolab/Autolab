@@ -15,7 +15,7 @@ module AssessmentHandin
   #
   # validateHandin_forHTML() cannot modify the state of the world in any way. And it should
   # call super() to enable any other functionality.  The only reason to not call super()
-  # is if you want to prevent other functionlity. You should be very careful about this.
+  # is if you want to prevent other functionality. You should be very careful about this.
   #
   # Any errors should be added to flash[:error] and return false or nil.
   def handin

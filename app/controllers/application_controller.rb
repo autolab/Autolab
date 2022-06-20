@@ -353,7 +353,7 @@ private
         if !current_user.nil? && (current_user.instructor? || current_user.administrator?)
           @error = exception
 
-          # Generate course id and assesssment id objects
+          # Generate course id and assessment id objects
           @course_name = params[:course_name] ||
                          (params[:controller] == "courses" ? params[:name] : nil)
           if @course_name

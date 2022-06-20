@@ -256,7 +256,7 @@ private
     rescue StandardError
       # If there is no autoresult for this student (typically
       # because their code did not compile or it segfaulted and
-      # the intructor's autograder did not catch it) then
+      # the instructor's autograder did not catch it) then
       # return a nicely formatted nil result.
       begin
         parsed = ActiveSupport::JSON.decode(@scoreboard.colspec)

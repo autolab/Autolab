@@ -318,7 +318,6 @@ table.prettyBorder tr:hover,
 }
 
 ul.panel {
-  list-style-image: none;
   list-style: none;
   margin: 0px;
   padding: 0px;

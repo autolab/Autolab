@@ -3,7 +3,7 @@
 !!! bug "Attention"
     The OneClick installation is currently broken. We are in the midst of migrating to Docker for installation. Please treat this page as legacy reference.
 
-OneClick is the fastest way to install Autolab and Tango on an Ubuntu VM. The installation uses packages Autolab, MySQL, and Tango into seperate Docker containers with specific exposed ports for communication.
+OneClick is the fastest way to install Autolab and Tango on an Ubuntu VM. The installation uses packages Autolab, MySQL, and Tango into separate Docker containers with specific exposed ports for communication.
 
 There are two types of installations. A local development setup and a real-world ready setup that requires SSL certificates, email service configuration, and domain name registration. Use the local setup for experimentation before deploying in a real-world scenario on such apps like Heroku, EC2, or DigitalOcean, among others.
 
@@ -174,7 +174,7 @@ Autolab uses email for various features, include sending out user confirmation e
         ssl_certificate /path/to/ssl_certificate/file
         ssl_certificate_key /path/to/ssl_certificate_key/file
 
-7.  Configure Email in `server/configs/production.rb`. Update the address, port, user_name, password and domain with your email service informations. For Mandrill, go to "SMTP & API Info" to see the informations.
+7.  Configure Email in `server/configs/production.rb`. Update the address, port, user_name, password and domain with your email service information. For Mandrill, go to "SMTP & API Info" to see the information.
 
 ### 3. Installation
 
