@@ -18,7 +18,7 @@ $(document).ready(function () {
   resizeCodeTable();
 });
 
-/* On Window Reisze */
+/* On Window Resize */
 $(window).on('resize', function () {
   resizeCodeTable();
 });
@@ -33,9 +33,9 @@ function retrieveSharedComments() {
 
 function resizeCodeTable() {
   // Resize code table if announcements are shown
-  if ($(".annoucement.gray-box")) {
-    $('.code-table').css("max-height", $(window).height() - $(".annoucement.gray-box").height() - 250);
-    $('#annotationPane').css("max-height", $(window).height() - $(".annoucement.gray-box").height() - 200);
+  if ($(".announcement.gray-box")) {
+    $('.code-table').css("max-height", $(window).height() - $(".announcement.gray-box").height() - 250);
+    $('#annotationPane').css("max-height", $(window).height() - $(".announcement.gray-box").height() - 200);
   }
 }
 
@@ -774,7 +774,7 @@ function newAnnotationBoxForPDF(annObj) {
 
   $(edit).on("mousedown", function (e) {
     return false;
-  }); // Prevents dragging and edting
+  }); // Prevents dragging and editing
 
   // Maximize On Click
   // Shows everything and returns everything to size

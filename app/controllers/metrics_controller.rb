@@ -47,9 +47,9 @@ class MetricsController < ApplicationController
     # (a json containing more info pertaining to violation)
     #
     # risk_conditions: dictionary of risk conditions found in watchlist instances,
-    # key being the risk_conditon_id each entry contains the condition_type
+    # key being the risk_condition_id each entry contains the condition_type
     #
-    # users: dicitonary of users found in watchlist instances, key being the course_user_datum_id
+    # users: dictionary of users found in watchlist instances, key being the course_user_datum_id
     # each entry contains the first name, last name and email
     #
     # params required would be the course name

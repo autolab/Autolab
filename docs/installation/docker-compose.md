@@ -38,7 +38,7 @@ First ensure that you have Docker and Docker Compose installed on your machine. 
         :::bash
         docker-compose up -d
 
-    Note at this point Nginx will still be crash-looping in the Autolab container because TLS/SSL has not been configuired/disabled yet.
+    Note at this point Nginx will still be crash-looping in the Autolab container because TLS/SSL has not been configured/disabled yet.
 
 7. Ensure that the newly created config files have the right permissions, as it may have been modified during the building process:
 
@@ -70,7 +70,7 @@ First ensure that you have Docker and Docker Compose installed on your machine. 
         :::bash 
         docker-compose stop
 
-12. Update the Nginx config. Update all occurences of `REPLACE_WITH_YOUR_DOMAIN` in `nginx/app.conf` and `nginx/no-ssl-app.conf` to your real domain name. The configs are used when TLS is enabled and disabled respectively. Double-check that ALL occurrences are replaced as otherwise you will have trouble accessing your deployment.
+12. Update the Nginx config. Update all occurrences of `REPLACE_WITH_YOUR_DOMAIN` in `nginx/app.conf` and `nginx/no-ssl-app.conf` to your real domain name. The configs are used when TLS is enabled and disabled respectively. Double-check that ALL occurrences are replaced as otherwise you will have trouble accessing your deployment.
 
 13. Continue with TLS setup as outlined in the [next section](#configuring-tlsssl)
 

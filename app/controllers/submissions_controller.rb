@@ -533,7 +533,7 @@ private
   end
 
   # Extract the andrewID from a filename.
-  # Filename format is andrewID_version_asessment.ext
+  # Filename format is andrewID_version_assessment.ext
   def extractAndrewID(filename)
     underscoreInd = filename.index("_")
     return filename[0...underscoreInd] unless underscoreInd.nil?
@@ -542,7 +542,7 @@ private
   end
 
   # Extract the version from a filename
-  # Filename format is andrewID_version_asessment.ext
+  # Filename format is andrewID_version_assessment.ext
   def extractVersion(filename)
     firstUnderscoreInd = filename.index("_")
     return nil if firstUnderscoreInd.nil?

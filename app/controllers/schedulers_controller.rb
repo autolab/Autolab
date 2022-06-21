@@ -27,7 +27,7 @@ class SchedulersController < ApplicationController
       flash[:success] = "Scheduler created!"
       redirect_to(course_schedulers_path(@course)) and return
     else
-      flash[:error] = "Create failed. Pleaes check all fields."
+      flash[:error] = "Create failed. Please check all fields."
       redirect_to(action: "new") and return
     end
   end
