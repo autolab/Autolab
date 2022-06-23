@@ -165,13 +165,13 @@ module ApplicationHelper
     # Update versions manually as-and-when newer versions become available on the CDN
     case library
     when "jquery"
-      version = "3.6.0"
+      version = "2.2.4" # latest is "3.6.0"
       javascript_include_tag "#{cloudflare}/jquery/#{version}/jquery.min.js"
     when "jquery-ui"
       version = "1.12.1"
       javascript_include_tag "#{cloudflare}/jqueryui/#{version}/jquery-ui.min.js"
     when "lodash"
-      version = "4.17.21"
+      version = "3.10.1" # latest is "4.17.21"
       javascript_include_tag "#{cloudflare}/lodash.js/#{version}/lodash.min.js"
     when "jquery.dataTables"
       version = "1.10.21"
