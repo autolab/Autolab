@@ -150,12 +150,9 @@ module ApplicationHelper
       version = "1.12.1"
       stylesheet_link_tag "#{cloudflare}/jqueryui/#{version}/themes/smoothness/jquery-ui.min.css"
     when "golden-layout-base"
-      # The version on cdnjs is subtly different
-      # also not sure why the website displays v1.5.9 when the latest is v2.5.0
       stylesheet_link_tag "//golden-layout.com/files/latest/css/goldenlayout-base.css"
     when "golden-layout-theme"
-      version = "2.5.0"
-      stylesheet_link_tag "#{cloudflare}/golden-layout/#{version}/css/themes/goldenlayout-light-theme.min.css"
+      stylesheet_link_tag "//golden-layout.com/files/latest/css/goldenlayout-light-theme.css"
     when "semantic-ui"
       version = "2.4.1"
       stylesheet_link_tag "#{cloudflare}/semantic-ui/#{version}/semantic.min.css"
@@ -186,7 +183,6 @@ module ApplicationHelper
       version = "2.1.3"
       javascript_include_tag "#{cloudflare}/jquery-scrollTo/#{version}/jquery.scrollTo.min.js"
     when "golden-layout"
-      # cloudflare only stores the typescript file
       javascript_include_tag "//golden-layout.com/files/latest/js/goldenlayout.min.js"
     when "semantic-ui-accordion"
       version = "2.4.1"
