@@ -29,6 +29,11 @@ module AssessmentHelper
     out
   end
 
+  def stats_graph(graph_name, type)
+    out = "<div id='#{graph_name + type}Div'></div>"
+    out
+  end
+
   def aud_special_grade_type?(aud)
     aud.grade_type != AssessmentUserDatum::NORMAL
   end
