@@ -7,7 +7,7 @@
 
     <%= stylesheet_link_tag 'application' %>
     <!-- Flatpickr Datepicker CSS (lightweight file) -->
-    <%= stylesheet_link_tag "https://unpkg.com/flatpickr/dist/flatpickr.min.css" %>
+    <%= external_stylesheet_link_tag "flatpickr" %>
     <%= stylesheet_link_tag 'animate' %>
     <%= stylesheet_link_tag 'style' %>
 
@@ -38,12 +38,12 @@
   </head>
 
   <body class="autolab">
-    <%= external_javascript_include_tag "jquery", "2.1.4" %>
+    <%= external_javascript_include_tag "jquery" %>
     <%= content_for :js_widget_patch %>
     <%= javascript_include_tag 'application' %>
 
     <!-- Flatpickr Datetimepicker JS (lightweight file) -->
-    <%= javascript_include_tag "https://unpkg.com/flatpickr" %>
+    <%= external_javascript_include_tag "flatpickr" %>
 
     <div class="page-wrapper">
       <a class="skip-main" href="#content">Skip to main content</a>
