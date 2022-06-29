@@ -507,34 +507,33 @@ class AssessmentsController < ApplicationController
     @autograded = @assessment.has_autograder?
 
     @lastest_submission_graded = false
-    
+
     # Checks if the lastest submission has been autograded by checking if any scores of it exist
-    if @autograded && @submissions.present?
-      last_id = @submissions[0].id # this is correct because submissions is ordered by version
-      for problem in @problems do
-        if @scores[last_id] and @scores[last_id][problem.id]
-          @lastest_submission_graded = true
-        end
+    return unless @autograded && @submissions.present?
+
+    last_id = @submissions[0].id # this is correct because submissions is ordered by version
+    @problems.each do |problem|
+      if @scores[last_id] && @scores[last_id][problem.id]
+        @lastest_submission_graded = true
       end
     end
-    
   end
 
-  # Get the complete lists of live jobs from tango and send to channel 
+  # Get the complete lists of live jobs from tango and send to channel
   # every 5 seconds
   s = Rufus::Scheduler.singleton
   s.every '5s' do
     running_jobs = []
     waiting_jobs = []
-      
+
     begin
       raw_live_jobs = TangoClient.jobs
     rescue TangoClient::TangoException => e
-      puts "Error while getting job list: #{e.message}"
+      Rails.logger.debug "Error while getting job list: #{e.message}"
     end
 
     # Build formatted lists of the running, waiting
-    unless raw_live_jobs.nil? or raw_live_jobs.empty?
+    unless raw_live_jobs.nil? || raw_live_jobs.empty?
       raw_live_jobs.each do |rjob|
         if rjob["assigned"] == true
           running_jobs << rjob["id"]
@@ -545,7 +544,7 @@ class AssessmentsController < ApplicationController
     end
 
     # Call speak from AssessmentChannel
-    AssessmentChannel.speak(running_jobs, waiting_jobs)      
+    AssessmentChannel.speak(running_jobs, waiting_jobs)
     @repos = GithubIntegration.find_by(user_id: @cud.user.id)&.repositories
   end
 
@@ -586,7 +585,7 @@ class AssessmentsController < ApplicationController
     @scores = {}
     results.each do |result|
       subId = result["submission_id"].to_i
-      
+
       @scores[subId] = {} unless @scores.key?(subId)
 
       @scores[subId][result["problem_id"].to_i] = {
@@ -596,28 +595,28 @@ class AssessmentsController < ApplicationController
         released: Utilities.is_truthy?(result["released"]) ? 1 : 0, # converts 't' to 1, "f" to 0
       }
     end
-    
+
     # Check if we should include regrade as a function
     @autograded = @assessment.has_autograder?
-    
+
     @lastest_submission_graded = false
-    
+
     # Checks if the lastest submission has been autograded by checking if any scores of it exist
     if @autograded && @submissions.present?
-      
+
       last_id = @submissions[0].id # this is correct because submissions is ordered by version
-      
-      for problem in @problems do
-        if @scores[last_id] and @scores[last_id][problem.id]
+
+      @problems.each do |problem|
+        if @scores[last_id] && @scores[last_id][problem.id]
           @lastest_submission_graded = true
         end
       end
 
-      # Set jobID if latest submission has not been graded and there are no JobID in url params 
-      if(!@lastest_submission_graded && @curr_jobID == 0) 
-        @curr_jobID = @submissions[0].tango_job_id 
+      # Set jobID if latest submission has not been graded and there are no JobID in url params
+      if !@lastest_submission_graded && @curr_jobID == 0
+        @curr_jobID = @submissions[0].tango_job_id
       end
-    
+
     end
 
     return unless params[:partial]

@@ -391,7 +391,7 @@ class Submission < ApplicationRecord
 
   def add_jobID(jobID)
     self.tango_job_id = jobID
-    self.save!
+    save!
   end
 
 private
