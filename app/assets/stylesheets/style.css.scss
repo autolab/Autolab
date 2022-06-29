@@ -1156,16 +1156,19 @@ div.center {
   margin-top: 8px;
 }
 
-#flash_alert.alert,
-#flash_error.error,
-#flash_notice {
-  color: #ce4844;
+#flash_error,
+#flash_notice,
+#flash_success {
   padding: 10px;
   margin-bottom: 0px;
   border-radius: 3px;
   border: 1px solid #eee;
-  border-left: 5px solid #ce4844;
   font-weight: 500;
+}
+
+#flash_error {
+  color: #ce4844;
+  border-left: 5px solid #ce4844;
 }
 
 #flash_error table {
@@ -1177,21 +1180,14 @@ div.center {
   margin: 0px;
 }
 
-#flash_alert.success,
-#flash_success.success,
-#flash_notice.success {
-  color: green;
-  padding: 10px;
-  margin-bottom: 0px;
-  border-radius: 3px;
-  border: 1px solid #eee;
-  border-left: 5px solid green;
-  font-weight: 500;
-}
-
 #flash_notice {
   color: #1b809e;
   border-left: 5px solid #1b809e;
+}
+
+#flash_success {
+  color: green;
+  border-left: 5px solid green;
 }
 
 .attachments,
