@@ -179,7 +179,7 @@ protected
 
     when :admin_created
       @cud = cud
-      flash[:info] = "Administrator user added to course"
+      flash[:notice] = "Administrator user added to course"
 
     when :admin_creation_error
       flash[:error] = "Error adding administrator #{current_user.email} to course"

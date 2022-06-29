@@ -37,7 +37,7 @@ module AssessmentSVN
       aud.save!
     end
 
-    flash[:info] = "Repositories were imported successfully"
+    flash[:notice] = "Repositories were imported successfully"
     redirect_to(action: :admin_svn) && return
   end
 
