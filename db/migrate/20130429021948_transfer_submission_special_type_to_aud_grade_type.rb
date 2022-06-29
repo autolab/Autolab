@@ -1,4 +1,4 @@
-class TransferSubmissionSpecialTypeToAudGradeType < ActiveRecord::Migration
+class TransferSubmissionSpecialTypeToAudGradeType < ActiveRecord::Migration[4.2]
   def self.up
     Submission.joins(:assessment_user_datum).where(:special_type => [ Submission::NG, Submission::EXC ]) do |s|
       s.aud.update_attribute(:grade_type, case s.special_type

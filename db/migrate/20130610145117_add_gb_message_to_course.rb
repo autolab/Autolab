@@ -1,4 +1,4 @@
-class AddGbMessageToCourse < ActiveRecord::Migration
+class AddGbMessageToCourse < ActiveRecord::Migration[4.2]
   def self.up
     add_column :courses, :gb_message, :text
   end

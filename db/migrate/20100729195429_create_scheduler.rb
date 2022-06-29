@@ -1,4 +1,4 @@
-class CreateScheduler < ActiveRecord::Migration
+class CreateScheduler < ActiveRecord::Migration[4.2]
   def self.up
     create_table :scheduler do |t|
       t.string :action

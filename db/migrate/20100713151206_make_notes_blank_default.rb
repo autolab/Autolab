@@ -1,4 +1,4 @@
-class MakeNotesBlankDefault < ActiveRecord::Migration
+class MakeNotesBlankDefault < ActiveRecord::Migration[4.2]
   def self.up
     change_column :submissions, :notes, :string, :default=>""
     rename_column :submissions, :notesPoints, :notes_points

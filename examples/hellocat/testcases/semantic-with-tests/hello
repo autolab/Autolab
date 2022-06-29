@@ -1,0 +1,9 @@
+This example shows the a JSON string with test data invoking the semantic feedback layout.
+
+Feedback will have three sections:
+ * Raw Output (showing the contents of this file)
+ * Test Results (showing two 'tests': Build and Run both will have a green check indicating success)
+ * Score (showing a table with point for "Correctness", "TA/Design/Readability", and their sum)
+
+{"_presentation": "semantic", "stages": ["Test Results"], "Test Results": {"Build": {"passed": true}, "Run": {"passed": true}}}
+{"scores": {"Correctness": 20, "TA/Design/Readability": 40}}

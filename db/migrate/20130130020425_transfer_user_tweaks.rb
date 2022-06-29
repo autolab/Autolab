@@ -1,4 +1,4 @@
-class TransferUserTweaks < ActiveRecord::Migration
+class TransferUserTweaks < ActiveRecord::Migration[4.2]
   def self.up
 	  rename_column :users, :tweak, :tweak_old
 	  add_column :users, :tweak_id, :integer, :null => true, :default => nil

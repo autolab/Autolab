@@ -1,4 +1,4 @@
-class TransferAssessmentTweaks < ActiveRecord::Migration
+class TransferAssessmentTweaks < ActiveRecord::Migration[4.2]
   def self.up
     rename_column :assessments, :late_penalty, :late_penalty_old
     rename_column :assessments, :version_penalty, :version_penalty_old

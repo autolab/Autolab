@@ -2,7 +2,7 @@
 # Users are specific to a real-world person.  Each User is enrolled in a course using
 # the CourseUserData join table.
 #
-class User < ActiveRecord::Base
+class User < ApplicationRecord
   # Include default devise modules. Others available are:
   # :confirmable, :lockable, :timeoutable and :omniauthable
   devise :database_authenticatable, :registerable,
@@ -13,7 +13,8 @@ class User < ActiveRecord::Base
 
   has_many :course_user_data, dependent: :destroy
   has_many :courses, through: :course_user_data
-  has_many :authentications
+  has_many :authentications, dependent: :destroy
+  has_one :github_integration
 
   trim_field :school
   validates :first_name, :last_name, :email, presence: true
@@ -48,7 +49,7 @@ class User < ActiveRecord::Base
   end
 
   def display_name
-    (first_name && last_name) ? full_name : email
+    first_name && last_name ? full_name : email
   end
 
   def after_create
@@ -82,19 +83,19 @@ class User < ActiveRecord::Base
   def self.find_for_facebook_oauth(auth, _signed_in_resource = nil)
     authentication = Authentication.find_by(provider: auth.provider,
                                             uid: auth.uid)
-    return authentication.user if authentication && authentication.user
+    return authentication.user if authentication&.user
   end
 
   def self.find_for_google_oauth2_oauth(auth, _signed_in_resource = nil)
     authentication = Authentication.find_by(provider: auth.provider,
                                             uid: auth.uid)
-    return authentication.user if authentication && authentication.user
+    return authentication.user if authentication&.user
   end
 
   def self.find_for_shibboleth_oauth(auth, _signed_in_resource = nil)
     authentication = Authentication.find_by(provider: "CMU-Shibboleth",
                                             uid: auth.uid)
-    return authentication.user if authentication && authentication.user
+    return authentication.user if authentication&.user
   end
 
   def self.new_with_session(params, session)
@@ -112,7 +113,7 @@ class User < ActiveRecord::Base
         user.authentications.new(provider: data["provider"],
                                  uid: data["uid"])
       elsif (data = session["devise.shibboleth_data"])
-        user.email = data["uid"]  # email is uid in our case
+        user.email = data["uid"] # email is uid in our case
         user.authentications.new(provider: "CMU-Shibboleth",
                                  uid: data["uid"])
       end
@@ -135,17 +136,16 @@ class User < ActiveRecord::Base
     user.year = year
     user.authentications << auth
 
-    temp_pass = Devise.friendly_token[0, 20]    # generate a random token
+    temp_pass = Devise.friendly_token[0, 20] # generate a random token
     user.password = temp_pass
     user.password_confirmation = temp_pass
     user.skip_confirmation!
 
-    if user.save
-      # user.send_reset_password_instructions
-      return user
-    else
-      return nil
-    end
+    Rails.logger.debug("user email: #{user.email}")
+    Rails.logger.debug("user pswd: #{user.password}")
+
+    user.save!
+    user
   end
 
   # user (instructor) created by building a course
@@ -155,7 +155,7 @@ class User < ActiveRecord::Base
     user.first_name = "Instructor"
     user.last_name = course_name
 
-    temp_pass = Devise.friendly_token[0, 20]    # generate a random token
+    temp_pass = Devise.friendly_token[0, 20] # generate a random token
     user.password = temp_pass
     user.password_confirmation = temp_pass
     user.skip_confirmation!
@@ -169,24 +169,26 @@ class User < ActiveRecord::Base
   # list all courses if he's an admin
   def self.courses_for_user(user)
     if user.administrator?
-      return Course.order("display_name ASC")
+      Course.order("display_name ASC")
     else
-      return user.courses.order("display_name ASC")
+      user.courses.order("display_name ASC")
     end
   end
 
   # use LDAP to look up a user
-  def self.ldap_lookup(andrewID)
-    return unless andrewID
+  def self.ldap_lookup(andrew_id)
+    return unless andrew_id
+
     require "rubygems"
     require "net/ldap"
 
-    host = "ldap.andrew.cmu.edu"
+    host = "ldap.cmu.edu"
     ldap = Net::LDAP.new(host: host, port: 389)
-    user = ldap.search(base: "ou=Person,dc=cmu,dc=edu",
-                       filter: "cmuAndrewId=" + andrewID)[0]
+
+    user = ldap.search(base: "uid=#{andrew_id},ou=AndrewPerson,dc=andrew,dc=cmu,dc=edu")[0]
 
     return unless user
+
     # Create result hash and parse ldap response
     result = {}
     result[:first_name] = user[:givenname][-1]
@@ -223,6 +225,8 @@ class User < ActiveRecord::Base
 
     result[:year] = case user[:cmustudentclass][0]
                     when "Freshman" then "1"
+                    when "First-Year student" then "1"
+                    when "First-Year Student" then "1"
                     when "Sophomore" then "2"
                     when "Junior" then "3"
                     when "Senior" then "4"

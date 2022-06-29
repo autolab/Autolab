@@ -1,0 +1,36 @@
+<table id="entries">
+  <tr>
+    <th class="i">#</th>
+    <th class="email">Email</th>
+  <% problems.each do |problem| %>
+    <th><%= problem.name %></th>
+  <% end %>
+    <th>Grade Type</th>
+  </tr>
+<% entries.each_with_index do |entry, i| %>
+
+  <% error_in_row = false %>
+
+  <% if bulkGrade_cell_class(entry[:grade_type]).eql?("error") or bulkGrade_cell_class(entry[:email]).eql?("error") %>
+    <% error_in_row = true %>
+  <% end %>
+
+  <% problems.each do |problem| %>
+    <% if bulkGrade_cell_class(entry[:data][problem.name]).eql?("error") %>
+      <% error_in_row = true %>
+    <% end %>
+  <% end %>
+
+  <% if error_in_row %>
+    <tr>
+      <td class="i"><%= i %></td>
+      <td class="email <%= bulkGrade_cell_class entry[:email] %>"><%= bulkGrade_cell entry[:email] %>
+    <% problems.each do |problem| %>
+      <td class="datum <%= bulkGrade_cell_class entry[:data][problem.name] %>"><%= bulkGrade_cell entry[:data][problem.name] %></td>
+    <% end %>
+      <td class="grade_type <%= bulkGrade_cell_class entry[:grade_type] %>"><%= bulkGrade_cell entry[:grade_type] %></td>
+    </tr>
+  <% end %>
+
+<% end %>
+</table>

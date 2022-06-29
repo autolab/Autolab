@@ -4,7 +4,7 @@ require "fileutils"
 # Attachments are Course or Assessment specific, and allow instructors to
 # handout files to students through Autolab.
 #
-class Attachment < ActiveRecord::Base
+class Attachment < ApplicationRecord
   validates :name, presence: true
   validates :filename, presence: true
 

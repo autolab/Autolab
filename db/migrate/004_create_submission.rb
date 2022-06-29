@@ -1,4 +1,4 @@
-class CreateSubmission < ActiveRecord::Migration
+class CreateSubmission < ActiveRecord::Migration[4.2]
   def self.up
     create_table :submissions do |t|
       t.integer :version

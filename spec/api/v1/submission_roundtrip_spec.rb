@@ -13,7 +13,7 @@ RSpec.describe "API Submission Autograding Roundtrip Test", :type => :request do
     # perform submission
     subm = Hash.new
     subm['file'] = @handin_file
-    post "/api/v1/courses/#{@ap_course.name}/assessments/#{@adder_asm.name}/submit", :access_token => token.token, :submission => subm
+    post "/api/v1/courses/#{@ap_course.name}/assessments/#{@adder_asm.name}/submit", params: {:access_token => token.token, :submission => subm}
     msg = JSON.parse(response.body)
     expect(response.response_code).to eq(200)
     expect(msg).to include('version')

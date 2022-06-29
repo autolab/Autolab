@@ -1,0 +1,8 @@
+This example shows the a valid JSON string on the second to last line of the file, but
+the line does not invoke the semantic feedback because it doesn't conform to the formatting
+requirements. 
+
+Feedback will be shown in the as raw (verbatim) text.
+
+{"feedback": "semantic"}
+{"scores": {"Correctness": 20, "TA/Design/Readability": 40}}

@@ -1,4 +1,4 @@
-class AddIgnoredToSubmission < ActiveRecord::Migration
+class AddIgnoredToSubmission < ActiveRecord::Migration[4.2]
   def self.up
     # NG => ignored
     add_column :submissions, :ignored, :boolean, :default => false, :null => false

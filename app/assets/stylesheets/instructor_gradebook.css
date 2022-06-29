@@ -21,7 +21,6 @@
 
 #last_updated a {
   font: inherit;
-  color: #1874cd;
 }
 
 #last_updated a.regenerate {
@@ -53,7 +52,6 @@
   background-color: #f8f8f8;
   box-shadow: 0 0 5px 0px #eee;
   font-size: 1.2em;
-  font-family: Helvetica;
   border: 1px solid #ccc;
   border-radius: 2px;
   margin: 0 auto 0 auto;
@@ -84,7 +82,6 @@
 }
 
 #gradebook .slick-header {
-  box-shadow: 0 1px 3px 0px #ccc;
   z-index: 10;
 }
 
@@ -94,10 +91,10 @@
 }
 
 #gradebook .slick-header-column {
-  padding: 8px;
+  padding: 10px;
   text-transform: uppercase;
   border-left: none;
-  border-right: 1px solid #dbdbdb;
+  border-right: none;
   font-size: 0.8em;
   font-weight: bold;
   color: #909090;
@@ -107,7 +104,7 @@
 }
 
 #gradebook .slick-cell.andrew a {
-  color: #1874cd;
+  color: #0882af;
   text-decoration: none;
   font: inherit;
 }

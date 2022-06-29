@@ -1,0 +1,8 @@
+This example shows the minimal JSON string necessary to invoke the semantic feedback layout.
+
+Feedback will have two sections:
+ * Raw Output (showing the contents of this file)
+ * Score (showing a table with point for "Correctness", "TA/Design/Readability", and their sum)
+
+{"_presentation": "semantic"}
+{"scores": {"Correctness": 20, "TA/Design/Readability": 40}}

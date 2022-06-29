@@ -8,27 +8,17 @@
 <% content_for :javascripts do %>
   <%= javascript_include_tag "confirm_discard_changes" %>
   <script type="text/javascript">
-    function validate(){
-        var checkbox = document.getElementById('assessment_has_custom_form');
-        var moreOptions = document.getElementById('moreOptions');
-        var showMoreOptions = function(){
-          if(checkbox.checked) {
-              moreOptions.style['display'] = 'block';
-          } else {
-              moreOptions.style['display'] = 'none';
-          }
-        }
-        checkbox.onclick = showMoreOptions;
-        showMoreOptions();
-    };
-    validate();
+    // Initializes Materialize JS's tabs
+    $(document).ready(function(){
+      $('.tabs').tabs();
+    });
   </script>
 <% end %>
 
 <div class="row">
   <div class="col s12">
     <ul id="tabs" class="tabs tabs-fixed-width">
-    <% [ "basic", "handin", "penalties", "problems" ].each do |tab_name| %>
+    <% [ "basic", "handin", "penalties", "problems", "advanced" ].each do |tab_name| %>
       <%= (tab_name == params[:active_tab]) ? tag(:li, {:class => "active tab"}) : tag(:li, class: :tab) %>
         <%= link_to tab_name.titleize, "#tab_#{tab_name}" %>
       </li>
@@ -66,6 +56,9 @@
       </div>
       <div id="tab_problems">
         <%= render "edit_problems", f: f %>
+      </div>
+      <div id="tab_advanced">
+        <%= render "edit_advanced", f: f %>
       </div>
     <% end %>
   </div>

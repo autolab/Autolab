@@ -6,8 +6,10 @@
   <b>This will destroy their submission and scores.  This cannot be undone!</b>
   <%= form_tag(course_assessment_submission_path(@course, @assessment, @submission), method: :delete) %>
   <br>
-  <%= check_box_tag "yes", class: "filled-in" %>   
-  <label for="yes">Yes! Destroy this submission!</label>
+  <label>
+    <%= check_box_tag "yes", class: "filled-in" %>   
+    <span>Yes! Destroy this submission!</span>
+  </label>
   <br><br>
   <%= submit_tag("Destroy!", :class => "btn primary") %>
 <% end %>

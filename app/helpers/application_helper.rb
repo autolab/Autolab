@@ -82,15 +82,15 @@ module ApplicationHelper
     end
   end
 
-  def list_archive_files(submission, title)
+  def view_archive_files(submission, title)
     if Archive.archive? submission.handin_file_path
-      link_to title, list_archive_course_assessment_submission_path(@course, @assessment, submission),
-              tabindex: -1, target: "_blank"
+      link_to title, url_for([:view, @course, @assessment, submission]),
+        tabindex: -1, target: "_blank"
     end
   end
 
-  def view_file(submission, list_archive_title, view_source_title, download_title = nil)
-    if (link = list_archive_files(submission, list_archive_title))
+  def view_file(submission, view_archive_title, view_source_title, download_title = nil)
+    if (link = view_archive_files(submission, view_archive_title))
       link
     elsif (link = view_syntax_highlighted_source(submission, view_source_title))
       link
@@ -141,43 +141,56 @@ module ApplicationHelper
     "text-decoration: " + (s.ignored? ? "line-through" : "none") + ";"
   end
 
-  def external_stylesheet_link_tag(library, version)
+  def external_stylesheet_link_tag(library)
     cloudflare = "//cdnjs.cloudflare.com/ajax/libs"
-    google = "//ajax.googleapis.com/ajax/libs"
 
+    # Update versions manually as-and-when newer versions become available on the CDN
     case library
-    when "bootstrap"
-      stylesheet_link_tag "#{cloudflare}/twitter-bootstrap/#{version}/css/bootstrap.css"
     when "jquery-ui"
-      stylesheet_link_tag "#{google}/jqueryui/#{version}/themes/smoothness/jquery-ui.css"
+      version = "1.12.1"
+      stylesheet_link_tag "#{cloudflare}/jqueryui/#{version}/themes/smoothness/jquery-ui.min.css"
+    when "flatpickr"
+      version = "4.6.13"
+      stylesheet_link_tag "#{cloudflare}/flatpickr/#{version}/flatpickr.min.css"
+    when "golden-layout-base"
+      stylesheet_link_tag "//golden-layout.com/files/latest/css/goldenlayout-base.css"
+    when "golden-layout-theme"
+      stylesheet_link_tag "//golden-layout.com/files/latest/css/goldenlayout-light-theme.css"
+    when "semantic-ui"
+      version = "2.4.1"
+      stylesheet_link_tag "#{cloudflare}/semantic-ui/#{version}/semantic.min.css"
     end
   end
 
-  def external_javascript_include_tag(library, version)
+  def external_javascript_include_tag(library)
     cloudflare = "//cdnjs.cloudflare.com/ajax/libs"
-    google = "//ajax.googleapis.com/ajax/libs"
 
+    # Update versions manually as-and-when newer versions become available on the CDN
     case library
     when "jquery"
-      javascript_include_tag "#{google}/jquery/#{version}/jquery.min.js"
+      version = "2.2.4" # latest is "3.6.0"
+      javascript_include_tag "#{cloudflare}/jquery/#{version}/jquery.min.js"
     when "jquery-ui"
-      javascript_include_tag "#{google}/jqueryui/#{version}/jquery-ui.min.js"
-    when "prototype"
-      javascript_include_tag "#{google}/prototype/#{version}/prototype.js"
+      version = "1.12.1"
+      javascript_include_tag "#{cloudflare}/jqueryui/#{version}/jquery-ui.min.js"
     when "lodash"
+      version = "3.10.1" # latest is "4.17.21"
       javascript_include_tag "#{cloudflare}/lodash.js/#{version}/lodash.min.js"
-    when "backbone"
-      javascript_include_tag "#{cloudflare}/backbone.js/#{version}/backbone-min.js"
-    when "backbone-relational"
-      javascript_include_tag "#{cloudflare}/backbone-relational/#{version}/backbone-relational.min.js"
     when "jquery.dataTables"
+      version = "1.10.21"
       javascript_include_tag "#{cloudflare}/datatables/#{version}/js/jquery.dataTables.min.js"
-    when "handlebars"
-      javascript_include_tag "#{cloudflare}/handlebars.js/#{version}/handlebars.min.js"
-    when "bootstrap"
-      javascript_include_tag "#{cloudflare}/twitter-bootstrap/#{version}/js/bootstrap.js"
-    when "lodash"
-      javascript_include_tag "#{cloudflare}/lodash.js/#{version}/lodash.min.js"
+    when "flatpickr"
+      version = "4.6.13"
+      javascript_include_tag "#{cloudflare}/flatpickr/#{version}/flatpickr.min.js"
+    when "scrollTo"
+      version = "2.1.3"
+      javascript_include_tag "#{cloudflare}/jquery-scrollTo/#{version}/jquery.scrollTo.min.js"
+    when "golden-layout"
+      javascript_include_tag "//golden-layout.com/files/latest/js/goldenlayout.min.js"
+    when "semantic-ui-accordion"
+      version = "2.4.1"
+      javascript_include_tag "//#{cloudflare}/semantic-ui/#{version}/components/accordion.min.js"
+
     end
   end
 

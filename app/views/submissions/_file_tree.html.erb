@@ -1,0 +1,48 @@
+<!-- A helper function to recursively render the file directory -->
+<!-- Ideally this would be in a ruby helper file, but it renders HTML elements which is far more concise to do in a .html.erb file -->
+<%
+def renderFileTree(file, isRoot: false)
+  if(file[:mac_bs_file])
+    return ""
+  end
+
+  if(!file[:directory]) %>
+    <%= link_to(
+            url_for([:view, @course, @assessment, @submission, header_position: file[:header_position]]),
+            class: 'file valign-wrapper noselect' + ((file[:header_position] == params[:header_position]) ? ' active' : ""),
+            "data-header_position": file[:header_position],
+            remote: true) do %>
+        <i class="material-icons md_18 closed-icon">insert_drive_file</i>
+        <%= file[:pathname].split("/").last %>
+    <% end %>
+<%
+  else %>
+    <div class="folder">
+      <div class="folder-name valign-wrapper noselect <%= "active" if isRoot %>  " onclick="switchFolderState($(this))">
+        <i class="material-icons md_18 closed-icon">folder</i>
+        <i class="material-icons md_18 open-icon">folder_open</i>
+        <%= file[:pathname].split("/").last %>
+      </div>
+      <div class="folder-contents">
+        <% for subFile in file[:subfiles] %>
+              <% renderFileTree(subFile) %>
+        <% end %>
+      </div>
+    </div>
+<%
+  end
+end
+%>
+
+<!-- Actual file tree column -->
+<div class="file-explorer">
+  <div class="file-list">
+    <% @files.sort { |a, b| a[:header_position] <=> b[:header_position] }.each do |file| %>
+        <%
+          if(!file[:mac_bs_file])
+            renderFileTree(file, isRoot: true)
+          end
+        %>
+    <% end %>
+  </div>
+</div>

@@ -1,8 +1,10 @@
-require File.expand_path('../boot', __FILE__)
+require_relative 'boot'
 
 require 'rails/all'
 
-Bundler.require(:default, Rails.env)
+# Require the gems listed in Gemfile, including any gems
+# you've limited to :test, :development, or :production.
+Bundler.require(*Rails.groups)
 
 module Autolab3
   class Application < Rails::Application
@@ -10,7 +12,7 @@ module Autolab3
       Devise::ConfirmationsController.skip_before_action :set_course
       Devise::ConfirmationsController.skip_before_action :authorize_user_for_course
       Devise::ConfirmationsController.skip_before_action :authenticate_for_action
-      Devise::ConfirmationsController.skip_before_action :update_persistent_announcements     
+      Devise::ConfirmationsController.skip_before_action :update_persistent_announcements
       Devise::SessionsController.skip_before_action :set_course
       Devise::SessionsController.skip_before_action :authorize_user_for_course
       Devise::SessionsController.skip_before_action :authenticate_for_action
@@ -27,13 +29,13 @@ module Autolab3
       Devise::OmniauthCallbacksController.skip_before_action :authorize_user_for_course
       Devise::OmniauthCallbacksController.skip_before_action :authenticate_for_action
       Devise::OmniauthCallbacksController.skip_before_action :update_persistent_announcements
-      Devise::SessionsController.layout "home"
-      Devise::RegistrationsController.layout proc{ |controller| user_signed_in? ? "application"   : "home" }
-      Devise::ConfirmationsController.layout "home"
-      Devise::UnlocksController.layout "home"            
-      Devise::PasswordsController.layout "home"        
-      Doorkeeper::AuthorizationsController.layout "home"
-      Doorkeeper::AuthorizedApplicationsController.layout "home"
+      Devise::SessionsController.layout "application"
+      Devise::RegistrationsController.layout "application"
+      Devise::ConfirmationsController.layout "application"
+      Devise::UnlocksController.layout "application"
+      Devise::PasswordsController.layout "application"
+      Doorkeeper::AuthorizationsController.layout "application"
+      Doorkeeper::AuthorizedApplicationsController.layout "application"
     end
 
     # TODO: this should be a macro
@@ -78,15 +80,19 @@ module Autolab3
     # Don't fall back to assets pipeline if a precompiled asset is missed
     config.assets.compile = true
 
+
     # Generate digests for assets URLs
     config.assets.digest = false
     config.serve_static_files = false
+
+    # Added in Rails 5
+    config.assets.enabled = true
 
     # Version of your assets, change this if you want to expire all your assets
     config.assets.version = '1.0'
 
     # Customize form control error state: controls with erroneous input get wrapped with this
-    config.action_view.field_error_proc = Proc.new { |html_tag, instance| 
+    config.action_view.field_error_proc = Proc.new { |html_tag, instance|
       "<div class=\"field_with_errors has-error\">#{html_tag}</div>".html_safe
     }
 
@@ -103,6 +109,6 @@ module Autolab3
     config.middleware.use Rack::Attack
 
     # site version
-    config.site_version = "2.3.0"
+    config.site_version = "2.8.0"
   end
 end

@@ -73,7 +73,7 @@ RSpec.describe UsersController, type: :controller do
       u = get_admin
       login_as(u)
       it "renders successfully" do
-        get :show, id: u.id
+        get :show, params: {id: u.id}
         expect(response).to be_success
         expect(response.body).to match(/Showing user/m)
       end
@@ -83,7 +83,7 @@ RSpec.describe UsersController, type: :controller do
       u = get_user
       login_as(u)
       it "renders successfully" do
-        get :show, id: u.id
+        get :show, params: {id: u.id}
         expect(response).to be_success
         expect(response.body).to match(/Showing user/m)
       end
@@ -91,7 +91,7 @@ RSpec.describe UsersController, type: :controller do
 
     context "when user is not logged in" do
       it "renders with failure" do
-        get :show, id: 0
+        get :show, params: {id: 0}
         expect(response).not_to be_success
         expect(response.body).not_to match(/Showing user/m)
       end

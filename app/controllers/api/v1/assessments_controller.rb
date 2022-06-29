@@ -5,6 +5,7 @@ class Api::V1::AssessmentsController < Api::V1::BaseApiController
 
   before_action -> {require_privilege :user_courses}, only: [:index, :problems, :writeup, :handout]
   before_action -> {require_privilege :user_submit}, only: [:submit]
+  before_action -> {require_privilege :instructor_all}, only: [:set_group_size]
 
   before_action :set_assessment, except: [:index]
 
@@ -22,7 +23,7 @@ class Api::V1::AssessmentsController < Api::V1::BaseApiController
 
   def show
     allowed = [:name, :display_name, :description, :start_at, :due_at, :end_at, :updated_at, :max_grace_days, :max_submissions,
-      :disable_handins, :category_name, :group_size, :writeup_format, :handout_format, :has_scoreboard, :has_autograder]
+      :disable_handins, :category_name, :group_size, :writeup_format, :handout_format, :has_scoreboard, :has_autograder, :max_unpenalized_submissions]
     if not @cud.student?
       allowed += [:grading_deadline]
     end
@@ -30,6 +31,7 @@ class Api::V1::AssessmentsController < Api::V1::BaseApiController
     result = @assessment.attributes.symbolize_keys
     result.merge!(:has_scoreboard => @assessment.has_scoreboard?)
     result.merge!(:has_autograder => @assessment.has_autograder?)
+    result.merge!(:max_unpenalized_submissions => @assessment.effective_version_threshold)
     if @assessment.writeup_is_file?
       result.merge!(:writeup_format => "file")
     elsif @assessment.writeup_is_url?
@@ -184,6 +186,15 @@ class Api::V1::AssessmentsController < Api::V1::BaseApiController
     end
 
     respond_with_hash({version: submissions[0].version, filename: submissions[0].filename})
+  end
+
+  def set_group_settings
+    require_params([:group_size, :allow_student_assign_group])
+    @assessment.group_size = params[:group_size].to_i
+    @assessment.allow_student_assign_group = (params[:allow_student_assign_group].to_s == "true")
+    @assessment.save!
+    respond_with_hash({ group_size: @assessment.group_size, 
+      allow_student_assign_group: @assessment.allow_student_assign_group })
   end
 
 end

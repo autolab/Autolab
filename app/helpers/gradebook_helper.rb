@@ -15,7 +15,11 @@ module GradebookHelper
         sortable: true, width: 100, cssClass: "last_name",
         headerCssClass: "last_name" },
       { id: "section", name: "Sec", field: "section",
-        sortable: true, width: 50 }
+        sortable: true, width: 50 },
+      { id: "grace_days", name: "Grace Days Used", field: "grace_days",
+        sortable: true, width: 50},
+      { id: "late_days", name: "Penalty Late Days", field: "late_days",
+        sortable: true, width: 50}
     ]
 
     course.assessment_categories.each do |cat|
@@ -64,12 +68,15 @@ module GradebookHelper
       sgb_link = url_for controller: :gradebooks, action: :student, id: cud.id
 
       row = {}
+      grace_days = 0
+      late_days = 0
 
+      # CGI.escapeHTML to avoid XSS
       row["id"] = cud.id
-      row["email"] = cud.user.email
+      row["email"] = CGI.escapeHTML cud.user.email
       row["student_gradebook_link"] = sgb_link
-      row["first_name"] = cud.user.first_name
-      row["last_name"] = cud.user.last_name
+      row["first_name"] = CGI.escapeHTML cud.user.first_name
+      row["last_name"] = CGI.escapeHTML cud.user.last_name
       row["section"] = cud.section
 
       # TODO: formalize score render stack, consolidate with computed score
@@ -81,6 +88,12 @@ module GradebookHelper
         row["#{a.name}_submission_status"] = cell["submission_status"]
         row["#{a.name}_grade_type"] = cell["grade_type"]
         row["#{a.name}_end_at"] = cell["end_at"]
+
+        # Specify default option of 0, because it is possible to end up getting
+        # a cell that contains nil sometimes. Currently all other row entries above
+        # are able to accept nil values.
+        grace_days += cell["grace_days"] || 0
+        late_days += cell["late_days"] || 0
       end
 
       course.assessment_categories.each do |cat|
@@ -91,6 +104,8 @@ module GradebookHelper
       end
 
       row["course_average"] = round matrix.course_average(cud.id)
+      row["grace_days"] = grace_days
+      row["late_days"] = late_days
 
       rows << row
     end
@@ -103,7 +118,7 @@ module GradebookHelper
   end
 
   def csv_header(matrix, course)
-    header = %w(Email first_name last_name Lecture Section School Major Year)
+    header = %w(Email first_name last_name Lecture Section School Major Year grace_days_used penalty_late_days)
     course.assessment_categories.each do |cat|
       next unless matrix.has_category? cat
       course.assessments_with_category(cat).each do |asmt|
@@ -135,16 +150,22 @@ module GradebookHelper
       course.course_user_data.each do |cud|
         next unless matrix.has_cud? cud.id
 
+        grace_days = 0
+        late_days = 0
+
         # general info
-        row = [cud.user.email, cud.user.first_name, cud.user.last_name, cud.lecture, cud.section, cud.school, cud.major, cud.year]
+        row = [cud.user.email, cud.user.first_name, cud.user.last_name, cud.lecture, cud.section, cud.school, cud.major, cud.year, grace_days, late_days]
 
         # assessment status (see AssessmentUserDatum.status), category averages
         course.assessment_categories.each do |cat|
           next unless matrix.has_category? cat
           course.assessments_with_category(cat).each do |asmt|
             next unless matrix.has_assessment? asmt.id
+            cell = matrix.cell(asmt.id, cud.id)
 
-            row << formatted_status(matrix.cell(asmt.id, cud.id)["status"])
+            row << formatted_status(cell["status"])
+            grace_days += cell["grace_days"]
+            late_days += cell["late_days"]
           end
 
           row << round(matrix.category_average(cat, cud.id))
@@ -152,6 +173,10 @@ module GradebookHelper
 
         # course average
         row << round(matrix.course_average(cud.id))
+
+        # update grace_days and late_days data
+        row[8] = grace_days
+        row[9] = late_days
 
         # add to csv
         csv << row

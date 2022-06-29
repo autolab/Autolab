@@ -35,6 +35,13 @@ module Utilities
 
     score
   end
+
+  def self.is_truthy?(val)
+    val == true || val == "True" || val == "true" || val == "t" || val == 1 || val == "1" || val == "T"
+  end
+end
+
+class InvalidScoreException < StandardError
 end
 
 class ScoreComputationException < StandardError
