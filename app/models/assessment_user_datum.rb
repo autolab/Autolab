@@ -21,7 +21,8 @@ class AssessmentUserDatum < ApplicationRecord
   # * similarly, when the grade type is updated, the number of grace days used could change.
   #   submissions associated with AUDs with Zeroed and Excused grade types aren't counted as late
   #   even if they were submitted past the due date whereas Normal grade type AUD submissions are.
-  after_save :invalidate_cgdubs_for_assessments_after, if: :saved_change_to_latest_submission_id? or :saved_change_to_grade_type?
+  after_save :invalidate_cgdubs_for_assessments_after,
+             if: :saved_change_to_latest_submission_id_or_grade_type?
 
   NORMAL = 0
   ZEROED = 1
@@ -31,7 +32,7 @@ class AssessmentUserDatum < ApplicationRecord
     normal: NORMAL,
     zeroed: ZEROED,
     excused: EXCUSED
-  }
+  }.freeze
 
   # Different statuses for group membership
   UNCONFIRMED = 0x0
@@ -58,7 +59,6 @@ class AssessmentUserDatum < ApplicationRecord
   #   6. A: aud.save    (but then submission 1 is saved as aud.latest_submission)
   # by making sure (2 and 6) and (4 and 5) each occur atomically.
   def update_latest_submission
-
     AssessmentUserDatum.transaction do
       # acquire lock on AUD
       reload(lock: true)
@@ -66,9 +66,10 @@ class AssessmentUserDatum < ApplicationRecord
       # update
       self.latest_submission = latest_submission!
       save!
-    end # release lock on AUD
-    # see: http://dev.mysql.com/doc/refman/5.0/en/innodb-locking-reads.html
 
+      # release lock on AUD
+    end
+    # see: http://dev.mysql.com/doc/refman/5.0/en/innodb-locking-reads.html
   end
 
   # Calculate latest unignored submission (i.e. with max version and unignored)
@@ -78,8 +79,6 @@ class AssessmentUserDatum < ApplicationRecord
                                        ignored: false).maximum(:version))
       Submission.find_by(version: max_version, assessment_id: assessment_id,
                          course_user_datum_id: course_user_datum_id)
-    else
-      nil
     end
   end
 
@@ -109,6 +108,12 @@ class AssessmentUserDatum < ApplicationRecord
     @final_score[as_seen_by] ||= final_score! as_seen_by
   end
 
+  def final_score_ignore_grading_deadline(as_seen_by)
+    @final_score_ignore_grading_deadline ||= {}
+    @final_score_ignore_grading_deadline[as_seen_by] ||=
+      final_score_ignore_grading_deadline! as_seen_by
+  end
+
   def status(as_seen_by)
     @status ||= {}
     @status[as_seen_by] ||= status! as_seen_by
@@ -123,7 +128,7 @@ class AssessmentUserDatum < ApplicationRecord
     return 0 if course_grace_days == 0 || assessment_max_grace_days == 0
 
     grace_days_left = course_grace_days - cumulative_grace_days_used_before
-    fail "fatal: negative grace days left" if grace_days_left < 0
+    raise "fatal: negative grace days left" if grace_days_left < 0
 
     # if the assessment has no max_grace_days specified, then upto grace_days_left
     # number of grace days can be used on this assessment
@@ -155,7 +160,9 @@ class AssessmentUserDatum < ApplicationRecord
       end
 
       Rails.cache.delete course_user_datum.ggl_cache_key
-    end # release lock
+
+      # release lock
+    end
   end
 
   # Due date for user
@@ -199,11 +206,11 @@ class AssessmentUserDatum < ApplicationRecord
     end
   end
 
-  def past_due_at?(as_of = Time.now)
+  def past_due_at?(as_of = Time.current)
     due_at && due_at < as_of
   end
 
-  def past_end_at?(as_of = Time.now)
+  def past_end_at?(as_of = Time.current)
     end_at && end_at < as_of
   end
 
@@ -212,7 +219,7 @@ class AssessmentUserDatum < ApplicationRecord
   end
 
   def self.get(assessment_id, cud_id)
-    find_by_assessment_id_and_course_user_datum_id assessment_id, cud_id
+    find_by assessment_id: assessment_id, course_user_datum_id: cud_id
   end
 
   # Quickly create an AUD (without any callbacks, validations, AR object creation, etc.)
@@ -226,7 +233,7 @@ class AssessmentUserDatum < ApplicationRecord
     insert_sql = "INSERT INTO #{table_name} (#{columns_sql}) VALUES (#{values_sql})"
     connection.execute insert_sql
   end
-  
+
   def global_cumulative_grace_days_used
     cumulative_grace_days_used
   end
@@ -246,6 +253,10 @@ protected
 
 private
 
+  def saved_change_to_latest_submission_id_or_grade_type?
+    (saved_change_to_latest_submission_id? or saved_change_to_grade_type?)
+  end
+
   # Applies given extension to given date limit (due date or end_at).
   # Returns nil, if extension is infinite and thus the date limit is void.
   def apply_extension(original_date, ext)
@@ -260,7 +271,7 @@ private
     return @cgdub if @cgdub
 
     cache_key = cgdub_cache_key
-    
+
     unless (cgdub = Rails.cache.read cache_key)
       CourseUserDatum.transaction do
         # acquire lock on user
@@ -271,7 +282,9 @@ private
 
         # cache
         Rails.cache.write(cache_key, cgdub)
-      end # release lock
+
+        # release lock
+      end
     end
 
     @cgdub = cgdub
@@ -280,23 +293,35 @@ private
   # TODO: CA's shouldn't see non-normal
   # TODO: make above policy
   def final_score!(as_seen_by)
-    final_score = case grade_type
-                  when NORMAL
-                    if Time.now <= assessment.grading_deadline
-                      nil
-                    elsif latest_submission
-                      latest_submission.final_score as_seen_by
-                    else
-                      0.0
-                    end
-                  when ZEROED
-                    0.0
-                  when EXCUSED
-                    nil
-                  end
+    case grade_type
+    when NORMAL
+      if Time.current <= assessment.grading_deadline
+        nil
+      elsif latest_submission
+        latest_submission.final_score as_seen_by
+      else
+        0.0
+      end
+    when ZEROED
+      0.0
+    when EXCUSED
+      nil
+    end
+  end
 
-    # TODO: final_score = apply_tweak(final_score) if final_score
-    final_score
+  def final_score_ignore_grading_deadline!(as_seen_by)
+    case grade_type
+    when NORMAL
+      if latest_submission
+        latest_submission.final_score as_seen_by
+      else
+        0.0
+      end
+    when ZEROED
+      0.0
+    when EXCUSED
+      nil
+    end
   end
 
   # the consolidated status of a student on an assessment
@@ -335,11 +360,9 @@ private
   end
 
   def aud_for_assessment_before
-    if (assessment_before = assessment.assessment_before)
-      assessment_before.aud_for course_user_datum_id
-    else
-      nil
-    end
+    return unless (assessment_before = assessment.assessment_before)
+
+    assessment_before.aud_for course_user_datum_id
   end
 
   def auds_for_assessments_after

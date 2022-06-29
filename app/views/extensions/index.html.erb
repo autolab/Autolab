@@ -1,32 +1,9 @@
 <% @title = "Manage Extensions" %>
 
 <% content_for :javascripts do %>
-
+  <%= render partial: "components/autocomplete", locals: { hiddenCUDField: "#extension_course_user_datum_id" } %>
   <script type="application/javascript">
     jQuery(function() {
-      /* match user name/email with cud_id */
-      userData = {
-        <% @usersEncoded.each do |k,v| %>
-          "<%= k %>": "<%= v %>",
-        <% end %>
-      };
-
-      /* user autocomplete */
-      $studentAutocompleteField = $('#student_autocomplete');
-      $hiddenCUDField = $('#extension_course_user_datum_id');
-      $studentAutocompleteField.autocomplete({
-        data: {
-          <% @users.each do |k,v| %>
-            "<%= k %>": null,
-          <% end %>
-        }
-      });
-
-      /* track changes in student autocomplete field */
-      $studentAutocompleteField.on('change', function() {
-        $hiddenCUDField.val(userData[window.btoa($studentAutocompleteField.val())]);
-      })
-
       /* set up dates */
       $dueDate = moment("<%= @assessment.due_at.to_s %>", "YYYY-MM-DD hh:mm:ss ZZ").startOf('day');
 
@@ -102,9 +79,8 @@
     <p><b>Create New Extension</b></p>
       <%= form_for @new_extension, :as=>"extension", :url=>{:action=>"create"}, builder: FormBuilderWithDateTimeInput do |f| %>
         <div class="input-field">
-          <label class="control-label active" for="student_autocomplete">Student Name/Email</label>
-          <input type="text" id="student_autocomplete" placeholder="Start typing student name or email" class="autocomplete" autocomplete="off">
-          <p class="help-block"></p>
+          <input type="text" size="3" id="student_autocomplete" class="autocomplete" autocomplete="off"/>
+          <label for="student_autocomplete">Start typing student name or email</label>
         </div>
         <p>Select a new due date (Currently due at: <span class="moment-date-time"><%= @assessment.due_at.to_s %></span>)</p>
         <%= f.date_select :due_at, greater_than: @assessment.due_at, id: "extension_due_at" %><br>

@@ -8,11 +8,12 @@ assignees: ''
 ---
 
 **Your environment**
-If you think this is relevant, let us know details such as 
+Let us know details such as 
+- Which institution's Autolab you are using (e.g. Carnegie Mellon's Autolab at https://autolab.andrew.cmu.edu/ etc)
 - Operating system
-- Commit hash
-- Ruby version
-- Rails version
+- Commit hash (if relevant)
+- Ruby version (if relevant)
+- Rails version (if relevant)
 
 **Steps To Reproduce**
 Steps to reproduce the behavior:

@@ -3,28 +3,30 @@ Rails.application.routes.draw do
 
   use_doorkeeper
 
-  namespace :oauth, { defaults: {format: :json} } do
-    get 'device_flow_init', to: 'device_flow#init'
-    get 'device_flow_authorize', to: 'device_flow#authorize'
+  namespace :oauth, { defaults: { format: :json } } do
+    get "device_flow_init", to: "device_flow#init"
+    get "device_flow_authorize", to: "device_flow#authorize"
   end
 
-  namespace :api, { defaults: {format: :json} } do
+  namespace :api, { defaults: { format: :json } } do
     namespace :v1 do
-      get 'user', to: 'user#show'
+      get "user", to: "user#show"
 
       resources :courses, param: :name, only: [:index, :create] do
-
         resources :course_user_data, only: [:index, :create, :show, :update, :destroy],
-          param: :email, :constraints => { :email => /[^\/]+/ }
-
+                                     param: :email, :constraints => { :email => /[^\/]+/ }
+        
         resources :assessments, param: :name, only: [:index, :show] do
-          get 'problems'
-          get 'writeup'
-          get 'handout'
-          post 'submit'
+          get "problems"
+          get "writeup"
+          get "handout"
+          post "submit"
+          post "set_group_settings"
           
+          resources :groups, only: [:index, :create, :destroy]
+
           resources :submissions, param: :version, only: [:index] do
-            get 'feedback'
+            get "feedback"
           end
         end
       end
@@ -36,7 +38,7 @@ Rails.application.routes.draw do
   root "courses#index"
 
   devise_for :users, controllers: { omniauth_callbacks: "users/omniauth_callbacks",
-                                    registrations:      "registrations" },
+                                    registrations: "registrations" },
                      path_prefix: "auth"
 
   get "contact", to: "home#contact"
@@ -57,16 +59,32 @@ Rails.application.routes.draw do
 
   resource :admin do
     match "email_instructors", via: [:get, :post]
+    match "github_integration", via: [:get]
   end
 
   resources :users do
     get "admin"
+    get "github_oauth", on: :member
+    post "github_revoke", on: :member
+    get "github_oauth_callback", on: :collection
   end
 
   resources :courses, param: :name do
     resources :schedulers do
-        get "visualRun", action: :visual_run
-        get "run"
+      post "visualRun", action: :visual_run
+      post "run"
+    end
+
+    resource :metrics, only: :index do
+      get "index"
+      get "get_current_metrics"
+      get "get_watchlist_instances"
+      get "get_num_pending_instances"
+      post "refresh_watchlist_instances"
+      get "get_watchlist_category_blocklist"
+      post "update_current_metrics"
+      post "update_watchlist_instances"
+      post "update_watchlist_configuration"
     end
 
     resources :jobs, only: :index do
@@ -99,7 +117,12 @@ Rails.application.routes.draw do
         get "help", on: :member
       end
       resources :submissions do
-        resources :annotations, only: [:create, :update, :destroy]
+        resources :annotations, only: [:create, :update, :destroy] do
+          collection do
+            get "shared_comments"
+          end
+        end
+
         resources :scores, only: [:create, :show, :update]
 
         member do
@@ -118,12 +141,12 @@ Rails.application.routes.draw do
         match "bulkGrade", via: [:get, :post]
         post "bulkGrade_complete"
         get "bulkExport"
-        get "releaseAllGrades"
-        get "releaseSectionGrades"
+        post "releaseAllGrades"
+        post "releaseSectionGrades"
         get "viewFeedback"
-        get "reload"
+        post "reload"
         get "statistics"
-        get "withdrawAllGrades"
+        post "withdrawAllGrades"
         get "export"
         patch "edit/*active_tab", action: :update
         get "edit/*active_tab", action: :edit
@@ -157,7 +180,7 @@ Rails.application.routes.draw do
       end
 
       collection do
-        get "installAssessment"
+        get "install_assessment"
         post "importAssessment"
         post "importAsmtFromTar"
       end
@@ -165,9 +188,9 @@ Rails.application.routes.draw do
 
     resources :course_user_data do
       resource :gradebook, only: :show do
-        get "bulkRelease"
+        post "bulk_release"
         get "csv"
-        get "invalidate"
+        post "invalidate"
         get "statistics"
         get "student"
         get "view"
@@ -176,23 +199,28 @@ Rails.application.routes.draw do
       member do
         get "destroyConfirm"
         match "sudo", via: [:get, :post]
-        get "unsudo"
+        post "unsudo"
       end
     end
 
     member do
-      get "bulkRelease"
-      get "downloadRoster"
+      post "bulk_release"
+      get "download_roster"
       match "email", via: [:get, :post]
       get "manage"
       get "moss"
-      get "reload"
+      post "reload"
       match "report_bug", via: [:get, :post]
-      post "runMoss"
+      post "run_moss"
       get "sudo"
-      match "uploadRoster", via: [:get, :post]
-      get "userLookup"
+      match "upload_roster", via: [:get, :post]
+      get "user_lookup"
       get "users"
     end
+  end
+
+  resource :github_integration, only: [] do
+    get "get_repositories"
+    get "get_branches"
   end
 end

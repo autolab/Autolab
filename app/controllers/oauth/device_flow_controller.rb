@@ -69,7 +69,7 @@ private
 
     @app = Doorkeeper::Application.find_by(uid: params[:client_id])
     if @app.nil?
-      raise DeviceFlowError.new("Unrecongized client_id", :bad_request)
+      raise DeviceFlowError.new("Unrecognized client_id", :bad_request)
     end
   end
 

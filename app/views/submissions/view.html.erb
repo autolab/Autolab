@@ -1,19 +1,23 @@
 <% @title = (@cud.instructor || @cud.course_assistant) ? "Annotate Submission" : "View Submission" %>
 
 <% content_for :stylesheets do %>
+  <%= external_stylesheet_link_tag "golden-layout-base" %>
+  <%= external_stylesheet_link_tag "golden-layout-theme" %>
   <%= stylesheet_link_tag "annotations" %>
   <% # highlightjs - change the style sheet for different styles %>
   <%= stylesheet_link_tag "highlightjs-styles/vs.css" %>
-  <%= external_stylesheet_link_tag "jquery-ui", "1.11.4" %>
+  <%= external_stylesheet_link_tag "jquery-ui" %>
 <% end %>
 
 <% content_for :javascripts do %>
   <%= javascript_include_tag "pdf.js" %>
-  <%= external_javascript_include_tag "lodash", "3.3.1" %>
+  <%= external_javascript_include_tag "lodash" %>
   <%= javascript_include_tag "highlight.pack.js" %>
   <%= javascript_include_tag "jquery.jeditable" %>
-  <%= external_javascript_include_tag "jquery-ui", "1.11.4" %>
-  <script src="//cdnjs.cloudflare.com/ajax/libs/jquery-scrollTo/2.1.2/jquery.scrollTo.min.js"></script>
+  <%= external_javascript_include_tag "jquery-ui" %>
+  <%= external_javascript_include_tag "scrollTo" %>
+  <%= external_javascript_include_tag "golden-layout" %>
+  <div style="display: none"><%= render(:partial => 'grades') %></div>
   <script type="application/javascript">
     <% if @cud.instructor || @cud.course_assistant then %>
       var isInstructor = true;
@@ -49,39 +53,7 @@
     hljs.initHighlightingOnLoad();
     PDFJS.workerSrc = "<%= asset_url 'pdf.worker.js' %>";
   </script>
-  <%= javascript_include_tag "annotations.js" %>
-  <%= javascript_include_tag "submission_view.js" %>
-  <script type="text/javascript">
-    setActiveFilePos(currentHeaderPos)
-    initializeAnnotationsForCode();
-    attachEvents();
-    // Set up file switching to use the local cache
-    $(".file").on("click", function(e) {
-    wasCachedLocally = changeFile($(this).data("header_position"));
-    if (wasCachedLocally) {
-      e.preventDefault();
-      return false;
-    }
-    return true;
-  });
-  </script>
-
-  <script>
-    var newFile = {};
-    newFile.url = '<%= url_for(params.permit(:header_position, :action, :controller).to_h) %>'
-
-    <% if @is_pdf %>
-    newFile.pdf = true;
-    newFile.pdfUrl = "<%= url_for [:download, @course, @assessment, @submission, header_position: params[:header_position]] %>";
-    newFile.annotatedPdfUrl = "<%= url_for [:download, @course, @assessment, @submission, header_position: params[:header_position], annotated: true] %>";
-    newFile.previewMode = false;
-    <% if @preview_mode %>
-        newFile.previewMode = true;
-    <% end %>
-    <% else %>
-    newFile.pdf = false;
-    <% end %>
-  </script>
+  <%= render partial: "golden-layout" %>
 <% end %>
 <!-- force end the container -->
 </div></div>
@@ -94,13 +66,22 @@
         <%= link_to(url_for([:view, @course, @assessment, @prevSubmission]), class: "valign-wrapper", id: "prev_submission_link") do %>
           <i class="material-icons" style="margin-right: 3px">arrow_back</i> <%= @prevSubmission.course_user_datum.user.email %>
         <% end %>
+         <link rel="prerender" href= <%= url_for([:view, @course, @assessment, @prevSubmission])%> />
       <% end %>
     </div>
-    <div class="col s8 center-align valign-wrapper">
-      <div style="display: inline-block">
-      <%= @submission.course_user_datum.email %> (v<%= @submission.version %>) [<%= @curSubmissionIndex+1 %>/<%= @latestSubmissions.length %>]</div>
-
-      <a href="<%= download_file_url(@submission) %>" class="tooltipped" data-placement="top" data-tooltip="Download Submission" title="Download Submission" ><i class="material-icons" aria-hidden="true" style="margin-left:6px; font-size: 20px;">file_download</i></a>
+    <div class="col s8 center-align valign-wrapper submission-controls">
+        <span>[<%= @curSubmissionIndex+1 %>/<%= @latestSubmissions.length %>] <%= @submission.course_user_datum.email %>,</span>
+        <strong>version:</strong>
+        <select class="browser-default" onchange="location = this.value">
+          <% for submission in @userVersions do %>
+            <option <% if @submission.version == submission.version %> selected <% end %> value=<%= url_for([:view, @course, @assessment, submission]) %>>
+              <%= submission.version %>
+            </option>
+          <% end %>
+        </select>
+        <strong>/<%= @userVersions.length %>
+      <a href="<%= download_file_url(@submission) %>" class="btn small" title="Download" >Download</a>
+      <button class="btn small" onclick="resetLayout()">Reset Layout</button>
     </div>
 
     <div class="col s2 center-align">
@@ -108,48 +89,13 @@
         <%= link_to(url_for([:view, @course, @assessment, @nextSubmission]), class: "valign-wrapper", id: "next_submission_link") do %>
           <%= @nextSubmission.course_user_datum.user.email %> <i class="material-icons" style="margin-left: 3px">arrow_forward</i>
         <% end %>
+        <link rel="prerender" href= <%= url_for([:view, @course, @assessment, @nextSubmission])%> />
       <% end %>
     </div>
   </div>
 <% end %>
 
-<div class="row" style="height: 100%">
-  <%# If there are multiple files, we have a header position and need a file tree %>
-  <% if (params[:header_position] || (!@ctag_obj.nil? && !@ctag_obj.empty?)) %>
-    <div class="col s2" style="height: 100%">
-      <% if (params[:header_position]) %>
-        <%= render "file_tree" %>
-      <% end %>
-      <div id="symbol-tree-container">
-      <% unless @ctag_obj.nil? || @ctag_obj.empty? %>
-        <%= render "code_symbol_tree", ctag_obj: @ctag_obj %>
-      <% end %>
-      </div>
-    </div>
-    <div class="col s8">
-        <label>
-          <input type="checkbox" id="highlightLongLines" checked>
-          <span>Highlight lines longer than 80 characters</span>
-        </label>
-        <br>
-      <%= render "code_viewer" %>
-    </div>
-    <div class="col s2" style="height: 100%;">
-      <%= render "annotation_pane" %>
-    </div>
-  <% else %>
-  <%# Else center the code and annotations %>
-    <div class="col s10">
-      <label>
-        <input type="checkbox" id="highlightLongLines" checked>
-        <span>Highlight lines longer than 80 characters</span>
-      </label>
-      <%= render "code_viewer" %>
-    </div>
-    <div class="col s2" style="height: 100%;">
-      <%= render "annotation_pane" %>
-    </div>
-  <% end %>
+<div class="row" id="speedgrader">
 </div>
 
 <%= render "annotation" %>

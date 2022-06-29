@@ -99,8 +99,9 @@ module AssessmentAutograde
       end
     end
 
-    if failed_list.length > 0
-      flash[:error] = "Warning: Could not regrade #{failed_list.length} submission(s):<br>"
+    failure_jobs = failed_list.length
+    if failure_jobs > 0
+      flash[:error] = "Warning: Could not regrade #{pluralize(failure_jobs, "submission")}:<br>"
       failed_list.each do |failure|
         if failure[:error].error_code == :nil_submission
           flash[:error] += "Unrecognized submission ID<br>"
@@ -110,11 +111,14 @@ module AssessmentAutograde
       end
     end
 
-    success_jobs = submission_ids.size - failed_list.length
+    success_jobs = submission_ids.size - failure_jobs
     if success_jobs > 0
-      link = "<a href=\"#{url_for(controller: 'jobs')}\">#{success_jobs} submission</a>"
-      flash[:success] = ("Regrading #{link}").html_safe
+      link = "<a href=\"#{url_for(controller: 'jobs')}\">#{pluralize(success_jobs, "submission")}</a>"
+      flash[:success] = ("Regrading #{link}")
     end
+
+    # For both :success and :error
+    flash[:html_safe] = true
 
     redirect_to([@course, @assessment, :submissions]) && return
   end
@@ -142,8 +146,9 @@ module AssessmentAutograde
       end
     end
 
-    if failed_list.length > 0
-      flash[:error] = "Warning: Could not regrade #{failed_list.length} submission(s):<br>"
+    failure_jobs = failed_list.length
+    if failure_jobs > 0
+      flash[:error] = "Warning: Could not regrade #{pluralize(failure_jobs, "submission")}:<br>"
       failed_list.each do |failure|
         if failure[:error].error_code == :nil_submission
           flash[:error] += "Unrecognized submission ID<br>"
@@ -153,11 +158,14 @@ module AssessmentAutograde
       end
     end
 
-    success_jobs = last_submissions.size - failed_list.length
+    success_jobs = last_submissions.size - failure_jobs
     if success_jobs > 0
-      link = "<a href=\"#{url_for(controller: 'jobs')}\">#{success_jobs} students</a>"
-      flash[:success] = ("Regrading the most recent submissions from #{link}").html_safe
+      link = "<a href=\"#{url_for(controller: 'jobs')}\">#{pluralize(success_jobs, "student")}</a>"
+      flash[:success] = ("Regrading the most recent submissions from #{link}")
     end
+
+    # For both :success and :error
+    flash[:html_safe] = true
 
     redirect_to([@course, @assessment, :submissions]) && return
   end
@@ -187,6 +195,7 @@ module AssessmentAutograde
         if @cud.instructor?
           link = (view_context.link_to "Autograder Settings", [:edit, course, assessment, :autograder])
           flash[:error] += " Visit #{link} to set the autograding properties."
+          flash[:html_safe] = true
         else
           flash[:error] += " Please contact your instructor."
         end
@@ -200,6 +209,7 @@ module AssessmentAutograde
         if @cud.instructor?
           link = (view_context.link_to "Autograder Settings", [:edit, course, assessment, :autograder])
           flash[:error] += " (Verify the autograding properties at #{link}.)\nErrorMsg: " + e.additional_data
+          flash[:html_safe] = true
         end
       when :missing_autograder_file
         flash[:error] = "One or more files are missing in the server. Please contact the instructor. The missing files are: " + e.additional_data
@@ -211,8 +221,9 @@ module AssessmentAutograde
     end
 
     link = "<a href=\"#{url_for(controller: 'jobs', action: 'getjob', id: job)}\">Job ID = #{job}</a>"
-    flash[:success] = ("Submitted file #{submissions[0].filename} (#{link}) for autograding.")
-
+    flash[:success] = ("Submitted file #{submissions[0].filename} (#{link}) for autograding." \
+      " Refresh the page to see the results.")
+    flash[:html_safe] = true
     job
   end
 

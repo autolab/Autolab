@@ -1,8 +1,8 @@
 class Penalty < ScoreAdjustment
   # penalties should always be positive
-  validates_numericality_of :value, greater_than_or_equal_to: 0
+  validates :value, numericality: { greater_than_or_equal_to: 0 }
 
-  SERIALIZABLE = Set.new %w(kind value)
+  SERIALIZABLE = Set.new %w[kind value]
   def serialize
     Utilities.serializable attributes, SERIALIZABLE
   end

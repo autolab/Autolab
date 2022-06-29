@@ -1,36 +1,60 @@
+# tmp files
 log/
 tmp/cache/
+tmp/
+!tmp/restart.txt
+
+# autolab configs
 config/autogradeConfig.rb
 assessmentConfig/
 courseConfig/
 config/environments/production.rb
-config/initializers/devise.rb
 coverage/
 /courses/
 /courses
 /gradebooks/
 config/database.yml
 config/school.yml
+
+# autolab user documents
+app/views/home/_topannounce.html.erb
+attachments/
+doc/
+out.txt
+
+# compiled assets
 public/images/CourseSubmissions.png
 public/images/HourlySubmissions.png
 public/assets/
 public/stylesheets/
 vendor/
-tmp/
-!tmp/restart.txt
-*.swp
+
+# sqlite databases
+db/autolab_development
+db/autolab_test
 db/*.sqlite3
+
+# Mkdocs generated site
+site/
+
+# misc
+*.swp
 tags
 .DS_Store
 .idea/
 .yardoc
-/docker/nginx.conf
 app/views/home/_topannounce.html.erb
 attachments/
 doc/
 out.txt
 .vscode/
 .byebug_history
+
+# Credentials
 .env
 db/autolab_development
 db/autolab_test
+
+# Rails credentials
+config/master.key
+config/credentials.yml.enc

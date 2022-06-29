@@ -8,10 +8,8 @@ class Tweak < ScoreAdjustment
   #
   # @return The applied adjustment (float)
   def self.apply_tweak(tweak, score)
-    if score.nil?
-      fail ArgumentError.new("ScoreAdjustment.apply_tweak: score was nil")
-    else
-      score + applied_tweak(tweak, score)
-    end
+    raise ArgumentError, "ScoreAdjustment.apply_tweak: score was nil" if score.nil?
+
+    score + applied_tweak(tweak, score)
   end
 end

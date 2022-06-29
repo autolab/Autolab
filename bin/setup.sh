@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# This is the legacy One-Click install script
+# It probably doesn't work anymore, but is left here as reference
+
 #####################################
 ## Initialization & Helper Functions
 #####################################

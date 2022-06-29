@@ -25,8 +25,7 @@ module Archive
         header_position: i,
         mac_bs_file: pathname.include?("__MACOSX") ||
           pathname.include?(".DS_Store") ||
-          pathname.include?(".metadata") ||
-          File.basename(pathname).start_with?('.'),
+          pathname.include?(".metadata"),
         directory: looks_like_directory?(pathname)
       }
     end
@@ -85,13 +84,25 @@ module Archive
       # exist. If it does not, create and add them
       if(!file[:directory])
         paths = file[:pathname].split("/")
+        mac_bs_file = false
+        for path in paths do
+          # note that __MACOSX is actually a folder
+          # need to check whether the path includes that
+          # for the completeness of cleaned_files
+          # mac_bs_file folder paths will still be added
+          if path.include?("__MACOSX") || path.include?(".DS_Store") ||
+             path.include?(".metadata")
+             mac_bs_file = true
+             break
+          end
+        end
         for i in 1..(paths.size - 1) do
           new_path = paths[0,paths.size-i].join("/") + "/"
           if(!file_path_set.include?(new_path))
             cleaned_files.append({
               :pathname=>new_path,
               :header_position=>starting_header,
-              :mac_bs_file=>false,
+              :mac_bs_file=>mac_bs_file,
               :directory=>true
             })
             starting_header = starting_header - 1
@@ -204,14 +215,18 @@ module Archive
   def self.create_zip(paths)
     return nil if paths.nil? || paths.empty?
 
-    Tempfile.open(["submissions", ".zip"]) do |t|
-      Zip::File.open(t.path, Zip::File::CREATE) do |z|
-        paths.each { |p| z.add(File.basename(p), p) }
-        z
+    # don't create a tempfile, just stream it to client for download
+    zip_stream = Zip::OutputStream.write_buffer do |zos|
+      paths.each do |filepath|
+        ctimestamp = Zip::DOSTime.at(File.open(filepath,"r").ctime) # use creation time of submitted file
+        zip_entry = Zip::Entry.new(zos, "#{File.basename(filepath)}", nil, nil, nil, nil, nil, nil,
+                    ctimestamp)
+        zos.put_next_entry(zip_entry)
+        zos.print IO.read(filepath)
       end
-      t
     end
-    # the return value should be the return value of the outer block, which is the tempfile
+    zip_stream.rewind
+    zip_stream
   end
 
   def self.looks_like_directory?(pathname)

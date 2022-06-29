@@ -6,12 +6,12 @@ require "tango_client"
 # This controller communicates with Tango to give information about autograding jobs
 #
 class JobsController < ApplicationController
-  autolab_require Rails.root.join("config", "autogradeConfig.rb")
+  autolab_require Rails.root.join("config/autogradeConfig.rb")
 
   # index - This is the default action that generates lists of the
   # running, waiting, and completed jobs.
-    rescue_from ActionView::MissingTemplate do |exception|
-      redirect_to("/home/error_404")
+  rescue_from ActionView::MissingTemplate do |_exception|
+    redirect_to("/home/error_404")
   end
   action_auth_level :index, :student
   def index
@@ -30,7 +30,7 @@ class JobsController < ApplicationController
     # Get the complete lists of live and dead jobs from the server
     begin
       raw_live_jobs = TangoClient.jobs
-      raw_dead_jobs = TangoClient.jobs(deadjobs = 1)
+      raw_dead_jobs = TangoClient.jobs(1)
     rescue TangoClient::TangoException => e
       flash[:error] = "Error while getting job list: #{e.message}"
     end
@@ -77,7 +77,7 @@ class JobsController < ApplicationController
     # Get the complete lists of live and dead jobs from the server
     begin
       raw_live_jobs = TangoClient.jobs
-      raw_dead_jobs = TangoClient.jobs(deadjobs = 1)
+      raw_dead_jobs = TangoClient.jobs(1)
     rescue TangoClient::TangoException => e
       flash[:error] = "Error while getting job list: #{e.message}"
     end
@@ -88,6 +88,7 @@ class JobsController < ApplicationController
     if raw_live_jobs && raw_dead_jobs
       raw_live_jobs.each do |item|
         next unless item["id"] == job_id
+
         rjob = item
         is_live = true
         break
@@ -95,6 +96,7 @@ class JobsController < ApplicationController
       if rjob.nil?
         raw_dead_jobs.each do |item|
           next unless item["id"] == job_id
+
           rjob = item
           break
         end
@@ -116,7 +118,7 @@ class JobsController < ApplicationController
       uri = URI(rjob["notifyURL"])
 
       # Parse the notify URL from the autograder
-      path_parts =  uri.path.split("/")
+      path_parts = uri.path.split("/")
       url_course = path_parts[2]
       url_assessment = path_parts[4]
 
@@ -126,7 +128,7 @@ class JobsController < ApplicationController
       # Grab all of the scores for this submission
       begin
         submission = Submission.find(params["submission_id"][0])
-      rescue # submission not found, tar tar sauce!
+      rescue StandardError # submission not found, tar tar sauce!
         return
       end
       scores = submission.scores
@@ -140,6 +142,7 @@ class JobsController < ApplicationController
       scores.each do |score|
         i += 1
         next unless score.feedback && score.feedback["Autograder"]
+
         @feedback_str = score.feedback
         feedback_num = i
         break
@@ -154,10 +157,10 @@ class JobsController < ApplicationController
       redirect_to(viewFeedback_course_assessment_path(url_course, url_assessment,
                                                       submission_id: submission.id,
                                                       feedback: feedback_num)) && return
-    else
-      flash[:error] = "Could not locate autograder feedback"
-      redirect_to(controller: :jobs, item: nil) && return
     end
+
+    flash[:error] = "Could not locate autograder feedback"
+    redirect_to(controller: :jobs, item: nil) && return
   end
 
   action_auth_level :tango_status, :instructor
@@ -176,12 +179,12 @@ class JobsController < ApplicationController
     end
     # Run through job list and extract useful data
     @tango_live_jobs = TangoClient.jobs
-    @tango_dead_jobs = TangoClient.jobs(deadjobs = 1)
-    @plot_data = tango_plot_data(live_jobs = @tango_live_jobs, dead_jobs = @tango_dead_jobs)
+    @tango_dead_jobs = TangoClient.jobs(1)
+    @plot_data = tango_plot_data(@tango_live_jobs, @tango_dead_jobs)
     # Get a list of current and upcoming assessments
     @upcoming_asmt = []
     Assessment.find_each do |asmt|
-      @upcoming_asmt << asmt if asmt.has_autograder? && asmt.due_at > Time.now
+      @upcoming_asmt << asmt if asmt.has_autograder? && asmt.due_at > Time.current
     end
     @upcoming_asmt.sort! { |a, b| a.due_at <=> b.due_at }
   end
@@ -214,10 +217,10 @@ protected
       if !@cud.instructor?
         # Students can see only their own job names
         job[:name] = "*" unless job[:name].ends_with? "_#{@cud.user.email}"
-      else
-        # Instructors can see only their course's job names
-        job[:name] = "*" if !rjob["notifyURL"] || !(job[:course].eql? @cud.course.id.to_s)
+      elsif !rjob["notifyURL"] || !(job[:course].eql? @cud.course.id.to_s)
+        job[:name] = "*"
       end
+      # Instructors can see only their course's job names
     end
 
     # Extract timestamps of first and last trace records
@@ -242,11 +245,11 @@ protected
     end
 
     if is_live
-      if job[:status]["Added job"]
-        job[:state] = "Waiting"
-      else
-        job[:state] = "Running"
-      end
+      job[:state] = if job[:status]["Added job"]
+                      "Waiting"
+                    else
+                      "Running"
+                    end
     else
       job[:state] = "Completed"
       job[:state] = "Failed" if rjob["trace"][-1].split("|")[1].include? "Error"
@@ -257,7 +260,7 @@ protected
 
   def tango_plot_data(live_jobs = nil, dead_jobs = nil)
     live_jobs ||= TangoClient.jobs
-    dead_jobs ||= TangoClient.jobs(deadjobs = 1)
+    dead_jobs ||= TangoClient.jobs(1)
     @plot_data = { new_jobs: { name: "New Job Requests", dates: [], job_name: [], job_id: [],
                                vm_pool: [], vm_id: [], status: [], duration: [] },
                    job_errors: { name: "Job Errors", dates: [], job_name: [], job_id: [],
@@ -265,7 +268,8 @@ protected
                    failed_jobs: { name: "Job Failures", dates: [], job_name: [], job_id: [],
                                   vm_pool: [], vm_id: [], duration: [] } }
     live_jobs.each do |j|
-      next if j["trace"].nil? || j["trace"].length == 0
+      next if j["trace"].nil? || j["trace"].empty?
+
       tstamp = j["trace"][0].split("|")[0]
       name = j["name"]
       pool = j["vm"]["name"]
@@ -273,11 +277,14 @@ protected
       jid = j["id"]
       status = j["assigned"] ? "Running (assigned)" : "Waiting to be assigned"
       trace = j["trace"].join
-      duration = Time.parse(j["trace"].last.split("|")[0]).to_i - Time.parse(j["trace"].first.split("|")[0]).to_i
+      duration = Time.parse(j["trace"].last.split("|")[0]).to_i -
+                 Time.parse(j["trace"].first.split("|")[0]).to_i
+
       if j["retries"] > 0 || trace.include?("fail") || trace.include?("error")
         status = "Running (error occured)"
         j["trace"].each do |tr|
           next unless tr.include?("fail") || tr.include?("error")
+
           @plot_data[:job_errors][:dates] << tr.split("|")[0]
           @plot_data[:job_errors][:job_name] << name
           @plot_data[:job_errors][:vm_pool] << pool
@@ -296,18 +303,24 @@ protected
       @plot_data[:new_jobs][:job_id] << jid
     end
     dead_jobs.each do |j|
-      next if j["trace"].nil? || j["trace"].length == 0
+      next if j["trace"].nil? || j["trace"].empty?
+
       tstamp = j["trace"][0].split("|")[0]
       name = j["name"]
       jid = j["id"]
       pool = j["vm"]["name"]
       vmid = j["vm"]["id"]
       trace = j["trace"].join
-      duration = Time.parse(j["trace"].last.split("|")[0]).to_i - Time.parse(j["trace"].first.split("|")[0]).to_i
+      duration = Time.parse(j["trace"].
+                      last.split("|")[0]).to_i -
+                 Time.parse(j["trace"].
+                 first.split("|")[0]).to_i
+
       warnings = false
       if j["retries"] > 0 || trace.include?("fail") || trace.include?("error")
         j["trace"].each do |tr|
           next unless tr.include?("fail") || tr.include?("error")
+
           @plot_data[:job_errors][:dates] << tr.split("|")[0]
           @plot_data[:job_errors][:job_name] << name
           @plot_data[:job_errors][:vm_pool] << pool

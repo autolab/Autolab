@@ -12,8 +12,6 @@
 <!--- Include details of your testing environment, and the tests you ran to -->
 <!--- see how your change affects other areas of the code, etc. -->
 
-## Screenshots (if appropriate):
-
 ## Types of changes
 <!--- What types of changes does your code introduce? Put an `x` in all the boxes that apply: -->
 - [ ] Bug fix (non-breaking change which fixes an issue)
@@ -22,8 +20,9 @@
 
 ## Checklist:
 <!--- Go over all the following points, and put an `x` in all the boxes that apply. -->
+- [ ] I have run rubocop for style check. If you haven't, run `overcommit --install && overcommit --sign` to use pre-commit hook for linting
 - [ ] My change requires a change to the documentation, which is located at [Autolab Docs](https://github.com/autolab/docs)
-- [ ] I have updated the documentation accordingly, and here is the corresponding pull request to Autolab Docs -> 
+- [ ] I have updated the documentation accordingly, included in this PR
 
 ## Other issues / help required
 <!--- Do you have any other relevant issues / questions? --->

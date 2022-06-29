@@ -1,10 +1,6 @@
 <% @title = "Statistics" %>
 <h2 id="statsHeading">Statistics for <%= link_to @assessment.display_name, course_assessment_path(@course, @assessment) %></h2>
 <% if @assessment.problems.count > 0 %>
-<%= javascript_include_tag "https://code.jquery.com/jquery-2.1.4.min.js" -%>
-
-<%= javascript_include_tag "https://cdn.plot.ly/plotly-latest.min.js" -%>
-<%= javascript_include_tag "https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js" -%>
 
 <br />
 <%= render :partial=>"statistics"%>

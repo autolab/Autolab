@@ -49,19 +49,18 @@ class FormBuilderWithDateTimeInput < ActionView::Helpers::FormBuilder
   def check_box(name, *args)
     options = args.extract_options!
 
-    # display_name = options[:display_name]
+    display_name = options[:display_name].nil? ? name : options[:display_name]
     
-    display_span = "<span>" + name.to_s.humanize + "</span>"
+    display_span = "<span>" + display_name.to_s.humanize + "</span>"
     # Materalize requires the label to be in a span
     field = super name, *(args + [options])
 
-    unless options.include?(:help_text)
-        options[:help_text] = " "
-    end
-
     @template.content_tag :div do
-           label(name, field + display_span.html_safe, class: "control-label") +
-            help_text(name, options[:help_text])
+      if options.include?(:help_text)
+        label(name, field + display_span.html_safe, class: "control-label") + help_text(name, options[:help_text])
+      else
+        label(name, field + display_span.html_safe, class: "control-label") 
+      end 
     end
   end
 
@@ -90,9 +89,9 @@ class FormBuilderWithDateTimeInput < ActionView::Helpers::FormBuilder
   end
 
   def datetime_select(name, options = {}, _html_options = {})
-    strftime = "%F %H:%M"
-    date_format = "F j, Y h:i K"
-    alt_format = "F j, Y h:i K"
+    strftime = "%F %H:%M %z"
+    date_format = "YYYY-MM-DD HH:mm ZZ"
+    alt_format = "YYYY-MM-DD HH:mm ZZ"
     options[:picker_class] = "datetimepicker"
     date_helper name, options, strftime, date_format, alt_format
   end
@@ -127,8 +126,7 @@ private
     wrap_field name, field, options[:help_text]
   end
 
-  def wrap_field(name, field, help_text, display_name = nil)
-
+  def wrap_field(name, field, help_text = nil, display_name = nil)
     @template.content_tag :div, class: "input-field" do
       label(name, display_name, class: "control-label") +
          field + help_text(name, help_text)
@@ -136,7 +134,11 @@ private
   end
 
   def help_text(_name, help_text)
-    @template.content_tag :p, help_text, class: "help-block"
+    if help_text.nil?
+      ""
+    else
+      @template.content_tag :p, help_text, class: "help-block"
+    end
   end
 
   def objectify_options(options)

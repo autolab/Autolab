@@ -2,22 +2,21 @@
 # of editing this file, please use the migrations feature of Active Record to
 # incrementally modify your database, and then regenerate this schema definition.
 #
-# Note that this schema.rb definition is the authoritative source for your
-# database schema. If you need to create the application database on another
-# system, you should be using db:schema:load, not running all the migrations
-# from scratch. The latter is a flawed and unsustainable approach (the more migrations
-# you'll amass, the slower it'll run and the greater likelihood for issues).
+# This file is the source Rails uses to define your schema when running `rails
+# db:schema:load`. When creating a new database, `rails db:schema:load` tends to
+# be faster and is potentially less error prone than running all of your
+# migrations from scratch. Old migrations may fail to apply correctly if those
+# migrations use external dependencies or application code.
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_07_25_133754) do
+ActiveRecord::Schema.define(version: 2022_04_24_202745) do
 
   create_table "annotations", force: :cascade do |t|
     t.integer "submission_id"
     t.string "filename"
     t.integer "position"
     t.integer "line"
-    t.string "text"
     t.datetime "created_at"
     t.datetime "updated_at"
     t.string "submitted_by"
@@ -25,6 +24,7 @@ ActiveRecord::Schema.define(version: 2020_07_25_133754) do
     t.float "value"
     t.integer "problem_id"
     t.string "coordinate"
+    t.boolean "shared_comment", default: false
   end
 
   create_table "announcements", force: :cascade do |t|
@@ -95,6 +95,8 @@ ActiveRecord::Schema.define(version: 2020_07_25_133754) do
     t.text "embedded_quiz_form_data"
     t.boolean "embedded_quiz"
     t.binary "embedded_quiz_form"
+    t.boolean "allow_student_assign_group", default: true
+    t.boolean "github_submission_enabled", default: true
   end
 
   create_table "attachments", force: :cascade do |t|
@@ -162,6 +164,16 @@ ActiveRecord::Schema.define(version: 2020_07_25_133754) do
     t.integer "assessment_id"
     t.integer "days"
     t.boolean "infinite", default: false, null: false
+  end
+
+  create_table "github_integrations", force: :cascade do |t|
+    t.string "oauth_state"
+    t.text "access_token_ciphertext"
+    t.integer "user_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["oauth_state"], name: "index_github_integrations_on_oauth_state", unique: true
+    t.index ["user_id"], name: "index_github_integrations_on_user_id", unique: true
   end
 
   create_table "groups", force: :cascade do |t|
@@ -252,6 +264,15 @@ ActiveRecord::Schema.define(version: 2020_07_25_133754) do
     t.boolean "optional", default: false
   end
 
+  create_table "risk_conditions", force: :cascade do |t|
+    t.integer "condition_type"
+    t.text "parameters"
+    t.integer "version"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.integer "course_id"
+  end
+
   create_table "scheduler", force: :cascade do |t|
     t.string "action"
     t.datetime "next"
@@ -337,6 +358,29 @@ ActiveRecord::Schema.define(version: 2020_07_25_133754) do
     t.index ["confirmation_token"], name: "index_users_on_confirmation_token", unique: true
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
+  end
+
+  create_table "watchlist_configurations", force: :cascade do |t|
+    t.json "category_blocklist"
+    t.json "assessment_blocklist"
+    t.integer "course_id"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["course_id"], name: "index_watchlist_configurations_on_course_id"
+  end
+
+  create_table "watchlist_instances", force: :cascade do |t|
+    t.integer "course_user_datum_id"
+    t.integer "course_id"
+    t.integer "risk_condition_id"
+    t.integer "status", default: 0
+    t.boolean "archived", default: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.json "violation_info"
+    t.index ["course_id"], name: "index_watchlist_instances_on_course_id"
+    t.index ["course_user_datum_id"], name: "index_watchlist_instances_on_course_user_datum_id"
+    t.index ["risk_condition_id"], name: "index_watchlist_instances_on_risk_condition_id"
   end
 
 end

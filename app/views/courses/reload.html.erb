@@ -1,7 +1,18 @@
-<h2>Error Parsing your Course Configuration File:</h2><pre> <%=h @error.to_s %></pre>
-<br>
-<a href="<%= %>">Click here once you have fixed the
-  above error</a>
+<h2>Error Parsing your Course Configuration File:</h2>
 
-<%= debug @error %>
-<pre><%= @error.backtrace.join("\n") %></pre>
+<div>
+  <pre><%= @error.to_s %></pre>
+</div>
+
+<div>
+  <%= link_to "Click here once you have fixed the above error", [:reload, @course], data: {method: "post"} %>
+</div>
+
+<% # this rails function returns a <pre> containing the error as YAML %>
+<div>
+  <%= debug @error %>
+</div>
+
+<div>
+  <pre><%= @error.backtrace.join("\n") %></pre>
+</div>

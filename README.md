@@ -14,11 +14,11 @@ Since 2010, Autolab has had a transformative impact on education at CMU. Each se
   <img src="public/images/join_slack.svg" width="170px" height="44px">
 </a>
 
-<a href="https://autolab.github.io/docs/" style="float:left">
+<a href="https://docs.autolabproject.com/" style="float:left">
   <img src="public/images/read_the_docs.svg" width="170px" height="44px">
 </a>
 
-<a href="https://groups.google.com/forum/#!forum/autolabproject/join" style="float:left">
+<a href="https://groups.google.com/g/autolabproject" style="float:left">
  <img src="public/images/mailing_list.svg" width="170px" height="44px">
 </a>
 
@@ -27,13 +27,15 @@ Since 2010, Autolab has had a transformative impact on education at CMU. Each se
 [![Build Status](https://travis-ci.org/autolab/Autolab.svg)](https://travis-ci.org/autolab/Autolab)
 ![GitHub last commit](https://img.shields.io/github/last-commit/autolab/Autolab)
 
-Subscribe to our [mailing list](https://groups.google.com/forum/#!forum/autolabproject/join) to recieve announcements about major releases and updates to the Autolab Project.
+Subscribe to our [mailing list](https://groups.google.com/g/autolabproject) to receive announcements about major releases and updates to the Autolab Project.
+
+## Try It Out
+We have a demo site running at https://nightly.autolabproject.com/. See the [docs](https://docs.autolabproject.com/#demonstration-site) for more information on how to login and suggestions on things to try.
+
 
 ## Installation
 
-We released new documentation! Check it out [here](https://autolab.github.io/docs).
-
-We are currently in the process of updating our documentation to work with our newest release of Autolab, v2.5.0, which has been upgraded to Rails 5 from Rails 4
+We released new documentation! Check it out [here](https://docs.autolabproject.com).
 
 ## Testing
 
@@ -43,8 +45,8 @@ We are currently in the process of updating our documentation to work with our n
 
 2. Create and migrate the database.
 	```sh
-	RAILS_ENV=test bundle exec rake db:create
-	RAILS_ENV=test bundle exec rake db:migrate
+	RAILS_ENV=test bundle exec rails db:create
+	RAILS_ENV=test bundle exec rails db:migrate
 	```
    Do not forget to use `RAILS_ENV=test bundle exec` in front of every rake/rails command.
 
@@ -59,16 +61,37 @@ We are currently in the process of updating our documentation to work with our n
 After setting up the test environment, simply run spec by:
 
 ```sh
-bundle exec rake spec
+bundle exec rails spec
 ```
 
 ## Rails 4 Support
-Autolab is now running on Rails 5. However, we may still work on important bug fixes on the Rails 4 branch,
- partially because the deployment on CMU is currently still on Rails 4. Please file an issue
-  if you believe that you have found a severe bug. The Rails 4 branch
- can be found on `master-rails-4`. 
- 
- We will not be backporting new features from `master` to `master-rails-4`.
+Autolab is now running on Rails 5. The Rails 4 branch can be found on `master-rails-4`. 
+We will not be backporting any new features from `master` to `master-rails-4`, and we have discontinued Rails 4 support.
+
+## Updating Docs
+To install mkdocs, run
+```bash
+pip install --user mkdocs
+```
+
+We rely on the `mkdocs-material` theme, which can be installed with
+```bash
+pip install --user mkdocs-material
+```
+
+To run and preview this locally, run:
+
+```bash
+mkdocs serve
+```
+
+Once your updated documentation is in `master`, run:
+
+```bash
+mkdocs gh-deploy
+```
+
+This will build the site using the branch you are currently in (hopefully `master`), place the built HTML files into the `gh-pages` branch, and push to GitHub. GitHub will then automatically deploy the new content in `gh-pages`.
 
 ## Contributing
 
@@ -85,6 +108,24 @@ Please feel free to use Autolab at your school/organization. If you run into any
 
 
 ## Changelog
+### [v2.8.0](https://github.com/autolab/Autolab/releases/tag/v2.8.0) (2021/12/20) GitHub Integration and Roster Upload Improvement
+- Students can now submit code via GitHub
+- Improved Roster Upload with better error reporting
+- Numerous bug fixes
+
+### [v2.7.0](https://github.com/autolab/Autolab/releases/tag/v2.7.0) (2021/05/29) Autolab Docker Compose, Student Metrics, Redesigned Documentation
+- Integration with new Docker Compose [installation method](https://github.com/autolab/docker)
+- Student Metrics Feature, which allows instructors to identify students who may be in need of attention
+- Redesigned Autolab documentation
+- Numerous bug fixes
+
+### [v2.6.0](https://github.com/autolab/Autolab/releases/tag/v2.6.0) (2020/10/24) Formatted Feedbacks, Course Dashboard, Accessibility
+- Formatted Feedback feature
+- Introduction of Course Dashboards
+- Numerous bug fixes
+
+### (2021/10/12) Moved from Uglifier to Terser
+- Autolab has migrated from Uglifier to Terser for our Javascript compressor in order to support the latest Javascript syntax. Please change `Uglifier.new(harmony: true)` to `:terser` in your `production.rb`
 
 ### v2.5.0 (2020/02/22) Upgrade from Rails 4 Rails 5
 - Autolab has been upgraded from Rails 4 to Rails 5 after almost a year of effort! There are still some small
