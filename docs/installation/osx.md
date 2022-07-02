@@ -2,22 +2,22 @@ This page provides instructions on installing Autolab for development on Mac OSX
 
 Follow the step-by-step instructions below:
 
-1.  Install <a href="https://github.com/sstephenson/rbenv" target="_blank">rbenv</a> (use the Basic GitHub Checkout method)
+1. Install <a href="https://github.com/sstephenson/rbenv" target="_blank">rbenv</a> (use the Basic GitHub Checkout method)
 
-2.  Install <a href="https://github.com/sstephenson/ruby-build" target="_blank">ruby-build</a> as an rbenv plugin:
+2. Install <a href="https://github.com/sstephenson/ruby-build" target="_blank">ruby-build</a> as an rbenv plugin:
 
         :::bash
         git clone https://github.com/sstephenson/ruby-build.git ~/.rbenv/plugins/ruby-build
 
     Restart your shell at this point in order to start using your newly installed rbenv
 
-3.  Clone the Autolab repo into home directory and enter it:
+3. Clone the Autolab repo into home directory and enter it:
 
         :::bash
         cd ~/
         git clone https://github.com/autolab/Autolab.git && cd Autolab
 
-4.  Install the correct version of ruby:
+4. Install the correct version of ruby:
 
         :::bash
         rbenv install $(cat .ruby-version)
@@ -37,13 +37,13 @@ Follow the step-by-step instructions below:
         export RBENV_ROOT=<rbenv folder path on your local machine>
         eval "$(rbenv init -)"
 
-5.  Install `bundler`:
+5. Install `bundler`:
 
         :::bash
         gem install bundler
         rbenv rehash
 
-6.  Install the required gems (run the following commands in the cloned Autolab repo):
+6. Install the required gems (run the following commands in the cloned Autolab repo):
 
         :::bash
         cd bin
@@ -51,7 +51,7 @@ Follow the step-by-step instructions below:
 
     Refer to [Troubleshooting](/installation/troubleshoot) for issues installing gems
 
-7.  Install one of two database options
+7. Install one of two database options
 
     -   <a href="https://www.tutorialspoint.com/sqlite/sqlite_installation.htm" target="_blank">SQLite</a> should **only** be used in development
     -   <a href="https://dev.mysql.com/doc/refman/5.7/en/osx-installation-pkg.html" target="_blank">MySQL</a> can be used in development or production
@@ -64,7 +64,7 @@ Follow the step-by-step instructions below:
 
     Afterward, run `which ctags` to ensure that the package lies on your `PATH` and can be found.
 
-9.  Initialize Autolab Configs
+9. Initialize Autolab Configs
 
         :::bash
         cp config/database.yml.template config/database.yml
@@ -74,7 +74,7 @@ Follow the step-by-step instructions below:
     Edit `school.yml` with your school/organization specific names and emails
     Edit `database.yml` with the correct credentials for your chosen database. Refer to [Troubleshooting](/installation/troubleshoot) for any issues and suggested development [configurations](/installation/troubleshoot/#suggested-development-configuration-for-configdatabaseyml).
 
-10.  Create a .env file to store Autolab configuration constants. 
+10. Create a .env file to store Autolab configuration constants. 
 
         :::bash
         cp .env.template .env

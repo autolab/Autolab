@@ -76,7 +76,7 @@ Following instructions from <a href="https://www.digitalocean.com/community/tuto
         cp config/school.yml.template config/school.yml
         cp config/autogradeConfig.rb.template config/autogradeConfig.rb
 
-10.  Create a .env file to store Autolab configuration constants. 
+10. Create a .env file to store Autolab configuration constants. 
 
         :::bash
         cp .env.template .env
