@@ -56,7 +56,15 @@ Follow the step-by-step instructions below:
     -   <a href="https://www.tutorialspoint.com/sqlite/sqlite_installation.htm" target="_blank">SQLite</a> should **only** be used in development
     -   <a href="https://dev.mysql.com/doc/refman/5.7/en/osx-installation-pkg.html" target="_blank">MySQL</a> can be used in development or production
 
-8.  Initialize Autolab Configs
+8. Install <a href="https://brew.sh/" target="_blank">homebrew</a>, as well as the <a href="https://github.com/universal-ctags/homebrew-universal-ctags" target="_blank">universal-ctags</a> package:
+
+        :::bash
+        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+        brew install --HEAD universal-ctags/universal-ctags/universal-ctags
+
+    Afterward, run `which ctags` to ensure that the package lies on your `PATH` and can be found.
+
+9.  Initialize Autolab Configs
 
         :::bash
         cp config/database.yml.template config/database.yml
@@ -66,19 +74,19 @@ Follow the step-by-step instructions below:
     Edit `school.yml` with your school/organization specific names and emails
     Edit `database.yml` with the correct credentials for your chosen database. Refer to [Troubleshooting](/installation/troubleshoot) for any issues and suggested development [configurations](/installation/troubleshoot/#suggested-development-configuration-for-configdatabaseyml).
 
-9.  Create a .env file to store Autolab configuration constants. 
+10.  Create a .env file to store Autolab configuration constants. 
 
         :::bash
         cp .env.template .env
 
     If you have not installed Tango yet, you do not need to do anything else in this stage. If you have already installed Tango, you should make sure to fill in the `.env` file with values consistent with Tango's `config.py`
 
-10. Initialize application secrets.
+11. Initialize application secrets.
 
         :::bash
         ./bin/initialize_secrets.sh
 
-11. Create and initialize the database tables:
+12. Create and initialize the database tables:
 
         :::bash
         bundle exec rails db:create
@@ -86,7 +94,7 @@ Follow the step-by-step instructions below:
 
     Do not forget to use `bundle exec` in front of every rake/rails command.
 
-12. Create initial root user, pass the `-d` flag for developmental deployments:
+13. Create initial root user, pass the `-d` flag for developmental deployments:
 
         :::bash
         # For production:
@@ -95,24 +103,24 @@ Follow the step-by-step instructions below:
         # For development:
         ./bin/initialize_user.sh -d
 
-13. Populate dummy data (for development only):
+14. Populate dummy data (for development only):
 
         :::bash
         bundle exec rails autolab:populate
 
-14. Start the rails server:
+15. Start the rails server:
 
         :::bash
         bundle exec rails s -p 3000
 
-15. Go to localhost:3000 and login with either the credentials of the root user you just created, or choose `Developer Login` with:
+16. Go to localhost:3000 and login with either the credentials of the root user you just created, or choose `Developer Login` with:
 
         :::bash
         Email: "admin@foo.bar".
 
-16. Install [Tango](/installation/tango), the backend autograding service. Information on linking Autolab to Tango can be found on this page
+17. Install [Tango](/installation/tango), the backend autograding service. Information on linking Autolab to Tango can be found on this page
 as well.
 
-17. If you would like to configure Github integration to allow students to submit via Github, please follow the [Github integration setup instructions](/installation/github_integration).
+18. If you would like to configure Github integration to allow students to submit via Github, please follow the [Github integration setup instructions](/installation/github_integration).
 
-18. Now you are all set to start using Autolab! Visit the [Guide for Instructors](/instructors) and [Guide for Lab Authors](/lab) pages for more info.
+19. Now you are all set to start using Autolab! Visit the [Guide for Instructors](/instructors) and [Guide for Lab Authors](/lab) pages for more info.
