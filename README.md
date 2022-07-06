@@ -21,7 +21,6 @@ Since 2010, Autolab has had a transformative impact on education at CMU. Each se
 <a href="https://groups.google.com/g/autolabproject" style="float:left">
  <img src="public/images/mailing_list.svg" width="170px" height="44px">
 </a>
-
 </p>
 
 [![Build Status](https://travis-ci.org/autolab/Autolab.svg)](https://travis-ci.org/autolab/Autolab)
@@ -31,7 +30,6 @@ Subscribe to our [mailing list](https://groups.google.com/g/autolabproject) to r
 
 ## Try It Out
 We have a demo site running at https://nightly.autolabproject.com/. See the [docs](https://docs.autolabproject.com/#demonstration-site) for more information on how to login and suggestions on things to try.
-
 
 ## Installation
 
@@ -129,7 +127,7 @@ Please feel free to use Autolab at your school/organization. If you run into any
 ### (2021/10/12) Moved from Uglifier to Terser
 - Autolab has migrated from Uglifier to Terser for our Javascript compressor in order to support the latest Javascript syntax. Please change `Uglifier.new(harmony: true)` to `:terser` in your `production.rb`
 
-### v2.5.0 (2020/02/22) Upgrade from Rails 4 Rails 5
+### v2.5.0 (2020/02/22) Upgrade from Rails 4 to Rails 5
 - Autolab has been upgraded from Rails 4 to Rails 5 after almost a year of effort! There are still some small
 bugs to be fixed, but it should not affect the core functionality of Autolab. Please file an issue if you believe
 you have found a bug.
