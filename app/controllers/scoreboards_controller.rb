@@ -18,7 +18,7 @@ class ScoreboardsController < ApplicationController
     end
     begin
       @scoreboard.save!
-      flash[:info] = "Scoreboard Created"
+      flash[:notice] = "Scoreboard Created"
     rescue ActiveRecord::RecordInvalid => e
       flash[:error] = "Unable to create scoreboard: #{e.message}"
     end
@@ -151,7 +151,7 @@ class ScoreboardsController < ApplicationController
   action_auth_level :destroy, :instructor
   def destroy
     if @scoreboard.destroy
-      flash[:info] = "Destroyed!"
+      flash[:notice] = "Destroyed!"
     else
       flash[:error] = "Unable to destroy scoreboard"
     end

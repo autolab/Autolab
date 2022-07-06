@@ -59,7 +59,7 @@ module AssessmentAutograde
 
     unless @assessment.has_autograder?
       # Not an error, this behavior was specified!
-      flash[:info] = "This submission is not autogradable"
+      flash[:notice] = "This submission is not autogradable"
       redirect_to([:history, @course, @assessment, cud_id: @effective_cud.id]) && return
     end
 
