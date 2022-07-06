@@ -1,4 +1,4 @@
-<a href="http://autolabproject.com">
+<a href="https://autolabproject.com">
   <img src="public/images/autolab_banner.svg" width="380px" height="100px">
 </a>
 
