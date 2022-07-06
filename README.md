@@ -23,7 +23,8 @@ Since 2010, Autolab has had a transformative impact on education at CMU. Each se
 </a>
 </p>
 
-[![Build Status](https://travis-ci.org/autolab/Autolab.svg)](https://travis-ci.org/autolab/Autolab)
+[![Build Status](http://autolab-d01.club.cc.cmu.edu:8080/buildStatus/icon?job=autolab+demosite)](http://autolab-d01.club.cc.cmu.edu:8080/job/autolab%20demosite/)
+[![Better Uptime Badge](https://betteruptime.com/status-badges/v1/monitor/95ro.svg)](https://betteruptime.com/?utm_source=status_badge)
 ![GitHub last commit](https://img.shields.io/github/last-commit/autolab/Autolab)
 
 Subscribe to our [mailing list](https://groups.google.com/g/autolabproject) to receive announcements about major releases and updates to the Autolab Project.
