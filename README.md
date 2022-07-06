@@ -64,9 +64,9 @@ After setting up the test environment, simply run spec by:
 bundle exec rails spec
 ```
 
-## Rails 4 Support
-Autolab is now running on Rails 5. The Rails 4 branch can be found on `master-rails-4`. 
-We will not be backporting any new features from `master` to `master-rails-4`, and we have discontinued Rails 4 support.
+## Rails 5 Support
+Autolab is now running on Rails 6. The Rails 5 branch can be found on `master-rails-5`. 
+We will not be backporting any new features from `master` to `master-rails-5`, and we have discontinued Rails 5 support.
 
 ## Updating Docs
 To install mkdocs, run
