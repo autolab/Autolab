@@ -93,6 +93,8 @@ mkdocs gh-deploy
 
 This will build the site using the branch you are currently in (hopefully `master`), place the built HTML files into the `gh-pages` branch, and push to GitHub. GitHub will then automatically deploy the new content in `gh-pages`.
 
+**Note**: Jenkins will automatically deploy the documentation whenever a new commit is pushed to `master`, so there is generally no need to manually execute this step. 
+
 ## Contributing
 
 We encourage you to contribute to Autolab! Please check out the
