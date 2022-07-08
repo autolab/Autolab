@@ -84,15 +84,13 @@ To run and preview this locally, run:
 mkdocs serve
 ```
 
-Once your updated documentation is in `master`, run:
+Once your updated documentation is in `master`, Jenkins will automatically run a job to update the docs. You can trigger a manual update with
 
 ```bash
 mkdocs gh-deploy
 ```
 
 This will build the site using the branch you are currently in (hopefully `master`), place the built HTML files into the `gh-pages` branch, and push to GitHub. GitHub will then automatically deploy the new content in `gh-pages`.
-
-**Note**: Jenkins will automatically deploy the documentation whenever a new commit is pushed to `master`, so there is generally no need to manually execute this step. 
 
 ## Contributing
 
