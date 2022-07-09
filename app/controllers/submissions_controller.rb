@@ -432,6 +432,12 @@ class SubmissionsController < ApplicationController
     @problemReleased = @submission.scores.pluck(:released).all?
 
     @annotations = @submission.annotations.to_a
+    unless @submission.group_key.empty?
+      group_submissions = @submission.group_associated_submissions
+      group_submissions.each do |group_submission|
+        @annotations += group_submission.annotations.to_a
+      end
+    end
     @annotations.sort! { |a, b| a.line.to_i <=> b.line.to_i }
 
     @problemSummaries = {}
