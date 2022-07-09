@@ -1,6 +1,6 @@
 # Autolab + Tango Docker Compose Installation
 
-The Autolab Docker Compose installation is a fast and easy production-ready installation and deployment method. It uses a MySQL database for the Autolab deployment, and comes with TLS/SSL support. This is now the preferred way of installing Autolab.
+The Autolab Docker Compose installation is a fast and easy production-ready installation and deployment method. It uses a MySQL database for the Autolab deployment, and comes with TLS/SSL support. This is now the preferred way of installing Autolab due to its ease of use.
 
 If you are stuck or find issues with the installation process you can either file an issue on our Github repository, or join our Slack <a href="https://autolab-slack.herokuapp.com/" target="_blank">here</a> and let us know and we will try our best to help. Also see the [debugging](#debugging-your-deployment) section for tips on how to diagnose problems and check out the [troubleshooting](#troubleshooting) section if you run into any issues.
 
@@ -38,7 +38,7 @@ First ensure that you have Docker and Docker Compose installed on your machine. 
         :::bash
         docker-compose up -d
 
-    Note at this point Nginx will still be crash-looping in the Autolab container because TLS/SSL has not been configuired/disabled yet.
+    Note at this point Nginx will still be crash-looping in the Autolab container because TLS/SSL has not been configured/disabled yet.
 
 7. Ensure that the newly created config files have the right permissions, as it may have been modified during the building process:
 
@@ -70,7 +70,7 @@ First ensure that you have Docker and Docker Compose installed on your machine. 
         :::bash 
         docker-compose stop
 
-12. Update the Nginx config. Update all occurences of `REPLACE_WITH_YOUR_DOMAIN` in `nginx/app.conf` and `nginx/no-ssl-app.conf` to your real domain name. The configs are used when TLS is enabled and disabled respectively. Double-check that ALL occurrences are replaced as otherwise you will have trouble accessing your deployment.
+12. Update the Nginx config. Update all occurrences of `REPLACE_WITH_YOUR_DOMAIN` in `nginx/app.conf` and `nginx/no-ssl-app.conf` to your real domain name. The configs are used when TLS is enabled and disabled respectively. Double-check that ALL occurrences are replaced as otherwise you will have trouble accessing your deployment.
 
 13. Continue with TLS setup as outlined in the [next section](#configuring-tlsssl)
 

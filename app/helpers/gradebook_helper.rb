@@ -71,11 +71,12 @@ module GradebookHelper
       grace_days = 0
       late_days = 0
 
+      # CGI.escapeHTML to avoid XSS
       row["id"] = cud.id
-      row["email"] = cud.user.email
+      row["email"] = CGI.escapeHTML cud.user.email
       row["student_gradebook_link"] = sgb_link
-      row["first_name"] = cud.user.first_name
-      row["last_name"] = cud.user.last_name
+      row["first_name"] = CGI.escapeHTML cud.user.first_name
+      row["last_name"] = CGI.escapeHTML cud.user.last_name
       row["section"] = cud.section
 
       # TODO: formalize score render stack, consolidate with computed score

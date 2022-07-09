@@ -46,7 +46,7 @@ class HomeController < ApplicationController
       redirect_to(controller: "course", course: @course.name,
                   action: "index") && return
     else
-      flash[:error] = "An internal error occured. Please contact the " \
+      flash[:error] = "An internal error occurred. Please contact the " \
                     "Autolab Development team at the " \
                     "contact link below"
       redirect_to(controller: "home", action: "index") && return

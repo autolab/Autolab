@@ -56,7 +56,7 @@ class RiskCondition < ApplicationRecord
     max_version = RiskCondition.get_max_version(course_id)
     # Is params empty?
     if params.empty? && (max_version == 0)
-      # puts "case 1: max_version = 0 (no previous conditons have been set)
+      # puts "case 1: max_version = 0 (no previous conditions have been set)
       # and instructor doesn't want any at this point"
       WatchlistInstance.refresh_instances_for_course(course_name, true)
       return []

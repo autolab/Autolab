@@ -1,23 +1,22 @@
 <% @title = (@cud.instructor || @cud.course_assistant) ? "Annotate Submission" : "View Submission" %>
 
 <% content_for :stylesheets do %>
-  <link type="text/css" rel="stylesheet" href="https://golden-layout.com/files/latest/css/goldenlayout-base.css" />
-  <link type="text/css" rel="stylesheet" href="https://golden-layout.com/files/latest/css/goldenlayout-light-theme.css" />
+  <%= external_stylesheet_link_tag "golden-layout-base" %>
+  <%= external_stylesheet_link_tag "golden-layout-theme" %>
   <%= stylesheet_link_tag "annotations" %>
   <% # highlightjs - change the style sheet for different styles %>
   <%= stylesheet_link_tag "highlightjs-styles/vs.css" %>
-  <%= external_stylesheet_link_tag "jquery-ui", "1.11.4" %>
+  <%= external_stylesheet_link_tag "jquery-ui" %>
 <% end %>
 
 <% content_for :javascripts do %>
   <%= javascript_include_tag "pdf.js" %>
-  <%= external_javascript_include_tag "lodash", "3.3.1" %>
+  <%= external_javascript_include_tag "lodash" %>
   <%= javascript_include_tag "highlight.pack.js" %>
   <%= javascript_include_tag "jquery.jeditable" %>
-  <%= external_javascript_include_tag "jquery-ui", "1.11.4" %>
-  <script src="//cdnjs.cloudflare.com/ajax/libs/jquery-scrollTo/2.1.2/jquery.scrollTo.min.js"></script>
-  <%# <script type="text/javascript" src="http://code.jquery.com/jquery-1.11.1.min.js"></script> %>
-  <script type="text/javascript" src="https://golden-layout.com/files/latest/js/goldenlayout.min.js"></script>
+  <%= external_javascript_include_tag "jquery-ui" %>
+  <%= external_javascript_include_tag "scrollTo" %>
+  <%= external_javascript_include_tag "golden-layout" %>
   <div style="display: none"><%= render(:partial => 'grades') %></div>
   <script type="application/javascript">
     <% if @cud.instructor || @cud.course_assistant then %>

@@ -2,7 +2,7 @@
 
 <% content_for :stylesheets do %>
 <%= stylesheet_link_tag "annotations" %>
-<%= external_stylesheet_link_tag "jquery-ui", "1.11.4" %>
+<%= external_stylesheet_link_tag "jquery-ui" %>
 
 
 <style type="text/css">
@@ -23,8 +23,8 @@
 
 <% content_for :javascripts do %>
   <%= javascript_include_tag "pdf.js" %>
-  <%= external_javascript_include_tag "lodash", "3.3.1" %>
-  <%= external_javascript_include_tag "jquery-ui", "1.11.4" %>
+  <%= external_javascript_include_tag "lodash" %>
+  <%= external_javascript_include_tag "jquery-ui" %>
   <%= javascript_include_tag "highlight.pack.js" %>
 
   <script type="application/javascript">

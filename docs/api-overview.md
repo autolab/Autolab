@@ -25,8 +25,8 @@ For clients with no easy access to web browsers (e.g. console apps), an alternat
 To register an API application, one needs to have an admin privileges, and then visit `Manage Autolab > Manage API application`. Refer to [Scopes](#scopes) for the available scopes. To understand how to authorize and unauthorize clients as a user, go to [Managing Authorized Apps](/api-managing-authorized-apps/)
 ### Authorization Code Grant Flow (OAuth2)
 
-- **OAuth Authorization Reqeust Endpoint**: `/oauth/authorize`
-- **OAuth Acess Token Endpoint**: `oauth/token`
+- **OAuth Authorization Request Endpoint**: `/oauth/authorize`
+- **OAuth Access Token Endpoint**: `oauth/token`
 
 The authorization code grant consists of 5 basic steps:
 

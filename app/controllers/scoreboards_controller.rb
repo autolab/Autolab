@@ -18,7 +18,7 @@ class ScoreboardsController < ApplicationController
     end
     begin
       @scoreboard.save!
-      flash[:info] = "Scoreboard Created"
+      flash[:notice] = "Scoreboard Created"
     rescue ActiveRecord::RecordInvalid => e
       flash[:error] = "Unable to create scoreboard: #{e.message}"
     end
@@ -151,7 +151,7 @@ class ScoreboardsController < ApplicationController
   action_auth_level :destroy, :instructor
   def destroy
     if @scoreboard.destroy
-      flash[:info] = "Destroyed!"
+      flash[:notice] = "Destroyed!"
     else
       flash[:error] = "Unable to destroy scoreboard"
     end
@@ -256,7 +256,7 @@ private
     rescue StandardError
       # If there is no autoresult for this student (typically
       # because their code did not compile or it segfaulted and
-      # the intructor's autograder did not catch it) then
+      # the instructor's autograder did not catch it) then
       # return a nicely formatted nil result.
       begin
         parsed = ActiveSupport::JSON.decode(@scoreboard.colspec)

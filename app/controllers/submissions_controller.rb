@@ -35,11 +35,7 @@ class SubmissionsController < ApplicationController
         render([@course, @assessment, :submissions]) && return
       end
     else
-      @cuds = {}
-      # TODO: change order
-      @course.course_user_data.joins(:user).order("email ASC").each do |cud|
-        @cuds[cud.full_name_with_email] = cud.id
-      end
+      @users, @usersEncoded = @course.get_autocomplete_data
     end
   end
 
@@ -543,7 +539,7 @@ private
   end
 
   # Extract the andrewID from a filename.
-  # Filename format is andrewID_version_asessment.ext
+  # Filename format is andrewID_version_assessment.ext
   def extractAndrewID(filename)
     underscoreInd = filename.index("_")
     return filename[0...underscoreInd] unless underscoreInd.nil?
@@ -552,7 +548,7 @@ private
   end
 
   # Extract the version from a filename
-  # Filename format is andrewID_version_asessment.ext
+  # Filename format is andrewID_version_assessment.ext
   def extractVersion(filename)
     firstUnderscoreInd = filename.index("_")
     return nil if firstUnderscoreInd.nil?

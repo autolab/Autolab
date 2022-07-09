@@ -70,7 +70,7 @@ class UsersController < ApplicationController
   end
 
   # GET users/new
-  # only adminstrator and instructors are allowed
+  # only administrator and instructors are allowed
   action_auth_level :new, :instructor
   def new
     if current_user.administrator? || current_user.instructor?
@@ -275,7 +275,7 @@ class UsersController < ApplicationController
       gh_integration.destroy
       flash[:success] = "Successfully disconnected from Github"
     else
-      flash[:info] = "Github not connected, revocation unnecessary"
+      flash[:notice] = "Github not connected, revocation unnecessary"
     end
     (redirect_to user_path(id: @user.id)) && return
   end

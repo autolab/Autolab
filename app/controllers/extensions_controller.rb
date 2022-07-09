@@ -14,12 +14,7 @@ class ExtensionsController < ApplicationController
   action_auth_level :index, :instructor
   def index
     @extensions = @assessment.extensions.includes(:course_user_datum)
-    @users = {}
-    @usersEncoded = {}
-    @course.course_user_data.each do |cud|
-      @users[cud.full_name_with_email] = cud.id
-      @usersEncoded[Base64.encode64(cud.full_name_with_email.strip).strip] = cud.id
-    end
+    @users, @usersEncoded = @course.get_autocomplete_data
     @new_extension = @assessment.extensions.new
   end
 
