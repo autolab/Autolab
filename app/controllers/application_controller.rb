@@ -211,6 +211,7 @@ protected
     @cud.errors.full_messages.each do |msg|
       flash[:error] += "<br>#{msg}"
     end
+    flash[:html_safe] = true
     redirect_to([:edit, @course, @cud]) && return
   end
 
