@@ -8,6 +8,9 @@ Bundler.require(*Rails.groups)
 
 module Autolab3
   class Application < Rails::Application
+    # Initialize configuration defaults for originally generated Rails version.
+    config.load_defaults 5.0
+
     config.to_prepare do
       Devise::ConfirmationsController.skip_before_action :set_course
       Devise::ConfirmationsController.skip_before_action :authorize_user_for_course
@@ -42,8 +45,9 @@ module Autolab3
     config.action_mailer.default_url_options = {protocol: 'https', host: 'YOUR_APP_URL' }
 
     # Settings in config/environments/* take precedence over those specified here.
-    # Application configuration should go into files in config/initializers
-    # -- all .rb files in that directory are automatically loaded.
+    # Application configuration can go into files in config/initializers
+    # -- all .rb files in that directory are automatically loaded after loading
+    # the framework and any gems in your application.
 
     # Custom directories with classes and modules you want to be autoloadable.
     # config.autoload_paths += %W(#{config.root}/extras)
