@@ -173,7 +173,11 @@ GEM
     jstz-rails3-plus (1.0.5)
       railties (>= 3.1)
     jwt (2.4.1)
+    libv8-node (15.14.0.1)
     libv8-node (15.14.0.1-arm64-darwin-21)
+    libv8-node (15.14.0.1-x86_64-darwin-19)
+    libv8-node (15.14.0.1-x86_64-darwin-20)
+    libv8-node (15.14.0.1-x86_64-linux)
     lockbox (1.0.0)
     loofah (2.18.0)
       crass (~> 1.0.2)
@@ -193,6 +197,7 @@ GEM
       nokogiri (~> 1)
       rake
     mini_mime (1.1.2)
+    mini_portile2 (2.8.0)
     mini_racer (0.4.0)
       libv8-node (~> 15.14.0.0)
     minitest (5.16.2)
@@ -206,7 +211,14 @@ GEM
     net-ldap (0.17.1)
     newrelic_rpm (8.8.0)
     nio4r (2.5.8)
+    nokogiri (1.13.6)
+      mini_portile2 (~> 2.8.0)
+      racc (~> 1.4)
     nokogiri (1.13.6-arm64-darwin)
+      racc (~> 1.4)
+    nokogiri (1.13.6-x86_64-darwin)
+      racc (~> 1.4)
+    nokogiri (1.13.6-x86_64-linux)
       racc (~> 1.4)
     oauth2 (1.4.10)
       faraday (>= 0.17.3, < 3.0)
@@ -401,6 +413,10 @@ GEM
 
 PLATFORMS
   arm64-darwin-21
+  ruby
+  x86_64-darwin-19
+  x86_64-darwin-20
+  x86_64-linux
 
 DEPENDENCIES
   better_errors
