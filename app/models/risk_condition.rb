@@ -25,8 +25,9 @@ class RiskCondition < ApplicationRecord
             "Make sure your request body fits the criteria!"
     end
 
-    options = { course_id: course_id, condition_type: type, parameters: params, version: version }
-    new_risk_condition = RiskCondition.new(options)
+    options = { course_id: course_id, condition_type: type, parameters: params.to_hash,
+                version: version }
+    new_risk_condition = RiskCondition.new(options.to_hash)
     unless new_risk_condition.save
       raise "Fail to create new risk condition with type #{type} for course #{course_id}"
     end
