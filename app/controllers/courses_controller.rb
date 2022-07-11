@@ -278,8 +278,9 @@ class CoursesController < ApplicationController
     @cuds.each do |cud|
       user = cud.user
       # to_csv avoids issues with commas
-      output += [@course.semester, cud.user.email, user.last_name, user.first_name, cud.school,
-                 cud.major, cud.year, cud.grade_policy, cud.lecture, cud.section].to_csv
+      output += [@course.semester, cud.user.email, user.last_name, user.first_name,
+                 cud.school, cud.major, cud.year, cud.grade_policy,
+                 @course.name, cud.lecture, cud.section].to_csv
     end
     send_data output, filename: "roster.csv", type: "text/csv", disposition: "inline"
   end
@@ -644,6 +645,7 @@ private
                     major: row[5].to_s.chomp(" "),
                     year: row[6].to_s.chomp(" "),
                     grade_policy: row[7].to_s.chomp(" "),
+                    # Ignore courseNumber (row[8])
                     lecture: row[9].to_s.chomp(" "),
                     section: row[10].to_s.chomp(" ") }
         cud = @currentCUDs.find do |current|
