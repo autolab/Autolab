@@ -730,19 +730,19 @@ private
     case parsedRoster[0].length
     when ROSTER_COLUMNS_F20
       # In CMU S3 roster. Columns are:
-      # Semester(0), Course(1), Section(2), (Lecture)(3), (Mini-skip)(4),
+      # Semester(0), Course(1), Section(2), Lecture(3), (Mini-skip)(4),
       # Last Name(5), Preferred/First Name(6), (MI-skip)(7), Andrew ID(8),
       # (Email-skip)(9), College(10), (Department-skip)(11), Major(12),
       # Class(13), Graduation Semester(skip)(14), Units(skip)(15), Grade Option(16), ...
-      map = [0, 8, 5, 6, 10, 12, 13, 16, -1, 1, 2]
+      map = [0, 8, 5, 6, 10, 12, 13, 16, -1, 3, 2]
       select_columns = ROSTER_COLUMNS_F20
     when ROSTER_COLUMNS_F16
       # In CMU S3 roster. Columns are:
-      # Semester(0), Course(1), Section(2), (Lecture-skip)(3), (Mini-skip)(4),
+      # Semester(0), Course(1), Section(2), Lecture(3), (Mini-skip)(4),
       # Last Name(5), First Name(6), (MI-skip)(7), Andrew ID(8),
       # (Email-skip)(9), School(10), (Department-skip)(11), Major(12),
       # Year(13), (skip)(14), Grade Policy(15), ...
-      map = [0, 8, 5, 6, 10, 12, 13, 15, -1, 1, 2]
+      map = [0, 8, 5, 6, 10, 12, 13, 15, -1, 3, 2]
       select_columns = ROSTER_COLUMNS_F16
     when ROSTER_COLUMNS_S15
       # In CMU S3 roster. Columns are:
