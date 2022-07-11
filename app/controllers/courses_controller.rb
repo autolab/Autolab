@@ -651,8 +651,14 @@ private
         end
 
         if !cud
+          # New account
           new_cud[:color] = "green"
+        elsif cud.dropped
+          # Undropped account
+          new_cud[:color] = "blue"
+          @currentCUDs.delete(cud)
         else
+          # Existing account
           @currentCUDs.delete(cud)
         end
         @cuds << new_cud

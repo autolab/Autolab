@@ -645,15 +645,23 @@ div.field_with_errors {
   }
 }
 
+/* New account */
 .green_cud {
   color: green;
 }
 
+/* Undropped account */
+.blue_cud {
+  color: blue;
+}
+
+/* Dropped account */
 .red_cud {
   color: red;
 }
 
 .green_cud,
+.blue_cud,
 .red_cud {
   font-weight: 400;
 }
