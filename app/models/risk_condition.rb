@@ -27,7 +27,7 @@ class RiskCondition < ApplicationRecord
 
     options = { course_id: course_id, condition_type: type, parameters: params.to_hash,
                 version: version }
-    new_risk_condition = RiskCondition.new(options.to_hash)
+    new_risk_condition = RiskCondition.new(options)
     unless new_risk_condition.save
       raise "Fail to create new risk condition with type #{type} for course #{course_id}"
     end
