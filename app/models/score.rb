@@ -23,7 +23,6 @@ class Score < ApplicationRecord
   validates :grader_id, presence: true
 
   after_commit :log_entry, on: [:create, :update]
-  after_commit :log_delete, on: [:destroy]
 
   def self.find_with_feedback(*args)
     with_exclusive_scope { find(*args) }
@@ -58,10 +57,6 @@ class Score < ApplicationRecord
     "#{submission.course_user_datum.user.email} set to " \
     "#{score} on #{submission.assessment.name}:#{problem.name} by" \
     " #{setter}")
-  end
-
-  def log_delete
-    COURSE_LOGGER.log("Score #{id} DESTROYED for #{submission.course_user_datum.user.email}")
   end
 
 private
