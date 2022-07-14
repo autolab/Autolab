@@ -64,8 +64,6 @@ Run `bundle install` again
 
 If neither of these works, try exploring [this StackOverflow link](http://stackoverflow.com/questions/23536893/therubyracer-gemextbuilderror-error-failed-to-build-gem-native-extension)
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 ##### `mimemagic`
 
 Another error that may occur on macOS when running `bundle install` is that the dependancy mimemagic may fail to install, causing `bundle install` to fail. A possible fix is if you have homebrew installed, run:
@@ -74,12 +72,6 @@ brew install shared-mime-info
 bundle install
 ```
 For more information, read the following [github issues link](https://github.com/mimemagicrb/mimemagic/issues/162).
-=======
-Another error that may occur on macOS when running `bundle install` is that the dependancy mimemagic may fail to install, causing `bundle install` to fail. A possible fix is if you have homebrew installed, run `brew install shared-mime-info` and then run `bundle install`. For more information, read the follow [github issues link](https://github.com/mimemagicrb/mimemagic/issues/162).
->>>>>>> Added small section to troubleshooting about possible error when running bundle install on mac
-=======
-Another error that may occur on macOS when running `bundle install` is that the dependancy mimemagic may fail to install, causing `bundle install` to fail. A possible fix is if you have homebrew installed, run `brew install shared-mime-info` and then run `bundle install`. For more information, read the follow [github issues link](https://github.com/mimemagicrb/mimemagic/issues/162).
->>>>>>> 4b24e5ea74a0d4b73abf4640e05e953cbf29a626
 
 #### Can't connect to local MySQL server through socket
 Make sure you've started the MySQL server and double-check the socket in `config/database.yml`
