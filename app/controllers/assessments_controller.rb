@@ -116,6 +116,7 @@ class AssessmentsController < ApplicationController
       # assessment names must be only lowercase letters and digits
       if filename =~ /[^a-z0-9]/
         # add line break if adding to existing error message
+        flash[:html_safe] = true
         flash[:error] = flash[:error] ? flash[:error] + "<br>" : ""
         flash[:error] += "An error occured while trying to display an existing assessment on file directory #{filename}: assessment file names must only contain lowercase letters and digits with no spaces"
         next
@@ -123,6 +124,7 @@ class AssessmentsController < ApplicationController
 
       # each assessment must have an associated yaml file
       unless File.exist?(File.join(ass_dir, filename, "#{filename}.yml"))
+        flash[:html_safe] = true
         flash[:error] = flash[:error] ? flash[:error] + "<br>" : ""
         flash[:error] += "An error occured while trying to display an existing assessment on file directory #{filename}: #{filename}.yml does not exist"
         next
