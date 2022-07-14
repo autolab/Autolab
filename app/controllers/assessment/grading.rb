@@ -426,12 +426,12 @@ private
       problem_stats = {}
       # seems like we always index with 1
       @assessment.problems.each do |problem|
-        problem_stats[problem.name] =  stats.stats(problem_scores[problem.id])
+        problem_stats[problem.name] = stats.stats(problem_scores[problem.id])
       end
       problem_stats[:Total] = stats.stats(problem_scores[:total])
       result[group] = {}
       result[group][:data] = problem_stats
-      result[group][:total_students] =problem_scores[ problem_scores.keys[1]].length
+      result[group][:total_students] = problem_scores[:total].length
     end
     # raise result.inspect
     result
