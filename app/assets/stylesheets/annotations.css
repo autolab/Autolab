@@ -650,7 +650,7 @@
   margin-left:10px;
 }
 
-.file{
+.file, .folder{
   margin-left:5px;
   padding: 3px;
 }
