@@ -15,11 +15,14 @@ module Archive
 
     files = []
 
-    # Parse archive header
-    archive_extract.each_with_index do |entry, i|
+    pathnames = archive_extract.map do |entry|
       # Obtain path name depending for tar/zip entry
-      pathname = get_entry_name(entry)
+      get_entry_name(entry)
+    end
 
+    pathnames.sort!
+
+    pathnames.each_with_index do |pathname, i|
       files << {
         pathname: pathname,
         header_position: i,
