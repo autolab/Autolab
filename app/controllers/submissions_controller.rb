@@ -407,12 +407,6 @@ class SubmissionsController < ApplicationController
       ensure
         ctagFile.unlink if defined?(ctagFile) && !ctagFile.nil?
       end
-      # rescue
-      # flash[:error] =
-      # "Sorry, we could not display your file because it contains non-ASCII characters.
-      # Please remove these characters and resubmit your work."
-      # redirect_to(:back) && return
-      # end
 
       begin
         # replace tabs with 4 spaces
