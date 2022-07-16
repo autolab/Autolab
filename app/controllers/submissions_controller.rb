@@ -160,7 +160,12 @@ class SubmissionsController < ApplicationController
 
     if @assessment.disable_handins
       flash[:error] = "There are no submissions to download."
-      redirect_to([@course, @assessment, :submissions]) && return
+      if @cud.course_assistant
+        redirect_to([@course, @assessment])
+      else
+        redirect_to([@course, @assessment, :submissions])
+      end
+      return
     end
 
     submissions = if params[:final]
@@ -177,7 +182,12 @@ class SubmissionsController < ApplicationController
 
     if result.nil?
       flash[:error] = "There are no submissions to download."
-      redirect_to([@course, @assessment, :submissions]) && return
+      if @cud.course_assistant
+        redirect_to([@course, @assessment])
+      else
+        redirect_to([@course, @assessment, :submissions])
+      end
+      return
     end
 
     send_data(result.read, # to read from stringIO object returned by create_zip
