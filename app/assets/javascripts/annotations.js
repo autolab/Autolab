@@ -259,11 +259,11 @@ $(document).keydown(function (e) {
       }
       break;
 
-    case 219: // left bracket - navigate to older version
+    case 219: // left square bracket - navigate to the previous version containing this file
       $('#prev_version_link')[0].click();
       break;
 
-    case 221: // right bracket - navigate to newer version
+    case 221: // right square bracket - navigate to the next version containing this file
       $('#next_version_link')[0].click();
       break;
 
