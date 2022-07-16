@@ -454,7 +454,6 @@ class SubmissionsController < ApplicationController
     @problems = @assessment.problems.to_a
     @problems.sort! { |a, b| a.id <=> b.id }
 
-    # Previous and next student
     @latestSubmissions = @assessment.assessment_user_data
                                     .map(&:latest_submission)
                                     .reject(&:nil?)
@@ -462,6 +461,7 @@ class SubmissionsController < ApplicationController
     @curSubmissionIndex = @latestSubmissions.index do |submission|
       submission.course_user_datum.user.email == @submission.course_user_datum.user.email
     end
+    # Previous and next student
     @prevSubmission = if @curSubmissionIndex > 0
                         @latestSubmissions[@curSubmissionIndex - 1]
                       end
@@ -469,18 +469,49 @@ class SubmissionsController < ApplicationController
                         @latestSubmissions[@curSubmissionIndex + 1]
                       end
 
-    # Previous and next versions
     @userVersions = @assessment.submissions
                                .where(course_user_datum_id: @submission.course_user_datum_id)
                                .order("version DESC")
-    @curVersionIndex = @userVersions.index do |submission|
-      submission.version == @submission.version
+    # Find user submissions that contain the same pathname
+    matchedVersions = []
+    @userVersions.each do |submission|
+      submission_filename = submission.handin_file_path
+      # Extract files of submission
+      submission_files = if Archive.archive? submission_filename
+                           Archive.get_files(submission_filename)
+                         else
+                           [{
+                             pathname: submission_filename,
+                             header_position: 0,
+                             mac_bs_file: submission_filename.include?("__MACOSX") ||
+                               submission_filename.include?(".DS_Store") ||
+                               submission_filename.include?(".metadata"),
+                             directory: Archive.looks_like_directory?(submission_filename)
+                           }]
+                         end
+
+      # Find index correlating to the pathname
+      matched_file = submission_files.detect { |submission_file|
+        submission_file[:pathname] == @displayFilename
+      }
+      next if matched_file.nil?
+
+      matchedVersions << {
+        version: submission.version,
+        header_position: matched_file[:header_position],
+        submission: submission
+      }
     end
-    @prevVersion = if @curVersionIndex < (@userVersions.size - 1)
-                     @userVersions[@curVersionIndex + 1]
+
+    @curVersionIndex = matchedVersions.index do |submission|
+      submission[:version] == @submission.version
+    end
+    # Previous and next versions
+    @prevVersion = if @curVersionIndex < (matchedVersions.size - 1)
+                     matchedVersions[@curVersionIndex + 1]
                    end
     @nextVersion = if @curVersionIndex > 0
-                     @userVersions[@curVersionIndex - 1]
+                     matchedVersions[@curVersionIndex - 1]
                    end
 
     # Adding allowing scores to be assessed by the view
