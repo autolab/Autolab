@@ -26,6 +26,7 @@ class ProblemsController < ApplicationController
     @problem.errors.full_messages.each do |msg|
       flash[:error] += "<br>#{msg}"
     end
+    flash[:html_safe] = true
     redirect_to([:new, @course, @assessment, :problem]) && return
   end
 
@@ -41,6 +42,7 @@ class ProblemsController < ApplicationController
       @problem.errors.full_messages.each do |msg|
         flash[:error] += "<br>#{msg}"
       end
+      flash[:html_safe] = true
     end
     redirect_to(problems_index) && return
   end
@@ -50,10 +52,11 @@ class ProblemsController < ApplicationController
     if @problem.destroy
       flash[:success] = "Problem successfully destroyed."
     else
-      flash[:success] = "Problem failed to destroy:"
+      flash[:error] = "Problem failed to destroy:"
       @problem.errors.full_messages.each do |msg|
         flash[:error] += "<br>#{msg}"
       end
+      flash[:html_safe] = true
     end
 
     redirect_to(problems_index) && return

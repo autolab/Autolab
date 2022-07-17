@@ -99,6 +99,7 @@ class SubmissionsController < ApplicationController
     @submission.errors.full_messages.each do |msg|
       flash[:error] += "<br>#{msg}"
     end
+    flash[:html_safe] = true
     redirect_to(edit_course_assessment_submission_path(@submission.course_user_datum.course,
                                                        @assessment, @submission)) && return
   end
@@ -156,11 +157,17 @@ class SubmissionsController < ApplicationController
       @assessment.errors.full_messages.each do |msg|
         flash[:error] += "<br>#{msg}"
       end
+      flash[:html_safe] = true
     end
 
     if @assessment.disable_handins
       flash[:error] = "There are no submissions to download."
-      redirect_to([@course, @assessment, :submissions]) && return
+      if @cud.course_assistant
+        redirect_to([@course, @assessment])
+      else
+        redirect_to([@course, @assessment, :submissions])
+      end
+      return
     end
 
     submissions = if params[:final]
@@ -177,7 +184,12 @@ class SubmissionsController < ApplicationController
 
     if result.nil?
       flash[:error] = "There are no submissions to download."
-      redirect_to([@course, @assessment, :submissions]) && return
+      if @cud.course_assistant
+        redirect_to([@course, @assessment])
+      else
+        redirect_to([@course, @assessment, :submissions])
+      end
+      return
     end
 
     send_data(result.read, # to read from stringIO object returned by create_zip
