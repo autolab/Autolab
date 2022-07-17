@@ -99,6 +99,7 @@ class SubmissionsController < ApplicationController
     @submission.errors.full_messages.each do |msg|
       flash[:error] += "<br>#{msg}"
     end
+    flash[:html_safe] = true
     redirect_to(edit_course_assessment_submission_path(@submission.course_user_datum.course,
                                                        @assessment, @submission)) && return
   end
@@ -156,6 +157,7 @@ class SubmissionsController < ApplicationController
       @assessment.errors.full_messages.each do |msg|
         flash[:error] += "<br>#{msg}"
       end
+      flash[:html_safe] = true
     end
 
     if @assessment.disable_handins
