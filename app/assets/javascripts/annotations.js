@@ -72,6 +72,9 @@ function changeFile(headerPos) {
     // Update the page URL
     history.replaceState(null, null, newFile.url);
 
+    // Update version buttons
+    $('#version_links').replaceWith(newFile.versionLinks);
+
     displayAnnotations();
     attachEvents();
     return true;
