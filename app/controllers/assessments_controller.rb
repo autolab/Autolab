@@ -113,15 +113,25 @@ class AssessmentsController < ApplicationController
       next if !File.directory?(File.join(ass_dir,
                                          filename)) || (filename == "..") || (filename == ".")
 
-      # assessment's yaml file must exist
-      unless File.exist?(File.join(ass_dir, filename, "#{filename}.yml"))
-        flash[:error] = flash[:error] || ""
-        flash[:error] += "Yml does not exist: #{filename}     -     "
+      # assessment names must be only lowercase letters and digits
+      if filename =~ /[^a-z0-9]/
+        # add line break if adding to existing error message
+        flash.now[:error] = flash.now[:error] ? "#{flash.now[:error]} <br>" : ""
+        flash.now[:error] += "An error occurred while trying to display an existing assessment " \
+            "on file directory #{filename}: assessment file names must only contain lowercase " \
+            "letters and digits with no spaces"
+        flash.now[:html_safe] = true
         next
       end
 
-      # names must be only lowercase letters and digits
-      next if filename =~ /[^a-z0-9]/
+      # each assessment must have an associated yaml file
+      unless File.exist?(File.join(ass_dir, filename, "#{filename}.yml"))
+        flash.now[:error] = flash.now[:error] ? "#{flash.now[:error]} <br>" : ""
+        flash.now[:error] += "An error occurred while trying to display an existing assessment " \
+          "on file directory #{filename}: #{filename}.yml does not exist"
+        flash.now[:html_safe] = true
+        next
+      end
 
       # Only list assessments that aren't installed yet
       assessment_exists = @course.assessments.exists?(name: filename)

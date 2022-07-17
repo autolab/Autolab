@@ -50,7 +50,7 @@
 	</div>
 <% end %>
 
-  <%= render partial: "fields", locals: {f: f, cud: @newCUD} %>
+  <%= render partial: "fields", locals: {f: f, cud: @newCUD, edit: false} %>
 
   <br>
   <input id="user_submit" class="btn primary"name="commit" type="submit" value="Save Changes" onclick="formvalidation(this.parentNode); return false;">

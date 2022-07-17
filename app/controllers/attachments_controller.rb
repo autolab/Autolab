@@ -75,6 +75,7 @@ class AttachmentsController < ApplicationController
         error_msg += "<br>Unknown error"
       end
       flash[:error] = error_msg
+      flash[:html_safe] = true
       COURSE_LOGGER.log("Failed to update attachment: #{error_msg}")
 
       if @is_assessment
