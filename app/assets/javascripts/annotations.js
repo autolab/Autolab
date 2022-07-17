@@ -87,6 +87,7 @@ function purgeCurrentPageCache() {
     codeBox: `<div id="code-box">${$('#code-box').html()}</div>`,
     pdf: false,
     symbolTree: `<div id="symbol-tree-box">${$('#symbol-tree-box').html()}</div>`,
+    versionLinks: `<span id="version_links">${$('#version_links').html()}</span>`,
     url: window.location.href,
   };
 }
