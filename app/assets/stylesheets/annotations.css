@@ -578,18 +578,18 @@
 }
 
 .annotation-comment {
-  margin-bottom:0; 
+  margin-bottom:0;
   padding-bottom:0 !important;
 }
 
 .annotation-problem-score {
-  margin-bottom:0; 
-  margin-top:0 !important; 
+  margin-bottom:0;
+  margin-top:0 !important;
   padding-bottom:0 !important;
 }
 
 .annotation-buttons {
-  margin-top:0 !important; 
+  margin-top:0 !important;
   margin-bottom:0 !important;
 }
 
@@ -650,7 +650,7 @@
   margin-left:10px;
 }
 
-.file{
+.file, .folder{
   margin-left:5px;
   padding: 3px;
 }
