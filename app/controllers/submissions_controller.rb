@@ -475,30 +475,28 @@ class SubmissionsController < ApplicationController
     # Find user submissions that contain the same pathname
     matchedVersions = []
     @userVersions.each do |submission|
-      submission_filename = submission.handin_file_path
-      # Extract files of submission
-      submission_files = if Archive.archive? submission_filename
-                           Archive.get_files(submission_filename)
-                         else
-                           [{
-                             pathname: submission_filename,
-                             header_position: 0,
-                             mac_bs_file: submission_filename.include?("__MACOSX") ||
-                               submission_filename.include?(".DS_Store") ||
-                               submission_filename.include?(".metadata"),
-                             directory: Archive.looks_like_directory?(submission_filename)
-                           }]
-                         end
+      submission_path = submission.handin_file_path
 
-      # Find index correlating to the pathname
-      matched_file = submission_files.detect { |submission_file|
-        submission_file[:pathname] == @displayFilename
-      }
-      next if matched_file.nil?
+      # Find corresponding header position
+      header_position = if Archive.archive? submission_path
+                          submission_files = Archive.get_files(submission_path)
+                          matched_file = submission_files.detect { |submission_file|
+                            submission_file[:pathname] == @displayFilename
+                          }
+                          # Skip if file doesn't exist
+                          next if matched_file.nil?
+
+                          matched_file[:header_position]
+                        end
+      # If not an archive, header_position = nil
+      # This ensures that in _version_links.html.erb, header_position is not set in the querystring
+      # for the prev / next button urls
+      # Otherwise, pure PDF submissions would not load as #download sees the header_position
+      # and treats the file as an archive
 
       matchedVersions << {
         version: submission.version,
-        header_position: matched_file[:header_position],
+        header_position: header_position,
         submission: submission
       }
     end
