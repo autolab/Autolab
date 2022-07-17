@@ -543,7 +543,7 @@ private
   end
 
   ##
-  # This function attempts to preserve Backwords Compatibility for when assessments are
+  # This function attempts to preserve Backwards Compatibility for when assessments are
   # imported from a YAML file
   #
   GENERAL_BC = { "category" => "category_name",

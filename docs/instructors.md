@@ -43,7 +43,7 @@ You can tag each assessment with an arbitrary user-defined _category_, e.g., "La
 
 ## Autograders and Scoreboards
 
-Labs can be _autograded_ or not, at your disrcretion. When a student submits to an autograded lab, Autolab runs an instructor-supplied _autograder_ program that assigns scores to one or more problems associated with the lab. Autograded labs can have an optional _scoreboard_ that shows (anonymized) results in real-time. See the companion [Guide For Lab Authors](/lab/) for details on writing autograded labs with scoreboards.
+Labs can be _autograded_ or not, at your discretion. When a student submits to an autograded lab, Autolab runs an instructor-supplied _autograder_ program that assigns scores to one or more problems associated with the lab. Autograded labs can have an optional _scoreboard_ that shows (anonymized) results in real-time. See the companion [Guide For Lab Authors](/lab/) for details on writing autograded labs with scoreboards.
 
 ## Important Dates
 
@@ -80,9 +80,9 @@ _Grades_ come in a number of different forms:
 
 3. _Assessment total score:_ The total score is the raw score, plus any late penalties, plus any instructor _tweaks_.
 
-4. _Category averages:_ This is the average for a particular student over all assessments in a specific instructor-defined category such as "Labs, or "Exams". By default the category average is the arithmetic mean of all assessment total scores, but it can be overwridden. See below.
+4. _Category averages:_ This is the average for a particular student over all assessments in a specific instructor-defined category such as "Labs, or "Exams". By default the category average is the arithmetic mean of all assessment total scores, but it can be overridden. See below.
 
-5. _Course Average:_ By default, the course average is average of all category averages, but can be overidden. See below.
+5. _Course Average:_ By default, the course average is average of all category averages, but can be overridden. See below.
 
 Submissions can be classified as one of three types: "Normal", "No Grade" or "Excused". A "No Grade" submission will show up in the gradebook as NG and a zero will be used when calculating averages. An "Excused" submission will show up in the gradebook as EXC and will not be used when calculating averages.
 
@@ -207,7 +207,7 @@ For each lab, students can view all of their submissions, including any source c
 
 The _gradesheet_ (not to be confused with the _gradebook_) is the workhorse grading tool. Each assessment has a separate gradesheet with the following features:
 
--   Provides an interface for manually entering problem scores (and problem feedback) for the most recent submmission from each student.
+-   Provides an interface for manually entering problem scores (and problem feedback) for the most recent submission from each student.
 
 -   Provides an interface for viewing and annotating the submitted code.
 

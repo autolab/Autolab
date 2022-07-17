@@ -150,7 +150,7 @@ class Submission < ApplicationRecord
     archive = File.join(assessment.handin_directory_path, "archive")
     Dir.mkdir(archive) unless FileTest.directory?(archive)
 
-    # Using the id instead of the version guarentees a unique filename
+    # Using the id instead of the version guarantees a unique filename
     submission_backup = File.join(archive, "deleted_#{filename}")
     FileUtils.mv(handin_file_path, submission_backup)
 
@@ -350,7 +350,7 @@ class Submission < ApplicationRecord
     (aud.latest_submission_id == id)
   end
 
-  # override as_json to include the total with a paramter
+  # override as_json to include the total with a parameter
   def as_json(options = {})
     json = super(options)
     json["total"] = final_score options[:seen_by]
@@ -387,6 +387,12 @@ class Submission < ApplicationRecord
   # easy access to AUD
   def aud
     assessment.aud_for course_user_datum_id
+  end
+
+  def group_associated_submissions
+    raise "Submission is not associated with a group" if group_key.empty?
+
+    Submission.where(group_key: group_key).where.not(id: id)
   end
 
 private

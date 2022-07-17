@@ -43,16 +43,42 @@ class Annotation < ApplicationRecord
     end
 
     # Obtain sum of all annotations for this score
-    annotation_delta = Annotation
-                       .where(submission_id: submission_id,
-                              problem_id: problem_id)
-                       .map(&:value).sum { |v| v.nil? ? 0 : v }
+    if submission.group_key.empty?
+      annotation_delta = Annotation
+                         .where(submission_id: submission_id,
+                                problem_id: problem_id)
+                         .map(&:value).sum { |v| v.nil? ? 0 : v }
+    else
+      submissions = Submission.where(group_key: submission.group_key)
+      annotation_delta = 0
+      submissions.each do |submission|
+        annotation_delta += submission.annotations.where(problem_id: problem_id)
+                                      .map(&:value).sum { |v| v.nil? ? 0 : v }
+      end
+    end
 
     # Default score to 0 if problem.max_score is nil
     max_score = score.problem.max_score || 0
     new_score = max_score + annotation_delta
 
     # Update score
-    score.update!(score: new_score)
+    if submission.group_key.empty?
+      score.update!(score: new_score)
+    else
+      # Find all scores
+      group_submissions = submission.group_associated_submissions
+      scores = [score]
+      group_submissions.each do |group_submission|
+        group_score = Score
+                      .find_or_initialize_by_submission_id_and_problem_id(
+                        group_submission.id, problem_id
+                      )
+        group_score.grader_id = score.grader_id
+        scores.append(group_score)
+      end
+      scores.each do |group_score|
+        group_score.update!(score: new_score)
+      end
+    end
   end
 end

@@ -3,7 +3,7 @@
 !!! bug "Attention"
     The OneClick installation is currently broken. We are in the midst of migrating to Docker for installation. Please treat this page as legacy reference.
 
-OneClick is the fastest way to install Autolab and Tango on an Ubuntu VM. The installation uses packages Autolab, MySQL, and Tango into seperate Docker containers with specific exposed ports for communication.
+OneClick is the fastest way to install Autolab and Tango on an Ubuntu VM. The installation uses packages Autolab, MySQL, and Tango into separate Docker containers with specific exposed ports for communication.
 
 There are two types of installations. A local development setup and a real-world ready setup that requires SSL certificates, email service configuration, and domain name registration. Use the local setup for experimentation before deploying in a real-world scenario on such apps like Heroku, EC2, or DigitalOcean, among others.
 
@@ -101,11 +101,11 @@ You can run Autolab with or without HTTPS encryption. We strongly recommend you 
 
 Here are a few options to get the SSL certificate and key:
 
-1.  Go through your school/organization
+1. Go through your school/organization
 
     Many universities have a program whereby they'll grant SSL certificates to students and faculty for free. Some of these programs require you to be using a school-related domain name, but some don't. You should be able to find out more information from your school's IT department.
 
-2.  Use paid service: SSLmate
+2. Use paid service: SSLmate
 
     You can follow this [simple guide](https://sslmate.com/help/getting_started) to get your paid SSL with [SSLMate](https://sslmate.com/) in the simplest way.
 
@@ -125,17 +125,17 @@ Autolab uses email for various features, include sending out user confirmation e
 
 ### 2. Download and Configuration
 
-1.  Use root to install Autolab
+1. Use root to install Autolab
 
         :::bash
         sudo -i
 
-2.  Clone the installation package
+2. Clone the installation package
 
         :::bash
         git clone https://github.com/autolab/autolab-oneclick.git; cd autolab-oneclick
 
-3.  Generate a new secret key for Devise Auth Configuration:
+3. Generate a new secret key for Devise Auth Configuration:
 
         :::bash
         python -c "import random; print hex(random.getrandbits(512))[2:-1]"
@@ -167,18 +167,18 @@ Autolab uses email for various features, include sending out user confirmation e
         :::ruby
         # config.middleware.use Rack::SslEnforcer, :except => [ /log_submit/, /local_submit/ ]
 
-6.  Configure Nginx in `server/configs/nginx.conf`
+6. Configure Nginx in `server/configs/nginx.conf`
 
         :::ruby
         server_name <YOUR_SERVER_DOMAIN>
         ssl_certificate /path/to/ssl_certificate/file
         ssl_certificate_key /path/to/ssl_certificate_key/file
 
-7.  Configure Email in `server/configs/production.rb`. Update the address, port, user_name, password and domain with your email service informations. For Mandrill, go to "SMTP & API Info" to see the informations.
+7. Configure Email in `server/configs/production.rb`. Update the address, port, user_name, password and domain with your email service information. For Mandrill, go to "SMTP & API Info" to see the information.
 
 ### 3. Installation
 
-1.  Start Installation
+1. Start Installation
 
         ::bash
         cd autolab-oneclick
@@ -186,7 +186,7 @@ Autolab uses email for various features, include sending out user confirmation e
 
     Answer the prompts and wait until you see `Autolab Installation Finished`.
 
-2.  Ensure docker containers are running
+2. Ensure docker containers are running
 
         :::bash
         docker ps

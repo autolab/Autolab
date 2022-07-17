@@ -9,7 +9,7 @@
 class ApplicationController < ActionController::Base
   helper :all # include all helpers, all the time
 
-  before_action :configure_permitted_paramters, if: :devise_controller?
+  before_action :configure_permitted_parameters, if: :devise_controller?
   before_action :maintenance_mode?
   before_action :run_scheduler
 
@@ -77,7 +77,7 @@ class ApplicationController < ActionController::Base
   def self.action_no_auth(action)
     skip_before_action :verify_authenticity_token, only: [action], raise: false
     skip_before_action :authenticate_user!, only: [action], raise: false
-    skip_before_action :configure_permitted_paramters, only: [action], raise: false
+    skip_before_action :configure_permitted_parameters, only: [action], raise: false
     skip_before_action :maintenance_mode?, only: [action], raise: false
     skip_before_action :run_scheduler, only: [action], raise: false
 
@@ -89,7 +89,7 @@ class ApplicationController < ActionController::Base
 
 protected
 
-  def configure_permitted_paramters
+  def configure_permitted_parameters
     devise_parameter_sanitizer.permit(:sign_in) { |u| u.permit(:email) }
     devise_parameter_sanitizer.permit(:sign_up) do |u|
       u.permit(:email, :first_name, :last_name, :password, :password_confirmation)
@@ -179,7 +179,7 @@ protected
 
     when :admin_created
       @cud = cud
-      flash[:info] = "Administrator user added to course"
+      flash[:notice] = "Administrator user added to course"
 
     when :admin_creation_error
       flash[:error] = "Error adding administrator #{current_user.email} to course"
@@ -211,6 +211,7 @@ protected
     @cud.errors.full_messages.each do |msg|
       flash[:error] += "<br>#{msg}"
     end
+    flash[:html_safe] = true
     redirect_to([:edit, @course, @cud]) && return
   end
 
@@ -352,7 +353,7 @@ private
         if !current_user.nil? && (current_user.instructor? || current_user.administrator?)
           @error = exception
 
-          # Generate course id and assesssment id objects
+          # Generate course id and assessment id objects
           @course_name = params[:course_name] ||
                          (params[:controller] == "courses" ? params[:name] : nil)
           if @course_name

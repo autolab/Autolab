@@ -99,6 +99,7 @@ class SubmissionsController < ApplicationController
     @submission.errors.full_messages.each do |msg|
       flash[:error] += "<br>#{msg}"
     end
+    flash[:html_safe] = true
     redirect_to(edit_course_assessment_submission_path(@submission.course_user_datum.course,
                                                        @assessment, @submission)) && return
   end
@@ -156,11 +157,17 @@ class SubmissionsController < ApplicationController
       @assessment.errors.full_messages.each do |msg|
         flash[:error] += "<br>#{msg}"
       end
+      flash[:html_safe] = true
     end
 
     if @assessment.disable_handins
       flash[:error] = "There are no submissions to download."
-      redirect_to([@course, @assessment, :submissions]) && return
+      if @cud.course_assistant
+        redirect_to([@course, @assessment])
+      else
+        redirect_to([@course, @assessment, :submissions])
+      end
+      return
     end
 
     submissions = if params[:final]
@@ -177,7 +184,12 @@ class SubmissionsController < ApplicationController
 
     if result.nil?
       flash[:error] = "There are no submissions to download."
-      redirect_to([@course, @assessment, :submissions]) && return
+      if @cud.course_assistant
+        redirect_to([@course, @assessment])
+      else
+        redirect_to([@course, @assessment, :submissions])
+      end
+      return
     end
 
     send_data(result.read, # to read from stringIO object returned by create_zip
@@ -426,6 +438,12 @@ class SubmissionsController < ApplicationController
     @problemReleased = @submission.scores.pluck(:released).all?
 
     @annotations = @submission.annotations.to_a
+    unless @submission.group_key.empty?
+      group_submissions = @submission.group_associated_submissions
+      group_submissions.each do |group_submission|
+        @annotations += group_submission.annotations.to_a
+      end
+    end
     @annotations.sort! { |a, b| a.line.to_i <=> b.line.to_i }
 
     @problemSummaries = {}
@@ -566,7 +584,7 @@ private
   end
 
   # Extract the andrewID from a filename.
-  # Filename format is andrewID_version_asessment.ext
+  # Filename format is andrewID_version_assessment.ext
   def extractAndrewID(filename)
     underscoreInd = filename.index("_")
     return filename[0...underscoreInd] unless underscoreInd.nil?
@@ -575,7 +593,7 @@ private
   end
 
   # Extract the version from a filename
-  # Filename format is andrewID_version_asessment.ext
+  # Filename format is andrewID_version_assessment.ext
   def extractVersion(filename)
     firstUnderscoreInd = filename.index("_")
     return nil if firstUnderscoreInd.nil?

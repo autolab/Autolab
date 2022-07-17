@@ -5,7 +5,7 @@ class GithubIntegrationsController < ApplicationController
   skip_before_action :update_persistent_announcements
   before_action :set_github_integration
 
-  # This API endpoint retrives the 30 most recently pushed repositories of the user
+  # This API endpoint retrieves the 30 most recently pushed repositories of the user
   # if the user has connected their account to Github
   action_auth_level :get_repositories, :student
   def get_repositories

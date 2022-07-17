@@ -4,7 +4,7 @@ Annotations is a feature introduced as part of the Speedgrader update to Autolab
 
 ![Annotation Form](/images/annotations.png)
 
-Hover over any line of the code and click on the green arrow, and the annotation form will appear. Add the comment, adjust the score, and select the targetted problem.
+Hover over any line of the code and click on the green arrow, and the annotation form will appear. Add the comment, adjust the score, and select the targeted problem.
 
 !!! attention "Non-Autograded Problems Only"
     Note that annotations can only be added to non-autograded problems. Specifically, a problem is non-autograded if there is no assigned score for that problem in the json outputted by the autograder

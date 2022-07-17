@@ -6,7 +6,7 @@
   For example, at CMU we use it to provide students and instructors with
   a convenient link to an older deployment of Autolab that exists solely
   for archival purposes. Uncomment the below, rename this file to drop
-  the `.template` suffix, and nagivate to Autolab in your browser to see
+  the `.template` suffix, and navigate to Autolab in your browser to see
   the effect.
 %>
 

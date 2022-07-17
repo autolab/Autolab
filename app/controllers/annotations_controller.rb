@@ -1,5 +1,5 @@
 # All modifications to the annotations are meant to be asynchronous and
-# thus this contorller only exposes javascript interfaces.
+# thus this controller only exposes javascript interfaces.
 #
 # Only people acting as instructors or CA's should be able to do anything
 # but view the annotations and since all of these mutate them, they are
@@ -30,8 +30,11 @@ class AnnotationsController < ApplicationController
   # PUT /:course/annotations/1.json
   action_auth_level :update, :course_assistant
   def update
+    tweaked_params = annotation_params
+    tweaked_params.delete(:submission_id)
+    tweaked_params.delete(:filename)
     ActiveRecord::Base.transaction do
-      @annotation.update(annotation_params)
+      @annotation.update(tweaked_params)
       @annotation.update_non_autograded_score
     end
 
@@ -75,6 +78,6 @@ private
   end
 
   def set_annotation
-    @annotation = @submission.annotations.find(params[:id])
+    @annotation = Annotation.find_by(id: params[:id])
   end
 end
