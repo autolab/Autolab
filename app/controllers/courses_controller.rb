@@ -158,6 +158,7 @@ class CoursesController < ApplicationController
       @course.errors.full_messages.each do |msg|
         flash[:error] += "<br>#{msg}"
       end
+      flash[:html_safe] = true
     end
     redirect_to edit_course_path(@course)
   end
