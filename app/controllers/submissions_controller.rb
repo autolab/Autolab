@@ -314,7 +314,7 @@ class SubmissionsController < ApplicationController
 
     if params.include?(:header_position) &&
        (params[:header_position].to_i == -1) &&
-       @submission.autograde_file.nil?
+       !@submission.autograde_file.nil?
 
       file = @submission.autograde_file.read || "Empty Autograder Output"
       @displayFilename = "Autograder Output"
