@@ -5,7 +5,7 @@ This page provides instructions on installing Autolab for development on Ubuntu 
         :::bash
         sudo apt-get update
         sudo apt-get upgrade
-        sudo apt-get install build-essential git libffi-dev zlib1g-dev autoconf bison build-essential libssl-dev libyaml-dev libreadline6-dev libncurses5-dev libgdbm5 libgdbm-dev libmysqlclient-dev libjansson-dev ctags
+        sudo apt-get install build-essential git libffi-dev zlib1g-dev autoconf bison build-essential libssl-dev libyaml-dev libreadline6-dev libncurses5-dev libgdbm5 libgdbm-dev libmysqlclient-dev libjansson-dev universal-ctags
 
 2. Cloning Autolab repo from Github to ~/Autolab
 
@@ -76,7 +76,7 @@ Following instructions from <a href="https://www.digitalocean.com/community/tuto
         cp config/school.yml.template config/school.yml
         cp config/autogradeConfig.rb.template config/autogradeConfig.rb
 
-10.  Create a .env file to store Autolab configuration constants. 
+10. Create a .env file to store Autolab configuration constants. 
 
         :::bash
         cp .env.template .env

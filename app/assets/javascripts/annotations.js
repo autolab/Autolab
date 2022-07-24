@@ -72,6 +72,9 @@ function changeFile(headerPos) {
     // Update the page URL
     history.replaceState(null, null, newFile.url);
 
+    // Update version buttons
+    $('#version-links').replaceWith(newFile.versionLinks);
+
     displayAnnotations();
     attachEvents();
     return true;
@@ -84,6 +87,7 @@ function purgeCurrentPageCache() {
     codeBox: `<div id="code-box">${$('#code-box').html()}</div>`,
     pdf: false,
     symbolTree: `<div id="symbol-tree-box">${$('#symbol-tree-box').html()}</div>`,
+    versionLinks: `<span id="version-links">${$('#version-links').html()}</span>`,
     url: window.location.href,
   };
 }
@@ -92,6 +96,7 @@ function purgeCurrentPageCache() {
 function setActiveFilePos(headerPos) {
   currentHeaderPos = headerPos;
   $('.file.active').removeClass("active");
+  const rootFiles = $('.file-list').children();
   rootFiles.each(function (_, file) {
     setActiveFilePosHelper($(file), headerPos);
   });
@@ -226,6 +231,8 @@ $(document).keydown(function (e) {
     return true;
   }
 
+  const allFilesFolders = $('.file-list').find("*");
+
   switch (e.which) {
     case 37: // left - navigate to the previous submission
       $('#prev_submission_link')[0].click();
@@ -257,6 +264,14 @@ $(document).keydown(function (e) {
         }
         testPos += 1;
       }
+      break;
+
+    case 219: // left square bracket - navigate to the previous version containing this file
+      $('#prev_version_link')[0].click();
+      break;
+
+    case 221: // right square bracket - navigate to the next version containing this file
+      $('#next_version_link')[0].click();
       break;
 
     default: return; // exit this handler for other keys

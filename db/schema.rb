@@ -328,6 +328,7 @@ ActiveRecord::Schema.define(version: 2022_04_24_202745) do
     t.text "embedded_quiz_form_answer"
     t.integer "submitted_by_app_id"
     t.integer "tango_job_id"
+    t.string "group_key", default: ""
     t.index ["assessment_id"], name: "index_submissions_on_assessment_id"
     t.index ["course_user_datum_id"], name: "index_submissions_on_course_user_datum_id"
   end

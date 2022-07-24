@@ -27,5 +27,5 @@
 <% if current_user.administrator? %>
 <br> <br><hr><br>
 <h3> Admin Only</h3>
-  <%= link_to raw('<span class="btn">Delete User</span>'), user_path(@user), method: :delete, confirm: "Are you sure!?" %>
+  <%= link_to raw('<span class="btn">Delete User</span>'), user_path(@user), method: :delete, data: {confirm: "Are you sure!?"} %>
 <% end %> 

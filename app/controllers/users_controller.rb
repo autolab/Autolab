@@ -275,7 +275,7 @@ class UsersController < ApplicationController
       gh_integration.destroy
       flash[:success] = "Successfully disconnected from Github"
     else
-      flash[:info] = "Github not connected, revocation unnecessary"
+      flash[:notice] = "Github not connected, revocation unnecessary"
     end
     (redirect_to user_path(id: @user.id)) && return
   end

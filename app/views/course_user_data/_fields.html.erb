@@ -1,8 +1,9 @@
 <%= f.fields_for :user, cud.user do |u| %>
-    <%= u.email_field :email, disabled: false, placeholder: "johndoe@example.com" %>
+    <%# It doesn't make sense for these fields to be editable when editing an existing CUD %>
+    <%= u.email_field :email, disabled: edit, placeholder: "johndoe@example.com" %>
 
-    <%= u.text_field :first_name, disabled: false, placeholder: "John" %>
-    <%= u.text_field :last_name, disabled: false, placeholder: "Doe" %>
+    <%= u.text_field :first_name, disabled: edit, placeholder: "John" %>
+    <%= u.text_field :last_name, disabled: edit, placeholder: "Doe" %>
 
   <% end %>
 

@@ -52,6 +52,7 @@ class CourseUserDataController < ApplicationController
         end
         COURSE_LOGGER.log(error_msg)
         flash[:error] = error_msg
+        flash[:html_safe] = true
         redirect_to(action: "new") && return
       end
 
@@ -80,6 +81,7 @@ class CourseUserDataController < ApplicationController
       end
       COURSE_LOGGER.log(error_msg)
       flash[:error] = error_msg
+      flash[:html_safe] = true
     end
 
     redirect_to(action: "new") && return
@@ -137,6 +139,7 @@ class CourseUserDataController < ApplicationController
           @editCUD.errors.full_messages.each do |msg|
             flash[:error] += "<br>#{msg}"
           end
+          flash[:html_safe] = true
           redirect_to(action: :edit) && return
         end
       end

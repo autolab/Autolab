@@ -99,6 +99,7 @@ class SubmissionsController < ApplicationController
     @submission.errors.full_messages.each do |msg|
       flash[:error] += "<br>#{msg}"
     end
+    flash[:html_safe] = true
     redirect_to(edit_course_assessment_submission_path(@submission.course_user_datum.course,
                                                        @assessment, @submission)) && return
   end
@@ -156,11 +157,17 @@ class SubmissionsController < ApplicationController
       @assessment.errors.full_messages.each do |msg|
         flash[:error] += "<br>#{msg}"
       end
+      flash[:html_safe] = true
     end
 
     if @assessment.disable_handins
       flash[:error] = "There are no submissions to download."
-      redirect_to([@course, @assessment, :submissions]) && return
+      if @cud.course_assistant
+        redirect_to([@course, @assessment])
+      else
+        redirect_to([@course, @assessment, :submissions])
+      end
+      return
     end
 
     submissions = if params[:final]
@@ -177,7 +184,12 @@ class SubmissionsController < ApplicationController
 
     if result.nil?
       flash[:error] = "There are no submissions to download."
-      redirect_to([@course, @assessment, :submissions]) && return
+      if @cud.course_assistant
+        redirect_to([@course, @assessment])
+      else
+        redirect_to([@course, @assessment, :submissions])
+      end
+      return
     end
 
     send_data(result.read, # to read from stringIO object returned by create_zip
@@ -302,7 +314,7 @@ class SubmissionsController < ApplicationController
 
     if params.include?(:header_position) &&
        (params[:header_position].to_i == -1) &&
-       @submission.autograde_file.nil?
+       !@submission.autograde_file.nil?
 
       file = @submission.autograde_file.read || "Empty Autograder Output"
       @displayFilename = "Autograder Output"
@@ -407,12 +419,6 @@ class SubmissionsController < ApplicationController
       ensure
         ctagFile.unlink if defined?(ctagFile) && !ctagFile.nil?
       end
-      # rescue
-      # flash[:error] =
-      # "Sorry, we could not display your file because it contains non-ASCII characters.
-      # Please remove these characters and resubmit your work."
-      # redirect_to(:back) && return
-      # end
 
       begin
         # replace tabs with 4 spaces
@@ -432,6 +438,12 @@ class SubmissionsController < ApplicationController
     @problemReleased = @submission.scores.pluck(:released).all?
 
     @annotations = @submission.annotations.to_a
+    unless @submission.group_key.empty?
+      group_submissions = @submission.group_associated_submissions
+      group_submissions.each do |group_submission|
+        @annotations += group_submission.annotations.to_a
+      end
+    end
     @annotations.sort! { |a, b| a.line.to_i <=> b.line.to_i }
 
     @problemSummaries = {}
@@ -464,10 +476,10 @@ class SubmissionsController < ApplicationController
                                     .map(&:latest_submission)
                                     .reject(&:nil?)
                                     .sort_by{ |submission| submission.course_user_datum.user.email }
-
     @curSubmissionIndex = @latestSubmissions.index do |submission|
       submission.course_user_datum.user.email == @submission.course_user_datum.user.email
     end
+    # Previous and next student
     @prevSubmission = if @curSubmissionIndex > 0
                         @latestSubmissions[@curSubmissionIndex - 1]
                       end
@@ -478,6 +490,45 @@ class SubmissionsController < ApplicationController
     @userVersions = @assessment.submissions
                                .where(course_user_datum_id: @submission.course_user_datum_id)
                                .order("version DESC")
+    # Find user submissions that contain the same pathname
+    matchedVersions = []
+    @userVersions.each do |submission|
+      submission_path = submission.handin_file_path
+
+      # Find corresponding header position
+      header_position = if Archive.archive? submission_path
+                          submission_files = Archive.get_files(submission_path)
+                          matched_file = submission_files.detect { |submission_file|
+                            submission_file[:pathname] == @displayFilename
+                          }
+                          # Skip if file doesn't exist
+                          next if matched_file.nil?
+
+                          matched_file[:header_position]
+                        end
+      # If not an archive, header_position = nil
+      # This ensures that in _version_links.html.erb, header_position is not set in the querystring
+      # for the prev / next button urls
+      # Otherwise, pure PDF submissions would not load as #download sees the header_position
+      # and treats the file as an archive
+
+      matchedVersions << {
+        version: submission.version,
+        header_position: header_position,
+        submission: submission
+      }
+    end
+
+    @curVersionIndex = matchedVersions.index do |submission|
+      submission[:version] == @submission.version
+    end
+    # Previous and next versions
+    @prevVersion = if @curVersionIndex < (matchedVersions.size - 1)
+                     matchedVersions[@curVersionIndex + 1]
+                   end
+    @nextVersion = if @curVersionIndex > 0
+                     matchedVersions[@curVersionIndex - 1]
+                   end
 
     # Adding allowing scores to be assessed by the view
     @scores = Score.where(submission_id: @submission.id)
