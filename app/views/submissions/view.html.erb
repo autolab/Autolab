@@ -70,7 +70,7 @@
       <% end %>
     </div>
     <div class="col s8 center-align valign-wrapper submission-controls">
-        <span>[<%= @curSubmissionIndex+1 %>/<%= @latestSubmissions.length %>] <%= @submission.course_user_datum.email %>,</span>
+        <span title="student # / total students">[<%= @curSubmissionIndex+1 %>/<%= @latestSubmissions.length %>] <%= @submission.course_user_datum.email %>,</span>
         <strong>version:</strong>
         <select class="browser-default" onchange="location = this.value">
           <% for submission in @userVersions do %>
