@@ -5,7 +5,7 @@ class Api::V1::AssessmentsController < Api::V1::BaseApiController
 
   before_action -> {require_privilege :user_courses}, only: [:index, :problems, :writeup, :handout]
   before_action -> {require_privilege :user_submit}, only: [:submit]
-  before_action -> {require_privilege :instructor_all}, only: [:set_group_size]
+  before_action -> {require_privilege :instructor_all}, only: [:set_group_settings]
 
   before_action :set_assessment, except: [:index]
 
