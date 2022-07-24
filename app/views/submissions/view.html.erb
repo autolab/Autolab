@@ -26,8 +26,6 @@
     <% end %>
 
     const editableUrl = "<%= url_for ([:quickSetScore, @course, @assessment]) %>"
-    const rootFiles = $('.file-list').children()
-    const allFilesFolders = $('.file-list').find("*")
 
     var currentHeaderPos = <%= params[:header_position] || 0 %>
     var submissionID = <%= @submission.id %>

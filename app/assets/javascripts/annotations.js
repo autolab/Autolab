@@ -96,6 +96,7 @@ function purgeCurrentPageCache() {
 function setActiveFilePos(headerPos) {
   currentHeaderPos = headerPos;
   $('.file.active').removeClass("active");
+  const rootFiles = $('.file-list').children();
   rootFiles.each(function (_, file) {
     setActiveFilePosHelper($(file), headerPos);
   });
@@ -229,6 +230,8 @@ $(document).keydown(function (e) {
   if (!$(e.target).is('body')) {
     return true;
   }
+
+  const allFilesFolders = $('.file-list').find("*");
 
   switch (e.which) {
     case 37: // left - navigate to the previous submission
