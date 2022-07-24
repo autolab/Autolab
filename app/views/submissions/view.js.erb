@@ -3,6 +3,7 @@ newFile = {};
 newFile.codeBox = '<%= j render("submissions/code_viewer") %>'
 newFile.symbolTree = '<%= j render("submissions/code_symbol_tree", ctag_obj: @ctag_obj) %>'
 newFile.url = '<%= url_for(params.permit(:header_position, :action, :controller).to_h) %>'
+newFile.versionLinks = '<%= j render("version_links") %>'
 
 <% if @is_pdf %>
 newFile.pdf = true;
@@ -22,7 +23,6 @@ if (!newFile.pdf) localCache[<%= params[:header_position] %>] = newFile;
 // If we've navigated to another file, don't update the page
 if (currentHeaderPos == <%= params[:header_position] %>) {
     // Update the code viewer and symbol tree with the new data
-
     $('#code-box').replaceWith(newFile.codeBox);
     $('#symbol-tree-container').replaceWith(newFile.symbolTree);
 
@@ -31,6 +31,9 @@ if (currentHeaderPos == <%= params[:header_position] %>) {
 
     // Update the page URL
     history.replaceState(null, null, newFile.url);
+
+    // Update version buttons
+    $('#version-links').replaceWith(newFile.versionLinks);
 
     displayAnnotations();
     attachEvents();
