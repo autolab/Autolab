@@ -3,13 +3,13 @@ require "fileutils"
 
 class Course < ApplicationRecord
   trim_field :name, :semester, :display_name
-  validates_uniqueness_of :name
-  validates_presence_of :display_name, :start_date, :end_date
-  validates_presence_of :late_slack, :grace_days, :late_penalty, :version_penalty
-  validates_numericality_of :grace_days, greater_than_or_equal_to: 0
-  validates_numericality_of :version_threshold, only_integer: true, greater_than_or_equal_to: -1
+  validates :name, uniqueness: true
+  validates :display_name, :start_date, :end_date, presence: true
+  validates :late_slack, :grace_days, :late_penalty, :version_penalty, presence: true
+  validates :grace_days, numericality: { greater_than_or_equal_to: 0 }
+  validates :version_threshold, numericality: { only_integer: true, greater_than_or_equal_to: -1 }
   validate :order_of_dates
-  validates_format_of :name, with: /\A(\w|-)+\z/, on: :create
+  validates :name, format: { with: /\A(\w|-)+\z/, on: :create }
   # validates course website format if there exists one
   validate :valid_website?
 
@@ -23,13 +23,23 @@ class Course < ApplicationRecord
   belongs_to :version_penalty, class_name: "Penalty"
   has_many :assessment_user_data, through: :assessments
   has_many :submissions, through: :assessments
+  has_many :watchlist_instances, dependent: :destroy
+  has_many :risk_conditions, dependent: :destroy
+  has_one :watchlist_configuration, dependent: :destroy
 
   accepts_nested_attributes_for :late_penalty, :version_penalty
 
-  before_save :cgdub_dependencies_updated, if: :grace_days_changed?
-  before_save :cgdub_dependencies_updated, if: :late_slack_changed?
+  before_save :cgdub_dependencies_updated, if: :grace_days_or_late_slack_changed?
   before_create :cgdub_dependencies_updated
   after_create :init_course_folder
+
+  def config_file_path
+    Rails.root.join("courseConfig", "#{sanitized_name}.rb")
+  end
+
+  def config_backup_file_path
+    config_file_path.sub_ext(".rb.bak")
+  end
 
   # Create a course with name, semester, and instructor email
   # all other fields are filled in automatically
@@ -40,8 +50,8 @@ class Course < ApplicationRecord
     # fill temporary values in other fields
     newCourse.late_slack = 0
     newCourse.grace_days = 0
-    newCourse.start_date = Time.now
-    newCourse.end_date = Time.now
+    newCourse.start_date = Time.current
+    newCourse.end_date = Time.current
 
     newCourse.late_penalty = Penalty.new
     newCourse.late_penalty.kind = "points"
@@ -51,8 +61,9 @@ class Course < ApplicationRecord
     newCourse.version_penalty.kind = "points"
     newCourse.version_penalty.value = "0"
 
-    if not newCourse.save
-      raise "Failed to create course #{newCourse.name}: #{newCourse.errors.full_messages.join(", ")}"
+    unless newCourse.save
+      raise "Failed to create course #{newCourse.name}: "\
+            "#{newCourse.errors.full_messages.join(', ')}"
     end
 
     # Check instructor
@@ -62,7 +73,7 @@ class Course < ApplicationRecord
       begin
         instructor = User.instructor_create(instructor_email,
                                             newCourse.name)
-      rescue Exception => e
+      rescue StandardError => e
         # roll back course creation
         newCourse.destroy
         raise "Failed to create instructor for course: #{e}"
@@ -73,21 +84,23 @@ class Course < ApplicationRecord
     newCUD = newCourse.course_user_data.new
     newCUD.user = instructor
     newCUD.instructor = true
-    if not newCUD.save
+    unless newCUD.save
       # roll back course creation
       newCourse.destroy
       raise "Failed to create CUD for instructor of new course #{newCourse.name}"
     end
 
     # Load course config
-    if not newCourse.reload_course_config
+    begin
+      newCourse.reload_course_config
+    rescue StandardError, SyntaxError
       # roll back course and CUD creation
       newCUD.destroy
       newCourse.destroy
       raise "Failed to load course config for new course #{newCourse.name}"
     end
 
-    return newCourse
+    newCourse
   end
 
   # generate course folder
@@ -98,7 +111,11 @@ class Course < ApplicationRecord
     FileUtils.touch File.join(course_dir, "autolab.log")
 
     course_rb = File.join(course_dir, "course.rb")
+
+    # rubocop:disable Rails/FilePath
     default_course_rb = Rails.root.join("lib", "__defaultCourse.rb")
+    # rubocop:enable Rails/FilePath
+
     FileUtils.cp default_course_rb, course_rb
 
     FileUtils.mkdir_p Rails.root.join("assessmentConfig")
@@ -112,14 +129,12 @@ class Course < ApplicationRecord
 
   def valid_website?
     if website.nil? || website.eql?("")
-      return true
+      true
+    elsif website[0..7].eql?("https://")
+      true
     else
-      if website[0..7].eql?("https://")
-        return true
-      else
-        errors.add("website", "needs to start with https://")
-        return false
-      end
+      errors.add("website", "needs to start with https://")
+      false
     end
   end
 
@@ -138,28 +153,40 @@ class Course < ApplicationRecord
   end
 
   def full_name
-    if semester.to_s.size > 0
-      display_name + " (" + semester + ")"
+    if !semester.to_s.empty?
+      "#{display_name} (#{semester})"
     else
       display_name
     end
   end
 
+  def source_config_file_path
+    Rails.root.join("courses", name, "course.rb")
+  end
+
   def reload_config_file
-    course = name.gsub(/[^A-Za-z0-9]/, "")
-    src = Rails.root.join("courses", name, "course.rb")
-    dest = Rails.root.join("courseConfig/", "#{course}.rb")
-    s = File.open(src, "r")
+    s = File.open(source_config_file_path, "r")
     lines = s.readlines
     s.close
 
-    d = File.open(dest, "w")
+    # read from source
+    config_source = File.open(source_config_file_path, "r", &:read)
+
+    # validate syntax of config
+    RubyVM::InstructionSequence.compile(config_source)
+
+    # backup old config
+    if File.exist? config_file_path
+      File.rename(config_file_path, config_backup_file_path)
+    end
+
+    d = File.open(config_file_path, "w")
     d.write("require 'CourseBase.rb'\n\n")
-    d.write("module Course" + course.camelize + "\n")
+    d.write("module #{config_module_name}\n")
     d.write("\tinclude CourseBase\n\n")
-    for line in lines do
-      if line.length > 0
-        d.write("\t" + line)
+    lines.each do |line|
+      if !line.empty?
+        d.write("\t#{line}")
       else
         d.write(line)
       end
@@ -167,23 +194,19 @@ class Course < ApplicationRecord
     d.write("end")
     d.close
 
-    load(dest)
-    eval("Course#{course.camelize}")
+    load(config_file_path)
+    # rubocop:disable Security/Eval
+    eval(config_module_name)
+    # rubocop:enable Security/Eval
   end
 
   # reload_course_config
   # Reload the course config file and extend the loaded methods
   # to AdminsController
   def reload_course_config
-    mod = nil
-    begin
-      mod = reload_config_file
-    rescue Exception => @error
-      return false
-    end
+    mod = reload_config_file
 
     AdminsController.extend(mod)
-    true
   end
 
   def sanitized_name
@@ -202,7 +225,9 @@ class Course < ApplicationRecord
 
     # raw_scores
     # NOTE: keep in sync with assessment#invalidate_raw_scores
-    assessments.update_all(updated_at: Time.now)
+    # rubocop:disable Rails/SkipsModelValidations
+    assessments.update_all(updated_at: Time.current)
+    # rubocop:enable Rails/SkipsModelValidations
   end
 
   def config
@@ -222,11 +247,11 @@ class Course < ApplicationRecord
   end
 
   def assessment_categories
-    assessments.pluck("DISTINCT category_name").sort
+    assessments.distinct.pluck(:category_name).sort
   end
 
-  def assessments_with_category(cat_name, isStudent = false)
-    if isStudent
+  def assessments_with_category(cat_name, is_student = false)
+    if is_student
       assessments.where(category_name: cat_name).ordered.released
     else
       assessments.where(category_name: cat_name).ordered
@@ -237,22 +262,53 @@ class Course < ApplicationRecord
     name
   end
 
+  def asmts_before_date(date)
+    asmts = assessments.ordered
+    asmts.where("due_at < ?", date)
+  end
+
+  # Used by manage extensions, create submission, and sudo
+  def get_autocomplete_data
+    users = {}
+    usersEncoded = {}
+    course_user_data.each do |cud|
+      # Escape once here, and another time in _autocomplete.html.erb (see comments)
+      users[CGI.escapeHTML cud.full_name_with_email] = cud.id
+      # base64 to avoid issues where leading / trailing whitespaces are stripped (see #931)
+      # strict_encode64 to avoid line feeds
+      usersEncoded[Base64.strict_encode64(cud.full_name_with_email.strip).strip] = cud.id
+    end
+    [users, usersEncoded]
+  end
+
 private
 
+  def saved_change_to_grade_related_fields?
+    (saved_change_to_late_slack? or saved_change_to_grace_days? or
+            saved_change_to_version_threshold? or saved_change_to_late_penalty_id? or
+            saved_change_to_version_penalty_id?)
+  end
+
+  def grace_days_or_late_slack_changed?
+    (grace_days_changed? or late_slack_changed?)
+  end
+
+  def saved_change_to_grace_days_or_late_slack?
+    (saved_change_to_grace_days? or saved_change_to_late_slack?)
+  end
+
   def cgdub_dependencies_updated
-    self.cgdub_dependencies_updated_at = Time.now
+    self.cgdub_dependencies_updated_at = Time.current
   end
 
   def config!
     source = "#{name}_course_config".to_sym
     Utilities.execute_instructor_code(source) do
       require config_file_path
+      # rubocop:disable Security/Eval
       Class.new.extend eval(config_module_name)
+      # rubocop:enable Security/Eval
     end
-  end
-
-  def config_file_path
-    Rails.root.join("courseConfig", "#{sanitized_name}.rb")
   end
 
   def config_module_name

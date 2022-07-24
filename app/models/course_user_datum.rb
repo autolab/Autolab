@@ -1,15 +1,18 @@
 require "association_cache"
 
 class CourseUserDatum < ApplicationRecord
-  class AuthenticationFailed < Exception
+  class AuthenticationFailed < RuntimeError
     attr_reader :user_message, :dev_message
+
+    # rubocop:disable Lint/MissingSuper
     def initialize(user_message, dev_message)
       @user_message = user_message
       @dev_message = dev_message
     end
+    # rubocop:enable Lint/MissingSuper
   end
 
-  AUTH_LEVELS = [:student, :course_assistant, :instructor, :administrator]
+  AUTH_LEVELS = %i[student course_assistant instructor administrator].freeze
 
   # Don't want to trim the nickname.
   trim_field :school, :major, :year, :lecture, :section, :grade_policy, :email
@@ -21,6 +24,7 @@ class CourseUserDatum < ApplicationRecord
   has_many :extensions, dependent: :destroy
   has_many :scores, through: :submissions
   has_many :assessment_user_data, dependent: :destroy
+  has_many :watchlist_instances, dependent: :destroy
 
   attr_readonly :course_id
   before_save :strip_html
@@ -30,21 +34,21 @@ class CourseUserDatum < ApplicationRecord
   after_create :create_AUDs_modulo_callbacks
 
   def self.conditions_by_like(value, *columns)
-    columns = self.columns if columns.size == 0
+    columns = self.columns if columns.empty?
     columns = columns[0] if columns[0].is_a?(Array)
-    conditions = columns.map do|c|
+    # rubocop:disable Lint/UselessAssignment
+    conditions = columns.map do |c|
       c = c.name if c.is_a? ActiveRecord::ConnectionAdapters::Column
       "`#{c}` LIKE " + ActiveRecord::Base.connection.quote("%#{value}%")
     end.join(" OR ")
+    # rubocop:enable Lint/UselessAssignment
   end
 
   def strip_html
-    for column in CourseUserDatum.content_columns
-      if column.type == :string || column.type == :text
-        unless self[column.name].nil?
-          self[column.name] = self[column.name].gsub(/</, "")
-        end
-      end
+    CourseUserDatum.content_columns.each do |column|
+      next unless column.type == :string || column.type == :text
+
+      self[column.name] = self[column.name].gsub(/</, "") unless self[column.name].nil?
     end
   end
 
@@ -91,12 +95,12 @@ class CourseUserDatum < ApplicationRecord
 
   def can_sudo_to?(cud)
     if user.administrator?
-      return true
+      true
     elsif instructor? && !cud.user.administrator? &&
           course == cud.course
-      return true
+      true
     else
-      return false
+      false
     end
   end
 
@@ -107,19 +111,21 @@ class CourseUserDatum < ApplicationRecord
   def CA_of?(student)
     return false unless course_assistant?
     return false unless student.student?
+
     section == student.section && lecture == student.lecture
   end
 
   def instructor_of?(student)
     return false unless instructor?
     return false unless student.student?
+
     course == student.course
   end
 
   # because CAs can do things that instructors can't as of 2/19/2013
   # e.g.: CAs can release (their) section grades, instructors can't
   def CA_only?
-    course_assistant? && (!instructor?)
+    course_assistant? && !instructor?
   end
 
   def can_administer?(student)
@@ -154,14 +160,14 @@ class CourseUserDatum < ApplicationRecord
 
   def auth_level_string
     if instructor?
-      return "instructor"
+      "instructor"
     elsif course_assistant?
-      return "course_assistant"
+      "course_assistant"
     else
-      return "student"
+      "student"
     end
   end
-  
+
   def global_grace_days_left
     return @ggl if @ggl
 
@@ -169,17 +175,17 @@ class CourseUserDatum < ApplicationRecord
 
     unless (ggl = Rails.cache.read cache_key)
       CourseUserDatum.transaction do
-      	# acquire lock on CUD
+        # acquire lock on CUD
         reload(lock: true)
 
         ggl = global_grace_days_left!
 
         Rails.cache.write(ggl_cache_key, ggl)
-      end # release lock
+        # release lock
+      end
     end
 
     @ggl = ggl
-
   end
 
   #
@@ -210,10 +216,10 @@ class CourseUserDatum < ApplicationRecord
         new_cud = course.course_user_data.new(user: user,
                                               instructor: true,
                                               course_assistant: true)
-        return new_cud.save ? new_cud : nil
+        new_cud.save ? new_cud : nil
       end
     else
-        return cud
+      cud
     end
   end
 
@@ -225,27 +231,25 @@ class CourseUserDatum < ApplicationRecord
     cud = user.course_user_data.find_by(course: course)
 
     if cud
-      return [cud, :found]
+      [cud, :found]
+    elsif user.administrator?
+      new_cud = course.course_user_data.new(user: user,
+                                            instructor: true,
+                                            course_assistant: true)
+
+      new_cud.save ? [new_cud, :admin_created] : [nil, :admin_creation_error]
+
     else
-      if user.administrator?
-
-        new_cud = course.course_user_data.new(user: user,
-                                              instructor: true,
-                                              course_assistant: true)
-
-        return new_cud.save ? [new_cud, :admin_created] : [nil, :admin_creation_error]
-      else
-        return [nil, :unauthorized]
-      end
+      [nil, :unauthorized]
     end
   end
-  
+
   # global grace left cache key
   def ggl_cache_key
     # gets it into the YYYYMMDDHHMMSS form
     dua = course.cgdub_dependencies_updated_at.utc.to_s(:number)
 
-    "ggl/dua-#{dua}/u-#{self.id}"
+    "ggl/dua-#{dua}/u-#{id}"
   end
 
 private
@@ -275,25 +279,19 @@ private
     method_name = "#{category}Average".to_sym
 
     config = course.config
-    average = if config.respond_to? method_name
-                v = Utilities.execute_instructor_code(method_name) do
-                  config.send method_name, input
-                end
-                Utilities.validated_score_value(v, method_name, true)
-              else
-                default_category_average input
+    if config.respond_to? method_name
+      v = Utilities.execute_instructor_code(method_name) do
+        config.send method_name, input
+      end
+      Utilities.validated_score_value(v, method_name, true)
+    else
+      default_category_average input
     end
-
-    average
   end
 
   def default_category_average(input)
     final_scores = input.values
-    if final_scores.size > 0
-      final_scores.reduce(:+) / final_scores.size
-    else
-      nil
-    end
+    final_scores.reduce(:+) / final_scores.size if !final_scores.empty?
   end
 
   def category_average_input(category, as_seen_by)
@@ -301,9 +299,12 @@ private
     @category_average_input[as_seen_by] ||= {}
     input = (@category_average_input[as_seen_by][category] ||= {})
 
+    # rubocop:disable Lint/UselessAssignment
     user_id = id
+    # rubocop:enable Lint/UselessAssignment
     course.assessments.each do |a|
       next unless a.category_name == category
+
       input[a.name] ||= a.aud_for(id).final_score as_seen_by
     end
 
@@ -315,7 +316,9 @@ private
     @average_input ||= {}
     input = (@average_input[as_seen_by] ||= {})
 
+    # rubocop:disable Lint/UselessAssignment
     user_id = id
+    # rubocop:enable Lint/UselessAssignment
     course.assessments.each do |a|
       input[a.name] ||= a.aud_for(id).final_score as_seen_by
     end
@@ -328,8 +331,8 @@ private
     compact_hash input
   end
 
-  def compact_hash(h)
-    h.delete_if { |_, v| !v }
+  def compact_hash(hash)
+    hash.delete_if { |_, v| !v }
   end
 
   def global_grace_days_left!
@@ -337,12 +340,13 @@ private
 
     if latest_asmt.nil?
       # Just don't cache anything since no database query is necessary
-      return course.grace_days
+      course.grace_days
     else
       # do the usual database query and calculate
-      cur_aud = AssessmentUserDatum.get(latest_asmt.id, self.id)
+      cur_aud = AssessmentUserDatum.get(latest_asmt.id, id)
       return course.grace_days if cur_aud.nil?
-      return (course.grace_days - cur_aud.global_cumulative_grace_days_used)
+
+      (course.grace_days - cur_aud.global_cumulative_grace_days_used)
     end
   end
 

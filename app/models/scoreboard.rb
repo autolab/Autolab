@@ -8,9 +8,9 @@ class Scoreboard < ApplicationRecord
 
   validate :colspec_is_well_formed
 
-  after_save -> { assessment.dump_yaml }
+  after_commit -> { assessment.dump_yaml }
 
-  SERIALIZABLE = Set.new %w(banner colspec)
+  SERIALIZABLE = Set.new %w[banner colspec]
   def serialize
     Utilities.serializable attributes, SERIALIZABLE
   end
@@ -26,9 +26,9 @@ protected
     begin
       # Quote JSON keys and values if they are not already quoted
       quoted = colspec.gsub(/([a-zA-Z0-9]+):/, '"\1":').gsub(/:([a-zA-Z0-9]+)/, ':"\1"')
-      parsed = ActiveSupport::JSON.decode(colspec)
+      parsed = ActiveSupport::JSON.decode(quoted)
     rescue StandardError => e
-      errors.add "colspec", "#{e}"
+      errors.add "colspec", e.to_s
       return
     end
 
@@ -56,14 +56,16 @@ protected
       end
 
       hash.each_key do |k|
-        unless k == "hdr" || k == "asc" || k == "img"
+        unless %w[hdr asc img].include?(k)
           errors.add "colspec", "unknown key('#{k}') in scoreboard[#{i}]"
           return
         end
 
-        if k == "asc" && i > 2
-          errors.add "colspec", "'asc' key in col #{i} ignored because only the first three columns are sorted."
-        end
+        next unless k == "asc" && i > 2
+
+        errors.add "colspec",
+                   "'asc' key in col #{i} ignored because only the first",
+                   "three columns are sorted."
       end
     end
   end

@@ -43,15 +43,19 @@ You can tag each assessment with an arbitrary user-defined _category_, e.g., "La
 
 ## Autograders and Scoreboards
 
-Labs can be _autograded_ or not, at your disrcretion. When a student submits to an autograded lab, Autolab runs an instructor-supplied _autograder_ program that assigns scores to one or more problems associated with the lab. Autograded labs can have an optional _scoreboard_ that shows (anonymized) results in real-time. See the companion [Guide For Lab Authors](/lab/) for details on writing autograded labs with scoreboards.
+Labs can be _autograded_ or not, at your discretion. When a student submits to an autograded lab, Autolab runs an instructor-supplied _autograder_ program that assigns scores to one or more problems associated with the lab. Autograded labs can have an optional _scoreboard_ that shows (anonymized) results in real-time. See the companion [Guide For Lab Authors](/lab/) for details on writing autograded labs with scoreboards.
 
 ## Important Dates
 
 A lab has a _start date_, _due date_, _end date_ and _grading deadline_. The link to a lab becomes visible to students after the start date (it's always visible to instructors). Students can submit until the due date without penalty or consuming grace days. Submission is turned off after the end date. Grades are included in the gradebook's category and course averages only after the grading deadline.
 
-## Handins
+## Handins/Submissions
 
-Once an assessment is live (past the start date), students can begin submitting handins, where each handin is a single file, which can be either a text file or an archive file (e.g., `mm.c`, `handin.tar`).
+Once an assessment is live (past the start date), students can begin submitting handins, where each handin is a single file, which can be either a text file or an archive file (e.g., `mm.c`, `handin.tar`). Alternatively, instructors can enable GitHub submission for an assessment in its settings and students can directly link their GitHub account and submit from their repo's corresponding branch. Check [here](/installation/github_integration) for how to set up and try our [demo site](https://nightly.autolabproject.com/) for a feel of its usage.
+
+## Groups
+
+Instructors can enable groups by setting the group size to be greater than 1. By default, students are allowed to form groups on their own. In that case, students can create their own group, ask to join an unsaturated group, or leave their existing group. When a student is in a group, any one member's submission counts towards the group's submission. Alternatively, when instructors disallow students to self-assign, it's best practice for instructors to assign groups through the [Autolab Frontend API](/api-overview).
 
 ## Penalties and Extensions
 
@@ -66,10 +70,6 @@ Autolab provides support for a late handin policy based on _grace days_. Each st
 
 Each lab contains at least one _problem_, defined by the instructor, with some point value. Each problem has a name (e.g., "Prob1", "Style") that is unique for the lab (although different labs can have the same problem names).
 
-## Submissions
-
-Once an assessment is live (past the start date), students can begin making submissions (handins), where each submission is a single file.
-
 ## Grades
 
 _Grades_ come in a number of different forms:
@@ -80,9 +80,9 @@ _Grades_ come in a number of different forms:
 
 3. _Assessment total score:_ The total score is the raw score, plus any late penalties, plus any instructor _tweaks_.
 
-4. _Category averages:_ This is the average for a particular student over all assessments in a specific instructor-defined category such as "Labs, or "Exams". By default the category average is the arithmetic mean of all assessment total scores, but it can be overwridden. See below.
+4. _Category averages:_ This is the average for a particular student over all assessments in a specific instructor-defined category such as "Labs, or "Exams". By default the category average is the arithmetic mean of all assessment total scores, but it can be overridden. See below.
 
-5. _Course Average:_ By default, the course average is average of all category averages, but can be overidden. See below.
+5. _Course Average:_ By default, the course average is average of all category averages, but can be overridden. See below.
 
 Submissions can be classified as one of three types: "Normal", "No Grade" or "Excused". A "No Grade" submission will show up in the gradebook as NG and a zero will be used when calculating averages. An "Excused" submission will show up in the gradebook as EXC and will not be used when calculating averages.
 
@@ -161,6 +161,44 @@ In this course, the course average is the sum of the category averages for "Lab"
 
 Note: To make these changes live, you must select "Reload course config file" on the "Manage course" page.
 
+## Customizing Submision File MIME Type Check
+
+By default, Autolab does not perform MIME type check for submission files. However, it allows instructors to define their own MIME type check method in the assessment config file. The corresponding function is `checkMimeType` in `<labname>.rb` file. For example, to prevent students from submitting a binary file to the assessment `malloclab`, you might add the following `checkMimeType` function to `malloclab/malloclab.rb`:
+
+```ruby
+# In malloclab/malloclab.rb file
+def checkMimeType(contentType, fileName)
+    return contentType != "application/octet-stream"
+end
+```
+
+As of now, the only way to provide a more informative message to student is to raise an error:
+
+```ruby
+# In malloclab/malloclab.rb file
+def checkMimeType(contentType, fileName)
+    raise "Do not submit binary files!" if contentType == "application/octet-stream"
+    
+    return true
+end
+```
+
+This results in the following error message to students when they attempt to submit binary files.
+
+![MIME Type Check](/images/mime_type_check.png)
+
+Alternatively, you can use the file name to do file type check. The following snippet prevents students from submitting python files:
+
+```ruby
+def checkMimeType(contentType, fileName)
+    return fileName.split(".")[-1] != "py"
+end
+```
+
+Note that this function does not have access to Rails controller attributes such as `flash` or `params`. Attempts to access what's beyond the arguments passed to the function will result in an error.
+
+Note: To make this change live, you must select the "Reload config file" option on the `malloclab` page.
+
 ## Handin History
 
 For each lab, students can view all of their submissions, including any source code, and the problem scores, penalties, and total scores associated with those submissions, via the _handin history_ page.
@@ -169,7 +207,7 @@ For each lab, students can view all of their submissions, including any source c
 
 The _gradesheet_ (not to be confused with the _gradebook_) is the workhorse grading tool. Each assessment has a separate gradesheet with the following features:
 
--   Provides an interface for manually entering problem scores (and problem feedback) for the most recent submmission from each student.
+-   Provides an interface for manually entering problem scores (and problem feedback) for the most recent submission from each student.
 
 -   Provides an interface for viewing and annotating the submitted code.
 

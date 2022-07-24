@@ -4,16 +4,16 @@
 <% end %>
 
 <% content_for :javascripts do %>
-  <%= external_javascript_include_tag "jquery-ui", "1.10.2" %>
-  <%= external_javascript_include_tag "jquery.dataTables", "1.10.9" %>
+  <%= external_javascript_include_tag "jquery-ui" %>
+  <%= external_javascript_include_tag "jquery.dataTables" %>
 
   <%= javascript_include_tag "jquery.jeditable" %>
 
   <script type="text/javascript">
     // global constants
     total_rows = <%= @submissions.length %>;
-    rows_on_display = 40;
-    increment_rows_by = 20;
+    rows_on_display = 1000;
+    increment_rows_by = 500;
     email_col = 1;
     problem_count = <%= @assessment.problems.length %>;
     first_problem_column = 4;
@@ -195,7 +195,7 @@
 <% end %>
 
 <div class="collection">
-<a id ="interaction_banner" href="https://docs.autolabproject.com/features/#annotations" target="_blank" class="collection-item">
+<a id ="interaction_banner" href="https://docs.autolabproject.com/features/annotations/" target="_blank" class="collection-item">
 Interaction between gradesheet and annotations
 <span id="interaction_badge" class="badge" data-badge-caption="Feature Information"></span></a>
 </div>
@@ -228,7 +228,9 @@ Interaction between gradesheet and annotations
           <div>
             <span class="left">
               <b>Released</b>
-              <input class="released" type="checkbox" />
+              <label>
+                <input class="released" type="checkbox" />
+              </label>
             </span>
             <span class="save_box">
               <span class="saving">Saving...</span>

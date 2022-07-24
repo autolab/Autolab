@@ -2,6 +2,10 @@
   display_name: "Group size",
   help_text: "Set the maximum size of groups for this assessment.  If group size is 1, the assessment is solo.  If the size is decreased, groups that are too large will not be broken up.  If the size is set to 1, groups will be saved, but the assessment will be solo.", placeholder: "1" %>
 
+<%= f.check_box :allow_student_assign_group,
+  display_name: "Allow student to self assign groups",
+  help_text: "Allow students to self assign and create their own groups. Uncheck if you don't want students to create/edit their own groups" %>
+
 <% unless f.object.disable_handins %>
 <%= f.text_field :handin_directory, help_text: "The subdirectory in the assessment directory where student submissions will be store. You generally shouldn't need to change this.", placeholder: "Default: handin" %>
 
@@ -19,7 +23,7 @@
                   <% if @assessment.embedded_quiz_form_data.nil? %>
                         Upload Embedded Form
                   <% else %>
-                        Replace Exisiting Embedded Form
+                        Replace Existing Embedded Form
                   <% end %>
               <%= f.file_field_nowrap :embedded_quiz_form, class: "upload_embedded" %>
             </span>
@@ -31,7 +35,7 @@
 
     <p class="help-block">
       For more information on Embedded Forms, visit our new
-      <a href="https://docs.autolabproject.com/features/#embedded-forms" target="_blank"> docs page.</a>
+      <a href="https://docs.autolabproject.com/features/embedded-forms" target="_blank"> docs page.</a>
     </p>
 </div>
 

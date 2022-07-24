@@ -19,9 +19,14 @@ module AssessmentHandinCore
       return :file_too_large
     end
     # Check if mimetype is correct (if overwritten by assessment config)
-    if @assessment.overwrites_method?(:checkMimeType) and 
-       not @assessment.config_module.checkMimeType(content_type, filename)
-       return :fail_type_check
+    begin
+      if @assessment.overwrites_method?(:checkMimeType) and 
+        not @assessment.config_module.checkMimeType(content_type, filename)
+        return :fail_type_check
+      end
+    rescue RuntimeError => e
+      flash[:error] = e.message
+      return :fail_type_check
     end
 
     return :valid
@@ -85,11 +90,17 @@ module AssessmentHandinCore
     end
 
     submissions = []
+
+    # group_key = group_name_submitter_email_handin_filename_timestamp
+    group_key = "#{group.name}_#{@cud.user.email}_#{@assessment.handin_filename}_"
+    group_key += Time.current.utc.to_s(:number)
+
     ActiveRecord::Base.transaction do
       group.course_user_data.each do |cud|
         submission = @assessment.submissions.create(course_user_datum_id: cud.id,
                                                     submitter_ip: request.remote_ip,
-                                                    submitted_by_app_id: app_id)
+                                                    submitted_by_app_id: app_id,
+                                                    group_key: group_key)
         submission.save_file(sub)
         submissions << submission
       end

@@ -59,7 +59,7 @@
 <% end %>
 
 <% content_for :javascripts do %>
-  <%= external_javascript_include_tag "jquery-ui", "1.11.4" %>
+  <%= external_javascript_include_tag "jquery-ui" %>
   <%= javascript_include_tag "jquery.event.drag-2.2.js"%>
   <%= javascript_include_tag "SlickGrid/2.02/slick.core.js"  %>
   <%= javascript_include_tag "SlickGrid/2.02/slick.grid.js"  %>
@@ -94,7 +94,7 @@
     <a class="tip link" title="Course Statistics" href="<%= url_for :action => :statistics %>">
       Statistics
     </a> /
-    <a class="tip regenerate" title="Regenerate (~10 seconds)" href="<%= url_for :action => :invalidate %>">
+    <a class="tip regenerate" title="Regenerate (~10 seconds)" href="<%= url_for :action => :invalidate %>" data-method="post">
       <i class="icon-refresh"></i>
       <%= time_ago_in_words(DateTime.parse @matrix.last_updated) %> old
     </a>

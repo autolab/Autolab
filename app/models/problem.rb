@@ -13,9 +13,9 @@ class Problem < ApplicationRecord
   validates :name, presence: true
   validates_associated :assessment
 
-  after_save -> { assessment.dump_yaml }
+  after_commit -> { assessment.dump_yaml }
 
-  SERIALIZABLE = Set.new %w(name description max_score optional)
+  SERIALIZABLE = Set.new %w[name description max_score optional]
   def serialize
     Utilities.serializable attributes, SERIALIZABLE
   end

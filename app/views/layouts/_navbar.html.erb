@@ -1,4 +1,4 @@
-<div class="main-header">
+<div class="main-header" role="navigation">
 
   <!-- Materialize Icons -->
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -10,9 +10,9 @@
         edge: 'right'
       });
 
-      $('.dropdown-trigger').dropdown({
-        coverTrigger: false
-      });
+      // Using this over jQuery approach to avoid any issues when other libraries override .dropdown()
+      var elems = document.querySelectorAll('.dropdown-trigger');
+      M.Dropdown.init(elems, { coverTrigger: false });
     });
   </script>
 
@@ -47,16 +47,14 @@
 
       <ul class="right hide-on-med-and-down">
         <% if session[:sudo] && @cud then %>
-          <li><%= link_to "(#{@cud.display_name}) Reset user", [:unsudo, @course, @cud] %></li>
+          <li><%= link_to "(#{@cud.display_name}) Return to instructor view", [:unsudo, @course, @cud], data: {method: "post"} %></li>
         <% end %>
 
         <% if @cud %>
-          <% if @cud.course_assistant? && !@cud.section.blank? %>
-            <li><%= link_to "Section #{@cud.section} Gradebook", [:view, @course, @cud, :gradebook, section: @cud.section], title: "View your gradebook" %></li>
-          <% end %>
-
-          <% if @cud.instructor? || !(@cud.course_assistant? && !@cud.section.blank?) %>
-            <li><%= link_to "<i class='material-icons left'>assessment</i> Gradebook".html_safe, [@course, @cud, :gradebook], title: "View your gradebook" %></li>
+          <% if !@cud.instructor? && @cud.course_assistant? && !@cud.section.blank? %>
+            <li><%= link_to "<i class='material-icons left'>grading</i> Section #{@cud.section} Gradebook".html_safe, [:view, @course, @cud, :gradebook, section: @cud.section], title: "View your gradebook" %></li>
+          <% elsif @cud.instructor? || @cud.student? %>
+            <li><%= link_to "<i class='material-icons left'>grading</i> Gradebook".html_safe, [@course, @cud, :gradebook], title: "View your gradebook" %></li>
           <% end %>
 
           <li><%= link_to "<i class='material-icons left'>clear_all</i> Jobs".html_safe, [@course, :jobs], title: "View a history of autograding jobs" %></li>
@@ -106,16 +104,14 @@
       </div>
         <!-- Usual Navbar Items -->
         <% if session[:sudo] && @cud then %>
-          <li><%= link_to "(#{@cud.display_name}) Reset user", [:unsudo, @course, @cud] %></li>
+          <li><%= link_to "(#{@cud.display_name}) Return to instructor view", [:unsudo, @course, @cud], data: {method: "post"} %></li>
         <% end %>
 
         <% if @cud %>
-          <% if @cud.course_assistant? && !@cud.section.blank? %>
-            <li><%= link_to "Section #{@cud.section} Gradebook", [:view, @course, @cud, :gradebook, section: @cud.section], title: "View your gradebook" %></li>
-          <% end %>
-
-          <% if @cud.instructor? || !(@cud.course_assistant? && !@cud.section.blank?) %>
-            <li><%= link_to "<i class='material-icons left'>assessment</i> Gradebook".html_safe, [@course, @cud, :gradebook], title: "View your gradebook" %></li>
+          <% if !@cud.instructor? && @cud.course_assistant? && !@cud.section.blank? %>
+            <li><%= link_to "<i class='material-icons left'>grading</i> Section #{@cud.section} Gradebook".html_safe, [:view, @course, @cud, :gradebook, section: @cud.section], title: "View your gradebook" %></li>
+          <% elsif @cud.instructor? || @cud.student? %>
+            <li><%= link_to "<i class='material-icons left'>grading</i> Gradebook".html_safe, [@course, @cud, :gradebook], title: "View your gradebook" %></li>
           <% end %>
 
           <li><%= link_to "<i class='material-icons left'>clear_all</i> Jobs".html_safe, [@course, :jobs], title: "View a history of autograding jobs" %></li>

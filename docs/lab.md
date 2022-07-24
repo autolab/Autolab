@@ -1,6 +1,6 @@
 # Guide for Lab Authors
 
-This guide explains how to create autograded programming assignments (labs) for the Autolab system.
+This guide explains how to create autograded programming assignments (labs) for the Autolab system. While **reading through the documentation is recommended**, for a quick start, here's a <a href="https://youtu.be/GQ2EkBcRH4k" target="_blank">short video</a> that gives a brief introduction of autograders.
 
 ## Writing Autograders
 
@@ -24,6 +24,8 @@ If you used the Autolab web site to configure a scoreboard for this lab with thr
 By convention, an autograder accepts an optional `-A` command line argument that tells it to emit the JSON autoresult. So if you run the autograder outside of the context of Autolab, you can suppress the autoresult line by calling the autograder without the `-A` argument.
 
 One of the nice properties of Autolab autograders is that they can be written and tested offline, without requiring any interaction with Autolab. Writing autograders is not easy, but the fact that they can be developed offline allows you to develop and test them in your own familiar computing environment.
+
+To format your autoresult feedback provided to the students, use the [formatted feedback feature](/features/formatted-feedback).
 
 ## Installing Autograded Labs
 
@@ -78,9 +80,7 @@ If you don't have access to the lab directory, another option is to import a lab
 
 ## Example: Hello Lab
 
-In this section we'll look at the simplest possible autograded lab we could imagine, called, appropriately enough, the
-[Hello Lab](https://github.com/autolab/Autolab/tree/master/examples/hello)
-(with [tarball](https://github.com/autolab/Autolab/tree/master/examples/hello.tar)), which is stored in a lab directory called `hello` in the Autolab github repo. While it's trivial, it illustrates all of the aspects of developing an autograded lab, and provides a simple example that you can use for sanity testing on your Autolab installation.
+In this section we'll look at the simplest possible autograded lab we could imagine, called, appropriately enough, the <a href="https://github.com/autolab/Autolab/tree/master/examples/hello" target="_blank">Hello Lab</a> (with <a href="https://github.com/autolab/Autolab/tree/master/examples/hello.tar" target="_blank">tarball</a>), which is stored in a lab directory called `hello` in the Autolab github repo. While it's trivial, it illustrates all of the aspects of developing an autograded lab, and provides a simple example that you can use for sanity testing on your Autolab installation.
 
 In this lab, students are asked to write a version of the K&R "hello, world" program, called `hello.c`. The autograder simply checks that the submitted `hello.c` program compiles and runs with an exit status of zero. If so, the submission gets 100 points. Otherwise it gets 0 points.
 
@@ -88,39 +88,39 @@ In this lab, students are asked to write a version of the K&R "hello, world" pro
 
 Autolab expects to find the `autograde-Makefile`and `autograde.tar` files in the `hello` lab directory, but otherwise places no constraints on the contents and organization of this directory. However, based on our experience, we strongly recommend a directory structure with the following form:
 
-[hello/README](https://github.com/autolab/Autolab/tree/master/examples/hello/README):
+<a href="https://github.com/autolab/Autolab/tree/master/examples/hello/README" target="_blank">hello/README</a>:
 
 ```md
 # Basic files created by the lab author
 
-Makefile Builds the lab from src/
-README  
-autograde-Makefile Makefile that runs the autograder
-src/ Contains all src files and solutions  
-test-autograder/ For testing autograder offline
-writeup/ Lab writeup that students view from Autolab
+Makefile              Builds the lab from src/
+README
+autograde-Makefile    Makefile that runs the autograder
+src/                  Contains all src files and solutions  
+test-autograder/      For testing autograder offline
+writeup/              Lab writeup that students view from Autolab
 
 # Files created by running make
 
-hello-handout/ The directory that is handed out to students, created
-using files from src/.
-hello-handout.tar Archive of hello-handout directory
-autograde.tar File that is copied to the autograding instance
-(along with autograde-Makefile and student handin file)
+hello-handout/        The directory that is handed out to students, created
+                      using files from src/.
+hello-handout.tar     Archive of hello-handout directory
+autograde.tar         File that is copied to the autograding instance
+                      (along with autograde-Makefile and student handin file)
 
 # Files created and managed by Autolab
 
-handin/ All students handin files
-hello.rb Config file
-hello.yml Database properties that persist from semester to semester
-log.txt Log of autograded submissions
+handin/               All students handin files
+hello.rb              Config file
+hello.yml             Database properties that persist from semester to semester
+log.txt               Log of autograded submissions
 ```
 
 The key idea with this directory structure is to place _all_ code for the lab in the `src` directory, including the autograding code and any starter code handed out to students in the handout directory (`hello-handout.tar` in this example). Keeping all hard state in the `src` directory helps limit inconsistencies.
 
 The main makefile creates `hello-handout` by copying files from `src`, and then tars it up:
 
-[hello/Makefile](https://github.com/autolab/Autolab/tree/master/examples/hello/Makefile):
+<a href="https://github.com/autolab/Autolab/tree/master/examples/hello/Makefile" target="_blank">hello/Makefile</a>:
 
 ```makefile
 #
@@ -174,10 +174,10 @@ To build the lab, type `make clean; make`. You can do this as often as you like 
 
 ### Source Directory
 
-The [hello/src/](https://github.com/autolab/Autolab/tree/master/examples/hello/src) directory
+The <a href="https://github.com/autolab/Autolab/tree/master/examples/hello/src" target="_blank">hello/src/</a> directory
 contains _all_ of the code files for the Hello Lab, including the files that are handed out to students:
 
-[hello/src/README](https://github.com/autolab/Autolab/tree/master/examples/hello/src/README):
+<a href="https://github.com/autolab/Autolab/tree/master/examples/hello/src/README" target="_blank">hello/src/README</a>:
 
 ```
 # Autograder and solution files
@@ -194,10 +194,10 @@ hello.c-handout         Blank hello.c file handed out to students
 
 ### Handout Directory
 
-The [hello/hello-handout/](https://github.com/autolab/Autolab/tree/master/examples/hello/hello-handout/) directory
+The <a href="https://github.com/autolab/Autolab/tree/master/examples/hello/hello-handout/" target="_blank">hello/hello-handout/</a> directory
 contains the files that the students will use to work on the lab. It contains no hard state, and is populated entirely with files from `hello/src`:
 
-[hello/hello-handout/README](https://github.com/autolab/Autolab/tree/master/examples/hello/hello-handout/README):
+<a href="https://github.com/autolab/Autolab/tree/master/examples/hello/hello-handout/README" target="_blank">hello/hello-handout/README</a>:
 
 ```
 For this lab, you should write a tiny C program, called "hello.c",
@@ -217,7 +217,7 @@ driver.sh       Autolab autograder
 hello.c         Empty C file that you will edit
 ```
 
-[hello/hello-handout/Makefile](https://github.com/autolab/Autolab/tree/master/examples/hello/hello-handout/Makefile) contains the rules that compile the student source code:
+<a href="https://github.com/autolab/Autolab/tree/master/examples/hello/hello-handout/Makefile" target="_blank">hello/hello-handout/Makefile</a> contains the rules that compile the student source code:
 
 ```makefile
 # Student makefile for the Hello Lab
@@ -239,7 +239,7 @@ $ ./hello
 
 The autograder for the Hello Lab is a trivially simple bash script called `driver.sh` that compiles and runs `hello.c` and verifies that it returns with an exit status of zero:
 
-[hello/src/driver.sh](https://github.com/autolab/Autolab/tree/master/examples/hello/src/driver.sh)
+<a href="https://github.com/autolab/Autolab/tree/master/examples/hello/src/driver.sh" target="_blank">hello/src/driver.sh</a>:
 
 ```bash
 #!/bin/bash
@@ -294,7 +294,7 @@ Notice that the autograder expects the `hello` lab on the Autolab front-end to h
 Autolab requires two _autograding files_ called `autograde.tar`, which contains all of the code required by the autograder, and `autograde-Makefile`, which runs the autograder on the autograding image when each submission is graded.
 
 For the Hello Lab, `autograde.tar` is simply a copy of the `hello-handout.tar` file that is handed out to students. And here is the corresponding
-[hello/autograde-makefile](https://github.com/autolab/Autolab/tree/master/examples/hello/autograde-Makefile):
+<a href="https://github.com/autolab/Autolab/tree/master/examples/hello/autograde-Makefile" target="_blank">hello/autograde-makefile</a>:
 
 ```makefile
 all:
@@ -335,12 +335,11 @@ $ cd test-autograder && make clean && make
 
 The `hello/writeup` contains the detailed lab writeup, either html or pdf file, that students can download from the Autolab front end.
 
-## FAQ
+## Other sample autograders
+We have a [repository for sample autograders](https://github.com/autolab/autograders-examples) written for popular languages, which includes Python, Java, C++, Golang, and Javascript.
+
+## Troubleshooting
 
 #### Why is Autolab not displaying my stdout output?
 
 Autolab always shows the stdout output of running make, even when the program crashed or timed out. However, when it does crash and the expected autoresult json string is not appended to the output, parsing of the last line will fail. If this happens, any stdout output that is longer than 10,000 lines will be discarded (Note that this limit does not apply when the autoresult json is valid).
-
-#### Is there a way to formatting the feedback provided to the students
-
-Yes there is, by using the [formatted feedback feature](/features/#formatted-feedback). 

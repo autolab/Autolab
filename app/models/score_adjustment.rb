@@ -1,8 +1,8 @@
 class ScoreAdjustment < ApplicationRecord
   # attr_accessible :kind, :value
 
-  validates_presence_of :value, :kind
-  validates_numericality_of :value
+  validates :value, :kind, presence: true
+  validates :value, numericality: true
 
   # constants for the kind of score_adjustment
   POINTS = 0
@@ -14,9 +14,9 @@ class ScoreAdjustment < ApplicationRecord
   #
   # @return The applied adjustment (float)
   def self.applied_value(adj, score, multiplier)
-    if score.nil?
-      fail ArgumentError.new("ScoreAdjustment.applied_value: score was nil")
-    elsif adj.nil?
+    raise ArgumentError, "ScoreAdjustment.applied_value: score was nil" if score.nil?
+
+    if adj.nil?
       0.0
     else
       case adj.read_attribute(:kind)
@@ -31,7 +31,7 @@ class ScoreAdjustment < ApplicationRecord
           score * multiplier * (adj.value / 100)
         end
       else
-        fail ArgumentError
+        raise ArgumentError
       end
     end
   end
@@ -48,7 +48,7 @@ class ScoreAdjustment < ApplicationRecord
     when PERCENT
       self[:kind] = PERCENT
     else
-      fail ArgumentError
+      raise ArgumentError
     end
   end
 
@@ -68,9 +68,9 @@ class ScoreAdjustment < ApplicationRecord
     when PERCENT
       type_str = "%"
     else
-      fail ArgumentError
+      raise ArgumentError
     end
 
-    sprintf("%+g", value) + " " + type_str
+    "#{format('%+g', value)} #{type_str}"
   end
 end

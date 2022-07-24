@@ -7,43 +7,46 @@
 
     <%= stylesheet_link_tag 'application' %>
     <!-- Flatpickr Datepicker CSS (lightweight file) -->
-    <%= stylesheet_link_tag "https://unpkg.com/flatpickr/dist/flatpickr.min.css" %>
+    <%= external_stylesheet_link_tag "flatpickr" %>
     <%= stylesheet_link_tag 'animate' %>
     <%= stylesheet_link_tag 'style' %>
 
-
     <% if Rails.configuration.x.analytics_id %>
+      <!-- Heap Analytics -->
       <script type="text/javascript">
         window.heap=window.heap||[],heap.load=function(t,e){window.heap.appid=t,window.heap.config=e;var a=document.createElement("script");a.type="text/javascript",a.async=!0,a.src=("https:"===document.location.protocol?"https:":"http:")+"//cdn.heapanalytics.com/js/heap-"+t+".js";var n=document.getElementsByTagName("script")[0];n.parentNode.insertBefore(a,n);for(var o=function(t){return function(){heap.push([t].concat(Array.prototype.slice.call(arguments,0)))}},p=["clearEventProperties","identify","setEventProperties","track","unsetEventProperty"],c=0;c<p.length;c++)heap[p[c]]=o(p[c])};
         heap.load("<%= Rails.configuration.x.analytics_id %>");
       </script>
     <% end %>
 
+    <% if Rails.configuration.x.google_analytics_id %>
+      <!-- Global site tag (gtag.js) - Google Analytics -->
+      <script async src="https://www.googletagmanager.com/gtag/js?id=<%= Rails.configuration.x.google_analytics_id %>"></script>
+      <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', "<%= Rails.configuration.x.google_analytics_id %>");
+      </script>
+    <% end %>
+
     <%= content_for :head %>
     <link href='//fonts.googleapis.com/css?family=Source+Sans+Pro:300,400' rel='stylesheet' type='text/css'>
     <%= content_for :stylesheets %>
-    <title><%= if @title then @title elsif @course then @course.display_name else "Autolab" end %></title>
+    <title><%= if @title then @title elsif @course then @course.display_name else "Autolab Home" end %></title>
 
   </head>
 
   <body class="autolab">
-    <!-- <div id="fb-root"></div>
-    <script>(function(d, s, id) {
-      var js, fjs = d.getElementsByTagName(s)[0];
-      if (d.getElementById(id)) return;
-      js = d.createElement(s); js.id = id;
-      js.src = "//connect.facebook.net/en_US/sdk.js#xfbml=1&version=v2.3&appId=259908887444831";
-      fjs.parentNode.insertBefore(js, fjs);
-    }(document, 'script', 'facebook-jssdk'));</script>  -->
-    <%= external_javascript_include_tag "jquery", "2.1.4" %>
+    <%= external_javascript_include_tag "jquery" %>
     <%= content_for :js_widget_patch %>
-    <!--<%= external_javascript_include_tag "bootstrap", "3.0.0" %>-->
     <%= javascript_include_tag 'application' %>
 
     <!-- Flatpickr Datetimepicker JS (lightweight file) -->
-    <%= javascript_include_tag "https://unpkg.com/flatpickr" %>
+    <%= external_javascript_include_tag "flatpickr" %>
 
     <div class="page-wrapper">
+      <a class="skip-main" href="#content">Skip to main content</a>
       <%= render "layouts/navbar" %>
 
       <!-- Page Body -->
@@ -55,11 +58,22 @@
 
         <!-- Flashes -->
         <div id="flashes">
+          <%# msg is escaped by default %>
+          <%# if you must output raw html, set flash[:html_safe] = true in controller %>
+          <% html_safe = flash[:html_safe] %>
+          <% flash.delete(:html_safe) %>
           <% flash.each do |name, msg| %>
-          <%= content_tag :div, sanitize(msg), id: "flash_#{name}",
-              class: "#{name}" %>
+            <% if name == "roster_error" %>
+              <div class="error" id="flash_error">
+                <%= render :partial=>'courses/uploadError',
+                            locals: {roster_errors: msg} %>
+              </div>
+            <% else %>
+              <% msg = msg.html_safe if html_safe %>
+              <%= content_tag :div, msg, id: "flash_#{name}",
+                  class: "#{name}" %>
+            <% end %>
           <% end %>
-
           <noscript>
               <div id="flash_error" class="error">
                   AutoLab requires Javascript to be enabled for all features to correctly function. Please enable Javascript.
@@ -74,7 +88,7 @@
         <!-- End Persistent Announcements -->
 
         <!-- Content -->
-        <div id="content">
+        <div id="content" role="main">
           <%= yield %>
         </div>
         <!-- End Content -->

@@ -1,17 +1,26 @@
 <div id="code-box">
+  <% if @is_pdf %>
+    <div type="checkbox" id="highlightLongLines" style="display: none"></div>
+  <% else %>
+    <label>
+      <input type="checkbox" id="highlightLongLines" checked>
+      <span>Highlight lines longer than 80 characters</span>
+    </label>
+  <% end %>
   <div class="lds-spinner"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
   <div class="file-header">
     <div class="file-name">
       <i class="material-icons">insert_drive_file</i> <span><%= @displayFilename %></span>
     </div>
-    <div class="file-button">
-      <%= link_to [:download, @course, @assessment, @submission, header_position: @header_position ],
-                    data: {toggle: "tooltip", placement:"top"},
-                    title: "Download Submission" do %>
-          Download File
-      <% end %>
-    </div>
-
+    <% if( !(params.has_key?(:header_position) && params[:header_position].to_i < 0) ) %>
+      <div class="file-button">
+        <%= link_to [:download, @course, @assessment, @submission, header_position: @header_position ],
+                      data: {toggle: "tooltip", placement:"top"},
+                      title: "Download Submission" do %>
+            Download File
+        <% end %>
+      </div>
+    <% end %>
     <% if @is_pdf %>
     <div class="file-button">
       <%= link_to [:download, @course, @assessment, @submission, header_position: @header_position, annotated: true ],

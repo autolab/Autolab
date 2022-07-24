@@ -3,11 +3,12 @@
 # Version of your assets, change this if you want to expire all your assets.
 Rails.application.config.assets.version = '1.0'
 
-# Add additional assets to the asset load path
+# Add additional assets to the asset load path.
 # Rails.application.config.assets.paths << Emoji.images_path
 
 # Precompile additional assets.
-# application.js, application.css, and all non-JS/CSS in app/assets folder are already added.
+# application.js, application.css, and all non-JS/CSS in the app/assets
+# folder are already added.
 Rails.application.config.assets.precompile += %w( *.js )
 Rails.application.config.assets.precompile += %w( animate.css )
 Rails.application.config.assets.precompile += %w( gradesheet.css.scss )
@@ -24,7 +25,6 @@ Rails.application.config.assets.precompile += %w( scaffold.css )
 Rails.application.config.assets.precompile += %w( beta.css )
 Rails.application.config.assets.precompile += %w( icons.css.scss )
 Rails.application.config.assets.precompile += %w( scaffolds.scss )
-Rails.application.config.assets.precompile += %w( chosen.min.css )
 Rails.application.config.assets.precompile += %w( instructor_gradebook.css )
 Rails.application.config.assets.precompile += %w( SlickGrid/* )
 Rails.application.config.assets.precompile += %w( css/* )
@@ -65,7 +65,6 @@ Rails.application.config.assets.precompile += %w( jquery.simplemodal-1.4.4.js )
 Rails.application.config.assets.precompile += %w( metricsgraphics.min.js )
 Rails.application.config.assets.precompile += %w( sorttable.js )
 Rails.application.config.assets.precompile += %w( validateIntegrity.js )
-Rails.application.config.assets.precompile += %w( chosen.jquery.min.js )
 Rails.application.config.assets.precompile += %w( gradebook.js )
 Rails.application.config.assets.precompile += %w( initialize_datetimepickers.js )
 Rails.application.config.assets.precompile += %w( jquery.stickytableheaders.js )

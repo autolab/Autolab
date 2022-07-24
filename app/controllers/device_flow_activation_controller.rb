@@ -12,7 +12,7 @@ class DeviceFlowActivationController < ApplicationController
 
   # target for the form on the index page
   def resolve
-    if not params.has_key?(:user_code)
+    unless params.key?(:user_code)
       flash[:error] = "User code missing. Please enter user code."
       redirect_to(action: :index) && return
     end
@@ -34,7 +34,6 @@ class DeviceFlowActivationController < ApplicationController
                                          scope: req.scopes,
                                          redirect_uri: device_flow_auth_cb_url,
                                          state: new_code)
-
   end
 
   # called by the authorization service
@@ -46,7 +45,7 @@ class DeviceFlowActivationController < ApplicationController
       redirect_to(action: :index) && return
     end
 
-    if params.has_key?(:error)
+    if params.key?(:error)
       # encountered error
       req.deny_request(current_user.id)
       flash[:error] = "Access denied by user"

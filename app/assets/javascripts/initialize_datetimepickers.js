@@ -13,7 +13,13 @@
       $(datetimeElts[i]).flatpickr({
         enableTime: true,
         altInput: true,
-        defaultDate: defaultDate
+        defaultDate: defaultDate,
+        formatDate: (date, format) => {
+          return moment(date).format(format);
+        },
+        parseDate: (datestr, format) => {
+          return moment(datestr, format, true).toDate();
+        },
       })
     }
 
@@ -27,7 +33,7 @@
 
       $(dateElts[i]).flatpickr({
         altInput: true,
-        defaultDate: defaultDate
+        defaultDate: defaultDate,
       })
     }
   });

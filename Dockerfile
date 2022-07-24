@@ -7,7 +7,7 @@
 #     https://github.com/phusion/passenger-docker
 #
 #
-FROM phusion/passenger-ruby26
+FROM phusion/passenger-ruby26:2.0.0
 
 MAINTAINER Autolab Development Team "autolab-dev@andrew.cmu.edu"
 
@@ -18,7 +18,8 @@ RUN ln -fs /usr/share/zoneinfo/America/New_York /etc/localtime
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y \
   sqlite3 \
-  tzdata
+  tzdata  \
+  shared-mime-info
 
 # Start Nginx / Passenger
 RUN rm -f /etc/service/nginx/down
@@ -34,6 +35,10 @@ RUN chown app:app Gemfile Gemfile.lock
 
 # Prepare folders
 USER app
+# Update rubygem to latest version
+RUN gem update --system
+# Specify bundler version
+RUN gem install bundler -v $(tail -n1 Gemfile.lock)
 RUN bundle install
 
 RUN mkdir /home/app/webapp
@@ -42,18 +47,18 @@ WORKDIR /home/app/webapp
 # Add the rails app
 ADD . /home/app/webapp
 
+USER root
+
 # Create the log files
 RUN mkdir -p /home/app/webapp/log && \
   touch /home/app/webapp/log/production.log && \
-  chown -R app:app /home/app/webapp/log && \
-  chmod 0664 /home/app/webapp/log/production.log
+  chmod 0664 /home/app/webapp/log/production.log && \
+  chown -R app:app .
 
-USER root
-RUN chown -R app:app .
 USER app
 
 # precompile the Rails assets
-RUN RAILS_ENV=production bundle exec rake assets:precompile
+RUN RAILS_ENV=production bundle exec rails assets:precompile
 
 # Clean up APT when done.
 USER root
