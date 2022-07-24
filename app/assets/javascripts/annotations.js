@@ -73,7 +73,7 @@ function changeFile(headerPos) {
     history.replaceState(null, null, newFile.url);
 
     // Update version buttons
-    $('#version_links').replaceWith(newFile.versionLinks);
+    $('#version-links').replaceWith(newFile.versionLinks);
 
     displayAnnotations();
     attachEvents();
@@ -87,7 +87,7 @@ function purgeCurrentPageCache() {
     codeBox: `<div id="code-box">${$('#code-box').html()}</div>`,
     pdf: false,
     symbolTree: `<div id="symbol-tree-box">${$('#symbol-tree-box').html()}</div>`,
-    versionLinks: `<span id="version_links">${$('#version_links').html()}</span>`,
+    versionLinks: `<span id="version-links">${$('#version-links').html()}</span>`,
     url: window.location.href,
   };
 }

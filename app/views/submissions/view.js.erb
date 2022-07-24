@@ -33,7 +33,7 @@ if (currentHeaderPos == <%= params[:header_position] %>) {
     history.replaceState(null, null, newFile.url);
 
     // Update version buttons
-    $('#version_links').replaceWith(newFile.versionLinks);
+    $('#version-links').replaceWith(newFile.versionLinks);
 
     displayAnnotations();
     attachEvents();
