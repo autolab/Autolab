@@ -10,7 +10,7 @@ class MetricsController < ApplicationController
     @max_consecutive_assessments = if course_max.nil?
                                      0
                                    else
-                                     course_max[1] - 1
+                                     course_max[1]
                                    end
   end
 
