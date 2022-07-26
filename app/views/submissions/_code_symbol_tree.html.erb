@@ -1,5 +1,5 @@
 <div id="symbol-tree-container">
-<% unless @is_pdf %>
+<% unless (@is_pdf || @ctag_obj.nil?) %>
     <div id="symbol-tree-box">
         <h5>Symbol Tree</h5>
         <ul>

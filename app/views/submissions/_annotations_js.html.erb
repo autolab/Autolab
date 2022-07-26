@@ -13,8 +13,8 @@
 
   <% if @is_pdf %>
   newFile.pdf = true;
-  newFile.pdfUrl = "<%= url_for [:download, @course, @assessment, @submission, header_position: params[:header_position]] %>";
-  newFile.annotatedPdfUrl = "<%= url_for [:download, @course, @assessment, @submission, header_position: params[:header_position], annotated: true] %>";
+  newFile.pdfUrl = "<%= url_for [:download, @course, @assessment, @submission, header_position: @header_position] %>";
+  newFile.annotatedPdfUrl = "<%= url_for [:download, @course, @assessment, @submission, header_position: @header_position, annotated: true] %>";
   newFile.previewMode = false;
   <% if @preview_mode %>
       newFile.previewMode = true;
