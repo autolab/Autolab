@@ -203,7 +203,7 @@ class SubmissionsController < ApplicationController
   # try to send the file at that position in the archive.
   action_auth_level :download, :student
   def download
-    if params[:header_position]
+    if Archive.archive?(@submission.handin_file_path) && params[:header_position]
       file, pathname = Archive.get_nth_file(@filename, params[:header_position].to_i)
       unless file && pathname
         flash[:error] = "Could not read archive."
@@ -506,11 +506,10 @@ class SubmissionsController < ApplicationController
 
                           matched_file[:header_position]
                         end
-      # If not an archive, header_position = nil
-      # This ensures that in _version_links.html.erb, header_position is not set in the querystring
+      # If not an archive, we have header_position = nil
+      # This means that in _version_links.html.erb, header_position is not set in the querystring
       # for the prev / next button urls
-      # Otherwise, pure PDF submissions would not load as #download sees the header_position
-      # and treats the file as an archive
+      # This is fine since #download ignores header_position for non-archives
 
       matchedVersions << {
         version: submission.version,
