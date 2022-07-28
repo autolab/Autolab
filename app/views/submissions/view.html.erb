@@ -64,7 +64,6 @@
         <%= link_to(url_for([:view, @course, @assessment, @prevSubmission]), class: "valign-wrapper", title: "Previous student (shortcut: ←)", id: "prev_submission_link") do %>
           <i class="material-icons" style="margin-right: 3px">arrow_back</i> <%= @prevSubmission.course_user_datum.user.email %>
         <% end %>
-         <link rel="prerender" href= <%= url_for([:view, @course, @assessment, @prevSubmission])%> />
       <% end %>
     </div>
     <div class="col s8 center-align valign-wrapper submission-controls">
