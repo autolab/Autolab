@@ -2,22 +2,27 @@ This page provides instructions on installing Autolab for development on Mac OSX
 
 Follow the step-by-step instructions below:
 
-1. Install <a href="https://github.com/sstephenson/rbenv" target="_blank">rbenv</a> (use the Basic GitHub Checkout method)
+1. Install one of two database options
 
-2. Install <a href="https://github.com/sstephenson/ruby-build" target="_blank">ruby-build</a> as an rbenv plugin:
+    -  <a href="https://www.tutorialspoint.com/sqlite/sqlite_installation.htm" target="_blank">SQLite</a> should **only** be used in development
+    -  <a href="https://dev.mysql.com/doc/refman/8.0/en/macos-installation-pkg.html" target="_blank">MySQL</a> can be used in development or production
+
+2. Install <a href="https://github.com/sstephenson/rbenv" target="_blank">rbenv</a> (use the Basic GitHub Checkout method)
+
+3. Install <a href="https://github.com/sstephenson/ruby-build" target="_blank">ruby-build</a> as an rbenv plugin:
 
         :::bash
         git clone https://github.com/sstephenson/ruby-build.git ~/.rbenv/plugins/ruby-build
 
     Restart your shell at this point in order to start using your newly installed rbenv
 
-3. Clone the Autolab repo into home directory and enter it:
+4. Clone the Autolab repo into home directory and enter it:
 
         :::bash
         cd ~/
         git clone https://github.com/autolab/Autolab.git && cd Autolab
 
-4. Install the correct version of ruby:
+5. Install the correct version of ruby:
 
         :::bash
         rbenv install $(cat .ruby-version)
@@ -37,24 +42,19 @@ Follow the step-by-step instructions below:
         export RBENV_ROOT=<rbenv folder path on your local machine>
         eval "$(rbenv init -)"
 
-5. Install `bundler`:
+6. Install `bundler`:
 
         :::bash
         gem install bundler
         rbenv rehash
 
-6. Install the required gems (run the following commands in the cloned Autolab repo):
+7. Install the required gems (run the following commands in the cloned Autolab repo):
 
         :::bash
         cd bin
         bundle install
 
     Refer to [Troubleshooting](/installation/troubleshoot) for issues installing gems
-
-7. Install one of two database options
-
-    -   <a href="https://www.tutorialspoint.com/sqlite/sqlite_installation.htm" target="_blank">SQLite</a> should **only** be used in development
-    -   <a href="https://dev.mysql.com/doc/refman/5.7/en/osx-installation-pkg.html" target="_blank">MySQL</a> can be used in development or production
 
 8. Install <a href="https://brew.sh/" target="_blank">homebrew</a>, as well as the <a href="https://github.com/universal-ctags/homebrew-universal-ctags" target="_blank">universal-ctags</a> package:
 
