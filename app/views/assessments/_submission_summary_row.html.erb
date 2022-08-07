@@ -10,7 +10,7 @@
       -
       <% if submission.filename then %>
         <%  if link = view_course_assessment_submission_path(@course, @assessment, submission) %>
-          <a href="<%= link %>" class="tooltipped" title="View Source" data-tooltip="View Source" data-placement="right" aria-label="Justify" style="margin-right:6px; font-size: 20px;"><%= submission.filename %></a>
+          <a href="<%= link %>" class="tooltipped" title="View Source" data-tooltip="View Source" data-placement="right" aria-label="Justify" style="margin-right:6px; font-size: 20px; vertical-align: middle"><%= submission.filename %></a>
 
         <% else %>
         <%= submission.filename %>
