@@ -9,7 +9,7 @@ class User < ApplicationRecord
          :recoverable, :rememberable, :trackable, :validatable,
          :confirmable
 
-  devise :omniauthable, omniauth_providers: [:shibboleth]
+  devise :omniauthable, omniauth_providers: [:saml]
 
   has_many :course_user_data, dependent: :destroy
   has_many :courses, through: :course_user_data
@@ -97,6 +97,12 @@ class User < ApplicationRecord
                                             uid: auth.uid)
     return authentication.user if authentication&.user
   end
+  def self.find_for_saml(auth_uid, _signed_in_resource = nil)
+    authentication = Authentication.find_by(provider: "saml",
+                                            uid: auth_uid)
+    return authentication.user if authentication && authentication.user
+  end
+
 
   def self.new_with_session(params, session)
     super.tap do |user|
@@ -116,6 +122,11 @@ class User < ApplicationRecord
         user.email = data["uid"] # email is uid in our case
         user.authentications.new(provider: "CMU-Shibboleth",
                                  uid: data["uid"])
+      elsif (data = session["devise.saml_data"])
+        user.email = data["uid"]
+        user.authentications.new(provider: "saml",
+                                 uid: data["uid"])
+
       end
     end
   end
