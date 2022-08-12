@@ -10,7 +10,7 @@ First ensure that you have Docker and Docker Compose installed on your machine. 
 1. Clone this repository and its Autolab and Tango submodules: 
 
         :::bash
-        git clone --recurse-submodules -j8 git@github.com:autolab/docker.git autolab-docker
+        git clone --recurse-submodules -j8 https://github.com/autolab/docker.git autolab-docker
 
 
 2. Enter the project directory:
@@ -23,6 +23,11 @@ First ensure that you have Docker and Docker Compose installed on your machine. 
         :::bash
         make update
 
+3a. If the previous step fails with `make: command not found`, you may need to install `make` with the appropriate command for your Linux system, such as:
+
+        :::bash
+        apt install make
+
 4. Create initial default configs:
 
         :::bash
@@ -31,12 +36,12 @@ First ensure that you have Docker and Docker Compose installed on your machine. 
 5. Build the Dockerfiles for both Autolab and Tango:
 
         :::bash
-        docker-compose build
+        docker compose build
 
 6. Run the Docker containers:
 
         :::bash
-        docker-compose up -d
+        docker compose up -d
 
     Note at this point Nginx will still be crash-looping in the Autolab container because TLS/SSL has not been configured/disabled yet.
 
@@ -98,7 +103,7 @@ There are three options for TLS: using Let's Encrypt (for free TLS certificates)
 2. Ensure that port 443 is exposed on your server (i.e checking your firewall, AWS security group settings, etc)
 3. In `ssl/init-letsencrypt.sh`, change `domains=(example.com)` to the list of domains that your host is associated with, and change `email` to be your email address so that Let's Encrypt will be able to email you when your certificate is about to expire
 4. If necessary, change `staging=0` to `staging=1` to avoid being rate-limited by Let's Encrypt since there is a limit of 20 certificates/week. Setting this is helpful if you have an experimental setup.
-5. Run your modified script: `sudo sh ./ssl/init-letsencrypt.sh`
+5. Run your modified script: `su -c 'sh ./ssl/init-letsencrypt.sh'`
 
 ### Option 2: Using your own TLS certificate
 1. Copy your private key to `ssl/privkey.pem`
