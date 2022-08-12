@@ -18,15 +18,12 @@
   <%= link_to "Didn't receive unlock instructions?", new_unlock_path(resource_name) %><br />
 <% end -%>
 
-<% if false %>
 <%- if devise_mapping.omniauthable? %>
   <%- resource_class.omniauth_providers.each do |provider| %>
 		<% if provider.to_s.titleize == "Shibboleth" %>
-			<b><%= link_to "Sign in with your CMU account", user_omniauth_authorize_path(provider) %></b><br />
+			<b><%= button_to "Sign in with your CMU account", user_saml_omniauth_authorize_path %></b><br />
 		<% else %>
-			<%= link_to "Sign in with #{provider.to_s.titleize}", user_omniauth_authorize_path(provider) %><br />
+			<%= button_to "Sign in with #{provider.to_s.titleize}", user_saml_omniauth_authorize_path %><br />
 		<% end %>
 	<% end -%>
 <% end %>
-
-<% end -%>
