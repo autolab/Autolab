@@ -229,6 +229,14 @@ Devise.setup do |config|
   # up on your models and hooks.
   # config.omniauth :github, 'APP_ID', 'APP_SECRET', :scope => 'user,public_repo'
 
+  config.omniauth :saml, idp_cert_fingerprint: 'nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn', # insert your fingerprint here
+    idp_sso_target_url: 'https://login.microsoftonline.com/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/saml2', # replace with your url
+    issuer: 'https://autolab.myschool.edu',
+    assertion_consumer_service_url: 'https://autolab.myschool.edu/auth/users/auth/saml/callback',
+    idp_entity_id: 'https://sts.windows.net/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/', # similar to the target URL
+    name_identifier_format: 'urn:oasis:names:tc:SAML:2.0:nameid-format:persistent',
+    attribute_statements: { email: ['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress']}
+
   # ==> Warden configuration
   # If you want to use other strategies, that are not supported by Devise, or
   # change the failure app, you can configure them inside the config.warden block.
