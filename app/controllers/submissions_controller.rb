@@ -303,6 +303,10 @@ class SubmissionsController < ApplicationController
       }]
     end
 
+    viewing_autograder_output = params.include?(:header_position) &&
+                                (params[:header_position].to_i == -1) &&
+                                !@submission.autograde_file.nil?
+
     # Adds autograded file as first option if it exist
     # We are mapping Autograder to header_position -1
     unless @submission.autograde_file.nil?
@@ -312,10 +316,7 @@ class SubmissionsController < ApplicationController
                        directory: false })
     end
 
-    if params.include?(:header_position) &&
-       (params[:header_position].to_i == -1) &&
-       !@submission.autograde_file.nil?
-
+    if viewing_autograder_output
       file = @submission.autograde_file.read || "Empty Autograder Output"
       @displayFilename = "Autograder Output"
     elsif params.include?(:header_position) && Archive.archive?(@submission.handin_file_path)
@@ -492,12 +493,9 @@ class SubmissionsController < ApplicationController
                                .order("version DESC")
 
     # Autograder Output is a dummy file
-    # If we are displaying autograder output, don't attempt to match pathname
-    is_autograder_output = params.include?(:header_position) &&
-                           (params[:header_position].to_i == -1) &&
-                           !@submission.autograde_file.nil?
-
-    unless is_autograder_output
+    # If we are viewing autograder output, don't attempt to match versions
+    # and let @prevVersion = @nextVersion = nil
+    unless viewing_autograder_output
       # Find user submissions that contain the same pathname
       matchedVersions = []
       @userVersions.each do |submission|
