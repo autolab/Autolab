@@ -317,7 +317,6 @@ class SubmissionsController < ApplicationController
        !@submission.autograde_file.nil?
 
       file = @submission.autograde_file.read || "Empty Autograder Output"
-      is_autograder_output = true
       @displayFilename = "Autograder Output"
     elsif params.include?(:header_position) && Archive.archive?(@submission.handin_file_path)
       file, pathname = Archive.get_nth_file(@submission.handin_file_path,
@@ -494,6 +493,10 @@ class SubmissionsController < ApplicationController
 
     # Autograder Output is a dummy file
     # If we are displaying autograder output, don't attempt to match pathname
+    is_autograder_output = params.include?(:header_position) &&
+                           (params[:header_position].to_i == -1) &&
+                           !@submission.autograde_file.nil?
+
     unless is_autograder_output
       # Find user submissions that contain the same pathname
       matchedVersions = []
