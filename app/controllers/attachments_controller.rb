@@ -38,12 +38,21 @@ class AttachmentsController < ApplicationController
   def show
     filename = Rails.root.join("attachments", @attachment.filename)
     unless File.exist?(filename)
-      COURSE_LOGGER.log("Cannot find the file '#{@attachment.filename}' for attachment #{@attachment.name}")
+      COURSE_LOGGER.log("Cannot find the file '#{@attachment.filename}' for"\
+                        " attachment #{@attachment.name}")
+
       flash[:error] = "Error loading #{@attachment.name} from #{@attachment.filename}"
       redirect_to([@course, :attachments]) && return
     end
-    send_file(filename, disposition: "inline",
-                        type: @attachment.mime_type, filename: @attachment.filename) && return
+    if @cud.instructor? || @attachment.released?
+      # Set to application/octet-stream to force download
+      send_file(filename, disposition: "inline",
+                          type: "application/octet-stream",
+                          filename: @attachment.filename) && return
+    end
+
+    flash[:error] = "You are unauthorized to view this attachment"
+    redirect_to([@course, @assessment])
   end
 
   action_auth_level :edit, :instructor
@@ -66,13 +75,14 @@ class AttachmentsController < ApplicationController
         error_msg += "<br>Unknown error"
       end
       flash[:error] = error_msg
+      flash[:html_safe] = true
       COURSE_LOGGER.log("Failed to update attachment: #{error_msg}")
 
       if @is_assessment
         redirect_to([:edit, @course, @assessment, @attachment]) && return
-      else
-        redirect_to([:edit, @course, @attachment]) && return
       end
+
+      redirect_to([:edit, @course, @attachment]) && return
     end
   end
 
@@ -96,19 +106,19 @@ private
                     @course.attachments.find(params[:id])
                   end
 
-    if @attachment.nil?
-      COURSE_LOGGER.log("Cannot find attachment with id: #{params[:id]}")
-      flash[:error] = "Could not find Attachment \# #{params[:id]}"
-      redirect_to_attachment_list && return
-    end
+    return unless @attachment.nil?
+
+    COURSE_LOGGER.log("Cannot find attachment with id: #{params[:id]}")
+    flash[:error] = "Could not find Attachment \# #{params[:id]}"
+    redirect_to_attachment_list && return
   end
 
   def redirect_to_attachment_list
     if @is_assessment
-      redirect_to([@course, @assessment]) && return
-    else
-      redirect_to([@course, :attachments]) && return
+      (redirect_to([@course, @assessment]) && return)
     end
+
+    redirect_to([@course, :attachments]) && return
   end
 
   def add_attachments_breadcrumb

@@ -14,10 +14,12 @@
     </div>
   </div>
   <%= form_for :doIt, :url=>{:action=>"upload_roster",:doIt=>"true"} do |f| %>
+    <%= f.submit "Confirm", {:class => "btn primary"} %>
+    <br>
     <%= render partial: 'uploadTable', locals: {cud_view:@cuds, sort_status:"unsorted_cuds"} %>
     <%= render partial: 'uploadTable', locals: {cud_view:@sorted_cuds, sort_status:"sorted_cuds"} %>
-  <br>
-  <%= f.submit "Confirm", {:class => "btn primary"} %>
+    <br>
+    <%= f.submit "Confirm", {:class => "btn primary"} %>
 	<% end %>
 <% else %>
 <p>
@@ -48,7 +50,6 @@ The CMU Roster file should include a header.  Editing accounts will occur as a <
 
 <% end %>
 
-<script src="//cdnjs.cloudflare.com/ajax/libs/jquery-scrollTo/2.1.2/jquery.scrollTo.min.js"></script>
 <% content_for :javascripts do %>
   <%= javascript_include_tag "sort-toggle" %>
 <% end %>

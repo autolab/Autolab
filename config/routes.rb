@@ -1,5 +1,5 @@
 Rails.application.routes.draw do
-  # For details on the DSL available within this file, see http://guides.rubyonrails.org/routing.html
+  # For details on the DSL available within this file, see https://guides.rubyonrails.org/routing.html
 
   use_doorkeeper
 
@@ -15,12 +15,15 @@ Rails.application.routes.draw do
       resources :courses, param: :name, only: [:index, :create] do
         resources :course_user_data, only: [:index, :create, :show, :update, :destroy],
                                      param: :email, :constraints => { :email => /[^\/]+/ }
-
+        
         resources :assessments, param: :name, only: [:index, :show] do
           get "problems"
           get "writeup"
           get "handout"
           post "submit"
+          post "set_group_settings"
+          
+          resources :groups, only: [:index, :create, :destroy]
 
           resources :submissions, param: :version, only: [:index] do
             get "feedback"
@@ -62,14 +65,14 @@ Rails.application.routes.draw do
   resources :users do
     get "admin"
     get "github_oauth", on: :member
-    get "github_revoke", on: :member
+    post "github_revoke", on: :member
     get "github_oauth_callback", on: :collection
   end
 
   resources :courses, param: :name do
     resources :schedulers do
-      get "visualRun", action: :visual_run
-      get "run"
+      post "visualRun", action: :visual_run
+      post "run"
     end
 
     resource :metrics, only: :index do
@@ -77,10 +80,11 @@ Rails.application.routes.draw do
       get "get_current_metrics"
       get "get_watchlist_instances"
       get "get_num_pending_instances"
-      get "refresh_watchlist_instances"
+      post "refresh_watchlist_instances"
+      get "get_watchlist_category_blocklist"
       post "update_current_metrics"
       post "update_watchlist_instances"
-      post "update_current_metrics"
+      post "update_watchlist_configuration"
     end
 
     resources :jobs, only: :index do
@@ -113,7 +117,12 @@ Rails.application.routes.draw do
         get "help", on: :member
       end
       resources :submissions do
-        resources :annotations, only: [:create, :update, :destroy]
+        resources :annotations, only: [:create, :update, :destroy] do
+          collection do
+            get "shared_comments"
+          end
+        end
+
         resources :scores, only: [:create, :show, :update]
 
         member do
@@ -132,12 +141,12 @@ Rails.application.routes.draw do
         match "bulkGrade", via: [:get, :post]
         post "bulkGrade_complete"
         get "bulkExport"
-        get "releaseAllGrades"
-        get "releaseSectionGrades"
+        post "releaseAllGrades"
+        post "releaseSectionGrades"
         get "viewFeedback"
-        get "reload"
+        post "reload"
         get "statistics"
-        get "withdrawAllGrades"
+        post "withdrawAllGrades"
         get "export"
         patch "edit/*active_tab", action: :update
         get "edit/*active_tab", action: :edit
@@ -179,9 +188,9 @@ Rails.application.routes.draw do
 
     resources :course_user_data do
       resource :gradebook, only: :show do
-        get "bulkRelease"
+        post "bulk_release"
         get "csv"
-        get "invalidate"
+        post "invalidate"
         get "statistics"
         get "student"
         get "view"
@@ -190,17 +199,17 @@ Rails.application.routes.draw do
       member do
         get "destroyConfirm"
         match "sudo", via: [:get, :post]
-        get "unsudo"
+        post "unsudo"
       end
     end
 
     member do
-      get "bulkRelease"
+      post "bulk_release"
       get "download_roster"
       match "email", via: [:get, :post]
       get "manage"
       get "moss"
-      get "reload"
+      post "reload"
       match "report_bug", via: [:get, :post]
       post "run_moss"
       get "sudo"

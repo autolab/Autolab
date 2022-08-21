@@ -32,7 +32,6 @@ class Submission < ApplicationRecord
   # keep track of latest submission
   after_save :update_latest_submission, if: :version_changed?
   after_save :update_latest_submission, if: :ignored_changed?
-  after_save :update_individual_grade_watchlist_instances_if_latest, if: :saved_change_to_tweak_id?
   after_commit do |sub|
     COURSE_LOGGER.log("Submission #{sub.id} SAVED for " \
       "#{sub.course_user_datum.user.email} on" \
@@ -151,7 +150,7 @@ class Submission < ApplicationRecord
     archive = File.join(assessment.handin_directory_path, "archive")
     Dir.mkdir(archive) unless FileTest.directory?(archive)
 
-    # Using the id instead of the version guarentees a unique filename
+    # Using the id instead of the version guarantees a unique filename
     submission_backup = File.join(archive, "deleted_#{filename}")
     FileUtils.mv(handin_file_path, submission_backup)
 
@@ -351,7 +350,7 @@ class Submission < ApplicationRecord
     (aud.latest_submission_id == id)
   end
 
-  # override as_json to include the total with a paramter
+  # override as_json to include the total with a parameter
   def as_json(options = {})
     json = super(options)
     json["total"] = final_score options[:seen_by]
@@ -390,10 +389,10 @@ class Submission < ApplicationRecord
     assessment.aud_for course_user_datum_id
   end
 
-  def update_individual_grade_watchlist_instances_if_latest
-    return unless aud.latest_submission_id == id
+  def group_associated_submissions
+    raise "Submission is not associated with a group" if group_key.empty?
 
-    WatchlistInstance.update_individual_grade_watchlist_instances(course_user_datum)
+    Submission.where(group_key: group_key).where.not(id: id)
   end
 
 private

@@ -1,7 +1,7 @@
 <% content_for :javascripts do %>
     <script type="text/javascript">
         $(function () {
-            $.get("visualRun", function (returned) {
+            $.post("visualRun", function (returned) {
                 $(".output").html(returned)
             })
         })

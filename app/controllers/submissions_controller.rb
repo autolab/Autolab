@@ -17,9 +17,6 @@ class SubmissionsController < ApplicationController
   action_auth_level :index, :instructor
   def index
     @submissions = @assessment.submissions.order("created_at DESC")
-
-    assign = @assessment.name.gsub(/\./, "")
-    modName = (assign + @course.name.gsub(/[^A-Za-z0-9]/, "")).camelize
     @autograded = @assessment.has_autograder?
   end
 
@@ -38,11 +35,7 @@ class SubmissionsController < ApplicationController
         render([@course, @assessment, :submissions]) && return
       end
     else
-      @cuds = {}
-      # TODO: change order
-      @course.course_user_data.joins(:user).order("email ASC").each do |cud|
-        @cuds[cud.full_name_with_email] = cud.id
-      end
+      @users, @usersEncoded = @course.get_autocomplete_data
     end
   end
 
@@ -70,19 +63,16 @@ class SubmissionsController < ApplicationController
       @submission.submitted_by_id = @cud.id
       next unless @submission.save! # Now we have a version number!
 
-      if params[:submission]["file"] &&
-         params[:submission]["file"].present?
+      if params[:submission]["file"]&.present?
         @submission.save_file(params[:submission])
       end
     end
-    flash[:success] = pluralize(cud_ids.size, "Submission") + " Created"
+    flash[:success] = "#{pluralize(cud_ids.size, 'Submission')} Created"
     redirect_to course_assessment_submissions_path(@course, @assessment)
   end
 
   action_auth_level :show, :student
-  def show
-    submission = Submission.find(params[:id])
-  end
+  def show; end
 
   # this loads and looks good
   action_auth_level :edit, :instructor
@@ -98,17 +88,20 @@ class SubmissionsController < ApplicationController
     if params[:submission][:tweak_attributes][:value].blank?
       params[:submission][:tweak_attributes][:_destroy] = true
     end
+
     if @submission.update(edit_submission_params)
       redirect_to(history_course_assessment_path(@submission.course_user_datum.course,
                                                  @assessment)) && return
-    else
-      flash[:error] = "Error: There were errors editing the submission."
-      @submission.errors.full_messages.each do |msg|
-        flash[:error] += "<br>#{msg}"
-      end
-      redirect_to(edit_course_assessment_submission_path(@submission.course_user_datum.course,
-                                                         @assessment, @submission)) && return
     end
+
+    # Error case
+    flash[:error] = "Error: There were errors editing the submission."
+    @submission.errors.full_messages.each do |msg|
+      flash[:error] += "<br>#{msg}"
+    end
+    flash[:html_safe] = true
+    redirect_to(edit_course_assessment_submission_path(@submission.course_user_datum.course,
+                                                       @assessment, @submission)) && return
   end
 
   # this is good
@@ -164,11 +157,17 @@ class SubmissionsController < ApplicationController
       @assessment.errors.full_messages.each do |msg|
         flash[:error] += "<br>#{msg}"
       end
+      flash[:html_safe] = true
     end
 
     if @assessment.disable_handins
       flash[:error] = "There are no submissions to download."
-      redirect_to([@course, @assessment, :submissions]) && return
+      if @cud.course_assistant
+        redirect_to([@course, @assessment])
+      else
+        redirect_to([@course, @assessment, :submissions])
+      end
+      return
     end
 
     submissions = if params[:final]
@@ -181,17 +180,22 @@ class SubmissionsController < ApplicationController
     paths = submissions.collect(&:handin_file_path)
     paths = paths.select { |p| !p.nil? && File.exist?(p) && File.readable?(p) }
 
-    result = Archive.create_zip paths
+    result = Archive.create_zip paths # result is stringIO to be sent
 
     if result.nil?
       flash[:error] = "There are no submissions to download."
-      redirect_to([@course, @assessment, :submissions]) && return
+      if @cud.course_assistant
+        redirect_to([@course, @assessment])
+      else
+        redirect_to([@course, @assessment, :submissions])
+      end
+      return
     end
 
-    send_file(result.path,
+    send_data(result.read, # to read from stringIO object returned by create_zip
               type: "application/zip",
-              stream: false, # So we can delete the file immediately.
-              filename: File.basename(result.path)) && return
+              disposition: "attachment", # tell browser to download
+              filename: "#{@course.name}_#{@course.semester}_#{@assessment.name}_submissions.zip")
   end
 
   # Action to be taken when the user wants do download a submission but
@@ -199,7 +203,7 @@ class SubmissionsController < ApplicationController
   # try to send the file at that position in the archive.
   action_auth_level :download, :student
   def download
-    if params[:header_position]
+    if Archive.archive?(@submission.handin_file_path) && params[:header_position]
       file, pathname = Archive.get_nth_file(@filename, params[:header_position].to_i)
       unless file && pathname
         flash[:error] = "Could not read archive."
@@ -262,8 +266,6 @@ class SubmissionsController < ApplicationController
                 disposition: "inline"
 
     else
-      mime = params[:forceMime] || @submission.detected_mime_type
-
       send_file @filename,
                 filename: @basename,
                 disposition: "inline"
@@ -301,6 +303,10 @@ class SubmissionsController < ApplicationController
       }]
     end
 
+    viewing_autograder_output = params.include?(:header_position) &&
+                                (params[:header_position].to_i == -1) &&
+                                !@submission.autograde_file.nil?
+
     # Adds autograded file as first option if it exist
     # We are mapping Autograder to header_position -1
     unless @submission.autograde_file.nil?
@@ -310,7 +316,7 @@ class SubmissionsController < ApplicationController
                        directory: false })
     end
 
-    if params.include?(:header_position) && (params[:header_position].to_i == -1) && !@submission.autograde_file.nil?
+    if viewing_autograder_output
       file = @submission.autograde_file.read || "Empty Autograder Output"
       @displayFilename = "Autograder Output"
     elsif params.include?(:header_position) && Archive.archive?(@submission.handin_file_path)
@@ -327,8 +333,8 @@ class SubmissionsController < ApplicationController
     else
       # auto-set header position for archives
       if Archive.archive?(@submission.handin_file_path)
-        firstFile = Archive.get_files(@submission.handin_file_path).find do |file|
-          file[:mac_bs_file] == false and file[:directory] == false
+        firstFile = Archive.get_files(@submission.handin_file_path).find do |archive_file|
+          archive_file[:mac_bs_file] == false and archive_file[:directory] == false
         end || { header_position: 0 }
         redirect_to(url_for([:view, @course, @assessment, @submission, {
                               header_position: firstFile[:header_position]
@@ -349,7 +355,7 @@ class SubmissionsController < ApplicationController
     return unless file
 
     mm = MimeMagic.by_magic(file)
-    file = "Binary file not displayed" if mm.present? && (!mm.text? and mm.subtype != "pdf")
+    file = "Binary file not displayed" if mm.present? && (!mm.text? && (mm.subtype != "pdf"))
 
     unless PDF.pdf?(file)
       # begin
@@ -358,7 +364,9 @@ class SubmissionsController < ApplicationController
       begin
         codePath = @filename
         if Archive.archive?(@submission.handin_file_path)
-          # If the submission is an archive, write the open file's code to a temp file so we can pass it into ctags
+          # If the submission is an archive, write the open file's code
+          # to a temp file so we can pass it into ctags
+
           ctagFile = Tempfile.new(["autolab_ctag", File.extname(pathname)])
           ctagFile.write(file)
           ctagFile.close
@@ -366,20 +374,23 @@ class SubmissionsController < ApplicationController
         end
         # Special case -- we're using a CMU-specific language, and we need to
         # force the language interpretation
-        @ctags_json = if codePath.last(3) == ".c0" or codePath.last(3) == ".c1"
-                        `ctags --output-format=json --language-force=C --fields="Nnk" #{codePath}`.split("\n")
-                      else
-                        # General case -- language can be inferred from file extension
-                        `ctags --extras=+q --output-format=json --fields="Nnk" #{codePath}`.split("\n")
-                      end
-
+        @ctags_json =
+          if (codePath.last(3) == ".c0") || (codePath.last(3) == ".c1")
+            `ctags --output-format=json --language-force=C --fields="Nnk" #{codePath}`.split("\n")
+          else
+            # General case -- language can be inferred from file extension
+            `ctags --extras=+q --output-format=json --fields="Nnk" #{codePath}`.split("\n")
+          end
         @ctag_obj = []
         i = 0
         while i < @ctags_json.length
           obj_temp = JSON.parse(@ctags_json[i])
-          if (obj_temp["kind"] == "function" or obj_temp["kind"] == "method") && (@ctag_obj.select do |ctag|
-                                                                                    ctag["line"] == obj_temp["line"]
-                                                                                  end).empty?
+          if ((obj_temp["kind"] == "function") ||
+            (obj_temp["kind"] == "method")) &&
+             (@ctag_obj.select do |ctag|
+                ctag["line"] == obj_temp["line"]
+              end).empty?
+
             @ctag_obj.push(obj_temp)
           end
           i += 1
@@ -387,7 +398,9 @@ class SubmissionsController < ApplicationController
           next unless obj_temp["kind"] == "class"
 
           obj_temp = JSON.parse(@ctags_json[i])
-          while i + 1 < @ctags_json.length and (obj_temp["kind"] == "member" or obj_temp["kind"] == "method")
+          while (i + 1 < @ctags_json.length) &&
+                ((obj_temp["kind"] == "member") || (obj_temp["kind"] == "method"))
+
             obj_exists = @ctag_obj.select { |ctag| ctag["line"] == obj_temp["line"] }
             if obj_exists.empty?
               @ctag_obj.push(obj_temp)
@@ -403,25 +416,22 @@ class SubmissionsController < ApplicationController
         # The functions are in some arbitrary order, so sort them
         @ctag_obj = @ctag_obj.sort_by { |obj| obj["line"].to_i }
       rescue StandardError
-        puts("Ctags not installed or failed")
+        Rails.logger.error("Ctags not installed or failed")
       ensure
         ctagFile.unlink if defined?(ctagFile) && !ctagFile.nil?
       end
-      # rescue
-      # flash[:error] = "Sorry, we could not display your file because it contains non-ASCII characters. Please remove these characters and resubmit your work."
-      # redirect_to(:back) && return
-      # end
 
       begin
         # replace tabs with 4 spaces
-        (0...@data.length).each do |i|
-          @data[i][0].gsub!("\t", " " * 4)
+        (0...@data.length).each do |k|
+          @data[k][0].gsub!("\t", " " * 4)
         end
       rescue ArgumentError => e
         raise e unless e.message == "invalid byte sequence in UTF-8"
 
         flash[:error] =
-          "Sorry, we could not parse your file because it contains non-ASCII characters. Please download file to view the source."
+          "Sorry, we could not parse your file because it contains non-ASCII characters."\
+          " Please download file to view the source."
         redirect_to(:back) && return
       end
     end
@@ -429,6 +439,12 @@ class SubmissionsController < ApplicationController
     @problemReleased = @submission.scores.pluck(:released).all?
 
     @annotations = @submission.annotations.to_a
+    unless @submission.group_key.empty?
+      group_submissions = @submission.group_associated_submissions
+      group_submissions.each do |group_submission|
+        @annotations += group_submission.annotations.to_a
+      end
+    end
     @annotations.sort! { |a, b| a.line.to_i <=> b.line.to_i }
 
     @problemSummaries = {}
@@ -458,14 +474,67 @@ class SubmissionsController < ApplicationController
     @problems.sort! { |a, b| a.id <=> b.id }
 
     @latestSubmissions = @assessment.assessment_user_data
-                                    .map { |aud| aud.latest_submission }
-                                    .select { |submission| !submission.nil? }
-                                    .sort_by { |submission| submission.course_user_datum.user.email }
+                                    .map(&:latest_submission)
+                                    .reject(&:nil?)
+                                    .sort_by{ |submission| submission.course_user_datum.user.email }
     @curSubmissionIndex = @latestSubmissions.index do |submission|
       submission.course_user_datum.user.email == @submission.course_user_datum.user.email
     end
-    @prevSubmission = @curSubmissionIndex > 0 ? @latestSubmissions[@curSubmissionIndex - 1] : nil
-    @nextSubmission = @curSubmissionIndex < (@latestSubmissions.size - 1) ? @latestSubmissions[@curSubmissionIndex + 1] : nil
+    # Previous and next student
+    @prevSubmission = if @curSubmissionIndex > 0
+                        @latestSubmissions[@curSubmissionIndex - 1]
+                      end
+    @nextSubmission = if @curSubmissionIndex < (@latestSubmissions.size - 1)
+                        @latestSubmissions[@curSubmissionIndex + 1]
+                      end
+
+    @userVersions = @assessment.submissions
+                               .where(course_user_datum_id: @submission.course_user_datum_id)
+                               .order("version DESC")
+
+    # Autograder Output is a dummy file
+    # If we are viewing autograder output, don't attempt to match versions
+    # and let @prevVersion = @nextVersion = nil
+    unless viewing_autograder_output
+      # Find user submissions that contain the same pathname
+      matchedVersions = []
+      @userVersions.each do |submission|
+        submission_path = submission.handin_file_path
+
+        # Find corresponding header position
+        header_position = if Archive.archive? submission_path
+                            submission_files = Archive.get_files(submission_path)
+                            matched_file = submission_files.detect { |submission_file|
+                              submission_file[:pathname] == @displayFilename
+                            }
+                            # Skip if file doesn't exist
+                            next if matched_file.nil?
+
+                            matched_file[:header_position]
+                          end
+        # If not an archive, we have header_position = nil
+        # This means that in _version_links.html.erb, header_position is not set in the querystring
+        # for the prev / next button urls
+        # This is fine since #download ignores header_position for non-archives
+
+        matchedVersions << {
+          version: submission.version,
+          header_position: header_position,
+          submission: submission
+        }
+      end
+
+      @curVersionIndex = matchedVersions.index do |submission|
+        submission[:version] == @submission.version
+      end
+      # Previous and next versions
+      @prevVersion = if @curVersionIndex < (matchedVersions.size - 1)
+                       matchedVersions[@curVersionIndex + 1]
+                     end
+      @nextVersion = if @curVersionIndex > 0
+                       matchedVersions[@curVersionIndex - 1]
+                     end
+    end
 
     # Adding allowing scores to be assessed by the view
     @scores = Score.where(submission_id: @submission.id)
@@ -521,7 +590,7 @@ private
   end
 
   # Extract the andrewID from a filename.
-  # Filename format is andrewID_version_asessment.ext
+  # Filename format is andrewID_version_assessment.ext
   def extractAndrewID(filename)
     underscoreInd = filename.index("_")
     return filename[0...underscoreInd] unless underscoreInd.nil?
@@ -530,7 +599,7 @@ private
   end
 
   # Extract the version from a filename
-  # Filename format is andrewID_version_asessment.ext
+  # Filename format is andrewID_version_assessment.ext
   def extractVersion(filename)
     firstUnderscoreInd = filename.index("_")
     return nil if firstUnderscoreInd.nil?

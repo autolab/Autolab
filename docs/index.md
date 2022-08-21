@@ -1,6 +1,6 @@
 # Welcome to the Autolab Docs
 
-##Rationale
+## Rationale
 
 Autolab is a course management platform that enables instructors to offer autograded programming assignments to their students. The two key ideas in Autolab are _autograding_–that is, programs evaluating other programs, and _scoreboards_ that display the latest autograded scores for each student.
 
@@ -14,7 +14,7 @@ For more of the rationale behind Autolab, please check out <a href="https://auto
 
 <!-- For information on how to use Autolab for your course see the [Guide for Instructors](/instructors). To learn how to write an autograded lab see the [Guide for Lab Authors](/lab). 
  -->
-##Components
+## Components
 
 Autolab consists of two services: (1) the Autolab frontend which is implemented using Ruby on Rails, and (2) Tango, the RESTful Python autograding server. <b>Either service can run independently without the other.</b> But in order to use all features of Autolab, we highly recommend installing both services.
 
@@ -26,18 +26,19 @@ As you can see on the left, the Autolab frontend receives handin files from the 
 
 Apart from client usage, both the Autolab frontend and Tango provide application programming interfaces (API) for developers. The specific guides are included in the [Reference](/reference) section.
 
-##Demonstration Website
-Installation instructions can be found in our comprehensive [installation guide](/installation/overview). However, if this is your first experience with Autolab, we encourage you to try out some key features on Autolab's <a href="https://nightly.autolabproject.com" target="_blank">Demo Site</a>. You can login through `Developer Login` with the email: `admin@foo.bar`. The demonstration website refreshes at 0,6,12,18 Hours (UTC) daily, and it is publicly accessible, so please only use it for your exploration. Do not use this site to store important information.
+## Demonstration Website
+Installation instructions can be found in our comprehensive [installation guide](/installation/overview). If this is your first experience with Autolab, we encourage you to try out some key features on Autolab's <a href="https://nightly.autolabproject.com" target="_blank">Demo Site</a>. Login with the following test credentials
 
+Email address: `admin@demo.bar`  
+Password: `adminfoobar`
 
-Try the following in order:
+The demonstration website refreshes daily and it is publicly accessible. Do not use the site to store important information.  
+After you have successfully logged in, try the user flow below 
 
-### Create a new course 
-Click on `Manage Autolab` (top-right navigation bar) > `Create New Course`. Fill in the name and semester, and then create to see your course on the homepage.
+### 1. Create a new course 
+Click on `Manage Autolab` (top-right navigation bar) > `Create New Course`. Fill in the name and semester, and then create to see your course on the homepage. (NOTE: the email doesn't need to be real here)
 
-(NOTE: the email doesn't need to be real here)
-
-### Create an Autograded Lab Assessment. 
+### 2. Create an Autograded Lab Assessment. 
 Go into the course you have just created, click on `Install Assessment`. You can install a simple autograded lab, called hello lab.
 [Download hello.tar](https://github.com/autolab/Autolab/raw/master/examples/hello.tar) and install it using the `Import from Tarball` option. 
 
@@ -58,9 +59,9 @@ In the `hello` lab, students are asked to write a file called `hello.c`. The aut
 2. Refresh the submitted entries page to see the autograded score appear
 3. Click on a sub score, in this case the `100.0` under the `Correctness` heading, to see the output from the autograder.
 
-For more information on `hello` lab, or how to create your own lab, go to [Guide for Lab Authors](/lab)! 
+For more information on `hello` lab, or how to create your own lab, go to [Guide for Lab Authors](/lab)! You can also check out other sample autograders on our [Autograders repository](https://github.com/autolab/autograders-examples).
 
-### Create a PDF homework assessment
+### 3. Create a PDF homework assessment
 Autolab can also handle pdf submissions as well!
 
 Click on `Install Assessment`, then on `Assessment Builder`. Name your assessment, and give it a category and click `Create Assessment`!. 
@@ -72,5 +73,5 @@ Because it defaults to accepting `.c` files, we would like to change it to `*.pd
 1. Submit a `.pdf` file.
 2. Look at your submission using the magnifying glass icon
 
-### Grading submissions
+### 4. Grading submissions
 Click on `Grade Submissions`, and then the arrow button to open up student submissions. For details on the relevant features for an Instructor, go to [Guide for Instructors](/instructors).

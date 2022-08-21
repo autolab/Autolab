@@ -87,7 +87,7 @@
                   <% when AssessmentUserDatum::NORMAL %>
                     <% case aud.submission_status
                        when :submitted %>
-                      <% if Time.now <= aud.assessment.grading_deadline %>
+                      <% if Time.now <= aud.assessment.grading_deadline || !aud.latest_submission.all_scores_released? %>
                         <i class="material-icons tooltipped" data-tooltip="Final score will be visible once grading is complete.">access_time</i>
                       <% else %>
                         <%= render_final_score aud %>
@@ -119,7 +119,7 @@
               <th>Category Average</th>
               <% if @course.grace_days > 0 %><th></th><% end %>
               <th></th>
-              <th class="cat_avg"><%= computed_score { @_cud.category_average cat, @cud } %></td>
+              <th class="cat_avg"><%= computed_score { @_cud.category_average cat, @cud } %></th>
             </tr>
           </table>
         </div>

@@ -35,9 +35,9 @@ class CourseUserDataController < ApplicationController
 
       if user
         @newCUD.user = user
-      elsif cud_parameters[:user_attributes][:email] == "" or
-            cud_parameters[:user_attributes][:first_name] == "" or
-            cud_parameters[:user_attributes][:last_name] == ""
+      elsif (cud_parameters[:user_attributes][:email] == "") ||
+            (cud_parameters[:user_attributes][:first_name] == "") ||
+            (cud_parameters[:user_attributes][:last_name] == "")
         flash[:error] = "All required fields must be filled"
         redirect_to(action: "new") && return
 
@@ -52,6 +52,7 @@ class CourseUserDataController < ApplicationController
         end
         COURSE_LOGGER.log(error_msg)
         flash[:error] = error_msg
+        flash[:html_safe] = true
         redirect_to(action: "new") && return
       end
 
@@ -68,8 +69,6 @@ class CourseUserDataController < ApplicationController
       flash[:success] = "Success: added user #{email} in #{@course.full_name}"
       if @cud.user.administrator?
         redirect_to([:users, @course]) && return
-      else
-        redirect_to(action: "new") && return
       end
     else
       error_msg = "Adding user failed:"
@@ -82,8 +81,10 @@ class CourseUserDataController < ApplicationController
       end
       COURSE_LOGGER.log(error_msg)
       flash[:error] = error_msg
-      redirect_to(action: "new") && return
+      flash[:html_safe] = true
     end
+
+    redirect_to(action: "new") && return
   end
 
   action_auth_level :show, :student
@@ -138,6 +139,7 @@ class CourseUserDataController < ApplicationController
           @editCUD.errors.full_messages.each do |msg|
             flash[:error] += "<br>#{msg}"
           end
+          flash[:html_safe] = true
           redirect_to(action: :edit) && return
         end
       end
@@ -178,10 +180,10 @@ class CourseUserDataController < ApplicationController
   action_auth_level :destroyConfirm, :instructor
   def destroyConfirm
     @destroyCUD = @course.course_user_data.find(params[:id])
-    if @destroyCUD.nil?
-      flash[:error] = "The user to be deleted is not in the course"
-      redirect_to(action: :index) && return
-    end
+    return unless @destroyCUD.nil?
+
+    flash[:error] = "The user to be deleted is not in the course"
+    redirect_to(action: :index) && return
   end
 
   action_auth_level :sudo, :instructor
@@ -191,19 +193,17 @@ class CourseUserDataController < ApplicationController
       redirect_to([@cud.course]) && return
     end
 
+    @users, @usersEncoded = @course.get_autocomplete_data
+
     return unless request.post?
 
-    sudo_user = User.where(email: params[:sudo_email]).first
-    unless sudo_user
-      flash[:error] = "User #{params[:sudo_email]} does not exist"
+    sudo_cud = @course.course_user_data.where(id: params[:sudo_id]).first
+    unless sudo_cud
+      flash[:error] = "User does not exist in the course"
       redirect_to(action: :sudo) && return
     end
 
-    sudo_cud = @course.course_user_data.where(user_id: sudo_user.id).first
-    unless sudo_cud
-      flash[:error] = "User #{params[:sudo_email]} does not exist in the course"
-      redirect_to(action: :sudo) && return
-    end
+    sudo_user = User.where(id: sudo_cud.user_id).first
 
     unless @cud.can_sudo_to?(sudo_cud)
       flash[:error] = "You do not have the privileges to act as " \
@@ -230,7 +230,7 @@ class CourseUserDataController < ApplicationController
   action_auth_level :unsudo, :student
   def unsudo
     session[:sudo] = nil
-    flash[:success] = "You are yourself again"
+    flash[:success] = "You are no longer acting as user #{@cud.email}"
     redirect_to([@cud.course]) && return
   end
 
@@ -243,12 +243,14 @@ private
   def cud_params
     if @cud.administrator?
       params.require(:course_user_datum).permit(:school, :major, :year,
-                                                :lecture, :section, :instructor, :dropped, :nickname, :course_assistant,
+                                                :lecture, :section, :instructor, :dropped,
+                                                :nickname, :course_assistant,
                                                 user_attributes: %i[first_name last_name email],
                                                 tweak_attributes: %i[_destroy kind value])
     elsif @cud.instructor?
       params.require(:course_user_datum).permit(:school, :major, :year,
-                                                :lecture, :section, :instructor, :dropped, :nickname, :course_assistant,
+                                                :lecture, :section, :instructor, :dropped,
+                                                :nickname, :course_assistant,
                                                 user_attributes: %i[email first_name last_name],
                                                 tweak_attributes: %i[_destroy kind value])
     else
@@ -260,16 +262,19 @@ private
   def edit_cud_params
     if @cud.administrator?
       params.require(:course_user_datum).permit(:school, :major, :year,
-                                                :lecture, :section, :instructor, :dropped, :nickname, :course_assistant,
+                                                :lecture, :section, :instructor, :dropped,
+                                                :nickname, :course_assistant,
                                                 user_attributes: %i[id email first_name last_name],
                                                 tweak_attributes: %i[_destroy kind value])
     elsif @cud.instructor?
       params.require(:course_user_datum).permit(:school, :major, :year,
-                                                :lecture, :section, :instructor, :dropped, :nickname, :course_assistant,
+                                                :lecture, :section, :instructor, :dropped,
+                                                :nickname, :course_assistant,
                                                 user_attributes: %i[id email first_name last_name],
                                                 tweak_attributes: %i[_destroy kind value])
     else
-      params.require(:course_user_datum).permit(:nickname) # user_attributes: [:first_name, :last_name])
+      params.require(:course_user_datum).permit(:nickname)
+      # user_attributes: [:first_name, :last_name])
     end
   end
 end

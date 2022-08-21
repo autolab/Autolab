@@ -32,7 +32,9 @@ function dragExit(e) {
   $(".drag-drop-handin").get(0).style = undefined;
 }
 
-function clickDrag() {
+function clickDrag(e) {
+  // Ignore shift and tab
+  if (e.key === "Shift" || e.key === "Tab") return;
   $("#handin_show_assessment input[type='file']").trigger('click');
 }
 

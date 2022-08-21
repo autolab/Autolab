@@ -32,13 +32,13 @@ If you lost your root password, refer to the [MySQL wiki](http://dev.mysql.com/d
 #### Bundle Install Errors
 This happens as gems get updated. These fixes are gem-specific, but two common ones are
 
-`eventmachine`
+#####  `eventmachine`
 
 ```bash
 bundle config build.eventmachine --with-cppflags=-I/usr/local/opt/openssl/include
 ```
 
-`libv8`
+##### `libv8`
 
 ```bash
 bundle config build.libv8 --with-system-v8
@@ -64,6 +64,15 @@ Run `bundle install` again
 
 If neither of these works, try exploring [this StackOverflow link](http://stackoverflow.com/questions/23536893/therubyracer-gemextbuilderror-error-failed-to-build-gem-native-extension)
 
+##### `mimemagic`
+
+Another error that may occur on macOS when running `bundle install` is that the dependancy mimemagic may fail to install, causing `bundle install` to fail. A possible fix is if you have homebrew installed, run:
+```bash
+brew install shared-mime-info
+bundle install
+```
+For more information, read the following [github issues link](https://github.com/mimemagicrb/mimemagic/issues/162).
+
 #### Can't connect to local MySQL server through socket
 Make sure you've started the MySQL server and double-check the socket in `config/database.yml`
 
@@ -87,3 +96,47 @@ this may be an issue with using an incompatible version of MySQL. Try switching 
 
 #### Undefined method 'devise' for User
 You most likely missed the step of copying 'config/initializers/devise.rb.template' to 'config/initializers/devise.rb' and setting your secret key in the setup instructions.
+
+#### Suggested Development Configuration for config/database.yml
+
+**MySQL**  
+Change the <username> and <password> fields in config/database.yml to the username and password that has been set up for the mysql. For example if your username is `user1`, and your password is `123456`, then your yml would be
+
+    :::yml
+    development:
+        adapter: mysql2
+        database: autolab_development
+        pool: 5
+        username: user1
+        password: '123456'
+        socket: /var/run/mysqld/mysqld.sock # /tmp/mysql.sock on Mac OSX
+        host: localhost
+        variables:
+            sql_mode: NO_ENGINE_SUBSTITUTION
+
+    test:
+        adapter: mysql2
+        database: autolab_test
+        pool: 5
+        username: user1
+        password: '123456'
+        socket: /var/run/mysqld/mysqld.sock # /tmp/mysql.sock on Mac OSX
+        host: localhost
+        variables:
+            sql_mode: NO_ENGINE_SUBSTITUTION
+
+**SQLite**  
+Comment out the configurations meant for MySQL in config/database.yml, and insert the following
+
+    :::yml
+    development:
+        adapter: sqlite3
+        database: db/autolab_development
+        pool: 5
+        timeout: 5000
+
+    test:
+        adapter: sqlite3
+        database: db/autolab_test
+        pool: 5
+        timeout: 5000

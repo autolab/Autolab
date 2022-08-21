@@ -1,0 +1,26 @@
+<%= javascript_include_tag "annotations.js" %>
+<%= javascript_include_tag "submission_view.js" %>
+<script type="text/javascript">
+  setActiveFilePos(currentHeaderPos)
+  initializeAnnotationsForCode();
+  attachEvents();
+  attachChangeFileEvents();
+</script>
+
+<script>
+  var newFile = {};
+  newFile.url = '<%= url_for(params.permit(:header_position, :action, :controller).to_h) %>'
+
+  <% if @is_pdf %>
+  newFile.pdf = true;
+  newFile.pdfUrl = "<%= url_for [:download, @course, @assessment, @submission, header_position: @header_position] %>";
+  newFile.annotatedPdfUrl = "<%= url_for [:download, @course, @assessment, @submission, header_position: @header_position, annotated: true] %>";
+  newFile.previewMode = false;
+  <% if @preview_mode %>
+      newFile.previewMode = true;
+  <% end %>
+  <% else %>
+  newFile.pdf = false;
+  <% end %>
+</script>
+

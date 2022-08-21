@@ -10,6 +10,7 @@
     <th>Next</th>
     <th>Interval</th>
     <th>Visual Run</th>
+    <th>Operations</th>
   </tr>
 
 <% for scheduler in @schedulers %>
@@ -17,7 +18,7 @@
     <td><%=h scheduler.action %></td>
     <td><%=h scheduler.next %></td>
     <td><%=h scheduler.interval %></td>
-    <td><%= link_to 'Visual Run', {:action=>"run", :scheduler_id=>scheduler.id} %></td>
+    <td><%= link_to 'Visual Run', {:action=>"run", :scheduler_id=>scheduler.id}, data: { method: "post" } %></td>
     <td><%= link_to 'Show', {:action=>"show",:id=>scheduler.id} %>
     <%= link_to 'Edit', edit_course_scheduler_path(@course, scheduler) %>
     <%= link_to 'Destroy', course_scheduler_path(@course, scheduler), method: "delete", data: {confirm: 'Are you sure?'} %></td>

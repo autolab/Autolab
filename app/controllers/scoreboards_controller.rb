@@ -18,9 +18,9 @@ class ScoreboardsController < ApplicationController
     end
     begin
       @scoreboard.save!
-      flash[:info] = "Scoreboard Created"
+      flash[:notice] = "Scoreboard Created"
     rescue ActiveRecord::RecordInvalid => e
-      flash[:error] = "Unable to create scoreboard: " + e.message
+      flash[:error] = "Unable to create scoreboard: #{e.message}"
     end
     redirect_to(action: :edit) && return
   end
@@ -51,12 +51,12 @@ class ScoreboardsController < ApplicationController
         @grades[uid] = {}
         @grades[uid][:nickname] = user.nickname
         @grades[uid][:andrewID] = user.email
-        @grades[uid][:fullName] = user.first_name + " " + user.last_name
+        @grades[uid][:fullName] = "#{user.first_name} #{user.last_name}"
         @grades[uid][:problems] = {}
       end
       if @grades[uid][:version] != row["version"]
         # MySQL returns a Time object, but SQLite returns a time-stamp string
-        row["time"] = Time.parse(row["time"]) if row["time"].class != Time
+        row["time"] = Time.zone.parse(row["time"]) if row["time"].class != Time
         @grades[uid][:time] = row["time"].in_time_zone
         @grades[uid][:version] = row["version"].to_i
         @grades[uid][:autoresult] = row["autoresult"]
@@ -124,10 +124,10 @@ class ScoreboardsController < ApplicationController
     end
 
     @colspec = nil
-    if @scoreboard.colspec.present?
-      # our scoreboard validations should ensure this will always work
-      @colspec = ActiveSupport::JSON.decode(@scoreboard.colspec)["scoreboard"]
-    end
+    return unless @scoreboard.colspec.present?
+
+    # our scoreboard validations should ensure this will always work
+    @colspec = ActiveSupport::JSON.decode(@scoreboard.colspec)["scoreboard"]
   end
 
   action_auth_level :edit, :instructor
@@ -151,7 +151,7 @@ class ScoreboardsController < ApplicationController
   action_auth_level :destroy, :instructor
   def destroy
     if @scoreboard.destroy
-      flash[:info] = "Destroyed!"
+      flash[:notice] = "Destroyed!"
     else
       flash[:error] = "Unable to destroy scoreboard"
     end
@@ -184,7 +184,7 @@ private
       # Quote JSON keys and values if they are not already quoted
       quoted = colspec.gsub(/([a-zA-Z0-9]+):/, '"\1":').gsub(/:([a-zA-Z0-9]+)/, ':"\1"')
       parsed = ActiveSupport::JSON.decode(quoted)
-    rescue StandardError => e
+    rescue StandardError
       return "Invalid column spec"
     end
 
@@ -256,7 +256,7 @@ private
     rescue StandardError
       # If there is no autoresult for this student (typically
       # because their code did not compile or it segfaulted and
-      # the intructor's autograder did not catch it) then
+      # the instructor's autograder did not catch it) then
       # return a nicely formatted nil result.
       begin
         parsed = ActiveSupport::JSON.decode(@scoreboard.colspec)
@@ -327,12 +327,13 @@ private
 
       begin
         parsed = ActiveSupport::JSON.decode(@scoreboard.colspec)
-      rescue StandardError
+      rescue StandardError => e
+        Rails.logger.error("Error in scoreboards controller updater: #{e.message}")
       end
 
       if a0 != b0
         if parsed && parsed["scoreboard"] &&
-           parsed["scoreboard"].size > 0 &&
+           !parsed["scoreboard"].empty? &&
            parsed["scoreboard"][0]["asc"]
           a0 <=> b0 # ascending order
         else

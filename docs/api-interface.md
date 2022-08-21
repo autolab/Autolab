@@ -109,11 +109,13 @@ A list of assessments. If the user is only a student of the course, only release
 
 ### assessment details
 
+#### show
+
 Show detailed information of an assessment.
 
 **Scope:** 'user_courses'
 
-**Endpoint:** `/courses/{course_name}/assessments/{assessment_name}`
+**Endpoint:** `GET /courses/{course_name}/assessments/{assessment_name}`
 
 **Parameters:** [none]
 
@@ -142,11 +144,114 @@ Show detailed information of an assessment.
 
 ---
 
+#### set group settings
+
+set the group size of the assessment.
+
+**Scope:** 'user_courses'
+
+**Endpoint:** `POST /courses/{course_name}/assessments/{assessment_name}/set_group_settings`
+
+**Parameters:** 
+
+| key              | type     | description                                                                                               |
+| ---------------- | -------- | --------------------------------------------------------------------------------------------------------- |
+| group_size       | integer  | the number of people in a group                                                                           |
+| allow_student_assign_group       | boolean  | whether students are allowed to edit and self-assign groups                               |
+
+**Response:**
+
+| key              | type     | description                                                                                               |
+| ---------------- | -------- | --------------------------------------------------------------------------------------------------------- |
+| group_size       | integer  | the number of people in a group                                                                           |
+| allow_student_assign_group       | boolean  | whether students are allowed to edit and self-assign groups                               |
+
+---
+
+### groups
+
+#### index
+
+List all groups in an assessment
+
+**Scope:** 'instructor_all'
+
+**Endpoint:** `GET /courses/{course name}/assessments/{assessment name}/groups`
+
+**Parameters:** [none]
+
+**Response:**
+
+A JSON object containing the group_size, a list of groups, and the assessment containing the groups.
+
+#### create
+
+Create groups in the assessment, given the emails of the people in the group, and an optional group name.
+
+**Scope:** 'instructor_all'
+
+**Endpoint:** `POST /courses/{course name}/assessments/{assessment name}/groups`
+
+**Parameters:** 
+
+
+`Groups`
+
+| key          |          | type    | description                                                                                               |
+| ------------ | -------- | ------- | --------------------------------------------------------------------------------------------------------- |
+| groups       | required | string  | List of `group`s to be created. Refer to group object.                                                      |
+
+---
+
+`Group`
+
+| key          |          | type    | description                                                                                               |
+| ------------ | -------- | ------- | --------------------------------------------------------------------------------------------------------- |
+| name         |          | string  | Name of the group                                                                                         |
+| group_members| required | list of string | List of emails of students in that group |
+
+---
+
+
+Example json object
+```
+{
+    "groups" : [{
+        "name": "hello",
+        "group_members": ["user@foo.bar","user1@foo.bar"]
+    },
+    {
+        "name": "hello2",
+        "group_members": ["user2@foo.bar",""user3@foo.bar"]
+    } ]
+}
+```
+
+**Response:**
+
+A list of the groups created if successful. Otherwise an error message will be returned.
+
+#### destroy
+
+Delete a certain group of an assessment given the id
+
+**Scope:** 'instructor_all'
+
+**Endpoint:** `DELETE /courses/{course name}/assessments/{assessment name}/groups/{id}`
+
+**Parameters:** [none]
+
+**Response:**
+
+Success message if deleted. 
+
+---
+
 ### problems
 
 Get all problems of an assessment.
 
-**Scope:** 'user_courses'
+**Scope:** 'instructor_all'
 
 Endpoint `/courses/{course_name}/assessments/{assessment_name}/problems`
 
@@ -309,7 +414,7 @@ A course_user_data object in the response will be formatted in this form:
 
 There are five endpoints related to course_user_data:
 
-#### Index
+#### index
 
 List all course_user_data of a course.
 
@@ -323,7 +428,7 @@ List all course_user_data of a course.
 
 A list of course_user_data objects.
 
-#### Show
+#### show
 
 Show the course_user_data of a particular student in a course.
 
@@ -337,7 +442,7 @@ Show the course_user_data of a particular student in a course.
 
 The requested user's course_user_data object.
 
-#### Create
+#### create
 
 Create a new course_user_data for a course.
 
@@ -363,7 +468,7 @@ The user's email is used to uniquely identify the user on Autolab. If the user i
 
 The newly created course_user_data object.
 
-#### Update
+#### update
 
 Update an existing course_user_data.
 
@@ -386,7 +491,7 @@ Update an existing course_user_data.
 
 The newly updated course_user_data object.
 
-#### Destroy
+#### destroy
 
 Drop a user from a course. Since CUDs are never deleted from the course, this is just a shortcut for updating a user with the dropped attribute set to true.
 

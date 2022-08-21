@@ -4,13 +4,15 @@ class CourseUserDatum < ApplicationRecord
   class AuthenticationFailed < RuntimeError
     attr_reader :user_message, :dev_message
 
+    # rubocop:disable Lint/MissingSuper
     def initialize(user_message, dev_message)
       @user_message = user_message
       @dev_message = dev_message
     end
+    # rubocop:enable Lint/MissingSuper
   end
 
-  AUTH_LEVELS = %i[student course_assistant instructor administrator]
+  AUTH_LEVELS = %i[student course_assistant instructor administrator].freeze
 
   # Don't want to trim the nickname.
   trim_field :school, :major, :year, :lecture, :section, :grade_policy, :email
@@ -32,12 +34,14 @@ class CourseUserDatum < ApplicationRecord
   after_create :create_AUDs_modulo_callbacks
 
   def self.conditions_by_like(value, *columns)
-    columns = self.columns if columns.size == 0
+    columns = self.columns if columns.empty?
     columns = columns[0] if columns[0].is_a?(Array)
+    # rubocop:disable Lint/UselessAssignment
     conditions = columns.map do |c|
       c = c.name if c.is_a? ActiveRecord::ConnectionAdapters::Column
       "`#{c}` LIKE " + ActiveRecord::Base.connection.quote("%#{value}%")
     end.join(" OR ")
+    # rubocop:enable Lint/UselessAssignment
   end
 
   def strip_html
@@ -177,7 +181,8 @@ class CourseUserDatum < ApplicationRecord
         ggl = global_grace_days_left!
 
         Rails.cache.write(ggl_cache_key, ggl)
-      end # release lock
+        # release lock
+      end
     end
 
     @ggl = ggl
@@ -247,14 +252,6 @@ class CourseUserDatum < ApplicationRecord
     "ggl/dua-#{dua}/u-#{id}"
   end
 
-  # This method call is used specifically for the purpose of callback style update to watchlist
-  # Need to archive old instances and also add new instances
-  def update_cud_gdu_watchlist_instances
-    # At this point, all relevant previously cached grace day usage information should be invalidated
-    # Calls to calculate grace day usage should be from scratch
-    WatchlistInstance.update_cud_gdu_watchlist_instances(self)
-  end
-
 private
 
   # Need to create AUDs for all assessments when new user is created
@@ -294,7 +291,7 @@ private
 
   def default_category_average(input)
     final_scores = input.values
-    final_scores.reduce(:+) / final_scores.size if final_scores.size > 0
+    final_scores.reduce(:+) / final_scores.size if !final_scores.empty?
   end
 
   def category_average_input(category, as_seen_by)
@@ -302,7 +299,9 @@ private
     @category_average_input[as_seen_by] ||= {}
     input = (@category_average_input[as_seen_by][category] ||= {})
 
+    # rubocop:disable Lint/UselessAssignment
     user_id = id
+    # rubocop:enable Lint/UselessAssignment
     course.assessments.each do |a|
       next unless a.category_name == category
 
@@ -317,7 +316,9 @@ private
     @average_input ||= {}
     input = (@average_input[as_seen_by] ||= {})
 
+    # rubocop:disable Lint/UselessAssignment
     user_id = id
+    # rubocop:enable Lint/UselessAssignment
     course.assessments.each do |a|
       input[a.name] ||= a.aud_for(id).final_score as_seen_by
     end
@@ -330,8 +331,8 @@ private
     compact_hash input
   end
 
-  def compact_hash(h)
-    h.delete_if { |_, v| !v }
+  def compact_hash(hash)
+    hash.delete_if { |_, v| !v }
   end
 
   def global_grace_days_left!

@@ -3,11 +3,22 @@
 <% content_for :stylesheets do %>
   <%= stylesheet_link_tag "student_gradebook" %>
 <% end %>
-<script type="text/javascript">
-  $(document).ready(function() {
-    $('.collapsible').collapsible();
-  })
-</script>
+<% content_for :javascripts do %>
+  <script>
+    function toggleAria(id) {
+        var expanded = document.getElementById(id).getAttribute("aria-expanded");
+        if (expanded == "true") {
+            expanded = "false"
+        } else {
+            expanded = "true"
+        }
+        document.getElementById(id).setAttribute("aria-expanded", expanded);
+    }
+    $(document).ready(function() {
+      $('.collapsible').collapsible();
+    })
+  </script>
+<% end %>
 <div class="row">
   <div class="col s12 m12">
     <h2>Manage Course</h2>
@@ -17,7 +28,7 @@
 <div class="row">
   <div class="col s12 m4">
     <ul class="collapsible" data-collapsible="accordion">
-      <li class="collapsible-menu-link">
+      <li class="collapsible-menu-link active" id="admin-course" aria-role="button" aria-expanded="true" onclick="toggleAria('admin-course')" onkeydown="toggleAria('admin-course')">
         <div class="collapsible-header active"><h5>Admin Course</h5></div>
         <div class="collapsible-body">
           <ul class="options">
@@ -42,16 +53,16 @@
                 { title: "Use the Stanford Moss server to detect copying" } %></li>
 
             <li class="collection-item red-text danger-bottom no-hover"><h4>Danger Zone</h4></li>
-            <li class="danger-side"><%= link_to "Release all grades", [:bulkRelease, @course, @cud, :gradebook],
-                { title: "Release all grades for all assessments", data: {confirm: "Are you sure you want to release all grades?"}} %></li>
+            <li class="danger-side"><%= link_to "Release all grades", [:bulk_release, @course, @cud, :gradebook],
+                { title: "Release all grades for all assessments", data: {confirm: "Are you sure you want to release all grades?", method: "post"}} %></li>
             <li class="danger-side danger-bottom"><%= link_to "Reload course config file", [:reload, @course],
-                { title: "Do this each time your modify the course.rb file", data: {confirm: "Are you sure you want to reload the course config file?"}}%></li>
+                { title: "Reload each time you modify the course.rb file", data: {confirm: "Are you sure you want to reload the course config file?", method: "post"}}%></li>
           </ul>
         </div>
       </li>
     </ul>
     <% if @cud.user.administrator? then %>
-    <ul class="collapsible" data-collapsible="accordion">
+    <ul class="collapsible" data-collapsible="accordion" id="admin-autolab" aria-role="button" aria-expanded="false" onclick="toggleAria('admin-autolab')" onkeydown="toggleAria('admin-autolab')">
       <li class="collapsible-menu-link">
         <div class="collapsible-header"><h5>Admin Autolab</h5></div>
         <div class="collapsible-body">

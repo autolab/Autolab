@@ -25,7 +25,8 @@ class RiskCondition < ApplicationRecord
             "Make sure your request body fits the criteria!"
     end
 
-    options = { course_id: course_id, condition_type: type, parameters: params, version: version }
+    options = { course_id: course_id, condition_type: type, parameters: params.to_hash,
+                version: version }
     new_risk_condition = RiskCondition.new(options)
     unless new_risk_condition.save
       raise "Fail to create new risk condition with type #{type} for course #{course_id}"
@@ -56,7 +57,7 @@ class RiskCondition < ApplicationRecord
     max_version = RiskCondition.get_max_version(course_id)
     # Is params empty?
     if params.empty? && (max_version == 0)
-      # puts "case 1: max_version = 0 (no previous conditons have been set)
+      # puts "case 1: max_version = 0 (no previous conditions have been set)
       # and instructor doesn't want any at this point"
       WatchlistInstance.refresh_instances_for_course(course_name, true)
       return []

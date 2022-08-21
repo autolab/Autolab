@@ -8,6 +8,11 @@ Bundler.require(*Rails.groups)
 
 module Autolab3
   class Application < Rails::Application
+    # Initialize configuration defaults for originally generated Rails version.
+    # config.load_defaults 5.0
+    # NOTE: uncommenting the above sets active_record.belongs_to_required_by_default = true
+    # This breaks some existing code (e.g. create course, create assessment)
+
     config.to_prepare do
       Devise::ConfirmationsController.skip_before_action :set_course
       Devise::ConfirmationsController.skip_before_action :authorize_user_for_course
@@ -29,21 +34,22 @@ module Autolab3
       Devise::OmniauthCallbacksController.skip_before_action :authorize_user_for_course
       Devise::OmniauthCallbacksController.skip_before_action :authenticate_for_action
       Devise::OmniauthCallbacksController.skip_before_action :update_persistent_announcements
-      Devise::SessionsController.layout "home"
-      Devise::RegistrationsController.layout proc{ |controller| user_signed_in? ? "application"   : "home" }
-      Devise::ConfirmationsController.layout "home"
-      Devise::UnlocksController.layout "home"
-      Devise::PasswordsController.layout "home"
-      Doorkeeper::AuthorizationsController.layout "home"
-      Doorkeeper::AuthorizedApplicationsController.layout "home"
+      Devise::SessionsController.layout "application"
+      Devise::RegistrationsController.layout "application"
+      Devise::ConfirmationsController.layout "application"
+      Devise::UnlocksController.layout "application"
+      Devise::PasswordsController.layout "application"
+      Doorkeeper::AuthorizationsController.layout "application"
+      Doorkeeper::AuthorizedApplicationsController.layout "application"
     end
 
     # TODO: this should be a macro
     config.action_mailer.default_url_options = {protocol: 'https', host: 'YOUR_APP_URL' }
 
     # Settings in config/environments/* take precedence over those specified here.
-    # Application configuration should go into files in config/initializers
-    # -- all .rb files in that directory are automatically loaded.
+    # Application configuration can go into files in config/initializers
+    # -- all .rb files in that directory are automatically loaded after loading
+    # the framework and any gems in your application.
 
     # Custom directories with classes and modules you want to be autoloadable.
     # config.autoload_paths += %W(#{config.root}/extras)
@@ -109,6 +115,6 @@ module Autolab3
     config.middleware.use Rack::Attack
 
     # site version
-    config.site_version = "2.8.0"
+    config.site_version = "2.9.0"
   end
 end

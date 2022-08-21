@@ -14,12 +14,7 @@ class ExtensionsController < ApplicationController
   action_auth_level :index, :instructor
   def index
     @extensions = @assessment.extensions.includes(:course_user_datum)
-    @users = {}
-    @usersEncoded = {}
-    @course.course_user_data.each do |cud|
-      @users[cud.full_name_with_email] = cud.id
-      @usersEncoded[Base64.encode64(cud.full_name_with_email.strip).strip] = cud.id
-    end
+    @users, @usersEncoded = @course.get_autocomplete_data
     @new_extension = @assessment.extensions.new
   end
 
@@ -36,11 +31,10 @@ class ExtensionsController < ApplicationController
     ext = @assessment.extensions.create(extension_params)
     if !ext.errors.empty?
       flash[:error] = ext.errors.full_messages[0]
-      redirect_to(action: :index) && return
     else
       flash[:success] = "Extension created successfully."
-      redirect_to(action: :index) && return
     end
+    redirect_to(action: :index) && return
   end
 
   action_auth_level :destroy, :instructor

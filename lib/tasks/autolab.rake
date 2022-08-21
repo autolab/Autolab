@@ -335,7 +335,7 @@ namespace :autolab do
     # If course exists, in `dev` aborts; in `test` overwrites.
     if Course.where(:name => args.name).first
       if Rails.env == "development"
-        abort("Course name #{args.name} alread in use. Depopulate or change name.")
+        abort("Course name #{args.name} already in use. Depopulate or change name.")
       else
         Rake::Task["autolab:depopulate"].invoke(args.name)
         Rake::Task["db:reset"].invoke()

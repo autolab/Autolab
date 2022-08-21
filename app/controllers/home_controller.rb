@@ -42,12 +42,11 @@ class HomeController < ApplicationController
     # allows user to be an instructor for demo course only
     cud.instructor = params[:isInstructor] if course_id == PUBLIC_COURSE_ID
     if cud.save
-      flash[:success] = "You have successfully registered for " +
-                        @course.full_name
+      flash[:success] = "You have successfully registered for #{@course.full_name}"
       redirect_to(controller: "course", course: @course.name,
                   action: "index") && return
     else
-      flash[:error] = "An internal error occured. Please contact the " \
+      flash[:error] = "An internal error occurred. Please contact the " \
                     "Autolab Development team at the " \
                     "contact link below"
       redirect_to(controller: "home", action: "index") && return

@@ -2,7 +2,7 @@
   <%= f.error_messages %>
   <h3>Scoreboard Settings</h3> 
   <p>
-    Learn more about how to configure <a href="https://docs.autolabproject.com/features/#scoreboards">custom scoreboards here</a>
+    Learn more about how to configure <a href="https://docs.autolabproject.com/features/scoreboards/">custom scoreboards here</a>
   </p>
   <hr>
 
@@ -25,7 +25,7 @@
 
   <%= f.submit "Save", {class: "btn primary"} %>
   <%= link_to "Delete", [@course, @assessment, :scoreboard], method: :delete, class: "btn danger",
-              data: {confirm: "Are you sure you want to delete the Scoreboard for this assesssment?"} %>
+              data: {confirm: "Are you sure you want to delete the Scoreboard for this assessment?"} %>
 
 <% end %>
 

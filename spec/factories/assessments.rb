@@ -8,7 +8,7 @@ FactoryBot.define do
     sequence(:name) { |n| "assessment_#{n}" }
     sequence(:display_name) { |n| "Assessment #{n}" }
     # We still want these so that assessments can have submissions
-    # but they should always be mocked unless we're explicity
+    # but they should always be mocked unless we're explicitly
     # testing file system interaction.
     handin_filename { |n| "handin_file_#{n}" }
     handin_directory { |n| "handin_directory_#{n}" }

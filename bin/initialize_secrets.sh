@@ -6,19 +6,6 @@ if ! ls Gemfile > /dev/null 2>&1 ; then
   exit 1
 fi
 
-if test -f ".env"; then
-  if [ "$1" = "-f" ]; then
-    echo "Replacing existing .env file"
-    cp .env.template .env
-  else
-    echo ".env file seems to already exist, run with -f option to force replace"
-    echo "No changes applied"
-    exit 1
-  fi
-else
-  cp -n .env.template .env
-fi
-
 LOCKBOX_MASTER_KEY=$(echo 'Lockbox.generate_key' | bundle exec rails c | grep "\".*\"" | tr -d "\"")
 DEVISE_SECRET_KEY=$(bundle exec rake secret)
 

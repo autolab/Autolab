@@ -4,10 +4,7 @@ class Score < ApplicationRecord
   belongs_to :grader, class_name: "CourseUserDatum"
 
   after_save :invalidate_raw_score
-  after_save :update_individual_grade_watchlist_instances_if_submission_latest,
-             if: :saved_change_to_score_or_released?
   after_destroy :invalidate_raw_score
-  after_destroy :update_individual_grade_watchlist_instances_if_submission_latest
 
   scope :on_latest_submissions, lambda {
                                   where(submissions: { ignored: false })
@@ -25,7 +22,7 @@ class Score < ApplicationRecord
   validates(:problem_id, uniqueness: { scope: :submission_id })
   validates :grader_id, presence: true
 
-  after_commit :log_entry
+  after_commit :log_entry, on: [:create, :update]
 
   def self.find_with_feedback(*args)
     with_exclusive_scope { find(*args) }
@@ -60,11 +57,6 @@ class Score < ApplicationRecord
     "#{submission.course_user_datum.user.email} set to " \
     "#{score} on #{submission.assessment.name}:#{problem.name} by" \
     " #{setter}")
-  end
-
-  def update_individual_grade_watchlist_instances_if_submission_latest
-    # check whether score has been released
-    submission.update_individual_grade_watchlist_instances_if_latest if released
   end
 
 private

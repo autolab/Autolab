@@ -1,6 +1,6 @@
 # Scoreboards
 
-Scoreboards are created by the output of [Autograders](/lab/#writing-autograders). They anonomously rank students submitted assignments inspiring health competition and desire to improve. They are simple and highly customizable. Scoreboard's can be added/edited on the edit assessment screen (`/courses/<course>/assessments/<assessment>/edit`).
+Scoreboards are created by the output of [Autograders](/lab/#writing-autograders). They anonymously rank students submitted assignments inspiring health competition and desire to improve. They are simple and highly customizable. Scoreboard's can be added/edited on the edit assessment screen (`/courses/<course>/assessments/<assessment>/edit`).
 
 ![Scoreboard Edit](/images/scoreboard_edit.png)
 

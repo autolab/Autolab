@@ -20,8 +20,6 @@ class CoursesController < ApplicationController
     redirect_to(home_no_user_path) && return unless courses_for_user.any?
 
     @listing = categorize_courses_for_listing courses_for_user
-
-    render layout: "home"
   end
 
   action_auth_level :show, :student
@@ -121,15 +119,17 @@ class CoursesController < ApplicationController
       new_cud.instructor = true
 
       if new_cud.save
-        if @newCourse.reload_course_config
-          flash[:success] = "New Course #{@newCourse.name} successfully created!"
-          redirect_to(edit_course_path(@newCourse)) && return
-        else
+        begin
+          @newCourse.reload_course_config
+        rescue StandardError, SyntaxError
           # roll back course creation and instruction creation
           new_cud.destroy
           @newCourse.destroy
           flash[:error] = "Can't load course config for #{@newCourse.name}."
           render(action: "new") && return
+        else
+          flash[:success] = "New Course #{@newCourse.name} successfully created!"
+          redirect_to(edit_course_path(@newCourse)) && return
         end
       else
         # roll back course creation
@@ -158,6 +158,7 @@ class CoursesController < ApplicationController
       @course.errors.full_messages.each do |msg|
         flash[:error] += "<br>#{msg}"
       end
+      flash[:html_safe] = true
     end
     redirect_to edit_course_path(@course)
   end
@@ -165,6 +166,14 @@ class CoursesController < ApplicationController
   # DELETE courses/:id/
   action_auth_level :destroy, :administrator
   def destroy
+    # Delete config file copy in courseConfig
+    if File.exist? @course.config_file_path
+      File.delete @course.config_file_path
+    end
+    if File.exist? @course.config_backup_file_path
+      File.delete @course.config_backup_file_path
+    end
+
     if @course.destroy
       flash[:success] = "Course destroyed."
     else
@@ -222,8 +231,11 @@ class CoursesController < ApplicationController
 
   action_auth_level :reload, :instructor
   def reload
-    render && return unless @course.reload_course_config
-
+    @course.reload_course_config
+  rescue StandardError, SyntaxError => e
+    @error = e
+    # let the reload view render
+  else
     flash[:success] = "Success: Course config file reloaded!"
     redirect_to([@course]) && return
   end
@@ -266,9 +278,10 @@ class CoursesController < ApplicationController
     output = ""
     @cuds.each do |cud|
       user = cud.user
-      output += "#{@course.semester},#{cud.user.email},#{user.last_name},#{user.first_name}," \
-                "#{cud.school},#{cud.major},#{cud.year},#{cud.grade_policy}," \
-                "#{cud.lecture},#{cud.section}\n"
+      # to_csv avoids issues with commas
+      output += [@course.semester, cud.user.email, user.last_name, user.first_name,
+                 cud.school, cud.major, cud.year, cud.grade_policy,
+                 @course.name, cud.lecture, cud.section].to_csv
     end
     send_data output, filename: "roster.csv", type: "text/csv", disposition: "inline"
   end
@@ -464,7 +477,6 @@ private
             # Create a new user
             user = User.roster_create(email, first_name, last_name, school,
                                       major, year)
-            
           rescue StandardError => e
             msg = "#{e} at line #{rowNum + 2} of the CSV"
             if !rosterErrors.key?(msg)
@@ -533,9 +545,11 @@ private
         existing = @course.course_user_data.includes(:user)
                           .where("lower(users.email) = ?", new_cud[:email].downcase)
                           .references(:users).first
-        # existing = @course.course_user_data.includes(:user).where(users[:email].matches("%#{new_cud[:email]}%")).first
-        
+        # existing = @course.course_user_data.includes(:user).
+        # where(users[:email].matches("%#{new_cud[:email]}%")).first
+
         fail "Black CUD doesn't exist in the database." if existing.nil?
+
         user = existing.user
         if user.nil?
           fail "User associated to black CUD doesn't exist in the database."
@@ -625,15 +639,18 @@ private
     begin
       csv = detect_and_convert_roster(params["upload"]["file"].read)
       csv.each do |row|
-        new_cud = { email: row[1].to_s,
-                    last_name: row[2].to_s.chomp(" "),
-                    first_name: row[3].to_s.chomp(" "),
-                    school: row[4].to_s.chomp(" "),
-                    major: row[5].to_s.chomp(" "),
-                    year: row[6].to_s.chomp(" "),
-                    grade_policy: row[7].to_s.chomp(" "),
-                    lecture: row[9].to_s.chomp(" "),
-                    section: row[10].to_s.chomp(" ") }
+        new_cud = { # Ignore Semester (row[0])
+          email: row[1].to_s,
+          last_name: row[2].to_s.chomp(" "),
+          first_name: row[3].to_s.chomp(" "),
+          school: row[4].to_s.chomp(" "),
+          major: row[5].to_s.chomp(" "),
+          year: row[6].to_s.chomp(" "),
+          grade_policy: row[7].to_s.chomp(" "),
+          # Ignore courseNumber (row[8])
+          lecture: row[9].to_s.chomp(" "),
+          section: row[10].to_s.chomp(" ")
+        }
         cud = @currentCUDs.find do |current|
           current.user && current.user.email.downcase == new_cud[:email].downcase
         end
@@ -649,7 +666,7 @@ private
       flash[:error] = "Error parsing CSV file: #{e}"
       redirect_to(action: "upload_roster") && return
     rescue StandardError => e
-      flash[:error] = "Error uploading the CSV file!: #{e}#{e.backtrace.join('<br>')}"
+      flash[:error] = "Error uploading the CSV file: #{e}"
       redirect_to(action: "upload_roster") && return
       raise e
     end
@@ -695,7 +712,7 @@ private
   # column matching and convert to default roster
 
   # map fields:
-  # map[0]: semester
+  # map[0]: semester (unused)
   # map[1]: email
   # map[2]: last_name
   # map[3]: first_name
@@ -703,44 +720,58 @@ private
   # map[5]: major
   # map[6]: year
   # map[7]: grade_policy
-  # map[8]: unused
+  # map[8]: course (unused)
   # map[9]: lecture
   # map[10]: section
+  # rubocop:disable Lint/UselessAssignment
   def detect_and_convert_roster(roster)
+    raise "Roster is empty" if roster.empty?
+
     parsedRoster = CSV.parse(roster, skip_blanks: true)
     raise "Roster cannot be recognized" if parsedRoster[0][0].nil?
 
     case parsedRoster[0].length
-    when ROSTER_COLUMNS_F20
+    when ROSTER_COLUMNS_F20 # 34 fields
       # In CMU S3 roster. Columns are:
-      # Semester(0), Course(1), Section(2), (Lecture)(3), (Mini-skip)(4),
-      # Last Name(5), Preferred/First Name(6), (MI-skip)(7), Andrew ID(8),
-      # (Email-skip)(9), College(10), (Department-skip)(11), Major(12),
-      # Class(13), Graduation Semester(skip)(14), Units(skip)(15), Grade Option(16), ...
-      map = [0, 8, 5, 6, 10, 12, 13, 16, -1, 1, 2]
+      # Semester(0 - skip), Course(1 - skip), Section(2), Lecture(3), Mini(4 - skip),
+      # Last Name(5), Preferred/First Name(6), MI(7 - skip), Andrew ID(8),
+      # Email(9 - skip), College(10), Department(11 - skip), Major(12),
+      # Class(13), Graduation Semester(14 - skip), Units(15 - skip), Grade Option(16)
+      # ... the remaining fields are all skipped but shown for completeness
+      # QPA Scale(17), Mid-Semester Grade(18), Primary Advisor(19), Final Grade(20),
+      # Default Grade(21), Time Zone Code(22), Time Zone Description(23), Added By(24),
+      # Added On(25), Confirmed(26), Waitlist Position(27), Units Carried/Max Units(28),
+      # Waitlisted By(29), Waitlisted On(30), Dropped By(31), Dropped On(32), Roster As Of Date(33)
+      map = [-1, 8, 5, 6, 10, 12, 13, 16, -1, 3, 2]
       select_columns = ROSTER_COLUMNS_F20
-    when ROSTER_COLUMNS_F16
+    when ROSTER_COLUMNS_F16 # 32 fields
       # In CMU S3 roster. Columns are:
-      # Semester(0), Course(1), Section(2), (Lecture-skip)(3), (Mini-skip)(4),
-      # Last Name(5), First Name(6), (MI-skip)(7), Andrew ID(8),
-      # (Email-skip)(9), School(10), (Department-skip)(11), Major(12),
-      # Year(13), (skip)(14), Grade Policy(15), ...
-      map = [0, 8, 5, 6, 10, 12, 13, 15, -1, 1, 2]
+      # Semester(0 - skip), Course(1 - skip), Section(2), Lecture(3), Mini(4 - skip),
+      # Last Name(5), Preferred/First Name(6), MI(7 - skip), Andrew ID(8),
+      # Email(9 - skip), College(10), Department(11), Major(12),
+      # Class(13), Graduation Semester(14 - skip), Units(15 - skip), Grade Option(16)
+      # ... the remaining fields are all skipped but shown for completeness
+      # QPA Scale(17), Mid-Semester Grade(18), Primary Advisor(19), Final Grade(20),
+      # Default Grade(21), Added By(22), Added On(23), Confirmed(24), Waitlist Position(25),
+      # Units Carried/Max Units(26), Waitlisted By(27), Waitlisted On(28), Dropped By(29),
+      # Dropped On(30), Roster As Of Date(31)
+      map = [-1, 8, 5, 6, 10, 12, 13, 16, -1, 3, 2]
       select_columns = ROSTER_COLUMNS_F16
-    when ROSTER_COLUMNS_S15
+    when ROSTER_COLUMNS_S15 # 29 fields
       # In CMU S3 roster. Columns are:
-      # Semester(0), Lecture(1), Section(2), (skip)(3), (skip)(4), Last Name(5),
+      # Semester(0 - skip), Lecture(1), Section(2), (skip)(3), (skip)(4), Last Name(5),
       # First Name(6), (skip)(7), Andrew ID(8), (skip)(9), School(10),
-      # Major(11), Year(12), (skip)(13), Grade Policy(14), ...
-      map = [0, 8, 5, 6, 10, 11, 12, 14, -1, 1, 2]
+      # Major(11), Year(12), (skip)(13), Grade Policy(14), ... [elided]
+      map = [-1, 8, 5, 6, 10, 11, 12, 14, -1, 1, 2]
       select_columns = ROSTER_COLUMNS_S15
     else
       # No header row. Columns are:
-      # Semester(0), Email(1), Last Name(2), First Name(3), School(4),
-      # Major(5), Year(6), Grade Policy(7), (skip)(8), Lecture(9),
-      # Section(10), ...
+      # Semester(0 - skip), Email(1), Last Name(2), First Name(3), School(4),
+      # Major(5), Year(6), Grade Policy(7), Course(8 - skip), Lecture(9),
+      # Section(10)
       return parsedRoster
     end
+    # rubocop:enable Lint/UselessAssignment
 
     # Detect if there is a header row
     offset = if parsedRoster[0][0] == "Semester"
@@ -846,6 +877,7 @@ private
       Dir.mkdir(extTarDir)
       Dir.mkdir(baseFilesDir) # To hold all basefiles
     rescue StandardError
+      nil
     end
 
     # Read in the tarfile from the given source.
@@ -859,6 +891,7 @@ private
     begin
       Dir.mkdir(extFilesDir) # To hold all submissions
     rescue StandardError
+      nil
     end
 
     # Untar the given Tar file.

@@ -9,7 +9,7 @@
 class ApplicationController < ActionController::Base
   helper :all # include all helpers, all the time
 
-  before_action :configure_permitted_paramters, if: :devise_controller?
+  before_action :configure_permitted_parameters, if: :devise_controller?
   before_action :maintenance_mode?
   before_action :run_scheduler
 
@@ -50,7 +50,10 @@ class ApplicationController < ActionController::Base
     require(path)
   end
 
+  # rubocop:disable Style/ClassVars
   @@global_whitelist = {}
+  # rubocop:enable Style/ClassVars
+
   def self.action_auth_level(action, level)
     raise ArgumentError, "The action must be specified." if action.nil?
     raise ArgumentError, "The action must be symbol." unless action.is_a? Symbol
@@ -62,7 +65,6 @@ class ApplicationController < ActionController::Base
 
     if level == :administrator
       skip_before_action :authorize_user_for_course, only: [action], raise: false
-      skip_before_action authenticate_for_action: [action]
       skip_before_action :update_persistent_announcements, only: [action], raise: false
     end
 
@@ -73,21 +75,21 @@ class ApplicationController < ActionController::Base
   end
 
   def self.action_no_auth(action)
-    skip_before_action :verify_authenticity_token, raise: false
-    skip_before_action :authenticate_user!, raise: false
-    skip_before_action configure_permitted_paramters: [action]
-    skip_before_action maintenance_mode: [action]
-    skip_before_action run_scheduler: [action]
+    skip_before_action :verify_authenticity_token, only: [action], raise: false
+    skip_before_action :authenticate_user!, only: [action], raise: false
+    skip_before_action :configure_permitted_parameters, only: [action], raise: false
+    skip_before_action :maintenance_mode?, only: [action], raise: false
+    skip_before_action :run_scheduler, only: [action], raise: false
 
-    skip_before_action authenticate_user: [action], raise: false
-    skip_before_action :authorize_user_for_course, only: [action]
-    skip_before_action authenticate_for_action: [action], raise: false
+    skip_before_action :authenticate_user, only: [action], raise: false
+    skip_before_action :authorize_user_for_course, only: [action], raise: false
+    skip_before_action :authenticate_for_action, only: [action], raise: false
     skip_before_action :update_persistent_announcements, only: [action], raise: false
   end
 
 protected
 
-  def configure_permitted_paramters
+  def configure_permitted_parameters
     devise_parameter_sanitizer.permit(:sign_in) { |u| u.permit(:email) }
     devise_parameter_sanitizer.permit(:sign_up) do |u|
       u.permit(:email, :first_name, :last_name, :password, :password_confirmation)
@@ -144,7 +146,7 @@ protected
                   (params[:controller] == "courses" ? params[:name] : nil)
     @course = Course.find_by(name: course_name) if course_name
 
-    render file: "#{Rails.root}/public/404.html", status: :not_found and return unless @course
+    render file: Rails.root.join("public/404.html"), status: :not_found and return unless @course
 
     # set course logger
     begin
@@ -177,7 +179,7 @@ protected
 
     when :admin_created
       @cud = cud
-      flash[:info] = "Administrator user added to course"
+      flash[:notice] = "Administrator user added to course"
 
     when :admin_creation_error
       flash[:error] = "Error adding administrator #{current_user.email} to course"
@@ -209,6 +211,7 @@ protected
     @cud.errors.full_messages.each do |msg|
       flash[:error] += "<br>#{msg}"
     end
+    flash[:html_safe] = true
     redirect_to([:edit, @course, @cud]) && return
   end
 
@@ -260,9 +263,9 @@ protected
   end
 
   def run_scheduler
-    actions = Scheduler.where("next < ?", Time.now)
+    actions = Scheduler.where("next < ?", Time.current)
     actions.each do |action|
-      action.next = Time.now + action.interval
+      action.next = Time.current + action.interval
       action.save
       Rails.logger.info("Executing #{Rails.root.join(action.action)}")
       begin
@@ -350,7 +353,7 @@ private
         if !current_user.nil? && (current_user.instructor? || current_user.administrator?)
           @error = exception
 
-          # Generate course id and assesssment id objects
+          # Generate course id and assessment id objects
           @course_name = params[:course_name] ||
                          (params[:controller] == "courses" ? params[:name] : nil)
           if @course_name

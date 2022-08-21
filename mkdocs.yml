@@ -13,7 +13,9 @@ nav:
             - Troubleshooting: installation/troubleshoot.md
             - Mailing Setup: installation/mailing.md
             - Github Integration Setup: installation/github_integration.md
-        - Tango: installation/tango.md
+        - Tango: 
+            - Installation: installation/tango.md
+            - Troubleshooting: installation/tango-troubleshoot.md
         # - (Legacy) OneClick Install: installation/one-click.md
     - Getting Started:
         - Autolab Frontend:
@@ -26,6 +28,7 @@ nav:
                 - Annotations: features/annotations.md
                 - MOSS Plagiarism Detection: features/moss.md
                 - Metrics: features/metrics.md
+                - Git Submission: features/git-submission.md
         - Autolab Frontend CLI: command-line-interface.md
         - Tango CLI: tango-cli.md
     - Reference: 

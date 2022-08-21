@@ -18,11 +18,15 @@ V1 of the API allows clients to:
 
 All endpoints of the Autolab API requires client authentication in the form of an access token. To obtain this access token, clients must obtain authorization from the user.
 
-Autolab API uses the standard <a href="https://tools.ietf.org/html/rfc6749" target="_blank">OAuth2</a> <a href="https://tools.ietf.org/html/rfc6749#section-4.1" target="_blank">Authorization Code Grant</a> for user authorization. For clients with no easy access to web browsers (e.g. console apps), an alternative <a href="https://tools.ietf.org/html/draft-ietf-oauth-device-flow-07" target="_blank">device flow</a>-based authorization method is provided as well.
+Autolab API uses the standard <a href="https://tools.ietf.org/html/rfc6749" target="_blank">OAuth2</a> <a href="https://tools.ietf.org/html/rfc6749#section-4.1" target="_blank">Authorization Code Grant</a> for user authorization.
 
-To understand how to authorize and unauthorize clients as a user, go to [Managing Authorized Apps](/api-managing-authorized-apps/)
+For clients with no easy access to web browsers (e.g. console apps), an alternative <a href="https://tools.ietf.org/html/draft-ietf-oauth-device-flow-07" target="_blank">device flow</a>-based authorization method is provided as well.
 
-### Authorization Code Grant Flow
+To register an API application, one needs to have an admin privileges, and then visit `Manage Autolab > Manage API application`. Refer to [Scopes](#scopes) for the available scopes. To understand how to authorize and unauthorize clients as a user, go to [Managing Authorized Apps](/api-managing-authorized-apps/)
+### Authorization Code Grant Flow (OAuth2)
+
+- **OAuth Authorization Request Endpoint**: `/oauth/authorize`
+- **OAuth Access Token Endpoint**: `oauth/token`
 
 The authorization code grant consists of 5 basic steps:
 
@@ -32,17 +36,11 @@ The authorization code grant consists of 5 basic steps:
 4. Client exchanges the authorization code for an access token from the access token endpoint.
 5. Client uses the access token for subsequent requests to the API.
 
-The endpoint for obtaining user authorization is
-`/oauth/authorize`
-
-The endpoint for obtaning access tokens and refresh tokens is
-`oauth/token`
-
 <a href="https://tools.ietf.org/html/rfc6749#section-4.1" target="_blank">Section 4.1 of RFC 6749</a> details the parameters required and the response clients can expect from these endpoints.
 
 Autolab API provides a refresh token with every new access token. Once the access token has expired, the client can use the refresh token to obtain a new access token, refresh token pair. Details are also provided in RFC 6749 <a href="https://tools.ietf.org/html/rfc6749#section-6" target="_blank">here</a>.
 
-### Device Flow
+### Device Flow (Alternative)
 
 For devices that cannot use a web browser to obtain user authorization, the alternative device flow approach circumvents the first 3 steps in the authorization code grant flow. Instead of directing a user to the authorization page directly, the client obtains a user code that the user can enter on the Autolab website from any device. The website then takes the user through the authorization procedure, and returns the authorization code to the client. The client can then use this code to request an access token from the access token endpoint as usual.
 

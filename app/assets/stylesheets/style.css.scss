@@ -49,6 +49,10 @@ a {
 
 /* Helper Styles */
 
+.clickable {
+  cursor: pointer;
+}
+
 .full-width {
   width: 100%;
 }
@@ -147,6 +151,13 @@ div.main-header img {
 .annotationPane .left {
   float: none !important;
   margin-left: -10px;
+}
+
+#speedgrader {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  overflow: hidden;
 }
 
 /* Custom Form Styling */
@@ -651,6 +662,10 @@ div.field_with_errors {
   display: none;
 }
 
+#sorted_cuds, #unsorted_cuds {
+  margin-top: 10px;
+}
+
 /* TABLE STYLES.  Styles for the multiple tables that we have for some reason */
 /* Pretty Border Tables. I vote we make this the generic table style. */
 table.prettyBorder,
@@ -1141,42 +1156,48 @@ div.center {
   margin-top: 8px;
 }
 
-#flash_alert.alert,
-#flash_error.error,
-#flash_notice {
-  color: #ce4844;
+/*
+ * The canonical flashes are :alert and :notice
+ * The custom flashes are :error (alias for :alert) and :success
+ * In practice, :error, :notice, and :success are used
+ */
+
+#flash_alert,
+#flash_error,
+#flash_notice,
+#flash_success {
   padding: 10px;
   margin-bottom: 0px;
   border-radius: 3px;
   border: 1px solid #eee;
-  border-left: 5px solid #ce4844;
   font-weight: 500;
 }
 
+#flash_alert,
+#flash_error {
+  color: #ce4844;
+  border-left: 5px solid #ce4844;
+}
+
+#flash_alert table,
 #flash_error table {
   color: rgba(0, 0, 0, 0.87);
   font-weight: 300;
 }
 
+#flash_alert p,
 #flash_error p {
   margin: 0px;
-}
-
-#flash_alert.success,
-#flash_success.success,
-#flash_notice.success {
-  color: green;
-  padding: 10px;
-  margin-bottom: 0px;
-  border-radius: 3px;
-  border: 1px solid #eee;
-  border-left: 5px solid green;
-  font-weight: 500;
 }
 
 #flash_notice {
   color: #1b809e;
   border-left: 5px solid #1b809e;
+}
+
+#flash_success {
+  color: green;
+  border-left: 5px solid green;
 }
 
 .attachments,

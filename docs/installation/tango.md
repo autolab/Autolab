@@ -1,24 +1,23 @@
 # Tango Installation
-
 This guide provides instructions for installing Tango on either a [development environment](#development-installation) or a [production environment](#production-installation).
 
-# Development Installation
+## Development Installation
 
 This guide shows how to setup Tango in a **development environment**. Use the [production installation](#production-installation) guide for installing in a **production environment**.
 
-1.  Obtain the source code.
+1. Obtain the source code.
 
         :::bash
         git clone https://github.com/autolab/Tango.git; cd Tango
 
-2.  Install Redis following <a href="http://redis.io/topics/quickstart" target="_blank">this guide</a>. By default, Tango uses Redis as a stateless job queue. Learn more <a href="https://autolab.github.io/2015/04/making-backend-scalable/" target="_blank">here</a>.
+2. Install Redis following <a href="http://redis.io/topics/quickstart" target="_blank">this guide</a>. By default, Tango uses Redis as a stateless job queue. Learn more <a href="https://autolab.github.io/2015/04/making-backend-scalable/" target="_blank">here</a>.
 
-3.  Create a `config.py` file from the given template.
+3. Create a `config.py` file from the given template.
 
         :::bash
         cp config.template.py config.py
 
-4.  Create the course labs directory where job's output files will go, organized by key and lab name:
+4. Create the course labs directory where job's output files will go, organized by key and lab name:
 
         :::bash
         mkdir courselabs
@@ -26,14 +25,14 @@ This guide shows how to setup Tango in a **development environment**. Use the [p
     By default the `COURSELABS` option in `config.py` points to the `courselabs` directory in the Tango directory.
     Change this to specify another path if you wish.
 
-5.  Set up a VMMS for Tango to use.
+5. Set up a VMMS for Tango to use.
 
     -   [Docker](#docker-vmms-setup) (**recommended**)
     -   [Amazon EC2](#amazon-ec2-vmms-setup)
     -   TashiVMMS (deprecated)
 
 
-6.  Run the following commands to setup the Tango dev environment inside the Tango directory. <a href="https://pip.pypa.io/en/stable/installing/" target="_blank">Install pip</a> if needed.
+6. Run the following commands to setup the Tango dev environment inside the Tango directory. <a href="https://pip.pypa.io/en/stable/installing/" target="_blank">Install pip</a> if needed.
 
         :::bash
         $ pip install virtualenv
@@ -42,21 +41,21 @@ This guide shows how to setup Tango in a **development environment**. Use the [p
         $ pip install -r requirements.txt
         $ mkdir volumes
 
-7.  If you are using Docker, set `DOCKER_VOLUME_PATH` in `config.py` to be the path to the `volumes` directory you just created.
+7. If you are using Docker, set `DOCKER_VOLUME_PATH` in `config.py` to be the path to the `volumes` directory you just created.
 
         :::bash
         DOCKER_VOLUME_PATH = "/path/to/Tango/volumes/"
 
 
-8.  Start Redis by running the following command:
+8. Start Redis by running the following command:
 
         :::bash
         $ redis-server
 
-9.  Run the following command to start the server (producer). If no port is given, the server will run on the port specified in `config.py` (default: 3000):
+9. Run the following command to start the server (producer). If no port is given, the server will run on the port specified in `config.py` (default: 3000):
 
         :::bash
-        python restful-tango/server.py <port>
+        python restful_tango/server.py <port>
 
     Open another terminal window and start the job manager (consumer):
 
@@ -65,7 +64,7 @@ This guide shows how to setup Tango in a **development environment**. Use the [p
 
     For more information on the job producer/consumer model check out our <a href="https://autolab.github.io/2015/04/making-backend-scalable/" target="_blank">blog post</a>.
 
-10.  Ensure Tango is running:
+10. Ensure Tango is running:
 
         :::bash
         $ curl localhost:<port>
@@ -77,8 +76,8 @@ This guide shows how to setup Tango in a **development environment**. Use the [p
 
         :::bash
         cp config/autogradeConfig.rb.template config/autogradeConfig.rb
-
-    Fill in the correct info for your Tango deployment, mainly the following:
+    
+    Then in your Autolab installation's `.env` file, fill in the correct info for your Tango deployment, mainly the following:
 
         :::ruby
         # Hostname for Tango RESTful API
@@ -88,53 +87,52 @@ This guide shows how to setup Tango in a **development environment**. Use the [p
         RESTFUL_PORT = "3000"
 
         # Key for Tango RESTful API
-        RESTFUL_KEY = "test"
+        RESTFUL_KEY = "test" # change this in production to a secret phrase
+
+    Note that by default Autolab also uses a default port of `3000`, so be sure to change the port if you are developing on `localhost`.
+
+    
 
 13. See below for instructions on how to deploy Tango in a standalone production environment.
 
-
-
-
-# Production Installation
+## Production Installation
 
 This is a guide to setup a fully self-sufficient Tango deployment environment out-of-the-box using Docker. The suggested deployment pattern for Tango uses Nginx as a proxy and Supervisor as a process manager for Tango and all its dependencies. All requests to Nginx are rerouted to a Tango process.
 
-## Details
-
+### Details
 -   Nginx default port - 8600
 -   Tango ports - 8610, 8611
 -   Redis port - 6379
 -   You can change any of these in the respective config files in `deployment/config/` before you build the `tango_deployment` image.
 
-## Steps
-
-1.  Clone the Tango repo
+### Steps
+1. Clone the Tango repo
 
         :::sh
         $ git clone https://github.com/autolab/Tango.git; cd Tango
 
-2.  Create a `config.py` file from the given template.  
+2. Create a `config.py` file from the given template.  
       
         :::sh
         $ cp config.template.py config.py
 
-3.  Modify `DOCKER_VOLUME_PATH` in `config.py` as follows: 
+3. Modify `DOCKER_VOLUME_PATH` in `config.py` as follows: 
 	
         :::sh
         DOCKER_VOLUME_PATH = '/opt/TangoService/Tango/volumes/'
 
-4.  Install docker on the host machine by following instructions on the <a href="https://docs.docker.com/installation/" target="_blank">docker installation page</a>. Ensure docker is running:
+4. Install docker on the host machine by following instructions on the <a href="https://docs.docker.com/installation/" target="_blank">docker installation page</a>. Ensure docker is running:
 
         :::sh
         $ docker ps
         # CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS                    NAMES
 
-5.  Run the following command to build the Tango deployment image.
+5. Run the following command to build the Tango deployment image.
 
         :::sh
         $ docker build --tag="tango_deployment" .
 
-6.  Ensure the image was built by running.
+6. Ensure the image was built by running.
 
         :::sh
         $ docker images
@@ -142,22 +140,22 @@ This is a guide to setup a fully self-sufficient Tango deployment environment ou
         # tango_deployment    latest              3c0d4f4b4958        2 minutes ago       742.6 MB
         # ubuntu              15.04               d1b55fd07600        4 minutes ago       131.3 MB
 
-7.  Run the following command to access the image in a container with a bash shell. The `-p` flag will map `nginxPort` on the docker container to `localPort` (8610 recommended) on your local machine (or on the VM that docker is running in on the local machine) so that Tango is accessible from outside the docker container.
+7. Run the following command to access the image in a container with a bash shell. The `-p` flag will map `nginxPort` on the docker container to `localPort` (8610 recommended) on your local machine (or on the VM that docker is running in on the local machine) so that Tango is accessible from outside the docker container.
       
         :::sh
         $ docker run --privileged -p <localPort>:<nginxPort> -it tango_deployment /bin/bash
 
-8.  Set up a VMMS for Tango within the Docker container.
+8. Set up a VMMS for Tango within the Docker container.
 
     - [Docker](#docker-vmms-setup) (**recommended**)
     - [Amazon EC2](#amazon-ec2-vmms-setup)
 
-9.  Run the following command to start supervisor, which will then start Tango and all its dependencies.
+9. Run the following command to start supervisor, which will then start Tango and all its dependencies.
 
         :::sh
         $ service supervisor start
 
-10.  Check to see if Tango is responding to requests
+10. Check to see if Tango is responding to requests
       
         :::sh
         $ curl localhost:8610 # Hello, world! RESTful Tango here!
@@ -239,37 +237,37 @@ This is a guide to setup a fully self-sufficient Tango deployment environment ou
         # (Server Reboots)
         $ service erwin status
 
-# Docker VMMS Setup
+## Docker VMMS Setup
 
 This is a guide to set up Tango to run jobs inside Docker containers.
 
-1.  Install docker on host machine by following instructions on the <a href="https://docs.docker.com/installation/" target="_blank">docker installation page</a>. Ensure docker is running:
+1. Install docker on host machine by following instructions on the <a href="https://docs.docker.com/installation/" target="_blank">docker installation page</a>. Ensure docker is running:
       
         :::bash
         $ docker ps # CONTAINER ID IMAGE COMMAND CREATED STATUS PORTS NAMES
 
-2.  Build base Docker image from root Tango directory.
+2. Build base Docker image from root Tango directory.
 
         :::sh
         cd path/to/Tango
         docker build -t autograding_image vmms/
         docker images autograding_image    # Check if image built
 
-3.  Update `VMMS_NAME` in `config.py`.
+3. Update `VMMS_NAME` in `config.py`.
 
         :::python
         # in config.py
         VMMS_NAME = "localDocker"
 
-# Amazon EC2 VMMS Setup
+## Amazon EC2 VMMS Setup
 
 This is a guide to set up Tango to run jobs on an Amazon EC2 VM.
 
-1.  Create an <a href="https://aws.amazon.com/" target="_blank">AWS Account</a> or use an existing one.
+1. Create an <a href="https://aws.amazon.com/" target="_blank">AWS Account</a> or use an existing one.
 
-2.  Obtain your `access_key_id` and `secret_access_key` by following the instructions <a href="http://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys" target="_blank">here</a>.
+2. Obtain your `access_key_id` and `secret_access_key` by following the instructions <a href="http://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys" target="_blank">here</a>.
 
-3.  Add AWS Credentials to a file called `~/.boto` using the following format:
+3. Add AWS Credentials to a file called `~/.boto` using the following format:
 
         :::bash
         [Credentials]
@@ -278,9 +276,9 @@ This is a guide to set up Tango to run jobs on an Amazon EC2 VM.
 
     Tango uses the <a href="http://boto.cloudhackers.com/en/latest/" target="_blank">Boto</a> Python package to interface with Amazon Web Services
 
-4.  In the AWS EC2 console, create an Ubuntu 14.04+ EC2 instance and save the `.pem` file in a safe location.
+4. In the AWS EC2 console, create an Ubuntu 14.04+ EC2 instance and save the `.pem` file in a safe location.
 
-5.  Copy the directory and contents of `autodriver/` in the Tango repo into the EC2 VM. For more help connecting to the EC2 instance follow <a href="http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/AccessingInstancesLinux.html#AccessingInstancesLinuxSCP" target="_blank">this guide</a>.
+5. Copy the directory and contents of `autodriver/` in the Tango repo into the EC2 VM. For more help connecting to the EC2 instance follow <a href="http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/AccessingInstancesLinux.html#AccessingInstancesLinuxSCP" target="_blank">this guide</a>.
 
         :::bash
         chmod 400 /path/my-key-pair.pem
@@ -288,14 +286,14 @@ This is a guide to set up Tango to run jobs on an Amazon EC2 VM.
 
     The autodriver is used as a sandbox environment to run the job inside the VM. It limits Disk I/O, Disk Usage, monitors security, and controls other valuable `sudo` level resources.
 
-6.  In the EC2 VM, compile the autodriver.
+6. In the EC2 VM, compile the autodriver.
 
         :::bash
         $ cd autodriver/
         $ make clean; make
         $ cp -p autodriver /usr/bin/autodriver
 
-7.  Create the `autograde` Linux user and directory. All jobs will be run under this user.
+7. Create the `autograde` Linux user and directory. All jobs will be run under this user.
 
         :::bash
         $ useradd autograde
@@ -303,9 +301,9 @@ This is a guide to set up Tango to run jobs on an Amazon EC2 VM.
         $ chown autograde autograde
         $ chown :autograde autograde
 
-8.  In the AWS EC2 console, create an AMI image from your EC2 VM. Use <a href="http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/creating-an-ami-ebs.html#how-to-create-ebs-ami" target="_blank">this guide</a> to create a custom AMI.
+8. In the AWS EC2 console, create an AMI image from your EC2 VM. Use <a href="http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/creating-an-ami-ebs.html#how-to-create-ebs-ami" target="_blank">this guide</a> to create a custom AMI.
 
-9.  Exit the EC2 instance and edit the following values in `config.py` in the Tango directory.
+9. Exit the EC2 instance and edit the following values in `config.py` in the Tango directory.
 
         :::bash
         # VMMS to use. Must be set to a VMMS implemented in vmms/ before

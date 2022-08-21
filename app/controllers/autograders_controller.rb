@@ -62,11 +62,12 @@ class AutogradersController < ApplicationController
         file.write(uploaded_makefile.read) unless uploaded_makefile.nil?
       end
     end
-    unless uploaded_tar.nil?
-      File.open(Rails.root.join("courses", @course.name, @assessment.name, "autograde.tar"),
-                "wb") do |file|
-        file.write(uploaded_tar.read) unless uploaded_tar.nil?
-      end
+
+    return if uploaded_tar.nil?
+
+    File.open(Rails.root.join("courses", @course.name, @assessment.name, "autograde.tar"),
+              "wb") do |file|
+      file.write(uploaded_tar.read) unless uploaded_tar.nil?
     end
   end
 

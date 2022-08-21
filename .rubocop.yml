@@ -15,8 +15,9 @@ AllCops:
     - 'db/**/*'
     - 'script/**/*'
     - 'tmp/**/*'
+    - 'vendor/bundle/**/*'
   NewCops: disable
-
+   
 Rails:
   Enabled: true
 
@@ -29,10 +30,16 @@ Rails/InverseOf:
 Rails/HasManyOrHasOneDependent:
   Enabled: false
 
+Rails/LexicallyScopedActionFilter:
+  Enabled: false
+
+Rails/Blank:
+  Enabled: false
+
 Layout/LineLength:
   Max: 100
   # To make it possible to copy or click on URIs in the code, we allow lines
-  # contaning a URI to be longer than Max.
+  # containing a URI to be longer than Max.
   AllowURI: true
   URISchemes:
     - http
@@ -71,6 +78,21 @@ Naming/VariableName:
   Enabled: false
 
 Naming/AccessorMethodName:
+  Enabled: false
+
+Naming/MethodName:
+  Enabled: false
+
+Naming/PredicateName:
+  Enabled: false
+  
+Naming/VariableNumber:
+  Enabled: false
+
+Naming/BlockParameterName:
+  Enabled: false
+
+Naming/MethodParameterName:
   Enabled: false
 
 Style/OptionalBooleanParameter:

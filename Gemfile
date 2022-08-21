@@ -1,7 +1,7 @@
 source 'https://rubygems.org'
 ruby '2.6.8'
 
-gem 'rails', '=5.2.0'
+gem 'rails', '=6.0.5'
 
 # Use SCSS for stylesheets
 gem 'sass-rails', '>= 4.0.3'
@@ -120,17 +120,21 @@ group :development do
 
   # static code analyzer
   gem 'rubocop', require: false
+  gem 'rubocop-rails', require: false
+
+  # pre-commit hook for rubocop
+  gem 'overcommit' 
 
   # documentation generator
   gem 'yard'
 
   # sqlite3 adapter
-  gem 'sqlite3', '~> 1.3.6'
+  gem 'sqlite3', '~> 1.4'
 end
 
 # Also install sqlite3 for docker installations
 if ENV['DEPLOY_METHOD'] == "docker"
-  gem 'sqlite3', '~> 1.3.6'
+  gem 'sqlite3', '~> 1.4'
 end
 
 gem 'tzinfo-data'

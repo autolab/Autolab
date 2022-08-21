@@ -318,7 +318,6 @@ table.prettyBorder tr:hover,
 }
 
 ul.panel {
-  list-style-image: none;
   list-style: none;
   margin: 0px;
   padding: 0px;
@@ -469,7 +468,6 @@ table.announcements a {
 input[type="button"] {
   display: inline-block;
   margin: 2px;
-  color: #fff;
   cursor: pointer;
   text-decoration: none;
   padding: 5px;
@@ -526,8 +524,6 @@ div.navLinks .navbutton,
   cursor: pointer;
   color: #eee;
   position: relative;
-  margin: 0px;
-  padding: 2px;
   list-style: none;
   display: block;
   padding: 10px 15px;
@@ -641,7 +637,6 @@ li:hover .half {
   font-size: 12px;
   color: #888;
   padding: 15px;
-  background-color: #eaebed;
   background-color: #e5e5e5;
   background: -webkit-gradient(
     linear,
@@ -752,7 +747,6 @@ input.button {
   padding: 8px;
   margin: 2px;
   margin-bottom: 10px;
-  border: none;
   outline: none;
   color: #888;
   background-color: #f5f5f5;
@@ -767,7 +761,6 @@ input[type="submit"] {
   min-width: 70px;
   font-size: 12px;
   margin: 2px;
-  color: #fff;
   cursor: pointer;
   text-decoration: none;
   padding: 5px;
@@ -813,7 +806,6 @@ textarea {
   padding: 8px;
   margin: 2px;
   margin-bottom: 10px;
-  border: none;
   outline: none;
   color: #000;
   -webkit-border-radius: 5px;
@@ -992,7 +984,7 @@ th:hover a.graphme:hover {
   position: absolute;
   top: 0px;
   left: 0px;
-  z-axis: 100000;
+  z-index: 100000;
 }
 
 .blackbox {
@@ -1064,7 +1056,6 @@ table.prettyBorder th {
   font-size: 12px;
   color: #888;
   padding: 5px;
-  background-color: #eaebed;
   background-color: #e5e5e5;
   background: -webkit-gradient(
     linear,
