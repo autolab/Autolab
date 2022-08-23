@@ -27,9 +27,7 @@ Yes, feedback is per problem but we show all annotations for this submission any
   <% @submission.annotations.each do |annotation| %>
     <li>
       <%= link_to annotation.as_text, [:view, @course, @assessment, @submission, header_position: annotation.position] %>
-      <% 
-
-        filename = if annotation.position == -1
+      <% filename = if annotation.position == -1
                      # position -1 maps to the Autograder Output
                      "Autograder Output"
                    else
