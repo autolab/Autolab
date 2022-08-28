@@ -99,7 +99,7 @@
           </label>
         </p>
       </td>
-      <td><%= "#{submission.course_user_datum.last_name}, #{submission.course_user_datum.first_name}" %>
+      <td><%= [submission.course_user_datum.last_name, submission.course_user_datum.first_name].reject(&:blank?).join(', ') %>
       <%= link_to submission.course_user_datum.email,
                       history_course_assessment_path(@course, @assessment, cud_id: submission.course_user_datum_id, partial: true),
                       {remote: true, class: :trigger}
