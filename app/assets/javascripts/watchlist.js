@@ -373,7 +373,8 @@ function get_watchlist_function(){
           var id = _.get(watchlist_instance,'id');
           var course_id = _.get(watchlist_instance,'course_id');
           var user_id = _.get(watchlist_instance,'course_user_datum_id');
-          var user_name = _.get(data,`["users"][${user_id}].first_name`) + " " + _.get(data,`["users"][${user_id}].last_name`); 
+          // https://stackoverflow.com/questions/19902860/join-strings-with-a-delimiter-only-if-strings-are-not-null-or-empty
+          var user_name = [_.get(data,`["users"][${user_id}].first_name`), _.get(data,`["users"][${user_id}].last_name`)].filter(Boolean).join(' ');
           var user_email = _.get(data,`["users"][${user_id}].email`);
           var risk_condition_id = _.get(watchlist_instance,'risk_condition_id');
           var watchlist_status = _.get(watchlist_instance,'status');
