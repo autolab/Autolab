@@ -42,7 +42,7 @@ class User < ApplicationRecord
   end
 
   def full_name
-    "#{first_name} #{last_name}"
+    [first_name, last_name].reject(&:empty?).join(' ')
   end
 
   def full_name_with_email
@@ -50,7 +50,7 @@ class User < ApplicationRecord
   end
 
   def display_name
-    first_name && last_name ? full_name : email
+    first_name.present? && last_name.present? ? full_name : email
   end
 
   def after_create
