@@ -258,7 +258,7 @@ class CoursesController < ApplicationController
     if params[:doIt]
       begin
         save_uploaded_roster
-        flash[:success] = "Success!"
+        flash.now[:success] = "Successfully updated roster!"
       rescue StandardError => e
         if e != "Roster validation error"
           flash[:error] = e

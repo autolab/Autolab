@@ -5,8 +5,18 @@
     <a href="mailto:<%= @user.email %>"><%= @user.email %></a>
   </li>
   <li> <b>About</b><br>
-    First name <strong><%= @user.first_name %></strong><br>
-    Last name <strong><%= @user.last_name %></strong><br>
+    <% if @user.first_name.present? %>
+      First name: <strong><%= @user.first_name %></strong>
+    <% else %>
+      First name: (student has no first name)
+    <% end %>
+    <br>
+    <% if @user.last_name.present? %>
+      Last name: <strong><%= @user.last_name %></strong>
+    <% else %>
+      Last name: (student has no last name)
+    <% end %>
+    <br>
     Courses 
     <% if @cuds.empty? %>
       <strong> None </strong>

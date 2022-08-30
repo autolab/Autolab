@@ -46,7 +46,7 @@
       <% for s in @submissions do %>
           { "id": "",
             "name": {
-              name: "<%= s.course_user_datum.last_name %>, <%= s.course_user_datum.first_name %>",
+              name: "<%= [s.course_user_datum.last_name, s.course_user_datum.first_name].reject(&:blank?).join(', ') %>",
               email: "<%= s.course_user_datum.email %>"
             },
             "lec": "<%= s.course_user_datum.lecture %>",

@@ -293,11 +293,11 @@ end
     grader = (if score then score.grader else nil end)
     grader_info = ""
     if grader
-      grader_info = "#{grader.first_name} #{grader.last_name} (#{grader.email})"
+      grader_info = grader.full_name_with_email
     end
 
     feedback = score.feedback
-    response = {"grader" => grader_info, "feedback" => feedback, "score" => score.score}
+    response = { "grader" => grader_info, "feedback" => feedback, "score" => score.score }
     render json: response
   end
 

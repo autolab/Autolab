@@ -1,8 +1,8 @@
-<h2><%= @requestedUser.first_name %> <%= @requestedUser.last_name %> (<%= @requestedUser.nickname %>)</h2>
+<h2><%= @requestedUser.full_name %> (<%= @requestedUser.nickname %>)</h2>
 <ul class="gray-box">
   <li><b>Contact</b><br>
     <a href="mailto:<%= @requestedUser.email %>"><%= @requestedUser.email %></a></li>
-  <li> <b>About</b><br>
+  <li><b>About</b><br>
     Lecture <strong><%= @requestedUser.lecture %></strong><br>
     Section <strong><%= @requestedUser.section %></strong><br>
     Course <strong><%= @requestedUser.course.full_name %></strong><br>
