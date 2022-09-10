@@ -136,29 +136,4 @@ Please feel free to use Autolab at your school/organization. If you run into any
 bugs to be fixed, but they should not affect the core functionality of Autolab. Please file an issue if you believe
 you have found a bug.
 
-
-### [v2.4.0](https://github.com/autolab/Autolab/releases/tag/v2.4.0) (2020/02/08) Speedgrader - The new code viewer 
-- The File Tree shows the file hierarchy of student’s submission 
-  - Click on a file to open 
-  - Click on a folder to expand 
-- The Symbol Tree allows you to jump quickly to functions in the student’s code 
-  - Click on a function to jump 
-- You can easily switch between submissions and files 
-  - Up/down arrow keys change the file 
-  - Right/left arrow keys change the submission 
-- How to use the new annotation system: 
-  - Make annotations with grade adjustments 
-  - Important: annotations can only be made for non-autograded problems (to preserve the original autograded score of the autograded problem) 
-  - Annotations grade changes are summarized by the Annotations table on the right 
-- New: Score for problem automatically updates after annotation score changes based on the following formula (this no longer has to be done manually on the Gradebook): 
-
- `score = max_score + ∑(annotation score changes) `
-- For example, a way to grade style in a deductive manner would be to set the max score for the Style problem, and make annotations with a negative score for style violations and a zero score for good style 
-
-UI Enhancements 
-- Tables are more standardized 
-- Fixed text overflowing issues on Gradebook modals 
-- Improved standardization and UI for annotations on PDF submissions 
-
-Others 
-- Course assistants are now able to submit assignments early 
+**For older releases, please check out the [releases page](https://github.com/autolab/Autolab/releases).**
