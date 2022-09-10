@@ -107,6 +107,11 @@ Please feel free to use Autolab at your school/organization. If you run into any
 
 
 ## Changelog
+### [v2.9.0](https://github.com/autolab/Autolab/releases/tag/v2.9.0) (2022/08/08) Metrics Excluded Categories and New Speedgrader Interface
+- Instructors can now exclude selected categories of assessments from metrics watchlist calculations
+- Introduced new speedgrader interface which utilizes the Golden Layout library, amongst other new features
+- Numerous bug fixes and improvements
+
 ### [v2.8.0](https://github.com/autolab/Autolab/releases/tag/v2.8.0) (2021/12/20) GitHub Integration and Roster Upload Improvement
 - Students can now submit code via GitHub
 - Improved Roster Upload with better error reporting
