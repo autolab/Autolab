@@ -107,53 +107,33 @@ Please feel free to use Autolab at your school/organization. If you run into any
 
 
 ## Changelog
+### [v2.9.0](https://github.com/autolab/Autolab/releases/tag/v2.9.0) (2022/08/08) Metrics Excluded Categories and New Speedgrader Interface
+- Instructors can now exclude selected categories of assessments from metrics watchlist calculations
+- Introduced new speedgrader interface which utilizes the Golden Layout library, amongst other new features
+- Numerous bug fixes and improvements
+
 ### [v2.8.0](https://github.com/autolab/Autolab/releases/tag/v2.8.0) (2021/12/20) GitHub Integration and Roster Upload Improvement
 - Students can now submit code via GitHub
 - Improved Roster Upload with better error reporting
-- Numerous bug fixes
+- Numerous bug fixes and improvements
+
+### (2021/10/12) Moved from Uglifier to Terser
+- Autolab has migrated from Uglifier to Terser for our Javascript compressor to support the latest Javascript syntax. Please change `Uglifier.new(harmony: true)` to `:terser` in your `production.rb`
 
 ### [v2.7.0](https://github.com/autolab/Autolab/releases/tag/v2.7.0) (2021/05/29) Autolab Docker Compose, Student Metrics, Redesigned Documentation
 - Integration with new Docker Compose [installation method](https://github.com/autolab/docker)
 - Student Metrics Feature, which allows instructors to identify students who may require attention
 - Redesigned Autolab documentation
-- Numerous bug fixes
+- Numerous bug fixes and improvements
 
 ### [v2.6.0](https://github.com/autolab/Autolab/releases/tag/v2.6.0) (2020/10/24) Formatted Feedbacks, Course Dashboard, Accessibility
 - Formatted Feedback feature
 - Introduction of Course Dashboards
-- Numerous bug fixes
-
-### (2021/10/12) Moved from Uglifier to Terser
-- Autolab has migrated from Uglifier to Terser for our Javascript compressor to support the latest Javascript syntax. Please change `Uglifier.new(harmony: true)` to `:terser` in your `production.rb`
+- Numerous bug fixes and improvements
 
 ### v2.5.0 (2020/02/22) Upgrade from Rails 4 to Rails 5
 - Autolab has been upgraded from Rails 4 to Rails 5 after almost a year of effort! There are still some small
 bugs to be fixed, but they should not affect the core functionality of Autolab. Please file an issue if you believe
 you have found a bug.
 
-
-### [v2.4.0](https://github.com/autolab/Autolab/releases/tag/v2.4.0) (2020/02/08) Speedgrader - The new code viewer 
-- The File Tree shows the file hierarchy of student’s submission 
-  - Click on a file to open 
-  - Click on a folder to expand 
-- The Symbol Tree allows you to jump quickly to functions in the student’s code 
-  - Click on a function to jump 
-- You can easily switch between submissions and files 
-  - Up/down arrow keys change the file 
-  - Right/left arrow keys change the submission 
-- How to use the new annotation system: 
-  - Make annotations with grade adjustments 
-  - Important: annotations can only be made for non-autograded problems (to preserve the original autograded score of the autograded problem) 
-  - Annotations grade changes are summarized by the Annotations table on the right 
-- New: Score for problem automatically updates after annotation score changes based on the following formula (this no longer has to be done manually on the Gradebook): 
-
- `score = max_score + ∑(annotation score changes) `
-- For example, a way to grade style in a deductive manner would be to set the max score for the Style problem, and make annotations with a negative score for style violations and a zero score for good style 
-
-UI Enhancements 
-- Tables are more standardized 
-- Fixed text overflowing issues on Gradebook modals 
-- Improved standardization and UI for annotations on PDF submissions 
-
-Others 
-- Course assistants are now able to submit assignments early 
+**For older releases, please check out the [releases page](https://github.com/autolab/Autolab/releases).**
