@@ -27,7 +27,8 @@ class CourseUserDataController < ApplicationController
     if (cud_parameters[:user_attributes][:email] == "") ||
        ((cud_parameters[:user_attributes][:first_name] == "") &&
        (cud_parameters[:user_attributes][:last_name] == ""))
-      flash[:error] = "Error enrolling user: You must enter a valid email, and a first or last name to create a new student"
+      flash[:error] = "Error enrolling user: You must enter a valid email, and a first or last" \
+        "name to create a new student"
       redirect_to(action: "new") && return
     end
     # check user existence
