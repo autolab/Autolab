@@ -6,41 +6,30 @@
     <thead>
       <tr>
         <th>&#8470;</th>
+        <th>Email</th>
         <th>First Name</th>
         <th>Last Name</th>
-        <th>Email</th>
         <th>Lecture</th>
-        <th>section</th>
+        <th>Section</th>
         <th>School</th>
         <th>Major</th>
         <th>Year</th>
-        <th>Nickname</th>
-        <th>Dropped?</th>
-        <th>Type</th>
+        <th>Grading Policy</th>
       </tr>
     </thead>
     <!-- Row index is set using CSS. -->
     <% rowList.each do |errorRow| %>
       <tr class="user-row">
         <td><%= errorRow["row_num"] %></td>
+        <td><%= errorRow["email"] %></td>
         <td><%= errorRow["first_name"] %></td>
         <td><%= errorRow["last_name"] %></td>
-        <td><%= errorRow["email"] %></td>
         <td><%= errorRow["lecture"] %></td>
         <td><%= errorRow["section"] %></td>
         <td><%= errorRow["school"] %></td>
         <td><%= errorRow["major"] %></td>
         <td><%= errorRow["year"] %></td>
-        <td><%= errorRow["nickname"] %></td>
-        <td><%= errorRow["dropped"] %></td>
-        <td><%= if errorRow["instructor"] then
-          "Instructor"
-        elsif errorRow["instructor"] then
-          "Course Assistant"
-        else
-          "Student"
-        end
-        %></td>
+        <td><%= errorRow["grade_policy"] %></td>
       </tr>
     <% end %>
   </table>
