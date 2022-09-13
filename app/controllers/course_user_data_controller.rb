@@ -24,10 +24,10 @@ class CourseUserDataController < ApplicationController
     @newCUD = @course.course_user_data.new(cud_parameters)
     # do pre-validation of required fields
     # must have email, and first OR last name
-    if (cud_parameters[:user_attributes][:email] == "") ||
-       ((cud_parameters[:user_attributes][:first_name] == "") &&
-       (cud_parameters[:user_attributes][:last_name] == ""))
-      flash[:error] = "Error enrolling user: You must enter a valid email, and a first or last" \
+    if cud_parameters[:user_attributes][:email].blank? ||
+       (cud_parameters[:user_attributes][:first_name].blank? &&
+       cud_parameters[:user_attributes][:last_name].blank?)
+      flash[:error] = "Error enrolling user: You must enter a valid email, and a first or last " \
         "name to create a new student"
       redirect_to(action: "new") && return
     end
