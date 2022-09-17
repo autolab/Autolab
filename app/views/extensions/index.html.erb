@@ -65,19 +65,27 @@
       </thead>
 
       <tbody>
-        <% for ext in @extensions do %>
+        <% if @extensions.empty? %>
           <tr>
-            <th><%= ext.course_user_datum.email %></th>
-            <td style="padding: 0 5px"><%= ext.infinite? ? "Infinite" : "#{ext.days} days" %></td>
-            <td><%= link_to '<i class="material-icons">delete</i>'.html_safe, [@course, @assessment, ext], method: :delete %></td>
+            <td colspan=3>There are currently no extensions for this assessment</td>
           </tr>
+        <% else %>
+          <% for ext in @extensions do %>
+            <tr>
+              <td><%= ext.course_user_datum.email %></td>
+              <td style="padding: 0 5px"><%= ext.infinite? ? "Infinite" : "#{pluralize(ext.days, "day")}" %></td>
+              <td><%= link_to '<i class="material-icons">delete</i>'.html_safe, [@course, @assessment, ext],
+                              data: { confirm: 'Are you sure you want to delete the extension for user ' + ext.course_user_datum.email + '?' },
+                              method: :delete %></td>
+            </tr>
+          <% end %>
         <% end %>
       </tbody>
     </table>
   </div>
 
   <div class="col s12 m6">
-    <p><b>Create New Extension</b></p>
+    <p><b>Create/Update Extension</b></p>
       <%= form_for @new_extension, :as=>"extension", :url=>{:action=>"create"}, builder: FormBuilderWithDateTimeInput do |f| %>
         <div class="input-field">
           <input type="text" size="3" id="student_autocomplete" class="autocomplete" autocomplete="off"/>
@@ -91,7 +99,7 @@
         <%= f.check_box :infinite, id: "extension_infinite" %>
         <%= f.hidden_field(:course_user_datum_id)%>
         <%= f.hidden_field(:assessment_id)%>
-        <%= f.submit "Create" , {:class=>"btn primary"} %>
+        <%= f.submit "Create/Update" , {:class=>"btn primary"} %>
       <% end %>
   </div>
 
