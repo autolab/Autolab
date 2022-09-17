@@ -5,22 +5,23 @@
   <script type="application/javascript">
     jQuery(function() {
       /* set up dates */
-      $dueDate = moment("<%= @assessment.due_at.to_s %>", "YYYY-MM-DD hh:mm:ss ZZ").startOf('day');
+      const $dueDate = moment("<%= @assessment.due_at.to_s %>", "YYYY-MM-DD hh:mm:ss ZZ").startOf('day');
 
-      $extensionDaysField = $('#extension_days');
-      $extensionNewDayField = $('#extension_due_at');
-      $extensionDaysLabel = $('label[for="extension_days"]');
+      const $extensionDaysField = $('#extension_days');
+      const $extensionNewDayField = $('#extension_due_at');
+      const $extensionDaysLabel = $('label[for="extension_days"]');
+      const $studentAutocompleteField = $('#student_autocomplete');
 
       /* set up flatpickr (not using initialize_datetimepickers script since
       * it seems to be causing trouble with setting minDate). */
-      $extensionNewDayFlatpickr = flatpickr($extensionNewDayField, {
+      const $extensionNewDayFlatpickr = flatpickr($extensionNewDayField, {
           altInput: true,
           defaultDate: $dueDate.valueOf(),
           minDate: $dueDate.valueOf()
       });
 
       /* Enable/disable extension days options */
-      $enableInfiniteExtension = $('#extension_infinite');
+      const $enableInfiniteExtension = $('#extension_infinite');
       if ($enableInfiniteExtension.is(':checked')) {
         $extensionDaysField.prop('disabled',true);
         $extensionNewDayField.prop('disabled',true);
@@ -37,13 +38,13 @@
 
       /* two-way-bind newDayField with daysField */
       $extensionDaysField.on('change', function() {
-        $newDate = moment($dueDate);
+        const $newDate = moment($dueDate);
         $newDate.add($extensionDaysField.val(), 'days').startOf('day');
         $extensionNewDayFlatpickr.setDate($newDate.toDate());
       });
       $extensionNewDayField.on('change', function() {
-        $newDate = moment($extensionNewDayField.val()).startOf('day');
-        $extendBy = $newDate.diff($dueDate, 'days');
+        const $newDate = moment($extensionNewDayField.val()).startOf('day');
+        const $extendBy = $newDate.diff($dueDate, 'days');
         $extensionDaysField.val($extendBy);
         $extensionDaysLabel.addClass("active");
       });
