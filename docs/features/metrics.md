@@ -2,7 +2,7 @@
 
 Traditional approaches of identifying students who are struggling with class is reactive; course staff wait for students to come to them to provide help, which can often be too late.
 
-The metrics feature seeks to be an proactive approach by actively identifying students who might be struggling in class through tracking of metrics that signify possible risks. Identifying students in need of attention early in the course would provide a better chance of getting them back on track in the course.
+The metrics feature seeks to be a proactive approach by actively identifying students who might be struggling in class through tracking of metrics that signify possible risks. Identifying students in need of attention early in the course would provide a better chance of getting them back on track in the course.
 
 
 ## Usage Flow
@@ -97,3 +97,6 @@ The `resolved` tab contains all instances that the instructor has marked as reso
 #### Archived
 
 When an instructor adjusts the student metrics for a course, all instances that were in `contacted` or `resolved` for the outdated student metrics are placed into `archived`. All `pending` instances for the outdated student metrics are dropped. As such, all instances in `pending`, `contacted`, and `resolved` are consistent with the most up-to-date student metrics.
+
+## Allowlist
+To account for the fact that some courses may have optional assignments that shouldn't be used to determine which students are struggling, we have created an "allowlist." This feature allows instructors to toggle which categories of assignments should be included or excluded in metrics calculations.
