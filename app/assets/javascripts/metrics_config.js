@@ -2,6 +2,13 @@
 //= require semantic-ui
 
 // metrics api endpoints
+const parameterize = (str) => {
+  return str.trim().toLowerCase()
+          .replace(/[^a-z0-9\-_]+/, "_")
+          .replace(/_{2,}/g, "_")
+          .replace(/^_|_$/g, "");
+}
+
 const metrics_config_endpoints = {
 	get_category: 'get_watchlist_category_blocklist',
 	update: 'update_watchlist_configuration',
@@ -12,11 +19,11 @@ Object.freeze(metrics_config_endpoints);
 
 $.getJSON(metrics_config_endpoints['get_category'],function(data, status){
 		excluded_categories = [];
-
+    
 		if (status=='success') {
-			data.forEach(category => {
-				excluded_categories.push(category);
-				$(`#excluded_${category}`).css('visibility', 'visible');
+      data.forEach(category => {
+        excluded_categories.push(category);
+				$(`#excluded_${parameterize(category)}`).css('visibility', 'visible');
 			});
 
 			$('#included_categories').children("div").each(function () {
