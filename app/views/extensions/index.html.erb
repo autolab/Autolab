@@ -11,6 +11,14 @@
       $extensionNewDayField = $('#extension_due_at');
       $extensionDaysLabel = $('label[for="extension_days"]');
 
+      /* set up flatpickr (not using initialize_datetimepickers script since
+      * it seems to be causing trouble with setting minDate). */
+      $extensionNewDayFlatpickr = flatpickr($extensionNewDayField, {
+          altInput: true,
+          defaultDate: $dueDate.valueOf(),
+          minDate: $dueDate.valueOf()
+      });
+
       /* Enable/disable extension days options */
       $enableInfiniteExtension = $('#extension_infinite');
       if ($enableInfiniteExtension.is(':checked')) {
@@ -31,21 +39,13 @@
       $extensionDaysField.on('change', function() {
         $newDate = moment($dueDate);
         $newDate.add($extensionDaysField.val(), 'days').startOf('day');
-        $extensionNewDayField.flatpickr().setDate($newDate.toDate());
+        $extensionNewDayFlatpickr.setDate($newDate.toDate());
       });
       $extensionNewDayField.on('change', function() {
         $newDate = moment($extensionNewDayField.val()).startOf('day');
         $extendBy = $newDate.diff($dueDate, 'days');
         $extensionDaysField.val($extendBy);
         $extensionDaysLabel.addClass("active");
-      });
-
-      /* set up flatpickr (not using initialize_datetimepickers script since
-       * it seems to be causing trouble with setting minDate). */
-      $extensionNewDayField.flatpickr({
-        altInput: true,
-        defaultDate: $dueDate.valueOf(),
-        minDate: $dueDate.valueOf()
       });
     });
   </script>
@@ -85,7 +85,7 @@
         <p>Select a new due date (Currently due at: <span class="moment-date-time"><%= @assessment.due_at.to_s %></span>)</p>
         <%= f.date_select :due_at, greater_than: @assessment.due_at, id: "extension_due_at" %><br>
         <p>-OR- Specify number of days to extend:</p>
-        <%= f.text_field :days, :size=>3, :id => "extension_days" %>
+        <%= f.number_field :days, :size=>3, :placeholder=>0, :value=>0, :min=>0, :id=>"extension_days" %>
         <p>-OR- Infinite Extension?</p>
         <%= f.check_box :infinite, id: "extension_infinite" %>
         <%= f.hidden_field(:course_user_datum_id)%>
