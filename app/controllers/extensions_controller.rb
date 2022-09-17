@@ -33,6 +33,22 @@ class ExtensionsController < ApplicationController
       flash[:error] = "No student with id #{cud_id} was found for this course."
       redirect_to(action: :index) && return
     end
+
+    # Check for existing extension, and if so, update
+    existing_ext = @assessment.extensions.find_by(course_user_datum_id: cud_id)
+    if existing_ext
+      existing_ext.days = params[:extension][:days]
+      existing_ext.infinite = params[:extension][:infinite]
+      existing_ext.save
+      if !existing_ext.errors.empty?
+        flash[:error] = existing_ext.errors.full_messages[0]
+      else
+        flash[:success] = "Extension updated successfully for user #{cud.email}."
+      end
+      redirect_to(action: :index) && return
+    end
+
+    # Create new extension instead
     ext = @assessment.extensions.create(extension_params)
     if !ext.errors.empty?
       flash[:error] = ext.errors.full_messages[0]
