@@ -15,7 +15,7 @@
             </div>
             <div class="collapsible-body">
               <% if @cud.instructor? or @cud.course_assistant? or @problemReleased%>
-                <% puts(descriptTuples) %>
+                <!-- a[6] = filename, a[2] = line-->
                 <% descriptTuples.sort_by{|a| [a[6], a[2]]}.each do |description, value, line, user, id, position, filename| %>
                   <div class="descript" id="li-annotation-<%= id %>"> <!-- Line + 1 because the code line numbers starts with 1 not 0. -->
                     <%= link_to(
