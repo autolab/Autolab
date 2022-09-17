@@ -33,8 +33,6 @@
       }
 
       $enableInfiniteExtension.click(() => checkInfiniteExtension());
-      // Run once at the start
-      checkInfiniteExtension();
 
       /* two-way-bind newDayField with daysField */
       $extensionDaysField.on('change', function() {
@@ -51,6 +49,7 @@
 
       /* Automatically display details of existing extensions */
 
+      const $updateWarning = $('#update-warning');
       // Map CUD to days / infinite details
       const CUDMap = {
           <% @extensions.each do |ext| %>
@@ -65,9 +64,11 @@
         const cud = $hiddenCUDField.val();
         if (cud === '') return;
 
+        const extensionExists = cud in CUDMap;
+
         let extensionDays = '0';
         let infiniteExtension = false;
-        if (cud in CUDMap) {
+        if (extensionExists) {
             const extensionData = CUDMap[cud];
             extensionDays = extensionData.days || '0';
             infiniteExtension = extensionData.infinite;
@@ -75,8 +76,13 @@
         /* Populate fields */
         $extensionDaysField.val(extensionDays);
         $enableInfiniteExtension.prop('checked', infiniteExtension);
+        $updateWarning.toggle(extensionExists);
         checkInfiniteExtension();
       });
+
+      // Initialization
+      checkInfiniteExtension();
+      $updateWarning.hide();
     });
   </script>
 
@@ -121,13 +127,14 @@
           <label for="student_autocomplete">Start typing student name or email</label>
         </div>
         <p>Select a new due date (Currently due at: <span class="moment-date-time"><%= @assessment.due_at.to_s %></span>)</p>
-        <%= f.date_select :due_at, greater_than: @assessment.due_at, id: "extension_due_at" %><br>
+        <%= f.date_select :due_at, greater_than: @assessment.due_at, id: "extension_due_at" %>
         <p>-OR- Specify number of days to extend:</p>
         <%= f.number_field :days, :size=>3, :placeholder=>0, :value=>0, :min=>0, :id=>"extension_days" %>
         <p>-OR- Infinite Extension?</p>
         <%= f.check_box :infinite, id: "extension_infinite" %>
         <%= f.hidden_field(:course_user_datum_id)%>
         <%= f.hidden_field(:assessment_id)%>
+        <p id="update-warning" class="red-text">This student has a current extension. Submitting will override it!</p>
         <%= f.submit "Create/Update" , {:class=>"btn primary"} %>
       <% end %>
   </div>
