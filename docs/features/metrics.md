@@ -103,4 +103,5 @@ To account for the fact that some courses may have optional assignments that sho
 
 ### Configuring Considered Categories
 The allowlist is located under the "Configurations" tab of the student metrics page. To toggle an assignment between "Included" and "Excluded," a user can press the arrow icon between the two lists. After pressing save, the new considered category settings will be updated and taken into consideration the next time you refresh the watchlist.
+
 ![Category Configuration](/images/metrics-category-config.jpg)
