@@ -461,10 +461,19 @@ class SubmissionsController < ApplicationController
       value = annotation.value || 0
       line = annotation.line
       problem = annotation.problem ? annotation.problem.name : "General"
-
+      filename = if annotation.position == -1
+                   # position -1 maps to the Autograder Output
+                   "Autograder Output"
+                 elsif @files && annotation.position != 0
+                   # if the submission is an archive, use filename in archive;
+                   # otherwise, use submission filename
+                   Archive.get_nth_filename(@files, annotation.position)
+                 else
+                   @submission.filename
+                 end
       @problemSummaries[problem] ||= []
       @problemSummaries[problem] << [description, value, line, annotation.submitted_by,
-                                     annotation.id, annotation.position]
+                                     annotation.id, annotation.position, filename]
 
       @problemGrades[problem] ||= 0
       @problemGrades[problem] += value
