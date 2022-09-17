@@ -32,8 +32,6 @@ $('.exchange.icon').click(function(){
   var category = $(this).attr("data-value");
 	var included_category = $(`#included_${category}`);
 	var excluded_category = $(`#excluded_${category}`);
-  console.log('clicked', included_category.css('visibility'));
-  console.log('clicked', excluded_category.css('visibility'));
 	if(included_category.css('visibility') == 'hidden') {
 		included_category.css('visibility', 'visible');
 		excluded_category.css('visibility', 'hidden');
