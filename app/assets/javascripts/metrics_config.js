@@ -29,7 +29,7 @@ $.getJSON(metrics_config_endpoints['get_category'],function(data, status){
 });
 
 $('.exchange.icon').click(function(){
-  var category = $(this).attr("data-value");
+	var category = $(this).attr("data-value");
 	var included_category = $(`#included_${category}`);
 	var excluded_category = $(`#excluded_${category}`);
 	if(included_category.css('visibility') == 'hidden') {
