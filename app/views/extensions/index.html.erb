@@ -146,7 +146,9 @@
         <% end %>
       </tbody>
     </table>
-    <p>Click on an email above to update the extension.</p>
+    <% if !@extensions.empty? %>
+      <p>Click on an email above to update the extension.</p>
+    <% end %>
   </div>
 
   <div class="col s12 m6">
