@@ -88,6 +88,9 @@
         $extensionDaysField.val(extensionDays);
         $enableInfiniteExtension.prop('checked', infiniteExtension);
         $updateWarning.toggle(extensionExists);
+        // To update calendar picker
+        $extensionDaysField.trigger('change');
+        // To disable extension days field as necessary
         checkInfiniteExtension();
       });
 
@@ -98,7 +101,9 @@
         const fullName = CUDToFullnameMap[cud];
         console.log(cud, fullName);
         $studentAutocompleteField.val(fullName);
+        // To prevent overlap
         $studentAutocompleteLabel.addClass('active');
+        // To trigger CUD change, etc.
         $studentAutocompleteField.trigger('change');
       }
 
@@ -141,6 +146,7 @@
         <% end %>
       </tbody>
     </table>
+    <p>Click on an email above to update the extension.</p>
   </div>
 
   <div class="col s12 m6">
@@ -158,7 +164,7 @@
       <%= f.check_box :infinite, id: "extension_infinite" %>
       <%= f.hidden_field(:course_user_datum_id)%>
       <%= f.hidden_field(:assessment_id)%>
-      <p id="update-warning" class="red-text">This student has a current extension. Submitting will override it!</p>
+      <p id="update-warning" class="red-text">This student has a current extension. Submitting will update it!</p>
       <%= f.submit "Create/Update" , {:class=>"btn primary"} %>
     <% end %>
   </div>
