@@ -52,7 +52,6 @@
       const $hiddenCUDField = $('#extension_course_user_datum_id');
       const $updateWarning = $('#update-warning');
       const $studentSelect = $('.student-select');
-      const $autocomplete = M.Autocomplete.getInstance($studentAutocompleteField);
       /* Map CUD to days / infinite details */
       const CUDToExtensionsMap = {
         <% @extensions.each do |ext| %>
@@ -62,7 +61,7 @@
           },
         <% end %>
       };
-      const CUDToFullnameMap = {
+      const CUDToFullNameMap = {
         <% @users.each do |k,v| %>
           "<%= v %>": "<%= j k %>",
         <% end %>
@@ -98,7 +97,7 @@
       function selectStudent(e) {
         const $student = $(e.target);
         const cud = $student.data('cud');
-        const fullName = CUDToFullnameMap[cud];
+        const fullName = CUDToFullNameMap[cud];
         console.log(cud, fullName);
         $studentAutocompleteField.val(fullName);
         // To prevent overlap
