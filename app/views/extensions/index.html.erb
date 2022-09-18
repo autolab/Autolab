@@ -65,7 +65,7 @@
         <% @users.each do |k,v| %>
           "<%= v %>": "<%= j k %>",
         <% end %>
-      }
+      };
 
       $hiddenCUDField.on('change', function() {
         const cud = $hiddenCUDField.val();
@@ -98,7 +98,6 @@
         const $student = $(e.target);
         const cud = $student.data('cud');
         const fullName = CUDToFullNameMap[cud];
-        console.log(cud, fullName);
         $studentAutocompleteField.val(fullName);
         // To prevent overlap
         $studentAutocompleteLabel.addClass('active');
