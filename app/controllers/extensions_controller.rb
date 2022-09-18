@@ -28,7 +28,7 @@ class ExtensionsController < ApplicationController
       redirect_to(action: :index) && return
     end
 
-    cud = @course.course_user_data.find_by(id: cud_id)
+    cud = @course.course_user_data.find(cud_id)
     unless cud
       flash[:error] = "No student with id #{cud_id} was found for this course."
       redirect_to(action: :index) && return
