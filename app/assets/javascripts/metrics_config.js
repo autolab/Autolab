@@ -14,8 +14,8 @@ $.getJSON(metrics_config_endpoints['get_category'],function(data, status){
 		excluded_categories = [];
 
 		if (status=='success') {
-      data.forEach(category => {
-        excluded_categories.push(category);
+			data.forEach(category => {
+				excluded_categories.push(category);
 				$(`[id='excluded_${category}']`).css('visibility', 'visible');
 			});
 
