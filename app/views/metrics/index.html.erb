@@ -228,21 +228,21 @@
       <h3> Included </h3>
       <div id="included_categories">
         <% for category in @course_assessment_categories do%>
-          <div class="item" id="included_<%=category.parameterize.underscore%>" style="visibility: hidden;"><%=category%></div><br />
+          <div class="item" id="included_<%=category%>" style="visibility: hidden;"><%=category%></div><br />
         <% end %>
       </div>
     </div>
     <div class="four wide column">
       <h3><br /></h3>
       <% for category in @course_assessment_categories do%>
-        <i class="exchange alternate icon" data-value="<%=category.parameterize.underscore%>"></i><br /><br />
+        <i class="exchange alternate icon" data-value="<%=category%>"></i><br /><br />
       <% end %>
     </div>
     <div class="five wide column">
       <h3> Excluded </h3>
       <div id="excluded_categories">
         <% for category in @course_assessment_categories do%>
-          <div class="item" id="excluded_<%=category.parameterize.underscore%>" style="visibility: hidden;"><%=category%></div><br />
+          <div class="item" id="excluded_<%=category%>" style="visibility: hidden;"><%=category%></div><br />
         <% end %>
       </div>
     </div>
