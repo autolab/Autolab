@@ -26,7 +26,7 @@
     /* track changes in student autocomplete field */
     $studentAutocompleteField.on('change', function() {
       /* $studentAutocompleteField.val() unescapes a second time */
-      const encoded = window.btoa($studentAutocompleteField.val())
+      const encoded = window.btoa($studentAutocompleteField.val());
       // Trigger 'change' event for any code that might be listening
       $hiddenCUDField.val(userData[encoded]).trigger('change');
     });
