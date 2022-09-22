@@ -16,7 +16,7 @@ $.getJSON(metrics_config_endpoints['get_category'],function(data, status){
 		if (status=='success') {
 			data.forEach(category => {
 				excluded_categories.push(category);
-				$(`#excluded_${category}`).css('visibility', 'visible');
+				$(`[id='excluded_${category}']`).css('visibility', 'visible');
 			});
 
 			$('#included_categories').children("div").each(function () {
@@ -30,8 +30,8 @@ $.getJSON(metrics_config_endpoints['get_category'],function(data, status){
 
 $('.exchange.icon').click(function(){
 	var category = $(this).attr("data-value");
-	var included_category = $(`#included_${category}`);
-	var excluded_category = $(`#excluded_${category}`);
+	var included_category = $(`[id='included_${category}']`);
+	var excluded_category = $(`[id='excluded_${category}']`);
 	if(included_category.css('visibility') == 'hidden') {
 		included_category.css('visibility', 'visible');
 		excluded_category.css('visibility', 'hidden');
