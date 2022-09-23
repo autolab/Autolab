@@ -25,38 +25,37 @@ class CourseUserDataController < ApplicationController
 
     email = cud_parameters[:user_attributes][:email]
     user = User.where(email: email).first
+    # check user existence
     if user.nil?
       # user is new
       # do pre-validation of required fields
       # must have email, and first OR last name
-      # check user existence
       if cud_parameters[:user_attributes][:email].blank? ||
          (cud_parameters[:user_attributes][:first_name].blank? &&
           cud_parameters[:user_attributes][:last_name].blank?)
         flash[:error] = "Error enrolling user: You must enter a valid email, and a first or last " \
         "name to create a new student"
         redirect_to(action: "new") && return
+      end
+      user = User.roster_create(email,
+                                cud_parameters[:user_attributes][:first_name],
+                                cud_parameters[:user_attributes][:last_name],
+                                "", "", "")
+      if user
+        @newCUD.user = user
       else
-        user = User.roster_create(email,
-                                  cud_parameters[:user_attributes][:first_name],
-                                  cud_parameters[:user_attributes][:last_name],
-                                  "", "", "")
-        if user
-          @newCUD.user = user
-        else
-          error_msg = "The user with email #{email} could not be created:"
-          if !user.valid?
-            user.errors.full_messages.each do |msg|
-              error_msg += "<br>#{msg}"
-            end
-          else
-            error_msg += "<br>Unknown error"
+        error_msg = "The user with email #{email} could not be created:"
+        if !user.valid?
+          user.errors.full_messages.each do |msg|
+            error_msg += "<br>#{msg}"
           end
-          COURSE_LOGGER.log(error_msg)
-          flash[:error] = error_msg
-          flash[:html_safe] = true
-          redirect_to(action: "new") && return
+        else
+          error_msg += "<br>Unknown error"
         end
+        COURSE_LOGGER.log(error_msg)
+        flash[:error] = error_msg
+        flash[:html_safe] = true
+        redirect_to(action: "new") && return
       end
     else
       # user exists
