@@ -21,8 +21,9 @@
     // set problemGrades div height so that overflow properties apply
     if (!$('.problemGrades')) return;
     
+    // update problemGrades div height to match the height of
+    // the golden layout component it's contained in
     const parentHeight = $('.problemGrades')[0]?.parentElement?.style.height;
-    console.log(parentHeight);
     $('.problemGrades')[0].style.height = parentHeight;
   }
 
