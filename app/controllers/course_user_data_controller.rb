@@ -22,41 +22,42 @@ class CourseUserDataController < ApplicationController
   def create
     cud_parameters = cud_params
     @newCUD = @course.course_user_data.new(cud_parameters)
-    # do pre-validation of required fields
-    # must have email, and first OR last name
-    if cud_parameters[:user_attributes][:email].blank? ||
-       (cud_parameters[:user_attributes][:first_name].blank? &&
-       cud_parameters[:user_attributes][:last_name].blank?)
-      flash[:error] = "Error enrolling user: You must enter a valid email, and a first or last " \
-        "name to create a new student"
-      redirect_to(action: "new") && return
-    end
-    # check user existence
+
     email = cud_parameters[:user_attributes][:email]
     user = User.where(email: email).first
     if user.nil?
       # user is new
-      user = User.roster_create(email,
-                                cud_parameters[:user_attributes][:first_name],
-                                cud_parameters[:user_attributes][:last_name],
-                                "", "", "")
-      if user
-        @newCUD.user = user
-      else
-        error_msg = "The user with email #{email} could not be created:"
-        if !user.valid?
-          user.errors.full_messages.each do |msg|
-            error_msg += "<br>#{msg}"
-          end
-        else
-          error_msg += "<br>Unknown error"
-        end
-        COURSE_LOGGER.log(error_msg)
-        flash[:error] = error_msg
-        flash[:html_safe] = true
+      # do pre-validation of required fields
+      # must have email, and first OR last name
+      # check user existence
+      if cud_parameters[:user_attributes][:email].blank? ||
+         (cud_parameters[:user_attributes][:first_name].blank? &&
+          cud_parameters[:user_attributes][:last_name].blank?)
+        flash[:error] = "Error enrolling user: You must enter a valid email, and a first or last " \
+        "name to create a new student"
         redirect_to(action: "new") && return
+      else
+        user = User.roster_create(email,
+                                  cud_parameters[:user_attributes][:first_name],
+                                  cud_parameters[:user_attributes][:last_name],
+                                  "", "", "")
+        if user
+          @newCUD.user = user
+        else
+          error_msg = "The user with email #{email} could not be created:"
+          if !user.valid?
+            user.errors.full_messages.each do |msg|
+              error_msg += "<br>#{msg}"
+            end
+          else
+            error_msg += "<br>Unknown error"
+          end
+          COURSE_LOGGER.log(error_msg)
+          flash[:error] = error_msg
+          flash[:html_safe] = true
+          redirect_to(action: "new") && return
+        end
       end
-
     else
       # user exists
       unless user.course_user_data.where(course: @course).empty?
