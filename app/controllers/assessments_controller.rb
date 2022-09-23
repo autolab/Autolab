@@ -582,18 +582,9 @@ class AssessmentsController < ApplicationController
       @files = Archive.get_files @submission.handin_file_path
     end
     @problemReleased = @submission.scores.pluck(:released).all?
+    # get_correct_filename is protected, so we wrap around controller-specific call
     @get_correct_filename = ->(annotation) {
-      filename = if annotation.position == -1
-                   # position -1 maps to the Autograder Output
-                   "Autograder Output"
-                 elsif @files && annotation.position
-                   # if the submission is an archive, use filename in archive;
-                   # otherwise, use submission filename
-                   Archive.get_nth_filename(@files, annotation.position)
-                 else
-                   @submission.filename
-                 end
-      return filename
+      get_correct_filename(annotation, @files, @submission)
     }
   end
 
