@@ -22,20 +22,31 @@ Yes, feedback is per problem but we show all annotations for this submission any
 <% if @submission.annotations.count > 0 and @problemReleased %>
   <h2 style="margin-top: 1em">Remarks</h2>
   <ul class="collection">
-  <!-- TODO: Make order of annotations consistent with order of file list  -->
-    
-    <% @submission.annotations.each do |annotation| %>
+  <!-- use custom sort b/c using ordering doesn't work with autograder output, archived files -->
+  <% @subs = @submission.annotations.sort do |a,b|
+     aFilename = @get_correct_filename.call(a)
+     bFilename = @get_correct_filename.call(b)
+     case
+       when aFilename < bFilename
+         -1
+       when aFilename > bFilename
+          1
+       else
+          a.line <=> b.line
+       end
+     end
+     @subs.each do |annotation| %>
     <li class="collection-item">
-        <div style='white-space: pre-wrap;'><%= annotation.comment%> </div>
-        <% filename = if annotation.position == -1
-                      # position -1 maps to the Autograder Output
-                      "Autograder Output"
-                    else
-                      # if the submission is an archive, use filename in archive; otherwise, use submission filename
-                      @files && annotation.position ? Archive.get_nth_filename(@files, annotation.position) : @submission.filename
-                    end %>
-        <!-- todo: positive should have plus -->
-        <span> <b>(<%= annotation.value.to_s%>, <%= annotation.problem.name%>)</b> <%= link_to filename.to_s + ":"+ annotation.line.to_s , [:view, @course, @assessment, @submission, header_position: annotation.position] %> </span>
+          <div style='white-space: pre-wrap;'><%= annotation.comment%> </div>
+          <% filename = if annotation.position == -1
+                        # position -1 maps to the Autograder Output
+                        "Autograder Output"
+                      else
+                        # if the submission is an archive, use filename in archive; otherwise, use submission filename
+                        @files && annotation.position ? Archive.get_nth_filename(@files, annotation.position) : @submission.filename
+                      end %>
+          <!-- todo: positive should have plus -->
+          <span> <b>(<%= annotation.value.to_s%>, <%= annotation.problem.name%>)</b> <%= link_to filename.to_s + ":"+ annotation.line.to_s , [:view, @course, @assessment, @submission, header_position: annotation.position] %> </span>
     </li>
     <% end %>
   </ul>
