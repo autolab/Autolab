@@ -50,7 +50,10 @@ Yes, feedback is per problem but we show all annotations for this submission any
                             # if the submission is an archive, use filename in archive; otherwise, use submission filename
                             @files && annotation.position ? Archive.get_nth_filename(@files, annotation.position) : @submission.filename
                           end %>
-              <span> <b>(<%= (annotation.value >= 0 ? ' +' : ' -') + annotation.value.abs.to_s%>)</b> <%= link_to filename.to_s + ":"+ annotation.line.to_s , [:view, @course, @assessment, @submission, header_position: annotation.position] %> </span>
+              <span> 
+                <b><%= annotation.value? ? "(#{(annotation.value >= 0 ? ' +' : ' -') + annotation.value.abs.to_s})" : "" %></b> 
+                <%= link_to filename.to_s + ":"+ annotation.line.to_s , [:view, @course, @assessment, @submission, header_position: annotation.position] %> 
+              </span>
         </li>
         <% end %>
       </ul>
