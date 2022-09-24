@@ -34,6 +34,7 @@ Yes, feedback is per problem but we show all annotations for this submission any
                       # if the submission is an archive, use filename in archive; otherwise, use submission filename
                       @files && annotation.position ? Archive.get_nth_filename(@files, annotation.position) : @submission.filename
                     end %>
+        <!-- todo: positive should have plus -->
         <span> <b>(<%= annotation.value.to_s%>, <%= annotation.problem.name%>)</b> <%= link_to filename.to_s + ":"+ annotation.line.to_s , [:view, @course, @assessment, @submission, header_position: annotation.position] %> </span>
     </li>
     <% end %>
