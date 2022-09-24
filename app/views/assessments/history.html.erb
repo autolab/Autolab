@@ -5,21 +5,20 @@
 <% download_access = (@cud.instructor?) %>
 
 <% if @extension then %>
-  <i>
-  You have a <%=@extension.days %> day extension on this assessment
-  </i>
-  <font size=-1>
-  (Due date: <%= due_at_display(@assessment.aud_for(@effectiveCud.id).due_at) %>)
-  </font>
+  <p>
+    <% if @extension.infinite then %>
+    You have an infinite extension on this assessment
+    <% else %>
+    You have a <%= pluralize(@extension.days, "day") %> extension on this assessment
+    <% end %>
+    <small>
+    (Due date: <%= due_at_display(@assessment.aud_for(@effectiveCud.id).due_at) %>).
+    </small>
+  </p>
 <% end %>
 <% if @assessment.max_submissions != -1 then %>
-  <% numSubmissions = @submissions.size %>
-  <% if numSubmissions > @assessment.max_submissions then %>
-    <% numSubmissions = 0 %>
-  <% else %>
-    <% numSubmissions = @assessment.max_submissions - numSubmissions %>
-  <% end %>
-  <i>You have <%= numSubmissions %> <%= (numSubmissions == 1) ? "submission" : "submissions" %> left.</i> 
+  <% numSubmissions = [0, @assessment.max_submissions - @submissions.size].max %>
+  <p>You have <%= pluralize(numSubmissions, "submission") %> left.</p>
 <% end %>
 
 <% if @cud.instructor? then %>
