@@ -426,8 +426,6 @@ class AssessmentsController < ApplicationController
     rescue StandardError => e
       flash[:error] = "Unable to generate tarball -- #{e.message}"
       redirect_to action: "index"
-    else
-      flash[:success] = "Successfully exported the assessment."
     end
   end
 
