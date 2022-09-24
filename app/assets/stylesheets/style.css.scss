@@ -25,6 +25,10 @@ a {
   color: $autolab-blue-text;
 }
 
+pre {
+  overflow-x: auto;
+}
+
 /* Error Classes - for elements that display error/status messages */
 .error {
   color: red;
