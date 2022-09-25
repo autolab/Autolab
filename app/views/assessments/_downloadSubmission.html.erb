@@ -16,7 +16,7 @@
     <% end %>
 
     <% if link = view_course_assessment_submission_path(@course, @assessment, sub) then %>
-      <%= link_to link, data: {toggle: "tooltip", title: "View Source"}, aria: {label: "Justify"}, style: "margin-right:3px;" do %>
+      <%= link_to link, data: {toggle: "tooltip", placement: "top"}, title: "View Source", aria: {label: "Justify"}, style: "margin-right:3px;" do %>
         <span><i class="material-icons">zoom_in</i></span>
       <% end %>
     <% end %>
