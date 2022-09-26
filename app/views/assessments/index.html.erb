@@ -50,7 +50,7 @@
   <div class="col s12 m12" style="margin-bottom: 0">
     <div class="card" style="margin-bottom: 0">
       <div class="card-content white">
-       <span class="card-title black-text" style="font-size: 40px"><b><%= "#{@course.display_name} (#{@course.semester})" %></b></span>
+       <span class="card-title black-text" style="font-size: 40px"><b><%= "#{@course.display_name} #{@course.semester? ? "(" + @course.semester + ")" : "" } "%></b></span>
        <h3 style="border-bottom: 4px solid #dddddd"></h3>
           <p style="font-size: 18px">Section: <b><%= "#{@cud.section}" %></b></p>
           <p style="font-size: 18px">Number of grace days remaining: <b><%="#{@cud.global_grace_days_left}"%></b></p></br>
