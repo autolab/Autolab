@@ -582,6 +582,10 @@ class AssessmentsController < ApplicationController
       @files = Archive.get_files @submission.handin_file_path
     end
     @problemReleased = @submission.scores.pluck(:released).all?
+    # get_correct_filename is protected, so we wrap around controller-specific call
+    @get_correct_filename = ->(annotation) {
+      get_correct_filename(annotation, @files, @submission)
+    }
   end
 
   def parseScore(feedback)

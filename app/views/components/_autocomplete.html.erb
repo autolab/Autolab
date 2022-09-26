@@ -3,15 +3,15 @@
   jQuery(function() {
     /* match user name/email with cud_id */
     /* escape_javascript prevents issues with backslashes in names, etc. */
-    userData = {
+    const userData = {
       <% @usersEncoded.each do |k,v| %>
         "<%= j k %>": "<%= v %>",
       <% end %>
     };
 
     /* user autocomplete */
-    $studentAutocompleteField = $('#student_autocomplete');
-    $hiddenCUDField = $('<%= hiddenCUDField %>');
+    const $studentAutocompleteField = $('#student_autocomplete');
+    const $hiddenCUDField = $('<%= hiddenCUDField %>');
     /* note that the names were already escaped once in retrieve_autocompletion_data! */
     /* and now, each name (k) is implicitly escaped a second time */
     /* this is desired behavior since autocomplete unescapes once */
@@ -26,8 +26,9 @@
     /* track changes in student autocomplete field */
     $studentAutocompleteField.on('change', function() {
       /* $studentAutocompleteField.val() unescapes a second time */
-      encoded = window.btoa($studentAutocompleteField.val())
-      $hiddenCUDField.val(userData[encoded]);
+      const encoded = window.btoa($studentAutocompleteField.val());
+      // Trigger 'change' event for any code that might be listening
+      $hiddenCUDField.val(userData[encoded]).trigger('change');
     });
   });
 </script>
