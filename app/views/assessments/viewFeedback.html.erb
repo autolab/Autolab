@@ -43,13 +43,7 @@ Yes, feedback is per problem but we show all annotations for this submission any
         s_annotations.each do |annotation| %>
         <li class="collection-item">
               <div style='white-space: pre-wrap;'><%= annotation.comment%> </div>
-              <% filename = if annotation.position == -1
-                            # position -1 maps to the Autograder Output
-                            "Autograder Output"
-                          else
-                            # if the submission is an archive, use filename in archive; otherwise, use submission filename
-                            @files && annotation.position ? Archive.get_nth_filename(@files, annotation.position) : @submission.filename
-                          end %>
+              <% filename = @get_correct_filename.call(annotation)%>
               <span> 
                 <b><%= annotation.value? ? "(#{(annotation.value >= 0 ? ' +' : ' -') + annotation.value.abs.to_s})" : "" %></b> 
                 <%= link_to filename.to_s + ":"+ annotation.line.to_s , [:view, @course, @assessment, @submission, header_position: annotation.position] %> 
