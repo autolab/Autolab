@@ -1310,3 +1310,10 @@ a.skip-main:active {
   font-size: 1em;
   z-index: 999;
 }
+table.sub {
+  display: block;
+  overflow-x: scroll;
+}
+.sub th{
+  vertical-align: top;
+}

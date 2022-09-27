@@ -190,7 +190,7 @@
   <%# Display any attachments %>
   <% if @attachments.any? or @cud.instructor? %>
     <div class="section">
-      <h3 class="section-title"><span class="white">Attachments</span></h3>
+      <h4 class="section-title"><span class="white">Attachments</span></h4>
       <ul class="collection with-header attachments">
         <%= render @attachments %>
 
@@ -318,16 +318,15 @@
           <p>You cannot view previous submissions while an exam is in progress.</p>
       <% end %>
   <% end %>
-
+  <h4 class="section-title"><span class="white">
+    Submission Summary
+  </span></h4>
   <% if @submissions.size == 0 then %>
     No Submissions yet!
   <% else %>
-    <% for submission in @submissions.first(limit=3) do %>
-      <%= render partial: "submission_summary_row",
-        locals: { submission: submission,
-        download_access: download_access } %>
-    <% end %>
-    <%= link_to "See all submissions", {:action => "history"} %></li>
-
+    <%= render partial: "submission_history_table", locals: {download_access: download_access, limit: 3} %>
+    <h6>
+      <%= link_to "See all #{@submissions.size}" + " submission".pluralize(@submissions.size), {:action => "history"} %></li>
+    </h6>
   <% end %>
 </div>
