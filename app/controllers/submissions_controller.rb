@@ -456,7 +456,7 @@ class SubmissionsController < ApplicationController
     end
 
     if Archive.archive? @filename
-      files = Archive.get_files(@submission.handin_file_path)
+      files = Archive.get_files(@filename)
     end
     # extract information from annotations
     @annotations.each do |annotation|
