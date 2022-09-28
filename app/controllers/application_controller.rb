@@ -331,6 +331,22 @@ protected
     emails.join(",")
   end
 
+  # gets a filename string to be able to sort files properly
+  # by changing the filename if it's the autograded output
+  # or it's an archived file
+  def get_correct_filename(annotation, files, submission)
+    if annotation.position == -1
+      # position -1 maps to the Autograder Output
+      "Autograder Output"
+    elsif files && annotation.position != 0
+      # if the submission is an archive, use filename in archive;
+      # otherwise, use submission filename
+      Archive.get_nth_filename(files, annotation.position)
+    else
+      submission.filename
+    end
+  end
+
 private
 
   # called on Exceptions.  Shows a stack trace to course assistants, and above.
