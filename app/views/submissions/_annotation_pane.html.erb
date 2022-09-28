@@ -15,7 +15,8 @@
             </div>
             <div class="collapsible-body">
               <% if @cud.instructor? or @cud.course_assistant? or @problemReleased%>
-                <% descriptTuples.each do |description, value, line, user, id, position| %>
+                <!-- a[6] = filename, a[2] = line-->
+                <% descriptTuples.sort_by{|a| [a[6], a[2]]}.each do |description, value, line, user, id, position, filename| %>
                   <div class="descript" id="li-annotation-<%= id %>"> <!-- Line + 1 because the code line numbers starts with 1 not 0. -->
                     <%= link_to(
                         url_for([:view, @course, @assessment, @submission, header_position: position.nil? ? 0 : position, line: line.nil? ? 1 : line+1]),
@@ -24,7 +25,7 @@
                         "data-line": line.nil? ? 1 : line+1,
                         remote: true,
                       ) do %>
-                        <span class="point_badge <%= value > 0 ? "positive" : value < 0 ? "negative" : "neutral" %>"><%= plus_fix(value) %></span> <%= description %>
+                        <span class="point_badge <%= value > 0 ? "positive" : value < 0 ? "negative" : "neutral" %>"><%= plus_fix(value) %></span> <%= description  %>
                     <% end %>
                   </div>
                 <% end %>
