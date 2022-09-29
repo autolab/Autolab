@@ -30,6 +30,7 @@
     var currentHeaderPos = <%= params[:header_position] || 0 %>
     var submissionID = <%= @submission.id %>
     var annotations = <%=raw @annotations.to_json %>;
+    var fileList = <%=raw @fileList.to_json %>;
     var annotationsByPositionByLine = {};
     var fileNameStr = "<%= @filename %>";
     var cudEmailStr = "<%= @cud.email %>";

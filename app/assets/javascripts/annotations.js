@@ -136,6 +136,19 @@ function plusFix(n) {
   return n.toFixed(1);
 }
 
+// Used by fillAnnotationBox to determine actual filename of an annotation
+function get_correct_filename(annotation, files) {
+  if (annotation.position === -1) {
+    return "Autograder Output";
+  } else if (files !== null && annotation.position !== 0) {
+    return files[annotation.position].pathname;
+  } else {
+    // Doesn't really matter since this is not an archive and we
+    // are only using this for sorting
+    return "";
+  }
+}
+
 // function called after create, update & delete of annotations
 function fillAnnotationBox() {
 
