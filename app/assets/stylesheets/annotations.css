@@ -575,6 +575,15 @@
   background: #818181;
 }
 
+.annotationSummary .line_number {
+  background: #818181;
+  margin-left: -8px;
+  border-top-left-radius: 100vw;
+  padding-left: 8px;
+  padding-right: 3px;
+  border-bottom-left-radius: 100vw;
+}
+
 .annotation-comment {
   margin-bottom:0;
   padding-bottom:0 !important;

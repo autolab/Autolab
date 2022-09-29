@@ -24,7 +24,13 @@
                         "data-line": line.nil? ? 1 : line+1,
                         remote: true,
                       ) do %>
-                        <span class="point_badge <%= value > 0 ? "positive" : value < 0 ? "negative" : "neutral" %>"><%= plus_fix(value) %></span> <%= description  %>
+                        <span class="point_badge <%= value > 0 ? "positive" : value < 0 ? "negative" : "neutral" %>">
+                          <% unless line.nil? %>
+                            <span class="line_number">Line <%= line + 1 %>:</span>
+                          <% end %>
+                          <%= plus_fix(value) %>
+                        </span>
+                      <%= description  %>
                     <% end %>
                   </div>
                 <% end %>
