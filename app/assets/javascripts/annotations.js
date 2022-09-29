@@ -214,7 +214,13 @@ function fillAnnotationBox() {
       } else {
         pointBadge.addClass('neutral');
       }
-      pointBadge.text(plusFix(annotation.value));
+
+      var lineNumber = $('<span />');
+      lineNumber.addClass('line_number');
+      lineNumber.text(`Line ${ annotation.line + 1 }:`);
+      pointBadge.append(lineNumber);
+
+      pointBadge.append(plusFix(annotation.value));
       link.append(pointBadge);
       link.append(annotation.comment);
       annotationElement.append(link);
