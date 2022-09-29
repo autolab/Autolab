@@ -172,9 +172,9 @@ function fillAnnotationBox() {
     newLi.addClass('active');
     annotationsSummary.find("ul").append(newLi)
     newLi.attr("id", "li-problem-" + problem);
+    newLi.addClass('active');
     var collapsible = $('<div />');
     collapsible.addClass('collapsible-header');
-    collapsible.addClass('active');
     collapsible.append(
       '<h4 style="text-transform:capitalize;">' + problem + '<div class="summary_score">' + plusFix(score) + '</div>' +
       '</h4>'

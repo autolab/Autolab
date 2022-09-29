@@ -2,8 +2,8 @@
   <div class="annotationSummary">
     <ul class="collapsible expandable">
         <% @problemSummaries.each do |problem, descriptTuples| %>
-          <li id="li-problem-<%= problem %>">
-            <div class="collapsible-header active">
+          <li id="li-problem-<%= problem %>" class="active">
+            <div class="collapsible-header">
               <h4> <%= problem.capitalize %>
                   <div class="summary_score">
                     <% if @cud.instructor? or @cud.course_assistant? or @problemReleased%>
