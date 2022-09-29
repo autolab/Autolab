@@ -1,5 +1,5 @@
 module SubmissionHelper
   def plus_fix(f)
-    f > 0 ? "+#{f}" : "#{f}"
+    sprintf("+%.1f", f)
   end
 end
