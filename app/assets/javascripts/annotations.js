@@ -139,12 +139,14 @@ function plusFix(n) {
 // Used by fillAnnotationBox to determine actual filename of an annotation
 function get_correct_filename(annotation, files) {
   if (annotation.position === -1) {
+    // Might want to handle this specially so that
+    // Autograder Output always comes first
     return "Autograder Output";
   } else if (files !== null && annotation.position !== 0) {
     return files[annotation.position].pathname;
   } else {
-    // Doesn't really matter since this is not an archive and we
-    // are only using this for sorting
+    // Doesn't matter; This is not an archive so there's only one
+    // file and we will just tiebreak by line number
     return "";
   }
 }
@@ -200,8 +202,19 @@ function fillAnnotationBox() {
     listing.addClass("active");
     listing.css('display', 'block');
 
-    // sorts the annotation by line order
-    annotationsByProblem[problem].sort(function (annotation1, annotation2) { return annotation1.line - annotation2.line });
+    // Orders the annotations by filename first, then line number
+    annotationsByProblem[problem].sort(function (annotation1, annotation2) {
+      // Sort by filename first
+      const aFilename = get_correct_filename(annotation1, fileList);
+      const bFilename = get_correct_filename(annotation2, fileList);
+      if (aFilename < bFilename)
+        return -1;
+      if (aFilename > bFilename)
+        return 1;
+      // Then by line number
+      return annotation1.line - annotation2.line
+    });
+
     for (var i = 0; i < annotationsByProblem[problem].length; i++) {
       var annotation = annotationsByProblem[problem][i];
 
