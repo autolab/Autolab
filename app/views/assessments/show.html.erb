@@ -126,7 +126,7 @@
             <li><%= link_to "View handin history", {:action => 'history'}, {:title=> "View your submissions, scores, and feedback from the course staff" } %> </li>
 
             <% if @assessment.has_writeup? %>
-            <li><%= link_to "View writeup", {:action => 'writeup'}, {:title=> "View the assessment writeup", :class=>""}%> </li>
+              <li><%= link_to "View writeup", {:action => 'writeup'}, {:title=> "View the assessment writeup", :class=>""}%> </li>
             <% end %>
 
             <li><%= link_to "Download handout", {:action => 'handout'}, {:title=> "Download handout materials and starter code" } %> </li>
@@ -138,7 +138,7 @@
               <% end %>
             <% end %>
             <% if @assessment.has_scoreboard? %>
-                <li><%= link_to "View scoreboard", [@course, @assessment, :scoreboard], title: "View the assessment scoreboard" %></li>
+              <li><%= link_to "View scoreboard", [@course, @assessment, :scoreboard], title: "View the assessment scoreboard" %></li>
             <% end %>
 
           <% @list.sort { |a,b| a[1] <=> b[1] }.each { |key, value| %>
