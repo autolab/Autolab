@@ -137,7 +137,7 @@ function plusFix(n) {
 }
 
 // Used by fillAnnotationBox to determine actual filename of an annotation
-function get_correct_filename(annotation, files) {
+function get_correct_filename(annotation, files, submissionName) {
   if (annotation.position === -1) {
     // Might want to handle this specially so that
     // Autograder Output always comes first
@@ -145,9 +145,12 @@ function get_correct_filename(annotation, files) {
   } else if (files !== null && annotation.position !== 0) {
     return files[annotation.position].pathname;
   } else {
-    // Doesn't matter; This is not an archive so there's only one
+    // Doesn't really matter: This is not an archive so there's only one
     // file and we will just tiebreak by line number
-    return "";
+
+    // Using submissionName for now since Autograder Output is currently
+    // treated as an actual file, and we want that to (usually) come first
+    return submissionName;
   }
 }
 
@@ -205,8 +208,8 @@ function fillAnnotationBox() {
     // Orders the annotations by filename first, then line number
     annotationsByProblem[problem].sort(function (annotation1, annotation2) {
       // Sort by filename first
-      const aFilename = get_correct_filename(annotation1, fileList);
-      const bFilename = get_correct_filename(annotation2, fileList);
+      const aFilename = get_correct_filename(annotation1, fileList, submissionName);
+      const bFilename = get_correct_filename(annotation2, fileList, submissionName);
       if (aFilename < bFilename)
         return -1;
       if (aFilename > bFilename)
