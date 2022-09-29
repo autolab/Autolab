@@ -325,6 +325,10 @@ class Assessment < ApplicationRecord
     scoreboard != nil
   end
 
+  def has_writeup?
+    writeup_is_url? || writeup_is_file?
+  end
+
   def groups
     Group.joins(:assessment_user_data).where(assessment_user_data: { assessment_id: id }).distinct
   end
