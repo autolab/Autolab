@@ -2,6 +2,8 @@ Rails.application.routes.draw do
   # For details on the DSL available within this file, see https://guides.rubyonrails.org/routing.html
 
   use_doorkeeper
+    post 'lti_integration/launch', to:"lti_integration#launch"
+    get 'lti_integration/index', to:"lti_integration#index"
 
   namespace :oauth, { defaults: { format: :json } } do
     get "device_flow_init", to: "device_flow#init"
