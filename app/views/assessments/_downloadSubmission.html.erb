@@ -14,7 +14,9 @@
         Download Submission
       <% end %>
     <% end %>
-    <br>
+    <div style="height: 4px">
+      <br>
+    </div>
     <% if link = view_course_assessment_submission_path(@course, @assessment, sub) then %>
       <%= link_to link, data: {toggle: "tooltip", placement: "top"}, title: "View Source", aria: {label: "Justify"}, style: "margin-right:3px; white-space: nowrap" do %>
         <span><i class="material-icons">zoom_in</i></span>
