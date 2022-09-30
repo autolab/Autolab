@@ -17,6 +17,16 @@
     });
   }
 
+  function resizeGradeList() {
+    // set problemGrades div height so that overflow properties apply
+    if (!$('.problemGrades')) return;
+    
+    // update problemGrades div height to match the height of
+    // the golden layout component it's contained in
+    const parentHeight = $('.problemGrades')[0]?.parentElement?.style.height;
+    $('.problemGrades')[0].style.height = parentHeight;
+  }
+
   // Check if file tree & symbol tree are necessary in the layout
   var fileComponents = [];
   var hasFileTree = false;
@@ -136,13 +146,14 @@
   });
 
   myLayout.on( 'stateChanged', function(){
-      var state = JSON.stringify( myLayout.toConfig() );
-      localStorage.setItem( 'savedState', state );
+    var state = JSON.stringify( myLayout.toConfig() );
+    localStorage.setItem( 'savedState', state );
+    resizeGradeList();
   });
 
   // Dynamically resize golden layout on client window resize
   $(window).resize(function () {
-    myLayout.updateSize(document.body.clientWidth - $.position.scrollbarWidth(), myLayout.height);
+    myLayout.updateSize();
   });
 
   function resetLayout() {
