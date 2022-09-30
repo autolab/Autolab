@@ -16,11 +16,13 @@ $(document).ready(function () {
 
   retrieveSharedComments();
   resizeCodeTable();
+  resizeGradeList();
 });
 
 /* On Window Resize */
 $(window).on('resize', function () {
   resizeCodeTable();
+  resizeGradeList();
 });
 
 // retrieve shared comments
@@ -222,7 +224,7 @@ function fillAnnotationBox() {
     }
   }
   // Reloads the grades part upon update
-  $('.problemGrades').load(document.URL + ' .problemGrades')
+  $('.problemGrades').load(document.URL + ' .problemGrades');
 }
 
 // Sets up the keybindings

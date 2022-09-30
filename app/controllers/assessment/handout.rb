@@ -31,6 +31,6 @@ module AssessmentHandout
       return
     end
 
-    flash[:error] = "There is no handout for this assessment."
+    flash.now[:error] = "There is no handout for this assessment."
   end
 end
