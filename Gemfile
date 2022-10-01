@@ -161,3 +161,7 @@ gem 'mimemagic', '>= 0.3.7'
 # For encrypting API tokens
 gem 'lockbox'
 
+
+gem "oauth"
+
+gem 'ims-lti', '~> 1.2.4'
