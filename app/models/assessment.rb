@@ -442,6 +442,7 @@ private
     s["scoreboard"] = scoreboard.serialize if has_scoreboard?
     s["late_penalty"] = late_penalty.serialize if late_penalty
     s["version_penalty"] = version_penalty.serialize if version_penalty
+    s["is_positive_grading"] = is_positive_grading
     s
   end
 
@@ -472,6 +473,9 @@ private
     if s["version_penalty"]
       version_penalty ||= Penalty.new
       version_penalty.update(s["version_penalty"])
+    end
+    if s["is_positive_grading"]
+      self.is_positive_grading = s["is_positive_grading"]
     end
     # rubocop:enable Style/GuardClause
   end
