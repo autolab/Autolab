@@ -442,14 +442,13 @@ private
     s["scoreboard"] = scoreboard.serialize if has_scoreboard?
     s["late_penalty"] = late_penalty.serialize if late_penalty
     s["version_penalty"] = version_penalty.serialize if version_penalty
-    s["is_positive_grading"] = is_positive_grading
     s
   end
 
   GENERAL_SERIALIZABLE = Set.new %w[name display_name category_name description handin_filename
                                     handin_directory has_svn has_lang max_grace_days handout
                                     writeup max_submissions disable_handins max_size
-                                    version_threshold embedded_quiz]
+                                    version_threshold is_positive_grading embedded_quiz]
 
   def serialize_general
     Utilities.serializable attributes, GENERAL_SERIALIZABLE
@@ -473,9 +472,6 @@ private
     if s["version_penalty"]
       version_penalty ||= Penalty.new
       version_penalty.update(s["version_penalty"])
-    end
-    if s["is_positive_grading"]
-      self.is_positive_grading = s["is_positive_grading"]
     end
     # rubocop:enable Style/GuardClause
   end
