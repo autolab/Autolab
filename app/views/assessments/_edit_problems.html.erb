@@ -1,4 +1,14 @@
-<br>
+<script type="text/javascript">
+	is_positive_grading = <%= @is_positive_grading %>;
+	has_annotations = <%= @has_annotations %>;
+</script>
+
+<ul class="collection" hidden id="grading-change-warning" >
+	<li class="collection-item"> You currently have annotations for this assessment. 
+	If you change the grading type, future score changes made by annotations might become inconsistent. 
+	Grading type change won't be made until you save.
+	</li>
+</ul>
 
 <div class="switch">
 	<label>
