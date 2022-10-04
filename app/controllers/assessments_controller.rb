@@ -891,6 +891,8 @@ private
       tab_name = "handin"
     elsif params[:penalties]
       tab_name = "penalties"
+    elsif params[:problems]
+      tab_name = "problems"
     elsif params[:advanced]
       tab_name = "advanced"
     end
