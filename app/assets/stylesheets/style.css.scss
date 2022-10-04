@@ -973,6 +973,21 @@ form p:last-child {
 }
 
 /**
+* Switch styling
+*/
+
+.switch > label > b {
+  font-size: 1.1rem; 
+  color: black
+}
+
+label[for="switch"] {
+  font-size: 1rem; 
+  color: darkslategrey;
+} 
+
+
+/**
  * Checkbox styling
  */
 
@@ -990,6 +1005,7 @@ form p:last-child {
 .checkbox label {
   margin-left: 8px;
 }
+
 .checkbox label::before {
   cursor: pointer;
   position: absolute;
