@@ -25,6 +25,15 @@ a {
   color: $autolab-blue-text;
 }
 
+h2 {
+  font-size: 2.65rem;
+  font-weight: bold;
+}
+
+h3 {
+  font-size: 2.1rem;
+}
+
 /* Error Classes - for elements that display error/status messages */
 .error {
   color: red;
@@ -751,8 +760,15 @@ table.navigatable tr:hover {
     margin: 0;
   }
 
-  .card-content .card-title {
+  .card-content.white .card-title {
     line-height: normal;
+    font-size: 2.65rem;
+    font-weight: bold;
+  }
+
+  .card-content .card-title.white-text {
+    line-height: normal;
+    font-size: 24px;
   }
 
   .collection {
