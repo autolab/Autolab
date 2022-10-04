@@ -663,6 +663,10 @@ class AssessmentsController < ApplicationController
     # make sure the penalties are set up
     @assessment.late_penalty ||= Penalty.new(kind: "points")
     @assessment.version_penalty ||= Penalty.new(kind: "points")
+
+    @has_annotations = @assessment.submissions.any? { |s| !s.annotations.empty? }
+
+    @is_positive_grading = @assessment.is_positive_grading
   end
 
   action_auth_level :update, :instructor
@@ -887,6 +891,8 @@ private
       tab_name = "handin"
     elsif params[:penalties]
       tab_name = "penalties"
+    elsif params[:problems]
+      tab_name = "problems"
     elsif params[:advanced]
       tab_name = "advanced"
     end
