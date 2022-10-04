@@ -38,7 +38,6 @@
           $('#grading-change-warning').show();
         }
         else{
-          console.log("not changed");
           $('#grading-change-warning').hide();
         }
       }
