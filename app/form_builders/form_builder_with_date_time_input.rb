@@ -55,7 +55,7 @@ class FormBuilderWithDateTimeInput < ActionView::Helpers::FormBuilder
     # Materalize requires the label to be in a span
     field = super name, *(args + [options])
 
-    if(options[:default])
+    if (options[:default])
       return field 
     end 
 
