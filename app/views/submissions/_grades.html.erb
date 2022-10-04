@@ -1,24 +1,21 @@
-<div class="problemGrades">
-  <h1>Grades</h1>
-  <div class="collection">
-    <% p_scores = @submission.problems_to_scores %>
-    <% @assessment.problems.each_with_index do |p,i| %>
-      <% p_score = p_scores[p.id] %>
-      <div class="problem-grade-item collection-item">
-        <div class="problem_name"> <%= p.name.capitalize %>: </div>
-        <div class="problem_score">
-          <% if @cud.instructor? or @cud.course_assistant? %>
-            <b class="student_score" data-problem-id="<%= p.id %>" data-submission-id="<%= @submission.id %>"> <%= p_score && p_score.score ? p_score.score : raw("&ndash;") %> </b>
+<div class="problemGrades collection">
+  <% p_scores = @submission.problems_to_scores %>
+  <% @assessment.problems.each_with_index do |p,i| %>
+    <% p_score = p_scores[p.id] %>
+    <div class="problem-grade-item collection-item">
+      <div class="problem_name"> <%= p.name.capitalize %>: </div>
+      <div class="problem_score">
+        <% if @cud.instructor? or @cud.course_assistant? %>
+          <b class="student_score" data-problem-id="<%= p.id %>" data-submission-id="<%= @submission.id %>"> <%= p_score && p_score.score ? p_score.score : raw("&ndash;") %> </b>
+        <% else %>
+          <% if p_score && p_score.released %> 
+            <b class="student_score"> <%= p_score.score %> </b>
           <% else %>
-            <% if p_score && p_score.released %> 
-              <b class="student_score"> <%= p_score.score %> </b>
-            <% else %>
-              <b> &ndash; </b>
-            <% end %>
+            <b> &ndash; </b>
           <% end %>
-          <b> / <%= p.max_score %></b>
-        </div>
+        <% end %>
+        <b> / <%= p.max_score %></b>
       </div>
-    <% end %>
-  </div>
+    </div>
+  <% end %>
 </div>

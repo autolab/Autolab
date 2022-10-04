@@ -505,10 +505,9 @@
   display: flex;
   flex-flow: column;
   height: 100%;
-  overflow-y: scroll;
+  overflow-y: auto;
 }
 .annotationSummary{
-  border: solid 2px #0882af;
   margin-bottom: 15px;
   color: #4f4f4f;
 }
@@ -531,7 +530,6 @@
   box-shadow: none;
   border: none;
   margin: 10px 0;
-  max-height: 350px;
 }
 
 .annotationSummary .collapsible-header{
@@ -593,26 +591,8 @@
   margin-bottom:0 !important;
 }
 
-.problemGrades{
-  overflow: auto;
-}
-.problemGrades h1{
-  margin: 0px;
-  background-color: #ebebeb;
-  padding: 8px;
-  border-right: none;
-  border-left: none;
-  font-weight: normal !important;
-  font-size: 1em !important;
-  color: #909090;
-  white-space: nowrap;
-  overflow: hidden;
-  padding-left: 10px;
-  padding-right: 15px;
-  text-align: left;
-}
-.problemGrades ul{
-  margin: 5px 10px;
+.problemGrades {
+  overflow-y: auto;
 }
 
 .collection{
@@ -698,6 +678,7 @@
 #symbol-tree-container {
   max-height: 100%;
   overflow: auto;
+  padding: 5px;
 }
 
 #symbol-tree-box ul {
@@ -709,6 +690,7 @@
 #symbol-tree-box ul li {
   cursor: pointer;
   display: flex;
+  align-items: center;
 }
 
 #symbol-tree-box ul li:hover {
