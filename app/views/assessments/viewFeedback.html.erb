@@ -45,7 +45,7 @@ Yes, feedback is per problem but we show all annotations for this submission any
               <div style='white-space: pre-wrap;'><%= annotation.comment%> </div>
               <% filename = @get_correct_filename.call(annotation)%>
               <span> 
-                <b><%= annotation.value? ? "(#{(annotation.value >= 0 ? ' +' : ' -') + annotation.value.abs.to_s})" : "" %></b> 
+                <b><%= annotation.value? ? sprintf("(%+.1f)", annotation.value) : "" %></b> 
                 <%= link_to filename.to_s + ":"+ annotation.line.to_s , [:view, @course, @assessment, @submission, header_position: annotation.position] %> 
               </span>
         </li>
