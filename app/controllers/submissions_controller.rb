@@ -455,16 +455,19 @@ class SubmissionsController < ApplicationController
       @annotations = []
     end
 
+    if Archive.archive? @filename
+      files = Archive.get_files(@filename)
+    end
     # extract information from annotations
     @annotations.each do |annotation|
       description = annotation.comment
       value = annotation.value || 0
       line = annotation.line
       problem = annotation.problem ? annotation.problem.name : "General"
-
+      filename = get_correct_filename(annotation, files, @submission)
       @problemSummaries[problem] ||= []
       @problemSummaries[problem] << [description, value, line, annotation.submitted_by,
-                                     annotation.id, annotation.position]
+                                     annotation.id, annotation.position, filename]
 
       @problemGrades[problem] ||= 0
       @problemGrades[problem] += value

@@ -22,20 +22,21 @@ class CourseUserDataController < ApplicationController
   def create
     cud_parameters = cud_params
     @newCUD = @course.course_user_data.new(cud_parameters)
-    # do pre-validation of required fields
-    # must have email, and first OR last name
-    if cud_parameters[:user_attributes][:email].blank? ||
-       (cud_parameters[:user_attributes][:first_name].blank? &&
-       cud_parameters[:user_attributes][:last_name].blank?)
-      flash[:error] = "Error enrolling user: You must enter a valid email, and a first or last " \
-        "name to create a new student"
-      redirect_to(action: "new") && return
-    end
-    # check user existence
+
     email = cud_parameters[:user_attributes][:email]
     user = User.where(email: email).first
+    # check user existence
     if user.nil?
       # user is new
+      # do pre-validation of required fields
+      # must have email, and first OR last name
+      if cud_parameters[:user_attributes][:email].blank? ||
+         (cud_parameters[:user_attributes][:first_name].blank? &&
+          cud_parameters[:user_attributes][:last_name].blank?)
+        flash[:error] = "Error enrolling user: You must enter a valid email, and a first or last " \
+        "name to create a new student"
+        redirect_to(action: "new") && return
+      end
       user = User.roster_create(email,
                                 cud_parameters[:user_attributes][:first_name],
                                 cud_parameters[:user_attributes][:last_name],
@@ -56,7 +57,6 @@ class CourseUserDataController < ApplicationController
         flash[:html_safe] = true
         redirect_to(action: "new") && return
       end
-
     else
       # user exists
       unless user.course_user_data.where(course: @course).empty?
