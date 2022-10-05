@@ -206,8 +206,12 @@ function fillAnnotationBox() {
       return annotation1.line - annotation2.line
     });
 
+    // To group annotations by filename
+    var previousFilename = "";
+
     for (var i = 0; i < annotationsByProblem[problem].length; i++) {
       var annotation = annotationsByProblem[problem][i];
+      var currentFilename = get_correct_filename(annotation, fileList, submissionName);
 
       var annotationElement = $('<div />');
       annotationElement.addClass('descript');
@@ -241,6 +245,12 @@ function fillAnnotationBox() {
       link.append(pointBadge);
       link.append(annotation.comment);
       annotationElement.append(link);
+
+      if (previousFilename !== currentFilename) {
+        listing.append(`<strong> ${currentFilename} </strong>`);
+        previousFilename = currentFilename;
+      }
+
       listing.append(annotationElement);
     }
   }
