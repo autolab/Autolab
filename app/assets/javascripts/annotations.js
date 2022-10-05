@@ -242,10 +242,10 @@ function fillAnnotationBox() {
       link.append(annotation.comment);
       annotationElement.append(link);
       listing.append(annotationElement);
-
-      attachChangeFileEvents();
     }
   }
+
+  attachChangeFileEvents();
   // Reloads the grades part upon update
   $('.problemGrades').load(document.URL + ' .problemGrades');
 }
