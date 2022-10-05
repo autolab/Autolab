@@ -325,6 +325,10 @@ class Assessment < ApplicationRecord
     scoreboard != nil
   end
 
+  def has_writeup?
+    writeup_is_url? || writeup_is_file?
+  end
+
   def groups
     Group.joins(:assessment_user_data).where(assessment_user_data: { assessment_id: id }).distinct
   end
@@ -444,7 +448,7 @@ private
   GENERAL_SERIALIZABLE = Set.new %w[name display_name category_name description handin_filename
                                     handin_directory has_svn has_lang max_grace_days handout
                                     writeup max_submissions disable_handins max_size
-                                    version_threshold embedded_quiz]
+                                    version_threshold is_positive_grading embedded_quiz]
 
   def serialize_general
     Utilities.serializable attributes, GENERAL_SERIALIZABLE
