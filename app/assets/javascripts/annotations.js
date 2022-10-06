@@ -147,6 +147,22 @@ function get_correct_filename(annotation, files, submissionName) {
   }
 }
 
+// Returns a dictionary of key => values, where key is obtained by calling fn
+// as well as an array of the (unique) keys in the order they first appear
+function group_by(data, fn) {
+  let dict = {};
+  let keys = [];
+  data.forEach(item => {
+    const key = fn(item);
+    if (!(key in dict)) {
+      dict[key] = [];
+      keys.push(key);
+    }
+    dict[key].push(item);
+  });
+  return [dict, keys];
+}
+
 // function called after create, update & delete of annotations
 function fillAnnotationBox() {
 
@@ -182,8 +198,8 @@ function fillAnnotationBox() {
     var collapsible = $('<div />');
     collapsible.addClass('collapsible-header');
     collapsible.append(
-      '<h4 style="text-transform:capitalize;">' + problem + '<div class="summary_score">' + plusFix(score) + '</div>' +
-      '</h4>'
+        '<h4 style="text-transform:capitalize;">' + problem + '<div class="summary_score">' + plusFix(score) + '</div>' +
+        '</h4>'
     )
     newLi.append(collapsible);
 
@@ -207,52 +223,48 @@ function fillAnnotationBox() {
     });
 
     // To group annotations by filename
-    var previousFilename = "";
+    const [annotations_by_filename, filenames] = group_by(annotationsByProblem[problem],
+        (e) => get_correct_filename(e, fileList, submissionName));
 
-    for (var i = 0; i < annotationsByProblem[problem].length; i++) {
-      var annotation = annotationsByProblem[problem][i];
-      var currentFilename = get_correct_filename(annotation, fileList, submissionName);
+    filenames.forEach((filename) => {
+      listing.append(`<strong> ${filename} </strong>`);
+      annotations_by_filename[filename].forEach((annotation) => {
+        var annotationElement = $('<div />');
+        annotationElement.addClass('descript');
+        annotationElement.attr('id', 'li-annotation-' + annotation.id);
 
-      var annotationElement = $('<div />');
-      annotationElement.addClass('descript');
-      annotationElement.attr('id', 'li-annotation-' + annotation.id);
+        var pos = annotation.position ? annotation.position : 0;
+        var line = annotation.line + 1;
+        var link = $('<a />');
+        link.addClass('descript-link');
+        link.attr('data-header_position', pos);
+        link.attr('data-line', line);
+        link.attr('data-remote', true);
+        link.attr('href', `./view?header_position=${pos}&line=${line}`);
 
-      var pos = annotation.position ? annotation.position : 0;
-      var line = annotation.line + 1;
-      var link = $('<a />');
-      link.addClass('descript-link');
-      link.attr('data-header_position', pos);
-      link.attr('data-line', line);
-      link.attr('data-remote', true);
-      link.attr('href', `./view?header_position=${pos}&line=${line}`);
+        var pointBadge = $('<span />');
+        pointBadge.addClass('point_badge');
+        if (annotation.value > 0) {
+          pointBadge.addClass('positive');
+        } else if (annotation.value < 0) {
+          pointBadge.addClass('negative');
+        } else {
+          pointBadge.addClass('neutral');
+        }
 
-      var pointBadge = $('<span />');
-      pointBadge.addClass('point_badge');
-      if (annotation.value > 0) {
-        pointBadge.addClass('positive');
-      } else if (annotation.value < 0) {
-        pointBadge.addClass('negative');
-      } else {
-        pointBadge.addClass('neutral');
-      }
+        var lineNumber = $('<span />');
+        lineNumber.addClass('line_number');
+        lineNumber.text(`Line ${annotation.line + 1}:`);
+        pointBadge.append(lineNumber);
 
-      var lineNumber = $('<span />');
-      lineNumber.addClass('line_number');
-      lineNumber.text(`Line ${ annotation.line + 1 }:`);
-      pointBadge.append(lineNumber);
+        pointBadge.append(plusFix(annotation.value));
+        link.append(pointBadge);
+        link.append(annotation.comment);
+        annotationElement.append(link);
 
-      pointBadge.append(plusFix(annotation.value));
-      link.append(pointBadge);
-      link.append(annotation.comment);
-      annotationElement.append(link);
-
-      if (previousFilename !== currentFilename) {
-        listing.append(`<strong> ${currentFilename} </strong>`);
-        previousFilename = currentFilename;
-      }
-
-      listing.append(annotationElement);
-    }
+        listing.append(annotationElement);
+      });
+    });
   }
 
   attachChangeFileEvents();

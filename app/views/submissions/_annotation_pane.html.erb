@@ -15,6 +15,7 @@
           <div class="collapsible-body">
             <% if @cud.instructor? or @cud.course_assistant? or @problemReleased%>
               <!-- a[6] = filename, a[2] = line-->
+              <%# Note: group_by preserves insertion order %>
               <% annotations_by_file = descriptTuples.sort_by{ |a| [a[6], a[2]] }.group_by { |a| a[6] }
                  annotations_by_file.each do |filename, annotations| %>
                 <strong> <%= filename %> </strong>
