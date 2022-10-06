@@ -25,8 +25,18 @@ a {
   color: $autolab-blue-text;
 }
 
+
 pre {
   overflow-x: auto;
+}
+
+h2 {
+  font-size: 2.65rem;
+  font-weight: bold;
+}
+
+h3 {
+  font-size: 2.1rem;
 }
 
 /* Error Classes - for elements that display error/status messages */
@@ -755,8 +765,15 @@ table.navigatable tr:hover {
     margin: 0;
   }
 
-  .card-content .card-title {
+  .card-content.white .card-title {
     line-height: normal;
+    font-size: 2.65rem;
+    font-weight: bold;
+  }
+
+  .card-content .card-title.white-text {
+    line-height: normal;
+    font-size: 24px;
   }
 
   .collection {
@@ -977,6 +994,21 @@ form p:last-child {
 }
 
 /**
+* Switch styling
+*/
+
+.switch > label > b {
+  font-size: 1.1rem; 
+  color: black
+}
+
+label[for="switch"] {
+  font-size: 1rem; 
+  color: darkslategrey;
+} 
+
+
+/**
  * Checkbox styling
  */
 
@@ -994,6 +1026,7 @@ form p:last-child {
 .checkbox label {
   margin-left: 8px;
 }
+
 .checkbox label::before {
   cursor: pointer;
   position: absolute;

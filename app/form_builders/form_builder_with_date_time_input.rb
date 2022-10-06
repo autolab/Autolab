@@ -55,6 +55,10 @@ class FormBuilderWithDateTimeInput < ActionView::Helpers::FormBuilder
     # Materalize requires the label to be in a span
     field = super name, *(args + [options])
 
+    if (options[:default])
+      return field 
+    end 
+
     @template.content_tag :div do
       if options.include?(:help_text)
         label(name, field + display_span.html_safe, class: "control-label") + help_text(name, options[:help_text])
