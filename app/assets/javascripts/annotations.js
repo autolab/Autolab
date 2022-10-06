@@ -201,6 +201,10 @@ function fillAnnotationBox() {
         '<h4 style="text-transform:capitalize;">' + problem + '<div class="summary_score">' + plusFix(score) + '</div>' +
         '</h4>'
     )
+
+    collapsible.append('<i class="large material-icons expand-icon">arrow_drop_down</i>');
+    collapsible.append('<i class="large material-icons collapse-icon">arrow_drop_up</i>');
+
     newLi.append(collapsible);
 
     var listing = $('<div />');
@@ -257,7 +261,7 @@ function fillAnnotationBox() {
         lineNumber.text(`Line ${annotation.line + 1}:`);
         pointBadge.append(lineNumber);
 
-        pointBadge.append(plusFix(annotation.value));
+        pointBadge.append(`<span>${plusFix(annotation.value)}</span>`);
         link.append(pointBadge);
         link.append(annotation.comment);
         annotationElement.append(link);
@@ -270,6 +274,7 @@ function fillAnnotationBox() {
   attachChangeFileEvents();
   // Reloads the grades part upon update
   $('.problemGrades').load(document.URL + ' .problemGrades');
+  // $('.annotationSummary').load(document.URL + ' .annotationSummary');
 }
 
 // Sets up the keybindings
