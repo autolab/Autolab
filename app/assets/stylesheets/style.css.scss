@@ -25,6 +25,11 @@ a {
   color: $autolab-blue-text;
 }
 
+
+pre {
+  overflow-x: auto;
+}
+
 h2 {
   font-size: 2.65rem;
   font-weight: bold;
