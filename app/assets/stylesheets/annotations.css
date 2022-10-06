@@ -801,6 +801,14 @@
   overflow: auto;
 }
 
+.collapsible li.active i.expand-icon {
+  display: none;
+}
+
+.collapsible li:not(.active) i.collapse-icon {
+  display: none;
+}
+
 .descript {
   cursor: pointer;
 }

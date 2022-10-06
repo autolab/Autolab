@@ -11,6 +11,8 @@
                   <% end %>
                 </div>
             </h4>
+            <i class="large material-icons expand-icon">arrow_drop_down</i>
+            <i class="large material-icons collapse-icon">arrow_drop_up</i>
           </div>
           <div class="collapsible-body">
             <% if @cud.instructor? or @cud.course_assistant? or @problemReleased%>
@@ -34,7 +36,7 @@
                           <% end %>
                           <%= plus_fix(value) %>
                         </span>
-                      <%= description  %>
+                      <%= description %>
                     <% end %>
                   </div>
                 <% end %>
