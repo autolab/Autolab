@@ -545,13 +545,28 @@
   font-size: 1.1em;
 }
 
-.annotationSummary .collapsible-header .dropdown-arrow{
-
-}
-
 .annotationSummary .collapsible-body{
   padding: 0 1rem;
   border: none;
+}
+
+.annotationSummary .collapsible {
+  overflow: auto;
+}
+
+/* Annotations collapsible icons */
+
+.annotationSummary .collapsible i.expand-icon,
+.annotationSummary .collapsible i.collapse-icon {
+  font-size: 2rem;
+}
+
+.annotationSummary .collapsible li.active i.expand-icon {
+  display: none;
+}
+
+.annotationSummary .collapsible li:not(.active) i.collapse-icon {
+  display: none;
 }
 
 .annotationSummary .summary_score {
@@ -796,17 +811,6 @@
   100% {
     opacity: 0;
   }
-}
-.collapsible {
-  overflow: auto;
-}
-
-.collapsible li.active i.expand-icon {
-  display: none;
-}
-
-.collapsible li:not(.active) i.collapse-icon {
-  display: none;
 }
 
 .descript {
