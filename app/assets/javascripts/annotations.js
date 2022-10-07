@@ -165,116 +165,12 @@ function group_by(data, fn) {
 
 // function called after create, update & delete of annotations
 function fillAnnotationBox() {
-
   retrieveSharedComments();
-
-  var annotationsByProblem = {}
-  $(".collapsible.expandable").find('li').remove();
-  for (var i = 0; i < annotations.length; i++) {
-    var problem = getProblemNameWithId(annotations[i].problem_id)
-    if (!annotationsByProblem[problem]) {
-      annotationsByProblem[problem] = []
-    }
-    annotations[i].problem = problem;
-    annotationsByProblem[problem].push(annotations[i]);
-  }
-
-  for (var problem in annotationsByProblem) {
-    var score = 0;
-    for (var i = 0; i < annotationsByProblem[problem].length; i++) {
-      var annotation = annotationsByProblem[problem][i];
-      var points = parseFloat(annotation.value);
-      if (isNaN(points)) points = 0;
-      score += points;
-    }
-
-    var annotationsSummary = $(".annotationSummary");
-
-    var newLi = $("<li />");
-    newLi.addClass('active');
-    annotationsSummary.find("ul").append(newLi)
-    newLi.attr("id", "li-problem-" + problem);
-    newLi.addClass('active');
-    var collapsible = $('<div />');
-    collapsible.addClass('collapsible-header');
-    collapsible.append(
-        '<h4 style="text-transform:capitalize;">' + problem + '<div class="summary_score">' + plusFix(score) + '</div>' +
-        '</h4>'
-    )
-
-    collapsible.append('<i class="large material-icons expand-icon">arrow_drop_down</i>');
-    collapsible.append('<i class="large material-icons collapse-icon">arrow_drop_up</i>');
-
-    newLi.append(collapsible);
-
-    var listing = $('<div />');
-    newLi.append(listing);
-    listing.addClass("collapsible-body");
-    listing.addClass("active");
-    listing.css('display', 'block');
-
-    // Orders the annotations by filename first, then line number
-    annotationsByProblem[problem].sort(function (annotation1, annotation2) {
-      // Sort by filename first
-      const aFilename = get_correct_filename(annotation1, fileList, submissionName);
-      const bFilename = get_correct_filename(annotation2, fileList, submissionName);
-      if (aFilename < bFilename)
-        return -1;
-      if (aFilename > bFilename)
-        return 1;
-      // Then by line number
-      return annotation1.line - annotation2.line
-    });
-
-    // To group annotations by filename
-    const [annotations_by_filename, filenames] = group_by(annotationsByProblem[problem],
-        (e) => get_correct_filename(e, fileList, submissionName));
-
-    filenames.forEach((filename) => {
-      listing.append(`<strong> ${filename} </strong>`);
-      annotations_by_filename[filename].forEach((annotation) => {
-        var annotationElement = $('<div />');
-        annotationElement.addClass('descript');
-        annotationElement.attr('id', 'li-annotation-' + annotation.id);
-
-        var pos = annotation.position ? annotation.position : 0;
-        var line = annotation.line + 1;
-        var link = $('<a />');
-        link.addClass('descript-link');
-        link.attr('data-header_position', pos);
-        link.attr('data-line', line);
-        link.attr('data-remote', true);
-        link.attr('href', `./view?header_position=${pos}&line=${line}`);
-
-        var pointBadge = $('<span />');
-        pointBadge.addClass('point_badge');
-        if (annotation.value > 0) {
-          pointBadge.addClass('positive');
-        } else if (annotation.value < 0) {
-          pointBadge.addClass('negative');
-        } else {
-          pointBadge.addClass('neutral');
-        }
-
-        var lineNumber = $('<span />');
-        lineNumber.addClass('line_number');
-        lineNumber.text(`Line ${annotation.line + 1}:`);
-        pointBadge.append(lineNumber);
-
-        pointBadge.append(`<span>${plusFix(annotation.value)}</span>`);
-        link.append(pointBadge);
-        link.append(annotation.comment);
-        annotationElement.append(link);
-
-        listing.append(annotationElement);
-      });
-    });
-  }
-
-  attachChangeFileEvents();
-  // Reloads the grades part upon update
   $('.problemGrades').load(document.URL + ' .problemGrades');
-  // $('.annotationSummary').load(document.URL + ' .annotationSummary');
+  $('#annotationPane').load(document.URL + ' #annotationPane', function() {
+    $('.collapsible').collapsible({ accordion: false });
+    attachChangeFileEvents();
+  });
 }
 
 // Sets up the keybindings

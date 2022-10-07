@@ -17,7 +17,9 @@
   <%= external_javascript_include_tag "jquery-ui" %>
   <%= external_javascript_include_tag "scrollTo" %>
   <%= external_javascript_include_tag "golden-layout" %>
+  <%# Hidden elements used by fillAnnotationBox in annotation.js %>
   <div style="display: none"><%= render(:partial => 'grades') %></div>
+  <div style="display: none"><%= render(:partial => 'annotation_pane') %></div>
   <script type="application/javascript">
     <% if @cud.instructor || @cud.course_assistant then %>
       var isInstructor = true;
