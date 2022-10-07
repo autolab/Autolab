@@ -44,7 +44,7 @@
   <% if @course.grace_days >= 0 then %>
     <td title="Submitted <%= submission.days_late %> days late" >
       <span class="nobr">
-      <%= "Submitted #{submission.days_late} days late" %>
+      <%= "#{submission.days_late}"+ " day".pluralize(submission.days_late)%>
       </span>
     </td>
   <% end %>
