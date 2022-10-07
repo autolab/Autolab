@@ -70,7 +70,7 @@
     </div>
   <% end %>
   <% if success == false %>
-    <div id="code_error"> Sorry, we could not parse your file because it contains non-ASCII characters. Please <%= link_to [:download, @course, @assessment, @submission, header_position: @header_position ],
+    <div id="code_error"> Sorry, we could not parse your file because it contains non-UTF8 characters. Please <%= link_to [:download, @course, @assessment, @submission, header_position: @header_position ],
                     data: {toggle: "tooltip", placement:"top"},
                     title: "Download Submission" do %>
           download the file
