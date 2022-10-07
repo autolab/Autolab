@@ -538,6 +538,7 @@
   border: none;
   padding: 5px;
   padding-left: 10px;
+  user-select: none;
 }
 
 .annotationSummary .collapsible-header h4{
