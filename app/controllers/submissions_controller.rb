@@ -549,18 +549,9 @@ class SubmissionsController < ApplicationController
       @is_pdf = false
     end
 
-    begin
-      respond_to do |format|
-        format.html { render(:view) }
-        format.js
-      end
-    rescue StandardError
-      # if rendering fails, try viewing the next file in the submission
-      # +1 should be fine b/c if we overflow, we'll go back to assessment page
-      # and @header_position starts at first file for archives
-      redirect_to(url_for([:view, @course, @assessment, @submission, {
-                            header_position: @header_position + 1
-                          }])) && return
+    respond_to do |format|
+      format.html { render(:view) }
+      format.js
     end
   end
 
