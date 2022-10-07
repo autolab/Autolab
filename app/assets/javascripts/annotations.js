@@ -135,34 +135,6 @@ function plusFix(n) {
   return n.toFixed(1);
 }
 
-// Same logic as application_controller.rb#get_correct_filename
-// Used by fillAnnotationBox to determine actual filename of an annotation
-function get_correct_filename(annotation, files, submissionName) {
-  if (annotation.position === -1) {
-    return "Autograder Output";
-  } else if (files !== null && annotation.position !== 0) {
-    return files[annotation.position].pathname;
-  } else {
-    return submissionName;
-  }
-}
-
-// Returns a dictionary of key => values, where key is obtained by calling fn
-// as well as an array of the (unique) keys in the order they first appear
-function group_by(data, fn) {
-  let dict = {};
-  let keys = [];
-  data.forEach(item => {
-    const key = fn(item);
-    if (!(key in dict)) {
-      dict[key] = [];
-      keys.push(key);
-    }
-    dict[key].push(item);
-  });
-  return [dict, keys];
-}
-
 // function called after create, update & delete of annotations
 function fillAnnotationBox() {
   retrieveSharedComments();
