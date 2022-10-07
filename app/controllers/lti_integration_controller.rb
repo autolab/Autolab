@@ -30,7 +30,9 @@ class LtiIntegrationController < ApplicationController
     end
     puts("AUTH COMPLETE")
     puts(@provider.username)
-    @return_url = @provider.build_return_url
+    @return_url = "https:" + params[:custom_canvas_api_domain] + "/"
+
+    #response = Faraday.get("")
     render json: { body: params }, status: :ok
     #redirect_to(@return_url)
   end
