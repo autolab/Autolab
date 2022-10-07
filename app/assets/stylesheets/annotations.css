@@ -551,6 +551,10 @@
   border: none;
 }
 
+.annotationSummary .collapsible-body .file_annotations {
+  margin-bottom: 10px;
+}
+
 .annotationSummary .collapsible {
   overflow: auto;
 }
