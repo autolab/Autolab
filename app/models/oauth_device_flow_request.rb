@@ -21,7 +21,7 @@ class OauthDeviceFlowRequest < ApplicationRecord
     user_code = gen_user_code
 
     # this loop is not expected to run for more than one iteration
-    (0..2).each do |_iter|
+    3.times do |_iter|
       req = new(application_id: app.id,
                 scopes: app.scopes,
                 requested_at: Time.current,

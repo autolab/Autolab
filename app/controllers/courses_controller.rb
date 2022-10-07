@@ -788,7 +788,7 @@ private
                "foo.bar"
              end
     (0..(numRows - 1)).each do |i|
-      (0..10).each do |j|
+      11.times do |j|
         next unless map[j] >= 0
 
         convertedRoster[i][j] = if j == 1

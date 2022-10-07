@@ -44,29 +44,33 @@
   <% else %>
     <div class="code-table">
         <% @data.each_with_index do |(code, annotation), index| %>
-          <div class="code-line" id="line-<%=index%>" data-line-id="<%=index%>">
-            <div class="line-sticky">
-              <div class="line-number"><%= index+1 %></div>
-              <div class="code-separator"></div>
+          <% if code.valid_encoding? %>
+            <div class="code-line" id="line-<%=index%>" data-line-id="<%=index%>">
+              <div class="line-sticky">
+                <div class="line-number"><%= index+1 %></div>
+                <div class="code-separator"></div>
+              </div>
+              <div class="add-comment">
+                <% if @cud.instructor? or @cud.course_assistant? then %><div class="add-button-container"><button class="add-button" id="add-btn-<%= index+1 %>"><i class="material-icons">add_comment</i></button></div><% end %>
+              </div>
+              <% begin %>
+              <div class="code"><pre><code class="<%= @displayFilename.split(".")[-1].downcase %>"><%= code %></code></pre></div>
+              <% rescue %>
+                </code></pre></div></div>
+                <% success = false %>
+                <% break %>
+              <% end %>
             </div>
-            <div class="add-comment">
-              <% if @cud.instructor? or @cud.course_assistant? then %><div class="add-button-container"><button class="add-button" id="add-btn-<%= index+1 %>"><i class="material-icons">add_comment</i></button></div><% end %>
+            <div class="annotation-container" id="annotation-line-<%=index%>" data-line-id="<%=index%>">
             </div>
-            <% begin %>
-            <div class="code"><pre><code class="<%= @displayFilename.split(".")[-1].downcase %>"><%= code %></code></pre></div>
-            <% rescue %>
-              </code></pre></div></div>
-              <% success = false %>
-              <% break %>
-            <% end %>
-          </div>
-          <div class="annotation-container" id="annotation-line-<%=index%>" data-line-id="<%=index%>">
-          </div>
+          <% else %>
+            <% success = false %>
+          <% end %>
         <% end %>
     </div>
   <% end %>
   <% if success == false %>
-    <div id="code_error"> Sorry, we could not parse your file because it contains non-ASCII characters. Please <%= link_to [:download, @course, @assessment, @submission, header_position: @header_position ],
+    <div id="code_error"> Sorry, we could not parse your file because it contains non-UTF8 characters. Please <%= link_to [:download, @course, @assessment, @submission, header_position: @header_position ],
                     data: {toggle: "tooltip", placement:"top"},
                     title: "Download Submission" do %>
           download the file
