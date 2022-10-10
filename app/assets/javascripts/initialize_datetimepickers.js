@@ -13,6 +13,7 @@
       $(datetimeElts[i]).flatpickr({
         enableTime: true,
         altInput: true,
+        disableMobile: true,
         defaultDate: defaultDate,
         formatDate: (date, format) => {
           return moment(date).format(format);
@@ -34,6 +35,7 @@
       $(dateElts[i]).flatpickr({
         altInput: true,
         defaultDate: defaultDate,
+        disableMobile: true
       })
     }
   });
