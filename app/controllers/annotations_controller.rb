@@ -34,6 +34,10 @@ class AnnotationsController < ApplicationController
     tweaked_params.delete(:submission_id)
     tweaked_params.delete(:filename)
     ActiveRecord::Base.transaction do
+      # Remove effect of annotation to handle updating annotation problem
+      @annotation.update({ "value" => "0" })
+      @annotation.update_non_autograded_score
+
       @annotation.update(tweaked_params)
       @annotation.update_non_autograded_score
     end
