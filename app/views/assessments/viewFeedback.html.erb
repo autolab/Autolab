@@ -1,15 +1,36 @@
 <% if @jsonFeedback.nil? %>
 
-<h2>Feedback for
+<h2>Autograding Result for
 <%= "#{@assessment.display_name} - #{@score.problem.name}" %>
 (<%=@score.submission.course_user_datum.user.email %>)
 </h2>
-<pre>
-<%= @score.feedback %>
-Score for this problem: <%= @score.score.to_f().round(1) %>
+<div class="result-container">
+  <div class="feedback-container result-pane">
+    <div class="feedback-header">
+      <h3>Feedback</h3>
+      <div class="feedback-status__completed">
+        Completed
+      </div>
+    </div>
+    <pre>
+      <%= @score.feedback %>
+    </pre>
+  </div>
+  <div class="result-summary">
+    <div class="result-pane result-fixed">
+      <div class="feedback-header">
+        <h3>Results</h3>
+      </div>
+      <p>
+        Score for this problem: <%= @score.score.to_f().round(1) %>
+      </p>
+      <p>
+        Graded by: <%= if @score.grader && @score.grader.user then @score.grader.user.email end %>
+      </p>
+    </div>
+  </div>
 
-Graded by: <%= if @score.grader && @score.grader.user then @score.grader.user.email end %>
-</pre>
+</div>
 
 <% else %>
 <%= render "semantic" %>
@@ -54,3 +75,4 @@ Yes, feedback is per problem but we show all annotations for this submission any
     <% end %>
 
 <% end %>
+<%= javascript_include_tag "feedback.js" %>

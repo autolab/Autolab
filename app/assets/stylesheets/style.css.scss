@@ -174,6 +174,51 @@ div.main-header img {
   overflow: hidden;
 }
 
+/* Feedback Styling */
+.result-container {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+}
+.result-pane {
+  box-shadow: (0px 4px 15px rgba(0, 0, 0, 0.1));
+  border-radius: 10px;
+  padding: 2vh 2vw;
+}
+.feedback-container {
+  width: 65%;
+}
+.result-summary {
+  position: relative;
+  right: 0;
+  top: 0;
+  width: 33%;
+}
+.result-fixed {
+  position: absolute;
+  display: table-cell;
+  width: 100%;
+}
+.feedback-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 1vh;
+  margin-bottom: 1vh;
+  border-bottom: 2px solid #C4C4C4;
+}
+.result-container .feedback-header h3 {
+  margin-top: 0px;
+  margin-bottom: 0px;
+}
+.feedback-status__completed {
+  padding: 0.5vh 1vw;
+  background-color: #3A862D; // todo: replace w/ variable
+  color: white;
+  font-weight: bold;
+  border-radius: 10px;
+}
+
 /* Custom Form Styling */
 form#edit_editCourse {
   margin-top: 80px;
