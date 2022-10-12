@@ -1,3 +1,4 @@
+document.getElementById("pageBody").style.width = '90%';
 $(window).scroll(function(e){ 
   const $el = $('.result-fixed'); 
   const container = $('.result-container')[0];
