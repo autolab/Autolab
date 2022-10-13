@@ -181,23 +181,27 @@ div.main-header img {
   justify-content: space-between;
 }
 .result-pane {
-  box-shadow: (0px 4px 15px rgba(0, 0, 0, 0.1));
   border-radius: 10px;
   padding: 2vh 2vw;
+  background-color: white;
+  border: 1px solid #C4C4C4;
 }
 .feedback-container {
-  width: 65%;
+  width: 74%;
 }
 .result-summary {
   position: relative;
   right: 0;
   top: 0;
-  width: 33%;
+  /* if the 25 is changed, also modify the containerWidth
+     multiplier in app/assets/javascripts/feedback.js */
+  width: 25%;
 }
 .result-fixed {
   position: absolute;
-  display: table-cell;
   width: 100%;
+  max-height: 70vh;
+  overflow-y: auto;
 }
 .feedback-header {
   display: flex;
@@ -1393,4 +1397,7 @@ table.sub {
 }
 .sub th{
   vertical-align: top;
+}
+table.sub td, th {
+  padding-right: 25px;
 }
