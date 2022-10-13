@@ -21,37 +21,32 @@
       <div class="feedback-header">
         <h3>Results</h3>
       </div>
-        <% if !@scoreHash.nil? %>
-          <table class="ui unstackable table">
-            <tbody>
-            <% @scoreHash.each do |key, value| %>
-              <% if key != '_total' %>
-                <tr>
-                  <td><%= key %>:</td>
-                  <td><%= value %></td>
-                </tr>
-              <% end %>
-            <% end %>
-            <tr style="border-bottom: none">
-              <td>Autograding Total:</td>
-              <td><%= @scoreHash["_total"] %></td>
-            </tr>
-            <% if @score.grader && @score.grader.user%>
+      <h4><%= "#{@score.problem.name}" %></h4>
+      <p>
+        Score for this problem: <%= @score.score.to_f().round(1) %>
+      </p>
+      <% if @score.grader && @score.grader.user%>
+        <p>Graded By: <%= @score.grader.user.email %></p>
+      <% end %>
+      <% if !@scoreHash.nil? %>
+        <h4>Autograder Scores</h4>
+        <table class="ui unstackable table">
+          <tbody>
+          <% @scoreHash.each do |key, value| %>
+            <% if key != '_total' %>
               <tr>
-                <td>Graded By:</td>
-                <td><%= @score.grader.user.email %></td>
+                <td><%= key %>:</td>
+                <td><%= value %></td>
               </tr>
             <% end %>
-            </tbody>
-          </table>
-        <% else %>
-          <p>
-            Score for this problem: <%= @score.score.to_f().round(1) %>
-          </p>
-          <% if @score.grader && @score.grader.user%>
-            <p>Graded By: <%= @score.grader.user.email %></p>
           <% end %>
-        <% end %>
+          <tr style="border-bottom: none">
+            <td>Autograding Total:</td>
+            <td><%= @scoreHash["_total"] %></td>
+          </tr>
+          </tbody>
+        </table>
+      <% end %>
     </div>
   </div>
 
