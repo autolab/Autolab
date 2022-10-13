@@ -510,12 +510,17 @@ function initializeBoxForm(box, annotation) {
   box.find('.annotation-form').submit(function (e) {
     e.preventDefault();
     var comment = $(this).find(".comment").val();
+    var shared_comment = $(this).find("#shared-comment").is(":checked");
     var score = $(this).find(".score").val();
     var problem_id = $(this).find(".problem-id").val();
-    var shared_comment = $(this).find("#shared-comment").is(":checked");
 
-    if (comment == undefined || comment == "") {
+    if (comment === undefined || comment === "") {
       box.find('.error').text("Annotation comment can not be blank!").show();
+      return;
+    }
+
+    if (score === undefined || score === "") {
+      box.find('.error').text("Annotation score can not be blank!").show();
       return;
     }
 
