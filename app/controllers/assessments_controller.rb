@@ -866,6 +866,7 @@ private
     tar_extract.each do |entry|
       pathname = entry.full_name
       next if pathname.start_with? "."
+      next if pathname.start_with? "PaxHeader"
 
       pathname.chomp!("/") if entry.directory?
       # nested directories are okay
