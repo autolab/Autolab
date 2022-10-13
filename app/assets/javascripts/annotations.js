@@ -542,9 +542,9 @@ function newAnnotationBox(annotation) {
   var shared_comment = annotation.shared_comment;
 
   if (annotation.value < 0) {
-    box.find('.value').parent().removeClass('positive').addClass('negative');
-  } else if (!annotation.value > 0) { // I am a little hesitant about using == 1 here -> what if it's negative 0?
-    box.find('.value').parent().removeClass('positive').addClass('neutral');
+    box.find('.value').parent().removeClass('neutral').addClass('negative');
+  } else if (annotation.value > 0) {
+    box.find('.value').parent().removeClass('neutral').addClass('positive');
   }
 
   box.find('.submitted_by').text(annotation.submitted_by);
