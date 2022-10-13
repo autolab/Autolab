@@ -10,7 +10,7 @@ class Problem < ApplicationRecord
   belongs_to :assessment, touch: true
   has_many :annotations
 
-  validates :name, presence: true
+  validates :name, :max_score, presence: true
   validates_associated :assessment
 
   after_commit -> { assessment.dump_yaml }
