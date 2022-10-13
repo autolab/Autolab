@@ -452,8 +452,13 @@ function newAnnotationFormCode() {
     var problem_id = $(this).find(".problem-id").val();
     var line = $(this).parent().parent().data("lineId");
 
-    if (comment == undefined || comment == "") {
+    if (comment === undefined || comment === "") {
       box.find('.error').text("Annotation comment can not be blank!").show();
+      return;
+    }
+
+    if (score === undefined || score === "") {
+      box.find('.error').text("Annotation score can not be blank!").show();
       return;
     }
 

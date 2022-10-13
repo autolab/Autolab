@@ -7,7 +7,7 @@ class Annotation < ApplicationRecord
   belongs_to :submission
   belongs_to :problem
 
-  validates :comment, :filename, :submission_id, :problem_id, presence: true
+  validates :comment, :score, :filename, :submission_id, :problem_id, presence: true
 
   def as_text
     if value
