@@ -1347,10 +1347,13 @@ a.skip-main:active {
   font-size: 1em;
   z-index: 999;
 }
+// used in submission_history_table.html.erb
 table.sub {
-  display: block;
-  overflow-x: scroll;
+  display: table;
 }
 .sub th{
   vertical-align: top;
+}
+.submissions {
+  overflow-x: scroll;
 }
