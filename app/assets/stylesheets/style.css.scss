@@ -1367,6 +1367,8 @@ table.sub {
   box-shadow: 0px -0.5px 0.5px 0px rgba(0, 0, 0, 0.15),
               0px 0.5px 0.5px 0.5px rgba(0, 0, 0, 0.15),
               0px 0.5px 0.5px -0.5px rgba(0, 0, 0, 0.15);
+  display: flex;
+  justify-content: center;
 }
 
 .submission-history-button:hover {
