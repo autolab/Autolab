@@ -5,16 +5,54 @@
 (<%=@score.submission.course_user_datum.user.email %>)
 </h2>
 <div class="result-container">
-  <div class="feedback-container result-pane">
-    <div class="feedback-header">
-      <h3>Feedback</h3>
-      <div class="feedback-status__completed">
-        Completed
+  <div class="feedback-container">
+    <div class="result-pane">
+      <div class="feedback-header">
+        <h3>Feedback</h3>
+        <div class="feedback-status__completed">
+          Completed
+        </div>
       </div>
+      <pre><%= @score.feedback %></pre>
     </div>
-    <pre>
-      <%= @score.feedback %>
-    </pre>
+    <% if @submission.annotations.count > 0 and @problemReleased %>
+      <div class="result-pane">
+        <div class="feedback-header">
+          <h3>Remarks</h3>
+        </div>
+        <br />
+        <% subs_by_problem = @submission.annotations.group_by(&:problem)
+            subs_by_problem.each do |problem, annotations| %>
+            <b> <%= problem.name %> </b>
+            <ul class="collection">
+            <!-- use custom sort b/c using ordering doesn't work with autograder output, archived files -->
+            <%
+              s_annotations = annotations.sort do |a,b|
+              aFilename = @get_correct_filename.call(a)
+              bFilename = @get_correct_filename.call(b)
+              case
+                when aFilename < bFilename
+                  -1
+                when aFilename > bFilename
+                    1
+                else
+                    a.line <=> b.line
+                end
+              end
+              s_annotations.each do |annotation| %>
+              <li class="collection-item">
+                    <div style='white-space: pre-wrap;'><%= annotation.comment%> </div>
+                    <% filename = @get_correct_filename.call(annotation)%>
+                    <span> 
+                      <b><%= annotation.value? ? sprintf("(%+.1f)", annotation.value) : "" %></b> 
+                      <%= link_to filename.to_s + ":"+ annotation.line.to_s , [:view, @course, @assessment, @submission, header_position: annotation.position] %> 
+                    </span>
+              </li>
+              <% end %>
+            </ul>
+          <% end %>
+      </div>
+    <% end %>
   </div>
   <div class="result-summary">
     <div class="result-pane result-fixed">
@@ -59,40 +97,4 @@
 <!--
 Yes, feedback is per problem but we show all annotations for this submission anyway. While this is not semantically correct, it offers a better UX than we had before. If we just show annotations attached to this problem, then where would we show annotations not attached to a problem at all?
 -->
-
-<% if @submission.annotations.count > 0 and @problemReleased %>
-  <h2 style="margin-top: 1em">Remarks</h2>
-
-  <% subs_by_problem = @submission.annotations.group_by(&:problem)
-      subs_by_problem.each do |problem, annotations| %>
-      <b> <%= problem.name %> </b>
-      <ul class="collection">
-      <!-- use custom sort b/c using ordering doesn't work with autograder output, archived files -->
-      <%
-        s_annotations = annotations.sort do |a,b|
-        aFilename = @get_correct_filename.call(a)
-        bFilename = @get_correct_filename.call(b)
-        case
-          when aFilename < bFilename
-            -1
-          when aFilename > bFilename
-              1
-          else
-              a.line <=> b.line
-          end
-        end
-        s_annotations.each do |annotation| %>
-        <li class="collection-item">
-              <div style='white-space: pre-wrap;'><%= annotation.comment%> </div>
-              <% filename = @get_correct_filename.call(annotation)%>
-              <span> 
-                <b><%= annotation.value? ? sprintf("(%+.1f)", annotation.value) : "" %></b> 
-                <%= link_to filename.to_s + ":"+ annotation.line.to_s , [:view, @course, @assessment, @submission, header_position: annotation.position] %> 
-              </span>
-        </li>
-        <% end %>
-      </ul>
-    <% end %>
-
-<% end %>
 <%= javascript_include_tag "feedback.js" %>
