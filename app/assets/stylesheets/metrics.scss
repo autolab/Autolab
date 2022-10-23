@@ -93,12 +93,13 @@ input[type="text"] {
 
 .top-bar {
   padding-left: 21%;
-  display: none;
+  display: flex;
+  align-items: center;
 }
 
 .last-updated{
-  float: right;
   margin-top: 15px;
+  margin-left: auto;
 }
 
 .students-buttons-right{
@@ -137,6 +138,13 @@ i.external.alternate {
 .select_single label {
   display: inline-block !important; 
   vertical-align: middle !important;
+  -webkit-touch-callout: default !important; /* iOS Safari */
+  -webkit-user-select: auto !important; /* Safari */
+  -khtml-user-select: default !important; /* Konqueror HTML */
+  -moz-user-select: auto !important; /* Firefox */
+  -ms-user-select: auto !important; /* Internet Explorer/Edge */
+  user-select: auto !important; /* Non-prefixed version, currently
+                                supported by Chrome and Opera */
 }
 
 .ui.checkbox.select_single label:before, 
@@ -178,4 +186,9 @@ span.instances .segment {
   border-radius: 0;
   border: none;
   border-top: 1px solid rgba(34,36,38,0.15);
+}
+
+.select-all-chip {
+  display: flex;
+  align-items: center;
 }

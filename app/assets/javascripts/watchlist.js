@@ -193,7 +193,8 @@ function set_tab_html(is_search, instances, tab_name, archived_instances, empty_
       }
     }
   });
-  
+
+  // contact single watchlist student associated with student
   if (tab_name === "pending") {
     $('.ui.button.contact_single').click(function() {
 
@@ -214,9 +215,10 @@ function set_tab_html(is_search, instances, tab_name, archived_instances, empty_
     });
   }
 
+  // resolve for single watchlist student
   $('.ui.button.resolve_single').click(function() {
 
-    // disable all action buttons
+    // disable all action buttons associated with student
     var button_group = $(this).parent().find('button');
     button_group.prop('disabled', true);
     
@@ -547,35 +549,58 @@ $('.ui.vertical.fluid.tabular.menu .item').on('click', function() {
   updateButtonVisibility(this);
 });
 
+
+
+// helper function to configure top button visibility
+function showTopButtons(selectAllCheckbox, resolveButton, contactButton, deleteButton) {
+  if (selectAllCheckbox === true) {
+    $("#select_all_checkbox").show();
+  } else {
+    $("#select_all_checkbox").hide();
+  }
+  if (resolveButton === true) {
+    $("#resolve_button").show();
+  } else {
+    $("#resolve_button").hide();
+  }
+  if (contactButton === true) {
+    $("#contact_button").show();
+  } else {
+    $("#contact_button").hide();
+  }
+  if (deleteButton === true) {
+    $("#delete_button").show();
+  } else {
+    $("#delete_button").hide();
+  }
+}
+// controls visibility for top bar actions (select all, contact, resolve, delete)
 function updateButtonVisibility(item){
   // Deleting instances only avilable in archive tab
-  $("#delete_button").hide();
+  showTopButtons(true, true, true, false);
   switch ($(item).attr("data-tab")) {
     case "pending_tab":
+      // if no students pending
       if ($("#pending_tab #empty_tabs").length > 0) {
-        $("#contact_button").addClass("disabled");
-        $("#resolve_button").addClass("disabled");
-      } else {
-        $("#contact_button").removeClass("disabled");
-        $("#resolve_button").removeClass("disabled");
+        showTopButtons(false, false, false, false);
       }
       break;
     case "contacted_tab":
-      $("#contact_button").addClass("disabled");
+      // no students to contact
       if ($("#contacted_tab #empty_tabs").length > 0) {
-        $("#resolve_button").addClass("disabled");
+        showTopButtons(false, false, false, false);
       } else {
-        $("#resolve_button").removeClass("disabled");
+        // still allowed to resolve
+        showTopButtons(true, true, false, false);
       }
       break;
     case "resolved_tab":
-      $("#contact_button").addClass("disabled");
-      $("#resolve_button").addClass("disabled");
+      // no actions allowed
+      showTopButtons(false, false, false, false);
       break;
     case "archived_tab":
-      $("#contact_button").addClass("disabled");
-      $("#resolve_button").addClass("disabled");
-      $("#delete_button").show();
+      // only delete is allowed
+      showTopButtons(true, false, false, true);
       break;
     default:
       console.log(`${$(this).attr("data-tab")} is not a valid tab`);
