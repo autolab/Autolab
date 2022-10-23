@@ -1,9 +1,9 @@
 module SubmissionHelper
   def plus_fix(f)
     if f > 0
-      sprintf("+%.1f", f)
+      sprintf("+%.2f", f.round(2))
     else
-      sprintf("%.1f", f)
+      sprintf("%.2f", f.round(2))
     end
   end
 end
