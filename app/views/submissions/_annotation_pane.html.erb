@@ -23,8 +23,10 @@
                   Sort file annotations by filename (a[6]), followed by line (a[2]) and group by filename
               %>
               <% annotations_by_type = descriptTuples.group_by { |a| a[7] }
-                 global_annotations = annotations_by_type[true].sort_by { |a| a[4] }
-                 annotations_by_file = annotations_by_type[false].sort_by{ |a| [a[6], a[2]] }.group_by { |a| a[6] } %>
+                 global_annotations = annotations_by_type[true] || []
+                 global_annotations = global_annotations.sort_by { |a| a[4] }
+                 annotations_by_file = annotations_by_type[false] || []
+                 annotations_by_file = annotations_by_file.sort_by{ |a| [a[6], a[2]] }.group_by { |a| a[6] } %>
                 <div class="file_annotations">
                   <% global_annotations.each do |description, value, line, user, id, position, filename, global| %>
                     <div class="descript" id="li-annotation-<%= id %>">
