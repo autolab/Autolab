@@ -455,9 +455,9 @@ class SubmissionsController < ApplicationController
       @annotations = []
     end
 
-    if Archive.archive? @filename
-      files = Archive.get_files(@filename)
-    end
+    files = if Archive.archive? @filename
+              Archive.get_files(@filename)
+            end
     # extract information from annotations
     @annotations.each do |annotation|
       description = annotation.comment
