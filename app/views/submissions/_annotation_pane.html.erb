@@ -16,34 +16,50 @@
           </div>
           <div class="collapsible-body">
             <% if @cud.instructor? or @cud.course_assistant? or @problemReleased%>
-              <!-- a[6] = filename, a[2] = line-->
               <%# Note: group_by preserves insertion order %>
-              <% annotations_by_file = descriptTuples.sort_by{ |a| [a[6], a[2]] }.group_by { |a| a[6] }
-                 annotations_by_file.each do |filename, annotations| %>
+              <%#
+                  First, group_by global (a[7])
+                  Sort global annotations by id (a[4])
+                  Sort file annotations by filename (a[6]), followed by line (a[2]) and group by filename
+              %>
+              <% annotations_by_type = descriptTuples.group_by { |a| a[7] }
+                 global_annotations = annotations_by_type[true].sort_by { |a| a[4] }
+                 annotations_by_file = annotations_by_type[false].sort_by{ |a| [a[6], a[2]] }.group_by { |a| a[6] } %>
                 <div class="file_annotations">
-                  <strong> <%= filename %> </strong>
-                  <% annotations.each do |description, value, line, user, id, position, filename| %>
-                    <div class="descript" id="li-annotation-<%= id %>"> <!-- Line + 1 because the code line numbers starts with 1 not 0. -->
-                      <%= link_to(
-                          url_for([:view, @course, @assessment, @submission, header_position: position.nil? ? 0 : position, line: line.nil? ? 1 : line+1]),
-                          class: 'descript-link',
-                          "data-header_position": position.nil? ? 0 : position,
-                          "data-line": line.nil? ? 1 : line+1,
-                          remote: true,
-                        ) do %>
-                          <span class="point_badge <%= value > 0 ? "positive" : value < 0 ? "negative" : "neutral" %>">
-                            <% unless line.nil? %>
-                              <span class="line_number">Line <%= line + 1 %>:</span>
-                            <% end %>
-                            <%= plus_fix(value) %>
-                          </span>
-                        <%= description %>
-                      <% end %>
+                  <% global_annotations.each do |description, value, line, user, id, position, filename, global| %>
+                    <div class="descript" id="li-annotation-<%= id %>">
+                      <span class="point_badge <%= value > 0 ? "positive" : value < 0 ? "negative" : "neutral" %>">
+                        <%= plus_fix(value) %>
+                      </span>
+                      <%= description %>
                     </div>
                   <% end %>
                 </div>
-              <% end %>
-              <% else %>
+                <% annotations_by_file.each do |filename, annotations| %>
+                  <div class="file_annotations">
+                    <strong> <%= filename %> </strong>
+                    <% annotations.each do |description, value, line, user, id, position, filename, global| %>
+                      <div class="descript" id="li-annotation-<%= id %>"> <!-- Line + 1 because the code line numbers starts with 1 not 0. -->
+                        <%= link_to(
+                            url_for([:view, @course, @assessment, @submission, header_position: position.nil? ? 0 : position, line: line.nil? ? 1 : line+1]),
+                            class: 'descript-link',
+                            "data-header_position": position.nil? ? 0 : position,
+                            "data-line": line.nil? ? 1 : line+1,
+                            remote: true,
+                          ) do %>
+                            <span class="point_badge <%= value > 0 ? "positive" : value < 0 ? "negative" : "neutral" %>">
+                              <% unless line.nil? %>
+                                <span class="line_number">Line <%= line + 1 %>:</span>
+                              <% end %>
+                              <%= plus_fix(value) %>
+                            </span>
+                          <%= description %>
+                        <% end %>
+                      </div>
+                    <% end %>
+                  </div>
+                <% end %>
+            <% else %>
               <i>Unreleased</i>
             <% end %>
           </div>

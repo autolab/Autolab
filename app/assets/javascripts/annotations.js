@@ -448,6 +448,7 @@ function newAnnotationFormCode() {
     e.preventDefault();
     var comment = $(this).find(".comment").val();
     var shared_comment = $(this).find("#shared-comment").is(":checked");
+    var global_comment = $(this).find("#global-comment").is(":checked");
     var score = $(this).find(".score").val();
     var problem_id = $(this).find(".problem-id").val();
     var line = $(this).parent().parent().data("lineId");
@@ -471,7 +472,7 @@ function newAnnotationFormCode() {
     }
 
 
-    submitNewAnnotation(comment, shared_comment, score, problem_id, line, $(this));
+    submitNewAnnotation(comment, shared_comment, global_comment, score, problem_id, line, $(this));
   });
 
   return box;
@@ -511,6 +512,7 @@ function initializeBoxForm(box, annotation) {
     e.preventDefault();
     var comment = $(this).find(".comment").val();
     var shared_comment = $(this).find("#shared-comment").is(":checked");
+    var global_comment = $(this).find("#global-comment").is(":checked");
     var score = $(this).find(".score").val();
     var problem_id = $(this).find(".problem-id").val();
 
@@ -529,6 +531,7 @@ function initializeBoxForm(box, annotation) {
     annotationObject.value = score;
     annotationObject.problem_id = problem_id;
     annotationObject.shared_comment = shared_comment;
+    annotationObject.global_comment = global_comment;
 
     updateAnnotation(annotationObject, box);
   });
@@ -545,6 +548,7 @@ function newAnnotationBox(annotation) {
   valueStr = plusFix(valueStr);
   var commentStr = annotation.comment;
   var shared_comment = annotation.shared_comment;
+  var global_comment = annotation.global_comment;
 
   if (annotation.value < 0) {
     box.find('.value').parent().removeClass('neutral').addClass('negative');
@@ -557,6 +561,7 @@ function newAnnotationBox(annotation) {
   box.find('.problem_id').text(problemStr);
   box.find('.value').text(valueStr);
   box.find('#shared-comment').prop("checked", shared_comment);
+  box.find('#global-comment').prop("checked", global_comment);
 
   if (isInstructor) {
     box.find('.instructors-only').show();
@@ -1060,7 +1065,7 @@ var submitNewPDFAnnotation = function (comment, value, problem_id, pageInd, xRat
 }
 
 /* sets up and calls $.ajax to submit an annotation */
-var submitNewAnnotation = function (comment, shared_comment, value, problem_id, lineInd, form) {
+var submitNewAnnotation = function (comment, shared_comment, global_comment, value, problem_id, lineInd, form) {
   var newAnnotation = createAnnotation();
   newAnnotation.line = parseInt(lineInd);
   newAnnotation.comment = comment;
@@ -1068,6 +1073,7 @@ var submitNewAnnotation = function (comment, shared_comment, value, problem_id, 
   newAnnotation.problem_id = problem_id;
   newAnnotation.filename = fileNameStr;
   newAnnotation.shared_comment = shared_comment;
+  newAnnotation.global_comment = global_comment;
 
   if (comment == undefined || comment == "") {
     $(form).find('.error').text("Could not save annotation. Please refresh the page and try again.").show();
