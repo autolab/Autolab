@@ -1347,10 +1347,34 @@ a.skip-main:active {
   font-size: 1em;
   z-index: 999;
 }
+
+// used in submission_history_table.html.erb
 table.sub {
-  display: block;
+  display: table;
+}
+
+.sub th {
+  vertical-align: top;
+}
+
+.submissions {
   overflow-x: scroll;
 }
-.sub th{
-  vertical-align: top;
+
+.submission-history-button {
+  white-space: nowrap;
+  text-transform: unset !important;
+  font-size: 13px;
+  width: 100%;
+  border-radius: 5px;
+  color: #0882af;
+  box-shadow: 0px -0.5px 0.5px 0px rgba(0, 0, 0, 0.15),
+              0px 0.5px 0.5px 0.5px rgba(0, 0, 0, 0.15),
+              0px 0.5px 0.5px -0.5px rgba(0, 0, 0, 0.15);
+  display: flex;
+  justify-content: center;
+}
+
+.submission-history-button:hover {
+  color: white !important;
 }
