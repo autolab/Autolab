@@ -9,7 +9,7 @@ Rails.application.config.assets.version = '1.0'
 # Precompile additional assets.
 # application.js, application.css, and all non-JS/CSS in the app/assets
 # folder are already added.
-Rails.application.config.assets.precompile += %w( *.js )
+Rails.application.config.assets.precompile += %w( *.css )
 Rails.application.config.assets.precompile += %w( animate.css )
 Rails.application.config.assets.precompile += %w( gradesheet.css.scss )
 Rails.application.config.assets.precompile += %w( mobile.css )
@@ -37,6 +37,7 @@ Rails.application.config.assets.precompile += %w( eventdrops.css )
 Rails.application.config.assets.precompile += %w( metricsgraphics.css )
 Rails.application.config.assets.precompile += %w( users.css.scss )
 
+Rails.application.config.assets.precompile += %w( *.js )
 Rails.application.config.assets.precompile += %w( annotations.js )
 Rails.application.config.assets.precompile += %w( chroma.min.js )
 Rails.application.config.assets.precompile += %w( gradesheet.js.erb )
@@ -57,8 +58,6 @@ Rails.application.config.assets.precompile += %w( highlight.pack.js )
 Rails.application.config.assets.precompile += %w( jquery.jeditable.js )
 Rails.application.config.assets.precompile += %w( metricsgraphics_brushing.js )
 Rails.application.config.assets.precompile += %w( SlickGrid/* )
-Rails.application.config.assets.precompile += %w( users.js.coffee )
-Rails.application.config.assets.precompile += %w( assessments_show.coffee )
 Rails.application.config.assets.precompile += %w( eventdrops.js )
 Rails.application.config.assets.precompile += %w( init_handin_datetimepickers.js )
 Rails.application.config.assets.precompile += %w( jquery.simplemodal-1.4.4.js )
@@ -70,3 +69,4 @@ Rails.application.config.assets.precompile += %w( initialize_datetimepickers.js 
 Rails.application.config.assets.precompile += %w( jquery.stickytableheaders.js )
 Rails.application.config.assets.precompile += %w( pdf.js )
 Rails.application.config.assets.precompile += %w( table_floating_header.js )
+Rails.application.config.assets.precompile += %w( base64.js )
