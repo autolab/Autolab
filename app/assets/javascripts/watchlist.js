@@ -26,15 +26,20 @@ function get_html_empty_message(message){
       </div>`;
 }
 
-function get_name_email_html(name, email) {
+function get_name_email_html(name, email, tab) {
+  // janky way of conditionally rendering checkbox
+  // display: none doesn't work and adding a parent div to
+  // checkbox is difficult
+  checkbox = tab !== "resolved" ?  `<input type="checkbox"/>` : ``;
+  checkboxclass = tab !== "resolved" ? "checkbox" : ""
   return `
-      <div class="ui checkbox select_single">
-        <input type="checkbox"/>
-        <label>
-          <p class="name_label"> ${escapeHtml(name)} </p>
-          <p class="email_label"> ${escapeHtml(email)} </p>
-        </label>
-      </div>`;
+        <div class="ui select_single ${checkboxclass}">
+          ${checkbox}
+          <label>
+            <p class="name_label"> ${escapeHtml(name)} </p>
+            <p class="email_label"> ${escapeHtml(email)} </p>
+          </label>
+        </div>`;
 }
 
 function get_gradebook_link_html(course_id, user_id) {
@@ -148,7 +153,7 @@ function get_row_html(user_id, instance, tab, archived_instances) {
   var condition_types = instance["conditions"];
   var course_id = instance["course_id"];
 
-  var name_email_html = get_name_email_html(name, email);
+  var name_email_html = get_name_email_html(name, email, tab);
   var gradebook_link_html = get_gradebook_link_html(course_id, user_id);
   var conditions_html = get_condition_html(condition_types);
   var buttons_html = get_buttons_html(user_id, tab, archived_instances);
@@ -179,7 +184,7 @@ function set_tab_html(is_search, instances, tab_name, archived_instances, empty_
   $('.ui.icon').popup();
   $('.ui.circular.label.condition').popup();
 
-  $('.ui.checkbox.select_single').checkbox({
+  $('.ui.checkbox.select_single.checkbox').checkbox({
     onChecked: function () { 
       selected_user_ids.push($(this).parent().parent().attr('id'));
     },
@@ -553,26 +558,10 @@ $('.ui.vertical.fluid.tabular.menu .item').on('click', function() {
 
 // helper function to configure top button visibility
 function showTopButtons(selectAllCheckbox, resolveButton, contactButton, deleteButton) {
-  if (selectAllCheckbox === true) {
-    $("#select_all_checkbox").show();
-  } else {
-    $("#select_all_checkbox").hide();
-  }
-  if (resolveButton === true) {
-    $("#resolve_button").show();
-  } else {
-    $("#resolve_button").hide();
-  }
-  if (contactButton === true) {
-    $("#contact_button").show();
-  } else {
-    $("#contact_button").hide();
-  }
-  if (deleteButton === true) {
-    $("#delete_button").show();
-  } else {
-    $("#delete_button").hide();
-  }
+  $("#select_all_checkbox").toggle(selectAllCheckbox);
+  $("#resolve_button").toggle(resolveButton);
+  $("#contact_button").toggle(contactButton);
+  $("#delete_button").toggle(deleteButton);
 }
 // controls visibility for top bar actions (select all, contact, resolve, delete)
 function updateButtonVisibility(item){

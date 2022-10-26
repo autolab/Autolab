@@ -104,7 +104,7 @@ input[type="text"] {
 
 .students-buttons-right{
   display: initial;
-  float: right;
+  margin-left: auto;
 }
 
 #undefined_metrics{
@@ -136,6 +136,8 @@ i.external.alternate {
 }
 
 .select_single label {
+  color: black;
+  font-size: 1em;
   display: inline-block !important; 
   vertical-align: middle !important;
   -webkit-touch-callout: default !important; /* iOS Safari */
@@ -186,6 +188,8 @@ span.instances .segment {
   border-radius: 0;
   border: none;
   border-top: 1px solid rgba(34,36,38,0.15);
+  display: flex;
+  align-items: center;
 }
 
 .select-all-chip {
