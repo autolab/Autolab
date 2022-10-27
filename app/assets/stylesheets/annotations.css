@@ -538,6 +538,7 @@
   border: none;
   padding: 5px;
   padding-left: 10px;
+  user-select: none;
 }
 
 .annotationSummary .collapsible-header h4{
@@ -545,13 +546,32 @@
   font-size: 1.1em;
 }
 
-.annotationSummary .collapsible-header .dropdown-arrow{
-
-}
-
 .annotationSummary .collapsible-body{
   padding: 0 1rem;
   border: none;
+}
+
+.annotationSummary .collapsible-body .file_annotations {
+  margin-bottom: 10px;
+}
+
+.annotationSummary .collapsible {
+  overflow: auto;
+}
+
+/* Annotations collapsible icons */
+
+.annotationSummary .collapsible i.expand-icon,
+.annotationSummary .collapsible i.collapse-icon {
+  font-size: 2rem;
+}
+
+.annotationSummary .collapsible li.active i.expand-icon {
+  display: none;
+}
+
+.annotationSummary .collapsible li:not(.active) i.collapse-icon {
+  display: none;
 }
 
 .annotationSummary .summary_score {
@@ -573,6 +593,15 @@
 }
 .annotationSummary .point_badge.neutral {
   background: #818181;
+}
+
+.annotationSummary .line_number {
+  background: #818181;
+  margin-left: -8px;
+  border-top-left-radius: 100vw;
+  padding-left: 8px;
+  padding-right: 3px;
+  border-bottom-left-radius: 100vw;
 }
 
 .annotation-comment {
@@ -787,10 +816,6 @@
   100% {
     opacity: 0;
   }
-}
-.collapsible {
-  max-height: 50vh;
-  overflow: auto;
 }
 
 .descript {
