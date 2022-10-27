@@ -26,15 +26,20 @@ function get_html_empty_message(message){
       </div>`;
 }
 
-function get_name_email_html(name, email) {
+function get_name_email_html(name, email, tab) {
+  // janky way of conditionally rendering checkbox
+  // display: none doesn't work and adding a parent div to
+  // checkbox is difficult
+  checkbox = tab !== "resolved" ?  `<input type="checkbox"/>` : ``;
+  checkboxclass = tab !== "resolved" ? "checkbox" : ""
   return `
-      <div class="ui checkbox select_single">
-        <input type="checkbox"/>
-        <label>
-          <p class="name_label"> ${escapeHtml(name)} </p>
-          <p class="email_label"> ${escapeHtml(email)} </p>
-        </label>
-      </div>`;
+        <div class="ui select_single ${checkboxclass}">
+          ${checkbox}
+          <label>
+            <p class="name_label"> ${escapeHtml(name)} </p>
+            <p class="email_label"> ${escapeHtml(email)} </p>
+          </label>
+        </div>`;
 }
 
 function get_gradebook_link_html(course_id, user_id) {
@@ -97,7 +102,7 @@ function get_condition_html(condition_types) {
         return;
     }
     conditions_html += `
-        <div class="ui circular label condition" data-html="${violation_string}" data-variation="wide"> 
+        <div class="ui circular label condition gray black-text" data-html="${violation_string}" data-variation="wide"> 
           ${condition_string}
         </div>`
   });
@@ -148,7 +153,7 @@ function get_row_html(user_id, instance, tab, archived_instances) {
   var condition_types = instance["conditions"];
   var course_id = instance["course_id"];
 
-  var name_email_html = get_name_email_html(name, email);
+  var name_email_html = get_name_email_html(name, email, tab);
   var gradebook_link_html = get_gradebook_link_html(course_id, user_id);
   var conditions_html = get_condition_html(condition_types);
   var buttons_html = get_buttons_html(user_id, tab, archived_instances);
@@ -179,7 +184,7 @@ function set_tab_html(is_search, instances, tab_name, archived_instances, empty_
   $('.ui.icon').popup();
   $('.ui.circular.label.condition').popup();
 
-  $('.ui.checkbox.select_single').checkbox({
+  $('.ui.checkbox.select_single.checkbox').checkbox({
     onChecked: function () { 
       selected_user_ids.push($(this).parent().parent().attr('id'));
     },
@@ -193,7 +198,8 @@ function set_tab_html(is_search, instances, tab_name, archived_instances, empty_
       }
     }
   });
-  
+
+  // contact single watchlist student associated with student
   if (tab_name === "pending") {
     $('.ui.button.contact_single').click(function() {
 
@@ -214,9 +220,10 @@ function set_tab_html(is_search, instances, tab_name, archived_instances, empty_
     });
   }
 
+  // resolve for single watchlist student
   $('.ui.button.resolve_single').click(function() {
 
-    // disable all action buttons
+    // disable all action buttons associated with student
     var button_group = $(this).parent().find('button');
     button_group.prop('disabled', true);
     
@@ -547,35 +554,42 @@ $('.ui.vertical.fluid.tabular.menu .item').on('click', function() {
   updateButtonVisibility(this);
 });
 
+
+
+// helper function to configure top button visibility
+function showTopButtons(selectAllCheckbox, resolveButton, contactButton, deleteButton) {
+  $("#select_all_checkbox").toggle(selectAllCheckbox);
+  $("#resolve_button").toggle(resolveButton);
+  $("#contact_button").toggle(contactButton);
+  $("#delete_button").toggle(deleteButton);
+}
+// controls visibility for top bar actions (select all, contact, resolve, delete)
 function updateButtonVisibility(item){
   // Deleting instances only avilable in archive tab
-  $("#delete_button").hide();
+  showTopButtons(true, true, true, false);
   switch ($(item).attr("data-tab")) {
     case "pending_tab":
+      // if no students pending
       if ($("#pending_tab #empty_tabs").length > 0) {
-        $("#contact_button").addClass("disabled");
-        $("#resolve_button").addClass("disabled");
-      } else {
-        $("#contact_button").removeClass("disabled");
-        $("#resolve_button").removeClass("disabled");
+        showTopButtons(false, false, false, false);
       }
       break;
     case "contacted_tab":
-      $("#contact_button").addClass("disabled");
+      // no students to contact
       if ($("#contacted_tab #empty_tabs").length > 0) {
-        $("#resolve_button").addClass("disabled");
+        showTopButtons(false, false, false, false);
       } else {
-        $("#resolve_button").removeClass("disabled");
+        // still allowed to resolve
+        showTopButtons(true, true, false, false);
       }
       break;
     case "resolved_tab":
-      $("#contact_button").addClass("disabled");
-      $("#resolve_button").addClass("disabled");
+      // no actions allowed
+      showTopButtons(false, false, false, false);
       break;
     case "archived_tab":
-      $("#contact_button").addClass("disabled");
-      $("#resolve_button").addClass("disabled");
-      $("#delete_button").show();
+      // only delete is allowed
+      showTopButtons(true, false, false, true);
       break;
     default:
       console.log(`${$(this).attr("data-tab")} is not a valid tab`);
