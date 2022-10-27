@@ -102,7 +102,7 @@ function get_condition_html(condition_types) {
         return;
     }
     conditions_html += `
-        <div class="ui circular label condition" data-html="${violation_string}" data-variation="wide"> 
+        <div class="ui circular label condition gray black-text" data-html="${violation_string}" data-variation="wide"> 
           ${condition_string}
         </div>`
   });

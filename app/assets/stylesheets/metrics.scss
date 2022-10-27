@@ -129,6 +129,10 @@ i.external.alternate {
   min-width: max-content;
 }
 
+.name_label {
+  font-size: 14px;
+  font-weight: 400;
+}
 .email_label {
   color: grey;
   font-size: 10px;
@@ -136,8 +140,9 @@ i.external.alternate {
 }
 
 .select_single label {
+  // color, font-weight needed here for non checkbox label
   color: black;
-  font-size: 1em;
+  font-weight: 300;
   display: inline-block !important; 
   vertical-align: middle !important;
   -webkit-touch-callout: default !important; /* iOS Safari */
@@ -148,12 +153,19 @@ i.external.alternate {
   user-select: auto !important; /* Non-prefixed version, currently
                                 supported by Chrome and Opera */
 }
-
+// override materialize style for checkbox label
+.select_single [type="checkbox"] + label {
+  color: black;
+  font-weight: 300;
+}
 .ui.checkbox.select_single label:before, 
 .ui.checkbox.select_single label:after {
   top: 6.5px;
 }
-
+// override weight for watchlist label
+.segment .label {
+  font-weight: 400;
+}
 .ui.search .ui.input {
   width: 230px;
   float: right;
