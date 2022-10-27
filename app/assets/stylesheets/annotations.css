@@ -567,14 +567,24 @@
   overflow: auto;
 }
 
-/* Annotations collapsible icons */
-
 .annotationSummary .collapsible li.active i.expand-icon {
   display: none;
 }
 
 .annotationSummary .collapsible li:not(.active) i.collapse-icon {
   display: none;
+}
+
+.annotationSummary .global-annotation {
+  display: flex;
+}
+
+.annotationSummary .global-annotation .annotation-tools {
+  margin-left: auto;
+}
+
+.annotationSummary .global-annotation:not(:hover) .annotation-tools {
+  visibility: hidden;
 }
 
 .annotationSummary .summary_score {

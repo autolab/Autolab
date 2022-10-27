@@ -16,7 +16,7 @@
             <div class="collapsible-header-controls">
               <i class="small material-icons expand-icon">expand_more</i>
               <i class="small material-icons collapse-icon">expand_less</i>
-              <i class="small material-icons">add</i>
+              <i class="small material-icons instructors-only">add</i>
             </div>
           </div>
           <div class="collapsible-body">
@@ -34,15 +34,19 @@
                  annotations_by_file = annotations_by_file.sort_by{ |a| [a[6], a[2]] }.group_by { |a| a[6] } %>
                 <div class="file_annotations">
                   <% global_annotations.each do |description, value, line, user, id, position, filename, global| %>
-                    <div class="descript" id="li-annotation-<%= id %>">
-                      <span class="point_badge <%= value > 0 ? "positive" : value < 0 ? "negative" : "neutral" %>">
-                        <%= plus_fix(value) %>
-                      </span>
-                      <div class="global-annotation-tools" data-annotationId="<%= id %>">
-                        <a class="annotation-edit-button" href="#"><i class="material-icons">edit</i></a>
-                        <a class="annotation-delete-button" href="#"><i class="material-icons">delete</i></a>
+                    <div class="global-annotation" id="li-annotation-<%= id %>">
+                      <div>
+                        <span class="point_badge <%= value > 0 ? "positive" : value < 0 ? "negative" : "neutral" %>">
+                          <%= plus_fix(value) %>
+                        </span>
+                        <%= description %>
                       </div>
-                      <%= description %>
+                      <div class="annotation-tools">
+                        <span class="instructors-only" data-annotationId="<%= id %>">
+                          <a class="annotation-edit-button" href="#"><i class="material-icons">edit</i></a>
+                          <a class="annotation-delete-button" href="#"><i class="material-icons">delete</i></a>
+                        </span>
+                      </div>
                     </div>
                   <% end %>
                 </div>
