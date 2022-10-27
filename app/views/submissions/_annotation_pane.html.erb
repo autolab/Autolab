@@ -3,16 +3,21 @@
     <ul class="collapsible expandable">
       <% @problemSummaries.each do |problem, descriptTuples| %>
         <li id="li-problem-<%= problem %>" class="active">
-          <div class="collapsible-header">
-            <h4> <%= problem.capitalize %>
-                <div class="summary_score">
-                  <% if @cud.instructor? or @cud.course_assistant? or @problemReleased%>
-                    <%= plus_fix(@problemGrades[problem]) %>
-                  <% end %>
-                </div>
-            </h4>
-            <i class="large material-icons expand-icon">arrow_drop_down</i>
-            <i class="large material-icons collapse-icon">arrow_drop_up</i>
+          <div class="collapsible-header-wrap">
+            <div class="collapsible-header">
+              <h4> <%= problem.capitalize %>
+                  <div class="summary_score">
+                    <% if @cud.instructor? or @cud.course_assistant? or @problemReleased%>
+                      <%= plus_fix(@problemGrades[problem]) %>
+                    <% end %>
+                  </div>
+              </h4>
+            </div>
+            <div class="collapsible-header-controls">
+              <i class="small material-icons expand-icon">expand_more</i>
+              <i class="small material-icons collapse-icon">expand_less</i>
+              <i class="small material-icons">add</i>
+            </div>
           </div>
           <div class="collapsible-body">
             <% if @cud.instructor? or @cud.course_assistant? or @problemReleased%>
@@ -33,6 +38,10 @@
                       <span class="point_badge <%= value > 0 ? "positive" : value < 0 ? "negative" : "neutral" %>">
                         <%= plus_fix(value) %>
                       </span>
+                      <div class="global-annotation-tools" data-annotationId="<%= id %>">
+                        <a class="annotation-edit-button" href="#"><i class="material-icons">edit</i></a>
+                        <a class="annotation-delete-button" href="#"><i class="material-icons">delete</i></a>
+                      </div>
                       <%= description %>
                     </div>
                   <% end %>

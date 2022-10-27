@@ -532,6 +532,14 @@
   margin: 10px 0;
 }
 
+.annotationSummary .collapsible-header-wrap {
+  display: flex;
+}
+
+.annotationSummary .collapsible-header-controls {
+  margin-left: auto;
+}
+
 .annotationSummary .collapsible-header{
   min-height: inherit;
   line-height: inherit;
@@ -560,11 +568,6 @@
 }
 
 /* Annotations collapsible icons */
-
-.annotationSummary .collapsible i.expand-icon,
-.annotationSummary .collapsible i.collapse-icon {
-  font-size: 2rem;
-}
 
 .annotationSummary .collapsible li.active i.expand-icon {
   display: none;
