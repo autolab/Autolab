@@ -129,10 +129,10 @@ function plusFix(n) {
   if (isNaN(n)) n = 0;
 
   if (n > 0) {
-    return "+" + n.toFixed(1);
+    return "+" + n.toFixed(2);
   }
 
-  return n.toFixed(1);
+  return n.toFixed(2);
 }
 
 // function called after create, update & delete of annotations
