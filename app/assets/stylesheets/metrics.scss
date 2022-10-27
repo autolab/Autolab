@@ -29,13 +29,13 @@ $autolab-subtle-red: #C87B7E;
   min-width: 20px !important;
 }
 
-span:before {
-  content:" "; 
+span.padded-span:before {
+  content:" ";
   display:inline-block; 
   width:10px;
 }
 
-span:after {
+span.padded-span:after {
   content:" "; 
   display:inline-block; 
   width:10px;
