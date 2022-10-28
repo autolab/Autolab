@@ -77,7 +77,7 @@
     </ul>
     <% end %>
   </div>
-  <!-- category averages -->
+  <!-- course / assessment statistics -->
   <div class="col s12 m8">
     <div class="category">
       <table class="stats-table">
@@ -101,7 +101,9 @@
         </thead>
         <tbody>
         <%
-           @course_stats.filter{|_, statsValue| statsValue[0] == "avg"}.each do |name, statsValue|
+           # filter only for category / course average
+           @course_stats.filter{|_, statsValue| statsValue[0] == "avg"}
+                        .each do |name, statsValue|
         %>
           <% stats = statsValue[2] %>
           <tr>
@@ -117,7 +119,12 @@
         <% end %>
         </tbody>
         <tbody>
-        <% @course_stats.filter{|_, statsValue| statsValue[0] == "asmt"}.group_by{|_, statsValue| statsValue[1].category_name}.each do |category_name, category_asmts| %>
+        <%
+          # filter for only assessments, group into hashes based on category
+          @course_stats.filter{|_, statsValue| statsValue[0] == "asmt"}
+                        .group_by{|_, statsValue| statsValue[1].category_name}
+                        .each do |category_name, category_asmts|
+        %>
           <thead>
           <tr class="header">
             <th><%= category_name %> Averages</th>
@@ -133,11 +140,7 @@
           <% stats = statsValue[2] %>
           <tr>
             <td>
-              <% if !asmt.nil?%>
                 <%= link_to asmt.display_name, course_assessment_path(@course, asmt) %>
-              <% else %>
-                <%= name %>
-              <% end %>
             </td>
             <td><%= stats[:mean] %></td>
             <td><%= stats[:median] %></td>
