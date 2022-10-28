@@ -180,7 +180,7 @@ class CourseUserDatum < ApplicationRecord
 
         ggl = global_grace_days_left!
 
-        Rails.cache.write(ggl_cache_key, ggl)
+        Rails.cache.write(ggl_cache_key, ggl, expires_in: 7.days, race_condition_ttl: 1.minute)
         # release lock
       end
     end
