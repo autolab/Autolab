@@ -142,6 +142,7 @@ function fillAnnotationBox() {
   $('#annotationPane').load(document.URL + ' #annotationPane', function() {
     $('.collapsible').collapsible({ accordion: false });
     attachChangeFileEvents();
+    attachAnnotationEvents();
   });
 }
 
@@ -319,7 +320,6 @@ function attachEvents() {
 
       refreshAnnotations();
     }
-
   });
 }
 
@@ -341,6 +341,38 @@ function attachChangeFileEvents() {
 
   $(".file").on("click", changeFileClickHandler);
   $(".descript-link").on("click", changeFileClickHandler);
+}
+
+// Events that deal with the annotation panel
+function attachAnnotationEvents() {
+  // Delete action for global annotations
+  $('.global-annotation .annotation-delete-button').on("click", function (e) {
+    e.preventDefault();
+    if (!confirm("Are you sure you want to delete this annotation?")) return;
+    const annotationIdData = $(this).parent().data('annotationid');
+    console.log(annotationIdData);
+    const annotationId = annotations.findIndex((e) => e.id === annotationIdData);
+
+    if (annotationId === -1) return;
+
+    const annotation = annotations[annotationId];
+
+    $.ajax({
+      url: deletePath(annotation),
+      type: 'DELETE',
+      complete: function () {
+        annotations.splice(annotationId, 1);
+        initializeAnnotationsForCode();
+        fillAnnotationBox();
+      }
+    });
+  });
+
+  // Chevron events (collapse / show problem)
+  $('.collapsible-header-controls .collapse-icon, .collapsible-header-controls .expand-icon').on('click', function(e) {
+    e.preventDefault();
+    $(e.target).closest(".collapsible-header-wrap").find(".collapsible-header").click();
+  });
 }
 
 var initializeAnnotationsForCode = function () {
