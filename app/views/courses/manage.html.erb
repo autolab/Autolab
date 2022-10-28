@@ -77,16 +77,17 @@
     </ul>
     <% end %>
   </div>
+  <!-- category averages -->
   <div class="col s12 m8">
     <div class="category">
       <table class="stats-table">
         <colgroup>
-          <col class="asmt_names"></col>
-          <col class="gdu"></col>
-          <col class="gdu"></col>
-          <col class="gdu"></col>
-          <col class="gdu"></col>
-          <col class="gdu"></col>
+          <col class="asmt_names">
+          <col class="gdu">
+          <col class="gdu">
+          <col class="gdu">
+          <col class="gdu">
+          <col class="gdu">
         </colgroup>
         <thead>
         <tr class="header">
@@ -115,33 +116,19 @@
           </tr>
         <% end %>
         </tbody>
-      </table>
-    </div>
-  </div>
-  <div class="col s12 m8" style="margin-top: 10px">
-    <div class="category">
-      <table class="stats-table">
-        <colgroup>
-          <col class="asmt_names"></col>
-          <col class="gdu"></col>
-          <col class="gdu"></col>
-          <col class="gdu"></col>
-          <col class="gdu"></col>
-          <col class="gdu"></col>
-        </colgroup>
-        <thead>
+        <tbody>
+        <% @course_stats.filter{|_, statsValue| statsValue[0] == "asmt"}.group_by{|_, statsValue| statsValue[1].category_name}.each do |category_name, category_asmts| %>
+          <thead>
           <tr class="header">
-            <th>Assessment Averages</th>
+            <th><%= category_name %> Averages</th>
             <th>Mean</th>
             <th>Median</th>
             <th>Std. Dev.</th>
             <th>Min</th>
             <th>Max</th>
           </tr>
-        </thead>
-        <tbody>
-        <% @course_stats.filter{|_, statsValue| statsValue[0] == "asmt"}.each do |name, statsValue| %>
-          <% type = statsValue[0] %>
+          </thead>
+        <% category_asmts.each do |name, statsValue| %>
           <% asmt = statsValue[1] %>
           <% stats = statsValue[2] %>
           <tr>
@@ -158,6 +145,7 @@
             <td><%= stats[:min] %></td>
             <td><%= stats[:max] %></td>
           </tr>
+        <% end %>
         <% end %>
         </tbody>
       </table>

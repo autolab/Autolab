@@ -55,6 +55,11 @@ class CoursesController < ApplicationController
     cols["Course Average"] = ["avg", nil, matrix.course_averages]
 
     # calculate statistics
+    # send course_stats back in the form of
+    # name of average / assesment -> [type, asmt, statistics]
+    # where type = "asmt" or "avg" (assessment or average)
+    # asmt = assessment object or nil if an average of category / class
+    # statistics (statistics pertaining to asmt/avg (mean, median, std dev, etc))
     @course_stats = {}
     stat = Statistics.new
     cols.each do |key, values|
