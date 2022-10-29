@@ -19,10 +19,25 @@
 </div>
 <div class="ui tab active" data-tab="watchlist" id="watchlist_tab">
   <div class="top-bar">
-    <div class="ui checkbox select_all"><input type="checkbox"/></div>
-    <button class="ui submit small button" id="contact_button"><i class="mail outline icon"></i>CONTACT</button>
-    <button class="ui submit small button" id="resolve_button"><i class="check circle icon"></i>RESOLVE</button>
-    <button class="ui icon small button" id="delete_button" data-content="Removing selected student(s)"><i class="trash alternate icon"></i></button>
+    <span class="select-all-chip" id="select_all_checkbox">
+      <!-- hacky way to get checkbox aligned perfectly vertically, spaced -->
+      <div class="ui checkbox select_all" style="margin-top: 2px; margin-right: -5px;">
+        <input type="checkbox"/>
+      </div>
+      Select All Students
+    </span>
+    <button class="ui submit small button" id="contact_button">
+      <i class="mail outline icon"></i>
+      CONTACT
+    </button>
+    <button class="ui submit small button" id="resolve_button">
+      <i class="check circle icon"></i>
+      RESOLVE
+    </button>
+    <button class="ui icon small button" id="delete_button">
+      <i class="trash alternate icon"></i>
+      Delete from watchlist
+    </button>
     <div class="last-updated">
       <b id="last-updated-time"></b> <i class="repeat link icon" id="refresh_btn"></i>
     </div>
@@ -114,7 +129,7 @@
           <input type="checkbox" tabindex="0" class="hidden" name="metrics-checkbox-1">
         </div>
         Students who have used
-        <span>
+        <span class="padded-span">
           <div class="ui selection dropdown" id="grace_days_value">
             <input type="hidden" name="grace_days">
             <i class="dropdown icon"></i>
@@ -127,7 +142,7 @@
           </div>
         </span>
         grace day(s) by
-        <span>
+        <span class="padded-span">
           <div class="ui calendar" id="grace_days_by_date">
             <div class="ui input left icon">
               <i class="calendar icon"></i>
@@ -145,11 +160,11 @@
           <input type="checkbox" tabindex="0" class="hidden" name="metrics-checkbox-2">
         </div>
         Students whose grades have dropped by
-        <span>
+        <span class="padded-span">
           <input type="text" placeholder="0" id='grade_drop_percentage'>
         </span>
         percent within
-        <span>
+        <span class="padded-span">
           <div class="ui selection dropdown" id='grade_drop_consecutive_counts'>
             <input type="hidden" name="number">
             <i class="dropdown icon"></i>
@@ -172,7 +187,7 @@
           <input type="checkbox" tabindex="0" class="hidden" name="metrics-checkbox-3">
         </div>
         Students who did not submit at least
-        <span>
+        <span class="padded-span">
           <div class="ui selection dropdown" id="no_submit_value">
             <input type="hidden" name="number">
             <i class="dropdown icon"></i>
@@ -195,7 +210,7 @@
           <input type="checkbox" tabindex="0" class="hidden" name="metrics-checkbox-4">
         </div>
         Students with at least
-        <span>
+        <span class="padded-span">
           <div class="ui selection dropdown" id="low_grades_count">
             <input type="hidden" name="number">
             <i class="dropdown icon"></i>
@@ -208,7 +223,7 @@
           </div>
         </span>
         submitted assignment(s) below a percentage of
-        <span>
+        <span class="padded-span">
           <input type="text" placeholder="0" id='low_grades_percentage'>
         </span>
       </div>
