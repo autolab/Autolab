@@ -463,7 +463,7 @@ class SubmissionsController < ApplicationController
       description = annotation.comment
       value = annotation.value || 0
       line = annotation.line
-      problem = annotation.problem ? annotation.problem.name : "General"
+      problem = annotation.problem ? annotation.problem.name : "Global"
       global = annotation.global_comment
       filename = get_correct_filename(annotation, files, @submission)
       @problemSummaries[problem] ||= []

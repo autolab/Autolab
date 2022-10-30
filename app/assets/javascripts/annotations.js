@@ -142,7 +142,7 @@ function fillAnnotationBox() {
   $('#annotationPane').load(document.URL + ' #annotationPane', function() {
     $('.collapsible').collapsible({ accordion: false });
     attachChangeFileEvents();
-    attachAnnotationEvents();
+    attachAnnotationPanelEvents();
   });
 }
 
@@ -306,16 +306,16 @@ function displayAnnotations() {
 }
 
 function attachEvents() {
-  var status = $('#highlightLongLines')[0].checked;
+  const status = $('#highlightLongLines')[0].checked;
   highlightLines(status);
 
   $(".add-button").on("click", function (e) {
     e.preventDefault();
-    var line = $(this).parent().parent().parent();
-    var annotationContainer = line.data("lineId");
+    const line = $(this).parent().parent().parent();
+    const annotationContainer = line.data("lineId");
 
     // append an annotation form only if there is none currently
-    if ($("#annotation-line-" + annotationContainer).find(".annotation-line").length == 0) {
+    if ($("#annotation-line-" + annotationContainer).find(".annotation-line").length === 0) {
       $("#annotation-line-" + annotationContainer).append(newAnnotationFormCode());
 
       refreshAnnotations();
@@ -326,7 +326,7 @@ function attachEvents() {
 function attachChangeFileEvents() {
   // Set up file switching to use the local cache
   function changeFileClickHandler(e) {
-    wasCachedLocally = changeFile($(this).data("header_position"));
+    const wasCachedLocally = changeFile($(this).data("header_position"));
     if (wasCachedLocally) {
       e.preventDefault();
       if ($(this).data("line")) {
@@ -344,13 +344,28 @@ function attachChangeFileEvents() {
 }
 
 // Events that deal with the annotation panel
-function attachAnnotationEvents() {
+function attachAnnotationPanelEvents() {
+  // Add action
+  $(".global-add-button").on("click", function (e) {
+    e.preventDefault();
+    const problemName = $(this).data("problem-name");
+    const $headerDiv = $(this).parent().parent();
+    const $problemLi = $headerDiv.parent();
+
+    if ($problemLi.find(".global-annotation-form").length === 0) {
+      $headerDiv.after(newAnnotationFormCode(problemName));
+    }
+  });
+
+  // Edit action
+
+  // TODO
+
   // Delete action for global annotations
   $('.global-annotation .annotation-delete-button').on("click", function (e) {
     e.preventDefault();
     if (!confirm("Are you sure you want to delete this annotation?")) return;
     const annotationIdData = $(this).parent().data('annotationid');
-    console.log(annotationIdData);
     const annotationId = annotations.findIndex((e) => e.id === annotationIdData);
 
     if (annotationId === -1) return;
@@ -440,9 +455,19 @@ function createAnnotation() {
   return annObj;
 }
 
-function newAnnotationFormCode() {
-  var box = $(".base-annotation-line").clone();
-  box.removeClass("base-annotation-line");
+function newAnnotationFormCode(problemName) {
+  var box;
+
+  // problem is only defined for global annotations
+  if (problemName !== undefined) {
+    box = $(".base-global-annotation-form").clone();
+
+    box.removeClass("base-global-annotation-form");
+  } else {
+    box = $(".base-annotation-line").clone();
+
+    box.removeClass("base-annotation-line");
+  }
 
   // Creates a dictionary of problem and grader_id
   var autogradedproblems = {}
@@ -450,11 +475,13 @@ function newAnnotationFormCode() {
     autogradedproblems[score.problem_id] = score.grader_id;
   })
 
+  var problemNameToIdMap = {};
   _.each(problems, function (problem) {
-    if (autogradedproblems[problem.id] != 0) { // Because grader == 0 is autograder
+    if (autogradedproblems[problem.id] !== 0) { // Because grader == 0 is autograder
       box.find("select").append(
         $("<option />").val(problem.id).text(problem.name)
       )
+      problemNameToIdMap[problem.name] = problem.id;
     }
   })
 
@@ -482,7 +509,7 @@ function newAnnotationFormCode() {
     var shared_comment = $(this).find("#shared-comment").is(":checked");
     var global_comment = $(this).find("#global-comment").is(":checked");
     var score = $(this).find(".score").val();
-    var problem_id = $(this).find(".problem-id").val();
+    var problem_id = problemName ? problemNameToIdMap[problemName] : $(this).find(".problem-id").val();
     var line = $(this).parent().parent().data("lineId");
 
     if (comment === undefined || comment === "") {
@@ -495,7 +522,7 @@ function newAnnotationFormCode() {
       return;
     }
 
-    if (problem_id == undefined) {
+    if (problem_id === undefined) {
       if ($('.select').children('option').length > 0)
         box.find('.error').text("Problem not selected").show();
       else
