@@ -25,6 +25,20 @@ a {
   color: $autolab-blue-text;
 }
 
+
+pre {
+  overflow-x: auto;
+}
+
+h2 {
+  font-size: 2.65rem;
+  font-weight: bold;
+}
+
+h3 {
+  font-size: 2.1rem;
+}
+
 /* Error Classes - for elements that display error/status messages */
 .error {
   color: red;
@@ -751,8 +765,15 @@ table.navigatable tr:hover {
     margin: 0;
   }
 
-  .card-content .card-title {
+  .card-content.white .card-title {
     line-height: normal;
+    font-size: 2.65rem;
+    font-weight: bold;
+  }
+
+  .card-content .card-title.white-text {
+    line-height: normal;
+    font-size: 24px;
   }
 
   .collection {
@@ -973,6 +994,21 @@ form p:last-child {
 }
 
 /**
+* Switch styling
+*/
+
+.switch > label > b {
+  font-size: 1.1rem; 
+  color: black
+}
+
+label[for="switch"] {
+  font-size: 1rem; 
+  color: darkslategrey;
+} 
+
+
+/**
  * Checkbox styling
  */
 
@@ -990,6 +1026,7 @@ form p:last-child {
 .checkbox label {
   margin-left: 8px;
 }
+
 .checkbox label::before {
   cursor: pointer;
   position: absolute;
@@ -1310,10 +1347,34 @@ a.skip-main:active {
   font-size: 1em;
   z-index: 999;
 }
+
+// used in submission_history_table.html.erb
 table.sub {
-  display: block;
+  display: table;
+}
+
+.sub th {
+  vertical-align: top;
+}
+
+.submissions {
   overflow-x: scroll;
 }
-.sub th{
-  vertical-align: top;
+
+.submission-history-button {
+  white-space: nowrap;
+  text-transform: unset !important;
+  font-size: 13px;
+  width: 100%;
+  border-radius: 5px;
+  color: #0882af;
+  box-shadow: 0px -0.5px 0.5px 0px rgba(0, 0, 0, 0.15),
+              0px 0.5px 0.5px 0.5px rgba(0, 0, 0, 0.15),
+              0px 0.5px 0.5px -0.5px rgba(0, 0, 0, 0.15);
+  display: flex;
+  justify-content: center;
+}
+
+.submission-history-button:hover {
+  color: white !important;
 }
