@@ -456,10 +456,12 @@ function createAnnotation() {
 }
 
 function newAnnotationFormCode(problemName) {
+  const isGlobal = problemName !== undefined;
+
   var box;
 
   // problem is only defined for global annotations
-  if (problemName !== undefined) {
+  if (isGlobal) {
     box = $(".base-global-annotation-form").clone();
 
     box.removeClass("base-global-annotation-form");
@@ -507,9 +509,9 @@ function newAnnotationFormCode(problemName) {
     e.preventDefault();
     var comment = $(this).find(".comment").val();
     var shared_comment = $(this).find("#shared-comment").is(":checked");
-    var global_comment = $(this).find("#global-comment").is(":checked");
+    var global_comment = isGlobal ? true : (this).find("#global-comment").is(":checked");
     var score = $(this).find(".score").val();
-    var problem_id = problemName ? problemNameToIdMap[problemName] : $(this).find(".problem-id").val();
+    var problem_id = isGlobal ? problemNameToIdMap[problemName] : $(this).find(".problem-id").val();
     var line = $(this).parent().parent().data("lineId");
 
     if (comment === undefined || comment === "") {
