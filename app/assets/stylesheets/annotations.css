@@ -580,6 +580,7 @@
 }
 
 .annotationSummary .global-annotation .annotation-tools {
+  flex-shrink: 0;
   margin-left: auto;
 }
 
