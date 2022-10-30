@@ -346,6 +346,12 @@ class WatchlistInstance < ApplicationRecord
   end
   # rubocop:enable Style/GuardClause
 
+  ##
+  # Archives instances of dropped students
+  #
+  # Given course and current instances
+  # archives instances where the student is no longer in the course
+  # returns the remaining instances
   def self.remove_dropped_students(course, current_instances)
     dropped_cuds = CourseUserDatum.where(course_id: course.id, instructor: false,
                                          course_assistant: false, dropped: true).pluck(:id)
