@@ -42,9 +42,13 @@ class WatchlistInstance < ApplicationRecord
       # no-op
     else
       # case 2: current risk conditions exist
+
+      # remove dropped students from watchlist
+      filtered_instances = remove_dropped_students(course, current_instances)
+
       # take category blocklist into consideration
       new_instances, deprecated_instances = add_new_instances_for_conditions(
-        current_conditions, course, category_blocklist, current_instances
+        current_conditions, course, category_blocklist, filtered_instances
       )
     end
 
@@ -342,14 +346,31 @@ class WatchlistInstance < ApplicationRecord
   end
   # rubocop:enable Style/GuardClause
 
+  ##
+  # Archives instances of dropped students
+  #
+  # Given course and current instances
+  # archives instances where the student is no longer in the course
+  # returns the remaining instances
+  def self.remove_dropped_students(course, current_instances)
+    dropped_cuds = CourseUserDatum.where(course_id: course.id, instructor: false,
+                                         course_assistant: false, dropped: true).pluck(:id)
+    current_instances.where(course_user_datum_id: dropped_cuds)
+                     .find_each(&:archive_watchlist_instance)
+    current_instances.where.not(course_user_datum_id: dropped_cuds)
+  end
+
   def self.add_new_instances_for_conditions(conditions, course, category_blocklist,
                                             current_instances)
     new_instances = []
+
+    # prevent dropped students from being considered
     course_user_data = CourseUserDatum.where(course_id: course.id, instructor: false,
-                                             course_assistant: false)
+                                             course_assistant: false, dropped: false)
 
     # new
     criteria2 = current_instances.where(status: :pending)
+
     # contacted or resolved
     criteria1 = current_instances - criteria2
     deprecated_instances = current_instances
