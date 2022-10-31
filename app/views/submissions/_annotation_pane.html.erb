@@ -20,6 +20,9 @@
             </div>
           </div>
           <div class="collapsible-body">
+            <% if descriptTuples.empty? %>
+              There are currently no annotations.
+            <% end %>
             <% if @cud.instructor? or @cud.course_assistant? or @problemReleased%>
               <%# Note: group_by preserves insertion order %>
               <%#

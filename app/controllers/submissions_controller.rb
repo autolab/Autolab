@@ -477,6 +477,12 @@ class SubmissionsController < ApplicationController
     @problems = @assessment.problems.to_a
     @problems.sort! { |a, b| a.id <=> b.id }
 
+    # Initialize problems without annotations
+    @problems.each do |problem|
+      @problemSummaries[problem.name] ||= []
+      @problemGrades[problem.name] ||= 0
+    end
+
     @latestSubmissions = @assessment.assessment_user_data
                                     .map(&:latest_submission)
                                     .reject(&:nil?)
