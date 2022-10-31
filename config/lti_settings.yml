@@ -6,5 +6,6 @@ development:
   developer_key: "lti.app.client_id"
   auth_url: "https://lti-ri.imsglobal.org/platforms/3644/authorizations/new"
 
+
 test:
   test_con_key: 'ac67f77a6d86c36a776b380408fb0f428e31b11f0ce1b2d316938d5090852f7900e25ca322d6a70fa6240a477e94eda32508150ae0674e46957d3c17c68a95d4'

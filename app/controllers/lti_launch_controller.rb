@@ -4,7 +4,6 @@ class LtiLaunchController < ApplicationController
   skip_before_action :authorize_user_for_course
   skip_before_action :update_persistent_announcements
   skip_before_action :authenticate_for_action
-  skip_before_action :authenticate_user!
 
   # have to do because we are making a POST request from Canvas
   skip_before_action :verify_authenticity_token
@@ -16,12 +15,14 @@ class LtiLaunchController < ApplicationController
       super(msg)
     end
   end
+  rescue_from LtiError, with: :respond_with_lti_error
+  respond_to :json
   def respond_with_lti_error(error)
+    puts(error)
     Rails.logger.send(:warn) {"#{error.status_code} Lti Error: #{error.message}"}
     render :json => {:error => error.message}.to_json, :status => error.status_code
   end
 
-  rescue_from LtiError, with: :respond_with_lti_error
   def validate_oidc_login(params)
 
     # Validate Issuer.
@@ -42,18 +43,41 @@ class LtiLaunchController < ApplicationController
     #     throw new OIDC_Exception("Could not find registration details", 1);
     #   }}
   end
-  def redirect
-    @id_token = params["id_token"]
-    @jwt_parts = @id_token.split(".")
-    if (@jwt_parts.size != 3)
-      raise LtiError.new("JWT is wrong", :bad_request)
+  def validate_state(params)
+    if (params["state"].nil?)
+      raise LtiError.new("no state found", :bad_request)
     end
-    puts(@jwt_parts)
-    @jwt_body = Base64.urlsafe_decode64(@jwt_parts[1])
-    render json: @jwt_body.as_json
-    puts("got", params)
+    # match previous state cookie from oidc_login
+    if cookies["lti1p3_#{params["state"]}"] != params["state"]
+      raise LtiError.new("state cookie not found or correct", :bad_request)
+    end
+  end
+  def validate_jwt_format(id_token)
+    if (id_token.nil?)
+      raise LtiError.new("no id token found", :bad_request)
+    end
+    jwt_parts = id_token.split(".")
+    if (jwt_parts.size != 3)
+      raise LtiError.new("JWT not valid", :bad_request)
+    end
+    @jwt = {header: Base64.urlsafe_decode64(jwt_parts[0]),
+            body:  Base64.urlsafe_decode64(jwt_parts[1]),
+            sig: Base64.urlsafe_decode64(jwt_parts[1])}
+  end
+  def validate_nonce()
   end
   def launch
+    puts(params)
+    validate_state(params)
+    id_token = params["id_token"]
+    validate_jwt_format(id_token)
+    validate_nonce()
+    # puts(@jwt_parts)
+    # @jwt_body = Base64.urlsafe_decode64(@jwt_parts[1])
+    render json: @jwt[:body].as_json
+    puts("got", params)
+  end
+  def oidc_login
     # code based on: https://github.com/IMSGlobal/lti-1-3-php-library/blob/master/src/lti/LTI_OIDC_Login.php
     # validate OIDC
     puts("hello", params)
@@ -75,7 +99,7 @@ class LtiLaunchController < ApplicationController
       "response_type": "id_token", # oidc response is always an id token
       "response_mode": "form_post", # oidc response is always a form post
       "client_id": Rails.configuration.lti_settings["developer_key"], # client id (developer key)
-      "redirect_uri": "http://localhost:3000/lti_launch/redirect", # URL to return to after login
+      "redirect_uri": "http://localhost:3000/lti_launch/launch", # URL to return to after login
       "state": state, # state to identify browser session
       "nonce": nonce, # nonce to prevent replay attacks
       "login_hint": params["login_hint"], # login hint to identify platform session
