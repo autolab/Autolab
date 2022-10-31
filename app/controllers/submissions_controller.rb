@@ -458,21 +458,6 @@ class SubmissionsController < ApplicationController
     files = if Archive.archive? @filename
               Archive.get_files(@filename)
             end
-    # extract information from annotations
-    @annotations.each do |annotation|
-      description = annotation.comment
-      value = annotation.value || 0
-      line = annotation.line
-      problem = annotation.problem ? annotation.problem.name : "Global"
-      global = annotation.global_comment
-      filename = get_correct_filename(annotation, files, @submission)
-      @problemSummaries[problem] ||= []
-      @problemSummaries[problem] << [description, value, line, annotation.submitted_by,
-                                     annotation.id, annotation.position, filename, global]
-
-      @problemGrades[problem] ||= 0
-      @problemGrades[problem] += value
-    end
 
     @problems = @assessment.problems.to_a
     @problems.sort! { |a, b| a.id <=> b.id }
@@ -481,6 +466,19 @@ class SubmissionsController < ApplicationController
     @problems.each do |problem|
       @problemSummaries[problem.name] ||= []
       @problemGrades[problem.name] ||= 0
+    end
+
+    # extract information from annotations
+    @annotations.each do |annotation|
+      description = annotation.comment
+      value = annotation.value || 0
+      line = annotation.line
+      problem = annotation.problem ? annotation.problem.name : "Global"
+      global = annotation.global_comment
+      filename = get_correct_filename(annotation, files, @submission)
+      @problemSummaries[problem] << [description, value, line, annotation.submitted_by,
+                                     annotation.id, annotation.position, filename, global]
+      @problemGrades[problem] += value
     end
 
     @latestSubmissions = @assessment.assessment_user_data
