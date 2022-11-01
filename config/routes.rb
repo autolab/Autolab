@@ -17,7 +17,7 @@ Rails.application.routes.draw do
                                      param: :email, :constraints => { :email => /[^\/]+/ }
         
         resources :assessments, param: :name, only: [:index, :show] do
-          get "problems"
+          resources :problems, only: [:index, :create]
           get "writeup"
           get "handout"
           post "submit"
