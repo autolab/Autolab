@@ -354,7 +354,7 @@ function attachAnnotationPanelEvents() {
     const problem = $(this).data("problem");
     const $headerDiv = $(this).parent().parent();
 
-    if ($headerDiv.parent().find(".global-annotation-form").length === 0) {
+    if (!$headerDiv.next().hasClass("global-annotation-form")) {
       $headerDiv.after(globalAnnotationFormCode(true, { problem }));
     }
   });
@@ -367,10 +367,10 @@ function attachAnnotationPanelEvents() {
     const score = $(this).data("score");
     const comment = $(this).data("comment");
     const annotationId = $(this).data("annotationid");
-    const $annotationDiv = $(this).parents(".global-annotation").find(".annotation-description");
+    const $wrapperDiv = $(this).parents(".file_annotations");
 
-    if ($annotationDiv.find(".global-annotation-form").length === 0) {
-      $annotationDiv.append(globalAnnotationFormCode(false, { problem, score, comment, annotationId }));
+    if ($wrapperDiv.find(".global-annotation-form").length === 0) {
+      $wrapperDiv.append(globalAnnotationFormCode(false, { problem, score, comment, annotationId }));
     }
   });
 
@@ -546,7 +546,7 @@ function globalAnnotationFormCode(newAnnotation, config) {
   if (!newAnnotation) {
     box.find(".comment").val(config.comment);
     box.find(".score").val(config.score);
-    box.find('input[type=submit]').val("Update global annotation");
+    box.find('input[type=submit]').val("Update annotation");
   }
 
   var problemNameToIdMap = {};
