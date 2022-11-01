@@ -543,7 +543,7 @@ function globalAnnotationFormCode(newAnnotation, config) {
   if (!newAnnotation) {
     box.find(".comment").val(config.comment);
     box.find(".score").val(config.score);
-    box.find('input[type=submit]').val("Update annotation");
+    box.find('input[type=submit]').val("Update global annotation");
   }
 
   var problemNameToIdMap = {};
