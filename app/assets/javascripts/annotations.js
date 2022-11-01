@@ -509,7 +509,7 @@ function newAnnotationFormCode(problemName) {
     e.preventDefault();
     var comment = $(this).find(".comment").val();
     var shared_comment = $(this).find("#shared-comment").is(":checked");
-    var global_comment = isGlobal ? true : (this).find("#global-comment").is(":checked");
+    var global_comment = isGlobal ? true : $(this).find("#global-comment").is(":checked");
     var score = $(this).find(".score").val();
     var problem_id = isGlobal ? problemNameToIdMap[problemName] : $(this).find(".problem-id").val();
     var line = $(this).parent().parent().data("lineId");

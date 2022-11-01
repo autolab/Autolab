@@ -20,10 +20,10 @@
             </div>
           </div>
           <div class="collapsible-body">
-            <% if descriptTuples.empty? %>
-              There are currently no annotations.
-            <% end %>
-            <% if @cud.instructor? or @cud.course_assistant? or @problemReleased%>
+            <% if @cud.instructor? or @cud.course_assistant? or @problemReleased %>
+              <% if descriptTuples.empty? %>
+                There are currently no annotations for this problem.
+              <% end %>
               <%# Note: group_by preserves insertion order %>
               <%#
                   First, group_by global (a[7])
@@ -35,24 +35,26 @@
                  global_annotations = global_annotations.sort_by { |a| a[4] }
                  annotations_by_file = annotations_by_type[false] || []
                  annotations_by_file = annotations_by_file.sort_by{ |a| [a[6], a[2]] }.group_by { |a| a[6] } %>
-                <div class="file_annotations">
-                  <% global_annotations.each do |description, value, line, user, id, position, filename, global| %>
-                    <div class="global-annotation" id="li-annotation-<%= id %>">
-                      <div>
-                        <span class="point_badge <%= value > 0 ? "positive" : value < 0 ? "negative" : "neutral" %>">
-                          <%= plus_fix(value) %>
-                        </span>
-                        <%= description %>
+                <% if !global_annotations.empty? %>
+                  <div class="file_annotations">
+                    <% global_annotations.each do |description, value, line, user, id, position, filename, global| %>
+                      <div class="global-annotation" id="li-annotation-<%= id %>">
+                        <div>
+                          <span class="point_badge <%= value > 0 ? "positive" : value < 0 ? "negative" : "neutral" %>">
+                            <%= plus_fix(value) %>
+                          </span>
+                          <%= description %>
+                        </div>
+                        <div class="annotation-tools">
+                          <span class="instructors-only" data-annotationId="<%= id %>">
+                            <a class="annotation-edit-button" href="#"><i class="material-icons">edit</i></a>
+                            <a class="annotation-delete-button" href="#"><i class="material-icons">delete</i></a>
+                          </span>
+                        </div>
                       </div>
-                      <div class="annotation-tools">
-                        <span class="instructors-only" data-annotationId="<%= id %>">
-                          <a class="annotation-edit-button" href="#"><i class="material-icons">edit</i></a>
-                          <a class="annotation-delete-button" href="#"><i class="material-icons">delete</i></a>
-                        </span>
-                      </div>
-                    </div>
-                  <% end %>
-                </div>
+                    <% end %>
+                  </div>
+                <% end %>
                 <% annotations_by_file.each do |filename, annotations| %>
                   <div class="file_annotations">
                     <strong> <%= filename %> </strong>
@@ -78,7 +80,7 @@
                   </div>
                 <% end %>
             <% else %>
-              <i>Unreleased</i>
+              There are unreleased annotations.
             <% end %>
           </div>
         </li>
