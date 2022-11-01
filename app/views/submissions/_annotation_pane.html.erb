@@ -7,7 +7,7 @@
             <div class="collapsible-header">
               <h4> <%= problem.capitalize %>
                   <div class="summary_score">
-                    <% if @cud.instructor? or @cud.course_assistant? or @problemReleased%>
+                    <% if @cud.instructor? or @cud.course_assistant? or @problemReleased %>
                       <%= plus_fix(@problemGrades[problem]) %>
                     <% end %>
                   </div>
@@ -16,7 +16,9 @@
             <div class="collapsible-header-controls">
               <a href="#"><i class="small material-icons expand-icon">expand_more</i></a>
               <a href="#"><i class="small material-icons collapse-icon">expand_less</i></a>
-              <a href="#" class="global-add-button" data-problem-name="<%= problem %>"><i class="small material-icons instructors-only">add</i></a>
+              <a href="#" class="global-annotation-add-button" data-problem-name="<%= problem %>">
+                <i class="small material-icons instructors-only">add</i>
+              </a>
             </div>
           </div>
           <div class="collapsible-body">
@@ -39,7 +41,7 @@
                   <div class="file_annotations">
                     <% global_annotations.each do |description, value, line, user, id, position, filename, global| %>
                       <div class="global-annotation" id="li-annotation-<%= id %>">
-                        <div>
+                        <div class="annotation-description">
                           <span class="point_badge <%= value > 0 ? "positive" : value < 0 ? "negative" : "neutral" %>">
                             <%= plus_fix(value) %>
                           </span>
@@ -47,8 +49,15 @@
                         </div>
                         <div class="annotation-tools">
                           <span class="instructors-only" data-annotationId="<%= id %>">
-                            <a class="annotation-edit-button" href="#"><i class="material-icons">edit</i></a>
-                            <a class="annotation-delete-button" href="#"><i class="material-icons">delete</i></a>
+                            <a class="global-annotation-edit-button" href="#"
+                               data-annotationid="<%= id %>"
+                               data-problem="<%= problem %>"
+                               data-score="<%= value %>"
+                               data-comment="<%= description %>"
+                            >
+                              <i class="material-icons">edit</i>
+                            </a>
+                            <a class="global-annotation-delete-button" href="#"><i class="material-icons">delete</i></a>
                           </span>
                         </div>
                       </div>
