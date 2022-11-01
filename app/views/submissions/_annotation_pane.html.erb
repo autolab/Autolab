@@ -14,17 +14,21 @@
               </h4>
             </div>
             <div class="collapsible-header-controls">
-              <a href="#"><i class="small material-icons expand-icon">expand_more</i></a>
-              <a href="#"><i class="small material-icons collapse-icon">expand_less</i></a>
-              <a href="#" class="global-annotation-add-button" data-problem="<%= problem %>">
-                <i class="small material-icons instructors-only">add</i>
+              <a href="#" title="Expand dropdown"><i class="small material-icons expand-icon">expand_more</i></a>
+              <a href="#" title="Collapse dropdown"><i class="small material-icons collapse-icon">expand_less</i></a>
+              <% if @cud.instructor? or @cud.course_assistant? %>
+              <a href="#" class="global-annotation-add-button" data-problem="<%= problem %>" title="Add global annotation">
+                <i class="small material-icons">add</i>
               </a>
+              <% end %>
             </div>
           </div>
           <div class="collapsible-body">
             <% if @cud.instructor? or @cud.course_assistant? or @problemReleased %>
               <% if descriptTuples.empty? %>
-                There are currently no annotations for this problem.
+                <%# Note: Students also see this when grades have been released, but it is not past the grading deadline %>
+                <%# This differs from the "unreleased message" if grades have not been released %>
+                There are currently no annotations.
               <% end %>
               <%# Note: group_by preserves insertion order %>
               <%#
@@ -47,20 +51,25 @@
                           </span>
                           <%= description %>
                         </div>
+                        <% if @cud.instructor? or @cud.course_assistant? %>
                         <div class="annotation-tools">
-                          <span class="instructors-only" data-annotationId="<%= id %>">
+                          <span data-annotationId="<%= id %>">
                             <a class="global-annotation-edit-button" href="#"
                                data-annotationid="<%= id %>"
                                data-problem="<%= problem %>"
                                data-score="<%= value %>"
                                data-comment="<%= description %>"
+                               title="Edit global annotation"
                             >
                               <i class="material-icons">edit</i>
                             </a>
-                            <a class="global-annotation-delete-button" href="#"><i class="material-icons">delete</i></a>
+                            <a class="global-annotation-delete-button" href="#" title="Delete global annotation">
+                              <i class="material-icons">delete</i>
+                            </a>
                           </span>
                         </div>
                       </div>
+                      <% end %>
                     <% end %>
                   </div>
                 <% end %>
