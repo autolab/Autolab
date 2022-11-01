@@ -50,6 +50,20 @@ function showFiles() {
   var fileSelector = $("#handin_show_assessment input[type='file']").get(0);
   var file = fileSelector.files[0];
   $("#handin-file-name").text(file.name);
+  if( $('#handin-file-type').length && file
+     && file.name.split(".").length >= 2)         // use this if you are using id to check
+  {
+    $('#handin-file-type-incorrect').text("")
+    var file_type= file.name.split(".")[file.name.split(".").length -1];
+
+    var handin_filetype = $('#handin-file-type').text();
+
+    if (handin_filetype != file_type) {
+      $('#handin-file-type-incorrect').text(`Warning: ${file.name}'s type doesn't match the .${handin_filetype} handin format`)
+    }
+  }
+
+
   $("#handin-modify-date").text(moment(file.lastModified).format("MMMM Do YYYY, h:mm a"));
   submittedFile = false;
 
