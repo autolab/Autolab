@@ -26,8 +26,6 @@
           <div class="collapsible-body">
             <% if @cud.instructor? or @cud.course_assistant? or @problemReleased %>
               <% if descriptTuples.empty? %>
-                <%# Note: Students also see this when grades have been released, but it is not past the grading deadline %>
-                <%# This differs from the "unreleased message" if grades have not been released %>
                 There are currently no annotations.
               <% end %>
               <%# Note: group_by preserves insertion order %>

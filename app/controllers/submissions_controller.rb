@@ -436,7 +436,8 @@ class SubmissionsController < ApplicationController
       end
     end
 
-    @problemReleased = @submission.scores.pluck(:released).all?
+    @problemReleased = @submission.scores.pluck(:released).all? &&
+                       !@assessment.before_grading_deadline?
 
     @annotations = @submission.annotations.to_a
     unless @submission.group_key.empty?
