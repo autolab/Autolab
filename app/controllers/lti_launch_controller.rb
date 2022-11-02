@@ -22,11 +22,12 @@ class LtiLaunchController < ApplicationController
     Rails.logger.send(:warn) {"Lti Error: #{error.message}"}
     render :json => {:error => error.message}.to_json, :status => 400
   end
-
+  # validate we get iss login_hint params for oidc entrypoint
   def validate_oidc_login(params)
 
     # Validate Issuer. Different than other LTI implementations since for now
-    # we will only support integration with one service
+    # we will only support integration with one service, if more than one
+    # integration enabled, then changed to check a list of issuers
     if params['iss'].nil? && params['iss'] != Rails.configuration.lti_settings["iss"]
       raise LtiError.new("Could not find issuer", :bad_request);
     end
@@ -35,15 +36,8 @@ class LtiLaunchController < ApplicationController
     if params['login_hint'].nil?
       raise LtiError.new("Could not find login hint", :bad_request);
     end
-
-    # Fetch Registration Details. Do nothing for now
-    # registration = $this->db->find_registration_by_issuer($request['iss']);
-
-    # {Check we got something.
-    #   if (empty($registration)) {
-    #     throw new OIDC_Exception("Could not find registration details", 1);
-    #   }}
   end
+  # check state matches what was already sent in oidc_login
   def validate_state(params)
     if (params["state"].nil?)
       raise LtiError.new("no state found", :bad_request)
@@ -53,6 +47,7 @@ class LtiLaunchController < ApplicationController
       raise LtiError.new("state cookie not found or correct", :bad_request)
     end
   end
+  # ensure id_token is a valid jwt
   def validate_jwt_format(id_token)
     if (id_token.nil?)
       raise LtiError.new("no id token found in request", :bad_request)
@@ -65,6 +60,7 @@ class LtiLaunchController < ApplicationController
             body:  JSON.parse(Base64.urlsafe_decode64(jwt_parts[1])),
             sig: JSON.parse(Base64.urlsafe_decode64(jwt_parts[1]))}
   end
+  # validate nonce is same as initially sent during oidc_login
   def validate_nonce()
     if (@jwt[:body]["nonce"].nil?)
       raise LtiError.new("no nonce found in request", :bad_request)
@@ -78,7 +74,7 @@ class LtiLaunchController < ApplicationController
     end
 
   end
-  # validate issuer
+  # validate issuer, client_id should be same as stored in our settings
   def validate_registration()
     client_id = @jwt[:body]['aud'].is_a?(Array) ? @jwt[:body]['aud'][0] : @jwt[:body]['aud'];
     if (client_id != Rails.configuration.lti_settings["developer_key"])
@@ -114,7 +110,15 @@ class LtiLaunchController < ApplicationController
     if (@jwt[:body]["https://purl.imsglobal.org/spec/lti/claim/roles"].nil?)
       raise LtiError.new("Roles claim not found", :bad_request)
     end
-
+  end
+  # make sure that we are given the context_memberships_url
+  # otherwise, we can't call / access NRPS
+  def validate_nrps_access()
+    if (@jwt[:body]['https://purl.imsglobal.org/spec/lti-nrps/claim/namesroleservice'].nil?  ||
+        @jwt[:body]['https://purl.imsglobal.org/spec/lti-nrps/claim/namesroleservice']['context_memberships_url'].nil? ||
+      @jwt[:body]['https://purl.imsglobal.org/spec/lti-nrps/claim/namesroleservice']['context_memberships_url'].empty?)
+        raise LtiError.new("NRPS context membership url not found", :bad_request)
+    end
   end
   def validate_jwt_signature(id_token)
     rsa_public = OpenSSL::PKey::RSA.new(Rails.configuration.lti_settings["platform_public_key"])
@@ -137,17 +141,17 @@ class LtiLaunchController < ApplicationController
     validate_nonce()
     validate_registration()
     validate_link_request()
+    validate_nrps_access()
     if (!current_user.present?)
       raise LtiError.new("Not logged in!", :bad_request)
     end
     @user = current_user
     redirect_to :controller => "users", :action => "lti_launch_initialize", :launch_context => @jwt[:body], :id=> @user.id
-    # puts(@jwt_parts)
-    # @jwt_body = Base64.urlsafe_decode64(@jwt_parts[1])
-    #render json: @jwt[:body].as_json
-    #puts("got", params)
 
   end
+  # LTI launch entrypoint to initiate open id connect login
+  # build our authentication response and redirect back to
+  # platform
   def oidc_login
     # code based on: https://github.com/IMSGlobal/lti-1-3-php-library/blob/master/src/lti/LTI_OIDC_Login.php
     # validate OIDC
@@ -179,21 +183,12 @@ class LtiLaunchController < ApplicationController
     unless params["lti_message_hint"].nil?
       auth_params["lti_message_hint"] = params["lti_message_hint"]
     end
-    # just testing using the Canvas API, above flow not even necessary for this
-    # because using manually generated Canvas key
+
+    # put auth params as URL query parameters for redirect
     @auth_params = auth_params
     @test = URI.encode_www_form(auth_params)
-    puts("#{Rails.configuration.lti_settings["auth_url"]}?#{@test}")
 
-    puts(auth_params.to_json)
     redirect_to "#{Rails.configuration.lti_settings["auth_url"]}?#{@test}"
-    #render html: @response.body.html_safe
-
-    # might use code in future
-    # get_service_request(params[:oauth_consumer_key],
-    #                     Rails.configuration.lti_settings[params[:oauth_consumer_key]],
-    #                     "https://canvas.cmu.edu/api/lti/courses/28853/names_and_roles?access_token=7752~UIBEUM9K5hYc60tuc4OZR8cixYYHXlEWOM9GYo9zKFdAPQlcKQx8FFwBgT5WpzAB")
-    # @response = request(:get, "https://canvas.cmu.edu/api/v1/courses/28853/users", {'Authorization' => "Bearer 7752~Bqkw7YLmlSBYGQDV5oBgrMFOevjV8hDNV3gnjBWFJbVsHYrjBSEqdJORKlyk7ma0"})
   end
 
 end

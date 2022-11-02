@@ -6,7 +6,6 @@ Rails.application.routes.draw do
     get 'lti_launch/oidc_login', to:"lti_launch#oidc_login"
     post 'lti_launch/launch', to:"lti_launch#launch"
     get 'lti_launch/launch', to:"lti_launch#launch"
-    get 'lti_launch/index', to:"lti_launch#index"
 
   namespace :oauth, { defaults: { format: :json } } do
     get "device_flow_init", to: "device_flow#init"

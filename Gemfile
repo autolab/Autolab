@@ -161,7 +161,5 @@ gem 'mimemagic', '>= 0.3.7'
 # For encrypting API tokens
 gem 'lockbox'
 
-
-gem "oauth"
-
-gem 'ims-lti', '~> 1.2.4'
+# to decode / verify jwts for LTI Integration
+gem "jwt"

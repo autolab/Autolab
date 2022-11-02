@@ -1,20 +1,6 @@
 <h4> LTI Linking </h4>
 <h4><%= @user.display_name %></h4>
 <ul class="gray-box">
-  <li> <b>About</b><br>
-    <% if @user.first_name.present? %>
-      First name: <strong><%= @user.first_name %></strong>
-    <% else %>
-      First name: (student has no first name)
-    <% end %>
-    <br>
-    <% if @user.last_name.present? %>
-      Last name: <strong><%= @user.last_name %></strong>
-    <% else %>
-      Last name: (student has no last name)
-    <% end %>
-    <br>
-  </li>
   <li>
     <b> Information from LTI resource </b>
     <ul> Launch email: <%= @launch_context["email"] %></ul>
