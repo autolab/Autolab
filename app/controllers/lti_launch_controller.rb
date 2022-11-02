@@ -143,8 +143,12 @@ class LtiLaunchController < ApplicationController
     # Handle invalid token, e.g. logout user or deny access
     raise LtiError.new("JWT signature invalid", :bad_request)
   end
-
+  # final LTI launch flow endpoint
+  # validate id_token, jwt, check we have NRPS access
+  # redirect to users/:id/lti_launch_initialize for final linking
   def launch
+    # Code based on:
+    # https://github.com/IMSGlobal/lti-1-3-php-library/blob/master/src/lti/LTI_Message_Launch.php
     validate_state(params)
     id_token = params["id_token"]
     validate_jwt_format(id_token)
