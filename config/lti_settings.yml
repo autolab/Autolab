@@ -1,11 +1,16 @@
-production:
-  test_con_key: '17ff13ea27af503557e68f9fe08738a52051702b60b3f399cc09272c5c724738c3ba34fa17ba674595e465cb62081964774d015d049d526399f3024d962ea561'
+#test:
+#  test_con_key: 'ac67f77a6d86c36a776b380408fb0f428e31b11f0ce1b2d316938d5090852f7900e25ca322d6a70fa6240a477e94eda32508150ae0674e46957d3c17c68a95d4'
+
+
+#production:
+#  test_con_key: '17ff13ea27af503557e68f9fe08738a52051702b60b3f399cc09272c5c724738c3ba34fa17ba674595e465cb62081964774d015d049d526399f3024d962ea561'
 
 development:
-  iss: "https://saltire.lti.app/platform"
+  iss: "https://lti-ri.imsglobal.org"
   developer_key: "lti.app.client_id"
   auth_url: "https://lti-ri.imsglobal.org/platforms/3644/authorizations/new"
+  platform_public_key: "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA1+ACVFVSZ6ee2Iv2A3S4O+fcrz4ki3Sigh+1vQcCCbi1arb5najJby9r0rrHbgqpTVM7/LLGvQz8siLUBKdvRAQo6tC0zsI+sbNn4Nu1kK339gk83w56DdqDNsPJohb2Zmkc3GOZYVTncIA9AGrdA2l0R64nWK2gl8y948bRIj9r0fzWgwlIAVwHXmlMoLNBZ6MdcaX85pia/gLBKp4ZFZNF8zWms8h2k9f08AbB2bME04jTfjGOIsHrPYWDfzGyHAueKV9000nzRgQ0LS+ponwXjXZ1Ocqu86sxws19g75TBrpoz+GRODXkwRTJBenlKI+Va7oyUEQZ6jYmgmdFwQIDAQAB\n-----END PUBLIC KEY-----\n"
 
 
-test:
-  test_con_key: 'ac67f77a6d86c36a776b380408fb0f428e31b11f0ce1b2d316938d5090852f7900e25ca322d6a70fa6240a477e94eda32508150ae0674e46957d3c17c68a95d4'
+#test:
+#  test_con_key: 'ac67f77a6d86c36a776b380408fb0f428e31b11f0ce1b2d316938d5090852f7900e25ca322d6a70fa6240a477e94eda32508150ae0674e46957d3c17c68a95d4'

@@ -7,7 +7,7 @@ class UsersController < ApplicationController
     redirect_to("/home/error_404")
   end
   before_action :set_gh_oauth_client, only: [:github_oauth, :github_oauth_callback]
-  before_action :set_user, only: [:github_oauth, :github_revoke]
+  before_action :set_user, only: [:github_oauth, :github_revoke, :lti_launch_initialize]
 
   # GET /users
   action_auth_level :index, :student
@@ -196,7 +196,34 @@ class UsersController < ApplicationController
     flash[:success] = "User destroyed."
     redirect_to(users_path) && return
   end
+  def lti_launch_initialize
+    @launch_context = params[:launch_context]
+    # code from show
+    # get courses where user is instructor
+    if current_user.administrator?
+      # if current user is admin, show whatever he requests
+      @cuds = @user.course_user_data
+    else
+      # look for cud in courses where current user is instructor of
+      cuds = @user.course_user_data
+      user_cuds = []
 
+      cuds.each do |cud|
+        next unless cud.instructor?
+
+        user_cud =
+          cud.course.course_user_data.where(user: @user).first
+        user_cuds << user_cud unless user_cud.nil?
+      end
+    end
+    # lti_launch_context = LtiIntegration.find_by(user_id: @user.id)
+    # if lti_integration.nil?
+    #   lti_launch_context = LtiIntegration.create!(launch_contexts: [launch_context], user: @user)
+    # else
+    #   lti_launch_context.update!(launch_contexts: [launch_context])
+    # end
+    #render json: launch_context
+  end
   action_auth_level :github_oauth, :student
   def github_oauth
     github_integration = GithubIntegration.find_by(user_id: @user.id)

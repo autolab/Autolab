@@ -19,14 +19,15 @@ class LtiLaunchController < ApplicationController
   respond_to :json
   def respond_with_lti_error(error)
     puts(error)
-    Rails.logger.send(:warn) {"#{error.status_code} Lti Error: #{error.message}"}
-    render :json => {:error => error.message}.to_json, :status => error.status_code
+    Rails.logger.send(:warn) {"Lti Error: #{error.message}"}
+    render :json => {:error => error.message}.to_json, :status => 400
   end
 
   def validate_oidc_login(params)
 
-    # Validate Issuer.
-    if params['iss'].nil?
+    # Validate Issuer. Different than other LTI implementations since for now
+    # we will only support integration with one service
+    if params['iss'].nil? && params['iss'] != Rails.configuration.lti_settings["iss"]
       raise LtiError.new("Could not find issuer", :bad_request);
     end
 
@@ -54,28 +55,98 @@ class LtiLaunchController < ApplicationController
   end
   def validate_jwt_format(id_token)
     if (id_token.nil?)
-      raise LtiError.new("no id token found", :bad_request)
+      raise LtiError.new("no id token found in request", :bad_request)
     end
     jwt_parts = id_token.split(".")
     if (jwt_parts.size != 3)
       raise LtiError.new("JWT not valid", :bad_request)
     end
-    @jwt = {header: Base64.urlsafe_decode64(jwt_parts[0]),
-            body:  Base64.urlsafe_decode64(jwt_parts[1]),
-            sig: Base64.urlsafe_decode64(jwt_parts[1])}
+    @jwt = {header: JSON.parse(Base64.urlsafe_decode64(jwt_parts[0])),
+            body:  JSON.parse(Base64.urlsafe_decode64(jwt_parts[1])),
+            sig: JSON.parse(Base64.urlsafe_decode64(jwt_parts[1]))}
   end
   def validate_nonce()
+    if (@jwt[:body]["nonce"].nil?)
+      raise LtiError.new("no nonce found in request", :bad_request)
+    end
+    cache_nonce = Rails.cache.read('nonce')
+    if (cache_nonce.nil?)
+      raise LtiError.new("nonce in cache expired", :bad_request)
+    end
+    if (cache_nonce != @jwt[:body]["nonce"])
+      raise LtiError.new("nonce doesn't match cache", :bad_request)
+    end
+
   end
+  # validate issuer
+  def validate_registration()
+    client_id = @jwt[:body]['aud'].is_a?(Array) ? @jwt[:body]['aud'][0] : @jwt[:body]['aud'];
+    if (client_id != Rails.configuration.lti_settings["developer_key"])
+      # Client not registered.
+      raise LtiError.new("client id not registered for issuer", :bad_request)
+    end
+    if (@jwt[:body]['iss'] != Rails.configuration.lti_settings["iss"])
+      raise LtiError.new("iss doesn't match config", :bad_request)
+    end
+  end
+
+  # Right now, we only allow / validate LtiResourceLinkRequest
+  # since this is the message type needed for launches to get
+  # course context information needed for syncing
+  def validate_link_request()
+    message_type = @jwt[:body]["https://purl.imsglobal.org/spec/lti/claim/message_type"]
+    if (message_type.nil? || message_type != "LtiResourceLinkRequest")
+      raise LtiError.new("LTI launch is not an LtiResourceLinkRequest", :bad_request)
+    end
+    id = @jwt[:body]["https://purl.imsglobal.org/spec/lti/claim/resource_link"]["id"]
+    if id.nil?
+      raise LtiError.new("Missing Resource Link ID", :bad_request)
+    end
+    # checking for required fields of id token
+    # http://www.imsglobal.org/spec/security/v1p0/#id-token
+    if (@jwt[:body]['sub'].nil?)
+      raise LtiError.new("sub required in LTI launch", :bad_request)
+    end
+    # check that claim version is for LTI Advantage
+    if (@jwt[:body]['https://purl.imsglobal.org/spec/lti/claim/version'] != "1.3.0")
+      raise LtiError.new("launch claim version is not 1.3.0", :bad_request)
+    end
+    if (@jwt[:body]["https://purl.imsglobal.org/spec/lti/claim/roles"].nil?)
+      raise LtiError.new("Roles claim not found", :bad_request)
+    end
+
+  end
+  def validate_jwt_signature(id_token)
+    rsa_public = OpenSSL::PKey::RSA.new(Rails.configuration.lti_settings["platform_public_key"])
+    begin
+    decoded_token = JWT.decode id_token, rsa_public, true, { algorithm: 'RS256' }
+    rescue JWT::ExpiredSignature
+      # Handle expired token, e.g. logout user or deny access
+      raise LtiError.new("JWT signature expired", :bad_request)
+      end
+    rescue JWT::ImmatureSignature
+      # Handle invalid token, e.g. logout user or deny access
+      raise LtiError.new("JWT signature invalid", :bad_request)
+    end
   def launch
     puts(params)
     validate_state(params)
     id_token = params["id_token"]
     validate_jwt_format(id_token)
+    validate_jwt_signature(id_token)
     validate_nonce()
+    validate_registration()
+    validate_link_request()
+    if (!current_user.present?)
+      raise LtiError.new("Not logged in!", :bad_request)
+    end
+    @user = current_user
+    redirect_to :controller => "users", :action => "lti_launch_initialize", :launch_context => @jwt[:body], :id=> @user.id
     # puts(@jwt_parts)
     # @jwt_body = Base64.urlsafe_decode64(@jwt_parts[1])
-    render json: @jwt[:body].as_json
-    puts("got", params)
+    #render json: @jwt[:body].as_json
+    #puts("got", params)
+
   end
   def oidc_login
     # code based on: https://github.com/IMSGlobal/lti-1-3-php-library/blob/master/src/lti/LTI_OIDC_Login.php
