@@ -196,6 +196,7 @@ class UsersController < ApplicationController
     flash[:success] = "User destroyed."
     redirect_to(users_path) && return
   end
+
   def lti_launch_initialize
     @launch_context = params[:launch_context]
     # code from show
@@ -215,14 +216,8 @@ class UsersController < ApplicationController
           cud.course.course_user_data.where(user: @user).first
         user_cuds << user_cud unless user_cud.nil?
       end
+      @cuds = user_cuds
     end
-    # lti_launch_context = LtiIntegration.find_by(user_id: @user.id)
-    # if lti_integration.nil?
-    #   lti_launch_context = LtiIntegration.create!(launch_contexts: [launch_context], user: @user)
-    # else
-    #   lti_launch_context.update!(launch_contexts: [launch_context])
-    # end
-    #render json: launch_context
   end
   action_auth_level :github_oauth, :student
   def github_oauth
