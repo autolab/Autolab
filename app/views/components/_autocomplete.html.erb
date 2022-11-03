@@ -1,3 +1,4 @@
+<%= javascript_include_tag 'base64' %>
 <script type="application/javascript">
   /* requires @usersEncoded and @users to be set, i.e. via Course.get_autocomplete_data */
   jQuery(function() {
@@ -26,7 +27,7 @@
     /* track changes in student autocomplete field */
     $studentAutocompleteField.on('change', function() {
       /* $studentAutocompleteField.val() unescapes a second time */
-      const encoded = window.btoa($studentAutocompleteField.val());
+      const encoded = strToBase64($studentAutocompleteField.val());
       // Trigger 'change' event for any code that might be listening
       $hiddenCUDField.val(userData[encoded]).trigger('change');
     });

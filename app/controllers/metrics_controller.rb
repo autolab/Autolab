@@ -64,9 +64,9 @@ class MetricsController < ApplicationController
     user_data = User.joins(:course_user_data)
                     .where(course_user_data: { id: course_user_data_ids })
                     .select('users.id as user_id,
-								     users.first_name,
-									 users.last_name,users.email,
-									 course_user_data.id as course_user_datum_id')
+								             users.first_name,
+									           users.last_name,users.email,
+									           course_user_data.id as course_user_datum_id')
                     .as_json
 
     user_hash = user_data.index_by do |entry|
