@@ -448,9 +448,6 @@ class SubmissionsController < ApplicationController
     end
     @annotations.sort! { |a, b| a.line.to_i <=> b.line.to_i }
 
-    @problemSummaries = {}
-    @problemGrades = {}
-
     # Only show annotations if grades have been released or the user is an instructor
     unless !@assessment.before_grading_deadline? || @cud.instructor || @cud.course_assistant
       @annotations = []
@@ -463,10 +460,28 @@ class SubmissionsController < ApplicationController
     @problems = @assessment.problems.to_a
     @problems.sort! { |a, b| a.id <=> b.id }
 
-    # Initialize problems without annotations
+    # Allow scores to be assessed by the view
+    @scores = Score.where(submission_id: @submission.id)
+
+    # @problemSummaries and @problemGrades are used in _annotation_pane.html.erb
+    @problemSummaries = {}
+    @problemGrades = {}
+    autogradedProblems = {}
+
+    @scores.each do |score|
+      if score.grader_id == 0
+        autogradedProblems[score.problem_id] = nil
+      end
+    end
+
+    # initialize all problems
     @problems.each do |problem|
-      @problemSummaries[problem.name] ||= []
-      @problemGrades[problem.name] ||= 0
+      # exclude problems that were autograded
+      # so that we do not render the header in the annotation pane
+      unless autogradedProblems.key? problem.id
+        @problemSummaries[problem.name] ||= []
+        @problemGrades[problem.name] ||= 0
+      end
     end
 
     # extract information from annotations
@@ -544,9 +559,6 @@ class SubmissionsController < ApplicationController
                        matchedVersions[@curVersionIndex - 1]
                      end
     end
-
-    # Adding allowing scores to be assessed by the view
-    @scores = Score.where(submission_id: @submission.id)
 
     # Rendering this page fails. Often. Mostly due to PDFs.
     # So if it fails, redirect, instead of showing an error page.
