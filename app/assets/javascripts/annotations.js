@@ -367,10 +367,10 @@ function attachAnnotationPanelEvents() {
     const score = $(this).data("score");
     const comment = $(this).data("comment");
     const annotationId = $(this).data("annotationid");
-    const $wrapperDiv = $(this).parents(".file_annotations");
+    const $annotationDiv = $(this).parents(".global-annotation");
 
-    if ($wrapperDiv.find(".global-annotation-form").length === 0) {
-      $wrapperDiv.append(globalAnnotationFormCode(false, { problem, score, comment, annotationId }));
+    if (!$annotationDiv.next().hasClass("global-annotation-form")) {
+      $annotationDiv.after(globalAnnotationFormCode(false, { problem, score, comment, annotationId }));
     }
   });
 
