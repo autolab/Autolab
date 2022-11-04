@@ -142,7 +142,7 @@ function fillAnnotationBox() {
   $('#annotationPane').load(document.URL + ' #annotationPane', function() {
     $('.collapsible').collapsible({ accordion: false });
     attachChangeFileEvents();
-    attachAnnotationPanelEvents();
+    attachAnnotationPaneEvents();
   });
 }
 
@@ -346,8 +346,8 @@ function attachChangeFileEvents() {
   $(".descript-link").on("click", changeFileClickHandler);
 }
 
-// Events that deal with the annotation panel
-function attachAnnotationPanelEvents() {
+// Events that deal with the annotation pane
+function attachAnnotationPaneEvents() {
   // Add action
   $(".global-annotation-add-button").on("click", function (e) {
     e.preventDefault();
