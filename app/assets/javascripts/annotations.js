@@ -489,7 +489,7 @@ function newAnnotationFormCode() {
   box.find('.annotation-form').show();
   box.find('.annotation-cancel-button').click(function (e) {
     e.preventDefault();
-    $(this).parent().parent().parent().parent().remove();
+    $(this).parents(".annotation-form").parent().remove();
     refreshAnnotations();
   })
 
@@ -557,7 +557,7 @@ function globalAnnotationFormCode(newAnnotation, config) {
   box.find('.annotation-form').show();
   box.find('.annotation-cancel-button').click(function (e) {
     e.preventDefault();
-    $(this).parent().parent().parent().parent().remove();
+    $(this).parents(".annotation-form").parent().remove();
   })
 
   box.find('#comment-textarea').autocomplete({
