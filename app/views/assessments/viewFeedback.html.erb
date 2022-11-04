@@ -54,7 +54,8 @@ Yes, feedback is per problem but we show all annotations for this submission any
                 <% if annotation.global_comment? %>
                   <%= link_to "Global Annotation", [:view, @course, @assessment, @submission] %>
                 <% else %>
-                <%= link_to filename.to_s + ":" + annotation.line.to_s, [:view, @course, @assessment, @submission, header_position: annotation.position] %>
+                  <%# line + 1 because line numbers start from 1 %>
+                  <%= link_to filename.to_s + ":" + (annotation.line + 1).to_s, [:view, @course, @assessment, @submission, header_position: annotation.position] %>
                 <% end %>
               </span>
         </li>
