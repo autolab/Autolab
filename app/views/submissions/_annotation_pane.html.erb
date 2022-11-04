@@ -51,12 +51,13 @@
                         </div>
                         <% if @cud.instructor? or @cud.course_assistant? %>
                         <div class="annotation-tools">
-                          <span data-annotationId="<%= id %>">
+                          <span
+                                data-annotationid="<%= id %>"
+                                data-problem="<%= problem %>"
+                                data-score="<%= value %>"
+                                data-comment="<%= description %>"
+                          >
                             <a class="global-annotation-edit-button" href="#"
-                               data-annotationid="<%= id %>"
-                               data-problem="<%= problem %>"
-                               data-score="<%= value %>"
-                               data-comment="<%= description %>"
                                title="Edit global annotation"
                             >
                               <i class="material-icons">edit</i>

@@ -360,13 +360,12 @@ function attachAnnotationPaneEvents() {
   });
 
   // Edit action
-
   $(".global-annotation-edit-button").on("click", function (e) {
     e.preventDefault();
-    const problem = $(this).data("problem");
-    const score = $(this).data("score");
-    const comment = $(this).data("comment");
-    const annotationId = $(this).data("annotationid");
+    const problem = $(this).parent().data("problem");
+    const score = $(this).parent().data("score");
+    const comment = $(this).parent().data("comment");
+    const annotationId = $(this).parent().data("annotationid");
     const $annotationDiv = $(this).parents(".global-annotation");
 
     if (!$annotationDiv.next().hasClass("global-annotation-form")) {
@@ -390,7 +389,6 @@ function attachAnnotationPaneEvents() {
       type: 'DELETE',
       complete: function () {
         annotations.splice(annotationId, 1);
-        initializeAnnotationsForCode();
         fillAnnotationBox();
       }
     });
