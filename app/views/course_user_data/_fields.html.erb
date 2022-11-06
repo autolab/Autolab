@@ -9,6 +9,8 @@
 
   <%= f.text_field :nickname, help_text: "Anonymous nickname to display on the public scoreboards", placeholder: "droh" %>
 
+  <%= f.text_field :course_number, help_text: "The course number", placeholder: "15213", disabled: !@cud.instructor? %>
+
   <%= f.text_field :lecture, help_text: "The lecture number", placeholder: "1", disabled: !@cud.instructor? %>
 
   <%= f.text_field :section, help_text: "The section letter. A course assistant can see the gradebook and bulk-release grades for their assigned lecture and section.", placeholder: "A", disabled: !@cud.instructor? %>
