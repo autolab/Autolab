@@ -12,10 +12,10 @@ class FormBuilderWithDateTimeInput < ActionView::Helpers::FormBuilder
       options = args.extract_options!
 
       # DEPRECATED: add form-control class (for Bootstrap styling) and pass on to Rails
-      options[:class] = "#{options[:class]}"
+      options[:class] = (options[:class]).to_s
 
       unless options.include?(:placeholder)
-          options[:placeholder] = ""
+        options[:placeholder] = ""
       end
 
       field = super name, *(args + [options])
@@ -28,7 +28,7 @@ class FormBuilderWithDateTimeInput < ActionView::Helpers::FormBuilder
     options = args.extract_options!
 
     fields = fields_for name do |f|
-        (f.vanilla_text_field :value, class: "score-box", placeholder: "10") +
+      (f.vanilla_text_field :value, class: "score-box", placeholder: "10") +
         (@template.content_tag :div, class: "" do
           f.select(:kind, { "points" => "points", "%" => "percent" }, {},
                    class: "carrot")
@@ -50,21 +50,22 @@ class FormBuilderWithDateTimeInput < ActionView::Helpers::FormBuilder
     options = args.extract_options!
 
     display_name = options[:display_name].nil? ? name : options[:display_name]
-    
-    display_span = "<span>" + display_name.to_s.humanize + "</span>"
+
+    display_span = "<span>#{display_name.to_s.humanize}</span>"
     # Materalize requires the label to be in a span
     field = super name, *(args + [options])
 
-    if (options[:default])
-      return field 
-    end 
+    if options[:default]
+      return field
+    end
 
     @template.content_tag :div do
       if options.include?(:help_text)
-        label(name, field + display_span.html_safe, class: "control-label") + help_text(name, options[:help_text])
+        label(name, field + display_span.html_safe,
+              class: "control-label") + help_text(name, options[:help_text])
       else
-        label(name, field + display_span.html_safe, class: "control-label") 
-      end 
+        label(name, field + display_span.html_safe, class: "control-label")
+      end
     end
   end
 
@@ -112,20 +113,20 @@ private
       existing_time = nil
     end
 
-    if existing_time.present?
-      formatted_datetime = existing_time.strftime(strftime)
-    else
-      formatted_datetime = ""
-    end
+    formatted_datetime = if existing_time.present?
+                           existing_time.strftime(strftime)
+                         else
+                           ""
+                         end
     field = vanilla_text_field(
       name,
-      :value => formatted_datetime,
-      :class => "#{options[:picker_class]}",
-      :"data-date-format" => date_format,
-      :"data-alt-format" => alt_format,
-      :"data-date-less-than" => options[:less_than],
-      :"data-date-greater-than" => options[:greater_than])
-
+      value: formatted_datetime,
+      class: (options[:picker_class]).to_s,
+      "data-date-format": date_format,
+      "data-alt-format": alt_format,
+      "data-date-less-than": options[:less_than],
+      "data-date-greater-than": options[:greater_than]
+    )
 
     wrap_field name, field, options[:help_text]
   end
@@ -133,7 +134,7 @@ private
   def wrap_field(name, field, help_text = nil, display_name = nil)
     @template.content_tag :div, class: "input-field" do
       label(name, display_name, class: "control-label") +
-         field + help_text(name, help_text)
+        field + help_text(name, help_text)
     end
   end
 
