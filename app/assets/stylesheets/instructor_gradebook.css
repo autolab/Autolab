@@ -109,10 +109,7 @@
   font: inherit;
 }
 
-#gradebook .slick-header-column.andrew,
-#gradebook .slick-header-column.first_name,
-#gradebook .slick-header-column.last_name,
-#gradebook .slick-cell.andrew,
+#gradebook .slick-cell.email,
 #gradebook .slick-cell.first_name,
 #gradebook .slick-cell.last_name {
   text-align: left;
