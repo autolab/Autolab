@@ -268,7 +268,13 @@ module AssessmentAutogradeCore
       tango_poll(course, assessment, submissions, output_file)
     end
 
-    response_json["jobId"].to_i
+    job = response_json["jobId"].to_i
+    ActiveRecord::Base.transaction do
+      submissions.each do |submission|
+        submission.update!(jobid: job)
+      end
+    end
+    job
   end
 
   #
