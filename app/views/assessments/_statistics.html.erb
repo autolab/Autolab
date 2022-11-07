@@ -49,7 +49,7 @@
     <div id='sectionDiv' class="section scrollspy">
       <h4> Statistics by Section </h4>
       <% @statistics[:section].each do |(section, group_stats)| %>
-        <h4 class="statSectionTitle"><%= section %>[<%= group_stats[:total_students]%> Students]</h4>
+        <h4 class="statSectionTitle"><%= section %> [<%= group_stats[:total_students]%> Students]</h4>
         <%=raw stats_table(group_stats[:data]) %>
         <%=raw stats_graph(section, "section")%>
       <% end %>
@@ -72,7 +72,7 @@
     <div id='schoolDiv' class="section scrollspy">
       <h4> Statistics by School </h4>
       <% @statistics[:school].each do |(school, group_stats)| %>
-        <h4 class="statSectionTitle"><%= school %>[<%= group_stats[:total_students]%> Students]</h4>
+        <h4 class="statSectionTitle"><%= school %> [<%= group_stats[:total_students]%> Students]</h4>
         <%=raw stats_table(group_stats[:data]) %>
         <%=raw stats_graph(school, "school")%>
       <% end %>
@@ -85,7 +85,7 @@
       <h4> Statistics by Major </h4>
 
       <% @statistics[:major].each do |(major, group_stats)| %>
-        <h4 class="statSectionTitle"><%= major %>[<%= group_stats[:total_students]%> Students]</h4>
+        <h4 class="statSectionTitle"><%= major %> [<%= group_stats[:total_students]%> Students]</h4>
         <%=raw stats_table(group_stats[:data]) %>
         <%=raw stats_graph(major, "major")%>
       <% end %>
@@ -98,7 +98,7 @@
       <h4> Statistics by Year </h4>
 
       <% @statistics[:year].each do |(year, group_stats)| %>
-        <h4 class="statSectionTitle"><%= year %>[<%= group_stats[:total_students]%> Students]</h4>
+        <h4 class="statSectionTitle"><%= year %> [<%= group_stats[:total_students]%> Students]</h4>
         <%=raw stats_table(group_stats[:data]) %>
         <%=raw stats_graph(year, "year")%>
       <% end %>
