@@ -29,7 +29,7 @@ To do so, click on the "+" header button corresponding to the problem.
 
 ## Scoring Behavior
 
-There are two intended ways for course instructors to use the add annotation features. Deductions from maximum ("negative grading"), or additions from zero ("positive grading").
+There are two intended ways for course instructors to use the add annotation features. Deductions from maximum ("negative grading"), or additions to zero ("positive grading").
 
 The default setting is negative grading, but positive grading can be enabled under `Edit Assessment > Problems`.
 
@@ -44,8 +44,6 @@ The maximum score can be `0` if the deductions are meant to be penalties, such a
 ### Positive Grading
 
 Set a `max_score` either programmatically, or under `Edit Assessment > Problems` for the particular non-autograded question. Then when the grader is viewing the code, add a positive score, such as `5` to the score field, to add to the score. This use case is preferred when giving out bonus points.
-
-The most common use case is when `max_score` is set to `0`, with marks awarded for each rubric item achieved.
 
 ## Interaction with Gradesheet
 
