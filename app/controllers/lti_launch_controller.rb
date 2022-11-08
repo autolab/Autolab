@@ -185,13 +185,26 @@ class LtiLaunchController < ApplicationController
     # generate nonce, store in cache
     nonce = "nonce-#{SecureRandom.uuid}"
     Rails.cache.write('nonce', nonce)
+    # only https since for dev, base url used
+    prefix = "https://"
+    begin
+      hostname = if Rails.env.development?
+                   request.base_url
+                 else
+                   prefix + request.host
+                 end
+    rescue StandardError
+      hostname = `hostname`
+      hostname = prefix + hostname.strip
+    end
+
     # build response
     auth_params = {
       "scope": "openid", # oidc scope
       "response_type": "id_token", # oidc response is always an id token
       "response_mode": "form_post", # oidc response is always a form post
       "client_id": Rails.configuration.lti_settings["developer_key"], # client id (developer key)
-      "redirect_uri": "http://localhost:3000/lti_launch/launch", # URL to return to after login
+      "redirect_uri": "#{hostname}/lti_launch/launch", # URL to return to after login
       "state": state, # state to identify browser session
       "nonce": nonce, # nonce to prevent replay attacks
       "login_hint": params["login_hint"], # login hint to identify platform session
