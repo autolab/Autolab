@@ -185,8 +185,10 @@ class LtiLaunchController < ApplicationController
     # generate nonce, store in cache
     nonce = "nonce-#{SecureRandom.uuid}"
     Rails.cache.write('nonce', nonce)
-    # only https since for dev, base url used
     prefix = "https://"
+    if ENV["DOCKER_SSL"] == "false"
+      prefix = "http://"
+    end
     begin
       hostname = if Rails.env.development?
                    request.base_url
