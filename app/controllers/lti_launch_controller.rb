@@ -209,8 +209,7 @@ class LtiLaunchController < ApplicationController
       "redirect_uri": "#{hostname}/lti_launch/launch", # URL to return to after login
       "state": state, # state to identify browser session
       "nonce": nonce, # nonce to prevent replay attacks
-      "login_hint": params["login_hint"], # login hint to identify platform session
-      "id": "1"
+      "login_hint": params["login_hint"] # login hint to identify platform session
     }
     unless params["lti_message_hint"].nil?
       auth_params["lti_message_hint"] = params["lti_message_hint"]
