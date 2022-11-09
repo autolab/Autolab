@@ -50,17 +50,21 @@ function showFiles() {
   var fileSelector = $("#handin_show_assessment input[type='file']").get(0);
   var file = fileSelector.files[0];
   $("#handin-file-name").text(file.name);
+
+  // only do check for file type that has a period
   if( $('#handin-file-type').length && file
      && file.name.split(".").length >= 2)         // use this if you are using id to check
   {
     $('#handin-file-type-incorrect').text("")
     var file_type= file.name.split(".")[file.name.split(".").length -1];
-
     var handin_filetype = $('#handin-file-type').text();
-
     if (handin_filetype != file_type) {
-      $('#handin-file-type-incorrect').text(`Warning: ${file.name}'s type doesn't match the .${handin_filetype} handin format`)
+      $('#handin-file-type-incorrect').text(`Warning: ${file.name}'s file type doesn't match expected .${handin_filetype} file type`)
     }
+  } else if ($('#handin-file-type').length) {
+    // no . in the filename, so probably wrong
+    var handin_filetype = $('#handin-file-type').text();
+    $('#handin-file-type-incorrect').text(`Warning: ${file.name}'s file type doesn't match expected .${handin_filetype} file type`)
   }
 
 
@@ -118,6 +122,10 @@ function enableSubmit() {
     fileSelector.value = null;
     $(".handin-row").show();
     $(".handedin-row").hide();
+    // hide file type check text
+    $("#filename-check").hide();
+  } else {
+    $("#filename-check").show();
   }
   if (!checkbox.checked) {
     $("#fake-submit").addClass("disabled");
