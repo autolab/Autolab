@@ -1,4 +1,5 @@
 <% content_for :javascripts do %>
+  <script src="https://unpkg.com/@popperjs/core@2"></script>
   <%= javascript_include_tag "sorttable" %>
   <!--
     TODO: Fix table floating headers (absolute positioning)
@@ -7,44 +8,36 @@
           screen). The current "solution" is overkill. -JZ
   <%= javascript_include_tag "table_floating_header" %>
   -->
-
-  <script type="text/javascript">
-    // Triggered on keyup in the search field
-    function filterRows(name) {
-      var rows = document.getElementsByClassName("user-row"),
-          i = 0, L = rows.length, r;
-      var newTotal = 0;
-
-      // Filter rows, keep track of number remaining
-      while (i < L) {
-        r = rows[i++];
-        if (r.innerHTML.toLowerCase().indexOf(name.toLowerCase()) != -1) {
-          r.style.display = "table-row";
-          newTotal++;
-        }
-        else
-          r.style.display = "none";
-      }
-
-      // Update "Found ... users" heading
-      if(newTotal > 0) {
-        document.getElementById("results-count").innerHTML = newTotal;
-      }
-      else {
-        document.getElementById("results-count").innerHTML = "no";
-      }
-    }
-  </script>
+  <%= javascript_include_tag "course_users" %>
 <% end %>
 
 <h2>Manage Accounts</h2>
 
 <hr>
 <p>
-<%= link_to raw('<span class="btn">Add User to Course</span>'), [:new, @course, :course_user_datum] %>
-<%= link_to raw('<span class="btn">Import Roster/Users</span>'), {:action=>"upload_roster"} %>
-<%= link_to raw('<span class="btn">Export Roster</span>'), {:action=>"download_roster"} %>
+  <%= link_to raw('<span class="btn">Add User to Course</span>'), [:new, @course, :course_user_datum] %>
+  <!-- Add User Dropdown Trigger -->
+  <a id="add-users" class='dropdown-trigger btn' href='#' data-target='add-users-dropdown'>ADD USERS FROM EMAILS</a>
+  <%= link_to raw('<span class="btn">Import Roster/Users</span>'), {:action=>"upload_roster"} %>
+  <%= link_to raw('<span class="btn">Export Roster</span>'), {:action=>"download_roster"} %>
 </p>
+
+<!-- Add Users Dropdown Structure -->
+<ul id='add-users-dropdown' class='dropdown-content'>
+  <li>
+    <div>
+      <form style="padding:10px; width:25rem; max-height:25rem">
+        <div class="row">
+          <div class="input-field">
+            <textarea id="textarea1" class="materialize-textarea"></textarea>
+            <label for="textarea1">User Emails</label>
+          </div>
+        </div>
+        <input type="submit" value="Submit">
+      </form>
+    </div>
+  </li>
+</ul>
 
 <hr>
 Search: <%= text_field_tag 'search', nil, onkeyup:'filterRows(this.value)' %>
