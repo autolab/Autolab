@@ -229,6 +229,63 @@ class CoursesController < ApplicationController
             end
   end
 
+  action_auth_level :add_users_from_emails, :instructor
+  def add_users_from_emails
+    params.require([:user_emails, :role])
+    user_emails = params[:user_emails].split(/\n/).map(&:strip)
+    role = params[:role]
+
+    @cuds = []
+    user_emails.each do |email|
+      user = User.where(email: email).first
+
+      if user.nil?
+        user = User.roster_create(email, email, "", "", "", "")
+        if user.nil?
+          flash[:error] = "Error: User #{email} could not be created."
+          redirect_to([:users, @course]) && return
+        end
+      end
+
+      # if user already exists in the course, retrieve the cud
+      cud = @course.course_user_data.where(user_id: user.id).first
+
+      # if user doesn't exist in the course, create a new cud
+      if cud.nil?
+        cud = @course.course_user_data.new
+        cud.user = user
+      end
+
+      # set the role of the user
+      case role
+      when "instructor"
+        cud.instructor = true
+        cud.course_assistant = false
+      when "ca"
+        cud.instructor = false
+        cud.course_assistant = true
+      when "student"
+        cud.instructor = false
+        cud.course_assistant = false
+        # if role is not valid, return error
+      else
+        flash[:error] = "Error: Invalid role #{role}."
+        redirect_to([:users, @course]) && return
+      end
+
+      # add the cud to the list of cuds to be saved
+      @cuds << cud
+    end
+
+    # save all the cuds
+    if @cuds.all?(&:save)
+      flash[:success] = "Success: Users added to course."
+    else
+      flash[:error] = "Error: Users could not be added to course."
+    end
+    redirect_to([:users, @course]) && return
+  end
+
   action_auth_level :reload, :instructor
   def reload
     @course.reload_course_config

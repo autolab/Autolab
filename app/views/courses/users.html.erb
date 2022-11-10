@@ -24,19 +24,29 @@
 
 <!-- Add Users Dropdown Structure -->
 <ul id='add-users-dropdown' class='dropdown-content'>
-  <li>
-    <div>
-      <form style="padding:10px; width:25rem; max-height:25rem">
-        <div class="row">
-          <div class="input-field">
-            <textarea id="textarea1" class="materialize-textarea"></textarea>
+  <div>
+    <form style="padding:10px; width:25rem; height:21rem; max-height:30rem;" action="add_users_from_emails" method="post">
+      <div class="row" style="display:flex; flex-direction:column;">
+        <div style="height:10rem;">
+          <div class="input-field" style="flex-grow:1;">
+            <textarea id="textarea1" class="materialize-textarea" style="max-height:8rem;"
+                      name="user_emails" ></textarea>
             <label for="textarea1">User Emails</label>
           </div>
         </div>
-        <input type="submit" value="Submit">
-      </form>
-    </div>
-  </li>
+        <div class="input-field" style="flex-grow:1;margin:0;padding:0;" >
+          <select class="browser-default" name="role">
+            <option value="" disabled selected>Assigned Role</option>
+            <option value="instructor">Instructor</option>
+            <option value="ca">Course Assistant</option>
+            <option value="student">Student</option>
+          </select>
+        </div> 
+        <input class="btn" type="submit" value="Submit">
+      </div>
+      <input type="hidden" name="authenticity_token">
+    </form>
+  </div>
 </ul>
 
 <hr>

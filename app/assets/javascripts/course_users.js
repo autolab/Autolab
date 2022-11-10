@@ -27,18 +27,12 @@ function filterRows(name) {
 
 
 document.addEventListener('DOMContentLoaded', function() {
-    var elems = document.querySelectorAll('#add-users');
-    var instances = M.Dropdown.init(elems, {
+    var elem = document.querySelector('#add-users');
+    var instances = M.Dropdown.init(elem, {
         constrainWidth: false,
         coverTrigger: false,
         closeOnClick: false,
     });
-  });
-
-$("#textarea1").keydown(
-    function() {
-        console.log("keyup");
-        var instance = M.Dropdown.getInstance($("#add-users"));
-        instance.recalculateDimensions();
-    }
-);
+    // Add authennication token to add form
+    $('#add-users-dropdown > [name="authenticity_token"]').val($('meta[name="csrf-token"]').attr('content'));
+});
