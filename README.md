@@ -46,6 +46,8 @@ We released new documentation! Check it out [here](https://docs.autolabproject.c
 	```sh
 	RAILS_ENV=test bundle exec rails db:create
 	RAILS_ENV=test bundle exec rails db:migrate
+	RAILS_ENV=test bundle exec rake db:setup
+	RAILS_ENV=test bundle exec rake autolab:populate
 	```
    Do not forget to use `RAILS_ENV=test bundle exec` in front of every rake/rails command.
 
