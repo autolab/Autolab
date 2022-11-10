@@ -28,6 +28,9 @@ Rails.application.routes.draw do
           resources :submissions, param: :version, only: [:index] do
             get "feedback"
           end
+
+          resources :scores, only: [:index, :show, :update],
+                    param: :email, :constraints => { :email => /[^\/]+/ }
         end
       end
 
