@@ -233,14 +233,47 @@ class CoursesController < ApplicationController
   def add_users_from_emails
     params.require([:user_emails, :role])
     user_emails = params[:user_emails].split(/\n/).map(&:strip)
+
+    user_emails = user_emails.map do |email|
+      if email.nil?
+        nil?
+        # when it's first name <email>
+      elsif email =~ /(.*)\s+<(.*)>/
+        { first_name: Regexp.last_match(1), email: Regexp.last_match(2) }
+        # when it's first name last name <email>
+      elsif email =~ /(.*)\s+(.*)\s+<(.*)>/
+        { first_name: Regexp.last_match(1), last_name: Regexp.last_match(2),
+          email: Regexp.last_match(3) }
+        # when it's first name middle name last name <email>
+      elsif email =~ /(.*)\s+(.*)\s+(.*)\s+<(.*)>/
+        { first_name: Regexp.last_match(1), middle_name: Regexp.last_match(2),
+          last_name: Regexp.last_match(3), email: Regexp.last_match(4) }
+        # when it's email
+      else
+        { email: email }
+      end
+    end
+
     role = params[:role]
 
     @cuds = []
     user_emails.each do |email|
-      user = User.where(email: email).first
+      user = User.where(email: email[:email]).first
 
+      # create users if they don't exist
       if user.nil?
-        user = User.roster_create(email, email, "", "", "", "")
+        begin
+          user = if email[:first_name].nil? && email[:last_name].nil?
+                   User.roster_create(email[:email], email[:email], "", "", "", "")
+                 else
+                   User.roster_create(email[:email], email[:first_name] || "",
+                                      email[:last_name] || "", "", "", "")
+                 end
+        rescue StandardError => e
+          flash[:error] = "Error: #{e.message}"
+          redirect_to([:users, @course]) && return
+        end
+
         if user.nil?
           flash[:error] = "Error: User #{email} could not be created."
           redirect_to([:users, @course]) && return
@@ -267,7 +300,7 @@ class CoursesController < ApplicationController
       when "student"
         cud.instructor = false
         cud.course_assistant = false
-        # if role is not valid, return error
+      # if role is not valid, return error
       else
         flash[:error] = "Error: Invalid role #{role}."
         redirect_to([:users, @course]) && return
