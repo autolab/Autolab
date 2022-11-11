@@ -14,7 +14,7 @@ module GradebookHelper
       { id: "last_name", name: "Last", field: "last_name",
         sortable: true, width: 100, cssClass: "last_name",
         headerCssClass: "last_name" },
-      { id: "course", name: "Course", field: "course",
+      { id: "course_number", name: "Course &#8470;", field: "course_number",
         sortable: true, width: 100 },
       { id: "lecture", name: "Lecture", field: "lecture",
         sortable: true, width: 100 },
@@ -81,7 +81,7 @@ module GradebookHelper
       row["student_gradebook_link"] = sgb_link
       row["first_name"] = CGI.escapeHTML cud.user.first_name
       row["last_name"] = CGI.escapeHTML cud.user.last_name
-      row["course"] = cud.course_number
+      row["course_number"] = cud.course_number
       row["lecture"] = cud.lecture
       row["section"] = cud.section
 

@@ -22,14 +22,14 @@
 
     </div>
 
-    <div id='courseDiv' class="section scrollspy">
-      <h4> Statistics by Course </h4>
-      <% @statistics[:course].each do |(course, group_stats)| %>
-        <h4 class="statSectionTitle"><%= course %> [<%= group_stats[:total_students]%> Students]</h4>
+    <div id='courseNumberDiv' class="section scrollspy">
+      <h4> Statistics by Course &#8470; </h4>
+      <% @statistics[:course_number].each do |(course_number, group_stats)| %>
+        <h4 class="statSectionTitle"><%= course_number %> [<%= group_stats[:total_students]%> Students]</h4>
         <%=raw stats_table(group_stats[:data])%>
-        <%=raw stats_graph(course, "course")%>
+        <%=raw stats_graph(course_number, "course")%>
       <% end %>
-      <div id='courseDivGraph'>
+      <div id='courseNumberDivGraph'>
 
       </div>
     </div>
@@ -110,7 +110,7 @@
   <div class="col hide-on-small-only m3 l2">
     <ul class="section table-of-contents statsGroups">
       <li><a href="#allGradesDiv">All Grades</a></li>
-      <li><a href="#courseDiv">By Course</a></li>
+      <li><a href="#courseNumberDiv">By Course &#8470;</a></li>
       <li><a href="#lectureDiv">By Lecture</a></li>
       <li><a href="#sectionDiv">By Section</a></li>
       <li><a href="#graderDiv">By Grader</a></li>
