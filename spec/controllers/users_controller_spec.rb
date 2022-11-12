@@ -75,7 +75,11 @@ RSpec.describe UsersController, type: :controller do
       it "renders successfully" do
         get :show, params: {id: u.id}
         expect(response).to be_successful
-        expect(response.body).to match(/Showing user/m)
+        expect(response.body).to match(/Contact/m)
+        expect(response.body).to match(/About/m)
+        expect(response.body).to match(/Courses/m)
+        expect(response.body).to match(/Private Settings/m)
+        expect(response.body).to match(/API Settings/m)
       end
     end
 
@@ -85,7 +89,11 @@ RSpec.describe UsersController, type: :controller do
       it "renders successfully" do
         get :show, params: {id: u.id}
         expect(response).to be_successful
-        expect(response.body).to match(/Showing user/m)
+        expect(response.body).to match(/Contact/m)
+        expect(response.body).to match(/About/m)
+        expect(response.body).to match(/Courses/m)
+        expect(response.body).to match(/Private Settings/m)
+        expect(response.body).to match(/API Settings/m)
       end
     end
 
