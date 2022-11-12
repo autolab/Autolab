@@ -19,10 +19,49 @@ jobs:
         uses: actions/checkout@v3
       
       - name: Install Ruby
-        uses: ruby/setup-ruby@v1.100.0
+        uses: ruby/setup-ruby@0a29871fe2b0200a17a4497bae54fe5df0d973aa # v1.115.3
         with:
           bundler-cache: true
           cache-version: 3
           
       - name: Rubocop
         run: bundle exec rubocop
+
+  test:
+    runs-on: ubuntu-latest
+
+    env:
+      DB_DATABASE: autolab_test
+      DB_USER: user
+      DB_PASSWORD: password
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install Ruby
+        uses: ruby/setup-ruby@0a29871fe2b0200a17a4497bae54fe5df0d973aa # v1.115.3
+        with:
+          bundler-cache: true
+          cache-version: 3
+
+      - name: Set up Autolab
+        run: |
+          cd Autolab
+          cp config/database.github.yml config/database.yml
+          cp config/school.yml.template config/school.yml
+          cp config/autogradeConfig.rb.template config/autogradeConfig.rb
+          mkdir attachments/ tmp/
+          bundle install --quiet
+
+      - name: Set up database
+        run: |
+          sudo /etc/init.d/mysql start
+          mysql -e 'CREATE DATABASE ${{ env.DB_DATABASE }};' -u${{ env.DB_USER }} -p${{ env.DB_PASSWORD }}
+          RAILS_ENV=test bundle exec rails db:create
+          RAILS_ENV=test bundle exec rails db:migrate
+          RAILS_ENV=test bundle exec rake db:setup
+          RAILS_ENV=test bundle exec rake autolab:populate
+
+      - name: Run tests
+        run: bundle exec rails spec
