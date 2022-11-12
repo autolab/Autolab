@@ -24,13 +24,17 @@
 <!-- Add Users Dropdown Structure -->
 <ul id='add-users-dropdown' class='dropdown-content'>
   <div>
-    <form style="padding:10px; width:25rem; height:21rem; max-height:30rem;" action="add_users_from_emails" method="post">
-      <div class="row" style="display:flex; flex-direction:column;">
+    <form style="padding:10px; width:25rem; max-height:30rem;" action="add_users_from_emails" method="post">
+      <div class="row" style="display:flex; flex-direction:column; margin-bottom:0px;">
+        <!-- Error Box -->
+        <div id="error-box" class="red lighten-4" style="display:none;">
+          <span id="error-box-text" class="red-text text-darken-2"></span>
+        </div>
         <div style="height:10rem;">
-          <div class="input-field" style="flex-grow:1;">
-            <textarea id="textarea1" class="materialize-textarea" style="max-height:8rem;"
+          <div id="emailfield"  style="flex-grow:1;">
+            <b for="textarea1">User Emails (One Email Per Line)</b>
+            <textarea id="textarea1" style="height:8rem;"
                       name="user_emails" ></textarea>
-            <label for="textarea1">User Emails</label>
           </div>
         </div>
         <div class="input-field" style="flex-grow:1;margin:0;padding:0;" >
@@ -41,7 +45,7 @@
             <option value="student">Student</option>
           </select>
         </div> 
-        <input class="btn" type="submit" value="Submit">
+        <input id="add-users-submit" class="btn" type="submit" value="Submit">
       </div>
       <input type="hidden" name="authenticity_token">
     </form>
