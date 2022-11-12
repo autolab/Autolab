@@ -254,6 +254,19 @@ class CoursesController < ApplicationController
       end
     end
 
+    # filter out nil emails
+    user_emails = user_emails.reject(&:nil?)
+
+    # check if email matches regex
+    email_regex = /\A[\w+\-.]+@[a-z\d\-]+(\.[a-z\d\-]+)*\.[a-z]+\z/i
+
+    # raise error if any email is invalid and return which emails are invalid
+    invalid_emails = user_emails.reject { |user| user[:email] =~ email_regex }
+    if invalid_emails.any?
+      flash[:error] = "Invalid email(s): #{invalid_emails.map { |user| user[:email] }.join(', ')}"
+      redirect_to([:users, @course]) && return
+    end
+
     role = params[:role]
 
     @cuds = []
