@@ -47,12 +47,10 @@ jobs:
 
       - name: Set up Autolab
         run: |
-          cd Autolab
           cp config/database.github.yml config/database.yml
           cp config/school.yml.template config/school.yml
           cp config/autogradeConfig.rb.template config/autogradeConfig.rb
           mkdir attachments/ tmp/
-          bundle install --quiet
 
       - name: Set up database
         run: |
