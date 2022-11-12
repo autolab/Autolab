@@ -1,4 +1,3 @@
-//= require semantic-ui
 // Triggered on keyup in the search field
 function filterRows(name) {
   var rows = document.getElementsByClassName("user-row"),
