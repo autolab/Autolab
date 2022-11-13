@@ -54,7 +54,10 @@ jobs:
 
       - name: Set up Autolab
         run: |
-          sudo /etc/init.d/mysql start
+          sudo /lib/systemd/systemd-sysv-install enable mysql
+          sudo systemctl enable mysql.service
+          sudo systemctl start mysql.service
+          sudo systemctl status mysql.service
           cp config/database.github.yml config/database.yml
           cp config/school.yml.template config/school.yml
           cp config/autogradeConfig.rb.template config/autogradeConfig.rb
