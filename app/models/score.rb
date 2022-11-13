@@ -44,7 +44,9 @@ class Score < ApplicationRecord
   end
 
   def log_entry
-    setter = if grader_id != 0
+    setter = if grader_id == -1
+               "Error Handler"
+             elsif grader_id != 0
                grader.user.email
              else
                "Autograder"
