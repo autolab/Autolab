@@ -54,6 +54,7 @@ jobs:
 
       - name: Set up Autolab
         run: |
+          sudo service mysql start
           cp config/database.github.yml config/database.yml
           cp config/school.yml.template config/school.yml
           cp config/autogradeConfig.rb.template config/autogradeConfig.rb
