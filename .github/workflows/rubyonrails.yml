@@ -30,17 +30,10 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
-    services:
-      mysql:
-        image: mysql:5.7
-        env:
-          MYSQL_DATABASE: autolab_test
-          MYSQL_USER: user
-          MYSQL_PASSWORD: password
-          MYSQL_ALLOW_EMPTY_PASSWORD: yes
-        ports:
-          - 3306:3306
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=10s --health-retries=10
+    env:
+      DB_DATABASE: autolab_test
+      DB_USER: root
+      DB_PASSWORD: root
 
     steps:
       - name: Checkout code
@@ -54,10 +47,6 @@ jobs:
 
       - name: Set up Autolab
         run: |
-          sudo /lib/systemd/systemd-sysv-install enable mysql
-          sudo systemctl enable mysql.service
-          sudo systemctl start mysql.service
-          sudo systemctl status mysql.service
           cp config/database.github.yml config/database.yml
           cp config/school.yml.template config/school.yml
           cp config/autogradeConfig.rb.template config/autogradeConfig.rb
@@ -65,6 +54,8 @@ jobs:
 
       - name: Set up database
         run: |
+          sudo /etc/init.d/mysql start
+          mysql -e 'CREATE DATABASE ${{ env.DB_DATABASE }};' -u${{ env.DB_USER }} -p${{ env.DB_PASSWORD }}
           RAILS_ENV=test bundle exec rails db:create
           RAILS_ENV=test bundle exec rails db:migrate
           RAILS_ENV=test bundle exec rake autolab:populate

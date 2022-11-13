@@ -4,8 +4,8 @@ test:
   adapter: mysql2
   database: autolab_test
   pool: 5
-  username: user
-  password: password
+  username: root
+  password: root
   socket: /var/run/mysqld/mysqld.sock
   host: localhost
   variables:
