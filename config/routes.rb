@@ -2,10 +2,10 @@ Rails.application.routes.draw do
   # For details on the DSL available within this file, see https://guides.rubyonrails.org/routing.html
 
   use_doorkeeper
-    post 'lti_launch/oidc_login', to:"lti_launch#oidc_login"
-    get 'lti_launch/oidc_login', to:"lti_launch#oidc_login"
-    post 'lti_launch/launch', to:"lti_launch#launch"
-    get 'lti_launch/launch', to:"lti_launch#launch"
+    post 'lti_launch/oidc_login', to: "lti_launch#oidc_login"
+    get 'lti_launch/oidc_login', to: "lti_launch#oidc_login"
+    post 'lti_launch/launch', to: "lti_launch#launch"
+    get 'lti_launch/launch', to: "lti_launch#launch"
 
   namespace :oauth, { defaults: { format: :json } } do
     get "device_flow_init", to: "device_flow#init"

@@ -199,25 +199,15 @@ class UsersController < ApplicationController
 
   def lti_launch_initialize
     @launch_context = params[:launch_context]
-    # code from show
     # get courses where user is instructor
-    if current_user.administrator?
-      # if current user is admin, show whatever he requests
-      @cuds = @user.course_user_data
-    else
-      # look for cud in courses where current user is instructor of
-      cuds = @user.course_user_data
-      user_cuds = []
+    @cuds = if current_user.administrator?
+              # if current user is admin, show whatever he requests
+              @user.course_user_data
+            else
+              # look for cud in courses where current user is instructor of
+              @user.course_user_data.filter(&:instructor?)
 
-      cuds.each do |cud|
-        next unless cud.instructor?
-
-        user_cud =
-          cud.course.course_user_data.where(user: @user).first
-        user_cuds << user_cud unless user_cud.nil?
-      end
-      @cuds = user_cuds
-    end
+            end
   end
   action_auth_level :github_oauth, :student
   def github_oauth

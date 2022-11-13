@@ -8,7 +8,7 @@ class LtiLaunchController < ApplicationController
   # have to do because we are making a POST request from Canvas
   skip_before_action :verify_authenticity_token
 
-  # action_auth_level :launch, :instructor
+  action_auth_level :launch, :instructor
   class LtiError < StandardError
     def initialize(msg, status_code = :bad_request)
       @status_code = status_code
@@ -16,7 +16,7 @@ class LtiLaunchController < ApplicationController
     end
   end
   rescue_from LtiError, with: :respond_with_lti_error
-  respond_to :json
+
   def respond_with_lti_error(error)
     Rails.logger.debug(error)
     Rails.logger.send(:warn) { "Lti Error: #{error.message}" }
@@ -71,7 +71,7 @@ class LtiLaunchController < ApplicationController
       raise LtiError.new("no nonce found in request", :bad_request)
     end
 
-    cache_nonce = Rails.cache.read('nonce')
+    cache_nonce = Rails.cache.read("nonce-#{@user.id}")
     if cache_nonce.nil?
       raise LtiError.new("nonce in cache expired", :bad_request)
     end
@@ -150,6 +150,7 @@ class LtiLaunchController < ApplicationController
   def launch
     # Code based on:
     # https://github.com/IMSGlobal/lti-1-3-php-library/blob/master/src/lti/LTI_Message_Launch.php
+    @user = current_user
     validate_state(params)
     id_token = params["id_token"]
     validate_jwt_format(id_token)
@@ -162,7 +163,6 @@ class LtiLaunchController < ApplicationController
       raise LtiError.new("Not logged in!", :bad_request)
     end
 
-    @user = current_user
     redirect_to controller: "users", action: "lti_launch_initialize",
                 launch_context: @jwt[:body], id: @user.id
   end
@@ -174,7 +174,6 @@ class LtiLaunchController < ApplicationController
     # code based on: https://github.com/IMSGlobal/lti-1-3-php-library/blob/master/src/lti/LTI_OIDC_Login.php
     # validate OIDC
     validate_oidc_login(params)
-
     # Build OIDC Auth Response
     # Generate State.
     # Set cookie (short lived)
@@ -182,9 +181,10 @@ class LtiLaunchController < ApplicationController
     stateCookie = "lti1p3_#{state}"
     cookies[stateCookie] = { value: state, expires_in: 1.hour }
 
-    # generate nonce, store in cache
+    # generate nonce, store in cache for user
+    @user = current_user
     nonce = "nonce-#{SecureRandom.uuid}"
-    Rails.cache.write('nonce', nonce)
+    Rails.cache.write("nonce-#{@user.id}", nonce)
     prefix = "https://"
     if ENV["DOCKER_SSL"] == "false"
       prefix = "http://"
@@ -216,9 +216,8 @@ class LtiLaunchController < ApplicationController
     end
 
     # put auth params as URL query parameters for redirect
-    @auth_params = auth_params
-    @test = URI.encode_www_form(auth_params)
+    @encoded_params = URI.encode_www_form(auth_params)
 
-    redirect_to "#{Rails.configuration.lti_settings['auth_url']}?#{@test}"
+    redirect_to "#{Rails.configuration.lti_settings['auth_url']}?#{@encoded_params}"
   end
 end
