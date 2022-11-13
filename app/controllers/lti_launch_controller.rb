@@ -184,7 +184,7 @@ class LtiLaunchController < ApplicationController
     # generate nonce, store in cache for user
     @user = current_user
     nonce = "nonce-#{SecureRandom.uuid}"
-    Rails.cache.write("nonce-#{@user.id}", nonce)
+    Rails.cache.write("nonce-#{@user.id}", nonce, expires_in: 3600)
     prefix = "https://"
     if ENV["DOCKER_SSL"] == "false"
       prefix = "http://"
