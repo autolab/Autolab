@@ -35,31 +35,35 @@ class CoursesController < ApplicationController
   def manage
     matrix = GradeMatrix.new @course, @cud
     cols = {}
-
     # extract assessment final scores
     @course.assessments.each do |asmt|
       next unless matrix.has_assessment? asmt.id
 
       cells = matrix.cells_for_assessment asmt.id
       final_scores = cells.map { |c| c["final_score"] }
-      cols[asmt.name] = final_scores
+      cols[asmt.name] = ["asmt", asmt, final_scores]
     end
 
     # category averages
     @course.assessment_categories.each do |cat|
       next unless matrix.has_category? cat
 
-      cols["#{cat} Average"] = matrix.averages_for_category cat
+      cols["#{cat} Average"] = ["avg", nil, matrix.averages_for_category(cat)]
     end
 
     # course averages
-    cols["Course Average"] = matrix.course_averages
+    cols["Course Average"] = ["avg", nil, matrix.course_averages]
 
     # calculate statistics
+    # send course_stats back in the form of
+    # name of average / assesment -> [type, asmt, statistics]
+    # where type = "asmt" or "avg" (assessment or average)
+    # asmt = assessment object or nil if an average of category / class
+    # statistics (statistics pertaining to asmt/avg (mean, median, std dev, etc))
     @course_stats = {}
     stat = Statistics.new
-    cols.each do |key, value|
-      @course_stats[key] = stat.stats(value)
+    cols.each do |key, values|
+      @course_stats[key] = [values[0], values[1], stat.stats(values[2])]
     end
   end
 
