@@ -124,7 +124,11 @@
         <div class="collapsible-body">
           <ul class="options">
             <li><%= link_to "View handin history", {:action => 'history'}, {:title=> "View your submissions, scores, and feedback from the course staff" } %> </li>
-            <li><%= link_to "View writeup", {:action => 'writeup'}, {:title=> "View the assessment writeup", :class=>""}%> </li>
+
+            <% if @assessment.has_writeup? %>
+              <li><%= link_to "View writeup", {:action => 'writeup'}, {:title=> "View the assessment writeup", :class=>""}%> </li>
+            <% end %>
+
             <li><%= link_to "Download handout", {:action => 'handout'}, {:title=> "Download handout materials and starter code" } %> </li>
             <% if @assessment.has_groups? %>
               <% if @aud.membership_status != AssessmentUserDatum::UNCONFIRMED then %>
@@ -134,7 +138,7 @@
               <% end %>
             <% end %>
             <% if @assessment.has_scoreboard? %>
-                <li><%= link_to "View scoreboard", [@course, @assessment, :scoreboard], title: "View the assessment scoreboard" %></li>
+              <li><%= link_to "View scoreboard", [@course, @assessment, :scoreboard], title: "View the assessment scoreboard" %></li>
             <% end %>
 
           <% @list.sort { |a,b| a[1] <=> b[1] }.each { |key, value| %>
@@ -190,7 +194,7 @@
   <%# Display any attachments %>
   <% if @attachments.any? or @cud.instructor? %>
     <div class="section">
-      <h3 class="section-title"><span class="white">Attachments</span></h3>
+      <h4 class="section-title"><span class="white">Attachments</span></h4>
       <ul class="collection with-header attachments">
         <%= render @attachments %>
 
@@ -318,16 +322,18 @@
           <p>You cannot view previous submissions while an exam is in progress.</p>
       <% end %>
   <% end %>
-
+  <h4 class="section-title"><span class="white">
+    Submission Summary
+  </span></h4>
   <% if @submissions.size == 0 then %>
     No Submissions yet!
   <% else %>
-    <% for submission in @submissions.first(limit=3) do %>
-      <%= render partial: "submission_summary_row",
-        locals: { submission: submission,
-        download_access: download_access } %>
+    <%= render partial: "submission_history_table", locals: {download_access: download_access, limit: 3} %>
+      <% if @submissions.size > 3  then %>
+        <!-- display link to history only if we exceed summary limit (since they are the same component) -->
+        <h6>
+            <%= link_to "See all #{@submissions.size}" + " submission".pluralize(@submissions.size), {:action => "history"} %>
+        </h6>
     <% end %>
-    <%= link_to "See all submissions", {:action => "history"} %></li>
-
   <% end %>
 </div>

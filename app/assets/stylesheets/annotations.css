@@ -505,10 +505,9 @@
   display: flex;
   flex-flow: column;
   height: 100%;
-  overflow-y: scroll;
+  overflow-y: auto;
 }
 .annotationSummary{
-  border: solid 2px #0882af;
   margin-bottom: 15px;
   color: #4f4f4f;
 }
@@ -531,7 +530,6 @@
   box-shadow: none;
   border: none;
   margin: 10px 0;
-  max-height: 350px;
 }
 
 .annotationSummary .collapsible-header{
@@ -540,6 +538,7 @@
   border: none;
   padding: 5px;
   padding-left: 10px;
+  user-select: none;
 }
 
 .annotationSummary .collapsible-header h4{
@@ -547,13 +546,32 @@
   font-size: 1.1em;
 }
 
-.annotationSummary .collapsible-header .dropdown-arrow{
-
-}
-
 .annotationSummary .collapsible-body{
   padding: 0 1rem;
   border: none;
+}
+
+.annotationSummary .collapsible-body .file_annotations {
+  margin-bottom: 10px;
+}
+
+.annotationSummary .collapsible {
+  overflow: auto;
+}
+
+/* Annotations collapsible icons */
+
+.annotationSummary .collapsible i.expand-icon,
+.annotationSummary .collapsible i.collapse-icon {
+  font-size: 2rem;
+}
+
+.annotationSummary .collapsible li.active i.expand-icon {
+  display: none;
+}
+
+.annotationSummary .collapsible li:not(.active) i.collapse-icon {
+  display: none;
 }
 
 .annotationSummary .summary_score {
@@ -577,6 +595,15 @@
   background: #818181;
 }
 
+.annotationSummary .line_number {
+  background: #818181;
+  margin-left: -8px;
+  border-top-left-radius: 100vw;
+  padding-left: 8px;
+  padding-right: 3px;
+  border-bottom-left-radius: 100vw;
+}
+
 .annotation-comment {
   margin-bottom:0;
   padding-bottom:0 !important;
@@ -593,26 +620,8 @@
   margin-bottom:0 !important;
 }
 
-.problemGrades{
-  overflow: auto;
-}
-.problemGrades h1{
-  margin: 0px;
-  background-color: #ebebeb;
-  padding: 8px;
-  border-right: none;
-  border-left: none;
-  font-weight: normal !important;
-  font-size: 1em !important;
-  color: #909090;
-  white-space: nowrap;
-  overflow: hidden;
-  padding-left: 10px;
-  padding-right: 15px;
-  text-align: left;
-}
-.problemGrades ul{
-  margin: 5px 10px;
+.problemGrades {
+  overflow-y: auto;
 }
 
 .collection{
@@ -698,6 +707,7 @@
 #symbol-tree-container {
   max-height: 100%;
   overflow: auto;
+  padding: 5px;
 }
 
 #symbol-tree-box ul {
@@ -709,6 +719,7 @@
 #symbol-tree-box ul li {
   cursor: pointer;
   display: flex;
+  align-items: center;
 }
 
 #symbol-tree-box ul li:hover {
@@ -805,10 +816,6 @@
   100% {
     opacity: 0;
   }
-}
-.collapsible {
-  max-height: 50vh;
-  overflow: auto;
 }
 
 .descript {
