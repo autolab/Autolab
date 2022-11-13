@@ -1,5 +1,5 @@
 # MySQL Configuration used for Github Actions
-production:
+test:
   adapter: mysql2
   database: autolab_test
   pool: 5
