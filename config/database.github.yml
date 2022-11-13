@@ -6,6 +6,6 @@ test:
   username: user
   password: password
   socket: /var/run/mysqld/mysqld.sock
-  host: mysql
+  host: localhost
   variables:
     sql_mode: NO_ENGINE_SUBSTITUTION
