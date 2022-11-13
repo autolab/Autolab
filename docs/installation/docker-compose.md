@@ -79,15 +79,16 @@ First ensure that you have Docker and Docker Compose installed on your machine. 
         :::bash
         docker build -t autograding_image Tango/vmms/
         
-Note that we can just run this directly on the host because we are mapping the Docker socket to the Tango container (i.e they are using the same Docker server).
+    Note that we can just run this directly on the host because we are mapping the Docker socket to the Tango container (i.e they are using the same Docker server).
 
 15. Start up everything: 
 
         :::bash
         docker-compose up -d
         
-Autolab should now be accessible on port 80 (and 443 if you configured TLS)! You can now go on to configure mailing, [follow the instructions for setting up mailing](/installation/mailing/) with the only difference being that the paths mentioned are relative to the directory `Autolab/`.
+    Autolab should now be accessible on port 80 (and 443 if you configured TLS)! You can now go on to configure mailing, [follow the instructions for setting up mailing](/installation/mailing/) with the only difference being that the paths mentioned are relative to the directory `Autolab/`.
 
+16. Now you are all set to start using Autolab! Please fill out [this form](https://docs.google.com/forms/d/e/1FAIpQLSctfi3kwa03yuCuLgGF7qS_PItfk__1s80twhVDiKGQHvqUJg/viewform?usp=sf_link) to join our registry so that we can provide you with news about the latest features, bug-fixes, and security updates. For more info, visit the [Guide for Instructors](/instructors) and [Guide for Lab Authors](/lab). 
 ## Configuring TLS/SSL
 Having TLS/SSL configured is important as it helps to ensure that sensitive information like user credentials and submission information are encrypted instead of being sent over in plaintext across the network when users are using Autolab. We have made setting up TLS as easy and pain-free as possible. Using TLS is strongly recommended if you are using Autolab in a production environment with real students and instructors.
 
