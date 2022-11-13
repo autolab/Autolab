@@ -6,7 +6,7 @@
 </h2>
 <pre>
 <%= @score.feedback %>
-Score for this problem: <%= @score.score.to_f().round(1) %>
+Score for this problem: <%= sprintf("%.2f", @score.score.to_f.round(2)) %>
 
 Graded by: <%= if @score.grader && @score.grader.user then @score.grader.user.email end %>
 </pre>
