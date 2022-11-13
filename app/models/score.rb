@@ -44,12 +44,13 @@ class Score < ApplicationRecord
   end
 
   def log_entry
-    setter = if grader_id == -1
+    setter = case grader_id
+             when -1
                "Error Handler"
-             elsif grader_id != 0
-               grader.user.email
-             else
+             when 0
                "Autograder"
+             else
+               grader.user.email
              end
 
     # Some scores don't have submissions, probably if they're deleted ones
