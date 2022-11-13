@@ -3,7 +3,7 @@ production:
   adapter: mysql2
   database: autolab_test
   pool: 5
-  username: root
+  username: user
   password: password
   socket: /var/run/mysqld/mysqld.sock
   host: mysql
