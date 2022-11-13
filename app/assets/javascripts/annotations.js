@@ -2,8 +2,7 @@
 
 $(document).ready(function () {
   $('.skip-main').remove(); // removes skip main anchor tag
-  $(".collapsible-body").show(); //expands all collapsible initially
-  $('.collapsible').collapsible();
+  $('.collapsible').collapsible({ accordion: false });
   //get line number in URL, if it exists
   var urlParams = new URLSearchParams(location.search);
 
@@ -130,101 +129,20 @@ function plusFix(n) {
   if (isNaN(n)) n = 0;
 
   if (n > 0) {
-    return "+" + n.toFixed(1);
+    return "+" + n.toFixed(2);
   }
 
-  return n.toFixed(1);
+  return n.toFixed(2);
 }
 
 // function called after create, update & delete of annotations
 function fillAnnotationBox() {
-
   retrieveSharedComments();
-
-  var annotationsByProblem = {}
-  $(".collapsible.expandable").find('li').remove();
-  for (var i = 0; i < annotations.length; i++) {
-    var problem = getProblemNameWithId(annotations[i].problem_id)
-    if (!annotationsByProblem[problem]) {
-      annotationsByProblem[problem] = []
-    }
-    annotations[i].problem = problem;
-    annotationsByProblem[problem].push(annotations[i]);
-  }
-
-  for (var problem in annotationsByProblem) {
-    var problemElement = $("#li-problem-" + problem);
-    var score = 0;
-    for (var i = 0; i < annotationsByProblem[problem].length; i++) {
-      var annotation = annotationsByProblem[problem][i];
-      var points = parseFloat(annotation.value);
-      if (isNaN(points)) points = 0;
-      score += points;
-    }
-
-    var annotationsSummary = $(".annotationSummary");
-
-    if (problemElement) {
-      problemElement.remove();
-    }
-
-    var newLi = $("<li />");
-    newLi.addClass('active');
-    annotationsSummary.find("ul").append(newLi)
-    newLi.attr("id", "li-problem-" + problem);
-    var collapsible = $('<div />');
-    collapsible.addClass('collapsible-header');
-    collapsible.addClass('active');
-    collapsible.append(
-      '<h4 style="text-transform:capitalize;">' + problem + '<div class="summary_score">' + plusFix(score) + '</div>' +
-      '</h4>'
-    )
-    newLi.append(collapsible);
-
-    var listing = $('<div />');
-    newLi.append(listing);
-    listing.addClass("collapsible-body");
-    listing.addClass("active");
-    listing.css('display', 'block');
-
-    // sorts the annotation by line order
-    annotationsByProblem[problem].sort(function (annotation1, annotation2) { return annotation1.line - annotation2.line });
-    for (var i = 0; i < annotationsByProblem[problem].length; i++) {
-      var annotation = annotationsByProblem[problem][i];
-
-      var annotationElement = $('<div />');
-      annotationElement.addClass('descript');
-      annotationElement.attr('id', 'li-annotation-' + annotation.id);
-
-      var pos = annotation.position ? annotation.position : 0;
-      var line = annotation.line + 1;
-      var link = $('<a />');
-      link.addClass('descript-link');
-      link.attr('data-header_position', pos);
-      link.attr('data-line', line);
-      link.attr('data-remote', true);
-      link.attr('href', `./view?header_position=${pos}&line=${line}`);
-
-      var pointBadge = $('<span />');
-      pointBadge.addClass('point_badge');
-      if (annotation.value > 0) {
-        pointBadge.addClass('positive');
-      } else if (annotation.value < 0) {
-        pointBadge.addClass('negative');
-      } else {
-        pointBadge.addClass('neutral');
-      }
-      pointBadge.text(plusFix(annotation.value));
-      link.append(pointBadge);
-      link.append(annotation.comment);
-      annotationElement.append(link);
-      listing.append(annotationElement);
-
-      attachChangeFileEvents();
-    }
-  }
-  // Reloads the grades part upon update
   $('.problemGrades').load(document.URL + ' .problemGrades');
+  $('#annotationPane').load(document.URL + ' #annotationPane', function() {
+    $('.collapsible').collapsible({ accordion: false });
+    attachChangeFileEvents();
+  });
 }
 
 // Sets up the keybindings
@@ -534,8 +452,13 @@ function newAnnotationFormCode() {
     var problem_id = $(this).find(".problem-id").val();
     var line = $(this).parent().parent().data("lineId");
 
-    if (comment == undefined || comment == "") {
+    if (comment === undefined || comment === "") {
       box.find('.error').text("Annotation comment can not be blank!").show();
+      return;
+    }
+
+    if (score === undefined || score === "") {
+      box.find('.error').text("Annotation score can not be blank!").show();
       return;
     }
 
@@ -587,12 +510,17 @@ function initializeBoxForm(box, annotation) {
   box.find('.annotation-form').submit(function (e) {
     e.preventDefault();
     var comment = $(this).find(".comment").val();
+    var shared_comment = $(this).find("#shared-comment").is(":checked");
     var score = $(this).find(".score").val();
     var problem_id = $(this).find(".problem-id").val();
-    var shared_comment = $(this).find("#shared-comment").is(":checked");
 
-    if (comment == undefined || comment == "") {
+    if (comment === undefined || comment === "") {
       box.find('.error').text("Annotation comment can not be blank!").show();
+      return;
+    }
+
+    if (score === undefined || score === "") {
+      box.find('.error').text("Annotation score can not be blank!").show();
       return;
     }
 
@@ -619,9 +547,9 @@ function newAnnotationBox(annotation) {
   var shared_comment = annotation.shared_comment;
 
   if (annotation.value < 0) {
-    box.find('.value').parent().removeClass('positive').addClass('negative');
-  } else if (!annotation.value > 0) { // I am a little hesitant about using == 1 here -> what if it's negative 0?
-    box.find('.value').parent().removeClass('positive').addClass('neutral');
+    box.find('.value').parent().removeClass('neutral').addClass('negative');
+  } else if (annotation.value > 0) {
+    box.find('.value').parent().removeClass('neutral').addClass('positive');
   }
 
   box.find('.submitted_by').text(annotation.submitted_by);
