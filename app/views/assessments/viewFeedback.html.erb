@@ -18,7 +18,7 @@
     <% if @submission.annotations.count > 0 and @problemReleased %>
       <div class="result-pane">
         <div class="feedback-header">
-          <h3>Remarks</h3>
+          <h3 id="remarks">Remarks</h3>
         </div>
         <br />
         <% subs_by_problem = @submission.annotations.group_by(&:problem)
@@ -84,6 +84,9 @@
           </tr>
           </tbody>
         </table>
+      <% end %>
+      <% if @submission.annotations.count > 0 and @problemReleased %>
+        <a href="#remarks">Jump to remarks</a>
       <% end %>
     </div>
   </div>
