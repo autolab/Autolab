@@ -585,10 +585,7 @@ class AssessmentsController < ApplicationController
         @queue_position = @job_status["queue_position"]
         @queue_length = @job_status["queue_length"]
       end
-      return unless @partial_feedback.nil? && @queue_position.nil?
-
-      flash[:error] = "No feedback for requested score"
-      redirect_to(action: "index") && return
+      return
     end
     @jsonFeedback = parseFeedback(@score.feedback)
     @scoreHash = parseScore(@score.feedback) unless @jsonFeedback.nil?
