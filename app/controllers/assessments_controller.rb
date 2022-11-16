@@ -8,6 +8,7 @@ require "utilities"
 
 class AssessmentsController < ApplicationController
   include ActiveSupport::Callbacks
+  include AssessmentAutogradeCore
 
   rescue_from ActionView::MissingTemplate do |_exception|
     redirect_to("/home/error_404")
@@ -570,9 +571,16 @@ class AssessmentsController < ApplicationController
   def viewFeedback
     # User requested to view feedback on a score
     @score = @submission.scores.find_by(problem_id: params[:feedback])
-    unless @score
-      flash[:error] = "No feedback for requested score"
-      redirect_to(action: "index") && return
+    job_id = @submission["jobid"]
+    if @score.nil?
+      if job_id && is_assigned(job_id)
+        @partialFeedback = tango_get_partial_feedback @job_id
+      end
+      if @partialFeedback.nil?
+        flash[:error] = "No feedback for requested score"
+        redirect_to(action: "index") && return
+      end
+      return
     end
     @jsonFeedback = parseFeedback(@score.feedback)
     @scoreHash = parseScore(@score.feedback) unless @jsonFeedback.nil?

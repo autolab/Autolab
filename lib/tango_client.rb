@@ -71,6 +71,14 @@ module TangoClient
     end
   end
 
+  def self.getpartialoutput(job_id)
+    resp = handle_exceptions do
+      url = "/getPartialOutput/#{api_key}/#{job_id}/"
+      ClientObj.get(url)
+    end
+    resp
+  end
+
   def self.info
     resp = handle_exceptions do
       url = "/info/#{api_key}/"
