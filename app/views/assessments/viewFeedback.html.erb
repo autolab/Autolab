@@ -1,9 +1,13 @@
 <% if @jsonFeedback.nil? %>
-  <% if @score.nil? and @partialFeedback %>
+  <% if @score.nil? %>
     <h2>Feedback for
       <%= @assessment.display_name %>
     </h2>
-    <pre><%= @partialFeedback["output"] %></pre>
+    <% if !@partial_feedback.nil? %>
+      <pre><%= @partial_feedback %></pre>
+    <% elsif !@queue_position.nil? %>
+      <pre>You are at position <%= (@queue_position + 1) %>/<%= @queue_length %> in the queue</pre>
+    <% end %>
   <% else %>
     <h2>Feedback for
     <%= "#{@assessment.display_name} - #{@score.problem.name}" %>

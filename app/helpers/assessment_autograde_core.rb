@@ -128,15 +128,22 @@ module AssessmentAutogradeCore
     "#{course.name}_#{assessment.name}_#{submission.version}_#{submission.course_user_datum.email}"
   end
 
-  def is_assigned(job_id)
+  def get_job_status(job_id)
     begin
       raw_live_jobs = TangoClient.jobs
+      assigned_jobs, unassigned_jobs = raw_live_jobs.partition {|rjob| rjob["assigned"]}
+      unassigned_jobs = unassigned_jobs.sort {|rjob1, rjob2| rjob1["id"].to_i - rjob2["id"].to_i}
     rescue TangoClient::TangoException => e
       COURSE_LOGGER.log("Error while getting jobs")
-      raise AutogradeError.new("Error while getting jobs", :tango_get_partial_feedback)
+      raise AutogradeError.new("Error while getting jobs", :is_assigned)
     end
-
-    return raw_live_jobs.any? {|rjob| rjob["id"].to_i == job_id and rjob["assigned"]}
+    
+    assignment = {"is_assigned"=>assigned_jobs.any? {|rjob| rjob["id"].to_i == job_id}}
+    if !assignment["is_assigned"]
+      assignment["queue_position"] = unassigned_jobs.index {|rjob| rjob["id"] == job_id}
+      assignment["queue_length"] = unassigned_jobs.length
+    end
+    assignment
   end
 
   ##
@@ -206,7 +213,7 @@ module AssessmentAutogradeCore
     begin
       response = TangoClient.getpartialoutput(job_id)
     rescue Timeout::Error
-      COURSE_LOGGER.log("Error while getting partial feedback for job #{job_id} status: Timeout")
+      COURSE_LOGGER.log("Error while getting partial feedback for job #{job_id}")
       raise AutogradeError.new("Timed out while getting partial feedback", :tango_get_partial_feedback)
     rescue TangoClient::TangoException => e
       COURSE_LOGGER.log("Error while getting partial feedback for job #{job_id} status: #{e.message}")
@@ -217,7 +224,8 @@ module AssessmentAutogradeCore
       COURSE_LOGGER.log("Error while getting partial feedback for job #{job_id} status: No feedback")
       raise AutogradeError.new("Error getting response from getting partial feedback", :tango_get_partial_feedback)
     end
-    response
+
+    response["output"]
   end
 
   ##

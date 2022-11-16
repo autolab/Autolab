@@ -571,16 +571,24 @@ class AssessmentsController < ApplicationController
   def viewFeedback
     # User requested to view feedback on a score
     @score = @submission.scores.find_by(problem_id: params[:feedback])
-    job_id = @submission["jobid"]
+    @job_id = @submission["jobid"]
     if @score.nil?
-      if job_id && is_assigned(job_id)
-        @partialFeedback = tango_get_partial_feedback @job_id
-      end
-      if @partialFeedback.nil?
-        flash[:error] = "No feedback for requested score"
+      if @job_id.nil?
+        flash[:error] = "No feedback for requested job id"
         redirect_to(action: "index") && return
       end
-      return
+
+      begin
+        @partial_feedback = tango_get_partial_feedback(@job_id)
+      rescue AutogradeError
+        @job_status = get_job_status(@job_id)
+        @queue_position = @job_status["queue_position"]
+        @queue_length = @job_status["queue_length"]
+      end
+      return unless @partial_feedback.nil? && @queue_position.nil?
+
+      flash[:error] = "No feedback for requested score"
+      redirect_to(action: "index") && return
     end
     @jsonFeedback = parseFeedback(@score.feedback)
     @scoreHash = parseScore(@score.feedback) unless @jsonFeedback.nil?
