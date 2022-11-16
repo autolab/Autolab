@@ -56,6 +56,7 @@ jobs:
         run: |
           sudo /etc/init.d/mysql start
           mysql -e 'CREATE DATABASE ${{ env.DB_DATABASE }};' -u${{ env.DB_USER }} -p${{ env.DB_PASSWORD }}
+          RAILS_ENV=test bundle exec rails generate devise:install
           RAILS_ENV=test bundle exec rails db:create
           RAILS_ENV=test bundle exec rails db:schema:load
           RAILS_ENV=test bundle exec rake autolab:populate
