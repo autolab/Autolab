@@ -34,6 +34,7 @@ jobs:
       DB_DATABASE: autolab_test
       DB_USER: root
       DB_PASSWORD: root
+      RESTFUL_KEY: test_key
 
     steps:
       - name: Checkout code
@@ -57,10 +58,18 @@ jobs:
         run: |
           sudo /etc/init.d/mysql start
           mysql -e 'CREATE DATABASE ${{ env.DB_DATABASE }};' -u${{ env.DB_USER }} -p${{ env.DB_PASSWORD }}
-          RAILS_ENV=test bundle exec rails generate devise:install
           RAILS_ENV=test bundle exec rails db:create
           RAILS_ENV=test bundle exec rails db:schema:load
           RAILS_ENV=test bundle exec rake autolab:populate
 
       - name: Run tests
-        run: bundle exec rails spec
+        continue-on-error: true
+        run: |
+          bundle exec rake log:clear
+          bundle exec rails spec
+
+      - name: Debug tests
+        run: |
+          ls
+          ls log
+          cat log/test.log
