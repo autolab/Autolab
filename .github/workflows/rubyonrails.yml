@@ -31,7 +31,8 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      DB_DATABASE: autolab_test
+      DB_TEST_DATABASE: autolab_test
+      DB_DEV_DATABASE: autolab_development
       DB_USER: root
       DB_PASSWORD: root
       RESTFUL_HOST: localhost
@@ -54,15 +55,15 @@ jobs:
           cp config/lti_settings.yml.template config/lti_settings.yml
           cp config/school.yml.template config/school.yml
           cp config/autogradeConfig.rb.template config/autogradeConfig.rb
-          mkdir attachments/ tmp/
           cp .env.template .env
-          ./bin/initialize_secrets.sh
+          mkdir attachments/ tmp/
 
       - name: Set up database
         run: |
           sudo /etc/init.d/mysql start
-          mysql -e 'CREATE DATABASE ${{ env.DB_DATABASE }};' -u${{ env.DB_USER }} -p${{ env.DB_PASSWORD }}
-          RAILS_ENV=test bundle exec rails db:create
+          mysql -e 'CREATE DATABASE ${{ env.DB_DEV_DATABASE }};' -u${{ env.DB_USER }} -p${{ env.DB_PASSWORD }}
+          ./bin/initialize_secrets.sh
+          mysql -e 'CREATE DATABASE ${{ env.DB_TEST_DATABASE }};' -u${{ env.DB_USER }} -p${{ env.DB_PASSWORD }}
           RAILS_ENV=test bundle exec rails db:schema:load
           RAILS_ENV=test bundle exec rake autolab:populate
 
