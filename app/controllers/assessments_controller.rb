@@ -577,14 +577,6 @@ class AssessmentsController < ApplicationController
         flash[:error] = "No feedback for requested job id"
         redirect_to(action: "index") && return
       end
-
-      begin
-        @partial_feedback = tango_get_partial_feedback(@job_id)
-      rescue AutogradeError
-        @job_status = get_job_status(@job_id)
-        @queue_position = @job_status["queue_position"]
-        @queue_length = @job_status["queue_length"]
-      end
       return
     end
     @jsonFeedback = parseFeedback(@score.feedback)

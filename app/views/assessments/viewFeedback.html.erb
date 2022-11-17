@@ -3,7 +3,7 @@
     <h2>Feedback for
       <%= @assessment.display_name %>
     </h2>
-      <pre id="partial-feedback"><%= @partial_feedback %></pre>
+      <div id="partial-feedback"></div>
       <script>
         setInterval(refreshPartial, 1000)
 
@@ -12,10 +12,17 @@
               url: `getPartialFeedback?job_id=${<%= @job_id %>}`,
               success: (res) => {
                 if (!res) return;
-                if (res.is_assigned && res.partial_feedback) {
-                  $('#partial-feedback').html(res.partial_feedback)
+                if (res.partial_feedback) {
+                  $('#partial-feedback').html(`
+                    <pre>${res.partial_feedback}</pre>
+                    <div class="autograding-in-progress">
+                      <pre>Autograding in progress</pre>
+                    </div>`)
                 } else if (res.queue_position) {
-                  $('#partial-feedback').html(`You are at position ${(res.queue_position) + 1} / ${(res.queue_length)} in the queue.`)
+                  $('#partial-feedback').html(`
+                    <div class="autograding-in-progress">
+                      <pre>You are at position ${(res.queue_position) + 1} / ${(res.queue_length)} in the autograding queue.</pre>
+                    </div>`)
                 } else {
                   location.reload();
                 }

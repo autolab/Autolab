@@ -1357,6 +1357,23 @@ table.sub {
   vertical-align: top;
 }
 
+.autograding-in-progress {
+  display: flex;
+  flex-direction: row;
+}
+.autograding-in-progress:before, .autograding-in-progress:after{
+  content: "";
+  flex: 1 1;
+  border-bottom: 2px dashed;
+  margin: auto;
+}
+.autograding-in-progress:before {
+  margin-right: 10px
+}
+.autograding-in-progress:after {
+  margin-left: 10px
+}
+
 .submissions {
   overflow-x: scroll;
 }
