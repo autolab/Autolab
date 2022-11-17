@@ -7,7 +7,7 @@ class UsersController < ApplicationController
     redirect_to("/home/error_404")
   end
   before_action :set_gh_oauth_client, only: [:github_oauth, :github_oauth_callback]
-  before_action :set_user, only: [:github_oauth, :github_revoke, :lti_launch_initialize]
+  before_action :set_user, only: [:github_oauth, :github_revoke, :lti_launch_initialize, :lti_launch_link_course]
 
   # GET /users
   action_auth_level :index, :student
@@ -197,6 +197,7 @@ class UsersController < ApplicationController
     redirect_to(users_path) && return
   end
 
+  action_auth_level :lti_launch_initialize, :instructor
   def lti_launch_initialize
     @launch_context = params[:launch_context]
     # get courses where user is instructor
@@ -206,8 +207,29 @@ class UsersController < ApplicationController
             else
               # look for cud in courses where current user is instructor of
               @user.course_user_data.filter(&:instructor?)
-
             end
+  end
+
+  action_auth_level :lti_launch_link_course, :instructor
+  def lti_launch_link_course
+    @membership_url = params[:membership_url]
+    @selectedCudId = params[:selectedCud]
+    if !@selectedCudId.nil?
+      @selectedCud = CourseUserDatum.find(@selectedCudId)
+      puts @selectedCud
+    end
+    if !@selectedCud.nil? && !@membership_url.nil?
+      @selectedCud.lti_context_membership_url = @membership_url
+      if @selectedCud.save
+        flash[:success] = "Success: LTI Link was successful"
+      else
+        flash[:error] = "Saving LTI Course context membership url failed"
+      end
+      redirect_to(controller: :courses, action: :index) && return
+    else
+      flash[:error] = "Action Error"
+    end
+    redirect_to(controller: :users, action: :show) && return
   end
   action_auth_level :github_oauth, :student
   def github_oauth

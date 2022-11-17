@@ -44,6 +44,13 @@
 <%= link_to raw('<span class="btn">Add User to Course</span>'), [:new, @course, :course_user_datum] %>
 <%= link_to raw('<span class="btn">Import Roster/Users</span>'), {:action=>"upload_roster"} %>
 <%= link_to raw('<span class="btn">Export Roster</span>'), {:action=>"download_roster"} %>
+  <% @cuds = current_user.course_user_data.filter(&:instructor?)%>
+  <% @cuds = @cuds.filter{|cud| cud.course.id == @course.id && !cud.lti_context_membership_url.nil?} %>
+  <% puts @cuds %>
+  <% if !@cuds.nil? && @cuds.length > 0 %>
+    <li> <%= @cuds[0].course.display_name %></li>
+    <%= button_to "Import Users from LTI", controller: :lti_nrps, action: :send_nrps_request, course: @course.id, lti_context_membership_url: @cuds[0].lti_context_membership_url%>
+  <% end %>
 </p>
 
 <hr>

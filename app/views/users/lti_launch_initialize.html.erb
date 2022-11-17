@@ -18,8 +18,10 @@
     <% else %>
       <ul>
         <% @cuds.each do |cud| %>
-          <li><%= link_to cud.course.display_name, edit_course_course_user_datum_path(cud.course, cud) %>
-          </li>
+          <li><%= button_to "link "+cud.course.display_name, controller: :users, action: :lti_launch_link_course,
+                          :membership_url => @launch_context["https://purl.imsglobal.org/spec/lti-nrps/claim/namesroleservice"]["context_memberships_url"],
+                          :selectedCud => cud, method: :post
+          %></li>
         <% end %>
       </ul>
     <% end %>
