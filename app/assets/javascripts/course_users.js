@@ -59,7 +59,7 @@ document.addEventListener('DOMContentLoaded', function () {
   // remove keydown event listener for add-users-dropdown
   instance._handleDropdownKeydownBound = function (e) {};
 
-  // Add authennication token to add form
+  // Add authentication token to add form
   $('#add-users-dropdown > [name="authenticity_token"]').val($('meta[name="csrf-token"]').attr('content'));
 
   // form validation
@@ -81,10 +81,10 @@ document.addEventListener('DOMContentLoaded', function () {
         error_free = false;
         invalid_inputs.push(input);
       }
-      if (invalid_inputs.length > 0) {
-        error_message = "Invalid input: " + invalid_inputs.join(', ');
-      }
     });
+    if (invalid_inputs.length > 0) {
+      error_message = "Invalid input: " + invalid_inputs.join(', ');
+    }
 
     if($('[name="role"]').val() === "" || $('[name="role"]').val() === null) {
       error_free = false;
