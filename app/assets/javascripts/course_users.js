@@ -56,6 +56,9 @@ document.addEventListener('DOMContentLoaded', function () {
     closeOnClick: false,
   });
 
+  // remove keydown event listener for add-users-dropdown
+  instance._handleDropdownKeydownBound = function (e) {};
+
   // Add authennication token to add form
   $('#add-users-dropdown > [name="authenticity_token"]').val($('meta[name="csrf-token"]').attr('content'));
 
