@@ -7,7 +7,7 @@ class UsersController < ApplicationController
     redirect_to("/home/error_404")
   end
   before_action :set_gh_oauth_client, only: [:github_oauth, :github_oauth_callback]
-  before_action :set_user, only: [:github_oauth, :github_revoke, :lti_launch_initialize]
+  before_action :set_user, only: [:github_oauth, :github_revoke, :lti_launch_initialize, :lti_link]
 
   # GET /users
   action_auth_level :index, :student
@@ -199,26 +199,65 @@ class UsersController < ApplicationController
 
   def lti_launch_initialize
     @launch_context = params[:launch_context]
+    # find course associated with context_id if there exists one
+    context_id = @launch_context["https://purl.imsglobal.org/spec/lti/claim/context"][:id]
+    # linked_course_id = LtiCourseDatum.find_by(context_id: context_id)
+    # linked_course = Course.find_by(id: linked_course_id)
+    linked_lcd = LtiCourseDatum.joins(:course).find_by(context_id: context_id)
+    unless linked_lcd.nil?
+      lti_course_title = @launch_context['https://purl.imsglobal.org/spec/lti/claim/context'][:title]
+      flash[:success] = "#{lti_course_title} already linked"
+      redirect_to(course_path(linked_lcd.course)) && return
+    end
+
+    courses_for_user = User.courses_for_user @user
+    redirect_to(home_no_user_path) && return unless courses_for_user.any?
+
+    @listing = { current: [], completed: [], upcoming: [] }
+
+    courses_for_user.each do |course|
+      next if course.disabled?
+
+      course_cud = CourseUserDatum.find_cud_for_course(course, @user.id)
+      next unless course_cud.has_auth_level?(:course_assistant)
+
+      @listing[course.temporal_status] << course
+    end
     # code from show
     # get courses where user is instructor
-    if current_user.administrator?
-      # if current user is admin, show whatever he requests
-      @cuds = @user.course_user_data
-    else
-      # look for cud in courses where current user is instructor of
-      cuds = @user.course_user_data
-      user_cuds = []
-
-      cuds.each do |cud|
-        next unless cud.instructor?
-
-        user_cud =
-          cud.course.course_user_data.where(user: @user).first
-        user_cuds << user_cud unless user_cud.nil?
-      end
-      @cuds = user_cuds
-    end
+    # if current_user.administrator?
+    #   # if current user is admin, show whatever he requests
+    #   @cuds = @user.course_user_data
+    # else
+    #   # look for cud in courses where current user is instructor of
+    #   cuds = @user.course_user_data
+    #   user_cuds = []
+    #
+    #   cuds.each do |cud|
+    #     next unless cud.instructor?
+    #
+    #     user_cud =
+    #       cud.course.course_user_data.where(user: @user).first
+    #     user_cuds << user_cud unless user_cud.nil?
+    #   end
+    #   @cuds = user_cuds
+    # end
   end
+
+  action_auth_level :lti_link, :instructor
+  def lti_link
+    LtiCourseDatum.create(
+      course_id: params[:course_id],
+      context_id: params[:context_id],
+      membership_url: params[:membership_url],
+      last_synced: DateTime.current
+    )
+
+    course = Course.find(params[:course_id])
+    flash[:success] = "#{course.name} successfully linked"
+    redirect_to(course)
+  end
+
   action_auth_level :github_oauth, :student
   def github_oauth
     github_integration = GithubIntegration.find_by(user_id: @user.id)

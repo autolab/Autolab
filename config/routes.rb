@@ -70,6 +70,7 @@ Rails.application.routes.draw do
     get "admin"
     get "github_oauth", on: :member
     get "lti_launch_initialize", on: :member
+    get "lti_link", on: :member
     post "github_revoke", on: :member
     get "github_oauth_callback", on: :collection
   end
@@ -211,6 +212,7 @@ Rails.application.routes.draw do
     member do
       post "bulk_release"
       get "download_roster"
+      get "unlink_course"
       match "email", via: [:get, :post]
       get "manage"
       get "moss"

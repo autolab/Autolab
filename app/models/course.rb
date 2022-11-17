@@ -26,6 +26,7 @@ class Course < ApplicationRecord
   has_many :watchlist_instances, dependent: :destroy
   has_many :risk_conditions, dependent: :destroy
   has_one :watchlist_configuration, dependent: :destroy
+  has_one :lti_course_datum, dependent: :destroy
 
   accepts_nested_attributes_for :late_penalty, :version_penalty
 
