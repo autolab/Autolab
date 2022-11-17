@@ -3,24 +3,26 @@
     <h2>Feedback for
       <%= @assessment.display_name %>
     </h2>
-    <% if !@partial_feedback.nil? %>
       <pre id="partial-feedback"><%= @partial_feedback %></pre>
       <script>
-        setInterval(refreshPartial, 3000)
+        setInterval(refreshPartial, 1000)
 
         function refreshPartial() {
           $.ajax({
               url: `getPartialFeedback?job_id=${<%= @job_id %>}`,
               success: (res) => {
-                $('#partial-feedback').html(res.partial_feedback)
-                console.log("hi", res);
-              }
+                if (!res) return;
+                if (res.is_assigned && res.partial_feedback) {
+                  $('#partial-feedback').html(res.partial_feedback)
+                } else if (res.queue_position) {
+                  $('#partial-feedback').html(`You are at position ${(res.queue_position) + 1} / ${(res.queue_length)} in the queue.`)
+                } else {
+                  location.reload();
+                }
+              },
           });
         }
       </script>
-    <% elsif !@queue_position.nil? %>
-      <pre>You are at position <%= (@queue_position + 1) %>/<%= @queue_length %> in the queue</pre>
-    <% end %>
   <% else %>
     <h2>Feedback for
     <%= "#{@assessment.display_name} - #{@score.problem.name}" %>
