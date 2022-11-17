@@ -3,11 +3,8 @@
 <ul class="gray-box">
   <li>
     <b> Information from LTI resource </b>
-    <ul> Launch email: <%= @launch_context["email"] %></ul>
-    <ul> Course context id: <%= @launch_context["https://purl.imsglobal.org/spec/lti/claim/context"]["id"] %></ul>
-    <ul> Course title: <%= @launch_context["https://purl.imsglobal.org/spec/lti/claim/context"]["title"] %></ul>
-    <ul> Scopes: <%= @launch_context["scope"] %></ul>
-    <ul> Course memberships url: <%= @launch_context["https://purl.imsglobal.org/spec/lti-nrps/claim/namesroleservice"]["context_memberships_url"] %></ul>
+    <ul> Course title: <%= @course_title %></ul>
+    <ul> Course memberships url: <%= @course_memberships_url%></ul>
   </li>
   <li>
     <b>
@@ -19,7 +16,7 @@
       <ul>
         <% @cuds.each do |cud| %>
           <li><%= button_to "link "+cud.course.display_name, controller: :users, action: :lti_launch_link_course,
-                          :membership_url => @launch_context["https://purl.imsglobal.org/spec/lti-nrps/claim/namesroleservice"]["context_memberships_url"],
+                          :membership_url => @course_memberships_url,
                           :selectedCud => cud, method: :post
           %></li>
         <% end %>

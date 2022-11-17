@@ -201,7 +201,8 @@ class UsersController < ApplicationController
 
   action_auth_level :lti_launch_initialize, :instructor
   def lti_launch_initialize
-    @launch_context = params[:launch_context]
+    @course_memberships_url = params[:course_memberships_url]
+    @course_title = params[:course_title]
     # get courses where user is instructor
     @cuds = if current_user.administrator?
               # if current user is admin, show whatever he requests

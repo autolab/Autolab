@@ -164,7 +164,9 @@ class LtiLaunchController < ApplicationController
     end
 
     redirect_to controller: "users", action: "lti_launch_initialize",
-                launch_context: @jwt[:body], id: @user.id
+                course_memberships_url: @jwt[:body]["https://purl.imsglobal.org/spec/lti-nrps/claim/namesroleservice"]["context_memberships_url"],
+                course_title: @jwt[:body]["https://purl.imsglobal.org/spec/lti/claim/context"]["title"],
+                id: @user.id
   end
 
   # LTI launch entrypoint to initiate open id connect login
@@ -209,7 +211,8 @@ class LtiLaunchController < ApplicationController
       "redirect_uri": "#{hostname}/lti_launch/launch", # URL to return to after login
       "state": state, # state to identify browser session
       "nonce": nonce, # nonce to prevent replay attacks
-      "login_hint": params["login_hint"] # login hint to identify platform session
+      "login_hint": params["login_hint"], # login hint to identify platform session
+      "prompt": "none"
     }
     unless params["lti_message_hint"].nil?
       auth_params["lti_message_hint"] = params["lti_message_hint"]
