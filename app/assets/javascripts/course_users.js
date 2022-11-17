@@ -83,7 +83,7 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     });
     if (invalid_inputs.length > 0) {
-      error_message = "Invalid input: " + invalid_inputs.join(', ');
+      error_message = "Invalid email(s): " + invalid_inputs.join(', ');
     }
 
     if($('[name="role"]').val() === "" || $('[name="role"]').val() === null) {
