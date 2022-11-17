@@ -144,6 +144,7 @@ Rails.application.routes.draw do
         post "releaseAllGrades"
         post "releaseSectionGrades"
         get "viewFeedback"
+        get "getPartialFeedback"
         post "reload"
         get "statistics"
         post "withdrawAllGrades"

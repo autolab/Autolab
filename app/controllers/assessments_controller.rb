@@ -599,6 +599,29 @@ class AssessmentsController < ApplicationController
     }
   end
 
+  action_auth_level :getPartialFeedback, :student
+
+  def getPartialFeedback
+    job_id = params["job_id"].to_i
+    resp = {}
+    # User requested to view feedback on a score
+    if job_id.nil?
+      flash[:error] = "No feedback for requested job id"
+      redirect_to(action: "index") && return
+    end
+
+    begin
+      resp['partial_feedback'] = tango_get_partial_feedback(job_id)
+    rescue AutogradeError
+      @job_status = get_job_status(job_id)
+      resp["is_assigned"] = @job_status["is_assigned"]
+      resp["queue_position"] = @job_status["queue_position"]
+      resp["queue_length"] = @job_status["queue_length"]
+    end
+
+    render json: resp.to_json
+  end
+
   def parseScore(feedback)
     lines = feedback.lines
     feedback = lines[lines.length - 1].chomp
