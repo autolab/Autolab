@@ -5,7 +5,8 @@
     </h2>
       <div id="partial-feedback"></div>
       <script>
-        setInterval(refreshPartial, 1000)
+        refreshPartial();
+        setInterval(refreshPartial, 1000);
 
         function refreshPartial() {
           $.ajax({
@@ -18,12 +19,12 @@
                     <div class="autograding-in-progress">
                       <pre>Autograding in progress</pre>
                     </div>`)
-                } else if (res.queue_position) {
+                } else if (res.queue_position !== undefined && res.queue_length !== 0) {
                   $('#partial-feedback').html(`
                     <div class="autograding-in-progress">
                       <pre>You are at position ${(res.queue_position) + 1} / ${(res.queue_length)} in the autograding queue.</pre>
                     </div>`)
-                } else {
+                } else if (!res.is_assigned) {
                   location.reload();
                 }
               },
