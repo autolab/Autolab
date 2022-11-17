@@ -231,12 +231,17 @@ class CoursesController < ApplicationController
 
   action_auth_level :add_users_from_emails, :instructor
   def add_users_from_emails
-    params.require([:user_emails, :role])
+    # check if user_emails and role exist in params
+    unless params.key?(:user_emails) && params.key?(:role)
+      flash[:error] = "No user emails or role supplied"
+      redirect_to(course_users_path(@course)) && return
+    end
+
     user_emails = params[:user_emails].split(/\n/).map(&:strip)
 
     user_emails = user_emails.map do |email|
       if email.nil?
-        nil?
+        nil
         # when it's first name <email>
       elsif email =~ /(.*)\s+<(.*)>/
         { first_name: Regexp.last_match(1), email: Regexp.last_match(2) }
@@ -271,7 +276,7 @@ class CoursesController < ApplicationController
 
     @cuds = []
     user_emails.each do |email|
-      user = User.where(email: email[:email]).first
+      user = User.find_by(email: email[:email])
 
       # create users if they don't exist
       if user.nil?
@@ -294,7 +299,7 @@ class CoursesController < ApplicationController
       end
 
       # if user already exists in the course, retrieve the cud
-      cud = @course.course_user_data.where(user_id: user.id).first
+      cud = @course.course_user_data.find_by(user_id: user.id)
 
       # if user doesn't exist in the course, create a new cud
       if cud.nil?
