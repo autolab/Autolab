@@ -7,7 +7,9 @@ class UsersController < ApplicationController
     redirect_to("/home/error_404")
   end
   before_action :set_gh_oauth_client, only: [:github_oauth, :github_oauth_callback]
-  before_action :set_user, only: [:github_oauth, :github_revoke, :lti_launch_initialize, :lti_launch_link_course]
+  before_action :set_user,
+                only: [:github_oauth, :github_revoke, :lti_launch_initialize,
+                       :lti_launch_link_course]
 
   # GET /users
   action_auth_level :index, :student
@@ -216,7 +218,7 @@ class UsersController < ApplicationController
     @selectedCudId = params[:selectedCud]
     if !@selectedCudId.nil?
       @selectedCud = CourseUserDatum.find(@selectedCudId)
-      puts @selectedCud
+      Rails.logger.debug @selectedCud
     end
     if !@selectedCud.nil? && !@membership_url.nil?
       @selectedCud.lti_context_membership_url = @membership_url
