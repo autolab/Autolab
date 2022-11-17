@@ -55,6 +55,8 @@ jobs:
           cp config/school.yml.template config/school.yml
           cp config/autogradeConfig.rb.template config/autogradeConfig.rb
           mkdir attachments/ tmp/
+          cp .env.template .env
+          ./bin/initialize_secrets.sh
 
       - name: Set up database
         run: |
