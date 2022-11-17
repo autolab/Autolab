@@ -34,6 +34,8 @@ jobs:
       DB_DATABASE: autolab_test
       DB_USER: root
       DB_PASSWORD: root
+      RESTFUL_HOST: localhost
+      RESTFUL_PORT: 3000
       RESTFUL_KEY: test_key
 
     steps:
@@ -63,13 +65,6 @@ jobs:
           RAILS_ENV=test bundle exec rake autolab:populate
 
       - name: Run tests
-        continue-on-error: true
         run: |
           bundle exec rake log:clear
           bundle exec rails spec
-
-      - name: Debug tests
-        run: |
-          ls
-          ls log
-          cat log/test.log

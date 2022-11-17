@@ -245,9 +245,7 @@ module AssessmentAutogradeCore
 
     # send the tango open request
     begin
-      Rails.logger.debug "Sending open request to #{course.name}-#{assessment.name}"
       existing_files = TangoClient.open("#{course.name}-#{assessment.name}")
-      Rails.logger.debug "Done, got #{existing_files}"
     rescue TangoClient::TangoException => e
       COURSE_LOGGER.log("Error with open request on Tango for submission #{submissions[0].id}: #{e.message}")
       raise AutogradeError.new("Error with open request on Tango", :tango_open, e.message)

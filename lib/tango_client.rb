@@ -43,7 +43,6 @@ module TangoClient
   end
 
   def self.open(courselab)
-    Rails.logger.debug "GETTING: /open/#{api_key}/#{courselab}/"
     resp = handle_exceptions do
       url = "/open/#{api_key}/#{courselab}/"
       ClientObj.get(url)

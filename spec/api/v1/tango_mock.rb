@@ -11,7 +11,7 @@ RSpec.shared_context "tango mock" do
     # open #
     #------#
     open_uri = Addressable::Template.new "#{base_uri}/open/{key}/{courselab}/"
-    Rails.logger.debug "OPEN_URI IS: #{base_uri}/open/{key}/{courselab}/"
+
     files = {}
     files["hello.c"] = SecureRandom.hex(32);
     files["Makefile"] = SecureRandom.hex(32);
