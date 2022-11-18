@@ -20,7 +20,8 @@ class LtiNrpsController < ApplicationController
 
   def request_access_token
     # get private key from config to sign Autolab's client assertion
-    tool_rsa_private = OpenSSL::PKey::RSA.new(Rails.configuration.lti_settings["tool_private_key"])
+    private_key = Rails.configuration.lti_settings["tool_private_key"].to_s.gsub(/\\n/,"\n")
+    tool_rsa_private = OpenSSL::PKey::RSA.new(private_key)
     # build client assertion based on lti 1.3 spec
     # https://www.imsglobal.org/spec/security/v1p0/#using-json-web-tokens-with-oauth-2-0-client-credentials-grant
     # https://www.imsglobal.org/spec/lti/v1p3#token-endpoint-claim-and-services
