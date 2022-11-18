@@ -31,10 +31,6 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      DB_TEST_DATABASE: autolab_test
-      DB_DEV_DATABASE: autolab_development
-      DB_USER: root
-      DB_PASSWORD: root
       RESTFUL_HOST: localhost
       RESTFUL_PORT: 3000
       RESTFUL_KEY: test_key
@@ -61,9 +57,9 @@ jobs:
       - name: Set up database
         run: |
           sudo /etc/init.d/mysql start
-          mysql -e 'CREATE DATABASE ${{ env.DB_DEV_DATABASE }};' -u${{ env.DB_USER }} -p${{ env.DB_PASSWORD }}
-          mysql -e 'CREATE DATABASE ${{ env.DB_TEST_DATABASE }};' -u${{ env.DB_USER }} -p${{ env.DB_PASSWORD }}
-          ./bin/initialize_secrets.sh 
+          RAILS_ENV=development bundle exec rails db:create
+          ./bin/initialize_secrets.sh
+          RAILS_ENV=test bundle exec rails db:create
           RAILS_ENV=test bundle exec rails db:schema:load
           RAILS_ENV=test bundle exec rake autolab:populate
 
