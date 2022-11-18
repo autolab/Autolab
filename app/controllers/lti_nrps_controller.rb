@@ -22,6 +22,14 @@ class LtiNrpsController < ApplicationController
     # get private key from config to sign Autolab's client assertion
     private_key = Rails.configuration.lti_settings["tool_private_key"].to_s.gsub(/\\n/,"\n")
     tool_rsa_private = OpenSSL::PKey::RSA.new(private_key)
+    optional_parameters = {
+      kid: "dGkeZwrt+H7GnGZ2t2LUfhYf+/o=",
+      use: 'sig',
+      alg: 'RS256',
+      e: "AQAB",
+      kty: "RSA",
+    }
+    tool_rsa_private_JWK = JWT::JWK.new(tool_rsa_private, optional_parameters);
     # build client assertion based on lti 1.3 spec
     # https://www.imsglobal.org/spec/security/v1p0/#using-json-web-tokens-with-oauth-2-0-client-credentials-grant
     # https://www.imsglobal.org/spec/lti/v1p3#token-endpoint-claim-and-services
@@ -33,9 +41,10 @@ class LtiNrpsController < ApplicationController
       "exp": Time.now.to_i + 600,
       "jti": "lti-refresh-token-#{SecureRandom.uuid}"
     }
+    puts(tool_rsa_private_JWK.to_s)
     # sign client_assertion using private key
-    token = JWT.encode client_assertion, tool_rsa_private, 'RS256'
-
+    token = JWT.encode(client_assertion, tool_rsa_private_JWK.keypair, optional_parameters[:alg], kid: optional_parameters[:kid])
+    puts(token)
     # build Client-Credentials Grant
     # https://www.imsglobal.org/spec/security/v1p0/#using-oauth-2-0-client-credentials-grant
     payload = { "grant_type": "client_credentials",
@@ -53,7 +62,7 @@ class LtiNrpsController < ApplicationController
     end
     response_body = JSON.parse(response.body)
     if response_body["access_token"].nil?
-      raise LtiError.new("Client-Credentials Grant Failed", :bad_request)
+      raise LtiError.new("Client-Credentials Grant Failed: #{response.body}", :bad_request)
     end
 
     response_body["access_token"]
