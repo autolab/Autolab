@@ -243,17 +243,17 @@ class CoursesController < ApplicationController
       if email.nil?
         nil
         # when it's first name <email>
-      elsif email =~ /(.*)\s+<(.*)>/
-        { first_name: Regexp.last_match(1), email: Regexp.last_match(2) }
-        # when it's first name last name <email>
-      elsif email =~ /(.*)\s+(.*)\s+<(.*)>/
-        { first_name: Regexp.last_match(1), last_name: Regexp.last_match(2),
-          email: Regexp.last_match(3) }
-        # when it's first name middle name last name <email>
       elsif email =~ /(.*)\s+(.*)\s+(.*)\s+<(.*)>/
         { first_name: Regexp.last_match(1), middle_name: Regexp.last_match(2),
           last_name: Regexp.last_match(3), email: Regexp.last_match(4) }
         # when it's email
+      elsif email =~ /(.*)\s+(.*)\s+<(.*)>/
+        { first_name: Regexp.last_match(1), last_name: Regexp.last_match(2),
+          email: Regexp.last_match(3) }
+        # when it's first name middle name last name <email>
+      elsif email =~ /(.*)\s+<(.*)>/
+        { first_name: Regexp.last_match(1), email: Regexp.last_match(2) }
+        # when it's first name last name <email>
       else
         { email: email }
       end
