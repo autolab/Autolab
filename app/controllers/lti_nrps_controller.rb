@@ -20,6 +20,7 @@ class LtiNrpsController < ApplicationController
 
   def request_access_token
     # get private key from config to sign Autolab's client assertion
+
     private_key = Rails.configuration.lti_settings["tool_private_key"].to_s.gsub(/\\n/,"\n")
     tool_rsa_private = OpenSSL::PKey::RSA.new(private_key)
     optional_parameters = {
@@ -77,7 +78,7 @@ class LtiNrpsController < ApplicationController
         headers: { 'Content-Type' => 'application/json' }
       )
       response = conn.get("") do |req|
-        req.headers["Authorization"] = @access_token
+        req.headers["Authorization"] = "Bearer #{@access_token}"
         req.headers["Accept"] = "application/vnd.ims.lti-nrps.v2.membershipcontainer+json"
         # filter on Learners
         req.params["role"] = "http://purl.imsglobal.org/vocab/lis/v2/membership#Learner"
