@@ -199,6 +199,7 @@ class UsersController < ApplicationController
     redirect_to(users_path) && return
   end
 
+  # Process CUDs of Instructor to display LTI course linking options
   action_auth_level :lti_launch_initialize, :instructor
   def lti_launch_initialize
     @course_memberships_url = params[:course_memberships_url]
@@ -212,16 +213,18 @@ class UsersController < ApplicationController
               @user.course_user_data.filter(&:instructor?)
             end
   end
-
+  # Links LTI Course Context with an Autolab Instructor's CUD
   action_auth_level :lti_launch_link_course, :instructor
   def lti_launch_link_course
     @membership_url = params[:membership_url]
     @selectedCudId = params[:selectedCud]
     if !@selectedCudId.nil?
+      # get CUD object for selected user
       @selectedCud = CourseUserDatum.find(@selectedCudId)
-      Rails.logger.debug @selectedCud
     end
+
     if !@selectedCud.nil? && !@membership_url.nil?
+      # save LTI context membership URL to user's CUD
       @selectedCud.lti_context_membership_url = @membership_url
       if @selectedCud.save
         flash[:success] = "Success: LTI Link was successful"
@@ -230,7 +233,8 @@ class UsersController < ApplicationController
       end
       redirect_to(controller: :courses, action: :index) && return
     else
-      flash[:error] = "Action Error"
+      flash[:error] = "Error: either selected user's CUD
+                       or course membership URL doesn't exist"
     end
     redirect_to(controller: :users, action: :show) && return
   end
