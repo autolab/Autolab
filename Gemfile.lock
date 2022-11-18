@@ -172,7 +172,7 @@ GEM
     json (2.6.2)
     jstz-rails3-plus (1.0.5)
       railties (>= 3.1)
-    jwt (2.4.1)
+    jwt (2.5.0)
     libv8-node (16.10.0.0)
     libv8-node (16.10.0.0-arm64-darwin)
     libv8-node (16.10.0.0-x86_64-darwin)
@@ -440,6 +440,7 @@ DEPENDENCIES
   jquery-rails
   js_cookie_rails
   jstz-rails3-plus (>= 1.0)
+  jwt
   lockbox
   materialize-sass (= 1.0.0)
   mimemagic (>= 0.3.7)
@@ -483,4 +484,4 @@ RUBY VERSION
    ruby 2.6.8p205
 
 BUNDLED WITH
-   2.3.9
+   2.3.19
