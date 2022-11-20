@@ -1,5 +1,5 @@
 # MySQL Configuration used for Github Actions
-# https://alexrs.me/2021/github-actions-mysql-rails
+# https://ovirium.com/blog/how-to-make-mysql-work-in-your-github-actions/
 development:
   adapter: mysql2
   database: autolab_development
