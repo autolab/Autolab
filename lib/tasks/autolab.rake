@@ -127,6 +127,7 @@ namespace :autolab do
       :user => @grader,
       :course => course,
 
+      :course_number => "AutoPopulated",
       :lecture => "1",
       :section => "Instructor",
       :dropped => false,
@@ -153,6 +154,7 @@ namespace :autolab do
         cud.course_id = course.id
         cud.user_id = u.id
 
+        cud.course_number = "AutoPopulated"
         cud.lecture = "1"
         cud.section = "None"
         cud.dropped = false
