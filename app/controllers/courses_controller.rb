@@ -233,6 +233,114 @@ class CoursesController < ApplicationController
             end
   end
 
+  action_auth_level :add_users_from_emails, :instructor
+  def add_users_from_emails
+    # check if user_emails and role exist in params
+    unless params.key?(:user_emails) && params.key?(:role)
+      flash[:error] = "No user emails or role supplied"
+      redirect_to(course_users_path(@course)) && return
+    end
+
+    user_emails = params[:user_emails].split(/\n/).map(&:strip)
+
+    user_emails = user_emails.map do |email|
+      if email.nil?
+        nil
+        # when it's first name <email>
+      elsif email =~ /(.*)\s+(.*)\s+(.*)\s+<(.*)>/
+        { first_name: Regexp.last_match(1), middle_name: Regexp.last_match(2),
+          last_name: Regexp.last_match(3), email: Regexp.last_match(4) }
+        # when it's email
+      elsif email =~ /(.*)\s+(.*)\s+<(.*)>/
+        { first_name: Regexp.last_match(1), last_name: Regexp.last_match(2),
+          email: Regexp.last_match(3) }
+        # when it's first name middle name last name <email>
+      elsif email =~ /(.*)\s+<(.*)>/
+        { first_name: Regexp.last_match(1), email: Regexp.last_match(2) }
+        # when it's first name last name <email>
+      else
+        { email: email }
+      end
+    end
+
+    # filter out nil emails
+    user_emails = user_emails.reject(&:nil?)
+
+    # check if email matches regex
+    email_regex = /\A[\w+\-.]+@[a-z\d\-]+(\.[a-z\d\-]+)*\.[a-z]+\z/i
+
+    # raise error if any email is invalid and return which emails are invalid
+    invalid_emails = user_emails.reject { |user| user[:email] =~ email_regex }
+    if invalid_emails.any?
+      flash[:error] = "Invalid email(s): #{invalid_emails.map { |user| user[:email] }.join(', ')}"
+      redirect_to([:users, @course]) && return
+    end
+
+    role = params[:role]
+
+    @cuds = []
+    user_emails.each do |email|
+      user = User.find_by(email: email[:email])
+
+      # create users if they don't exist
+      if user.nil?
+        begin
+          user = if email[:first_name].nil? && email[:last_name].nil?
+                   User.roster_create(email[:email], email[:email], "", "", "", "")
+                 else
+                   User.roster_create(email[:email], email[:first_name] || "",
+                                      email[:last_name] || "", "", "", "")
+                 end
+        rescue StandardError => e
+          flash[:error] = "Error: #{e.message}"
+          redirect_to([:users, @course]) && return
+        end
+
+        if user.nil?
+          flash[:error] = "Error: User #{email} could not be created."
+          redirect_to([:users, @course]) && return
+        end
+      end
+
+      # if user already exists in the course, retrieve the cud
+      cud = @course.course_user_data.find_by(user_id: user.id)
+
+      # if user doesn't exist in the course, create a new cud
+      if cud.nil?
+        cud = @course.course_user_data.new
+        cud.user = user
+      end
+
+      # set the role of the user
+      case role
+      when "instructor"
+        cud.instructor = true
+        cud.course_assistant = false
+      when "ca"
+        cud.instructor = false
+        cud.course_assistant = true
+      when "student"
+        cud.instructor = false
+        cud.course_assistant = false
+      # if role is not valid, return error
+      else
+        flash[:error] = "Error: Invalid role #{role}."
+        redirect_to([:users, @course]) && return
+      end
+
+      # add the cud to the list of cuds to be saved
+      @cuds << cud
+    end
+
+    # save all the cuds
+    if @cuds.all?(&:save)
+      flash[:success] = "Success: Users added to course."
+    else
+      flash[:error] = "Error: Users could not be added to course."
+    end
+    redirect_to([:users, @course]) && return
+  end
+
   action_auth_level :reload, :instructor
   def reload
     @course.reload_course_config

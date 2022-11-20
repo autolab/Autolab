@@ -219,6 +219,7 @@ Rails.application.routes.draw do
       post "run_moss"
       get "sudo"
       match "upload_roster", via: [:get, :post]
+      post "add_users_from_emails"
       get "user_lookup"
       get "users"
     end
