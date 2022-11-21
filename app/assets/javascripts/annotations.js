@@ -1188,15 +1188,9 @@ var submitNewPDFAnnotation = function (comment, value, problem_id, pageInd, xRat
 /* sets up and calls $.ajax to submit an annotation */
 var submitNewAnnotation = function (comment, shared_comment, global_comment, value, problem_id, lineInd, form) {
   var newAnnotation = createAnnotation();
-  newAnnotation.line = parseInt(lineInd);
-  newAnnotation.comment = comment;
-  newAnnotation.value = value;
-  newAnnotation.problem_id = problem_id;
-  newAnnotation.filename = fileNameStr;
-  newAnnotation.shared_comment = shared_comment;
-  newAnnotation.global_comment = global_comment;
+  Object.assign(newAnnotation, { line: parseInt(lineInd), comment, value, problem_id, filename: fileNameStr, shared_comment, global_comment });
 
-  if (comment == undefined || comment == "") {
+  if (comment === undefined || comment === "") {
     $(form).find('.error').text("Could not save annotation. Please refresh the page and try again.").show();
     return;
   }
