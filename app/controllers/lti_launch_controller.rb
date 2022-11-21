@@ -18,8 +18,7 @@ class LtiLaunchController < ApplicationController
   rescue_from LtiError, with: :respond_with_lti_error
 
   def respond_with_lti_error(error)
-    Rails.logger.debug(error)
-    Rails.logger.send(:warn) { "Lti Error: #{error.message}" }
+    Rails.logger.send(:warn) { "Lti Launch Error: #{error.message}" }
     render json: { error: error.message }.to_json, status: :bad_request
   end
 
@@ -131,17 +130,63 @@ class LtiLaunchController < ApplicationController
     # rubocop:enable Layout/LineLength
   end
 
+  def get_public_key
+    # import public key depending on whether we have a PEM format
+    # or list of JWKs
+    if !@platform_public_pem.nil?
+      begin
+        rsa_public_key = OpenSSL::PKey::RSA.new(@platform_public_pem)
+        return rsa_public_key
+      rescue StandardError
+        return nil
+      end
+    end
+    @platform_public_keys.each do |platform_public_key|
+      next unless platform_public_key["kid"] == @jwt[:header]["kid"]
+
+      begin
+        rsa_public_key = JWT::JWK::RSA.import(platform_public_key).public_key
+        return rsa_public_key
+      rescue StandardError
+        return nil
+      end
+    end
+    nil
+  end
+
   def validate_jwt_signature(id_token)
-    rsa_public = OpenSSL::PKey::RSA.new(Rails.configuration.lti_settings["platform_public_key"])
+    if !Rails.configuration.lti_settings["platform_public_key"].nil?
+      # static platform public key, so take key from yml
+      @platform_public_pem = Rails.configuration.lti_settings["platform_public_key"]
+    elsif !Rails.configuration.lti_settings["platform_public_jwks_url"].nil?
+      # fetch JWKS from provided keys URL
+      conn = Faraday.new(
+        url: Rails.configuration.lti_settings["platform_public_jwks_url"],
+        headers: { 'Content-Type' => 'application/json' }
+      )
+      # make a GET request to public JWK endpoint
+      response = conn.get("")
+      if response.body["keys"].nil?
+        LtiError.new("No keys were found from public JWK url", :error)
+      end
+      @platform_public_keys = JSON.parse(response.body)["keys"]
+    else
+      LtiError.new("No platform public key or public JWK url provided", :error)
+    end
+    rsa_public_key = get_public_key
+    if rsa_public_key.nil?
+      raise LtiError.new("No matching JWK found", :bad_request)
+    end
+
     begin
-      JWT.decode id_token, rsa_public, true, { algorithm: 'RS256' }
+      JWT.decode id_token, rsa_public_key, true, { algorithm: 'RS256' }
     rescue JWT::ExpiredSignature
       # Handle expired token, e.g. logout user or deny access
       raise LtiError.new("JWT signature expired", :bad_request)
+    rescue JWT::ImmatureSignature
+      # Handle invalid token, e.g. logout user or deny access
+      raise LtiError.new("JWT signature invalid", :bad_request)
     end
-  rescue JWT::ImmatureSignature
-    # Handle invalid token, e.g. logout user or deny access
-    raise LtiError.new("JWT signature invalid", :bad_request)
   end
 
   # final LTI launch flow endpoint

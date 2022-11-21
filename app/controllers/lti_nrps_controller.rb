@@ -2,27 +2,20 @@ class LtiNrpsController < ApplicationController
   respond_to :json
   skip_before_action :set_course
   skip_before_action :authorize_user_for_course
+  skip_before_action :authenticate_for_action
   skip_before_action :update_persistent_announcements
 
-  class LtiError < StandardError
-    def initialize(msg, status_code = :bad_request)
-      @status_code = status_code
-      super(msg)
-    end
-  end
-  rescue_from LtiError, with: :respond_with_lti_error
-
+  rescue_from LtiLaunchController::LtiError, with: :respond_with_lti_error
   def respond_with_lti_error(error)
-    Rails.logger.debug(error)
-    Rails.logger.send(:warn) { "Lti Error: #{error.message}" }
+    Rails.logger.send(:warn) { "Lti NRPS Error: #{error.message}" }
     render json: { error: error.message }.to_json, status: :bad_request
   end
-
+  action_auth_level :request_access_token, :instructor
   def request_access_token
-    # get private key from config to sign Autolab's client assertion
-
-    private_key = Rails.configuration.lti_settings["tool_private_key"].to_s.gsub(/\\n/,"\n")
+    # get private key from config to sign Autolab's client assertion as a JWK
+    private_key = Rails.configuration.lti_settings["tool_private_key"].to_s.gsub(/\\n/, "\n")
     tool_rsa_private = OpenSSL::PKey::RSA.new(private_key)
+    # build JWK format for RSA
     optional_parameters = {
       kid: "dGkeZwrt+H7GnGZ2t2LUfhYf+/o=",
       use: 'sig',
@@ -42,34 +35,68 @@ class LtiNrpsController < ApplicationController
       "exp": Time.now.to_i + 600,
       "jti": "lti-refresh-token-#{SecureRandom.uuid}"
     }
-    puts(tool_rsa_private_JWK.to_s)
     # sign client_assertion using private key
-    token = JWT.encode(client_assertion, tool_rsa_private_JWK.keypair, optional_parameters[:alg], kid: optional_parameters[:kid])
-    puts(token)
+    token = JWT.encode(client_assertion, tool_rsa_private_JWK.keypair, optional_parameters[:alg],
+                       kid: optional_parameters[:kid])
     # build Client-Credentials Grant
     # https://www.imsglobal.org/spec/security/v1p0/#using-oauth-2-0-client-credentials-grant
-    payload = { "grant_type": "client_credentials",
-                "client_assertion_type": "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
-                "client_assertion": token,
-                "scope":
-                  "https://purl.imsglobal.org/spec/lti-nrps/scope/contextmembership.readonly" }
+    payload = {
+      "grant_type": "client_credentials",
+      "client_assertion_type": "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
+      "client_assertion": token,
+      "scope": "https://purl.imsglobal.org/spec/lti-nrps/scope/contextmembership.readonly"
+    }
+    # send Client-Credentials Grant to LTI Oauth2 access token endpoint
     conn = Faraday.new(
       url: Rails.configuration.lti_settings["platform_oauth2_access_token_url"],
       headers: { 'Content-Type' => 'application/json' }
     )
-    # send Client-Credentials Grant to LTI Oauth2 access token endpoint
     response = conn.post('') do |req|
       req.body = payload.to_json
     end
     response_body = JSON.parse(response.body)
     if response_body["access_token"].nil?
-      raise LtiError.new("Client-Credentials Grant Failed: #{response.body}", :bad_request)
+      raise LtiLaunchController::LtiError.new("Client-Credentials Grant Failed: #{response.body}",
+                                              :bad_request)
     end
 
     response_body["access_token"]
   end
+  # NRPS endpoint for Autolab to send an NRPS request to LTI Advantage Platform
+  action_auth_level :send_nrps_request, :instructor
+  def send_nrps_request
+    if params[:lti_context_membership_url].nil? || params[:course].nil?
+      raise LtiError.new("Parameters for request are missing", :bad_request)
+    end
 
+    @lti_context_membership_url = params[:lti_context_membership_url]
+    @course_id = params[:course]
+
+    # make sure the user initiating the request has proper permissions to make an NRPS request
+    cuds = current_user.course_user_data.filter(&:instructor?)
+    lti_authorized_cuds = cuds.filter{ |cud|
+      cud.course.id == @course_id && !cud.lti_context_membership_url.nil?
+    }
+    if lti_authorized_cuds.nil?
+      raise LtiLaunchController::LtiError.new(
+        "User does not have proper permissions to make NRPS request", :bad_request
+      )
+    end
+
+    # get access token to be authenticated to make NRPS request
+    @access_token = request_access_token
+
+    # query NRPS using the access token
+    members = query_nrps
+    render json: members.as_json
+  end
+
+private
+
+  # Query NRPS after being authenticated
+  # with logic to handle multi-page queries
   def query_nrps
+    # Initially use the context membership url to start querying NRPS
     next_page_url = @lti_context_membership_url
     members = []
     while !next_page_url.nil?
@@ -77,6 +104,7 @@ class LtiNrpsController < ApplicationController
         url: next_page_url,
         headers: { 'Content-Type' => 'application/json' }
       )
+      # make a GET request to NRPS endpoint using access token from request_access_token
       response = conn.get("") do |req|
         req.headers["Authorization"] = "Bearer #{@access_token}"
         req.headers["Accept"] = "application/vnd.ims.lti-nrps.v2.membershipcontainer+json"
@@ -94,24 +122,13 @@ class LtiNrpsController < ApplicationController
       next if next_page_header.nil?
 
       # regex match for next page link
-      # regex string taken from https://github.com/1EdTech/lti-1-3-php-library/blob/master/src/lti/LTI_Names_Roles_Provisioning_Service.php
+      # regex string taken from
+      # https://github.com/1EdTech/lti-1-3-php-library/blob/master/src/lti/LTI_Names_Roles_Provisioning_Service.php
       matches = /^Link:.*<([^>]*)>; ?rel="next"/i.match(next_page_header)
       unless matches.nil?
         next_page_url = matches[1]
       end
     end
     members
-  end
-
-  def send_nrps_request
-    @lti_context_membership_url = params[:lti_context_membership_url]
-    @course = params[:course]
-
-    # get access token to be authenticated to make NRPS request
-    @access_token = request_access_token
-
-    # query NRPS using the access token
-    members = query_nrps
-    render json: members.as_json
   end
 end
