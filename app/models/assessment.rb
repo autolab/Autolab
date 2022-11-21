@@ -261,7 +261,7 @@ class Assessment < ApplicationRecord
   # writes the properties of the assessment in YAML format to the assessment's yaml file
   #
   def dump_yaml
-    File.open(path("#{name}.yml"), "w") { |f| f.write(YAML.dump(serialize)) }
+    File.open(path("#{name}.yml"), "w") { |f| f.write(YAML.dump(sort_hash(serialize))) }
   end
 
   ##
@@ -432,6 +432,20 @@ private
     Utilities.execute_instructor_code(source) do
       Class.new.extend config_module
     end
+  end
+
+  # Recursively sort a hash by its keys and return an array
+  # Inspired by: https://bdunagan.com/2011/10/23/ruby-tip-sort-a-hash-recursively/
+  def sort_hash(h)
+    h.class[
+      h.each do |k, v|
+        if v.instance_of? Hash
+          h[k] = sort_hash v
+        elsif v.instance_of? Array
+          h[k] = v.collect { |x| sort_hash x }
+        end
+        # else do nothing
+      end.sort]
   end
 
   def serialize
