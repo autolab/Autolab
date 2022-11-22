@@ -7,44 +7,51 @@
           screen). The current "solution" is overkill. -JZ
   <%= javascript_include_tag "table_floating_header" %>
   -->
-
-  <script type="text/javascript">
-    // Triggered on keyup in the search field
-    function filterRows(name) {
-      var rows = document.getElementsByClassName("user-row"),
-          i = 0, L = rows.length, r;
-      var newTotal = 0;
-
-      // Filter rows, keep track of number remaining
-      while (i < L) {
-        r = rows[i++];
-        if (r.innerHTML.toLowerCase().indexOf(name.toLowerCase()) != -1) {
-          r.style.display = "table-row";
-          newTotal++;
-        }
-        else
-          r.style.display = "none";
-      }
-
-      // Update "Found ... users" heading
-      if(newTotal > 0) {
-        document.getElementById("results-count").innerHTML = newTotal;
-      }
-      else {
-        document.getElementById("results-count").innerHTML = "no";
-      }
-    }
-  </script>
+  <%= javascript_include_tag "course_users" %>
 <% end %>
 
-<h2>Manage Accounts</h2>
+<h3>Manage Course Users</h3>
 
 <hr>
 <p>
-<%= link_to raw('<span class="btn">Add User to Course</span>'), [:new, @course, :course_user_datum] %>
-<%= link_to raw('<span class="btn">Import Roster/Users</span>'), {:action=>"upload_roster"} %>
-<%= link_to raw('<span class="btn">Export Roster</span>'), {:action=>"download_roster"} %>
+  <%= link_to raw('<span class="btn">Add User to Course</span>'), [:new, @course, :course_user_datum] %>
+  <!-- Add User Dropdown Trigger -->
+  <a id="add-users" class='dropdown-trigger btn' href='#' data-target='add-users-dropdown'>ADD USERS FROM EMAILS</a>
+  <%= link_to raw('<span class="btn">Import Roster/Users</span>'), {:action=>"upload_roster"} %>
+  <%= link_to raw('<span class="btn">Export Roster</span>'), {:action=>"download_roster"} %>
 </p>
+
+<!-- Add Users Dropdown Structure -->
+<ul id='add-users-dropdown' class='dropdown-content'>
+  <div>
+    <form style="padding:10px; width:30rem; max-height:30rem;" action="add_users_from_emails" method="post">
+      <div class="row" style="display:flex; flex-direction:column; margin-bottom:0px;">
+        <!-- Error Box -->
+        <div id="error-box" class="red lighten-4" style="display:none;">
+          <span id="error-box-text" class="red-text text-darken-2"></span>
+        </div>
+        <div style="height:11rem; padding-bottom:1rem;">
+          <div id="emailfield"  style="flex-grow:1; display:flex; flex-direction:column;">
+            <b for="textarea1">User Emails (One Entry* Per Line)</b>
+            <span> *E.g. <i>dave@autolab.com</i> or <i>Greg K &lt;greg@autolab.com&gt;</i> </span>
+            <textarea id="textarea1" style="height:8rem;"
+                      name="user_emails" ></textarea>
+          </div>
+        </div>
+        <div class="input-field" style="flex-grow:1;margin:0;padding:0;" >
+          <select class="browser-default" name="role">
+            <option value="" disabled selected>Assigned Role</option>
+            <option value="instructor">Instructor</option>
+            <option value="ca">Course Assistant</option>
+            <option value="student">Student</option>
+          </select>
+        </div> 
+        <input id="add-users-submit" class="btn" type="submit" value="Submit">
+      </div>
+      <input type="hidden" name="authenticity_token">
+    </form>
+  </div>
+</ul>
 
 <hr>
 Search: <%= text_field_tag 'search', nil, onkeyup:'filterRows(this.value)' %>
