@@ -501,17 +501,17 @@ class CoursesController < ApplicationController
 
     moss_params = ""
     files&.each do |_, v|
-        # Space-separated patterns
-        # Each pattern consists of one or more segments, where each segment consists of
-        # - a leading period (optional)
-        # - one or more alphanumeric characters (with hyphens and underscores), or one asterisk
-        # - zero or more trailing spaces
-        # OKAY: foo.c *.c * .c README foo_c foo-c .* **
-        # NOT OKAY: . foo. .. *.
-        unless v =~ /^ *((\.?([\w-]+|\*))+ *)+$/
-          flash[:error] = "Invalid file pattern"
-          redirect_to(action: :moss) && return
-        end
+      # Space-separated patterns
+      # Each pattern consists of one or more segments, where each segment consists of
+      # - a leading period (optional)
+      # - one or more alphanumeric characters (with hyphens and underscores), or one asterisk
+      # - zero or more trailing spaces
+      # OKAY: foo.c *.c * .c README foo_c foo-c .* **
+      # NOT OKAY: . foo. .. *.
+      unless v =~ /^ *((\.?([\w-]+|\*))+ *)+$/
+        flash[:error] = "Invalid file pattern"
+        redirect_to(action: :moss) && return
+      end
     end
     unless base_file.nil?
       extract_tar_for_moss(tmp_dir, params[:base_tar], false)
