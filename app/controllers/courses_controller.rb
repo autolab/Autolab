@@ -521,11 +521,13 @@ private
         if !user.nil?
           cud = @course.course_user_data.new
           cud.user = user
-          params = ActionController::Parameters.new(section: new_cud["section"],
-                                                    grade_policy: new_cud[:grade_policy],
-                                                    lecture: new_cud[:lecture])
-          Rails.logger.debug params
-          cud.assign_attributes(params.permit(:lecture, :section, :grade_policy))
+          params = ActionController::Parameters.new(
+            course_number: new_cud[:course_number],
+            lecture: new_cud[:lecture],
+            section: new_cud[:section],
+            grade_policy: new_cud[:grade_policy]
+          )
+          cud.assign_attributes(params.permit(:course_number, :lecture, :section, :grade_policy))
 
           # Save without validations
           cud.save(validate: false)
@@ -582,10 +584,13 @@ private
         new_cud.delete(:year)
 
         # assign attributes
-        params = ActionController::Parameters.new(section: new_cud["section"],
-                                                  grade_policy: new_cud[:grade_policy],
-                                                  lecture: new_cud[:lecture])
-        existing.assign_attributes(params.permit(:lecture, :section, :grade_policy))
+        params = ActionController::Parameters.new(
+          course_number: new_cud[:course_number],
+          lecture: new_cud[:lecture],
+          section: new_cud[:section],
+          grade_policy: new_cud[:grade_policy]
+        )
+        existing.assign_attributes(params.permit(:course_number, :lecture, :section, :grade_policy))
         existing.dropped = false
         existing.save(validate: false) # Save without validations.
       end
