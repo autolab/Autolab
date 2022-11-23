@@ -20,7 +20,7 @@ class Assessment < ApplicationRecord
   has_one :scoreboard, dependent: :destroy
 
   # Validations
-  validates :name, uniqueness: { scope: :course_id }
+  validates :name, uniqueness: { case_sensitive: false, scope: :course_id }
   validates :name, format: { with: /\A[^0-9].*/, message: "can't have leading numeral" }
   validates :display_name, length: { minimum: 1 }
   validate :verify_dates_order

@@ -27,6 +27,8 @@ RSpec.configure do |config|
   config.include Devise::Test::ControllerHelpers, type: :controller
   config.extend ControllerMacros, type: :controller
 
+  MiniRacer::Platform.set_flags! :single_threaded
+
   # Before hooks for initialization
   config.before(:suite) do
     Capybara.app_host = "http://localhost:8200"

@@ -8,7 +8,16 @@
 <%= @score.feedback %>
 Score for this problem: <%= @score.score.to_f().round(1) %>
 
-Graded by: <%= if @score.grader && @score.grader.user then @score.grader.user.email end %>
+Graded by: <%=
+  case @score.grader_id
+  when -1
+    "Error Handler"
+  when 0
+    "Autograder"
+  else
+    if @score.grader&.user then @score.grader.user.email end
+  end
+%>
 </pre>
 
 <% else %>
