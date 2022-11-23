@@ -11,7 +11,7 @@ RSpec.describe CoursesController, type: :controller do
       cname = Course.find(cid).name
       it "renders successfully" do
         get :report_bug, params: {name: cname}
-        expect(response).to be_success
+        expect(response).to be_successful
         expect(response.body).to match(/Stuck on a bug/m)
       end
     end
@@ -22,7 +22,7 @@ RSpec.describe CoursesController, type: :controller do
       cname = Course.find(cid).name
       it "renders with failure" do
         get :report_bug, params: {name: cname}
-        expect(response).not_to be_success
+        expect(response).not_to be_successful
         expect(response.body).not_to match(/Stuck on a bug/m)
       end
     end
@@ -36,7 +36,7 @@ RSpec.describe CoursesController, type: :controller do
       cname = Course.find(cid).name
       it "renders successfully" do
         get :user_lookup, params: {name: cname, email: u.email}
-        expect(response).to be_success
+        expect(response).to be_successful
         expect(response.body).to match(/first_name/m)
       end
     end
@@ -48,7 +48,7 @@ RSpec.describe CoursesController, type: :controller do
       cname = Course.find(cid).name
       it "renders successfully" do
         get :user_lookup, params: {name: cname, email: u.email}
-        expect(response).to be_success
+        expect(response).to be_successful
         expect(response.body).to match(/first_name/m)
       end
     end
@@ -60,7 +60,7 @@ RSpec.describe CoursesController, type: :controller do
       cname = Course.find(cid).name
       it "renders with failure" do
         get :user_lookup, params: {name: cname, email: u.email}
-        expect(response).not_to be_success
+        expect(response).not_to be_successful
         expect(response.body).not_to match(/first_name/m)
       end
     end
@@ -69,7 +69,7 @@ RSpec.describe CoursesController, type: :controller do
       u = get_admin
       it "renders with failure" do
         get :user_lookup, params: {name: "dummy", email: u.email}
-        expect(response).not_to be_success
+        expect(response).not_to be_successful
         expect(response.body).not_to match(/first_name/m)
       end
     end

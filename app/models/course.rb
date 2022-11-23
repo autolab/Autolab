@@ -3,7 +3,7 @@ require "fileutils"
 
 class Course < ApplicationRecord
   trim_field :name, :semester, :display_name
-  validates :name, uniqueness: true
+  validates :name, uniqueness: { case_sensitive: false }
   validates :display_name, :start_date, :end_date, presence: true
   validates :late_slack, :grace_days, :late_penalty, :version_penalty, presence: true
   validates :grace_days, numericality: { greater_than_or_equal_to: 0 }

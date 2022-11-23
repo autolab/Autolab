@@ -69,4 +69,4 @@ Rails.application.config.assets.precompile += %w( initialize_datetimepickers.js 
 Rails.application.config.assets.precompile += %w( jquery.stickytableheaders.js )
 Rails.application.config.assets.precompile += %w( pdf.js )
 Rails.application.config.assets.precompile += %w( table_floating_header.js )
-Rails.application.config.assets.precompile += %w( base64.js )
+Rails.application.config.assets.precompile += %w( course_users.js )
