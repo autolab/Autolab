@@ -8,7 +8,7 @@ RSpec.describe AdminsController, type: :controller do
       login_admin
       it "renders successfully" do
         get :show
-        expect(response).to be_success
+        expect(response).to be_successful
         expect(response.body).to match(/Admin Autolab/m)
       end
     end
@@ -17,7 +17,7 @@ RSpec.describe AdminsController, type: :controller do
       login_user
       it "renders with failure" do
         get :show
-        expect(response).not_to be_success
+        expect(response).not_to be_successful
         expect(response.body).not_to match(/Admin Autolab/m)
       end
     end
@@ -25,7 +25,7 @@ RSpec.describe AdminsController, type: :controller do
     context "when user is not logged in" do
       it "renders with failure" do
         get :show
-        expect(response).not_to be_success
+        expect(response).not_to be_successful
         expect(response.body).not_to match(/Admin Autolab/m)
       end
     end
@@ -36,7 +36,7 @@ RSpec.describe AdminsController, type: :controller do
       login_admin
       it "renders successfully" do
         get :email_instructors
-        expect(response).to be_success
+        expect(response).to be_successful
         expect(response.body).to match(/From:/m)
         expect(response.body).to match(/Subject:/m)
       end
@@ -46,7 +46,7 @@ RSpec.describe AdminsController, type: :controller do
       login_user
       it "renders with failure" do
         get :email_instructors
-        expect(response).not_to be_success
+        expect(response).not_to be_successful
         expect(response.body).not_to match(/From:/m)
         expect(response.body).not_to match(/Subject:/m)
       end
@@ -55,7 +55,7 @@ RSpec.describe AdminsController, type: :controller do
     context "when user is not logged in" do
       it "renders with failure" do
         get :email_instructors
-        expect(response).not_to be_success
+        expect(response).not_to be_successful
         expect(response.body).not_to match(/From:/m)
         expect(response.body).not_to match(/Subject:/m)
       end

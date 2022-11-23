@@ -19,10 +19,49 @@ jobs:
         uses: actions/checkout@v3
       
       - name: Install Ruby
-        uses: ruby/setup-ruby@v1.100.0
+        uses: ruby/setup-ruby@0a29871fe2b0200a17a4497bae54fe5df0d973aa # v1.115.3
         with:
           bundler-cache: true
           cache-version: 3
           
       - name: Rubocop
         run: bundle exec rubocop
+
+  test:
+    runs-on: ubuntu-latest
+
+    env:
+      RESTFUL_HOST: localhost
+      RESTFUL_PORT: 3000
+      RESTFUL_KEY: test_key
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install Ruby
+        uses: ruby/setup-ruby@0a29871fe2b0200a17a4497bae54fe5df0d973aa # v1.115.3
+        with:
+          bundler-cache: true
+          cache-version: 3
+
+      - name: Set up Autolab
+        run: |
+          cp config/database.github.yml config/database.yml
+          cp config/lti_settings.yml.template config/lti_settings.yml
+          cp config/school.yml.template config/school.yml
+          cp config/autogradeConfig.rb.template config/autogradeConfig.rb
+          cp .env.template .env
+          mkdir attachments/ tmp/
+
+      - name: Set up database
+        run: |
+          sudo /etc/init.d/mysql start
+          RAILS_ENV=development bundle exec rails db:create
+          ./bin/initialize_secrets.sh
+          RAILS_ENV=test bundle exec rails db:create
+          RAILS_ENV=test bundle exec rails db:schema:load
+          RAILS_ENV=test bundle exec rake autolab:populate
+
+      - name: Run tests
+        run: bundle exec rails spec

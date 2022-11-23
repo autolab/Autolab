@@ -45,7 +45,8 @@ We released new documentation! Check it out [here](https://docs.autolabproject.c
 2. Create and migrate the database.
 	```sh
 	RAILS_ENV=test bundle exec rails db:create
-	RAILS_ENV=test bundle exec rails db:migrate
+	RAILS_ENV=test bundle exec rails db:schema:load
+	RAILS_ENV=test bundle exec rake autolab:populate
 	```
    Do not forget to use `RAILS_ENV=test bundle exec` in front of every rake/rails command.
 
