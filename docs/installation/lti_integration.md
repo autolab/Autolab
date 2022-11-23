@@ -126,9 +126,38 @@ your instance's `.env` file
         :::bash
     	./bin/initialize_secrets.sh
 
-2. Open up `.env` in your favorite editor, and update LTI_TOOL_PRIVATE_KEY= to use the client ID and client secrets generated previously:
+2. Open up `.env` in your favorite editor, and update LTI_TOOL_PRIVATE_KEY to use the JWK Private Key generated previously, however you **must** convert the private key from
+   JWK format to PEM format. An example is provided in `.env.template`. You can covert JWK objects to PEM format using tools such as the Node library [jwkToPem](https://www.npmjs.com/package/jwk-to-pem) and 
+   running it locally or on an
+   [online codespace](https://npm.runkit.com/jwk-to-pem)
 
         :::bash
-        GITHUB_CLIENT_ID=replace_with_your_client_ID
-        GITHUB_CLIENT_SECRET=replace_with_your_client_secret
+        LTI_TOOL_PRIVATE_KEY=-----BEGIN RSA PRIVATE KEY-----\n<your-private-key>\n-----END RSA PRIVATE KEY-----\n
 
+3. Create your LTI config file. This file will essentially tell Autolab how to connect to the LTI Advantage platform
+
+        :::bash
+        cp config/lti_settings.yml.template config/lti_settings.yml
+
+4. Fill in `lti_settings.yml` with your platform-specific information. For example, you should paste in the `client_id` created by your platform into the `developer_key` field.
+   To find the right values for `iss`, `auth_url`, `platform_public_key`, `platform_oauth2_access_token_url`, and `platform_public_jwks_url` please consult your respective platforms' guides
+   on LTI integration. For example, for Canvas please consult "Configuring Canvas in the Tool" on [this page](https://canvas.instructure.com/doc/api/file.lti_dev_key_config.html).
+
+   - A summary of some of the values needed for configuring a Canvas integration in Autolab are provided below:
+      
+      ```yaml
+        iss: "https://canvas.instructure.com"
+        auth_url: "https://<your-canvas-domain>/api/lti/authorize_redirect"
+        platform_oauth2_access_token_url: "https://<your-canvas-domain>/login/oauth2/token"
+        platform_public_jwks_url: "https://<your-canvas-domain>/api/lti/security/jwks"
+      ```
+   - There is a choice of using the `platform_public_key` field or the `platform_public_jwks_url` field depending on which is defined. However, it is highly recommended to use
+     `platform_public_jwks_url` as most platforms use multiple private keys to sign their JWTs, which is not supported when using `platform_public_key`.
+
+
+5. Once all settings are initialized, Autolab must be restarted. Afterwards, it should be possible to launch Autolab from your specified platform, given your configuration is correct.
+
+   - For Canvas, click on "Autolab" on the Course Navigation section
+     ![Canvas Course Navigation](/images/Canvas_Course_Navigation.png)
+   - You should be redirected to Autolab. If you are not already logged in, please log in, and try to launch Autolab from Canvas again.
+     If successful, you will be redirected on a page in Autolab that allows you to choose an Autolab course to connect with your platform's course (image coming soon).
