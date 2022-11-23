@@ -34,7 +34,7 @@
           <ul class="options">
             <li><%= link_to "Course settings", [:edit, @course],
                 { title: "Modify the properties for this course" } %></li>
-            <li><%= link_to "Manage students", [:users, @course],
+            <li><%= link_to "Manage course users", [:users, @course],
                 { title: "Create, modify, and delete user accounts" } %></li>
             <li><%= link_to "Install assessment", [:install_assessment, @course, :assessments],
                 { title: "Create an assessment from scratch or install one from an existing directory" } %></li>
