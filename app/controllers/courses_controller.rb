@@ -459,6 +459,10 @@ class CoursesController < ApplicationController
     end
   end
 
+  LANGUAGE_WHITELIST = %w[c cc java ml pascal ada lisp scheme haskell fortran ascii vhdl perl
+                          matlab python mips prolog spice vb csharp modula2 a8086 javascript plsql
+                          verilog].freeze
+
   action_auth_level :run_moss, :instructor
   def run_moss
     # Return if we have no files to process.
@@ -490,21 +494,45 @@ class CoursesController < ApplicationController
     @failures = []
     tmp_dir = Dir.mktmpdir("#{@cud.user.email}Moss", Rails.root.join("tmp"))
 
+    files = params[:files]
     base_file = params[:box_basefile]
     max_lines = params[:box_max]
     language = params[:box_language]
 
     moss_params = ""
-
+    files&.each do |_, v|
+        # Space-separated patterns
+        # Each pattern consists of one or more segments, where each segment consists of
+        # - a leading period (optional)
+        # - one or more alphanumeric characters (with hyphens and underscores), or one asterisk
+        # - zero or more trailing spaces
+        # OKAY: foo.c *.c * .c README foo_c foo-c .* **
+        # NOT OKAY: . foo. .. *.
+        unless v =~ /^ *((\.?([\w-]+|\*))+ *)+$/
+          flash[:error] = "Invalid file pattern"
+          redirect_to(action: :moss) && return
+        end
+    end
     unless base_file.nil?
       extract_tar_for_moss(tmp_dir, params[:base_tar], false)
       moss_params = [moss_params, "-b", @basefiles].join(" ")
     end
     unless max_lines.nil?
       params[:max_lines] = 10 if params[:max_lines] == ""
+      # Only accept positive integers (> 0)
+      unless params[:max_lines] =~ /^[1-9]([0-9]*)?$/
+        flash[:error] = "Invalid max lines"
+        redirect_to(action: :moss) && return
+      end
       moss_params = [moss_params, "-m", params[:max_lines]].join(" ")
     end
-    moss_params = [moss_params, "-l", params[:language_selection]].join(" ") unless language.nil?
+    unless language.nil?
+      unless LANGUAGE_WHITELIST.include? params[:language_selection]
+        flash[:error] = "Invalid language"
+        redirect_to(action: :moss) && return
+      end
+      moss_params = [moss_params, "-l", params[:language_selection]].join(" ")
+    end
 
     # Get moss flags from text field
     moss_flags = ["mossnet#{moss_params} -d"].join(" ")
@@ -523,7 +551,7 @@ class CoursesController < ApplicationController
     @mossOutput = `#{@mossCmdString} 2>&1`
     @mossExit = $?.exitstatus
 
-    # Clean up after ourselves (droh: leave for dsebugging)
+    # Clean up after ourselves (droh: leave for debugging)
     `rm -rf #{tmp_dir}`
   end
 
@@ -975,7 +1003,10 @@ private
       end
 
       # add this assessment to the moss command
-      @mossCmd << File.join(assDir, "*", params["files"][ass.id.to_s])
+      patternList = params["files"][ass.id.to_s].split(" ")
+      patternList.each do |pattern|
+        @mossCmd << File.join(assDir, ["*", pattern])
+      end
     end
   end
 
