@@ -22,7 +22,7 @@
 
     /* table data */
     // header classes
-    hclasses = ["enumerator", "id", "lec", "sec",
+    hclasses = ["enumerator", "id", "course_number", "lec", "sec",
                 <% for i in 0..(@assessment.problems.length - 1) do%>
                   "problem",
                 <% end %>
@@ -49,6 +49,7 @@
               name: "<%= [s.course_user_datum.last_name, s.course_user_datum.first_name].reject(&:blank?).join(', ') %>",
               email: "<%= s.course_user_datum.email %>"
             },
+            "course_number": "<%= s.course_user_datum.course_number %>",
             "lec": "<%= s.course_user_datum.lecture %>",
             "sec": "<%= s.course_user_datum.section %>",
             <% p_scores = s.problems_to_scores %>
@@ -110,6 +111,7 @@
           if (type == "sort") return data.email;
           return data.name;
         } },
+      { title: "Course &#8470;", className: "course_number", data: "course_number" },
       { title: "Lec", className: "lec", data: "lec" },
       { title: "Sec", className: "sec", data: "sec" },
       <% @assessment.problems.each_with_index do |p,i| %>
