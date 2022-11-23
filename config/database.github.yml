@@ -1,0 +1,23 @@
+# MySQL Configuration used for Github Actions
+# https://ovirium.com/blog/how-to-make-mysql-work-in-your-github-actions/
+development:
+  adapter: mysql2
+  database: autolab_development
+  pool: 5
+  username: root
+  password: root
+  socket: /var/run/mysqld/mysqld.sock
+  host: localhost
+  variables:
+    sql_mode: NO_ENGINE_SUBSTITUTION
+
+test:
+  adapter: mysql2
+  database: autolab_test
+  pool: 5
+  username: root
+  password: root
+  socket: /var/run/mysqld/mysqld.sock
+  host: localhost
+  variables:
+    sql_mode: NO_ENGINE_SUBSTITUTION

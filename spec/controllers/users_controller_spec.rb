@@ -8,7 +8,7 @@ RSpec.describe UsersController, type: :controller do
       login_admin
       it "renders successfully" do
         get :index
-        expect(response).to be_success
+        expect(response).to be_successful
         expect(response.body).to match(/Users List/m)
       end
     end
@@ -17,7 +17,7 @@ RSpec.describe UsersController, type: :controller do
       login_user
       it "renders successfully" do
         get :index
-        expect(response).to be_success
+        expect(response).to be_successful
         expect(response.body).to match(/Users List/m)
       end
     end
@@ -25,7 +25,7 @@ RSpec.describe UsersController, type: :controller do
     context "when user is not logged in" do
       it "renders with failure" do
         get :index
-        expect(response).not_to be_success
+        expect(response).not_to be_successful
         expect(response.body).not_to match(/Users List/m)
       end
     end
@@ -36,7 +36,7 @@ RSpec.describe UsersController, type: :controller do
       login_admin
       it "renders successfully" do
         get :new
-        expect(response).to be_success
+        expect(response).to be_successful
         expect(response.body).to match(/New user/m)
       end
     end
@@ -45,7 +45,7 @@ RSpec.describe UsersController, type: :controller do
       login_instructor
       it "renders successfully" do
         get :new
-        expect(response).to be_success
+        expect(response).to be_successful
         expect(response.body).to match(/New user/m)
       end
     end
@@ -54,7 +54,7 @@ RSpec.describe UsersController, type: :controller do
       login_user
       it "renders with failure" do
         get :new
-        expect(response).not_to be_success
+        expect(response).not_to be_successful
         expect(response.body).not_to match(/New user/m)
       end
     end
@@ -62,7 +62,7 @@ RSpec.describe UsersController, type: :controller do
     context "when user is not logged in" do
       it "renders with failure" do
         get :new
-        expect(response).not_to be_success
+        expect(response).not_to be_successful
         expect(response.body).not_to match(/New user/m)
       end
     end
@@ -74,8 +74,12 @@ RSpec.describe UsersController, type: :controller do
       login_as(u)
       it "renders successfully" do
         get :show, params: {id: u.id}
-        expect(response).to be_success
-        expect(response.body).to match(/Showing user/m)
+        expect(response).to be_successful
+        expect(response.body).to match(/Contact/m)
+        expect(response.body).to match(/About/m)
+        expect(response.body).to match(/Courses/m)
+        expect(response.body).to match(/Private Settings/m)
+        expect(response.body).to match(/API Settings/m)
       end
     end
 
@@ -84,15 +88,19 @@ RSpec.describe UsersController, type: :controller do
       login_as(u)
       it "renders successfully" do
         get :show, params: {id: u.id}
-        expect(response).to be_success
-        expect(response.body).to match(/Showing user/m)
+        expect(response).to be_successful
+        expect(response.body).to match(/Contact/m)
+        expect(response.body).to match(/About/m)
+        expect(response.body).to match(/Courses/m)
+        expect(response.body).to match(/Private Settings/m)
+        expect(response.body).to match(/API Settings/m)
       end
     end
 
     context "when user is not logged in" do
       it "renders with failure" do
         get :show, params: {id: 0}
-        expect(response).not_to be_success
+        expect(response).not_to be_successful
         expect(response.body).not_to match(/Showing user/m)
       end
     end
