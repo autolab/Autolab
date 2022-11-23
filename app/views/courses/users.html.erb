@@ -36,26 +36,29 @@
     }
   </script>
 <% end %>
+<%= stylesheet_link_tag "users" %>
 
 <h2>Manage Accounts</h2>
 
 <hr>
-<p>
-<%= link_to raw('<span class="btn">Add User to Course</span>'), [:new, @course, :course_user_datum] %>
-<%= link_to raw('<span class="btn">Import Roster/Users</span>'), {:action=>"upload_roster"} %>
-<%= link_to raw('<span class="btn">Export Roster</span>'), {:action=>"download_roster"} %>
-  <% @cuds = current_user.course_user_data.filter(&:instructor?)%>
-  <% @lti_authorized_cud = @cuds.find{|cud| cud.course.id == @course.id && !cud.lti_context_membership_url.nil?} %>
-  <% if !@lti_authorized_cud.nil? %>
-    <li> <%= @lti_authorized_cud.course.display_name %></li>
-    <%= button_to "Import Users from LTI",
-                  controller: :lti_nrps,
-                  action: :send_nrps_request,
-                  course: @course.id,
-                  lti_context_membership_url: @lti_authorized_cud.lti_context_membership_url
-    %>
-  <% end %>
-</p>
+<div class="btn-list">
+<% lcd = @course.lti_course_datum %>
+<span>
+  <%= link_to raw('<span class="btn">Add User to Course</span>'), [:new, @course, :course_user_datum] %>
+  <%= link_to raw('<span class="btn">Import Roster/Users</span>'), {:action=>"upload_roster"} %>
+  <%= link_to raw('<span class="btn">Export Roster</span>'), {:action=>"download_roster"} %>
+  <% unless lcd.nil? %><%= link_to raw('<span class="btn">Unlink Course</span>'), {:action=>"unlink_course"} %><% end %>
+</span>
+<% unless lcd.nil? %>
+  <span class="inline-span">
+    <p>Last synced: <%= time_ago_in_words(@course.lti_course_datum.last_synced, include_seconds: true) %> ago</p>
+    <%= link_to raw("<i class=\"material-icons\">sync</i>"),
+                course_path(@course),
+                method: :put %>
+
+  </span>
+<% end %>
+</div>
 
 <hr>
 Search: <%= text_field_tag 'search', nil, onkeyup:'filterRows(this.value)' %>

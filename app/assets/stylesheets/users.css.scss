@@ -1,3 +1,27 @@
 // Place all the styles related to the users controller here.
 // They will automatically be included in application.css.
 // You can use Sass (SCSS) here: http://sass-lang.com/
+@import 'style.css.scss';
+
+.btn-list {
+  display: flex;
+  justify-content: space-between;
+  align-content: center;
+}
+
+.inline-span {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.inline-span p {
+  margin: 0;
+  color: $autolab-black-text;
+}
+
+.inline-span a {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
