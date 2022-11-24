@@ -142,22 +142,24 @@ your instance's `.env` file
 4. Fill in `lti_settings.yml` with your platform-specific information. For example, you should paste in the `client_id` created by your platform into the `developer_key` field.
    To find the right values for `iss`, `auth_url`, `platform_public_key`, `platform_oauth2_access_token_url`, and `platform_public_jwks_url` please consult your respective platforms' guides
    on LTI integration. For example, for Canvas please consult "Configuring Canvas in the Tool" on [this page](https://canvas.instructure.com/doc/api/file.lti_dev_key_config.html).
-
-   - A summary of some of the values needed for configuring a Canvas integration in Autolab are provided below:
+   
+    A summary of some of the values needed for configuring a Canvas integration in Autolab are provided below:
       
-      ```yaml
+        :::yaml
         iss: "https://canvas.instructure.com"
         auth_url: "https://<your-canvas-domain>/api/lti/authorize_redirect"
         platform_oauth2_access_token_url: "https://<your-canvas-domain>/login/oauth2/token"
         platform_public_jwks_url: "https://<your-canvas-domain>/api/lti/security/jwks"
-      ```
-   - There is a choice of using the `platform_public_key` field or the `platform_public_jwks_url` field depending on which is defined. However, it is highly recommended to use
-     `platform_public_jwks_url` as most platforms use multiple private keys to sign their JWTs, which is not supported when using `platform_public_key`.
+
+    There is a choice of using the `platform_public_key` field or the `platform_public_jwks_url` field depending on which is defined. However, it is highly recommended to use
+    `platform_public_jwks_url` as most platforms use multiple private keys to sign their JWTs, which is not supported when using `platform_public_key`.
 
 
 5. Once all settings are initialized, Autolab must be restarted. Afterwards, it should be possible to launch Autolab from your specified platform, given your configuration is correct.
 
-   - For Canvas, click on "Autolab" on the Course Navigation section
-     ![Canvas Course Navigation](/images/Canvas_Course_Navigation.png)
-   - You should be redirected to Autolab. If you are not already logged in, please log in, and try to launch Autolab from Canvas again.
+    For Canvas, click on "Autolab" on the Course Navigation section
+   
+      ![Canvas Course Navigation](/images/Canvas_Course_Navigation.png)
+   
+   - You should be redirected to Autolab. If you are not already logged in, please log in, and try to launch Autolab from your LTI platform again.
      If successful, you will be redirected on a page in Autolab that allows you to choose an Autolab course to connect with your platform's course (image coming soon).

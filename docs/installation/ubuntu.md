@@ -71,10 +71,14 @@ Following instructions from <a href="https://www.digitalocean.com/community/tuto
 9. Initializing Autolab Configs
 
         :::bash
-        cd Autolab
         cp config/database.yml.template config/database.yml
         cp config/school.yml.template config/school.yml
         cp config/autogradeConfig.rb.template config/autogradeConfig.rb
+        cp config/lti_settings.yml.template config/lti_settings.yml
+
+    - Edit `school.yml` with your school/organization specific names and emails.
+    - Edit `database.yml` with the correct credentials for your chosen database. Refer to [Troubleshooting](/installation/troubleshoot) for any issues and suggested development [configurations](/installation/troubleshoot/#suggested-development-configuration-for-configdatabaseyml).
+    - Edit `lti_settings.yml` if you are intending on integrating your instance of Autolab with an LTI Advantage Platform. See [LTI Integration Setup](/installation/lti_integration) for more information.
 
 10. Create a .env file to store Autolab configuration constants. 
 
