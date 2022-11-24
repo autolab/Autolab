@@ -661,11 +661,13 @@ private
         if !user.nil?
           cud = @course.course_user_data.new
           cud.user = user
-          params = ActionController::Parameters.new(section: new_cud["section"],
-                                                    grade_policy: new_cud[:grade_policy],
-                                                    lecture: new_cud[:lecture])
-          Rails.logger.debug params
-          cud.assign_attributes(params.permit(:lecture, :section, :grade_policy))
+          params = ActionController::Parameters.new(
+            course_number: new_cud[:course_number],
+            lecture: new_cud[:lecture],
+            section: new_cud[:section],
+            grade_policy: new_cud[:grade_policy]
+          )
+          cud.assign_attributes(params.permit(:course_number, :lecture, :section, :grade_policy))
 
           # Save without validations
           cud.save(validate: false)
@@ -722,10 +724,13 @@ private
         new_cud.delete(:year)
 
         # assign attributes
-        params = ActionController::Parameters.new(section: new_cud["section"],
-                                                  grade_policy: new_cud[:grade_policy],
-                                                  lecture: new_cud[:lecture])
-        existing.assign_attributes(params.permit(:lecture, :section, :grade_policy))
+        params = ActionController::Parameters.new(
+          course_number: new_cud[:course_number],
+          lecture: new_cud[:lecture],
+          section: new_cud[:section],
+          grade_policy: new_cud[:grade_policy]
+        )
+        existing.assign_attributes(params.permit(:course_number, :lecture, :section, :grade_policy))
         existing.dropped = false
         existing.save(validate: false) # Save without validations.
       end
@@ -787,7 +792,7 @@ private
           major: row[5].to_s.chomp(" "),
           year: row[6].to_s.chomp(" "),
           grade_policy: row[7].to_s.chomp(" "),
-          # Ignore courseNumber (row[8])
+          course_number: row[8].to_s.chomp(" "),
           lecture: row[9].to_s.chomp(" "),
           section: row[10].to_s.chomp(" ")
         }
@@ -818,16 +823,19 @@ private
         cud.instructor? || cud.user.administrator? || cud.course_assistant?
       end
       @currentCUDs.each do |cud| # These are the drops
-        new_cud = { email: cud.user.email,
-                    last_name: cud.user.last_name,
-                    first_name: cud.user.first_name,
-                    school: cud.school,
-                    major: cud.major,
-                    year: cud.year,
-                    grade_policy: cud.grade_policy,
-                    lecture: cud.lecture,
-                    section: cud.section,
-                    color: "red" }
+        new_cud = {
+          email: cud.user.email,
+          last_name: cud.user.last_name,
+          first_name: cud.user.first_name,
+          school: cud.school,
+          major: cud.major,
+          year: cud.year,
+          grade_policy: cud.grade_policy,
+          course_number: cud.course_number,
+          lecture: cud.lecture,
+          section: cud.section,
+          color: "red"
+        }
         @cuds << new_cud
       end
     end
@@ -860,7 +868,7 @@ private
   # map[5]: major
   # map[6]: year
   # map[7]: grade_policy
-  # map[8]: course (unused)
+  # map[8]: course
   # map[9]: lecture
   # map[10]: section
   # rubocop:disable Lint/UselessAssignment
@@ -873,7 +881,7 @@ private
     case parsedRoster[0].length
     when ROSTER_COLUMNS_F20 # 34 fields
       # In CMU S3 roster. Columns are:
-      # Semester(0 - skip), Course(1 - skip), Section(2), Lecture(3), Mini(4 - skip),
+      # Semester(0 - skip), Course(1), Section(2), Lecture(3), Mini(4 - skip),
       # Last Name(5), Preferred/First Name(6), MI(7 - skip), Andrew ID(8),
       # Email(9 - skip), College(10), Department(11 - skip), Major(12),
       # Class(13), Graduation Semester(14 - skip), Units(15 - skip), Grade Option(16)
@@ -882,11 +890,11 @@ private
       # Default Grade(21), Time Zone Code(22), Time Zone Description(23), Added By(24),
       # Added On(25), Confirmed(26), Waitlist Position(27), Units Carried/Max Units(28),
       # Waitlisted By(29), Waitlisted On(30), Dropped By(31), Dropped On(32), Roster As Of Date(33)
-      map = [-1, 8, 5, 6, 10, 12, 13, 16, -1, 3, 2]
+      map = [-1, 8, 5, 6, 10, 12, 13, 16, 1, 3, 2]
       select_columns = ROSTER_COLUMNS_F20
     when ROSTER_COLUMNS_F16 # 32 fields
       # In CMU S3 roster. Columns are:
-      # Semester(0 - skip), Course(1 - skip), Section(2), Lecture(3), Mini(4 - skip),
+      # Semester(0 - skip), Course(1), Section(2), Lecture(3), Mini(4 - skip),
       # Last Name(5), Preferred/First Name(6), MI(7 - skip), Andrew ID(8),
       # Email(9 - skip), College(10), Department(11), Major(12),
       # Class(13), Graduation Semester(14 - skip), Units(15 - skip), Grade Option(16)
@@ -895,7 +903,7 @@ private
       # Default Grade(21), Added By(22), Added On(23), Confirmed(24), Waitlist Position(25),
       # Units Carried/Max Units(26), Waitlisted By(27), Waitlisted On(28), Dropped By(29),
       # Dropped On(30), Roster As Of Date(31)
-      map = [-1, 8, 5, 6, 10, 12, 13, 16, -1, 3, 2]
+      map = [-1, 8, 5, 6, 10, 12, 13, 16, 1, 3, 2]
       select_columns = ROSTER_COLUMNS_F16
     when ROSTER_COLUMNS_S15 # 29 fields
       # In CMU S3 roster. Columns are:
@@ -907,7 +915,7 @@ private
     else
       # No header row. Columns are:
       # Semester(0 - skip), Email(1), Last Name(2), First Name(3), School(4),
-      # Major(5), Year(6), Grade Policy(7), Course(8 - skip), Lecture(9),
+      # Major(5), Year(6), Grade Policy(7), Course(8), Lecture(9),
       # Section(10)
       return parsedRoster
     end
