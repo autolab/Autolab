@@ -229,11 +229,11 @@
       </div>
     </div>
     <br>
-    <% if @cud.course_assistant? %>
+    <% if @cud.instructor? %>
+      <button class="ui disabled submit button" id="save">SAVE</button>
+    <% else %>
       <button class= "ui disabled submit button"> SAVE </button>
       <label> You do not have permission to edit student metrics </label>
-    <% else %>
-      <button class="ui disabled submit button" id="save">SAVE</button>
     <% end %>
   </div>
 </div>
@@ -268,7 +268,7 @@
   </div>
   <h4> Access Control </h4>
   <h6>
-    Providing CAs with access will allow them to use the watchlist, but they will not be able to modify the metrics or the configurations.
+    Providing Course Assistants (CAs) with access will allow them to use the watchlist, but they will not be able to modify the metrics or the configurations.
   </h6>
   <div>
     <div class="ui checkbox <%=@allow_ca ? 'checked' : ''%> " id="allow_ca">
@@ -277,10 +277,10 @@
     </div>
   </div>
   <br/>
-  <% if @cud.course_assistant? %>
+  <% if @cud.instructor? %>
+    <button class="ui disabled submit button" id="save_configs_btn">SAVE</button>
+  <% else %>
     <button class= "ui disabled submit button"> SAVE </button>
     <label> You do not have permission to edit metrics configurations </label>
-  <% else %>
-    <button class="ui disabled submit button" id="save_configs_btn">SAVE</button>
   <% end %>
 </div>
