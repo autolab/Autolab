@@ -13,6 +13,7 @@ nav:
             - Troubleshooting: installation/troubleshoot.md
             - Mailing Setup: installation/mailing.md
             - Github Integration Setup: installation/github_integration.md
+            - LTI Advantage Integration Setup: installation/lti_integration.md
         - Tango: 
             - Installation: installation/tango.md
             - Troubleshooting: installation/tango-troubleshoot.md
