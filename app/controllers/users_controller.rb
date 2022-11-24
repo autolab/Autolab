@@ -200,15 +200,11 @@ class UsersController < ApplicationController
   end
 
   def lti_launch_initialize
-    @launch_context = params[:launch_context]
-    # find course associated with context_id if there exists one
-    context_id = @launch_context["https://purl.imsglobal.org/spec/lti/claim/context"][:id]
-    # linked_course_id = LtiCourseDatum.find_by(context_id: context_id)
-    # linked_course = Course.find_by(id: linked_course_id)
-    linked_lcd = LtiCourseDatum.joins(:course).find_by(context_id: context_id)
+    params.require([:course_title, :context_id, :course_memberships_url, :platform])
+
+    linked_lcd = LtiCourseDatum.joins(:course).find_by(context_id: params[:context_id])
     unless linked_lcd.nil?
-      lti_course_title = @launch_context['https://purl.imsglobal.org/spec/lti/claim/context'][:title]
-      flash[:success] = "#{lti_course_title} already linked"
+      flash[:success] = "#{params[:course_title]} already linked"
       redirect_to(course_path(linked_lcd.course)) && return
     end
 
@@ -225,33 +221,17 @@ class UsersController < ApplicationController
 
       @listing[course.temporal_status] << course
     end
-    # code from show
-    # get courses where user is instructor
-    # if current_user.administrator?
-    #   # if current user is admin, show whatever he requests
-    #   @cuds = @user.course_user_data
-    # else
-    #   # look for cud in courses where current user is instructor of
-    #   cuds = @user.course_user_data
-    #   user_cuds = []
-    #
-    #   cuds.each do |cud|
-    #     next unless cud.instructor?
-    #
-    #     user_cud =
-    #       cud.course.course_user_data.where(user: @user).first
-    #     user_cuds << user_cud unless user_cud.nil?
-    #   end
-    #   @cuds = user_cuds
-    # end
   end
 
-  action_auth_level :lti_link, :instructor
-  def lti_link
+  action_auth_level :lti_launch_link_course, :instructor
+  def lti_launch_link_course
+    params.require([:course_id, :context_id, :course_memberships_url, :platform])
+
     LtiCourseDatum.create(
       course_id: params[:course_id],
       context_id: params[:context_id],
-      membership_url: params[:membership_url],
+      membership_url: params[:course_memberships_url],
+      platform: params[:platform],
       last_synced: DateTime.current
     )
 

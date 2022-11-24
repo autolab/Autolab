@@ -1,4 +1,4 @@
-<h2>Link a Course with '<%= @launch_context["https://purl.imsglobal.org/spec/lti/claim/context"]["title"] %>'</h2>
+<h2>Link a Course with '<%= params[:course_title] %>'</h2>
 
 <% @listing.each do |category, list| %>
   <% if list.size > 0 %>
@@ -11,11 +11,9 @@
             <div class="clearfix hide-on-small-only"></div>
           <% end %>
 
-          <% context_id = @launch_context["https://purl.imsglobal.org/spec/lti/claim/context"]["id"] %>
-          <% membership_url = @launch_context["https://purl.imsglobal.org/spec/lti-nrps/claim/namesroleservice"]["context_memberships_url"] %>
           <div class="col s12 m4">
             <div class="card hoverable">
-              <%= link_to lti_link_user_path(context_id: context_id, course_id: course.id, membership_url: membership_url) do %>
+              <%= link_to lti_launch_link_course_user_path(context_id: params[:context_id], course_id: course.id, course_memberships_url: params[:course_memberships_url], platform: params[:platform]), method: :post do %>
                 <div class="card-content red darken-4">
                   <div class="row">
                     <div class="col s9"><h4><span class="card-title white-text"><%= course.full_name %></span></h4></div>

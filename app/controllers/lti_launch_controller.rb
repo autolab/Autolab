@@ -208,10 +208,16 @@ class LtiLaunchController < ApplicationController
       raise LtiError.new("Not logged in!", :bad_request)
     end
 
-    redirect_to controller: "users", action: "lti_launch_initialize",
-                course_memberships_url: @jwt[:body]["https://purl.imsglobal.org/spec/lti-nrps/claim/namesroleservice"]["context_memberships_url"],
-                course_title: @jwt[:body]["https://purl.imsglobal.org/spec/lti/claim/context"]["title"],
-                id: @user.id
+    # Rails.logger.info(@jwt[:body])
+    # puts @jwt
+    # render json: @jwt.as_json
+    redirect_to lti_launch_initialize_user_path(
+      @user,
+      course_memberships_url: @jwt[:body]["https://purl.imsglobal.org/spec/lti-nrps/claim/namesroleservice"]["context_memberships_url"],
+      course_title: @jwt[:body]["https://purl.imsglobal.org/spec/lti/claim/context"]["title"],
+      platform: @jwt[:body]["https://purl.imsglobal.org/spec/lti/claim/tool_platform"]["name"],
+      context_id: @jwt[:body]["https://purl.imsglobal.org/spec/lti/claim/context"]["id"],
+    )
   end
 
   # LTI launch entrypoint to initiate open id connect login

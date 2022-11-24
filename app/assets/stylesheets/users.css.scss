@@ -3,13 +3,13 @@
 // You can use Sass (SCSS) here: http://sass-lang.com/
 @import 'style.css.scss';
 
-.btn-list {
+.manage-course-options {
   display: flex;
-  justify-content: space-between;
-  align-content: center;
+  flex-direction: column;
 }
 
 .inline-span {
+  float: right;
   display: flex;
   justify-content: center;
   align-items: center;

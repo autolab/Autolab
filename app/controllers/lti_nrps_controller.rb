@@ -62,32 +62,30 @@ class LtiNrpsController < ApplicationController
 
     response_body["access_token"]
   end
+
   # NRPS endpoint for Autolab to send an NRPS request to LTI Advantage Platform
   action_auth_level :send_nrps_request, :instructor
   def send_nrps_request
-    if params[:lti_context_membership_url].nil? || params[:course].nil?
-      raise LtiError.new("Parameters for request are missing", :bad_request)
+    params.require(:lcd_id)
+
+    lcd = LtiCourseDatum.find(params[:lcd_id])
+    if lcd.nil? || lcd.membership_url.nil? || lcd.course_id.nil?
+      raise LtiError.new("Unable to update roster", :bad_request)
     end
 
-    @lti_context_membership_url = params[:lti_context_membership_url]
-    @course_id = params[:course]
-
-    # make sure the user initiating the request has proper permissions to make an NRPS request
-    cuds = current_user.course_user_data.filter(&:instructor?)
-    lti_authorized_cuds = cuds.filter{ |cud|
-      cud.course.id == @course_id && !cud.lti_context_membership_url.nil?
-    }
-    if lti_authorized_cuds.nil?
-      raise LtiLaunchController::LtiError.new(
-        "User does not have proper permissions to make NRPS request", :bad_request
-      )
-    end
+    @lti_context_membership_url = lcd.membership_url
+    @course_id = lcd.course_id
 
     # get access token to be authenticated to make NRPS request
     @access_token = request_access_token
 
     # query NRPS using the access token
     members = query_nrps
+
+    # Update last synced time
+    lcd.last_synced = DateTime.current
+    lcd.save
+
     render json: members.as_json
   end
 
