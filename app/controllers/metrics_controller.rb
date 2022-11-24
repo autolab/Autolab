@@ -1,7 +1,9 @@
 class MetricsController < ApplicationController
-  action_auth_level :index, :instructor
+  action_auth_level :index, :course_assistant
   def index
     course = Course.find_by(name: params[:course_name])
+    permission_check
+
     @course_grace_days = course.grace_days
     @course_assessment_categories = course.assessment_categories
     @num_assessments = course.assessments.count
@@ -12,9 +14,11 @@ class MetricsController < ApplicationController
                                    else
                                      course_max[1]
                                    end
+
+    @allow_ca = course.watchlist_configuration.allow_ca
   end
 
-  action_auth_level :get_current_metrics, :instructor
+  action_auth_level :get_current_metrics, :course_assistant
   def get_current_metrics
     # This API endpoint aims to retrieve the current/latest risk conditions for a particular course
     # On success, a JSON list of condition objects will be returned
@@ -27,6 +31,7 @@ class MetricsController < ApplicationController
     # In particular, the parameters field includes specific information
     # of the condition corresponding to its type
     # On error, a flash error message will be shown and nil gets returned
+    permission_check
 
     course_name = params[:course_name]
     conditions = RiskCondition.get_current_for_course(course_name)
@@ -36,7 +41,7 @@ class MetricsController < ApplicationController
     nil
   end
 
-  action_auth_level :get_watchlist_instances, :instructor
+  action_auth_level :get_watchlist_instances, :course_assistant
   def get_watchlist_instances
     # This API endpoint retrieves the watchlist instances for a particular course
     # On success, a JSON that contains the following will be returned
@@ -54,6 +59,7 @@ class MetricsController < ApplicationController
     #
     # params required would be the course name
     # On error, a 404 error is returned
+    permission_check
 
     course_name = params[:course_name]
     instances = WatchlistInstance.get_instances_for_course(course_name)
@@ -90,11 +96,12 @@ class MetricsController < ApplicationController
     nil
   end
 
-  action_auth_level :get_num_pending_instances, :instructor
+  action_auth_level :get_num_pending_instances, :course_assistant
   def get_num_pending_instances
     # This API endpoint retrieves the number of pending watchlist instances for a particular course
     # On success, a JSON containing num_pending will be returned
     # On error, a 404 error is returned
+    permission_check
 
     course_name = params[:course_name]
     number = WatchlistInstance.get_num_pending_instance_for_course(course_name)
@@ -123,6 +130,7 @@ class MetricsController < ApplicationController
     # no_submissions: { "no_submissions_asmt_names" => [ "Homework 1", "Quiz 2", ... ] }
     # low_grades: { "Homework 1" => "70/100", ... }
     # On error, an error json is rendered and status is set to :bad_request
+    permission_check
 
     course_name = params[:course_name]
     new_instances = WatchlistInstance.refresh_instances_for_course(course_name)
@@ -173,7 +181,7 @@ class MetricsController < ApplicationController
     nil
   end
 
-  action_auth_level :update_watchlist_instances, :instructor
+  action_auth_level :update_watchlist_instances, :course_assistant
   def update_watchlist_instances
     # This API endpoint updates watchlist instances for a particular course
     # On success, the watchlist instance will be updated appropriately
@@ -181,6 +189,7 @@ class MetricsController < ApplicationController
     # example json body {"method":"resolve","ids":[1,2,3]}
     # method: contact, resolve
     # ids: [1,2,3...] list of ids to be updated
+    permission_check
 
     begin
       course_name = params[:course_name]
@@ -213,11 +222,13 @@ class MetricsController < ApplicationController
     render json: { message: "Successfully updated instances" }, status: :ok
   end
 
-  action_auth_level :get_watchlist_category_blocklist, :instructor
+  action_auth_level :get_watchlist_category_blocklist, :course_assistant
   def get_watchlist_category_blocklist
     # This API endpoint aims to retrieve the current/latest category blocklist for a course
     # On success, a JSON list of category names will be returned
     # On error, an error message in JSON will be rendered
+    permission_check
+
     begin
       course_name = params[:course_name]
       raise "Course name cannot be blank" if course_name.blank?
@@ -250,7 +261,8 @@ class MetricsController < ApplicationController
     begin
       # handle nil blocklist in models
       config = WatchlistConfiguration.update_watchlist_configuration_for_course(course_name,
-                                                                                params[:blocklist])
+                                                                                params[:blocklist],
+                                                                                params[:allow_ca])
     rescue StandardError => e
       render json: { error: e.message }, status: :bad_request
       return
@@ -272,5 +284,12 @@ private
                                    low_grades: %i[
                                      grade_threshold count_threshold
                                    ])
+  end
+
+  def permission_check
+    return if @cud.course_assistant && @course.watchlist_configuration.allow_ca || @cud.instructor
+
+    flash[:error] = "You do not have permission to access the metrics feature."
+    redirect_to([@course]) && return
   end
 end
