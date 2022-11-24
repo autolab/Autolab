@@ -10,6 +10,15 @@ const metrics_config_endpoints = {
 // prevents enumerator from being changed
 Object.freeze(metrics_config_endpoints);
 
+$(document).ready(function(){
+	// initial allow_ca checkbox
+	$('#allow_ca').checkbox({
+		onChange: function(){
+			$('#save_configs_btn').removeClass('disabled');
+		}
+	});
+});
+
 $.getJSON(metrics_config_endpoints['get_category'],function(data, status){
 		excluded_categories = [];
 
@@ -43,25 +52,30 @@ $('.exchange.icon').click(function(){
 });
 
 $('#save_configs_btn').click(function(){
-	var new_blocklist = {"blocklist": {"category": [], "assessment": []}};
+	let new_data = {};
+	let new_blocklist = {"category": [], "assessment": []};
+	let new_allow_ca = $('#allow_ca').checkbox('is checked');
 
 	$('#excluded_categories').children("div").each(function () {
 		if($(this).css('visibility') == 'visible') {
-			new_blocklist["blocklist"]["category"].push($(this).text());
+			new_blocklist["category"].push($(this).text());
 		}
 	});
+
+	new_data["blocklist"] = new_blocklist;
+	new_data["allow_ca"] = new_allow_ca;
 
 	$("#save_configs_btn").addClass('loading');
 	$.ajax({
 		url:metrics_config_endpoints['update'],
 		dataType: "json",
 		contentType:'application/json',
-		data: JSON.stringify(new_blocklist),
+		data: JSON.stringify(new_data),
 		type: "POST",
 		success:function(data){
 			render_banner({
 				type:"positive",
-				header:"You have successfully saved your included categories",
+				header:"You have successfully saved your configuration",
 				message:"Your watchlist should reflect your new student metrics",
 			});
 			get_watchlist_function();
@@ -69,7 +83,7 @@ $('#save_configs_btn').click(function(){
 		error:function(result, type){
 			render_banner({
 				type:"negative",
-				header:"Currently unable to update included categories",
+				header:"Currently unable to update your configuration",
 				message: "Please try again later",
 				timeout: -1
 			});
