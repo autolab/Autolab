@@ -111,7 +111,7 @@ class MetricsController < ApplicationController
     nil
   end
 
-  action_auth_level :refresh_watchlist_instances, :instructor
+  action_auth_level :refresh_watchlist_instances, :course_assistant
   def refresh_watchlist_instances
     # This API endpoint refreshes the watchlist instances for a particular course from scratch
     # Any previously added watchlist instances will be archived
