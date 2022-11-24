@@ -288,10 +288,6 @@ var highlightLines = function (highlight) {
   });
 };
 
-$("#highlightLongLines").click(function () {
-  highlightLines(this.checked);
-});
-
 function displayAnnotations() {
 
   $(".annotation-line").not(".base-annotation-line").remove();
@@ -305,6 +301,10 @@ function displayAnnotations() {
 }
 
 function attachEvents() {
+  $("#highlightLongLines").click(function () {
+    highlightLines(this.checked);
+  });
+
   var status = $('#highlightLongLines')[0].checked;
   highlightLines(status);
 

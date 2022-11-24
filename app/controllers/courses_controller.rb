@@ -459,6 +459,10 @@ class CoursesController < ApplicationController
     end
   end
 
+  LANGUAGE_WHITELIST = %w[c cc java ml pascal ada lisp scheme haskell fortran ascii vhdl perl
+                          matlab python mips prolog spice vb csharp modula2 a8086 javascript plsql
+                          verilog].freeze
+
   action_auth_level :run_moss, :instructor
   def run_moss
     # Return if we have no files to process.
@@ -490,21 +494,45 @@ class CoursesController < ApplicationController
     @failures = []
     tmp_dir = Dir.mktmpdir("#{@cud.user.email}Moss", Rails.root.join("tmp"))
 
+    files = params[:files]
     base_file = params[:box_basefile]
     max_lines = params[:box_max]
     language = params[:box_language]
 
     moss_params = ""
-
+    files&.each do |_, v|
+      # Space-separated patterns
+      # Each pattern consists of one or more segments, where each segment consists of
+      # - a leading period (optional)
+      # - one or more alphanumeric characters (with hyphens and underscores), or one asterisk
+      # - zero or more trailing spaces
+      # OKAY: foo.c *.c * .c README foo_c foo-c .* **
+      # NOT OKAY: . foo. .. *.
+      unless v =~ /^ *((\.?([\w-]+|\*))+ *)+$/
+        flash[:error] = "Invalid file pattern"
+        redirect_to(action: :moss) && return
+      end
+    end
     unless base_file.nil?
       extract_tar_for_moss(tmp_dir, params[:base_tar], false)
       moss_params = [moss_params, "-b", @basefiles].join(" ")
     end
     unless max_lines.nil?
       params[:max_lines] = 10 if params[:max_lines] == ""
+      # Only accept positive integers (> 0)
+      unless params[:max_lines] =~ /^[1-9]([0-9]*)?$/
+        flash[:error] = "Invalid max lines"
+        redirect_to(action: :moss) && return
+      end
       moss_params = [moss_params, "-m", params[:max_lines]].join(" ")
     end
-    moss_params = [moss_params, "-l", params[:language_selection]].join(" ") unless language.nil?
+    unless language.nil?
+      unless LANGUAGE_WHITELIST.include? params[:language_selection]
+        flash[:error] = "Invalid language"
+        redirect_to(action: :moss) && return
+      end
+      moss_params = [moss_params, "-l", params[:language_selection]].join(" ")
+    end
 
     # Get moss flags from text field
     moss_flags = ["mossnet#{moss_params} -d"].join(" ")
@@ -523,7 +551,7 @@ class CoursesController < ApplicationController
     @mossOutput = `#{@mossCmdString} 2>&1`
     @mossExit = $?.exitstatus
 
-    # Clean up after ourselves (droh: leave for dsebugging)
+    # Clean up after ourselves (droh: leave for debugging)
     `rm -rf #{tmp_dir}`
   end
 
@@ -633,11 +661,13 @@ private
         if !user.nil?
           cud = @course.course_user_data.new
           cud.user = user
-          params = ActionController::Parameters.new(section: new_cud["section"],
-                                                    grade_policy: new_cud[:grade_policy],
-                                                    lecture: new_cud[:lecture])
-          Rails.logger.debug params
-          cud.assign_attributes(params.permit(:lecture, :section, :grade_policy))
+          params = ActionController::Parameters.new(
+            course_number: new_cud[:course_number],
+            lecture: new_cud[:lecture],
+            section: new_cud[:section],
+            grade_policy: new_cud[:grade_policy]
+          )
+          cud.assign_attributes(params.permit(:course_number, :lecture, :section, :grade_policy))
 
           # Save without validations
           cud.save(validate: false)
@@ -694,10 +724,13 @@ private
         new_cud.delete(:year)
 
         # assign attributes
-        params = ActionController::Parameters.new(section: new_cud["section"],
-                                                  grade_policy: new_cud[:grade_policy],
-                                                  lecture: new_cud[:lecture])
-        existing.assign_attributes(params.permit(:lecture, :section, :grade_policy))
+        params = ActionController::Parameters.new(
+          course_number: new_cud[:course_number],
+          lecture: new_cud[:lecture],
+          section: new_cud[:section],
+          grade_policy: new_cud[:grade_policy]
+        )
+        existing.assign_attributes(params.permit(:course_number, :lecture, :section, :grade_policy))
         existing.dropped = false
         existing.save(validate: false) # Save without validations.
       end
@@ -759,7 +792,7 @@ private
           major: row[5].to_s.chomp(" "),
           year: row[6].to_s.chomp(" "),
           grade_policy: row[7].to_s.chomp(" "),
-          # Ignore courseNumber (row[8])
+          course_number: row[8].to_s.chomp(" "),
           lecture: row[9].to_s.chomp(" "),
           section: row[10].to_s.chomp(" ")
         }
@@ -790,16 +823,19 @@ private
         cud.instructor? || cud.user.administrator? || cud.course_assistant?
       end
       @currentCUDs.each do |cud| # These are the drops
-        new_cud = { email: cud.user.email,
-                    last_name: cud.user.last_name,
-                    first_name: cud.user.first_name,
-                    school: cud.school,
-                    major: cud.major,
-                    year: cud.year,
-                    grade_policy: cud.grade_policy,
-                    lecture: cud.lecture,
-                    section: cud.section,
-                    color: "red" }
+        new_cud = {
+          email: cud.user.email,
+          last_name: cud.user.last_name,
+          first_name: cud.user.first_name,
+          school: cud.school,
+          major: cud.major,
+          year: cud.year,
+          grade_policy: cud.grade_policy,
+          course_number: cud.course_number,
+          lecture: cud.lecture,
+          section: cud.section,
+          color: "red"
+        }
         @cuds << new_cud
       end
     end
@@ -832,7 +868,7 @@ private
   # map[5]: major
   # map[6]: year
   # map[7]: grade_policy
-  # map[8]: course (unused)
+  # map[8]: course
   # map[9]: lecture
   # map[10]: section
   # rubocop:disable Lint/UselessAssignment
@@ -845,7 +881,7 @@ private
     case parsedRoster[0].length
     when ROSTER_COLUMNS_F20 # 34 fields
       # In CMU S3 roster. Columns are:
-      # Semester(0 - skip), Course(1 - skip), Section(2), Lecture(3), Mini(4 - skip),
+      # Semester(0 - skip), Course(1), Section(2), Lecture(3), Mini(4 - skip),
       # Last Name(5), Preferred/First Name(6), MI(7 - skip), Andrew ID(8),
       # Email(9 - skip), College(10), Department(11 - skip), Major(12),
       # Class(13), Graduation Semester(14 - skip), Units(15 - skip), Grade Option(16)
@@ -854,11 +890,11 @@ private
       # Default Grade(21), Time Zone Code(22), Time Zone Description(23), Added By(24),
       # Added On(25), Confirmed(26), Waitlist Position(27), Units Carried/Max Units(28),
       # Waitlisted By(29), Waitlisted On(30), Dropped By(31), Dropped On(32), Roster As Of Date(33)
-      map = [-1, 8, 5, 6, 10, 12, 13, 16, -1, 3, 2]
+      map = [-1, 8, 5, 6, 10, 12, 13, 16, 1, 3, 2]
       select_columns = ROSTER_COLUMNS_F20
     when ROSTER_COLUMNS_F16 # 32 fields
       # In CMU S3 roster. Columns are:
-      # Semester(0 - skip), Course(1 - skip), Section(2), Lecture(3), Mini(4 - skip),
+      # Semester(0 - skip), Course(1), Section(2), Lecture(3), Mini(4 - skip),
       # Last Name(5), Preferred/First Name(6), MI(7 - skip), Andrew ID(8),
       # Email(9 - skip), College(10), Department(11), Major(12),
       # Class(13), Graduation Semester(14 - skip), Units(15 - skip), Grade Option(16)
@@ -867,7 +903,7 @@ private
       # Default Grade(21), Added By(22), Added On(23), Confirmed(24), Waitlist Position(25),
       # Units Carried/Max Units(26), Waitlisted By(27), Waitlisted On(28), Dropped By(29),
       # Dropped On(30), Roster As Of Date(31)
-      map = [-1, 8, 5, 6, 10, 12, 13, 16, -1, 3, 2]
+      map = [-1, 8, 5, 6, 10, 12, 13, 16, 1, 3, 2]
       select_columns = ROSTER_COLUMNS_F16
     when ROSTER_COLUMNS_S15 # 29 fields
       # In CMU S3 roster. Columns are:
@@ -879,7 +915,7 @@ private
     else
       # No header row. Columns are:
       # Semester(0 - skip), Email(1), Last Name(2), First Name(3), School(4),
-      # Major(5), Year(6), Grade Policy(7), Course(8 - skip), Lecture(9),
+      # Major(5), Year(6), Grade Policy(7), Course(8), Lecture(9),
       # Section(10)
       return parsedRoster
     end
@@ -975,7 +1011,10 @@ private
       end
 
       # add this assessment to the moss command
-      @mossCmd << File.join(assDir, "*", params["files"][ass.id.to_s])
+      patternList = params["files"][ass.id.to_s].split(" ")
+      patternList.each do |pattern|
+        @mossCmd << File.join(assDir, ["*", pattern])
+      end
     end
   end
 

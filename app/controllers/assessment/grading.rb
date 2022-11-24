@@ -337,6 +337,10 @@ end
       @scores[:all] = all_grouping[1]
     end
 
+    by_course_number = latest_submissions.group_by { |s| s.course_user_datum.course_number }
+    @statistics[:course_number] = stats_for_grouping(by_course_number)
+    @scores[:course_number] = scores_for_grouping(by_course_number)
+
     by_lecture = latest_submissions.group_by { |s| s.course_user_datum.lecture }
     @statistics[:lecture] = stats_for_grouping(by_lecture)
     @scores[:lecture] = scores_for_grouping(by_lecture)

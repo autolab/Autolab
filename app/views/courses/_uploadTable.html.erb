@@ -4,6 +4,7 @@
     <th>Email</th>
     <th>First Name</th>
     <th>Last Name</th>
+    <th>Course &#8470;</th>
     <th>Lecture</th>
     <th>Section</th>
     <th>School</th>
@@ -28,6 +29,10 @@
       <td><%= cud[:last_name] %>
         <input type="hidden" name="cuds[<%=rowNum%>][last_name]"
           value="<%= cud[:last_name] %>" />
+      </td>
+      <td><%= cud[:course_number] %>
+        <input type="hidden" name="cuds[<%=rowNum%>][course_number]"
+               value="<%= cud[:course_number] %>" />
       </td>
       <td><%= cud[:lecture] %>
         <input type="hidden" name="cuds[<%=rowNum%>][lecture]"

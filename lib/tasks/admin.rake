@@ -34,5 +34,12 @@ namespace :admin do
     puts "Successfully created root user with email #{args.email}"
   end
 
+  desc "Create a new user"
+  task :create_user, [:email, :password, :first_name, :last_name] => [:environment] do |t, args|
+    u = User.new(email: args.email, first_name: args.first_name, last_name: args.last_name, password: args.password, administrator: false, school: "My School", major: "CS", year: "4")
+    u.skip_confirmation!
+    u.save!
+    puts "Successfully created user with email #{args.email}"
+  end
 
 end
