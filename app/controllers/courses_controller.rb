@@ -502,15 +502,18 @@ class CoursesController < ApplicationController
     moss_params = ""
     files&.each do |_, v|
       # Space-separated patterns
+      patternList = v.split(" ")
       # Each pattern consists of one or more segments, where each segment consists of
       # - a leading period (optional)
-      # - one or more alphanumeric characters (with hyphens and underscores), or one asterisk
-      # - zero or more trailing spaces
+      # - a word character (A..Z, a..z, 0..9, _), or hyphen (-), or asterisk (*)
+      # Each pattern optionally ends with a period
       # OKAY: foo.c *.c * .c README foo_c foo-c .* **
-      # NOT OKAY: . foo. .. *.
-      unless v =~ /^ *((\.?([\w-]+|\*))+ *)+$/
-        flash[:error] = "Invalid file pattern"
-        redirect_to(action: :moss) && return
+      # NOT OKAY: . ..
+      patternList.each do |pattern|
+        unless pattern =~ /\A(\.?[\w*-])+\.?\z/
+          flash[:error] = "Invalid file pattern"
+          redirect_to(action: :moss) && return
+        end
       end
     end
     unless base_file.nil?
@@ -520,7 +523,7 @@ class CoursesController < ApplicationController
     unless max_lines.nil?
       params[:max_lines] = 10 if params[:max_lines] == ""
       # Only accept positive integers (> 0)
-      unless params[:max_lines] =~ /^[1-9]([0-9]*)?$/
+      unless params[:max_lines] =~ /\A[1-9]([0-9]*)?\z/
         flash[:error] = "Invalid max lines"
         redirect_to(action: :moss) && return
       end
