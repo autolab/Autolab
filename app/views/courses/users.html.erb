@@ -9,29 +9,19 @@
   -->
   <%= javascript_include_tag "course_users" %>
 <% end %>
-<%= stylesheet_link_tag "users" %>
 
 <h3>Manage Course Users</h3>
 
 <hr>
-<div class="manage-course-options">
-  <% lcd = @course.lti_course_datum %>
+<div>
   <span>
     <%= link_to raw('<span class="btn">Add User to Course</span>'), [:new, @course, :course_user_datum] %>
     <!-- Add User Dropdown Trigger -->
     <a id="add-users" class='dropdown-trigger btn' href='#' data-target='add-users-dropdown'>ADD USERS FROM EMAILS</a>
     <%= link_to raw('<span class="btn">Import Roster/Users</span>'), {:action=>"upload_roster"} %>
     <%= link_to raw('<span class="btn">Export Roster</span>'), {:action=>"download_roster"} %>
-    <% unless lcd.nil? %> <%= link_to raw('<span class="btn">Unlink Course</span>'), {:action=>"unlink_course"} %> <% end %>
+    <% unless @course.lti_course_datum.nil? %> <%= link_to raw('<span class="btn">Unlink Course</span>'), {:action=>"unlink_course"} %> <% end %>
   </span>
-  <% unless lcd.nil? %>
-    <span>
-      <span class="inline-span">
-        <p>Roster synced with <%= lcd.platform %>: <%= time_ago_in_words(@course.lti_course_datum.last_synced, include_seconds: true) %> ago</p>
-          <%= link_to raw("<i class=\"material-icons\">sync</i>"), lti_nrps_send_nrps_request_path(lcd_id: lcd.id), method: :post %>
-      </span>
-    </span>
-  <% end %>
 </div>
 
 <!-- Add Users Dropdown Structure -->
@@ -69,6 +59,7 @@
 <hr>
 Search: <%= text_field_tag 'search', nil, onkeyup:'filterRows(this.value)' %>
 <br>
+
 
 <div id='ajaxTable'>
 <%= render :partial=>'usersTable' %>

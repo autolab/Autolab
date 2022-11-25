@@ -3,13 +3,12 @@
 // You can use Sass (SCSS) here: http://sass-lang.com/
 @import 'style.css.scss';
 
-.manage-course-options {
+.inline-space-between {
   display: flex;
-  flex-direction: column;
+  justify-content: space-between;
 }
 
 .inline-span {
-  float: right;
   display: flex;
   justify-content: center;
   align-items: center;
