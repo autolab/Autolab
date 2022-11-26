@@ -289,10 +289,6 @@ var highlightLines = function (highlight) {
   });
 };
 
-$("#highlightLongLines").click(function () {
-  highlightLines(this.checked);
-});
-
 function displayAnnotations() {
 
   $(".annotation-line").not(".base-annotation-line").remove();
@@ -309,7 +305,11 @@ function displayAnnotations() {
 }
 
 function attachEvents() {
-  const status = $('#highlightLongLines')[0].checked;
+  $("#highlightLongLines").click(function () {
+    highlightLines(this.checked);
+  });
+
+  var status = $('#highlightLongLines')[0].checked;
   highlightLines(status);
 
   $(".add-button").on("click", function (e) {
