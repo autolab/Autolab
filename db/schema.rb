@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2022_11_06_192532) do
+ActiveRecord::Schema.define(version: 2022_11_24_042718) do
 
   create_table "annotations", force: :cascade do |t|
     t.integer "submission_id"
@@ -95,8 +95,8 @@ ActiveRecord::Schema.define(version: 2022_11_06_192532) do
     t.text "embedded_quiz_form_data"
     t.boolean "embedded_quiz"
     t.binary "embedded_quiz_form"
-    t.boolean "allow_student_assign_group", default: true
     t.boolean "github_submission_enabled", default: true
+    t.boolean "allow_student_assign_group", default: true
     t.boolean "is_positive_grading", default: false
   end
 
@@ -182,6 +182,16 @@ ActiveRecord::Schema.define(version: 2022_11_06_192532) do
     t.string "name"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+  end
+
+  create_table "lti_course_data", force: :cascade do |t|
+    t.string "context_id"
+    t.integer "course_id"
+    t.datetime "last_synced"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.string "membership_url"
+    t.string "platform"
   end
 
   create_table "module_data", force: :cascade do |t|
@@ -378,4 +388,8 @@ ActiveRecord::Schema.define(version: 2022_11_06_192532) do
     t.index ["risk_condition_id"], name: "index_watchlist_instances_on_risk_condition_id"
   end
 
+  add_foreign_key "github_integrations", "users"
+  add_foreign_key "oauth_access_grants", "oauth_applications", column: "application_id"
+  add_foreign_key "oauth_access_tokens", "oauth_applications", column: "application_id"
+  add_foreign_key "oauth_device_flow_requests", "oauth_applications", column: "application_id"
 end

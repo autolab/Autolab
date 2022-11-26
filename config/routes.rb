@@ -214,6 +214,7 @@ Rails.application.routes.draw do
       post "bulk_release"
       get "download_roster"
       get "unlink_course"
+      patch "update_lti_settings"
       match "email", via: [:get, :post]
       get "manage"
       get "moss"

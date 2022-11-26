@@ -1,31 +1,13 @@
 // Place all the styles related to the users controller here.
 // They will automatically be included in application.css.
 // You can use Sass (SCSS) here: http://sass-lang.com/
-@import 'style.css.scss';
 
-.inline-space-between {
-  display: flex;
-  justify-content: space-between;
+#lti-settings-modal {
+  width: 30%;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
 }
 
-.inline-space-between .count-title {
-  margin-top: 0.8rem;
-  margin-bottom: 0.8rem;
-}
-
-.inline-span {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.inline-span p {
-  margin: 0;
-  color: $autolab-black-text;
-}
-
-.inline-span a {
-  display: flex;
-  justify-content: center;
-  align-items: center;
+.tooltips {
+  font-size: 14px;
 }

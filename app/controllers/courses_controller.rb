@@ -354,6 +354,16 @@ class CoursesController < ApplicationController
     redirect_to(action: :users) && return
   end
 
+  action_auth_level :update_lti_settings, :instructor
+  def update_lti_settings
+    lcd = @course.lti_course_datum
+    lcd.auto_sync = params[:lcd][:auto_sync] == "1"
+    lcd.drop_missing_students = params[:lcd][:drop_missing_students] == "1"
+    lcd.save
+
+    redirect_to(action: :users) && return
+  end
+
   action_auth_level :reload, :instructor
   def reload
     @course.reload_course_config

@@ -86,10 +86,49 @@ class LtiNrpsController < ApplicationController
     lcd.last_synced = DateTime.current
     lcd.save
 
-    render json: members.as_json
+    # Update the roster with the retrieved set of members
+    update_roster(lcd, members.as_json)
+
+    # render json: members.as_json
+    course = Course.find(@course_id)
+    redirect_to users_course_path(course) && return
   end
 
 private
+
+  def update_roster(lcd, members_data)
+    student_cuds = CourseUserDatum.where(course_id: lcd.course_id, instructor: false,
+                                         course_assistant: false).to_set
+    members_data.each do |user_data|
+      next unless user_data["roles"].include? "http://purl.imsglobal.org/vocab/lis/v2/membership#Learner"
+
+      # If user doesn't exist on Autolab yet, create an account
+      user = User.find_by(email: user_data["email"].downcase)
+      if user.nil?
+        user = User.roster_create(
+          user_data["email"], user_data["given_name"], user_data["family_name"], "", "", 0
+        )
+      end
+
+      # If user isn't enrolled in this course yet, enroll them
+      cud = CourseUserDatum.find_by(user_id: user.id, course_id: lcd.course_id)
+      if cud.nil?
+        lcd.course.course_user_data.create(user: user, instructor: false, course_assistant: false)
+      end
+
+      student_cuds.delete(cud)
+    end
+
+    return unless lcd.drop_missing_students == true
+
+    # Mark the remaining students as dropped
+    CourseUserDatum.transaction do
+      student_cuds.each do |cud|
+        cud.dropped = true
+        cud.save
+      end
+    end
+  end
 
   # Query NRPS after being authenticated
   # with logic to handle multi-page queries
