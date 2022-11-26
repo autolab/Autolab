@@ -61,7 +61,6 @@ jobs:
           ./bin/initialize_secrets.sh
           RAILS_ENV=test bundle exec rails db:create
           RAILS_ENV=test bundle exec rails db:schema:load
-          RAILS_ENV=test bundle exec rails db:migrate
           RAILS_ENV=test bundle exec rake autolab:populate
 
       - name: Run tests
