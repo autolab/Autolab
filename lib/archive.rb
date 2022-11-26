@@ -222,7 +222,7 @@ module Archive
         zip_entry = Zip::Entry.new(zos, "#{File.basename(filepath)}", nil, nil, nil, nil, nil, nil,
                     ctimestamp)
         zos.put_next_entry(zip_entry)
-        zos.print IO.read(filepath)
+        zos.print File.read(filepath)
       end
     end
     zip_stream.rewind
