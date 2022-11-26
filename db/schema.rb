@@ -184,6 +184,16 @@ ActiveRecord::Schema.define(version: 2022_11_06_192532) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "lti_course_data", force: :cascade do |t|
+    t.string "context_id"
+    t.integer "course_id"
+    t.datetime "last_synced"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.string "membership_url"
+    t.string "platform"
+  end
+
   create_table "module_data", force: :cascade do |t|
     t.integer "field_id"
     t.integer "data_id"
