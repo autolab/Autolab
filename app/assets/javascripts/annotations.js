@@ -542,6 +542,7 @@ function globalAnnotationFormCode(newAnnotation, config) {
   box.removeClass("base-global-annotation-form");
 
   if (!newAnnotation) {
+    box.find(".header").text("Update global annotation");
     box.find(".comment").val(config.comment);
     box.find(".score").val(config.score);
     box.find('input[type=submit]').val("Update annotation");
@@ -552,6 +553,7 @@ function globalAnnotationFormCode(newAnnotation, config) {
     problemNameToIdMap[problem.name] = problem.id;
   })
 
+  box.find(".header").show();
   box.find('.annotation-form').show();
   box.find('.annotation-cancel-button').click(function (e) {
     e.preventDefault();
