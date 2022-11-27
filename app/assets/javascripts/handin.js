@@ -53,11 +53,13 @@ function showFiles() {
 
   // only do check for file type that has a period
   if( $('#handin-file-type').length && file
-     && file.name.split(".").length >= 2)         // use this if you are using id to check
+     && file.name.split(".").length > 1)         // use this if you are using id to check
   {
     $('#handin-file-type-incorrect').text("")
-    var file_type= file.name.split(".")[file.name.split(".").length -1];
     var handin_filetype = $('#handin-file-type').text();
+    var handin_filetype_length = handin_filetype.split(".").length;
+    var file_type = file.name.split(".").slice(-handin_filetype_length).join('.');
+    // compare expected file extension (handin_filetype) to submitted file extension (file_type)
     if (handin_filetype != file_type) {
       $('#handin-file-type-incorrect').text(`Warning: ${file.name}'s file type doesn't match expected .${handin_filetype} file type`)
     }
@@ -112,6 +114,7 @@ $("#remove-handed-in").click(function (e) {
     enableSubmit();
   });
   $(".handedin-row").hide();
+  $('#handin-file-type-incorrect').text("")
 });
 
 function enableSubmit() {
