@@ -281,6 +281,13 @@ class Course < ApplicationRecord
     [users, usersEncoded]
   end
 
+  # To determine if a course assistant has permission to watchlist
+  def watchlist_allow_ca
+    return false if watchlist_configuration.nil?
+
+    watchlist_configuration.allow_ca
+  end
+
 private
 
   def saved_change_to_grade_related_fields?
