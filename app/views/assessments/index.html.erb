@@ -8,22 +8,24 @@
           return false;  // prevent click propagation
         });
       });
-      $.getJSON('metrics/get_num_pending_instances',function(data, status){
-        if(status=='success' && data['num_pending'] != 0){
-          // when there is a non-zero number of pending instances
-          var pending_instances_str = 
-            `<div class='col s1 metrics'>
-              <i class='material-icons left metrics'>assessment</i>
-            </div>
-            <div class='col s4 metrics'>
-              <span class='new badge metrics-badge' data-badge-caption='${data["num_pending"]}'></span>
-            </div>
-            <h7 class='metrics'>
-              Student Metrics
-            </h7>`;
-          $('.row.metrics').empty().append(pending_instances_str);
-        }
-      });
+      <% if (@cud.instructor? || @cud.course_assistant? && @course.watchlist_allow_ca) %>
+        $.getJSON('metrics/get_num_pending_instances',function(data, status){
+          if(status=='success' && data['num_pending'] != 0){
+            // when there is a non-zero number of pending instances
+            var pending_instances_str = 
+              `<div class='col s1 metrics'>
+                <i class='material-icons left metrics'>assessment</i>
+              </div>
+              <div class='col s4 metrics'>
+                <span class='new badge metrics-badge' data-badge-caption='${data["num_pending"]}'></span>
+              </div>
+              <h7 class='metrics'>
+                Student Metrics
+              </h7>`;
+            $('.row.metrics').empty().append(pending_instances_str);
+          }
+        });
+      <% end %>
     });
   </script>
 <% end %>
