@@ -213,7 +213,7 @@ Rails.application.routes.draw do
     member do
       post "bulk_release"
       get "download_roster"
-      get "unlink_course"
+      post "unlink_course"
       match "email", via: [:get, :post]
       get "manage"
       get "moss"

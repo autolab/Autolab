@@ -211,9 +211,6 @@ class LtiLaunchController < ApplicationController
       raise LtiError.new("Not logged in!", :bad_request)
     end
 
-    # Rails.logger.info(@jwt[:body])
-    # puts @jwt
-    # render json: @jwt.as_json
     redirect_to lti_launch_initialize_user_path(
       @user,
       course_memberships_url: @jwt[:body]["https://purl.imsglobal.org/spec/lti-nrps/claim/namesroleservice"]["context_memberships_url"],

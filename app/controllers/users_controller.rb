@@ -200,7 +200,11 @@ class UsersController < ApplicationController
   end
 
   def lti_launch_initialize
-    params.require([:course_title, :context_id, :course_memberships_url, :platform])
+    unless params[:course_title].present? && params[:context_id].present? &&
+           params[:course_memberships_url].present? && params[:platform].present?
+      raise LtiLaunchController::LtiError.new("Unable launch LTI link, missing parameters",
+                                              :bad_request)
+    end
 
     linked_lcd = LtiCourseDatum.joins(:course).find_by(context_id: params[:context_id])
     unless linked_lcd.nil?
@@ -225,7 +229,11 @@ class UsersController < ApplicationController
 
   action_auth_level :lti_launch_link_course, :instructor
   def lti_launch_link_course
-    params.require([:course_id, :context_id, :course_memberships_url, :platform])
+    unless params[:context_id].present? && params[:course_memberships_url].present? &&
+           params[:platform].present?
+      raise LtiLaunchController::LtiError.new("Unable link course, missing parameters",
+                                              :bad_request)
+    end
 
     LtiCourseDatum.create(
       course_id: params[:course_id],

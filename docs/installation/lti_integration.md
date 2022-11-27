@@ -162,4 +162,4 @@ your instance's `.env` file
       ![Canvas Course Navigation](/images/Canvas_Course_Navigation.png)
    
    - You should be redirected to Autolab. If you are not already logged in, please log in, and try to launch Autolab from your LTI platform again.
-     If successful, you will be redirected on a page in Autolab that allows you to choose an Autolab course to connect with your platform's course (image coming soon).
+     If successful, you will be redirected on a page in Autolab that allows you to choose an Autolab course to connect with your platform's course. ![LTI Linking Page](/images/lti_linking_page.png)

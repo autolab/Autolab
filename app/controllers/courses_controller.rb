@@ -351,6 +351,7 @@ class CoursesController < ApplicationController
     end
 
     lcd.destroy
+    flash[:success] = "Course unlinked"
     redirect_to(action: :users) && return
   end
 
