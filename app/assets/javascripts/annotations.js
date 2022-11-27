@@ -590,11 +590,7 @@ function globalAnnotationFormCode(newAnnotation, config) {
       submitNewAnnotation(comment, shared_comment, true, score, problem_id, 0, $(this));
     } else {
       const annotationObject = getAnnotationObject(config.annotationId);
-      annotationObject.comment = comment;
-      annotationObject.value = score;
-      annotationObject.problem_id = problem_id;
-      annotationObject.shared_comment = shared_comment;
-      annotationObject.global_comment = true;
+      Object.assign(annotationObject, { comment, value: score, problem_id, shared_comment, global_comment: true });
 
       updateAnnotation(annotationObject, box);
     }
