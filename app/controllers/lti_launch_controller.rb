@@ -160,7 +160,7 @@ class LtiLaunchController < ApplicationController
   def validate_jwt_signature(id_token)
     if !Rails.configuration.lti_settings["platform_public_key"].nil?
       # static platform public key, so take key from yml
-      @platform_public_key_pem = Rails.configuration.lti_settings["platform_public_key"]
+      platform_public_key_pem = Rails.configuration.lti_settings["platform_public_key"]
     elsif !Rails.configuration.lti_settings["platform_public_jwks_url"].nil?
       # fetch JWKS from provided keys URL
       conn = Faraday.new(
@@ -172,11 +172,11 @@ class LtiLaunchController < ApplicationController
       if response.body["keys"].nil?
         LtiError.new("No keys were found from public JWK url", :internal_server_error)
       end
-      @platform_public_jwks = JSON.parse(response.body)["keys"]
+      platform_public_jwks = JSON.parse(response.body)["keys"]
     else
       LtiError.new("No platform public key or public JWK url provided", :internal_server_error)
     end
-    rsa_public_key = get_public_key(@platform_public_key_pem, @platform_public_jwks)
+    rsa_public_key = get_public_key(platform_public_key_pem, platform_public_jwks)
     if rsa_public_key.nil?
       raise LtiError.new("No matching JWK found", :bad_request)
     end
