@@ -14,6 +14,9 @@ Hover over any line of the code and click on the green arrow, and the annotation
 When the "Add to shared comment pool" option is checked, the comment will be saved to a shared comment pool.
 When creating new annotations, shared comments matching what you have typed will be available via a dropdown list.
 
+Note that the shared comment pool operates on a per-assessment basis, so a shared comment for one problem is available when creating an annotation for another problem within the same assessment.
+Additionally, the same shared comment pool is used by all instructors and course-assistants, so your shared comments will be available to other instructors and course-assistants, and vice-versa.
+
 ![Shared Comments](/images/shared_comments.png)
 
 !!! attention "Deleting annotations"
