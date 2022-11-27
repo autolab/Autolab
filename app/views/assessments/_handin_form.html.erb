@@ -69,7 +69,17 @@
             <% end %>
             
             <%= render partial: "submission_panel", locals: {repos: @repos, f: f}%>
-
+            <% filename_list = @assessment.handin_filename.split(".") %>
+            <% if (filename_list.size > 1) %>
+                <!-- file needs to have a period, else we ignore (e.g. for README files) -->
+                <div class="filename-check" id="filename-check">
+                  <div>
+                    Handin format:
+                    .<b id="handin-file-type"><%= filename_list[1..].join(".") %></b> files
+                  </div>
+                  <b id="handin-file-type-incorrect" style="color: red; margin: 0"></b>
+                </div>
+            <% end %>
 						<%= label_tag(:integrity_checkbox) do %>
 							<%= check_box_tag(:integrity_checkbox) %>
 							<%= content_tag("span", "I affirm that I have complied with this course's academic integrity policy as defined in the syllabus#{late_confirm}.") %>
