@@ -572,13 +572,13 @@ $('.ui.vertical.fluid.tabular.menu .item').on('click', function() {
 function export_instances_to_csv(instances) {
 
   var csv = "data:text/csv;charset=utf-8,";
-  var header = "User Name, Email,Condition Type, Violation Info \n";
+  var header = "User Name, Email,Condition Type, Conditiong Info\n";
   csv += header;
 
   instances.forEach(instance => {
     let condition_type = `"${JSON.stringify(Object.keys(instance.conditions)).replaceAll('"', '""')}"`;
-    let violation_info = `"${JSON.stringify(instance["conditions"]).replaceAll('"', '""')}"`;
-    csv += `${instance.name},${instance.email},${condition_type},${violation_info}\n`;
+    let condition_info = `"${JSON.stringify(instance["conditions"]).replaceAll('"', '""')}"`;
+    csv += `${instance.name},${instance.email},${condition_type},${condition_info}\n`;
   });
 
   var encodedUri = encodeURI(csv);
