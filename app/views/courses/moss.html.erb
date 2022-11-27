@@ -60,7 +60,7 @@
             <i>Check this if the submissions will need to be extracted. (The handin filename was: <%= a.handin_filename %>)</i>
             <br>
             <b>Files to send to Moss:</b>
-						<%= text_field_tag "files[#{a.id}]", "*hello.c *.c", required: true, pattern: "^ *((\\.?([\\w-]+|\\*))+ *)+$" %>
+						<%= text_field_tag "files[#{a.id}]", "*hello.c *.c", required: true %>
             <i>This can be file names (foo.c) or patterns(*.c), space-separated</i>
             <br>
           </div>
