@@ -15,7 +15,7 @@ class MetricsController < ApplicationController
                                      course_max[1]
                                    end
 
-    @allow_ca = course.watchlist_configuration.allow_ca
+    @allow_ca = course.watchlist_allow_ca
   end
 
   action_auth_level :get_current_metrics, :course_assistant
@@ -246,9 +246,10 @@ class MetricsController < ApplicationController
   def update_watchlist_configuration
     # This API endpoint updates a course's watchlist configuration
     # On success, a JSON object of watchlist configuration will be returned
-    # params required include course_name and blocklist
+    # params required include course_name, blocklist and allow_ca
     # blocklist should be a hash in the following form:
     # { "category": ["Lab", "Homework"], "assessment": ["homework1", "homework2"] }
+    # allow_ca should be a boolean
     # Note: The assessment names ARE NOT the display names.
     begin
       course_name = params[:course_name]
@@ -287,7 +288,7 @@ private
   end
 
   def permission_check
-    return if @cud.course_assistant && @course.watchlist_configuration.allow_ca || @cud.instructor
+    return if @cud.instructor || @cud.course_assistant && @course.watchlist_allow_ca
 
     flash[:error] = "You do not have permission to access the metrics feature."
     redirect_to([@course]) && return
