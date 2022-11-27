@@ -3,7 +3,7 @@ require "fileutils"
 
 class Course < ApplicationRecord
   trim_field :name, :semester, :display_name
-  validates :name, uniqueness: true
+  validates :name, uniqueness: { case_sensitive: false }
   validates :display_name, :start_date, :end_date, presence: true
   validates :late_slack, :grace_days, :late_penalty, :version_penalty, presence: true
   validates :grace_days, numericality: { greater_than_or_equal_to: 0 }
@@ -279,6 +279,13 @@ class Course < ApplicationRecord
       usersEncoded[Base64.strict_encode64(cud.full_name_with_email.strip).strip] = cud.id
     end
     [users, usersEncoded]
+  end
+
+  # To determine if a course assistant has permission to watchlist
+  def watchlist_allow_ca
+    return false if watchlist_configuration.nil?
+
+    watchlist_configuration.allow_ca
   end
 
 private

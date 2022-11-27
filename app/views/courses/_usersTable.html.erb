@@ -6,8 +6,9 @@
     <th>First Name</th>
     <th>Last Name</th>
     <th>Email</th>
+    <th>Course &#8470;</th>
     <th>Lecture</th>
-    <th>section</th>
+    <th>Section</th>
     <th>School</th>
     <th>Major</th>
     <th>Year</th>
@@ -23,6 +24,7 @@
   <td><%= cud.user.first_name %></td>
   <td><%= cud.user.last_name %></td>
   <td><%= link_to cud.user.email, course_course_user_datum_path(@course, cud) %></td>
+  <td><%= cud.course_number %></td>
   <td><%= cud.lecture %></td>
   <td><%= cud.section %></td>
   <td><%= cud.user.school %></td>
