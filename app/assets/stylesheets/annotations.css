@@ -511,20 +511,11 @@
   margin-bottom: 15px;
   color: #4f4f4f;
 }
-.annotationSummary h1{
-  margin: 0px;
+.annotationSummary .annotation-form-header {
   background-color: #0882af;
-  padding: 8px;
-  border-right: none;
-  border-left: none;
-  font-weight: normal !important;
-  font-size: 1em !important;
+  padding: 8px 15px 8px 10px;
+  font-weight: normal;
   color: white;
-  white-space: nowrap;
-  overflow: hidden;
-  padding-left: 10px;
-  padding-right: 15px;
-  text-align: left;
 }
 .annotationSummary ul {
   box-shadow: none;
