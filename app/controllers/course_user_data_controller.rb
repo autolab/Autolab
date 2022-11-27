@@ -242,17 +242,11 @@ private
   end
 
   def cud_params
-    if @cud.administrator?
-      params.require(:course_user_datum).permit(:school, :major, :year,
+    if @cud.administrator? || @cud.instructor?
+      params.require(:course_user_datum).permit(:school, :major, :year, :course_number,
                                                 :lecture, :section, :instructor, :dropped,
                                                 :nickname, :course_assistant,
                                                 user_attributes: %i[first_name last_name email],
-                                                tweak_attributes: %i[_destroy kind value])
-    elsif @cud.instructor?
-      params.require(:course_user_datum).permit(:school, :major, :year,
-                                                :lecture, :section, :instructor, :dropped,
-                                                :nickname, :course_assistant,
-                                                user_attributes: %i[email first_name last_name],
                                                 tweak_attributes: %i[_destroy kind value])
     else
       params.require(:course_user_datum).permit(:nickname) # ,
@@ -261,14 +255,8 @@ private
   end
 
   def edit_cud_params
-    if @cud.administrator?
-      params.require(:course_user_datum).permit(:school, :major, :year,
-                                                :lecture, :section, :instructor, :dropped,
-                                                :nickname, :course_assistant,
-                                                user_attributes: %i[id email first_name last_name],
-                                                tweak_attributes: %i[_destroy kind value])
-    elsif @cud.instructor?
-      params.require(:course_user_datum).permit(:school, :major, :year,
+    if @cud.administrator? || @cud.instructor?
+      params.require(:course_user_datum).permit(:school, :major, :year, :course_number,
                                                 :lecture, :section, :instructor, :dropped,
                                                 :nickname, :course_assistant,
                                                 user_attributes: %i[id email first_name last_name],

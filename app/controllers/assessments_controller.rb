@@ -880,6 +880,8 @@ private
       @assessment.version_penalty&.destroy
     end
 
+    ass.delete(:name)
+
     ass.permit!
   end
 

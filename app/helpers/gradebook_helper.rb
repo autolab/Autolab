@@ -6,7 +6,7 @@ module GradebookHelper
     columns = [
       { id: "number", name: "#", field: "", width: 50 },
       { id: "email", name: "Email", field: "email",
-        sortable: true, width: 100, cssClass: "email",
+        sortable: true, width: 200, cssClass: "email",
         headerCssClass: "email" },
       { id: "first_name", name: "First", field: "first_name",
         sortable: true, width: 100, cssClass: "first_name",
@@ -14,12 +14,16 @@ module GradebookHelper
       { id: "last_name", name: "Last", field: "last_name",
         sortable: true, width: 100, cssClass: "last_name",
         headerCssClass: "last_name" },
-      { id: "section", name: "Sec", field: "section",
-        sortable: true, width: 50 },
-      { id: "grace_days", name: "Grace Days Used", field: "grace_days",
-        sortable: true, width: 50},
+      { id: "course_number", name: "Course &#8470;", field: "course_number",
+        sortable: true, width: 100 },
+      { id: "lecture", name: "Lecture", field: "lecture",
+        sortable: true, width: 100 },
+      { id: "section", name: "Section", field: "section",
+        sortable: true, width: 100 },
+      { id: "grace_days", name: "Grace Days", field: "grace_days",
+        sortable: true, width: 100 },
       { id: "late_days", name: "Penalty Late Days", field: "late_days",
-        sortable: true, width: 50}
+        sortable: true, width: 100 }
     ]
 
     course.assessment_categories.each do |cat|
@@ -48,7 +52,7 @@ module GradebookHelper
                  headerCssClass: "course_average" }
 
     columns << { id: "email_right", name: "Email", field: "email",
-                 sortable: true, width: 100, cssClass: "email right",
+                 sortable: true, width: 200, cssClass: "email right",
                  headerCssClass: "email right" }
 
     columns
@@ -77,6 +81,8 @@ module GradebookHelper
       row["student_gradebook_link"] = sgb_link
       row["first_name"] = CGI.escapeHTML cud.user.first_name
       row["last_name"] = CGI.escapeHTML cud.user.last_name
+      row["course_number"] = cud.course_number
+      row["lecture"] = cud.lecture
       row["section"] = cud.section
 
       # TODO: formalize score render stack, consolidate with computed score

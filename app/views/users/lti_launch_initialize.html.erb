@@ -1,0 +1,27 @@
+<h4> LTI Linking </h4>
+<h4><%= @user.display_name %></h4>
+<ul class="gray-box">
+  <li>
+    <b> Information from LTI resource </b>
+    <ul> Launch email: <%= @launch_context["email"] %></ul>
+    <ul> Course context id: <%= @launch_context["https://purl.imsglobal.org/spec/lti/claim/context"]["id"] %></ul>
+    <ul> Course title: <%= @launch_context["https://purl.imsglobal.org/spec/lti/claim/context"]["title"] %></ul>
+    <ul> Scopes: <%= @launch_context["scope"] %></ul>
+    <ul> Course memberships url: <%= @launch_context["https://purl.imsglobal.org/spec/lti-nrps/claim/namesroleservice"]["context_memberships_url"] %></ul>
+  </li>
+  <li>
+    <b>
+      Linkable courses
+    </b>
+    <% if @cuds.empty? %>
+      <strong> None </strong>
+    <% else %>
+      <ul>
+        <% @cuds.each do |cud| %>
+          <li><%= link_to cud.course.display_name, edit_course_course_user_datum_path(cud.course, cud) %>
+          </li>
+        <% end %>
+      </ul>
+    <% end %>
+  </li>
+</ul>
