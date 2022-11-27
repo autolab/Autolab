@@ -24,8 +24,6 @@
     <a id="add-users" class='dropdown-trigger btn' href='#' data-target='add-users-dropdown'>ADD USERS FROM EMAILS</a>
     <%= link_to raw('<span class="btn">Import Roster/Users</span>'), {:action=>"upload_roster"} %>
     <%= link_to raw('<span class="btn">Export Roster</span>'), {:action=>"download_roster"} %>
-    <%# unless @course.lti_course_datum.nil? %> <%#= link_to raw('<span class="btn">Unlink Course</span>'), {:action=>"unlink_course"} %> <%# end %>
-<!--    <%# unless lcd.nil? %> <a id="add-users" class='dropdown-trigger btn' href='#' data-target='lti-settings-dropdown'> <%#= lcd.platform %> Link Settings</a> <%# end %>-->
     <% unless lcd.nil? %> <a class="waves-effect waves-light btn modal-trigger" href="#lti-settings-modal"><%= lcd.platform %> Link Settings</a> <% end %>
   </span>
 </div>
