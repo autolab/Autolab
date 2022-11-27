@@ -29,6 +29,15 @@ $autolab-subtle-red: #C87B7E;
   min-width: 20px !important;
 }
 
+.select_all {
+  margin-top: 2px; 
+  margin-right: -5px;
+}
+
+.select-all-chip{
+  margin-right: 0.5rem;
+}
+
 span.padded-span:before {
   content:" ";
   display:inline-block; 
