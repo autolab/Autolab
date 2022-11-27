@@ -1,5 +1,4 @@
 <% content_for :javascripts do %>
-  <%= javascript_include_tag "assessments_show" %>
   <%= javascript_include_tag 'validateIntegrity.js' %>
   <script>
     function toggleAria(id) {
@@ -329,8 +328,11 @@
     No Submissions yet!
   <% else %>
     <%= render partial: "submission_history_table", locals: {download_access: download_access, limit: 3} %>
-    <h6>
-      <%= link_to "See all #{@submissions.size}" + " submission".pluralize(@submissions.size), {:action => "history"} %></li>
-    </h6>
+      <% if @submissions.size > 3  then %>
+        <!-- display link to history only if we exceed summary limit (since they are the same component) -->
+        <h6>
+            <%= link_to "See all #{@submissions.size}" + " submission".pluralize(@submissions.size), {:action => "history"} %>
+        </h6>
+    <% end %>
   <% end %>
 </div>

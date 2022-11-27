@@ -53,7 +53,6 @@
     var old = localStorage.getItem(stateType);
     
     var changed = JSON.parse(old) != newState;
-    console.log(stateType, JSON.parse(old), newState, changed);
     localStorage.setItem(stateType, newState);
     
     return changed;

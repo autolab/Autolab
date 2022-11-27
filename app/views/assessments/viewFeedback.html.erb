@@ -16,42 +16,39 @@
       <pre><%= @score.feedback %></pre>
     </div>
     <% if @submission.annotations.count > 0 and @problemReleased %>
-      <div class="result-pane">
-        <div class="feedback-header">
-          <h3 id="remarks">Remarks</h3>
-        </div>
-        <br />
-        <% subs_by_problem = @submission.annotations.group_by(&:problem)
-            subs_by_problem.each do |problem, annotations| %>
-            <b> <%= problem.name %> </b>
-            <ul class="collection">
-            <!-- use custom sort b/c using ordering doesn't work with autograder output, archived files -->
-            <%
-              s_annotations = annotations.sort do |a,b|
-              aFilename = @get_correct_filename.call(a)
-              bFilename = @get_correct_filename.call(b)
-              case
-                when aFilename < bFilename
-                  -1
-                when aFilename > bFilename
-                    1
-                else
-                    a.line <=> b.line
-                end
+      <h2 style="margin-top: 1em">Remarks</h2>
+
+      <% subs_by_problem = @submission.annotations.group_by(&:problem)
+          subs_by_problem.each do |problem, annotations| %>
+          <b> <%= problem.name %> </b>
+          <ul class="collection">
+          <!-- use custom sort b/c using ordering doesn't work with autograder output, archived files -->
+          <%
+            s_annotations = annotations.sort do |a,b|
+            aFilename = @get_correct_filename.call(a)
+            bFilename = @get_correct_filename.call(b)
+            case
+              when aFilename < bFilename
+                -1
+              when aFilename > bFilename
+                  1
+              else
+                  a.line <=> b.line
               end
-              s_annotations.each do |annotation| %>
-              <li class="collection-item">
-                    <div style='white-space: pre-wrap;'><%= annotation.comment%> </div>
-                    <% filename = @get_correct_filename.call(annotation)%>
-                    <span> 
-                      <b><%= annotation.value? ? sprintf("(%+.1f)", annotation.value) : "" %></b> 
-                      <%= link_to filename.to_s + ":"+ annotation.line.to_s , [:view, @course, @assessment, @submission, header_position: annotation.position] %> 
-                    </span>
-              </li>
-              <% end %>
-            </ul>
-          <% end %>
-      </div>
+            end
+            s_annotations.each do |annotation| %>
+            <li class="collection-item">
+                  <div style='white-space: pre-wrap;'><%= annotation.comment%> </div>
+                  <% filename = @get_correct_filename.call(annotation)%>
+                  <span> 
+                    <b><%= annotation.value? ? sprintf("(%+.2f)", annotation.value.round(2)) : "" %></b> 
+                    <%= link_to filename.to_s + ":"+ annotation.line.to_s , [:view, @course, @assessment, @submission, header_position: annotation.position] %> 
+                  </span>
+            </li>
+            <% end %>
+          </ul>
+        <% end %>
+
     <% end %>
   </div>
   <div class="result-summary">
@@ -64,7 +61,17 @@
         Score for this problem: <%= @score.score.to_f().round(1) %>
       </p>
       <% if @score.grader && @score.grader.user%>
-        <p>Graded By: <%= @score.grader.user.email %></p>
+        <p>Graded by: <%=
+            case @score.grader_id
+            when -1
+              "Error Handler"
+            when 0
+              "Autograder"
+            else
+              if @score.grader&.user then @score.grader.user.email end
+            end
+          %>
+        </p>
       <% end %>
       <% if !@scoreHash.nil? %>
         <h4>Autograder Scores</h4>
@@ -90,7 +97,6 @@
       <% end %>
     </div>
   </div>
-
 </div>
 
 <% else %>

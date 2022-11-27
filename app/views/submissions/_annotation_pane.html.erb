@@ -1,39 +1,54 @@
 <div id="annotationPane">
   <div class="annotationSummary">
     <ul class="collapsible expandable">
-        <% @problemSummaries.each do |problem, descriptTuples| %>
-          <li id="li-problem-<%= problem %>">
-            <div class="collapsible-header active">
-              <h4> <%= problem.capitalize %>
-                  <div class="summary_score">
-                    <% if @cud.instructor? or @cud.course_assistant? or @problemReleased%>
-                      <%= plus_fix(@problemGrades[problem]) %>
-                    <% end %>
-                  </div>
-              </h4>
-            </div>
-            <div class="collapsible-body">
-              <% if @cud.instructor? or @cud.course_assistant? or @problemReleased%>
-                <!-- a[6] = filename, a[2] = line-->
-                <% descriptTuples.sort_by{|a| [a[6], a[2]]}.each do |description, value, line, user, id, position, filename| %>
-                  <div class="descript" id="li-annotation-<%= id %>"> <!-- Line + 1 because the code line numbers starts with 1 not 0. -->
-                    <%= link_to(
-                        url_for([:view, @course, @assessment, @submission, header_position: position.nil? ? 0 : position, line: line.nil? ? 1 : line+1]),
-                        class: 'descript-link',
-                        "data-header_position": position.nil? ? 0 : position,
-                        "data-line": line.nil? ? 1 : line+1,
-                        remote: true,
-                      ) do %>
-                        <span class="point_badge <%= value > 0 ? "positive" : value < 0 ? "negative" : "neutral" %>"><%= plus_fix(value) %></span> <%= description  %>
-                    <% end %>
-                  </div>
-                <% end %>
-                <% else %>
-                <i>Unreleased</i>
+      <% @problemSummaries.each do |problem, descriptTuples| %>
+        <li id="li-problem-<%= problem %>" class="active">
+          <div class="collapsible-header">
+            <h4> <%= problem.capitalize %>
+                <div class="summary_score">
+                  <% if @cud.instructor? or @cud.course_assistant? or @problemReleased%>
+                    <%= plus_fix(@problemGrades[problem]) %>
+                  <% end %>
+                </div>
+            </h4>
+            <i class="large material-icons expand-icon">arrow_drop_down</i>
+            <i class="large material-icons collapse-icon">arrow_drop_up</i>
+          </div>
+          <div class="collapsible-body">
+            <% if @cud.instructor? or @cud.course_assistant? or @problemReleased%>
+              <!-- a[6] = filename, a[2] = line-->
+              <%# Note: group_by preserves insertion order %>
+              <% annotations_by_file = descriptTuples.sort_by{ |a| [a[6], a[2]] }.group_by { |a| a[6] }
+                 annotations_by_file.each do |filename, annotations| %>
+                <div class="file_annotations">
+                  <strong> <%= filename %> </strong>
+                  <% annotations.each do |description, value, line, user, id, position, filename| %>
+                    <div class="descript" id="li-annotation-<%= id %>"> <!-- Line + 1 because the code line numbers starts with 1 not 0. -->
+                      <%= link_to(
+                          url_for([:view, @course, @assessment, @submission, header_position: position.nil? ? 0 : position, line: line.nil? ? 1 : line+1]),
+                          class: 'descript-link',
+                          "data-header_position": position.nil? ? 0 : position,
+                          "data-line": line.nil? ? 1 : line+1,
+                          remote: true,
+                        ) do %>
+                          <span class="point_badge <%= value > 0 ? "positive" : value < 0 ? "negative" : "neutral" %>">
+                            <% unless line.nil? %>
+                              <span class="line_number">Line <%= line + 1 %>:</span>
+                            <% end %>
+                            <%= plus_fix(value) %>
+                          </span>
+                        <%= description %>
+                      <% end %>
+                    </div>
+                  <% end %>
+                </div>
               <% end %>
-            </div>
-          </li>
-        <% end %>
+              <% else %>
+              <i>Unreleased</i>
+            <% end %>
+          </div>
+        </li>
+      <% end %>
     </ul>
   </div>
 </div>

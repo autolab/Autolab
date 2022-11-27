@@ -122,7 +122,8 @@
       <thead>
         <tr>
           <th>Email</th>
-          <th colspan=2>Length</th>
+          <th>Length</th>
+          <th colspan=2>New Due Date</th>
         </tr>
       </thead>
 
@@ -136,6 +137,7 @@
             <tr>
               <td><a class="clickable student-select" data-cud=<%= ext.course_user_datum_id %>><%= ext.course_user_datum.email %></a></td>
               <td style="padding: 0 5px"><%= ext.infinite? ? "Infinite" : "#{pluralize(ext.days, "day")}" %></td>
+              <td style="padding: 0 5px"><%= ext.infinite? ? "-" : "#{(@assessment.due_at + ext.days.days).strftime('%m-%d-%Y')}" %></td>
               <td><%= link_to '<i class="material-icons">delete</i>'.html_safe, [@course, @assessment, ext],
                               data: { confirm: 'Are you sure you want to delete the extension for user ' + ext.course_user_datum.email + '?' },
                               method: :delete %></td>

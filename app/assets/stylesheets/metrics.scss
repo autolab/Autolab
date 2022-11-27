@@ -29,13 +29,13 @@ $autolab-subtle-red: #C87B7E;
   min-width: 20px !important;
 }
 
-span:before {
-  content:" "; 
+span.padded-span:before {
+  content:" ";
   display:inline-block; 
   width:10px;
 }
 
-span:after {
+span.padded-span:after {
   content:" "; 
   display:inline-block; 
   width:10px;
@@ -93,17 +93,18 @@ input[type="text"] {
 
 .top-bar {
   padding-left: 21%;
-  display: none;
+  display: flex;
+  align-items: center;
 }
 
 .last-updated{
-  float: right;
   margin-top: 15px;
+  margin-left: auto;
 }
 
 .students-buttons-right{
   display: initial;
-  float: right;
+  margin-left: auto;
 }
 
 #undefined_metrics{
@@ -128,6 +129,10 @@ i.external.alternate {
   min-width: max-content;
 }
 
+.name_label {
+  font-size: 14px;
+  font-weight: 400;
+}
 .email_label {
   color: grey;
   font-size: 10px;
@@ -135,15 +140,32 @@ i.external.alternate {
 }
 
 .select_single label {
+  // color, font-weight needed here for non checkbox label
+  color: black;
+  font-weight: 300;
   display: inline-block !important; 
   vertical-align: middle !important;
+  -webkit-touch-callout: default !important; /* iOS Safari */
+  -webkit-user-select: auto !important; /* Safari */
+  -khtml-user-select: default !important; /* Konqueror HTML */
+  -moz-user-select: auto !important; /* Firefox */
+  -ms-user-select: auto !important; /* Internet Explorer/Edge */
+  user-select: auto !important; /* Non-prefixed version, currently
+                                supported by Chrome and Opera */
 }
-
+// override materialize style for checkbox label
+.select_single [type="checkbox"] + label {
+  color: black;
+  font-weight: 300;
+}
 .ui.checkbox.select_single label:before, 
 .ui.checkbox.select_single label:after {
   top: 6.5px;
 }
-
+// override weight for watchlist label
+.segment .label {
+  font-weight: 400;
+}
 .ui.search .ui.input {
   width: 230px;
   float: right;
@@ -178,4 +200,11 @@ span.instances .segment {
   border-radius: 0;
   border: none;
   border-top: 1px solid rgba(34,36,38,0.15);
+  display: flex;
+  align-items: center;
+}
+
+.select-all-chip {
+  display: flex;
+  align-items: center;
 }

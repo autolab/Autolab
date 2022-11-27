@@ -22,7 +22,7 @@
 
       <div class="row annotation-problem-score">
         <div class="input-field col s6" >
-          <input class="score" type="text" placeholder="" id="comment-score">
+          <input class="score" type="number" value="0" placeholder="0" step="any" id="comment-score">
           <label for="comment-score">Score</label>
           <span> Grading style: <b><%= @assessment.is_positive_grading ? "Positive grading" : "Negative grading" %></b> 
             <i class="material-icons" title="<%= (@assessment.is_positive_grading ? "Score is added, starting from 0." : "Score is deducted from the total points.") + " Change this setting in Edit Assessment > Problems" %>" 
@@ -51,7 +51,7 @@
             <a class="annotation-edit-button" href="#"><i class="material-icons">edit</i></a>
             <a class="annotation-delete-button" href="#"><i class="material-icons">delete</i></a>
         </span>
-        <span class="point_badge positive"><span class="problem"><span class="problem_id"></span>:</span> <span class="value"></span></span>
+        <span class="point_badge neutral"><span class="problem"><span class="problem_id"></span>:</span> <span class="value"></span></span>
       </div>
     </div>
     <div class="annotation-separator"></div>

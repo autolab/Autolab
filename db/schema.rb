@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2022_09_29_205611) do
+ActiveRecord::Schema.define(version: 2022_11_23_133708) do
 
   create_table "annotations", force: :cascade do |t|
     t.integer "submission_id"
@@ -140,6 +140,7 @@ ActiveRecord::Schema.define(version: 2022_09_29_205611) do
     t.boolean "course_assistant", default: false
     t.integer "tweak_id"
     t.integer "user_id", null: false
+    t.string "course_number", default: ""
   end
 
   create_table "courses", force: :cascade do |t|
@@ -360,6 +361,7 @@ ActiveRecord::Schema.define(version: 2022_09_29_205611) do
     t.integer "course_id"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.boolean "allow_ca", default: false
     t.index ["course_id"], name: "index_watchlist_configurations_on_course_id"
   end
 
