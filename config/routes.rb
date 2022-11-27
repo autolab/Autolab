@@ -86,7 +86,7 @@ Rails.application.routes.draw do
       get "get_watchlist_instances"
       get "get_num_pending_instances"
       post "refresh_watchlist_instances"
-      get "get_watchlist_category_blocklist"
+      get "get_watchlist_configuration"
       post "update_current_metrics"
       post "update_watchlist_instances"
       post "update_watchlist_configuration"

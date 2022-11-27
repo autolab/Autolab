@@ -222,8 +222,8 @@ class MetricsController < ApplicationController
     render json: { message: "Successfully updated instances" }, status: :ok
   end
 
-  action_auth_level :get_watchlist_category_blocklist, :course_assistant
-  def get_watchlist_category_blocklist
+  action_auth_level :get_watchlist_configuration, :course_assistant
+  def get_watchlist_configuration
     # This API endpoint aims to retrieve the current/latest category blocklist for a course
     # On success, a JSON list of category names will be returned
     # On error, an error message in JSON will be rendered
@@ -234,12 +234,13 @@ class MetricsController < ApplicationController
       raise "Course name cannot be blank" if course_name.blank?
 
       category_blocklist = WatchlistConfiguration.get_category_blocklist_for_course(course_name)
+      allow_ca = @course.watchlist_allow_ca
     rescue StandardError => e
       render json: { error: e.message }, status: :not_found
       return
     end
 
-    render json: category_blocklist, status: :ok
+    render json: { category_blocklist: category_blocklist, allow_ca: allow_ca }, status: :ok
   end
 
   action_auth_level :update_watchlist_configuration, :instructor

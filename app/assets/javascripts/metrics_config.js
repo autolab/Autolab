@@ -3,7 +3,7 @@
 
 // metrics api endpoints
 const metrics_config_endpoints = {
-	get_category: 'get_watchlist_category_blocklist',
+	get: 'get_watchlist_configuration',
 	update: 'update_watchlist_configuration',
 }
 
@@ -19,11 +19,13 @@ $(document).ready(function(){
 	});
 });
 
-$.getJSON(metrics_config_endpoints['get_category'],function(data, status){
+$.getJSON(metrics_config_endpoints['get'],function(data, status){
 		excluded_categories = [];
 
+		$('#allow_ca').checkbox(data['allow_ca'] ? 'check' : 'uncheck');
+
 		if (status=='success') {
-			data.forEach(category => {
+			data['category_blocklist'].forEach(category => {
 				excluded_categories.push(category);
 				$(`[id='excluded_${category}']`).css('visibility', 'visible');
 			});
