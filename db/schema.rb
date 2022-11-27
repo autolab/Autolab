@@ -371,6 +371,7 @@ ActiveRecord::Schema.define(version: 2022_11_24_042718) do
     t.integer "course_id"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.boolean "allow_ca", default: false
     t.index ["course_id"], name: "index_watchlist_configurations_on_course_id"
   end
 

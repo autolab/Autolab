@@ -67,7 +67,7 @@
           </div>
           <span class="instances" id="pending_instances"></span>
         </div>
-        <div class="ui tab segments" data-tab="contacted_tab", id="contacted_tab">
+        <div class="ui tab segments" data-tab="contacted_tab" id="contacted_tab">
           <div class="ui secondary segment" id="contacted_header" hidden>
             <div class="ui right aligned scrolling search" id="contacted_search">
               <div class="ui icon input">
@@ -80,7 +80,7 @@
           </div>
           <span class="instances" id="contacted_instances"></span>
         </div>
-        <div class="ui tab segments" data-tab="resolved_tab", id="resolved_tab">
+        <div class="ui tab segments" data-tab="resolved_tab" id="resolved_tab">
           <div class="ui secondary segment" id="resolved_header" hidden>
             <div class="ui right aligned scrolling search" id="resolved_search">
               <div class="ui icon input">
@@ -93,7 +93,7 @@
           </div>
           <span class="instances" id="resolved_instances"></span>
         </div>
-        <div class="ui tab segments" data-tab="archived_tab", id="archived_tab">
+        <div class="ui tab segments" data-tab="archived_tab" id="archived_tab">
           <div class="ui secondary segment" id="archived_header" hidden>
             <div class="ui right aligned scrolling search" id="archived_search">
               <div class="ui icon input">
@@ -229,7 +229,12 @@
       </div>
     </div>
     <br>
-    <button class="ui disabled submit button" id="save">SAVE</button>
+    <% if @cud.instructor? %>
+      <button class="ui disabled submit button" id="save">SAVE</button>
+    <% else %>
+      <button class= "ui disabled submit button">SAVE</button>
+      <label> You do not have permission to edit student metrics </label>
+    <% end %>
   </div>
 </div>
 <div class="ui tab configs" data-tab="configurations">
@@ -237,7 +242,6 @@
   <h6>
     All categories are selected by default. Modify this list to change which assessment categories are included in student metrics analysis.
   </h6>
-
   <div class="ui grid">
     <div class="five wide column">
       <h3> Included </h3>
@@ -262,6 +266,21 @@
       </div>
     </div>
   </div>
-  <br />
-  <button class="ui disabled submit button" id="save_configs_btn">SAVE</button>
+  <h4> Access Control </h4>
+  <h6>
+    Providing Course Assistants (CAs) with access will allow them to use the watchlist, but they will not be able to modify the metrics or the configurations.
+  </h6>
+  <div>
+    <div class="ui checkbox" id="allow_ca">
+      <input type="checkbox" />
+      <label>Allow CAs to access the watchlist</label>
+    </div>
+  </div>
+  <br/>
+  <% if @cud.instructor? %>
+    <button class="ui disabled submit button" id="save_configs_btn">SAVE</button>
+  <% else %>
+    <button class= "ui disabled submit button">SAVE</button>
+    <label> You do not have permission to edit metrics configurations </label>
+  <% end %>
 </div>
