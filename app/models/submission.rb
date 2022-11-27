@@ -1,3 +1,4 @@
+require "fileutils"
 require "utilities"
 require "association_cache"
 require "json"
@@ -91,11 +92,12 @@ class Submission < ApplicationRecord
       # local_submit_file is a path string to the temporary handin
       # directory we create for local submissions
       File.open(path, "wb") do |f|
-        f.write(IO.read(upload["local_submit_file"], mode: File::RDONLY | File::NOFOLLOW))
+        f.write(File.read(upload["local_submit_file"], mode: File::RDONLY | File::NOFOLLOW))
       end
     elsif upload["tar"]
       src = upload["tar"]
-      `mv #{src} #{path}`
+      # Only used for Github submissions, so this is fairly safe
+      FileUtils.mv(src, path)
     end
 
     self.filename = filename

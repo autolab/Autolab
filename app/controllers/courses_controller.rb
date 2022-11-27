@@ -565,7 +565,7 @@ private
   end
 
   def edit_course_params
-    params.require(:editCourse).permit(:name, :semester, :website, :late_slack,
+    params.require(:editCourse).permit(:semester, :website, :late_slack,
                                        :grace_days, :display_name, :start_date, :end_date,
                                        :disabled, :exam_in_progress, :version_threshold,
                                        :gb_message, late_penalty_attributes: %i[kind value],
