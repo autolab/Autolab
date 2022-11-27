@@ -497,6 +497,27 @@ class SubmissionsController < ApplicationController
       @problemGrades[problem] += value
     end
 
+    # Process @problemSummaries
+    # Group into global annotations, sorted by id
+    # and file annotations, sorted by filename, followed by line, and then grouped by filename
+    @problemSummaries.each do |problem, descriptTuples|
+      # group by global (a[7])
+      annotations_by_type = descriptTuples.group_by { |a| a[7] }
+
+      global_annotations = annotations_by_type[true] || []
+      # sort by id (a[4])
+      global_annotations = global_annotations.sort_by { |a| a[4] }
+
+      annotations_by_file = annotations_by_type[false] || []
+      # sort by filename (a[6]), followed by line (a[2]) and group by filename (a[6])
+      annotations_by_file = annotations_by_file.sort_by{ |a| [a[6], a[2]] }.group_by { |a| a[6] }
+
+      @problemSummaries[problem] = {
+        global_annotations: global_annotations,
+        annotations_by_file: annotations_by_file
+      }
+    end
+
     @latestSubmissions = @assessment.assessment_user_data
                                     .map(&:latest_submission)
                                     .reject(&:nil?)
