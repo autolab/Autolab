@@ -8,7 +8,7 @@ class LtiNrpsController < ApplicationController
   rescue_from LtiLaunchController::LtiError, with: :respond_with_lti_error
   def respond_with_lti_error(error)
     Rails.logger.send(:warn) { "Lti NRPS Error: #{error.message}" }
-    render json: { error: error.message }.to_json, status: :bad_request
+    render json: { error: error.message }.to_json, status: error.status_code
   end
   action_auth_level :request_access_token, :instructor
   def request_access_token
@@ -23,7 +23,7 @@ class LtiNrpsController < ApplicationController
       e: "AQAB",
       kty: "RSA",
     }
-    tool_rsa_private_JWK = JWT::JWK.new(tool_rsa_private, optional_parameters);
+    tool_rsa_private_JWK = JWT::JWK.new(tool_rsa_private, optional_parameters)
     # build client assertion based on lti 1.3 spec
     # https://www.imsglobal.org/spec/security/v1p0/#using-json-web-tokens-with-oauth-2-0-client-credentials-grant
     # https://www.imsglobal.org/spec/lti/v1p3#token-endpoint-claim-and-services
@@ -57,7 +57,7 @@ class LtiNrpsController < ApplicationController
     response_body = JSON.parse(response.body)
     if response_body["access_token"].nil?
       raise LtiLaunchController::LtiError.new("Client-Credentials Grant Failed: #{response.body}",
-                                              :bad_request)
+                                              :internal_server_error)
     end
 
     response_body["access_token"]
@@ -70,7 +70,7 @@ class LtiNrpsController < ApplicationController
 
     lcd = LtiCourseDatum.find(params[:lcd_id])
     if lcd.nil? || lcd.membership_url.nil? || lcd.course_id.nil?
-      raise LtiError.new("Unable to update roster", :bad_request)
+      raise LtiLaunchController::LtiError.new("Unable to update roster", :bad_request)
     end
 
     @lti_context_membership_url = lcd.membership_url

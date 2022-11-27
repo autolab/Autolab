@@ -91,7 +91,6 @@ on Autolab's end as well.
           }
         }
       ],
-      // INSERT YOUR PUBLIC JWK HERE
       "public_jwk":{
         "kty": "RSA",
         "e": "AQAB",
@@ -124,6 +123,7 @@ your instance's `.env` file
 1. If you do not have a `.env` file in your Autolab root yet (it may not be present on older installations), create it by running the following script from the Autolab root directory:
 
         :::bash
+        cp .env.template .env
     	./bin/initialize_secrets.sh
 
 2. Open up `.env` in your favorite editor, and update LTI_TOOL_PRIVATE_KEY to use the JWK Private Key generated previously, however you **must** convert the private key from

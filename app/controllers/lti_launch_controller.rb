@@ -10,6 +10,8 @@ class LtiLaunchController < ApplicationController
 
   action_auth_level :launch, :instructor
   class LtiError < StandardError
+    attr_reader :status_code
+
     def initialize(msg, status_code = :bad_request)
       @status_code = status_code
       super(msg)
@@ -19,7 +21,7 @@ class LtiLaunchController < ApplicationController
 
   def respond_with_lti_error(error)
     Rails.logger.send(:warn) { "Lti Launch Error: #{error.message}" }
-    render json: { error: error.message }.to_json, status: :bad_request
+    render json: { error: error.message }.to_json, status: error.status_code
   end
 
   # validate we get iss login_hint params for oidc entrypoint
@@ -28,13 +30,13 @@ class LtiLaunchController < ApplicationController
     # we will only support integration with one service, if more than one
     # integration enabled, then changed to check a list of issuers
     if params['iss'].nil? && params['iss'] != Rails.configuration.lti_settings["iss"]
-      raise LtiError.new("Could not find issuer", :bad_request);
+      raise LtiError.new("Could not find issuer", :bad_request)
     end
 
     # Validate Login Hint.
     return unless params['login_hint'].nil?
 
-    raise LtiError.new("Could not find login hint", :bad_request);
+    raise LtiError.new("Could not find login hint", :bad_request)
   end
 
   # check state matches what was already sent in oidc_login
@@ -81,7 +83,7 @@ class LtiLaunchController < ApplicationController
 
   # validate issuer, client_id should be same as stored in our settings
   def validate_registration
-    client_id = @jwt[:body]['aud'].is_a?(Array) ? @jwt[:body]['aud'][0] : @jwt[:body]['aud'];
+    client_id = @jwt[:body]['aud'].is_a?(Array) ? @jwt[:body]['aud'][0] : @jwt[:body]['aud']
     if client_id != Rails.configuration.lti_settings["developer_key"]
       # Client not registered.
       raise LtiError.new("client id not registered for issuer", :bad_request)
@@ -130,18 +132,19 @@ class LtiLaunchController < ApplicationController
     # rubocop:enable Layout/LineLength
   end
 
-  def get_public_key
+  def get_public_key(platform_public_key_pem, platform_public_jwks)
     # import public key depending on whether we have a PEM format
     # or list of JWKs
-    if !@platform_public_pem.nil?
+    if !platform_public_key_pem.nil?
       begin
-        rsa_public_key = OpenSSL::PKey::RSA.new(@platform_public_pem)
+        rsa_public_key = OpenSSL::PKey::RSA.new(platform_public_key_pem)
         return rsa_public_key
       rescue StandardError
         return nil
       end
     end
-    @platform_public_keys.each do |platform_public_key|
+    platform_public_jwks.each do |platform_public_key|
+      # JWT has a "key-id" header which specifies which public key to use
       next unless platform_public_key["kid"] == @jwt[:header]["kid"]
 
       begin
@@ -157,7 +160,7 @@ class LtiLaunchController < ApplicationController
   def validate_jwt_signature(id_token)
     if !Rails.configuration.lti_settings["platform_public_key"].nil?
       # static platform public key, so take key from yml
-      @platform_public_pem = Rails.configuration.lti_settings["platform_public_key"]
+      @platform_public_key_pem = Rails.configuration.lti_settings["platform_public_key"]
     elsif !Rails.configuration.lti_settings["platform_public_jwks_url"].nil?
       # fetch JWKS from provided keys URL
       conn = Faraday.new(
@@ -167,13 +170,13 @@ class LtiLaunchController < ApplicationController
       # make a GET request to public JWK endpoint
       response = conn.get("")
       if response.body["keys"].nil?
-        LtiError.new("No keys were found from public JWK url", :error)
+        LtiError.new("No keys were found from public JWK url", :internal_server_error)
       end
-      @platform_public_keys = JSON.parse(response.body)["keys"]
+      @platform_public_jwks = JSON.parse(response.body)["keys"]
     else
-      LtiError.new("No platform public key or public JWK url provided", :error)
+      LtiError.new("No platform public key or public JWK url provided", :internal_server_error)
     end
-    rsa_public_key = get_public_key
+    rsa_public_key = get_public_key(@platform_public_key_pem, @platform_public_jwks)
     if rsa_public_key.nil?
       raise LtiError.new("No matching JWK found", :bad_request)
     end
