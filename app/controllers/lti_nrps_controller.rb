@@ -181,7 +181,7 @@ private
       # regex match for next page link
       # regex string taken from
       # https://github.com/1EdTech/lti-1-3-php-library/blob/master/src/lti/LTI_Names_Roles_Provisioning_Service.php
-      matches = /^Link:.*<([^>]*)>; ?rel="next"/i.match(next_page_header)
+      matches = /<([^>]*)>;\s*rel="next"/.match(next_page_header)
       unless matches.nil?
         next_page_url = matches[1]
       end
