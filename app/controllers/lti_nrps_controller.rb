@@ -64,11 +64,13 @@ class LtiNrpsController < ApplicationController
   end
 
   # NRPS endpoint for Autolab to send an NRPS request to LTI Advantage Platform
-  action_auth_level :send_nrps_request, :instructor
-  def send_nrps_request
+  action_auth_level :sync_roster, :instructor
+  def sync_roster
+    params.require(:lcd_id)
+
     lcd = LtiCourseDatum.find(params[:lcd_id])
     if lcd.nil? || lcd.membership_url.nil? || lcd.course_id.nil?
-      raise LtiLaunchController::LtiError.new("Unable to update roster", :bad_request)
+      raise LtiError.new("Unable to update roster", :bad_request)
     end
 
     @lti_context_membership_url = lcd.membership_url
@@ -84,10 +86,69 @@ class LtiNrpsController < ApplicationController
     lcd.last_synced = DateTime.current
     lcd.save
 
-    render json: members.as_json
+    # Update the roster with the retrieved set of members
+    @cuds = parse_members_data(lcd, members.as_json)
+    @sorted_cuds = @cuds.sort_by { |cud| cud[:color] || "z" }.reverse
+    @course = lcd.course
   end
 
 private
+
+  def parse_members_data(lcd, members_data)
+    cuds = CourseUserDatum.where(course_id: lcd.course_id, instructor: false,
+                                 course_assistant: false).to_set
+    email_to_cud = {}
+    cuds.each do |cud|
+      email_to_cud[cud.user.email] = cud
+    end
+
+    cud_view = []
+    members_data.each do |user_data|
+      next unless user_data["roles"].include? "http://purl.imsglobal.org/vocab/lis/v2/membership#Learner"
+
+      cud_data = {}
+      # Normalize email
+      user_data["email"] = user_data["email"].downcase
+
+      user = User.find_by(email: user_data["email"])
+      cud_data[:color] = if user.nil? || lcd.course.course_user_data.find_by(user_id: user.id).nil?
+                           "green"
+                         else
+                           "black"
+                         end
+      cud_data[:email] = user_data["email"]
+      cud_data[:first_name] = user_data["given_name"]
+      cud_data[:last_name] = user_data["family_name"]
+      cud_view << cud_data
+
+      email_to_cud.delete(cud_data[:email])
+    end
+
+    return cud_view unless lcd.drop_missing_students
+
+    # Mark the remaining students as dropped
+    email_to_cud.each do |email, cud|
+      next if cud.dropped
+
+      user = cud.user
+      cud_data = {
+        color: "red",
+        email: email,
+        first_name: user.first_name,
+        last_name: user.last_name,
+        course_number: cud.course_number,
+        lecture: cud.lecture,
+        section: cud.section,
+        school: user.school,
+        major: user.major,
+        year: user.year,
+        grade_policy: cud.grade_policy
+      }
+      cud_view << cud_data
+    end
+
+    cud_view
+  end
 
   # Query NRPS after being authenticated
   # with logic to handle multi-page queries
