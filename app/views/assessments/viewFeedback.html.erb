@@ -16,8 +16,10 @@
       <pre><%= @score.feedback %></pre>
     </div>
     <% if @submission.annotations.count > 0 and @problemReleased %>
-      <h2 style="margin-top: 1em">Remarks</h2>
-
+    <div class="result-pane">
+      <div class="feedback-header">
+        <h2 style="margin-top: 1em">Remarks</h2>
+      </div>
       <% subs_by_problem = @submission.annotations.group_by(&:problem)
           subs_by_problem.each do |problem, annotations| %>
           <b> <%= problem.name %> </b>
@@ -48,7 +50,7 @@
             <% end %>
           </ul>
         <% end %>
-
+    </div>
     <% end %>
   </div>
   <div class="result-summary">

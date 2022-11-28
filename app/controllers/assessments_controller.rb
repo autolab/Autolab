@@ -594,7 +594,7 @@ class AssessmentsController < ApplicationController
 
     score_hash = JSON.parse(feedback)
     score_hash = score_hash["scores"]
-    if @jsonFeedback && @jsonFeedback.key?("_scores_order") == false
+    if @jsonFeedback&.key?("_scores_order") == false
       @jsonFeedback["_scores_order"] = score_hash.keys
     end
     @total = 0
