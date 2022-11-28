@@ -58,23 +58,6 @@
       <div class="feedback-header">
         <h3>Results</h3>
       </div>
-      <h4><%= "#{@score.problem.name}" %></h4>
-      <p>
-        Score for this problem: <%= @score.score.to_f().round(1) %>
-      </p>
-      <% if @score.grader && @score.grader.user%>
-        <p>Graded by: <%=
-            case @score.grader_id
-            when -1
-              "Error Handler"
-            when 0
-              "Autograder"
-            else
-              if @score.grader&.user then @score.grader.user.email end
-            end
-          %>
-        </p>
-      <% end %>
       <% if !@scoreHash.nil? %>
         <h4>Autograder Scores</h4>
         <table class="ui unstackable table">
@@ -93,6 +76,22 @@
           </tr>
           </tbody>
         </table>
+      <% else %>
+        <h4><%= "#{@score.problem.name}" %></h4>
+        <p>
+          Score for this problem: <%= @score.score.to_f().round(1) %>
+        </p>
+        <p>Graded by: <%=
+            case @score.grader_id
+            when -1
+              "Error Handler"
+            when 0
+              "Autograder"
+            else
+              if @score.grader&.user then @score.grader.user.email end
+            end
+          %>
+        </p>
       <% end %>
       <% if @submission.annotations.count > 0 and @problemReleased %>
         <a href="#remarks">Jump to remarks</a>
