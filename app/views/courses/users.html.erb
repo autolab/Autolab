@@ -13,13 +13,18 @@
 <h3>Manage Course Users</h3>
 
 <hr>
-<p>
-  <%= link_to raw('<span class="btn">Add User to Course</span>'), [:new, @course, :course_user_datum] %>
-  <!-- Add User Dropdown Trigger -->
-  <a id="add-users" class='dropdown-trigger btn' href='#' data-target='add-users-dropdown'>ADD USERS FROM EMAILS</a>
-  <%= link_to raw('<span class="btn">Import Roster/Users</span>'), {:action=>"upload_roster"} %>
-  <%= link_to raw('<span class="btn">Export Roster</span>'), {:action=>"download_roster"} %>
-</p>
+<div>
+  <span>
+    <%= link_to raw('<span class="btn">Add User to Course</span>'), [:new, @course, :course_user_datum] %>
+    <!-- Add User Dropdown Trigger -->
+    <a id="add-users" class='dropdown-trigger btn' href='#' data-target='add-users-dropdown'>ADD USERS FROM EMAILS</a>
+    <%= link_to raw('<span class="btn">Import Roster/Users</span>'), {:action=>"upload_roster"} %>
+    <%= link_to raw('<span class="btn">Export Roster</span>'), {:action=>"download_roster"} %>
+    <% unless @course.lti_course_datum.nil? %>
+      <%= link_to raw('<span class="btn">Unlink Course</span>'), {:action=>"unlink_course"}, data: { confirm: "Are you sure you want to unlink the course?" }, method: "post" %>
+    <% end %>
+  </span>
+</div>
 
 <!-- Add Users Dropdown Structure -->
 <ul id='add-users-dropdown' class='dropdown-content'>
@@ -45,7 +50,7 @@
             <option value="ca">Course Assistant</option>
             <option value="student">Student</option>
           </select>
-        </div> 
+        </div>
         <input id="add-users-submit" class="btn" type="submit" value="Submit">
       </div>
       <input type="hidden" name="authenticity_token">
@@ -56,6 +61,7 @@
 <hr>
 Search: <%= text_field_tag 'search', nil, onkeyup:'filterRows(this.value)' %>
 <br>
+
 
 <div id='ajaxTable'>
 <%= render :partial=>'usersTable' %>
