@@ -24,7 +24,7 @@
     <a id="add-users" class='dropdown-trigger btn' href='#' data-target='add-users-dropdown'>ADD USERS FROM EMAILS</a>
     <%= link_to raw('<span class="btn">Import Roster/Users</span>'), {:action=>"upload_roster"} %>
     <%= link_to raw('<span class="btn">Export Roster</span>'), {:action=>"download_roster"} %>
-    <% unless lcd.nil? %> <a class="waves-effect waves-light btn modal-trigger" href="#lti-settings-modal"><%= lcd.platform %> Link Settings</a> <% end %>
+    <% unless lcd.nil? %> <a class="waves-effect waves-light btn modal-trigger" href="#lti-settings-modal">Linked Course Settings</a> <% end %>
   </span>
 </div>
 
@@ -33,21 +33,22 @@
   <div id="lti-settings-modal" class="modal">
     <%= form_for lcd, as: :lcd, url: update_lti_settings_course_path do |f| %>
       <div class="modal-content">
-        <h4><%= lcd.platform %> Link Settings</h4>
+        <h4>Linked Course Settings</h4>
         <hr>
         <label>
           <%= f.check_box :drop_missing_students %>
           <span>
-            <p>Auto drop students not enrolled on <%= lcd.platform %>
+            <p>Auto drop students not enrolled in linked course
               <i class="material-icons tooltips tooltipped" data-position="top" data-tooltip="When enabled, students not on the <%= lcd.platform %> roster will be marked as dropped.">info_outline</i>
             </p>
           </span>
         </label>
         <br>
         <label>
-          <%= f.check_box :auto_sync %>
+          <%= f.check_box :auto_sync, disabled: true%>
           <span>
-            <p>Auto sync roster with <%= lcd.platform %>
+            <p>
+              <span style="color:red;">COMING SOON:</span> Auto sync roster with linked course
               <i class="material-icons tooltips tooltipped" data-position="top" data-tooltip="When enabled, the Autolab roster for this course will automatically sync with the linked <%= lcd.platform %> course's roster.">info_outline</i>
             </p>
           </span>
@@ -55,10 +56,10 @@
       </div>
       <div class="modal-footer">
         <span style="float: left;">
-          <input class="waves-effect waves-green btn-flat" type="submit" value="Save">
-          <a href="#!" class="modal-close waves-effect waves-green btn-flat">Cancel</a>
+          <%= f.submit "Save" , {class: "btn-flat"} %>
+          <a href="#!" class="modal-close btn-flat">Cancel</a>
         </span>
-        <%= link_to raw('<span class="waves-effect waves-green btn-flat">Unlink Course</span>'), {:action=>"unlink_course"} %>
+        <%= link_to raw('<span class="btn-flat">Unlink Course</span>'), {action: "unlink_course"}, data: { confirm: "Are you sure you want to unlink the course?" } %>
       </div>
     <% end %>
   </div>

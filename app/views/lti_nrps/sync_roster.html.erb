@@ -12,11 +12,15 @@
     </label>
   </div>
 </div>
-<%= form_for :doIt, :url=>{:action=>"upload_roster",:doIt=>"true"} do |f| %>
+<%= form_for :doIt, url: upload_roster_course_path(name: @course.name, doIt: "true") do |f| %>
   <%= f.submit "Confirm", {:class => "btn primary"} %>
   <br>
-  <%= render partial: 'uploadTable', locals: {cud_view:@cuds, sort_status:"unsorted_cuds"} %>
-  <%= render partial: 'uploadTable', locals: {cud_view:@sorted_cuds, sort_status:"sorted_cuds"} %>
+  <%= render partial: 'courses/uploadTable', locals: {cud_view:@cuds, sort_status:"unsorted_cuds"} %>
+  <%= render partial: 'courses/uploadTable', locals: {cud_view:@sorted_cuds, sort_status:"sorted_cuds"} %>
   <br>
   <%= f.submit "Confirm", {:class => "btn primary"} %>
+<% end %>
+
+<% content_for :javascripts do %>
+  <%= javascript_include_tag "sort-toggle" %>
 <% end %>

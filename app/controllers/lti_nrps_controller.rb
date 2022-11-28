@@ -64,8 +64,8 @@ class LtiNrpsController < ApplicationController
   end
 
   # NRPS endpoint for Autolab to send an NRPS request to LTI Advantage Platform
-  action_auth_level :send_nrps_request, :instructor
-  def send_nrps_request
+  action_auth_level :sync_roster, :instructor
+  def sync_roster
     params.require(:lcd_id)
 
     lcd = LtiCourseDatum.find(params[:lcd_id])
@@ -87,20 +87,14 @@ class LtiNrpsController < ApplicationController
     lcd.save
 
     # Update the roster with the retrieved set of members
-    @cuds = update_roster(lcd, members.as_json)
-    @sorted_cuds = @cuds
-
-    # render json: members.as_json
-    # course = Course.find(@course_id)
-    # redirect_to users_course_path(course) && return
-    # render 'courses/upload_roster'
-    # render json: @cuds.as_json
-    render(plain: "test", status: :ok)
+    @cuds = parse_members_data(lcd, members.as_json)
+    @sorted_cuds = @cuds.sort_by { |cud| cud[:color] || "z" }.reverse
+    @course = lcd.course
   end
 
 private
 
-  def update_roster(lcd, members_data)
+  def parse_members_data(lcd, members_data)
     cuds = CourseUserDatum.where(course_id: lcd.course_id, instructor: false,
                                  course_assistant: false).to_set
     email_to_cud = {}
@@ -109,45 +103,24 @@ private
     end
 
     cud_view = []
-    # color
-    # email
-    # first_name
-    # last_name
-    # course_number
-    # lecture
-    # section
-    # school
-    # major
-    # year
-    # grade_policy
-
-    cud_view = []
     members_data.each do |user_data|
       next unless user_data["roles"].include? "http://purl.imsglobal.org/vocab/lis/v2/membership#Learner"
 
       cud_data = {}
-      # If user doesn't exist on Autolab yet, create an account
-      user = User.find_by(email: user_data["email"].downcase)
-      if user.nil? || lcd.course.course_user_data.find_by(user_id: user.id).nil?
-        # user = User.roster_create(
-        #   user_data["email"], user_data["given_name"], user_data["family_name"], "", "", 0
-        # )
-        cud_data[:color] = "green"
-      else
-        cud_data[:color] = "black"
-      end
+      # Normalize email
+      user_data["email"] = user_data["email"].downcase
+
+      user = User.find_by(email: user_data["email"])
+      cud_data[:color] = if user.nil? || lcd.course.course_user_data.find_by(user_id: user.id).nil?
+                           "green"
+                         else
+                           "black"
+                         end
       cud_data[:email] = user_data["email"]
       cud_data[:first_name] = user_data["given_name"]
       cud_data[:last_name] = user_data["family_name"]
       cud_view << cud_data
 
-      # If user isn't enrolled in this course yet, enroll them
-      # cud = CourseUserDatum.find_by(user_id: user.id, course_id: lcd.course_id)
-      # if cud.nil?
-      #   lcd.course.course_user_data.create(user: user, instructor: false, course_assistant: false)
-      # end
-
-      # student_cuds.delete(cud)
       email_to_cud.delete(cud_data[:email])
     end
 
@@ -155,6 +128,8 @@ private
 
     # Mark the remaining students as dropped
     email_to_cud.each do |email, cud|
+      next if cud.dropped
+
       user = cud.user
       cud_data = {
         color: "red",
@@ -173,12 +148,6 @@ private
     end
 
     cud_view
-    # CourseUserDatum.transaction do
-    #   student_cuds.each do |cud|
-    #     cud.dropped = true
-    #     cud.save
-    #   end
-    # end
   end
 
   # Query NRPS after being authenticated
