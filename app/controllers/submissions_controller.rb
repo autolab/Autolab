@@ -489,9 +489,18 @@ class SubmissionsController < ApplicationController
       description = annotation.comment
       value = annotation.value || 0
       line = annotation.line
-      problem = annotation.problem ? annotation.problem.name : "Global"
+      problem = if annotation.problem
+                  annotation.problem.name
+                else
+                  annotation.problem_id ? "Deleted Problem(s)" : "Global"
+                end
       global = annotation.global_comment
       filename = get_correct_filename(annotation, files, @submission)
+
+      # To handle annotations on deleted problems
+      @problemSummaries[problem] ||= []
+      @problemGrades[problem] ||= 0
+
       @problemSummaries[problem] << [description, value, line, annotation.submitted_by,
                                      annotation.id, annotation.position, filename, global]
       @problemGrades[problem] += value
