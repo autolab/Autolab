@@ -25,12 +25,12 @@
           </div>
           <div class="collapsible-body">
             <% if @cud.instructor? or @cud.course_assistant? or @problemReleased %>
-              <% if all_annotations.empty? %>
-                There are currently no annotations.
-              <% end %>
               <% global_annotations = all_annotations[:global_annotations]
                  annotations_by_file = all_annotations[:annotations_by_file] %>
-                <% if !global_annotations.empty? %>
+              <% if global_annotations.empty? && annotations_by_file.empty? %>
+                There are currently no annotations.
+              <% end %>
+              <% if !global_annotations.empty? %>
                   <div class="file_annotations">
                     <% global_annotations.each do |description, value, line, user, id, position, filename, global| %>
                       <div class="global-annotation" id="li-annotation-<%= id %>">
@@ -63,7 +63,7 @@
                     <% end %>
                   </div>
                 <% end %>
-                <% annotations_by_file.each do |filename, annotations| %>
+              <% annotations_by_file.each do |filename, annotations| %>
                   <div class="file_annotations">
                     <strong> <%= filename %> </strong>
                     <% annotations.each do |description, value, line, user, id, position, filename, global| %>
