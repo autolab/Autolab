@@ -85,6 +85,14 @@
             </tr>
             </tbody>
           </table>
+        <% elsif @score.nil? %>
+          <h4>Autograding in progress...</h4>
+          <p>
+            Your submission is currently being autograded.
+          </p>
+          <p>
+            Press the refresh button to get updates.
+          </p>
         <% else %>
           <h4><%= "#{@score.problem.name}" %></h4>
           <p>
