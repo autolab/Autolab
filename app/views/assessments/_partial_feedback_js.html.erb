@@ -1,0 +1,27 @@
+<script>
+  refreshPartial();
+  setInterval(refreshPartial, 1000);
+
+  function refreshPartial() {
+    $.ajax({
+        url: `getPartialFeedback?job_id=${<%= @job_id %>}`,
+        success: (res) => {
+          if (!res) return;
+          if (res.partial_feedback) {
+            $('#partial-feedback').html(`
+              <pre>${res.partial_feedback}</pre>
+              <div class="autograding-in-progress">
+                <pre>Autograding in progress</pre>
+              </div>`)
+          } else if (res.queue_position !== undefined && res.queue_length) {
+            $('#partial-feedback').html(`
+              <div class="autograding-in-progress">
+                <pre>You are at position ${(res.queue_position) + 1} / ${(res.queue_length)} in the autograding queue.</pre>
+              </div>`)
+          } else if (!res.is_assigned) {
+            location.reload();
+          }
+        },
+    });
+  }
+</script>

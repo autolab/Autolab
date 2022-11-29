@@ -213,6 +213,18 @@ div.main-header img {
   margin-bottom: 1vh;
   border-bottom: 2px solid #C4C4C4;
 }
+#status-refresh {
+  display: flex;
+
+  .material-icons {
+    color: $autolab-blue-text;
+    margin-right: 1vw;
+
+    &:hover {
+      cursor: pointer;
+    }
+  }
+}
 .result-container .feedback-header h3 {
   margin-top: 0px;
   margin-bottom: 0px;
