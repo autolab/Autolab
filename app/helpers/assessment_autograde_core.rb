@@ -132,14 +132,17 @@ module AssessmentAutogradeCore
     begin
       raw_live_jobs = TangoClient.jobs
       assigned_jobs, unassigned_jobs = raw_live_jobs.partition {|rjob| rjob["assigned"]}
+
+      # Order by job number to get the position in queue
       unassigned_jobs = unassigned_jobs.sort {|rjob1, rjob2| rjob1["id"].to_i - rjob2["id"].to_i}
     rescue TangoClient::TangoException => e
       COURSE_LOGGER.log("Error while getting jobs")
-      raise AutogradeError.new("Error while getting jobs", :is_assigned)
+      raise AutogradeError.new("Error while getting jobs", :get_job_status)
     end
     
     assignment = {"is_assigned"=>assigned_jobs.any? {|rjob| rjob["id"].to_i == job_id}}
     if !assignment["is_assigned"]
+      # Assign a queue position if the job is live but not assigned
       assignment["queue_position"] = unassigned_jobs.index {|rjob| rjob["id"] == job_id}
       assignment["queue_length"] = unassigned_jobs.length
     end

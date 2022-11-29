@@ -574,7 +574,7 @@ class AssessmentsController < ApplicationController
     @job_id = @submission["jobid"]
     if @score.nil?
       if @job_id.nil?
-        flash[:error] = "No feedback for requested job id"
+        flash[:error] = "Invalid job id"
         redirect_to(action: "index") && return
       end
       return
@@ -599,13 +599,14 @@ class AssessmentsController < ApplicationController
     resp = {}
     # User requested to view feedback on a score
     if job_id.nil?
-      flash[:error] = "No feedback for requested job id"
+      flash[:error] = "Invalid job id"
       redirect_to(action: "index") && return
     end
 
     begin
       resp['partial_feedback'] = tango_get_partial_feedback(job_id)
     rescue AutogradeError
+      # if unable to get partial feedback, check if job is on the queue
       @job_status = get_job_status(job_id)
       resp["is_assigned"] = @job_status["is_assigned"]
       resp["queue_position"] = @job_status["queue_position"]
