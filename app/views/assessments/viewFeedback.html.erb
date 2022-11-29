@@ -28,7 +28,7 @@ Graded by: <%=
 Yes, feedback is per problem but we show all annotations for this submission anyway. While this is not semantically correct, it offers a better UX than we had before. If we just show annotations attached to this problem, then where would we show annotations not attached to a problem at all?
 -->
 
-<% if @submission.annotations.count > 0 and @problemReleased %>
+<% if @submission.annotations.count > 0 and (@cud.instructor? or @cud.course_assistant? or @problemReleased) %>
   <h2 style="margin-top: 1em">Remarks</h2>
 
   <% subs_by_problem = @submission.annotations.group_by(&:problem)
