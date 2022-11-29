@@ -1,0 +1,37 @@
+<% if @submission.annotations.count > 0 and (@cud.instructor? or @cud.course_assistant? or @problemReleased) %>
+  <div class="result-pane">
+    <div class="feedback-header">
+      <h2 style="margin-top: 1em">Remarks</h2>
+    </div>
+    <% subs_by_problem = @submission.annotations.group_by(&:problem)
+        subs_by_problem.each do |problem, annotations| %>
+        <b> <%= problem.nil? ? "Deleted Problem(s)" : problem.name %> </b>
+        <ul class="collection">
+        <!-- use custom sort b/c using ordering doesn't work with autograder output, archived files -->
+        <%
+          s_annotations = annotations.sort do |a,b|
+          aFilename = @get_correct_filename.call(a)
+          bFilename = @get_correct_filename.call(b)
+          case
+            when aFilename < bFilename
+              -1
+            when aFilename > bFilename
+                1
+            else
+                a.line <=> b.line
+            end
+          end
+          s_annotations.each do |annotation| %>
+          <li class="collection-item">
+                <div style='white-space: pre-wrap;'><%= annotation.comment%> </div>
+                <% filename = @get_correct_filename.call(annotation)%>
+                <span> 
+                  <b><%= annotation.value? ? sprintf("(%+.2f)", annotation.value.round(2)) : "" %></b> 
+                  <%= link_to filename.to_s + ":"+ annotation.line.to_s , [:view, @course, @assessment, @submission, header_position: annotation.position] %> 
+                </span>
+          </li>
+          <% end %>
+        </ul>
+      <% end %>
+  </div>
+<% end %>
