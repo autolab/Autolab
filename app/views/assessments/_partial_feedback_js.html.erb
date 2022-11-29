@@ -39,7 +39,6 @@
         },
     });
   }
-  // refreshPartial();
 
   const btn = $('#refresh-feedback')[0];
 
@@ -52,10 +51,6 @@
       // Current called time of the function
       let now = new Date().getTime();
 
-      // Logging the difference between previously
-      // called and current called timings
-      console.log(now-prev, delay);
-        
       // If difference is greater than delay call
       // the function again.
       if(now - prev > delay){
