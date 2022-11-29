@@ -33,7 +33,7 @@ Yes, feedback is per problem but we show all annotations for this submission any
 
   <% subs_by_problem = @submission.annotations.group_by(&:problem)
       subs_by_problem.each do |problem, annotations| %>
-      <b> <%= problem.name %> </b>
+      <b> <%= problem.nil? ? "Deleted Problem(s)" : problem.name %> </b>
       <ul class="collection">
       <!-- use custom sort b/c using ordering doesn't work with autograder output, archived files -->
       <%
