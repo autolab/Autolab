@@ -9,15 +9,20 @@
               <pre>${res.partial_feedback}</pre>
               <div class="autograding-in-progress">
                 <pre>Autograding in progress</pre>
-              </div>`)
+              </div>`);
+            $('.feedback-status').html("In-Progress");
+            $('.feedback-status').removeClass("feedback-status__queued");
+            $('.feedback-status').addClass("feedback-status__inprogress");
+            $( "#result-body" ).load(window.location.href + " #result-body" );
+
           } else if (res.queue_position !== undefined && res.queue_length) {
             $('#partial-feedback').html(`
               <div class="autograding-in-progress">
                 <pre>You are at position ${(res.queue_position) + 1} / ${(res.queue_length)} in the autograding queue.</pre>
               </div>`);
-              $('.feedback-status').html("Queued");
-              $('.feedback-status').removeClass("feedback-status__inprogress");
-              $('.feedback-status').addClass("feedback-status__queued");
+              $('#status-badge').html("Queued");
+              $('#status-badge').removeClass("feedback-status__inprogress");
+              $('#status-badge').addClass("feedback-status__queued");
               $('#result-body').html(`
               <h4>Submission queued...</h4>
               <p>
