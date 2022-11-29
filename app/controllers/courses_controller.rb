@@ -341,6 +341,20 @@ class CoursesController < ApplicationController
     redirect_to([:users, @course]) && return
   end
 
+  action_auth_level :unlink_course, :instructor
+  def unlink_course
+    lcd = LtiCourseDatum.find_by(course_id: @course.id)
+
+    if lcd.nil?
+      flash[:error] = "Unable to unlink course"
+      redirect_to(action: :users) && return
+    end
+
+    lcd.destroy
+    flash[:success] = "Course unlinked"
+    redirect_to(action: :users) && return
+  end
+
   action_auth_level :reload, :instructor
   def reload
     @course.reload_course_config
