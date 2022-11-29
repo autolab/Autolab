@@ -1,24 +1,114 @@
 <% if @jsonFeedback.nil? %>
 
-<h2>Feedback for
+<h2>Autograding Result for
 <%= "#{@assessment.display_name} - #{@score.problem.name}" %>
 (<%=@score.submission.course_user_datum.user.email %>)
 </h2>
-<pre>
-<%= @score.feedback %>
-Score for this problem: <%= sprintf("%.2f", @score.score.to_f.round(2)) %>
+<div class="result-container">
+  <div class="feedback-container">
+    <div class="result-pane">
+      <div class="feedback-header">
+        <h3>Feedback</h3>
+        <div class="feedback-status__completed">
+          Completed
+        </div>
+      </div>
+      <pre><%= @score.feedback %></pre>
+    </div>
+    <% if @submission.annotations.count > 0 and @problemReleased %>
+    <div class="result-pane">
+      <div class="feedback-header">
+        <h2 style="margin-top: 1em">Remarks</h2>
+      </div>
+      <% subs_by_problem = @submission.annotations.group_by(&:problem)
+          subs_by_problem.each do |problem, annotations| %>
+          <b> <%= problem.name %> </b>
+          <ul class="collection">
+          <%# use custom sort b/c using ordering doesn't work with autograder output, archived files %>
+            <%
+              s_annotations = annotations.sort do |a,b|
+              aFilename = @get_correct_filename.call(a)
+              bFilename = @get_correct_filename.call(b)
 
-Graded by: <%=
-  case @score.grader_id
-  when -1
-    "Error Handler"
-  when 0
-    "Autograder"
-  else
-    if @score.grader&.user then @score.grader.user.email end
-  end
-%>
-</pre>
+              if a.global_comment? && b.global_comment?
+                a.id <=> b.id
+              else
+                case
+                  when a.global_comment? != b.global_comment?
+                    a.global_comment? ? -1 : 1
+                  when aFilename != bFilename
+                    aFilename <=> bFilename
+                  else
+                    a.line <=> b.line
+                  end
+                end
+              end
+              s_annotations.each do |annotation| %>
+                <li class="collection-item">
+                  <div style='white-space: pre-wrap;'><%= annotation.comment%> </div>
+                  <% filename = @get_correct_filename.call(annotation)%>
+                  <span> 
+                    <b><%= annotation.value? ? sprintf("(%+.2f)", annotation.value.round(2)) : "" %></b>
+                    <% if annotation.global_comment? %>
+                      <%= link_to "Global Annotation", [:view, @course, @assessment, @submission] %>
+                    <% else %>
+                      <%# line + 1 because line numbers start from 1 %>
+                      <%= link_to filename.to_s + ":" + (annotation.line + 1).to_s, [:view, @course, @assessment, @submission, header_position: annotation.position] %>
+                    <% end %>
+                  </span>
+                </li>
+              <% end %>
+            </ul>
+        <% end %>
+    </div>
+    <% end %>
+  </div>
+  <div class="result-summary">
+    <div class="result-pane result-fixed">
+      <div class="feedback-header">
+        <h3>Results</h3>
+      </div>
+      <% if !@scoreHash.nil? %>
+        <h4>Autograder Scores</h4>
+        <table class="ui unstackable table">
+          <tbody>
+          <% @scoreHash.each do |key, value| %>
+            <% if key != '_total' %>
+              <tr>
+                <td><%= key %>:</td>
+                <td><%= value %></td>
+              </tr>
+            <% end %>
+          <% end %>
+          <tr style="border-bottom: none">
+            <td>Autograding Total:</td>
+            <td><%= @scoreHash["_total"] %></td>
+          </tr>
+          </tbody>
+        </table>
+      <% else %>
+        <h4><%= "#{@score.problem.name}" %></h4>
+        <p>
+          Score for this problem: <%= @score.score.to_f().round(1) %>
+        </p>
+        <p>Graded by: <%=
+            case @score.grader_id
+            when -1
+              "Error Handler"
+            when 0
+              "Autograder"
+            else
+              if @score.grader&.user then @score.grader.user.email end
+            end
+          %>
+        </p>
+      <% end %>
+      <% if @submission.annotations.count > 0 and @problemReleased %>
+        <a href="#remarks">Jump to remarks</a>
+      <% end %>
+    </div>
+  </div>
+</div>
 
 <% else %>
 <%= render "semantic" %>
@@ -27,49 +117,4 @@ Graded by: <%=
 <!--
 Yes, feedback is per problem but we show all annotations for this submission anyway. While this is not semantically correct, it offers a better UX than we had before. If we just show annotations attached to this problem, then where would we show annotations not attached to a problem at all?
 -->
-
-<% if @submission.annotations.count > 0 and @problemReleased %>
-  <h2 style="margin-top: 1em">Remarks</h2>
-
-  <% subs_by_problem = @submission.annotations.group_by(&:problem)
-      subs_by_problem.each do |problem, annotations| %>
-      <b> <%= problem.name %> </b>
-      <ul class="collection">
-      <%# use custom sort b/c using ordering doesn't work with autograder output, archived files %>
-      <%
-        s_annotations = annotations.sort do |a,b|
-        aFilename = @get_correct_filename.call(a)
-        bFilename = @get_correct_filename.call(b)
-
-        if a.global_comment? && b.global_comment?
-          a.id <=> b.id
-        else
-          case
-            when a.global_comment? != b.global_comment?
-              a.global_comment? ? -1 : 1
-            when aFilename != bFilename
-              aFilename <=> bFilename
-            else
-              a.line <=> b.line
-            end
-          end
-        end
-        s_annotations.each do |annotation| %>
-        <li class="collection-item">
-              <div style='white-space: pre-wrap;'><%= annotation.comment%> </div>
-              <% filename = @get_correct_filename.call(annotation)%>
-              <span> 
-                <b><%= annotation.value? ? sprintf("(%+.2f)", annotation.value.round(2)) : "" %></b>
-                <% if annotation.global_comment? %>
-                  <%= link_to "Global Annotation", [:view, @course, @assessment, @submission] %>
-                <% else %>
-                  <%# line + 1 because line numbers start from 1 %>
-                  <%= link_to filename.to_s + ":" + (annotation.line + 1).to_s, [:view, @course, @assessment, @submission, header_position: annotation.position] %>
-                <% end %>
-              </span>
-        </li>
-        <% end %>
-      </ul>
-    <% end %>
-
-<% end %>
+<%= javascript_include_tag "feedback.js" %>
