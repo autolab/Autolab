@@ -37,6 +37,32 @@
         },
     });
   }
+  // refreshPartial();
+
+  const btn = $('#refresh-feedback')[0];
+
+  // Throttling Function
+  const throttleFunction=(func, delay)=>{
+
+    // Previously called time of the function
+    let prev = 0;
+    return (...args) => {
+      // Current called time of the function
+      let now = new Date().getTime();
+
+      // Logging the difference between previously
+      // called and current called timings
+      console.log(now-prev, delay);
+        
+      // If difference is greater than delay call
+      // the function again.
+      if(now - prev > delay){
+        prev = now;
+
+        return func(...args); 
+      }
+    }
+  }
   refreshPartial();
-  $('#refresh-feedback')[0].addEventListener('click', refreshPartial);
+  btn.addEventListener("click", throttleFunction(refreshPartial, 5000));
 </script>
