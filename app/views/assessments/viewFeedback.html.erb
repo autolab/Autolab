@@ -1,7 +1,6 @@
 <% if @jsonFeedback.nil? %>
   <h2>Autograding Result for 
-      <%= @score.nil? ? @assessment.display_name : "#{@assessment.display_name} - #{@score.problem.name}"%> 
-      (<%=@score.submission.course_user_datum.user.email %>)
+      <%= @score.nil? ? @assessment.display_name : "#{@assessment.display_name} - #{@score.problem.name} (#{@score.submission.course_user_datum.user.email})"%> 
   </h2>
   <div class="result-container">
     <div class="feedback-container">
@@ -10,7 +9,7 @@
           <div class="feedback-header">
             <h3>Feedback</h3>
             <div id="status-refresh">
-              <i class="small material-icons">refresh</i>
+              <i id="refresh-feedback" class="small material-icons">refresh</i>
               <div class="feedback-status feedback-status__inprogress">
                 In-Progress
               </div>

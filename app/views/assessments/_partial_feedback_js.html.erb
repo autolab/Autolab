@@ -1,7 +1,4 @@
 <script>
-  refreshPartial();
-  setInterval(refreshPartial, 1000);
-
   function refreshPartial() {
     $.ajax({
         url: `getPartialFeedback?job_id=${<%= @job_id %>}`,
@@ -24,4 +21,6 @@
         },
     });
   }
+
+  $('#refresh-feedback')[0].addEventListener('click', refreshPartial);
 </script>
