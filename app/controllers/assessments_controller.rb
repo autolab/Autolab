@@ -579,7 +579,8 @@ class AssessmentsController < ApplicationController
     if Archive.archive? @submission.handin_file_path
       @files = Archive.get_files @submission.handin_file_path
     end
-    @problemReleased = @submission.scores.pluck(:released).all?
+    @problemReleased = @submission.scores.pluck(:released).all? &&
+                       !@assessment.before_grading_deadline?
     # get_correct_filename is protected, so we wrap around controller-specific call
     @get_correct_filename = ->(annotation) {
       get_correct_filename(annotation, @files, @submission)

@@ -25,6 +25,7 @@ ActiveRecord::Schema.define(version: 2022_11_24_042718) do
     t.integer "problem_id"
     t.string "coordinate"
     t.boolean "shared_comment", default: false
+    t.boolean "global_comment", default: false
   end
 
   create_table "announcements", force: :cascade do |t|
