@@ -14,7 +14,18 @@
             $('#partial-feedback').html(`
               <div class="autograding-in-progress">
                 <pre>You are at position ${(res.queue_position) + 1} / ${(res.queue_length)} in the autograding queue.</pre>
-              </div>`)
+              </div>`);
+              $('.feedback-status').html("Queued");
+              $('.feedback-status').removeClass("feedback-status__inprogress");
+              $('.feedback-status').addClass("feedback-status__queued");
+              $('#result-body').html(`
+              <h4>Submission queued...</h4>
+              <p>
+                Your submission is currently in the autograding queue, waiting to be graded.
+              </p>
+              <p>
+                Press the refresh button to get updates.
+              </p>`);
           } else if (!res.is_assigned) {
             location.reload();
           }

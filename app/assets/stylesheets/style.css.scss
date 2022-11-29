@@ -241,6 +241,9 @@ div.main-header img {
   &__inprogress {
     background-color: $autolab-red;
   }
+  &__queued {
+    background-color: $autolab-blue-text;
+  }
 }
 
 /* Custom Form Styling */
