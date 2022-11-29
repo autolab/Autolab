@@ -295,7 +295,7 @@ function displayAnnotations() {
 
   _.each(annotationsByPositionByLine[currentHeaderPos], function (arr_annotations, line) {
     _.each(arr_annotations, function (annotationObj, ind) {
-      if (annotationObj.global_comment === true)
+      if (annotationObj.global_comment)
         return;
       $("#annotation-line-" + line).append(newAnnotationBox(annotationObj));
     });
