@@ -8,9 +8,9 @@ class Problem < ApplicationRecord
   # don't need :dependent => :destroy as of 2/18/13
   has_many :scores, dependent: :delete_all
   belongs_to :assessment, touch: true
-  has_many :annotations
+  has_many :annotations, dependent: :destroy
 
-  validates :name, presence: true
+  validates :name, :max_score, presence: true
   validates_associated :assessment
 
   after_commit -> { assessment.dump_yaml }

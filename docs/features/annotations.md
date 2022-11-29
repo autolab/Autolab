@@ -2,28 +2,53 @@
 
 Annotations is a feature introduced as part of the Speedgrader update to Autolab. It allows instructors and TAs to quickly leave comments and grade code at the same time. 
 
+!!! attention "Non-Autograded Problems Only"
+    Note that annotations can only be added to non-autograded problems. Specifically, a problem is non-autograded if there is no assigned score for that problem in the json outputted by the autograder
+
+### Line-based annotations
+
 ![Annotation Form](/images/annotations.png)
 
 Hover over any line of the code and click on the green arrow, and the annotation form will appear. Add the comment, adjust the score, and select the targeted problem.
 
-!!! attention "Non-Autograded Problems Only"
-    Note that annotations can only be added to non-autograded problems. Specifically, a problem is non-autograded if there is no assigned score for that problem in the json outputted by the autograder
+When the "Add to shared comment pool" option is checked, the comment will be saved to a shared comment pool.
+When creating new annotations, shared comments matching what you have typed will be available via a dropdown list.
 
-### Scoring Behavior
+Note that the shared comment pool operates on a per-assessment basis, so a shared comment for one problem is available when creating an annotation for another problem within the same assessment.
+Additionally, the same shared comment pool is used by all instructors and course-assistants, so your shared comments will be available to other instructors and course-assistants, and vice-versa.
 
-There are two intended ways for course instructors to use the add annotation features. Deductions from maximum, or additions from zero.
+![Shared Comments](/images/shared_comments.png)
 
-**Deductions from maximum**
+!!! attention "Deleting annotations"
+    Note that shared comments are tied to the original annotation. If the original annotation is deleted, the comment will not persist in the shared comment pool.
 
-Set a `max_score` either programmatically, or under `Edit Assessment > Problems` for the particular non-autograded question. Then when the grader is viewing the code, add negative score, such as `-5` into the score field, to deduct from the maximum. This use case is preferred when grading based on a rubric, and the score is deducted for each mistake.
+### Global annotations
+
+You can can also add a global annotation to a problem that is not tied to a specific line of code.
+
+![Global Annotation Form](/images/annotations_global.png)
+
+To do so, click on the "+" header button corresponding to the problem.
+
+## Scoring Behavior
+
+There are two intended ways for course instructors to use the add annotation features. Deductions from maximum ("negative grading"), or additions to zero ("positive grading").
+
+The default setting is negative grading, but positive grading can be enabled under `Edit Assessment > Problems`.
+
+![Positive Grading](/images/positive_grading.png)
+
+### Negative Grading
+
+Set a `max_score` either programmatically, or under `Edit Assessment > Problems` for the particular non-autograded question. Then when the grader is viewing the code, add a negative score, such as `-5` into the score field, to deduct from the maximum. This use case is preferred when grading based on a rubric, and the score is deducted for each mistake.
 
 The maximum score can be `0` if the deductions are meant to be penalties, such as for poor code style or violation of library interfaces.
 
-**Additions from zero**
+### Positive Grading
 
-Set a `max_score` either programmatically, or under `Edit Assessment > Problems` for the particular non-autograded question to `0`. When the grader is viewing the code, add positive scores, such as `5` to the score field, to add to the score. This use case is preferred when giving out bonus points.
+Set a `max_score` either programmatically, or under `Edit Assessment > Problems` for the particular non-autograded question. Then when the grader is viewing the code, add a positive score, such as `5` to the score field, to add to the score. This use case is preferred when giving out bonus points.
 
-### Interaction with Gradesheet
+## Interaction with Gradesheet
 
 We have kept the ability the edit the scores in the gradesheet, as we understand that there are instances in which editing the gradesheet directly is much more efficient and/or needed. However, this leads to an unintended interaction with the annotations.
 

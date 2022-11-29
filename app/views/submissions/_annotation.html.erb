@@ -4,43 +4,7 @@
     <div class="line-number"></div>
     <div class="code-separator"></div>
   </div>
-  <div class="annotation-form" style="display: none;">
-    <div class="error" style="display: none;"></div>
-
-    <form>
-      <div class="input-field col s12 annotation-comment">
-        <textarea class="comment materialize-textarea" id="comment-textarea" placeholder="" ></textarea>
-        <label for="comment-textarea">Comment</label>
-        <p>
-        <label>
-          <input type="checkbox" class="filled-in" id="shared-comment" />
-          <span> Add to shared comment pool <i class="material-icons" title="Adding to the shared comment pool allows you 
-                and other graders to reuse this comment within this assessment">info_outline</i> </span>
-        </label>
-        </p>
-      </div>
-
-      <div class="row annotation-problem-score">
-        <div class="input-field col s6" >
-          <input class="score" type="number" value="0" placeholder="0" step="any" id="comment-score">
-          <label for="comment-score">Score</label>
-          <span> Grading style: <b><%= @assessment.is_positive_grading ? "Positive grading" : "Negative grading" %></b> 
-            <i class="material-icons" title="<%= (@assessment.is_positive_grading ? "Score is added, starting from 0." : "Score is deducted from the total points.") + " Change this setting in Edit Assessment > Problems" %>" 
-            >info_outline</i> </span>
-        </div>
-
-        <div class="input-field col s6">
-          <select class="browser-default problem-id">
-          </select>
-        </div>
-      </div>
-
-      <div class="input-field col s12" >
-        <input type="submit" class="btn" value="Add annotation">
-        <button class="btn grey annotation-cancel-button">Cancel</button>
-      </div>
-    </form>
-  </div>
+  <%= render "annotation_form", global: false %>
   <div class="annotation-box" style="display: none;">
     <div class="annotation-header">
       <div class="annotation-from">
