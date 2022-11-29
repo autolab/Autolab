@@ -4,7 +4,7 @@
 # custom datetimepicker. In reality, it's goal is to wrap common form builder
 # methods in Bootstrap boilerplate code.
 class FormBuilderWithDateTimeInput < ActionView::Helpers::FormBuilder
-  %w(text_field text_area email_field).each do |method_name|
+  %w(text_field text_area email_field number_field).each do |method_name|
     # retain access to default textfield, etc. helpers
     alias_method "vanilla_#{method_name}", method_name
 
