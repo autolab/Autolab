@@ -66,11 +66,9 @@ class LtiNrpsController < ApplicationController
   # NRPS endpoint for Autolab to send an NRPS request to LTI Advantage Platform
   action_auth_level :sync_roster, :instructor
   def sync_roster
-    params.require(:lcd_id)
-
     lcd = LtiCourseDatum.find(params[:lcd_id])
     if lcd.nil? || lcd.membership_url.nil? || lcd.course_id.nil?
-      raise LtiError.new("Unable to update roster", :bad_request)
+      raise LtiLaunchController::LtiError.new("Unable to update roster", :bad_request)
     end
 
     @lti_context_membership_url = lcd.membership_url
@@ -106,9 +104,11 @@ private
     members_data.each do |user_data|
       next unless user_data["roles"].include? "http://purl.imsglobal.org/vocab/lis/v2/membership#Learner"
 
+      next if user_data.key?("status") && user_data["status"] != "Active"
+
       cud_data = {}
       # Normalize email
-      user_data["email"] = user_data["email"].downcase
+      user_data["email"].downcase!
 
       user = User.find_by(email: user_data["email"])
       cud_data[:color] = if user.nil? || lcd.course.course_user_data.find_by(user_id: user.id).nil?

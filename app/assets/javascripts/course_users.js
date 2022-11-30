@@ -50,7 +50,8 @@ const validateIdentity = (input) => {
 
 document.addEventListener('DOMContentLoaded', function () {
   $('#lti-settings-modal').modal({
-    dismissible: false
+    dismissible: false,
+    preventScrolling: false
   });
 
   let elem = document.querySelector('#add-users');
