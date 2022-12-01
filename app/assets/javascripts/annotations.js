@@ -317,12 +317,10 @@ function attachEvents() {
     const line = $(this).parent().parent().parent();
     const annotationContainer = line.data("lineId");
 
-    // append an annotation form only if there is none currently
-    if ($("#annotation-line-" + annotationContainer).find(".annotation-line").length === 0) {
-      $("#annotation-line-" + annotationContainer).append(newAnnotationFormCode());
+    // allow multiple annotations per line, as per 122's feedback
+    $("#annotation-line-" + annotationContainer).append(newAnnotationFormCode());
 
-      refreshAnnotations();
-    }
+    refreshAnnotations();
   });
 }
 
