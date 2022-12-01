@@ -469,18 +469,18 @@ function newAnnotationFormCode() {
   box.removeClass("base-annotation-line");
 
   // Creates a dictionary of problem and grader_id
-  var autogradedproblems = {}
+  var problemGraderId = {};
   _.each(scores, function (score) {
-    autogradedproblems[score.problem_id] = score.grader_id;
-  })
+    problemGraderId[score.problem_id] = score.grader_id;
+  });
 
   _.each(problems, function (problem) {
-    if (autogradedproblems[problem.id] != 0) { // Because grader == 0 is autograder
+    if (problemGraderId[problem.id] !== 0) { // Because grader == 0 is autograder
       box.find("select").append(
           $("<option />").val(problem.id).text(problem.name)
-      )
+      );
     }
-  })
+  });
 
   box.find('.annotation-form').show();
   box.find('.annotation-cancel-button').click(function (e) {
@@ -612,10 +612,18 @@ function initializeBoxForm(box, annotation) {
   var valueStr = annotation.value ? annotation.value.toString() : "0";
   var commentStr = annotation.comment;
 
+  // Creates a dictionary of problem and grader_id
+  var problemGraderId = {};
+  _.each(scores, function (score) {
+    problemGraderId[score.problem_id] = score.grader_id;
+  });
+
   _.each(problems, function (problem) {
-    box.find("select").append(
-      $("<option />").val(problem.id).text(problem.name)
-    )
+    if (problemGraderId[problem.id] !== 0) { // Because grader == 0 is autograder
+      box.find("select").append(
+          $("<option />").val(problem.id).text(problem.name)
+      );
+    }
   });
 
   box.find(".comment").val(commentStr);
@@ -975,19 +983,18 @@ var newAnnotationFormTemplatePDF = function (name, pageInd) {
   });
 
   // Creates a dictionary of problem and grader_id
-  var autogradedproblems = {}
-
+  var problemGraderId = {};
   _.each(scores, function (score) {
-    autogradedproblems[score.problem_id] = score.grader_id;
-  })
+    problemGraderId[score.problem_id] = score.grader_id;
+  });
 
   _.each(problems, function (problem) {
-    if (autogradedproblems[problem.id] != 0) { // Because grader == 0 is autograder
+    if (problemGraderId[problem.id] !== 0) { // Because grader == 0 is autograder
       problemSelect.appendChild(elt("option", {
         value: problem.id
       }, problem.name));
     }
-  })
+  });
 
   var newForm = elt("form", {
     title: "Press <Enter> to Submit",
