@@ -114,5 +114,7 @@
 <%= render "semantic" %>
 
 <% end %>
-
+<!--
+Yes, feedback is per problem but we show all annotations for this submission anyway. While this is not semantically correct, it offers a better UX than we had before. If we just show annotations attached to this problem, then where would we show annotations not attached to a problem at all?
+-->
 <%= javascript_include_tag "feedback.js" %>
