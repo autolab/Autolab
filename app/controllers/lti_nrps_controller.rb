@@ -135,6 +135,11 @@ private
         cud_data[:email] = user_data["email"]
         cud_data[:first_name] = user_data["given_name"]
         cud_data[:last_name] = user_data["family_name"]
+        unless user.nil?
+          cud_data[:school] = user.school
+          cud_data[:major] = user.major
+          cud_data[:year] = user.year
+        end
       else
         cud = email_to_cud[user.email]
         cud_data = populate_cud_data(cud)
