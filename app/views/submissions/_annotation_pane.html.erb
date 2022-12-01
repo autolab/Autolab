@@ -38,7 +38,9 @@
                           <span class="point_badge <%= value > 0 ? "positive" : value < 0 ? "negative" : "neutral" %>">
                             <%= plus_fix(value) %>
                           </span>
-                          <%= description %>
+                          <span style="white-space: pre-line;">
+                            <%= description %>
+                          </span>
                         </div>
                         <% if @cud.instructor? or @cud.course_assistant? %>
                         <div class="annotation-tools">
@@ -82,7 +84,9 @@
                               <% end %>
                               <%= plus_fix(value) %>
                             </span>
-                          <%= description %>
+                            <span style="white-space: pre-line;">
+                              <%= description %>
+                            </span>
                         <% end %>
                       </div>
                     <% end %>
