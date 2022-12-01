@@ -373,10 +373,11 @@ function attachAnnotationPaneEvents() {
     const score = $(this).parent().data("score");
     const comment = $(this).parent().data("comment");
     const annotationId = $(this).parent().data("annotationid");
+    const shared = $(this).parent().data("shared");
     const $annotationDiv = $(this).parents(".global-annotation");
 
     if (!$annotationDiv.next().hasClass("global-annotation-form")) {
-      $annotationDiv.after(globalAnnotationFormCode(false, { problem, score, comment, annotationId }));
+      $annotationDiv.after(globalAnnotationFormCode(false, { problem, score, comment, annotationId, shared }));
     }
   });
 
@@ -550,7 +551,7 @@ function newAnnotationFormCode() {
 }
 
 // Create form code to create / update a global annotation
-// config takes the following keys: problem, score (for edit), comment (for edit)
+// config takes the following keys: problem, score (for edit), comment (for edit), shared (for edit)
 function globalAnnotationFormCode(newAnnotation, config) {
   const box = $(".base-global-annotation-form").clone();
   box.removeClass("base-global-annotation-form");
@@ -559,6 +560,7 @@ function globalAnnotationFormCode(newAnnotation, config) {
     box.find(".annotation-form-header").text("Update global annotation");
     box.find(".comment").val(config.comment);
     box.find(".score").val(config.score);
+    box.find("#shared-comment").prop("checked", config.shared);
     box.find('input[type=submit]').val("Update annotation");
   }
 

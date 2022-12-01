@@ -32,7 +32,7 @@
               <% end %>
               <% if !global_annotations.empty? %>
                   <div class="file_annotations">
-                    <% global_annotations.each do |description, value, line, user, id, position, filename, global| %>
+                    <% global_annotations.each do |description, value, line, user, id, position, filename, shared, global| %>
                       <div class="global-annotation" id="li-annotation-<%= id %>">
                         <div class="annotation-description">
                           <span class="point_badge <%= value > 0 ? "positive" : value < 0 ? "negative" : "neutral" %>">
@@ -47,6 +47,7 @@
                                 data-problem="<%= problem %>"
                                 data-score="<%= value %>"
                                 data-comment="<%= description %>"
+                                data-shared="<%= shared %>"
                           >
                             <a class="global-annotation-edit-button" href="#"
                                title="Edit global annotation"

@@ -496,6 +496,7 @@ class SubmissionsController < ApplicationController
                 else
                   annotation.problem_id ? "Deleted Problem(s)" : "Global"
                 end
+      shared = annotation.shared_comment
       global = annotation.global_comment
       filename = get_correct_filename(annotation, files, @submission)
 
@@ -505,7 +506,7 @@ class SubmissionsController < ApplicationController
       @problemScores[problem] ||= 0
 
       @problemAnnotations[problem] << [description, value, line, annotation.submitted_by,
-                                       annotation.id, annotation.position, filename, global]
+                                       annotation.id, annotation.position, filename, shared, global]
       @problemScores[problem] += value
     end
 
@@ -513,8 +514,8 @@ class SubmissionsController < ApplicationController
     # Group into global annotations, sorted by id
     # and file annotations, sorted by filename, followed by line, and then grouped by filename
     @problemAnnotations.each do |problem, descriptTuples|
-      # group by global (a[7])
-      annotations_by_type = descriptTuples.group_by { |a| a[7] }
+      # group by global (a[8])
+      annotations_by_type = descriptTuples.group_by { |a| a[8] }
 
       global_annotations = annotations_by_type[true] || []
       # sort by id (a[4])
