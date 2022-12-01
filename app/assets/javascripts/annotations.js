@@ -429,7 +429,7 @@ var initializeAnnotationsForCode = function () {
 function getProblemNameWithId(problem_id) {
   var problem_id = parseInt(problem_id, 10);
   var problem = _.findWhere(problems, { "id": problem_id });
-  if (problem == undefined) return "General";
+  if (problem == undefined) return "Deleted Problem(s)";
   return problem.name;
 }
 
