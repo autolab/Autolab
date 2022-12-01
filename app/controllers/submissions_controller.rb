@@ -436,7 +436,8 @@ class SubmissionsController < ApplicationController
       end
     end
 
-    @problemReleased = @submission.scores.pluck(:released).all?
+    @problemReleased = @submission.scores.pluck(:released).all? &&
+                       !@assessment.before_grading_deadline?
 
     @annotations = @submission.annotations.to_a
     unless @submission.group_key.empty?
@@ -447,9 +448,6 @@ class SubmissionsController < ApplicationController
     end
     @annotations.sort! { |a, b| a.line.to_i <=> b.line.to_i }
 
-    @problemSummaries = {}
-    @problemGrades = {}
-
     # Only show annotations if grades have been released or the user is an instructor
     unless !@assessment.before_grading_deadline? || @cud.instructor || @cud.course_assistant
       @annotations = []
@@ -458,23 +456,76 @@ class SubmissionsController < ApplicationController
     files = if Archive.archive? @filename
               Archive.get_files(@filename)
             end
+
+    @problems = @assessment.problems.to_a
+    @problems.sort! { |a, b| a.id <=> b.id }
+
+    # Allow scores to be assessed by the view
+    @scores = Score.where(submission_id: @submission.id)
+
+    # @problemSummaries and @problemGrades are used in _annotation_pane.html.erb
+    @problemSummaries = {}
+    @problemGrades = {}
+    autogradedProblems = {}
+
+    @scores.each do |score|
+      if score.grader_id == 0
+        autogradedProblems[score.problem_id] = nil
+      end
+    end
+
+    # initialize all problems
+    @problems.each do |problem|
+      # exclude problems that were autograded
+      # so that we do not render the header in the annotation pane
+      unless autogradedProblems.key? problem.id
+        @problemSummaries[problem.name] ||= []
+        @problemGrades[problem.name] ||= 0
+      end
+    end
+
     # extract information from annotations
     @annotations.each do |annotation|
       description = annotation.comment
       value = annotation.value || 0
       line = annotation.line
-      problem = annotation.problem ? annotation.problem.name : "General"
+      problem = if annotation.problem
+                  annotation.problem.name
+                else
+                  annotation.problem_id ? "Deleted Problem(s)" : "Global"
+                end
+      global = annotation.global_comment
       filename = get_correct_filename(annotation, files, @submission)
-      @problemSummaries[problem] ||= []
-      @problemSummaries[problem] << [description, value, line, annotation.submitted_by,
-                                     annotation.id, annotation.position, filename]
 
+      # To handle annotations on deleted problems
+      @problemSummaries[problem] ||= []
       @problemGrades[problem] ||= 0
+
+      @problemSummaries[problem] << [description, value, line, annotation.submitted_by,
+                                     annotation.id, annotation.position, filename, global]
       @problemGrades[problem] += value
     end
 
-    @problems = @assessment.problems.to_a
-    @problems.sort! { |a, b| a.id <=> b.id }
+    # Process @problemSummaries
+    # Group into global annotations, sorted by id
+    # and file annotations, sorted by filename, followed by line, and then grouped by filename
+    @problemSummaries.each do |problem, descriptTuples|
+      # group by global (a[7])
+      annotations_by_type = descriptTuples.group_by { |a| a[7] }
+
+      global_annotations = annotations_by_type[true] || []
+      # sort by id (a[4])
+      global_annotations = global_annotations.sort_by { |a| a[4] }
+
+      annotations_by_file = annotations_by_type[false] || []
+      # sort by filename (a[6]), followed by line (a[2]) and group by filename (a[6])
+      annotations_by_file = annotations_by_file.sort_by{ |a| [a[6], a[2]] }.group_by { |a| a[6] }
+
+      @problemSummaries[problem] = {
+        global_annotations: global_annotations,
+        annotations_by_file: annotations_by_file
+      }
+    end
 
     @latestSubmissions = @assessment.assessment_user_data
                                     .map(&:latest_submission)
@@ -538,9 +589,6 @@ class SubmissionsController < ApplicationController
                        matchedVersions[@curVersionIndex - 1]
                      end
     end
-
-    # Adding allowing scores to be assessed by the view
-    @scores = Score.where(submission_id: @submission.id)
 
     # Rendering this page fails. Often. Mostly due to PDFs.
     # So if it fails, redirect, instead of showing an error page.
