@@ -29,8 +29,10 @@ Rails.application.routes.draw do
             get "feedback"
           end
 
-          resources :scores, only: [:index, :show, :update],
+          resources :scores, only: [:index, :show],
                     param: :email, :constraints => { :email => /[^\/]+/ }
+
+          put "scores/:email", :constraints => { :email => /[^\/]+/ }, to: "scores#update_latest"
         end
       end
 

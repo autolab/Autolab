@@ -2,6 +2,7 @@ class Api::V1::ScoresController < Api::V1::BaseApiController
 
   before_action -> { require_privilege :instructor_all }
   before_action :set_assessment
+  before_action :current_user, only: [:update_latest]
 
   def index
     submissions = @assessment.submissions.where(assessment_id: @assessment.id)
@@ -41,7 +42,9 @@ class Api::V1::ScoresController < Api::V1::BaseApiController
     respond_with scores
   end
 
-  def update
+  def update_latest
+    require_params([:problems])
+
     cud = get_cud params
     aud = AssessmentUserDatum.find_by(assessment_id: @assessment.id, course_user_datum_id: cud.id)
 
@@ -59,29 +62,46 @@ class Api::V1::ScoresController < Api::V1::BaseApiController
     end
 
     scores = {}
-    cuds.each do |cud_id|
-      submission = @assessment.submissions.where(
-        assessment_id: @assessment.id,
-        course_user_datum_id: cud_id
-      ).order(version: :desc).first
+    problem_params = JSON.parse(params[:problems])
 
-      problem_id_to_name = @assessment.problem_id_to_name
-      submission_scores = Score.where(submission_id: submission.id)
+    Score.transaction do
+      cuds.each do |cud_id|
+        submission = @assessment.submissions.where(
+          assessment_id: @assessment.id,
+          course_user_datum_id: cud_id
+        ).order(version: :desc).first
 
-      user_scores = {}
-      submission_scores.each do |score|
-        problem_name = problem_id_to_name[score.problem_id]
-        user_scores[problem_name] = score.score
-        next unless params.key?(problem_name)
+        user_scores = {}
+        problem_id_to_name = @assessment.problem_id_to_name
+        problem_name_to_id = problem_id_to_name.invert
 
-        score.score = params[problem_name]
-        unless score.save
-          raise ApiError.new("Unable to update #{problem_name} score.", :internal_server_error)
+        # Update scores for problems in problem_params
+        problem_params.each do |problem_name, updated_score|
+          unless problem_name_to_id.include? problem_name
+            raise ApiError.new("'#{problem_name}' not found in this assessment", :bad_request)
+          end
+
+          score = Score.find_or_initialize_by_submission_id_and_problem_id(
+            submission.id, problem_name_to_id[problem_name]
+          )
+          score.score = updated_score
+          score.grader_id = @current_user.id
+          unless score.save
+            raise ApiError.new("Unable to update #{problem_name} score", :internal_server_error)
+          end
+
+          user_scores[problem_name] = updated_score
         end
 
-        user_scores[problem_name] = score.score
+        # Get the score for non-updated problems
+        submission.scores.each do |score|
+          problem_name = problem_id_to_name[score.problem_id]
+          next if user_scores.include? problem_name
+
+          user_scores[problem_name] = score.score
+        end
+        scores[user_from_cud(cud_id).email] = user_scores
       end
-      scores[user_from_cud(cud_id).email] = user_scores
     end
 
     render json: scores.as_json, status: :ok
