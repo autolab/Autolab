@@ -15,14 +15,14 @@
       </div>
       <pre><%= @score.feedback %></pre>
     </div>
-    <% if @submission.annotations.count > 0 and @problemReleased %>
+    <% if @submission.annotations.count > 0 and (@cud.instructor? or @cud.course_assistant? or @problemReleased) %>
     <div class="result-pane">
       <div class="feedback-header">
         <h2 style="margin-top: 1em">Remarks</h2>
       </div>
       <% subs_by_problem = @submission.annotations.group_by(&:problem)
           subs_by_problem.each do |problem, annotations| %>
-          <b> <%= problem.name %> </b>
+          <b> <%= problem.nil? ? "Deleted Problem(s)" : problem.name %> </b>
           <ul class="collection">
           <%# use custom sort b/c using ordering doesn't work with autograder output, archived files %>
             <%
