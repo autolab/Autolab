@@ -34,13 +34,15 @@
         <% else %>
           --
         <% end %>
-      <% else %>
+      <% elsif submission.jobid.nil? %>
         <% unless problem.optional then
           dontTotal = true
         end %>
+        --
+      <% else %>
         <%= link_to "--", { action: :viewFeedback,
-          submission_id: submission.id,
-          feedback: problem.id} %>
+            submission_id: submission.id,
+            feedback: problem.id} %>
       <% end %>
     </td>
   <% end %>
