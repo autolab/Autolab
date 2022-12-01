@@ -138,8 +138,10 @@ function plusFix(n) {
 // function called after create, update & delete of annotations
 function fillAnnotationBox() {
   retrieveSharedComments();
-  $('.problemGrades').load(document.URL + ' .problemGrades');
-  $('#annotationPane').load(document.URL + ' #annotationPane', function() {
+  $.get(document.URL, function(data) {
+    const $page = $('<div />').html(data);
+    $('.problemGrades').html($page.find('.problemGrades'));
+    $('#annotationPane').html($page.find(' #annotationPane'));
     $('.collapsible').collapsible({ accordion: false });
     attachChangeFileEvents();
     attachAnnotationPaneEvents();
