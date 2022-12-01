@@ -900,6 +900,8 @@ private
     tar_extract.each do |entry|
       pathname = entry.full_name
       next if pathname.start_with? "."
+
+      # Removes file created by Mac when tar'ed
       next if pathname.start_with? "PaxHeader"
 
       pathname.chomp!("/") if entry.directory?
