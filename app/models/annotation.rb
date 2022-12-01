@@ -33,6 +33,9 @@ class Annotation < ApplicationRecord
       submission_id, problem_id
     )
 
+    # Associated problem was deleted
+    return if score.problem_id && score.problem.nil?
+
     # Ensure that problem is non-autograded
     return if score.grader_id == 0
 

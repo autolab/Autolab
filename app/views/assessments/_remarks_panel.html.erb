@@ -1,7 +1,7 @@
 <% if @submission.annotations.count > 0 and (@cud.instructor? or @cud.course_assistant? or @problemReleased) %>
   <div class="result-pane">
     <div class="feedback-header">
-      <h2 style="margin-top: 1em">Remarks</h2>
+      <h2 id="remarks" style="margin-top: 0">Remarks</h2>
     </div>
     <% subs_by_problem = @submission.annotations.group_by(&:problem)
         subs_by_problem.each do |problem, annotations| %>
