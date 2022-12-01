@@ -78,7 +78,7 @@ class Api::V1::ScoresController < Api::V1::BaseApiController
         # Update scores for problems in problem_params
         problem_params.each do |problem_name, updated_score|
           unless problem_name_to_id.include? problem_name
-            raise ApiError.new("'#{problem_name}' not found in this assessment", :bad_request)
+            raise ApiError.new("Problem '#{problem_name}' not found in this assessment", :bad_request)
           end
 
           score = Score.find_or_initialize_by_submission_id_and_problem_id(
