@@ -46,7 +46,7 @@
         <% unless problem.optional then
           dontTotal = true
         end %>
-        <%= link_to "--", { action: :viewFeedback,
+        <%= link_to '<i class="tiny material-icons">access_time</i>'.html_safe, { action: :viewFeedback,
             submission_id: submission.id,
             feedback: problem.id} %>
       <% end %>

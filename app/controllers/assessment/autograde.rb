@@ -220,8 +220,9 @@ module AssessmentAutograde
     end
 
     link = "<a href=\"#{url_for(controller: 'jobs', action: 'getjob', id: job)}\">Job ID = #{job}</a>"
+    viewFeedbackLink = "<a href=\"#{url_for(controller: 'assessments', action: 'viewFeedback', submission_id: submissions[0].id, feedback: assessment.problems[0].id)}\">View autograding progress.</a>"
     flash[:success] = ("Submitted file #{submissions[0].filename} (#{link}) for autograding." \
-      " Refresh the page to see the results.")
+      " #{viewFeedbackLink}")
     flash[:html_safe] = true
     job
   end
