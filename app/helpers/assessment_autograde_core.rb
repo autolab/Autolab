@@ -386,7 +386,7 @@ module AssessmentAutogradeCore
   #
   def saveAutograde(submissions, feedback)
     begin
-      # Set job id to done to indicate that autograding is no longer in-progress
+      # Set job id to nil to indicate that autograding is no longer in-progress
       ActiveRecord::Base.transaction do
         submissions.each do |submission|
           submission.jobid = nil
