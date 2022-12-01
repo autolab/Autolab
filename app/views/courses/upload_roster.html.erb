@@ -1,6 +1,6 @@
 <h2>Import Course Roster</h2>
 <% if params[:upload] then %>
-  <%= render partial: 'updateRosterPreview', locals: { cuds:@cuds, sorted_cuds: @sorted_cuds} %>
+  <%= render partial: 'updateRosterPreview', locals: { cuds: @cuds, sorted_cuds: @sorted_cuds} %>
 <% else %>
 <p>
 This page will take a CSV file from the HUB and modify your course's users based

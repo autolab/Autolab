@@ -92,6 +92,22 @@ class LtiNrpsController < ApplicationController
 
 private
 
+  def populate_cud_data(cud)
+    user = cud.user
+    {
+      email: user.email,
+      first_name: user.first_name,
+      last_name: user.last_name,
+      course_number: cud.course_number,
+      lecture: cud.lecture,
+      section: cud.section,
+      school: user.school,
+      major: user.major,
+      year: user.year,
+      grade_policy: cud.grade_policy
+    }
+  end
+
   def parse_members_data(lcd, members_data)
     cuds = CourseUserDatum.where(course_id: lcd.course_id, instructor: false,
                                  course_assistant: false).to_set
@@ -106,44 +122,37 @@ private
 
       next if user_data.key?("status") && user_data["status"] != "Active"
 
-      cud_data = {}
+      next unless user_data.key?("email") && user_data.key?("given_name") &&
+                  user_data.key?("family_name")
+
       # Normalize email
       user_data["email"].downcase!
 
+      cud_data = {}
       user = User.find_by(email: user_data["email"])
-      cud_data[:color] = if user.nil? || lcd.course.course_user_data.find_by(user_id: user.id).nil?
-                           "green"
-                         else
-                           "black"
-                         end
-      cud_data[:email] = user_data["email"]
-      cud_data[:first_name] = user_data["given_name"]
-      cud_data[:last_name] = user_data["family_name"]
-      cud_view << cud_data
+      if user.nil? || lcd.course.course_user_data.find_by(user_id: user.id).nil?
+        cud_data[:color] = "green"
+        cud_data[:email] = user_data["email"]
+        cud_data[:first_name] = user_data["given_name"]
+        cud_data[:last_name] = user_data["family_name"]
+      else
+        cud = email_to_cud[user.email]
+        cud_data = populate_cud_data(cud)
+        cud_data[:color] = "black"
+      end
 
+      cud_view << cud_data
       email_to_cud.delete(cud_data[:email])
     end
 
     return cud_view unless lcd.drop_missing_students
 
     # Mark the remaining students as dropped
-    email_to_cud.each do |email, cud|
+    email_to_cud.each do |_email, cud|
       next if cud.dropped
 
-      user = cud.user
-      cud_data = {
-        color: "red",
-        email: email,
-        first_name: user.first_name,
-        last_name: user.last_name,
-        course_number: cud.course_number,
-        lecture: cud.lecture,
-        section: cud.section,
-        school: user.school,
-        major: user.major,
-        year: user.year,
-        grade_policy: cud.grade_policy
-      }
+      cud_data = populate_cud_data(cud)
+      cud_data[:color] = "red"
       cud_view << cud_data
     end
 
