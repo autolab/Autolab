@@ -386,6 +386,14 @@ module AssessmentAutogradeCore
   #
   def saveAutograde(submissions, feedback)
     begin
+      # Set job id to done to indicate that autograding is no longer in-progress
+      ActiveRecord::Base.transaction do
+        submissions.each do |submission|
+          submission.jobid = nil
+          submission.save!
+        end
+      end
+
       lines = feedback.rstrip.lines
       raise AutogradeError.new("The Autograder returned no output", :autograde_no_output) if lines.empty?
 

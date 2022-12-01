@@ -572,13 +572,15 @@ class AssessmentsController < ApplicationController
     # User requested to view feedback on a score
     @score = @submission.scores.find_by(problem_id: params[:feedback])
     @job_id = @submission["jobid"]
-    if @score.nil?
-      if @job_id.nil?
-        flash[:error] = "Invalid job id"
-        redirect_to(action: "index") && return
-      end
-      return
+    # Autograding is not in-progress and no score is available
+    if @score.nil? && @job_id.nil?
+      flash[:error] = "No feedback for requested score"
+      redirect_to(action: "index") && return
     end
+
+    # Autograding is in-progress
+    return if @score.nil?
+
     @jsonFeedback = parseFeedback(@score.feedback)
     @scoreHash = parseScore(@score.feedback)
     if Archive.archive? @submission.handin_file_path
