@@ -15,7 +15,7 @@
             $('.feedback-status').addClass("feedback-status__inprogress");
             $( "#result-body" ).load(window.location.href + " #result-body" );
 
-          } else if (res.queue_position !== undefined && res.queue_length) {
+          } else if (res.queue_position != null) {
             $('#partial-feedback').html(`
               <div class="autograding-in-progress">
                 <pre>You are at position ${(res.queue_position) + 1} / ${(res.queue_length)} in the autograding queue.</pre>

@@ -141,7 +141,7 @@ module AssessmentAutogradeCore
     end
     
     assignment = {"is_assigned"=>assigned_jobs.any? {|rjob| rjob["id"].to_i == job_id}}
-    if !assignment["is_assigned"]
+    if !assignment["is_assigned"] && unassigned_jobs.length > 0
       # Assign a queue position if the job is live but not assigned
       assignment["queue_position"] = unassigned_jobs.index {|rjob| rjob["id"] == job_id}
       assignment["queue_length"] = unassigned_jobs.length
