@@ -22,24 +22,30 @@
   <% for problem in @problems do %>
     <td class="prettyBorder">
       <% if @scores[submission.id] and @scores[submission.id][problem.id] %>
-        <% if @scores[submission.id][problem.id][:released] == 1 %>
-          <% score = @scores[submission.id][problem.id]
+        <% score = @scores[submission.id][problem.id]
+          if score[:released] == 1 then
             if score[:feedback] %>
-            <%= link_to (score[:score].to_f.round(1).to_s), { action: :viewFeedback,
-              submission_id: submission.id,
-              feedback: problem.id} %>
+              <%= link_to (score[:score].to_f.round(1).to_s), { action: :viewFeedback,
+                submission_id: submission.id,
+                feedback: problem.id} %>
+            <% else %>
+              <%= score[:score].to_f.round(1).to_s %>
+            <% end %>
           <% else %>
-            <%= score[:score].to_f.round(1).to_s %>
+            <% unless problem.optional then
+              dontTotal = true
+            end %>
+            --
           <% end %>
-        <% else %>
-          --
-        <% end %>
       <% elsif submission.jobid.nil? %>
         <% unless problem.optional then
           dontTotal = true
         end %>
         --
       <% else %>
+        <% unless problem.optional then
+          dontTotal = true
+        end %>
         <%= link_to "--", { action: :viewFeedback,
             submission_id: submission.id,
             feedback: problem.id} %>
