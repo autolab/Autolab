@@ -464,8 +464,9 @@ class SubmissionsController < ApplicationController
     @scores = Score.where(submission_id: @submission.id)
 
     # @problemSummaries and @problemGrades are used in _annotation_pane.html.erb
-    @problemSummaries = {}
-    @problemGrades = {}
+    @problemAnnotations = {}
+    @problemMaxScores = {}
+    @problemScores = {}
     autogradedProblems = {}
 
     @scores.each do |score|
@@ -478,10 +479,11 @@ class SubmissionsController < ApplicationController
     @problems.each do |problem|
       # exclude problems that were autograded
       # so that we do not render the header in the annotation pane
-      unless autogradedProblems.key? problem.id
-        @problemSummaries[problem.name] ||= []
-        @problemGrades[problem.name] ||= 0
-      end
+      next if autogradedProblems.key? problem.id
+
+      @problemAnnotations[problem.name] ||= []
+      @problemMaxScores[problem.name] ||= problem.max_score
+      @problemScores[problem.name] ||= 0
     end
 
     # extract information from annotations
@@ -498,18 +500,19 @@ class SubmissionsController < ApplicationController
       filename = get_correct_filename(annotation, files, @submission)
 
       # To handle annotations on deleted problems
-      @problemSummaries[problem] ||= []
-      @problemGrades[problem] ||= 0
+      @problemAnnotations[problem] ||= []
+      @problemMaxScores[problem] ||= 0
+      @problemScores[problem] ||= 0
 
-      @problemSummaries[problem] << [description, value, line, annotation.submitted_by,
-                                     annotation.id, annotation.position, filename, global]
-      @problemGrades[problem] += value
+      @problemAnnotations[problem] << [description, value, line, annotation.submitted_by,
+                                       annotation.id, annotation.position, filename, global]
+      @problemScores[problem] += value
     end
 
     # Process @problemSummaries
     # Group into global annotations, sorted by id
     # and file annotations, sorted by filename, followed by line, and then grouped by filename
-    @problemSummaries.each do |problem, descriptTuples|
+    @problemAnnotations.each do |problem, descriptTuples|
       # group by global (a[7])
       annotations_by_type = descriptTuples.group_by { |a| a[7] }
 
@@ -521,7 +524,7 @@ class SubmissionsController < ApplicationController
       # sort by filename (a[6]), followed by line (a[2]) and group by filename (a[6])
       annotations_by_file = annotations_by_file.sort_by{ |a| [a[6], a[2]] }.group_by { |a| a[6] }
 
-      @problemSummaries[problem] = {
+      @problemAnnotations[problem] = {
         global_annotations: global_annotations,
         annotations_by_file: annotations_by_file
       }

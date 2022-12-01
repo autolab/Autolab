@@ -1,14 +1,14 @@
 <div id="annotationPane">
   <div class="annotationSummary">
     <ul class="collapsible expandable">
-      <% @problemSummaries.each do |problem, all_annotations| %>
+      <% @problemAnnotations.each do |problem, all_annotations| %>
         <li id="li-problem-<%= problem %>" class="active">
           <div class="collapsible-header-wrap">
             <div class="collapsible-header">
               <h4> <%= problem.capitalize %>
                   <div class="summary_score">
                     <% if @cud.instructor? or @cud.course_assistant? or @problemReleased %>
-                      <%= plus_fix(@problemGrades[problem]) %>
+                      <%= plus_fix(@problemScores[problem]) %> / <%= plus_fix(@problemMaxScores[problem]) %>
                     <% end %>
                   </div>
               </h4>
