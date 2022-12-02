@@ -153,7 +153,7 @@ private
     return cud_view unless lcd.drop_missing_students
 
     # Mark the remaining students as dropped
-    email_to_cud.each do |_email, cud|
+    email_to_cud.each do |_, cud|
       next if cud.dropped
 
       cud_data = populate_cud_data(cud)
