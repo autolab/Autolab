@@ -9,6 +9,7 @@
             $('#partial-feedback').html(`
               <pre>${res.partial_feedback}</pre>
               <div class="autograding-in-progress">
+                <i class="refresh-feedback small material-icons" onclick="onClickRefresh()">refresh</i>
                 <pre>Autograding in progress</pre>
               </div>`);
             $('.feedback-status').html("In-Progress");
@@ -41,8 +42,9 @@
     });
   }
 
-  const btn = $('#refresh-feedback')[0];
-
   refreshPartial();
-  btn.addEventListener("click", _.throttle(refreshPartial, 5000));
+
+  const onClickRefresh = _.throttle(refreshPartial, 5000);
+
+  $('.refresh-feedback')[0].addEventListener("click", onClickRefresh);
 </script>

@@ -217,9 +217,6 @@ div.main-header img {
   display: flex;
 
   .material-icons {
-    color: $autolab-blue-text;
-    margin-right: 1vw;
-
     &:hover {
       cursor: pointer;
     }
@@ -1430,6 +1427,14 @@ table.sub td, th {
 .autograding-in-progress {
   display: flex;
   flex-direction: row;
+  align-items: center;
+}
+.refresh-feedback {
+  color: $autolab-blue-text;
+  margin-right: 1vw;
+}
+.refresh-feedback:hover {
+  cursor: pointer;
 }
 .autograding-in-progress:before, .autograding-in-progress:after{
   content: "";
