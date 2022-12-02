@@ -3,14 +3,15 @@
   <li><b>Contact</b><br>
     <a href="mailto:<%= @requestedUser.email %>"><%= @requestedUser.email %></a></li>
   <li><b>About</b><br>
-    Lecture <strong><%= @requestedUser.lecture %></strong><br>
-    Section <strong><%= @requestedUser.section %></strong><br>
-    Course <strong><%= @requestedUser.course.full_name %></strong><br>
+    Course Name: <strong><%= @requestedUser.course.full_name %></strong><br>
+    Course &#8470;: <strong><%= @requestedUser.course_number %></strong><br>
+    Lecture: <strong><%= @requestedUser.lecture %></strong><br>
+    Section: <strong><%= @requestedUser.section %></strong><br>
     <%= @requestedUser.school %> <%= @requestedUser.major %>, Class of <%= @requestedUser.year %></li>
-  <% if @cud.instructor? then %>
+  <% if @cud.instructor? %>
   <li><b>Course Average Tweak</b> of <%=raw tweak(@requestedUser.tweak) %></li>
   <% end %>
 </ul>
-<% if @cud.instructor? then %>
+<% if @cud.instructor? %>
   <%= link_to raw('<span class="btn primary">Edit Information</span>'), edit_course_course_user_datum_path(@course, @requestedUser) %>
 <% end %>

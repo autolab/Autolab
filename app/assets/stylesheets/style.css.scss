@@ -16,6 +16,7 @@ $autolab-subtle-gray: #eee;
 $autolab-highlight-gray: #ccc;
 $autolab-black-text: #212121;
 $autolab-blue-text: #0882af;
+$autolab-green: #3a862d;
 #F2EFEF html,
 body {
   height: 100%;
@@ -172,6 +173,56 @@ div.main-header img {
   height: 100%;
   position: absolute;
   overflow: hidden;
+}
+
+/* Feedback Styling */
+.result-container {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+}
+.result-pane {
+  border-radius: 10px;
+  padding: 2vh 2vw;
+  background-color: white;
+  border: 1px solid #C4C4C4;
+  margin-bottom: 2vh;
+}
+.feedback-container {
+  width: 74%;
+}
+.result-summary {
+  position: relative;
+  right: 0;
+  top: 0;
+  /* if the 25 is changed, also modify the containerWidth
+     multiplier in app/assets/javascripts/feedback.js */
+  width: 25%;
+}
+.result-fixed {
+  position: absolute;
+  width: 100%;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+.feedback-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 1vh;
+  margin-bottom: 1vh;
+  border-bottom: 2px solid #C4C4C4;
+}
+.result-container .feedback-header h3 {
+  margin-top: 0px;
+  margin-bottom: 0px;
+}
+.feedback-status__completed {
+  padding: 0.5vh 1vw;
+  background-color: $autolab-green;
+  color: white;
+  font-weight: bold;
+  border-radius: 10px;
 }
 
 /* Custom Form Styling */
@@ -852,11 +903,6 @@ body.autolab {
   }
 }
 
-@media (min-width: 1200px) {
-  #pageBody.container {
-    max-width: 970px;
-  }
-}
 
 input[type="text"],
 input[type="email"],
@@ -1355,6 +1401,9 @@ table.sub {
 
 .sub th {
   vertical-align: top;
+}
+table.sub td, th {
+  padding-right: 25px;
 }
 
 .submissions {
