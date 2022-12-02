@@ -571,9 +571,11 @@ class AssessmentsController < ApplicationController
   def viewFeedback
     # User requested to view feedback on a score
     @score = @submission.scores.find_by(problem_id: params[:feedback])
+    # Checks whether at least one problem has finished being auto-graded
+    @finishedAutograding = @submission.scores.where.not(feedback: nil).where(grader_id: 0)
     @job_id = @submission["jobid"]
     # Autograding is not in-progress and no score is available
-    if @score.nil? && @job_id.nil?
+    if @score.nil? && (@job_id.nil? || !@finishedAutograding.empty?)
       flash[:error] = "No feedback for requested score"
       redirect_to(action: "index") && return
     end
