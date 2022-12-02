@@ -326,10 +326,16 @@ function attachEvents() {
     const line = $(this).parent().parent().parent();
     const annotationContainer = line.data("lineId");
 
-    // allow multiple annotations per line, as per 122's feedback
-    $("#annotation-line-" + annotationContainer).append(newAnnotationFormCode());
+    // Allow multiple annotations per line
+    // However, only allow one annotation to be created per line at a time
+    const $annotationLine = $("#annotation-line-" + annotationContainer);
+    if ($annotationLine.find(".new-annotation .annotation-form:visible").length === 0) {
+      $annotationLine.append(newAnnotationFormCode());
 
-    refreshAnnotations();
+      refreshAnnotations();
+    } else {
+      M.toast({html: 'Only one annotation can be created per line at a time!'});
+    }
   });
 }
 
@@ -477,6 +483,9 @@ function createAnnotation() {
 function newAnnotationFormCode() {
   var box = $(".base-annotation-line").clone();
   box.removeClass("base-annotation-line");
+
+  // Allow us to enforce the creation of one annotation per line at a time
+  box.addClass("new-annotation");
 
   // Creates a dictionary of problem and grader_id
   var problemGraderId = {};
