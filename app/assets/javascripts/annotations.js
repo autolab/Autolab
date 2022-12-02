@@ -329,7 +329,7 @@ function attachEvents() {
     // Allow multiple annotations per line
     // However, only allow one annotation to be created per line at a time
     const $annotationLine = $("#annotation-line-" + annotationContainer);
-    if ($annotationLine.find(".new-annotation .annotation-form:visible").length === 0) {
+    if ($annotationLine.find(".new-annotation").length === 0) {
       $annotationLine.append(newAnnotationFormCode());
 
       refreshAnnotations();
