@@ -4,10 +4,14 @@
 
 <%= f.text_field :last_name, placeholder: "Doe" %>
 
-<%= f.text_field :school, placeholder: "School of Computer Science" %>
+<% if current_user.administrator? %>
+	<%= f.text_field :school, placeholder: "School of Computer Science" %>
 
-<%= f.text_field :major, placeholder: "Computer Science" %>
+	<%= f.text_field :major, placeholder: "Computer Science" %>
 
-<% if current_user.administrator? then %>
 	<%= f.check_box :administrator, help_text: "Administrators have total access to change anything in the system." %>
+<% else %>
+	<%= f.text_field :school, disabled: true, placeholder: "School of Computer Science" %>
+
+	<%= f.text_field :major, disabled: true, placeholder: "Computer Science" %>
 <% end %>
