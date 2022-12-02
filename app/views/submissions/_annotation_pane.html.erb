@@ -38,13 +38,13 @@
                   <div class="file_annotations">
                     <% global_annotations.each do |description, value, line, user, id, position, filename, shared, global| %>
                       <div class="global-annotation" id="li-annotation-<%= id %>">
-                        <div class="annotation-description">
+                        <div class="annotation-badge">
                           <span class="point_badge <%= value > 0 ? "positive" : value < 0 ? "negative" : "neutral" %>">
                             <%= plus_fix(value) %>
                           </span>
-                          <span style="white-space: pre-line;">
-                            <%= description %>
-                          </span>
+                        </div>
+                        <div class="annotation-description">
+                          <span style="white-space: pre-line;"><%= description %></span>
                         </div>
                         <% if @cud.instructor? or @cud.course_assistant? %>
                         <div class="annotation-tools">
@@ -82,15 +82,17 @@
                             "data-line": line.nil? ? 1 : line+1,
                             remote: true,
                           ) do %>
-                            <span class="point_badge <%= value > 0 ? "positive" : value < 0 ? "negative" : "neutral" %>">
-                              <% unless line.nil? %>
-                                <span class="line_number">Line <%= line + 1 %>:</span>
-                              <% end %>
-                              <%= plus_fix(value) %>
-                            </span>
-                            <span style="white-space: pre-line;">
-                              <%= description %>
-                            </span>
+                            <div class="annotation-badge">
+                              <span class="point_badge <%= value > 0 ? "positive" : value < 0 ? "negative" : "neutral" %>">
+                                <% unless line.nil? %>
+                                  <span class="line_number">Line <%= line + 1 %>:</span>
+                                <% end %>
+                                <%= plus_fix(value) %>
+                              </span>
+                            </div>
+                            <div class="annotation-description">
+                              <span style="white-space: pre-line;"><%= description %></span>
+                            </div>
                         <% end %>
                       </div>
                     <% end %>
