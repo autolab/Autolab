@@ -511,25 +511,24 @@
   margin-bottom: 15px;
   color: #4f4f4f;
 }
-.annotationSummary h1{
-  margin: 0px;
+.annotationSummary .annotation-form-header {
   background-color: #0882af;
-  padding: 8px;
-  border-right: none;
-  border-left: none;
-  font-weight: normal !important;
-  font-size: 1em !important;
+  padding: 8px 15px 8px 10px;
+  font-weight: normal;
   color: white;
-  white-space: nowrap;
-  overflow: hidden;
-  padding-left: 10px;
-  padding-right: 15px;
-  text-align: left;
 }
 .annotationSummary ul {
   box-shadow: none;
   border: none;
   margin: 10px 0;
+}
+
+.annotationSummary .collapsible-header-wrap {
+  display: flex;
+}
+
+.annotationSummary .collapsible-header-controls {
+  margin-left: auto;
 }
 
 .annotationSummary .collapsible-header{
@@ -559,19 +558,25 @@
   overflow: auto;
 }
 
-/* Annotations collapsible icons */
-
-.annotationSummary .collapsible i.expand-icon,
-.annotationSummary .collapsible i.collapse-icon {
-  font-size: 2rem;
-}
-
 .annotationSummary .collapsible li.active i.expand-icon {
   display: none;
 }
 
 .annotationSummary .collapsible li:not(.active) i.collapse-icon {
   display: none;
+}
+
+.annotationSummary .global-annotation {
+  display: flex;
+}
+
+.annotationSummary .global-annotation .annotation-tools {
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.annotationSummary .global-annotation:not(:hover) .annotation-tools {
+  visibility: hidden;
 }
 
 .annotationSummary .summary_score {

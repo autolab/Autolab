@@ -49,6 +49,11 @@ const validateIdentity = (input) => {
 };
 
 document.addEventListener('DOMContentLoaded', function () {
+  $('#lti-settings-modal').modal({
+    dismissible: false,
+    preventScrolling: false
+  });
+
   let elem = document.querySelector('#add-users');
   let instance = M.Dropdown.init(elem, {
     constrainWidth: false,

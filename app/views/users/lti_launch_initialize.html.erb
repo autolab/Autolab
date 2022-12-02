@@ -1,27 +1,34 @@
-<h4> LTI Linking </h4>
-<h4><%= @user.display_name %></h4>
-<ul class="gray-box">
-  <li>
-    <b> Information from LTI resource </b>
-    <ul> Launch email: <%= @launch_context["email"] %></ul>
-    <ul> Course context id: <%= @launch_context["https://purl.imsglobal.org/spec/lti/claim/context"]["id"] %></ul>
-    <ul> Course title: <%= @launch_context["https://purl.imsglobal.org/spec/lti/claim/context"]["title"] %></ul>
-    <ul> Scopes: <%= @launch_context["scope"] %></ul>
-    <ul> Course memberships url: <%= @launch_context["https://purl.imsglobal.org/spec/lti-nrps/claim/namesroleservice"]["context_memberships_url"] %></ul>
-  </li>
-  <li>
-    <b>
-      Linkable courses
-    </b>
-    <% if @cuds.empty? %>
-      <strong> None </strong>
-    <% else %>
-      <ul>
-        <% @cuds.each do |cud| %>
-          <li><%= link_to cud.course.display_name, edit_course_course_user_datum_path(cud.course, cud) %>
-          </li>
+<h2>Link a Course with '<%= params[:course_title] %>'</h2>
+
+<% @listing.each do |category, list| %>
+  <% if list.size > 0 %>
+    <div class="section">
+      <h3 class="section-title"><span class="white"><%= category.capitalize %></span></h3>
+
+      <div class="row">
+        <% list.each_with_index do |course, idx| %>
+          <% if idx % 3 == 0 %>
+            <div class="clearfix hide-on-small-only"></div>
+          <% end %>
+
+          <div class="col s12 m4">
+            <div class="card hoverable">
+              <%= link_to lti_launch_link_course_user_path(context_id: params[:context_id], course_id: course.id, course_memberships_url: params[:course_memberships_url], platform: params[:platform]), method: :post do %>
+                <div class="card-content red darken-4">
+                  <div class="row">
+                    <div class="col s9"><h4><span class="card-title white-text"><%= course.full_name %></span></h4></div>
+                    <div class="col s3"><span class="new badge padded-badge" data-badge-caption="Instructor"></span></div>
+                  </div>
+                </div>
+            <% end %>
+            </div>
+          </div>
+
         <% end %>
-      </ul>
-    <% end %>
-  </li>
-</ul>
+      </div>
+
+    </div> <!-- section -->
+  <% end %>
+<% end %>
+
+<%= render partial: "home/topannounce" rescue nil %>

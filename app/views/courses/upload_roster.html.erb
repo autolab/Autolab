@@ -1,26 +1,6 @@
 <h2>Import Course Roster</h2>
 <% if params[:upload] then %>
-  <div class="table-info">
-    <div>
-      Existing accounts in <b>Black</b>.  New accounts in <b><font
-      color=green>Green</font></b>.  Dropped accounts in <b><font
-      color=red>Red</font></b>. Instructors are not shown. <br>
-    </div>
-    <div>
-      <label>
-        <input type="checkbox" id="sort-status" name="sort-status" class="filled-in" checked="checked" />
-        <span>Sort by account status</span>
-      </label>
-    </div>
-  </div>
-  <%= form_for :doIt, :url=>{:action=>"upload_roster",:doIt=>"true"} do |f| %>
-    <%= f.submit "Confirm", {:class => "btn primary"} %>
-    <br>
-    <%= render partial: 'uploadTable', locals: {cud_view:@cuds, sort_status:"unsorted_cuds"} %>
-    <%= render partial: 'uploadTable', locals: {cud_view:@sorted_cuds, sort_status:"sorted_cuds"} %>
-    <br>
-    <%= f.submit "Confirm", {:class => "btn primary"} %>
-	<% end %>
+  <%= render partial: 'updateRosterPreview', locals: { cuds: @cuds, sorted_cuds: @sorted_cuds} %>
 <% else %>
 <p>
 This page will take a CSV file from the HUB and modify your course's users based

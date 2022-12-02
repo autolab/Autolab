@@ -10,6 +10,8 @@ class LtiLaunchController < ApplicationController
 
   action_auth_level :launch, :instructor
   class LtiError < StandardError
+    attr_reader :status_code
+
     def initialize(msg, status_code = :bad_request)
       @status_code = status_code
       super(msg)
@@ -18,9 +20,8 @@ class LtiLaunchController < ApplicationController
   rescue_from LtiError, with: :respond_with_lti_error
 
   def respond_with_lti_error(error)
-    Rails.logger.debug(error)
-    Rails.logger.send(:warn) { "Lti Error: #{error.message}" }
-    render json: { error: error.message }.to_json, status: :bad_request
+    Rails.logger.send(:warn) { "Lti Launch Error: #{error.message}" }
+    render json: { error: error.message }.to_json, status: error.status_code
   end
 
   # validate we get iss login_hint params for oidc entrypoint
@@ -29,13 +30,13 @@ class LtiLaunchController < ApplicationController
     # we will only support integration with one service, if more than one
     # integration enabled, then changed to check a list of issuers
     if params['iss'].nil? && params['iss'] != Rails.configuration.lti_settings["iss"]
-      raise LtiError.new("Could not find issuer", :bad_request);
+      raise LtiError.new("Could not find issuer", :bad_request)
     end
 
     # Validate Login Hint.
     return unless params['login_hint'].nil?
 
-    raise LtiError.new("Could not find login hint", :bad_request);
+    raise LtiError.new("Could not find login hint", :bad_request)
   end
 
   # check state matches what was already sent in oidc_login
@@ -82,7 +83,7 @@ class LtiLaunchController < ApplicationController
 
   # validate issuer, client_id should be same as stored in our settings
   def validate_registration
-    client_id = @jwt[:body]['aud'].is_a?(Array) ? @jwt[:body]['aud'][0] : @jwt[:body]['aud'];
+    client_id = @jwt[:body]['aud'].is_a?(Array) ? @jwt[:body]['aud'][0] : @jwt[:body]['aud']
     if client_id != Rails.configuration.lti_settings["developer_key"]
       # Client not registered.
       raise LtiError.new("client id not registered for issuer", :bad_request)
@@ -131,17 +132,64 @@ class LtiLaunchController < ApplicationController
     # rubocop:enable Layout/LineLength
   end
 
+  def get_public_key(platform_public_key_pem, platform_public_jwks)
+    # import public key depending on whether we have a PEM format
+    # or list of JWKs
+    if !platform_public_key_pem.nil?
+      begin
+        rsa_public_key = OpenSSL::PKey::RSA.new(platform_public_key_pem)
+        return rsa_public_key
+      rescue StandardError
+        return nil
+      end
+    end
+    platform_public_jwks.each do |platform_public_key|
+      # JWT has a "key-id" header which specifies which public key to use
+      next unless platform_public_key["kid"] == @jwt[:header]["kid"]
+
+      begin
+        rsa_public_key = JWT::JWK::RSA.import(platform_public_key).public_key
+        return rsa_public_key
+      rescue StandardError
+        return nil
+      end
+    end
+    nil
+  end
+
   def validate_jwt_signature(id_token)
-    rsa_public = OpenSSL::PKey::RSA.new(Rails.configuration.lti_settings["platform_public_key"])
+    if !Rails.configuration.lti_settings["platform_public_key"].nil?
+      # static platform public key, so take key from yml
+      platform_public_key_pem = Rails.configuration.lti_settings["platform_public_key"]
+    elsif !Rails.configuration.lti_settings["platform_public_jwks_url"].nil?
+      # fetch JWKS from provided keys URL
+      conn = Faraday.new(
+        url: Rails.configuration.lti_settings["platform_public_jwks_url"],
+        headers: { 'Content-Type' => 'application/json' }
+      )
+      # make a GET request to public JWK endpoint
+      response = conn.get("")
+      if response.body["keys"].nil?
+        LtiError.new("No keys were found from public JWK url", :internal_server_error)
+      end
+      platform_public_jwks = JSON.parse(response.body)["keys"]
+    else
+      LtiError.new("No platform public key or public JWK url provided", :internal_server_error)
+    end
+    rsa_public_key = get_public_key(platform_public_key_pem, platform_public_jwks)
+    if rsa_public_key.nil?
+      raise LtiError.new("No matching JWK found", :bad_request)
+    end
+
     begin
-      JWT.decode id_token, rsa_public, true, { algorithm: 'RS256' }
+      JWT.decode id_token, rsa_public_key, true, { algorithm: 'RS256' }
     rescue JWT::ExpiredSignature
       # Handle expired token, e.g. logout user or deny access
       raise LtiError.new("JWT signature expired", :bad_request)
+    rescue JWT::ImmatureSignature
+      # Handle invalid token, e.g. logout user or deny access
+      raise LtiError.new("JWT signature invalid", :bad_request)
     end
-  rescue JWT::ImmatureSignature
-    # Handle invalid token, e.g. logout user or deny access
-    raise LtiError.new("JWT signature invalid", :bad_request)
   end
 
   # final LTI launch flow endpoint
@@ -163,8 +211,13 @@ class LtiLaunchController < ApplicationController
       raise LtiError.new("Not logged in!", :bad_request)
     end
 
-    redirect_to controller: "users", action: "lti_launch_initialize",
-                launch_context: @jwt[:body], id: @user.id
+    redirect_to lti_launch_initialize_user_path(
+      @user,
+      course_memberships_url: @jwt[:body]["https://purl.imsglobal.org/spec/lti-nrps/claim/namesroleservice"]["context_memberships_url"],
+      course_title: @jwt[:body]["https://purl.imsglobal.org/spec/lti/claim/context"]["title"],
+      platform: @jwt[:body]["https://purl.imsglobal.org/spec/lti/claim/tool_platform"]["name"],
+      context_id: @jwt[:body]["https://purl.imsglobal.org/spec/lti/claim/context"]["id"],
+    )
   end
 
   # LTI launch entrypoint to initiate open id connect login
@@ -209,7 +262,8 @@ class LtiLaunchController < ApplicationController
       "redirect_uri": "#{hostname}/lti_launch/launch", # URL to return to after login
       "state": state, # state to identify browser session
       "nonce": nonce, # nonce to prevent replay attacks
-      "login_hint": params["login_hint"] # login hint to identify platform session
+      "login_hint": params["login_hint"], # login hint to identify platform session
+      "prompt": "none"
     }
     unless params["lti_message_hint"].nil?
       auth_params["lti_message_hint"] = params["lti_message_hint"]

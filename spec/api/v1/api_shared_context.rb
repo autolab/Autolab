@@ -2,7 +2,8 @@ RSpec.shared_context "api shared context" do
   all_users = CourseUserDatum.joins(:user).where("users.administrator" => false, :instructor => false, :course_assistant => false)
   let(:user) { all_users.offset(rand(all_users.count)).first.user }
   let(:course) { CourseUserDatum.where(user_id: user.id).first.course }
-  let(:assessment) { course.assessments.offset(rand(course.assessments.count)).first }
+  let(:released_assessments) { course.assessments.where('start_at < ?', DateTime.now) }
+  let(:assessment) { released_assessments.offset(rand(released_assessments.count)).first }
   let(:msg) { JSON.parse(response.body) }
 
   # default application with access to user_info and user_courses

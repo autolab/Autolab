@@ -543,6 +543,20 @@ function get_watchlist_function(){
       update_watchlist(method, instance_ids);
     }
   });
+
+  $('#export_button').off('click');
+  $('#export_button').click(function(){
+    var instances = get_active_instances(pending_instances, contacted_instances, archived_instances);
+    
+    var selected_instances = [];
+    selected_user_ids.forEach(user_id => {
+      selected_instances = selected_instances.concat(instances[user_id]);
+    });
+
+    if(selected_instances.length > 0) {
+      export_instances_to_csv(selected_instances);
+    }
+  });
 }
 
 // Uncheck all checkboxes when moving to another tab
@@ -554,42 +568,67 @@ $('.ui.vertical.fluid.tabular.menu .item').on('click', function() {
   updateButtonVisibility(this);
 });
 
+// helper function to export instances to csv
+function export_instances_to_csv(instances) {
+
+  var csv = "data:text/csv;charset=utf-8,";
+  var header = "User Name, Email,Condition Type, Conditiong Info\n";
+  csv += header;
+
+  instances.forEach(instance => {
+    let condition_type = `"${JSON.stringify(Object.keys(instance.conditions)).replaceAll('"', '""')}"`;
+    let condition_info = `"${JSON.stringify(instance["conditions"]).replaceAll('"', '""')}"`;
+    csv += `${instance.name},${instance.email},${condition_type},${condition_info}\n`;
+  });
+
+  var encodedUri = encodeURI(csv);
+  var link = document.createElement("a");
+  link.setAttribute("href", encodedUri);
+  // create file name with current date and time
+  link.setAttribute("download", `student_metrics_${new Date().toLocaleString()}.csv`);
+  document.body.appendChild(link); // Required for FF
+  link.click(); 
+  document.body.removeChild(link);
+
+}
 
 
 // helper function to configure top button visibility
-function showTopButtons(selectAllCheckbox, resolveButton, contactButton, deleteButton) {
+function showTopButtons(selectAllCheckbox, resolveButton, contactButton, deleteButton, exportButton) {
   $("#select_all_checkbox").toggle(selectAllCheckbox);
   $("#resolve_button").toggle(resolveButton);
   $("#contact_button").toggle(contactButton);
   $("#delete_button").toggle(deleteButton);
+  $('#export_button').toggle(exportButton);
 }
+
 // controls visibility for top bar actions (select all, contact, resolve, delete)
 function updateButtonVisibility(item){
   // Deleting instances only avilable in archive tab
-  showTopButtons(true, true, true, false);
+  showTopButtons(true, true, true, false, true);
   switch ($(item).attr("data-tab")) {
     case "pending_tab":
       // if no students pending
       if ($("#pending_tab #empty_tabs").length > 0) {
-        showTopButtons(false, false, false, false);
+        showTopButtons(false, false, false, false, false);
       }
       break;
     case "contacted_tab":
       // no students to contact
       if ($("#contacted_tab #empty_tabs").length > 0) {
-        showTopButtons(false, false, false, false);
+        showTopButtons(false, false, false, false, false);
       } else {
         // still allowed to resolve
-        showTopButtons(true, true, false, false);
+        showTopButtons(true, true, false, false, false);
       }
       break;
     case "resolved_tab":
       // no actions allowed
-      showTopButtons(false, false, false, false);
+      showTopButtons(false, false, false, false, false);
       break;
     case "archived_tab":
       // only delete is allowed
-      showTopButtons(true, false, false, true);
+      showTopButtons(true, false, false, true, false);
       break;
     default:
       console.log(`${$(this).attr("data-tab")} is not a valid tab`);
