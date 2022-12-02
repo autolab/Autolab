@@ -463,10 +463,11 @@ class SubmissionsController < ApplicationController
     # Allow scores to be assessed by the view
     @scores = Score.where(submission_id: @submission.id)
 
-    # @problemSummaries and @problemGrades are used in _annotation_pane.html.erb
+    # Used in _annotation_pane.html.erb
     @problemAnnotations = {}
     @problemMaxScores = {}
     @problemScores = {}
+    @problemNameToId = {}
     autogradedProblems = {}
 
     @scores.each do |score|
@@ -484,6 +485,7 @@ class SubmissionsController < ApplicationController
       @problemAnnotations[problem.name] ||= []
       @problemMaxScores[problem.name] ||= problem.max_score
       @problemScores[problem.name] ||= 0
+      @problemNameToId[problem.name] ||= problem.id
     end
 
     # extract information from annotations
@@ -504,6 +506,7 @@ class SubmissionsController < ApplicationController
       @problemAnnotations[problem] ||= []
       @problemMaxScores[problem] ||= 0
       @problemScores[problem] ||= 0
+      @problemNameToId[problem] ||= -1
 
       @problemAnnotations[problem] << [description, value, line, annotation.submitted_by,
                                        annotation.id, annotation.position, filename, shared, global]
