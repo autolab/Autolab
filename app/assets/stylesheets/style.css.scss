@@ -1429,6 +1429,18 @@ table.sub td, th {
   flex-direction: row;
   align-items: center;
 }
+
+@keyframes spin {
+  from {
+      transform:rotate(0deg);
+  }
+  to {
+      transform:rotate(360deg);
+  }
+}
+.refresh-feedback.loading {
+  animation: spin 2s linear infinite;
+}
 .refresh-feedback {
   color: $autolab-blue-text;
   margin-right: 1vw;
