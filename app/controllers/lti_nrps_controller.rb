@@ -64,8 +64,8 @@ class LtiNrpsController < ApplicationController
   end
 
   # NRPS endpoint for Autolab to send an NRPS request to LTI Advantage Platform
-  action_auth_level :send_nrps_request, :instructor
-  def send_nrps_request
+  action_auth_level :sync_roster, :instructor
+  def sync_roster
     lcd = LtiCourseDatum.find(params[:lcd_id])
     if lcd.nil? || lcd.membership_url.nil? || lcd.course_id.nil?
       raise LtiLaunchController::LtiError.new("Unable to update roster", :bad_request)
@@ -84,10 +84,85 @@ class LtiNrpsController < ApplicationController
     lcd.last_synced = DateTime.current
     lcd.save
 
-    render json: members.as_json
+    # Update the roster with the retrieved set of members
+    @cuds = parse_members_data(lcd, members.as_json)
+    @sorted_cuds = @cuds.sort_by { |cud| cud[:color] || "z" }.reverse
+    @course = lcd.course
   end
 
 private
+
+  def populate_cud_data(cud)
+    user = cud.user
+    {
+      email: user.email,
+      first_name: user.first_name,
+      last_name: user.last_name,
+      course_number: cud.course_number,
+      lecture: cud.lecture,
+      section: cud.section,
+      school: user.school,
+      major: user.major,
+      year: user.year,
+      grade_policy: cud.grade_policy
+    }
+  end
+
+  def parse_members_data(lcd, members_data)
+    cuds = CourseUserDatum.where(course_id: lcd.course_id, instructor: false,
+                                 course_assistant: false).to_set
+    email_to_cud = {}
+    cuds.each do |cud|
+      email_to_cud[cud.user.email] = cud
+    end
+
+    cud_view = []
+    members_data.each do |user_data|
+      next unless user_data["roles"].include? "http://purl.imsglobal.org/vocab/lis/v2/membership#Learner"
+
+      next if user_data.key?("status") && user_data["status"] != "Active"
+
+      next unless user_data.key?("email") && user_data.key?("given_name") &&
+                  user_data.key?("family_name")
+
+      # Normalize email
+      user_data["email"].downcase!
+
+      cud_data = {}
+      user = User.find_by(email: user_data["email"])
+      if user.nil? || lcd.course.course_user_data.find_by(user_id: user.id).nil?
+        cud_data[:color] = "green"
+        cud_data[:email] = user_data["email"]
+        cud_data[:first_name] = user_data["given_name"]
+        cud_data[:last_name] = user_data["family_name"]
+        unless user.nil?
+          cud_data[:school] = user.school
+          cud_data[:major] = user.major
+          cud_data[:year] = user.year
+        end
+      else
+        cud = email_to_cud[user.email]
+        cud_data = populate_cud_data(cud)
+        cud_data[:color] = "black"
+      end
+
+      cud_view << cud_data
+      email_to_cud.delete(cud_data[:email])
+    end
+
+    return cud_view unless lcd.drop_missing_students
+
+    # Mark the remaining students as dropped
+    email_to_cud.each do |_, cud|
+      next if cud.dropped
+
+      cud_data = populate_cud_data(cud)
+      cud_data[:color] = "red"
+      cud_view << cud_data
+    end
+
+    cud_view
+  end
 
   # Query NRPS after being authenticated
   # with logic to handle multi-page queries
@@ -120,7 +195,7 @@ private
       # regex match for next page link
       # regex string taken from
       # https://github.com/1EdTech/lti-1-3-php-library/blob/master/src/lti/LTI_Names_Roles_Provisioning_Service.php
-      matches = /^Link:.*<([^>]*)>; ?rel="next"/i.match(next_page_header)
+      matches = /<([^>]*)>;\s*rel="next"/.match(next_page_header)
       unless matches.nil?
         next_page_url = matches[1]
       end
