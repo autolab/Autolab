@@ -625,11 +625,6 @@ class AssessmentsController < ApplicationController
       resp["queue_length"] = @job_status["queue_length"]
     end
 
-    if @job_status["is_assigned"] && resp["partial_feedback"].nil?
-      # means that it's autograding, but partial_feedback isn't working
-      raise AutogradeError, "Unable to get partial feedback check back later"
-    end
-
     render json: resp.to_json
   end
 
