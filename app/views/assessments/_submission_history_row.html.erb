@@ -37,7 +37,7 @@
             end %>
             --
           <% end %>
-      <% elsif submission.jobid.nil? %>
+      <% elsif submission.jobid.nil? || !submission.scores.where.not(feedback: nil).where(grader_id: 0).empty? %>
         <% unless problem.optional then
           dontTotal = true
         end %>
