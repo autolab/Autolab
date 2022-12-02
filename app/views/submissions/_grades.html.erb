@@ -10,7 +10,7 @@
         <% else %>
           <b> &ndash; </b>
         <% end %>
-        <b> / <%= sprintf("%.2f", p.max_score) %></b>
+        <b> / <%= p.max_score ? sprintf("%.2f", p.max_score.round(2)) : raw("&ndash;") %></b>
       </div>
     </div>
   <% end %>

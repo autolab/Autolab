@@ -570,6 +570,11 @@
   display: flex;
 }
 
+.annotationSummary .global-annotation .annotation-badge,
+.annotationSummary .descript-link .annotation-badge {
+  flex-shrink: 0;
+}
+
 .annotationSummary .global-annotation .annotation-tools {
   flex-shrink: 0;
   margin-left: auto;
@@ -828,6 +833,7 @@
 }
 
 .descript-link {
+  display: flex;
   color: inherit;
   text-decoration: inherit;
 }
