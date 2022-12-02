@@ -624,7 +624,6 @@ class AssessmentsController < ApplicationController
       resp["queue_position"] = @job_status["queue_position"]
       resp["queue_length"] = @job_status["queue_length"]
     end
-
     render json: resp.to_json
   end
 
