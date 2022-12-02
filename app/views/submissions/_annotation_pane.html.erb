@@ -12,7 +12,7 @@
                     <% if @cud.instructor? or @cud.course_assistant? or @problemReleased %>
                       <%= plus_fix(@problemScores[problem]) %>
                       (<%= p_score&.score ? sprintf("%.2f", p_score.score) : raw("&ndash;") %>
-                      / <%= sprintf("%.2f", @problemMaxScores[problem]) %>)
+                      / <%= @problemMaxScores[problem] ? sprintf("%.2f", @problemMaxScores[problem]) : raw("&ndash;") %>)
                     <% end %>
                   </div>
               </h4>
