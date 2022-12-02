@@ -34,12 +34,6 @@
                   "tweak",
                 <% end %>
                 "total"];
-    problems = [<% for p in @assessment.problems do %>
-                  {
-                    name: "<%= p.name %>",
-                    max_score: "<%= p.max_score %>"
-                  },
-                <% end %>];
 
     // raw data for each row
     table_data = [
