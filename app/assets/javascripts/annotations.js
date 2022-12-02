@@ -331,7 +331,7 @@ function attachEvents() {
     const $annotationLine = $("#annotation-line-" + annotationContainer);
     if ($annotationLine.find(".new-annotation").length === 0) {
       $annotationLine.append(newAnnotationFormCode());
-
+      $('.code-table').scrollTo($annotationLine.children().last(), { duration: "fast" });
       refreshAnnotations();
     } else {
       M.toast({html: 'Only one annotation can be created per line at a time!'});
