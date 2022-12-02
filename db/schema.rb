@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2022_11_24_042718) do
+ActiveRecord::Schema.define(version: 2022_11_28_044321) do
 
   create_table "annotations", force: :cascade do |t|
     t.integer "submission_id"
@@ -193,6 +193,8 @@ ActiveRecord::Schema.define(version: 2022_11_24_042718) do
     t.datetime "updated_at", null: false
     t.string "membership_url"
     t.string "platform"
+    t.boolean "auto_sync"
+    t.boolean "drop_missing_students"
   end
 
   create_table "module_data", force: :cascade do |t|
