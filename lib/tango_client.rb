@@ -39,6 +39,11 @@ module TangoClient
     if resp.content_type == "application/json" && resp["statusId"] && resp["statusId"] < 0
       raise TangoException, "Tango returned negative status code: #{resp["statusMsg"]}"
     end
+
+    if resp.code != 200
+      raise TangoException, "Tango returned HTTP code #{resp.code}"
+    end
+    
     return resp
   end
 

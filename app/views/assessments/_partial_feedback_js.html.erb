@@ -40,6 +40,9 @@
           } else {
             $('#partial-feedback').html(`There was an error loading your feedback. Check back once autograding is complete.`);
           }
+        },
+        error: (err) => {
+          $('#partial-feedback').html(`There was an error loading your feedback. Check back once autograding is complete.`);
         }
     });
   }
