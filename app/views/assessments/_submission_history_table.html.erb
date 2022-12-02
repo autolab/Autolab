@@ -1,47 +1,50 @@
-<table class="highlight" border=1 width=80%>
+<div class="submissions">
+  <table class="highlight sub" border=1>
 
-  <thead>
-    <tr>
-      <th>Ver</th>
-      <th>File</th>
-      <th>Submission Date</th>
+    <thead>
+      <tr>
+        <th>Ver</th>
+        <th>File</th>
+        <th>Submission Date</th>
 
-      <% for problem in @problems do %>
-        <th title="Max <%=problem.max_score %> points">
-          <%=problem.name %><br>
-          (<%=problem.max_score%>)
-        </th>
-      <%end%>
+        <% for problem in @problems do %>
+          <th title="Max <%=problem.max_score %> points">
+            <%=problem.name %><br>
+            (<%=problem.max_score%>)
+          </th>
+        <%end%>
 
-      <% if @course.grace_days >= 0 then %>
-        <th>Late Days Used</th>
+        <% if @course.grace_days >= 0 then %>
+          <th>Late Days Used</th>
+        <% end %>
+
+        <% if @assessment.version_penalty? %>
+          <th>Version Penalty (Over Threshold By)</th>
+        <% end %>
+
+        <th>Total Score</th>
+
+        <% if @cud.instructor? then %>
+          <th>Tweak</th>
+          <th>Instructor Actions</th>
+          <th>Errors</th>
+        <% end %>
+
+      </tr>
+    </thead>
+
+    <tbody>
+      <% if @submissions.size == 0 then %>
+        <tr><td colspan="400">No Submissions yet!</td></tr><!-- Sure! -->
+      <% else %>
+        <% if limit.nil? then limit = @submissions.size end %>
+        <% for submission in @submissions.first(limit) do %>
+          <%= render partial: "submission_history_row",
+            locals: { submission: submission,
+            download_access: download_access } %>
+        <% end %>
       <% end %>
+    </tbody>
 
-      <% if @assessment.version_penalty? %>
-        <th>Version Penalty (Over Threshold By)</th>
-      <% end %>
-
-      <th>Total Score</th>
-
-      <% if @cud.instructor? then %>
-        <th>Tweak</th>
-        <th></th>
-        <th>Errors</th>
-      <% end %>
-
-    </tr>
-  </thead>
-
-  <tbody>
-    <% if @submissions.size == 0 then %>
-      <tr><td colspan="400">No Submissions yet!</td></tr><!-- Sure! -->
-    <% else %>
-      <% for submission in @submissions do %>
-        <%= render partial: "submission_history_row", 
-          locals: { submission: submission, 
-          download_access: download_access } %>
-      <% end %>
-    <% end %>
-  </tbody>
-
-</table>
+  </table>
+</div>

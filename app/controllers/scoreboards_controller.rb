@@ -51,7 +51,7 @@ class ScoreboardsController < ApplicationController
         @grades[uid] = {}
         @grades[uid][:nickname] = user.nickname
         @grades[uid][:andrewID] = user.email
-        @grades[uid][:fullName] = "#{user.first_name} #{user.last_name}"
+        @grades[uid][:fullName] = user.full_name
         @grades[uid][:problems] = {}
       end
       if @grades[uid][:version] != row["version"]

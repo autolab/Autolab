@@ -19,10 +19,29 @@
 </div>
 <div class="ui tab active" data-tab="watchlist" id="watchlist_tab">
   <div class="top-bar">
-    <div class="ui checkbox select_all"><input type="checkbox"/></div>
-    <button class="ui submit small button" id="contact_button"><i class="mail outline icon"></i>CONTACT</button>
-    <button class="ui submit small button" id="resolve_button"><i class="check circle icon"></i>RESOLVE</button>
-    <button class="ui icon small button" id="delete_button" data-content="Removing selected student(s)"><i class="trash alternate icon"></i></button>
+    <span class="select-all-chip" id="select_all_checkbox">
+      <!-- hacky way to get checkbox aligned perfectly vertically, spaced -->
+      <div class="ui checkbox select_all">
+        <input type="checkbox"/>
+      </div>
+      Select All
+    </span>
+    <button class="ui submit tiny button" id="contact_button">
+      <i class="mail outline icon"></i>
+      CONTACT
+    </button>
+    <button class="ui submit tiny button" id="resolve_button">
+      <i class="check circle icon"></i>
+      RESOLVE
+    </button>
+    <button class="ui submit tiny button" id="export_button">
+      <i class="insert drive file icon"></i>
+      EXPORT
+    </button>
+    <button class="ui icon tiny button" id="delete_button">
+      <i class="trash alternate icon"></i>
+      Delete from watchlist
+    </button>
     <div class="last-updated">
       <b id="last-updated-time"></b> <i class="repeat link icon" id="refresh_btn"></i>
     </div>
@@ -52,7 +71,7 @@
           </div>
           <span class="instances" id="pending_instances"></span>
         </div>
-        <div class="ui tab segments" data-tab="contacted_tab", id="contacted_tab">
+        <div class="ui tab segments" data-tab="contacted_tab" id="contacted_tab">
           <div class="ui secondary segment" id="contacted_header" hidden>
             <div class="ui right aligned scrolling search" id="contacted_search">
               <div class="ui icon input">
@@ -65,7 +84,7 @@
           </div>
           <span class="instances" id="contacted_instances"></span>
         </div>
-        <div class="ui tab segments" data-tab="resolved_tab", id="resolved_tab">
+        <div class="ui tab segments" data-tab="resolved_tab" id="resolved_tab">
           <div class="ui secondary segment" id="resolved_header" hidden>
             <div class="ui right aligned scrolling search" id="resolved_search">
               <div class="ui icon input">
@@ -78,7 +97,7 @@
           </div>
           <span class="instances" id="resolved_instances"></span>
         </div>
-        <div class="ui tab segments" data-tab="archived_tab", id="archived_tab">
+        <div class="ui tab segments" data-tab="archived_tab" id="archived_tab">
           <div class="ui secondary segment" id="archived_header" hidden>
             <div class="ui right aligned scrolling search" id="archived_search">
               <div class="ui icon input">
@@ -87,7 +106,7 @@
               </div>
               <div class="results"></div>
             </div>
-          <h5> Archived students </h5> <b>Resolved and contacted students becomes archived when student metrics are changed </b>
+          <h5> Archived students </h5> <b>Resolved and contacted students become archived when student metrics are changed OR when dropped from the course </b>
         </div>
         <span class="instances" id="archived_instances"></span>
         </div>
@@ -114,7 +133,7 @@
           <input type="checkbox" tabindex="0" class="hidden" name="metrics-checkbox-1">
         </div>
         Students who have used
-        <span>
+        <span class="padded-span">
           <div class="ui selection dropdown" id="grace_days_value">
             <input type="hidden" name="grace_days">
             <i class="dropdown icon"></i>
@@ -127,7 +146,7 @@
           </div>
         </span>
         grace day(s) by
-        <span>
+        <span class="padded-span">
           <div class="ui calendar" id="grace_days_by_date">
             <div class="ui input left icon">
               <i class="calendar icon"></i>
@@ -145,11 +164,11 @@
           <input type="checkbox" tabindex="0" class="hidden" name="metrics-checkbox-2">
         </div>
         Students whose grades have dropped by
-        <span>
+        <span class="padded-span">
           <input type="text" placeholder="0" id='grade_drop_percentage'>
         </span>
         percent within
-        <span>
+        <span class="padded-span">
           <div class="ui selection dropdown" id='grade_drop_consecutive_counts'>
             <input type="hidden" name="number">
             <i class="dropdown icon"></i>
@@ -172,7 +191,7 @@
           <input type="checkbox" tabindex="0" class="hidden" name="metrics-checkbox-3">
         </div>
         Students who did not submit at least
-        <span>
+        <span class="padded-span">
           <div class="ui selection dropdown" id="no_submit_value">
             <input type="hidden" name="number">
             <i class="dropdown icon"></i>
@@ -195,7 +214,7 @@
           <input type="checkbox" tabindex="0" class="hidden" name="metrics-checkbox-4">
         </div>
         Students with at least
-        <span>
+        <span class="padded-span">
           <div class="ui selection dropdown" id="low_grades_count">
             <input type="hidden" name="number">
             <i class="dropdown icon"></i>
@@ -208,13 +227,18 @@
           </div>
         </span>
         submitted assignment(s) below a percentage of
-        <span>
+        <span class="padded-span">
           <input type="text" placeholder="0" id='low_grades_percentage'>
         </span>
       </div>
     </div>
     <br>
-    <button class="ui disabled submit button" id="save">SAVE</button>
+    <% if @cud.instructor? %>
+      <button class="ui disabled submit button" id="save">SAVE</button>
+    <% else %>
+      <button class= "ui disabled submit button">SAVE</button>
+      <label> You do not have permission to edit student metrics </label>
+    <% end %>
   </div>
 </div>
 <div class="ui tab configs" data-tab="configurations">
@@ -222,7 +246,6 @@
   <h6>
     All categories are selected by default. Modify this list to change which assessment categories are included in student metrics analysis.
   </h6>
-
   <div class="ui grid">
     <div class="five wide column">
       <h3> Included </h3>
@@ -247,6 +270,21 @@
       </div>
     </div>
   </div>
-  <br />
-  <button class="ui disabled submit button" id="save_configs_btn">SAVE</button>
+  <h4> Access Control </h4>
+  <h6>
+    Providing Course Assistants (CAs) with access will allow them to use the watchlist, but they will not be able to modify the metrics or the configurations.
+  </h6>
+  <div>
+    <div class="ui checkbox" id="allow_ca">
+      <input type="checkbox" />
+      <label>Allow CAs to access the watchlist</label>
+    </div>
+  </div>
+  <br/>
+  <% if @cud.instructor? %>
+    <button class="ui disabled submit button" id="save_configs_btn">SAVE</button>
+  <% else %>
+    <button class= "ui disabled submit button">SAVE</button>
+    <label> You do not have permission to edit metrics configurations </label>
+  <% end %>
 </div>

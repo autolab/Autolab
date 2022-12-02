@@ -23,24 +23,26 @@ class CourseUserDataController < ApplicationController
     cud_parameters = cud_params
     @newCUD = @course.course_user_data.new(cud_parameters)
 
-    # check user existence
     email = cud_parameters[:user_attributes][:email]
     user = User.where(email: email).first
+    # check user existence
     if user.nil?
       # user is new
+      # do pre-validation of required fields
+      # must have email, and first OR last name
+      if cud_parameters[:user_attributes][:email].blank? ||
+         (cud_parameters[:user_attributes][:first_name].blank? &&
+          cud_parameters[:user_attributes][:last_name].blank?)
+        flash[:error] = "Error enrolling user: You must enter a valid email, and a first or last " \
+        "name to create a new student"
+        redirect_to(action: "new") && return
+      end
       user = User.roster_create(email,
                                 cud_parameters[:user_attributes][:first_name],
                                 cud_parameters[:user_attributes][:last_name],
                                 "", "", "")
-
       if user
         @newCUD.user = user
-      elsif (cud_parameters[:user_attributes][:email] == "") ||
-            (cud_parameters[:user_attributes][:first_name] == "") ||
-            (cud_parameters[:user_attributes][:last_name] == "")
-        flash[:error] = "All required fields must be filled"
-        redirect_to(action: "new") && return
-
       else
         error_msg = "The user with email #{email} could not be created:"
         if !user.valid?
@@ -55,7 +57,6 @@ class CourseUserDataController < ApplicationController
         flash[:html_safe] = true
         redirect_to(action: "new") && return
       end
-
     else
       # user exists
       unless user.course_user_data.where(course: @course).empty?
@@ -241,17 +242,11 @@ private
   end
 
   def cud_params
-    if @cud.administrator?
-      params.require(:course_user_datum).permit(:school, :major, :year,
+    if @cud.administrator? || @cud.instructor?
+      params.require(:course_user_datum).permit(:school, :major, :year, :course_number,
                                                 :lecture, :section, :instructor, :dropped,
                                                 :nickname, :course_assistant,
                                                 user_attributes: %i[first_name last_name email],
-                                                tweak_attributes: %i[_destroy kind value])
-    elsif @cud.instructor?
-      params.require(:course_user_datum).permit(:school, :major, :year,
-                                                :lecture, :section, :instructor, :dropped,
-                                                :nickname, :course_assistant,
-                                                user_attributes: %i[email first_name last_name],
                                                 tweak_attributes: %i[_destroy kind value])
     else
       params.require(:course_user_datum).permit(:nickname) # ,
@@ -260,14 +255,8 @@ private
   end
 
   def edit_cud_params
-    if @cud.administrator?
-      params.require(:course_user_datum).permit(:school, :major, :year,
-                                                :lecture, :section, :instructor, :dropped,
-                                                :nickname, :course_assistant,
-                                                user_attributes: %i[id email first_name last_name],
-                                                tweak_attributes: %i[_destroy kind value])
-    elsif @cud.instructor?
-      params.require(:course_user_datum).permit(:school, :major, :year,
+    if @cud.administrator? || @cud.instructor?
+      params.require(:course_user_datum).permit(:school, :major, :year, :course_number,
                                                 :lecture, :section, :instructor, :dropped,
                                                 :nickname, :course_assistant,
                                                 user_attributes: %i[id email first_name last_name],

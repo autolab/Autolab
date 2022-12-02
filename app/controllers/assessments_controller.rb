@@ -426,8 +426,6 @@ class AssessmentsController < ApplicationController
     rescue StandardError => e
       flash[:error] = "Unable to generate tarball -- #{e.message}"
       redirect_to action: "index"
-    else
-      flash[:success] = "Successfully exported the assessment."
     end
   end
 
@@ -577,11 +575,16 @@ class AssessmentsController < ApplicationController
       redirect_to(action: "index") && return
     end
     @jsonFeedback = parseFeedback(@score.feedback)
-    @scoreHash = parseScore(@score.feedback) unless @jsonFeedback.nil?
+    @scoreHash = parseScore(@score.feedback)
     if Archive.archive? @submission.handin_file_path
       @files = Archive.get_files @submission.handin_file_path
     end
-    @problemReleased = @submission.scores.pluck(:released).all?
+    @problemReleased = @submission.scores.pluck(:released).all? &&
+                       !@assessment.before_grading_deadline?
+    # get_correct_filename is protected, so we wrap around controller-specific call
+    @get_correct_filename = ->(annotation) {
+      get_correct_filename(annotation, @files, @submission)
+    }
   end
 
   def parseScore(feedback)
@@ -592,7 +595,7 @@ class AssessmentsController < ApplicationController
 
     score_hash = JSON.parse(feedback)
     score_hash = score_hash["scores"]
-    if @jsonFeedback.key?("_scores_order") == false
+    if @jsonFeedback&.key?("_scores_order") == false
       @jsonFeedback["_scores_order"] = score_hash.keys
     end
     @total = 0
@@ -661,6 +664,10 @@ class AssessmentsController < ApplicationController
     # make sure the penalties are set up
     @assessment.late_penalty ||= Penalty.new(kind: "points")
     @assessment.version_penalty ||= Penalty.new(kind: "points")
+
+    @has_annotations = @assessment.submissions.any? { |s| !s.annotations.empty? }
+
+    @is_positive_grading = @assessment.is_positive_grading
   end
 
   action_auth_level :update, :instructor
@@ -752,6 +759,7 @@ class AssessmentsController < ApplicationController
   action_auth_level :writeup, :student
 
   def writeup
+    # If the logic here changes, do update assessment#has_writeup?
     if @assessment.writeup_is_url?
       redirect_to @assessment.writeup
       return
@@ -766,7 +774,7 @@ class AssessmentsController < ApplicationController
       return
     end
 
-    @output = "There is no writeup for this assessment."
+    flash.now[:error] = "There is no writeup for this assessment."
   end
 
   # uninstall - uninstalls an assessment
@@ -845,6 +853,8 @@ private
       @assessment.version_penalty&.destroy
     end
 
+    ass.delete(:name)
+
     ass.permit!
   end
 
@@ -859,6 +869,7 @@ private
     tar_extract.each do |entry|
       pathname = entry.full_name
       next if pathname.start_with? "."
+      next if pathname.start_with? "PaxHeader"
 
       pathname.chomp!("/") if entry.directory?
       # nested directories are okay
@@ -884,6 +895,8 @@ private
       tab_name = "handin"
     elsif params[:penalties]
       tab_name = "penalties"
+    elsif params[:problems]
+      tab_name = "problems"
     elsif params[:advanced]
       tab_name = "advanced"
     end

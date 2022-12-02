@@ -113,7 +113,7 @@ private
               course_user_datum_id: user.id,
               assessment_id: asmt.id,
               submitted_by_id: @cud.id,
-              created_at: asmt.due_at
+              created_at: [Time.current, asmt.due_at].min
             )
           end
 
@@ -293,11 +293,11 @@ end
     grader = (if score then score.grader else nil end)
     grader_info = ""
     if grader
-      grader_info = "#{grader.first_name} #{grader.last_name} (#{grader.email})"
+      grader_info = grader.full_name_with_email
     end
 
     feedback = score.feedback
-    response = {"grader" => grader_info, "feedback" => feedback, "score" => score.score}
+    response = { "grader" => grader_info, "feedback" => feedback, "score" => score.score }
     render json: response
   end
 
@@ -336,6 +336,10 @@ end
       @statistics[:all] = all_grouping[:data]
       @scores[:all] = all_grouping[1]
     end
+
+    by_course_number = latest_submissions.group_by { |s| s.course_user_datum.course_number }
+    @statistics[:course_number] = stats_for_grouping(by_course_number)
+    @scores[:course_number] = scores_for_grouping(by_course_number)
 
     by_lecture = latest_submissions.group_by { |s| s.course_user_datum.lecture }
     @statistics[:lecture] = stats_for_grouping(by_lecture)

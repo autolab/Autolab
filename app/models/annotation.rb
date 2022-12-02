@@ -7,7 +7,7 @@ class Annotation < ApplicationRecord
   belongs_to :submission
   belongs_to :problem
 
-  validates :comment, :filename, :submission_id, :problem_id, presence: true
+  validates :comment, :value, :filename, :submission_id, :problem_id, presence: true
 
   def as_text
     if value
@@ -32,6 +32,9 @@ class Annotation < ApplicationRecord
     score = Score.find_or_initialize_by_submission_id_and_problem_id(
       submission_id, problem_id
     )
+
+    # Associated problem was deleted
+    return if score.problem_id && score.problem.nil?
 
     # Ensure that problem is non-autograded
     return if score.grader_id == 0
@@ -59,7 +62,13 @@ class Annotation < ApplicationRecord
 
     # Default score to 0 if problem.max_score is nil
     max_score = score.problem.max_score || 0
-    new_score = max_score + annotation_delta
+
+    # Check if positive grading is enabled for this assessment
+    new_score = if submission.assessment.is_positive_grading
+                  annotation_delta
+                else
+                  max_score + annotation_delta
+                end
 
     # Update score
     if submission.group_key.empty?

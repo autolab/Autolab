@@ -389,7 +389,7 @@ module AssessmentAutogradeCore
           score.score = 0
           score.feedback = feedback_str
           score.released = true
-          score.grader_id = 0
+          score.grader_id = -1
           score.save!
         end
       end

@@ -6,12 +6,18 @@
   var changes = false;
 
   $(document).ready(function() {
+
     $('input').on('change', function(e) {
       changes = true;
     });
     $('textarea').on('change', function(e) {
       changes = true;
     });
+
+    $(document).ready(function(){
+      $('.tabs').tabs();
+    });
+    
 
     window.onbeforeunload = function() {
       if (changes) {
@@ -25,5 +31,20 @@
     $('form').on('submit', function() {
       changes = false;
     });
+
+    $('input[name="assessment[is_positive_grading]"]').on('change', function() {
+      if(has_annotations){
+        if ($(this).prop('checked') !=  is_positive_grading) {
+          $('#grading-change-warning').show();
+        }
+        else{
+          $('#grading-change-warning').hide();
+        }
+      }
+    });
+
   });
+
 })();
+
+

@@ -1,7 +1,7 @@
 
 <% dontTotal = false %>
-  <div class="row">
-    <h3 style="word-break: break-all;" class="col l12">
+  <div>
+    <h4 style="word-break: break-all;" class="">
       <% if submission.version == 0 then %>
         <font size=-2>Unofficial</font>
       <% else %>
@@ -10,7 +10,7 @@
       -
       <% if submission.filename then %>
         <%  if link = view_course_assessment_submission_path(@course, @assessment, submission) %>
-          <a href="<%= link %>" class="tooltipped" title="View Source" data-tooltip="View Source" data-placement="right" aria-label="Justify" style="margin-right:6px; font-size: 20px;"><%= submission.filename %></a>
+          <a href="<%= link %>" class="tooltipped" title="View Source" data-tooltip="View Source" data-placement="right" aria-label="Justify" style="margin-right:6px; font-size: 20px; vertical-align: middle"><%= submission.filename %></a>
 
         <% else %>
         <%= submission.filename %>
@@ -33,11 +33,9 @@
 
         <% end %>
       </span>
-    </h3>
+    </h4>
   </div>
-  <br>
-
-<table class="highlight bordered">
+<table class="highlight bordered small">
 
   <thead>
     <tr>
@@ -119,7 +117,6 @@
 </tr>
 
 </table>
-<br>
   <span class="smallText">Submitted at: <span class="moment-date-time"><%= submission.created_at.in_time_zone.to_s %></span></span>
 <br>
   <% if @cud.instructor? then %>

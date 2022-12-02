@@ -42,9 +42,13 @@ class WatchlistInstance < ApplicationRecord
       # no-op
     else
       # case 2: current risk conditions exist
+
+      # remove dropped students from watchlist
+      filtered_instances = remove_dropped_students(course, current_instances)
+
       # take category blocklist into consideration
       new_instances, deprecated_instances = add_new_instances_for_conditions(
-        current_conditions, course, category_blocklist, current_instances
+        current_conditions, course, category_blocklist, filtered_instances
       )
     end
 
@@ -342,14 +346,31 @@ class WatchlistInstance < ApplicationRecord
   end
   # rubocop:enable Style/GuardClause
 
+  ##
+  # Archives instances of dropped students
+  #
+  # Given course and current instances
+  # archives instances where the student is no longer in the course
+  # returns the remaining instances
+  def self.remove_dropped_students(course, current_instances)
+    dropped_cuds = CourseUserDatum.where(course_id: course.id, instructor: false,
+                                         course_assistant: false, dropped: true).pluck(:id)
+    current_instances.where(course_user_datum_id: dropped_cuds)
+                     .find_each(&:archive_watchlist_instance)
+    current_instances.where.not(course_user_datum_id: dropped_cuds)
+  end
+
   def self.add_new_instances_for_conditions(conditions, course, category_blocklist,
                                             current_instances)
     new_instances = []
+
+    # prevent dropped students from being considered
     course_user_data = CourseUserDatum.where(course_id: course.id, instructor: false,
-                                             course_assistant: false)
+                                             course_assistant: false, dropped: false)
 
     # new
     criteria2 = current_instances.where(status: :pending)
+
     # contacted or resolved
     criteria1 = current_instances - criteria2
     deprecated_instances = current_instances
@@ -360,8 +381,8 @@ class WatchlistInstance < ApplicationRecord
         case condition.condition_type
 
         when "grace_day_usage"
-          grace_day_threshold = condition.parameters[:grace_day_threshold].to_i
-          date = condition.parameters[:date]
+          grace_day_threshold = condition.parameters["grace_day_threshold"].to_i
+          date = condition.parameters["date"]
           asmts_before_date = course.asmts_before_date(date)
           asmts_before_date = asmts_before_date.reject do |asmt|
             category_blocklist.include?(asmt.category_name)
@@ -377,8 +398,8 @@ class WatchlistInstance < ApplicationRecord
           cur_instances << new_instance unless new_instance.nil?
 
         when "grade_drop"
-          percentage_drop = condition.parameters[:percentage_drop].to_f
-          consecutive_counts = condition.parameters[:consecutive_counts].to_i
+          percentage_drop = condition.parameters["percentage_drop"].to_f
+          consecutive_counts = condition.parameters["consecutive_counts"].to_i
 
           categories = course.assessment_categories - category_blocklist
           asmt_arrs = categories.map do |category|
@@ -391,7 +412,7 @@ class WatchlistInstance < ApplicationRecord
           cur_instances << new_instance unless new_instance.nil?
 
         when "no_submissions"
-          no_submissions_threshold = condition.parameters[:no_submissions_threshold].to_i
+          no_submissions_threshold = condition.parameters["no_submissions_threshold"].to_i
 
           new_instance = add_new_instance_for_cud_no_submissions(course, category_blocklist,
                                                                  condition.id, cud,
@@ -399,8 +420,8 @@ class WatchlistInstance < ApplicationRecord
           cur_instances << new_instance unless new_instance.nil?
 
         when "low_grades"
-          grade_threshold = condition.parameters[:grade_threshold].to_f
-          count_threshold = condition.parameters[:count_threshold].to_i
+          grade_threshold = condition.parameters["grade_threshold"].to_f
+          count_threshold = condition.parameters["count_threshold"].to_i
 
           new_instance = add_new_instance_for_cud_low_grades(course, category_blocklist,
                                                              condition.id, cud,

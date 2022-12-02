@@ -2,6 +2,11 @@ Rails.application.routes.draw do
   # For details on the DSL available within this file, see https://guides.rubyonrails.org/routing.html
 
   use_doorkeeper
+    post 'lti_launch/oidc_login', to: "lti_launch#oidc_login"
+    get 'lti_launch/oidc_login', to: "lti_launch#oidc_login"
+    post 'lti_launch/launch', to: "lti_launch#launch"
+    get 'lti_launch/launch', to: "lti_launch#launch"
+    post 'lti_nrps/sync_roster', to: "lti_nrps#sync_roster"
 
   namespace :oauth, { defaults: { format: :json } } do
     get "device_flow_init", to: "device_flow#init"
@@ -65,6 +70,8 @@ Rails.application.routes.draw do
   resources :users do
     get "admin"
     get "github_oauth", on: :member
+    get "lti_launch_initialize", on: :member
+    post "lti_launch_link_course", on: :member
     post "github_revoke", on: :member
     get "github_oauth_callback", on: :collection
   end
@@ -81,7 +88,7 @@ Rails.application.routes.draw do
       get "get_watchlist_instances"
       get "get_num_pending_instances"
       post "refresh_watchlist_instances"
-      get "get_watchlist_category_blocklist"
+      get "get_watchlist_configuration"
       post "update_current_metrics"
       post "update_watchlist_instances"
       post "update_watchlist_configuration"
@@ -206,6 +213,8 @@ Rails.application.routes.draw do
     member do
       post "bulk_release"
       get "download_roster"
+      post "unlink_course"
+      patch "update_lti_settings"
       match "email", via: [:get, :post]
       get "manage"
       get "moss"
@@ -214,6 +223,7 @@ Rails.application.routes.draw do
       post "run_moss"
       get "sudo"
       match "upload_roster", via: [:get, :post]
+      post "add_users_from_emails"
       get "user_lookup"
       get "users"
     end

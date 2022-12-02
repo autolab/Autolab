@@ -3,7 +3,6 @@
     <%= link_to(url_for([:view, @course, @assessment, @prevVersion[:submission], header_position: @prevVersion[:header_position]]), class: "btn small", title: "Previous version containing this file (shortcut: [)", id: "prev_version_link") do %>
       <i class="material-icons">south</i>
     <% end %>
-    <link rel="prerender" href=<%= url_for([:view, @course, @assessment, @prevVersion[:submission], header_position: @prevVersion[:header_position]]) %> />
   <% else %>
     <a class="btn disabled"><i class="material-icons">south</i></a>
   <% end %>
@@ -11,7 +10,6 @@
     <%= link_to(url_for([:view, @course, @assessment, @nextVersion[:submission], header_position: @nextVersion[:header_position]]), class: "btn small", title: "Next version containing this file (shortcut: ])", id: "next_version_link") do %>
       <i class="material-icons">north</i>
     <% end %>
-    <link rel="prerender" href=<%= url_for([:view, @course, @assessment, @nextVersion[:submission], header_position: @nextVersion[:header_position]]) %> />
   <% else %>
     <a class="btn disabled"><i class="material-icons">north</i></a>
   <% end %>

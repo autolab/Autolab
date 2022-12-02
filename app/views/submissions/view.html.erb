@@ -17,7 +17,9 @@
   <%= external_javascript_include_tag "jquery-ui" %>
   <%= external_javascript_include_tag "scrollTo" %>
   <%= external_javascript_include_tag "golden-layout" %>
+  <%# Hidden elements used by fillAnnotationBox in annotation.js %>
   <div style="display: none"><%= render(:partial => 'grades') %></div>
+  <div style="display: none"><%= render(:partial => 'annotation_pane') %></div>
   <script type="application/javascript">
     <% if @cud.instructor || @cud.course_assistant then %>
       var isInstructor = true;
@@ -27,8 +29,7 @@
 
     const editableUrl = "<%= url_for ([:quickSetScore, @course, @assessment]) %>"
 
-    var currentHeaderPos = <%= params[:header_position] || 0 %>
-    var submissionID = <%= @submission.id %>
+    var currentHeaderPos = <%= params[:header_position] || 0 %>;
     var annotations = <%=raw @annotations.to_json %>;
     var annotationsByPositionByLine = {};
     var fileNameStr = "<%= @filename %>";
@@ -64,7 +65,6 @@
         <%= link_to(url_for([:view, @course, @assessment, @prevSubmission]), class: "valign-wrapper", title: "Previous student (shortcut: ←)", id: "prev_submission_link") do %>
           <i class="material-icons" style="margin-right: 3px">arrow_back</i> <%= @prevSubmission.course_user_datum.user.email %>
         <% end %>
-         <link rel="prerender" href= <%= url_for([:view, @course, @assessment, @prevSubmission])%> />
       <% end %>
     </div>
     <div class="col s8 center-align valign-wrapper submission-controls">
@@ -92,12 +92,20 @@
       <% end %>
     </div>
   </div>
+<% else %>
+  <div class="row">
+    <div class="col s12 center-align valign-wrapper">
+      <button class="btn small" onclick="resetLayout()">Reset Layout</button>
+    </div>
+  </div>
+
 <% end %>
 
 <div class="row" id="speedgrader">
 </div>
 
 <%= render "annotation" %>
+<%= render "annotation_global" %>
 
 <!-- restart the container -->
 <div>
