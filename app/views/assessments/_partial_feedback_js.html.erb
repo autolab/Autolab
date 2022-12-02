@@ -37,6 +37,8 @@
             /* if there's no partial feedback and no queue position,
                 refresh the page to see if full feedback is available */
             location.reload();
+          } else {
+            $('#partial-feedback').html(`There was an error loading your in-progress feedback. Check back once autograding is complete.`);
           }
         }
     });
