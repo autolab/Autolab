@@ -575,9 +575,17 @@ class AssessmentsController < ApplicationController
     @finishedAutograding = @submission.scores.where.not(feedback: nil).where(grader_id: 0)
     @job_id = @submission["jobid"]
     # Autograding is not in-progress and no score is available
-    if @score.nil? && (@job_id.nil? || !@finishedAutograding.empty?)
-      flash[:error] = "No feedback for requested score"
-      redirect_to(action: "index") && return
+    if @score.nil?
+      if !@finishedAutograding.empty?
+        redirect_to(action: "viewFeedback",
+                    feedback: @finishedAutograding.first.problem_id,
+                    submission_id: params[:submission_id]) && return
+      end
+
+      if @job_id.nil?
+        flash[:error] = "No feedback for requested score"
+        redirect_to(action: "index") && return
+      end
     end
 
     # Autograding is in-progress
