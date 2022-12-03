@@ -373,7 +373,7 @@ Update the scores for a student's latest submission.
 
 **Scope:** 'instructor_all'
 
-Endpoint `PUT /courses/{course_name}/assessments/{assessment_name}/scores/{email}`
+Endpoint `PUT /courses/{course_name}/assessments/{assessment_name}/scores/update_latest/{email}`
 
 **Parameters:**
 
