@@ -22,7 +22,7 @@ Rails.application.routes.draw do
                                      param: :email, :constraints => { :email => /[^\/]+/ }
         
         resources :assessments, param: :name, only: [:index, :show] do
-          get "problems"
+          resources :problems, only: [:index, :create]
           get "writeup"
           get "handout"
           post "submit"
@@ -33,6 +33,11 @@ Rails.application.routes.draw do
           resources :submissions, param: :version, only: [:index] do
             get "feedback"
           end
+
+          resources :scores, only: [:index, :show],
+                    param: :email, :constraints => { :email => /[^\/]+/ }
+
+          put "scores/:email/update_latest", :constraints => { :email => /[^\/]+/ }, to: "scores#update_latest"
         end
       end
 
