@@ -31,9 +31,9 @@
           Press the refresh button to get updates.
         </p>
       <% else %>
-        <h4><%= "#{@score.problem.name}" %></h4>
+        <h4>Problem Score</h4>
         <p>
-          Score for this problem: <%= @score.score.to_f().round(1) %>
+          <%= "#{@score.problem.name}: #{@score.score.to_f().round(1)}" %>
         </p>
         <p>Graded by: <%=
             case @score.grader_id
