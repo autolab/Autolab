@@ -37,7 +37,7 @@ Rails.application.routes.draw do
           resources :scores, only: [:index, :show],
                     param: :email, :constraints => { :email => /[^\/]+/ }
 
-          put "scores/update_latest/:email", :constraints => { :email => /[^\/]+/ }, to: "scores#update_latest"
+          put "scores/:email/update_latest", :constraints => { :email => /[^\/]+/ }, to: "scores#update_latest"
         end
       end
 
