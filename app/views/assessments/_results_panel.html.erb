@@ -8,17 +8,15 @@
         <h4>Autograder Scores</h4>
         <table class="ui unstackable table">
           <tbody>
-          <% @scoreHash.each do |key, value| %>
-            <% if key != '_total' %>
-              <tr>
-                <td><%= key %>:</td>
-                <td><%= value %></td>
-              </tr>
-            <% end %>
+          <% @scoreHash.except("_total").each do |key, value| %>
+            <tr>
+              <td><%= key %>:</td>
+              <td><%= value.to_f.round(1) %></td>
+            </tr>
           <% end %>
           <tr style="border-bottom: none">
             <td>Autograding Total:</td>
-            <td><%= @scoreHash["_total"] %></td>
+            <td><%= @scoreHash["_total"].to_f.round(1) %></td>
           </tr>
           </tbody>
         </table>
