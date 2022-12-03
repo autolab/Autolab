@@ -10,9 +10,13 @@
   <%= javascript_include_tag "course_users" %>
 <% end %>
 
+<%= stylesheet_link_tag "users" %>
+
 <h3>Manage Course Users</h3>
 
 <hr>
+
+<% lcd = @course.lti_course_datum %>
 <div>
   <span>
     <%= link_to raw('<span class="btn">Add User to Course</span>'), [:new, @course, :course_user_datum] %>
@@ -20,11 +24,36 @@
     <a id="add-users" class='dropdown-trigger btn' href='#' data-target='add-users-dropdown'>ADD USERS FROM EMAILS</a>
     <%= link_to raw('<span class="btn">Import Roster/Users</span>'), {:action=>"upload_roster"} %>
     <%= link_to raw('<span class="btn">Export Roster</span>'), {:action=>"download_roster"} %>
-    <% unless @course.lti_course_datum.nil? %>
-      <%= link_to raw('<span class="btn">Unlink Course</span>'), {:action=>"unlink_course"}, data: { confirm: "Are you sure you want to unlink the course?" }, method: "post" %>
-    <% end %>
+    <% unless lcd.nil? %> <a class="waves-effect waves-light btn modal-trigger" href="#lti-settings-modal">Linked Course Settings</a> <% end %>
   </span>
 </div>
+
+<!-- LTI Settings Modal Structure -->
+<% unless lcd.nil? %>
+  <div id="lti-settings-modal" class="modal">
+    <%= form_for lcd, as: :lcd, url: update_lti_settings_course_path do |f| %>
+      <div class="modal-content">
+        <h4>Linked Course Settings</h4>
+        <hr>
+        <label>
+          <%= f.check_box :drop_missing_students %>
+          <span>
+            <p>Auto drop students not enrolled in linked course
+              <i class="material-icons tooltips tooltipped" data-position="top" data-tooltip="When enabled, students not on the <%= lcd.platform %> roster will be marked as dropped.">info_outline</i>
+            </p>
+          </span>
+        </label>
+      </div>
+      <div class="modal-footer">
+        <span style="float: left;">
+          <%= f.submit "Save" , {class: "btn-flat"} %>
+          <a href="#!" class="modal-close btn-flat">Cancel</a>
+        </span>
+        <%= link_to raw('<span class="btn-flat">Unlink Course</span>'), {action: "unlink_course"}, data: { confirm: "Are you sure you want to unlink the course?" }, method: :post %>
+      </div>
+    <% end %>
+  </div>
+<% end %>
 
 <!-- Add Users Dropdown Structure -->
 <ul id='add-users-dropdown' class='dropdown-content'>

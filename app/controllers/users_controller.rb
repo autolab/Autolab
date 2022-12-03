@@ -347,7 +347,7 @@ private
 
   # user params that admin is allowed to edit
   def admin_user_params
-    params.require(:user).permit(:first_name, :last_name, :administrator)
+    params.require(:user).permit(:first_name, :last_name, :school, :major, :administrator)
   end
 
   def set_gh_oauth_client
