@@ -47,7 +47,7 @@
           %>
         </p>
       <% end %>
-      <% if @submission.annotations.count > 0 and @problemReleased %>
+      <% if @submission.annotations.count > 0 and (@cud.instructor? or @cud.course_assistant? or @problemReleased) %>
         <a href="#remarks">Jump to remarks</a>
       <% end %>
     </div>
