@@ -336,6 +336,7 @@ ActiveRecord::Schema.define(version: 2022_11_28_044321) do
     t.text "embedded_quiz_form_answer"
     t.integer "submitted_by_app_id"
     t.string "group_key", default: ""
+    t.integer "jobid"
     t.index ["assessment_id"], name: "index_submissions_on_assessment_id"
     t.index ["course_user_datum_id"], name: "index_submissions_on_course_user_datum_id"
   end
