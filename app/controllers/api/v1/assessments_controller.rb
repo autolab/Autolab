@@ -50,13 +50,6 @@ class Api::V1::AssessmentsController < Api::V1::BaseApiController
     respond_with result, only: allowed
   end
 
-  # endpoint for obtaining details about all problems of an assessment
-  def problems
-    problems = @assessment.problems
-
-    respond_with problems, only: [:name, :description, :max_score, :optional]
-  end
-
   # endpoint for obtaining the writeup
   def writeup
     if @assessment.writeup_is_url?
