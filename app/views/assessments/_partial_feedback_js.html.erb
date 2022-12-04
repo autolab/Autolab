@@ -1,0 +1,66 @@
+<%= external_javascript_include_tag "lodash" %>
+<script>
+  function refreshPartial(clicked) {
+    $.ajax({
+        url: `getPartialFeedback?job_id=${<%= @job_id %>}`,
+        success: (res) => {
+          if (!res) return;
+          if (res.partial_feedback) {
+            $('#partial-feedback').html(`
+              <pre>${res.partial_feedback}</pre>
+              <div class="autograding-in-progress">
+                <i class="refresh-feedback small material-icons" onclick="rotateIcon(); onClickRefresh()">refresh</i>
+                <pre>Autograding in progress</pre>
+              </div>`);
+            $('.feedback-status').html("In-Progress");
+            $('.feedback-status').removeClass("feedback-status__queued");
+            $('.feedback-status').addClass("feedback-status__inprogress");
+            $( "#result-body" ).load(window.location.href + " #result-body" );
+
+          } else if (res.queue_position != null) {
+            $('#partial-feedback').html(`
+              <div class="autograding-in-progress">
+                <pre>You are at position ${(res.queue_position) + 1} / ${(res.queue_length)} in the autograding queue.</pre>
+              </div>`);
+              $('#status-badge').html("Queued");
+              $('#status-badge').removeClass("feedback-status__inprogress");
+              $('#status-badge').addClass("feedback-status__queued");
+              $('#result-body').html(`
+              <h4>Submission queued...</h4>
+              <p>
+                Your submission is currently in the autograding queue, waiting to be graded.
+              </p>
+              <p>
+                Press the refresh button to get updates.
+              </p>`);
+          } else if (!res.is_assigned && clicked) {
+            /* if there's no partial feedback and no queue position,
+                refresh the page to see if full feedback is available */
+            location.reload();
+          } else {
+            $('#partial-feedback').html(`There was an error loading your feedback. Check back once autograding is complete.`);
+          }
+        },
+        error: (err) => {
+          $('#partial-feedback').html(`There was an error loading your feedback. Check back once autograding is complete.`);
+        }
+    });
+  }
+
+  refreshPartial(false);
+
+  const onClickRefresh = _.throttle(() => {
+    refreshPartial(true)}
+  , 5000);
+
+  const rotateIcon = () => {
+    const icon = $('.refresh-feedback');
+    if(!icon.hasClass("loading")) {
+	    icon.addClass('loading');
+      setTimeout(() => icon.removeClass('loading'), 1000);
+    }
+  }
+
+  $('.refresh-feedback')[0].addEventListener("click", onClickRefresh);
+  $('.refresh-feedback')[0].addEventListener("click", rotateIcon);
+</script>
