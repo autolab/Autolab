@@ -21,22 +21,34 @@
 
   <% for problem in @problems do %>
     <td class="prettyBorder">
-      <% if @scores[submission.id] and @scores[submission.id][problem.id] and @scores[submission.id][problem.id][:released] == 1 then
-        score = @scores[submission.id][problem.id]
-        if score[:feedback] then %>
-
-          <%= link_to (score[:score].to_f.round(1).to_s), { action: :viewFeedback,
-            submission_id: submission.id,
-            feedback: problem.id} %>
-
-        <% else %>
-          <%= score[:score].to_f.round(1).to_s %>
-        <% end %>
-      <% else %>
+      <% if @scores[submission.id] and @scores[submission.id][problem.id] %>
+        <% score = @scores[submission.id][problem.id]
+          if score[:released] == 1 then
+            if score[:feedback] %>
+              <%= link_to (score[:score].to_f.round(1).to_s), { action: :viewFeedback,
+                submission_id: submission.id,
+                feedback: problem.id} %>
+            <% else %>
+              <%= score[:score].to_f.round(1).to_s %>
+            <% end %>
+          <% else %>
+            <% unless problem.optional then
+              dontTotal = true
+            end %>
+            --
+          <% end %>
+      <% elsif submission.jobid.nil? || !submission.scores.where.not(feedback: nil).where(grader_id: 0).empty? %>
         <% unless problem.optional then
           dontTotal = true
         end %>
         --
+      <% else %>
+        <% unless problem.optional then
+          dontTotal = true
+        end %>
+        <%= link_to '<i class="tiny material-icons">access_time</i>'.html_safe, { action: :viewFeedback,
+            submission_id: submission.id,
+            feedback: problem.id} %>
       <% end %>
     </td>
   <% end %>

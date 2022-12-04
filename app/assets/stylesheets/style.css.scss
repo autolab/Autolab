@@ -213,16 +213,35 @@ div.main-header img {
   margin-bottom: 1vh;
   border-bottom: 2px solid #C4C4C4;
 }
+#status-refresh {
+  display: flex;
+  align-items: center;
+
+  .material-icons {
+    &:hover {
+      cursor: pointer;
+    }
+  }
+}
 .result-container .feedback-header h3 {
   margin-top: 0px;
   margin-bottom: 0px;
 }
-.feedback-status__completed {
+
+.feedback-status {
   padding: 0.5vh 1vw;
-  background-color: $autolab-green;
   color: white;
   font-weight: bold;
   border-radius: 10px;
+  &__completed {
+    background-color: $autolab-green;
+  }
+  &__inprogress {
+    background-color: $autolab-red;
+  }
+  &__queued {
+    background-color: $autolab-blue-text;
+  }
 }
 
 /* Custom Form Styling */
@@ -1404,6 +1423,43 @@ table.sub {
 }
 table.sub td, th {
   padding-right: 25px;
+}
+
+.autograding-in-progress {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+@keyframes spin {
+  from {
+      transform:rotate(0deg);
+  }
+  to {
+      transform:rotate(360deg);
+  }
+}
+.refresh-feedback.loading {
+  animation: spin 2s linear infinite;
+}
+.refresh-feedback {
+  color: $autolab-blue-text;
+  margin-right: 1vw;
+}
+.refresh-feedback:hover {
+  cursor: pointer;
+}
+.autograding-in-progress:before, .autograding-in-progress:after{
+  content: "";
+  flex: 1 1;
+  border-bottom: 2px dashed;
+  margin: auto;
+}
+.autograding-in-progress:before {
+  margin-right: 10px
+}
+.autograding-in-progress:after {
+  margin-left: 10px
 }
 
 .submissions {

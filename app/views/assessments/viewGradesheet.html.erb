@@ -34,12 +34,6 @@
                   "tweak",
                 <% end %>
                 "total"];
-    problems = [<% for p in @assessment.problems do %>
-                  {
-                    name: "<%= p.name %>",
-                    max_score: "<%= p.max_score %>"
-                  },
-                <% end %>];
 
     // raw data for each row
     table_data = [
@@ -116,7 +110,7 @@
       { title: "Sec", className: "sec", data: "sec" },
       <% @assessment.problems.each_with_index do |p,i| %>
         { title: `<%= p.name %>
-            <span class="max_score">(<%= p.max_score %>)</span>`,
+            <span class="max_score">(<%= p.max_score || raw("&ndash;") %>)</span>`,
           className: "problem",
           data: "problem<%= i %>",
           render: function(data, type, full, meta) {
