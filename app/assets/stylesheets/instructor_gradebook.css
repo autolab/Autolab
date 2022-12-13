@@ -15,8 +15,10 @@
 
 #last_updated {
   text-align: right;
-  margin-bottom: 3px;
   color: #999;
+  margin-left: auto;
+  width: fit-content;
+  margin-top: auto
 }
 
 #last_updated a {
