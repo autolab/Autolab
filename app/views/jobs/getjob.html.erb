@@ -62,28 +62,73 @@
 
 
 <h3>Job Parameters</h3>
-<ul>
-<li>VM image: <%= @job[:rjob]["vm"]["name"]%>
-<li>Job Timeout: <%= @job[:rjob]["timeout"] %> secs
-<li>Maximum Output File Size: <%= @job[:rjob]["maxOutputFileSize"] %> bytes
-<li>Input Files: 
-<table class=prettyBorder>
-<tr><th>Local File on Server (<kbd>localFile</kbd>)</th>
-<th>Filename on VM (<kbd>destFile</kbd>)</th></tr>
-<% for item in @job[:rjob]["input"] do %>
-  <tr>
-  <td><font size=-1><kbd><%= item["localFile"].sub(/\/afs\/cs\.cmu\.edu\/academic\/autolab\/autolab2\/courses/, "[autolab courses]")%></kbd></font></td>
-  <td><font size=-1><kbd><%= item["destFile"] %></kbd></font></td>
-  </tr>
-<% end %>
+<div class="jobs-table-div">
+  <table class="jobs-table">
+    <tbody>
+      <tr>
+        <td>
+          VM image
+        </td>
+        <td>
+          <%= @job[:rjob]["vm"]["name"]%>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          Output File
+        </td>
+        <td>
+          <%= @job[:rjob]["outputFile"].sub(/\/afs\/cs\.cmu\.edu\/academic\/autolab\/autolab2/, "[autolab]") %>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          Maximum Output File Size
+        </td>
+        <td>
+          <%= @job[:rjob]["maxOutputFileSize"] %> bytes
+        </td>
+      </tr>
+      <% if @cud.user.administrator?  then %>
+        <tr>
+          <td>
+            notifyURL
+          </td>
+          <td>
+            <%= @job[:rjob]["notifyURL"] %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
+<h4> Input Files </h4>
+<div class="jobs-table-div">
+  <table class="jobs-table">
+    <thead>
+    <tr>
+      <th>Local File on Server (<code>localFile</code>)</th>
+      <th>Filename on VM (<code>localFile</code>)</th>
+    </tr>
+    </thead>
+    <tbody style="font-size: 14px">
+    <% for item in @job[:rjob]["input"] do %>
+      <tr>
+        <td>
+          <code>
+          <%= item["localFile"].sub(/\/afs\/cs\.cmu\.edu\/academic\/autolab\/autolab2\/courses/, "[autolab courses]")%>
+          </code>
+        </td>
+        <td>
+          <code><%= item["destFile"] %>
+          </code>
+        </td>
+      </tr>
+    <% end %>
+    </tbody>
+  </table>
+</div>
 </table>
-
-<% if @cud.user.administrator?  then %>
-<li><kbd>notifyURL</kbd>: <%= @job[:rjob]["notifyURL"] %>
-<% end %>
-
-<li>Output File: <%= @job[:rjob]["outputFile"].sub(/\/afs\/cs\.cmu\.edu\/academic\/autolab\/autolab2/, "[autolab]") %>
-</ul>
 
 <h3>Runtime Trace</h3>
 <div class="result-container">
