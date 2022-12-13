@@ -1494,10 +1494,15 @@ table.sub td, th {
 }
 .jobs-table {
   table-layout: fixed;
-
 }
 .jobs-table td {
   padding: 8px 5px;
   overflow: scroll;
   font-size: inherit;
+}
+.left {
+  width: 30%;
+}
+.right {
+  width: 70%;
 }

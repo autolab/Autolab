@@ -9,50 +9,50 @@
   <table class="jobs-table">
     <tbody>
       <tr>
-        <td>
+        <td class="left">
           Name
         </td>
-        <td>
+        <td class="right">
           <%= @job[:name] %>
         </td>
       </tr>
       <tr>
-        <td>
+        <td class="left">
           ID
         </td>
-        <td>
+        <td class="right">
           <%= @job[:id] %>
         </td>
       </tr>
       <tr>
-        <td>
+        <td class="left">
           State
         </td>
-        <td>
+        <td class="right">
           <%= @job[:state] %>
         </td>
       </tr>
       <tr>
-        <td>
+        <td class="left">
           Status
         </td>
-        <td>
+        <td class="right">
           <%= @job[:status] %>
         </td>
       </tr>
       <tr>
-        <td>
+        <td class="left">
           Elapsed time
         </td>
-        <td>
+        <td class="right">
           <%= @job[:elapsed] %> secs
         </td>
       </tr>
       <tr>
-        <td>
+        <td class="left">
           VM instance
         </td>
-        <td>
+        <td class="right">
           <%= @job[:rjob]["vm"]["id"] %>
         </td>
       </tr>
@@ -66,35 +66,35 @@
   <table class="jobs-table">
     <tbody>
       <tr>
-        <td>
+        <td class="left">
           VM image
         </td>
-        <td>
+        <td class="right">
           <%= @job[:rjob]["vm"]["name"]%>
         </td>
       </tr>
       <tr>
-        <td>
+        <td class="left">
           Output File
         </td>
-        <td>
+        <td class="right">
           <%= @job[:rjob]["outputFile"].sub(/\/afs\/cs\.cmu\.edu\/academic\/autolab\/autolab2/, "[autolab]") %>
         </td>
       </tr>
       <tr>
-        <td>
+        <td class="left">
           Maximum Output File Size
         </td>
-        <td>
+        <td class="right">
           <%= @job[:rjob]["maxOutputFileSize"] %> bytes
         </td>
       </tr>
       <% if @cud.user.administrator?  then %>
         <tr>
-          <td>
+          <td class="left">
             notifyURL
           </td>
-          <td>
+          <td class="right">
             <%= @job[:rjob]["notifyURL"] %>
           </td>
         </tr>
