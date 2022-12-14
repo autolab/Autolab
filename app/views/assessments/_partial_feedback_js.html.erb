@@ -13,6 +13,7 @@
     $( "#result-body" ).load(window.location.href + " #result-body" );
   }
   function refreshPartial(clicked) {
+    const lastPartialFeedback = localStorage.getItem(<%= @job_id %>);
     $.ajax({
         url: `getPartialFeedback?job_id=${<%= @job_id %>}`,
         success: (res) => {
@@ -41,7 +42,6 @@
                 refresh the page to see if full feedback is available */
             location.reload();
           } else {
-            const lastPartialFeedback = localStorage.getItem(<%= @job_id %>);
             if (lastPartialFeedback && lastPartialFeedback != "") {
               loadPartialFeedback(lastPartialFeedback);
             } else {
