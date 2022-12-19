@@ -1,5 +1,6 @@
 <%= external_javascript_include_tag "lodash" %>
 <script>
+  const sessionKey = `${window.location.href}&job_id=${<%= @job_id %>}`;
   function loadPartialFeedback(partialFeedback) {
     $('#partial-feedback').html(`
       <pre>${partialFeedback}</pre>
@@ -13,13 +14,13 @@
     $( "#result-body" ).load(window.location.href + " #result-body" );
   }
   function refreshPartial(clicked) {
-    const lastPartialFeedback = localStorage.getItem(<%= @job_id %>);
+    const lastPartialFeedback = sessionStorage.getItem(sessionKey);
     $.ajax({
         url: `getPartialFeedback?job_id=${<%= @job_id %>}`,
         success: (res) => {
           if (!res) return;
           if (res.partial_feedback) {
-            localStorage.setItem(<%= @job_id %>, res.partial_feedback);
+            sessionStorage.setItem(sessionKey, res.partial_feedback);
             loadPartialFeedback(res.partial_feedback);
           } else if (res.queue_position != null) {
             $('#partial-feedback').html(`
@@ -53,7 +54,7 @@
           if (lastPartialFeedback && lastPartialFeedback != "") {
             loadPartialFeedback(lastPartialFeedback);
           } else {
-            $('#partial-feedback').html(`There was an error loading your feedback. Check back once autograding is complete.`);
+            $('#partial-feedback').html(`There was an error loading your feedback while autograding. Check back once autograding is complete.`);
           }
         }
     });
