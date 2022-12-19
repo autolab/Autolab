@@ -5,9 +5,8 @@
     job: <%= @job_id %>,
     user: <%= @cud&.user_id %>,
   }
-  
   const sessionKey = JSON.stringify(sessionKeyJson);
-  console.log('sessionKey', sessionKey);
+  
   function loadPartialFeedback(partialFeedback) {
     $('#partial-feedback').html(`
       <pre>${partialFeedback}</pre>
