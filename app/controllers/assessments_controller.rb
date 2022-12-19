@@ -574,6 +574,8 @@ class AssessmentsController < ApplicationController
     # Checks whether at least one problem has finished being auto-graded
     @finishedAutograding = @submission.scores.where.not(feedback: nil).where(grader_id: 0)
     @job_id = @submission["jobid"]
+    @submission_id = params[:submission_id]
+
     # Autograding is not in-progress and no score is available
     if @score.nil?
       if !@finishedAutograding.empty?

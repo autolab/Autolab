@@ -1,6 +1,13 @@
 <%= external_javascript_include_tag "lodash" %>
 <script>
-  const sessionKey = `${window.location.href}&job_id=${<%= @job_id %>}`;
+  const sessionKeyJson = {
+    submission: <%= @submission_id %>,
+    job: <%= @job_id %>,
+    user: <%= @cud&.user_id %>,
+  }
+  
+  const sessionKey = JSON.stringify(sessionKeyJson);
+  console.log('sessionKey', sessionKey);
   function loadPartialFeedback(partialFeedback) {
     $('#partial-feedback').html(`
       <pre>${partialFeedback}</pre>
