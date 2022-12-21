@@ -574,6 +574,8 @@ class AssessmentsController < ApplicationController
     # Checks whether at least one problem has finished being auto-graded
     @finishedAutograding = @submission.scores.where.not(feedback: nil).where(grader_id: 0)
     @job_id = @submission["jobid"]
+    @submission_id = params[:submission_id]
+
     # Autograding is not in-progress and no score is available
     if @score.nil?
       if !@finishedAutograding.empty?
@@ -608,27 +610,25 @@ class AssessmentsController < ApplicationController
 
   def getPartialFeedback
     job_id = params["job_id"].to_i
-    resp = {}
+
     # User requested to view feedback on a score
     if job_id.nil?
       flash[:error] = "Invalid job id"
       redirect_to(action: "index") && return
     end
 
-    begin
+    resp = get_job_status(job_id)
+
+    if resp["is_assigned"]
       resp['partial_feedback'] = tango_get_partial_feedback(job_id)
-    rescue AutogradeError
-      # if unable to get partial feedback, check if job is on the queue
-      @job_status = get_job_status(job_id)
-      resp["is_assigned"] = @job_status["is_assigned"]
-      resp["queue_position"] = @job_status["queue_position"]
-      resp["queue_length"] = @job_status["queue_length"]
     end
 
     render json: resp.to_json
   end
 
   def parseScore(feedback)
+    return if feedback.nil?
+
     lines = feedback.lines
     feedback = lines[lines.length - 1].chomp
 
@@ -660,6 +660,8 @@ class AssessmentsController < ApplicationController
   end
 
   def parseFeedback(feedback)
+    return if feedback.nil?
+
     lines = feedback.lines
     feedback = lines[lines.length - 2]&.chomp
 
