@@ -128,7 +128,7 @@ jQuery(function() {
         'aoColumnDefs': [
           { "bSortable": false, "aTargets": [ 0 ] },
           { "bSearchable": false, "aTargets": non_searchable_columns },
-          { "sType": "html", "aTargets": [ email_col ] },
+          { "sType": "html", "aTargets": [ email_col,lec_sec_col ] },
           { "sType": "num-html", "aTargets": numeric_columns }, 
         ],
         'columns' : columns,
@@ -144,7 +144,7 @@ jQuery(function() {
             });
           }
         },
-        "aaSorting": [[ email_col, 'asc' ]]
+        "aaSorting": [[ email_col, 'asc' ],[lec_sec_col, 'asc']]
     }).fnSetFilteringDelay();
 
     // dynamically change # of rows to display
