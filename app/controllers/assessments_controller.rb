@@ -165,10 +165,15 @@ class AssessmentsController < ApplicationController
         redirect_to(action: "install_assessment")
         return
       end
+    rescue SyntaxError => e
+      flash[:error] = "Error parsing assessment configuration file:"
+      # escape so that <compiled> doesn't get treated as a html tag
+      flash[:error] += "<br><pre>#{CGI.escapeHTML e.to_s}</pre>"
+      flash[:html_safe] = true
+      redirect_to(action: "install_assessment") && return
     rescue StandardError => e
       flash[:error] = "Error while reading the tarball -- #{e.message}."
-      redirect_to(action: "install_assessment")
-      return
+      redirect_to(action: "install_assessment") && return
     end
 
     # Check if the assessment already exists.
@@ -925,7 +930,15 @@ private
       else
         return false unless asmt_name
 
-        asmt_rb_exists = true if pathname == "#{asmt_name}/#{asmt_name}.rb"
+        if pathname == "#{asmt_name}/#{asmt_name}.rb"
+          # We only ever read once, so no need to rewind after
+          config_source = entry.read
+
+          # validate syntax of config
+          RubyVM::InstructionSequence.compile(config_source)
+
+          asmt_rb_exists = true
+        end
         asmt_yml_exists = true if pathname == "#{asmt_name}/#{asmt_name}.yml"
       end
     end
