@@ -36,6 +36,9 @@ td.focus {
   padding-right: 7px;
   white-space: nowrap;
 }
+#grades th.sorting, th.sorting_asc, th.sorting_desc {
+  cursor: pointer;
+}
 
 #grades_filter {
   margin-bottom: 10px;
@@ -142,6 +145,7 @@ td.focus {
 
 #grades td.id > a.email {
   margin-right: 4px;
+  cursor: pointer;
 }
 
 #grades .tweak a:hover {
@@ -293,4 +297,34 @@ input[type="checkbox"]:not(:checked),
 
 #interaction_badge {
   color: #0882af;
+}
+.sorting .up-icon{
+  display: none;
+}
+.sorting_asc .up-icon{
+  display: inline-block;
+}
+.sorting_desc .up-icon{
+  display: none;
+}
+.sorting .down-icon{
+  display: none;
+}
+.sorting_desc .down-icon{
+  display: inline-block;
+}
+.sorting_asc .down-icon{
+  display: none;
+}
+.sorting .sort-icon{
+  display: inline-block;
+}
+.sorting_asc .sort-icon{
+  display: none;
+}
+.sorting_desc .sort-icon{
+  display: none;
+}
+.small-icon {
+  font-size: 16px !important;
 }
