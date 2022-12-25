@@ -11,6 +11,7 @@ var slickgrid_options = {
   defaultColumnWidth: 65,
   syncColumnCellResize: true,
   fullWidthRows: true,
+  enableTextSelectionOnCells: true,
 
   defaultFormatter: function(row, cell, value, columnDef, data) {
     user = data.email;

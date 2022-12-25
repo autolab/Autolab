@@ -17,7 +17,7 @@
     email_col = 1;
     lec_sec_col = 4;
     problem_count = <%= @assessment.problems.length %>;
-    first_problem_column = 4;
+    first_problem_column = 5;
     first_non_searchable_column = 2;
     first_row_ready = true;
 
@@ -246,8 +246,15 @@ Interaction between gradesheet and annotations
   </div>
 </div>
 
-<span style="display: inline-block;" class="template" id="icon_template">
-<i class="material-icons small-icon down-icon" aria-hidden="true">arrow_downward</i>
-<i class="material-icons small-icon up-icon" aria-hidden="true">arrow_upward</i>
-<i class="material-icons small-icon sort-icon" aria-hidden="true">sort</i></span>
+<span id="icon_template" class="template" >
+  <i class="material-icons small-icon down-icon" aria-hidden="true">
+    arrow_downward
+  </i>
+  <i class="material-icons small-icon up-icon" aria-hidden="true">
+    arrow_upward
+  </i>
+  <i class="material-icons small-icon sort-icon" aria-hidden="true">
+    sort
+  </i>
+</span>
 

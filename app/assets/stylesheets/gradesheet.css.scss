@@ -2,7 +2,10 @@ td.focus {
   background-color: #666666 !important;
   color: white !important;
 }
-
+.container {
+  width: 90%;
+  max-width: none;
+}
 #grades_wrapper .tools {
   margin-top: 15px;
   margin-bottom: 20px;
@@ -72,14 +75,12 @@ td.focus {
 #grades {
   box-shadow: 0 0 5px 0px #eee;
   font-size: 16px;
-  border: 1px solid #ccc;
   border-radius: 2px;
   border-collapse: collapse;
   margin: 0 auto 0 auto;
 }
 
 #grades td {
-  background-color: #f8f8f8;
   padding: 10px;
   border: 1px solid #e8e8e8;
   border-right: none;
@@ -92,7 +93,7 @@ td.focus {
 
 #grades td.edit {
   text-align: center;
-  background-color: white;
+  background-color: #f2f2f2;
 }
 
 #grades th {
@@ -102,7 +103,6 @@ td.focus {
   border-left: none;
   text-transform: uppercase;
   font-size: 0.8em;
-  color: #909090;
   white-space: nowrap;
   overflow: hidden;
   padding-left: 10px;
@@ -178,16 +178,16 @@ td.id {
   padding: 3px;
   background-color: #eee;
   display: none;
-  max-width: 360px;
 }
 
 #grades td.id .popover span.filename {
   padding-left: 3px;
   line-height: 1.8em;
+  display: block;
+  text-align: center;
 }
 
 #grades td.id .popover span.filename span.links {
-  float: right;
   padding-right: 3px;
   text-transform: uppercase;
   font-weight: bold;
@@ -281,7 +281,7 @@ td.id {
 }
 
 .template {
-  display: none;
+  display: none ;
 }
 
 input[type="checkbox"]:not(:checked),
@@ -328,3 +328,10 @@ input[type="checkbox"]:not(:checked),
 .small-icon {
   font-size: 16px !important;
 }
+#grades #icon_template {
+  display: inline-block;
+  line-height: 14px;
+  vertical-align: middle;
+}
+
+
