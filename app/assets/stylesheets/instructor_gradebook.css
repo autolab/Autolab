@@ -168,6 +168,7 @@ div.course table tr td {
   font-weight: bold;
   font-size: 0.9em;
 }
+
 div .search-student-bar {
   display: inline-flex;
   align-items: center;
@@ -175,4 +176,10 @@ div .search-student-bar {
   justify-content: space-between;
   flex-grow: 1;
   width: 100%;
+}
+
+.gradebook-row {
+  width: 100%;
+  margin-top: -20px;
+  margin-bottom: 10px;
 }

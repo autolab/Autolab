@@ -298,36 +298,47 @@ input[type="checkbox"]:not(:checked),
 #interaction_badge {
   color: #0882af;
 }
+
 .sorting .up-icon{
   display: none;
 }
+
 .sorting_asc .up-icon{
   display: inline-block;
 }
+
 .sorting_desc .up-icon{
   display: none;
 }
+
 .sorting .down-icon{
   display: none;
 }
+
 .sorting_desc .down-icon{
   display: inline-block;
 }
+
 .sorting_asc .down-icon{
   display: none;
 }
+
 .sorting .sort-icon{
   display: inline-block;
 }
+
 .sorting_asc .sort-icon{
   display: none;
 }
+
 .sorting_desc .sort-icon{
   display: none;
 }
+
 .small-icon {
   font-size: 16px !important;
 }
+
 #grades #icon_template {
   display: inline-block;
   line-height: 14px;

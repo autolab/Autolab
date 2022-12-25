@@ -146,8 +146,10 @@ jQuery(function() {
         },
         "aaSorting": [[ email_col, 'asc' ],[lec_sec_col, 'asc']]
     }).fnSetFilteringDelay();
+
+    // add sorting icons to table headings
     function add_icons(selector) {
-      var icons = $icon_template.clone();
+      let icons = $icon_template.clone();
       icons.appendTo(selector);
     }
     add_icons('th.id');
