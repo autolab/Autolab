@@ -112,7 +112,7 @@
         } },
       { title: "Course &#8470;", className: "course_number", data: "course_number" },
       { title: "Lec/Sec", className: "lec-sec", data: "lec-sec" },
-        { title: "Actions", className: "actions", data: "actions" },
+      { title: "Actions", className: "actions", data: "actions" },
       <% @assessment.problems.each_with_index do |p,i| %>
         { title: `<%= p.name %>
             <span class="max_score">(<%= p.max_score || raw("&ndash;") %>)</span>`,
