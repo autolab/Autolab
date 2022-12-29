@@ -107,8 +107,12 @@
   <table class="jobs-table">
     <thead>
     <tr>
-      <th>Local File on Server (<code>localFile</code>)</th>
-      <th>Filename on VM (<code>localFile</code>)</th>
+      <th>
+        Local File on Server (<code>localFile</code>)
+      </th>
+      <th>
+        Filename on VM (<code>destFile</code>)
+      </th>
     </tr>
     </thead>
     <tbody style="font-size: 14px">
@@ -116,11 +120,12 @@
       <tr>
         <td>
           <code>
-          <%= item["localFile"].sub(/\/afs\/cs\.cmu\.edu\/academic\/autolab\/autolab2\/courses/, "[autolab courses]")%>
+            <%= item["localFile"].sub(/\/afs\/cs\.cmu\.edu\/academic\/autolab\/autolab2\/courses/, "[autolab courses]")%>
           </code>
         </td>
         <td>
-          <code><%= item["destFile"] %>
+          <code>
+            <%= item["destFile"] %>
           </code>
         </td>
       </tr>
@@ -136,8 +141,10 @@
     <div class="result-pane" style="padding: 0 2vh;">
       <ul>
         <% for item in @job[:rjob]["trace"] do %>
-          <% poo = item.split("|") %>
-          <li><span class="moment-date-time"><%= DateTime.parse(poo[0]).to_time.in_time_zone.to_s %></span> | <%= poo[1] %></li>
+          <% trace_line = item.split("|") %>
+          <li>
+            <span class="moment-date-time"><%= DateTime.parse(trace_line[0]).to_time.in_time_zone.to_s %></span> | <%= trace_line[1] %>
+          </li>
         <% end %>
       </ul>
     </div>
