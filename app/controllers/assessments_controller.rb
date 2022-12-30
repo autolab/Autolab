@@ -8,6 +8,7 @@ require "utilities"
 
 class AssessmentsController < ApplicationController
   include ActiveSupport::Callbacks
+  include AssessmentAutogradeCore
 
   rescue_from ActionView::MissingTemplate do |_exception|
     redirect_to("/home/error_404")
@@ -164,10 +165,15 @@ class AssessmentsController < ApplicationController
         redirect_to(action: "install_assessment")
         return
       end
+    rescue SyntaxError => e
+      flash[:error] = "Error parsing assessment configuration file:"
+      # escape so that <compiled> doesn't get treated as a html tag
+      flash[:error] += "<br><pre>#{CGI.escapeHTML e.to_s}</pre>"
+      flash[:html_safe] = true
+      redirect_to(action: "install_assessment") && return
     rescue StandardError => e
       flash[:error] = "Error while reading the tarball -- #{e.message}."
-      redirect_to(action: "install_assessment")
-      return
+      redirect_to(action: "install_assessment") && return
     end
 
     # Check if the assessment already exists.
@@ -570,10 +576,28 @@ class AssessmentsController < ApplicationController
   def viewFeedback
     # User requested to view feedback on a score
     @score = @submission.scores.find_by(problem_id: params[:feedback])
-    unless @score
-      flash[:error] = "No feedback for requested score"
-      redirect_to(action: "index") && return
+    # Checks whether at least one problem has finished being auto-graded
+    @finishedAutograding = @submission.scores.where.not(feedback: nil).where(grader_id: 0)
+    @job_id = @submission["jobid"]
+    @submission_id = params[:submission_id]
+
+    # Autograding is not in-progress and no score is available
+    if @score.nil?
+      if !@finishedAutograding.empty?
+        redirect_to(action: "viewFeedback",
+                    feedback: @finishedAutograding.first.problem_id,
+                    submission_id: params[:submission_id]) && return
+      end
+
+      if @job_id.nil?
+        flash[:error] = "No feedback for requested score"
+        redirect_to(action: "index") && return
+      end
     end
+
+    # Autograding is in-progress
+    return if @score.nil?
+
     @jsonFeedback = parseFeedback(@score.feedback)
     @scoreHash = parseScore(@score.feedback)
     if Archive.archive? @submission.handin_file_path
@@ -587,7 +611,29 @@ class AssessmentsController < ApplicationController
     }
   end
 
+  action_auth_level :getPartialFeedback, :student
+
+  def getPartialFeedback
+    job_id = params["job_id"].to_i
+
+    # User requested to view feedback on a score
+    if job_id.nil?
+      flash[:error] = "Invalid job id"
+      redirect_to(action: "index") && return
+    end
+
+    resp = get_job_status(job_id)
+
+    if resp["is_assigned"]
+      resp['partial_feedback'] = tango_get_partial_feedback(job_id)
+    end
+
+    render json: resp.to_json
+  end
+
   def parseScore(feedback)
+    return if feedback.nil?
+
     lines = feedback.lines
     feedback = lines[lines.length - 1].chomp
 
@@ -619,6 +665,8 @@ class AssessmentsController < ApplicationController
   end
 
   def parseFeedback(feedback)
+    return if feedback.nil?
+
     lines = feedback.lines
     feedback = lines[lines.length - 2]&.chomp
 
@@ -869,6 +917,8 @@ private
     tar_extract.each do |entry|
       pathname = entry.full_name
       next if pathname.start_with? "."
+
+      # Removes file created by Mac when tar'ed
       next if pathname.start_with? "PaxHeader"
 
       pathname.chomp!("/") if entry.directory?
@@ -880,7 +930,15 @@ private
       else
         return false unless asmt_name
 
-        asmt_rb_exists = true if pathname == "#{asmt_name}/#{asmt_name}.rb"
+        if pathname == "#{asmt_name}/#{asmt_name}.rb"
+          # We only ever read once, so no need to rewind after
+          config_source = entry.read
+
+          # validate syntax of config
+          RubyVM::InstructionSequence.compile(config_source)
+
+          asmt_rb_exists = true
+        end
         asmt_yml_exists = true if pathname == "#{asmt_name}/#{asmt_name}.yml"
       end
     end

@@ -28,7 +28,14 @@ $(window).on('resize', function () {
 // also retrieves annotation id to allow easy deletion in the future
 function retrieveSharedComments() {
   $.getJSON(sharedCommentsPath, function (data) {
-    localCache['shared_comments'] = data.map(i => i.comment);
+    localCache['shared_comments'] = {};
+    data.forEach(e => {
+      if (!e.problem_id)
+        return;
+
+      localCache['shared_comments'][e.problem_id] ||= [];
+      localCache['shared_comments'][e.problem_id].push(e.comment);
+    });
   });
 }
 
@@ -138,8 +145,10 @@ function plusFix(n) {
 // function called after create, update & delete of annotations
 function fillAnnotationBox() {
   retrieveSharedComments();
-  $('.problemGrades').load(document.URL + ' .problemGrades');
-  $('#annotationPane').load(document.URL + ' #annotationPane', function() {
+  $.get(document.URL, function(data) {
+    const $page = $('<div />').html(data);
+    $('.problemGrades').html($page.find('.problemGrades'));
+    $('#annotationPane').html($page.find(' #annotationPane'));
     $('.collapsible').collapsible({ accordion: false });
     attachChangeFileEvents();
     attachAnnotationPaneEvents();
@@ -317,11 +326,15 @@ function attachEvents() {
     const line = $(this).parent().parent().parent();
     const annotationContainer = line.data("lineId");
 
-    // append an annotation form only if there is none currently
-    if ($("#annotation-line-" + annotationContainer).find(".annotation-line").length === 0) {
-      $("#annotation-line-" + annotationContainer).append(newAnnotationFormCode());
-
+    // Allow multiple annotations per line
+    // However, only allow one annotation to be created per line at a time
+    const $annotationLine = $("#annotation-line-" + annotationContainer);
+    if ($annotationLine.find(".new-annotation").length === 0) {
+      $annotationLine.append(newAnnotationFormCode());
+      $('.code-table').scrollTo($annotationLine.children().last(), { duration: "fast" });
       refreshAnnotations();
+    } else {
+      M.toast({html: 'Only one annotation can be created per line at a time!'});
     }
   });
 }
@@ -366,10 +379,11 @@ function attachAnnotationPaneEvents() {
     const score = $(this).parent().data("score");
     const comment = $(this).parent().data("comment");
     const annotationId = $(this).parent().data("annotationid");
+    const shared = $(this).parent().data("shared");
     const $annotationDiv = $(this).parents(".global-annotation");
 
     if (!$annotationDiv.next().hasClass("global-annotation-form")) {
-      $annotationDiv.after(globalAnnotationFormCode(false, { problem, score, comment, annotationId }));
+      $annotationDiv.after(globalAnnotationFormCode(false, { problem, score, comment, annotationId, shared }));
     }
   });
 
@@ -470,19 +484,22 @@ function newAnnotationFormCode() {
   var box = $(".base-annotation-line").clone();
   box.removeClass("base-annotation-line");
 
+  // Allow us to enforce the creation of one annotation per line at a time
+  box.addClass("new-annotation");
+
   // Creates a dictionary of problem and grader_id
-  var autogradedproblems = {}
+  var problemGraderId = {};
   _.each(scores, function (score) {
-    autogradedproblems[score.problem_id] = score.grader_id;
-  })
+    problemGraderId[score.problem_id] = score.grader_id;
+  });
 
   _.each(problems, function (problem) {
-    if (autogradedproblems[problem.id] != 0) { // Because grader == 0 is autograder
+    if (problemGraderId[problem.id] !== 0) { // Because grader == 0 is autograder
       box.find("select").append(
           $("<option />").val(problem.id).text(problem.name)
-      )
+      );
     }
-  })
+  });
 
   box.find('.annotation-form').show();
   box.find('.annotation-cancel-button').click(function (e) {
@@ -495,12 +512,19 @@ function newAnnotationFormCode() {
     appendTo: box.find('#comment-textarea').parent(),
     minLength: 0,
     delay: 0,
-    source: localCache["shared_comments"]
+    source: localCache["shared_comments"][box.find("select").val()] || []
   }).focus(function () {
     $(this).autocomplete('search', $(this).val())
   });
 
   box.tooltip();
+
+  box.find("select").on('change', function () {
+    const problem_id = $(this).val();
+
+    // Update autocomplete to display shared comments for selected problem
+    box.find("#comment-textarea").autocomplete("option", "source", localCache["shared_comments"][problem_id] || []);
+  });
 
   box.find('.annotation-form').submit(function (e) {
     e.preventDefault();
@@ -536,7 +560,7 @@ function newAnnotationFormCode() {
 }
 
 // Create form code to create / update a global annotation
-// config takes the following keys: problem, score (for edit), comment (for edit)
+// config takes the following keys: problem, score (for edit), comment (for edit), shared (for edit)
 function globalAnnotationFormCode(newAnnotation, config) {
   const box = $(".base-global-annotation-form").clone();
   box.removeClass("base-global-annotation-form");
@@ -545,6 +569,7 @@ function globalAnnotationFormCode(newAnnotation, config) {
     box.find(".annotation-form-header").text("Update global annotation");
     box.find(".comment").val(config.comment);
     box.find(".score").val(config.score);
+    box.find("#shared-comment").prop("checked", config.shared);
     box.find('input[type=submit]').val("Update annotation");
   }
 
@@ -564,7 +589,7 @@ function globalAnnotationFormCode(newAnnotation, config) {
     appendTo: box.find('#comment-textarea').parent(),
     minLength: 0,
     delay: 0,
-    source: localCache["shared_comments"]
+    source: localCache["shared_comments"][problemNameToIdMap[config.problem]] || []
   }).focus(function () {
     $(this).autocomplete('search', $(this).val())
   });
@@ -614,10 +639,18 @@ function initializeBoxForm(box, annotation) {
   var valueStr = annotation.value ? annotation.value.toString() : "0";
   var commentStr = annotation.comment;
 
+  // Creates a dictionary of problem and grader_id
+  var problemGraderId = {};
+  _.each(scores, function (score) {
+    problemGraderId[score.problem_id] = score.grader_id;
+  });
+
   _.each(problems, function (problem) {
-    box.find("select").append(
-      $("<option />").val(problem.id).text(problem.name)
-    )
+    if (problemGraderId[problem.id] !== 0) { // Because grader == 0 is autograder
+      box.find("select").append(
+          $("<option />").val(problem.id).text(problem.name)
+      );
+    }
   });
 
   box.find(".comment").val(commentStr);
@@ -694,19 +727,26 @@ function newAnnotationBox(annotation) {
     e.preventDefault();
     box.find('.annotation-box').hide();
     box.find('.annotation-form').show().css('width', '100%');
-    
+
     box.find('#comment-textarea').autocomplete({
       appendTo: box.find('#comment-textarea').parent(),
       minLength: 0,
       delay: 0,
-      source: localCache["shared_comments"],
+      source: localCache["shared_comments"][annotation.problem_id] || [],
     }).focus(function () {
       $(this).autocomplete('search', $(this).val())
     });
     box.tooltip();
     
     refreshAnnotations();
-  })
+  });
+
+  box.find("select").on('change', function () {
+    const problem_id = $(this).val();
+
+    // Update autocomplete to display shared comments for selected problem
+    box.find("#comment-textarea").autocomplete("option", "source", localCache["shared_comments"][problem_id] || []);
+  });
 
   box.find('.annotation-delete-button').on("click", function (e) {
     e.preventDefault();
@@ -977,19 +1017,18 @@ var newAnnotationFormTemplatePDF = function (name, pageInd) {
   });
 
   // Creates a dictionary of problem and grader_id
-  var autogradedproblems = {}
-
+  var problemGraderId = {};
   _.each(scores, function (score) {
-    autogradedproblems[score.problem_id] = score.grader_id;
-  })
+    problemGraderId[score.problem_id] = score.grader_id;
+  });
 
   _.each(problems, function (problem) {
-    if (autogradedproblems[problem.id] != 0) { // Because grader == 0 is autograder
+    if (problemGraderId[problem.id] !== 0) { // Because grader == 0 is autograder
       problemSelect.appendChild(elt("option", {
         value: problem.id
       }, problem.name));
     }
-  })
+  });
 
   var newForm = elt("form", {
     title: "Press <Enter> to Submit",

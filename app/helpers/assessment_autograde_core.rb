@@ -128,6 +128,27 @@ module AssessmentAutogradeCore
     "#{course.name}_#{assessment.name}_#{submission.version}_#{submission.course_user_datum.email}"
   end
 
+  def get_job_status(job_id)
+    begin
+      raw_live_jobs = TangoClient.jobs
+      assigned_jobs, unassigned_jobs = raw_live_jobs.partition {|rjob| rjob["assigned"]}
+
+      # Order by job number to get the position in queue
+      unassigned_jobs = unassigned_jobs.sort {|rjob1, rjob2| rjob1["id"].to_i - rjob2["id"].to_i}
+    rescue TangoClient::TangoException => e
+      COURSE_LOGGER.log("Error while getting jobs")
+      raise AutogradeError.new("Error while getting jobs", :get_job_status)
+    end
+    
+    assignment = {"is_assigned"=>assigned_jobs.any? {|rjob| rjob["id"].to_i == job_id}}
+    if !assignment["is_assigned"] && unassigned_jobs.length > 0
+      # Assign a queue position if the job is live but not assigned
+      assignment["queue_position"] = unassigned_jobs.index {|rjob| rjob["id"] == job_id}
+      assignment["queue_length"] = unassigned_jobs.length
+    end
+    assignment
+  end
+
   ##
   # Makes the Tango addJob request.
   # Returns the Tango response
@@ -189,6 +210,25 @@ module AssessmentAutogradeCore
       end
 
     end
+  end
+
+  def tango_get_partial_feedback(job_id)
+    begin
+      response = TangoClient.getpartialoutput(job_id)
+    rescue Timeout::Error
+      COURSE_LOGGER.log("Error while getting partial feedback for job #{job_id}")
+      raise AutogradeError.new("Timed out while getting partial feedback", :tango_get_partial_feedback)
+    rescue TangoClient::TangoException => e
+      COURSE_LOGGER.log("Error while getting partial feedback for job #{job_id} status: #{e.message}")
+      raise AutogradeError.new("Error while getting partial feedback", :tango_get_partial_feedback, e.message)
+    end
+
+    if response.nil?
+      COURSE_LOGGER.log("Error while getting partial feedback for job #{job_id} status: No feedback")
+      raise AutogradeError.new("Error getting response from getting partial feedback", :tango_get_partial_feedback)
+    end
+
+    response["output"]
   end
 
   ##
@@ -268,7 +308,13 @@ module AssessmentAutogradeCore
       tango_poll(course, assessment, submissions, output_file)
     end
 
-    response_json["jobId"].to_i
+    job = response_json["jobId"].to_i
+    ActiveRecord::Base.transaction do
+      submissions.each do |submission|
+        submission.update!(jobid: job)
+      end
+    end
+    job
   end
 
   #
@@ -340,6 +386,14 @@ module AssessmentAutogradeCore
   #
   def saveAutograde(submissions, feedback)
     begin
+      # Set job id to nil to indicate that autograding is no longer in-progress
+      ActiveRecord::Base.transaction do
+        submissions.each do |submission|
+          submission.jobid = nil
+          submission.save!
+        end
+      end
+
       lines = feedback.rstrip.lines
       raise AutogradeError.new("The Autograder returned no output", :autograde_no_output) if lines.empty?
 
