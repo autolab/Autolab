@@ -157,7 +157,7 @@ There are three options for TLS: using Let's Encrypt (for free TLS certificates)
         docker-compose up
 
 ## Debugging your Deployment
-In the (very likely) event that you run into problems during setup, hopefully these steps will help you to help identify and diagnose the issue. If you continue to face difficulties or believe you discovered issues with the setup process please join our Slack [here](https://autolab-slack.herokuapp.com/) and let us know and we will try our best to help.
+In the (very likely) event that you run into problems during setup, hopefully these steps will help you to help identify and diagnose the issue. If you continue to face difficulties or believe you discovered issues with the setup process please join our Slack [here](https://join.slack.com/t/autolab/shared_invite/zt-1maodn5ti-jdLHUnm5sZkuLn4PJNaTbw) and let us know and we will try our best to help.
 
 ### Better logging output for Docker Compose
 By default, `docker-compose up -d` runs in detached state and it is not easy to immediately see errors:
