@@ -10,7 +10,7 @@ Since 2010, Autolab has had a transformative impact on education at CMU. Each se
 
 
 <p>
-<a href="https://autolab-slack.herokuapp.com" style="float:left">
+<a href="https://join.slack.com/t/autolab/shared_invite/zt-1maodn5ti-jdLHUnm5sZkuLn4PJNaTbw" style="float:left">
   <img src="public/images/join_slack.svg" width="170px" height="44px">
 </a>
 
