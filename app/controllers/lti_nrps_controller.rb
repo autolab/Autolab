@@ -72,7 +72,7 @@ class LtiNrpsController < ApplicationController
     end
 
     @lti_context_membership_url = lcd.membership_url
-    @course_id = lcd.course_id
+    @course = lcd.course
 
     # get access token to be authenticated to make NRPS request
     @access_token = request_access_token
@@ -87,7 +87,6 @@ class LtiNrpsController < ApplicationController
     # Update the roster with the retrieved set of members
     @cuds = parse_members_data(lcd, members.as_json)
     @sorted_cuds = @cuds.sort_by { |cud| cud[:color] || "z" }.reverse
-    @course = lcd.course
   end
 
 private
@@ -109,8 +108,7 @@ private
   end
 
   def parse_members_data(lcd, members_data)
-    cuds = CourseUserDatum.where(course_id: lcd.course_id, instructor: false,
-                                 course_assistant: false).to_set
+    cuds = @course.course_user_data.all.to_set
     email_to_cud = {}
     cuds.each do |cud|
       email_to_cud[cud.user.email] = cud
@@ -130,7 +128,7 @@ private
 
       cud_data = {}
       user = User.find_by(email: user_data["email"])
-      if user.nil? || lcd.course.course_user_data.find_by(user_id: user.id).nil?
+      if user.nil? || @course.course_user_data.find_by(user_id: user.id).nil?
         cud_data[:color] = "green"
         cud_data[:email] = user_data["email"]
         cud_data[:first_name] = user_data["given_name"]
@@ -151,6 +149,11 @@ private
     end
 
     return cud_view unless lcd.drop_missing_students
+
+    # Never drop instructors, remove them first
+    email_to_cud.delete_if do |_, cud|
+      cud.instructor? || cud.user.administrator? || cud.course_assistant?
+    end
 
     # Mark the remaining students as dropped
     email_to_cud.each do |_, cud|
