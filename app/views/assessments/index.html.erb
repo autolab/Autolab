@@ -125,15 +125,17 @@
   <div class="section">
     <h3 class="section-title"><span class="white">Attachments</span></h3>
     <ul class="collection with-header attachments">
-      <%= render @attachments %>
       <% if @cud.instructor? %>
         <li class="collection-item add">
+          <p>
           <%= link_to new_course_attachment_path(@course) do %>
             <i class="material-icons left">note_add</i>Add Attachment
           <% end %>
           <span class="secondary-content"></span>
+          </p>
         </li>
       <% end %>
+      <%= render @attachments %>
     </ul>
   </div>
 <% end %>
