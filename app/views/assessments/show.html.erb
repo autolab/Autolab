@@ -211,7 +211,7 @@
             <% end %>
           <% end %>
         <% end %>
-      <% if @cud.instructor? then %>
+      <% if @cud.instructor? %>
         <li class="collection-item add">
           <%= link_to new_course_assessment_attachment_path(@course, @assessment) do %>
             <i class="material-icons left">note_add</i>Add Attachment
