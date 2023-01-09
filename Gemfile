@@ -22,7 +22,7 @@ gem 'terser', '>= 1.1.7'
 gem 'coffee-rails', '>= 4.0.0'
 
 # See https://github.com/sstephenson/execjs#readme for more supported runtimes
-gem 'mini_racer', '~> 0.6.3' , platforms: :ruby
+gem 'mini_racer', '~> 0.4.0' , platforms: :ruby
 
 # Use jquery as the JavaScript library
 gem 'jquery-rails'
@@ -49,7 +49,7 @@ gem 'rake', '>=10.3.2'
 gem 'populator', '>=1.0.0'
 
 # To communicate with MySQL database
-gem 'mysql2', '~>0.4.10'
+# gem 'mysql2', '~>0.4.10'
 
 # Development server
 gem 'thin'
@@ -129,12 +129,12 @@ group :development do
   gem 'yard'
 
   # sqlite3 adapter
-  gem 'sqlite3', '~> 1.4'
+  gem 'sqlite3', '~> 1.5.4'
 end
 
 # Also install sqlite3 for docker installations
 if ENV['DEPLOY_METHOD'] == "docker"
-  gem 'sqlite3', '~> 1.4'
+  gem 'sqlite3', '~> 1.5.4'
 end
 
 gem 'tzinfo-data'

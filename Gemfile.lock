@@ -173,11 +173,12 @@ GEM
     jstz-rails3-plus (1.0.5)
       railties (>= 3.1)
     jwt (2.5.0)
-    libv8-node (16.10.0.0)
-    libv8-node (16.10.0.0-arm64-darwin)
-    libv8-node (16.10.0.0-x86_64-darwin)
-    libv8-node (16.10.0.0-x86_64-darwin-19)
-    libv8-node (16.10.0.0-x86_64-linux)
+    libv8-node (15.14.0.1)
+    libv8-node (15.14.0.1-aarch64-linux)
+    libv8-node (15.14.0.1-arm64-darwin-21)
+    libv8-node (15.14.0.1-x86_64-darwin-19)
+    libv8-node (15.14.0.1-x86_64-darwin-20)
+    libv8-node (15.14.0.1-x86_64-linux)
     lockbox (1.0.0)
     loofah (2.18.0)
       crass (~> 1.0.2)
@@ -197,8 +198,8 @@ GEM
       rake
     mini_mime (1.1.2)
     mini_portile2 (2.8.0)
-    mini_racer (0.6.3)
-      libv8-node (~> 16.10.0.0)
+    mini_racer (0.4.0)
+      libv8-node (~> 15.14.0.0)
     minitest (5.16.2)
     moment_timezone-rails (0.5.14)
       momentjs-rails (~> 2.15.1)
@@ -206,12 +207,13 @@ GEM
       railties (>= 3.1)
     multi_json (1.15.0)
     multi_xml (0.6.0)
-    mysql2 (0.4.10)
     net-ldap (0.17.1)
     newrelic_rpm (8.8.0)
     nio4r (2.5.8)
     nokogiri (1.13.9)
       mini_portile2 (~> 2.8.0)
+      racc (~> 1.4)
+    nokogiri (1.13.9-aarch64-linux)
       racc (~> 1.4)
     nokogiri (1.13.9-arm64-darwin)
       racc (~> 1.4)
@@ -377,7 +379,7 @@ GEM
       actionpack (>= 5.2)
       activesupport (>= 5.2)
       sprockets (>= 3.0.0)
-    sqlite3 (1.4.4)
+    sqlite3 (1.5.4-arm64-darwin)
     stringio (3.0.2)
     terser (1.1.11)
       execjs (>= 0.3.0, < 3)
@@ -411,6 +413,7 @@ GEM
     zeitwerk (2.6.0)
 
 PLATFORMS
+  aarch64-linux
   arm64-darwin-21
   ruby
   x86_64-darwin-19
@@ -444,10 +447,9 @@ DEPENDENCIES
   lockbox
   materialize-sass (= 1.0.0)
   mimemagic (>= 0.3.7)
-  mini_racer (~> 0.6.3)
+  mini_racer (~> 0.4.0)
   moment_timezone-rails
   momentjs-rails (>= 2.9.0)
-  mysql2 (~> 0.4.10)
   net-ldap
   newrelic_rpm
   oauth2
@@ -473,7 +475,7 @@ DEPENDENCIES
   slack-notifier
   spring
   sprockets-rails (>= 3.2.1)
-  sqlite3 (~> 1.4)
+  sqlite3 (~> 1.5.4)
   terser (>= 1.1.7)
   thin
   tzinfo-data
@@ -484,4 +486,4 @@ RUBY VERSION
    ruby 2.6.8p205
 
 BUNDLED WITH
-   2.3.19
+   2.3.26
