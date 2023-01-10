@@ -32,11 +32,9 @@ class AttachmentsController < ApplicationController
                   end
 
     if @attachment.update(attachment_params)
-      # is successful
       flash[:success] = "Attachment created"
       redirect_to_attachment_list
     else
-      # not successful
       error_msg = "Attachment create failed:"
       if !@attachment.valid?
         @attachment.errors.full_messages.each do |msg|
@@ -84,11 +82,9 @@ class AttachmentsController < ApplicationController
   action_auth_level :update, :instructor
   def update
     if @attachment.update(attachment_params)
-      # is successful
       flash[:success] = "Attachment updated"
       redirect_to_attachment_list
     else
-      # not successful, go back to edit page
       error_msg = "Attachment update failed:"
       if !@attachment.valid?
         @attachment.errors.full_messages.each do |msg|
@@ -102,9 +98,9 @@ class AttachmentsController < ApplicationController
       COURSE_LOGGER.log("Failed to update attachment: #{error_msg}")
 
       if @is_assessment
-        redirect_to([:edit, @course, @assessment, @attachment])
+        redirect_to edit_course_assessment_attachment_path(@course, @assessment, @attachment)
       else
-        redirect_to([:edit, @course, @attachment])
+        redirect_to edit_course_attachment_path(@course, @attachment)
       end
     end
   end
@@ -113,7 +109,7 @@ class AttachmentsController < ApplicationController
   def destroy
     @attachment.destroy
     flash[:success] = "Attachment deleted"
-    redirect_to_attachment_list && return
+    redirect_to_attachment_list
   end
 
 private
@@ -133,15 +129,15 @@ private
 
     COURSE_LOGGER.log("Cannot find attachment with id: #{params[:id]}")
     flash[:error] = "Could not find Attachment \# #{params[:id]}"
-    redirect_to_attachment_list && return
+    redirect_to_attachment_list
   end
 
   def redirect_to_attachment_list
     if @is_assessment
-      (redirect_to([@course, @assessment]) && return)
+      redirect_to course_assessment_path(@course, @assessment)
+    else
+      redirect_to course_path(@course)
     end
-
-    redirect_to([@course, :attachments]) && return
   end
 
   def add_attachments_breadcrumb
