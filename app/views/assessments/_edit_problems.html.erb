@@ -1,4 +1,26 @@
-<br>
+<script type="text/javascript">
+	is_positive_grading = <%= @is_positive_grading %>;
+	has_annotations = <%= @has_annotations %>;
+</script>
+
+<div class="switch">
+	<label>
+	<b>Negative Grading</b>
+	<%= f.check_box :is_positive_grading, default: true %>
+	<span class="lever"></span>
+	<b>Positive Grading</b>
+	</label>
+</div>
+<label for="switch">
+	Negative Grading is where you grade by deducting from the max score. Positive Grading is where you grade by adding to 0.
+</label>
+
+<ul class="collection" hidden id="grading-change-warning" >
+	<li class="collection-item"> You currently have annotations for this assessment. 
+	If you change the grading type, future score changes made by annotations might become inconsistent. 
+	Grading type change won't be made until you save.
+	</li>
+</ul>
 
 <table class="bordered responsive-table">
 	<thead>
@@ -9,7 +31,6 @@
 	      <th data-field="options">Options</th>
 	  </tr>
 	</thead>
-
 	<tbody>
 		<% for problem in @assessment.problems do %>
 			<tr>
@@ -18,7 +39,7 @@
 				<td><%= problem.optional ? "yes" : "no" %></td>
 				<td>
 					<%= link_to "<i class=\"material-icons left\">mode_edit</i>".html_safe, [:edit, @course, @assessment, problem], { class: "small" } %>
-	  				<%= link_to "<i class=\"material-icons left\">delete</i>".html_safe, [@course, @assessment, problem], method: :delete, class: "small", data: { confirm: "Are you sure you want to destroy this problem? It will also destroy all scores associated with this problem!!!" } %>
+	  				<%= link_to "<i class=\"material-icons left\">delete</i>".html_safe, [@course, @assessment, problem], method: :delete, class: "small", data: { confirm: "Deleting will delete all associated problem data (such as scores and annotations) and cannot be undone. Are you sure you want to delete this problem?" } %>
 				</td>
 			</tr>
 		<% end %>
@@ -26,3 +47,7 @@
 </table>
 <br>
 <%= link_to "Add Problem".html_safe, new_course_assessment_problem_path(@course, @assessment), { :class=> "btn" } %>
+
+<div class="action_buttons">
+  <%= f.submit "Save", :name=>"problems" %>
+</div>

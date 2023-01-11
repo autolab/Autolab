@@ -1,22 +1,35 @@
 <%= form_for @attachment, as: :attachment, url: path, builder: FormBuilderWithDateTimeInput do |f| %>
   <%= f.error_messages %>
 
-	<%= f.text_field :name, :required => true %>
-
-	<% if @attachment.new_record? %>
-  <div class="row embedded-form">
-    <label class="custom-file-upload">
-			<span class="btn primary" id="upload_button">
-				Attachment ...
-					<%= f.file_field :file, class: "upload_embedded" %>
-			</span>
-		</label>
-		<input type="text" id="upload_file" readonly value="Select to Upload a File.">
-  </div>
-	<% else %>
-		<%= f.text_field :mime_type,
-				help_text: "Note: If you change the Mime type of a file, you might need to clear your browser's cache in order for you to see the change." %>
-	<% end %>
+	<ul>
+		<li>
+			<%= f.text_field :name, :required => true %>
+		</li>
+		<li>
+			<% if @attachment.new_record? %>
+				<div class="row">
+					<label class="custom-file-upload">
+						<span class="btn primary" id="upload_button">
+								Upload Attachment
+							<%= f.file_field :file, class: "upload_embedded" %>
+						</span>
+					</label>
+					<input type="text" id="upload_file" readonly value="Click above to upload a file">
+				</div>
+			<% else %>
+				<%= f.text_field :mime_type,
+												 help_text: "Note: If you change the Mime type of a file, you might need to clear your browser's cache in order for you to see the change." %>
+			<% end %>
+		</li>
+		<li>
+			<div>
+				<%= f.check_box :released, help_text: "Checking this box will release the attachment to students" %>
+			</div>
+		</li>
+		<li>
+			<%= f.submit(@attachment.new_record? ? "Create New Attachment" : "Save Changes", class: "btn primary") %>
+		</li>
+	</ul>
 
 <script>
     document.getElementById("attachment_file").onchange = function(e) {
@@ -24,7 +37,4 @@
     }
 </script>
 
-  <%= f.check_box :released %>
-
-  <%= f.submit(@attachment.new_record? ? "Upload" : "Save", class: "btn primary") %>
 <% end %>

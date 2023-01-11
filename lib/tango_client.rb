@@ -39,6 +39,11 @@ module TangoClient
     if resp.content_type == "application/json" && resp["statusId"] && resp["statusId"] < 0
       raise TangoException, "Tango returned negative status code: #{resp["statusMsg"]}"
     end
+
+    if resp.code != 200
+      raise TangoException, "Tango returned HTTP code #{resp.code}"
+    end
+    
     return resp
   end
 
@@ -69,6 +74,14 @@ module TangoClient
       url = "/poll/#{api_key}/#{courselab}/#{output_file}"
       ClientObj.get(url)
     end
+  end
+
+  def self.getpartialoutput(job_id)
+    resp = handle_exceptions do
+      url = "/getPartialOutput/#{api_key}/#{job_id}/"
+      ClientObj.get(url)
+    end
+    resp
   end
 
   def self.info

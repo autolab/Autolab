@@ -2,8 +2,7 @@
 
 $(document).ready(function () {
   $('.skip-main').remove(); // removes skip main anchor tag
-  $(".collapsible-body").show(); //expands all collapsible initially
-  $('.collapsible').collapsible();
+  $('.collapsible').collapsible({ accordion: false });
   //get line number in URL, if it exists
   var urlParams = new URLSearchParams(location.search);
 
@@ -16,18 +15,27 @@ $(document).ready(function () {
 
   retrieveSharedComments();
   resizeCodeTable();
+  resizeGradeList();
 });
 
 /* On Window Resize */
 $(window).on('resize', function () {
   resizeCodeTable();
+  resizeGradeList();
 });
 
 // retrieve shared comments
 // also retrieves annotation id to allow easy deletion in the future
 function retrieveSharedComments() {
   $.getJSON(sharedCommentsPath, function (data) {
-    localCache['shared_comments'] = data.map(i => i.comment);
+    localCache['shared_comments'] = {};
+    data.forEach(e => {
+      if (!e.problem_id)
+        return;
+
+      localCache['shared_comments'][e.problem_id] ||= [];
+      localCache['shared_comments'][e.problem_id].push(e.comment);
+    });
   });
 }
 
@@ -128,101 +136,23 @@ function plusFix(n) {
   if (isNaN(n)) n = 0;
 
   if (n > 0) {
-    return "+" + n.toFixed(1);
+    return "+" + n.toFixed(2);
   }
 
-  return n.toFixed(1);
+  return n.toFixed(2);
 }
 
 // function called after create, update & delete of annotations
 function fillAnnotationBox() {
-
   retrieveSharedComments();
-
-  var annotationsByProblem = {}
-  $(".collapsible.expandable").find('li').remove();
-  for (var i = 0; i < annotations.length; i++) {
-    var problem = getProblemNameWithId(annotations[i].problem_id)
-    if (!annotationsByProblem[problem]) {
-      annotationsByProblem[problem] = []
-    }
-    annotations[i].problem = problem;
-    annotationsByProblem[problem].push(annotations[i]);
-  }
-
-  for (var problem in annotationsByProblem) {
-    var problemElement = $("#li-problem-" + problem);
-    var score = 0;
-    for (var i = 0; i < annotationsByProblem[problem].length; i++) {
-      var annotation = annotationsByProblem[problem][i];
-      var points = parseFloat(annotation.value);
-      if (isNaN(points)) points = 0;
-      score += points;
-    }
-
-    var annotationsSummary = $(".annotationSummary");
-
-    if (problemElement) {
-      problemElement.remove();
-    }
-
-    var newLi = $("<li />");
-    newLi.addClass('active');
-    annotationsSummary.find("ul").append(newLi)
-    newLi.attr("id", "li-problem-" + problem);
-    var collapsible = $('<div />');
-    collapsible.addClass('collapsible-header');
-    collapsible.addClass('active');
-    collapsible.append(
-      '<h4 style="text-transform:capitalize;">' + problem + '<div class="summary_score">' + plusFix(score) + '</div>' +
-      '</h4>'
-    )
-    newLi.append(collapsible);
-
-    var listing = $('<div />');
-    newLi.append(listing);
-    listing.addClass("collapsible-body");
-    listing.addClass("active");
-    listing.css('display', 'block');
-
-    // sorts the annotation by line order
-    annotationsByProblem[problem].sort(function (annotation1, annotation2) { return annotation1.line - annotation2.line });
-    for (var i = 0; i < annotationsByProblem[problem].length; i++) {
-      var annotation = annotationsByProblem[problem][i];
-
-      var annotationElement = $('<div />');
-      annotationElement.addClass('descript');
-      annotationElement.attr('id', 'li-annotation-' + annotation.id);
-
-      var pos = annotation.position ? annotation.position : 0;
-      var line = annotation.line + 1;
-      var link = $('<a />');
-      link.addClass('descript-link');
-      link.attr('data-header_position', pos);
-      link.attr('data-line', line);
-      link.attr('data-remote', true);
-      link.attr('href', `./view?header_position=${pos}&line=${line}`);
-
-      var pointBadge = $('<span />');
-      pointBadge.addClass('point_badge');
-      if (annotation.value > 0) {
-        pointBadge.addClass('positive');
-      } else if (annotation.value < 0) {
-        pointBadge.addClass('negative');
-      } else {
-        pointBadge.addClass('neutral');
-      }
-      pointBadge.text(plusFix(annotation.value));
-      link.append(pointBadge);
-      link.append(annotation.comment);
-      annotationElement.append(link);
-      listing.append(annotationElement);
-
-      attachChangeFileEvents();
-    }
-  }
-  // Reloads the grades part upon update
-  $('.problemGrades').load(document.URL + ' .problemGrades')
+  $.get(document.URL, function(data) {
+    const $page = $('<div />').html(data);
+    $('.problemGrades').html($page.find('.problemGrades'));
+    $('#annotationPane').html($page.find(' #annotationPane'));
+    $('.collapsible').collapsible({ accordion: false });
+    attachChangeFileEvents();
+    attachAnnotationPaneEvents();
+  });
 }
 
 // Sets up the keybindings
@@ -368,45 +298,51 @@ var highlightLines = function (highlight) {
   });
 };
 
-$("#highlightLongLines").click(function () {
-  highlightLines(this.checked);
-});
-
 function displayAnnotations() {
 
   $(".annotation-line").not(".base-annotation-line").remove();
 
   _.each(annotationsByPositionByLine[currentHeaderPos], function (arr_annotations, line) {
     _.each(arr_annotations, function (annotationObj, ind) {
+      if (annotationObj.global_comment)
+        return;
       $("#annotation-line-" + line).append(newAnnotationBox(annotationObj));
-      refreshAnnotations();
     });
   });
+
+  refreshAnnotations();
 }
 
 function attachEvents() {
+  $("#highlightLongLines").click(function () {
+    highlightLines(this.checked);
+  });
+
   var status = $('#highlightLongLines')[0].checked;
   highlightLines(status);
 
   $(".add-button").on("click", function (e) {
     e.preventDefault();
-    var line = $(this).parent().parent().parent();
-    var annotationContainer = line.data("lineId");
+    const line = $(this).parent().parent().parent();
+    const annotationContainer = line.data("lineId");
 
-    // append an annotation form only if there is none currently
-    if ($("#annotation-line-" + annotationContainer).find(".annotation-line").length == 0) {
-      $("#annotation-line-" + annotationContainer).append(newAnnotationFormCode());
-
+    // Allow multiple annotations per line
+    // However, only allow one annotation to be created per line at a time
+    const $annotationLine = $("#annotation-line-" + annotationContainer);
+    if ($annotationLine.find(".new-annotation").length === 0) {
+      $annotationLine.append(newAnnotationFormCode());
+      $('.code-table').scrollTo($annotationLine.children().last(), { duration: "fast" });
       refreshAnnotations();
+    } else {
+      M.toast({html: 'Only one annotation can be created per line at a time!'});
     }
-
   });
 }
 
 function attachChangeFileEvents() {
   // Set up file switching to use the local cache
   function changeFileClickHandler(e) {
-    wasCachedLocally = changeFile($(this).data("header_position"));
+    const wasCachedLocally = changeFile($(this).data("header_position"));
     if (wasCachedLocally) {
       e.preventDefault();
       if ($(this).data("line")) {
@@ -421,6 +357,62 @@ function attachChangeFileEvents() {
 
   $(".file").on("click", changeFileClickHandler);
   $(".descript-link").on("click", changeFileClickHandler);
+}
+
+// Events that deal with the annotation pane
+function attachAnnotationPaneEvents() {
+  // Add action
+  $(".global-annotation-add-button").on("click", function (e) {
+    e.preventDefault();
+    const problem = $(this).data("problem");
+    const $headerDiv = $(this).parent().parent();
+
+    if (!$headerDiv.next().hasClass("global-annotation-form")) {
+      $headerDiv.after(globalAnnotationFormCode(true, { problem }));
+    }
+  });
+
+  // Edit action
+  $(".global-annotation-edit-button").on("click", function (e) {
+    e.preventDefault();
+    const problem = $(this).parent().data("problem");
+    const score = $(this).parent().data("score");
+    const comment = $(this).parent().data("comment");
+    const annotationId = $(this).parent().data("annotationid");
+    const shared = $(this).parent().data("shared");
+    const $annotationDiv = $(this).parents(".global-annotation");
+
+    if (!$annotationDiv.next().hasClass("global-annotation-form")) {
+      $annotationDiv.after(globalAnnotationFormCode(false, { problem, score, comment, annotationId, shared }));
+    }
+  });
+
+  // Delete action for global annotations
+  $('.global-annotation-delete-button').on("click", function (e) {
+    e.preventDefault();
+    if (!confirm("Are you sure you want to delete this annotation?")) return;
+    const annotationIdData = $(this).parent().data('annotationid');
+    const annotationId = annotations.findIndex((e) => e.id === annotationIdData);
+
+    if (annotationId === -1) return;
+
+    const annotation = annotations[annotationId];
+
+    $.ajax({
+      url: deletePath(annotation),
+      type: 'DELETE',
+      complete: function () {
+        annotations.splice(annotationId, 1);
+        fillAnnotationBox();
+      }
+    });
+  });
+
+  // Chevron events (collapse / show problem)
+  $('.collapsible-header-controls .collapse-icon, .collapsible-header-controls .expand-icon').on('click', function(e) {
+    e.preventDefault();
+    $(e.target).closest(".collapsible-header-wrap").find(".collapsible-header").click();
+  });
 }
 
 var initializeAnnotationsForCode = function () {
@@ -451,7 +443,7 @@ var initializeAnnotationsForCode = function () {
 function getProblemNameWithId(problem_id) {
   var problem_id = parseInt(problem_id, 10);
   var problem = _.findWhere(problems, { "id": problem_id });
-  if (problem == undefined) return "General";
+  if (problem == undefined) return "Deleted Problem(s)";
   return problem.name;
 }
 
@@ -492,24 +484,27 @@ function newAnnotationFormCode() {
   var box = $(".base-annotation-line").clone();
   box.removeClass("base-annotation-line");
 
+  // Allow us to enforce the creation of one annotation per line at a time
+  box.addClass("new-annotation");
+
   // Creates a dictionary of problem and grader_id
-  var autogradedproblems = {}
+  var problemGraderId = {};
   _.each(scores, function (score) {
-    autogradedproblems[score.problem_id] = score.grader_id;
-  })
+    problemGraderId[score.problem_id] = score.grader_id;
+  });
 
   _.each(problems, function (problem) {
-    if (autogradedproblems[problem.id] != 0) { // Because grader == 0 is autograder
+    if (problemGraderId[problem.id] !== 0) { // Because grader == 0 is autograder
       box.find("select").append(
-        $("<option />").val(problem.id).text(problem.name)
-      )
+          $("<option />").val(problem.id).text(problem.name)
+      );
     }
-  })
+  });
 
   box.find('.annotation-form').show();
   box.find('.annotation-cancel-button').click(function (e) {
     e.preventDefault();
-    $(this).parent().parent().parent().parent().remove();
+    $(this).parents(".annotation-form").parent().remove();
     refreshAnnotations();
   })
 
@@ -517,12 +512,19 @@ function newAnnotationFormCode() {
     appendTo: box.find('#comment-textarea').parent(),
     minLength: 0,
     delay: 0,
-    source: localCache["shared_comments"]
+    source: localCache["shared_comments"][box.find("select").val()] || []
   }).focus(function () {
     $(this).autocomplete('search', $(this).val())
   });
 
   box.tooltip();
+
+  box.find("select").on('change', function () {
+    const problem_id = $(this).val();
+
+    // Update autocomplete to display shared comments for selected problem
+    box.find("#comment-textarea").autocomplete("option", "source", localCache["shared_comments"][problem_id] || []);
+  });
 
   box.find('.annotation-form').submit(function (e) {
     e.preventDefault();
@@ -532,8 +534,13 @@ function newAnnotationFormCode() {
     var problem_id = $(this).find(".problem-id").val();
     var line = $(this).parent().parent().data("lineId");
 
-    if (comment == undefined || comment == "") {
+    if (comment === undefined || comment === "") {
       box.find('.error').text("Annotation comment can not be blank!").show();
+      return;
+    }
+
+    if (score === undefined || score === "") {
+      box.find('.error').text("Annotation score can not be blank!").show();
       return;
     }
 
@@ -546,7 +553,74 @@ function newAnnotationFormCode() {
     }
 
 
-    submitNewAnnotation(comment, shared_comment, score, problem_id, line, $(this));
+    submitNewAnnotation(comment, shared_comment, false, score, problem_id, line, $(this));
+  });
+
+  return box;
+}
+
+// Create form code to create / update a global annotation
+// config takes the following keys: problem, score (for edit), comment (for edit), shared (for edit)
+function globalAnnotationFormCode(newAnnotation, config) {
+  const box = $(".base-global-annotation-form").clone();
+  box.removeClass("base-global-annotation-form");
+
+  if (!newAnnotation) {
+    box.find(".annotation-form-header").text("Update global annotation");
+    box.find(".comment").val(config.comment);
+    box.find(".score").val(config.score);
+    box.find("#shared-comment").prop("checked", config.shared);
+    box.find('input[type=submit]').val("Update annotation");
+  }
+
+  var problemNameToIdMap = {};
+  _.each(problems, function (problem) {
+    problemNameToIdMap[problem.name] = problem.id;
+  })
+
+  box.find(".annotation-form-header").show();
+  box.find('.annotation-form').show();
+  box.find('.annotation-cancel-button').click(function (e) {
+    e.preventDefault();
+    $(this).parents(".annotation-form").parent().remove();
+  })
+
+  box.find('#comment-textarea').autocomplete({
+    appendTo: box.find('#comment-textarea').parent(),
+    minLength: 0,
+    delay: 0,
+    source: localCache["shared_comments"][problemNameToIdMap[config.problem]] || []
+  }).focus(function () {
+    $(this).autocomplete('search', $(this).val())
+  });
+
+  box.tooltip();
+
+  box.find('.annotation-form').submit(function (e) {
+    e.preventDefault();
+    var comment = $(this).find(".comment").val();
+    var shared_comment = $(this).find("#shared-comment").is(":checked");
+    var score = $(this).find(".score").val();
+    var problem_id = problemNameToIdMap[config.problem];
+
+    if (comment === undefined || comment === "") {
+      box.find('.error').text("Annotation comment can not be blank!").show();
+      return;
+    }
+
+    if (score === undefined || score === "") {
+      box.find('.error').text("Annotation score can not be blank!").show();
+      return;
+    }
+
+    if (newAnnotation) {
+      submitNewAnnotation(comment, shared_comment, true, score, problem_id, 0, $(this));
+    } else {
+      const annotationObject = getAnnotationObject(config.annotationId);
+      Object.assign(annotationObject, { comment, value: score, problem_id, shared_comment, global_comment: true });
+
+      updateAnnotation(annotationObject, box);
+    }
   });
 
   return box;
@@ -565,10 +639,18 @@ function initializeBoxForm(box, annotation) {
   var valueStr = annotation.value ? annotation.value.toString() : "0";
   var commentStr = annotation.comment;
 
+  // Creates a dictionary of problem and grader_id
+  var problemGraderId = {};
+  _.each(scores, function (score) {
+    problemGraderId[score.problem_id] = score.grader_id;
+  });
+
   _.each(problems, function (problem) {
-    box.find("select").append(
-      $("<option />").val(problem.id).text(problem.name)
-    )
+    if (problemGraderId[problem.id] !== 0) { // Because grader == 0 is autograder
+      box.find("select").append(
+          $("<option />").val(problem.id).text(problem.name)
+      );
+    }
   });
 
   box.find(".comment").val(commentStr);
@@ -585,12 +667,17 @@ function initializeBoxForm(box, annotation) {
   box.find('.annotation-form').submit(function (e) {
     e.preventDefault();
     var comment = $(this).find(".comment").val();
+    var shared_comment = $(this).find("#shared-comment").is(":checked");
     var score = $(this).find(".score").val();
     var problem_id = $(this).find(".problem-id").val();
-    var shared_comment = $(this).find("#shared-comment").is(":checked");
 
-    if (comment == undefined || comment == "") {
+    if (comment === undefined || comment === "") {
       box.find('.error').text("Annotation comment can not be blank!").show();
+      return;
+    }
+
+    if (score === undefined || score === "") {
+      box.find('.error').text("Annotation score can not be blank!").show();
       return;
     }
 
@@ -599,6 +686,7 @@ function initializeBoxForm(box, annotation) {
     annotationObject.value = score;
     annotationObject.problem_id = problem_id;
     annotationObject.shared_comment = shared_comment;
+    annotationObject.global_comment = false;
 
     updateAnnotation(annotationObject, box);
   });
@@ -606,7 +694,6 @@ function initializeBoxForm(box, annotation) {
 
 // this creates the HTML to display an annotation.
 function newAnnotationBox(annotation) {
-
   var box = $(".base-annotation-line").clone();
   box.removeClass("base-annotation-line");
 
@@ -617,9 +704,9 @@ function newAnnotationBox(annotation) {
   var shared_comment = annotation.shared_comment;
 
   if (annotation.value < 0) {
-    box.find('.value').parent().removeClass('positive').addClass('negative');
-  } else if (!annotation.value > 0) { // I am a little hesitant about using == 1 here -> what if it's negative 0?
-    box.find('.value').parent().removeClass('positive').addClass('neutral');
+    box.find('.value').parent().removeClass('neutral').addClass('negative');
+  } else if (annotation.value > 0) {
+    box.find('.value').parent().removeClass('neutral').addClass('positive');
   }
 
   box.find('.submitted_by').text(annotation.submitted_by);
@@ -640,19 +727,26 @@ function newAnnotationBox(annotation) {
     e.preventDefault();
     box.find('.annotation-box').hide();
     box.find('.annotation-form').show().css('width', '100%');
-    
+
     box.find('#comment-textarea').autocomplete({
       appendTo: box.find('#comment-textarea').parent(),
       minLength: 0,
       delay: 0,
-      source: localCache["shared_comments"],
+      source: localCache["shared_comments"][annotation.problem_id] || [],
     }).focus(function () {
       $(this).autocomplete('search', $(this).val())
     });
     box.tooltip();
     
     refreshAnnotations();
-  })
+  });
+
+  box.find("select").on('change', function () {
+    const problem_id = $(this).val();
+
+    // Update autocomplete to display shared comments for selected problem
+    box.find("#comment-textarea").autocomplete("option", "source", localCache["shared_comments"][problem_id] || []);
+  });
 
   box.find('.annotation-delete-button').on("click", function (e) {
     e.preventDefault();
@@ -923,19 +1017,18 @@ var newAnnotationFormTemplatePDF = function (name, pageInd) {
   });
 
   // Creates a dictionary of problem and grader_id
-  var autogradedproblems = {}
-
+  var problemGraderId = {};
   _.each(scores, function (score) {
-    autogradedproblems[score.problem_id] = score.grader_id;
-  })
+    problemGraderId[score.problem_id] = score.grader_id;
+  });
 
   _.each(problems, function (problem) {
-    if (autogradedproblems[problem.id] != 0) { // Because grader == 0 is autograder
+    if (problemGraderId[problem.id] !== 0) { // Because grader == 0 is autograder
       problemSelect.appendChild(elt("option", {
         value: problem.id
       }, problem.name));
     }
-  })
+  });
 
   var newForm = elt("form", {
     title: "Press <Enter> to Submit",
@@ -1130,16 +1223,11 @@ var submitNewPDFAnnotation = function (comment, value, problem_id, pageInd, xRat
 }
 
 /* sets up and calls $.ajax to submit an annotation */
-var submitNewAnnotation = function (comment, shared_comment, value, problem_id, lineInd, form) {
+var submitNewAnnotation = function (comment, shared_comment, global_comment, value, problem_id, lineInd, form) {
   var newAnnotation = createAnnotation();
-  newAnnotation.line = parseInt(lineInd);
-  newAnnotation.comment = comment;
-  newAnnotation.value = value;
-  newAnnotation.problem_id = problem_id;
-  newAnnotation.filename = fileNameStr;
-  newAnnotation.shared_comment = shared_comment;
+  Object.assign(newAnnotation, { line: parseInt(lineInd), comment, value, problem_id, filename: fileNameStr, shared_comment, global_comment });
 
-  if (comment == undefined || comment == "") {
+  if (comment === undefined || comment === "") {
     $(form).find('.error').text("Could not save annotation. Please refresh the page and try again.").show();
     return;
   }
@@ -1156,20 +1244,25 @@ var submitNewAnnotation = function (comment, shared_comment, value, problem_id, 
     type: "POST",
     success: function (data, type) {
       $(form).parent().remove();
-      $("#annotation-line-" + lineInd).append(newAnnotationBox(data));
-      refreshAnnotations();
 
-      if (!annotationsByPositionByLine[currentHeaderPos]) {
-        annotationsByPositionByLine[currentHeaderPos] = {};
+      // Logic to render annotation boxes, not applicable to global annotations
+      if (!global_comment) {
+        $("#annotation-line-" + lineInd).append(newAnnotationBox(data));
+        refreshAnnotations();
+
+        if (!annotationsByPositionByLine[currentHeaderPos]) {
+          annotationsByPositionByLine[currentHeaderPos] = {};
+        }
+
+        var annotationsByLine = annotationsByPositionByLine[currentHeaderPos];
+
+        if (!annotationsByLine[lineInd]) {
+          annotationsByLine[lineInd] = [];
+        }
+
+        annotationsByLine[lineInd].push(data);
       }
 
-      var annotationsByLine = annotationsByPositionByLine[currentHeaderPos];
-
-      if (!annotationsByLine[lineInd]) {
-        annotationsByLine[lineInd] = [];
-      }
-
-      annotationsByLine[lineInd].push(data);
       annotations.push(data);
       fillAnnotationBox();
       purgeCurrentPageCache();

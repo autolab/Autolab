@@ -7,6 +7,7 @@ $(document).ready(function() {
     var defaults = {
       enableTime: true,
       altInput: true,
+      disableMobile: true,
       defaultDate: moment(elt.val(), elt.data("date-format")).toDate(),
       parseDate: (datestr, format) => {
         return moment(datestr, format, true).toDate();

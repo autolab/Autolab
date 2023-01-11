@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2022_04_24_202745) do
+ActiveRecord::Schema.define(version: 2022_11_28_044321) do
 
   create_table "annotations", force: :cascade do |t|
     t.integer "submission_id"
@@ -25,6 +25,7 @@ ActiveRecord::Schema.define(version: 2022_04_24_202745) do
     t.integer "problem_id"
     t.string "coordinate"
     t.boolean "shared_comment", default: false
+    t.boolean "global_comment", default: false
   end
 
   create_table "announcements", force: :cascade do |t|
@@ -97,6 +98,7 @@ ActiveRecord::Schema.define(version: 2022_04_24_202745) do
     t.binary "embedded_quiz_form"
     t.boolean "allow_student_assign_group", default: true
     t.boolean "github_submission_enabled", default: true
+    t.boolean "is_positive_grading", default: false
   end
 
   create_table "attachments", force: :cascade do |t|
@@ -139,6 +141,7 @@ ActiveRecord::Schema.define(version: 2022_04_24_202745) do
     t.boolean "course_assistant", default: false
     t.integer "tweak_id"
     t.integer "user_id", null: false
+    t.string "course_number", default: ""
   end
 
   create_table "courses", force: :cascade do |t|
@@ -180,6 +183,18 @@ ActiveRecord::Schema.define(version: 2022_04_24_202745) do
     t.string "name"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+  end
+
+  create_table "lti_course_data", force: :cascade do |t|
+    t.string "context_id"
+    t.integer "course_id"
+    t.datetime "last_synced"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.string "membership_url"
+    t.string "platform"
+    t.boolean "auto_sync"
+    t.boolean "drop_missing_students"
   end
 
   create_table "module_data", force: :cascade do |t|
@@ -321,6 +336,7 @@ ActiveRecord::Schema.define(version: 2022_04_24_202745) do
     t.text "embedded_quiz_form_answer"
     t.integer "submitted_by_app_id"
     t.string "group_key", default: ""
+    t.integer "jobid"
     t.index ["assessment_id"], name: "index_submissions_on_assessment_id"
     t.index ["course_user_datum_id"], name: "index_submissions_on_course_user_datum_id"
   end
@@ -359,6 +375,7 @@ ActiveRecord::Schema.define(version: 2022_04_24_202745) do
     t.integer "course_id"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.boolean "allow_ca", default: false
     t.index ["course_id"], name: "index_watchlist_configurations_on_course_id"
   end
 

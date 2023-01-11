@@ -1,7 +1,3 @@
-<% content_for :javascripts do %>
-  <%= render partial: "components/autocomplete", locals: { hiddenCUDField: "#submission_course_user_datum_id" } %>
-<% end %>
-
 <h2>Create Submission for <%= link_to @assessment.display_name, [@course, @assessment] %> </h2>
 
 <p>
@@ -25,6 +21,10 @@
   <th>User:</th>
   <td>
   <% if params[:course_user_datum_id].nil? then %>
+
+  <% content_for :javascripts do %>
+    <%= render partial: "components/autocomplete", locals: { hiddenCUDField: "#submission_course_user_datum_id" } %>
+  <% end %>
 
   <div class="input-field">
     <input type="text" size="3" id="student_autocomplete" class="autocomplete" autocomplete="off"/>

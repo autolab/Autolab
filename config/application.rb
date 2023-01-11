@@ -115,6 +115,8 @@ module Autolab3
     config.middleware.use Rack::Attack
 
     # site version
-    config.site_version = "2.9.0"
+    config.site_version = "2.10.0"
+
+    config.lti_settings = Rails.application.config_for(:lti_settings)
   end
 end

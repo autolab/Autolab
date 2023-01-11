@@ -2,7 +2,7 @@
 
 The Autolab Docker Compose installation is a fast and easy production-ready installation and deployment method. It uses a MySQL database for the Autolab deployment, and comes with TLS/SSL support. This is now the preferred way of installing Autolab due to its ease of use.
 
-If you are stuck or find issues with the installation process you can either file an issue on our Github repository, or join our Slack <a href="https://autolab-slack.herokuapp.com/" target="_blank">here</a> and let us know and we will try our best to help. Also see the [debugging](#debugging-your-deployment) section for tips on how to diagnose problems and check out the [troubleshooting](#troubleshooting) section if you run into any issues.
+If you are stuck or find issues with the installation process you can either file an issue on our Github repository, or join our Slack <a href="https://join.slack.com/t/autolab/shared_invite/zt-1maodn5ti-jdLHUnm5sZkuLn4PJNaTbw">here</a> and let us know and we will try our best to help. Also see the [debugging](#debugging-your-deployment) section for tips on how to diagnose problems and check out the [troubleshooting](#troubleshooting) section if you run into any issues.
 
 ## Installation
 First ensure that you have Docker and Docker Compose installed on your machine. See the official <a href="https://docs.docker.com/install/" target="_blank">Docker docs</a> for the installation steps.
@@ -79,15 +79,16 @@ First ensure that you have Docker and Docker Compose installed on your machine. 
         :::bash
         docker build -t autograding_image Tango/vmms/
         
-Note that we can just run this directly on the host because we are mapping the Docker socket to the Tango container (i.e they are using the same Docker server).
+    Note that we can just run this directly on the host because we are mapping the Docker socket to the Tango container (i.e they are using the same Docker server).
 
 15. Start up everything: 
 
         :::bash
         docker-compose up -d
         
-Autolab should now be accessible on port 80 (and 443 if you configured TLS)! You can now go on to configure mailing, [follow the instructions for setting up mailing](/installation/mailing/) with the only difference being that the paths mentioned are relative to the directory `Autolab/`.
+    Autolab should now be accessible on port 80 (and 443 if you configured TLS)! You can now go on to configure mailing, [follow the instructions for setting up mailing](/installation/mailing/) with the only difference being that the paths mentioned are relative to the directory `Autolab/`.
 
+16. Now you are all set to start using Autolab! Please fill out [this form](https://docs.google.com/forms/d/e/1FAIpQLSctfi3kwa03yuCuLgGF7qS_PItfk__1s80twhVDiKGQHvqUJg/viewform?usp=sf_link) to join our registry so that we can provide you with news about the latest features, bug-fixes, and security updates. For more info, visit the [Guide for Instructors](/instructors) and [Guide for Lab Authors](/lab). 
 ## Configuring TLS/SSL
 Having TLS/SSL configured is important as it helps to ensure that sensitive information like user credentials and submission information are encrypted instead of being sent over in plaintext across the network when users are using Autolab. We have made setting up TLS as easy and pain-free as possible. Using TLS is strongly recommended if you are using Autolab in a production environment with real students and instructors.
 
@@ -156,7 +157,7 @@ There are three options for TLS: using Let's Encrypt (for free TLS certificates)
         docker-compose up
 
 ## Debugging your Deployment
-In the (very likely) event that you run into problems during setup, hopefully these steps will help you to help identify and diagnose the issue. If you continue to face difficulties or believe you discovered issues with the setup process please join our Slack [here](https://autolab-slack.herokuapp.com/) and let us know and we will try our best to help.
+In the (very likely) event that you run into problems during setup, hopefully these steps will help you to help identify and diagnose the issue. If you continue to face difficulties or believe you discovered issues with the setup process please join our Slack [here](https://join.slack.com/t/autolab/shared_invite/zt-1maodn5ti-jdLHUnm5sZkuLn4PJNaTbw) and let us know and we will try our best to help.
 
 ### Better logging output for Docker Compose
 By default, `docker-compose up -d` runs in detached state and it is not easy to immediately see errors:

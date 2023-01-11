@@ -8,6 +8,7 @@ require "utilities"
 
 class AssessmentsController < ApplicationController
   include ActiveSupport::Callbacks
+  include AssessmentAutogradeCore
 
   rescue_from ActionView::MissingTemplate do |_exception|
     redirect_to("/home/error_404")
@@ -164,10 +165,15 @@ class AssessmentsController < ApplicationController
         redirect_to(action: "install_assessment")
         return
       end
+    rescue SyntaxError => e
+      flash[:error] = "Error parsing assessment configuration file:"
+      # escape so that <compiled> doesn't get treated as a html tag
+      flash[:error] += "<br><pre>#{CGI.escapeHTML e.to_s}</pre>"
+      flash[:html_safe] = true
+      redirect_to(action: "install_assessment") && return
     rescue StandardError => e
       flash[:error] = "Error while reading the tarball -- #{e.message}."
-      redirect_to(action: "install_assessment")
-      return
+      redirect_to(action: "install_assessment") && return
     end
 
     # Check if the assessment already exists.
@@ -426,8 +432,6 @@ class AssessmentsController < ApplicationController
     rescue StandardError => e
       flash[:error] = "Unable to generate tarball -- #{e.message}"
       redirect_to action: "index"
-    else
-      flash[:success] = "Successfully exported the assessment."
     end
   end
 
@@ -572,19 +576,69 @@ class AssessmentsController < ApplicationController
   def viewFeedback
     # User requested to view feedback on a score
     @score = @submission.scores.find_by(problem_id: params[:feedback])
-    unless @score
-      flash[:error] = "No feedback for requested score"
-      redirect_to(action: "index") && return
+    # Checks whether at least one problem has finished being auto-graded
+    @finishedAutograding = @submission.scores.where.not(feedback: nil).where(grader_id: 0)
+    @job_id = @submission["jobid"]
+    @submission_id = params[:submission_id]
+
+    # Autograding is not in-progress and no score is available
+    if @score.nil?
+      if !@finishedAutograding.empty?
+        redirect_to(action: "viewFeedback",
+                    feedback: @finishedAutograding.first.problem_id,
+                    submission_id: params[:submission_id]) && return
+      end
+
+      if @job_id.nil?
+        flash[:error] = "No feedback for requested score"
+        redirect_to(action: "index") && return
+      end
     end
+
+    # Autograding is in-progress
+    return if @score.nil?
+
     @jsonFeedback = parseFeedback(@score.feedback)
-    @scoreHash = parseScore(@score.feedback) unless @jsonFeedback.nil?
+    @scoreHash = parseScore(@score.feedback)
     if Archive.archive? @submission.handin_file_path
       @files = Archive.get_files @submission.handin_file_path
     end
-    @problemReleased = @submission.scores.pluck(:released).all?
+    @problemReleased = @submission.scores.pluck(:released).all? &&
+                       !@assessment.before_grading_deadline?
+    # get_correct_filename is protected, so we wrap around controller-specific call
+    @get_correct_filename = ->(annotation) {
+      get_correct_filename(annotation, @files, @submission)
+    }
+  end
+
+  action_auth_level :getPartialFeedback, :student
+
+  def getPartialFeedback
+    job_id = params["job_id"].to_i
+
+    # User requested to view feedback on a score
+    if job_id.nil?
+      flash[:error] = "Invalid job id"
+      redirect_to(action: "index") && return
+    end
+
+    begin
+      resp = get_job_status(job_id)
+
+      if resp["is_assigned"]
+        resp['partial_feedback'] = tango_get_partial_feedback(job_id)
+      end
+    rescue AutogradeError => e
+      render json: { error: "Get partial feedback request failed: #{e}" },
+             status: :internal_server_error
+    else
+      render json: resp.to_json
+    end
   end
 
   def parseScore(feedback)
+    return if feedback.nil?
+
     lines = feedback.lines
     feedback = lines[lines.length - 1].chomp
 
@@ -592,7 +646,7 @@ class AssessmentsController < ApplicationController
 
     score_hash = JSON.parse(feedback)
     score_hash = score_hash["scores"]
-    if @jsonFeedback.key?("_scores_order") == false
+    if @jsonFeedback&.key?("_scores_order") == false
       @jsonFeedback["_scores_order"] = score_hash.keys
     end
     @total = 0
@@ -616,6 +670,8 @@ class AssessmentsController < ApplicationController
   end
 
   def parseFeedback(feedback)
+    return if feedback.nil?
+
     lines = feedback.lines
     feedback = lines[lines.length - 2]&.chomp
 
@@ -661,6 +717,10 @@ class AssessmentsController < ApplicationController
     # make sure the penalties are set up
     @assessment.late_penalty ||= Penalty.new(kind: "points")
     @assessment.version_penalty ||= Penalty.new(kind: "points")
+
+    @has_annotations = @assessment.submissions.any? { |s| !s.annotations.empty? }
+
+    @is_positive_grading = @assessment.is_positive_grading
   end
 
   action_auth_level :update, :instructor
@@ -752,6 +812,7 @@ class AssessmentsController < ApplicationController
   action_auth_level :writeup, :student
 
   def writeup
+    # If the logic here changes, do update assessment#has_writeup?
     if @assessment.writeup_is_url?
       redirect_to @assessment.writeup
       return
@@ -766,7 +827,7 @@ class AssessmentsController < ApplicationController
       return
     end
 
-    @output = "There is no writeup for this assessment."
+    flash.now[:error] = "There is no writeup for this assessment."
   end
 
   # uninstall - uninstalls an assessment
@@ -845,6 +906,8 @@ private
       @assessment.version_penalty&.destroy
     end
 
+    ass.delete(:name)
+
     ass.permit!
   end
 
@@ -860,6 +923,9 @@ private
       pathname = entry.full_name
       next if pathname.start_with? "."
 
+      # Removes file created by Mac when tar'ed
+      next if pathname.start_with? "PaxHeader"
+
       pathname.chomp!("/") if entry.directory?
       # nested directories are okay
       if entry.directory? && pathname.count("/") == 0
@@ -869,7 +935,15 @@ private
       else
         return false unless asmt_name
 
-        asmt_rb_exists = true if pathname == "#{asmt_name}/#{asmt_name}.rb"
+        if pathname == "#{asmt_name}/#{asmt_name}.rb"
+          # We only ever read once, so no need to rewind after
+          config_source = entry.read
+
+          # validate syntax of config
+          RubyVM::InstructionSequence.compile(config_source)
+
+          asmt_rb_exists = true
+        end
         asmt_yml_exists = true if pathname == "#{asmt_name}/#{asmt_name}.yml"
       end
     end
@@ -884,6 +958,8 @@ private
       tab_name = "handin"
     elsif params[:penalties]
       tab_name = "penalties"
+    elsif params[:problems]
+      tab_name = "problems"
     elsif params[:advanced]
       tab_name = "advanced"
     end

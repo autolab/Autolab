@@ -20,7 +20,7 @@ class Assessment < ApplicationRecord
   has_one :scoreboard, dependent: :destroy
 
   # Validations
-  validates :name, uniqueness: { scope: :course_id }
+  validates :name, uniqueness: { case_sensitive: false, scope: :course_id }
   validates :name, format: { with: /\A[^0-9].*/, message: "can't have leading numeral" }
   validates :display_name, length: { minimum: 1 }
   validate :verify_dates_order
@@ -261,7 +261,7 @@ class Assessment < ApplicationRecord
   # writes the properties of the assessment in YAML format to the assessment's yaml file
   #
   def dump_yaml
-    File.open(path("#{name}.yml"), "w") { |f| f.write(YAML.dump(serialize)) }
+    File.open(path("#{name}.yml"), "w") { |f| f.write(YAML.dump(sort_hash(serialize))) }
   end
 
   ##
@@ -323,6 +323,10 @@ class Assessment < ApplicationRecord
 
   def has_scoreboard?
     scoreboard != nil
+  end
+
+  def has_writeup?
+    writeup_is_url? || writeup_is_file?
   end
 
   def groups
@@ -430,6 +434,20 @@ private
     end
   end
 
+  # Recursively sort a hash by its keys and return an array
+  # Inspired by: https://bdunagan.com/2011/10/23/ruby-tip-sort-a-hash-recursively/
+  def sort_hash(h)
+    h.class[
+      h.each do |k, v|
+        if v.instance_of? Hash
+          h[k] = sort_hash v
+        elsif v.instance_of? Array
+          h[k] = v.collect { |x| sort_hash x }
+        end
+        # else do nothing
+      end.sort]
+  end
+
   def serialize
     s = {}
     s["general"] = serialize_general
@@ -444,7 +462,7 @@ private
   GENERAL_SERIALIZABLE = Set.new %w[name display_name category_name description handin_filename
                                     handin_directory has_svn has_lang max_grace_days handout
                                     writeup max_submissions disable_handins max_size
-                                    version_threshold embedded_quiz]
+                                    version_threshold is_positive_grading embedded_quiz]
 
   def serialize_general
     Utilities.serializable attributes, GENERAL_SERIALIZABLE

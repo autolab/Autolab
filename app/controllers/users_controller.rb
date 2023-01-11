@@ -7,7 +7,9 @@ class UsersController < ApplicationController
     redirect_to("/home/error_404")
   end
   before_action :set_gh_oauth_client, only: [:github_oauth, :github_oauth_callback]
-  before_action :set_user, only: [:github_oauth, :github_revoke]
+  before_action :set_user,
+                only: [:github_oauth, :github_revoke, :lti_launch_initialize,
+                       :lti_launch_link_course]
 
   # GET /users
   action_auth_level :index, :student
@@ -197,6 +199,55 @@ class UsersController < ApplicationController
     redirect_to(users_path) && return
   end
 
+  def lti_launch_initialize
+    unless params[:course_title].present? && params[:context_id].present? &&
+           params[:course_memberships_url].present? && params[:platform].present?
+      raise LtiLaunchController::LtiError.new("Unable launch LTI link, missing parameters",
+                                              :bad_request)
+    end
+
+    linked_lcd = LtiCourseDatum.joins(:course).find_by(context_id: params[:context_id])
+    unless linked_lcd.nil?
+      flash[:success] = "#{params[:course_title]} already linked"
+      redirect_to(course_path(linked_lcd.course)) && return
+    end
+
+    courses_for_user = User.courses_for_user @user
+    redirect_to(home_no_user_path) && return unless courses_for_user.any?
+
+    @listing = { current: [], completed: [], upcoming: [] }
+
+    courses_for_user.each do |course|
+      next if course.disabled?
+
+      course_cud = CourseUserDatum.find_cud_for_course(course, @user.id)
+      next unless course_cud.has_auth_level?(:course_assistant)
+
+      @listing[course.temporal_status] << course
+    end
+  end
+
+  action_auth_level :lti_launch_link_course, :instructor
+  def lti_launch_link_course
+    unless params[:context_id].present? && params[:course_memberships_url].present? &&
+           params[:platform].present?
+      raise LtiLaunchController::LtiError.new("Unable link course, missing parameters",
+                                              :bad_request)
+    end
+
+    LtiCourseDatum.create(
+      course_id: params[:course_id],
+      context_id: params[:context_id],
+      membership_url: params[:course_memberships_url],
+      platform: params[:platform],
+      last_synced: DateTime.current
+    )
+
+    course = Course.find(params[:course_id])
+    flash[:success] = "#{course.name} successfully linked"
+    redirect_to(course)
+  end
+
   action_auth_level :github_oauth, :student
   def github_oauth
     github_integration = GithubIntegration.find_by(user_id: @user.id)
@@ -296,7 +347,7 @@ private
 
   # user params that admin is allowed to edit
   def admin_user_params
-    params.require(:user).permit(:first_name, :last_name, :administrator)
+    params.require(:user).permit(:first_name, :last_name, :school, :major, :administrator)
   end
 
   def set_gh_oauth_client

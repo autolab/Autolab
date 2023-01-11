@@ -16,6 +16,7 @@ $autolab-subtle-gray: #eee;
 $autolab-highlight-gray: #ccc;
 $autolab-black-text: #212121;
 $autolab-blue-text: #0882af;
+$autolab-green: #3a862d;
 #F2EFEF html,
 body {
   height: 100%;
@@ -23,6 +24,20 @@ body {
 
 a {
   color: $autolab-blue-text;
+}
+
+
+pre {
+  overflow-x: auto;
+}
+
+h2 {
+  font-size: 2.65rem;
+  font-weight: bold;
+}
+
+h3 {
+  font-size: 2.1rem;
 }
 
 /* Error Classes - for elements that display error/status messages */
@@ -160,6 +175,75 @@ div.main-header img {
   overflow: hidden;
 }
 
+/* Feedback Styling */
+.result-container {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+}
+.result-pane {
+  border-radius: 10px;
+  padding: 2vh 2vw;
+  background-color: white;
+  border: 1px solid #C4C4C4;
+  margin-bottom: 2vh;
+}
+.feedback-container {
+  width: 74%;
+}
+.result-summary {
+  position: relative;
+  right: 0;
+  top: 0;
+  /* if the 25 is changed, also modify the containerWidth
+     multiplier in app/assets/javascripts/feedback.js */
+  width: 25%;
+}
+.result-fixed {
+  position: absolute;
+  width: 100%;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+.feedback-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 1vh;
+  margin-bottom: 1vh;
+  border-bottom: 2px solid #C4C4C4;
+}
+#status-refresh {
+  display: flex;
+  align-items: center;
+
+  .material-icons {
+    &:hover {
+      cursor: pointer;
+    }
+  }
+}
+.result-container .feedback-header h3 {
+  margin-top: 0px;
+  margin-bottom: 0px;
+}
+
+.feedback-status {
+  padding: 0.5vh 1vw;
+  color: white;
+  font-weight: bold;
+  border-radius: 10px;
+  &__completed {
+    background-color: $autolab-green;
+  }
+  &__inprogress {
+    background-color: $autolab-red;
+  }
+  &__queued {
+    background-color: $autolab-blue-text;
+  }
+}
+
 /* Custom Form Styling */
 form#edit_editCourse {
   margin-top: 80px;
@@ -280,7 +364,6 @@ input[type="file"].upload_embedded {
 
 .sub-navigation {
   background-color: rgba(243, 240, 240, 0.9);
-  width: 100%;
   border-bottom: 1px solid rgba(223, 220, 220, 1);
   margin-bottom: 15px;
   padding: 0 15px;
@@ -752,8 +835,15 @@ table.navigatable tr:hover {
     margin: 0;
   }
 
-  .card-content .card-title {
+  .card-content.white .card-title {
     line-height: normal;
+    font-size: 2.65rem;
+    font-weight: bold;
+  }
+
+  .card-content .card-title.white-text {
+    line-height: normal;
+    font-size: 24px;
   }
 
   .collection {
@@ -832,11 +922,6 @@ body.autolab {
   }
 }
 
-@media (min-width: 1200px) {
-  #pageBody.container {
-    max-width: 970px;
-  }
-}
 
 input[type="text"],
 input[type="email"],
@@ -974,6 +1059,21 @@ form p:last-child {
 }
 
 /**
+* Switch styling
+*/
+
+.switch > label > b {
+  font-size: 1.1rem; 
+  color: black
+}
+
+label[for="switch"] {
+  font-size: 1rem; 
+  color: darkslategrey;
+} 
+
+
+/**
  * Checkbox styling
  */
 
@@ -991,6 +1091,7 @@ form p:last-child {
 .checkbox label {
   margin-left: 8px;
 }
+
 .checkbox label::before {
   cursor: pointer;
   position: absolute;
@@ -1310,4 +1411,75 @@ a.skip-main:active {
   padding: 5px;
   font-size: 1em;
   z-index: 999;
+}
+
+// used in submission_history_table.html.erb
+table.sub {
+  display: table;
+}
+
+.sub th {
+  vertical-align: top;
+}
+table.sub td, th {
+  padding-right: 25px;
+}
+
+.autograding-in-progress {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+@keyframes spin {
+  from {
+      transform:rotate(0deg);
+  }
+  to {
+      transform:rotate(360deg);
+  }
+}
+.refresh-feedback.loading {
+  animation: spin 2s linear infinite;
+}
+.refresh-feedback {
+  color: $autolab-blue-text;
+  margin-right: 1vw;
+}
+.refresh-feedback:hover {
+  cursor: pointer;
+}
+.autograding-in-progress:before, .autograding-in-progress:after{
+  content: "";
+  flex: 1 1;
+  border-bottom: 2px dashed;
+  margin: auto;
+}
+.autograding-in-progress:before {
+  margin-right: 10px
+}
+.autograding-in-progress:after {
+  margin-left: 10px
+}
+
+.submissions {
+  overflow-x: scroll;
+}
+
+.submission-history-button {
+  white-space: nowrap;
+  text-transform: unset !important;
+  font-size: 13px;
+  width: 100%;
+  border-radius: 5px;
+  color: #0882af;
+  box-shadow: 0px -0.5px 0.5px 0px rgba(0, 0, 0, 0.15),
+              0px 0.5px 0.5px 0.5px rgba(0, 0, 0, 0.15),
+              0px 0.5px 0.5px -0.5px rgba(0, 0, 0, 0.15);
+  display: flex;
+  justify-content: center;
+}
+
+.submission-history-button:hover {
+  color: white !important;
 }

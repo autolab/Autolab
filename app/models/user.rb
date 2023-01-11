@@ -17,7 +17,8 @@ class User < ApplicationRecord
   has_one :github_integration
 
   trim_field :school
-  validates :first_name, :last_name, :email, presence: true
+  validates :email, presence: true
+  validate :first_or_last_name
 
   # check if user is instructor in any course
   def instructor?
@@ -41,7 +42,7 @@ class User < ApplicationRecord
   end
 
   def full_name
-    "#{first_name} #{last_name}"
+    [first_name, last_name].reject(&:empty?).join(' ')
   end
 
   def full_name_with_email
@@ -49,7 +50,7 @@ class User < ApplicationRecord
   end
 
   def display_name
-    first_name && last_name ? full_name : email
+    first_name.present? && last_name.present? ? full_name : email
   end
 
   def after_create
@@ -260,5 +261,13 @@ class User < ApplicationRecord
     result[:school] ||= user[:edupersonschoolcollegename][0]
 
     result
+  end
+
+private
+
+  def first_or_last_name
+    return if first_name.present? || last_name.present?
+
+    errors.add(:base, "Student first name and last name can't both be blank")
   end
 end
