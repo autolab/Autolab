@@ -338,7 +338,7 @@ protected
     if annotation.position == -1
       # position -1 maps to the Autograder Output
       "Autograder Output"
-    elsif files && annotation.position != 0
+    elsif files && !annotation.position.nil?
       # if the submission is an archive, use filename in archive;
       # otherwise, use submission filename
       Archive.get_nth_filename(files, annotation.position)
