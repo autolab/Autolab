@@ -1,22 +1,33 @@
 <%= external_javascript_include_tag "lodash" %>
 <script>
+  const sessionKeyJson = {
+    submission: <%= @submission_id %>,
+    job: <%= @job_id %>,
+    user: <%= @cud&.user_id %>,
+  }
+  const sessionKey = JSON.stringify(sessionKeyJson);
+  
+  function loadPartialFeedback(partialFeedback) {
+    $('#partial-feedback').html(`
+      <pre>${partialFeedback}</pre>
+      <div class="autograding-in-progress">
+        <i class="refresh-feedback small material-icons" onclick="rotateIcon(); onClickRefresh()">refresh</i>
+        <pre>Autograding in progress</pre>
+      </div>`);
+    $('.feedback-status').html("In-Progress");
+    $('.feedback-status').removeClass("feedback-status__queued");
+    $('.feedback-status').addClass("feedback-status__inprogress");
+    $( "#result-body" ).load(window.location.href + " #result-body" );
+  }
   function refreshPartial(clicked) {
+    const lastPartialFeedback = sessionStorage.getItem(sessionKey);
     $.ajax({
         url: `getPartialFeedback?job_id=${<%= @job_id %>}`,
         success: (res) => {
           if (!res) return;
           if (res.partial_feedback) {
-            $('#partial-feedback').html(`
-              <pre>${res.partial_feedback}</pre>
-              <div class="autograding-in-progress">
-                <i class="refresh-feedback small material-icons" onclick="rotateIcon(); onClickRefresh()">refresh</i>
-                <pre>Autograding in progress</pre>
-              </div>`);
-            $('.feedback-status').html("In-Progress");
-            $('.feedback-status').removeClass("feedback-status__queued");
-            $('.feedback-status').addClass("feedback-status__inprogress");
-            $( "#result-body" ).load(window.location.href + " #result-body" );
-
+            sessionStorage.setItem(sessionKey, res.partial_feedback);
+            loadPartialFeedback(res.partial_feedback);
           } else if (res.queue_position != null) {
             $('#partial-feedback').html(`
               <div class="autograding-in-progress">
@@ -38,11 +49,19 @@
                 refresh the page to see if full feedback is available */
             location.reload();
           } else {
-            $('#partial-feedback').html(`There was an error loading your feedback. Check back once autograding is complete.`);
+            if (lastPartialFeedback && lastPartialFeedback != "") {
+              loadPartialFeedback(lastPartialFeedback);
+            } else {
+              $('#partial-feedback').html(`Your feedback is still loading. Click the refresh icon for updates.`);
+            }
           }
         },
         error: (err) => {
-          $('#partial-feedback').html(`There was an error loading your feedback. Check back once autograding is complete.`);
+          if (lastPartialFeedback && lastPartialFeedback != "") {
+            loadPartialFeedback(lastPartialFeedback);
+          } else {
+            $('#partial-feedback').html(`There was an error loading your feedback while autograding. Check back once autograding is complete.`);
+          }
         }
     });
   }

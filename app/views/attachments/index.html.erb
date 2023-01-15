@@ -1,23 +1,23 @@
-<% if @is_assessment then %> 
+<% if @is_assessment %>
   <h2>Listing <%= link_to @assessment.display_name, [@course, @assessment] %> Attachments</h2>
 <% else %>
   <h2>Listing <%= link_to @course.full_name, @course %> Attachments</h2>
 <% end %>
 
-
-<p>
-  <% if @is_assessment then %>
-    <%= link_to 'Add '+@assessment.display_name+' Attachment', new_course_assessment_attachment_path(@course, @assessment) %>
-  <% else %>
-    <%= link_to 'Add Course Attachment', new_course_attachment_path(@course) %>
-  <% end %>
-</p>
-
-<% if @attachments.any? then  %>
-  <ul>
-    <%= render @attachments %>
-  </ul>
-<% else %>
-  There are no attachments yet.
-<% end %>
+<ul class="collection with-header attachments">
+  <li class="collection-item add">
+    <p>
+      <% if @is_assessment %>
+        <%= link_to new_course_assessment_attachment_path(@course, @assessment) do %>
+          <i class="material-icons left">note_add</i>Add <%= @assessment.display_name %> Attachment
+        <% end %>
+      <% else %>
+        <%= link_to new_course_attachment_path(@course) do %>
+          <i class="material-icons left">note_add</i>Add Course Attachment
+        <% end %>
+      <% end %>
+    </p>
+  </li>
+  <%= render @attachments %>
+</ul>
 
