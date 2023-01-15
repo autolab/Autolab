@@ -45,7 +45,7 @@
               email: "<%= s.course_user_datum.email %>",
             },
             "course_number": "<%= s.course_user_datum.course_number %>",
-            "lec-sec": "<%= s.course_user_datum.lecture %><br><%= s.course_user_datum.section %>",
+            "lec-sec": "<%= s.course_user_datum.lecture %>/<%= s.course_user_datum.section %>",
             "actions": <% if s.filename %>
               `<%= render partial: "downloadSubmission", locals: {sub: s, can_always_download: true} %>`
             <% else %>
@@ -244,14 +244,14 @@ Interaction between gradesheet and annotations
   </div>
 </div>
 
-<span id="icon_template" class="template" >
-  <i class="material-icons small-icon down-icon" aria-hidden="true">
+<span id="icon_template" class="template">
+  <i class="material-icons tiny down-icon" aria-hidden="true">
     arrow_downward
   </i>
-  <i class="material-icons small-icon up-icon" aria-hidden="true">
+  <i class="material-icons tiny up-icon" aria-hidden="true">
     arrow_upward
   </i>
-  <i class="material-icons small-icon sort-icon" aria-hidden="true">
+  <i class="material-icons tiny sort-icon" aria-hidden="true">
     sort
   </i>
 </span>

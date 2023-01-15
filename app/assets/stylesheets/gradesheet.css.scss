@@ -2,10 +2,12 @@ td.focus {
   background-color: #666666 !important;
   color: white !important;
 }
+
 .container {
   width: 90%;
   max-width: none;
 }
+
 #grades_wrapper .tools {
   margin-top: 15px;
   margin-bottom: 20px;
@@ -27,7 +29,7 @@ td.focus {
 }
 
 #grades td.edit:hover {
-  color: #e1e1e1;
+  color: rgba(140, 0, 0, 0.95);
 }
 
 #grades tr.sortable th {
@@ -39,7 +41,8 @@ td.focus {
   padding-right: 7px;
   white-space: nowrap;
 }
-#grades th.sorting, th.sorting_asc, th.sorting_desc {
+
+#grades th.sorting, #grades th.sorting_asc, #grades th.sorting_desc {
   cursor: pointer;
 }
 
@@ -69,7 +72,7 @@ td.focus {
 }
 
 #grades td.edit input:hover {
-  color: #e1e1e1;
+  color: rgba(140, 0, 0, 0.95);
 }
 
 #grades {
@@ -149,7 +152,7 @@ td.focus {
 }
 
 #grades .tweak a:hover {
-  color: #e1e1e1;
+  color: rgba(140, 0, 0, 0.95);
 }
 
 #grades .released {
@@ -176,8 +179,12 @@ td.id {
   border-radius: 5px;
   z-index: 100000;
   padding: 3px;
-  background-color: #eee;
+  background-color: #ebebeb;
   display: none;
+}
+
+#grades .popover a:hover {
+  color: rgba(140, 0, 0, 0.95);
 }
 
 #grades td.id .popover span.filename {
@@ -280,6 +287,10 @@ td.id {
   color: red;
 }
 
+#grades tr:last-child {
+  border-bottom: none;
+}
+
 .template {
   display: none ;
 }
@@ -299,44 +310,28 @@ input[type="checkbox"]:not(:checked),
   color: #0882af;
 }
 
-.sorting .up-icon{
+th:not(.sorting_asc) .up-icon {
   display: none;
 }
 
-.sorting_asc .up-icon{
+th:not(.sorting_desc) .down-icon {
+  display: none;
+}
+
+th:not(.sorting) .sort-icon {
+  display: none;
+}
+
+.sorting_asc .up-icon {
   display: inline-block;
 }
 
-.sorting_desc .up-icon{
-  display: none;
-}
-
-.sorting .down-icon{
-  display: none;
-}
-
-.sorting_desc .down-icon{
+.sorting_desc .down-icon {
   display: inline-block;
 }
 
-.sorting_asc .down-icon{
-  display: none;
-}
-
-.sorting .sort-icon{
+.sorting .sort-icon {
   display: inline-block;
-}
-
-.sorting_asc .sort-icon{
-  display: none;
-}
-
-.sorting_desc .sort-icon{
-  display: none;
-}
-
-.small-icon {
-  font-size: 16px !important;
 }
 
 #grades #icon_template {
