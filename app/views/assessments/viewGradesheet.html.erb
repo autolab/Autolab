@@ -15,14 +15,15 @@
     rows_on_display = 1000;
     increment_rows_by = 500;
     email_col = 1;
+    lec_sec_col = 4;
     problem_count = <%= @assessment.problems.length %>;
-    first_problem_column = 4;
+    first_problem_column = 5;
     first_non_searchable_column = 2;
     first_row_ready = true;
 
     /* table data */
     // header classes
-    hclasses = ["enumerator", "id", "course_number", "lec", "sec",
+    hclasses = ["enumerator", "id", "actions", "course_number", "lec-sec",
                 <% for i in 0..(@assessment.problems.length - 1) do%>
                   "problem",
                 <% end %>
@@ -41,11 +42,15 @@
           { "id": "",
             "name": {
               name: "<%= [s.course_user_datum.last_name, s.course_user_datum.first_name].reject(&:blank?).join(', ') %>",
-              email: "<%= s.course_user_datum.email %>"
+              email: "<%= s.course_user_datum.email %>",
             },
             "course_number": "<%= s.course_user_datum.course_number %>",
-            "lec": "<%= s.course_user_datum.lecture %>",
-            "sec": "<%= s.course_user_datum.section %>",
+            "lec-sec": "<%= s.course_user_datum.lecture %>/<%= s.course_user_datum.section %>",
+            "actions": <% if s.filename %>
+              `<%= render partial: "downloadSubmission", locals: {sub: s, can_always_download: true} %>`
+            <% else %>
+              ` no file found `
+            <%end %>,
             <% p_scores = s.problems_to_scores %>
             <% @assessment.problems.each_with_index do |p,i| %>
               <% p_score = p_scores[p.id] %>
@@ -73,7 +78,7 @@
           r_class: "<%= aud_special_grade_type?(s.aud) && @cud.instructor? ? "special_submission" : "" %>",
           email: "<%= s.course_user_datum.email %>",
           <% if s.filename %>
-          file: `<%=raw(view_file(s, go_img(-1), go_img(-1), go_img(-1))) %>`,
+          actions: `<%= render partial: "downloadSubmission", locals: {sub: s, can_always_download: true} %>`,
           <% end %>
           problems: [
             <% p_scores = s.problems_to_scores %>
@@ -106,8 +111,8 @@
           return data.name;
         } },
       { title: "Course &#8470;", className: "course_number", data: "course_number" },
-      { title: "Lec", className: "lec", data: "lec" },
-      { title: "Sec", className: "sec", data: "sec" },
+      { title: "Lec/Sec", className: "lec-sec", data: "lec-sec" },
+      { title: "Actions", className: "actions", data: "actions" },
       <% @assessment.problems.each_with_index do |p,i| %>
         { title: `<%= p.name %>
             <span class="max_score">(<%= p.max_score || raw("&ndash;") %>)</span>`,
@@ -141,6 +146,7 @@
     // templates
     $col_name_template = jQuery('#col_name_template');
     $col_prob_template = jQuery('#col_prob_template');
+    $icon_template = jQuery('#icon_template');
 
 
     /***************
@@ -196,8 +202,8 @@ Interaction between gradesheet and annotations
 <span id="interaction_badge" class="badge" data-badge-caption="Feature Information"></span></a>
 </div>
 
-<div id="table_container" style="text-align: center">
-  <table id="grades"></table>
+<div id="table_container">
+  <table id="grades" style="width:100%"></table>
 </div>
 
 
@@ -237,4 +243,16 @@ Interaction between gradesheet and annotations
       </div>
   </div>
 </div>
+
+<span id="icon_template" class="template">
+  <i class="material-icons tiny down-icon" aria-hidden="true">
+    arrow_downward
+  </i>
+  <i class="material-icons tiny up-icon" aria-hidden="true">
+    arrow_upward
+  </i>
+  <i class="material-icons tiny sort-icon" aria-hidden="true">
+    sort
+  </i>
+</span>
 
