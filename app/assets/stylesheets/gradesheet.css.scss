@@ -292,7 +292,7 @@ td.id {
 }
 
 .template {
-  display: none ;
+  display: none;
 }
 
 input[type="checkbox"]:not(:checked),
@@ -322,20 +322,14 @@ th:not(.sorting) .sort-icon {
   display: none;
 }
 
-.sorting_asc .up-icon {
-  display: inline-block;
-}
-
-.sorting_desc .down-icon {
-  display: inline-block;
-}
-
-.sorting .sort-icon {
-  display: inline-block;
-}
-
 #grades #icon_template {
   display: inline-block;
   line-height: 14px;
   vertical-align: middle;
+}
+
+#table_container {
+  text-align: center;
+  width:100%;
+  overflow: auto;
 }
