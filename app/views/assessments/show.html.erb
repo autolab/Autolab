@@ -195,8 +195,6 @@
     <div class="section">
       <h4 class="section-title"><span class="white">Attachments</span></h4>
       <ul class="collection with-header attachments">
-        <%= render @attachments %>
-
         <% # this code is temporarily "commented out" because Dan wants to preserve the logic for future changes to _attachment.html.erb %>
         <% if false then %>
           <% for a in @assessment.attachments do %>
@@ -211,14 +209,17 @@
             <% end %>
           <% end %>
         <% end %>
-      <% if @cud.instructor? then %>
-        <li class="collection-item add">
-          <%= link_to new_course_assessment_attachment_path(@course, @assessment) do %>
-            <i class="material-icons left">note_add</i>Add Attachment
-          <% end %>
-          <span class="secondary-content"></span>
-        </li>
-      <% end %>
+        <% if @cud.instructor? %>
+          <li class="collection-item add">
+            <p>
+            <%= link_to new_course_assessment_attachment_path(@course, @assessment) do %>
+              <i class="material-icons left">note_add</i>Add Attachment
+            <% end %>
+            <span class="secondary-content"></span>
+            </p>
+          </li>
+        <% end %>
+        <%= render @attachments %>
       </ul>
     </div>
     <hr>

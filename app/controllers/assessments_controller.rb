@@ -622,13 +622,18 @@ class AssessmentsController < ApplicationController
       redirect_to(action: "index") && return
     end
 
-    resp = get_job_status(job_id)
+    begin
+      resp = get_job_status(job_id)
 
-    if resp["is_assigned"]
-      resp['partial_feedback'] = tango_get_partial_feedback(job_id)
+      if resp["is_assigned"]
+        resp['partial_feedback'] = tango_get_partial_feedback(job_id)
+      end
+    rescue AutogradeError => e
+      render json: { error: "Get partial feedback request failed: #{e}" },
+             status: :internal_server_error
+    else
+      render json: resp.to_json
     end
-
-    render json: resp.to_json
   end
 
   def parseScore(feedback)
