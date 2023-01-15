@@ -1,6 +1,9 @@
 <% content_for :javascripts do %>
   <%= javascript_include_tag "sorttable" %>
 <% end %>
+<% content_for :stylesheets do %>
+  <%= stylesheet_link_tag "getjob" %>
+<% end %>
 <p>
 <%= link_to "Return to Jobs", {:action=>"index"} %>
 </p>
@@ -9,50 +12,50 @@
   <table class="jobs-table">
     <tbody>
       <tr>
-        <td class="left">
+        <td>
           Name
         </td>
-        <td class="right">
+        <td>
           <%= @job[:name] %>
         </td>
       </tr>
       <tr>
-        <td class="left">
+        <td>
           ID
         </td>
-        <td class="right">
+        <td>
           <%= @job[:id] %>
         </td>
       </tr>
       <tr>
-        <td class="left">
+        <td>
           State
         </td>
-        <td class="right">
+        <td>
           <%= @job[:state] %>
         </td>
       </tr>
       <tr>
-        <td class="left">
+        <td>
           Status
         </td>
-        <td class="right">
+        <td>
           <%= @job[:status] %>
         </td>
       </tr>
       <tr>
-        <td class="left">
+        <td>
           Elapsed time
         </td>
-        <td class="right">
+        <td>
           <%= @job[:elapsed] %> secs
         </td>
       </tr>
       <tr>
-        <td class="left">
+        <td>
           VM instance
         </td>
-        <td class="right">
+        <td>
           <%= @job[:rjob]["vm"]["id"] %>
         </td>
       </tr>
@@ -66,35 +69,43 @@
   <table class="jobs-table">
     <tbody>
       <tr>
-        <td class="left">
+        <td>
           VM image
         </td>
-        <td class="right">
+        <td>
           <%= @job[:rjob]["vm"]["name"]%>
         </td>
       </tr>
       <tr>
-        <td class="left">
+        <td>
+          Job Timeout
+        </td>
+        <td>
+          <%= @job[:rjob]["timeout"] %> secs
+        </td>
+      </tr>
+      <tr>
+        <td>
           Output File
         </td>
-        <td class="right">
+        <td>
           <%= @job[:rjob]["outputFile"].sub(/\/afs\/cs\.cmu\.edu\/academic\/autolab\/autolab2/, "[autolab]") %>
         </td>
       </tr>
       <tr>
-        <td class="left">
+        <td>
           Maximum Output File Size
         </td>
-        <td class="right">
+        <td>
           <%= @job[:rjob]["maxOutputFileSize"] %> bytes
         </td>
       </tr>
       <% if @cud.user.administrator?  then %>
         <tr>
-          <td class="left">
+          <td>
             notifyURL
           </td>
-          <td class="right">
+          <td>
             <%= @job[:rjob]["notifyURL"] %>
           </td>
         </tr>
