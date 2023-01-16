@@ -8,5 +8,9 @@ namespace :user do
   task :clear_cache => :environment do
     Rails.cache.clear
   end
+
+  task :cleanup_cache => :environment do
+    Rails.cache.cleanup
+  end
 end
 
