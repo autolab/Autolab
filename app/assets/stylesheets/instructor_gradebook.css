@@ -15,8 +15,10 @@
 
 #last_updated {
   text-align: right;
-  margin-bottom: 3px;
   color: #999;
+  margin-left: auto;
+  width: fit-content;
+  margin-top: auto
 }
 
 #last_updated a {
@@ -165,4 +167,19 @@ div.course table tr td {
   text-align: right;
   font-weight: bold;
   font-size: 0.9em;
+}
+
+div .search-student-bar {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: space-between;
+  flex-grow: 1;
+  width: 100%;
+}
+
+.gradebook-row {
+  width: 100%;
+  margin-top: -20px;
+  margin-bottom: 10px;
 }
