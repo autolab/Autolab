@@ -281,7 +281,7 @@ private
         cgdub = cumulative_grace_days_used_before!
 
         # cache
-        Rails.cache.write(cache_key, cgdub)
+        Rails.cache.write(cache_key, cgdub, expires_in: 7.days, race_condition_ttl: 1.minute)
 
         # release lock
       end

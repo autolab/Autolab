@@ -1,55 +1,178 @@
 <% content_for :javascripts do %>
   <%= javascript_include_tag "sorttable" %>
 <% end %>
-
-<h1>Job <%= @job[:name]%></h1>
+<% content_for :stylesheets do %>
+  <%= stylesheet_link_tag "getjob" %>
+<% end %>
 <p>
 <%= link_to "Return to Jobs", {:action=>"index"} %>
 </p>
-<h2>Summary</h2>
-<ul>
-<li>Job ID: <%= @job[:id] %>
-<li>State: <%= @job[:state] %>
-<li>Status: <%= @job[:status] %>
-<li>Elapsed time: <%= @job[:elapsed] %> secs
-<li>VM instance: <%= @job[:rjob]["vm"]["id"] %>
-</ul>
+<h3>Job <%= @job[:id] %> Summary</h3>
+<div class="jobs-table-div">
+  <table class="jobs-table">
+    <tbody>
+      <tr>
+        <td>
+          Name
+        </td>
+        <td>
+          <%= @job[:name] %>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          ID
+        </td>
+        <td>
+          <%= @job[:id] %>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          State
+        </td>
+        <td>
+          <%= @job[:state] %>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          Status
+        </td>
+        <td>
+          <%= @job[:status] %>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          Elapsed time
+        </td>
+        <td>
+          <%= @job[:elapsed] %> secs
+        </td>
+      </tr>
+      <tr>
+        <td>
+          VM instance
+        </td>
+        <td>
+          <%= @job[:rjob]["vm"]["id"] %>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
-<h2>Job Parameters</h2>
-<ul>
-<li>VM image: <%= @job[:rjob]["vm"]["name"]%>
-<li>Job Timeout: <%= @job[:rjob]["timeout"] %> secs
-<li>Maximum Output File Size: <%= @job[:rjob]["maxOutputFileSize"] %> bytes
-<li>Input Files: 
-<table class=prettyBorder>
-<tr><th>Local File on Server (<kbd>localFile</kbd>)</th>
-<th>Filename on VM (<kbd>destFile</kbd>)</th></tr>
-<% for item in @job[:rjob]["input"] do %>
-  <tr>
-  <td><font size=-1><kbd><%= item["localFile"].sub(/\/afs\/cs\.cmu\.edu\/academic\/autolab\/autolab2\/courses/, "[autolab courses]")%></kbd></font></td>
-  <td><font size=-1><kbd><%= item["destFile"] %></kbd></font></td>
-  </tr>
-<% end %>
+
+<h3>Job Parameters</h3>
+<div class="jobs-table-div">
+  <table class="jobs-table">
+    <tbody>
+      <tr>
+        <td>
+          VM image
+        </td>
+        <td>
+          <%= @job[:rjob]["vm"]["name"]%>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          Job Timeout
+        </td>
+        <td>
+          <%= @job[:rjob]["timeout"] %> secs
+        </td>
+      </tr>
+      <tr>
+        <td>
+          Output File
+        </td>
+        <td>
+          <%= @job[:rjob]["outputFile"].sub(/\/afs\/cs\.cmu\.edu\/academic\/autolab\/autolab2/, "[autolab]") %>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          Maximum Output File Size
+        </td>
+        <td>
+          <%= @job[:rjob]["maxOutputFileSize"] %> bytes
+        </td>
+      </tr>
+      <% if @cud.user.administrator?  then %>
+        <tr>
+          <td>
+            notifyURL
+          </td>
+          <td>
+            <%= @job[:rjob]["notifyURL"] %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
+<h4> Input Files </h4>
+<div class="jobs-table-div">
+  <table class="jobs-table">
+    <thead>
+    <tr>
+      <th>
+        Local File on Server (<code>localFile</code>)
+      </th>
+      <th>
+        Filename on VM (<code>destFile</code>)
+      </th>
+    </tr>
+    </thead>
+    <tbody style="font-size: 14px">
+    <% for item in @job[:rjob]["input"] do %>
+      <tr>
+        <td>
+          <code>
+            <%= item["localFile"].sub(/\/afs\/cs\.cmu\.edu\/academic\/autolab\/autolab2\/courses/, "[autolab courses]")%>
+          </code>
+        </td>
+        <td>
+          <code>
+            <%= item["destFile"] %>
+          </code>
+        </td>
+      </tr>
+    <% end %>
+    </tbody>
+  </table>
+</div>
 </table>
 
-<% if @cud.user.administrator?  then %>
-<li><kbd>notifyURL</kbd>: <%= @job[:rjob]["notifyURL"] %>
-<% end %>
+<h3>Runtime Trace</h3>
+<div class="result-container">
+  <div class="feedback-container" style="width: 100%;">
+    <div class="result-pane" style="padding: 0 2vh;">
+      <ul>
+        <% for item in @job[:rjob]["trace"] do %>
+          <% trace_line = item.split("|") %>
+          <li>
+            <span class="moment-date-time"><%= DateTime.parse(trace_line[0]).to_time.in_time_zone.to_s %></span> | <%= trace_line[1] %>
+          </li>
+        <% end %>
+      </ul>
+    </div>
+  </div>
+</div>
 
-<li>Output File: <%= @job[:rjob]["outputFile"].sub(/\/afs\/cs\.cmu\.edu\/academic\/autolab\/autolab2/, "[autolab]") %>
-</ul>
 
-<h2>Runtime Trace</h2>
-<ul>
-  <% for item in @job[:rjob]["trace"] do %>
-    <% poo = item.split("|") %>
-    <li><span class="moment-date-time"><%= DateTime.parse(poo[0]).to_time.in_time_zone.to_s %></span> | <%= poo[1] %></li>
-  <% end %>
-</ul>
 
-<h2>Most Recent Autograder Feedback for this Submission</h2>
+<h3>Most Recent Autograder Feedback for this Submission</h3>
 <% if @feedback_str == nil || @feedback_str == "" then %>
   <pre>No Feedback Available</pre>
 <% else %>
-  <pre><%= @feedback_str %></pre>
+  <div class="result-container">
+    <div class="feedback-container" style="width: 100%;">
+      <div class="result-pane">
+        <pre><%= @feedback_str %></pre>
+      </div>
+    </div>
+  </div>
 <% end %>
