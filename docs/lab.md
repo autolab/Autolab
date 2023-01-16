@@ -4,8 +4,12 @@ This guide explains how to create autograded programming assignments (labs) for 
 
 ## Writing Autograders
 
-An _autograder_ is a program that takes a student's work as input, and generates some quantitative evaluation of that work as output. The student's work consists of one or more source files written in an arbitrary programming language.
-The autograder processes these files and generates arbitrary text lines on stdout. The last text line on stdout must be a JSON string, called an _autoresult_, that assigns an autograded score to one or more problems, and optionally, generates the scoreboard entries for this submission.
+An _autograder_ is a program that takes a student's work as input, and generates some quantitative evaluation of that work as output. The student's work consists of one or more source files written in an arbitrary programming language. The autograder processes these files and generates arbitrary text lines on stdout. What's written to stdout will be displayed to the students as **autograder feedback**.
+
+!!! info "Streaming Output"
+	As of Autolab v2.10, any output written into the stdout will be streamed directly for students to see, so students can see the live progress of the autograding. Many programming languages do buffered writes to `stdout`, so if you want live progress, you would have to guarantee that you are writing to stdout by flushing the buffer accordingly (e.g. [Python `print`'s flush flag](https://docs.python.org/3/library/functions.html#print), [C's `fflush`](https://www.tutorialspoint.com/c_standard_library/c_function_fflush.htm), [CPP's `fflush` ](https://en.cppreference.com/w/cpp/io/c/fflush)) 
+
+The last text line on stdout must be a JSON string, called an _autoresult_, that assigns an autograded score to one or more problems, and optionally, generates the scoreboard entries for this submission.
 
 The JSON autoresult is a "scores" hash that assigns a numerical score to one or more problems, and an optional "scoreboard" array that provides the scoreboard entries for this submission. For example,
 
@@ -343,3 +347,7 @@ We have a [repository for sample autograders](https://github.com/autolab/autogra
 #### Why is Autolab not displaying my stdout output?
 
 Autolab always shows the stdout output of running make, even when the program crashed or timed out. However, when it does crash and the expected autoresult json string is not appended to the output, parsing of the last line will fail. If this happens, any stdout output that is longer than 10,000 lines will be discarded (Note that this limit does not apply when the autoresult json is valid).
+
+#### Why is Autolab not able to stream my stdout output? The output only seems to be displayed when autograding is completed.
+
+Autolab can only stream stdout. Many programming languages do buffered writes to `stdout`, so you would have to guarantee that you are writing to stdout by flushing the buffer accordingly (e.g. [Python `print`'s flush flag](https://docs.python.org/3/library/functions.html#print), [C's `fflush`](https://www.tutorialspoint.com/c_standard_library/c_function_fflush.htm), [CPP's `fflush` ](https://en.cppreference.com/w/cpp/io/c/fflush))
