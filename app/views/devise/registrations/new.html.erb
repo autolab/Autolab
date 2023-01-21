@@ -1,31 +1,72 @@
 <h2>Sign Up</h2>
 
+<% content_for :stylesheets do %>
+  <%= stylesheet_link_tag "signup_form" %>
+<% end %>
+
+<% content_for :javascripts do %>
+  <%= javascript_include_tag "signup_form" %>
+<% end %>
+
 <%= form_for(resource, :as => resource_name, :url => registration_path(resource_name)) do |f| %>
-  <%= render "devise/shared/error_messages", resource: resource %>
-
 	<div class="input-field">
-	  <%= f.text_field :first_name, :autofocus => true %>
+		<%= f.text_field :first_name, :title => "", :pattern => ".+", :required => true, :autofocus => true %>
 		<%= f.label :first_name %>
+    <div class="field-hint">
+			<% if resource.errors[:first_name].empty? %>
+				Either your first or last name must be specified
+			<% else %>
+				<b style="color: #cc0000"><%= resource.errors[:first_name][0] %></b>
+			<% end %>
+		</div>
 	</div>
 
 	<div class="input-field">
-		<%= f.text_field :last_name %>
+		<%= f.text_field :last_name, :pattern => ".+", :required => true %>
 		<%= f.label :last_name %>
+    <div class="field-hint">
+			<% if resource.errors[:last_name].empty? %>
+				Either your first or last name must be specified
+			<% else %>
+				<b style="color: #cc0000"><%= resource.errors[:last_name][0] %></b>
+			<% end %>
+		</div>
 	</div>
 
 	<div class="input-field">
-		<%= f.email_field :email %>
+		<%= f.email_field :email, :required => true %>
 		<%= f.label :email %>
+    <div class="field-hint">
+			<% if resource.errors[:email].empty? %>
+				Format: username@email.com
+			<% else %>
+				<b style="color: #cc0000"><%= resource.errors.full_messages_for(:email)[0] %></b>
+			<% end %>
+		</div>
 	</div>
 
 	<div class="input-field">
-		<%= f.password_field :password %>
+		<%= f.password_field :password, :pattern => ".{8,}", :required => true %>
 		<%= f.label :password %>
+		<div class="field-hint">
+			<% if resource.errors[:password].empty? %>
+				Use 8 or more characters for your password
+			<% else %>
+				<b style="color: #cc0000"><%= resource.errors.full_messages_for(:password)[0] %></b>
+			<% end %>
+		</div>
 	</div>
 
 	<div class="input-field">
-	  <%= f.password_field :password_confirmation %>
+	  <%= f.password_field :password_confirmation, :title => "Must match your password", :required => true %>
 		<%= f.label :password_confirmation %>
+    <div class="field-hint">
+			<% if resource.errors[:password_confirmation].empty? %>
+				Must match your password
+			<% else %>
+				<b style="color: #cc0000"><%= resource.errors.full_messages_for(:password_confirmation)[0] %></b>
+			<% end %>
+		</div>
 	</div>
   <br />
   <div><%= f.submit "Sign up", { :class => "btn primary" } %></div>
