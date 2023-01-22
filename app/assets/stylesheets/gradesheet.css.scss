@@ -1,3 +1,5 @@
+@import 'variables';
+
 td.focus {
   background-color: #666666 !important;
   color: white !important;
@@ -57,7 +59,7 @@ td.focus {
 #grades_filter input {
   border: 1px solid #d0d0d0;
   border-radius: 3px;
-  box-shadow: 0 0 2px #ccc;
+  box-shadow: 0 0 2px $autolab-highlight-gray;
   font-size: 18px;
   padding: 6px 12px;
   width: 100%;
@@ -65,7 +67,7 @@ td.focus {
 }
 
 #grades td.edit input {
-  border: 0px solid #ccc;
+  border: 0 solid $autolab-highlight-gray;
   color: #e1e1e1;
   font: inherit;
   text-align: inherit;
@@ -76,7 +78,7 @@ td.focus {
 }
 
 #grades {
-  box-shadow: 0 0 5px 0px #eee;
+  box-shadow: 0 0 5px 0 $autolab-subtle-gray;
   font-size: 16px;
   border-radius: 2px;
   border-collapse: collapse;
@@ -175,7 +177,7 @@ td.id {
   position: absolute;
   top: 0;
   left: 0;
-  box-shadow: 1px 1px 4px 1px #ccc;
+  box-shadow: 1px 1px 4px 1px $autolab-highlight-gray;
   border-radius: 5px;
   z-index: 100000;
   padding: 3px;
@@ -307,7 +309,7 @@ input[type="checkbox"]:not(:checked),
 }
 
 #interaction_badge {
-  color: #0882af;
+  color: $autolab-blue-text;
 }
 
 th:not(.sorting_asc) .up-icon {
