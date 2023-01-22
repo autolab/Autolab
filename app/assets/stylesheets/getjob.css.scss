@@ -1,6 +1,8 @@
+@import 'variables';
+
 .jobs-table-div {
   background-color: #fafafa;
-  border: 1px solid #eee;
+  border: 1px solid $autolab-subtle-gray;
   border-radius: 10px;
   color: black;
   margin: 0;

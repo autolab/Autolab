@@ -7,16 +7,8 @@
 * Class and ID Rules. Also pseudo classes *
 *******************************************/
 
-/********************************************************
-* These colors have been changed to fit a CMU aesthetic.*
-********************************************************/
-$autolab-red: rgba(153, 0, 0, 0.9);
-$autolab-subtle-red: #c87b7e;
-$autolab-subtle-gray: #eee;
-$autolab-highlight-gray: #ccc;
-$autolab-black-text: #212121;
-$autolab-blue-text: #0882af;
-$autolab-green: #3a862d;
+@import 'variables';
+
 #F2EFEF html,
 body {
   height: 100%;
@@ -147,7 +139,7 @@ div.main-header img {
 }
 
 .action-links.navbar-nav .dropdown li:hover {
-  background-color: #eee;
+  background-color: $autolab-subtle-gray;
 }
 
 .action-links.navbar-nav li.dropdown a {
@@ -565,7 +557,7 @@ ul.gray-box {
 }
 ul.gray-box > li {
   background-color: #fafafa;
-  border: 1px solid #eee;
+  border: 1px solid $autolab-subtle-gray;
   color: #666;
   margin: 0;
   padding: 10px;
@@ -663,8 +655,8 @@ ul.moss-list {
   padding: 0;
 }
 ul.moss-list > li {
-  background: #eee;
-  border: 1px solid #ccc;
+  background: $autolab-subtle-gray;
+  border: 1px solid $autolab-highlight-gray;
   cursor: pointer;
   margin: 5px;
   padding: 4px;
@@ -679,8 +671,8 @@ ul.moss-inner-list {
   padding: 0;
 }
 ul.moss-inner-list > li {
-  background: linear-gradient(to top, #eee, #fff);
-  border: 1px solid #ccc;
+  background: linear-gradient(to top, $autolab-subtle-gray, #fff);
+  border: 1px solid $autolab-highlight-gray;
   cursor: default;
   padding: 2px;
 }
@@ -759,7 +751,7 @@ table.prettyBorder td {
 }
 table.prettyBorder {
   border-collapse: collapse;
-  box-shadow: 0 0 5px 0px #eee;
+  box-shadow: 0 0 5px 0px $autolab-subtle-gray;
   font-size: 15px;
   width: 100%;
   // keep track of what row this is
@@ -801,7 +793,7 @@ table.prettyBorder {
   }
 
   tr.selected {
-    background-color: #eee;
+    background-color: $autolab-subtle-gray;
   }
 
   tr .btn.small {
@@ -931,8 +923,8 @@ textarea {
   margin-top: 0.2rem;
   margin-bottom: 0.2rem;
   padding: 5px 0 5px 0;
-  border-color: #ccc;
-  box-shadow: 0 1px 0 0 #ccc;
+  border-color: $autolab-highlight-gray;
+  box-shadow: 0 1px 0 0 $autolab-highlight-gray;
   outline: none;
   font-weight: 400;
 }
@@ -954,8 +946,8 @@ input[type="checkbox"] {
 }
 
 input[type="search"] {
-  border-bottom: 1px #ccc;
-  box-shadow: 0 1px 0 0 #ccc;
+  border-bottom: 1px $autolab-highlight-gray;
+  box-shadow: 0 1px 0 0 $autolab-highlight-gray;
 }
 
 .flatpickr-input {
@@ -1100,7 +1092,7 @@ label[for="switch"] {
   height: 24px;
   top: -2px;
   left: -2px;
-  background: #eee;
+  background: $autolab-subtle-gray;
   border: 1px solid #ddd;
   content: "";
   border-radius: 2px;
@@ -1145,16 +1137,16 @@ label[for="switch"] {
 .options {
   line-height: 36px;
   list-style: none;
-  border-top: 1px solid #eee;
+  border-top: 1px solid $autolab-subtle-gray;
   padding-left: 0;
 }
 
 .options li:hover {
-  background-color: #eee;
+  background-color: $autolab-subtle-gray;
 }
 
 .options li {
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid $autolab-subtle-gray;
 }
 
 .options li a {
@@ -1270,7 +1262,7 @@ div.center {
   padding: 10px;
   margin-bottom: 0px;
   border-radius: 3px;
-  border: 1px solid #eee;
+  border: 1px solid $autolab-subtle-gray;
   font-weight: 500;
 }
 
@@ -1308,8 +1300,8 @@ div.center {
 
 .attachment {
   font-weight: bold;
-  color: #eee;
-  border: 2px solid #eee;
+  color: $autolab-subtle-gray;
+  border: 2px solid $autolab-subtle-gray;
   border-radius: 6px;
   list-style: none;
   padding: 8px;
@@ -1472,7 +1464,7 @@ table.sub td, th {
   font-size: 13px;
   width: 100%;
   border-radius: 5px;
-  color: #0882af;
+  color: $autolab-blue-text;
   box-shadow: 0px -0.5px 0.5px 0px rgba(0, 0, 0, 0.15),
               0px 0.5px 0.5px 0.5px rgba(0, 0, 0, 0.15),
               0px 0.5px 0.5px -0.5px rgba(0, 0, 0, 0.15);
