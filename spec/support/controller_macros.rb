@@ -50,6 +50,15 @@ module ControllerMacros
     CourseUserDatum.where(user_id: uid).first.course_id
   end
 
+
+  def get_first_cud_by_uid(uid)
+    CourseUserDatum.where(user_id: uid).first
+  end
+
+  def get_first_aid_by_cud(cud)
+    AssessmentUserDatum.where(course_user_datum_id: cud).first.assessment_id
+  end
+
   def create_scheduler_with_cid(cid)
     # Prepare the updater script for scheduler to run
     update_script_path = Rails.root.join("tmp/testscript.rb")
