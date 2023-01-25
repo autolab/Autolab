@@ -1,3 +1,5 @@
+@import 'variables';
+
 #grades td.edit {
   text-align: center;
   color: #666666;
@@ -46,15 +48,15 @@
   height: 18px;
   width: 200px;
   border-radius: 3px;
-  box-shadow: 0 0 2px #CCC;
+  box-shadow: 0 0 2px $autolab-highlight-gray;
 }
 
 #gradebook {
   min-height: 100px;
   background-color: #f8f8f8;
-  box-shadow: 0 0 5px 0px #eee;
+  box-shadow: 0 0 5px 0 $autolab-subtle-gray;
   font-size: 1.2em;
-  border: 1px solid #ccc;
+  border: 1px solid $autolab-highlight-gray;
   border-radius: 2px;
   margin: 0 auto 0 auto;
   width: 100%;
@@ -64,7 +66,7 @@
 #gradebook .slick-cell {
   padding: 10px;
   border: none;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid $autolab-subtle-gray;
   white-space: nowrap;
   color: #555;
   text-align: center;
@@ -106,7 +108,7 @@
 }
 
 #gradebook .slick-cell.andrew a {
-  color: #0882af;
+  color: $autolab-blue-text;
   text-decoration: none;
   font: inherit;
 }

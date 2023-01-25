@@ -1,3 +1,5 @@
+@import 'variables';
+
 body { background-color: #fff; color: #333; }
 
 body, p, ol, ul, td {
@@ -7,7 +9,7 @@ body, p, ol, ul, td {
 }
 
 pre {
-  background-color: #eee;
+  background-color: $autolab-subtle-gray;
   padding: 10px;
   font-size: 11px;
 }

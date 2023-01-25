@@ -1,3 +1,5 @@
+@import '../variables';
+
 .quiz-form {
   max-width: 900px;
   width: 100%;
@@ -70,7 +72,7 @@ div.questionBlock, div.block {
       font-size: 22px;
       font-weight: bold;
       cursor: pointer;
-      color: rgba(153, 0, 0, 0.9);
+      color: $autolab-red;
     }
   }
 
