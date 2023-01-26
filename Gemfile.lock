@@ -362,10 +362,10 @@ GEM
       faraday (>= 0.17.3, < 3)
     sdoc (2.4.0)
       rdoc (>= 5.0)
-    selenium-webdriver (4.1.0)
-      childprocess (>= 0.5, < 5.0)
+    selenium-webdriver (4.8.0)
       rexml (~> 3.2, >= 3.2.5)
-      rubyzip (>= 1.2.2)
+      rubyzip (>= 1.2.2, < 3.0)
+      websocket (~> 1.0)
     simplecov (0.13.0)
       docile (~> 1.1.0)
       json (>= 1.8, < 3)
@@ -412,6 +412,7 @@ GEM
       crack (>= 0.3.2)
       hashdiff (>= 0.4.0, < 2.0.0)
     webrick (1.7.0)
+    websocket (1.2.9)
     websocket-driver (0.7.5)
       websocket-extensions (>= 0.1.0)
     websocket-extensions (0.1.5)
@@ -482,7 +483,7 @@ DEPENDENCIES
   rubyzip
   sass-rails (>= 4.0.3)
   sdoc (>= 0.4.0)
-  selenium-webdriver
+  selenium-webdriver (>= 4.7.1)
   slack-notifier
   spring
   sprockets-rails (>= 3.2.1)
@@ -495,7 +496,7 @@ DEPENDENCIES
   yard
 
 RUBY VERSION
-   ruby 2.6.8p205
+   ruby 2.7.7p221
 
 BUNDLED WITH
    2.4.4

@@ -38,10 +38,23 @@ RSpec.configure do |config|
   Capybara.server = :webrick
 
   # driver needed for Selenium to run
+  # Capybara.register_driver :chrome do |app|
+  #   Capybara::Selenium::Driver.new(app, browser: :chrome)
+  # end
   Capybara.register_driver :chrome do |app|
     Capybara::Selenium::Driver.new(app, browser: :chrome)
   end
-  Capybara.javascript_driver = :chrome
+
+  Capybara.register_driver :headless_chrome do |app|
+    capabilities = Selenium::WebDriver::Remote::Capabilities.chrome(
+      'goog:chromeOptions': { args: %w[headless] }
+    )
+
+    Capybara::Selenium::Driver.new app,
+                                   browser: :chrome,
+                                   capabilities: capabilities
+  end
+  Capybara.javascript_driver = :headless_chrome
 
   # Before hooks for initialization
   config.before(:suite) do

@@ -1,5 +1,5 @@
 source 'https://rubygems.org'
-ruby '2.6.8'
+ruby '2.7.7'
 
 gem 'rails', '=6.0.5'
 
@@ -86,8 +86,8 @@ gem 'httparty'
 gem 'rspec-rails', '>=3.5.0'
 gem 'rack-test'
 gem 'capybara', group: [:development, :test]
-# for DSL on capybara
-gem 'selenium-webdriver', group: :test
+# To enable webdriver testing capabilities along with capybara
+gem 'selenium-webdriver', '>=4.7.1', group: :test
 # required to run webdriver for selenium on chrome
 gem 'webdrivers', group: :test
 # required for capybara debugging
