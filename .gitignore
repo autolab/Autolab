@@ -57,3 +57,5 @@ out.txt
 # Rails credentials
 config/master.key
 config/credentials.yml.enc
+
+dump.rdb
