@@ -51,7 +51,8 @@ RSpec.describe SubmissionsController, type: :controller do
 
     context "when user is course assistant" do
       cid = get_first_course
-      user_id = create_ca_for_course(cid, "courseassistant@test.com", "course", "assistant", "12345678")
+      user_id = create_ca_for_course(cid, "courseassistant@test.com", "course", "assistant",
+                                     "12345678")
       cud = get_first_cud_by_uid(user_id)
       cid = get_course_id_by_uid(user_id)
       course_name = Course.find(cid).name

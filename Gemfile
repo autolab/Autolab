@@ -86,6 +86,12 @@ gem 'httparty'
 gem 'rspec-rails', '>=3.5.0'
 gem 'rack-test'
 gem 'capybara', group: [:development, :test]
+# for DSL on capybara
+gem 'selenium-webdriver', group: :test
+# required to run webdriver for selenium on chrome
+gem 'webdrivers', group: :test
+# required for capybara debugging
+gem 'launchy', group: :test
 gem 'factory_bot_rails', group: [:development, :test]
 gem 'database_cleaner', group: [:development, :test]
 gem 'webmock', group: [:development, :test]
@@ -129,7 +135,7 @@ group :development do
   gem 'yard'
 
   # sqlite3 adapter
-  gem 'sqlite3', '~> 1.4'
+  gem 'sqlite3', '1.5.0'
 end
 
 # Also install sqlite3 for docker installations

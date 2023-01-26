@@ -3,8 +3,11 @@ ENV["RAILS_ENV"] ||= "test"
 require "spec_helper"
 require File.expand_path("../../config/environment", __FILE__)
 require "rspec/rails"
-require "capybara/rspec"
+require 'capybara/rspec'
+require 'capybara/rails'
 require "devise"
+require "selenium/webdriver"
+
 # Requires supporting ruby files in spec/support/ and its subdirectories.
 Dir[Rails.root.join("spec/support/**/*.rb")].each { |f| require f }
 
@@ -29,6 +32,17 @@ RSpec.configure do |config|
 
   MiniRacer::Platform.set_flags! :single_threaded
 
+  config.include Capybara::DSL
+  # needed to load JS for capybara
+  Capybara.default_driver = :rack_test
+  Capybara.server = :webrick
+
+  # driver needed
+  Capybara.register_driver :chrome do |app|
+    Capybara::Selenium::Driver.new(app, browser: :chrome)
+  end
+
+  Capybara.javascript_driver = :chrome
   # Before hooks for initialization
   config.before(:suite) do
     Capybara.app_host = "http://localhost:8200"
