@@ -33,16 +33,16 @@ RSpec.configure do |config|
   MiniRacer::Platform.set_flags! :single_threaded
 
   config.include Capybara::DSL
-  # needed to load JS for capybara
+  # rack_test to be used when selenium is not necessary as it is faster
   Capybara.default_driver = :rack_test
   Capybara.server = :webrick
 
-  # driver needed
+  # driver needed for Selenium to run
   Capybara.register_driver :chrome do |app|
     Capybara::Selenium::Driver.new(app, browser: :chrome)
   end
-
   Capybara.javascript_driver = :chrome
+
   # Before hooks for initialization
   config.before(:suite) do
     Capybara.app_host = "http://localhost:8200"

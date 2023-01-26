@@ -7,9 +7,9 @@ RSpec.describe "manage submissions user flow", type: :feature do
     context "when user is Instructor" do
       # can't use login_as for features
       user_id = User.create!(email: "autolabintructor@foo.bar",
-                          first_name: "Test",
-                          last_name: "User",
-                          password: "AutolabProject")
+                             first_name: "Test",
+                             last_name: "User",
+                             password: "AutolabProject")
       user_id.skip_confirmation!
       user_id.save!
 
@@ -35,13 +35,14 @@ RSpec.describe "manage submissions user flow", type: :feature do
         fill_in "user_password", with: "AutolabProject"
 
         click_on "Sign in"
-
         click_on "Go to Course Page"
         click_on "Homework 0"
+
         click_on "Manage submissions"
         first(:link, "Edit the grading properties of this submission").click
         fill_in("submission_notes", with: "test notes")
         fill_in("submission_tweak_attributes_value", with: "1.0")
+
         click_on("Update Submission")
 
         # TODO: check values are okay

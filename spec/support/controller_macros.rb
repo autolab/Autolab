@@ -57,14 +57,14 @@ module ControllerMacros
   def get_first_aid_by_cud(cud)
     AssessmentUserDatum.where(course_user_datum_id: cud).first.assessment_id
   end
-
+  # create user and add to given course as a course assistant
   def create_ca_for_course(cid, email, first_name, last_name, password)
-    u = User.new(email: email, first_name: first_name, last_name: last_name, password: password,
+    user = User.new(email: email, first_name: first_name, last_name: last_name, password: password,
                  administrator: false, school: "My School", major: "CS", year: "4")
-    u.skip_confirmation!
-    u.save!
+    user.skip_confirmation!
+    user.save!
     CourseUserDatum.create!({
-                              user: u,
+                              user: user,
                               course: cid,
 
                               course_number: "AutoPopulated",
@@ -77,7 +77,7 @@ module ControllerMacros
 
                               nickname: "courseassistant"
                             })
-    u
+    user
   end
 
   def get_first_course
