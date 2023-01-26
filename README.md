@@ -108,6 +108,13 @@ Please feel free to use Autolab at your school/organization. If you run into any
 
 
 ## Changelog
+### [v2.10.0](https://github.com/autolab/Autolab/releases/tag/v2.10.0) (2023/01/13) LTI Integration, Generalized Feedback, and Streaming Output
+- Autolab now supports roster syncing with courses on Canvas and other LTI (Learning Tools Interoperability) services. For full instructions on setup, see the documentation.
+- Streaming partial output and new feedback interface
+- Generalized annotations
+- Numerous UI updates
+- Numerous bug fixes and improvements
+
 ### [v2.9.0](https://github.com/autolab/Autolab/releases/tag/v2.9.0) (2022/08/08) Metrics Excluded Categories and New Speedgrader Interface
 - Instructors can now exclude selected categories of assessments from metrics watchlist calculations
 - Introduced new speedgrader interface which utilizes the Golden Layout library, amongst other new features
