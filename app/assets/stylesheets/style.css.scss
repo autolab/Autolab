@@ -642,6 +642,11 @@ p.attention {
   font-style: italic;
 }
 
+span.disabled-submission {
+  color: red;
+  padding: 5px;
+}
+
 .autolab .tooltip-inner {
   white-space: pre;
   max-width: none;
