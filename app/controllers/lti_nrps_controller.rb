@@ -12,18 +12,22 @@ class LtiNrpsController < ApplicationController
   end
   action_auth_level :request_access_token, :instructor
   def request_access_token
-    # get private key from config to sign Autolab's client assertion as a JWK
-    private_key = Rails.configuration.lti_settings["tool_private_key"].to_s.gsub(/\\n/, "\n")
-    tool_rsa_private = OpenSSL::PKey::RSA.new(private_key)
-    # build JWK format for RSA
-    optional_parameters = {
-      kid: "dGkeZwrt+H7GnGZ2t2LUfhYf+/o=",
-      use: 'sig',
-      alg: 'RS256',
-      e: "AQAB",
-      kty: "RSA",
-    }
-    tool_rsa_private_JWK = JWT::JWK.new(tool_rsa_private, optional_parameters)
+    # get private key from JSON file to sign Autolab's client assertion as a JWK
+    unless File.exist?("config/lti_tool_jwk.json")
+      flash[:error] = "Autolab's JWK JSON file was not found"
+      redirect_to([:users, @course]) && return
+    end
+
+    jwk_json = File.read("config/lti_tool_jwk.json")
+    jwk_hash = JSON.parse(jwk_json)
+
+    if jwk_hash['kid'].blank? || jwk_hash['alg'].blank?
+      flash[:error] = "Autolab's JWK JSON file does not contain kid or alg"
+      redirect_to([:users, @course]) && return
+    end
+
+    tool_private_JWK = JWT::JWK.import(jwk_hash)
+
     # build client assertion based on lti 1.3 spec
     # https://www.imsglobal.org/spec/security/v1p0/#using-json-web-tokens-with-oauth-2-0-client-credentials-grant
     # https://www.imsglobal.org/spec/lti/v1p3#token-endpoint-claim-and-services
@@ -36,8 +40,8 @@ class LtiNrpsController < ApplicationController
       "jti": "lti-refresh-token-#{SecureRandom.uuid}"
     }
     # sign client_assertion using private key
-    token = JWT.encode(client_assertion, tool_rsa_private_JWK.keypair, optional_parameters[:alg],
-                       kid: optional_parameters[:kid])
+    token = JWT.encode(client_assertion, tool_private_JWK.keypair, jwk_hash['alg'],
+                       kid: jwk_hash['kid'])
     # build Client-Credentials Grant
     # https://www.imsglobal.org/spec/security/v1p0/#using-oauth-2-0-client-credentials-grant
     payload = {
@@ -76,7 +80,9 @@ class LtiNrpsController < ApplicationController
 
     # get access token to be authenticated to make NRPS request
     @access_token = request_access_token
-
+    if (@access_token.nil?)
+      return
+    end
     # query NRPS using the access token
     members = query_nrps
 
