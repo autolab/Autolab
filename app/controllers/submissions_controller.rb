@@ -90,8 +90,8 @@ class SubmissionsController < ApplicationController
     end
 
     if @submission.update(edit_submission_params)
-      redirect_to(history_course_assessment_path(@submission.course_user_datum.course,
-                                                 @assessment)) && return
+      flash[:success] = "Submission successfully updated"
+      redirect_to(course_assessment_submissions_path(@course, @assessment)) && return
     end
 
     # Error case
