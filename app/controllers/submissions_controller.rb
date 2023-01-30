@@ -95,7 +95,7 @@ class SubmissionsController < ApplicationController
     end
 
     # Error case
-    flash[:error] = "Error: There were errors editing the submission."
+    flash[:error] = "Error: There were errors updating the submission."
     @submission.errors.full_messages.each do |msg|
       flash[:error] += "<br>#{msg}"
     end
