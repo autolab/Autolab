@@ -45,7 +45,7 @@
       <a href="/" class="brand-logo logo"><%= image_tag "AUTOLAB@2x.png", :width=> 180, :alt=>"Carnegie Mellon University" %></a>
       <a href="#" data-target="mobile-demo" class="sidenav-trigger right"><i class="material-icons">menu</i></a>
 
-      <ul class="right hide-on-med-and-down">
+      <ul class="right hide-on-med-and-down navbar-menu">
         <% if session[:sudo] && @cud then %>
           <li><%= link_to "(#{@cud.display_name}) Return to instructor view", [:unsudo, @course, @cud], data: {method: "post"} %></li>
         <% end %>
