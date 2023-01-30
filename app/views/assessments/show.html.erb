@@ -154,7 +154,7 @@
   <div class="col s12 m8">
     <br>
     <br>
-    <% if !@assessment.disable_handins%>
+    <% if !@assessment.disable_handins %>
       <div class="handin-panel card z-depth-0">
         <div class="card-content">
           <p class="valign-wrapper">
@@ -188,13 +188,15 @@
         <%= render partial: "handin_form", locals: {modal: false, id: "handin_show_assessment"} %>
       </div>
     <% else %>
-        <div class="handin-panel card z-depth-0">
-            <p class="valign-wrapper">
-              <i class="material-icons valign">file_upload_off</i>
-              <b class="red-text">&nbsp;Handins are disabled for this assessment.</b>
-            </p>
+      <div class="handin-panel card z-depth-0">
+        <div class="card-content">
+          <p class="valign-wrapper">
+            <i class="material-icons valign">file_upload_off</i>
+            <b class="red-text">&nbsp;Handins are disabled for this assessment.</b>
+          </p>
         </div>
-      <% end %>
+      </div>
+    <% end %>
   </div>
 </div>
 <% download_access = (@cud.instructor?) %>
