@@ -58,10 +58,6 @@ class Rack::Attack
     end
   end
 
-  throttle("getPartialFeedback", limit: 1, period: 2.seconds) do |req|
-    req.user_id
-  end
-
   # Throttle requests for device_flow_init
   #
   # Key: "rack::attack:#{Time.now.to_i/:period}:oauth/device_flow_init:#{req.user_id}"
@@ -78,6 +74,13 @@ class Rack::Attack
     if req.path.start_with?("/oauth/device_flow_authorize")
       req.ip
     end
+  end
+
+  # Throttle requests for getPartialFeedback
+  #
+  # Key: "rack::attack:#{Time.now.to_i/:period}:getPartialFeedback:#{req.ip}"
+  throttle("getPartialFeedback", :limit => 1, :period => 5.seconds) do |req|
+    req.ip if req.path.include?("getPartialFeedback")
   end
 
   ### Custom Throttle Response ###
