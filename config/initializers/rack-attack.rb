@@ -24,7 +24,7 @@ class Rack::Attack
   # whitelisting). It must implement .increment and .write like
   # ActiveSupport::Cache::Store
 
-  # Rack::Attack.cache.store = ActiveSupport::Cache::MemoryStore.new 
+#   self.cache.store = ActiveSupport::Cache::FileStore.new(Rails.root.join('tmp', 'cache'))
 
   ### Safelist Requests ###
 
@@ -34,7 +34,8 @@ class Rack::Attack
   # since these requests will be rejected by doorkeeper immediately anyway.
   safelist('allow from localhost') do |req|
     ((not req.path.start_with?("/api/")) || (not req.params['access_token'])) &&
-    (not req.path.start_with?("/oauth/device_flow_"))
+    (not req.path.start_with?("/oauth/device_flow_")) &&
+    (not req.path.include?("getPartialFeedback"))
   end
 
   ### Throttle Requests ###
@@ -55,6 +56,10 @@ class Rack::Attack
     if req.path.end_with?("submit")
       req.user_id
     end
+  end
+
+  throttle("getPartialFeedback", limit: 1, period: 2.seconds) do |req|
+    req.user_id
   end
 
   # Throttle requests for device_flow_init
