@@ -24,7 +24,7 @@ class Rack::Attack
   # whitelisting). It must implement .increment and .write like
   # ActiveSupport::Cache::Store
 
-#   self.cache.store = ActiveSupport::Cache::FileStore.new(Rails.root.join('tmp', 'cache'))
+  # Rack::Attack.cache.store = ActiveSupport::Cache::MemoryStore.new
 
   ### Safelist Requests ###
 
@@ -92,6 +92,16 @@ class Rack::Attack
   # believing that they've successfully broken your app (or you just want to
   # customize the response), then uncomment these lines.
   self.throttled_responder = lambda do |env|
-    [429, {}, ['{"error": "Too Many Requests. Retry Later."}']]
+    now = Time.now
+    match_data = env['rack.attack.match_data']
+
+    headers = match_data.nil? ? {} : {
+      'X-RateLimit-Limit' => match_data[:limit].to_s,
+      'X-RateLimit-Remaining' => '0',
+      'X-RateLimit-Reset' => (now + (match_data[:period] - now.to_i % match_data[:period])).to_s,
+      'Content-Type' => 'application/json'
+    }
+
+    [429, match_data, ['{"error": "Too Many Requests. Retry Later."}']]
   end
 end
