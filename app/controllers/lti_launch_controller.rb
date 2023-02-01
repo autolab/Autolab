@@ -29,7 +29,7 @@ class LtiLaunchController < ApplicationController
     # Validate Issuer. Different than other LTI implementations since for now
     # we will only support integration with one service, if more than one
     # integration enabled, then changed to check a list of issuers
-    if params['iss'].nil? && params['iss'] != Rails.configuration.lti_settings["iss"]
+    if params['iss'].nil? && params['iss'] != @lti_config_hash["iss"]
       raise LtiError.new("Could not find issuer", :bad_request)
     end
 
@@ -84,11 +84,11 @@ class LtiLaunchController < ApplicationController
   # validate issuer, client_id should be same as stored in our settings
   def validate_registration
     client_id = @jwt[:body]['aud'].is_a?(Array) ? @jwt[:body]['aud'][0] : @jwt[:body]['aud']
-    if client_id != Rails.configuration.lti_settings["developer_key"]
+    if client_id != @lti_config_hash["developer_key"]
       # Client not registered.
       raise LtiError.new("client id not registered for issuer", :bad_request)
     end
-    return unless @jwt[:body]['iss'] != Rails.configuration.lti_settings["iss"]
+    return unless @jwt[:body]['iss'] != @lti_config_hash["iss"]
 
     raise LtiError.new("iss doesn't match config", :bad_request)
   end
@@ -158,13 +158,13 @@ class LtiLaunchController < ApplicationController
   end
 
   def validate_jwt_signature(id_token)
-    if !Rails.configuration.lti_settings["platform_public_key"].nil?
+    if @lti_config_hash["platform_public_key_pem"].present?
       # static platform public key, so take key from yml
-      platform_public_key_pem = Rails.configuration.lti_settings["platform_public_key"]
-    elsif !Rails.configuration.lti_settings["platform_public_jwks_url"].nil?
+      platform_public_key_pem = @lti_config_hash["platform_public_key"]
+    elsif @lti_config_hash["platform_public_jwks_url"].present?
       # fetch JWKS from provided keys URL
       conn = Faraday.new(
-        url: Rails.configuration.lti_settings["platform_public_jwks_url"],
+        url: @lti_config_hash["platform_public_jwks_url"],
         headers: { 'Content-Type' => 'application/json' }
       )
       # make a GET request to public JWK endpoint
@@ -224,6 +224,12 @@ class LtiLaunchController < ApplicationController
   # build our authentication response and redirect back to
   # platform
   def oidc_login
+    unless File.exist?("config/lti_config.yml")
+      raise LtiError.new("LTI configuration not found on Autolab Server", :internal_server_error)
+    end
+    # load LTI configuration from file
+    @lti_config_hash = YAML.safe_load(File.read("config/lti_config.yml"))
+
     # code based on: https://github.com/IMSGlobal/lti-1-3-php-library/blob/master/src/lti/LTI_OIDC_Login.php
     # validate OIDC
     validate_oidc_login(params)
@@ -258,7 +264,7 @@ class LtiLaunchController < ApplicationController
       "scope": "openid", # oidc scope
       "response_type": "id_token", # oidc response is always an id token
       "response_mode": "form_post", # oidc response is always a form post
-      "client_id": Rails.configuration.lti_settings["developer_key"], # client id (developer key)
+      "client_id": @lti_config_hash["developer_key"], # client id (developer key)
       "redirect_uri": "#{hostname}/lti_launch/launch", # URL to return to after login
       "state": state, # state to identify browser session
       "nonce": nonce, # nonce to prevent replay attacks
@@ -272,6 +278,6 @@ class LtiLaunchController < ApplicationController
     # put auth params as URL query parameters for redirect
     @encoded_params = URI.encode_www_form(auth_params)
 
-    redirect_to "#{Rails.configuration.lti_settings['auth_url']}?#{@encoded_params}"
+    redirect_to "#{@lti_config_hash['auth_url']}?#{@encoded_params}"
   end
 end

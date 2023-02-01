@@ -10,7 +10,6 @@ class LtiConfigController < ApplicationController
     if File.exist?("config/lti_config.yml")
       @lti_config_hash = YAML.safe_load(File.read("config/lti_config.yml"))
     end
-    puts(@lti_config_hash)
   end
   action_auth_level :update_config, :administrator
   def update_config
