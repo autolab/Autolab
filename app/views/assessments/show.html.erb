@@ -154,38 +154,49 @@
   <div class="col s12 m8">
     <br>
     <br>
-    <div class="handin-panel card z-depth-0">
-      <div class="card-content">
-        <p class="valign-wrapper">
-          <i class="material-icons valign">access_time</i>
-            &nbsp;&nbsp;Due<% if @extension %> (with <% if @extension.infinite? %> infinite <% else %> <%= pluralize(@extension.days, "day") %> <% end %> extension)<% end %>:&nbsp;
+    <% if !@assessment.disable_handins %>
+      <div class="handin-panel card z-depth-0">
+        <div class="card-content">
+          <p class="valign-wrapper">
+            <i class="material-icons valign">access_time</i>
+              &nbsp;&nbsp;Due<% if @extension %> (with <% if @extension.infinite? %> infinite <% else %> <%= pluralize(@extension.days, "day") %> <% end %> extension)<% end %>:&nbsp;
+              <b>
+                <% if @extension&.infinite? %>
+                  <%= due_at_display @aud.due_at %>
+                <% else %>
+                  <span class="moment-date-time" data-format="MMMM Do YYYY, h:mm a z [(UTC] Z[)]"><%= due_at_display @aud.due_at %></span>
+                <% end %>
+              </b>
+          </p>
+
+          <p class="valign-wrapper">
+            <i class="valign material-icons">today</i>
+            &nbsp;&nbsp;Last day to handin:&nbsp;
             <b>
               <% if @extension&.infinite? %>
-                <%= due_at_display @aud.due_at %>
+                <%= end_at_display(@aud.end_at false) %>
               <% else %>
-                <span class="moment-date-time" data-format="MMMM Do YYYY, h:mm a z [(UTC] Z[)]"><%= due_at_display @aud.due_at %></span>
+                <span class="moment-date-time" data-format="MMMM Do YYYY, h:mm a z [(UTC] Z[)]"><%= end_at_display(@aud.end_at false) %></span>
               <% end %>
             </b>
-        </p>
+          </p>
 
-        <p class="valign-wrapper">
-          <i class="valign material-icons">today</i>
-          &nbsp;&nbsp;Last day to handin:&nbsp;
-          <b>
-            <% if @extension&.infinite? %>
-              <%= end_at_display(@aud.end_at false) %>
-            <% else %>
-              <span class="moment-date-time" data-format="MMMM Do YYYY, h:mm a z [(UTC] Z[)]"><%= end_at_display(@aud.end_at false) %></span>
-            <% end %>
-          </b>
-        </p>
-
-        <% if @cud.instructor? and @assessment.exam? %>
-        <p class="attention">This is an exam. While it is in progress, please check Admin > Edit Course > Exam In Progress.</p>
-        <% end %>
+          <% if @cud.instructor? and @assessment.exam? %>
+          <p class="attention">This is an exam. While it is in progress, please check Admin > Edit Course > Exam In Progress.</p>
+          <% end %>
+        </div>
+        <%= render partial: "handin_form", locals: {modal: false, id: "handin_show_assessment"} %>
       </div>
-      <%= render partial: "handin_form", locals: {modal: false, id: "handin_show_assessment"} %>
-    </div>
+    <% else %>
+      <div class="handin-panel card z-depth-0">
+        <div class="card-content">
+          <p class="valign-wrapper">
+            <i class="material-icons valign">file_upload_off</i>
+            <b class="red-text">&nbsp;Handins are disabled for this assessment.</b>
+          </p>
+        </div>
+      </div>
+    <% end %>
   </div>
 </div>
 <% download_access = (@cud.instructor?) %>
