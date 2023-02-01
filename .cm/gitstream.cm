@@ -48,26 +48,18 @@ automations:
       # such PRs to save reviewers time for such changes.
       # - action: approve@v1
 
-  familiar_reviewer:
+  add_reviewers_gt_25:
     if:
       - true
     run:
-      - action: add-comment@v1
-        args:
-          comment: |
-            {{ repo | explainRankByGitBlame(gt=25) }}
       - action: add-reviewers@v1
         args:
           reviewers: {{ repo | rankByGitBlame(gt=25) | filter(list=['20wildmanj', 'najclark', 'damianhxy', 'michellexliu', 'victorhuangwq', 'lykimchee', 'jlge', 'evanyeyeye', 'KesterTan']) | random }}
 
-  share_knowledge:
+  add_reviewers_lt_25:
     if:
       - true
     run:
-      - action: add-comment@v1
-        args:
-          comment: |
-            {{ repo | explainRankByGitBlame(lt=25) }}
       - action: add-reviewers@v1
         args:
           reviewers: {{ repo | rankByGitBlame(lt=25) | filter(list=['20wildmanj', 'najclark', 'damianhxy', 'michellexliu', 'victorhuangwq', 'lykimchee', 'jlge', 'evanyeyeye', 'KesterTan']) | random }}
