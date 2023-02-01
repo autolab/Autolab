@@ -19,7 +19,8 @@
               <div class="card-content red darken-4">
                 <div class="row">
                   <div class="col <%= not_student ? 's9' : 's12' %>"><h4><span class="card-title white-text"><%= course.full_name %></span></h4></div>
-                  <% if not_student %> <div class="col s3"><span class="new badge padded-badge" data-badge-caption="Instructor"></span></div> <% end %>
+                  <% if course_cud.instructor? %> <div class="col s3"><span class="new badge padded-badge" data-badge-caption="Instructor"></span></div> <% end %>
+                  <% if course_cud.CA_only? %> <div class="col s3"><span class="new badge padded-badge" data-badge-caption="Course&nbsp;Assistant"></span></div> <% end %>
                 </div>
               </div>
             <% end %>
