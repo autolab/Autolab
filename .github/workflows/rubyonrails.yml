@@ -59,9 +59,7 @@ jobs:
           sudo /etc/init.d/mysql start
           RAILS_ENV=development bundle exec rails db:create
           ./bin/initialize_secrets.sh
-          RAILS_ENV=test bundle exec rails db:create
-          RAILS_ENV=test bundle exec rails db:schema:load
-          RAILS_ENV=test bundle exec rake autolab:populate
+          RAILS_ENV=test bundle exec rails autolab:setup_test_env
 
       - name: Run tests
         run: bundle exec rails spec
