@@ -1,4 +1,3 @@
-# Dummy change
 class LtiLaunchController < ApplicationController
   respond_to :json
   skip_before_action :set_course
