@@ -1,0 +1,32 @@
+@import 'variables';
+
+.jobs-table-div {
+  background-color: #fafafa;
+  border: 1px solid $autolab-subtle-gray;
+  border-radius: 10px;
+  color: black;
+  margin: 0;
+  padding: 5px;
+}
+
+.jobs-table {
+  table-layout: fixed;
+}
+
+.jobs-table td {
+  padding: 8px 5px;
+  overflow: scroll;
+  font-size: inherit;
+}
+
+.jobs-table td:first-child {
+  width: 30%;
+}
+
+.jobs-table td:last-child {
+  width: 70%;
+}
+
+.jobs-table tr:last-child {
+  border-bottom: none;
+}

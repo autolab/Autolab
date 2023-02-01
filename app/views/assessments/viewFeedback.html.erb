@@ -24,7 +24,11 @@
                 Completed
               </div>
           </div>
-          <pre><%= @score.feedback %></pre>
+          <% if @score.feedback.nil? %>
+            <pre>There was an error autograding your submission. Feedback is not available.</pre>
+          <% else %>
+            <pre><%= @score.feedback %></pre>
+          <% end %>
         <% end %>
       </div>
       <%= render "remarks_panel" %>

@@ -1,5 +1,5 @@
 @charset "utf-8";
-
+@import 'variables';
 /* Overarching Rules */
 
 .page-wrapper {
@@ -34,7 +34,7 @@
 
 .code-table {
   background: #fcfcfc;
-  border: 1px solid #ccc;
+  border: 1px solid $autolab-highlight-gray;
   max-height: calc(100vh - 230px);
   overflow: auto;
 }
@@ -87,14 +87,14 @@
 
 .code-table .code-separator {
   height: 100%;
-  background: #ccc;
+  background: $autolab-highlight-gray;
   width: 2px;
   margin: 0;
   padding: 0;
 }
 
 #code-box .file-header {
-  border: 1px #ccc solid;
+  border: 1px $autolab-highlight-gray solid;
   top: 0;
   left: 0;
   z-index: 999;
@@ -103,7 +103,7 @@
 }
 
 #code-box .file-header .file-name {
-  border-right: 1px #ccc solid;
+  border-right: 1px $autolab-highlight-gray solid;
   padding: 5px;
   display: flex;
   align-items: center;
@@ -111,14 +111,14 @@
 }
 
 #code-box .file-button {
-  border-left: 1px #ccc solid;
+  border-left: 1px $autolab-highlight-gray solid;
   padding: 5px;
   display: flex;
   align-items: center;
 }
 
 #code-box .file-button:hover{
-  background: #eee;
+  background: $autolab-subtle-gray;
 }
 
 #code-box .file-button span {
@@ -200,7 +200,7 @@
 }
 
 .code-table .annotation-line .annotation-box {
-  border: 1px solid #ccc;
+  border: 1px solid $autolab-highlight-gray;
   background: white;
   margin: 0 10px;
   margin-bottom: 5px;
@@ -208,12 +208,12 @@
 
 .code-table .annotation-line .annotation-box .annotation-separator {
   height: 1px;
-  background: #ccc;
+  background: $autolab-highlight-gray;
 }
 
 .code-table .annotation-line .annotation-box .annotation-header {
   display: flex;
-  background: #ccc;
+  background: $autolab-highlight-gray;
   padding: 5px;
   font-weight: bold;
   justify-content: center;
@@ -236,7 +236,7 @@
 
 
 .code-table .annotation-line .annotation-form {
-  border: 1px solid #ccc;
+  border: 1px solid $autolab-highlight-gray;
   padding: 5px;
   margin: 0 10px;
   margin-bottom: 5px;
@@ -250,7 +250,7 @@
 }
 
 .code-table .annotation-line .annotation-preview {
-  border: 1px solid #ccc;
+  border: 1px solid $autolab-highlight-gray;
   padding: 5px;
   margin: 0 10px;
   width: 100%;
@@ -270,7 +270,7 @@
 
 #code_error {
   padding: 2% 5%;
-  background: #eee;
+  background: $autolab-subtle-gray;
 }
 
 #code-list {
@@ -347,7 +347,7 @@
 }
 
 .ann-box > .header {
-  background: #eee;
+  background: $autolab-subtle-gray;
   padding: .5em;
   font-weight: bold;
   display: flex;
@@ -389,13 +389,13 @@
 }
 
 .ann-box .score-box span:first-child {
-  background-color: #ccc;
+  background-color: $autolab-highlight-gray;
 }
 
 .ann-box > .header > .minimize:hover,
 .ann-box > .header > .delete:hover,
 .ann-box > .header > .edit:hover {
-  border: 1px solid #ccc;
+  border: 1px solid $autolab-highlight-gray;
 }
 
 .ann-box > .body {
@@ -512,7 +512,7 @@
   color: #4f4f4f;
 }
 .annotationSummary .annotation-form-header {
-  background-color: #0882af;
+  background-color: $autolab-blue-text;
   padding: 8px 15px 8px 10px;
   font-weight: normal;
   color: white;
@@ -674,7 +674,7 @@
   padding: 3px;
 }
 .file:not(.active):hover, .folder-name:hover{
-  background: #eee;
+  background: $autolab-subtle-gray;
 }
 
 .file.active{
@@ -733,7 +733,7 @@
 }
 
 #symbol-tree-box ul li:hover {
-  background: #eee;
+  background: $autolab-subtle-gray;
 }
 
 #symbol-tree-box li img {

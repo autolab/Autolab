@@ -165,10 +165,15 @@ class AssessmentsController < ApplicationController
         redirect_to(action: "install_assessment")
         return
       end
+    rescue SyntaxError => e
+      flash[:error] = "Error parsing assessment configuration file:"
+      # escape so that <compiled> doesn't get treated as a html tag
+      flash[:error] += "<br><pre>#{CGI.escapeHTML e.to_s}</pre>"
+      flash[:html_safe] = true
+      redirect_to(action: "install_assessment") && return
     rescue StandardError => e
       flash[:error] = "Error while reading the tarball -- #{e.message}."
-      redirect_to(action: "install_assessment")
-      return
+      redirect_to(action: "install_assessment") && return
     end
 
     # Check if the assessment already exists.
@@ -574,6 +579,8 @@ class AssessmentsController < ApplicationController
     # Checks whether at least one problem has finished being auto-graded
     @finishedAutograding = @submission.scores.where.not(feedback: nil).where(grader_id: 0)
     @job_id = @submission["jobid"]
+    @submission_id = params[:submission_id]
+
     # Autograding is not in-progress and no score is available
     if @score.nil?
       if !@finishedAutograding.empty?
@@ -608,7 +615,7 @@ class AssessmentsController < ApplicationController
 
   def getPartialFeedback
     job_id = params["job_id"].to_i
-    resp = {}
+
     # User requested to view feedback on a score
     if job_id.nil?
       flash[:error] = "Invalid job id"
@@ -616,19 +623,22 @@ class AssessmentsController < ApplicationController
     end
 
     begin
-      resp['partial_feedback'] = tango_get_partial_feedback(job_id)
-    rescue AutogradeError
-      # if unable to get partial feedback, check if job is on the queue
-      @job_status = get_job_status(job_id)
-      resp["is_assigned"] = @job_status["is_assigned"]
-      resp["queue_position"] = @job_status["queue_position"]
-      resp["queue_length"] = @job_status["queue_length"]
-    end
+      resp = get_job_status(job_id)
 
-    render json: resp.to_json
+      if resp["is_assigned"]
+        resp['partial_feedback'] = tango_get_partial_feedback(job_id)
+      end
+    rescue AutogradeError => e
+      render json: { error: "Get partial feedback request failed: #{e}" },
+             status: :internal_server_error
+    else
+      render json: resp.to_json
+    end
   end
 
   def parseScore(feedback)
+    return if feedback.nil?
+
     lines = feedback.lines
     feedback = lines[lines.length - 1].chomp
 
@@ -660,6 +670,8 @@ class AssessmentsController < ApplicationController
   end
 
   def parseFeedback(feedback)
+    return if feedback.nil?
+
     lines = feedback.lines
     feedback = lines[lines.length - 2]&.chomp
 
@@ -923,7 +935,15 @@ private
       else
         return false unless asmt_name
 
-        asmt_rb_exists = true if pathname == "#{asmt_name}/#{asmt_name}.rb"
+        if pathname == "#{asmt_name}/#{asmt_name}.rb"
+          # We only ever read once, so no need to rewind after
+          config_source = entry.read
+
+          # validate syntax of config
+          RubyVM::InstructionSequence.compile(config_source)
+
+          asmt_rb_exists = true
+        end
         asmt_yml_exists = true if pathname == "#{asmt_name}/#{asmt_name}.yml"
       end
     end

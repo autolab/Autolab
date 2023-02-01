@@ -10,7 +10,7 @@ Since 2010, Autolab has had a transformative impact on education at CMU. Each se
 
 
 <p>
-<a href="https://autolab-slack.herokuapp.com" style="float:left">
+<a href="https://join.slack.com/t/autolab/shared_invite/zt-1maodn5ti-jdLHUnm5sZkuLn4PJNaTbw" style="float:left">
   <img src="public/images/join_slack.svg" width="170px" height="44px">
 </a>
 
@@ -96,7 +96,7 @@ This will build the site using the branch you are currently in (hopefully `maste
 ## Contributing
 
 We encourage you to contribute to Autolab! Please check out the
-[Contributing to Autolab Guide](https://github.com/autolab/Autolab/blob/master/CONTRIBUTING.md) for guidelines about how to proceed. You can reach out to us on [Slack](https://autolab-slack.herokuapp.com) as well.
+[Contributing to Autolab Guide](https://github.com/autolab/Autolab/blob/master/CONTRIBUTING.md) for guidelines about how to proceed. You can reach out to us on [Slack](https://join.slack.com/t/autolab/shared_invite/zt-1maodn5ti-jdLHUnm5sZkuLn4PJNaTbw) as well.
 
 ## License
 
@@ -108,6 +108,13 @@ Please feel free to use Autolab at your school/organization. If you run into any
 
 
 ## Changelog
+### [v2.10.0](https://github.com/autolab/Autolab/releases/tag/v2.10.0) (2023/01/13) LTI Integration, Generalized Feedback, and Streaming Output
+- Autolab now supports roster syncing with courses on Canvas and other LTI (Learning Tools Interoperability) services. For full instructions on setup, see the documentation.
+- Streaming partial output and new feedback interface
+- Generalized annotations
+- Numerous UI updates
+- Numerous bug fixes and improvements
+
 ### [v2.9.0](https://github.com/autolab/Autolab/releases/tag/v2.9.0) (2022/08/08) Metrics Excluded Categories and New Speedgrader Interface
 - Instructors can now exclude selected categories of assessments from metrics watchlist calculations
 - Introduced new speedgrader interface which utilizes the Golden Layout library, amongst other new features
