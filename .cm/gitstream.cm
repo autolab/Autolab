@@ -48,6 +48,29 @@ automations:
       # such PRs to save reviewers time for such changes.
       # - action: approve@v1
 
+  familiar_reviewer:
+    if:
+      - true
+    run:
+      - action: add-comment@v1
+        args:
+          comment: |
+            {{ repo | explainRankByGitBlame(gt=25) }}
+      - action: add-reviewers@v1
+        args:
+          reviewers: {{ repo | rankByGitBlame(gt=25) | random }}
+
+  share_knowledge:
+    if:
+      - true
+    run:
+      - action: add-comment@v1
+        args:
+          comment: |
+            {{ repo | explainRankByGitBlame(lt=25) }}
+      - action: add-reviewers@v1
+        args:
+          reviewers: {{ repo | rankByGitBlame(lt=25) | random }}
 
 calc:
   etr: {{ branch | estimatedReviewTime }}
