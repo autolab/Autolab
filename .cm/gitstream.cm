@@ -58,7 +58,7 @@ automations:
             {{ repo | explainRankByGitBlame(gt=25) }}
       - action: add-reviewers@v1
         args:
-          reviewers: {{ repo | rankByGitBlame(gt=25) | random }}
+          reviewers: {{ repo | rankByGitBlame(gt=25) | filter(list=['20wildmanj', 'najclark', 'damianhxy', 'michellexliu', 'victorhuangwq', 'lykimchee', 'jlge', 'evanyeyeye', 'KesterTan']) | random }}
 
   share_knowledge:
     if:
@@ -70,7 +70,7 @@ automations:
             {{ repo | explainRankByGitBlame(lt=25) }}
       - action: add-reviewers@v1
         args:
-          reviewers: {{ repo | rankByGitBlame(lt=25) | random }}
+          reviewers: {{ repo | rankByGitBlame(lt=25) | filter(list=['20wildmanj', 'najclark', 'damianhxy', 'michellexliu', 'victorhuangwq', 'lykimchee', 'jlge', 'evanyeyeye', 'KesterTan']) | random }}
 
 calc:
   etr: {{ branch | estimatedReviewTime }}
