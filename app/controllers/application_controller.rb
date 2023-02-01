@@ -1,3 +1,4 @@
+# Probably random?
 ##
 # All Controllers inherit this controller.  It handles setting @course, and doing authentication
 # and authorization.  It also has functions for loading assessments and submissions so that
