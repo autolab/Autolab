@@ -1,4 +1,3 @@
-# Pls assign joey to review this PR
 class LtiLaunchController < ApplicationController
   respond_to :json
   skip_before_action :set_course
