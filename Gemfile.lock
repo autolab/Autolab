@@ -173,6 +173,8 @@ GEM
     jstz-rails3-plus (1.0.5)
       railties (>= 3.1)
     jwt (2.5.0)
+    launchy (2.5.2)
+      addressable (~> 2.8)
     libv8-node (16.10.0.0)
     libv8-node (16.10.0.0-arm64-darwin)
     libv8-node (16.10.0.0-x86_64-darwin)
@@ -360,6 +362,10 @@ GEM
       faraday (>= 0.17.3, < 3)
     sdoc (2.4.0)
       rdoc (>= 5.0)
+    selenium-webdriver (4.8.0)
+      rexml (~> 3.2, >= 3.2.5)
+      rubyzip (>= 1.2.2, < 3.0)
+      websocket (~> 1.0)
     simplecov (0.13.0)
       docile (~> 1.1.0)
       json (>= 1.8, < 3)
@@ -374,7 +380,11 @@ GEM
       actionpack (>= 5.2)
       activesupport (>= 5.2)
       sprockets (>= 3.0.0)
-    sqlite3 (1.4.4)
+    sqlite3 (1.5.0)
+      mini_portile2 (~> 2.8.0)
+    sqlite3 (1.5.0-arm64-darwin)
+    sqlite3 (1.5.0-x86_64-darwin)
+    sqlite3 (1.5.0-x86_64-linux)
     stringio (3.0.2)
     terser (1.1.11)
       execjs (>= 0.3.0, < 3)
@@ -393,11 +403,16 @@ GEM
     unicode-display_width (2.2.0)
     warden (1.2.9)
       rack (>= 2.0.9)
+    webdrivers (5.2.0)
+      nokogiri (~> 1.6)
+      rubyzip (>= 1.3.0)
+      selenium-webdriver (~> 4.0)
     webmock (3.14.0)
       addressable (>= 2.8.0)
       crack (>= 0.3.2)
       hashdiff (>= 0.4.0, < 2.0.0)
     webrick (1.7.0)
+    websocket (1.2.9)
     websocket-driver (0.7.5)
       websocket-extensions (>= 0.1.0)
     websocket-extensions (0.1.5)
@@ -438,6 +453,7 @@ DEPENDENCIES
   js_cookie_rails
   jstz-rails3-plus (>= 1.0)
   jwt
+  launchy
   lockbox
   materialize-sass (= 1.0.0)
   mimemagic (>= 0.3.7)
@@ -467,18 +483,20 @@ DEPENDENCIES
   rubyzip
   sass-rails (>= 4.0.3)
   sdoc (>= 0.4.0)
+  selenium-webdriver (>= 4.7.1)
   slack-notifier
   spring
   sprockets-rails (>= 3.2.1)
-  sqlite3 (~> 1.4)
+  sqlite3 (= 1.5.0)
   terser (>= 1.1.7)
   thin
   tzinfo-data
+  webdrivers
   webmock
   yard
 
 RUBY VERSION
-   ruby 2.6.8p205
+   ruby 2.7.7p221
 
 BUNDLED WITH
-   2.3.19
+   2.4.4
