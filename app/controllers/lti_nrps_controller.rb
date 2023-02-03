@@ -27,7 +27,8 @@ class LtiNrpsController < ApplicationController
       redirect_to([:users, @course]) && return
     end
     # load LTI configuration from file
-    lti_config_hash = YAML.safe_load(File.read("#{Rails.configuration.lti_config_location}/lti_config.yml"))
+    lti_config_hash =
+      YAML.safe_load(File.read("#{Rails.configuration.lti_config_location}/lti_config.yml"))
 
     if jwk_hash['kid'].blank? || jwk_hash['alg'].blank?
       flash[:error] = "Autolab's JWK JSON file does not contain kid or alg"

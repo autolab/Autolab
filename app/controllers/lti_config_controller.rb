@@ -9,12 +9,11 @@ class LtiConfigController < ApplicationController
   def index
     return unless File.exist?("#{Rails.configuration.lti_config_location}/lti_config.yml")
 
-    @lti_config_hash = YAML.safe_load(File.read("#{Rails.configuration.lti_config_location}/lti_config.yml"))
-
+    @lti_config_hash =
+      YAML.safe_load(File.read("#{Rails.configuration.lti_config_location}/lti_config.yml"))
   end
   action_auth_level :update_config, :administrator
   def update_config
-
     required_params = %w[iss developer_key auth_url oauth2_access_token_url]
     required_params.each do |param|
       if params[param].blank?
@@ -33,7 +32,8 @@ class LtiConfigController < ApplicationController
     }
     uploaded_tool_jwk_file = params['tool_jwk']
     # Ensure user uploaded private JWK for config, or it already exists
-    if !File.exist?("#{Rails.configuration.lti_config_location}/lti_tool_jwk.json") && uploaded_tool_jwk_file.nil?
+    if !File.exist?("#{Rails.configuration.lti_config_location}/lti_tool_jwk.json") &&
+       uploaded_tool_jwk_file.nil?
       flash[:error] = "No tool JWK JSON file was uploaded"
       redirect_to(lti_config_index_path) && return
     end

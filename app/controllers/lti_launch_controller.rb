@@ -177,7 +177,8 @@ class LtiLaunchController < ApplicationController
       platform_public_jwks = JSON.parse(response.body)["keys"]
     elsif File.exist?("#{Rails.configuration.lti_config_location}/lti_platform_jwk.json")
       # static platform public key, so take key from yml
-      platform_public_key_file = File.read("#{Rails.configuration.lti_config_location}/lti_platform_jwk.json")
+      platform_public_key_file =
+        File.read("#{Rails.configuration.lti_config_location}/lti_platform_jwk.json")
     else
       LtiError.new("No platform public key or public JWK url provided", :internal_server_error)
     end
@@ -208,7 +209,8 @@ class LtiLaunchController < ApplicationController
     end
 
     # load LTI configuration from file
-    @lti_config_hash = YAML.safe_load(File.read("#{Rails.configuration.lti_config_location}/lti_config.yml"))
+    @lti_config_hash =
+      YAML.safe_load(File.read("#{Rails.configuration.lti_config_location}/lti_config.yml"))
 
     @user = current_user
     validate_state(params)
@@ -241,7 +243,8 @@ class LtiLaunchController < ApplicationController
     end
 
     # load LTI configuration from file
-    @lti_config_hash = YAML.safe_load(File.read("#{Rails.configuration.lti_config_location}/lti_config.yml"))
+    @lti_config_hash =
+      YAML.safe_load(File.read("#{Rails.configuration.lti_config_location}/lti_config.yml"))
 
     # code based on: https://github.com/IMSGlobal/lti-1-3-php-library/blob/master/src/lti/LTI_OIDC_Login.php
     # validate OIDC
