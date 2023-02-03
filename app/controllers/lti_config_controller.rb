@@ -7,9 +7,10 @@ class LtiConfigController < ApplicationController
 
   action_auth_level :index, :administrator
   def index
-    if File.exist?("config/lti_config.yml")
-      @lti_config_hash = YAML.safe_load(File.read("config/lti_config.yml"))
-    end
+    return unless File.exist?("config/lti_config.yml")
+
+    @lti_config_hash = YAML.safe_load(File.read("config/lti_config.yml"))
+
   end
   action_auth_level :update_config, :administrator
   def update_config
@@ -18,22 +19,39 @@ class LtiConfigController < ApplicationController
       iss: params['iss'],
       developer_key: params['developer_key'],
       auth_url: params['auth_url'],
-      platform_public_jwks: params['platform_public_jwks'],
+      platform_public_jwks_url: params['platform_public_jwks_url'],
       oauth2_access_token_url: params['oauth2_access_token_url']
     }
-    uploaded_file = params['tool_jwk']
-    if uploaded_file.nil?
-      flash[:error] = "No JSON file was uploaded"
+    uploaded_tool_jwk_file = params['tool_jwk']
+    # Ensure user uploaded private JWK for config, or it already exists
+    if !File.exist?("config/lti_tool_jwk.json") && uploaded_tool_jwk_file.nil?
+      flash[:error] = "No tool JWK JSON file was uploaded"
+      redirect_to(lti_config_index_path) && return
+    end
+    # Ensure either plaform has a jwk file associated with it or URL to public JWKs
+    uploaded_platform_public_jwk_file = params['platform_public_jwk_json']
+    if uploaded_platform_public_jwk_file.nil? && yaml_hash[:platform_public_jwks_url].blank?
+      flash[:error] =
+        "No platform JWK JSON file or URL was uploaded. Please specify one or the other"
       redirect_to(lti_config_index_path) && return
     end
     # write text parameters to config yml
     File.open("config/lti_config.yml", "w") do |file|
       file.write(YAML.dump(yaml_hash.deep_stringify_keys))
     end
-    # write private key to separate file
-    File.open("config/lti_tool_jwk.json", "w") do |file|
-      file.write(uploaded_file.read)
+    # write private key to separate file if it was uploaded
+    unless uploaded_tool_jwk_file.nil?
+      File.open("config/lti_tool_jwk.json", "w") do |file|
+        file.write(uploaded_tool_jwk_file.read)
+      end
     end
+    # write platform public key to separate file, if it exists
+    unless uploaded_platform_public_jwk_file.nil?
+      File.open("config/lti_platform_jwk.json", "w") do |file|
+        file.write(uploaded_platform_public_jwk_file.read)
+      end
+    end
+
     flash[:success] = "LTI configuration was successfully updated"
     redirect_to(lti_config_index_path) && return
   end

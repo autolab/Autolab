@@ -116,7 +116,5 @@ module Autolab3
 
     # site version
     config.site_version = "2.10.0"
-
-    config.lti_settings = Rails.application.config_for(:lti_settings)
   end
 end

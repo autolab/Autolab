@@ -19,7 +19,13 @@ class LtiNrpsController < ApplicationController
     end
 
     jwk_json = File.read("config/lti_tool_jwk.json")
-    jwk_hash = JSON.parse(jwk_json)
+    begin
+      jwk_hash = JSON.parse(jwk_json)
+    rescue JSON::ParserError => e
+      Rails.logger.error("Error Parsing JWK JSON: #{e}")
+      flash[:error] = "There was an error with Autolab's JWK JSON file."
+      redirect_to([:users, @course]) && return
+    end
     # load LTI configuration from file
     lti_config_hash = YAML.safe_load(File.read("config/lti_config.yml"))
 
@@ -31,8 +37,14 @@ class LtiNrpsController < ApplicationController
       flash[:error] = "LTI Configuration has blank or missing developer key or oauth2 URL"
       redirect_to([:users, @course]) && return
     end
-
-    tool_private_JWK = JWT::JWK.import(jwk_hash)
+    # import could fail b/c we only support one key, not multiple
+    begin
+      tool_private_JWK = JWT::JWK.import(jwk_hash)
+    rescue StandardError => e
+      Rails.logger.error("Error importing private JWK: #{e}")
+      flash[:error] = "LTI Configuration has malformed JWK"
+      redirect_to([:users, @course]) && return
+    end
 
     # build client assertion based on lti 1.3 spec
     # https://www.imsglobal.org/spec/security/v1p0/#using-json-web-tokens-with-oauth-2-0-client-credentials-grant
@@ -86,14 +98,15 @@ class LtiNrpsController < ApplicationController
 
     unless File.exist?("config/lti_config.yml")
       flash[:error] = "Could not find LTI Configuration"
-      redirect_to([:users, @course])
+      redirect_to([:users, @course]) && return
     end
 
     # get access token to be authenticated to make NRPS request
     @access_token = request_access_token
-    if (@access_token.nil?)
+    if @access_token.nil?
       return
     end
+
     # query NRPS using the access token
     members = query_nrps
 

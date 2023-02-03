@@ -13,7 +13,7 @@
     <div class="input-field">
       <%= form.text_field :developer_key, value: @lti_config_hash.nil? ? "" : @lti_config_hash["developer_key"], required: true  %>
       <%= form.label :developer_key, "Developer Key"%>
-      <span class="ÏÏelper-text">also known as client_id, obtained from the LTI platform</span>
+      <span class="helper-text">also known as client_id, obtained from the LTI platform</span>
     </div>
     <div class="input-field">
         <%= form.url_field :auth_url, value: @lti_config_hash.nil? ? "" : @lti_config_hash["auth_url"], required: true %>
@@ -21,8 +21,8 @@
         <span class="helper-text"> LTI Platform's Launch Authentication URL, obtained from the platform </span>
     </div>
     <div class="input-field">
-        <%= form.url_field :platform_public_jwks, value: @lti_config_hash.nil? ? "" : @lti_config_hash["platform_public_jwks"], required: true %>
-        <%= form.label :platform_public_jwks, "LTI platform public JWK URL" %>
+        <%= form.url_field :platform_public_jwks_url, value: @lti_config_hash.nil? ? "" : @lti_config_hash["platform_public_jwks_url"], required: false %>
+        <%= form.label :platform_public_jwks_url, "LTI platform public JWK URL" %>
         <span class="helper-text"> LTI platform endpoint URL to obtain JWKs </span>
     </div>
     <div class="input-field">
@@ -34,7 +34,19 @@
       <h5>
         Upload Autolab's JWK as a JSON file
       </h5>
-      <%= form.file_field :tool_jwk, accept:'text/json', required: true %>
+      <% if File.exist?("config/lti_tool_jwk.json") %>
+        <p> File already uploaded. Uploading will rewrite the previous JWK </p>
+      <% end %>
+      <%= form.file_field :tool_jwk, accept:'text/json', required: !File.exist?("config/lti_tool_jwk.json") %>
     </div>
+      <div class="lti-upload-container">
+        <h5>
+          Upload the Platform's Public JWK (Unnecessary if public JWK URL specified)
+        </h5>
+        <% if File.exist?("config/lti_platform_jwk.json") %>
+          <p> File already uploaded. Uploading will rewrite the previous JWK </p>
+        <% end %>
+        <%= form.file_field :platform_public_jwk_json, accept:'text/json', required: false %>
+      </div>
     <%= form.submit "Update Configuration", {:class=>"btn primary"}%>
 <% end %>

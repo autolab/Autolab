@@ -132,14 +132,17 @@ class LtiLaunchController < ApplicationController
     # rubocop:enable Layout/LineLength
   end
 
-  def get_public_key(platform_public_key_pem, platform_public_jwks)
-    # import public key depending on whether we have a PEM format
-    # or list of JWKs
-    if !platform_public_key_pem.nil?
+  def get_public_key(platform_public_key_file, platform_public_jwks)
+    # import public key depending on whether we have a JSON file
+    # with a single JWK or list of JWKs
+    if !platform_public_key_file.nil?
       begin
-        rsa_public_key = OpenSSL::PKey::RSA.new(platform_public_key_pem)
+        platform_public_key_json = JSON.parse(platform_public_key_file)
+        # import could fail b/c this assumes only one key is specified, not list of keys
+        rsa_public_key = JWT::JWK.import(platform_public_key_json).public_key
         return rsa_public_key
-      rescue StandardError
+      rescue StandardError => e
+        Rails.logger.error(e)
         return nil
       end
     end
@@ -158,10 +161,9 @@ class LtiLaunchController < ApplicationController
   end
 
   def validate_jwt_signature(id_token)
-    if @lti_config_hash["platform_public_key_pem"].present?
-      # static platform public key, so take key from yml
-      platform_public_key_pem = @lti_config_hash["platform_public_key"]
-    elsif @lti_config_hash["platform_public_jwks_url"].present?
+    # use JWK URL over file
+    if !@lti_config_hash["platform_public_jwks_url"].nil? &&
+       @lti_config_hash["platform_public_jwks_url"].present?
       # fetch JWKS from provided keys URL
       conn = Faraday.new(
         url: @lti_config_hash["platform_public_jwks_url"],
@@ -173,10 +175,13 @@ class LtiLaunchController < ApplicationController
         LtiError.new("No keys were found from public JWK url", :internal_server_error)
       end
       platform_public_jwks = JSON.parse(response.body)["keys"]
+    elsif File.exist?("config/lti_platform_jwk.json")
+      # static platform public key, so take key from yml
+      platform_public_key_file = File.read("config/lti_platform_jwk.json")
     else
       LtiError.new("No platform public key or public JWK url provided", :internal_server_error)
     end
-    rsa_public_key = get_public_key(platform_public_key_pem, platform_public_jwks)
+    rsa_public_key = get_public_key(platform_public_key_file, platform_public_jwks)
     if rsa_public_key.nil?
       raise LtiError.new("No matching JWK found", :bad_request)
     end
@@ -198,6 +203,13 @@ class LtiLaunchController < ApplicationController
   def launch
     # Code based on:
     # https://github.com/IMSGlobal/lti-1-3-php-library/blob/master/src/lti/LTI_Message_Launch.php
+    unless File.exist?("config/lti_config.yml")
+      raise LtiError.new("LTI configuration not found on Autolab Server", :internal_server_error)
+    end
+
+    # load LTI configuration from file
+    @lti_config_hash = YAML.safe_load(File.read("config/lti_config.yml"))
+
     @user = current_user
     validate_state(params)
     id_token = params["id_token"]
@@ -227,6 +239,7 @@ class LtiLaunchController < ApplicationController
     unless File.exist?("config/lti_config.yml")
       raise LtiError.new("LTI configuration not found on Autolab Server", :internal_server_error)
     end
+
     # load LTI configuration from file
     @lti_config_hash = YAML.safe_load(File.read("config/lti_config.yml"))
 
