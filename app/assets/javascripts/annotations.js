@@ -25,7 +25,20 @@ $(window).on('resize', function () {
 });
 
 function getSharedCommentsForProblem(problem_id) {
-    return localCache['shared_comments'][problem_id]?.map((problem) => problem.comment ?? problem);
+  return localCache['shared_comments'][problem_id]?.map(
+    (annotation) => {
+      return {label: annotation.comment ?? annotation, value: annotation}
+    }
+  )
+}
+
+function selectProblem(e, ui) {
+  console.log("ui", ui);
+  const {label, value} = ui.item;
+
+  const score = value.value ?? 0;
+  console.log(score);
+  $('#comment-score').val(score);
 }
 
 // retrieve shared comments
@@ -516,7 +529,8 @@ function newAnnotationFormCode() {
     appendTo: box.find('#comment-textarea').parent(),
     minLength: 0,
     delay: 0,
-    source: getSharedCommentsForProblem(box.find("select").val()) || []
+    source: getSharedCommentsForProblem(box.find("select").val()) || [],
+    select: selectProblem
   }).focus(function () {
     $(this).autocomplete('search', $(this).val())
   });
@@ -527,7 +541,10 @@ function newAnnotationFormCode() {
     const problem_id = $(this).val();
 
     // Update autocomplete to display shared comments for selected problem
-    box.find("#comment-textarea").autocomplete("option", "source", getSharedCommentsForProblem(problem_id) || []);
+    box.find("#comment-textarea").autocomplete({
+        select: selectProblem,
+        source: getSharedCommentsForProblem(problem_id) || []
+    });
   });
 
   box.find('.annotation-form').submit(function (e) {
@@ -593,7 +610,8 @@ function globalAnnotationFormCode(newAnnotation, config) {
     appendTo: box.find('#comment-textarea').parent(),
     minLength: 0,
     delay: 0,
-    source: getSharedCommentsForProblem(problemNameToIdMap[config.problem]) || []
+    source: getSharedCommentsForProblem(problemNameToIdMap[config.problem]) || [],
+    select: selectProblem
   }).focus(function () {
     $(this).autocomplete('search', $(this).val())
   });
@@ -736,6 +754,7 @@ function newAnnotationBox(annotation) {
       appendTo: box.find('#comment-textarea').parent(),
       minLength: 0,
       delay: 0,
+      select: selectProblem,
       source: getSharedCommentsForProblem(annotation.problem_id) || [],
     }).focus(function () {
       $(this).autocomplete('search', $(this).val())
@@ -749,7 +768,10 @@ function newAnnotationBox(annotation) {
     const problem_id = $(this).val();
 
     // Update autocomplete to display shared comments for selected problem
-    box.find("#comment-textarea").autocomplete("option", "source", getSharedCommentsForProblem(problem_id) || []);
+    box.find("#comment-textarea").autocomplete({
+        source: getSharedCommentsForProblem(problem_id) || [],
+        select: selectProblem
+    });
   });
 
   box.find('.annotation-delete-button').on("click", function (e) {
