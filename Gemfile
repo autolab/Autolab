@@ -135,12 +135,12 @@ group :development do
   gem 'yard'
 
   # sqlite3 adapter
-  gem 'sqlite3', '1.5.0'
+  gem 'sqlite3', '1.5.1'
 end
 
 # Also install sqlite3 for docker installations
 if ENV['DEPLOY_METHOD'] == "docker"
-  gem 'sqlite3', '~> 1.4'
+  gem 'sqlite3', '1.5.1'
 end
 
 gem 'tzinfo-data'
