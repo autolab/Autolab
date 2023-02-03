@@ -7,13 +7,22 @@ class LtiConfigController < ApplicationController
 
   action_auth_level :index, :administrator
   def index
-    return unless File.exist?("config/lti_config.yml")
+    return unless File.exist?("#{Rails.configuration.x.lti_config_location}/lti_config.yml")
 
-    @lti_config_hash = YAML.safe_load(File.read("config/lti_config.yml"))
+    @lti_config_hash = YAML.safe_load(File.read("#{Rails.configuration.x.lti_config_location}/lti_config.yml"))
 
   end
   action_auth_level :update_config, :administrator
   def update_config
+
+    required_params = %w[iss developer_key auth_url oauth2_access_token_url]
+    required_params.each do |param|
+      if params[param].blank?
+        flash[:error] = "#{param} field was missing"
+        redirect_to(lti_config_index_path) && return
+      end
+    end
+
     # create hash from form
     yaml_hash = {
       iss: params['iss'],
@@ -24,7 +33,7 @@ class LtiConfigController < ApplicationController
     }
     uploaded_tool_jwk_file = params['tool_jwk']
     # Ensure user uploaded private JWK for config, or it already exists
-    if !File.exist?("config/lti_tool_jwk.json") && uploaded_tool_jwk_file.nil?
+    if !File.exist?("#{Rails.configuration.x.lti_config_location}/lti_tool_jwk.json") && uploaded_tool_jwk_file.nil?
       flash[:error] = "No tool JWK JSON file was uploaded"
       redirect_to(lti_config_index_path) && return
     end
@@ -36,18 +45,18 @@ class LtiConfigController < ApplicationController
       redirect_to(lti_config_index_path) && return
     end
     # write text parameters to config yml
-    File.open("config/lti_config.yml", "w") do |file|
+    File.open("#{Rails.configuration.x.lti_config_location}/lti_config.yml", "w") do |file|
       file.write(YAML.dump(yaml_hash.deep_stringify_keys))
     end
     # write private key to separate file if it was uploaded
     unless uploaded_tool_jwk_file.nil?
-      File.open("config/lti_tool_jwk.json", "w") do |file|
+      File.open("#{Rails.configuration.x.lti_config_location}/lti_tool_jwk.json", "w") do |file|
         file.write(uploaded_tool_jwk_file.read)
       end
     end
     # write platform public key to separate file, if it exists
     unless uploaded_platform_public_jwk_file.nil?
-      File.open("config/lti_platform_jwk.json", "w") do |file|
+      File.open("#{Rails.configuration.x.lti_config_location}/lti_platform_jwk.json", "w") do |file|
         file.write(uploaded_platform_public_jwk_file.read)
       end
     end
