@@ -32,13 +32,13 @@ function getSharedCommentsForProblem(problem_id) {
   )
 }
 
-function selectAnnotation(e, ui) {
+const selectAnnotation = box => (e, ui) => {
   console.log("ui", ui);
   const {label, value} = ui.item;
 
   const score = value.value ?? 0;
   console.log('debugggg', score, value.comment);
-  $('#comment-score').val(score);
+  box.find('#comment-score').val(score);
   return false;
 }
 
@@ -536,7 +536,7 @@ function newAnnotationFormCode() {
     minLength: 0,
     delay: 0,
     source: getSharedCommentsForProblem(box.find("select").val()) || [],
-    select: selectAnnotation,
+    select: selectAnnotation(box),
     focus: focusAnnotation
   }).focus(function () {
     $(this).autocomplete('search', $(this).val())
@@ -549,7 +549,7 @@ function newAnnotationFormCode() {
 
     // Update autocomplete to display shared comments for selected problem
     box.find("#comment-textarea").autocomplete({
-        select: selectAnnotation,
+        select: selectAnnotation(box),
         focus: focusAnnotation,
         source: getSharedCommentsForProblem(problem_id) || []
     });
@@ -619,7 +619,7 @@ function globalAnnotationFormCode(newAnnotation, config) {
     minLength: 0,
     delay: 0,
     source: getSharedCommentsForProblem(problemNameToIdMap[config.problem]) || [],
-    select: selectAnnotation,
+    select: selectAnnotation(box),
     focus: focusAnnotation
   }).focus(function () {
     $(this).autocomplete('search', $(this).val())
@@ -763,7 +763,7 @@ function newAnnotationBox(annotation) {
       appendTo: box.find('#comment-textarea').parent(),
       minLength: 0,
       delay: 0,
-      select: selectAnnotation,
+      select: selectAnnotation(box),
       focus: focusAnnotation,
       source: getSharedCommentsForProblem(annotation.problem_id) || [],
     }).focus(function () {
@@ -780,7 +780,7 @@ function newAnnotationBox(annotation) {
     // Update autocomplete to display shared comments for selected problem
     box.find("#comment-textarea").autocomplete({
         source: getSharedCommentsForProblem(problem_id) || [],
-        select: selectAnnotation,
+        select: selectAnnotation(box),
         focus: focusAnnotation
     });
   });
