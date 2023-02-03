@@ -3,33 +3,25 @@ require "rails_helper"
 RSpec.describe LtiConfigController, type: :controller do
   render_views
   before(:all) do
-    # configuration doesn't work here b/c rspec
-    # can't also do allow(Rails.application.config.x)... here because
-    # can't apply to all scopes, so just defining a varaible here
-    lti_config_location = Rails.root.join('spec/fixtures/lti_config_files')
-    @lti_config_hash = YAML.safe_load(File.read("#{lti_config_location}/lti_config_template.yml"))
-    @lti_tool_jwk_file = Rack::Test::UploadedFile.new("#{lti_config_location}/lti_tool_jwk_template.json");
-    @lti_platform_jwk_file = Rack::Test::UploadedFile.new("#{lti_config_location}/lti_platform_jwk_template.json");
+    @lti_config_hash = YAML.safe_load(File.read("#{Rails.configuration.lti_config_location}/lti_config_template.yml"))
+    @lti_tool_jwk_file = Rack::Test::UploadedFile.new("#{Rails.configuration.lti_config_location}/lti_tool_jwk_template.json");
+    @lti_platform_jwk_file = Rack::Test::UploadedFile.new("#{Rails.configuration.lti_config_location}/lti_platform_jwk_template.json");
   end
   after(:each) do
-    if File.exist?("#{Rails.configuration.x.lti_config_location}/lti_config.yml")
-      File.delete("#{Rails.configuration.x.lti_config_location}/lti_config.yml")
+    if File.exist?("#{Rails.configuration.lti_config_location}/lti_config.yml")
+      File.delete("#{Rails.configuration.lti_config_location}/lti_config.yml")
     end
-    if File.exist?("#{Rails.configuration.x.lti_config_location}/lti_tool_jwk.json")
-      File.delete("#{Rails.configuration.x.lti_config_location}/lti_tool_jwk.json")
+    if File.exist?("#{Rails.configuration.lti_config_location}/lti_tool_jwk.json")
+      File.delete("#{Rails.configuration.lti_config_location}/lti_tool_jwk.json")
     end
-    if File.exist?("#{Rails.configuration.x.lti_config_location}/lti_platform_jwk.json")
-      File.delete("#{Rails.configuration.x.lti_config_location}/lti_platform_jwk.json")
+    if File.exist?("#{Rails.configuration.lti_config_location}/lti_platform_jwk.json")
+      File.delete("#{Rails.configuration.lti_config_location}/lti_platform_jwk.json")
     end
   end
   describe "#update_config" do
     context "when user is Autolab admin" do
       user_id = get_admin
       login_as(user_id)
-      before do
-        # otherwise configuration will return nil
-        allow(Rails.application.config.x).to receive(:lti_config_location).and_return(Rails.root.join('spec/fixtures/lti_config_files'))
-      end
       it "rejects empty POST" do
         post :update_config, params: {}
         expect(response).to have_http_status(302)
@@ -78,7 +70,7 @@ RSpec.describe LtiConfigController, type: :controller do
         expect(flash[:success]).to be_present
       end
       it "loads existing config correctly" do
-        File.open("#{Rails.configuration.x.lti_config_location}/lti_config.yml", "w") do |file|
+        File.open("#{Rails.configuration.lti_config_location}/lti_config.yml", "w") do |file|
           file.write(YAML.dump(@lti_config_hash.deep_stringify_keys))
         end
         get :index

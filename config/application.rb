@@ -116,5 +116,9 @@ module Autolab3
 
     # site version
     config.site_version = "2.10.0"
+
+    # lti configuration file path, keep it private
+    config.lti_config_location = Rails.root.join("config").to_s
+
   end
 end

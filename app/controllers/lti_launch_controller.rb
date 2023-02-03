@@ -175,9 +175,9 @@ class LtiLaunchController < ApplicationController
         LtiError.new("No keys were found from public JWK url", :internal_server_error)
       end
       platform_public_jwks = JSON.parse(response.body)["keys"]
-    elsif File.exist?("#{Rails.configuration.x.lti_config_location}/lti_platform_jwk.json")
+    elsif File.exist?("#{Rails.configuration.lti_config_location}/lti_platform_jwk.json")
       # static platform public key, so take key from yml
-      platform_public_key_file = File.read("#{Rails.configuration.x.lti_config_location}/lti_platform_jwk.json")
+      platform_public_key_file = File.read("#{Rails.configuration.lti_config_location}/lti_platform_jwk.json")
     else
       LtiError.new("No platform public key or public JWK url provided", :internal_server_error)
     end
@@ -203,12 +203,12 @@ class LtiLaunchController < ApplicationController
   def launch
     # Code based on:
     # https://github.com/IMSGlobal/lti-1-3-php-library/blob/master/src/lti/LTI_Message_Launch.php
-    unless File.exist?("#{Rails.configuration.x.lti_config_location}/lti_config.yml")
+    unless File.exist?("#{Rails.configuration.lti_config_location}/lti_config.yml")
       raise LtiError.new("LTI configuration not found on Autolab Server", :internal_server_error)
     end
 
     # load LTI configuration from file
-    @lti_config_hash = YAML.safe_load(File.read("#{Rails.configuration.x.lti_config_location}/lti_config.yml"))
+    @lti_config_hash = YAML.safe_load(File.read("#{Rails.configuration.lti_config_location}/lti_config.yml"))
 
     @user = current_user
     validate_state(params)
@@ -236,12 +236,12 @@ class LtiLaunchController < ApplicationController
   # build our authentication response and redirect back to
   # platform
   def oidc_login
-    unless File.exist?("#{Rails.configuration.x.lti_config_location}/lti_config.yml")
+    unless File.exist?("#{Rails.configuration.lti_config_location}/lti_config.yml")
       raise LtiError.new("LTI configuration not found on Autolab Server", :internal_server_error)
     end
 
     # load LTI configuration from file
-    @lti_config_hash = YAML.safe_load(File.read("#{Rails.configuration.x.lti_config_location}/lti_config.yml"))
+    @lti_config_hash = YAML.safe_load(File.read("#{Rails.configuration.lti_config_location}/lti_config.yml"))
 
     # code based on: https://github.com/IMSGlobal/lti-1-3-php-library/blob/master/src/lti/LTI_OIDC_Login.php
     # validate OIDC
