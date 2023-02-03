@@ -33,11 +33,9 @@ function getSharedCommentsForProblem(problem_id) {
 }
 
 const selectAnnotation = box => (e, ui) => {
-  console.log("ui", ui);
   const {label, value} = ui.item;
 
   const score = value.value ?? 0;
-  console.log('debugggg', score, value.comment);
   box.find('#comment-score').val(score);
   return false;
 }
@@ -55,7 +53,6 @@ function retrieveSharedComments() {
     data.forEach(e => {
       if (!e.problem_id)
         return;
-      console.log(e);
       localCache['shared_comments'][e.problem_id] ||= [];
       localCache['shared_comments'][e.problem_id].push(e);
     });
