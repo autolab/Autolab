@@ -64,5 +64,4 @@ Rails.application.configure do
   # See (TODO replace with doc link)
   config.x.github.client_id = ENV['GITHUB_CLIENT_ID']
   config.x.github.client_secret = ENV['GITHUB_CLIENT_SECRET']
-  config.x.lti_config_location = Rails.root.join('config')
 end
