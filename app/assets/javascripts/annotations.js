@@ -37,6 +37,10 @@ const selectAnnotation = box => (e, ui) => {
 
   const score = value.value ?? 0;
   box.find('#comment-score').val(score);
+
+  const $textarea = box.find("#comment-textarea");
+  M.textareaAutoResize($textarea);
+
   return false;
 }
 
