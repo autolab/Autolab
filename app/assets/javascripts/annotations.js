@@ -32,13 +32,19 @@ function getSharedCommentsForProblem(problem_id) {
   )
 }
 
-function selectProblem(e, ui) {
+function selectAnnotation(e, ui) {
   console.log("ui", ui);
   const {label, value} = ui.item;
 
   const score = value.value ?? 0;
-  console.log(score);
+  console.log('debugggg', score, value.comment);
   $('#comment-score').val(score);
+  return false;
+}
+
+function focusAnnotation( event, ui ) {
+  $(this).val(ui.item.label);
+  return false;
 }
 
 // retrieve shared comments
@@ -530,7 +536,8 @@ function newAnnotationFormCode() {
     minLength: 0,
     delay: 0,
     source: getSharedCommentsForProblem(box.find("select").val()) || [],
-    select: selectProblem
+    select: selectAnnotation,
+    focus: focusAnnotation
   }).focus(function () {
     $(this).autocomplete('search', $(this).val())
   });
@@ -542,7 +549,8 @@ function newAnnotationFormCode() {
 
     // Update autocomplete to display shared comments for selected problem
     box.find("#comment-textarea").autocomplete({
-        select: selectProblem,
+        select: selectAnnotation,
+        focus: focusAnnotation,
         source: getSharedCommentsForProblem(problem_id) || []
     });
   });
@@ -611,7 +619,8 @@ function globalAnnotationFormCode(newAnnotation, config) {
     minLength: 0,
     delay: 0,
     source: getSharedCommentsForProblem(problemNameToIdMap[config.problem]) || [],
-    select: selectProblem
+    select: selectAnnotation,
+    focus: focusAnnotation
   }).focus(function () {
     $(this).autocomplete('search', $(this).val())
   });
@@ -754,7 +763,8 @@ function newAnnotationBox(annotation) {
       appendTo: box.find('#comment-textarea').parent(),
       minLength: 0,
       delay: 0,
-      select: selectProblem,
+      select: selectAnnotation,
+      focus: focusAnnotation,
       source: getSharedCommentsForProblem(annotation.problem_id) || [],
     }).focus(function () {
       $(this).autocomplete('search', $(this).val())
@@ -770,7 +780,8 @@ function newAnnotationBox(annotation) {
     // Update autocomplete to display shared comments for selected problem
     box.find("#comment-textarea").autocomplete({
         source: getSharedCommentsForProblem(problem_id) || [],
-        select: selectProblem
+        select: selectAnnotation,
+        focus: focusAnnotation
     });
   });
 
