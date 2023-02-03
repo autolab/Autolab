@@ -540,6 +540,7 @@ function newAnnotationFormCode() {
     select: selectAnnotation(box),
     focus: focusAnnotation
   }).focus(function () {
+    M.textareaAutoResize($(this));
     $(this).autocomplete('search', $(this).val())
   });
 
@@ -623,6 +624,7 @@ function globalAnnotationFormCode(newAnnotation, config) {
     select: selectAnnotation(box),
     focus: focusAnnotation
   }).focus(function () {
+    M.textareaAutoResize($(this));
     $(this).autocomplete('search', $(this).val())
   });
 
@@ -768,6 +770,7 @@ function newAnnotationBox(annotation) {
       focus: focusAnnotation,
       source: getSharedCommentsForProblem(annotation.problem_id) || [],
     }).focus(function () {
+      M.textareaAutoResize($(this));
       $(this).autocomplete('search', $(this).val())
     });
     box.tooltip();
