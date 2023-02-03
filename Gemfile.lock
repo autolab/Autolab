@@ -195,7 +195,7 @@ GEM
       nokogiri (~> 1)
       rake
     mini_mime (1.1.2)
-    mini_portile2 (2.8.0)
+    mini_portile2 (2.8.1)
     mini_racer (0.6.3)
       libv8-node (~> 16.10.0.0)
     minitest (5.17.0)
@@ -380,11 +380,11 @@ GEM
       actionpack (>= 5.2)
       activesupport (>= 5.2)
       sprockets (>= 3.0.0)
-    sqlite3 (1.5.0)
+    sqlite3 (1.5.1)
       mini_portile2 (~> 2.8.0)
-    sqlite3 (1.5.0-arm64-darwin)
-    sqlite3 (1.5.0-x86_64-darwin)
-    sqlite3 (1.5.0-x86_64-linux)
+    sqlite3 (1.5.1-arm64-darwin)
+    sqlite3 (1.5.1-x86_64-darwin)
+    sqlite3 (1.5.1-x86_64-linux)
     stringio (3.0.2)
     terser (1.1.11)
       execjs (>= 0.3.0, < 3)
@@ -487,7 +487,7 @@ DEPENDENCIES
   slack-notifier
   spring
   sprockets-rails (>= 3.2.1)
-  sqlite3 (= 1.5.0)
+  sqlite3 (= 1.5.1)
   terser (>= 1.1.7)
   thin
   tzinfo-data
