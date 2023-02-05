@@ -67,7 +67,7 @@ Rails.application.routes.draw do
     match "github_integration", via: [:get]
   end
 
-  resources :users do
+  resource :admin, :except => [:show] do
     get "admin"
     get "github_oauth", on: :member
     get "lti_launch_initialize", on: :member

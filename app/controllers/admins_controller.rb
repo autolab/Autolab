@@ -8,9 +8,6 @@ class AdminsController < ApplicationController
 
   skip_before_action :set_course
 
-  action_auth_level :show, :administrator
-  def show; end
-
   action_auth_level :email_instructors, :administrator
   def email_instructors
     @cuds = CourseUserDatum.select(:user_id).distinct.joins(:course).joins(:user)
