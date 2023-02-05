@@ -118,5 +118,22 @@ module Autolab3
     config.site_version = "2.10.0"
 
     config.lti_settings = Rails.application.config_for(:lti_settings)
+
+    # Configure the host and port of generated urls
+    config.action_controller.default_url_options = {}
+    config.action_mailer.default_url_options = {}
+
+    if !ENV['DEFAULT_URL_HOST'].empty? 
+      config.action_controller.default_url_options[:host] = ENV['DEFAULT_URL_HOST']
+      config.action_mailer.default_url_options[:host] = ENV['DEFAULT_URL_HOST']
+    end 
+
+    if ENV['DEFAULT_URL_PORT'].casecmp?("NONE") then
+      config.action_controller.default_url_options[:port] = nil
+      config.action_mailer.default_url_options[:port] = nil
+    elsif !ENV['DEFAULT_URL_PORT'].empty?
+      config.action_controller.default_url_options[:port] = ENV['DEFAULT_URL_PORT']
+      config.action_mailer.default_url_options[:port] = ENV['DEFAULT_URL_PORT']
+    end
   end
 end
