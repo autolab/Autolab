@@ -249,11 +249,13 @@ Success message if deleted.
 
 ### problems
 
+#### index
+
 Get all problems of an assessment.
 
 **Scope:** 'instructor_all'
 
-Endpoint `/courses/{course_name}/assessments/{assessment_name}/problems`
+Endpoint `GET /courses/{course_name}/assessments/{assessment_name}/problems`
 
 **Parameters:** [none]
 
@@ -267,6 +269,146 @@ A list of problems. Each problem contains:
 | description | string  | Brief description of the problem.        |
 | max_score   | float   | Maximum possible score for this problem. |
 | optional    | boolean | Is this problem optional?                |
+
+---
+
+#### create
+
+Create a problem for an assessment.
+
+**Scope:** 'instructor_all'
+
+Endpoint `POST /courses/{course_name}/assessments/{assessment_name}/problems`
+
+**Parameters:**
+
+| key         | type    | description                              |
+| ----------- | ------- | ---------------------------------------- |
+| name        | string  | Full name of the problem.                |
+| description | string  | Brief description of the problem.        |
+| max_score   | float   | Maximum possible score for this problem. |
+| optional    | boolean | Is this problem optional?                |
+
+**Responses:**
+
+The newly created problem.
+
+| key         | type    | description                              |
+| ----------- | ------- | ---------------------------------------- |
+| name        | string  | Full name of the problem.                |
+| description | string  | Brief description of the problem.        |
+| max_score   | float   | Maximum possible score for this problem. |
+| optional    | boolean | Is this problem optional?                |
+
+---
+
+### scores
+
+#### index
+
+Get the submission scores for all users for an assessment.
+
+**Scope:** 'instructor_all'
+
+Endpoint `GET /courses/{course_name}/assessments/{assessment_name}/scores`
+
+**Parameters:** [none]
+
+**Responses:**
+
+A dictionary containing the submission data for each student that's made a submission.
+The keys are students' emails, and the values are a dictionary with keys equal to the submission number, and values equal to the scores for the graded problems.
+
+Example json object
+```
+{
+    "student1@andrew.cmu.edu" : {
+        "1": {
+            "problem1": 100.0,
+            "problem2": 10.0
+        },
+        "2": {
+            "problem1": 100.0,
+            "problem2": 15.0
+        }
+    },
+    "student2@andrew.cmu.edu" : {
+        "1": {}
+    }
+}
+```
+
+---
+
+#### show
+
+Get the submission scores for a user for an assessment.
+
+**Scope:** 'instructor_all'
+
+Endpoint `GET /courses/{course_name}/assessments/{assessment_name}/scores/{email}`
+
+**Parameters:** [none]
+
+**Response:**
+
+A dictionary containing the submission data for the student.
+The keys are the submission number, and values equal to the scores for the graded problems.
+
+Example json response:
+```
+{
+    "1": {
+        "Problem 1": 100.0,
+        "Problem 2": 10.0
+    }
+}
+```
+
+---
+
+#### update_latest
+
+Update the scores for a student's latest submission.
+
+**Scope:** 'instructor_all'
+
+Endpoint `PUT /courses/{course_name}/assessments/{assessment_name}/scores/{email}/update_latest/`
+
+**Parameters:**
+
+| key                 | type        | description                                                                                            |
+|---------------------|-------------|--------------------------------------------------------------------------------------------------------|
+| update_group_scores | boolean     | Should the score update be propagated to the students in the student's group?                          |
+| problems            | json object | Keys equal to the name of the problems to update, values equal to the updated score for a problem |
+
+**Responses:**
+
+-   If any of the problems in `problems` does not exist for the assessment
+
+| key   | type   | value                                        |
+|-------| ------ |----------------------------------------------|
+| error | string | "Problem '...' not found in this assessment" |
+
+In this case, no score updates will be saved.
+
+-   If all of the problems in `problems` exist for the assessment
+
+The a dictionary with keys equal to the email of the users with updated scores, values equal to the scores for the latest submission.
+
+Example json response:
+```
+{
+    "student1@andrew.cmu.edu": {
+        "Problem 2": 10.0,
+        "Problem 1": 10.0
+    },
+    "student2@andrew.cmu.edu": {
+        "Problem 2": 10.0,
+        "Problem 1": 10.0
+    }
+}
+```
 
 ---
 

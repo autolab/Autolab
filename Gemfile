@@ -49,7 +49,7 @@ gem 'rake', '>=10.3.2'
 gem 'populator', '>=1.0.0'
 
 # To communicate with MySQL database
-# gem 'mysql2', '~>0.4.10'
+gem 'mysql2', '~>0.4.10'
 
 # Development server
 gem 'thin'

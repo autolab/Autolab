@@ -20,7 +20,7 @@
     <% end %>
 
     <div class="row">
-      <div class="col">
+      <div class="col s12">
         <% if @assessment.has_svn then %>
           <%= form_for @submission, url: {action: :handin}, :html => {:name => "submissionForm", :onclick => "return validateIntegrity();"}, method: :post do |f| %>
 

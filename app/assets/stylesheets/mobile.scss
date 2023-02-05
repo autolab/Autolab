@@ -1,3 +1,5 @@
+@import 'variables';
+
 .mobileonly{}
 .desktoponly{display:none;}
 
@@ -9,7 +11,7 @@ body {
 	font-size: 17px;
 	font-weight: normal;
 	color:#333;
-	background-color:#EEE;
+	background-color: $autolab-subtle-gray;
 	text-align:center;
 	line-height:25px;
 }
@@ -25,7 +27,7 @@ th, h2 {
 	color:#666;
 	max-width:100%;
 	background-color:#DDD;
-	background: -moz-linear-gradient(top,  #CCC, #EEE);
+	background: -moz-linear-gradient(top,  $autolab-highlight-gray, $autolab-subtle-gray);
 	background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#999), to(#BBB));
 	border-top:1px solid #999;
 	border-bottom:1px solid #999;
@@ -63,10 +65,10 @@ li{
 	max-width:100%;
 	padding:15px 15px;
 	color:#888;
-	border-bottom: 1px solid #CCC;
+	border-bottom: 1px solid $autolab-highlight-gray;
 	text-align:left;
 }
-li { background:#EEE; }
+li { background: $autolab-subtle-gray; }
 li:nth-child(odd) { background:#FFF; }
 li b{color:#000;}
 
@@ -104,8 +106,8 @@ li b{color:#000;}
 #footer{
 	padding:10px 0px;
 	margin:0px;
-	background-color:#EEE;
-	color:#EEE;
+	background-color: $autolab-subtle-gray;
+	color: $autolab-subtle-gray;
 }
 #footer a{
 	color:#AAA;
@@ -185,10 +187,9 @@ img.select{
 	text-decoration:none;
 	padding:15px;
 	-webkit-border-radius: 5px; border-radius:5px;
-	background-color:#EEE;
-	background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#FFF), to(#EEE));
+	background: $autolab-subtle-gray;
 	color:#888;
-	border:1px solid #CCC;
+	border: 1px solid $autolab-highlight-gray;
 }
 .half {
 	margin: 10px auto;

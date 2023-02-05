@@ -99,7 +99,7 @@ You most likely missed the step of copying 'config/initializers/devise.rb.templa
 
 #### Suggested Development Configuration for config/database.yml
 
-**MySQL**  
+**MySQL**
 Change the <username> and <password> fields in config/database.yml to the username and password that has been set up for the mysql. For example if your username is `user1`, and your password is `123456`, then your yml would be
 
     :::yml
@@ -125,7 +125,7 @@ Change the <username> and <password> fields in config/database.yml to the userna
         variables:
             sql_mode: NO_ENGINE_SUBSTITUTION
 
-**SQLite**  
+**SQLite**
 Comment out the configurations meant for MySQL in config/database.yml, and insert the following
 
     :::yml
@@ -140,3 +140,15 @@ Comment out the configurations meant for MySQL in config/database.yml, and inser
         database: db/autolab_test
         pool: 5
         timeout: 5000
+
+#### No space left on device
+
+If you get the following error
+
+```bash
+No space left on device @ rb_sysopen - /path/to/autolab/tmp/cache/.raw_score_includes_unreleased[...]
+```
+
+it is likely that you need to purge the cache. This is because `FileStore` caches are not purged automatically.
+
+To purge the cache, run `rake user:cleanup_cache` (to clear expired entries) or `rake user:clear_cache` (to clear **all** entries). 

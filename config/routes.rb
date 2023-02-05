@@ -6,7 +6,7 @@ Rails.application.routes.draw do
     get 'lti_launch/oidc_login', to: "lti_launch#oidc_login"
     post 'lti_launch/launch', to: "lti_launch#launch"
     get 'lti_launch/launch', to: "lti_launch#launch"
-    post 'lti_nrps/send_nrps_request', to: "lti_nrps#send_nrps_request"
+    post 'lti_nrps/sync_roster', to: "lti_nrps#sync_roster"
 
   namespace :oauth, { defaults: { format: :json } } do
     get "device_flow_init", to: "device_flow#init"
@@ -22,7 +22,7 @@ Rails.application.routes.draw do
                                      param: :email, :constraints => { :email => /[^\/]+/ }
         
         resources :assessments, param: :name, only: [:index, :show] do
-          get "problems"
+          resources :problems, only: [:index, :create]
           get "writeup"
           get "handout"
           post "submit"
@@ -33,6 +33,11 @@ Rails.application.routes.draw do
           resources :submissions, param: :version, only: [:index] do
             get "feedback"
           end
+
+          resources :scores, only: [:index, :show],
+                    param: :email, :constraints => { :email => /[^\/]+/ }
+
+          put "scores/:email/update_latest", :constraints => { :email => /[^\/]+/ }, to: "scores#update_latest"
         end
       end
 
@@ -67,7 +72,7 @@ Rails.application.routes.draw do
     match "github_integration", via: [:get]
   end
 
-  resources :users do
+  resource :admin, :except => [:show] do
     get "admin"
     get "github_oauth", on: :member
     get "lti_launch_initialize", on: :member
@@ -151,6 +156,7 @@ Rails.application.routes.draw do
         post "releaseAllGrades"
         post "releaseSectionGrades"
         get "viewFeedback"
+        get "getPartialFeedback"
         post "reload"
         get "statistics"
         post "withdrawAllGrades"
@@ -214,6 +220,7 @@ Rails.application.routes.draw do
       post "bulk_release"
       get "download_roster"
       post "unlink_course"
+      patch "update_lti_settings"
       match "email", via: [:get, :post]
       get "manage"
       get "moss"

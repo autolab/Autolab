@@ -29,6 +29,13 @@ For the bulk upload, you can choose to either:
 
 2. **update** the Autolab roster by marking students missing from roster files as _dropped_.
 
+For a linked course, you can sync the Autolab roster by clicking the refresh button above the table of users on the 'Manage Course Users' page.
+
+The behavior of the linked course syncing can be customized by clicking the 'Linked Course Settings' button on the 'Manage Course Users' page.
+
+ * The 'Auto drop students' option when enabled will mark students not enrolled in the linked course as dropped on the Autolab roster.
+
+
 Instructors and course assistants are never marked as dropped. User accounts are never deleted. Students marked as dropped can still see their work, but cannot submit new work and do not appear on the instructor gradebook. Instructors can change the dropped status of a student at any time.
 
 Once a student is added to the roster for a course, then that course becomes visible to the student when they visit the Autolab site. A student can be enrolled in an arbitrary number of Autolab courses.

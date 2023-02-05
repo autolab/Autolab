@@ -1,0 +1,28 @@
+@import 'variables';
+
+.inline-space-between {
+  display: flex;
+  justify-content: space-between;
+}
+
+.inline-space-between .count-title {
+  margin-top: 0.8rem;
+  margin-bottom: 0.8rem;
+}
+
+.inline-span {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.inline-span p {
+  margin: 0;
+  color: $autolab-black-text;
+}
+
+.inline-span a {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}

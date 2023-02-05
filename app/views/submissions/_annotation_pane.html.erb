@@ -1,14 +1,18 @@
 <div id="annotationPane">
   <div class="annotationSummary">
     <ul class="collapsible expandable">
-      <% @problemSummaries.each do |problem, all_annotations| %>
+      <% p_scores = @submission.problems_to_scores %>
+      <% @problemAnnotations.each do |problem, all_annotations| %>
         <li id="li-problem-<%= problem %>" class="active">
           <div class="collapsible-header-wrap">
             <div class="collapsible-header">
               <h4> <%= problem.capitalize %>
                   <div class="summary_score">
+                    <% p_score = p_scores[@problemNameToId[problem]] %>
                     <% if @cud.instructor? or @cud.course_assistant? or @problemReleased %>
-                      <%= plus_fix(@problemGrades[problem]) %>
+                      <%= plus_fix(@problemScores[problem]) %>
+                      (<%= p_score&.score ? sprintf("%.2f", p_score.score.round(2)) : raw("&ndash;") %>
+                      / <%= @problemMaxScores[problem] ? sprintf("%.2f", @problemMaxScores[problem].round(2)) : raw("&ndash;") %>)
                     <% end %>
                   </div>
               </h4>
@@ -32,13 +36,15 @@
               <% end %>
               <% if !global_annotations.empty? %>
                   <div class="file_annotations">
-                    <% global_annotations.each do |description, value, line, user, id, position, filename, global| %>
+                    <% global_annotations.each do |description, value, line, user, id, position, filename, shared, global| %>
                       <div class="global-annotation" id="li-annotation-<%= id %>">
-                        <div class="annotation-description">
+                        <div class="annotation-badge">
                           <span class="point_badge <%= value > 0 ? "positive" : value < 0 ? "negative" : "neutral" %>">
                             <%= plus_fix(value) %>
                           </span>
-                          <%= description %>
+                        </div>
+                        <div class="annotation-description">
+                          <span style="white-space: pre-line;"><%= description %></span>
                         </div>
                         <% if @cud.instructor? or @cud.course_assistant? %>
                         <div class="annotation-tools">
@@ -47,6 +53,7 @@
                                 data-problem="<%= problem %>"
                                 data-score="<%= value %>"
                                 data-comment="<%= description %>"
+                                data-shared="<%= shared %>"
                           >
                             <a class="global-annotation-edit-button" href="#"
                                title="Edit global annotation"
@@ -75,13 +82,17 @@
                             "data-line": line.nil? ? 1 : line+1,
                             remote: true,
                           ) do %>
-                            <span class="point_badge <%= value > 0 ? "positive" : value < 0 ? "negative" : "neutral" %>">
-                              <% unless line.nil? %>
-                                <span class="line_number">Line <%= line + 1 %>:</span>
-                              <% end %>
-                              <%= plus_fix(value) %>
-                            </span>
-                          <%= description %>
+                            <div class="annotation-badge">
+                              <span class="point_badge <%= value > 0 ? "positive" : value < 0 ? "negative" : "neutral" %>">
+                                <% unless line.nil? %>
+                                  <span class="line_number">Line <%= line + 1 %>:</span>
+                                <% end %>
+                                <%= plus_fix(value) %>
+                              </span>
+                            </div>
+                            <div class="annotation-description">
+                              <span style="white-space: pre-line;"><%= description %></span>
+                            </div>
                         <% end %>
                       </div>
                     <% end %>

@@ -1,0 +1,54 @@
+<div class="result-summary">
+  <div class="result-pane result-fixed">
+    <div class="feedback-header">
+      <h3>Results</h3>
+    </div>
+    <div id="result-body">
+      <% if !@scoreHash.nil? %>
+        <h4>Autograder Scores</h4>
+        <table class="ui unstackable table">
+          <tbody>
+          <% @scoreHash.except("_total").each do |key, value| %>
+            <tr>
+              <td><%= key %>:</td>
+              <td><%= value.to_f.round(1) %></td>
+            </tr>
+          <% end %>
+          <tr style="border-bottom: none">
+            <td>Autograding Total:</td>
+            <td><%= @scoreHash["_total"].to_f.round(1) %></td>
+          </tr>
+          </tbody>
+        </table>
+      <% elsif @score.nil? %>
+        <h4>Autograding in progress...</h4>
+        <p>
+          Your submission is currently being autograded.
+        </p>
+        <p>
+          Press the refresh button to get updates.
+        </p>
+      <% else %>
+        <h4>Problem Score</h4>
+        <p>
+          <%= "#{@score.problem.name}: #{@score.score.to_f().round(1)}" %>
+        </p>
+        <p>Graded by: <%=
+            case @score.grader_id
+            when -1
+              "Error Handler"
+            when 0
+              "Autograder"
+            else
+              if @score.grader&.user then @score.grader.user.email end
+            end
+          %>
+        </p>
+      <% end %>
+      <% if @submission.annotations.count > 0 and (@cud.instructor? or @cud.course_assistant? or @problemReleased) %>
+        <a href="#remarks">Jump to remarks</a>
+      <% end %>
+    </div>
+  </div>
+</div>
+<%= javascript_include_tag "feedback.js" %>

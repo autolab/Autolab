@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2022_11_24_042718) do
+ActiveRecord::Schema.define(version: 2022_11_28_044321) do
 
   create_table "annotations", force: :cascade do |t|
     t.integer "submission_id"
@@ -193,6 +193,8 @@ ActiveRecord::Schema.define(version: 2022_11_24_042718) do
     t.datetime "updated_at", precision: 6, null: false
     t.string "membership_url"
     t.string "platform"
+    t.boolean "auto_sync"
+    t.boolean "drop_missing_students"
   end
 
   create_table "module_data", force: :cascade do |t|
@@ -334,6 +336,7 @@ ActiveRecord::Schema.define(version: 2022_11_24_042718) do
     t.text "embedded_quiz_form_answer"
     t.integer "submitted_by_app_id"
     t.string "group_key", default: ""
+    t.integer "jobid"
     t.index ["assessment_id"], name: "index_submissions_on_assessment_id"
     t.index ["course_user_datum_id"], name: "index_submissions_on_course_user_datum_id"
   end

@@ -1,3 +1,5 @@
+@import 'variables';
+
 .mg-active-datapoint {
     fill: black;
     font-size: 1.5rem;
@@ -85,7 +87,7 @@
 }
 
 .mg-chart-title .fa {
-    color: #ccc;
+    color: $autolab-highlight-gray;
     font-size: 1.2rem;
     padding-left: 4px;
     vertical-align: top;
@@ -113,7 +115,7 @@
 }
 
 .mg-data-table thead tr th .fa {
-    color: #ccc;
+    color: $autolab-highlight-gray;
     padding-left: 4px;
 }
 
@@ -150,7 +152,7 @@
     fill: none;
     opacity: 0.7;
     shape-rendering: auto;
-    stroke: #ccc;
+    stroke: $autolab-highlight-gray;
 }
 
 .mg-histogram .mg-bar rect {
@@ -288,7 +290,7 @@ path.mg-main-area {
 }
 
 path.mg-confidence-band {
-    fill: #ccc;
+    fill: $autolab-highlight-gray;
     opacity: 0.4;
     stroke: none;
 }

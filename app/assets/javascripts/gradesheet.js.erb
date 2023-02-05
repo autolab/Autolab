@@ -126,9 +126,9 @@ jQuery(function() {
         'iDisplayStart': 0,
         'deferRender': true,
         'aoColumnDefs': [
-          { "bSortable": false, "aTargets": [ 0 ] },
+          { "bSortable": false, "aTargets": [ 0,4 ] },
           { "bSearchable": false, "aTargets": non_searchable_columns },
-          { "sType": "html", "aTargets": [ email_col ] },
+          { "sType": "html", "aTargets": [ email_col,lec_sec_col ] },
           { "sType": "num-html", "aTargets": numeric_columns }, 
         ],
         'columns' : columns,
@@ -144,8 +144,21 @@ jQuery(function() {
             });
           }
         },
-        "aaSorting": [[ email_col, 'asc' ]]
+        "aaSorting": [[ email_col, 'asc' ],[lec_sec_col, 'asc']]
     }).fnSetFilteringDelay();
+
+    // add sorting icons to table headings
+    function add_icons(selector) {
+      let icons = $icon_template.clone();
+      icons.appendTo(selector);
+    }
+    add_icons('th.id');
+    add_icons('th.course_number');
+    add_icons('th.lec-sec');
+    add_icons('th.problem');
+    add_icons('th.late_penalty');
+    add_icons('th.total');
+    add_icons('th.tweak');
 
     // dynamically change # of rows to display
     function incrementDisplayLength(n) {
@@ -530,7 +543,6 @@ jQuery(function() {
 
       current_popover = popover;
     }
-
     // to show the the ID column popovers
     jQuery('#grades').on('click', 'td.id a.email', function() {
       jQuery('div.popover').hide();
