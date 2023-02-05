@@ -50,6 +50,40 @@ module ControllerMacros
     CourseUserDatum.where(user_id: uid).first.course_id
   end
 
+  def get_first_cud_by_uid(uid)
+    CourseUserDatum.where(user_id: uid).first.id
+  end
+
+  def get_first_aid_by_cud(cud)
+    AssessmentUserDatum.where(course_user_datum_id: cud).first.assessment_id
+  end
+  # create user and add to given course as a course assistant
+  def create_ca_for_course(cid, email, first_name, last_name, password)
+    user = User.new(email: email, first_name: first_name, last_name: last_name, password: password,
+                 administrator: false, school: "My School", major: "CS", year: "4")
+    user.skip_confirmation!
+    user.save!
+    CourseUserDatum.create!({
+                              user: user,
+                              course: cid,
+
+                              course_number: "AutoPopulated",
+                              lecture: "1",
+                              section: "A",
+                              dropped: false,
+
+                              instructor: false,
+                              course_assistant: true,
+
+                              nickname: "courseassistant"
+                            })
+    user
+  end
+
+  def get_first_course
+    Course.first
+  end
+
   def create_scheduler_with_cid(cid)
     # Prepare the updater script for scheduler to run
     update_script_path = Rails.root.join("tmp/testscript.rb")
