@@ -24,7 +24,7 @@ class Rack::Attack
   # whitelisting). It must implement .increment and .write like
   # ActiveSupport::Cache::Store
 
-  # Rack::Attack.cache.store = ActiveSupport::Cache::MemoryStore.new 
+  # Rack::Attack.cache.store = ActiveSupport::Cache::MemoryStore.new
 
   ### Safelist Requests ###
 
@@ -34,7 +34,8 @@ class Rack::Attack
   # since these requests will be rejected by doorkeeper immediately anyway.
   safelist('allow from localhost') do |req|
     ((not req.path.start_with?("/api/")) || (not req.params['access_token'])) &&
-    (not req.path.start_with?("/oauth/device_flow_"))
+    (not req.path.start_with?("/oauth/device_flow_")) &&
+    (not req.path.include?("getPartialFeedback"))
   end
 
   ### Throttle Requests ###
@@ -75,6 +76,13 @@ class Rack::Attack
     end
   end
 
+  # Throttle requests for getPartialFeedback
+  #
+  # Key: "rack::attack:#{Time.now.to_i/:period}:getPartialFeedback:#{req.ip}"
+  throttle("getPartialFeedback", :limit => 1, :period => 5.seconds) do |req|
+    req.ip if req.path.include?("getPartialFeedback")
+  end
+
   ### Custom Throttle Response ###
 
   # By default, Rack::Attack returns an HTTP 429 for throttled responses,
@@ -87,13 +95,13 @@ class Rack::Attack
     now = Time.now
     match_data = env['rack.attack.match_data']
 
-    headers = {
+    headers = match_data.nil? ? {} : {
       'X-RateLimit-Limit' => match_data[:limit].to_s,
       'X-RateLimit-Remaining' => '0',
       'X-RateLimit-Reset' => (now + (match_data[:period] - now.to_i % match_data[:period])).to_s,
       'Content-Type' => 'application/json'
     }
 
-    return [429, headers, ['{"error": "Too Many Requests. Retry Later."}']]
+    [429, headers, ['{"error": "Too Many Requests. Retry Later."}']]
   end
 end
