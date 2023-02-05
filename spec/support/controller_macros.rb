@@ -7,13 +7,18 @@ module ControllerMacros
   end
 
   def get_instructor
-    instructorCUDs = CourseUserDatum.where(instructor: true)
+    instructorCUDs = CourseUserDatum.joins(:user).where("users.administrator" => false,
+                                                        :instructor => true)
     instructorCUDs.offset(rand(instructorCUDs.count)).first.user
   end
 
   def get_course_assistant
     caCUDs = CourseUserDatum.where(course_assistant: true)
     caCUDs.offset(rand(caCUDs.count)).first.user
+  end
+
+  def get_course_assistant_only
+    CourseUserDatum.where(course_assistant: true, instructor: false).first.user
   end
 
   def get_user

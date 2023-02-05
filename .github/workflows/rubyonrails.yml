@@ -48,7 +48,6 @@ jobs:
       - name: Set up Autolab
         run: |
           cp config/database.github.yml config/database.yml
-          cp config/lti_settings.yml.template config/lti_settings.yml
           cp config/school.yml.template config/school.yml
           cp config/autogradeConfig.rb.template config/autogradeConfig.rb
           cp .env.template .env

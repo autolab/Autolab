@@ -1,0 +1,6 @@
+---
+iss: https://lti-ri.imsglobal.org
+developer_key: lti.app.client_id
+auth_url: https://lti-ri.imsglobal.org/platforms/3644/authorizations/new
+platform_public_jwks_url: https://lti-ri.imsglobal.org/platforms/3644/platform_keys/3356.json
+oauth2_access_token_url: https://lti-ri.imsglobal.org/platforms/3644/access_tokens
