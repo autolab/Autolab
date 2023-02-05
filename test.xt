@@ -1,2 +1,0 @@
-.env file secrets have been initialized
-If you want to use Github integration for submission via Git, please update .env with your Github application credentials
