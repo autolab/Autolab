@@ -43,9 +43,6 @@ module Autolab3
       Doorkeeper::AuthorizedApplicationsController.layout "application"
     end
 
-    # TODO: this should be a macro
-    config.action_mailer.default_url_options = {protocol: 'https', host: 'YOUR_APP_URL' }
-
     # Settings in config/environments/* take precedence over those specified here.
     # Application configuration can go into files in config/initializers
     # -- all .rb files in that directory are automatically loaded after loading
@@ -119,21 +116,20 @@ module Autolab3
 
     config.lti_settings = Rails.application.config_for(:lti_settings)
 
-    # Configure the host and port of generated urls
-    config.action_controller.default_url_options = {}
+    config.action_controller.default_url_options = { }
     config.action_mailer.default_url_options = {}
 
-    if !ENV['DEFAULT_URL_HOST'].empty? 
-      config.action_controller.default_url_options[:host] = ENV['DEFAULT_URL_HOST']
-      config.action_mailer.default_url_options[:host] = ENV['DEFAULT_URL_HOST']
-    end 
+    # Set application host for mailer
+    config.action_mailer.default_url_options = { host: ENV['MAILER_HOST'] }
 
-    if ENV['DEFAULT_URL_PORT'].casecmp?("NONE") then
-      config.action_controller.default_url_options[:port] = nil
-      config.action_mailer.default_url_options[:port] = nil
-    elsif !ENV['DEFAULT_URL_PORT'].empty?
-      config.action_controller.default_url_options[:port] = ENV['DEFAULT_URL_PORT']
-      config.action_mailer.default_url_options[:port] = ENV['DEFAULT_URL_PORT']
-    end
+    # Configure the host and port of generated urls
+    if !ENV['DEFAULT_URL_HOST'].empty? 
+      config.action_controller.default_url_options = { host: ENV['DEFAULT_URL_HOST'] }
+      if ENV['DEFAULT_URL_PORT'].casecmp?("NONE") then
+        config.action_controller.default_url_options[:port] = nil
+      elsif !ENV['DEFAULT_URL_PORT'].empty?
+        config.action_controller.default_url_options[:port] = ENV['DEFAULT_URL_PORT']
+      end
+    end 
   end
 end
