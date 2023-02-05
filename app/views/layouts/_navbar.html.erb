@@ -99,7 +99,9 @@
 
         <% if user_signed_in? %>
           <li><a class="dropdown-trigger" href="#!" data-target="dropdown2" data-beloworigin="true" data-hover="false"><i class='material-icons left'>lock</i>Manage Autolab<i class="material-icons right">arrow_drop_down</i></a></li>
-          <li><a class="dropdown-trigger" href="#!" data-target="dropdown1" data-beloworigin="true" data-hover="false"><%= current_user.display_name %><i class="material-icons right">arrow_drop_down</i></a></li>
+          <% if current_user&.administrator? %>
+            <li><a class="dropdown-trigger" href="#!" data-target="dropdown1" data-beloworigin="true" data-hover="false"><%= current_user.display_name %><i class="material-icons right">arrow_drop_down</i></a></li>
+          <% end %>
       <% end %>
       </ul>
 
@@ -151,7 +153,7 @@
           <% end %>
         <% end %>
 
-        <% if current_user && current_user.administrator? %>
+        <% if current_user&.administrator? %>
           <li><a class="dropdown-trigger" href="#!" data-target="dropdown3" data-beloworigin="true" data-hover="false"><i class='material-icons left'>lock</i>Manage Autolab<i class="material-icons right">arrow_drop_down</i></a></li>
         <% end %>
       </ul>
