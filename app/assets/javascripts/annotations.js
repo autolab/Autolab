@@ -759,6 +759,8 @@ function newAnnotationBox(annotation) {
     e.preventDefault();
     box.find('.annotation-box').hide();
     box.find('.annotation-form').show().css('width', '100%');
+    
+    M.textareaAutoResize(box.find('#comment-textarea'));
 
     box.find('#comment-textarea').autocomplete({
       appendTo: box.find('#comment-textarea').parent(),
