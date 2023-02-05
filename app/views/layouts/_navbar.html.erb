@@ -121,15 +121,15 @@
             <%= link_to "<i class='material-icons left'>assignment_ind</i> Course Profile".html_safe, [@course, @cud], :title => "View your user profile for the current course" %>
           </li>
         <% end %>
-        <% if Rails.env.development? %>
-          <li role="presentation">
-            <a href='/home/developer_login'>Dev Login</a>
-          </li>
-        <% end %>
         <li role="presentation">
           <%= link_to "<i class='material-icons left'>exit_to_app</i> Log out".html_safe, destroy_user_session_path, :method => :delete  %>
         </li>
         <li role="presentation" class="divider"></li>
+        <% end %>
+        <% if Rails.env.development? %>
+          <li role="presentation">
+            <a href='/home/developer_login'>Dev Login</a>
+          </li>
         <% end %>
       </div>
         <!-- Usual Navbar Items -->
