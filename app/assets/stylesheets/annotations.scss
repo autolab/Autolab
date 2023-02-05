@@ -575,6 +575,11 @@
   flex-shrink: 0;
 }
 
+.annotationSummary .annotation-description span {
+  white-space: pre-line;
+  word-break: break-word;
+}
+
 .annotationSummary .global-annotation .annotation-tools {
   flex-shrink: 0;
   margin-left: auto;
