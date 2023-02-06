@@ -477,6 +477,7 @@ private
         return @course.course_user_data.find(i)
       end
     end
+    grader_ids.filter! { |i| i != -1 }
     graders = grader_ids.map(&method(:find_user))
     graders = graders.compact
     graders.sort! { |g1, g2| g1.full_name <=> g2.full_name }

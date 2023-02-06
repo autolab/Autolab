@@ -44,9 +44,7 @@ We released new documentation! Check it out [here](https://docs.autolabproject.c
 
 2. Create and migrate the database.
 	```sh
-	RAILS_ENV=test bundle exec rails db:create
-	RAILS_ENV=test bundle exec rails db:schema:load
-	RAILS_ENV=test bundle exec rake autolab:populate
+	RAILS_ENV=test bundle exec rails autolab:setup_test_env
 	```
    Do not forget to use `RAILS_ENV=test bundle exec` in front of every rake/rails command.
 
@@ -62,6 +60,15 @@ After setting up the test environment, simply run spec by:
 
 ```sh
 bundle exec rails spec
+```
+
+You may need to run `RAILS_ENV=test bundle exec rails autolab:setup_test_env` when re-running tests as some tests
+may create models in the database.
+
+You can also run individual spec files by running:
+
+```sh
+rake spec SPEC=./spec/<path_to_spec>/<spec_file>.rb
 ```
 
 ## Rails 5 Support
