@@ -48,18 +48,18 @@
               </th>
               <th>Final Score</th>
             </tr>
-              <% @course.assessments_with_category(cat, @cud.student?).each do |asmt| %>
-                <% aud = asmt.aud_for @_cud  %>
-                <tr>
-                  <td>
-                    <span>
-                    <%= link_to asmt.display_name, course_assessment_path(@course, asmt) %>
-                    <% unless @cud.student? %>
-                      <a class="history_icon" href="<%= history_url(@_cud, asmt) %>">
-                        <i title="Handin history" class="icon-list tip"></i>
-                      </a>
-                    <% end %>
-                    </span>
+            <% @course.assessments_with_category(cat, @cud.student?).each do |asmt| %>
+              <% aud = asmt.aud_for @_cud  %>
+              <tr>
+                <td>
+                  <span>
+                  <%= link_to asmt.display_name, course_assessment_path(@course, asmt) %>
+                  <% unless @cud.student? %>
+                    <a class="history_icon" href="<%= history_url(@_cud, asmt) %>">
+                      <i title="Handin history" class="icon-list tip"></i>
+                    </a>
+                  <% end %>
+                  </span>
                 </td>
                 <% if @course.grace_days > 0 %>
                   <td><%= aud.grace_days_used %></td>
@@ -88,7 +88,9 @@
                     <% case aud.submission_status
                        when :submitted %>
                       <% if Time.now <= aud.assessment.grading_deadline || !aud.latest_submission.all_scores_released? %>
-                        <i class="material-icons tooltipped" data-tooltip="Final score will be visible once grading is complete.">access_time</i>
+                        <a href="<%= history_url(@_cud, asmt) %>">
+                          <i class="material-icons tooltipped" data-tooltip="Final score will be visible once grading is complete.">access_time</i>
+                        </a>
                       <% else %>
                         <%= render_final_score aud %>
                       <% end %>
