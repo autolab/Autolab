@@ -41,7 +41,7 @@
     </li>
   </ul>
 
-  <% if current_user && current_user.administrator? %>
+  <% if current_user&.administrator? %>
     <ul id="dropdown2" class="dropdown-content">
 
       <li role="presentation"><%= link_to "Create New Course", new_course_path, title: "Create a new course" %></li>
@@ -57,7 +57,7 @@
     </ul>
   <% end %>
 
-  <% if current_user && current_user.administrator? %>
+  <% if current_user&.administrator? %>
     <ul id="dropdown3" class="dropdown-content">
 
       <li role="presentation"><%= link_to "Create New Course", new_course_path, title: "Create a new course" %></li>
@@ -99,7 +99,7 @@
 
         <% if current_user&.administrator? %>
           <li><a class="dropdown-trigger" href="#!" data-target="dropdown2" data-beloworigin="true" data-hover="false"><i class='material-icons left'>lock</i>Manage Autolab<i class="material-icons right">arrow_drop_down</i></a></li>
-      <% end %>
+        <% end %>
         <% if user_signed_in?%>
           <li><a class="dropdown-trigger" href="#!" data-target="dropdown1" data-beloworigin="true" data-hover="false"><%= current_user.display_name %><i class="material-icons right">arrow_drop_down</i></a></li>
         <% end %>
