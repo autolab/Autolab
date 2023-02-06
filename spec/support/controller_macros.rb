@@ -7,13 +7,18 @@ module ControllerMacros
   end
 
   def get_instructor
-    instructorCUDs = CourseUserDatum.where(instructor: true)
+    instructorCUDs = CourseUserDatum.joins(:user).where("users.administrator" => false,
+                                                        :instructor => true)
     instructorCUDs.offset(rand(instructorCUDs.count)).first.user
   end
 
   def get_course_assistant
     caCUDs = CourseUserDatum.where(course_assistant: true)
     caCUDs.offset(rand(caCUDs.count)).first.user
+  end
+
+  def get_course_assistant_only
+    CourseUserDatum.where(course_assistant: true, instructor: false).first.user
   end
 
   def get_user
@@ -48,6 +53,40 @@ module ControllerMacros
 
   def get_course_id_by_uid(uid)
     CourseUserDatum.where(user_id: uid).first.course_id
+  end
+
+  def get_first_cud_by_uid(uid)
+    CourseUserDatum.where(user_id: uid).first.id
+  end
+
+  def get_first_aid_by_cud(cud)
+    AssessmentUserDatum.where(course_user_datum_id: cud).first.assessment_id
+  end
+  # create user and add to given course as a course assistant
+  def create_ca_for_course(cid, email, first_name, last_name, password)
+    user = User.new(email: email, first_name: first_name, last_name: last_name, password: password,
+                 administrator: false, school: "My School", major: "CS", year: "4")
+    user.skip_confirmation!
+    user.save!
+    CourseUserDatum.create!({
+                              user: user,
+                              course: cid,
+
+                              course_number: "AutoPopulated",
+                              lecture: "1",
+                              section: "A",
+                              dropped: false,
+
+                              instructor: false,
+                              course_assistant: true,
+
+                              nickname: "courseassistant"
+                            })
+    user
+  end
+
+  def get_first_course
+    Course.first
   end
 
   def create_scheduler_with_cid(cid)

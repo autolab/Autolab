@@ -116,5 +116,6 @@ Autolab3::Application.configure do
   # See (TODO replace with doc link)
   config.x.github.client_id = ENV['GITHUB_CLIENT_ID']
   config.x.github.client_secret = ENV['GITHUB_CLIENT_SECRET']
-
+  # LTI configuration file storage location. Needs to be in a private folder
+  config.lti_config_location  = Rails.root.join('config').to_s
 end

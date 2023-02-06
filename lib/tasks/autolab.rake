@@ -21,7 +21,7 @@ namespace :autolab do
   USER_COUNT = 50
   ASSESSMENT_CATEGORIES = ["Homework", "Lab", "Quiz"]
   ASSESSMENT_COUNT = 6
-  PROBLEM_COUNT = 3 
+  PROBLEM_COUNT = 3
   SUBMISSION_MAX = 3
   PROBLEM_MAX_SCORE = 100.0
   COURSE_START = Time.now - 80.days
@@ -44,9 +44,9 @@ namespace :autolab do
       c.name = name
       c.semester = "SEM"
       c.late_slack = 0
-      c.grace_days = 3 
-      c.late_penalty = Penalty.new(:value => 5, :kind => "points")
-      c.version_penalty = Penalty.new(:value => 5, :kind => "points")
+      c.grace_days = 3
+      c.late_penalty = Penalty.new(value: 5, kind: "points")
+      c.version_penalty = Penalty.new(value: 5, kind: "points")
       c.display_name = name
       c.start_date = COURSE_START
       c.end_date = COURSE_END
@@ -63,12 +63,12 @@ namespace :autolab do
       ASSESSMENT_COUNT.times do |i|
         course.assessments.create do |a|
           a.category_name = cat
-          
-          a.visible_at = start 
+
+          a.visible_at = start
           a.start_at = start
           a.due_at = start + (5 + rand(11)).days          # 5-15d after start date
           a.end_at = a.due_at + (1 + rand(7)).day   # 1d-1w after the due date
-          a.grading_deadline = a.end_at + (1 + rand(7)).day   # 1-7d after submit deadline 
+          a.grading_deadline = a.end_at + (1 + rand(7)).day   # 1-7d after submit deadline
 
           a.name = "#{cat}#{i.to_s}".downcase
           a.display_name = "#{cat} #{i.to_s}"
@@ -102,9 +102,9 @@ namespace :autolab do
   end
 
   def load_users course
-    
-    if User.where(:email => "admin@foo.bar").first then
-      @grader = User.where(:email => "admin@foo.bar").first
+
+    if User.where(email: "admin@foo.bar").first then
+      @grader = User.where(email: "admin@foo.bar").first
     else
       @grader = User.new({
         first_name: "Autolab",
@@ -124,22 +124,80 @@ namespace :autolab do
     end
 
     @grader_cud = CourseUserDatum.create!({
-      :user => @grader,
-      :course => course,
+      user: @grader,
+      course: course,
 
-      :course_number => "AutoPopulated",
-      :lecture => "1",
-      :section => "Instructor",
-      :dropped => false,
+      course_number: "AutoPopulated",
+      lecture: "1",
+      section: "Instructor",
+      dropped: false,
 
-      :instructor => true,
-      :course_assistant => true,
+      instructor: true,
+      course_assistant: true,
 
-      :nickname => "admin_#{course.name}"
+      nickname: "admin_#{course.name}"
+    })
+
+    # create course assistant
+    @ca = User.new({
+         first_name: "Course",
+         last_name: "Assistant",
+         password: 'adminfoobar',
+         school: "SCS",
+         major: "CS",
+         year: "4",
+         email: "autopopulated_courseassistant@foo.bar",
+
+         administrator: false
+       })
+    @ca.skip_confirmation!
+    @ca.save
+    @ca_cud = CourseUserDatum.create!({
+      user: @ca,
+      course: course,
+
+      course_number: "AutoPopulated",
+      lecture: "1",
+      section: "Course Assistant",
+      dropped: false,
+
+      instructor: false,
+      course_assistant: true,
+
+      nickname: "course_assistant_#{course.name}"
+    })
+
+    # create instructor only
+    @instructor = User.new({
+     first_name: "Instructor",
+     last_name: "Only",
+     password: 'adminfoobar',
+     school: "SCS",
+     major: "CS",
+     year: "4",
+     email: "autopopulated_instructor@foo.bar",
+
+     administrator: false
+   })
+    @instructor.skip_confirmation!
+    @instructor.save
+    @instructor_cud = CourseUserDatum.create!({
+      user: @instructor,
+      course: course,
+
+      course_number: "AutoPopulated",
+      lecture: "1",
+      section: "Instructor",
+      dropped: false,
+
+      instructor: true,
+      course_assistant: true,
+
+      nickname: "instructor_#{course.name}"
     })
 
     i = 0
-    User.populate(USER_COUNT, :per_query => 10000) do |u| 
+    User.populate(USER_COUNT, per_query: 10000) do |u|
       u.attributes = @default_user
 
       u.first_name = "User"
@@ -209,7 +267,7 @@ namespace :autolab do
       submission_window = a.end_at - a.start_at
 
       i = 0
-      Submission.populate(sub_count, :per_query => 10000) do |s|
+      Submission.populate(sub_count, per_query: 10000) do |s|
         s.attributes = @default_submission
 
         s.created_at = s.updated_at = a.end_at - rand(submission_window)
@@ -238,7 +296,7 @@ namespace :autolab do
     assessment = Assessment.find(submission.assessment_id)
 
     assessment.problems.each do |p|
-      Score.populate(1, :per_query => 10000) do |score|
+      Score.populate(1, per_query: 10000) do |score|
         score.attributes = @default_score
 
         score.score = rand(PROBLEM_MAX_SCORE.to_i).to_f
@@ -290,7 +348,7 @@ namespace :autolab do
     # Create assessment
     asmt = course.assessments.create! do |a|
       a.category_name = AUTOGRADE_CATEGORY_NAME
-      
+
       a.visible_at = COURSE_START
       a.start_at = COURSE_START
       a.due_at = COURSE_START + (5 + rand(11)).days
@@ -330,12 +388,12 @@ namespace :autolab do
   end
 
   task :populate, [:name] => :environment do |t, args|
-    require "populator" 
-  
-    args.with_defaults(:name => COURSE_NAME)
+    require "populator"
+
+    args.with_defaults(name: COURSE_NAME)
     abort("Only use this task in development or test.") unless ["development", "test"].include? Rails.env
     # If course exists, in `dev` aborts; in `test` overwrites.
-    if Course.where(:name => args.name).first
+    if Course.where(name: args.name).first
       if Rails.env == "development"
         abort("Course name #{args.name} already in use. Depopulate or change name.")
       else
@@ -353,7 +411,7 @@ namespace :autolab do
     @default_score = Score.new.attributes.delete_if &unwanted
     @default_user = User.new.attributes.delete_if &unwanted
 
-    puts "Creating Course #{args.name} and config file" 
+    puts "Creating Course #{args.name} and config file"
     course = load_course args.name
 
     puts "Creating Assessments"
@@ -398,10 +456,10 @@ namespace :autolab do
   end
 
   task :depopulate, [:name] => :environment do |t, args|
-    args.with_defaults(:name => COURSE_NAME)
+    args.with_defaults(name: COURSE_NAME)
     abort("Only use this task in development or test.") unless ["development", "test"].include? Rails.env
 
-    course = Course.where(:name => args.name).first
+    course = Course.where(name: args.name).first
 
     if course
       puts "Deleting Course along with all associated data (might take a while)"
@@ -414,6 +472,17 @@ namespace :autolab do
     else
       abort "No course with name #{args.name} found."
     end
+  end
+
+  task setup_test_env: [:environment] do
+    Rails.env = ENV['RAILS_ENV'] = 'test'
+    require "rspec/core/rake_task"
+    RSpec::Core::RakeTask.new(:spec)
+    Rake::Task['db:drop'].invoke
+    Rake::Task['db:create'].invoke
+    Rake::Task['db:schema:load'].invoke
+    Rake::Task['autolab:populate'].invoke
+    puts "Test environment is ready"
   end
 end
 
