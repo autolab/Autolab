@@ -571,7 +571,7 @@
 }
 
 .annotationSummary .global-annotation .annotation-badge,
-.annotationSummary .descript-link .annotation-badge {
+.annotationSummary .descript-link-style .annotation-badge {
   flex-shrink: 0;
 }
 
@@ -832,7 +832,7 @@
   cursor: pointer;
 }
 
-.descript-link {
+.descript-link-style {
   display: flex;
   color: inherit;
   text-decoration: inherit;

@@ -75,23 +75,41 @@
                     <strong> <%= filename %> </strong>
                     <% annotations.each do |description, value, line, user, id, position, filename, global| %>
                       <div class="descript" id="li-annotation-<%= id %>"> <!-- Line + 1 because the code line numbers starts with 1 not 0. -->
-                       <%= link_to(
-                          url_for([@course, @assessment, @submission, header_position: position.nil? ? 0 : position, line: line.nil? ? 1 : line+1]),
-                          :onclick => "scrollToLine(#{line + 1})",
-                          remote: true,
-                       ) do %>
-                            <div class="annotation-badge">
-                              <span class="point_badge <%= value > 0 ? "positive" : value < 0 ? "negative" : "neutral" %>">
-                                <% unless line.nil? %>
-                                  <span class="line_number">Line <%= line + 1 %>:</span>
-                                <% end %>
-                                <%= plus_fix(value) %>
-                              </span>
-                            </div>
-                            <div class="annotation-description">
-                              <span style="white-space: pre-line;"><%= description %></span>
-                            </div>
-                        <% end %>
+                          <% if (Integer(params[:header_position]) || 0) != (position.nil? ? 0 : position)  %> <%# only change URLs if annotation is on a different page %>
+                            <%= link_to(
+                              url_for([:view, @course, @assessment, @submission, header_position: position.nil? ? 0 : position, line: line.nil? ? 1 : line+1]),
+                              class: 'descript-link descript-link-style',
+                              "data-header_position": position.nil? ? 0 : position,
+                              "data-line": line.nil? ? 1 : line+1,
+                              remote: true,
+                            ) do %> <%# start HTML elements inside link_to %>
+                              <div class="annotation-badge">
+                                <span class="point_badge <%= value > 0 ? "positive" : value < 0 ? "negative" : "neutral" %>">
+                                  <% unless line.nil? %>
+                                    <span class="line_number">Line <%= line + 1 %>:</span>
+                                  <% end %>
+                                  <%= plus_fix(value) %>
+                                </span>
+                              </div>
+                              <div class="annotation-description">
+                                <span style="white-space: pre-line;"><%= description %></span>
+                              </div>
+                            <% end %> <%# closes HTML elements inside link_to %>
+                          <% else %>
+                            <div onclick="scrollToLine(<%=line+1%>)" class="descript-link-style">
+                              <div class="annotation-badge">
+                                <span class="point_badge <%= value > 0 ? "positive" : value < 0 ? "negative" : "neutral" %>">
+                                  <% unless line.nil? %>
+                                    <span class="line_number">Line <%= line + 1 %>:</span>
+                                  <% end %>
+                                  <%= plus_fix(value) %>
+                                </span>
+                              </div>
+                              <div class="annotation-description">
+                                <span style="white-space: pre-line;"><%= description %></span>
+                              </div>
+                            </div> <%# closes HTML elements inside link_to %>
+                          <% end %> <%# ends conditional %>
                       </div>
                     <% end %>
                   </div>

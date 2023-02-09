@@ -131,6 +131,11 @@ function scrollToLine(n) {
   $('.code-table').scrollTo($('#line-' + (n - 1)), { duration: "fast" })
 }
 
+// For annotation comments
+function goToAnnotation(currentHeader, targetHeader, targetLine) {
+  
+}
+
 function plusFix(n) {
   n = parseFloat(n)
   if (isNaN(n)) n = 0;

@@ -21,6 +21,7 @@ newFile.pdf = false;
 if (!newFile.pdf) localCache[<%= params[:header_position] %>] = newFile;
 
 // If we've navigated to another file, don't update the page
+// The following if statement only triggers if we switch to another file for the first time
 if (currentHeaderPos == <%= params[:header_position] %>) {
     // Update the code viewer and symbol tree with the new data
     $('#code-box').replaceWith(newFile.codeBox);
