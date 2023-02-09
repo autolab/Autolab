@@ -138,11 +138,22 @@ module ControllerMacros
   end
 
   # create a course which has an instructor and lcd attached
-  def course_with_instructor_and_lcd
+  def create_course_with_instructor_and_lcd
     FactoryBot.create(:course) do |course|
       user = FactoryBot.create(:user)
       FactoryBot.create(:course_user_datum, course: course, user: user, instructor: true)
       FactoryBot.create(:lti_course_datum, course_id: course.id)
+    end
+  end
+
+  # create course with unique CUDs (unique student users)
+  def create_course_with_many_students(students_count: 10)
+    FactoryBot.create(:course) do |course|
+      user = FactoryBot.create(:user)
+      FactoryBot.create(:course_user_datum, course: course, user: user, instructor: true)
+      FactoryBot.create_list(:student, students_count, course: course).each do |cud|
+        cud.user = FactoryBot.create(:user)
+      end
     end
   end
 end
