@@ -86,7 +86,8 @@ RSpec.describe CoursesController, type: :controller do
         sign_in(instructor)
       end
       it "updates lti settings" do
-        patch :update_lti_settings, params: { name: course.name, lcd: { drop_missing_students: "1" } }
+        patch :update_lti_settings,
+              params: { name: course.name, lcd: { drop_missing_students: "1" } }
         expect(response).to have_http_status(302)
         # need to reload to see changes to model
         course.lti_course_datum.reload
@@ -172,7 +173,7 @@ RSpec.describe CoursesController, type: :controller do
         FactoryBot.create_list(:user, 10)
       end
       let!(:unused_emails) do
-        Array.new(10) { |elem| elem = "unused#{elem}@example.org" }
+        Array.new(10) { |elem| "unused#{elem}@example.org" }
       end
       before(:each) do
         instructor = get_instructor_by_cid(course.id)
@@ -194,7 +195,8 @@ RSpec.describe CoursesController, type: :controller do
                             "#{user.last_name} <#{user.email}>\n"
                           end
         end
-        post :add_users_from_emails, params: { name: course.name, user_emails: users_emails, role: "ca" }
+        post :add_users_from_emails,
+             params: { name: course.name, user_emails: users_emails, role: "ca" }
         expect(response).to have_http_status(302)
         expect(flash[:success]).to be_present
       end
@@ -204,7 +206,8 @@ RSpec.describe CoursesController, type: :controller do
         users_to_add.each do |user|
           users_emails += "#{user.email}\n"
         end
-        post :add_users_from_emails, params: { name: course.name, user_emails: users_emails, role: "instructor" }
+        post :add_users_from_emails,
+             params: { name: course.name, user_emails: users_emails, role: "instructor" }
         expect(response).to have_http_status(302)
         expect(flash[:success]).to be_present
       end
@@ -214,7 +217,8 @@ RSpec.describe CoursesController, type: :controller do
         users_to_add.each do |user|
           users_emails += "#{user.email}\n"
         end
-        post :add_users_from_emails, params: { name: course.name, user_emails: users_emails, role: "student" }
+        post :add_users_from_emails,
+             params: { name: course.name, user_emails: users_emails, role: "student" }
         expect(response).to have_http_status(302)
         expect(flash[:success]).to be_present
       end
