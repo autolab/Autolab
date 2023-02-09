@@ -81,9 +81,11 @@ RSpec.describe CoursesController, type: :controller do
       let!(:course) do
         create_course_with_instructor_and_lcd
       end
-      it "updates lti settings" do
+      before(:each) do
         instructor = get_instructor_by_cid(course.id)
         sign_in(instructor)
+      end
+      it "updates lti settings" do
         patch :update_lti_settings, params: { name: course.name, lcd: { drop_missing_students: "1" } }
         expect(response).to have_http_status(302)
         # need to reload to see changes to model
@@ -92,14 +94,17 @@ RSpec.describe CoursesController, type: :controller do
       end
     end
   end
+
   describe "#unlink_course" do
     context "when user is autolab instructor" do
       let!(:course) do
         create_course_with_instructor_and_lcd
       end
-      it "updates lti settings" do
+      before(:each) do
         instructor = get_instructor_by_cid(course.id)
         sign_in(instructor)
+      end
+      it "unlinks LTI from course" do
         expect {
           post :unlink_course, params: { name: course.name }
         }.to change(LtiCourseDatum, :count).by(-1)
@@ -107,6 +112,7 @@ RSpec.describe CoursesController, type: :controller do
         expect(flash[:success]).to be_present
       end
     end
+
     context "when user is instructor of course with no lcd" do
       let!(:course) do
         FactoryBot.create(:course) do |course|
@@ -115,9 +121,11 @@ RSpec.describe CoursesController, type: :controller do
           course.lti_course_datum = nil
         end
       end
-      it "fails on unlink" do
+      before(:each) do
         instructor = get_instructor_by_cid(course.id)
         sign_in(instructor)
+      end
+      it "fails on unlink" do
         expect {
           post :unlink_course, params: { name: course.name }
         }.to change(LtiCourseDatum, :count).by(0)
@@ -126,6 +134,7 @@ RSpec.describe CoursesController, type: :controller do
       end
     end
   end
+
   describe "#download_roster" do
     context "when user is autolab instructor" do
       let!(:course) do
@@ -153,6 +162,7 @@ RSpec.describe CoursesController, type: :controller do
       end
     end
   end
+
   describe "#add_users_from_emails" do
     context "when instructor" do
       let!(:course) do
@@ -191,7 +201,7 @@ RSpec.describe CoursesController, type: :controller do
 
       it "adds users as instructors successfully" do
         users_emails = ""
-        users_to_add.each_with_index do |user, i|
+        users_to_add.each do |user|
           users_emails += "#{user.email}\n"
         end
         post :add_users_from_emails, params: { name: course.name, user_emails: users_emails, role: "instructor" }
@@ -201,7 +211,7 @@ RSpec.describe CoursesController, type: :controller do
 
       it "adds users as students successfully" do
         users_emails = ""
-        users_to_add.each_with_index do |user, i|
+        users_to_add.each do |user|
           users_emails += "#{user.email}\n"
         end
         post :add_users_from_emails, params: { name: course.name, user_emails: users_emails, role: "student" }
@@ -249,7 +259,7 @@ RSpec.describe CoursesController, type: :controller do
 
       it "fails when role is invalid" do
         users_emails = ""
-        users_to_add.each_with_index do |user, i|
+        users_to_add.each do |user|
           users_emails += "#{user.email}\n"
         end
         post :add_users_from_emails, params:
