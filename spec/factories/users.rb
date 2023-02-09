@@ -6,11 +6,5 @@ FactoryBot.define do
     password { "testPassword" }
 
     confirmed_at { Time.zone.now }
-
-    factory :instructor do
-      instructor { true }
-      administrator { true }
-      course_assistant { false }
-    end
   end
 end

@@ -74,4 +74,16 @@ RSpec.describe CoursesController, type: :controller do
       end
     end
   end
+
+  describe "#update_lti_settings" do
+    context "when user is autolab instructor" do
+      course = course_with_instructor_and_lcd
+      instructor = get_instructor_by_cid(course.id)
+      login_as(instructor)
+      it "updates lti settings" do
+        patch :update_lti_settings, params: {name: course.name, lcd: {drop_missing_students: "1"}}
+        expect(response).to have_http_status(302)
+      end
+    end
+  end
 end
