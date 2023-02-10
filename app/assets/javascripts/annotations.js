@@ -342,7 +342,11 @@ function attachEvents() {
 function attachChangeFileEvents() {
   // Set up file switching to use the local cache
   function changeFileClickHandler(e) {
-    const wasCachedLocally = changeFile($(this).data("header_position"));
+    const headerURL = new URLSearchParams(location.search);
+    const currentHeader = parseInt(headerURL.get("header_position"));
+
+    const targetHeader = $(this).data("header_position");
+    const wasCachedLocally = (targetHeader === currentHeader) || changeFile(targetHeader);
     if (wasCachedLocally) {
       e.preventDefault();
       if ($(this).data("line")) {
