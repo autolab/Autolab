@@ -47,13 +47,14 @@ Rails.application.routes.draw do
     end
   end
 
-  root "courses#index"
+  root "courses#courses_redirect"
 
   devise_for :users, controllers: { omniauth_callbacks: "users/omniauth_callbacks",
                                     registrations: "registrations" },
                      path_prefix: "auth"
 
   get "contact", to: "home#contact"
+  get "courses", to: "courses#index"
 
   namespace :home do
     if Rails.env == "development" || Rails.env == "test"
