@@ -69,7 +69,7 @@ Rails.application.routes.draw do
   get "device_flow_resolve", to: "device_flow_activation#resolve"
   get "device_flow_auth_cb", to: "device_flow_activation#authorization_callback"
 
-  resource :admin do
+  resource :admin, :except => [:show] do
     match "email_instructors", via: [:get, :post]
     match "github_integration", via: [:get]
   end
