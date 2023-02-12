@@ -57,19 +57,19 @@ class AttachmentsController < ApplicationController
 
   action_auth_level :show, :student
   def show
-    filename = Rails.root.join("attachments", @attachment.filename)
-    unless File.exist?(filename)
-      COURSE_LOGGER.log("Cannot find the file '#{@attachment.filename}' for"\
-                        " attachment #{@attachment.name}")
+    attached_file = @attachment.attachment_file
+    unless attached_file.attached?
+      COURSE_LOGGER.log("No file attached to attachment '#{@attachment.name}'")
 
-      flash[:error] = "Error loading #{@attachment.name} from #{@attachment.filename}"
+      flash[:error] = "No file attached to attachment '#{@attachment.name}'"
       redirect_to([@course, :attachments]) && return
     end
     if @cud.instructor? || @attachment.released?
-      # Set to application/octet-stream to force download
-      send_file(filename, disposition: "inline",
-                          type: "application/octet-stream",
-                          filename: @attachment.filename) && return
+      # Default disposition is "attachment" which forces download
+      send_data attached_file.download,
+                :filename => @attachment.filename,
+                :type => @attachment.mime_type
+      return
     end
 
     flash[:error] = "You are unauthorized to view this attachment"
