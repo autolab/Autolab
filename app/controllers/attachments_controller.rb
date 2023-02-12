@@ -67,8 +67,8 @@ class AttachmentsController < ApplicationController
     if @cud.instructor? || @attachment.released?
       # Default disposition is "attachment" which forces download
       send_data attached_file.download,
-                :filename => @attachment.filename,
-                :type => @attachment.mime_type
+                filename: @attachment.filename,
+                type: @attachment.mime_type
       return
     end
 
