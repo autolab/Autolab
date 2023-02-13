@@ -102,33 +102,20 @@ module ControllerMacros
   end
 
   def create_course_att_with_cid(cid)
-    # Prepare course attachment file
-    course_att_file = Rails.root.join("attachments/testattach.txt")
-    File.open(course_att_file, "w") do |f|
-      f.write("Course attachment file")
-    end
-    att = Attachment.new(course_id: cid, assessment_id: nil,
-                         name: "att#{cid}",
-                         released: true)
-
-    att.file = Rack::Test::UploadedFile.new(
-        path=Rails.root.join("attachments", File.basename(course_att_file)), content_type="text/plain",
-        tempfile=Tempfile.new("attach.tmp"))
-    att.save
-    att
+    FactoryBot.create(:attachment,
+                      course_id: cid,
+                      assessment_id: nil,
+                      name: "att#{cid}",
+                      released: true,
+                      file: fixture_file_upload("attachments/course.txt", "text/plain"))
   end
 
   def create_assess_att_with_cid_aid(cid, aid)
-    # Prepare assessment attachment file
-    assess_att_file = Rails.root.join("attachments/assessattach.txt")
-    File.open(assess_att_file, "w") do |f|
-      f.write("Assessment attachment file")
-    end
-    att = Attachment.new(course_id: cid, assessment_id: aid,
-                         name: "att#{cid}-#{aid}", filename: assess_att_file,
-                         released: true, mime_type: "text/plain")
-    att.file = File.open(assess_att_file, "w")
-    att.save
-    att
+    FactoryBot.create(:attachment,
+                      course_id: cid,
+                      assessment_id: aid,
+                      name: "att#{cid}--#{aid}",
+                      released: true,
+                      file: fixture_file_upload("attachments/assessment.txt", "text/plain"))
   end
 end

@@ -1,4 +1,5 @@
 require "rails_helper"
+include ControllerMacros
 
 RSpec.describe AttachmentsController, type: :controller do
   render_views
@@ -105,7 +106,7 @@ RSpec.describe AttachmentsController, type: :controller do
       login_as(u)
       cid = get_course_id_by_uid(u.id)
       cname = Course.find(cid).name
-      att = create_course_att_with_cid(cid)
+      let!(:att) { create_course_att_with_cid(cid) }
       it "renders successfully" do
         get :edit, params: {course_name: cname, id: att.id}
         expect(response).to be_successful
@@ -119,7 +120,7 @@ RSpec.describe AttachmentsController, type: :controller do
       login_as(u)
       cid = get_course_id_by_uid(u.id)
       cname = Course.find(cid).name
-      att = create_course_att_with_cid(cid)
+      let!(:att) { create_course_att_with_cid(cid) }
       it "renders successfully" do
         get :edit, params: {course_name: cname, id: att.id}
         expect(response).to be_successful
@@ -133,7 +134,7 @@ RSpec.describe AttachmentsController, type: :controller do
       login_as(u)
       cid = get_course_id_by_uid(u.id)
       cname = Course.find(cid).name
-      att = create_course_att_with_cid(cid)
+      let!(:att) { create_course_att_with_cid(cid) }
       it "renders with failure" do
         get :edit, params: {course_name: cname, id: att.id}
         expect(response).not_to be_successful
@@ -146,7 +147,7 @@ RSpec.describe AttachmentsController, type: :controller do
       u = get_admin
       cid = get_course_id_by_uid(u.id)
       cname = Course.find(cid).name
-      att = create_course_att_with_cid(cid)
+      let!(:att) { create_course_att_with_cid(cid) }
       it "renders with failure" do
         get :edit, params: {course_name: cname, id: att.id}
         expect(response).not_to be_successful
@@ -162,7 +163,7 @@ RSpec.describe AttachmentsController, type: :controller do
       login_as(u)
       cid = get_course_id_by_uid(u.id)
       cname = Course.find(cid).name
-      att = create_course_att_with_cid(cid)
+      let!(:att) { create_course_att_with_cid(cid) }
       it "renders successfully" do
         get :show, params: {course_name: cname, id: att.id}
         expect(response).to be_successful
@@ -174,7 +175,7 @@ RSpec.describe AttachmentsController, type: :controller do
       login_as(u)
       cid = get_course_id_by_uid(u.id)
       cname = Course.find(cid).name
-      att = create_course_att_with_cid(cid)
+      let!(:att) { create_course_att_with_cid(cid) }
       it "renders successfully" do
         get :show, params: {course_name: cname, id: att.id}
         expect(response).to be_successful
@@ -186,7 +187,7 @@ RSpec.describe AttachmentsController, type: :controller do
       login_as(u)
       cid = get_course_id_by_uid(u.id)
       cname = Course.find(cid).name
-      att = create_course_att_with_cid(cid)
+      let!(:att) { create_course_att_with_cid(cid) }
       it "renders successfully" do
         get :show, params: {course_name: cname, id: att.id}
         expect(response).to be_successful
@@ -197,7 +198,7 @@ RSpec.describe AttachmentsController, type: :controller do
       u = get_admin
       cid = get_course_id_by_uid(u.id)
       cname = Course.find(cid).name
-      att = create_course_att_with_cid(cid)
+      let!(:att) { create_course_att_with_cid(cid) }
       it "renders with failure" do
         get :show, params: {course_name: cname, id: att.id}
         expect(response).not_to be_successful
