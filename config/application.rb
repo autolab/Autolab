@@ -114,8 +114,6 @@ module Autolab3
     # site version
     config.site_version = "2.10.0"
 
-    config.lti_settings = Rails.application.config_for(:lti_settings)
-
     # Set application host for mailer
     config.action_mailer.default_url_options = { host: ENV['MAILER_HOST'] || "YOUR_APP_HOST" }
 
@@ -132,5 +130,9 @@ module Autolab3
         config.action_controller.default_url_options[:port] = ENV['DEFAULT_URL_PORT']
       end
     end 
+
+    # lti configuration file path, keep it private
+    config.lti_config_location = Rails.root.join("config").to_s
+    
   end
 end

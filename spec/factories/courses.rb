@@ -11,5 +11,6 @@ FactoryBot.define do
     start_date { 1.day.ago.to_s(:db) }
     end_date { 100.days.from_now.to_s(:db) }
     disabled { false }
+    association :lti_course_datum, factory: :lti_course_datum
   end
 end

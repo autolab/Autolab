@@ -1,0 +1,40 @@
+// Place all the styles related to the LtiConfig controller here.
+// They will automatically be included in application.css.
+// You can use Sass (SCSS) here: https://sass-lang.com/
+@import 'variables';
+
+.lti-upload-container input[type=file]::file-selector-button {
+  background-color: $autolab-white;
+  border-radius: 5px;
+  border-style: solid;
+  border-width: 0.5px;
+  box-shadow: 0 -0.5px 0.5px 0 rgba(0, 0, 0, 0.15),
+    0 0.5px 0.5px 0.5px rgba(0, 0, 0, 0.15),
+    0 0.5px 0.5px -0.5px rgba(0, 0, 0, 0.15);
+  color: $autolab-black-text !important;
+  cursor: pointer;
+  font-family: 'Source Sans Pro', sans-serif;
+  font-size: 18px;
+  font-weight: normal;
+  margin-top: 10px;
+  padding: 10px;
+  text-align: center;
+  transition: all 0.3s ease-in-out;
+  width: 30%;
+}
+
+.lti-upload-container input[type=file]::file-selector-button:hover {
+  background-color: $autolab-red;
+  color: $autolab-white !important;
+  transition: all 0.2s ease-in-out;
+}
+
+.lti-upload-container {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1rem;
+}
+
+.lti-upload-container p {
+  color: $autolab-red;
+}

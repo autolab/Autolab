@@ -186,6 +186,11 @@ class UsersController < ApplicationController
       redirect_to(users_path) && return
     end
 
+    if current_user.id == params[:id].to_i
+      flash[:error] = "You cannot delete yourself."
+      redirect_to(users_path) && return
+    end
+
     user = User.find(params[:id])
     if user.nil?
       flash[:error] = "User doesn't exist."

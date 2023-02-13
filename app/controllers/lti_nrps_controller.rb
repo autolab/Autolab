@@ -12,32 +12,55 @@ class LtiNrpsController < ApplicationController
   end
   action_auth_level :request_access_token, :instructor
   def request_access_token
-    # get private key from config to sign Autolab's client assertion as a JWK
-    private_key = Rails.configuration.lti_settings["tool_private_key"].to_s.gsub(/\\n/, "\n")
-    tool_rsa_private = OpenSSL::PKey::RSA.new(private_key)
-    # build JWK format for RSA
-    optional_parameters = {
-      kid: "dGkeZwrt+H7GnGZ2t2LUfhYf+/o=",
-      use: 'sig',
-      alg: 'RS256',
-      e: "AQAB",
-      kty: "RSA",
-    }
-    tool_rsa_private_JWK = JWT::JWK.new(tool_rsa_private, optional_parameters)
+    # get private key from JSON file to sign Autolab's client assertion as a JWK
+    unless File.exist?("#{Rails.configuration.lti_config_location}/lti_tool_jwk.json")
+      flash[:error] = "Autolab's JWK JSON file was not found"
+      redirect_to([:users, @course]) && return
+    end
+
+    jwk_json = File.read("#{Rails.configuration.lti_config_location}/lti_tool_jwk.json")
+    begin
+      jwk_hash = JSON.parse(jwk_json)
+    rescue JSON::ParserError => e
+      Rails.logger.error("Error Parsing JWK JSON: #{e}")
+      flash[:error] = "There was an error with Autolab's JWK JSON file."
+      redirect_to([:users, @course]) && return
+    end
+    # load LTI configuration from file
+    lti_config_hash =
+      YAML.safe_load(File.read("#{Rails.configuration.lti_config_location}/lti_config.yml"))
+
+    if jwk_hash['kid'].blank? || jwk_hash['alg'].blank?
+      flash[:error] = "Autolab's JWK JSON file does not contain kid or alg"
+      redirect_to([:users, @course]) && return
+    end
+    if lti_config_hash["developer_key"].blank? || lti_config_hash["oauth2_access_token_url"].blank?
+      flash[:error] = "LTI Configuration has blank or missing developer key or oauth2 URL"
+      redirect_to([:users, @course]) && return
+    end
+    # import could fail b/c we only support one key, not multiple
+    begin
+      tool_private_JWK = JWT::JWK.import(jwk_hash)
+    rescue StandardError => e
+      Rails.logger.error("Error importing private JWK: #{e}")
+      flash[:error] = "LTI Configuration has malformed JWK"
+      redirect_to([:users, @course]) && return
+    end
+
     # build client assertion based on lti 1.3 spec
     # https://www.imsglobal.org/spec/security/v1p0/#using-json-web-tokens-with-oauth-2-0-client-credentials-grant
     # https://www.imsglobal.org/spec/lti/v1p3#token-endpoint-claim-and-services
     client_assertion = {
-      "iss": Rails.configuration.lti_settings["developer_key"],
-      "sub": Rails.configuration.lti_settings["developer_key"],
-      "aud": Rails.configuration.lti_settings["platform_oauth2_access_token_url"],
+      "iss": lti_config_hash["developer_key"],
+      "sub": lti_config_hash["developer_key"],
+      "aud": lti_config_hash["oauth2_access_token_url"],
       "iat": Time.now.to_i,
       "exp": Time.now.to_i + 600,
       "jti": "lti-refresh-token-#{SecureRandom.uuid}"
     }
     # sign client_assertion using private key
-    token = JWT.encode(client_assertion, tool_rsa_private_JWK.keypair, optional_parameters[:alg],
-                       kid: optional_parameters[:kid])
+    token = JWT.encode(client_assertion, tool_private_JWK.keypair, jwk_hash['alg'],
+                       kid: jwk_hash['kid'])
     # build Client-Credentials Grant
     # https://www.imsglobal.org/spec/security/v1p0/#using-oauth-2-0-client-credentials-grant
     payload = {
@@ -48,7 +71,7 @@ class LtiNrpsController < ApplicationController
     }
     # send Client-Credentials Grant to LTI Oauth2 access token endpoint
     conn = Faraday.new(
-      url: Rails.configuration.lti_settings["platform_oauth2_access_token_url"],
+      url: lti_config_hash["oauth2_access_token_url"],
       headers: { 'Content-Type' => 'application/json' }
     )
     response = conn.post('') do |req|
@@ -74,8 +97,16 @@ class LtiNrpsController < ApplicationController
     @lti_context_membership_url = lcd.membership_url
     @course = lcd.course
 
+    unless File.exist?("#{Rails.configuration.lti_config_location}/lti_config.yml")
+      flash[:error] = "Could not find LTI Configuration"
+      redirect_to([:users, @course]) && return
+    end
+
     # get access token to be authenticated to make NRPS request
     @access_token = request_access_token
+    if @access_token.nil?
+      return
+    end
 
     # query NRPS using the access token
     members = query_nrps
