@@ -98,11 +98,11 @@
 
               <div class="collection red darken-4">
                 <% asmts.each do |asmt| %>
-                  <%= link_to course_assessment_url(@course, asmt),
-                              :class => "collection-item grey-text text-darken-4" do %>
+                  <%= link_to course_assessment_path(@course, asmt),
+                      :class => "collection-item grey-text text-darken-4" do %>
                     <%= asmt.display_name %>
                     <% if !asmt.released? %>
-                      <span class="new badge blue darken-4" data-badge-caption="unreleased" data-url="<%= edit_course_assessment_url(@course, asmt) %>/handin"></span>
+                        <span class="new badge blue darken-4" data-badge-caption="unreleased" data-url="<%= edit_course_assessment_path(@course, asmt) %>/handin"></span>
                     <% end %>
                   <% end %>
                 <% end %>
