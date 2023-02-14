@@ -33,7 +33,7 @@ ActiveRecord::Schema.define(version: 2023_02_12_191438) do
     t.index ["key"], name: "index_active_storage_blobs_on_key", unique: true
   end
 
-  create_table "annotations", id: :integer, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci", force: :cascade do |t|
+  create_table "annotations", force: :cascade do |t|
     t.integer "submission_id"
     t.string "filename"
     t.integer "position"
