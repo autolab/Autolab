@@ -12,6 +12,11 @@ module ControllerMacros
     instructorCUDs.offset(rand(instructorCUDs.count)).first.user
   end
 
+  def get_instructor_by_cid(cid)
+    instructorCUDs = CourseUserDatum.where(course_id: cid, instructor: true)
+    instructorCUDs.offset(rand(instructorCUDs.count)).first.user
+  end
+
   def get_course_assistant
     caCUDs = CourseUserDatum.where(course_assistant: true)
     caCUDs.offset(rand(caCUDs.count)).first.user
@@ -130,5 +135,25 @@ module ControllerMacros
     att.file = File.open(assess_att_file, "w")
     att.save
     att
+  end
+
+  # create a course which has an instructor and lcd attached
+  def create_course_with_instructor_and_lcd
+    FactoryBot.create(:course) do |course|
+      user = FactoryBot.create(:user)
+      FactoryBot.create(:course_user_datum, course: course, user: user, instructor: true)
+      FactoryBot.create(:lti_course_datum, course_id: course.id)
+    end
+  end
+
+  # create course with unique CUDs (unique student users)
+  def create_course_with_many_students(students_count: 10)
+    FactoryBot.create(:course) do |course|
+      user = FactoryBot.create(:user)
+      FactoryBot.create(:course_user_datum, course: course, user: user, instructor: true)
+      FactoryBot.create_list(:student, students_count, course: course).each do |cud|
+        cud.user = FactoryBot.create(:user)
+      end
+    end
   end
 end
