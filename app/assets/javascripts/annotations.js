@@ -626,6 +626,8 @@ function globalAnnotationFormCode(newAnnotation, config) {
     $(this).autocomplete('search', $(this).val())
   });
 
+  M.textareaAutoResize(box.find('#comment-textarea'));
+
   box.tooltip();
 
   box.find('.annotation-form').submit(function (e) {
