@@ -55,6 +55,7 @@ automations:
       - action: add-reviewers@v1
         args:
           reviewers: {{ repo | rankByGitBlame(gt=25) | filter(list=['20wildmanj', 'najclark', 'damianhxy', 'michellexliu', 'victorhuangwq', 'lykimchee', 'jlge', 'evanyeyeye', 'KesterTan']) | random }}
+          unless_reviewers_set: true
 
   add_reviewers_lt_25:
     if:
@@ -63,6 +64,7 @@ automations:
       - action: add-reviewers@v1
         args:
           reviewers: {{ repo | rankByGitBlame(lt=25) | filter(list=['20wildmanj', 'najclark', 'damianhxy', 'michellexliu', 'victorhuangwq', 'lykimchee', 'jlge', 'evanyeyeye', 'KesterTan']) | random }}
+          unless_reviewers_set: true
 
 calc:
   etr: {{ branch | estimatedReviewTime }}

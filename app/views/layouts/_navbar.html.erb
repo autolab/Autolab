@@ -40,6 +40,39 @@
       <%= link_to "Log out", destroy_user_session_path, :method => :delete  %>
     </li>
   </ul>
+
+  <% if current_user&.administrator? %>
+    <ul id="dropdown2" class="dropdown-content">
+
+      <li role="presentation"><%= link_to "Create New Course", new_course_path, title: "Create a new course" %></li>
+
+      <li role="presentation"><%= link_to "Manage Users", users_path, title: "Manage every Autolab user" %></li>
+
+      <li role="presentation"><%= link_to "Github Integration", github_integration_admin_path, title: "Manage Github Integration" %></li>
+
+      <li role="presentation"><%= link_to "Manage API Applications", oauth_applications_path, title: "Manage registered API clients" %></li>
+
+      <li role="presentation"><%= link_to "Bulk Email Instructors", email_instructors_admin_path, title: "Send a bulk email to every Autolab instructor" %></li>
+
+    </ul>
+  <% end %>
+
+  <% if current_user&.administrator? %>
+    <ul id="dropdown3" class="dropdown-content">
+
+      <li role="presentation"><%= link_to "Create New Course", new_course_path, title: "Create a new course" %></li>
+
+      <li role="presentation"><%= link_to "Manage Users", users_path, title: "Manage every Autolab user" %></li>
+
+      <li role="presentation"><%= link_to "Github Integration", github_integration_admin_path, title: "Manage Github Integration" %></li>
+
+      <li role="presentation"><%= link_to "Manage API Applications", oauth_applications_path, title: "Manage registered API clients" %></li>
+
+      <li role="presentation"><%= link_to "Bulk Email Instructors", email_instructors_admin_path, title: "Send a bulk email to every Autolab instructor" %></li>
+
+    </ul>
+  <% end %>
+
   <nav>
     <div class="nav-wrapper">
       <a href="/" class="brand-logo logo"><%= image_tag "AUTOLAB@2x.png", :width=> 180, :alt=>"Carnegie Mellon University" %></a>
@@ -60,14 +93,13 @@
           <li><%= link_to "<i class='material-icons left'>clear_all</i> Jobs".html_safe, [@course, :jobs], title: "View a history of autograding jobs" %></li>
 
           <% if @cud.instructor? %>
-            <li><%= link_to "<i class='material-icons left'>settings</i> Manage Course".html_safe, [:manage, @course], title: "Perform course-wise administrative actions" %></li>
+            <li><%= link_to "<i class='material-icons left'>settings</i>Manage Course".html_safe, [:manage, @course], title: "Perform course-wise administrative actions" %></li>
           <% end %>
         <% end %>
 
-        <% if current_user && current_user.administrator? %>
-          <li><%= link_to "<i class='material-icons left'>lock</i> Manage Autolab".html_safe, admin_path, title: "Perform system-wide administrative actions" %></li>
+        <% if current_user&.administrator? %>
+          <li><a class="dropdown-trigger" href="#!" data-target="dropdown2" data-beloworigin="true" data-hover="false"><i class='material-icons left'>lock</i>Manage Autolab<i class="material-icons right">arrow_drop_down</i></a></li>
         <% end %>
-
         <% if user_signed_in? %>
           <li><a class="dropdown-trigger" href="#!" data-target="dropdown1" data-beloworigin="true" data-hover="false"><%= current_user.display_name %><i class="material-icons right">arrow_drop_down</i></a></li>
         <% end %>
@@ -91,15 +123,15 @@
             <%= link_to "<i class='material-icons left'>assignment_ind</i> Course Profile".html_safe, [@course, @cud], :title => "View your user profile for the current course" %>
           </li>
         <% end %>
-        <% if Rails.env.development? %>
-          <li role="presentation">
-            <a href='/home/developer_login'>Dev Login</a>
-          </li>
-        <% end %>
         <li role="presentation">
           <%= link_to "<i class='material-icons left'>exit_to_app</i> Log out".html_safe, destroy_user_session_path, :method => :delete  %>
         </li>
         <li role="presentation" class="divider"></li>
+        <% end %>
+        <% if Rails.env.development? %>
+          <li role="presentation">
+            <a href='/home/developer_login'>Dev Login</a>
+          </li>
         <% end %>
       </div>
         <!-- Usual Navbar Items -->
@@ -121,8 +153,8 @@
           <% end %>
         <% end %>
 
-        <% if current_user && current_user.administrator? %>
-          <li><%= link_to "<i class='material-icons left'>lock</i> Manage Autolab".html_safe, admin_path, title: "Perform system-wide administrative actions" %></li>
+        <% if current_user&.administrator? %>
+          <li><a class="dropdown-trigger" href="#!" data-target="dropdown3" data-beloworigin="true" data-hover="false"><i class='material-icons left'>lock</i>Manage Autolab<i class="material-icons right">arrow_drop_down</i></a></li>
         <% end %>
       </ul>
 
