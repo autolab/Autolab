@@ -169,11 +169,13 @@ function plusFix(n) {
 // function called after create, update & delete of annotations
 function fillAnnotationBox() {
   retrieveSharedComments();
+  $('#loadScreen').css('display', 'flex');
   $.get(document.URL, function(data) {
     const $page = $('<div />').html(data);
     $('.problemGrades').html($page.find('.problemGrades'));
     $('#annotationPane').html($page.find(' #annotationPane'));
     $('.collapsible').collapsible({ accordion: false });
+    $('#loadScreen').hide();
     attachChangeFileEvents();
     attachAnnotationPaneEvents();
   });
@@ -389,6 +391,7 @@ function attachAnnotationPaneEvents() {
   // Add action
   $(".global-annotation-add-button").on("click", function (e) {
     e.preventDefault();
+    if ($('#loadScreen').css('display') === 'flex') return;
     const problem = $(this).data("problem");
     const $headerDiv = $(this).parent().parent();
 
@@ -400,6 +403,7 @@ function attachAnnotationPaneEvents() {
   // Edit action
   $(".global-annotation-edit-button").on("click", function (e) {
     e.preventDefault();
+    if ($('#loadScreen').css('display') === 'flex') return;
     const problem = $(this).parent().data("problem");
     const score = $(this).parent().data("score");
     const comment = $(this).parent().data("comment");
@@ -415,6 +419,7 @@ function attachAnnotationPaneEvents() {
   // Delete action for global annotations
   $('.global-annotation-delete-button').on("click", function (e) {
     e.preventDefault();
+    if ($('#loadScreen').css('display') === 'flex') return;
     if (!confirm("Are you sure you want to delete this annotation?")) return;
     const annotationIdData = $(this).parent().data('annotationid');
     const annotationId = annotations.findIndex((e) => e.id === annotationIdData);
@@ -436,6 +441,7 @@ function attachAnnotationPaneEvents() {
   // Chevron events (collapse / show problem)
   $('.collapsible-header-controls .collapse-icon, .collapsible-header-controls .expand-icon').on('click', function(e) {
     e.preventDefault();
+    if ($('#loadScreen').css('display') === 'flex') return;
     $(e.target).closest(".collapsible-header-wrap").find(".collapsible-header").click();
   });
 }
