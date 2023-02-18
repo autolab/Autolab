@@ -24,6 +24,31 @@ $(window).on('resize', function () {
   resizeGradeList();
 });
 
+function getSharedCommentsForProblem(problem_id) {
+  return localCache['shared_comments'][problem_id]?.map(
+    (annotation) => {
+      return {label: annotation.comment ?? annotation, value: annotation}
+    }
+  )
+}
+
+const selectAnnotation = box => (e, ui) => {
+  const {label, value} = ui.item;
+
+  const score = value.value ?? 0;
+  box.find('#comment-score').val(score);
+
+  const $textarea = box.find("#comment-textarea");
+  M.textareaAutoResize($textarea);
+
+  return false;
+}
+
+function focusAnnotation( event, ui ) {
+  $(this).val(ui.item.label);
+  return false;
+}
+
 // retrieve shared comments
 // also retrieves annotation id to allow easy deletion in the future
 function retrieveSharedComments() {
@@ -32,9 +57,8 @@ function retrieveSharedComments() {
     data.forEach(e => {
       if (!e.problem_id)
         return;
-
       localCache['shared_comments'][e.problem_id] ||= [];
-      localCache['shared_comments'][e.problem_id].push(e.comment);
+      localCache['shared_comments'][e.problem_id].push(e);
     });
   });
 }
@@ -511,10 +535,13 @@ function newAnnotationFormCode() {
 
   box.find('#comment-textarea').autocomplete({
     appendTo: box.find('#comment-textarea').parent(),
+    source: getSharedCommentsForProblem(box.find("select").val()) || [],
     minLength: 0,
     delay: 0,
-    source: localCache["shared_comments"][box.find("select").val()] || []
+    select: selectAnnotation(box),
+    focus: focusAnnotation
   }).focus(function () {
+    M.textareaAutoResize($(this));
     $(this).autocomplete('search', $(this).val())
   });
 
@@ -524,7 +551,9 @@ function newAnnotationFormCode() {
     const problem_id = $(this).val();
 
     // Update autocomplete to display shared comments for selected problem
-    box.find("#comment-textarea").autocomplete("option", "source", localCache["shared_comments"][problem_id] || []);
+    box.find("#comment-textarea").autocomplete({
+        source: getSharedCommentsForProblem(problem_id) || []
+    });
   });
 
   box.find('.annotation-form').submit(function (e) {
@@ -590,10 +619,15 @@ function globalAnnotationFormCode(newAnnotation, config) {
     appendTo: box.find('#comment-textarea').parent(),
     minLength: 0,
     delay: 0,
-    source: localCache["shared_comments"][problemNameToIdMap[config.problem]] || []
+    source: getSharedCommentsForProblem(problemNameToIdMap[config.problem]) || [],
+    select: selectAnnotation(box),
+    focus: focusAnnotation
   }).focus(function () {
+    M.textareaAutoResize($(this));
     $(this).autocomplete('search', $(this).val())
   });
+
+  M.textareaAutoResize(box.find('#comment-textarea'));
 
   box.tooltip();
 
@@ -728,13 +762,18 @@ function newAnnotationBox(annotation) {
     e.preventDefault();
     box.find('.annotation-box').hide();
     box.find('.annotation-form').show().css('width', '100%');
+    
+    M.textareaAutoResize(box.find('#comment-textarea'));
 
     box.find('#comment-textarea').autocomplete({
       appendTo: box.find('#comment-textarea').parent(),
       minLength: 0,
       delay: 0,
-      source: localCache["shared_comments"][annotation.problem_id] || [],
+      source: getSharedCommentsForProblem(annotation.problem_id) || [],
+      select: selectAnnotation(box),
+      focus: focusAnnotation,
     }).focus(function () {
+      M.textareaAutoResize($(this));
       $(this).autocomplete('search', $(this).val())
     });
     box.tooltip();
@@ -746,7 +785,9 @@ function newAnnotationBox(annotation) {
     const problem_id = $(this).val();
 
     // Update autocomplete to display shared comments for selected problem
-    box.find("#comment-textarea").autocomplete("option", "source", localCache["shared_comments"][problem_id] || []);
+    box.find("#comment-textarea").autocomplete({
+        source: getSharedCommentsForProblem(problem_id) || [],
+    });
   });
 
   box.find('.annotation-delete-button').on("click", function (e) {
