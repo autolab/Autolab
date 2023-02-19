@@ -4,18 +4,26 @@ include ControllerMacros
 RSpec.describe AttachmentsController, type: :controller do
   render_views
 
-  # Course attachments
+  # Render tests
 
   # INDEX
   shared_examples "index_success" do |u|
     login_as(u)
     let!(:cid)  { get_course_id_by_uid(u.id) }
     let!(:cname) { Course.find(cid).name }
-    it "renders successfully" do
+    it "renders course successfully" do
       get :index, params: {course_name: cname}
       expect(response).to be_successful
       expect(response.body).to match(cname)
       expect(response.body).to match(/Course Attachments/m)
+    end
+    let!(:aid)  { get_first_aid_by_cid(cid) }
+    let!(:aname) { Assessment.find(aid).name }
+    it "renders assessment successfully" do
+      get :index, params: {course_name: cname, assessment_name: aname}
+      expect(response).to be_successful
+      expect(response.body).to match(aname)
+      expect(response.body).to match(/Add/m)
     end
   end
 
@@ -23,11 +31,19 @@ RSpec.describe AttachmentsController, type: :controller do
     login_as(u) if login
     let!(:cid)  { get_course_id_by_uid(u.id) }
     let!(:cname) { Course.find(cid).name }
-    it "renders with failure" do
+    it "renders course with failure" do
       get :index, params: {course_name: cname}
       expect(response).not_to be_successful
       expect(response.body).not_to match(cname)
       expect(response.body).not_to match(/Course Attachments/m)
+    end
+    let!(:aid)  { get_first_aid_by_cid(cid) }
+    let!(:aname) { Assessment.find(aid).name }
+    it "renders assessment with failure" do
+      get :index, params: {course_name: cname, assessment_name: aname}
+      expect(response).not_to be_successful
+      expect(response.body).not_to match(aname)
+      expect(response.body).not_to match(/Add/m)
     end
   end
 
@@ -189,4 +205,9 @@ RSpec.describe AttachmentsController, type: :controller do
       it_behaves_like "show_failure", get_admin, login: false, released: false
     end
   end
+
+  # Functionality tests
+  # Create
+  # Update
+  # Destroy
 end
