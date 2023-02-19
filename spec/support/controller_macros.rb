@@ -33,6 +33,11 @@ module ControllerMacros
     users.offset(rand(users.count)).first.user
   end
 
+  def get_user_by_cid(cid)
+    userCUDS = CourseUserDatum.where(course_id: cid, instructor: false, course_assistant: false)
+    userCUDS.offset(rand(userCUDS.count)).first.user
+  end
+
   def login_admin
     login_as(get_admin)
   end
