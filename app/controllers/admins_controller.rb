@@ -34,6 +34,6 @@ class AdminsController < ApplicationController
   def clear_cache
     Rails.cache.cleanup
     flash[:success] = "Cache Cleared"
-    redirect_to root_path
+    redirect_back(fallback_location: root_path)
   end
 end

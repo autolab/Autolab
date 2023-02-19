@@ -72,7 +72,7 @@ Rails.application.routes.draw do
   resource :admin, :except => [:show] do
     match "email_instructors", via: [:get, :post]
     match "github_integration", via: [:get]
-    get "clear_cache"
+    post "clear_cache"
   end
 
   resources :users do

@@ -54,7 +54,7 @@
 
       <li role="presentation"><%= link_to "Bulk Email Instructors", email_instructors_admin_path, title: "Send a bulk email to every Autolab instructor" %></li>
 
-      <li role="presentation"><%= link_to "Clear Cache", clear_cache_admin_url, title: "Clear Cache" %></li>
+      <li role="presentation"><%= link_to "Clear Cache", clear_cache_admin_url, title: "Clear Cache" , data: {method: "post"} %></li>
     </ul>
   <% end %>
 
@@ -71,7 +71,7 @@
 
       <li role="presentation"><%= link_to "Bulk Email Instructors", email_instructors_admin_path, title: "Send a bulk email to every Autolab instructor" %></li>
 
-      <li role="presentation"><%= link_to "Clear Cache", clear_cache_admin_url, title: "Clear Cache" %></li>
+      <li role="presentation"><%= link_to "Clear Cache", clear_cache_admin_url, title: "Clear Cache", data: {method: "post"} %></li>
 
     </ul>
   <% end %>
