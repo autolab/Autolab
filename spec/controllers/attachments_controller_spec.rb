@@ -195,13 +195,31 @@ RSpec.describe AttachmentsController, type: :controller do
     end
   end
 
+  shared_examples "edit_missing" do |u|
+    login_as(u)
+    let!(:cid)  { get_course_id_by_uid(u.id) }
+    let!(:cname) { Course.find(cid).name }
+    it "flashes error for non-existent course attachment" do
+      get :edit, params: {course_name: cname, id: -1}
+      expect(flash[:error]).to match(/Could not find/)
+    end
+    let!(:aid)  { get_first_aid_by_cid(cid) }
+    let!(:aname) { Assessment.find(aid).name }
+    it "flashes error for non-existent assessment attachment" do
+      get :edit, params: {course_name: cname, assessment_name: aname, id: -1}
+      expect(flash[:error]).to match(/Could not find/)
+    end
+  end
+
   describe "#edit" do
     context "when user is Autolab admin" do
       it_behaves_like "edit_success", get_admin
+      it_behaves_like "edit_missing", get_admin
     end
 
     context "when user is Autolab instructor" do
       it_behaves_like "edit_success", get_instructor
+      it_behaves_like "edit_missing", get_instructor
     end
 
     context "when user is Autolab user" do
@@ -250,20 +268,39 @@ RSpec.describe AttachmentsController, type: :controller do
     end
   end
 
+  shared_examples "show_missing" do |u|
+    login_as(u)
+    let!(:cid)  { get_course_id_by_uid(u.id) }
+    let!(:cname) { Course.find(cid).name }
+    it "flashes error for non-existent course attachment" do
+      get :show, params: {course_name: cname, id: -1}
+      expect(flash[:error]).to match(/Could not find/)
+    end
+    let!(:aid)  { get_first_aid_by_cid(cid) }
+    let!(:aname) { Assessment.find(aid).name }
+    it "flashes error for non-existent assessment attachment" do
+      get :show, params: {course_name: cname, assessment_name: aname, id: -1}
+      expect(flash[:error]).to match(/Could not find/)
+    end
+  end
+
   describe "#show" do
     context "when user is Autolab admin" do
       it_behaves_like "show_success", get_admin
       it_behaves_like "show_success", get_admin, released: false
+      it_behaves_like "show_missing", get_admin
     end
 
     context "when user is Autolab instructor" do
       it_behaves_like "show_success", get_instructor
       it_behaves_like "show_success", get_instructor, released: false
+      it_behaves_like "show_missing", get_instructor
     end
 
     context "when user is Autolab user" do
       it_behaves_like "show_success", get_user
       it_behaves_like "show_failure", get_user, released: false
+      it_behaves_like "show_missing", get_user
     end
 
     context "when user is not logged in" do
