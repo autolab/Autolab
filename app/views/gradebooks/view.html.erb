@@ -8,48 +8,6 @@
 
   <!-- Temporary Bootstrap overrides -->
   <style type="text/css">
-    *, *:before, *:after {
-      -moz-box-sizing: content-box;
-           box-sizing: content-box;
-    }
-    div#pageBody {
-      width: 95%;
-      margin: 0 auto;
-      padding: 15px;
-      box-sizing: border-box;
-    }
-
-    h1#courseTitle {
-      font-size: 24.5px;
-      margin-bottom: 0;
-    }
-
-    span.label {
-      text-transform: uppercase;
-      font-size: 8.5px;
-      vertical-align: text-bottom;
-    }
-
-    .slick-cell img {
-      vertical-align: baseline;
-    }
-
-    input#filter {
-      margin-bottom: 0;
-    }
-
-    #gradebook {
-      font-size: 13px;
-    }
-
-    input {
-      font-size: inherit !important;
-    }
-
-    div#footer {
-      display: none;
-    }
-
     <% unless @options[:show_actions] %>
       div#filter_container {
         margin-bottom: 20px;
