@@ -9,10 +9,6 @@ nav i, nav [class^="mdi-"], nav [class*="mdi-"], nav i.material-icons {
   height: 50px;
 }
 
-nav a, nav a:hover, nav a:focus{
-  text-decoration: none;
-  color:white;
-}
 nav ul li{
   cursor:pointer;
 }

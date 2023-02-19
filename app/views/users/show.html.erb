@@ -34,7 +34,10 @@
     <% end %>
   </li>
 </ul>
-<%= link_to raw('<span class="btn primary">Edit Information</span>'), edit_user_path(@user) %><br>
+<%= link_to raw('<span class="btn primary">Edit Information</span>'), edit_user_path(@user) %>
+<% if current_user.administrator? && @user.id != current_user.id %>
+  <%= link_to raw('<span class="btn">Delete User</span>'), user_path(@user), method: :delete, data: {confirm: "Are you sure!?"} %>
+<% end %>
 <% if @user == current_user %>
   <hr>
   <h4>Private Settings</h4>

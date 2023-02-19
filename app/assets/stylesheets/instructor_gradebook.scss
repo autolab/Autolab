@@ -1,5 +1,44 @@
 @import 'variables';
 
+*, *:before, *:after {
+  -moz-box-sizing: content-box;
+       box-sizing: content-box;
+}
+
+div#pageBody {
+  width: 95%;
+  margin: 0 auto;
+  padding: 15px;
+  box-sizing: border-box;
+}
+
+h1#courseTitle {
+  font-size: 24.5px;
+  margin-bottom: 0;
+}
+
+span.label {
+  text-transform: uppercase;
+  font-size: 8.5px;
+  vertical-align: text-bottom;
+}
+
+.slick-cell img {
+  vertical-align: baseline;
+}
+
+input#filter {
+  margin-bottom: 0;
+}
+
+input {
+  font-size: inherit !important;
+}
+
+div#footer {
+  display: none;
+}
+
 #grades td.edit {
   text-align: center;
   color: #666666;
@@ -55,12 +94,15 @@
   min-height: 100px;
   background-color: #f8f8f8;
   box-shadow: 0 0 5px 0 $autolab-subtle-gray;
-  font-size: 1.2em;
-  border: 1px solid $autolab-highlight-gray;
+  font-size: 14px;
   border-radius: 2px;
   margin: 0 auto 0 auto;
   width: 100%;
   box-sizing: border-box;
+}
+
+.grid-canvas {
+  background-color: white;
 }
 
 #gradebook .slick-cell {
@@ -95,13 +137,13 @@
 }
 
 #gradebook .slick-header-column {
-  padding: 10px;
+  padding: 15px;
   text-transform: uppercase;
   border-left: none;
   border-right: none;
-  font-size: 0.8em;
+  font-size: 0.9em;
   font-weight: bold;
-  color: #909090;
+  color: #000000;
   white-space: nowrap;
   text-align: center;
   cursor: pointer;
@@ -147,7 +189,7 @@ div.course {
   color: #555;
   border-radius: 3px;
   box-shadow: 0 0 2px 0px #f4f4f4;
-  font-size: 1.2em;
+  font-size: 0.9em;
   box-sizing: border-box;
   margin-top: 10px;
 }
@@ -155,7 +197,7 @@ div.course {
 div.course table tr th {
   color: #aaa;
   text-transform: uppercase;
-  font-size: 0.7em;
+  font-size: 0.9em;
   font-weight: bold;
   text-align: right;
 }

@@ -238,7 +238,7 @@ class CoursesController < ApplicationController
     # check if user_emails and role exist in params
     unless params.key?(:user_emails) && params.key?(:role)
       flash[:error] = "No user emails or role supplied"
-      redirect_to(course_users_path(@course)) && return
+      redirect_to(users_course_path(@course)) && return
     end
 
     user_emails = params[:user_emails].split(/\n/).map(&:strip)

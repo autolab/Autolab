@@ -129,7 +129,7 @@ group :development do
   gem 'rubocop-rails', require: false
 
   # pre-commit hook for rubocop
-  gem 'overcommit' 
+  gem 'overcommit'
 
   # documentation generator
   gem 'yard'
@@ -161,7 +161,7 @@ gem 'sprockets-rails', '>=3.2.1'
 
 gem "jstz-rails3-plus", ">= 1.0"
 
-# For getting file types 
+# For getting file types
 gem 'mimemagic', '>= 0.3.7'
 
 # For encrypting API tokens
