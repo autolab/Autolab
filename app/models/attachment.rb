@@ -14,7 +14,7 @@ class Attachment < ApplicationRecord
 
   def file=(upload)
     self.filename = File.basename(upload.original_filename)
-    self.attachment_file = upload
+    self.attachment_file.attach(upload)
     self.mime_type = upload.content_type
   end
 
