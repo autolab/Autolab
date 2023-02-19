@@ -167,8 +167,9 @@ module ControllerMacros
       cud.user = FactoryBot.create(:user)
     end
 
-    { course: course, instructor: instructor_user, course_assistant: course_assistant_user,
-      students: students }
+    { course: course, admin_user: admin_user, 
+      instructor_user: instructor_user, course_assistant_user: course_assistant_user,
+      students_cud: students }
   end
 
   def create_asssessments_with_submissions_for_course(course)
