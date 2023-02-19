@@ -4,14 +4,11 @@ require "fileutils"
 require "statistics"
 
 class CoursesController < ApplicationController
-  skip_before_action :set_course, only: %i[index new create]
-  skip_before_action :set_course, only: %i[courses_redirect new create]
+  skip_before_action :set_course, only: %i[courses_redirect index new create]
   # you need to be able to pick a course to be authorized for it
-  skip_before_action :authorize_user_for_course, only: %i[index new create]
-  skip_before_action :authorize_user_for_course, only: %i[courses_redirect new create]
+  skip_before_action :authorize_user_for_course, only: %i[courses_redirect index new create]
   # if there's no course, there are no persistent announcements for that course
-  skip_before_action :update_persistent_announcements, only: %i[index new create]
-  skip_before_action :update_persistent_announcements, only: %i[courses_redirect new create]
+  skip_before_action :update_persistent_announcements, only: %i[courses_redirect index new create]
 
   rescue_from ActionView::MissingTemplate do |_exception|
     redirect_to("/home/error_404")
