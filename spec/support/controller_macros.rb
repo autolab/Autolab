@@ -146,14 +146,19 @@ module ControllerMacros
     end
   end
 
+  # Generic function that creates a sample class
   # create course with unique CUDs (unique student users)
   def create_course_with_many_students(students_count: 10)
     FactoryBot.create(:course) do |course|
       user = FactoryBot.create(:user)
       FactoryBot.create(:course_user_datum, course: course, user: user, instructor: true)
+      FactoryBot.create(:course_user_datum, course: course, user: user, instructor: false, course_assistant: true)
       FactoryBot.create_list(:student, students_count, course: course).each do |cud|
         cud.user = FactoryBot.create(:user)
       end
+      FactoryBot.create(:assessment, course: course)
+      FactoryBot.create(:problem, assessment: course.assessments.first)
     end
   end
+
 end
