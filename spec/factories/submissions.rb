@@ -21,7 +21,5 @@ FactoryBot.define do
     submitted_by_app_id { 0 }
     group_key { "" }
     jobid { 0 }
-    index_submissions_on_assessment_id { 0 }
-    index_submissions_on_course_user_datum_id { 0 }
   end
 end
