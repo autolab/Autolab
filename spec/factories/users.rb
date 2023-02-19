@@ -7,4 +7,8 @@ FactoryBot.define do
 
     confirmed_at { Time.zone.now }
   end
+
+  factory :admin, parent: :user do
+    administrator { true }
+  end
 end
