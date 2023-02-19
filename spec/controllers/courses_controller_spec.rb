@@ -4,6 +4,52 @@ include ControllerMacros
 RSpec.describe CoursesController, type: :controller do
   render_views
 
+  describe "#show" do
+    context "when user is Autolab admin" do 
+      let!(:course) do
+        create_course_with_many_students
+      end
+      let!(:admin) do
+        FactoryBot.create(:admin)
+      end
+      it "renders successfully" do 
+        u = admin
+        sign_in(u)
+        cname = Course.first
+        get :show, params: { name: cname }
+        save_and_open_page
+        expect(response).to be_successful
+        expect(response.body).to match(/#{cname}/m)
+      end
+    end
+
+    context "when user is Autolab user" do 
+      let!(:course) do
+        create_course_with_many_students
+      end
+
+      it "renders successfully" do 
+        u = get_user_by_cid(course.id)
+        sign_in(u)
+        cid = get_course_id_by_uid(u.id)
+        cname = Course.find(cid).name
+        get :show, params: { name: cname }
+        expect(response).to be_successful
+        expect(response.body).to match(/#{cname}/m)
+      end
+    end
+  end
+
+# [Render test] manage
+  # admins + instructors can
+  # students + course assistants can't
+
+# [Functionality test] create
+  # kms
+# [Functionality test] update
+# [Render test] new
+# [Functionality test] update user_lookup to actually check the right things
+
   describe "#report_bug" do
     context "when user is Autolab user" do
       u = get_user
