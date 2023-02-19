@@ -7,8 +7,8 @@ RSpec.describe AttachmentsController, type: :controller do
   # Course attachments
 
   # INDEX
-  shared_examples "index_success" do |u, login: true|
-    login_as(u) if login
+  shared_examples "index_success" do |u|
+    login_as(u)
     let!(:cid)  { get_course_id_by_uid(u.id) }
     let!(:cname) { Course.find(cid).name }
     it "renders successfully" do
@@ -50,8 +50,8 @@ RSpec.describe AttachmentsController, type: :controller do
   end
 
   # NEW
-  shared_examples "new_success" do |u, login: true|
-    login_as(u) if login
+  shared_examples "new_success" do |u|
+    login_as(u)
     let!(:cid)  { get_course_id_by_uid(u.id) }
     let!(:cname) { Course.find(cid).name }
     it "renders successfully" do
@@ -95,8 +95,8 @@ RSpec.describe AttachmentsController, type: :controller do
   end
 
   # EDIT
-  shared_examples "edit_success" do |u, login: true|
-    login_as(u) if login
+  shared_examples "edit_success" do |u|
+    login_as(u)
     let!(:cid)  { get_course_id_by_uid(u.id) }
     let!(:cname) { Course.find(cid).name }
     let!(:att) { create_course_att_with_cid(cid, true) }
@@ -146,22 +146,22 @@ RSpec.describe AttachmentsController, type: :controller do
   end
 
   # SHOW
-  shared_examples "show_success" do |u, login: true|
-    login_as(u) if login
+  shared_examples "show_success" do |u, released: true|
+    login_as(u)
     let!(:cid)  { get_course_id_by_uid(u.id) }
     let!(:cname) { Course.find(cid).name }
-    let!(:att) { create_course_att_with_cid(cid, true) }
+    let!(:att) { create_course_att_with_cid(cid, released) }
     it "renders successfully" do
       get :show, params: {course_name: cname, id: att.id}
       expect(response).to be_successful
     end
   end
 
-  shared_examples "show_failure" do |u, login: true|
+  shared_examples "show_failure" do |u, login: true, released: true|
     login_as(u) if login
     let!(:cid)  { get_course_id_by_uid(u.id) }
     let!(:cname) { Course.find(cid).name }
-    let!(:att) { create_course_att_with_cid(cid, true) }
+    let!(:att) { create_course_att_with_cid(cid, released) }
     it "renders with failure" do
       get :show, params: {course_name: cname, id: att.id}
       expect(response).not_to be_successful
@@ -171,18 +171,22 @@ RSpec.describe AttachmentsController, type: :controller do
   describe "#show" do
     context "when user is Autolab admin" do
       it_behaves_like "show_success", get_admin
+      it_behaves_like "show_success", get_admin, released: false
     end
 
     context "when user is Autolab instructor" do
       it_behaves_like "show_success", get_instructor
+      it_behaves_like "show_success", get_instructor, released: false
     end
 
     context "when user is Autolab user" do
       it_behaves_like "show_success", get_user
+      it_behaves_like "show_failure", get_user, released: false
     end
 
     context "when user is not logged in" do
       it_behaves_like "show_failure", get_admin, login: false
+      it_behaves_like "show_failure", get_admin, login: false, released: false
     end
   end
 end
