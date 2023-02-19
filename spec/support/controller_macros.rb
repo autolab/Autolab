@@ -67,10 +67,11 @@ module ControllerMacros
   def get_first_aid_by_cud(cud)
     AssessmentUserDatum.where(course_user_datum_id: cud).first.assessment_id
   end
+
   # create user and add to given course as a course assistant
   def create_ca_for_course(cid, email, first_name, last_name, password)
     user = User.new(email: email, first_name: first_name, last_name: last_name, password: password,
-                 administrator: false, school: "My School", major: "CS", year: "4")
+                    administrator: false, school: "My School", major: "CS", year: "4")
     user.skip_confirmation!
     user.save!
     CourseUserDatum.create!({
@@ -101,7 +102,7 @@ module ControllerMacros
       f.write("module Updater def self.update(foo) 0 end end")
     end
     s = Course.find(cid).scheduler.new(action: "tmp/testscript.rb",
-                                       interval: 86_400, next: Time.now)
+                                       interval: 86_400, next: Time.zone.now)
     s.save
     s
   end
@@ -117,8 +118,9 @@ module ControllerMacros
                          released: true)
 
     att.file = Rack::Test::UploadedFile.new(
-        path=Rails.root.join("attachments", File.basename(course_att_file)), content_type="text/plain",
-        tempfile=Tempfile.new("attach.tmp"))
+      path = Rails.root.join("attachments", File.basename(course_att_file)), content_type = "text/plain",
+      tempfile = Tempfile.new("attach.tmp")
+    )
     att.save
     att
   end
@@ -146,14 +148,39 @@ module ControllerMacros
     end
   end
 
+  # Generic function that creates a sample class
   # create course with unique CUDs (unique student users)
-  def create_course_with_many_students(students_count: 10)
-    FactoryBot.create(:course) do |course|
-      user = FactoryBot.create(:user)
-      FactoryBot.create(:course_user_datum, course: course, user: user, instructor: true)
-      FactoryBot.create_list(:student, students_count, course: course).each do |cud|
-        cud.user = FactoryBot.create(:user)
-      end
+  def create_course_with_many_students(students_count: 3)
+    course = FactoryBot.create(:course)
+
+    admin_user = FactoryBot.create(:user, administrator: true)
+    instructor_user = FactoryBot.create(:user)
+    course_assistant_user = FactoryBot.create(:user)
+
+    FactoryBot.create(:course_user_datum, course: course, user: instructor_user, instructor: true)
+
+    course_assistant = FactoryBot.create(:course_user_datum, course: course,
+                                                             user: course_assistant_user,
+                                                             instructor: false, course_assistant: true)
+
+    students = FactoryBot.create_list(:student, students_count, course: course).each do |cud|
+      cud.user = FactoryBot.create(:user)
     end
+
+    { course: course, admin_user: admin_user, 
+      instructor_user: instructor_user, course_assistant_user: course_assistant_user,
+      students_cud: students }
+  end
+
+  def create_asssessments_with_submissions_for_course(course)
+    assessment = FactoryBot.create(:assessment, course: course)
+    problem = FactoryBot.create(:problem, assessment: assessment)
+
+    # for each student in the course, create a submission
+    course.course_user_data.each do |cud|
+      FactoryBot.create(:submission, problem: problem, course_user_datum: cud)
+    end
+
+    { assessment: assessment, problem: problem, submissions: submissions }
   end
 end

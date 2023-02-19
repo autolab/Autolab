@@ -139,7 +139,8 @@ RSpec.describe CoursesController, type: :controller do
   describe "#download_roster" do
     context "when user is autolab instructor" do
       let!(:course) do
-        create_course_with_many_students
+        course_info = create_course_with_many_students
+        course_info[:course]
       end
       it "downloads roster" do
         instructor = get_instructor_by_cid(course.id)
@@ -167,7 +168,8 @@ RSpec.describe CoursesController, type: :controller do
   describe "#add_users_from_emails" do
     context "when instructor" do
       let!(:course) do
-        create_course_with_many_students
+        course_info = create_course_with_many_students
+        course_info[:course]
       end
       let!(:users_to_add) do
         FactoryBot.create_list(:user, 10)
