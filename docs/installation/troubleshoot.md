@@ -151,4 +151,6 @@ No space left on device @ rb_sysopen - /path/to/autolab/tmp/cache/.raw_score_inc
 
 it is likely that you need to purge the cache. This is because `FileStore` caches are not purged automatically.
 
-To purge the cache, run `rake user:cleanup_cache` (to clear expired entries) or `rake user:clear_cache` (to clear **all** entries). 
+To purge the cache, click on `Manage Autolab` followed by `Clear Cache` to clear expired entries.
+
+Alternatively, run `rake user:cleanup_cache` (to clear expired entries) or `rake user:clear_cache` (to clear **all** entries) in your terminal.
