@@ -94,121 +94,95 @@ RSpec.describe AttachmentsController, type: :controller do
     end
   end
 
+  # EDIT
+  shared_examples "edit_success" do |u, login: true|
+    login_as(u) if login
+    let!(:cid)  { get_course_id_by_uid(u.id) }
+    let!(:cname) { Course.find(cid).name }
+    let!(:att) { create_course_att_with_cid(cid, true) }
+    it "renders successfully" do
+      get :edit, params: {course_name: cname, id: att.id}
+      expect(response).to be_successful
+      expect(response.body).to match(cname)
+      expect(response.body).to match(att.name)
+      expect(response.body).to match("text/plain")
+      expect(response.body).to match(/Name/m)
+      expect(response.body).to match(/Released/m)
+    end
+  end
+
+  shared_examples "edit_failure" do |u, login: true|
+    login_as(u) if login
+    let!(:cid)  { get_course_id_by_uid(u.id) }
+    let!(:cname) { Course.find(cid).name }
+    let!(:att) { create_course_att_with_cid(cid, true) }
+    it "renders with failure" do
+      get :edit, params: {course_name: cname, id: att.id}
+      expect(response).not_to be_successful
+      expect(response.body).not_to match(cname)
+      expect(response.body).not_to match(att.name)
+      expect(response.body).not_to match("text/plain")
+      expect(response.body).not_to match(/Name/m)
+      expect(response.body).not_to match(/Released/m)
+    end
+  end
+
   describe "#edit" do
     context "when user is Autolab admin" do
-      u = get_admin
-      login_as(u)
-      cid = get_course_id_by_uid(u.id)
-      cname = Course.find(cid).name
-      let!(:att) { create_course_att_with_cid(cid, true) }
-      it "renders successfully" do
-        get :edit, params: {course_name: cname, id: att.id}
-        expect(response).to be_successful
-        expect(response.body).to match(cname)
-        expect(response.body).to match(att.name)
-        expect(response.body).to match("text/plain")
-        expect(response.body).to match(/Name/m)
-        expect(response.body).to match(/Released/m)
-      end
+      it_behaves_like "edit_success", get_admin
     end
 
     context "when user is Autolab instructor" do
-      u = get_instructor
-      login_as(u)
-      cid = get_course_id_by_uid(u.id)
-      cname = Course.find(cid).name
-      let!(:att) { create_course_att_with_cid(cid, true) }
-      it "renders successfully" do
-        get :edit, params: {course_name: cname, id: att.id}
-        expect(response).to be_successful
-        expect(response.body).to match(cname)
-        expect(response.body).to match(att.name)
-        expect(response.body).to match("text/plain")
-        expect(response.body).to match(/Name/m)
-        expect(response.body).to match(/Released/m)
-      end
+      it_behaves_like "edit_success", get_instructor
     end
 
     context "when user is Autolab user" do
-      u = get_user
-      login_as(u)
-      cid = get_course_id_by_uid(u.id)
-      cname = Course.find(cid).name
-      let!(:att) { create_course_att_with_cid(cid, true) }
-      it "renders with failure" do
-        get :edit, params: {course_name: cname, id: att.id}
-        expect(response).not_to be_successful
-        expect(response.body).not_to match(cname)
-        expect(response.body).not_to match(att.name)
-        expect(response.body).not_to match("text/plain")
-        expect(response.body).not_to match(/Name/m)
-        expect(response.body).not_to match(/Released/m)
-      end
+      it_behaves_like "edit_failure", get_user
     end
 
     context "when user is not logged in" do
-      u = get_admin
-      cid = get_course_id_by_uid(u.id)
-      cname = Course.find(cid).name
-      let!(:att) { create_course_att_with_cid(cid, true) }
-      it "renders with failure" do
-        get :edit, params: {course_name: cname, id: att.id}
-        expect(response).not_to be_successful
-        expect(response.body).not_to match(cname)
-        expect(response.body).not_to match(att.name)
-        expect(response.body).not_to match("text/plain")
-        expect(response.body).not_to match(/Name/m)
-        expect(response.body).not_to match(/Released/m)
-      end
+      it_behaves_like "edit_failure", get_admin, login: false
+    end
+  end
+
+  # SHOW
+  shared_examples "show_success" do |u, login: true|
+    login_as(u) if login
+    let!(:cid)  { get_course_id_by_uid(u.id) }
+    let!(:cname) { Course.find(cid).name }
+    let!(:att) { create_course_att_with_cid(cid, true) }
+    it "renders successfully" do
+      get :show, params: {course_name: cname, id: att.id}
+      expect(response).to be_successful
+    end
+  end
+
+  shared_examples "show_failure" do |u, login: true|
+    login_as(u) if login
+    let!(:cid)  { get_course_id_by_uid(u.id) }
+    let!(:cname) { Course.find(cid).name }
+    let!(:att) { create_course_att_with_cid(cid, true) }
+    it "renders with failure" do
+      get :show, params: {course_name: cname, id: att.id}
+      expect(response).not_to be_successful
     end
   end
 
   describe "#show" do
     context "when user is Autolab admin" do
-      u = get_admin
-      login_as(u)
-      cid = get_course_id_by_uid(u.id)
-      cname = Course.find(cid).name
-      let!(:att) { create_course_att_with_cid(cid, true) }
-      it "renders successfully" do
-        get :show, params: {course_name: cname, id: att.id}
-        expect(response).to be_successful
-      end
+      it_behaves_like "show_success", get_admin
     end
 
     context "when user is Autolab instructor" do
-      u = get_instructor
-      login_as(u)
-      cid = get_course_id_by_uid(u.id)
-      cname = Course.find(cid).name
-      let!(:att) { create_course_att_with_cid(cid, true) }
-      it "renders successfully" do
-        get :show, params: {course_name: cname, id: att.id}
-        expect(response).to be_successful
-      end
+      it_behaves_like "show_success", get_instructor
     end
 
     context "when user is Autolab user" do
-      u = get_user
-      login_as(u)
-      cid = get_course_id_by_uid(u.id)
-      cname = Course.find(cid).name
-      let!(:att) { create_course_att_with_cid(cid, true) }
-      it "renders successfully" do
-        get :show, params: {course_name: cname, id: att.id}
-        expect(response).to be_successful
-      end
+      it_behaves_like "show_success", get_user
     end
 
     context "when user is not logged in" do
-      u = get_admin
-      cid = get_course_id_by_uid(u.id)
-      cname = Course.find(cid).name
-      let!(:att) { create_course_att_with_cid(cid, true) }
-      it "renders with failure" do
-        get :show, params: {course_name: cname, id: att.id}
-        expect(response).not_to be_successful
-      end
+      it_behaves_like "show_failure", get_admin, login: false
     end
   end
 end
