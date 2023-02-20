@@ -29,4 +29,11 @@ class AdminsController < ApplicationController
   def github_integration
     @github_integration = GithubIntegration.check_github_authorization
   end
+
+  action_auth_level :clear_cache, :administrator
+  def clear_cache
+    Rails.cache.cleanup
+    flash[:success] = "Cache Cleared"
+    redirect_back(fallback_location: root_path)
+  end
 end
