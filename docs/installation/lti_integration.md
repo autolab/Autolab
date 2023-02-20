@@ -131,10 +131,10 @@ Setting up Autolab to function as an LTI Advantage Tool requires setting up the 
    
      A summary of some of the values needed for configuring a Canvas integration in Autolab are provided below:
       
-     - iss URL: https://canvas.instructure.com
-     - LTI Launch Auth URL: https://<your-canvas-domain\>/api/lti/authorize_redirect
-     - Platform OAuth2 Endpoint: "https://<your-canvas-domain\>/login/oauth2/token"
-     - LTI platform public JWK URL: "https://<your-canvas-domain\>/api/lti/security/jwks"
+     - iss URL: `https://canvas.instructure.com`
+     - LTI Launch Auth URL: `https://<your-canvas-domain>/api/lti/authorize_redirect`
+     - Platform OAuth2 Endpoint: `https://<your-canvas-domain>/login/oauth2/token`
+     - LTI platform public JWK URL: `https://<your-canvas-domain>/api/lti/security/jwks`
 
      There is a choice of using the "LTI platform public JWK URL" field or uploading a public JWK as a JSON file field, depending on which is defined in the Configuration. However, it is highly recommended to use
      "LTI platform public JWK URL" as most platforms use multiple private keys to sign their JWTs, which is not supported when using the file upload method. Therefore, Autolab will default to using "LTI platform public JWK URL", even if a platform public JWK is uploaded.
