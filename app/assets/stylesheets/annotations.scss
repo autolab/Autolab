@@ -507,6 +507,16 @@
   height: 100%;
   overflow-y: auto;
 }
+#loadScreen {
+  height: inherit;
+  width: 100%;
+  position: absolute;
+  background-color: rgba(0,0,0,.3);
+  display: none;
+  pointer-events: none;
+  justify-content: center;
+  align-items: center;
+}
 .annotationSummary{
   margin-bottom: 15px;
   color: #4f4f4f;

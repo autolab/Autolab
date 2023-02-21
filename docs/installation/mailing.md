@@ -36,16 +36,16 @@ To set Autolab Docker up for a custom SMTP Server, update the following in `.env
 After which, doing a `docker-compose down` followed by `docker-compose up -d` will allow you to see the changes.
 
 ## Mailing for Autolab Manual Installation
-To set Autolab up to use a custom SMTP Server, edit the following in `production.rb` that you have created. (If you would like to test it in development, add the following settings into `development.rb`). Both `production.rb` and `development.rb` are located at `config/environments`
+To set Autolab up to use a custom SMTP Server, you will need to make edits to the `.env` and `production.rb` files that you have created. (If you would like to test it in development, add the following settings into `development.rb`). Both `production.rb` and `development.rb` are located under `config/environments`
 
-1. Update the host domain of your Autolab frontend instance
+1. Update the host domain of your Autolab instance in `.env`
 
-        :::ruby
-        config.action_mailer.default_url_options = {protocol: 'http', host: 'yourhost.com' }
-    
-    Host here should be the domain in which Autolab is hosted on. (e.g. `autolab.andrew.cmu.edu`)
+        :::
+        MAILER_HOST=yourhost.com
 
-2. Update the custom smtp server settings
+       The value should be the domain in which Autolab is hosted on. (e.g. `autolab.andrew.cmu.edu`)
+
+2. Update the custom smtp server settings in `production.rb`
    
         :::ruby
         config.action_mailer.smtp_settings = {
@@ -60,7 +60,7 @@ To set Autolab up to use a custom SMTP Server, edit the following in `production
         
       Refer to the SMTP settings instructions that your selected service provides you such as [SendGrid SMTP for Ruby on Rails](https://sendgrid.com/docs/for-developers/sending-email/rubyonrails/), [Amazon SES](https://docs.aws.amazon.com/ses/latest/DeveloperGuide/send-email-smtp.html).
 
-3. Update the "from" setting
+3. Update the "from" setting in `production.rb`
    
         :::ruby
         ActionMailer::Base.default :from => 'something@example.com'
