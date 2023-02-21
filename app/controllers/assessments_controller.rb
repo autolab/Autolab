@@ -946,6 +946,7 @@ private
     asmt_name = nil
     asmt_rb_exists = false
     asmt_yml_exists = false
+    asmt_name_is_valid = true
     tar_extract.each do |entry|
       pathname = entry.full_name
       next if pathname.start_with? "."
@@ -977,6 +978,12 @@ private
     # it is possible that the assessment path does not match the
     # the expected assessment path when the Ruby config file
     # has a different name then the pathname
+    if !asmt_name.nil? && asmt_name =~ /[^a-z0-9]/
+      flash[:error] = "Errors found in tarball: Assessment name #{asmt_name} is invalid.
+                       Assessment file names must only contain lowercase
+                       letters and digits with no spaces."
+      asmt_name_is_valid = false
+    end
     if !(asmt_rb_exists && asmt_yml_exists && !asmt_name.nil?)
       flash[:error] = "Errors found in tarball:"
       if !asmt_yml_exists && !asmt_name.nil?
@@ -986,7 +993,7 @@ private
         flash[:error] += "<br>Assessment rb file #{asmt_name}/#{asmt_name}.rb was not found"
       end
     end
-    [asmt_rb_exists && asmt_yml_exists && !asmt_name.nil?, asmt_name]
+    [asmt_rb_exists && asmt_yml_exists && !asmt_name.nil? && asmt_name_is_valid, asmt_name]
   end
 
   def tab_index
