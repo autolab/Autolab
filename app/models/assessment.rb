@@ -228,7 +228,7 @@ class Assessment < ApplicationRecord
     # ensure source_config_module_name is an actual module in the assessment config rb file
     # otherwise loading the file on subsequent calls to config_module will result in an exception
     if config_source !~ /\b#{source_config_module_name}\b/
-      raise "Error loading config module: Module name in #{name}.rb
+      raise "Module name in #{name}.rb
              doesn't match expected #{source_config_module_name}"
     end
 
