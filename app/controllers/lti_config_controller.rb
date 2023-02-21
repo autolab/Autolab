@@ -5,13 +5,6 @@ class LtiConfigController < ApplicationController
   skip_before_action :authorize_user_for_course
   skip_before_action :update_persistent_announcements
 
-  action_auth_level :index, :administrator
-  def index
-    return unless File.exist?("#{Rails.configuration.lti_config_location}/lti_config.yml")
-
-    @lti_config_hash =
-      YAML.safe_load(File.read("#{Rails.configuration.lti_config_location}/lti_config.yml"))
-  end
   action_auth_level :update_config, :administrator
   def update_config
     required_params = %w[iss developer_key auth_url oauth2_access_token_url]
@@ -62,6 +55,6 @@ class LtiConfigController < ApplicationController
     end
 
     flash[:success] = "LTI configuration was successfully updated"
-    redirect_to(lti_config_index_path) && return
+    redirect_to autolab_config_admin_path(active: :lti)
   end
 end

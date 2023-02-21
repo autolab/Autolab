@@ -25,15 +25,20 @@ class AdminsController < ApplicationController
     @email.deliver
   end
 
-  action_auth_level :github_integration, :administrator
-  def github_integration
-    @github_integration = GithubIntegration.check_github_authorization
-  end
-
   action_auth_level :clear_cache, :administrator
   def clear_cache
     Rails.cache.cleanup
     flash[:success] = "Cache Cleared"
     redirect_back(fallback_location: root_path)
+  end
+
+  action_auth_level :autolab_config, :administrator
+  def autolab_config
+    @github_integration = GithubIntegration.check_github_authorization
+
+    return unless File.exist?("#{Rails.configuration.lti_config_location}/lti_config.yml")
+
+    @lti_config_hash =
+      YAML.safe_load(File.read("#{Rails.configuration.lti_config_location}/lti_config.yml"))
   end
 end
