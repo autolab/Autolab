@@ -158,12 +158,12 @@ class AssessmentsController < ApplicationController
       is_valid_tar, asmt_name = valid_asmt_tar(tar_extract)
       tar_extract.close
       unless is_valid_tar
-        flash[:error] =
-          "Invalid tarball. A valid assessment tar has a single root "\
+        flash[:error] +=
+          "<br>Invalid tarball. A valid assessment tar has a single root "\
           "directory that's named after the assessment, containing an "\
           "assessment yaml file and an assessment ruby file."
-        redirect_to(action: "install_assessment")
-        return
+        flash[:html_safe] = true
+        redirect_to(action: "install_assessment") && return
       end
     rescue SyntaxError => e
       flash[:error] = "Error parsing assessment configuration file:"
@@ -222,10 +222,37 @@ class AssessmentsController < ApplicationController
 
   def importAssessment
     @assessment = @course.assessments.new(name: params[:assessment_name])
-    @assessment.load_yaml # this will save the assessment
+    assessment_path = Rails.root.join("courses/#{@course.name}/#{@assessment.name}")
+    if params[:assessment_name] != @assessment.name
+      flash[:error] = "Error creating assessment: Config module is named #{@assessment.name}
+                       but assessment file name is #{params[:assessment_name]}"
+      # destroy model
+      destroy_no_redirect
+      # need to delete explicitly b/c the paths don't match
+      FileUtils.rm_rf(assessment_path)
+      redirect_to(install_assessment_course_assessments_path(@course)) && return
+    end
+
+    begin
+      @assessment.load_yaml # this will save the assessment
+    rescue StandardError => e
+      flash[:error] = "Error loading yaml: #{e}"
+      destroy_no_redirect
+      # need to delete explicitly b/c the paths don't match
+      FileUtils.rm_rf(assessment_path)
+      redirect_to(install_assessment_course_assessments_path(@course)) && return
+    end
     @assessment.load_embedded_quiz # this will check and load embedded quiz
     @assessment.construct_folder # make sure there's a handin folder, just in case
-    @assessment.load_config_file # only call this on saved assessments
+    begin
+      @assessment.load_config_file # only call this on saved assessments
+    rescue StandardError => e
+      flash[:error] = "Error loading config module: #{e}"
+      destroy_no_redirect
+      # need to delete explicitly b/c the paths don't match
+      FileUtils.rm_rf(assessment_path)
+      redirect_to(install_assessment_course_assessments_path(@course)) && return
+    end
     redirect_to([@course, @assessment])
   end
 
@@ -947,6 +974,18 @@ private
         asmt_yml_exists = true if pathname == "#{asmt_name}/#{asmt_name}.yml"
       end
     end
+    # it is possible that the assessment path does not match the
+    # the expected assessment path when the Ruby config file
+    # has a different name then the pathname
+    if !(asmt_rb_exists && asmt_yml_exists && !asmt_name.nil?)
+      flash[:error] = "Errors found in tarball:"
+      if !asmt_yml_exists && !asmt_name.nil?
+        flash[:error] += "<br>Assessment yml file #{asmt_name}/#{asmt_name}.yml was not found"
+      end
+      if !asmt_rb_exists && !asmt_name.nil?
+        flash[:error] += "<br>Assessment rb file #{asmt_name}/#{asmt_name}.rb was not found"
+      end
+    end
     [asmt_rb_exists && asmt_yml_exists && !asmt_name.nil?, asmt_name]
   end
 
@@ -965,5 +1004,21 @@ private
     end
 
     "#{edit_course_assessment_path(@course, @assessment)}/#tab_#{tab_name}"
+  end
+
+  def destroy_no_redirect
+    @assessment.submissions.each(&:destroy)
+
+    @assessment.attachments.each(&:destroy)
+
+    # Delete config file copy in assessmentConfig
+    if File.exist? @assessment.config_file_path
+      File.delete @assessment.config_file_path
+    end
+    if File.exist? @assessment.config_backup_file_path
+      File.delete @assessment.config_backup_file_path
+    end
+
+    @assessment.destroy # awwww!!!!
   end
 end
