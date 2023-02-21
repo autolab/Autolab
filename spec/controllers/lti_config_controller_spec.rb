@@ -3,9 +3,18 @@ require "rails_helper"
 RSpec.describe LtiConfigController, type: :controller do
   render_views
   before(:all) do
-    @lti_config_hash = YAML.safe_load(File.read("#{Rails.configuration.lti_config_location}/lti_config_template.yml"))
-    @lti_tool_jwk_file = Rack::Test::UploadedFile.new("#{Rails.configuration.lti_config_location}/lti_tool_jwk_template.json");
-    @lti_platform_jwk_file = Rack::Test::UploadedFile.new("#{Rails.configuration.lti_config_location}/lti_platform_jwk_template.json");
+    @lti_config_hash =
+      YAML.safe_load(
+        File.read("#{Rails.configuration.lti_config_location}/lti_config_template.yml")
+      )
+    @lti_tool_jwk_file =
+      Rack::Test::UploadedFile.new(
+        "#{Rails.configuration.lti_config_location}/lti_tool_jwk_template.json"
+      )
+    @lti_platform_jwk_file =
+      Rack::Test::UploadedFile.new(
+        "#{Rails.configuration.lti_config_location}/lti_platform_jwk_template.json"
+      )
   end
   after(:each) do
     if File.exist?("#{Rails.configuration.lti_config_location}/lti_config.yml")
@@ -29,8 +38,10 @@ RSpec.describe LtiConfigController, type: :controller do
       end
       it "rejects valid params but no file" do
         post :update_config, params: {
-          iss: @lti_config_hash["iss"], developer_key: @lti_config_hash["developer_key"],
-          auth_url: @lti_config_hash['auth_url'], platform_public_jwks_url: @lti_config_hash['platform_public_jwks_url'],
+          iss: @lti_config_hash["iss"],
+          developer_key: @lti_config_hash["developer_key"],
+          auth_url: @lti_config_hash['auth_url'],
+          platform_public_jwks_url: @lti_config_hash['platform_public_jwks_url'],
           oauth2_access_token_url: @lti_config_hash['oauth2_access_token_url']
         }
         expect(response).to have_http_status(302)
@@ -46,12 +57,18 @@ RSpec.describe LtiConfigController, type: :controller do
         }
         expect(response).to have_http_status(302)
         expect(flash[:error]).to be_present
-        expect(flash[:error]).to match(/No platform JWK JSON file or URL was uploaded. Please specify one or the other/m)
+        expect(
+          flash[:error]
+        ).to match(
+          /No platform JWK JSON file or URL was uploaded. Please specify one or the other/m
+        )
       end
       it "accepts valid POST" do
         post :update_config, params: {
-          iss: @lti_config_hash["iss"], developer_key: @lti_config_hash["developer_key"],
-          auth_url: @lti_config_hash['auth_url'], platform_public_jwks_url: @lti_config_hash['platform_public_jwks_url'],
+          iss: @lti_config_hash["iss"],
+          developer_key: @lti_config_hash["developer_key"],
+          auth_url: @lti_config_hash['auth_url'],
+          platform_public_jwks_url: @lti_config_hash['platform_public_jwks_url'],
           oauth2_access_token_url: @lti_config_hash['oauth2_access_token_url'],
           tool_jwk: @lti_tool_jwk_file
         }
@@ -121,4 +138,3 @@ RSpec.describe LtiConfigController, type: :controller do
     end
   end
 end
-
