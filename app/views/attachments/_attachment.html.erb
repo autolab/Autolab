@@ -26,11 +26,11 @@
   <span class="secondary-content">
   <% if @cud.instructor? %>
     <% if attachment.assessment.nil? %>
-      <%= link_to '<i class="material-icons left">mode_edit</i>'.html_safe, [:edit, @course, attachment], {class:"small"} %>
-      <%= link_to '<i class="material-icons left">delete</i>'.html_safe, [@course, attachment], {method: :delete, class:"small"} %>
+      <%= link_to '<i class="material-icons left">mode_edit</i>'.html_safe, [:edit, @course, attachment], class:"small" %>
+      <%= link_to '<i class="material-icons left">delete</i>'.html_safe, [@course, attachment], method: :delete, class:"small", data: {confirm: "Are you sure?"} %>
     <% else %>
-      <%= link_to '<i class="material-icons left">mode_edit</i>'.html_safe, [:edit, @course, attachment.assessment, attachment], {class:"small"} %>
-      <%= link_to '<i class="material-icons left">delete</i>'.html_safe, [@course, attachment.assessment, attachment], {method: :delete, class:"small"} %>
+      <%= link_to '<i class="material-icons left">mode_edit</i>'.html_safe, [:edit, @course, attachment.assessment, attachment], class:"small" %>
+      <%= link_to '<i class="material-icons left">delete</i>'.html_safe, [@course, attachment.assessment, attachment], method: :delete, class:"small", data: {confirm: "Are you sure?"} %>
     <% end %>
   <% end %>
   </span>
