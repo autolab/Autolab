@@ -63,7 +63,7 @@ RSpec.describe AssessmentsController, type: :controller do
       end
       it "handles nil tarfile" do
         post :importAsmtFromTar, params: { course_name: course_2_hash[:course].name,
-                                           name: course_2_hash[:assessment].name}
+                                           name: course_2_hash[:assessment].name }
         expect(response).to have_http_status(302)
         expect(flash[:error]).to be_present
         expect(flash[:error]).to match(/Please select an assessment tarball for uploading/m)
@@ -71,7 +71,7 @@ RSpec.describe AssessmentsController, type: :controller do
       it "handles bad tarfile" do
         post :importAsmtFromTar, params: { course_name: course_2_hash[:course].name,
                                            name: course_2_hash[:assessment].name,
-                                           tarFile: nil}
+                                           tarFile: nil }
         expect(response).to have_http_status(302)
         expect(flash[:error]).to be_present
         expect(flash[:error]).to match(/Error while reading the tarball/m)
