@@ -223,6 +223,8 @@ class AssessmentsController < ApplicationController
   def importAssessment
     @assessment = @course.assessments.new(name: params[:assessment_name])
     assessment_path = Rails.root.join("courses/#{@course.name}/#{@assessment.name}")
+    # not sure if this check is 100% necessary anymore, but is a last resort
+    # against creating an invalid assessment
     if params[:assessment_name] != @assessment.name
       flash[:error] = "Error creating assessment: Config module is named #{@assessment.name}
                        but assessment file name is #{params[:assessment_name]}"
@@ -253,6 +255,7 @@ class AssessmentsController < ApplicationController
       FileUtils.rm_rf(assessment_path)
       redirect_to(install_assessment_course_assessments_path(@course)) && return
     end
+    flash[:success] = "Successfully imported #{@assessment.name}"
     redirect_to([@course, @assessment])
   end
 
