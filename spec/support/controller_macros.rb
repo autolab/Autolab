@@ -152,7 +152,12 @@ module ControllerMacros
   # Generic function that creates a sample class
   # create course with unique CUDs (unique student users)
   def create_course_with_many_students(students_count: 3)
-    course = FactoryBot.create(:course)
+    asmt_name = "testAssessment"
+    course = FactoryBot.create(:course) do |course|
+      path = Rails.root.join("courses/#{course.name}/#{asmt_name}")
+      FileUtils.mkdir_p(path)
+      FactoryBot.create(:assessment, course: course, name: asmt_name)
+    end
 
     admin_user = FactoryBot.create(:user, administrator: true)
     instructor_user = FactoryBot.create(:user)
@@ -168,9 +173,11 @@ module ControllerMacros
       cud.user = FactoryBot.create(:user)
     end
 
+    assessment = Assessment.where(course: course, name: asmt_name).first
+
     { course: course, admin_user: admin_user,
       instructor_user: instructor_user, course_assistant_user: course_assistant_user,
-      students_cud: students }
+      students_cud: students, assessment: assessment }
   end
 
   def create_asssessments_with_submissions_for_course(course)
