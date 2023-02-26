@@ -21,5 +21,9 @@ FactoryBot.define do
     is_positive_grading { true }
     group_size { 3 }
     max_grace_days { 4 }
+<<<<<<< HEAD
+=======
+    course
+>>>>>>> master
   end
 end
