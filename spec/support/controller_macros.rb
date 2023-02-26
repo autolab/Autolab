@@ -118,8 +118,9 @@ module ControllerMacros
                          released: true)
 
     att.file = Rack::Test::UploadedFile.new(
-      path = Rails.root.join("attachments", File.basename(course_att_file)), content_type = "text/plain",
-      tempfile = Tempfile.new("attach.tmp")
+      Rails.root.join("attachments/#{File.basename(course_att_file)}"),
+      "text/plain",
+      Tempfile.new("attach.tmp")
     )
     att.save
     att
@@ -159,15 +160,15 @@ module ControllerMacros
 
     FactoryBot.create(:course_user_datum, course: course, user: instructor_user, instructor: true)
 
-    course_assistant = FactoryBot.create(:course_user_datum, course: course,
-                                                             user: course_assistant_user,
-                                                             instructor: false, course_assistant: true)
+    FactoryBot.create(:course_user_datum, course: course,
+                                          user: course_assistant_user,
+                                          instructor: false, course_assistant: true)
 
     students = FactoryBot.create_list(:student, students_count, course: course).each do |cud|
       cud.user = FactoryBot.create(:user)
     end
 
-    { course: course, admin_user: admin_user, 
+    { course: course, admin_user: admin_user,
       instructor_user: instructor_user, course_assistant_user: course_assistant_user,
       students_cud: students }
   end

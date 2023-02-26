@@ -17,7 +17,7 @@ RSpec.describe Annotation, type: :model do
                                     value: 20,
                                     submitted_by: 'admin@foo.bar')
 
-    annotation.update_non_autograded_score()
+    annotation.update_non_autograded_score
 
     # need to force reload lookup of score to avoid caching
     expect(Score.find(score.id).score).to eq(max_score + 20)
