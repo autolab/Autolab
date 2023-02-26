@@ -15,7 +15,9 @@ coverage/
 /gradebooks/
 config/database.yml
 config/school.yml
-config/lti_settings.yml
+config/lti_config.yml
+config/lti_platform_jwk.yml
+config/lti_tool_jwk.yml
 
 # autolab user documents
 app/views/home/_topannounce.html.erb
