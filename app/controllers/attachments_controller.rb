@@ -65,10 +65,14 @@ class AttachmentsController < ApplicationController
       redirect_to([@course, :attachments]) && return
     end
     if @cud.instructor? || @attachment.released?
-      # Default disposition is "attachment" which forces download
-      send_data attached_file.download,
-                filename: @attachment.filename,
-                type: @attachment.mime_type
+      begin
+        send_data attached_file.download, filename: @attachment.filename,
+                                          type: @attachment.mime_type
+      rescue StandardError
+        COURSE_LOGGER.log("Error viewing attachment '#{@attachment.name}'")
+        flash[:error] = "Error viewing attachment '#{@attachment.name}'"
+        redirect_to([@course, @assessment])
+      end
       return
     end
 

@@ -116,7 +116,7 @@ Autolab3::Application.configure do
   config.x.google_analytics_id = nil
 
   # OAuth2 Application Configuration for Github
-  # See (TODO replace with doc link)
+  # See https://docs.autolabproject.com/installation/github_integration/
   config.x.github.client_id = ENV['GITHUB_CLIENT_ID']
   config.x.github.client_secret = ENV['GITHUB_CLIENT_SECRET']
   # LTI configuration file storage location. Needs to be in a private folder
