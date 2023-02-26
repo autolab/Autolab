@@ -3,7 +3,7 @@ require_relative("../support/controller_macros")
 include ControllerMacros
 
 RSpec.describe "manage submissions user flow", type: :feature do
-  describe "click button", js: :true do
+  describe "click button", js: true do
     context "when user is Instructor" do
       # can't use login_as for features
       user_id = User.create!(email: "autolabintructor@foo.bar",
