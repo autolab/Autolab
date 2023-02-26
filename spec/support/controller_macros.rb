@@ -151,11 +151,22 @@ module ControllerMacros
 
   # Generic function that creates a sample class
   # create course with unique CUDs (unique student users)
-  def create_course_with_many_students(students_count: 3)
-    course = FactoryBot.create(:course)
+  def create_course_with_many_students(students_count: 3, asmt_name: "testassessment",
+                                       instructor_user: nil)
+    if asmt_name =~ /[^a-z0-9]/
+      raise ArgumentError("Assessment name must contain only lowercase and digits")
+    end
+
+    course = FactoryBot.create(:course) do |new_course|
+      # create assessment directory
+      path = Rails.root.join("courses/#{new_course.name}/#{asmt_name}")
+      FileUtils.mkdir_p(path)
+      asmt = FactoryBot.create(:assessment, course: new_course, name: asmt_name)
+      asmt.construct_default_config_file
+    end
 
     admin_user = FactoryBot.create(:user, administrator: true)
-    instructor_user = FactoryBot.create(:user)
+    instructor_user ||= FactoryBot.create(:user)
     course_assistant_user = FactoryBot.create(:user)
 
     FactoryBot.create(:course_user_datum, course: course, user: instructor_user, instructor: true)
@@ -168,9 +179,11 @@ module ControllerMacros
       cud.user = FactoryBot.create(:user)
     end
 
+    assessment = Assessment.where(course: course, name: asmt_name).first
+
     { course: course, admin_user: admin_user,
       instructor_user: instructor_user, course_assistant_user: course_assistant_user,
-      students_cud: students }
+      students_cud: students, assessment: assessment }
   end
 
   def create_asssessments_with_submissions_for_course(course)
