@@ -10,7 +10,7 @@ First ensure that you have Docker and Docker Compose installed on your machine. 
 1. Clone this repository and its Autolab and Tango submodules: 
 
         :::bash
-        git clone --recurse-submodules -j8 git@github.com:autolab/docker.git autolab-docker
+        git clone --recurse-submodules -j8 https://github.com/autolab/docker.git autolab-docker
 
 
 2. Enter the project directory:
@@ -23,6 +23,8 @@ First ensure that you have Docker and Docker Compose installed on your machine. 
         :::bash
         make update
 
+    You may need to install `make` using the appropriate command for your system, such as `apt install make`.
+
 4. Create initial default configs:
 
         :::bash
@@ -31,12 +33,12 @@ First ensure that you have Docker and Docker Compose installed on your machine. 
 5. Build the Dockerfiles for both Autolab and Tango:
 
         :::bash
-        docker-compose build
+        docker compose build
 
 6. Run the Docker containers:
 
         :::bash
-        docker-compose up -d
+        docker compose up -d
 
     Note at this point Nginx will still be crash-looping in the Autolab container because TLS/SSL has not been configured/disabled yet.
 
@@ -68,7 +70,7 @@ First ensure that you have Docker and Docker Compose installed on your machine. 
 11. Stop all containers, as we are going to setup/disable TLS:
 
         :::bash 
-        docker-compose stop
+        docker compose stop
 
 12. Update the Nginx config. Update all occurrences of `REPLACE_WITH_YOUR_DOMAIN` in `nginx/app.conf` and `nginx/no-ssl-app.conf` to your real domain name. The configs are used when TLS is enabled and disabled respectively. Double-check that ALL occurrences are replaced as otherwise you will have trouble accessing your deployment.
 
@@ -84,7 +86,7 @@ First ensure that you have Docker and Docker Compose installed on your machine. 
 15. Start up everything: 
 
         :::bash
-        docker-compose up -d
+        docker compose up -d
         
     Autolab should now be accessible on port 80 (and 443 if you configured TLS)! You can now go on to configure mailing, [follow the instructions for setting up mailing](/installation/mailing/) with the only difference being that the paths mentioned are relative to the directory `Autolab/`.
 
@@ -139,7 +141,7 @@ There are three options for TLS: using Let's Encrypt (for free TLS certificates)
 1. Stop your running instances:
 
         :::bash
-        docker-compose stop
+        docker compose stop
 
 2. Update your Autolab and Tango repositories:
 
@@ -149,31 +151,31 @@ There are three options for TLS: using Let's Encrypt (for free TLS certificates)
 3. Rebuild the images with the latest code:
 
         :::bash
-        docker-compose build
+        docker compose build
 
 4. Re-deploy your containers:
 
         :::bash
-        docker-compose up
+        docker compose up
 
 ## Debugging your Deployment
 In the (very likely) event that you run into problems during setup, hopefully these steps will help you to help identify and diagnose the issue. If you continue to face difficulties or believe you discovered issues with the setup process please join our Slack [here](https://join.slack.com/t/autolab/shared_invite/zt-1maodn5ti-jdLHUnm5sZkuLn4PJNaTbw) and let us know and we will try our best to help.
 
 ### Better logging output for Docker Compose
-By default, `docker-compose up -d` runs in detached state and it is not easy to immediately see errors:
+By default, `docker compose up -d` runs in detached state and it is not easy to immediately see errors:
 
     :::bash
-    $ docker-compose up -d
+    $ docker compose up -d
     Starting certbot ... done
     Starting redis   ... done
     Starting mysql   ... done
     Starting tango     ... done
     Recreating autolab ... done
 
-Use `docker-compose up` instead to get output from all the containers in real time:
+Use `docker compose up` instead to get output from all the containers in real time:
 
     :::bash
-    $ docker-compose up
+    $ docker compose up
     Starting certbot ... done
     Starting mysql   ... done
     Starting redis   ... done
