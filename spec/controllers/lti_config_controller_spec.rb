@@ -69,55 +69,6 @@ RSpec.describe LtiConfigController, type: :controller do
         expect(response).to have_http_status(302)
         expect(flash[:success]).to be_present
       end
-      it "loads existing config correctly" do
-        File.open("#{Rails.configuration.lti_config_location}/lti_config.yml", "w") do |file|
-          file.write(YAML.dump(@lti_config_hash.deep_stringify_keys))
-        end
-        get :index
-        expect(response).to be_successful
-        expect(response.body).to match(/LTI Configuration Settings/m)
-      end
-    end
-  end
-  describe "#index" do
-    context "when user is Autolab admin" do
-      user_id = get_admin
-      login_as(user_id)
-      it "renders successfully" do
-        get :index
-        expect(response).to be_successful
-        expect(response.body).to match(/LTI Configuration Settings/m)
-      end
-    end
-
-    context "when user is Instructor" do
-      user_id = get_instructor
-      login_as(user_id)
-      it "renders with failure" do
-        get :index
-        expect(response).not_to be_successful
-        expect(response.body).not_to match(/LTI Configuration Settings/m)
-      end
-    end
-
-    context "when user is student" do
-      user_id = get_user
-      login_as(user_id)
-      it "renders with failure" do
-        get :index
-        expect(response).not_to be_successful
-        expect(response.body).not_to match(/LTI Configuration Settings/m)
-      end
-    end
-
-    context "when user is course assistant" do
-      user_id = get_course_assistant_only
-      login_as(user_id)
-      it "renders with failure" do
-        get :index
-        expect(response).not_to be_successful
-        expect(response.body).not_to match(/LTI Configuration Settings/m)
-      end
     end
   end
 end

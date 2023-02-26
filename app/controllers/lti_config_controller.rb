@@ -11,7 +11,7 @@ class LtiConfigController < ApplicationController
     required_params.each do |param|
       if params[param].blank?
         flash[:error] = "#{param} field was missing"
-        redirect_to(lti_config_index_path) && return
+        redirect_to(autolab_config_admin_path(active: :lti)) && return
       end
     end
 
@@ -28,14 +28,14 @@ class LtiConfigController < ApplicationController
     if !File.exist?("#{Rails.configuration.lti_config_location}/lti_tool_jwk.json") &&
        uploaded_tool_jwk_file.nil?
       flash[:error] = "No tool JWK JSON file was uploaded"
-      redirect_to(lti_config_index_path) && return
+      redirect_to(autolab_config_admin_path(active: :lti)) && return
     end
     # Ensure either plaform has a jwk file associated with it or URL to public JWKs
     uploaded_platform_public_jwk_file = params['platform_public_jwk_json']
     if uploaded_platform_public_jwk_file.nil? && yaml_hash[:platform_public_jwks_url].blank?
       flash[:error] =
         "No platform JWK JSON file or URL was uploaded. Please specify one or the other"
-      redirect_to(lti_config_index_path) && return
+      redirect_to(autolab_config_admin_path(active: :lti)) && return
     end
     # write text parameters to config yml
     File.open("#{Rails.configuration.lti_config_location}/lti_config.yml", "w") do |file|
