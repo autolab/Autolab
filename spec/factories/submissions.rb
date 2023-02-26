@@ -1,8 +1,8 @@
 FactoryBot.define do
   factory :submission do
-    version { 0 }
-    course_user_datum_id { 0 }
-    assessment_id { 0 }
+    sequence(:version) { n }
+    course_user_datum_id
+    assessment_id
     filename { "hello.c" }
     created_at { Time.zone.now }
     updated_at { Time.zone.now }
@@ -13,7 +13,7 @@ FactoryBot.define do
     autoresult { "" }
     detected_mime_type { "application/x-tgz" }
     submitter_ip { "123.456.789" }
-    tweak_id { 0 }
+    tweak_id
     ignored { false }
     dave { "" }
     settings { "" }

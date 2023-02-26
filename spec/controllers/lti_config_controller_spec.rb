@@ -29,8 +29,13 @@ RSpec.describe LtiConfigController, type: :controller do
   end
   describe "#update_config" do
     context "when user is Autolab admin" do
-      user_id = get_admin
-      login_as(user_id)
+      let!(:user_id) do
+        create_users
+        @admin_user
+      end
+      before(:each) do
+        sign_in(user_id)
+      end
       it "rejects empty POST" do
         post :update_config, params: {}
         expect(response).to have_http_status(302)
@@ -98,8 +103,13 @@ RSpec.describe LtiConfigController, type: :controller do
   end
   describe "#index" do
     context "when user is Autolab admin" do
-      user_id = get_admin
-      login_as(user_id)
+      let!(:user_id) do
+        create_users
+        @admin_user
+      end
+      before(:each) do
+        sign_in(user_id)
+      end
       it "renders successfully" do
         get :index
         expect(response).to be_successful
@@ -108,8 +118,13 @@ RSpec.describe LtiConfigController, type: :controller do
     end
 
     context "when user is Instructor" do
-      user_id = get_instructor
-      login_as(user_id)
+      let!(:user_id) do
+        create_course_with_users
+        @instructor_user
+      end
+      before(:each) do
+        sign_in(user_id)
+      end
       it "renders with failure" do
         get :index
         expect(response).not_to be_successful
@@ -118,8 +133,13 @@ RSpec.describe LtiConfigController, type: :controller do
     end
 
     context "when user is student" do
-      user_id = get_user
-      login_as(user_id)
+      let!(:user_id) do
+        create_course_with_users
+        @students.first
+      end
+      before(:each) do
+        sign_in(user_id)
+      end
       it "renders with failure" do
         get :index
         expect(response).not_to be_successful
@@ -128,8 +148,13 @@ RSpec.describe LtiConfigController, type: :controller do
     end
 
     context "when user is course assistant" do
-      user_id = get_course_assistant_only
-      login_as(user_id)
+      let!(:user_id) do
+        create_course_with_users
+        @course_assistant_user
+      end
+      before(:each) do
+        sign_in(user_id)
+      end
       it "renders with failure" do
         get :index
         expect(response).not_to be_successful
