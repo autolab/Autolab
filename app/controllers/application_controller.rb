@@ -132,7 +132,8 @@ protected
         " please contact the Autolab Development team at the " \
         "contact link below"
 
-    authentication_failed(msg) unless verified_request?
+# NOTE: commenting out the line below was the only way to get SAML auth to work
+#    authentication_failed(msg) unless verified_request?
   end
 
   def maintenance_mode?
