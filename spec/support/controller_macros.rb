@@ -149,15 +149,15 @@ module ControllerMacros
 
     FactoryBot.create(:course_user_datum, course: course, user: instructor_user, instructor: true)
 
-    course_assistant = FactoryBot.create(:course_user_datum, course: course,
-                                                             user: course_assistant_user,
-                                                             instructor: false, course_assistant: true)
+    FactoryBot.create(:course_user_datum, course: course,
+                                          user: course_assistant_user,
+                                          instructor: false, course_assistant: true)
 
     students = FactoryBot.create_list(:student, students_count, course: course).each do |cud|
       cud.user = FactoryBot.create(:user)
     end
 
-    { course: course, admin_user: admin_user, 
+    { course: course, admin_user: admin_user,
       instructor_user: instructor_user, course_assistant_user: course_assistant_user,
       students_cud: students }
   end
