@@ -23,6 +23,8 @@ First ensure that you have Docker and Docker Compose installed on your machine. 
         :::bash
         make update
 
+    You may need to install `make` using the appropriate command for your system, such as `apt install make`.
+
 4. Create initial default configs:
 
         :::bash
