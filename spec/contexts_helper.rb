@@ -13,4 +13,16 @@ module Contexts
     create_course
     puts "Built courses"
   end
+
+  def create_course_with_users_as_hash(asmt_name: "testassessment2")
+    if @instructor_user.nil?
+      create_users
+      puts "Built users"
+    end
+    create_course(asmt_name: asmt_name)
+    puts "Built courses"
+    { course: @course, admin_user: @admin_user,
+      instructor_user: @instructor_user, course_assistant_user: @course_assistant_user,
+      students_cud: @students, assessment: @assessment }
+  end
 end
