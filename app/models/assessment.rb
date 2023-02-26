@@ -225,10 +225,16 @@ class Assessment < ApplicationRecord
     # validate syntax of config
     RubyVM::InstructionSequence.compile(config_source)
 
+    # ensure source_config_module_name is an actual module in the assessment config rb file
+    # otherwise loading the file on subsequent calls to config_module will result in an exception
+    if config_source !~ /\b#{source_config_module_name}\b/
+      raise "Module name in #{name}.rb
+             doesn't match expected #{source_config_module_name}"
+    end
+
     # uniquely rename module (so that it's unique among all assessment modules loaded in Autolab)
     config = config_source.gsub("module #{source_config_module_name}",
                                 "module #{config_module_name}")
-
     # backup old config
     if File.exist?(config_file_path)
       File.rename(config_file_path, config_backup_file_path)
@@ -456,21 +462,44 @@ private
     s["scoreboard"] = scoreboard.serialize if has_scoreboard?
     s["late_penalty"] = late_penalty.serialize if late_penalty
     s["version_penalty"] = version_penalty.serialize if version_penalty
+    # convert to string so if instructor wants to edit the date in yml
+    # can do so easily
+    s["dates"] = { start_at: start_at.to_s,
+                   due_at: due_at.to_s,
+                   end_at: end_at.to_s,
+                   grading_deadline: grading_deadline.to_s,
+                   visible_at: visible_at.to_s }.deep_stringify_keys
     s
   end
 
   GENERAL_SERIALIZABLE = Set.new %w[name display_name category_name description handin_filename
                                     handin_directory has_svn has_lang max_grace_days handout
                                     writeup max_submissions disable_handins max_size
-                                    version_threshold is_positive_grading embedded_quiz]
+                                    version_threshold is_positive_grading embedded_quiz group_size
+                                    github_submission_enabled allow_student_assign_group
+                                    is_positive_grading]
 
   def serialize_general
     Utilities.serializable attributes, GENERAL_SERIALIZABLE
   end
 
   def deserialize(s)
-    self.due_at = self.end_at = self.visible_at =
-                    self.start_at = self.grading_deadline = Time.current + 1.day
+    unless s["general"] && (s["general"]["name"] == name)
+      raise "Name in yaml (#{s['general']['name']}) doesn't match #{name}"
+    end
+
+    if s["dates"] && s["dates"]["start_at"] && s["dates"]["due_at"] && s["dates"]["end_at"] &&
+       s["dates"]["visible_at"] && s["dates"]["grading_deadline"]
+      self.due_at = Time.zone.parse(s["dates"]["due_at"])
+      self.start_at = Time.zone.parse(s["dates"]["start_at"])
+      self.end_at = Time.zone.parse(s["dates"]["due_at"])
+      self.visible_at = Time.zone.parse(s["dates"]["visible_at"])
+      self.grading_deadline = Time.zone.parse(s["dates"]["grading_deadline"])
+    else
+      self.due_at = self.end_at = self.visible_at =
+                      self.start_at = self.grading_deadline = Time.current + 1.day
+    end
+
     self.quiz = false
     self.quizData = ""
     update!(s["general"])

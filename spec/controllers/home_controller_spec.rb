@@ -31,7 +31,9 @@ RSpec.describe HomeController, type: :controller do
     it "renders successfully" do
       get :no_user
       expect(response).to be_successful
-      expect(response.body).to match(/We noticed that you're not currently associated with any courses/m)
+      expect(
+        response.body
+      ).to match(/We noticed that you're not currently associated with any courses/m)
     end
   end
 end
