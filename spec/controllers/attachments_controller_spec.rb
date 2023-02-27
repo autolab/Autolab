@@ -9,18 +9,18 @@ RSpec.describe AttachmentsController, type: :controller do
   # INDEX
   shared_examples "index_success" do |u|
     login_as(u)
-    let!(:cid)  { get_course_id_by_uid(u.id) }
+    let!(:cid) { get_course_id_by_uid(u.id) }
     let!(:cname) { Course.find(cid).name }
     it "renders course successfully" do
-      get :index, params: {course_name: cname}
+      get :index, params: { course_name: cname }
       expect(response).to be_successful
       expect(response.body).to match(cname)
       expect(response.body).to match(/Course Attachments/m)
     end
-    let!(:aid)  { get_first_aid_by_cid(cid) }
+    let!(:aid) { get_first_aid_by_cid(cid) }
     let!(:aname) { Assessment.find(aid).name }
     it "renders assessment successfully" do
-      get :index, params: {course_name: cname, assessment_name: aname}
+      get :index, params: { course_name: cname, assessment_name: aname }
       expect(response).to be_successful
       expect(response.body).to match(cname)
       expect(response.body).to match(aname)
@@ -33,15 +33,15 @@ RSpec.describe AttachmentsController, type: :controller do
     let!(:cid)  { get_course_id_by_uid(u.id) }
     let!(:cname) { Course.find(cid).name }
     it "renders course with failure" do
-      get :index, params: {course_name: cname}
+      get :index, params: { course_name: cname }
       expect(response).not_to be_successful
       expect(response.body).not_to match(cname)
       expect(response.body).not_to match(/Course Attachments/m)
     end
-    let!(:aid)  { get_first_aid_by_cid(cid) }
+    let!(:aid) { get_first_aid_by_cid(cid) }
     let!(:aname) { Assessment.find(aid).name }
     it "renders assessment with failure" do
-      get :index, params: {course_name: cname, assessment_name: aname}
+      get :index, params: { course_name: cname, assessment_name: aname }
       expect(response).not_to be_successful
       expect(response.body).not_to match(cname)
       expect(response.body).not_to match(aname)
@@ -70,19 +70,19 @@ RSpec.describe AttachmentsController, type: :controller do
   # NEW
   shared_examples "new_success" do |u|
     login_as(u)
-    let!(:cid)  { get_course_id_by_uid(u.id) }
+    let!(:cid) { get_course_id_by_uid(u.id) }
     let!(:cname) { Course.find(cid).name }
     it "renders course successfully" do
-      get :new, params: {course_name: cname}
+      get :new, params: { course_name: cname }
       expect(response).to be_successful
       expect(response.body).to match(cname)
       expect(response.body).to match(/Name/m)
       expect(response.body).to match(/Released/m)
     end
-    let!(:aid)  { get_first_aid_by_cid(cid) }
+    let!(:aid) { get_first_aid_by_cid(cid) }
     let!(:aname) { Assessment.find(aid).name }
     it "renders assessment successfully" do
-      get :new, params: {course_name: cname, assessment_name: aname}
+      get :new, params: { course_name: cname, assessment_name: aname }
       expect(response).to be_successful
       expect(response.body).to match(cname)
       expect(response.body).to match(aname)
@@ -96,16 +96,16 @@ RSpec.describe AttachmentsController, type: :controller do
     let!(:cid)  { get_course_id_by_uid(u.id) }
     let!(:cname) { Course.find(cid).name }
     it "renders course with failure" do
-      get :new, params: {course_name: cname}
+      get :new, params: { course_name: cname }
       expect(response).not_to be_successful
       expect(response.body).not_to match(cname)
       expect(response.body).not_to match(/Name/m)
       expect(response.body).not_to match(/Released/m)
     end
-    let!(:aid)  { get_first_aid_by_cid(cid) }
+    let!(:aid) { get_first_aid_by_cid(cid) }
     let!(:aname) { Assessment.find(aid).name }
     it "renders assessment with failure" do
-      get :new, params: {course_name: cname, assessment_name: aname}
+      get :new, params: { course_name: cname, assessment_name: aname }
       expect(response).not_to be_successful
       expect(response.body).not_to match(cname)
       expect(response.body).not_to match(aname)
@@ -135,11 +135,11 @@ RSpec.describe AttachmentsController, type: :controller do
   # EDIT
   shared_examples "edit_success" do |u|
     login_as(u)
-    let!(:cid)  { get_course_id_by_uid(u.id) }
+    let!(:cid) { get_course_id_by_uid(u.id) }
     let!(:cname) { Course.find(cid).name }
     let!(:att) { create_course_att_with_cid(cid, true) }
     it "renders course successfully" do
-      get :edit, params: {course_name: cname, id: att.id}
+      get :edit, params: { course_name: cname, id: att.id }
       expect(response).to be_successful
       expect(response.body).to match(cname)
       expect(response.body).to match(att.name)
@@ -148,11 +148,11 @@ RSpec.describe AttachmentsController, type: :controller do
       expect(response.body).to match(/Mime type/m)
       expect(response.body).to match(/Released/m)
     end
-    let!(:aid)  { get_first_aid_by_cid(cid) }
+    let!(:aid) { get_first_aid_by_cid(cid) }
     let!(:aname) { Assessment.find(aid).name }
     let!(:assess_att) { create_assess_att_with_cid_aid(cid, aid, true) }
     it "renders assessment successfully" do
-      get :edit, params: {course_name: cname, assessment_name: aname, id: assess_att.id}
+      get :edit, params: { course_name: cname, assessment_name: aname, id: assess_att.id }
       expect(response).to be_successful
       expect(response.body).to match(cname)
       expect(response.body).to match(aname)
@@ -170,7 +170,7 @@ RSpec.describe AttachmentsController, type: :controller do
     let!(:cname) { Course.find(cid).name }
     let!(:att) { create_course_att_with_cid(cid, true) }
     it "renders course with failure" do
-      get :edit, params: {course_name: cname, id: att.id}
+      get :edit, params: { course_name: cname, id: att.id }
       expect(response).not_to be_successful
       expect(response.body).not_to match(cname)
       expect(response.body).not_to match(att.name)
@@ -179,11 +179,11 @@ RSpec.describe AttachmentsController, type: :controller do
       expect(response.body).not_to match(/Mime type/m)
       expect(response.body).not_to match(/Released/m)
     end
-    let!(:aid)  { get_first_aid_by_cid(cid) }
+    let!(:aid) { get_first_aid_by_cid(cid) }
     let!(:aname) { Assessment.find(aid).name }
     let!(:assess_att) { create_assess_att_with_cid_aid(cid, aid, true) }
     it "renders assessment with failure" do
-      get :edit, params: {course_name: cname, assessment_name: aname, id: assess_att.id}
+      get :edit, params: { course_name: cname, assessment_name: aname, id: assess_att.id }
       expect(response).not_to be_successful
       expect(response.body).not_to match(cname)
       expect(response.body).not_to match(aname)
@@ -197,16 +197,16 @@ RSpec.describe AttachmentsController, type: :controller do
 
   shared_examples "edit_missing" do |u|
     login_as(u)
-    let!(:cid)  { get_course_id_by_uid(u.id) }
+    let!(:cid) { get_course_id_by_uid(u.id) }
     let!(:cname) { Course.find(cid).name }
     it "flashes error for non-existent course attachment" do
-      get :edit, params: {course_name: cname, id: -1}
+      get :edit, params: { course_name: cname, id: -1 }
       expect(flash[:error]).to match(/Could not find/)
     end
-    let!(:aid)  { get_first_aid_by_cid(cid) }
+    let!(:aid) { get_first_aid_by_cid(cid) }
     let!(:aname) { Assessment.find(aid).name }
     it "flashes error for non-existent assessment attachment" do
-      get :edit, params: {course_name: cname, assessment_name: aname, id: -1}
+      get :edit, params: { course_name: cname, assessment_name: aname, id: -1 }
       expect(flash[:error]).to match(/Could not find/)
     end
   end
@@ -234,18 +234,18 @@ RSpec.describe AttachmentsController, type: :controller do
   # SHOW
   shared_examples "show_success" do |u, released: true|
     login_as(u)
-    let!(:cid)  { get_course_id_by_uid(u.id) }
+    let!(:cid) { get_course_id_by_uid(u.id) }
     let!(:cname) { Course.find(cid).name }
     let!(:att) { create_course_att_with_cid(cid, released) }
     it "renders course successfully" do
-      get :show, params: {course_name: cname, id: att.id}
+      get :show, params: { course_name: cname, id: att.id }
       expect(response).to be_successful
     end
-    let!(:aid)  { get_first_aid_by_cid(cid) }
+    let!(:aid) { get_first_aid_by_cid(cid) }
     let!(:aname) { Assessment.find(aid).name }
     let!(:assess_att) { create_assess_att_with_cid_aid(cid, aid, released) }
     it "renders assessment successfully" do
-      get :show, params: {course_name: cname, assessment_name: aname, id: assess_att.id}
+      get :show, params: { course_name: cname, assessment_name: aname, id: assess_att.id }
       expect(response).to be_successful
     end
   end
@@ -256,30 +256,30 @@ RSpec.describe AttachmentsController, type: :controller do
     let!(:cname) { Course.find(cid).name }
     let!(:att) { create_course_att_with_cid(cid, released) }
     it "renders course with failure" do
-      get :show, params: {course_name: cname, id: att.id}
+      get :show, params: { course_name: cname, id: att.id }
       expect(response).not_to be_successful
     end
-    let!(:aid)  { get_first_aid_by_cid(cid) }
+    let!(:aid) { get_first_aid_by_cid(cid) }
     let!(:aname) { Assessment.find(aid).name }
     let!(:assess_att) { create_assess_att_with_cid_aid(cid, aid, released) }
     it "renders assessment with failure" do
-      get :show, params: {course_name: cname, assessment_name: aname, id: assess_att.id}
+      get :show, params: { course_name: cname, assessment_name: aname, id: assess_att.id }
       expect(response).not_to be_successful
     end
   end
 
   shared_examples "show_missing" do |u|
     login_as(u)
-    let!(:cid)  { get_course_id_by_uid(u.id) }
+    let!(:cid) { get_course_id_by_uid(u.id) }
     let!(:cname) { Course.find(cid).name }
     it "flashes error for non-existent course attachment" do
-      get :show, params: {course_name: cname, id: -1}
+      get :show, params: { course_name: cname, id: -1 }
       expect(flash[:error]).to match(/Could not find/)
     end
-    let!(:aid)  { get_first_aid_by_cid(cid) }
+    let!(:aid) { get_first_aid_by_cid(cid) }
     let!(:aname) { Assessment.find(aid).name }
     it "flashes error for non-existent assessment attachment" do
-      get :show, params: {course_name: cname, assessment_name: aname, id: -1}
+      get :show, params: { course_name: cname, assessment_name: aname, id: -1 }
       expect(flash[:error]).to match(/Could not find/)
     end
   end
