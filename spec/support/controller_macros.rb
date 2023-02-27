@@ -68,6 +68,10 @@ module ControllerMacros
     AssessmentUserDatum.where(course_user_datum_id: cud).first.assessment_id
   end
 
+  def get_first_aid_by_cid(cid)
+    Assessment.where(course_id: cid).first.id
+  end
+
   # create user and add to given course as a course assistant
   def create_ca_for_course(cid, email, first_name, last_name, password)
     user = User.new(email: email, first_name: first_name, last_name: last_name, password: password,
@@ -107,37 +111,22 @@ module ControllerMacros
     s
   end
 
-  def create_course_att_with_cid(cid)
-    # Prepare course attachment file
-    course_att_file = Rails.root.join("attachments/testattach.txt")
-    File.open(course_att_file, "w") do |f|
-      f.write("Course attachment file")
-    end
-    att = Attachment.new(course_id: cid, assessment_id: nil,
-                         name: "att#{cid}",
-                         released: true)
-
-    att.file = Rack::Test::UploadedFile.new(
-      Rails.root.join("attachments/#{File.basename(course_att_file)}"),
-      "text/plain",
-      Tempfile.new("attach.tmp")
-    )
-    att.save
-    att
+  def create_course_att_with_cid(cid, released)
+    FactoryBot.create(:attachment,
+                      course_id: cid,
+                      assessment_id: nil,
+                      name: "att#{cid}",
+                      released: released,
+                      file: fixture_file_upload("attachments/course.txt", "text/plain"))
   end
 
-  def create_assess_att_with_cid_aid(cid, aid)
-    # Prepare assessment attachment file
-    assess_att_file = Rails.root.join("attachments/assessattach.txt")
-    File.open(assess_att_file, "w") do |f|
-      f.write("Assessment attachment file")
-    end
-    att = Attachment.new(course_id: cid, assessment_id: aid,
-                         name: "att#{cid}-#{aid}", filename: assess_att_file,
-                         released: true, mime_type: "text/plain")
-    att.file = File.open(assess_att_file, "w")
-    att.save
-    att
+  def create_assess_att_with_cid_aid(cid, aid, released)
+    FactoryBot.create(:attachment,
+                      course_id: cid,
+                      assessment_id: aid,
+                      name: "att#{cid}--#{aid}",
+                      released: released,
+                      file: fixture_file_upload("attachments/assessment.txt", "text/plain"))
   end
 
   # create a course which has an instructor and lcd attached

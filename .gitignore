@@ -19,8 +19,8 @@ config/lti_settings.yml
 
 # autolab user documents
 app/views/home/_topannounce.html.erb
-attachments/
 doc/
+storage/
 out.txt
 
 # compiled assets
@@ -45,7 +45,6 @@ tags
 .idea/
 .yardoc
 app/views/home/_topannounce.html.erb
-attachments/
 doc/
 out.txt
 .vscode/

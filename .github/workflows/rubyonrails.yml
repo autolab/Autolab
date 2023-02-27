@@ -7,11 +7,11 @@
 name: "Ruby on Rails CI"
 on:
   push:
-    branches: [ master ]
+    branches: [ master, 'develop/**' ]
   pull_request:
-    branches: [ master ]
+    branches: [ master, 'develop/**' ]
   merge_group:
-    branches: [ master ]
+    branches: [ master, 'develop/**' ]
 jobs:
   lint:
     runs-on: ubuntu-latest
@@ -53,7 +53,7 @@ jobs:
           cp config/school.yml.template config/school.yml
           cp config/autogradeConfig.rb.template config/autogradeConfig.rb
           cp .env.template .env
-          mkdir attachments/ tmp/
+          mkdir tmp/
 
       - name: Set up database
         run: |
