@@ -1,19 +1,17 @@
 require 'rails_helper'
-require_relative "api_shared_context"
+require_relative "api_shared_context.rb"
 
 # test cases common to all CUD routes
 # requires "api shared context" to have been included
 RSpec.shared_examples "a CUD route" do |method, action|
   it 'fails to authenticate when the app does not have instructor scope' do
-    send method, action,
-         params: { access_token: token.token, course_name: course.name, email: user.email }
+    send method, action, params: {:access_token => token.token, :course_name => course.name, :email => user.email}
     expect(response.response_code).to eq(403)
   end
 
   it 'fails to authenticate when the user is not an instructor' do
-    send method, action, params: { access_token: instructor_token_for_user.token,
-                                   course_name: course.name,
-                                   email: instructor.email }
+    send method, action, params: {:access_token => instructor_token_for_user.token, :course_name => course.name,
+      :email => instructor.email}
     expect(response.response_code).to eq(403)
   end
 end
@@ -22,10 +20,10 @@ end
 # requires "api shared context" to have been included
 RSpec.shared_examples "a CUD member route" do |method, action|
   it "fails to #{action} when user does not exist" do
-    rand_user_email = 16.times.map { rand(65..90).chr }.join
-    send method, action, params: { access_token: instructor_token_for_instructor.token,
-                                   course_name: course.name, email: rand_user_email, lecture: "1",
-                                   section: "A", auth_level: "student" }
+    rand_user_email = 16.times.map { (65 + rand(26)).chr }.join
+    send method, action, params: {:access_token => instructor_token_for_instructor.token,
+      :course_name => course.name, :email => rand_user_email, :lecture => "1",
+      :section => "A", :auth_level => "student"}
     expect(response.response_code).to eq(400)
 
     no_user = User.find_by(email: rand_user_email)
@@ -33,15 +31,15 @@ RSpec.shared_examples "a CUD member route" do |method, action|
   end
 
   it "fails to #{action} when user is not in the course" do
-    email_name = 16.times.map { rand(65..90).chr }.join
-    email_domain = 8.times.map { rand(65..90).chr }.join
-    newUser = User.new(email: "#{email_name}@#{email_domain}.com",
-                       first_name: "hello", last_name: "there", password: "password")
+    email_name = 16.times.map { (65 + rand(26)).chr }.join
+    email_domain = 8.times.map { (65 + rand(26)).chr }.join
+    newUser = User.new(email: email_name + "@" + email_domain + ".com",
+      first_name: "hello", last_name: "there", password: "password")
     newUser.save!
 
-    send method, action, params: { access_token: instructor_token_for_instructor.token,
-                                   course_name: course.name, email: newUser.email, lecture: "1",
-                                   section: "A", auth_level: "student" }
+    send method, action, params: {:access_token => instructor_token_for_instructor.token,
+      :course_name => course.name, :email => newUser.email, :lecture => "1",
+      :section => "A", :auth_level => "student"}
     expect(response.response_code).to eq(404)
 
     no_cud = newUser.course_user_data.find_by(course: course)
@@ -49,16 +47,15 @@ RSpec.shared_examples "a CUD member route" do |method, action|
   end
 end
 
-RSpec.describe Api::V1::CourseUserDataController, type: :controller do
+RSpec.describe Api::V1::CourseUserDataController, :type => :controller do
+
   describe 'GET index' do
     include_context "api shared context"
 
     it_behaves_like "a CUD route", :get, :index
 
     it 'returns the correct number of users and have the correct fields' do
-      get :index,
-          params: { access_token: instructor_token_for_instructor.token,
-                    course_name: course.name }
+      get :index, params: {:access_token => instructor_token_for_instructor.token, :course_name => course.name}
       expect(response.response_code).to eq(200)
       msg = JSON.parse(response.body)
 
@@ -88,10 +85,10 @@ RSpec.describe Api::V1::CourseUserDataController, type: :controller do
     it_behaves_like "a CUD route", :post, :create
 
     it 'fails to create when user does not exist' do
-      rand_user_email = 16.times.map { rand(65..90).chr }.join
-      post :create, params: { access_token: instructor_token_for_instructor.token,
-                              course_name: course.name, email: rand_user_email, lecture: "1",
-                              section: "A", auth_level: "student" }
+      rand_user_email = 16.times.map { (65 + rand(26)).chr }.join
+      post :create, params: {:access_token => instructor_token_for_instructor.token,
+        :course_name => course.name, :email => rand_user_email, :lecture => "1",
+        :section => "A", :auth_level => "student"}
       expect(response.response_code).to eq(400)
 
       user = User.find_by(email: rand_user_email)
@@ -99,25 +96,26 @@ RSpec.describe Api::V1::CourseUserDataController, type: :controller do
     end
 
     it 'fails to create when user is already in course' do
-      post :create, params: { access_token: instructor_token_for_instructor.token,
-                              course_name: course.name, email: user.email, lecture: "1",
-                              section: "A", auth_level: "student" }
+      rand_user_email = 16.times.map { (65 + rand(26)).chr }.join
+      post :create, params: {:access_token => instructor_token_for_instructor.token,
+        :course_name => course.name, :email => user.email, :lecture => "1",
+        :section => "A", :auth_level => "student"}
       expect(response.response_code).to eq(400)
     end
 
     context "when user is valid" do
       before(:each) do
-        email_name = 16.times.map { rand(65..90).chr }.join
-        email_domain = 8.times.map { rand(65..90).chr }.join
-        @newUser = User.new(email: "#{email_name}@#{email_domain}.com",
-                            first_name: "hello", last_name: "there", password: "password")
+        email_name = 16.times.map { (65 + rand(26)).chr }.join
+        email_domain = 8.times.map { (65 + rand(26)).chr }.join
+        @newUser = User.new(email: email_name + "@" + email_domain + ".com",
+          first_name: "hello", last_name: "there", password: "password")
         @newUser.save!
       end
 
       it 'creates a student CUD' do
-        post :create, params: { access_token: instructor_token_for_instructor.token,
-                                course_name: course.name, email: @newUser.email, lecture: "1",
-                                section: "A", auth_level: "student", grade_policy: "letter" }
+        post :create, params: {:access_token => instructor_token_for_instructor.token,
+          :course_name => course.name, :email => @newUser.email, :lecture => "1",
+          :section => "A", :auth_level => "student", :grade_policy => "letter"}
         expect(response.response_code).to eq(200)
 
         cud = @newUser.course_user_data.find_by(course: course)
@@ -132,9 +130,9 @@ RSpec.describe Api::V1::CourseUserDataController, type: :controller do
       end
 
       it 'creates a dropped student CUD' do
-        post :create, params: { access_token: instructor_token_for_instructor.token,
-                                course_name: course.name, email: @newUser.email, lecture: "1",
-                                section: "A", auth_level: "student", dropped: true }
+        post :create, params: {:access_token => instructor_token_for_instructor.token,
+          :course_name => course.name, :email => @newUser.email, :lecture => "1",
+          :section => "A", :auth_level => "student", :dropped => true}
         expect(response.response_code).to eq(200)
 
         cud = @newUser.course_user_data.find_by(course: course)
@@ -143,9 +141,9 @@ RSpec.describe Api::V1::CourseUserDataController, type: :controller do
       end
 
       it 'creates an instructor CUD' do
-        post :create, params: { access_token: instructor_token_for_instructor.token,
-                                course_name: course.name, email: @newUser.email, lecture: "2",
-                                section: "D", auth_level: "instructor" }
+        post :create, params: {:access_token => instructor_token_for_instructor.token,
+          :course_name => course.name, :email => @newUser.email, :lecture => "2",
+          :section => "D", :auth_level => "instructor"}
         expect(response.response_code).to eq(200)
 
         cud = @newUser.course_user_data.find_by(course: course)
@@ -159,16 +157,16 @@ RSpec.describe Api::V1::CourseUserDataController, type: :controller do
       end
 
       it 'fails to create if missing parameter' do
-        post :create, params: { access_token: instructor_token_for_instructor.token,
-                                course_name: course.name, email: @newUser.email, lecture: "1",
-                                auth_level: "student" } # no section
+        post :create, params: {:access_token => instructor_token_for_instructor.token,
+          :course_name => course.name, :email => @newUser.email, :lecture => "1",
+          :auth_level => "student"}# no section
         expect(response.response_code).to eq(400)
       end
 
       it 'fails to create if auth_level is invalid' do
-        post :create, params: { access_token: instructor_token_for_instructor.token,
-                                course_name: course.name, email: @newUser.email, lecture: "1",
-                                section: "A", auth_level: "blah" }
+        post :create, params: {:access_token => instructor_token_for_instructor.token,
+          :course_name => course.name, :email => @newUser.email, :lecture => "1",
+          :section => "A", :auth_level => "blah"}
         expect(response.response_code).to eq(400)
       end
     end
@@ -183,8 +181,8 @@ RSpec.describe Api::V1::CourseUserDataController, type: :controller do
 
     context 'when user is valid' do
       it 'returns the info correctly' do
-        get :show, params: { access_token: instructor_token_for_instructor.token,
-                             course_name: course.name, email: user.email }
+        get :show, params: {:access_token => instructor_token_for_instructor.token,
+          :course_name => course.name, :email => user.email}
         expect(response.response_code).to eq(200)
         msg = JSON.parse(response.body)
 
@@ -207,9 +205,9 @@ RSpec.describe Api::V1::CourseUserDataController, type: :controller do
 
     context 'when user is valid' do
       it 'updates the auth_level correctly' do
-        put :update, params: { access_token: instructor_token_for_instructor.token,
-                               course_name: course.name, email: user.email, lecture: "1",
-                               auth_level: "course_assistant" }
+        put :update, params: {:access_token => instructor_token_for_instructor.token,
+          :course_name => course.name, :email => user.email, :lecture => "1",
+          :auth_level => "course_assistant"}
         expect(response.response_code).to eq(200)
         msg = JSON.parse(response.body)
 
@@ -221,14 +219,14 @@ RSpec.describe Api::V1::CourseUserDataController, type: :controller do
 
       it 'updates other info correctly' do
         cud = user.course_user_data.find_by(course: course)
-        new_lecture = "#{cud.lecture}_24"
-        new_section = "#{cud.section}_42"
+        new_lecture = cud.lecture + "_24"
+        new_section = cud.section + "_42"
         new_dropped = !cud.dropped
         new_grade_policy = "pass_fail"
-        put :update, params: { access_token: instructor_token_for_instructor.token,
-                               course_name: course.name, email: user.email,
-                               lecture: new_lecture, section: new_section,
-                               dropped: new_dropped, grade_policy: new_grade_policy }
+        put :update, params: {:access_token => instructor_token_for_instructor.token,
+          :course_name => course.name, :email => user.email,
+          :lecture => new_lecture, :section => new_section,
+          :dropped => new_dropped, :grade_policy => new_grade_policy}
         expect(response.response_code).to eq(200)
         msg = JSON.parse(response.body)
 
@@ -258,8 +256,8 @@ RSpec.describe Api::V1::CourseUserDataController, type: :controller do
         cud.dropped = false
         cud.save!
 
-        delete :destroy, params: { access_token: instructor_token_for_instructor.token,
-                                   course_name: course.name, email: user.email }
+        delete :destroy, params: {:access_token => instructor_token_for_instructor.token,
+          :course_name => course.name, :email => user.email}
         expect(response.response_code).to eq(200)
 
         cud = user.course_user_data.find_by(course: course)
@@ -272,8 +270,8 @@ RSpec.describe Api::V1::CourseUserDataController, type: :controller do
         cud.dropped = false
         cud.save!
 
-        delete :destroy, params: { access_token: instructor_token_for_instructor.token,
-                                   course_name: course.name, email: user.email, dropped: false }
+        delete :destroy, params: {:access_token => instructor_token_for_instructor.token,
+          :course_name => course.name, :email => user.email, :dropped => false}
         expect(response.response_code).to eq(200)
 
         cud = user.course_user_data.find_by(course: course)
@@ -284,12 +282,10 @@ RSpec.describe Api::V1::CourseUserDataController, type: :controller do
       it 'does not update other attributes' do
         cud = user.course_user_data.find_by(course: course)
         old_lecture = cud.lecture
-        new_lecture = "#{cud.lecture}4242"
+        new_lecture = cud.lecture + "4242"
 
-        delete :destroy, params: { access_token: instructor_token_for_instructor.token,
-                                   course_name: course.name,
-                                   email: user.email,
-                                   lecture: new_lecture }
+        delete :destroy, params: {:access_token => instructor_token_for_instructor.token,
+          :course_name => course.name, :email => user.email, :lecture => new_lecture}
         expect(response.response_code).to eq(200)
 
         cud = user.course_user_data.find_by(course: course)

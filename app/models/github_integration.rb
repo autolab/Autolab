@@ -134,8 +134,7 @@ class GithubIntegration < ApplicationRecord
     begin
       limit = client.rate_limit!
     rescue StandardError
-      limit = ActiveSupport::OrderedOptions.new
-      limit.limit = 0
+      limit = { limit: 0 }
     end
     limit
   end

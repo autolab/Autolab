@@ -1,5 +1,5 @@
 require 'rails_helper'
-require_relative "api_shared_context"
+require_relative "api_shared_context.rb"
 
 RSpec.describe Api::V1::ProblemsController, type: :controller do
   describe 'GET #problems' do
