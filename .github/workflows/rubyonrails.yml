@@ -7,11 +7,11 @@
 name: "Ruby on Rails CI"
 on:
   push:
-    branches: [ master, `develop/**` ]
+    branches: [ master, 'develop/**' ]
   pull_request:
-    branches: [ master, `develop/**` ]
+    branches: [ master, 'develop/**' ]
   merge_group:
-    branches: [ master, `develop/**` ]
+    branches: [ master, 'develop/**' ]
 jobs:
   lint:
     runs-on: ubuntu-latest
