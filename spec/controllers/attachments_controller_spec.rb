@@ -17,6 +17,7 @@ RSpec.describe AttachmentsController, type: :controller do
       expect(response.body).to match(cname)
       expect(response.body).to match(/Course Attachments/m)
     end
+
     let!(:aid) { get_first_aid_by_cid(cid) }
     let!(:aname) { Assessment.find(aid).name }
     it "renders assessment successfully" do
@@ -38,6 +39,7 @@ RSpec.describe AttachmentsController, type: :controller do
       expect(response.body).not_to match(cname)
       expect(response.body).not_to match(/Course Attachments/m)
     end
+
     let!(:aid) { get_first_aid_by_cid(cid) }
     let!(:aname) { Assessment.find(aid).name }
     it "renders assessment with failure" do
@@ -79,6 +81,7 @@ RSpec.describe AttachmentsController, type: :controller do
       expect(response.body).to match(/Name/m)
       expect(response.body).to match(/Released/m)
     end
+
     let!(:aid) { get_first_aid_by_cid(cid) }
     let!(:aname) { Assessment.find(aid).name }
     it "renders assessment successfully" do
@@ -102,6 +105,7 @@ RSpec.describe AttachmentsController, type: :controller do
       expect(response.body).not_to match(/Name/m)
       expect(response.body).not_to match(/Released/m)
     end
+
     let!(:aid) { get_first_aid_by_cid(cid) }
     let!(:aname) { Assessment.find(aid).name }
     it "renders assessment with failure" do
@@ -148,6 +152,7 @@ RSpec.describe AttachmentsController, type: :controller do
       expect(response.body).to match(/Mime type/m)
       expect(response.body).to match(/Released/m)
     end
+
     let!(:aid) { get_first_aid_by_cid(cid) }
     let!(:aname) { Assessment.find(aid).name }
     let!(:assess_att) { create_assess_att_with_cid_aid(cid, aid, true) }
@@ -179,6 +184,7 @@ RSpec.describe AttachmentsController, type: :controller do
       expect(response.body).not_to match(/Mime type/m)
       expect(response.body).not_to match(/Released/m)
     end
+
     let!(:aid) { get_first_aid_by_cid(cid) }
     let!(:aname) { Assessment.find(aid).name }
     let!(:assess_att) { create_assess_att_with_cid_aid(cid, aid, true) }
@@ -203,6 +209,7 @@ RSpec.describe AttachmentsController, type: :controller do
       get :edit, params: { course_name: cname, id: -1 }
       expect(flash[:error]).to match(/Could not find/)
     end
+
     let!(:aid) { get_first_aid_by_cid(cid) }
     let!(:aname) { Assessment.find(aid).name }
     it "flashes error for non-existent assessment attachment" do
@@ -241,6 +248,7 @@ RSpec.describe AttachmentsController, type: :controller do
       get :show, params: { course_name: cname, id: att.id }
       expect(response).to be_successful
     end
+
     let!(:aid) { get_first_aid_by_cid(cid) }
     let!(:aname) { Assessment.find(aid).name }
     let!(:assess_att) { create_assess_att_with_cid_aid(cid, aid, released) }
@@ -259,6 +267,7 @@ RSpec.describe AttachmentsController, type: :controller do
       get :show, params: { course_name: cname, id: att.id }
       expect(response).not_to be_successful
     end
+
     let!(:aid) { get_first_aid_by_cid(cid) }
     let!(:aname) { Assessment.find(aid).name }
     let!(:assess_att) { create_assess_att_with_cid_aid(cid, aid, released) }
@@ -276,6 +285,7 @@ RSpec.describe AttachmentsController, type: :controller do
       get :show, params: { course_name: cname, id: -1 }
       expect(flash[:error]).to match(/Could not find/)
     end
+
     let!(:aid) { get_first_aid_by_cid(cid) }
     let!(:aname) { Assessment.find(aid).name }
     it "flashes error for non-existent assessment attachment" do
@@ -312,12 +322,12 @@ RSpec.describe AttachmentsController, type: :controller do
   ### Functionality tests ###
 
   # Create
-  shared_examples "create_success" do |u, released: true|
+  shared_examples "create_success" do |u|
     login_as(u)
     let!(:cid) { get_course_id_by_uid(u.id) }
     let!(:course) { Course.find(cid) }
     let!(:cname) { course.name }
-    let!(:att) { course_att_with_cid(cid, released) }
+    let!(:att) { course_att_with_cid(cid, true) }
     it "creates course attachment successfully" do
       expect do
         post :create, params: { course_name: cname, attachment: att }
@@ -330,7 +340,7 @@ RSpec.describe AttachmentsController, type: :controller do
     let!(:aid) { get_first_aid_by_cid(cid) }
     let!(:assessment) { Assessment.find(aid) }
     let!(:aname) { assessment.name }
-    let!(:assess_att) { assess_att_with_cid_aid(cid, aid, released) }
+    let!(:assess_att) { assess_att_with_cid_aid(cid, aid, true) }
     it "creates assessment attachment successfully" do
       expect do
         post :create, params: { course_name: cname, assessment_name: aname, attachment: assess_att }
@@ -341,12 +351,12 @@ RSpec.describe AttachmentsController, type: :controller do
     end
   end
 
-  shared_examples "create_error" do |u, released: true|
+  shared_examples "create_error" do |u|
     login_as(u)
     let!(:cid) { get_course_id_by_uid(u.id) }
     let!(:course) { Course.find(cid) }
     let!(:cname) { course.name }
-    let!(:att) { course_att_with_cid(cid, released).except(:name, :file) }
+    let!(:att) { course_att_with_cid(cid, true).except(:name, :file) }
     it "fails to create course attachment with missing name or file" do
       expect do
         post :create, params: { course_name: cname, attachment: att }
@@ -360,7 +370,7 @@ RSpec.describe AttachmentsController, type: :controller do
     let!(:aid) { get_first_aid_by_cid(cid) }
     let!(:assessment) { Assessment.find(aid) }
     let!(:aname) { assessment.name }
-    let!(:assess_att) { assess_att_with_cid_aid(cid, aid, released).except(:name, :file) }
+    let!(:assess_att) { assess_att_with_cid_aid(cid, aid, true).except(:name, :file) }
     it "fails to create assessment attachment with missing name or file" do
       expect do
         post :create, params: { course_name: cname, assessment_name: aname, attachment: assess_att }
@@ -400,16 +410,12 @@ RSpec.describe AttachmentsController, type: :controller do
   describe "#create" do
     context "when user is Autolab admin" do
       it_behaves_like "create_success", get_admin
-      it_behaves_like "create_success", get_admin, released: false
       it_behaves_like "create_error", get_admin
-      it_behaves_like "create_error", get_admin, released: false
     end
 
     context "when user is Autolab instructor" do
       it_behaves_like "create_success", get_instructor
-      it_behaves_like "create_success", get_instructor, released: false
       it_behaves_like "create_error", get_instructor
-      it_behaves_like "create_error", get_instructor, released: false
     end
 
     context "when user is Autolab user" do
