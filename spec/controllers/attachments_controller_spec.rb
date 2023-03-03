@@ -427,7 +427,161 @@ RSpec.describe AttachmentsController, type: :controller do
     end
   end
 
+  shared_examples "update_success" do |u|
+    login_as(u)
+    let!(:cid) { get_course_id_by_uid(u.id) }
+    let!(:course) { Course.find(cid) }
+    let!(:cname) { course.name }
+    let!(:att) { create_course_att_with_cid(cid, true) }
+    it "updates course attachment successfully" do
+      expect do
+        post :update, params: { course_name: cname, id: att.id, attachment: {
+          name: "new_name",
+          mime_type: "new_mime_type",
+          released: false,
+        } }
+        expect(flash[:success]).to match(/Attachment updated/)
+        expect(flash[:error]).to be_nil
+        expect(response).to redirect_to(course_path(course))
+      end.to change(Attachment, :count).by(0)
+      att.reload
+      expect(att.name).to eq("new_name")
+      expect(att.mime_type).to eq("new_mime_type")
+      expect(att.released).to eq(false)
+    end
+
+    let!(:aid) { get_first_aid_by_cid(cid) }
+    let!(:assessment) { Assessment.find(aid) }
+    let!(:aname) { assessment.name }
+    let!(:assess_att) { create_assess_att_with_cid_aid(cid, aid, true) }
+    it "updates assessment attachment successfully" do
+      expect do
+        post :update, params: { course_name: cname, assessment_name: aname, id: assess_att.id,
+                                attachment: {
+                                  name: "new_name",
+                                  mime_type: "new_mime_type",
+                                  released: false,
+                                } }
+        expect(flash[:success]).to match(/Attachment updated/)
+        expect(flash[:error]).to be_nil
+        expect(response).to redirect_to(course_assessment_path(course, assessment))
+      end.to change(Attachment, :count).by(0)
+      assess_att.reload
+      expect(assess_att.name).to eq("new_name")
+      expect(assess_att.mime_type).to eq("new_mime_type")
+      expect(assess_att.released).to eq(false)
+    end
+  end
+
+  shared_examples "update_error" do |u|
+    login_as(u)
+    let!(:cid) { get_course_id_by_uid(u.id) }
+    let!(:course) { Course.find(cid) }
+    let!(:cname) { course.name }
+    let!(:att) { create_course_att_with_cid(cid, true) }
+    it "fails to update course attachment with missing name" do
+      expect do
+        post :update, params: { course_name: cname, id: att.id, attachment: {
+          name: "",
+          mime_type: "new_mime_type",
+          released: false,
+        } }
+        expect(flash[:success]).to be_nil
+        expect(flash[:error]).to match(/Name can't be blank/)
+        expect(response).to redirect_to(edit_course_attachment_path(course, att))
+      end.to change(Attachment, :count).by(0)
+      att.reload
+      expect(att.name).not_to eq("")
+      expect(att.mime_type).not_to eq("new_mime_type")
+      expect(att.released).not_to eq(false)
+    end
+
+    let!(:aid) { get_first_aid_by_cid(cid) }
+    let!(:assessment) { Assessment.find(aid) }
+    let!(:aname) { assessment.name }
+    let!(:assess_att) { create_assess_att_with_cid_aid(cid, aid, true) }
+    it "fails to update assessment attachment with missing name" do
+      expect do
+        post :update, params: { course_name: cname, assessment_name: aname, id: assess_att.id,
+                                attachment: {
+                                  name: "",
+                                  mime_type: "new_mime_type",
+                                  released: false,
+                                } }
+        expect(flash[:success]).to be_nil
+        expect(flash[:error]).to match(/Name can't be blank/)
+        expect(response).to redirect_to(edit_course_assessment_attachment_path(course, assessment,
+                                                                               assess_att))
+      end.to change(Attachment, :count).by(0)
+      assess_att.reload
+      expect(assess_att.name).not_to eq("")
+      expect(assess_att.mime_type).not_to eq("new_mime_type")
+      expect(assess_att.released).not_to eq(false)
+    end
+  end
+
+  shared_examples "update_failure" do |u, login: true|
+    login_as(u) if login
+    let!(:cid) { get_course_id_by_uid(u.id) }
+    let!(:course) { Course.find(cid) }
+    let!(:cname) { course.name }
+    let!(:att) { create_course_att_with_cid(cid, true) }
+    it "fails to update course attachment" do
+      expect do
+        post :update, params: { course_name: cname, id: att.id, attachment: {
+          name: "new_name",
+          mime_type: "new_mime_type",
+          released: false,
+        } }
+        expect(flash[:success]).to be_nil
+      end.to change(Attachment, :count).by(0)
+      att.reload
+      expect(att.name).not_to eq("new_name")
+      expect(att.mime_type).not_to eq("new_mime_type")
+      expect(att.released).not_to eq(false)
+    end
+
+    let!(:aid) { get_first_aid_by_cid(cid) }
+    let!(:assessment) { Assessment.find(aid) }
+    let!(:aname) { assessment.name }
+    let!(:assess_att) { create_assess_att_with_cid_aid(cid, aid, true) }
+    it "fails to update assessment attachment" do
+      expect do
+        post :update, params: { course_name: cname, assessment_name: aname, id: assess_att.id,
+                                attachment: {
+                                  name: "new_name",
+                                  mime_type: "new_mime_type",
+                                  released: false,
+                                } }
+        expect(flash[:success]).to be_nil
+      end.to change(Attachment, :count).by(0)
+      assess_att.reload
+      expect(assess_att.name).not_to eq("new_name")
+      expect(assess_att.mime_type).not_to eq("new_mime_type")
+      expect(assess_att.released).not_to eq(false)
+    end
+  end
+
   # Update
+  describe "#update" do
+    context "when user is Autolab admin" do
+      it_behaves_like "update_success", get_admin
+      it_behaves_like "update_error", get_admin
+    end
+
+    context "when user is Autolab instructor" do
+      it_behaves_like "update_success", get_instructor
+      it_behaves_like "update_error", get_instructor
+    end
+
+    context "when user is Autolab user" do
+      it_behaves_like "update_failure", get_user
+    end
+
+    context "when user is not logged in" do
+      it_behaves_like "update_failure", get_admin, login: false
+    end
+  end
 
   # Destroy
   shared_examples "destroy_success" do |u|
