@@ -430,4 +430,75 @@ RSpec.describe AttachmentsController, type: :controller do
   # Update
 
   # Destroy
+  shared_examples "destroy_success" do |u|
+    login_as(u)
+    let!(:cid) { get_course_id_by_uid(u.id) }
+    let!(:course) { Course.find(cid) }
+    let!(:cname) { course.name }
+    let!(:att) { create_course_att_with_cid(cid, true) }
+    it "destroys course attachment successfully" do
+      expect do
+        delete :destroy, params: { course_name: cname, id: att.id }
+        expect(flash[:success]).to match(/Attachment deleted/)
+        expect(flash[:error]).to be_nil
+        expect(response).to redirect_to(course_path(course))
+      end.to change(Attachment, :count).by(-1)
+    end
+
+    let!(:aid) { get_first_aid_by_cid(cid) }
+    let!(:assessment) { Assessment.find(aid) }
+    let!(:aname) { assessment.name }
+    let!(:assess_att) { create_assess_att_with_cid_aid(cid, aid, true) }
+    it "destroys assessment attachment successfully" do
+      expect do
+        delete :destroy, params: { course_name: cname, assessment_name: aname, id: assess_att.id }
+        expect(flash[:success]).to match(/Attachment deleted/)
+        expect(flash[:error]).to be_nil
+        expect(response).to redirect_to(course_assessment_path(course, assessment))
+      end.to change(Attachment, :count).by(-1)
+    end
+  end
+
+  shared_examples "destroy_failure" do |u, login: true|
+    login_as(u) if login
+    let!(:cid) { get_course_id_by_uid(u.id) }
+    let!(:course) { Course.find(cid) }
+    let!(:cname) { course.name }
+    let!(:att) { create_course_att_with_cid(cid, true) }
+    it "fails to destroy course attachment" do
+      expect do
+        delete :destroy, params: { course_name: cname, id: att.id }
+        expect(flash[:success]).to be_nil
+      end.not_to change(Attachment, :count)
+    end
+
+    let!(:aid) { get_first_aid_by_cid(cid) }
+    let!(:assessment) { Assessment.find(aid) }
+    let!(:aname) { assessment.name }
+    let!(:assess_att) { create_assess_att_with_cid_aid(cid, aid, true) }
+    it "fails to destroy assessment attachment" do
+      expect do
+        delete :destroy, params: { course_name: cname, assessment_name: aname, id: assess_att.id }
+        expect(flash[:success]).to be_nil
+      end.not_to change(Attachment, :count)
+    end
+  end
+
+  describe "#destroy" do
+    context "when user is Autolab admin" do
+      it_behaves_like "destroy_success", get_admin
+    end
+
+    context "when user is Autolab instructor" do
+      it_behaves_like "destroy_success", get_instructor
+    end
+
+    context "when user is Autolab user" do
+      it_behaves_like "destroy_failure", get_user
+    end
+
+    context "when user is not logged in" do
+      it_behaves_like "destroy_failure", get_admin, login: false
+    end
+  end
 end
