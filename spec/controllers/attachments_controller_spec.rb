@@ -4,9 +4,9 @@ include ControllerMacros
 RSpec.describe AttachmentsController, type: :controller do
   render_views
 
-  # Render tests
+  ### Render tests ###
 
-  # INDEX
+  # Index
   shared_examples "index_success" do |u|
     login_as(u)
     let!(:cid) { get_course_id_by_uid(u.id) }
@@ -67,7 +67,7 @@ RSpec.describe AttachmentsController, type: :controller do
     end
   end
 
-  # NEW
+  # New
   shared_examples "new_success" do |u|
     login_as(u)
     let!(:cid) { get_course_id_by_uid(u.id) }
@@ -132,7 +132,7 @@ RSpec.describe AttachmentsController, type: :controller do
     end
   end
 
-  # EDIT
+  # Edit
   shared_examples "edit_success" do |u|
     login_as(u)
     let!(:cid) { get_course_id_by_uid(u.id) }
@@ -231,7 +231,7 @@ RSpec.describe AttachmentsController, type: :controller do
     end
   end
 
-  # SHOW
+  # Show
   shared_examples "show_success" do |u, released: true|
     login_as(u)
     let!(:cid) { get_course_id_by_uid(u.id) }
@@ -309,8 +309,119 @@ RSpec.describe AttachmentsController, type: :controller do
     end
   end
 
-  # Functionality tests
+  ### Functionality tests ###
+
   # Create
+  shared_examples "create_success" do |u, released: true|
+    login_as(u)
+    let!(:cid) { get_course_id_by_uid(u.id) }
+    let!(:course) { Course.find(cid) }
+    let!(:cname) { course.name }
+    let!(:att) { course_att_with_cid(cid, released) }
+    it "creates course attachment successfully" do
+      expect do
+        post :create, params: { course_name: cname, attachment: att }
+        expect(flash[:success]).to match(/Attachment created/)
+        expect(flash[:error]).to be_nil
+        expect(response).to redirect_to(course_path(course))
+      end.to change(Attachment, :count).by(1)
+    end
+
+    let!(:aid) { get_first_aid_by_cid(cid) }
+    let!(:assessment) { Assessment.find(aid) }
+    let!(:aname) { assessment.name }
+    let!(:assess_att) { assess_att_with_cid_aid(cid, aid, released) }
+    it "creates assessment attachment successfully" do
+      expect do
+        post :create, params: { course_name: cname, assessment_name: aname, attachment: assess_att }
+        expect(flash[:success]).to match(/Attachment created/)
+        expect(flash[:error]).to be_nil
+        expect(response).to redirect_to(course_assessment_path(course, assessment))
+      end.to change(Attachment, :count).by(1)
+    end
+  end
+
+  shared_examples "create_error" do |u, released: true|
+    login_as(u)
+    let!(:cid) { get_course_id_by_uid(u.id) }
+    let!(:course) { Course.find(cid) }
+    let!(:cname) { course.name }
+    let!(:att) { course_att_with_cid(cid, released).except(:name, :file) }
+    it "fails to create course attachment with missing name or file" do
+      expect do
+        post :create, params: { course_name: cname, attachment: att }
+        expect(flash[:success]).to be_nil
+        expect(flash[:error]).to match(/Name can't be blank/)
+        expect(flash[:error]).to match(/Filename can't be blank/)
+        expect(response).to redirect_to(new_course_attachment_path(course))
+      end.not_to change(Attachment, :count)
+    end
+
+    let!(:aid) { get_first_aid_by_cid(cid) }
+    let!(:assessment) { Assessment.find(aid) }
+    let!(:aname) { assessment.name }
+    let!(:assess_att) { assess_att_with_cid_aid(cid, aid, released).except(:name, :file) }
+    it "fails to create assessment attachment with missing name or file" do
+      expect do
+        post :create, params: { course_name: cname, assessment_name: aname, attachment: assess_att }
+        expect(flash[:success]).to be_nil
+        expect(flash[:error]).to match(/Name can't be blank/)
+        expect(flash[:error]).to match(/Filename can't be blank/)
+        expect(response).to redirect_to(new_course_assessment_attachment_path(course, assessment))
+      end.not_to change(Attachment, :count)
+    end
+  end
+
+  shared_examples "create_failure" do |u, login: true|
+    login_as(u) if login
+    let!(:cid) { get_course_id_by_uid(u.id) }
+    let!(:course) { Course.find(cid) }
+    let!(:cname) { course.name }
+    let!(:att) { course_att_with_cid(cid, true) }
+    it "fails to create course attachment" do
+      expect do
+        post :create, params: { course_name: cname, attachment: att }
+        expect(flash[:success]).to be_nil
+      end.not_to change(Attachment, :count)
+    end
+
+    let!(:aid) { get_first_aid_by_cid(cid) }
+    let!(:assessment) { Assessment.find(aid) }
+    let!(:aname) { assessment.name }
+    let!(:assess_att) { assess_att_with_cid_aid(cid, aid, true) }
+    it "fails to create assessment attachment" do
+      expect do
+        post :create, params: { course_name: cname, assessment_name: aname, attachment: assess_att }
+        expect(flash[:success]).to be_nil
+      end.not_to change(Attachment, :count)
+    end
+  end
+
+  describe "#create" do
+    context "when user is Autolab admin" do
+      it_behaves_like "create_success", get_admin
+      it_behaves_like "create_success", get_admin, released: false
+      it_behaves_like "create_error", get_admin
+      it_behaves_like "create_error", get_admin, released: false
+    end
+
+    context "when user is Autolab instructor" do
+      it_behaves_like "create_success", get_instructor
+      it_behaves_like "create_success", get_instructor, released: false
+      it_behaves_like "create_error", get_instructor
+      it_behaves_like "create_error", get_instructor, released: false
+    end
+
+    context "when user is Autolab user" do
+      it_behaves_like "create_failure", get_user
+    end
+
+    context "when user is not logged in" do
+      it_behaves_like "create_failure", get_admin, login: false
+    end
+  end
+
   # Update
+
   # Destroy
 end
