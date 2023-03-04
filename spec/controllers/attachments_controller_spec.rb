@@ -443,7 +443,7 @@ RSpec.describe AttachmentsController, type: :controller do
         expect(flash[:success]).to match(/Attachment updated/)
         expect(flash[:error]).to be_nil
         expect(response).to redirect_to(course_path(course))
-      end.to change(Attachment, :count).by(0)
+      end.not_to change(Attachment, :count)
       att.reload
       expect(att.name).to eq("new_name")
       expect(att.mime_type).to eq("new_mime_type")
@@ -465,7 +465,7 @@ RSpec.describe AttachmentsController, type: :controller do
         expect(flash[:success]).to match(/Attachment updated/)
         expect(flash[:error]).to be_nil
         expect(response).to redirect_to(course_assessment_path(course, assessment))
-      end.to change(Attachment, :count).by(0)
+      end.not_to change(Attachment, :count)
       assess_att.reload
       expect(assess_att.name).to eq("new_name")
       expect(assess_att.mime_type).to eq("new_mime_type")
@@ -489,7 +489,7 @@ RSpec.describe AttachmentsController, type: :controller do
         expect(flash[:success]).to be_nil
         expect(flash[:error]).to match(/Name can't be blank/)
         expect(response).to redirect_to(edit_course_attachment_path(course, att))
-      end.to change(Attachment, :count).by(0)
+      end.not_to change(Attachment, :count)
       att.reload
       expect(att.name).not_to eq("")
       expect(att.mime_type).not_to eq("new_mime_type")
@@ -512,7 +512,7 @@ RSpec.describe AttachmentsController, type: :controller do
         expect(flash[:error]).to match(/Name can't be blank/)
         expect(response).to redirect_to(edit_course_assessment_attachment_path(course, assessment,
                                                                                assess_att))
-      end.to change(Attachment, :count).by(0)
+      end.not_to change(Attachment, :count)
       assess_att.reload
       expect(assess_att.name).not_to eq("")
       expect(assess_att.mime_type).not_to eq("new_mime_type")
@@ -534,7 +534,7 @@ RSpec.describe AttachmentsController, type: :controller do
           released: false,
         } }
         expect(flash[:success]).to be_nil
-      end.to change(Attachment, :count).by(0)
+      end.not_to change(Attachment, :count)
       att.reload
       expect(att.name).not_to eq("new_name")
       expect(att.mime_type).not_to eq("new_mime_type")
@@ -554,7 +554,7 @@ RSpec.describe AttachmentsController, type: :controller do
                                   released: false,
                                 } }
         expect(flash[:success]).to be_nil
-      end.to change(Attachment, :count).by(0)
+      end.not_to change(Attachment, :count)
       assess_att.reload
       expect(assess_att.name).not_to eq("new_name")
       expect(assess_att.mime_type).not_to eq("new_mime_type")
