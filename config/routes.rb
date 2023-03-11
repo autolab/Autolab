@@ -7,6 +7,8 @@ Rails.application.routes.draw do
     post 'lti_launch/launch', to: "lti_launch#launch"
     get 'lti_launch/launch', to: "lti_launch#launch"
     post 'lti_nrps/sync_roster', to: "lti_nrps#sync_roster"
+  get 'lti_config/index', to: "lti_config#index"
+  post 'lti_config/update_config', to: "lti_config#update_config"
 
   namespace :oauth, { defaults: { format: :json } } do
     get "device_flow_init", to: "device_flow#init"
@@ -45,13 +47,14 @@ Rails.application.routes.draw do
     end
   end
 
-  root "courses#index"
+  root "courses#courses_redirect"
 
   devise_for :users, controllers: { omniauth_callbacks: "users/omniauth_callbacks",
                                     registrations: "registrations" },
                      path_prefix: "auth"
 
   get "contact", to: "home#contact"
+  get "courses", to: "courses#index"
 
   namespace :home do
     if Rails.env == "development" || Rails.env == "test"
@@ -67,9 +70,10 @@ Rails.application.routes.draw do
   get "device_flow_resolve", to: "device_flow_activation#resolve"
   get "device_flow_auth_cb", to: "device_flow_activation#authorization_callback"
 
-  resource :admin do
+  resource :admin, :except => [:show] do
     match "email_instructors", via: [:get, :post]
     match "github_integration", via: [:get]
+    post "clear_cache"
   end
 
   resources :users do

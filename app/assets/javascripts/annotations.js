@@ -24,6 +24,31 @@ $(window).on('resize', function () {
   resizeGradeList();
 });
 
+function getSharedCommentsForProblem(problem_id) {
+  return localCache['shared_comments'][problem_id]?.map(
+    (annotation) => {
+      return {label: annotation.comment ?? annotation, value: annotation}
+    }
+  )
+}
+
+const selectAnnotation = box => (e, ui) => {
+  const {label, value} = ui.item;
+
+  const score = value.value ?? 0;
+  box.find('#comment-score').val(score);
+
+  const $textarea = box.find("#comment-textarea");
+  M.textareaAutoResize($textarea);
+
+  return false;
+}
+
+function focusAnnotation( event, ui ) {
+  $(this).val(ui.item.label);
+  return false;
+}
+
 // retrieve shared comments
 // also retrieves annotation id to allow easy deletion in the future
 function retrieveSharedComments() {
@@ -32,9 +57,8 @@ function retrieveSharedComments() {
     data.forEach(e => {
       if (!e.problem_id)
         return;
-
       localCache['shared_comments'][e.problem_id] ||= [];
-      localCache['shared_comments'][e.problem_id].push(e.comment);
+      localCache['shared_comments'][e.problem_id].push(e);
     });
   });
 }
@@ -145,11 +169,13 @@ function plusFix(n) {
 // function called after create, update & delete of annotations
 function fillAnnotationBox() {
   retrieveSharedComments();
+  $('#loadScreen').css('display', 'flex');
   $.get(document.URL, function(data) {
     const $page = $('<div />').html(data);
     $('.problemGrades').html($page.find('.problemGrades'));
     $('#annotationPane').html($page.find(' #annotationPane'));
     $('.collapsible').collapsible({ accordion: false });
+    $('#loadScreen').hide();
     attachChangeFileEvents();
     attachAnnotationPaneEvents();
   });
@@ -342,7 +368,8 @@ function attachEvents() {
 function attachChangeFileEvents() {
   // Set up file switching to use the local cache
   function changeFileClickHandler(e) {
-    const wasCachedLocally = changeFile($(this).data("header_position"));
+    const targetHeader = $(this).data("header_position");
+    const wasCachedLocally = (targetHeader === currentHeaderPos) || changeFile(targetHeader);
     if (wasCachedLocally) {
       e.preventDefault();
       if ($(this).data("line")) {
@@ -364,6 +391,7 @@ function attachAnnotationPaneEvents() {
   // Add action
   $(".global-annotation-add-button").on("click", function (e) {
     e.preventDefault();
+    if ($('#loadScreen').css('display') === 'flex') return;
     const problem = $(this).data("problem");
     const $headerDiv = $(this).parent().parent();
 
@@ -375,6 +403,7 @@ function attachAnnotationPaneEvents() {
   // Edit action
   $(".global-annotation-edit-button").on("click", function (e) {
     e.preventDefault();
+    if ($('#loadScreen').css('display') === 'flex') return;
     const problem = $(this).parent().data("problem");
     const score = $(this).parent().data("score");
     const comment = $(this).parent().data("comment");
@@ -390,6 +419,7 @@ function attachAnnotationPaneEvents() {
   // Delete action for global annotations
   $('.global-annotation-delete-button').on("click", function (e) {
     e.preventDefault();
+    if ($('#loadScreen').css('display') === 'flex') return;
     if (!confirm("Are you sure you want to delete this annotation?")) return;
     const annotationIdData = $(this).parent().data('annotationid');
     const annotationId = annotations.findIndex((e) => e.id === annotationIdData);
@@ -411,6 +441,7 @@ function attachAnnotationPaneEvents() {
   // Chevron events (collapse / show problem)
   $('.collapsible-header-controls .collapse-icon, .collapsible-header-controls .expand-icon').on('click', function(e) {
     e.preventDefault();
+    if ($('#loadScreen').css('display') === 'flex') return;
     $(e.target).closest(".collapsible-header-wrap").find(".collapsible-header").click();
   });
 }
@@ -510,10 +541,13 @@ function newAnnotationFormCode() {
 
   box.find('#comment-textarea').autocomplete({
     appendTo: box.find('#comment-textarea').parent(),
+    source: getSharedCommentsForProblem(box.find("select").val()) || [],
     minLength: 0,
     delay: 0,
-    source: localCache["shared_comments"][box.find("select").val()] || []
+    select: selectAnnotation(box),
+    focus: focusAnnotation
   }).focus(function () {
+    M.textareaAutoResize($(this));
     $(this).autocomplete('search', $(this).val())
   });
 
@@ -523,7 +557,9 @@ function newAnnotationFormCode() {
     const problem_id = $(this).val();
 
     // Update autocomplete to display shared comments for selected problem
-    box.find("#comment-textarea").autocomplete("option", "source", localCache["shared_comments"][problem_id] || []);
+    box.find("#comment-textarea").autocomplete({
+        source: getSharedCommentsForProblem(problem_id) || []
+    });
   });
 
   box.find('.annotation-form').submit(function (e) {
@@ -589,10 +625,15 @@ function globalAnnotationFormCode(newAnnotation, config) {
     appendTo: box.find('#comment-textarea').parent(),
     minLength: 0,
     delay: 0,
-    source: localCache["shared_comments"][problemNameToIdMap[config.problem]] || []
+    source: getSharedCommentsForProblem(problemNameToIdMap[config.problem]) || [],
+    select: selectAnnotation(box),
+    focus: focusAnnotation
   }).focus(function () {
+    M.textareaAutoResize($(this));
     $(this).autocomplete('search', $(this).val())
   });
+
+  M.textareaAutoResize(box.find('#comment-textarea'));
 
   box.tooltip();
 
@@ -727,13 +768,18 @@ function newAnnotationBox(annotation) {
     e.preventDefault();
     box.find('.annotation-box').hide();
     box.find('.annotation-form').show().css('width', '100%');
+    
+    M.textareaAutoResize(box.find('#comment-textarea'));
 
     box.find('#comment-textarea').autocomplete({
       appendTo: box.find('#comment-textarea').parent(),
       minLength: 0,
       delay: 0,
-      source: localCache["shared_comments"][annotation.problem_id] || [],
+      source: getSharedCommentsForProblem(annotation.problem_id) || [],
+      select: selectAnnotation(box),
+      focus: focusAnnotation,
     }).focus(function () {
+      M.textareaAutoResize($(this));
       $(this).autocomplete('search', $(this).val())
     });
     box.tooltip();
@@ -745,7 +791,9 @@ function newAnnotationBox(annotation) {
     const problem_id = $(this).val();
 
     // Update autocomplete to display shared comments for selected problem
-    box.find("#comment-textarea").autocomplete("option", "source", localCache["shared_comments"][problem_id] || []);
+    box.find("#comment-textarea").autocomplete({
+        source: getSharedCommentsForProblem(problem_id) || [],
+    });
   });
 
   box.find('.annotation-delete-button').on("click", function (e) {

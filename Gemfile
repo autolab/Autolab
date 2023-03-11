@@ -1,5 +1,5 @@
 source 'https://rubygems.org'
-ruby '2.6.8'
+ruby '2.7.7'
 
 gem 'rails', '=6.0.5'
 
@@ -86,6 +86,12 @@ gem 'httparty'
 gem 'rspec-rails', '>=3.5.0'
 gem 'rack-test'
 gem 'capybara', group: [:development, :test]
+# To enable webdriver testing capabilities along with capybara
+gem 'selenium-webdriver', '>=4.7.1', group: :test
+# required to run webdriver for selenium on chrome
+gem 'webdrivers', group: :test
+# required for capybara debugging
+gem 'launchy', group: :test
 gem 'factory_bot_rails', group: [:development, :test]
 gem 'database_cleaner', group: [:development, :test]
 gem 'webmock', group: [:development, :test]
@@ -123,18 +129,18 @@ group :development do
   gem 'rubocop-rails', require: false
 
   # pre-commit hook for rubocop
-  gem 'overcommit' 
+  gem 'overcommit'
 
   # documentation generator
   gem 'yard'
 
   # sqlite3 adapter
-  gem 'sqlite3', '~> 1.4'
+  gem 'sqlite3', '1.5.1'
 end
 
 # Also install sqlite3 for docker installations
 if ENV['DEPLOY_METHOD'] == "docker"
-  gem 'sqlite3', '~> 1.4'
+  gem 'sqlite3', '1.5.1'
 end
 
 gem 'tzinfo-data'
@@ -155,7 +161,7 @@ gem 'sprockets-rails', '>=3.2.1'
 
 gem "jstz-rails3-plus", ">= 1.0"
 
-# For getting file types 
+# For getting file types
 gem 'mimemagic', '>= 0.3.7'
 
 # For encrypting API tokens

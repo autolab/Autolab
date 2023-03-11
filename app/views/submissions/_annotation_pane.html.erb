@@ -1,4 +1,17 @@
 <div id="annotationPane">
+  <div id="loadScreen">
+    <div class="preloader-wrapper small active">
+      <div class="spinner-layer spinner-red-only">
+        <div class="circle-clipper left">
+          <div class="circle"></div>
+        </div><div class="gap-patch">
+          <div class="circle"></div>
+        </div><div class="circle-clipper right">
+          <div class="circle"></div>
+        </div>
+      </div>
+    </div>
+  </div>
   <div class="annotationSummary">
     <ul class="collapsible expandable">
       <% p_scores = @submission.problems_to_scores %>
@@ -44,7 +57,7 @@
                           </span>
                         </div>
                         <div class="annotation-description">
-                          <span style="white-space: pre-line;"><%= description %></span>
+                          <span><%= description %></span>
                         </div>
                         <% if @cud.instructor? or @cud.course_assistant? %>
                         <div class="annotation-tools">
@@ -91,7 +104,7 @@
                               </span>
                             </div>
                             <div class="annotation-description">
-                              <span style="white-space: pre-line;"><%= description %></span>
+                              <span><%= description %></span>
                             </div>
                         <% end %>
                       </div>

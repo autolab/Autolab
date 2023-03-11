@@ -10,6 +10,8 @@ on:
     branches: [ master ]
   pull_request:
     branches: [ master ]
+  merge_group:
+    branches: [ master ]
 jobs:
   lint:
     runs-on: ubuntu-latest
@@ -19,7 +21,7 @@ jobs:
         uses: actions/checkout@v3
       
       - name: Install Ruby
-        uses: ruby/setup-ruby@0a29871fe2b0200a17a4497bae54fe5df0d973aa # v1.115.3
+        uses: ruby/setup-ruby@v1.134.0
         with:
           bundler-cache: true
           cache-version: 3
@@ -40,7 +42,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Install Ruby
-        uses: ruby/setup-ruby@0a29871fe2b0200a17a4497bae54fe5df0d973aa # v1.115.3
+        uses: ruby/setup-ruby@v1.134.0
         with:
           bundler-cache: true
           cache-version: 3
@@ -48,7 +50,6 @@ jobs:
       - name: Set up Autolab
         run: |
           cp config/database.github.yml config/database.yml
-          cp config/lti_settings.yml.template config/lti_settings.yml
           cp config/school.yml.template config/school.yml
           cp config/autogradeConfig.rb.template config/autogradeConfig.rb
           cp .env.template .env
@@ -59,9 +60,7 @@ jobs:
           sudo /etc/init.d/mysql start
           RAILS_ENV=development bundle exec rails db:create
           ./bin/initialize_secrets.sh
-          RAILS_ENV=test bundle exec rails db:create
-          RAILS_ENV=test bundle exec rails db:schema:load
-          RAILS_ENV=test bundle exec rake autolab:populate
+          RAILS_ENV=test bundle exec rails autolab:setup_test_env
 
       - name: Run tests
         run: bundle exec rails spec

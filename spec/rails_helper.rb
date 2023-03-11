@@ -1,12 +1,15 @@
 # This file is copied to spec/ when you run 'rails generate rspec:install'
 ENV["RAILS_ENV"] ||= "test"
 require "spec_helper"
-require File.expand_path("../../config/environment", __FILE__)
+require File.expand_path('../config/environment', __dir__)
 require "rspec/rails"
-require "capybara/rspec"
+require 'capybara/rspec'
+require 'capybara/rails'
 require "devise"
+require "selenium/webdriver"
+
 # Requires supporting ruby files in spec/support/ and its subdirectories.
-Dir[Rails.root.join("spec/support/**/*.rb")].each { |f| require f }
+Dir[Rails.root.join("spec/support/**/*.rb")].sort.each { |f| require f }
 
 # Checks for pending migrations before tests are run.
 # If you are not using ActiveRecord, you can remove this line.
@@ -28,6 +31,28 @@ RSpec.configure do |config|
   config.extend ControllerMacros, type: :controller
 
   MiniRacer::Platform.set_flags! :single_threaded
+
+  config.include Capybara::DSL
+  # rack_test to be used when selenium is not necessary as it is faster
+  Capybara.default_driver = :rack_test
+  Capybara.server = :webrick
+
+  # driver needed for Selenium to run
+  Capybara.register_driver :chrome do |app|
+    Capybara::Selenium::Driver.new(app, browser: :chrome)
+  end
+
+  Capybara.register_driver :headless_chrome do |app|
+    capabilities = Selenium::WebDriver::Remote::Capabilities.chrome(
+      'goog:chromeOptions': { args: %w[headless] }
+    )
+
+    Capybara::Selenium::Driver.new app,
+                                   browser: :chrome,
+                                   capabilities: capabilities
+  end
+  # change to chrome to see execution on browser
+  Capybara.javascript_driver = :headless_chrome
 
   # Before hooks for initialization
   config.before(:suite) do

@@ -3,7 +3,7 @@ AllCops:
   Include:
     - '**/Rakefile'
     - '**/config.ru'
-    - 'spec/factories/*.rb'
+    - 'spec/**/*.rb'
     - 'app/controllers/*.rb'
     - 'app/models/*.rb'
   Exclude:

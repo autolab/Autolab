@@ -1,19 +1,19 @@
 <% content_for :javascripts do %>
   <script>
-    jQuery(function() {
-      /* a way to mimic nested anchor tags */
-      $('a.collection-item span.new.badge').each(function(idx, obj) {
-        $(obj).on("click", function() {
-          window.location = obj.dataset.url;
-          return false;  // prevent click propagation
-        });
-      });
-      <% if (@cud.instructor? || @cud.course_assistant? && @course.watchlist_allow_ca) %>
-        $.getJSON('metrics/get_num_pending_instances',function(data, status){
-          if(status=='success' && data['num_pending'] != 0){
-            // when there is a non-zero number of pending instances
-            var pending_instances_str = 
-              `<div class='col s1 metrics'>
+      jQuery(function() {
+          /* a way to mimic nested anchor tags */
+          $('a.collection-item span.new.badge').each(function(idx, obj) {
+              $(obj).on("click", function() {
+                  window.location = obj.dataset.url;
+                  return false;  // prevent click propagation
+              });
+          });
+          <% if (@cud.instructor? || @cud.course_assistant? && @course.watchlist_allow_ca) %>
+          $.getJSON('metrics/get_num_pending_instances',function(data, status){
+              if(status=='success' && data['num_pending'] != 0){
+                  // when there is a non-zero number of pending instances
+                  var pending_instances_str =
+                      `<div class='col s1 metrics'>
                 <i class='material-icons left metrics'>assessment</i>
               </div>
               <div class='col s4 metrics'>
@@ -22,19 +22,19 @@
               <h7 class='metrics'>
                 Student Metrics
               </h7>`;
-            $('.row.metrics').empty().append(pending_instances_str);
-          }
-        });
-      <% end %>
-    });
+                  $('.row.metrics').empty().append(pending_instances_str);
+              }
+          });
+          <% end %>
+      });
   </script>
 <% end %>
 
 <% content_for :stylesheets do %>
   <style>
-    .collection-item {
-      overflow: auto;
-    }
+      .collection-item {
+          overflow: auto;
+      }
   </style>
 <% end %>
 
@@ -42,7 +42,7 @@
            locals: { announcements: @announcements } %>
 
 <% if @is_instructor and @course.exam_in_progress? %>
-    <p class="attention">An exam is in progress. Uncheck Admin > Edit Course > Exam In Progress after it's administered.</p>
+  <p class="attention">An exam is in progress. Uncheck Admin > Edit Course > Exam In Progress after it's administered.</p>
 <% end %>
 
 <!-- General course information including COURSE NAME, (COURSE WEB),
@@ -52,79 +52,85 @@
   <div class="col s12 m12" style="margin-bottom: 0">
     <div class="card" style="margin-bottom: 0">
       <div class="card-content white">
-       <span class="card-title black-text" style="font-size: 40px"><b><%= "#{@course.display_name} #{@course.semester? ? "(" + @course.semester + ")" : "" } "%></b></span>
-       <h3 style="border-bottom: 4px solid #dddddd"></h3>
-          <p style="font-size: 18px">Section: <b><%= "#{@cud.section}" %></b></p>
-          <p style="font-size: 18px">Number of grace days remaining: <b><%="#{@cud.global_grace_days_left}"%></b></p></br>
+        <span class="card-title black-text" style="font-size: 40px"><b><%= "#{@course.display_name} #{@course.semester? ? "(" + @course.semester + ")" : "" } "%></b></span>
+        <h3 style="border-bottom: 4px solid #dddddd"></h3>
+        <p style="font-size: 18px">Section: <b><%= "#{@cud.section}" %></b></p>
+        <p style="font-size: 18px">Number of grace days remaining: <b><%="#{@cud.global_grace_days_left}"%></b></p></br>
 
-          <% if @course.website.nil? || @course.website.eql?("") %>
-            <span class="btn btn-large disabled"><%= "<i class='material-icons left'>web</i> Course Website".html_safe %></span>
-          <% else %>
-            <%= link_to "<i class='material-icons left'>web</i> Course Website".html_safe, @course.website, target: "_blank", title: "Go to course website", :class => "btn btn-large red darken-3" %>
-          <% end %>
+        <% if @course.website.nil? || @course.website.eql?("") %>
+          <span class="btn btn-large disabled"><%= "<i class='material-icons left'>web</i> Course Website".html_safe %></span>
+        <% else %>
+          <%= link_to "<i class='material-icons left'>web</i> Course Website".html_safe, @course.website, target: "_blank", title: "Go to course website", :class => "btn btn-large red darken-3" %>
+        <% end %>
 
-          <% if !(!@cud.instructor? && @cud.course_assistant? && @cud.section.blank?) %>
-            <%= link_to "<i class='material-icons left'>grading</i> Gradebook".html_safe, [@course, @cud, :gradebook], title: "View your gradebook", :class => "btn btn-large red darken-3" %>
-          <% end %>
+        <% if !(!@cud.instructor? && @cud.course_assistant? && @cud.section.blank?) %>
+          <%= link_to "<i class='material-icons left'>grading</i> Gradebook".html_safe, [@course, @cud, :gradebook], title: "View your gradebook", :class => "btn btn-large red darken-3" %>
+        <% end %>
 
-          <% if (@cud.instructor? || @cud.course_assistant? && @course.watchlist_allow_ca) %>
-           <%= link_to "<div class='row metrics'><i class='material-icons left'>assessment</i> Student Metrics</div>".html_safe, course_metrics_path, title: "Metrics for Identifying Students in Need", :class => "btn btn-large red darken-3" %>
-          <% end %>
-      </div>
+        <% if (@cud.instructor? || @cud.course_assistant? && @course.watchlist_allow_ca) %>
+          <%= link_to "<div class='row metrics'><i class='material-icons left'>assessment</i> Student Metrics</div>".html_safe, course_metrics_path, title: "Metrics for Identifying Students in Need", :class => "btn btn-large red darken-3" %>
+        <% end %>
+
+        <% if @is_instructor %>
+          <%= link_to "<i class='material-icons left'>assignment</i> Install Assessment".html_safe, {:action=>"install_assessment"}, {:title=>"Install Assessment", :class => "btn btn-large red darken-3"} %>
+        <% end %>
       </div>
     </div>
   </div>
 </div>
 
-<% if @is_instructor %>
-<div class="section">
-  <h3 class="section-title"><span class="white">Instructor Actions</span></h3>
-  <span style="padding-left: 10px"><%= link_to 'Install Assessment',
-                    {:action=>"install_assessment"},
-                    {:title=>"Install Assessment", :class => "btn btn-large red darken-3" } %></span>
+<% if @course.assessments.exists? %>
+  <div class="section">
+    <h3 class="section-title"><span class="white">Assessments</span></h3>
 
-<% end %>
+    <div class="row">
+      <% @course.assessment_categories.each_with_index do |cat, idx| %>
+        <% if idx % 3 == 0 %>
+          <div class="clearfix hide-on-small-only"></div>
+        <% end %>
+        <% asmts = @course.assessments_with_category(cat, @cud.student?) %>
+        <% if asmts.any? %>
+          <div class="col s12 m4">
+            <div class="card hoverable">
+              <div class="card-content red darken-3">
+                <span class="card-title white-text"><%= cat %></span>
+              </div>
 
-<div class="section">
-  <h3 class="section-title"><span class="white">Assignments</span></h3>
-
-  <div class="row">
-    <% @course.assessment_categories.each_with_index do |cat, idx| %>
-      <% if idx % 3 == 0 %>
-        <div class="clearfix hide-on-small-only"></div>
-      <% end %>
-      <% asmts = @course.assessments_with_category(cat, @cud.student?) %>
-      <% if asmts.any? %>
-        <div class="col s12 m4">
-          <div class="card hoverable">
-            <div class="card-content red darken-3">
-              <span class="card-title white-text"><%= cat %></span>
-            </div>
-
-            <div class="collection red darken-4">
-              <% asmts.each do |asmt| %>
-                <%= link_to course_assessment_url(@course, asmt),
-                    :class => "collection-item grey-text text-darken-4" do %>
-                  <%= asmt.display_name %>
-                  <% if !asmt.released? %>
-                      <span class="new badge blue darken-4" data-badge-caption="unreleased" data-url="<%= edit_course_assessment_url(@course, asmt) %>/handin"></span>
+              <div class="collection red darken-4">
+                <% asmts.each do |asmt| %>
+                  <%= link_to course_assessment_path(@course, asmt),
+                      :class => "collection-item grey-text text-darken-4" do %>
+                    <%= asmt.display_name %>
+                    <% if !asmt.released? %>
+                        <span class="new badge blue darken-4" data-badge-caption="unreleased" data-url="<%= edit_course_assessment_path(@course, asmt) %>/handin"></span>
+                    <% end %>
                   <% end %>
                 <% end %>
-              <% end %>
+              </div>
+
             </div>
-
           </div>
-        </div>
+        <% end %>
       <% end %>
-    <% end %>
 
+    </div>
   </div>
-</div>
+<% end %>
 
-<% if @attachments.any? %>
+<% if @attachments.any? or @cud.instructor? %>
   <div class="section">
     <h3 class="section-title"><span class="white">Attachments</span></h3>
     <ul class="collection with-header attachments">
+      <% if @cud.instructor? %>
+        <li class="collection-item add">
+          <p>
+            <%= link_to new_course_attachment_path(@course) do %>
+              <i class="material-icons left">note_add</i>Add Attachment
+            <% end %>
+            <span class="secondary-content"></span>
+          </p>
+        </li>
+      <% end %>
       <%= render @attachments %>
     </ul>
   </div>

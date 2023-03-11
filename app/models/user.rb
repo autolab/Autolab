@@ -268,6 +268,7 @@ private
   def first_or_last_name
     return if first_name.present? || last_name.present?
 
-    errors.add(:base, "Student first name and last name can't both be blank")
+    errors.add(:first_name, "First name and last name can't both be blank")
+    errors.add(:last_name, "First name and last name can't both be blank")
   end
 end

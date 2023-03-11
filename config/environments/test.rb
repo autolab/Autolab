@@ -49,4 +49,5 @@ Rails.application.configure do
 
   # Raises error for missing translations.
   # config.action_view.raise_on_missing_translations = true
+  config.lti_config_location  = Rails.root.join('spec/fixtures/lti_config_files').to_s
 end

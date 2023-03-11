@@ -1,10 +1,13 @@
 
 <li class="collection-item">
   <p>
-  <% if attachment.assessment.nil? then %>
-    <i class="material-icons left">file_download</i>
+  <% if attachment.assessment.nil? %>
     <%= link_to [@course, attachment] do %>
+      <i class="material-icons left">file_download</i>
       <%= attachment.name %>
+      <% unless attachment.released %>
+        <b>(Not Released)</b>
+      <% end %>
     <% end %>
   <% else %> 
     <%= link_to [@course, attachment.assessment, attachment] do %>
@@ -12,17 +15,17 @@
       <%= attachment.name %>
       <% unless attachment.released %>
           <b>(Not Released)</b>
-      <%  end %>
+      <% end %>
     <% end %>
   <% end %>
 
-  <% if !attachment.assessment.nil? && @assessment.nil? then %>
+  <% if !attachment.assessment.nil? && @assessment.nil? %>
     (<%= attachment.assessment.display_name %>)
   <% end %>
 
   <span class="secondary-content">
-  <% if @cud.instructor? then %>
-    <% if attachment.assessment.nil? then %>
+  <% if @cud.instructor? %>
+    <% if attachment.assessment.nil? %>
       <%= link_to '<i class="material-icons left">mode_edit</i>'.html_safe, [:edit, @course, attachment], {class:"small"} %>
       <%= link_to '<i class="material-icons left">delete</i>'.html_safe, [@course, attachment], {method: :delete, class:"small"} %>
     <% else %>

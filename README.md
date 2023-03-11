@@ -44,9 +44,7 @@ We released new documentation! Check it out [here](https://docs.autolabproject.c
 
 2. Create and migrate the database.
 	```sh
-	RAILS_ENV=test bundle exec rails db:create
-	RAILS_ENV=test bundle exec rails db:schema:load
-	RAILS_ENV=test bundle exec rake autolab:populate
+	RAILS_ENV=test bundle exec rails autolab:setup_test_env
 	```
    Do not forget to use `RAILS_ENV=test bundle exec` in front of every rake/rails command.
 
@@ -62,6 +60,15 @@ After setting up the test environment, simply run spec by:
 
 ```sh
 bundle exec rails spec
+```
+
+You may need to run `RAILS_ENV=test bundle exec rails autolab:setup_test_env` when re-running tests as some tests
+may create models in the database.
+
+You can also run individual spec files by running:
+
+```sh
+rake spec SPEC=./spec/<path_to_spec>/<spec_file>.rb
 ```
 
 ## Rails 5 Support
@@ -108,6 +115,13 @@ Please feel free to use Autolab at your school/organization. If you run into any
 
 
 ## Changelog
+### [v2.10.0](https://github.com/autolab/Autolab/releases/tag/v2.10.0) (2023/01/13) LTI Integration, Generalized Feedback, and Streaming Output
+- Autolab now supports roster syncing with courses on Canvas and other LTI (Learning Tools Interoperability) services. For full instructions on setup, see the documentation.
+- Streaming partial output and new feedback interface
+- Generalized annotations
+- Numerous UI updates
+- Numerous bug fixes and improvements
+
 ### [v2.9.0](https://github.com/autolab/Autolab/releases/tag/v2.9.0) (2022/08/08) Metrics Excluded Categories and New Speedgrader Interface
 - Instructors can now exclude selected categories of assessments from metrics watchlist calculations
 - Introduced new speedgrader interface which utilizes the Golden Layout library, amongst other new features

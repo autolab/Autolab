@@ -1,6 +1,13 @@
+@import 'variables';
+
 td.focus {
   background-color: #666666 !important;
   color: white !important;
+}
+
+.container {
+  width: 90%;
+  max-width: none;
 }
 
 #grades_wrapper .tools {
@@ -24,7 +31,7 @@ td.focus {
 }
 
 #grades td.edit:hover {
-  color: #e1e1e1;
+  color: rgba(140, 0, 0, 0.95);
 }
 
 #grades tr.sortable th {
@@ -35,6 +42,10 @@ td.focus {
   padding-left: 7px;
   padding-right: 7px;
   white-space: nowrap;
+}
+
+#grades th.sorting, #grades th.sorting_asc, #grades th.sorting_desc {
+  cursor: pointer;
 }
 
 #grades_filter {
@@ -48,7 +59,7 @@ td.focus {
 #grades_filter input {
   border: 1px solid #d0d0d0;
   border-radius: 3px;
-  box-shadow: 0 0 2px #ccc;
+  box-shadow: 0 0 2px $autolab-highlight-gray;
   font-size: 18px;
   padding: 6px 12px;
   width: 100%;
@@ -56,27 +67,25 @@ td.focus {
 }
 
 #grades td.edit input {
-  border: 0px solid #ccc;
+  border: 0 solid $autolab-highlight-gray;
   color: #e1e1e1;
   font: inherit;
   text-align: inherit;
 }
 
 #grades td.edit input:hover {
-  color: #e1e1e1;
+  color: rgba(140, 0, 0, 0.95);
 }
 
 #grades {
-  box-shadow: 0 0 5px 0px #eee;
+  box-shadow: 0 0 5px 0 $autolab-subtle-gray;
   font-size: 16px;
-  border: 1px solid #ccc;
   border-radius: 2px;
   border-collapse: collapse;
   margin: 0 auto 0 auto;
 }
 
 #grades td {
-  background-color: #f8f8f8;
   padding: 10px;
   border: 1px solid #e8e8e8;
   border-right: none;
@@ -89,7 +98,7 @@ td.focus {
 
 #grades td.edit {
   text-align: center;
-  background-color: white;
+  background-color: #f2f2f2;
 }
 
 #grades th {
@@ -98,8 +107,7 @@ td.focus {
   border-right: none;
   border-left: none;
   text-transform: uppercase;
-  font-size: 0.8em;
-  color: #909090;
+  font-size: 0.9em;
   white-space: nowrap;
   overflow: hidden;
   padding-left: 10px;
@@ -137,17 +145,16 @@ td.focus {
 
 #grades .tweak a,
 #grades .id a {
-  color: #666666;
-  text-decoration: none;
   font: inherit;
 }
 
 #grades td.id > a.email {
   margin-right: 4px;
+  cursor: pointer;
 }
 
 #grades .tweak a:hover {
-  color: #e1e1e1;
+  color: rgba(140, 0, 0, 0.95);
 }
 
 #grades .released {
@@ -170,22 +177,26 @@ td.id {
   position: absolute;
   top: 0;
   left: 0;
-  box-shadow: 1px 1px 4px 1px #ccc;
+  box-shadow: 1px 1px 4px 1px $autolab-highlight-gray;
   border-radius: 5px;
   z-index: 100000;
   padding: 3px;
-  background-color: #eee;
+  background-color: #ebebeb;
   display: none;
-  max-width: 360px;
+}
+
+#grades .popover a:hover {
+  color: rgba(140, 0, 0, 0.95);
 }
 
 #grades td.id .popover span.filename {
   padding-left: 3px;
   line-height: 1.8em;
+  display: block;
+  text-align: center;
 }
 
 #grades td.id .popover span.filename span.links {
-  float: right;
   padding-right: 3px;
   text-transform: uppercase;
   font-weight: bold;
@@ -278,6 +289,10 @@ td.id {
   color: red;
 }
 
+#grades tr:last-child {
+  border-bottom: none;
+}
+
 .template {
   display: none;
 }
@@ -294,5 +309,29 @@ input[type="checkbox"]:not(:checked),
 }
 
 #interaction_badge {
-  color: #0882af;
+  color: $autolab-blue-text;
+}
+
+th:not(.sorting_asc) .up-icon {
+  display: none;
+}
+
+th:not(.sorting_desc) .down-icon {
+  display: none;
+}
+
+th:not(.sorting) .sort-icon {
+  display: none;
+}
+
+#grades #icon_template {
+  display: inline-block;
+  line-height: 14px;
+  vertical-align: middle;
+}
+
+#table_container {
+  text-align: center;
+  width: 100%;
+  overflow: auto;
 }

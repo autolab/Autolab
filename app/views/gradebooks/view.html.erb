@@ -8,48 +8,6 @@
 
   <!-- Temporary Bootstrap overrides -->
   <style type="text/css">
-    *, *:before, *:after {
-      -moz-box-sizing: content-box;
-           box-sizing: content-box;
-    }
-    div#pageBody {
-      width: 95%;
-      margin: 0 auto;
-      padding: 15px;
-      box-sizing: border-box;
-    }
-
-    h1#courseTitle {
-      font-size: 24.5px;
-      margin-bottom: 0;
-    }
-
-    span.label {
-      text-transform: uppercase;
-      font-size: 8.5px;
-      vertical-align: text-bottom;
-    }
-
-    .slick-cell img {
-      vertical-align: baseline;
-    }
-
-    input#filter {
-      margin-bottom: 0;
-    }
-
-    #gradebook {
-      font-size: 13px;
-    }
-
-    input {
-      font-size: inherit !important;
-    }
-
-    div#footer {
-      display: none;
-    }
-
     <% unless @options[:show_actions] %>
       div#filter_container {
         margin-bottom: 20px;
@@ -79,27 +37,29 @@
   <div class="gb_message"><%=raw(@course.gb_message)%></div>
 <% end %>
 
-<div class="row">
-  <div class="input-field col s4 offset-s4 filter_container">
+<div class="gradebook-row">
+  <div class="filter_container search-student-bar">
     <i class="material-icons prefix">search</i>
-    <input id="filter" placeholder="Search..." type="text"></input>
+    <div style="width: 30%;">
+      <input id="filter" placeholder="Search..." type="text">
+    </div>
+    <% if @options[:show_actions] %>
+      <div id="last_updated">
+        <a class="tip link" title="Export as CSV" href="<%= url_for :action => :csv %>">
+          Export
+        </a> /
+        <a class="tip link" title="Course Statistics" href="<%= url_for :action => :statistics %>">
+          Statistics
+        </a> /
+        <a class="tip regenerate" title="Regenerate (~10 seconds)" href="<%= url_for :action => :invalidate %>" data-method="post">
+          <i class="icon-refresh"></i>
+          <%= time_ago_in_words(DateTime.parse @matrix.last_updated) %> old
+        </a>
+      </div>
+    <% end %>
   </div>
 </div>
 
-<% if @options[:show_actions] %>
-  <div id="last_updated">
-    <a class="tip link" title="Export as CSV" href="<%= url_for :action => :csv %>">
-      Export
-    </a> /
-    <a class="tip link" title="Course Statistics" href="<%= url_for :action => :statistics %>">
-      Statistics
-    </a> /
-    <a class="tip regenerate" title="Regenerate (~10 seconds)" href="<%= url_for :action => :invalidate %>" data-method="post">
-      <i class="icon-refresh"></i>
-      <%= time_ago_in_words(DateTime.parse @matrix.last_updated) %> old
-    </a>
-  </div>
-<% end %>
 
 <div id="gradebook">
   <!-- will be filled in by gradebook.js -->

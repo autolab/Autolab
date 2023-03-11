@@ -1,3 +1,5 @@
+@import 'variables';
+
 .mobileonly {
   display: none;
 }
@@ -195,13 +197,13 @@ td.HiddenGradeCell {
 }
 
 table.announcements {
-  border: 1px solid #cccccc;
+  border: 1px solid $autolab-highlight-gray;
   border-collapse: collapse;
   width: 550px;
 }
 table.announcements th {
   text-align: left;
-  border: 1px solid #cccccc;
+  border: 1px solid $autolab-highlight-gray;
   font-family: Verdana, Arial, Helvetica, sans-serif;
   font-size: 13px;
   color: #990000;
@@ -239,7 +241,7 @@ a {
   height: 100%;
   max-height: 100%;
   padding: 60px 30px 30px 30px;
-  background-color: #eee;
+  background-color: $autolab-subtle-gray;
   overflow: scroll;
 
   -webkit-transition: all 0.3s ease-out;
@@ -249,7 +251,7 @@ a {
 }
 
 #gradesheetStudent:hover {
-  background-color: #eee;
+  background-color: $autolab-subtle-gray;
 
   -webkit-transition: all 0.3s ease-out;
   transition: all 0.3s ease-out;
@@ -326,14 +328,14 @@ ul.panel {
   -webkit-border-radius: 2px;
   border-radius: 2px;
   -moz-border-radius: 2px;
-  border: 1px solid #eee;
+  border: 1px solid $autolab-subtle-gray;
   overflow: hidden;
 }
 ul.panel li {
   margin: 0px;
   padding: 8px 15px;
-  box-shadow: 0px -1px 0px #eee;
-  -webkit-box-shadow: 0px -1px 0px #eee;
+  box-shadow: 0px -1px 0px $autolab-subtle-gray;
+  -webkit-box-shadow: 0px -1px 0px $autolab-subtle-gray;
 }
 
 ul.panel a,
@@ -348,7 +350,7 @@ ul.panel a:hover {
   color: #222;
 }
 ul.panel li:hover {
-  background-color: #eee;
+  background-color: $autolab-subtle-gray;
   box-shadow: 0px -1px 0px #e0e0e0, 0px 1px 0px #e0e0e0;
   -webkit-box-shadow: 0px -1px 0px #e0e0e0, 0px 1px 0px #e0e0e0;
 }
@@ -381,7 +383,7 @@ table.announcements li {
   padding: 10px;
   margin: 5px 0px;
   background-color: #fafafa;
-  border: 1px solid #eee;
+  border: 1px solid $autolab-subtle-gray;
   color: #666;
 }
 
@@ -473,7 +475,7 @@ input[type="button"] {
   padding: 5px;
   -webkit-border-radius: 2px;
   border-radius: 2px;
-  background-color: #eee;
+  background-color: $autolab-subtle-gray;
   background: -webkit-gradient(
     linear,
     0% 0%,
@@ -482,7 +484,7 @@ input[type="button"] {
     to(#e8e8e8)
   );
   color: #888;
-  border: 1px solid #ccc;
+  border: 1px solid $autolab-highlight-gray;
 }
 .button:hover,
 input[type="button"]:hover {
@@ -522,7 +524,7 @@ div.navLinks .navbutton,
 #coursetitle {
   font-size: 12px;
   cursor: pointer;
-  color: #eee;
+  color: $autolab-subtle-gray;
   position: relative;
   list-style: none;
   display: block;
@@ -602,7 +604,7 @@ li:hover .half {
   width: 150px;
   padding: 15px;
   margin: 0px 30px 0px 0px;
-  border-right: 1px solid #eee;
+  border-right: 1px solid $autolab-subtle-gray;
   float: left;
 }
 #content {
@@ -766,7 +768,7 @@ input[type="submit"] {
   padding: 5px;
   -webkit-border-radius: 2px;
   border-radius: 2px;
-  background-color: #eee;
+  background-color: $autolab-subtle-gray;
   background: -webkit-gradient(
     linear,
     0% 0%,
@@ -775,7 +777,7 @@ input[type="submit"] {
     to(#e8e8e8)
   );
   color: #888;
-  border: 1px solid #ccc;
+  border: 1px solid $autolab-highlight-gray;
 }
 input[type="submit"]:hover {
   background-color: #f5f5f5;
@@ -840,7 +842,7 @@ form p {
   color: #666;
   padding: 10px;
   padding-top: 0px;
-  border: 1px solid #eee;
+  border: 1px solid $autolab-subtle-gray;
   border-top: none;
   background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#fff), to(#f8f8f8));
 }
@@ -855,8 +857,8 @@ form p {
   padding: 10px;
   width: 450px;
   display: inline-block;
-  border-top: 1px solid #eee;
-  border-bottom: 1px solid #eee;
+  border-top: 1px solid $autolab-subtle-gray;
+  border-bottom: 1px solid $autolab-subtle-gray;
 }
 
 div.checkbox span.formtext {
@@ -868,7 +870,7 @@ input.bstrong {
   padding-left: 10px;
   padding-right: 10px;
   color: #444;
-  background-color: #ccc;
+  background-color: $autolab-highlight-gray;
   background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#bbb), to(#999));
   border: 1px solid #666;
 }
@@ -1035,7 +1037,7 @@ div.sidetable {
 }
 #ajaxTable tr:nth-child(odd),
 .ajaxTable tr:nth-child(odd) {
-  background: #eee;
+  background: $autolab-subtle-gray;
 }
 #ajaxTable td,
 .ajaxTable td {

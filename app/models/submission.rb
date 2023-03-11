@@ -425,7 +425,7 @@ private
         raw_score = raw_score! options
 
         # cache
-        Rails.cache.write(cache_key, raw_score)
+        Rails.cache.write(cache_key, raw_score, expires_in: 7.days, race_condition_ttl: 1.minute)
       end
     end
 

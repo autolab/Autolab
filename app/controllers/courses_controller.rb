@@ -4,11 +4,11 @@ require "fileutils"
 require "statistics"
 
 class CoursesController < ApplicationController
-  skip_before_action :set_course, only: %i[index new create]
+  skip_before_action :set_course, only: %i[courses_redirect index new create]
   # you need to be able to pick a course to be authorized for it
-  skip_before_action :authorize_user_for_course, only: %i[index new create]
+  skip_before_action :authorize_user_for_course, only: %i[courses_redirect index new create]
   # if there's no course, there are no persistent announcements for that course
-  skip_before_action :update_persistent_announcements, only: %i[index new create]
+  skip_before_action :update_persistent_announcements, only: %i[courses_redirect index new create]
 
   rescue_from ActionView::MissingTemplate do |_exception|
     redirect_to("/home/error_404")
@@ -20,6 +20,21 @@ class CoursesController < ApplicationController
     redirect_to(home_no_user_path) && return unless courses_for_user.any?
 
     @listing = categorize_courses_for_listing courses_for_user
+  end
+
+  def courses_redirect
+    courses_for_user = User.courses_for_user current_user
+    redirect_to(home_no_user_path) && return unless courses_for_user.any?
+
+    @listing = categorize_courses_for_listing courses_for_user
+    # if only enrolled in one course (currently), go to that course
+    # only happens when first loading the site, not when user goes back to courses
+    if @listing[:current].one?
+      course_name = @listing[:current][0].name
+      redirect_to course_assessments_url(course_name)
+    else
+      redirect_to(action: :index)
+    end
   end
 
   action_auth_level :show, :student
@@ -238,7 +253,7 @@ class CoursesController < ApplicationController
     # check if user_emails and role exist in params
     unless params.key?(:user_emails) && params.key?(:role)
       flash[:error] = "No user emails or role supplied"
-      redirect_to(course_users_path(@course)) && return
+      redirect_to(users_course_path(@course)) && return
     end
 
     user_emails = params[:user_emails].split(/\n/).map(&:strip)

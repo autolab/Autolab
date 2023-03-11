@@ -62,7 +62,10 @@ class AnnotationsController < ApplicationController
   # Gets all shared_comments of annotations
   action_auth_level :shared_comments, :course_assistant
   def shared_comments
-    result = Annotation.select("annotations.id, annotations.comment, annotations.problem_id")
+    result = Annotation.select("annotations.id,
+                                annotations.comment,
+                                annotations.problem_id,
+                                annotations.value")
                        .joins(:submission).where(shared_comment: true)
                        .where("submissions.assessment_id = ?", @assessment.id)
                        .order(updated_at: :desc).limit(50).as_json

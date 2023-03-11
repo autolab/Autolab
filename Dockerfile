@@ -7,7 +7,7 @@
 #     https://github.com/phusion/passenger-docker
 #
 #
-FROM phusion/passenger-ruby26:2.0.0
+FROM phusion/passenger-ruby27
 
 # Change to your time zone here
 RUN ln -fs /usr/share/zoneinfo/America/Los_Angeles /etc/localtime

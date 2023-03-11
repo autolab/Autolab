@@ -2,8 +2,26 @@
 // They will automatically be included in application.css.
 // You can use Sass (SCSS) here: https://sass-lang.com/
 @import "semantic-ui";
-$autolab-red: rgba(153, 0, 0, 0.9);
-$autolab-subtle-red: #C87B7E;
+@import 'variables';
+
+/* reset changes by semantic-ui (Line 8-24) */
+@media only screen and (min-width: 0) {
+  html {
+    font-size: 14px;
+  }
+}
+
+@media only screen and (min-width: 992px) {
+  html {
+    font-size: 14.5px;
+  }
+}
+
+@media only screen and (min-width: 1200px) {
+  html {
+    font-size: 15px;
+  }
+}
 
 .button.submit {
   color: #FFFFFF !important;

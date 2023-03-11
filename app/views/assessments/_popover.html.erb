@@ -2,6 +2,7 @@
 <% if s.filename %>
 <span class="filename">
     <%= view_file(s, s.filename, s.filename, s.filename) %>
+    <br>
     <span class="links">
         <% link = view_file(s, "View Archive", "View/Annotate Source"); if link %><%= link %> &middot;<% end %>
         <%= download_file(s, "Download") %>
@@ -16,7 +17,7 @@
         <% version = s.version == 0 ? "Unofficial" : s.version %>
         <%= version %>
         <% if @cud.instructor? %>
-            (<%= link_to "more...", { :action => "history", :cud_id => s.course_user_datum_id } %>)
+            (<%= link_to "Submission History", { :action => "history", :cud_id => s.course_user_datum_id } %>)
         <% end %>
     </td></tr>
     <% if @cud.instructor? && @assessment.version_penalty? %>
