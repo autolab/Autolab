@@ -5,6 +5,7 @@ module Contexts
         if asmt_name =~ /[^a-z0-9]/
           raise ArgumentError("Assessment name must contain only lowercase and digits")
         end
+
         # create assessment directory
         path = Rails.root.join("courses/#{new_course.name}/#{asmt_name}")
         FileUtils.mkdir_p(path)
@@ -12,19 +13,19 @@ module Contexts
         asmt.construct_default_config_file
 
         FactoryBot.create(:course_user_datum, course: new_course,
-                            user: @instructor_user,
-                            instructor: true)
+                                              user: @instructor_user,
+                                              instructor: true)
         FactoryBot.create(:course_user_datum, course: new_course,
-                            user: @course_assistant_user,
-                            instructor: false, course_assistant: true)
-        studentCuds = @students.each do |student|
+                                              user: @admin_user,
+                                              instructor: true)
+        FactoryBot.create(:course_user_datum, course: new_course,
+                                              user: @course_assistant_user,
+                                              instructor: false, course_assistant: true)
+        @students.each do |student|
           FactoryBot.create(:student, course: new_course, user: student)
         end
         @assessment = Assessment.where(course: new_course, name: asmt_name).first
-
       end
-
-      
     end
   end
 end
