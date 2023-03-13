@@ -1,6 +1,7 @@
 require "rails_helper"
 require "fileutils"
 include ControllerMacros
+require_relative "controllers_shared_context"
 
 RSpec.describe SchedulersController, type: :controller do
   render_views
@@ -99,153 +100,109 @@ RSpec.describe SchedulersController, type: :controller do
   end
 
   describe "#index" do
+    include_context "controllers shared context"
     context "when user is Autolab admin" do
       it_behaves_like "index_success" do
-        let!(:user) do
-          create_course_with_users
-          @admin_user
-        end
+        let!(:user) { admin_user }
       end
     end
 
     context "when user is Autolab instructor" do
       it_behaves_like "index_success" do
-        let!(:user) do
-          create_course_with_users
-          @instructor_user
-        end
+        let!(:user) { instructor_user }
       end
     end
 
     context "when user is Autolab user" do
       it_behaves_like "index_failure", login: true do
-        let!(:user) do
-          create_course_with_users
-          @students.first
-        end
+        let!(:user) { student_user }
       end
     end
 
     context "when user is not logged in" do
       it_behaves_like "index_failure", login: false do
-        let!(:user) do
-          create_course_with_users
-          @students.first
-        end
+        let!(:user) { student_user }
       end
     end
   end
 
   describe "#new" do
+    include_context "controllers shared context"
     context "when user is Autolab admin" do
       it_behaves_like "new_success" do
-        let!(:user) do
-          create_course_with_users
-          @admin_user
-        end
+        let!(:user) { admin_user }
       end
     end
 
     context "when user is Autolab instructor" do
       it_behaves_like "new_success" do
-        let!(:user) do
-          create_course_with_users
-          @instructor_user
-        end
+        let!(:user) { instructor_user }
       end
     end
 
     context "when user is Autolab user" do
       it_behaves_like "new_failure", login: true do
-        let!(:user) do
-          create_course_with_users
-          @students.first
-        end
+        let!(:user) { student_user }
       end
     end
 
     context "when user is not logged in" do
       it_behaves_like "new_failure", login: false do
-        let!(:user) do
-          create_course_with_users
-          @students.first
-        end
+        let!(:user) { student_user }
       end
     end
   end
 
   describe "#edit" do
+    include_context "controllers shared context"
     context "when user is Autolab admin" do
       it_behaves_like "edit_success" do
-        let!(:user) do
-          create_course_with_users
-          @admin_user
-        end
+        let!(:user) { admin_user }
       end
     end
 
     context "when user is Autolab instructor" do
       it_behaves_like "edit_success" do
-        let!(:user) do
-          create_course_with_users
-          @instructor_user
-        end
+        let!(:user) { instructor_user }
       end
     end
 
     context "when user is Autolab user" do
       it_behaves_like "new_failure", login: true do
-        let!(:user) do
-          create_course_with_users
-          @students.first
-        end
+        let!(:user) { student_user }
       end
     end
 
     context "when user is not logged in" do
       it_behaves_like "new_failure", login: false do
-        let!(:user) do
-          create_course_with_users
-          @students.first
-        end
+        let!(:user) { student_user }
       end
     end
   end
 
   describe "#show" do
+    include_context "controllers shared context"
     context "when user is Autolab admin" do
       it_behaves_like "show_success" do
-        let!(:user) do
-          create_course_with_users
-          @admin_user
-        end
+        let!(:user) { admin_user }
       end
     end
 
     context "when user is Autolab instructor" do
       it_behaves_like "show_success" do
-        let!(:user) do
-          create_course_with_users
-          @instructor_user
-        end
+        let!(:user) { instructor_user }
       end
     end
 
     context "when user is Autolab user" do
       it_behaves_like "show_failure", login: true do
-        let!(:user) do
-          create_course_with_users
-          @students.first
-        end
+        let!(:user) { student_user }
       end
     end
 
     context "when user is not logged in" do
       it_behaves_like "show_failure", login: false do
-        let!(:user) do
-          create_course_with_users
-          @students.first
-        end
+        let!(:user) { student_user }
       end
     end
   end

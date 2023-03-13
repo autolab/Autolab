@@ -1,14 +1,13 @@
 require "rails_helper"
 include ControllerMacros
+require_relative "controllers_shared_context"
 
 RSpec.describe AttachmentsController, type: :controller do
   render_views
 
   shared_examples "index_success" do
-    before(:each) do
-      sign_in(user)
-    end
     it "renders successfully" do
+      sign_in(user)
       cid = get_course_id_by_uid(user.id)
       cname = Course.find(cid).name
       get :index, params: { course_name: cname }
@@ -18,10 +17,8 @@ RSpec.describe AttachmentsController, type: :controller do
   end
 
   shared_examples "index_failure" do |login: false|
-    before(:each) do
-      sign_in(user) if login
-    end
     it "renders with failure" do
+      sign_in(user) if login
       cid = get_course_id_by_uid(user.id)
       cname = Course.find(cid).name
       get :index, params: { course_name: cname }
@@ -30,10 +27,8 @@ RSpec.describe AttachmentsController, type: :controller do
     end
   end
   shared_examples "new_success" do
-    before(:each) do
-      sign_in(user)
-    end
     it "renders successfully" do
+      sign_in(user)
       cid = get_course_id_by_uid(user.id)
       cname = Course.find(cid).name
       get :new, params: { course_name: cname }
@@ -43,10 +38,8 @@ RSpec.describe AttachmentsController, type: :controller do
     end
   end
   shared_examples "new_failure" do |login: false|
-    before(:each) do
-      sign_in(user) if login
-    end
     it "renders with failure" do
+      sign_in(user) if login
       cid = get_course_id_by_uid(user.id)
       cname = Course.find(cid).name
       get :new, params: { course_name: cname }
@@ -56,10 +49,8 @@ RSpec.describe AttachmentsController, type: :controller do
     end
   end
   shared_examples "edit_success" do
-    before(:each) do
-      sign_in(user)
-    end
     it "renders successfully" do
+      sign_in(user)
       cid = get_course_id_by_uid(user.id)
       cname = Course.find(cid).name
       # TODO: replace with factory (this code will become redundant)
@@ -72,10 +63,8 @@ RSpec.describe AttachmentsController, type: :controller do
     end
   end
   shared_examples "edit_failure" do |login: false|
-    before(:each) do
-      sign_in(user) if login
-    end
     it "renders with failure" do
+      sign_in(user) if login
       cid = get_course_id_by_uid(user.id)
       cname = Course.find(cid).name
       att = create_course_att_with_cid(cid)
@@ -86,10 +75,8 @@ RSpec.describe AttachmentsController, type: :controller do
     end
   end
   shared_examples "show_success" do
-    before(:each) do
-      sign_in(user)
-    end
     it "renders successfully" do
+      sign_in(user)
       cid = get_course_id_by_uid(user.id)
       cname = Course.find(cid).name
       att = create_course_att_with_cid(cid)
@@ -98,10 +85,8 @@ RSpec.describe AttachmentsController, type: :controller do
     end
   end
   shared_examples "show_failure" do |login: false|
-    before(:each) do
-      sign_in(user) if login
-    end
     it "renders with failure" do
+      sign_in(user) if login
       cid = get_course_id_by_uid(user.id)
       cname = Course.find(cid).name
       att = create_course_att_with_cid(cid)
@@ -110,153 +95,109 @@ RSpec.describe AttachmentsController, type: :controller do
     end
   end
   describe "#index" do
+    include_context "controllers shared context"
     context "when user is Autolab admin" do
       it_behaves_like "index_success" do
-        let!(:user) do
-          create_course_with_users
-          @admin_user
-        end
+        let!(:user) { admin_user }
       end
     end
 
     context "when user is Autolab instructor" do
       it_behaves_like "index_success" do
-        let!(:user) do
-          create_course_with_users
-          @instructor_user
-        end
+        let!(:user) { instructor_user }
       end
     end
 
     context "when user is Autolab user" do
       it_behaves_like "index_failure", login: true do
-        let!(:user) do
-          create_course_with_users
-          @students.first
-        end
+        let!(:user) { student_user }
       end
     end
 
     context "when user is not logged in" do
       it_behaves_like "index_failure", login: false do
-        let!(:user) do
-          create_course_with_users
-          @students.first
-        end
+        let!(:user) { student_user }
       end
     end
   end
 
   describe "#new" do
+    include_context "controllers shared context"
     context "when user is Autolab admin" do
       it_behaves_like "new_success" do
-        let!(:user) do
-          create_course_with_users
-          @admin_user
-        end
+        let!(:user) { admin_user }
       end
     end
 
     context "when user is Autolab instructor" do
       it_behaves_like "new_success" do
-        let!(:user) do
-          create_course_with_users
-          @instructor_user
-        end
+        let!(:user) { instructor_user }
       end
     end
 
     context "when user is Autolab user" do
       it_behaves_like "new_failure", login: true do
-        let!(:user) do
-          create_course_with_users
-          @students.first
-        end
+        let!(:user) { student_user }
       end
     end
 
     context "when user is not logged in" do
       it_behaves_like "new_failure", login: false do
-        let!(:user) do
-          create_course_with_users
-          @students.first
-        end
+        let!(:user) { student_user }
       end
     end
   end
 
   describe "#edit" do
+    include_context "controllers shared context"
     context "when user is Autolab admin" do
       it_behaves_like "edit_success" do
-        let!(:user) do
-          create_course_with_users
-          @admin_user
-        end
+        let!(:user) { admin_user }
       end
     end
 
     context "when user is Autolab instructor" do
       it_behaves_like "edit_success" do
-        let!(:user) do
-          create_course_with_users
-          @instructor_user
-        end
+        let!(:user) { instructor_user }
       end
     end
 
     context "when user is Autolab user" do
       it_behaves_like "edit_failure", login: true do
-        let!(:user) do
-          create_course_with_users
-          @students.first
-        end
+        let!(:user) { student_user }
       end
     end
 
     context "when user is not logged in" do
       it_behaves_like "edit_failure", login: false do
-        let!(:user) do
-          create_course_with_users
-          @students.first
-        end
+        let!(:user) { student_user }
       end
     end
   end
 
   describe "#show" do
+    include_context "controllers shared context"
     context "when user is Autolab admin" do
       it_behaves_like "show_success" do
-        let!(:user) do
-          create_course_with_users
-          @admin_user
-        end
+        let!(:user) { admin_user }
       end
     end
 
     context "when user is Autolab instructor" do
       it_behaves_like "show_success" do
-        let!(:user) do
-          create_course_with_users
-          @instructor_user
-        end
+        let!(:user) { instructor_user }
       end
     end
 
     context "when user is Autolab user" do
       it_behaves_like "show_success" do
-        let!(:user) do
-          create_course_with_users
-          @students.first
-        end
+        let!(:user) { student_user }
       end
     end
 
     context "when user is not logged in" do
       it_behaves_like "show_failure", login: false do
-        let!(:user) do
-          create_course_with_users
-          @students.first
-        end
+        let!(:user) { student_user }
       end
     end
   end

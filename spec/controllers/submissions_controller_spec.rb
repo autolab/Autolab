@@ -1,14 +1,13 @@
 require "rails_helper"
 include ControllerMacros
+require_relative "controllers_shared_context"
 
 RSpec.describe SubmissionsController, type: :controller do
   render_views
 
   shared_examples "index_success" do
-    before(:each) do
-      sign_in(user)
-    end
     it "renders successfully" do
+      sign_in(user)
       cud = get_first_cud_by_uid(user)
       cid = get_course_id_by_uid(user)
       course_name = Course.find(cid).name
@@ -21,10 +20,8 @@ RSpec.describe SubmissionsController, type: :controller do
   end
 
   shared_examples "index_failure" do
-    before(:each) do
-      sign_in(user)
-    end
     it "renders with failure" do
+      sign_in(user)
       cud = get_first_cud_by_uid(user)
       cid = get_course_id_by_uid(user)
       course_name = Course.find(cid).name
@@ -37,39 +34,28 @@ RSpec.describe SubmissionsController, type: :controller do
   end
 
   describe "#index" do
+    include_context "controllers shared context"
     context "when user is Autolab admin" do
       it_behaves_like "index_success" do
-        let!(:user) do
-          create_course_with_users
-          @admin_user
-        end
+        let!(:user) { admin_user }
       end
     end
 
     context "when user is Instructor" do
       it_behaves_like "index_success" do
-        let!(:user) do
-          create_course_with_users
-          @instructor_user
-        end
+        let!(:user) { instructor_user }
       end
     end
 
     context "when user is student" do
       it_behaves_like "index_failure" do
-        let!(:user) do
-          create_course_with_users
-          @students.first
-        end
+        let!(:user) { student_user }
       end
     end
 
-    context "when user is Instructor" do
+    context "when user is Course Assistant" do
       it_behaves_like "index_failure" do
-        let!(:user) do
-          create_course_with_users
-          @course_assistant_user
-        end
+        let!(:user) { course_assistant_user }
       end
     end
   end
