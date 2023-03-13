@@ -1,18 +1,16 @@
 require "rails_helper"
 include ControllerMacros
+require_relative "controllers_shared_context"
 
 RSpec.describe CoursesController, type: :controller do
   render_views
 
   describe "#report_bug" do
+    include_context "controllers shared context"
     context "when user is Autolab user" do
-      let!(:user) do
-        create_course_with_users
-        @students.first
-      end
       it "renders successfully" do
-        sign_in(user)
-        cid = get_course_id_by_uid(user.id)
+        sign_in(student_user)
+        cid = get_course_id_by_uid(student_user.id)
         cname = Course.find(cid).name
         get :report_bug, params: { name: cname }
         expect(response).to be_successful
@@ -21,12 +19,8 @@ RSpec.describe CoursesController, type: :controller do
     end
 
     context "when user is not logged in" do
-      let!(:user) do
-        create_course_with_users
-        @students.first
-      end
       it "renders with failure" do
-        cid = get_course_id_by_uid(user.id)
+        cid = get_course_id_by_uid(student_user.id)
         cname = Course.find(cid).name
         get :report_bug, params: { name: cname }
         expect(response).not_to be_successful
@@ -63,49 +57,35 @@ RSpec.describe CoursesController, type: :controller do
   end
 
   describe "#user_lookup" do
+    include_context "controllers shared context"
     context "when user is Autolab admin" do
       it_behaves_like "user_lookup_success" do
-        let!(:user) do
-          create_course_with_users
-          @admin_user
-        end
+        let!(:user) { admin_user }
       end
     end
 
     context "when user is Autolab instructor" do
       it_behaves_like "user_lookup_success" do
-        let!(:user) do
-          create_course_with_users
-          @instructor_user
-        end
+        let!(:user) { instructor_user }
       end
     end
 
     context "when user is Autolab user" do
       it_behaves_like "user_lookup_failure", login: true do
-        let!(:user) do
-          create_course_with_users
-          @students.first
-        end
+        let!(:user) { student_user }
       end
     end
 
     context "when user is not logged in" do
       it_behaves_like "user_lookup_failure", login: false do
-        let!(:user) do
-          create_course_with_users
-          @students.first
-        end
+        let!(:user) { student_user }
       end
     end
   end
 
   describe "#update_lti_settings" do
+    include_context "controllers shared context"
     context "when user is autolab instructor" do
-      let!(:course) do
-        create_course_with_users
-        @course
-      end
       before(:each) do
         instructor = get_instructor_by_cid(course.id)
         sign_in(instructor)
@@ -123,10 +103,7 @@ RSpec.describe CoursesController, type: :controller do
 
   describe "#unlink_course" do
     context "when user is autolab instructor" do
-      let!(:course) do
-        create_course_with_users
-        @course
-      end
+      include_context "controllers shared context"
       before(:each) do
         instructor = get_instructor_by_cid(course.id)
         sign_in(instructor)
@@ -164,10 +141,7 @@ RSpec.describe CoursesController, type: :controller do
 
   describe "#download_roster" do
     context "when user is autolab instructor" do
-      let!(:course) do
-        create_course_with_users
-        @course
-      end
+      include_context "controllers shared context"
       it "downloads roster" do
         instructor = get_instructor_by_cid(course.id)
         sign_in(instructor)
@@ -192,11 +166,8 @@ RSpec.describe CoursesController, type: :controller do
   end
 
   describe "#add_users_from_emails" do
+    include_context "controllers shared context"
     context "when instructor" do
-      let!(:course) do
-        create_course_with_users
-        @course
-      end
       let!(:users_to_add) do
         FactoryBot.create_list(:user, 10)
       end
@@ -252,8 +223,6 @@ RSpec.describe CoursesController, type: :controller do
       end
 
       it "adds new users as course assistants successfully" do
-        instructor = get_instructor_by_cid(course.id)
-        sign_in(instructor)
         emails = ""
         unused_emails.each_with_index do |email, i|
           emails += case i % 4

@@ -6,33 +6,15 @@ RSpec.describe "manage submissions user flow", type: :feature do
   describe "click button", js: true do
     context "when user is Instructor" do
       # can't use login_as for features
-      user_id = User.create!(email: "autolabintructor@foo.bar",
-                             first_name: "Test",
-                             last_name: "User",
-                             password: "AutolabProject")
-      user_id.skip_confirmation!
-      user_id.save!
-
-      cid = get_first_course
-      CourseUserDatum.create!({
-                                user: user_id,
-                                course: cid,
-
-                                course_number: "AutoPopulated",
-                                lecture: "1",
-                                section: "A",
-                                dropped: false,
-
-                                instructor: true,
-                                course_assistant: true,
-
-                                nickname: "instructor"
-                              })
+      let(:user) do
+        create_course_with_users
+        @instructor_user
+      end
       it "allows editing manage session" do
         # Simulates user log in
         visit "/auth/users/sign_in"
-        fill_in "user_email",    with: "autolabintructor@foo.bar"
-        fill_in "user_password", with: "AutolabProject"
+        fill_in "user_email",    with: user.email
+        fill_in "user_password", with: "testPassword"
 
         click_on "Sign in"
         click_on "Go to Course Page"
