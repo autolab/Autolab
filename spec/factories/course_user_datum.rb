@@ -9,7 +9,7 @@ FactoryBot.define do
       course_assistant { false }
 
       trait :nicknamed do
-        nickname { "nickname" }
+        sequence(:nickname) { |n| "user_#{n}" }
       end
 
       trait :dropped do

@@ -21,8 +21,11 @@ module Contexts
         FactoryBot.create(:course_user_datum, course: new_course,
                                               user: @course_assistant_user,
                                               instructor: false, course_assistant: true)
+
+        # students in this course are given nicknames to bypass
+        # initial cud edit redirect that occurs when no nickname is given
         @students.each do |student|
-          FactoryBot.create(:student, course: new_course, user: student)
+          FactoryBot.create(:nicknamed_student, course: new_course, user: student)
         end
         @assessment = Assessment.where(course: new_course, name: asmt_name).first
       end

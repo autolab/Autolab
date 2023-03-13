@@ -6,11 +6,14 @@ RSpec.describe CoursesController, type: :controller do
 
   describe "#report_bug" do
     context "when user is Autolab user" do
-      u = get_user
-      login_as(u)
-      cid = get_course_id_by_uid(u.id)
-      cname = Course.find(cid).name
+      let!(:user) do
+        create_course_with_users
+        @students.first
+      end
       it "renders successfully" do
+        sign_in(user)
+        cid = get_course_id_by_uid(user.id)
+        cname = Course.find(cid).name
         get :report_bug, params: { name: cname }
         expect(response).to be_successful
         expect(response.body).to match(/Stuck on a bug/m)
@@ -18,10 +21,13 @@ RSpec.describe CoursesController, type: :controller do
     end
 
     context "when user is not logged in" do
-      u = get_admin
-      cid = get_course_id_by_uid(u.id)
-      cname = Course.find(cid).name
+      let!(:user) do
+        create_course_with_users
+        @students.first
+      end
       it "renders with failure" do
+        cid = get_course_id_by_uid(user.id)
+        cname = Course.find(cid).name
         get :report_bug, params: { name: cname }
         expect(response).not_to be_successful
         expect(response.body).not_to match(/Stuck on a bug/m)
@@ -29,49 +35,67 @@ RSpec.describe CoursesController, type: :controller do
     end
   end
 
+
+  shared_examples "user_lookup_success" do
+    before(:each) do
+      sign_in(user)
+    end
+    it "renders successfully" do
+      cid = get_course_id_by_uid(user.id)
+      cname = Course.find(cid).name
+      get :user_lookup, params: { name: cname, email: user.email }
+      expect(response).to be_successful
+      expect(response.body).to match(/first_name/m)
+    end
+  end
+
+  shared_examples "user_lookup_failure" do |login: false|
+    before(:each) do
+      sign_in(user) if login
+    end
+    it "renders with failure" do
+      cid = get_course_id_by_uid(user.id)
+      cname = Course.find(cid).name
+      get :user_lookup, params: { name: cname, email: user.email }
+      expect(response).not_to be_successful
+      expect(response.body).not_to match(/first_name/m)
+    end
+  end
+
   describe "#user_lookup" do
     context "when user is Autolab admin" do
-      u = get_admin
-      login_as(u)
-      cid = get_course_id_by_uid(u.id)
-      cname = Course.find(cid).name
-      it "renders successfully" do
-        get :user_lookup, params: { name: cname, email: u.email }
-        expect(response).to be_successful
-        expect(response.body).to match(/first_name/m)
+      it_behaves_like "user_lookup_success" do
+        let!(:user) do
+          create_course_with_users
+          @admin_user
+        end
       end
     end
 
     context "when user is Autolab instructor" do
-      u = get_instructor
-      login_as(u)
-      cid = get_course_id_by_uid(u.id)
-      cname = Course.find(cid).name
-      it "renders successfully" do
-        get :user_lookup, params: { name: cname, email: u.email }
-        expect(response).to be_successful
-        expect(response.body).to match(/first_name/m)
+      it_behaves_like "user_lookup_success" do
+        let!(:user) do
+          create_course_with_users
+          @instructor_user
+        end
       end
     end
 
     context "when user is Autolab user" do
-      u = get_user
-      login_as(u)
-      cid = get_course_id_by_uid(u.id)
-      cname = Course.find(cid).name
-      it "renders with failure" do
-        get :user_lookup, params: { name: cname, email: u.email }
-        expect(response).not_to be_successful
-        expect(response.body).not_to match(/first_name/m)
+      it_behaves_like "user_lookup_failure", login: true do
+        let!(:user) do
+          create_course_with_users
+          @students.first
+        end
       end
     end
 
     context "when user is not logged in" do
-      u = get_admin
-      it "renders with failure" do
-        get :user_lookup, params: { name: "dummy", email: u.email }
-        expect(response).not_to be_successful
-        expect(response.body).not_to match(/first_name/m)
+      it_behaves_like "user_lookup_failure", login: false do
+        let!(:user) do
+          create_course_with_users
+          @students.first
+        end
       end
     end
   end

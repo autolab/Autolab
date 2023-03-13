@@ -241,15 +241,15 @@ RSpec.describe AttachmentsController, type: :controller do
         end
       end
     end
-    # TODO: fix this test as it fails incorrectly
-    # context "when user is Autolab user" do
-    #   it_behaves_like "show_success" do
-    #     let!(:user) do
-    #       create_course_with_users
-    #       @students.first
-    #     end
-    #   end
-    # end
+
+    context "when user is Autolab user" do
+      it_behaves_like "show_success" do
+        let!(:user) do
+          create_course_with_users
+          @students.first
+        end
+      end
+    end
 
     context "when user is not logged in" do
       it_behaves_like "show_failure", login: false do
