@@ -119,8 +119,8 @@ class Submission < ApplicationRecord
 
     FileUtils.mkdir_p handin_archive_path
 
-    # Using the id instead of the version guarantees a unique filename
-    submission_backup = File.join(handin_archive_path, "deleted_#{filename}")
+    # Prepend id to ensure uniqueness
+    submission_backup = File.join(handin_archive_path, "#{id}_#{filename}")
     FileUtils.mv(handin_file_path, submission_backup)
 
     archive_autograder_feedback
@@ -130,7 +130,8 @@ class Submission < ApplicationRecord
     return unless assessment.has_autograder?
     return unless File.exist?(autograde_feedback_path)
 
-    feedback_backup = File.join(handin_archive_path, "deleted_#{autograde_feedback_filename}")
+    # Prepend id to ensure uniqueness
+    feedback_backup = File.join(handin_archive_path, "#{id}_#{autograde_feedback_filename}")
     FileUtils.mv(autograde_feedback_path, feedback_backup)
   end
 
