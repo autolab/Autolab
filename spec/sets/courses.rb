@@ -1,6 +1,6 @@
 module Contexts
   module Courses
-    def create_course(asmt_name: "testassessment")
+    def create_course(asmt_name: "testassessment5")
       @course = FactoryBot.create(:course) do |new_course|
         if asmt_name =~ /[^a-z0-9]/
           raise ArgumentError("Assessment name must contain only lowercase and digits")
@@ -11,6 +11,7 @@ module Contexts
         FileUtils.mkdir_p(path)
         asmt = FactoryBot.create(:assessment, course: new_course, name: asmt_name)
         asmt.construct_default_config_file
+        asmt.load_config_file
 
         FactoryBot.create(:course_user_datum, course: new_course,
                                               user: @instructor_user,

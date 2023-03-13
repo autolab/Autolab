@@ -10,6 +10,11 @@ RSpec.describe "manage submissions user flow", type: :feature do
         create_course_with_users
         @instructor_user
       end
+      let(:assessment_name) do
+        cud = get_first_cud_by_uid(user)
+        assessment_id = get_first_aid_by_cud(cud)
+        Assessment.find(assessment_id).display_name
+      end
       it "allows editing manage session" do
         # Simulates user log in
         visit "/auth/users/sign_in"
@@ -18,8 +23,9 @@ RSpec.describe "manage submissions user flow", type: :feature do
 
         click_on "Sign in"
         click_on "Go to Course Page"
-        click_on "Homework 0"
+        click_on assessment_name
 
+        save_and_open_page
         click_on "Manage submissions"
         first(:link, "Edit the grading properties of this submission").click
         fill_in("submission_notes", with: "test notes")
