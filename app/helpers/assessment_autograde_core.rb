@@ -414,18 +414,18 @@ module AssessmentAutogradeCore
       # Record each of the scores extracted from the autoresult
       submissions.each do |submission|
 
-        # If modifyScore is overridden, use that to modify the score
+        # If modifySubmissionScore is overridden, use that to modify the score
         # Provide it with the scores and previous submissions
-        if @assessment.overwrites_method?(:modifyScore)
+        if @assessment.overwrites_method?(:modifySubmissionScores)
           
           # Get previous submissions of the same assessment by the user, excluding the current submission
           previous_submissions = Submission.where(course_user_datum_id: submission.course_user_datum_id, 
                                  assessment_id: @assessment.id).where.not(id: submission.id)
 
           begin
-            scores = @assessment.config_module.modifyScore(scores, previous_submissions)
+            scores = @assessment.config_module.modifySubmissionScores(scores, previous_submissions)
           rescue StandardError => e
-            puts "Error in modifyScore: #{e}"
+            raise AutogradeError.new("Error in modifySubmissionScores: " + e.message)
           end
         end
 
