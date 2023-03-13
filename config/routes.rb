@@ -9,6 +9,7 @@ Rails.application.routes.draw do
     post 'lti_nrps/sync_roster', to: "lti_nrps#sync_roster"
   get 'lti_config/index', to: "lti_config#index"
   post 'lti_config/update_config', to: "lti_config#update_config"
+  post 'smtp_config/update_config', to: "smtp_config#update_config"
 
   namespace :oauth, { defaults: { format: :json } } do
     get "device_flow_init", to: "device_flow#init"
