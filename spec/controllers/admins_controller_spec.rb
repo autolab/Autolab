@@ -74,7 +74,7 @@ RSpec.describe AdminsController, type: :controller do
         end
       end
 
-      context "when user is Instructor" do
+      context "when user is instructor" do
         user_id = get_instructor
         login_as(user_id)
         it "renders with failure" do
