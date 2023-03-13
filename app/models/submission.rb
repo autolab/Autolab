@@ -117,27 +117,24 @@ class Submission < ApplicationRecord
     return if filename.nil?
     return unless File.exist?(handin_file_path)
 
-    archive = File.join(assessment.handin_directory_path, "archive")
-    Dir.mkdir(archive) unless FileTest.directory?(archive)
+    FileUtils.mkdir_p handin_archive_path
 
     # Using the id instead of the version guarantees a unique filename
-    submission_backup = File.join(archive, "deleted_#{filename}")
+    submission_backup = File.join(handin_archive_path, "deleted_#{filename}")
     FileUtils.mv(handin_file_path, submission_backup)
 
-    archive_autograder_feedback(archive)
+    archive_autograder_feedback
   end
 
-  def archive_autograder_feedback(archive)
+  def archive_autograder_feedback
     return unless assessment.has_autograder?
+    return unless File.exist?(autograde_feedback_path)
 
-    feedback_path = autograde_feedback_path
-    return unless File.exist?(feedback_path)
-
-    backup = File.join(archive, "deleted_#{autograde_feedback_filename}")
-    FileUtils.mv(feedback_path, backup)
+    feedback_backup = File.join(handin_archive_path, "deleted_#{autograde_feedback_filename}")
+    FileUtils.mv(autograde_feedback_path, feedback_backup)
   end
 
-  def make_user_handin_directory
+  def create_user_handin_directory
     FileUtils.mkdir_p File.join(assessment.handin_directory_path, course_user_datum.email)
   end
 
@@ -148,15 +145,19 @@ class Submission < ApplicationRecord
   def handin_file_path
     return nil unless filename
 
-    make_user_handin_directory
+    create_user_handin_directory
 
     File.join(assessment.handin_directory_path, course_user_datum.email, filename)
+  end
+
+  def handin_archive_path
+    File.join(assessment.handin_directory_path, "archive", course_user_datum.email)
   end
 
   def handin_annotated_file_path
     return nil unless filename
 
-    make_user_handin_directory
+    create_user_handin_directory
 
     File.join(assessment.handin_directory_path, course_user_datum.email, "annotated_#{filename}")
   end
@@ -166,7 +167,7 @@ class Submission < ApplicationRecord
   end
 
   def autograde_feedback_path
-    make_user_handin_directory
+    create_user_handin_directory
 
     File.join(assessment.handin_directory_path, course_user_datum.email,
               autograde_feedback_filename)
