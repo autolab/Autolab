@@ -423,7 +423,7 @@ module AssessmentAutogradeCore
                                  assessment_id: @assessment.id).where.not(id: submission.id)
 
           begin
-            scores = @assessment.config_module.modifySubmissionScores(scores, previous_submissions)
+            scores = @assessment.config_module.modifySubmissionScores(scores, previous_submissions, @assessment.problems)
           rescue StandardError => e
             raise AutogradeError.new("Error in modifySubmissionScores: " + e.message)
           end
