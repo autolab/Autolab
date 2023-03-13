@@ -79,28 +79,23 @@ class Submission < ApplicationRecord
   delegate :update_latest_submission, to: :aud
 
   def save_file(upload)
-    filename = "#{course_user_datum.user.email}_#{version}_#{assessment.handin_filename}"
-    directory = assessment.handin_directory
-    path = Rails.root.join("courses", course_user_datum.course.name,
-                           assessment.name, directory, filename)
+    self.filename = handin_file_filename
 
     if upload["file"]
       # Sanity!
       upload["file"].rewind
-      File.open(path, "wb") { |f| f.write(upload["file"].read) }
+      File.open(handin_file_path, "wb") { |f| f.write(upload["file"].read) }
     elsif upload["local_submit_file"]
       # local_submit_file is a path string to the temporary handin
       # directory we create for local submissions
-      File.open(path, "wb") do |f|
+      File.open(handin_file_path, "wb") do |f|
         f.write(File.read(upload["local_submit_file"], mode: File::RDONLY | File::NOFOLLOW))
       end
     elsif upload["tar"]
       src = upload["tar"]
       # Only used for Github submissions, so this is fairly safe
-      FileUtils.mv(src, path)
+      FileUtils.mv(src, handin_file_path)
     end
-
-    self.filename = filename
 
     if upload["file"]
       begin
@@ -142,24 +137,39 @@ class Submission < ApplicationRecord
     FileUtils.mv(feedback_path, backup)
   end
 
+  def make_user_handin_directory
+    FileUtils.mkdir_p File.join(assessment.handin_directory_path, course_user_datum.email)
+  end
+
+  def handin_file_filename
+    "#{version}_#{assessment.handin_filename}"
+  end
+
   def handin_file_path
     return nil unless filename
 
-    File.join(assessment.handin_directory_path, filename)
+    make_user_handin_directory
+
+    File.join(assessment.handin_directory_path, course_user_datum.email, filename)
   end
 
   def handin_annotated_file_path
     return nil unless filename
 
-    File.join(assessment.handin_directory_path, "annotated_#{filename}")
+    make_user_handin_directory
+
+    File.join(assessment.handin_directory_path, course_user_datum.email, "annotated_#{filename}")
   end
 
   def autograde_feedback_filename
-    "#{course_user_datum.email}_#{version}_#{assessment.name}_autograde.txt"
+    "#{version}_autograde.txt"
   end
 
   def autograde_feedback_path
-    File.join(assessment.handin_directory_path, autograde_feedback_filename)
+    make_user_handin_directory
+
+    File.join(assessment.handin_directory_path, course_user_datum.email,
+              autograde_feedback_filename)
   end
 
   def autograde_file
