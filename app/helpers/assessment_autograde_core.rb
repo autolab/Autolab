@@ -412,10 +412,26 @@ module AssessmentAutogradeCore
       @autograde_prop = @assessment.autograder
 
       # Record each of the scores extracted from the autoresult
-      scores.keys.each do |key|
-        problem = @assessment.problems.find_by(name: key)
-        raise AutogradeError.new("Problem \"" + key + "\" not found.") unless problem
-        submissions.each do |submission|
+      submissions.each do |submission|
+
+        # If modifyScore is overridden, use that to modify the score
+        # Provide it with the scores and previous submissions
+        if @assessment.overwrites_method?(:modifyScore)
+          
+          # Get previous submissions of the same assessment by the user, excluding the current submission
+          previous_submissions = Submission.where(course_user_datum_id: submission.course_user_datum_id, 
+                                 assessment_id: @assessment.id).where.not(id: submission.id)
+
+          begin
+            scores = @assessment.config_module.modifyScore(scores, previous_submissions)
+          rescue StandardError => e
+            puts "Error in modifyScore: #{e}"
+          end
+        end
+
+        scores.keys.each do |key|
+          problem = @assessment.problems.find_by(name: key)
+          raise AutogradeError.new("Problem \"" + key + "\" not found.") unless problem
           score = submission.scores.find_or_initialize_by(problem_id: problem.id)
           score.score = scores[key]
           score.feedback = feedback
