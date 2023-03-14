@@ -230,7 +230,7 @@ class SubmissionsController < ApplicationController
 
       Prawn::Document.generate(@filename_annotated, template: @filename) do |pdf|
         @annotations.each do |annotation|
-          return if annotation.coordinate.nil?
+          next if annotation.coordinate.nil?
 
           position = annotation.coordinate.split(",")
           page  = position[2].to_i
