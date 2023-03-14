@@ -127,6 +127,8 @@ class CoursesController < ApplicationController
           instructor = User.instructor_create(params[:instructor_email],
                                               @newCourse.name)
         rescue StandardError => e
+          # roll back course creation
+          @newCourse.destroy
           flash[:error] = "Can't create instructor for the course: #{e}"
           render(action: "new") && return
         end
