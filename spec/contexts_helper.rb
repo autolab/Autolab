@@ -14,6 +14,13 @@ module Contexts
     puts "Built courses"
   end
 
+  def create_autograded_course_with_users
+    create_users
+    puts "Built users"
+    create_autograded_course(asmt_name: "autogradecourse")
+    puts "Built courses"
+  end
+
   def create_course_with_users_as_hash(asmt_name: "testassessment2")
     if @instructor_user.nil?
       create_users

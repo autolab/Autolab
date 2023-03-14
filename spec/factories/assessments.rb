@@ -19,7 +19,7 @@ FactoryBot.define do
     updated_at { 1.week.ago.to_s(:db) }
     github_submission_enabled { true }
     is_positive_grading { true }
-    group_size { 3 }
+    group_size { 1 }
     max_grace_days { 4 }
     course
   end

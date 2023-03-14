@@ -1,6 +1,6 @@
 RSpec.shared_context "api shared context" do
   let!(:course) do
-    create_course_with_users
+    create_autograded_course_with_users
     @course
   end
 
@@ -94,7 +94,7 @@ end
 
 RSpec.shared_context "api handin context" do
   let(:course) do
-    create_course_with_users
+    create_autograded_course_with_users
     @course
   end
   before :each do
