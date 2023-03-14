@@ -29,7 +29,6 @@ RSpec.describe CoursesController, type: :controller do
     end
   end
 
-
   shared_examples "user_lookup_success" do
     before(:each) do
       sign_in(user)

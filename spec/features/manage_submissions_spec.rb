@@ -25,7 +25,6 @@ RSpec.describe "manage submissions user flow", type: :feature do
         click_on "Go to Course Page"
         click_on assessment_name
 
-        save_and_open_page
         click_on "Manage submissions"
         first(:link, "Edit the grading properties of this submission").click
         fill_in("submission_notes", with: "test notes")

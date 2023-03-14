@@ -5,8 +5,10 @@ RSpec.shared_context "api shared context" do
   end
 
   let(:user) {
-    all_users = CourseUserDatum.joins(:user).where(:course => course, "users.administrator" => false,
-                                                  :instructor => false, :course_assistant => false)
+    all_users = CourseUserDatum.joins(:user).where(
+      :course => course, "users.administrator" => false,
+      :instructor => false, :course_assistant => false
+    )
     all_users.offset(rand(all_users.count)).first.user
   }
   let(:released_assessments) { course.assessments.where('start_at < ?', DateTime.now) }
