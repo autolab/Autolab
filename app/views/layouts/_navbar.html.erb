@@ -78,7 +78,7 @@
 
   <nav>
     <div class="nav-wrapper">
-      <a href="/" class="brand-logo logo"><%= image_tag "AUTOLAB@2x.png", :width=> 180, :alt=>"Carnegie Mellon University" %></a>
+      <a href="/courses" class="brand-logo logo"><%= image_tag "AUTOLAB@2x.png", :width=> 180, :alt=>"Carnegie Mellon University" %></a>
       <a href="#" data-target="mobile-demo" class="sidenav-trigger right"><i class="material-icons">menu</i></a>
 
       <ul class="right hide-on-med-and-down">
@@ -173,7 +173,7 @@
   <div class="sub-navigation">
     <span class="left-nav">
       <span class="item">
-        <a href="/"><i class="material-icons home-icon">home</i></a>
+        <a title="Go to Courses Home" href="/courses"><i class="material-icons home-icon">home</i></a>
       </span>
       <% @breadcrumbs.each do |b| %>
         <span class="item"><%= b %></span>
