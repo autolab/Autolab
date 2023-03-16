@@ -10,7 +10,7 @@ RSpec.describe CoursesController, type: :controller do
     context "when user is Autolab user" do
       it "renders successfully" do
         sign_in(student_user)
-        cid = get_course_id_by_uid(student_user.id)
+        cid = get_first_cid_by_uid(student_user.id)
         cname = Course.find(cid).name
         get :report_bug, params: { name: cname }
         expect(response).to be_successful
@@ -20,7 +20,7 @@ RSpec.describe CoursesController, type: :controller do
 
     context "when user is not logged in" do
       it "renders with failure" do
-        cid = get_course_id_by_uid(student_user.id)
+        cid = get_first_cid_by_uid(student_user.id)
         cname = Course.find(cid).name
         get :report_bug, params: { name: cname }
         expect(response).not_to be_successful
@@ -34,7 +34,7 @@ RSpec.describe CoursesController, type: :controller do
       sign_in(user)
     end
     it "renders successfully" do
-      cid = get_course_id_by_uid(user.id)
+      cid = get_first_cid_by_uid(user.id)
       cname = Course.find(cid).name
       get :user_lookup, params: { name: cname, email: user.email }
       expect(response).to be_successful
@@ -47,7 +47,7 @@ RSpec.describe CoursesController, type: :controller do
       sign_in(user) if login
     end
     it "renders with failure" do
-      cid = get_course_id_by_uid(user.id)
+      cid = get_first_cid_by_uid(user.id)
       cname = Course.find(cid).name
       get :user_lookup, params: { name: cname, email: user.email }
       expect(response).not_to be_successful

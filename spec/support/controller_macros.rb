@@ -56,7 +56,7 @@ module ControllerMacros
     end
   end
 
-  def get_course_id_by_uid(uid)
+  def get_first_cid_by_uid(uid)
     CourseUserDatum.where(user_id: uid).first.course_id
   end
 

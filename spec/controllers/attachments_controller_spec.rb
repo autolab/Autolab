@@ -8,7 +8,7 @@ RSpec.describe AttachmentsController, type: :controller do
   shared_examples "index_success" do
     it "renders successfully" do
       sign_in(user)
-      cid = get_course_id_by_uid(user.id)
+      cid = get_first_cid_by_uid(user.id)
       cname = Course.find(cid).name
       get :index, params: { course_name: cname }
       expect(response).to be_successful
@@ -19,7 +19,7 @@ RSpec.describe AttachmentsController, type: :controller do
   shared_examples "index_failure" do |login: false|
     it "renders with failure" do
       sign_in(user) if login
-      cid = get_course_id_by_uid(user.id)
+      cid = get_first_cid_by_uid(user.id)
       cname = Course.find(cid).name
       get :index, params: { course_name: cname }
       expect(response).not_to be_successful
@@ -29,7 +29,7 @@ RSpec.describe AttachmentsController, type: :controller do
   shared_examples "new_success" do
     it "renders successfully" do
       sign_in(user)
-      cid = get_course_id_by_uid(user.id)
+      cid = get_first_cid_by_uid(user.id)
       cname = Course.find(cid).name
       get :new, params: { course_name: cname }
       expect(response).to be_successful
@@ -40,7 +40,7 @@ RSpec.describe AttachmentsController, type: :controller do
   shared_examples "new_failure" do |login: false|
     it "renders with failure" do
       sign_in(user) if login
-      cid = get_course_id_by_uid(user.id)
+      cid = get_first_cid_by_uid(user.id)
       cname = Course.find(cid).name
       get :new, params: { course_name: cname }
       expect(response).not_to be_successful
@@ -51,7 +51,7 @@ RSpec.describe AttachmentsController, type: :controller do
   shared_examples "edit_success" do
     it "renders successfully" do
       sign_in(user)
-      cid = get_course_id_by_uid(user.id)
+      cid = get_first_cid_by_uid(user.id)
       cname = Course.find(cid).name
       # TODO: replace with factory (this code will become redundant)
       # based on develop branch changes to attachments
@@ -65,7 +65,7 @@ RSpec.describe AttachmentsController, type: :controller do
   shared_examples "edit_failure" do |login: false|
     it "renders with failure" do
       sign_in(user) if login
-      cid = get_course_id_by_uid(user.id)
+      cid = get_first_cid_by_uid(user.id)
       cname = Course.find(cid).name
       att = create_course_att_with_cid(cid)
       get :edit, params: { course_name: cname, id: att.id }
@@ -77,7 +77,7 @@ RSpec.describe AttachmentsController, type: :controller do
   shared_examples "show_success" do
     it "renders successfully" do
       sign_in(user)
-      cid = get_course_id_by_uid(user.id)
+      cid = get_first_cid_by_uid(user.id)
       cname = Course.find(cid).name
       att = create_course_att_with_cid(cid)
       get :show, params: { course_name: cname, id: att.id }
@@ -87,7 +87,7 @@ RSpec.describe AttachmentsController, type: :controller do
   shared_examples "show_failure" do |login: false|
     it "renders with failure" do
       sign_in(user) if login
-      cid = get_course_id_by_uid(user.id)
+      cid = get_first_cid_by_uid(user.id)
       cname = Course.find(cid).name
       att = create_course_att_with_cid(cid)
       get :show, params: { course_name: cname, id: att.id }

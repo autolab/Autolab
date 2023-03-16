@@ -9,7 +9,7 @@ RSpec.describe SchedulersController, type: :controller do
   shared_examples "index_success" do
     it "renders successfully" do
       sign_in(user)
-      cid = get_course_id_by_uid(user.id)
+      cid = get_first_cid_by_uid(user.id)
       cname = Course.find(cid).name
       get :index, params: { course_name: cname }
       expect(response).to be_successful
@@ -20,7 +20,7 @@ RSpec.describe SchedulersController, type: :controller do
   shared_examples "index_failure" do |login: false|
     it "renders with failure" do
       sign_in(user) if login
-      cid = get_course_id_by_uid(user.id)
+      cid = get_first_cid_by_uid(user.id)
       cname = Course.find(cid).name
       get :index, params: { course_name: cname }
       expect(response).not_to be_successful
@@ -31,7 +31,7 @@ RSpec.describe SchedulersController, type: :controller do
   shared_examples "new_success" do
     it "renders successfully" do
       sign_in(user)
-      cid = get_course_id_by_uid(user.id)
+      cid = get_first_cid_by_uid(user.id)
       cname = Course.find(cid).name
       get :new, params: { course_name: cname }
       expect(response).to be_successful
@@ -42,7 +42,7 @@ RSpec.describe SchedulersController, type: :controller do
   shared_examples "new_failure" do |login: false|
     it "renders with failure" do
       sign_in(user) if login
-      cid = get_course_id_by_uid(user.id)
+      cid = get_first_cid_by_uid(user.id)
       cname = Course.find(cid).name
       get :new, params: { course_name: cname }
       expect(response).not_to be_successful
@@ -53,7 +53,7 @@ RSpec.describe SchedulersController, type: :controller do
   shared_examples "edit_success" do
     it "renders successfully" do
       sign_in(user)
-      cid = get_course_id_by_uid(user.id)
+      cid = get_first_cid_by_uid(user.id)
       cname = Course.find(cid).name
       s = create_scheduler_with_cid(cid)
       get :edit, params: { course_name: cname, id: s.id }
@@ -65,7 +65,7 @@ RSpec.describe SchedulersController, type: :controller do
   shared_examples "edit_failure" do |login: false|
     it "renders with failure" do
       sign_in(user) if login
-      cid = get_course_id_by_uid(user.id)
+      cid = get_first_cid_by_uid(user.id)
       cname = Course.find(cid).name
       s = create_scheduler_with_cid(cid)
       get :edit, params: { course_name: cname, id: s.id }
@@ -77,7 +77,7 @@ RSpec.describe SchedulersController, type: :controller do
   shared_examples "show_success" do
     it "renders successfully" do
       sign_in(user)
-      cid = get_course_id_by_uid(user.id)
+      cid = get_first_cid_by_uid(user.id)
       cname = Course.find(cid).name
       s = create_scheduler_with_cid(cid)
       get :show, params: { course_name: cname, id: s.id }
@@ -89,7 +89,7 @@ RSpec.describe SchedulersController, type: :controller do
   shared_examples "show_failure" do |login: false|
     it "renders successfully" do
       sign_in(user) if login
-      cid = get_course_id_by_uid(user.id)
+      cid = get_first_cid_by_uid(user.id)
       cname = Course.find(cid).name
       s = create_scheduler_with_cid(cid)
       get :show, params: { course_name: cname, id: s.id }

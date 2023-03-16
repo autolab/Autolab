@@ -9,7 +9,7 @@ RSpec.describe SubmissionsController, type: :controller do
     it "renders successfully" do
       sign_in(user)
       cud = get_first_cud_by_uid(user)
-      cid = get_course_id_by_uid(user)
+      cid = get_first_cid_by_uid(user)
       course_name = Course.find(cid).name
       assessment_id = get_first_aid_by_cud(cud)
       assessment_name = Assessment.find(assessment_id).name
@@ -23,7 +23,7 @@ RSpec.describe SubmissionsController, type: :controller do
     it "renders with failure" do
       sign_in(user)
       cud = get_first_cud_by_uid(user)
-      cid = get_course_id_by_uid(user)
+      cid = get_first_cid_by_uid(user)
       course_name = Course.find(cid).name
       assessment_id = get_first_aid_by_cud(cud)
       assessment_name = Assessment.find(assessment_id).name

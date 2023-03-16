@@ -2,7 +2,7 @@ module Contexts
   module Courses
     # TODO: course creation creates a bunch of folders and files that persist
     # should implement some form of cleanup
-    def create_course(asmt_name: "testassessment5")
+    def create_course(asmt_name: "testassessment")
       @course = FactoryBot.create(:course) do |new_course|
         if asmt_name =~ /[^a-z0-9]/
           raise ArgumentError("Assessment name must contain only lowercase and digits")
@@ -71,7 +71,7 @@ module Contexts
       end
     end
 
-    def create_autograded_course(asmt_name: "testassessment5")
+    def create_autograded_course(asmt_name: "autogradedassessment")
       @course = FactoryBot.create(:course) do |new_course|
         if asmt_name =~ /[^a-z0-9]/
           raise ArgumentError("Assessment name must contain only lowercase and digits")
