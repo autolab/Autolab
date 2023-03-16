@@ -121,7 +121,7 @@ Setting up Autolab to function as an LTI Advantage Tool requires setting up the 
 
 1. Go to "LTI Configuration Settings" via the "Manage Autolab" Dropdown or by navigating to `/lti_config/index`
 
-2. The "LTI Configuration Settings" should look like the following image. Here, Admins are able to specify a single LTI platform which they can link with.
+     The "LTI Configuration Settings" should look like the following image. Here, Admins are able to specify a single LTI platform which they can link with.
 
      ![Autolab LTI Configuration Settings Page](/images/lti_configuration_settings.png)
 
