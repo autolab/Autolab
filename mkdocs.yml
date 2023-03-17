@@ -30,6 +30,7 @@ nav:
                 - MOSS Plagiarism Detection: features/moss.md
                 - Metrics: features/metrics.md
                 - Git Submission: features/git-submission.md
+                - LTI Course Linking: features/lti-course-integration.md
         - Autolab Frontend CLI: command-line-interface.md
         - Tango CLI: tango-cli.md
     - Reference: 
