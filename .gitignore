@@ -16,8 +16,8 @@ coverage/
 config/database.yml
 config/school.yml
 config/lti_config.yml
-config/lti_tool_jwk.json
 config/lti_platform_jwk.json
+config/lti_tool_jwk.json
 
 # autolab user documents
 app/views/home/_topannounce.html.erb
