@@ -90,14 +90,6 @@ class Assessment < ApplicationRecord
     Time.current <= grading_deadline
   end
 
-  def getLanguages
-    languages.split(/\s*,\s*/)
-  end
-
-  def getTextfields
-    textfields.split(/\s*,\s*/)
-  end
-
   def folder_path
     Rails.root.join("courses", course.name, name)
   end

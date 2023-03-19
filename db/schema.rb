@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2022_11_28_044321) do
+ActiveRecord::Schema.define(version: 2023_03_13_053555) do
 
   create_table "annotations", force: :cascade do |t|
     t.integer "submission_id"
@@ -90,9 +90,6 @@ ActiveRecord::Schema.define(version: 2022_11_28_044321) do
     t.string "remote_handin_path"
     t.string "category_name"
     t.integer "group_size", default: 1
-    t.boolean "has_custom_form", default: false
-    t.text "languages"
-    t.text "textfields"
     t.text "embedded_quiz_form_data"
     t.boolean "embedded_quiz"
     t.binary "embedded_quiz_form"
@@ -332,7 +329,6 @@ ActiveRecord::Schema.define(version: 2022_11_28_044321) do
     t.integer "tweak_id"
     t.boolean "ignored", default: false, null: false
     t.string "dave", limit: 255
-    t.text "settings"
     t.text "embedded_quiz_form_answer"
     t.integer "submitted_by_app_id"
     t.string "group_key", default: ""
