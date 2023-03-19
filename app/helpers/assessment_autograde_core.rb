@@ -426,7 +426,7 @@ module AssessmentAutogradeCore
                                           
           # Get previous submissions of the same assessment by the user, excluding the current submission
           previous_submissions = Submission.where(course_user_datum_id: submission.course_user_datum_id, 
-                                 assessment_id: @assessment.id).where.not(id: submission.id).order(created_at: :asc).limit(previous_submissions_lookback)
+                                 assessment_id: @assessment.id).where.not(id: submission.id).order(created_at: :desc).limit(previous_submissions_lookback)
 
           begin
             scores = @assessment.config_module.modifySubmissionScores(scores, previous_submissions, @assessment.problems)
