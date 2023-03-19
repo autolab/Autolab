@@ -20,8 +20,7 @@ class GithubIntegration < ApplicationRecord
                            })
       repos.map { |repo|
         { repo_name: repo[:full_name],
-          clone_url: repo[:clone_url],
-          default_branch: repo[:default_branch] }
+          clone_url: repo[:clone_url] }
       }
     rescue StandardError => e
       if e.response_status == 401 # unauthorized
@@ -42,8 +41,7 @@ class GithubIntegration < ApplicationRecord
     client = Octokit::Client.new(access_token: access_token)
     branches = client.branches(repo, query: { per_page: 100 })
     branches.map { |branch|
-      { name: branch[:name],
-        url: branch[:commit][:url] }
+      { name: branch[:name] }
     }
   end
 
