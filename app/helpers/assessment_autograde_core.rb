@@ -418,9 +418,15 @@ module AssessmentAutogradeCore
         # Provide it with the scores and previous submissions
         if @assessment.overwrites_method?(:modifySubmissionScores)
           
+          previous_submissions_lookback = if (@assessment.assessment_variable.key?("previous_submissions_lookback"))
+                                            @assessment.assessment_variable["previous_submissions_lookback"]
+                                          else
+                                            1000 # default to 1000
+                                          end 
+                                          
           # Get previous submissions of the same assessment by the user, excluding the current submission
           previous_submissions = Submission.where(course_user_datum_id: submission.course_user_datum_id, 
-                                 assessment_id: @assessment.id).where.not(id: submission.id)
+                                 assessment_id: @assessment.id).where.not(id: submission.id).order(created_at: :asc).limit(previous_submissions_lookback)
 
           begin
             scores = @assessment.config_module.modifySubmissionScores(scores, previous_submissions, @assessment.problems)
