@@ -34,12 +34,12 @@ function update_commits(repo, branch) {
     $("#commit-dropdown input[name='commit']").addClass("noselection");
     $("#commit-dropdown .text").addClass("default");
     $("#commit-dropdown .text").text("Select commit");
-      $.getJSON(github_endpoints['get_commits'], {repository: repo, branch: branch}, function(data, status) {
-        commits_html = "";
-        data.forEach(commit => {
-            commits_html += `<div data-value="${commit["sha"]}" class="item">${commit["sha"]} (${commit["msg"]})</div>`;
-        });
-        $("#commit-dropdown .menu").html(commits_html);
+    $.getJSON(github_endpoints['get_commits'], {repository: repo, branch: branch}, function(data, status) {
+      commits_html = "";
+      data.forEach(commit => {
+        commits_html += `<div data-value="${commit["sha"]}" class="item">${commit["sha"]} (${commit["msg"]})</div>`;
+      });
+      $("#commit-dropdown .menu").html(commits_html);
     });
 }
 
