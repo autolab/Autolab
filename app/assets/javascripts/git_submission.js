@@ -8,7 +8,7 @@ const github_endpoints = {
 }
 
 function update_repos() {
-	$.getJSON(github_endpoints['get_repos'], function(data, status){
+  $.getJSON(github_endpoints['get_repos'], function(data, status) {
     repos_html = "";
     data.forEach(repo => {
       repos_html += `<div class="item">${repo["repo_name"]}</div>`;
@@ -21,7 +21,7 @@ function update_branches(repo) {
   $("#branch-dropdown input[name='branch']").addClass("noselection");
   $("#branch-dropdown .text").addClass("default");
   $("#branch-dropdown .text").text("Select branch");
-	$.getJSON(github_endpoints['get_branches'], {repository: repo}, function(data, status){
+  $.getJSON(github_endpoints['get_branches'], {repository: repo}, function(data, status) {
     branches_html = "";
     data.forEach(branch => {
       branches_html += `<div class="item">${branch["name"]}</div>`;
@@ -34,7 +34,7 @@ function update_commits(repo, branch) {
     $("#commit-dropdown input[name='commit']").addClass("noselection");
     $("#commit-dropdown .text").addClass("default");
     $("#commit-dropdown .text").text("Select commit");
-        $.getJSON(github_endpoints['get_commits'], {repository: repo, branch: branch}, function(data, status){
+      $.getJSON(github_endpoints['get_commits'], {repository: repo, branch: branch}, function(data, status) {
         commits_html = "";
         data.forEach(commit => {
             commits_html += `<div data-value="${commit["sha"]}" class="item">${commit["sha"]} (${commit["msg"]})</div>`;
