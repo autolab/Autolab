@@ -47,6 +47,21 @@ class GithubIntegration < ApplicationRecord
     }
   end
 
+  # Returns all the commits for a branch
+  # repo should be of the form `github_user/repo_name`
+  def commits(repo, branch)
+    if !access_token
+      return nil
+    end
+
+    client = Octokit::Client.new(access_token: access_token)
+    commits = client.commits(repo, query: { per_page: 100, sha: branch })
+    commits.map { |commit|
+      { sha: commit[:sha].truncate(7, omission: ""),
+        msg: commit[:commit][:message].truncate(72) }
+    }
+  end
+
   def is_connected
     access_token.present?
   end
