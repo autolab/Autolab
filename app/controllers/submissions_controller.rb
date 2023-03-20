@@ -578,6 +578,7 @@ class SubmissionsController < ApplicationController
         # for the prev / next button urls
         # This is fine since #download ignores header_position for non-archives
 
+        submission.header_position = header_position
         matchedVersions << {
           version: submission.version,
           header_position: header_position,

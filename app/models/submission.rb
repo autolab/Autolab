@@ -6,7 +6,7 @@ require "json"
 # Submissions jointly belong to Assessments and CourseUserData
 #
 class Submission < ApplicationRecord
-  attr_accessor :lang, :formfield1, :formfield2, :formfield3
+  attr_accessor :header_position
 
   trim_field :filename, :notes, :mime_type
 
