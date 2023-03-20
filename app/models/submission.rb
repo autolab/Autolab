@@ -119,22 +119,41 @@ class Submission < ApplicationRecord
 
     FileUtils.mkdir_p handin_archive_path
 
-    # Prepend id to ensure uniqueness
-    submission_backup = File.join(handin_archive_path, "#{id}_#{filename}")
-    FileUtils.mv(handin_file_path, submission_backup)
+    # Archive handin file
+    FileUtils.mv(handin_file_path, submission_archive_path)
 
-    archive_autograder_feedback
+    # Archive feedback file
+    if assessment.has_autograder? && File.exist?(autograde_feedback_path)
+      FileUtils.mv(autograde_feedback_path, feedback_archive_path)
+    end
+
+    # Archive annotated file
+    return unless File.exist?(handin_annotated_file_path)
+
+    FileUtils.mv(handin_annotated_file_path, annotated_archive_path)
   end
 
-  def archive_autograder_feedback
-    return unless assessment.has_autograder?
-    return unless File.exist?(autograde_feedback_path)
-
-    # Prepend id to ensure uniqueness
-    feedback_backup = File.join(handin_archive_path, "#{id}_#{autograde_feedback_filename}")
-    FileUtils.mv(autograde_feedback_path, feedback_backup)
+  ### archive helpers
+  def handin_archive_path
+    File.join(assessment.handin_directory_path, "archive", course_user_datum.email)
   end
 
+  def submission_archive_path
+    submission_archive_filename = "#{id}_#{filename}"
+    File.join(handin_archive_path, submission_archive_filename)
+  end
+
+  def feedback_archive_path
+    feedback_archive_filename = "#{id}_#{autograde_feedback_filename}"
+    File.join(handin_archive_path, feedback_archive_filename)
+  end
+
+  def annotated_archive_path
+    annotated_archive_filename = "#{id}_annotated_#{filename}"
+    File.join(handin_archive_path, annotated_archive_filename)
+  end
+
+  ### handin helpers
   def create_user_handin_directory
     FileUtils.mkdir_p File.join(assessment.handin_directory_path, course_user_datum.email)
   end
@@ -149,10 +168,6 @@ class Submission < ApplicationRecord
     create_user_handin_directory
 
     File.join(assessment.handin_directory_path, course_user_datum.email, filename)
-  end
-
-  def handin_archive_path
-    File.join(assessment.handin_directory_path, "archive", course_user_datum.email)
   end
 
   def handin_annotated_file_path
