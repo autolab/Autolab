@@ -25,6 +25,11 @@ class AdminsController < ApplicationController
     @email.deliver
   end
 
+  action_auth_level :github_integration, :administrator
+  def github_integration
+    @github_integration = GithubIntegration.check_github_authorization
+  end
+
   action_auth_level :clear_cache, :administrator
   def clear_cache
     Rails.cache.cleanup
