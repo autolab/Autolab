@@ -1,6 +1,6 @@
 <span id="version-dropdown">
   <strong>version:</strong>
-  <select class="browser-default" onchange="location = this.value">
+  <select class="browser-default" onchange="location = this.value" title="* version also contains the current file">
     <% for submission in @userVersions do %>
       <% selected = @submission.version == submission.version %>
       <% path = view_course_assessment_submission_path(@course, @assessment, submission, {header_position: submission.header_position}) %>
