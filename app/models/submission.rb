@@ -114,34 +114,7 @@ class Submission < ApplicationRecord
     elsif upload["tar"]
       self.mime_type = "application/x-tgz"
     end
-    save_additional_form_fields(upload)
     save!
-    settings_file = "#{course_user_datum.user.email}_#{version}" \
-                    "_#{assessment.handin_filename}.settings.json"
-
-    settings_path = Rails.root.join("courses",
-                                    course_user_datum.course.name,
-                                    assessment.name, directory, settings_file)
-
-    File.open(settings_path, "wb") { |f| f.write(settings) }
-  end
-
-  def save_additional_form_fields(params)
-    form_hash = {}
-    form_hash["Language"] = params["lang"] if params["lang"]
-    form_hash[assessment.getTextfields[0]] = params["formfield1"] if params["formfield1"]
-    form_hash[assessment.getTextfields[1]] = params["formfield2"] if params["formfield2"]
-    form_hash[assessment.getTextfields[2]] = params["formfield3"] if params["formfield3"]
-    self.settings = form_hash.to_json
-    save!
-  end
-
-  def get_settings
-    if settings
-      JSON.parse(settings)
-    else
-      {}
-    end
   end
 
   def archive_handin

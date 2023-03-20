@@ -125,6 +125,8 @@ class Course < ApplicationRecord
   end
 
   def order_of_dates
+    return if start_date.nil? || end_date.nil?
+
     errors.add(:start_date, "must come before end date") if start_date > end_date
   end
 
