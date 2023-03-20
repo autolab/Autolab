@@ -10,8 +10,8 @@ newFile = {
 <% if @is_pdf %>
 newFile = {
     pdf: true,
-    pdfUrl: "<%= url_for [:download, @course, @assessment, @submission, header_position: params[:header_position]] %>",
-    annotatedPdfUrl: "<%= url_for [:download, @course, @assessment, @submission, header_position: params[:header_position], annotated: true] %>",
+    pdfUrl: "<%= download_course_assessment_submission_path(@course, @assessment, @submission, {header_position: params[:header_position]}) %>",
+    annotatedPdfUrl: "<%= download_course_assessment_submission_path(@course, @assessment, @submission, {header_position: params[:header_position], annotated: true}) %>",
     previewMode: false
 }
 <% if @preview_mode %>
