@@ -69,17 +69,7 @@
     </div>
     <div class="col s8 center-align valign-wrapper submission-controls">
         <span title="student # / total students">[<%= @curSubmissionIndex+1 %>/<%= @latestSubmissions.length %>] <%= @submission.course_user_datum.email %>,</span>
-        <strong>version:</strong>
-        <select class="browser-default" onchange="location = this.value">
-          <% for submission in @userVersions do %>
-            <% selected = @submission.version == submission.version %>
-            <% path = view_course_assessment_submission_path(@course, @assessment, submission, {header_position: submission.header_position}) %>
-            <option <% if selected %> selected <% end %> value=<%= path %>>
-              <%= submission.version %> <% unless submission.header_position.nil? %> * <% end %>
-            </option>
-          <% end %>
-        </select>
-        <strong>/<%= @userVersions.first.version %></strong>
+        <%= render "version_dropdown" %>
         <%= render "version_links" %>
       <a href="<%= download_file_url(@submission) %>" class="btn small" title="Download" >Download</a>
       <button class="btn small" onclick="resetLayout()">Reset Layout</button>
