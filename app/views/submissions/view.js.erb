@@ -13,7 +13,7 @@ newFile = {
     pdfUrl: "<%= download_course_assessment_submission_path(@course, @assessment, @submission, {header_position: params[:header_position]}) %>",
     annotatedPdfUrl: "<%= download_course_assessment_submission_path(@course, @assessment, @submission, {header_position: params[:header_position], annotated: true}) %>",
     previewMode: false
-}
+};
 <% if @preview_mode %>
     newFile.previewMode = true;
 <% end %>
