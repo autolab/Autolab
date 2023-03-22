@@ -599,6 +599,9 @@ class CoursesController < ApplicationController
     `rm -rf #{tmp_dir}`
   end
 
+  def export
+  end
+
 private
 
   def new_course_params
