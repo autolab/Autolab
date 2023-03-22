@@ -77,6 +77,10 @@ Rails.application.configure do
       host: config_hash['host']
     }
 
+    config.action_mailer.default_options = {
+      from: config_hash['from']
+    }
+
     smtp_settings = {
       address: config_hash['address'],
       port: config_hash['port'],

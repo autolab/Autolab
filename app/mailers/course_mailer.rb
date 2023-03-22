@@ -36,12 +36,13 @@ class CourseMailer < ActionMailer::Base
     )
   end
 
-  def test_email(sender, to)
+  def test_email(sender, to, smtp_settings)
     mail(
       subject: 'Autolab Test Email',
       from: sender,
       to: to,
-      sent_on: Time.now
+      sent_on: Time.now,
+      delivery_method_options: smtp_settings
     )
   end
 end
