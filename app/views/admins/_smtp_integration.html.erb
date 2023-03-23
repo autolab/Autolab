@@ -98,6 +98,11 @@
     <%= form.label :protocol, "Protocol" %>
     <span class="helper-text">Protocol (e.g. https)</span>
   </div>
+
+  <h4>
+    Email Defaults
+    <i class="material-icons tooltips tooltipped" data-position="top" data-tooltip="Default fields for emails (e.g. used in registration emails)" style="font-size: 14px">info_outline</i>
+  </h4>
   <div class="input-field">
     <%= form.email_field :default_from, value: @smtp_config_hash.nil? ? "" : @smtp_config_hash[:from], required: true %>
     <%= form.label :default_from, "Default 'From:' email address" %>
