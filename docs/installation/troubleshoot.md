@@ -154,3 +154,26 @@ it is likely that you need to purge the cache. This is because `FileStore` cache
 To purge the cache, click on `Manage Autolab` followed by `Clear Cache` to clear expired entries.
 
 Alternatively, run `rake user:cleanup_cache` (to clear expired entries) or `rake user:clear_cache` (to clear **all** entries) in your terminal.
+
+#### MacOS: OpenSSL error
+
+If you get the following error when trying to run rake or rails
+
+
+```bash
+Library not loaded: libssl.1.1.dylib (LoadError)
+```
+
+paths to OpenSSL may not be properly set up. To enable proper linking:
+
+```bash
+brew install openssl@1.1
+brew link openssl@1.1. --force
+```
+
+You may need to export paths as well during this process, which homebrew will display. You may also need to reinstall the
+`mysql2` gem (the following command is for Apple Silicon):
+
+```bash
+gem install mysql2 -v "{version}" -- --with-ldflags=-L/opt/homebrew/opt/openssl@1.1/lib --with-cppflags=-I/opt/homebrew/opt/openssl@1.1/include
+```
