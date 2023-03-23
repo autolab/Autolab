@@ -25,7 +25,7 @@ class LtiConfigController < ApplicationController
     }
     uploaded_tool_jwk_file = params['tool_jwk']
     # Ensure user uploaded private JWK for config, or it already exists
-    if !File.exist?("#{Rails.configuration.lti_config_location}/lti_tool_jwk.json") &&
+    if !File.exist?("#{Rails.configuration.config_location}/lti_tool_jwk.json") &&
        uploaded_tool_jwk_file.nil?
       flash[:error] = "No tool JWK JSON file was uploaded"
       redirect_to(autolab_config_admin_path(active: :lti)) && return
@@ -38,18 +38,18 @@ class LtiConfigController < ApplicationController
       redirect_to(autolab_config_admin_path(active: :lti)) && return
     end
     # write text parameters to config yml
-    File.open("#{Rails.configuration.lti_config_location}/lti_config.yml", "w") do |file|
+    File.open("#{Rails.configuration.config_location}/lti_config.yml", "w") do |file|
       file.write(YAML.dump(yaml_hash.deep_stringify_keys))
     end
     # write private key to separate file if it was uploaded
     unless uploaded_tool_jwk_file.nil?
-      File.open("#{Rails.configuration.lti_config_location}/lti_tool_jwk.json", "w") do |file|
+      File.open("#{Rails.configuration.config_location}/lti_tool_jwk.json", "w") do |file|
         file.write(uploaded_tool_jwk_file.read)
       end
     end
     # write platform public key to separate file, if it exists
     unless uploaded_platform_public_jwk_file.nil?
-      File.open("#{Rails.configuration.lti_config_location}/lti_platform_jwk.json", "w") do |file|
+      File.open("#{Rails.configuration.config_location}/lti_platform_jwk.json", "w") do |file|
         file.write(uploaded_platform_public_jwk_file.read)
       end
     end
