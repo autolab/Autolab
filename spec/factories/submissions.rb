@@ -12,7 +12,6 @@ FactoryBot.define do
     submitter_ip { "123.456.789" }
     ignored { false }
     dave { "" }
-    settings { "" }
     embedded_quiz_form_answer { "" }
     submitted_by_app_id { 0 }
     group_key { "" }
