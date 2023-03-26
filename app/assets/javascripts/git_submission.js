@@ -17,10 +17,23 @@ function update_repos() {
   });
 }
 
-function update_branches(repo) {
+function clear_branches() {
   $("#branch-dropdown input[name='branch']").addClass("noselection");
   $("#branch-dropdown .text").addClass("default");
   $("#branch-dropdown .text").text("Select branch");
+  $("#branch-dropdown .menu").html("");
+}
+
+function clear_commits() {
+  $("#commit-dropdown input[name='commit']").addClass("noselection");
+  $("#commit-dropdown .text").addClass("default");
+  $("#commit-dropdown .text").text("Select commit");
+  $("#commit-dropdown .menu").html("");
+}
+
+function update_branches(repo) {
+  clear_branches();
+  clear_commits();
   $.getJSON(github_endpoints['get_branches'], {repository: repo}, function(data, status) {
     branches_html = "";
     data.forEach(branch => {
@@ -31,16 +44,14 @@ function update_branches(repo) {
 }
 
 function update_commits(repo, branch) {
-    $("#commit-dropdown input[name='commit']").addClass("noselection");
-    $("#commit-dropdown .text").addClass("default");
-    $("#commit-dropdown .text").text("Select commit");
-    $.getJSON(github_endpoints['get_commits'], {repository: repo, branch: branch}, function(data, status) {
-      commits_html = "";
-      data.forEach(commit => {
-        commits_html += `<div data-value="${commit["sha"]}" class="item">${commit["sha"]} (${commit["msg"]})</div>`;
-      });
-      $("#commit-dropdown .menu").html(commits_html);
+  clear_commits();
+  $.getJSON(github_endpoints['get_commits'], {repository: repo, branch: branch}, function(data, status) {
+    commits_html = "";
+    data.forEach(commit => {
+      commits_html += `<div data-value="${commit["sha"]}" class="item">${commit["sha"]} (${commit["msg"]})</div>`;
     });
+    $("#commit-dropdown .menu").html(commits_html);
+  });
 }
 
 $("a[data-tab=github]").click(function (e) {
@@ -53,9 +64,9 @@ $("#repo-dropdown").change(function() {
 });
 
 $("#branch-dropdown").change(function() {
-    var repo_name = $("#repo-dropdown input[name='repo']").val();
-    var branch_name = $("#branch-dropdown input[name='branch']").val();
-    update_commits(repo_name, branch_name);
+  var repo_name = $("#repo-dropdown input[name='repo']").val();
+  var branch_name = $("#branch-dropdown input[name='branch']").val();
+  update_commits(repo_name, branch_name);
 });
 
 // https://stackoverflow.com/questions/5524045/jquery-non-ajax-post
