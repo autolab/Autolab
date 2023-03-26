@@ -20,9 +20,6 @@ FactoryBot.define do
     assessment_id { 0 }
     tweak_id { 0 }
     sequence(:version) { |n| n }
-    # course_user_datum { nil }
-    # submitted_by { nil }
-    # assessment { nil }
     association :course_user_datum, factory: :course_user_datum
     association :submitted_by, factory: :course_user_datum
     association :assessment, factory: :assessment
