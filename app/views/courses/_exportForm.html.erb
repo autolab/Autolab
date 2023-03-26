@@ -1,50 +1,41 @@
 <table class="prettyBorder" id="course_fields">
+  <colgroup>
+    <col span="1" style="width: 50px;">
+    <col span="1">
+  </colgroup>
   <thead>
     <tr>
-      <th>
-      </th>
+      <th></th>
       <th>Course fields</th>
     </tr>
   </thead>
   <tbody>
-    <tr>
+    <tr class="course-field"> 
       <td>
-        <p>
-          <label>
-            <input class="cbox" type="checkbox" id="course-config">
-            <span/>
-          </label>
-        </p>
+        <label>
+          <input disabled=true class="cbox" type="checkbox" id="course_config_checkbox" checked >
+          <span/>
+        </label>
       </td>
-      <td>
-        <p>Course configuration</p>
-      </td>
+      <td>Course configuration</td>
     </tr>
-    <tr>
+    <tr class="course-field">
       <td>
-        <p>
-          <label>
-            <input class="cbox" type="checkbox" id="assessments">
-            <span/>
-          </label>
-        </p>
+        <label>
+          <input class="cbox" type="checkbox" id="assessments_checkbox">
+          <span/>
+        </label>
       </td>
-      <td>
-        <p>Assessments</p>
-      </td>
+      <td>Assessments</td>
     </tr>
-    <tr>
+    <tr class="course-field">
       <td>
-        <p>
-          <label>
-            <input class="cbox" type="checkbox" id="metrics-config">
-            <span/>
-          </label>
-        </p>
+        <label>
+          <input class="cbox" type="checkbox" id="metrics_config_checkbox">
+          <span/>
+        </label>
       </td>
-      <td>
-        <p>Metrics configuration</p>
-      </td>
+      <td>Metrics configuration</td>
     </tr>
   </tbody>
 </table>
