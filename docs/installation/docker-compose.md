@@ -101,7 +101,7 @@ There are three options for TLS: using Let's Encrypt (for free TLS certificates)
 2. Ensure that port 443 is exposed on your server (i.e checking your firewall, AWS security group settings, etc)
 3. In `ssl/init-letsencrypt.sh`, change `domains=(example.com)` to the list of domains that your host is associated with, and change `email` to be your email address so that Let's Encrypt will be able to email you when your certificate is about to expire
 4. If necessary, change `staging=0` to `staging=1` to avoid being rate-limited by Let's Encrypt since there is a limit of 20 certificates/week. Setting this is helpful if you have an experimental setup.
-5. Run your modified script: `sudo sh ./ssl/init-letsencrypt.sh`
+5. Run your modified script: `sudo ./ssl/init-letsencrypt.sh`
 
 ### Option 2: Using your own TLS certificate
 1. Copy your private key to `ssl/privkey.pem`
