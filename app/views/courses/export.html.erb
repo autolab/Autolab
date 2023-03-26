@@ -1,1 +1,12 @@
+<% @title = "Export Course" %>
+
+<% content_for :stylesheets do %>
+  <%= stylesheet_link_tag "export" %>
+<% end %>
+
 <h2>Export Course</h2>
+<p>
+  Select fields to include in the export:
+</p>
+
+<%= render partial: "exportForm" %>
