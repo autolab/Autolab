@@ -84,17 +84,17 @@ class Submission < ApplicationRecord
     if upload["file"]
       # Sanity!
       upload["file"].rewind
-      File.open(handin_file_path, "wb") { |f| f.write(upload["file"].read) }
+      File.open(create_and_return_handin_file_path, "wb") { |f| f.write(upload["file"].read) }
     elsif upload["local_submit_file"]
       # local_submit_file is a path string to the temporary handin
       # directory we create for local submissions
-      File.open(handin_file_path, "wb") do |f|
+      File.open(create_and_return_handin_file_path, "wb") do |f|
         f.write(File.read(upload["local_submit_file"], mode: File::RDONLY | File::NOFOLLOW))
       end
     elsif upload["tar"]
       src = upload["tar"]
       # Only used for Github submissions, so this is fairly safe
-      FileUtils.mv(src, handin_file_path)
+      FileUtils.mv(src, create_and_return_handin_file_path)
     end
 
     if upload["file"]
@@ -165,6 +165,15 @@ class Submission < ApplicationRecord
   def handin_file_path
     return nil unless filename
 
+    new_handin_file_path = File.join(assessment.handin_directory_path, course_user_datum.email, filename)
+    unless File.exist?(new_handin_file_path)
+      return File.join(assessment.handin_directory_path, filename)
+    end
+    new_handin_file_path
+  end
+  def create_and_return_handin_file_path
+    return nil unless filename
+
     create_user_handin_directory
 
     File.join(assessment.handin_directory_path, course_user_datum.email, filename)
@@ -175,18 +184,29 @@ class Submission < ApplicationRecord
 
     create_user_handin_directory
 
-    File.join(assessment.handin_directory_path, course_user_datum.email, "annotated_#{filename}")
+    new_handin_annotated_file_path = File.join(assessment.handin_directory_path, course_user_datum.email, "annotated_#{filename}")
+    unless File.exist?(new_handin_annotated_file_path)
+      return File.join(assessment.handin_directory_path, "annotated_#{filename}")
+    end
+    new_handin_annotated_file_path
   end
 
   def autograde_feedback_filename
     "#{version}_autograde.txt"
   end
+  def old_autograde_feedback_filename
+    "#{course_user_datum.email}_#{version}_#{assessment.name}_autograde.txt"
+  end
 
   def autograde_feedback_path
     create_user_handin_directory
 
-    File.join(assessment.handin_directory_path, course_user_datum.email,
+    new_autograde_feedback_path = File.join(assessment.handin_directory_path, course_user_datum.email,
               autograde_feedback_filename)
+    unless File.exist?(new_autograde_feedback_path)
+      return File.join(assessment.handin_directory_path, old_autograde_feedback_filename)
+    end
+    new_autograde_feedback_path
   end
 
   def autograde_file
