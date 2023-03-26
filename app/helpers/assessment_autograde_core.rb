@@ -330,7 +330,6 @@ module AssessmentAutogradeCore
     local_handin = File.join(ass_dir, assessment.handin_directory, submission.filename)
     local_makefile = File.join(ass_dir, "autograde-Makefile")
     local_autograde = File.join(ass_dir, "autograde.tar")
-    local_settings_config = File.join(ass_dir, assessment.handin_directory, submission.filename + ".settings.json")
 
     # Name of the handin file on the destination machine
     dest_handin = assessment.handin_filename
@@ -339,14 +338,8 @@ module AssessmentAutogradeCore
     handin = { "localFile" => local_handin, "destFile" => dest_handin }
     makefile = { "localFile" => local_makefile, "destFile" => "Makefile" }
     autograde = { "localFile" => local_autograde, "destFile" => "autograde.tar" }
-    settings_config = { "localFile" => local_settings_config, "destFile" => "settings.json" }
 
-    if assessment.has_custom_form
-        [handin, makefile, autograde, settings_config]
-    else
-        [handin, makefile, autograde]
-    end
-    
+    [handin, makefile, autograde]
   end
 
   ##

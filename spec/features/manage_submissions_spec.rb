@@ -22,6 +22,7 @@ RSpec.describe "manage submissions user flow", type: :feature do
         fill_in "user_password", with: "testPassword"
 
         click_on "Sign in"
+        click_on "Go to Courses Home"
         click_on "Go to Course Page"
         click_on assessment_name
 
