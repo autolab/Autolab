@@ -16,14 +16,4 @@ $(document).ready(function() {
       addChecked(checkbox);
     });
   });
-
-
-  $('#select_all_btn').on('click', function() {
-    var checkboxes = document.querySelectorAll('.cbox');
-    for(var i=0; i < checkboxes.length; i++){  
-      console.log(checkboxes[i]);
-      checkboxes[i].checked=true;
-      addChecked(checkboxes[i]);
-    }  
-  });
 });
