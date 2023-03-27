@@ -242,5 +242,6 @@ Rails.application.routes.draw do
   resource :github_integration, only: [] do
     get "get_repositories"
     get "get_branches"
+    get "get_commits"
   end
 end
