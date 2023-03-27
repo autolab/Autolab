@@ -8,8 +8,8 @@ tbody {
   tr {
     height: 46px !important;
 
-    .selected {
-      background-color: #ebebeb !important;
+    &.checked {
+      background-color: #f5f5f5 !important;
     }
   }
 
