@@ -26,6 +26,7 @@ RSpec.describe AttachmentsController, type: :controller do
       expect(response.body).not_to match(/Course Attachments/m)
     end
   end
+
   shared_examples "new_success" do
     it "renders successfully" do
       sign_in(user)
@@ -37,6 +38,7 @@ RSpec.describe AttachmentsController, type: :controller do
       expect(response.body).to match(/Released/m)
     end
   end
+
   shared_examples "new_failure" do |login: false|
     it "renders with failure" do
       sign_in(user) if login
@@ -48,6 +50,7 @@ RSpec.describe AttachmentsController, type: :controller do
       expect(response.body).not_to match(/Released/m)
     end
   end
+
   shared_examples "edit_success" do
     it "renders successfully" do
       sign_in(user)
@@ -62,6 +65,7 @@ RSpec.describe AttachmentsController, type: :controller do
       expect(response.body).to match(/Released/m)
     end
   end
+
   shared_examples "edit_failure" do |login: false|
     it "renders with failure" do
       sign_in(user) if login
@@ -74,6 +78,7 @@ RSpec.describe AttachmentsController, type: :controller do
       expect(response.body).not_to match(/Released/m)
     end
   end
+
   shared_examples "show_success" do
     it "renders successfully" do
       sign_in(user)
@@ -84,6 +89,7 @@ RSpec.describe AttachmentsController, type: :controller do
       expect(response).to be_successful
     end
   end
+
   shared_examples "show_failure" do |login: false|
     it "renders with failure" do
       sign_in(user) if login
@@ -94,6 +100,7 @@ RSpec.describe AttachmentsController, type: :controller do
       expect(response).not_to be_successful
     end
   end
+
   describe "#index" do
     include_context "controllers shared context"
     context "when user is Autolab admin" do

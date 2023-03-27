@@ -2,6 +2,7 @@ require "rails_helper"
 
 RSpec.describe LtiConfigController, type: :controller do
   render_views
+
   before(:all) do
     @lti_config_hash =
       YAML.safe_load(
@@ -16,6 +17,7 @@ RSpec.describe LtiConfigController, type: :controller do
         "#{Rails.configuration.lti_config_location}/lti_platform_jwk_template.json"
       )
   end
+
   after(:each) do
     if File.exist?("#{Rails.configuration.lti_config_location}/lti_config.yml")
       File.delete("#{Rails.configuration.lti_config_location}/lti_config.yml")
@@ -27,6 +29,7 @@ RSpec.describe LtiConfigController, type: :controller do
       File.delete("#{Rails.configuration.lti_config_location}/lti_platform_jwk.json")
     end
   end
+
   describe "#update_config" do
     context "when user is Autolab admin" do
       let!(:user_id) do
@@ -101,6 +104,7 @@ RSpec.describe LtiConfigController, type: :controller do
       end
     end
   end
+
   describe "#index" do
     context "when user is Autolab admin" do
       let!(:user_id) do
