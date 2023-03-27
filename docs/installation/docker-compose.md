@@ -35,6 +35,10 @@ First ensure that you have Docker and Docker Compose installed on your machine. 
         :::bash
         docker compose build
 
+    !!! warning "RAM requirements"
+        You may face issues on a machine with less than 2GB of RAM as the gem `sassc` takes a significant amount of RAM to install.
+
+
 6. Run the Docker containers:
 
         :::bash
