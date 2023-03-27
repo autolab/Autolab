@@ -12,7 +12,6 @@ FactoryBot.define do
     submitter_ip { "123.456.789" }
     ignored { false }
     dave { "" }
-    settings { "" }
     embedded_quiz_form_answer { "" }
     submitted_by_app_id { 0 }
     group_key { "" }
@@ -21,9 +20,6 @@ FactoryBot.define do
     assessment_id { 0 }
     tweak_id { 0 }
     sequence(:version) { |n| n }
-    # course_user_datum { nil }
-    # submitted_by { nil }
-    # assessment { nil }
     association :course_user_datum, factory: :course_user_datum
     association :submitted_by, factory: :course_user_datum
     association :assessment, factory: :assessment

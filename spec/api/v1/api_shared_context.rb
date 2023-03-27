@@ -107,11 +107,6 @@ RSpec.shared_context "api handin context" do
     @ap_student = @ap_cud.user
     # The adder.py Assessment
     @adder_asm = Assessment.where(course: @ap_course).first
-    # # make sure we can submit to this assessment
-    # @adder_asm.due_at = Time.zone.now + 1.hour
-    # @adder_asm.end_at = Time.zone.now + 1.hour
-    # @adder_asm.grading_deadline = Time.zone.now + 1.hour
-    # @adder_asm.save!
   end
 
   let!(:bad_application) {
