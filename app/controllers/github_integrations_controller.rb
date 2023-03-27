@@ -30,6 +30,19 @@ class GithubIntegrationsController < ApplicationController
     nil
   end
 
+  action_auth_level :get_commits, :student
+  def get_commits
+    return fail_with_reason("User not connected to Github") unless @github_integration
+    return fail_with_reason("Repository not provided") unless params["repository"]
+    return fail_with_reason("Branch not provided") unless params["branch"]
+
+    commits = @github_integration.commits(params["repository"], params["branch"])
+    render json: commits, status: :ok
+  rescue StandardError => e
+    render json: { error: e.message }, status: :not_found
+    nil
+  end
+
 private
 
   def set_github_integration
