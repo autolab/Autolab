@@ -582,8 +582,7 @@ class CoursesController < ApplicationController
     `rm -rf #{tmp_dir}`
   end
 
-  def export
-  end
+  def export; end
 
 private
 
