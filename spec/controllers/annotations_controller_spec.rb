@@ -4,6 +4,13 @@ include ControllerMacros
 RSpec.describe AnnotationsController, type: :controller do
   render_views
 
+  let(:base_annotation) do
+    {
+      position: 0, line: 1, submitted_by: user.id, shared_comment: false,
+      global_comment: false, coordinate: nil, comment: "test", value: 0
+    }
+  end
+
   shared_examples "create_success" do
     it "renders successfully" do
       sign_in(user)
@@ -12,10 +19,10 @@ RSpec.describe AnnotationsController, type: :controller do
       submission = assessment.submissions.first
 
       annotation_params = {
-        filename: submission.filename, position: 0, line: 1,
-        submitted_by: user.id, shared_comment: false,
-        global_comment: false, problem_id: problem.id, coordinate: nil,
-        submission_id: submission.id, comment: "test", value: 0
+        problem_id: problem.id,
+        submission_id: submission.id,
+        filename: submission.filename,
+        **base_annotation
       }
 
       post :create, params: { course_name: course.name,
@@ -23,6 +30,28 @@ RSpec.describe AnnotationsController, type: :controller do
                               submission_id: submission.id,
                               annotation: annotation_params }
       expect(response).to be_successful
+    end
+  end
+
+  shared_examples "create_failure" do |login: false|
+    it "renders with failure" do
+      sign_in(user) if login
+
+      problem = assessment.problems.first
+      submission = assessment.submissions.first
+
+      annotation_params = {
+        problem_id: problem.id,
+        submission_id: submission.id,
+        filename: submission.filename,
+        **base_annotation
+      }
+
+      post :create, params: { course_name: course.name,
+                              assessment_name: assessment.name,
+                              submission_id: submission.id,
+                              annotation: annotation_params }
+      expect(response).not_to be_successful
     end
   end
 
@@ -44,6 +73,18 @@ RSpec.describe AnnotationsController, type: :controller do
     context "when user is Autolab course assistant" do
       it_behaves_like "create_success" do
         let!(:user) { course_assistant_user }
+      end
+    end
+
+    context "when user is Autolab student" do
+      it_behaves_like "create_failure", login: true do
+        let!(:user) { student_user }
+      end
+    end
+
+    context "when user is not logged in" do
+      it_behaves_like "create_failure", login: false do
+        let!(:user) { admin_user }
       end
     end
   end
