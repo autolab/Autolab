@@ -186,15 +186,25 @@ module ControllerMacros
       students_cud: students, assessment: assessment }
   end
 
-  def create_asssessments_with_submissions_for_course(course)
-    assessment = FactoryBot.create(:assessment, course: course)
-    problem = FactoryBot.create(:problem, assessment: assessment)
+  # def create_submissions_for_assessment(course, assessment)
+  #   problem = FactoryBot.create(:problem, assessment: assessment)
 
-    # for each student in the course, create a submission
-    course.course_user_data.each do |cud|
-      FactoryBot.create(:submission, problem: problem, course_user_datum: cud)
-    end
+  #   # for each student in the course, create a submission
+  #   course.course_user_data.each do |cud|
+  #     FactoryBot.create(:submission, submitted_by: cud,
+  #                                    course_user_datum: cud,
+  #                                    assessment: assessment)
+  #   end
 
-    { assessment: assessment, problem: problem, submissions: submissions }
-  end
+  #   { problem: problem, submissions: submissions }
+  # end
+
+  # def create_asssessments_with_submissions_for_course(course)
+  #   assessment = FactoryBot.create(:assessment, course: course)
+
+  #   result_hash = create_submissions_for_assessment(course, assessment)
+  #   result_hash[:assessment] = assessment
+
+  #   result_hash
+  # end
 end
