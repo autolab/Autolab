@@ -1,0 +1,33 @@
+<% content_for :javascripts do %>
+  <%= javascript_include_tag "autolab_config" %>
+<% end %>
+
+<h3>OAuth Configuration Settings</h3>
+<ul class="collapsible popout">
+  <li class="active">
+    <div class="collapsible-header">Google OAuth <% unless @oauth_config_hash[:google].nil? %><i class="material-icons">check</i><% end %></div>
+    <div class="collapsible-body">
+      <%= form_with url: oauth_config_update_google_oauth_url do |form| %>
+        <div class="input-field">
+          <%= form.text_field :client_id, value: @oauth_config_hash[:google].nil? ?  "" : @oauth_config_hash[:google][:client_id], required: true %>
+          <%= form.label :client_id, "Client ID" %>
+          <span class="helper-text">Google OAuth Client ID</span>
+        </div>
+        <div class="input-field">
+          <%= form.text_field :client_secret, value: @oauth_config_hash[:google].nil? ?  "" : @oauth_config_hash[:google][:client_secret], required: true %>
+          <%= form.label :client_secret, "Client Secret" %>
+          <span class="helper-text">Google OAuth Client Secret</span>
+        </div>
+        <%= form.submit "Update Configuration", { class: "btn primary" }%>
+      <% end %>
+    </div>
+  </li>
+  <li>
+    <div class="collapsible-header">Facebook<% unless @oauth_config_hash[:facebook].nil? %><i class="material-icons">check</i><% end %></div>
+    <div class="collapsible-body"><span>Lorem ipsum dolor sit amet.</span></div>
+  </li>
+  <li>
+    <div class="collapsible-header"><i class="material-icons">whatshot</i>Third</div>
+    <div class="collapsible-body"><span>Lorem ipsum dolor sit amet.</span></div>
+  </li>
+</ul>

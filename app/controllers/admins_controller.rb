@@ -54,5 +54,12 @@ class AdminsController < ApplicationController
         YAML.safe_load(File.read("#{Rails.configuration.config_location}/smtp_config.yml"))
       @smtp_config_hash.symbolize_keys!
     end
+
+    @oauth_config_hash = {}
+    return unless File.exist?("#{Rails.configuration.config_location}/google_oauth_config.yml")
+
+    @oauth_config_hash[:google] = YAML.safe_load(
+      File.read("#{Rails.configuration.config_location}/google_oauth_config.yml")
+    ).symbolize_keys!
   end
 end
