@@ -481,7 +481,6 @@ namespace :autolab do
     Rake::Task['db:drop'].invoke
     Rake::Task['db:create'].invoke
     Rake::Task['db:schema:load'].invoke
-    Rake::Task['autolab:populate'].invoke
     puts "Test environment is ready"
   end
 end
