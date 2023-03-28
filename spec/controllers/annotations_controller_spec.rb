@@ -1,5 +1,6 @@
 require "rails_helper"
 include ControllerMacros
+require_relative "controllers_shared_context"
 
 RSpec.describe AnnotationsController, type: :controller do
   render_views
@@ -15,8 +16,8 @@ RSpec.describe AnnotationsController, type: :controller do
     it "renders successfully" do
       sign_in(user)
 
-      problem = assessment.problems.first
-      submission = assessment.submissions.first
+      problem = get_first_problem_by_assessment(assessment.id)
+      submission = get_first_submission_by_assessment(assessment.id)
 
       annotation_params = {
         problem_id: problem.id,
@@ -37,8 +38,8 @@ RSpec.describe AnnotationsController, type: :controller do
     it "renders with failure" do
       sign_in(user) if login
 
-      problem = assessment.problems.first
-      submission = assessment.submissions.first
+      problem = get_first_problem_by_assessment(assessment.id)
+      submission = get_first_submission_by_assessment(assessment.id)
 
       annotation_params = {
         problem_id: problem.id,
