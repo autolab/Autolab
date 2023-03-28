@@ -52,6 +52,7 @@ RSpec.describe UsersController, type: :controller do
       expect(response.body).to match(/API Settings/m)
     end
   end
+
   shared_examples "show_failure" do |login: false|
     it "renders with failure" do
       sign_in(user) if login
@@ -63,21 +64,25 @@ RSpec.describe UsersController, type: :controller do
 
   describe "#index" do
     include_context "controllers shared context"
+
     context "when user is Autolab admin" do
       it_behaves_like "index_success" do
         let!(:user) { admin_user }
       end
     end
+
     context "when user is Autolab instructor" do
       it_behaves_like "index_success" do
         let!(:user) { instructor_user }
       end
     end
+
     context "when user is Autolab normal user" do
       it_behaves_like "index_success" do
         let!(:user) { student_user }
       end
     end
+
     context "when user is not logged in" do
       it_behaves_like "index_success", login: false do
         let!(:user) { student_user }
@@ -87,21 +92,25 @@ RSpec.describe UsersController, type: :controller do
 
   describe "#new" do
     include_context "controllers shared context"
+
     context "when user is Autolab admin" do
       it_behaves_like "new_success" do
         let!(:user) { admin_user }
       end
     end
+
     context "when user is Autolab instructor" do
       it_behaves_like "new_success" do
         let!(:user) { instructor_user }
       end
     end
+
     context "when user is Autolab normal user" do
       it_behaves_like "new_failure", login: true do
         let!(:user) { student_user }
       end
     end
+
     context "when user is not logged in" do
       it_behaves_like "new_failure", login: false do
         let!(:user) { student_user }
@@ -111,21 +120,25 @@ RSpec.describe UsersController, type: :controller do
 
   describe "#show" do
     include_context "controllers shared context"
+
     context "when user is Autolab admin" do
       it_behaves_like "show_success" do
         let!(:user) { admin_user }
       end
     end
+
     context "when user is Autolab instructor" do
       it_behaves_like "show_success" do
         let!(:user) { instructor_user }
       end
     end
+
     context "when user is Autolab normal user" do
       it_behaves_like "show_success" do
         let!(:user) { student_user }
       end
     end
+
     context "when user is not logged in" do
       it_behaves_like "show_failure", login: false do
         let!(:user) { student_user }

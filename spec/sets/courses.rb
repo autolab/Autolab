@@ -6,11 +6,6 @@ module Contexts
                       instructor_user: @instructor_user,
                       course_assistant_user: @course_assistant_user,
                       students: @students)
-      # admin_user = @admin_user if admin_user.nil?
-      # instructor_user = @instructor_user if instructor_user.nil?
-      # course_assistant_user = @course_assistant_user if course_assistant_user.nil?
-      # students = @students if students.nil?
-
       @course = FactoryBot.create(:course) do |new_course|
         @instructor_cud = create_cud(user: instructor_user, course: new_course, role: 'instructor')
         create_cud(user: admin_user, course: new_course)

@@ -86,6 +86,7 @@ RSpec.describe SchedulersController, type: :controller do
       expect(response.body).to match(/Interval:/m)
     end
   end
+
   shared_examples "show_failure" do |login: false|
     it "renders successfully" do
       sign_in(user) if login
