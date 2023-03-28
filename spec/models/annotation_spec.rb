@@ -10,7 +10,6 @@ RSpec.describe Annotation, type: :model do
     end
     it "updates score correctly when annotations for non-autograded problem applied" do
       submission = Submission.where(course_user_datum: users[0]).first
-      warn "submission #{submission.scores.all}"
       score = submission.scores.order(:problem_id).first
       score.update!(grader_id: users[1].id)
       problem = score.problem
