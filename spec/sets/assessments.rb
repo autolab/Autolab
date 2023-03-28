@@ -1,7 +1,6 @@
 module Contexts
   module Assessments
-    def create_assessment(asmt_name: "testassessment", course: nil)
-      course = @course if course.nil?
+    def create_assessment(asmt_name: "testassessment", course: @course)
       if asmt_name =~ /[^a-z0-9]/
         raise ArgumentError("Assessment name must contain only lowercase and digits")
       end

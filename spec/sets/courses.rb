@@ -23,10 +23,8 @@ module Contexts
       end
     end
 
-    def create_cud(user: nil, course: nil, role: 'admin')
-      user = @admin_user if user.nil?
+    def create_cud(user: @admin_user, course: @course, role: 'admin')
       role = 'admin' if user.administrator # enforce admin if user is admin
-      course = @course if course.nil?
 
       case role
       when 'student'

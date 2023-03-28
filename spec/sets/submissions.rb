@@ -1,8 +1,7 @@
 module Contexts
   module Submissions
     # Creates submissions for all students in the course for an assignment
-    def create_submissions_for_assignment(assessment: nil)
-      asmt = @assessment if assessment.nil?
+    def create_submissions_for_assignment(asmt: @assessment)
       students = get_students_by_assessment(asmt)
 
       # create submissions
