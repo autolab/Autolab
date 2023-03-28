@@ -1,13 +1,12 @@
 module Contexts
   module Problems
-    def create_problems(num_problems: 3, assessment: nil)
-      asmt = @assessment if assessment.nil?
-
+    def create_problems(num_problems: 3, asmt: @assessment)
       FactoryBot.create_list(:problem, num_problems, assessment_id: asmt.id)
     end
 
-    def create_autograded_problem(assessment: nil)
-      asmt = @assessment if assessment.nil?
+    def create_autograded_problem(asmt: @assessment)
+      course = asmt.course
+      path = Rails.root.join("courses/#{course.name}/#{asmt.name}")
 
       FactoryBot.create(:problem, assessment_id: asmt.id, name: "autograded")
 

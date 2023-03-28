@@ -17,6 +17,16 @@ module ControllerMacros
     instructorCUDs.offset(rand(instructorCUDs.count)).first.user
   end
 
+  def get_students_by_cid(cid)
+    cuds = CourseUserDatum.where(course_id: cid, instructor: false, course_assistant: false).all
+    cuds.map(&:user)
+  end
+
+  def get_students_by_assessment(assessment)
+    cid = assessment.course_id
+    get_students_by_cid(cid)
+  end
+
   def get_first_cid_by_uid(uid)
     CourseUserDatum.where(user_id: uid).first.course_id
   end
@@ -29,12 +39,22 @@ module ControllerMacros
     AssessmentUserDatum.where(course_user_datum_id: cud).first.assessment_id
   end
 
+  def get_problems_by_assessment(assessment)
+    Problem.where(assessment_id: assessment).all
+  end
+
   def get_first_problem_by_assessment(assessment)
     Problem.where(assessment_id: assessment).first
   end
 
   def get_first_submission_by_assessment(assessment)
     Submission.where(assessment_id: assessment).first
+  end
+
+  def get_handin_path(asmt)
+    course = asmt.course
+    path = Rails.root.join("courses/#{course.name}/#{asmt.name}")
+    Rails.root.join(path, asmt.handin_directory)
   end
 
   def create_scheduler_with_cid(cid)

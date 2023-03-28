@@ -2,22 +2,40 @@ module Contexts
   module Courses
     # TODO: course creation creates a bunch of folders and files that persist
     # should implement some form of cleanup
-    def create_course
+    def create_course(admin_user: @admin_user,
+                      instructor_user: @instructor_user,
+                      course_assistant_user: @course_assistant_user,
+                      students: @students)
+      # admin_user = @admin_user if admin_user.nil?
+      # instructor_user = @instructor_user if instructor_user.nil?
+      # course_assistant_user = @course_assistant_user if course_assistant_user.nil?
+      # students = @students if students.nil?
+
       @course = FactoryBot.create(:course) do |new_course|
-        @instructor_cud = FactoryBot.create(:course_user_datum, course: new_course,
-                                                                user: @instructor_user,
-                                                                instructor: true)
-        FactoryBot.create(:course_user_datum, course: new_course,
-                                              user: @admin_user,
-                                              instructor: true)
-        FactoryBot.create(:course_user_datum, course: new_course,
-                                              user: @course_assistant_user,
-                                              instructor: false, course_assistant: true)
-        @students.each do |student|
+        @instructor_cud = create_cud(user: instructor_user, course: new_course, role: 'instructor')
+        create_cud(user: admin_user, course: new_course)
+        create_cud(user: course_assistant_user, course: new_course, role: 'course_assistant')
+        students.each do |student|
           # students in this course are given nicknames to bypass
           # initial cud edit redirect that occurs when no nickname is given
-          FactoryBot.create(:nicknamed_student, course: new_course, user: student)
+          create_cud(user: student, course: new_course, role: 'student')
         end
+      end
+    end
+
+    def create_cud(user: nil, course: nil, role: 'admin')
+      user = @admin_user if user.nil?
+      role = 'admin' if user.administrator # enforce admin if user is admin
+      course = @course if course.nil?
+
+      case role
+      when 'student'
+        FactoryBot.create(:nicknamed_student, course: course, user: user)
+      when 'instructor', 'admin'
+        FactoryBot.create(:course_user_datum, course: course, user: user, instructor: true)
+      else
+        FactoryBot.create(:course_user_datum, course: course, user: user,
+                                              course_assistant: true)
       end
     end
   end
