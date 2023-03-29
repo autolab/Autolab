@@ -97,12 +97,7 @@ private
 
     # add AUD status (see AUD.status method) as final column
     final = aud.status as_seen_by
-    row << case final
-      when Symbol
-        final
-      when Float
-        round final
-    end
+    row << final
 
     row
   end
