@@ -54,7 +54,10 @@ Follow the step-by-step instructions below:
         cd bin
         bundle install
 
-    Refer to [Troubleshooting](/installation/troubleshoot) for issues installing gems
+    !!! warning "RAM requirements"
+        You may face issues on a machine with less than 2GB of RAM as the gem `sassc` takes a significant amount of RAM to install.
+
+        Refer to [Troubleshooting](/installation/troubleshoot) for issues installing gems.
 
 8. Install the <a href="https://github.com/universal-ctags/homebrew-universal-ctags" target="_blank">universal-ctags</a> package:
 

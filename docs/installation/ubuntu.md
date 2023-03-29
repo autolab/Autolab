@@ -68,6 +68,11 @@ Following instructions from <a href="https://www.digitalocean.com/community/tuto
         rbenv rehash
         bundle install
 
+    !!! warning "RAM requirements"
+        You may face issues on a machine with less than 2GB of RAM as the gem `sassc` takes a significant amount of RAM to install.
+
+        Refer to [Troubleshooting](/installation/troubleshoot) for issues installing gems.
+
 9. Initializing Autolab Configs
 
         :::bash
