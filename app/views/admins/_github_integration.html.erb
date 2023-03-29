@@ -28,7 +28,7 @@ a large enough value -->
   </div>
 
   <div class="input-field">
-    <%= form.text_field :client_secret, required: true %>
+    <%= form.password_field :client_secret, value: @github_config_hash.nil? ? "" : @github_config_hash[:client_secret], required: true %>
     <%= form.label :client_secret, "Client Secret" %>
     <span class="helper-text">Specify Github client secret</span>
   </div>
