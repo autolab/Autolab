@@ -87,7 +87,7 @@
 					<span> Language </span>
 					</label>
 					<br>
-					<div id='<%= a.id %>OptionsDiv' style="margin-right: 10px;" >
+					<div id='OptionsDiv' style="margin-right: 10px;" >
 						<div class="input-field">
 							<%= select_tag :language_selection, options_for_select([
 								["ASCII", "ascii"],
@@ -126,7 +126,7 @@
 					<span>Max Lines </span>
 					</label>
 					<br>
-					<div id='<%= a.id %>OptionsDiv' style="padding-left:10px;" >
+					<div id='OptionsDiv' style="padding-left:10px;" >
 						<%= number_field_tag "max_lines", "10", placeholder: "If you don't know what this is please read the Moss documentation before altering this value.", min: 1 %>
 					</div>
 				</li>
@@ -135,7 +135,7 @@
 						<%= check_box_tag "box_basefile", "1",false, :class => "filled-in" %> 
 						<span>Base File Tar </span>
 					</label>
-					<div id='<%= a.id %>OptionsDiv' style="padding-left:10px;" >
+					<div id='OptionsDiv' style="padding-left:10px;" >
 						<div class="file-field input-field">
 						  <div class="btn">
 					      <span>Base File</span>
