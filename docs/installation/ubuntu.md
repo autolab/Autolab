@@ -68,6 +68,8 @@ Following instructions from <a href="https://www.digitalocean.com/community/tuto
         rbenv rehash
         bundle install
 
+    Refer to [Troubleshooting](/installation/troubleshoot) for issues installing gems.
+
 9. Initializing Autolab Configs
 
         :::bash

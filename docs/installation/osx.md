@@ -54,7 +54,7 @@ Follow the step-by-step instructions below:
         cd bin
         bundle install
 
-    Refer to [Troubleshooting](/installation/troubleshoot) for issues installing gems
+    Refer to [Troubleshooting](/installation/troubleshoot) for issues installing gems.
 
 8. Install the <a href="https://github.com/universal-ctags/homebrew-universal-ctags" target="_blank">universal-ctags</a> package:
 
