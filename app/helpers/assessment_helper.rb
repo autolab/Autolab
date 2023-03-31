@@ -93,12 +93,7 @@ private
 
     # add AUD status (see AUD.status method)
     final = aud.status as_seen_by
-    row << case final
-           when Symbol
-             final
-           when Float
-             round final
-           end
+    row << final
 
     # add scores to csv row (for scores columns)
     row.concat score_cells
