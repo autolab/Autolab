@@ -54,5 +54,10 @@ class AdminsController < ApplicationController
         YAML.safe_load(File.read("#{Rails.configuration.config_location}/smtp_config.yml"))
       @smtp_config_hash.symbolize_keys!
     end
+
+    @github_config_hash = {
+      client_id: Rails.configuration&.x&.github&.client_id || "",
+      client_secret: Rails.configuration&.x&.github&.client_secret || ""
+    }
   end
 end
