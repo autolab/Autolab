@@ -62,8 +62,11 @@ Rails.application.configure do
 
   # OAuth2 Application Configuration for Github
   # See https://docs.autolabproject.com/installation/github_integration/
-  config.x.github.client_id = ENV['GITHUB_CLIENT_ID']
-  config.x.github.client_secret = ENV['GITHUB_CLIENT_SECRET']
+  if File.exist?("#{Rails.configuration.config_location}/github_config.yml")
+    config_hash = YAML.safe_load(File.read("#{Rails.configuration.config_location}/github_config.yml"))
+    config.x.github.client_id = config_hash['github']['client_id']
+    config.x.github.client_secret = config_hash['github']['client_secret']
+  end
 
   if File.exist?("#{Rails.configuration.config_location}/smtp_config.yml")
     config_hash = YAML.safe_load(File.read("#{Rails.configuration.config_location}/smtp_config.yml"))

@@ -1,6 +1,9 @@
 <% @title = "Github Integration" %>
+
+<h3> Github Integration Configuration Settings </h3>
+
 <% GithubIntegration.check_github_authorization %>
-<h3>Github Integration</h3>
+<h4>Github Integration Status </h4>
 <!-- If Github application secrets are not configured correctly, the default unauthenticated
 limit is 60 as of writing, and it is 5000 if configured, so we just check for
 a large enough value -->
@@ -13,9 +16,22 @@ a large enough value -->
   </ul>
 <% else %>
   <b>Github integration is not configured or misconfigured, or Github is down. </b>
-  <br>
-  To configure Github integration, please check our docs here. <!-- TODO update with documentation link -->
-  <br>
-  Please set GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET environment variables to refer to
-  your Github application's client ID and secret respectively.
+<% end %>
+
+<%= form_with url: github_config_update_config_url do |form| %>
+
+  <h4> GitHub Client Settings </h4>
+  <div class="input-field">
+    <%= form.text_field :client_id, value: @github_config_hash.nil? ? "" : @github_config_hash[:client_id], required: true %>
+    <%= form.label :client_id, "Client ID" %>
+    <span class="helper-text">Specify Github client ID </span>
+  </div>
+
+  <div class="input-field">
+    <%= form.password_field :client_secret, value: @github_config_hash.nil? ? "" : @github_config_hash[:client_secret], required: true %>
+    <%= form.label :client_secret, "Client Secret" %>
+    <span class="helper-text">Specify Github client secret</span>
+  </div>
+
+  <%= form.submit "Save", { class: 'btn primary' } %>
 <% end %>

@@ -1,8 +1,3 @@
-<% content_for :javascripts do %>
-  <%= javascript_include_tag "autolab_config" %>
-  <%= stylesheet_link_tag "lti_config" %>
-<% end %>
-
 <h3>SMTP Configuration Settings</h3>
 <%= form_with url: smtp_config_update_config_url do |form| %>
 
