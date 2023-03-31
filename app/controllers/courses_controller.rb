@@ -493,11 +493,6 @@ class CoursesController < ApplicationController
 
   action_auth_level :moss, :instructor
   def moss
-    @courses = Course.all.select do |course|
-      @cud.user.administrator ||
-        !course.course_user_data.joins(:user).find_by(users: { email: @cud.user.email },
-                                                      instructor: true).nil?
-    end
   end
 
   LANGUAGE_WHITELIST = %w[c cc java ml pascal ada lisp scheme haskell fortran ascii vhdl perl
