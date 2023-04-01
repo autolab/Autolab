@@ -431,7 +431,9 @@ module AssessmentAutogradeCore
           begin
             scores = @assessment.config_module.modifySubmissionScores(scores, previous_submissions, @assessment.problems)
           rescue StandardError => e
-            raise AutogradeError.new("Error in modifySubmissionScores: " + e.message)
+            # Append the error message to the feedback
+            feedback_str = "An error occurred while modifying submission scores:\nError message: #{e}\n\n---\n"
+            feedback = feedback_str + feedback
           end
         end
 
@@ -440,7 +442,7 @@ module AssessmentAutogradeCore
           raise AutogradeError.new("Problem \"" + key + "\" not found.") unless problem
           score = submission.scores.find_or_initialize_by(problem_id: problem.id)
           score.score = scores[key]
-          score.feedback = feedback
+          score.feedback = feedback # do something here
           score.released = @autograde_prop.release_score
           score.grader_id = 0
           score.save!
