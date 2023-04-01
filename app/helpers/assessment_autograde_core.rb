@@ -442,7 +442,7 @@ module AssessmentAutogradeCore
           raise AutogradeError.new("Problem \"" + key + "\" not found.") unless problem
           score = submission.scores.find_or_initialize_by(problem_id: problem.id)
           score.score = scores[key]
-          score.feedback = feedback # do something here
+          score.feedback = feedback 
           score.released = @autograde_prop.release_score
           score.grader_id = 0
           score.save!
