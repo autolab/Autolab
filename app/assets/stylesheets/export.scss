@@ -1,6 +1,8 @@
+@import 'variables';
+
 table {
   box-shadow: none !important;
-  border: 1px solid #F4F1F1 !important;
+  border: 1px solid $autolab-border-gray !important;
   font-size: 17px !important;
 }
 
@@ -9,7 +11,7 @@ tbody {
     height: 46px !important;
 
     &.checked {
-      background-color: #f5f5f5 !important;
+      background-color: $autolab-selected-gray !important;
     }
   }
 
