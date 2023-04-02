@@ -79,28 +79,25 @@ class Submission < ApplicationRecord
   delegate :update_latest_submission, to: :aud
 
   def save_file(upload)
-    filename = "#{course_user_datum.user.email}_#{version}_#{assessment.handin_filename}"
-    directory = assessment.handin_directory
-    path = Rails.root.join("courses", course_user_datum.course.name,
-                           assessment.name, directory, filename)
+    self.filename = handin_file_filename
 
     if upload["file"]
       # Sanity!
       upload["file"].rewind
-      File.open(path, "wb") { |f| f.write(upload["file"].read) }
+      File.open(create_user_directory_and_return_handin_file_path, "wb") { |f|
+        f.write(upload["file"].read)
+      }
     elsif upload["local_submit_file"]
       # local_submit_file is a path string to the temporary handin
       # directory we create for local submissions
-      File.open(path, "wb") do |f|
+      File.open(create_user_directory_and_return_handin_file_path, "wb") do |f|
         f.write(File.read(upload["local_submit_file"], mode: File::RDONLY | File::NOFOLLOW))
       end
     elsif upload["tar"]
       src = upload["tar"]
       # Only used for Github submissions, so this is fairly safe
-      FileUtils.mv(src, path)
+      FileUtils.mv(src, create_user_directory_and_return_handin_file_path)
     end
-
-    self.filename = filename
 
     if upload["file"]
       begin
@@ -122,44 +119,105 @@ class Submission < ApplicationRecord
     return if filename.nil?
     return unless File.exist?(handin_file_path)
 
-    archive = File.join(assessment.handin_directory_path, "archive")
-    Dir.mkdir(archive) unless FileTest.directory?(archive)
+    FileUtils.mkdir_p handin_archive_path
 
-    # Using the id instead of the version guarantees a unique filename
-    submission_backup = File.join(archive, "deleted_#{filename}")
-    FileUtils.mv(handin_file_path, submission_backup)
+    # Archive handin file
+    FileUtils.mv(handin_file_path, submission_archive_path)
 
-    archive_autograder_feedback(archive)
+    # Archive feedback file
+    if assessment.has_autograder? && File.exist?(autograde_feedback_path)
+      FileUtils.mv(autograde_feedback_path, feedback_archive_path)
+    end
+
+    # Archive annotated file
+    return unless File.exist?(handin_annotated_file_path)
+
+    FileUtils.mv(handin_annotated_file_path, annotated_archive_path)
   end
 
-  def archive_autograder_feedback(archive)
-    return unless assessment.has_autograder?
+  ### archive helpers
+  def handin_archive_path
+    File.join(assessment.handin_directory_path, "archive", course_user_datum.email)
+  end
 
-    feedback_path = autograde_feedback_path
-    return unless File.exist?(feedback_path)
+  def submission_archive_path
+    submission_archive_filename = "#{id}_#{filename}"
+    File.join(handin_archive_path, submission_archive_filename)
+  end
 
-    backup = File.join(archive, "deleted_#{autograde_feedback_filename}")
-    FileUtils.mv(feedback_path, backup)
+  def feedback_archive_path
+    feedback_archive_filename = "#{id}_#{autograde_feedback_filename}"
+    File.join(handin_archive_path, feedback_archive_filename)
+  end
+
+  def annotated_archive_path
+    annotated_archive_filename = "#{id}_annotated_#{filename}"
+    File.join(handin_archive_path, annotated_archive_filename)
+  end
+
+  ### handin helpers
+  def create_user_handin_directory
+    FileUtils.mkdir_p File.join(assessment.handin_directory_path, course_user_datum.email)
+  end
+
+  def handin_file_filename
+    "#{version}_#{assessment.handin_filename}"
   end
 
   def handin_file_path
     return nil unless filename
 
-    File.join(assessment.handin_directory_path, filename)
+    new_handin_file_path = File.join(assessment.handin_directory_path, course_user_datum.email,
+                                     filename)
+    old_handin_file_path = File.join(assessment.handin_directory_path, filename)
+    unless File.exist?(old_handin_file_path)
+      return new_handin_file_path
+    end
+
+    old_handin_file_path
+  end
+
+  def create_user_directory_and_return_handin_file_path
+    return nil unless filename
+
+    create_user_handin_directory
+
+    File.join(assessment.handin_directory_path, course_user_datum.email, filename)
   end
 
   def handin_annotated_file_path
     return nil unless filename
 
-    File.join(assessment.handin_directory_path, "annotated_#{filename}")
+    new_handin_annotated_file_path = File.join(assessment.handin_directory_path,
+                                               course_user_datum.email, "annotated_#{filename}")
+    old_handin_annotated_file_path = File.join(assessment.handin_directory_path,
+                                               "annotated_#{filename}")
+    unless File.exist?(old_handin_annotated_file_path)
+      return new_handin_annotated_file_path
+    end
+
+    old_handin_annotated_file_path
   end
 
   def autograde_feedback_filename
+    "#{version}_autograde.txt"
+  end
+
+  def old_autograde_feedback_filename
     "#{course_user_datum.email}_#{version}_#{assessment.name}_autograde.txt"
   end
 
   def autograde_feedback_path
-    File.join(assessment.handin_directory_path, autograde_feedback_filename)
+    new_autograde_feedback_path = File.join(assessment.handin_directory_path,
+                                            course_user_datum.email,
+                                            autograde_feedback_filename)
+    old_autograde_feedback_path = File.join(assessment.handin_directory_path,
+                                            old_autograde_feedback_filename)
+    unless File.exist?(old_autograde_feedback_path)
+      return new_autograde_feedback_path
+    end
+
+    old_autograde_feedback_path
   end
 
   def autograde_file
