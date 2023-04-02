@@ -342,6 +342,49 @@ The `hello/writeup` contains the detailed lab writeup, either html or pdf file, 
 ## Other sample autograders
 We have a [repository for sample autograders](https://github.com/autolab/autograders-examples) written for popular languages, which includes Python, Java, C++, Golang, and Javascript.
 
+## Overriding Modify Submission Score
+
+By default, the score output by the autograder will directly assigned to the individual problem scores. But you can change this by providing your own `modifySubmissionScores` function in `<labname>.rb` file. For example, to override the score calculation for a lab called `malloclab`, you might add the following `modifySubmissionScores` function to `malloclab/malloclab.rb`:
+
+```ruby
+# In malloclab/malloclab.rb file
+  def assessmentVariables
+    variables = {}
+    variables["previous_submissions_lookback"] = 1000
+    variables["exclude_autograding_in_progress_submissions"] = false
+    variables
+  end
+
+  def modifySubmissionScores(scores, previous_submissions, problems)
+
+    scores["Score1"] = -(previous_submissions.length)
+    
+    # Get Score1 score for previous submission
+    scores["Score2"] = previous_submissions[0].scores.find_or_initialize_by(:problem_id => problems.find_by(:name => "Score1").id).score
+
+    # Get Score2 score for previous submission
+    scores["Score3"] = previous_submissions[0].scores.find_or_initialize_by(:problem_id => problems.find_by(:name => "Score2").id).score
+    
+    scores
+  end
+```
+This overriding allows you to create a lab that has a score that is a function of the number of previous submissions, and the scores of previous submissions. This particular lab has four problems called "Autograded Score", "Score1", "Score2", "Score3". It assigns the score of "Score1" to be the negative of the number of previous submissions, and the score of "Score2" to be the score of "Score1" of the previous submission, and the score of "Score3" to be the score of "Score2" of the previous submission. 
+
+There are two settings that you can change in the `assessmentVariables` function that will affect the behavior of the `modifySubmissionScores` function:
+
+- `previous_submissions_lookback`: The number of previous submissions to look back when calculating the score. By default, it is set to 1000.
+- `exclude_autograding_in_progress_submissions`: If set to `true`, the submissions that are currently being autograded will be excluded when passed into the `modifySubmissionScores` function. By default, it is set to `false`.
+
+The three arguments passed into the `modifySubmissionScores` function are:
+
+- `scores`: A hash that maps the problem name to the score.
+- `previous_submissions`: A list of previous submissions, sorted by submission time in descending order, it is an ActiveRecord object.
+- `problems`: A list of problems in the lab, it is an ActiveRecord object.
+
+For more information on how to use ActiveRecord, please refer to the [ActiveRecord documentation](http://guides.rubyonrails.org/active_record_querying.html). For the schema of the `Submission` and `Problem` models, please refer to the [Autolab Schema](https://github.com/autolab/Autolab/blob/master/db/schema.rb).
+
+To make this change live, you must select the "Reload config file" option on the assessment page.
+
 ## Troubleshooting
 
 #### Why is Autolab not displaying my stdout output?
