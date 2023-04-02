@@ -1,0 +1,14 @@
+glob: "app/**/*.{html,text,js}{+*,}.erb"
+EnableDefaultLinters: true
+linters:
+  HardCodedString:
+    enabled: false
+  ErbSafety:
+    enabled: true
+  Rubocop:
+    enabled: true
+    rubocop_config:
+      inherit_from:
+        - .rubocop.yml
+      Layout/CommentIndentation:
+        Enabled: false
