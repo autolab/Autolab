@@ -190,6 +190,7 @@ class Submission < ApplicationRecord
 
     new_handin_annotated_file_path = File.join(assessment.handin_directory_path,
                                                course_user_datum.email, "annotated_#{filename}")
+
     old_handin_annotated_file_path = File.join(assessment.handin_directory_path,
                                                "annotated_#{filename}")
 
