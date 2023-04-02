@@ -418,16 +418,27 @@ module AssessmentAutogradeCore
         # Provide it with the scores and previous submissions
         if @assessment.overwrites_method?(:modifySubmissionScores)
           
+          # Get previous submissions of the same assessment by the user, excluding the current submission
+          previous_submissions = Submission.where(course_user_datum_id: submission.course_user_datum_id, 
+                                 assessment_id: @assessment.id).where.not(id: submission.id).order(created_at: :desc)
+          
+          # If the assessment variable is set to exclude autograding in progress submissions, exclude them
+          previous_submssions = if (@assessment.assessment_variable.key?("exclude_autograding_in_progress_submissions")
+                                    && @assessment.assessment_variable["exclude_autograding_in_progress_submissions"])
+                                  previous_submissions.where.not(jobid: nil)
+                                else
+                                  previous_submissions
+                                end
+
           previous_submissions_lookback = if (@assessment.assessment_variable.key?("previous_submissions_lookback"))
                                             @assessment.assessment_variable["previous_submissions_lookback"]
                                           else
                                             1000 # default to 1000
                                           end 
-                                          
-          # Get previous submissions of the same assessment by the user, excluding the current submission
-          previous_submissions = Submission.where(course_user_datum_id: submission.course_user_datum_id, 
-                                 assessment_id: @assessment.id).where.not(id: submission.id).order(created_at: :desc).limit(previous_submissions_lookback)
 
+          # Limit the number of previous submissions to the lookback value
+          previous_submissions = previous_submissions.limit(previous_submissions_lookback)
+          
           begin
             scores = @assessment.config_module.modifySubmissionScores(scores, previous_submissions, @assessment.problems)
           rescue StandardError => e
