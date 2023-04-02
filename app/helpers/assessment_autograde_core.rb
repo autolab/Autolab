@@ -403,13 +403,51 @@ module AssessmentAutogradeCore
       @autograde_prop = @assessment.autograder
 
       # Record each of the scores extracted from the autoresult
-      scores.keys.each do |key|
-        problem = @assessment.problems.find_by(name: key)
-        raise AutogradeError.new("Problem \"" + key + "\" not found.") unless problem
-        submissions.each do |submission|
+      submissions.each do |submission|
+
+        # If modifySubmissionScore is overridden, use that to modify the score
+        # Provide it with the scores and previous submissions
+        if @assessment.overwrites_method?(:modifySubmissionScores)
+          
+          # Get previous submissions of the same assessment by the user, excluding the current submission
+          previous_submissions = Submission.where(course_user_datum_id: submission.course_user_datum_id, 
+                                 assessment_id: @assessment.id)
+                                 .where.not(id: submission.id)
+                                 .where("created_at < ?", submission.created_at)
+                                 .order(created_at: :desc)
+                                 
+          # If the assessment variable is set to exclude autograding in progress submissions, exclude them
+          previous_submissions = if (@assessment.assessment_variable.key?("exclude_autograding_in_progress_submissions") && 
+            @assessment.assessment_variable.key?("exclude_autograding_in_progress_submissions"))
+                                  previous_submissions.where(jobid: nil)
+                                else
+                                  previous_submissions
+                                end
+          
+          previous_submissions_lookback = if (@assessment.assessment_variable.key?("previous_submissions_lookback"))
+                                            @assessment.assessment_variable["previous_submissions_lookback"]
+                                          else
+                                            1000 # default to 1000
+                                          end 
+
+          # Limit the number of previous submissions to the lookback value
+          previous_submissions = previous_submissions.limit(previous_submissions_lookback)
+          
+          begin
+            scores = @assessment.config_module.modifySubmissionScores(scores, previous_submissions, @assessment.problems)
+          rescue StandardError => e
+            # Append the error message to the feedback
+            feedback_str = "An error occurred while modifying submission scores:\nError message: #{e}\n\n---\n"
+            feedback = feedback_str + feedback
+          end
+        end
+
+        scores.keys.each do |key|
+          problem = @assessment.problems.find_by(name: key)
+          raise AutogradeError.new("Problem \"" + key + "\" not found.") unless problem
           score = submission.scores.find_or_initialize_by(problem_id: problem.id)
           score.score = scores[key]
-          score.feedback = feedback
+          score.feedback = feedback 
           score.released = @autograde_prop.release_score
           score.grader_id = 0
           score.save!
