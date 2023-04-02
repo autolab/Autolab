@@ -344,7 +344,7 @@ We have a [repository for sample autograders](https://github.com/autolab/autogra
 
 ## Overriding Modify Submission Score
 
-By default, the score output by the autograder will directly assigned to the individual problem scores. But you can change this by providing your own `modify_submission_score` function in `<labname>.rb` file. For example, to override the score calculation for a lab called `malloclab`, you might add the following `modify_submission_score` function to `malloclab/malloclab.rb`:
+By default, the score output by the autograder will directly assigned to the individual problem scores. But you can change this by providing your own `modifySubmissionScores` function in `<labname>.rb` file. For example, to override the score calculation for a lab called `malloclab`, you might add the following `modifySubmissionScores` function to `malloclab/malloclab.rb`:
 
 ```ruby
 # In malloclab/malloclab.rb file
@@ -374,6 +374,14 @@ There are two settings that you can change in the `assessmentVariables` function
 
 - `previous_submissions_lookback`: The number of previous submissions to look back when calculating the score. By default, it is set to 1000.
 - `exclude_autograding_in_progress_submissions`: If set to `true`, the submissions that are currently being autograded will be excluded when passed into the `modifySubmissionScores` function. By default, it is set to `false`.
+
+The three arguments passed into the `modifySubmissionScores` function are:
+
+- `scores`: A hash that maps the problem name to the score.
+- `previous_submissions`: A list of previous submissions, sorted by submission time in descending order, it is an ActiveRecord object.
+- `problems`: A list of problems in the lab, it is an ActiveRecord object.
+
+For more information on how to use ActiveRecord, please refer to the [ActiveRecord documentation](http://guides.rubyonrails.org/active_record_querying.html). For the schema of the `Submission` and `Problem` models, please refer to the [Autolab Schema](https://github.com/autolab/Autolab/blob/master/db/schema.rb).
 
 To make this change live, you must select the "Reload config file" option on the assessment page.
 
