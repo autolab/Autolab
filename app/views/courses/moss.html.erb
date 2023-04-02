@@ -6,7 +6,7 @@
 	<ul class="collection" style="text-align: center; font-size: 18px;">
 		<li class="collection-item add">
 			<p>You do not seem to have any assessments in this course to be able to run the Cheat Checker</p>
-			<a title="Install an assessment" class="btn btn-large red darken-3" href=<%= install_assessment_course_assessments_path(@course) %> style="font-size: 18px;">Add an Assessment</a>
+			<%= link_to "<i class='material-icons left'>assignment</i> Install Assessment".html_safe, install_assessment_course_assessments_path(@course), { title: "Install Assessment", class: "btn btn-large red darken-3" } %>
 		</li>
 
 	</ul>
@@ -77,7 +77,7 @@
 							<span> Language </span>
 						</label>
 						<br>
-						<div id='<%= a.id %>OptionsDiv' style="margin-right: 10px;" >
+						<div style="margin-right: 10px;" >
 							<div class="input-field">
 								<%= select_tag :language_selection, options_for_select([
 																																				 ["ASCII", "ascii"],
@@ -116,7 +116,7 @@
 							<span>Max Lines </span>
 						</label>
 						<br>
-						<div id='<%= a.id %>OptionsDiv' style="padding-left:10px;" >
+						<div style="padding-left:10px;" >
 							<%= number_field_tag "max_lines", "10", placeholder: "If you don't know what this is please read the Moss documentation before altering this value.", min: 1 %>
 						</div>
 					</li>
@@ -125,7 +125,7 @@
 							<%= check_box_tag "box_basefile", "1",false, :class => "filled-in" %>
 							<span>Base File Tar </span>
 						</label>
-						<div id='<%= a.id %>OptionsDiv' style="padding-left:10px;" >
+						<div style="padding-left:10px;" >
 							<div class="file-field input-field">
 								<div class="btn">
 									<span>Base File</span>
