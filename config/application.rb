@@ -131,8 +131,7 @@ module Autolab3
       end
     end 
 
-    # lti configuration file path, keep it private
-    config.lti_config_location = Rails.root.join("config").to_s
-    
+    # Configuration file path, keep it private
+    config.config_location = Rails.root.join("config").to_s
   end
 end
