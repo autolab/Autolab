@@ -14,6 +14,8 @@ linters:
         Enabled: false
       Layout/LineLength:
         Enabled: false
+      Layout/LeadingEmptyLines:
+        Enabled: false
       Layout/TrailingEmptyLines:
         Enabled: false
       Layout/TrailingWhitespace:
