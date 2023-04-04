@@ -8,7 +8,6 @@
 			<p>You do not seem to have any assessments in this course to be able to run the Cheat Checker</p>
 			<%= link_to "<i class='material-icons left'>assignment</i> Install Assessment".html_safe, install_assessment_course_assessments_path(@course), { title: "Install Assessment", class: "btn btn-large red darken-3" } %>
 		</li>
-
 	</ul>
 <% else %>
 	<% content_for :javascripts do %>
@@ -29,7 +28,7 @@
 
 	<%= form_tag([:run_moss, @course], multipart: true) do %>
 		<ul class="moss-list">
-			<li class="filterableCourse" id="<%= @course.display_name %>">
+			<li id="<%= @course.display_name %>">
 				<h5 onclick="toggleOptions('<%= @course.id %>Assessments')">
 					<%= @course.full_name %>
 				</h5>
@@ -41,8 +40,7 @@
 								<span> <%= a.display_name %> </span>
 							</label>
 							<br>
-							<div id='<%= a.id %>OptionsDiv' style="padding-left:10px;" >
-								<!-- <b>Is Archive:</b> -->
+							<div style="padding-left:10px;" >
 								<label>
 									<%= check_box_tag "isArchive[#{a.id}]", :class => "filled-in" %>
 									<span>Is Archive: </span>
@@ -66,7 +64,7 @@
 		<h4>Step 2:</h4>
 		<p>(Optional) Add flags that will be run with moss.</p>
 		<ul class="moss-list">
-			<li class="filterableCourse" id="Moss Flags">
+			<li id="Moss Flags">
 				<h5 onclick="toggleOptions('flags')">
 					Moss Flags
 				</h5>
