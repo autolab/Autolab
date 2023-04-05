@@ -50,13 +50,14 @@ Rails.application.routes.draw do
     end
   end
 
-  root "courses#index"
+  root "courses#courses_redirect"
 
   devise_for :users, controllers: { omniauth_callbacks: "users/omniauth_callbacks",
                                     registrations: "registrations" },
                      path_prefix: "auth"
 
   get "contact", to: "home#contact"
+  get "courses", to: "courses#index"
 
   namespace :home do
     if Rails.env == "development" || Rails.env == "test"
@@ -244,5 +245,6 @@ Rails.application.routes.draw do
   resource :github_integration, only: [] do
     get "get_repositories"
     get "get_branches"
+    get "get_commits"
   end
 end

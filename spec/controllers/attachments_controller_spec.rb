@@ -1,5 +1,6 @@
 require "rails_helper"
 include ControllerMacros
+require_relative "controllers_shared_context"
 
 RSpec.describe AttachmentsController, type: :controller do
   render_views
@@ -119,6 +120,7 @@ RSpec.describe AttachmentsController, type: :controller do
   end
 
   describe "#new" do
+    include_context "controllers shared context"
     context "when user is Autolab admin" do
       it_behaves_like "new_success", get_admin
     end
@@ -219,6 +221,7 @@ RSpec.describe AttachmentsController, type: :controller do
   end
 
   describe "#edit" do
+    include_context "controllers shared context"
     context "when user is Autolab admin" do
       it_behaves_like "edit_success", get_admin
       it_behaves_like "edit_missing", get_admin
@@ -295,6 +298,7 @@ RSpec.describe AttachmentsController, type: :controller do
   end
 
   describe "#show" do
+    include_context "controllers shared context"
     context "when user is Autolab admin" do
       it_behaves_like "show_success", get_admin
       it_behaves_like "show_success", get_admin, released: false

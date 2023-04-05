@@ -53,7 +53,7 @@ doc/
 out.txt
 .vscode/
 .byebug_history
-
+node_modules/
 # Credentials
 .env
 

@@ -10,13 +10,17 @@ FactoryBot.define do
     # We still want these so that assessments can have submissions
     # but they should always be mocked unless we're explicitly
     # testing file system interaction.
-    handin_filename { |n| "handin_file_#{n}" }
-    handin_directory { |n| "handin_directory_#{n}" }
+    handin_filename { "handin_file.c" }
+    handin_directory { "handin" }
     category_name { |n| "category_#{n}" }
     max_size { 1_024_000 }
     max_submissions { 10 }
     created_at { 2.weeks.ago.to_s(:db) }
     updated_at { 1.week.ago.to_s(:db) }
+    github_submission_enabled { true }
+    is_positive_grading { true }
+    group_size { 1 }
+    max_grace_days { 4 }
     course
   end
 end
