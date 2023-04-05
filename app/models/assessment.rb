@@ -311,6 +311,12 @@ class Assessment < ApplicationRecord
     config_module.instance_methods.include?(methodKey)
   end
 
+  def assessment_variable
+    return {} unless config_module.instance_methods.include?(:assessmentVariables)
+
+    config_module.assessmentVariables
+  end
+
   def has_autograder?
     autograder != nil
   end
