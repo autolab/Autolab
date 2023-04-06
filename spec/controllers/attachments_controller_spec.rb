@@ -47,27 +47,23 @@ RSpec.describe AttachmentsController, type: :controller do
   describe "#index" do
     include_context "controllers shared context"
     context "when user is Autolab admin" do
-      it_behaves_like "index_success" do
-        let!(:u) { admin_user }
-      end
+      let!(:u) { admin_user }
+      it_behaves_like "index_success"
     end
 
     context "when user is Autolab instructor" do
-      it_behaves_like "index_success" do
-        let!(:u) { instructor_user }
-      end
+      let!(:u) { instructor_user }
+      it_behaves_like "index_success"
     end
 
     context "when user is Autolab user" do
-      it_behaves_like "index_failure", login: true do
-        let!(:u) { student_user }
-      end
+      let!(:u) { student_user }
+      it_behaves_like "index_failure", login: true
     end
 
     context "when user is not logged in" do
-      it_behaves_like "index_failure", login: false do
-        let!(:u) { admin_user }
-      end
+      let!(:u) { admin_user }
+      it_behaves_like "index_failure", login: false
     end
   end
 
@@ -117,27 +113,23 @@ RSpec.describe AttachmentsController, type: :controller do
   describe "#new" do
     include_context "controllers shared context"
     context "when user is Autolab admin" do
-      it_behaves_like "new_success" do
-        let!(:u) { admin_user }
-      end
+      let!(:u) { admin_user }
+      it_behaves_like "new_success"
     end
 
     context "when user is Autolab instructor" do
-      it_behaves_like "new_success" do
-        let!(:u) { instructor_user }
-      end
+      let!(:u) { instructor_user }
+      it_behaves_like "new_success"
     end
 
     context "when user is Autolab user" do
-      it_behaves_like "new_failure" do
-        let!(:u) { student_user }
-      end
+      let!(:u) { student_user }
+      it_behaves_like "new_failure"
     end
 
     context "when user is not logged in" do
-      it_behaves_like "new_failure", login: false do
-        let!(:u) { admin_user }
-      end
+      let!(:u) { admin_user }
+      it_behaves_like "new_failure", login: false
     end
   end
 
@@ -219,33 +211,25 @@ RSpec.describe AttachmentsController, type: :controller do
   describe "#edit" do
     include_context "controllers shared context"
     context "when user is Autolab admin" do
-      it_behaves_like "edit_success" do
-        let!(:u) { admin_user }
-      end
-      it_behaves_like "edit_missing" do
-        let!(:u) { admin_user }
-      end
+      let!(:u) { admin_user }
+      it_behaves_like "edit_success"
+      it_behaves_like "edit_missing"
     end
 
     context "when user is Autolab instructor" do
-      it_behaves_like "edit_success" do
-        let!(:u) { instructor_user }
-      end
-      it_behaves_like "edit_missing" do
-        let!(:u) { instructor_user }
-      end
+      let!(:u) { instructor_user }
+      it_behaves_like "edit_success"
+      it_behaves_like "edit_missing"
     end
 
     context "when user is Autolab user" do
-      it_behaves_like "edit_failure" do
-        let!(:u) { student_user }
-      end
+      let!(:u) { student_user }
+      it_behaves_like "edit_failure"
     end
 
     context "when user is not logged in" do
-      it_behaves_like "edit_failure", login: false do
-        let!(:u) { admin_user }
-      end
+      let!(:u) { admin_user }
+      it_behaves_like "edit_failure", login: false
     end
   end
 
@@ -301,48 +285,30 @@ RSpec.describe AttachmentsController, type: :controller do
   describe "#show" do
     include_context "controllers shared context"
     context "when user is Autolab admin" do
-      it_behaves_like "show_success" do
-        let!(:u) { admin_user }
-      end
-      it_behaves_like "show_success", released: false do
-        let!(:u) { admin_user }
-      end
-      it_behaves_like "show_missing" do
-        let!(:u) { admin_user }
-      end
+      let!(:u) { admin_user }
+      it_behaves_like "show_success"
+      it_behaves_like "show_success", released: false
+      it_behaves_like "show_missing"
     end
 
     context "when user is Autolab instructor" do
-      it_behaves_like "show_success" do
-        let!(:u) { instructor_user }
-      end
-      it_behaves_like "show_success", released: false do
-        let!(:u) { instructor_user }
-      end
-      it_behaves_like "show_missing" do
-        let!(:u) { instructor_user }
-      end
+      let!(:u) { instructor_user }
+      it_behaves_like "show_success"
+      it_behaves_like "show_success", released: false
+      it_behaves_like "show_missing"
     end
 
     context "when user is Autolab user" do
-      it_behaves_like "show_success" do
-        let!(:u) { student_user }
-      end
-      it_behaves_like "show_failure", released: false do
-        let!(:u) { student_user }
-      end
-      it_behaves_like "show_missing" do
-        let!(:u) { student_user }
-      end
+      let!(:u) { student_user }
+      it_behaves_like "show_success"
+      it_behaves_like "show_failure", released: false
+      it_behaves_like "show_missing"
     end
 
     context "when user is not logged in" do
-      it_behaves_like "show_failure", login: false do
-        let!(:u) { admin_user }
-      end
-      it_behaves_like "show_failure", login: false, released: false do
-        let!(:u) { admin_user }
-      end
+      let!(:u) { admin_user }
+      it_behaves_like "show_failure", login: false
+      it_behaves_like "show_failure", login: false, released: false
     end
   end
 
@@ -430,33 +396,25 @@ RSpec.describe AttachmentsController, type: :controller do
   describe "#create" do
     include_context "controllers shared context"
     context "when user is Autolab admin" do
-      it_behaves_like "create_success" do
-        let!(:u) { admin_user }
-      end
-      it_behaves_like "create_error" do
-        let!(:u) { admin_user }
-      end
+      let!(:u) { admin_user }
+      it_behaves_like "create_success"
+      it_behaves_like "create_error"
     end
 
     context "when user is Autolab instructor" do
-      it_behaves_like "create_success" do
-        let!(:u) { instructor_user }
-      end
-      it_behaves_like "create_error" do
-        let!(:u) { instructor_user }
-      end
+      let!(:u) { instructor_user }
+      it_behaves_like "create_success"
+      it_behaves_like "create_error"
     end
 
     context "when user is Autolab user" do
-      it_behaves_like "create_failure" do
-        let!(:u) { student_user }
-      end
+      let!(:u) { student_user }
+      it_behaves_like "create_failure"
     end
 
     context "when user is not logged in" do
-      it_behaves_like "create_failure", login: false do
-        let!(:u) { admin_user }
-      end
+      let!(:u) { admin_user }
+      it_behaves_like "create_failure", login: false
     end
   end
 
