@@ -34,7 +34,7 @@ RSpec.describe AttachmentsController, type: :controller do
       expect(response.body).not_to match(course.name)
       expect(response.body).not_to match(/Course Attachments/m)
     end
-    
+
     it "renders assessment with failure" do
       get :index, params: { course_name: course.name, assessment_name: assessment.name }
       expect(response).not_to be_successful
@@ -74,8 +74,7 @@ RSpec.describe AttachmentsController, type: :controller do
   # New
   shared_examples "new_success" do
     before(:each) { sign_in(u) }
-    
-    
+
     it "renders course successfully" do
       get :new, params: { course_name: course.name }
       expect(response).to be_successful
@@ -84,8 +83,6 @@ RSpec.describe AttachmentsController, type: :controller do
       expect(response.body).to match(/Released/m)
     end
 
-    
-    
     it "renders assessment successfully" do
       get :new, params: { course_name: course.name, assessment_name: assessment.name }
       expect(response).to be_successful
@@ -98,8 +95,7 @@ RSpec.describe AttachmentsController, type: :controller do
 
   shared_examples "new_failure" do |login: true|
     before(:each) { sign_in(u) if login }
-    
-    
+
     it "renders course with failure" do
       get :new, params: { course_name: course.name }
       expect(response).not_to be_successful
@@ -108,8 +104,6 @@ RSpec.describe AttachmentsController, type: :controller do
       expect(response.body).not_to match(/Released/m)
     end
 
-    
-    
     it "renders assessment with failure" do
       get :new, params: { course_name: course.name, assessment_name: assessment.name }
       expect(response).not_to be_successful
@@ -150,8 +144,7 @@ RSpec.describe AttachmentsController, type: :controller do
   # Edit
   shared_examples "edit_success" do
     before(:each) { sign_in(u) }
-    
-    
+
     let!(:att) { create_course_att_with_cid(course.id, true) }
     it "renders course successfully" do
       get :edit, params: { course_name: course.name, id: att.id }
@@ -164,11 +157,10 @@ RSpec.describe AttachmentsController, type: :controller do
       expect(response.body).to match(/Released/m)
     end
 
-    
-    
     let!(:assess_att) { create_assess_att_with_cid_aid(course.id, assessment.id, true) }
     it "renders assessment successfully" do
-      get :edit, params: { course_name: course.name, assessment_name: assessment.name, id: assess_att.id }
+      get :edit,
+          params: { course_name: course.name, assessment_name: assessment.name, id: assess_att.id }
       expect(response).to be_successful
       expect(response.body).to match(course.name)
       expect(response.body).to match(assessment.name)
@@ -182,8 +174,7 @@ RSpec.describe AttachmentsController, type: :controller do
 
   shared_examples "edit_failure" do |login: true|
     before(:each) { sign_in(u) if login }
-    
-    
+
     let!(:att) { create_course_att_with_cid(course.id, true) }
     it "renders course with failure" do
       get :edit, params: { course_name: course.name, id: att.id }
@@ -196,11 +187,10 @@ RSpec.describe AttachmentsController, type: :controller do
       expect(response.body).not_to match(/Released/m)
     end
 
-    
-    
     let!(:assess_att) { create_assess_att_with_cid_aid(course.id, assessment.id, true) }
     it "renders assessment with failure" do
-      get :edit, params: { course_name: course.name, assessment_name: assessment.name, id: assess_att.id }
+      get :edit,
+          params: { course_name: course.name, assessment_name: assessment.name, id: assess_att.id }
       expect(response).not_to be_successful
       expect(response.body).not_to match(course.name)
       expect(response.body).not_to match(assessment.name)
@@ -214,15 +204,12 @@ RSpec.describe AttachmentsController, type: :controller do
 
   shared_examples "edit_missing" do
     before(:each) { sign_in(u) }
-    
-    
+
     it "flashes error for non-existent course attachment" do
       get :edit, params: { course_name: course.name, id: -1 }
       expect(flash[:error]).to match(/Could not find/)
     end
 
-    
-    
     it "flashes error for non-existent assessment attachment" do
       get :edit, params: { course_name: course.name, assessment_name: assessment.name, id: -1 }
       expect(flash[:error]).to match(/Could not find/)
@@ -265,53 +252,46 @@ RSpec.describe AttachmentsController, type: :controller do
   # Show
   shared_examples "show_success" do |released: true|
     before(:each) { sign_in(u) }
-    
-    
+
     let!(:att) { create_course_att_with_cid(course.id, released) }
     it "renders course successfully" do
       get :show, params: { course_name: course.name, id: att.id }
       expect(response).to be_successful
     end
 
-    
-    
     let!(:assess_att) { create_assess_att_with_cid_aid(course.id, assessment.id, released) }
     it "renders assessment successfully" do
-      get :show, params: { course_name: course.name, assessment_name: assessment.name, id: assess_att.id }
+      get :show,
+          params: { course_name: course.name, assessment_name: assessment.name, id: assess_att.id }
       expect(response).to be_successful
     end
   end
 
   shared_examples "show_failure" do |login: true, released: true|
     before(:each) { sign_in(u) if login }
-    
-    
+
     let!(:att) { create_course_att_with_cid(course.id, released) }
     it "renders course with failure" do
       get :show, params: { course_name: course.name, id: att.id }
       expect(response).not_to be_successful
     end
 
-    
-    
     let!(:assess_att) { create_assess_att_with_cid_aid(course.id, assessment.id, released) }
     it "renders assessment with failure" do
-      get :show, params: { course_name: course.name, assessment_name: assessment.name, id: assess_att.id }
+      get :show,
+          params: { course_name: course.name, assessment_name: assessment.name, id: assess_att.id }
       expect(response).not_to be_successful
     end
   end
 
   shared_examples "show_missing" do
     before(:each) { sign_in(u) }
-    
-    
+
     it "flashes error for non-existent course attachment" do
       get :show, params: { course_name: course.name, id: -1 }
       expect(flash[:error]).to match(/Could not find/)
     end
 
-    
-    
     it "flashes error for non-existent assessment attachment" do
       get :show, params: { course_name: course.name, assessment_name: assessment.name, id: -1 }
       expect(flash[:error]).to match(/Could not find/)
@@ -371,9 +351,7 @@ RSpec.describe AttachmentsController, type: :controller do
   # Create
   shared_examples "create_success" do
     before(:each) { sign_in(u) }
-    
-    
-    
+
     let!(:att) { course_att_with_cid(course.id, true) }
     it "creates course attachment successfully" do
       expect do
@@ -384,13 +362,12 @@ RSpec.describe AttachmentsController, type: :controller do
       end.to change(Attachment, :count).by(1)
     end
 
-    
-    
-    
     let!(:assess_att) { assess_att_with_cid_aid(course.id, assessment.id, true) }
     it "creates assessment attachment successfully" do
       expect do
-        post :create, params: { course_name: course.name, assessment_name: assessment.name, attachment: assess_att }
+        post :create,
+             params: { course_name: course.name, assessment_name: assessment.name,
+                       attachment: assess_att }
         expect(flash[:success]).to match(/Attachment created/)
         expect(flash[:error]).to be_nil
         expect(response).to redirect_to(course_assessment_path(course, assessment))
@@ -400,7 +377,7 @@ RSpec.describe AttachmentsController, type: :controller do
 
   shared_examples "create_error" do
     before(:each) { sign_in(u) }
-    
+
     let!(:att) { course_att_with_cid(course.id, true).except(:name, :file) }
     it "fails to create course attachment with missing name or file" do
       expect do
@@ -412,13 +389,14 @@ RSpec.describe AttachmentsController, type: :controller do
       end.not_to change(Attachment, :count)
     end
 
-    
-    
-    
-    let!(:assess_att) { assess_att_with_cid_aid(course.id, assessment.id, true).except(:name, :file) }
+    let!(:assess_att) {
+      assess_att_with_cid_aid(course.id, assessment.id, true).except(:name, :file)
+    }
     it "fails to create assessment attachment with missing name or file" do
       expect do
-        post :create, params: { course_name: course.name, assessment_name: assessment.name, attachment: assess_att }
+        post :create,
+             params: { course_name: course.name, assessment_name: assessment.name,
+                       attachment: assess_att }
         expect(flash[:success]).to be_nil
         expect(flash[:error]).to match(/Name can't be blank/)
         expect(flash[:error]).to match(/Filename can't be blank/)
@@ -429,9 +407,7 @@ RSpec.describe AttachmentsController, type: :controller do
 
   shared_examples "create_failure" do |login: true|
     before(:each) { sign_in(u) if login }
-    
-    
-    
+
     let!(:att) { course_att_with_cid(course.id, true) }
     it "fails to create course attachment" do
       expect do
@@ -440,12 +416,12 @@ RSpec.describe AttachmentsController, type: :controller do
       end.not_to change(Attachment, :count)
     end
 
-    
-    
     let!(:assess_att) { assess_att_with_cid_aid(course.id, assessment.id, true) }
     it "fails to create assessment attachment" do
       expect do
-        post :create, params: { course_name: course.name, assessment_name: assessment.name, attachment: assess_att }
+        post :create,
+             params: { course_name: course.name, assessment_name: assessment.name,
+                       attachment: assess_att }
         expect(flash[:success]).to be_nil
       end.not_to change(Attachment, :count)
     end
@@ -486,9 +462,7 @@ RSpec.describe AttachmentsController, type: :controller do
 
   shared_examples "update_success" do
     before(:each) { sign_in(u) }
-    
-    
-    
+
     let!(:att) { create_course_att_with_cid(course.id, true) }
     it "updates course attachment successfully" do
       expect do
@@ -507,12 +481,11 @@ RSpec.describe AttachmentsController, type: :controller do
       expect(att.released).to eq(false)
     end
 
-    
-    
     let!(:assess_att) { create_assess_att_with_cid_aid(course.id, assessment.id, true) }
     it "updates assessment attachment successfully" do
       expect do
-        post :update, params: { course_name: course.name, assessment_name: assessment.name, id: assess_att.id,
+        post :update, params: { course_name: course.name, assessment_name: assessment.name,
+                                id: assess_att.id,
                                 attachment: {
                                   name: "new_name",
                                   mime_type: "new_mime_type",
@@ -531,8 +504,7 @@ RSpec.describe AttachmentsController, type: :controller do
 
   shared_examples "update_error" do
     before(:each) { sign_in(u) }
-    
-    
+
     let!(:att) { create_course_att_with_cid(course.id, true) }
     it "fails to update course attachment with missing name" do
       expect do
@@ -551,12 +523,11 @@ RSpec.describe AttachmentsController, type: :controller do
       expect(att.released).not_to eq(false)
     end
 
-    
-    
     let!(:assess_att) { create_assess_att_with_cid_aid(course.id, assessment.id, true) }
     it "fails to update assessment attachment with missing name" do
       expect do
-        post :update, params: { course_name: course.name, assessment_name: assessment.name, id: assess_att.id,
+        post :update, params: { course_name: course.name, assessment_name: assessment.name,
+                                id: assess_att.id,
                                 attachment: {
                                   name: "",
                                   mime_type: "new_mime_type",
@@ -576,9 +547,7 @@ RSpec.describe AttachmentsController, type: :controller do
 
   shared_examples "update_failure" do |login: true|
     before(:each) { sign_in(u) if login }
-    
-    
-    
+
     let!(:att) { create_course_att_with_cid(course.id, true) }
     it "fails to update course attachment" do
       expect do
@@ -595,12 +564,11 @@ RSpec.describe AttachmentsController, type: :controller do
       expect(att.released).not_to eq(false)
     end
 
-    
-    
     let!(:assess_att) { create_assess_att_with_cid_aid(course.id, assessment.id, true) }
     it "fails to update assessment attachment" do
       expect do
-        post :update, params: { course_name: course.name, assessment_name: assessment.name, id: assess_att.id,
+        post :update, params: { course_name: course.name, assessment_name: assessment.name,
+                                id: assess_att.id,
                                 attachment: {
                                   name: "new_name",
                                   mime_type: "new_mime_type",
@@ -644,8 +612,7 @@ RSpec.describe AttachmentsController, type: :controller do
   # Destroy
   shared_examples "destroy_success" do
     before(:each) { sign_in(u) }
-    
-    
+
     let!(:att) { create_course_att_with_cid(course.id, true) }
     it "destroys course attachment successfully" do
       expect do
@@ -656,12 +623,12 @@ RSpec.describe AttachmentsController, type: :controller do
       end.to change(Attachment, :count).by(-1)
     end
 
-    
-    
     let!(:assess_att) { create_assess_att_with_cid_aid(course.id, assessment.id, true) }
     it "destroys assessment attachment successfully" do
       expect do
-        delete :destroy, params: { course_name: course.name, assessment_name: assessment.name, id: assess_att.id }
+        delete :destroy,
+               params: { course_name: course.name, assessment_name: assessment.name,
+                         id: assess_att.id }
         expect(flash[:success]).to match(/Attachment deleted/)
         expect(flash[:error]).to be_nil
         expect(response).to redirect_to(course_assessment_path(course, assessment))
@@ -671,8 +638,7 @@ RSpec.describe AttachmentsController, type: :controller do
 
   shared_examples "destroy_failure" do |login: true|
     before(:each) { sign_in(u) if login }
-    
-    
+
     let!(:att) { create_course_att_with_cid(course.id, true) }
     it "fails to destroy course attachment" do
       expect do
@@ -681,13 +647,12 @@ RSpec.describe AttachmentsController, type: :controller do
       end.not_to change(Attachment, :count)
     end
 
-    
-    
-    
     let!(:assess_att) { create_assess_att_with_cid_aid(course.id, assessment.id, true) }
     it "fails to destroy assessment attachment" do
       expect do
-        delete :destroy, params: { course_name: course.name, assessment_name: assessment.name, id: assess_att.id }
+        delete :destroy,
+               params: { course_name: course.name, assessment_name: assessment.name,
+                         id: assess_att.id }
         expect(flash[:success]).to be_nil
       end.not_to change(Attachment, :count)
     end
