@@ -24,7 +24,7 @@
 	<% end %>
 
 	<h4>Step 1:</h4>
-	<p>Check the box of all the assessments you want to send to Moss for cheat checking.</p>
+	<p>Check the box for each assessment you want to send to Moss for cheat checking.</p>
 
 	<%= form_tag([:run_moss, @course], multipart: true) do %>
 		<ul class="moss-list">
@@ -145,7 +145,7 @@
 
 		<h4>Step 3:</h4>
 		<p> (Optional) Upload an archive containing additional files you'd like Moss to compare against.</p>
-		<p>(Note: the archive must contain only regular files.  Nested archives wil not be extracted.)</p>
+		<p>(Note: the archive must contain only regular files. Nested archives will not be extracted.)</p>
 
 		<div class="file-field input-field">
 			<div class="btn">
