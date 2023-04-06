@@ -50,4 +50,22 @@ module ControllerMacros
       file: fixture_file_upload("attachments/course.txt", "text/plain")
     }
   end
+
+  def create_course_att_with_cid(cid, released)
+    FactoryBot.create(:attachment, **course_att_with_cid(cid, released))
+  end
+
+  def assess_att_with_cid_aid(cid, aid, released)
+    {
+      course_id: cid,
+      assessment_id: aid,
+      name: "att#{cid}--#{aid}",
+      released: released,
+      file: fixture_file_upload("attachments/assessment.txt", "text/plain")
+    }
+  end
+
+  def create_assess_att_with_cid_aid(cid, aid, released)
+    FactoryBot.create(:attachment, **assess_att_with_cid_aid(cid, aid, released))
+  end
 end

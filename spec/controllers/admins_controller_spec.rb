@@ -47,9 +47,10 @@ RSpec.describe AdminsController, type: :controller do
 
   describe "#autolab_config" do
     describe "lti_config" do
+      include_context "controllers shared context"
       context "when user is Autolab admin" do
-        user_id = get_admin
-        login_as(user_id)
+        let!(:user_id) { admin_user }
+        before(:each) { sign_in(user_id) }
         it "renders successfully" do
           get :autolab_config, params: { active: :lti }
           expect(response).to be_successful
@@ -86,9 +87,9 @@ RSpec.describe AdminsController, type: :controller do
       end
 
       context "when user is Instructor" do
-        user_id = get_instructor
-        login_as(user_id)
+        let!(:user_id) { instructor_user }
         it "renders with failure" do
+          sign_in(user_id)
           get :autolab_config, params: { active: :lti }
           expect(response).not_to be_successful
           expect(response.body).not_to match(/LTI Configuration Settings/m)
@@ -96,9 +97,9 @@ RSpec.describe AdminsController, type: :controller do
       end
 
       context "when user is student" do
-        user_id = get_user
-        login_as(user_id)
+        let!(:user_id) { student_user }
         it "renders with failure" do
+          sign_in(user_id)
           get :autolab_config, params: { active: :lti }
           expect(response).not_to be_successful
           expect(response.body).not_to match(/LTI Configuration Settings/m)
@@ -106,9 +107,9 @@ RSpec.describe AdminsController, type: :controller do
       end
 
       context "when user is course assistant" do
-        user_id = get_course_assistant_only
-        login_as(user_id)
+        let!(:user_id) { course_assistant_user }
         it "renders with failure" do
+          sign_in(user_id)
           get :autolab_config, params: { active: :lti }
           expect(response).not_to be_successful
           expect(response.body).not_to match(/LTI Configuration Settings/m)
