@@ -20,8 +20,7 @@ class GithubIntegration < ApplicationRecord
                            })
       repos.map { |repo|
         { repo_name: repo[:full_name],
-          clone_url: repo[:clone_url],
-          default_branch: repo[:default_branch] }
+          clone_url: repo[:clone_url] }
       }
     rescue StandardError => e
       if e.response_status == 401 # unauthorized
@@ -42,8 +41,22 @@ class GithubIntegration < ApplicationRecord
     client = Octokit::Client.new(access_token: access_token)
     branches = client.branches(repo, query: { per_page: 100 })
     branches.map { |branch|
-      { name: branch[:name],
-        url: branch[:commit][:url] }
+      { name: branch[:name] }
+    }
+  end
+
+  # Returns all the commits for a branch
+  # repo should be of the form `github_user/repo_name`
+  def commits(repo, branch)
+    if !access_token
+      return nil
+    end
+
+    client = Octokit::Client.new(access_token: access_token)
+    commits = client.commits(repo, query: { per_page: 100, sha: branch })
+    commits.map { |commit|
+      { sha: commit[:sha].truncate(7, omission: ""),
+        msg: commit[:commit][:message].truncate(72) }
     }
   end
 
@@ -57,7 +70,7 @@ class GithubIntegration < ApplicationRecord
   # repo_name is of the form user/repo
   # repo_branch should be a valid branch of repo_name
   # max_size is in MB
-  def clone_repo(repo_name, repo_branch, max_size)
+  def clone_repo(repo_name, repo_branch, commit, max_size)
     client = Octokit::Client.new(access_token: access_token)
     repo_info = client.repo(repo_name)
 
@@ -83,8 +96,9 @@ class GithubIntegration < ApplicationRecord
     clone_url.sub! "https://", "https://#{access_token}@"
     repo_name.gsub! "/", "-"
 
-    if !check_allowed_chars(repo_name) || !check_allowed_chars(repo_branch)
-      raise "Bad repository name"
+    if !check_allowed_chars(repo_name) || !check_allowed_chars(repo_branch) ||
+       !check_allowed_chars(commit)
+      raise "Bad repository name / branch / commit"
     end
 
     # Slap on random 8 bytes at the end
@@ -93,12 +107,18 @@ class GithubIntegration < ApplicationRecord
     destination = "/tmp/#{repo_unique_name}"
     tarfile_dest = "/tmp/#{tarfile_name}"
 
-    if !system(*%W(git clone --depth=1 --branch #{repo_branch} #{clone_url} #{destination}))
+    # depth should match the per_page limit in commits()
+    if !system(*%W(git clone --depth=100 --branch #{repo_branch} #{clone_url} #{destination}))
       raise "Cloning repo failed"
     end
 
     # Change to repo dir
     Dir.chdir(destination) {
+      # Checkout commit
+      if !system(*%W(git checkout #{commit}))
+        raise "Checkout of commit failed"
+      end
+
       # Create compressed tarball
       if !system(*%W(tar -cvzf #{tarfile_dest} --exclude=.git .))
         raise "Creation of archive from Git submission failed"
@@ -134,7 +154,8 @@ class GithubIntegration < ApplicationRecord
     begin
       limit = client.rate_limit!
     rescue StandardError
-      limit = { limit: 0 }
+      limit = ActiveSupport::OrderedOptions.new
+      limit.limit = 0
     end
     limit
   end

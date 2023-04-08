@@ -148,14 +148,6 @@
         <i class="material-icons" aria-hidden="true">file_download</i>
         <span>Annotated</span>
       </a>
-      <% if @assessment.has_custom_form then %>
-        <% if @assessment.getLanguages.size > 0 then %>
-            <p><b>Language:</b> <%= @submission.get_settings["Language"] %></p>
-        <% end %>
-        <% for i in 0..@assessment.getTextfields.size-1 do %>
-            <p><b><%= @assessment.getTextfields[i] %>:</b> <%= @submission.get_settings[@assessment.getTextfields[i]] %></p>
-        <% end %>
-     <% end %>
     <% end %>
   </div>
   <div class="col l10">
