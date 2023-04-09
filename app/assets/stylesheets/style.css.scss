@@ -800,6 +800,14 @@ table.prettyBorder {
     padding: 5px 0 5px 0;
   }
 
+  .submissions-cbox-label {
+    display: flex;
+    justify-content: center;
+    span::before {
+      left: 6px;
+    }
+  }
+
   tr.selected {
     background-color: $autolab-subtle-gray;
   }
@@ -1499,6 +1507,9 @@ table.sub td, th {
 
 .buttons-spacing {
   margin-right: 10px;
+  a {
+    overflow-y: hidden;
+  }
 }
 
 .submissions-checkbox {

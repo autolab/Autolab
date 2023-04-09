@@ -26,12 +26,11 @@
 
 <%# Main buttons %>
 <div class="row buttons-row">
-  <% if @autograded then %>
     <div class="buttons-spacing">
-    <%= link_to "<i class='material-icons left submissions-icons'>add</i>Create Submission".html_safe,
-        new_course_assessment_submission_path(@course, @assessment),
-        {:title=>"Create a new submission for a student, with an option to submit a handin file on their behalf",
-         :class=>"btn submissions disabled"} %>
+      <%= link_to "<i class='material-icons left submissions-icons'>add</i>Create Submission".html_safe,
+          new_course_assessment_submission_path(@course, @assessment),
+          {:title=>"Create a new submission for a student, with an option to submit a handin file on their behalf",
+          :class=>"btn submissions disabled"} %>
     </div>
 
     <div class="buttons-spacing">
@@ -52,7 +51,6 @@
         [@course, @assessment, :extensions],
         {:class=>"btn submissions"} %>
     </div>
-  <% end %>
 </div>
 
 
@@ -79,8 +77,9 @@
       <%# Checkbox %>
       <td class="submissions-td submissions-checkbox">
         <div>
-          <label>
-            <input class="cbox" type="checkbox" id="cbox-<%= submission.id %>"><span/>
+          <label class="submissions-cbox-label">
+            <input class="cbox" type="checkbox" id="cbox-<%= submission.id %>">
+            <span><span/>
           </label>
         </div>
       </td>
