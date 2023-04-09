@@ -1,3 +1,4 @@
+include ControllerMacros
 require "rails_helper"
 
 RSpec.describe Annotation, type: :model do
