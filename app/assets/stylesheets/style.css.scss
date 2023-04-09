@@ -742,7 +742,6 @@ div.field_with_errors {
 }
 
 /* TABLE STYLES.  Styles for the multiple tables that we have for some reason */
-/* Pretty Border Tables. I vote we make this the generic table style. */
 table.prettyBorder,
 table.prettyBorder tr,
 table.prettyBorder th,
@@ -759,7 +758,6 @@ table.prettyBorder {
 
   tr {
     background-color: #fff;
-    border: 1px solid #d0d0d0;
     &:hover {
       background-color: #abcdef;
     }
@@ -777,7 +775,7 @@ table.prettyBorder {
 
   th {
     background-color: #ebebeb;
-    color: #909090;
+    color: #000000;
     cursor: pointer;
     font-family: Source Sans Pro, sans-serif;
     font-size: 0.8em;
@@ -787,9 +785,19 @@ table.prettyBorder {
     text-transform: uppercase;
   }
 
+  .submissions-th {
+    padding: 25px 0 25px 0;
+  }
+
   td {
     border: 1px solid #ddd;
     padding: 0 5px;
+  }
+
+  .submissions-td {
+    border: none;
+    border-bottom: 1px solid #ddd;
+    padding: 5px 0 5px 0;
   }
 
   tr.selected {
@@ -1475,4 +1483,38 @@ table.sub td, th {
 
 .submission-history-button:hover {
   color: white !important;
+}
+
+/* Manage Submissions */
+
+.btn.submissions {
+  margin: 0;
+  padding: 0px 10px 0px 5px;
+}
+
+.buttons-row {
+  display: flex;
+  flex-direction: row;
+}
+
+.buttons-spacing {
+  margin-right: 10px;
+}
+
+.submissions-checkbox {
+  margin-left: 35px;
+}
+
+.submissions-center-icons {
+  display: flex;
+  align-items: center;
+}
+
+.submissions-center-icons p {
+  margin: 0 0 0 10px;
+}
+
+.submissions-icons {
+  margin-left: 3px;
+  margin-right: 5px !important;
 }

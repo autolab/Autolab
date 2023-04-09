@@ -159,6 +159,12 @@ module ApplicationHelper
     when "semantic-ui"
       version = "2.4.1"
       stylesheet_link_tag "#{cloudflare}/semantic-ui/#{version}/semantic.min.css"
+    when "jquery.dataTables-css"
+      version = "1.13.4"
+      stylesheet_link_tag "https://cdn.datatables.net/#{version}/css/jquery.dataTables.min.css"
+    when "datatables-buttons-css"
+      version = "2.3.6"
+      stylesheet_link_tag "https://cdn.datatables.net/buttons/#{version}/css/buttons.dataTables.min.css"
     end
   end
 
@@ -168,7 +174,7 @@ module ApplicationHelper
     # Update versions manually as-and-when newer versions become available on the CDN
     case library
     when "jquery"
-      version = "2.2.4" # latest is "3.6.0"
+      version = "3.5.1" # latest is "3.6.0"
       javascript_include_tag "#{cloudflare}/jquery/#{version}/jquery.min.js"
     when "jquery-ui"
       version = "1.12.1"
@@ -177,8 +183,11 @@ module ApplicationHelper
       version = "3.10.1" # latest is "4.17.21"
       javascript_include_tag "#{cloudflare}/lodash.js/#{version}/lodash.min.js"
     when "jquery.dataTables"
-      version = "1.10.21"
-      javascript_include_tag "#{cloudflare}/datatables/#{version}/js/jquery.dataTables.min.js"
+      version = "1.13.4"
+      javascript_include_tag "https://cdn.datatables.net/#{version}/js/jquery.dataTables.min.js"
+    when "datatables-buttons"
+      version = "2.3.6"
+      javascript_include_tag "https://cdn.datatables.net/buttons/#{version}/js/dataTables.buttons.min.js"
     when "flatpickr"
       version = "4.6.13"
       javascript_include_tag "#{cloudflare}/flatpickr/#{version}/flatpickr.min.js"
