@@ -62,22 +62,14 @@
   <div class="row">
     <div class="col s2 center-align">
       <% if @prevSubmission != nil %>
-        <%= link_to(url_for([:view, @course, @assessment, @prevSubmission]), class: "valign-wrapper", title: "Previous student (shortcut: ←)", id: "prev_submission_link") do %>
+        <%= link_to(view_course_assessment_submission_path(@course, @assessment, @prevSubmission), class: "valign-wrapper", title: "Previous student (shortcut: ←)", id: "prev_submission_link") do %>
           <i class="material-icons" style="margin-right: 3px">arrow_back</i> <%= @prevSubmission.course_user_datum.user.email %>
         <% end %>
       <% end %>
     </div>
     <div class="col s8 center-align valign-wrapper submission-controls">
         <span title="student # / total students">[<%= @curSubmissionIndex+1 %>/<%= @latestSubmissions.length %>] <%= @submission.course_user_datum.email %>,</span>
-        <strong>version:</strong>
-        <select class="browser-default" onchange="location = this.value">
-          <% for submission in @userVersions do %>
-            <option <% if @submission.version == submission.version %> selected <% end %> value=<%= url_for([:view, @course, @assessment, submission]) %>>
-              <%= submission.version %>
-            </option>
-          <% end %>
-        </select>
-        <strong>/<%= @userVersions.first.version %></strong>
+        <%= render "version_dropdown" %>
         <%= render "version_links" %>
       <a href="<%= download_file_url(@submission) %>" class="btn small" title="Download" >Download</a>
       <button class="btn small" onclick="resetLayout()">Reset Layout</button>
@@ -85,10 +77,10 @@
 
     <div class="col s2 center-align">
       <% if @nextSubmission != nil %>
-        <%= link_to(url_for([:view, @course, @assessment, @nextSubmission]), class: "valign-wrapper", title: "Next student (shortcut: →)", id: "next_submission_link") do %>
+        <%= link_to(view_course_assessment_submission_path(@course, @assessment, @nextSubmission), class: "valign-wrapper", title: "Next student (shortcut: →)", id: "next_submission_link") do %>
           <%= @nextSubmission.course_user_datum.user.email %> <i class="material-icons" style="margin-left: 3px">arrow_forward</i>
         <% end %>
-        <link rel="prerender" href= <%= url_for([:view, @course, @assessment, @nextSubmission])%> />
+        <link rel="prerender" href= <%= view_course_assessment_submission_path(@course, @assessment, @nextSubmission) %> />
       <% end %>
     </div>
   </div>

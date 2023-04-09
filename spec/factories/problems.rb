@@ -1,11 +1,11 @@
 FactoryBot.define do
   factory :problem do
-    name { "Problem 1" }
+    sequence(:name) { |n| "problem_#{n}" }
     description { "This is a sample problem" }
-    assessment_id { 0 }
     created_at { Time.zone.now }
     updated_at { Time.zone.now }
     max_score { 100 }
     optional { false }
+    assessment_id { 0 }
   end
 end

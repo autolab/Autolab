@@ -84,31 +84,39 @@ function refreshAnnotations() {
   });
 }
 
+// Updates relevant elements of the speedgrader when a new file is selected
+function loadFile(newFile) {
+  // Update the code viewer and symbol tree with the cached data
+  $('#code-box').replaceWith(newFile.codeBox);
+  $('#symbol-tree-container').replaceWith(newFile.symbolTree);
+
+  // Add syntax highlighting to the new code viewer
+  $('pre code').each(function () {
+    hljs.highlightBlock(this);
+  });
+
+  // Update the page URL
+  history.replaceState(null, null, newFile.url);
+
+  // Update version dropdown
+  $('#version-dropdown').replaceWith(newFile.versionDropdown);
+
+  // Update version buttons
+  $('#version-links').replaceWith(newFile.versionLinks);
+
+  displayAnnotations();
+  attachEvents();
+}
+
 // Returns true if the file was cached, false otherwise
 function changeFile(headerPos) {
   $('#code-box').addClass('loading');
   setActiveFilePos(headerPos);
 
   // If we've cached this file locally, just get it
-  if (localCache[headerPos] != undefined) {
+  if (localCache[headerPos] !== undefined) {
     newFile = localCache[headerPos];
-    // Update the code viewer and symbol tree with the cached data
-    $('#code-box').replaceWith(newFile.codeBox);
-    $('#symbol-tree-container').replaceWith(newFile.symbolTree);
-
-    // Add syntax highlighting to the new code viewer
-    $('pre code').each(function () {
-      hljs.highlightBlock(this);
-    });
-
-    // Update the page URL
-    history.replaceState(null, null, newFile.url);
-
-    // Update version buttons
-    $('#version-links').replaceWith(newFile.versionLinks);
-
-    displayAnnotations();
-    attachEvents();
+    loadFile(newFile);
     return true;
   }
   return false;
@@ -120,6 +128,7 @@ function purgeCurrentPageCache() {
     pdf: false,
     symbolTree: `<div id="symbol-tree-box">${$('#symbol-tree-box').html()}</div>`,
     versionLinks: `<span id="version-links">${$('#version-links').html()}</span>`,
+    versionDropdown: `<span id="version-dropdown">${$('#version-dropdown').html()}</span>`,
     url: window.location.href,
   };
 }

@@ -19,6 +19,7 @@ config/lti_config.yml
 config/lti_platform_jwk.json
 config/lti_tool_jwk.json
 config/smtp_config.yml
+config/github_config.yml
 config/oauth_config.yml
 
 # autolab user documents
@@ -53,7 +54,7 @@ doc/
 out.txt
 .vscode/
 .byebug_history
-
+node_modules/
 # Credentials
 .env
 

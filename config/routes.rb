@@ -8,6 +8,7 @@ Rails.application.routes.draw do
     get 'lti_launch/launch', to: "lti_launch#launch"
     post 'lti_nrps/sync_roster', to: "lti_nrps#sync_roster"
   get 'lti_config/index', to: "lti_config#index"
+  post 'github_config/update_config', to: "github_config#update_config"
   post 'lti_config/update_config', to: "lti_config#update_config"
   post 'smtp_config/update_config', to: "smtp_config#update_config"
   post 'smtp_config/send_test_email', to: "smtp_config#send_test_email"
@@ -50,13 +51,14 @@ Rails.application.routes.draw do
     end
   end
 
-  root "courses#index"
+  root "courses#courses_redirect"
 
   devise_for :users, controllers: { omniauth_callbacks: "users/omniauth_callbacks",
                                     registrations: "registrations" },
                      path_prefix: "auth"
 
   get "contact", to: "home#contact"
+  get "courses", to: "courses#index"
 
   namespace :home do
     if Rails.env == "development" || Rails.env == "test"
@@ -244,5 +246,6 @@ Rails.application.routes.draw do
   resource :github_integration, only: [] do
     get "get_repositories"
     get "get_branches"
+    get "get_commits"
   end
 end

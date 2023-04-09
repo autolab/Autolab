@@ -1,42 +1,32 @@
 // First cache the new html elements in our local cache
-newFile = {};
-newFile.codeBox = '<%= j render("submissions/code_viewer") %>'
-newFile.symbolTree = '<%= j render("submissions/code_symbol_tree", ctag_obj: @ctag_obj) %>'
-newFile.url = '<%= url_for(params.permit(:header_position, :action, :controller).to_h) %>'
-newFile.versionLinks = '<%= j render("version_links") %>'
+newFile = {
+    codeBox: '<%= j render("submissions/code_viewer") %>',
+    symbolTree: '<%= j render("submissions/code_symbol_tree", ctag_obj: @ctag_obj) %>',
+    url: '<%= url_for(params.permit(:header_position, :action, :controller).to_h) %>',
+    versionLinks: '<%= j render("version_links") %>',
+    versionDropdown: '<%= j render("version_dropdown") %>'
+};
 
 <% if @is_pdf %>
-newFile.pdf = true;
-newFile.pdfUrl = "<%= url_for [:download, @course, @assessment, @submission, header_position: params[:header_position]] %>";
-newFile.annotatedPdfUrl = "<%= url_for [:download, @course, @assessment, @submission, header_position: params[:header_position], annotated: true] %>";
-newFile.previewMode = false;
+newFile = {
+    pdf: true,
+    pdfUrl: "<%= download_course_assessment_submission_path(@course, @assessment, @submission, {header_position: params[:header_position]}) %>",
+    annotatedPdfUrl: "<%= download_course_assessment_submission_path(@course, @assessment, @submission, {header_position: params[:header_position], annotated: true}) %>",
+    previewMode: false
+};
 <% if @preview_mode %>
     newFile.previewMode = true;
 <% end %>
 <% else %>
-newFile.pdf = false;
+    newFile.pdf = false;
 <% end %>
 
 
 if (!newFile.pdf) localCache[<%= params[:header_position] %>] = newFile;
 
 // If we've navigated to another file, don't update the page
-if (currentHeaderPos == <%= params[:header_position] %>) {
-    // Update the code viewer and symbol tree with the new data
-    $('#code-box').replaceWith(newFile.codeBox);
-    $('#symbol-tree-container').replaceWith(newFile.symbolTree);
-
-    // Add syntax highlighting to the new code viewer
-    $('pre code').each(function(){hljs.highlightBlock(this)});
-
-    // Update the page URL
-    history.replaceState(null, null, newFile.url);
-
-    // Update version buttons
-    $('#version-links').replaceWith(newFile.versionLinks);
-
-    displayAnnotations();
-    attachEvents();
+if (currentHeaderPos === <%= params[:header_position] %>) {
+    loadFile(newFile);
     
     <% if params[:line] # note: line numbers are non-zero %>
         scrollToLine(<%= params[:line] %>);

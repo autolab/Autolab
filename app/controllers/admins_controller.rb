@@ -55,6 +55,11 @@ class AdminsController < ApplicationController
       @smtp_config_hash.symbolize_keys!
     end
 
+    @github_config_hash = {
+      client_id: Rails.configuration&.x&.github&.client_id || "",
+      client_secret: Rails.configuration&.x&.github&.client_secret || ""
+    }
+
     @configured_oauth_providers = OauthConfigController.get_oauth_providers
   end
 end

@@ -37,7 +37,7 @@ module AssessmentHandin
       github_integration = current_user.github_integration
 
       begin
-        @tarfile_path = github_integration.clone_repo(params["repo"], params["branch"], @assessment.max_size * (2 ** 20))
+        @tarfile_path = github_integration.clone_repo(params["repo"], params["branch"], params["commit"], @assessment.max_size * (2 ** 20))
       rescue StandardError => msg
         flash[:error] = msg
         redirect_to(action: :show)
@@ -354,8 +354,6 @@ module AssessmentHandin
       return false
     end
 
-    validate_custom_form
-
     validity = validateHandin(params[:submission]["file"].size,
                               params[:submission]["file"].content_type,
                               params[:submission]["file"].original_filename)
@@ -399,18 +397,6 @@ module AssessmentHandin
 
     flash[:error] = msg
     return false
-  end
-
-  def validate_custom_form
-    # check if custom form exists
-    if @assessment.has_custom_form
-      for i in 0..@assessment.getTextfields.size - 1
-        if params[:submission][("formfield" + (i + 1).to_s).to_sym].blank?
-          flash[:error] = @assessment.getTextfields[i] + " is a required field."
-          return false
-        end
-      end
-    end
   end
 
   def handle_validity(validity)

@@ -1,19 +1,34 @@
 require "tempfile"
 require "uri"
 require "httparty"
+include ControllerMacros
 
 RSpec.describe "autograding", type: :feature do
+  let!(:user) do
+    create_autograded_course_with_users
+    @instructor_user
+  end
+  let(:assessment_name) do
+    cud = get_first_cud_by_uid(user)
+    assessment_id = get_first_aid_by_cud(cud)
+    Assessment.find(assessment_id).display_name
+  end
+  let(:course_name) do
+    cid = get_first_cid_by_uid(user)
+    Course.find(cid).display_name
+  end
   it "runs through successfully" do
     # Simulates user log in
     visit "/auth/users/sign_in"
-    fill_in "user_email", with: "admin@foo.bar"
-    fill_in "user_password", with: "adminfoobar"
+    fill_in "user_email", with: user.email
+    fill_in "user_password", with: "testPassword"
     click_button "Sign in"
     expect(page).to have_content "Signed in successfully."
 
+    # TODO: fix this so that we can test autograded assessment
     # Goes into assessment submission page
-    click_link "AutoPopulated (SEM)"
-    click_link "Lab Template"
+    click_link course_name
+    click_link assessment_name
 
     # Submit adder file
     tmp_file = Tempfile.new("adder.py")

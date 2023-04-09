@@ -1,8 +1,16 @@
 RSpec.shared_context "api shared context" do
-  all_users = CourseUserDatum.joins(:user).where("users.administrator" => false,
-                                                 :instructor => false, :course_assistant => false)
-  let(:user) { all_users.offset(rand(all_users.count)).first.user }
-  let(:course) { CourseUserDatum.where(user_id: user.id).first.course }
+  let!(:course) do
+    create_autograded_course_with_users
+    @course
+  end
+
+  let(:user) {
+    all_users = CourseUserDatum.joins(:user).where(
+      :course => course, "users.administrator" => false,
+      :instructor => false, :course_assistant => false
+    )
+    all_users.offset(rand(all_users.count)).first.user
+  }
   let(:released_assessments) { course.assessments.where('start_at < ?', DateTime.now) }
   let(:assessment) { released_assessments.offset(rand(released_assessments.count)).first }
   let(:msg) { JSON.parse(response.body) }
@@ -85,21 +93,20 @@ RSpec.shared_context "api shared context" do
 end
 
 RSpec.shared_context "api handin context" do
+  let(:course) do
+    create_autograded_course_with_users
+    @course
+  end
   before :each do
     # The adder.py file to hand in
     @handin_file = fixture_file_upload('handins/adder.py', 'text/plain')
     # The AutoPopulate Course
-    @ap_course = Course.find_by(name: 'AutoPopulated')
+    @ap_course = course
     @ap_cud = CourseUserDatum.where(course: @ap_course, instructor: false,
                                     course_assistant: false).first
     @ap_student = @ap_cud.user
     # The adder.py Assessment
-    @adder_asm = Assessment.find_by(course: @ap_course, name: 'labtemplate')
-    # make sure we can submit to this assessment
-    @adder_asm.due_at = Time.zone.now + 1.hour
-    @adder_asm.end_at = Time.zone.now + 1.hour
-    @adder_asm.grading_deadline = Time.zone.now + 1.hour
-    @adder_asm.save!
+    @adder_asm = Assessment.where(course: @ap_course).first
   end
 
   let!(:bad_application) {

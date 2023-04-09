@@ -1,7 +1,9 @@
 <% @title = "Configure Autolab"%>
 <% content_for :javascripts do %>
   <%= javascript_include_tag "autolab_config" %>
+  <%= stylesheet_link_tag "lti_config" %>
 <% end %>
+
 <% active_tab = params.with_defaults(active: 'github')[:active] %>
 <div class="row">
   <div class="col s12">
