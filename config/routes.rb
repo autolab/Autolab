@@ -11,7 +11,7 @@ Rails.application.routes.draw do
   post 'lti_config/update_config', to: "lti_config#update_config"
   post 'smtp_config/update_config', to: "smtp_config#update_config"
   post 'smtp_config/send_test_email', to: "smtp_config#send_test_email"
-  post 'oauth_config/update_google_oauth', to: "oauth_config#update_google_oauth_config"
+  post 'oauth_config/update_oauth', to: "oauth_config#update_oauth_config"
 
   namespace :oauth, { defaults: { format: :json } } do
     get "device_flow_init", to: "device_flow#init"

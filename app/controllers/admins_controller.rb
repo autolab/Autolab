@@ -55,11 +55,6 @@ class AdminsController < ApplicationController
       @smtp_config_hash.symbolize_keys!
     end
 
-    @oauth_config_hash = {}
-    return unless File.exist?("#{Rails.configuration.config_location}/google_oauth_config.yml")
-
-    @oauth_config_hash[:google] = YAML.safe_load(
-      File.read("#{Rails.configuration.config_location}/google_oauth_config.yml")
-    ).symbolize_keys!
+    @configured_oauth_providers = OauthConfigController.get_oauth_providers
   end
 end
