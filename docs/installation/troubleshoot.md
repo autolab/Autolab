@@ -95,12 +95,12 @@ Mysql2::Error: You have an error in your SQL syntax
 this may be an issue with using an incompatible version of MySQL. Try switching to MySQL 5.7 if you are currently using a different version.
 
 #### Undefined method 'devise' for User
-You most likely missed the step of copying 'config/initializers/devise.rb.template' to 'config/initializers/devise.rb' and setting your secret key in the setup instructions.
+You most likely missed the step of copying `config/initializers/devise.rb.template` to `config/initializers/devise.rb` and setting your secret key in the setup instructions.
 
 #### Suggested Development Configuration for config/database.yml
 
 **MySQL**
-Change the <username> and <password> fields in config/database.yml to the username and password that has been set up for the mysql. For example if your username is `user1`, and your password is `123456`, then your yml would be
+Change the <username> and <password> fields in `config/database.yml` to the username and password that has been set up for the mysql. For example if your username is `user1`, and your password is `123456`, then your yml would be
 
     :::yml
     development:
@@ -126,7 +126,7 @@ Change the <username> and <password> fields in config/database.yml to the userna
             sql_mode: NO_ENGINE_SUBSTITUTION
 
 **SQLite**
-Comment out the configurations meant for MySQL in config/database.yml, and insert the following
+Comment out the configurations meant for MySQL in `config/database.yml`, and insert the following
 
     :::yml
     development:
@@ -154,3 +154,26 @@ it is likely that you need to purge the cache. This is because `FileStore` cache
 To purge the cache, click on `Manage Autolab` followed by `Clear Cache` to clear expired entries.
 
 Alternatively, run `rake user:cleanup_cache` (to clear expired entries) or `rake user:clear_cache` (to clear **all** entries) in your terminal.
+
+#### MacOS: OpenSSL error
+
+If you get the following error when trying to run rake or rails
+
+
+```bash
+Library not loaded: libssl.1.1.dylib (LoadError)
+```
+
+paths to OpenSSL may not be properly set up. To enable proper linking:
+
+```bash
+brew install openssl@1.1
+brew link openssl@1.1. --force
+```
+
+You may need to export paths as well during this process, which homebrew will display. You may also need to reinstall the
+`mysql2` gem (the following command is for Apple Silicon):
+
+```bash
+gem install mysql2 -v "{version}" -- --with-ldflags=-L/opt/homebrew/opt/openssl@1.1/lib --with-cppflags=-I/opt/homebrew/opt/openssl@1.1/include
+```

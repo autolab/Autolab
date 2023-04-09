@@ -7,14 +7,14 @@ Follow the step-by-step instructions below:
     -  <a href="https://www.tutorialspoint.com/sqlite/sqlite_installation.htm" target="_blank">SQLite</a> should **only** be used in development
     -  <a href="https://dev.mysql.com/doc/refman/8.0/en/macos-installation-pkg.html" target="_blank">MySQL</a> can be used in development or production
 
-2. Install <a href="https://github.com/sstephenson/rbenv" target="_blank">rbenv</a> (use the Basic GitHub Checkout method)
+2. Install <a href="https://brew.sh/"> homebrew </a>
 
-3. Install <a href="https://github.com/sstephenson/ruby-build" target="_blank">ruby-build</a> as an rbenv plugin:
-
+3. Install <a href="https://github.com/sstephenson/rbenv" target="_blank">rbenv</a> and ruby-build using homebrew:
+       
         :::bash
-        git clone https://github.com/sstephenson/ruby-build.git ~/.rbenv/plugins/ruby-build
-
-    Restart your shell at this point in order to start using your newly installed rbenv
+        brew install rbenv ruby-build
+    
+    Restart your shell at this point in order to start using your newly installed rbenv.
 
 4. Clone the Autolab repo into home directory and enter it:
 
@@ -54,12 +54,11 @@ Follow the step-by-step instructions below:
         cd bin
         bundle install
 
-    Refer to [Troubleshooting](/installation/troubleshoot) for issues installing gems
+    Refer to [Troubleshooting](/installation/troubleshoot) for issues installing gems.
 
-8. Install <a href="https://brew.sh/" target="_blank">homebrew</a>, as well as the <a href="https://github.com/universal-ctags/homebrew-universal-ctags" target="_blank">universal-ctags</a> package:
+8. Install the <a href="https://github.com/universal-ctags/homebrew-universal-ctags" target="_blank">universal-ctags</a> package:
 
         :::bash
-        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
         brew install --HEAD universal-ctags/universal-ctags/universal-ctags
 
     Afterward, run `which ctags` to ensure that the package lies on your `PATH` and can be found.
@@ -70,11 +69,9 @@ Follow the step-by-step instructions below:
         cp config/database.yml.template config/database.yml
         cp config/school.yml.template config/school.yml
         cp config/autogradeConfig.rb.template config/autogradeConfig.rb
-        cp config/lti_settings.yml.template config/lti_settings.yml
 
     - Edit `school.yml` with your school/organization specific names and emails.
     - Edit `database.yml` with the correct credentials for your chosen database. Refer to [Troubleshooting](/installation/troubleshoot) for any issues and suggested development [configurations](/installation/troubleshoot/#suggested-development-configuration-for-configdatabaseyml).
-    - Edit `lti_settings.yml` if you are intending on integrating your instance of Autolab with an LTI Advantage Platform. See [LTI Integration Setup](/installation/lti_integration) for more information.
 
 10. Create a .env file to store Autolab configuration constants. 
 
@@ -125,4 +122,6 @@ as well.
 
 18. If you would like to configure Github integration to allow students to submit via Github, please follow the [Github integration setup instructions](/installation/github_integration).
 
-19. Now you are all set to start using Autolab! Please fill out [this form](https://docs.google.com/forms/d/e/1FAIpQLSctfi3kwa03yuCuLgGF7qS_PItfk__1s80twhVDiKGQHvqUJg/viewform?usp=sf_link) to join our registry so that we can provide you with news about the latest features, bug-fixes, and security updates. For more info, visit the [Guide for Instructors](/instructors) and [Guide for Lab Authors](/lab).
+19. If you would like to configure LTI integration to link Autolab courses to LTI platforms, please follow the [LTI integration setup instructions](/installation/lti_integration).
+
+20. Now you are all set to start using Autolab! Please fill out [this form](https://docs.google.com/forms/d/e/1FAIpQLSctfi3kwa03yuCuLgGF7qS_PItfk__1s80twhVDiKGQHvqUJg/viewform?usp=sf_link) to join our registry so that we can provide you with news about the latest features, bug-fixes, and security updates. For more info, visit the [Guide for Instructors](/instructors) and [Guide for Lab Authors](/lab).

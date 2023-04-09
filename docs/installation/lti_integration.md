@@ -117,49 +117,45 @@ Click "Install". Refresh your Course page and Autolab should appear on the Cours
 
 ## Set up Autolab's LTI configuration settings
 
-Setting up Autolab to function as an LTI Advantage Tool requires setting up `lti_settings.yml` and
-your instance's `.env` file
+Setting up Autolab to function as an LTI Advantage Tool requires setting up the LTI Tool Configuration specified in the "LTI Configuration Settings" Page.
 
-1. If you do not have a `.env` file in your Autolab root yet (it may not be present on older installations), create it by running the following script from the Autolab root directory:
+1. Go to "LTI Configuration Settings" via the "Manage Autolab" Dropdown or by navigating to `/lti_config/index`
 
-        :::bash
-        cp .env.template .env
-    	./bin/initialize_secrets.sh
+     The "LTI Configuration Settings" should look like the following image. Here, Admins are able to specify a single LTI platform which they can link with.
 
-2. Open up `.env` in your favorite editor, and update LTI_TOOL_PRIVATE_KEY to use the JWK Private Key generated previously, however you **must** convert the private key from
-   JWK format to PEM format. An example is provided in `.env.template`. You can covert JWK objects to PEM format using tools such as the Node library [jwkToPem](https://www.npmjs.com/package/jwk-to-pem) and 
-   running it locally or on an
-   [online codespace](https://npm.runkit.com/jwk-to-pem)
+     ![Autolab LTI Configuration Settings Page](/images/lti_configuration_settings.png)
 
-        :::bash
-        LTI_TOOL_PRIVATE_KEY=-----BEGIN RSA PRIVATE KEY-----\n<your-private-key>\n-----END RSA PRIVATE KEY-----\n
-
-3. Create your LTI config file. This file will essentially tell Autolab how to connect to the LTI Advantage platform
-
-        :::bash
-        cp config/lti_settings.yml.template config/lti_settings.yml
-
-4. Fill in `lti_settings.yml` with your platform-specific information. For example, you should paste in the `client_id` created by your platform into the `developer_key` field.
-   To find the right values for `iss`, `auth_url`, `platform_public_key`, `platform_oauth2_access_token_url`, and `platform_public_jwks_url` please consult your respective platforms' guides
+3. Fill in the text-fields with your platform-specific information. For example, you should paste in the `client_id` created by your platform into the "Developer Key" field.
+   To find the right values for "iss URL", "LTI Launch Auth URL", "LTI platform public JWK URL", and "Platform OAuth2 Endpoint", please consult your respective platforms' guides
    on LTI integration. For example, for Canvas please consult "Configuring Canvas in the Tool" on [this page](https://canvas.instructure.com/doc/api/file.lti_dev_key_config.html).
    
-    A summary of some of the values needed for configuring a Canvas integration in Autolab are provided below:
+     A summary of some of the values needed for configuring a Canvas integration in Autolab are provided below:
       
-        :::yaml
-        iss: "https://canvas.instructure.com"
-        auth_url: "https://<your-canvas-domain>/api/lti/authorize_redirect"
-        platform_oauth2_access_token_url: "https://<your-canvas-domain>/login/oauth2/token"
-        platform_public_jwks_url: "https://<your-canvas-domain>/api/lti/security/jwks"
+     - iss URL: `https://canvas.instructure.com`
+     - LTI Launch Auth URL: `https://<your-canvas-domain>/api/lti/authorize_redirect`
+     - Platform OAuth2 Endpoint: `https://<your-canvas-domain>/login/oauth2/token`
+     - LTI platform public JWK URL: `https://<your-canvas-domain>/api/lti/security/jwks`
 
-    There is a choice of using the `platform_public_key` field or the `platform_public_jwks_url` field depending on which is defined. However, it is highly recommended to use
-    `platform_public_jwks_url` as most platforms use multiple private keys to sign their JWTs, which is not supported when using `platform_public_key`.
-
-
-5. Once all settings are initialized, Autolab must be restarted. Afterwards, it should be possible to launch Autolab from your specified platform, given your configuration is correct.
-
-    For Canvas, click on "Autolab" on the Course Navigation section
+     There is a choice of using the "LTI platform public JWK URL" field or uploading a public JWK as a JSON file field, depending on which is defined in the Configuration. However, it is highly recommended to use
+     "LTI platform public JWK URL" as most platforms use multiple private keys to sign their JWTs, which is not supported when using the file upload method. Therefore, Autolab will default to using "LTI platform public JWK URL", even if a platform public JWK is uploaded.
    
-      ![Canvas Course Navigation](/images/Canvas_Course_Navigation.png)
-   
-   - You should be redirected to Autolab. If you are not already logged in, please log in, and try to launch Autolab from your LTI platform again.
-     If successful, you will be redirected on a page in Autolab that allows you to choose an Autolab course to connect with your platform's course. ![LTI Linking Page](/images/lti_linking_page.png)
+4. Upload Autolab's private JWK as a JSON file in the "Upload Autolab's JWK as a JSON file" field. The format of the JWK is shown in the sample below:
+
+
+         {
+         "p": "-ZtUu_QDlz9XX218fNCUkGLwggD9-w86WRE5R7uON9W6p7mme8l2z2dOyTTftkiHTee4dN2Cww3c5-EV-6QCiIapPCwbIFQxsXeMNatPjA2IthiqQPUM1R7Rc9KkwRYIBz6J-1sjWsAQlJDM3WOGgabr_VY13KsG6wOPw2lrCF0",
+         "kty": "RSA",
+         "q": "yDAwjdLNfzZXXGK3b_Unmx_jvlCzKqF4ysYVtB6ULg3LgKGLBgGhcYMHnCU2-KeTLRsJYaE8CbigiJaWtC2QfkYbLZ6yU8v8kM5wum7hENEgm8PINbCNxRTTYJM9Y5LTzKnNMPYu1DXUx7iC_TkeAX0Gj-7rKBaTAdmdXvmbieM",
+         "d": "CJYgyd0xavwIjOocVL4lYj2FsdMxRDhu13457a5v3Sq_OCfPMTL5_pzE187DN0eCBSOGUTmTYbsiJVkOeO-cHZoOjsRFIM2hrDPLAjud00a6dPoLNlPNwQ5IQppHXMbP2r7Uq30Y1hXXA7aQMnH0205Wv7bgWVd1yBO-d0LlqgA1jqQx_8XTIOdv3CQgBKOXWtvYhBgrOpUoeozL9xm2qbl3bjwvr1cniaJhhP_vUNVjphdxpA1aczOr0ZYJNebwrEoNndnEGlIYr0MkQmatnGmw-al5cn20_DhGgzmxykwXMYfWpt9xM5S7q8DgtC0v-kdh2sF3-KPW5yIwXL-NqQ",
+         "e": "AQAB",
+         "use": "sig",
+         "kid": "PdwZOKsxtweAiBua4y_aBYmKfMe8L2dBj60AmhzR0bw",
+         "qi": "q82CtY2kzU_k-EaIeaEsJ6mTaG0YgKHtAmLohY5GQSOgYPMnvN7vLSCdgilXzVZCmNo4zu5CuHSO7cOhbfPFr2VP9rkNnhxG2bIhfuUOWn5vap2AQz5K6KD9HuRW6h4g8JJR1zL2FtdYkOZArQAEuwg9YDesHk6xUTIKR3pemK4",
+         "dp": "Pe6pnp0UCwIfZsEew0Vpp021STx_yDxmCNV6Ne82gWoZjyZERbCeNyX16XyiCXODhvP4055mpIkbB7nUn4R5UHDBKvnynRnm3pbABk0ERsbQ5gXGsKlczsB_zdI1KOeThGCjEefyJMFFG-e1vTTFmgPVyB0M7jzNUaCnmh_c-80",
+         "alg": "RS256",
+         "dq": "q23pBmpxI_ErGqhGog90XTkP1FhTNbyVLkA3McnF5zJVBNBRt1EKKaSljaeozYLjXAr9G6fxO_npL06Vu7IRPLFYcNanq27R2EeQ7XYqMjaEEB-2gZOxtAXDhb5RIcYIrgjy-Gy5aWy3zFhLhAG3mlqwle1pXykFtt3eEAj8kzU",
+         "n": "wzBWqiHbQQn-IXI2xjxkjURHVZb2ROEauJ0eRXiiSN4GeTWp9QEVL5Lo4BZKPM0OtXWbXxdoRjHkhA7m3rVqZZkwHKp6z9ncHIuEk0ep8l_gXL92OJCRWONvhJ7xQ8RihlIsbTLowGSdfDBMGWjOeZRiNqpRLeQKQmCon_RcbZIDDA28f6zZnC59nkxE7SA-MsCpF_JDgPYvzXoBytU2gqif2YRCFZSlgMBX-jqVybeaqjxDq3-IXNVCwpsWSMChU3JyIWm7K6czNbkOEytf9qnMV7yHg9_-n7ty8arTDhN1N4y7yXiM0gQx-UQsZe80Jy0Um6U2UHU2NRfHRrEvdw"
+         }
+         
+
+5. Once all settings have been filled in, click "Update Configuration", and the LTI Configuration should be live on the server. it should be possible to launch Autolab from your specified platform, given your configuration is correct.

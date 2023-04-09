@@ -327,10 +327,9 @@ module AssessmentAutogradeCore
     # The makefile that runs the process, 3) The tarfile with all
     # of files needed by the autograder. Can be overridden in the
     # lab config file.
-    local_handin = File.join(ass_dir, assessment.handin_directory, submission.filename)
+    local_handin = submission.handin_file_path
     local_makefile = File.join(ass_dir, "autograde-Makefile")
     local_autograde = File.join(ass_dir, "autograde.tar")
-    local_settings_config = File.join(ass_dir, assessment.handin_directory, submission.filename + ".settings.json")
 
     # Name of the handin file on the destination machine
     dest_handin = assessment.handin_filename
@@ -339,14 +338,8 @@ module AssessmentAutogradeCore
     handin = { "localFile" => local_handin, "destFile" => dest_handin }
     makefile = { "localFile" => local_makefile, "destFile" => "Makefile" }
     autograde = { "localFile" => local_autograde, "destFile" => "autograde.tar" }
-    settings_config = { "localFile" => local_settings_config, "destFile" => "settings.json" }
 
-    if assessment.has_custom_form
-        [handin, makefile, autograde, settings_config]
-    else
-        [handin, makefile, autograde]
-    end
-    
+    [handin, makefile, autograde]
   end
 
   ##
@@ -358,10 +351,8 @@ module AssessmentAutogradeCore
     ass_dir = @assessment.folder_path
 
     submissions.each do |submission|
-      filename = submission.autograde_feedback_filename
-
-      feedback_file = File.join(ass_dir, @assessment.handin_directory, filename)
-      COURSE_LOGGER.log("Looking for Feedbackfile:" + feedback_file)
+      feedback_file = submission.autograde_feedback_path
+      COURSE_LOGGER.log("Looking for feedback file:" + feedback_file)
 
       feedback.force_encoding("UTF-8")
       if not feedback.valid_encoding?
