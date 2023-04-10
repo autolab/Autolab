@@ -103,7 +103,7 @@ This will build the site using the branch you are currently in (hopefully `maste
 ## Contributing
 
 We encourage you to contribute to Autolab! Please check out the
-[Contributing to Autolab Guide](https://github.com/autolab/Autolab/blob/master/CONTRIBUTING.md) for guidelines about how to proceed. You can reach out to us on [Slack](https://join.slack.com/t/autolab/shared_invite/zt-1maodn5ti-jdLHUnm5sZkuLn4PJNaTbw) as well.
+[Contributing to Autolab Guide](https://github.com/autolab/Autolab/blob/master/CONTRIBUTING.md) for guidelines about how to proceed. You can reach out to us on [Slack](https://communityinviter.com/apps/autolab/autolab-project) as well.
 
 ## License
 

@@ -1,5 +1,5 @@
 This is a general list of Tango-related issues that we get often. If you are encountering or find a solution to an issue not mentioned here,
-please let us know on our [Slack](https://join.slack.com/t/autolab/shared_invite/zt-1maodn5ti-jdLHUnm5sZkuLn4PJNaTbw).
+please let us know on our [Slack](https://communityinviter.com/apps/autolab/autolab-project).
 
 ## Clearing Tango job queue
 Due to faulty configs or other reasons, you may have a large backlog of jobs waiting to run that are stuck. 
