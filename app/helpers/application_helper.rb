@@ -159,12 +159,6 @@ module ApplicationHelper
     when "semantic-ui"
       version = "2.4.1"
       stylesheet_link_tag "#{cloudflare}/semantic-ui/#{version}/semantic.min.css"
-    when "jquery.dataTables-css"
-      version = "1.13.4"
-      stylesheet_link_tag "https://cdn.datatables.net/#{version}/css/jquery.dataTables.min.css"
-    when "datatables-buttons-css"
-      version = "2.3.6"
-      stylesheet_link_tag "https://cdn.datatables.net/buttons/#{version}/css/buttons.dataTables.min.css"
     end
   end
 

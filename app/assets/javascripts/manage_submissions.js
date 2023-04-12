@@ -32,28 +32,23 @@ $(document).ready(function() {
   // const newLocal = 'full_numbers';
 
   var table = $('#submissions').DataTable({
-    "dom": 'Bfrt', // show buttons, search, table
-    // ajax: '/api/data',
+    "dom": 'fBrt', // show buttons, search, table
     buttons: [
-        {
-            text: 'Reload',
-            action: function ( e, dt, node, config ) {
-                // dt.ajax.reload();
-            }
-        }
+      { text: '<i class="material-icons">cached</i>Regrade Selected', className: 'btn submissions-selected disabled' },
+      { text: '<i class="material-icons">delete_outline</i>Delete Selected', className: 'btn submissions-selected disabled' },
+      { text: '<i class="material-icons">download</i>Download Selected', className: 'btn submissions-selected disabled' },
+      { text: '<i class="material-icons">done</i>Excuse Selected', className: 'btn submissions-selected disabled' }
     ]
   });
-
-  // table.buttons().container().insertBefore( '#submissions_filter');
 
   // $("#only-latest").on("change", function() {
   //   table.draw();
   // });
 
-  // var ids = [];
-  // $("input[type='checkbox']:checked").each(function() {
-  //   ids.push($(this).val());
-  // });
+  var ids = [];
+  $("input[type='checkbox']:checked").each(function() {
+    ids.push($(this).val());
+  });
 
   // var selectedSubmissions = [];
 

@@ -2,8 +2,6 @@
 
 <% content_for :stylesheets do %>
   <%= stylesheet_link_tag "datatable.adapter" %>
-  <%= stylesheet_link_tag "datatables-buttons-css" %>
-  <%= stylesheet_link_tag "jquery.dataTables-css" %>
 <% end %>
 
 <% content_for :javascripts do %>
@@ -27,29 +25,30 @@
 <%# Main buttons %>
 <div class="row buttons-row">
     <div class="buttons-spacing">
-      <%= link_to "<i class='material-icons left submissions-icons'>add</i>Create Submission".html_safe,
-          new_course_assessment_submission_path(@course, @assessment),
-          {:title=>"Create a new submission for a student, with an option to submit a handin file on their behalf",
-          :class=>"btn submissions disabled"} %>
+    <%= link_to "<i class='material-icons left submissions-icons'>add</i>Create Submission".html_safe,
+        new_course_assessment_submission_path(@course, @assessment),
+        {:title=>"Create a new submission for a student, with an option to submit a handin file on their behalf",
+         :class=>"btn submissions-main"} %>
     </div>
 
     <div class="buttons-spacing">
     <%= link_to "<i class='material-icons left submissions-icons'>file_download</i>Download Final Submissions".html_safe,
         downloadAll_course_assessment_submissions_path(@course, @assessment, final: true),
         {:title=>"Download final submissions from each student",
-         :class=>"btn submissions"} %>
+         :class=>"btn submissions-main"} %>
     </div>
 
     <div class="buttons-spacing"> <!-- TODO -->
     <%= link_to "<i class='material-icons left submissions-icons'>people</i>Missing Submissions".html_safe,
-        [:regradeAll, @course, @assessment],
-        {:class=>"btn submissions"} %>
+        missing_course_assessment_submissions_path(@course, @assessment),
+        {:title=>"List the students who have not submitted anything",
+         :class=>"btn submissions-main"} %>
     </div>
 
     <div class="buttons-spacing">
     <%= link_to "<i class='material-icons left submissions-icons'>event</i>Manage Extensions".html_safe,
         [@course, @assessment, :extensions],
-        {:class=>"btn submissions"} %>
+        {:class=>"btn submissions-main"} %>
     </div>
 </div>
 
@@ -113,7 +112,7 @@
         <% if submission.filename then %>
           <div class="submissions-center-icons">
             <%= link_to "<i class='material-icons'>zoom_in</i>".html_safe,
-                [:edit, @course, @assessment, submission],
+                [:view, @course, @assessment, submission],
                 {:title=>"View the file for this submission",
                 :class=>"btn small"} %>
             <p>View File</p>
@@ -125,7 +124,7 @@
 
       <%# Actions %>
       <td class="submissions-td" class="exclude-click" style="text-align:center;">
-        <% if @autograded and submission.version > 0 then %>
+        <% if @autograded then %>
           <div class="submissions-center-icons">
             <%= button_to [:regrade, @course, @assessment, submission_id: submission.id],
                 :method => :post,
@@ -137,7 +136,7 @@
           </div>
         <% end %>
         <div class="submissions-center-icons">
-          <%= link_to "<i class='material-icons'>delete</i>".html_safe,
+          <%= link_to "<i class='material-icons'>delete_outline</i>".html_safe,
                 destroyConfirm_course_assessment_submission_path(@course, @assessment, submission),
                 {:title=>"Destroy this submission forever",
                 :class=>"btn small"} %>

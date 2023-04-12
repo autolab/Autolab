@@ -805,7 +805,10 @@ table.prettyBorder {
     justify-content: center;
     span::before {
       left: 6px;
-    }
+    };
+    [type="checkbox"]:checked + span:not(.lever):before {
+      left: 3px;
+    };
   }
 
   tr.selected {
@@ -1145,6 +1148,7 @@ label[for="switch"] {
 
 .checkbox input[type="checkbox"]:checked + label::before {
   border: 1px solid #bbb;
+  
 }
 
 .new_submission {
@@ -1471,10 +1475,6 @@ table.sub td, th {
   margin-left: 10px
 }
 
-.submissions {
-  overflow-x: auto;
-}
-
 .submission-history-button {
   white-space: nowrap;
   text-transform: unset !important;
@@ -1495,9 +1495,20 @@ table.sub td, th {
 
 /* Manage Submissions */
 
-.btn.submissions {
+.btn.submissions-main {
+  margin: 0;
+  padding: 5px 10px 5px 5px;
+  min-height: 36px;
+  height: auto;
+  line-height: 1.3;
+  display: flex;
+  align-items: center;
+}
+
+.btn.submissions-selected {
   margin: 0;
   padding: 0px 10px 0px 5px;
+  font-family: Source Sans Pro, sans-serif;
 }
 
 .buttons-row {
