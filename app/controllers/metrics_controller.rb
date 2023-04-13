@@ -285,6 +285,9 @@ private
                                    no_submissions: [:no_submissions_threshold],
                                    low_grades: %i[
                                      grade_threshold count_threshold
+                                   ],
+                                   extension_requests: %i[
+                                     extension_count
                                    ])
   end
 

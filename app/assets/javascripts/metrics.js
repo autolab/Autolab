@@ -11,7 +11,6 @@ const metrics_endpoints = {
 Object.freeze(metrics_endpoints);
 
 $(document).ready(function(){
-
 	// Initializing Fomantic UI elements
 	$('.tabular.menu .item').tab();	
 	$('.ui.dropdown').dropdown();
@@ -23,6 +22,7 @@ $(document).ready(function(){
 	$('.ui.calendar').calendar({type: 'date', initialDate: new Date()});
 	$('.ui.dropdown').dropdown('set selected',1);
 	$('#grade_drop_consecutive_counts').dropdown('set selected',2);
+	$('#extension_requests_selection').dropdown('set selected','greater than');
 });
 
 // Updates form validation based on checked
@@ -103,8 +103,13 @@ $.getJSON(metrics_endpoints['get'],function(data, status){
 					$('#low_grades_percentage')
 					.val(_.get(condition,'parameters.grade_threshold',1));
 					break;
+				case "extension_requests":
+					$('#extension_requests_checkbox').checkbox('check');
+					$('#extensions_requests_count')
+					.val(_.get(condition,'parameters.extension_count',1));
+					break;
 				default:
-					console.error(_.get(condition,'condition_type') +" is not valid");
+					console.error(_.get(condition,'condition_type') + " is not valid");
 					return;
 			}
 		})
@@ -164,8 +169,14 @@ $('#save').click(function(){
 		};
 	}
 
+	if($('#extension_requests_checkbox').checkbox('is checked')){
+		new_conditions['extension_requests'] = {
+			extension_count: $('#extension_requests_count').val()
+		};
+	}
+
 	$.ajax({
-		url:metrics_endpoints['update'],
+		url: metrics_endpoints['update'],
 		dataType: "json",
 		contentType:'application/json',
 		data: JSON.stringify(new_conditions),
