@@ -57,8 +57,6 @@ RUN mkdir -p /home/app/webapp/log && \
 
 USER app
 
-RUN RAILS_ENV=production ./bin/initialize_secrets.sh
-
 # precompile the Rails assets
 RUN RAILS_ENV=production bundle exec rails assets:precompile
 
@@ -68,4 +66,3 @@ RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Use baseimage-docker's init system.
 CMD ["/sbin/my_init"]
-
