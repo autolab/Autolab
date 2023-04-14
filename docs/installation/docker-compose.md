@@ -30,6 +30,10 @@ First ensure that you have Docker and Docker Compose installed on your machine. 
         :::bash
         make
 
+    !!! warning "Set a secret key for Tango"
+
+        After running `make`, update all occurrences of `REPLACE_ME_SECRET_TANGO_KEY` in `.env` to the same secret phrase. 
+
 5. Build the Dockerfiles for both Autolab and Tango:
 
         :::bash
