@@ -57,6 +57,8 @@ RUN mkdir -p /home/app/webapp/log && \
 
 USER app
 
+RUN ./bin/initialize_secrets.sh
+
 # precompile the Rails assets
 RUN RAILS_ENV=production bundle exec rails assets:precompile
 
