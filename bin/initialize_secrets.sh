@@ -6,9 +6,9 @@ if ! ls Gemfile > /dev/null 2>&1 ; then
   exit 1
 fi
 
-SECRET_KEY_BASE=$(rails secret)
-LOCKBOX_MASTER_KEY=$(echo 'Lockbox.generate_key' | bundle exec rails c | grep "\".*\"" | tr -d "\"")
-DEVISE_SECRET_KEY=$(bundle exec rake secret)
+SECRET_KEY_BASE=$(openssl rand -hex 64)
+LOCKBOX_MASTER_KEY=$(openssl rand -hex 32)
+DEVISE_SECRET_KEY=$(openssl rand -hex 64)
 
 if ! perl -i -pe"s/<SECRET_KEY_BASE_REPLACE_ME>/${SECRET_KEY_BASE}/g" .env ; then
   echo "SECRET_KEY_BASE seems to have already been set"
