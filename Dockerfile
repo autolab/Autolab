@@ -58,6 +58,7 @@ RUN mkdir -p /home/app/webapp/log && \
 USER app
 
 # precompile the Rails assets
+ENV SECRET_KEY_BASE=dummy_secret_key_base
 RUN RAILS_ENV=production bundle exec rails assets:precompile
 
 # Clean up APT when done.
