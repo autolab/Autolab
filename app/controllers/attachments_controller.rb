@@ -25,8 +25,8 @@ class AttachmentsController < ApplicationController
 
   action_auth_level :create, :instructor
   def create
-    if params[:attachment][:file].size > 100.megabytes
-      flash[:error] = "Attachment file size must be less than 100 MB"
+    if params[:attachment][:file].size > 1.gigabyte
+      flash[:error] = "Attachment file size must be less than 1 GB"
       redirect_to_create_attachment && return
     end
 
