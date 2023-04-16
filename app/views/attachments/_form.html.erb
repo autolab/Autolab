@@ -14,7 +14,7 @@
 							<%= f.file_field :file, class: "upload_embedded" %>
 						</span>
 					</label>
-					<input type="text" id="upload_file" readonly value="Click above to upload a file">
+					<input type="text" id="upload_file" readonly value="Click above to upload a file (Max Size: 1GB)">
 				</div>
 			<% else %>
 				<%= f.text_field :mime_type,
