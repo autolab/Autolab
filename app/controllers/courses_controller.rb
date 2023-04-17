@@ -605,6 +605,7 @@ class CoursesController < ApplicationController
     course_dir = @course.name
     attachments_dir = File.join(course_dir, "attachments")
     rb_path = "course.rb"
+    config_path = "#{@course.name}.yml"
     mode = 0o755 # TODO: figure out the modes
     begin
       tarStream = StringIO.new("")
@@ -615,6 +616,11 @@ class CoursesController < ApplicationController
         source_file = File.open(File.join(base_path, rb_path), 'rb')
         tar.add_file File.join(course_dir, "course.rb"), File.stat(source_file).mode do |tar_file|
           tar_file.write(source_file.read)
+        end
+
+        # course and metrics config
+        tar.add_file File.join(course_dir, config_path), mode do |tar_file|
+          tar_file.write(@course.dump_yaml)
         end
 
         # save attachments
@@ -628,14 +634,6 @@ class CoursesController < ApplicationController
           tar.add_file relative_path, mode do |file|
             file.write(attachment_data)
           end
-        end
-
-        # course and metrics config
-        file_path = "#{@course.name}.yml"
-        relative_path = File.join(course_dir, file_path)
-
-        tar.add_file relative_path, mode do |tar_file|
-          tar_file.write(@course.dump_yaml)
         end
 
         # copy the rest of the folder for assessments lmao
