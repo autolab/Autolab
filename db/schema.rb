@@ -352,7 +352,7 @@ ActiveRecord::Schema.define(version: 2023_03_13_053555) do
     t.string "submitter_ip", limit: 40
     t.integer "tweak_id"
     t.boolean "ignored", default: false, null: false
-    t.string "dave"
+    t.string "dave", limit: 255
     t.text "embedded_quiz_form_answer"
     t.integer "submitted_by_app_id"
     t.string "group_key", default: ""
