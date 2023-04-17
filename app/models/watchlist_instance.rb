@@ -525,10 +525,18 @@ class WatchlistInstance < ApplicationRecord
       end
     end
 
-    aud = AssessmentUserDatum.find_by(course_user_datum_id: cud.id, assessment_id: asmts[0])
-
     if num_of_extensions >= extension_count
-      violation_info[aud.assessment.display_name] = num_of_extensions
+      asmts.each do |asmt|
+        extensions = Extension.where(course_user_datum_id: cud.id, assessment_id: asmt)
+        aud = AssessmentUserDatum.find_by(course_user_datum_id: cud.id, assessment_id: asmt)
+        indiv_extensions_count = 0
+        extensions.each do
+          indiv_extensions_count += 1
+        end
+        if indiv_extensions_count >= 1
+          violation_info[aud.assessment.display_name] = indiv_extensions_count
+        end
+      end
     end
 
     return if violation_info.empty?

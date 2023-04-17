@@ -241,7 +241,7 @@
         </div>
         Students who have greater than or equal to
         <span class="padded-span">
-          <input type="text" placeholder="1" id='extension_requests_count'>
+          <input type="text" placeholder="0" id='extension_requests_count'>
         </span>
         extensions.
       </div>
@@ -249,7 +249,7 @@
 
     <br>
     <% if @cud.instructor? %>
-      <button class="ui submit button" id="save">SAVE</button>
+      <button class="ui disabled submit button" id="save">SAVE</button>
     <% else %>
       <button class= "ui disabled submit button">SAVE</button>
       <label> You do not have permission to edit student metrics </label>
