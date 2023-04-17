@@ -291,6 +291,10 @@ class Course < ApplicationRecord
     watchlist_configuration.allow_ca
   end
 
+  def dump_yaml
+    YAML.dump(sort_hash(serialize))
+  end
+
 private
 
   def saved_change_to_grade_related_fields?
@@ -323,6 +327,35 @@ private
 
   def config_module_name
     "Course#{sanitized_name.camelize}"
+  end
+
+  # Recursively sort a hash by its keys and return an array
+  # Inspired by: https://bdunagan.com/2011/10/23/ruby-tip-sort-a-hash-recursively/
+  def sort_hash(h)
+    h.class[
+      h.each do |k, v|
+        if v.instance_of? Hash
+          h[k] = sort_hash v
+        elsif v.instance_of? Array
+          h[k] = v.collect { |x| sort_hash x }
+        end
+        # else do nothing
+      end.sort]
+  end
+
+  def serialize
+    s = {}
+    s["general"] = serialize_general
+    # s["risk_conditions"] = risk_conditions.serialize
+    # s["watchlist_configuration"] = watchlist_configuration.serialize
+    # assessments
+  end
+
+  GENERAL_SERIALIZABLE = Set.new %w[name semester late_slack grace_days display_name start_date
+                                    end_date disabled exam_in_progress version_threshold late_penalty_id
+                                    version_penalty_id gb_message website]
+  def serialize_general
+    Utilities.serializable attributes, GENERAL_SERIALIZABLE
   end
 
   include CourseAssociationCache

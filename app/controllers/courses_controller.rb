@@ -599,6 +599,32 @@ class CoursesController < ApplicationController
     `rm -rf #{tmp_dir}`
   end
 
+  action_auth_level :export, :instructor
+  def export
+    base_path = Rails.root.join("courses", @course.name).to_s
+    course_dir = @course.name
+    begin
+      tarStream = StringIO.new("")
+      Gem::Package::TarWriter.new(tarStream) do |tar|
+        tar.mkdir course_dir, File.stat(base_path).mode
+        file_path = "#{@course.name}.yml"
+        relative_path = File.join(course_dir, file_path)
+
+        tar.add_file relative_path, 0o644 do |tarFile|
+          tarFile.write(@course.dump_yaml)
+        end
+      end
+
+    tarStream.rewind
+    tarStream.close
+    send_data tarStream.string.force_encoding("binary"),
+              filename: "#{@course.name}_#{Time.current.strftime('%Y%m%d')}.tar",
+              content_type: "application/x-tar"
+    rescue SystemCallError => e
+      flash[:error] = "Unable to create the config YAML file: #{e}"
+    end
+  end
+
 private
 
   def new_course_params
