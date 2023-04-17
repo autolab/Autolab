@@ -7,7 +7,8 @@
 <div class="row">
 	<div class="col s12">
 		<h4>Edit Course</h4>
-		<%= form_for @course, as: :editCourse, url: course_path(@course), method: :patch, builder: FormBuilderWithDateTimeInput do |f| %>
+		<%= form_for @course, as: :editCourse, url: course_path(@course), method: :patch, builder: FormBuilderWithDateTimeInput,
+								 html: {multipart: true} do |f| %>
 			<% if @course.errors.any? %>
 				<div id="error_explanation">
 					<h2><%= pluralize(@course.errors.count, "error") %>
