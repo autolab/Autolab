@@ -352,8 +352,8 @@ private
   end
 
   GENERAL_SERIALIZABLE = Set.new %w[name semester late_slack grace_days display_name start_date
-                                    end_date disabled exam_in_progress version_threshold late_penalty_id
-                                    version_penalty_id gb_message website]
+                                    end_date disabled exam_in_progress version_threshold
+                                    late_penalty_id version_penalty_id gb_message website]
   def serialize_general
     Utilities.serializable attributes, GENERAL_SERIALIZABLE
   end
