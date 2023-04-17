@@ -291,8 +291,16 @@ class Course < ApplicationRecord
     watchlist_configuration.allow_ca
   end
 
+  def has_risk_conditions?
+    risk_conditions != nil
+  end
+
+  def has_watchlist_configuration?
+    watchlist_configuration != nil
+  end
+
   def dump_yaml
-    YAML.dump(sort_hash(serialize))
+    YAML.dump(serialize)
   end
 
 private
@@ -346,9 +354,11 @@ private
   def serialize
     s = {}
     s["general"] = serialize_general
-    # s["risk_conditions"] = risk_conditions.serialize
-    # s["watchlist_configuration"] = watchlist_configuration.serialize
-    # assessments
+    s["risk_conditions"] = risk_conditions.map(&:serialize) if has_risk_conditions?
+    s["watchlist_configuration"] = watchlist_configuration.serialize
+    # assessments - probably won't store in yaml
+    # attachments - probably won't store in yaml
+    s
   end
 
   GENERAL_SERIALIZABLE = Set.new %w[name semester late_slack grace_days display_name start_date
