@@ -605,6 +605,7 @@ class CoursesController < ApplicationController
     course_dir = @course.name
     attachments_dir = File.join(course_dir, "attachments")
     rb_path = "course.rb"
+    mode = 0o755 # TODO: figure out the modes
     begin
       tarStream = StringIO.new("")
       Gem::Package::TarWriter.new(tarStream) do |tar|
@@ -622,7 +623,6 @@ class CoursesController < ApplicationController
         @course.attachments.each do |attachment|
           attachment_data = attachment.attachment_file.download
           filename = attachment.filename
-          mode = 0o755 # TODO: activestorage stat info depends on the service used
           relative_path = File.join(attachments_dir, filename)
 
           tar.add_file relative_path, mode do |file|
@@ -634,7 +634,7 @@ class CoursesController < ApplicationController
         file_path = "#{@course.name}.yml"
         relative_path = File.join(course_dir, file_path)
 
-        tar.add_file relative_path, 0o644 do |tar_file|
+        tar.add_file relative_path, mode do |tar_file|
           tar_file.write(@course.dump_yaml)
         end
 
@@ -665,6 +665,8 @@ class CoursesController < ApplicationController
                 content_type: "application/x-tar"
     rescue SystemCallError => e
       flash[:error] = "Unable to create the config YAML file: #{e}"
+    rescue StandardError => e
+      flash[:error] = "Unable to generate tarball -- #{e.message}"
     end
   end
 
