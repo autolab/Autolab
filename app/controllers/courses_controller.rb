@@ -603,9 +603,11 @@ class CoursesController < ApplicationController
   def export
     base_path = Rails.root.join("courses", @course.name).to_s
     course_dir = @course.name
+    attachments_dir = File.join(course_dir, "attachments")
     begin
       tarStream = StringIO.new("")
       Gem::Package::TarWriter.new(tarStream) do |tar|
+        # course and metrics config
         tar.mkdir course_dir, File.stat(base_path).mode
         file_path = "#{@course.name}.yml"
         relative_path = File.join(course_dir, file_path)
@@ -613,6 +615,22 @@ class CoursesController < ApplicationController
         tar.add_file relative_path, 0o644 do |tarFile|
           tarFile.write(@course.dump_yaml)
         end
+
+        # save attachments 
+        # TODO: figure out whether should be in course folder or not idt it actually matters though
+        tar.mkdir attachments_dir, File.stat(base_path).mode
+        @course.attachments.each do |attachment|
+          attachment_data = attachment.attachment_file.download
+          filename = attachment.filename
+          mode = 0755 # TODO: activestorage stat info depends on the service used
+          relative_path = File.join(attachments_dir, filename)
+        
+          tar.add_file relative_path, mode do |file|
+            file.write(attachment_data)
+          end
+        end
+
+        
       end
 
     tarStream.rewind

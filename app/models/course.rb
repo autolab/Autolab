@@ -291,6 +291,10 @@ class Course < ApplicationRecord
     watchlist_configuration.allow_ca
   end
 
+  def has_attachment?
+    attachments != nil
+  end
+
   def has_risk_conditions?
     risk_conditions != nil
   end
@@ -337,27 +341,13 @@ private
     "Course#{sanitized_name.camelize}"
   end
 
-  # Recursively sort a hash by its keys and return an array
-  # Inspired by: https://bdunagan.com/2011/10/23/ruby-tip-sort-a-hash-recursively/
-  def sort_hash(h)
-    h.class[
-      h.each do |k, v|
-        if v.instance_of? Hash
-          h[k] = sort_hash v
-        elsif v.instance_of? Array
-          h[k] = v.collect { |x| sort_hash x }
-        end
-        # else do nothing
-      end.sort]
-  end
-
   def serialize
     s = {}
     s["general"] = serialize_general
     s["risk_conditions"] = risk_conditions.map(&:serialize) if has_risk_conditions?
     s["watchlist_configuration"] = watchlist_configuration.serialize
+    s["attachments"] = attachments.map(&:serialize) if has_attachment?
     # assessments - probably won't store in yaml
-    # attachments - probably won't store in yaml
     s
   end
 
