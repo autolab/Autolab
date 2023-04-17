@@ -367,6 +367,10 @@ class Assessment < ApplicationRecord
     problems.sum :max_score
   end
 
+  def source_config_file_path
+    Rails.root.join("courses", course.name, sanitized_name, "#{sanitized_name}.rb")
+  end
+
 private
 
   def saved_change_to_grade_related_fields?
@@ -382,10 +386,6 @@ private
 
   def path(filename)
     Rails.root.join("courses", course.name, name, filename)
-  end
-
-  def source_config_file_path
-    Rails.root.join("courses", course.name, sanitized_name, "#{sanitized_name}.rb")
   end
 
   def source_config_module_name
