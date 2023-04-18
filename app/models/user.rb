@@ -9,7 +9,7 @@ class User < ApplicationRecord
          :recoverable, :rememberable, :trackable, :validatable,
          :confirmable
 
-  devise :omniauthable, omniauth_providers: [:shibboleth]
+  devise :omniauthable, omniauth_providers: [:shibboleth, :google_oauth2]
 
   has_many :course_user_data, dependent: :destroy
   has_many :courses, through: :course_user_data
