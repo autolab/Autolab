@@ -348,7 +348,7 @@ private
 
     if include_metrics
       s["risk_conditions"] = risk_conditions.map(&:serialize) if has_risk_conditions?
-      s["watchlist_configuration"] = watchlist_configuration.serialize
+      s["watchlist_configuration"] = watchlist_configuration.serialize if has_watchlist_configuration?
     end
 
     s

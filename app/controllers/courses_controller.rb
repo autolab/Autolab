@@ -664,11 +664,12 @@ class CoursesController < ApplicationController
       send_data tarStream.string.force_encoding("binary"),
                 filename: "#{@course.name}_#{Time.current.strftime('%Y%m%d')}.tar",
                 content_type: "application/x-tar"
-      # TODO: FIX THIS SEND DATA BS I LITERALLY WANT TO BLOw MY BRAINS OUT !!!!!!!!!!!
     rescue SystemCallError => e
       flash[:error] = "Unable to create the config YAML file: #{e}"
+      redirect_to(action: :export)
     rescue StandardError => e
       flash[:error] = "Unable to generate tarball -- #{e.message}"
+      redirect_to(action: :export)
     end
   end
 
