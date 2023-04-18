@@ -308,4 +308,57 @@ RSpec.describe CoursesController, type: :controller do
       end
     end
   end
+
+  shared_examples "export_success" do
+    before(:each) do
+      sign_in(user)
+    end
+    it "renders successfully" do
+      cid = get_first_cid_by_uid(user.id)
+      cname = Course.find(cid).name
+      get :export, params: { name: cname }
+      expect(response).to be_successful
+      expect(response.body).to match(/Export Course/m)
+    end
+  end
+
+  shared_examples "export_failure" do |login: false|
+    before(:each) do
+      sign_in(user) if login
+    end
+    it "renders with failure" do
+      cid = get_first_cid_by_uid(user.id)
+      cname = Course.find(cid).name
+      get :export, params: { name: cname }
+      expect(response).not_to be_successful
+      expect(response.body).not_to match(/Export Course/m)
+    end
+  end
+
+  describe "#export" do
+    include_context "controllers shared context"
+    context "when user is Autolab admin" do
+      it_behaves_like "export_success" do
+        let!(:user) { admin_user }
+      end
+    end
+
+    context "when user is Autolab instructor" do
+      it_behaves_like "export_success" do
+        let!(:user) { instructor_user }
+      end
+    end
+
+    context "when user is Autolab user" do
+      it_behaves_like "export_failure", login: true do
+        let!(:user) { student_user }
+      end
+    end
+
+    context "when user is not logged in" do
+      it_behaves_like "export_failure", login: false do
+        let!(:user) { student_user }
+      end
+    end
+  end
 end
