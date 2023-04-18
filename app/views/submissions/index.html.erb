@@ -2,6 +2,7 @@
 
 <% content_for :stylesheets do %>
   <%= stylesheet_link_tag "datatable.adapter" %>
+  <%= stylesheet_link_tag "datatables-rows" %>
 <% end %>
 
 <% content_for :javascripts do %>
@@ -10,6 +11,7 @@
   <%= external_javascript_include_tag "jquery.dataTables" %>
   <%= external_javascript_include_tag "datatables-buttons" %>
   <%= javascript_include_tag "manage_submissions" %>
+  <%= javascript_include_tag "datatables-rows" %>
 <% end %>
 
 <h3>Manage Submissions</h3>

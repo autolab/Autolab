@@ -1,6 +1,6 @@
-// var hideStudent;
-
 $(document).ready(function() {
+
+  // USE LATER FOR GROUPING ROWS (POSSIBLY):
 
   // $.fn.dataTable.ext.search.push(
   //   function(settings, data, dataIndex) {
@@ -15,22 +15,6 @@ $(document).ready(function() {
   //   }
   // );
 
-  // var $floater = $("#floater"),
-  //   $backdrop = $("#gradeBackdrop");
-  // $('.trigger').bind('ajax:success', function showStudent(event, data, status, xhr) {
-  //   $floater.html(data);
-  //   $floater.show();
-  //   $backdrop.show();
-  // });
-
-  /** override the global **/
-  // hideStudent = function hideStudent() {
-  //   $floater.hide();
-  //   $backdrop.hide();
-  // };
-
-  // const newLocal = 'full_numbers';
-
   var table = $('#submissions').DataTable({
     "dom": 'fBrt', // show buttons, search, table
     buttons: [
@@ -41,21 +25,13 @@ $(document).ready(function() {
     ]
   });
 
-  // $("#only-latest").on("change", function() {
-  //   table.draw();
-  // });
+  var selectedSubmissions = [];
 
-  var ids = [];
-  $("input[type='checkbox']:checked").each(function() {
-    ids.push($(this).val());
-  });
-
-  // var selectedSubmissions = [];
+  // USE LATER FOR REGRADE SELECTED (POSSIBLY):
 
   // var initialBatchUrl = $("#batch-regrade").prop("href");
 
   // function updateBatchRegradeButton() {
-
   //   if (selectedSubmissions.length == 0) {
   //     $("#batch-regrade").fadeOut(120);
   //   } else {
@@ -69,42 +45,30 @@ $(document).ready(function() {
   //   $("#batch-regrade").prop("href", newHref);
   // };
 
-  // function toggleRow(submissionId) {
-  //   if (selectedSubmissions.indexOf(submissionId) < 0) {
-  //     // not in the list
-  //     selectedSubmissions.push(submissionId);
-  //     $("#cbox-" + submissionId).prop('checked', true);
-  //     $("#row-" + submissionId).addClass("selected");
-  //   } else {
-  //     // in the list
-  //     $("#cbox-" + submissionId).prop('checked', false);
-  //     $("#row-" + submissionId).removeClass("selected");
-  //     selectedSubmissions = _.without(selectedSubmissions, submissionId);
-  //   }
+  function toggleRow(submissionId) {
+    if (selectedSubmissions.indexOf(submissionId) < 0) {
+      // not in the list
+      selectedSubmissions.push(submissionId);
+      $("#cbox-" + submissionId).prop('checked', true);
+      $("#row-" + submissionId).addClass("selected");
+    } else {
+      // in the list
+      $("#cbox-" + submissionId).prop('checked', false);
+      $("#row-" + submissionId).removeClass("selected");
+      selectedSubmissions = _.without(selectedSubmissions, submissionId);
+    }
+    // updateBatchRegradeButton();
+  }
 
-  //   updateBatchRegradeButton();
-  // }
+  $("#submissions").on("click", ".exclude-click i", function (e) {
+    e.stopPropagation();
+    return;
+  });
 
-  // $("#submissions").on("click", ".exclude-click i", function (e) {
-  //   e.stopPropagation();
-  //   return;
-  // });
-
-  // $('#submissions').on("click", ".submission-row", function(e) {
-  //   // Don't toggle row if we originally clicked on an anchor and input tag
-  //   if(e.target.localName != 'a' && e.target.localName !='input') {
-  //     // e.target: tightest element that triggered the event
-  //     // e.currentTarget: element the event has bubbled up to currently
-  //     var submissionId = parseInt(e.currentTarget.id.replace("row-", ""), 10);
-  //     toggleRow(submissionId);
-  //     return false;
-  //   }
-  // });
-
-  // $('#submissions').on("click", ".cbox", function(e) {
-  //   var submissionId = parseInt(e.currentTarget.id.replace("cbox-", ""), 10);
-  //   toggleRow(submissionId);
-  //   e.stopPropagation();
-  // });
+  $('#submissions').on("click", ".cbox", function(e) {
+    var submissionId = parseInt(e.currentTarget.id.replace("cbox-", ""), 10);
+    toggleRow(submissionId);
+    e.stopPropagation();
+  });
 
 });
