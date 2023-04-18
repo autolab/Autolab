@@ -609,19 +609,19 @@ class CoursesController < ApplicationController
     attachments_dir = File.join(course_dir, "attachments")
     rb_path = "course.rb"
     config_path = "#{@course.name}.yml"
-    mode = 0o755 # TODO: figure out the modes
+    mode = 0o755
     begin
       tarStream = StringIO.new("")
       Gem::Package::TarWriter.new(tarStream) do |tar|
         tar.mkdir course_dir, File.stat(base_path).mode
 
-        # course.rb
+        # save course.rb
         source_file = File.open(File.join(base_path, rb_path), 'rb')
         tar.add_file File.join(course_dir, rb_path), File.stat(source_file).mode do |tar_file|
           tar_file.write(source_file.read)
         end
 
-        # course and metrics config
+        # save course and metrics config
         tar.add_file File.join(course_dir, config_path), mode do |tar_file|
           tar_file.write(@course.dump_yaml(params[:export_configs]&.include?('metrics_config')))
         end

@@ -347,10 +347,14 @@ private
     s["attachments"] = attachments.map(&:serialize) if has_attachment?
 
     if include_metrics
-      s["risk_conditions"] = risk_conditions.map(&:serialize) if has_risk_conditions?
+      if has_risk_conditions?
+        s["risk_conditions"] = risk_conditions.map(&:serialize)
+        latest_version = s["risk_conditions"].max_by{|k| k["version"]}["version"]
+        s["risk_conditions"] = s["risk_conditions"].select { |condition| condition["version"] == latest_version }
+      end
+      
       s["watchlist_configuration"] = watchlist_configuration.serialize if has_watchlist_configuration?
     end
-
     s
   end
 
