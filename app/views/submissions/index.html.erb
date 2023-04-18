@@ -99,7 +99,10 @@
 
       <%# Score %>
       <td class="submissions-td">
-        <%= computed_score { submission.final_score(@cud) } %>
+        <div class="submissions-score-align">
+          <%= computed_score { submission.final_score(@cud) } %>
+          <span><i class="material-icons submissions-score-icon">zoom_in</i></span>
+        </div>
       </td>
 
       <%# Submission Date %>

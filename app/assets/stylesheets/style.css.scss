@@ -1540,3 +1540,14 @@ table.sub td, th {
   margin-left: 3px;
   margin-right: 5px !important;
 }
+
+.submissions-score-align {
+  display: flex;
+  align-items: center;
+}
+
+.submissions-score-icon {
+  margin-left: 5px;
+  margin-top: 5px;
+  color: #A1A0A3;
+}
