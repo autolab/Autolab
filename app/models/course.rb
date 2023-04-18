@@ -304,7 +304,7 @@ class Course < ApplicationRecord
   end
 
   def dump_yaml(include_metrics)
-    YAML.dump(serialize include_metrics)
+    YAML.dump(serialize(include_metrics))
   end
 
 private
@@ -346,7 +346,7 @@ private
     s["general"] = serialize_general
     s["attachments"] = attachments.map(&:serialize) if has_attachment?
 
-    if (include_metrics)
+    if include_metrics
       s["risk_conditions"] = risk_conditions.map(&:serialize) if has_risk_conditions?
       s["watchlist_configuration"] = watchlist_configuration.serialize
     end

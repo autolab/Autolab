@@ -623,7 +623,7 @@ class CoursesController < ApplicationController
 
         # course and metrics config
         tar.add_file File.join(course_dir, config_path), mode do |tar_file|
-          tar_file.write(@course.dump_yaml params[:export_configs]&.include?('metrics_config'))
+          tar_file.write(@course.dump_yaml(params[:export_configs]&.include?('metrics_config')))
         end
 
         # save attachments
@@ -638,8 +638,8 @@ class CoursesController < ApplicationController
           end
         end
 
-        # copy the rest of the folder for assessments lmao
-        if (params[:export_configs]&.include?('assessments'))
+        # save assessments
+        if params[:export_configs]&.include?('assessments')
           @course.assessments.each do |assessment|
             asmt_dir = assessment.name
             assessment.dump_yaml
