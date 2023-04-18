@@ -1538,12 +1538,18 @@ table.sub td, th {
 
 .submissions-icons {
   margin-left: 3px;
-  margin-right: 5px !important;
 }
 
 .submissions-score-align {
   display: flex;
   align-items: center;
+  width: 100%;
+  .score-num {
+    width: 40%;
+  }
+  .score-icon {
+    width: 20%;
+  }
 }
 
 .submissions-score-icon {

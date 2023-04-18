@@ -17,14 +17,6 @@
 <h3>Manage Submissions</h3>
 <hr>
 
-<!--
-    <%= link_to "Missing Submissions".html_safe,
-        missing_course_assessment_submissions_path(@course, @assessment),
-        {:title=>"List the students who have not submitted anything. You'll be given the option to create new submissions for the missing students",
-         :class=>""} %>
--->
-
-<%# Main buttons %>
 <div class="row buttons-row">
     <div class="buttons-spacing">
     <%= link_to "<i class='material-icons left submissions-icons'>add</i>Create Submission".html_safe,
@@ -40,7 +32,7 @@
          :class=>"btn submissions-main"} %>
     </div>
 
-    <div class="buttons-spacing"> <!-- TODO -->
+    <div class="buttons-spacing"> <!-- TODO: Change functionality to filter for missing submissions -->
     <%= link_to "<i class='material-icons left submissions-icons'>people</i>Missing Submissions".html_safe,
         missing_course_assessment_submissions_path(@course, @assessment),
         {:title=>"List the students who have not submitted anything",
@@ -100,8 +92,8 @@
       <%# Score %>
       <td class="submissions-td">
         <div class="submissions-score-align">
-          <%= computed_score { submission.final_score(@cud) } %>
-          <span><i class="material-icons submissions-score-icon">zoom_in</i></span>
+          <div class="score-num"><%= computed_score { submission.final_score(@cud) } %></div>
+          <div class="score-icon"><i class="material-icons submissions-score-icon">zoom_in</i></div>
         </div>
       </td>
 
