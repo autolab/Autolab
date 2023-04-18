@@ -46,12 +46,7 @@ class AttachmentsController < ApplicationController
       flash[:error] = error_msg
       flash[:html_safe] = true
       COURSE_LOGGER.log("Failed to create attachment: #{error_msg}")
-
-      if @is_assessment
-        redirect_to new_course_assessment_attachment_path(@course, @assessment)
-      else
-        redirect_to new_course_attachment_path(@course)
-      end
+      redirect_to_create_attachment
     end
   end
 
@@ -106,12 +101,7 @@ class AttachmentsController < ApplicationController
       flash[:error] = error_msg
       flash[:html_safe] = true
       COURSE_LOGGER.log("Failed to update attachment: #{error_msg}")
-
-      if @is_assessment
-        redirect_to edit_course_assessment_attachment_path(@course, @assessment, @attachment)
-      else
-        redirect_to edit_course_attachment_path(@course, @attachment)
-      end
+      redirect_to_edit_attachment
     end
   end
 
@@ -140,6 +130,22 @@ private
     COURSE_LOGGER.log("Cannot find attachment with id: #{params[:id]}")
     flash[:error] = "Could not find Attachment \##{params[:id]}"
     redirect_to_attachment_list
+  end
+
+  def redirect_to_create_attachment
+    if @is_assessment
+      redirect_to new_course_assessment_attachment_path(@course, @assessment)
+    else
+      redirect_to new_course_attachment_path(@course)
+    end
+  end
+
+  def redirect_to_edit_attachment
+    if @is_assessment
+      redirect_to edit_course_assessment_attachment_path(@course, @assessment, @attachment)
+    else
+      redirect_to edit_course_attachment_path(@course, @attachment)
+    end
   end
 
   def redirect_to_attachment_list
