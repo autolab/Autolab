@@ -610,6 +610,7 @@ class CoursesController < ApplicationController
     rb_path = "course.rb"
     config_path = "#{@course.name}.yml"
     mode = 0o755
+
     begin
       tarStream = StringIO.new("")
       Gem::Package::TarWriter.new(tarStream) do |tar|

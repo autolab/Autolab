@@ -344,6 +344,8 @@ private
   def serialize(include_metrics)
     s = {}
     s["general"] = serialize_general
+    s["general"]["late_penalty"] = late_penalty.serialize if late_penalty
+    s["general"]["version_penalty"] = version_penalty.serialize if version_penalty
     s["attachments"] = attachments.map(&:serialize) if has_attachment?
 
     if include_metrics
@@ -365,7 +367,7 @@ private
 
   GENERAL_SERIALIZABLE = Set.new %w[name semester late_slack grace_days display_name start_date
                                     end_date disabled exam_in_progress version_threshold
-                                    late_penalty_id version_penalty_id gb_message website]
+                                    gb_message website]
   def serialize_general
     Utilities.serializable attributes, GENERAL_SERIALIZABLE
   end
