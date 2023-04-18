@@ -303,8 +303,8 @@ class Course < ApplicationRecord
     watchlist_configuration != nil
   end
 
-  def dump_yaml
-    YAML.dump(serialize)
+  def dump_yaml(include_metrics)
+    YAML.dump(serialize include_metrics)
   end
 
 private
@@ -341,13 +341,16 @@ private
     "Course#{sanitized_name.camelize}"
   end
 
-  def serialize
+  def serialize(include_metrics)
     s = {}
     s["general"] = serialize_general
-    s["risk_conditions"] = risk_conditions.map(&:serialize) if has_risk_conditions?
-    s["watchlist_configuration"] = watchlist_configuration.serialize
     s["attachments"] = attachments.map(&:serialize) if has_attachment?
-    # assessments - probably won't store in yaml
+
+    if (include_metrics)
+      s["risk_conditions"] = risk_conditions.map(&:serialize) if has_risk_conditions?
+      s["watchlist_configuration"] = watchlist_configuration.serialize
+    end
+
     s
   end
 

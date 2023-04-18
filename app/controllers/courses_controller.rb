@@ -600,7 +600,10 @@ class CoursesController < ApplicationController
   end
 
   action_auth_level :export, :instructor
-  def export
+  def export; end
+
+  action_auth_level :export_selected, :instructor
+  def export_selected
     base_path = Rails.root.join("courses", @course.name).to_s
     course_dir = @course.name
     attachments_dir = File.join(course_dir, "attachments")
@@ -614,17 +617,16 @@ class CoursesController < ApplicationController
 
         # course.rb
         source_file = File.open(File.join(base_path, rb_path), 'rb')
-        tar.add_file File.join(course_dir, "course.rb"), File.stat(source_file).mode do |tar_file|
+        tar.add_file File.join(course_dir, rb_path), File.stat(source_file).mode do |tar_file|
           tar_file.write(source_file.read)
         end
 
         # course and metrics config
         tar.add_file File.join(course_dir, config_path), mode do |tar_file|
-          tar_file.write(@course.dump_yaml)
+          tar_file.write(@course.dump_yaml params[:export_configs]&.include?('metrics_config'))
         end
 
         # save attachments
-        # TODO: figure out whether should be in course folder or not idt it actually matters though
         tar.mkdir attachments_dir, File.stat(base_path).mode
         @course.attachments.each do |attachment|
           attachment_data = attachment.attachment_file.download
@@ -637,30 +639,32 @@ class CoursesController < ApplicationController
         end
 
         # copy the rest of the folder for assessments lmao
-        @course.assessments.each do |assessment|
-          asmt_dir = assessment.name
-          assessment.dump_yaml
-          Dir[File.join(base_path, asmt_dir, "**")].each do |file|
-            mode = File.stat(file).mode
-            relative_path = File.join(course_dir, file.sub(%r{^#{Regexp.escape base_path}/?}, ""))
+        if (params[:export_configs]&.include?('assessments'))
+          @course.assessments.each do |assessment|
+            asmt_dir = assessment.name
+            assessment.dump_yaml
+            Dir[File.join(base_path, asmt_dir, "**")].each do |file|
+              mode = File.stat(file).mode
+              relative_path = File.join(course_dir, file.sub(%r{^#{Regexp.escape base_path}/?}, ""))
 
-            if File.directory?(file)
-              tar.mkdir relative_path, mode
-            elsif !relative_path.starts_with? File.join(asmt_dir,
-                                                        assessment.handin_directory)
-              tar.add_file relative_path, mode do |tar_file|
-                File.open(file, "rb") { |f| tar_file.write f.read }
+              if File.directory?(file)
+                tar.mkdir relative_path, mode
+              elsif !relative_path.starts_with? File.join(asmt_dir,
+                                                          assessment.handin_directory)
+                tar.add_file relative_path, mode do |tar_file|
+                  File.open(file, "rb") { |f| tar_file.write f.read }
+                end
               end
             end
           end
         end
       end
-
       tarStream.rewind
       tarStream.close
       send_data tarStream.string.force_encoding("binary"),
                 filename: "#{@course.name}_#{Time.current.strftime('%Y%m%d')}.tar",
                 content_type: "application/x-tar"
+      # TODO: FIX THIS SEND DATA BS I LITERALLY WANT TO BLOw MY BRAINS OUT !!!!!!!!!!!
     rescue SystemCallError => e
       flash[:error] = "Unable to create the config YAML file: #{e}"
     rescue StandardError => e
