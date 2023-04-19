@@ -378,8 +378,9 @@ RSpec.describe CoursesController, type: :controller do
 
     it "exports metric configs" do
       cid = get_first_cid_by_uid(user.id)
-      cname = Course.find(cid).name
-      metrics_tar = (Course.find(cid).generate_tar ["metrics_config"]).string.force_encoding("binary")
+      course = Course.find(cid)
+      cname = course.name
+      metrics_tar = (course.generate_tar ["metrics_config"]).string.force_encoding("binary")
       post :export_selected, params: { name: cname, export_configs: ["metrics_config"] }
       expect(response).to be_successful
       expect(response.body).to eq(metrics_tar)
@@ -387,8 +388,9 @@ RSpec.describe CoursesController, type: :controller do
 
     it "exports assessments" do
       cid = get_first_cid_by_uid(user.id)
-      cname = Course.find(cid).name
-      assessments_tar = (Course.find(cid).generate_tar ["assessments"]).string.force_encoding("binary")
+      course = Course.find(cid)
+      cname = course.name
+      assessments_tar = (course.generate_tar ["assessments"]).string.force_encoding("binary")
       post :export_selected, params: { name: cname, export_configs: ["assessments"] }
       expect(response).to be_successful
       expect(response.body).to eq(assessments_tar)
@@ -397,13 +399,14 @@ RSpec.describe CoursesController, type: :controller do
     it "handles SystemCallError during export" do
       cid = get_first_cid_by_uid(user.id)
       cname = Course.find(cid).name
-      allow_any_instance_of(Gem::Package::TarWriter).to receive(:add_file).and_raise(SystemCallError)
+      allow_any_instance_of(Gem::Package::TarWriter).to receive(:add_file)
+        .and_raise(SystemCallError)
       post :export_selected, params: { name: cname }
       puts response.body
       expect(response).to have_http_status(302)
       expect(flash[:error]).to be_present
       expect(flash[:error]).to match(/Error: StandardError/m)
-      # allow(Course.find(cid)).to receive(:generate_tar).and_raise(SystemCallError.new("mocked error"))
+      # allow(course).to receive(:generate_tar).and_raise(SystemCallError.new("mocked error"))
 
       # post :export_selected, params: { name: cname }
       # expect(response).to redirect_to(action: :export)
@@ -444,14 +447,13 @@ RSpec.describe CoursesController, type: :controller do
       it_behaves_like "export_selected_success" do
         let!(:user) { instructor_user }
       end
-
     end
 
     context "when user is instructor with attachment" do
       let!(:course_hash) do
         create_course_with_attachment_as_hash
       end
-      
+
       it_behaves_like "export_selected_success" do
         let!(:user) { course_hash[:instructor_user] }
       end

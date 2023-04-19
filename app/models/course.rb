@@ -292,11 +292,11 @@ class Course < ApplicationRecord
   end
 
   def has_attachment?
-    attachments != nil && attachments.count > 0
+    !attachments.nil? && attachments.count > 0
   end
 
   def has_risk_conditions?
-    risk_conditions != nil && risk_conditions.count > 0
+    !risk_conditions.nil? && risk_conditions.count > 0
   end
 
   def has_watchlist_configuration?

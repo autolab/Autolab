@@ -148,8 +148,8 @@ module Contexts
       end
     end
 
-    def create_course_with_attachment(asmt_name: "testassessment")
-      @course = create_course
+    def create_course_with_attachment(asmt_name: "attachmentassessment")
+      @course = create_course(asmt_name: asmt_name)
       @attachment = FactoryBot.create(:attachment, course: @course)
     end
   end
