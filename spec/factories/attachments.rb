@@ -1,9 +1,8 @@
 FactoryBot.define do
   factory :attachment do
-    course_id { 1 }
-    assessment_id { 1 }
+    association :course
     name { "attachment.txt" }
     released { true }
-    file { fixture_file_upload("attachments/attachment.txt", "text/plain") }
+    file { Rack::Test::UploadedFile.new("spec/files/test_attachment.txt", "text/plain") }
   end
 end
