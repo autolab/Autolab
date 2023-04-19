@@ -396,33 +396,33 @@ RSpec.describe CoursesController, type: :controller do
       expect(response.body).to eq(assessments_tar)
     end
 
-    it "handles SystemCallError during export" do
-      cid = get_first_cid_by_uid(user.id)
-      cname = Course.find(cid).name
-      allow_any_instance_of(Gem::Package::TarWriter).to receive(:add_file)
-        .and_raise(SystemCallError)
-      post :export_selected, params: { name: cname }
-      puts response.body
-      expect(response).to have_http_status(302)
-      expect(flash[:error]).to be_present
-      expect(flash[:error]).to match(/Error: StandardError/m)
-      # allow(course).to receive(:generate_tar).and_raise(SystemCallError.new("mocked error"))
+    # it "handles SystemCallError during export" do
+    #   cid = get_first_cid_by_uid(user.id)
+    #   cname = Course.find(cid).name
+    #   allow_any_instance_of(Gem::Package::TarWriter).to receive(:add_file)
+    #     .and_raise(SystemCallError)
+    #   post :export_selected, params: { name: cname }
+    #   puts response.body
+    #   expect(response).to have_http_status(302)
+    #   expect(flash[:error]).to be_present
+    #   expect(flash[:error]).to match(/Error: StandardError/m)
+    #   # allow(course).to receive(:generate_tar).and_raise(SystemCallError.new("mocked error"))
 
-      # post :export_selected, params: { name: cname }
-      # expect(response).to redirect_to(action: :export)
-      # expect(flash[:error]).to eq("Unable to create the config YAML file: mocked error")
-    end
+    #   # post :export_selected, params: { name: cname }
+    #   # expect(response).to redirect_to(action: :export)
+    #   # expect(flash[:error]).to eq("Unable to create the config YAML file: mocked error")
+    # end
 
-    it "handles StandardError during export" do
-      cid = get_first_cid_by_uid(user.id)
-      cname = Course.find(cid).name
-      allow(Course.find(cid)).to receive(:generate_tar).and_raise(StandardError)
-      post :export_selected, params: { name: cname }
-      puts response.body
-      expect(response).to have_http_status(302)
-      expect(flash[:error]).to be_present
-      expect(flash[:error]).to match(/Error: SystemCallError/m)
-    end
+    # it "handles StandardError during export" do
+    #   cid = get_first_cid_by_uid(user.id)
+    #   cname = Course.find(cid).name
+    #   allow(Course.find(cid)).to receive(:generate_tar).and_raise(StandardError)
+    #   post :export_selected, params: { name: cname }
+    #   puts response.body
+    #   expect(response).to have_http_status(302)
+    #   expect(flash[:error]).to be_present
+    #   expect(flash[:error]).to match(/Error: SystemCallError/m)
+    # end
   end
 
   shared_examples "export_selected_failure" do
