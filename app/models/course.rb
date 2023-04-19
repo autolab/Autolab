@@ -292,11 +292,11 @@ class Course < ApplicationRecord
   end
 
   def has_attachment?
-    attachments != nil
+    attachments != nil && attachments.count > 0
   end
 
   def has_risk_conditions?
-    risk_conditions != nil
+    risk_conditions != nil && risk_conditions.count > 0
   end
 
   def has_watchlist_configuration?
@@ -305,6 +305,69 @@ class Course < ApplicationRecord
 
   def dump_yaml(include_metrics)
     YAML.dump(serialize(include_metrics))
+  end
+
+  def generate_tar(export_configs)
+    base_path = Rails.root.join("courses", name).to_s
+    course_dir = name
+    attachments_dir = File.join(course_dir, "attachments")
+    rb_path = "course.rb"
+    config_path = "#{name}.yml"
+    mode = 0o755
+
+    begin
+      tarStream = StringIO.new("")
+      Gem::Package::TarWriter.new(tarStream) do |tar|
+        tar.mkdir course_dir, File.stat(base_path).mode
+
+        # save course.rb
+        source_file = File.open(File.join(base_path, rb_path), 'rb')
+        tar.add_file File.join(course_dir, rb_path), File.stat(source_file).mode do |tar_file|
+          tar_file.write(source_file.read)
+        end
+
+        # save course and metrics config
+        tar.add_file File.join(course_dir, config_path), mode do |tar_file|
+          tar_file.write(dump_yaml(export_configs&.include?('metrics_config')))
+        end
+
+        # save attachments
+        tar.mkdir attachments_dir, File.stat(base_path).mode
+        attachments.each do |attachment|
+          attachment_data = attachment.attachment_file.download
+          filename = attachment.filename
+          relative_path = File.join(attachments_dir, filename)
+
+          tar.add_file relative_path, mode do |file|
+            file.write(attachment_data)
+          end
+        end
+
+        # save assessments
+        if export_configs&.include?('assessments')
+          assessments.each do |assessment|
+            asmt_dir = assessment.name
+            assessment.dump_yaml
+            Dir[File.join(base_path, asmt_dir, "**")].each do |file|
+              mode = File.stat(file).mode
+              relative_path = File.join(course_dir, file.sub(%r{^#{Regexp.escape base_path}/?}, ""))
+
+              if File.directory?(file)
+                tar.mkdir relative_path, mode
+              elsif !relative_path.starts_with? File.join(asmt_dir,
+                                                          assessment.handin_directory)
+                tar.add_file relative_path, mode do |tar_file|
+                  File.open(file, "rb") { |f| tar_file.write f.read }
+                end
+              end
+            end
+          end
+        end
+      end
+      tarStream.rewind
+      tarStream.close
+      tarStream
+    end
   end
 
 private
