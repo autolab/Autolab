@@ -14,9 +14,7 @@
 
 <%= f.check_box :allow_unofficial, help_text: "Allow unofficial submission. Unless you know what you're doing, leave this unchecked." %>
 <%= f.check_box :embedded_quiz, display_name: "Enable Embedded Form" %>
-<%= f.file_field :embedded_quiz_form,
-                        button_text: @assessment.embedded_quiz_form_data.nil? ? "Upload Embedded Form" : "Replace Existing Embedded Form"
-%>
+<%= f.file_field :embedded_quiz_form, button_text: @assessment.embedded_quiz_form_data.nil? ? "Upload Embedded Form" : "Replace Existing Embedded Form" %>
 <p class="help-block">
   For more information on Embedded Forms, visit our new
   <a href="https://docs.autolabproject.com/features/embedded-forms" target="_blank"> docs page.</a>

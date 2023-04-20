@@ -69,7 +69,6 @@ class FormBuilderWithDateTimeInput < ActionView::Helpers::FormBuilder
     end
   end
 
-  # Prefer over file_field where possible
   def file_field(name, *args)
     options = args.extract_options!
 
