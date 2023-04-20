@@ -769,11 +769,18 @@ class AssessmentsController < ApplicationController
       File.open(assessment_config_file_path, "w") do |f|
         f.write(config_source)
       end
+
+      begin
+        @assessment.load_config_file
+      rescue StandardError, SyntaxError => e
+        @error = e
+        render("reload") && return
+      end
     end
 
     begin
       @assessment.update!(edit_assessment_params)
-      flash[:success] = "Saved!"
+      flash[:success] = "Assessment configuration updated!"
 
       redirect_to(tab_index) && return
     rescue ActiveRecord::RecordInvalid => e
