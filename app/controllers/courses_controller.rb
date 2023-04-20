@@ -178,10 +178,17 @@ class CoursesController < ApplicationController
       File.open(course_config_source_path, "w") do |f|
         f.write(config_source)
       end
+
+      begin
+        @course.reload_course_config
+      rescue StandardError, SyntaxError => e
+        @error = e
+        render("reload") && return
+      end
     end
 
     if @course.update(edit_course_params)
-      flash[:success] = "Success: Course info updated."
+      flash[:success] = "Course configuration updated!"
     else
       flash[:error] = "Error: There were errors editing the course."
       @course.errors.full_messages.each do |msg|
