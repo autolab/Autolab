@@ -22,7 +22,6 @@ $(document).ready(function(){
 	$('.ui.calendar').calendar({type: 'date', initialDate: new Date()});
 	$('.ui.dropdown').dropdown('set selected',1);
 	$('#grade_drop_consecutive_counts').dropdown('set selected',2);
-	$('#extension_requests_selection').dropdown('set selected','greater than');
 });
 
 // Updates form validation based on checked
