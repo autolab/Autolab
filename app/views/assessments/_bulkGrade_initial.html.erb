@@ -8,7 +8,7 @@ Choose a file that contain rows of problem scores or feedback in the following c
   <p>All columns are mandatory. An empty cell will leave the existing value unmodified. Valid values for Grade Type are <code>normal</code>, <code>zeroed</code>, <code>excused</code>, and empty.</p>
 </div>
 
-<%= form_for :upload, :html => { :multipart => true } do |f| %>
+<%= form_for :upload, :html => { :multipart => true }, builder: FormBuilderWithDateTimeInput do |f| %>
   <div class="controls">
     <%= f.file_field :file %>
 

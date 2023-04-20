@@ -41,16 +41,4 @@
   their gradebooks.  It can be used to explain grading criteria.",
   display_name: "Gradebook Message", placeholder: "Optional" %>
 
-<div class="file-field input-field">
-  <div class="btn">
-    <span>Upload course.rb</span>
-    <input name="editCourse[config_file]" type="file">
-  </div>
-  <div class="file-path-wrapper">
-    <input class="file-path validate" type="text">
-    <p class="help-block">
-      Config file will be automatically reloaded after saving.
-      <strong class="red-text">Changes to other settings will be lost if an error is encountered.</strong>
-    </p>
-  </div>
-</div>
+<%= f.file_field :config_file, button_text: "Upload course.rb", help_text: "Config file will be automatically reloaded after saving." %>

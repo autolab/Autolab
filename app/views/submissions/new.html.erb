@@ -6,7 +6,7 @@
 
 <%= form_for @submission, as: :submission,
       url: [@course, @assessment, @submission], method: :post,
-      html: {multipart: true}  do |f| %>
+      html: {multipart: true} do |f| %>
 <%= f.error_messages %>
 
 <!-- Work in Progress

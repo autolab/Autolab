@@ -7,15 +7,7 @@
 		</li>
 		<li>
 			<% if @attachment.new_record? %>
-				<div class="row">
-					<label class="custom-file-upload">
-						<span class="btn primary" id="upload_button">
-								Upload Attachment
-							<%= f.file_field :file, class: "upload_embedded" %>
-						</span>
-					</label>
-					<input type="text" id="upload_file" readonly value="Click above to upload a file">
-				</div>
+				<%= f.file_field :file, button_text: "Upload Attachment" %>
 			<% else %>
 				<%= f.text_field :mime_type,
 												 help_text: "Note: If you change the Mime type of a file, you might need to clear your browser's cache in order for you to see the change." %>
