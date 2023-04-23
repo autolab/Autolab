@@ -72,10 +72,19 @@
   <% headers = ["Submitted By", "Version", "Score", "Submission Date (YYYY-MM-DD)", "File", "IP Address", "Actions", "isLatest"] %>
   <thead class="float">
     <tr>
-      <th></th>
-    <% for header in headers %>
-      <th><%= header %></th>
-    <% end %>
+      <th class="submissions-th"></th>
+      <% for header in headers %>
+        <th class="submissions-th sorting">
+          <div>
+            <p><%= header %></p>
+            <% if header != "File" && header != "Actions" then %>
+              <i class="material-icons tiny sort-icon sort-icon__both" aria-hidden="true">swap_vert</i>
+              <i class="material-icons tiny sort-icon sort-icon__up" aria-hidden="true">arrow_upward</i>
+              <i class="material-icons tiny sort-icon sort-icon__down" aria-hidden="true">arrow_downward</i>
+            <% end %>
+          </div>
+        </th>
+      <% end %>
     </tr>
   </thead>
   <tbody>
