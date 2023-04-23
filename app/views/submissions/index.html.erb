@@ -12,6 +12,12 @@
     #floater {
       z-index: 5;
     }
+
+    th {
+        z-index: 1;
+        position: sticky;
+        top: 0;
+    }
   </style>
 <% end %>
 
@@ -20,8 +26,8 @@
   <%= javascript_include_tag "sorttable" %> 
   <%= external_javascript_include_tag "jquery.dataTables" %>
   <%= javascript_include_tag "manage_submissions" %>
-
 <% end %>
+
 <h3>Manage Submissions</h3>
 <hr>
 
