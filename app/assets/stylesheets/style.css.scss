@@ -299,24 +299,6 @@ input[type="email"] {
   border-color: transparent !important;
 }
 
-/* embedded-form */
-.embedded-form {
-  display: inline-block;
-  cursor: pointer;
-}
-
-input[type="file"].upload_embedded {
-  display: none;
-}
-
-#upload_button .control-label {
-  display: none;
-}
-
-.hide-all {
-  display: none;
-}
-
 .navbar-nav.action-links > li > .dropdown-menu {
   border-top-right-radius: 4px;
   border-top-left-radius: 4px;
