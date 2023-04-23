@@ -334,6 +334,8 @@ class Course < ApplicationRecord
         # save attachments
         tar.mkdir attachments_dir, File.stat(base_path).mode
         attachments.each do |attachment|
+          next unless attachment.attachment_file.attached?
+
           attachment_data = attachment.attachment_file.download
           filename = attachment.filename
           relative_path = File.join(attachments_dir, filename)
