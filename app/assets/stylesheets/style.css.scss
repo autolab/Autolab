@@ -787,6 +787,15 @@ table.prettyBorder {
 
   .submissions-th {
     padding: 25px 0 25px 0;
+    div {
+      display: flex;
+      align-items: center;
+    }
+    p {
+      margin: 0;
+      float: left;
+      padding-right: 3px;
+    }
   }
 
   td {

@@ -58,7 +58,14 @@
     <tr>
       <th class="submissions-th"></th>
       <% for header in headers %>
-        <th class="submissions-th"><%= header %></th>
+        <th class="submissions-th">
+          <div>
+            <p><%= header %></p>
+            <% if header != "File" && header != "Actions" then %>
+              <i class="material-icons tiny sort-icon" aria-hidden="true">swap_vert</i>
+            <% end %>
+          </div>
+        </th>
       <% end %>
     </tr>
   </thead>
