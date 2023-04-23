@@ -401,7 +401,6 @@ RSpec.describe CoursesController, type: :controller do
       cname = Course.find(cid).name
       allow_any_instance_of(Course).to receive(:generate_tar).and_raise(StandardError)
       post :export_selected, params: { name: cname }
-      puts response.body
       expect(response).to have_http_status(302)
       expect(flash[:error]).to be_present
       expect(flash[:error]).to match(/StandardError/m)

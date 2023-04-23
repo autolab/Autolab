@@ -300,7 +300,7 @@ class Course < ApplicationRecord
   end
 
   def has_watchlist_configuration?
-    watchlist_configuration != nil
+    !watchlist_configuration.nil?
   end
 
   def dump_yaml(include_metrics)
@@ -407,8 +407,8 @@ private
   def serialize(include_metrics)
     s = {}
     s["general"] = serialize_general
-    s["general"]["late_penalty"] = late_penalty.serialize if late_penalty
-    s["general"]["version_penalty"] = version_penalty.serialize if version_penalty
+    s["general"]["late_penalty"] = late_penalty.serialize unless late_penalty.nil?
+    s["general"]["version_penalty"] = version_penalty.serialize unless version_penalty.nil?
     s["attachments"] = attachments.map(&:serialize) if has_attachment?
 
     if include_metrics

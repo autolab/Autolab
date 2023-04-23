@@ -10,8 +10,8 @@ FactoryBot.define do
     # We still want these so that assessments can have submissions
     # but they should always be mocked unless we're explicitly
     # testing file system interaction.
-    sequence(:handin_filename) { |n| "handin_file_#{n}" }
-    sequence(:handin_directory) { |n| "handin_directory_#{n}" }
+    handin_filename { "handin_file.c" }
+    handin_directory { "handin" }
     category_name { |n| "category_#{n}" }
     max_size { 1_024_000 }
     max_submissions { 10 }

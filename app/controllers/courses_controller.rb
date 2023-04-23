@@ -610,7 +610,7 @@ class CoursesController < ApplicationController
               filename: "#{@course.name}_#{Time.current.strftime('%Y%m%d')}.tar",
               type: "application/x-tar"
   rescue SystemCallError => e
-    flash[:error] = "Unable to create the config YAML file: #{e}"
+    flash[:error] = "Unable to create the config YAML file: #{e.message}"
     redirect_to(action: :export)
   rescue StandardError => e
     flash[:error] = "Unable to generate tarball -- #{e.message}"
