@@ -73,6 +73,9 @@ class FormBuilderWithDateTimeInput < ActionView::Helpers::FormBuilder
     options = args.extract_options!
 
     @template.content_tag :div, class: "file-field input-field" do
+      (@template.content_tag :h6 do
+        options[:label_text] || ""
+      end) +
       (@template.content_tag :div, class: "btn" do
         (@template.content_tag :span do
           options[:button_text] || "Choose File"
@@ -80,7 +83,7 @@ class FormBuilderWithDateTimeInput < ActionView::Helpers::FormBuilder
           vanilla_file_field(name, options)
       end) +
         (@template.content_tag :div, class: "file-path-wrapper" do
-          (@template.content_tag :input, nil, class: "file-path validate", type: "text") +
+          (@template.content_tag :input, nil, class: "file-path validate", type: "text", value: "No file selected") +
             help_text(name, options[:help_text])
         end)
     end
