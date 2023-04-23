@@ -102,12 +102,16 @@
   display: flex;
 }
 
-#code-box .file-header .file-name {
+#code-box .file-header .file-name, #code-box .submission-time {
   border-right: 1px $autolab-highlight-gray solid;
   padding: 5px;
   display: flex;
   align-items: center;
   margin-right: auto;
+}
+
+#code-box .file-header .file-name {
+  margin-right: 0px;
 }
 
 #code-box .file-button {

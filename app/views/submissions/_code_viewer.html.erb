@@ -12,6 +12,9 @@
     <div class="file-name">
       <i class="material-icons">insert_drive_file</i> <span><%= @displayFilename %></span>
     </div>
+    <div class="submission-time">
+      <span><%= @submission.created_at %></span>
+    </div>
     <% if( !(params.has_key?(:header_position) && params[:header_position].to_i < 0) ) %>
       <div class="file-button">
         <%= link_to [:download, @course, @assessment, @submission, header_position: @header_position ],
