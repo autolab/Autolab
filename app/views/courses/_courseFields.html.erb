@@ -41,4 +41,4 @@
   their gradebooks.  It can be used to explain grading criteria.",
   display_name: "Gradebook Message", placeholder: "Optional" %>
 
-<%= f.file_field :config_file, button_text: "Upload course.rb", help_text: "Config file will be automatically reloaded after saving." %>
+<%= f.file_field :config_file, button_text: "Upload course.rb", help_text: "Config file will be automatically reloaded after saving. Changes to other settings will be lost if an error is encountered." %>
