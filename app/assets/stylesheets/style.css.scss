@@ -798,6 +798,27 @@ table.prettyBorder {
     }
   }
 
+  .sorting_desc {
+    .sort-icon__both, .sort-icon__up {
+      display: none;
+    }
+    .sort-icon__down {
+      display: inline;
+    }
+  }
+  .sorting_asc {
+    .sort-icon__both, .sort-icon__down {
+      display: none;
+    }
+    .sort-icon__up {
+      display: inline;
+    }
+  }
+
+  .sort-icon__up, .sort-icon__down {
+    display: none;
+  }
+
   td {
     border: 1px solid #ddd;
     padding: 0 5px;

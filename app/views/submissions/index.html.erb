@@ -7,7 +7,7 @@
 
 <% content_for :javascripts do %>
   <%= external_javascript_include_tag "lodash" %>
-  <%= javascript_include_tag "sorttable" %> 
+  <%= javascript_include_tag "sorttable" %>
   <%= external_javascript_include_tag "jquery.dataTables" %>
   <%= external_javascript_include_tag "datatables-buttons" %>
   <%= javascript_include_tag "manage_submissions" %>
@@ -58,11 +58,13 @@
     <tr>
       <th class="submissions-th"></th>
       <% for header in headers %>
-        <th class="submissions-th">
+        <th class="submissions-th sorting">
           <div>
             <p><%= header %></p>
             <% if header != "File" && header != "Actions" then %>
-              <i class="material-icons tiny sort-icon" aria-hidden="true">swap_vert</i>
+              <i class="material-icons tiny sort-icon sort-icon__both" aria-hidden="true">swap_vert</i>
+              <i class="material-icons tiny sort-icon sort-icon__up" aria-hidden="true">arrow_upward</i>
+              <i class="material-icons tiny sort-icon sort-icon__down" aria-hidden="true">arrow_downward</i>
             <% end %>
           </div>
         </th>
