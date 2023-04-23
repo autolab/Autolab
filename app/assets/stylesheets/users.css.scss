@@ -11,3 +11,9 @@
 .tooltips {
   font-size: 14px;
 }
+
+th {
+  z-index: 1;
+  position: sticky;
+  top: 0;
+}
