@@ -919,6 +919,13 @@ input[type="password"]:focus {
   outline: none;
 }
 
+// To remove line for file-field
+input[type="text"].validate,
+input[type="text"].validate.valid, {
+  border-bottom: none;
+  box-shadow: none;
+}
+
 input[type="checkbox"] {
   // For spacing between this and an adjacent label
   margin-right: 10px;
