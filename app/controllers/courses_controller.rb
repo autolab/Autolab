@@ -604,19 +604,17 @@ class CoursesController < ApplicationController
 
   action_auth_level :export_selected, :instructor
   def export_selected
-    begin
     tar_stream = @course.generate_tar(params[:export_configs])
 
     send_data tar_stream.string.force_encoding("binary"),
               filename: "#{@course.name}_#{Time.current.strftime('%Y%m%d')}.tar",
               type: "application/x-tar"
-    rescue SystemCallError => e
-      flash[:error] = "Unable to create the config YAML file: #{e}"
-      redirect_to(action: :export)
-    rescue StandardError => e
-      flash[:error] = "Unable to generate tarball -- #{e.message}"
-      redirect_to(action: :export)
-    end
+  rescue SystemCallError => e
+    flash[:error] = "Unable to create the config YAML file: #{e}"
+    redirect_to(action: :export)
+  rescue StandardError => e
+    flash[:error] = "Unable to generate tarball -- #{e.message}"
+    redirect_to(action: :export)
   end
 
 private
