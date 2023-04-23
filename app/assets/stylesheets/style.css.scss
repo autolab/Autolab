@@ -787,6 +787,36 @@ table.prettyBorder {
 
   .submissions-th {
     padding: 25px 0 25px 0;
+    div {
+      display: flex;
+      align-items: center;
+    }
+    p {
+      margin: 0;
+      float: left;
+      padding-right: 3px;
+    }
+  }
+
+  .sorting_desc {
+    .sort-icon__both, .sort-icon__up {
+      display: none;
+    }
+    .sort-icon__down {
+      display: inline;
+    }
+  }
+  .sorting_asc {
+    .sort-icon__both, .sort-icon__down {
+      display: none;
+    }
+    .sort-icon__up {
+      display: inline;
+    }
+  }
+
+  .sort-icon__up, .sort-icon__down {
+    display: none;
   }
 
   td {
