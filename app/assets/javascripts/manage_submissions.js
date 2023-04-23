@@ -1,4 +1,128 @@
+const manage_submissions_endpoints = {
+  'score_details': 'submissions/score_details',
+}
+
 $(document).ready(function() {
+
+  $('.modal').modal();
+
+  $('.score-details').on('click', function() {
+    // Get the email 
+    const course_user_datum_id = $(this).data('cuid');
+    const email = $(this).data('email');
+    
+    // Clear the modal content
+    $('#score-details-content').html('');
+    $('#score-details-email').html(email);
+    
+    // TODO: Add loading spinner
+
+    // Open the modal
+    $('#score-details-modal').modal('open');
+    
+    // Fetch data and render it in the modal 
+    getTableData(course_user_datum_id).then((data) => {
+      console.log(data);
+      
+      const problemHeaders = data.submissions[0].problems.map((problem) => {
+        return `<th class="submission-th">${problem.name}</th>`;
+      }).join('');
+
+      const submissions = data.submissions.map((submission) => {
+          return `
+            <tr id="row-${submission.id}" class="submission-row">
+              <td class="submission-td">
+                ${submission.version}
+              </td>
+              <td class="submisison-td">
+                ${submission.created_at}
+              </td>
+              <td class="submission-td">
+                ${submission.total}
+              </td>
+              ${submission.problems.map((problem) => {
+                return `<td class="submission-td">${data.scores[submission.id][problem.id]['score']}</td>`;
+              }).join('')}
+              <td class="submission-td">
+                ${submission.late_penalty}
+              </td>
+              <td class="submission-td">
+                <a href="submissions/${submission.id}/edit">
+                  ${data?.tweaks[submission.id]?.value ?? "None"}
+                </a>
+              </td>
+              <td class="submission-td">
+                ${submission.filename ?
+                  `<div class="submissions-center-icons">
+                    <a href="submissions/${submission.id}/view"
+                      title="View the file for this submission"
+                      class="btn small">
+                      <i class='material-icons'>zoom_in</i>
+                    </a>
+                    <p>View File</p>
+                  </div>` : "None"}
+                ${ /text/.test(submission.detected_mime_type) ?
+                    `<div class="submissions-center-icons">
+                      <a href="submissions/${submission.id}/download?forceMime=text/plain"
+                        title="Download as text/plain"
+                        class="btn small">
+                        <i class='material-icons'>file_download</i>
+                      </a>
+                      <p>Download as text/plain</p>
+                    </div>` :
+                    `<div class="submissions-center-icons">
+                      <a href="submissions/${submission.id}/download"
+                        title="Download the file for this submission"
+                        class="btn small">
+                        <i class='material-icons'>file_download</i>
+                      </a>
+                      <p>Download File</p>
+                    </div>`}
+              </td>
+            </tr>`;
+      }).join('');
+
+      const submissionsTable = 
+        `<table class="prettyBorder" id="score-details-table">
+            <thead>
+              <tr>
+                <th class="submission-th">Version No.</th>
+                <th class="submission-th">Submission Date</th>
+                <th class="submission-th">Final Score</th>
+                  ${problemHeaders}
+                <th class="submission-th">Late Penalty</th>
+                <th class="submission-th">Tweak</th>
+                <th class="submission-th">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${submissions}
+            </tbody>
+          </table>
+        `;
+
+      $('#score-details-content').html(`<div> ${submissionsTable} </div>`);
+    }).catch((err) => {
+      console.log(err);
+    });
+  });
+
+  function getTableData(course_user_datum_id) {
+    return new Promise((resolve, reject) => {
+      $.ajax({
+        url: manage_submissions_endpoints['score_details'],
+        type: 'GET',
+        data: { cuid: course_user_datum_id },
+        success: function(data) {
+          resolve(data);
+        },
+        error: function(err) {
+          console.log(err);
+          reject(err);
+        }
+      })
+    });
+  }
 
   // USE LATER FOR GROUPING ROWS (POSSIBLY):
 
