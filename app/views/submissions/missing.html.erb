@@ -1,6 +1,5 @@
 <% content_for :javascripts do %>
   <%= javascript_include_tag "sorttable" %>
-  <%= javascript_include_tag "table_floating_header" %>
 <% end %>
 
 <h2>Missing Submissions for <%= link_to @assessment.display_name, [@course, @assessment] %> </h2>
@@ -21,7 +20,7 @@
 <p>
 <%= @users %>
 <table class="prettyBorder sortable">
-  <thead>
+  <thead class="float">
     <tr>
     <th>Student</th>
     <th>Has extension?</th>

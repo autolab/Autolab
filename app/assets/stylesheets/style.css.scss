@@ -753,6 +753,11 @@ table.prettyBorder {
     }
   }
 
+  thead.float th {
+    z-index: 1;
+    position: sticky;
+    top: 0;
+  }
   th {
     background-color: #ebebeb;
     color: #909090;
