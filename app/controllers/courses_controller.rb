@@ -170,10 +170,25 @@ class CoursesController < ApplicationController
 
   action_auth_level :update, :instructor
   def update
-    flash[:error] = "Cannot update nil course" if @course.nil?
+    uploaded_config_file = params[:editCourse][:config_file]
+    unless uploaded_config_file.nil?
+      config_source = uploaded_config_file.read
+
+      course_config_source_path = @course.source_config_file_path
+      File.open(course_config_source_path, "w") do |f|
+        f.write(config_source)
+      end
+
+      begin
+        @course.reload_course_config
+      rescue StandardError, SyntaxError => e
+        @error = e
+        render("reload") && return
+      end
+    end
 
     if @course.update(edit_course_params)
-      flash[:success] = "Success: Course info updated."
+      flash[:success] = "Course configuration updated!"
     else
       flash[:error] = "Error: There were errors editing the course."
       @course.errors.full_messages.each do |msg|

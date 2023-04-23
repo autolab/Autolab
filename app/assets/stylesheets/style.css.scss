@@ -237,10 +237,6 @@ div.main-header img {
 }
 
 /* Custom Form Styling */
-form#edit_editCourse {
-  margin-top: 80px;
-}
-
 .input-field,
 form > div {
   padding-bottom: 1rem !important;
@@ -301,24 +297,6 @@ input[type="email"] {
 
 .caret {
   border-color: transparent !important;
-}
-
-/* embedded-form */
-.embedded-form {
-  display: inline-block;
-  cursor: pointer;
-}
-
-input[type="file"].upload_embedded {
-  display: none;
-}
-
-#upload_button .control-label {
-  display: none;
-}
-
-.hide-all {
-  display: none;
 }
 
 .navbar-nav.action-links > li > .dropdown-menu {
@@ -939,6 +917,13 @@ input[type="text"]:focus,
 input[type="email"]:focus,
 input[type="password"]:focus {
   outline: none;
+}
+
+// To remove line for file-field
+input[type="text"].validate,
+input[type="text"].validate.valid, {
+  border-bottom: none;
+  box-shadow: none;
 }
 
 input[type="checkbox"] {
