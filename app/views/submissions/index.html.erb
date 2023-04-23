@@ -12,12 +12,6 @@
     #floater {
       z-index: 5;
     }
-
-    th {
-        z-index: 1;
-        position: sticky;
-        top: 0;
-    }
   </style>
 <% end %>
 
@@ -76,7 +70,7 @@
 </div>
 <table class="prettyBorder" id="submissions">
   <% headers = ["Submitted By", "Version", "Score", "Submission Date (YYYY-MM-DD)", "File", "IP Address", "Actions", "isLatest"] %>
-  <thead>
+  <thead class="float">
     <tr>
       <th></th>
     <% for header in headers %>
