@@ -52,6 +52,18 @@ $('.checkbox.conditions').change(function(){
 			]
 		};
 	}
+
+	if($('#extension_requests_checkbox').checkbox('is checked')){
+		fields['extension_requests_count'] = {
+			identifier: 'extension_requests_count',
+			rules: [
+				{
+					type   : 'integer[1..]',
+					prompt : 'Please enter an integer greater or equal to 1 for count'
+				}
+			]
+		};
+	}
 	
 	$('.ui.form').form({inline: true, fields});
 

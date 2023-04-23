@@ -21,8 +21,8 @@ class RiskCondition < ApplicationRecord
                       params[:consecutive_counts].nil? || params.length != 2)) ||
        (type == 3 && (params[:no_submissions_threshold].nil? || params.length != 1)) ||
        (type == 4 && (params[:grade_threshold].nil? ||
-                      params[:count_threshold].nil? || params.length != 2))
-      (type == 5 && (params[:extension_count].nil? || params.length != 1))
+                      params[:count_threshold].nil? || params.length != 2)) ||
+       (type == 5 && (params[:extension_count].nil? || params.length != 1))
       raise "Invalid update parameters for risk conditions! "\
             "Make sure your request body fits the criteria!"
     end
