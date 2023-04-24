@@ -29,7 +29,7 @@ tr {
   font-weight: 400 !important;
 }
 
-span {
+span:not(.left-nav):not(.item):not(.title) {
   padding-left: 10px !important;
-  vertical-align: middle !important;
+  vertical-align: middle;
 }

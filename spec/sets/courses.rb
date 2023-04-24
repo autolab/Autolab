@@ -147,5 +147,10 @@ module Contexts
         @assessment = Assessment.where(course: new_course, name: asmt_name).first
       end
     end
+
+    def create_course_with_attachment(asmt_name: "attachmentassessment")
+      @course = create_course(asmt_name: asmt_name)
+      @attachment = FactoryBot.create(:attachment, course: @course)
+    end
   end
 end

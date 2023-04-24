@@ -1,3 +1,4 @@
+<%= form_tag export_selected_course_path, method: 'post' do %>
 <table class="prettyBorder" id="course_fields">
   <colgroup>
     <col span="1" style="width: 50px;">
@@ -7,7 +8,7 @@
     <tr class="course-field checked"> 
       <td>
         <label>
-          <input disabled=true class="cbox" type="checkbox" id="course_config_checkbox" checked>
+           <%= check_box_tag 'export_configs[]', 'course_config', true, class: 'cbox', id: 'course_config_checkbox', disabled: true %>
           <span/>
         </label>
       </td>
@@ -16,26 +17,27 @@
     <tr class="course-field">
       <td>
         <label>
-          <input class="cbox" type="checkbox" id="assessments_checkbox">
-          <span/>
-        </label>
-      </td>
-      <td>Assessments</td>
-    </tr>
-    <tr class="course-field">
-      <td>
-        <label>
-          <input class="cbox" type="checkbox" id="metrics_config_checkbox">
+          <%= check_box_tag 'export_configs[]', 'metrics_config', false, class: 'cbox', id: 'metrics_config_checkbox' %>
           <span/>
         </label>
       </td>
       <td>Metrics configuration</td>
+    </tr>
+    <tr class="course-field">
+      <td>
+        <label>
+          <%= check_box_tag 'export_configs[]', 'assessments', false, class: 'cbox', id: 'assessments_checkbox' %>
+          <span/>
+        </label>
+      </td>
+      <td>Assessments</td>
     </tr>
   </tbody>
 </table>
 <br />
 <div class="row">
   <div>
-    <a class="btn" id="export_btn" >Export</a>
+    <%= submit_tag 'Export', class: 'btn', id: 'export_btn', data: { disable_with: false } %>
   </div>
 </div>
+<% end %>
