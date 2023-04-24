@@ -68,9 +68,3 @@ div.dataTables_paginate span>a {
   width: 15px;
   text-align: center;
 }
-
-th {
-  z-index: 1;
-  position: sticky;
-  top: 0;
-}

@@ -20,8 +20,8 @@
   <%= javascript_include_tag "sorttable" %> 
   <%= external_javascript_include_tag "jquery.dataTables" %>
   <%= javascript_include_tag "manage_submissions" %>
-
 <% end %>
+
 <h3>Manage Submissions</h3>
 <hr>
 
@@ -70,7 +70,7 @@
 </div>
 <table class="prettyBorder" id="submissions">
   <% headers = ["Submitted By", "Version", "Score", "Submission Date (YYYY-MM-DD)", "File", "IP Address", "Actions", "isLatest"] %>
-  <thead>
+  <thead class="float">
     <tr>
       <th></th>
     <% for header in headers %>

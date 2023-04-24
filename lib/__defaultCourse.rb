@@ -4,6 +4,7 @@
 # This file is cached on the Autolab server.
 #
 # To make your changes go live: Admin->Reload course config file
+# Alternatively: Admin->Course Settings->Upload Course.rb
 #
 # To check for typos before reloading in Autolab:
 # linux> irb

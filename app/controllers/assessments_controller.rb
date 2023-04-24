@@ -755,14 +755,32 @@ class AssessmentsController < ApplicationController
 
   action_auth_level :update, :instructor
   def update
-    unless params[:assessment][:embedded_quiz_form].nil?
-      @assessment.embedded_quiz_form_data = params[:assessment][:embedded_quiz_form].read
+    uploaded_embedded_quiz_form = params[:assessment][:embedded_quiz_form]
+    uploaded_config_file = params[:assessment][:config_file]
+    unless uploaded_embedded_quiz_form.nil?
+      @assessment.embedded_quiz_form_data = uploaded_embedded_quiz_form.read
       @assessment.save!
+    end
+
+    unless uploaded_config_file.nil?
+      config_source = uploaded_config_file.read
+
+      assessment_config_file_path = @assessment.source_config_file_path
+      File.open(assessment_config_file_path, "w") do |f|
+        f.write(config_source)
+      end
+
+      begin
+        @assessment.load_config_file
+      rescue StandardError, SyntaxError => e
+        @error = e
+        render("reload") && return
+      end
     end
 
     begin
       @assessment.update!(edit_assessment_params)
-      flash[:success] = "Saved!"
+      flash[:success] = "Assessment configuration updated!"
 
       redirect_to(tab_index) && return
     rescue ActiveRecord::RecordInvalid => e
@@ -937,6 +955,7 @@ private
     end
 
     ass.delete(:name)
+    ass.delete(:config_file)
 
     ass.permit!
   end

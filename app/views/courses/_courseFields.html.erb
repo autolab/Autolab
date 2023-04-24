@@ -1,8 +1,3 @@
-<%= f.text_field :name,
-  help_text: "The course ID used in URLs and DB keys. This field must be unique
-  and URL-able. Typically includes the course number and semester. Examples:
-  15213-f12, 15110-s11" %></td>
-
 <%= f.text_field :semester, size: 3,
   help_text: "The current semester. Examples: f12, s13, m13" %>
 
@@ -45,3 +40,5 @@
   help_text: "An optional message that is displayed to students at the top of
   their gradebooks.  It can be used to explain grading criteria.",
   display_name: "Gradebook Message", placeholder: "Optional" %>
+
+<%= f.file_field :config_file, button_text: "Upload course.rb", help_text: "Config file will be automatically reloaded after saving. Changes to other settings will be lost if an error is encountered." %>

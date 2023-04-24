@@ -1,12 +1,5 @@
 <% content_for :javascripts do %>
   <%= javascript_include_tag "sorttable" %>
-  <!--
-    TODO: Fix table floating headers (absolute positioning)
-    NOTE: I think this problem can be solved almost entirely with CSS, with
-          minimal JS (to apply a CSS class once the element hits the top of the
-          screen). The current "solution" is overkill. -JZ
-  <%= javascript_include_tag "table_floating_header" %>
-  -->
   <%= javascript_include_tag "course_users" %>
 <% end %>
 

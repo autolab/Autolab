@@ -13,37 +13,12 @@
       <% end %>
 
 <%= f.check_box :allow_unofficial, help_text: "Allow unofficial submission. Unless you know what you're doing, leave this unchecked." %>
-
-<div class="embedded-form">
-  <%= f.check_box :embedded_quiz, display_name: "Enable Embedded Form", onclick: "boxClicked();" %>
-
-    <div style="margin-top: 0.5rem;">
-      <label class="custom-file-upload">
-            <span class = "btn primary" id="upload_button" style="clear:both;">
-                  <% if @assessment.embedded_quiz_form_data.nil? %>
-                        Upload Embedded Form
-                  <% else %>
-                        Replace Existing Embedded Form
-                  <% end %>
-              <%= f.file_field_nowrap :embedded_quiz_form, class: "upload_embedded" %>
-            </span>
-      </label>
-    </div>
-    <p class="file_name">
-        <span id="file_name"></span>
-    </p>
-
-    <p class="help-block">
-      For more information on Embedded Forms, visit our new
-      <a href="https://docs.autolabproject.com/features/embedded-forms" target="_blank"> docs page.</a>
-    </p>
-</div>
-
-<script>
-    document.getElementById("assessment_embedded_quiz_form").onchange = function(e) {
-        document.getElementById("file_name").textContent = "File Selected: " + document.getElementById("assessment_embedded_quiz_form").value.split(/(\\|\/)/g).pop();
-    }
-</script>
+<%= f.check_box :embedded_quiz, display_name: "Enable Embedded Form" %>
+<%= f.file_field :embedded_quiz_form, button_text: @assessment.embedded_quiz_form_data.nil? ? "Upload Embedded Form" : "Replace Existing Embedded Form" %>
+<p class="help-block">
+  For more information on Embedded Forms, visit our new
+  <a href="https://docs.autolabproject.com/features/embedded-forms" target="_blank"> docs page.</a>
+</p>
 
 <div class="action_buttons">
   <%= f.submit "Save", :name=>"advanced" %>
