@@ -2,6 +2,23 @@ const manage_submissions_endpoints = {
   'score_details': 'submissions/score_details',
 }
 
+function get_score_details(course_user_datum_id) {
+  return new Promise((resolve, reject) => {
+    $.ajax({
+      url: manage_submissions_endpoints['score_details'],
+      type: 'GET',
+      data: { cuid: course_user_datum_id },
+      success: function (data) {
+        resolve(data);
+      },
+      error: function (err) {
+        console.log(err);
+        reject(err);
+      }
+    })
+  });
+}
+
 $(document).ready(function () {
 
   $('.modal').modal();
@@ -135,29 +152,20 @@ $(document).ready(function () {
         "order": [[0, "desc"]],
         "paging": false,
         "info": false,
-        "searching": false,
-      });
+        "searching": false,});
+
     }).catch((err) => {
       console.log(err);
+      $('#score-details-content').html(`
+        <div class="row">
+          <div class="col s12">
+            <div class="card-panel red lighten-2">
+            ${err}
+            </div>
+          </div>
+        </div>`);
     });
   });
-
-  function get_score_details(course_user_datum_id) {
-    return new Promise((resolve, reject) => {
-      $.ajax({
-        url: manage_submissions_endpoints['score_details'],
-        type: 'GET',
-        data: { cuid: course_user_datum_id },
-        success: function (data) {
-          resolve(data);
-        },
-        error: function (err) {
-          console.log(err);
-          reject(err);
-        }
-      })
-    });
-  }
 
   // USE LATER FOR GROUPING ROWS (POSSIBLY):
 
