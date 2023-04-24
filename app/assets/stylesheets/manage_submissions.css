@@ -1,0 +1,8 @@
+.score-details {
+    cursor: pointer;
+}
+
+#score-details-modal{
+    width: 90%;
+    height: auto;
+}
