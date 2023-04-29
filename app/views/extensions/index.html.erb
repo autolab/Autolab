@@ -7,7 +7,6 @@
 </style>
 <% end %>
 <% content_for :javascripts do %>
-  <%= render partial: "components/autocomplete", locals: { hiddenCUDField: "#extension_course_user_datum_id" } %>
   <%= javascript_include_tag "materialize-autocomplete" %>
   <script type="application/javascript">
     jQuery(function() {
@@ -54,10 +53,6 @@
       });
 
       /* Automatically display details of existing extensions */
-      const $studentAutocompleteField = $('#student_autocomplete');
-      const $studentAutocompleteLabel = $('label[for=\'student_autocomplete\']');
-      const $hiddenCUDField = $('#extension_course_user_datum_id');
-      const $updateWarning = $('#update-warning');
       const $studentSelect = $('.student-select');
       /* Map CUD to days / infinite details */
       const CUDToExtensionsMap = {
@@ -68,83 +63,71 @@
           },
         <% end %>
       };
-      const CUDToFullNameMap = {
+      const CUDToItemMap = {
         <% @users.each do |k,v| %>
-          "<%= v %>": "<%= j k %>",
+          "<%= v %>": {
+            'id': <%= v %>,
+            'text': "<%= j k.html_safe %>"
+          },
         <% end %>
       };
+      const multiSelectData = Object.values(CUDToItemMap);
 
-      $hiddenCUDField.on('change', function() {
-        const cud = $hiddenCUDField.val();
-        if (cud === '' && $studentAutocompleteField.val() !== '') {
-          // Don't update, cud is just temporarily blank while the option is being selected
-          return;
-        }
-
-        const extensionExists = cud in CUDToExtensionsMap;
-
+      function updateFields() {
+        const values = autocomplete.value;
         let extensionDays = '0';
         let infiniteExtension = false;
-        if (extensionExists) {
-          const extensionData = CUDToExtensionsMap[cud];
-          extensionDays = extensionData.days || '0';
-          infiniteExtension = extensionData.infinite;
+
+        /* Populate fields if all extensions for selected students are the same */
+        // First check if everyone has an extension
+        let allExists = values.every((val) => val.id in CUDToExtensionsMap);
+        if (values.length && allExists) {
+          // Now check that the extensions are all the same
+          let extensions = values.map((val) => CUDToExtensionsMap[val.id]);
+          let allSame = extensions.every((val, i, arr) => val.days === arr[0].days && val.infinite === arr[0].infinite);
+          if (allSame) {
+            const extensionData = extensions[0];
+            extensionDays = extensionData.days || '0';
+            infiniteExtension = extensionData.infinite;
+          }
         }
-        /* Populate fields */
+
         $extensionDaysField.val(extensionDays);
         $enableInfiniteExtension.prop('checked', infiniteExtension);
-        $updateWarning.toggle(extensionExists);
         // To update calendar picker
         $extensionDaysField.trigger('change');
         // To disable extension days field as necessary
         checkInfiniteExtension();
-      });
+      }
 
-      // https://stackoverflow.com/questions/69317948/how-to-use-selectoption-in-autocomplete
       function selectStudent(e) {
         const $student = $(e.target);
         const cud = $student.data('cud');
-        const fullName = CUDToFullNameMap[cud];
-        $studentAutocompleteField.val(fullName);
-        // To prevent overlap
-        $studentAutocompleteLabel.addClass('active');
-        // To trigger CUD change, etc.
-        $studentAutocompleteField.trigger('change');
+        const item = CUDToItemMap[cud];
+        autocomplete.append(item);
       }
-
       $studentSelect.click((e) => selectStudent(e));
 
-      /* Initialization */
-      checkInfiniteExtension();
-      $updateWarning.hide();
-    });
-  </script>
-  <script>
-    const multiSelectData = [
-      <% @users.each do |k,v| %>
-      {
-        'id': "<%= v %>",
-        'text': "<%= j k %>"
-      },
-      <% end %>
-    ];
+      /* Autocomplete logic */
 
-    // https://github.com/icefox0801/materialize-autocomplete/issues/52#issuecomment-432699742
-    var resizeDropdown = function (id_ele) {
-      var elem = document.getElementById(id_ele);
-      var instance = M.Dropdown.getInstance(elem);
-      if (instance) {
-        if (!instance.isOpen) instance.open();
-        instance.recalculateDimensions();
+      // https://github.com/icefox0801/materialize-autocomplete/issues/52#issuecomment-432699742
+      const resizeDropdown = function (id_ele) {
+        var elem = document.getElementById(id_ele);
+        var instance = M.Dropdown.getInstance(elem);
+        if (instance) {
+          if (!instance.isOpen) instance.open();
+          instance.recalculateDimensions();
+        }
       }
-    }
 
-    $(function () {
-      $('#multipleInput').materialize_autocomplete({
-        cacheable: false, // Force getData to run every time, to resize dropdown correctly
+      const autocomplete = $('#multipleInput').materialize_autocomplete({
+        // Force getData to run every time, to resize dropdown correctly
+        cacheable: false,
         multiple: {
           enable: true,
           maxSize: 999,
+          onAppend: () => updateFields(),
+          onRemove: () => updateFields()
         },
         appender: {
           el: '#ac-users'
@@ -164,6 +147,9 @@
           resizeDropdown("multipleInput");
         }
       });
+
+      /* Initialization */
+      checkInfiniteExtension();
     });
   </script>
 <% end %>
@@ -199,14 +185,14 @@
         <% end %>
       </tbody>
     </table>
-    <% if !@extensions.empty? %>
+    <% unless @extensions.empty? %>
       <p>Click on an email above to update the extension.</p>
     <% end %>
   </div>
 
   <div class="col s12 m6">
     <h4>Create Extension</h4>
-    <%= form_for @new_extension, :as=>"extension", :url=>{:action=>"create"}, builder: FormBuilderWithDateTimeInput do |f| %>
+    <%= form_for @new_extension, :url=>{:action=>"create"}, builder: FormBuilderWithDateTimeInput do |f| %>
       <div class="input-field">
         <div class="autocomplete">
           <div id="ac-users"></div>
@@ -223,9 +209,7 @@
       <p>-OR- Infinite Extension?</p>
       <%= f.check_box :infinite, id: "extension_infinite" %>
       <%= hidden_field_tag :course_user_data, nil, autocomplete: "off" %>
-      <%= f.hidden_field :course_user_datum_id, autocomplete: "off" %>
-      <%= f.hidden_field :assessment_id%>
-      <p id="update-warning" class="red-text">This student has a current extension. Submitting will update it!</p>
+      <%= f.hidden_field :assessment_id %>
       <%= f.submit "Create" , {:class=>"btn primary"} %>
     <% end %>
   </div>
