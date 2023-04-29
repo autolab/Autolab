@@ -20,42 +20,47 @@ class ExtensionsController < ApplicationController
 
   action_auth_level :create, :instructor
   def create
+    unless params[:course_user_data].present?
+      flash[:error] = "No students were specified!"
+      redirect_to(action: :index) && return
+    end
+    cuds = params[:course_user_data].split(",")
+
     # Do some verifications to make sure an instructor of one course is not
     # giving themselves an extension in another course!
-    cud_id = params[:extension][:course_user_datum_id]
-    unless cud_id.present?
-      flash[:error] = "No student was specified!"
-      redirect_to(action: :index) && return
-    end
-
-    cud = @course.course_user_data.find(cud_id)
-    unless cud
-      flash[:error] = "No student with id #{cud_id} was found for this course."
-      redirect_to(action: :index) && return
-    end
-
-    # Check for existing extension, and if so, update
-    existing_ext = @assessment.extensions.find_by(course_user_datum_id: cud_id)
-    if existing_ext
-      existing_ext.days = params[:extension][:days]
-      existing_ext.infinite = params[:extension][:infinite]
-      existing_ext.save
-      if !existing_ext.errors.empty?
-        flash[:error] = existing_ext.errors.full_messages[0]
-      else
-        flash[:success] = "Extension updated successfully for user #{cud.email}."
+    cuds.each do |cud_id|
+      cud = @course.course_user_data.find_by(id: cud_id)
+      unless cud
+        flash[:error] = "No student with id #{cud_id} was found for this course."
+        redirect_to(action: :index) && return
       end
+    end
+
+    Extension.transaction do
+      cuds.each do |cud_id|
+        existing_ext = @assessment.extensions.find_by(course_user_datum_id: cud_id)
+        if existing_ext
+          existing_ext.days = params[:extension][:days]
+          existing_ext.infinite = params[:extension][:infinite]
+          existing_ext.save!
+        else
+          new_ext = @assessment.extensions.create(
+            days: params[:extension][:days],
+            infinite: params[:extension][:infinite],
+            course_user_datum_id: cud_id,
+            assessment_id: params[:extension][:assessment_id]
+          )
+          new_ext.save!
+        end
+      end
+    rescue ActiveRecord::RecordInvalid => e
+      flash[:error] = e.message
       redirect_to(action: :index) && return
     end
 
-    # Create new extension instead
-    ext = @assessment.extensions.create(extension_params)
-    if !ext.errors.empty?
-      flash[:error] = ext.errors.full_messages[0]
-    else
-      flash[:success] = "Extension created successfully for user #{cud.email}."
-    end
-    redirect_to(action: :index) && return
+    emails = cuds.map { |cud_id| @course.course_user_data.find(cud_id).email }
+    flash[:success] = "Extensions created for the following students: #{emails.join(', ')}."
+    redirect_to(action: :index)
   end
 
   action_auth_level :destroy, :instructor
