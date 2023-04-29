@@ -21,7 +21,7 @@ class ExtensionsController < ApplicationController
   action_auth_level :create, :instructor
   def create
     unless params[:course_user_data].present?
-      flash[:error] = "No students were specified!"
+      flash[:error] = "No users were specified!"
       redirect_to(action: :index) && return
     end
     cuds = params[:course_user_data].split(",")
@@ -31,7 +31,7 @@ class ExtensionsController < ApplicationController
     cuds.each do |cud_id|
       cud = @course.course_user_data.find_by(id: cud_id)
       unless cud
-        flash[:error] = "No student with id #{cud_id} was found for this course."
+        flash[:error] = "No user with id #{cud_id} was found for this course."
         redirect_to(action: :index) && return
       end
     end
@@ -59,7 +59,7 @@ class ExtensionsController < ApplicationController
     end
 
     emails = cuds.map { |cud_id| @course.course_user_data.find(cud_id).email }
-    flash[:success] = "Extensions created for the following students: #{emails.join(', ')}."
+    flash[:success] = "Extensions created for the following users: #{emails.join(', ')}."
     redirect_to(action: :index)
   end
 
@@ -69,7 +69,7 @@ class ExtensionsController < ApplicationController
     cud = extension.course_user_datum
     extension.destroy
     flash[:success] = "Extension deleted for user #{cud.email}."
-    redirect_to(action: :index) && return
+    redirect_to(action: :index)
   end
 
 private

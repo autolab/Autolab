@@ -28,15 +28,10 @@
       /* Enable/disable extension days options */
       const $enableInfiniteExtension = $('#extension_infinite');
       function checkInfiniteExtension() {
-        if ($enableInfiniteExtension.is(':checked')) {
-          $extensionDaysField.prop('disabled',true);
-          $extensionNewDayField.prop('disabled',true);
-        } else {
-          $extensionDaysField.prop('disabled',false);
-          $extensionNewDayField.prop('disabled',false);
-        }
+        const infiniteChecked = $enableInfiniteExtension.is(':checked');
+        $extensionDaysField.prop('disabled', infiniteChecked);
+        $extensionNewDayField.prop('disabled', infiniteChecked);
       }
-
       $enableInfiniteExtension.click(checkInfiniteExtension);
 
       /* two-way-bind newDayField with daysField */
@@ -53,8 +48,6 @@
       });
 
       /* Automatically display details of existing extensions */
-      const $studentSelect = $('.student-select');
-      /* Map CUD to days / infinite details */
       const CUDToExtensionsMap = {
         <% @extensions.each do |ext| %>
           "<%= ext.course_user_datum_id %>": {
@@ -71,18 +64,14 @@
           },
         <% end %>
       };
-      const multiSelectData = Object.values(CUDToItemMap);
 
       function updateFields() {
         const values = autocomplete.value;
         let extensionDays = '0';
         let infiniteExtension = false;
 
-        /* Populate fields if all extensions for selected students are the same */
-        // First check if everyone has an extension
         let allExists = values.every((val) => val.id in CUDToExtensionsMap);
         if (values.length && allExists) {
-          // Now check that the extensions are all the same
           let extensions = values.map((val) => CUDToExtensionsMap[val.id]);
           let allSame = extensions.every((val, i, arr) => val.days === arr[0].days && val.infinite === arr[0].infinite);
           if (allSame) {
@@ -100,6 +89,7 @@
         checkInfiniteExtension();
       }
 
+      const $studentSelect = $('.student-select');
       function selectStudent(e) {
         const $student = $(e.target);
         const cud = $student.data('cud');
@@ -109,7 +99,6 @@
       $studentSelect.click((e) => selectStudent(e));
 
       /* Autocomplete logic */
-
       // https://github.com/icefox0801/materialize-autocomplete/issues/52#issuecomment-432699742
       const resizeDropdown = function (id_ele) {
         var elem = document.getElementById(id_ele);
@@ -120,12 +109,12 @@
         }
       }
 
+      const multiSelectData = Object.values(CUDToItemMap);
       const autocomplete = $('#multipleInput').materialize_autocomplete({
-        // Force getData to run every time, to resize dropdown correctly
-        cacheable: false,
+        cacheable: false, // Disable caching so that getData (and hence resizeDropdown) is called every time
         multiple: {
           enable: true,
-          maxSize: 999,
+          maxSize: 999, // Sufficiently large number
           onAppend: () => updateFields(),
           onRemove: () => updateFields()
         },
@@ -197,17 +186,15 @@
         <div class="autocomplete">
           <div id="ac-users"></div>
           <input type="text" id="multipleInput" placeholder="Start typing student names or emails" data-target="multipleDropdown" data-beloworigin="true" autocomplete="off">
-          <p>Note: Existing extensions will be updated.</p>
+          <p>Note: Any existing extensions for these students will be updated.</p>
           <ul id="multipleDropdown" class="ac-dropdown dropdown-content"></ul>
         </div>
       </div>
       <h6>Select a new due date</h6>
-      <p>Currently due at: <span class="moment-date-time"><%= @assessment.due_at.to_s %></p>
+      <p>Assessment due date: <span class="moment-date-time"><%= @assessment.due_at.to_s %></p>
       <%= f.date_select :due_at, greater_than: @assessment.due_at, id: "extension_due_at" %>
-      <p>-OR- Specify number of days to extend:</p>
       <%= f.number_field :days, :size=>3, :placeholder=>0, :value=>0, :min=>0, :id=>"extension_days" %>
-      <p>-OR- Infinite Extension?</p>
-      <%= f.check_box :infinite, id: "extension_infinite" %>
+      <%= f.check_box :infinite, display_name: "Infinite Extension", id: "extension_infinite" %>
       <%= hidden_field_tag :course_user_data, nil, autocomplete: "off" %>
       <%= f.hidden_field :assessment_id %>
       <%= f.submit "Create" , {:class=>"btn primary"} %>
