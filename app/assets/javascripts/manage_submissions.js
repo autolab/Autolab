@@ -12,7 +12,6 @@ function get_score_details(course_user_datum_id) {
         resolve(data);
       },
       error: function (err) {
-        console.log(err);
         reject(err);
       }
     })
@@ -45,7 +44,6 @@ $(document).ready(function () {
 
     // Fetch data and render it in the modal 
     get_score_details(course_user_datum_id).then((data) => {
-      console.log(data);
 
       const problem_headers = data.submissions[0].problems.map((problem) => {
         const max_score = problem.max_score;
@@ -53,7 +51,7 @@ $(document).ready(function () {
         return `<th class="submission-th">
                   ${problem.name}
                   <br>
-                  ${max_score} ${autograded}
+                  <i> ${max_score} ${autograded} </i>
                 </th>`;
       }).join('');
 
@@ -65,7 +63,8 @@ $(document).ready(function () {
         }
 
         // Convert to human readable date with timezone 
-        const human_readable_created_at = moment(submission.created_at).format('MMM Do YYYY, h:mm:ss a z Z');
+        const human_readable_created_at = 
+              moment(submission.created_at).format('MMM Do YY, h:mma z UTC Z');
 
         const view_button = submission.filename ? 
               `<div class="submissions-center-icons">
@@ -99,28 +98,28 @@ $(document).ready(function () {
 
         return `
             <tr id="row-${submission.id}" class="submission-row">
-              <td class="submission-td">
+              <td class="submissions-td">
                 ${submission.version}
               </td>
-              <td class="submission-td">
+              <td class="submissions-td">
                 ${human_readable_created_at}
               </td>
-              <td class="submission-td">
+              <td class="submissions-td">
                 ${submission.total}
               </td>
               ${submission.problems.
               map((problem) =>
-                `<td class="submission-td">${data.scores[submission.id][problem.id]['score']}</td>`
+                `<td class="submissions-td">${data.scores[submission.id][problem.id]?.['score']}</td>`
               ).join('')}
-              <td class="submission-td">
+              <td class="submissions-td">
                 ${submission.late_penalty}
               </td>
-              <td class="submission-td">
+              <td class="submissions-td">
                 <a href="submissions/${submission.id}/edit">
                   ${tweak_value}
                 </a>
               </td>
-              <td class="submission-td">
+              <td class="submissions-td">
                 ${view_button}
                 ${download_button}
               </td>
@@ -128,7 +127,7 @@ $(document).ready(function () {
       }).join('');
 
       const submissions_table =
-        ` <p>Click on non-autograded problem scores to edit or leave a comment </p>
+        ` <p>Click on non-autograded problem scores to edit or leave a comment. </p>
           <table class="prettyBorder" id="score-details-table">
             <thead>
               <tr>
@@ -155,7 +154,6 @@ $(document).ready(function () {
         "searching": false,});
 
     }).catch((err) => {
-      console.log(err);
       $('#score-details-content').html(`
         <div class="row">
           <div class="col s12">
