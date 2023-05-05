@@ -115,18 +115,19 @@ class User < ApplicationRecord
         user.first_name = data["info"]["first_name"]
         user.last_name = data["info"]["last_name"]
         user.email = data["info"]["email"]
+        User.assign_random_password user
+        User.add_oauth_if_user_exists session
       elsif (data = session["devise.google_oauth2_data"])
         user.first_name = data["info"]["first_name"]
         user.last_name = data["info"]["last_name"]
         user.email = data["info"]["email"]
+        User.assign_random_password user
+        User.add_oauth_if_user_exists session
       elsif (data = session["devise.shibboleth_data"])
         user.email = data["uid"] # email is uid in our case
-      else
-        return # early exit if not called from an oauth callback
+        User.assign_random_password user
+        User.add_oauth_if_user_exists session
       end
-
-      User.assign_random_password user
-      User.add_oauth_if_user_exists session
     end
   end
 
