@@ -151,6 +151,9 @@ class User < ApplicationRecord
     return if user.nil?
 
     user.authentications.new(provider: provider, uid: uid)
+    user.skip_confirmation!
+    user.save!
+
     user
   end
 
