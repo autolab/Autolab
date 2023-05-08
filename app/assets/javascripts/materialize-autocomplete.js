@@ -327,7 +327,7 @@
       var self = this;
 
       if (self.options.dropdown.el) {
-        self.$dropdown = $(self.options.dropdown.el);
+        self.$dropdown = $('*').find(self.options.dropdown.el);
       } else {
         self.$dropdown = $(document.createElement(self.options.dropdown.tagName));
         self.$dropdown.insertAfter(self.$el);
@@ -336,7 +336,7 @@
       self.$dropdown.addClass(self.options.dropdown.className);
 
       if (self.options.appender.el) {
-        self.$appender = $(self.options.appender.el);
+        self.$appender = $('*').find(self.options.appender.el);
       } else {
         self.$appender = $(document.createElement(self.options.appender.tagName));
         self.$appender.insertBefore(self.$el);
