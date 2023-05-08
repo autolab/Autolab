@@ -36,17 +36,19 @@ class ExtensionsController < ApplicationController
       end
     end
 
+    days = params[:extension][:days]
+    infinite = params[:extension][:infinite]
     Extension.transaction do
       cuds.each do |cud_id|
         existing_ext = @assessment.extensions.find_by(course_user_datum_id: cud_id)
         if existing_ext
-          existing_ext.days = params[:extension][:days]
-          existing_ext.infinite = params[:extension][:infinite]
+          existing_ext.days = days
+          existing_ext.infinite = infinite
           existing_ext.save!
         else
           new_ext = @assessment.extensions.create(
-            days: params[:extension][:days],
-            infinite: params[:extension][:infinite],
+            days: days,
+            infinite: infinite,
             course_user_datum_id: cud_id,
             assessment_id: params[:extension][:assessment_id]
           )
