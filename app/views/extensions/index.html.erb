@@ -108,13 +108,20 @@
           instance.recalculateDimensions();
         }
       }
+      $('#ac-input').on('input', function() {
+        // This is necessary, otherwise the dropdown width appears too small when the following happens
+        // 1. User types a search term
+        // 2. User clicks outside the page (e.g. url bar, console)
+        // 3. User clicks search bar again (causing dropdown to close), and types / deletes a character
+        resizeDropdown("ac-input");
+      });
 
       const multiSelectData = Object.values(CUDToItemMap);
       const autocomplete = $('#ac-input').materialize_autocomplete({
         cacheable: false, // Disable caching so that getData (and hence resizeDropdown) is called every time
         multiple: {
           enable: true,
-          maxSize: 999,
+          maxSize: -1,
           onAppend: () => updateFields(),
           onRemove: () => updateFields()
         },
@@ -122,7 +129,8 @@
           el: '#ac-users'
         },
         dropdown: {
-          el: '#ac-dropdown'
+          el: '#ac-dropdown',
+          noItem: "<li class='ac-item'><a>No matches found</a></li>",
         },
         hidden: {
           enable: true,

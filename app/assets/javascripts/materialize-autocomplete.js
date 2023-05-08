@@ -389,7 +389,7 @@
         return false;
       }
 
-      if (self.value.length >= self.options.multiple.maxSize) {
+      if (self.options.multiple.maxSize !== -1 && self.value.length >= self.options.multiple.maxSize) {
 
         if ('function' === typeof self.options.multiple.onExceed) {
           self.options.multiple.onExceed.call(this, self.options.multiple.maxSize, item);
@@ -485,7 +485,7 @@
     $el.dropdown(
       {
         coverTrigger: false,
-        autoFocus: false
+        autoFocus: false,
       });
     var elem = $el[0];
 
