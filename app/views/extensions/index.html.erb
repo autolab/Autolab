@@ -1,10 +1,10 @@
 <% @title = "Manage Extensions" %>
 <% content_for :stylesheets do %>
-<style>
-    .autocomplete .ac-dropdown .ac-hover {
-        background: #eee;
+  <style>
+    .dropdown-content .ac-hover {
+      background: #eee;
     }
-</style>
+  </style>
 <% end %>
 <% content_for :javascripts do %>
   <%= javascript_include_tag "materialize-autocomplete" %>
@@ -77,7 +77,7 @@
           if (allSame) {
             const extensionData = extensions[0];
             extensionDays = extensionData.days || '0';
-            infiniteExtension = extensionData.infinite;
+            infiniteExtension = extensionData.infinite || false;
           }
         }
 
@@ -100,8 +100,8 @@
 
       /* Autocomplete logic */
       // https://github.com/icefox0801/materialize-autocomplete/issues/52#issuecomment-432699742
-      const resizeDropdown = function (id_ele) {
-        var elem = document.getElementById(id_ele);
+      const resizeDropdown = function(id) {
+        var elem = document.getElementById(id);
         var instance = M.Dropdown.getInstance(elem);
         if (instance) {
           if (!instance.isOpen) instance.open();
@@ -110,11 +110,11 @@
       }
 
       const multiSelectData = Object.values(CUDToItemMap);
-      const autocomplete = $('#multipleInput').materialize_autocomplete({
+      const autocomplete = $('#ac-input').materialize_autocomplete({
         cacheable: false, // Disable caching so that getData (and hence resizeDropdown) is called every time
         multiple: {
           enable: true,
-          maxSize: 999, // Sufficiently large number
+          maxSize: 999,
           onAppend: () => updateFields(),
           onRemove: () => updateFields()
         },
@@ -122,7 +122,7 @@
           el: '#ac-users'
         },
         dropdown: {
-          el: '#multipleDropdown'
+          el: '#ac-dropdown'
         },
         hidden: {
           enable: true,
@@ -130,10 +130,11 @@
         },
         getData: function(value, callback) {
           const data = multiSelectData.filter(function (e) {
-            return e.text.toLowerCase().indexOf(value.toLowerCase()) >= 0;
+            return e.text.toLowerCase().indexOf(value.toLowerCase()) >= 0 &&
+              !autocomplete.value.some((val) => val.id === e.id);
           });
           callback(value, data);
-          resizeDropdown("multipleInput");
+          resizeDropdown("ac-input");
         }
       });
 
@@ -183,15 +184,13 @@
     <h4>Create Extension</h4>
     <%= form_for @new_extension, :url=>{:action=>"create"}, builder: FormBuilderWithDateTimeInput do |f| %>
       <div class="input-field">
-        <div class="autocomplete">
-          <div id="ac-users"></div>
-          <input type="text" id="multipleInput" placeholder="Start typing student names or emails" data-target="multipleDropdown" data-beloworigin="true" autocomplete="off">
-          <p>Note: Any existing extensions for these students will be updated.</p>
-          <ul id="multipleDropdown" class="ac-dropdown dropdown-content"></ul>
-        </div>
+        <div id="ac-users"></div>
+        <input type="text" id="ac-input" placeholder="Start typing student names or emails" data-target="ac-dropdown" data-beloworigin="true" autocomplete="off">
+        <p>Note: Any existing extensions for these students will be updated.</p>
+        <ul id="ac-dropdown" class="dropdown-content"></ul>
       </div>
       <h6>Select a new due date</h6>
-      <p>Assessment due date: <span class="moment-date-time"><%= @assessment.due_at.to_s %></p>
+      <p>Original assessment due date: <span class="moment-date-time"><%= @assessment.due_at.to_s %></p>
       <%= f.date_select :due_at, greater_than: @assessment.due_at, id: "extension_due_at" %>
       <%= f.number_field :days, :size=>3, :placeholder=>0, :value=>0, :min=>0, :id=>"extension_days" %>
       <%= f.check_box :infinite, display_name: "Infinite Extension", id: "extension_infinite" %>
