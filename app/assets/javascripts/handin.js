@@ -140,14 +140,10 @@ function enableSubmit() {
         $("#fake-submit").removeClass("disabled");
       }  
     } else if (tab === "github_tab") {
-      var repoSelected = $("#repo-dropdown .noselection").length === 0;
-      var branchSelected = $("#branch-dropdown .noselection").length === 0;
-      // if there's no repos
-      if (!repoSelected || !branchSelected) {
-        $("#fake-submit").addClass("disabled");
-      } else {
-        $("#fake-submit").removeClass("disabled");
-      }
+      const repoSelected= $("#repo-dropdown .noselection").length === 0;
+      const branchSelected= $("#branch-dropdown .noselection").length === 0;
+      const commitSelected= $("#commit-dropdown .noselection").length === 0;
+      $("#fake-submit").toggleClass("disabled", !repoSelected || !branchSelected || !commitSelected);
     }
   }
 
