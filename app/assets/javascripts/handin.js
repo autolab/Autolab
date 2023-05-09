@@ -122,9 +122,6 @@ function enableSubmit() {
   var tab = $(".submission-panel .ui.tab.active").attr('id');
   var fileSelector = $("#handin_show_assessment input[type='file']").get(0);
   if (tab === "github_tab") {
-    fileSelector.value = null;
-    $(".handin-row").show();
-    $(".handedin-row").hide();
     // hide file type check text
     $("#filename-check").hide();
   } else {
