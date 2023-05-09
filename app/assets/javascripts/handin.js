@@ -137,9 +137,9 @@ function enableSubmit() {
         $("#fake-submit").removeClass("disabled");
       }  
     } else if (tab === "github_tab") {
-      const repoSelected= $("#repo-dropdown .noselection").length === 0;
-      const branchSelected= $("#branch-dropdown .noselection").length === 0;
-      const commitSelected= $("#commit-dropdown .noselection").length === 0;
+      const repoSelected = $("#repo-dropdown .noselection").length === 0;
+      const branchSelected = $("#branch-dropdown .noselection").length === 0;
+      const commitSelected = $("#commit-dropdown .noselection").length === 0;
       $("#fake-submit").toggleClass("disabled", !repoSelected || !branchSelected || !commitSelected);
     }
   }
