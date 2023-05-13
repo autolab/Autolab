@@ -98,7 +98,9 @@ $(document).on("click", "input[type='submit']", function (e) {
     var branch_name = $("#branch-dropdown input[name='branch']").val();
     var commit_sha = $("#commit-dropdown input[name='commit']").val();
     var token = $("meta[name=csrf-token]").attr("content");
-    var params = {repo: repo_name, branch: branch_name, commit: commit_sha, authenticity_token: token};
+    var params = {
+      repo: repo_name, branch: branch_name, commit: commit_sha, authenticity_token: token, github_submission: true
+    };
     var assessment_nav = $(".sub-navigation").find(".item").last();
     var assessment_url = assessment_nav.find("a").attr("href");
     var url = assessment_url + "/handin"
