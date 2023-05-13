@@ -1,0 +1,18 @@
+.modal-header {
+    float: right;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.score-details {
+    cursor: pointer;
+}
+
+#score-details-modal{
+    width: 90%;
+    height: auto;
+}
+
+.submissions-td {
+    padding-left: 0.6rem !important;
+}

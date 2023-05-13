@@ -3,6 +3,7 @@
 <% content_for :stylesheets do %>
   <%= stylesheet_link_tag "datatable.adapter" %>
   <%= stylesheet_link_tag "datatables-rows" %>
+  <%= stylesheet_link_tag "manage_submissions" %>
 <% end %>
 
 <% content_for :javascripts do %>
@@ -102,7 +103,13 @@
       <td class="submissions-td">
         <div class="submissions-score-align">
           <div class="score-num"><%= computed_score { submission.final_score(@cud) } %></div>
-          <div class="score-icon"><i class="material-icons submissions-score-icon">zoom_in</i></div>
+          <div class="score-icon">
+            <a class="modal-trigger score-details" 
+              data-email="<%= submission.course_user_datum.email %>"
+              data-cuid=" <%= submission.course_user_datum.id %>">
+              <i class="material-icons submissions-score-icon">zoom_in</i>
+            </a>
+            </div>   
         </div>
       </td>
 
@@ -153,3 +160,15 @@
   <% end %> <%# End loop over submissions %>
   </tbody>
 </table>
+
+<div id="score-details-modal" class="modal">
+  <div class="modal-header">
+    <a href="#!" class="modal-close btn-flat"><i class="material-icons">close</i>
+    </a>
+  </div>
+  <div class="modal-content">
+    <h3>Score Details for <span id="score-details-email"></span></h3>
+    <hr>
+    <div id="score-details-content"></div>
+  </div>
+</div>
