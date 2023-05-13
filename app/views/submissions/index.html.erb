@@ -5,6 +5,12 @@
   <%= stylesheet_link_tag "datatables-rows" %>
 <% end %>
 
+<script>
+  var is_autograded = <%= @autograded %>;
+  var excused_cids = <%= @excused_cids %>;
+  var submissions_to_cud = <%= @submissions_to_cud.html_safe %>;
+</script>
+
 <% content_for :javascripts do %>
   <%= external_javascript_include_tag "lodash" %>
   <%= javascript_include_tag "sorttable" %> 
@@ -44,8 +50,14 @@
         [@course, @assessment, :extensions],
         {:class=>"btn submissions-main"} %>
     </div>
-</div>
 
+    <%# Download Selected URL, hidden %>
+    <%= link_to "",
+        downloadBatch_course_assessment_submissions_path(@course, @assessment, @submissions),
+        {method: :get,
+         :id => "download-batch",
+         :style => "display:none;"} %>
+</div>
 
 <table class="prettyBorder" id="submissions">
   <% headers = ["Submitted By",
@@ -56,7 +68,16 @@
                 "Actions"] %>
   <thead>
     <tr>
-      <th class="submissions-th"></th>
+      <%# Select all checkbox in header row %>
+      <th class="submissions-td submissions-checkbox">
+        <div>
+          <label class="submissions-cbox-label">
+            <input class="cbox" type="checkbox" id="cbox-select-all">
+            <span><span/>
+          </label>
+        </div>
+      </th>
+      <%# Table headers %>
       <% for header in headers %>
         <th class="submissions-th"><%= header %></th>
       <% end %>
@@ -79,8 +100,15 @@
       
       <%# Submitted By %>
       <td class="submissions-td">
-        <%= [submission.course_user_datum.first_name, submission.course_user_datum.last_name].reject(&:blank?).join(' ') %>
-        <br/>
+        <div class="submissions-name">
+          <%= [submission.course_user_datum.first_name, submission.course_user_datum.last_name].reject(&:blank?).join(' ') %>
+          <% if @excused_cids.include? submission.course_user_datum_id %>
+            <a class="submissions-excused-label">EXCUSED</a>
+            <div class="excused-popover">
+              <div class="excused-arrow"></div>
+            </div>
+          <% end %>
+        </div>
         <%= submission.course_user_datum.email %>
       </td>
 

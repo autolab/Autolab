@@ -1523,6 +1523,14 @@ table.sub td, th {
   }
 }
 
+.excused-popover {
+  display: none;
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  background-color: gray;
+}
+
 .submissions-checkbox {
   margin-left: 35px;
 }
@@ -1536,8 +1544,23 @@ table.sub td, th {
   margin: 0 0 0 10px;
 }
 
+.submissions-excused-label {
+  color:rgba(140, 0, 0, 0.95);
+  margin: 0;
+  margin-left: 5px;
+  font-size: 12px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
 .submissions-icons {
   margin-left: 3px;
+}
+
+.submissions-name {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
 }
 
 .submissions-score-align {

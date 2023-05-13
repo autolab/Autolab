@@ -18,6 +18,19 @@ class SubmissionsController < ApplicationController
   def index
     @submissions = @assessment.submissions.order("created_at DESC")
     @autograded = @assessment.has_autograder?
+
+    @submissions_to_cud = {}
+    @submissions.each do |submission|
+      currSubId = submission.id
+      currCud = submission.course_user_datum_id
+      @submissions_to_cud[currSubId] = currCud
+    end
+    @submissions_to_cud = @submissions_to_cud.to_json
+    @excused_cids = []
+    excused_students = AssessmentUserDatum.where(assessment_id: @assessment.id, grade_type: 2)
+    excused_students.each do |aud|
+      @excused_cids.append(aud.course_user_datum_id)
+    end
   end
 
   # this works
@@ -120,6 +133,21 @@ class SubmissionsController < ApplicationController
                                                    @submission.assessment)) && return
   end
 
+  action_auth_level :destroyBatch, :instructor
+  def destroyBatch
+    if params[:yes]
+      if @submission.destroy
+        flash[:success] = "Submission successfully destroyed"
+      else
+        flash[:error] = "Submission failed to be destroyed"
+      end
+    else
+      flash[:error] = "There was an error deleting the submission."
+    end
+    redirect_to(course_assessment_submissions_path(@submission.course_user_datum.course,
+                                                   @submission.assessment)) && return
+  end
+
   # this is good
   action_auth_level :destroyConfirm, :instructor
   def destroyConfirm; end
@@ -176,6 +204,51 @@ class SubmissionsController < ApplicationController
                     @assessment.submissions.includes(:course_user_datum)
                   end
 
+    submissions = submissions.select { |s| @cud.can_administer?(s.course_user_datum) }
+    paths = submissions.collect(&:handin_file_path)
+    paths = paths.select { |p| !p.nil? && File.exist?(p) && File.readable?(p) }
+
+    result = Archive.create_zip paths # result is stringIO to be sent
+
+    if result.nil?
+      flash[:error] = "There are no submissions to download."
+      if @cud.course_assistant
+        redirect_to([@course, @assessment])
+      else
+        redirect_to([@course, @assessment, :submissions])
+      end
+      return
+    end
+
+    send_data(result.read, # to read from stringIO object returned by create_zip
+              type: "application/zip",
+              disposition: "attachment", # tell browser to download
+              filename: "#{@course.name}_#{@course.semester}_#{@assessment.name}_submissions.zip")
+  end
+
+  action_auth_level :downloadBatch, :course_assistant
+  def downloadBatch
+    submission_ids = params[:submission_ids]
+    flash[:error] = "Cannot index submissions for nil assessment" if @assessment.nil?
+
+    unless @assessment.valid?
+      @assessment.errors.full_messages.each do |msg|
+        flash[:error] += "<br>#{msg}"
+      end
+      flash[:html_safe] = true
+    end
+
+    if @assessment.disable_handins
+      flash[:error] = "There are no submissions to download."
+      if @cud.course_assistant
+        redirect_to([@course, @assessment])
+      else
+        redirect_to([@course, @assessment, :submissions])
+      end
+      return
+    end
+
+    submissions = submission_ids.map { |sid| @assessment.submissions.find_by(sid) }
     submissions = submissions.select { |s| @cud.can_administer?(s.course_user_datum) }
     paths = submissions.collect(&:handin_file_path)
     paths = paths.select { |p| !p.nil? && File.exist?(p) && File.readable?(p) }
