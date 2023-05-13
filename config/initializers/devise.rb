@@ -228,6 +228,8 @@ Devise.setup do |config|
   # Add a new OmniAuth provider. Check the wiki for more information on setting
   # up on your models and hooks.
   # config.omniauth :github, 'APP_ID', 'APP_SECRET', :scope => 'user,public_repo'
+
+  # Set up Google OAuth interceptor
   config.omniauth :google_oauth2, "", "", setup: lambda{ |env|
     env['omniauth.strategy'].options.merge!(OauthConfigController.get_oauth_credentials :google_oauth2)
   }
