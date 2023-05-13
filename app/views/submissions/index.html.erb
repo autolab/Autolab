@@ -2,17 +2,8 @@
 
 <% content_for :stylesheets do %>
   <%= stylesheet_link_tag "datatable.adapter" %>
-
-  <style>
-    table [type="checkbox"] + label {
-      width: 18px;
-      padding: 0;
-    }
-
-    #floater {
-      z-index: 5;
-    }
-  </style>
+  <%= stylesheet_link_tag "datatables-rows" %>
+  <%= stylesheet_link_tag "manage_submissions" %>
 <% end %>
 
 <% content_for :javascripts do %>
@@ -26,24 +17,29 @@
 <hr>
 
 <p>
+  <div class="buttons-spacing">
     <%= link_to "Create New Submission".html_safe, new_course_assessment_submission_path(@course, @assessment),
                 { title: "Create a new submission for a student, with an option to submit a handin file on their behalf",
                   class: "" } %>
-         |
+  </div>
+  <div class="buttons-spacing">
     <%= link_to "Download All Submissions".html_safe,
-                downloadAll_course_assessment_submissions_path(@course, @assessment),
-                { title: "Down all submissions from each student",
-                  class: "" } %>
-         |
+              downloadAll_course_assessment_submissions_path(@course, @assessment),
+              { title: "Down all submissions from each student",
+                class: "" } %>
+  </div>
+  <div class="buttons-spacing">
     <%= link_to "Download Final Submissions".html_safe,
-                downloadAll_course_assessment_submissions_path(@course, @assessment, final: true),
-                { title: "Download the most recent submission from each student",
-                  class: "" } %>
-         |
+              downloadAll_course_assessment_submissions_path(@course, @assessment, final: true),
+              { title: "Download the most recent submission from each student",
+                class: "" } %>
+  </div>
+  <div class="buttons-spacing">
     <%= link_to "Missing Submissions".html_safe,
-                missing_course_assessment_submissions_path(@course, @assessment),
-                { title: "List the students who have not submitted anything. You'll be given the option to create new submissions for the missing students",
-                  class: "" } %>
+              missing_course_assessment_submissions_path(@course, @assessment),
+              { title: "List the students who have not submitted anything. You'll be given the option to create new submissions for the missing students",
+                class: "" } %>
+  </div>
 
 </p>
 <div class="row">
@@ -69,7 +65,7 @@
   <% end %>
 </div>
 <table class="prettyBorder" id="submissions">
-  <% headers = ["Submitted By", "Version", "Score", "Submission Date (YYYY-MM-DD)", "File", "IP Address", "Actions", "isLatest"] %>
+  <% headers = ["Submitted By", "Version", "Score", "Submission Date (YYYY-MM-DD)", "File", "Actions"] %>
   <thead class="float">
     <tr>
       <th class="submissions-th"></th>
@@ -98,54 +94,86 @@
           </label>
         </p>
       </td>
+
       <td><%= [submission.course_user_datum.last_name, submission.course_user_datum.first_name].reject(&:blank?).join(', ') %>
       <%= link_to submission.course_user_datum.email,
                   history_course_assessment_path(@course, @assessment, cud_id: submission.course_user_datum_id, partial: true),
                   { remote: true, class: :trigger } %></td>
-      <!-- TODO: for now, until rewrite -->
-      <td style="<%= ignored_submission_style submission %>"><%= submission.version %></td>
 
-      <td><%= computed_score { submission.final_score(@cud) } %></td>
+      <%# Version %>
+      <td class="submissions-td" style="<%= ignored_submission_style submission %>">
+        <%= submission.version %>
+      </td>
 
-      <td><span class="moment-date-time"><%= submission.created_at.in_time_zone.to_s %></span></td>
-      <!-- TODO: for now, until rewrite -->
-      <td style="<%= ignored_submission_style submission %>">
+      <%# Score %>
+      <td class="submissions-td">
+        <div class="submissions-score-align">
+          <div class="score-num"><%= computed_score { submission.final_score(@cud) } %></div>
+          <div class="score-icon">
+            <a class="modal-trigger score-details" 
+              data-email="<%= submission.course_user_datum.email %>"
+              data-cuid=" <%= submission.course_user_datum.id %>">
+              <i class="material-icons submissions-score-icon">zoom_in</i>
+            </a>
+            </div>   
+        </div>
+      </td>
+
+      <%# Submission Date %>
+      <td class="submissions-td">
+        <span class="moment-date-time">
+          <%= submission.created_at.in_time_zone.to_s %>
+        </span>
+      </td>
+
+      <%# File %>
+      <td class="submissions-td" style="<%= ignored_submission_style submission %>">
         <% if submission.filename then %>
-          <%= link_to submission.filename.to_s,
-                      download_course_assessment_submission_path(@course, @assessment, submission) %>
+          <div class="submissions-center-icons">
+            <%= link_to "<i class='material-icons'>zoom_in</i>".html_safe,
+                [:view, @course, @assessment, submission],
+                {:title=>"View the file for this submission",
+                :class=>"btn small"} %>
+            <p>View File</p>
+          </div>
         <% else %>
           None
         <% end %>
       </td>
-      <td>
-        <%= submission.submitter_ip %>
-      </td>
-      <td class="exclude-click" style="text-align:center;">
+      <%# Actions %>
+      <td class="submissions-td" class="exclude-click" style="text-align:center;">
         <% if @autograded and submission.version > 0 then %>
-          <%= button_to regrade_course_assessment_path(@course, @assessment, submission_id: submission.id),
+          <div class="submissions-center-icons">
+            <%= button_to regrade_course_assessment_path(@course, @assessment, submission_id: submission.id),
                         method: :post,
                         title: "Rerun the autograder on this submission",
                         class: "btn small" do %>
-               <i class='material-icons'>autorenew</i>
+              <i class='material-icons'>autorenew</i>
+            <% end %>
+            <p>Regrade</p>
+          </div>
         <% end %>
-        <% end %>
-        <%= link_to "<i class='material-icons'>edit</i>".html_safe,
-                    edit_course_assessment_submission_path(@course, @assessment, submission),
-                    { title: "Edit the grading properties of this submission",
-                      class: "btn small" } %>
-        <%= link_to "<i class='material-icons'>delete</i>".html_safe,
-                    destroyConfirm_course_assessment_submission_path(@course, @assessment, submission),
-                    { title: "Destroy this submission forever",
-                      class: "btn small" } %>
+        <div class="submissions-center-icons">
+          <%= link_to "<i class='material-icons'>delete_outline</i>".html_safe,
+                destroyConfirm_course_assessment_submission_path(@course, @assessment, submission),
+                {:title=>"Destroy this submission forever",
+                :class=>"btn small"} %>
+          <p>Delete</p>
+        </div>
       </td>
-      <td><%= submission.latest? %></td>
     </tr>
   <% end %>
   </tbody>
 </table>
 
-<div id="gradeBackdrop">
-</div>
-
-<div id="floater">
+<div id="score-details-modal" class="modal">
+  <div class="modal-header">
+    <a href="#!" class="modal-close btn-flat"><i class="material-icons">close</i>
+    </a>
+  </div>
+  <div class="modal-content">
+    <h3>Score Details for <span id="score-details-email"></span></h3>
+    <hr>
+    <div id="score-details-content"></div>
+  </div>
 </div>

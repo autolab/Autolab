@@ -18,6 +18,38 @@ class SubmissionsController < ApplicationController
     @autograded = @assessment.has_autograder?
   end
 
+  action_auth_level :score_details, :instructor
+  def score_details
+    cuid = params[:cuid]
+    submissions = @assessment.submissions.where(course_user_datum_id: cuid).order("created_at DESC")
+    scores = submissions.map(&:scores).flatten
+
+    # make a dictionary that makes submission id to score data
+    submission_id_to_score_data = {}
+    scores.each do |score|
+      if submission_id_to_score_data[score.submission_id].nil?
+        submission_id_to_score_data[score.submission_id] = {}
+      end
+      submission_id_to_score_data[score.submission_id][score.problem_id] = score
+    end
+
+    tweaks = {}
+    submissions.each do |submission|
+      tweaks[submission.id] = submission.tweak
+    end
+
+    autograded = @assessment.has_autograder?
+    submissions = submissions.as_json(seen_by: @cud)
+
+    render json: { submissions: submissions,
+                   scores: submission_id_to_score_data,
+                   tweaks: tweaks,
+                   autograded: autograded }, status: :ok
+  rescue StandardError => e
+    render json: { error: e.message }, status: :not_found
+    nil
+  end
+
   # this works
   action_auth_level :new, :instructor
   def new
