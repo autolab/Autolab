@@ -171,79 +171,79 @@ $(document).ready(function() {
 });
 
 
-// POPOVERS
+// POPOVERS [TODO]
 
-jQuery(function() {
-  var current_popover = undefined;
+// jQuery(function() {
+//   var current_popover = undefined;
 
-  function close_current_popover() {
-    current_popover.hide();
-    current_popover = undefined;
-  }
+//   function close_current_popover() {
+//     current_popover.hide();
+//     current_popover = undefined;
+//   }
 
-  function close_current_popover_on_blur(event) {
-    if (current_popover && jQuery(current_popover).closest("td").find(event.target).length == 0) {
-        close_current_popover();
-    }
-  }
+//   function close_current_popover_on_blur(event) {
+//     if (current_popover && jQuery(current_popover).closest("td").find(event.target).length == 0) {
+//         close_current_popover();
+//     }
+//   }
 
-  jQuery(document).click(function(event) {
-    event.stopPropagation();
-    console.log("hi");
-    close_current_popover_on_blur(event);
-  });
+//   jQuery(document).click(function(event) {
+//     event.stopPropagation();
+//     console.log("hi");
+//     close_current_popover_on_blur(event);
+//   });
   
-  function show_popover(popover, at, arrow_at) {
-    if (current_popover) close_current_popover();
+//   function show_popover(popover, at, arrow_at) {
+//     if (current_popover) close_current_popover();
 
-    popover.show();
-    popover.position(at);
+//     popover.show();
+//     popover.position(at);
 
-    var arrow = jQuery(".excused-arrow", popover)
-      if (arrow_at) {
-        arrow.position(arrow_at);
-      } else {
-        arrow.position({
-          my: "right",
-          at: "left",
-          of: popover
-        });
-      }
+//     var arrow = jQuery(".excused-arrow", popover)
+//       if (arrow_at) {
+//         arrow.position(arrow_at);
+//       } else {
+//         arrow.position({
+//           my: "right",
+//           at: "left",
+//           of: popover
+//         });
+//       }
 
-    current_popover = popover;
-  }
+//     current_popover = popover;
+//   }
 
-  jQuery('#submissions').on('click', 'td.submissions-td div.submissions-name a.submissions-excused-label',
-    function() {
-      if (current_popover) {
-        close_current_popover();
-        return;
-      }
+//   jQuery('#submissions').on('click', 'td.submissions-td div.submissions-name a.submissions-excused-label',
+//     function() {
+//       if (current_popover) {
+//         close_current_popover();
+//         return;
+//       }
 
-      var link = jQuery(this);
-      currentPopover = link.siblings("div.excused-popover");
-      currentPopover.show();
+//       var link = jQuery(this);
+//       currentPopover = link.siblings("div.excused-popover");
+//       currentPopover.show();
 
-      // show_popover(popover, {
-      //         my: "left center",
-      //         at: "right center",
-      //         of: link,
-      //         offset: "10px 0"
-      //       });
+//       // show_popover(popover, {
+//       //         my: "left center",
+//       //         at: "right center",
+//       //         of: link,
+//       //         offset: "10px 0"
+//       //       });
 
-      // jQuery.ajax("submission_popover", {
-      //   data: { submission_id: link.parent().data("submission-id") },
-      //   success: function(data, status, jqXHR) {
-      //     popover.html(data)
-      //     show_popover(popover, {
-      //       my: "left center",
-      //       at: "right center",
-      //       of: link,
-      //       offset: "10px 0"
-      //     });
-      //   }
-      // });
+//       // jQuery.ajax("submission_popover", {
+//       //   data: { submission_id: link.parent().data("submission-id") },
+//       //   success: function(data, status, jqXHR) {
+//       //     popover.html(data)
+//       //     show_popover(popover, {
+//       //       my: "left center",
+//       //       at: "right center",
+//       //       of: link,
+//       //       offset: "10px 0"
+//       //     });
+//       //   }
+//       // });
 
-    }
-  );
-});
+//     }
+//   );
+// });
