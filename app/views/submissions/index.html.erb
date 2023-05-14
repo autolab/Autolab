@@ -14,7 +14,6 @@
   <%= external_javascript_include_tag "lodash" %>
   <%= javascript_include_tag "sorttable" %> 
   <%= external_javascript_include_tag "jquery.dataTables" %>
-  <%= external_javascript_include_tag "datatables-buttons" %>
   <%= javascript_include_tag "manage_submissions" %>
 <% end %>
 
@@ -46,22 +45,45 @@
     <div class="buttons-spacing">
     <%= link_to "<i class='material-icons left submissions-icons'>event</i>Manage Extensions".html_safe,
         [@course, @assessment, :extensions],
-        {:class=>"btn submissions-main"} %>
+        {:title=>"Manage extensions for this assignment",
+         :class=>"btn submissions-main"} %>
     </div>
+</div>
 
-    <%# Regrade Selected URL, hidden %>
-    <%= link_to "Regrade Batch",
+<%# Selected buttons, hidden so HTML can be accessed in DataTables %>
+<div class="selected-buttons-placeholder">
+  <div id="regrade-batch-html">
+    <%= link_to "<i class='material-icons'>cached</i>Regrade Selected".html_safe,
         [:regradeBatch, @course, @assessment],
         {method: :post,
-         :id => "regrade-batch",
-         :style => "display: none;"} %>
+        :title => "Regrade selected submissions",
+        :class => "btn submissions-selected"} %>
+  </div>
 
-    <%# Download Selected URL, hidden %>
-    <%= link_to "Download Batch",
+  <div id="delete-batch-html">
+    <%= link_to "<i class='material-icons'>delete_outline</i>Delete Selected".html_safe,
+        "",
+        {method: :post,
+        :title => "Delete selected submissions",
+        :class => "btn submissions-selected"} %>
+  </div>
+
+  <div id="download-batch-html">
+    <%= link_to "<i class='material-icons'>download</i>Download Selected".html_safe,
         downloadBatch_course_assessment_submissions_path(@course, @assessment, @submissions),
         {method: :get,
-         :id => "download-batch",
-         :style => "display: none;"} %>
+        :title => "Download selected submissions",
+        :class => "btn submissions-selected"} %>
+  </div>
+
+  <div id="gradetype-batch-html"> <%# TODO while adding dropdown %>
+    <%= link_to "<i class='material-icons'>done</i>Change Grade Type".html_safe,
+        "",
+        {method: :post,
+        :title => "Gradetype change for selected submissions",
+        :class => "btn submissions-selected"} %>
+  </div>
+
 </div>
 
 <table class="prettyBorder" id="submissions">

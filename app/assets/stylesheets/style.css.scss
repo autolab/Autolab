@@ -1507,8 +1507,14 @@ table.sub td, th {
 
 .btn.submissions-selected {
   margin: 0;
+  margin-right: 10px;
   padding: 0px 10px 0px 5px;
   font-family: Source Sans Pro, sans-serif;
+  display: flex;
+}
+
+.btn.submissions-selected i {
+  margin: 0 6px 0 4px;
 }
 
 .buttons-row {
@@ -1529,6 +1535,17 @@ table.sub td, th {
   width: 100px;
   height: 100px;
   background-color: gray;
+}
+
+#selected-buttons {
+  height: 75px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+
+.selected-buttons-placeholder {
+  display: none;
 }
 
 .submissions-checkbox {

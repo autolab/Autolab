@@ -4,92 +4,57 @@ const manage_submissions_endpoints = {
 
 $(document).ready(function() {
 
-  var excusing = true;
   var selectedStudentCids = [];
   var selectedSubmissions = [];
 
   var table = $('#submissions').DataTable({
-    "dom": 'fBrt', // show buttons, search, table
-    buttons: [
-      { text: '<i class="material-icons">cached</i>Regrade Selected',
-        className: 'btn submissions-selected',
-        attr: {id: 'regrade-selected'},
-        action: function ( e, dt, node, config ) {
-          var urlParam = $.param({"submission_ids": selectedSubmissions});
-          var initialUrl = $("#regrade-batch").prop("href");
-          var newHref = initialUrl + "?" + urlParam;
-          location.href = newHref;
-        }
-      },
-      { text: '<i class="material-icons">delete_outline</i>Delete Selected',
-        className: 'btn submissions-selected',
-        attr: {id: 'delete-selected'},
-        action: function ( e, dt, node, config ) {
-          // TODO
-        }
-      },
-      { text: '<i class="material-icons">download</i>Download Selected',
-        className: 'btn submissions-selected',
-        attr: {id: 'download-selected'},
-        action: function ( e, dt, node, config ) {
-          var urlParam = $.param({"submission_ids": selectedSubmissions});
-          var initialUrl = $("#download-batch").prop("href");
-          var newHref = initialUrl + "?" + urlParam;
-          location.href = newHref;
-        }
-      },
-      { text: '<i class="material-icons">done</i>Excuse Selected',
-        className: 'btn submissions-selected',
-        attr: {id: 'excuse-selected'},
-        action: function ( e, dt, node, config ) {
-          $.ajax({
-            url: 'update'
-          });
-          // selectedStudentCids.forEach((cid) =>
-          //   excusing ? // set to 0 : set to 2
-          // );
-          // // TODO
-        }
-      },
-    ]
+    'dom': 'f<"selected-buttons">rt', // show buttons, search, table
   });
-
 
   // SELECTED BUTTONS
 
+  // create selected buttons inside datatable wrapper
+  var regradeHTML = document.getElementById('regrade-batch-html').innerHTML;
+  var deleteHTML = document.getElementById('delete-batch-html').innerHTML;
+  var downloadHTML = document.getElementById('download-batch-html').innerHTML;
+  var excuseHTML = document.getElementById('gradetype-batch-html').innerHTML;
+  $('div.selected-buttons').html(`<div id='selected-buttons'>${regradeHTML}${deleteHTML}${downloadHTML}${excuseHTML}</div>`);
+
+  // add ids to each selected button
+  $('#selected-buttons > a').each(function () { 
+    let idText = this.title.split(' ')[0].toLowerCase() + '-selected';
+    this.setAttribute('id', idText);
+   });
+
   if (!is_autograded) {
-    $("#regrade-selected").hide();
+    $('#regrade-selected').hide();
   }
 
   function changeButtonStates(state) {
-    var buttonIDs = ['#regrade-selected', '#delete-selected', '#download-selected', '#excuse-selected'];
-    buttonIDs.forEach((id) => $(id).prop('disabled', state));
+    var buttonIDs = ['#regrade-selected', '#delete-selected', '#download-selected', '#gradetype-selected'];
+    state ? buttonIDs.forEach((id) => $(id).addClass('disabled')) : buttonIDs.forEach((id) => $(id).removeClass('disabled'));
+
+    // prop each selected button with selected submissions
+    if (!state) {
+      var urlParam = $.param({'submission_ids': selectedSubmissions});
+      buttonIDs.forEach(function(id) {
+        var initialUrl = $(id).prop('href');
+        console.log(initialUrl);
+        var newHref = initialUrl + '?' + urlParam;
+        $(id).prop('href', newHref);
+      });
+    } else {
+      buttonIDs.forEach(function(id) {
+        var initialUrl = $(id).prop('href');
+        if (initialUrl.indexOf('?') != -1) {
+          var newHref = initialUrl.substring(0, initialUrl.indexOf('?'));
+          $(id).prop('href', newHref);
+        }
+      });
+    }
   }
   
   changeButtonStates(true); // disable all buttons by default
-
-
-  // EXCUSING STUDENTS
-
-  function allSelectedExcused() {
-    if (!selectedStudentCids.length) return false;
-    for (cidIndex in selectedStudentCids) {
-      if (excused_cids.indexOf(selectedStudentCids[cidIndex]) < 0) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  // Updating text of "Excuse Selected" / "Unexcuse Selected" button
-  function updateExcusedButtonText() {
-    var allExcused = allSelectedExcused();
-    var currState = allExcused ? "Unexcuse" : "Excuse";
-    var buttonHTML = '<span><i class="material-icons">done</i>' + currState + ' Selected</span>'
-    excusing = allExcused;
-    $('#excuse-selected').html(buttonHTML);
-  }
-
 
   // SELECTING STUDENT CHECKBOXES
 
@@ -98,16 +63,16 @@ $(document).ready(function() {
     if (selectedSubmissions.indexOf(submissionId) < 0) {
       // not in the list
       selectedSubmissions.push(submissionId);
-      $("#cbox-" + submissionId).prop('checked', true);
-      $("#row-" + submissionId).addClass("selected");
+      $('#cbox-' + submissionId).prop('checked', true);
+      $('#row-' + submissionId).addClass('selected');
       // add student cid
       if (selectedStudentCids.indexOf(selectedCid) < 0) {
         selectedStudentCids.push(selectedCid);
       }
     } else {
       // in the list
-      $("#cbox-" + submissionId).prop('checked', false);
-      $("#row-" + submissionId).removeClass("selected");
+      $('#cbox-' + submissionId).prop('checked', false);
+      $('#row-' + submissionId).removeClass('selected');
       selectedSubmissions = _.without(selectedSubmissions, submissionId);
       // remove student cid, but only if none of their submissions are selected
       for (sidIndex in selectedSubmissions) {
@@ -119,28 +84,27 @@ $(document).ready(function() {
       selectedStudentCids = _.without(selectedStudentCids, selectedCid);
     }
     changeButtonStates(!selectedSubmissions.length);
-    updateExcusedButtonText();
   }
 
-  $("#submissions").on("click", ".exclude-click i", function (e) {
+  $('#submissions').on('click', '.exclude-click i', function (e) {
     e.stopPropagation();
     return;
   });
 
-  $('#submissions').on("click", ".submission-row", function(e) {
+  $('#submissions').on('click', '.submission-row', function (e) {
     // Don't toggle row if we originally clicked on an icon or anchor or input tag
     if(e.target.localName != 'i' && e.target.localName != 'a' && e.target.localName != 'input') {
       // e.target: tightest element that triggered the event
       // e.currentTarget: element the event has bubbled up to currently
-      var submissionId = parseInt(e.currentTarget.id.replace("row-", ""), 10);
+      var submissionId = parseInt(e.currentTarget.id.replace('row-', ''), 10);
       toggleRow(submissionId);
       return false;
     }
   });
 
-  $('#submissions').on("click", ".cbox", function(e) {
-    var clickedSubmissionId = e.currentTarget.id.replace("cbox-", "");
-    var submissionId = clickedSubmissionId == "select-all" ?  clickedSubmissionId : parseInt(clickedSubmissionId, 10);
+  $('#submissions').on('click', '.cbox', function (e) {
+    var clickedSubmissionId = e.currentTarget.id.replace('cbox-', '');
+    var submissionId = clickedSubmissionId == 'select-all' ?  clickedSubmissionId : parseInt(clickedSubmissionId, 10);
     toggleRow(submissionId);
     e.stopPropagation();
   });

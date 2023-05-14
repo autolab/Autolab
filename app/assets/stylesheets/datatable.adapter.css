@@ -37,22 +37,3 @@ th {
   position: sticky;
   top: 0;
 }
-
-.dt-buttons {
-  height: 75px;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-}
-
-.dt-button {
-  margin-right: 10px !important;
-}
-
-.dt-button span {
-  display: flex;
-}
-
-.dt-button i {
-  margin: 0 6px 0 4px;
-}
