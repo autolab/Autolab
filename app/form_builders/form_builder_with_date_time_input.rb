@@ -92,7 +92,7 @@ class FormBuilderWithDateTimeInput < ActionView::Helpers::FormBuilder
   def date_select(name, options = {}, _html_options = {})
     strftime = "%F"
     date_format = "F j, Y"
-    alt_format = "F j, Y"
+    alt_format = "M j Y"
     options[:picker_class] = "datepicker"
     date_helper name, options, strftime, date_format, alt_format
   end
