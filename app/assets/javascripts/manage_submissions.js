@@ -15,20 +15,10 @@ $(document).ready(function() {
         className: 'btn submissions-selected',
         attr: {id: 'regrade-selected'},
         action: function ( e, dt, node, config ) {
-          $.ajax({
-            url: manage_submissions_endpoints['regrade-selected'],
-            type: "POST",
-            data: {"submission_ids": selectedSubmissions},
-            success: function (data) {
-              // TODO
-              // show alert
-              // refresh page (to refresh table data)
-            },
-            error: function () {
-              // TODO
-              // show bad alert
-            }
-          });
+          var urlParam = $.param({"submission_ids": selectedSubmissions});
+          var initialUrl = $("#regrade-batch").prop("href");
+          var newHref = initialUrl + "?" + urlParam;
+          location.href = newHref;
         }
       },
       { text: '<i class="material-icons">delete_outline</i>Delete Selected',

@@ -159,8 +159,6 @@ module ApplicationHelper
     when "semantic-ui"
       version = "2.4.1"
       stylesheet_link_tag "#{cloudflare}/semantic-ui/#{version}/semantic.min.css"
-    when "datatables-rows"
-      stylesheet_link_tag "https://cdn.datatables.net/v/dt/dt-1.13.4/b-2.3.6/rg-1.3.1/datatables.min.css"
     end
   end
 
@@ -184,8 +182,6 @@ module ApplicationHelper
     when "datatables-buttons"
       version = "2.3.6"
       javascript_include_tag "https://cdn.datatables.net/buttons/#{version}/js/dataTables.buttons.min.js"
-    when "datatables-rows"
-      javascript_include_tag "https://cdn.datatables.net/v/dt/dt-1.13.4/b-2.3.6/rg-1.3.1/datatables.min.js"
     when "flatpickr"
       version = "4.6.13"
       javascript_include_tag "#{cloudflare}/flatpickr/#{version}/flatpickr.min.js"

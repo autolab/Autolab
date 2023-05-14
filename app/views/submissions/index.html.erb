@@ -2,7 +2,6 @@
 
 <% content_for :stylesheets do %>
   <%= stylesheet_link_tag "datatable.adapter" %>
-  <%= stylesheet_link_tag "datatables-rows" %>
 <% end %>
 
 <script>
@@ -17,7 +16,6 @@
   <%= external_javascript_include_tag "jquery.dataTables" %>
   <%= external_javascript_include_tag "datatables-buttons" %>
   <%= javascript_include_tag "manage_submissions" %>
-  <%= javascript_include_tag "datatables-rows" %>
 <% end %>
 
 <h3>Manage Submissions</h3>
@@ -51,12 +49,19 @@
         {:class=>"btn submissions-main"} %>
     </div>
 
+    <%# Regrade Selected URL, hidden %>
+    <%= link_to "Regrade Batch",
+        [:regradeBatch, @course, @assessment],
+        {method: :post,
+         :id => "regrade-batch",
+         :style => "display: none;"} %>
+
     <%# Download Selected URL, hidden %>
-    <%= link_to "",
+    <%= link_to "Download Batch",
         downloadBatch_course_assessment_submissions_path(@course, @assessment, @submissions),
         {method: :get,
          :id => "download-batch",
-         :style => "display:none;"} %>
+         :style => "display: none;"} %>
 </div>
 
 <table class="prettyBorder" id="submissions">
