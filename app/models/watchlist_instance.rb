@@ -430,7 +430,7 @@ class WatchlistInstance < ApplicationRecord
 
         when "extension_requests"
           extension_count = condition.parameters["extension_count"].to_i
-          new_instance = add_new_instance_for_cud_extension_requests(course,
+          new_instance = add_new_instance_for_cud_extension_requests(course, category_blocklist,
                                                                      condition.id, cud,
                                                                      extension_count)
           cur_instances << new_instance unless new_instance.nil?
@@ -513,8 +513,9 @@ class WatchlistInstance < ApplicationRecord
                           violation_info: violation_info)
   end
 
-  def self.add_new_instance_for_cud_extension_requests(course, condition_id, cud, extension_count)
-    asmts = Assessment.where(course_id: course.id).pluck(:id)
+  def self.add_new_instance_for_cud_extension_requests(course, category_blocklist,
+                                                       condition_id, cud, extension_count)
+    asmts = Assessment.where.not(category_name: category_blocklist).pluck(:id)
     violation_info = {}
     num_of_extensions = 0
 
