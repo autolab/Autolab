@@ -27,7 +27,10 @@ class SubmissionsController < ApplicationController
     end
     @submissions_to_cud = @submissions_to_cud.to_json
     @excused_cids = []
-    excused_students = AssessmentUserDatum.where(assessment_id: @assessment.id, grade_type: 2)
+    excused_students = AssessmentUserDatum.where(
+      assessment_id: @assessment.id,
+      grade_type: AssessmentUserDatum::EXCUSED
+    )
     excused_students.each do |aud|
       @excused_cids.append(aud.course_user_datum_id)
     end

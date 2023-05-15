@@ -54,7 +54,7 @@
 <div class="selected-buttons-placeholder">
   <div id="regrade-batch-html">
     <%= link_to "<i class='material-icons'>cached</i>Regrade Selected".html_safe,
-        [:regradeBatch, @course, @assessment],
+        regradeBatch_course_assessment_path(@course, @assessment),
         {method: :post,
         :title => "Regrade selected submissions",
         :class => "btn submissions-selected"} %>
@@ -76,7 +76,7 @@
         :class => "btn submissions-selected"} %>
   </div>
 
-  <div id="gradetype-batch-html"> <%# TODO while adding dropdown %>
+  <div id="gradetype-batch-html"> <%# TODO with excused popups + dropdown button change %>
     <%= link_to "<i class='material-icons'>done</i>Change Grade Type".html_safe,
         "",
         {method: :post,
