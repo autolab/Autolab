@@ -1,7 +1,13 @@
 <% @title = "Manage Extensions" %>
-
+<% content_for :stylesheets do %>
+  <style>
+    .dropdown-content .ac-hover {
+      background: #eee;
+    }
+  </style>
+<% end %>
 <% content_for :javascripts do %>
-  <%= render partial: "components/autocomplete", locals: { hiddenCUDField: "#extension_course_user_datum_id" } %>
+  <%= javascript_include_tag "materialize-autocomplete" %>
   <script type="application/javascript">
     jQuery(function() {
       /* set up dates */
@@ -22,15 +28,10 @@
       /* Enable/disable extension days options */
       const $enableInfiniteExtension = $('#extension_infinite');
       function checkInfiniteExtension() {
-        if ($enableInfiniteExtension.is(':checked')) {
-          $extensionDaysField.prop('disabled',true);
-          $extensionNewDayField.prop('disabled',true);
-        } else {
-          $extensionDaysField.prop('disabled',false);
-          $extensionNewDayField.prop('disabled',false);
-        }
+        const infiniteChecked = $enableInfiniteExtension.is(':checked');
+        $extensionDaysField.prop('disabled', infiniteChecked);
+        $extensionNewDayField.prop('disabled', infiniteChecked);
       }
-
       $enableInfiniteExtension.click(checkInfiniteExtension);
 
       /* two-way-bind newDayField with daysField */
@@ -47,12 +48,6 @@
       });
 
       /* Automatically display details of existing extensions */
-      const $studentAutocompleteField = $('#student_autocomplete');
-      const $studentAutocompleteLabel = $('label[for=\'student_autocomplete\']');
-      const $hiddenCUDField = $('#extension_course_user_datum_id');
-      const $updateWarning = $('#update-warning');
-      const $studentSelect = $('.student-select');
-      /* Map CUD to days / infinite details */
       const CUDToExtensionsMap = {
         <% @extensions.each do |ext| %>
           "<%= ext.course_user_datum_id %>": {
@@ -61,58 +56,100 @@
           },
         <% end %>
       };
-      const CUDToFullNameMap = {
+      const CUDToItemMap = {
         <% @users.each do |k,v| %>
-          "<%= v %>": "<%= j k %>",
+          "<%= v %>": {
+            'id': <%= v %>,
+            'text': "<%= j k.html_safe %>"
+          },
         <% end %>
       };
 
-      $hiddenCUDField.on('change', function() {
-        const cud = $hiddenCUDField.val();
-        if (cud === '' && $studentAutocompleteField.val() !== '') {
-          // Don't update, cud is just temporarily blank while the option is being selected
-          return;
-        }
-
-        const extensionExists = cud in CUDToExtensionsMap;
-
+      function updateFields() {
+        const values = autocomplete.value;
         let extensionDays = '0';
         let infiniteExtension = false;
-        if (extensionExists) {
-          const extensionData = CUDToExtensionsMap[cud];
-          extensionDays = extensionData.days || '0';
-          infiniteExtension = extensionData.infinite;
+
+        let allExists = values.every((val) => val.id in CUDToExtensionsMap);
+        if (values.length && allExists) {
+          let extensions = values.map((val) => CUDToExtensionsMap[val.id]);
+          let allSame = extensions.every((val, i, arr) => val.days === arr[0].days && val.infinite === arr[0].infinite);
+          if (allSame) {
+            const extensionData = extensions[0];
+            extensionDays = extensionData.days || '0';
+            infiniteExtension = extensionData.infinite || false;
+          }
         }
-        /* Populate fields */
+
         $extensionDaysField.val(extensionDays);
         $enableInfiniteExtension.prop('checked', infiniteExtension);
-        $updateWarning.toggle(extensionExists);
         // To update calendar picker
         $extensionDaysField.trigger('change');
         // To disable extension days field as necessary
         checkInfiniteExtension();
-      });
+      }
 
-      // https://stackoverflow.com/questions/69317948/how-to-use-selectoption-in-autocomplete
+      const $studentSelect = $('.student-select');
       function selectStudent(e) {
         const $student = $(e.target);
         const cud = $student.data('cud');
-        const fullName = CUDToFullNameMap[cud];
-        $studentAutocompleteField.val(fullName);
-        // To prevent overlap
-        $studentAutocompleteLabel.addClass('active');
-        // To trigger CUD change, etc.
-        $studentAutocompleteField.trigger('change');
+        const item = CUDToItemMap[cud];
+        autocomplete.append(item);
       }
-
       $studentSelect.click((e) => selectStudent(e));
+
+      /* Autocomplete logic */
+      // https://github.com/icefox0801/materialize-autocomplete/issues/52#issuecomment-432699742
+      const resizeDropdown = function(id) {
+        var elem = document.getElementById(id);
+        var instance = M.Dropdown.getInstance(elem);
+        if (instance) {
+          if (!instance.isOpen) instance.open();
+          instance.recalculateDimensions();
+        }
+      }
+      $('#ac-input').on('input', function() {
+        // This is necessary, otherwise the dropdown width appears too small when the following happens
+        // 1. User types a search term
+        // 2. User clicks outside the page (e.g. url bar, console)
+        // 3. User clicks search bar again (causing dropdown to close), and types / deletes a character
+        resizeDropdown("ac-input");
+      });
+
+      const multiSelectData = Object.values(CUDToItemMap);
+      const autocomplete = $('#ac-input').materialize_autocomplete({
+        cacheable: false, // Disable caching so that getData (and hence resizeDropdown) is called every time
+        multiple: {
+          enable: true,
+          maxSize: -1,
+          onAppend: () => updateFields(),
+          onRemove: () => updateFields()
+        },
+        appender: {
+          el: '#ac-users'
+        },
+        dropdown: {
+          el: '#ac-dropdown',
+          noItem: "<li class='ac-item'><a>No matches found</a></li>",
+        },
+        hidden: {
+          enable: true,
+          el: '#course_user_data'
+        },
+        getData: function(value, callback) {
+          const data = multiSelectData.filter(function (e) {
+            return e.text.toLowerCase().indexOf(value.toLowerCase()) >= 0 &&
+              !autocomplete.value.some((val) => val.id === e.id);
+          });
+          callback(value, data);
+          resizeDropdown("ac-input");
+        }
+      });
 
       /* Initialization */
       checkInfiniteExtension();
-      $updateWarning.hide();
     });
   </script>
-
 <% end %>
 
 <div class="row">
@@ -137,7 +174,7 @@
             <tr>
               <td><a class="clickable student-select" data-cud=<%= ext.course_user_datum_id %>><%= ext.course_user_datum.email %></a></td>
               <td style="padding: 0 5px"><%= ext.infinite? ? "Infinite" : "#{pluralize(ext.days, "day")}" %></td>
-              <td style="padding: 0 5px"><%= ext.infinite? ? "-" : "#{(@assessment.due_at + ext.days.days).strftime('%m-%d-%Y')}" %></td>
+              <td style="padding: 0 5px"><%= ext.infinite? ? "-" : "#{(@assessment.due_at + ext.days.days).strftime('%b %d %Y')}" %></td>
               <td><%= link_to '<i class="material-icons">delete</i>'.html_safe, [@course, @assessment, ext],
                               data: { confirm: 'Are you sure you want to delete the extension for user ' + ext.course_user_datum.email + '?' },
                               method: :delete %></td>
@@ -146,29 +183,28 @@
         <% end %>
       </tbody>
     </table>
-    <% if !@extensions.empty? %>
+    <% unless @extensions.empty? %>
       <p>Click on an email above to update the extension.</p>
     <% end %>
   </div>
 
   <div class="col s12 m6">
-    <h4>Create/Update Extension</h4>
-    <%= form_for @new_extension, :as=>"extension", :url=>{:action=>"create"}, builder: FormBuilderWithDateTimeInput do |f| %>
+    <h4>Create Extension</h4>
+    <%= form_for @new_extension, :url=>{:action=>"create"}, builder: FormBuilderWithDateTimeInput do |f| %>
       <div class="input-field">
-        <input type="text" size="3" id="student_autocomplete" class="autocomplete" autocomplete="off"/>
-        <label for="student_autocomplete">Start typing student name or email</label>
+        <div id="ac-users"></div>
+        <input type="text" id="ac-input" placeholder="Start typing student names or emails" data-target="ac-dropdown" data-beloworigin="true" autocomplete="off">
+        <p>Any existing extensions will be updated.</p>
+        <ul id="ac-dropdown" class="dropdown-content"></ul>
       </div>
-      <p>Select a new due date (Currently due at: <span class="moment-date-time"><%= @assessment.due_at.to_s %></span>)</p>
+      <h6>Select a new due date</h6>
+      <p>Original assessment due date: <span class="moment-date-time" data-format="MMM D YYYY h:mm:ssa Z"><%= @assessment.due_at.to_s %></p>
       <%= f.date_select :due_at, greater_than: @assessment.due_at, id: "extension_due_at" %>
-      <p>-OR- Specify number of days to extend:</p>
       <%= f.number_field :days, :size=>3, :placeholder=>0, :value=>0, :min=>0, :id=>"extension_days" %>
-      <p>-OR- Infinite Extension?</p>
-      <%= f.check_box :infinite, id: "extension_infinite" %>
-      <%= f.hidden_field(:course_user_datum_id)%>
-      <%= f.hidden_field(:assessment_id)%>
-      <p id="update-warning" class="red-text">This student has a current extension. Submitting will update it!</p>
-      <%= f.submit "Create/Update" , {:class=>"btn primary"} %>
+      <%= f.check_box :infinite, display_name: "Infinite Extension", id: "extension_infinite" %>
+      <%= hidden_field_tag :course_user_data, nil, autocomplete: "off" %>
+      <%= f.hidden_field :assessment_id %>
+      <%= f.submit "Create" , {:class=>"btn primary"} %>
     <% end %>
   </div>
-
 </div>
