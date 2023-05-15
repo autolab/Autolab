@@ -149,6 +149,7 @@ Rails.application.routes.draw do
 
         collection do
           get "downloadAll"
+          post "destroyBatch"
           get "downloadBatch"
           get "missing"
         end

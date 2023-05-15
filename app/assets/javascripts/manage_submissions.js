@@ -9,6 +9,7 @@ $(document).ready(function() {
 
   var table = $('#submissions').DataTable({
     'dom': 'f<"selected-buttons">rt', // show buttons, search, table
+    'paging': false,
   });
 
   // SELECTED BUTTONS
@@ -30,26 +31,26 @@ $(document).ready(function() {
     $('#regrade-selected').hide();
   }
 
+  // base URLs for selected buttons
+  var buttonIDs = ['#regrade-selected', '#delete-selected', '#download-selected', '#gradetype-selected'];
+  var baseURLs = {};
+  buttonIDs.forEach(function(id) {
+    baseURLs[id] = $(id).prop('href');
+  });
+
   function changeButtonStates(state) {
-    var buttonIDs = ['#regrade-selected', '#delete-selected', '#download-selected', '#gradetype-selected'];
     state ? buttonIDs.forEach((id) => $(id).addClass('disabled')) : buttonIDs.forEach((id) => $(id).removeClass('disabled'));
 
     // prop each selected button with selected submissions
     if (!state) {
       var urlParam = $.param({'submission_ids': selectedSubmissions});
       buttonIDs.forEach(function(id) {
-        var initialUrl = $(id).prop('href');
-        console.log(initialUrl);
-        var newHref = initialUrl + '?' + urlParam;
+        var newHref = baseURLs[id] + '?' + urlParam;
         $(id).prop('href', newHref);
       });
     } else {
       buttonIDs.forEach(function(id) {
-        var initialUrl = $(id).prop('href');
-        if (initialUrl.indexOf('?') != -1) {
-          var newHref = initialUrl.substring(0, initialUrl.indexOf('?'));
-          $(id).prop('href', newHref);
-        }
+        $(id).prop('href', baseURLs[id]);
       });
     }
   }

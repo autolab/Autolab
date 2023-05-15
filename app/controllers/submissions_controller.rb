@@ -122,9 +122,9 @@ class SubmissionsController < ApplicationController
   def destroy
     if params[:yes]
       if @submission.destroy
-        flash[:success] = "Submission successfully destroyed"
+        flash[:success] = "Submission successfully destroyed."
       else
-        flash[:error] = "Submission failed to be destroyed"
+        flash[:error] = "Submission failed to be destroyed."
       end
     else
       flash[:error] = "There was an error deleting the submission."
@@ -135,17 +135,24 @@ class SubmissionsController < ApplicationController
 
   action_auth_level :destroyBatch, :instructor
   def destroyBatch
-    if params[:yes]
-      if @submission.destroy
-        flash[:success] = "Submission successfully destroyed"
+    submission_ids = params[:submission_ids]
+    submissions = submission_ids.map { |sid| @assessment.submissions.find_by(id: sid) }
+    scount = 0
+    fcount = 0
+    submissions.each do |s|
+      if s.destroy
+        scount += 1
       else
-        flash[:error] = "Submission failed to be destroyed"
+        fcount += 1
       end
-    else
-      flash[:error] = "There was an error deleting the submission."
     end
-    redirect_to(course_assessment_submissions_path(@submission.course_user_datum.course,
-                                                   @submission.assessment)) && return
+    if fcount == 0
+      flash[:success] = "#{scount} submission(s) destroyed. #{fcount} submission(s) failed."
+    else
+      flash[:error] = "#{scount} submission(s) destroyed. #{fcount} submission(s) failed."
+    end
+    redirect_to(course_assessment_submissions_path(submissions[0].course_user_datum.course,
+                                                   submissions[0].assessment)) && return
   end
 
   # this is good
