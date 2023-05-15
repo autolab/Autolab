@@ -15,10 +15,10 @@ $(document).ready(function() {
   // SELECTED BUTTONS
 
   // create selected buttons inside datatable wrapper
-  var regradeHTML = document.getElementById('regrade-batch-html').innerHTML;
-  var deleteHTML = document.getElementById('delete-batch-html').innerHTML;
-  var downloadHTML = document.getElementById('download-batch-html').innerHTML;
-  var excuseHTML = document.getElementById('gradetype-batch-html').innerHTML;
+  var regradeHTML = $('#regrade-batch-html').html();
+  var deleteHTML = $('#delete-batch-html').html();
+  var downloadHTML = $('#download-batch-html').html();
+  var excuseHTML = $('#gradetype-batch-html').html();
   $('div.selected-buttons').html(`<div id='selected-buttons'>${regradeHTML}${deleteHTML}${downloadHTML}${excuseHTML}</div>`);
 
   // add ids to each selected button
