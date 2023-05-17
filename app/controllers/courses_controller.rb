@@ -1,6 +1,7 @@
 require "archive"
 require "csv"
 require "fileutils"
+require "pathname"
 require "statistics"
 
 class CoursesController < ApplicationController
@@ -1107,15 +1108,18 @@ private
         pathname = Archive.get_entry_name(entry)
         next if Archive.looks_like_directory?(pathname)
 
-        destination = if archive
-                        File.join(extFilesDir,
-                                  pathname)
+        output_dir = if archive
+                       extFilesDir
                       else
-                        File.join(baseFilesDir, pathname)
+                        baseFilesDir
                       end
-        pathname.gsub!(%r{/}, "-")
+        output_file = File.join(output_dir, pathname)
+
+        # skip if the file lies outside the archive
+        next unless Archive.in_dir?(Pathname(output_file), Pathname(output_dir))
+
         # make sure all subdirectories are there
-        File.open(destination, "wb") do |out|
+        File.open(output_file, "wb") do |out|
           out.write Archive.read_entry_file(entry)
           begin
             out.fsync
