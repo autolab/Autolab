@@ -233,6 +233,21 @@
       </div>
     </div>
     <br>
+
+    <div class="metric">
+      <div class="inline field">
+        <div class="ui checkbox conditions" id='extension_requests_checkbox'>
+          <input type="checkbox" tabindex="0" class="hidden" name="metrics-checkbox-5">
+        </div>
+        Students who have greater than or equal to
+        <span class="padded-span">
+          <input type="text" placeholder="1" id='extension_requests_count'>
+        </span>
+        extensions.
+      </div>
+    </div>
+
+    <br>
     <% if @cud.instructor? %>
       <button class="ui disabled submit button" id="save">SAVE</button>
     <% else %>
