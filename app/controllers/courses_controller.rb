@@ -1110,9 +1110,9 @@ private
 
         output_dir = if archive
                        extFilesDir
-                      else
-                        baseFilesDir
-                      end
+                     else
+                       baseFilesDir
+                     end
         output_file = File.join(output_dir, pathname)
 
         # skip if the file lies outside the archive
