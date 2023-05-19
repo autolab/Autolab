@@ -115,6 +115,13 @@ Please feel free to use Autolab at your school/organization. If you run into any
 
 
 ## Changelog
+### [v2.11.0](https://github.com/autolab/Autolab/releases/tag/v2.11.0) (2023/05/20) LTI Settings UI, extensions metrics, and simultaneous extension creation
+- Introduced UI to manage LTI integration settings
+- Added extension metrics for instructors to monitor students by number of extensions granted
+- Instructors can now create extensions for multiple students at once
+- Numerous UI updates
+- Numerous bug fixes and improvements
+
 ### [v2.10.0](https://github.com/autolab/Autolab/releases/tag/v2.10.0) (2023/01/13) LTI Integration, Generalized Feedback, and Streaming Output
 - Autolab now supports roster syncing with courses on Canvas and other LTI (Learning Tools Interoperability) services. For full instructions on setup, see the documentation.
 - Streaming partial output and new feedback interface
