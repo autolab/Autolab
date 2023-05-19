@@ -193,12 +193,12 @@ class AssessmentsController < ApplicationController
         # byebug
         relative_pathname = entry.full_name
         entry_file = File.join(course_root, relative_pathname)
-
-        # filter mac-specific files
+        puts(entry_file)
+        # filter macOS-specific files
         next if relative_pathname =~ %r{\.DS_Store|__MACOSX|(^|/)\._}
         # Ensure file will lie within course, otherwise skip
         next unless Archive.in_dir?(Pathname(entry_file), Pathname(assessment_path))
-
+        puts("writeback")
         if entry.directory?
           FileUtils.mkdir_p(entry_file,
                             mode: entry.header.mode, verbose: false)
