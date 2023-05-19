@@ -232,4 +232,15 @@ module Archive
   def self.looks_like_directory?(pathname)
     pathname.ends_with?("/")
   end
+
+  # Check if a path lies (strictly) within a directory
+  # Takes two Pathname objects
+  # https://gist.github.com/henrik/48e8bb74de9d887770dfb3cc6efaa9b2
+  def self.in_dir?(path, dir)
+    path_parts = path.expand_path.each_filename.to_a
+    dir_parts = dir.expand_path.each_filename.to_a
+    return false if path_parts == dir_parts
+
+    dir_parts.zip(path_parts).all? { |x, y| x == y }
+  end
 end

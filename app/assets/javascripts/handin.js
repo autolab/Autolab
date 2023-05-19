@@ -122,9 +122,6 @@ function enableSubmit() {
   var tab = $(".submission-panel .ui.tab.active").attr('id');
   var fileSelector = $("#handin_show_assessment input[type='file']").get(0);
   if (tab === "github_tab") {
-    fileSelector.value = null;
-    $(".handin-row").show();
-    $(".handedin-row").hide();
     // hide file type check text
     $("#filename-check").hide();
   } else {
@@ -140,14 +137,10 @@ function enableSubmit() {
         $("#fake-submit").removeClass("disabled");
       }  
     } else if (tab === "github_tab") {
-      var repoSelected = $("#repo-dropdown .noselection").length === 0;
-      var branchSelected = $("#branch-dropdown .noselection").length === 0;
-      // if there's no repos
-      if (!repoSelected || !branchSelected) {
-        $("#fake-submit").addClass("disabled");
-      } else {
-        $("#fake-submit").removeClass("disabled");
-      }
+      const repoSelected = $("#repo-dropdown .noselection").length === 0;
+      const branchSelected = $("#branch-dropdown .noselection").length === 0;
+      const commitSelected = $("#commit-dropdown .noselection").length === 0;
+      $("#fake-submit").toggleClass("disabled", !repoSelected || !branchSelected || !commitSelected);
     }
   }
 
