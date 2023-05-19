@@ -193,13 +193,13 @@ class AssessmentsController < ApplicationController
         # byebug
         relative_pathname = entry.full_name
         entry_file = File.join(course_root, relative_pathname)
-        # puts(entry_file)
+        puts(entry_file)
         # filter macOS-specific files
         next if relative_pathname =~ %r{\.DS_Store|__MACOSX|(^|/)\._}
         # Ensure file will lie within course, otherwise skip
         next unless Archive.in_dir?(Pathname(entry_file), Pathname(assessment_path))
 
-        # puts("writeback")
+        puts("writeback")
         if entry.directory?
           FileUtils.mkdir_p(entry_file,
                             mode: entry.header.mode, verbose: false)
@@ -217,7 +217,8 @@ class AssessmentsController < ApplicationController
       end
       tar_extract.close
     rescue StandardError => e
-      flash[:error] = "Error while extracting tarball to server -- #{e.message}."
+      flash[:error] = "Error while extracting tarball to server -- #{e.message}. #{e.backtrace}"
+      puts(e.backtrace)
       redirect_to(action: "install_assessment") && return
     end
 

@@ -67,17 +67,17 @@ RSpec.configure do |config|
   #   Kernel.srand config.seed
 
   # Suppress stdout and stderr while testing.
-  original_stderr = $stderr
-  original_stdout = $stdout
-  config.before(:all) do
-    # Redirect stderr and stdout
-    $stderr = File.new("/dev/null", "w")
-    $stdout = File.new("/dev/null", "w")
-  end
-  config.after(:all) do
-    $stderr = original_stderr
-    $stdout = original_stdout
-  end
+  # original_stderr = $stderr
+  # original_stdout = $stdout
+  # config.before(:all) do
+  #   # Redirect stderr and stdout
+  #   $stderr = File.new("/dev/null", "w")
+  #   $stdout = File.new("/dev/null", "w")
+  # end
+  # config.after(:all) do
+  #   $stderr = original_stderr
+  #   $stdout = original_stdout
+  # end
 
   # Enforce random ordering of tests
   config.order = :random
