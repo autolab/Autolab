@@ -58,7 +58,7 @@ RSpec.describe AssessmentsController, type: :controller do
                                            tarFile: file }
 
         expect(response).to have_http_status(302)
-        expect(flash[:error]).to match(/test/m)
+        expect(flash[:error]).to match(/123457653175342893415/m)
         FileUtils.rm("tmp/test.tar")
       end
       it "handles nil tarfile" do
