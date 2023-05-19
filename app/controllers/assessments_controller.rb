@@ -190,8 +190,12 @@ class AssessmentsController < ApplicationController
       assessment_path = Rails.root.join("courses", @course.name, asmt_name)
       tar_extract.rewind
       tar_extract.each do |entry|
+        # byebug
         relative_pathname = entry.full_name
         entry_file = File.join(course_root, relative_pathname)
+
+        # filter mac-specific files
+        next if relative_pathname =~ %r{\.DS_Store|__MACOSX|(^|/)\._}
         # Ensure file will lie within course, otherwise skip
         next unless Archive.in_dir?(Pathname(entry_file), Pathname(assessment_path))
 
