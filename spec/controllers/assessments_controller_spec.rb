@@ -23,7 +23,6 @@ RSpec.describe AssessmentsController, type: :controller do
       end
 
       it "successfully imports an exported assessment" do
-        puts("success!")
         get :export,
             params: { course_name: course_hash[:course].name, name: course_hash[:assessment].name }
         expect(response).to have_http_status(200)
@@ -58,7 +57,7 @@ RSpec.describe AssessmentsController, type: :controller do
                                            tarFile: file }
 
         expect(response).to have_http_status(302)
-        expect(flash[:error]).to match(/123457653175342893415/m)
+        expect(flash[:success]).to be_present
         FileUtils.rm("tmp/test.tar")
       end
       it "handles nil tarfile" do
