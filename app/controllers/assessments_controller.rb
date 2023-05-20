@@ -201,15 +201,17 @@ class AssessmentsController < ApplicationController
         next unless Archive.in_dir?(Pathname(entry_file), Pathname(assessment_path))
 
         if entry.directory?
+          puts("... entry is a directory")
+          puts("... creating directory #{entry_file}")
+          puts("... mode #{entry.header.mode}")
           FileUtils.mkdir_p(entry_file,
                             mode: entry.header.mode, verbose: false)
         elsif entry.file?
-          puts("... creating directory #{File.join(course_root, File.dirname(relative_pathname))}")
-          puts("... alternative #{File.dirname(entry_file)}")
+          puts("... entry is a file")
+          puts("... creating directory #{File.dirname(entry_file)}")
           puts("... mode #{entry.header.mode}")
-          puts("... corrected mode #{entry.header.mode & 0777}")
           FileUtils.mkdir_p(File.dirname(entry_file),
-                            mode: entry.header.mode & 0777, verbose: false)
+                            mode: entry.header.mode & 0644, verbose: false)
           File.open(entry_file, "wb") do |f|
             f.write entry.read
           end
