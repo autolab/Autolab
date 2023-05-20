@@ -183,7 +183,7 @@ class AssessmentsController < ApplicationController
         "Please use a different name."
       redirect_to(action: "install_assessment") && return
     end
-
+    puts("=== importing assessment #{asmt_name} ===")
     # If all requirements are satisfied, extract assessment files.
     begin
       course_root = Rails.root.join("courses", @course.name)
@@ -192,14 +192,20 @@ class AssessmentsController < ApplicationController
       tar_extract.each do |entry|
         relative_pathname = entry.full_name
         entry_file = File.join(course_root, relative_pathname)
+        puts("=== extracting #{relative_pathname} to #{entry_file} ===")
 
         # Ensure file will lie within course, otherwise skip
         next unless Archive.in_dir?(Pathname(entry_file), Pathname(assessment_path))
+        puts("... writing")
 
         if entry.directory?
+          puts("... is a directory with mode #{entry.header.mode}")
+          puts("... creating directories")
           FileUtils.mkdir_p(entry_file,
                             mode: entry.header.mode, verbose: false)
         elsif entry.file?
+          puts("... is a file with mode #{entry.header.mode}")
+          puts("... creating directories")
           FileUtils.mkdir_p(File.dirname(entry_file),
                             mode: 0o755, verbose: false)
           File.open(entry_file, "wb") do |f|
@@ -208,7 +214,10 @@ class AssessmentsController < ApplicationController
           FileUtils.chmod entry.header.mode, entry_file,
                           verbose: false
         elsif entry.header.typeflag == "2"
+          puts("... is a symlink")
           File.symlink entry.header.linkname, entry_file
+        else
+          puts("... is something else: #{entry.header.typeflag}")
         end
       end
       tar_extract.close
