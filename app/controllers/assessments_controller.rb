@@ -211,7 +211,7 @@ class AssessmentsController < ApplicationController
           puts("... creating directory #{File.dirname(entry_file)}")
           puts("... mode #{entry.header.mode}")
           FileUtils.mkdir_p(File.dirname(entry_file),
-                            mode: entry.header.mode & 0644, verbose: false)
+                            mode: 0755, verbose: false)
           File.open(entry_file, "wb") do |f|
             f.write entry.read
           end
