@@ -144,7 +144,6 @@ class AssessmentsController < ApplicationController
   action_auth_level :importAsmtFromTar, :instructor
 
   def importAsmtFromTar
-    puts("=== importAsmtFromTar ===")
     tarFile = params["tarFile"]
     if tarFile.nil?
       flash[:error] = "Please select an assessment tarball for uploading."
@@ -193,25 +192,16 @@ class AssessmentsController < ApplicationController
       tar_extract.each do |entry|
         relative_pathname = entry.full_name
         entry_file = File.join(course_root, relative_pathname)
-        puts("Extracting #{entry_file}")
-        # filter macOS-specific files
-        next if relative_pathname =~ %r{\.DS_Store|__MACOSX|(^|/)\._}
-        puts("... writing")
+
         # Ensure file will lie within course, otherwise skip
         next unless Archive.in_dir?(Pathname(entry_file), Pathname(assessment_path))
 
         if entry.directory?
-          puts("... entry is a directory")
-          puts("... creating directory #{entry_file}")
-          puts("... mode #{entry.header.mode}")
           FileUtils.mkdir_p(entry_file,
                             mode: entry.header.mode, verbose: false)
         elsif entry.file?
-          puts("... entry is a file")
-          puts("... creating directory #{File.dirname(entry_file)}")
-          puts("... mode #{entry.header.mode}")
           FileUtils.mkdir_p(File.dirname(entry_file),
-                            mode: 0755, verbose: false)
+                            mode: 0o755, verbose: false)
           File.open(entry_file, "wb") do |f|
             f.write entry.read
           end
@@ -224,8 +214,6 @@ class AssessmentsController < ApplicationController
       tar_extract.close
     rescue StandardError => e
       flash[:error] = "Error while extracting tarball to server -- #{e.message}."
-      puts(e.message)
-      puts(e.backtrace)
       redirect_to(action: "install_assessment") && return
     end
 

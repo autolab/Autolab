@@ -16,31 +16,31 @@ module Contexts
   def create_course_with_users(asmt_name: "testassessment")
     if @instructor_user.nil?
       create_users
-      # puts "Built users"
+      puts "Built users"
     end
     create_course
-    # puts "Built courses"
+    puts "Built courses"
     create_assessment(asmt_name: asmt_name)
-    # puts "Built assessments"
+    puts "Built assessments"
     create_problems
-    # puts "Built problems"
+    puts "Built problems"
     create_submissions_for_assignment
-    # puts "Built submissions"
+    puts "Built submissions"
   end
 
   def create_autograded_course_with_users
     create_users
-    # puts "Built users"
+    puts "Built users"
     create_course
-    # puts "Built courses"
+    puts "Built courses"
     create_assessment(asmt_name: "autograded")
-    # puts "Built assessments"
+    puts "Built assessments"
     create_problems
-    # puts "Built problems"
+    puts "Built problems"
     create_autograded_problem
-    # puts "Built autograded problem"
+    puts "Built autograded problem"
     create_submissions_for_assignment
-    # puts "Built submissions"
+    puts "Built submissions"
   end
 
   def create_course_with_users_as_hash(asmt_name: "testassessment2")
