@@ -68,6 +68,13 @@ GEM
       coderay (>= 1.0.0)
       erubi (>= 1.0.0)
       rack (>= 0.9.0)
+    better_html (2.0.1)
+      actionview (>= 6.0)
+      activesupport (>= 6.0)
+      ast (~> 2.0)
+      erubi (~> 1.4)
+      parser (>= 2.4)
+      smart_properties
     binding_of_caller (1.0.0)
       debug_inspector (>= 0.0.1)
     bootstrap-sass (3.4.1)
@@ -127,6 +134,13 @@ GEM
       dotenv (= 2.7.6)
       railties (>= 3.2)
     dynamic_form (1.1.4)
+    erb_lint (0.4.0)
+      activesupport
+      better_html (>= 2.0.1)
+      parser (>= 2.7.1.4)
+      rainbow
+      rubocop
+      smart_properties
     erubi (1.10.0)
     eventmachine (1.2.7)
     exception_notification (4.5.0)
@@ -175,7 +189,6 @@ GEM
     jwt (2.5.0)
     launchy (2.5.2)
       addressable (~> 2.8)
-    libv8-node (16.10.0.0)
     libv8-node (16.10.0.0-arm64-darwin)
     libv8-node (16.10.0.0-x86_64-darwin)
     libv8-node (16.10.0.0-x86_64-darwin-19)
@@ -195,7 +208,6 @@ GEM
       nokogiri (~> 1)
       rake
     mini_mime (1.1.2)
-    mini_portile2 (2.8.1)
     mini_racer (0.6.3)
       libv8-node (~> 16.10.0.0)
     minitest (5.17.0)
@@ -209,9 +221,6 @@ GEM
     net-ldap (0.17.1)
     newrelic_rpm (8.8.0)
     nio4r (2.5.8)
-    nokogiri (1.14.3)
-      mini_portile2 (~> 2.8.0)
-      racc (~> 1.4)
     nokogiri (1.14.3-arm64-darwin)
       racc (~> 1.4)
     nokogiri (1.14.3-x86_64-darwin)
@@ -372,6 +381,7 @@ GEM
       simplecov-html (~> 0.10.0)
     simplecov-html (0.10.2)
     slack-notifier (2.4.0)
+    smart_properties (1.17.0)
     spring (3.1.1)
     sprockets (4.1.1)
       concurrent-ruby (~> 1.0)
@@ -380,8 +390,6 @@ GEM
       actionpack (>= 5.2)
       activesupport (>= 5.2)
       sprockets (>= 3.0.0)
-    sqlite3 (1.5.1)
-      mini_portile2 (~> 2.8.0)
     sqlite3 (1.5.1-arm64-darwin)
     sqlite3 (1.5.1-x86_64-darwin)
     sqlite3 (1.5.1-x86_64-linux)
@@ -424,7 +432,7 @@ GEM
 
 PLATFORMS
   arm64-darwin-21
-  ruby
+  arm64-darwin-22
   x86_64-darwin-19
   x86_64-darwin-20
   x86_64-linux
@@ -444,6 +452,7 @@ DEPENDENCIES
   doorkeeper
   dotenv-rails
   dynamic_form
+  erb_lint
   exception_notification (>= 4.1.0)
   factory_bot_rails
   fomantic-ui-sass
@@ -499,4 +508,4 @@ RUBY VERSION
    ruby 2.7.7p221
 
 BUNDLED WITH
-   2.4.4
+   2.4.12
