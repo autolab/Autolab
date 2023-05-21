@@ -300,8 +300,8 @@ private
 
   def saved_change_to_grade_related_fields?
     (saved_change_to_late_slack? or saved_change_to_grace_days? or
-      saved_change_to_version_threshold? or saved_change_to_late_penalty_id? or
-      saved_change_to_version_penalty_id?)
+            saved_change_to_version_threshold? or saved_change_to_late_penalty_id? or
+            saved_change_to_version_penalty_id?)
   end
 
   def grace_days_or_late_slack_changed?
