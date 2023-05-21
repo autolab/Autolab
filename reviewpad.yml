@@ -46,19 +46,6 @@ workflows:
       - if: $pullRequestCountBy($author()) == 1
         then: $commentOnce($sprintf("Thank you @%s for this first contribution!", [$author()]))
 
-  # This workflow validates that pull requests follow the conventional commits specification.
-  # This helps developers automatically generate changelogs.
-  # For more details, see https://www.conventionalcommits.org/en/v1.0.0/.
-  - name: check-conventional-commits
-    description: Validate that pull requests follow the conventional commits
-    run:
-      - if: $isDraft() == false
-        then:
-          # Check commits messages against the conventional commits specification
-          - $commitLint()
-          # Check pull request title against the conventional commits specification.
-          - $titleLint()
-
   # This workflow validates best practices for pull request management.
   # This helps developers follow best practices.
   - name: best-practices
