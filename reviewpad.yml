@@ -37,15 +37,6 @@ workflows:
       - if: $isDraft() == false
         then: $assignCodeAuthorReviewers()
 
-  # This workflow praises contributors on their pull request contributions.
-  # This helps contributors feel appreciated.
-  - name: praise-contributors-on-milestones
-    description: Praise contributors based on their contributions
-    run:
-      # Praise contributors on their first pull request.
-      - if: $pullRequestCountBy($author()) == 1
-        then: $commentOnce($sprintf("Thank you @%s for this first contribution!", [$author()]))
-
   # This workflow labels pull requests based on the total number of lines changed.
   # This helps pick pull requests based on their size and to incentivize small pull requests.
   - name: size-labeling
