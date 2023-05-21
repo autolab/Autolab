@@ -230,7 +230,7 @@ class SubmissionsController < ApplicationController
 
       Prawn::Document.generate(@filename_annotated, template: @filename) do |pdf|
         @annotations.each do |annotation|
-          return if annotation.coordinate.nil?
+          next if annotation.coordinate.nil?
 
           position = annotation.coordinate.split(",")
           page  = position[2].to_i
@@ -577,6 +577,10 @@ class SubmissionsController < ApplicationController
         # This means that in _version_links.html.erb, header_position is not set in the querystring
         # for the prev / next button urls
         # This is fine since #download ignores header_position for non-archives
+
+        if @submission.version != submission.version
+          submission.header_position = header_position
+        end
 
         matchedVersions << {
           version: submission.version,

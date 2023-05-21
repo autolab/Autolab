@@ -23,15 +23,8 @@
 	<%= f.text_field :writeup, help_text: "File path from the assessment directory containing instructions to students, or a URL to redirect to.", placeholder: "E.g.   writeup.pdf   or   http://school.edu/class/writeup.pdf" %>
 </div>
 
-<!--
-<h4>Additional Submission Form</h4>
-<div class="form-group">
-    <span class="" onclick="validate();"><%= f.check_box :has_custom_form, class: "",
-    display_name: "Use custom submission form?",
-    help_text: "Whether to require a custom form while submitting files for this assignment. Please note that changing the form after submissions have begun may result in unexpected errors." %></span>
-<div id = "moreOptions" style="display:none"><%= f.text_field :languages, :size => 75, help_text: "Multiple Language Support: Programming Languages that the assessment can be submitted in (separated by comma)" %><%= f.text_field :textfields, :size => 75, help_text: "Any additional textfields (upto 3) that need to be filled in at the time of submission (separated by comma)" %></div>
-</div>
--->
+<%= f.file_field :config_file, button_text: "Upload #{@assessment.name}.rb", help_text: "Config file will be automatically reloaded after saving. Changes to other settings will be lost if an error is encountered." %>
+
 <h4>Modules Used</h4>
 <ul class="collection attachments">
   <li class="collection-item">

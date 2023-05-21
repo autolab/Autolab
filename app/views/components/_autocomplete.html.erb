@@ -13,7 +13,7 @@
     /* user autocomplete */
     const $studentAutocompleteField = $('#student_autocomplete');
     const $hiddenCUDField = $('<%= hiddenCUDField %>');
-    /* note that the names were already escaped once in retrieve_autocompletion_data! */
+    /* note that the names were already escaped once in get_autocomplete_data */
     /* and now, each name (k) is implicitly escaped a second time */
     /* this is desired behavior since autocomplete unescapes once */
     $studentAutocompleteField.autocomplete({

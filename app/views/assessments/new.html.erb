@@ -21,35 +21,6 @@
       <%= text_field_tag :new_category, nil, placeholder: "New Category" %>
       <p class="help-block">Select an existing category or enter a new category name <i>(you can always change it later)</i></p>
     </div>
-    <!-- Not many people use embedded forms and this is more confusing than usefl for most users right now
-    <div class="embedded-form" style="margin-top: 2rem;">
-      <%= f.check_box :embedded_quiz, display_name: "Embedded Form", style: "margin-top: 0.8rem;", onclick: "boxClicked();" %>
-
-       <div class="row">
-         <label class="custom-file-upload">
-          <span class = "btn primary" id="upload_button">
-            Embedded Form
-            <%= f.file_field :embedded_quiz_form, class: "upload_embedded" %>
-          </span>
-        </label>
-         <% if @assessment.embedded_quiz_form_data.nil? %>
-             <input type="text" id="file_name" readonly value="Select to Upload a File.">
-         <% else %>
-             <input type="text" id="file_name" readonly value="Upload will replace existing file." class="red-text">
-         <% end %>
-        </div>
-
-      <p class="help-block">
-        For more information on Embedded Forms, visit our new 
-        <a href="https://docs.autolabproject.com/features/#embedded-forms"> docs page.</a>
-      </p>
-    </div>
-    <script>
-      document.getElementById("assessment_embedded_quiz_form").onchange = function(e) {
-          document.getElementById("file_name").value = document.getElementById("assessment_embedded_quiz_form").value.split(/(\\|\/)/g).pop();
-      }
-    </script>
--->
     <%= f.text_field :group_size,
       display_name: "Group Size",
       help_text: "Set the maximum size of groups for this assessment.  If group size is 1, the assessment is solo.  If the size is decreased, groups that are too large will not be broken up.  If the size is set to 1, groups will be saved, but the assessment will be solo." %>

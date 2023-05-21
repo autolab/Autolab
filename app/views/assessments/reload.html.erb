@@ -1,18 +1,17 @@
 <h2>Error Parsing your Assessment Configuration File:</h2>
 
+<h4>Error</h4>
 <div>
   <pre><%= @error.to_s %></pre>
 </div>
 
-<div>
-  <%= link_to "Click here once you have fixed the above error", [:reload, @course, @assessment], data: {method: "post"} %>
-</div>
+<h4>Options</h4>
+<ul class="collection">
+  <li class="collection-item">Directly edit the configuration file (via the file system) and <%= link_to "reload", reload_course_assessment_path(@course, @assessment), data: {method: "post"} %></li>
+  <li class="collection-item">Upload a new configuration file <%= link_to "here", edit_course_assessment_path(@course, @assessment) %></li>
+</ul>
 
-<% # this rails function returns a <pre> containing the error as YAML %>
-<div>
-  <%= debug @error %>
-</div>
-
+<h4>Stack Trace</h4>
 <div>
   <pre><%= @error.backtrace.join("\n") %></pre>
 </div>

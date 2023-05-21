@@ -33,7 +33,7 @@
   %>
 <% end %>
 <% unless f.object.disable_handins %>
-  <%= f.text_field :handin_filename, help_text: "The suffix that is appended to student submission files. Autolab stores submission files in the handin directory as email_version_fname", placeholder: "E.g. mm.c" %>
+  <%= f.text_field :handin_filename, help_text: "The suffix that is appended to student submission files. Autolab stores submission files in the handin directory as email/version_fname", placeholder: "E.g. mm.c" %>
 <% end %>
 <%= f.text_field :max_size, help_text: "The maximum size that a handin file can have in megabytes (MB)." %>
 <%= f.check_box :disable_handins,

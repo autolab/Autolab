@@ -1,177 +1,166 @@
 <% @title = "Moss Cheat Checker" %>
 
-<% content_for :javascripts do %>
-  <script type="text/javascript">
-    /**
-     * toggles the "style.display" of the element with the given id.
-     **/
-    function toggleOptions(id) {
-      var show = document.getElementById(id);
-      show.style.display = (show.style.display == "none")? "block" : "none";
-    }
-
-    function filterCourses(name) {
-      $(".filterableCourse").each( function() {
-        var course = this;
-        var keywords = name.split(" ");
-        var toShow = true;
-        for (var i=0; i<keywords.length; i++) {
-          if (course.id.toLowerCase().indexOf(keywords[i]) == -1)
-            toShow = false;
-        }
-        $(this).toggle(toShow);
-      });
-    }
-  
-  </script>
-<% end %>
-
 <h2>Run the Moss Cheat Checker</h2>
 
-<h4>Step 1:</h4>
-<p>Click on course names to see their assessments, then check box all of the assessments you want Moss to compare against. </br> If a course doesn't appear, ensure you are an instructor.</p>
+<% if @course.assessments.empty? %>
+	<ul class="collection" style="text-align: center; font-size: 18px;">
+		<li class="collection-item add">
+			<p>You do not seem to have any assessments in this course to be able to run the Cheat Checker</p>
+			<%= link_to "<i class='material-icons left'>assignment</i> Install Assessment".html_safe, install_assessment_course_assessments_path(@course), { title: "Install Assessment", class: "btn btn-large red darken-3" } %>
+		</li>
+	</ul>
+<% else %>
+	<% content_for :javascripts do %>
+		<script type="text/javascript">
+			/**
+			 * toggles the "style.display" of the element with the given id.
+			 **/
+			function toggleOptions(id) {
+				var show = document.getElementById(id);
+				show.style.display = (show.style.display == "none")? "block" : "none";
+			}
 
-<h5 style="display:inline">Filter Courses (Keywords Separated by Space): </h5>
-<div class="input-field">
-	<input placeholder="Course Name" type="text" onkeyup="filterCourses(this.value.toLowerCase())" style="margin-bottom: 10px;">
-</div>
-<%= form_tag([:run_moss, @course], multipart: true) do %>
-  <ul class="moss-list">
-  <% for course in @courses %>
-    <li class="filterableCourse" id="<%= course.display_name %>">
-      <h5 onclick="toggleOptions('<%= course.id %>Assessments')"> 
-        <%= course.full_name %>
-      </h5>
-      <ul id="<%= course.id %>Assessments" class="moss-inner-list" style="display:none" >
-      <% for a in course.assessments do %>
-		<li>
-		  <label>
-          	<%= check_box_tag "assessments[#{a.id}]","1",false, :class => "filled-in" %> 
-          	<span> <%= a.display_name %> </span>
-		  </label> 
-		  <br>
-          <div id='<%= a.id %>OptionsDiv' style="padding-left:10px;" >
-			<!-- <b>Is Archive:</b> -->
-			<label>
-				<%= check_box_tag "isArchive[#{a.id}]", :class => "filled-in" %>
-				<span>Is Archive: </span> 
-			</label>
-			</br>
-            <i>Check this if the submissions will need to be extracted. (The handin filename was: <%= a.handin_filename %>)</i>
-            <br>
-            <b>Files to send to Moss:</b>
-						<%= text_field_tag "files[#{a.id}]", "*hello.c *.c", required: true %>
-            <i>This can be file names (foo.c) or patterns(*.c), space-separated</i>
-            <br>
-          </div>
-        </li>
-      <% end %>
-      </ul>
-    </li>
-  <% end %>
-  </ul>
+		</script>
+	<% end %>
 
-  <br>
+	<h4>Step 1:</h4>
+	<p>Check the box for each assessment you want to send to Moss for cheat checking.</p>
 
-	<h4>Step 2:</h4>
-	<p>(Optional) Add flags that will be run with moss.</p>
-  <ul class="moss-list">
-    <li class="filterableCourse" id="Moss Flags">
-    <h5 onclick="toggleOptions('flags')"> 
-	  	Moss Flags
-	  </h5>
-      <ul id="flags" class="moss-inner-list" style="display:none" >
-        <li>
-					<label>
-					<%= check_box_tag "box_language","1",false, :class => "filled-in" %> 
-					<span> Language </span>
-					</label>
-					<br>
-					<div id='<%= a.id %>OptionsDiv' style="margin-right: 10px;" >
-						<div class="input-field">
-							<%= select_tag :language_selection, options_for_select([
-								["ASCII", "ascii"],
-								["Ada", "ada"],
-								["C", "c"],
-								["C#", "csharp"],
-								["C++", "cc"],
-								["FORTRAN", "fortran"],
-								["Haskell", "haskell"],
-								["Java", "java"],
-								["Javascript", "javascript"],
-								["Lisp", "lisp"],
-								["MIPS Assembly", "mips"],
-								["ML", "ml"],
-								["Matlab", "matlab"],
-								["Modula2", "modula2"],
-								["Pascal", "pascal"],
-								["Perl", "perl"],
-								["PL/SQL", "plsql"],
-								["Prolog", "prolog"],
-								["Python", "python"],
-								["Scheme", "scheme"],
-								["Spice", "spice"],
-								["VHDL", "vhdl"],
-								["Verilog", "verilog"],
-								["Visual Basic", "vb"],
-								["a8086 Assembly", "a8086"]
-							], "c") %>
-							<label>Language Options</label>
-						</div>
-					</div>
-				</li>
-				<li>
-					<label>
-					<%= check_box_tag "box_max","1",false, :class => "filled-in" %> 
-					<span>Max Lines </span>
-					</label>
-					<br>
-					<div id='<%= a.id %>OptionsDiv' style="padding-left:10px;" >
-						<%= number_field_tag "max_lines", "10", placeholder: "If you don't know what this is please read the Moss documentation before altering this value.", min: 1 %>
-					</div>
-				</li>
-				<li>
-					<label>
-						<%= check_box_tag "box_basefile", "1",false, :class => "filled-in" %> 
-						<span>Base File Tar </span>
-					</label>
-					<div id='<%= a.id %>OptionsDiv' style="padding-left:10px;" >
-						<div class="file-field input-field">
-						  <div class="btn">
-					      <span>Base File</span>
-						    <%= file_field_tag 'base_tar' %>
-					    </div>
-					    <div class="file-path-wrapper">
-					      <input class="file-path validate" type="text" placeholder="Additional files archive">
-					    </div>
-						</div>
+	<%= form_tag([:run_moss, @course], multipart: true) do %>
+		<ul class="moss-list">
+			<li id="<%= @course.display_name %>">
+				<h5 onclick="toggleOptions('<%= @course.id %>Assessments')">
+					<%= @course.full_name %>
+				</h5>
+				<ul id="<%= @course.id %>Assessments" class="moss-inner-list">
+					<% for a in @course.assessments do %>
+						<li>
+							<label>
+								<%= check_box_tag "assessments[#{a.id}]","1",false, :class => "filled-in" %>
+								<span> <%= a.display_name %> </span>
+							</label>
+							<br>
+							<div style="padding-left:10px;" >
+								<label>
+									<%= check_box_tag "isArchive[#{a.id}]", :class => "filled-in" %>
+									<span>Is Archive: </span>
+								</label>
+								</br>
+								<i>Check this if the submissions will need to be extracted. (The handin filename was: <%= a.handin_filename %>)</i>
+								<br>
+								<b>Files to send to Moss:</b>
+								<%= text_field_tag "files[#{a.id}]", "*hello.c *.c", required: true %>
+								<i>This can be file names (foo.c) or patterns(*.c), space-separated</i>
+								<br>
+							</div>
+						</li>
+					<% end %>
+				</ul>
+			</li>
+		</ul>
+
+		<br>
+
+		<h4>Step 2:</h4>
+		<p>(Optional) Add flags that will be run with moss.</p>
+		<ul class="moss-list">
+			<li id="Moss Flags">
+				<h5 onclick="toggleOptions('flags')">
+					Moss Flags
+				</h5>
+				<ul id="flags" class="moss-inner-list" style="display:none" >
+					<li>
+						<label>
+							<%= check_box_tag "box_language","1",false, :class => "filled-in" %>
+							<span> Language </span>
+						</label>
 						<br>
-						<i>This if used must be an non-nested TAR. Contents of which will not be run against the assignments. Perfect for example code, or stubbed out functions that were given out.</i>
-					</div>
-				</li>
-			</ul>
-    </li>
-  </ul>
+						<div style="margin-right: 10px;" >
+							<div class="input-field">
+								<%= select_tag :language_selection, options_for_select([
+																																				 ["ASCII", "ascii"],
+																																				 ["Ada", "ada"],
+																																				 ["C", "c"],
+																																				 ["C#", "csharp"],
+																																				 ["C++", "cc"],
+																																				 ["FORTRAN", "fortran"],
+																																				 ["Haskell", "haskell"],
+																																				 ["Java", "java"],
+																																				 ["Javascript", "javascript"],
+																																				 ["Lisp", "lisp"],
+																																				 ["MIPS Assembly", "mips"],
+																																				 ["ML", "ml"],
+																																				 ["Matlab", "matlab"],
+																																				 ["Modula2", "modula2"],
+																																				 ["Pascal", "pascal"],
+																																				 ["Perl", "perl"],
+																																				 ["PL/SQL", "plsql"],
+																																				 ["Prolog", "prolog"],
+																																				 ["Python", "python"],
+																																				 ["Scheme", "scheme"],
+																																				 ["Spice", "spice"],
+																																				 ["VHDL", "vhdl"],
+																																				 ["Verilog", "verilog"],
+																																				 ["Visual Basic", "vb"],
+																																				 ["a8086 Assembly", "a8086"]
+																																			 ], "c") %>
+								<label>Language Options</label>
+							</div>
+						</div>
+					</li>
+					<li>
+						<label>
+							<%= check_box_tag "box_max","1",false, :class => "filled-in" %>
+							<span>Max Lines </span>
+						</label>
+						<br>
+						<div style="padding-left:10px;" >
+							<%= number_field_tag "max_lines", "10", placeholder: "If you don't know what this is please read the Moss documentation before altering this value.", min: 1 %>
+						</div>
+					</li>
+					<li>
+						<label>
+							<%= check_box_tag "box_basefile", "1",false, :class => "filled-in" %>
+							<span>Base File Tar </span>
+						</label>
+						<div style="padding-left:10px;" >
+							<div class="file-field input-field">
+								<div class="btn">
+									<span>Base File</span>
+									<%= file_field_tag 'base_tar' %>
+								</div>
+								<div class="file-path-wrapper">
+									<input class="file-path validate" type="text" placeholder="Additional files archive">
+								</div>
+							</div>
+							<br>
+							<i>This if used must be an non-nested TAR. Contents of which will not be run against the assignments. Perfect for example code, or stubbed out functions that were given out.</i>
+						</div>
+					</li>
+				</ul>
+			</li>
+		</ul>
 
-  <br>
+		<br>
 
-	<h4>Step 3:</h4>
-	<p> (Optional) Upload an archive containing additional files you'd like Moss to compare against.</p>
-  <p>(Note: the archive must contain only regular files.  Nested archives wil not be extracted.)</p>
-   
-  <div class="file-field input-field">
-    <div class="btn">
-      <span>Archive</span>
-      <%= file_field_tag 'external_tar' %>
-    </div>
-    <div class="file-path-wrapper">
-      <input class="file-path validate" type="text" placeholder="Additional files archive">
-    </div>
-  </div> 
-  <br>
+		<h4>Step 3:</h4>
+		<p> (Optional) Upload an archive containing additional files you'd like Moss to compare against.</p>
+		<p>(Note: the archive must contain only regular files. Nested archives will not be extracted.)</p>
 
-	<h4>Step 4:</h4>
-	<p> Click "Go!" once to run Moss. This may take up to a minute, so be patient...</p>
+		<div class="file-field input-field">
+			<div class="btn">
+				<span>Archive</span>
+				<%= file_field_tag 'external_tar' %>
+			</div>
+			<div class="file-path-wrapper">
+				<input class="file-path validate" type="text" placeholder="Additional files archive">
+			</div>
+		</div>
+		<br>
 
-  <p><%= submit_tag "Go!", data: { disable_with: "Please wait..." }, class: "btn primary" %></p>
+		<h4>Step 4:</h4>
+		<p> Click "Go!" once to run Moss. This may take up to a minute, so be patient...</p>
+
+		<p><%= submit_tag "Go!", data: { disable_with: "Please wait..." }, class: "btn primary" %></p>
+	<% end %>
 <% end %>

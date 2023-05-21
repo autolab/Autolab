@@ -12,11 +12,10 @@ RSpec.describe AssessmentsController, type: :controller do
   describe "Export and Import Roundtrip" do
     context "when user is Instructor" do
       let!(:course_hash) do
-        create_course_with_many_students
+        create_course_with_users_as_hash
       end
       let!(:course_2_hash) do
-        create_course_with_many_students(asmt_name: "newassessment",
-                                         instructor_user: course_hash[:instructor_user])
+        create_course_with_users_as_hash(asmt_name: "newassessment")
       end
       before(:each) do
         instructor = get_instructor_by_cid(course_hash[:course].id)

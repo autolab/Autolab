@@ -1,6 +1,7 @@
 require "archive"
 require "csv"
 require "fileutils"
+require "pathname"
 require "statistics"
 
 class CoursesController < ApplicationController
@@ -127,6 +128,8 @@ class CoursesController < ApplicationController
           instructor = User.instructor_create(params[:instructor_email],
                                               @newCourse.name)
         rescue StandardError => e
+          # roll back course creation
+          @newCourse.destroy
           flash[:error] = "Can't create instructor for the course: #{e}"
           render(action: "new") && return
         end
@@ -168,10 +171,25 @@ class CoursesController < ApplicationController
 
   action_auth_level :update, :instructor
   def update
-    flash[:error] = "Cannot update nil course" if @course.nil?
+    uploaded_config_file = params[:editCourse][:config_file]
+    unless uploaded_config_file.nil?
+      config_source = uploaded_config_file.read
+
+      course_config_source_path = @course.source_config_file_path
+      File.open(course_config_source_path, "w") do |f|
+        f.write(config_source)
+      end
+
+      begin
+        @course.reload_course_config
+      rescue StandardError, SyntaxError => e
+        @error = e
+        render("reload") && return
+      end
+    end
 
     if @course.update(edit_course_params)
-      flash[:success] = "Success: Course info updated."
+      flash[:success] = "Course configuration updated!"
     else
       flash[:error] = "Error: There were errors editing the course."
       @course.errors.full_messages.each do |msg|
@@ -490,13 +508,7 @@ class CoursesController < ApplicationController
   end
 
   action_auth_level :moss, :instructor
-  def moss
-    @courses = Course.all.select do |course|
-      @cud.user.administrator ||
-        !course.course_user_data.joins(:user).find_by(users: { email: @cud.user.email },
-                                                      instructor: true).nil?
-    end
-  end
+  def moss; end
 
   LANGUAGE_WHITELIST = %w[c cc java ml pascal ada lisp scheme haskell fortran ascii vhdl perl
                           matlab python mips prolog spice vb csharp modula2 a8086 javascript plsql
@@ -1096,15 +1108,18 @@ private
         pathname = Archive.get_entry_name(entry)
         next if Archive.looks_like_directory?(pathname)
 
-        destination = if archive
-                        File.join(extFilesDir,
-                                  pathname)
-                      else
-                        File.join(baseFilesDir, pathname)
-                      end
-        pathname.gsub!(%r{/}, "-")
+        output_dir = if archive
+                       extFilesDir
+                     else
+                       baseFilesDir
+                     end
+        output_file = File.join(output_dir, pathname)
+
+        # skip if the file lies outside the archive
+        next unless Archive.in_dir?(Pathname(output_file), Pathname(output_dir))
+
         # make sure all subdirectories are there
-        File.open(destination, "wb") do |out|
+        File.open(output_file, "wb") do |out|
           out.write Archive.read_entry_file(entry)
           begin
             out.fsync

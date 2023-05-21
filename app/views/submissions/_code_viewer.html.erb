@@ -10,7 +10,10 @@
   <div class="lds-spinner"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
   <div class="file-header">
     <div class="file-name">
-      <i class="material-icons">insert_drive_file</i> <span><%= @displayFilename %></span>
+      <i class="material-icons">insert_drive_file</i>
+      <span>
+        <%= @displayFilename %> (<%= @submission.created_at.in_time_zone.strftime('%b %e %y, %l:%M:%S%P %:z').to_s %>)
+      </span>
     </div>
     <% if( !(params.has_key?(:header_position) && params[:header_position].to_i < 0) ) %>
       <div class="file-button">

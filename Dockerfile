@@ -56,8 +56,15 @@ RUN mkdir -p /home/app/webapp/log && \
 USER root
 RUN chown -R app:app .
 
-WORKDIR /home/app/webapp
+#WORKDIR /home/app/webapp
+
+# precompile the Rails assets
+ENV SECRET_KEY_BASE="ekz0nrn_DPG6ucv5ukw"
+RUN RAILS_ENV=production bundle exec rails assets:precompile
 
 # Clean up APT when done.
 USER root
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# Use baseimage-docker's init system.
+CMD ["/sbin/my_init"]

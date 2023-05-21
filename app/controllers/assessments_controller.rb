@@ -187,22 +187,27 @@ class AssessmentsController < ApplicationController
     # If all requirements are satisfied, extract assessment files.
     begin
       course_root = Rails.root.join("courses", @course.name)
+      assessment_path = Rails.root.join("courses", @course.name, asmt_name)
       tar_extract.rewind
       tar_extract.each do |entry|
         relative_pathname = entry.full_name
+        entry_file = File.join(course_root, relative_pathname)
+        # Ensure file will lie within course, otherwise skip
+        next unless Archive.in_dir?(Pathname(entry_file), Pathname(assessment_path))
+
         if entry.directory?
-          FileUtils.mkdir_p(File.join(course_root, relative_pathname),
+          FileUtils.mkdir_p(entry_file,
                             mode: entry.header.mode, verbose: false)
         elsif entry.file?
           FileUtils.mkdir_p(File.join(course_root, File.dirname(relative_pathname)),
                             mode: entry.header.mode, verbose: false)
-          File.open(File.join(course_root, relative_pathname), "wb") do |f|
+          File.open(entry_file, "wb") do |f|
             f.write entry.read
           end
-          FileUtils.chmod entry.header.mode, File.join(course_root, relative_pathname),
+          FileUtils.chmod entry.header.mode, entry_file,
                           verbose: false
         elsif entry.header.typeflag == "2"
-          File.symlink entry.header.linkname, File.join(course_root, relative_pathname)
+          File.symlink entry.header.linkname, entry_file
         end
       end
       tar_extract.close
@@ -755,14 +760,32 @@ class AssessmentsController < ApplicationController
 
   action_auth_level :update, :instructor
   def update
-    unless params[:assessment][:embedded_quiz_form].nil?
-      @assessment.embedded_quiz_form_data = params[:assessment][:embedded_quiz_form].read
+    uploaded_embedded_quiz_form = params[:assessment][:embedded_quiz_form]
+    uploaded_config_file = params[:assessment][:config_file]
+    unless uploaded_embedded_quiz_form.nil?
+      @assessment.embedded_quiz_form_data = uploaded_embedded_quiz_form.read
       @assessment.save!
+    end
+
+    unless uploaded_config_file.nil?
+      config_source = uploaded_config_file.read
+
+      assessment_config_file_path = @assessment.source_config_file_path
+      File.open(assessment_config_file_path, "w") do |f|
+        f.write(config_source)
+      end
+
+      begin
+        @assessment.load_config_file
+      rescue StandardError, SyntaxError => e
+        @error = e
+        render("reload") && return
+      end
     end
 
     begin
       @assessment.update!(edit_assessment_params)
-      flash[:success] = "Saved!"
+      flash[:success] = "Assessment configuration updated!"
 
       redirect_to(tab_index) && return
     rescue ActiveRecord::RecordInvalid => e
@@ -937,6 +960,7 @@ private
     end
 
     ass.delete(:name)
+    ass.delete(:config_file)
 
     ass.permit!
   end

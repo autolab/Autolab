@@ -33,7 +33,7 @@ class UsersController < ApplicationController
   # based on current user's role
   action_auth_level :show, :student
   def show
-    user = User.find(params[:id])
+    user = User.find_by id: params[:id]
     if user.nil?
       flash[:error] = "User does not exist"
       redirect_to(users_path) && return

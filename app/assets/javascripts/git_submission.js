@@ -3,11 +3,12 @@
 
 const github_endpoints = {
   get_repos: '/github_integration/get_repositories',
-	get_branches: '/github_integration/get_branches',
+  get_branches: '/github_integration/get_branches',
+  get_commits: '/github_integration/get_commits',
 }
 
 function update_repos() {
-	$.getJSON(github_endpoints['get_repos'], function(data, status){
+  $.getJSON(github_endpoints['get_repos'], function(data, status) {
     repos_html = "";
     data.forEach(repo => {
       repos_html += `<div class="item">${repo["repo_name"]}</div>`;
@@ -16,16 +17,40 @@ function update_repos() {
   });
 }
 
-function update_branches(repo) {
+function clear_branches() {
   $("#branch-dropdown input[name='branch']").addClass("noselection");
   $("#branch-dropdown .text").addClass("default");
   $("#branch-dropdown .text").text("Select branch");
-	$.getJSON(github_endpoints['get_branches'], {repository: repo}, function(data, status){
+  $("#branch-dropdown .menu").html("");
+}
+
+function clear_commits() {
+  $("#commit-dropdown input[name='commit']").addClass("noselection");
+  $("#commit-dropdown .text").addClass("default");
+  $("#commit-dropdown .text").text("Select commit");
+  $("#commit-dropdown .menu").html("");
+}
+
+function update_branches(repo) {
+  clear_branches();
+  clear_commits();
+  $.getJSON(github_endpoints['get_branches'], {repository: repo}, function(data, status) {
     branches_html = "";
     data.forEach(branch => {
       branches_html += `<div class="item">${branch["name"]}</div>`;
     });
     $("#branch-dropdown .menu").html(branches_html);
+  });
+}
+
+function update_commits(repo, branch) {
+  clear_commits();
+  $.getJSON(github_endpoints['get_commits'], {repository: repo, branch: branch}, function(data, status) {
+    commits_html = "";
+    data.forEach(commit => {
+      commits_html += `<div data-value="${commit["sha"]}" class="item">${commit["sha"]} (${commit["msg"]})</div>`;
+    });
+    $("#commit-dropdown .menu").html(commits_html);
   });
 }
 
@@ -36,6 +61,12 @@ $("a[data-tab=github]").click(function (e) {
 $("#repo-dropdown").change(function() {
   var repo_name = $("#repo-dropdown input[name='repo']").val();
   update_branches(repo_name);
+});
+
+$("#branch-dropdown").change(function() {
+  var repo_name = $("#repo-dropdown input[name='repo']").val();
+  var branch_name = $("#branch-dropdown input[name='branch']").val();
+  update_commits(repo_name, branch_name);
 });
 
 // https://stackoverflow.com/questions/5524045/jquery-non-ajax-post
@@ -65,8 +96,11 @@ $(document).on("click", "input[type='submit']", function (e) {
     e.preventDefault();
     var repo_name = $("#repo-dropdown input[name='repo']").val();
     var branch_name = $("#branch-dropdown input[name='branch']").val();
+    var commit_sha = $("#commit-dropdown input[name='commit']").val();
     var token = $("meta[name=csrf-token]").attr("content");
-    var params = {repo: repo_name, branch: branch_name, authenticity_token: token};
+    var params = {
+      repo: repo_name, branch: branch_name, commit: commit_sha, authenticity_token: token, github_submission: true
+    };
     var assessment_nav = $(".sub-navigation").find(".item").last();
     var assessment_url = assessment_nav.find("a").attr("href");
     var url = assessment_url + "/handin"
@@ -75,6 +109,7 @@ $(document).on("click", "input[type='submit']", function (e) {
 });
 
 $(document).ready(function () {
+  $('.ui.dropdown input[type="hidden"]').val("");
   $('.ui.dropdown').dropdown({
     fullTextSearch: true,
   });

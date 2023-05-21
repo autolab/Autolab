@@ -97,6 +97,16 @@ function get_condition_html(condition_types) {
         condition_string = `${num_grace_days_used} grace days used`;
         violation_string = violation_list.join(" | ");
         break;
+      case "extension_requests":
+        var extension_count = 0;
+        var violation_list = [];
+        $.each(violations, function( lab, val ) {
+          violation_list.push(`${lab}: ${val}`);
+          extension_count += val;
+        });
+        condition_string = `${extension_count} extension requests made`;
+        violation_string = violation_list.join(" | ");
+        break;
       default:
         console.log(`${condition} is not valid`);
         return;

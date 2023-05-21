@@ -90,14 +90,6 @@ class Assessment < ApplicationRecord
     Time.current <= grading_deadline
   end
 
-  def getLanguages
-    languages.split(/\s*,\s*/)
-  end
-
-  def getTextfields
-    textfields.split(/\s*,\s*/)
-  end
-
   def folder_path
     Rails.root.join("courses", course.name, name)
   end
@@ -319,6 +311,12 @@ class Assessment < ApplicationRecord
     config_module.instance_methods.include?(methodKey)
   end
 
+  def assessment_variable
+    return {} unless config_module.instance_methods.include?(:assessmentVariables)
+
+    config_module.assessmentVariables
+  end
+
   def has_autograder?
     autograder != nil
   end
@@ -369,6 +367,10 @@ class Assessment < ApplicationRecord
     problems.sum :max_score
   end
 
+  def source_config_file_path
+    Rails.root.join("courses", course.name, sanitized_name, "#{sanitized_name}.rb")
+  end
+
 private
 
   def saved_change_to_grade_related_fields?
@@ -384,10 +386,6 @@ private
 
   def path(filename)
     Rails.root.join("courses", course.name, name, filename)
-  end
-
-  def source_config_file_path
-    Rails.root.join("courses", course.name, sanitized_name, "#{sanitized_name}.rb")
   end
 
   def source_config_module_name

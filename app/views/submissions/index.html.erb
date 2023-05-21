@@ -17,13 +17,11 @@
 
 <% content_for :javascripts do %>
   <%= external_javascript_include_tag "lodash" %>
-  <%= javascript_include_tag "sorttable" %>
+  <%= javascript_include_tag "sorttable" %> 
   <%= external_javascript_include_tag "jquery.dataTables" %>
-
-  <%= javascript_include_tag "table_floating_header" %>
   <%= javascript_include_tag "manage_submissions" %>
-
 <% end %>
+
 <h3>Manage Submissions</h3>
 <hr>
 
@@ -72,15 +70,7 @@
 </div>
 <table class="prettyBorder" id="submissions">
   <% headers = ["Submitted By", "Version", "Score", "Submission Date (YYYY-MM-DD)", "File", "IP Address", "Actions", "isLatest"] %>
-  <% if @assessment.has_custom_form then %>
-    <% if @assessment.getLanguages.size > 0 then %>
-        <% headers.push("Language") %>
-    <% end %>
-    <% for i in 0..@assessment.getTextfields.size - 1 do %>
-        <% headers.push(@assessment.getTextfields[i]) %>
-    <% end %>
-  <% end %>
-  <thead>
+  <thead class="float">
     <tr>
       <th></th>
     <% for header in headers %>
@@ -139,16 +129,7 @@
             {:title=>"Destroy this submission forever",
               :class=>"btn small"} %>
       </td>
-      <td><%= submission.latest? %>
-      </td>
-      <% if @assessment.has_custom_form then %>
-        <% if @assessment.getLanguages.size > 0 then %>
-            <td><%= submission.get_settings["Language"] %></td>
-        <% end %>
-        <% for i in 0..@assessment.getTextfields.size-1 do %>
-            <td><%= submission.get_settings[@assessment.getTextfields[i]] %></td>
-        <% end %>
-     <% end %>
+      <td><%= submission.latest? %></td>
     </tr>
   <% end %>
   </tbody>

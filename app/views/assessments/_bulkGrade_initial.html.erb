@@ -8,7 +8,7 @@ Choose a file that contain rows of problem scores or feedback in the following c
   <p>All columns are mandatory. An empty cell will leave the existing value unmodified. Valid values for Grade Type are <code>normal</code>, <code>zeroed</code>, <code>excused</code>, and empty.</p>
 </div>
 
-<%= form_for :upload, :html => { :multipart => true } do |f| %>
+<%= form_for :upload, :html => { :multipart => true }, builder: FormBuilderWithDateTimeInput do |f| %>
   <div class="controls">
     <%= f.file_field :file %>
 
@@ -29,8 +29,8 @@ Choose a file that contain rows of problem scores or feedback in the following c
   </div>
 
   <p>
-    We will show you a preview of the uploaded data before it used to update grades. The update will occur as a 
-    <a href="http://en.wikipedia.org/wiki/Database_transaction#Transactional_databases">transaction</a>,
+    We will show you a preview of the uploaded data before it is used to update grades. The update will occur as a
+    <a href="https://en.wikipedia.org/wiki/Database_transaction#Transactional_databases">transaction</a>,
     allowing you to correct errors and re-submit.
   </p>
   <%= f.submit 'Start', { :class => "btn primary"} %>
