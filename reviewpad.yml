@@ -28,14 +28,13 @@ workflows:
       - if: ($eventType() == "synchronize" || $eventType() == "opened") && $state() == "open"
         then: $summarize()
 
-  # This workflow assigns the team developers-current as a reviewer
-  # This will trigger a review to a random team member (due to the team's code review settings)
+  # This workflow assigns a random current developer as a reviewer
   - name: reviewer-assignment
-    description: Assign the most relevant reviewer to pull requests
+    description: Assign a random reviewer to pull requests
     run:
       # Automatically assign reviewer when the pull request is ready for review;
       - if: $isDraft() == false
-        then: $assignTeamReviewer(["developers-current"])
+        then: $assignReviewer($team("developers-current"), 1, "reviewpad")
 
   # This workflow labels pull requests based on the total number of lines changed.
   # This helps pick pull requests based on their size and to incentivize small pull requests.
