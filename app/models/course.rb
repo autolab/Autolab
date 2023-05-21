@@ -270,6 +270,11 @@ class Course < ApplicationRecord
     asmts.where("due_at < ?", date)
   end
 
+  def asmts_after_date(date)
+    asmts = assessments.ordered
+    asmts.where("due_at > ?", date)
+  end
+
   # Used by manage extensions, create submission, and sudo
   def get_autocomplete_data
     users = {}

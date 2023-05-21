@@ -99,6 +99,10 @@ input[type="text"] {
   color: black;
 }
 
+.ui.form input[type="text"] {
+  vertical-align: baseline;
+}
+
 .ui.form .inline.fields .field .calendar:not(.popup), .ui.form .inline.field .calendar:not(.popup) {
   display: inline-flex;
 }
