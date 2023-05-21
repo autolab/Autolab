@@ -4,16 +4,19 @@
   <%= javascript_include_tag "sorttable" %>
 <% end %>
 
+<h4>Scoreboard</h4>
+
 <% if @grades.values.empty? %>
-  <h3>No submissions yet.</h3>
+  <strong>There are currently no submissions.</strong>
 <% else %>
-  <h3>
+  <strong>
     <% if @scoreboard.banner.blank? %>
       Here are the most recent scores for the class.
     <% else %>
       <%= sanitize @scoreboard.banner %>
     <% end %>
-  </h3>
+  </strong>
+  <hr>
 
   <table class="sortable prettyBorder">
     <thead>
@@ -73,19 +76,24 @@
 <% end %>
 
 
-<%= form_for @cud, url: course_course_user_datum_path(@course, @cud) do |f| %>
-<% if @cud.errors.any? %>
-  <div id="error_explanation">
-    <h2><%= pluralize(@cud.errors.count, "error") %> prohibited the data from being saved:</h2>
-    <ul>
-      <% @cud.errors.full_messages.each do |msg| %>
-        <li><%= msg %></li>
-      <% end %>
-    </ul>
+<%= form_for @cud, url: course_course_user_datum_path(@course, @cud), builder: FormBuilderWithDateTimeInput do |f| %>
+  <% if @cud.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(@cud.errors.count, "error") %> prohibited the data from being saved:</h2>
+      <ul>
+        <% @cud.errors.full_messages.each do |msg| %>
+          <li><%= msg %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+  <hr>
+  <div class="row valign-wrapper">
+    <div class="col s4">
+      <%= f.text_field :nickname %>
+    </div>
+    <div class="col s8">
+      <input id="user_submit" name="commit" type="submit" class="btn" value="Update" onclick="formvalidation(this.parentNode); return false;">
+    </div>
   </div>
-<% end %>
-<hr>
-  <table width=50% class="verticalTable" >
-  <tr><th><h3>Nickname:</h3> </th><td><%= f.text_field :nickname %>  <input id="user_submit" name="commit" type="submit" class="btn" value="Update Nickname" onclick="formvalidation(this.parentNode); return false;"></td></tr>
-  </table>
 <% end %>
