@@ -33,10 +33,13 @@
               <span> 
                 <b><%= annotation.value? ? sprintf("(%+.2f)", annotation.value.round(2)) : "" %></b>
                 <% if annotation.global_comment? %>
-                  <%= link_to "Global Annotation", [:view, @course, @assessment, @submission] %>
+                  <%= link_to "Global Annotation", view_course_assessment_submission_path(@course, @assessment, @submission) %>
+                <% elsif annotation.coordinate.present? %>
+                  <%# note: does not have a line number %>
+                  <%= link_to filename.to_s, view_course_assessment_submission_path(@course, @assessment, @submission, header_position: annotation.position) %>
                 <% else %>
                   <%# line + 1 because line numbers start from 1 %>
-                  <%= link_to filename.to_s + ":" + (annotation.line + 1).to_s, [:view, @course, @assessment, @submission, header_position: annotation.position] %>
+                  <%= link_to filename.to_s + ":" + (annotation.line + 1).to_s, view_course_assessment_submission_path(@course, @assessment, @submission, header_position: annotation.position) %>
                 <% end %>
               </span>
             </li>
