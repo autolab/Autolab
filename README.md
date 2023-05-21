@@ -115,7 +115,7 @@ Please feel free to use Autolab at your school/organization. If you run into any
 
 
 ## Changelog
-### [v2.11.0](https://github.com/autolab/Autolab/releases/tag/v2.11.0) (2023/05/20) LTI Settings UI, extensions metrics, and simultaneous extension creation
+### [v2.11.0](https://github.com/autolab/Autolab/releases/tag/v2.11.0) (2023/05/21) LTI Settings UI, extensions metrics, and simultaneous extension creation
 - Introduced UI to manage LTI integration settings
 - Added extension metrics for instructors to monitor students by number of extensions granted
 - Instructors can now create extensions for multiple students at once
