@@ -515,9 +515,15 @@ class WatchlistInstance < ApplicationRecord
 
   def self.add_new_instance_for_cud_extension_requests(course, category_blocklist,
                                                        condition_id, cud, extension_count)
-    asmts = Assessment.where.not(category_name: category_blocklist).pluck(:id)
+    asmts = Assessment.where.not(category_name: category_blocklist)
     violation_info = {}
     num_of_extensions = 0
+
+    asmts_after_date = course.asmts_after_date(DateTime.current)
+    asmts = asmts.reject do |asmt|
+      asmts_after_date.include?(asmt)
+    end
+    asmts = asmts.pluck(:id)
 
     asmts.each do |asmt|
       extensions = Extension.where(course_user_datum_id: cud.id, assessment_id: asmt)
@@ -546,7 +552,11 @@ class WatchlistInstance < ApplicationRecord
                                                condition_id, cud, asmt_arrs,
                                                consecutive_counts, percentage_drop)
     violation_info = {}
+    asmts_after_date = course.asmts_after_date(DateTime.current)
     asmt_arrs.each do |asmts|
+      asmts = asmts.reject do |asmt|
+        asmts_after_date.include?(asmt)
+      end
       auds = asmts.map do |asmt|
         AssessmentUserDatum.find_by(course_user_datum_id: cud.id, assessment_id: asmt.id)
       end
@@ -611,6 +621,10 @@ class WatchlistInstance < ApplicationRecord
                                                    cud,
                                                    no_submissions_threshold)
     asmts_ids = Assessment.where.not(category_name: category_blocklist).pluck(:id)
+    asmts_after_date = course.asmts_after_date(DateTime.current)
+    asmts_ids = asmts_ids.reject do |asmt|
+      asmts_after_date.include?(asmt)
+    end
     auds = AssessmentUserDatum.where(assessment_id: asmts_ids, course_user_datum_id: cud.id)
     no_submissions_asmt_names = []
     auds.each do |aud|
@@ -634,6 +648,10 @@ class WatchlistInstance < ApplicationRecord
                                                grade_threshold,
                                                count_threshold)
     asmts_ids = Assessment.where.not(category_name: category_blocklist)
+    asmts_after_date = course.asmts_after_date(DateTime.current)
+    asmts_ids = asmts_ids.reject do |asmt|
+      asmts_after_date.include?(asmt)
+    end
     auds = AssessmentUserDatum.where(assessment_id: asmts_ids, course_user_datum_id: cud.id)
     violation_info = {}
     auds.each do |aud|
