@@ -61,24 +61,6 @@ workflows:
       - if: $isDraft() == false && $approvalsCount() < 1
         then: $addLabel("waiting-for-review")
 
-  # This workflow labels pull requests based on the pull request change type.
-  # This helps pick pull requests based on their change type.
-  - name: change-type-labelling
-    description: Label pull requests based on the type of changes
-    run:
-      # Label pull requests with `docs` if they only modify Markdown or txt files.
-      - if: $hasFileExtensions([".md", ".txt"])
-        then: $addLabel("docs")
-        else: $removeLabel("docs")
-      # Label pull requests with `infra` if they modify Terraform files.
-      - if: $hasFileExtensions([".tf"])
-        then: $addLabel("infra")
-        else: $removeLabel("infra")
-      # Label pull requests with `dependencies` if they only modify `package.json` and `package.lock` files.
-      - if: $hasFileExtensions(["package.json", "package-lock.json"])
-        then: $addLabel("dependencies")
-        else: $removeLabel("dependencies")
-
   # This workflow validates that pull requests do not contain changes to the license.
   # This helps avoid unwanted license modifications.
   - name: license-validation
