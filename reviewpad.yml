@@ -46,21 +46,6 @@ workflows:
       - if: $pullRequestCountBy($author()) == 1
         then: $commentOnce($sprintf("Thank you @%s for this first contribution!", [$author()]))
 
-  # This workflow validates best practices for pull request management.
-  # This helps developers follow best practices.
-  - name: best-practices
-    description: Validate best practices for pull request management
-    run:
-      # Warn pull requests that do not have an associated GitHub issue.
-      - if: $hasLinkedIssues() == false
-        then: $warn("Please link an issue to the pull request")
-      # Warn pull requests if their description is empty.
-      - if: $description() == ""
-        then: $warn("Please provide a description for the pull request")
-      # Warn pull request do not have a clean linear history.
-      - if: $hasLinearHistory() == false
-        then: $warn("Please rebase your pull request on the latest changes")
-
   # This workflow labels pull requests based on the total number of lines changed.
   # This helps pick pull requests based on their size and to incentivize small pull requests.
   - name: size-labeling
