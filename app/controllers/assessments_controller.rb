@@ -194,12 +194,17 @@ class AssessmentsController < ApplicationController
         entry_file = File.join(course_root, relative_pathname)
 
         # Ensure file will lie within course, otherwise skip
-        next unless Archive.in_dir?(Pathname(entry_file), Pathname(assessment_path))
+        # Allow equality for the main directory to be created
+        next unless Archive.in_dir?(Pathname(entry_file), Pathname(assessment_path), strict: false)
 
         if entry.directory?
           FileUtils.mkdir_p(entry_file,
                             mode: entry.header.mode, verbose: false)
+          # In case the directory was implicitly created by a file
+          FileUtils.chmod entry.header.mode, entry_file,
+                          verbose: false
         elsif entry.file?
+          # Default to 0755 so that directory is writeable, mode will be updated later
           FileUtils.mkdir_p(File.dirname(entry_file),
                             mode: 0o755, verbose: false)
           File.open(entry_file, "wb") do |f|
