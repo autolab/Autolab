@@ -24,8 +24,8 @@ workflows:
   - name: summarize
     description: Summarize the pull request
     run:
-      # Summarize the pull request on pull request synchronization.
-      - if: ($eventType() == "synchronize" || $eventType() == "opened") && $state() == "open"
+      # Summarize the pull request on pull request creation;
+      - if: $eventType() == "opened"
         then: $summarize()
 
   # This workflow assigns a random current developer as a reviewer
