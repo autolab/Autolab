@@ -59,4 +59,5 @@ workflows:
       # Label pull requests with `waiting-for-review` if there are no approvals;
       - if: $isDraft() == false && $approvalsCount() < 1
         then: $addLabel("waiting-for-review")
+        else: $removeLabel("waiting-for-review")
 
