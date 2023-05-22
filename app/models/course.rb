@@ -270,6 +270,13 @@ class Course < ApplicationRecord
     asmts.where("due_at < ?", date)
   end
 
+  def exclude_curr_asmts(asmts)
+    date = DateTime.current
+    asmts.reject do |asmt|
+      asmt.due_at > date
+    end
+  end
+
   # Used by manage extensions, create submission, and sudo
   def get_autocomplete_data
     users = {}

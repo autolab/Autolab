@@ -519,10 +519,7 @@ class WatchlistInstance < ApplicationRecord
     violation_info = {}
     num_of_extensions = 0
 
-    date = DateTime.current
-    asmts = asmts.reject do |asmt|
-      asmt.due_at > date
-    end
+    asmts = course.exclude_curr_asmts(asmts)
     asmts = asmts.pluck(:id)
 
     asmts.each do |asmt|
@@ -552,11 +549,8 @@ class WatchlistInstance < ApplicationRecord
                                                condition_id, cud, asmt_arrs,
                                                consecutive_counts, percentage_drop)
     violation_info = {}
-    date = DateTime.current
     asmt_arrs.each do |asmts|
-      asmts = asmts.reject do |asmt|
-        asmt.due_at > date
-      end
+      asmts = course.exclude_curr_asmts(asmts)
       auds = asmts.map do |asmt|
         AssessmentUserDatum.find_by(course_user_datum_id: cud.id, assessment_id: asmt.id)
       end
@@ -621,10 +615,7 @@ class WatchlistInstance < ApplicationRecord
                                                    cud,
                                                    no_submissions_threshold)
     asmts_ids = Assessment.where.not(category_name: category_blocklist)
-    date = DateTime.current
-    asmts_ids = asmts_ids.reject do |asmt|
-      asmt.due_at > date
-    end
+    asmts_ids = course.exclude_curr_asmts(asmts_ids)
     asmts_ids = asmts_ids.pluck(:id)
     auds = AssessmentUserDatum.where(assessment_id: asmts_ids, course_user_datum_id: cud.id)
     no_submissions_asmt_names = []
@@ -649,10 +640,7 @@ class WatchlistInstance < ApplicationRecord
                                                grade_threshold,
                                                count_threshold)
     asmts_ids = Assessment.where.not(category_name: category_blocklist)
-    date = DateTime.current
-    asmts_ids = asmts_ids.reject do |asmt|
-      asmt.due_at > date
-    end
+    asmts_ids = course.exclude_curr_asmts(asmts_ids)
     auds = AssessmentUserDatum.where(assessment_id: asmts_ids, course_user_datum_id: cud.id)
     violation_info = {}
     auds.each do |aud|
