@@ -36,14 +36,20 @@ module GradebookHelper
         columns << { id: asmt.name, name: asmt.display_name, field: asmt.name,
                      sortable: true, cssClass: "computed assessment_final_score",
                      headerCssClass: "assessment_final_score",
-                     before_grading_deadline: matrix.before_grading_deadline?(asmt.id) }
+                     before_grading_deadline: matrix.before_grading_deadline?(asmt.id), width: 180 }
+
+        columns << { id: "#{asmt.name}_version", name: "#{asmt.display_name}_version",
+                     field: "#{asmt.name}_version",
+                     sortable: true, cssClass: "computed assessment_final_score",
+                     headerCssClass: "assessment_final_score",
+                     before_grading_deadline: matrix.before_grading_deadline?(asmt.id), width: 180 }
       end
 
       # category average column
-      columns << { id: cat, name: cat + " Average",
+      columns << { id: cat, name: "#{cat} Average",
                    field: "#{cat}_category_average",
                    sortable: true, cssClass: "computed category_average",
-                   headerCssClass: "category_average", width: 100 }
+                   headerCssClass: "category_average", width: 180 }
     end
 
     # course average column
@@ -109,12 +115,25 @@ module GradebookHelper
         row[key] = round matrix.category_average(cat, cud.id)
       end
 
+      Rails.logger.debug "starting loops"
+      # Rails.logger.debug "Make Sure Postion 1"
+      course.assessments.ordered.each do |a|
+        next unless matrix.has_assessment? a.id
+
+        next unless a.latest_submission_by cud
+
+        row["#{a.name}_version"] = Submission.where(assessment_id: a.id,
+                                                    course_user_datum_id: cud.id,
+                                                    ignored: false).maximum(:version)
+      end
+
       row["course_average"] = round matrix.course_average(cud.id)
       row["grace_days"] = grace_days
       row["late_days"] = late_days
 
       rows << row
     end
+    Rails.logger.debug "Finishing Outer loops"
 
     rows
   end
@@ -127,8 +146,10 @@ module GradebookHelper
     header = %w(Email first_name last_name Lecture Section School Major Year grace_days_used penalty_late_days)
     course.assessment_categories.each do |cat|
       next unless matrix.has_category? cat
+
       course.assessments_with_category(cat).each do |asmt|
         next unless matrix.has_assessment? asmt.id
+
         header << asmt.name
       end
       header << "#{cat} Average"

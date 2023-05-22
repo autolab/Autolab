@@ -386,6 +386,8 @@ class Submission < ApplicationRecord
   # override as_json to include the total with a parameter
   def as_json(options = {})
     json = super(options)
+    Rails.logger.debug "log options"
+    Rails.logger.debug options[:seen_by]
     json["total"] = final_score options[:seen_by]
     json["late_penalty"] = late_penalty options[:seen_by]
     json["grace_days_used"] = grace_days_used
