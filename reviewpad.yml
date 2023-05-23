@@ -16,6 +16,10 @@ labels:
     description: Pull request is large
     color: "#c90076"
 
+groups:
+  - name: all-reviewers
+    spec: $append($reviewers(), $requestedReviewers())
+
 # Define the list of workflows to be run by Reviewpad.
 # A workflow is a list of actions that will be executed based on the defined rules.
 # For more details see https://docs.reviewpad.com/guides/syntax#workflow.
@@ -24,8 +28,8 @@ workflows:
   - name: summarize
     description: Summarize the pull request
     run:
-      # Summarize the pull request on pull request synchronization.
-      - if: ($eventType() == "synchronize" || $eventType() == "opened") && $state() == "open"
+      # Summarize the pull request on pull request creation;
+      - if: $eventType() == "opened"
         then: $summarize()
 
   # This workflow assigns a random current developer as a reviewer
@@ -33,7 +37,7 @@ workflows:
     description: Assign a random reviewer to pull requests
     run:
       # Automatically assign reviewer when the pull request is ready for review;
-      - if: $isDraft() == false
+      - if: $isDraft() == false && $group("all-reviewers") == []
         then: $assignReviewer($team("developers-current"), 1, "reviewpad")
 
   # This workflow labels pull requests based on the total number of lines changed.
@@ -59,4 +63,5 @@ workflows:
       # Label pull requests with `waiting-for-review` if there are no approvals;
       - if: $isDraft() == false && $approvalsCount() < 1
         then: $addLabel("waiting-for-review")
+        else: $removeLabel("waiting-for-review")
 
