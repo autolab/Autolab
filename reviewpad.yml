@@ -24,14 +24,6 @@ groups:
 # A workflow is a list of actions that will be executed based on the defined rules.
 # For more details see https://docs.reviewpad.com/guides/syntax#workflow.
 workflows:
-  # This workflow calls Reviewpad AI agent to summarize the pull request.
-  - name: summarize
-    description: Summarize the pull request
-    run:
-      # Summarize the pull request on pull request creation;
-      - if: $eventType() == "opened"
-        then: $summarize()
-
   # This workflow assigns a random current developer as a reviewer
   - name: reviewer-assignment
     description: Assign a random reviewer to pull requests
