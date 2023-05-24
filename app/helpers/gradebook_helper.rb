@@ -36,13 +36,13 @@ module GradebookHelper
         columns << { id: asmt.name, name: asmt.display_name, field: asmt.name,
                      sortable: true, cssClass: "computed assessment_final_score",
                      headerCssClass: "assessment_final_score",
-                     before_grading_deadline: matrix.before_grading_deadline?(asmt.id), width: 180 }
+                     before_grading_deadline: matrix.before_grading_deadline?(asmt.id), width: 150 }
 
-        columns << { id: "#{asmt.name}_version", name: "#{asmt.display_name}_version",
+        columns << { id: "#{asmt.name}_version", name: "ver",
                      field: "#{asmt.name}_version",
                      sortable: true, cssClass: "computed assessment_final_score",
                      headerCssClass: "assessment_final_score",
-                     before_grading_deadline: matrix.before_grading_deadline?(asmt.id), width: 180 }
+                     before_grading_deadline: matrix.before_grading_deadline?(asmt.id), width: 100 }
       end
 
       # category average column
@@ -96,7 +96,10 @@ module GradebookHelper
         next unless matrix.has_assessment? a.id
 
         cell = matrix.cell(a.id, cud.id)
-        row[a.name] = round cell["final_score"]
+        row["#{a.name}_version"] = Submission.where(assessment_id: a.id,
+                                                    course_user_datum_id: cud.id,
+                                                    ignored: false).maximum(:version)
+        row[a.name] = (round cell["final_score"])
         row["#{a.name}_submission_status"] = cell["submission_status"]
         row["#{a.name}_grade_type"] = cell["grade_type"]
         row["#{a.name}_end_at"] = cell["end_at"]
