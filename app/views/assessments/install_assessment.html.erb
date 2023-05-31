@@ -4,7 +4,7 @@ Choose one of the following methods to install an assessment
 <div class="section">
   <h4>1. Create from scratch</h4>
   <p>Create a new assessment from scratch using our
-  	<%= link_to "Assessment Builder", new_course_assessment_path %>.</p>
+    <%= link_to "Assessment Builder", new_course_assessment_path %>.</p>
 </div>
 
 <div class="section">
@@ -46,5 +46,5 @@ Choose one of the following methods to install an assessment
   <%= form_with url: { action: :importAsmtFromTar }, builder: FormBuilderWithDateTimeInput do |f| %>
     <%= f.file_field :tarFile, name: "tarFile", button_text: "Upload Assessment Tarball" %>
     <%= f.submit "Import" %>
-	<% end %>
+  <% end %>
 </div>
