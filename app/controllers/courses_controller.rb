@@ -455,30 +455,6 @@ class CoursesController < ApplicationController
     send_data output, filename: "roster.csv", type: "text/csv", disposition: "inline"
   end
 
-  # install_assessment - Installs a new assessment, either by
-  # creating it from scratch, or importing it from an existing
-  # assessment directory.
-  action_auth_level :install_assessment, :instructor
-  def install_assessment
-    @assignDir = Rails.root.join("courses", @course.name)
-    @availableAssessments = []
-    begin
-      Dir.foreach(@assignDir) do |filename|
-        if File.exist?(File.join(@assignDir, filename, "#{filename}.rb"))
-          # names must be only lowercase letters and digits
-          next if filename =~ /[^a-z0-9]/
-
-          # Only list assessments that aren't installed yet
-          assessment = @course.assessments.where(name: filename).first
-          @availableAssessments << filename unless assessment
-        end
-      end
-      @availableAssessments = @availableAssessments.sort
-    rescue StandardError => e
-      render(text: "<h3>#{e}</h3>", layout: true) && return
-    end
-  end
-
   # email - The email action allows instructors to email the entire course, or
   # a single section at a time.  Sections are passed via params[:section].
   action_auth_level :email, :instructor
