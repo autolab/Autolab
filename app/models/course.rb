@@ -110,7 +110,7 @@ class Course < ApplicationRecord
 
   # generate course folder
   def init_course_folder
-    dir_path = @course.directory_path
+    dir_path = directory_path
     FileUtils.mkdir_p dir_path
 
     FileUtils.touch File.join(dir_path, "autolab.log")
