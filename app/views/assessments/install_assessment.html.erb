@@ -44,7 +44,7 @@ Choose one of the following methods to install an assessment
 <div class="section">
   <h4>3. Import from tarball</h4>
   <%= form_with url: { action: :importAsmtFromTar }, builder: FormBuilderWithDateTimeInput do |f| %>
-    <%= f.file_field :tarFile, name: "tarFile", button_text: "Upload Assessment Tarball" %>
-    <%= f.submit "Import" %>
+    <%= f.file_field :tarFile, name: "tarFile", button_text: "Choose Tarball" %>
+    <%= f.submit "Import Tarball" %>
   <% end %>
 </div>
