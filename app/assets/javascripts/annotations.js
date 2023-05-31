@@ -126,7 +126,7 @@ function purgeCurrentPageCache() {
   localCache[currentHeaderPos] = {
     codeBox: `<div id="code-box">${$('#code-box').html()}</div>`,
     pdf: false,
-    symbolTree: `<div id="symbol-tree-box">${$('#symbol-tree-box').html()}</div>`,
+    symbolTree: `<div id="symbol-tree-container">${$('#symbol-tree-container').html()}</div>`,
     versionLinks: `<span id="version-links">${$('#version-links').html()}</span>`,
     versionDropdown: `<span id="version-dropdown">${$('#version-dropdown').html()}</span>`,
     url: window.location.href,
