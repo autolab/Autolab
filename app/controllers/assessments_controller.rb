@@ -677,6 +677,9 @@ class AssessmentsController < ApplicationController
     end
   end
 
+  # TODO: Take into account any modifications by :parseAutoresult and :modifySubmissionScores
+  # We should probably read the final scores directly
+  # See: assessment_autograde_core.rb's saveAutograde
   def parseScore(feedback)
     return if feedback.nil?
 
