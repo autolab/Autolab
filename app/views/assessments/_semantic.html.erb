@@ -82,7 +82,7 @@
   <h2>Score</h2>
   <table class="ui unstackable table">
     <tbody>
-      <%# If @scoreHash is not nil, then _scores_order will necessarily have been defined %>
+      <%# If @scoreHash is not nil, then _scores_order would have been defined by parseScore %>
       <% @jsonFeedback["_scores_order"].each do |key| %>
         <% if key[0] != '_' %>
           <tr>
