@@ -25,10 +25,10 @@ class SchedulersController < ApplicationController
     @scheduler = @course.scheduler.new(scheduler_params)
     if @scheduler.save
       flash[:success] = "Scheduler created!"
-      redirect_to(course_schedulers_path(@course)) and return
+      redirect_to(course_schedulers_path(@course))
     else
-      flash[:error] = "Create failed. Please check all fields."
-      redirect_to(action: "new") and return
+      flash[:error] = "Scheduler create failed. Please check all fields."
+      redirect_to(new_course_scheduler_path(@course))
     end
   end
 
@@ -62,11 +62,11 @@ class SchedulersController < ApplicationController
   def update
     @scheduler = Scheduler.find(params[:id])
     if @scheduler.update(scheduler_params)
-      flash[:success] = "Edit success!"
-      redirect_to(course_schedulers_path(@course)) and return
+      flash[:success] = "Scheduler updated."
+      redirect_to(course_schedulers_path(@course))
     else
-      flash[:error] = "Scheduler edit failed! Please check your fields."
-      redirect_to(action: "edit") and return
+      flash[:error] = "Scheduler update failed! Please check your fields."
+      redirect_to(edit_course_scheduler_path(@course, @scheduler))
     end
   end
 
@@ -75,11 +75,11 @@ class SchedulersController < ApplicationController
     @scheduler = Scheduler.find(params[:id])
     if @scheduler.destroy
       flash[:success] = "Scheduler destroyed."
+      redirect_to(course_schedulers_path(@course))
     else
       flash[:error] = "Scheduler destroy failed! Please check your fields."
-      redirect_to(action: "edit") and return
+      redirect_to(edit_course_scheduler_path(@course, @scheduler))
     end
-    redirect_to(action: "index") and return
   end
 
 private
