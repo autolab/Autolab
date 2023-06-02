@@ -683,7 +683,7 @@ class AssessmentsController < ApplicationController
     lines = feedback.rstrip.lines
     feedback = lines[lines.length - 1]
 
-    return unless valid_json?(feedback)
+    return unless valid_json_hash?(feedback)
 
     score_hash = JSON.parse(feedback)
     score_hash = score_hash["scores"]
@@ -716,7 +716,7 @@ class AssessmentsController < ApplicationController
     lines = feedback.rstrip.lines
     feedback = lines[lines.length - 2]
 
-    return unless valid_json?(feedback)
+    return unless valid_json_hash?(feedback)
 
     jsonFeedbackHash = JSON.parse(feedback)
     if jsonFeedbackHash.key?("_presentation") == false
@@ -726,8 +726,9 @@ class AssessmentsController < ApplicationController
     end
   end
 
-  def valid_json?(json)
-    JSON.parse(json)
+  def valid_json_hash?(json)
+    parsed = JSON.parse(json)
+    parsed.is_a? Hash
   rescue JSON::ParserError, TypeError
     false
   end
