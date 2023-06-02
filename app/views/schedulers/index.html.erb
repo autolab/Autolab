@@ -23,13 +23,13 @@
         <td><span class="moment-date-time" data-format="MMM D YYYY h:mm:ssa Z"><%= scheduler.next %></span></td>
         <td><%= scheduler.interval %>s</td>
         <td>
-          <%= link_to "<i class='material-icons'>play_circle_filled</i>".html_safe, course_scheduler_run_path(@course, scheduler),
-                        { method: "post", title: "Run this scheduler",
-                          data: { confirm: "Are you sure you want to run this scheduler?" }, class: "btn" } %>
           <%= link_to "<i class='material-icons'>info</i>".html_safe, course_scheduler_path(@course, scheduler),
                       { title: "View scheduler details", class: "btn" } %>
           <%= link_to "<i class='material-icons'>edit</i>".html_safe, edit_course_scheduler_path(@course, scheduler),
                       { title: "Edit this scheduler", class: "btn" } %>
+          <%= link_to "<i class='material-icons'>play_circle_filled</i>".html_safe, course_scheduler_run_path(@course, scheduler),
+                      { method: "post", title: "Run this scheduler",
+                        data: { confirm: "Are you sure you want to run this scheduler?" }, class: "btn" } %>
           <%= link_to "<i class='material-icons'>delete</i>".html_safe, course_scheduler_path(@course, scheduler),
                       { method: "delete", title: "Delete this scheduler",
                         data: { confirm: "Are you sure you want to delete this scheduler?" }, class: "btn" } %>
