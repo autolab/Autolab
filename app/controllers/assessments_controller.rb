@@ -692,7 +692,11 @@ class AssessmentsController < ApplicationController
     end
     @total = 0
     score_hash.keys.each do |k|
-      @total += score_hash[k]
+      @total += score_hash[k].to_f
+    rescue TypeError
+      flash.now[:error] ||= ""
+      flash.now[:error] += "The score for #{k} could not be parsed.<br>"
+      flash.now[:html_safe] = true
     end
     score_hash["_total"] = @total
     score_hash
