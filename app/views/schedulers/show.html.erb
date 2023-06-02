@@ -1,18 +1,17 @@
 <p>
   <b>Action:</b>
-  <%=h @scheduler.action %>
+  <%= @scheduler.action %>
 </p>
 
 <p>
   <b>Next:</b>
-  <%=h @scheduler.next %>
+  <%= @scheduler.next %>
 </p>
 
 <p>
   <b>Interval:</b>
-  <%=h @scheduler.interval %>
+  <%= @scheduler.interval %>
 </p>
 
-
-<%= link_to 'Edit', {:action=>"edit",:id=>@scheduler.id} %> |
-<%= link_to 'Back', {:action=>"index"} %>
+<%= link_to 'Back', { action: "index" }, { class: "btn" } %>
+<%= link_to 'Edit', { action: "edit", id: @scheduler.id }, { class: "btn" } %>
