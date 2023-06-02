@@ -680,8 +680,8 @@ class AssessmentsController < ApplicationController
   def parseScore(feedback)
     return if feedback.nil?
 
-    lines = feedback.lines
-    feedback = lines[lines.length - 1].chomp
+    lines = feedback.rstrip.lines
+    feedback = lines[lines.length - 1]
 
     return unless valid_json?(feedback)
 
@@ -713,8 +713,8 @@ class AssessmentsController < ApplicationController
   def parseFeedback(feedback)
     return if feedback.nil?
 
-    lines = feedback.lines
-    feedback = lines[lines.length - 2]&.chomp
+    lines = feedback.rstrip.lines
+    feedback = lines[lines.length - 2]
 
     return unless valid_json?(feedback)
 
