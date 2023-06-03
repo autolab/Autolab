@@ -6,11 +6,11 @@ Scoreboards are created by the output of [Autograders](/lab/#writing-autograders
 
 In general, scoreboards are configured using a JSON string.
 
-### Default Scoreboard
+## Default Scoreboard
 
 The default scoreboard displays the total problem scores, followed by each individual problem score, sorted in descending order by the total score.
 
-### Custom Scoreboards
+## Custom Scoreboards
 
 Autograded assignments have the option of creating custom scoreboards. You can specify your own custom scoreboard using a JSON column specification.
 
@@ -34,7 +34,7 @@ A custom scoreboard sorts the first three columns, from left to right, in descen
 }
 ```
 
-### Scoreboard Entries
+## Scoreboard Entries
 
 The values for each row in a custom scoreboard come directly from a `scoreboard` array object in the autoresult string produced by the Tango, the autograder.
 
