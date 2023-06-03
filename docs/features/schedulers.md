@@ -1,9 +1,9 @@
 # Schedulers
 
-Schedulers allow instructors to define scripts that are run periodically. They can be managed via `Manage Course > Manage schedulers`.
+Schedulers are instructor scripts that run periodically. They can be managed via `Manage Course > Manage schedulers`.
 
 !!! info "Interval Guarantees"
-    Schedulers only run during a page load, meaning that the interval parameter represents the minimum time between executions.
+    Schedulers only run when a page load occurs. Thus, the interval parameter only guarantees a minimum time between runs.
 
 ## Scheduler structure
 Schedulers must define a `update` method within a class or module. Changes made to the scheduler file take effect immediately.
@@ -26,7 +26,7 @@ end
 ```
 
 ## Visual Run
-You can run a scheduler manually by clicking the `Run` button. This is useful to check for any syntax errors in the code. 
+You can run a scheduler manually by clicking the `Run` button. This is useful for ensuring the code's correctness. 
 
 To assist in debugging, you can return a string from the `update` method, which will be displayed as output in the browser.
 
