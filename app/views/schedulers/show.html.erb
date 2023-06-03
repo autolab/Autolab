@@ -23,5 +23,5 @@
   <%= @scheduler.disabled %>
 </p>
 
-<%= link_to 'Back', { action: "index" }, { class: "btn" } %>
-<%= link_to 'Edit', { action: "edit", id: @scheduler.id }, { class: "btn" } %>
+<%= link_to 'Back', course_schedulers_path(@course), { class: "btn" } %>
+<%= link_to 'Edit', edit_course_scheduler_path(@course, @scheduler), { class: "btn" } %>
