@@ -49,10 +49,17 @@ class SchedulersController < ApplicationController
     mod_name = Rails.root.join(action.action)
     begin
       load mod_name
-      Updater.update(action.course)
+      output = Updater.update(action.course)
+      if output
+        @log << "----- Script Output -----\n"
+        @log << output
+        @log << "\n----- End Script Output -----"
+      end
     rescue ScriptError, StandardError => e
-      @log << ("Error in '#{@course.name}' updater: #{e.message}\n")
-      @log << (e.backtrace.join("\n\t"))
+      @log << "----- Error Output -----\n"
+      @log << "Error in '#{@course.name}' updater: #{e.message}\n"
+      @log << e.backtrace.join("\n\t")
+      @log << "\n---- End Error Output -----"
     end
     begin
       Object.send(:remove_const, :Updater)
