@@ -54,7 +54,7 @@ class SchedulersController < ApplicationController
         mod_name = Rails.root.join(action.action)
         fork_log = ""
         begin
-          load mod_name
+          require mod_name
           output = Updater.update(action.course)
           if output
             fork_log << "----- Script Output -----\n"
