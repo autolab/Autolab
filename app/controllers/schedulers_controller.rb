@@ -67,7 +67,7 @@ class SchedulersController < ApplicationController
           fork_log << e.backtrace.join("\n\t")
           fork_log << "\n---- End Script Error Output -----"
         end
-        write.puts fork_log
+        write.print fork_log
       end
 
       write.close
@@ -76,7 +76,8 @@ class SchedulersController < ApplicationController
       @log << result
     rescue StandardError => e
       @log << "----- Error Output -----\n"
-      @log << "Cannot fork '#{@course.name}' updater: #{e.message}"
+      @log << "Error in '#{@course.name}' updater: #{e.message}\n"
+      @log << e.backtrace.join("\n\t")
       @log << "\n---- End Error Output -----"
     end
     @log << "\nCompleted running action."
