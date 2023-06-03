@@ -45,26 +45,39 @@ class SchedulersController < ApplicationController
   action_auth_level :visual_run, :instructor
   def visual_run
     action = Scheduler.find(params[:scheduler_id])
+    # https://stackoverflow.com/a/1076445
+    read, write = IO.pipe
     @log = "Executing #{Rails.root.join(action.action)}\n"
-    mod_name = Rails.root.join(action.action)
     begin
-      load mod_name
-      output = Updater.update(action.course)
-      if output
-        @log << "----- Script Output -----\n"
-        @log << output
-        @log << "\n----- End Script Output -----"
+      pid = fork do
+        read.close
+        mod_name = Rails.root.join(action.action)
+        fork_log = ""
+        begin
+          load mod_name
+          output = Updater.update(action.course)
+          if output
+            fork_log << "----- Script Output -----\n"
+            fork_log << output
+            fork_log << "\n----- End Script Output -----"
+          end
+        rescue ScriptError, StandardError => e
+          fork_log << "----- Script Error Output -----\n"
+          fork_log << "Error in '#{@course.name}' updater: #{e.message}\n"
+          fork_log << e.backtrace.join("\n\t")
+          fork_log << "\n---- End Script Error Output -----"
+        end
+        write.puts fork_log
       end
-    rescue ScriptError, StandardError => e
+
+      write.close
+      result = read.read
+      Process.wait2(pid)
+      @log << result
+    rescue StandardError => e
       @log << "----- Error Output -----\n"
-      @log << "Error in '#{@course.name}' updater: #{e.message}\n"
-      @log << e.backtrace.join("\n\t")
+      @log << "Cannot fork '#{@course.name}' updater: #{e.message}"
       @log << "\n---- End Error Output -----"
-    end
-    begin
-      Object.send(:remove_const, :Updater)
-    rescue NameError
-      # Ignored
     end
     @log << "\nCompleted running action."
     render partial: "visual_test"
