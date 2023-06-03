@@ -1,16 +1,26 @@
 <p>
-  <b>Action:</b>
+  <strong>Action:</strong>
   <%= @scheduler.action %>
 </p>
 
 <p>
-  <b>Next:</b>
+  <strong>Next:</strong>
   <%= @scheduler.next %>
 </p>
 
 <p>
-  <b>Interval:</b>
+  <strong>Until:</strong>
+  <%= @scheduler.until %>
+</p>
+
+<p>
+  <strong>Interval:</strong>
   <%= @scheduler.interval %>
+</p>
+
+<p>
+  <strong>Disabled:</strong>
+  <%= @scheduler.disabled %>
 </p>
 
 <%= link_to 'Back', { action: "index" }, { class: "btn" } %>

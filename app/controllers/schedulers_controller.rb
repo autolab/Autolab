@@ -111,6 +111,6 @@ class SchedulersController < ApplicationController
 private
 
   def scheduler_params
-    params.require(:scheduler).permit(:action, :next, :interval)
+    params.require(:scheduler).permit(:action, :next, :until, :interval, :disabled)
   end
 end
