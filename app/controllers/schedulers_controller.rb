@@ -51,7 +51,7 @@ class SchedulersController < ApplicationController
     begin
       pid = fork do
         read.close
-        mod_name = Rails.root.join(action.action)
+        mod_name = Rails.root.join(action.action).to_path
         fork_log = ""
         begin
           require mod_name
