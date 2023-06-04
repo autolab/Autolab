@@ -87,9 +87,5 @@
       <%= link_to '(Destroy)', [:destroyConfirm, @course, @assessment, submission] %>
       <%= link_to '(Edit)', [:edit, @course, @assessment, submission] %>
     </td>
-
-    <% if @cud.instructor? %>
-      <td style="color: red;"><%= submission.errors.full_messages.join("<br />") %></td>
-    <% end %>
   <% end %>
 </tr>
