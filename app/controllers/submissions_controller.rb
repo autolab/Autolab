@@ -16,7 +16,8 @@ class SubmissionsController < ApplicationController
   # this page loads.  links/functionality may be/are off
   action_auth_level :index, :instructor
   def index
-    @submissions = @assessment.submissions.order("created_at DESC")
+    @submissions = @assessment.submissions.includes({ course_user_datum: :user })
+                              .order("created_at DESC")
     @autograded = @assessment.has_autograder?
   end
 
