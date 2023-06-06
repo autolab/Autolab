@@ -300,7 +300,7 @@ class CoursesController < ApplicationController
     user_emails = user_emails.reject(&:nil?)
 
     # check if email matches regex
-    email_regex = /\A[\w+\-.]+@[a-z\d\-]+(\.[a-z\d\-]+)*\.[a-z]+\z/i
+    email_regex = /\A[\w+\-.]+@[a-z\d-]+(\.[a-z\d-]+)*\.[a-z]+\z/i
 
     # raise error if any email is invalid and return which emails are invalid
     invalid_emails = user_emails.reject { |user| user[:email] =~ email_regex }
@@ -453,30 +453,6 @@ class CoursesController < ApplicationController
                  @course.name, cud.lecture, cud.section].to_csv
     end
     send_data output, filename: "roster.csv", type: "text/csv", disposition: "inline"
-  end
-
-  # install_assessment - Installs a new assessment, either by
-  # creating it from scratch, or importing it from an existing
-  # assessment directory.
-  action_auth_level :install_assessment, :instructor
-  def install_assessment
-    @assignDir = Rails.root.join("courses", @course.name)
-    @availableAssessments = []
-    begin
-      Dir.foreach(@assignDir) do |filename|
-        if File.exist?(File.join(@assignDir, filename, "#{filename}.rb"))
-          # names must be only lowercase letters and digits
-          next if filename =~ /[^a-z0-9]/
-
-          # Only list assessments that aren't installed yet
-          assessment = @course.assessments.where(name: filename).first
-          @availableAssessments << filename unless assessment
-        end
-      end
-      @availableAssessments = @availableAssessments.sort
-    rescue StandardError => e
-      render(text: "<h3>#{e}</h3>", layout: true) && return
-    end
   end
 
   # email - The email action allows instructors to email the entire course, or

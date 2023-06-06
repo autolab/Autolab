@@ -42,6 +42,10 @@ class Course < ApplicationRecord
     config_file_path.sub_ext(".rb.bak")
   end
 
+  def directory_path
+    Rails.root.join("courses", name)
+  end
+
   # Create a course with name, semester, and instructor email
   # all other fields are filled in automatically
   def self.quick_create(unique_name, semester, instructor_email)
@@ -106,12 +110,12 @@ class Course < ApplicationRecord
 
   # generate course folder
   def init_course_folder
-    course_dir = Rails.root.join("courses", name)
-    FileUtils.mkdir_p course_dir
+    dir_path = directory_path
+    FileUtils.mkdir_p dir_path
 
-    FileUtils.touch File.join(course_dir, "autolab.log")
+    FileUtils.touch File.join(dir_path, "autolab.log")
 
-    course_rb = File.join(course_dir, "course.rb")
+    course_rb = File.join(dir_path, "course.rb")
 
     # rubocop:disable Rails/FilePath
     default_course_rb = Rails.root.join("lib", "__defaultCourse.rb")

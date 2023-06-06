@@ -107,11 +107,11 @@ class AssessmentsController < ApplicationController
   # tar file with the assessment directory.
   action_auth_level :install_assessment, :instructor
   def install_assessment
-    ass_dir = Rails.root.join("courses", @course.name)
+    dir_path = @course.directory_path
     @unused_config_files = []
-    Dir.foreach(ass_dir) do |filename|
+    Dir.foreach(dir_path) do |filename|
       # skip if not directory in folder
-      next if !File.directory?(File.join(ass_dir,
+      next if !File.directory?(File.join(dir_path,
                                          filename)) || (filename == "..") || (filename == ".")
 
       # assessment names must be only lowercase letters and digits
@@ -126,7 +126,7 @@ class AssessmentsController < ApplicationController
       end
 
       # each assessment must have an associated yaml file
-      unless File.exist?(File.join(ass_dir, filename, "#{filename}.yml"))
+      unless File.exist?(File.join(dir_path, filename, "#{filename}.yml"))
         flash.now[:error] = flash.now[:error] ? "#{flash.now[:error]} <br>" : ""
         flash.now[:error] += "An error occurred while trying to display an existing assessment " \
           "on file directory #{filename}: #{filename}.yml does not exist"
@@ -186,12 +186,12 @@ class AssessmentsController < ApplicationController
 
     # If all requirements are satisfied, extract assessment files.
     begin
-      course_root = Rails.root.join("courses", @course.name)
+      dir_path = @course.directory_path
       assessment_path = Rails.root.join("courses", @course.name, asmt_name)
       tar_extract.rewind
       tar_extract.each do |entry|
         relative_pathname = entry.full_name
-        entry_file = File.join(course_root, relative_pathname)
+        entry_file = File.join(dir_path, relative_pathname)
 
         # Ensure file will lie within course, otherwise skip
         # Allow equality for the main directory to be created
@@ -437,7 +437,7 @@ class AssessmentsController < ApplicationController
   action_auth_level :export, :instructor
 
   def export
-    base_path = Rails.root.join("courses", @course.name).to_s
+    dir_path = @course.directory_path.to_s
     asmt_dir = @assessment.name
     begin
       # Update the assessment config YAML file.
@@ -447,10 +447,10 @@ class AssessmentsController < ApplicationController
       # Pack assessment directory into a tarball.
       tarStream = StringIO.new("")
       Gem::Package::TarWriter.new(tarStream) do |tar|
-        tar.mkdir asmt_dir, File.stat(File.join(base_path, asmt_dir)).mode
-        Dir[File.join(base_path, asmt_dir, "**")].each do |file|
+        tar.mkdir asmt_dir, File.stat(File.join(dir_path, asmt_dir)).mode
+        Dir[File.join(dir_path, asmt_dir, "**")].each do |file|
           mode = File.stat(file).mode
-          relative_path = file.sub(%r{^#{Regexp.escape base_path}/?}, "")
+          relative_path = file.sub(%r{^#{Regexp.escape dir_path}/?}, "")
 
           if File.directory?(file)
             tar.mkdir relative_path, mode

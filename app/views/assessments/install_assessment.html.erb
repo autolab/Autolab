@@ -1,54 +1,33 @@
 <% @title = "Install Assessment" %>
 
-<% content_for :javascripts do %>
-  <script type="application/javascript">
-    jQuery(function() {
-      $importTarballForm = $('#import-tarball-form');
-      $tarballFilenameInput = $('#tarFile-name');
-
-      /* two-way-bind newDayField with daysField */
-      $tarballFilenameInput.on('change', function() {
-        $importTarballForm.submit();
-      });
-    });
-  </script>
-<% end %>
-
 Choose one of the following methods to install an assessment
-
 <div class="section">
-  <h4><li>Create from scratch</h4>
-  <h5>You can create a new assessment from scratch using our 
-  	<%= link_to "Assessment Builder", new_course_assessment_path %>. </h5>
+  <h4>1. Create from scratch</h4>
+  <p>Create a new assessment from scratch using our
+    <%= link_to "Assessment Builder", new_course_assessment_path %>.</p>
 </div>
 
 <div class="section">
-  <h4>
-    <li>Import from file system
-  </h4>
-  <h5>
-    You can import an existing assessment from file system.
-  </h5>
+  <h4>2. Import from file system</h4>
   <p>
-    If you have an existing Autolab assessment from a previous course offering,
-    then you can import it into your current course:
+    Import an existing Autolab assessment from a previous course iteration.
   </p>
   <ul>
     <li>
-        Step 1: Copy the assessment from the previous course directory to the current course directory
-        (<%= File.join(Rails.root, "courses", @course.name) %>).
+        <strong>Step 1</strong>: Copy the assessment from the previous course directory to the current course directory
+        (<%= @course.directory_path %>).
     </li>
     <li>
-      Step 2: Refresh this page to cause your new assessment to appear in the list below. 
+      <strong>Step 2</strong>: Refresh this page to cause your new assessment to appear in the list below.
     </li>
     <li>
-      Step 3: Click the link on the uninstalled assessment you want to import.
+      <strong>Step 3</strong>: Click the link on the uninstalled assessment you want to import.
     </li>
-    <% if @unused_config_files.empty? then %>
+    <% if @unused_config_files.empty? %>
       <li>
-        <i>
+        <em>
           There are no uninstalled assessments available for importing.
-        </i>
+        </em>
       </li>
     <% else %>
       <ul>
@@ -62,19 +41,10 @@ Choose one of the following methods to install an assessment
   </ul>
 </div>
 
-<!-- This section is blocked off because it breaks things  -->
 <div class="section">
-  <h4><li>Import from tarball</h4>
-  <h5>You can import a tarball with the assessment directory.</h5>
-  <%= form_tag({action: :importAsmtFromTar}, multipart: true, id: "import-tarball-form") do %>
-    <div class="file-field input-field" style="margin: 1.5rem 0 !important">
-      <div class="btn">
-        <span>Browse</span>
-        <%= file_field_tag "tarFile" %>
-      </div>
-      <div class="file-path-wrapper">
-        <%= text_field_tag "tarFile-name", "Upload Assessment Tarball", class: "file-path validate" %>
-      </div>
-    </div>
-	<% end %>
+  <h4>3. Import from tarball</h4>
+  <%= form_with url: { action: :importAsmtFromTar }, builder: FormBuilderWithDateTimeInput do |f| %>
+    <%= f.file_field :tarFile, name: "tarFile", button_text: "Choose Tarball" %>
+    <%= f.submit "Import Tarball" %>
+  <% end %>
 </div>
