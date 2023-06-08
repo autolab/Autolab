@@ -60,8 +60,6 @@ Rails.application.routes.draw do
     if Rails.env == "development" || Rails.env == "test"
       match "developer_login", via: [:get, :post]
     end
-    get "error"
-    get "error_404"
     get "no_user"
   end
 
