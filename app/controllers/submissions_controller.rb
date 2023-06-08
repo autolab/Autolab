@@ -9,9 +9,6 @@ class SubmissionsController < ApplicationController
   before_action :set_assessment
   before_action :set_submission, only: %i[destroy destroyConfirm download edit update view]
   before_action :get_submission_file, only: %i[download view]
-  rescue_from ActionView::MissingTemplate do |_exception|
-    redirect_to("/home/error_404")
-  end
 
   # this page loads.  links/functionality may be/are off
   action_auth_level :index, :instructor

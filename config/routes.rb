@@ -244,4 +244,7 @@ Rails.application.routes.draw do
     get "get_branches"
     get "get_commits"
   end
+
+  get "/404", to: "home#error_404"
+  get "/500", to: "home#error_500"
 end
