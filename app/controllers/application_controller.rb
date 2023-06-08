@@ -142,14 +142,14 @@ protected
                   (params[:controller] == "courses" ? params[:name] : nil)
     @course = Course.find_by(name: course_name) if course_name
 
-    redirect_to(controller: :home, action: :error_404) && return unless @course
+    render("home/error_404") && return unless @course
 
     # set course logger
     begin
       COURSE_LOGGER.setCourse(@course)
     rescue StandardError => e
       flash[:error] = e.to_s
-      redirect_to(controller: :home, action: :error_500) && return
+      render("home/error_500") && return
     end
     ASSESSMENT_LOGGER.setCourse(@course)
   end
