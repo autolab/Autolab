@@ -198,7 +198,7 @@
         <ul id="ac-dropdown" class="dropdown-content"></ul>
       </div>
       <h6>Select a new due date</h6>
-      <p>Original assessment due date: <span class="moment-date-time" data-format="MMM D YYYY h:mm:ssa Z"><%= @assessment.due_at.to_s %></p>
+      <p>Original assessment due date: <span class="moment-date-time" data-format="MMM D YYYY h:mm:ssa Z"><%= @assessment.due_at.to_s %></span></p>
       <%= f.date_select :due_at, greater_than: @assessment.due_at, id: "extension_due_at" %>
       <%= f.number_field :days, :size=>3, :placeholder=>0, :value=>0, :min=>0, :id=>"extension_days" %>
       <%= f.check_box :infinite, display_name: "Infinite Extension", id: "extension_infinite" %>

@@ -1,29 +1,47 @@
-<h2>Manage Schedulers</h2>
-<i>It is currently <%= Time.now() %></i>
+<h4>Manage Schedulers</h4>
+<p>It is currently <span class="moment-date-time" data-format="MMM D YYYY h:mm:ssa Z"><%= Time.now %></span></p>
 
-<p>
-<%= link_to 'Create New Scheduler', new_course_scheduler_path(@course) %>
-</p>
-<table class="prettyBorder" >
-  <tr>
-    <th>Action</th>
-    <th>Next</th>
-    <th>Interval</th>
-    <th>Visual Run</th>
-    <th>Operations</th>
-  </tr>
-
-<% for scheduler in @schedulers %>
-  <tr>
-    <td><%=h scheduler.action %></td>
-    <td><%=h scheduler.next %></td>
-    <td><%=h scheduler.interval %></td>
-    <td><%= link_to 'Visual Run', {:action=>"run", :scheduler_id=>scheduler.id}, data: { method: "post" } %></td>
-    <td><%= link_to 'Show', {:action=>"show",:id=>scheduler.id} %>
-    <%= link_to 'Edit', edit_course_scheduler_path(@course, scheduler) %>
-    <%= link_to 'Destroy', course_scheduler_path(@course, scheduler), method: "delete", data: {confirm: 'Are you sure?'} %></td>
-  </tr>
-<% end %>
+<%= link_to 'New Scheduler', new_course_scheduler_path(@course), { class: "btn" } %>
+<table class="prettyBorder">
+  <thead>
+    <tr>
+      <th>Action</th>
+      <th>Next</th>
+      <th>Until</th>
+      <th>Status</th>
+      <th>Interval (s)</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+  <% if @schedulers.empty? %>
+    <tr>
+      <td colspan="6">There are currently no schedulers for this course</td>
+    </tr>
+  <% else %>
+    <% @schedulers.each do |scheduler| %>
+      <tr>
+        <td><%= scheduler.action %></td>
+        <td><span class="moment-date-time" data-format="MMM D YYYY h:mm:ssa Z"><%= scheduler.next %></span></td>
+        <td><span class="moment-date-time" data-format="MMM D YYYY h:mm:ssa Z"><%= scheduler.until %></span></td>
+        <td><%= scheduler.status %></td>
+        <td><%= scheduler.interval %></td>
+        <td>
+          <%= link_to "<i class='material-icons'>info</i>".html_safe, course_scheduler_path(@course, scheduler),
+                      { title: "View scheduler details", class: "btn" } %>
+          <%= link_to "<i class='material-icons'>edit</i>".html_safe, edit_course_scheduler_path(@course, scheduler),
+                      { title: "Edit this scheduler", class: "btn" } %>
+          <%= link_to "<i class='material-icons'>play_circle_filled</i>".html_safe, course_scheduler_run_path(@course, scheduler),
+                      { method: "post", title: "Run this scheduler",
+                        data: { confirm: "Are you sure you want to run this scheduler?" }, class: "btn" } %>
+          <%= link_to "<i class='material-icons'>delete</i>".html_safe, course_scheduler_path(@course, scheduler),
+                      { method: "delete", title: "Delete this scheduler",
+                        data: { confirm: "Are you sure you want to delete this scheduler?" }, class: "btn" } %>
+        </td>
+      </tr>
+    <% end %>
+  <% end %>
+  </tbody>
 </table>
 
 <br />

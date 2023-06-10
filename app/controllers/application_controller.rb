@@ -263,7 +263,9 @@ protected
   end
 
   def run_scheduler
-    actions = Scheduler.where("next < ?", Time.current)
+    current_time = Time.current
+    actions = Scheduler.where("next < ? AND ? <= until AND disabled is false", current_time,
+                              current_time)
     actions.each do |action|
       action.next = Time.current + action.interval
       action.save
@@ -273,7 +275,7 @@ protected
           # child process
           @course = action.course
           COURSE_LOGGER.setCourse(@course)
-          mod_name = Rails.root.join(action.action)
+          mod_name = Rails.root.join(action.action).to_path
           begin
             require mod_name
             Updater.update(@course)

@@ -1,9 +1,11 @@
-## Annotations
+# Annotations
 
 Annotations is a feature introduced as part of the Speedgrader update to Autolab. It allows instructors and TAs to quickly leave comments and grade code at the same time. 
 
 !!! attention "Non-Autograded Problems Only"
     Note that annotations can only be added to non-autograded problems. Specifically, a problem is non-autograded if there is no assigned score for that problem in the json outputted by the autograder
+
+## Annotation types
 
 ### Line-based annotations
 

@@ -25,10 +25,10 @@ class SchedulersController < ApplicationController
     @scheduler = @course.scheduler.new(scheduler_params)
     if @scheduler.save
       flash[:success] = "Scheduler created!"
-      redirect_to(course_schedulers_path(@course)) and return
+      redirect_to(course_schedulers_path(@course))
     else
-      flash[:error] = "Create failed. Please check all fields."
-      redirect_to(action: "new") and return
+      flash[:error] = "Scheduler create failed. Please check all fields."
+      redirect_to(new_course_scheduler_path(@course))
     end
   end
 
@@ -45,14 +45,40 @@ class SchedulersController < ApplicationController
   action_auth_level :visual_run, :instructor
   def visual_run
     action = Scheduler.find(params[:scheduler_id])
+    # https://stackoverflow.com/a/1076445
+    read, write = IO.pipe
     @log = "Executing #{Rails.root.join(action.action)}\n"
-    mod_name = Rails.root.join(action.action)
     begin
-      require mod_name
-      Updater.update(action.course)
-    rescue ScriptError, StandardError => e
-      @log << ("Error in '#{@course.name}' updater: #{e.message}\n")
-      @log << (e.backtrace.join("\n\t"))
+      pid = fork do
+        read.close
+        mod_name = Rails.root.join(action.action).to_path
+        fork_log = ""
+        begin
+          require mod_name
+          output = Updater.update(action.course)
+          if output
+            fork_log << "----- Script Output -----\n"
+            fork_log << output
+            fork_log << "\n----- End Script Output -----"
+          end
+        rescue ScriptError, StandardError => e
+          fork_log << "----- Script Error Output -----\n"
+          fork_log << "Error in '#{@course.name}' updater: #{e.message}\n"
+          fork_log << e.backtrace.join("\n\t")
+          fork_log << "\n---- End Script Error Output -----"
+        end
+        write.print fork_log
+      end
+
+      write.close
+      result = read.read
+      Process.wait2(pid)
+      @log << result
+    rescue StandardError => e
+      @log << "----- Error Output -----\n"
+      @log << "Error in '#{@course.name}' updater: #{e.message}\n"
+      @log << e.backtrace.join("\n\t")
+      @log << "\n---- End Error Output -----"
     end
     @log << "\nCompleted running action."
     render partial: "visual_test"
@@ -62,11 +88,11 @@ class SchedulersController < ApplicationController
   def update
     @scheduler = Scheduler.find(params[:id])
     if @scheduler.update(scheduler_params)
-      flash[:success] = "Edit success!"
-      redirect_to(course_schedulers_path(@course)) and return
+      flash[:success] = "Scheduler updated."
+      redirect_to(course_schedulers_path(@course))
     else
-      flash[:error] = "Scheduler edit failed! Please check your fields."
-      redirect_to(action: "edit") and return
+      flash[:error] = "Scheduler update failed! Please check your fields."
+      redirect_to(edit_course_scheduler_path(@course, @scheduler))
     end
   end
 
@@ -75,16 +101,16 @@ class SchedulersController < ApplicationController
     @scheduler = Scheduler.find(params[:id])
     if @scheduler.destroy
       flash[:success] = "Scheduler destroyed."
+      redirect_to(course_schedulers_path(@course))
     else
       flash[:error] = "Scheduler destroy failed! Please check your fields."
-      redirect_to(action: "edit") and return
+      redirect_to(edit_course_scheduler_path(@course, @scheduler))
     end
-    redirect_to(action: "index") and return
   end
 
 private
 
   def scheduler_params
-    params.require(:scheduler).permit(:action, :next, :interval)
+    params.require(:scheduler).permit(:action, :next, :until, :interval, :disabled)
   end
 end
