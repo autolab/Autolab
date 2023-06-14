@@ -685,13 +685,16 @@ class AssessmentsController < ApplicationController
     end
   end
 
+  # TODO: Take into account any modifications by :parseAutoresult and :modifySubmissionScores
+  # We should probably read the final scores directly
+  # See: assessment_autograde_core.rb's saveAutograde
   def parseScore(feedback)
     return if feedback.nil?
 
-    lines = feedback.lines
-    feedback = lines[lines.length - 1].chomp
+    lines = feedback.rstrip.lines
+    feedback = lines[lines.length - 1]
 
-    return unless valid_json?(feedback)
+    return unless valid_json_hash?(feedback)
 
     score_hash = JSON.parse(feedback)
     score_hash = score_hash["scores"]
@@ -700,7 +703,11 @@ class AssessmentsController < ApplicationController
     end
     @total = 0
     score_hash.keys.each do |k|
-      @total += score_hash[k]
+      @total += score_hash[k].to_f
+    rescue NoMethodError
+      flash.now[:error] ||= ""
+      flash.now[:error] += "The score for #{k} could not be parsed.<br>"
+      flash.now[:html_safe] = true
     end
     score_hash["_total"] = @total
     score_hash
@@ -721,10 +728,10 @@ class AssessmentsController < ApplicationController
   def parseFeedback(feedback)
     return if feedback.nil?
 
-    lines = feedback.lines
-    feedback = lines[lines.length - 2]&.chomp
+    lines = feedback.rstrip.lines
+    feedback = lines[lines.length - 2]
 
-    return unless valid_json?(feedback)
+    return unless valid_json_hash?(feedback)
 
     jsonFeedbackHash = JSON.parse(feedback)
     if jsonFeedbackHash.key?("_presentation") == false
@@ -734,8 +741,9 @@ class AssessmentsController < ApplicationController
     end
   end
 
-  def valid_json?(json)
-    JSON.parse(json)
+  def valid_json_hash?(json)
+    parsed = JSON.parse(json)
+    parsed.is_a? Hash
   rescue JSON::ParserError, TypeError
     false
   end

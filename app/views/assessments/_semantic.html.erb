@@ -78,28 +78,31 @@
 
   <% end %>
 
+  <% unless @scoreHash.nil? %>
   <h2>Score</h2>
   <table class="ui unstackable table">
     <tbody>
-    <% @jsonFeedback["_scores_order"].each do |key| %>
-      <% if key[0] != '_' %>
+      <%# If @scoreHash is not nil, then _scores_order would have been defined by parseScore %>
+      <% @jsonFeedback["_scores_order"].each do |key| %>
+        <% if key[0] != '_' %>
+          <tr>
+            <td><%= key %>:</td>
+            <td><%= @scoreHash[key] %></td>
+          </tr>
+        <% end %>
+      <% end %>
+      <tr>
+        <td>Autograding Total:</td>
+        <td><%= @scoreHash["_total"] %></td>
+      </tr>
+      <% if @score.grader&.user%>
         <tr>
-          <td><%= key %>:</td>
-          <td><%= @scoreHash[key] %></td>
+          <td>Graded By:</td>
+          <td><%= @score.grader.user.email %></td>
         </tr>
       <% end %>
-    <% end %>
-    <tr>
-      <td>Autograding Total:</td>
-      <td><%= @scoreHash["_total"] %></td>
-    </tr>
-    <% if @score.grader && @score.grader.user%>
-      <tr>
-        <td>Graded By:</td>
-        <td><%= @score.grader.user.email %></td>
-      </tr>
-    <% end %>
     </tbody>
   </table>
+  <% end %>
 </div>
 
