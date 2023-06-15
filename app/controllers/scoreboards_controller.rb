@@ -324,15 +324,14 @@ private
         Rails.logger.error("Error in scoreboards controller updater: #{e.message}")
       end
 
-      if parsed && parsed["scoreboard"] && !parsed["scoreboard"].empty?
-        parsed["scoreboard"].each_with_index do |v, i|
-          ai = a[:entry][i].to_f
-          bi = b[:entry][i].to_f
-          next unless ai != bi
-          return ai <=> bi if v["asc"] # ascending
+      # Validations ensure that colspec is of the correct format
+      parsed["scoreboard"].each_with_index do |v, i|
+        ai = a[:entry][i].to_f
+        bi = b[:entry][i].to_f
+        next unless ai != bi
+        return ai <=> bi if v["asc"] # ascending
 
-          return bi <=> ai # descending otherwise
-        end
+        return bi <=> ai # descending otherwise
       end
       a[:time] <=> b[:time] # ascending by submission time to tiebreak
     end
