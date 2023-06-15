@@ -24,11 +24,14 @@ protected
 
     # The parse will throw an exception if the string has a JSON syntax error
     begin
-      # Quote JSON keys and values if they are not already quoted
-      quoted = colspec.gsub(/([a-zA-Z0-9]+):/, '"\1":').gsub(/:([a-zA-Z0-9]+)/, ':"\1"')
-      parsed = ActiveSupport::JSON.decode(quoted)
+      parsed = ActiveSupport::JSON.decode(colspec)
     rescue StandardError => e
       errors.add "colspec", e.to_s
+      return
+    end
+
+    unless parsed.is_a? Hash
+      errors.add "colspec", "must be a hash object"
       return
     end
 
