@@ -16,7 +16,6 @@
       <%= sanitize @scoreboard.banner %>
     <% end %>
   </strong>
-  <hr>
 
   <table class="sortable prettyBorder">
     <thead>
@@ -77,16 +76,6 @@
 
 
 <%= form_for @cud, url: course_course_user_datum_path(@course, @cud), builder: FormBuilderWithDateTimeInput do |f| %>
-  <% if @cud.errors.any? %>
-    <div id="error_explanation">
-      <h2><%= pluralize(@cud.errors.count, "error") %> prohibited the data from being saved:</h2>
-      <ul>
-        <% @cud.errors.full_messages.each do |msg| %>
-          <li><%= msg %></li>
-        <% end %>
-      </ul>
-    </div>
-  <% end %>
   <hr>
   <div class="row valign-wrapper">
     <div class="col s4">
