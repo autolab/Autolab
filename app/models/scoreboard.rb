@@ -60,12 +60,6 @@ protected
           errors.add "colspec", "unknown key('#{k}') in scoreboard[#{i}]"
           return
         end
-
-        next unless k == "asc" && i > 2
-
-        errors.add "colspec",
-                   "'asc' key in col #{i} ignored because only the first",
-                   "three columns are sorted."
       end
     end
   end
