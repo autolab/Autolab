@@ -24,7 +24,7 @@ The column spec consists of a "scoreboard" object, which is an array of JSON obj
 }
 ```
 
-A custom scoreboard sorts the first three columns, from left to right, in descending order. You can change the default sort order for a particular column by adding an optional "asc:1" element to its hash.
+A custom scoreboard sorts the columns from left to right in descending order, and tiebreaks by submission time. You can change the default sort order for a particular column by adding an optional "asc:1" element to its hash.
 
 **Example:** Scoreboard with two columns, "Score" and "Ops", with "Score" sorted descending, and then "Ops" ascending:
 
