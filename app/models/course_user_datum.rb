@@ -63,6 +63,8 @@ class CourseUserDatum < ApplicationRecord
   end
 
   def valid_nickname?
+    return if nickname.nil?
+
     if nickname.length > 32
       errors.add("nickname", "is too long (maximum is 32 characters)")
     end
