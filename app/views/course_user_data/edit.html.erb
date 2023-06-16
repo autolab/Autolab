@@ -11,6 +11,6 @@
   <%= render partial: "fields", locals: {f: f, cud: @editCUD, edit: true} %>
 
   <br>
-  <input id="user_submit" name="commit" type="submit" class="btn primary" value="Save Changes" onclick="formvalidation(this.parentNode); return false;">
+  <input id="user_submit" name="commit" type="submit" class="btn primary" value="Save Changes" onclick="formvalidation(this.closest('form')); return false;">
 
 <% end %>

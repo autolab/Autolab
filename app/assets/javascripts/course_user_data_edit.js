@@ -1,28 +1,18 @@
 function formvalidation(form){
     function DoubleByte(str) {
       for (var i = 0, n = str.length; i < n; i++) {
-        if (str[i].charCodeAt() > 127) { return true; }
+        if (str.charCodeAt(i) > 127) { return true; }
       }
       return false;
     }
-    var formlog = 'Your nickname ';
-    function flag(msg, nickname){
+    var nickname = document.getElementById('course_user_datum_nickname');
+
+    if (DoubleByte(nickname.value)){
       nickname.setAttribute('style','background-color:#FFF352');
-      if (formlog!= 'Your nickname '){formlog+=' and ';}
-      formlog +=msg;
-
       nickname.focus();
-    }
-    var nickname = document.getElementById('user_nickname');
-    var approve = true;
-
-    if (nickname.value.length>20){approve = false; flag('is too long',nickname);}
-    if (DoubleByte(nickname.value)===true){approve = false; flag('has non-ASCII characters',nickname);}
-
-    if (approve){
-      form.submit();
+      alert("Your nickname has non-ASCII characters");
     } else {
-      alert(formlog);
+      form.submit();
     }
 }
 
