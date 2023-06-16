@@ -78,10 +78,10 @@
 <%= form_for @cud, url: course_course_user_datum_path(@course, @cud), builder: FormBuilderWithDateTimeInput do |f| %>
   <hr>
   <div class="row valign-wrapper">
-    <div class="col s4">
-      <%= f.text_field :nickname %>
+    <div class="col s6">
+      <%= f.text_field :nickname, help_text: "Anonymous nickname to display on the public scoreboards (maxlength: 32)", maxlength: 32 %>
     </div>
-    <div class="col s8">
+    <div class="col s6">
       <input id="user_submit" name="commit" type="submit" class="btn" value="Update" onclick="formvalidation(this.parentNode); return false;">
     </div>
   </div>
