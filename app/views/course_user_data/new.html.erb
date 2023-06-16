@@ -31,25 +31,11 @@
 
 <% @title="Enroll User" %>
 
-<h2>Enroll User in <%= @course.display_name %></h2>
-
-<br>
+<h4>Enroll User in <%= @course.display_name %></h4>
 
 <%= form_for @newCUD, url: course_course_user_data_path, builder: FormBuilderWithDateTimeInput do |f| %>
 
-<% if @newCUD.errors.any? %>
-	<div id="error_explanation">
-		<h2><%= pluralize(@newCUD.errors.count, "error") %>
-      prohibited the data from being saved:</h2>
-
-		<ul>
-			<% @newCUD.errors.full_messages.each do |msg| %>
-			<li><%= msg %></li>
-			<% end %>
-		</ul>
-	</div>
-<% end %>
-
+  <br>
   <%= render partial: "fields", locals: {f: f, cud: @newCUD, edit: false} %>
 
   <br>

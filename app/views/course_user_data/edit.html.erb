@@ -4,7 +4,6 @@
   <%= javascript_include_tag "course_user_data_edit" %>
 <% end %>
 
-<br>
 <h4>Editing <%= @editCUD.user.full_name %>'s Enrollment in <%= @course.display_name %></h4>
 
 <%= form_for @editCUD, url: course_course_user_datum_path(@course, @editCUD), builder: FormBuilderWithDateTimeInput do |f| %>
