@@ -160,7 +160,9 @@ class CourseUserDataController < ApplicationController
     else
       COURSE_LOGGER.log(@editCUD.errors.full_messages.join(", "))
       # error details are shown separately in the view
-      flash[:error] = "Update failed. Check all fields"
+      flash[:error] = "Update failed.<br>"
+      flash[:error] += @editCUD.errors.full_messages.join("<br>")
+      flash[:html_safe] = true
       redirect_to(action: :edit) && return
     end
   end
