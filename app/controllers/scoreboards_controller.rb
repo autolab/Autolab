@@ -208,7 +208,7 @@ private
         str += " | "
       end
       str += hash["hdr"].to_s.upcase
-      str += hash["asc"] ? " [asc]" : " [desc]" if i < 3
+      str += hash["asc"] ? " [asc]" : " [desc]"
       i += 1
     end
     str
@@ -318,46 +318,22 @@ private
       # in descending order. Lab authors can modify the default
       # direction with the "asc" key in the column spec.
     else
-      a0 = a[:entry][0].to_f
-      a1 = a[:entry][1].to_f
-      a2 = a[:entry][2].to_f
-      b0 = b[:entry][0].to_f
-      b1 = b[:entry][1].to_f
-      b2 = b[:entry][2].to_f
-
       begin
         parsed = ActiveSupport::JSON.decode(@scoreboard.colspec)
       rescue StandardError => e
         Rails.logger.error("Error in scoreboards controller updater: #{e.message}")
       end
 
-      if a0 != b0
-        if parsed && parsed["scoreboard"] &&
-           !parsed["scoreboard"].empty? &&
-           parsed["scoreboard"][0]["asc"]
-          a0 <=> b0 # ascending order
-        else
-          b0 <=> a0 # descending order
-        end
-      elsif a1 != b1
-        if parsed && parsed["scoreboard"] &&
-           parsed["scoreboard"].size > 1 &&
-           parsed["scoreboard"][1]["asc"]
-          a1 <=> b1 # ascending order
-        else
-          b1 <=> a1 # descending order
-        end
-      elsif a2 != b2
-        if parsed && parsed["scoreboard"] &&
-           parsed["scoreboard"].size > 2 &&
-           parsed["scoreboard"][2]["asc"]
-          a2 <=> b2 # ascending order
-        else
-          b2 <=> a2 # descending order
-        end
-      else
-        a[:time] <=> b[:time] # ascending by submission time
+      # Validations ensure that colspec is of the correct format
+      parsed["scoreboard"].each_with_index do |v, i|
+        ai = a[:entry][i].to_f
+        bi = b[:entry][i].to_f
+        next unless ai != bi
+        return ai <=> bi if v["asc"] # ascending
+
+        return bi <=> ai # descending otherwise
       end
+      a[:time] <=> b[:time] # ascending by submission time to tiebreak
     end
   end
 end
