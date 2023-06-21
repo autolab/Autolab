@@ -72,7 +72,7 @@ class CourseUserDataController < ApplicationController
         redirect_to([:users, @course]) && return
       end
     else
-      error_msg = "Adding user failed:"
+      error_msg = "Creation failed."
       if !@newCUD.valid?
         @newCUD.errors.full_messages.each do |msg|
           error_msg += "<br>#{msg}"
