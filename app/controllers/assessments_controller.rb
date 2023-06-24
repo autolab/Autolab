@@ -263,7 +263,7 @@ class AssessmentsController < ApplicationController
       redirect_to(install_assessment_course_assessments_path(@course)) && return
     end
     flash[:success] = "Successfully imported #{@assessment.name}"
-    redirect_to([@course, @assessment])
+    redirect_to course_assessment_path(@course, @assessment)
   end
 
   # create - Creates an assessment from an assessment directory
