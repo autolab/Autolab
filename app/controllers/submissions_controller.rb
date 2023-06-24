@@ -625,12 +625,11 @@ private
 
   # Given the path to a file, return the filename to use when the user downloads it
   # path should be of the form .../<ver>_<handin> or .../annotated_<ver>_<handin>
-  # returns <email>_<asmt>_<ver>_<handin> or annotated_<email>_<asmt>_<ver>_<handin>
-  def download_filename(path, asmt_name = nil, student_email = nil)
+  # returns <email>_<ver>_<handin> or annotated_<email>_<ver>_<handin>
+  def download_filename(path, student_email = nil)
     basename = File.basename path
     basename_parts = basename.split("_")
     basename_parts.insert(-3, student_email) if student_email
-    basename_parts.insert(-3, asmt_name) if asmt_name
 
     basename_parts.join("_")
   end
@@ -642,12 +641,11 @@ private
     end
 
     @filename = @submission.handin_file_path
-    @basename = download_filename(@filename, @assessment.name,
-                                  @submission.course_user_datum.user.email)
+    @basename = download_filename(@filename, @submission.course_user_datum.user.email)
 
     unless @submission.handin_annotated_file_path.nil?
       @filename_annotated = @submission.handin_annotated_file_path
-      @basename_annotated = download_filename(@filename_annotated, @assessment.name,
+      @basename_annotated = download_filename(@filename_annotated,
                                               @submission.course_user_datum.user.email)
     end
 
