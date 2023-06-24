@@ -10,10 +10,6 @@ class AssessmentsController < ApplicationController
   include ActiveSupport::Callbacks
   include AssessmentAutogradeCore
 
-  rescue_from ActionView::MissingTemplate do |_exception|
-    redirect_to("/home/error_404")
-  end
-
   autolab_require Rails.root.join("app/controllers/assessment/handin.rb")
   include AssessmentHandin
 

@@ -4,9 +4,6 @@
 # hasn't ran in more than its period's time, it's function is run.  This is awful.
 #
 class SchedulersController < ApplicationController
-  rescue_from ActionView::MissingTemplate do |_exception|
-    redirect_to("/home/error_404")
-  end
   action_auth_level :index, :instructor
   def index
     @schedulers = Scheduler.where(course_id: @course.id)

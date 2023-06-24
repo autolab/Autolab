@@ -1,10 +1,6 @@
 class CourseUserDataController < ApplicationController
   before_action :add_users_breadcrumb
 
-  rescue_from ActionView::MissingTemplate do |_exception|
-    redirect_to("/home/error_404")
-  end
-
   action_auth_level :index, :student
   def index
     @requestedUser = @cud

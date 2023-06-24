@@ -4,9 +4,6 @@ require "statistics"
 require "utilities"
 
 class GradebooksController < ApplicationController
-  rescue_from ActionView::MissingTemplate do |_exception|
-    redirect_to("/home/error_404")
-  end
   action_auth_level :show, :student
   def show
     if @cud.instructor?

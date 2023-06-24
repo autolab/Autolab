@@ -11,10 +11,6 @@ class CoursesController < ApplicationController
   # if there's no course, there are no persistent announcements for that course
   skip_before_action :update_persistent_announcements, only: %i[courses_redirect index new create]
 
-  rescue_from ActionView::MissingTemplate do |_exception|
-    redirect_to("/home/error_404")
-  end
-
   def index
     courses_for_user = User.courses_for_user current_user
 

@@ -20,10 +20,6 @@ class ApplicationController < ActionController::Base
   before_action :update_persistent_announcements
   before_action :set_breadcrumbs
 
-  rescue_from ActionView::MissingTemplate do |_exception|
-    redirect_to("/home/error_404")
-  end
-
   # this is where Error Handling is configured. this routes exceptions to
   # the error handler in the HomeController, unless we're in development mode
   #
@@ -146,14 +142,14 @@ protected
                   (params[:controller] == "courses" ? params[:name] : nil)
     @course = Course.find_by(name: course_name) if course_name
 
-    render file: Rails.root.join("public/404.html"), status: :not_found and return unless @course
+    render("home/error_404") && return unless @course
 
     # set course logger
     begin
       COURSE_LOGGER.setCourse(@course)
     rescue StandardError => e
       flash[:error] = e.to_s
-      redirect_to(controller: :home, action: :error) && return
+      render("home/error_500") && return
     end
     ASSESSMENT_LOGGER.setCourse(@course)
   end
@@ -381,7 +377,7 @@ private
           end
         end
 
-        render "home/error"
+        render "home/error_500"
       end
       format.json { head :internal_server_error }
       format.js { head :internal_server_error }
