@@ -213,10 +213,6 @@ class SubmissionsController < ApplicationController
                 disposition: "inline"
 
     elsif params[:annotated]
-
-      @filename_annotated = @submission.handin_annotated_file_path
-      @basename_annotated = File.basename @filename_annotated
-
       @problems = @assessment.problems.to_a
       @problems.sort! { |a, b| a.id <=> b.id }
 
@@ -639,6 +635,16 @@ private
     basename_parts.prepend(@assessment.name)
     basename_parts.prepend(@submission.course_user_datum.user.email)
     @basename = basename_parts.join("_")
+
+    unless @submission.handin_annotated_file_path.nil?
+      @filename_annotated = @submission.handin_annotated_file_path
+      basename_annotated = File.basename @filename_annotated
+      basename_parts_annotated = basename_annotated.split("_")
+      # Preserve first element as "annotated"
+      basename_parts_annotated.insert(-3, @assessment.name)
+      basename_parts_annotated.insert(-4, @submission.course_user_datum.user.email)
+      @basename_annotated = basename_parts_annotated.join("_")
+    end
 
     unless File.exist? @filename
       flash[:error] = "Could not find submission file."
