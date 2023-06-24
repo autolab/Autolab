@@ -631,10 +631,10 @@ private
   # Given the path to a file, return the filename to use when the user downloads it
   # path should be of the form .../<ver>_<handin> or .../annotated_<ver>_<handin>
   # returns <email>_<ver>_<handin> or annotated_<email>_<ver>_<handin>
-  def download_filename(path, student_email = nil)
+  def download_filename(path, student_email)
     basename = File.basename path
     basename_parts = basename.split("_")
-    basename_parts.insert(-3, student_email) if student_email
+    basename_parts.insert(-3, student_email)
 
     basename_parts.join("_")
   end
