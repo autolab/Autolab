@@ -11,7 +11,13 @@
           <% @scoreHash.except("_total").each do |key, value| %>
             <tr>
               <td><%= key %>:</td>
-              <td><%= value.to_f.round(1) %></td>
+              <td><%=
+                begin
+                  value.to_f.round(1)
+                rescue
+                  value
+                end
+              %></td>
             </tr>
           <% end %>
           <tr style="border-bottom: none">

@@ -1,16 +1,17 @@
 <% content_for :javascripts do %>
   <%= javascript_include_tag "initialize_datetimepickers" %>
 <% end %>
-<h2>New scheduler</h2>
+<h4>New scheduler</h4>
 
-<%= form_for :scheduler, :url=>{:action=>"create"}, builder: FormBuilderWithDateTimeInput do |f| %>
+<%= form_for :scheduler, url: course_schedulers_path(@course), builder: FormBuilderWithDateTimeInput do |f| %>
   <%= f.error_messages %>
-  <%= f.text_field :action, help_text: "  ", placeholder: "(scheduler action)" %>
-  <%= f.datetime_select :next, step: 1 %>
-  <%= f.text_field :interval , placeholder: "(in seconds)" %>
+  <%= f.text_field :action, help_text: "Path to scheduler file relative to Autolab root", placeholder: "(scheduler action)" %>
+  <%= f.datetime_select :next, help_text: "Time of next run" %>
+  <%= f.datetime_select :until, help_text: "Don't run after this time" %>
+  <%= f.number_field :interval, min: 1, help_text: "Minimum interval between each run (in seconds)", value: 600 %>
+  <%= f.check_box :disabled %>
   <div class="action_buttons">
-    <%= f.submit "Create" , {:class=>"btn primary"} %>
+    <%= link_to 'Back', course_schedulers_path(@course), { class: "btn" } %>
+    <%= f.submit "Create", { class: "btn" } %>
   </div>
 <% end %>
-
-<%= link_to 'Back', :action=>"index" %>

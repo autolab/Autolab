@@ -1,19 +1,22 @@
 <% @title = "Scoreboard" %>
 
 <% content_for :javascripts do %>
+  <%= javascript_include_tag "course_user_data_edit" %>
   <%= javascript_include_tag "sorttable" %>
 <% end %>
 
+<h4>Scoreboard</h4>
+
 <% if @grades.values.empty? %>
-  <h3>No submissions yet.</h3>
+  <strong>There are currently no submissions.</strong>
 <% else %>
-  <h3>
+  <strong>
     <% if @scoreboard.banner.blank? %>
       Here are the most recent scores for the class.
     <% else %>
       <%= sanitize @scoreboard.banner %>
     <% end %>
-  </h3>
+  </strong>
 
   <table class="sortable prettyBorder">
     <thead>
@@ -73,19 +76,14 @@
 <% end %>
 
 
-<%= form_for @cud, url: course_course_user_datum_path(@course, @cud) do |f| %>
-<% if @cud.errors.any? %>
-  <div id="error_explanation">
-    <h2><%= pluralize(@cud.errors.count, "error") %> prohibited the data from being saved:</h2>
-    <ul>
-      <% @cud.errors.full_messages.each do |msg| %>
-        <li><%= msg %></li>
-      <% end %>
-    </ul>
+<%= form_for @cud, url: course_course_user_datum_path(@course, @cud), builder: FormBuilderWithDateTimeInput do |f| %>
+  <hr>
+  <div class="row valign-wrapper">
+    <div class="col s6">
+      <%= f.text_field :nickname, help_text: "Anonymous nickname to display on the public scoreboards (max length: 32)", maxlength: 32 %>
+    </div>
+    <div class="col s6">
+      <input id="user_submit" name="commit" type="submit" class="btn" value="Update" onclick="formvalidation(this.closest('form')); return false;">
+    </div>
   </div>
-<% end %>
-<hr>
-  <table width=50% class="verticalTable" >
-  <tr><th><h3>Nickname:</h3> </th><td><%= f.text_field :nickname %>  <input id="user_submit" name="commit" type="submit" class="btn" value="Update Nickname" onclick="formvalidation(this.parentNode); return false;"></td></tr>
-  </table>
 <% end %>

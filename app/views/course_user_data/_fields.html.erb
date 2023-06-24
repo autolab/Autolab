@@ -7,7 +7,7 @@
 
   <% end %>
 
-  <%= f.text_field :nickname, help_text: "Anonymous nickname to display on the public scoreboards", placeholder: "droh" %>
+  <%= f.text_field :nickname, help_text: "Anonymous nickname to display on the public scoreboards (max length: 32)", placeholder: "droh", maxlength: 32 %>
 
   <%= f.text_field :course_number, help_text: "The course number", placeholder: "15213", disabled: !@cud.instructor? %>
 

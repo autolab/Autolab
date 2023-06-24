@@ -26,6 +26,7 @@ nav:
                 - Formatted Feedback: features/formatted-feedback.md
                 - Scoreboards: features/scoreboards.md
                 - Embedded Forms: features/embedded-forms.md
+                - Schedulers: features/schedulers.md
                 - Annotations: features/annotations.md
                 - MOSS Plagiarism Detection: features/moss.md
                 - Metrics: features/metrics.md

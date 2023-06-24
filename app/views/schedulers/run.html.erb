@@ -1,15 +1,16 @@
 <% content_for :javascripts do %>
-    <script type="text/javascript">
-        $(function () {
-            $.post("visualRun", function (returned) {
-                $(".output").html(returned)
-            })
-        })
-    </script>
+  <script type="text/javascript">
+    $(function () {
+      $.post("visualRun", function (returned) {
+        $(".output").html(returned);
+      });
+    });
+  </script>
 <% end %>
 
-<h3>Running scheduler</h3>
+<h4>Running scheduler</h4>
 
 <div class="output">
-    Running script...
+  Running script...
 </div>
+<%= link_to 'Back', course_schedulers_path(@course), { class: "btn" } %>
