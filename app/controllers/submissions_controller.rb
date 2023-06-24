@@ -161,9 +161,9 @@ class SubmissionsController < ApplicationController
     if @assessment.disable_handins
       flash[:error] = "There are no submissions to download."
       if @cud.course_assistant
-        redirect_to([@course, @assessment])
+        redirect_to course_assessment_path(@course, @assessment)
       else
-        redirect_to([@course, @assessment, :submissions])
+        redirect_to course_assessment_submissions_path(@course, @assessment)
       end
       return
     end
@@ -189,9 +189,9 @@ class SubmissionsController < ApplicationController
     if result.nil?
       flash[:error] = "There are no submissions to download."
       if @cud.course_assistant
-        redirect_to([@course, @assessment])
+        redirect_to course_assessment_path(@course, @assessment)
       else
-        redirect_to([@course, @assessment, :submissions])
+        redirect_to course_assessment_submissions_path(@course, @assessment)
       end
       return
     end
@@ -211,7 +211,7 @@ class SubmissionsController < ApplicationController
       file, pathname = Archive.get_nth_file(@filename, params[:header_position].to_i)
       unless file && pathname
         flash[:error] = "Could not read archive."
-        redirect_to [@course, @assessment] and return false
+        redirect_to course_assessment_path(@course, @assessment) and return
       end
 
       send_data file,
@@ -269,7 +269,6 @@ class SubmissionsController < ApplicationController
       send_file @filename,
                 filename: @basename,
                 disposition: "inline"
-      #  :type => mime
     end
   end
 
