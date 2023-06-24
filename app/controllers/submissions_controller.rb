@@ -623,6 +623,18 @@ private
                                        tweak_attributes: %i[_destroy kind value])
   end
 
+  # Given the path to a file, return the filename to use when the user downloads it
+  # path should be of the form .../<ver>_<handin> or .../annotated_<ver>_<handin>
+  # returns <email>_<asmt>_<ver>_<handin> or annotated_<email>_<asmt>_<ver>_<handin>
+  def download_filename(path, asmt_name = nil, student_email = nil)
+    basename = File.basename path
+    basename_parts = basename.split("_")
+    basename_parts.insert(-3, student_email) if student_email
+    basename_parts.insert(-3, asmt_name) if asmt_name
+
+    basename_parts.join("_")
+  end
+
   def get_submission_file
     unless @submission.filename
       flash[:error] = "No file associated with submission."
@@ -630,20 +642,13 @@ private
     end
 
     @filename = @submission.handin_file_path
-    basename = File.basename @filename
-    basename_parts = basename.split("_")
-    basename_parts.prepend(@assessment.name)
-    basename_parts.prepend(@submission.course_user_datum.user.email)
-    @basename = basename_parts.join("_")
+    @basename = download_filename(@filename, @assessment.name,
+                                  @submission.course_user_datum.user.email)
 
     unless @submission.handin_annotated_file_path.nil?
       @filename_annotated = @submission.handin_annotated_file_path
-      basename_annotated = File.basename @filename_annotated
-      basename_parts_annotated = basename_annotated.split("_")
-      # Preserve first element as "annotated"
-      basename_parts_annotated.insert(-3, @assessment.name)
-      basename_parts_annotated.insert(-4, @submission.course_user_datum.user.email)
-      @basename_annotated = basename_parts_annotated.join("_")
+      @basename_annotated = download_filename(@filename_annotated, @assessment.name,
+                                              @submission.course_user_datum.user.email)
     end
 
     unless File.exist? @filename
