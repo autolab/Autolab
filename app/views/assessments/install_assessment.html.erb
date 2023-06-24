@@ -32,10 +32,10 @@ Choose one of the following methods to install an assessment
     <% else %>
       <div class="collection">
         <% @unused_config_files.each do |ass_file| %>
-          <%= link_to ass_file, {action: :importAssessment, assessment_name: ass_file}, method: :post, class: "collection-item install" %>
+          <%= link_to ass_file, {action: :importAssessment, assessment_name: ass_file}, method: :post, class: "collection-item import" %>
         <% end %>
       </div>
-      <a class="btn" onclick="$('.install').each((i, e) => $.post(e.href)); location.reload();">Install all</a>
+      <a class="btn" onclick="$('.import').each((i, e) => $.post(e.href)); location.reload();">Import all</a>
     <% end %>
   </ul>
 </div>
