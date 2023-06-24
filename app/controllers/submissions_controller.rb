@@ -634,11 +634,10 @@ private
     end
 
     @filename = @submission.handin_file_path
-    @basename = File.basename @filename
-
-    basename_parts = @basename.split("_")
-    basename_parts.insert(-3, @assessment.name)
-
+    basename = File.basename @filename
+    basename_parts = basename.split("_")
+    basename_parts.prepend(@assessment.name)
+    basename_parts.prepend(@submission.course_user_datum.user.email)
     @basename = basename_parts.join("_")
 
     unless File.exist? @filename
