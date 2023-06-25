@@ -298,7 +298,6 @@ class AssessmentsController < ApplicationController
                                     "handin.c"
                                   end
 
-    @assessment.visible_at = Time.current + 1.day
     @assessment.start_at = Time.current + 1.day
     @assessment.due_at = Time.current + 1.day
     @assessment.end_at = Time.current + 1.day
@@ -365,7 +364,6 @@ class AssessmentsController < ApplicationController
     @start_at = @assessment.start_at
     @due_at = @assessment.due_at
     @end_at = @assessment.end_at
-    @visible_at = @assessment.visible_at
     @id = @assessment.id
   end
 
