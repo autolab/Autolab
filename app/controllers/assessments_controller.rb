@@ -967,6 +967,7 @@ private
 
     ass.delete(:name)
     ass.delete(:config_file)
+    ass.delete(:embedded_quiz_form)
 
     ass.permit!
   end
