@@ -306,16 +306,6 @@ class AssessmentsController < ApplicationController
     @assessment.quizData = ""
     @assessment.max_submissions = params.include?(:max_submissions) ? params[:max_submissions] : -1
 
-    if @assessment.embedded_quiz
-      begin
-        @assessment.embedded_quiz_form_data = params[:assessment][:embedded_quiz_form].read
-      rescue StandardError
-        flash[:error] = "Embedded quiz form cannot be empty!"
-        redirect_to(action: :install_assessment)
-        return
-      end
-    end
-
     begin
       @assessment.construct_folder
     rescue StandardError => e
@@ -958,7 +948,7 @@ private
     ass = params.require(:assessment)
     ass[:category_name] = params[:new_category] if params[:new_category].present?
     ass.permit(:name, :display_name, :category_name, :has_svn, :has_lang, :group_size,
-               :embedded_quiz, :embedded_quiz_form_data, :github_submission_enabled)
+               :github_submission_enabled)
   end
 
   def edit_assessment_params
