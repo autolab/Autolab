@@ -18,6 +18,7 @@ config/school.yml
 config/lti_config.yml
 config/lti_tool_jwk.json
 config/lti_platform_jwk.json
+config/databse.docker.yml
 
 # autolab user documents
 app/views/home/_topannounce.html.erb
@@ -36,6 +37,7 @@ vendor/
 db/autolab_development
 db/autolab_test
 db/*.sqlite3
+db/schema.rb
 
 # Mkdocs generated site
 site/
