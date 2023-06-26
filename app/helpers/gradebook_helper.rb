@@ -118,8 +118,6 @@ module GradebookHelper
         row[key] = round matrix.category_average(cat, cud.id)
       end
 
-      Rails.logger.debug "starting loops"
-      # Rails.logger.debug "Make Sure Postion 1"
       course.assessments.ordered.each do |a|
         next unless matrix.has_assessment? a.id
 
@@ -136,7 +134,6 @@ module GradebookHelper
 
       rows << row
     end
-    Rails.logger.debug "Finishing Outer loops"
 
     rows
   end
