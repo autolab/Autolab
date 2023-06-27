@@ -635,7 +635,6 @@ private
     basename = File.basename path
     basename_parts = basename.split("_")
     basename_parts.insert(-3, student_email)
-
     basename_parts.join("_")
   end
 
