@@ -250,8 +250,8 @@ GEM
     omniauth-oauth2 (1.7.3)
       oauth2 (>= 1.4, < 3)
       omniauth (>= 1.9, < 3)
-    omniauth-shibboleth (1.3.0)
-      omniauth (>= 1.0.0)
+    omniauth-shibboleth-redux (2.0.0)
+      omniauth (>= 2.0.0)
     orm_adapter (0.5.0)
     overcommit (0.59.1)
       childprocess (>= 0.6.3, < 5)
@@ -272,7 +272,7 @@ GEM
       pdf-reader (~> 1.2)
       ruby-rc4
       ttfunk (~> 1.0.3)
-    psych (4.0.4)
+    psych (5.1.0)
       stringio
     public_suffix (4.0.7)
     racc (1.7.0)
@@ -394,7 +394,7 @@ GEM
     sqlite3 (1.5.1-arm64-darwin)
     sqlite3 (1.5.1-x86_64-darwin)
     sqlite3 (1.5.1-x86_64-linux)
-    stringio (3.0.2)
+    stringio (3.0.7)
     terser (1.1.11)
       execjs (>= 0.3.0, < 3)
     thin (1.8.1)
@@ -478,7 +478,7 @@ DEPENDENCIES
   omniauth (>= 1.2.2)
   omniauth-facebook (>= 2.0.0)
   omniauth-google-oauth2 (>= 0.2.5)
-  omniauth-shibboleth (>= 1.1.2)
+  omniauth-shibboleth-redux (~> 2.0)
   overcommit
   populator (>= 1.0.0)
   prawn (= 0.13.0)
@@ -509,4 +509,4 @@ RUBY VERSION
    ruby 2.7.7p221
 
 BUNDLED WITH
-   2.4.12
+   2.4.14
