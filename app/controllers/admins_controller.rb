@@ -6,7 +6,7 @@ class AdminsController < ApplicationController
 
   action_auth_level :email_instructors, :administrator
   def email_instructors
-    @cuds = CourseUserDatum.select(:user_id).distinct.joins(:course).joins(:user)
+    @cuds = CourseUserDatum.select([:user_id, :email]).distinct.joins(:course).joins(:user)
                            .where(instructor: true)
                            .order("users.email ASC")
 
