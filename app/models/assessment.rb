@@ -465,8 +465,7 @@ private
     s["dates"] = { start_at: start_at.to_s,
                    due_at: due_at.to_s,
                    end_at: end_at.to_s,
-                   grading_deadline: grading_deadline.to_s,
-                   visible_at: visible_at.to_s }.deep_stringify_keys
+                   grading_deadline: grading_deadline.to_s }.deep_stringify_keys
     s
   end
 
@@ -486,16 +485,18 @@ private
       raise "Name in yaml (#{s['general']['name']}) doesn't match #{name}"
     end
 
-    if s["dates"] && s["dates"]["start_at"] && s["dates"]["due_at"] && s["dates"]["end_at"] &&
-       s["dates"]["visible_at"] && s["dates"]["grading_deadline"]
-      self.due_at = Time.zone.parse(s["dates"]["due_at"])
-      self.start_at = Time.zone.parse(s["dates"]["start_at"])
-      self.end_at = Time.zone.parse(s["dates"]["due_at"])
-      self.visible_at = Time.zone.parse(s["dates"]["visible_at"])
-      self.grading_deadline = Time.zone.parse(s["dates"]["grading_deadline"])
+    if s["dates"] && s["dates"]["start_at"]
+      if s["dates"]["due_at"] && s["dates"]["end_at"] && s["dates"]["grading_deadline"]
+        self.due_at = Time.zone.parse(s["dates"]["due_at"])
+        self.start_at = Time.zone.parse(s["dates"]["start_at"])
+        self.end_at = Time.zone.parse(s["dates"]["end_at"])
+        self.grading_deadline = Time.zone.parse(s["dates"]["grading_deadline"])
+      else
+        self.due_at = self.end_at = self.start_at = self.grading_deadline =
+                                      Time.zone.parse(s["dates"]["start_at"])
+      end
     else
-      self.due_at = self.end_at = self.visible_at =
-                      self.start_at = self.grading_deadline = Time.current + 1.day
+      self.due_at = self.end_at = self.start_at = self.grading_deadline = Time.current + 1.day
     end
 
     self.quiz = false

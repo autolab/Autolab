@@ -534,7 +534,6 @@ module AssessmentAutogradeCore
       @start_at = @assessment.start_at
       @due_at = @assessment.due_at
       @end_at = @assessment.end_at
-      @visible_at = @assessment.visible_at
       @id = @assessment.id
 
       # we iterate over all the methods
