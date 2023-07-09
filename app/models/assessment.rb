@@ -489,7 +489,7 @@ private
       if s["dates"]["due_at"] && s["dates"]["end_at"] && s["dates"]["grading_deadline"]
         self.due_at = Time.zone.parse(s["dates"]["due_at"])
         self.start_at = Time.zone.parse(s["dates"]["start_at"])
-        self.end_at = Time.zone.parse(s["dates"]["due_at"])
+        self.end_at = Time.zone.parse(s["dates"]["end_at"])
         self.grading_deadline = Time.zone.parse(s["dates"]["grading_deadline"])
       else
         self.due_at = self.end_at = self.start_at = self.grading_deadline =
