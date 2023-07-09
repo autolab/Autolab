@@ -298,7 +298,6 @@ class AssessmentsController < ApplicationController
                                     "handin.c"
                                   end
 
-    @assessment.visible_at = Time.current + 1.day
     @assessment.start_at = Time.current + 1.day
     @assessment.due_at = Time.current + 1.day
     @assessment.end_at = Time.current + 1.day
@@ -306,16 +305,6 @@ class AssessmentsController < ApplicationController
     @assessment.quiz = false
     @assessment.quizData = ""
     @assessment.max_submissions = params.include?(:max_submissions) ? params[:max_submissions] : -1
-
-    if @assessment.embedded_quiz
-      begin
-        @assessment.embedded_quiz_form_data = params[:assessment][:embedded_quiz_form].read
-      rescue StandardError
-        flash[:error] = "Embedded quiz form cannot be empty!"
-        redirect_to(action: :install_assessment)
-        return
-      end
-    end
 
     begin
       @assessment.construct_folder
@@ -365,7 +354,6 @@ class AssessmentsController < ApplicationController
     @start_at = @assessment.start_at
     @due_at = @assessment.due_at
     @end_at = @assessment.end_at
-    @visible_at = @assessment.visible_at
     @id = @assessment.id
   end
 
@@ -960,7 +948,7 @@ private
     ass = params.require(:assessment)
     ass[:category_name] = params[:new_category] if params[:new_category].present?
     ass.permit(:name, :display_name, :category_name, :has_svn, :has_lang, :group_size,
-               :embedded_quiz, :embedded_quiz_form_data, :github_submission_enabled)
+               :github_submission_enabled)
   end
 
   def edit_assessment_params
@@ -979,6 +967,7 @@ private
 
     ass.delete(:name)
     ass.delete(:config_file)
+    ass.delete(:embedded_quiz_form)
 
     ass.permit!
   end
