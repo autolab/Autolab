@@ -169,8 +169,6 @@ class AssessmentsController < ApplicationController
       redirect_to(action: "install_assessment") && return
     rescue StandardError => e
       flash[:error] = "Error while reading the tarball -- #{e.message}."
-      puts("ERRRR")
-      puts(e.backtrace)
       redirect_to(action: "install_assessment") && return
     end
 
