@@ -169,6 +169,8 @@ class AssessmentsController < ApplicationController
       redirect_to(action: "install_assessment") && return
     rescue StandardError => e
       flash[:error] = "Error while reading the tarball -- #{e.message}."
+      puts("ERRRR")
+      puts(e.backtrace)
       redirect_to(action: "install_assessment") && return
     end
 
@@ -991,11 +993,19 @@ private
       pathname.chomp!("/") if entry.directory?
       # nested directories are okay
       if entry.directory? && pathname.count("/") == 0
-        return false if asmt_name
+        if asmt_name
+          flash[:error] = "Error in tarball: Found root directory #{asmt_name}
+                           but also encountered root directory #{pathname} folder. Ensure
+                           there is only one root directory in the tar."
+          return false
+        end
 
         asmt_name = pathname
       else
-        return false unless asmt_name
+        if !asmt_name
+          flash[:error] = "Error in tarball: No root directory found"
+          return false
+        end
 
         if pathname == "#{asmt_name}/#{asmt_name}.rb"
           # We only ever read once, so no need to rewind after
