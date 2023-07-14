@@ -993,15 +993,15 @@ private
       if entry.directory? && pathname.count("/") == 0
         if asmt_name
           flash[:error] = "Error in tarball: Found root directory #{asmt_name}
-                           but also encountered root directory #{pathname} folder. Ensure
-                           there is only one root directory in the tar."
+                           but also found root directory #{pathname}. Ensure
+                           there is only one root directory in the tarball."
           return false
         end
 
         asmt_name = pathname
       else
         if !asmt_name
-          flash[:error] = "Error in tarball: No root directory found"
+          flash[:error] = "Error in tarball: No root directory found."
           return false
         end
 
