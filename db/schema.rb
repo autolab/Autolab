@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2023_06_25_131325) do
+ActiveRecord::Schema.define(version: 2023_07_07_161335) do
 
   create_table "annotations", force: :cascade do |t|
     t.integer "submission_id"
@@ -263,6 +263,7 @@ ActiveRecord::Schema.define(version: 2023_06_25_131325) do
     t.datetime "updated_at"
     t.float "max_score", default: 0.0
     t.boolean "optional", default: false
+    t.index ["assessment_id", "name"], name: "problem_uniq", unique: true
   end
 
   create_table "risk_conditions", force: :cascade do |t|
