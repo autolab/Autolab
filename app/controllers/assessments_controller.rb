@@ -991,11 +991,19 @@ private
       pathname.chomp!("/") if entry.directory?
       # nested directories are okay
       if entry.directory? && pathname.count("/") == 0
-        return false if asmt_name
+        if asmt_name
+          flash[:error] = "Error in tarball: Found root directory #{asmt_name}
+                           but also found root directory #{pathname}. Ensure
+                           there is only one root directory in the tarball."
+          return false
+        end
 
         asmt_name = pathname
       else
-        return false unless asmt_name
+        if !asmt_name
+          flash[:error] = "Error in tarball: No root directory found."
+          return false
+        end
 
         if pathname == "#{asmt_name}/#{asmt_name}.rb"
           # We only ever read once, so no need to rewind after
