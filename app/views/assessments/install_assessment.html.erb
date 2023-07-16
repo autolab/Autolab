@@ -8,9 +8,9 @@
         if (!window.confirm(msg))
           return false;
 
-        const btn = $(e.target);
-        btn.text("Importing...");
-        btn.addClass("disabled");
+        const $btn = $(e.target);
+        $btn.text("Importing...");
+        $btn.addClass("disabled");
 
         Promise.all(
             $(".import").map((i, e) => $.post(e.href))
