@@ -16,7 +16,7 @@
             $(".import").map((i, e) => $.post(e.href))
           )
           .then(() => {
-            btn.text("Done!");
+            alert("Finished import of all assessments.\nIf any assessment remains, it encountered errors during import.");
             location.reload();
           });
       });
