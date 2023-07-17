@@ -1,5 +1,29 @@
 <% @title = "Install Assessment" %>
 
+<% content_for :javascripts do %>
+  <script>
+    $(function() {
+      $("#importAll").click(function(e) {
+        const msg = "Are you sure you want to import all assessments?";
+        if (!window.confirm(msg))
+          return false;
+
+        const $btn = $(e.target);
+        $btn.text("Importing...");
+        $btn.addClass("disabled");
+
+        Promise.all(
+            $(".import").map((i, e) => $.post(e.href))
+          )
+          .then(() => {
+            alert("Finished import of all assessments.\nIf any assessments remain, errors occurred while importing them.");
+            location.reload();
+          });
+      });
+    });
+  </script>
+<% end %>
+
 Choose one of the following methods to install an assessment
 <div class="section">
   <h4>1. Create from scratch</h4>
@@ -30,13 +54,12 @@ Choose one of the following methods to install an assessment
         </em>
       </li>
     <% else %>
-      <ul>
+      <div class="collection">
         <% @unused_config_files.each do |ass_file| %>
-          <li>
-            <%= link_to ass_file, {action: :importAssessment, assessment_name: ass_file}, method: :post %>
-          </li>
+          <%= link_to ass_file, {action: :importAssessment, assessment_name: ass_file}, method: :post, class: "collection-item import" %>
         <% end %>
-      </ul>
+      </div>
+      <a id="importAll" class="btn">Import all</a>
     <% end %>
   </ul>
 </div>
