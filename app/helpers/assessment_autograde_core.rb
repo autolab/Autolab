@@ -331,6 +331,7 @@ module AssessmentAutogradeCore
     # of files needed by the autograder. Can be overridden in the
     # lab config file.
     local_handin = submission.handin_file_path
+    remote_handin = submission.handin_file_long_filename
     local_makefile = File.join(ass_dir, "autograde-Makefile")
     local_autograde = File.join(ass_dir, "autograde.tar")
 
@@ -338,7 +339,9 @@ module AssessmentAutogradeCore
     dest_handin = assessment.handin_filename
 
     # Construct the array of input files.
-    handin = { "localFile" => local_handin, "destFile" => dest_handin }
+    handin = { "localFile" => local_handin,
+               "remoteFile" => remote_handin,
+               "destFile" => dest_handin }
     makefile = { "localFile" => local_makefile, "destFile" => "Makefile" }
     autograde = { "localFile" => local_autograde, "destFile" => "autograde.tar" }
 
