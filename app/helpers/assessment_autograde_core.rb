@@ -45,19 +45,19 @@ module AssessmentAutogradeCore
         raise AutogradeError.new("Error while uploading autograding files", :missing_autograder_file, name_of_file)
       end
       if f["remoteFile"].nil?
-        f["remoteFile"] = f["localFile"]
+        f["remoteFile"] = File.basename(f["localFile"])
       end
     end
 
     # now actually send all of the upload requests
     upload_file_list.each do |f|
       md5hash = Digest::MD5.file(f["localFile"]).to_s
-      next if (existing_files.has_key?(File.basename(f["remoteFile"])) &&
-          existing_files[File.basename(f["remoteFile"])] == md5hash)
+      next if (existing_files.has_key?(f["remoteFile"]) &&
+          existing_files[f["remoteFile"]] == md5hash)
 
       begin
         TangoClient.upload("#{course.name}-#{assessment.name}",
-                           File.basename(f["remoteFile"]),
+                           f["remoteFile"],
                            File.open(f["localFile"], "rb").read)
       rescue TangoClient::TangoException => e
         COURSE_LOGGER.log("Error while uploading autograding files for #{submission.id}: #{e.message}")
@@ -159,7 +159,7 @@ module AssessmentAutogradeCore
   def tango_add_job(course, assessment, upload_file_list, callback_url, job_name, output_file)
     job_properties = { "image" => @autograde_prop.autograde_image,
                        "files" => upload_file_list.map do |f|
-                         { "localFile" => File.basename(f["remoteFile"]),
+                         { "localFile" => f["remoteFile"],
                            "destFile" => Pathname.new(f["destFile"]).basename.to_s }
                        end,
                        "output_file" => output_file,
