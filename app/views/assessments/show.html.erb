@@ -123,12 +123,12 @@
         <div class="collapsible-body">
           <ul class="options">
             <li><%= link_to "View handin history", {:action => 'history'}, {:title=> "View your submissions, scores, and feedback from the course staff" } %> </li>
-
             <% if @assessment.has_writeup? %>
-              <li><%= link_to "View writeup", {:action => 'writeup'}, {:title=> "View the assessment writeup", :class=>""}%> </li>
+              <li><%= link_to "View writeup", {:action => 'writeup'}, {:title=> "View the assessment writeup"} %> </li>
             <% end %>
-
-            <li><%= link_to "Download handout", {:action => 'handout'}, {:title=> "Download handout materials and starter code" } %> </li>
+            <% if @assessment.has_handout? %>
+              <li><%= link_to "Download handout", {:action => 'handout'}, {:title=> "Download handout materials and starter code" } %> </li>
+            <% end %>
             <% if @assessment.has_groups? %>
               <% if @aud.membership_status != AssessmentUserDatum::UNCONFIRMED then %>
                 <li><%= link_to "Group options", [@course, @assessment, @aud.group], title: "Check your group settings." %></li>
@@ -139,7 +139,6 @@
             <% if @assessment.has_scoreboard? %>
               <li><%= link_to "View scoreboard", [@course, @assessment, :scoreboard], title: "View the assessment scoreboard" %></li>
             <% end %>
-
           <% @list.sort { |a,b| a[1] <=> b[1] }.each { |key, value| %>
             <% if value.size > 0  then  %>
               <li><%= link_to value, {:action => key}, {:title=>(@list_title[key] || "")} %> </li>
