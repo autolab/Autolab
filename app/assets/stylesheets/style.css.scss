@@ -794,7 +794,6 @@ table.prettyBorder {
     p {
       margin: 0;
       float: left;
-      padding-right: 3px;
     }
   }
 
@@ -827,7 +826,7 @@ table.prettyBorder {
   .submissions-td {
     border: none;
     border-bottom: 1px solid #ddd;
-    padding: 5px 0 5px 0;
+    padding: 5px 0 5px 0.6rem;
   }
 
   .submissions-cbox-label {
@@ -1568,6 +1567,10 @@ table.sub td, th {
 
 .submissions-icons {
   margin-left: 3px;
+}
+
+i.left {
+  margin-right: 10px;
 }
 
 .submissions-score-align {

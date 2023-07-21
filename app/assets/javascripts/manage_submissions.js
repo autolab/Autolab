@@ -44,14 +44,20 @@ $(document).ready(function () {
 
     // Fetch data and render it in the modal 
     get_score_details(course_user_datum_id).then((data) => {
+      const sorting_icons =
+      ` <i class="material-icons tiny sort-icon sort-icon__both" aria-hidden="true">swap_vert</i>
+        <i class="material-icons tiny sort-icon sort-icon__up" aria-hidden="true">arrow_upward</i>
+        <i class="material-icons tiny sort-icon sort-icon__down" aria-hidden="true">arrow_downward</i>`;
 
       const problem_headers = data.submissions[0].problems.map((problem) => {
         const max_score = problem.max_score;
         const autograded = problem.grader_id < 0 ? " (Autograded)" : "";
-        return `<th class="submission-th">
-                  ${problem.name}
-                  <br>
-                  <i> ${max_score} ${autograded} </i>
+        return `<th class="submission-th submissions-problem-bg">
+                  <div class="sorting-th">
+                    ${problem.name}
+                    ${sorting_icons}
+                  </div>
+                  <span class="score-styling"> ${max_score} ${autograded} </span>
                 </th>`;
       }).join('');
 
@@ -109,7 +115,7 @@ $(document).ready(function () {
               </td>
               ${submission.problems.
               map((problem) =>
-                `<td class="submissions-td">${data.scores[submission.id][problem.id]?.['score']}</td>`
+                `<td class="submissions-td submissions-problem-bg">${data.scores[submission.id][problem.id]?.['score']}</td>`
               ).join('')}
               <td class="submissions-td">
                 ${submission.late_penalty}
@@ -131,11 +137,31 @@ $(document).ready(function () {
           <table class="prettyBorder" id="score-details-table">
             <thead>
               <tr>
-                <th class="submission-th">Version No.</th>
-                <th class="submission-th">Submission Date</th>
-                <th class="submission-th">Final Score</th>
+                <th class="submission-th">
+                  <div class="sorting-th">
+                    Version No.
+                    ${sorting_icons}
+                  </div>
+                </th>
+                <th class="submission-th">
+                  <div class="sorting-th">
+                    Submission Date
+                    ${sorting_icons}
+                  </div>
+                </th>
+                <th class="submission-th">
+                  <div class="sorting-th">
+                    Final Score
+                    ${sorting_icons}
+                  </div>
+                </th>
                   ${problem_headers}
-                <th class="submission-th">Late Penalty</th>
+                <th class="submission-th">
+                  <div class="sorting-th">
+                    Late Penalty
+                    ${sorting_icons}
+                  </div>
+                </th>
                 <th class="submission-th">Tweak</th>
                 <th class="submission-th">Actions</th>
               </tr>

@@ -1,7 +1,11 @@
-.modal-header {
-    float: right;
-    margin-bottom: 0;
-    padding-bottom: 0;
+/* Score Popup */
+
+#modal-close {
+    font-size: 2rem;
+    position: absolute;
+    top: -35%;
+    right: 0;
+    padding: 0;
 }
 
 .score-details {
@@ -13,6 +17,39 @@
     height: auto;
 }
 
-.submissions-td {
-    padding-left: 0.6rem !important;
+/* Table Header */
+
+#score-details-header {
+    position: relative;
+    margin-top: 0;
+}
+
+.score-styling {
+    font-weight: normal;
+    font-style: italic;
+}
+
+.sorting-th {
+    display: flex;
+    align-items: center;
+}
+
+/* Table Styling */
+
+.submissions-problem-bg {
+    background-color: #F2F2F2 !important;
+}
+
+table.prettyBorder tr:hover {
+    background-color: white;
+}
+
+/* Icons */
+
+.material-icons {
+    margin-left: 3px;
+}
+
+.i-no-margin {
+    margin-left: 0;
 }
