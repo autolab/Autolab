@@ -51,7 +51,7 @@ $(document).ready(function () {
 
       const problem_headers = data.submissions[0].problems.map((problem) => {
         const max_score = problem.max_score;
-        const autograded = problem.grader_id < 0 ? " (Autograded)" : "";
+        const autograded = data.autograded ? " (Autograded)" : "";
         return `<th class="submission-th submissions-problem-bg">
                   <div class="sorting-th">
                     ${problem.name}
@@ -115,7 +115,10 @@ $(document).ready(function () {
               </td>
               ${submission.problems.
               map((problem) =>
+                data.scores.length ?
                 `<td class="submissions-td submissions-problem-bg">${data.scores[submission.id][problem.id]?.['score']}</td>`
+                :
+                `<td class="submissions-td submissions-problem-bg">undefined</td>`
               ).join('')}
               <td class="submissions-td">
                 ${submission.late_penalty}
