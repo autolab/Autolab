@@ -115,17 +115,30 @@ class AssessmentsController < ApplicationController
         # add line break if adding to existing error message
         flash.now[:error] = flash.now[:error] ? "#{flash.now[:error]} <br>" : ""
         flash.now[:error] += "An error occurred while trying to display an existing assessment " \
-            "on file directory #{filename}: assessment file names must only contain lowercase " \
+            "from file directory #{filename}: assessment file names must only contain lowercase " \
             "letters and digits with no spaces"
         flash.now[:html_safe] = true
         next
       end
 
-      # each assessment must have an associated yaml file
-      unless File.exist?(File.join(dir_path, filename, "#{filename}.yml"))
+      # each assessment must have an associated yaml file,
+      # and it must have a name field that matches its filename
+      if File.exist?(File.join(dir_path, filename, "#{filename}.yml"))
+        props = YAML.safe_load(File.open(
+                                 File.join(dir_path, filename, "#{filename}.yml"), "r", &:read
+                               ))
+        unless props["general"] && (props["general"]["name"] == filename)
+          flash.now[:error] = flash.now[:error] ? "#{flash.now[:error]} <br>" : ""
+          flash.now[:error] += "An error occurred while trying to display an existing assessment " \
+          "from file directory #{filename}: Name in yaml (#{props['general']['name']}) " \
+          "doesn't match #{filename}"
+          flash.now[:html_safe] = true
+          next
+        end
+      else
         flash.now[:error] = flash.now[:error] ? "#{flash.now[:error]} <br>" : ""
         flash.now[:error] += "An error occurred while trying to display an existing assessment " \
-          "on file directory #{filename}: #{filename}.yml does not exist"
+          "from file directory #{filename}: #{filename}.yml does not exist"
         flash.now[:html_safe] = true
         next
       end
@@ -219,6 +232,7 @@ class AssessmentsController < ApplicationController
     end
 
     params[:assessment_name] = asmt_name
+    params[:cleanup_on_failure] = true
     importAssessment && return
   end
 
@@ -228,6 +242,7 @@ class AssessmentsController < ApplicationController
   action_auth_level :importAssessment, :instructor
 
   def importAssessment
+    cleanup_on_failure = params[:cleanup_on_failure]
     @assessment = @course.assessments.new(name: params[:assessment_name])
     assessment_path = Rails.root.join("courses/#{@course.name}/#{@assessment.name}")
     # not sure if this check is 100% necessary anymore, but is a last resort
@@ -237,8 +252,9 @@ class AssessmentsController < ApplicationController
                        but assessment file name is #{params[:assessment_name]}"
       # destroy model
       destroy_no_redirect
-      # need to delete explicitly b/c the paths don't match
-      FileUtils.rm_rf(assessment_path)
+      # delete files explicitly b/c the paths don't match ONLY if
+      # import was from tarball
+      FileUtils.rm_rf(assessment_path) if cleanup_on_failure
       redirect_to(install_assessment_course_assessments_path(@course)) && return
     end
 
@@ -247,8 +263,9 @@ class AssessmentsController < ApplicationController
     rescue StandardError => e
       flash[:error] = "Error loading yaml: #{e}"
       destroy_no_redirect
-      # need to delete explicitly b/c the paths don't match
-      FileUtils.rm_rf(assessment_path)
+      # delete files explicitly b/c the paths don't match ONLY if
+      # import was from tarball
+      FileUtils.rm_rf(assessment_path) if cleanup_on_failure
       redirect_to(install_assessment_course_assessments_path(@course)) && return
     end
     @assessment.load_embedded_quiz # this will check and load embedded quiz
@@ -258,8 +275,9 @@ class AssessmentsController < ApplicationController
     rescue StandardError => e
       flash[:error] = "Error loading config module: #{e}"
       destroy_no_redirect
-      # need to delete explicitly b/c the paths don't match
-      FileUtils.rm_rf(assessment_path)
+      # delete files explicitly b/c the paths don't match ONLY if
+      # import was from tarball
+      FileUtils.rm_rf(assessment_path) if cleanup_on_failure
       redirect_to(install_assessment_course_assessments_path(@course)) && return
     end
     flash[:success] = "Successfully imported #{@assessment.name}"
