@@ -115,7 +115,7 @@ $(document).ready(function () {
               </td>
               ${submission.problems.
               map((problem) =>
-                data.scores.length ?
+                data.scores[submission.id] ?
                 `<td class="submissions-td submissions-problem-bg">${data.scores[submission.id][problem.id]?.['score']}</td>`
                 :
                 `<td class="submissions-td submissions-problem-bg">undefined</td>`
