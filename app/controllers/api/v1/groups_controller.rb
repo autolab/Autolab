@@ -5,11 +5,17 @@ class Api::V1::GroupsController < Api::V1::BaseApiController
 
   # endpoint to obtain all groups
   def index
-    groups = @assessment.groups
+    groups = @assessment.groups(with_members: true)
+    if params[:with_members]&.to_s == 'true'
+      groups_json = groups.as_json(include: { assessment_user_data: { include: { course_user_datum: { include: :user } } } })
+    else
+      groups_json = groups.as_json
+    end
+
     group_size = @assessment.group_size
 
     respond_with({ group_size: group_size,
-                   groups: groups,
+                   groups: groups_json,
                    assessment: @assessment })
   end
 
