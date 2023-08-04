@@ -5,8 +5,9 @@ class Api::V1::GroupsController < Api::V1::BaseApiController
 
   # endpoint to obtain all groups
   def index
-    groups = @assessment.groups(with_members: true)
-    if params[:with_members]&.to_s == 'true'
+    show_members = params[:with_members]&.to_s == 'true'
+    groups = @assessment.groups(with_members: show_members)
+    if show_members
       groups_json = groups.as_json(include: { assessment_user_data: { include: { course_user_datum: { include: :user } } } })
     else
       groups_json = groups.as_json
@@ -17,6 +18,17 @@ class Api::V1::GroupsController < Api::V1::BaseApiController
     respond_with({ group_size: group_size,
                    groups: groups_json,
                    assessment: @assessment })
+  end
+
+  def show
+    require_params([:id])
+    group = @assessment.groups(with_members: true).find(params[:id])
+
+    if group.nil?
+      raise ApiError.new("Couldn't find group with id #{params[:id]}", :bad_request)
+    end
+
+    respond_with(group, include: { assessment_user_data: { include: { course_user_datum: { include: :user } } } })
   end
 
   # create group endpoint
