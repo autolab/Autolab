@@ -197,7 +197,7 @@ If `show_members` is set to true, a list of `assessment_user_datum` objects will
 
 #### show
 
-Show the details of a group, its assignment, and its members
+Show the details of a group and its members
 
 **Scope:** 'instructor_all'
 
