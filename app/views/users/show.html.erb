@@ -34,22 +34,50 @@
     <% end %>
   </li>
 </ul>
-<%= link_to raw('<span class="btn primary">Edit Information</span>'), edit_user_path(@user) %>
+<%= link_to edit_user_path(@user) do %>
+  <span class="btn primary">
+    Edit Information
+  </span>
+<% end %>
 <% if current_user.administrator? && @user.id != current_user.id %>
-  <%= link_to raw('<span class="btn">Delete User</span>'), user_path(@user), method: :delete, data: {confirm: "Are you sure!?"} %>
+  <%= link_to user_path(@user), method: :delete, data: { confirm: "Are you sure!?" } do %>
+    <span class="btn">
+      Delete User
+    </span>
+  <% end %>
 <% end %>
 <% if @user == current_user %>
   <hr>
   <h4>Private Settings</h4>
-  <%= link_to raw('<span class="btn primary">Change Password</span>'), edit_user_registration_path %>
+  <%= link_to edit_user_registration_path do %>
+    <span class="btn primary">
+      Change Password
+    </span>
+  <% end %>
   <% if GithubIntegration.connected %>
     <% if @user.github_integration && @user.github_integration.is_connected %>
-      <%= link_to raw('<span class="btn primary">Revoke Github Token</span>'), github_revoke_user_path(@user), data: {method: "post"} %>
+      <%= link_to github_revoke_user_path(@user), data: { method: "post" } do %>
+        <span class="btn primary">
+          Revoke Github Token
+        </span>
+      <% end %>
     <% else %>
-      <%= link_to raw('<span class="btn primary">Connect to Github</span>'), github_oauth_user_path(@user) %>
+      <%= link_to github_oauth_user_path(@user) do %>
+        <span class="btn primary">
+          Connect to Github
+        </span>
+      <% end %>
     <% end %>
   <% end %>
   <h4>API Settings</h4>
-  <%= link_to raw('<span class="btn primary">New Activation</span>'), device_flow_activation_path %>
-  <%= link_to raw('<span class="btn primary">Managed Authorized Clients</span>'), oauth_authorized_applications_path %>
+  <%= link_to device_flow_activation_path do %>
+    <span class="btn primary">
+      New Activation
+    </span>
+  <% end %>
+  <%= link_to oauth_authorized_applications_path do %>
+    <span class="btn primary">
+      Managed Authorized Clients
+    </span>
+  <% end %>
 <% end %>

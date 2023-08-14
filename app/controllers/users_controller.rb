@@ -115,7 +115,7 @@ class UsersController < ApplicationController
     end
     if save_worked
       @user.send_reset_password_instructions
-      flash[:success] = "User creation success"
+      flash[:success] = "Successfully created user."
       redirect_to(users_path) && return
     else
       render action: "new"
