@@ -1,4 +1,4 @@
-<%= form_tag [@course, @assessment, @group] do %>
+<%= form_tag action: :create do %>
   <div class="form-group">
     <label class="control-label" for="group_name">Group Name</label>
     <%= text_field_tag :group_name, nil, class: "form-control" %>
@@ -11,5 +11,5 @@
     <p class="help-block">The email of your desired partner. They will need to confirm their membership.</p>
   </div>
 
-  <%= submit_tag "Create Group", class:"btn btn-primary" %>
+  <%= submit_tag "Create Group", class: "btn btn-primary" %>
 <% end %>
