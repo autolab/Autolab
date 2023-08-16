@@ -11,6 +11,7 @@ module AssessmentHandout
   end
 
   def handout
+    # If the logic here changes, do update assessment#has_handout?
     extend_config_module(@assessment, nil, @cud)
 
     if @assessment.overwrites_method?(:handout)

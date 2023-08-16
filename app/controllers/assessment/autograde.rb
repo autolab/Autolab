@@ -199,7 +199,6 @@ module AssessmentAutograde
           flash[:error] += " Please contact your instructor."
         end
       when :tango_open
-        link = "<a href=\"#{url_for(controller: 'jobs')}\">Jobs</a>"
         flash[:error] = "There was an error submitting your autograding job. We are likely down for maintenance if issues persist, please contact #{Rails.configuration.school['support_email']}"
       when :tango_upload
         flash[:error] = "There was an error uploading the submission file."
@@ -207,7 +206,7 @@ module AssessmentAutograde
         flash[:error] = "Submission was rejected by autograder."
         if @cud.instructor?
           link = (view_context.link_to "Autograder Settings", [:edit, course, assessment, :autograder])
-          flash[:error] += " (Verify the autograding properties at #{link}.)\nErrorMsg: " + e.additional_data
+          flash[:error] += " Verify the autograding properties at #{link}.<br>ErrorMsg: " + e.additional_data
           flash[:html_safe] = true
         end
       when :missing_autograder_file

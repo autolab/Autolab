@@ -1,10 +1,6 @@
 class CourseUserDataController < ApplicationController
   before_action :add_users_breadcrumb
 
-  rescue_from ActionView::MissingTemplate do |_exception|
-    redirect_to("/home/error_404")
-  end
-
   action_auth_level :index, :student
   def index
     @requestedUser = @cud
@@ -72,7 +68,7 @@ class CourseUserDataController < ApplicationController
         redirect_to([:users, @course]) && return
       end
     else
-      error_msg = "Adding user failed:"
+      error_msg = "Creation failed."
       if !@newCUD.valid?
         @newCUD.errors.full_messages.each do |msg|
           error_msg += "<br>#{msg}"
@@ -160,7 +156,9 @@ class CourseUserDataController < ApplicationController
     else
       COURSE_LOGGER.log(@editCUD.errors.full_messages.join(", "))
       # error details are shown separately in the view
-      flash[:error] = "Update failed. Check all fields"
+      flash[:error] = "Update failed.<br>"
+      flash[:error] += @editCUD.errors.full_messages.join("<br>")
+      flash[:html_safe] = true
       redirect_to(action: :edit) && return
     end
   end

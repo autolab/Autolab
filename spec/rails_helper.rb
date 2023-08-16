@@ -21,7 +21,7 @@ ActiveRecord::Migration.maintain_test_schema!
 RSpec.configure do |config|
   config.include ActionDispatch::TestProcess
   # Remove this line if you're not using ActiveRecord or ActiveRecord fixtures
-  config.fixture_path = "#{::Rails.root}/spec/fixtures"
+  config.fixture_path = Rails.root.join("spec/fixtures")
 
   # If you're not using ActiveRecord, or you'd prefer not to run each of your
   # examples within a transaction, remove the following line or assign false
@@ -44,6 +44,10 @@ RSpec.configure do |config|
   Capybara.register_driver :chrome do |app|
     Capybara::Selenium::Driver.new(app, browser: :chrome)
   end
+
+  # Temporary fix for chromedriver version issue, until we can update Selenium
+  # https://github.com/titusfortner/webdrivers/issues/247
+  Webdrivers::Chromedriver.required_version = "114.0.5735.90"
 
   Capybara.register_driver :headless_chrome do |app|
     capabilities = Selenium::WebDriver::Remote::Capabilities.chrome(

@@ -925,8 +925,8 @@ input[type="password"]:focus {
 }
 
 // To remove line for file-field
-input[type="text"].validate,
-input[type="text"].validate.valid, {
+.file-field input[type="text"].validate,
+.file-field input[type="text"].validate.valid, {
   border-bottom: none;
   box-shadow: none;
 }

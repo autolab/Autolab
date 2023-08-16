@@ -60,8 +60,6 @@ Rails.application.routes.draw do
     if Rails.env == "development" || Rails.env == "test"
       match "developer_login", via: [:get, :post]
     end
-    get "error"
-    get "error_404"
     get "no_user"
   end
 
@@ -244,4 +242,7 @@ Rails.application.routes.draw do
     get "get_branches"
     get "get_commits"
   end
+
+  get "/404", to: "home#error_404"
+  get "/500", to: "home#error_500"
 end

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2023_03_13_053555) do
+ActiveRecord::Schema.define(version: 2023_07_07_161335) do
 
   create_table "annotations", force: :cascade do |t|
     t.integer "submission_id"
@@ -60,7 +60,6 @@ ActiveRecord::Schema.define(version: 2023_03_13_053555) do
   create_table "assessments", force: :cascade do |t|
     t.datetime "due_at"
     t.datetime "end_at"
-    t.datetime "visible_at"
     t.datetime "start_at"
     t.string "name"
     t.text "description"
@@ -82,8 +81,6 @@ ActiveRecord::Schema.define(version: 2023_03_13_053555) do
     t.integer "late_penalty_id"
     t.integer "version_penalty_id"
     t.datetime "grading_deadline", null: false
-    t.boolean "has_autograde_old"
-    t.boolean "has_scoreboard_old"
     t.boolean "has_svn"
     t.boolean "quiz", default: false
     t.text "quizData"
@@ -92,7 +89,6 @@ ActiveRecord::Schema.define(version: 2023_03_13_053555) do
     t.integer "group_size", default: 1
     t.text "embedded_quiz_form_data"
     t.boolean "embedded_quiz"
-    t.binary "embedded_quiz_form"
     t.boolean "allow_student_assign_group", default: true
     t.boolean "github_submission_enabled", default: true
     t.boolean "is_positive_grading", default: false
@@ -267,6 +263,7 @@ ActiveRecord::Schema.define(version: 2023_03_13_053555) do
     t.datetime "updated_at"
     t.float "max_score", default: 0.0
     t.boolean "optional", default: false
+    t.index ["assessment_id", "name"], name: "problem_uniq", unique: true
   end
 
   create_table "risk_conditions", force: :cascade do |t|
@@ -285,6 +282,8 @@ ActiveRecord::Schema.define(version: 2023_03_13_053555) do
     t.integer "course_id"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.datetime "until", default: -> { "CURRENT_TIMESTAMP" }
+    t.boolean "disabled", default: false
   end
 
   create_table "score_adjustments", force: :cascade do |t|

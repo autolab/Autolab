@@ -48,7 +48,7 @@
 }
 
 .select_all {
-  margin-top: 2px; 
+  margin-top: 2px;
   margin-right: -5px;
 }
 
@@ -58,13 +58,13 @@
 
 span.padded-span:before {
   content:" ";
-  display:inline-block; 
+  display:inline-block;
   width:10px;
 }
 
 span.padded-span:after {
-  content:" "; 
-  display:inline-block; 
+  content:" ";
+  display:inline-block;
   width:10px;
 }
 
@@ -97,6 +97,10 @@ input[type="text"] {
 
 .error {
   color: black;
+}
+
+.ui.form input[type="text"] {
+  vertical-align: baseline;
 }
 
 .ui.form .inline.fields .field .calendar:not(.popup), .ui.form .inline.field .calendar:not(.popup) {
@@ -170,7 +174,7 @@ i.external.alternate {
   // color, font-weight needed here for non checkbox label
   color: black;
   font-weight: 300;
-  display: inline-block !important; 
+  display: inline-block !important;
   vertical-align: middle !important;
   -webkit-touch-callout: default !important; /* iOS Safari */
   -webkit-user-select: auto !important; /* Safari */
@@ -185,7 +189,7 @@ i.external.alternate {
   color: black;
   font-weight: 300;
 }
-.ui.checkbox.select_single label:before, 
+.ui.checkbox.select_single label:before,
 .ui.checkbox.select_single label:after {
   top: 6.5px;
 }

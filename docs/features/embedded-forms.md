@@ -1,4 +1,4 @@
-## Embedded Forms
+# Embedded Forms
 
 This feature allows an instructor to create an assessment which does not require a file submission on the part of the student. Instead, when an assessment is created, the hand-in page for that assessment will display an HTML form of the instructor’s design. When the student submits the form, the information is sent directly in JSON format to the Tango grading server for evaluation.
 
@@ -7,7 +7,7 @@ This feature allows an instructor to create an assessment which does not require
 
 ![Embedded Form](/images/embedded_form_example.png)
 
-### Creating an Embedded Form
+## Creating an Embedded Form
 
 Create an HTML file with a combination of the following elements. The HTML file need only include form elements, because it will automatically be wrapped in a `<form></form>` block when it is rendered on the page.
 
@@ -101,7 +101,7 @@ Navigate to the Basic section of editing an assessment (`/courses/<course>/asses
 
 ![Embedded Form Edit](/images/embedded_quiz_edit.png)
 
-### Grading an Embedded Form
+## Grading an Embedded Form
 
 When a student submits a form, the form data is sent to [Tango](/installation/tango/) in the form of a JSON string in the file `out.txt.` In your grading script, parse the contents of `out.txt` as a JSON object. The JSON object will be a key-value pair data structure, so you can access the students response string (`value`) by its unique key (the `name` attribute).
 
