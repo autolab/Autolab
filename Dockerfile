@@ -60,7 +60,7 @@ RUN chown -R app:app .
 
 # precompile the Rails assets
 ENV SECRET_KEY_BASE="ekz0nrn_DPG6ucv5ukw"
-RUN RAILS_ENV=production bundle exec rails assets:precompile
+#RUN RAILS_ENV=production bundle exec rails assets:precompile
 
 # Clean up APT when done.
 USER root
