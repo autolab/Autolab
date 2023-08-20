@@ -52,7 +52,7 @@
     <%= form_tag add_course_assessment_group_path(@course, @assessment, @group) do %>
       <div class="form-group">
         <label class="control-label" for="member_email">Partner Email</label>
-        <%= text_field_tag :member_email, nil, class: "form-control" %>
+        <%= text_field_tag :member_email, nil, class: "form-control", autocomplete: "email" %>
         <p class="help-block">The email of your desired partner. They will need to confirm their membership.</p>
       </div>
 
