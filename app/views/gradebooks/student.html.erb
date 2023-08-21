@@ -14,7 +14,7 @@
   <h4>Grades for <%= @_cud.email %></h4>
 
   <% if not @course.gb_message.blank? %>
-    <div class="gb_message"><%=raw(@course.gb_message)%></div>
+    <div class="gb_message"><%= raw(@course.gb_message) %></div>
   <% end %>
 
   <div class="grades_container">
@@ -26,12 +26,12 @@
         <div class="category">
           <table class="grades">
             <colgroup>
-              <col class="asmt_names"></col>
+              <col class="asmt_names">
               <% if @course.grace_days > 0 %>
-                <col class="gdu"></col>
+                <col class="gdu">
               <% end %>
-              <col class="pld"></col>
-              <col class="fs"></col>
+              <col class="pld">
+              <col class="fs">
             </colgroup>
 
             <tr class="header">
@@ -39,17 +39,29 @@
               <% if @course.grace_days > 0 %>
                 <th>
                   GDU
-                  <i class="material-icons tooltipped" tabindex="0" data-html="true" data-tooltip="<b>Grace Days Used</b><br />Number of late days used for which <em>no</em> penalty was incurred">help</i>
+                  <i
+                    class="material-icons tooltipped"
+                    tabindex="0"
+                    data-html="true"
+                    data-tooltip="<b>Grace Days Used</b><br />Number of late days used for which <em>no</em> penalty was incurred">
+                      help
+                  </i>
                 </th>
               <% end %>
               <th>
                 PLD
-                <i class="material-icons tooltipped" tabindex="0" data-html="true" data-tooltip="<b>Penalty Late Days</b><br />Number of late days used for which a penalty was incurred">help</i>
+                <i
+                  class="material-icons tooltipped"
+                  tabindex="0"
+                  data-html="true"
+                  data-tooltip="<b>Penalty Late Days</b><br />Number of late days used for which a penalty was incurred">
+                  help
+                </i>
               </th>
               <th>Final Score</th>
             </tr>
             <% @course.assessments_with_category(cat, @cud.student?).each do |asmt| %>
-              <% aud = asmt.aud_for @_cud  %>
+              <% aud = asmt.aud_for @_cud %>
               <tr>
                 <td>
                   <span>
@@ -89,7 +101,11 @@
                        when :submitted %>
                       <% if Time.now <= aud.assessment.grading_deadline || !aud.latest_submission.all_scores_released? %>
                         <a href="<%= history_url(@_cud, asmt) %>">
-                          <i class="material-icons tooltipped" data-tooltip="Final score will be visible once grading is complete.">access_time</i>
+                          <i
+                            class="material-icons tooltipped"
+                            data-tooltip="Final score will be visible once grading is complete.">
+                            access_time
+                          </i>
                         </a>
                       <% else %>
                         <%= render_final_score aud %>
@@ -97,7 +113,11 @@
 
                     <% when :not_submitted %>
                       <% if Time.now <= aud.assessment.grading_deadline %>
-                        <i class="material-icons tooltipped" data-tooltip="No submission was made.">priority_high</i>
+                        <i
+                          class="material-icons tooltipped"
+                          data-tooltip="No submission was made.">
+                          priority_high
+                        </i>
                       <% else %>
                         <span class="not-submitted tooltipped" data-tooltip="No submission was made.">
                           <%= render_final_score aud %>
@@ -106,7 +126,11 @@
 
                     <% when :not_yet_submitted %>
                       <% if Time.now <= aud.assessment.grading_deadline %>
-                        <i class="material-icons tooltipped" data-tooltip="No submission has been made yet.">priority_high</i>
+                        <i
+                          class="material-icons tooltipped"
+                          data-tooltip="No submission has been made yet.">
+                          priority_high
+                        </i>
                       <% else %>
                         <span class="not-yet-submitted tooltipped" data-tooltip="No submission has been made yet.">
                           <%= render_final_score aud %>
