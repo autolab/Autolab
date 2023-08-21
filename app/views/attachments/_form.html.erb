@@ -1,32 +1,26 @@
 <%= form_for @attachment, as: :attachment, url: path, builder: FormBuilderWithDateTimeInput do |f| %>
   <%= f.error_messages %>
 
-	<ul>
-		<li>
-			<%= f.text_field :name, :required => true %>
-		</li>
-		<li>
-			<% if @attachment.new_record? %>
-				<%= f.file_field :file, button_text: "Upload Attachment" %>
-			<% else %>
-				<%= f.text_field :mime_type,
-												 help_text: "Note: If you change the Mime type of a file, you might need to clear your browser's cache in order for you to see the change." %>
-			<% end %>
-		</li>
-		<li>
-			<div>
-				<%= f.check_box :released, help_text: "Checking this box will release the attachment to students" %>
-			</div>
-		</li>
-		<li>
-			<%= f.submit(@attachment.new_record? ? "Create New Attachment" : "Save Changes", class: "btn primary") %>
-		</li>
-	</ul>
-
-<script>
-    document.getElementById("attachment_file").onchange = function(e) {
-        document.getElementById("upload_file").value = document.getElementById("attachment_file").value.split(/(\\|\/)/g).pop();
-    }
-</script>
+  <ul>
+    <li>
+      <%= f.text_field :name, required: true %>
+    </li>
+    <li>
+      <% if @attachment.new_record? %>
+        <%= f.file_field :file, button_text: "Upload Attachment" %>
+      <% else %>
+        <%= f.text_field :mime_type,
+                         help_text: "Note: If you change the Mime type of a file, you might need to clear your browser's cache in order for you to see the change." %>
+      <% end %>
+    </li>
+    <li>
+      <div>
+        <%= f.check_box :released, help_text: "Checking this box will release the attachment to students" %>
+      </div>
+    </li>
+    <li>
+      <%= f.submit(@attachment.new_record? ? "Create New Attachment" : "Save Changes", class: "btn primary") %>
+    </li>
+  </ul>
 
 <% end %>
