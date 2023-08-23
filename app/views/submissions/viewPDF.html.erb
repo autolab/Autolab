@@ -1,24 +1,23 @@
-<% @title = (@cud.instructor || @cud.course_assistant) ? "Annotate Submission" : "View Submission" %>
+<% @title = @cud.instructor || @cud.course_assistant ? "Annotate Submission" : "View Submission" %>
 
 <% content_for :stylesheets do %>
-<%= stylesheet_link_tag "annotations" %>
-<%= external_stylesheet_link_tag "jquery-ui" %>
+  <%= stylesheet_link_tag "annotations" %>
+  <%= external_stylesheet_link_tag "jquery-ui" %>
 
+  <style type="text/css">
+    #pdf-doc canvas {
+      margin-bottom: 20px;
+      border: 1px solid #ddd;
+    }
 
-<style type="text/css">
-  #pdf-doc canvas {
-    margin-bottom: 20px;
-    border: 1px solid #ddd;
-  }
-
-  .annotationPane .btn {
-    padding: 0 1rem;
-    display: flex;
-    align-content: center;
-    align-items: center;
-    justify-content: space-between;
-  }
-</style>
+    .annotationPane .btn {
+      padding: 0 1rem;
+      display: flex;
+      align-content: center;
+      align-items: center;
+      justify-content: space-between;
+    }
+  </style>
 <% end %>
 
 <% content_for :javascripts do %>
@@ -27,7 +26,7 @@
   <%= external_javascript_include_tag "jquery-ui" %>
   <%= javascript_include_tag "highlight.pack.js" %>
 
-  <script type="application/javascript">
+  <script type="text/javascript">
 
     <% if @cud.instructor || @cud.course_assistant then %>
       var isInstructor = true;
@@ -35,20 +34,20 @@
       var isInstructor = false;
     <% end %>
 
-    var annotations = <%=raw @annotations.to_json %>;
+    var annotations = <%= raw @annotations.to_json %>;
     var fileNameStr = "<%= @filename %>";
     <% if @preview_mode then %>
-    var fileLink    = "<%= url_for [:download, @course, @assessment, @submission, header_position: params[:header_position], annotated: true] %>";
+    var fileLink    = "<%= url_for [:download, @course, @assessment, @submission, { header_position: params[:header_position], annotated: true }] %>";
     <% else %>
-    var fileLink    = "<%= url_for [:download, @course, @assessment, @submission, header_position: params[:header_position]] %>";
+    var fileLink    = "<%= url_for [:download, @course, @assessment, @submission, { header_position: params[:header_position] }] %>";
     <% end %>
     var cudEmailStr = "<%= @cud.email %>";
-    
+
     // a json list of problems for this assessment
-    var problems = <%=raw @problems.to_json %>;
+    var problems = <%= raw @problems.to_json %>;
 
     // a json list of scores for this assessment
-    var scores = <%=raw @scores.to_json %>;
+    var scores = <%= raw @scores.to_json %>;
     var basePath = "<%= course_assessment_submission_annotations_path(@course, @assessment, @submission) %>";
 
     <% if params[:header_position] %>
@@ -58,7 +57,6 @@
     <% end %>
 
     PDFJS.workerSrc = "<%= asset_url 'pdf.worker.js' %>";
-
 
     var canvasContainer = document.getElementById("pdf-doc");
     //
@@ -107,7 +105,6 @@
           }
         });
 
-
       }
     }).catch(function(error){
         //no error message is logged either
@@ -122,7 +119,7 @@
 
 <% end %>
 
-<h2>Submission Version <%=@submission.version%> for
+<h2>Submission Version <%= @submission.version %> for
 <%= current_assessment_link %> (<%= @submission.course_user_datum.email %>)
 </h2>
 <hr>
@@ -140,11 +137,11 @@
         <span>Preview</span>
       </a>
       <% end %>
-      <a style="width:100%; margin-top: 6px;" href="<%= url_for [:download, @course, @assessment, @submission, header_position: params[:header_position]] %>" title="Original Submission" class="btn">
+      <a style="width:100%; margin-top: 6px;" href="<%= url_for [:download, @course, @assessment, @submission, { header_position: params[:header_position] }] %>" title="Original Submission" class="btn">
         <i class="material-icons" aria-hidden="true">file_download</i>
         <span>Original</span>
       </a>
-      <a style="width:100%; margin-top: 6px;" href="<%= url_for [:download, @course, @assessment, @submission, header_position: params[:header_position], annotated: true] %>" title="Annotated Submission" class="btn">
+      <a style="width:100%; margin-top: 6px;" href="<%= url_for [:download, @course, @assessment, @submission, { header_position: params[:header_position], annotated: true }] %>" title="Annotated Submission" class="btn">
         <i class="material-icons" aria-hidden="true">file_download</i>
         <span>Annotated</span>
       </a>
