@@ -8,11 +8,11 @@
         <th>Submission Date</th>
 
         <% for problem in @problems do %>
-          <th title="Max <%=problem.max_score %> points">
-            <%=problem.name %><br>
+          <th title="Max <%= problem.max_score %> points">
+            <%= problem.name %><br>
             (<%= problem.max_score || raw('&ndash;') %>)
           </th>
-        <%end%>
+        <% end %>
 
         <% if @course.grace_days >= 0 %>
           <th>Late Days Used</th>
@@ -39,8 +39,8 @@
         <% if limit.nil? then limit = @submissions.size end %>
         <% for submission in @submissions.first(limit) do %>
           <%= render partial: "submission_history_row",
-            locals: { submission: submission,
-            download_access: download_access } %>
+                     locals: { submission: submission,
+                               download_access: download_access } %>
         <% end %>
       <% end %>
     </tbody>
