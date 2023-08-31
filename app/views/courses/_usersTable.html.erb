@@ -10,7 +10,7 @@
     </span>
 <% end %>
 </span>
-<table class="prettyBorder sortable" >
+<table class="prettyBorder sortable">
 <thead class="float">
   <tr>
     <th>&#8470;</th><!-- "No." symbol. -->
@@ -43,15 +43,13 @@
   <td><%= cud.user.year %></td>
   <td><%= cud.nickname %></td>
   <td><%= cud.dropped %></td>
-  <td><%= if cud.instructor? then
-    "Instructor"
-  elsif cud.course_assistant? then
-    "Course Assistant"
-  else
-    "Student"
-  end
-  %></td>
+  <td><%= if cud.instructor?
+            "Instructor"
+          elsif cud.course_assistant?
+            "Course Assistant"
+          else
+            "Student"
+          end %></td>
 </tr>
 <% end %>
 </table>
-
