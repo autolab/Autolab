@@ -54,9 +54,13 @@ RSpec.configure do |config|
       'goog:chromeOptions': { args: %w[headless] }
     )
 
+    service_args = %w[--disable-build-check]
+    service = Selenium::WebDriver::Service.chrome(args: service_args)
+
     Capybara::Selenium::Driver.new app,
                                    browser: :chrome,
-                                   capabilities: capabilities
+                                   capabilities: capabilities,
+                                   service: service
   end
   # change to chrome to see execution on browser
   Capybara.javascript_driver = :headless_chrome
