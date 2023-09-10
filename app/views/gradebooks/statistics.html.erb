@@ -29,10 +29,10 @@
       <% @course_stats.each do |name, stats| %>
         <tr>
           <td>
-# TODO: RESTORE LINKS
+<%# TODO: RESTORE LINKS %>
             <%= name %>
-# TODO: BAD! FIX!
-# name.end_with?(' Average') ? name : (link_to name, { :controller => name }, :class => :asmt_link)
+<%# TODO: BAD! FIX!%>
+<%# name.end_with?(' Average') ? name : (link_to name, { :controller => name }, :class => :asmt_link)%>
           </td>
           <td><%= stats[:mean] %></td>
           <td><%= stats[:median] %></td>
