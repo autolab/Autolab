@@ -15,11 +15,11 @@
 
   <p>
     The CMU Roster file should include a header.  Editing accounts will occur as a
-    <a href="http://en.wikipedia.org/wiki/Database_transaction#Transactional_databases">transaction</a>,
+    <a href="https://en.wikipedia.org/wiki/Database_transaction#Transactional_databases">transaction</a>,
     if there is an error we will cancel all changes and allow you to correct the error and re-submit.
   </p>
 
-  <%= form_for :upload, url: { action: "upload_roster" },
+  <%= form_for :upload, url: upload_roster_course_path(@course),
                         builder: FormBuilderWithDateTimeInput, html: { multipart: true } do |f| %>
     <%= f.file_field :file %>
     <p></p>

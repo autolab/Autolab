@@ -12,11 +12,11 @@
 <% lcd = @course.lti_course_datum %>
 <div>
   <span>
-    <%= link_to raw('<span class="btn">Add User to Course</span>'), [:new, @course, :course_user_datum] %>
+    <%= link_to raw('<span class="btn">Add User to Course</span>'), new_course_course_user_datum_path(@course) %>
     <!-- Add User Dropdown Trigger -->
     <a id="add-users" class='dropdown-trigger btn' href='#' data-target='add-users-dropdown'>ADD USERS FROM EMAILS</a>
-    <%= link_to raw('<span class="btn">Import Roster/Users</span>'), { action: "upload_roster" } %>
-    <%= link_to raw('<span class="btn">Export Roster</span>'), { action: "download_roster" } %>
+    <%= link_to raw('<span class="btn">Import Roster/Users</span>'), upload_roster_course_path(@course) %>
+    <%= link_to raw('<span class="btn">Export Roster</span>'), download_roster_course_path(@course) %>
     <% unless lcd.nil? %> <a class="waves-effect waves-light btn modal-trigger" href="#lti-settings-modal">Linked Course Settings</a> <% end %>
   </span>
 </div>
@@ -46,7 +46,7 @@
           <a href="#!" class="modal-close btn-flat">Cancel</a>
         </span>
         <%= link_to raw('<span class="btn-flat">Unlink Course</span>'),
-                    { action: "unlink_course" },
+                    unlink_course_course_path(@course),
                     data: { confirm: "Are you sure you want to unlink the course?" },
                     method: :post %>
       </div>

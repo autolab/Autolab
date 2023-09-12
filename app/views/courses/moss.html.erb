@@ -26,7 +26,7 @@
   <h4>Step 1:</h4>
   <p>Check the box for each assessment you want to send to Moss for cheat checking.</p>
 
-  <%= form_tag([:run_moss, @course], multipart: true) do %>
+  <%= form_tag(run_moss_course_path(@course), multipart: true) do %>
     <ul class="moss-list">
       <li id="<%= @course.display_name %>">
         <div class="moss-dropdown" id="moss-dropdown" onclick="toggleOptions('moss-dropdown', '<%= @course.id %>Assessments')">
