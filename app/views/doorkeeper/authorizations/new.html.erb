@@ -13,7 +13,7 @@
 <h3>Authorization Required</h3>
 
 <p class="h4">
-  <%= raw t('.prompt', client_name: "<strong class=\"text-info\">#{ h @pre_auth.client.name }</strong>") %>
+  <%= raw t('.prompt', client_name: "<strong class=\"text-info\">#{h @pre_auth.client.name}</strong>") %>
 </p>
 
 <% if @pre_auth.scopes.count > 0 %>
@@ -94,4 +94,3 @@
   </tbody>
 </table>
 </div>
-
