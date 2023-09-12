@@ -4,9 +4,9 @@
   <%= javascript_include_tag "signup_form" %>
 <% end %>
 
-<%= form_for(resource, :as => resource_name, :url => registration_path(resource_name)) do |f| %>
+<%= form_for(resource, as: resource_name, url: registration_path(resource_name)) do |f| %>
   <div class="input-field">
-    <%= f.text_field :first_name, :required => true, :autofocus => true %>
+    <%= f.text_field :first_name, required: true, autofocus: true %>
     <%= f.label :first_name %>
     <div class="help-block">
       <% if resource.errors[:first_name].empty? %>
@@ -18,7 +18,7 @@
   </div>
 
   <div class="input-field">
-    <%= f.text_field :last_name, :required => true %>
+    <%= f.text_field :last_name, required: true %>
     <%= f.label :last_name %>
     <div class="help-block">
       <% if resource.errors[:last_name].empty? %>
@@ -30,7 +30,7 @@
   </div>
 
   <div class="input-field">
-    <%= f.email_field :email, :required => true %>
+    <%= f.email_field :email, required: true %>
     <%= f.label :email %>
     <div class="help-block">
       <% if resource.errors[:email].empty? %>
@@ -42,7 +42,7 @@
   </div>
 
   <div class="input-field">
-    <%= f.password_field :password, :pattern => ".{8,}", :required => true %>
+    <%= f.password_field :password, pattern: ".{8,}", required: true %>
     <%= f.label :password %>
     <div class="help-block">
       <% if resource.errors[:password].empty? %>
@@ -54,7 +54,7 @@
   </div>
 
   <div class="input-field">
-    <%= f.password_field :password_confirmation, :title => "Must match your password", :required => true %>
+    <%= f.password_field :password_confirmation, title: "Must match your password", required: true %>
     <%= f.label :password_confirmation %>
     <div class="help-block">
       <% if resource.errors[:password_confirmation].empty? %>
@@ -65,9 +65,9 @@
     </div>
   </div>
 
-  <br />
-  <div><%= f.submit "Sign up", { :class => "btn primary" } %></div>
-  <br />
+  <br>
+  <div><%= f.submit "Sign up", { class: "btn primary" } %></div>
+  <br>
 <% end %>
 
 <%= render "devise/shared/links" %>

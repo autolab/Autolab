@@ -7,8 +7,13 @@
 
 <h4>Options</h4>
 <ul class="collection">
-  <li class="collection-item">Directly edit the configuration file (via the file system) and <%= link_to "reload", reload_course_path(@course, @assessment), data: {method: "post"} %></li>
-  <li class="collection-item">Upload a new configuration file <%= link_to "here", edit_course_path(@course) %></li>
+  <li class="collection-item">
+    Directly edit the configuration file (via the file system) and
+    <%= link_to "reload", reload_course_path(@course, @assessment), data: { method: "post" } %>
+  </li>
+  <li class="collection-item">
+    Upload a new configuration file <%= link_to "here", edit_course_path(@course) %>
+  </li>
 </ul>
 
 <h4>Stack Trace</h4>

@@ -32,7 +32,7 @@ class UsersController < ApplicationController
   def show
     user = User.find_by id: params[:id]
     if user.nil?
-      flash[:error] = "User does not exist"
+      flash[:error] = "Failed to show user: user does not exist."
       redirect_to(users_path) && return
     end
 
@@ -59,7 +59,7 @@ class UsersController < ApplicationController
         @cuds = user_cuds
       elsif user != current_user
         # current user is not instructor to user
-        flash[:error] = "Permission denied"
+        flash[:error] = "Permission denied: you are not allowed to view this user."
         redirect_to(users_path) && return
       else
         @user = current_user
@@ -76,7 +76,7 @@ class UsersController < ApplicationController
       @user = User.new
     else
       # current user is a normal user. Permission denied
-      flash[:error] = "Permission denied"
+      flash[:error] = "Permission denied: you are not allowed to view this page."
       redirect_to(users_path) && return
     end
   end
@@ -92,7 +92,7 @@ class UsersController < ApplicationController
       @user = User.new(new_user_params)
     else
       # current user is a normal user. Permission denied
-      flash[:error] = "Permission denied"
+      flash[:error] = "Permission denied: you are not allowed to view this page."
       redirect_to(users_path) && return
     end
 
@@ -103,19 +103,19 @@ class UsersController < ApplicationController
     save_worked = false
     begin
       save_worked = @user.save
-      flash[:error] = "User creation failed" unless save_worked
+      flash[:error] = "Failed to create user." unless save_worked
     rescue StandardError => e
       error_message = e.message
       flash[:error] = if error_message.include?("Duplicate entry") && error_message.include?("@")
-                        "User with email #{@user.email} already exists"
+                        "Failed to create user: User with email #{@user.email} already exists."
                       else
-                        "User creation failed"
+                        "Failed to create user."
                       end
       save_worked = false
     end
     if save_worked
       @user.send_reset_password_instructions
-      flash[:success] = "User creation success"
+      flash[:success] = "Successfully created user."
       redirect_to(users_path) && return
     else
       render action: "new"
@@ -127,7 +127,7 @@ class UsersController < ApplicationController
   def edit
     user = User.find(params[:id])
     if user.nil?
-      flash[:error] = "User does not exist"
+      flash[:error] = "Failed to edit user: user does not exist."
       redirect_to(users_path) && return
     end
 
@@ -135,7 +135,7 @@ class UsersController < ApplicationController
       @user = user
     elsif user != current_user
       # current user can only edit himself if he's neither role
-      flash[:error] = "Permission denied"
+      flash[:error] = "Permission denied: you are not allowed to edit this user."
       redirect_to(users_path) && return
     else
       @user = current_user
@@ -147,7 +147,7 @@ class UsersController < ApplicationController
   def update
     user = User.find(params[:id])
     if user.nil?
-      flash[:error] = "User does not exist"
+      flash[:error] = "Failed to update user: user does not exist."
       redirect_to(users_path) && return
     end
 
@@ -156,7 +156,7 @@ class UsersController < ApplicationController
       @user = user
     elsif user != current_user
       # current user can only edit himself if he's neither role
-      flash[:error] = "Permission denied"
+      flash[:error] = "Permission denied: you are not allowed to update this user."
       redirect_to(users_path) && return
     else
       @user = current_user
@@ -167,10 +167,10 @@ class UsersController < ApplicationController
                    else
                      user_params
                    end)
-      flash[:success] = "User was successfully updated."
+      flash[:success] = "Successfully updated user."
       redirect_to(users_path) && return
     else
-      flash[:error] = "User update failed. Check all fields"
+      flash[:error] = "Failed to update user. Check all fields and try again."
       redirect_to(edit_user_path(user)) && return
     end
   end
@@ -179,32 +179,32 @@ class UsersController < ApplicationController
   action_auth_level :destroy, :administrator
   def destroy
     unless current_user.administrator?
-      flash[:error] = "Permission denied."
+      flash[:error] = "Permission denied: you are not allowed to delete this user."
       redirect_to(users_path) && return
     end
 
     if current_user.id == params[:id].to_i
-      flash[:error] = "You cannot delete yourself."
+      flash[:error] = "Failed to delete user: you cannot delete yourself."
       redirect_to(users_path) && return
     end
 
     user = User.find(params[:id])
     if user.nil?
-      flash[:error] = "User doesn't exist."
+      flash[:error] = "Failed to delete user: user doesn't exist."
       redirect_to(users_path) && return
     end
 
     # TODO: Need to cleanup user resources here
 
     user.destroy
-    flash[:success] = "User destroyed."
+    flash[:success] = "Successfully destroyed user."
     redirect_to(users_path) && return
   end
 
   def lti_launch_initialize
     unless params[:course_title].present? && params[:context_id].present? &&
            params[:course_memberships_url].present? && params[:platform].present?
-      raise LtiLaunchController::LtiError.new("Unable launch LTI link, missing parameters",
+      raise LtiLaunchController::LtiError.new("Unable to launch LTI link, missing parameters",
                                               :bad_request)
     end
 
@@ -233,7 +233,7 @@ class UsersController < ApplicationController
   def lti_launch_link_course
     unless params[:context_id].present? && params[:course_memberships_url].present? &&
            params[:platform].present?
-      raise LtiLaunchController::LtiError.new("Unable link course, missing parameters",
+      raise LtiLaunchController::LtiError.new("Unable to link course, missing parameters",
                                               :bad_request)
     end
 
@@ -246,7 +246,7 @@ class UsersController < ApplicationController
     )
 
     course = Course.find(params[:course_id])
-    flash[:success] = "#{course.name} successfully linked"
+    flash[:success] = "#{course.name} successfully linked."
     redirect_to(course)
   end
 
