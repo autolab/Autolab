@@ -4,16 +4,19 @@
 
 <h2>Act as User</h2>
 
-<p>You can use sudo to examine how Autolab appears to other users. You can also change your permission levels to see what your course assistants or students generically see.</p>
+<p>
+  You can use sudo to examine how Autolab appears to other users.
+  You can also change your permission levels to see what your course assistants or students generically see.
+</p>
 
 <p>
-<%= form_tag do %>
-  <p><b>Act as user (email):</b></p>
-  <div class="input-field">
-    <input type="text" size="3" id="student_autocomplete" class="autocomplete" autocomplete="off"/>
-    <label for="student_autocomplete">Start typing student name or email</label>
-  </div>
-  <%= hidden_field_tag(:sudo_id) %>
-  <%= submit_tag "Act as user", {:class=> "btn primary"} %>
-<% end %>
+  <%= form_tag do %>
+    <p><b>Act as user (email):</b></p>
+    <div class="input-field">
+      <input type="text" size="3" id="student_autocomplete" class="autocomplete" autocomplete="off">
+      <label for="student_autocomplete">Start typing student name or email</label>
+    </div>
+    <%= hidden_field_tag(:sudo_id) %>
+    <%= submit_tag "Act as user", { class: "btn primary" } %>
+  <% end %>
 </p>

@@ -9,7 +9,7 @@
     function user_lookup() {
       var email_input = document.getElementById("course_user_datum_user_attributes_email").value;
       if (!email_input || email_input == "") return;
-      $.get('<%= url_for [:user_lookup, @course, remote: true]  %>',  { email: email_input }, function( data ) {
+      $.get('<%= url_for [:user_lookup, @course, { remote: true }] %>',  { email: email_input }, function( data ) {
         if (!data)  {
           $('#course_user_datum_user_attributes_first_name').prop('disabled', false);
           $('#course_user_datum_user_attributes_last_name').prop('disabled', false);
@@ -23,21 +23,20 @@
           $('#course_user_datum_user_attributes_first_name').prop('disabled', true);
           $('#course_user_datum_user_attributes_last_name').val(data.last_name);
           $('#course_user_datum_user_attributes_last_name').prop('disabled', true);
-          // $('#course_user_datum_nickname').focus();
         }
       });
     }
   </script>
 <% end %>
 
-<% @title="Enroll User" %>
+<% @title = "Enroll User" %>
 
 <h4>Enroll User in <%= @course.display_name %></h4>
 
 <%= form_for @newCUD, url: course_course_user_data_path, builder: FormBuilderWithDateTimeInput do |f| %>
 
   <br>
-  <%= render partial: "fields", locals: {f: f, cud: @newCUD, edit: false} %>
+  <%= render partial: "fields", locals: { f: f, cud: @newCUD, edit: false } %>
 
   <br>
   <input id="user_submit" class="btn primary" name="commit" type="submit" value="Save Changes" onclick="formvalidation(this.closest('form')); return false;">
