@@ -44,7 +44,7 @@
       <% @sortedGrades.each_with_index do |grade, i| %>
         <tr>
           <td><%= i + 1 %></td>
-          <td title="<%= (@cud.instructor?) ? "#{grade[:fullName]} (#{grade[:andrewID]})" : "" %>">
+          <td title="<%= @cud.instructor? ? "#{grade[:fullName]} (#{grade[:andrewID]})" : "" %>">
             <%= grade[:nickname] %>
           </td>
           <td>
@@ -57,9 +57,9 @@
           <td><span class="moment-date-time"><%= grade[:time] %></span></td>
           <% if @colspec %>
             <% @colspec.each_with_index do |c, i| %>
-              <% # this is a hack for 15-122's image lab.  It displays b64 encoded results in image tags %>
+              <%# this is a hack for 15-122's image lab.  It displays b64 encoded results in image tags %>
               <% if c["img"] %>
-                <td><img src="data:image/png;base64,<%= grade[:entry][i] %>" /></td>
+                <td><img src="data:image/png;base64,<%= grade[:entry][i] %>"></td>
               <% else %>
                 <td><%= grade[:entry][i] %></td>
               <% end %>
@@ -74,7 +74,6 @@
     </tbody>
   </table>
 <% end %>
-
 
 <%= form_for @cud, url: course_course_user_datum_path(@course, @cud), builder: FormBuilderWithDateTimeInput do |f| %>
   <hr>
