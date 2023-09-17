@@ -146,6 +146,6 @@ private
   end
 
   def attachment_params
-    params.require(:attachment).permit(:name, :file, :released, :mime_type)
+    params.require(:attachment).permit(:name, :file, :category_name, :released, :mime_type)
   end
 end

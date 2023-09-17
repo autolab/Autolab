@@ -1,0 +1,25 @@
+<%# Special style for attachments displayed on course homepage %>
+<%= link_to course_attachment_path(@course, course_attachment),
+            :class => "collection-item grey-text text-darken-4" do %>
+  <%= course_attachment.name %>
+  <span class="secondary-content">
+    <% if @cud.instructor? %>
+      <span class="new badge black"
+            data-badge-caption="edit"
+            data-url="<%= edit_course_attachment_path(@course, course_attachment) %>">
+      </span>
+    <% end %>
+    <% unless course_attachment.released? %>
+      <span class="new badge blue darken-4"
+            data-badge-caption="unreleased"
+            data-url="<%= edit_course_attachment_path(@course, course_attachment) %>">
+      </span>
+    <% end %>
+    <% if course_attachment.has_assessment? %>
+      <span class="new badge yellow darken-4"
+            data-badge-caption="<%= course_attachment.assessment.display_name %>"
+            data-url="<%= course_assessment_path(@course, course_attachment.assessment) %>">
+      </span>
+    <% end %>
+  </span>
+<% end %>

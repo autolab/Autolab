@@ -6,10 +6,17 @@ require "fileutils"
 #
 class Attachment < ApplicationRecord
   validates :name, presence: true
+  validates :category_name, presence: true
   validates :filename, presence: true
 
   belongs_to :course
   belongs_to :assessment
+
+  scope :from_category, ->(category_name) { where(category_name: category_name) }
+
+  def has_assessment?
+    !assessment.nil?
+  end
 
   def file=(upload)
     directory = "attachments"
