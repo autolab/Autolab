@@ -427,6 +427,7 @@ PLATFORMS
   ruby
   x86_64-darwin-19
   x86_64-darwin-20
+  x86_64-darwin-21
   x86_64-linux
 
 DEPENDENCIES
@@ -499,4 +500,4 @@ RUBY VERSION
    ruby 2.7.7p221
 
 BUNDLED WITH
-   2.4.4
+   2.4.12
