@@ -5,41 +5,41 @@
     <%= u.text_field :first_name, disabled: edit, placeholder: "John" %>
     <%= u.text_field :last_name, disabled: edit, placeholder: "Doe" %>
 
-  <% end %>
+<% end %>
 
-  <%= f.text_field :nickname, help_text: "Anonymous nickname to display on the public scoreboards (max length: 32)", placeholder: "droh", maxlength: 32 %>
+<%= f.text_field :nickname, help_text: "Anonymous nickname to display on the public scoreboards (max length: 32)",
+                            placeholder: "droh", maxlength: 32 %>
 
-  <%= f.text_field :course_number, help_text: "The course number", placeholder: "15213", disabled: !@cud.instructor? %>
+<%= f.text_field :course_number, help_text: "The course number", placeholder: "15213", disabled: !@cud.instructor? %>
 
-  <%= f.text_field :lecture, help_text: "The lecture number", placeholder: "1", disabled: !@cud.instructor? %>
+<%= f.text_field :lecture, help_text: "The lecture number", placeholder: "1", disabled: !@cud.instructor? %>
 
-  <%= f.text_field :section, help_text: "The section letter. A course assistant can see the gradebook and bulk-release grades for their assigned lecture and section.", placeholder: "A", disabled: !@cud.instructor? %>
+<%= f.text_field :section, placeholder: "A", disabled: !@cud.instructor?,
+                           help_text: "The section letter. A course assistant can see the gradebook and bulk-release grades for their assigned lecture and section." %>
 
-  <% if @cud.instructor? %>
+<% if @cud.instructor? %>
 
   <h4>Course average tweak:</h4>
   <div class="row">
     <%= f.fields_for :tweak, cud.tweak do |t| %>
-      <div class="col s8">
-        <%= t.text_field :value, size: 18, value: "0", placeholder: "0"%>
+      <div class="col s8" style="padding-left: 0 !important">
+        <%= t.text_field :value, size: 18, value: "0", placeholder: "0",
+                                 help_text: "A tweak is a positive or negative value that adjusts the student's course average. For example, a tweak of 5 points would increase the student's course average by 5 points." %>
       </div>
       <div class="col s4">
         <div class="input-field">
           <label class="control-label active">Kind</label>
-          <%= t.select :kind, options_for_select({"points" => "points", "%" => "percent"}, :selected => (cud.tweak ? cud.tweak.kind : "points")), value: "points" %>
+          <%= t.select :kind, options_for_select({ "points" => "points", "%" => "percent" },
+                                                 selected: (cud.tweak ? cud.tweak.kind : "points")), value: "points" %>
         </div>
       </div>
     <% end %>
   </div>
-  <p class="help-block">
-    A tweak is a positive or negative value that adjusts the student's course average.<br>
-    Ex: A tweak of 5 points would increase the student's course average by 5 points.
-  </p>
 
-	<%= f.check_box :dropped, help_text: "Dropping a student from a course prevents them from handing in submissions or downloading assessments. Additionally they do not appear in any gradebook. None of their account information or submissions are deleted." %>
-  
+  <%= f.check_box :dropped, help_text: "Dropping a student from a course prevents them from handing in submissions or downloading assessments. Additionally they do not appear in any gradebook. None of their account information or submissions are deleted." %>
+
   <%= f.check_box :instructor, help_text: "Instructors have full read/write access to the course." %>
 
   <%= f.check_box :course_assistant, help_text: "Course assistants can assign scores to problems and nothing else." %>
 
-  <% end %>
+<% end %>
