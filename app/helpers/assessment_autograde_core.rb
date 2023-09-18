@@ -502,7 +502,7 @@ module AssessmentAutogradeCore
   end
 
   def extend_config_module(assessment, submission, cud)
-    require assessment.config_file_path
+    require assessment.unique_config_file_path
 
     # casted to local variable so that
     # they can be passed into `module_eval`

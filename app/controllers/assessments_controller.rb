@@ -111,7 +111,7 @@ class AssessmentsController < ApplicationController
                                          filename)) || (filename == "..") || (filename == ".")
 
       # assessment names must be only lowercase letters and digits
-      if filename =~ /[^a-z0-9]/
+      if filename =~ /[A-Za-z_][A-Za-z0-9_-]* /
         # add line break if adding to existing error message
         flash.now[:error] = flash.now[:error] ? "#{flash.now[:error]} <br>" : ""
         flash.now[:error] += "An error occurred while trying to display an existing assessment " \
@@ -292,18 +292,17 @@ class AssessmentsController < ApplicationController
     @assessment = @course.assessments.new(new_assessment_params)
 
     if @assessment.name.blank?
-      # Validate the name
-      ass_name = @assessment.display_name.downcase.gsub(/[^a-z0-9]/, "")
-
-      if ass_name.blank?
+      # Validate the name, very similar to valid Ruby identifiers, but also allowing hyphens and periods
+      # We just want to prevent file traversal attacks here
+      if @assessment.display_name !~ /^[a-zA-Z_][A-Za-z0-9._-]*$/
         flash[:error] =
-          "Assessment name is blank or contains characters that are not lowercase letters or digits"
+          "Assessment name is blank or contains disallowed characters. Find more information on valid assessment names here"
         redirect_to(action: :install_assessment)
         return
       end
 
       # Update name in object
-      @assessment.name = ass_name
+      @assessment.name = @assessment.display_name
     end
 
     # fill in other fields
@@ -491,6 +490,12 @@ class AssessmentsController < ApplicationController
     end
     if File.exist? @assessment.config_backup_file_path
       File.delete @assessment.config_backup_file_path
+    end
+    if File.exist? @assessment.unique_config_file_path
+      File.delete @assessment.unique_config_file_path
+    end
+    if File.exist? @assessment.unique_config_backup_file_path
+      File.delete @assessment.unique_config_backup_file_path
     end
 
     name = @assessment.display_name
@@ -794,7 +799,7 @@ class AssessmentsController < ApplicationController
     unless uploaded_config_file.nil?
       config_source = uploaded_config_file.read
 
-      assessment_config_file_path = @assessment.source_config_file_path
+      assessment_config_file_path = @assessment.unique_source_config_file_path
       File.open(assessment_config_file_path, "w") do |f|
         f.write(config_source)
       end
