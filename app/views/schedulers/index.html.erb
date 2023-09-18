@@ -1,5 +1,5 @@
 <h4>Manage Schedulers</h4>
-<p>It is currently <span class="moment-date-time" data-format="MMM D YYYY h:mm:ssa Z"><%= Time.now %></span></p>
+<p>It is currently <span class="moment-date-time" data-format="MMM D YYYY h:mm:ssa Z"><%= Time.zone.now %></span></p>
 
 <%= link_to 'New Scheduler', new_course_scheduler_path(@course), { class: "btn" } %>
 <table class="prettyBorder">
@@ -31,7 +31,8 @@
                       { title: "View scheduler details", class: "btn" } %>
           <%= link_to "<i class='material-icons'>edit</i>".html_safe, edit_course_scheduler_path(@course, scheduler),
                       { title: "Edit this scheduler", class: "btn" } %>
-          <%= link_to "<i class='material-icons'>play_circle_filled</i>".html_safe, course_scheduler_run_path(@course, scheduler),
+          <%= link_to "<i class='material-icons'>play_circle_filled</i>".html_safe,
+                      course_scheduler_run_path(@course, scheduler),
                       { method: "post", title: "Run this scheduler",
                         data: { confirm: "Are you sure you want to run this scheduler?" }, class: "btn" } %>
           <%= link_to "<i class='material-icons'>delete</i>".html_safe, course_scheduler_path(@course, scheduler),
@@ -44,4 +45,4 @@
   </tbody>
 </table>
 
-<br />
+<br>
