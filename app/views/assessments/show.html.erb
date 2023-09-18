@@ -51,9 +51,20 @@
           <div class="collapsible-header"><h5>Admin Options</h5></div>
           <div class="collapsible-body">
             <ul class="options">
-              <li><%= link_to "Edit assessment", {:action => "edit" }, {:title=> "View and modify the properties for this assessment, including its problems", :class=>""} %></li>
-              <li><%= link_to "Grade submissions", {:action => "viewGradesheet" }, {:title=> "View and enter grades on the gradesheet" } %></li>
-              <li><%= link_to "Export assessment", {:action => "export" }, {:title=> "Export persistent properties that will be imported when you install this assessment in a future term" } %></li>
+              <li>
+                <%= link_to "Edit assessment",
+                            { action: "edit" },
+                            { title: "View and modify the properties for this assessment, including its problems", class: "" } %>
+              </li>
+              <li>
+                <%= link_to "Grade submissions",
+                            { action: "viewGradesheet" },
+                            { title: "View and enter grades on the gradesheet" } %>
+              </li>
+              <li><%= link_to "Export assessment",
+                              { action: "export" },
+                              { title: "Export persistent properties that will be imported when you install this assessment in a future term" } %>
+              </li>
 
               <% if @assessment.has_autograder? then %>
                 <li><%= link_to "Autograder settings", [:edit, @course, @assessment, :autograder], title: "Modify autograding properties such as the VM image and the timeout value" %></li>
@@ -68,19 +79,19 @@
               <% end %>
               <li><%= link_to "Manage extensions", [@course, @assessment, :extensions], { title: "Give extensions to students" } %></li>
               <li><%= link_to "Manage submissions", [@course, @assessment, :submissions], { title: "Create, view, export, and re-autograde submissions" } %></li>
-              <li><%= link_to "View statistics", {:action => "statistics" }, {:title=> "View detailed stats for this assessment" } %></li>
-              <li><%= link_to "Bulk import grades", {:action => "bulkGrade" }, {:title=> "Upload scores or feedback for multiple students from a CSV file" } %></li>
-              <li><%= link_to "Bulk export grades", {:action => "bulkExport" }, {:title=> "Export grades (with sub-scores) \nfor all students to a CSV file" } %></li>
+              <li><%= link_to "View statistics", { action: "statistics" }, { title: "View detailed stats for this assessment" } %></li>
+              <li><%= link_to "Bulk import grades", { action: "bulkGrade" }, { title: "Upload scores or feedback for multiple students from a CSV file" } %></li>
+              <li><%= link_to "Bulk export grades", { action: "bulkExport" }, { title: "Export grades (with sub-scores) \nfor all students to a CSV file" } %></li>
 
               <li class="collection-item red-text danger-bottom no-hover"><h4>Danger Zone</h4></li>
 
               <li class="danger-side">
-                <%= link_to "Release all grades", { :action => "releaseAllGrades" }, { :title=> "Make all scores for this assessment visible to students", data: {confirm: "Are you sure you want to release all grades?", method: "post"}} %>
+                <%= link_to "Release all grades", { action: "releaseAllGrades" }, { title: "Make all scores for this assessment visible to students", data: { confirm: "Are you sure you want to release all grades?", method: "post" } } %>
               </li>
               <li class="danger-side">
-                <%= link_to "Withdraw all grades", { :action => "withdrawAllGrades" }, {:title=> "Hide all scores for this assessment from students", data: {confirm: "Are you sure you want to withdraw all grades?", method: "post"}} %>
+                <%= link_to "Withdraw all grades", { action: "withdrawAllGrades" }, { title: "Hide all scores for this assessment from students", data: { confirm: "Are you sure you want to withdraw all grades?", method: "post" } } %>
               </li>
-              <li class="danger-side danger-bottom"> <%= link_to "Reload config file", {:action => "reload" }, {:title=> "Reload the assessment config file (provided for backward compatibility with legacy assessments)", data: {confirm: "Are you sure you want to reload the config file?", method: "post"}} %></li>
+              <li class="danger-side danger-bottom"> <%= link_to "Reload config file", { action: "reload" }, { title: "Reload the assessment config file (provided for backward compatibility with legacy assessments)", data: { confirm: "Are you sure you want to reload the config file?", method: "post" } } %></li>
             </ul>
           </div>
         </li>
@@ -94,18 +105,18 @@
           <div class="collapsible-header"><h5>CA Options</h5></div>
           <div class="collapsible-body">
             <ul class="options">
-              <li><%= link_to "Grade section #{@cud.section} submissions", url_for(:action => 'viewGradesheet', :section => '1', :escape => false),
-                :title=> "View and enter grades for your section. Make sure your instructor has assigned you to a section in your Autolab account" %></li>
-              <li><%= link_to "Grade all submissions", url_for(:action => 'viewGradesheet'),
-                :title=> "View and enter grades for all sections"  %></li>
+              <li><%= link_to "Grade section #{@cud.section} submissions", url_for(action: 'viewGradesheet', section: '1', escape: false),
+                              title: "View and enter grades for your section. Make sure your instructor has assigned you to a section in your Autolab account" %></li>
+              <li><%= link_to "Grade all submissions", url_for(action: 'viewGradesheet'),
+                              title: "View and enter grades for all sections" %></li>
 
               <% if !@assessment.disable_handins %>
-                <li><%= link_to  "Download section #{@cud.section} submissions", [:downloadAll, @course, @assessment, :submissions, final: true], title: "Download section #{@cud.section} submissions" %></li>
+                <li><%= link_to "Download section #{@cud.section} submissions", [:downloadAll, @course, @assessment, :submissions, { final: true }], title: "Download section #{@cud.section} submissions" %></li>
               <% end %>
               <li class="collection-item red-text danger-bottom no-hover"><h4>Danger Zone</h4></li>
-              <li class="danger-side"><%= link_to "Reload config file", {:action => "reload" }, {:title=> "Reload the assessment config file (provided for backward compatibility with legacy assessments)", data: {confirm: "Are you sure you want to reload the config file?", method: "post"}} %></li>
+              <li class="danger-side"><%= link_to "Reload config file", { action: "reload" }, { title: "Reload the assessment config file (provided for backward compatibility with legacy assessments)", data: { confirm: "Are you sure you want to reload the config file?", method: "post" } } %></li>
               <li class="danger-side danger-bottom">
-                <%= link_to "Release section grades", { :action => "releaseSectionGrades" }, { :title=> "Make all scores visible to the students in your section. This will work only if your instructor has assigned you to a lecture and section in your Autolab account.", data: {confirm: "Are you sure you want to release section grades?", method: "post"}} %>
+                <%= link_to "Release section grades", { action: "releaseSectionGrades" }, { title: "Make all scores visible to the students in your section. This will work only if your instructor has assigned you to a lecture and section in your Autolab account.", data: { confirm: "Are you sure you want to release section grades?", method: "post" } } %>
               </li>
             </ul>
           </div>
@@ -122,12 +133,12 @@
         <div class="collapsible-header active"><h5>Options</h5></div>
         <div class="collapsible-body">
           <ul class="options">
-            <li><%= link_to "View handin history", {:action => 'history'}, {:title=> "View your submissions, scores, and feedback from the course staff" } %> </li>
+            <li><%= link_to "View handin history", { action: 'history' }, { title: "View your submissions, scores, and feedback from the course staff" } %> </li>
             <% if @assessment.has_writeup? %>
-              <li><%= link_to "View writeup", {:action => 'writeup'}, {:title=> "View the assessment writeup"} %> </li>
+              <li><%= link_to "View writeup", { action: 'writeup' }, { title: "View the assessment writeup" } %> </li>
             <% end %>
             <% if @assessment.has_handout? %>
-              <li><%= link_to "Download handout", {:action => 'handout'}, {:title=> "Download handout materials and starter code" } %> </li>
+              <li><%= link_to "Download handout", { action: 'handout' }, { title: "Download handout materials and starter code" } %> </li>
             <% end %>
             <% if @assessment.has_groups? %>
               <% if @aud.membership_status != AssessmentUserDatum::UNCONFIRMED then %>
@@ -139,9 +150,9 @@
             <% if @assessment.has_scoreboard? %>
               <li><%= link_to "View scoreboard", [@course, @assessment, :scoreboard], title: "View the assessment scoreboard" %></li>
             <% end %>
-          <% @list.sort { |a,b| a[1] <=> b[1] }.each { |key, value| %>
-            <% if value.size > 0  then  %>
-              <li><%= link_to value, {:action => key}, {:title=>(@list_title[key] || "")} %> </li>
+          <% @list.sort { |a, b| a[1] <=> b[1] }.each { |key, value| %>
+            <% if value.size > 0  then %>
+              <li><%= link_to value, { action: key }, { title: (@list_title[key] || "") } %> </li>
             <% end %>
           <% } %>
           </ul>
@@ -173,9 +184,9 @@
             &nbsp;&nbsp;Last day to handin:&nbsp;
             <b>
               <% if @extension&.infinite? %>
-                <%= end_at_display(@aud.end_at false) %>
+                <%= end_at_display(@aud.end_at(false)) %>
               <% else %>
-                <span class="moment-date-time" data-format="MMMM Do YYYY, h:mm a z [(UTC] Z[)]"><%= end_at_display(@aud.end_at false) %></span>
+                <span class="moment-date-time" data-format="MMMM Do YYYY, h:mm a z [(UTC] Z[)]"><%= end_at_display(@aud.end_at(false)) %></span>
               <% end %>
             </b>
           </p>
@@ -184,7 +195,7 @@
           <p class="attention">This is an exam. While it is in progress, please check Admin > Edit Course > Exam In Progress.</p>
           <% end %>
         </div>
-        <%= render partial: "handin_form", locals: {modal: false, id: "handin_show_assessment"} %>
+        <%= render partial: "handin_form", locals: { modal: false, id: "handin_show_assessment" } %>
       </div>
     <% else %>
       <div class="handin-panel card z-depth-0">
@@ -198,14 +209,13 @@
     <% end %>
   </div>
 </div>
-<% download_access = (@cud.instructor?) %>
+<% download_access = @cud.instructor? %>
 
   <%# Display any attachments %>
   <% if @attachments.any? or @cud.instructor? %>
     <div class="section">
       <h4 class="section-title"><span class="white">Attachments</span></h4>
       <ul class="collection with-header attachments">
-        <% # this code is temporarily "commented out" because Dan wants to preserve the logic for future changes to _attachment.html.erb %>
         <% if false then %>
           <% for a in @assessment.attachments do %>
             <% if a.released? then %>
@@ -272,17 +282,17 @@
       </script>
 
       <% if @cud.instructor %>
-          <div class = "row">
-            <div class = "col s12 offset-s0">
+          <div class="row">
+            <div class="col s12 offset-s0">
               <b>This is how students will view this assessment:</b>
             </div>
           </div>
       <% end %>
 
-      <div class = "row">
-        <div class = "col s10 offset-s1">
+      <div class="row">
+        <div class="col s10 offset-s1">
           <hr>
-          <%= form_for @submission, url: {action: :handin}, :html => {:id => "quiz_form", :onclick => "return validateIntegrity();"}, method: :post do |f| %>
+          <%= form_for @submission, url: { action: :handin }, html: { id: "quiz_form", onclick: "return validateIntegrity();" }, method: :post do |f| %>
 
               <%= f.hidden_field :embedded_quiz_form_answer, value: "" %>
 
@@ -291,10 +301,9 @@
                 <% begin %>
                     <%= @assessment.embedded_quiz_form_data.html_safe %>
                 <% rescue %>
-                  <p style = "color: red">Your assessment has no content yet! </p>
+                  <p style="color: red">Your assessment has no content yet! </p>
                 <% end %>
               </p>
-
 
               <% if @can_submit %>
 
@@ -305,9 +314,9 @@
                   <%= content_tag("span", "I affirm that I have complied with this course's academic integrity policy as defined in the syllabus.") %>
                 <% end %>
 
-                <div class = "row" style = "margin-top: 10px !important">
-                  <input type="submit" class = "btn primary handin-btn" onclick = "setSubmitClicked()">
-                  <span id="submission_error" style = "margin-left: 10px !important; color: red"></span>
+                <div class="row" style="margin-top: 10px !important">
+                  <input type="submit" class="btn primary handin-btn" onclick="setSubmitClicked()">
+                  <span id="submission_error" style="margin-left: 10px !important; color: red"></span>
                 </div>
               <% end %>
           <% end %>
@@ -338,11 +347,11 @@
   <% if @submissions.size == 0 then %>
     No Submissions yet!
   <% else %>
-    <%= render partial: "submission_history_table", locals: {download_access: download_access, limit: 3} %>
+    <%= render partial: "submission_history_table", locals: { download_access: download_access, limit: 3 } %>
       <% if @submissions.size > 3  then %>
         <!-- display link to history only if we exceed summary limit (since they are the same component) -->
         <h6>
-            <%= link_to "See all #{@submissions.size}" + " submission".pluralize(@submissions.size), {:action => "history"} %>
+            <%= link_to "See all #{@submissions.size}" + " submission".pluralize(@submissions.size), { action: "history" } %>
         </h6>
     <% end %>
   <% end %>

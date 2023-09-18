@@ -14,10 +14,10 @@
               <td><%=
                 begin
                   value.to_f.round(1)
-                rescue
+                rescue StandardError
                   value
                 end
-              %></td>
+                  %></td>
             </tr>
           <% end %>
           <tr style="border-bottom: none">
@@ -37,7 +37,7 @@
       <% else %>
         <h4>Problem Score</h4>
         <p>
-          <%= "#{@score.problem.name}: #{@score.score.to_f().round(1)}" %>
+          <%= "#{@score.problem.name}: #{@score.score.to_f.round(1)}" %>
         </p>
         <p>Graded by: <%=
             case @score.grader_id
@@ -48,7 +48,7 @@
             else
               if @score.grader&.user then @score.grader.user.email end
             end
-          %>
+                      %>
         </p>
       <% end %>
       <% if @submission.annotations.count > 0 and (@cud.instructor? or @cud.course_assistant? or @problemReleased) %>
