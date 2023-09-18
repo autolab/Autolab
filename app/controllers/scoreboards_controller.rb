@@ -86,10 +86,10 @@ class ScoreboardsController < ApplicationController
       # this.
       if @cud.instructor?
         @errorMessage = "An error occurred while calling " \
-          "createScoreboardEntry(#{grade[:problems].inspect},"\
+          "createScoreboardEntry(#{grade[:problems].inspect},\n"\
           "#{grade[:autoresult]})"
         @error = e
-        render([@course, @assessment]) && return
+        render("scoreboards/edit") && return
       end
     end
 
@@ -108,14 +108,13 @@ class ScoreboardsController < ApplicationController
       else
         scoreboardOrderSubmissions(a, b)
       end
-
     rescue StandardError => e
       if @cud.instructor?
         @errorMessage = "An error occurred while calling "\
-          "scoreboardOrderSubmissions(#{a.inspect},"\
+          "scoreboardOrderSubmissions(#{a.inspect},\n"\
           "#{b.inspect})"
         @error = e
-        render([@course, @assessment]) && return
+        render("scoreboards/edit") && return
       end
       0 # Just say they're equal!
     end
