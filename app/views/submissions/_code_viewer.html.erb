@@ -25,25 +25,25 @@
       </div>
     <% end %>
     <% if @is_pdf %>
-    <div class="file-button">
-      <%= link_to download_course_assessment_submission_path(@course, @assessment, @submission, header_position: @header_position, annotated: true),
-                  data: { toggle: "tooltip", placement: "top" },
-                  title: "Download Annotated Submission" do %>
-          Download Annotated
-      <% end %>
-    </div>
+      <div class="file-button">
+        <%= link_to download_course_assessment_submission_path(@course, @assessment, @submission, header_position: @header_position, annotated: true),
+                    data: { toggle: "tooltip", placement: "top" },
+                    title: "Download Annotated Submission" do %>
+            Download Annotated
+        <% end %>
+      </div>
     <% else %>
-    <div class="file-button">
-      <a href="#" onclick="copyFileToClipboard()">Copy Code</a>
-    </div>
+      <div class="file-button">
+        <a href="#" onclick="copyFileToClipboard()">Copy Code</a>
+      </div>
     <% end %>
   </div>
 
   <% success = true %>
   <% if @is_pdf %>
-  <div class="code-table">
-    <div id="pdf-doc" style="text-align: center;"></div>
-  </div>
+    <div class="code-table">
+      <div id="pdf-doc" style="text-align: center;"></div>
+    </div>
   <% else %>
     <div class="code-table">
         <% @data.each_with_index do |(code, annotation), index| %>
@@ -73,17 +73,23 @@
     </div>
   <% end %>
   <% if success == false %>
-    <div id="code_error"> Sorry, we could not parse your file because it contains non-UTF8 characters. Please <%= link_to download_course_assessment_submission_path(@course, @assessment, @submission, header_position: @header_position),
-                                                                                                                          data: { toggle: "tooltip", placement: "top" },
-                                                                                                                          title: "Download Submission" do %>
+    <div id="code_error">
+      <p>
+        Sorry, we could not parse your file because it contains non-UTF8 characters. Please
+        <%= link_to download_course_assessment_submission_path(@course, @assessment, @submission, header_position: @header_position),
+                    data: { toggle: "tooltip", placement: "top" },
+                    title: "Download Submission" do %>
           download the file
-      <% end %> to view the source. </div>
+        <% end %>
+        to view the source.
+      </p>
+    </div>
     <script> $('.code-table').hide() </script>
   <% end %>
 </div>
 
 <% if @is_pdf %>
-<script>
-$(document).ready(function () { renderPdf(); });
-</script>
+  <script>
+  $(document).ready(function () { renderPdf(); });
+  </script>
 <% end %>
