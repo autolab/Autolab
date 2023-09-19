@@ -252,7 +252,7 @@ private
       parsed = ActiveSupport::JSON.decode(autoresult)
       if !parsed["scoreboard"].is_a?(Array) && @cud.instructor?
         flash[:error] = "Error parsing scoreboard for autograded assessment: scoreboard result is"\
-          "not an array. Please ensure that the autograder returns scoreboard results as an array."
+          " not an array. Please ensure that the autograder returns scoreboard results as an array."
       end
       raise if !parsed || !parsed["scoreboard"] || !parsed["scoreboard"].is_a?(Array)
     rescue StandardError
