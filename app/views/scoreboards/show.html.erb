@@ -61,12 +61,33 @@
               <% if c["img"] %>
                 <td><img src="data:image/png;base64,<%= grade[:entry][i] %>"></td>
               <% else %>
-                <td><%= grade[:entry][i] %></td>
+                <% if grade[:entry].is_a?(Array) && grade[:entry][i] != "-" %>
+                  <td><%= grade[:entry][i] %></td>
+                <% else %>
+                  <td>
+                    <div style="display: flex; align-content: center; justify-content: center;">
+                      <i class="material-icons tooltipped" data-tooltip="Could not parse scoreboard entry">
+                        error_outline
+                      </i>
+                    </div>
+                  </td>
+                <% end %>
               <% end %>
             <% end %>
           <% else %>
-            <% grade[:entry].each do |column| %>
-              <td><%= column %></td>
+            <%# this should be guaranteed to be an array, but for redundancy, check that entry is array %>
+            <% if grade[:entry].is_a?(Array) && grade[:entry][i] != "-" %>
+              <% grade[:entry].each do |column| %>
+                <td><%= column %></td>
+              <% end %>
+            <% else %>
+              <td>
+                <div style="display: flex; align-content: center; justify-content: center;">
+                  <i class="material-icons tooltipped" data-tooltip="Could not parse scoreboard entry">
+                    error_outline
+                  </i>
+                </div>
+              </td>
             <% end %>
           <% end %>
         </tr>
