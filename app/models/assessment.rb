@@ -126,7 +126,7 @@ class Assessment < ApplicationRecord
   end
   
   def unique_config_file_path
-    Rails.root.join("assessmentConfig", "#{course.name}-#{sanitized_name}-#{id}.rb")
+    Rails.root.join("assessmentConfig", "#{course.name}-#{name}-#{id}.rb")
   end
 
   def config_backup_file_path
@@ -201,7 +201,8 @@ class Assessment < ApplicationRecord
   # returns true if the file is actually created
   #
   def construct_default_config_file
-    assessment_config_file_path = source_config_file_path
+    puts("contrucc")
+    assessment_config_file_path = unique_source_config_file_path
     return false if File.file?(assessment_config_file_path)
 
     # Open and read the default assessment config file
@@ -211,12 +212,11 @@ class Assessment < ApplicationRecord
     # Update with this assessment information
     config_source.gsub!("##NAME_CAMEL##", unique_config_module_name)
     config_source.gsub!("##NAME_LOWER##", name)
-
+    puts("contrucc2")
     # Write the new config out to the right file.
     File.open(assessment_config_file_path, "w") { |f| f.write(config_source) }
     # Load the assessment config file while we're at it
     File.open(config_file_path, "w") { |f| f.write config_source }
-
     true
   end
 
@@ -232,7 +232,7 @@ class Assessment < ApplicationRecord
       # read from source
       config_source = File.open(source_config_file_path, "r", &:read)
       RubyVM::InstructionSequence.compile(config_source)
-
+      puts("unique name", unique_config_module_name)
       if config_source !~ /\b#{unique_config_module_name}\b/
         puts("hmm", match)
         match = config_source.match(/module\s+(\w+)/)
@@ -242,7 +242,6 @@ class Assessment < ApplicationRecord
         # raise "Module name in #{name}.rb
         #      doesn't match expected #{source_config_module_name}"
       end
-
       File.open(unique_source_config_file_path, "w"){ |f| f.write(config_source) }
       File.rename(source_config_file_path, source_config_file_backup_path)
     end
@@ -285,11 +284,11 @@ class Assessment < ApplicationRecord
     File.open(unique_config_file_path, "w") { |f| f.write config_source }
     # config file might have an updated custom raw score function: clear raw score cache
     invalidate_raw_scores
-
     logger.info "Loaded #{unique_config_file_path}"
   end
 
   def config_module
+    puts("config module hit")
     # (re)construct config file from source, unless it already exists
     load_config_file unless File.exist? unique_config_file_path
 
@@ -422,7 +421,7 @@ class Assessment < ApplicationRecord
   def source_config_file_path
     Rails.root.join("courses", course.name, sanitized_name, "#{sanitized_name}.rb")
   end
-
+  # name is already sanitized during the creation process
   def unique_source_config_file_path
     Rails.root.join("courses", course.name, name, "#{name}.rb")
   end

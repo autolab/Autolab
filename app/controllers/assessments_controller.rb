@@ -111,7 +111,8 @@ class AssessmentsController < ApplicationController
                                          filename)) || (filename == "..") || (filename == ".")
 
       # assessment names must be only lowercase letters and digits
-      if filename =~ /[A-Za-z_][A-Za-z0-9_-]* /
+      puts(filename, filename !~ /[A-Za-z_][A-Za-z0-9_-]*$/)
+      if filename !~ /[A-Za-z_][A-Za-z0-9_-]*$/
         # add line break if adding to existing error message
         flash.now[:error] = flash.now[:error] ? "#{flash.now[:error]} <br>" : ""
         flash.now[:error] += "An error occurred while trying to display an existing assessment " \
@@ -292,9 +293,9 @@ class AssessmentsController < ApplicationController
     @assessment = @course.assessments.new(new_assessment_params)
 
     if @assessment.name.blank?
-      # Validate the name, very similar to valid Ruby identifiers, but also allowing hyphens and periods
+      # Validate the name, very similar to valid Ruby identifiers, but also allowing hyphens and periods, but not two periods
       # We just want to prevent file traversal attacks here
-      if @assessment.display_name !~ /^[a-zA-Z_][A-Za-z0-9._-]*$/
+      if @assessment.display_name !~ /[A-Za-z_][A-Za-z0-9_-]*$/
         flash[:error] =
           "Assessment name is blank or contains disallowed characters. Find more information on valid assessment names here"
         redirect_to(action: :install_assessment)
