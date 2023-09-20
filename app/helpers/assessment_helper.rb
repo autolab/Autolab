@@ -47,8 +47,9 @@ module AssessmentHelper
   def gradesheet_csv(asmt, as_seen_by)
     CSV.generate do |csv|
       # title row with the column names:
-      title = ["Submission Time:","Email:","Total:"]
-      asmt.problems.each { |problem| title << "#{problem.name}:" }
+      title = ["Submission Time","Email","Total"]
+      asmt.problems.each { |problem| title << problem.name }
+      title += ["First name", "Last name", "Section", "Lecture"]
       csv << title
 
       asmt.course.course_user_data.each do |cud|
@@ -97,7 +98,7 @@ private
 
     # add scores to csv row (for scores columns)
     row.concat score_cells
-
+    row += [cud.user.first_name, cud.user.last_name, cud.section, cud.lecture]
     row
   end
 

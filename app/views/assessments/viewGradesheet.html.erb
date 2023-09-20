@@ -24,7 +24,7 @@
     /* table data */
     // header classes
     hclasses = ["enumerator", "id", "actions", "course_number", "lec-sec",
-                <% for i in 0..(@assessment.problems.length - 1) do%>
+                <% for i in 0..(@assessment.problems.length - 1) do %>
                   "problem",
                 <% end %>
                 <% if @cud.instructor? %>
@@ -47,25 +47,25 @@
             "course_number": "<%= s.course_user_datum.course_number %>",
             "lec-sec": "<%= s.course_user_datum.lecture %>/<%= s.course_user_datum.section %>",
             "actions": <% if s.filename %>
-              `<%= render partial: "downloadSubmission", locals: {sub: s, can_always_download: true} %>`
+              `<%= render partial: "downloadSubmission", locals: { sub: s, can_always_download: true } %>`
             <% else %>
               ` no file found `
-            <%end %>,
+            <% end %>,
             <% p_scores = s.problems_to_scores %>
             <% @assessment.problems.each_with_index do |p,i| %>
               <% p_score = p_scores[p.id] %>
-              "problem<%= i %>": "<%= p_score && p_score.score ? p_score.score : raw("&ndash;") %>",
+              "problem<%= i %>": "<%= p_score&.score ? p_score.score : raw("&ndash;") %>",
             <% end %>
             <% if @cud.instructor? %>
-              "late_penalty": "<%= computed_score(history_url s.course_user_datum) { s.late_penalty @cud } %>",
+              "late_penalty": "<%= computed_score(history_url(s.course_user_datum)) { s.late_penalty @cud } %>",
               <% if @assessment.version_penalty? %>
-                "version_penalty": "<%= computed_score(history_url s.course_user_datum) { s.version_penalty @cud } %>",
+                "version_penalty": "<%= computed_score(history_url(s.course_user_datum)) { s.version_penalty @cud } %>",
               <% end %>
                 "tweak": `<%= link_to raw(tweak(s.tweak)),
-                  edit_course_assessment_submission_path(@course, @assessment, s),
-                  tabindex: -1 %>`,
+                                      edit_course_assessment_submission_path(@course, @assessment, s),
+                                      tabindex: -1 %>`,
             <% end %>
-            "total": "<%= computed_score(history_url s.course_user_datum) { s.final_score @cud } %>"
+            "total": "<%= computed_score(history_url(s.course_user_datum)) { s.final_score @cud } %>"
           },
       <% end %>
     ];
@@ -78,19 +78,19 @@
           r_class: "<%= aud_special_grade_type?(s.aud) && @cud.instructor? ? "special_submission" : "" %>",
           email: "<%= s.course_user_datum.email %>",
           <% if s.filename %>
-          actions: `<%= render partial: "downloadSubmission", locals: {sub: s, can_always_download: true} %>`,
+          actions: `<%= render partial: "downloadSubmission", locals: { sub: s, can_always_download: true } %>`,
           <% end %>
           problems: [
             <% p_scores = s.problems_to_scores %>
             <% for p in @assessment.problems do %>
               <% p_score = p_scores[p.id] %>
-              <% id = s.id.to_s + "_" + p.id.to_s %>
-              <% released = p_score && p_score.released ? "true" : "false" %>
+              <% id = "#{s.id}_#{p.id}" %>
+              <% released = p_score&.released ? "true" : "false" %>
               {
                 released: <%= released %>,
-                score: '<%= p_score && p_score.score ? p_score.score : raw("&ndash;") %>',
+                score: '<%= p_score&.score ? p_score.score : raw("&ndash;") %>',
                 <% if p_score %>
-                  "score-id": "<%= "#{p_score.id}" %>",
+                  "score-id": "<%= p_score.id.to_s %>",
                 <% end %>
                 "problem-id": "<%= p.id.to_s %>"
               },
@@ -148,7 +148,6 @@
     $col_prob_template = jQuery('#col_prob_template');
     $icon_template = jQuery('#icon_template');
 
-
     /***************
      * local cache *
      ***************/
@@ -197,7 +196,7 @@
 <% end %>
 
 <div class="collection">
-<a id ="interaction_banner" href="https://docs.autolabproject.com/features/annotations/" target="_blank" class="collection-item">
+<a id="interaction_banner" href="https://docs.autolabproject.com/features/annotations/" target="_blank" class="collection-item">
 Interaction between gradesheet and annotations
 <span id="interaction_badge" class="badge" data-badge-caption="Feature Information"></span></a>
 </div>
@@ -205,7 +204,6 @@ Interaction between gradesheet and annotations
 <div id="table_container">
   <table id="grades" style="width:100%"></table>
 </div>
-
 
 <!-- templates -->
 <div id="col_name_template" class="template">
@@ -231,7 +229,7 @@ Interaction between gradesheet and annotations
             <span class="left">
               <b>Released</b>
               <label>
-                <input class="released" type="checkbox" />
+                <input class="released" type="checkbox">
               </label>
             </span>
             <span class="save_box">
@@ -255,4 +253,3 @@ Interaction between gradesheet and annotations
     sort
   </i>
 </span>
-

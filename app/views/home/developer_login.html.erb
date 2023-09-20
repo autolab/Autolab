@@ -1,8 +1,8 @@
-<h2>Welcome to Development Autolab!</h2>
-<h3>Please enter the email you would like:</h3>
+<h2>Development Autolab</h2>
 
+<h3>Sign in as user</h3>
 <%= form_tag do %>
-  Email: <%= email_field_tag 'email' %>
+  Email: <%= email_field_tag 'email', "", autocomplete: "email" %>
   <br><br><br>
-  <%= submit_tag 'Go!', {:class=>"btn primary"} %>
+  <%= submit_tag 'Sign In', { class: "btn primary" } %>
 <% end %>

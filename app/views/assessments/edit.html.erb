@@ -12,10 +12,12 @@
 <div class="row">
   <div class="col s12">
     <ul id="tabs" class="tabs tabs-fixed-width">
-    <% [ "basic", "handin", "penalties", "problems", "advanced" ].each do |tab_name| %>
-      <%= (tab_name == params[:active_tab]) ? tag(:li, {:class => "active tab"}) : tag(:li, class: :tab) %>
-        <%= link_to tab_name.titleize, "#tab_#{tab_name}" %>
-      </li>
+    <% ["basic", "handin", "penalties", "problems", "advanced"].each do |tab_name| %>
+         <%= if tab_name == params[:active_tab]
+               tag.li(link_to(tab_name.titleize, "#tab_#{tab_name}"), class: "active tab")
+             else
+               tag.li(link_to(tab_name.titleize, "#tab_#{tab_name}"), class: :tab)
+             end %>
     <% end %>
     </ul>
   </div>
@@ -23,7 +25,7 @@
 
 <div class="row">
   <div class="col s12">
-    <%= form_for [ @course, @assessment ], url: edit_course_assessment_path(@course, @assessment) + "/#{params[:active_tab]}", builder: FormBuilderWithDateTimeInput do |f| %>
+    <%= form_for [@course, @assessment], url: edit_course_assessment_path(@course, @assessment) + "/#{params[:active_tab]}", builder: FormBuilderWithDateTimeInput do |f| %>
       <% if @course.errors.any? %>
           <ul>
             <% @course.errors.full_messages.each do |msg| %>

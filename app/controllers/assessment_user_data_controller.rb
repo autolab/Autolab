@@ -6,9 +6,6 @@ class AssessmentUserDataController < ApplicationController
   # inherited from ApplicationController
   before_action :set_assessment
   before_action :set_aud
-  rescue_from ActionView::MissingTemplate do |_exception|
-    redirect_to("/home/error_404")
-  end
 
   action_auth_level :edit, :instructor
   def edit

@@ -427,6 +427,13 @@ class WatchlistInstance < ApplicationRecord
                                                              condition.id, cud,
                                                              grade_threshold, count_threshold)
           cur_instances << new_instance unless new_instance.nil?
+
+        when "extension_requests"
+          extension_count = condition.parameters["extension_count"].to_i
+          new_instance = add_new_instance_for_cud_extension_requests(course, category_blocklist,
+                                                                     condition.id, cud,
+                                                                     extension_count)
+          cur_instances << new_instance unless new_instance.nil?
         end
       end
 
@@ -506,11 +513,44 @@ class WatchlistInstance < ApplicationRecord
                           violation_info: violation_info)
   end
 
+  def self.add_new_instance_for_cud_extension_requests(course, category_blocklist,
+                                                       condition_id, cud, extension_count)
+    asmts = Assessment.where.not(category_name: category_blocklist)
+    violation_info = {}
+    num_of_extensions = 0
+
+    asmts = course.exclude_curr_asmts(asmts)
+    asmts = asmts.pluck(:id)
+
+    asmts.each do |asmt|
+      extensions = Extension.where(course_user_datum_id: cud.id, assessment_id: asmt)
+      num_of_extensions += extensions.count
+    end
+
+    if num_of_extensions >= extension_count
+      asmts.each do |asmt|
+        extensions = Extension.where(course_user_datum_id: cud.id, assessment_id: asmt)
+        aud = AssessmentUserDatum.find_by(course_user_datum_id: cud.id, assessment_id: asmt)
+        indiv_extensions_count = extensions.count
+        if indiv_extensions_count >= 1
+          violation_info[aud.assessment.display_name] = indiv_extensions_count
+        end
+      end
+    end
+
+    return if violation_info.empty?
+
+    WatchlistInstance.new(course_user_datum_id: cud.id, course_id: course.id,
+                          risk_condition_id: condition_id,
+                          violation_info: violation_info)
+  end
+
   def self.add_new_instance_for_cud_grade_drop(course,
                                                condition_id, cud, asmt_arrs,
                                                consecutive_counts, percentage_drop)
     violation_info = {}
     asmt_arrs.each do |asmts|
+      asmts = course.exclude_curr_asmts(asmts)
       auds = asmts.map do |asmt|
         AssessmentUserDatum.find_by(course_user_datum_id: cud.id, assessment_id: asmt.id)
       end
@@ -532,7 +572,8 @@ class WatchlistInstance < ApplicationRecord
           i += 1
           next
         elsif (begin_aud.latest_submission && !begin_aud.latest_submission.all_scores_released?) ||
-              (end_aud.latest_submission && !end_aud.latest_submission.all_scores_released?)
+              (end_aud.latest_submission &&
+                !end_aud.latest_submission.all_scores_released?)
           # - Score for either is not finalized and released to student yet
           i += 1
           next
@@ -573,7 +614,9 @@ class WatchlistInstance < ApplicationRecord
                                                    condition_id,
                                                    cud,
                                                    no_submissions_threshold)
-    asmts_ids = Assessment.where.not(category_name: category_blocklist).pluck(:id)
+    asmts_ids = Assessment.where.not(category_name: category_blocklist)
+    asmts_ids = course.exclude_curr_asmts(asmts_ids)
+    asmts_ids = asmts_ids.pluck(:id)
     auds = AssessmentUserDatum.where(assessment_id: asmts_ids, course_user_datum_id: cud.id)
     no_submissions_asmt_names = []
     auds.each do |aud|
@@ -597,6 +640,7 @@ class WatchlistInstance < ApplicationRecord
                                                grade_threshold,
                                                count_threshold)
     asmts_ids = Assessment.where.not(category_name: category_blocklist)
+    asmts_ids = course.exclude_curr_asmts(asmts_ids)
     auds = AssessmentUserDatum.where(assessment_id: asmts_ids, course_user_datum_id: cud.id)
     violation_info = {}
     auds.each do |aud|
@@ -604,9 +648,8 @@ class WatchlistInstance < ApplicationRecord
       # - Score is excused
       # - Score has not been released yet
       # - Student did not make any submissions at all
-      if aud_score.nil? ||
-         aud.latest_submission.nil? ||
-         (aud.latest_submission && !aud.latest_submission.all_scores_released?)
+      if aud_score.nil? || aud.latest_submission.nil? || (aud.latest_submission &&
+        !aud.latest_submission.all_scores_released?)
         next
       end
 

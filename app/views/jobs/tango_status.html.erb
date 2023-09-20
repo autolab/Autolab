@@ -29,7 +29,7 @@
   </thead>
   <tbody>
     <% @tango_live_jobs.each do |j| %>
-    <%   next unless j["assigned"] %>
+    <% next unless j["assigned"] %>
     <tr>
       <td><%= j["id"] %></td>
       <td><%= j["name"] %></td>
@@ -54,7 +54,7 @@
   </thead>
   <tbody>
     <% @tango_live_jobs.each do |j| %>
-    <%   next if j["assigned"] %>
+    <% next if j["assigned"] %>
     <tr>
       <td><%= j["id"] %></td>
       <td><%= j["name"] %></td>
@@ -91,8 +91,11 @@
       <td><%= k %></td>
       <td><%= p["total"].join(", ") %></td>
       <td><%= p["free"].join(", ") %></td>
-      <td><%= p["total"].length == 0 ? number_to_percentage(0, precision: 1)
-                                     : number_to_percentage(p["free"].length.to_f / p["total"].length * 100, precision: 1) %></td>
+      <td><%= if p["total"].empty?
+                number_to_percentage(0, precision: 1)
+              else
+                number_to_percentage(p["free"].length.to_f / p["total"].length * 100, precision: 1)
+              end %></td>
     </tr>
     <% end %>
   </tbody>
@@ -116,22 +119,21 @@
 </table>
 <h3>Global Job History</h3>
 <p>
-  <i>Zoom/pan to adjust the timeframe below. Hover over an event to view details. Each dot in the diagram represent an event, including:</i><br />
-  &mdash; New Job Requests: any new jobs submitted to Tango;<br />
-  &mdash; Job Errors: non-fatal errors in Tango jobs;<br />
-  &mdash; Job Failures: jobs terminated with failure.<br />
+  <i>Zoom/pan to adjust the timeframe below. Hover over an event to view details. Each dot in the diagram represent an event, including:</i><br>
+  &mdash; New Job Requests: any new jobs submitted to Tango;<br>
+  &mdash; Job Errors: non-fatal errors in Tango jobs;<br>
+  &mdash; Job Failures: jobs terminated with failure.<br>
 <div id="tango_event_plot"></div>
 
 <p><i>Following are VM pools with at least one job &mdash; select the pool to view the time-series chart of jobs lengths for that pool.</i>
 <div id="pool_selection" class="center">
   <% pool_list = []
-    @plot_data.each { |e|
-      if e[:name] == "New Job Requests" then
-        pool_list = e[:vm_pool].uniq.sort!
-        break
-      end
-    }
-    %>
+     @plot_data.each { |e|
+       if e[:name] == "New Job Requests"
+         pool_list = e[:vm_pool].uniq.sort!
+         break
+       end
+     } %>
   <%= button_tag "All VM Pools", name: "vmpool", value: "", class: 'btn btn-info small' %>
   <% pool_list.each { |p| %>
     <%= button_tag(p, name: "vmpool", value: p, class: 'btn btn-info small') %>

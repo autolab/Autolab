@@ -6,27 +6,33 @@
 
 <%= form_with url: lti_config_update_config_path do |form| %>
     <div class="input-field">
-        <%= form.url_field :iss, value: @lti_config_hash.nil? ?  "" : @lti_config_hash["iss"], required: true %>
+        <%= form.url_field :iss, value: @lti_config_hash.nil? ? "" : @lti_config_hash["iss"], required: true %>
         <%= form.label :iss, "iss URL" %>
         <span class="helper-text">Find issuer identifier from the LTI platform's documentation</span>
     </div>
     <div class="input-field">
-      <%= form.text_field :developer_key, value: @lti_config_hash.nil? ? "" : @lti_config_hash["developer_key"], required: true  %>
-      <%= form.label :developer_key, "Developer Key"%>
+      <%= form.text_field :developer_key, value: @lti_config_hash.nil? ? "" : @lti_config_hash["developer_key"],
+                                          required: true %>
+      <%= form.label :developer_key, "Developer Key" %>
       <span class="helper-text">also known as client_id, obtained from the LTI platform</span>
     </div>
     <div class="input-field">
-        <%= form.url_field :auth_url, value: @lti_config_hash.nil? ? "" : @lti_config_hash["auth_url"], required: true %>
+        <%= form.url_field :auth_url, value: @lti_config_hash.nil? ? "" : @lti_config_hash["auth_url"],
+                                      required: true %>
         <%= form.label :auth_url, "LTI Launch Auth URL" %>
         <span class="helper-text"> LTI Platform's Launch Authentication URL, obtained from the platform </span>
     </div>
     <div class="input-field">
-        <%= form.url_field :platform_public_jwks_url, value: @lti_config_hash.nil? ? "" : @lti_config_hash["platform_public_jwks_url"], required: false %>
+        <%= form.url_field :platform_public_jwks_url,
+                           value: @lti_config_hash.nil? ? "" : @lti_config_hash["platform_public_jwks_url"],
+                           required: false %>
         <%= form.label :platform_public_jwks_url, "LTI platform public JWK URL" %>
         <span class="helper-text"> LTI platform endpoint URL to obtain JWKs </span>
     </div>
     <div class="input-field">
-      <%= form.url_field :oauth2_access_token_url, value: @lti_config_hash.nil? ? "" : @lti_config_hash["oauth2_access_token_url"], required: true %>
+      <%= form.url_field :oauth2_access_token_url,
+                         value: @lti_config_hash.nil? ? "" : @lti_config_hash["oauth2_access_token_url"],
+                         required: true %>
       <%= form.label :oauth2_access_token_url, "Platform OAuth2 Endpoint" %>
       <span class="helper-text"> LTI platform's Oauth2 Access Token Endpoint URL </span>
     </div>
@@ -37,7 +43,7 @@
       <% if File.exist?("config/lti_tool_jwk.json") %>
         <p> File already uploaded. Uploading will rewrite the previous JWK </p>
       <% end %>
-      <%= form.file_field :tool_jwk, accept:'text/json', required: !File.exist?("config/lti_tool_jwk.json") %>
+      <%= form.file_field :tool_jwk, accept: 'text/json', required: !File.exist?("config/lti_tool_jwk.json") %>
     </div>
       <div class="lti-upload-container">
         <h5>
@@ -46,7 +52,7 @@
         <% if File.exist?("config/lti_platform_jwk.json") %>
           <p> File already uploaded. Uploading will rewrite the previous JWK </p>
         <% end %>
-        <%= form.file_field :platform_public_jwk_json, accept:'text/json', required: false %>
+        <%= form.file_field :platform_public_jwk_json, accept: 'text/json', required: false %>
       </div>
-    <%= form.submit "Update Configuration", {:class=>"btn primary"}%>
+    <%= form.submit "Update Configuration", { class: "btn primary" } %>
 <% end %>

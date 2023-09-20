@@ -1,47 +1,53 @@
-<%= f.text_field :name,
-  help_text: "The course ID used in URLs and DB keys. This field must be unique
-  and URL-able. Typically includes the course number and semester. Examples:
-  15213-f12, 15110-s11" %></td>
-
 <%= f.text_field :semester, size: 3,
-  help_text: "The current semester. Examples: f12, s13, m13" %>
+                            help_text: "The current semester. Examples: f12, s13, m13" %>
 
 <%= f.text_field :display_name,
-  help_text: "Descriptive course name for displaying. Example: 15-213: Intro to
+                 help_text: "Descriptive course name for displaying. Example: 15-213: Intro to
   Computer Systems" %>
 
 <%= f.text_field :website,
-  help_text: "Official course website. Example: https://www.cs.cmu.edu/~213/" %>
+                 help_text: "Official course website. Example: https://www.cs.cmu.edu/~213/" %>
 
 <%= f.text_field :late_slack,
-  help_text: "This is the number of seconds after a deadline that the server
+                 help_text: "This is the number of seconds after a deadline that the server
   will still accept a submission and not count it as late. Example: 3600" %>
 
 <%= f.text_field :grace_days,
-  help_text: "The total number of grace days for late submissions that students
+                 help_text: "The total number of grace days for late submissions that students
   are allowed each semester. Example: 3" %>
 
-<%= f.score_adjustment_input :late_penalty, optional: true, help_text: "The penalty applied to late submissions after a student runs out of grace days. It represents an amount of points or a percentage of the total score removed per day, and must be a non-negative number. This field can be overriden on a per-assessment basis.", placeholder: "E.g. 15%" %>
+<%= f.score_adjustment_input :late_penalty, optional: true, help_text: "The penalty applied to late submissions after
+  a student runs out of grace days. It represents an amount of points or a percentage of the total score removed per
+  day, and must be a non-negative number. This field can be overriden on a per-assessment basis.",
+                                            placeholder: "E.g. 15%" %>
 
 <%= f.text_field :version_threshold, help_text: "If a submission's version is greater than this threshold, it is
-  penalized according to the version penalty. If set to -1, no submissions are penalized. This is required, but can be overridden on a per-assessment basis.", placeholder: "E.g. 10" %>
+  penalized according to the version penalty. If set to -1, no submissions are penalized. This is required, but can be
+  overridden on a per-assessment basis.", placeholder: "E.g. 10" %>
 
-<%= f.score_adjustment_input :version_penalty, optional: true, help_text: "The penalty applied to submissions with versions greater than the version threshold, i.e. number of points or percentage of the total score removed per version above the threshold. For example, if this is set to 1 point and the version threshold to 3, the fifth version of a student's submissions would be docked 2 points.", placeholder: "E.g. 15%" %>
+<%= f.score_adjustment_input :version_penalty, optional: true, help_text: "The penalty applied to submissions with
+  versions greater than the version threshold, i.e. number of points or percentage of the total score removed per
+  version above the threshold. For example, if this is set to 1 point and the version threshold to 3, the fifth
+  version of a student's submissions would be docked 2 points.", placeholder: "E.g. 15%" %>
 
 <%= f.date_select :start_date, help_text: "When the course becomes active.",
-  less_than: "course_end_date" %>
+                               less_than: "course_end_date" %>
 
 <%= f.date_select :end_date, help_text: "When the course becomes inactive.",
-  greater_than: "course_start_date" %>
+                             greater_than: "course_start_date" %>
 
 <%= f.check_box :disabled,
-  help_text: "If this box is checked, then students won't be able download labs
+                help_text: "If this box is checked, then students won't be able download labs
   or upload submissions." %>
 
 <%= f.check_box :exam_in_progress, help_text: "While checked, students are not allowed to view their previous
   submissions for any assessment in this class." %>
 
 <%= f.text_area :gb_message, class: "materialize-textarea",
-  help_text: "An optional message that is displayed to students at the top of
+                             help_text: "An optional message that is displayed to students at the top of
   their gradebooks.  It can be used to explain grading criteria.",
-  display_name: "Gradebook Message", placeholder: "Optional" %>
+                             display_name: "Gradebook Message", placeholder: "Optional" %>
+
+<%= f.file_field :config_file, button_text: "Upload course.rb",
+                               help_text: "Config file will be automatically reloaded after saving.
+                               Changes to other settings will be lost if an error is encountered." %>

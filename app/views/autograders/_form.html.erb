@@ -34,27 +34,13 @@
   <%= f.check_box :release_score, display_name: "Release Scores?",
     help_text: "Check to release autograded scores to students immediately after autograding (strongly recommended)." %>
 
-	<br />
-	<label class="btn primary">
-  	Autograder Makefile
-	  <span class="hide-all">
-  	  <%= f.file_field :makefile, action: :upload %>
-	  </span>
-	</label><br />
-	<input var id="makefile_name" value="autograde-Makefile" readonly>
-	
-	<label class="btn primary">
-  	Autograder Tar
-	  <span class="hide-all">
-  	  <%= f.file_field :tar, action: :upload %>
-	  </span>
-	</label><br />
-	<input var id="tar_name" type="text" value="autograde.tar" readonly>
+	<%= f.file_field :makefile, label_text: "Autograder Makefile", action: :upload %>
+	<%= f.file_field :tar, label_text: "Autograder Tar", action: :upload %>
 	<p class="help-block">
 		Both of the above files will be renamed upon upload.
 	</p>
 
-  <%= f.submit "Save Settings", { class: "" } %>
+  <%= f.submit "Save Settings" %>
   
   <%= link_to "Delete Autograder", [@course, @assessment, :autograder], method: :delete, class: "btn danger",
               data: {confirm: "Are you sure you want to delete the Autograder for this assesssment?"} %>
