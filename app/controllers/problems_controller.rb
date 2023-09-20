@@ -6,9 +6,6 @@ class ProblemsController < ApplicationController
   # inherited from ApplicationController
   before_action :set_assessment
   before_action :set_problem, only: %i[edit update destroy]
-  rescue_from ActionView::MissingTemplate do |_exception|
-    redirect_to("/home/error_404")
-  end
 
   action_auth_level :new, :instructor
   def new

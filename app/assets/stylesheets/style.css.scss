@@ -237,10 +237,6 @@ div.main-header img {
 }
 
 /* Custom Form Styling */
-form#edit_editCourse {
-  margin-top: 80px;
-}
-
 .input-field,
 form > div {
   padding-bottom: 1rem !important;
@@ -301,24 +297,6 @@ input[type="email"] {
 
 .caret {
   border-color: transparent !important;
-}
-
-/* embedded-form */
-.embedded-form {
-  display: inline-block;
-  cursor: pointer;
-}
-
-input[type="file"].upload_embedded {
-  display: none;
-}
-
-#upload_button .control-label {
-  display: none;
-}
-
-.hide-all {
-  display: none;
 }
 
 .navbar-nav.action-links > li > .dropdown-menu {
@@ -648,33 +626,47 @@ p.attention {
 }
 
 /**
- * ULs on the moss page
+ * Moss Page Styling
  **/
+.moss-dropdown {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  text-align: center;
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+.moss-dropdown h5 {
+  margin: 0;
+}
+.moss-dropdown i {
+  font-size: 32px;
+}
 ul.moss-list {
   list-style: none;
-  padding: 0;
+  background: $autolab-subtle-gray;
+  border-radius: 5px;
 }
 ul.moss-list > li {
-  background: $autolab-subtle-gray;
-  border: 1px solid $autolab-highlight-gray;
   cursor: pointer;
-  margin: 5px;
-  padding: 4px;
+  padding: 15px;
 }
 ul.moss-list > li > h5 {
-  color: #00a;
   font-weight: bold;
   margin: 0;
+  padding-bottom: 10px;
 }
 ul.moss-inner-list {
   list-style: none;
   padding: 0;
 }
 ul.moss-inner-list > li {
-  background: linear-gradient(to top, $autolab-subtle-gray, #fff);
-  border: 1px solid $autolab-highlight-gray;
+  background: $autolab-white;
   cursor: default;
-  padding: 2px;
+  padding: 10px;
+  margin: 5px;
+  border-radius: 5px;
 }
 ul.moss-inner-list > li > h5 {
   margin: 0;
@@ -773,6 +765,11 @@ table.prettyBorder {
     }
   }
 
+  thead.float th {
+    z-index: 1;
+    position: sticky;
+    top: 0;
+  }
   th {
     background-color: #ebebeb;
     color: #000000;
@@ -987,6 +984,13 @@ input[type="text"]:focus,
 input[type="email"]:focus,
 input[type="password"]:focus {
   outline: none;
+}
+
+// To remove line for file-field
+.file-field input[type="text"].validate,
+.file-field input[type="text"].validate.valid, {
+  border-bottom: none;
+  box-shadow: none;
 }
 
 input[type="checkbox"] {

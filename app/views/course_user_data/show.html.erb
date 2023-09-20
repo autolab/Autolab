@@ -9,7 +9,7 @@
     Section: <strong><%= @requestedUser.section %></strong><br>
     <%= @requestedUser.school %> <%= @requestedUser.major %>, Class of <%= @requestedUser.year %></li>
   <% if @cud.instructor? %>
-  <li><b>Course Average Tweak</b> of <%=raw tweak(@requestedUser.tweak) %></li>
+  <li><b>Course Average Tweak</b> of <%= raw tweak(@requestedUser.tweak) %></li>
   <% end %>
 </ul>
 <% if @cud.instructor? %>

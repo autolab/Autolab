@@ -115,6 +115,13 @@ Please feel free to use Autolab at your school/organization. If you run into any
 
 
 ## Changelog
+### [v2.11.0](https://github.com/autolab/Autolab/releases/tag/v2.11.0) (2023/05/21) LTI Settings UI, extensions metrics, and simultaneous extension creation
+- Introduced UI to manage LTI integration settings
+- Added extension metrics for instructors to monitor students by number of extensions granted
+- Instructors can now create extensions for multiple students at once
+- Numerous UI updates
+- Numerous bug fixes and improvements
+
 ### [v2.10.0](https://github.com/autolab/Autolab/releases/tag/v2.10.0) (2023/01/13) LTI Integration, Generalized Feedback, and Streaming Output
 - Autolab now supports roster syncing with courses on Canvas and other LTI (Learning Tools Interoperability) services. For full instructions on setup, see the documentation.
 - Streaming partial output and new feedback interface
@@ -131,24 +138,5 @@ Please feel free to use Autolab at your school/organization. If you run into any
 - Students can now submit code via GitHub
 - Improved Roster Upload with better error reporting
 - Numerous bug fixes and improvements
-
-### (2021/10/12) Moved from Uglifier to Terser
-- Autolab has migrated from Uglifier to Terser for our Javascript compressor to support the latest Javascript syntax. Please change `Uglifier.new(harmony: true)` to `:terser` in your `production.rb`
-
-### [v2.7.0](https://github.com/autolab/Autolab/releases/tag/v2.7.0) (2021/05/29) Autolab Docker Compose, Student Metrics, Redesigned Documentation
-- Integration with new Docker Compose [installation method](https://github.com/autolab/docker)
-- Student Metrics Feature, which allows instructors to identify students who may require attention
-- Redesigned Autolab documentation
-- Numerous bug fixes and improvements
-
-### [v2.6.0](https://github.com/autolab/Autolab/releases/tag/v2.6.0) (2020/10/24) Formatted Feedbacks, Course Dashboard, Accessibility
-- Formatted Feedback feature
-- Introduction of Course Dashboards
-- Numerous bug fixes and improvements
-
-### v2.5.0 (2020/02/22) Upgrade from Rails 4 to Rails 5
-- Autolab has been upgraded from Rails 4 to Rails 5 after almost a year of effort! There are still some small
-bugs to be fixed, but they should not affect the core functionality of Autolab. Please file an issue if you believe
-you have found a bug.
 
 **For older releases, please check out the [releases page](https://github.com/autolab/Autolab/releases).**

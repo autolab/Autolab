@@ -11,6 +11,7 @@ class Problem < ApplicationRecord
   has_many :annotations, dependent: :destroy
 
   validates :name, :max_score, presence: true
+  validates :name, uniqueness: { case_sensitive: false, scope: :assessment_id }
   validates_associated :assessment
 
   after_commit -> { assessment.dump_yaml }

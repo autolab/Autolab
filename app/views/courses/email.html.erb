@@ -1,7 +1,7 @@
-<% @title = "Send a Bulk Email to " + @course.display_name %>
+<% @title = "Send a Bulk Email to #{@course.display_name}" %>
 
 <% if @errors then %>
-  <font color=red><%=@errors %></font>
+  <font color=red><%= @errors %></font>
 <% elsif @email then %>
   <font color=green>Success!</font>
   <pre><%= @email.encoded %></pre>
@@ -11,12 +11,12 @@
   <% end %>
   <%
   sections = @course.course_user_data.select("section").group("section")
-  sectionSelect = sections.collect {|p| [ p.section ,p.section ]}
-  sectionSelect.insert(0,["Entire Course",""])
+  sectionSelect = sections.collect { |p| [p.section, p.section] }
+  sectionSelect.insert(0, ["Entire Course", ""])
   %>
 
-  <%= form_tag :action=>"email" do %>
-  <table class=verticalTable >
+  <%= form_tag action: "email" do %>
+  <table class=verticalTable>
     <tr>
       <th><b> From: </b></th>
       <td><%= text_field_tag :from %></td>
@@ -30,20 +30,20 @@
     <tr>
       <th><b>Section:</b></th>
       <td>
-				<div class="input-field">      	
-					<%= select("","section",sectionSelect) %>
-				</div>
-			</td>
+        <div class="input-field">
+          <%= select("", "section", sectionSelect) %>
+        </div>
+      </td>
     </tr>
     <tr>
       <td colspan=2>
-					<%= text_area_tag :body,nil,{:rows=>15,:cols=>50}%>
+          <%= text_area_tag :body, nil, { rows: 15, cols: 50 } %>
       </td>
     </tr>
     <tr>
       <td colspan=2>
       <br>
-      <%= submit_tag "Send Email",:confirm=>"Are you sure?", :class=>"btn primary" %>
+      <%= submit_tag "Send Email", confirm: "Are you sure?", class: "btn primary" %>
       </td>
     </tr>
   </table>

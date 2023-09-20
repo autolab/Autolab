@@ -2,8 +2,8 @@
 <h2 id="statsHeading">Statistics for <%= link_to @assessment.display_name, course_assessment_path(@course, @assessment) %></h2>
 <% if @assessment.problems.count > 0 %>
 
-<br />
-<%= render :partial=>"statistics"%>
+<br>
+<%= render partial: "statistics" %>
 <% else %>
 This assessment has no problems.
 <% end %>

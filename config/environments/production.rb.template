@@ -118,4 +118,7 @@ Autolab3::Application.configure do
   config.x.github.client_secret = ENV['GITHUB_CLIENT_SECRET']
   # LTI configuration file storage location. Needs to be in a private folder
   config.lti_config_location  = Rails.root.join('config').to_s
+
+  # Use custom routes for error pages
+  config.exceptions_app = self.routes
 end
