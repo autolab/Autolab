@@ -1,55 +1,67 @@
 <div id="<%= id %>" data-cansubmit="<%= @can_submit %> " class="card-action">
   <% if @can_submit %>
-    <% late_confirm ="" %>
+    <% late_confirm = "" %>
     <% grace_late_info = "" %>
 
     <% if @aud.past_due_at? %>
-    <%   currentTime = Time.zone.now %>
-    <%   days_late = currentTime - @aud.due_at + (currentTime.utc_offset - @aud.due_at.utc_offset) %>
-    <%   days_late = (days_late / 1.day).ceil %>
-    <%   grace_days_left = @aud.grace_days_usable %>
-    <%   if grace_days_left >= days_late %>
-    <%     grace_late_info = "submitting #{pluralize(days_late, "day")} late using #{pluralize(days_late, "grace day")}" %>
-    <%   elsif grace_days_left > 0 %>
-    <%     grace_late_info = "submitting #{pluralize(days_late, "day")} late using #{pluralize(grace_days_left, "grace day")} with #{pluralize(days_late - grace_days_left, "penalty late day")}" %>
-    <%   else %>
-    <%     grace_late_info = "submitting #{pluralize(days_late, "day")} late using #{pluralize(days_late, "penalty late day")}" %>
-    <%   end %>
-    <%   late_confirm = " and that I am #{grace_late_info} under the late policy as defined in the syllabus" %>
+    <% currentTime = Time.zone.now %>
+    <% days_late = currentTime - @aud.due_at + (currentTime.utc_offset - @aud.due_at.utc_offset) %>
+    <% days_late = (days_late / 1.day).ceil %>
+    <% grace_days_left = @aud.grace_days_usable %>
+    <% if grace_days_left >= days_late %>
+    <% grace_late_info = "submitting #{pluralize(days_late, 'day')} late using #{pluralize(days_late, 'grace day')}" %>
+    <% elsif grace_days_left > 0 %>
+    <% grace_late_info = "submitting #{pluralize(days_late, 'day')} late using #{pluralize(grace_days_left, 'grace day')} with #{pluralize(days_late - grace_days_left, 'penalty late day')}" %>
+    <% else %>
+    <% grace_late_info = "submitting #{pluralize(days_late, 'day')} late using #{pluralize(days_late, 'penalty late day')}" %>
+    <% end %>
+    <% late_confirm = " and that I am #{grace_late_info} under the late policy as defined in the syllabus" %>
       <p><b>Warning:</b> Submitting late may result in the usage of a grace day or a grade penalty!</p>
     <% end %>
 
     <div class="row">
       <div class="col s12">
         <% if @assessment.has_svn then %>
-          <%= form_for @submission, url: {action: :handin}, :html => {:name => "submissionForm", :onclick => "return validateIntegrity();"}, method: :post do |f| %>
+          <%= form_for @submission, url: { action: :handin },
+                                    html: { name: "submissionForm", onclick: "return validateIntegrity();" },
+                                    method: :post do |f| %>
 
             <!-- Academic integrity checkbox -->
             <%= label_tag(:integrity_checkbox) do %>
                 <%= check_box_tag(:integrity_checkbox) %>
-                <%= content_tag("span", "I affirm that I have complied with this course's academic integrity policy as defined in the syllabus#{late_confirm}.") %>
+                <%= content_tag("span", "I affirm that I have complied with this course's academic integrity
+                policy as defined in the syllabus#{late_confirm}.") %>
             <% end %>
 
             <% if @aud.past_due_at? then %>
-              <table style = "width:100%">
-                <td><%= f.submit("Checkout Repository", class: "btn primary handin-btn", data: { confirm: "Are you sure you want to submit late?" }, onclick: "setSubmitClicked()") %></td>
-                <td id = "submission_error" style = "color:red"></td>
+              <table style="width:100%">
+                <td>
+                  <%= f.submit("Checkout Repository", class: "btn primary handin-btn",
+                                                      data: { confirm: "Are you sure you want to submit late?" },
+                                                      onclick: "setSubmitClicked()") %>
+                </td>
+                <td id="submission_error" style="color:red"></td>
               </table>
             <% else %>
-              <table style = "width:100%">
-                <td><%= f.submit("Checkout Repository", class: "btn primary handin-btn", onclick: "setSubmitClicked()") %></td>
-                <td id = "submission_error" style = "color:red"></td>
+              <table style="width:100%">
+                <td>
+                  <%= f.submit("Checkout Repository", class: "btn primary handin-btn",
+                                                      onclick: "setSubmitClicked()") %>
+                </td>
+                <td id="submission_error" style="color:red"></td>
               </table>
             <% end %>
           <% end %>
         <% elsif ! @assessment.disable_handins? and !@assessment.embedded_quiz then %>
-          <%= form_for @submission, url: {action: :handin}, :html => {:name => "submissionForm", :onclick => "return validateIntegrity();"}, multipart: true do |f| %>
+          <%= form_for @submission, url: { action: :handin },
+                                    html: { name: "submissionForm", onclick: "return validateIntegrity();" },
+                                    multipart: true do |f| %>
             <% content_for :javascripts do %>
               <%= javascript_include_tag "handin" %>
               <%= javascript_include_tag "git_submission" %>
             <% end %>
-            
-            <%= render partial: "submission_panel", locals: {repos: @repos, f: f}%>
+
+            <%= render partial: "submission_panel", locals: { repos: @repos, f: f } %>
             <% filename_list = @assessment.handin_filename.split(".") %>
             <% if (filename_list.size > 1) %>
                 <!-- file needs to have a period, else we ignore (e.g. for README files) -->
@@ -61,18 +73,23 @@
                   <b id="handin-file-type-incorrect" style="color: red; margin: 0"></b>
                 </div>
             <% end %>
-						<%= label_tag(:integrity_checkbox) do %>
-							<%= check_box_tag(:integrity_checkbox) %>
-							<%= content_tag("span", "I affirm that I have complied with this course's academic integrity policy as defined in the syllabus#{late_confirm}.") %>
-						<% end %>
+            <%= label_tag(:integrity_checkbox) do %>
+              <%= check_box_tag(:integrity_checkbox) %>
+              <%= content_tag("span", "I affirm that I have complied with this course's academic
+              integrity policy as defined in the syllabus#{late_confirm}.") %>
+            <% end %>
 
             <%= f.file_field :file %>
             <div class="row" style="padding-top: 10px">
-              <div id = "submission_error" style = "color:red" class="col s6 m8 center-align"></div>
+              <div id="submission_error" style="color:red" class="col s6 m8 center-align"></div>
               <% if @aud.past_due_at? then %>
-                  <div class="col s6 m4 center-align"><%= f.submit("Submit Late", id: "fake-submit", class: "btn primary handin-btn disabled") %></div>
+                  <div class="col s6 m4 center-align">
+                    <%= f.submit("Submit Late", id: "fake-submit", class: "btn primary handin-btn disabled") %>
+                  </div>
               <% else %>
-                  <div class="col s6 m4 center-align"><%= f.submit("Submit", id: "fake-submit", class: "btn primary handin-btn disabled") %></div>
+                  <div class="col s6 m4 center-align">
+                    <%= f.submit("Submit", id: "fake-submit", class: "btn primary handin-btn disabled") %>
+                  </div>
               <% end %>
             </div>
             <div class="row">

@@ -2,7 +2,7 @@
 <% if @partial then %>
   <a class="clickable" onclick="hideStudent()">Exit</a>
 <% end %>
-<% download_access = (@cud.instructor?) %>
+<% download_access = @cud.instructor? %>
 
 <% if @extension then %>
   <p>
@@ -41,10 +41,10 @@
     <% end %>
 <% end %>
 
-<%= render partial: "submission_history_table", locals: {download_access: download_access, limit: @submissions.size} %>
+<%= render partial: "submission_history_table", locals: { download_access: download_access, limit: @submissions.size } %>
 
 <% if @partial then %>
   <a class="clickable" onclick="hideStudent()">Exit</a>
 <% end %>
 <p>
-<%= "Page loaded in " + (Time.now() - @startTime).to_s + " seconds" %>
+<%= "Page loaded in #{Time.zone.now - @startTime} seconds" %>

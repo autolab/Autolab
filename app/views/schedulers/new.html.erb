@@ -5,10 +5,12 @@
 
 <%= form_for :scheduler, url: course_schedulers_path(@course), builder: FormBuilderWithDateTimeInput do |f| %>
   <%= f.error_messages %>
-  <%= f.text_field :action, help_text: "Path to scheduler file relative to Autolab root", placeholder: "(scheduler action)" %>
+  <%= f.text_field :action, help_text: "Path to scheduler file relative to Autolab root",
+                   placeholder: "(scheduler action)" %>
   <%= f.datetime_select :next, help_text: "Time of next run" %>
   <%= f.datetime_select :until, help_text: "Don't run after this time" %>
-  <%= f.number_field :interval, min: 1, help_text: "Minimum interval between each run (in seconds)", value: 600 %>
+  <%= f.number_field :interval, min: 1, help_text: "Minimum interval between each run (in seconds)",
+                     value: 600 %>
   <%= f.check_box :disabled %>
   <div class="action_buttons">
     <%= link_to 'Back', course_schedulers_path(@course), { class: "btn" } %>
