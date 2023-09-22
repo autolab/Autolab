@@ -82,6 +82,7 @@ class AssessmentsController < ApplicationController
                                        .or(course_attachments.where("assessments.start_at < ?",
                                                                     Time.current))
                    end
+    @course_attachments = @attachments.where(assessment_id: nil)
   end
 
   # GET /assessments/new

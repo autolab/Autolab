@@ -115,7 +115,7 @@
   </div>
 <% end %>
 
-<% if @attachments.any? or @cud.instructor? %> <!-- TODO: Update logic to check release date -->
+<% if @course_attachments.any? or @cud.instructor? %> <!-- TODO: Update logic to check release date -->
   <div class="section">
     <h3 class="section-title"><span class="white">Attachments</span></h3>
     <% if @cud.instructor? %>
@@ -130,12 +130,12 @@
       </ul>
     <% end %>
     <div class="row">
-      <% attachment_categories = @attachments.distinct.pluck(:category_name).sort %>
+      <% attachment_categories = @course_attachments.distinct.pluck(:category_name).sort %>
       <% attachment_categories.each_with_index do |cat, idx| %>
         <% if idx % 3 == 0 %>
           <div class="clearfix hide-on-small-only"></div>
         <% end %>
-        <% attachments = @attachments.from_category(cat) %>
+        <% attachments = @course_attachments.from_category(cat) %>
         <% if attachments.any? %>
           <div class="col s12 m4">
             <div class="card hoverable">
