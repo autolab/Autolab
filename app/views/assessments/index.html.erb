@@ -26,6 +26,9 @@
               }
           });
           <% end %>
+          $(document).ready(function(){
+              $('.collapsible.expandable').collapsible({accordion: false});
+          });
       });
   </script>
 <% end %>
@@ -97,15 +100,33 @@
               </div>
 
               <div class="collection red darken-4">
-                <% asmts.each do |asmt| %>
-                  <%= link_to course_assessment_path(@course, asmt),
-                              class: "collection-item grey-text text-darken-4" do %>
-                    <%= asmt.display_name %>
-                    <% if !asmt.released? %>
-                        <span class="new badge blue darken-4" data-badge-caption="unreleased" data-url="<%= edit_course_assessment_path(@course, asmt) %>/handin"></span>
-                    <% end %>
+                <ul class="collapsible expandable">
+                  <% asmts.each do |asmt| %>
+                    <li>
+                      <div class="collapsible-header">
+                        <%= link_to course_assessment_path(@course, asmt),
+                                    :class => "collection-item grey-text text-darken-4" do %>
+                          <%= asmt.display_name %>
+                          <% if !asmt.released? %>
+                            <span class="new badge blue darken-4" data-badge-caption="unreleased" data-url="<%= edit_course_assessment_path(@course, asmt) %>/handin"></span>
+                          <% end %>
+                        <% end %>
+                      </div>
+                      <div class="collapsible-body">
+                        <p style="text-align:left;">
+                          <b>Released: </b>
+                          <span style="float:right;"><i class="material-icons">date_range</i></span>
+                          <span style="float:right;"><%= asmt.start_at %></span>
+                        </p><br>
+                        <p style="text-align:left;">
+                          <b>Due: </b>
+                          <span style="float:right;"><i class="material-icons">date_range</i></span>
+                          <span style="float:right;"><%= asmt.due_at %></span>
+                        </p>
+                      </div>
+                    </li>
                   <% end %>
-                <% end %>
+                </ul>
               </div>
 
             </div>
