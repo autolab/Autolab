@@ -227,6 +227,7 @@ class Assessment < ApplicationRecord
   def load_config_file
     # migrate old source config file path
     if (File.exist? source_config_file_path) && (source_config_file_path != unique_source_config_file_path)
+      puts("rewrote file?")
       # read from source
       config_source = File.open(source_config_file_path, "r", &:read)
       RubyVM::InstructionSequence.compile(config_source)
@@ -247,12 +248,12 @@ class Assessment < ApplicationRecord
 
     # ensure source_config_module_name is an actual module in the assessment config rb file
     # otherwise loading the file on subsequent calls to config_module will result in an exception
-    
+
     # uniquely rename module (so that it's unique among all assessment modules loaded in Autolab)
     if config_source !~ /\b#{unique_config_module_name}\b/
       match = config_source.match(/module\s+(\w+)/)
       config_source = config_source.gsub(match[1], unique_config_module_name)
-      new_config_source = File.open(unique_source_config_file_path, "w"){ |f| f.write(config_source) }
+      # new_config_source = File.open(unique_source_config_file_path, "w"){ |f| f.write(config_source) }
     end
     
     # backup old config
