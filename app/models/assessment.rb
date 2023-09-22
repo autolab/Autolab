@@ -201,7 +201,6 @@ class Assessment < ApplicationRecord
   # returns true if the file is actually created
   #
   def construct_default_config_file
-    puts("contrucc")
     assessment_config_file_path = unique_source_config_file_path
     return false if File.file?(assessment_config_file_path)
 
@@ -212,7 +211,6 @@ class Assessment < ApplicationRecord
     # Update with this assessment information
     config_source.gsub!("##NAME_CAMEL##", unique_config_module_name)
     config_source.gsub!("##NAME_LOWER##", name)
-    puts("contrucc2")
     # Write the new config out to the right file.
     File.open(assessment_config_file_path, "w") { |f| f.write(config_source) }
     # Load the assessment config file while we're at it
@@ -232,15 +230,10 @@ class Assessment < ApplicationRecord
       # read from source
       config_source = File.open(source_config_file_path, "r", &:read)
       RubyVM::InstructionSequence.compile(config_source)
-      puts("unique name", unique_config_module_name)
+      # rename module name if it doesn't match new unique naming scheme
       if config_source !~ /\b#{unique_config_module_name}\b/
-        puts("hmm", match)
         match = config_source.match(/module\s+(\w+)/)
         config_source = config_source.gsub(match[1], unique_config_module_name)
-        puts("hmm", match)
-        # new_config_source = config_source.gsub(match.string, unique_config_module_name)
-        # raise "Module name in #{name}.rb
-        #      doesn't match expected #{source_config_module_name}"
       end
       File.open(unique_source_config_file_path, "w"){ |f| f.write(config_source) }
       File.rename(source_config_file_path, source_config_file_backup_path)
@@ -254,20 +247,12 @@ class Assessment < ApplicationRecord
 
     # ensure source_config_module_name is an actual module in the assessment config rb file
     # otherwise loading the file on subsequent calls to config_module will result in an exception
-    # puts("TEST")
-    # puts(/\b#{source_config_module_name}\b/, config_source)
-    # puts(id)
     
     # uniquely rename module (so that it's unique among all assessment modules loaded in Autolab)
     if config_source !~ /\b#{unique_config_module_name}\b/
-      puts("hmm", match)
       match = config_source.match(/module\s+(\w+)/)
       config_source = config_source.gsub(match[1], unique_config_module_name)
-      puts("rebuilt config", config_source, match.string)
       new_config_source = File.open(unique_source_config_file_path, "w"){ |f| f.write(config_source) }
-
-      # raise "Module name in #{name}.rb
-      #      doesn't match expected #{source_config_module_name}"
     end
     
     # backup old config

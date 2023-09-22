@@ -1,11 +1,55 @@
 require "rails_helper"
 include ControllerMacros
 RSpec.describe AssessmentsController, type: :controller do
+  render_views
   describe "GET index" do
     it "assigns all assessments as @assessments" do
       assessment = build(:assessment)
       FileUtils.mkdir_p assessment.handin_directory_path
       assessment.save
+    end
+  end
+
+  describe "Create Assessment" do
+    context "when user is Instructor" do
+      let!(:course_hash) do
+        create_course_with_users_as_hash
+      end
+      let!(:stub_assessment) do
+        stubAssessment = build(:assessment)
+        stubAssessment.display_name = "../courses"
+        stubAssessment.name = ""
+        stubAssessment.save
+        stubAssessment
+      end
+      let!(:stub_assessment2) do
+        stubAssessment = build(:assessment)
+        stubAssessment.display_name = "..courses-okay_beautiful"
+        stubAssessment.name = ""
+        stubAssessment.save
+        stubAssessment
+      end
+      before(:each) do
+        instructor = get_instructor_by_cid(course_hash[:course].id)
+        sign_in(instructor)
+        allow_any_instance_of(AssessmentsController).to receive(:new_assessment_params).and_return(nil)
+      end
+      it "rejects bad assessment display name" do
+        allow_any_instance_of( ActiveRecord::Associations::CollectionProxy).to receive(:new).and_return(stub_assessment)
+        post :create, params: { course_name: course_hash[:course].name }
+        puts(response.body)
+        expect(flash[:error]).to be_present
+        expect(flash[:error]).to match(/Assessment name is blank or contains disallowed characters/m)
+        expect(Assessment.find_by(name: "courses")).to eql(nil)
+      end
+      it "sanitizes assessment display name" do
+        allow_any_instance_of( ActiveRecord::Associations::CollectionProxy).to receive(:new).and_return(stub_assessment2)
+        post :create, params: { course_name: course_hash[:course].name,
+                                display_name: stub_assessment2.display_name }
+        expect(response).to have_http_status(302)
+        expect(flash[:success]).to be_present
+        expect(Assessment.find_by(name: "courses-okay_beautiful")).not_to eql(nil)
+      end
     end
   end
 
@@ -58,7 +102,13 @@ RSpec.describe AssessmentsController, type: :controller do
 
         expect(response).to have_http_status(302)
         expect(flash[:success]).to be_present
+        expect(File).to exist(course_2_hash[:assessment].unique_config_file_path)
+        config_source = File.open(course_2_hash[:assessment].unique_config_file_path,
+                                  "r", &:read)
+        expect config_source.include? course_2_hash[:assessment].unique_config_module_name
         FileUtils.rm("tmp/test.tar")
+        # cleanup assessmentConfig
+        FileUtils.rm(course_2_hash[:assessment].unique_config_file_path)
       end
       it "handles nil tarfile" do
         post :importAsmtFromTar, params: { course_name: course_2_hash[:course].name,
@@ -103,13 +153,20 @@ RSpec.describe AssessmentsController, type: :controller do
         expect(flash[:error]).to match(/Error loading yaml/m)
       end
       it "handles mismatched module name" do
+        # we now support any module name since we just overwrite the module name anyways,
+        # so this test is now successful
         file = fixture_file_upload("assessments/homework02-module-mismatch.tar")
         post :importAsmtFromTar, params: { course_name: course_2_hash[:course].name,
                                            name: course_2_hash[:assessment].name,
                                            tarFile: file }
         expect(response).to have_http_status(302)
-        expect(flash[:error]).to be_present
-        expect(flash[:error]).to match(/Error loading config module/m)
+        expect(flash[:success]).to be_present
+        expect(File).to exist(course_2_hash[:assessment].unique_config_file_path)
+        config_source = File.open(course_2_hash[:assessment].unique_config_file_path,
+                                  "r", &:read)
+        expect config_source.include? course_2_hash[:assessment].unique_config_module_name
+        # cleanup assessmentConfig
+        FileUtils.rm(course_2_hash[:assessment].unique_config_file_path)
       end
       it "handles module with bad syntax" do
         file = fixture_file_upload("assessments/homework02_badsyntax.tar")

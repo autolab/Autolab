@@ -112,7 +112,7 @@ class AssessmentsController < ApplicationController
 
       # assessment names must be only lowercase letters and digits
       puts(filename, filename !~ /[A-Za-z_][A-Za-z0-9_-]*$/)
-      if filename !~ /[A-Za-z_][A-Za-z0-9_-]*$/
+      if filename !~ /^[A-Za-z_][A-Za-z0-9_-]*$/
         # add line break if adding to existing error message
         flash.now[:error] = flash.now[:error] ? "#{flash.now[:error]} <br>" : ""
         flash.now[:error] += "An error occurred while trying to display an existing assessment " \
@@ -291,19 +291,23 @@ class AssessmentsController < ApplicationController
 
   def create
     @assessment = @course.assessments.new(new_assessment_params)
-
     if @assessment.name.blank?
-      # Validate the name, very similar to valid Ruby identifiers, but also allowing hyphens and periods, but not two periods
-      # We just want to prevent file traversal attacks here
-      if @assessment.display_name !~ /[A-Za-z_][A-Za-z0-9_-]*$/
+      # Validate the name, very similar to valid Ruby identifiers, but also allowing hyphens
+      # We just want to prevent file traversal attacks here, and stop names that break routing
+      # first regex - try to sanitize input, allow special characters in display name but not name
+      # if the sanitized doesn't match the required identifier structure, then we reject
+      sanitized_display_name = @assessment.display_name.gsub(/[!@#$%^&*(),.?":{}|<>\s]/, "")
+      if sanitized_display_name !~ /^[A-Za-z_][A-Za-z0-9_-]*$/
+        # TODO: update with docs link
         flash[:error] =
-          "Assessment name is blank or contains disallowed characters. Find more information on valid assessment names here"
+          "Assessment name is blank or contains disallowed characters. Find more information on"\
+          " valid assessment names here"
         redirect_to(action: :install_assessment)
         return
       end
 
       # Update name in object
-      @assessment.name = @assessment.display_name
+      @assessment.name = sanitized_display_name
     end
 
     # fill in other fields
@@ -353,7 +357,12 @@ class AssessmentsController < ApplicationController
 
     flash[:success] = "Successfully installed #{@assessment.name}."
     # reload the course config file
-    @course.reload_course_config
+    begin
+      @course.reload_course_config
+    rescue StandardError, SyntaxError => e
+      @error = e
+      render("reload") && return
+    end
 
     redirect_to([@course, @assessment]) && return
   end
