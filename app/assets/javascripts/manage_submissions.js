@@ -18,6 +18,14 @@ function get_score_details(course_user_datum_id) {
   });
 }
 
+const selectTweak = (e) => {
+  const $student = $(e.target);
+  const submission = $student.data('submissionid');
+  console.log(submission);
+  $('#annotation-modal').modal('open');
+  $('.annotation-form').show();
+}
+
 $(document).ready(function () {
 
   $('.modal').modal();
@@ -115,9 +123,9 @@ $(document).ready(function () {
                 ${submission.late_penalty}
               </td>
               <td class="submissions-td">
-                <a href="submissions/${submission.id}/edit">
+                <p class="tweak-button" data-submissionid="${submission.id}">
                   ${tweak_value}
-                </a>
+                </p>
               </td>
               <td class="submissions-td">
                 ${view_button}
@@ -153,6 +161,8 @@ $(document).ready(function () {
         "info": false,
         "searching": false,});
 
+    }).then(() => {
+      $('.tweak-button').click(selectTweak);
     }).catch((err) => {
       $('#score-details-content').html(`
         <div class="row">
