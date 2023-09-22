@@ -251,16 +251,15 @@ class Assessment < ApplicationRecord
 
     # uniquely rename module (so that it's unique among all assessment modules loaded in Autolab)
     if config_source !~ /\b#{unique_config_module_name}\b/
+      puts("write new config source")
       match = config_source.match(/module\s+(\w+)/)
       config_source = config_source.gsub(match[1], unique_config_module_name)
       # new_config_source = File.open(unique_source_config_file_path, "w"){ |f| f.write(config_source) }
     end
     
-    # backup old config
-    if File.exist?(config_file_path)
-      File.rename(config_file_path, config_backup_file_path)
-    end
-
+    # backup old *unique* configs
+    # we keep the previous config_file_path, if it exists, to allow for the unique file path changes
+    # to be reverted without breaking all previous existing assessments
     if File.exist?(unique_config_file_path)
       File.rename(unique_config_file_path, unique_config_backup_file_path)
     end
