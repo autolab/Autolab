@@ -1,7 +1,7 @@
 <% if @is_assessment %>
-  <h2>Listing <%= link_to @assessment.display_name, [@course, @assessment] %> Attachments</h2>
+  <h2>Listing <%= link_to @assessment.display_name, course_assessment_path(@course, @assessment) %> Attachments</h2>
 <% else %>
-  <h2>Listing <%= link_to @course.full_name, @course %> Attachments</h2>
+  <h2>Listing <%= link_to @course.full_name, course_path(@course) %> Attachments</h2>
 <% end %>
 
 <ul class="collection with-header attachments">
@@ -20,4 +20,3 @@
   </li>
   <%= render @attachments %>
 </ul>
-
