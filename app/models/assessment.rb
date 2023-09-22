@@ -124,7 +124,7 @@ class Assessment < ApplicationRecord
   def config_file_path
     Rails.root.join("assessmentConfig", "#{course.name}-#{sanitized_name}.rb")
   end
-  
+
   def unique_config_file_path
     Rails.root.join("assessmentConfig", "#{course.name}-#{name}-#{id}.rb")
   end
@@ -213,8 +213,6 @@ class Assessment < ApplicationRecord
     config_source.gsub!("##NAME_LOWER##", name)
     # Write the new config out to the right file.
     File.open(assessment_config_file_path, "w") { |f| f.write(config_source) }
-    # Load the assessment config file while we're at it
-    File.open(config_file_path, "w") { |f| f.write config_source }
     true
   end
 
@@ -227,7 +225,6 @@ class Assessment < ApplicationRecord
   def load_config_file
     # migrate old source config file path
     if (File.exist? source_config_file_path) && (source_config_file_path != unique_source_config_file_path)
-      puts("rewrote file?")
       # read from source
       config_source = File.open(source_config_file_path, "r", &:read)
       RubyVM::InstructionSequence.compile(config_source)
@@ -251,12 +248,10 @@ class Assessment < ApplicationRecord
 
     # uniquely rename module (so that it's unique among all assessment modules loaded in Autolab)
     if config_source !~ /\b#{unique_config_module_name}\b/
-      puts("write new config source")
       match = config_source.match(/module\s+(\w+)/)
       config_source = config_source.gsub(match[1], unique_config_module_name)
-      # new_config_source = File.open(unique_source_config_file_path, "w"){ |f| f.write(config_source) }
     end
-    
+
     # backup old *unique* configs
     # we keep the previous config_file_path, if it exists, to allow for the unique file path changes
     # to be reverted without breaking all previous existing assessments
@@ -265,15 +260,15 @@ class Assessment < ApplicationRecord
     end
 
     # write to config_file_path
-    # File.open(config_file_path, "w") { |f| f.write config }
     File.open(unique_config_file_path, "w") { |f| f.write config_source }
+
     # config file might have an updated custom raw score function: clear raw score cache
     invalidate_raw_scores
     logger.info "Loaded #{unique_config_file_path}"
   end
 
   def config_module
-    puts("config module hit")
+    Rails.logger.debug("config module hit")
     # (re)construct config file from source, unless it already exists
     load_config_file unless File.exist? unique_config_file_path
 
@@ -406,6 +401,7 @@ class Assessment < ApplicationRecord
   def source_config_file_path
     Rails.root.join("courses", course.name, sanitized_name, "#{sanitized_name}.rb")
   end
+
   # name is already sanitized during the creation process
   def unique_source_config_file_path
     Rails.root.join("courses", course.name, name, "#{name}.rb")
@@ -448,7 +444,10 @@ private
     # remove the previously loaded config module
     Object.send :remove_const, config_module_name if Object.const_defined? config_module_name
 
-    Object.send :remove_const, unique_config_module_name if Object.const_defined? unique_config_module_name
+    if Object.const_defined? unique_config_module_name
+      Object.send :remove_const,
+                  unique_config_module_name
+    end
 
     # force load config file (see http://www.ruby-doc.org/core-2.0.0/Kernel.html#method-i-load)
     load unique_config_file_path

@@ -502,6 +502,7 @@ module AssessmentAutogradeCore
   end
 
   def extend_config_module(assessment, submission, cud)
+    # autograde core calls might be called before migration to unique module name occurs, so need to add check
     if (@assessment.use_unique_module_name)
       require assessment.unique_config_file_path
     else
