@@ -8,9 +8,7 @@
               course_attachment_path(@course, course_attachment) %>
   <%= course_attachment.name %>
   <% unless course_attachment.released? %>
-    <a href="<%= edit_course_attachment_path(@course, course_attachment) %>">
-      <span class="new badge blue darken-4" data-badge-caption="unreleased"></span>
-    </a>
+    <span class="new badge blue darken-4" data-badge-caption="unreleased"></span>
   <% end %>
   <% if course_attachment.has_assessment? %>
     <a href="<%= course_assessment_path(@course, course_attachment.assessment) %>">

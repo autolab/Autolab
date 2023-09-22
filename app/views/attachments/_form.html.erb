@@ -23,7 +23,7 @@
       <%= f.submit(@attachment.new_record? ? "Create New Attachment" : "Save Changes", class: "btn primary") %>
       <% unless @attachment.new_record? %>
         <%= link_to "Delete Attachment",
-                    @attachment.has_assessment? ? course_assessment_attachment_path(@course, @attachment.assessment, @attachment) : course_attachment_path(@course, @attachment),
+                    course_attachment_path(@course, @attachment),
                     method: :delete, class: "btn danger", data: { confirm: "Are you sure?" } %>
       <% end %>
     </li>
