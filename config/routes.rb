@@ -81,6 +81,8 @@ Rails.application.routes.draw do
     post "lti_launch_link_course", on: :member
     post "github_revoke", on: :member
     get "github_oauth_callback", on: :collection
+    post "reset_password", on: :member
+    get "login_with_token", on: :member
   end
 
   resources :courses, param: :name do

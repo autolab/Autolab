@@ -333,6 +333,27 @@ class UsersController < ApplicationController
     (redirect_to user_path(id: @user.id)) && return
   end
 
+  action_auth_level :reset_password, :administrator
+  def reset_password
+    user = User.find(params[:id])
+    @temporary_token = SecureRandom.urlsafe_base64(20)
+    user.create_token(user, @temporary_token)
+    user.send_reset_password_instructions
+    render 'reset_password'
+  end
+
+  skip_before_action :authenticate_user!, except: [:publicSignUp]
+  action_auth_level :login_with_token, :administrator
+  def login_with_token
+    user = User.find_by(temporary_token: params[:temporary_token])
+    if user && !user.temporary_token_expired(user)
+      sign_in :user, user
+      redirect_to("/") && return
+    else
+      redirect_to root_path, alert: "Invalid token."
+    end
+  end
+
 private
 
   def new_user_params
