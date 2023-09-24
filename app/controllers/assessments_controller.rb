@@ -111,7 +111,6 @@ class AssessmentsController < ApplicationController
                                          filename)) || (filename == "..") || (filename == ".")
 
       # assessment names must be only lowercase letters and digits
-      puts(filename, filename !~ /[A-Za-z_][A-Za-z0-9_-]*$/)
       if filename !~ /^[A-Za-z_][A-Za-z0-9_-]*$/
         # add line break if adding to existing error message
         flash.now[:error] = flash.now[:error] ? "#{flash.now[:error]} <br>" : ""
@@ -1011,7 +1010,6 @@ private
   #
   def valid_asmt_tar(tar_extract)
     asmt_name = nil
-    asmt_rb_exists = false
     asmt_yml_exists = false
     asmt_name_is_valid = true
     tar_extract.each do |entry|
@@ -1044,8 +1042,6 @@ private
 
           # validate syntax of config
           RubyVM::InstructionSequence.compile(config_source)
-
-          asmt_rb_exists = true
         end
         asmt_yml_exists = true if pathname == "#{asmt_name}/#{asmt_name}.yml"
       end
@@ -1053,22 +1049,19 @@ private
     # it is possible that the assessment path does not match the
     # the expected assessment path when the Ruby config file
     # has a different name then the pathname
-    if !asmt_name.nil? && asmt_name =~ /[^a-z0-9]/
+    if !asmt_name.nil? && asmt_name !~ /^[A-Za-z_][A-Za-z0-9_-]*$/
       flash[:error] = "Errors found in tarball: Assessment name #{asmt_name} is invalid.
                        Assessment file names must only contain lowercase
                        letters and digits with no spaces."
       asmt_name_is_valid = false
     end
-    if !(asmt_rb_exists && asmt_yml_exists && !asmt_name.nil?)
+    if !(asmt_yml_exists && !asmt_name.nil?)
       flash[:error] = "Errors found in tarball:"
       if !asmt_yml_exists && !asmt_name.nil?
         flash[:error] += "<br>Assessment yml file #{asmt_name}/#{asmt_name}.yml was not found"
       end
-      if !asmt_rb_exists && !asmt_name.nil?
-        flash[:error] += "<br>Assessment rb file #{asmt_name}/#{asmt_name}.rb was not found"
-      end
     end
-    [asmt_rb_exists && asmt_yml_exists && !asmt_name.nil? && asmt_name_is_valid, asmt_name]
+    [asmt_yml_exists && !asmt_name.nil? && asmt_name_is_valid, asmt_name]
   end
 
   def tab_index

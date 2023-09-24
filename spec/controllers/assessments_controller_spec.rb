@@ -32,18 +32,22 @@ RSpec.describe AssessmentsController, type: :controller do
       before(:each) do
         instructor = get_instructor_by_cid(course_hash[:course].id)
         sign_in(instructor)
-        allow_any_instance_of(AssessmentsController).to receive(:new_assessment_params).and_return(nil)
+        allow_any_instance_of(AssessmentsController).to
+        receive(:new_assessment_params).and_return(nil)
       end
       it "rejects bad assessment display name" do
-        allow_any_instance_of( ActiveRecord::Associations::CollectionProxy).to receive(:new).and_return(stub_assessment)
+        allow_any_instance_of(ActiveRecord::Associations::CollectionProxy).to
+        receive(:new).and_return(stub_assessment)
         post :create, params: { course_name: course_hash[:course].name }
         puts(response.body)
         expect(flash[:error]).to be_present
-        expect(flash[:error]).to match(/Assessment name is blank or contains disallowed characters/m)
+        expect(flash[:error]).to
+        match(/Assessment name is blank or contains disallowed characters/m)
         expect(Assessment.find_by(name: "courses")).to eql(nil)
       end
       it "sanitizes assessment display name" do
-        allow_any_instance_of( ActiveRecord::Associations::CollectionProxy).to receive(:new).and_return(stub_assessment2)
+        allow_any_instance_of( ActiveRecord::Associations::CollectionProxy).to
+        receive(:new).and_return(stub_assessment2)
         post :create, params: { course_name: course_hash[:course].name,
                                 display_name: stub_assessment2.display_name }
         expect(response).to have_http_status(302)

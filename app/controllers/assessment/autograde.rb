@@ -27,7 +27,7 @@ module AssessmentAutograde
     COURSE_LOGGER.log("autograde_done hit: #{request.fullpath}")
 
     extend_config_module(@assessment, submissions[0], @cud)
-    puts("hello?", File.exist?(@assessment.unique_config_file_path))
+
     if (@assessment.use_unique_module_name)
       require_relative(@assessment.unique_config_file_path)
     else

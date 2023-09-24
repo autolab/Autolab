@@ -224,7 +224,8 @@ class Assessment < ApplicationRecord
   #
   def load_config_file
     # migrate old source config file path
-    if (File.exist? source_config_file_path) && (source_config_file_path != unique_source_config_file_path)
+    if (File.exist? source_config_file_path) &&
+       (source_config_file_path != unique_source_config_file_path)
       # read from source
       config_source = File.open(source_config_file_path, "r", &:read)
       RubyVM::InstructionSequence.compile(config_source)
