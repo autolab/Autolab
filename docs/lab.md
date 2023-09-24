@@ -423,8 +423,8 @@ the name of the folder containing the assessment files determines the assessment
 In addition, the assessment "name" is used to determine the name of the assessment config file.
 
 
-As a result, the assessment "name" must be a valid [Ruby Identifier](https://ruby-doc.org/docs/ruby-doc-bundle/Manual/man-1.4/syntax.html#ident),
-but hyphens are also allowed.
+As a result, the assessment name must be a valid [Ruby Identifier](https://ruby-doc.org/docs/ruby-doc-bundle/Manual/man-1.4/syntax.html#ident),
+but hyphens are also allowed. The assessment name must also be unique within a course.
 
 #### Valid Assessment Names
 - `autolabAsmt`
