@@ -31,9 +31,3 @@ html[xmlns] .dataTables_wrapper {
 table.dataTable {
   clear: both;
 }
-
-th {
-  z-index: 1;
-  position: sticky;
-  top: 0;
-}

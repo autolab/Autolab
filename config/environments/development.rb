@@ -64,4 +64,7 @@ Rails.application.configure do
   # See (TODO replace with doc link)
   config.x.github.client_id = ENV['GITHUB_CLIENT_ID']
   config.x.github.client_secret = ENV['GITHUB_CLIENT_SECRET']
+
+  # Use custom routes for error pages
+  config.exceptions_app = self.routes
 end

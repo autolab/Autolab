@@ -6,7 +6,7 @@
     user: <%= @cud&.user_id %>,
   }
   const sessionKey = JSON.stringify(sessionKeyJson);
-  
+
   function loadPartialFeedback(partialFeedback) {
     $('#partial-feedback').html(`
       <pre>${partialFeedback}</pre>
@@ -75,7 +75,7 @@
   const rotateIcon = () => {
     const icon = $('.refresh-feedback');
     if(!icon.hasClass("loading")) {
-	    icon.addClass('loading');
+      icon.addClass('loading');
       setTimeout(() => icon.removeClass('loading'), 1000);
     }
   }

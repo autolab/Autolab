@@ -1,14 +1,32 @@
-<%= f.text_field :max_submissions, help_text: "The maximum number of times a student can submit the assessment.  Set this to -1 to allow unlimited submissions.", placeholder: "E.g. 10" %>
+<%= f.text_field :max_submissions,
+                 help_text: "The maximum number of times a student can submit the assessment.
+  Set this to -1 to allow unlimited submissions.",
+                 placeholder: "E.g. 10" %>
 
-<%= f.text_field :max_grace_days, help_text: "Maximum number of grace days that a student can spend on this assessment. E.g., 2. If left blank, all of the remaining available course grace days can be spent on this assessment.", placeholder: "Leave blank for no grace day limit" %>
+<%= f.text_field :max_grace_days,
+                 help_text: "Maximum number of grace days that a student can spend on this assessment. E.g., 2. If left
+  blank, all of the remaining available course grace days can be spent on this assessment.",
+                 placeholder: "Leave blank for no grace day limit" %>
 
-<%= f.score_adjustment_input :late_penalty, optional: true, help_text: "The penalty applied to late submissions after a student runs out of grace days. It represents the number of points or a percentage of the total score removed per day, and must be a non-negative number. If left blank, the course default is used.", placeholder: "E.g. 15%" %>
+<%= f.score_adjustment_input :late_penalty,
+                             optional: true,
+                             help_text: "The penalty applied to late submissions after a student runs out of grace days.
+  It represents the number of points or a percentage of the total score removed per day, and must be a non-negative
+  number. If left blank, the course default is used.",
+                             placeholder: "E.g. 15%" %>
 
+<%= f.text_field :version_threshold, help_text: "The number of unpenalized submissions allowed. After this threshold,
+  each additional submission is penalized according to the version penalty. If set to -1, no submissions are penalized.
+  If this is left blank, the course default is used.",
+                                     placeholder: "Leave blank to use course default." %>
 
-<%= f.text_field :version_threshold, help_text: "The number of unpenalized submissions allowed. After this threshold, each additional submission is penalized according to the version penalty. If set to -1, no submissions are penalized. If this is left blank, the course default is used.", placeholder: "Leave blank to use course default." %>
-
-<%= f.score_adjustment_input :version_penalty, optional: true, help_text: "The penalty applied to submissions with version greater than the version threshold. It represents the number of points or the percentage of the total score removed per version above the threshold, and must be a non-negative number. For example, if this is set to 1 point and the version threshold to 3, the fifth version of a student's submissions would be docked 2 points.", placeholder: "Leave blank to use course default." %>
+<%= f.score_adjustment_input :version_penalty, optional: true,
+                                               help_text: "The penalty applied to submissions with version greater than the version
+  threshold. It represents the number of points or the percentage of the total score removed per version above the
+  threshold, and must be a non-negative number. For example, if this is set to 1 point and the version threshold to 3,
+  the fifth version of a student's submissions would be docked 2 points.",
+                                               placeholder: "Leave blank to use course default." %>
 
 <div class="action_buttons">
-  <%= f.submit "Save", :name=>"penalties" %>
+  <%= f.submit "Save", name: "penalties" %>
 </div>

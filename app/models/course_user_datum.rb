@@ -63,17 +63,15 @@ class CourseUserDatum < ApplicationRecord
   end
 
   def valid_nickname?
-    if !nickname
-      true
-    elsif nickname.length > 32
+    return if nickname.nil?
+
+    if nickname.length > 32
       errors.add("nickname", "is too long (maximum is 32 characters)")
-      false
-    elsif !nickname.ascii_only?
-      errors.add("nickname", "can only contain ASCII characters")
-      false
-    else
-      true
     end
+
+    return if nickname.ascii_only?
+
+    errors.add("nickname", "can only contain ASCII characters")
   end
 
   ##

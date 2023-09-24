@@ -1,31 +1,32 @@
 <%= form_for [@course, @assessment, @scoreboard], builder: FormBuilderWithDateTimeInput do |f| %>
   <%= f.error_messages %>
-  <h3>Scoreboard Settings</h3> 
+  <h3>Scoreboard Settings</h3>
   <p>
-    Learn more about how to configure <a href="https://docs.autolabproject.com/features/scoreboards/">custom scoreboards here</a>
+    Learn more about how to configure <a href="https://docs.autolabproject.com/features/scoreboards/">custom scoreboards here.</a>
   </p>
   <hr>
 
   <%= f.text_field :banner, size: 80,
-    placeholder: "Optional HTML banner text. Leave blank for default." %>
+                            placeholder: "Optional HTML banner text. Leave blank for default." %>
 
-  <%= f.text_area :colspec, class: "materialize-textarea", placeholder: "Optional JSON string that describes your customized scoreboard columns. Leave blank for default.", display_name: "Column Specification",
-    rows: 5, cols: 80 %></td>
+  <%= f.text_area :colspec, class: "materialize-textarea",
+                            placeholder: "Optional JSON string that describes your customized scoreboard columns. Leave blank for default.",
+                            display_name: "Column Specification",
+                            rows: 5, cols: 80 %>
   <p class="help-block">
-  <b>Example: </b>A scoreboard with two columns "Score" and "Ops" with "Ops" sorted in ascending order
+  <b>Example: </b>A scoreboard with two columns "Score" and "Ops" with "Ops" sorted in ascending order.
   <br>
   <b>{"scoreboard": [ {"hdr":"Score"}, {"hdr":"Ops", "asc":1} ] }</b>
   </p>
-  
+
   <h4>Column summary</h4>
   <p><%= @column_summary %></p>
   <p class="help-block">
-    <b>[desc]/[asc]</b>: break ties by sorting this column is descending or ascending order.
+    <b>[desc]/[asc]</b>: Indicates that the column is in descending or ascending order.
   <p>
 
-  <%= f.submit "Save", {class: "btn primary"} %>
+  <%= f.submit "Save", { class: "btn primary" } %>
   <%= link_to "Delete", [@course, @assessment, :scoreboard], method: :delete, class: "btn danger",
-              data: {confirm: "Are you sure you want to delete the Scoreboard for this assessment?"} %>
+                                                             data: { confirm: "Are you sure you want to delete the Scoreboard for this assessment?" } %>
 
 <% end %>
-

@@ -20,7 +20,6 @@ Here are some resources to get you started.
   </div><!-- row -->
 </div><!-- container -->
 
-
 <h2>For instructors</h2>
 
 <div class="container">
@@ -58,7 +57,6 @@ Here are some resources to get you started.
     </div>
   </div><!-- row -->
 </div><!-- container -->
-
 
 <h2>For administrators</h2>
 
@@ -113,4 +111,8 @@ Here are some resources to get you started.
   </div><!-- row -->
 </div><!-- container -->
 
-<%= render partial: "topannounce" rescue nil %>
+<%= begin
+      render partial: "topannounce"
+    rescue StandardError
+      nil
+    end %>

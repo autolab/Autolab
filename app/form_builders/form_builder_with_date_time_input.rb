@@ -4,7 +4,7 @@
 # custom datetimepicker. In reality, it's goal is to wrap common form builder
 # methods in Bootstrap boilerplate code.
 class FormBuilderWithDateTimeInput < ActionView::Helpers::FormBuilder
-  %w(text_field text_area email_field number_field).each do |method_name|
+  %w(text_field text_area email_field number_field file_field).each do |method_name|
     # retain access to default textfield, etc. helpers
     alias_method "vanilla_#{method_name}", method_name
 
@@ -29,7 +29,7 @@ class FormBuilderWithDateTimeInput < ActionView::Helpers::FormBuilder
 
     fields = fields_for name do |f|
       (f.vanilla_text_field :value, class: "score-box", placeholder: "10") +
-        (@template.content_tag :div, class: "" do
+        (@template.content_tag :div do
           f.select(:kind, { "points" => "points", "%" => "percent" }, {},
                    class: "carrot")
         end)
@@ -72,23 +72,27 @@ class FormBuilderWithDateTimeInput < ActionView::Helpers::FormBuilder
   def file_field(name, *args)
     options = args.extract_options!
 
-    field = super name, *(args + [options])
-
-    wrap_field name, field, options[:help_text], options[:display_name]
-  end
-
-  def file_field_nowrap(name, *args)
-    options = args.extract_options!
-
-    field = method(:file_field).super_method.call name, *(args + [options])
-
-    field
+    @template.content_tag :div, class: "file-field input-field" do
+      (@template.content_tag :h6 do
+        options[:label_text] || ""
+      end) +
+      (@template.content_tag :div, class: "btn" do
+        (@template.content_tag :span do
+          options[:button_text] || "Choose File"
+        end) +
+          vanilla_file_field(name, options)
+      end) +
+        (@template.content_tag :div, class: "file-path-wrapper" do
+          (@template.content_tag :input, nil, class: "file-path validate", type: "text", value: "No file selected") +
+            help_text(name, options[:help_text])
+        end)
+    end
   end
 
   def date_select(name, options = {}, _html_options = {})
     strftime = "%F"
     date_format = "F j, Y"
-    alt_format = "F j, Y"
+    alt_format = "M j Y"
     options[:picker_class] = "datepicker"
     date_helper name, options, strftime, date_format, alt_format
   end

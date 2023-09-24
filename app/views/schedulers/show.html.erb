@@ -1,18 +1,27 @@
 <p>
-  <b>Action:</b>
-  <%=h @scheduler.action %>
+  <strong>Action:</strong>
+  <%= @scheduler.action %>
 </p>
 
 <p>
-  <b>Next:</b>
-  <%=h @scheduler.next %>
+  <strong>Next:</strong>
+  <%= @scheduler.next %>
 </p>
 
 <p>
-  <b>Interval:</b>
-  <%=h @scheduler.interval %>
+  <strong>Until:</strong>
+  <%= @scheduler.until %>
 </p>
 
+<p>
+  <strong>Interval:</strong>
+  <%= @scheduler.interval %>
+</p>
 
-<%= link_to 'Edit', {:action=>"edit",:id=>@scheduler.id} %> |
-<%= link_to 'Back', {:action=>"index"} %>
+<p>
+  <strong>Disabled:</strong>
+  <%= @scheduler.disabled %>
+</p>
+
+<%= link_to 'Back', course_schedulers_path(@course), { class: "btn" } %>
+<%= link_to 'Edit', edit_course_scheduler_path(@course, @scheduler), { class: "btn" } %>

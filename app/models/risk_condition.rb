@@ -1,7 +1,7 @@
 class RiskCondition < ApplicationRecord
   serialize :parameters, Hash
   enum condition_type: { no_condition_selected: 0, grace_day_usage: 1, grade_drop: 2,
-                         no_submissions: 3, low_grades: 4 }
+                         no_submissions: 3, low_grades: 4, extension_requests: 5 }
 
   has_many :watchlist_instances, dependent: :destroy
   belongs_to :course
@@ -11,6 +11,7 @@ class RiskCondition < ApplicationRecord
   # :grade_drop => :percentage_drop, :consecutive_counts
   # :no_submissions => :no_submissions_threshold
   # :low_grades => :grade_threshold, :count_threshold
+  # :extension_requests => :extension_count
 
   def self.create_condition_for_course_with_type(course_id, type, params, version)
     # parameter check shouldn't surface to user and is for sanity check during development only
@@ -20,7 +21,8 @@ class RiskCondition < ApplicationRecord
                       params[:consecutive_counts].nil? || params.length != 2)) ||
        (type == 3 && (params[:no_submissions_threshold].nil? || params.length != 1)) ||
        (type == 4 && (params[:grade_threshold].nil? ||
-                      params[:count_threshold].nil? || params.length != 2))
+                      params[:count_threshold].nil? || params.length != 2)) ||
+       (type == 5 && (params[:extension_count].nil? || params.length != 1))
       raise "Invalid update parameters for risk conditions! "\
             "Make sure your request body fits the criteria!"
     end

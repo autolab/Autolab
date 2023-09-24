@@ -31,11 +31,11 @@ Note: if you encountered the following problems, please contact your course inst
   </tr>
   <tr>
     <td colspan=2><%= text_area_tag :summary, nil,
-            {:placeholder=>"Include a brief description of your problem here",
-            :rows=>15, :cols=>50 } %></td>
+                                    { placeholder: "Include a brief description of your problem here",
+                                      rows: 15, cols: 50 } %></td>
   </tr>
   <tr>
-    <td colspan=2><%= submit_tag "Submit Bug", { :class=> "btn primary" } %></td>
+    <td colspan=2><%= submit_tag "Submit Bug", { class: "btn primary" } %></td>
   </tr>
 </table>
 <% end %>
