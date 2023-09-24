@@ -111,12 +111,14 @@ class AssessmentsController < ApplicationController
                                          filename)) || (filename == "..") || (filename == ".")
 
       # assessment names must be only lowercase letters and digits
-      if filename !~ /^[A-Za-z_][A-Za-z0-9_-]*$/
+      if filename !~ /^[A-Za-z_][A-Za-z][A-Za-z0-9_-]*$/
         # add line break if adding to existing error message
         flash.now[:error] = flash.now[:error] ? "#{flash.now[:error]} <br>" : ""
         flash.now[:error] += "An error occurred while trying to display an existing assessment " \
-            "from file directory #{filename}: assessment file names must only contain lowercase " \
-            "letters and digits with no spaces"
+            "from file directory #{filename}: Invalid assessment name. "\
+            "Find more information on valid assessment names "\
+            '<a href="https://docs.autolabproject.com/lab/#assessment-naming-rules">here</a><br>'
+        flash[:html_safe] = true
         flash.now[:html_safe] = true
         next
       end
@@ -170,7 +172,7 @@ class AssessmentsController < ApplicationController
         flash[:error] +=
           "<br>Invalid tarball. A valid assessment tar has a single root "\
           "directory that's named after the assessment, containing an "\
-          "assessment yaml file and an assessment ruby file."
+          "assessment yaml file"
         flash[:html_safe] = true
         redirect_to(action: "install_assessment") && return
       end
@@ -296,11 +298,14 @@ class AssessmentsController < ApplicationController
       # first regex - try to sanitize input, allow special characters in display name but not name
       # if the sanitized doesn't match the required identifier structure, then we reject
       sanitized_display_name = @assessment.display_name.gsub(/[!@#$%^&*(),.?":{}|<>\s]/, "")
-      if sanitized_display_name !~ /^[A-Za-z_][A-Za-z0-9_-]*$/
+      Rails.logger.debug(sanitized_display_name)
+      if sanitized_display_name !~ /^[A-Za-z_][A-Za-z][A-Za-z0-9_-]*$/
         # TODO: update with docs link
         flash[:error] =
           "Assessment name is blank or contains disallowed characters. Find more information on"\
-          " valid assessment names here"
+          "valid assessment names "\
+          '<a href="https://docs.autolabproject.com/lab/#assessment-naming-rules">here</a>'
+        flash[:html_safe] = true
         redirect_to(action: :install_assessment)
         return
       end
@@ -1006,7 +1011,7 @@ private
 
   ##
   # a valid assessment tar has a single root directory that's named after the
-  # assessment, containing an assessment yaml file and an assessment ruby file
+  # assessment, containing an assessment yaml file
   #
   def valid_asmt_tar(tar_extract)
     asmt_name = nil
@@ -1049,10 +1054,11 @@ private
     # it is possible that the assessment path does not match the
     # the expected assessment path when the Ruby config file
     # has a different name then the pathname
-    if !asmt_name.nil? && asmt_name !~ /^[A-Za-z_][A-Za-z0-9_-]*$/
+    if !asmt_name.nil? && asmt_name !~ /^[A-Za-z_][A-Za-z][A-Za-z0-9_-]*$/
       flash[:error] = "Errors found in tarball: Assessment name #{asmt_name} is invalid.
-                       Assessment file names must only contain lowercase
-                       letters and digits with no spaces."
+                       Find more information on valid assessment names "\
+          '<a href="https://docs.autolabproject.com/lab/#assessment-naming-rules">here</a> <br>'
+      flash[:html_safe] = true
       asmt_name_is_valid = false
     end
     if !(asmt_yml_exists && !asmt_name.nil?)
