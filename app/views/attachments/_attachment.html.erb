@@ -5,7 +5,7 @@
                   course_attachment_path(@course, attachment) do %>
       <i class="material-icons left">file_download</i>
       <%= attachment.name %>
-      <% unless attachment.released %>
+      <% unless attachment.released? %>
           <b>(Not Released)</b>
       <% end %>
     <% end %>

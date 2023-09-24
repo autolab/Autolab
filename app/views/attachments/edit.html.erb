@@ -1,3 +1,6 @@
+<% content_for :javascripts do %>
+  <%= javascript_include_tag "initialize_datetimepickers" %>
+<% end %>
 <% path = if @is_assessment
             course_assessment_attachment_path(@course, @attachment.assessment, @attachment)
           else

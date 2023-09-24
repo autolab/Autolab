@@ -11,7 +11,7 @@ class AttachmentsController < ApplicationController
 
   action_auth_level :index, :instructor
   def index
-    @attachments = @is_assessment ? @assessment.attachments : @course.attachments
+    @attachments = @is_assessment ? @assessment.attachments.ordered : @course.attachments.ordered
   end
 
   action_auth_level :new, :instructor
@@ -146,6 +146,6 @@ private
   end
 
   def attachment_params
-    params.require(:attachment).permit(:name, :file, :category_name, :released, :mime_type)
+    params.require(:attachment).permit(:name, :file, :category_name, :release_at, :mime_type)
   end
 end

@@ -8,14 +8,25 @@ class Attachment < ApplicationRecord
   validates :name, presence: true
   validates :category_name, presence: true
   validates :filename, presence: true
+  validates :release_at, presence: true
 
   belongs_to :course
   belongs_to :assessment
 
+  # Constants
+  ORDERING = "release_at ASC, name ASC".freeze
+
+  # Scopes
+  scope :ordered, -> { order(ORDERING) }
   scope :from_category, ->(category_name) { where(category_name: category_name) }
+  scope :released, -> { where("release_at <= ?", Time.current) }
 
   def has_assessment?
     !assessment.nil?
+  end
+
+  def released?
+    release_at <= Time.current
   end
 
   def file=(upload)
