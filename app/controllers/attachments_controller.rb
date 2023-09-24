@@ -118,13 +118,13 @@ private
     @attachment = if @is_assessment
                     @course.attachments.find_by(assessment_id: @assessment.id, id: params[:id])
                   else
-                    @course.attachments.find(params[:id])
+                    @course.attachments.find_by(id: params[:id])
                   end
 
     return unless @attachment.nil?
 
     COURSE_LOGGER.log("Cannot find attachment with id: #{params[:id]}")
-    flash[:error] = "Could not find Attachment \# #{params[:id]}"
+    flash[:error] = "Could not find Attachment \##{params[:id]}"
     redirect_to_attachment_list
   end
 
