@@ -143,7 +143,7 @@
                 <span class="card-title white-text"><%= cat %></span>
               </div>
               <div class="collection red darken-4">
-                <%= render partial: "attachments/course_attachment", collection: attachments %>
+                <%= render partial: "attachments/course_attachment", collection: attachments, as: :attachment %>
               </div>
             </div>
           </div>

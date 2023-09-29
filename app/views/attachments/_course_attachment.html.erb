@@ -1,13 +1,13 @@
 <%# Special style for attachments displayed on course homepage %>
-<li class="collection-item grey-text text-darken-4">
+<li class="collection-item grey-text text-darken-4" title="Released at <%= attachment.release_at %>">
+  <%= link_to '<i class="material-icons left">file_download</i>'.html_safe,
+              course_attachment_path(@course, attachment) %>
+  <%= attachment.name %>
   <% if @cud.instructor? %>
     <%= link_to '<i class="material-icons left">mode_edit</i>'.html_safe,
-                edit_course_attachment_path(@course, course_attachment) %>
+                edit_course_attachment_path(@course, attachment) %>
   <% end %>
-  <%= link_to '<i class="material-icons left">file_download</i>'.html_safe,
-              course_attachment_path(@course, course_attachment) %>
-  <%= course_attachment.name %>
-  <% unless course_attachment.released? %>
+  <% unless attachment.released? %>
     <span class="new badge blue darken-4" data-badge-caption="unreleased"></span>
   <% end %>
 </li>
