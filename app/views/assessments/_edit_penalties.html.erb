@@ -15,7 +15,7 @@
   number. If left blank, the course default is used.",
                              placeholder: "E.g. 15%" %>
 <% if @assessment.late_penalty.value.nil? %>
-  <strong class="red-text">The late penalty is currently set to the course default of -<%= @assessment.course.late_penalty %> per day.</strong>
+  <strong class="red-text">The late penalty is currently set to the course default of deducting <%= @assessment.course.late_penalty %> per day.</strong>
 <% end %>
 
 <%= f.text_field :version_threshold, help_text: "The number of unpenalized submissions allowed. After this threshold,
@@ -23,7 +23,10 @@
   If this is left blank, the course default is used.",
                                      placeholder: "Leave blank to use course default." %>
 <% if @assessment.version_threshold.nil? %>
-  <strong class="red-text">The version threshold is currently set to the course default of <%= @assessment.course.version_threshold %>.</strong>
+  <strong class="red-text">
+    The version threshold is currently set to the course default of <%= @assessment.course.version_threshold %>
+    <% if @assessment.course.version_threshold == -1 %>(unlimited)<% end %>.
+  </strong>
 <% end %>
 
 <%= f.score_adjustment_input :version_penalty, optional: true,
@@ -33,7 +36,7 @@
   the fifth version of a student's submissions would be docked 2 points.",
                                                placeholder: "Leave blank to use course default." %>
 <% if @assessment.version_penalty.value.nil? %>
-  <strong class="red-text">The version penalty is currently set to the course default of -<%= @assessment.course.version_penalty %> per submission.</strong>
+  <strong class="red-text">The version penalty is currently set to the course default of deducting <%= @assessment.course.version_penalty %> per submission.</strong>
 <% end %>
 
 <div class="action_buttons">

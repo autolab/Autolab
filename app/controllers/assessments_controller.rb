@@ -783,14 +783,14 @@ class AssessmentsController < ApplicationController
 
     return unless @assessment.end_at > @assessment.due_at
 
-    warn_message = "Warning: this assessment allows for late submissions (End At > Due At), but"
-    if (@assessment.effective_late_penalty.value || 0) == 0
-      flash.now[:error] ||= warn_message
-      flash.now[:error] += "<br>- Does not penalize late submissions (late penalty = 0)"
-    end
+    warn_message = "Late submissions are allowed, but"
     if @assessment.max_grace_days == 0
       flash.now[:error] ||= warn_message
-      flash.now[:error] += "<br>- Does not allow for the use of grace days (max grace days = 0)"
+      flash.now[:error] += "<br>- Max grace days = 0 (students can't use grace days)"
+    end
+    if (@assessment.effective_late_penalty.value || 0) == 0
+      flash.now[:error] ||= warn_message
+      flash.now[:error] += "<br>- Late penalty = 0 (does not penalize late submissions)"
     end
     flash.now[:html_safe] = true
   end
