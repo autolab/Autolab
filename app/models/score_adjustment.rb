@@ -71,6 +71,6 @@ class ScoreAdjustment < ApplicationRecord
       raise ArgumentError
     end
 
-    "#{format('%+g', value)} #{type_str}"
+    "#{format('%g', value)} #{type_str}"
   end
 end
