@@ -780,6 +780,19 @@ class AssessmentsController < ApplicationController
     @has_annotations = @assessment.submissions.any? { |s| !s.annotations.empty? }
 
     @is_positive_grading = @assessment.is_positive_grading
+
+    return unless @assessment.end_at > @assessment.due_at
+
+    warn_message = "Warning: this assessment allows for late submissions (End At > Due At), but"
+    if (@assessment.effective_late_penalty.value || 0) == 0
+      flash.now[:error] ||= warn_message
+      flash.now[:error] += "<br>- Does not penalize late submissions (late penalty = 0)"
+    end
+    if @assessment.max_grace_days == 0
+      flash.now[:error] ||= warn_message
+      flash.now[:error] += "<br>- Does not allow for the use of grace days (max grace days = 0)"
+    end
+    flash.now[:html_safe] = true
   end
 
   action_auth_level :update, :instructor
