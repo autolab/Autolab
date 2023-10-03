@@ -141,7 +141,7 @@ class Assessment < ApplicationRecord
   #
   # Use default course late penalty, if not set
   def effective_late_penalty
-    if !late_penalty.value.nil?
+    if !late_penalty&.value.nil?
       late_penalty
     else
       course.late_penalty
@@ -150,7 +150,7 @@ class Assessment < ApplicationRecord
 
   # Penalty to apply per version past the version_threshold
   def effective_version_penalty
-    if !version_penalty.value.nil?
+    if !version_penalty&.value.nil?
       version_penalty
     else
       course.version_penalty
