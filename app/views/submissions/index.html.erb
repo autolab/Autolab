@@ -6,11 +6,22 @@
   <%= stylesheet_link_tag "manage_submissions" %>
 <% end %>
 
+<script>
+let basePath = "";
+const getBasePath = (submission_id) => {
+  const p = "<%= course_assessment_submission_annotations_path(@course, @assessment, 'SUBMISSION_ID') %>";
+  return p.replace('SUBMISSION_ID', submission_id);
+}
+let problems = <%= raw @problems.to_json %>;
+console.log(problems);
+</script>
+
 <% content_for :javascripts do %>
   <%= external_javascript_include_tag "lodash" %>
   <%= javascript_include_tag "sorttable" %>
   <%= external_javascript_include_tag "jquery.dataTables" %>
   <%= external_javascript_include_tag "datatables-buttons" %>
+  <%= javascript_include_tag "annotation_form" %>
   <%= javascript_include_tag "manage_submissions" %>
   <%= javascript_include_tag "datatables-rows" %>
 <% end %>
@@ -179,6 +190,8 @@
     </a>
   </div>
   <div class="modal-content">
-    <%= render "annotation_form", global: true %>
+    <div class="base-annotation-line annotation-line">
+      <%= render "annotation_form", global: true, popup: true %>
+    </div>
   </div>
 </div>

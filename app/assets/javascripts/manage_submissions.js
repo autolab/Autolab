@@ -21,13 +21,17 @@ function get_score_details(course_user_datum_id) {
 const selectTweak = (e) => {
   const $student = $(e.target);
   const submission = $student.data('submissionid');
-  console.log(submission);
-  $('#annotation-modal').modal('open');
-  $('.annotation-form').show();
+  basePath = getBasePath(submission);
+  sharedCommentsPath = basePath + "/shared_comments";
+  retrieveSharedComments(() => {
+    console.log('then', submission, basePath);
+    $('#annotation-modal').modal('open');
+    // $('.annotation-form').show();
+    newAnnotationFormCode();
+  });
 }
 
 $(document).ready(function () {
-
   $('.modal').modal();
 
   $('.score-details').on('click', function () {

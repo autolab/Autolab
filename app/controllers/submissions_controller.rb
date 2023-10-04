@@ -18,6 +18,7 @@ class SubmissionsController < ApplicationController
   def index
     @submissions = @assessment.submissions.order("created_at DESC")
     @autograded = @assessment.has_autograder?
+    @problems = @assessment.problems.to_a
   end
 
   action_auth_level :score_details, :instructor
