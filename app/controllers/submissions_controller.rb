@@ -19,6 +19,7 @@ class SubmissionsController < ApplicationController
     @submissions = @assessment.submissions.order("created_at DESC")
     @autograded = @assessment.has_autograder?
     @problems = @assessment.problems.to_a
+    @filename = ""
   end
 
   action_auth_level :score_details, :instructor

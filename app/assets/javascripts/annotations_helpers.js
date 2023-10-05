@@ -1,5 +1,6 @@
 /* following paths/functions for annotations */
 var sharedCommentsPath = basePath + "/shared_comments";
+
 var createPath = basePath + ".json";
 var updatePath = function (ann) {
   return [basePath, "/", ann.id, ".json"].join("");
@@ -98,9 +99,11 @@ function elt(t, a) {
 // this creates a JSON representation of what the actual Rails Annotation model looks like
 function createAnnotation() {
   var annObj = {
-    filename: fileNameStr,
     submitted_by: cudEmailStr,
   };
+  if (fileNameStr != null) {
+    annObj.filename = fileNameStr
+  }
 
   if (currentHeaderPos || currentHeaderPos === 0) {
     annObj.position = currentHeaderPos

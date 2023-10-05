@@ -17,7 +17,12 @@ class AnnotationsController < ApplicationController
   # POST /:course/annotations.json
   action_auth_level :create, :course_assistant
   def create
-    annotation = @submission.annotations.new(annotation_params)
+    updated_params = if annotation_params[:filename].blank?
+                       annotation_params.merge({ filename: @submission.handin_file_path })
+                     else
+                       annotation_params
+                     end
+    annotation = @submission.annotations.new(updated_params)
 
     ActiveRecord::Base.transaction do
       annotation.save

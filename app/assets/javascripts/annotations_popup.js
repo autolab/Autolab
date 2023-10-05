@@ -54,7 +54,6 @@ function newAnnotationFormCode() {
     var shared_comment = $(this).find("#shared-comment").is(":checked");
     var score = $(this).find(".score").val();
     var problem_id = $(this).find(".problem-id").val();
-    var line = $(this).parent().parent().data("lineId");
 
     if (comment === undefined || comment === "") {
       box.find('.error').text("Annotation comment can not be blank!").show();
@@ -73,8 +72,7 @@ function newAnnotationFormCode() {
         box.find('.error').text("There are no non-autograded problems. Create a new one at Edit Assessment > Problems").show();
       return;
     }
-
-    submitNewAnnotation(comment, shared_comment, false, score, problem_id, line, $(this));
+    submitNewAnnotation(comment, shared_comment, true, score, problem_id, 0, $(this));
   });
 
   return box;
@@ -162,8 +160,7 @@ var submitNewAnnotation = function (comment, shared_comment, global_comment, val
     type: "POST",
     success: function (data, type) {
       $(form).parent().remove();
-      annotations.push(data);
-      purgeCurrentPageCache();
+      $('#annotation-modal').modal('close');
     },
     error: function (result, type) {
       $(form).find('.error').text("Could not save annotation. Please refresh the page and try again.").show();
@@ -186,7 +183,6 @@ var updateAnnotation = function (annotationObj, box) {
     success: function (data, type) {
       $(box).remove();
       displayAnnotations();
-      purgeCurrentPageCache();
     },
     error: function (result, type) {
       $(box).find('.error').text("Failed to save changes to the annotation. Please refresh the page and try again.").show();

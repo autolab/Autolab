@@ -22,8 +22,8 @@ const selectTweak = (e) => {
   $('#annotation-modal').modal('open');
   const $student = $(e.target);
   const submission = $student.data('submissionid');
-  basePath = getBasePath(submission);
-  sharedCommentsPath = basePath + "/shared_comments";
+  updateBasePath(submission);
+  deletePath = updatePath;
   retrieveSharedComments(() => {
     console.log('then', localCache);
     const newForm = newAnnotationFormCode();

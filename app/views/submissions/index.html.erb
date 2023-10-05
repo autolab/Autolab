@@ -9,12 +9,20 @@
 
 <script>
 let basePath = "";
-const getBasePath = (submission_id) => {
+const updateBasePath = (submission_id) => {
   const p = "<%= course_assessment_submission_annotations_path(@course, @assessment, 'SUBMISSION_ID') %>";
-  return p.replace('SUBMISSION_ID', submission_id);
+  basePath = p.replace('SUBMISSION_ID', submission_id);
+  sharedCommentsPath = basePath + "/shared_comments";
+  createPath = basePath + ".json";
+  updatePath = function (ann) {
+    return [basePath, "/", ann.id, ".json"].join("");
+  };
 }
 let problems = <%= raw @problems.to_json %>;
 let localCache = {};
+var cudEmailStr = "<%= @cud.email %>";
+var fileNameStr = null;
+var currentHeaderPos = null;
 </script>
 
 <% content_for :javascripts do %>
