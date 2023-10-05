@@ -35,16 +35,17 @@ function focusAnnotation( event, ui ) {
 // retrieve shared comments
 // also retrieves annotation id to allow easy deletion in the future
 function retrieveSharedComments(cb) {
+  console.log(sharedCommentsPath);
+
   $.getJSON(sharedCommentsPath, function (data) {
       localCache['shared_comments'] = {};
       data.forEach(e => {
         if (!e.problem_id)
         return;
-      localCache['shared_comments'][e.problem_id] ||= [];
-      localCache['shared_comments'][e.problem_id].push(e);
-
+        localCache['shared_comments'][e.problem_id] ||= [];
+        localCache['shared_comments'][e.problem_id].push(e);
+      });
       cb?.();
-    });
   });
 }
 

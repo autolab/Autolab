@@ -74,7 +74,6 @@ class AnnotationsController < ApplicationController
                        .joins(:submission).where(shared_comment: true)
                        .where("submissions.assessment_id = ?", @assessment.id)
                        .order(updated_at: :desc).limit(50).as_json
-
     render json: result, status: :ok
   end
 

@@ -6,16 +6,17 @@ function newAnnotationFormCode() {
 
   // Creates a dictionary of problem and grader_id
   var problemGraderId = {};
-  // _.each(scores, function (score) {
-  //   problemGraderId[score.problem_id] = score.grader_id;
-  // });
+
+  _.each(scores, function (score) {
+    problemGraderId[score.problem_id] = score.grader_id;
+  });
 
   _.each(problems, function (problem, i) {
-    // if (problemGraderId[problem.id] !== 0) { // Because grader == 0 is autograder
-    box.find("select")?.append(
-        $("<option />").val(problem.id).text(problem.name)
-    );
-    // }
+    if (problemGraderId[problem.id] !== 0) { // Because grader == 0 is autograder
+      box.find("select")?.append(
+          $("<option />").val(problem.id).text(problem.name)
+      );
+    }
   });
   
   box.find('.annotation-form').show();
@@ -76,66 +77,6 @@ function newAnnotationFormCode() {
   });
 
   return box;
-}
-
-var newEditAnnotationForm = function (pageInd, annObj) {
-  var valueStr = annObj.value ? annObj.value.toString() : "None";
-  var commentStr = annObj.comment;
-
-  var newForm = newAnnotationFormTemplatePDF("annotation-edit-form", pageInd);
-
-  newForm.elements.comment.value = commentStr;
-  newForm.elements.score.value = valueStr;
-  newForm.elements.problem.value = annObj.problem_id;
-
-  var cancelButton = newForm.elements.cancel;
-  var submitButton = newForm.elements.submit;
-  submitButton.value = "Update"; //Changing the name of the submit button
-
-  newForm.onsubmit = function (e) {
-    e.preventDefault();
-
-    var comment = newForm.elements.comment.value;
-    var value = newForm.elements.score.value;
-    var problem_id = newForm.elements.problem.value;
-
-    if (!comment || !problem_id) {
-      if (document.getElementsByClassName("form-warning").length == 0)
-        newForm.appendChild(elt("div", { class: "form-warning" }));
-    }
-
-    if (!comment) {
-      $(newForm).find('.form-warning').text("The comment cannot be empty");
-      return;
-    }
-
-    if (!problem_id) {
-      if (newForm.elements.problem.children.length > 1)
-        $(newForm).find('.form-warning').text("Problem not selected");
-      else
-        $(newForm).find('.form-warning').text("There are no non-autograded problems. Create a new one at Edit Assessment > Problems");
-      return;
-    }
-
-    annObj.comment = comment;
-    annObj.value = value;
-    annObj.problem_id = problem_id
-    updateLegacyAnnotation(annObj, pageInd, newForm); //ajax function to update the old boxes
-
-  };
-
-  $(cancelButton).on('click', function () {
-    updateAnnotationBox(annObj);
-    $(newForm).remove();
-  });
-
-  $(submitButton).on('click', function (e) {
-    $(newForm).submit();
-    e.preventDefault();
-    return false;
-  });
-
-  return newForm;
 }
 
 /* sets up and calls $.ajax to submit an annotation */

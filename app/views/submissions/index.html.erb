@@ -9,6 +9,7 @@
 
 <script>
 let basePath = "";
+var scores = [];
 const updateBasePath = (submission_id) => {
   const p = "<%= course_assessment_submission_annotations_path(@course, @assessment, 'SUBMISSION_ID') %>";
   basePath = p.replace('SUBMISSION_ID', submission_id);
@@ -17,6 +18,7 @@ const updateBasePath = (submission_id) => {
   updatePath = function (ann) {
     return [basePath, "/", ann.id, ".json"].join("");
   };
+  scores = <%= raw Score.where(submission_id: @submissions.first.id).to_json %>;
 }
 let problems = <%= raw @problems.to_json %>;
 let localCache = {};
