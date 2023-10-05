@@ -19,6 +19,7 @@ console.log(problems);
 <% content_for :javascripts do %>
   <%= external_javascript_include_tag "lodash" %>
   <%= javascript_include_tag "sorttable" %>
+  <%= external_javascript_include_tag "jquery-ui" %>
   <%= external_javascript_include_tag "jquery.dataTables" %>
   <%= external_javascript_include_tag "datatables-buttons" %>
   <%= javascript_include_tag "annotation_form" %>
@@ -189,9 +190,5 @@ console.log(problems);
     <a href="#!" class="modal-close btn-flat"><i class="material-icons">close</i>
     </a>
   </div>
-  <div class="modal-content">
-    <div class="base-annotation-line annotation-line">
-      <%= render "annotation_form", global: true, popup: true %>
-    </div>
-  </div>
+  <%= render "annotation_popup" %>
 </div>

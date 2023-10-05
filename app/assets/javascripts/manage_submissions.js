@@ -19,15 +19,17 @@ function get_score_details(course_user_datum_id) {
 }
 
 const selectTweak = (e) => {
+  $('#annotation-modal').modal('open');
   const $student = $(e.target);
   const submission = $student.data('submissionid');
   basePath = getBasePath(submission);
+  console.log(basePath);
   sharedCommentsPath = basePath + "/shared_comments";
   retrieveSharedComments(() => {
-    console.log('then', submission, basePath);
-    $('#annotation-modal').modal('open');
-    // $('.annotation-form').show();
-    newAnnotationFormCode();
+    console.log('then', localCache);
+    const newForm = newAnnotationFormCode();
+    console.log('templateee', newForm);
+    $('#active-annotation-form').html(newForm);
   });
 }
 
