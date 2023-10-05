@@ -4,6 +4,7 @@
   <%= stylesheet_link_tag "datatable.adapter" %>
   <%= stylesheet_link_tag "datatables-rows" %>
   <%= stylesheet_link_tag "manage_submissions" %>
+  <%= external_stylesheet_link_tag "jquery-ui" %>
 <% end %>
 
 <script>
@@ -13,7 +14,7 @@ const getBasePath = (submission_id) => {
   return p.replace('SUBMISSION_ID', submission_id);
 }
 let problems = <%= raw @problems.to_json %>;
-console.log(problems);
+let localCache = {};
 </script>
 
 <% content_for :javascripts do %>
@@ -22,7 +23,8 @@ console.log(problems);
   <%= external_javascript_include_tag "jquery-ui" %>
   <%= external_javascript_include_tag "jquery.dataTables" %>
   <%= external_javascript_include_tag "datatables-buttons" %>
-  <%= javascript_include_tag "annotation_form" %>
+  <%= javascript_include_tag "annotations_helpers" %>
+  <%= javascript_include_tag "annotations_popup" %>
   <%= javascript_include_tag "manage_submissions" %>
   <%= javascript_include_tag "datatables-rows" %>
 <% end %>

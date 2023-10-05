@@ -23,7 +23,6 @@ const selectTweak = (e) => {
   const $student = $(e.target);
   const submission = $student.data('submissionid');
   basePath = getBasePath(submission);
-  console.log(basePath);
   sharedCommentsPath = basePath + "/shared_comments";
   retrieveSharedComments(() => {
     console.log('then', localCache);
