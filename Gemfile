@@ -170,4 +170,4 @@ gem 'lockbox'
 # to decode / verify jwts for LTI Integration
 gem "jwt"
 
-gem 'erb_lint', require: false
+gem 'erb_lint', require: true
