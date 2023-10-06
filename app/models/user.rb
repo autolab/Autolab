@@ -263,15 +263,6 @@ class User < ApplicationRecord
     result
   end
 
-  def create_token(user, token)
-    user.update(temporary_token: token)
-    user.update(token_expires_at: 24.hours.from_now)
-  end
-
-  def temporary_token_expired(user)
-    user.token_expires_at < Time.current
-  end
-
 private
 
   def first_or_last_name

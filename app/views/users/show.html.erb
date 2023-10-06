@@ -47,7 +47,7 @@
   <% end %>
 <% end %>
 <% if current_user.administrator? %>
-  <%= link_to reset_password_user_path(@user), method: :post, data: { confirm: "Are you sure!?" } do %>
+  <%= link_to reset_password_user_path(@user), method: :post do %>
     <span class="btn">
       Reset Password
     </span>
