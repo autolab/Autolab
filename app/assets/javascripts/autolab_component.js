@@ -1,22 +1,3 @@
-function AutolabComponent(elementId, initialState = {}) {
-  this.$element = $(`#${elementId}`);
-  this.state = initialState;
-
-  this.setState = function(newState) {
-      $.extend(this.state, newState);
-      this.render();
-  };
-
-  this.template = function() {
-      // Default template; should be overridden by users of the library
-      return `<div></div>`;
-  };
-
-  this.render = function() {
-      this.$element.html(this.template());
-  };
-}
-
 /**
  * Usage:
  * // Create a new instance, associating it with the 'app' element
@@ -41,3 +22,23 @@ function AutolabComponent(elementId, initialState = {}) {
     // Later in the code, you can update the state like this:
     // MyComponent.setState({ age: 31 });
  */
+
+
+function AutolabComponent(elementId, initialState = {}) {
+  this.state = initialState;
+
+  this.setState = function(newState = {}) {
+      $.extend(this.state, newState);
+      this.render();
+      console.log('rendered', $(`#${elementId}`).html(), this.template())
+  };
+
+  this.template = function() {
+      // Default template; should be overridden by users of the library
+      return `<div></div>`;
+  };
+
+  this.render = function() {
+    $(`#${elementId}`).html(this.template());
+  };
+}

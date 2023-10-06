@@ -1,3 +1,16 @@
+const Tweak = new AutolabComponent('tweak-value', { global_annotations: [] });
+
+Tweak.template = function () {
+  // const { global_annotations } = this.state;
+  // if (global_annotations == null || global_annotations.length === 0) {
+    return `
+      <span>-</span>
+      <i class="material-icons">edit</i>
+    `
+  // }
+  const totalSum = global_annotations.reduce((acc, { value }) => acc + value, 0);
+}
+
 const manage_submissions_endpoints = {
   'score_details': 'submissions/score_details',
 }
@@ -123,9 +136,8 @@ $(document).ready(function () {
                 ${submission.late_penalty}
               </td>
               <td class="submissions-td">
-                <p class="tweak-button" data-submissionid="${submission.id}">
-                  ${tweak_value}
-                </p>
+                <div class="tweak-button" data-submissionid="${submission.id}" id="tweak-value">
+                </div>
               </td>
               <td class="submissions-td">
                 ${view_button}
@@ -162,6 +174,7 @@ $(document).ready(function () {
       //   "searching": false,});
 
     }).then(() => {
+      Tweak.setState();
       $('.tweak-button').click(selectTweak);
     }).catch((err) => {
       $('#score-details-content').html(`

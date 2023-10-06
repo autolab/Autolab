@@ -242,6 +242,10 @@ class Submission < ApplicationRecord
     end
   end
 
+  def global_annotations(problem_id)
+    annotations.where(global_comment: true, problem_id: problem_id)
+  end
+
   def annotated_file(file, filename, position)
     conditions = { filename: filename }
     conditions[:position] = position if position
