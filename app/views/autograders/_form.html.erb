@@ -20,9 +20,9 @@
   </script>
 <% end %>
 
-<%= form_for [@course, @assessment, @autograder],
-             builder: FormBuilderWithDateTimeInput,
-             html: { multipart: true } do |f| %>
+<%= form_for @autograder, url: course_assessment_autograder_path(@course, @assessment, @autograder),
+                          builder: FormBuilderWithDateTimeInput,
+                          html: { multipart: true } do |f| %>
   <%= f.error_messages %>
   <%= f.text_field :autograde_image, display_name: "VM Image",
                                      help_text: "VM image for autograding (e.g. <kbd>rhel.img</kbd>).  #{link_to 'Click here', tango_status_course_jobs_path}  to view the list of VM images and pools currently being used.".html_safe %>
