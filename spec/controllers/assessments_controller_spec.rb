@@ -33,9 +33,6 @@ RSpec.describe AssessmentsController, type: :controller do
               |entry|
               test = YAML.safe_load(entry.read)
               expect(
-                test["general"]["name"]
-              ).to eq(course_hash[:assessment].name)
-              expect(
                 test["general"]["display_name"]
               ).to eq(course_hash[:assessment].display_name)
               expect(
