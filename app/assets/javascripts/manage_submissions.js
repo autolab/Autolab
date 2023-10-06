@@ -1,4 +1,5 @@
 var submission_info = {}
+let tweaks = [];
 const Edit = (totalSum) => {
   if (totalSum == null) {
     return `
@@ -7,7 +8,7 @@ const Edit = (totalSum) => {
     `
   }
   return `
-    <div style="color:#0869af">${totalSum < 0 ? "+" : ""}${totalSum} points</div>
+    <div style="color:#0869af">${totalSum < 0 ? "" : "+"}${totalSum} points</div>
   `
 }
 
@@ -41,23 +42,6 @@ const selectSubmission = (data) => {
   };
   scores = data?.scores;
   deletePath = updatePath;
-}
-
-const get_submission_details = (submission_id) => {
-  return new Promise((resolve, reject) => {
-    $.ajax({
-      url: `submissions/${submission_id}/submission_info`,
-      method: 'GET',
-      dataType: 'json',
-      success: (data) => {
-        resolve(data);
-      },
-      error: (error) => {
-        console.error("There was an error fetching the scores:", error);
-        reject(error);
-      }
-    });
-  });
 }
 
 const selectTweak = function () {
@@ -108,14 +92,14 @@ $(document).ready(function () {
                 </th>`;
       }).join('');
 
-      const tweaks = [];
+      tweaks = [];
 
       const submissions_body = data.submissions.map((submission) => {
         const Tweak = new AutolabComponent(`tweak-value-${submission.id}`, { amount: null });
         Tweak.template = function () {
           return Edit( this.state.amount );
         }
-        tweaks.push(Tweak);
+        tweaks.push({tweak: Tweak, submission_id: submission.id});
 
         let tweak_value = data?.tweaks[submission.id]?.value ?? "None";
         if (tweak_value != "None" && tweak_value > 0) {
@@ -206,16 +190,12 @@ $(document).ready(function () {
 
       $('#score-details-content').html(`<div> ${submissions_table} </div>`);
 
-      data.submissions.map((submission, index) => {
-        get_submission_details(submission.id).then(data => {
-          tweaks[index].setState({ amount: data.tweak_total })
-        })
-      })
-      // $('#score-details-table').DataTable({
-      //   "order": [[0, "desc"]],
-      //   "paging": false,
-      //   "info": false,
-      //   "searching": false,});
+      updateTweaks();
+      $('#score-details-table').DataTable({
+        "order": [[0, "desc"]],
+        "paging": false,
+        "info": false,
+        "searching": false,});
 
     }).then(() => {
       $('.tweak-button').on('click', selectTweak);

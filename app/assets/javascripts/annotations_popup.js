@@ -1,3 +1,27 @@
+const updateTweaks = () => {
+  tweaks.forEach(({tweak, submission_id}) => {
+    get_submission_details(submission_id).then(data => {
+      tweak?.setState({ amount: data?.tweak_total })
+    })
+  })
+}
+const get_submission_details = (submission_id) => {
+  return new Promise((resolve, reject) => {
+    $.ajax({
+      url: `submissions/${submission_id}/submission_info`,
+      method: 'GET',
+      dataType: 'json',
+      success: (data) => {
+        resolve(data);
+      },
+      error: (error) => {
+        console.error("There was an error fetching the scores:", error);
+        reject(error);
+      }
+    });
+  });
+}
+
 function newAnnotationFormCode() {
   var box = $(".base-annotation-line").clone();
   box.removeClass("base-annotation-line");
@@ -100,6 +124,7 @@ var submitNewAnnotation = function (comment, shared_comment, global_comment, val
     },
     type: "POST",
     success: function (data, type) {
+      updateTweaks();
       $(form).parent().remove();
       $('#annotation-modal').modal('close');
     },
