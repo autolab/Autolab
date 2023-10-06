@@ -3,8 +3,8 @@
 <% content_for :javascripts do %>
   <script>
     $(function() {
-      $("#importAll").click(function(e) {
-        const msg = "Are you sure you want to import all assessments?";
+      $("#installSelected").click(function(e) {
+        const msg = "Are you sure you want to import the selected assessments?";
         if (!window.confirm(msg))
           return false;
 
@@ -12,8 +12,20 @@
         $btn.text("Importing...");
         $btn.addClass("disabled");
 
-        Promise.all(
-            $(".import").map((i, e) => $.post(e.href))
+        // Promise.all(
+        //     $(".cbox").each((i, e) => $.post(e.href))
+        //   )
+        //   .then(() => {
+        //     alert("Finished import of all assessments.\nIf any assessments remain, errors occurred while importing them.");
+        //     location.reload();
+        //   });
+          Promise.all(
+              $(".cbox").each(function(i){
+                  let id = $(this).attr('id')
+                  console.log(id,$(`#${id}_importLink`).href)
+                  $.post($(`#${id}_importLink`).href)
+              })
+
           )
           .then(() => {
             alert("Finished import of all assessments.\nIf any assessments remain, errors occurred while importing them.");
@@ -21,6 +33,14 @@
           });
       });
     });
+    $(function() {
+        $("#selectAll").click(function(e) {
+            $(".cbox").prop("checked", true)
+        })
+        $("#unselectAll").click(function(e) {
+            $(".cbox").prop("checked", false)
+        })
+    })
   </script>
 <% end %>
 
@@ -67,6 +87,39 @@ Choose one of the following methods to install an assessment
     <% end %>
   </ul>
 </div>
+<div>
+  <table class="prettyBorder" id="assessment_names">
+    <colgroup>
+      <col span="1" style="width: 50px;">
+      <col span="1">
+    </colgroup>
+    <tbody>
+    <tr>
+      <td><em>Install?</em></td>
+      <td><em>Assessment</em></td>
+    </tr>
+    <% @unused_config_files.each do |ass_file| %>
+      <tr class="assessment-field checked">
+        <td>
+          <label>
+            <%= check_box_tag ass_file, ass_file, true, class: 'cbox', id: "#{ass_file}_checkbox"%>
+            <% link_to  ass_file, importAssessment_course_assessments_path(@course, assessment_name: ass_file), method: :post, class: "collection-item", id: "#{ass_file}_checkbox_importLink" %>
+
+            <span/>
+          </label>
+        </td>
+        <td>
+          <%= ass_file %>
+        </td>
+      </tr>
+    <% end %>
+    <a id="unselectAll" class="btn">Unselect All</a>
+    <a id="selectAll" class="btn">Select All</a>
+    </tbody>
+  </table>
+</div>
+
+<a id="installSelected" class="btn">Install Selected</a>
 
 <div class="section">
   <h4>3. Import from tarball</h4>
