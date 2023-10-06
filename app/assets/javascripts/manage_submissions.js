@@ -65,7 +65,7 @@ $(document).ready(function () {
                 </th>`;
       }).join('');
 
-      const submissions_body = data.submissions.filter(({id}) => id in data.scores).map((submission) => {
+      const submissions_body = data.submissions.map((submission) => {
         let tweak_value = data?.tweaks[submission.id]?.value ?? "None";
         if (tweak_value != "None" && tweak_value > 0) {
           tweak_value = `+${tweak_value}`;
@@ -117,7 +117,7 @@ $(document).ready(function () {
               </td>
               ${submission.problems.
               map((problem) =>
-                `<td class="submissions-td">${data.scores[submission.id][problem.id]?.['score']}</td>`
+                `<td class="submissions-td">${data.scores[submission.id]?.[problem.id]?.['score'] ?? "-"}</td>`
               ).join('')}
               <td class="submissions-td">
                 ${submission.late_penalty}
