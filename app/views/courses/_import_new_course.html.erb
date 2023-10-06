@@ -1,0 +1,24 @@
+<h3>Create New Course from Tarball</h3>
+
+<%= form_for :newCourse, url: courses_path, builder: FormBuilderWithDateTimeInput do |f| %>
+  <%= f.error_messages %>
+  <p>
+    If you have an existing Autolab course, then you can import it into this course:
+  </p>
+  <ul>
+    <li>
+      1: Go into Manage Course in the existing Autolab course
+    </li>
+    <li>
+      2: On the left sidebar, click “Export Course”
+    </li>
+    <li>
+      3: Select the fields you would like to export and click the export button.
+    </li>
+  </ul>
+  <%= f.file_field :name, required: true,
+                   help_text: "This tarball should have come from Autolab, and contains course configuration data" %>
+
+
+  <%= f.submit "Create Course" , {:class=>"btn primary"} %>
+<% end %>
