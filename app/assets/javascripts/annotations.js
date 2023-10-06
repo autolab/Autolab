@@ -527,7 +527,6 @@ function globalAnnotationFormCode(newAnnotation, config) {
     e.preventDefault();
     $(this).parents(".annotation-form").parent().remove();
   })
-  console.log(box.find('#comment-textarea'));
   box.find('#comment-textarea').autocomplete({
     appendTo: box.find('#comment-textarea').parent(),
     minLength: 0,

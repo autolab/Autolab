@@ -35,8 +35,6 @@ function focusAnnotation( event, ui ) {
 // retrieve shared comments
 // also retrieves annotation id to allow easy deletion in the future
 function retrieveSharedComments(cb) {
-  console.log(sharedCommentsPath);
-
   $.getJSON(sharedCommentsPath, function (data) {
       localCache['shared_comments'] = {};
       data.forEach(e => {

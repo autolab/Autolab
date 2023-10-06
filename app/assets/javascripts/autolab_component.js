@@ -4,7 +4,6 @@ function AutolabComponent(elementId, initialState = {}) {
 
   this.setState = function(newState) {
       $.extend(this.state, newState);
-      console.log('set state')
       this.render();
   };
 

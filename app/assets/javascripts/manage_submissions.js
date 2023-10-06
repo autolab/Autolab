@@ -25,9 +25,7 @@ const selectTweak = (e) => {
   updateBasePath(submission);
   deletePath = updatePath;
   retrieveSharedComments(() => {
-    console.log('then', localCache);
     const newForm = newAnnotationFormCode();
-    console.log('templateee', newForm);
     $('#active-annotation-form').html(newForm);
   });
 }
@@ -57,10 +55,9 @@ $(document).ready(function () {
 
     // Fetch data and render it in the modal 
     get_score_details(course_user_datum_id).then((data) => {
-
       const problem_headers = data.submissions[0].problems.map((problem) => {
         const max_score = problem.max_score;
-        const autograded = problem.grader_id < 0 ? " (Autograded)" : "";
+        const autograded = problem.grader_id == null || problem.grader_id < 0 ? " (Autograded)" : "";
         return `<th class="submission-th">
                   ${problem.name}
                   <br>
@@ -68,8 +65,7 @@ $(document).ready(function () {
                 </th>`;
       }).join('');
 
-      const submissions_body = data.submissions.map((submission) => {
-        
+      const submissions_body = data.submissions.filter(({id}) => id in data.scores).map((submission) => {
         let tweak_value = data?.tweaks[submission.id]?.value ?? "None";
         if (tweak_value != "None" && tweak_value > 0) {
           tweak_value = `+${tweak_value}`;
@@ -108,7 +104,6 @@ $(document).ready(function () {
                     </a>
                     <p>Download</p>
                   </div>`;
-
         return `
             <tr id="row-${submission.id}" class="submission-row">
               <td class="submissions-td">
@@ -160,11 +155,11 @@ $(document).ready(function () {
         `;
 
       $('#score-details-content').html(`<div> ${submissions_table} </div>`);
-      $('#score-details-table').DataTable({
-        "order": [[0, "desc"]],
-        "paging": false,
-        "info": false,
-        "searching": false,});
+      // $('#score-details-table').DataTable({
+      //   "order": [[0, "desc"]],
+      //   "paging": false,
+      //   "info": false,
+      //   "searching": false,});
 
     }).then(() => {
       $('.tweak-button').click(selectTweak);
