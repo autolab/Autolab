@@ -335,23 +335,13 @@ class UsersController < ApplicationController
 
   action_auth_level :reset_password, :administrator
   def reset_password
-    user = User.find(params[:id])
-    @temporary_token = SecureRandom.urlsafe_base64(20)
-    user.create_token(user, @temporary_token)
-    user.send_reset_password_instructions
-    render 'reset_password'
-  end
-
-  skip_before_action :authenticate_user!, except: [:publicSignUp]
-  action_auth_level :login_with_token, :administrator
-  def login_with_token
-    user = User.find_by(temporary_token: params[:temporary_token])
-    if user && !user.temporary_token_expired(user)
-      sign_in :user, user
-      redirect_to("/") && return
-    else
-      redirect_to root_path, alert: "Invalid token."
-    end
+    sign_out @user
+    @user = User.find(params[:id])
+    raw, enc = Devise.token_generator.generate(User, :reset_password_token)
+    @user.reset_password_token = enc
+    @user.reset_password_sent_at = Time.current
+    @user.save(validate: false)
+    redirect_to edit_password_url(@user, reset_password_token: raw)
   end
 
 private
