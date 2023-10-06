@@ -18,10 +18,10 @@
 
 <% content_for :javascripts do %>
   <%= external_javascript_include_tag "jquery-ui" %>
-  <%= javascript_include_tag "jquery.event.drag-2.2.js"%>
-  <%= javascript_include_tag "SlickGrid/2.02/slick.core.js"  %>
-  <%= javascript_include_tag "SlickGrid/2.02/slick.grid.js"  %>
-  <%= javascript_include_tag "SlickGrid/2.02/slick.dataview.js"  %>
+  <%= javascript_include_tag "jquery.event.drag-2.2.js" %>
+  <%= javascript_include_tag "SlickGrid/2.02/slick.core.js" %>
+  <%= javascript_include_tag "SlickGrid/2.02/slick.grid.js" %>
+  <%= javascript_include_tag "SlickGrid/2.02/slick.dataview.js" %>
   <%= javascript_include_tag "SlickGrid/2.02/controls/slick.columnpicker.js" %>
 
   <script type="text/javascript">
@@ -34,32 +34,31 @@
 <% end %>
 
 <% if not @course.gb_message.blank? %>
-  <div class="gb_message"><%=raw(@course.gb_message)%></div>
+  <div class="gb_message"><%= raw(@course.gb_message) %></div>
 <% end %>
 
 <div class="gradebook-row">
   <div class="filter_container search-student-bar">
     <i class="material-icons prefix">search</i>
     <div style="width: 30%;">
-      <input id="filter" placeholder="Search..." type="text">
+      <input id="filter" placeholder="Search..." type="text" autocomplete="off">
     </div>
     <% if @options[:show_actions] %>
       <div id="last_updated">
-        <a class="tip link" title="Export as CSV" href="<%= url_for :action => :csv %>">
+        <a class="tip link" title="Export as CSV" href="<%= url_for action: :csv %>">
           Export
         </a> /
-        <a class="tip link" title="Course Statistics" href="<%= url_for :action => :statistics %>">
+        <a class="tip link" title="Course Statistics" href="<%= url_for action: :statistics %>">
           Statistics
         </a> /
-        <a class="tip regenerate" title="Regenerate (~10 seconds)" href="<%= url_for :action => :invalidate %>" data-method="post">
+        <a class="tip regenerate" title="Regenerate (~10 seconds)" href="<%= url_for action: :invalidate %>" data-method="post">
           <i class="icon-refresh"></i>
-          <%= time_ago_in_words(DateTime.parse @matrix.last_updated) %> old
+          <%= time_ago_in_words(DateTime.parse(@matrix.last_updated)) %> old
         </a>
       </div>
     <% end %>
   </div>
 </div>
-
 
 <div id="gradebook">
   <!-- will be filled in by gradebook.js -->

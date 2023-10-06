@@ -15,8 +15,8 @@
 
     <%= form_tag(device_flow_resolve_path, method: "get") do |f| %>
       <p>Enter 6-digit code</p>
-      <%= text_field_tag :user_code, nil, :max_length => 6, :autocomplete => :off %>
-      <%= submit_tag "Activate", :class=>"btn primary" %>
+      <%= text_field_tag :user_code, nil, max_length: 6, autocomplete: :off %>
+      <%= submit_tag "Activate", class: "btn primary" %>
     <% end %>
   </div>
 </div>

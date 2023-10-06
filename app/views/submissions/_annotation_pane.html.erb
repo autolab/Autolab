@@ -52,7 +52,11 @@
                     <% global_annotations.each do |description, value, line, user, id, position, filename, shared, global| %>
                       <div class="global-annotation" id="li-annotation-<%= id %>">
                         <div class="annotation-badge">
-                          <span class="point_badge <%= value > 0 ? "positive" : value < 0 ? "negative" : "neutral" %>">
+                          <span class="point_badge <%= if value > 0
+                                                         "positive"
+                                                       else
+                                                         value < 0 ? "negative" : "neutral"
+                                                       end %>">
                             <%= plus_fix(value) %>
                           </span>
                         </div>
@@ -66,11 +70,9 @@
                                 data-problem="<%= problem %>"
                                 data-score="<%= value %>"
                                 data-comment="<%= description %>"
-                                data-shared="<%= shared %>"
-                          >
+                                data-shared="<%= shared %>">
                             <a class="global-annotation-edit-button" href="#"
-                               title="Edit global annotation"
-                            >
+                               title="Edit global annotation">
                               <i class="material-icons">edit</i>
                             </a>
                             <a class="global-annotation-delete-button" href="#" title="Delete global annotation">
@@ -89,14 +91,18 @@
                     <% annotations.each do |description, value, line, user, id, position, filename, global| %>
                       <div class="descript" id="li-annotation-<%= id %>"> <!-- Line + 1 because the code line numbers starts with 1 not 0. -->
                         <%= link_to(
-                            url_for([:view, @course, @assessment, @submission, header_position: position.nil? ? 0 : position, line: line.nil? ? 1 : line+1]),
-                            class: 'descript-link',
-                            "data-header_position": position.nil? ? 0 : position,
-                            "data-line": line.nil? ? 1 : line+1,
-                            remote: true,
-                          ) do %>
+                              url_for([:view, @course, @assessment, @submission, { header_position: position.nil? ? 0 : position, line: line.nil? ? 1 : line + 1 }]),
+                              class: 'descript-link',
+                              "data-header_position": position.nil? ? 0 : position,
+                              "data-line": line.nil? ? 1 : line + 1,
+                              remote: true,
+                            ) do %>
                             <div class="annotation-badge">
-                              <span class="point_badge <%= value > 0 ? "positive" : value < 0 ? "negative" : "neutral" %>">
+                              <span class="point_badge <%= if value > 0
+                                                             "positive"
+                                                           else
+                                                             value < 0 ? "negative" : "neutral"
+                                                           end %>">
                                 <% unless line.nil? %>
                                   <span class="line_number">Line <%= line + 1 %>:</span>
                                 <% end %>

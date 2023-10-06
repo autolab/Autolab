@@ -1,10 +1,10 @@
-<% @title = (@cud.instructor || @cud.course_assistant) ? "Annotate Submission" : "View Submission" %>
+<% @title = @cud.instructor || @cud.course_assistant ? "Annotate Submission" : "View Submission" %>
 
 <% content_for :stylesheets do %>
   <%= external_stylesheet_link_tag "golden-layout-base" %>
   <%= external_stylesheet_link_tag "golden-layout-theme" %>
   <%= stylesheet_link_tag "annotations" %>
-  <% # highlightjs - change the style sheet for different styles %>
+  <%# highlightjs - change the style sheet for different styles %>
   <%= stylesheet_link_tag "highlightjs-styles/vs.css" %>
   <%= external_stylesheet_link_tag "jquery-ui" %>
 <% end %>
@@ -18,19 +18,19 @@
   <%= external_javascript_include_tag "scrollTo" %>
   <%= external_javascript_include_tag "golden-layout" %>
   <%# Hidden elements used by fillAnnotationBox in annotation.js %>
-  <div style="display: none"><%= render(:partial => 'grades') %></div>
-  <div style="display: none"><%= render(:partial => 'annotation_pane') %></div>
-  <script type="application/javascript">
+  <div style="display: none"><%= render(partial: 'grades') %></div>
+  <div style="display: none"><%= render(partial: 'annotation_pane') %></div>
+  <script type="text/javascript">
     <% if @cud.instructor || @cud.course_assistant then %>
       var isInstructor = true;
     <% else %>
       var isInstructor = false;
     <% end %>
 
-    const editableUrl = "<%= url_for ([:quickSetScore, @course, @assessment]) %>"
+    const editableUrl = "<%= url_for([:quickSetScore, @course, @assessment]) %>"
 
     var currentHeaderPos = <%= params[:header_position] || 0 %>;
-    var annotations = <%=raw @annotations.to_json %>;
+    var annotations = <%= raw @annotations.to_json %>;
     var annotationsByPositionByLine = {};
     var fileNameStr = "<%= @filename %>";
     var cudEmailStr = "<%= @cud.email %>";
@@ -39,7 +39,7 @@
     var problems = <%= raw @problems.to_json %>;
 
     // a json list of scores for this assessment
-    var scores = <%=raw @scores.to_json %>;
+    var scores = <%= raw @scores.to_json %>;
     var basePath = "<%= course_assessment_submission_annotations_path(@course, @assessment, @submission) %>";
 
     var localCache = {};
@@ -68,10 +68,10 @@
       <% end %>
     </div>
     <div class="col s8 center-align valign-wrapper submission-controls">
-        <span title="student # / total students">[<%= @curSubmissionIndex+1 %>/<%= @latestSubmissions.length %>] <%= @submission.course_user_datum.email %>,</span>
+        <span title="student # / total students">[<%= @curSubmissionIndex + 1 %>/<%= @latestSubmissions.length %>] <%= @submission.course_user_datum.email %>,</span>
         <%= render "version_dropdown" %>
         <%= render "version_links" %>
-      <a href="<%= download_file_url(@submission) %>" class="btn small" title="Download" >Download</a>
+      <a href="<%= download_file_url(@submission) %>" class="btn small" title="Download">Download</a>
       <button class="btn small" onclick="resetLayout()">Reset Layout</button>
     </div>
 
@@ -80,7 +80,7 @@
         <%= link_to(view_course_assessment_submission_path(@course, @assessment, @nextSubmission), class: "valign-wrapper", title: "Next student (shortcut: →)", id: "next_submission_link") do %>
           <%= @nextSubmission.course_user_datum.user.email %> <i class="material-icons" style="margin-left: 3px">arrow_forward</i>
         <% end %>
-        <link rel="prerender" href= <%= view_course_assessment_submission_path(@course, @assessment, @nextSubmission) %> />
+        <link rel="prerender" href="<%= view_course_assessment_submission_path(@course, @assessment, @nextSubmission) %>">
       <% end %>
     </div>
   </div>

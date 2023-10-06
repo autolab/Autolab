@@ -17,7 +17,7 @@
         <% version = s.version == 0 ? "Unofficial" : s.version %>
         <%= version %>
         <% if @cud.instructor? %>
-            (<%= link_to "Submission History", { :action => "history", :cud_id => s.course_user_datum_id } %>)
+            (<%= link_to "Submission History", { action: "history", cud_id: s.course_user_datum_id } %>)
         <% end %>
     </td></tr>
     <% if @cud.instructor? && @assessment.version_penalty? %>
@@ -30,7 +30,7 @@
         <tr><th>= Days late</th><td><%= s.days_late %></td></tr>
         <tr><th>Grade Type</th><td>
             <%= link_to grade_type_to_s(s.aud.grade_type),
-edit_course_assessment_assessment_user_datum_path(@course, @assessment, s.aud) %>
+                        edit_course_assessment_assessment_user_datum_path(@course, @assessment, s.aud) %>
         </td></tr>
     <% end %>
 </table>

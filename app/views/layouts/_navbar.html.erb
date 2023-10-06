@@ -22,12 +22,13 @@
   <ul id="dropdown1" class="dropdown-content">
     <% unless current_user.nil? %>
       <li role="presentation">
-        <%= link_to "Account", user_path(current_user), :title => "View your account info" %>
+        <%= link_to "Account", user_path(current_user), title: "View your account info" %>
       </li>
     <% end %>
     <% if @cud %>
       <li role="presentation">
-        <%= link_to "Course Profile", [@course, @cud], :title => "View your user profile for the current course" %>
+        <%= link_to "Course Profile", course_course_user_data_path(@course, @cud),
+                    title: "View your user profile for the current course" %>
       </li>
     <% end %>
     <% if Rails.env.development? %>
@@ -37,7 +38,7 @@
     <% end %>
     <li role="presentation" class="divider"></li>
     <li role="presentation">
-      <%= link_to "Log out", destroy_user_session_path, :method => :delete  %>
+      <%= link_to "Log out", destroy_user_session_path, method: :delete %>
     </li>
   </ul>
 
@@ -48,15 +49,22 @@
 
       <li role="presentation"><%= link_to "Manage Users", users_path, title: "Manage every Autolab user" %></li>
 
-      <li role="presentation"><%= link_to "Github Integration", github_integration_admin_path, title: "Manage Github Integration" %></li>
+      <li role="presentation"><%= link_to "Github Integration",
+                                          github_integration_admin_path, title: "Manage Github Integration" %></li>
 
-      <li role="presentation"><%= link_to "Manage API Applications", oauth_applications_path, title: "Manage registered API clients" %></li>
+      <li role="presentation"><%= link_to "Manage API Applications",
+                                          oauth_applications_path, title: "Manage registered API clients" %></li>
 
-      <li role="presentation"><%= link_to "Bulk Email Instructors", email_instructors_admin_path, title: "Send a bulk email to every Autolab instructor" %></li>
+      <li role="presentation"><%= link_to "Bulk Email Instructors",
+                                          email_instructors_admin_path,
+                                          title: "Send a bulk email to every Autolab instructor" %></li>
 
-      <li role="presentation"><%= link_to "LTI Integration", lti_config_index_path, title: "View and update LTI Integration Configuration" %></li>
+      <li role="presentation"><%= link_to "LTI Integration",
+                                          lti_config_index_path,
+                                          title: "View and update LTI Integration Configuration" %></li>
 
-      <li role="presentation"><%= link_to "Clear Cache", clear_cache_admin_url, title: "Clear Cache" , data: {method: "post"} %></li>
+      <li role="presentation"><%= link_to "Clear Cache", clear_cache_admin_url,
+                                          title: "Clear Cache", data: { method: "post" } %></li>
     </ul>
   <% end %>
 
@@ -67,48 +75,86 @@
 
       <li role="presentation"><%= link_to "Manage Users", users_path, title: "Manage every Autolab user" %></li>
 
-      <li role="presentation"><%= link_to "Github Integration", github_integration_admin_path, title: "Manage Github Integration" %></li>
+      <li role="presentation"><%= link_to "Github Integration",
+                                          github_integration_admin_path, title: "Manage Github Integration" %></li>
 
-      <li role="presentation"><%= link_to "Manage API Applications", oauth_applications_path, title: "Manage registered API clients" %></li>
+      <li role="presentation"><%= link_to "Manage API Applications",
+                                          oauth_applications_path, title: "Manage registered API clients" %></li>
 
-      <li role="presentation"><%= link_to "Bulk Email Instructors", email_instructors_admin_path, title: "Send a bulk email to every Autolab instructor" %></li>
+      <li role="presentation"><%= link_to "Bulk Email Instructors",
+                                          email_instructors_admin_path,
+                                          title: "Send a bulk email to every Autolab instructor" %></li>
 
-      <li role="presentation"><%= link_to "LTI Integration", lti_config_index_path, title: "View and update LTI Integration Configuration" %></li>
+      <li role="presentation"><%= link_to "LTI Integration",
+                                          lti_config_index_path,
+                                          title: "View and update LTI Integration Configuration" %></li>
 
-      <li role="presentation"><%= link_to "Clear Cache", clear_cache_admin_url, title: "Clear Cache", data: {method: "post"} %></li>
+      <li role="presentation"><%= link_to "Clear Cache",
+                                          clear_cache_admin_url,
+                                          title: "Clear Cache", data: { method: "post" } %></li>
 
     </ul>
   <% end %>
 
   <nav>
     <div class="nav-wrapper">
-      <a href="/courses" class="brand-logo logo"><%= image_tag "AUTOLAB@2x.png", :width=> 180, :alt=>"Carnegie Mellon University" %></a>
-      <a href="#" data-target="mobile-demo" class="sidenav-trigger right"><i class="material-icons">menu</i></a>
+      <a href="/courses" class="brand-logo logo">
+        <%= image_tag "AUTOLAB@2x.png", width: 180, alt: "Carnegie Mellon University" %>
+      </a>
+      <a href="#" data-target="mobile-demo" class="sidenav-trigger right">
+        <i class="material-icons">menu</i>
+      </a>
 
       <ul class="right hide-on-med-and-down">
         <% if session[:sudo] && @cud then %>
-          <li><%= link_to "(#{@cud.display_name}) Return to instructor view", [:unsudo, @course, @cud], data: {method: "post"} %></li>
+          <li>
+            <%= link_to "(#{@cud.display_name}) Return to instructor view",
+                        unsudo_course_course_user_datum_path(@course, @cud),
+                        data: { method: "post" } %>
+          </li>
         <% end %>
 
         <% if @cud %>
           <% if !@cud.instructor? && @cud.course_assistant? && !@cud.section.blank? %>
-            <li><%= link_to "<i class='material-icons left'>grading</i> Section #{@cud.section} Gradebook".html_safe, [:view, @course, @cud, :gradebook, section: @cud.section], title: "View your gradebook" %></li>
+            <li>
+              <%= link_to "<i class='material-icons left'>grading</i> Section #{@cud.section} Gradebook".html_safe,
+                          view_course_course_user_datum_gradebook_path(@course, @cud, { section: @cud.section }),
+                          title: "View your gradebook" %>
+            </li>
           <% elsif @cud.instructor? || @cud.student? %>
-            <li><%= link_to "<i class='material-icons left'>grading</i> Gradebook".html_safe, [@course, @cud, :gradebook], title: "View your gradebook" %></li>
+            <li>
+              <%= link_to "<i class='material-icons left'>grading</i> Gradebook".html_safe,
+                          [@course, @cud, :gradebook], title: "View your gradebook" %>
+            </li>
           <% end %>
 
-          <li><%= link_to "<i class='material-icons left'>clear_all</i> Jobs".html_safe, [@course, :jobs], title: "View a history of autograding jobs" %></li>
+          <li>
+            <%= link_to "<i class='material-icons left'>clear_all</i> Jobs".html_safe, course_jobs_path(@course),
+                        title: "View a history of autograding jobs" %>
+          </li>
 
           <% if @cud.instructor? %>
-            <li><%= link_to "<i class='material-icons left'>settings</i>Manage Course".html_safe, [:manage, @course], title: "Perform course-wise administrative actions" %></li>
+            <li>
+              <%= link_to "<i class='material-icons left'>settings</i>Manage Course".html_safe,
+                          manage_course_path(@course),
+                          title: "Perform course-wise administrative actions" %>
+            </li>
           <% end %>
         <% end %>
 
         <% if current_user&.administrator? %>
-          <li><a class="dropdown-trigger" href="#!" data-target="dropdown2" data-beloworigin="true" data-hover="false"><i class='material-icons left'>lock</i>Manage Autolab<i class="material-icons right">arrow_drop_down</i></a></li>
+          <li>
+            <a class="dropdown-trigger" href="#!" data-target="dropdown2" data-beloworigin="true" data-hover="false">
+              <i class='material-icons left'>lock</i>Manage Autolab<i class="material-icons right">arrow_drop_down</i>
+            </a>
+          </li>
         <% end %>
         <% if user_signed_in? %>
-          <li><a class="dropdown-trigger" href="#!" data-target="dropdown1" data-beloworigin="true" data-hover="false"><%= current_user.display_name %><i class="material-icons right">arrow_drop_down</i></a></li>
+          <li>
+            <a class="dropdown-trigger" href="#!" data-target="dropdown1" data-beloworigin="true" data-hover="false">
+              <%= current_user.display_name %><i class="material-icons right">arrow_drop_down</i>
+            </a>
+          </li>
         <% end %>
       </ul>
 
@@ -122,16 +168,20 @@
           </div>
         <% unless current_user.nil? %>
           <li role="presentation">
-            <%= link_to "<i class='material-icons left'>account_circle</i> Account".html_safe, user_path(current_user), :title => "View your account info" %>
+            <%= link_to "<i class='material-icons left'>account_circle</i> Account".html_safe,
+                        user_path(current_user), title: "View your account info" %>
           </li>
         <% end %>
         <% if @cud %>
           <li role="presentation">
-            <%= link_to "<i class='material-icons left'>assignment_ind</i> Course Profile".html_safe, [@course, @cud], :title => "View your user profile for the current course" %>
+            <%= link_to "<i class='material-icons left'>assignment_ind</i> Course Profile".html_safe,
+                        course_course_user_data_path(@course, @cud),
+                        title: "View your user profile for the current course" %>
           </li>
         <% end %>
         <li role="presentation">
-          <%= link_to "<i class='material-icons left'>exit_to_app</i> Log out".html_safe, destroy_user_session_path, :method => :delete  %>
+          <%= link_to "<i class='material-icons left'>exit_to_app</i> Log out".html_safe,
+                      destroy_user_session_path, method: :delete %>
         </li>
         <li role="presentation" class="divider"></li>
         <% end %>
@@ -143,25 +193,47 @@
       </div>
         <!-- Usual Navbar Items -->
         <% if session[:sudo] && @cud then %>
-          <li><%= link_to "(#{@cud.display_name}) Return to instructor view", [:unsudo, @course, @cud], data: {method: "post"} %></li>
+          <li>
+            <%= link_to "(#{@cud.display_name}) Return to instructor view",
+                        unsudo_course_course_user_datum_path(@course, @cud), data: { method: "post" } %>
+          </li>
         <% end %>
 
         <% if @cud %>
           <% if !@cud.instructor? && @cud.course_assistant? && !@cud.section.blank? %>
-            <li><%= link_to "<i class='material-icons left'>grading</i> Section #{@cud.section} Gradebook".html_safe, [:view, @course, @cud, :gradebook, section: @cud.section], title: "View your gradebook" %></li>
+            <li>
+              <%= link_to "<i class='material-icons left'>grading</i> Section #{@cud.section} Gradebook".html_safe,
+                          view_course_course_user_datum_gradebook_path(@course, @cud, { section: @cud.section }),
+                          title: "View your gradebook" %>
+            </li>
           <% elsif @cud.instructor? || @cud.student? %>
-            <li><%= link_to "<i class='material-icons left'>grading</i> Gradebook".html_safe, [@course, @cud, :gradebook], title: "View your gradebook" %></li>
+            <li>
+              <%= link_to "<i class='material-icons left'>grading</i> Gradebook".html_safe,
+                          [@course, @cud, :gradebook], title: "View your gradebook" %>
+            </li>
           <% end %>
 
-          <li><%= link_to "<i class='material-icons left'>clear_all</i> Jobs".html_safe, [@course, :jobs], title: "View a history of autograding jobs" %></li>
+          <li>
+            <%= link_to "<i class='material-icons left'>clear_all</i> Jobs".html_safe,
+                        course_jobs_path(@course, :jobs), title: "View a history of autograding jobs" %>
+          </li>
 
           <% if @cud.instructor? %>
-            <li><%= link_to "<i class='material-icons left'>settings</i> Manage Course".html_safe, [:manage, @course], title: "Perform course-wise administrative actions" %></li>
+            <li>
+              <%= link_to "<i class='material-icons left'>settings</i> Manage Course".html_safe,
+                          manage_course_path(@course), title: "Perform course-wise administrative actions" %>
+            </li>
           <% end %>
         <% end %>
 
         <% if current_user&.administrator? %>
-          <li><a class="dropdown-trigger" href="#!" data-target="dropdown3" data-beloworigin="true" data-hover="false"><i class='material-icons left'>lock</i>Manage Autolab<i class="material-icons right">arrow_drop_down</i></a></li>
+          <li>
+            <a class="dropdown-trigger" href="#!" data-target="dropdown3" data-beloworigin="true" data-hover="false">
+              <i class='material-icons left'>lock</i>Manage Autolab<i class="material-icons right">
+                arrow_drop_down
+              </i>
+            </a>
+          </li>
         <% end %>
       </ul>
 

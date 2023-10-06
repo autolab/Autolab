@@ -1,10 +1,9 @@
 <div class="history-download-pane" style="margin-right: 30px;">
   <% if can_always_download or not (sub.assessment.exam or sub.assessment.course.exam_in_progress) then %>
     <% if link = view_course_assessment_submission_path(@course, @assessment, sub) then %>
-      <%= link_to link, data: {toggle: "tooltip", placement: "top"}, title: "View Source",
-                    aria: {label: "Justify"}, style: "margin-right:3px",
-                    class: "btn btn-small white submission-history-button" do
-      %>
+      <%= link_to link, data: { toggle: "tooltip", placement: "top" }, title: "View Source",
+                        aria: { label: "Justify" }, style: "margin-right:3px",
+                        class: "btn btn-small white submission-history-button" do %>
         <span><i class="material-icons">zoom_in</i></span>
          View Source
       <% end %>
@@ -15,17 +14,15 @@
     <% mime_type = sub.detected_mime_type %>
     <% if mime_type =~ /text\/.*/ then %>
       <%= link_to download_course_assessment_submission_path(@course, @assessment, sub, forceMime: 'text/plain'),
-          data: {toggle: "tooltip", placement: "top"}, title: "Download as text/plain",
-          class: "btn btn-small white submission-history-button" do
-      %>
+                  data: { toggle: "tooltip", placement: "top" }, title: "Download as text/plain",
+                  class: "btn btn-small white submission-history-button" do %>
         <span style="margin-right:3px;"><i class="material-icons">file_download</i></span>
         Download Submission
       <% end %>
     <% else %>
       <%= link_to download_course_assessment_submission_path(@course, @assessment, sub),
-          data: {toggle: "tooltip", placement:"top"}, title: "Download Submission",
-          style:"", class: "btn btn-small white submission-history-button" do
-      %>
+                  data: { toggle: "tooltip", placement: "top" }, title: "Download Submission",
+                  style: "", class: "btn btn-small white submission-history-button" do %>
         <span style="margin-right:3px;"><i class="material-icons">file_download</i></span>
         Download Submission
       <% end %>

@@ -4,33 +4,31 @@
       <h2 id="remarks" style="margin-top: 0">Remarks</h2>
     </div>
     <% subs_by_problem = @submission.annotations.group_by(&:problem)
-        subs_by_problem.each do |problem, annotations| %>
+       subs_by_problem.each do |problem, annotations| %>
         <b> <%= problem.nil? ? "Deleted Problem(s)" : problem.name %> </b>
         <ul class="collection">
         <%# use custom sort b/c using ordering doesn't work with autograder output, archived files %>
         <%
-          s_annotations = annotations.sort do |a,b|
-          aFilename = @get_correct_filename.call(a)
-          bFilename = @get_correct_filename.call(b)
+          s_annotations = annotations.sort do |a, b|
+            aFilename = @get_correct_filename.call(a)
+            bFilename = @get_correct_filename.call(b)
 
-          if a.global_comment? && b.global_comment?
-            a.id <=> b.id
-          else
-            case
-              when a.global_comment? != b.global_comment?
-                a.global_comment? ? -1 : 1
-              when aFilename != bFilename
-                aFilename <=> bFilename
-              else
-                a.line <=> b.line
-              end
+            if a.global_comment? && b.global_comment?
+              a.id <=> b.id
+            elsif a.global_comment? != b.global_comment?
+              a.global_comment? ? -1 : 1
+            elsif aFilename != bFilename
+              aFilename <=> bFilename
+            else
+              a.line <=> b.line
             end
           end
-          s_annotations.each do |annotation| %>
+          s_annotations.each do |annotation|
+        %>
             <li class="collection-item">
-              <div style='white-space: pre-wrap;'><%= annotation.comment%> </div>
-              <% filename = @get_correct_filename.call(annotation)%>
-              <span> 
+              <div style='white-space: pre-wrap;'><%= annotation.comment %> </div>
+              <% filename = @get_correct_filename.call(annotation) %>
+              <span>
                 <b><%= annotation.value? ? sprintf("(%+.2f)", annotation.value.round(2)) : "" %></b>
                 <% if annotation.global_comment? %>
                   <%= link_to "Global Annotation", view_course_assessment_submission_path(@course, @assessment, @submission) %>
@@ -39,7 +37,7 @@
                   <%= link_to filename.to_s, view_course_assessment_submission_path(@course, @assessment, @submission, header_position: annotation.position) %>
                 <% else %>
                   <%# line + 1 because line numbers start from 1 %>
-                  <%= link_to filename.to_s + ":" + (annotation.line + 1).to_s, view_course_assessment_submission_path(@course, @assessment, @submission, header_position: annotation.position) %>
+                  <%= link_to "#{filename}:#{annotation.line + 1}", view_course_assessment_submission_path(@course, @assessment, @submission, header_position: annotation.position) %>
                 <% end %>
               </span>
             </li>

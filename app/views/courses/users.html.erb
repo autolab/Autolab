@@ -12,11 +12,11 @@
 <% lcd = @course.lti_course_datum %>
 <div>
   <span>
-    <%= link_to raw('<span class="btn">Add User to Course</span>'), [:new, @course, :course_user_datum] %>
+    <%= link_to raw('<span class="btn">Add User to Course</span>'), new_course_course_user_datum_path(@course) %>
     <!-- Add User Dropdown Trigger -->
     <a id="add-users" class='dropdown-trigger btn' href='#' data-target='add-users-dropdown'>ADD USERS FROM EMAILS</a>
-    <%= link_to raw('<span class="btn">Import Roster/Users</span>'), {:action=>"upload_roster"} %>
-    <%= link_to raw('<span class="btn">Export Roster</span>'), {:action=>"download_roster"} %>
+    <%= link_to raw('<span class="btn">Import Roster/Users</span>'), upload_roster_course_path(@course) %>
+    <%= link_to raw('<span class="btn">Export Roster</span>'), download_roster_course_path(@course) %>
     <% unless lcd.nil? %> <a class="waves-effect waves-light btn modal-trigger" href="#lti-settings-modal">Linked Course Settings</a> <% end %>
   </span>
 </div>
@@ -32,17 +32,23 @@
           <%= f.check_box :drop_missing_students %>
           <span>
             <p>Auto drop students not enrolled in linked course
-              <i class="material-icons tooltips tooltipped" data-position="top" data-tooltip="When enabled, students not on the <%= lcd.platform %> roster will be marked as dropped.">info_outline</i>
+              <i class="material-icons tooltips tooltipped" data-position="top"
+                 data-tooltip="When enabled, students not on the <%= lcd.platform %> roster will be marked as dropped.">
+                info_outline
+              </i>
             </p>
           </span>
         </label>
       </div>
       <div class="modal-footer">
         <span style="float: left;">
-          <%= f.submit "Save" , {class: "btn-flat"} %>
+          <%= f.submit "Save", { class: "btn-flat" } %>
           <a href="#!" class="modal-close btn-flat">Cancel</a>
         </span>
-        <%= link_to raw('<span class="btn-flat">Unlink Course</span>'), {action: "unlink_course"}, data: { confirm: "Are you sure you want to unlink the course?" }, method: :post %>
+        <%= link_to raw('<span class="btn-flat">Unlink Course</span>'),
+                    unlink_course_course_path(@course),
+                    data: { confirm: "Are you sure you want to unlink the course?" },
+                    method: :post %>
       </div>
     <% end %>
   </div>
@@ -58,14 +64,14 @@
           <span id="error-box-text" class="red-text text-darken-2"></span>
         </div>
         <div style="height:11rem; padding-bottom:1rem;">
-          <div id="emailfield"  style="flex-grow:1; display:flex; flex-direction:column;">
+          <div id="emailfield" style="flex-grow:1; display:flex; flex-direction:column;">
             <b for="textarea1">User Emails (One Entry* Per Line)</b>
             <span> *E.g. <i>dave@autolab.com</i> or <i>Greg K &lt;greg@autolab.com&gt;</i> </span>
             <textarea id="textarea1" style="height:8rem;"
-                      name="user_emails" ></textarea>
+                      name="user_emails"></textarea>
           </div>
         </div>
-        <div class="input-field" style="flex-grow:1;margin:0;padding:0;" >
+        <div class="input-field" style="flex-grow:1;margin:0;padding:0;">
           <select class="browser-default" name="role">
             <option value="" disabled selected>Assigned Role</option>
             <option value="instructor">Instructor</option>
@@ -81,10 +87,9 @@
 </ul>
 
 <hr>
-Search: <%= text_field_tag 'search', nil, onkeyup:'filterRows(this.value)' %>
+Search: <%= text_field_tag 'search', nil, onkeyup: 'filterRows(this.value)', autocomplete: "off" %>
 <br>
 
-
 <div id='ajaxTable'>
-<%= render :partial=>'usersTable' %>
+<%= render partial: 'usersTable' %>
 </div>
