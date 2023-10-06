@@ -162,6 +162,37 @@ class CoursesController < ApplicationController
     end
   end
 
+  action_auth_level :create_from_tar, :instructor
+  def create_from_tar
+    # check for permission
+    unless current_user.administrator?
+      flash[:error] = "Permission denied."
+      redirect_to(root_path) && return
+    end
+
+    # validate course tar
+    tarFile = params["tarFile"]
+    if tarFile.nil?
+      flash[:error] = "Please select a course tarball for uploading."
+      redirect_to(action: "new")
+      return
+    end
+
+    begin
+      tarFile = File.new(tarFile.open, "rb")
+      tar_extract = Gem::Package::TarReader.new(tarFile)
+      tar_extract.rewind
+
+      course_config = get_course_config(tar_extract)
+      assessments = get_assessments_from_tar(tar_extract)
+      tar_extract.close
+    end
+
+    session[:course_config] = course_config
+    session[:course_assessments] = assessments
+    import_course && return
+  end
+
   action_auth_level :edit, :instructor
   def edit; end
 
@@ -1110,5 +1141,30 @@ private
     else
       @basefiles = File.join(baseFilesDir, "*")
     end
+  end
+
+  def get_course_config(tar_extract)
+    tar_extract.rewind
+    target_file = @course.name + ".yml"
+    tar_extract.each do |entry|
+      if entry.full_name == target_file
+        return YAML.safe_load(entry.read)
+    end
+  end
+
+  def get_assessments_from_tar(tar_extract)
+    base_directory = ''
+    directory_names = []
+
+    tar_extract.rewind
+    tar_extract.each do |entry|
+      if entry.directory? && entry.full_name != base_directory + 'attachments/'
+        relative_path = entry.full_name.sub(base_directory, '')
+        first_directory = relative_path.split('/').first
+        directory_names << first_directory
+      end
+    end
+
+    directory_names.uniq!
   end
 end
