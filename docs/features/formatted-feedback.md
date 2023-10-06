@@ -6,7 +6,7 @@ Using formatted feedback requires a prior understanding of how Autolab's autogra
 
 The next few sections are meant to be read in order, with each following section introducing a more complex usage of the formatted feedback feature than the previous. Experimenting with the <a href="https://github.com/autolab/Autolab/tree/master/examples/hellocat" target="_blank">hellocat</a> example code is another way to familiarize with the formatted feedback.
 
-### Default Feedback
+## Default Feedback
 
 By only outputting the **autoresult** (**autoresult** is the JSON string that needs to be outputted on the last line of stdout, as mentioned in the [Guide for Lab Authors](/lab/#writing-autograders)), the default feedback format will automatically be used.
 ```json
@@ -18,7 +18,7 @@ Autolab will simply display the raw output as produced by the autograder
 ![Default Feedback](/images/feedback/default.png)
 
 
-### Semantic Feedback (Minimal)
+## Semantic Feedback (Minimal)
 
 By adding an additional JSON string before the **autoresult**, as follows
 
@@ -30,7 +30,7 @@ we can invoke the semantic layout, which will display the both the raw output an
 
 ![Semantic Minimal](/images/feedback/semantic_minimal.gif)
 
-### Semantic Feedback with Test Cases
+## Semantic Feedback with Test Cases
 
 By further describing the additional JSON string, we can introduce test stages to the formatted feedback, which we can use to indicate to the student the test cases that have passed and/or failed.
 
@@ -59,7 +59,7 @@ We would add `["Test Results"]` to the stages key. Then we would add to the  cor
 
 ![Semantic with Test Cases](/images/feedback/semantic_with_test_case.gif)
 
-### Semantic Feedback (Multi-Stage)
+## Semantic Feedback (Multi-Stage)
 
 Using the same manner in which we add a `Test Stage` in the previous section, we can adapt it to create as many stages as we want. The following example has three different stages, namely `Build`, `Test` and `Timing`, but you can use other names for the stages as well.
 

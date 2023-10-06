@@ -8,12 +8,14 @@ newFile = {
 };
 
 <% if @is_pdf %>
-newFile = {
-    pdf: true,
-    pdfUrl: "<%= download_course_assessment_submission_path(@course, @assessment, @submission, {header_position: params[:header_position]}) %>",
-    annotatedPdfUrl: "<%= download_course_assessment_submission_path(@course, @assessment, @submission, {header_position: params[:header_position], annotated: true}) %>",
-    previewMode: false
-};
+    Object.assign(newFile,
+        {
+            pdf: true,
+            pdfUrl: "<%= download_course_assessment_submission_path(@course, @assessment, @submission, {header_position: params[:header_position]}) %>",
+            annotatedPdfUrl: "<%= download_course_assessment_submission_path(@course, @assessment, @submission, {header_position: params[:header_position], annotated: true}) %>",
+            previewMode: false
+        }
+    );
 <% if @preview_mode %>
     newFile.previewMode = true;
 <% end %>
@@ -27,7 +29,7 @@ if (!newFile.pdf) localCache[<%= params[:header_position] %>] = newFile;
 // If we've navigated to another file, don't update the page
 if (currentHeaderPos === <%= params[:header_position] %>) {
     loadFile(newFile);
-    
+
     <% if params[:line] # note: line numbers are non-zero %>
         scrollToLine(<%= params[:line] %>);
     <% end %>

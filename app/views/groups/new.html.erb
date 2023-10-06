@@ -1,4 +1,6 @@
-<h2>Create a Group</h2>
+<% @title = "New Group" %>
+
+<h2>Create New Group</h2>
 
 <%= render "new_form" %>
 
@@ -9,7 +11,7 @@
     <% @grouplessCUDs.each do |cud| %>
       <% if cud.id != @cud.id && cud.student? then %>
         <li><b><%= cud.email %></b>
-          (<%= link_to "Invite to Group", [@course, @assessment, @group, member_id: cud.id], method: :post %>)
+          (<%= link_to "Invite to Group", [@course, @assessment, @group, { member_id: cud.id }], method: :post %>)
         </li>
       <% end %>
     <% end %>
@@ -21,7 +23,7 @@
 
   <ul class="gray-box">
     <% @unfullGroups.each do |group| %>
-      <%= render "list_item", {group: group} %>
+      <%= render "list_item", { group: group } %>
     <% end %>
   </ul>
 <% end %>

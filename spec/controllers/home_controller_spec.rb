@@ -19,9 +19,17 @@ RSpec.describe HomeController, type: :controller do
     end
   end
 
-  describe "#error" do
+  describe "#error_404" do
     it "renders successfully" do
-      get :error
+      get :error_404
+      expect(response).to be_successful
+      expect(response.body).to match(/Not found/m)
+    end
+  end
+
+  describe "#error_500" do
+    it "renders successfully" do
+      get :error_500
       expect(response).to be_successful
       expect(response.body).to match(/Internal error/m)
     end

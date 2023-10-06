@@ -64,7 +64,6 @@ namespace :autolab do
         course.assessments.create do |a|
           a.category_name = cat
 
-          a.visible_at = start
           a.start_at = start
           a.due_at = start + (5 + rand(11)).days          # 5-15d after start date
           a.end_at = a.due_at + (1 + rand(7)).day   # 1d-1w after the due date
@@ -349,7 +348,6 @@ namespace :autolab do
     asmt = course.assessments.create! do |a|
       a.category_name = AUTOGRADE_CATEGORY_NAME
 
-      a.visible_at = COURSE_START
       a.start_at = COURSE_START
       a.due_at = COURSE_START + (5 + rand(11)).days
       a.end_at = a.due_at + (1 + rand(7)).day

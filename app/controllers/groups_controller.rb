@@ -4,9 +4,6 @@ class GroupsController < ApplicationController
   before_action :check_assessment_for_groups
   before_action :set_group, only: %i[show edit update destroy add join leave]
   respond_to :html
-  rescue_from ActionView::MissingTemplate do |_exception|
-    redirect_to("/home/error_404")
-  end
 
   ##
   # can be used by instructors to check groups.  Students get redirected,

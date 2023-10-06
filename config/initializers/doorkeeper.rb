@@ -15,7 +15,7 @@ Doorkeeper.configure do
   #   # Put your admin authentication logic here.
   #   # Example implementation:
   #   Admin.find_by_id(session[:admin_id]) || redirect_to(new_admin_session_url)
-    (!current_user && warden.authenticate!(:scope => :user)) || current_user.administrator? || redirect_to("/404.html")
+    (!current_user && warden.authenticate!(:scope => :user)) || current_user.administrator? || redirect_to(controller: :home, action: :error_404)
   end
 
   # Authorization Code expiration time (default 10 minutes).
