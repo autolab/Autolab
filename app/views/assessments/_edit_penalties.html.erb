@@ -8,36 +8,39 @@
   blank, all of the remaining available course grace days can be spent on this assessment.",
                  placeholder: "Leave blank for no grace day limit" %>
 
+<% late_penalty_help_text = "The penalty applied to late submissions after a student runs out of grace days.
+  It represents the number of points or a percentage of the total score removed per day, and must be a non-negative
+  number. If left blank, the course default is used."
+  if @assessment.late_penalty.value.nil?
+    late_penalty_help_text += "<br><strong class='red-text'>The late penalty is currently set to the course default of deducting #{@assessment.course.late_penalty} per day.</strong>"
+  end %>
 <%= f.score_adjustment_input :late_penalty,
                              optional: true,
-                             help_text: "The penalty applied to late submissions after a student runs out of grace days.
-  It represents the number of points or a percentage of the total score removed per day, and must be a non-negative
-  number. If left blank, the course default is used.",
+                             help_text: late_penalty_help_text.html_safe,
                              placeholder: "E.g. 15%" %>
-<% if @assessment.late_penalty.value.nil? %>
-  <strong class="red-text">The late penalty is currently set to the course default of deducting <%= @assessment.course.late_penalty %> per day.</strong>
-<% end %>
 
-<%= f.text_field :version_threshold, help_text: "The number of unpenalized submissions allowed. After this threshold,
+<% version_threshold_help_text =  "The number of unpenalized submissions allowed. After this threshold,
   each additional submission is penalized according to the version penalty. If set to -1, no submissions are penalized.
-  If this is left blank, the course default is used.",
-                                     placeholder: "Leave blank to use course default." %>
-<% if @assessment.version_threshold.nil? %>
-  <strong class="red-text">
-    The version threshold is currently set to the course default of <%= @assessment.course.version_threshold %>
-    <% if @assessment.course.version_threshold == -1 %>(unlimited)<% end %>.
-  </strong>
-<% end %>
+  If this is left blank, the course default is used."
+   if @assessment.version_threshold.nil?
+     version_threshold_help_text += "<br><strong class='red-text'>The version threshold is currently set to the course default of #{@assessment.course.version_threshold}.</strong>"
+   end
+%>
+<%= f.text_field :version_threshold,
+                 help_text: version_threshold_help_text.html_safe,
+                 placeholder: "Leave blank to use course default." %>
 
-<%= f.score_adjustment_input :version_penalty, optional: true,
-                                               help_text: "The penalty applied to submissions with version greater than the version
+<% version_penalty_help_text = "The penalty applied to submissions with version greater than the version
   threshold. It represents the number of points or the percentage of the total score removed per version above the
   threshold, and must be a non-negative number. For example, if this is set to 1 point and the version threshold to 3,
-  the fifth version of a student's submissions would be docked 2 points.",
+  the fifth version of a student's submissions would be docked 2 points."
+   if @assessment.version_penalty.value.nil?
+     version_penalty_help_text += "<br><strong class='red-text'>The version penalty is currently set to the course default of deducting #{@assessment.course.version_penalty} per submission.</strong>"
+   end
+%>
+<%= f.score_adjustment_input :version_penalty, optional: true,
+                                               help_text: version_penalty_help_text.html_safe,
                                                placeholder: "Leave blank to use course default." %>
-<% if @assessment.version_penalty.value.nil? %>
-  <strong class="red-text">The version penalty is currently set to the course default of deducting <%= @assessment.course.version_penalty %> per submission.</strong>
-<% end %>
 
 <div class="action_buttons">
   <%= f.submit "Save", name: "penalties" %>
