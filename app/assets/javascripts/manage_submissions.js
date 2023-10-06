@@ -1,14 +1,14 @@
-const Tweak = new AutolabComponent('tweak-value', { global_annotations: [] });
-
-Tweak.template = function () {
-  // const { global_annotations } = this.state;
-  // if (global_annotations == null || global_annotations.length === 0) {
+var submission_info = {}
+const Edit = (totalSum) => {
+  if (totalSum == null) {
     return `
       <span>-</span>
-      <i class="material-icons">edit</i>
+      <i class="material-icons" style="color:#6F6F6F; margin-left:3px">edit</i>
     `
-  // }
-  const totalSum = global_annotations.reduce((acc, { value }) => acc + value, 0);
+  }
+  return `
+    <div style="color:#0869af">${totalSum < 0 ? "+" : ""}${totalSum} points</div>
+  `
 }
 
 const manage_submissions_endpoints = {
@@ -31,16 +31,46 @@ function get_score_details(course_user_datum_id) {
   });
 }
 
-const selectTweak = (e) => {
-  $('#annotation-modal').modal('open');
-  const $student = $(e.target);
-  const submission = $student.data('submissionid');
-  updateBasePath(submission);
+const selectSubmission = (data) => {
+  submission_info = data
+  basePath = data?.base_path;
+  sharedCommentsPath = `${basePath}/shared_comments`;
+  createPath = basePath + ".json";
+  updatePath = function (ann) {
+    return [basePath, "/", ann.id, ".json"].join("");
+  };
+  scores = data?.scores;
   deletePath = updatePath;
-  retrieveSharedComments(() => {
-    const newForm = newAnnotationFormCode();
-    $('#active-annotation-form').html(newForm);
+}
+
+const get_submission_details = (submission_id) => {
+  return new Promise((resolve, reject) => {
+    $.ajax({
+      url: `submissions/${submission_id}/submission_info`,
+      method: 'GET',
+      dataType: 'json',
+      success: (data) => {
+        resolve(data);
+      },
+      error: (error) => {
+        console.error("There was an error fetching the scores:", error);
+        reject(error);
+      }
+    });
   });
+}
+
+const selectTweak = function () {
+  $('#annotation-modal').modal('open');
+  const $student = $(this);
+  const submission = $student.data('submissionid');
+  get_submission_details(submission).then((data) => {
+    selectSubmission(data);
+    retrieveSharedComments(() => {
+      const newForm = newAnnotationFormCode();
+      $('#active-annotation-form').html(newForm);
+    });
+  }).catch(e => console.log(e))
 }
 
 $(document).ready(function () {
@@ -78,7 +108,15 @@ $(document).ready(function () {
                 </th>`;
       }).join('');
 
+      const tweaks = [];
+
       const submissions_body = data.submissions.map((submission) => {
+        const Tweak = new AutolabComponent(`tweak-value-${submission.id}`, { amount: null });
+        Tweak.template = function () {
+          return Edit( this.state.amount );
+        }
+        tweaks.push(Tweak);
+
         let tweak_value = data?.tweaks[submission.id]?.value ?? "None";
         if (tweak_value != "None" && tweak_value > 0) {
           tweak_value = `+${tweak_value}`;
@@ -136,7 +174,7 @@ $(document).ready(function () {
                 ${submission.late_penalty}
               </td>
               <td class="submissions-td">
-                <div class="tweak-button" data-submissionid="${submission.id}" id="tweak-value">
+                <div class="tweak-button" data-submissionid="${submission.id}" id="tweak-value-${submission.id}">
                 </div>
               </td>
               <td class="submissions-td">
@@ -167,6 +205,12 @@ $(document).ready(function () {
         `;
 
       $('#score-details-content').html(`<div> ${submissions_table} </div>`);
+
+      data.submissions.map((submission, index) => {
+        get_submission_details(submission.id).then(data => {
+          tweaks[index].setState({ amount: data.tweak_total })
+        })
+      })
       // $('#score-details-table').DataTable({
       //   "order": [[0, "desc"]],
       //   "paging": false,
@@ -174,8 +218,7 @@ $(document).ready(function () {
       //   "searching": false,});
 
     }).then(() => {
-      Tweak.setState();
-      $('.tweak-button').click(selectTweak);
+      $('.tweak-button').on('click', selectTweak);
     }).catch((err) => {
       $('#score-details-content').html(`
         <div class="row">

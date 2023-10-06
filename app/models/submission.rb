@@ -242,8 +242,8 @@ class Submission < ApplicationRecord
     end
   end
 
-  def global_annotations(problem_id)
-    annotations.where(global_comment: true, problem_id: problem_id)
+  def global_annotations
+    annotations.where(global_comment: true)
   end
 
   def annotated_file(file, filename, position)
@@ -390,8 +390,10 @@ class Submission < ApplicationRecord
   # override as_json to include the total with a parameter
   def as_json(options = {})
     json = super(options)
-    json["total"] = final_score options[:seen_by]
-    json["late_penalty"] = late_penalty options[:seen_by]
+    unless options[:seen_by].nil?
+      json["total"] = final_score options[:seen_by]
+      json["late_penalty"] = late_penalty options[:seen_by]
+    end
     json["grace_days_used"] = grace_days_used
     json["penalty_late_days"] = penalty_late_days
     json["days_late"] = days_late

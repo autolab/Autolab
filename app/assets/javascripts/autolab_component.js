@@ -25,12 +25,12 @@
 
 
 function AutolabComponent(elementId, initialState = {}) {
+  this.elementId = elementId;
   this.state = initialState;
 
   this.setState = function(newState = {}) {
       $.extend(this.state, newState);
       this.render();
-      console.log('rendered', $(`#${elementId}`).html(), this.template())
   };
 
   this.template = function() {
@@ -39,6 +39,6 @@ function AutolabComponent(elementId, initialState = {}) {
   };
 
   this.render = function() {
-    $(`#${elementId}`).html(this.template());
+    $(`#${this.elementId}`).html(this.template());
   };
 }

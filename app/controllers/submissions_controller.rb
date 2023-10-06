@@ -7,7 +7,8 @@ require "tempfile"
 class SubmissionsController < ApplicationController
   # inherited from ApplicationController
   before_action :set_assessment
-  before_action :set_submission, only: %i[destroy destroyConfirm download edit update view]
+  before_action :set_submission,
+                only: %i[destroy destroyConfirm download edit update view submission_info]
   before_action :get_submission_file, only: %i[download view]
   rescue_from ActionView::MissingTemplate do |_exception|
     redirect_to("/home/error_404")
@@ -304,6 +305,18 @@ class SubmissionsController < ApplicationController
                 disposition: "inline"
       #  :type => mime
     end
+  end
+
+  action_auth_level :submission_info, :instructor
+  def submission_info
+    submission_info = {}
+    submission_info[:submission] = @submission
+    submission_info[:scores] = Score.where(submission_id: @submission.id)
+    submission_info[:base_path] =
+      course_assessment_submission_annotations_path(@course, @assessment, @submission)
+    submission_info[:tweak_total] =
+      @submission.global_annotations.empty? ? nil : @submission.global_annotations.sum(:value)
+    render json: submission_info
   end
 
   # Action to be taken when the user wants to view a particular file.
