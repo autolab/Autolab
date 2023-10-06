@@ -1,23 +1,24 @@
-<%= f.fields_for :user, cud.user do |u| %>
-    <%# It doesn't make sense for these fields to be editable when editing an existing CUD %>
-    <%= u.email_field :email, disabled: edit, placeholder: "johndoe@example.com" %>
+<% if @cud.instructor? %>
+  <%= f.fields_for :user, cud.user do |u| %>
+      <%# It doesn't make sense for these fields to be editable when editing an existing CUD %>
+      <%= u.email_field :email, disabled: edit, placeholder: "johndoe@example.com" %>
 
-    <%= u.text_field :first_name, disabled: edit, placeholder: "John" %>
-    <%= u.text_field :last_name, disabled: edit, placeholder: "Doe" %>
+      <%= u.text_field :first_name, disabled: edit, placeholder: "John" %>
+      <%= u.text_field :last_name, disabled: edit, placeholder: "Doe" %>
+  <% end %>
 
 <% end %>
 
 <%= f.text_field :nickname, help_text: "Anonymous nickname to display on the public scoreboards (max length: 32)",
                             placeholder: "droh", maxlength: 32 %>
 
-<%= f.text_field :course_number, help_text: "The course number", placeholder: "15213", disabled: !@cud.instructor? %>
-
-<%= f.text_field :lecture, help_text: "The lecture number", placeholder: "1", disabled: !@cud.instructor? %>
-
-<%= f.text_field :section, placeholder: "A", disabled: !@cud.instructor?,
-                           help_text: "The section letter. A course assistant can see the gradebook and bulk-release grades for their assigned lecture and section." %>
-
 <% if @cud.instructor? %>
+  <%= f.text_field :course_number, help_text: "The course number", placeholder: "15213", disabled: !@cud.instructor? %>
+
+  <%= f.text_field :lecture, help_text: "The lecture number", placeholder: "1", disabled: !@cud.instructor? %>
+
+  <%= f.text_field :section, placeholder: "A", disabled: !@cud.instructor?,
+                             help_text: "The section letter. A course assistant can see the gradebook and bulk-release grades for their assigned lecture and section." %>
 
   <h4>Course average tweak:</h4>
   <div class="row">
