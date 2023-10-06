@@ -773,27 +773,30 @@ class AssessmentsController < ApplicationController
       params[:active_tab] = "basic"
     end
 
-    # make sure the penalties are set up
-    @assessment.late_penalty ||= Penalty.new(kind: "points")
-    @assessment.version_penalty ||= Penalty.new(kind: "points")
-
     @has_annotations = @assessment.submissions.any? { |s| !s.annotations.empty? }
 
     @is_positive_grading = @assessment.is_positive_grading
 
-    return unless @assessment.end_at > @assessment.due_at
+    # warn instructors if the assessment is configured to allow late submissions
+    # but the settings do not make sense
+    if @assessment.end_at > @assessment.due_at
+      warn_message = "Late submissions are allowed, but"
+      if @assessment.max_grace_days == 0
+        flash.now[:error] ||= warn_message
+        flash.now[:error] += "<br>- Max grace days = 0: students can't use grace days"
+      end
+      if @assessment.effective_late_penalty.value == 0
+        flash.now[:error] ||= warn_message
+        flash.now[:error] += "<br>- Late penalty = 0: late submissions made \
+                              without grace days are not penalized"
+      end
+      flash.now[:html_safe] = true
+    end
 
-    warn_message = "Late submissions are allowed, but"
-    if @assessment.max_grace_days == 0
-      flash.now[:error] ||= warn_message
-      flash.now[:error] += "<br>- Max grace days = 0: students can't use grace days"
-    end
-    if (@assessment.effective_late_penalty.value || 0) == 0
-      flash.now[:error] ||= warn_message
-      flash.now[:error] += "<br>- Late penalty = 0: late submissions made \
-                            without grace days are not penalized"
-    end
-    flash.now[:html_safe] = true
+    # make sure the penalties are set up
+    # placed after the check above, so that effective_late_penalty displays the correct result
+    @assessment.late_penalty ||= Penalty.new(kind: "points")
+    @assessment.version_penalty ||= Penalty.new(kind: "points")
   end
 
   action_auth_level :update, :instructor
