@@ -27,8 +27,12 @@
 Choose one of the following methods to install an assessment
 <div class="section">
   <h4>1. Create from scratch</h4>
-  <p>Create a new assessment from scratch using our
-    <%= link_to "Assessment Builder", new_course_assessment_path %>.</p>
+  <p>
+    Create a new assessment from scratch using our Assessment Builder.
+  </p>
+  <div>
+    <%= link_to "Create New Assessment", new_course_assessment_path, class: "btn" %>
+  </div>
 </div>
 
 <div class="section">
@@ -56,7 +60,7 @@ Choose one of the following methods to install an assessment
     <% else %>
       <div class="collection">
         <% @unused_config_files.each do |ass_file| %>
-          <%= link_to ass_file, {action: :importAssessment, assessment_name: ass_file}, method: :post, class: "collection-item import" %>
+          <%= link_to ass_file, { action: :importAssessment, assessment_name: ass_file }, method: :post, class: "collection-item import" %>
         <% end %>
       </div>
       <a id="importAll" class="btn">Import all</a>

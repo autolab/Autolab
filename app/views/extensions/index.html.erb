@@ -8,7 +8,7 @@
 <% end %>
 <% content_for :javascripts do %>
   <%= javascript_include_tag "materialize-autocomplete" %>
-  <script type="application/javascript">
+  <script type="text/javascript">
     jQuery(function() {
       /* set up dates */
       const $dueDate = moment("<%= @assessment.due_at.to_s %>", "YYYY-MM-DD hh:mm:ss ZZ").startOf('day');
@@ -172,11 +172,11 @@
         <% else %>
           <% @extensions.each do |ext| %>
             <tr>
-              <td><a class="clickable student-select" data-cud=<%= ext.course_user_datum_id %>><%= ext.course_user_datum.email %></a></td>
-              <td style="padding: 0 5px"><%= ext.infinite? ? "Infinite" : "#{pluralize(ext.days, "day")}" %></td>
-              <td style="padding: 0 5px"><%= ext.infinite? ? "-" : "#{(@assessment.due_at + ext.days.days).strftime('%b %d %Y')}" %></td>
-              <td><%= link_to '<i class="material-icons">delete</i>'.html_safe, [@course, @assessment, ext],
-                              data: { confirm: 'Are you sure you want to delete the extension for user ' + ext.course_user_datum.email + '?' },
+              <td><a class="clickable student-select" data-cud="<%= ext.course_user_datum_id %>"><%= ext.course_user_datum.email %></a></td>
+              <td style="padding: 0 5px"><%= ext.infinite? ? "Infinite" : pluralize(ext.days, "day").to_s %></td>
+              <td style="padding: 0 5px"><%= ext.infinite? ? "-" : (@assessment.due_at + ext.days.days).strftime('%b %d %Y').to_s %></td>
+              <td><%= link_to '<i class="material-icons">delete</i>'.html_safe, course_assessment_extension_path(@course, @assessment, ext),
+                              data: { confirm: "Are you sure you want to delete the extension for user #{ext.course_user_datum.email}?" },
                               method: :delete %></td>
             </tr>
           <% end %>
@@ -190,7 +190,7 @@
 
   <div class="col s12 m6">
     <h4>Create Extension</h4>
-    <%= form_for @new_extension, :url=>{:action=>"create"}, builder: FormBuilderWithDateTimeInput do |f| %>
+    <%= form_for @new_extension, url: { action: "create" }, builder: FormBuilderWithDateTimeInput do |f| %>
       <div class="input-field">
         <div id="ac-users"></div>
         <input type="text" id="ac-input" placeholder="Start typing student names or emails" data-target="ac-dropdown" data-beloworigin="true" autocomplete="off">
@@ -200,11 +200,11 @@
       <h6>Select a new due date</h6>
       <p>Original assessment due date: <span class="moment-date-time" data-format="MMM D YYYY h:mm:ssa Z"><%= @assessment.due_at.to_s %></span></p>
       <%= f.date_select :due_at, greater_than: @assessment.due_at, id: "extension_due_at" %>
-      <%= f.number_field :days, :size=>3, :placeholder=>0, :value=>0, :min=>0, :id=>"extension_days" %>
+      <%= f.number_field :days, size: 3, placeholder: 0, value: 0, min: 0, id: "extension_days" %>
       <%= f.check_box :infinite, display_name: "Infinite Extension", id: "extension_infinite" %>
       <%= hidden_field_tag :course_user_data, nil, autocomplete: "off" %>
       <%= f.hidden_field :assessment_id %>
-      <%= f.submit "Create" , {:class=>"btn primary"} %>
+      <%= f.submit "Create", { class: "btn primary" } %>
     <% end %>
   </div>
 </div>

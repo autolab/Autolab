@@ -1,15 +1,15 @@
-<%= form_tag [@course, @assessment, @group] do %>
+<%= form_tag action: :create do %>
   <div class="form-group">
     <label class="control-label" for="group_name">Group Name</label>
-    <%= text_field_tag :group_name, nil, class: "form-control" %>
+    <%= text_field_tag :group_name, nil, class: "form-control", autocomplete: "off" %>
     <p class="help-block">Set the name of this group.</p>
   </div>
 
   <div class="form-group">
     <label class="control-label" for="member_email">Partner Email</label>
-    <%= text_field_tag :member_email, nil, class: "form-control" %>
+    <%= text_field_tag :member_email, nil, class: "form-control", autocomplete: "email" %>
     <p class="help-block">The email of your desired partner. They will need to confirm their membership.</p>
   </div>
 
-  <%= submit_tag "Create Group", class:"btn btn-primary" %>
+  <%= submit_tag "Create Group", class: "btn btn-primary" %>
 <% end %>

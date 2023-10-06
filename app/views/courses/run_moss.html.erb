@@ -1,17 +1,21 @@
-<h2>Moss Result:
+<h3>
+  Moss Result:
   <% if @mossExit == 0 then %>
     <% begin %>
       <% message = @mossOutput.split("\n")[-1] %>
-      <% # Check whether the job is successful. %>
+<%# Check whether the job is successful. %>
       <% result = URI.parse(message).to_s %>
-      <a href=<%= result %>><%= result %></a>
+      Success
     <% rescue URI::InvalidURIError %>
       <%= message %>
     <% end %>
   <% else %>
-    Failed!
+    Failed
   <% end %>
-</h2>
+</h3>
+<% if result %>
+  <%= link_to "View Moss Results", result, { class: "btn" } %>
+<% end %>
 <% if @failures.length > 0 then %>
   <h3>The Following Files could not be extracted:</h3>
   <ol>
@@ -20,5 +24,20 @@
     <% end %>
   </ol>
 <% end %>
-<pre><%= @mossCmdString %></pre>
-<pre><%= @mossOutput %></pre>
+
+<h4>Moss Command String</h4>
+<div class="result-container">
+  <div class="feedback-container" style="width: 100%;">
+    <div class="result-pane">
+      <pre><%= @mossCmdString %></pre>
+    </div>
+  </div>
+</div>
+<h4>Moss Result Output</h4>
+<div class="result-container">
+  <div class="feedback-container" style="width: 100%;">
+    <div class="result-pane">
+      <pre><%= @mossOutput %></pre>
+    </div>
+  </div>
+</div>
