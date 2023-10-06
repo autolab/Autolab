@@ -115,6 +115,13 @@ module TangoClient
     end
   end
 
+  def self.build(file)
+    handle_exceptions do
+      url = "/build/#{api_key}"
+      ClientObj.post(url, body: file)
+    end
+  end
+
   def self.api_key
     RESTFUL_KEY
   end
