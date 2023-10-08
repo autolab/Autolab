@@ -43,6 +43,31 @@
       }
     });
 
+    // Penalties tab
+    $('#unlimited_submissions').on('change', function() {
+      $('#assessment_max_submissions').prop('disabled', $(this).prop('checked'));
+    });
+
+    $('#unlimited_grace_days').on('change', function() {
+      $('#assessment_max_grace_days').prop('disabled', $(this).prop('checked'));
+    });
+
+    $('#use_default_late_penalty').on('change', function() {
+      const $latePenaltyField = $('#assessment_late_penalty_attributes_value').parent();
+      $latePenaltyField.find('input').prop('disabled', $(this).prop('checked'));
+      $latePenaltyField.find('select').prop('disabled', $(this).prop('checked'));
+    });
+
+    $('#use_default_version_threshold').on('change', function() {
+      $('#assessment_version_threshold').prop('disabled', $(this).prop('checked'));
+    });
+
+    $('#use_default_version_penalty').on('change', function() {
+      const $versionPenaltyField = $('#assessment_version_penalty_attributes_value').parent();
+      $versionPenaltyField.find('input').prop('disabled', $(this).prop('checked'));
+      $versionPenaltyField.find('select').prop('disabled', $(this).prop('checked'));
+    });
+
   });
 
 })();
