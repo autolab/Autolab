@@ -796,7 +796,7 @@ class AssessmentsController < ApplicationController
     # Used for the penalties tab
     @has_unlimited_submissions = @assessment.max_submissions == -1
     @has_unlimited_grace_days = @assessment.max_grace_days.nil?
-    @uses_default_version_threshold = @assessment.version_threshold.nil?
+    @uses_default_version_threshold = @assessment.version_threshold == -1
     @uses_default_late_penalty = @assessment.late_penalty.nil?
     @uses_default_version_penalty = @assessment.version_penalty.nil?
 
@@ -1026,7 +1026,7 @@ private
     end
 
     if ActiveModel::Type::Boolean.new.cast(params[:use_default_version_threshold]) == true
-      ass[:version_threshold] = ""
+      ass[:version_threshold] = -1
     end
 
     ass.delete(:name)
