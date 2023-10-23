@@ -234,6 +234,11 @@ Rails.application.routes.draw do
       post "add_users_from_emails"
       get "user_lookup"
       get "users"
+      get "edit_import"
+    end
+
+    collection do
+      post "create_from_tar"
     end
   end
 

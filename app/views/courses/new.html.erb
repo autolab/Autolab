@@ -19,3 +19,8 @@
 
   <%= f.submit "Create", { class: "btn primary" } %>
 <% end %>
+
+<%= form_for :newCourse, url: create_from_tar_courses_path, builder: FormBuilderWithDateTimeInput do |f| %>
+  <%= f.file_field :tarfile %>
+  <%= f.submit "Upload Tar File" %>
+<% end %>
