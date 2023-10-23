@@ -188,9 +188,24 @@ class CoursesController < ApplicationController
       tar_extract.close
     end
 
-    session[:course_config] = course_config
+    @course_config = course_config
     session[:course_assessments] = assessments
-    import_course && return
+
+    edit_import && return
+  end
+
+  action_auth_level :edit_import, :instructor
+  def edit_import
+  end
+
+  action_auth_level :install_course_assessments, :instructor
+  def install_course_assessments
+    assessments = session[:course_assessments]
+
+    assessments.each do |name|
+      # install each assessment.....
+      # display error for each failed assessment
+    end
   end
 
   action_auth_level :edit, :instructor
@@ -1149,6 +1164,7 @@ private
     tar_extract.each do |entry|
       if entry.full_name == target_file
         return YAML.safe_load(entry.read)
+      end
     end
   end
 
