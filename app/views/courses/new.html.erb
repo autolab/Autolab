@@ -20,7 +20,12 @@
   <%= f.submit "Create", { class: "btn primary" } %>
 <% end %>
 
-<%= form_for :newCourse, url: create_from_tar_courses_path, builder: FormBuilderWithDateTimeInput do |f| %>
-  <%= f.file_field :tarfile %>
-  <%= f.submit "Upload Tar File" %>
+<%= form_with url: { action: :create_from_tar }, builder: FormBuilderWithDateTimeInput do |f| %>
+  <%= f.file_field :tarFile %>
+  <div class="input-field">
+    <label class="control-label" for="instructor_email">Instructor Email</label>
+    <%= email_field_tag :instructor_email, nil, class: "validate", placeholder: "", required: true %>
+    <p class="help-block">Email of an Instructor, they will set up the course from here!</p>
+  </div>
+  <%= f.submit "Create" %>
 <% end %>

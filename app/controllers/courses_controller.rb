@@ -162,7 +162,6 @@ class CoursesController < ApplicationController
     end
   end
 
-  action_auth_level :create_from_tar, :instructor
   def create_from_tar
     # check for permission
     unless current_user.administrator?
@@ -171,7 +170,7 @@ class CoursesController < ApplicationController
     end
 
     # validate course tar
-    tarFile = params["tarFile"]
+    tarFile = params["newCourse"]["tarFile"]
     if tarFile.nil?
       flash[:error] = "Please select a course tarball for uploading."
       redirect_to(action: "new")
@@ -188,15 +187,57 @@ class CoursesController < ApplicationController
       tar_extract.close
     end
 
-    @course_config = course_config
+    @newCourse = Course.new(course_config["general"])
     session[:course_assessments] = assessments
+    if @newCourse.save
+      instructor = User.where(email: params[:instructor_email]).first
 
-    edit_import && return
+      # create a new user as instructor if he didn't exist
+      if instructor.nil?
+        begin
+          instructor = User.instructor_create(params[:instructor_email],
+                                              @newCourse.name)
+        rescue StandardError => e
+          # roll back course creation
+          @newCourse.destroy
+          flash[:error] = "Can't create instructor for the course: #{e}"
+          render(action: "new") && return
+        end
+
+      end
+
+      new_cud = @newCourse.course_user_data.new
+      new_cud.user = instructor
+      new_cud.instructor = true
+
+      if new_cud.save
+        begin
+          @newCourse.reload_course_config
+        rescue StandardError, SyntaxError
+          # roll back course creation and instruction creation
+          new_cud.destroy
+          @newCourse.destroy
+          flash[:error] = "Can't load course config for #{@newCourse.name}."
+          render(action: "new") && return
+        else
+          flash[:success] = "New Course #{@newCourse.name} successfully created!"
+          redirect_to(edit_import_course_path(@newCourse)) && return
+        end
+      else
+        # roll back course creation
+        @newCourse.destroy
+        flash[:error] = "Can't create instructor for the course."
+        render(action: "new") && return
+      end
+
+    else
+      flash[:error] = "Course creation failed. Check all fields"
+      render(action: "new") && return
+    end
   end
 
   action_auth_level :edit_import, :instructor
-  def edit_import
-  end
+  def edit_import; end
 
   action_auth_level :install_course_assessments, :instructor
   def install_course_assessments
@@ -1160,7 +1201,7 @@ private
 
   def get_course_config(tar_extract)
     tar_extract.rewind
-    target_file = @course.name + ".yml"
+    target_file = "#{@course.name}.yml"
     tar_extract.each do |entry|
       if entry.full_name == target_file
         return YAML.safe_load(entry.read)
@@ -1174,7 +1215,7 @@ private
 
     tar_extract.rewind
     tar_extract.each do |entry|
-      if entry.directory? && entry.full_name != base_directory + 'attachments/'
+      if entry.directory? && entry.full_name != "#{base_directory}attachments/"
         relative_path = entry.full_name.sub(base_directory, '')
         first_directory = relative_path.split('/').first
         directory_names << first_directory
