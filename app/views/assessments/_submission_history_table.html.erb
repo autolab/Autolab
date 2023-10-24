@@ -22,7 +22,10 @@
           <th>Version Penalty (Over Threshold By)</th>
         <% end %>
 
-        <th>Total Score</th>
+        <th title="Max <%=@assessment.max_score %> points">
+          Total Score<br>
+          (<%= @assessment.max_score || raw('&ndash;') %>)
+        </th>
 
         <% if @cud.instructor? %>
           <th>Tweak</th>
