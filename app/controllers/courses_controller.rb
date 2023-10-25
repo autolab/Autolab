@@ -5,11 +5,13 @@ require "pathname"
 require "statistics"
 
 class CoursesController < ApplicationController
-  skip_before_action :set_course, only: %i[courses_redirect index new create]
+  skip_before_action :set_course, only: %i[courses_redirect index new create create_from_tar]
   # you need to be able to pick a course to be authorized for it
-  skip_before_action :authorize_user_for_course, only: %i[courses_redirect index new create]
+  skip_before_action :authorize_user_for_course, 
+    only: %i[courses_redirect index new create create_from_tar]
   # if there's no course, there are no persistent announcements for that course
-  skip_before_action :update_persistent_announcements, only: %i[courses_redirect index new create]
+  skip_before_action :update_persistent_announcements, 
+    only: %i[courses_redirect index new create create_from_tar]
 
   def index
     courses_for_user = User.courses_for_user current_user
@@ -189,10 +191,11 @@ class CoursesController < ApplicationController
 
     @newCourse = Course.new(course_config["general"])
     session[:course_assessments] = assessments
+
     if @newCourse.save
       instructor = User.where(email: params[:instructor_email]).first
 
-      # create a new user as instructor if he didn't exist
+      # create a new user as instructor if they didn't exist
       if instructor.nil?
         begin
           instructor = User.instructor_create(params[:instructor_email],
