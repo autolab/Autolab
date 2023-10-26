@@ -2,6 +2,27 @@
 
 <% content_for :javascripts do %>
   <%= javascript_include_tag "initialize_datetimepickers" %>
+  <script>
+      $(function() {
+          $("#installSelected").click(function(e) {
+              const msg = "Are you sure you want to import all assessments?";
+              if (!window.confirm(msg))
+                  return false;
+
+              const $btn = $(e.target);
+              $btn.text("Importing...");
+              $btn.addClass("disabled");
+
+              Promise.all(
+                  $(".import").map((i, e) => $.post(e.href))
+              )
+                  .then(() => {
+                      alert("Finished import of all assessments.\nIf any assessments remain, errors occurred while importing them.");
+                      location.reload();
+                  });
+          });
+      });
+  </script>
 <% end %>
 
 <div class="row">
@@ -23,6 +44,20 @@
       <% end %>
 
       <%= render partial: "courseFields", locals: { f: f, course: @course } %>
+      <% unless @unused_config_files.nil? %>
+        <div class="section">
+          <h4>Import Assessments</h4>
+          <%  if @unused_config_files.empty?  %>
+            <li>
+              <em>
+                There are no assessments available for importing.
+              </em>
+            </li>
+          <% else %>
+            <%=  render partial: "assessmentTable"  %>
+          <% end %>
+        </div>
+      <% end %>
       <%= f.submit 'Save', { class: "btn primary" } %>
       <% if current_user.administrator? %>
         <%= link_to "Delete Course", course_path(@course), method: :delete,
