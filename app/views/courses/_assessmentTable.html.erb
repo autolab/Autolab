@@ -1,0 +1,23 @@
+<%= form_with url: { action: :create_from_tar }, builder: FormBuilderWithDateTimeInput do |f| %>
+    <table class="prettyBorder" id="assessment_names">
+      <colgroup>
+        <col span="1" style="width: 50px;">
+        <col span="1">
+      </colgroup>
+      <tbody>
+        <% @unused_config_files.each do |ass_file| %>
+          <tr class="course-field checked">
+            <td>
+              <label>
+                <%= check_box_tag 'export_configs[]', 'course_config', true, class: 'cbox', id: 'course_config_checkbox'%>
+                <span/>
+              </label>
+            </td>
+            <td><%= link_to ass_file, { action: :new, assessment_name: ass_file }, method: :post, class: "collection-item import" %></td>
+          </tr>
+        <% end %>
+        <a id="importAll" class="btn">Import all</a>
+    </tbody>
+  </table>
+  <br />
+<% end %>
