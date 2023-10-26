@@ -1,3 +1,25 @@
-<h1>Course Data</h1>
+<% @title = "Edit Course" %>
 
-<pre><%= @newCourse.name %></pre>
+<h4>Edit Course From Import</h4>
+
+<p><%= @course.name %></p>
+
+<div class="section">
+  <h4>Import Assessments</h4>
+  <ul>
+    <% if @unused_config_files.empty? %>
+      <li>
+        <em>
+          There are no assessments available for importing.
+        </em>
+      </li>
+    <% else %>
+      <div class="collection">
+        <% @unused_config_files.each do |ass_file| %>
+          <%= link_to ass_file, { action: :new, assessment_name: ass_file }, method: :post, class: "collection-item import" %>
+        <% end %>
+      </div>
+      <a id="importAll" class="btn">Import all</a>
+    <% end %>
+  </ul>
+</div>

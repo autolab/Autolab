@@ -375,6 +375,54 @@ class Assessment < ApplicationRecord
     Rails.root.join("courses", course.name, sanitized_name, "#{sanitized_name}.rb")
   end
 
+  def self.get_uninstalled_assessments(course)
+    dir_path = course.directory_path
+    unused_config_files = []
+    Dir.foreach(dir_path) do |filename|
+      # skip if not directory in folder
+      next if !File.directory?(File.join(dir_path,
+                                         filename)) || (filename == "..") || (filename == ".")
+
+      # assessment names must be only lowercase letters and digits
+      if filename =~ /[^a-z0-9]/
+        # add line break if adding to existing error message
+        flash.now[:error] = flash.now[:error] ? "#{flash.now[:error]} <br>" : ""
+        flash.now[:error] += "An error occurred while trying to display an existing assessment " \
+            "from file directory #{filename}: assessment file names must only contain lowercase " \
+            "letters and digits with no spaces"
+        flash.now[:html_safe] = true
+        next
+      end
+
+      # each assessment must have an associated yaml file,
+      # and it must have a name field that matches its filename
+      if File.exist?(File.join(dir_path, filename, "#{filename}.yml"))
+        props = YAML.safe_load(File.open(
+          File.join(dir_path, filename, "#{filename}.yml"), "r", &:read
+        ))
+        unless props["general"] && (props["general"]["name"] == filename)
+          flash.now[:error] = flash.now[:error] ? "#{flash.now[:error]} <br>" : ""
+          flash.now[:error] += "An error occurred while trying to display an existing assessment " \
+          "from file directory #{filename}: Name in yaml (#{props['general']['name']}) " \
+          "doesn't match #{filename}"
+          flash.now[:html_safe] = true
+          next
+        end
+      else
+        flash.now[:error] = flash.now[:error] ? "#{flash.now[:error]} <br>" : ""
+        flash.now[:error] += "An error occurred while trying to display an existing assessment " \
+          "from file directory #{filename}: #{filename}.yml does not exist"
+        flash.now[:html_safe] = true
+        next
+      end
+
+      # Only list assessments that aren't installed yet
+      assessment_exists = course.assessments.exists?(name: filename)
+      unused_config_files << filename unless assessment_exists
+    end
+    unused_config_files.sort!
+  end
+
 private
 
   def saved_change_to_grade_related_fields?

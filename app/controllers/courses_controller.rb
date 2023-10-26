@@ -171,11 +171,11 @@ class CoursesController < ApplicationController
       redirect_to(root_path) && return
     end
 
-    # validate course tar
+    # TODO: validate course tar (AND ALSO ASSESSMENTS!)
     tarFile = params["tarFile"]
     if tarFile.nil?
       flash[:error] = "Please select a course tarball for uploading."
-      redirect_to(action: "new")
+      render(action: "new") && return
       return
     end
 
@@ -185,9 +185,12 @@ class CoursesController < ApplicationController
       tar_extract.rewind
 
       @newCourse = get_course_from_config(tar_extract)
-      assessments = get_assessments_from_tar(tar_extract)
-      session[:course_assessments] = assessments
+      # save assessment directories
+      save_assessments_from_tar(tar_extract)
       tar_extract.close
+    rescue StandardError => e
+      flash[:error] = "Error while extracting course to server -- #{e.message}."
+      redirect_to(action: "new") && return
     end
 
     if @newCourse.save
@@ -238,7 +241,9 @@ class CoursesController < ApplicationController
   end
 
   action_auth_level :edit_import, :instructor
-  def edit_import; end
+  def edit_import;
+    @unused_config_files = Assessment.get_uninstalled_assessments(@course)
+  end
 
   action_auth_level :install_course_assessments, :instructor
   def install_course_assessments
@@ -1212,23 +1217,29 @@ private
       course = Course.new(config.except("late_penalty", "version_penalty"))
       course.late_penalty = Penalty.new(config["late_penalty"])
       course.version_penalty = Penalty.new(config["version_penalty"])
+      # TODO: do the metric stuff too
       return course
     end
   end
 
-  def get_assessments_from_tar(tar_extract)
-    base_directory = ''
-    directory_names = []
-
+  def save_assessments_from_tar(tar_extract)
     tar_extract.rewind
-    tar_extract.each do |entry|
-      next unless entry.directory? && entry.full_name != "#{base_directory}attachments/"
+    src_directory = File.join(@newCourse.name, "assessments")
+    dest_directory = Rails.root.join("courses", @newCourse.name)
 
-      relative_path = entry.full_name.sub(base_directory, '')
-      first_directory = relative_path.split('/').first
-      directory_names << first_directory
+    tar_extract.each do |entry|
+      next unless File.dirname(entry.full_name).start_with?(src_directory)
+
+      relative_path = entry.full_name.gsub(/\A#{Regexp.escape(src_directory)}/, '')
+      destination_path = File.join(dest_directory, relative_path)
+      if entry.directory?
+        FileUtils.mkdir_p(destination_path)
+      elsif entry.file?
+        FileUtils.mkdir_p(File.dirname(destination_path))
+        File.open(destination_path, 'wb') { |dest_file| dest_file.write(entry.read) }
+      end
     end
 
-    directory_names.uniq!
+    params[:cleanup_on_failure] = true
   end
 end
