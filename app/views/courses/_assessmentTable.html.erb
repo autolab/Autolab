@@ -6,7 +6,7 @@
       </colgroup>
       <tbody>
         <% @unused_config_files.each do |ass_file| %>
-          <tr class="course-field checked">
+          <tr class="assessment-field checked">
             <td>
               <label>
                 <%= check_box_tag 'install_assessments[]', ass_file, true, class: 'cbox', id: "#{ass_file}_checkbox"%>
