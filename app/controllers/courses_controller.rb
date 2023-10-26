@@ -7,11 +7,11 @@ require "statistics"
 class CoursesController < ApplicationController
   skip_before_action :set_course, only: %i[courses_redirect index new create create_from_tar]
   # you need to be able to pick a course to be authorized for it
-  skip_before_action :authorize_user_for_course, 
-    only: %i[courses_redirect index new create create_from_tar]
+  skip_before_action :authorize_user_for_course,
+                     only: %i[courses_redirect index new create create_from_tar]
   # if there's no course, there are no persistent announcements for that course
-  skip_before_action :update_persistent_announcements, 
-    only: %i[courses_redirect index new create create_from_tar]
+  skip_before_action :update_persistent_announcements,
+                     only: %i[courses_redirect index new create create_from_tar]
 
   def index
     courses_for_user = User.courses_for_user current_user
@@ -184,13 +184,11 @@ class CoursesController < ApplicationController
       tar_extract = Gem::Package::TarReader.new(tarFile)
       tar_extract.rewind
 
-      course_config = get_course_config(tar_extract)
+      @newCourse = get_course_from_config(tar_extract)
       assessments = get_assessments_from_tar(tar_extract)
+      session[:course_assessments] = assessments
       tar_extract.close
     end
-
-    @newCourse = Course.new(course_config["general"])
-    session[:course_assessments] = assessments
 
     if @newCourse.save
       instructor = User.where(email: params[:instructor_email]).first
@@ -1202,15 +1200,19 @@ private
     end
   end
 
-  def get_course_config(tar_extract)
+  def get_course_from_config(tar_extract)
     tar_extract.rewind
 
     tar_extract.each do |entry|
       next unless entry.file? && entry.full_name.count('/') == 1
       # there should only be one file in the main directory with .yml extension
-      if File.extname(entry.full_name) == '.yml'
-        return YAML.safe_load(entry.read)
-      end
+      next unless File.extname(entry.full_name) == '.yml'
+
+      config = YAML.safe_load(entry.read, permitted_classes: [Date])["general"]
+      course = Course.new(config.except("late_penalty", "version_penalty"))
+      course.late_penalty = Penalty.new(config["late_penalty"])
+      course.version_penalty = Penalty.new(config["version_penalty"])
+      return course
     end
   end
 
@@ -1221,6 +1223,7 @@ private
     tar_extract.rewind
     tar_extract.each do |entry|
       next unless entry.directory? && entry.full_name != "#{base_directory}attachments/"
+
       relative_path = entry.full_name.sub(base_directory, '')
       first_directory = relative_path.split('/').first
       directory_names << first_directory
