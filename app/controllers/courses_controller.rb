@@ -172,7 +172,7 @@ class CoursesController < ApplicationController
     end
 
     # validate course tar
-    tarFile = params["newCourse"]["tarFile"]
+    tarFile = params["tarFile"]
     if tarFile.nil?
       flash[:error] = "Please select a course tarball for uploading."
       redirect_to(action: "new")
@@ -1204,9 +1204,11 @@ private
 
   def get_course_config(tar_extract)
     tar_extract.rewind
-    target_file = "#{@course.name}.yml"
+
     tar_extract.each do |entry|
-      if entry.full_name == target_file
+      next unless entry.file? && entry.full_name.count('/') == 1
+      # there should only be one file in the main directory with .yml extension
+      if File.extname(entry.full_name) == '.yml'
         return YAML.safe_load(entry.read)
       end
     end
@@ -1218,11 +1220,10 @@ private
 
     tar_extract.rewind
     tar_extract.each do |entry|
-      if entry.directory? && entry.full_name != "#{base_directory}attachments/"
-        relative_path = entry.full_name.sub(base_directory, '')
-        first_directory = relative_path.split('/').first
-        directory_names << first_directory
-      end
+      next unless entry.directory? && entry.full_name != "#{base_directory}attachments/"
+      relative_path = entry.full_name.sub(base_directory, '')
+      first_directory = relative_path.split('/').first
+      directory_names << first_directory
     end
 
     directory_names.uniq!
