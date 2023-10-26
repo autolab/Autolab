@@ -9,14 +9,15 @@
           <tr class="course-field checked">
             <td>
               <label>
-                <%= check_box_tag 'export_configs[]', 'course_config', true, class: 'cbox', id: 'course_config_checkbox'%>
+                <%= check_box_tag 'install_assessments[]', ass_file, true, class: 'cbox', id: "#{ass_file}_checkbox"%>
                 <span/>
               </label>
             </td>
-            <td><%= link_to ass_file, { action: :new, assessment_name: ass_file }, method: :post, class: "collection-item import" %></td>
+            <td><%= ass_file %></td>
           </tr>
         <% end %>
-        <a id="importAll" class="btn">Import all</a>
+        <a id="importAll" class="btn">Import All</a>
+        <a id="unselectAll" class="btn">Unselect All</a>
     </tbody>
   </table>
   <br />
