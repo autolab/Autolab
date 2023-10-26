@@ -69,8 +69,7 @@ var slickgrid_options = {
         break;
       }
     }
-
-    return (value !== null) ? link_to(data[history_key], value) : "&ndash;";
+    return (value !== null) ? ((data[history_key] !== undefined) ? link_to(data[history_key], value) : value) : "&ndash;";
   }
 };
 
