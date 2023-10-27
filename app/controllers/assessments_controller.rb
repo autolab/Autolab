@@ -123,7 +123,7 @@ class AssessmentsController < ApplicationController
 
       # each assessment must have an associated yaml file,
       # and it must have a name field that matches its filename
-      if File.exist?(File.join(dir_path, nfilename, "#{filename}.yml"))
+      if File.exist?(File.join(dir_path, filename, "#{filename}.yml"))
         props = YAML.safe_load(File.open(
                                  File.join(dir_path, filename, "#{filename}.yml"), "r", &:read
                                ))

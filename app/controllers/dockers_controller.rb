@@ -11,12 +11,13 @@ class DockersController < ApplicationController
       redirect_to(action: "index")
       return
     end
-    flash[:error] = imageFile.open
+    flash[:error] = imageFile.read
     begin
-      TangoClient.build(imageFile)
+      TangoClient.build(imageFile.read)
     rescue TangoClient::TangoException => e
       COURSE_LOGGER.log("Error while uploading docker image files")
-      raise AutogradeError.new("Error while uploading docker image")
+      raise StandardError.new("Error while uploading docker
+      image")
     end
     redirect_to(action: "index")
   end
