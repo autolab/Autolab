@@ -4,6 +4,6 @@
   <h4>Upload Docker image</h4>
   <%= form_with url: { action: :uploadDockerImage }, builder: FormBuilderWithDateTimeInput do |f| %>
     <%= f.file_field :imageFile, name: "imageFile", button_text: "Choose Image" %>
-    <%= f.submit "Upload" %>
+    <%= f.submit "Upload Image" %>
   <% end %>
 </div>
