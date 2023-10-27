@@ -225,7 +225,7 @@ class CoursesController < ApplicationController
           render(action: "new") && return
         else
           flash[:success] = "New Course #{@newCourse.name} successfully created!"
-          redirect_to(edit_course_path(@newCourse, true)) && return
+          redirect_to(edit_course_path(@newCourse, from_import: true)) && return
         end
       else
         # roll back course creation
@@ -242,7 +242,9 @@ class CoursesController < ApplicationController
 
   action_auth_level :edit, :instructor
   def edit
-    @unused_config_files = Assessment.get_uninstalled_assessments(@course)
+    if params[:from_import]
+      @unused_config_files = Assessment.get_uninstalled_assessments(@course)
+    end
   end
 
   action_auth_level :update, :instructor
