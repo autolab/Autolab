@@ -3,8 +3,8 @@ class OauthDeviceFlowRequest < ApplicationRecord
 
   validates :device_code,     uniqueness: { on: :create }
   validates :user_code,       uniqueness: { on: :create }
-  validates :requested_at,      presence: { on: :create }
-  validates_associated :oauth_application,  on: :create
+  validates :requested_at, presence: { on: :create }
+  validates_associated :oauth_application, on: :create
 
   # disallow others from instantiating requests on their own.
   # Must use create_request to create new device flow requests.

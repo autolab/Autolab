@@ -522,7 +522,21 @@ class AssessmentsController < ApplicationController
 
   def show
     set_handin
-    extend_config_module(@assessment, @submission, @cud)
+    begin
+      extend_config_module(@assessment, @submission, @cud)
+    rescue AutogradeError => e
+      if @cud.has_auth_level? :instructor
+        flash[:error] = "Error loading the config file: "
+        flash[:error] += e.message
+        flash[:error] += "<br/> Try reloading the course config file," \
+      " or re-upload the course config file in order to recover your assessment."
+        flash[:html_safe] = true
+        redirect_to(edit_course_assessment_path(@course, @assessment)) && return
+      else
+        flash[:error] = "Error loading #{@assessment.display_name}. Please contact your instructor."
+        redirect_to(course_path(@course)) && return
+      end
+    end
 
     @aud = @assessment.aud_for @cud.id
 
@@ -775,7 +789,7 @@ class AssessmentsController < ApplicationController
     @assessment.load_config_file
   rescue StandardError, SyntaxError => e
     @error = e
-    # let the reload view render
+  # let the reload view render
   else
     flash[:success] = "Success: Assessment config file reloaded!"
     redirect_to(action: :show) && return

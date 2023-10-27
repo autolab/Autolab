@@ -84,19 +84,19 @@ class User < ApplicationRecord
   def self.find_for_facebook_oauth(auth, _signed_in_resource = nil)
     authentication = Authentication.find_by(provider: auth.provider,
                                             uid: auth.uid)
-    return authentication.user if authentication&.user
+    authentication.user if authentication&.user
   end
 
   def self.find_for_google_oauth2_oauth(auth, _signed_in_resource = nil)
     authentication = Authentication.find_by(provider: auth.provider,
                                             uid: auth.uid)
-    return authentication.user if authentication&.user
+    authentication.user if authentication&.user
   end
 
   def self.find_for_shibboleth_oauth(auth, _signed_in_resource = nil)
     authentication = Authentication.find_by(provider: "CMU-Shibboleth",
                                             uid: auth.uid)
-    return authentication.user if authentication&.user
+    authentication.user if authentication&.user
   end
 
   def self.new_with_session(params, session)

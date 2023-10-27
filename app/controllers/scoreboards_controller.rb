@@ -108,7 +108,6 @@ class ScoreboardsController < ApplicationController
       else
         scoreboardOrderSubmissions(a, b)
       end
-
     rescue StandardError => e
       if @cud.instructor?
         @errorMessage = "An error occurred while calling "\

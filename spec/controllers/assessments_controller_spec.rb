@@ -80,7 +80,7 @@ RSpec.describe AssessmentsController, type: :controller do
             params: { course_name: course_hash[:course].name, name: course_hash[:assessment].name }
         expect(response).to have_http_status(200)
         File.binwrite("tmp/test.tar", response.parsed_body)
-        File.open("tmp/test.tar",  encoding: 'ASCII-8BIT') do |file|
+        File.open("tmp/test.tar", encoding: 'ASCII-8BIT') do |file|
           Gem::Package::TarReader.new(file) do |tar|
             tar.seek("#{course_hash[:assessment].name}/#{course_hash[:assessment].name}.yml") do
               |entry|
