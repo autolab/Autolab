@@ -585,6 +585,14 @@ ul.gray-box.small > li + li {
   color: red;
 }
 
+/* Disable Bootstrap styling to allow for scrolling within annotations and
+ * grades sidebars in file viewer
+ * (allows clicking on the scrollbar)
+ */
+div.drag-target.right-aligned {
+  display: none;
+}
+
 /**
 * Displayed on the home page
 **/
