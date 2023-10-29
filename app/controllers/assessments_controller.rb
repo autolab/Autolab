@@ -118,7 +118,6 @@ class AssessmentsController < ApplicationController
             "from file directory #{filename}: Invalid assessment name. "\
             "Find more information on valid assessment names "\
             '<a href="https://docs.autolabproject.com/lab/#assessment-naming-rules">here</a><br>'
-        flash[:html_safe] = true
         flash.now[:html_safe] = true
         next
       end
