@@ -42,7 +42,6 @@ RSpec.describe AssessmentsController, type: :controller do
         )
 
         post :create, params: { course_name: course_hash[:course].name }
-        puts(response.body)
         expect(flash[:error]).to be_present
         expect(flash[:error]).to(
           match(/Assessment name is blank or contains disallowed characters/m)
@@ -143,7 +142,7 @@ RSpec.describe AssessmentsController, type: :controller do
         expect(flash[:error]).to be_present
         expect(flash[:error]).to match(/Assessment yml file/m)
       end
-      it "handles illegal assessment name" do
+      it "handles legal assessment name" do
         file = fixture_file_upload("assessments/homework02-legal-name-no-config.tar")
         post :importAsmtFromTar, params: { course_name: course_2_hash[:course].name,
                                            name: course_2_hash[:assessment].name,
@@ -160,7 +159,7 @@ RSpec.describe AssessmentsController, type: :controller do
         expect(flash[:error]).to be_present
         expect(flash[:error]).to match(/Error loading yaml/m)
       end
-      it "handles mismatched module name" do
+      it "handles any module name" do
         # we now support any module name since we just overwrite the module name anyways,
         # so this test is now successful
         file = fixture_file_upload("assessments/homework02-module-mismatch.tar")
