@@ -35,12 +35,10 @@
     $('#assessment_config_file').on('change', function () {
       var fileSelector = $("#assessment_config_file").get(0);
       var file = fileSelector.files[0];
-      const targetFile = $('#assessment_config_file').data('target-name');
 
-      if (file?.name !== targetFile) {
-        $('#config-file-type-incorrect').text(`Warning: ${file.name} doesn't match expected ${targetFile} file name`)
+      if (!file?.name?.endsWith('.rb')) {
+        $('#config-file-type-incorrect').text(`Warning: ${file.name} doesn't match expected .rb file type`)
       } else {
-        console.log('uhhh')
         $('#config-file-type-incorrect').text("")
       }
     })
