@@ -27,7 +27,7 @@ RSpec.describe UsersController, type: :controller do
       sign_in(user)
       get :new
       expect(response).to be_successful
-      expect(response.body).to match(/New user/m)
+      expect(response.body).to match(/Create New User/m)
     end
   end
 
@@ -36,7 +36,7 @@ RSpec.describe UsersController, type: :controller do
       sign_in(user) if login
       get :new
       expect(response).not_to be_successful
-      expect(response.body).not_to match(/New user/m)
+      expect(response.body).not_to match(/Create New User/m)
     end
   end
 

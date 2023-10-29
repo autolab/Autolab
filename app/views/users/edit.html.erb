@@ -4,22 +4,21 @@
 <%= form_for @user, url: user_path(@user), builder: FormBuilderWithDateTimeInput do |f| %>
 
 <% if @user.errors.any? %>
-	<div id="error_explanation">
-		<h2><%= pluralize(@user.errors.count, "error") %>
+  <div id="error_explanation">
+    <h2><%= pluralize(@user.errors.count, "error") %>
       prohibited this user from being saved:</h2>
-			
-		<ul>
-			<% @user.errors.full_messages.each do |msg| %>
-			<li><%= msg %></li>
-			<% end %>
-		</ul>
-	</div>
+
+    <ul>
+      <% @user.errors.full_messages.each do |msg| %>
+      <li><%= msg %></li>
+      <% end %>
+    </ul>
+  </div>
 <% end %>
 
-	<br>
+  <br>
 
-  <%= render partial: "fields", locals: {f: f} %>
-  
+  <%= render partial: "fields", locals: { f: f } %>
 
-  <%= f.submit 'Save Changes', { :class=>"btn primary"} %>
+  <%= f.submit 'Save Changes', { class: "btn primary" } %>
 <% end %>

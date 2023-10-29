@@ -17,7 +17,7 @@
 
 <% content_for :javascripts do %>
   <%= external_javascript_include_tag "lodash" %>
-  <%= javascript_include_tag "sorttable" %> 
+  <%= javascript_include_tag "sorttable" %>
   <%= external_javascript_include_tag "jquery.dataTables" %>
   <%= javascript_include_tag "manage_submissions" %>
 <% end %>
@@ -27,44 +27,44 @@
 
 <p>
     <%= link_to "Create New Submission".html_safe, new_course_assessment_submission_path(@course, @assessment),
-        {:title=>"Create a new submission for a student, with an option to submit a handin file on their behalf",
-         :class=>""} %>
+                { title: "Create a new submission for a student, with an option to submit a handin file on their behalf",
+                  class: "" } %>
          |
     <%= link_to "Download All Submissions".html_safe,
-        downloadAll_course_assessment_submissions_path(@course, @assessment),
-        {:title=>"Down all submissions from each student",
-         :class=>""} %>
+                downloadAll_course_assessment_submissions_path(@course, @assessment),
+                { title: "Down all submissions from each student",
+                  class: "" } %>
          |
     <%= link_to "Download Final Submissions".html_safe,
-        downloadAll_course_assessment_submissions_path(@course, @assessment, final: true),
-        {:title=>"Download the most recent submission from each student",
-         :class=>""} %>
+                downloadAll_course_assessment_submissions_path(@course, @assessment, final: true),
+                { title: "Download the most recent submission from each student",
+                  class: "" } %>
          |
     <%= link_to "Missing Submissions".html_safe,
-        missing_course_assessment_submissions_path(@course, @assessment),
-        {:title=>"List the students who have not submitted anything. You'll be given the option to create new submissions for the missing students",
-         :class=>""} %>
+                missing_course_assessment_submissions_path(@course, @assessment),
+                { title: "List the students who have not submitted anything. You'll be given the option to create new submissions for the missing students",
+                  class: "" } %>
 
 </p>
 <div class="row">
   <% if @autograded then %>
     <div class="col s3">
-    <%= link_to "Regrade All",
-        [:regradeAll, @course, @assessment],
-        { method: :post,
-         :title=>"Regrade the most recent submission from each student",
-         :confirm=>"Are you sure you want to do this? It will regrade the most recent submission from each student, which might take a while.",
-         :class=>"btn"} %>
+      <%= link_to "Regrade All",
+                  regradeAll_course_assessment_path(@course, @assessment),
+                  { method: :post,
+                    title: "Regrade the most recent submission from each student",
+                    confirm: "Are you sure you want to do this? It will regrade the most recent submission from each student, which might take a while.",
+                    class: "btn" } %>
     </div>
     <div class="col s3 offset-s6">
 
-    <%= link_to "Regrade 0",
-        [:regradeBatch, @course, @assessment],
-        { method: :post,
-         :title=>"Regrade the most recent submission from each student",
-         :class=>"btn float-right",
-         :id => "batch-regrade",
-         :style => "display:none;"} %>
+      <%= link_to "Regrade 0",
+                  regradeBatch_course_assessment_path(@course, @assessment),
+                  { method: :post,
+                    title: "Regrade the most recent submission from each student",
+                    class: "btn float-right",
+                    id: "batch-regrade",
+                    style: "display:none;" } %>
     </div>
   <% end %>
 </div>
@@ -85,16 +85,14 @@
         <p>
           <label>
             <input class="cbox" type="checkbox" id="cbox-<%= submission.id %>">
-            <span/>
+            <span />
           </label>
         </p>
       </td>
       <td><%= [submission.course_user_datum.last_name, submission.course_user_datum.first_name].reject(&:blank?).join(', ') %>
       <%= link_to submission.course_user_datum.email,
-                      history_course_assessment_path(@course, @assessment, cud_id: submission.course_user_datum_id, partial: true),
-                      {remote: true, class: :trigger}
-
-          %></td>
+                  history_course_assessment_path(@course, @assessment, cud_id: submission.course_user_datum_id, partial: true),
+                  { remote: true, class: :trigger } %></td>
       <!-- TODO: for now, until rewrite -->
       <td style="<%= ignored_submission_style submission %>"><%= submission.version %></td>
 
@@ -104,8 +102,8 @@
       <!-- TODO: for now, until rewrite -->
       <td style="<%= ignored_submission_style submission %>">
         <% if submission.filename then %>
-          <%= link_to "#{submission.filename}",
-                download_course_assessment_submission_path(@course, @assessment, submission) %>
+          <%= link_to submission.filename.to_s,
+                      download_course_assessment_submission_path(@course, @assessment, submission) %>
         <% else %>
           None
         <% end %>
@@ -115,19 +113,21 @@
       </td>
       <td class="exclude-click" style="text-align:center;">
         <% if @autograded and submission.version > 0 then %>
-          <%= button_to [:regrade, @course, @assessment, submission_id: submission.id],
-               :method => :post,
-               :title=>"Rerun the autograder on this submission",
-               :class=>"btn small" do %>
+          <%= button_to regrade_course_assessment_path(@course, @assessment, submission_id: submission.id),
+                        method: :post,
+                        title: "Rerun the autograder on this submission",
+                        class: "btn small" do %>
                <i class='material-icons'>autorenew</i>
         <% end %>
         <% end %>
-        <%= link_to "<i class='material-icons'>edit</i>".html_safe, [:edit, @course, @assessment, submission],
-            {:title=>"Edit the grading properties of this submission",
-              :class=>"btn small"} %>
-        <%= link_to "<i class='material-icons'>delete</i>".html_safe, destroyConfirm_course_assessment_submission_path(@course, @assessment, submission),
-            {:title=>"Destroy this submission forever",
-              :class=>"btn small"} %>
+        <%= link_to "<i class='material-icons'>edit</i>".html_safe,
+                    edit_course_assessment_submission_path(@course, @assessment, submission),
+                    { title: "Edit the grading properties of this submission",
+                      class: "btn small" } %>
+        <%= link_to "<i class='material-icons'>delete</i>".html_safe,
+                    destroyConfirm_course_assessment_submission_path(@course, @assessment, submission),
+                    { title: "Destroy this submission forever",
+                      class: "btn small" } %>
       </td>
       <td><%= submission.latest? %></td>
     </tr>
