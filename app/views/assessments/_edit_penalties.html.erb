@@ -2,7 +2,6 @@
                  help_text: "The maximum number of times a student can submit the assessment. \
                              <br>If set to -1, unlimited submissions are allowed.".html_safe,
                  placeholder: "10",
-                 disabled: @has_unlimited_submissions,
                  wrap_class: %w[input-field no-padding-bottom] %>
 <%= label_tag(:unlimited_submissions, nil, class: "input-default") do %>
   <%= check_box_tag :unlimited_submissions, "1", @has_unlimited_submissions %>
@@ -12,7 +11,6 @@
 <%= f.text_field :max_grace_days,
                  help_text: "Maximum number of grace days that a student can spend on this assessment. \
                              <br>If left blank, all available grace days can be spent on this assessment.".html_safe,
-                 disabled: @has_unlimited_grace_days,
                  wrap_class: %w[input-field no-padding-bottom] %>
 <%= label_tag(:unlimited_grace_days) do %>
   <%= check_box_tag :unlimited_grace_days, "1", @has_unlimited_grace_days %>
@@ -24,7 +22,6 @@
                              help_text: "The penalty applied to late submissions after a student runs out of grace days.
   It represents the number of points or a percentage of the total score removed per day, and must be a non-negative
   number.<br>If left blank, the course default is used.".html_safe,
-                             disabled: @uses_default_late_penalty,
                              wrap_class: %w[input-field no-padding-bottom] %>
 <%= label_tag(:use_default_late_penalty) do %>
   <%= check_box_tag :use_default_late_penalty, "1", @uses_default_late_penalty %>
@@ -36,7 +33,6 @@
   each additional submission is penalized according to the version penalty.
   <br>If set to -1, no submissions are penalized.
   <br>If left blank, the course default is used.".html_safe,
-                 disabled: @uses_default_version_threshold,
                  wrap_class: %w[input-field no-padding-bottom] %>
 <%= label_tag(:use_default_version_threshold) do %>
   <%= check_box_tag :use_default_version_threshold, "1", @uses_default_version_threshold %>
@@ -49,7 +45,6 @@
   threshold, and must be a non-negative number.
   For example, if this is set to 1 point and the version threshold to 3, the fifth version of a student's submissions would be docked 2 points.
   <br>If left blank, the course default is used.".html_safe,
-                                               disabled: @uses_default_version_penalty,
                                                wrap_class: %w[input-field no-padding-bottom] %>
 <%= label_tag(:use_default_version_penalty) do %>
   <%= check_box_tag :use_default_version_penalty, "1", @uses_default_version_penalty %>

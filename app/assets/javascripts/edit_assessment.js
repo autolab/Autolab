@@ -44,12 +44,16 @@
     });
 
     // Penalties tab
+    let initial_load = true; // determines if the page is loading for the first time, if so, don't clear the fields
+
     $('#unlimited_submissions').on('change', function() {
       const checked = $(this).prop('checked');
       const $max_submissions = $('#assessment_max_submissions');
       $max_submissions.prop('disabled', checked);
       if (checked) {
-        $max_submissions.val(-1);
+        $max_submissions.val('Unlimited submissions');
+      } else if (!initial_load) {
+        $max_submissions.val('');
       }
     });
 
@@ -58,17 +62,22 @@
       const $max_grace_days = $('#assessment_max_grace_days');
       $max_grace_days.prop('disabled', checked);
       if (checked) {
+        $max_grace_days.val('Unlimited grace days');
+      } else if (!initial_load) {
         $max_grace_days.val('');
       }
     });
 
     $('#use_default_late_penalty').on('change', function() {
       const checked = $(this).prop('checked');
-      const $latePenaltyField = $('#assessment_late_penalty_attributes_value').parent();
+      const $latePenaltyValue = $('#assessment_late_penalty_attributes_value');
+      const $latePenaltyField = $latePenaltyValue.parent();
       $latePenaltyField.find('input').prop('disabled', checked);
       $latePenaltyField.find('select').prop('disabled', checked);
       if (checked) {
-        $('#assessment_late_penalty_attributes_value').val('');
+        $latePenaltyValue.val('Course default');
+      } else if (!initial_load) {
+        $latePenaltyValue.val('');
       }
     });
 
@@ -77,20 +86,32 @@
       const $version_threshold = $('#assessment_version_threshold');
       $version_threshold.prop('disabled', checked);
       if (checked) {
+        $version_threshold.val('Course default');
+      } else if (!initial_load) {
         $version_threshold.val('');
       }
     });
 
     $('#use_default_version_penalty').on('change', function() {
       const checked = $(this).prop('checked');
-      const $versionPenaltyField = $('#assessment_version_penalty_attributes_value').parent();
+      const $versionPenaltyValue = $('#assessment_version_penalty_attributes_value');
+      const $versionPenaltyField = $versionPenaltyValue.parent();
       $versionPenaltyField.find('input').prop('disabled', checked);
       $versionPenaltyField.find('select').prop('disabled', checked);
       if (checked) {
-        $('#assessment_version_penalty_attributes_value').val('');
+        $versionPenaltyValue.val('Course default');
+      } else if (!initial_load) {
+        $versionPenaltyValue.val('');
       }
     });
 
+    // Trigger on page load
+    $('#unlimited_submissions').trigger('change');
+    $('#unlimited_grace_days').trigger('change');
+    $('#use_default_late_penalty').trigger('change');
+    $('#use_default_version_threshold').trigger('change');
+    $('#use_default_version_penalty').trigger('change');
+    initial_load = false;
   });
 
 })();
