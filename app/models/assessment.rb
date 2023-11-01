@@ -46,7 +46,8 @@ class Assessment < ApplicationRecord
   # Constants
   ORDERING = "due_at ASC, name ASC".freeze
   RELEASED = "start_at < ?".freeze
-
+  VALID_NAME_REGEX = /^[A-Za-z][A-Za-z0-9_-]*$/.freeze
+  VALID_NAME_SANITIZER_REGEX = /^[^A-Za-z]*([^A-Za-z]*[A-Za-z0-9_-]+)/.freeze
   # Scopes
   scope :ordered, -> { order(ORDERING) }
   scope :released, ->(as_of = Time.current) { where(RELEASED, as_of) }
@@ -232,7 +233,7 @@ class Assessment < ApplicationRecord
       # rename module name if it doesn't match new unique naming scheme
       if config_source !~ /\b#{unique_config_module_name}\b/
         match = config_source.match(/module\s+(\w+)/)
-        config_source = config_source.gsub(match[1], unique_config_module_name)
+        config_source = config_source.sub(match[0], "module #{unique_config_module_name}")
       end
       File.open(unique_source_config_file_path, "w"){ |f| f.write(config_source) }
       File.rename(source_config_file_path, source_config_file_backup_path)
@@ -250,7 +251,7 @@ class Assessment < ApplicationRecord
     # uniquely rename module (so that it's unique among all assessment modules loaded in Autolab)
     if config_source !~ /\b#{unique_config_module_name}\b/
       match = config_source.match(/module\s+(\w+)/)
-      config_source = config_source.gsub(match[1], unique_config_module_name)
+      config_source = config_source.sub(match[0], "module #{unique_config_module_name}")
     end
 
     # backup old *unique* configs

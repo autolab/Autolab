@@ -111,7 +111,7 @@ class AssessmentsController < ApplicationController
                                          filename)) || (filename == "..") || (filename == ".")
 
       # assessment names must be only lowercase letters and digits
-      if filename !~ /^[A-Za-z_][A-Za-z][A-Za-z0-9_-]*$/
+      if filename !~ Assessment::VALID_NAME_REGEX
         # add line break if adding to existing error message
         flash.now[:error] = flash.now[:error] ? "#{flash.now[:error]} <br>" : ""
         flash.now[:error] += "An error occurred while trying to display an existing assessment " \
@@ -263,6 +263,7 @@ class AssessmentsController < ApplicationController
       @assessment.load_yaml # this will save the assessment
     rescue StandardError => e
       flash[:error] = "Error loading yaml: #{e}"
+      Rails.logger.debug e.backtrace
       destroy_no_redirect
       # delete files explicitly b/c the paths don't match ONLY if
       # import was from tarball
@@ -296,12 +297,25 @@ class AssessmentsController < ApplicationController
       # We just want to prevent file traversal attacks here, and stop names that break routing
       # first regex - try to sanitize input, allow special characters in display name but not name
       # if the sanitized doesn't match the required identifier structure, then we reject
-      sanitized_display_name = @assessment.display_name.gsub(/[!@#$%^&*(),.?":{}|<>\s]/, "")
-      Rails.logger.debug(sanitized_display_name)
-      if sanitized_display_name !~ /^[A-Za-z_][A-Za-z][A-Za-z0-9_-]*$/
-        # TODO: update with docs link
+      begin
+        # Attempt name generation, try to match to a substring that is valid within the display name
+        match = @assessment.display_name.match(Assessment::VALID_NAME_SANITIZER_REGEX)
+        unless match.nil?
+          sanitized_display_name = match.captures[0]
+        end
+
+        if sanitized_display_name !~ Assessment::VALID_NAME_REGEX
+          flash[:error] =
+            "Assessment name is blank or contains disallowed characters. Find more information on "\
+            "valid assessment names "\
+            '<a href="https://docs.autolabproject.com/lab/#assessment-naming-rules">here</a>'
+          flash[:html_safe] = true
+          redirect_to(action: :install_assessment)
+          return
+        end
+      rescue StandardError
         flash[:error] =
-          "Assessment name is blank or contains disallowed characters. Find more information on"\
+          "Error creating name from display name. Find more information on "\
           "valid assessment names "\
           '<a href="https://docs.autolabproject.com/lab/#assessment-naming-rules">here</a>'
         flash[:html_safe] = true
@@ -1067,7 +1081,7 @@ private
     # it is possible that the assessment path does not match the
     # the expected assessment path when the Ruby config file
     # has a different name then the pathname
-    if !asmt_name.nil? && asmt_name !~ /^[A-Za-z_][A-Za-z][A-Za-z0-9_-]*$/
+    if !asmt_name.nil? && asmt_name !~ Assessment::VALID_NAME_REGEX
       flash[:error] = "Errors found in tarball: Assessment name #{asmt_name} is invalid.
                        Find more information on valid assessment names "\
           '<a href="https://docs.autolabproject.com/lab/#assessment-naming-rules">here</a> <br>'

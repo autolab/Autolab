@@ -510,7 +510,9 @@ module AssessmentAutogradeCore
         require assessment.config_file_path
       end
     rescue TypeError => e
-      raise AutogradeError, "could not find the assessment config file"
+      raise AutogradeError, "could not find the assessment config file: #{e}"
+    rescue LoadError => e
+      raise AutogradeError, "could not load the assessment config file: #{e}"
     end
 
 

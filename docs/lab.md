@@ -430,9 +430,10 @@ but hyphens are also allowed. The assessment name must also be unique within a c
 - `autolabAsmt`
 - `Autolab-Asmt`
 - `Autolab_Asmt10`
-- `_4utol4b-_4smt`
+- `AuTol4b-_4smt`
 
 #### Invalid Assessment Names
+- `_autolab`
 - `4utolab`
 - `autolabAsmt!!`
 - `-autolabAsmt`
