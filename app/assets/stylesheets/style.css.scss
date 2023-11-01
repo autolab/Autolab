@@ -237,7 +237,7 @@ div.main-header img {
 }
 
 /* Custom Form Styling */
-.input-field,
+.input-field:not(.no-padding-bottom),
 form > div {
   padding-bottom: 1rem !important;
 }

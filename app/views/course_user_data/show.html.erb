@@ -12,6 +12,4 @@
   <li><b>Course Average Tweak</b> of <%= raw tweak(@requestedUser.tweak) %></li>
   <% end %>
 </ul>
-<% if @cud.instructor? %>
-  <%= link_to raw('<span class="btn primary">Edit Information</span>'), edit_course_course_user_datum_path(@course, @requestedUser) %>
-<% end %>
+<%= link_to raw('<span class="btn primary">Edit Information</span>'), edit_course_course_user_datum_path(@course, @requestedUser) %>
