@@ -17,7 +17,7 @@ RSpec.describe AssessmentsController, type: :controller do
       end
       let!(:stub_assessment) do
         stubAssessment = build(:assessment)
-        stubAssessment.display_name = "../courses"
+        stubAssessment.display_name = "../"
         stubAssessment.name = ""
         stubAssessment.save
         stubAssessment
