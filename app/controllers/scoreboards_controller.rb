@@ -90,6 +90,7 @@ class ScoreboardsController < ApplicationController
           "createScoreboardEntry(#{grade[:problems].inspect},\n"\
           "#{grade[:autoresult]})"
         @error = e
+        Rails.logger.error("Scoreboard error in #{@course.name}/#{@assessment.name}: #{@error}")
         render("scoreboards/edit") && return
       end
     end
@@ -254,6 +255,8 @@ private
         flash[:error] = "Error parsing scoreboard for autograded assessment: scoreboard result is"\
           " not an array. Please ensure that the autograder returns scoreboard results as an array."
       end
+      Rails.logger.error("Scoreboard error in #{@course.name}/#{@assessment.name}: " \
+                           "Scoreboard result is not an array")
       raise if !parsed || !parsed["scoreboard"] || !parsed["scoreboard"].is_a?(Array)
     rescue StandardError
       # If there is no autoresult for this student (typically
@@ -274,6 +277,8 @@ private
           flash[:error] = "Error parsing scoreboard for autograded assessment: Please ensure the"\
           " scoreboard results from the autograder are formatted to be an array, and the colspec"\
           " matches the expected format."
+          Rails.logger.error("Scoreboard error in #{@course.name}/#{@assessment.name}: " \
+                               "Scoreboard could not be parsed")
         end
         # Give up and bail
         return ["-"]
