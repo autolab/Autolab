@@ -64,13 +64,13 @@ class ScoreAdjustment < ApplicationRecord
   def to_s
     case self[:kind]
     when POINTS
-      type_str = "points"
+      type_str = " points"
     when PERCENT
       type_str = "%"
     else
       raise ArgumentError
     end
 
-    "#{format('%+g', value)} #{type_str}"
+    "#{format('%g', value)}#{type_str}"
   end
 end
