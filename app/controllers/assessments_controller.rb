@@ -780,17 +780,18 @@ class AssessmentsController < ApplicationController
     # warn instructors if the assessment is configured to allow late submissions
     # but the settings do not make sense
     if @assessment.end_at > @assessment.due_at
-      warn_message = "Late submissions are allowed, but"
+      warn_messages = []
       if @assessment.max_grace_days == 0
-        flash.now[:error] ||= warn_message
-        flash.now[:error] += "<br>- Max grace days = 0: students can't use grace days"
+        warn_messages << "- Max grace days = 0: students can't use grace days"
       end
       if @assessment.effective_late_penalty.value == 0
-        flash.now[:error] ||= warn_message
-        flash.now[:error] += "<br>- Late penalty = 0: late submissions made \
-                              without grace days are not penalized"
+        warn_messages << "- Late penalty = 0: late submissions made \
+                          without grace days are not penalized"
       end
-      flash.now[:html_safe] = true
+      unless warn_messages.empty?
+        flash.now[:error] = "Late submissions are allowed, but<br>#{warn_messages.join('<br>')}"
+        flash.now[:html_safe] = true
+      end
     end
 
     # Used for the penalties tab
@@ -1007,25 +1008,25 @@ private
       @assessment.version_penalty&.destroy
     end
 
-    if ActiveModel::Type::Boolean.new.cast(params[:unlimited_submissions]) == true
+    if params[:unlimited_submissions].to_boolean == true
       ass[:max_submissions] = -1
     end
 
-    if ActiveModel::Type::Boolean.new.cast(params[:unlimited_grace_days]) == true
+    if params[:unlimited_grace_days].to_boolean == true
       ass[:max_grace_days] = ""
     end
 
-    if ActiveModel::Type::Boolean.new.cast(params[:use_default_late_penalty]) == true
+    if params[:use_default_late_penalty].to_boolean == true
       ass.delete(:late_penalty_attributes)
       @assessment.late_penalty&.destroy
     end
 
-    if ActiveModel::Type::Boolean.new.cast(params[:use_default_version_penalty]) == true
+    if params[:use_default_version_penalty].to_boolean == true
       ass.delete(:version_penalty_attributes)
       @assessment.version_penalty&.destroy
     end
 
-    if ActiveModel::Type::Boolean.new.cast(params[:use_default_version_threshold]) == true
+    if params[:use_default_version_threshold].to_boolean == true
       ass[:version_threshold] = ""
     end
 
