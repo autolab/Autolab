@@ -20,6 +20,7 @@ var slickgrid_options = {
     submission_status_key = columnDef.field + "_submission_status"
     grade_type_key = columnDef.field + "_grade_type"
     end_at_key = columnDef.field + "_end_at"
+    history_key = columnDef.field + "_history_url";
 
     switch (data[grade_type_key]) {
     case "excused":
@@ -68,8 +69,7 @@ var slickgrid_options = {
         break;
       }
     }
-
-    return (value !== null) ? value : "&ndash;";
+    return (value !== null) ? ((data[history_key] !== undefined) ? link_to(data[history_key], value) : value) : "&ndash;";
   }
 };
 
