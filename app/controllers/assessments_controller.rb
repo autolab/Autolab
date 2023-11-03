@@ -837,8 +837,9 @@ class AssessmentsController < ApplicationController
       flash[:success] = "Assessment configuration updated!"
 
       redirect_to(tab_index) && return
-    rescue ActiveRecord::RecordInvalid => e
-      flash[:error] = e.message.sub!("Validation failed: ", "")
+    rescue ActiveRecord::RecordInvalid
+      flash[:error] = @assessment.errors.full_messages.join("<br>")
+      flash[:html_safe] = true
 
       redirect_to(tab_index) && return
     end
@@ -921,6 +922,7 @@ class AssessmentsController < ApplicationController
     end
 
     if @assessment.writeup_is_file?
+      # Note: writeup_is_file? validates that the writeup lies within the assessment folder
       filename = @assessment.writeup_path
       send_file(filename,
                 type: mime_type_from_ext(File.extname(filename)),
