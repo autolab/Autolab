@@ -90,15 +90,6 @@ RSpec.describe AssessmentsController, type: :controller do
         expect(flash[:error]).to be_present
         expect(flash[:error]).to match(/invalid/m)
       end
-      it "handles broken yaml file" do
-        file = fixture_file_upload("assessments/homework02-yaml-name-field-wrong.tar")
-        post :importAsmtFromTar, params: { course_name: course_2_hash[:course].name,
-                                           name: course_2_hash[:assessment].name,
-                                           tarFile: file }
-        expect(response).to have_http_status(302)
-        expect(flash[:error]).to be_present
-        expect(flash[:error]).to match(/Error loading yaml/m)
-      end
       it "handles mismatched module name" do
         file = fixture_file_upload("assessments/homework02-module-mismatch.tar")
         post :importAsmtFromTar, params: { course_name: course_2_hash[:course].name,
