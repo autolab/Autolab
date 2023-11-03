@@ -61,12 +61,21 @@
               <% if c["img"] %>
                 <td><img src="data:image/png;base64,<%= grade[:entry][i] %>"></td>
               <% else %>
-                <td><%= grade[:entry][i] %></td>
+                <% if grade[:entry].is_a?(Array) && grade[:entry][i] != "-" %>
+                  <td><%= grade[:entry][i] %></td>
+                <% else %>
+                  <%= render 'error_icon' %>
+                <% end %>
               <% end %>
             <% end %>
           <% else %>
-            <% grade[:entry].each do |column| %>
-              <td><%= column %></td>
+            <%# this should be guaranteed to be an array, but for redundancy, check that entry is array %>
+            <% if grade[:entry].is_a?(Array) && grade[:entry][i] != "-" %>
+              <% grade[:entry].each do |column| %>
+                <td><%= column %></td>
+              <% end %>q
+            <% else %>
+              <%= render 'error_icon' %>
             <% end %>
           <% end %>
         </tr>
