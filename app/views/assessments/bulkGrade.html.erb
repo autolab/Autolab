@@ -10,15 +10,15 @@
 <% end %>
 
   <% if @valid_entries %>
-    <%= render "bulkGrade_entries", :entries => @entries, :problems => @assessment.problems if @entries %>
-    <%= form_for :confirm, :url => "bulkGrade_complete", :html => { :class => "confirm" } do |f| %>
-      <%= f.hidden_field :bulkGrade_csv, :value => @csv %>
-      <%= f.hidden_field :bulkGrade_data_type, :value => @data_type %>
+    <%= render "bulkGrade_entries", entries: @entries, problems: @assessment.problems if @entries %>
+    <%= form_for :confirm, url: "bulkGrade_complete", html: { class: "confirm" } do |f| %>
+      <%= f.hidden_field :bulkGrade_csv, value: @csv %>
+      <%= f.hidden_field :bulkGrade_data_type, value: @data_type %>
 
-      <%= f.submit 'Yes' , {:class=>"btn submit"} %><%= link_to "No", { :action => :bulkGrade }, :class => "btn submit" %>
+      <%= f.submit 'Yes', { class: "btn submit" } %><%= link_to "No", { action: :bulkGrade }, class: "btn submit" %>
     <% end %>
   <% else %>
-    <%= render "bulkGrade_error_entries", :entries => @entries, :problems => @assessment.problems if @entries %>
+    <%= render "bulkGrade_error_entries", entries: @entries, problems: @assessment.problems if @entries %>
     <%= render 'bulkGrade_initial' %>
   <% end %>
 </div>

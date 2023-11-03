@@ -571,7 +571,9 @@ class CoursesController < ApplicationController
     system("chmod -R a+r #{tmp_dir}")
     ActiveRecord::Base.clear_active_connections!
     # Remove non text files when making a moss run
-    `~/Autolab/script/cleanMoss #{tmp_dir}`
+    Dir.chdir(Rails.root.join("script")) do
+      system("./cleanMoss #{tmp_dir}")
+    end
     # Now run the Moss command
     @mossCmdString = @mossCmd.join(" ")
     @mossOutput = `#{@mossCmdString} 2>&1`
