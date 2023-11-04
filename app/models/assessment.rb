@@ -283,7 +283,7 @@ class Assessment < ApplicationRecord
 
   def writeup_is_file?
     # Ensure that writeup lies within the assessment folder
-    Archive.in_dir?(writeup_path, folder_path) && is_file?(writeup)
+    writeup.present? && Archive.in_dir?(writeup_path, folder_path) && is_file?(writeup)
   end
 
   def handout_is_url?
@@ -292,7 +292,7 @@ class Assessment < ApplicationRecord
 
   def handout_is_file?
     # Ensure that handout lies within the assessment folder
-    Archive.in_dir?(handout_path, folder_path) && is_file?(handout)
+    handout.present? && Archive.in_dir?(handout_path, folder_path) && is_file?(handout)
   end
 
   # raw_score
@@ -543,7 +543,7 @@ private
   end
 
   def is_file?(name)
-    name.present? && File.file?(path(name))
+    File.file?(path(name))
   end
 
   def verify_dates_order
