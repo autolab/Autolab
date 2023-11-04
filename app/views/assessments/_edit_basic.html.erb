@@ -32,6 +32,7 @@
 <%= f.file_field :config_file, button_text: "Upload #{@assessment.name}.rb",
                                help_text: "Config file will be automatically reloaded after saving. Changes to other settings will
                  be lost if an error is encountered." %>
+<b id="config-file-type-incorrect" style="color: red; margin: 0"></b>
 
 <h4>Modules Used</h4>
 <ul class="collection attachments">

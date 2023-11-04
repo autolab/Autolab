@@ -32,6 +32,17 @@
       changes = false;
     });
 
+    $('#assessment_config_file').on('change', function () {
+      var fileSelector = $("#assessment_config_file").get(0);
+      var file = fileSelector.files[0];
+
+      if (!file?.name?.endsWith('.rb')) {
+        $('#config-file-type-incorrect').text(`Warning: ${file.name} doesn't match expected .rb file type`)
+      } else {
+        $('#config-file-type-incorrect').text("")
+      }
+    })
+
     $('input[name="assessment[is_positive_grading]"]').on('change', function() {
       if(has_annotations){
         if ($(this).prop('checked') !=  is_positive_grading) {
