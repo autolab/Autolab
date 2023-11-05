@@ -90,6 +90,7 @@ module GradebookHelper
         next unless matrix.has_assessment? a.id
 
         cell = matrix.cell(a.id, cud.id)
+        row["#{a.name}_history_url"] = history_url(cud, a)
         row[a.name] = round cell["final_score"]
         row["#{a.name}_submission_status"] = cell["submission_status"]
         row["#{a.name}_grade_type"] = cell["grade_type"]

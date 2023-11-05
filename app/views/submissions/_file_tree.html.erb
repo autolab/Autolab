@@ -6,17 +6,20 @@ def renderFileTree(file, isRoot: false)
     return ""
   end
 
-  if(!file[:directory]) %>
+  if(!file[:directory])
+%>
     <%= link_to(
-            url_for([:view, @course, @assessment, @submission, header_position: file[:header_position]]),
-            class: 'file valign-wrapper noselect' + ((file[:header_position] == params[:header_position]) ? ' active' : ""),
-            "data-header_position": file[:header_position],
-            remote: true) do %>
+          view_course_assessment_submission_path(@course, @assessment, @submission, header_position: file[:header_position]),
+          class: "file valign-wrapper noselect#{file[:header_position] == params[:header_position] ? ' active' : ''}",
+          "data-header_position": file[:header_position],
+          remote: true
+        ) do %>
         <i class="material-icons md_18 closed-icon">insert_drive_file</i>
         <%= file[:pathname].split("/").last %>
     <% end %>
 <%
-  else %>
+  else
+%>
     <div class="folder">
       <div class="folder-name valign-wrapper noselect <%= "active" if isRoot %>  " onclick="switchFolderState($(this))">
         <i class="material-icons md_18 closed-icon">folder</i>
@@ -39,7 +42,7 @@ end
   <div class="file-list">
     <% @files.sort { |a, b| a[:header_position] <=> b[:header_position] }.each do |file| %>
         <%
-          if(!file[:mac_bs_file])
+          if !file[:mac_bs_file]
             renderFileTree(file, isRoot: true)
           end
         %>

@@ -237,7 +237,7 @@ div.main-header img {
 }
 
 /* Custom Form Styling */
-.input-field,
+.input-field:not(.no-padding-bottom),
 form > div {
   padding-bottom: 1rem !important;
 }
@@ -1484,4 +1484,8 @@ table.sub td, th {
 
 .submission-history-button:hover {
   color: white !important;
+}
+
+.error-header {
+  color: $autolab-red;
 }

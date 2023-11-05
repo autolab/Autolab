@@ -3,11 +3,11 @@
   <form>
     <div class="row">
       <div class="input-field col s12 annotation-comment">
-        <textarea class="comment materialize-textarea" id="comment-textarea" placeholder="" ></textarea>
+        <textarea class="comment materialize-textarea" id="comment-textarea" placeholder=""></textarea>
         <label for="comment-textarea">Comment</label>
         <p>
           <label>
-            <input type="checkbox" class="filled-in" id="shared-comment" />
+            <input type="checkbox" class="filled-in" id="shared-comment">
             <span> Add to shared comment pool <i class="material-icons" title="Adding to the shared comment pool allows you
                       and other graders to reuse this comment within this assessment">info_outline</i> </span>
           </label>
@@ -17,20 +17,18 @@
 
     <div class="row annotation-problem-score">
       <% if global %>
-        <div class="input-field col s12" >
-          <input class="score" type="number" value="0" placeholder="0" step="any" id="comment-score">
+        <div class="input-field col s12">
+          <input class="score" type="number" value="0" placeholder="0" step="any" id="comment-score" autocomplete="on">
           <label for="comment-score">Score</label>
           <span> Grading style: <b><%= @assessment.is_positive_grading ? "Positive grading" : "Negative grading" %></b>
-            <i class="material-icons" title="<%= (@assessment.is_positive_grading ? "Score is added, starting from 0." : "Score is deducted from the total points.") + " Change this setting in Edit Assessment > Problems" %>"
-            >info_outline</i> </span>
+            <i class="material-icons" title="<%= "#{@assessment.is_positive_grading ? 'Score is added, starting from 0.' : 'Score is deducted from the total points.'} Change this setting in Edit Assessment > Problems" %>">info_outline</i> </span>
         </div>
       <% else %>
-        <div class="input-field col s6" >
-          <input class="score" type="number" value="0" placeholder="0" step="any" id="comment-score">
+        <div class="input-field col s6">
+          <input class="score" type="number" value="0" placeholder="0" step="any" id="comment-score" autocomplete="on">
           <label for="comment-score">Score</label>
           <span> Grading style: <b><%= @assessment.is_positive_grading ? "Positive grading" : "Negative grading" %></b>
-              <i class="material-icons" title="<%= (@assessment.is_positive_grading ? "Score is added, starting from 0." : "Score is deducted from the total points.") + " Change this setting in Edit Assessment > Problems" %>"
-              >info_outline</i> </span>
+              <i class="material-icons" title="<%= "#{@assessment.is_positive_grading ? 'Score is added, starting from 0.' : 'Score is deducted from the total points.'} Change this setting in Edit Assessment > Problems" %>">info_outline</i> </span>
         </div>
 
         <div class="input-field col s6">

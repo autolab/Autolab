@@ -1,15 +1,17 @@
 <% if ! @submission then %>
   No such Submission
 <% else %>
-  <h2>Destroy <%= @submission.course_user_datum.email %>'s Submission
-#<%=@submission.version%> for <%= @submission.assessment.display_name %></h2>
+  <h2>
+    Destroy <%= @submission.course_user_datum.email %>'s Submission
+    #<%= @submission.version %> for <%= @submission.assessment.display_name %>
+  </h2>
   <b>This will destroy their submission and scores.  This cannot be undone!</b>
   <%= form_tag(course_assessment_submission_path(@course, @assessment, @submission), method: :delete) %>
   <br>
   <label>
-    <%= check_box_tag "yes", class: "filled-in" %>   
+    <%= check_box_tag "yes", class: "filled-in" %>
     <span>Yes! Destroy this submission!</span>
   </label>
   <br><br>
-  <%= submit_tag("Destroy!", :class => "btn primary") %>
+  <%= submit_tag("Destroy!", class: "btn primary") %>
 <% end %>

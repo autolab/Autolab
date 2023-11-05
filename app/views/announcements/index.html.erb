@@ -1,8 +1,14 @@
-<h2>Make Announcements</h2>
+<h2>Manage Announcements</h2>
+<h3>Current Announcements</h3>
 <ul class="gray-box">
-<%= render @announcements %>
+  <% if !@announcements.nil? && @announcements.length > 0 %>
+    <%= render @announcements %>
+  <% else %>
+    There are no existing announcements.
+  <% end %>
 </ul>
-<%= link_to raw('<span class="button">Create Announcement</span>'),
-      new_course_announcement_path(@course) %>
-<br />
-<%= link_to raw('<span class="button">Save All Changes</span>'), @course %>
+<%= link_to new_course_announcement_path(@course) do %>
+  <span class="btn small">
+    Create Announcement
+  </span>
+<% end %>

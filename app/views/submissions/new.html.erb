@@ -1,22 +1,17 @@
 <h2>Create Submission for <%= link_to @assessment.display_name, [@course, @assessment] %> </h2>
 
 <p>
-<%= link_to "Manage Submissions", [@course, @assessment, :submissions] %>
+<%= link_to "Manage Submissions", course_assessment_submissions_path(@course, @assessment) %>
 </p>
 
 <%= form_for @submission, as: :submission,
-      url: [@course, @assessment, @submission], method: :post,
-      html: {multipart: true} do |f| %>
-<%= f.error_messages %>
+                          url: [@course, @assessment, @submission], method: :post,
+                          builder: FormBuilderWithDateTimeInput,
+                          html: { multipart: true } do |f| %>
 
-<!-- Work in Progress
+    <%= f.error_messages %>
 
-<div class="input-field">
-	<input placeholder="Name or Email" type="text" onkeyup="filterNames(this.value.toLowerCase())" style="margin-bottom: 10px;">
-</div>
-
--->
-<table class="verticalTable" >
+<table class="verticalTable">
 <tr>
   <th>User:</th>
   <td>
@@ -27,14 +22,14 @@
   <% end %>
 
   <div class="input-field">
-    <input type="text" size="3" id="student_autocomplete" class="autocomplete" autocomplete="off"/>
+    <input type="text" size="3" id="student_autocomplete" class="autocomplete" autocomplete="off">
     <label for="student_autocomplete">Start typing student name or email</label>
   </div>
-  <%= f.hidden_field(:course_user_datum_id)%>
+  <%= f.hidden_field(:course_user_datum_id) %>
 
   <% else %>
-    <%= @cuds.collect { |u| u.email }.join(", ") %>
-    <input type='hidden' name='submission[course_user_datum_id]' value='<%=@cuds.collect{ |u| u.id }.join(',')%>' />
+    <%= @cuds.collect(&:email).join(", ") %>
+    <input type='hidden' name='submission[course_user_datum_id]' value='<%= @cuds.collect(&:id).join(',') %>'>
   <% end %>
   </td>
 </tr>
@@ -46,21 +41,22 @@
   <th>File:</th><td><%= f.file_field :file %></td>
 </tr>
 <tr>
-  <th>Notes:</th><td><%= f.text_area :notes, class: 'materialize-textarea', placeholder: "Notes on submission"%></td>
+  <th>Notes:</th><td><%= f.text_area :notes, class: 'materialize-textarea', placeholder: "Notes on submission" %></td>
 </tr>
 <tr>
   <th>Tweak:</th>
   <td>
   <%= f.fields_for :tweak, @submission.tweak do |t| %>
     <%= t.text_field :value, placeholder: "Number of points or percentage" %>
-    <%= t.select :kind, options_for_select({"points" => "points", "%" => "percent"}, :selected => (@submission.tweak ? @submission.tweak.kind : "points")) %>
+    <%= t.select :kind, options_for_select({ "points" => "points", "%" => "percent" },
+                                           selected: (@submission.tweak ? @submission.tweak.kind : "points")) %>
   <% end %>
   </td>
 </tr>
 <tr>
-  <td colspan=2 >
+  <td colspan=2>
   <br>
-  <%= f.submit "Create Submission", { :class=>"btn primary"} %>
+  <%= f.submit "Create Submission", { class: "btn primary" } %>
   </td>
 </tr>
 </table>
