@@ -23,12 +23,8 @@
       <%= f.datetime_select :release_at, help_text: "Release attachment after this time" %>
     </li>
     <li>
+      <%= link_to "Cancel", :back, class: "btn-flat" %>
       <%= f.submit(@attachment.new_record? ? "Create Attachment" : "Save Changes") %>
-      <% unless @attachment.new_record? %>
-        <%= link_to "Delete Attachment",
-                    course_attachment_path(@course, @attachment),
-                    method: :delete, class: "btn danger", data: { confirm: "Are you sure you want to delete this attachment?" } %>
-      <% end %>
     </li>
   </ul>
 <% end %>
