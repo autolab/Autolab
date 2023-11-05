@@ -627,7 +627,7 @@ class AssessmentsController < ApplicationController
   def viewFeedback
     # User requested to view feedback on a score
     @score = @submission.scores.find_by(problem_id: params[:feedback])
-    all_scores = @submission.scores.includes(:problem)
+    autograded_scores = @submission.scores.includes(:problem).where(grader_id: 0)
     # Checks whether at least one problem has finished being auto-graded
     @finishedAutograding = @submission.scores.where.not(feedback: nil).where(grader_id: 0)
     @job_id = @submission["jobid"]
@@ -651,7 +651,7 @@ class AssessmentsController < ApplicationController
     return if @score.nil?
 
     @jsonFeedback = parseFeedback(@score.feedback)
-    raw_score_hash = scoreHashFromScores(all_scores)
+    raw_score_hash = scoreHashFromScores(autograded_scores)
     @scoreHash = parseScore(raw_score_hash)
     if Archive.archive? @submission.handin_file_path
       @files = Archive.get_files @submission.handin_file_path
