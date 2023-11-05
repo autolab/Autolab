@@ -54,9 +54,12 @@
   <% end %>
 
   <% if @course.grace_days >= 0 then %>
-    <td title="Submitted <%= submission.days_late %> days late">
-      <span class="nobr">
-      <%= submission.days_late.to_s + " day".pluralize(submission.days_late) %>
+    <td>
+      <span class="nobr" title="Submitted <%= submission.days_late %> day(s) late">
+        <%= submission.days_late.to_s + " day".pluralize(submission.days_late) %>
+      </span>
+      <span class="nobr" title="Used <%= submission.grace_days_used %> grace day(s)">
+        (<%= submission.grace_days_used.to_s + " day".pluralize(submission.grace_days_used) %>)
       </span>
     </td>
   <% end %>
