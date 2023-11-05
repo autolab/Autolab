@@ -21,7 +21,7 @@
       <%= f.datetime_select :release_at, help_text: "Release attachment after this time" %>
     </li>
     <li>
-      <%= f.submit(@attachment.new_record? ? "Create Attachment" : "Save Changes", class: "btn primary") %>
+      <%= f.submit(@attachment.new_record? ? "Create Attachment" : "Save Changes") %>
       <% unless @attachment.new_record? %>
         <%= link_to "Delete Attachment",
                     course_attachment_path(@course, @attachment),
