@@ -1206,7 +1206,13 @@ private
       course = Course.new(config.except("late_penalty", "version_penalty"))
       course.late_penalty = Penalty.new(config["late_penalty"])
       course.version_penalty = Penalty.new(config["version_penalty"])
-      # TODO: do the metric stuff too
+
+      config["risk_conditions"]&.each do |condition|
+        options = { course_id: course.id, condition_type: condition["condition_type"],
+                    parameters: condition["parameters"].to_hash, version: condition["version"] }
+        course.risk_conditions << RiskCondition.new(options)
+      end
+
       return course
     end
   end
