@@ -627,6 +627,7 @@ class AssessmentsController < ApplicationController
   def viewFeedback
     # User requested to view feedback on a score
     @score = @submission.scores.find_by(problem_id: params[:feedback])
+    all_scores = @submission.scores.includes(:problem)
     # Checks whether at least one problem has finished being auto-graded
     @finishedAutograding = @submission.scores.where.not(feedback: nil).where(grader_id: 0)
     @job_id = @submission["jobid"]
@@ -650,7 +651,8 @@ class AssessmentsController < ApplicationController
     return if @score.nil?
 
     @jsonFeedback = parseFeedback(@score.feedback)
-    @scoreHash = parseScore(@score.feedback)
+    raw_score_hash = scoreHashFromScores(all_scores)
+    @scoreHash = parseScore(raw_score_hash)
     if Archive.archive? @submission.handin_file_path
       @files = Archive.get_files @submission.handin_file_path
     end
@@ -687,23 +689,24 @@ class AssessmentsController < ApplicationController
     end
   end
 
+  def scoreHashFromScores(scores)
+    return unless @score.grader_id <= 0
+
+    scores.map { |s|
+      [s.problem.name, s.score]
+    }.to_h
+  end
+
   # TODO: Take into account any modifications by :parseAutoresult and :modifySubmissionScores
   # We should probably read the final scores directly
   # See: assessment_autograde_core.rb's saveAutograde
-  def parseScore(feedback)
-    return if feedback.nil?
+  def parseScore(score_hash)
+    @total = 0
+    return if score_hash.nil?
 
-    lines = feedback.rstrip.lines
-    feedback = lines[lines.length - 1]
-
-    return unless valid_json_hash?(feedback)
-
-    score_hash = JSON.parse(feedback)
-    score_hash = score_hash["scores"]
     if @jsonFeedback&.key?("_scores_order") == false
       @jsonFeedback["_scores_order"] = score_hash.keys
     end
-    @total = 0
     score_hash.keys.each do |k|
       @total += score_hash[k].to_f
     rescue NoMethodError
