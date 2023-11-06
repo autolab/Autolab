@@ -223,11 +223,12 @@ class Assessment < ApplicationRecord
   #
   # WILL NOT WORK ON NEW, UNSAVED ASSESSMENTS!!!
   #
-  def load_config_file(new_assessment = false)
-    # migrate old source config file path
+  def load_config_file
+    # migrate old source config file path, in dir check to ensure that we are not trying to migrate
+    # a different module in a different folder that has a asmt name that maps to the old system
     if (File.exist? source_config_file_path) &&
        (source_config_file_path != unique_source_config_file_path) &&
-       !new_assessment
+       Archive.in_dir?(source_config_file_path, folder_path)
       # read from source
       config_source = File.open(source_config_file_path, "r", &:read)
       RubyVM::InstructionSequence.compile(config_source)

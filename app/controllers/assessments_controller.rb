@@ -369,7 +369,7 @@ class AssessmentsController < ApplicationController
     end
 
     # reload the assessment's config file
-    @assessment.load_config_file(true) # only call this on saved assessments
+    @assessment.load_config_file # only call this on saved assessments
 
     flash[:success] = "Successfully installed #{@assessment.name}."
     # reload the course config file
