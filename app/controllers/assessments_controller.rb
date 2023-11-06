@@ -263,7 +263,6 @@ class AssessmentsController < ApplicationController
       @assessment.load_yaml # this will save the assessment
     rescue StandardError => e
       flash[:error] = "Error loading yaml: #{e}"
-      Rails.logger.debug e.backtrace
       destroy_no_redirect
       # delete files explicitly b/c the paths don't match ONLY if
       # import was from tarball
@@ -370,7 +369,7 @@ class AssessmentsController < ApplicationController
     end
 
     # reload the assessment's config file
-    @assessment.load_config_file # only call this on saved assessments
+    @assessment.load_config_file(true) # only call this on saved assessments
 
     flash[:success] = "Successfully installed #{@assessment.name}."
     # reload the course config file

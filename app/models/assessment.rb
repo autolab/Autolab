@@ -47,7 +47,7 @@ class Assessment < ApplicationRecord
   ORDERING = "due_at ASC, name ASC".freeze
   RELEASED = "start_at < ?".freeze
   VALID_NAME_REGEX = /^[A-Za-z][A-Za-z0-9_-]*$/.freeze
-  VALID_NAME_SANITIZER_REGEX = /^[^A-Za-z]*([^A-Za-z]*[A-Za-z0-9_-]+)/.freeze
+  VALID_NAME_SANITIZER_REGEX = /^[^A-Za-z]*([A-Za-z0-9_-]+)/.freeze
   # Scopes
   scope :ordered, -> { order(ORDERING) }
   scope :released, ->(as_of = Time.current) { where(RELEASED, as_of) }
@@ -143,7 +143,7 @@ class Assessment < ApplicationRecord
   end
 
   def unique_config_module_name
-    "#{sanitized_name}_#{id}".camelize
+    "#{sanitized_name}#{id}".camelize
   end
 
   def use_unique_module_name
@@ -223,10 +223,11 @@ class Assessment < ApplicationRecord
   #
   # WILL NOT WORK ON NEW, UNSAVED ASSESSMENTS!!!
   #
-  def load_config_file
+  def load_config_file(new_assessment = false)
     # migrate old source config file path
     if (File.exist? source_config_file_path) &&
-       (source_config_file_path != unique_source_config_file_path)
+       (source_config_file_path != unique_source_config_file_path) &&
+       !new_assessment
       # read from source
       config_source = File.open(source_config_file_path, "r", &:read)
       RubyVM::InstructionSequence.compile(config_source)
@@ -270,7 +271,6 @@ class Assessment < ApplicationRecord
   end
 
   def config_module
-    Rails.logger.debug("config module hit")
     # (re)construct config file from source, unless it already exists
     load_config_file unless File.exist? unique_config_file_path
 
@@ -432,10 +432,6 @@ private
 
   def source_config_module_name
     sanitized_name.camelize
-  end
-
-  def unique_source_config_module_name
-    name
   end
 
   # rubocop:disable Style/ClassVars
