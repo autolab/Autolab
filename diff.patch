@@ -1,0 +1,102 @@
+diff --git a/app/controllers/api/v1/assessments_controller.rb b/app/controllers/api/v1/assessments_controller.rb
+index 63dd46f5..211ad57f 100644
+--- a/app/controllers/api/v1/assessments_controller.rb
++++ b/app/controllers/api/v1/assessments_controller.rb
+@@ -57,6 +57,7 @@ class Api::V1::AssessmentsController < Api::V1::BaseApiController
+     end
+ 
+     if @assessment.writeup_is_file?
++      # Note: writeup_is_file? validates that the writeup lies within the assessment folder
+       filename = @assessment.writeup_path
+       send_file(filename,
+                 disposition: "inline",
+@@ -73,6 +74,11 @@ class Api::V1::AssessmentsController < Api::V1::BaseApiController
+ 
+     if @assessment.overwrites_method?(:handout)
+       hash = @assessment.config_module.handout
++      # Ensure that handout lies within the assessment folder
++      unless Archive.in_dir?(Pathname(hash["fullpath"]), @assessment.folder_path)
++        respond_with_hash({:handout => "none"}) and return
++      end
++
+       send_file(hash["fullpath"],
+                 disposition: "inline",
+                 filename: hash["filename"])
+@@ -84,6 +90,7 @@ class Api::V1::AssessmentsController < Api::V1::BaseApiController
+     end
+ 
+     if @assessment.handout_is_file?
++      # Note: handout_is_file? validates that the handout lies within the assessment folder
+       filename = @assessment.handout_path
+       send_file(filename,
+                 disposition: "inline",
+diff --git a/app/controllers/assessment/handout.rb b/app/controllers/assessment/handout.rb
+index 7021649c..b3be9bfe 100644
+--- a/app/controllers/assessment/handout.rb
++++ b/app/controllers/assessment/handout.rb
+@@ -16,6 +16,12 @@ module AssessmentHandout
+ 
+     if @assessment.overwrites_method?(:handout)
+       hash = @assessment.config_module.handout
++      # Ensure that handout lies within the assessment folder
++      unless Archive.in_dir?(Pathname(hash["fullpath"]), @assessment.folder_path)
++        flash.now[:error] = "Invalid handout path: #{hash["fullpath"]} does not lie within the assessment folder."
++        return
++      end
++
+       send_file(hash["fullpath"],
+                 disposition: "inline",
+                 filename: hash["filename"])
+@@ -25,6 +31,7 @@ module AssessmentHandout
+     redirect_to(@assessment.handout) && return if @assessment.handout_is_url?
+ 
+     if @assessment.handout_is_file?
++      # Note: handout_is_file? validates that the handout lies within the assessment folder
+       filename = @assessment.handout_path
+       send_file(filename,
+                 disposition: "inline",
+diff --git a/app/controllers/assessments_controller.rb b/app/controllers/assessments_controller.rb
+index d9fd4dca..b45f6ba0 100755
+--- a/app/controllers/assessments_controller.rb
++++ b/app/controllers/assessments_controller.rb
+@@ -896,6 +896,7 @@ class AssessmentsController < ApplicationController
+     end
+ 
+     if @assessment.writeup_is_file?
++      # Note: writeup_is_file? validates that the writeup lies within the assessment folder
+       filename = @assessment.writeup_path
+       send_file(filename,
+                 type: mime_type_from_ext(File.extname(filename)),
+diff --git a/app/models/assessment.rb b/app/models/assessment.rb
+index a1d260e9..2179b655 100755
+--- a/app/models/assessment.rb
++++ b/app/models/assessment.rb
+@@ -99,7 +99,7 @@ class Assessment < ApplicationRecord
+   end
+ 
+   def handin_directory_path
+-    path handin_directory
++    path ActiveStorage::Filename.new(handin_directory).sanitized
+   end
+ 
+   def writeup_path
+@@ -279,7 +279,8 @@ class Assessment < ApplicationRecord
+   end
+ 
+   def writeup_is_file?
+-    is_file? writeup
++    # Ensure that writeup lies within the assessment folder
++    Archive.in_dir?(writeup_path, folder_path) and is_file? writeup
+   end
+ 
+   def handout_is_url?
+@@ -287,7 +288,8 @@ class Assessment < ApplicationRecord
+   end
+ 
+   def handout_is_file?
+-    is_file? handout
++    # Ensure that handout lies within the assessment folder
++    Archive.in_dir?(handout_path, folder_path) and is_file? handout
+   end
+ 
+   # raw_score

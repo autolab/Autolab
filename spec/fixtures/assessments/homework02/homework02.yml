@@ -1,0 +1,32 @@
+---
+dates:
+  due_at: '2023-12-21 23:55:00 -0500'
+  end_at: '2023-12-22 23:55:00 -0500'
+  grading_deadline: '2023-12-22 23:55:00 -0500'
+  start_at: '2022-11-24 23:55:00 -0500'
+  visible_at: '2022-11-24 23:55:06 -0500'
+general:
+  category_name: Homework
+  description: ''
+  disable_handins: false
+  display_name: Homework 0
+  embedded_quiz: false
+  handin_directory: handin
+  handin_filename: handin.c
+  handout: ''
+  is_positive_grading: false
+  max_grace_days: 0
+  max_size: 2
+  max_submissions: -1
+  name: homework02
+  writeup: ''
+problems:
+- max_score: 100.0
+  name: problem0
+  optional: false
+- max_score: 100.0
+  name: problem1
+  optional: false
+- max_score: 100.0
+  name: problem2
+  optional: false

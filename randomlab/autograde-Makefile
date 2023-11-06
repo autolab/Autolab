@@ -1,0 +1,4 @@
+all:
+	tar xvf autograde.tar
+	(cd random; ./driver.sh)
+

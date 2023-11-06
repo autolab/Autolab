@@ -818,13 +818,38 @@ class AssessmentsController < ApplicationController
       params[:active_tab] = "basic"
     end
 
-    # make sure the penalties are set up
-    @assessment.late_penalty ||= Penalty.new(kind: "points")
-    @assessment.version_penalty ||= Penalty.new(kind: "points")
-
     @has_annotations = @assessment.submissions.any? { |s| !s.annotations.empty? }
 
     @is_positive_grading = @assessment.is_positive_grading
+
+    # warn instructors if the assessment is configured to allow late submissions
+    # but the settings do not make sense
+    if @assessment.end_at > @assessment.due_at
+      warn_messages = []
+      if @assessment.max_grace_days == 0
+        warn_messages << "- Max grace days = 0: students can't use grace days"
+      end
+      if @assessment.effective_late_penalty.value == 0
+        warn_messages << "- Late penalty = 0: late submissions made \
+                          without grace days are not penalized"
+      end
+      unless warn_messages.empty?
+        flash.now[:error] = "Late submissions are allowed, but<br>#{warn_messages.join('<br>')}"
+        flash.now[:html_safe] = true
+      end
+    end
+
+    # Used for the penalties tab
+    @has_unlimited_submissions = @assessment.max_submissions == -1
+    @has_unlimited_grace_days = @assessment.max_grace_days.nil?
+    @uses_default_version_threshold = @assessment.version_threshold.nil?
+    @uses_default_late_penalty = @assessment.late_penalty.nil?
+    @uses_default_version_penalty = @assessment.version_penalty.nil?
+
+    # make sure the penalties are set up
+    # placed after the check above, so that effective_late_penalty displays the correct result
+    @assessment.late_penalty ||= Penalty.new(kind: "points")
+    @assessment.version_penalty ||= Penalty.new(kind: "points")
   end
 
   action_auth_level :update, :instructor
@@ -857,8 +882,9 @@ class AssessmentsController < ApplicationController
       flash[:success] = "Assessment configuration updated!"
 
       redirect_to(tab_index) && return
-    rescue ActiveRecord::RecordInvalid => e
-      flash[:error] = e.message.sub!("Validation failed: ", "")
+    rescue ActiveRecord::RecordInvalid
+      flash[:error] = @assessment.errors.full_messages.join("<br>")
+      flash[:html_safe] = true
 
       redirect_to(tab_index) && return
     end
@@ -941,6 +967,7 @@ class AssessmentsController < ApplicationController
     end
 
     if @assessment.writeup_is_file?
+      # Note: writeup_is_file? validates that the writeup lies within the assessment folder
       filename = @assessment.writeup_path
       send_file(filename,
                 type: mime_type_from_ext(File.extname(filename)),
@@ -1026,6 +1053,28 @@ private
     if ass[:version_penalty_attributes] && ass[:version_penalty_attributes][:value].blank?
       ass.delete(:version_penalty_attributes)
       @assessment.version_penalty&.destroy
+    end
+
+    if params[:unlimited_submissions].to_boolean == true
+      ass[:max_submissions] = -1
+    end
+
+    if params[:unlimited_grace_days].to_boolean == true
+      ass[:max_grace_days] = ""
+    end
+
+    if params[:use_default_late_penalty].to_boolean == true
+      ass.delete(:late_penalty_attributes)
+      @assessment.late_penalty&.destroy
+    end
+
+    if params[:use_default_version_penalty].to_boolean == true
+      ass.delete(:version_penalty_attributes)
+      @assessment.version_penalty&.destroy
+    end
+
+    if params[:use_default_version_threshold].to_boolean == true
+      ass[:version_threshold] = ""
     end
 
     ass.delete(:name)
