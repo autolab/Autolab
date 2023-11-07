@@ -643,7 +643,7 @@ private
   def valid_handin_directory
     return true if handin_directory.blank? || Archive.in_dir?(handin_directory_path, folder_path)
 
-    errors.add :handin_directory, " must be a directory in the assessment folder"
+    errors.add :handin_directory, "must be a directory in the assessment folder"
     false
   end
 
