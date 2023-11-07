@@ -73,7 +73,7 @@
       $max_grace_days.prop('disabled', checked);
       if (checked) {
         $max_grace_days.val('Unlimited grace days');
-      } else  {
+      } else {
         $max_grace_days.val('');
       }
     }
