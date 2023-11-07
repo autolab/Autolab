@@ -29,10 +29,13 @@
                              placeholder: "E.g.   writeup.pdf   or   http://school.edu/class/writeup.pdf" %>
 </div>
 
+<h4>Assessment Config</h4>
 <%= f.file_field :config_file, button_text: "Upload #{@assessment.name}.rb",
-                               help_text: "Config file will be automatically reloaded after saving. Changes to other settings will
-                 be lost if an error is encountered." %>
+                               help_text: "Config file will be automatically reloaded after saving. Changes to other settings will be lost if an error is encountered." %>
 <b id="config-file-type-incorrect" style="color: red; margin: 0"></b>
+<div>
+  <%= link_to "Reload Assessment Config", { action: :reload }, { method: :post, class: "btn", title: "Reload the Assessment Config in the case that a config file doesn't exist." } %>
+</div>
 
 <h4>Modules Used</h4>
 <ul class="collection attachments">

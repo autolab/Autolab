@@ -111,12 +111,13 @@ class AssessmentsController < ApplicationController
                                          filename)) || (filename == "..") || (filename == ".")
 
       # assessment names must be only lowercase letters and digits
-      if filename =~ /[^a-z0-9]/
+      if filename !~ Assessment::VALID_NAME_REGEX
         # add line break if adding to existing error message
         flash.now[:error] = flash.now[:error] ? "#{flash.now[:error]} <br>" : ""
         flash.now[:error] += "An error occurred while trying to display an existing assessment " \
-            "from file directory #{filename}: assessment file names must only contain lowercase " \
-            "letters and digits with no spaces"
+            "from file directory #{filename}: Invalid assessment name. "\
+            "Find more information on valid assessment names "\
+            '<a href="https://docs.autolabproject.com/lab/#assessment-naming-rules">here</a><br>'
         flash.now[:html_safe] = true
         next
       end
@@ -170,7 +171,7 @@ class AssessmentsController < ApplicationController
         flash[:error] +=
           "<br>Invalid tarball. A valid assessment tar has a single root "\
           "directory that's named after the assessment, containing an "\
-          "assessment yaml file and an assessment ruby file."
+          "assessment yaml file"
         flash[:html_safe] = true
         redirect_to(action: "install_assessment") && return
       end
@@ -290,20 +291,39 @@ class AssessmentsController < ApplicationController
 
   def create
     @assessment = @course.assessments.new(new_assessment_params)
-
     if @assessment.name.blank?
-      # Validate the name
-      ass_name = @assessment.display_name.downcase.gsub(/[^a-z0-9]/, "")
+      # Validate the name, very similar to valid Ruby identifiers, but also allowing hyphens
+      # We just want to prevent file traversal attacks here, and stop names that break routing
+      # first regex - try to sanitize input, allow special characters in display name but not name
+      # if the sanitized doesn't match the required identifier structure, then we reject
+      begin
+        # Attempt name generation, try to match to a substring that is valid within the display name
+        match = @assessment.display_name.match(Assessment::VALID_NAME_SANITIZER_REGEX)
+        unless match.nil?
+          sanitized_display_name = match.captures[0]
+        end
 
-      if ass_name.blank?
+        if sanitized_display_name !~ Assessment::VALID_NAME_REGEX
+          flash[:error] =
+            "Assessment name is blank or contains disallowed characters. Find more information on "\
+            "valid assessment names "\
+            '<a href="https://docs.autolabproject.com/lab/#assessment-naming-rules">here</a>'
+          flash[:html_safe] = true
+          redirect_to(action: :install_assessment)
+          return
+        end
+      rescue StandardError
         flash[:error] =
-          "Assessment name is blank or contains characters that are not lowercase letters or digits"
+          "Error creating name from display name. Find more information on "\
+          "valid assessment names "\
+          '<a href="https://docs.autolabproject.com/lab/#assessment-naming-rules">here</a>'
+        flash[:html_safe] = true
         redirect_to(action: :install_assessment)
         return
       end
 
       # Update name in object
-      @assessment.name = ass_name
+      @assessment.name = sanitized_display_name
     end
 
     # fill in other fields
@@ -353,7 +373,12 @@ class AssessmentsController < ApplicationController
 
     flash[:success] = "Successfully installed #{@assessment.name}."
     # reload the course config file
-    @course.reload_course_config
+    begin
+      @course.reload_course_config
+    rescue StandardError, SyntaxError => e
+      @error = e
+      render("reload") && return
+    end
 
     redirect_to([@course, @assessment]) && return
   end
@@ -492,6 +517,12 @@ class AssessmentsController < ApplicationController
     if File.exist? @assessment.config_backup_file_path
       File.delete @assessment.config_backup_file_path
     end
+    if File.exist? @assessment.unique_config_file_path
+      File.delete @assessment.unique_config_file_path
+    end
+    if File.exist? @assessment.unique_config_backup_file_path
+      File.delete @assessment.unique_config_backup_file_path
+    end
 
     name = @assessment.display_name
     @assessment.destroy # awwww!!!!
@@ -503,7 +534,21 @@ class AssessmentsController < ApplicationController
 
   def show
     set_handin
-    extend_config_module(@assessment, @submission, @cud)
+    begin
+      extend_config_module(@assessment, @submission, @cud)
+    rescue AutogradeError => e
+      if @cud.has_auth_level? :instructor
+        flash[:error] = "Error loading the config file: "
+        flash[:error] += e.message
+        flash[:error] += "<br/> Try reloading the course config file," \
+      " or re-upload the course config file in order to recover your assessment."
+        flash[:html_safe] = true
+        redirect_to(edit_course_assessment_path(@course, @assessment)) && return
+      else
+        flash[:error] = "Error loading #{@assessment.display_name}. Please contact your instructor."
+        redirect_to(course_path(@course)) && return
+      end
+    end
 
     @aud = @assessment.aud_for @cud.id
 
@@ -756,7 +801,7 @@ class AssessmentsController < ApplicationController
     @assessment.load_config_file
   rescue StandardError, SyntaxError => e
     @error = e
-    # let the reload view render
+  # let the reload view render
   else
     flash[:success] = "Success: Assessment config file reloaded!"
     redirect_to(action: :show) && return
@@ -819,7 +864,7 @@ class AssessmentsController < ApplicationController
     unless uploaded_config_file.nil?
       config_source = uploaded_config_file.read
 
-      assessment_config_file_path = @assessment.source_config_file_path
+      assessment_config_file_path = @assessment.unique_source_config_file_path
       File.open(assessment_config_file_path, "w") do |f|
         f.write(config_source)
       end
@@ -1041,11 +1086,10 @@ private
 
   ##
   # a valid assessment tar has a single root directory that's named after the
-  # assessment, containing an assessment yaml file and an assessment ruby file
+  # assessment, containing an assessment yaml file
   #
   def valid_asmt_tar(tar_extract)
     asmt_name = nil
-    asmt_rb_exists = false
     asmt_yml_exists = false
     asmt_name_is_valid = true
     tar_extract.each do |entry|
@@ -1078,8 +1122,6 @@ private
 
           # validate syntax of config
           RubyVM::InstructionSequence.compile(config_source)
-
-          asmt_rb_exists = true
         end
         asmt_yml_exists = true if pathname == "#{asmt_name}/#{asmt_name}.yml"
       end
@@ -1087,22 +1129,20 @@ private
     # it is possible that the assessment path does not match the
     # the expected assessment path when the Ruby config file
     # has a different name then the pathname
-    if !asmt_name.nil? && asmt_name =~ /[^a-z0-9]/
+    if !asmt_name.nil? && asmt_name !~ Assessment::VALID_NAME_REGEX
       flash[:error] = "Errors found in tarball: Assessment name #{asmt_name} is invalid.
-                       Assessment file names must only contain lowercase
-                       letters and digits with no spaces."
+                       Find more information on valid assessment names "\
+          '<a href="https://docs.autolabproject.com/lab/#assessment-naming-rules">here</a> <br>'
+      flash[:html_safe] = true
       asmt_name_is_valid = false
     end
-    if !(asmt_rb_exists && asmt_yml_exists && !asmt_name.nil?)
+    if !(asmt_yml_exists && !asmt_name.nil?)
       flash[:error] = "Errors found in tarball:"
       if !asmt_yml_exists && !asmt_name.nil?
         flash[:error] += "<br>Assessment yml file #{asmt_name}/#{asmt_name}.yml was not found"
       end
-      if !asmt_rb_exists && !asmt_name.nil?
-        flash[:error] += "<br>Assessment rb file #{asmt_name}/#{asmt_name}.rb was not found"
-      end
     end
-    [asmt_rb_exists && asmt_yml_exists && !asmt_name.nil? && asmt_name_is_valid, asmt_name]
+    [asmt_yml_exists && !asmt_name.nil? && asmt_name_is_valid, asmt_name]
   end
 
   def tab_index

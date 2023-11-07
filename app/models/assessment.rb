@@ -49,7 +49,8 @@ class Assessment < ApplicationRecord
   # Constants
   ORDERING = "due_at ASC, name ASC".freeze
   RELEASED = "start_at < ?".freeze
-
+  VALID_NAME_REGEX = /^[A-Za-z][A-Za-z0-9_-]*$/.freeze
+  VALID_NAME_SANITIZER_REGEX = /^[^A-Za-z]*([A-Za-z0-9_-]+)/.freeze
   # Scopes
   scope :ordered, -> { order(ORDERING) }
   scope :released, ->(as_of = Time.current) { where(RELEASED, as_of) }
@@ -128,12 +129,28 @@ class Assessment < ApplicationRecord
     Rails.root.join("assessmentConfig", "#{course.name}-#{sanitized_name}.rb")
   end
 
+  def unique_config_file_path
+    Rails.root.join("assessmentConfig", "#{course.name}-#{name}-#{id}.rb")
+  end
+
   def config_backup_file_path
     config_file_path.sub_ext(".rb.bak")
   end
 
+  def unique_config_backup_file_path
+    unique_config_file_path.sub_ext(".rb.bak")
+  end
+
   def config_module_name
     (sanitized_name + course.sanitized_name).camelize
+  end
+
+  def unique_config_module_name
+    "#{sanitized_name}#{id}".camelize
+  end
+
+  def use_unique_module_name
+    File.exist? unique_config_file_path
   end
 
   def config
@@ -188,7 +205,7 @@ class Assessment < ApplicationRecord
   # returns true if the file is actually created
   #
   def construct_default_config_file
-    assessment_config_file_path = source_config_file_path
+    assessment_config_file_path = unique_source_config_file_path
     return false if File.file?(assessment_config_file_path)
 
     # Open and read the default assessment config file
@@ -196,14 +213,10 @@ class Assessment < ApplicationRecord
     config_source = File.open(default_config_file_path, "r", &:read)
 
     # Update with this assessment information
-    config_source.gsub!("##NAME_CAMEL##", name.camelize)
+    config_source.gsub!("##NAME_CAMEL##", unique_config_module_name)
     config_source.gsub!("##NAME_LOWER##", name)
-
     # Write the new config out to the right file.
     File.open(assessment_config_file_path, "w") { |f| f.write(config_source) }
-    # Load the assessment config file while we're at it
-    File.open(config_file_path, "w") { |f| f.write config_source }
-
     true
   end
 
@@ -214,39 +227,56 @@ class Assessment < ApplicationRecord
   # WILL NOT WORK ON NEW, UNSAVED ASSESSMENTS!!!
   #
   def load_config_file
+    # migrate old source config file path, in dir check to ensure that we are not trying to migrate
+    # a different module in a different folder that has a asmt name that maps to the old system
+    if (File.exist? source_config_file_path) &&
+       (source_config_file_path != unique_source_config_file_path) &&
+       Archive.in_dir?(source_config_file_path, folder_path)
+      # read from source
+      config_source = File.open(source_config_file_path, "r", &:read)
+      RubyVM::InstructionSequence.compile(config_source)
+      # rename module name if it doesn't match new unique naming scheme
+      if config_source !~ /\b#{unique_config_module_name}\b/
+        match = config_source.match(/module\s+(\w+)/)
+        config_source = config_source.sub(match[0], "module #{unique_config_module_name}")
+      end
+      File.open(unique_source_config_file_path, "w"){ |f| f.write(config_source) }
+      File.rename(source_config_file_path, source_config_file_backup_path)
+    end
+
     # read from source
-    config_source = File.open(source_config_file_path, "r", &:read)
+    config_source = File.open(unique_source_config_file_path, "r", &:read)
 
     # validate syntax of config
     RubyVM::InstructionSequence.compile(config_source)
 
     # ensure source_config_module_name is an actual module in the assessment config rb file
     # otherwise loading the file on subsequent calls to config_module will result in an exception
-    if config_source !~ /\b#{source_config_module_name}\b/
-      raise "Module name in #{name}.rb
-             doesn't match expected #{source_config_module_name}"
-    end
 
     # uniquely rename module (so that it's unique among all assessment modules loaded in Autolab)
-    config = config_source.gsub("module #{source_config_module_name}",
-                                "module #{config_module_name}")
-    # backup old config
-    if File.exist?(config_file_path)
-      File.rename(config_file_path, config_backup_file_path)
+    if config_source !~ /\b#{unique_config_module_name}\b/
+      match = config_source.match(/module\s+(\w+)/)
+      config_source = config_source.sub(match[0], "module #{unique_config_module_name}")
+    end
+
+    # backup old *unique* configs
+    # we keep the previous config_file_path, if it exists, to allow for the unique file path changes
+    # to be reverted without breaking all previous existing assessments
+    if File.exist?(unique_config_file_path)
+      File.rename(unique_config_file_path, unique_config_backup_file_path)
     end
 
     # write to config_file_path
-    File.open(config_file_path, "w") { |f| f.write config }
+    File.open(unique_config_file_path, "w") { |f| f.write config_source }
 
     # config file might have an updated custom raw score function: clear raw score cache
     invalidate_raw_scores
-
-    logger.info "Loaded #{config_file_path}"
+    logger.info "Loaded #{unique_config_file_path}"
   end
 
   def config_module
     # (re)construct config file from source, unless it already exists
-    load_config_file unless File.exist? config_file_path
+    load_config_file unless File.exist? unique_config_file_path
 
     # (re)load config file if it was updated or wasn't ever loaded into this process
     reload_config_file if config_file_updated?
@@ -254,7 +284,7 @@ class Assessment < ApplicationRecord
     # return config module
 
     # rubocop:disable Security/Eval
-    eval config_module_name
+    eval unique_config_module_name
     # rubocop:enable Security/Eval
   end
 
@@ -380,6 +410,15 @@ class Assessment < ApplicationRecord
     Rails.root.join("courses", course.name, sanitized_name, "#{sanitized_name}.rb")
   end
 
+  # name is already sanitized during the creation process
+  def unique_source_config_file_path
+    Rails.root.join("courses", course.name, name, "#{name}.rb")
+  end
+
+  def source_config_file_backup_path
+    source_config_file_path.sub_ext(".rb.bak")
+  end
+
 private
 
   def saved_change_to_grade_related_fields?
@@ -409,21 +448,26 @@ private
     # remove the previously loaded config module
     Object.send :remove_const, config_module_name if Object.const_defined? config_module_name
 
+    if Object.const_defined? unique_config_module_name
+      Object.send :remove_const,
+                  unique_config_module_name
+    end
+
     # force load config file (see http://www.ruby-doc.org/core-2.0.0/Kernel.html#method-i-load)
-    load config_file_path
+    load unique_config_file_path
 
     # updated last loaded time
-    @@CONFIG_FILE_LAST_LOADED[config_file_path] = Time.current
+    @@CONFIG_FILE_LAST_LOADED[unique_config_file_path] = Time.current
 
-    logger.info "Reloaded #{config_file_path}"
+    logger.info "Reloaded #{unique_config_file_path}"
   end
 
   def config_file_updated?
     # config file last modified time
-    config_file_mtime = File.mtime config_file_path
+    config_file_mtime = File.mtime unique_config_file_path
 
     # get last loaded time of config file by this process
-    last_loaded_time = @@CONFIG_FILE_LAST_LOADED[config_file_path]
+    last_loaded_time = @@CONFIG_FILE_LAST_LOADED[unique_config_file_path]
 
     # if there isn't last loaded time, consider config file updated
     last_loaded_time ? config_file_mtime >= last_loaded_time : true
@@ -611,7 +655,7 @@ private
   end
 
   def sanitized_name
-    name.gsub(/\./, "")
+    name.gsub(/[.-]/, "")
   end
 
   def active?
