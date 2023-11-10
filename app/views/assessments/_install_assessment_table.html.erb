@@ -50,7 +50,7 @@
                               $(cbox).closest("tr").find('.messages-dropdown').text(data[i].messages.toString())
                               $(cbox).parent().hide()
                           } else {
-                              $(cbox).closest('.install-success-p').show()
+                              $(cbox).closest("tr").find('.install-success-p').show()
                           }
 
                       } else if (data[i].status === "FAIL") {
