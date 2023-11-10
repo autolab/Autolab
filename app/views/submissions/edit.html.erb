@@ -2,8 +2,8 @@
 #<%= @submission.version %> for <%= link_to @assessment.display_name, course_assessment_path(@submission.course_user_datum.course, @assessment) %></h2>
 
 <%= form_for @submission, url: [@submission.course_user_datum.course, @assessment, @submission],
-             builder: FormBuilderWithDateTimeInput,
-             method: :patch do |f| %>
+                          builder: FormBuilderWithDateTimeInput,
+                          method: :patch do |f| %>
 <%= f.error_messages %>
 <table class="verticalTable">
   <tr>

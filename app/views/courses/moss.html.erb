@@ -33,7 +33,7 @@
           <h5>
             <%= @course.full_name %>
           </h5>
-          <%= render "components/dropdown_icon" %>
+          <%= render "components/dropdown_icon", start_closed: false %>
         </div>
         <ul id="<%= @course.id %>Assessments" class="moss-inner-list">
           <% for a in @course.assessments do %>
@@ -72,7 +72,7 @@
           <h5>
             Moss Flags
           </h5>
-          <%= render "components/dropdown_icon" %>
+          <%= render "components/dropdown_icon", start_closed: true %>
           <% content_for :javascripts do %>
             <script type="text/javascript">
                 renderDropDownIcon('moss-flags', 'flags');

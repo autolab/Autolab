@@ -57,6 +57,7 @@ class Api::V1::AssessmentsController < Api::V1::BaseApiController
     end
 
     if @assessment.writeup_is_file?
+      # Note: writeup_is_file? validates that the writeup lies within the assessment folder
       filename = @assessment.writeup_path
       send_file(filename,
                 disposition: "inline",
@@ -73,6 +74,11 @@ class Api::V1::AssessmentsController < Api::V1::BaseApiController
 
     if @assessment.overwrites_method?(:handout)
       hash = @assessment.config_module.handout
+      # Ensure that handout lies within the assessment folder
+      unless Archive.in_dir?(Pathname(hash["fullpath"]), @assessment.folder_path)
+        respond_with_hash({:handout => "none"}) and return
+      end
+
       send_file(hash["fullpath"],
                 disposition: "inline",
                 filename: hash["filename"])
@@ -84,6 +90,7 @@ class Api::V1::AssessmentsController < Api::V1::BaseApiController
     end
 
     if @assessment.handout_is_file?
+      # Note: handout_is_file? validates that the handout lies within the assessment folder
       filename = @assessment.handout_path
       send_file(filename,
                 disposition: "inline",
