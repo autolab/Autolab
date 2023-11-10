@@ -1,5 +1,24 @@
 <% content_for :javascripts do %>
   <%= javascript_include_tag "initialize_datetimepickers" %>
+  <script>
+    $(document).ready(function() {
+      const $attachmentReleaseAt = $("#attachment_release_at");
+
+      function updateReleaseStatus() {
+        const release_at = moment($attachmentReleaseAt.val(), "YYYY-MM-DD HH:mm ZZ");
+        const now = moment();
+        const $status = $("#release_status");
+
+        if (release_at.isAfter(now)) {
+          $status.html(`Attachment will be released in ${moment.duration(now.diff(release_at)).humanize()}.`);
+        } else {
+          $status.html("Attachment will be released immediately.");
+        }
+      }
+      $attachmentReleaseAt.on("change", updateReleaseStatus);
+      updateReleaseStatus();
+    });
+  </script>
 <% end %>
 <%= form_for @attachment, as: :attachment, url: path, builder: FormBuilderWithDateTimeInput do |f| %>
   <ul>
@@ -25,6 +44,9 @@
     <li>
       <%= link_to "Cancel", :back, class: "btn-flat" %>
       <%= f.submit(@attachment.new_record? ? "Create Attachment" : "Save Changes") %>
+    </li>
+    <li>
+      <strong id="release_status"></strong>
     </li>
   </ul>
 <% end %>
