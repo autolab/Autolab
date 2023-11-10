@@ -1199,17 +1199,26 @@ private
       # there should only be one file in the main directory with .yml extension
       next unless File.extname(entry.full_name) == '.yml'
 
-      config = YAML.safe_load(entry.read, permitted_classes: [Date])["general"]
-      course = Course.new(config.except("late_penalty", "version_penalty"))
-      course.late_penalty = Penalty.new(config["late_penalty"])
-      course.version_penalty = Penalty.new(config["version_penalty"])
+      config = YAML.safe_load(entry.read, permitted_classes: [Date])
+      general_config = config["general"]
+      course = Course.new(general_config.except("late_penalty", "version_penalty"))
+      course.late_penalty = Penalty.new(general_config["late_penalty"])
+      course.version_penalty = Penalty.new(general_config["version_penalty"])
 
+      # metrics import if exists in the file
       config["risk_conditions"]&.each do |condition|
         options = { course_id: course.id, condition_type: condition["condition_type"],
                     parameters: condition["parameters"].to_hash, version: condition["version"] }
         course.risk_conditions << RiskCondition.new(options)
       end
 
+      if config["watchlist_configuration"]
+        wl_config = config["watchlist_configuration"]
+        course.watchlist_configuration = WatchlistConfiguration.new
+        course.watchlist_configuration.category_blocklist = wl_config["category_blocklist"]
+        course.watchlist_configuration.assessment_blocklist = wl_config["assessment_blocklist"]
+        course.watchlist_configuration.allow_ca = wl_config["allow_ca"]
+      end
       return course
     end
   end
