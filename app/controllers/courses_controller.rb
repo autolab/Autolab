@@ -225,7 +225,7 @@ class CoursesController < ApplicationController
           render(action: "new") && return
         else
           flash[:success] = "New Course #{@newCourse.name} successfully created!"
-          redirect_to(edit_course_path(@newCourse, true)) && return
+          redirect_to(courseOnboardInstallAsmt_course_assessments_path(@newCourse)) && return
         end
       else
         # roll back course creation
@@ -241,9 +241,6 @@ class CoursesController < ApplicationController
   end
 
   action_auth_level :edit, :instructor
-  def edit
-    @unused_config_files = Assessment.get_uninstalled_assessments(@course)
-  end
 
   action_auth_level :update, :instructor
   def update
@@ -651,7 +648,9 @@ class CoursesController < ApplicationController
     system("chmod -R a+r #{tmp_dir}")
     ActiveRecord::Base.clear_active_connections!
     # Remove non text files when making a moss run
-    `~/Autolab/script/cleanMoss #{tmp_dir}`
+    Dir.chdir(Rails.root.join("script")) do
+      system("./cleanMoss #{tmp_dir}")
+    end
     # Now run the Moss command
     @mossCmdString = @mossCmd.join(" ")
     @mossOutput = `#{@mossCmdString} 2>&1`

@@ -85,11 +85,13 @@ class ScoreboardsController < ApplicationController
       # But, if this was an instructor, we want them to know about
       # this.
       if @cud.instructor?
+        # not using flash because could be too large of a message to pass
         @errorMessage = "An error occurred while calling " \
-          "createScoreboardEntry(#{grade[:problems].inspect},"\
+          "createScoreboardEntry(#{grade[:problems].inspect},\n"\
           "#{grade[:autoresult]})"
         @error = e
-        render([@course, @assessment]) && return
+        Rails.logger.error("Scoreboard error in #{@course.name}/#{@assessment.name}: #{@error}")
+        render("scoreboards/edit") && return
       end
     end
 
@@ -108,14 +110,14 @@ class ScoreboardsController < ApplicationController
       else
         scoreboardOrderSubmissions(a, b)
       end
-
     rescue StandardError => e
       if @cud.instructor?
+        # not using flash because could be too large of a message to pass
         @errorMessage = "An error occurred while calling "\
-          "scoreboardOrderSubmissions(#{a.inspect},"\
+          "scoreboardOrderSubmissions(#{a.inspect},\n"\
           "#{b.inspect})"
         @error = e
-        render([@course, @assessment]) && return
+        render("scoreboards/edit") && return
       end
       0 # Just say they're equal!
     end
@@ -249,7 +251,13 @@ private
     # from the scoreboard array object in the JSON autoresult.
     begin
       parsed = ActiveSupport::JSON.decode(autoresult)
-      raise if !parsed || !parsed["scoreboard"]
+      if !parsed["scoreboard"].is_a?(Array) && @cud.instructor?
+        flash[:error] = "Error parsing scoreboard for autograded assessment: scoreboard result is"\
+          " not an array. Please ensure that the autograder returns scoreboard results as an array."
+      end
+      Rails.logger.error("Scoreboard error in #{@course.name}/#{@assessment.name}: " \
+                           "Scoreboard result is not an array")
+      raise if !parsed || !parsed["scoreboard"] || !parsed["scoreboard"].is_a?(Array)
     rescue StandardError
       # If there is no autoresult for this student (typically
       # because their code did not compile or it segfaulted and
@@ -265,11 +273,17 @@ private
         end
         return entry
       rescue StandardError
+        if @cud.instructor?
+          flash[:error] = "Error parsing scoreboard for autograded assessment: Please ensure the"\
+          " scoreboard results from the autograder are formatted to be an array, and the colspec"\
+          " matches the expected format."
+          Rails.logger.error("Scoreboard error in #{@course.name}/#{@assessment.name}: " \
+                               "Scoreboard could not be parsed")
+        end
         # Give up and bail
         return ["-"]
       end
     end
-
     # Found a valid scoreboard array, so simply return it. If we
     # wanted to be really careful, we would verify that the size
     # was the same size as the column specification.
