@@ -74,6 +74,7 @@ module ControllerMacros
       course_id: cid,
       assessment_id: nil,
       name: "att#{cid}",
+      category_name: "General",
       release_at: released ? Time.current : Time.current + 1.day,
       file: fixture_file_upload("attachments/course.txt", "text/plain")
     }
@@ -88,6 +89,7 @@ module ControllerMacros
       course_id: cid,
       assessment_id: aid,
       name: "att#{cid}--#{aid}",
+      category_name: "General",
       release_at: released ? Time.current : Time.current + 1.day,
       file: fixture_file_upload("attachments/assessment.txt", "text/plain")
     }
