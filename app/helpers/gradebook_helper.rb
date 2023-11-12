@@ -38,7 +38,7 @@ module GradebookHelper
                      headerCssClass: "assessment_final_score",
                      before_grading_deadline: matrix.before_grading_deadline?(asmt.id), width: 150 }
 
-        columns << { id: "#{asmt.name}_version", name: "ver",
+        columns << { id: "#{asmt.name}_version", name: "Version",
                      field: "#{asmt.name}_version",
                      sortable: true, cssClass: "computed assessment_final_score",
                      headerCssClass: "assessment_final_score",
@@ -117,16 +117,6 @@ module GradebookHelper
 
         key = "#{cat}_category_average"
         row[key] = round matrix.category_average(cat, cud.id)
-      end
-
-      course.assessments.ordered.each do |a|
-        next unless matrix.has_assessment? a.id
-
-        next unless a.latest_submission_by cud
-
-        row["#{a.name}_version"] = Submission.where(assessment_id: a.id,
-                                                    course_user_datum_id: cud.id,
-                                                    ignored: false).maximum(:version)
       end
 
       row["course_average"] = round matrix.course_average(cud.id)
