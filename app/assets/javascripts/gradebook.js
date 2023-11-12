@@ -60,7 +60,7 @@ var slickgrid_options = {
 
       case "not_yet_submitted":
         if (columnDef.before_grading_deadline) {
-          value = "<a data-title='No submission has been made yet.' class='tip icon-exclamation-sign'></a>";
+          value = "<a data-tooltip='No submission has been made yet.' class='tooltipped icon-exclamation-sign'></a>";
         } else {
           tip = user + ' has not yet made any submissions for ' + asmt + '. ';
           tip += 'The last date for submission by ' + user + ' is ' + data[end_at_key] + '.';
