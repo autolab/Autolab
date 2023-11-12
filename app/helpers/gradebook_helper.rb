@@ -95,7 +95,8 @@ module GradebookHelper
         next unless matrix.has_assessment? a.id
 
         cell = matrix.cell(a.id, cud.id)
-        row["#{a.name}_version"] = a.assessment_user_data.find_by(course_user_datum_id: cud.id).latest_submission&.version
+        aud = a.assessment_user_data.find_by(course_user_datum_id: cud.id)
+        row["#{a.name}_version"] = aud&.latest_submission&.version
         row["#{a.name}_history_url"] = history_url(cud, a)
         row[a.name] = round cell["final_score"]
         row["#{a.name}_submission_status"] = cell["submission_status"]
@@ -139,6 +140,7 @@ module GradebookHelper
         next unless matrix.has_assessment? asmt.id
 
         header << asmt.name
+        header << "#{asmt.name}_version"
       end
       header << "#{cat} Average"
     end
