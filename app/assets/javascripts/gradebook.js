@@ -117,7 +117,6 @@ $(function () {
 
   // column header tooltips
   for (var i = 0; i < columns.length; i++) {
-    columns[i].headerCssClass = "tip";
     columns[i].toolTip = columns[i].name;
   }
 
