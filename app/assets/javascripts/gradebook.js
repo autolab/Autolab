@@ -164,15 +164,8 @@ $(function () {
   });
   $(window).resize();
 
-  grid.onMouseEnter.subscribe(function(e, args) {
-    $('.tooltipped', e.target).tooltip({
-      position: 'top',
-      delay: 100,
-      html: true
-    });
-  });
-
-  $('.tooltipped').tooltip({
+  // Since Materialize's tooltip method was overwritten by jquery-ui
+  M.Tooltip.init(document.querySelectorAll(".tooltipped"), {
     position: 'top',
     delay: 100,
     html: true
