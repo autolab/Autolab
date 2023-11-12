@@ -163,11 +163,16 @@ $(function () {
   });
   $(window).resize();
 
-  // Since Materialize's tooltip method was overwritten by jquery-ui
-  M.Tooltip.init(document.querySelectorAll(".tooltipped"), {
+  const tooltipOpts = {
     position: 'top',
     delay: 100,
     html: true
+  };
+  grid.onMouseEnter.subscribe(function(e, args) {
+    M.Tooltip.init(document.querySelectorAll(".tooltipped"), tooltipOpts);
   });
+
+  // Since Materialize's tooltip method was overwritten by jquery-ui
+  M.Tooltip.init(document.querySelectorAll(".tooltipped"), tooltipOpts);
 
 })
