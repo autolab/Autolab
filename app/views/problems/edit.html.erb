@@ -5,6 +5,10 @@
   <%= stylesheet_link_tag "problems" %>
 <% end %>
 
-<%= form_for @problem, url: course_assessment_problem_path(@course, @assessment, @problem), method: :patch, builder: FormBuilderWithDateTimeInput do |f|%>
-  <%= render partial: "fields", locals: {f: f} %>
+<h2>
+  Edit Problem
+</h2>
+<%= form_for @problem, url: course_assessment_problem_path(@course, @assessment, @problem),
+                       method: :patch, builder: FormBuilderWithDateTimeInput do |f| %>
+  <%= render partial: "fields", locals: { f: f } %>
 <% end %>

@@ -31,9 +31,9 @@
   </thead>
   <tbody>
     <% @applications.each do |application| %>
-      <% most_recent_grant = Doorkeeper::AccessGrant.where(:application_id => application.id,
-                                                           :resource_owner_id => current_user)
-                                                    .sort_by(&:created_at).last %>
+      <% most_recent_grant = Doorkeeper::AccessGrant.where(application_id: application.id,
+                                                           resource_owner_id: current_user)
+                                                    .max_by(&:created_at) %>
       <tr>
         <td><%= application.name %></td>
         <td><% if application.scopes.include? "user_info" %><i class="material-icons small">done</i><% end %></td>

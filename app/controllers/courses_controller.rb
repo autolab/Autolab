@@ -1,6 +1,7 @@
 require "archive"
 require "csv"
 require "fileutils"
+require "pathname"
 require "statistics"
 
 class CoursesController < ApplicationController
@@ -9,10 +10,6 @@ class CoursesController < ApplicationController
   skip_before_action :authorize_user_for_course, only: %i[courses_redirect index new create]
   # if there's no course, there are no persistent announcements for that course
   skip_before_action :update_persistent_announcements, only: %i[courses_redirect index new create]
-
-  rescue_from ActionView::MissingTemplate do |_exception|
-    redirect_to("/home/error_404")
-  end
 
   def index
     courses_for_user = User.courses_for_user current_user
@@ -299,7 +296,7 @@ class CoursesController < ApplicationController
     user_emails = user_emails.reject(&:nil?)
 
     # check if email matches regex
-    email_regex = /\A[\w+\-.]+@[a-z\d\-]+(\.[a-z\d\-]+)*\.[a-z]+\z/i
+    email_regex = /\A[\w+\-.]+@[a-z\d-]+(\.[a-z\d-]+)*\.[a-z]+\z/i
 
     # raise error if any email is invalid and return which emails are invalid
     invalid_emails = user_emails.reject { |user| user[:email] =~ email_regex }
@@ -454,30 +451,6 @@ class CoursesController < ApplicationController
     send_data output, filename: "roster.csv", type: "text/csv", disposition: "inline"
   end
 
-  # install_assessment - Installs a new assessment, either by
-  # creating it from scratch, or importing it from an existing
-  # assessment directory.
-  action_auth_level :install_assessment, :instructor
-  def install_assessment
-    @assignDir = Rails.root.join("courses", @course.name)
-    @availableAssessments = []
-    begin
-      Dir.foreach(@assignDir) do |filename|
-        if File.exist?(File.join(@assignDir, filename, "#{filename}.rb"))
-          # names must be only lowercase letters and digits
-          next if filename =~ /[^a-z0-9]/
-
-          # Only list assessments that aren't installed yet
-          assessment = @course.assessments.where(name: filename).first
-          @availableAssessments << filename unless assessment
-        end
-      end
-      @availableAssessments = @availableAssessments.sort
-    rescue StandardError => e
-      render(text: "<h3>#{e}</h3>", layout: true) && return
-    end
-  end
-
   # email - The email action allows instructors to email the entire course, or
   # a single section at a time.  Sections are passed via params[:section].
   action_auth_level :email, :instructor
@@ -598,7 +571,9 @@ class CoursesController < ApplicationController
     system("chmod -R a+r #{tmp_dir}")
     ActiveRecord::Base.clear_active_connections!
     # Remove non text files when making a moss run
-    `~/Autolab/script/cleanMoss #{tmp_dir}`
+    Dir.chdir(Rails.root.join("script")) do
+      system("./cleanMoss #{tmp_dir}")
+    end
     # Now run the Moss command
     @mossCmdString = @mossCmd.join(" ")
     @mossOutput = `#{@mossCmdString} 2>&1`
@@ -1107,15 +1082,18 @@ private
         pathname = Archive.get_entry_name(entry)
         next if Archive.looks_like_directory?(pathname)
 
-        destination = if archive
-                        File.join(extFilesDir,
-                                  pathname)
-                      else
-                        File.join(baseFilesDir, pathname)
-                      end
-        pathname.gsub!(%r{/}, "-")
+        output_dir = if archive
+                       extFilesDir
+                     else
+                       baseFilesDir
+                     end
+        output_file = File.join(output_dir, pathname)
+
+        # skip if the file lies outside the archive
+        next unless Archive.in_dir?(Pathname(output_file), Pathname(output_dir))
+
         # make sure all subdirectories are there
-        File.open(destination, "wb") do |out|
+        File.open(output_file, "wb") do |out|
           out.write Archive.read_entry_file(entry)
           begin
             out.fsync

@@ -5,9 +5,6 @@ class ScoreboardsController < ApplicationController
   before_action :set_assessment
   before_action :set_assessment_breadcrumb, only: [:edit]
   before_action :set_scoreboard, except: [:create]
-  rescue_from ActionView::MissingTemplate do |_exception|
-    redirect_to("/home/error_404")
-  end
 
   action_auth_level :create, :instructor
   def create
@@ -88,11 +85,13 @@ class ScoreboardsController < ApplicationController
       # But, if this was an instructor, we want them to know about
       # this.
       if @cud.instructor?
+        # not using flash because could be too large of a message to pass
         @errorMessage = "An error occurred while calling " \
-          "createScoreboardEntry(#{grade[:problems].inspect},"\
+          "createScoreboardEntry(#{grade[:problems].inspect},\n"\
           "#{grade[:autoresult]})"
         @error = e
-        render([@course, @assessment]) && return
+        Rails.logger.error("Scoreboard error in #{@course.name}/#{@assessment.name}: #{@error}")
+        render("scoreboards/edit") && return
       end
     end
 
@@ -111,14 +110,14 @@ class ScoreboardsController < ApplicationController
       else
         scoreboardOrderSubmissions(a, b)
       end
-
     rescue StandardError => e
       if @cud.instructor?
+        # not using flash because could be too large of a message to pass
         @errorMessage = "An error occurred while calling "\
-          "scoreboardOrderSubmissions(#{a.inspect},"\
+          "scoreboardOrderSubmissions(#{a.inspect},\n"\
           "#{b.inspect})"
         @error = e
-        render([@course, @assessment]) && return
+        render("scoreboards/edit") && return
       end
       0 # Just say they're equal!
     end
@@ -208,7 +207,7 @@ private
         str += " | "
       end
       str += hash["hdr"].to_s.upcase
-      str += hash["asc"] ? " [asc]" : " [desc]" if i < 3
+      str += hash["asc"] ? " [asc]" : " [desc]"
       i += 1
     end
     str
@@ -252,7 +251,13 @@ private
     # from the scoreboard array object in the JSON autoresult.
     begin
       parsed = ActiveSupport::JSON.decode(autoresult)
-      raise if !parsed || !parsed["scoreboard"]
+      if !parsed["scoreboard"].is_a?(Array) && @cud.instructor?
+        flash[:error] = "Error parsing scoreboard for autograded assessment: scoreboard result is"\
+          " not an array. Please ensure that the autograder returns scoreboard results as an array."
+      end
+      Rails.logger.error("Scoreboard error in #{@course.name}/#{@assessment.name}: " \
+                           "Scoreboard result is not an array")
+      raise if !parsed || !parsed["scoreboard"] || !parsed["scoreboard"].is_a?(Array)
     rescue StandardError
       # If there is no autoresult for this student (typically
       # because their code did not compile or it segfaulted and
@@ -268,11 +273,17 @@ private
         end
         return entry
       rescue StandardError
+        if @cud.instructor?
+          flash[:error] = "Error parsing scoreboard for autograded assessment: Please ensure the"\
+          " scoreboard results from the autograder are formatted to be an array, and the colspec"\
+          " matches the expected format."
+          Rails.logger.error("Scoreboard error in #{@course.name}/#{@assessment.name}: " \
+                               "Scoreboard could not be parsed")
+        end
         # Give up and bail
         return ["-"]
       end
     end
-
     # Found a valid scoreboard array, so simply return it. If we
     # wanted to be really careful, we would verify that the size
     # was the same size as the column specification.
@@ -318,46 +329,22 @@ private
       # in descending order. Lab authors can modify the default
       # direction with the "asc" key in the column spec.
     else
-      a0 = a[:entry][0].to_f
-      a1 = a[:entry][1].to_f
-      a2 = a[:entry][2].to_f
-      b0 = b[:entry][0].to_f
-      b1 = b[:entry][1].to_f
-      b2 = b[:entry][2].to_f
-
       begin
         parsed = ActiveSupport::JSON.decode(@scoreboard.colspec)
       rescue StandardError => e
         Rails.logger.error("Error in scoreboards controller updater: #{e.message}")
       end
 
-      if a0 != b0
-        if parsed && parsed["scoreboard"] &&
-           !parsed["scoreboard"].empty? &&
-           parsed["scoreboard"][0]["asc"]
-          a0 <=> b0 # ascending order
-        else
-          b0 <=> a0 # descending order
-        end
-      elsif a1 != b1
-        if parsed && parsed["scoreboard"] &&
-           parsed["scoreboard"].size > 1 &&
-           parsed["scoreboard"][1]["asc"]
-          a1 <=> b1 # ascending order
-        else
-          b1 <=> a1 # descending order
-        end
-      elsif a2 != b2
-        if parsed && parsed["scoreboard"] &&
-           parsed["scoreboard"].size > 2 &&
-           parsed["scoreboard"][2]["asc"]
-          a2 <=> b2 # ascending order
-        else
-          b2 <=> a2 # descending order
-        end
-      else
-        a[:time] <=> b[:time] # ascending by submission time
+      # Validations ensure that colspec is of the correct format
+      parsed["scoreboard"].each_with_index do |v, i|
+        ai = a[:entry][i].to_f
+        bi = b[:entry][i].to_f
+        next unless ai != bi
+        return ai <=> bi if v["asc"] # ascending
+
+        return bi <=> ai # descending otherwise
       end
+      a[:time] <=> b[:time] # ascending by submission time to tiebreak
     end
   end
 end

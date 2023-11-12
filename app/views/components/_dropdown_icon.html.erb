@@ -1,0 +1,25 @@
+<i class="material-icons" id="expand-more" style="display: none">
+  expand_more
+</i>
+<i class="material-icons" id="expand-less">
+  expand_less
+</i>
+
+<% content_for :javascripts do %>
+  <script type="text/javascript">
+      /**
+       * toggles the "style.display" of the element with the given id.
+       **/
+      function renderDropDownIcon(dropdownId, tableId) {
+          let table = document.getElementById(tableId);
+          let dropdown = document.getElementById(dropdownId);
+          if (table.style.display == "none") {
+              $(dropdown).children('#expand-more').show()
+              $(dropdown).children('#expand-less').hide()
+          } else {
+              $(dropdown).children('#expand-more').hide()
+              $(dropdown).children('#expand-less').show()
+          }
+      }
+  </script>
+<% end %>

@@ -3,10 +3,6 @@
 class AnnouncementsController < ApplicationController
   before_action :set_announcement, except: %i[index new create]
 
-  rescue_from ActionView::MissingTemplate do |_exception|
-    redirect_to("/home/error_404")
-  end
-
   action_auth_level :index, :instructor
   def index
     @announcements = if @cud.user.administrator?

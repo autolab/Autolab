@@ -1,4 +1,4 @@
-<table class='prettyBorder sortable' id="<%= sort_status %>" >
+<table class='prettyBorder sortable' id="<%= sort_status %>">
   <thead>
   <tr>
     <th>Email</th>
@@ -15,48 +15,48 @@
   </thead>
   <% rowNum = 0 %>
   <% for cud in cud_view do %>
-    <tr class="<%= cud[:color] %>_cud" >
+    <tr class="<%= cud[:color] %>_cud">
       <input type="hidden" name="cuds[<%= rowNum %>][color]"
-        value="<%= cud[:color] %>" />
+        value="<%= cud[:color] %>">
       <td><%= cud[:email] %>
-        <input type="hidden" name="cuds[<%=rowNum %>][email]"
-          value="<%= cud[:email]%>" />
+        <input type="hidden" name="cuds[<%= rowNum %>][email]"
+          value="<%= cud[:email] %>">
       </td>
       <td><%= cud[:first_name] %>
-        <input type="hidden" name="cuds[<%=rowNum%>][first_name]"
-          value="<%= cud[:first_name] %>" />
+        <input type="hidden" name="cuds[<%= rowNum %>][first_name]"
+          value="<%= cud[:first_name] %>">
       </td>
       <td><%= cud[:last_name] %>
-        <input type="hidden" name="cuds[<%=rowNum%>][last_name]"
-          value="<%= cud[:last_name] %>" />
+        <input type="hidden" name="cuds[<%= rowNum %>][last_name]"
+          value="<%= cud[:last_name] %>">
       </td>
       <td><%= cud[:course_number] %>
-        <input type="hidden" name="cuds[<%=rowNum%>][course_number]"
-               value="<%= cud[:course_number] %>" />
+        <input type="hidden" name="cuds[<%= rowNum %>][course_number]"
+               value="<%= cud[:course_number] %>">
       </td>
       <td><%= cud[:lecture] %>
-        <input type="hidden" name="cuds[<%=rowNum%>][lecture]"
-          value="<%= cud[:lecture] %>" />
+        <input type="hidden" name="cuds[<%= rowNum %>][lecture]"
+          value="<%= cud[:lecture] %>">
       </td>
       <td><%= cud[:section] %>
-        <input type="hidden" name="cuds[<%=rowNum%>][section]"
-          value="<%= cud[:section] %>" />
+        <input type="hidden" name="cuds[<%= rowNum %>][section]"
+          value="<%= cud[:section] %>">
       </td>
       <td><%= cud[:school] %>
-        <input type="hidden" name="cuds[<%=rowNum%>][school]"
-          value="<%= cud[:school] %>" />
+        <input type="hidden" name="cuds[<%= rowNum %>][school]"
+          value="<%= cud[:school] %>">
       </td>
       <td><%= cud[:major] %>
-        <input type="hidden" name="cuds[<%=rowNum%>][major]"
-          value="<%= cud[:major] %>" />
+        <input type="hidden" name="cuds[<%= rowNum %>][major]"
+          value="<%= cud[:major] %>">
       </td>
       <td><%= cud[:year] %>
-        <input type="hidden" name="cuds[<%=rowNum%>][year]"
-          value="<%= cud[:year] %>" />
+        <input type="hidden" name="cuds[<%= rowNum %>][year]"
+          value="<%= cud[:year] %>">
       </td>
       <td><%= cud[:grade_policy] %>
-        <input type="hidden" name="cuds[<%=rowNum%>][grade_policy]"
-          value="<%= cud[:grade_policy] %>" />
+        <input type="hidden" name="cuds[<%= rowNum %>][grade_policy]"
+          value="<%= cud[:grade_policy] %>">
       </td>
     </tr>
     <% rowNum += 1 %>

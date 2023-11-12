@@ -4,17 +4,17 @@ Choose a file that contain rows of problem scores or feedback in the following c
   <p class="code">
     <code>Email, <% @assessment.problems.each { |p| %><%= p.name %> Score/Feedback, <% } %>Grade Type</code>
   </p>
-  
+
   <p>All columns are mandatory. An empty cell will leave the existing value unmodified. Valid values for Grade Type are <code>normal</code>, <code>zeroed</code>, <code>excused</code>, and empty.</p>
 </div>
 
-<%= form_for :upload, :html => { :multipart => true }, builder: FormBuilderWithDateTimeInput do |f| %>
+<%= form_for :upload, html: { multipart: true }, builder: FormBuilderWithDateTimeInput do |f| %>
   <div class="controls">
     <%= f.file_field :file %>
 
     <div class="radio">
       <%= f.label(:data_type_scores) do %>
-        <%= f.radio_button :data_type, "scores", { :checked => true } %>
+        <%= f.radio_button :data_type, "scores", { checked: true } %>
         <span>Scores</span>
       <% end %>
     </div>
@@ -22,8 +22,8 @@ Choose a file that contain rows of problem scores or feedback in the following c
     <div class="radio">
       <%= f.label(:data_type_feedback) do %>
         <%= f.radio_button :data_type, "feedback" %>
-		<span>Feedback</span><br>
-		<span class="info">use escape characters in place of newlines (\n) and tabs (\t)</span>
+    <span>Feedback</span><br>
+    <span class="info">use escape characters in place of newlines (\n) and tabs (\t)</span>
       <% end %>
     </div>
   </div>
@@ -33,5 +33,5 @@ Choose a file that contain rows of problem scores or feedback in the following c
     <a href="https://en.wikipedia.org/wiki/Database_transaction#Transactional_databases">transaction</a>,
     allowing you to correct errors and re-submit.
   </p>
-  <%= f.submit 'Start', { :class => "btn primary"} %>
+  <%= f.submit 'Import Grades', { class: "btn primary" } %>
 <% end %>

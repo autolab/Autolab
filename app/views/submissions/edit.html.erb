@@ -1,7 +1,9 @@
 <h2>Edit <%= @submission.course_user_datum.email %>'s Submission
 #<%= @submission.version %> for <%= link_to @assessment.display_name, course_assessment_path(@submission.course_user_datum.course, @assessment) %></h2>
 
-<%= form_for @submission, url: [@submission.course_user_datum.course, @assessment, @submission], method: :patch do |f| %>
+<%= form_for @submission, url: [@submission.course_user_datum.course, @assessment, @submission],
+                          builder: FormBuilderWithDateTimeInput,
+                          method: :patch do |f| %>
 <%= f.error_messages %>
 <table class="verticalTable">
   <tr>
@@ -20,8 +22,8 @@
     <th>File:</th>
     <td>
       <% if @submission.filename then %>
-        <%= link_to "#{@submission.filename}",
-          download_course_assessment_submission_path(@submission.course_user_datum.course, @assessment, @submission) %>
+        <%= link_to @submission.filename.to_s,
+                    download_course_assessment_submission_path(@submission.course_user_datum.course, @assessment, @submission) %>
       <% else %>
         None
       <% end %>
@@ -29,19 +31,21 @@
   </tr>
   <tr>
     <th>Notes:</th>
-    <td><%= f.text_area :notes, :rows=>5, class: 'materialize-textarea', placeholder: "Brief notes on submission (no more than 255 characters)" %></td>
+    <td><%= f.text_area :notes, rows: 5, class: 'materialize-textarea',
+                                placeholder: "Brief notes on submission (no more than 255 characters)" %></td>
   </tr>
   <tr>
     <th>Tweak:</th>
     <td>
     <%= f.fields_for :tweak, @submission.tweak do |t| %>
       <%= t.text_field :value, placeholder: "Number of points or percentage" %>
-      <%= t.select :kind, options_for_select({"points" => "points", "%" => "percent"}, :selected => (@submission.tweak ? @submission.tweak.kind : "points")) %>
+      <%= t.select :kind, options_for_select({ "points" => "points", "%" => "percent" },
+                                             selected: (@submission.tweak ? @submission.tweak.kind : "points")) %>
     <% end %>
     </td>
   </tr>
   <tr>
-    <td colspan=2><br><%= f.submit :class => 'btn' %></td>
+    <td colspan=2><br><%= f.submit class: 'btn' %></td>
   </tr>
 </table>
 

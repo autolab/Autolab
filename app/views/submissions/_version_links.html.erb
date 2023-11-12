@@ -1,13 +1,15 @@
 <span id="version-links">
   <% if !@prevVersion.nil? %>
-    <%= link_to(url_for([:view, @course, @assessment, @prevVersion[:submission], header_position: @prevVersion[:header_position]]), class: "btn small", title: "Previous version containing this file (shortcut: [)", id: "prev_version_link") do %>
+    <%= link_to(view_course_assessment_submission_path(@course, @assessment, @prevVersion[:submission], header_position: @prevVersion[:header_position]),
+                class: "btn small", title: "Previous version containing this file (shortcut: [)", id: "prev_version_link") do %>
       <i class="material-icons">south</i>
     <% end %>
   <% else %>
     <a class="btn disabled"><i class="material-icons">south</i></a>
   <% end %>
   <% if !@nextVersion.nil? %>
-    <%= link_to(url_for([:view, @course, @assessment, @nextVersion[:submission], header_position: @nextVersion[:header_position]]), class: "btn small", title: "Next version containing this file (shortcut: ])", id: "next_version_link") do %>
+    <%= link_to(view_course_assessment_submission_path(@course, @assessment, @nextVersion[:submission], header_position: @nextVersion[:header_position]),
+                class: "btn small", title: "Next version containing this file (shortcut: ])", id: "next_version_link") do %>
       <i class="material-icons">north</i>
     <% end %>
   <% else %>

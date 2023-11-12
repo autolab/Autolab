@@ -8,10 +8,6 @@ class AnnotationsController < ApplicationController
   before_action :set_assessment
   before_action :set_submission
   before_action :set_annotation, except: [:create, :shared_comments]
-  rescue_from ActionView::MissingTemplate do |_exception|
-    redirect_to("/home/error_404")
-  end
-
   respond_to :json
 
   # POST /:course/annotations.json
@@ -79,6 +75,8 @@ private
     params[:annotation].delete(:id)
     params[:annotation].delete(:created_at)
     params[:annotation].delete(:updated_at)
+    # Prevent spoofing the submitter
+    params[:annotation][:submitted_by] = @current_user.email
     params.require(:annotation).permit(:filename, :position, :line, :submitted_by,
                                        :comment, :shared_comment, :global_comment, :value,
                                        :problem_id, :submission_id, :coordinate)

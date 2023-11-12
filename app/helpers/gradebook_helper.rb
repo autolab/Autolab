@@ -99,7 +99,8 @@ module GradebookHelper
         row["#{a.name}_version"] = Submission.where(assessment_id: a.id,
                                                     course_user_datum_id: cud.id,
                                                     ignored: false).maximum(:version)
-        row[a.name] = (round cell["final_score"])
+        row["#{a.name}_history_url"] = history_url(cud, a)
+        row[a.name] = round cell["final_score"]
         row["#{a.name}_submission_status"] = cell["submission_status"]
         row["#{a.name}_grade_type"] = cell["grade_type"]
         row["#{a.name}_end_at"] = cell["end_at"]
