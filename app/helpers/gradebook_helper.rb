@@ -181,6 +181,7 @@ module GradebookHelper
             cell = matrix.cell(asmt.id, cud.id)
 
             row << formatted_status(cell["status"])
+            row << cell["version"]
             grace_days += cell["grace_days"]
             late_days += cell["late_days"]
           end
