@@ -333,15 +333,44 @@ class UsersController < ApplicationController
     (redirect_to user_path(id: @user.id)) && return
   end
 
-  action_auth_level :reset_password, :administrator
-  def reset_password
-    sign_out @user
-    @user = User.find(params[:id])
+  action_auth_level :change_password_for_user, :administrator
+  def change_password_for_user
+    user = User.find(params[:id])
     raw, enc = Devise.token_generator.generate(User, :reset_password_token)
-    @user.reset_password_token = enc
-    @user.reset_password_sent_at = Time.current
-    @user.save(validate: false)
-    redirect_to edit_password_url(@user, reset_password_token: raw)
+    user.reset_password_token = enc
+    user.reset_password_sent_at = Time.current
+    user.save(validate: false)
+    Devise.sign_in_after_reset_password = false
+    if user_signed_in?
+      flash[:notice] =
+        "Please reset #{user.display_name}'s password " \
+          "#{view_context.link_to 'here',
+                                  update_password_for_user_user_path(user: user),
+                                  method: 'get'}."
+
+    else
+      flash[:notice] =
+        "Please reset #{user.display_name}'s password " \
+          "#{view_context.link_to 'here',
+                                  edit_password_url(user, reset_password_token: raw),
+                                  method: 'get'}."
+    end
+    flash[:html_safe] = true
+    redirect_to(user_path)
+  end
+
+  def update_password_for_user
+    @user = User.find(params[:id])
+    return unless params[:password]
+
+    @user.password = params[:password]
+    if @user.save!
+      flash[:success] = "Password changed successfully"
+      redirect_to(root_path)
+    else
+      flash[:error] = "Unable to change password"
+      render "update_password_for_user"
+    end
   end
 
 private
