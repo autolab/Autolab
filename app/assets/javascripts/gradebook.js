@@ -169,10 +169,7 @@ $(function () {
     html: true
   };
   grid.onMouseEnter.subscribe(function(e, args) {
+    // Since Materialize's tooltip method was overwritten by jquery-ui
     M.Tooltip.init(document.querySelectorAll(".tooltipped"), tooltipOpts);
   });
-
-  // Since Materialize's tooltip method was overwritten by jquery-ui
-  M.Tooltip.init(document.querySelectorAll(".tooltipped"), tooltipOpts);
-
 })
