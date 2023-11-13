@@ -140,7 +140,7 @@ module GradebookHelper
         next unless matrix.has_assessment? asmt.id
 
         header << asmt.name
-        header << "#{asmt.name}_version"
+        header << "version"
       end
       header << "#{cat} Average"
     end
