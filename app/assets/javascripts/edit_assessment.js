@@ -75,7 +75,7 @@
       $max_grace_days.prop('disabled', checked);
       if (checked) {
         $max_grace_days.val('Unlimited grace days');
-      } else if (!initial_load)  {
+      } else if (!initial_load) {
         $max_grace_days.val('');
       }
     }
@@ -89,7 +89,7 @@
       $latePenaltyField.find('select').prop('disabled', checked);
       if (checked) {
         $latePenaltyValue.val('Course default');
-      } else if (!initial_load)  {
+      } else if (!initial_load) {
         $latePenaltyValue.val('');
       }
     }
@@ -101,7 +101,7 @@
       $version_threshold.prop('disabled', checked);
       if (checked) {
         $version_threshold.val('Course default');
-      } else if (!initial_load)  {
+      } else if (!initial_load) {
         $version_threshold.val('');
       }
     }
@@ -115,7 +115,7 @@
       $versionPenaltyField.find('select').prop('disabled', checked);
       if (checked) {
         $versionPenaltyValue.val('Course default');
-      } else if (!initial_load)  {
+      } else if (!initial_load) {
         $versionPenaltyValue.val('');
       }
     }
