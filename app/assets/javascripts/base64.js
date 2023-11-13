@@ -25,9 +25,9 @@ function base64EncArr(aBytes) {
     let nUint24 = 0;
     for (let nIdx = 0; nIdx < nLen; nIdx++) {
         nMod3 = nIdx % 3;
-        if (nIdx > 0 && ((nIdx * 4) / 3) % 76 === 0) {
-            sB64Enc += "\r\n";
-        }
+        // if (nIdx > 0 && ((nIdx * 4) / 3) % 76 === 0) {
+        //     sB64Enc += "\r\n";
+        // }
 
         nUint24 |= aBytes[nIdx] << ((16 >>> nMod3) & 24);
         if (nMod3 === 2 || aBytes.length - nIdx === 1) {
