@@ -142,9 +142,6 @@ class User < ApplicationRecord
     user.password_confirmation = temp_pass
     user.skip_confirmation!
 
-    Rails.logger.debug("user email: #{user.email}")
-    Rails.logger.debug("user pswd: #{user.password}")
-
     user.save!
     user
   end
