@@ -62,6 +62,8 @@ class AssessmentsController < ApplicationController
   action_auth_level :set_repo, :instructor
   action_auth_level :import_svn, :instructor
 
+  IMPORT_ASMT_FAILURE_STATUS = "FAIL".freeze
+  IMPORT_ASMT_SUCCESS_STATUS = "SUCCESS".freeze
   def index
     @is_instructor = @cud.has_auth_level? :instructor
     announcements_tmp = Announcement.where("start_date < :now AND end_date > :now",
@@ -193,29 +195,25 @@ class AssessmentsController < ApplicationController
       redirect_to(action: "install_assessment") && return
     end
 
+    # asmt files now in file system, so finish import via file system
     import_result = importAssessmentFromFileSystem([asmt_name], true)
     handleImportResults(import_result, asmt_name)
   end
 
+  # importAssessments - Allows for multiple simultaneous imports of asmts
+  # from file system, returning results of each import
   action_auth_level :importAssessments, :instructor
   def importAssessments
-    redirect_path = if params[:install_flow] == "NEWCOURSE"
-                      new_course_path(@course)
-                    else
-                      install_assessment_course_assessments_path(@course)
-                    end
     if params[:assessment_names].nil? || !params[:assessment_names].is_a?(Array)
-      flash[:error] = "No assessment name specified."
-      redirect_to(redirect_path)
+      render json: { error: "Did not receive array of assessment names" }, status: :bad_request
+      return
     end
     import_results = importAssessmentFromFileSystem(params[:assessment_names], false)
-    Rails.logger.debug(import_results)
     import_results = import_results.each(&:to_json)
     render json: import_results
   end
-  # importAssessment - Imports an existing assessment from local file.
-  # The main task of this function is to decide what category a newly
-  # installed assessment should be assigned to.
+
+  # importAssessment - Imports an existing assessment from local file system
   action_auth_level :importAssessment, :instructor
 
   def importAssessment
@@ -234,7 +232,7 @@ class AssessmentsController < ApplicationController
     import_statuses = Array.new(assessment_names.length)
     import_statuses = import_statuses.map do |_status|
       {
-        status: "SUCCESS",
+        status: AssessmentsController::IMPORT_ASMT_SUCCESS_STATUS,
         errors: "",
         messages: []
       }
@@ -247,7 +245,7 @@ class AssessmentsController < ApplicationController
       if assessment_name != new_assessment.name
         import_statuses[i][:errors] = "Error creating assessment: Config module is
             named #{new_assessment.name} but assessment file name is #{assessment_name}"
-        import_statuses[i][:status] = "FAIL"
+        import_statuses[i][:status] = AssessmentsController::IMPORT_ASMT_FAILURE_STATUS
         # destroy model
         destroy_no_redirect(new_assessment)
         # delete files explicitly b/c the paths don't match ONLY if
@@ -260,7 +258,7 @@ class AssessmentsController < ApplicationController
         new_assessment.load_yaml # this will save the assessment
       rescue StandardError => e
         import_statuses[i][:errors] = "Error loading yaml: #{e}"
-        import_statuses[i][:status] = "FAIL"
+        import_statuses[i][:status] = AssessmentsController::IMPORT_ASMT_FAILURE_STATUS
         destroy_no_redirect(new_assessment)
         # delete files explicitly b/c the paths don't match ONLY if
         # import was from tarball
@@ -278,7 +276,7 @@ class AssessmentsController < ApplicationController
         new_assessment.load_config_file # only call this on saved assessments
       rescue StandardError => e
         import_statuses[i][:errors] = "Error loading config module: #{e}"
-        import_statuses[i][:status] = "FAIL"
+        import_statuses[i][:status] = AssessmentsController::IMPORT_ASMT_FAILURE_STATUS
         destroy_no_redirect(new_assessment)
         # delete files explicitly b/c the paths don't match ONLY if
         # import was from tarball
@@ -289,11 +287,13 @@ class AssessmentsController < ApplicationController
     import_statuses
   end
 
+  # helper function to take importAssessments results and show flashes / error messages
+  # currently only supports 1 import result (since used by legacy import functions)
   def handleImportResults(import_result, asmt_name)
     return unless import_result.length == 1
 
     import_result = import_result[0]
-    if import_result[:status] == "SUCCESS"
+    if import_result[:status] == AssessmentsController::IMPORT_ASMT_SUCCESS_STATUS
       @assessment = @course.assessments.find_by!(name: asmt_name)
       flash[:success] = "Successfully imported #{asmt_name}."
       unless import_result[:messages].empty?
@@ -307,6 +307,7 @@ class AssessmentsController < ApplicationController
       redirect_to(install_assessment_course_assessments_path(@course))
     end
   end
+
   # create - Creates an assessment from an assessment directory
   # residing in the course directory.
   action_auth_level :create, :instructor
