@@ -327,7 +327,7 @@ RSpec.describe CoursesController, type: :controller do
         expect(Course.find_by(name: @course_name)).to be_an_instance_of(Course)
       end
       it "handles nil tarfile" do
-        post :create_from_tar, params: { instructor_email: @instructor_email}
+        post :create_from_tar, params: { instructor_email: @instructor_email }
         expect(response).to have_http_status(200)
         expect(flash[:error]).to be_present
         expect(flash[:error]).to match(/Please select a course tarball for uploading/m)

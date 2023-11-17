@@ -302,7 +302,7 @@ class Course < ApplicationRecord
     watchlist_configuration.allow_ca
   end
 
-  private
+private
 
   def saved_change_to_grade_related_fields?
     (saved_change_to_late_slack? or saved_change_to_grace_days? or
