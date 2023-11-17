@@ -19,13 +19,13 @@
   <table class=verticalTable>
     <tr>
       <th><b> From: </b></th>
-      <td><%= text_field_tag :from %></td>
+      <td><%= text_field_tag :from, autocomplete: "email" %></td>
       <td class=smallText>This will be the from and reply-to address,
       so it should be legitimate</td>
     </tr>
     <tr>
       <th><b> Subject:</b></th>
-      <td><%= text_field_tag :subject %></td>
+      <td><%= text_field_tag :subject, autocomplete: "off" %></td>
     </tr>
     <tr>
       <th><b>Section:</b></th>

@@ -23,7 +23,7 @@ reviewpad:summary
 
 ## Checklist:
 <!--- Go over all the following points, and put an `x` in all the boxes that apply. -->
-- [ ] I have run rubocop for style check. If you haven't, run `overcommit --install && overcommit --sign` to use pre-commit hook for linting
+- [ ] I have run rubocop and erblint for style check. If you haven't, run `overcommit --install && overcommit --sign` to use pre-commit hook for linting
 - [ ] My change requires a change to the documentation, which is located at [Autolab Docs](https://docs.autolabproject.com/)
 - [ ] I have updated the documentation accordingly, included in this PR
 
