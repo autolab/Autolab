@@ -355,7 +355,7 @@ class UsersController < ApplicationController
 
   def update_password_for_user
     @user = User.find(params[:id])
-    return if params[:user].is_a?(String)
+    return if params[:user].nil? || params[:user].is_a?(String) || @user.nil?
 
     if @user.update(password: params[:user][:password])
       flash[:success] = "Password changed successfully"
