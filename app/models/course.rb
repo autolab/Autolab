@@ -302,7 +302,64 @@ class Course < ApplicationRecord
     watchlist_configuration.allow_ca
   end
 
-private
+  # same as assessment import check, ensures the tar has a single root directory
+  # named after the course with a course yml file
+  def self.valid_course_tar(tar_extract)
+    course_name = nil
+    course_yml_exists = false
+    course_name_is_valid = true
+    tar_extract.each do |entry|
+      pathname = entry.full_name
+      next if pathname.start_with? "."
+
+      # Removes file created by Mac when tar'ed
+      next if pathname.start_with? "PaxHeader"
+
+      pathname.chomp!("/") if entry.directory?
+      # nested directories are okay
+      if entry.directory? && pathname.count("/") == 0
+        if course_name
+          flash[:error] = "Error in tarball: Found root directory #{course_name}
+                           but also found root directory #{pathname}. Ensure
+                           there is only one root directory in the tarball."
+          return false
+        end
+
+        course_name = pathname
+      else
+        if !course_name
+          flash[:error] = "Error in tarball: No root directory found."
+          return false
+        end
+
+        if pathname == "#{course_name}/course.rb"
+          # We only ever read once, so no need to rewind after
+          config_source = entry.read
+
+          # validate syntax of config
+          RubyVM::InstructionSequence.compile(config_source)
+        end
+        course_yml_exists = true if pathname == "#{course_name}/#{course_name}.yml"
+      end
+    end
+    # it is possible that the assessment path does not match the
+    # the expected assessment path when the Ruby config file
+    # has a different name then the pathname
+    if !course_name.nil? && course_name !~ Assessment::VALID_NAME_REGEX
+      flash[:error] = "Errors found in tarball: Course name #{course_name} is invalid."
+      flash[:html_safe] = true
+      course_name_is_valid = false
+    end
+    if !(course_yml_exists && !course_name.nil?)
+      flash[:error] = "Errors found in tarball:"
+      if !course_yml_exists && !course_name.nil?
+        flash[:error] += "<br>Course yml file #{course_name}/#{course_name}.yml was not found"
+      end
+    end
+    course_yml_exists && !course_name.nil? && course_name_is_valid
+  end
+
+  private
 
   def saved_change_to_grade_related_fields?
     (saved_change_to_late_slack? or saved_change_to_grace_days? or

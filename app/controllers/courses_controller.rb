@@ -171,26 +171,45 @@ class CoursesController < ApplicationController
       redirect_to(root_path) && return
     end
 
-    # TODO: validate course tar (AND ALSO ASSESSMENTS!)
     tarFile = params["tarFile"]
     if tarFile.nil?
       flash[:error] = "Please select a course tarball for uploading."
       render(action: "new") && return
-      return
     end
 
     begin
       tarFile = File.new(tarFile.open, "rb")
       tar_extract = Gem::Package::TarReader.new(tarFile)
       tar_extract.rewind
+      unless Course.valid_course_tar(tar_extract)
+        flash[:error] +=
+          "<br>Invalid tarball. A valid course tar has a single root "\
+            "directory that's named after the assessment, containing a "\
+            "course yaml file"
+        flash[:html_safe] = true
+        render(action: "new") && return
+      end
+      tar_extract.close
+    rescue SyntaxError => e
+      flash[:error] = "Error parsing course configuration file:"
+      # escape so that <compiled> doesn't get treated as a html tag
+      flash[:error] += "<br><pre>#{CGI.escapeHTML e.to_s}</pre>"
+      flash[:html_safe] = true
+      render(action: "new") && return
+    rescue StandardError => e
+      flash[:error] = "Error while reading the tarball -- #{e.message}."
+      render(action: "new") && return
+    end
 
+    begin
+      tar_extract.rewind
       @newCourse = get_course_from_config(tar_extract)
       # save assessment directories
       save_assessments_from_tar(tar_extract)
       tar_extract.close
     rescue StandardError => e
       flash[:error] = "Error while extracting course to server -- #{e.message}."
-      redirect_to(action: "new") && return
+      render(action: "new") && return
     end
 
     if @newCourse.save
