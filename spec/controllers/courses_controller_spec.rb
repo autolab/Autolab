@@ -308,4 +308,26 @@ RSpec.describe CoursesController, type: :controller do
       end
     end
   end
+
+  describe "#imports_course" do
+    include_context "controllers shared context"
+    context "when user is administrator" do
+      it "successfully imports valid course tar" do
+
+      end
+
+      it "fails on invalid course tar" do
+
+      end
+    end
+
+    context "when user is not administrator" do
+      it "fails on valid course tar" do
+
+      end
+      it "fails on invalid course tar" do
+
+      end
+    end
+  end
 end
