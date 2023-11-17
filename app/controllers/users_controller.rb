@@ -341,31 +341,25 @@ class UsersController < ApplicationController
     user.reset_password_sent_at = Time.current
     user.save(validate: false)
     Devise.sign_in_after_reset_password = false
-    if user_signed_in?
-      flash[:notice] =
-        "Please reset #{user.display_name}'s password " \
-          "#{view_context.link_to 'here',
-                                  update_password_for_user_user_path(user: user),
-                                  method: 'get'}."
-
-    else
-      flash[:notice] =
-        "Please reset #{user.display_name}'s password " \
-          "#{view_context.link_to 'here',
-                                  edit_password_url(user, reset_password_token: raw),
-                                  method: 'get'}."
-    end
+    user_reset_link = edit_password_url(user, reset_password_token: raw)
+    admin_reset_link = update_password_for_user_user_path(user: user)
+    flash[:notice] =
+      "Click " \
+      "#{view_context.link_to 'here', admin_reset_link, method: 'get'} " \
+      "to reset #{user.display_name}'s password " \
+      "<br>Or copy this link for the user to reset their own password: "\
+      "#{user_reset_link}"
     flash[:html_safe] = true
     redirect_to(user_path)
   end
 
   def update_password_for_user
     @user = User.find(params[:id])
-    return unless params[:password]
+    return if params[:user].is_a?(String)
 
-    @user.password = params[:password]
-    if @user.save!
+    if @user.update(password: params[:user][:password])
       flash[:success] = "Password changed successfully"
+      PasswordMailer.admin_password_reset(@user, params[:user][:password]).deliver
       redirect_to(root_path)
     else
       flash[:error] = "Unable to change password"
