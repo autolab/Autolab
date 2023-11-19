@@ -118,7 +118,7 @@ module TangoClient
   def self.build(file)
     handle_exceptions do
       url = "/build/#{api_key}/"
-      ClientObj.post(url, headers: { "Content-Type": "binary" }, body: file)
+      ClientObj.post(url, headers: { "Content-Type": "application/octet-stream" }, body: file)
     end
   end
 
