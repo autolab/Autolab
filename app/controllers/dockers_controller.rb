@@ -1,7 +1,6 @@
 class DockersController < ApplicationController
   action_auth_level :index, :instructor
-  def index
-  end
+  def index; end
 
   action_auth_level :uploadDockerImage, :instructor
   def uploadDockerImage
@@ -18,5 +17,4 @@ class DockersController < ApplicationController
     end
     redirect_to(action: "index")
   end
-
 end
