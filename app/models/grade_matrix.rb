@@ -25,10 +25,6 @@ class GradeMatrix
     @matrix["last_updated"]
   end
 
-  def before_grading_deadline?(asmt_id)
-    @matrix["asmt_before_grading_deadline"][asmt_id.to_s]
-  end
-
   def cell(asmt_id, cud_id)
     @matrix["cell_by_asmt"][asmt_id.to_s][cud_id.to_s]
   end
@@ -84,11 +80,6 @@ private
     cell_by_asmt = {}
     cat_avg_by_cat = {}
     course_avg_by_user = {}
-    asmt_before_grading_deadline = {}
-
-    @course.assessments.each do |a|
-      asmt_before_grading_deadline[a.id.to_s] = a.before_grading_deadline?
-    end
 
     @course.course_user_data.each do |cud|
       next unless cud.student?
@@ -113,7 +104,6 @@ private
       "cell_by_asmt" => cell_by_asmt,
       "cat_avg_by_cat" => cat_avg_by_cat,
       "course_avg_by_user" => course_avg_by_user,
-      "asmt_before_grading_deadline" => asmt_before_grading_deadline,
       "last_updated" => Time.current
     }
   end
