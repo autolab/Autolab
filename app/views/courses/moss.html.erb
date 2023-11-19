@@ -3,40 +3,7 @@
 <h2>Run the Moss Cheat Checker</h2>
 
 <% content_for :javascripts do %>
-  <script type="text/javascript">
-    /**
-     * toggles the "style.display" of the element with the given id.
-     **/
-    function toggleOptions(dropdownId, tableId) {
-      const table = document.getElementById(tableId);
-      const dropdown = document.getElementById(dropdownId);
-      table.style.display = (table.style.display === "none") ? "block" : "none";
-      if (table.style.display === "none") {
-        $(dropdown).children('.expand-more').show()
-        $(dropdown).children('.expand-less').hide()
-      } else {
-        $(dropdown).children('.expand-more').hide()
-        $(dropdown).children('.expand-less').show()
-      }
-    }
-
-    function filterCourses(name) {
-      $(".filterableCourse").each(function(i, e) {
-        const keywords = name.split(" ");
-        const courseName = e.id.toLowerCase();
-        let show = keywords.every((k) => {
-          return courseName.includes(k);
-        });
-        $(e).toggle(show);
-      });
-    }
-
-    const $courseFilter = $("#courseFilter");
-    $courseFilter.on("keyup", function() {
-      filterCourses(this.value.toLowerCase());
-    });
-    $courseFilter.trigger("keyup");
-  </script>
+  <% javascript_include_tag "moss" %>
 <% end %>
 
 <strong>Filter Courses (Keywords Separated by Space): </strong>
@@ -76,7 +43,7 @@
                 <div style="padding-left:10px;">
                   <label>
                     <%= check_box_tag "isArchive[#{a.id}]", class: "filled-in" %>
-                    <span>Is Archive: </span>
+                    <span>Is Archive</span>
                   </label>
                   <br>
                   <i>Check this if the submissions will need to be extracted. (The handin filename was: <%= a.handin_filename %>)</i>
@@ -191,8 +158,8 @@
   </ul>
 
   <h4>(Optional) Step 3:</h4>
-  <p> Upload an archive containing additional files you'd like Moss to compare against.</p>
-  <p>Note: the archive must contain only regular files. Nested archives will not be extracted.</p>
+  <p>Upload an archive containing additional files you'd like Moss to compare against.</p>
+  <strong>The archive must contain only regular files. Nested archives will not be extracted.</strong>
   <div class="file-field input-field">
     <div class="btn">
       <span>Archive</span>

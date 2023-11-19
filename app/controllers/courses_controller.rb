@@ -484,10 +484,8 @@ class CoursesController < ApplicationController
     @courses = if @cud.user.administrator?
                  Course.all
                else
-                 Course.all.reject do |course|
-                   course.course_user_data.joins(:user)
-                         .find_by(users: { email: @cud.user.email }, instructor: true).nil?
-                 end
+                 Course.joins(:course_user_data)
+                       .where(course_user_data: { user_id: @cud.user.id, instructor: true })
                end
   end
 
