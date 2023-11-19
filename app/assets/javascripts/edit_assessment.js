@@ -55,13 +55,15 @@
     });
 
     // Penalties tab
+    let initial_load = true; // determines if the page is loading for the first time, if so, don't clear the fields
+
     function unlimited_submissions_callback() {
       const checked = $(this).prop('checked');
       const $max_submissions = $('#assessment_max_submissions');
       $max_submissions.prop('disabled', checked);
       if (checked) {
         $max_submissions.val('Unlimited submissions');
-      } else {
+      } else if (!initial_load) {
         $max_submissions.val('');
       }
     }
@@ -73,7 +75,7 @@
       $max_grace_days.prop('disabled', checked);
       if (checked) {
         $max_grace_days.val('Unlimited grace days');
-      } else {
+      } else if (!initial_load) {
         $max_grace_days.val('');
       }
     }
@@ -87,7 +89,7 @@
       $latePenaltyField.find('select').prop('disabled', checked);
       if (checked) {
         $latePenaltyValue.val('Course default');
-      } else {
+      } else if (!initial_load) {
         $latePenaltyValue.val('');
       }
     }
@@ -99,7 +101,7 @@
       $version_threshold.prop('disabled', checked);
       if (checked) {
         $version_threshold.val('Course default');
-      } else {
+      } else if (!initial_load) {
         $version_threshold.val('');
       }
     }
@@ -113,7 +115,7 @@
       $versionPenaltyField.find('select').prop('disabled', checked);
       if (checked) {
         $versionPenaltyValue.val('Course default');
-      } else {
+      } else if (!initial_load) {
         $versionPenaltyValue.val('');
       }
     }
@@ -125,6 +127,7 @@
     use_default_late_penalty_callback.call($('#use_default_late_penalty'));
     use_default_version_threshold_callback.call($('#use_default_version_threshold'));
     use_default_version_penalty_callback.call($('#use_default_version_penalty'));
+    initial_load = false;
   });
 
 })();

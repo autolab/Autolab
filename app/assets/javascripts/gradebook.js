@@ -103,7 +103,6 @@ $(function () {
 
   // column header tooltips
   for (var i = 0; i < columns.length; i++) {
-    columns[i].headerCssClass = "tip";
     columns[i].toolTip = columns[i].name;
   }
 
@@ -150,18 +149,13 @@ $(function () {
   });
   $(window).resize();
 
-  grid.onMouseEnter.subscribe(function(e, args) {
-    $('.tooltipped', e.target).tooltip({
-      position: 'top',
-      delay: 100,
-      html: true
-    });
-  });
-
-  $('.tooltipped').tooltip({
+  const tooltipOpts = {
     position: 'top',
     delay: 100,
     html: true
+  };
+  grid.onMouseEnter.subscribe(function(e, args) {
+    // Since Materialize's tooltip method was overwritten by jquery-ui
+    M.Tooltip.init(document.querySelectorAll(".tooltipped"), tooltipOpts);
   });
-
 })
