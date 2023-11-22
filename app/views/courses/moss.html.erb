@@ -16,7 +16,7 @@
   <ul class="moss-list">
     <% @courses.each do |course| %>
       <li class="filterableCourse" id="<%= course.display_name %>">
-        <div class="moss-dropdown" id="moss-dropdown-<%= course.id %>" onclick="toggleOptions('moss-dropdown-<%= course.id %>', '<%= course.id %>Assessments')">
+        <div class="moss-dropdown" id="moss-dropdown-<%= course.id %>" onclick="toggleOptions('#moss-dropdown-<%= course.id %>', '#<%= course.id %>Assessments')">
           <h5>
             <%= course.full_name %>
           </h5>
@@ -65,7 +65,7 @@
   <p>Add flags that will be run with moss.</p>
   <ul class="moss-list">
     <li id="Moss Flags">
-      <div class="moss-dropdown" id="moss-flags" onclick="toggleOptions('moss-flags', 'flags')">
+      <div class="moss-dropdown" id="moss-flags" onclick="toggleOptions('#moss-flags', '#flags')">
         <h5>
           Moss Flags
         </h5>
