@@ -342,20 +342,6 @@ class Course < ApplicationRecord
           tar_file.write(dump_yaml(export_configs&.include?('metrics_config')))
         end
 
-        # save attachments
-        tar.mkdir attachments_dir, File.stat(base_path).mode
-        attachments.each do |attachment|
-          next unless attachment.attachment_file.attached?
-
-          attachment_data = attachment.attachment_file.download
-          filename = attachment.filename
-          relative_path = File.join(attachments_dir, filename)
-
-          tar.add_file relative_path, mode do |file|
-            file.write(attachment_data)
-          end
-        end
-
         # save assessments
         if export_configs&.include?('assessments')
           assessments.each do |assessment|
