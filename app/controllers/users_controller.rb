@@ -343,7 +343,7 @@ class UsersController < ApplicationController
     Devise.sign_in_after_reset_password = false
     user_reset_link = edit_password_url(user, reset_password_token: raw)
     admin_reset_link = update_password_for_user_user_path(user: user)
-    flash[:notice] =
+    flash[:success] =
       "Click " \
       "#{view_context.link_to 'here', admin_reset_link, method: 'get'} " \
       "to reset #{user.display_name}'s password " \
@@ -357,13 +357,14 @@ class UsersController < ApplicationController
     @user = User.find(params[:id])
     return if params[:user].nil? || params[:user].is_a?(String) || @user.nil?
 
-    if @user.update(password: params[:user][:password])
+    if params[:user][:password] != params[:user][:password_confirmation]
+      flash[:error] = "Passwords do not match"
+    elsif @user.update(password: params[:user][:password])
       flash[:success] = "Password changed successfully"
       PasswordMailer.admin_password_reset(@user, params[:user][:password]).deliver
       redirect_to(root_path)
     else
-      flash[:error] = "Unable to change password"
-      render "update_password_for_user"
+      flash[:error] = "Password #{@user.errors[:password][0]}"
     end
   end
 
