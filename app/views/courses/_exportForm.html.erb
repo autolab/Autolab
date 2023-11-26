@@ -5,11 +5,11 @@
     <col span="1">
   </colgroup>
   <tbody>
-    <tr class="course-field checked"> 
+    <tr class="course-field checked">
       <td>
         <label>
            <%= check_box_tag 'export_configs[]', 'course_config', true, class: 'cbox', id: 'course_config_checkbox', disabled: true %>
-          <span/>
+          <span />
         </label>
       </td>
       <td>Course configuration</td>
@@ -18,7 +18,7 @@
       <td>
         <label>
           <%= check_box_tag 'export_configs[]', 'metrics_config', false, class: 'cbox', id: 'metrics_config_checkbox' %>
-          <span/>
+          <span />
         </label>
       </td>
       <td>Metrics configuration</td>
@@ -27,14 +27,14 @@
       <td>
         <label>
           <%= check_box_tag 'export_configs[]', 'assessments', false, class: 'cbox', id: 'assessments_checkbox' %>
-          <span/>
+          <span />
         </label>
       </td>
       <td>Assessments</td>
     </tr>
   </tbody>
 </table>
-<br />
+<br>
 <div class="row">
   <div>
     <%= submit_tag 'Export', class: 'btn', id: 'export_btn', data: { disable_with: false } %>
