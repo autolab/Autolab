@@ -3,8 +3,8 @@ FactoryBot.define do
     course_id { 1 }
     assessment_id { 1 }
     association :course
-    name { "attachment.txt" }
+    name { "hyperfastparrot.gif" }
     released { true }
-    file { Rack::Test::UploadedFile.new("spec/fixtures/attachments/attachment.txt", "text/plain") }
+    file { Rack::Test::UploadedFile.new("spec/fixtures/attachments/hyperfastparrot.gif", "image/gif") }
   end
 end
