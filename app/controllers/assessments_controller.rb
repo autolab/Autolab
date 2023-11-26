@@ -303,7 +303,7 @@ class AssessmentsController < ApplicationController
       end
       redirect_to(course_assessment_path(@course, @assessment))
     else
-      flash[:error] = import_result[:error]
+      flash[:error] = import_result[:errors]
       redirect_to(install_assessment_course_assessments_path(@course))
     end
   end
