@@ -361,7 +361,6 @@ class UsersController < ApplicationController
       flash[:error] = "Passwords do not match"
     elsif @user.update(password: params[:user][:password])
       flash[:success] = "Password changed successfully"
-      PasswordMailer.admin_password_reset(@user, params[:user][:password]).deliver
       redirect_to(root_path)
     else
       flash[:error] = "Password #{@user.errors[:password][0]}"
