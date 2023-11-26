@@ -321,7 +321,6 @@ class Course < ApplicationRecord
   def generate_tar(export_configs)
     base_path = Rails.root.join("courses", name).to_s
     course_dir = name
-    attachments_dir = File.join(course_dir, "attachments")
     rb_path = "course.rb"
     config_path = "#{name}.yml"
     mode = 0o755
