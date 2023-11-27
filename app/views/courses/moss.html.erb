@@ -4,10 +4,11 @@
 
 <% content_for :javascripts do %>
   <%= javascript_include_tag "moss" %>
+  <%= javascript_include_tag "dropdown" %>
 <% end %>
 
 <strong>Filter Courses (Keywords Separated by Space): </strong>
-<input id="courseFilter" placeholder="Course Name" type="text" value="<%= @course.display_name %>" style="margin-bottom: 10px;" autocomplete="off">
+<input id="courseFilter" placeholder="Keywords" type="text" value="<%= @course.display_name %>" style="margin-bottom: 10px;" autocomplete="off">
 
 <h4>Step 1:</h4>
 <p>Check the box for each assessment you want to send to Moss for cheat checking.</p>
@@ -15,7 +16,7 @@
 <%= form_tag(run_moss_course_path(@course), multipart: true) do %>
   <ul class="moss-list">
     <% @courses.each do |course| %>
-      <li class="filterableCourse" id="<%= course.display_name %>">
+      <li class="filterableCourse" id="<%= course.full_name %>">
         <div class="moss-dropdown" id="moss-dropdown-<%= course.id %>" onclick="toggleOptions('#moss-dropdown-<%= course.id %>', '#<%= course.id %>Assessments')">
           <h5>
             <%= course.full_name %>

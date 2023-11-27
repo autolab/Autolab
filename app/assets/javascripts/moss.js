@@ -1,22 +1,8 @@
-function toggleOptions(dropdown, table) {
-  const $dropdown = $(dropdown);
-  const $table = $(table);
-
-  $table.toggle();
-  if ($table.is(':hidden')) {
-    $dropdown.children('.expand-more').show();
-    $dropdown.children('.expand-less').hide();
-  } else {
-    $dropdown.children('.expand-more').hide();
-    $dropdown.children('.expand-less').show();
-  }
-}
-
 function filterCourses(name) {
   $(".filterableCourse").each(function(i, e) {
-    const keywords = name.split(" ");
+    const keywords = name.trim().split(" ");
     const courseName = e.id.toLowerCase();
-    let show = keywords.every((k) => {
+    let show = keywords.some((k) => {
       return courseName.includes(k);
     });
     $(e).toggle(show);
