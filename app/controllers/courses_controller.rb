@@ -480,7 +480,14 @@ class CoursesController < ApplicationController
   end
 
   action_auth_level :moss, :instructor
-  def moss; end
+  def moss
+    @courses = if @cud.user.administrator?
+                 Course.all
+               else
+                 Course.joins(:course_user_data)
+                       .where(course_user_data: { user_id: @cud.user.id, instructor: true })
+               end
+  end
 
   LANGUAGE_WHITELIST = %w[c cc java ml pascal ada lisp scheme haskell fortran ascii vhdl perl
                           matlab python mips prolog spice vb csharp modula2 a8086 javascript plsql
