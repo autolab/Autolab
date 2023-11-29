@@ -124,19 +124,7 @@ class AssessmentsController < ApplicationController
 
       # each assessment must have an associated yaml file,
       # and it must have a name field that matches its filename
-      if File.exist?(File.join(dir_path, filename, "#{filename}.yml"))
-        props = YAML.safe_load(File.open(
-                                 File.join(dir_path, filename, "#{filename}.yml"), "r", &:read
-                               ))
-        unless props["general"] && (props["general"]["name"] == filename)
-          flash.now[:error] = flash.now[:error] ? "#{flash.now[:error]} <br>" : ""
-          flash.now[:error] += "An error occurred while trying to display an existing assessment " \
-          "from file directory #{filename}: Name in yaml (#{props['general']['name']}) " \
-          "doesn't match #{filename}"
-          flash.now[:html_safe] = true
-          next
-        end
-      else
+      unless File.exist?(File.join(dir_path, filename, "#{filename}.yml"))
         flash.now[:error] = flash.now[:error] ? "#{flash.now[:error]} <br>" : ""
         flash.now[:error] += "An error occurred while trying to display an existing assessment " \
           "from file directory #{filename}: #{filename}.yml does not exist"

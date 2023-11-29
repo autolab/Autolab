@@ -522,7 +522,7 @@ private
     s
   end
 
-  GENERAL_SERIALIZABLE = Set.new %w[name display_name category_name description handin_filename
+  GENERAL_SERIALIZABLE = Set.new %w[display_name category_name description handin_filename
                                     handin_directory has_svn has_lang max_grace_days handout
                                     writeup max_submissions disable_handins max_size
                                     version_threshold is_positive_grading embedded_quiz group_size
@@ -534,8 +534,8 @@ private
   end
 
   def deserialize(s)
-    unless s["general"] && (s["general"]["name"] == name)
-      raise "Name in yaml (#{s['general']['name']}) doesn't match #{name}"
+    unless s["general"]
+      raise "General section missing in yaml"
     end
 
     if s["dates"] && s["dates"]["start_at"]
