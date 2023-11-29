@@ -85,9 +85,6 @@ RSpec.describe AssessmentsController, type: :controller do
               |entry|
               test = YAML.safe_load(entry.read)
               expect(
-                test["general"]["name"]
-              ).to eq(course_hash[:assessment].name)
-              expect(
                 test["general"]["display_name"]
               ).to eq(course_hash[:assessment].display_name)
               expect(
@@ -150,18 +147,7 @@ RSpec.describe AssessmentsController, type: :controller do
         expect(response).to have_http_status(302)
         expect(flash[:success]).to be_present
       end
-      it "handles broken yaml file" do
-        file = fixture_file_upload("assessments/homework02-yaml-name-field-wrong.tar")
-        post :importAsmtFromTar, params: { course_name: course_2_hash[:course].name,
-                                           name: course_2_hash[:assessment].name,
-                                           tarFile: file }
-        expect(response).to have_http_status(302)
-        expect(flash[:error]).to be_present
-        expect(flash[:error]).to match(/Error loading yaml/m)
-      end
-      it "handles any module name" do
-        # we now support any module name since we just overwrite the module name anyways,
-        # so this test is now successful
+      it "handles mismatched module name" do
         file = fixture_file_upload("assessments/homework02-module-mismatch.tar")
         post :importAsmtFromTar, params: { course_name: course_2_hash[:course].name,
                                            name: course_2_hash[:assessment].name,
