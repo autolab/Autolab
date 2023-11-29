@@ -5,6 +5,10 @@
   <%= stylesheet_link_tag "install_assessment" %>
 <% end %>
 
+<% content_for :javascripts do %>
+  <%= javascript_include_tag "dropdown" %>
+<% end %>
+
 <% render "install_assessment_table_js" %>
 
 <div class="install-asmt-container">
@@ -28,7 +32,7 @@
             <div
               class="error-dropdown"
               id="error-dropdown-<%= ass_file %>"
-              onclick="toggleOptions('error-dropdown-<%= ass_file %>', '<%= ass_file %>-messages-dropdown')">
+              onclick="toggleInstallDropdownOptions('error-dropdown-<%= ass_file %>', '<%= ass_file %>-messages-dropdown')">
               <b class="install-success-p">
                 Installed!
               </b>
@@ -48,7 +52,12 @@
                 <span />
               </label>
               <%= ass_file %>
-              <%= render "components/dropdown_icon", start_closed: true %>
+              <i class="material-icons expand-more">
+                expand_more
+              </i>
+              <i class="material-icons expand-less" style="display: none">
+                expand_less
+              </i>
             </div>
             <div
               id="<%= ass_file %>-messages-dropdown"

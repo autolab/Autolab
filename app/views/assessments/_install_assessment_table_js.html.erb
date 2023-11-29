@@ -2,11 +2,9 @@
   <script>
       let importAsmtsUrl = new URL(`<%= url_for(importAssessments_course_assessments_url(@course)) %>`)
       // dropdown toggle
-      function toggleOptions(dropdownId, tableId) {
+      function toggleInstallDropdownOptions(dropdownId, tableId) {
           if (!$(`#${tableId}`).parents().hasClass('import-incomplete')) {
-              let show = document.getElementById(tableId);
-              show.style.display = (show.style.display === "none")? "block" : "none";
-              renderDropDownIcon(dropdownId, tableId);
+              toggleOptions(`#${dropdownId}`, `#${tableId}`);
           }
       }
       $(function() {
