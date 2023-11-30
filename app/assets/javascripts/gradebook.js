@@ -49,7 +49,7 @@ var slickgrid_options = {
         break;
 
       case "not_yet_submitted":
-        tip = user + ' has not yet made any submissions for ' + asmt + '. ';
+        tip = user + ' has not yet made any submissions for ' + asmt + '. <br>';
         tip += 'The last date for submission by ' + user + ' is ' + data[end_at_key] + '.';
         value = '<a data-tooltip="' + tip + '" class="tooltipped not-yet-submitted">' + value + '</a>';
         break;
