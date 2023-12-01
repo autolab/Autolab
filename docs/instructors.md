@@ -234,6 +234,6 @@ Manually assigned grades are by default not released, and therefore not visible 
 
 ## Resetting a student's password
 
-If a student does not have access to a registered email address and forgot their password, an instructor can trigger the reset of the student's password by clicking into the student in the `users list` and clicking `change user's password` to reset the student's password.
+An instructor is able to trigger the reset of the student's password by selecting `Manage Users` from the `Manage Autolab` dropdown if a student does not have access to a registered email address and forgets their password. The instructor can click on a student from the generated `Users List` and click on `Change User's Password` to reset the student's password.
 
-The instructor can either choose to change the student's password on behalf of the student by clicking `here` in the `label` that appeared or send the link that was generated in the `label` to the student so that the student can change their password.
+The instructor can either choose to change the student's password on behalf of the student by clicking `here` in the `flash` that appeared or sending the link that was generated in the `flash` to the student so that the student can change their password.
