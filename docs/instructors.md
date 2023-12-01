@@ -231,3 +231,9 @@ For the gradebook calculations, submissions are classified as one of three types
 ## Releasing Grades
 
 Manually assigned grades are by default not released, and therefore not visible to students. You can release grades on an individual basis while grading, or release all available grades in bulk by using the "Release all grades" option. You can also reverse this process using the "Withdraw all grades" option. (The word "withdraw" is perhaps unfortunate. No grades are ever deleted. They are simply withdrawn from the student's view.)
+
+## Resetting a student's password
+
+If a student does not have access to a registered email address and forgot their password, an instructor can trigger the reset of the student's password by clicking into the student in the `users list` and clicking `change user's password` to reset the student's password.
+
+The instructor can either choose to change the student's password on behalf of the student by clicking `here` in the `label` that appeared or send the link that was generated in the `label` to the student so that the student can change their password.
