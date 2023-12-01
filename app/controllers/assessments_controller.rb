@@ -684,8 +684,10 @@ class AssessmentsController < ApplicationController
     return if @score.nil?
 
     @jsonFeedback = parseFeedback(@score.feedback)
-    raw_score_hash = scoreHashFromScores(autograded_scores)
-    @scoreHash = parseScore(raw_score_hash)
+
+    raw_score_hash = scoreHashFromScores(autograded_scores) if @score.grader_id <= 0
+    @scoreHash = parseScore(raw_score_hash) unless raw_score_hash.nil?
+
     if Archive.archive? @submission.handin_file_path
       @files = Archive.get_files @submission.handin_file_path
     end
@@ -1158,8 +1160,6 @@ private
   end
 
   def scoreHashFromScores(scores)
-    return unless @score.grader_id <= 0
-
     scores.map { |s|
       [s.problem.name, s.score]
     }.to_h
