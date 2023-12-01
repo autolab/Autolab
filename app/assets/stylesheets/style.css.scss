@@ -645,12 +645,13 @@ p.attention {
 }
 ul.moss-list {
   list-style: none;
-  background: $autolab-subtle-gray;
   border-radius: 5px;
 }
 ul.moss-list > li {
   cursor: pointer;
+  background: $autolab-subtle-gray;
   padding: 15px;
+  margin-bottom: 15px;
 }
 ul.moss-list > li > h5 {
   font-weight: bold;
