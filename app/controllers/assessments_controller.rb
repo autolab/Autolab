@@ -142,6 +142,7 @@ class AssessmentsController < ApplicationController
   action_auth_level :importAsmtFromTar, :instructor
 
   def importAsmtFromTar
+    overwrite = false
     tarFile = params["tarFile"]
     if tarFile.nil?
       flash[:error] = "Please select an assessment tarball for uploading."
@@ -176,10 +177,7 @@ class AssessmentsController < ApplicationController
 
     # Check if the assessment already exists.
     unless @course.assessments.find_by(name: asmt_name).nil?
-      flash[:error] =
-        "An assessment with the same name already exists for the course. "\
-        "Please use a different name."
-      redirect_to(action: "install_assessment") && return
+      overwrite = true
     end
 
     # If all requirements are satisfied, extract assessment files.
@@ -202,6 +200,9 @@ class AssessmentsController < ApplicationController
           FileUtils.chmod entry.header.mode, entry_file,
                           verbose: false
         elsif entry.file?
+          # Skip config files
+          next if overwrite && %W[#{asmt_name}.yml #{asmt_name}.rb].include?(File.basename(entry_file))
+
           # Default to 0755 so that directory is writeable, mode will be updated later
           FileUtils.mkdir_p(File.dirname(entry_file),
                             mode: 0o755, verbose: false)
@@ -222,6 +223,7 @@ class AssessmentsController < ApplicationController
 
     params[:assessment_name] = asmt_name
     params[:cleanup_on_failure] = true
+    params[:overwrite] = overwrite
     importAssessment && return
   end
 
@@ -231,6 +233,14 @@ class AssessmentsController < ApplicationController
   action_auth_level :importAssessment, :instructor
 
   def importAssessment
+    if params[:overwrite]
+      flash[:success] = "IMPORTANT: Successfully uploaded files for existing assessment
+                         #{params[:assessment_name]}. The YAML and config file were NOT reuploaded.
+                         If you would like to edit these fields, do so via 'Edit assessment'."
+      @assessment = @course.assessments.find_by(name: params[:assessment_name])
+      redirect_to(course_assessment_path(@course, @assessment)) && return
+    end
+
     cleanup_on_failure = params[:cleanup_on_failure]
     @assessment = @course.assessments.new(name: params[:assessment_name])
     assessment_path = Rails.root.join("courses/#{@course.name}/#{@assessment.name}")
