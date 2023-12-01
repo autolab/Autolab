@@ -662,15 +662,15 @@ class AssessmentsController < ApplicationController
     @score = @submission.scores.find_by(problem_id: params[:feedback])
     autograded_scores = @submission.scores.includes(:problem).where(grader_id: 0)
     # Checks whether at least one problem has finished being auto-graded
-    @finishedAutograding = @submission.scores.where.not(feedback: nil).where(grader_id: 0)
+    finishedAutograding = @submission.scores.where.not(feedback: nil).where(grader_id: 0)
     @job_id = @submission["jobid"]
     @submission_id = params[:submission_id]
 
     # Autograding is not in-progress and no score is available
     if @score.nil?
-      if !@finishedAutograding.empty?
+      if !finishedAutograding.empty?
         redirect_to(action: "viewFeedback",
-                    feedback: @finishedAutograding.first.problem_id,
+                    feedback: finishedAutograding.first.problem_id,
                     submission_id: params[:submission_id]) && return
       end
 
