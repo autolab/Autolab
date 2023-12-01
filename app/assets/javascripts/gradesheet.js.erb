@@ -76,7 +76,6 @@ jQuery(function() {
     // add necessary classes and data to rows after creation but before rendering
     function completeRow(row, data, index) {
       var submission = aux_data[index];
-      if (!submission) return;
       row.className = submission?.r_class;
 
       // set up name & email column
@@ -90,6 +89,7 @@ jQuery(function() {
       }
       $name_col.children().appendTo($td_name);
 
+      if (submission['submission-id'] == null) return;
       // set up problem columns
       $problems = jQuery('.problem',row);
       for (var i = 0; i < $problems.length; i++) {

@@ -68,7 +68,8 @@
             "total": "<%= computed_score(history_url(s.course_user_datum)) { s.final_score @cud } %>"
           },
       <% end %>
-      <% for c in @course.course_user_data.where.not(id: @submissions.pluck(:course_user_datum_id)) do %>
+      <% has_submissions = @submissions.pluck(:course_user_datum_id) %>
+      <% for c in @course.course_user_data.where.not(id: has_submissions) do %>
           { "id": "",
             "name": {
               name: "<%= [c.last_name, c.first_name].reject(&:blank?).join(', ') %>",
@@ -119,6 +120,11 @@
             <% end %>
           ]
         },
+      <% end %>
+      <% for c in @course.course_user_data.where.not(id: has_submissions) do %>
+          {
+            "email": "<%= c.email %>",
+          },
       <% end %>
     ];
 
