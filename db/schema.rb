@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2023_07_07_161335) do
+ActiveRecord::Schema.define(version: 2023_12_01_202449) do
 
   create_table "annotations", force: :cascade do |t|
     t.integer "submission_id"
@@ -80,7 +80,6 @@ ActiveRecord::Schema.define(version: 2023_07_07_161335) do
     t.integer "version_threshold"
     t.integer "late_penalty_id"
     t.integer "version_penalty_id"
-    t.datetime "grading_deadline", null: false
     t.boolean "has_svn"
     t.boolean "quiz", default: false
     t.text "quizData"
