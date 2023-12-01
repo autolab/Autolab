@@ -5,6 +5,8 @@ FactoryBot.define do
     association :course
     name { "hyperfastparrot.gif" }
     released { true }
-    file { Rack::Test::UploadedFile.new("spec/fixtures/attachments/hyperfastparrot.gif", "image/gif") }
+    file {
+      Rack::Test::UploadedFile.new("spec/fixtures/attachments/hyperfastparrot.gif", "image/gif")
+    }
   end
 end
