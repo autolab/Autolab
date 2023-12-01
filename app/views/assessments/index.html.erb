@@ -36,6 +36,7 @@
           overflow: auto;
       }
   </style>
+  <%= stylesheet_link_tag "assessments" %>
 <% end %>
 
 <%= render partial: "announcements/announcements_list",
@@ -96,12 +97,13 @@
                 <span class="card-title white-text"><%= cat %></span>
               </div>
 
-              <div class="collection red darken-4">
+              <div class="collection red darken-4 date">
                 <% asmts.each do |asmt| %>
                   <%= link_to course_assessment_path(@course, asmt),
-                              class: "collection-item grey-text text-darken-4" do %>
-                    <%= asmt.display_name %>
-                    <p><b>Released:</b>&ensp;<%= asmt.start_at %>&ensp;|&ensp;<b>Due:</b>&ensp;<%= asmt.due_at %></p>
+                              class: "collection-item grey-text text-darken-4 date" do %>
+                    <b><%= asmt.display_name %></b>
+                    <p class="date"><b>Start:</b>&ensp;<%= asmt.date_to_s(asmt.start_at) %>&ensp;|
+                      &ensp;<b>Due:</b>&ensp;<%= asmt.date_to_s(asmt.due_at) %></p>
                     <% if !asmt.released? %>
                         <span class="new badge blue darken-4" data-badge-caption="unreleased" data-url="<%= edit_course_assessment_path(@course, asmt) %>/handin"></span>
                     <% end %>
