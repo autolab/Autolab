@@ -231,9 +231,3 @@ For the gradebook calculations, submissions are classified as one of three types
 ## Releasing Grades
 
 Manually assigned grades are by default not released, and therefore not visible to students. You can release grades on an individual basis while grading, or release all available grades in bulk by using the "Release all grades" option. You can also reverse this process using the "Withdraw all grades" option. (The word "withdraw" is perhaps unfortunate. No grades are ever deleted. They are simply withdrawn from the student's view.)
-
-## Resetting a student's password
-
-An instructor is able to trigger the reset of the student's password by selecting `Manage Users` from the `Manage Autolab` dropdown if a student does not have access to a registered email address and forgets their password. The instructor can click on a student from the generated `Users List` and click on `Change User's Password` to reset the student's password.
-
-The instructor can either choose to change the student's password on behalf of the student by clicking `here` in the `flash` that appeared or sending the link that was generated in the `flash` to the student so that the student can change their password.
