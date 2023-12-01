@@ -201,7 +201,8 @@ class AssessmentsController < ApplicationController
                           verbose: false
         elsif entry.file?
           # Skip config files
-          next if overwrite && %W[#{asmt_name}.yml #{asmt_name}.rb].include?(File.basename(entry_file))
+          next if overwrite && %W[#{asmt_name}.yml
+                                  #{asmt_name}.rb].include?(File.basename(entry_file))
 
           # Default to 0755 so that directory is writeable, mode will be updated later
           FileUtils.mkdir_p(File.dirname(entry_file),
