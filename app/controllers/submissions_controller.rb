@@ -8,7 +8,7 @@ class SubmissionsController < ApplicationController
   # inherited from ApplicationController
   before_action :set_assessment
   before_action :set_submission,
-                only: %i[destroy destroyConfirm download edit update view submission_info]
+                only: %i[destroy destroyConfirm download edit update view tweak_total]
   before_action :get_submission_file, only: %i[download view]
 
   # this page loads.  links/functionality may be/are off
@@ -36,14 +36,19 @@ class SubmissionsController < ApplicationController
     end
 
     tweaks = {}
-    submissions.each do |submission|
+    submission_info = submissions.as_json
+    submissions.each_with_index do |submission, index|
       tweaks[submission.id] = submission.tweak
+      submission_info[index]["base_path"] =
+        course_assessment_submission_annotations_path(@course, @assessment, submission)
+      submission_info[index]["scores"] = Score.where(submission_id: submission.id)
+      submission_info[index]["tweak_total"] =
+        submission.global_annotations.empty? ? nil : submission.global_annotations.sum(:value)
     end
 
     autograded = @assessment.has_autograder?
-    submissions = submissions.as_json(seen_by: @cud)
 
-    render json: { submissions: submissions,
+    render json: { submissions: submission_info,
                    scores: submission_id_to_score_data,
                    tweaks: tweaks,
                    autograded: autograded }, status: :ok
@@ -236,6 +241,13 @@ class SubmissionsController < ApplicationController
               filename: "#{@course.name}_#{@course.semester}_#{@assessment.name}_submissions.zip")
   end
 
+  action_auth_level :submission_info, :instructor
+  def tweak_total
+    tweak =
+      @submission.global_annotations.empty? ? nil : @submission.global_annotations.sum(:value)
+    render json: tweak
+  end
+
   # Action to be taken when the user wants do download a submission but
   # not actually view it. If the :header_position parameter is set, it will
   # try to send the file at that position in the archive.
@@ -304,18 +316,6 @@ class SubmissionsController < ApplicationController
                 filename: @basename,
                 disposition: "inline"
     end
-  end
-
-  action_auth_level :submission_info, :instructor
-  def submission_info
-    submission_info = {}
-    submission_info[:submission] = @submission
-    submission_info[:scores] = Score.where(submission_id: @submission.id)
-    submission_info[:base_path] =
-      course_assessment_submission_annotations_path(@course, @assessment, @submission)
-    submission_info[:tweak_total] =
-      @submission.global_annotations.empty? ? nil : @submission.global_annotations.sum(:value)
-    render json: submission_info
   end
 
   # Action to be taken when the user wants to view a particular file.

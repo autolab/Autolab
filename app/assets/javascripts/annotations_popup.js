@@ -1,14 +1,14 @@
-const updateTweaks = () => {
-  tweaks.forEach(({tweak, submission_id}) => {
-    get_submission_details(submission_id).then(data => {
-      tweak?.setState({ amount: data?.tweak_total })
+const updateEditTweakButtons = () => {
+  tweaks.forEach(({tweak, submission}) => {
+    get_tweak_total(submission.id).then(data => {
+      tweak?.setState({ amount: data })
     })
   })
 }
-const get_submission_details = (submission_id) => {
+const get_tweak_total = (submission_id) => {
   return new Promise((resolve, reject) => {
     $.ajax({
-      url: `submissions/${submission_id}/submission_info`,
+      url: `submissions/${submission_id}/tweak_total`,
       method: 'GET',
       dataType: 'json',
       success: (data) => {
@@ -21,7 +21,6 @@ const get_submission_details = (submission_id) => {
     });
   });
 }
-
 function newAnnotationFormCode() {
   var box = $(".base-annotation-line").clone();
   box.removeClass("base-annotation-line");
@@ -124,7 +123,7 @@ var submitNewAnnotation = function (comment, shared_comment, global_comment, val
     },
     type: "POST",
     success: function (data, type) {
-      updateTweaks();
+      updateEditTweakButtons();
       $(form).parent().remove();
       $('#annotation-modal').modal('close');
     },

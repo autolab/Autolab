@@ -1,6 +1,6 @@
 /**
  * Usage:
- * // Create a new instance, associating it with the 'app' element
+ * // Create a new instance, associating it with the element specified by id 'app'
     const MyComponent = new AutolabComponent('app');
 
     // Define a template for the instance
@@ -24,9 +24,10 @@
  */
 
 
-function AutolabComponent(elementId, initialState = {}) {
+function AutolabComponent(elementId, initialState = {}, template = () => {}) {
   this.elementId = elementId;
   this.state = initialState;
+  this.template = template;
 
   this.setState = function(newState = {}) {
       $.extend(this.state, newState);

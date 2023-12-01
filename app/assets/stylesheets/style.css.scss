@@ -989,7 +989,7 @@ input[type="password"]:focus {
 
 // To remove line for file-field
 .file-field input[type="text"].validate,
-.file-field input[type="text"].validate.valid, {
+.file-field input[type="text"].validate.valid {
   border-bottom: none;
   box-shadow: none;
 }
@@ -1555,6 +1555,15 @@ table.sub td, th {
   a {
     overflow-y: hidden;
   }
+}
+
+.submissions-tweak-button {
+  margin-left: 3px;
+  color: $autolab-subtle-gray;
+}
+
+.submissions-tweak-points {
+  color: $autolab-highlight-gray;
 }
 
 .submissions-checkbox {
