@@ -722,32 +722,20 @@ class AssessmentsController < ApplicationController
     end
   end
 
-  def scoreHashFromScores(scores)
-    return unless @score.grader_id <= 0
-
-    scores.map { |s|
-      [s.problem.name, s.score]
-    }.to_h
-  end
-
   # TODO: Take into account any modifications by :parseAutoresult and :modifySubmissionScores
   # We should probably read the final scores directly
   # See: assessment_autograde_core.rb's saveAutograde
   def parseScore(score_hash)
-    @total = 0
+    total = 0
     return if score_hash.nil?
 
     if @jsonFeedback&.key?("_scores_order") == false
       @jsonFeedback["_scores_order"] = score_hash.keys
     end
     score_hash.keys.each do |k|
-      @total += score_hash[k].to_f
-    rescue NoMethodError
-      flash.now[:error] ||= ""
-      flash.now[:error] += "The score for #{k} could not be parsed.<br>"
-      flash.now[:html_safe] = true
+      total += score_hash[k].to_f if score_hash[k]
     end
-    score_hash["_total"] = @total
+    score_hash["_total"] = total
     score_hash
   end
 
@@ -1167,5 +1155,13 @@ private
     end
 
     @assessment.destroy # awwww!!!!
+  end
+
+  def scoreHashFromScores(scores)
+    return unless @score.grader_id <= 0
+
+    scores.map { |s|
+      [s.problem.name, s.score]
+    }.to_h
   end
 end
