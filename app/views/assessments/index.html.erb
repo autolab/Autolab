@@ -101,6 +101,7 @@
                   <%= link_to course_assessment_path(@course, asmt),
                               class: "collection-item grey-text text-darken-4" do %>
                     <%= asmt.display_name %>
+                    <p><b>Released:</b>&ensp;<%= asmt.start_at %>&ensp;|&ensp;<b>Due:</b>&ensp;<%= asmt.due_at %></p>
                     <% if !asmt.released? %>
                         <span class="new badge blue darken-4" data-badge-caption="unreleased" data-url="<%= edit_course_assessment_path(@course, asmt) %>/handin"></span>
                     <% end %>
