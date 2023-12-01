@@ -660,16 +660,17 @@ class AssessmentsController < ApplicationController
   def viewFeedback
     # User requested to view feedback on a score
     @score = @submission.scores.find_by(problem_id: params[:feedback])
+    autograded_scores = @submission.scores.includes(:problem).where(grader_id: 0)
     # Checks whether at least one problem has finished being auto-graded
-    @finishedAutograding = @submission.scores.where.not(feedback: nil).where(grader_id: 0)
+    finishedAutograding = @submission.scores.where.not(feedback: nil).where(grader_id: 0)
     @job_id = @submission["jobid"]
     @submission_id = params[:submission_id]
 
     # Autograding is not in-progress and no score is available
     if @score.nil?
-      if !@finishedAutograding.empty?
+      if !finishedAutograding.empty?
         redirect_to(action: "viewFeedback",
-                    feedback: @finishedAutograding.first.problem_id,
+                    feedback: finishedAutograding.first.problem_id,
                     submission_id: params[:submission_id]) && return
       end
 
@@ -683,7 +684,10 @@ class AssessmentsController < ApplicationController
     return if @score.nil?
 
     @jsonFeedback = parseFeedback(@score.feedback)
-    @scoreHash = parseScore(@score.feedback)
+
+    raw_score_hash = scoreHashFromScores(autograded_scores) if @score.grader_id <= 0
+    @scoreHash = parseScore(raw_score_hash) unless raw_score_hash.nil?
+
     if Archive.archive? @submission.handin_file_path
       @files = Archive.get_files @submission.handin_file_path
     end
@@ -723,28 +727,17 @@ class AssessmentsController < ApplicationController
   # TODO: Take into account any modifications by :parseAutoresult and :modifySubmissionScores
   # We should probably read the final scores directly
   # See: assessment_autograde_core.rb's saveAutograde
-  def parseScore(feedback)
-    return if feedback.nil?
+  def parseScore(score_hash)
+    total = 0
+    return if score_hash.nil?
 
-    lines = feedback.rstrip.lines
-    feedback = lines[lines.length - 1]
-
-    return unless valid_json_hash?(feedback)
-
-    score_hash = JSON.parse(feedback)
-    score_hash = score_hash["scores"]
     if @jsonFeedback&.key?("_scores_order") == false
       @jsonFeedback["_scores_order"] = score_hash.keys
     end
-    @total = 0
     score_hash.keys.each do |k|
-      @total += score_hash[k].to_f
-    rescue NoMethodError
-      flash.now[:error] ||= ""
-      flash.now[:error] += "The score for #{k} could not be parsed.<br>"
-      flash.now[:html_safe] = true
+      total += score_hash[k].to_f if score_hash[k]
     end
-    score_hash["_total"] = @total
+    score_hash["_total"] = total
     score_hash
   end
 
@@ -1164,5 +1157,11 @@ private
     end
 
     @assessment.destroy # awwww!!!!
+  end
+
+  def scoreHashFromScores(scores)
+    scores.map { |s|
+      [s.problem.name, s.score]
+    }.to_h
   end
 end
