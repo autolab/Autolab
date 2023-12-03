@@ -16,6 +16,8 @@
               const $btn = $(e.target);
               $btn.text("Importing...");
               $btn.addClass("disabled");
+              $("#unselectAll").addClass("disabled");
+              $("#selectAll").addClass("disabled");
 
               let checkedAsmts = $(".cbox").filter(':checked');
               let checkedAsmtNames = $.map(checkedAsmts, function(cbox){
