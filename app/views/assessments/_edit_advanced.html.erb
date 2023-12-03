@@ -1,9 +1,10 @@
-<%= f.text_field :group_size,
-                 display_name: "Group size",
-                 help_text: "Set the maximum size of groups for this assessment.
+<%= f.number_field :group_size,
+                   display_name: "Group size",
+                   help_text: "Set the maximum size of groups for this assessment.
   If group size is 1, the assessment is solo. If the size is decreased, groups that are too large will not be
   broken up.  If the size is set to 1, groups will be saved, but the assessment will be solo.",
-                 placeholder: "1" %>
+                   placeholder: "1",
+                   min: 1 %>
 
 <%= f.check_box :allow_student_assign_group,
                 display_name: "Allow student to self assign groups",

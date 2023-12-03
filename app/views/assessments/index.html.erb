@@ -4,7 +4,9 @@
           /* a way to mimic nested anchor tags */
           $('a.collection-item span.new.badge').each(function(idx, obj) {
               $(obj).on("click", function() {
-                  window.location = obj.dataset.url;
+                  if (obj.dataset.url !== undefined) {
+                    window.location = obj.dataset.url;
+                  }
                   return false;  // prevent click propagation
               });
           });
@@ -85,6 +87,8 @@
 
     <div class="row">
       <% @course.assessment_categories.each_with_index do |cat, idx| %>
+        <%# NOTE: A student might see gaps if all the assessments in a category are unreleased
+            A better approach would be to filter out unreleased assessments at the start %>
         <% if idx % 3 == 0 %>
           <div class="clearfix hide-on-small-only"></div>
         <% end %>
@@ -98,11 +102,15 @@
 
               <div class="collection red darken-4">
                 <% asmts.each do |asmt| %>
-                  <%= link_to course_assessment_path(@course, asmt),
+                  <% direct_download = asmt.handout_only && !@cud.instructor? %>
+                  <%= link_to direct_download ? handout_course_assessment_path(@course, asmt) : course_assessment_path(@course, asmt),
                               class: "collection-item grey-text text-darken-4" do %>
                     <%= asmt.display_name %>
                     <% if !asmt.released? %>
                         <span class="new badge blue darken-4" data-badge-caption="unreleased" data-url="<%= edit_course_assessment_path(@course, asmt) %>/handin"></span>
+                    <% end %>
+                    <% if asmt.handout_only %>
+                        <span class="new badge orange darken-4" data-badge-caption="document"></span>
                     <% end %>
                   <% end %>
                 <% end %>
