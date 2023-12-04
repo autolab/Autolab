@@ -25,7 +25,7 @@
                              placeholder: "E.g.   malloclab.zip   or   http://school.edu/class/malloclab.zip",
                              wrap_class: %w[input-field no-padding-bottom] %>
   <%= f.check_box :handout_only,
-                  help_text: "This assessment only consists of a handout. The handout will be directly downloaded when a student clicks on the assessment." %>
+                  help_text: "This assessment consists solely of a handout. Students that click on this assessment will be brought directly to the handout." %>
   <%= f.text_field :writeup, help_text: "File path from the assessment directory containing instructions to students,
   or a URL to redirect to.",
                              placeholder: "E.g.   writeup.pdf   or   http://school.edu/class/writeup.pdf" %>
