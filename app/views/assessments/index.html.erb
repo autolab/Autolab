@@ -149,8 +149,13 @@
               <% else %>
               <div class="collection red darken-4">
                 <% attachments.each do |attach| %>
-                  <%= link_to attach.name, course_attachment_path(@course, attach),
-                              class: "collection-item grey-text text-darken-4" %>
+                  <%= link_to course_attachment_path(@course, attach),
+                              class: "collection-item grey-text text-darken-4" do %>
+                    <span class="valign-wrapper">
+                      <i class="material-icons left">file_download</i>
+                      <%= attach.name %>
+                    </span>
+                  <% end %>
                 <% end %>
               </div>
               <% end %>
