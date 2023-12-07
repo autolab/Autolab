@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2023_07_07_161335) do
+ActiveRecord::Schema.define(version: 2023_09_24_163059) do
 
   create_table "annotations", force: :cascade do |t|
     t.integer "submission_id"
@@ -97,12 +97,13 @@ ActiveRecord::Schema.define(version: 2023_07_07_161335) do
   create_table "attachments", force: :cascade do |t|
     t.string "filename"
     t.string "mime_type"
-    t.boolean "released"
     t.string "name"
     t.datetime "created_at"
     t.datetime "updated_at"
     t.integer "course_id"
     t.integer "assessment_id"
+    t.string "category_name", default: "General"
+    t.datetime "release_at", default: -> { "CURRENT_TIMESTAMP" }
     t.index ["assessment_id"], name: "index_attachments_on_assessment_id"
   end
 

@@ -69,22 +69,33 @@ module ControllerMacros
     s
   end
 
-  def create_course_att_with_cid(cid)
-    # Prepare course attachment file
-    course_att_file = Rails.root.join("attachments/testattach.txt")
-    File.open(course_att_file, "w") do |f|
-      f.write("Course attachment file")
-    end
-    att = Attachment.new(course_id: cid, assessment_id: nil,
-                         name: "att#{cid}",
-                         released: true)
+  def course_att_with_cid(cid, released)
+    {
+      course_id: cid,
+      assessment_id: nil,
+      name: "att#{cid}",
+      category_name: "General",
+      release_at: released ? Time.current : Time.current + 1.day,
+      file: fixture_file_upload("attachments/course.txt", "text/plain")
+    }
+  end
 
-    att.file = Rack::Test::UploadedFile.new(
-      Rails.root.join("attachments/#{File.basename(course_att_file)}"),
-      "text/plain",
-      Tempfile.new("attach.tmp")
-    )
-    att.save
-    att
+  def create_course_att_with_cid(cid, released)
+    FactoryBot.create(:attachment, **course_att_with_cid(cid, released))
+  end
+
+  def assess_att_with_cid_aid(cid, aid, released)
+    {
+      course_id: cid,
+      assessment_id: aid,
+      name: "att#{cid}--#{aid}",
+      category_name: "General",
+      release_at: released ? Time.current : Time.current + 1.day,
+      file: fixture_file_upload("attachments/assessment.txt", "text/plain")
+    }
+  end
+
+  def create_assess_att_with_cid_aid(cid, aid, released)
+    FactoryBot.create(:attachment, **assess_att_with_cid_aid(cid, aid, released))
   end
 end
