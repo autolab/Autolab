@@ -11,7 +11,11 @@ class AttachmentsController < ApplicationController
 
   action_auth_level :index, :instructor
   def index
-    @attachments = @is_assessment ? @assessment.attachments.ordered : @course.attachments.ordered
+    @attachments = if @is_assessment
+                     @assessment.attachments.ordered
+                   else
+                     @course.attachments.where(assessment_id: nil).ordered
+                   end
   end
 
   action_auth_level :new, :instructor
