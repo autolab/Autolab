@@ -1225,6 +1225,7 @@ private
       @unused_config_files << filename unless assessment_exists
     end
     @unused_config_files.sort!
+  end
 
   def scoreHashFromScores(scores)
     scores.map { |s|
