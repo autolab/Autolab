@@ -6,17 +6,11 @@ class AddVersionNumberToAssessmentUserData < ActiveRecord::Migration[6.0]
       if max_submission_version.nil?
         aud.update(version_number: 0)
       else
-        aud.update(version_number: test)
+        aud.update(version_number: max_submission_version)
       end
     end
   end
   def down
-    AssessmentUserDatum.all.each do |aud|
-      revert = Submission.where(assessment_user_data: aud, version_number: aud.version_number)
-      unless revert.nil?
-        aud.update(latest_submission_id: Submission.where(assessment_user_data: aud, version_number: aud.version_number))
-      end
-    end
     remove_column :assessment_user_data, :version_number, :integer
   end
 end
