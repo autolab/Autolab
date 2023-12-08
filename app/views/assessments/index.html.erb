@@ -107,31 +107,62 @@
                   <% end %>
                 <% end %>
               </div>
-
             </div>
           </div>
         <% end %>
       <% end %>
-
     </div>
   </div>
 <% end %>
 
-<% if @attachments.any? or @cud.instructor? %>
+<% if @course_attachments.any? or @cud.instructor? %>
   <div class="section">
     <h3 class="section-title"><span class="white">Attachments</span></h3>
-    <ul class="collection with-header attachments">
-      <% if @cud.instructor? %>
+    <% if @cud.instructor? %>
+      <ul class="collection with-header attachments">
         <li class="collection-item add">
           <p>
             <%= link_to new_course_attachment_path(@course) do %>
               <i class="material-icons left">note_add</i>Add Attachment
             <% end %>
-            <span class="secondary-content"></span>
           </p>
         </li>
+      </ul>
+    <% end %>
+    <div class="row">
+      <% attachment_categories = @course_attachments.distinct.pluck(:category_name).sort %>
+      <% attachment_categories.each_with_index do |cat, idx| %>
+        <% if idx % 3 == 0 %>
+          <div class="clearfix hide-on-small-only"></div>
+        <% end %>
+        <% attachments = @course_attachments.from_category(cat).ordered %>
+        <% if attachments.any? %>
+          <div class="col s12 m4">
+            <div class="card hoverable">
+              <div class="card-content red darken-3">
+                <span class="card-title white-text"><%= cat %></span>
+              </div>
+              <% if @cud.instructor? %>
+              <ul class="collection red darken-4">
+                <%= render partial: "attachments/course_attachment", collection: attachments, as: :attachment %>
+              </ul>
+              <% else %>
+              <div class="collection red darken-4">
+                <% attachments.each do |attach| %>
+                  <%= link_to course_attachment_path(@course, attach),
+                              class: "collection-item grey-text text-darken-4" do %>
+                    <span class="valign-wrapper">
+                      <i class="material-icons left">file_download</i>
+                      <%= attach.name %>
+                    </span>
+                  <% end %>
+                <% end %>
+              </div>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
       <% end %>
-      <%= render @attachments %>
-    </ul>
+    </div>
   </div>
 <% end %>

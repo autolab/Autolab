@@ -216,19 +216,6 @@
     <div class="section">
       <h4 class="section-title"><span class="white">Attachments</span></h4>
       <ul class="collection with-header attachments">
-        <% if false then %>
-          <% for a in @assessment.attachments do %>
-            <% if a.released? then %>
-              <% if (Time.now() > @assessment.start_at) or (@cud.instructor?) then %>
-                <li><%= link_to a.name, [@course, @assessment, a] %></li>
-              <% else %>
-                <li><%= a.name %></li>
-              <% end %>
-            <% elsif @cud.instructor? then %>
-              <li><i><%= link_to a.name, [@course, @assessment, a] %>*</i></li>
-            <% end %>
-          <% end %>
-        <% end %>
         <% if @cud.instructor? %>
           <li class="collection-item add">
             <p>

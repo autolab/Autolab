@@ -11,7 +11,11 @@ class AttachmentsController < ApplicationController
 
   action_auth_level :index, :instructor
   def index
-    @attachments = @is_assessment ? @assessment.attachments : @course.attachments
+    @attachments = if @is_assessment
+                     @assessment.attachments.ordered
+                   else
+                     @course.attachments.where(assessment_id: nil).ordered
+                   end
   end
 
   action_auth_level :new, :instructor
@@ -118,13 +122,13 @@ private
     @attachment = if @is_assessment
                     @course.attachments.find_by(assessment_id: @assessment.id, id: params[:id])
                   else
-                    @course.attachments.find(params[:id])
+                    @course.attachments.find_by(id: params[:id])
                   end
 
     return unless @attachment.nil?
 
     COURSE_LOGGER.log("Cannot find attachment with id: #{params[:id]}")
-    flash[:error] = "Could not find Attachment \# #{params[:id]}"
+    flash[:error] = "Could not find Attachment \##{params[:id]}"
     redirect_to_attachment_list
   end
 
@@ -146,6 +150,6 @@ private
   end
 
   def attachment_params
-    params.require(:attachment).permit(:name, :file, :released, :mime_type)
+    params.require(:attachment).permit(:name, :file, :category_name, :release_at, :mime_type)
   end
 end
