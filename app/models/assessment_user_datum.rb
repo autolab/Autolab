@@ -238,6 +238,16 @@ class AssessmentUserDatum < ApplicationRecord
     cumulative_grace_days_used
   end
 
+  # atomic way of updating version number
+  # (necessary in the case multiple submissions made concurrently)
+  def update_version_number
+    with_lock do
+      self.version_number += 1
+      save!
+    end
+    self.version_number
+  end
+
 protected
 
   def cumulative_grace_days_used
