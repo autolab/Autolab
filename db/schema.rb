@@ -51,6 +51,7 @@ ActiveRecord::Schema.define(version: 2023_09_24_163059) do
     t.string "repository", limit: 255
     t.integer "group_id"
     t.integer "membership_status", limit: 1, default: 0
+    t.integer "version_number"
     t.index ["assessment_id"], name: "index_assessment_user_data_on_assessment_id"
     t.index ["course_user_datum_id", "assessment_id"], name: "index_AUDs_on_CUD_id_and_assessment_id"
     t.index ["course_user_datum_id"], name: "index_assessment_user_data_on_course_user_datum_id"
