@@ -419,6 +419,10 @@ class Assessment < ApplicationRecord
     source_config_file_path.sub_ext(".rb.bak")
   end
 
+  def date_to_s(date)
+    date.strftime("%b %e at %l:%M%P")
+  end
+
 private
 
   def saved_change_to_grade_related_fields?
