@@ -192,6 +192,7 @@ class AssessmentsController < ApplicationController
         # Ensure file will lie within course, otherwise skip
         # Allow equality for the main directory to be created
         next unless Archive.in_dir?(Pathname(entry_file), Pathname(assessment_path), strict: false)
+        next if overwrite && relative_pathname.start_with?('handin/')
 
         if entry.directory?
           FileUtils.mkdir_p(entry_file,
@@ -202,7 +203,8 @@ class AssessmentsController < ApplicationController
         elsif entry.file?
           # Skip config files
           next if overwrite && %W[#{asmt_name}.yml
-                                  #{asmt_name}.rb].include?(File.basename(entry_file))
+                                  #{asmt_name}.rb
+                                  log.txt].include?(File.basename(entry_file))
 
           # Default to 0755 so that directory is writeable, mode will be updated later
           FileUtils.mkdir_p(File.dirname(entry_file),
