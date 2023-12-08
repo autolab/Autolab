@@ -242,7 +242,11 @@ class AssessmentUserDatum < ApplicationRecord
   # (necessary in the case multiple submissions made concurrently)
   def update_version_number
     with_lock do
-      self.version_number += 1
+      if version_number.nil?
+        self.version_number = 1
+      else
+        self.version_number += 1
+      end
       save!
     end
     self.version_number
