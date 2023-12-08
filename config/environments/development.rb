@@ -61,7 +61,7 @@ Rails.application.configure do
   # config.file_watcher = ActiveSupport::EventedFileUpdateChecker
 
   # OAuth2 Application Configuration for Github
-  # See (TODO replace with doc link)
+  # See https://docs.autolabproject.com/installation/github_integration/
   config.x.github.client_id = ENV['GITHUB_CLIENT_ID']
   config.x.github.client_secret = ENV['GITHUB_CLIENT_SECRET']
 

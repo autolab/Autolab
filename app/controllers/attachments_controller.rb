@@ -1,3 +1,5 @@
+require "archive"
+
 ##
 # Attachments can be either assessment or course-specific.
 # This controller handles both types, setting @is_assessment to distinguish the two
@@ -57,23 +59,27 @@ class AttachmentsController < ApplicationController
 
   action_auth_level :show, :student
   def show
-    filename = Rails.root.join("attachments", @attachment.filename)
-    unless File.exist?(filename)
-      COURSE_LOGGER.log("Cannot find the file '#{@attachment.filename}' for"\
-                        " attachment #{@attachment.name}")
+    attached_file = @attachment.attachment_file
+    unless attached_file.attached?
+      COURSE_LOGGER.log("No file attached to attachment '#{@attachment.name}'")
 
-      flash[:error] = "Error loading #{@attachment.name} from #{@attachment.filename}"
-      redirect_to([@course, :attachments]) && return
+      flash[:error] = "No file attached to attachment '#{@attachment.name}'"
+      redirect_to course_attachments_path(@course) && return
     end
     if @cud.instructor? || @attachment.released?
-      # Set to application/octet-stream to force download
-      send_file(filename, disposition: "inline",
-                          type: "application/octet-stream",
-                          filename: @attachment.filename) && return
+      begin
+        send_data attached_file.download, filename: @attachment.filename,
+                                          type: @attachment.mime_type
+      rescue StandardError
+        COURSE_LOGGER.log("Error viewing attachment '#{@attachment.name}'")
+        flash[:error] = "Error viewing attachment '#{@attachment.name}'"
+        redirect_to course_assessment_path(@course, @assessment)
+      end
+      return
     end
 
     flash[:error] = "You are unauthorized to view this attachment"
-    redirect_to([@course, @assessment])
+    redirect_to course_assessment_path(@course, @assessment)
   end
 
   action_auth_level :edit, :instructor

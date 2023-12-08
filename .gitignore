@@ -23,6 +23,7 @@ config/lti_platform_jwk.json
 app/views/home/_topannounce.html.erb
 attachments/
 doc/
+storage/
 out.txt
 
 # compiled assets
