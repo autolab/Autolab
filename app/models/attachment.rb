@@ -9,10 +9,17 @@ class Attachment < ApplicationRecord
   validates :category_name, presence: true
   validates :filename, presence: true
   validates :release_at, presence: true
+  validate :file_size_limit
   has_one_attached :attachment_file
 
   belongs_to :course
   belongs_to :assessment
+
+  def file_size_limit
+    return unless attachment_file.attached? && attachment_file.byte_size > 1.gigabyte
+
+    errors.add(:attachment_file, "must be less than 1GB")
+  end
 
   # Constants
   ORDERING = "release_at ASC, name ASC".freeze
