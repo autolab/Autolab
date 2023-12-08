@@ -40,6 +40,7 @@ class Attachment < ApplicationRecord
   def file=(upload)
     self.filename = File.basename(upload.original_filename)
     attachment_file.attach(upload)
+    self.mime_type = upload.content_type
   end
 
   def after_create
