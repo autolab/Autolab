@@ -60,6 +60,9 @@ Rails.application.configure do
   # routes, locales, etc. This feature depends on the listen gem.
   # config.file_watcher = ActiveSupport::EventedFileUpdateChecker
 
+  # Feature flag for docker image upload
+  config.docker_image_upload_enabled = true
+
   # OAuth2 Application Configuration for Github
   # See (TODO replace with doc link)
   config.x.github.client_id = ENV['GITHUB_CLIENT_ID']
