@@ -893,6 +893,14 @@
   font-weight: bold;
 }
 
+/* Disable Bootstrap styling to allow for scrolling within annotations and
+ * grades sidebars in file viewer
+ * (allows clicking on the scrollbar)
+ */
+.drag-target.right-aligned {
+  display: none;
+}
+
 /* Tooltip */
 span > .material-icons {
   vertical-align: middle;
