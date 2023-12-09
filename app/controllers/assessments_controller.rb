@@ -68,20 +68,12 @@ class AssessmentsController < ApplicationController
                                     .where(persistent: false)
     @announcements = announcements_tmp.where(course_id: @course.id)
                                       .or(announcements_tmp.where(system: true)).order(:start_date)
-    @attachments = if @cud.instructor?
-                     @course.attachments
-                   else
-                     # Attachments that are released, and whose related assessment is also released
-                     course_attachments = @course.attachments
-                                                 .where(released: true)
-                                                 .left_outer_joins(:assessment)
-
-                     # Either assessment_id is nil (i.e. course attachment)
-                     # Or the assessment has started
-                     course_attachments.where(assessment_id: nil)
-                                       .or(course_attachments.where("assessments.start_at < ?",
-                                                                    Time.current))
-                   end
+    # Only display course attachments on course landing page
+    @course_attachments = if @cud.instructor?
+                            @course.attachments.where(assessment_id: nil)
+                          else
+                            @course.attachments.where(assessment_id: nil).released
+                          end
   end
 
   # GET /assessments/new
@@ -560,7 +552,7 @@ class AssessmentsController < ApplicationController
     @attachments = if @cud.instructor?
                      @assessment.attachments
                    else
-                     @assessment.attachments.where(released: true)
+                     @assessment.attachments.released
                    end
     @submissions = @assessment.submissions.where(course_user_datum_id: @effectiveCud.id)
                               .order("version DESC")

@@ -333,6 +333,40 @@ class UsersController < ApplicationController
     (redirect_to user_path(id: @user.id)) && return
   end
 
+  action_auth_level :change_password_for_user, :administrator
+  def change_password_for_user
+    user = User.find(params[:id])
+    raw, enc = Devise.token_generator.generate(User, :reset_password_token)
+    user.reset_password_token = enc
+    user.reset_password_sent_at = Time.current
+    user.save(validate: false)
+    Devise.sign_in_after_reset_password = false
+    user_reset_link = edit_password_url(user, reset_password_token: raw)
+    admin_reset_link = update_password_for_user_user_path(user: user)
+    flash[:success] =
+      "Click " \
+      "#{view_context.link_to 'here', admin_reset_link, method: 'get'} " \
+      "to reset #{user.display_name}'s password " \
+      "<br>Or copy this link for the user to reset their own password: "\
+      "#{user_reset_link}"
+    flash[:html_safe] = true
+    redirect_to(user_path)
+  end
+
+  def update_password_for_user
+    @user = User.find(params[:id])
+    return if params[:user].nil? || params[:user].is_a?(String) || @user.nil?
+
+    if params[:user][:password] != params[:user][:password_confirmation]
+      flash[:error] = "Passwords do not match"
+    elsif @user.update(password: params[:user][:password])
+      flash[:success] = "Password changed successfully"
+      redirect_to(root_path)
+    else
+      flash[:error] = "Password #{@user.errors[:password][0]}"
+    end
+  end
+
 private
 
   def new_user_params
