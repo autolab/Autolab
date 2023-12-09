@@ -105,8 +105,8 @@
                 <% asmts.each do |asmt| %>
                   <% direct_download = asmt.handout_only && !@cud.instructor? %>
                   <%= link_to direct_download ? handout_course_assessment_path(@course, asmt) : course_assessment_path(@course, asmt),
-                              class: "collection-item grey-text text-darken-4" do %>
-                    <%= asmt.display_name %>
+                              class: "collection-item grey-text text-darken-4 date" do %>
+                    <b><%= asmt.display_name %></b>
                     <% if !asmt.released? %>
                       <span class="new badge blue darken-4" data-badge-caption="unreleased" data-url="<%= edit_course_assessment_path(@course, asmt) %>/handin"></span>
                     <% end %>
