@@ -20,7 +20,6 @@ class Submission < ApplicationRecord
 
   validate :allowed?, on: :create
   validates_associated :assessment
-  validates :version, uniqueness: { scope: %i[course_user_datum_id assessment_id] }
   validate :user_and_assessment_in_same_course
   validates :notes, length: { maximum: 255 }
 
@@ -271,14 +270,7 @@ class Submission < ApplicationRecord
 
   def set_version
     self.submitted_by_id = course_user_datum_id unless submitted_by_id
-    begin
-      if version != 0
-        self.version = 1 + assessment.submissions.where(course_user_datum:
-          course_user_datum).maximum(:version)
-      end
-    rescue TypeError
-      self.version = 1
-    end
+    self.version = aud.update_version_number
   end
 
   def problems_to_scores
