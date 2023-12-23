@@ -56,7 +56,7 @@ jobs:
           cp config/school.yml.template config/school.yml
           cp config/autogradeConfig.rb.template config/autogradeConfig.rb
           cp .env.template .env
-          mkdir attachments/ tmp/
+          mkdir tmp/
 
       - name: Set up database
         run: |

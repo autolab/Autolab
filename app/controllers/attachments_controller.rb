@@ -33,7 +33,7 @@ class AttachmentsController < ApplicationController
 
     if @attachment.update(attachment_params)
       flash[:success] = "Attachment created"
-      redirect_to_attachment_list
+      redirect_to_index
     else
       error_msg = "Attachment create failed:"
       if !@attachment.valid?
@@ -57,23 +57,33 @@ class AttachmentsController < ApplicationController
 
   action_auth_level :show, :student
   def show
-    filename = Rails.root.join("attachments", @attachment.filename)
-    unless File.exist?(filename)
-      COURSE_LOGGER.log("Cannot find the file '#{@attachment.filename}' for"\
-                        " attachment #{@attachment.name}")
-
-      flash[:error] = "Error loading #{@attachment.name} from #{@attachment.filename}"
-      redirect_to([@course, :attachments]) && return
-    end
     if @cud.instructor? || @attachment.released?
-      # Set to application/octet-stream to force download
-      send_file(filename, disposition: "inline",
-                          type: "application/octet-stream",
-                          filename: @attachment.filename) && return
+      begin
+        attached_file = @attachment.attachment_file
+        if attached_file.attached?
+          send_data attached_file.download, filename: @attachment.filename,
+                                            type: @attachment.mime_type
+          return
+        end
+
+        old_attachment_path = Rails.root.join("attachments", @attachment.filename)
+        if File.exist?(old_attachment_path)
+          send_file old_attachment_path, filename: @attachment.filename, type: @attachment.mime_type
+          return
+        else
+          COURSE_LOGGER.log("No file attached to attachment '#{@attachment.name}'")
+          flash[:error] = "No file attached to attachment '#{@attachment.name}'"
+          redirect_to_index && return
+        end
+      rescue StandardError
+        COURSE_LOGGER.log("Error viewing attachment '#{@attachment.name}'")
+        flash[:error] = "Error viewing attachment '#{@attachment.name}'"
+        redirect_to_index && return
+      end
     end
 
     flash[:error] = "You are unauthorized to view this attachment"
-    redirect_to([@course, @assessment])
+    redirect_to_index
   end
 
   action_auth_level :edit, :instructor
@@ -83,7 +93,7 @@ class AttachmentsController < ApplicationController
   def update
     if @attachment.update(attachment_params)
       flash[:success] = "Attachment updated"
-      redirect_to_attachment_list
+      redirect_to_index
     else
       error_msg = "Attachment update failed:"
       if !@attachment.valid?
@@ -109,7 +119,7 @@ class AttachmentsController < ApplicationController
   def destroy
     @attachment.destroy
     flash[:success] = "Attachment deleted"
-    redirect_to_attachment_list
+    redirect_to_index
   end
 
 private
@@ -129,10 +139,10 @@ private
 
     COURSE_LOGGER.log("Cannot find attachment with id: #{params[:id]}")
     flash[:error] = "Could not find Attachment \##{params[:id]}"
-    redirect_to_attachment_list
+    redirect_to_index
   end
 
-  def redirect_to_attachment_list
+  def redirect_to_index
     if @is_assessment
       redirect_to course_assessment_path(@course, @assessment)
     else
@@ -142,10 +152,10 @@ private
 
   def add_attachments_breadcrumb
     @breadcrumbs << if @is_assessment
-                      (view_context.link_to "Assessment Attachments",
-                                            [@course, @assessment, :attachments])
+                      view_context.link_to "Assessment Attachments",
+                                           course_assessment_attachments_path(@course, @assessment)
                     else
-                      (view_context.link_to "Course Attachments", [@course, :attachments])
+                      view_context.link_to "Course Attachments", course_attachments_path(@course)
                     end
   end
 
