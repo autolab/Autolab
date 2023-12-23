@@ -21,7 +21,8 @@ module Contexts
       # TODO: replace with factorybot
       # needed to bypass validations, but jank
       AssessmentUserDatum.create_modulo_callbacks(assessment_id: asmt.id,
-                                                  course_user_datum_id: student.id)
+                                                  course_user_datum_id: student.id,
+                                                  version_number: 0)
       aud = AssessmentUserDatum.find_by(assessment_id: asmt.id,
                                         course_user_datum_id: student.id)
       # students in this course are given nicknames to bypass

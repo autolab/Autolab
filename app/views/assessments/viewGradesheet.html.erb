@@ -11,7 +11,7 @@
 
   <script type="text/javascript">
     // global constants
-    total_rows = <%= @submissions.length %>;
+    total_rows = <%= @course.course_user_data.length %>;
     rows_on_display = 1000;
     increment_rows_by = 500;
     email_col = 1;
@@ -68,6 +68,29 @@
             "total": "<%= computed_score(history_url(s.course_user_datum)) { s.final_score @cud } %>"
           },
       <% end %>
+      <% has_submissions = @submissions.pluck(:course_user_datum_id) %>
+      <% for c in @course.course_user_data.where.not(id: has_submissions) do %>
+          { "id": "",
+            "name": {
+              name: "<%= [c.last_name, c.first_name].reject(&:blank?).join(', ') %>",
+              email: "<%= c.email %>",
+            },
+            "course_number": "<%= c.course_number %>",
+            "lec-sec": "<%= c.lecture %>/<%= c.section %>",
+            "actions": "no file found",
+            <% @assessment.problems.each_with_index do |p,i| %>
+              "problem<%= i %>": "&ndash;",
+            <% end %>
+            <% if @cud.instructor? %>
+              "late_penalty": "&ndash;",
+              <% if @assessment.version_penalty? %>
+                "version_penalty": "&ndash;",
+              <% end %>
+                "tweak": "&ndash;",
+            <% end %>
+            "total": "&ndash;"
+          },
+      <% end %>
     ];
 
     // additional data for each row
@@ -98,6 +121,11 @@
           ]
         },
       <% end %>
+      <% for c in @course.course_user_data.where.not(id: has_submissions) do %>
+          {
+            "email": "<%= c.email %>",
+          },
+      <% end %>
     ];
 
     // column spec
@@ -112,7 +140,11 @@
         } },
       { title: "Course &#8470;", className: "course_number", data: "course_number" },
       { title: "Lec/Sec", className: "lec-sec", data: "lec-sec" },
-      { title: "Actions", className: "actions", data: "actions" },
+      { title: "Actions", className: "actions", data: "actions",
+        render: function(data, type, full, meta) {
+          if (type == "sort") return data === "no file found" ? data : "";
+          return data;
+        } },
       <% @assessment.problems.each_with_index do |p,i| %>
         { title: `<%= p.name %>
             <span class="max_score">(<%= p.max_score || raw("&ndash;") %>)</span>`,

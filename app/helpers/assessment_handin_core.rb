@@ -18,6 +18,7 @@ module AssessmentHandinCore
     if size > @assessment.max_size * (2**20)
       return :file_too_large
     end
+
     # Check if mimetype is correct (if overwritten by assessment config)
     begin
       if @assessment.overwrites_method?(:checkMimeType) and 
@@ -42,6 +43,7 @@ module AssessmentHandinCore
 
     submitter_aud = @assessment.aud_for(@cud.id)
     return :valid unless submitter_aud
+
     group = submitter_aud.group
     return :valid unless group
 
@@ -54,6 +56,7 @@ module AssessmentHandinCore
 
       submission_count = aud.course_user_datum.submissions.where(assessment: @assessment).size
       next unless submission_count >= @assessment.max_submissions
+
       return :group_submission_limit_exceeded
     end
 
