@@ -39,7 +39,7 @@
               <% if course_cud %>
                 <% if !course_cud.instructor? && course_cud.course_assistant? && !course_cud.section.blank? %>
                   <hr>
-                  <%= link_to "Grade Section", [:view, course, course_cud, :gradebook, section: course_cud.section], title: "Grade your section", class: "red-text text-darken-3", style: "white-space: nowrap" %>
+                  <%= link_to "Grade Section", [:view, course, course_cud, :gradebook, { section: course_cud.section }], title: "Grade your section", class: "red-text text-darken-3", style: "white-space: nowrap" %>
                 <% elsif course_cud.instructor? || course_cud.student? %>
                   <%= link_to "Gradebook", [course, course_cud, :gradebook], title: "View your gradebook", class: "red-text text-darken-3" %>
                 <% end %>
@@ -55,4 +55,8 @@
   <% end %>
 <% end %>
 
-<%= render partial: "home/topannounce" rescue nil %>
+<%= begin
+      render partial: "home/topannounce"
+    rescue StandardError
+      nil
+    end %>

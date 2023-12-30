@@ -20,6 +20,7 @@ var slickgrid_options = {
     submission_status_key = columnDef.field + "_submission_status"
     grade_type_key = columnDef.field + "_grade_type"
     end_at_key = columnDef.field + "_end_at"
+    history_key = columnDef.field + "_history_url";
 
     switch (data[grade_type_key]) {
     case "excused":
@@ -59,7 +60,7 @@ var slickgrid_options = {
 
       case "not_yet_submitted":
         if (columnDef.before_grading_deadline) {
-          value = "<a data-title='No submission has been made yet.' class='tip icon-exclamation-sign'></a>";
+          value = "<a data-tooltip='No submission has been made yet.' class='tooltipped icon-exclamation-sign'></a>";
         } else {
           tip = user + ' has not yet made any submissions for ' + asmt + '. ';
           tip += 'The last date for submission by ' + user + ' is ' + data[end_at_key] + '.';
@@ -68,8 +69,7 @@ var slickgrid_options = {
         break;
       }
     }
-
-    return (value !== null) ? value : "&ndash;";
+    return (value !== null) ? ((data[history_key] !== undefined) ? link_to(data[history_key], value) : value) : "&ndash;";
   }
 };
 
@@ -117,7 +117,6 @@ $(function () {
 
   // column header tooltips
   for (var i = 0; i < columns.length; i++) {
-    columns[i].headerCssClass = "tip";
     columns[i].toolTip = columns[i].name;
   }
 
@@ -164,18 +163,13 @@ $(function () {
   });
   $(window).resize();
 
-  grid.onMouseEnter.subscribe(function(e, args) {
-    $('.tooltipped', e.target).tooltip({
-      position: 'top',
-      delay: 100,
-      html: true
-    });
-  });
-
-  $('.tooltipped').tooltip({
+  const tooltipOpts = {
     position: 'top',
     delay: 100,
     html: true
+  };
+  grid.onMouseEnter.subscribe(function(e, args) {
+    // Since Materialize's tooltip method was overwritten by jquery-ui
+    M.Tooltip.init(document.querySelectorAll(".tooltipped"), tooltipOpts);
   });
-
 })

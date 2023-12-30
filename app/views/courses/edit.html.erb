@@ -5,29 +5,29 @@
 <% end %>
 
 <div class="row">
-	<div class="col s12">
-		<h4>Edit Course</h4>
-		<%= form_for @course, as: :editCourse, url: course_path(@course), method: :patch, builder: FormBuilderWithDateTimeInput,
-								 html: {multipart: true} do |f| %>
-			<% if @course.errors.any? %>
-				<div id="error_explanation">
-					<h2><%= pluralize(@course.errors.count, "error") %>
-						prohibited this course from being saved:</h2>
+  <div class="col s12">
+    <h4>Edit Course</h4>
+    <%= form_for @course, as: :editCourse, url: course_path(@course), method: :patch, builder: FormBuilderWithDateTimeInput,
+                          html: { multipart: true } do |f| %>
+      <% if @course.errors.any? %>
+        <div id="error_explanation">
+          <h2><%= pluralize(@course.errors.count, "error") %>
+            prohibited this course from being saved:</h2>
 
-					<ul>
-						<% @course.errors.full_messages.each do |msg| %>
-						<li><%= msg %></li>
-						<% end %>
-					</ul>
-				</div>
-			<% end %>
+          <ul>
+            <% @course.errors.full_messages.each do |msg| %>
+            <li><%= msg %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
 
-			<%= render :partial=>"courseFields", :locals=>{:f=>f, :course=>@course} %>
-			<%= f.submit 'Save', { :class=> "btn primary" } %>
-			<% if current_user.administrator? %>
-				<%= link_to "Delete Course", course_path(@course), method: :delete,
-										data: {confirm: "Are you sure to destroy #{@course.full_name}?"}, class: "btn" %>
-			<% end %>
-		<% end %>
-	</div>
+      <%= render partial: "courseFields", locals: { f: f, course: @course } %>
+      <%= f.submit 'Save', { class: "btn primary" } %>
+      <% if current_user.administrator? %>
+        <%= link_to "Delete Course", course_path(@course), method: :delete,
+                                                           data: { confirm: "Are you sure to destroy #{@course.full_name}?" }, class: "btn" %>
+      <% end %>
+    <% end %>
+  </div>
 </div>

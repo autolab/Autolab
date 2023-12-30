@@ -480,7 +480,14 @@ class CoursesController < ApplicationController
   end
 
   action_auth_level :moss, :instructor
-  def moss; end
+  def moss
+    @courses = if @cud.user.administrator?
+                 Course.all
+               else
+                 Course.joins(:course_user_data)
+                       .where(course_user_data: { user_id: @cud.user.id, instructor: true })
+               end
+  end
 
   LANGUAGE_WHITELIST = %w[c cc java ml pascal ada lisp scheme haskell fortran ascii vhdl perl
                           matlab python mips prolog spice vb csharp modula2 a8086 javascript plsql
@@ -571,7 +578,9 @@ class CoursesController < ApplicationController
     system("chmod -R a+r #{tmp_dir}")
     ActiveRecord::Base.clear_active_connections!
     # Remove non text files when making a moss run
-    `~/Autolab/script/cleanMoss #{tmp_dir}`
+    Dir.chdir(Rails.root.join("script")) do
+      system("./cleanMoss #{tmp_dir}")
+    end
     # Now run the Moss command
     @mossCmdString = @mossCmd.join(" ")
     @mossOutput = `#{@mossCmdString} 2>&1`

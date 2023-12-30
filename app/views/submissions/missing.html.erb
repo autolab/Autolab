@@ -2,20 +2,19 @@
   <%= javascript_include_tag "sorttable" %>
 <% end %>
 
-<h2>Missing Submissions for <%= link_to @assessment.display_name, [@course, @assessment] %> </h2>
+<h2>Missing Submissions for <%= link_to @assessment.display_name, course_assessment_path(@course, @assessment) %> </h2>
 
-<%= link_to "Back to Manage Submissions", 
-    course_assessment_submissions_path(@course, @assessment),
-    {:title=>"Return to the previous page"}
-%> 
+<%= link_to "Back to Manage Submissions",
+            course_assessment_submissions_path(@course, @assessment),
+            { title: "Return to the previous page" } %>
 |
 <%= link_to "Manage Extensions",
-    course_assessment_extensions_path(@course, @assessment),
-    {:title=>"Grant extensions to students"} %> 
+            course_assessment_extensions_path(@course, @assessment),
+            { title: "Grant extensions to students" } %>
 |
-<%= link_to "Fill In Empty Submissions", 
-    new_course_assessment_submission_path(@course, @assessment, course_user_datum_id: @missing.collect{ |u| u[:id]}.join(',')),
-    {:title=>"Create submissions for all of the missing students"} %>
+<%= link_to "Fill In Empty Submissions",
+            new_course_assessment_submission_path(@course, @assessment, course_user_datum_id: @missing.collect{ |u| u[:id] }.join(',')),
+            { title: "Create submissions for all of the missing students" } %>
 
 <p>
 <%= @users %>
@@ -29,18 +28,18 @@
     </tr>
   </thead>
   <tbody>
-  <% for student in @missing %>
+  <% @missing.each  do |student| %>
     <tr>
-      <td><%= student[:email] %></td>
+          <td><%= student[:email] %></td>
       <td><%= student[:aud].extension ? "yes" : "no" %></td>
       <td><%= end_at_display student[:aud].end_at %></td>
-      <td><%= link_to "Create Submission", 
-               new_course_assessment_submission_path(@course, @assessment, course_user_datum_id: student[:id]),
-               {:title=>"Create a submission for this student, with the option to handin a file on their behalf"} %>
+      <td><%= link_to "Create Submission",
+                      new_course_assessment_submission_path(@course, @assessment, course_user_datum_id: student[:id]),
+                      { title: "Create a submission for this student, with the option to handin a file on their behalf" } %>
       </td>
     </tr>
   <% end %>
-  <% if @missing.size == 0 then %> 
+  <% if @missing.size == 0 then %>
     <tr><td colspan=5>No Missing Submissions!</td></tr>
   <% end %>
   </tbody>

@@ -32,31 +32,56 @@
         <div class="collapsible-header active"><h5>Admin Course</h5></div>
         <div class="collapsible-body">
           <ul class="options">
-            <li><%= link_to "Course settings", [:edit, @course],
-                { title: "Modify the properties for this course" } %></li>
-            <li><%= link_to "Manage course users", [:users, @course],
-                { title: "Create, modify, and delete user accounts" } %></li>
-            <li><%= link_to "Install assessment", [:install_assessment, @course, :assessments],
-                { title: "Create an assessment from scratch or install one from an existing directory" } %></li>
-            <li><%= link_to "Send bulk email", [:email, @course],
-                { title: "Send an email to everyone in the class" } %></li>
-            <li><%= link_to "Manage course attachments", [@course, :attachments],
-                { title: "Distribute files to your students" } %></li>
-            <li><%= link_to "Manage announcements", [@course, :announcements],
-                { title: "Manage announcements via banners on either front page or all pages (persistent)." } %></li>
+            <li>
+              <%= link_to "Course settings", edit_course_path(@course),
+                          { title: "Modify the properties for this course" } %>
+            </li>
+            <li>
+              <%= link_to "Manage course users", users_course_path(@course),
+                          { title: "Create, modify, and delete user accounts" } %>
+            </li>
+            <li>
+              <%= link_to "Install assessment", install_assessment_course_assessments_path(@course),
+                          { title: "Create an assessment from scratch or install one from an existing directory" } %>
+            </li>
+            <li>
+              <%= link_to "Send bulk email", email_course_path(@course),
+                          { title: "Send an email to everyone in the class" } %>
+            </li>
+            <li>
+              <%= link_to "Manage course attachments", course_attachments_path(@course),
+                          { title: "Distribute files to your students" } %>
+            </li>
+            <li>
+              <%= link_to "Manage announcements", course_announcements_path(@course),
+                          { title: "Manage announcements via banners on either front page or all pages (persistent)." } %>
+            </li>
 
-            <li><%= link_to "Manage schedulers", [@course, :schedulers],
-                { title: "Set and update scheduler for log submissions. (Advanced feature)"} %></li>
-            <li><%= link_to "Act as user", [:sudo, @course, @cud],
-                { title: "Temporarily become another user" } %></li>
-            <li><%= link_to "Run Moss cheat checker", [:moss, @course],
-                { title: "Use the Stanford Moss server to detect copying" } %></li>
+            <li>
+              <%= link_to "Manage schedulers", course_schedulers_path(@course),
+                          { title: "Set and update scheduler for log submissions. (Advanced feature)" } %>
+            </li>
+            <li>
+              <%= link_to "Act as user", sudo_course_course_user_datum_path(@course, @cud),
+                          { title: "Temporarily become another user" } %>
+            </li>
+            <li>
+              <%= link_to "Run Moss cheat checker", moss_course_path(@course),
+                          { title: "Use the Stanford Moss server to detect copying" } %>
+            </li>
 
             <li class="collection-item red-text danger-bottom no-hover"><h4>Danger Zone</h4></li>
-            <li class="danger-side"><%= link_to "Release all grades", [:bulk_release, @course, @cud, :gradebook],
-                { title: "Release all grades for all assessments", data: {confirm: "Are you sure you want to release all grades?", method: "post"}} %></li>
-            <li class="danger-side danger-bottom"><%= link_to "Reload course config file", [:reload, @course],
-                { title: "Reload each time you modify the course.rb file", data: {confirm: "Are you sure you want to reload the course config file?", method: "post"}}%></li>
+            <li class="danger-side">
+              <%= link_to "Release all grades",
+                          bulk_release_course_course_user_datum_gradebook_path(@course, @cud),
+                          { title: "Release all grades for all assessments",
+                            data: { confirm: "Are you sure you want to release all grades?", method: "post" } } %>
+            </li>
+            <li class="danger-side danger-bottom"><%= link_to "Reload course config file",
+                                                              reload_course_path(@course),
+                                                              { title: "Reload each time you modify the course.rb file",
+                                                                data: { confirm: "Are you sure you want to reload the course config file?", method: "post" } } %>
+            </li>
           </ul>
         </div>
       </li>
@@ -68,9 +93,9 @@
         <div class="collapsible-body">
           <ul class="options">
             <li><%= link_to 'Create new course', new_course_path,
-                          {:title=>"Create a new course"} %></li>
+                            { title: "Create a new course" } %></li>
             <li><%= link_to raw('<span class="button">Manage users</span>'),
-                          users_path %></li>
+                            users_path %></li>
           </ul>
         </div>
       </li>
@@ -102,7 +127,7 @@
         <tbody>
         <%
            # filter only for category / course average
-           @course_stats.filter{|_, statsValue| statsValue[0] == "avg"}
+           @course_stats.filter{ |_, statsValue| statsValue[0] == "avg" }
                         .each do |name, statsValue|
         %>
           <% stats = statsValue[2] %>
@@ -121,9 +146,9 @@
         <tbody>
         <%
           # filter for only assessments, group into hashes based on category
-          @course_stats.filter{|_, statsValue| statsValue[0] == "asmt"}
-                        .group_by{|_, statsValue| statsValue[1].category_name}
-                        .each do |category_name, category_asmts|
+          @course_stats.filter{ |_, statsValue| statsValue[0] == "asmt" }
+                       .group_by{ |_, statsValue| statsValue[1].category_name }
+                       .each do |category_name, category_asmts|
         %>
           <thead>
           <tr class="header">

@@ -20,7 +20,7 @@ class FormBuilderWithDateTimeInput < ActionView::Helpers::FormBuilder
 
       field = super name, *(args + [options])
 
-      wrap_field name, field, options[:help_text], options[:display_name]
+      wrap_field name, field, options
     end
   end
 
@@ -28,14 +28,14 @@ class FormBuilderWithDateTimeInput < ActionView::Helpers::FormBuilder
     options = args.extract_options!
 
     fields = fields_for name do |f|
-      (f.vanilla_text_field :value, class: "score-box", placeholder: "10") +
+      (f.vanilla_text_field :value, class: "score-box", placeholder: options[:placeholder] || "", disabled: options[:disabled]) +
         (@template.content_tag :div do
           f.select(:kind, { "points" => "points", "%" => "percent" }, {},
-                   class: "carrot")
+                   class: "carrot", disabled: options[:disabled])
         end)
     end
 
-    wrap_field name, fields, options[:help_text]
+    wrap_field name, fields, options
   end
 
   def submit(text, *args)
@@ -132,13 +132,13 @@ private
       "data-date-greater-than": options[:greater_than]
     )
 
-    wrap_field name, field, options[:help_text]
+    wrap_field name, field, options
   end
 
-  def wrap_field(name, field, help_text = nil, display_name = nil)
-    @template.content_tag :div, class: "input-field" do
-      label(name, display_name, class: "control-label") +
-        field + help_text(name, help_text)
+  def wrap_field(name, field, options = {})
+    @template.content_tag :div, class: options[:wrap_class] || "input-field" do
+      label(name, options[:display_name], class: "control-label") +
+        field + help_text(name, options[:help_text])
     end
   end
 
