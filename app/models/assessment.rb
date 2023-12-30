@@ -372,8 +372,8 @@ class Assessment < ApplicationRecord
     overwrites_method?(:handout) || handout_is_url? || handout_is_file?
   end
 
-  def groups(with_members: false)
-    if with_members
+  def groups(show_members: false)
+    if show_members
       Group.includes(assessment_user_data: { course_user_datum: :user })
            .where(assessment_user_data: { assessment_id: id })
     else
