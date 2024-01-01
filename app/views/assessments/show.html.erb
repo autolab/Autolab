@@ -152,7 +152,7 @@
             <% end %>
           <% @list.sort { |a, b| a[1] <=> b[1] }.each { |key, value| %>
             <% if value.size > 0  then %>
-              <li><%= link_to value, { action: key }, { title: (@list_title[key] || "") } %> </li>
+              <li><%= link_to value, { action: key }, { title: @list_title[key] || "" } %> </li>
             <% end %>
           <% } %>
           </ul>
