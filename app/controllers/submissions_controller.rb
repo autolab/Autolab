@@ -61,7 +61,7 @@ class SubmissionsController < ApplicationController
       @submission.submitted_by_id = @cud.id
       next unless @submission.save! # Now we have a version number!
 
-      if params[:submission]["file"]&.present?
+      if params[:submission]["file"].present?
         @submission.save_file(params[:submission])
       end
     end
