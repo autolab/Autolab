@@ -1,7 +1,7 @@
 source 'https://rubygems.org'
 ruby '2.7.7'
 
-gem 'rails', '=6.0.5'
+gem 'rails', '=6.1.7.6'
 
 # Use SCSS for stylesheets
 gem 'sass-rails', '>= 4.0.3'
@@ -49,7 +49,7 @@ gem 'populator', '>=1.0.0'
 gem 'rake', '>=10.3.2'
 
 # To communicate with MySQL database
-gem 'mysql2', '~>0.4.10'
+gem 'mysql2', '~>0.5'
 
 # Development server
 gem 'thin'
