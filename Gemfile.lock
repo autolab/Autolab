@@ -165,7 +165,7 @@ GEM
       ruby2_keywords (>= 0.0.4)
     faraday-net_http (3.0.2)
     ffi (1.16.3)
-    fomantic-ui-sass (2.9.3)
+    fomantic-ui-sass (2.8.8.1)
       autoprefixer-rails
       railties (>= 3.2.0)
       sassc (>= 2.2)
@@ -486,7 +486,7 @@ DEPENDENCIES
   erb_lint
   exception_notification (>= 4.1.0)
   factory_bot_rails
-  fomantic-ui-sass
+  fomantic-ui-sass (= 2.8.8.1)
   httparty
   jbuilder (>= 2.0)
   jquery-rails
