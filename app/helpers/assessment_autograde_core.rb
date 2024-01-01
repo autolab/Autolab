@@ -357,7 +357,7 @@ module AssessmentAutogradeCore
     ass_dir = @assessment.folder_path
 
     submissions.each do |submission|
-      feedback_file = submission.autograde_feedback_path
+      feedback_file = submission.create_user_directory_and_return_autograde_feedback_path
       COURSE_LOGGER.log("Looking for feedback file:" + feedback_file)
 
       feedback.force_encoding("UTF-8")

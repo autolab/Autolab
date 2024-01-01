@@ -223,6 +223,13 @@ class Submission < ApplicationRecord
     old_autograde_feedback_path
   end
 
+  def create_user_directory_and_return_autograde_feedback_path
+    create_user_handin_directory
+
+    File.join(assessment.handin_directory_path, course_user_datum.email,
+              autograde_feedback_filename)
+  end
+
   def autograde_file
     path = autograde_feedback_path
     return nil unless path
