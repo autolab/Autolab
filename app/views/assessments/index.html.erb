@@ -4,7 +4,8 @@
           /* a way to mimic nested anchor tags */
           $('a.collection-item span.new.badge').each(function(idx, obj) {
               $(obj).on("click", function() {
-                  window.location = obj.dataset.url;
+                  if (obj.dataset.url)
+                    window.location = obj.dataset.url;
                   return false;  // prevent click propagation
               });
           });
@@ -103,7 +104,12 @@
                               class: "collection-item grey-text text-darken-4 date" do %>
                     <b><%= asmt.display_name %></b>
                     <% if !asmt.released? %>
-                      <span class="new badge blue darken-4" data-badge-caption="unreleased" data-url="<%= edit_course_assessment_path(@course, asmt) %>/handin"></span>
+                      <% if @cud.instructor? %>
+                        <span class="new badge blue darken-4" data-badge-caption="unreleased" data-url="<%= edit_course_assessment_path(@course, asmt) %>/handin"></span>
+                      <% else %>
+                        <%# CAs can see unreleased assessments, but can't edit them. %>
+                        <span class="new badge blue darken-4" data-badge-caption="unreleased"></span>
+                      <% end %>
                     <% end %>
                     <p class="date"><b>Start:</b>&ensp;<%= asmt.date_to_s(asmt.start_at) %>&ensp;|
                       &ensp;<b>Due:</b>&ensp;<%= asmt.date_to_s(asmt.due_at) %></p>
