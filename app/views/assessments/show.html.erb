@@ -34,7 +34,7 @@
     <%# Display any optional instructor admin options %>
     <% if @cud.instructor? %>
       <ul class="collapsible" data-collapsible="accordion">
-        <li class="collapsible-menu-link active" id="admin-options" role="button" aria-expanded="true" onclick="toggleAria('admin-options')" onkeydown="toggleAria('admin-options')">
+        <li class="collapsible-menu-link" id="admin-options" role="button" aria-expanded="false" onclick="toggleAria('admin-options')" onkeydown="toggleAria('admin-options')">
           <div class="collapsible-header"><h5>Admin Options</h5></div>
           <div class="collapsible-body">
             <ul class="options">
@@ -112,11 +112,7 @@
     <% end %>
 
     <ul class="collapsible" data-collapsible="accordion">
-      <% if @cud.course_assistant? or @cud.instructor? %>
         <li class="collapsible-menu-link" id="options" role="button" aria-expanded="false" onclick="toggleAria('options')" onkeydown="toggleAria('options')">
-      <% else %>
-        <li class="collapsible-menu-link active" id="options" role="button" aria-expanded="true" onclick="toggleAria('options')" onkeydown="toggleAria('options')">
-      <% end %>
         <div class="collapsible-header active"><h5>Options</h5></div>
         <div class="collapsible-body">
           <ul class="options">

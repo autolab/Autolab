@@ -10,4 +10,5 @@ function toggleAria(id) {
 
 $(document).ready(function(){
   $('.collapsible').collapsible();
+  $('.collapsible').first().collapsible('open', 0);
 });
