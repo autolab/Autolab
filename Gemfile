@@ -171,3 +171,6 @@ gem 'lockbox'
 # to decode / verify jwts for LTI Integration
 gem "jwt"
 
+# Avoid "already initialized constant" errors (https://github.com/ruby/net-imap/issues/16)
+gem "net-http"
+
