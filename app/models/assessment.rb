@@ -1,3 +1,4 @@
+require "archive"
 require "association_cache"
 require "fileutils"
 require "utilities"
