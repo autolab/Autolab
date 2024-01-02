@@ -528,5 +528,6 @@ private
 
     @assessment = cache.assessments[@assessment.id]
     @submissions = cache.latest_submissions.values
+    @section_filter = params[:section]
   end
 end
