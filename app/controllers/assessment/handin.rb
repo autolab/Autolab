@@ -69,6 +69,7 @@ module AssessmentHandin
                                                     })
 
       COURSE_LOGGER.log("could not save handin: #{exception.class} (#{exception.message})")
+      flash[:error] = exception.message
       submissions = nil
     end
 
@@ -80,7 +81,7 @@ module AssessmentHandin
     # make sure submission was correctly constructed and saved
     unless submissions
       # Avoid overwriting the flash[:error] set by saveHandin
-      if !flash[:error].nil? && !flash[:error].empty?
+      if flash[:error].blank?
         flash[:error] = "There was an error handing in your submission."
       end
       redirect_to(action: :show) && return

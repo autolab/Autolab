@@ -537,13 +537,13 @@ private
     else
       case why_not
       when :user_dropped
-        errors[:base] << "You cannot submit because you have dropped the course."
+        errors.add(:base, "You cannot submit because you have dropped the course.")
       when :before_start_at
-        errors[:base] << "We are not yet accepting submissions on this assessment."
+        errors.add(:base, "We are not yet accepting submissions on this assessment.")
       when :past_end_at
-        errors[:base] << "You cannot submit because it is past the deadline."
+        errors.add(:base, "You cannot submit because it is past the deadline.")
       when :at_submission_limit
-        errors[:base] << "You you have already reached the submission limit."
+        errors.add(:base, "You have already reached the submission limit.")
       else
         raise "FATAL: unknown reason for submission denial"
       end
