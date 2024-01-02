@@ -285,7 +285,12 @@ rescue ActiveRecord::StatementInvalid, ActiveRecord::RecordInvalid => error
 end
 
   def submission_popover
-    render partial: "popover", locals: { s: Submission.find(params[:submission_id].to_i) }
+    submission = Submission.find_by(id: params[:submission_id].to_i)
+    if submission
+      render partial: "popover", locals: { s: submission }
+    else
+      render plain: "Submission not found", status: :not_found
+    end
   end
 
   def score_grader_info
@@ -468,9 +473,10 @@ private
         def autograder.method_missing(m)
           self[m.to_s]
         end
-        return autograder
+
+        autograder
       else
-        return @course.course_user_data.find(i)
+        @course.course_user_data.find(i)
       end
     end
     grader_ids.filter! { |i| i != -1 }
