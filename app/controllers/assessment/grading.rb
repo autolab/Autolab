@@ -315,7 +315,7 @@ end
   end
 
   def statistics
-    return unless load_course_config
+    load_course_config
     latest_submissions = @assessment.submissions.latest_for_statistics.includes(:scores, :course_user_datum)
     #latest_submissions = @assessment.submissions.latest.includes(:scores, :course_user_datum)
 
@@ -371,13 +371,9 @@ private
       load(File.join(Rails.root, "courseConfig",
                      "#{course}.rb"))
       eval("extend(Course#{course.camelize})")
-    rescue Exception
-      render(text: "Error loading your course's grading " \
-        "configuration file.  Please go <a href='/#{@course.name}/"\
-        "admin/reload'>here</a> to reload the file, and try again") and
-        return false
+    rescue LoadError, SyntaxError, NameError, NoMethodError => e
+      @error = e
     end
-    true
   end
 
 # Scores for grouping
