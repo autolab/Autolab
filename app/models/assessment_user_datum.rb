@@ -238,6 +238,20 @@ class AssessmentUserDatum < ApplicationRecord
     cumulative_grace_days_used
   end
 
+  # atomic way of updating version number
+  # (necessary in the case multiple submissions made concurrently)
+  def update_version_number
+    with_lock do
+      if version_number.nil?
+        self.version_number = 1
+      else
+        self.version_number += 1
+      end
+      save!
+    end
+    self.version_number
+  end
+
 protected
 
   def cumulative_grace_days_used
@@ -254,7 +268,7 @@ protected
 private
 
   def saved_change_to_latest_submission_id_or_grade_type?
-    (saved_change_to_latest_submission_id? or saved_change_to_grade_type?)
+    saved_change_to_latest_submission_id? or saved_change_to_grade_type?
   end
 
   # Applies given extension to given date limit (due date or end_at).
