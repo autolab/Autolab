@@ -446,7 +446,7 @@ class CoursesController < ApplicationController
       # to_csv avoids issues with commas
       output += [@course.semester, cud.user.email, user.last_name, user.first_name,
                  cud.school, cud.major, cud.year, cud.grade_policy,
-                 @course.name, cud.lecture, cud.section].to_csv
+                 cud.course_number, cud.lecture, cud.section].to_csv
     end
     send_data output, filename: "roster.csv", type: "text/csv", disposition: "inline"
   end
