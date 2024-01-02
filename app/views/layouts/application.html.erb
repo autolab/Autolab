@@ -60,11 +60,9 @@
       <!-- Page Body -->
       <div id="pageBody" class="container">
 
-        <% if @cud && @cud.dropped? %>
-          <h3 class="error">
-            You seem to have dropped this course. Please email your instructor if this is incorrect.
-          </h3>
-        <% end %>
+        <% if @cud&.dropped?
+             flash[:error] = "You seem to have dropped this course. Please email your instructor if this is incorrect."
+           end %>
 
         <!-- Flashes -->
         <div id="flashes">
