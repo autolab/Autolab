@@ -143,7 +143,7 @@ private
       end # User.transaction
 
       true
-    rescue => e
+    rescue ActiveRecord::ActiveRecordError => e
       flash[:error] = "An error occurred: #{e}"
 
       false
