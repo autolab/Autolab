@@ -105,8 +105,8 @@
           <div class="collapsible-header"><h5>CA Options</h5></div>
           <div class="collapsible-body">
             <ul class="options">
-              <li><%= link_to "Grade section #{@cud.section} submissions", url_for(action: 'viewGradesheet', section: '1', escape: false),
-                              title: "View and enter grades for your section. Make sure your instructor has assigned you to a section in your Autolab account" %></li>
+              <li><%= link_to "Grade section #{@cud.section} submissions", url_for(action: 'viewGradesheet', section: '1'),
+                              title: "View and enter grades for your section. Make sure your instructor has assigned you to a lecture and section in your Autolab account" %></li>
               <li><%= link_to "Grade all submissions", url_for(action: 'viewGradesheet'),
                               title: "View and enter grades for all sections" %></li>
 
@@ -152,7 +152,7 @@
             <% end %>
           <% @list.sort { |a, b| a[1] <=> b[1] }.each { |key, value| %>
             <% if value.size > 0  then %>
-              <li><%= link_to value, { action: key }, { title: (@list_title[key] || "") } %> </li>
+              <li><%= link_to value, { action: key }, { title: @list_title[key] || "" } %> </li>
             <% end %>
           <% } %>
           </ul>

@@ -21,7 +21,7 @@ jobs:
         uses: actions/checkout@v3
       
       - name: Install Ruby
-        uses: ruby/setup-ruby@v1.134.0
+        uses: ruby/setup-ruby@v1
         with:
           bundler-cache: true
           cache-version: 3
@@ -45,7 +45,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Install Ruby
-        uses: ruby/setup-ruby@v1.134.0
+        uses: ruby/setup-ruby@v1
         with:
           bundler-cache: true
           cache-version: 3

@@ -146,7 +146,7 @@ RSpec.describe CoursesController, type: :controller do
         sign_in(instructor)
         get :download_roster, params: { name: course.name }, format: CSV
         expect(response).to have_http_status(200)
-        expect(response.body).to match(/#{course.name}/m)
+        expect(response.body).to match(/Auto-populated/m) # lecture
         # some of these fields aren't necessarily defined
         # but check for all of them to be in CSV
         CourseUserDatum.where(course: course) do |cud|

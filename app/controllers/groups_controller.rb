@@ -36,7 +36,7 @@ class GroupsController < ApplicationController
   def show
     @aud = @assessment.aud_for @cud.id
     unless @cud.instructor
-      (redirect_to(action: :new) && return) if @aud.group_id.nil?
+      redirect_to(action: :new) && return if @aud.group_id.nil?
 
       if @aud.group_id != params[:id].to_i
         redirect_to([@course, @assessment, @aud.group]) && return
