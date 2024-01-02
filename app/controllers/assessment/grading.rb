@@ -509,9 +509,9 @@ private
     @start = Time.now
     id = @assessment.id
 
-    # section filter
+    # lecture/section filter
     o = params[:section] ? {
-      conditions: { assessment_id: id, course_user_data: { section: @cud.section } }
+      conditions: { assessment_id: id, course_user_data: { lecture: @cud.lecture, section: @cud.section } }
     } : {
       conditions: { assessment_id: id }
     }
