@@ -1,4 +1,10 @@
 <% @title = "Statistics" %>
+<% if @error %>
+<h4>Error loading your course's grading configuration file.</h4>
+<div>
+  <pre><%= @error.to_s %></pre>
+</div>
+<% end %>
 <h2 id="statsHeading">Statistics for <%= link_to @assessment.display_name, course_assessment_path(@course, @assessment) %></h2>
 <% if @assessment.problems.count > 0 %>
 

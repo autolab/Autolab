@@ -65,6 +65,6 @@ class Score < ApplicationRecord
 private
 
   def saved_change_to_score_or_released?
-    (saved_change_to_score? or saved_change_to_released?)
+    saved_change_to_score? or saved_change_to_released?
   end
 end

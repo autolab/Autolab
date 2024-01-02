@@ -268,7 +268,7 @@ protected
 private
 
   def saved_change_to_latest_submission_id_or_grade_type?
-    (saved_change_to_latest_submission_id? or saved_change_to_grade_type?)
+    saved_change_to_latest_submission_id? or saved_change_to_grade_type?
   end
 
   # Applies given extension to given date limit (due date or end_at).

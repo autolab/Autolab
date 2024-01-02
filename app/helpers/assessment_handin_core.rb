@@ -75,7 +75,7 @@ module AssessmentHandinCore
   # Returns a list of the submissions created by this handin (aka a "logical submission").
   def saveHandin(sub, app_id = nil)
     unless @assessment.has_groups?
-      submission = @assessment.submissions.create(course_user_datum_id: @cud.id,
+      submission = @assessment.submissions.create!(course_user_datum_id: @cud.id,
                                                   submitter_ip: request.remote_ip,
                                                   submitted_by_app_id: app_id)
       submission.save_file(sub)
@@ -85,7 +85,7 @@ module AssessmentHandinCore
     aud = @assessment.aud_for @cud.id
     group = aud.group
     if group.nil?
-      submission = @assessment.submissions.create(course_user_datum_id: @cud.id,
+      submission = @assessment.submissions.create!(course_user_datum_id: @cud.id,
                                                   submitter_ip: request.remote_ip,
                                                   submitted_by_app_id: app_id)
       submission.save_file(sub)
@@ -100,7 +100,7 @@ module AssessmentHandinCore
 
     ActiveRecord::Base.transaction do
       group.course_user_data.each do |cud|
-        submission = @assessment.submissions.create(course_user_datum_id: cud.id,
+        submission = @assessment.submissions.create!(course_user_datum_id: cud.id,
                                                     submitter_ip: request.remote_ip,
                                                     submitted_by_app_id: app_id,
                                                     group_key: group_key)
