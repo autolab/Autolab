@@ -25,8 +25,8 @@ class OauthDeviceFlowRequest < ApplicationRecord
       req = new(application_id: app.id,
                 scopes: app.scopes,
                 requested_at: Time.current,
-                device_code: device_code,
-                user_code: user_code)
+                device_code:,
+                user_code:)
 
       # success
       return req if req.save

@@ -334,7 +334,7 @@
   <% if @submissions.size == 0 then %>
     No Submissions yet!
   <% else %>
-    <%= render partial: "submission_history_table", locals: { download_access: download_access, limit: 3 } %>
+    <%= render partial: "submission_history_table", locals: { download_access:, limit: 3 } %>
       <% if @submissions.size > 3  then %>
         <!-- display link to history only if we exceed summary limit (since they are the same component) -->
         <h6>

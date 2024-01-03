@@ -6,7 +6,7 @@ module Contexts
 
       # create submissions
       students.each do |student|
-        create_submissions_for_student(asmt: asmt, student: student)
+        create_submissions_for_student(asmt:, student:)
       end
     end
 
@@ -29,14 +29,14 @@ module Contexts
       # initial cud edit redirect that occurs when no nickname is given
       cud = CourseUserDatum.find_by(course_id: course.id, user_id: student.id)
       @submissions = FactoryBot.create(:submission,
-                                       filename: filename, course_user_datum: cud,
+                                       filename:, course_user_datum: cud,
                                        submitted_by: cud,
                                        assessment: asmt) do |submission|
         aud.latest_submission_id = submission.id
         problems.each do |problem|
           FactoryBot.create(:score, score: problem.max_score, grader: @instructor_cud,
-                                    problem: problem, released: true,
-                                    submission: submission)
+                                    problem:, released: true,
+                                    submission:)
         end
       end
       File.open(submission_path, 'w+') do |f|
