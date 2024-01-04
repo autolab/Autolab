@@ -88,8 +88,6 @@
 
     <div class="row">
       <% @course.assessment_categories.each_with_index do |cat, idx| %>
-        <%# NOTE: A student might see gaps if all the assessments in a category are unreleased
-            A better approach would be to filter out unreleased assessments at the start %>
         <% if idx % 3 == 0 %>
           <div class="clearfix hide-on-small-only"></div>
         <% end %>
