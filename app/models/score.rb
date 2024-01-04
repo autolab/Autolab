@@ -12,7 +12,7 @@ class Score < ApplicationRecord
                                 }
 
   def self.for_course(course_id)
-    where(assessments: { course_id: course_id }).joins(submission: :assessment)
+    where(assessments: { course_id: }).joins(submission: :assessment)
   end
 
   delegate :invalidate_raw_score, to: :submission
@@ -34,10 +34,10 @@ class Score < ApplicationRecord
       raise InvalidScoreException.new, "submission_id and problem_id cannot be empty"
     end
 
-    score = Score.find_by(submission_id: submission_id, problem_id: problem_id)
+    score = Score.find_by(submission_id:, problem_id:)
 
     if !score
-      Score.new(submission_id: submission_id, problem_id: problem_id)
+      Score.new(submission_id:, problem_id:)
     else
       score
     end

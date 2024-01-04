@@ -61,7 +61,7 @@
               <%= javascript_include_tag "git_submission" %>
             <% end %>
 
-            <%= render partial: "submission_panel", locals: { repos: @repos, f: f } %>
+            <%= render partial: "submission_panel", locals: { repos: @repos, f: } %>
             <% filename_list = @assessment.handin_filename.split(".") %>
             <% if (filename_list.size > 1) %>
                 <!-- file needs to have a period, else we ignore (e.g. for README files) -->
