@@ -44,8 +44,8 @@ class ExtensionsController < ApplicationController
           existing_ext.save!
         else
           new_ext = @assessment.extensions.create(
-            days: days,
-            infinite: infinite,
+            days:,
+            infinite:,
             course_user_datum_id: cud_id,
             assessment_id: params[:extension][:assessment_id]
           )

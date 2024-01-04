@@ -120,7 +120,7 @@ RSpec.describe CoursesController, type: :controller do
       let!(:course) do
         FactoryBot.create(:course) do |course|
           user = FactoryBot.create(:user)
-          FactoryBot.create(:course_user_datum, course: course, user: user, instructor: true)
+          FactoryBot.create(:course_user_datum, course:, user:, instructor: true)
           course.lti_course_datum = nil
         end
       end
@@ -149,7 +149,7 @@ RSpec.describe CoursesController, type: :controller do
         expect(response.body).to match(/Auto-populated/m) # lecture
         # some of these fields aren't necessarily defined
         # but check for all of them to be in CSV
-        CourseUserDatum.where(course: course) do |cud|
+        CourseUserDatum.where(course:) do |cud|
           page.should have_content cud.user.email
           page.should have_content cud.user.last_name
           page.should have_content cud.user.first_name
@@ -238,7 +238,7 @@ RSpec.describe CoursesController, type: :controller do
         expect {
           post :add_users_from_emails, params:
             { name: course.name, user_emails: emails, role: "ca" }
-        }.to change(CourseUserDatum.where(course: course, course_assistant: true), :count).by(10)
+        }.to change(CourseUserDatum.where(course:, course_assistant: true), :count).by(10)
         expect(response).to have_http_status(302)
         expect(flash[:success]).to be_present
       end

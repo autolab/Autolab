@@ -246,7 +246,7 @@ class Submission < ApplicationRecord
   end
 
   def annotated_file(file, filename, position)
-    conditions = { filename: filename }
+    conditions = { filename: }
     conditions[:position] = position if position
     annotations = self.annotations.where(conditions)
 
@@ -336,7 +336,7 @@ class Submission < ApplicationRecord
     # normal submission versions start at 1
     # unofficial submissions conveniently have version 0
     # actual version number is not used here, instead submission count is used
-    count = assessment.submissions.where(course_user_datum: course_user_datum).count
+    count = assessment.submissions.where(course_user_datum:).count
     [count - assessment.effective_version_threshold, 0].max
   end
 
@@ -421,7 +421,7 @@ class Submission < ApplicationRecord
   def group_associated_submissions
     raise "Submission is not associated with a group" if group_key.empty?
 
-    Submission.where(group_key: group_key).where.not(id: id)
+    Submission.where(group_key:).where.not(id:)
   end
 
 private

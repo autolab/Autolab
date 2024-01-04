@@ -1,5 +1,5 @@
 source 'https://rubygems.org'
-ruby '2.7.7'
+ruby '3.2.2'
 
 gem 'rails', '=6.1.7.6'
 
@@ -87,9 +87,8 @@ gem 'capybara', group: [:development, :test]
 gem 'rack-test'
 gem 'rspec-rails', '>=3.5.0'
 # To enable webdriver testing capabilities along with capybara
-gem 'selenium-webdriver', '>=4.7.1', group: :test
-# required to run webdriver for selenium on chrome
-gem 'webdrivers', group: :test
+gem 'selenium-webdriver', '>=4.16', group: :test
+gem "webrick", "~> 1.8"
 # required for capybara debugging
 gem 'codeclimate-test-reporter', group: :test, require: nil
 gem 'database_cleaner', group: [:development, :test]

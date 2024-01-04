@@ -9,7 +9,7 @@ module Contexts
       FileUtils.mkdir_p(path)
       # create assessment directory
       @assessment = FactoryBot.create(:assessment, name: asmt_name,
-                                                   course: course,
+                                                   course:,
                                                    is_positive_grading: false) do |asmt|
         asmt.construct_default_config_file
         asmt.load_config_file
