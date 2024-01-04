@@ -10,7 +10,7 @@ class WatchlistInstance < ApplicationRecord
     rescue NoMethodError
       raise "Course #{course_name} cannot be found"
     end
-    WatchlistInstance.where(course_id: course_id)
+    WatchlistInstance.where(course_id:)
   end
 
   def self.get_num_pending_instance_for_course(course_name)
@@ -19,7 +19,7 @@ class WatchlistInstance < ApplicationRecord
     rescue NoMethodError
       raise "Course #{course_name} cannot be found"
     end
-    WatchlistInstance.where(course_id: course_id,
+    WatchlistInstance.where(course_id:,
                             status: :pending).distinct.count(:course_user_datum_id)
   end
 
@@ -510,7 +510,7 @@ class WatchlistInstance < ApplicationRecord
 
     WatchlistInstance.new(course_user_datum_id: cud.id, course_id: course.id,
                           risk_condition_id: condition_id,
-                          violation_info: violation_info)
+                          violation_info:)
   end
 
   def self.add_new_instance_for_cud_extension_requests(course, category_blocklist,
@@ -542,7 +542,7 @@ class WatchlistInstance < ApplicationRecord
 
     WatchlistInstance.new(course_user_datum_id: cud.id, course_id: course.id,
                           risk_condition_id: condition_id,
-                          violation_info: violation_info)
+                          violation_info:)
   end
 
   def self.add_new_instance_for_cud_grade_drop(course,
@@ -606,7 +606,7 @@ class WatchlistInstance < ApplicationRecord
 
     WatchlistInstance.new(course_user_datum_id: cud.id, course_id: course.id,
                           risk_condition_id: condition_id,
-                          violation_info: violation_info)
+                          violation_info:)
   end
 
   def self.add_new_instance_for_cud_no_submissions(course,
@@ -629,7 +629,7 @@ class WatchlistInstance < ApplicationRecord
     WatchlistInstance.new(course_user_datum_id: cud.id, course_id: course.id,
                           risk_condition_id: condition_id,
                           violation_info: {
-                            no_submissions_asmt_names: no_submissions_asmt_names
+                            no_submissions_asmt_names:
                           })
   end
 
@@ -663,6 +663,6 @@ class WatchlistInstance < ApplicationRecord
 
     WatchlistInstance.new(course_user_datum_id: cud.id, course_id: course.id,
                           risk_condition_id: condition_id,
-                          violation_info: violation_info)
+                          violation_info:)
   end
 end

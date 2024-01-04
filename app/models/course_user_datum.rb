@@ -208,10 +208,10 @@ class CourseUserDatum < ApplicationRecord
   # find a cud in the course
   def self.find_cud_for_course(course, uid)
     user = User.find(uid)
-    cud = user.course_user_data.find_by(course: course)
+    cud = user.course_user_data.find_by(course:)
     if cud.nil?
       if user.administrator?
-        new_cud = course.course_user_data.new(user: user,
+        new_cud = course.course_user_data.new(user:,
                                               instructor: true,
                                               course_assistant: true)
         new_cud.save ? new_cud : nil
@@ -226,12 +226,12 @@ class CourseUserDatum < ApplicationRecord
   def self.find_or_create_cud_for_course(course, uid)
     user = User.find(uid)
 
-    cud = user.course_user_data.find_by(course: course)
+    cud = user.course_user_data.find_by(course:)
 
     if cud
       [cud, :found]
     elsif user.administrator?
-      new_cud = course.course_user_data.new(user: user,
+      new_cud = course.course_user_data.new(user:,
                                             instructor: true,
                                             course_assistant: true)
 

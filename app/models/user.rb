@@ -35,7 +35,7 @@ class User < ApplicationRecord
 
     cuds.each do |cud|
       next unless cud.instructor?
-      return true unless cud.course.course_user_data.where(user: user).empty?
+      return true unless cud.course.course_user_data.where(user:).empty?
     end
 
     false
@@ -181,7 +181,7 @@ class User < ApplicationRecord
     require "net/ldap"
 
     host = "ldap.cmu.edu"
-    ldap = Net::LDAP.new(host: host, port: 389)
+    ldap = Net::LDAP.new(host:, port: 389)
 
     user = ldap.search(base: "uid=#{andrew_id},ou=AndrewPerson,dc=andrew,dc=cmu,dc=edu")[0]
 
