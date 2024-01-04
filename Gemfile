@@ -172,4 +172,4 @@ gem "jwt"
 
 # Avoid "already initialized constant" errors (https://github.com/ruby/net-imap/issues/16)
 gem "net-http"
-gem 'uri', '0.10.0'
+gem 'uri', '0.10.3'
