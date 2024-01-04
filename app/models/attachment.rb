@@ -26,7 +26,7 @@ class Attachment < ApplicationRecord
 
   # Scopes
   scope :ordered, -> { order(ORDERING) }
-  scope :from_category, ->(category_name) { where(category_name: category_name) }
+  scope :from_category, ->(category_name) { where(category_name:) }
   scope :released, -> { where("release_at <= ?", Time.current) }
 
   def has_assessment?

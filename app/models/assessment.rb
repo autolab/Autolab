@@ -2,7 +2,6 @@ require "archive"
 require "association_cache"
 require "fileutils"
 require "utilities"
-
 class Assessment < ApplicationRecord
   # Mass-assignment
   # attr_protected :name
@@ -50,8 +49,8 @@ class Assessment < ApplicationRecord
   # Constants
   ORDERING = "due_at ASC, name ASC".freeze
   RELEASED = "start_at < ?".freeze
-  VALID_NAME_REGEX = /^[A-Za-z][A-Za-z0-9_-]*$/.freeze
-  VALID_NAME_SANITIZER_REGEX = /^[^A-Za-z]*([A-Za-z0-9_-]+)/.freeze
+  VALID_NAME_REGEX = /^[A-Za-z][A-Za-z0-9_-]*$/
+  VALID_NAME_SANITIZER_REGEX = /^[^A-Za-z]*([A-Za-z0-9_-]+)/
   # Scopes
   scope :ordered, -> { order(ORDERING) }
   scope :released, ->(as_of = Time.current) { where(RELEASED, as_of) }

@@ -80,7 +80,7 @@ RSpec.describe Api::V1::CoursesController, type: :controller do
       expect(course).not_to be_nil
       expect(course.semester).to eq(@course_sem)
 
-      cud = admin_user.course_user_data.find_by(course: course)
+      cud = admin_user.course_user_data.find_by(course:)
       expect(cud).not_to be_nil
       expect(cud.instructor).to be_truthy
     end
@@ -100,7 +100,7 @@ RSpec.describe Api::V1::CoursesController, type: :controller do
       expect(course).not_to be_nil
       expect(course.semester).to eq(@course_sem)
 
-      cud = newly_created_user.course_user_data.find_by(course: course)
+      cud = newly_created_user.course_user_data.find_by(course:)
       expect(cud).not_to be_nil
       expect(cud.instructor).to be_truthy
     end
