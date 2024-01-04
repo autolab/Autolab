@@ -109,7 +109,7 @@
                       <span class="new badge blue darken-4" data-badge-caption="unreleased" data-url="<%= edit_course_assessment_path(@course, asmt) %>/handin"></span>
                     <% end %>
                     <% if asmt.handout_only %>
-                        <span class="new badge orange darken-4" data-badge-caption="document"></span>
+                        <span class="new badge orange darken-4" data-badge-caption="handout"></span>
                     <% end %>
                     <p class="date"><b>Start:</b>&ensp;<%= asmt.date_to_s(asmt.start_at) %>&ensp;|
                       &ensp;<b>Due:</b>&ensp;<%= asmt.date_to_s(asmt.due_at) %></p>
