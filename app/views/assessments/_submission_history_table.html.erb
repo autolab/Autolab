@@ -39,8 +39,8 @@
         <% if limit.nil? then limit = @submissions.size end %>
         <% for submission in @submissions.first(limit) do %>
           <%= render partial: "submission_history_row",
-                     locals: { submission: submission,
-                               download_access: download_access } %>
+                     locals: { submission:,
+                               download_access: } %>
         <% end %>
       <% end %>
     </tbody>

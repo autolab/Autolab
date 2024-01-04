@@ -43,8 +43,10 @@
     <div style="width: 30%;">
       <input id="filter" placeholder="Search..." type="text" autocomplete="off">
     </div>
-    <% if @options[:show_actions] %>
-      <div id="last_updated">
+
+    <%# Always render #last_updated to ensure that search bar renders correctly even if actions are hidden %>
+    <div id="last_updated">
+      <% if @options[:show_actions] %>
         <a class="tip link" title="Export as CSV" href="<%= url_for action: :csv %>">
           Export
         </a> /
@@ -55,8 +57,8 @@
           <i class="icon-refresh"></i>
           <%= time_ago_in_words(DateTime.parse(@matrix.last_updated)) %> old
         </a>
-      </div>
-    <% end %>
+      <% end %>
+    </div>
   </div>
 </div>
 

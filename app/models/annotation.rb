@@ -48,14 +48,14 @@ class Annotation < ApplicationRecord
     # Obtain sum of all annotations for this score
     if submission.group_key.empty?
       annotation_delta = Annotation
-                         .where(submission_id: submission_id,
-                                problem_id: problem_id)
+                         .where(submission_id:,
+                                problem_id:)
                          .map(&:value).sum { |v| v.nil? ? 0 : v }
     else
       submissions = Submission.where(group_key: submission.group_key)
       annotation_delta = 0
       submissions.each do |submission|
-        annotation_delta += submission.annotations.where(problem_id: problem_id)
+        annotation_delta += submission.annotations.where(problem_id:)
                                       .map(&:value).sum { |v| v.nil? ? 0 : v }
       end
     end
