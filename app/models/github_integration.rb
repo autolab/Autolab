@@ -1,6 +1,6 @@
 class GithubIntegration < ApplicationRecord
   belongs_to :user
-  encrypts :access_token
+  has_encrypted :access_token
 
   # Returns the top 30 most recently pushed repos
   # Reasonably if a user wants to submit code, it should be among
