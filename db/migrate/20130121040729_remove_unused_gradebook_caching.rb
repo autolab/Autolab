@@ -12,7 +12,7 @@ class RemoveUnusedGradebookCaching < ActiveRecord::Migration[4.2]
       t.integer "course_id"
     end
 
-    add_index :gradebook_cache, :key, {:unique=>true}
+    add_index :gradebook_cache, :key, **{:unique=>true}
 
     create_table "gradebook_cache_averages", :id => false do |t|
       t.string  "field"

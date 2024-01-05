@@ -3,7 +3,6 @@ FactoryBot.define do
     due_at { 2.weeks.from_now.to_s(:db) }
     end_at { (2.weeks.from_now + 2.days).to_s(:db) }
     start_at { 1.day.ago.to_s(:db) }
-    grading_deadline { 5.weeks.from_now.to_s(:db) }
 
     sequence(:name) { |n| "assessment_#{n}" }
     sequence(:display_name) { |n| "Assessment #{n}" }

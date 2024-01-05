@@ -4,6 +4,6 @@ class RemoveKeyFromGradebookCache < ActiveRecord::Migration[4.2]
   end
 
   def self.down
-    add_index :gradebook_cache, :key, {:unique=>true}
+    add_index :gradebook_cache, :key, **{:unique=>true}
   end
 end
