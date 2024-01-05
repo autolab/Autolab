@@ -176,9 +176,7 @@ class AssessmentsController < ApplicationController
     end
 
     # Check if the assessment already exists.
-    unless @course.assessments.find_by(name: asmt_name).nil?
-      overwrite = true
-    end
+    existing_asmt = @course.assessments.find_by(name: asmt_name)
 
     # If all requirements are satisfied, extract assessment files.
     begin
@@ -192,7 +190,7 @@ class AssessmentsController < ApplicationController
         # Ensure file will lie within course, otherwise skip
         # Allow equality for the main directory to be created
         next unless Archive.in_dir?(Pathname(entry_file), Pathname(assessment_path), strict: false)
-        next if overwrite && relative_pathname.start_with?('handin/')
+        next if !existing_asmt.nil? && relative_pathname.start_with?(existing_asmt.handin_directory)
 
         if entry.directory?
           FileUtils.mkdir_p(entry_file,
@@ -202,7 +200,7 @@ class AssessmentsController < ApplicationController
                           verbose: false
         elsif entry.file?
           # Skip config files
-          next if overwrite && %W[#{asmt_name}.yml
+          next if existing_asmt && %W[#{asmt_name}.yml
                                   #{asmt_name}.rb
                                   log.txt].include?(File.basename(entry_file))
 
@@ -226,7 +224,7 @@ class AssessmentsController < ApplicationController
 
     params[:assessment_name] = asmt_name
     params[:cleanup_on_failure] = true
-    params[:overwrite] = overwrite
+    params[:overwrite] = existing_asmt
     importAssessment && return
   end
 
