@@ -109,7 +109,6 @@ ActiveRecord::Schema.define(version: 2024_01_01_084757) do
     t.integer "version_threshold"
     t.integer "late_penalty_id"
     t.integer "version_penalty_id"
-    t.datetime "grading_deadline", null: false
     t.boolean "has_svn"
     t.boolean "quiz", default: false
     t.text "quizData"

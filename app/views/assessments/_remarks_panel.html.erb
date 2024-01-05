@@ -1,4 +1,4 @@
-<% if @submission.annotations.count > 0 and (@cud.instructor? or @cud.course_assistant? or @problemReleased) %>
+<% if @submission.annotations.count > 0 and @submission.grades_released?(@cud) %>
   <div class="result-pane">
     <div class="feedback-header">
       <h2 id="remarks" style="margin-top: 0">Remarks</h2>

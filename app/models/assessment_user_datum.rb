@@ -108,12 +108,6 @@ class AssessmentUserDatum < ApplicationRecord
     @final_score[as_seen_by] ||= final_score! as_seen_by
   end
 
-  def final_score_ignore_grading_deadline(as_seen_by)
-    @final_score_ignore_grading_deadline ||= {}
-    @final_score_ignore_grading_deadline[as_seen_by] ||=
-      final_score_ignore_grading_deadline! as_seen_by
-  end
-
   def status(as_seen_by)
     @status ||= {}
     @status[as_seen_by] ||= status! as_seen_by
@@ -307,23 +301,6 @@ private
   # TODO: CA's shouldn't see non-normal
   # TODO: make above policy
   def final_score!(as_seen_by)
-    case grade_type
-    when NORMAL
-      if Time.current <= assessment.grading_deadline
-        nil
-      elsif latest_submission
-        latest_submission.final_score as_seen_by
-      else
-        0.0
-      end
-    when ZEROED
-      0.0
-    when EXCUSED
-      nil
-    end
-  end
-
-  def final_score_ignore_grading_deadline!(as_seen_by)
     case grade_type
     when NORMAL
       if latest_submission
