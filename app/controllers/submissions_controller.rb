@@ -150,10 +150,17 @@ class SubmissionsController < ApplicationController
   action_auth_level :downloadAll, :course_assistant
   def downloadAll
     unless @assessment.valid?
+      flash[:error] = "The assessment has errors which must be rectified."
       @assessment.errors.full_messages.each do |msg|
         flash[:error] += "<br>#{msg}"
       end
       flash[:html_safe] = true
+      if @cud.course_assistant
+        redirect_to course_assessment_path(@course, @assessment)
+      else
+        redirect_to course_assessment_submissions_path(@course, @assessment)
+      end
+      return
     end
 
     if @assessment.disable_handins
