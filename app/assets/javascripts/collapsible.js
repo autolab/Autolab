@@ -12,7 +12,8 @@ $(document).ready(function(){
     });
   });
 
-  // Expand first item of each collapsible
-  $collapsible.collapsible('open', 0);
-  $collapsible.find('.collapsible-menu-link:first').attr('aria-expanded', 'true');
+  // Expand first item of first collapsible
+  const $firstCollapsible = $collapsible.first();
+  $firstCollapsible.collapsible('open', 0);
+  $firstCollapsible.find('.collapsible-menu-link:first').attr('aria-expanded', 'true');
 });
