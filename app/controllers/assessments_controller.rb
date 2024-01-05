@@ -133,7 +133,6 @@ class AssessmentsController < ApplicationController
   action_auth_level :importAsmtFromTar, :instructor
 
   def importAsmtFromTar
-    overwrite = false
     tarFile = params["tarFile"]
     if tarFile.nil?
       flash[:error] = "Please select an assessment tarball for uploading."
@@ -192,8 +191,8 @@ class AssessmentsController < ApplicationController
         elsif entry.file?
           # Skip config files
           next if existing_asmt && %W[#{asmt_name}.yml
-                                  #{asmt_name}.rb
-                                  log.txt].include?(File.basename(entry_file))
+                                      #{asmt_name}.rb
+                                      log.txt].include?(File.basename(entry_file))
 
           # Default to 0755 so that directory is writeable, mode will be updated later
           FileUtils.mkdir_p(File.dirname(entry_file),
