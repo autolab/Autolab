@@ -167,11 +167,13 @@ class Submission < ApplicationRecord
     "#{course_user_datum.email}_#{version}_#{assessment.handin_filename}"
   end
 
+  def new_handin_file_path
+    File.join(assessment.handin_directory_path, course_user_datum.email, filename)
+  end
+
   def handin_file_path
     return nil unless filename
 
-    new_handin_file_path = File.join(assessment.handin_directory_path, course_user_datum.email,
-                                     filename)
     old_handin_file_path = File.join(assessment.handin_directory_path, filename)
     unless File.exist?(old_handin_file_path)
       return new_handin_file_path
@@ -184,8 +186,7 @@ class Submission < ApplicationRecord
     return nil unless filename
 
     create_user_handin_directory
-
-    File.join(assessment.handin_directory_path, course_user_datum.email, filename)
+    new_handin_file_path
   end
 
   def handin_annotated_file_path
@@ -210,10 +211,12 @@ class Submission < ApplicationRecord
     "#{course_user_datum.email}_#{version}_#{assessment.name}_autograde.txt"
   end
 
+  def new_autograde_feedback_path
+    File.join(assessment.handin_directory_path, course_user_datum.email,
+              autograde_feedback_filename)
+  end
+
   def autograde_feedback_path
-    new_autograde_feedback_path = File.join(assessment.handin_directory_path,
-                                            course_user_datum.email,
-                                            autograde_feedback_filename)
     old_autograde_feedback_path = File.join(assessment.handin_directory_path,
                                             old_autograde_feedback_filename)
     unless File.exist?(old_autograde_feedback_path)
@@ -221,6 +224,11 @@ class Submission < ApplicationRecord
     end
 
     old_autograde_feedback_path
+  end
+
+  def create_user_directory_and_return_autograde_feedback_path
+    create_user_handin_directory
+    new_autograde_feedback_path
   end
 
   def autograde_file
@@ -246,7 +254,7 @@ class Submission < ApplicationRecord
   end
 
   def annotated_file(file, filename, position)
-    conditions = { filename: filename }
+    conditions = { filename: }
     conditions[:position] = position if position
     annotations = self.annotations.where(conditions)
 
@@ -336,7 +344,7 @@ class Submission < ApplicationRecord
     # normal submission versions start at 1
     # unofficial submissions conveniently have version 0
     # actual version number is not used here, instead submission count is used
-    count = assessment.submissions.where(course_user_datum: course_user_datum).count
+    count = assessment.submissions.where(course_user_datum:).count
     [count - assessment.effective_version_threshold, 0].max
   end
 
@@ -391,26 +399,10 @@ class Submission < ApplicationRecord
     json
   end
 
-  def grading_complete?(as_seen_by)
-    include_unreleased = !as_seen_by.student?
-
-    complete, released = scores_status
-    (released || include_unreleased) && complete
-  end
-
-  def scores_status
-    all_complete = true
-    all_released = true
-
-    problems_to_scores.each do |problem, score|
-      next if problem.optional?
-      return false unless score
-
-      all_complete &&= false unless score.score
-      all_released &&= score.released?
-    end
-
-    [all_complete, all_released]
+  def grades_released?(as_seen_by)
+    include_unreleased = as_seen_by.course_assistant? || as_seen_by.instructor?
+    released = scores.pluck(:released).all?
+    released || include_unreleased
   end
 
   # easy access to AUD
@@ -421,7 +413,7 @@ class Submission < ApplicationRecord
   def group_associated_submissions
     raise "Submission is not associated with a group" if group_key.empty?
 
-    Submission.where(group_key: group_key).where.not(id: id)
+    Submission.where(group_key:).where.not(id:)
   end
 
 private
@@ -537,13 +529,13 @@ private
     else
       case why_not
       when :user_dropped
-        errors[:base] << "You cannot submit because you have dropped the course."
+        errors.add(:base, "You cannot submit because you have dropped the course.")
       when :before_start_at
-        errors[:base] << "We are not yet accepting submissions on this assessment."
+        errors.add(:base, "We are not yet accepting submissions on this assessment.")
       when :past_end_at
-        errors[:base] << "You cannot submit because it is past the deadline."
+        errors.add(:base, "You cannot submit because it is past the deadline.")
       when :at_submission_limit
-        errors[:base] << "You you have already reached the submission limit."
+        errors.add(:base, "You have already reached the submission limit.")
       else
         raise "FATAL: unknown reason for submission denial"
       end

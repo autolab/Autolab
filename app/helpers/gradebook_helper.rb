@@ -35,8 +35,7 @@ module GradebookHelper
 
         columns << { id: asmt.name, name: asmt.display_name, field: asmt.name,
                      sortable: true, cssClass: "computed assessment_final_score",
-                     headerCssClass: "assessment_final_score",
-                     before_grading_deadline: matrix.before_grading_deadline?(asmt.id), width: 150 }
+                     headerCssClass: "assessment_final_score", width: 150 }
 
         columns << { id: "#{asmt.name}_version", name: "Version",
                      field: "#{asmt.name}_version",

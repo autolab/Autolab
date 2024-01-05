@@ -3,7 +3,7 @@
   <div class="col">
     <%= form_for @announcement, url: course_announcement_path(@course, @announcement),
                                 method: :patch, builder: FormBuilderWithDateTimeInput do |f| %>
-      <%= render partial: 'announcementFields', locals: { f: f } %>
+      <%= render partial: 'announcementFields', locals: { f: } %>
     <% end %>
   </div>
 </div>

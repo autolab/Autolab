@@ -20,27 +20,12 @@ $(document).ready(function() {
     /* Invoke flatpickr library */
     return flatpickr(selector, defaults)
   }
-
-  /* Create all 4 date pickers */
-  var grading_deadline_pickr = createDatePicker('#assessment_grading_deadline');
-  
-  function endAtOnCloseHandler(selected_dates, date_str, flatpickr_inst) {
-    var cur_date = selected_dates[0];
-    
-    if (grading_deadline_pickr.selectedDates[0].getTime() < cur_date.getTime()) {
-      grading_deadline_pickr.setDate(cur_date, true);
-    }
-  }
   
   /* Add custom onClose handler for end at date picker */
-  var end_at_pickr = createDatePicker('#assessment_end_at',{onClose:endAtOnCloseHandler});
+  var end_at_pickr = createDatePicker('#assessment_end_at');
 
   function dueAtOnCloseHandler(selected_dates, date_str, flatpickr_inst) {
       var cur_date = selected_dates[0];
-      
-      if (grading_deadline_pickr.selectedDates[0].getTime() < cur_date.getTime()) {
-        grading_deadline_pickr.setDate(cur_date, true);
-      }
 
       if (end_at_pickr.selectedDates[0].getTime() < cur_date.getTime()) {
         end_at_pickr.setDate(cur_date, true);
@@ -55,10 +40,6 @@ $(document).ready(function() {
     
     if (due_at_pickr.selectedDates[0].getTime() < cur_date.getTime()) {
       due_at_pickr.setDate(cur_date, true);
-    }
-
-    if (grading_deadline_pickr.selectedDates[0].getTime() < cur_date.getTime()) {
-      grading_deadline_pickr.setDate(cur_date, true);
     }
 
     if (end_at_pickr.selectedDates[0].getTime() < cur_date.getTime()) {

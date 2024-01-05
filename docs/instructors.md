@@ -54,7 +54,7 @@ Labs can be _autograded_ or not, at your discretion. When a student submits to a
 
 ## Important Dates
 
-A lab has a _start date_, _due date_, _end date_ and _grading deadline_. The link to a lab becomes visible to students after the start date (it's always visible to instructors). Students can submit until the due date without penalty or consuming grace days. Submission is turned off after the end date. Grades are included in the gradebook's category and course averages only after the grading deadline.
+A lab has a _start date_, _due date_ and _end date_. The link to a lab becomes visible to students after the start date (it's always visible to instructors). Students can submit until the due date without penalty or consuming grace days. Submissions are disabled after the end date.
 
 ## Handins/Submissions
 

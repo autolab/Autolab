@@ -21,13 +21,13 @@ HTML Form Reference:
 **Text Field (For short responses)**
 
 ```html
-<input type="“text”" name="“question-1”" />
+<input type="text" name="question-1" />
 ```
 
 **Text Area (For coding questions)**
 
 ```html
-<textarea name="“question-2”" style="“width:100%”" />
+<textarea name="question-2" style="width:100%" />
 ```
 
 **Radio Button (For multiple choice)**

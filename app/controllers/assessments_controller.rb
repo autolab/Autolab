@@ -37,7 +37,6 @@ class AssessmentsController < ApplicationController
   action_auth_level :submission_popover, :course_assistant
   action_auth_level :score_grader_info, :course_assistant
   action_auth_level :viewGradesheet, :course_assistant
-  action_auth_level :viewGradesheet2, :course_assistant
   action_auth_level :quickGetTotal, :course_assistant
   action_auth_level :statistics, :instructor
 
@@ -319,7 +318,6 @@ class AssessmentsController < ApplicationController
     @assessment.start_at = Time.current + 1.day
     @assessment.due_at = Time.current + 1.day
     @assessment.end_at = Time.current + 1.day
-    @assessment.grading_deadline = Time.current + 1.day
     @assessment.quiz = false
     @assessment.quizData = ""
     @assessment.max_submissions = params.include?(:max_submissions) ? params[:max_submissions] : -1
@@ -588,10 +586,9 @@ class AssessmentsController < ApplicationController
 
     @repos = GithubIntegration.find_by(user_id: @cud.user.id)&.repositories
 
-    return unless @assessment.invalid?
+    return unless @assessment.invalid? && @cud.instructor?
 
-    # On the off-chance that the assessment has validation errors, let the user know
-    # as otherwise submissions would silently fail
+    # If the assessment has validation errors, let the instructor know
     flash.now[:error] = "This assessment is invalid due to the following error(s):<br/>"
     flash.now[:error] += @assessment.errors.full_messages.join("<br/>")
     flash.now[:html_safe] = true
@@ -683,8 +680,7 @@ class AssessmentsController < ApplicationController
     if Archive.archive? @submission.handin_file_path
       @files = Archive.get_files @submission.handin_file_path
     end
-    @problemReleased = @submission.scores.pluck(:released).all? &&
-                       !@assessment.before_grading_deadline?
+
     # get_correct_filename is protected, so we wrap around controller-specific call
     @get_correct_filename = ->(annotation) {
       get_correct_filename(annotation, @files, @submission)
@@ -872,7 +868,7 @@ class AssessmentsController < ApplicationController
     if num_released > 0
       flash[:success] =
         format("%<num_released>d %<plurality>s released.",
-               num_released: num_released,
+               num_released:,
                plurality: (num_released > 1 ? "grades were" : "grade was"))
     else
       flash[:error] = "No grades were released. They might have all already been released."
@@ -897,7 +893,7 @@ class AssessmentsController < ApplicationController
     if num_released > 0
       flash[:success] =
         format("%<num_released>d %<plurality>s released.",
-               num_released: num_released,
+               num_released:,
                plurality: (num_released > 1 ? "grades were" : "grade was"))
     else
       flash[:error] = "No grades were released. " \
@@ -905,7 +901,7 @@ class AssessmentsController < ApplicationController
                       "might be assigned to a lecture " \
                       "and/or section that doesn't exist. Please contact an instructor."
     end
-    redirect_to action: "viewGradesheet"
+    redirect_to url_for(action: 'viewGradesheet', section: '1')
   end
 
   action_auth_level :withdrawAllGrades, :instructor

@@ -1,6 +1,6 @@
-require_relative 'boot'
+require_relative "boot"
 
-require 'rails/all'
+require "rails/all"
 
 # Require the gems listed in Gemfile, including any gems
 # you've limited to :test, :development, or :production.
@@ -122,14 +122,14 @@ module Autolab3
 
     ENV['DEFAULT_URL_HOST'] = "" if ENV['DEFAULT_URL_HOST'].nil?
     ENV['DEFAULT_URL_PORT'] = "" if ENV['DEFAULT_URL_PORT'].nil?
-    if !ENV['DEFAULT_URL_HOST'].empty? 
+    if !ENV['DEFAULT_URL_HOST'].empty?
       config.action_controller.default_url_options[:host] = ENV['DEFAULT_URL_HOST']
       if ENV['DEFAULT_URL_PORT'].casecmp?("NONE") then
         config.action_controller.default_url_options[:port] = nil
       elsif !ENV['DEFAULT_URL_PORT'].empty?
         config.action_controller.default_url_options[:port] = ENV['DEFAULT_URL_PORT']
       end
-    end 
+    end
 
     # Configuration file path, keep it private
     config.config_location = Rails.root.join("config").to_s

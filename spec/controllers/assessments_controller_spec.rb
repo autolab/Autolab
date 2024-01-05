@@ -94,9 +94,6 @@ RSpec.describe AssessmentsController, type: :controller do
               expect(test["dates"]["due_at"]).to eq(course_hash[:assessment].due_at.to_s)
               expect(test["dates"]["start_at"]).to eq(course_hash[:assessment].start_at.to_s)
               expect(test["dates"]["end_at"]).to eq(course_hash[:assessment].end_at.to_s)
-              expect(
-                test["dates"]["grading_deadline"]
-              ).to eq(course_hash[:assessment].grading_deadline.to_s)
             end
           end
         end

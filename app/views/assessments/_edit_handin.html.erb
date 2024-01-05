@@ -5,22 +5,16 @@
 <%= f.datetime_select :start_at,
                       style: "margin-top: 0 !important;",
                       help_text: "The time this assessment is released to students.",
-                      less_than: "assessment_due_at assessment_end_at assessment_grading_deadline" %>
+                      less_than: "assessment_due_at assessment_end_at" %>
 <%= f.datetime_select :due_at,
                       style: "margin-top: 0 !important;",
                       help_text: "Students can submit before this time without being penalized or using grace days.",
                       greater_than: "assessment_start_at",
-                      less_than: "assessment_end_at assessment_grading_deadline" %>
+                      less_than: "assessment_end_at" %>
 <%= f.datetime_select :end_at,
                       style: "margin-top: 0 !important;",
                       help_text: "Last possible time that students can submit (except those granted extensions.)",
-                      greater_than: "assessment_start_at assessment_due_at",
-                      less_than: "assessment_grading_deadline" %>
-<%= f.datetime_select :grading_deadline,
-                      style: "margin-top: 0 !important;",
-                      help_text: "Time after which final scores are included in the gradebook",
-                      greater_than: "assessment_start_at assessment_due_at assessment_end_at",
-                      placeholder: Date.current %>
+                      greater_than: "assessment_start_at assessment_due_at" %>
 
 <% if GithubIntegration.connected %>
   <%= f.check_box :github_submission_enabled,

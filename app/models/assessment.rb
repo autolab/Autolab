@@ -1,7 +1,7 @@
+require "archive"
 require "association_cache"
 require "fileutils"
 require "utilities"
-
 class Assessment < ApplicationRecord
   # Mass-assignment
   # attr_protected :name
@@ -37,7 +37,7 @@ class Assessment < ApplicationRecord
   validates :group_size, numericality: { only_integer: true, greater_than_or_equal_to: 1,
                                          allow_nil: true }
   validates :name, :display_name, :due_at, :end_at, :start_at,
-            :grading_deadline, :category_name, :max_size, :max_submissions, presence: true
+            :category_name, :max_size, :max_submissions, presence: true
 
   # Callbacks
   trim_field :name, :display_name, :handin_filename, :handin_directory, :handout, :writeup
@@ -49,8 +49,8 @@ class Assessment < ApplicationRecord
   # Constants
   ORDERING = "due_at ASC, name ASC".freeze
   RELEASED = "start_at < ?".freeze
-  VALID_NAME_REGEX = /^[A-Za-z][A-Za-z0-9_-]*$/.freeze
-  VALID_NAME_SANITIZER_REGEX = /^[^A-Za-z]*([A-Za-z0-9_-]+)/.freeze
+  VALID_NAME_REGEX = /^[A-Za-z][A-Za-z0-9_-]*$/
+  VALID_NAME_SANITIZER_REGEX = /^[^A-Za-z]*([A-Za-z0-9_-]+)/
   # Scopes
   scope :ordered, -> { order(ORDERING) }
   scope :released, ->(as_of = Time.current) { where(RELEASED, as_of) }
@@ -88,10 +88,6 @@ class Assessment < ApplicationRecord
     sorted_asmts = course.assessments.ordered
     self_index = sorted_asmts.index self
     self_index > 0 ? sorted_asmts[self_index - 1] : nil
-  end
-
-  def before_grading_deadline?
-    Time.current <= grading_deadline
   end
 
   def folder_path
@@ -426,14 +422,14 @@ class Assessment < ApplicationRecord
 private
 
   def saved_change_to_grade_related_fields?
-    (saved_change_to_due_at? or saved_change_to_max_grace_days? or
-            saved_change_to_version_threshold? or
-            saved_change_to_late_penalty_id? or
-            saved_change_to_version_penalty_id?)
+    saved_change_to_due_at? or saved_change_to_max_grace_days? or
+      saved_change_to_version_threshold? or
+      saved_change_to_late_penalty_id? or
+      saved_change_to_version_penalty_id?
   end
 
   def saved_change_to_due_at_or_max_grace_days?
-    (saved_change_to_due_at? or saved_change_to_max_grace_days?)
+    saved_change_to_due_at? or saved_change_to_max_grace_days?
   end
 
   def path(filename)
@@ -521,8 +517,7 @@ private
     # can do so easily
     s["dates"] = { start_at: start_at.to_s,
                    due_at: due_at.to_s,
-                   end_at: end_at.to_s,
-                   grading_deadline: grading_deadline.to_s }.deep_stringify_keys
+                   end_at: end_at.to_s }.deep_stringify_keys
     s
   end
 
@@ -543,17 +538,15 @@ private
     end
 
     if s["dates"] && s["dates"]["start_at"]
-      if s["dates"]["due_at"] && s["dates"]["end_at"] && s["dates"]["grading_deadline"]
+      if s["dates"]["due_at"] && s["dates"]["end_at"]
         self.due_at = Time.zone.parse(s["dates"]["due_at"])
         self.start_at = Time.zone.parse(s["dates"]["start_at"])
         self.end_at = Time.zone.parse(s["dates"]["end_at"])
-        self.grading_deadline = Time.zone.parse(s["dates"]["grading_deadline"])
       else
-        self.due_at = self.end_at = self.start_at = self.grading_deadline =
-                                      Time.zone.parse(s["dates"]["start_at"])
+        self.due_at = self.end_at = self.start_at = Time.zone.parse(s["dates"]["start_at"])
       end
     else
-      self.due_at = self.end_at = self.start_at = self.grading_deadline = Time.current + 1.day
+      self.due_at = self.end_at = self.start_at = Time.current + 1.day
     end
 
     self.quiz = false
@@ -597,7 +590,6 @@ private
   def verify_dates_order
     errors.add :due_at, "must be after the start date" if start_at > due_at
     errors.add :end_at, "must be after the due date" if due_at > end_at
-    errors.add :grading_deadline, "must be after the end date" if end_at > grading_deadline
   end
 
   def handin_directory_and_filename_or_disable_handins

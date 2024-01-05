@@ -69,7 +69,12 @@
           },
       <% end %>
       <% has_submissions = @submissions.pluck(:course_user_datum_id) %>
-      <% for c in @course.course_user_data.where.not(id: has_submissions) do %>
+      <% matching_students = if @section_filter
+                               @course.course_user_data.where(lecture: @cud.lecture, section: @cud.section)
+                             else
+                               @course.course_user_data
+                             end %>
+      <% for c in matching_students.where.not(id: has_submissions) do %>
           { "id": "",
             "name": {
               name: "<%= [c.last_name, c.first_name].reject(&:blank?).join(', ') %>",
