@@ -167,11 +167,13 @@ class Submission < ApplicationRecord
     "#{course_user_datum.email}_#{version}_#{assessment.handin_filename}"
   end
 
+  def new_handin_file_path
+    File.join(assessment.handin_directory_path, course_user_datum.email, filename)
+  end
+
   def handin_file_path
     return nil unless filename
 
-    new_handin_file_path = File.join(assessment.handin_directory_path, course_user_datum.email,
-                                     filename)
     old_handin_file_path = File.join(assessment.handin_directory_path, filename)
     unless File.exist?(old_handin_file_path)
       return new_handin_file_path
@@ -184,8 +186,7 @@ class Submission < ApplicationRecord
     return nil unless filename
 
     create_user_handin_directory
-
-    File.join(assessment.handin_directory_path, course_user_datum.email, filename)
+    new_handin_file_path
   end
 
   def handin_annotated_file_path
@@ -210,10 +211,12 @@ class Submission < ApplicationRecord
     "#{course_user_datum.email}_#{version}_#{assessment.name}_autograde.txt"
   end
 
+  def new_autograde_feedback_path
+    File.join(assessment.handin_directory_path, course_user_datum.email,
+              autograde_feedback_filename)
+  end
+
   def autograde_feedback_path
-    new_autograde_feedback_path = File.join(assessment.handin_directory_path,
-                                            course_user_datum.email,
-                                            autograde_feedback_filename)
     old_autograde_feedback_path = File.join(assessment.handin_directory_path,
                                             old_autograde_feedback_filename)
     unless File.exist?(old_autograde_feedback_path)
@@ -221,6 +224,11 @@ class Submission < ApplicationRecord
     end
 
     old_autograde_feedback_path
+  end
+
+  def create_user_directory_and_return_autograde_feedback_path
+    create_user_handin_directory
+    new_autograde_feedback_path
   end
 
   def autograde_file
