@@ -391,26 +391,10 @@ class Submission < ApplicationRecord
     json
   end
 
-  def grading_complete?(as_seen_by)
-    include_unreleased = !as_seen_by.student?
-
-    complete, released = scores_status
-    (released || include_unreleased) && complete
-  end
-
-  def scores_status
-    all_complete = true
-    all_released = true
-
-    problems_to_scores.each do |problem, score|
-      next if problem.optional?
-      return false unless score
-
-      all_complete &&= false unless score.score
-      all_released &&= score.released?
-    end
-
-    [all_complete, all_released]
+  def grades_released?(as_seen_by)
+    include_unreleased = as_seen_by.course_assistant? || as_seen_by.instructor?
+    released = scores.pluck(:released).all?
+    released || include_unreleased
   end
 
   # easy access to AUD
