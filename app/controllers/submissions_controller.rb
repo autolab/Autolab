@@ -224,7 +224,7 @@ class SubmissionsController < ApplicationController
 
       # Only show annotations if grades have been released or the user is an instructor
       @annotations = []
-      if @submission.grading_complete?(@cud)
+      if @submission.grades_released?(@cud)
         @annotations = @submission.annotations.to_a
       end
 
@@ -445,7 +445,7 @@ class SubmissionsController < ApplicationController
     @annotations.sort! { |a, b| a.line.to_i <=> b.line.to_i }
 
     # Only show annotations if grades have been released or the user is an instructor
-    unless @submission.grading_complete?(@cud)
+    unless @submission.grades_released?(@cud)
       @annotations = []
     end
 

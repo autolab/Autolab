@@ -391,7 +391,7 @@ class Submission < ApplicationRecord
     json
   end
 
-  def grading_complete?(as_seen_by)
+  def grades_released?(as_seen_by)
     include_unreleased = as_seen_by.course_assistant? || as_seen_by.instructor?
     released = scores.pluck(:released).all?
     released || include_unreleased
