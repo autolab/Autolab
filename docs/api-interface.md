@@ -103,7 +103,6 @@ A list of assessments. If the user is only a student of the course, only release
 | due_at           | datetime | Students can submit before this time without being penalized or using grace days.                         |
 | end_at           | datetime | Last possible time that students can submit (except those granted extensions.)                            |
 | category_name    | string   | Name of the category this assessment belongs to.                                                          |
-| grading_deadline | string   | _Not available if the user is a student._<br>Time after which final scores are included in the gradebook. |
 
 ---
 
@@ -140,7 +139,6 @@ Show detailed information of an assessment.
 | handout_format   | string   | The format of this assessment's handout.<br>One of 'none', 'url', or 'file'.                              |
 | has_scoreboard   | boolean  | Does this assessment have a scoreboard?                                                                   |
 | has_autograder   | boolean  | Does this assessment use an autograder?                                                                   |
-| grading_deadline | string   | _Not available if the user is a student._<br>Time after which final scores are included in the gradebook. |
 
 ---
 
@@ -178,11 +176,37 @@ List all groups in an assessment
 
 **Endpoint:** `GET /courses/{course name}/assessments/{assessment name}/groups`
 
-**Parameters:** [none]
+**Parameters:**
+
+
+`show_members`
+
+| key          |          | type    | description                                          |
+| ------------ |----------|---------|------------------------------------------------------|
+| show_members | optional | boolean | whether to retrieve the members of each group or not |
+
+---
 
 **Response:**
 
 A JSON object containing the group_size, a list of groups, and the assessment containing the groups.
+If `show_members` is set to true, a list of `assessment_user_datum` objects will be retrieved for each group as well.
+
+
+#### show
+
+Show the details of a group and its members
+
+**Scope:** 'instructor_all'
+
+**Endpoint:** `GET /courses/{course name}/assessments/{assessment name}/groups/{id}`
+
+**Parameters:** [none]
+
+**Response:**
+
+The requested group object.
+
 
 #### create
 

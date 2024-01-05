@@ -40,32 +40,18 @@ var slickgrid_options = {
     case "normal":
       switch (data[submission_status_key]) {
       case "submitted":
-        if (columnDef.before_grading_deadline) {
-          tip = 'Grading is in-progress. <br>'  
-          tip += 'Final scores will be visible here after the grading deadline (specified as an assessment property). <br>'
-          tip += 'Meanwhile, check the assessment gradesheet for updates.<br>';
-          value = '<a data-tooltip="' + tip + '" class="tooltipped past-grading-deadline icon-time"></a>';
-        }
         break;
 
       case "not_submitted":
-        if (columnDef.before_grading_deadline) {
-          value = "<a data-tooltip='No submission was made.' class='tooltipped icon-exclamation-sign'></a>";
-        } else {
-          tip = user + ' has not made any submissions for ' + asmt + '. <br>';
-          tip += 'The last date for submission by ' + user + ' was ' + data[end_at_key] + '.';
-          value = '<a data-tooltip="' + tip + '" class="tooltipped not-submitted">' + value + '</a>';
-        }
+        tip = user + ' has not made any submissions for ' + asmt + '. <br>';
+        tip += 'The last date for submission by ' + user + ' was ' + data[end_at_key] + '.';
+        value = '<a data-tooltip="' + tip + '" class="tooltipped not-submitted">' + value + '</a>';
         break;
 
       case "not_yet_submitted":
-        if (columnDef.before_grading_deadline) {
-          value = "<a data-tooltip='No submission has been made yet.' class='tooltipped icon-exclamation-sign'></a>";
-        } else {
-          tip = user + ' has not yet made any submissions for ' + asmt + '. ';
-          tip += 'The last date for submission by ' + user + ' is ' + data[end_at_key] + '.';
-          value = '<a data-tooltip="' + tip + '" class="tooltipped not-yet-submitted">' + value + '</a>';
-        }
+        tip = user + ' has not yet made any submissions for ' + asmt + '. <br>';
+        tip += 'The last date for submission by ' + user + ' is ' + data[end_at_key] + '.';
+        value = '<a data-tooltip="' + tip + '" class="tooltipped not-yet-submitted">' + value + '</a>';
         break;
       }
     }

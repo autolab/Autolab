@@ -29,8 +29,7 @@ Rails.application.routes.draw do
           get "handout"
           post "submit"
           post "set_group_settings"
-
-          resources :groups, only: [:index, :create, :destroy]
+          resources :groups, only: [:index, :show, :create, :destroy]
 
           resources :submissions, param: :version, only: [:index] do
             get "feedback"
