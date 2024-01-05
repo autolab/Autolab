@@ -147,10 +147,10 @@ class User < ApplicationRecord
       uid = data["uid"]
     end
 
-    user = User.find_by(email: email)
+    user = User.find_by(email:)
     return if user.nil?
 
-    user.authentications.new(provider: provider, uid: uid)
+    user.authentications.new(provider:, uid:)
     user.skip_confirmation!
     user.save!
 
