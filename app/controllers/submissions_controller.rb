@@ -149,8 +149,6 @@ class SubmissionsController < ApplicationController
   # should be okay, but untested
   action_auth_level :downloadAll, :course_assistant
   def downloadAll
-    flash[:error] = "Cannot index submissions for nil assessment" if @assessment.nil?
-
     unless @assessment.valid?
       @assessment.errors.full_messages.each do |msg|
         flash[:error] += "<br>#{msg}"
