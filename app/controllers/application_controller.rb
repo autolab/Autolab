@@ -220,12 +220,12 @@ protected
       @assessment = @course.assessments.find_by!(name: params[:assessment_name] || params[:name])
     rescue StandardError
       flash[:error] = "The assessment was not found for this course."
-      redirect_to(action: :index) && return
+      redirect_to(course_assessments_path(@course)) && return
     end
 
     if @cud.student? && !@assessment.released?
       flash[:error] = "You are not authorized to view this assessment."
-      redirect_to(action: :index) && return
+      redirect_to(course_assessments_path(@course)) && return
     end
 
     @breadcrumbs << (view_context.current_assessment_link)
