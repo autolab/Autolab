@@ -565,8 +565,8 @@ class WatchlistInstance < ApplicationRecord
       while i + consecutive_counts - 1 < auds.count
         begin_aud = auds[i]
         end_aud = auds[i + consecutive_counts - 1]
-        begin_grade = begin_aud.final_score_ignore_grading_deadline(cud)
-        end_grade = end_aud.final_score_ignore_grading_deadline(cud)
+        begin_grade = begin_aud.final_score(cud)
+        end_grade = end_aud.final_score(cud)
         if begin_grade.nil? || end_grade.nil?
           # - Either is excused
           i += 1
@@ -644,7 +644,7 @@ class WatchlistInstance < ApplicationRecord
     auds = AssessmentUserDatum.where(assessment_id: asmts_ids, course_user_datum_id: cud.id)
     violation_info = {}
     auds.each do |aud|
-      aud_score = aud.final_score_ignore_grading_deadline(cud)
+      aud_score = aud.final_score(cud)
       # - Score is excused
       # - Score has not been released yet
       # - Student did not make any submissions at all
