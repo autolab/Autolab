@@ -1,7 +1,7 @@
 source 'https://rubygems.org'
-ruby '2.7.7'
+ruby '3.2.2'
 
-gem 'rails', '=6.0.5'
+gem 'rails', '=6.1.7.6'
 
 # Use SCSS for stylesheets
 gem 'sass-rails', '>= 4.0.3'
@@ -13,7 +13,7 @@ gem 'materialize-sass', "=1.0.0"
 gem 'bootstrap-sass', '>= 3.4.1'
 
 # Use for Metrics page
-gem 'fomantic-ui-sass'
+gem 'fomantic-ui-sass', '2.8.8.1'
 
 # Use Uglifier as compressor for JavaScript assets
 gem 'terser', '>= 1.1.7'
@@ -49,7 +49,7 @@ gem 'populator', '>=1.0.0'
 gem 'rake', '>=10.3.2'
 
 # To communicate with MySQL database
-gem 'mysql2', '~>0.4.10'
+gem 'mysql2', '~>0.5'
 
 # Development server
 gem 'thin'
@@ -87,9 +87,8 @@ gem 'capybara', group: [:development, :test]
 gem 'rack-test'
 gem 'rspec-rails', '>=3.5.0'
 # To enable webdriver testing capabilities along with capybara
-gem 'selenium-webdriver', '>=4.7.1', group: :test
-# required to run webdriver for selenium on chrome
-gem 'webdrivers', group: :test
+gem 'selenium-webdriver', '>=4.16', group: :test
+gem "webrick", "~> 1.8"
 # required for capybara debugging
 gem 'codeclimate-test-reporter', group: :test, require: nil
 gem 'database_cleaner', group: [:development, :test]
@@ -171,3 +170,6 @@ gem 'lockbox'
 # to decode / verify jwts for LTI Integration
 gem "jwt"
 
+# Avoid "already initialized constant" errors (https://github.com/ruby/net-imap/issues/16)
+gem "net-http"
+gem 'uri', '0.10.3'

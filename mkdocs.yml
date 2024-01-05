@@ -32,6 +32,7 @@ nav:
                 - Metrics: features/metrics.md
                 - Git Submission: features/git-submission.md
                 - LTI Course Linking: features/lti-course-integration.md
+                - Admin Features: features/admin-features.md
         - Autolab Frontend CLI: command-line-interface.md
         - Tango CLI: tango-cli.md
     - Reference: 

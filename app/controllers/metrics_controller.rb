@@ -89,7 +89,7 @@ class MetricsController < ApplicationController
       entry["id"]
     end
 
-    render json: { risk_conditions: risk_hash, users: user_hash, instances: instances },
+    render json: { risk_conditions: risk_hash, users: user_hash, instances: },
            status: :ok
   rescue StandardError => e
     render json: { error: e.message }, status: :not_found
@@ -240,7 +240,7 @@ class MetricsController < ApplicationController
       return
     end
 
-    render json: { category_blocklist: category_blocklist, allow_ca: allow_ca }, status: :ok
+    render json: { category_blocklist:, allow_ca: }, status: :ok
   end
 
   action_auth_level :update_watchlist_configuration, :instructor

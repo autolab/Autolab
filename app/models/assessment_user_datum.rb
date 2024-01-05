@@ -74,11 +74,11 @@ class AssessmentUserDatum < ApplicationRecord
 
   # Calculate latest unignored submission (i.e. with max version and unignored)
   def latest_submission!
-    if (max_version = Submission.where(assessment_id: assessment_id,
-                                       course_user_datum_id: course_user_datum_id,
+    if (max_version = Submission.where(assessment_id:,
+                                       course_user_datum_id:,
                                        ignored: false).maximum(:version))
-      Submission.find_by(version: max_version, assessment_id: assessment_id,
-                         course_user_datum_id: course_user_datum_id)
+      Submission.find_by(version: max_version, assessment_id:,
+                         course_user_datum_id:)
     end
   end
 
@@ -201,7 +201,7 @@ class AssessmentUserDatum < ApplicationRecord
     if assessment.max_submissions == -1
       false
     else
-      count = assessment.submissions.where(course_user_datum: course_user_datum).count
+      count = assessment.submissions.where(course_user_datum:).count
       count >= assessment.max_submissions
     end
   end
@@ -215,11 +215,11 @@ class AssessmentUserDatum < ApplicationRecord
   end
 
   def extension
-    Extension.find_by(course_user_datum: course_user_datum, assessment_id: assessment_id)
+    Extension.find_by(course_user_datum:, assessment_id:)
   end
 
   def self.get(assessment_id, cud_id)
-    find_by assessment_id: assessment_id, course_user_datum_id: cud_id
+    find_by assessment_id:, course_user_datum_id: cud_id
   end
 
   # Quickly create an AUD (without any callbacks, validations, AR object creation, etc.)
@@ -238,6 +238,20 @@ class AssessmentUserDatum < ApplicationRecord
     cumulative_grace_days_used
   end
 
+  # atomic way of updating version number
+  # (necessary in the case multiple submissions made concurrently)
+  def update_version_number
+    with_lock do
+      if version_number.nil?
+        self.version_number = 1
+      else
+        self.version_number += 1
+      end
+      save!
+    end
+    self.version_number
+  end
+
 protected
 
   def cumulative_grace_days_used
@@ -254,7 +268,7 @@ protected
 private
 
   def saved_change_to_latest_submission_id_or_grade_type?
-    (saved_change_to_latest_submission_id? or saved_change_to_grade_type?)
+    saved_change_to_latest_submission_id? or saved_change_to_grade_type?
   end
 
   # Applies given extension to given date limit (due date or end_at).

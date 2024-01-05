@@ -1,7 +1,7 @@
+require "archive"
 require "association_cache"
 require "fileutils"
 require "utilities"
-
 class Assessment < ApplicationRecord
   # Mass-assignment
   # attr_protected :name
@@ -49,8 +49,8 @@ class Assessment < ApplicationRecord
   # Constants
   ORDERING = "due_at ASC, name ASC".freeze
   RELEASED = "start_at < ?".freeze
-  VALID_NAME_REGEX = /^[A-Za-z][A-Za-z0-9_-]*$/.freeze
-  VALID_NAME_SANITIZER_REGEX = /^[^A-Za-z]*([A-Za-z0-9_-]+)/.freeze
+  VALID_NAME_REGEX = /^[A-Za-z][A-Za-z0-9_-]*$/
+  VALID_NAME_SANITIZER_REGEX = /^[^A-Za-z]*([A-Za-z0-9_-]+)/
   # Scopes
   scope :ordered, -> { order(ORDERING) }
   scope :released, ->(as_of = Time.current) { where(RELEASED, as_of) }
@@ -419,17 +419,21 @@ class Assessment < ApplicationRecord
     source_config_file_path.sub_ext(".rb.bak")
   end
 
+  def date_to_s(date)
+    date.strftime("%b %e at %l:%M%P")
+  end
+
 private
 
   def saved_change_to_grade_related_fields?
-    (saved_change_to_due_at? or saved_change_to_max_grace_days? or
-            saved_change_to_version_threshold? or
-            saved_change_to_late_penalty_id? or
-            saved_change_to_version_penalty_id?)
+    saved_change_to_due_at? or saved_change_to_max_grace_days? or
+      saved_change_to_version_threshold? or
+      saved_change_to_late_penalty_id? or
+      saved_change_to_version_penalty_id?
   end
 
   def saved_change_to_due_at_or_max_grace_days?
-    (saved_change_to_due_at? or saved_change_to_max_grace_days?)
+    saved_change_to_due_at? or saved_change_to_max_grace_days?
   end
 
   def path(filename)

@@ -27,19 +27,19 @@
   <div class="col s12">
     <%= form_for [@course, @assessment], url: edit_course_assessment_path(@course, @assessment) + "/#{params[:active_tab]}", builder: FormBuilderWithDateTimeInput do |f| %>
       <div id="tab_basic">
-        <%= render "edit_basic", f: f %>
+        <%= render "edit_basic", f: %>
       </div>
       <div id="tab_handin">
-        <%= render "edit_handin", f: f %>
+        <%= render "edit_handin", f: %>
       </div>
       <div id="tab_penalties">
-        <%= render "edit_penalties", f: f %>
+        <%= render "edit_penalties", f: %>
       </div>
       <div id="tab_problems">
-        <%= render "edit_problems", f: f %>
+        <%= render "edit_problems", f: %>
       </div>
       <div id="tab_advanced">
-        <%= render "edit_advanced", f: f %>
+        <%= render "edit_advanced", f: %>
       </div>
     <% end %>
   </div>

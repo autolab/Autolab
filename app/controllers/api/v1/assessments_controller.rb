@@ -1,3 +1,5 @@
+require "archive"
+
 class Api::V1::AssessmentsController < Api::V1::BaseApiController
 
   include AssessmentHandinCore
