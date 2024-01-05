@@ -22,7 +22,7 @@ Rails.application.routes.draw do
       resources :courses, param: :name, only: [:index, :create] do
         resources :course_user_data, only: [:index, :create, :show, :update, :destroy],
                                      param: :email, :constraints => { :email => /[^\/]+/ }
-        
+
         resources :assessments, param: :name, only: [:index, :show] do
           resources :problems, only: [:index, :create]
           get "writeup"

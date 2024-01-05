@@ -1,3 +1,5 @@
+require "archive"
+
 ##
 # Defines handout method, so students can get handout
 #

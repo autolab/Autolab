@@ -49,7 +49,7 @@ class UsersController < ApplicationController
         next unless cud.instructor?
 
         user_cud =
-          cud.course.course_user_data.where(user: user).first
+          cud.course.course_user_data.where(user:).first
         user_cuds << user_cud unless user_cud.nil?
       end
 
@@ -281,7 +281,7 @@ class UsersController < ApplicationController
     authorize_url_params = {
       redirect_uri: "#{hostname}/users/github_oauth_callback",
       scope: "repo",
-      state: state
+      state:
     }
     redirect_to @gh_client.auth_code.authorize_url(authorize_url_params)
   end
@@ -315,7 +315,7 @@ class UsersController < ApplicationController
     end
 
     access_token = token.to_hash[:access_token]
-    github_integration.update!(access_token: access_token, oauth_state: nil)
+    github_integration.update!(access_token:, oauth_state: nil)
     flash[:success] = "Successfully connected with Github."
     redirect_to(root_path) && return
   end
@@ -342,7 +342,7 @@ class UsersController < ApplicationController
     user.save(validate: false)
     Devise.sign_in_after_reset_password = false
     user_reset_link = edit_password_url(user, reset_password_token: raw)
-    admin_reset_link = update_password_for_user_user_path(user: user)
+    admin_reset_link = update_password_for_user_user_path(user:)
     flash[:success] =
       "Click " \
       "#{view_context.link_to 'here', admin_reset_link, method: 'get'} " \

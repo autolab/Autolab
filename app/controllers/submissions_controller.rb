@@ -61,7 +61,7 @@ class SubmissionsController < ApplicationController
       @submission.submitted_by_id = @cud.id
       next unless @submission.save! # Now we have a version number!
 
-      if params[:submission]["file"]&.present?
+      if params[:submission]["file"].present?
         @submission.save_file(params[:submission])
       end
     end
@@ -528,8 +528,8 @@ class SubmissionsController < ApplicationController
       annotations_by_file = annotations_by_file.sort_by{ |a| [a[6], a[2]] }.group_by { |a| a[6] }
 
       @problemAnnotations[problem] = {
-        global_annotations: global_annotations,
-        annotations_by_file: annotations_by_file
+        global_annotations:,
+        annotations_by_file:
       }
     end
 
@@ -583,8 +583,8 @@ class SubmissionsController < ApplicationController
 
         matchedVersions << {
           version: submission.version,
-          header_position: header_position,
-          submission: submission
+          header_position:,
+          submission:
         }
       end
 
