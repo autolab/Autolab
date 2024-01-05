@@ -176,11 +176,37 @@ List all groups in an assessment
 
 **Endpoint:** `GET /courses/{course name}/assessments/{assessment name}/groups`
 
-**Parameters:** [none]
+**Parameters:**
+
+
+`show_members`
+
+| key          |          | type    | description                                          |
+| ------------ |----------|---------|------------------------------------------------------|
+| show_members | optional | boolean | whether to retrieve the members of each group or not |
+
+---
 
 **Response:**
 
 A JSON object containing the group_size, a list of groups, and the assessment containing the groups.
+If `show_members` is set to true, a list of `assessment_user_datum` objects will be retrieved for each group as well.
+
+
+#### show
+
+Show the details of a group and its members
+
+**Scope:** 'instructor_all'
+
+**Endpoint:** `GET /courses/{course name}/assessments/{assessment name}/groups/{id}`
+
+**Parameters:** [none]
+
+**Response:**
+
+The requested group object.
+
 
 #### create
 

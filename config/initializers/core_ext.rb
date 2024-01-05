@@ -1,6 +1,6 @@
 class String
   def to_boolean
-    ActiveRecord::Type::Boolean.new.cast(self)
+    ActiveRecord::Type::Boolean.new.cast(self.downcase)
   end
 end
 
