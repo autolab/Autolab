@@ -1,0 +1,76 @@
+<!--Code for file manager adapted from: adrientoub/file-explorer-->
+<script>
+    function rename(path) {
+        var new_name = prompt("Enter the new name:");
+        var rel_path = path.split("/file_manager/")[1];
+        $.ajax({
+            url: "/file_manager/" + rel_path,
+            type: "PUT",
+            data: { new_name: new_name, relative_path: rel_path},
+            success: function(data) {
+                // handle success
+                location.reload();
+            }
+        });
+    }
+
+    $("#rename-file").click(function(e) {
+        var path = $(this).data("path");
+        if(confirm("Rename this file?")) {
+            rename(path);
+            e.preventDefault();
+        }
+    });
+</script>
+
+<%= form_tag({}, multipart: true) do %>
+  <%= file_field_tag 'file' %>
+  <input type="submit" value="Upload" />
+<% end %>
+<table>
+  <thead>
+  <tr>
+    <th>Filename</th>
+    <th>Size</th>
+    <th>Date</th>
+    <th>Rename</th>
+    <th>Delete</th>
+  </tr>
+  </thead>
+  <tbody>
+  <% @directory.each do |entry| %>
+    <% if entry[:instructor] %>
+      <tr>
+        <td>
+          <%= link_to "#{entry[:relative]}" do %>
+            <i class='material-icons left middle'><%= (entry[:type] == :file) ? 'article' : 'folder' %></i>
+            <span><%= entry[:entry] %></span>
+          <% end %>
+        </td>
+        <td>
+          <%= entry[:size] %>
+        </td>
+        <td>
+          <%= entry[:date] %>
+        </td>
+        <td>
+          <% if entry[:entry] != './' && entry[:entry] != '../' %>
+            <%= link_to "#", id: "rename-file", onclick: "rename('#{entry[:relative]}')" do %>
+              <i class='material-icons left align-middle'>I</i>
+              Rename
+            <% end %>
+          <% end %>
+        </td>
+        <td>
+          <% if entry[:entry] != './' && entry[:entry] != '../' %>
+            <%= link_to "#{entry[:relative]}", method: :delete, data: { confirm: "Are you sure you want to delete `#{entry[:absolute]}`?" } do %>
+              <i class='material-icons left middle'>delete</i>
+              Delete
+            <% end %>
+          <% end %>
+        </td>
+      </tr>
+    <% end %>
+  <% end %>
+  </tbody>
+</table>
