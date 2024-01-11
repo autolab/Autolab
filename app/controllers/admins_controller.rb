@@ -2,6 +2,10 @@
 # this controller contains methods for system-wise
 # admin functionality
 class AdminsController < ApplicationController
+  rescue_from ActionView::MissingTemplate do |_exception|
+    redirect_to("/home/error_404")
+  end
+
   skip_before_action :set_course
 
   action_auth_level :email_instructors, :administrator
@@ -31,5 +35,31 @@ class AdminsController < ApplicationController
     Rails.cache.cleanup
     flash[:success] = "Cache Cleared"
     redirect_back(fallback_location: root_path)
+  end
+
+  action_auth_level :autolab_config, :administrator
+  def autolab_config
+    @github_integration = GithubIntegration.check_github_authorization
+
+    if File.exist?("#{Rails.configuration.config_location}/lti_config.yml")
+      @lti_config_hash =
+        YAML.safe_load(File.read("#{Rails.configuration.config_location}/lti_config.yml"))
+    end
+
+    if Rails.cache.exist?(:tmp_smtp_config)
+      @smtp_config_hash = Rails.cache.read(:tmp_smtp_config)
+      Rails.cache.delete(:tmp_smtp_config)
+    elsif File.exist?("#{Rails.configuration.config_location}/smtp_config.yml")
+      @smtp_config_hash =
+        YAML.safe_load(File.read("#{Rails.configuration.config_location}/smtp_config.yml"))
+      @smtp_config_hash.symbolize_keys!
+    end
+
+    @github_config_hash = {
+      client_id: Rails.configuration&.x&.github&.client_id || "",
+      client_secret: Rails.configuration&.x&.github&.client_secret || ""
+    }
+
+    @configured_oauth_providers = OauthConfigController.get_oauth_providers
   end
 end

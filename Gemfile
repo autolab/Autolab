@@ -22,7 +22,7 @@ gem 'terser', '>= 1.1.7'
 gem 'coffee-rails', '>= 4.0.0'
 
 # See https://github.com/sstephenson/execjs#readme for more supported runtimes
-gem 'mini_racer', '~> 0.6.3' , platforms: :ruby
+gem 'mini_racer', '~> 0.6.3', platforms: :ruby
 
 # Use jquery as the JavaScript library
 gem 'jquery-rails'
@@ -45,8 +45,8 @@ gem 'slack-notifier'
 gem 'exception_notification', ">= 4.1.0"
 
 # Used by lib/tasks/autolab.rake to populate DB with dummy seed data
-gem 'populator', '>=1.0.0'
 gem 'rake', '>=10.3.2'
+gem 'populator', '>=1.0.0'
 
 # To communicate with MySQL database
 gem 'mysql2', '~>0.5'
@@ -59,6 +59,8 @@ gem 'devise', '>=4.5.0'
 gem 'omniauth', '>=1.2.2'
 gem 'omniauth-facebook', '>=2.0.0'
 gem 'omniauth-google-oauth2', '>=0.2.5'
+gem 'omniauth-rails_csrf_protection', '~> 1.0'
+gem 'omniauth-shibboleth', '>=1.1.2'
 gem 'omniauth-shibboleth-redux', '~> 2.0', require: 'omniauth-shibboleth'
 
 # OAuth2 authentication

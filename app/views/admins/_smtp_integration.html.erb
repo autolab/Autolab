@@ -1,0 +1,119 @@
+<h3>SMTP Configuration Settings</h3>
+<%= form_with url: smtp_config_update_config_url do |form| %>
+
+  <h4>Mail Server Settings</h4>
+  <div class="input-field">
+    <%= form.text_field :address, value: @smtp_config_hash.nil? ? "localhost" : @smtp_config_hash[:address], required: true %>
+    <%= form.label :address, "Mail Server Address" %>
+    <span class="helper-text">Allows you to use a remote mail server</span>
+  </div>
+  <div class="input-field">
+    <%= form.number_field :port, value: @smtp_config_hash.nil? ? "25" : @smtp_config_hash[:port], required: true %>
+    <%= form.label :port, "Mail Server Port" %>
+    <span class="helper-text">Port that the mail server is running on</span>
+  </div>
+  <div class="input-field">
+    <%= form.text_field :domain, value: @smtp_config_hash.nil? ? "" : @smtp_config_hash[:domain], required: false %>
+    <%= form.label :domain, "HELO Domain" %>
+    <span class="helper-text">Specify HELO domain if necessary</span>
+  </div>
+  <div class="input-field">
+    <span class="text">Specify mail server communication security protocol</span>
+    <div class="radio">
+      <%= form.label(:communication_protocol_none) do %>
+        <% com_none = @smtp_config_hash.nil? ? true : @smtp_config_hash[:ssl] != true && @smtp_config_hash[:tls] != true %>
+        <%= form.radio_button :communication_protocol, "none", checked: com_none %>
+        <span>None</span>
+      <% end %>
+    </div>
+    <div class="radio">
+      <%= form.label(:communication_protocol_ssl) do %>
+        <% com_ssl = @smtp_config_hash.nil? ? false : @smtp_config_hash[:ssl] == true %>
+        <%= form.radio_button :communication_protocol, "ssl", checked: com_ssl %>
+        <span>SSL</span>
+      <% end %>
+    </div>
+    <div class="radio">
+      <%= form.label(:communication_protocol_tls) do %>
+        <% com_tls = @smtp_config_hash.nil? ? false : @smtp_config_hash[:tls] == true %>
+        <%= form.radio_button :communication_protocol, "tls", checked: com_tls %>
+        <span>TLS</span>
+      <% end %>
+    </div>
+  </div>
+
+  <h4>Authentication</h4>
+  <div class="input-field">
+    <%= form.text_field :username, value: @smtp_config_hash.nil? ? "" : @smtp_config_hash[:user_name], required: false %>
+    <%= form.label :username, "Mail Server auth username" %>
+    <span class="helper-text">Specify mail server username if necessary</span>
+  </div>
+  <div class="input-field">
+    <%= form.password_field :password, value: @smtp_config_hash.nil? ? "" : @smtp_config_hash[:password], required: false %>
+    <%= form.label :password, "Mail Server auth password" %>
+    <span class="helper-text">Specify mail server password if necessary</span>
+  </div>
+  <div class="input-field">
+    <%= form.select :authentication, [:plain, :login, :cram_md5], selected: @smtp_config_hash.nil? ? "plain" : @smtp_config_hash[:authentication], required: true %>
+    <%= form.label :authentication, "Mail Server authentication method" %>
+    <span class="helper-text">Specify mail Server authentication method</span>
+  </div>
+
+  <h4>Connection Options</h4>
+  <div class="input-field">
+    <% auto_starttls = @smtp_config_hash.nil? ? true : @smtp_config_hash[:enable_starttls_auto] %>
+    <label>
+      <%= form.check_box :enable_starttls_auto, { checked: auto_starttls }, true, false %>
+      <span><p>Use STARTTLS if enabled on SMTP server</p></span>
+    </label>
+
+  </div>
+  <div class="input-field">
+    <%= form.number_field :open_timeout, value: @smtp_config_hash.nil? ? "" : @smtp_config_hash[:open_timeout], required: false %>
+    <%= form.label :open_timeout, "Open Mail Server connection timeout" %>
+    <span class="helper-text">Number of seconds to wait while attempting to open a connection</span>
+  </div>
+  <div class="input-field">
+    <%= form.number_field :read_timeout, value: @smtp_config_hash.nil? ? "" : @smtp_config_hash[:read_timeout], required: false %>
+    <%= form.label :read_timeout, "Open Mail Server read timeout" %>
+    <span class="helper-text">Number of seconds to wait until timing-out a read call</span>
+  </div>
+
+  <h4>
+    Autolab Url
+    <i class="material-icons tooltips tooltipped" data-position="top" data-tooltip="URL for this deployment of Autolab. Used for links to in emails." style="font-size: 14px">info_outline</i>
+  </h4>
+  <div class="input-field">
+    <%= form.url_field :host, value: @smtp_config_hash.nil? ? "" : @smtp_config_hash[:host], required: false %>
+    <%= form.label :host, "Host" %>
+    <span class="helper-text">Host (e.g. autolab.com)</span>
+  </div>
+  <div class="input-field">
+    <%= form.text_field :protocol, value: @smtp_config_hash.nil? ? "" : @smtp_config_hash[:protocol], required: false %>
+    <%= form.label :protocol, "Protocol" %>
+    <span class="helper-text">Protocol (e.g. https)</span>
+  </div>
+
+  <h4>
+    Email Defaults
+    <i class="material-icons tooltips tooltipped" data-position="top" data-tooltip="Default fields for emails (e.g. used in registration emails)" style="font-size: 14px">info_outline</i>
+  </h4>
+  <div class="input-field">
+    <%= form.email_field :default_from, value: @smtp_config_hash.nil? ? "" : @smtp_config_hash[:from], required: true %>
+    <%= form.label :default_from, "Default 'From:' email address" %>
+    <span class="helper-text">Default email address to use for 'From:' field of an email</span>
+  </div>
+  <%= form.submit "Update Configuration", { class: "btn primary" } %>
+
+  <br><br>
+  <h4>Configuration Testing</h4>
+  <div class="input-field">
+    <%= form.text_field :from_email, required: false %>
+    <%= form.label :from_email, "From:" %>
+  </div>
+  <div class="input-field">
+    <%= form.text_field :to_email, required: false %>
+    <%= form.label :to_email, "To:" %>
+  </div>
+  <%= form.submit "Send Test Email", { class: "btn primary", formaction: smtp_config_send_test_email_path } %>
+<% end %>

@@ -9,7 +9,7 @@ class User < ApplicationRecord
          :recoverable, :rememberable, :trackable, :validatable,
          :confirmable
 
-  devise :omniauthable, omniauth_providers: [:shibboleth]
+  devise :omniauthable, omniauth_providers: [:shibboleth, :google_oauth2]
 
   has_many :course_user_data, dependent: :destroy
   has_many :courses, through: :course_user_data
@@ -99,26 +99,62 @@ class User < ApplicationRecord
     authentication.user if authentication&.user
   end
 
+  def self.assign_random_password(user)
+    return if user.nil?
+
+    temp_pass = Devise.friendly_token[0, 20] # generate a random token
+    user.password = temp_pass
+    user.password_confirmation = temp_pass
+    user.skip_confirmation!
+    user.save!
+  end
+
   def self.new_with_session(params, session)
     super.tap do |user|
       if (data = session["devise.facebook_data"])
         user.first_name = data["info"]["first_name"]
         user.last_name = data["info"]["last_name"]
         user.email = data["info"]["email"]
-        user.authentications.new(provider: data["provider"],
-                                 uid: data["uid"])
+        User.assign_random_password user
+        User.add_oauth_if_user_exists session
       elsif (data = session["devise.google_oauth2_data"])
         user.first_name = data["info"]["first_name"]
         user.last_name = data["info"]["last_name"]
         user.email = data["info"]["email"]
-        user.authentications.new(provider: data["provider"],
-                                 uid: data["uid"])
+        User.assign_random_password user
+        User.add_oauth_if_user_exists session
       elsif (data = session["devise.shibboleth_data"])
         user.email = data["uid"] # email is uid in our case
-        user.authentications.new(provider: "CMU-Shibboleth",
-                                 uid: data["uid"])
+        User.assign_random_password user
+        User.add_oauth_if_user_exists session
       end
     end
+  end
+
+  def self.add_oauth_if_user_exists(session)
+    email, provider, uid = "", "", ""
+    if (data = session["devise.facebook_data"])
+      email = data["info"]["email"]
+      provider = data["provider"]
+      uid = data["uid"]
+    elsif (data = session["devise.google_oauth2_data"])
+      email = data["info"]["email"]
+      provider = data["provider"]
+      uid = data["uid"]
+    elsif (data = session["devise.shibboleth_data"])
+      email = data["uid"] # email is uid in our case
+      provider = "CMU-Shibboleth"
+      uid = data["uid"]
+    end
+
+    user = User.find_by(email:)
+    return if user.nil?
+
+    user.authentications.new(provider:, uid:)
+    user.skip_confirmation!
+    user.save!
+
+    user
   end
 
   # user created by roster
@@ -137,10 +173,7 @@ class User < ApplicationRecord
     user.year = year
     user.authentications << auth
 
-    temp_pass = Devise.friendly_token[0, 20] # generate a random token
-    user.password = temp_pass
-    user.password_confirmation = temp_pass
-    user.skip_confirmation!
+    User.assign_random_password user
 
     user.save!
     user
@@ -153,12 +186,8 @@ class User < ApplicationRecord
     user.first_name = "Instructor"
     user.last_name = course_name
 
-    temp_pass = Devise.friendly_token[0, 20] # generate a random token
-    user.password = temp_pass
-    user.password_confirmation = temp_pass
-    user.skip_confirmation!
+    User.assign_random_password user
 
-    user.save!
     user.send_reset_password_instructions
     user
   end
