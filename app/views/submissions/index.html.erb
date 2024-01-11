@@ -23,19 +23,19 @@
     <%= link_to "Create New Submission".html_safe,
                 new_course_assessment_submission_path(@course, @assessment),
                 { title: "Create a new submission for a student, with an option to submit a handin file on their behalf",
-                  class: "" } %>
+                  class: "btn submissions-main" } %>
   </div>
   <div class="buttons-spacing">
     <%= link_to "Download All Submissions".html_safe,
                 downloadAll_course_assessment_submissions_path(@course, @assessment),
                 { title: "Down all submissions from each student",
-                  class: "" } %>
+                  class: "btn submissions-main" } %>
   </div>
   <div class="buttons-spacing">
     <%= link_to "Download Final Submissions".html_safe,
                 downloadAll_course_assessment_submissions_path(@course, @assessment, final: true),
                 { title: "Download the most recent submission from each student",
-                  class: "" } %>
+                  class: "btn submissions-main" } %>
   </div>
   <div class="buttons-spacing">
     <%= link_to "Missing Submissions".html_safe,
