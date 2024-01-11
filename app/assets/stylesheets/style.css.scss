@@ -1524,3 +1524,69 @@ table.sub td, th {
 .error-header {
   color: $autolab-red;
 }
+
+
+/* Manage Submissions */
+
+.btn.submissions-main {
+  margin: 0;
+  padding: 5px 10px 5px 5px;
+  min-height: 36px;
+  height: auto;
+  line-height: 1.3;
+  display: flex;
+  align-items: center;
+}
+
+.btn.submissions-selected {
+  margin: 0;
+  padding: 0px 10px 0px 5px;
+  font-family: Source Sans Pro, sans-serif;
+}
+
+.buttons-row {
+  display: flex;
+  flex-direction: row;
+}
+
+.buttons-spacing {
+  margin-right: 10px;
+  a {
+    overflow-y: hidden;
+  }
+}
+
+.submissions-checkbox {
+  margin-left: 35px;
+}
+
+.submissions-center-icons {
+  display: flex;
+  align-items: center;
+}
+
+.submissions-center-icons p {
+  margin: 0 0 0 10px;
+}
+
+.submissions-icons {
+  margin-left: 3px;
+}
+
+.submissions-score-align {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  .score-num {
+    width: 40%;
+  }
+  .score-icon {
+    width: 20%;
+  }
+}
+
+.submissions-score-icon {
+  margin-left: 5px;
+  margin-top: 5px;
+  color: #A1A0A3;
+}
