@@ -53,7 +53,7 @@ a.paginate_active {
   padding: 2px 4px;
   margin-left: 2px;
   cursor: pointer;
-          *cursor: hand;
+  cursor: hand;
 }
 
 a.paginate_active {
