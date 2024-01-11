@@ -735,7 +735,6 @@ div.field_with_errors {
 }
 
 /* TABLE STYLES.  Styles for the multiple tables that we have for some reason */
-/* Pretty Border Tables. I vote we make this the generic table style. */
 table.prettyBorder,
 table.prettyBorder tr,
 table.prettyBorder th,
@@ -752,7 +751,6 @@ table.prettyBorder {
 
   tr {
     background-color: #fff;
-    border: 1px solid #d0d0d0;
     &:hover {
       background-color: #abcdef;
     }
@@ -775,7 +773,7 @@ table.prettyBorder {
   }
   th {
     background-color: #ebebeb;
-    color: #909090;
+    color: #000000;
     cursor: pointer;
     font-family: Source Sans Pro, sans-serif;
     font-size: 0.8em;
@@ -822,6 +820,23 @@ table.prettyBorder {
   td {
     border: 1px solid #ddd;
     padding: 0 5px;
+  }
+
+  .submissions-td {
+    border: none;
+    border-bottom: 1px solid #ddd;
+    padding: 5px 0 5px 0;
+  }
+
+  .submissions-cbox-label {
+    display: flex;
+    justify-content: center;
+    span::before {
+      left: 6px;
+    };
+    [type="checkbox"]:checked + span:not(.lever):before {
+      left: 3px;
+    };
   }
 
   tr.selected {
@@ -1173,6 +1188,7 @@ label[for="switch"] {
 
 .checkbox input[type="checkbox"]:checked + label::before {
   border: 1px solid #bbb;
+  
 }
 
 .new_submission {
@@ -1497,10 +1513,6 @@ table.sub td, th {
 }
 .autograding-in-progress:after {
   margin-left: 10px
-}
-
-.submissions {
-  overflow-x: auto;
 }
 
 .submission-history-button {

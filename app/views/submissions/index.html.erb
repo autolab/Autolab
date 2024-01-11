@@ -10,7 +10,9 @@
   <%= external_javascript_include_tag "lodash" %>
   <%= javascript_include_tag "sorttable" %>
   <%= external_javascript_include_tag "jquery.dataTables" %>
+  <%= external_javascript_include_tag "datatables-buttons" %>
   <%= javascript_include_tag "manage_submissions" %>
+  <%= javascript_include_tag "datatables-rows" %>
 <% end %>
 
 <h3>Manage Submissions</h3>
@@ -64,8 +66,14 @@
     </div>
   <% end %>
 </div>
+
 <table class="prettyBorder" id="submissions">
-  <% headers = ["Submitted By", "Version", "Score", "Submission Date (YYYY-MM-DD)", "File", "Actions"] %>
+  <% headers = ["Submitted By",
+                "Version",
+                "Score",
+                "Submission Date",
+                "File",
+                "Actions"] %>
   <thead class="float">
     <tr>
       <th class="submissions-th"></th>
@@ -83,22 +91,29 @@
       <% end %>
     </tr>
   </thead>
+
   <tbody>
   <% for submission in @submissions %>
     <tr id="row-<%= submission.id %>" class="submission-row">
-      <td>
-        <p>
-          <label>
+
+      <%# Checkbox %>
+      <td class="submissions-td submissions-checkbox">
+        <div>
+          <label class="submissions-cbox-label">
             <input class="cbox" type="checkbox" id="cbox-<%= submission.id %>">
             <span />
           </label>
-        </p>
+        </div>
       </td>
 
-      <td><%= [submission.course_user_datum.last_name, submission.course_user_datum.first_name].reject(&:blank?).join(', ') %>
-      <%= link_to submission.course_user_datum.email,
-                  history_course_assessment_path(@course, @assessment, cud_id: submission.course_user_datum_id, partial: true),
-                  { remote: true, class: :trigger } %></td>
+      <%# Submitted By %>
+      <td class="submissions-td">
+        <%= [submission.course_user_datum.first_name, submission.course_user_datum.last_name].reject(&:blank?).join(' ') %>
+        <br>
+        <%= link_to submission.course_user_datum.email,
+                    history_course_assessment_path(@course, @assessment, cud_id: submission.course_user_datum_id, partial: true),
+                    { remote: true, class: :trigger } %>
+      </td>
 
       <%# Version %>
       <td class="submissions-td" style="<%= ignored_submission_style submission %>">
@@ -162,7 +177,7 @@
         </div>
       </td>
     </tr>
-  <% end %>
+  <% end %> <%# End loop over submissions %>
   </tbody>
 </table>
 
