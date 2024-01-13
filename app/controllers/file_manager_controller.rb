@@ -47,7 +47,7 @@ class FileManagerController < ApplicationController
     courses_index = path_split.index("courses")
     result = path_split[(courses_index + 1)..(path_split.length()-1)].join("/")
     populate_directory(new_absolute_path, "")
-    new_path = file_manager_path + "/" + result
+    new_path = file_manager_index_path + "/" + result
     redirect_to new_path
   end
 

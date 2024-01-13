@@ -71,12 +71,23 @@ Rails.application.routes.draw do
   get "device_flow_auth_cb", to: "device_flow_activation#authorization_callback"
 
   # file_manager
-  get "file_manager", to: "file_manager#index"
-  post "file_manager", to: "file_manager#upload_index"
-  get 'file_manager/:path', to: 'file_manager#path', constraints: { path: /.+/ }
-  put 'file_manager/:path', to: 'file_manager#rename', constraints: { path: /.+/ }
-  post 'file_manager/:path', to: 'file_manager#upload', constraints: { path: /.+/ }
-  delete 'file_manager/:path', to: 'file_manager#delete', constraints: { path: /.+/ }
+  # get "file_manager", to: "file_manager#index"
+  # post "file_manager", to: "file_manager#upload_index"
+  # get 'file_manager/:path', to: 'file_manager#path', constraints: { path: /.+/ }
+  # put 'file_manager/:path', to: 'file_manager#rename', constraints: { path: /.+/ }
+  # post 'file_manager/:path', to: 'file_manager#upload', constraints: { path: /.+/ }
+  # delete 'file_manager/:path', to: 'file_manager#delete', constraints: { path: /.+/ }
+
+  resources :file_manager, param: :path, path: 'file_manager', only: [:index] do
+    collection do
+      post 'upload_index', to: 'file_manager#upload_index'
+      post 'upload', to: 'file_manager#upload'
+      get ':path', to: 'file_manager#path', constraints: { path: /.+/ }
+      put ':path', to: 'file_manager#rename', constraints: { path: /.+/ }
+      post ':path', to: 'file_manager#upload', constraints: { path: /.+/ }
+      delete ':path', to: 'file_manager#delete', constraints: { path: /.+/ }
+    end
+  end
 
   resource :admin, :except => [:show] do
     match "email_instructors", via: [:get, :post]
