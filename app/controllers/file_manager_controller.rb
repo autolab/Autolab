@@ -22,9 +22,9 @@ class FileManagerController < ApplicationController
       render 'file_manager/index'
     elsif File.file?(absolute_path)
       if File.size(absolute_path) > 1_000_000 || params[:download]
-        send_file absolute_path
+        send_file sanitize_path(absolute_path)
       else
-        @file = File.read(absolute_path)
+        @file = File.read(sanitize_path(absolute_path))
         render :file, formats: :html
       end
     end
@@ -153,5 +153,13 @@ class FileManagerController < ApplicationController
 
   def set_base_url
     @base_url = '/file_manager'
+  end
+
+  def sanitize_path(path)
+    allowed_pattern = /\A[a-zA-Z0-9_\-\/]+(\.[a-zA-Z]+)?\z/
+    unless path.match?(allowed_pattern)
+      raise ActionController::ForbiddenError(path, 'is not in a valid format')
+    end
+    path
   end
 end
