@@ -60,8 +60,6 @@ Rails.application.routes.draw do
     if Rails.env == "development" || Rails.env == "test"
       match "developer_login", via: [:get, :post]
     end
-    get "error"
-    get "error_404"
     get "no_user"
   end
 
@@ -70,16 +68,22 @@ Rails.application.routes.draw do
   get "device_flow_resolve", to: "device_flow_activation#resolve"
   get "device_flow_auth_cb", to: "device_flow_activation#authorization_callback"
 
+  # file_manager
+  # get "file_manager", to: "file_manager#index"
+  # post "file_manager", to: "file_manager#upload_index"
+  # get 'file_manager/:path', to: 'file_manager#path', constraints: { path: /.+/ }
+  # put 'file_manager/:path', to: 'file_manager#rename', constraints: { path: /.+/ }
+  # post 'file_manager/:path', to: 'file_manager#upload', constraints: { path: /.+/ }
+  # delete 'file_manager/:path', to: 'file_manager#delete', constraints: { path: /.+/ }
+
   resources :file_manager, param: :path, path: 'file_manager', only: [:index] do
     collection do
       post 'upload_index', to: 'file_manager#upload_index'
       post 'upload', to: 'file_manager#upload'
-      post '/', to: 'file_manager#upload'
-      post 'download_tar', to: 'file_manager#download_tar'
-      get ':path', to: 'file_manager#path', constraints: { path: /.+/ }, as: :path_file_manager
-      put ':path', to: 'file_manager#rename', constraints: { path: /.+/ }, as: :rename_file_manager
-      post ':path', to: 'file_manager#upload', constraints: { path: /.+/ }, as: :upload_file_manager
-      delete ':path', to: 'file_manager#delete', constraints: { path: /.+/ }, as: :delete_file_manager
+      get ':path', to: 'file_manager#path', constraints: { path: /.+/ }
+      put ':path', to: 'file_manager#rename', constraints: { path: /.+/ }
+      post ':path', to: 'file_manager#upload', constraints: { path: /.+/ }
+      delete ':path', to: 'file_manager#delete', constraints: { path: /.+/ }
     end
   end
 
@@ -96,6 +100,8 @@ Rails.application.routes.draw do
     post "lti_launch_link_course", on: :member
     post "github_revoke", on: :member
     get "github_oauth_callback", on: :collection
+    match "update_password_for_user", on: :member, via: [:get, :put]
+    post "change_password_for_user", on: :member
   end
 
   resources :courses, param: :name do
@@ -257,4 +263,7 @@ Rails.application.routes.draw do
     get "get_branches"
     get "get_commits"
   end
+
+  get "/404", to: "home#error_404"
+  get "/500", to: "home#error_500"
 end
