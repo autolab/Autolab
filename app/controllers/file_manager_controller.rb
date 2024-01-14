@@ -10,11 +10,13 @@ class FileManagerController < ApplicationController
     check_path_exist('')
     populate_directory(BASE_DIRECTORY, '')
   end
+
   def upload_index
     upload_file('')
     populate_directory(BASE_DIRECTORY, '')
     render 'file_manager/index'
   end
+
   def path
     absolute_path = check_path_exist(params[:path])
     if File.directory?(absolute_path)
@@ -45,43 +47,43 @@ class FileManagerController < ApplicationController
     new_absolute_path = File.expand_path("..", absolute_path)
     path_split = new_absolute_path.split("/")
     courses_index = path_split.index("courses")
-    result = path_split[(courses_index + 1)..(path_split.length()-1)].join("/")
+    result = path_split[(courses_index + 1)..(path_split.length - 1)].join("/")
     populate_directory(new_absolute_path, "")
-    new_path = file_manager_index_path + "/" + result
+    new_path = "#{file_manager_index_path}/#{result}"
     redirect_to new_path
   end
 
   def rename
-    begin
-      absolute_path = check_path_exist(params[:relative_path])
-      dir_name = File.dirname(params[:relative_path])
+    absolute_path = check_path_exist(params[:relative_path])
+    dir_name = File.dirname(params[:relative_path])
 
-      raise ArgumentError, "New name not provided, new name cannot be blank" if params[:new_name].empty?
+    raise ArgumentError, "New name not provided,
+      new name cannot be blank" if params[:new_name].empty?
 
-      unless params[:new_name].match(/^[a-zA-Z0-9_\-]+(\.[a-zA-Z0-9_\-]+)?$/)
-        raise ArgumentError, "Invalid characters.Only letters, numbers, underscores, and hyphens are allowed."
-      end
+    unless params[:new_name].match(/^[a-zA-Z0-9_\-]+(\.[a-zA-Z0-9_\-]+)?$/)
+      raise ArgumentError, "Invalid characters. Only letters,
+        numbers, underscores, and hyphens are allowed."
+    end
 
-      new_path = safe_expand_path(dir_name + "/" + params[:new_name])
-      parent = new_path.split('/')[0..-2].join('/')
+    new_path = safe_expand_path(dir_name + "/" + params[:new_name])
+    parent = new_path.split('/')[0..-2].join('/')
 
-      original_has_extension = !File.extname(absolute_path).empty?
+    original_has_extension = !File.extname(absolute_path).empty?
 
-      if original_has_extension && File.extname(params[:new_name]).empty?
-        raise ArgumentError, "You cannot name a file a folder"
-      elsif !original_has_extension && !File.extname(params[:new_name]).empty?
-        raise ArgumentError, "You cannot name a folder a file"
-      end
+    if original_has_extension && File.extname(params[:new_name]).empty?
+      raise ArgumentError, "You cannot name a file a folder"
+    elsif !original_has_extension && !File.extname(params[:new_name]).empty?
+      raise ArgumentError, "You cannot name a folder a file"
+    end
 
-      raise ArgumentError, "A file with that name already exists" if File.exists?(new_path)
+    raise ArgumentError, "A file with that name already exists" if File.exist?(new_path)
 
-      FileUtils.mkdir_p(parent)
-      FileUtils.mv(absolute_path, new_path)
-      flash[:success] = "File successfully renamed"
+    FileUtils.mkdir_p(parent)
+    FileUtils.mv(absolute_path, new_path)
+    flash[:success] = "File successfully renamed"
 
     rescue ArgumentError => e
       flash[:error] = e.message
-    end
   end
 
   private
@@ -126,8 +128,7 @@ class FileManagerController < ApplicationController
   def safe_expand_path(path)
     current_directory = File.expand_path(BASE_DIRECTORY)
     tested_path = File.expand_path(path, BASE_DIRECTORY)
-
-    unless tested_path.starts_with?(current_directory)
+    unless Archive.in_dir?(tested_path, current_directory)
       raise ArgumentError, 'Should not be parent of root'
     end
     tested_path
@@ -157,9 +158,10 @@ class FileManagerController < ApplicationController
 
   def sanitize_path(path)
     allowed_pattern = /\A[a-zA-Z0-9_\-\/]+(\.[a-zA-Z]+)?\z/
-    unless path.match?(allowed_pattern)
+    if path.match?(allowed_pattern)
+      path
+    else
       raise ActionController::ForbiddenError(path, 'is not in a valid format')
     end
-    path
   end
 end
