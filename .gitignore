@@ -12,7 +12,6 @@ config/environments/production.rb
 coverage/
 /courses/
 /courses
-/gradebooks/
 config/database.yml
 config/school.yml
 config/lti_config.yml
