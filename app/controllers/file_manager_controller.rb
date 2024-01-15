@@ -1,4 +1,6 @@
 # Code for file manager adapted from: adrientoub/file-explorer
+require 'archive'
+require 'pathname'
 class FileManagerController < ApplicationController
   BASE_DIRECTORY = Rails.root.join('courses')
   before_action :set_base_url
@@ -19,15 +21,20 @@ class FileManagerController < ApplicationController
 
   def path
     absolute_path = check_path_exist(params[:path])
+    instructor_paths = get_all_paths
     if File.directory?(absolute_path)
       populate_directory(absolute_path, "#{params[:path]}/")
       render 'file_manager/index'
     elsif File.file?(absolute_path)
       if File.size(absolute_path) > 1_000_000 || params[:download]
-        send_file sanitize_path(absolute_path)
+        if absolute_path.in?(instructor_paths)
+          send_file absolute_path
+        end
       else
-        @file = File.read(sanitize_path(absolute_path))
-        render :file, formats: :html
+        if absolute_path.in?(instructor_paths)
+          @file = File.read(absolute_path)
+          render :file, formats: :html
+        end
       end
     end
   end
@@ -96,22 +103,18 @@ class FileManagerController < ApplicationController
 
   def populate_directory(current_directory, current_url)
     directory = Dir.entries(current_directory)
+    instructor_paths = get_all_paths
     @directory = directory.map do |file|
-      real_path_absolute = "#{current_directory}/#{file}"
-      stat = File.stat(real_path_absolute)
+      abs_path_str = "#{current_directory}/#{file}"
+      stat = File.stat(abs_path_str)
       is_file = stat.file?
       rel_path = "#{current_url}/#{file}"
       base_dir = rel_path.split('/').reject(&:empty?).first
       if base_dir  == "." or base_dir  == ".."
         instructor = true
       else
-        course = Course.find_by(name: base_dir)
-        if course
-          cud = CourseUserDatum.find_by(course_id: course.id, user_id: current_user.id)
-          instructor = cud.instructor?
-        else
-          instructor = false
-        end
+        abs_path = Pathname.new(abs_path_str)
+        instructor = abs_path.in?(instructor_paths)
       end
       {
         size: (is_file ? (number_to_human_size stat.size rescue '-'): '-'),
@@ -119,19 +122,20 @@ class FileManagerController < ApplicationController
         date: (stat.mtime.strftime('%d %b %Y %H:%M') rescue '-'),
         relative: my_escape("/file_manager/#{current_url}#{file}").gsub('%2F', '/'),
         entry: "#{file}#{is_file ? '': '/'}",
-        absolute: real_path_absolute,
+        absolute: abs_path_str,
         instructor: instructor,
       }
     end.sort_by { |entry| "#{entry[:type]}#{entry[:relative]}" }
   end
 
   def safe_expand_path(path)
-    current_directory = File.expand_path(BASE_DIRECTORY)
-    tested_path = File.expand_path(path, BASE_DIRECTORY)
-    unless Archive.in_dir?(tested_path, current_directory)
+    current_directory = Pathname.new(File.expand_path(BASE_DIRECTORY))
+    tested_path = Pathname.new(File.expand_path(path, BASE_DIRECTORY))
+    if current_directory == tested_path or Archive.in_dir?(tested_path, current_directory)
+      tested_path
+    else
       raise ArgumentError, 'Should not be parent of root'
     end
-    tested_path
   end
 
   def upload_file(path)
@@ -156,12 +160,20 @@ class FileManagerController < ApplicationController
     @base_url = '/file_manager'
   end
 
-  def sanitize_path(path)
-    allowed_pattern = /\A[a-zA-Z0-9_\-\/]+(\.[a-zA-Z]+)?\z/
-    if path.match?(allowed_pattern)
-      path
-    else
-      raise ActionController::ForbiddenError(path, 'is not in a valid format')
+  def get_all_paths
+    current_user_id = current_user.id
+    cuds = CourseUserDatum.where(user_id: current_user_id, instructor: true)
+    courses = cuds.map do |cud|
+      Course.find_by(id: cud.course_id)
     end
+    paths = courses.map do |course|
+      Pathname.new("#{BASE_DIRECTORY}/#{course.name}")
+    end
+    children = paths.map do |path|
+      if path.exist?
+        path.children
+      end
+    end
+    (paths + children).flatten.compact
   end
 end
