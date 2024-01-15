@@ -20,7 +20,7 @@ class FileManagerController < ApplicationController
   end
 
   def path
-    absolute_path = check_path_exist(params[:path])
+    absolute_path = sanitize_path(check_path_exist(params[:path]))
     instructor_paths = get_all_paths
     if File.directory?(absolute_path)
       populate_directory(absolute_path, "#{params[:path]}/")
@@ -102,15 +102,13 @@ class FileManagerController < ApplicationController
   end
 
   def populate_directory(current_directory, current_url)
-    directory = Dir.entries(current_directory)
+    directory = Dir.entries(sanitize_path(current_directory))
     instructor_paths = get_all_paths
     @directory = directory.map do |file|
       abs_path_str = "#{current_directory}/#{file}"
       stat = File.stat(abs_path_str)
       is_file = stat.file?
-      rel_path = "#{current_url}/#{file}"
-      base_dir = rel_path.split('/').reject(&:empty?).first
-      if base_dir  == "." or base_dir  == ".."
+      if file  == "." or file  == ".."
         instructor = true
       else
         abs_path = Pathname.new(abs_path_str)
@@ -170,10 +168,29 @@ class FileManagerController < ApplicationController
       Pathname.new("#{BASE_DIRECTORY}/#{course.name}")
     end
     children = paths.map do |path|
-      if path.exist?
-        path.children
-      end
+      get_all_children(path)
     end
-    (paths + children).flatten.compact
+    (children + paths).flatten.compact.uniq
   end
+
+  def get_all_children(path)
+    return [] unless path.exist?
+    return [path] unless path.directory?
+    children = path.children
+    all_children = [children]
+    children.map do |child|
+      all_children += get_all_children(child)
+    end
+    all_children.flatten
+  end
+
+  def sanitize_path(path)
+    allowed_pattern = /\A[a-zA-Z0-9_\-\/]+(\.[a-zA-Z]+)?\z/
+    if path.to_s.match?(allowed_pattern)
+      path
+    else
+      raise ActionController::ForbiddenError(path, 'is not in a valid format')
+    end
+  end
+
 end
