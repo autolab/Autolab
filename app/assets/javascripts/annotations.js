@@ -316,7 +316,7 @@ function make_editable($editable) {
 }
 
 
-/* Highlights lines longer than 80 characters autolab red color */
+/* Highlights lines longer than 80 characters Autolab red color */
 var highlightLines = function (highlight) {
   var highlightColor = "rgba(255, 255, 0, 0.3)"
   $("#code-box > .code-table > .code-line > .code").each(function () {
