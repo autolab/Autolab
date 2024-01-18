@@ -4,7 +4,7 @@ tmp/cache/
 tmp/
 !tmp/restart.txt
 
-# autolab configs
+# Autolab configs
 config/autogradeConfig.rb
 assessmentConfig/
 courseConfig/
@@ -18,7 +18,7 @@ config/lti_config.yml
 config/lti_tool_jwk.json
 config/lti_platform_jwk.json
 
-# autolab user documents
+# Autolab user documents
 app/views/home/_topannounce.html.erb
 attachments/
 doc/
