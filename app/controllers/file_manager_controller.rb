@@ -78,9 +78,12 @@ class FileManagerController < ApplicationController
     original_has_extension = !File.extname(absolute_path).empty?
 
     if original_has_extension && File.extname(params[:new_name]).empty?
-      raise ArgumentError, "You cannot name a file a folder"
-    elsif !original_has_extension && !File.extname(params[:new_name]).empty?
-      raise ArgumentError, "You cannot name a folder a file"
+      raise ArgumentError,
+            "You cannot name a file a folder"
+    end
+    if !original_has_extension && !File.extname(params[:new_name]).empty?
+      raise ArgumentError,
+            "You cannot name a folder a file"
     end
 
     raise ArgumentError, "A file with that name already exists" if File.exist?(new_path)
@@ -108,10 +111,10 @@ private
       stat = File.stat(abs_path_str)
       is_file = stat.file?
       if [".", ".."].include?(file)
-        instructor = true
+        inst = true
       else
         abs_path = Pathname.new(abs_path_str)
-        instructor = abs_path.in?(instructor_paths)
+        inst = abs_path.in?(instructor_paths)
       end
       {
         size: (if is_file
@@ -132,7 +135,7 @@ private
         relative: my_escape("/file_manager/#{current_url}#{file}").gsub('%2F', '/'),
         entry: "#{file}#{is_file ? '' : '/'}",
         absolute: abs_path_str,
-        instructor: instructor,
+        instructor: inst,
       }
     end.sort_by { |entry| "#{entry[:type]}#{entry[:relative]}" }
   end
