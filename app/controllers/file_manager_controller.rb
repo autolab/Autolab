@@ -30,11 +30,9 @@ class FileManagerController < ApplicationController
         if absolute_path.in?(instructor_paths)
           send_file absolute_path
         end
-      else
-        if absolute_path.in?(instructor_paths)
-          @file = File.read(absolute_path)
-          render :file, formats: :html
-        end
+      elsif absolute_path.in?(instructor_paths)
+        @file = File.read(absolute_path)
+        render :file, formats: :html
       end
     end
   end
@@ -64,15 +62,17 @@ class FileManagerController < ApplicationController
     absolute_path = check_path_exist(params[:relative_path])
     dir_name = File.dirname(params[:relative_path])
 
-    raise ArgumentError, "New name not provided,
-      new name cannot be blank" if params[:new_name].empty?
+    if params[:new_name].empty?
+      raise ArgumentError, "New name not provided,
+        new name cannot be blank"
+    end
 
-    unless params[:new_name].match(/^[a-zA-Z0-9_\-]+(\.[a-zA-Z0-9_\-]+)?$/)
+    unless params[:new_name].match(/^[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)?$/)
       raise ArgumentError, "Invalid characters. Only letters,
         numbers, underscores, and hyphens are allowed."
     end
 
-    new_path = safe_expand_path(dir_name + "/" + params[:new_name])
+    new_path = safe_expand_path("#{dir_name}/#{params[:new_name]}")
     parent = new_path.split('/')[0..-2].join('/')
 
     original_has_extension = !File.extname(absolute_path).empty?
@@ -88,16 +88,15 @@ class FileManagerController < ApplicationController
     FileUtils.mkdir_p(parent)
     FileUtils.mv(absolute_path, new_path)
     flash[:success] = "File successfully renamed"
-
-    rescue ArgumentError => e
-      flash[:error] = e.message
+  rescue ArgumentError => e
+    flash[:error] = e.message
   end
 
-  private
+private
 
   def my_escape(string)
     string.gsub(/([^ a-zA-Z0-9_.-]+)/) do
-      '%' + $1.unpack('H2' * $1.bytesize).join('%').upcase
+      "%#{$1.unpack('H2' * $1.bytesize).join('%').upcase}"
     end
   end
 
@@ -108,18 +107,30 @@ class FileManagerController < ApplicationController
       abs_path_str = "#{current_directory}/#{file}"
       stat = File.stat(abs_path_str)
       is_file = stat.file?
-      if file  == "." or file  == ".."
+      if [".", ".."].include?(file)
         instructor = true
       else
         abs_path = Pathname.new(abs_path_str)
         instructor = abs_path.in?(instructor_paths)
       end
       {
-        size: (is_file ? (number_to_human_size stat.size rescue '-'): '-'),
+        size: (if is_file
+                 begin
+                   number_to_human_size stat.size
+                 rescue StandardError
+                   '-'
+                 end
+               else
+                 '-'
+               end),
         type: (is_file ? :file : :directory),
-        date: (stat.mtime.strftime('%d %b %Y %H:%M') rescue '-'),
+        date: begin
+          stat.mtime.strftime('%d %b %Y %H:%M')
+        rescue StandardError
+          '-'
+        end,
         relative: my_escape("/file_manager/#{current_url}#{file}").gsub('%2F', '/'),
-        entry: "#{file}#{is_file ? '': '/'}",
+        entry: "#{file}#{is_file ? '' : '/'}",
         absolute: abs_path_str,
         instructor: instructor,
       }
@@ -129,28 +140,30 @@ class FileManagerController < ApplicationController
   def safe_expand_path(path)
     current_directory = Pathname.new(File.expand_path(BASE_DIRECTORY))
     tested_path = Pathname.new(File.expand_path(path, BASE_DIRECTORY))
-    if current_directory == tested_path or Archive.in_dir?(tested_path, current_directory)
-      tested_path
-    else
+    unless (current_directory == tested_path) || Archive.in_dir?(tested_path, current_directory)
       raise ArgumentError, 'Should not be parent of root'
     end
+
+    tested_path
   end
 
   def upload_file(path)
     absolute_path = check_path_exist(path)
     raise ActionController::ForbiddenError unless File.directory?(absolute_path)
+
     input_file = params[:file]
-    if input_file
-      File.open(Rails.root.join(absolute_path, input_file.original_filename), 'wb') do |file|
-        file.write(input_file.read)
-      end
+    return unless input_file
+
+    File.open(Rails.root.join(absolute_path, input_file.original_filename), 'wb') do |file|
+      file.write(input_file.read)
     end
   end
 
   def check_path_exist(path)
     @absolute_path = safe_expand_path(path)
     @relative_path = path
-    raise ActionController::RoutingError, 'Not Found' unless File.exists?(@absolute_path)
+    raise ActionController::RoutingError, 'Not Found' unless File.exist?(@absolute_path)
+
     @absolute_path
   end
 
@@ -176,6 +189,7 @@ class FileManagerController < ApplicationController
   def get_all_children(path)
     return [] unless path.exist?
     return [path] unless path.directory?
+
     children = path.children
     all_children = [children]
     children.map do |child|
@@ -185,12 +199,11 @@ class FileManagerController < ApplicationController
   end
 
   def sanitize_path(path)
-    allowed_pattern = /\A[a-zA-Z0-9_\-\/]+(\.[a-zA-Z]+)?\z/
-    if path.to_s.match?(allowed_pattern)
-      path
-    else
+    allowed_pattern = %r{\A[a-zA-Z0-9_\-/]+(\.[a-zA-Z]+)?\z}
+    unless path.to_s.match?(allowed_pattern)
       raise ActionController::ForbiddenError(path, 'is not in a valid format')
     end
-  end
 
+    path
+  end
 end
