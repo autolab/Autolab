@@ -25,7 +25,8 @@
 
 <%= form_tag({}, multipart: true) do %>
   <%= file_field_tag 'file' %>
-  <input type="submit" value="Upload">
+  <input type="submit" value="Upload"
+         onclick="<%= @duplicated_file && params[:file].present? ? "return confirm('A file exists with the same name, continuing will override the existing file. Are you sure?');" : "" %>">
 <% end %>
 <table>
   <thead>
