@@ -20,7 +20,7 @@ class FileManagerController < ApplicationController
   end
 
   def path
-    absolute_path = sanitize_path(check_path_exist(params[:path]))
+    absolute_path = sanitize_path(check_path_exist(params[:path].nil? ? "" : params[:path]))
     instructor_paths = get_all_paths
     if File.directory?(absolute_path)
       populate_directory(absolute_path, "#{params[:path]}/")
@@ -38,7 +38,7 @@ class FileManagerController < ApplicationController
   end
 
   def upload
-    upload_file(params[:path])
+    upload_file(params[:path].nil? ? "" : params[:path])
     path
   end
 
@@ -73,7 +73,7 @@ class FileManagerController < ApplicationController
     end
 
     new_path = safe_expand_path("#{dir_name}/#{params[:new_name]}")
-    parent = new_path.split('/')[0..-2].join('/')
+    parent = new_path.split[0..-2].join('/')
 
     original_has_extension = !File.extname(absolute_path).empty?
 
@@ -156,6 +156,9 @@ private
 
     input_file = params[:file]
     return unless input_file
+
+    all_filenames = Dir.entries(absolute_path)
+    @duplicated_file = all_filenames.include?(input_file.original_filename)
 
     File.open(Rails.root.join(absolute_path, input_file.original_filename), 'wb') do |file|
       file.write(input_file.read)
