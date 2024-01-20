@@ -118,7 +118,7 @@ Please feel free to use Autolab at your school/organization. If you run into any
 ### [v2.12.0](https://github.com/autolab/Autolab/releases/tag/v2.12.0) (2024/01/20) Attachment categories and visual cues
 - Ruby upgraded to 3.2.2
 - Rails upgraded to 6.1.7.6
-- Instructors can now specify a category and release at date for attachments
+- Instructors can now specify a category and "release at" date for attachments
 - Assessment start / end dates are now displayed on the course homepage
 
 ### [v2.11.0](https://github.com/autolab/Autolab/releases/tag/v2.11.0) (2023/05/21) LTI Settings UI, extensions metrics, and simultaneous extension creation
