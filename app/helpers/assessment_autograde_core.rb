@@ -354,10 +354,8 @@ module AssessmentAutogradeCore
   # submission is confirmed via dave key to have been created by Autolab
   #
   def autogradeDone(submissions, feedback)
-    ass_dir = @assessment.folder_path
-
     submissions.each do |submission|
-      feedback_file = submission.autograde_feedback_path
+      feedback_file = submission.create_user_directory_and_return_autograde_feedback_path
       COURSE_LOGGER.log("Looking for feedback file:" + feedback_file)
 
       feedback.force_encoding("UTF-8")
@@ -450,7 +448,7 @@ module AssessmentAutogradeCore
 
         scores.keys.each do |key|
           problem = @assessment.problems.find_by(name: key)
-          raise AutogradeError.new("Problem \"" + key + "\" not found.") unless problem
+          raise AutogradeError, "Problem \"" + key + "\" not found." unless problem
           score = submission.scores.find_or_initialize_by(problem_id: problem.id)
           score.score = scores[key]
           score.feedback = feedback 
@@ -502,7 +500,19 @@ module AssessmentAutogradeCore
   end
 
   def extend_config_module(assessment, submission, cud)
-    require assessment.config_file_path
+    # autograde core calls might be called before migration to unique module name occurs, so need to add check
+    begin
+      if @assessment.use_unique_module_name
+        require assessment.unique_config_file_path
+      else
+        require assessment.config_file_path
+      end
+    rescue TypeError => e
+      raise AutogradeError, "could not find the assessment config file: #{e}"
+    rescue LoadError => e
+      raise AutogradeError, "could not load the assessment config file: #{e}"
+    end
+
 
     # casted to local variable so that
     # they can be passed into `module_eval`

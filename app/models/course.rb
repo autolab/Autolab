@@ -49,7 +49,7 @@ class Course < ApplicationRecord
   # Create a course with name, semester, and instructor email
   # all other fields are filled in automatically
   def self.quick_create(unique_name, semester, instructor_email)
-    newCourse = Course.new(name: unique_name, semester: semester)
+    newCourse = Course.new(name: unique_name, semester:)
     newCourse.display_name = newCourse.name
 
     # fill temporary values in other fields
@@ -156,7 +156,7 @@ class Course < ApplicationRecord
   end
 
   def current_assessments(now = DateTime.now)
-    assessments.where("start_at < :now AND end_at > :now", now: now)
+    assessments.where("start_at < :now AND end_at > :now", now:)
   end
 
   def full_name
@@ -371,17 +371,17 @@ class Course < ApplicationRecord
 private
 
   def saved_change_to_grade_related_fields?
-    (saved_change_to_late_slack? or saved_change_to_grace_days? or
-            saved_change_to_version_threshold? or saved_change_to_late_penalty_id? or
-            saved_change_to_version_penalty_id?)
+    saved_change_to_late_slack? or saved_change_to_grace_days? or
+      saved_change_to_version_threshold? or saved_change_to_late_penalty_id? or
+      saved_change_to_version_penalty_id?
   end
 
   def grace_days_or_late_slack_changed?
-    (grace_days_changed? or late_slack_changed?)
+    grace_days_changed? or late_slack_changed?
   end
 
   def saved_change_to_grace_days_or_late_slack?
-    (saved_change_to_grace_days? or saved_change_to_late_slack?)
+    saved_change_to_grace_days? or saved_change_to_late_slack?
   end
 
   def cgdub_dependencies_updated

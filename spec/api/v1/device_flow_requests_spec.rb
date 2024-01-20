@@ -49,12 +49,12 @@ RSpec.describe Oauth::DeviceFlowController, type: :controller do
         @req.deny_request(:user)
         device_code = @req.device_code
 
-        get :authorize, params: { client_id: df_application.uid, device_code: device_code }
+        get :authorize, params: { client_id: df_application.uid, device_code: }
         expect(response.response_code).to eq(400)
         expect(msg["error"]).to include("denied")
 
         # the request should have been deleted from db
-        prev_req = OauthDeviceFlowRequest.find_by(device_code: device_code)
+        prev_req = OauthDeviceFlowRequest.find_by(device_code:)
         expect(prev_req).to be_nil
       end
 
@@ -63,13 +63,13 @@ RSpec.describe Oauth::DeviceFlowController, type: :controller do
         @req.grant_request(:user, access_code)
         device_code = @req.device_code
 
-        get :authorize, params: { client_id: df_application.uid, device_code: device_code }
+        get :authorize, params: { client_id: df_application.uid, device_code: }
         expect(response.response_code).to eq(200)
         expect(msg).to have_key("code")
         expect(msg["code"]).to eq(access_code)
 
         # the request should have been deleted from db
-        prev_req = OauthDeviceFlowRequest.find_by(device_code: device_code)
+        prev_req = OauthDeviceFlowRequest.find_by(device_code:)
         expect(prev_req).to be_nil
       end
     end

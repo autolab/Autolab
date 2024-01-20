@@ -1,0 +1,13 @@
+<%# Special style for attachments displayed on course homepage %>
+<li class="collection-item grey-text text-darken-4" title="Released at <%= attachment.release_at %>">
+  <span class="valign-wrapper">
+    <%= link_to '<i class="material-icons">mode_edit</i>'.html_safe,
+                edit_course_attachment_path(@course, attachment),
+                class: "valign-wrapper" %>
+    <%= link_to '<i class="material-icons left">delete</i>'.html_safe,
+                course_attachment_path(@course, attachment),
+                { class: "valign-wrapper", method: :delete, data: { confirm: "Are you sure you want to delete this attachment?" } } %>
+    <%= link_to attachment.name + (attachment.released? ? '' : ' (unreleased)'),
+                course_attachment_path(@course, attachment) %>
+  </span>
+</li>

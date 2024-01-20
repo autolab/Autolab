@@ -29,8 +29,8 @@ class RiskCondition < ApplicationRecord
             "Make sure your request body fits the criteria!"
     end
 
-    options = { course_id: course_id, condition_type: type, parameters: params.to_hash,
-                version: version }
+    options = { course_id:, condition_type: type, parameters: params.to_hash,
+                version: }
     new_risk_condition = RiskCondition.new(options)
     unless new_risk_condition.save
       raise "Fail to create new risk condition with type #{type} for course #{course_id}"
@@ -45,7 +45,7 @@ class RiskCondition < ApplicationRecord
 
     return [] if max_version == 0
 
-    conditions_for_course = RiskCondition.where(course_id: course_id, version: max_version)
+    conditions_for_course = RiskCondition.where(course_id:, version: max_version)
     condition_types = conditions_for_course.map { |condition| condition.condition_type.to_sym }
     if condition_types.any? { |type| type == :no_condition_selected }
       []
@@ -67,7 +67,7 @@ class RiskCondition < ApplicationRecord
       return []
     end
 
-    previous_conditions = RiskCondition.where(course_id: course_id, version: max_version)
+    previous_conditions = RiskCondition.where(course_id:, version: max_version)
     previous_types = previous_conditions.map(&:condition_type)
     if params.empty?
       if !previous_types.empty? && previous_types.none? { |t| t == "no_condition_selected" }
@@ -179,7 +179,7 @@ class RiskCondition < ApplicationRecord
   end
 
   def self.get_max_version(course_id)
-    conditions_for_course = RiskCondition.where(course_id: course_id)
+    conditions_for_course = RiskCondition.where(course_id:)
     versions = conditions_for_course.map(&:version)
     max_version = versions.max
     if max_version.nil?
