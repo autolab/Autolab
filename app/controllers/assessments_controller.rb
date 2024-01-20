@@ -180,7 +180,7 @@ class AssessmentsController < ApplicationController
         # Ensure file will lie within course, otherwise skip
         # Allow equality for the main directory to be created
         next unless Archive.in_dir?(Pathname(entry_file), Pathname(assessment_path), strict: false)
-        next if !existing_asmt.nil? && relative_pathname.start_with?(existing_asmt.handin_directory)
+        next if existing_asmt && Archive.in_dir?(Pathname(entry_file), existing_asmt.handin_directory_path, strict: false)
 
         if entry.directory?
           FileUtils.mkdir_p(entry_file,
