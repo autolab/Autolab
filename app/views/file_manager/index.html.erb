@@ -1,6 +1,13 @@
 <!--Code for file manager adapted from: adrientoub/file-explorer-->
 <script>
+    function sanitize(path) {
+        const allowedPattern = /^[a-zA-Z0-9_\-/]+(\.[a-zA-Z]+)?$/;
+        if (!path.toString().match(allowedPattern)) {
+            throw new Error(`${path} is not in a valid format`);
+        }
+    }
     function rename(path) {
+        sanitize(path);
         var new_name = prompt("Enter the new name:");
         var rel_path = path.split("/file_manager/")[1];
         $.ajax({
