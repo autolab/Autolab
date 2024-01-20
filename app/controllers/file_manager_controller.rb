@@ -22,15 +22,13 @@ class FileManagerController < ApplicationController
   def path
     absolute_path = sanitize_path(check_path_exist(params[:path].nil? ? "" : params[:path]))
     instructor_paths = get_all_paths
-    if File.directory?(absolute_path)
+    if File.directory?(absolute_path) && absolute_path.in?(instructor_paths)
       populate_directory(absolute_path, "#{params[:path]}/")
       render 'file_manager/index'
-    elsif File.file?(absolute_path)
-      if File.size(absolute_path) > 1_000_000 || params[:download]
-        if absolute_path.in?(instructor_paths)
-          send_file absolute_path
-        end
-      elsif absolute_path.in?(instructor_paths)
+    elsif File.file?(absolute_path) && absolute_path.in?(instructor_paths)
+      if (File.size(absolute_path) > 1_000_000 || params[:download])
+        send_file absolute_path
+      else
         @file = File.read(absolute_path)
         render :file, formats: :html
       end
@@ -209,7 +207,6 @@ private
     unless path.to_s.match?(allowed_pattern)
       raise ActionController::ForbiddenError(path, 'is not in a valid format')
     end
-
     path
   end
 end
