@@ -223,23 +223,6 @@ class Assessment < ApplicationRecord
   # WILL NOT WORK ON NEW, UNSAVED ASSESSMENTS!!!
   #
   def load_config_file
-    # migrate old source config file path, in dir check to ensure that we are not trying to migrate
-    # a different module in a different folder that has a asmt name that maps to the old system
-    if (File.exist? source_config_file_path) &&
-       (source_config_file_path != unique_source_config_file_path) &&
-       Archive.in_dir?(source_config_file_path, folder_path)
-      # read from source
-      config_source = File.open(source_config_file_path, "r", &:read)
-      RubyVM::InstructionSequence.compile(config_source)
-      # rename module name if it doesn't match new unique naming scheme
-      if config_source !~ /\b#{unique_config_module_name}\b/
-        match = config_source.match(/module\s+(\w+)/)
-        config_source = config_source.sub(match[0], "module #{unique_config_module_name}")
-      end
-      File.open(unique_source_config_file_path, "w"){ |f| f.write(config_source) }
-      File.rename(source_config_file_path, source_config_file_backup_path)
-    end
-
     # read from source
     config_source = File.open(unique_source_config_file_path, "r", &:read)
 
@@ -252,7 +235,18 @@ class Assessment < ApplicationRecord
     # uniquely rename module (so that it's unique among all assessment modules loaded in Autolab)
     if config_source !~ /\b#{unique_config_module_name}\b/
       match = config_source.match(/module\s+(\w+)/)
-      config_source = config_source.sub(match[0], "module #{unique_config_module_name}")
+      if match.nil?
+        # no module found in the source, so we will add a template config to assessmentConfig
+        # (assuming that there is no important code, since there isn't even a module)
+
+        # Open and read the default assessment config file, fill in with assessment name
+        default_config_file_path = Rails.root.join("lib/__defaultAssessment.rb")
+        config_source = File.open(default_config_file_path, "r", &:read)
+        config_source.gsub!("##NAME_CAMEL##", unique_config_module_name)
+        config_source.gsub!("##NAME_LOWER##", name)
+      else
+        config_source = config_source.sub(match[0], "module #{unique_config_module_name}")
+      end
     end
 
     # backup old *unique* configs
