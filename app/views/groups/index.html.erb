@@ -1,7 +1,9 @@
-<% if @groups.size > 0 then %>
-  <h2>Groups</h2>
+<% @title = "Groups" %>
 
-  <table class=prettyBorder >
+<h2>Groups</h2>
+<% if @groups.size > 0 then %>
+
+  <table class=prettyBorder>
     <tr>
       <th>Group Name</th>
 
@@ -14,7 +16,7 @@
 
     <% @groups.each do |group| %>
       <tr>
-        <td><%= link_to group.name, [@course, @assessment, group] %></td>
+        <td><%= link_to group.name, course_assessment_group_path(@course, @assessment, group) %></td>
 
         <% group.assessment_user_data.each do |aud| %>
           <% cud = aud.course_user_datum %>
@@ -31,17 +33,25 @@
         <% end %>
 
         <td>
-          <%= link_to "Edit", [@course, @assessment, group] %> | 
-          <%= link_to "Destroy", [@course, @assessment, group], method: :delete, data: { confirm: "Are you sure you want to disband this group?" } %>
+          <%= link_to "Edit", course_assessment_group_path(@course, @assessment, group) %> |
+          <%= link_to "Destroy", course_assessment_group_path(@course, @assessment, group),
+                      method: :delete, data: { confirm: "Are you sure you want to disband this group?" } %>
         </td>
       </tr>
     <% end %>
   </table>
 <% else %>
-  <h2>No Groups have been set yet.</h2>
+  <p>
+    No Groups have been set yet.
+  </p>
 <% end %>
 
-<h3><%= link_to 'Create New Group', [:new, @course, @assessment, :group] %></h3>
+<br>
+<%= link_to new_course_assessment_group_path(@course, @assessment) do %>
+  <span class="btn primary">
+    Create New Group
+  </span>
+<% end %>
 
 <% if @grouplessCUDs.size > 0 then %>
   <h2>Users Without Groups</h2>
@@ -57,6 +67,6 @@
   <h2>Load Groups from Another Assessment</h2>
   <%= form_tag [:import, @course, @assessment, :groups] do %>
     <%= select_tag :ass, options_from_collection_for_select(@groupAssessments, :id, :name) %>
-    <%= submit_tag 'Go!', class: "btn btn-primary" %>
+    <%= submit_tag 'Import Groups', class: "btn btn-primary" %>
   <% end %>
 <% end %>

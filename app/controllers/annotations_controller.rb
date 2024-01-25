@@ -75,6 +75,8 @@ private
     params[:annotation].delete(:id)
     params[:annotation].delete(:created_at)
     params[:annotation].delete(:updated_at)
+    # Prevent spoofing the submitter
+    params[:annotation][:submitted_by] = @current_user.email
     params.require(:annotation).permit(:filename, :position, :line, :submitted_by,
                                        :comment, :shared_comment, :global_comment, :value,
                                        :problem_id, :submission_id, :coordinate)

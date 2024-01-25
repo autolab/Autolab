@@ -1,23 +1,30 @@
-<% if current_user.administrator? || current_user.instructor? %>
-<%= link_to "Create user", new_user_path, { :class=>"btn" }%>
+<% content_for :stylesheets do %>
+  <%= stylesheet_link_tag "users" %>
 <% end %>
 
+<div class="users-list-header-container">
+    <h3>Users List</h3>
+
+    <% if current_user.administrator? || current_user.instructor? %>
+      <%= link_to "Create user", new_user_path, { class: "btn" } %>
+    <% end %>
+</div>
+
 <% if @users.count >= 1 %>
-<h3>Users List</h3>
-
-<table class="noStyle navigatable">
-	<thead>
-		<tr><th>Email</th><th>First Name</th><th>Last Name</th></tr>
-	</thead>
-	<tbody>		
-		<% @users.each do |user| %>
-		<tr>
-			<td><%= link_to user.email, user_path(user) %></td>
-			<td><%= user.first_name %></td>
-			<td><%= user.last_name %></td>
-		</tr>
-		<% end %>
-	</tbody>
-</table>
-
+  <table class="noStyle navigatable">
+    <thead>
+      <tr><th>Email</th><th>First Name</th><th>Last Name</th></tr>
+    </thead>
+    <tbody>
+      <% @users.each do |user| %>
+      <tr>
+        <td><%= link_to user.email, user_path(user) %></td>
+        <td><%= user.first_name %></td>
+        <td><%= user.last_name %></td>
+      </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% else %>
+  There are currently no users that exist on Autolab.
 <% end %>

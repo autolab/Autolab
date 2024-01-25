@@ -33,7 +33,15 @@
     <%= content_for :head %>
     <link href='//fonts.googleapis.com/css?family=Source+Sans+Pro:300,400' rel='stylesheet' type='text/css'>
     <%= content_for :stylesheets %>
-    <title><%= if @title then @title elsif @course then @course.display_name else "Autolab Home" end %></title>
+    <title>
+      <%= if @title
+            @title
+          elsif @course
+            @course.display_name
+          else
+            "Autolab Home"
+          end %>
+    </title>
 
   </head>
 
@@ -52,9 +60,9 @@
       <!-- Page Body -->
       <div id="pageBody" class="container">
 
-        <% if @cud && @cud.dropped? %>
-          <h3 class="error">You seem to have dropped this course. Please email your instructor if this is incorrect.</h3>
-        <% end %>
+        <% if @cud&.dropped?
+             flash[:error] = "You seem to have dropped this course. Please email your instructor if this is incorrect."
+           end %>
 
         <!-- Flashes -->
         <div id="flashes">
@@ -65,18 +73,18 @@
           <% flash.each do |name, msg| %>
             <% if name == "roster_error" %>
               <div class="error" id="flash_error">
-                <%= render :partial=>'courses/uploadError',
-                            locals: {roster_errors: msg} %>
+                <%= render partial: 'courses/uploadError',
+                           locals: { roster_errors: msg } %>
               </div>
             <% else %>
               <% msg = msg.html_safe if html_safe %>
               <%= content_tag :div, msg, id: "flash_#{name}",
-                  class: "#{name}" %>
+                                         class: name.to_s %>
             <% end %>
           <% end %>
           <noscript>
               <div id="flash_error" class="error">
-                  AutoLab requires Javascript to be enabled for all features to correctly function. Please enable Javascript.
+                  Autolab requires Javascript to be enabled for all features to correctly function. Please enable Javascript.
               </div>
           </noscript>
         </div>
@@ -98,7 +106,6 @@
       <!-- End Page Body -->
       <!-- Footer -->
     </div>
-
 
     <script async defer id="github-bjs" src="https://buttons.github.io/buttons.js"></script>
     <%= content_for :javascripts %>

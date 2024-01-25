@@ -16,11 +16,11 @@
       <div class="valign-wrapper drag-drop-handin" tabindex="0"
           onclick="clickDrag(event);" onkeydown="clickDrag(event);" ondrop="dropHandler(event);"
           ondragover="dragOverHandler(event);" ondragenter="dragEnter(event);" ondragexit="dragExit(event);">
-        <p class="center-align" style="color:grey;" ondrop="dropHandler(event);" 
-          ondragover="dragOverHandler(event);" ondragenter="dragEnter(event);" 
+        <p class="center-align" style="color:grey;" ondrop="dropHandler(event);"
+          ondragover="dragOverHandler(event);" ondragenter="dragEnter(event);"
           ondragexit="dragExit(event);">
           <b>Drag a file here to hand in. Click to select a file.</b>
-          <br />
+          <br>
           <span style="font-size: 10px;">Files do not submit automatically.</span></p>
       </div>
     </div>
@@ -30,12 +30,12 @@
       </div>
       <div class="col s8">
         <p>
-          <b id="handin-file-name"></b><br />
-          Last modified: <span id="handin-modify-date"></span><br />
+          <b id="handin-file-name"></b><br>
+          Last modified: <span id="handin-modify-date"></span><br>
           <span id="handin-text">
-            Lines of code: <span id="handin-loc">Calculating...</span><br />
+            Lines of code: <span id="handin-loc">Calculating...</span><br>
           </span>
-          File size: <span id="handin-size"></span><br />
+          File size: <span id="handin-size"></span><br>
         </p>
       </div>
       <div class="col s1 right-align">
@@ -66,12 +66,12 @@
         </div>
       <% else %>
         <h5> No repositories found! Create a repository in your Github account in order to submit your work via Git submission.</h5>
-        <br />
+        <br>
       <% end %>
     <% else %>
       <div class="connect-github-account">
-        <br />
-        <label> Click below to connect your Github account </label> <br />
+        <br>
+        <label> Click below to connect your Github account </label> <br>
         <%= link_to raw('<span class="btn primary">Connect</span>'), github_oauth_user_path(@cud.user) %> <br>
     </div>
   <% end %>

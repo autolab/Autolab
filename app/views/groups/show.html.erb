@@ -1,10 +1,11 @@
+<% @title = @group.name %>
 <h2>Group: <%= @group.name %></h2>
 
 <% if @aud.group_id == @group.id or @cud.instructor then %>
   <% if (@aud.membership_status & AssessmentUserDatum::MEMBER_CONFIRMED) == 0 then %>
     <p>You have not confirmed your group membership yet.</p>
-    <%= link_to "Confirm Membership", [:join, @course, @assessment, @group], method: :post %> | 
-    <%= link_to "Deny Membership", [:leave, @course, @assessment, @group], method: :post %>
+    <%= link_to "Confirm Membership", join_course_assessment_group_path(@course, @assessment, @group), method: :post %> |
+    <%= link_to "Deny Membership", leave_course_assessment_group_path(@course, @assessment, @group), method: :post %>
   <% elsif (@aud.membership_status & AssessmentUserDatum::GROUP_CONFIRMED) == 0 then %>
     <p>Your group has not confirmed your membership yet.</p>
   <% end %>
@@ -22,14 +23,22 @@
       <% if !aud.group_confirmed(AssessmentUserDatum::MEMBER_CONFIRMED) then %>
         <p>This Member has not Confirmed their Membership yet.</p>
         <% if @group.is_member(@aud) or @cud.instructor then %>
-          <p><%= link_to "Cancel Request", [:leave, @course, @assessment, @group, member_id: cud.id], method: :post %></p>
+          <p>
+            <%= link_to "Cancel Request",
+                        leave_course_assessment_group_path(@course, @assessment, @group, member_id: cud.id),
+                        method: :post %>
+          </p>
         <% end %>
       <% elsif !aud.group_confirmed(AssessmentUserDatum::GROUP_CONFIRMED) then %>
         <p>This Member has not been Confirmed by the Group yet.</p>
         <% if @group.is_member(@aud) or @cud.instructor then %>
           <p>
-            <%= link_to "Confirm Membership", [:add, @course, @assessment, @group, member_id: cud.id], method: :post %> |
-            <%= link_to "Deny Membership", [:leave, @course, @assessment, @group, member_id: cud.id], method: :post %>
+            <%= link_to "Confirm Membership",
+                        add_course_assessment_group_path(@course, @assessment, @group, member_id: cud.id),
+                        method: :post %> |
+            <%= link_to "Deny Membership",
+                        leave_course_assessment_group_path(@course, @assessment, @group, member_id: cud.id),
+                        method: :post %>
           </p>
         <% end %>
       <% end %>
@@ -40,14 +49,14 @@
 <% if @group.is_member(@aud) or @cud.instructor then %>
   <% if @group.assessment_user_data.size < @assessment.group_size then %>
     <h2>Invite Another Student to Join This Group</h2>
-    <%= form_tag [:add, @course, @assessment, @group] do %>
+    <%= form_tag add_course_assessment_group_path(@course, @assessment, @group) do %>
       <div class="form-group">
         <label class="control-label" for="member_email">Partner Email</label>
-        <%= text_field_tag :member_email, nil, class: "form-control" %>
+        <%= text_field_tag :member_email, nil, class: "form-control", autocomplete: "email" %>
         <p class="help-block">The email of your desired partner. They will need to confirm their membership.</p>
       </div>
 
-      <%= submit_tag "Invite to Group", class:"btn btn-primary" %>
+      <%= submit_tag "Invite to Group", class: "btn btn-primary" %>
     <% end %>
   <% end %>
 <% end %>
@@ -58,7 +67,8 @@
     <% @grouplessCUDs.each do |cud| %>
       <% if cud.id != @cud.id && cud.student? then %>
         <li><b><%= cud.email %></b>
-          (<%= link_to "Invite to Group", [:add, @course, @assessment, @group, member_id: cud.id], method: :post %>)
+          (<%= link_to "Invite to Group", add_course_assessment_group_path(@course, @assessment, @group, member_id: cud.id),
+                       method: :post %>)
         </li>
       <% end %>
     <% end %>
@@ -67,7 +77,8 @@
 
 <div style="margin-top: 1em">
   <% if @group.is_member(@aud) then %>
-    <%= link_to "Leave Group", [:leave, @course, @assessment, @group], {method: :post, data: {confirm: "Are you sure you want to leave your group?"}} %> | 
+    <%= link_to "Leave Group", leave_course_assessment_group_path(@course, @assessment, @group),
+                { method: :post, data: { confirm: "Are you sure you want to leave your group?" } } %> |
   <% end %>
   <%= groups_back_link %>
 </div>

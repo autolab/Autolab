@@ -15,7 +15,7 @@
       <%= link_to t('doorkeeper.layouts.admin.nav.oauth2_provider'), oauth_applications_path, class: 'navbar-brand' %>
     </div>
     <ul class="nav navbar-nav">
-      <%= content_tag :li, class: "#{'active' if request.path == oauth_applications_path}" do %>
+      <%= content_tag :li, class: ('active' if request.path == oauth_applications_path).to_s do %>
         <%= link_to t('doorkeeper.layouts.admin.nav.applications'), oauth_applications_path %>
       <% end %>
       <%= content_tag :li do %>
