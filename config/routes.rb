@@ -79,6 +79,8 @@ Rails.application.routes.draw do
     get "lti_launch_initialize", on: :member
     post "lti_launch_link_course", on: :member
     post "github_revoke", on: :member
+    get "github_update", on: :member, to: 'users#show_github_update_form'
+    post 'github_update', on: :member, to: 'users#submit_github_update_form'
     get "github_oauth_callback", on: :collection
     match "update_password_for_user", on: :member, via: [:get, :put]
     post "change_password_for_user", on: :member
