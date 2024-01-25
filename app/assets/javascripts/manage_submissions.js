@@ -236,4 +236,4 @@ $(document).ready(function () {
     e.stopPropagation();
   });
 
-})
+});
