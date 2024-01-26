@@ -5,8 +5,9 @@ class UsersController < ApplicationController
   skip_before_action :update_persistent_announcements
   before_action :set_gh_oauth_client, only: [:github_oauth, :github_oauth_callback]
   before_action :set_user,
-                only: [:github_oauth, :github_revoke, :lti_launch_initialize,
-                       :lti_launch_link_course]
+                only: [:github_oauth, :github_revoke,
+                       :show_github_token_form, :submit_github_token_form,
+                        :lti_launch_initialize, :lti_launch_link_course]
 
   # GET /users
   action_auth_level :index, :student
@@ -248,6 +249,27 @@ class UsersController < ApplicationController
     course = Course.find(params[:course_id])
     flash[:success] = "#{course.name} successfully linked."
     redirect_to(course)
+  end
+
+  action_auth_level :github_token, :student
+  def show_github_token_form
+    @github_integration = GithubIntegration.find_by(user_id: @user.id)
+    render('github_token')
+  end
+
+  action_auth_level :github_token_form, :student
+  def submit_github_token_form
+    github_integration = GithubIntegration.find_by(user_id: @user.id)
+    access_token = params[:access_token]
+
+    if github_integration.nil?
+      github_integration = GithubIntegration.create!(access_token:, user: @user)
+    else
+      github_integration.update!(access_token:)
+    end
+
+    flash[:success] = "Updated Github Token"
+    redirect_to(user_path)
   end
 
   action_auth_level :github_oauth, :student

@@ -62,6 +62,7 @@
     </span>
   <% end %>
   <% if GithubIntegration.connected %>
+    <h4>Github Settings</h4>
     <% if @user.github_integration && @user.github_integration.is_connected %>
       <%= link_to github_revoke_user_path(@user), data: { method: "post" } do %>
         <span class="btn primary">
@@ -74,6 +75,12 @@
           Connect to Github
         </span>
       <% end %>
+    <% end %>
+
+    <%= link_to github_token_user_path(@user) do %>
+      <span class="btn primary">
+        Use Personal access Token
+      </span>
     <% end %>
   <% end %>
   <h4>API Settings</h4>
