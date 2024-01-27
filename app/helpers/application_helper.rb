@@ -5,10 +5,6 @@ module ApplicationHelper
     course_assessment_path(@course, @assessment)
   end
 
-  def current_assessment_link
-    link_to @assessment.display_name, course_assessment_path(@course, @assessment)
-  end
-
   # Older Helpers
   def sort_td_class_helper(param)
     result = 'class="sortup"' if params[:sort] == param
