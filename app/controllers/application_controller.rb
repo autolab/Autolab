@@ -228,7 +228,6 @@ protected
       redirect_to(course_assessments_path(@course)) && return
     end
 
-    @breadcrumbs << (view_context.current_assessment_link)
     ASSESSMENT_LOGGER.setAssessment(@assessment)
   end
 

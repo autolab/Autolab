@@ -1,3 +1,5 @@
+<% @title = "Manage Attachments" %>
+
 <% if @is_assessment %>
   <h2>Listing <%= link_to @assessment.display_name, course_assessment_path(@course, @assessment) %> Attachments</h2>
 <% else %>
