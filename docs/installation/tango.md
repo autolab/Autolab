@@ -122,7 +122,7 @@ This is a guide to setup a fully self-sufficient Tango deployment environment ou
         DOCKER_VOLUME_PATH = '/opt/TangoService/Tango/volumes/'
 
 4. Install docker on the host machine by following instructions on the <a href="https://docs.docker.com/installation/" target="_blank">docker installation page</a>.  
-Then give yourself permissions to run docker without root:
+Then give yourself permissions to run docker without root (need to relog in after):
 
         :::bash
         $ sudo usermod -aG docker $USER
@@ -249,7 +249,7 @@ Then give yourself permissions to run docker without root:
 This is a guide to set up Tango to run jobs inside Docker containers.
 
 1. Install docker on host machine by following instructions on the <a href="https://docs.docker.com/installation/" target="_blank">docker installation page</a>.  
-Then give yourself permissions to run docker without root:
+Then give yourself permissions to run docker without root (need to relog in after):
 
         :::bash
         sudo usermod -aG docker $USER
