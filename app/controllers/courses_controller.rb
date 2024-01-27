@@ -606,7 +606,7 @@ private
 
     if params[:allow_self_enrollment]
       att.delete(:allow_self_enrollment)
-      att = att.merge(access_code: generate_access_code)
+      att = att.merge(access_code: generate_access_code) if @course.access_code.blank?
     else
       att = att.merge(access_code: "")
     end
