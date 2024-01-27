@@ -31,9 +31,12 @@
                     title: "View your user profile for the current course" %>
       </li>
     <% end %>
+    <li role="presentation">
+      <%= link_to "Join Course", home_join_course_path, title: "Join Course" %>
+    </li>
     <% if Rails.env.development? %>
       <li role="presentation">
-        <a href='/home/developer_login'>Dev Login</a>
+        <%= link_to "Dev Login", home_developer_login_path %>
       </li>
     <% end %>
     <li role="presentation" class="divider"></li>
@@ -152,7 +155,7 @@
         <% if user_signed_in? %>
           <li>
             <a class="dropdown-trigger" href="#!" data-target="dropdown1" data-beloworigin="true" data-hover="false">
-              <%= current_user.display_name %><i class="material-icons right">arrow_drop_down</i>
+              <i class='material-icons left'>person</i><%= current_user.display_name %><i class="material-icons right">arrow_drop_down</i>
             </a>
           </li>
         <% end %>
@@ -166,28 +169,31 @@
           <div class="dropdown-toggle" id="dropdownMenu1">
             <%= current_user.display_name %>
           </div>
-        <% unless current_user.nil? %>
+          <% unless current_user.nil? %>
+            <li role="presentation">
+              <%= link_to "<i class='material-icons left'>account_circle</i> Account".html_safe,
+                          user_path(current_user), title: "View your account info" %>
+            </li>
+          <% end %>
+          <% if @cud %>
+            <li role="presentation">
+              <%= link_to "<i class='material-icons left'>assignment_ind</i> Course Profile".html_safe,
+                          course_course_user_data_path(@course, @cud),
+                          title: "View your user profile for the current course" %>
+            </li>
+          <% end %>
           <li role="presentation">
-            <%= link_to "<i class='material-icons left'>account_circle</i> Account".html_safe,
-                        user_path(current_user), title: "View your account info" %>
+            <%= link_to "<i class='material-icons left'>add</i> Join Course".html_safe, home_join_course_path, title: "Join Course" %>
           </li>
-        <% end %>
-        <% if @cud %>
+          <% if Rails.env.development? %>
+            <li role="presentation">
+              <%= link_to "<i class='material-icons left'>developer_mode</i> Dev Login".html_safe, home_developer_login_path %>
+            </li>
+          <% end %>
+          <li role="presentation" class="divider"></li>
           <li role="presentation">
-            <%= link_to "<i class='material-icons left'>assignment_ind</i> Course Profile".html_safe,
-                        course_course_user_data_path(@course, @cud),
-                        title: "View your user profile for the current course" %>
-          </li>
-        <% end %>
-        <li role="presentation">
-          <%= link_to "<i class='material-icons left'>exit_to_app</i> Log out".html_safe,
-                      destroy_user_session_path, method: :delete %>
-        </li>
-        <li role="presentation" class="divider"></li>
-        <% end %>
-        <% if Rails.env.development? %>
-          <li role="presentation">
-            <a href='/home/developer_login'>Dev Login</a>
+            <%= link_to "<i class='material-icons left'>exit_to_app</i> Log out".html_safe,
+                        destroy_user_session_path, method: :delete %>
           </li>
         <% end %>
       </div>

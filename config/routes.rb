@@ -52,13 +52,14 @@ Rails.application.routes.draw do
                                     registrations: "registrations" },
                      path_prefix: "auth"
 
-  get "contact", to: "home#contact"
   get "courses", to: "courses#index"
 
   namespace :home do
     if Rails.env == "development" || Rails.env == "test"
       match "developer_login", via: [:get, :post]
     end
+    match "join_course", via: [:get, :post]
+    get "contact"
     get "no_user"
   end
 

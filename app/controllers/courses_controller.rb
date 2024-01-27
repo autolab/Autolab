@@ -597,11 +597,30 @@ private
   end
 
   def edit_course_params
-    params.require(:editCourse).permit(:semester, :website, :late_slack,
-                                       :grace_days, :display_name, :start_date, :end_date,
-                                       :disabled, :exam_in_progress, :version_threshold,
-                                       :gb_message, late_penalty_attributes: %i[kind value],
-                                                    version_penalty_attributes: %i[kind value])
+    att = params.require(:editCourse).permit(:semester, :website, :late_slack,
+                                             :grace_days, :display_name, :start_date, :end_date,
+                                             :disabled, :exam_in_progress, :allow_self_enrollment,
+                                             :version_threshold, :gb_message,
+                                             late_penalty_attributes: %i[kind value],
+                                             version_penalty_attributes: %i[kind value])
+
+    if params[:allow_self_enrollment]
+      att.delete(:allow_self_enrollment)
+      att = att.merge(access_code: generate_access_code)
+    else
+      att = att.merge(access_code: "")
+    end
+
+    att
+  end
+
+  def generate_access_code
+    loop do
+      code = SecureRandom.alphanumeric(6).upcase
+
+      # Possible race condition, but we also have a uniqueness validation
+      break code unless Course.where(access_code: code).exists?
+    end
   end
 
   def categorize_courses_for_listing(courses)

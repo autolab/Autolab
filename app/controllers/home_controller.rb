@@ -2,7 +2,7 @@
 # The Home Controller houses (ha) any action that's available to the general public.
 #
 class HomeController < ApplicationController
-  skip_before_action :authenticate_user!, except: [:publicSignUp]
+  skip_before_action :authenticate_user!
   skip_before_action :set_course
   skip_before_action :authorize_user_for_course
   skip_before_action :authenticate_for_action
@@ -21,33 +21,39 @@ class HomeController < ApplicationController
     end
   end
 
-  # https://autolab.cs.cmu.edu/home/publicSignUp?id={#course_id}
-  # where {#course_id} is the id of the public course a user wants to register
-  #
-  # This currently isn't in use, but if we reenable it, SWITCH TO snake_case PLEASE!
-  def publicSignUp
-    course_id = params[:id].to_i
-    # for now, only check if this id is PUBLIC_COURSE_ID or ACM_COURSE_ID
-    if course_id != PUBLIC_COURSE_ID && course_id != ACM_COURSE_ID
-      flash[:error] = "Public course doesn't exist. Please check your link again."
-      redirect_to(controller: "home", action: "index") && return
+  def join_course
+    return unless request.post?
+
+    access_code = params[:access_code]
+    unless access_code.match(/\A[A-Z0-9]{6}\z/)
+      flash[:error] = "Invalid access code format"
+      redirect_to home_join_course_path && return
     end
 
-    @course = Course.find(course_id)
-    cud = @course.course_user_data.find_or_initialize_by(user: current_user)
+    course = Course.find_by(access_code:)
+    if course.nil?
+      flash[:error] = "Invalid access code"
+      redirect_to home_join_course_path && return
+    end
 
-    # allows user to be an instructor for demo course only
-    cud.instructor = params[:isInstructor] if course_id == PUBLIC_COURSE_ID
-    if cud.save
-      flash[:success] = "You have successfully registered for #{@course.full_name}"
-      redirect_to(controller: "course", course: @course.name,
-                  action: "index") && return
+    cud = course.course_user_data.find_by(user_id: current_user.id)
+
+    if cud.nil?
+      cud = course.course_user_data.new
+      cud.user = current_user
+      cud.instructor = false
+      cud.course_assistant = false
+      unless cud.save
+        flash[:error] = "An error occurred while joining the course"
+        redirect_to home_join_course_path && return
+      end
+      # else, no point setting a flash because they will be redirected
+      # to set their nickname
     else
-      flash[:error] = "An internal error occurred. Please contact the " \
-                    "Autolab Development team at the " \
-                    "contact link below"
-      redirect_to(controller: "home", action: "index") && return
+      flash[:success] = "You are already enrolled in this course"
     end
+
+    redirect_to course_path(course)
   end
 
   def contact
