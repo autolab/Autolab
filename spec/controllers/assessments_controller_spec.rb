@@ -112,6 +112,31 @@ RSpec.describe AssessmentsController, type: :controller do
         # cleanup assessmentConfig
         FileUtils.rm(course_2_hash[:assessment].unique_config_file_path)
       end
+      it "properly dumps imported data" do
+        file = fixture_file_upload("assessments/all-fields-filled.tar")
+        post :importAsmtFromTar, params: { course_name: course_2_hash[:course].name,
+                                           tarFile: file }
+        expect(response).to have_http_status(302)
+        expect(flash[:success]).to be_present
+        File.open(Rails.root.join(file_fixture_path, "assessments", "all-fields-filled.tar"),
+                  encoding: 'ASCII-8BIT') do |exportTarFile|
+          Gem::Package::TarReader.new(exportTarFile) do |tar|
+            tar.seek("hellotar-2/hellotar-2.yml") do |entry|
+              export_yml = YAML.safe_load(entry.read)
+              File.open(Rails.root.join("courses", course_2_hash[:course].name, "hellotar-2",
+                                        "hellotar-2.yml")) do |importFile|
+                import_yml = YAML.safe_load(importFile.read)
+                puts(Rails.root.join("courses", course_2_hash[:course].name, "hellotar-2",
+                                     "hellotar-2.yml"))
+                # the yml should contain exactly the same info, in the same order, per dump_yaml
+                expect(
+                  export_yml
+                ).to eq(import_yml)
+              end
+            end
+          end
+        end
+      end
       it "handles nil tarfile" do
         post :importAsmtFromTar, params: { course_name: course_2_hash[:course].name,
                                            name: course_2_hash[:assessment].name }
