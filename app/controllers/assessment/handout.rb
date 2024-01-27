@@ -14,7 +14,21 @@ module AssessmentHandout
 
   def handout
     # If the logic here changes, do update assessment#has_handout?
-    extend_config_module(@assessment, nil, @cud)
+    begin
+      extend_config_module(@assessment, nil, @cud)
+    rescue StandardError => e
+      if @cud.has_auth_level? :instructor
+        flash[:error] = "Error loading the config file: "
+        flash[:error] += e.message
+        flash[:error] += "<br/> Try reloading the course config file," \
+          " or re-upload the course config file in order to recover your assessment."
+        flash[:html_safe] = true
+      else
+        flash[:error] = "Error loading #{@assessment.display_name}. Please contact your instructor."
+      end
+      return
+    end
+
 
     if @assessment.overwrites_method?(:handout)
       hash = @assessment.config_module.handout
