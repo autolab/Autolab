@@ -60,7 +60,7 @@
           <% if @course.access_code.present? %>
             <p style="font-size: 18px">Access Code: <b><%= @course.access_code.to_s %></b></p>
           <% else %>
-            <p style="font-size: 18px">Access Code: <b>self-enrollment disabled</b></p>
+            <p style="font-size: 18px">Access Code: <b>(self-enrollment disabled)</b></p>
           <% end %>
         <% end %>
         <p style="font-size: 18px">Section: <b><%= @cud.section.to_s %></b></p>
