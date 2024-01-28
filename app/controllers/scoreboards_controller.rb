@@ -3,7 +3,7 @@
 #
 class ScoreboardsController < ApplicationController
   before_action :set_assessment
-  before_action :set_assessment_breadcrumb, only: [:edit]
+  before_action :set_assessment_breadcrumb
   before_action :set_edit_assessment_breadcrumb, only: [:edit]
   before_action :set_scoreboard, except: [:create]
 
