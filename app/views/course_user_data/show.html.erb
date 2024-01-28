@@ -1,3 +1,5 @@
+<% @title = @requestedUser.full_name %>
+
 <h2>
   <%= @requestedUser.full_name %> (<%= @requestedUser.nickname %>)
   <% if @cud.instructor? && @requestedUser.dropped? %>
