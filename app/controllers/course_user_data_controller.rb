@@ -1,5 +1,6 @@
 class CourseUserDataController < ApplicationController
-  before_action :add_users_breadcrumb
+  before_action :set_manage_course_breadcrumb
+  before_action :set_manage_course_users_breadcrumb, except: %i[sudo]
 
   action_auth_level :index, :student
   def index
@@ -110,6 +111,9 @@ class CourseUserDataController < ApplicationController
       flash[:error] = "Permission denied"
       redirect_to(action: "index") && return
     end
+
+    @breadcrumbs << (view_context.link_to @editCUD.user.full_name,
+                                          course_course_user_datum_path(@course, @editCUD))
 
     @editCUD.tweak ||= Tweak.new
   end
@@ -238,10 +242,6 @@ class CourseUserDataController < ApplicationController
   end
 
 private
-
-  def add_users_breadcrumb
-    @breadcrumbs << (view_context.link_to "Users", [:users, @course]) if @cud.instructor
-  end
 
   def cud_params
     if @cud.administrator? || @cud.instructor?

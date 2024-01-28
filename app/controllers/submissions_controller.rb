@@ -9,6 +9,8 @@ class SubmissionsController < ApplicationController
   before_action :set_assessment
   before_action :set_submission, only: %i[destroy destroyConfirm download edit update view]
   before_action :get_submission_file, only: %i[download view]
+  before_action :set_assessment_breadcrumb
+  before_action :set_manage_submissions_breadcrumb, except: %i[index]
 
   # this page loads.  links/functionality may be/are off
   action_auth_level :index, :instructor
@@ -652,5 +654,10 @@ private
     end
 
     true
+  end
+
+  def set_manage_submissions_breadcrumb
+    @breadcrumbs << (view_context.link_to "Manage Submissions",
+                                          course_assessment_submissions_path(@course, @assessment))
   end
 end

@@ -109,7 +109,7 @@
       </a>
 
       <ul class="right hide-on-med-and-down">
-        <% if session[:sudo] && @cud then %>
+        <% if session[:sudo] && @cud %>
           <li>
             <%= link_to "(#{@cud.display_name}) Return to instructor view",
                         unsudo_course_course_user_datum_path(@course, @cud),
@@ -127,7 +127,7 @@
           <% elsif @cud.instructor? || @cud.student? %>
             <li>
               <%= link_to "<i class='material-icons left'>grading</i> Gradebook".html_safe,
-                          [@course, @cud, :gradebook], title: "View your gradebook" %>
+                          course_course_user_datum_gradebook_path(@course, @cud), title: "View your gradebook" %>
             </li>
           <% end %>
 
@@ -198,7 +198,7 @@
         <% end %>
       </div>
         <!-- Usual Navbar Items -->
-        <% if session[:sudo] && @cud then %>
+        <% if session[:sudo] && @cud %>
           <li>
             <%= link_to "(#{@cud.display_name}) Return to instructor view",
                         unsudo_course_course_user_datum_path(@course, @cud), data: { method: "post" } %>
@@ -251,7 +251,7 @@
 
 </div>
 
-<% unless @breadcrumbs.blank? then %>
+<% unless @breadcrumbs.blank? && @title.blank? %>
   <div class="sub-navigation">
     <span class="left-nav">
       <span class="item">
@@ -260,7 +260,7 @@
       <% @breadcrumbs.each do |b| %>
         <span class="item"><%= b %></span>
       <% end %>
-      <% if @title then %>
+      <% if @title %>
         <span class="item"><span class="title"><%= @title %></span></span>
       <% end %>
     </span>

@@ -18,6 +18,7 @@ class ApplicationController < ActionController::Base
   before_action :authorize_user_for_course, except: [:action_no_auth]
   before_action :authenticate_for_action
   before_action :update_persistent_announcements
+  before_action :init_breadcrumbs
   before_action :set_breadcrumbs
 
   # this is where Error Handling is configured. this routes exceptions to
@@ -297,8 +298,12 @@ protected
                                 .or(Announcement.where(persistent: true, system: true))
   end
 
-  def set_breadcrumbs
+  def init_breadcrumbs
     @breadcrumbs = []
+  end
+
+  # This is separate from init_breadcrumbs so that assessments#index can skip it
+  def set_breadcrumbs
     return unless @course
 
     @breadcrumbs << if @course.disabled?
@@ -308,6 +313,30 @@ protected
                       (view_context.link_to @course.full_name, [@course], id: "courseTitle")
                     end
   end
+
+  ### Helpers for breadcrumbs
+  def set_assessment_breadcrumb
+    # Guarded because attachments controller might call this even if it is a course attachment
+    return if @assessment.nil?
+
+    @breadcrumbs << (view_context.link_to @assessment.display_name,
+                                          course_assessment_path(@course, @assessment))
+  end
+
+  def set_manage_course_breadcrumb
+    return unless @cud.instructor
+
+    @breadcrumbs << (view_context.link_to "Manage Course",
+                                          manage_course_path(@course))
+  end
+
+  def set_manage_course_users_breadcrumb
+    return unless @cud.instructor
+
+    @breadcrumbs << (view_context.link_to "Manage Course Users",
+                                          users_course_path(@course))
+  end
+  ### END HELPERS
 
   def pluralize(count, singular, plural = nil)
     "#{count || 0} " +

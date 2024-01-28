@@ -4,6 +4,7 @@
 class AutogradersController < ApplicationController
   before_action :set_assessment
   before_action :set_assessment_breadcrumb, only: [:edit]
+  before_action :set_edit_assessment_breadcrumb, only: [:edit]
   before_action :set_autograder, except: [:create]
 
   action_auth_level :create, :instructor
@@ -73,8 +74,9 @@ class AutogradersController < ApplicationController
 
 private
 
-  def set_assessment_breadcrumb
-    @breadcrumbs << (view_context.link_to "Edit Assessment", [:edit, @course, @assessment])
+  def set_edit_assessment_breadcrumb
+    @breadcrumbs << (view_context.link_to "Edit Assessment",
+                                          edit_course_assessment_path(@course, @assessment))
   end
 
   def set_autograder
