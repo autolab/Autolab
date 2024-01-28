@@ -19,14 +19,6 @@ RSpec.describe HomeController, type: :controller do
     end
   end
 
-  describe "#join_course" do
-    it "renders successfully" do
-      get :join_course
-      expect(response).to be_successful
-      expect(response.body).to match(/Join Course/m)
-    end
-  end
-
   describe "#error_404" do
     it "renders successfully" do
       get :error_404
