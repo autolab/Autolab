@@ -24,10 +24,8 @@ RSpec.describe "autograding", type: :feature do
     fill_in "user_password", with: "testPassword"
     click_button "Sign in"
     expect(page).to have_content "Signed in successfully."
-
     # TODO: fix this so that we can test autograded assessment
     # Goes into assessment submission page
-    click_link course_name
     click_link assessment_name
 
     # Submit adder file
