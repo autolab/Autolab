@@ -41,8 +41,6 @@ class HomeController < ApplicationController
     if cud.nil?
       cud = course.course_user_data.new
       cud.user = current_user
-      cud.instructor = false
-      cud.course_assistant = false
       unless cud.save
         flash[:error] = "An error occurred while joining the course"
         redirect_to home_join_course_path && return
