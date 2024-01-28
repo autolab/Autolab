@@ -18,7 +18,6 @@ class ApplicationController < ActionController::Base
   before_action :authorize_user_for_course, except: [:action_no_auth]
   before_action :authenticate_for_action
   before_action :update_persistent_announcements
-  before_action :init_breadcrumbs
   before_action :set_breadcrumbs
 
   # this is where Error Handling is configured. this routes exceptions to
@@ -298,12 +297,8 @@ protected
                                 .or(Announcement.where(persistent: true, system: true))
   end
 
-  def init_breadcrumbs
-    @breadcrumbs = []
-  end
-
-  # This is separate from init_breadcrumbs so that assessments#index can skip it
   def set_breadcrumbs
+    @breadcrumbs = []
     return unless @course
 
     @breadcrumbs << if @course.disabled?
