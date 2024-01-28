@@ -12,7 +12,7 @@ class Course < ApplicationRecord
   validates :name, format: { with: /\A(\w|-)+\z/, on: :create }
   # validates course website format if there exists one
   validate :valid_website?
-  validates :access_code, uniqueness: true, allow_blank: true
+  validates :access_code, uniqueness: true, allow_nil: true
 
   has_many :course_user_data, dependent: :destroy
   has_many :assessments, dependent: :destroy
