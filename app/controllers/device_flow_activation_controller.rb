@@ -5,9 +5,11 @@ class DeviceFlowActivationController < ApplicationController
   skip_before_action :authorize_user_for_course
   skip_before_action :authenticate_for_action
   skip_before_action :update_persistent_announcements
+  before_action :set_users_list_breadcrumb
 
   def index
-    # just renders the index page
+    # Do it ad-hoc here, since this is the only place we need it
+    @breadcrumbs << (view_context.link_to current_user.display_name, user_path(current_user))
   end
 
   # target for the form on the index page

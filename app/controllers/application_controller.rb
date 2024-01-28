@@ -336,6 +336,10 @@ protected
     @breadcrumbs << (view_context.link_to "Manage Course Users",
                                           users_course_path(@course))
   end
+
+  def set_users_list_breadcrumb
+    @breadcrumbs << (view_context.link_to "Users List", users_path)
+  end
   ### END HELPERS
 
   def pluralize(count, singular, plural = nil)

@@ -1,4 +1,10 @@
-<h2>Change password for <%= resource_name.to_s.humanize %></h2>
+<%# We can't modify the controller %>
+<% @breadcrumbs = [] %>
+<% @breadcrumbs << (link_to "Users List", users_path) %>
+<% @breadcrumbs << (link_to current_user.display_name, user_path(current_user)) %>
+<% @title = "Change Password" %>
+
+<h4>Change password for <%= resource_name.to_s.humanize %></h4>
 
 <%= form_for(resource, as: resource_name, url: registration_path(resource_name), html: { method: :put }) do |f| %>
   <%= render "devise/shared/error_messages", resource: %>
@@ -27,7 +33,8 @@
     <%= f.label :password_confirmation %><br>
   </div>
 
-  <div><%= f.submit "Update", { class: "btn primary" } %></div>
+  <div>
+    <%= link_to "Back", :back, { class: "btn secondary" } %>
+    <%= f.submit "Update", { class: "btn primary" } %>
+  </div>
 <% end %>
-
-<%= link_to "Back", :back, { class: "btn secondary" } %>

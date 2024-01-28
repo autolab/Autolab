@@ -112,6 +112,7 @@ class CourseUserDataController < ApplicationController
       redirect_to(action: "index") && return
     end
 
+    # Do it ad-hoc here, since this is the only place we need it
     @breadcrumbs << (view_context.link_to @editCUD.user.full_name,
                                           course_course_user_datum_path(@course, @editCUD))
 
