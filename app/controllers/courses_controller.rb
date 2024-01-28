@@ -5,11 +5,13 @@ require "pathname"
 require "statistics"
 
 class CoursesController < ApplicationController
-  skip_before_action :set_course, only: %i[courses_redirect index new create]
+  skip_before_action :set_course, only: %i[courses_redirect index new create join_course]
   # you need to be able to pick a course to be authorized for it
-  skip_before_action :authorize_user_for_course, only: %i[courses_redirect index new create]
+  skip_before_action :authorize_user_for_course,
+                     only: %i[courses_redirect index new create join_course]
   # if there's no course, there are no persistent announcements for that course
-  skip_before_action :update_persistent_announcements, only: %i[courses_redirect index new create]
+  skip_before_action :update_persistent_announcements,
+                     only: %i[courses_redirect index new create join_course]
   before_action :set_manage_course_breadcrumb, only: %i[edit users moss email upload_roster]
   before_action :set_manage_course_users_breadcrumb, only: %i[upload_roster]
 
@@ -34,6 +36,39 @@ class CoursesController < ApplicationController
     else
       redirect_to(action: :index)
     end
+  end
+
+  def join_course
+    return unless request.post?
+
+    access_code = params[:access_code]
+    unless access_code.match(/\A[A-Z0-9]{6}\z/)
+      flash[:error] = "Invalid access code format"
+      (redirect_to join_course_courses_path) && return
+    end
+
+    course = Course.find_by(access_code:)
+    if course.nil?
+      flash[:error] = "Invalid access code"
+      (redirect_to join_course_courses_path) && return
+    end
+
+    cud = course.course_user_data.find_by(user_id: current_user.id)
+
+    if cud.nil?
+      cud = course.course_user_data.new
+      cud.user = current_user
+      unless cud.save
+        flash[:error] = "An error occurred while joining the course"
+        (redirect_to join_course_courses_path) && return
+      end
+      # else, no point setting a flash because they will be redirected
+      # to set their nickname
+    else
+      flash[:success] = "You are already enrolled in this course"
+    end
+
+    redirect_to course_path(course)
   end
 
   action_auth_level :show, :student

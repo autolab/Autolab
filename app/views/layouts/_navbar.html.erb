@@ -32,7 +32,7 @@
       </li>
     <% end %>
     <li role="presentation">
-      <%= link_to "Join Course", home_join_course_path, title: "Join Course" %>
+      <%= link_to "Join Course", join_course_courses_path, title: "Join Course" %>
     </li>
     <% if Rails.env.development? %>
       <li role="presentation">
@@ -183,7 +183,7 @@
             </li>
           <% end %>
           <li role="presentation">
-            <%= link_to "<i class='material-icons left'>add</i> Join Course".html_safe, home_join_course_path, title: "Join Course" %>
+            <%= link_to "<i class='material-icons left'>add</i> Join Course".html_safe, join_course_courses_path, title: "Join Course" %>
           </li>
           <% if Rails.env.development? %>
             <li role="presentation">

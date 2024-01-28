@@ -58,7 +58,6 @@ Rails.application.routes.draw do
     if Rails.env == "development" || Rails.env == "test"
       match "developer_login", via: [:get, :post]
     end
-    match "join_course", via: [:get, :post]
     get "contact"
     get "no_user"
   end
@@ -86,6 +85,8 @@ Rails.application.routes.draw do
   end
 
   resources :courses, param: :name do
+    match "join_course", via: [:get, :post], on: :collection
+
     resources :schedulers do
       post "visualRun", action: :visual_run
       post "run"
