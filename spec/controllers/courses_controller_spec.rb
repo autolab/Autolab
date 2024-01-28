@@ -308,4 +308,24 @@ RSpec.describe CoursesController, type: :controller do
       end
     end
   end
+
+  describe "#join_course" do
+    include_context "controllers shared context"
+    context "when user is Autolab user" do
+      let!(:u) { student_user }
+      before(:each) { sign_in(u) }
+
+      it "renders successfully" do
+        get :join_course
+        expect(response.body).to match(/Join Course/m)
+      end
+    end
+
+    context "when user is not logged in" do
+      it "renders with failure" do
+        get :join_course
+        expect(response.body).not_to match(/Join Course/m)
+      end
+    end
+  end
 end
