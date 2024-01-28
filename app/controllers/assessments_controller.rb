@@ -29,7 +29,7 @@ class AssessmentsController < ApplicationController
   before_action :set_submission, only: [:viewFeedback]
   skip_before_action :set_breadcrumbs, only: %i[index]
   before_action :set_assessment_breadcrumb, except: %i[index show install_assessment]
-  before_action :set_manage_course_breadcrumb, only: %[install_assessment]
+  before_action :set_manage_course_breadcrumb, only: %i[install_assessment]
 
   # We have to do this here, because the modules don't inherit ApplicationController.
 

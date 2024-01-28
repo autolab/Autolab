@@ -606,14 +606,16 @@ private
                                              late_penalty_attributes: %i[kind value],
                                              version_penalty_attributes: %i[kind value])
 
-    if params[:allow_self_enrollment]
-      att.delete(:allow_self_enrollment)
-      att = att.merge(access_code: generate_access_code) if @course.access_code.blank?
-    else
-      att = att.merge(access_code: "")
-    end
+    handle_self_enrollment(att)
+  end
 
-    att
+  def handle_self_enrollment(att)
+    if params[:allow_self_enrollment] && @course.access_code.blank?
+      att.merge!(access_code: generate_access_code)
+    elsif !params[:allow_self_enrollment]
+      att.merge!(access_code: "")
+    end
+    att.except(:allow_self_enrollment)
   end
 
   def generate_access_code
