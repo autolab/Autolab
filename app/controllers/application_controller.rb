@@ -318,6 +318,11 @@ protected
                                           course_assessment_path(@course, @assessment))
   end
 
+  def set_edit_assessment_breadcrumb
+    @breadcrumbs << (view_context.link_to "Edit Assessment",
+                                          edit_course_assessment_path(@course, @assessment))
+  end
+
   def set_manage_course_breadcrumb
     return unless @cud.instructor
 

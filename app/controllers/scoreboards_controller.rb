@@ -163,11 +163,6 @@ class ScoreboardsController < ApplicationController
 
 private
 
-  def set_edit_assessment_breadcrumb
-    @breadcrumbs << (view_context.link_to "Edit Assessment",
-                                          edit_course_assessment_path(@course, @assessment))
-  end
-
   def set_scoreboard
     @scoreboard = @assessment.scoreboard
     redirect_to([@course, @assessment]) if @scoreboard.nil?
