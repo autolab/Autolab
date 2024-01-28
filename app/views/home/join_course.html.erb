@@ -9,7 +9,7 @@
 <p>
   <%= form_tag do %>
     <div class="input-field">
-      <%= text_field_tag :access_code, nil, placeholder: "Enter your six-character course access code", autocomplete: "off" %>
+      <%= text_field_tag :access_code, nil, placeholder: "Enter your six-character course access code", autocomplete: "off", pattern: "[A-Z0-9]{6}" %>
       <label for="access_code">Access Code</label>
     </div>
     <%= submit_tag "Join Course", { class: "btn primary" } %>
