@@ -182,7 +182,7 @@ ActiveRecord::Schema.define(version: 2024_01_27_172855) do
     t.datetime "cgdub_dependencies_updated_at"
     t.text "gb_message"
     t.string "website"
-    t.string "access_code", default: "", null: false
+    t.string "access_code"
   end
 
   create_table "extensions", force: :cascade do |t|

@@ -613,7 +613,7 @@ private
     if params[:allow_self_enrollment] && @course.access_code.blank?
       att.merge!(access_code: generate_access_code)
     elsif !params[:allow_self_enrollment]
-      att.merge!(access_code: "")
+      att.merge!(access_code: nil)
     end
     att.except(:allow_self_enrollment)
   end
