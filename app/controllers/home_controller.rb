@@ -14,10 +14,11 @@ class HomeController < ApplicationController
     user = User.find_by(email: params[:email])
     if user
       sign_in :user, user
-      redirect_to("/") && return
+      flash[:success] = "Signed in as #{user.display_name}"
+      redirect_to(root_path)
     else
       flash[:error] = "User with Email: '#{params[:email]}' doesn't exist"
-      redirect_to("/home/developer_login") && return
+      redirect_to home_developer_login_path
     end
   end
 
