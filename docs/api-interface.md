@@ -190,7 +190,7 @@ List all groups in an assessment
 **Response:**
 
 A JSON object containing the group_size, a list of groups, and the assessment containing the groups.
-If `show_members` is set to true, a list of `assessment_user_datum` objects will be retrieved for each group as well.
+If `show_members` is set to true, each group will have a list `members` of user objects that are members of that group.
 
 
 #### show
@@ -205,7 +205,7 @@ Show the details of a group and its members
 
 **Response:**
 
-The requested group object.
+The requested group object. It contains a list `members` of user objects that are members of that group.
 
 
 #### create

@@ -88,7 +88,7 @@ Autolab3::Application.configure do
   config.action_mailer.smtp_settings = {
     address:              ENV.fetch('SMTP_SETTINGS_ADDRESS','smtp.example.com'),
     port:                 ENV.fetch('SMTP_SETTINGS_PORT',25),
-    enable_starttls_auto: ENV.fetch('SMTP_SETTINGS_ENABLE_STARTTLS_AUTO',true),
+    enable_starttls_auto: ENV.fetch('SMTP_SETTINGS_ENABLE_STARTTLS_AUTO','true') == 'true',
     authentication:       ENV.fetch('SMTP_SETTINGS_AUTHENTICATION','login'),
     user_name:            ENV.fetch('SMTP_SETTINGS_USER_NAME','example'),
     password:             ENV.fetch('SMTP_SETTINGS_PASSWORD','example'),

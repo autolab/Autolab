@@ -126,7 +126,7 @@ class CoursesController < ApplicationController
         rescue StandardError => e
           # roll back course creation
           @newCourse.destroy
-          flash[:error] = "Can't create instructor for the course: #{e}"
+          flash.now[:error] = "Can't create instructor for the course: #{e}"
           render(action: "new") && return
         end
 
@@ -143,7 +143,7 @@ class CoursesController < ApplicationController
           # roll back course creation and instruction creation
           new_cud.destroy
           @newCourse.destroy
-          flash[:error] = "Can't load course config for #{@newCourse.name}."
+          flash.now[:error] = "Can't load course config for #{@newCourse.name}."
           render(action: "new") && return
         else
           flash[:success] = "New Course #{@newCourse.name} successfully created!"
@@ -152,12 +152,12 @@ class CoursesController < ApplicationController
       else
         # roll back course creation
         @newCourse.destroy
-        flash[:error] = "Can't create instructor for the course."
+        flash.now[:error] = "Can't create instructor for the course."
         render(action: "new") && return
       end
 
     else
-      flash[:error] = "Course creation failed. Check all fields"
+      flash.now[:error] = "Course creation failed. Check all fields"
       render(action: "new") && return
     end
   end

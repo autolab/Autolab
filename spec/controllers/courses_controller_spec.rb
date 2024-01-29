@@ -84,7 +84,7 @@ RSpec.describe CoursesController, type: :controller do
 
   describe "#update_lti_settings" do
     include_context "controllers shared context"
-    context "when user is autolab instructor" do
+    context "when user is Autolab instructor" do
       before(:each) do
         instructor = get_instructor_by_cid(course.id)
         sign_in(instructor)
@@ -101,7 +101,7 @@ RSpec.describe CoursesController, type: :controller do
   end
 
   describe "#unlink_course" do
-    context "when user is autolab instructor" do
+    context "when user is Autolab instructor" do
       include_context "controllers shared context"
       before(:each) do
         instructor = get_instructor_by_cid(course.id)
@@ -139,7 +139,7 @@ RSpec.describe CoursesController, type: :controller do
   end
 
   describe "#download_roster" do
-    context "when user is autolab instructor" do
+    context "when user is Autolab instructor" do
       include_context "controllers shared context"
       it "downloads roster" do
         instructor = get_instructor_by_cid(course.id)

@@ -514,7 +514,7 @@ class AssessmentsController < ApplicationController
     set_handin
     begin
       extend_config_module(@assessment, @submission, @cud)
-    rescue AutogradeError => e
+    rescue StandardError => e
       if @cud.has_auth_level? :instructor
         flash[:error] = "Error loading the config file: "
         flash[:error] += e.message
