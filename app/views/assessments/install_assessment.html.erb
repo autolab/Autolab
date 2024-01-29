@@ -70,6 +70,10 @@ Choose one of the following methods to install an assessment
 
 <div class="section">
   <h4>3. Import from tarball</h4>
+  <p>
+    Import an Autolab assessment from a tarball. Uploading an assessment tarball with the same name as an
+    existing assessment will overwrite course files except for the YAML, config file, log file, and handin directory.
+  </p>
   <%= form_with url: { action: :importAsmtFromTar }, builder: FormBuilderWithDateTimeInput do |f| %>
     <%= f.file_field :tarFile, name: "tarFile", button_text: "Choose Tarball" %>
     <%= f.submit "Import Tarball" %>
