@@ -1,22 +1,24 @@
 @import 'variables';
 
 table {
-  box-shadow: none !important;
-  border: 1px solid $autolab-border-gray !important;
-  font-size: 17px !important;
+  #course_fields {
+    box-shadow: none;
+    border: 1px solid $autolab-border-gray;
+    font-size: 17px;
+  }
 }
 
-tbody {
+#course_fields tbody {
   tr {
-    height: 46px !important;
+    height: 46px;
 
     &.checked {
-      background-color: $autolab-selected-gray !important;
+      background-color: $autolab-selected-gray;
     }
   }
 
   td {
-    padding-left: 1rem !important;
+    padding-left: 1rem;
   }
 }
 
