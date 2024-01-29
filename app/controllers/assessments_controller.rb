@@ -191,9 +191,9 @@ class AssessmentsController < ApplicationController
                           verbose: false
         elsif entry.file?
           # Skip config files
-          next if existing_asmt && %W[#{asmt_name}.yml
-                                      #{asmt_name}.rb
-                                      log.txt].include?(File.basename(entry_file))
+          next if existing_asmt && (entry_file == existing_asmt.asmt_yaml_path.to_s ||
+            entry_file == existing_asmt.unique_source_config_file_path.to_s ||
+            entry_file == existing_asmt.log_path.to_s)
 
           # Default to 0755 so that directory is writeable, mode will be updated later
           FileUtils.mkdir_p(File.dirname(entry_file),

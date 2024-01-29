@@ -94,12 +94,20 @@ class Assessment < ApplicationRecord
     Rails.root.join("courses", course.name, name)
   end
 
+  def asmt_yaml_path
+    path "#{name}.yml"
+  end
+
   def handout_path
     path handout
   end
 
   def handin_directory_path
     path handin_directory
+  end
+
+  def log_path
+    path "log.txt"
   end
 
   def writeup_path
@@ -288,7 +296,7 @@ class Assessment < ApplicationRecord
   # writes the properties of the assessment in YAML format to the assessment's yaml file
   #
   def dump_yaml
-    File.open(path("#{name}.yml"), "w") { |f| f.write(YAML.dump(sort_hash(serialize))) }
+    File.open(asmt_yaml_path, "w") { |f| f.write(YAML.dump(sort_hash(serialize))) }
   end
 
   ##
@@ -298,7 +306,7 @@ class Assessment < ApplicationRecord
   def load_yaml
     return unless new_record?
 
-    props = YAML.safe_load(File.open(path("#{name}.yml"), "r", &:read))
+    props = YAML.safe_load(File.open(asmt_yaml_path, "r", &:read))
     backwards_compatibility(props)
     deserialize(props)
   end
@@ -413,7 +421,7 @@ class Assessment < ApplicationRecord
 
   # name is already sanitized during the creation process
   def unique_source_config_file_path
-    Rails.root.join("courses", course.name, name, "#{name}.rb")
+    path "#{name}.rb"
   end
 
   def source_config_file_backup_path
