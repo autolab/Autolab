@@ -9,7 +9,7 @@
       <td>
         <label>
            <%= check_box_tag 'export_configs[]', 'course_config', true, class: 'cbox', id: 'course_config_checkbox', disabled: true %>
-          <span />
+          <span id="checkbox" />
         </label>
       </td>
       <td>Course configuration</td>
@@ -18,7 +18,7 @@
       <td>
         <label>
           <%= check_box_tag 'export_configs[]', 'metrics_config', false, class: 'cbox', id: 'metrics_config_checkbox' %>
-          <span />
+          <span id="checkbox" />
         </label>
       </td>
       <td>Metrics configuration</td>
@@ -27,7 +27,7 @@
       <td>
         <label>
           <%= check_box_tag 'export_configs[]', 'assessments', false, class: 'cbox', id: 'assessments_checkbox' %>
-          <span />
+          <span id="checkbox" />
         </label>
       </td>
       <td>Assessments</td>

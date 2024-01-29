@@ -50,7 +50,7 @@ module Contexts
       students_cud: @students, assessment: @assessment }
   end
 
-  def create_course_with_attachment_as_hash(asmt_name: "test_assessment")
+  def create_course_with_attachment_as_hash
     create_users
     puts "Built users"
     create_course_with_attachment

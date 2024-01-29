@@ -22,16 +22,16 @@ table {
   }
 }
 
-p {
-  font-weight: 400 !important;
-  font-size: 17px !important;
+#export_description {
+  font-weight: 400;
+  font-size: 17px;
 }
 
-tr {
-  font-weight: 400 !important;
+tr.course-field {
+  font-weight: 400;
 }
 
-span:not(.left-nav):not(.item):not(.title) {
-  padding-left: 10px !important;
+#checkbox {
+  padding-left: 10px;
   vertical-align: middle;
 }
