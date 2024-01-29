@@ -115,28 +115,20 @@ Please feel free to use Autolab at your school/organization. If you run into any
 
 
 ## Changelog
+### [v2.12.0](https://github.com/autolab/Autolab/releases/tag/v2.12.0) (2024/01/20) Attachment categories and visual cues
+- Ruby upgraded to 3.2.2
+- Rails upgraded to 6.1.7.6
+- Instructors can now specify a category and "release at" date for attachments
+- Assessment start / end dates are now shown on course homepages
+
 ### [v2.11.0](https://github.com/autolab/Autolab/releases/tag/v2.11.0) (2023/05/21) LTI Settings UI, extensions metrics, and simultaneous extension creation
 - Introduced UI to manage LTI integration settings
 - Added extension metrics for instructors to monitor students by number of extensions granted
 - Instructors can now create extensions for multiple students at once
-- Numerous UI updates
-- Numerous bug fixes and improvements
 
 ### [v2.10.0](https://github.com/autolab/Autolab/releases/tag/v2.10.0) (2023/01/13) LTI Integration, Generalized Feedback, and Streaming Output
 - Autolab now supports roster syncing with courses on Canvas and other LTI (Learning Tools Interoperability) services. For full instructions on setup, see the documentation.
 - Streaming partial output and new feedback interface
 - Generalized annotations
-- Numerous UI updates
-- Numerous bug fixes and improvements
-
-### [v2.9.0](https://github.com/autolab/Autolab/releases/tag/v2.9.0) (2022/08/08) Metrics Excluded Categories and New Speedgrader Interface
-- Instructors can now exclude selected categories of assessments from metrics watchlist calculations
-- Introduced new speedgrader interface which utilizes the Golden Layout library, amongst other new features
-- Numerous bug fixes and improvements
-
-### [v2.8.0](https://github.com/autolab/Autolab/releases/tag/v2.8.0) (2021/12/20) GitHub Integration and Roster Upload Improvement
-- Students can now submit code via GitHub
-- Improved Roster Upload with better error reporting
-- Numerous bug fixes and improvements
 
 **For older releases, please check out the [releases page](https://github.com/autolab/Autolab/releases).**
