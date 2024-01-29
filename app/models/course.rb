@@ -102,8 +102,6 @@ class Course < ApplicationRecord
       # roll back course and CUD creation
       newCUD.destroy
       newCourse.destroy
-
-
     end
 
     newCourse
