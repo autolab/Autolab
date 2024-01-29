@@ -15,7 +15,7 @@ FactoryBot.define do
 
     trait :with_attachment do
       after(:create) do |course|
-        create(:attachment, course: course)
+        create(:attachment, course:)
       end
     end
 
