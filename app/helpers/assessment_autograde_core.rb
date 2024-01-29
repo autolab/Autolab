@@ -305,7 +305,7 @@ module AssessmentAutogradeCore
     response_json = tango_add_job(course, assessment, upload_file_list,
                                           callback_url, job_name, output_file)
 
-    # If autolab user opts not to use a callback URL, we poll the job for 80 seconds
+    # If Autolab user opts not to use a callback URL, we poll the job for 80 seconds
     if callback_url.blank?
       tango_poll(course, assessment, submissions, output_file)
     end
@@ -324,7 +324,7 @@ module AssessmentAutogradeCore
   # Can be overridden in the lab config file.
   #
   def autogradeInputFiles(ass_dir, assessment, submission)
-    # Absolute path names on the local autolab server of the input
+    # Absolute path names on the local Autolab server of the input
     # autograding input files: 1) The student's handin file, 2)
     # The makefile that runs the process, 3) The tarfile with all
     # of files needed by the autograder. Can be overridden in the
@@ -353,10 +353,8 @@ module AssessmentAutogradeCore
   # submission is confirmed via dave key to have been created by Autolab
   #
   def autogradeDone(submissions, feedback)
-    ass_dir = @assessment.folder_path
-
     submissions.each do |submission|
-      feedback_file = submission.autograde_feedback_path
+      feedback_file = submission.create_user_directory_and_return_autograde_feedback_path
       COURSE_LOGGER.log("Looking for feedback file:" + feedback_file)
 
       feedback.force_encoding("UTF-8")

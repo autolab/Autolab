@@ -13,7 +13,7 @@ RSpec.describe SubmissionsController, type: :controller do
       course_name = Course.find(cid).name
       assessment_id = get_first_aid_by_cud(cud)
       assessment_name = Assessment.find(assessment_id).name
-      get :index, params: { course_name: course_name, assessment_name: assessment_name }
+      get :index, params: { course_name:, assessment_name: }
       expect(response).to be_successful
       expect(response.body).to match(/Manage Submissions/m)
     end
@@ -27,7 +27,7 @@ RSpec.describe SubmissionsController, type: :controller do
       course_name = Course.find(cid).name
       assessment_id = get_first_aid_by_cud(cud)
       assessment_name = Assessment.find(assessment_id).name
-      get :index, params: { course_name: course_name, assessment_name: assessment_name }
+      get :index, params: { course_name:, assessment_name: }
       expect(response).not_to be_successful
       expect(response.body).not_to match(/Manage Submissions/m)
     end

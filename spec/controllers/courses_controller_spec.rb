@@ -84,7 +84,7 @@ RSpec.describe CoursesController, type: :controller do
 
   describe "#update_lti_settings" do
     include_context "controllers shared context"
-    context "when user is autolab instructor" do
+    context "when user is Autolab instructor" do
       before(:each) do
         instructor = get_instructor_by_cid(course.id)
         sign_in(instructor)
@@ -101,7 +101,7 @@ RSpec.describe CoursesController, type: :controller do
   end
 
   describe "#unlink_course" do
-    context "when user is autolab instructor" do
+    context "when user is Autolab instructor" do
       include_context "controllers shared context"
       before(:each) do
         instructor = get_instructor_by_cid(course.id)
@@ -120,7 +120,7 @@ RSpec.describe CoursesController, type: :controller do
       let!(:course) do
         FactoryBot.create(:course) do |course|
           user = FactoryBot.create(:user)
-          FactoryBot.create(:course_user_datum, course: course, user: user, instructor: true)
+          FactoryBot.create(:course_user_datum, course:, user:, instructor: true)
           course.lti_course_datum = nil
         end
       end
@@ -139,17 +139,17 @@ RSpec.describe CoursesController, type: :controller do
   end
 
   describe "#download_roster" do
-    context "when user is autolab instructor" do
+    context "when user is Autolab instructor" do
       include_context "controllers shared context"
       it "downloads roster" do
         instructor = get_instructor_by_cid(course.id)
         sign_in(instructor)
         get :download_roster, params: { name: course.name }, format: CSV
         expect(response).to have_http_status(200)
-        expect(response.body).to match(/#{course.name}/m)
+        expect(response.body).to match(/Auto-populated/m) # lecture
         # some of these fields aren't necessarily defined
         # but check for all of them to be in CSV
-        CourseUserDatum.where(course: course) do |cud|
+        CourseUserDatum.where(course:) do |cud|
           page.should have_content cud.user.email
           page.should have_content cud.user.last_name
           page.should have_content cud.user.first_name
@@ -238,7 +238,7 @@ RSpec.describe CoursesController, type: :controller do
         expect {
           post :add_users_from_emails, params:
             { name: course.name, user_emails: emails, role: "ca" }
-        }.to change(CourseUserDatum.where(course: course, course_assistant: true), :count).by(10)
+        }.to change(CourseUserDatum.where(course:, course_assistant: true), :count).by(10)
         expect(response).to have_http_status(302)
         expect(flash[:success]).to be_present
       end

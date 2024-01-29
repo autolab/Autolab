@@ -8,7 +8,7 @@ nav:
         - Installation Overview: installation/overview.md
         - Docker Compose Install: installation/docker-compose.md
         - Autolab:
-            - Ubuntu 18.04: installation/ubuntu.md
+            - Ubuntu 22.04: installation/ubuntu.md
             - Mac OSX 10.11+: installation/osx.md
             - Troubleshooting: installation/troubleshoot.md
             - Mailing Setup: installation/mailing.md
@@ -32,6 +32,7 @@ nav:
                 - Metrics: features/metrics.md
                 - Git Submission: features/git-submission.md
                 - LTI Course Linking: features/lti-course-integration.md
+                - Admin Features: features/admin-features.md
         - Autolab Frontend CLI: command-line-interface.md
         - Tango CLI: tango-cli.md
     - Reference: 

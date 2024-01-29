@@ -45,22 +45,16 @@ RSpec.configure do |config|
     Capybara::Selenium::Driver.new(app, browser: :chrome)
   end
 
-  # Temporary fix for chromedriver version issue, until we can update Selenium
-  # https://github.com/titusfortner/webdrivers/issues/247
-  Webdrivers::Chromedriver.required_version = "114.0.5735.90"
-
   Capybara.register_driver :headless_chrome do |app|
-    capabilities = Selenium::WebDriver::Remote::Capabilities.chrome(
-      'goog:chromeOptions': { args: %w[headless] }
+    options = Selenium::WebDriver::Chrome::Options.new(
+      args: %w[headless no-sandbox disable-gpu disable-dev-shm-usage],
     )
 
-    service_args = %w[--disable-build-check]
-    service = Selenium::WebDriver::Service.chrome(args: service_args)
-
-    Capybara::Selenium::Driver.new app,
-                                   browser: :chrome,
-                                   capabilities: capabilities,
-                                   service: service
+    Capybara::Selenium::Driver.new(
+      app,
+      browser: :chrome,
+      options:
+    )
   end
   # change to chrome to see execution on browser
   Capybara.javascript_driver = :headless_chrome

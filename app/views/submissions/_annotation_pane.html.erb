@@ -22,7 +22,7 @@
               <h4> <%= problem.capitalize %>
                   <div class="summary_score">
                     <% p_score = p_scores[@problemNameToId[problem]] %>
-                    <% if @cud.instructor? or @cud.course_assistant? or @problemReleased %>
+                    <% if @submission.grades_released?(@cud) %>
                       <%= plus_fix(@problemScores[problem]) %>
                       (<%= p_score&.score ? sprintf("%.2f", p_score.score.round(2)) : raw("&ndash;") %>
                       / <%= @problemMaxScores[problem] ? sprintf("%.2f", @problemMaxScores[problem].round(2)) : raw("&ndash;") %>)
@@ -41,7 +41,7 @@
             </div>
           </div>
           <div class="collapsible-body">
-            <% if @cud.instructor? or @cud.course_assistant? or @problemReleased %>
+            <% if @submission.grades_released?(@cud) %>
               <% global_annotations = all_annotations[:global_annotations]
                  annotations_by_file = all_annotations[:annotations_by_file] %>
               <% if global_annotations.empty? && annotations_by_file.empty? %>

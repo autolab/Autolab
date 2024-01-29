@@ -23,11 +23,11 @@ module Contexts
 
       case role
       when 'student'
-        FactoryBot.create(:nicknamed_student, course: course, user: user)
+        FactoryBot.create(:nicknamed_student, course:, user:)
       when 'instructor', 'admin'
-        FactoryBot.create(:course_user_datum, course: course, user: user, instructor: true)
+        FactoryBot.create(:course_user_datum, course:, user:, instructor: true)
       else
-        FactoryBot.create(:course_user_datum, course: course, user: user,
+        FactoryBot.create(:course_user_datum, course:, user:,
                                               course_assistant: true)
       end
     end

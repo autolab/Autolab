@@ -20,7 +20,7 @@ class CourseUserDataController < ApplicationController
     @newCUD = @course.course_user_data.new(cud_parameters)
 
     email = cud_parameters[:user_attributes][:email]
-    user = User.where(email: email).first
+    user = User.where(email:).first
     # check user existence
     if user.nil?
       # user is new
@@ -149,15 +149,19 @@ class CourseUserDataController < ApplicationController
       params[:course_user_datum][:tweak_attributes][:_destroy] = true
     end
 
+    if params[:course_user_datum][:dropped] == "1" && !@editCUD.dropped?
+      flash[:notice] = "You have dropped #{@editCUD.email} from the course."
+    end
     # When we're finished editing, go back to the user table
     if @editCUD.update(edit_cud_params)
       flash[:success] = "Success: Updated user #{@editCUD.email}"
-      redirect_to([@course, @editCUD]) && return
+      redirect_to(course_course_user_datum_path(@course, @editCUD)) && return
     else
       COURSE_LOGGER.log(@editCUD.errors.full_messages.join(", "))
       # error details are shown separately in the view
       flash[:error] = "Update failed.<br>"
       flash[:error] += @editCUD.errors.full_messages.join("<br>")
+      flash[:notice] = ""
       flash[:html_safe] = true
       redirect_to(action: :edit) && return
     end

@@ -37,7 +37,6 @@ class AssessmentsController < ApplicationController
   action_auth_level :submission_popover, :course_assistant
   action_auth_level :score_grader_info, :course_assistant
   action_auth_level :viewGradesheet, :course_assistant
-  action_auth_level :viewGradesheet2, :course_assistant
   action_auth_level :quickGetTotal, :course_assistant
   action_auth_level :statistics, :instructor
 
@@ -68,20 +67,12 @@ class AssessmentsController < ApplicationController
                                     .where(persistent: false)
     @announcements = announcements_tmp.where(course_id: @course.id)
                                       .or(announcements_tmp.where(system: true)).order(:start_date)
-    @attachments = if @cud.instructor?
-                     @course.attachments
-                   else
-                     # Attachments that are released, and whose related assessment is also released
-                     course_attachments = @course.attachments
-                                                 .where(released: true)
-                                                 .left_outer_joins(:assessment)
-
-                     # Either assessment_id is nil (i.e. course attachment)
-                     # Or the assessment has started
-                     course_attachments.where(assessment_id: nil)
-                                       .or(course_attachments.where("assessments.start_at < ?",
-                                                                    Time.current))
-                   end
+    # Only display course attachments on course landing page
+    @course_attachments = if @cud.instructor?
+                            @course.attachments.where(assessment_id: nil)
+                          else
+                            @course.attachments.where(assessment_id: nil).released
+                          end
   end
 
   # GET /assessments/new
@@ -124,19 +115,7 @@ class AssessmentsController < ApplicationController
 
       # each assessment must have an associated yaml file,
       # and it must have a name field that matches its filename
-      if File.exist?(File.join(dir_path, filename, "#{filename}.yml"))
-        props = YAML.safe_load(File.open(
-                                 File.join(dir_path, filename, "#{filename}.yml"), "r", &:read
-                               ))
-        unless props["general"] && (props["general"]["name"] == filename)
-          flash.now[:error] = flash.now[:error] ? "#{flash.now[:error]} <br>" : ""
-          flash.now[:error] += "An error occurred while trying to display an existing assessment " \
-          "from file directory #{filename}: Name in yaml (#{props['general']['name']}) " \
-          "doesn't match #{filename}"
-          flash.now[:html_safe] = true
-          next
-        end
-      else
+      unless File.exist?(File.join(dir_path, filename, "#{filename}.yml"))
         flash.now[:error] = flash.now[:error] ? "#{flash.now[:error]} <br>" : ""
         flash.now[:error] += "An error occurred while trying to display an existing assessment " \
           "from file directory #{filename}: #{filename}.yml does not exist"
@@ -187,12 +166,7 @@ class AssessmentsController < ApplicationController
     end
 
     # Check if the assessment already exists.
-    unless @course.assessments.find_by(name: asmt_name).nil?
-      flash[:error] =
-        "An assessment with the same name already exists for the course. "\
-        "Please use a different name."
-      redirect_to(action: "install_assessment") && return
-    end
+    existing_asmt = @course.assessments.find_by(name: asmt_name)
 
     # If all requirements are satisfied, extract assessment files.
     begin
@@ -206,6 +180,8 @@ class AssessmentsController < ApplicationController
         # Ensure file will lie within course, otherwise skip
         # Allow equality for the main directory to be created
         next unless Archive.in_dir?(Pathname(entry_file), Pathname(assessment_path), strict: false)
+        next if existing_asmt && Archive.in_dir?(Pathname(entry_file),
+                                                 existing_asmt.handin_directory_path, strict: false)
 
         if entry.directory?
           FileUtils.mkdir_p(entry_file,
@@ -214,6 +190,11 @@ class AssessmentsController < ApplicationController
           FileUtils.chmod entry.header.mode, entry_file,
                           verbose: false
         elsif entry.file?
+          # Skip config files
+          next if existing_asmt && (entry_file == existing_asmt.asmt_yaml_path.to_s ||
+            entry_file == existing_asmt.unique_source_config_file_path.to_s ||
+            entry_file == existing_asmt.log_path.to_s)
+
           # Default to 0755 so that directory is writeable, mode will be updated later
           FileUtils.mkdir_p(File.dirname(entry_file),
                             mode: 0o755, verbose: false)
@@ -234,6 +215,7 @@ class AssessmentsController < ApplicationController
 
     params[:assessment_name] = asmt_name
     params[:cleanup_on_failure] = true
+    params[:overwrite] = existing_asmt
     importAssessment && return
   end
 
@@ -243,6 +225,14 @@ class AssessmentsController < ApplicationController
   action_auth_level :importAssessment, :instructor
 
   def importAssessment
+    if params[:overwrite]
+      flash[:success] = "IMPORTANT: Successfully uploaded files for existing assessment
+                         #{params[:assessment_name]}. The YAML and config file were NOT reuploaded.
+                         If you would like to edit these fields, do so via 'Edit assessment'."
+      @assessment = @course.assessments.find_by(name: params[:assessment_name])
+      redirect_to(course_assessment_path(@course, @assessment)) && return
+    end
+
     cleanup_on_failure = params[:cleanup_on_failure]
     @assessment = @course.assessments.new(name: params[:assessment_name])
     assessment_path = Rails.root.join("courses/#{@course.name}/#{@assessment.name}")
@@ -339,7 +329,6 @@ class AssessmentsController < ApplicationController
     @assessment.start_at = Time.current + 1.day
     @assessment.due_at = Time.current + 1.day
     @assessment.end_at = Time.current + 1.day
-    @assessment.grading_deadline = Time.current + 1.day
     @assessment.quiz = false
     @assessment.quizData = ""
     @assessment.max_submissions = params.include?(:max_submissions) ? params[:max_submissions] : -1
@@ -536,7 +525,7 @@ class AssessmentsController < ApplicationController
     set_handin
     begin
       extend_config_module(@assessment, @submission, @cud)
-    rescue AutogradeError => e
+    rescue StandardError => e
       if @cud.has_auth_level? :instructor
         flash[:error] = "Error loading the config file: "
         flash[:error] += e.message
@@ -572,7 +561,7 @@ class AssessmentsController < ApplicationController
     @attachments = if @cud.instructor?
                      @assessment.attachments
                    else
-                     @assessment.attachments.where(released: true)
+                     @assessment.attachments.released
                    end
     @submissions = @assessment.submissions.where(course_user_datum_id: @effectiveCud.id)
                               .order("version DESC")
@@ -608,10 +597,9 @@ class AssessmentsController < ApplicationController
 
     @repos = GithubIntegration.find_by(user_id: @cud.user.id)&.repositories
 
-    return unless @assessment.invalid?
+    return unless @assessment.invalid? && @cud.instructor?
 
-    # On the off-chance that the assessment has validation errors, let the user know
-    # as otherwise submissions would silently fail
+    # If the assessment has validation errors, let the instructor know
     flash.now[:error] = "This assessment is invalid due to the following error(s):<br/>"
     flash.now[:error] += @assessment.errors.full_messages.join("<br/>")
     flash.now[:html_safe] = true
@@ -672,16 +660,17 @@ class AssessmentsController < ApplicationController
   def viewFeedback
     # User requested to view feedback on a score
     @score = @submission.scores.find_by(problem_id: params[:feedback])
+    autograded_scores = @submission.scores.includes(:problem).where(grader_id: 0)
     # Checks whether at least one problem has finished being auto-graded
-    @finishedAutograding = @submission.scores.where.not(feedback: nil).where(grader_id: 0)
+    finishedAutograding = @submission.scores.where.not(feedback: nil).where(grader_id: 0)
     @job_id = @submission["jobid"]
     @submission_id = params[:submission_id]
 
     # Autograding is not in-progress and no score is available
     if @score.nil?
-      if !@finishedAutograding.empty?
+      if !finishedAutograding.empty?
         redirect_to(action: "viewFeedback",
-                    feedback: @finishedAutograding.first.problem_id,
+                    feedback: finishedAutograding.first.problem_id,
                     submission_id: params[:submission_id]) && return
       end
 
@@ -695,12 +684,14 @@ class AssessmentsController < ApplicationController
     return if @score.nil?
 
     @jsonFeedback = parseFeedback(@score.feedback)
-    @scoreHash = parseScore(@score.feedback)
+
+    raw_score_hash = scoreHashFromScores(autograded_scores) if @score.grader_id <= 0
+    @scoreHash = parseScore(raw_score_hash) unless raw_score_hash.nil?
+
     if Archive.archive? @submission.handin_file_path
       @files = Archive.get_files @submission.handin_file_path
     end
-    @problemReleased = @submission.scores.pluck(:released).all? &&
-                       !@assessment.before_grading_deadline?
+
     # get_correct_filename is protected, so we wrap around controller-specific call
     @get_correct_filename = ->(annotation) {
       get_correct_filename(annotation, @files, @submission)
@@ -735,28 +726,17 @@ class AssessmentsController < ApplicationController
   # TODO: Take into account any modifications by :parseAutoresult and :modifySubmissionScores
   # We should probably read the final scores directly
   # See: assessment_autograde_core.rb's saveAutograde
-  def parseScore(feedback)
-    return if feedback.nil?
+  def parseScore(score_hash)
+    total = 0
+    return if score_hash.nil?
 
-    lines = feedback.rstrip.lines
-    feedback = lines[lines.length - 1]
-
-    return unless valid_json_hash?(feedback)
-
-    score_hash = JSON.parse(feedback)
-    score_hash = score_hash["scores"]
     if @jsonFeedback&.key?("_scores_order") == false
       @jsonFeedback["_scores_order"] = score_hash.keys
     end
-    @total = 0
     score_hash.keys.each do |k|
-      @total += score_hash[k].to_f
-    rescue NoMethodError
-      flash.now[:error] ||= ""
-      flash.now[:error] += "The score for #{k} could not be parsed.<br>"
-      flash.now[:html_safe] = true
+      total += score_hash[k].to_f if score_hash[k]
     end
-    score_hash["_total"] = @total
+    score_hash["_total"] = total
     score_hash
   end
 
@@ -899,7 +879,7 @@ class AssessmentsController < ApplicationController
     if num_released > 0
       flash[:success] =
         format("%<num_released>d %<plurality>s released.",
-               num_released: num_released,
+               num_released:,
                plurality: (num_released > 1 ? "grades were" : "grade was"))
     else
       flash[:error] = "No grades were released. They might have all already been released."
@@ -924,7 +904,7 @@ class AssessmentsController < ApplicationController
     if num_released > 0
       flash[:success] =
         format("%<num_released>d %<plurality>s released.",
-               num_released: num_released,
+               num_released:,
                plurality: (num_released > 1 ? "grades were" : "grade was"))
     else
       flash[:error] = "No grades were released. " \
@@ -932,7 +912,7 @@ class AssessmentsController < ApplicationController
                       "might be assigned to a lecture " \
                       "and/or section that doesn't exist. Please contact an instructor."
     end
-    redirect_to action: "viewGradesheet"
+    redirect_to url_for(action: 'viewGradesheet', section: '1')
   end
 
   action_auth_level :withdrawAllGrades, :instructor
@@ -1176,5 +1156,11 @@ private
     end
 
     @assessment.destroy # awwww!!!!
+  end
+
+  def scoreHashFromScores(scores)
+    scores.map { |s|
+      [s.problem.name, s.score]
+    }.to_h
   end
 end

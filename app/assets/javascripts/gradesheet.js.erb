@@ -76,7 +76,7 @@ jQuery(function() {
     // add necessary classes and data to rows after creation but before rendering
     function completeRow(row, data, index) {
       var submission = aux_data[index];
-      row.className = submission['r_class'];
+      row.className = submission?.r_class;
 
       // set up name & email column
       $td_name = $('.id', row);
@@ -89,6 +89,7 @@ jQuery(function() {
       }
       $name_col.children().appendTo($td_name);
 
+      if (submission['submission-id'] == null) return;
       // set up problem columns
       $problems = jQuery('.problem',row);
       for (var i = 0; i < $problems.length; i++) {
@@ -126,7 +127,7 @@ jQuery(function() {
         'iDisplayStart': 0,
         'deferRender': true,
         'aoColumnDefs': [
-          { "bSortable": false, "aTargets": [ 0,4 ] },
+          { "bSortable": false, "aTargets": [ 0 ] },
           { "bSearchable": false, "aTargets": non_searchable_columns },
           { "sType": "html", "aTargets": [ email_col,lec_sec_col ] },
           { "sType": "num-html", "aTargets": numeric_columns }, 
@@ -155,6 +156,7 @@ jQuery(function() {
     add_icons('th.id');
     add_icons('th.course_number');
     add_icons('th.lec-sec');
+    add_icons('th.actions');
     add_icons('th.problem');
     add_icons('th.late_penalty');
     add_icons('th.total');

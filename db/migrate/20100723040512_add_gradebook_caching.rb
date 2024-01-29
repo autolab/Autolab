@@ -4,7 +4,7 @@ class AddGradebookCaching < ActiveRecord::Migration[4.2]
       t.string :key
       t.string :value
     end
-    add_index :gradebook_cache, :key, {:unique=>true}
+    add_index :gradebook_cache, :key, **{:unique=>true}
 
     create_table :gradebook_cache_averages, :id=>false do |t|
       t.string :field

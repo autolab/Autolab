@@ -36,7 +36,7 @@
 <%= form_for @newCUD, url: course_course_user_data_path, builder: FormBuilderWithDateTimeInput do |f| %>
 
   <br>
-  <%= render partial: "fields", locals: { f: f, cud: @newCUD, edit: false } %>
+  <%= render partial: "fields", locals: { f:, cud: @newCUD, edit: false } %>
 
   <br>
   <input id="user_submit" class="btn primary" name="commit" type="submit" value="Save Changes" onclick="formvalidation(this.closest('form')); return false;">
