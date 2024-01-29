@@ -102,7 +102,8 @@ class Course < ApplicationRecord
       # roll back course and CUD creation
       newCUD.destroy
       newCourse.destroy
-      raise "Failed to load course config for new course #{newCourse.name}"
+
+
     end
 
     newCourse
@@ -302,18 +303,6 @@ class Course < ApplicationRecord
     watchlist_configuration.allow_ca
   end
 
-  def has_attachment?
-    !attachments.nil? && attachments.count > 0
-  end
-
-  def has_risk_conditions?
-    !risk_conditions.nil? && risk_conditions.count > 0
-  end
-
-  def has_watchlist_configuration?
-    !watchlist_configuration.nil?
-  end
-
   def dump_yaml(include_metrics)
     YAML.dump(serialize(include_metrics))
   end
@@ -335,6 +324,7 @@ class Course < ApplicationRecord
         tar.add_file File.join(course_dir, rb_path), File.stat(source_file).mode do |tar_file|
           tar_file.write(source_file.read)
         end
+        source_file.close
 
         # save course and metrics config
         tar.add_file File.join(course_dir, config_path), mode do |tar_file|
@@ -407,18 +397,16 @@ private
     s["general"] = serialize_general
     s["general"]["late_penalty"] = late_penalty.serialize unless late_penalty.nil?
     s["general"]["version_penalty"] = version_penalty.serialize unless version_penalty.nil?
-    s["attachments"] = attachments.map(&:serialize) if has_attachment?
+    s["attachments"] = attachments.map(&:serialize) if attachments.exists?
 
     if include_metrics
-      if has_risk_conditions?
+      if risk_conditions.exists?
         s["risk_conditions"] = risk_conditions.map(&:serialize)
-        latest_version = s["risk_conditions"].max_by{ |k| k["version"] }["version"]
-        s["risk_conditions"] = s["risk_conditions"].select { |condition|
-          condition["version"] == latest_version
-        }
+        latest_version = risk_conditions.order(version: :desc).first.version
+        s["risk_conditions"] = risk_conditions.where(version: latest_version).map(&:serialize)
       end
 
-      if has_watchlist_configuration?
+      if watchlist_configuration.present?
         s["watchlist_configuration"] =
           watchlist_configuration.serialize
       end

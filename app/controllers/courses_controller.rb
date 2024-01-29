@@ -599,7 +599,8 @@ class CoursesController < ApplicationController
 
     send_data tar_stream.string.force_encoding("binary"),
               filename: "#{@course.name}_#{Time.current.strftime('%Y%m%d')}.tar",
-              type: "application/x-tar"
+              type: "application/x-tar",
+              disposition: 'attachment'
   rescue SystemCallError => e
     flash[:error] = "Unable to create the config YAML file: #{e.message}"
     redirect_to(action: :export)
