@@ -125,7 +125,6 @@ class Course < ApplicationRecord
 
     FileUtils.mkdir_p Rails.root.join("assessmentConfig")
     FileUtils.mkdir_p Rails.root.join("courseConfig")
-    FileUtils.mkdir_p Rails.root.join("gradebooks")
   end
 
   def order_of_dates
