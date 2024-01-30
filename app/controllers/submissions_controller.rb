@@ -7,10 +7,10 @@ require "tempfile"
 class SubmissionsController < ApplicationController
   # inherited from ApplicationController
   before_action :set_assessment
-  before_action :set_submission, only: %i[destroy destroyConfirm download edit update view]
-  before_action :get_submission_file, only: %i[download view]
   before_action :set_assessment_breadcrumb
   before_action :set_manage_submissions_breadcrumb, except: %i[index]
+  before_action :set_submission, only: %i[destroy destroyConfirm download edit update view]
+  before_action :get_submission_file, only: %i[download view]
 
   # this page loads.  links/functionality may be/are off
   action_auth_level :index, :instructor

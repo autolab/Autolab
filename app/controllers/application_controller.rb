@@ -309,29 +309,31 @@ protected
                     end
   end
 
-  ### Helpers for breadcrumbs
+  # Helpers for breadcrumbs
+  # Guarded to prevent accidental errors
   def set_assessment_breadcrumb
-    # Guarded because attachments controller might call this even if it is a course attachment
-    return if @assessment.nil?
+    return if @course.nil? || @assessment.nil?
 
     @breadcrumbs << (view_context.link_to @assessment.display_name,
                                           course_assessment_path(@course, @assessment))
   end
 
   def set_edit_assessment_breadcrumb
+    return if @course.nil? || @assessment.nil? || !@cud.instructor
+
     @breadcrumbs << (view_context.link_to "Edit Assessment",
                                           edit_course_assessment_path(@course, @assessment))
   end
 
   def set_manage_course_breadcrumb
-    return unless @cud.instructor
+    return if @course.nil? || !@cud.instructor
 
     @breadcrumbs << (view_context.link_to "Manage Course",
                                           manage_course_path(@course))
   end
 
   def set_manage_course_users_breadcrumb
-    return unless @cud.instructor
+    return if @course.nil? || !@cud.instructor
 
     @breadcrumbs << (view_context.link_to "Manage Course Users",
                                           users_course_path(@course))
