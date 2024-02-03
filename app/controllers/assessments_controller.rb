@@ -213,6 +213,7 @@ class AssessmentsController < ApplicationController
     if params[:assessment_name].nil?
       flash[:error] = "No assessment name specified."
       redirect_to(install_assessment_course_assessments_path(@course))
+    end
 
     if params[:overwrite]
       flash[:success] = "IMPORTANT: Successfully uploaded files for existing assessment
