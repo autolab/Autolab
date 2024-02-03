@@ -449,7 +449,7 @@ RSpec.describe CoursesController, type: :controller do
       end
     end
   end
-  
+
   describe "#join_course" do
     include_context "controllers shared context"
     context "when user is Autolab user" do
@@ -459,6 +459,18 @@ RSpec.describe CoursesController, type: :controller do
       it "renders successfully" do
         get :join_course
         expect(response.body).to match(/Join Course/m)
+      end
+
+      it "rejects invalid access code format" do
+        post :join_course, params: { access_code: "invalid" }
+        expect(flash[:error]).to be_present
+        expect(flash[:error]).to match(/Invalid access code format/m)
+      end
+
+      it "rejects invalid access code" do
+        post :join_course, params: { access_code: "AAAAAA" }
+        expect(flash[:error]).to be_present
+        expect(flash[:error]).to match(/Invalid access code/m)
       end
     end
 

@@ -47,13 +47,13 @@ class CoursesController < ApplicationController
     access_code = params[:access_code]
     unless access_code.match(/\A[A-Z0-9]{6}\z/)
       flash[:error] = "Invalid access code format"
-      (redirect_to join_course_courses_path) && return
+      redirect_to(join_course_courses_path) && return
     end
 
     course = Course.find_by(access_code:)
     if course.nil?
       flash[:error] = "Invalid access code"
-      (redirect_to join_course_courses_path) && return
+      redirect_to(join_course_courses_path) && return
     end
 
     cud = course.course_user_data.find_by(user_id: current_user.id)
@@ -63,7 +63,7 @@ class CoursesController < ApplicationController
       cud.user = current_user
       unless cud.save
         flash[:error] = "An error occurred while joining the course"
-        (redirect_to join_course_courses_path) && return
+        redirect_to(join_course_courses_path) && return
       end
       # else, no point setting a flash because they will be redirected
       # to set their nickname
