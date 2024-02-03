@@ -35,10 +35,17 @@ function prevent_dropping_instructor_ca(){
     }
 }
 
-$(document).ready(prevent_dropping_instructor_ca);
+$(document).ready(function(){
+    prevent_dropping_instructor_ca();
 
-$('#course_user_datum_instructor').on( "click", 
-    prevent_dropping_instructor_ca);
+    $('#user_submit').on("click", function(e){
+        formvalidation(this.closest('form'));
+        e.preventDefault();
+    });
 
-$('#course_user_datum_course_assistant').on( "click", 
-    prevent_dropping_instructor_ca);
+    $('#course_user_datum_instructor').on( "click",
+      prevent_dropping_instructor_ca);
+
+    $('#course_user_datum_course_assistant').on( "click",
+      prevent_dropping_instructor_ca);
+});
