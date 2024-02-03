@@ -74,7 +74,7 @@ Rails.application.routes.draw do
       post 'upload', to: 'file_manager#upload'
       post '/', to: 'file_manager#upload'
       get ':path', to: 'file_manager#path', constraints: { path: /.+/ }
-      put ':path', to: 'file_manager#rename', constraints: { path: /.+/ }
+      put ':path', to: 'file_manager#rename', constraints: { path: /.+/ }, as: :rename
       post ':path', to: 'file_manager#upload', constraints: { path: /.+/ }
       delete ':path', to: 'file_manager#delete', constraints: { path: /.+/ }
     end
