@@ -1,4 +1,5 @@
 require "fileutils"
+require "utilities"
 
 ##
 # Attachments are Course or Assessment specific, and allow instructors to
@@ -45,5 +46,10 @@ class Attachment < ApplicationRecord
 
   def after_create
     COURSE_LOGGER.log("Created Attachment #{id}:#{filename} (#{mime_type}) as \"#{name}\")")
+  end
+
+  SERIALIZABLE = Set.new %w[filename mime_type released name assessment_id]
+  def serialize
+    Utilities.serializable attributes, SERIALIZABLE
   end
 end

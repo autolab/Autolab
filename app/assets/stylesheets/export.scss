@@ -1,0 +1,37 @@
+@import 'variables';
+
+table {
+  #course_fields {
+    box-shadow: none;
+    border: 1px solid $autolab-border-gray;
+    font-size: 17px;
+  }
+}
+
+#course_fields tbody {
+  tr {
+    height: 46px;
+
+    &.checked {
+      background-color: $autolab-selected-gray;
+    }
+  }
+
+  td {
+    padding-left: 1rem;
+  }
+}
+
+#export_description {
+  font-weight: 400;
+  font-size: 17px;
+}
+
+tr.course-field {
+  font-weight: 400;
+}
+
+#checkbox {
+  padding-left: 10px;
+  vertical-align: middle;
+}
