@@ -305,9 +305,7 @@ RSpec.describe CoursesController, type: :controller do
       sign_in(user)
     end
     it "renders successfully" do
-      cid = get_first_cid_by_uid(user.id)
-      cname = Course.find(cid).name
-      get :export, params: { name: cname }
+      get :export, params: { name: @course.name }
       expect(response).to be_successful
       expect(response.body).to match(/Export Course/m)
     end
@@ -318,9 +316,7 @@ RSpec.describe CoursesController, type: :controller do
       sign_in(user) if login
     end
     it "renders with failure" do
-      cid = get_first_cid_by_uid(user.id)
-      cname = Course.find(cid).name
-      get :export, params: { name: cname }
+      get :export, params: { name: @course.name }
       expect(response).not_to be_successful
       expect(response.body).not_to match(/Export Course/m)
     end
@@ -359,39 +355,29 @@ RSpec.describe CoursesController, type: :controller do
     end
 
     it "exports default course configs and attachments" do
-      cid = get_first_cid_by_uid(user.id)
-      cname = Course.find(cid).name
-      default_tar = (Course.find(cid).generate_tar []).string.force_encoding("binary")
-      post :export_selected, params: { name: cname }
+      default_tar = (@course.generate_tar []).string.force_encoding("binary")
+      post :export_selected, params: { name: @course.name }
       expect(response).to be_successful
       expect(response.body).to eq(default_tar)
     end
 
     it "exports metric configs" do
-      cid = get_first_cid_by_uid(user.id)
-      course = Course.find(cid)
-      cname = course.name
-      metrics_tar = (course.generate_tar ["metrics_config"]).string.force_encoding("binary")
-      post :export_selected, params: { name: cname, export_configs: ["metrics_config"] }
+      metrics_tar = (@course.generate_tar ["metrics_config"]).string.force_encoding("binary")
+      post :export_selected, params: { name: @course.name, export_configs: ["metrics_config"] }
       expect(response).to be_successful
       expect(response.body).to eq(metrics_tar)
     end
 
     it "exports assessments" do
-      cid = get_first_cid_by_uid(user.id)
-      course = Course.find(cid)
-      cname = course.name
-      assessments_tar = (course.generate_tar ["assessments"]).string.force_encoding("binary")
-      post :export_selected, params: { name: cname, export_configs: ["assessments"] }
+      assessments_tar = (@course.generate_tar ["assessments"]).string.force_encoding("binary")
+      post :export_selected, params: { name: @course.name, export_configs: ["assessments"] }
       expect(response).to be_successful
       expect(response.body).to eq(assessments_tar)
     end
 
     it "handles StandardError during export" do
-      cid = get_first_cid_by_uid(user.id)
-      cname = Course.find(cid).name
       allow_any_instance_of(Course).to receive(:generate_tar).and_raise(StandardError)
-      post :export_selected, params: { name: cname }
+      post :export_selected, params: { name: @course.name }
       expect(response).to have_http_status(302)
       expect(flash[:error]).to be_present
       expect(flash[:error]).to match(/StandardError/m)
@@ -404,10 +390,8 @@ RSpec.describe CoursesController, type: :controller do
     end
 
     it "does not export a course" do
-      cid = get_first_cid_by_uid(user.id)
-      cname = Course.find(cid).name
-      default_tar = (Course.find(cid).generate_tar []).string.force_encoding("binary")
-      post :export_selected, params: { name: cname }
+      default_tar = (@course.generate_tar []).string.force_encoding("binary")
+      post :export_selected, params: { name: @course.name }
       expect(response).not_to be_successful
       expect(response.body).not_to eq(default_tar)
     end
