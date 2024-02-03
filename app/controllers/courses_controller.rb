@@ -39,7 +39,10 @@ class CoursesController < ApplicationController
   end
 
   def join_course
-    return unless request.post?
+    return unless params[:access_code]
+
+    # GET + access_code when using direct join link
+    # POST + access_code when using join course form
 
     access_code = params[:access_code]
     unless access_code.match(/\A[A-Z0-9]{6}\z/)

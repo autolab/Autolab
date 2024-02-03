@@ -64,7 +64,8 @@
         <h3 style="border-bottom: 4px solid #dddddd"></h3>
         <% if @cud.instructor? %>
           <% if @course.access_code.present? %>
-            <p style="font-size: 18px">Access Code: <b><%= @course.access_code.to_s %></b></p>
+            <p style="font-size: 18px">Access Code: <b><%= @course.access_code %></b></p>
+            <p style="font-size: 18px">Direct Join Link: <%= join_course_courses_url(access_code: @course.access_code) %> </p>
           <% else %>
             <p style="font-size: 18px">Access Code: <b>(self-enrollment disabled)</b></p>
           <% end %>
