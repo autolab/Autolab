@@ -1,6 +1,6 @@
-require_relative 'boot'
+require_relative "boot"
 
-require 'rails/all'
+require "rails/all"
 
 # Require the gems listed in Gemfile, including any gems
 # you've limited to :test, :development, or :production.
@@ -112,7 +112,7 @@ module Autolab3
     config.middleware.use Rack::Attack
 
     # site version
-    config.site_version = "2.11.1"
+    config.site_version = "2.12.0"
 
     # Set application host for mailer
     config.action_mailer.default_url_options = { host: ENV['MAILER_HOST'] || "YOUR_APP_HOST" }
@@ -122,18 +122,18 @@ module Autolab3
 
     ENV['DEFAULT_URL_HOST'] = "" if ENV['DEFAULT_URL_HOST'].nil?
     ENV['DEFAULT_URL_PORT'] = "" if ENV['DEFAULT_URL_PORT'].nil?
-    if !ENV['DEFAULT_URL_HOST'].empty? 
+    if !ENV['DEFAULT_URL_HOST'].empty?
       config.action_controller.default_url_options[:host] = ENV['DEFAULT_URL_HOST']
       if ENV['DEFAULT_URL_PORT'].casecmp?("NONE") then
         config.action_controller.default_url_options[:port] = nil
       elsif !ENV['DEFAULT_URL_PORT'].empty?
         config.action_controller.default_url_options[:port] = ENV['DEFAULT_URL_PORT']
       end
-    end 
+    end
 
     # lti configuration file path, keep it private
     config.lti_config_location = Rails.root.join("config").to_s
-    
+
     # Ensures correct error message if no secret_key_base is defined
     if !ENV['SECRET_KEY_BASE'].nil? && ENV['SECRET_KEY_BASE'].empty?
       ENV.delete('SECRET_KEY_BASE')

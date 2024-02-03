@@ -128,7 +128,7 @@ class CoursesController < ApplicationController
         rescue StandardError => e
           # roll back course creation
           @newCourse.destroy
-          flash[:error] = "Can't create instructor for the course: #{e}"
+          flash.now[:error] = "Can't create instructor for the course: #{e}"
           render(action: "new") && return
         end
 
@@ -145,7 +145,7 @@ class CoursesController < ApplicationController
           # roll back course creation and instruction creation
           new_cud.destroy
           @newCourse.destroy
-          flash[:error] = "Can't load course config for #{@newCourse.name}."
+          flash.now[:error] = "Can't load course config for #{@newCourse.name}."
           render(action: "new") && return
         else
           flash[:success] = "New Course #{@newCourse.name} successfully created!"
@@ -154,12 +154,12 @@ class CoursesController < ApplicationController
       else
         # roll back course creation
         @newCourse.destroy
-        flash[:error] = "Can't create instructor for the course."
+        flash.now[:error] = "Can't create instructor for the course."
         render(action: "new") && return
       end
 
     else
-      flash[:error] = "Course creation failed. Check all fields"
+      flash.now[:error] = "Course creation failed. Check all fields"
       render(action: "new") && return
     end
   end
@@ -384,7 +384,7 @@ class CoursesController < ApplicationController
         { first_name: Regexp.last_match(1), email: Regexp.last_match(2) }
         # when it's first name last name <email>
       else
-        { email: email }
+        { email: }
       end
     end
 
@@ -542,7 +542,7 @@ class CoursesController < ApplicationController
       # to_csv avoids issues with commas
       output += [@course.semester, cud.user.email, user.last_name, user.first_name,
                  cud.school, cud.major, cud.year, cud.grade_policy,
-                 @course.name, cud.lecture, cud.section].to_csv
+                 cud.course_number, cud.lecture, cud.section].to_csv
     end
     send_data output, filename: "roster.csv", type: "text/csv", disposition: "inline"
   end
@@ -557,7 +557,7 @@ class CoursesController < ApplicationController
 
     # don't email kids who dropped!
     @cuds = if section
-              @course.course_user_data.where(dropped: false, section: section)
+              @course.course_user_data.where(dropped: false, section:)
             else
               @course.course_user_data.where(dropped: false)
             end
@@ -743,7 +743,7 @@ private
         major = new_cud[:major]
         year = new_cud[:year]
 
-        if (user = User.where(email: email).first).nil?
+        if (user = User.where(email:).first).nil?
           begin
             # Create a new user
             user = User.roster_create(email, first_name, last_name, school,
@@ -773,7 +773,7 @@ private
           end
         end
 
-        existing = @course.course_user_data.where(user: user).first
+        existing = @course.course_user_data.where(user:).first
         # Make sure this user doesn't have a cud in the course
         if existing
           duplicates.add(new_cud[:email])

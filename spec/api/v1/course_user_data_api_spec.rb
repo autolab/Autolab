@@ -44,7 +44,7 @@ RSpec.shared_examples "a CUD member route" do |method, action|
                                    section: "A", auth_level: "student" }
     expect(response.response_code).to eq(404)
 
-    no_cud = newUser.course_user_data.find_by(course: course)
+    no_cud = newUser.course_user_data.find_by(course:)
     expect(no_cud).to be_nil
   end
 end
@@ -70,7 +70,7 @@ RSpec.describe Api::V1::CourseUserDataController, type: :controller do
 
       rand_user = User.find_by(email: rand_user_data['email'])
       expect(rand_user).not_to be_nil
-      rand_user_cud = rand_user.course_user_data.find_by(course: course)
+      rand_user_cud = rand_user.course_user_data.find_by(course:)
       expect(rand_user_cud).not_to be_nil
 
       expect(rand_user_data['first_name']).to eq(rand_user.first_name)
@@ -120,7 +120,7 @@ RSpec.describe Api::V1::CourseUserDataController, type: :controller do
                                 section: "A", auth_level: "student", grade_policy: "letter" }
         expect(response.response_code).to eq(200)
 
-        cud = @newUser.course_user_data.find_by(course: course)
+        cud = @newUser.course_user_data.find_by(course:)
         expect(cud).not_to be_nil
         expect(cud.user).to eq(@newUser)
         expect(cud.lecture).to eq("1")
@@ -137,7 +137,7 @@ RSpec.describe Api::V1::CourseUserDataController, type: :controller do
                                 section: "A", auth_level: "student", dropped: true }
         expect(response.response_code).to eq(200)
 
-        cud = @newUser.course_user_data.find_by(course: course)
+        cud = @newUser.course_user_data.find_by(course:)
         expect(cud).not_to be_nil
         expect(cud.dropped).to be_truthy
       end
@@ -148,7 +148,7 @@ RSpec.describe Api::V1::CourseUserDataController, type: :controller do
                                 section: "D", auth_level: "instructor" }
         expect(response.response_code).to eq(200)
 
-        cud = @newUser.course_user_data.find_by(course: course)
+        cud = @newUser.course_user_data.find_by(course:)
         expect(cud).not_to be_nil
         expect(cud.user).to eq(@newUser)
         expect(cud.lecture).to eq("2")
@@ -188,7 +188,7 @@ RSpec.describe Api::V1::CourseUserDataController, type: :controller do
         expect(response.response_code).to eq(200)
         msg = JSON.parse(response.body)
 
-        cud = user.course_user_data.find_by(course: course)
+        cud = user.course_user_data.find_by(course:)
         expect(msg['nickname']).to eq(cud.nickname)
         expect(msg['dropped']).to eq(cud.dropped)
         expect(msg['lecture']).to eq(cud.lecture)
@@ -214,13 +214,13 @@ RSpec.describe Api::V1::CourseUserDataController, type: :controller do
         msg = JSON.parse(response.body)
 
         expect(msg['auth_level']).to eq('course_assistant')
-        cud = user.course_user_data.find_by(course: course)
+        cud = user.course_user_data.find_by(course:)
         expect(cud.course_assistant).to be_truthy
         expect(cud.instructor).to be_falsey
       end
 
       it 'updates other info correctly' do
-        cud = user.course_user_data.find_by(course: course)
+        cud = user.course_user_data.find_by(course:)
         new_lecture = "#{cud.lecture}_24"
         new_section = "#{cud.section}_42"
         new_dropped = !cud.dropped
@@ -236,7 +236,7 @@ RSpec.describe Api::V1::CourseUserDataController, type: :controller do
         expect(msg['section']).to eq(new_section)
         expect(msg['dropped']).to eq(new_dropped)
         expect(msg['grade_policy']).to eq(new_grade_policy)
-        cud = user.course_user_data.find_by(course: course)
+        cud = user.course_user_data.find_by(course:)
         expect(cud.lecture).to eq(new_lecture)
         expect(cud.section).to eq(new_section)
         expect(cud.dropped).to eq(new_dropped)
@@ -254,7 +254,7 @@ RSpec.describe Api::V1::CourseUserDataController, type: :controller do
 
     context 'when user is valid' do
       it 'correctly drops the user' do
-        cud = user.course_user_data.find_by(course: course)
+        cud = user.course_user_data.find_by(course:)
         cud.dropped = false
         cud.save!
 
@@ -262,13 +262,13 @@ RSpec.describe Api::V1::CourseUserDataController, type: :controller do
                                    course_name: course.name, email: user.email }
         expect(response.response_code).to eq(200)
 
-        cud = user.course_user_data.find_by(course: course)
+        cud = user.course_user_data.find_by(course:)
         expect(cud).not_to be_nil
         expect(cud.dropped).to be_truthy
       end
 
       it 'correctly drops the user even if the dropped arg is false' do
-        cud = user.course_user_data.find_by(course: course)
+        cud = user.course_user_data.find_by(course:)
         cud.dropped = false
         cud.save!
 
@@ -276,13 +276,13 @@ RSpec.describe Api::V1::CourseUserDataController, type: :controller do
                                    course_name: course.name, email: user.email, dropped: false }
         expect(response.response_code).to eq(200)
 
-        cud = user.course_user_data.find_by(course: course)
+        cud = user.course_user_data.find_by(course:)
         expect(cud).not_to be_nil
         expect(cud.dropped).to be_truthy
       end
 
       it 'does not update other attributes' do
-        cud = user.course_user_data.find_by(course: course)
+        cud = user.course_user_data.find_by(course:)
         old_lecture = cud.lecture
         new_lecture = "#{cud.lecture}4242"
 
@@ -292,7 +292,7 @@ RSpec.describe Api::V1::CourseUserDataController, type: :controller do
                                    lecture: new_lecture }
         expect(response.response_code).to eq(200)
 
-        cud = user.course_user_data.find_by(course: course)
+        cud = user.course_user_data.find_by(course:)
         expect(cud).not_to be_nil
         expect(cud.lecture).to eq(old_lecture)
       end

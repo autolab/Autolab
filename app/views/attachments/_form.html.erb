@@ -32,7 +32,7 @@
     <% end %>
     <li>
       <% if @attachment.new_record? %>
-        <%= f.file_field :file, button_text: "Upload Attachment" %>
+        <%= f.file_field :file, button_text: "Upload Attachment", help_text: "Max Size: 1GB" %>
       <% else %>
         <%= f.text_field :mime_type,
                          help_text: "Note: If you change the Mime type of a file, you might need to clear your browser's cache in order for you to see the change." %>

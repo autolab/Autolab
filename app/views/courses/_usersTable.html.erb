@@ -2,7 +2,7 @@
 
 <% lcd = @course.lti_course_datum %>
 <span class="inline-space-between">
-<h4 class="count-title">Found <span id="results-count"><%= pluralize(@cuds.count, "user") %></span></h4>
+<h4 class="count-title">Found <span id="results-count"><%= @cuds.count %></span> users</h4>
 <% unless lcd.nil? %>
     <span class="inline-span">
       <p>Roster synced with linked course: <%= time_ago_in_words(@course.lti_course_datum.last_synced, include_seconds: true) %> ago</p>

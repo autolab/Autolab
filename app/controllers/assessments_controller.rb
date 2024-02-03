@@ -38,7 +38,6 @@ class AssessmentsController < ApplicationController
   action_auth_level :submission_popover, :course_assistant
   action_auth_level :score_grader_info, :course_assistant
   action_auth_level :viewGradesheet, :course_assistant
-  action_auth_level :viewGradesheet2, :course_assistant
   action_auth_level :quickGetTotal, :course_assistant
   action_auth_level :statistics, :instructor
 
@@ -142,12 +141,7 @@ class AssessmentsController < ApplicationController
     end
 
     # Check if the assessment already exists.
-    unless @course.assessments.find_by(name: asmt_name).nil?
-      flash[:error] =
-        "An assessment with the same name already exists for the course. "\
-        "Please use a different name."
-      redirect_to(action: "install_assessment") && return
-    end
+    existing_asmt = @course.assessments.find_by(name: asmt_name)
 
     # If all requirements are satisfied, extract assessment files.
     begin
@@ -161,6 +155,8 @@ class AssessmentsController < ApplicationController
         # Ensure file will lie within course, otherwise skip
         # Allow equality for the main directory to be created
         next unless Archive.in_dir?(Pathname(entry_file), Pathname(assessment_path), strict: false)
+        next if existing_asmt && Archive.in_dir?(Pathname(entry_file),
+                                                 existing_asmt.handin_directory_path, strict: false)
 
         if entry.directory?
           FileUtils.mkdir_p(entry_file,
@@ -169,6 +165,11 @@ class AssessmentsController < ApplicationController
           FileUtils.chmod entry.header.mode, entry_file,
                           verbose: false
         elsif entry.file?
+          # Skip config files
+          next if existing_asmt && (entry_file == existing_asmt.asmt_yaml_path.to_s ||
+            entry_file == existing_asmt.unique_source_config_file_path.to_s ||
+            entry_file == existing_asmt.log_path.to_s)
+
           # Default to 0755 so that directory is writeable, mode will be updated later
           FileUtils.mkdir_p(File.dirname(entry_file),
                             mode: 0o755, verbose: false)
@@ -212,6 +213,29 @@ class AssessmentsController < ApplicationController
     if params[:assessment_name].nil?
       flash[:error] = "No assessment name specified."
       redirect_to(install_assessment_course_assessments_path(@course))
+
+    if params[:overwrite]
+      flash[:success] = "IMPORTANT: Successfully uploaded files for existing assessment
+                         #{params[:assessment_name]}. The YAML and config file were NOT reuploaded.
+                         If you would like to edit these fields, do so via 'Edit assessment'."
+      @assessment = @course.assessments.find_by(name: params[:assessment_name])
+      redirect_to(course_assessment_path(@course, @assessment)) && return
+    end
+
+    cleanup_on_failure = params[:cleanup_on_failure]
+    @assessment = @course.assessments.new(name: params[:assessment_name])
+    assessment_path = Rails.root.join("courses/#{@course.name}/#{@assessment.name}")
+    # not sure if this check is 100% necessary anymore, but is a last resort
+    # against creating an invalid assessment
+    if params[:assessment_name] != @assessment.name
+      flash[:error] = "Error creating assessment: Config module is named #{@assessment.name}
+                       but assessment file name is #{params[:assessment_name]}"
+      # destroy model
+      destroy_no_redirect
+      # delete files explicitly b/c the paths don't match ONLY if
+      # import was from tarball
+      FileUtils.rm_rf(assessment_path) if cleanup_on_failure
+      redirect_to(install_assessment_course_assessments_path(@course)) && return
     end
     import_result = importAssessmentFromFileSystem([params[:assessment_name]], true)
     handleImportResults(import_result, params[:assessment_name])
@@ -354,7 +378,6 @@ class AssessmentsController < ApplicationController
     @assessment.start_at = Time.current + 1.day
     @assessment.due_at = Time.current + 1.day
     @assessment.end_at = Time.current + 1.day
-    @assessment.grading_deadline = Time.current + 1.day
     @assessment.quiz = false
     @assessment.quizData = ""
     @assessment.max_submissions = params.include?(:max_submissions) ? params[:max_submissions] : -1
@@ -551,7 +574,7 @@ class AssessmentsController < ApplicationController
     set_handin
     begin
       extend_config_module(@assessment, @submission, @cud)
-    rescue AutogradeError => e
+    rescue StandardError => e
       if @cud.has_auth_level? :instructor
         flash[:error] = "Error loading the config file: "
         flash[:error] += e.message
@@ -623,10 +646,9 @@ class AssessmentsController < ApplicationController
 
     @repos = GithubIntegration.find_by(user_id: @cud.user.id)&.repositories
 
-    return unless @assessment.invalid?
+    return unless @assessment.invalid? && @cud.instructor?
 
-    # On the off-chance that the assessment has validation errors, let the user know
-    # as otherwise submissions would silently fail
+    # If the assessment has validation errors, let the instructor know
     flash.now[:error] = "This assessment is invalid due to the following error(s):<br/>"
     flash.now[:error] += @assessment.errors.full_messages.join("<br/>")
     flash.now[:html_safe] = true
@@ -718,8 +740,7 @@ class AssessmentsController < ApplicationController
     if Archive.archive? @submission.handin_file_path
       @files = Archive.get_files @submission.handin_file_path
     end
-    @problemReleased = @submission.scores.pluck(:released).all? &&
-                       !@assessment.before_grading_deadline?
+
     # get_correct_filename is protected, so we wrap around controller-specific call
     @get_correct_filename = ->(annotation) {
       get_correct_filename(annotation, @files, @submission)
@@ -907,7 +928,7 @@ class AssessmentsController < ApplicationController
     if num_released > 0
       flash[:success] =
         format("%<num_released>d %<plurality>s released.",
-               num_released: num_released,
+               num_released:,
                plurality: (num_released > 1 ? "grades were" : "grade was"))
     else
       flash[:error] = "No grades were released. They might have all already been released."
@@ -932,7 +953,7 @@ class AssessmentsController < ApplicationController
     if num_released > 0
       flash[:success] =
         format("%<num_released>d %<plurality>s released.",
-               num_released: num_released,
+               num_released:,
                plurality: (num_released > 1 ? "grades were" : "grade was"))
     else
       flash[:error] = "No grades were released. " \
@@ -940,7 +961,7 @@ class AssessmentsController < ApplicationController
                       "might be assigned to a lecture " \
                       "and/or section that doesn't exist. Please contact an instructor."
     end
-    redirect_to action: "viewGradesheet"
+    redirect_to url_for(action: 'viewGradesheet', section: '1')
   end
 
   action_auth_level :withdrawAllGrades, :instructor

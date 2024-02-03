@@ -94,9 +94,6 @@ RSpec.describe AssessmentsController, type: :controller do
               expect(test["dates"]["due_at"]).to eq(course_hash[:assessment].due_at.to_s)
               expect(test["dates"]["start_at"]).to eq(course_hash[:assessment].start_at.to_s)
               expect(test["dates"]["end_at"]).to eq(course_hash[:assessment].end_at.to_s)
-              expect(
-                test["dates"]["grading_deadline"]
-              ).to eq(course_hash[:assessment].grading_deadline.to_s)
             end
           end
         end
@@ -170,7 +167,7 @@ RSpec.describe AssessmentsController, type: :controller do
         expect(flash[:error]).to be_present
         expect(flash[:error]).to match(/syntax error/m)
       end
-      it "handles mismatched same name error" do
+      it "handles existing assessment reupload" do
         file = fixture_file_upload("assessments/homework02-correct.tar")
         post :importAsmtFromTar, params: { course_name: course_2_hash[:course].name,
                                            name: course_2_hash[:assessment].name,
@@ -181,8 +178,8 @@ RSpec.describe AssessmentsController, type: :controller do
                                            name: course_2_hash[:assessment].name,
                                            tarFile: file }
         expect(response).to have_http_status(302)
-        expect(flash[:error]).to be_present
-        expect(flash[:error]).to match(/same name/m)
+        expect(flash[:success]).to be_present
+        expect(flash[:success]).to match(/IMPORTANT:/m)
       end
     end
   end
