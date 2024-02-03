@@ -657,7 +657,7 @@ private
   end
 
   def set_manage_submissions_breadcrumb
-    return unless @cud.instructor
+    return if @course.nil? || @assessment.nil? || !@cud.instructor
 
     @breadcrumbs << (view_context.link_to "Manage Submissions",
                                           course_assessment_submissions_path(@course, @assessment))

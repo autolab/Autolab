@@ -115,6 +115,8 @@ private
   end
 
   def set_manage_scheduler_breadcrumb
+    return if @course.nil?
+
     @breadcrumbs << (view_context.link_to "Manage Schedulers", course_schedulers_path(@course))
   end
 end

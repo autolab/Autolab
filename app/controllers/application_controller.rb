@@ -310,7 +310,6 @@ protected
   end
 
   # Helpers for breadcrumbs
-  # Guarded to prevent accidental errors
   def set_assessment_breadcrumb
     return if @course.nil? || @assessment.nil?
 

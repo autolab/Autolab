@@ -84,6 +84,8 @@ private
   end
 
   def set_manage_announcement_breadcrumb
+    return if @course.nil?
+
     @breadcrumbs << (view_context.link_to "Manage Announcements",
                                           course_announcements_path(@course))
   end

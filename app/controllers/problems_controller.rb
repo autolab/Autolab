@@ -77,6 +77,8 @@ private
     params.require(:problem).permit(:name, :description, :max_score, :optional)
   end
 
+  # Different from the one in application_controller.rb,
+  # so that we bring the user directly to the problems tab
   def set_edit_assessment_breadcrumb
     @breadcrumbs << (view_context.link_to "Edit Assessment", problems_index)
   end
