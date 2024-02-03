@@ -22,7 +22,7 @@ RSpec.configure do |config|
   config.include ActionDispatch::TestProcess
   # Remove this line if you're not using ActiveRecord or ActiveRecord fixtures
   config.fixture_path = Rails.root.join("spec/fixtures")
-
+  config.file_fixture_path = Rails.root.join("spec/fixtures")
   # If you're not using ActiveRecord, or you'd prefer not to run each of your
   # examples within a transaction, remove the following line or assign false
   # instead of true.
