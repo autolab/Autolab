@@ -76,10 +76,6 @@
         <% if @is_instructor %>
           <%= link_to "<i class='material-icons left'>assignment</i> Install Assessment".html_safe, { action: "install_assessment" }, { title: "Install Assessment", class: "btn btn-large red darken-3" } %>
         <% end %>
-
-        <% if Rails.configuration.docker_image_upload_enabled && @is_instructor %>
-          <%= link_to "<i class='material-icons left'>upload</i> Upload Docker Image".html_safe, course_dockers_path, title: "Docker Image Upload", class: "btn btn-large red darken-3" %>
-        <% end %>
       </div>
     </div>
   </div>
