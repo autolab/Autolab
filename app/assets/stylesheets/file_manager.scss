@@ -1,0 +1,25 @@
+.div-row {
+  display: flex;
+  flex-direction: row;
+  gap: 5rem;
+}
+
+[type="checkbox"]:not(:checked) {
+  opacity: 100;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  pointer-events: painted;
+}
+
+[type="checkbox"]:checked {
+  opacity: 100;
+  pointer-events: unset;
+}
+
+.table-col-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-top: 35%;
+}

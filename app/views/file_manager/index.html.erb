@@ -1,43 +1,79 @@
-<!--Code for file manager adapted from: adrientoub/file-explorer-->
-<script>
-    function sanitize(path) {
-        const allowedPattern = /^[a-zA-Z0-9_\-/]+(\.[a-zA-Z]+)?$/;
-        if (!path.toString().match(allowedPattern)) {
-            throw new Error(`${path} is not in a valid format`);
-        }
-    }
-    function rename(path) {
-        sanitize(path);
-        var new_name = prompt("Enter the new name:");
-        var rel_path = path.split("/file_manager/")[1];
-        $.ajax({
-            url: "/file_manager/" + rel_path,
-            type: "PUT",
-            data: { new_name: new_name, relative_path: rel_path},
-            success: function(data) {
-                // handle success
-                location.reload();
-            }
-        });
-    }
+<% content_for :javascripts do %>
+  <script>
+      function rename(path) {
+          var new_name = prompt("Enter the new name:");
+          var rel_path = path.split("/file_manager/")[1].replace(/%40/g, '@');
+          $.ajax({
+              url: "/file_manager/" + rel_path,
+              type: "PUT",
+              data: { new_name: new_name, relative_path: rel_path},
+              success: function(data) {
+                  console.log(`Renamed: ${rel_path}`)
+                  location.reload();
+              }
+          });
+      }
 
-    $("#rename-file").click(function(e) {
-        var path = $(this).data("path");
-        if(confirm("Rename this file?")) {
-            rename(path);
-            e.preventDefault();
-        }
-    });
-</script>
+      function deleteSelected(path) {
+          $.ajax({
+              url: path,
+              type: "DELETE",
+              headers: {
+                  'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content'),
+              },
+              success: function () {
+                  console.log(`Deleted: ${path}`);
+                  location.reload();
+              },
+              error: function (xhr, status, error) {
+                  console.error(`Failed to delete ${path}: ${error}`);
+              }
+          });
+      }
 
-<%= form_tag({}, multipart: true) do %>
-  <%= file_field_tag 'file' %>
-  <input type="submit" value="Upload"
-         onclick="<%= @duplicated_file && params[:file].present? ? "return confirm('A file exists with the same name, continuing will override the existing file. Are you sure?');" : "" %>">
+      function getSelectedItems() {
+          let selectedItems = $("input[type='checkbox']:checked");
+          let paths = [];
+
+          selectedItems.each(function(index, element) {
+              paths.push(jQuery(element).prop('value'));
+          });
+
+          return paths
+      }
+
+      $("#delete-selected").click(function(e) {
+          let paths = getSelectedItems();
+
+          if (paths.length > 0 && confirm("Delete selected files?")) {
+              paths.forEach(path => {
+                  deleteSelected(path);
+                  e.preventDefault();
+              });
+          }
+      })
+  </script>
 <% end %>
+
+<% content_for :stylesheets do %>
+  <%= stylesheet_link_tag "file_manager" %>
+<% end %>
+
+<div class="div-row">
+  <%= form_tag({}, multipart: true) do %>
+    <%= file_field_tag 'file' %>
+    <input type="submit" value="Upload"
+           onclick="<%= @duplicated_file && params[:file].present? ? "return confirm('A file exists with the same name, continuing will override the existing file. Are you sure?');" : "" %>">
+  <% end %>
+  <label for="delete-selected"></label>
+  <input type="submit" id="delete-selected" value="Delete Selected">
+  <label for="download-selected"></label>
+  <input type="submit" id="download-selected" value="Download Selected">
+</div>
 <table>
   <thead>
   <tr>
+    <th></th>
     <th>Filename</th>
     <th>Size</th>
     <th>Date</th>
@@ -47,8 +83,11 @@
   </thead>
   <tbody>
   <% @directory.each do |entry| %>
-    <% if entry[:instructor] %>
-      <tr>
+    <% if entry[:instructor] && entry[:entry] != './' %>
+      <tr class="table-row-center">
+        <td class="table-col-center">
+          <%= check_box_tag 'selected_files[]', entry[:relative], false, { html: { data: { path: entry[:relative] }}} %>
+        </td>
         <td>
           <%= link_to entry[:relative].to_s do %>
             <i class='material-icons left middle'><%= entry[:type] == :file ? 'article' : 'folder' %></i>
@@ -71,7 +110,7 @@
         </td>
         <td>
           <% if entry[:entry] != './' && entry[:entry] != '../' %>
-            <%= link_to entry[:relative].to_s, method: :delete, data: { confirm: "Are you sure you want to delete `#{entry[:absolute]}`?" } do %>
+            <%= link_to "#", id: "delete-file", data: { confirm: "Are you sure you want to delete `#{entry[:absolute]}`?" }, onclick: "deleteSelected('#{entry[:relative]}')" do %>
               <i class='material-icons left middle'>delete</i>
               Delete
             <% end %>
@@ -82,3 +121,4 @@
   <% end %>
   </tbody>
 </table>
+
