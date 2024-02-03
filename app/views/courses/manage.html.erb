@@ -56,6 +56,10 @@
               <%= link_to "Run Moss cheat checker", moss_course_path(@course),
                           { title: "Use the Stanford Moss server to detect copying" } %>
             </li>
+            <li>
+              <%= link_to "Export course", export_course_path(@course),
+                          { title: "Export course configurations and assessments" } %>
+            </li>
 
             <li class="collection-item red-text danger-bottom no-hover"><h4>Danger Zone</h4></li>
             <li class="danger-side">

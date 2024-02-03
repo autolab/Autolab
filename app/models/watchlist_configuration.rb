@@ -70,4 +70,9 @@ class WatchlistConfiguration < ApplicationRecord
 
     config
   end
+
+  SERIALIZABLE = Set.new %w[category_blocklist assessment_blocklist allow_ca]
+  def serialize
+    Utilities.serializable attributes, SERIALIZABLE
+  end
 end

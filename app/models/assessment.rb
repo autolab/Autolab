@@ -269,6 +269,7 @@ class Assessment < ApplicationRecord
 
     # config file might have an updated custom raw score function: clear raw score cache
     invalidate_raw_scores
+    dump_yaml
     logger.info "Loaded #{unique_config_file_path}"
   end
 
@@ -560,19 +561,29 @@ private
     self.quizData = ""
     update!(s["general"])
     Problem.deserialize_list(self, s["problems"]) if s["problems"]
-    Autograder.find_or_initialize_by(assessment_id: id).update(s["autograder"]) if s["autograder"]
-    Scoreboard.find_or_initialize_by(assessment_id: id).update(s["scoreboard"]) if s["scoreboard"]
 
-    # rubocop:disable Style/GuardClause
+    if s["autograder"]
+      autograder = Autograder.find_or_initialize_by(assessment_id: id)
+      autograder.update(s["autograder"])
+      self.autograder = autograder
+    end
+    if s["scoreboard"]
+      scoreboard = Scoreboard.find_or_initialize_by(assessment_id: id)
+      scoreboard.update(s["scoreboard"])
+      self.scoreboard = scoreboard
+    end
     if s["late_penalty"]
       late_penalty ||= Penalty.new
       late_penalty.update(s["late_penalty"])
+      self.late_penalty = late_penalty
     end
     if s["version_penalty"]
       version_penalty ||= Penalty.new
       version_penalty.update(s["version_penalty"])
+      self.version_penalty = version_penalty
     end
-    # rubocop:enable Style/GuardClause
+    # necessary for penaltu data to be saved properly
+    save!
   end
 
   def default_max_score
