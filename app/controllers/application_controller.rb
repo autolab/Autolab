@@ -309,7 +309,9 @@ protected
                     end
   end
 
-  # Helpers for breadcrumbs
+  ## Helpers for breadcrumbs
+
+  # Guarded against nil @assessment, so safe to use regardless of whether set_assessment was called
   def set_assessment_breadcrumb
     return if @course.nil? || @assessment.nil?
 

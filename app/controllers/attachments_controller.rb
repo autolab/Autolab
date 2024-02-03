@@ -6,7 +6,7 @@ class AttachmentsController < ApplicationController
   # inherited from ApplicationController
   # this will also set an @is_assessment variable based on the result of is_assessment?
   before_action :set_assessment, if: :assessment?
-  before_action :set_assessment_breadcrumb, if: :assessment?
+  before_action :set_assessment_breadcrumb
   before_action :set_attachment, except: %i[index new create]
 
   # This page shouldn't really be used
