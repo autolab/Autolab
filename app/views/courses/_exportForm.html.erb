@@ -1,0 +1,43 @@
+<%= form_tag export_selected_course_path, method: 'post' do %>
+<table class="prettyBorder" id="course_fields">
+  <colgroup>
+    <col span="1" style="width: 50px;">
+    <col span="1">
+  </colgroup>
+  <tbody id="course_fields">
+    <tr class="course-field checked">
+      <td>
+        <label>
+           <%= check_box_tag 'export_configs[]', 'course_config', true, class: 'cbox', id: 'course_config_checkbox', disabled: true %>
+          <span id="checkbox" />
+        </label>
+      </td>
+      <td>Course configuration</td>
+    </tr>
+    <tr class="course-field">
+      <td>
+        <label>
+          <%= check_box_tag 'export_configs[]', 'metrics_config', false, class: 'cbox', id: 'metrics_config_checkbox' %>
+          <span id="checkbox" />
+        </label>
+      </td>
+      <td>Metrics configuration</td>
+    </tr>
+    <tr class="course-field">
+      <td>
+        <label>
+          <%= check_box_tag 'export_configs[]', 'assessments', false, class: 'cbox', id: 'assessments_checkbox' %>
+          <span id="checkbox" />
+        </label>
+      </td>
+      <td>Assessments</td>
+    </tr>
+  </tbody>
+</table>
+<br>
+<div class="row">
+  <div>
+    <%= submit_tag 'Export', class: 'btn', id: 'export_btn', data: { disable_with: false } %>
+  </div>
+</div>
+<% end %>
