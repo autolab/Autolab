@@ -1,51 +1,52 @@
 function formvalidation(form){
-    function DoubleByte(str) {
-      for (var i = 0, n = str.length; i < n; i++) {
-        if (str.charCodeAt(i) > 127) { return true; }
-      }
-      return false;
+  function DoubleByte(str) {
+    for (var i = 0, n = str.length; i < n; i++) {
+      if (str.charCodeAt(i) > 127) { return true; }
     }
-    var nickname = document.getElementById('course_user_datum_nickname');
+    return false;
+  }
+  var nickname = document.getElementById('course_user_datum_nickname');
 
-    if (DoubleByte(nickname.value)){
-      nickname.setAttribute('style','background-color:#FFF352');
-      nickname.focus();
-      alert("Your nickname has non-ASCII characters");
-    } else {
-      form.submit();
-    }
+  if (DoubleByte(nickname.value)){
+    nickname.setAttribute('style','background-color:#FFF352');
+    nickname.focus();
+    alert("Your nickname has non-ASCII characters");
+  } else {
+    form.submit();
+  }
 }
 
-function disable_dropped(){
-    $('#course_user_datum_dropped').prop("checked",false);
-    $('#course_user_datum_dropped').prop("disabled",true);
-}
+// User can only be one of the following: instructor, course assistant, or dropped (student)
+function mutual_exclusion() {
+  const $instructor = $('#course_user_datum_instructor');
+  const $course_assistant = $('#course_user_datum_course_assistant');
+  const $dropped = $('#course_user_datum_dropped');
+  const fields = [$instructor, $course_assistant, $dropped];
 
-function enable_dropped(){
-    $('#course_user_datum_dropped').prop("disabled",false);
-}
+  // Enable all fields
+  fields.forEach((field) => field.prop('disabled', false));
 
-function prevent_dropping_instructor_ca(){
-    if($('#course_user_datum_instructor').is(':checked') || 
-        $('#course_user_datum_course_assistant').is(':checked')){
-        disable_dropped();
+  // If any field is checked, disable the rest
+  fields.forEach((field, idx) => {
+    if (field.is(':checked')) {
+      fields.forEach((field2, idx2) => {
+        if (idx !== idx2) {
+          field2.prop('disabled', true);
+          field2.prop('checked', false);
+        }
+      });
     }
-    else{
-        enable_dropped();
-    }
+  });
 }
 
 $(document).ready(function(){
-    prevent_dropping_instructor_ca();
+  $('#user_submit').on("click", function(e){
+    formvalidation(this.closest('form'));
+    e.preventDefault();
+  });
 
-    $('#user_submit').on("click", function(e){
-        formvalidation(this.closest('form'));
-        e.preventDefault();
-    });
-
-    $('#course_user_datum_instructor').on( "click",
-      prevent_dropping_instructor_ca);
-
-    $('#course_user_datum_course_assistant').on( "click",
-      prevent_dropping_instructor_ca);
+  mutual_exclusion();
+  $('#course_user_datum_instructor').on("click", mutual_exclusion);
+  $('#course_user_datum_course_assistant').on("click", mutual_exclusion);
+  $('#course_user_datum_dropped').on("click", mutual_exclusion);
 });
