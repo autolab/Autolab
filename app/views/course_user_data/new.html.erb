@@ -29,9 +29,9 @@
   </script>
 <% end %>
 
-<% @title = "Enroll User" %>
+<% @title = "Add User to Course" %>
 
-<h4>Enroll User in <%= @course.display_name %></h4>
+<h4>Add User to <%= @course.display_name %></h4>
 
 <%= form_for @newCUD, url: course_course_user_data_path, builder: FormBuilderWithDateTimeInput do |f| %>
 
