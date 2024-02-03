@@ -1,37 +1,27 @@
 require "rails_helper"
 require_relative("../support/controller_macros")
+require_relative("../controllers/controllers_shared_context")
 include ControllerMacros
 
 RSpec.describe "Instructor can create new assessment", type: :feature do
   describe "assessment creation", js: true do
+    include_context "controllers shared context"
     context "when user is Instructor" do
       # can't use login_as for features
       let(:user) do
-        create_course_with_users
         @instructor_user
       end
       let(:existing_asmt_name) do
-        cud = get_first_cud_by_uid(user)
-        assessment_id = get_first_aid_by_cud(cud)
-        Assessment.find(assessment_id).display_name
+        @assessment.display_name
       end
       let(:student) do
-        cud = get_first_cud_by_uid(user)
-        students = get_students_by_assessment(Assessment.find(get_first_aid_by_cud(cud)))
-        students.first
+        @students.first
       end
       let(:problem) do
-        cud = get_first_cud_by_uid(user)
-        assessment_id = get_first_aid_by_cud(cud)
-        asmt = Assessment.find(assessment_id)
-        asmt.problems.first
+        Problem.where(assessment_id: @assessment.id).first
       end
       let(:submission) do
-        cud = get_first_cud_by_uid(user)
-        asmt = Assessment.find(get_first_aid_by_cud(cud))
-        students = get_students_by_assessment(asmt)
-        student = students.first
-        Submission.where(course_user_datum_id: student.id).first
+        Submission.where(course_user_datum_id: get_first_cud_by_uid(@students.first.id)).first
       end
       let(:assessment_display_name) do
         "Test Capybara Lab"

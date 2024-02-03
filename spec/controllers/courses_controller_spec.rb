@@ -10,9 +10,7 @@ RSpec.describe CoursesController, type: :controller do
     context "when user is Autolab user" do
       it "renders successfully" do
         sign_in(student_user)
-        cid = get_first_cid_by_uid(student_user.id)
-        cname = Course.find(cid).name
-        get :report_bug, params: { name: cname }
+        get :report_bug, params: { name: @course.name }
         expect(response).to be_successful
         expect(response.body).to match(/Stuck on a bug/m)
       end
@@ -20,9 +18,7 @@ RSpec.describe CoursesController, type: :controller do
 
     context "when user is not logged in" do
       it "renders with failure" do
-        cid = get_first_cid_by_uid(student_user.id)
-        cname = Course.find(cid).name
-        get :report_bug, params: { name: cname }
+        get :report_bug, params: { name: @course.name }
         expect(response).not_to be_successful
         expect(response.body).not_to match(/Stuck on a bug/m)
       end
@@ -34,9 +30,7 @@ RSpec.describe CoursesController, type: :controller do
       sign_in(user)
     end
     it "renders successfully" do
-      cid = get_first_cid_by_uid(user.id)
-      cname = Course.find(cid).name
-      get :user_lookup, params: { name: cname, email: user.email }
+      get :user_lookup, params: { name: @course.name, email: user.email }
       expect(response).to be_successful
       expect(response.body).to match(/first_name/m)
     end
@@ -47,9 +41,7 @@ RSpec.describe CoursesController, type: :controller do
       sign_in(user) if login
     end
     it "renders with failure" do
-      cid = get_first_cid_by_uid(user.id)
-      cname = Course.find(cid).name
-      get :user_lookup, params: { name: cname, email: user.email }
+      get :user_lookup, params: { name: @course.name, email: user.email }
       expect(response).not_to be_successful
       expect(response.body).not_to match(/first_name/m)
     end
@@ -86,8 +78,7 @@ RSpec.describe CoursesController, type: :controller do
     include_context "controllers shared context"
     context "when user is Autolab instructor" do
       before(:each) do
-        instructor = get_instructor_by_cid(course.id)
-        sign_in(instructor)
+        sign_in(@instructor_user)
       end
       it "updates lti settings" do
         patch :update_lti_settings,
@@ -104,8 +95,7 @@ RSpec.describe CoursesController, type: :controller do
     context "when user is Autolab instructor" do
       include_context "controllers shared context"
       before(:each) do
-        instructor = get_instructor_by_cid(course.id)
-        sign_in(instructor)
+        sign_in(@instructor_user)
       end
       it "unlinks LTI from course" do
         expect {
@@ -128,6 +118,9 @@ RSpec.describe CoursesController, type: :controller do
         instructor = get_instructor_by_cid(course.id)
         sign_in(instructor)
       end
+      after(:each) do
+        delete_course_files(course)
+      end
       it "fails on unlink" do
         expect {
           post :unlink_course, params: { name: course.name }
@@ -142,8 +135,7 @@ RSpec.describe CoursesController, type: :controller do
     context "when user is Autolab instructor" do
       include_context "controllers shared context"
       it "downloads roster" do
-        instructor = get_instructor_by_cid(course.id)
-        sign_in(instructor)
+        sign_in(@instructor_user)
         get :download_roster, params: { name: course.name }, format: CSV
         expect(response).to have_http_status(200)
         expect(response.body).to match(/Auto-populated/m) # lecture
@@ -174,8 +166,7 @@ RSpec.describe CoursesController, type: :controller do
         Array.new(10) { |elem| "unused#{elem}@example.org" }
       end
       before(:each) do
-        instructor = get_instructor_by_cid(course.id)
-        sign_in(instructor)
+        sign_in(@instructor_user)
       end
 
       it "adds users as course assistants successfully" do
