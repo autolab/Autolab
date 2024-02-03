@@ -225,6 +225,8 @@ Rails.application.routes.draw do
       post "unlink_course"
       patch "update_lti_settings"
       match "email", via: [:get, :post]
+      get "export"
+      post "export_selected"
       get "manage"
       get "moss"
       post "reload"

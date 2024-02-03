@@ -1,10 +1,11 @@
 FactoryBot.define do
   factory :attachment do
     course
-    assessment
     category_name { "General" }
-    name { "attachment.txt" }
+    name { "hyperfastparrot.gif" }
     release_at { Time.current }
-    file { fixture_file_upload("attachments/attachment.txt", "text/plain") }
+    file {
+      Rack::Test::UploadedFile.new("spec/fixtures/attachments/hyperfastparrot.gif", "image/gif")
+    }
   end
 end

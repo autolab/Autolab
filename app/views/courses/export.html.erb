@@ -1,0 +1,12 @@
+<% @title = "Export Course" %>
+
+<% content_for :stylesheets do %>
+  <%= external_javascript_include_tag "jquery" %>
+  <%= stylesheet_link_tag "export" %>
+  <%= javascript_include_tag "export_course" %>
+<% end %>
+
+<h2>Export Course</h2>
+<p id="export_description">Select fields to include in the export:</p>
+
+<%= render partial: "exportForm" %>
