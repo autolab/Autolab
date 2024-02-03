@@ -58,4 +58,4 @@ automations:
       - action: add-label@v1
         args:
           label: "waiting-for-review"
-          color: {{ color.waiting-for-review }}
+          color: {{ color["waiting-for-review"] }}
