@@ -1,31 +1,55 @@
 <%= f.text_field :max_submissions,
-                 help_text: "The maximum number of times a student can submit the assessment.
-  Set this to -1 to allow unlimited submissions.",
-                 placeholder: "E.g. 10" %>
+                 help_text: "The maximum number of times a student can submit the assessment. \
+                             <br>If set to -1, unlimited submissions are allowed.".html_safe,
+                 placeholder: "10",
+                 wrap_class: %w[input-field no-padding-bottom] %>
+<%= label_tag(:unlimited_submissions, nil, class: "input-default") do %>
+  <%= check_box_tag :unlimited_submissions, "1", @has_unlimited_submissions %>
+  <%= content_tag("span", "Allow unlimited submissions.") %>
+<% end %>
 
 <%= f.text_field :max_grace_days,
-                 help_text: "Maximum number of grace days that a student can spend on this assessment. E.g., 2. If left
-  blank, all of the remaining available course grace days can be spent on this assessment.",
-                 placeholder: "Leave blank for no grace day limit" %>
+                 help_text: "Maximum number of grace days that a student can spend on this assessment. \
+                             <br>If left blank, all available grace days can be spent on this assessment.".html_safe,
+                 wrap_class: %w[input-field no-padding-bottom] %>
+<%= label_tag(:unlimited_grace_days) do %>
+  <%= check_box_tag :unlimited_grace_days, "1", @has_unlimited_grace_days %>
+  <%= content_tag("span", "Allow unlimited grace days.") %>
+<% end %>
 
 <%= f.score_adjustment_input :late_penalty,
                              optional: true,
                              help_text: "The penalty applied to late submissions after a student runs out of grace days.
   It represents the number of points or a percentage of the total score removed per day, and must be a non-negative
-  number. If left blank, the course default is used.",
-                             placeholder: "E.g. 15%" %>
+  number.<br>If left blank, the course default is used.".html_safe,
+                             wrap_class: %w[input-field no-padding-bottom] %>
+<%= label_tag(:use_default_late_penalty) do %>
+  <%= check_box_tag :use_default_late_penalty, "1", @uses_default_late_penalty %>
+  <%= content_tag("span", "Use the course default of deducting #{@assessment.course.late_penalty} per day.") %>
+<% end %>
 
-<%= f.text_field :version_threshold, help_text: "The number of unpenalized submissions allowed. After this threshold,
-  each additional submission is penalized according to the version penalty. If set to -1, no submissions are penalized.
-  If this is left blank, the course default is used.",
-                                     placeholder: "Leave blank to use course default." %>
+<%= f.text_field :version_threshold,
+                 help_text: "The number of unpenalized submissions allowed. After this threshold,
+  each additional submission is penalized according to the version penalty.
+  <br>If set to -1, no submissions are penalized.
+  <br>If left blank, the course default is used.".html_safe,
+                 wrap_class: %w[input-field no-padding-bottom] %>
+<%= label_tag(:use_default_version_threshold) do %>
+  <%= check_box_tag :use_default_version_threshold, "1", @uses_default_version_threshold %>
+  <%= content_tag("span", "Use the course default of #{@assessment.course.version_threshold}.") %>
+<% end %>
 
 <%= f.score_adjustment_input :version_penalty, optional: true,
                                                help_text: "The penalty applied to submissions with version greater than the version
   threshold. It represents the number of points or the percentage of the total score removed per version above the
-  threshold, and must be a non-negative number. For example, if this is set to 1 point and the version threshold to 3,
-  the fifth version of a student's submissions would be docked 2 points.",
-                                               placeholder: "Leave blank to use course default." %>
+  threshold, and must be a non-negative number.
+  For example, if this is set to 1 point and the version threshold to 3, the fifth version of a student's submissions would be docked 2 points.
+  <br>If left blank, the course default is used.".html_safe,
+                                               wrap_class: %w[input-field no-padding-bottom] %>
+<%= label_tag(:use_default_version_penalty) do %>
+  <%= check_box_tag :use_default_version_penalty, "1", @uses_default_version_penalty %>
+  <%= content_tag("span", "Use the course default of deducting #{@assessment.course.version_penalty} per submission.") %>
+<% end %>
 
 <div class="action_buttons">
   <%= f.submit "Save", name: "penalties" %>

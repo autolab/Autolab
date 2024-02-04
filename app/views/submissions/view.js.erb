@@ -11,8 +11,8 @@ newFile = {
     Object.assign(newFile,
         {
             pdf: true,
-            pdfUrl: "<%= download_course_assessment_submission_path(@course, @assessment, @submission, {header_position: params[:header_position]}) %>",
-            annotatedPdfUrl: "<%= download_course_assessment_submission_path(@course, @assessment, @submission, {header_position: params[:header_position], annotated: true}) %>",
+            pdfUrl: "<%= download_course_assessment_submission_path(@course, @assessment, @submission, { header_position: params[:header_position] }) %>",
+            annotatedPdfUrl: "<%= download_course_assessment_submission_path(@course, @assessment, @submission, { header_position: params[:header_position], annotated: true }) %>",
             previewMode: false
         }
     );
@@ -22,7 +22,6 @@ newFile = {
 <% else %>
     newFile.pdf = false;
 <% end %>
-
 
 if (!newFile.pdf) localCache[<%= params[:header_position] %>] = newFile;
 

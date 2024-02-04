@@ -1,26 +1,26 @@
 <script>
   function registerComponents(myLayout) {
     myLayout.registerComponent("file_tree", function (container, state) {
-        container.getElement().html("<%= j render(:partial => 'file_tree') %>");
+        container.getElement().html("<%= j render(partial: 'file_tree') %>");
     });
     myLayout.registerComponent("code_symbol_tree", function (container, state) {
-        container.getElement().html("<%= j render(:partial => 'code_symbol_tree', :locals => {ctag_obj: @ctag_obj}) %>");
+        container.getElement().html("<%= j render(partial: 'code_symbol_tree', locals: { ctag_obj: @ctag_obj }) %>");
     });
     myLayout.registerComponent("code_viewer", function (container, state) {
-        container.getElement().html("<%= j render(:partial => 'code_viewer') %>");
+        container.getElement().html("<%= j render(partial: 'code_viewer') %>");
     });
     myLayout.registerComponent("annotation_pane", function (container, state) {
-        container.getElement().html("<%= j render(:partial => 'annotation_pane') %>");
+        container.getElement().html("<%= j render(partial: 'annotation_pane') %>");
     });
     myLayout.registerComponent("grades", function (container, state) {
-      container.getElement().html("<%= j render(:partial => 'grades') %>");
+      container.getElement().html("<%= j render(partial: 'grades') %>");
     });
   }
 
   function resizeGradeList() {
     // set problemGrades div height so that overflow properties apply
     if (!$('.problemGrades')) return;
-    
+
     // update problemGrades div height to match the height of
     // the golden layout component it's contained in
     const parentHeight = $('.problemGrades')[0]?.parentElement?.style.height;
@@ -51,10 +51,10 @@
   // Check if old localStorage value is the same as the new value, then updates localStorage
   function layoutStateChanged(stateType, newState) {
     var old = localStorage.getItem(stateType);
-    
+
     var changed = JSON.parse(old) != newState;
     localStorage.setItem(stateType, newState);
-    
+
     return changed;
   }
 
@@ -141,7 +141,7 @@
     // if all components have been loaded, load the annotations js files
     componentsLoaded += 1;
     if (componentsLoaded === numComponents)
-      $('body').append("<%= j render(:partial => 'annotations_js') %>");
+      $('body').append("<%= j render(partial: 'annotations_js') %>");
   });
 
   myLayout.on( 'stateChanged', function(){

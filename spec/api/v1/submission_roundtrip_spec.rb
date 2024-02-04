@@ -37,7 +37,7 @@ RSpec.describe "API Submission Autograding Roundtrip Test", type: :request do
 
     # check score
     problem = @adder_asm.problems.find_by(name: "autograded")
-    score = Score.find_by(submission: latest_sub, problem: problem)
+    score = Score.find_by(submission: latest_sub, problem:)
     expect(score).not_to be_nil
     expect(score.score).to eq(42)
   end

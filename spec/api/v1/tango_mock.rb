@@ -16,7 +16,7 @@ RSpec.shared_context "tango mock" do
     files["Makefile"] = SecureRandom.hex(32);
     open_result = { statusId: 0,
                     statusMsg: "Found directory",
-                    files: files }
+                    files: }
 
     @tango_stub_open = stub_request(:get, open_uri).
                        to_return(status: 200, body: open_result.to_json,

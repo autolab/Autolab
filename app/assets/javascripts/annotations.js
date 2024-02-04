@@ -510,7 +510,6 @@ function elt(t, a) {
 function createAnnotation() {
   var annObj = {
     filename: fileNameStr,
-    submitted_by: cudEmailStr,
   };
 
   if (currentHeaderPos || currentHeaderPos === 0) {

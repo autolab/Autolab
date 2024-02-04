@@ -1,3 +1,5 @@
+require "archive"
+
 class Api::V1::AssessmentsController < Api::V1::BaseApiController
 
   include AssessmentHandinCore
@@ -14,8 +16,6 @@ class Api::V1::AssessmentsController < Api::V1::BaseApiController
     allowed = [:name, :display_name, :start_at, :due_at, :end_at, :category_name]
     if @cud.student?
       asmts = asmts.released
-    else
-      allowed += [:grading_deadline]
     end
 
     respond_with asmts, only: allowed
@@ -24,9 +24,6 @@ class Api::V1::AssessmentsController < Api::V1::BaseApiController
   def show
     allowed = [:name, :display_name, :description, :start_at, :due_at, :end_at, :updated_at, :max_grace_days, :max_submissions,
       :disable_handins, :category_name, :group_size, :writeup_format, :handout_format, :has_scoreboard, :has_autograder, :max_unpenalized_submissions]
-    if not @cud.student?
-      allowed += [:grading_deadline]
-    end
 
     result = @assessment.attributes.symbolize_keys
     result.merge!(:has_scoreboard => @assessment.has_scoreboard?)
@@ -57,6 +54,7 @@ class Api::V1::AssessmentsController < Api::V1::BaseApiController
     end
 
     if @assessment.writeup_is_file?
+      # Note: writeup_is_file? validates that the writeup lies within the assessment folder
       filename = @assessment.writeup_path
       send_file(filename,
                 disposition: "inline",
@@ -73,6 +71,11 @@ class Api::V1::AssessmentsController < Api::V1::BaseApiController
 
     if @assessment.overwrites_method?(:handout)
       hash = @assessment.config_module.handout
+      # Ensure that handout lies within the assessment folder
+      unless Archive.in_dir?(Pathname(hash["fullpath"]), @assessment.folder_path)
+        respond_with_hash({:handout => "none"}) and return
+      end
+
       send_file(hash["fullpath"],
                 disposition: "inline",
                 filename: hash["filename"])
@@ -84,6 +87,7 @@ class Api::V1::AssessmentsController < Api::V1::BaseApiController
     end
 
     if @assessment.handout_is_file?
+      # Note: handout_is_file? validates that the handout lies within the assessment folder
       filename = @assessment.handout_path
       send_file(filename,
                 disposition: "inline",

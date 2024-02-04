@@ -1,44 +1,26 @@
-
 <li class="collection-item">
   <p>
-  <% if attachment.assessment.nil? %>
-    <%= link_to course_attachment_path(@course, attachment) do %>
+    <%= link_to attachment.has_assessment? ? course_assessment_attachment_path(@course, attachment.assessment, attachment) : course_attachment_path(@course, attachment) do %>
       <i class="material-icons left">file_download</i>
       <%= attachment.name %>
-      <% unless attachment.released %>
-        <b>(Not Released)</b>
-      <% end %>
-    <% end %>
-  <% else %>
-    <%= link_to course_assessment_attachment_path(@course, attachment.assessment, attachment) do %>
-      <i class="material-icons left">file_download</i>
-      <%= attachment.name %>
-      <% unless attachment.released %>
+      <% unless attachment.released? %>
           <b>(Not Released)</b>
       <% end %>
     <% end %>
-  <% end %>
 
-  <% if !attachment.assessment.nil? && @assessment.nil? %>
-    (<%= attachment.assessment.display_name %>)
-  <% end %>
+    <% if attachment.has_assessment? && @assessment.nil? %>
+      (<%= attachment.assessment.display_name %>)
+    <% end %>
 
-  <span class="secondary-content">
-  <% if @cud.instructor? %>
-    <% if attachment.assessment.nil? %>
+    <span class="secondary-content">
+    <% if @cud.instructor? %>
       <%= link_to '<i class="material-icons left">mode_edit</i>'.html_safe,
-                  edit_course_attachment_path(@course, attachment), { class: "small" } %>
-      <%= link_to '<i class="material-icons left">delete</i>'.html_safe,
-                  course_attachment_path(@course, attachment), { method: :delete, class: "small" } %>
-    <% else %>
-      <%= link_to '<i class="material-icons left">mode_edit</i>'.html_safe,
-                  edit_course_assessment_attachment_path(@course, attachment.assessment, attachment),
+                  attachment.has_assessment? ? edit_course_assessment_attachment_path(@course, attachment.assessment, attachment) : edit_course_attachment_path(@course, attachment),
                   { class: "small" } %>
       <%= link_to '<i class="material-icons left">delete</i>'.html_safe,
-                  course_assessment_attachment_path(@course, attachment.assessment, attachment),
+                  attachment.has_assessment? ? course_assessment_attachment_path(@course, attachment.assessment, attachment) : course_attachment_path(@course, attachment),
                   { method: :delete, class: "small", data: { confirm: "Are you sure you want to delete this attachment?" } } %>
     <% end %>
-  <% end %>
-  </span>
+    </span>
   </p>
 </li>
