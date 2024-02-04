@@ -9,8 +9,16 @@
 <% end %>
 
 <script>
+/**
+ * initialization of global variables used across manage_submissions.js,
+ * annotations_helpers.js, annotations.js, and annotations_popup.js
+ */
 let basePath = "";
+
+// a json list of scores for this assessment
 var scores = [];
+
+// a json list of problems for this assessment
 let problems = <%= raw @problems.to_json %>;
 let localCache = {};
 var cudEmailStr = "<%= @cud.email %>";
