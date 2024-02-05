@@ -167,7 +167,7 @@ class CoursesController < ApplicationController
 
   action_auth_level :create_from_tar, :administrator
   def create_from_tar
-    tarFile = params["tarFile"]
+    tarFile = params[:tarFile]
     if tarFile.nil?
       flash[:error] = "Please select a course tarball for uploading."
       render(action: "new") && return
@@ -180,7 +180,7 @@ class CoursesController < ApplicationController
       unless valid_course_tar(tar_extract)
         flash[:error] +=
           "<br>Invalid tarball. A valid course tar has a single root "\
-            "directory that's named after the assessment, containing a "\
+            "directory that's named after the course, containing a "\
             "course yaml file"
         flash[:html_safe] = true
         render(action: "new") && return
@@ -1331,14 +1331,14 @@ private
     # has a different name then the pathname
     if !course_name.nil? && course_name !~ /\A(\w|-)+\z/
       flash[:error] = "Errors found in tarball: Course name #{course_name} is invalid."
-      flash[:html_safe] = true
-      course_name_is_valid = false
+      return false
     end
     if !(course_yml_exists && !course_name.nil?)
       flash[:error] = "Errors found in tarball:"
       if !course_yml_exists && !course_name.nil?
         flash[:error] += "<br>Course yml file #{course_name}/#{course_name}.yml was not found"
       end
+      flash[:html_safe] = true
     end
     course_yml_exists && !course_name.nil? && course_name_is_valid
   end
