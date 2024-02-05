@@ -246,7 +246,7 @@ class CoursesController < ApplicationController
         render(action: "new") && return
       else
         flash[:success] = "New Course #{@newCourse.name} successfully created!"
-        redirect_to(courseOnboardInstallAsmt_course_assessments_path(@newCourse)) && return
+        redirect_to(course_onboard_install_asmt_course_assessments_path(@newCourse)) && return
       end
 
     else

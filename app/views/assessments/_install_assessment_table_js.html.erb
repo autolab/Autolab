@@ -1,6 +1,6 @@
 <% content_for :javascripts do %>
   <script>
-      let importAsmtsUrl = new URL(`<%= url_for(importAssessments_course_assessments_url(@course)) %>`)
+      let importAsmtsUrl = new URL(`<%= url_for(import_assessments_course_assessments_url(@course)) %>`)
       // dropdown toggle
       function toggleInstallDropdownOptions(dropdownId, tableId) {
           if (!$(`#${tableId}`).parents().hasClass('import-incomplete')) {

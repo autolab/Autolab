@@ -197,10 +197,10 @@ Rails.application.routes.draw do
 
       collection do
         get "install_assessment"
-        get "courseOnboardInstallAsmt"
-        post "importAssessment"
-        post "importAssessments"
-        post "importAsmtFromTar"
+        get "course_onboard_install_asmt"
+        post "import_assessment"
+        post "import_assessments"
+        post "import_asmt_from_tar"
       end
     end
 

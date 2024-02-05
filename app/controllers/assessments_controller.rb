@@ -24,9 +24,9 @@ class AssessmentsController < ApplicationController
 
   # this is inherited from ApplicationController
   before_action :set_assessment, except: %i[index new create install_assessment
-                                            importAsmtFromTar importAssessment
-                                            log_submit local_submit autograde_done importAssessments
-                                            courseOnboardInstallAsmt]
+                                            import_asmt_from_tar import_assessment
+                                            log_submit local_submit autograde_done import_assessments
+                                            course_onboard_install_asmt]
   before_action :set_submission, only: [:viewFeedback]
 
   # We have to do this here, because the modules don't inherit ApplicationController.
@@ -100,14 +100,14 @@ class AssessmentsController < ApplicationController
     get_unimported_asmts_from_dir
   end
 
-  action_auth_level :courseOnboardInstallAsmt, :instructor
-  def courseOnboardInstallAsmt
+  action_auth_level :course_onboard_install_asmt, :instructor
+  def course_onboard_install_asmt
     get_unimported_asmts_from_dir
   end
 
-  action_auth_level :importAsmtFromTar, :instructor
+  action_auth_level :import_asmt_from_tar, :instructor
 
-  def importAsmtFromTar
+  def import_asmt_from_tar
     tarFile = params["tarFile"]
     if tarFile.nil?
       flash[:error] = "Please select an assessment tarball for uploading."
@@ -193,10 +193,10 @@ class AssessmentsController < ApplicationController
     handleImportResults(import_result, asmt_name)
   end
 
-  # importAssessments - Allows for multiple simultaneous imports of asmts
+  # import_assessments - Allows for multiple simultaneous imports of asmts
   # from file system, returning results of each import
-  action_auth_level :importAssessments, :instructor
-  def importAssessments
+  action_auth_level :import_assessments, :instructor
+  def import_assessments
     if params[:assessment_names].nil? || !params[:assessment_names].is_a?(Array)
       render json: { error: "Did not receive array of assessment names" }, status: :bad_request
       return
@@ -206,10 +206,10 @@ class AssessmentsController < ApplicationController
     render json: import_results
   end
 
-  # importAssessment - Imports an existing assessment from local file system
-  action_auth_level :importAssessment, :instructor
+  # import_assessment - Imports an existing assessment from local file system
+  action_auth_level :import_assessment, :instructor
 
-  def importAssessment
+  def import_assessment
     if params[:assessment_name].nil?
       flash[:error] = "No assessment name specified."
       redirect_to(install_assessment_course_assessments_path(@course))
@@ -243,7 +243,7 @@ class AssessmentsController < ApplicationController
   end
 
   # helper function that finalizes importing assessments, using files in file system
-  # called by both importAsmtFromTar and importAssessment
+  # called by both import_asmt_from_tar and importAssessment
   # can import multiple assessments at once, returning statuses of import and any errors
   def importAssessmentsFromFileSystem(assessment_names, cleanup_on_failure)
     import_statuses = Array.new(assessment_names.length)
