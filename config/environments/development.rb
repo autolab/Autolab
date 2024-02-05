@@ -61,6 +61,10 @@ Rails.application.configure do
   # Suppress logger output for asset requests.
   config.assets.quiet = true
 
+  # Keep precompiled assets in a different location than production
+  # So that the development server always compiles assets on-the-fly
+  config.assets.prefix = "/dev-assets"
+
   # Raises error for missing translations.
   # config.i18n.raise_on_missing_translations = true
 
