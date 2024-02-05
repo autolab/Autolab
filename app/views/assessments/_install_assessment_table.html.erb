@@ -26,13 +26,13 @@
       <tr>
         <th>Assessment Name</th>
       </tr>
-      <% @unused_config_files.each do |ass_file| %>
+      <% @unused_config_files.each do |asmt_file| %>
         <tr class="assessment-field checked">
           <td>
             <div
               class="error-dropdown"
-              id="error-dropdown-<%= ass_file %>"
-              onclick="toggleInstallDropdownOptions('error-dropdown-<%= ass_file %>', '<%= ass_file %>-messages-dropdown')">
+              id="error-dropdown-<%= asmt_file %>"
+              onclick="toggleInstallDropdownOptions('error-dropdown-<%= asmt_file %>', '<%= asmt_file %>-messages-dropdown')">
               <b class="install-success-p">
                 Installed!
               </b>
@@ -46,12 +46,10 @@
                 Failed to Install
               </b>
               <label>
-                <%= check_box_tag ass_file, ass_file, true, class: 'cbox', id: "#{ass_file}_checkbox" %>
-                <% link_to ass_file, importAssessment_course_assessments_path(@course, assessment_name: ass_file), method: :post, class: "collection-item", id: "#{ass_file}_checkbox_importLink" %>
-
+                <%= check_box_tag asmt_file, asmt_file, true, class: 'cbox', id: "#{asmt_file}_checkbox" %>
                 <span />
               </label>
-              <%= ass_file %>
+              <%= asmt_file %>
               <i class="material-icons expand-more">
                 expand_more
               </i>
@@ -60,7 +58,7 @@
               </i>
             </div>
             <div
-              id="<%= ass_file %>-messages-dropdown"
+              id="<%= asmt_file %>-messages-dropdown"
               class="messages-dropdown"
               style="display: none;">
               No error messages returned.

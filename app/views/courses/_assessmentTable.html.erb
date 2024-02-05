@@ -10,16 +10,16 @@
           <td><em>Install?</em></td>
           <td><em>Assessment</em></td>
         </tr>
-        <% @unused_config_files.each do |ass_file| %>
+        <% @unused_config_files.each do |asmt_file| %>
           <tr class="assessment-field checked">
             <td>
               <label>
-                <%= check_box_tag 'install_assessments[]', ass_file, true, class: 'cbox', id: "#{ass_file}_checkbox" %>
+                <%= check_box_tag 'install_assessments[]', asmt_file, true, class: 'cbox', id: "#{asmt_file}_checkbox" %>
                 <span />
               </label>
             </td>
             <td>
-              <%= link_to ass_file, importAssessment_course_assessments_path(@course, assessment_name: ass_file), method: :post, class: "collection-item import" %>
+              <%= link_to asmt_file, importAssessment_course_assessments_path(@course, assessment_name: asmt_file), method: :post, class: "collection-item import" %>
             </td>
           </tr>
         <% end %>
