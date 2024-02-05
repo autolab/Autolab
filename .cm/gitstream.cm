@@ -1,0 +1,61 @@
+# -*- mode: yaml -*-
+
+manifest:
+  version: 1.0
+
+size:
+  is:
+    small: {{ branch.diff.size < 100 }}
+    medium: {{ branch.diff.size >= 100 and branch.diff.size < 300 }}
+    large: {{ branch.diff.size >= 300 }}
+
+color:
+  small: "76DBBE"
+  medium: "2986CC"
+  large: "C90076"
+  waiting-for-review: "EDEDED"
+
+automations:
+  reviewer-assignment:
+    if:
+      - {{ pr.draft == false and pr.reviewers.length == 0 and pr.approvals.length == 0 }}
+    run:
+      - action: add-reviewers@v1
+        args:
+          reviewers: [autolab/developers-current]
+
+  size-labeling-small:
+    if:
+      - {{ size.is.small }}
+    run:
+      - action: add-label@v1
+        args:
+          label: "small"
+          color: {{ color.small }}
+
+  size-labeling-medium:
+    if:
+      - {{ size.is.medium }}
+    run:
+      - action: add-label@v1
+        args:
+          label: "medium"
+          color: {{ color.medium }}
+
+  size-labeling-large:
+    if:
+      - {{ size.is.large }}
+    run:
+      - action: add-label@v1
+        args:
+          label: "large"
+          color: {{ color.large }}
+
+  check-approvals:
+    if:
+      - {{ pr.draft == false and pr.approvals.length == 0 }}
+    run:
+      - action: add-label@v1
+        args:
+          label: "waiting-for-review"
+          color: {{ color["waiting-for-review"] }}
