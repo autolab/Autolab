@@ -530,7 +530,7 @@ private
   end
 
   GENERAL_SERIALIZABLE = Set.new %w[display_name category_name description handin_filename
-                                    handin_directory has_svn has_lang max_grace_days handout
+                                    handin_directory max_grace_days handout
                                     writeup max_submissions disable_handins max_size
                                     version_threshold is_positive_grading embedded_quiz group_size
                                     github_submission_enabled allow_student_assign_group
