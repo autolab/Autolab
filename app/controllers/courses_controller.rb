@@ -81,6 +81,7 @@ class CoursesController < ApplicationController
     end
   end
 
+  action_auth_level :new, :administrator
   def new
     # check for permission
     unless current_user.administrator?
@@ -164,13 +165,8 @@ class CoursesController < ApplicationController
     end
   end
 
+  action_auth_level :create_from_tar, :administrator
   def create_from_tar
-    # check for permission
-    unless current_user.administrator?
-      flash[:error] = "Permission denied."
-      redirect_to(root_path) && return
-    end
-
     tarFile = params["tarFile"]
     if tarFile.nil?
       flash[:error] = "Please select a course tarball for uploading."
@@ -260,6 +256,7 @@ class CoursesController < ApplicationController
   end
 
   action_auth_level :edit, :instructor
+  def edit; end
 
   action_auth_level :update, :instructor
   def update

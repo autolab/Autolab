@@ -314,9 +314,8 @@ class AssessmentsController < ApplicationController
       @assessment = @course.assessments.find_by!(name: asmt_name)
       flash[:success] = "Successfully imported #{asmt_name}."
       unless import_result[:messages].empty?
-        # rubocop:disable Rails/OutputSafety
-        flash[:notice] = import_result[:messages].join("<br>").html_safe
-        # rubocop:enable Rails/OutputSafety
+        flash[:html_safe] = true
+        flash[:notice] = import_result[:messages].join("<br>")
       end
       redirect_to(course_assessment_path(@course, @assessment))
     else

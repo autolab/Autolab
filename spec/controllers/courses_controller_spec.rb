@@ -354,7 +354,7 @@ RSpec.describe CoursesController, type: :controller do
                                          tarFile: file }
         expect(response).to have_http_status(200)
         expect(flash[:error]).to be_present
-        expect(flash[:error]).to match(/.yml was not found/m)
+        expect(flash[:error]).to match(/\.yml was not found/m)
       end
       it "handles bad config file syntax" do
         file = fixture_file_upload("courses/course-bad-config-syntax.tar")
@@ -370,7 +370,7 @@ RSpec.describe CoursesController, type: :controller do
                                          tarFile: file }
         expect(response).to have_http_status(200)
         expect(flash[:error]).to be_present
-        expect(flash[:error]).to match(/there is only one root directory in the tarball./m)
+        expect(flash[:error]).to match(/there is only one root directory in the tarball/m)
       end
     end
   end
