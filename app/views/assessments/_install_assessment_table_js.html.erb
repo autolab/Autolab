@@ -32,20 +32,21 @@
                       $('#error-install-help').show()
                   }
                   $.each(checkedAsmts, (i, cbox) => {
+                      const closest_tr = $(cbox).closest("tr")
                       $(cbox).closest(".import-incomplete").removeClass("import-incomplete").addClass("import-complete")
                       if (data[i].status === `<%= AssessmentsController::IMPORT_ASMT_SUCCESS_STATUS %>`) {
-                          $(cbox).closest("tr").addClass("import-success")
+                          closest_tr.addClass("import-success")
                           if (data[i].messages.length > 0) {
-                              $(cbox).closest("tr").find('.import-success-messages').css('display', 'flex');
-                              $(cbox).closest("tr").find('.messages-dropdown').text(data[i].messages.toString())
+                              closest_tr.find('.import-success-messages').css('display', 'flex');
+                              closest_tr.find('.messages-dropdown').text(data[i].messages.toString())
                               $(cbox).parent().hide()
                           } else {
-                              $(cbox).closest("tr").find('.install-success-p').show()
+                              closest_tr.find('.install-success-p').show()
                           }
                       } else if (data[i].status === `<%= AssessmentsController::IMPORT_ASMT_FAILURE_STATUS %>`) {
-                          $(cbox).closest("tr").addClass("import-failure")
-                          $(cbox).closest("tr").find('.install-failure-p').show()
-                          $(cbox).closest("tr").find('.messages-dropdown').text(data[i].errors.toString())
+                          closest_tr.addClass("import-failure")
+                          closest_tr.find('.install-failure-p').show()
+                          closest_tr.find('.messages-dropdown').text(data[i].errors.toString())
                           $(cbox).parent().hide()
                       }
 

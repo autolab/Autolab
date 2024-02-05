@@ -229,24 +229,24 @@ class CoursesController < ApplicationController
       new_cud.user = instructor
       new_cud.instructor = true
 
-      if new_cud.save
-        begin
-          @newCourse.reload_course_config
-        rescue StandardError, SyntaxError
-          # roll back course creation and instruction creation
-          new_cud.destroy
-          @newCourse.destroy
-          flash[:error] = "Can't load course config for #{@newCourse.name}."
-          render(action: "new") && return
-        else
-          flash[:success] = "New Course #{@newCourse.name} successfully created!"
-          redirect_to(courseOnboardInstallAsmt_course_assessments_path(@newCourse)) && return
-        end
-      else
+      unless new_cud.save
         # roll back course creation
         @newCourse.destroy
         flash[:error] = "Can't create instructor for the course."
         render(action: "new") && return
+      end
+
+      begin
+        @newCourse.reload_course_config
+      rescue StandardError, SyntaxError
+        # roll back course creation and instruction creation
+        new_cud.destroy
+        @newCourse.destroy
+        flash[:error] = "Can't load course config for #{@newCourse.name}."
+        render(action: "new") && return
+      else
+        flash[:success] = "New Course #{@newCourse.name} successfully created!"
+        redirect_to(courseOnboardInstallAsmt_course_assessments_path(@newCourse)) && return
       end
 
     else
@@ -1330,7 +1330,8 @@ private
     # the expected course path when the Ruby config file
     # has a different name then the pathname
     if !course_name.nil? && course_name !~ /\A(\w|-)+\z/
-      flash[:error] = "Errors found in tarball: Course name #{course_name} is invalid."
+      flash[:error] = "Errors found in tarball: Course name is invalid. Valid course names consist
+                  of letters, numbers, and hyphens, starting and ending with a letter or number."
       return false
     end
     if !(course_yml_exists && !course_name.nil?)

@@ -189,7 +189,7 @@ class AssessmentsController < ApplicationController
     end
 
     # asmt files now in file system, so finish import via file system
-    import_result = importAssessmentFromFileSystem([asmt_name], true)
+    import_result = importAssessmentsFromFileSystem([asmt_name], true)
     handleImportResults(import_result, asmt_name)
   end
 
@@ -201,7 +201,7 @@ class AssessmentsController < ApplicationController
       render json: { error: "Did not receive array of assessment names" }, status: :bad_request
       return
     end
-    import_results = importAssessmentFromFileSystem(params[:assessment_names], false)
+    import_results = importAssessmentsFromFileSystem(params[:assessment_names], false)
     import_results = import_results.each(&:to_json)
     render json: import_results
   end
@@ -238,14 +238,14 @@ class AssessmentsController < ApplicationController
       FileUtils.rm_rf(assessment_path) if cleanup_on_failure
       redirect_to(install_assessment_course_assessments_path(@course)) && return
     end
-    import_result = importAssessmentFromFileSystem([params[:assessment_name]], true)
+    import_result = importAssessmentsFromFileSystem([params[:assessment_name]], true)
     handleImportResults(import_result, params[:assessment_name])
   end
 
   # helper function that finalizes importing assessments, using files in file system
   # called by both importAsmtFromTar and importAssessment
   # can import multiple assessments at once, returning statuses of import and any errors
-  def importAssessmentFromFileSystem(assessment_names, cleanup_on_failure)
+  def importAssessmentsFromFileSystem(assessment_names, cleanup_on_failure)
     import_statuses = Array.new(assessment_names.length)
     import_statuses = import_statuses.map do |_status|
       {
