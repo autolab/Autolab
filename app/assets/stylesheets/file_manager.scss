@@ -4,6 +4,10 @@
   gap: 5rem;
 }
 
+.div-row-2 {
+  margin-top: 20px;
+}
+
 [type="checkbox"]:not(:checked) {
   opacity: 100;
   display: flex;
@@ -22,4 +26,9 @@
   justify-content: center;
   align-items: center;
   padding-top: 35%;
+}
+
+.table {
+  height: 100%;
+  overflow-y: auto;
 }

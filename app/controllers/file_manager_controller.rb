@@ -2,11 +2,6 @@
 require 'archive'
 require 'pathname'
 
-# 1) Allow for uploading of a folder + select multiple files
-# 2) Select multiple files to delete (tick and checkmark)
-# 3) Allow for folder download
-# 4) Scrolling within the page
-
 class FileManagerController < ApplicationController
   BASE_DIRECTORY = Rails.root.join('courses')
   before_action :set_base_url
@@ -42,7 +37,6 @@ class FileManagerController < ApplicationController
 
   def upload
     upload_file(params[:path].nil? ? "" : params[:path])
-    path
   end
 
   def delete
@@ -54,7 +48,7 @@ class FileManagerController < ApplicationController
         FileUtils.rm(absolute_path)
       end
     end
-    flash[:success] = "File(s) deleted."
+    flash[:success] = "Successfully deleted file(s)"
   end
 
   def rename
@@ -90,13 +84,47 @@ class FileManagerController < ApplicationController
 
       FileUtils.mkdir_p(parent)
       FileUtils.mv(absolute_path, new_path)
-      flash[:success] = "File successfully renamed"
+      flash[:success] = "Successfully renamed file to #{params[:new_name]}"
     end
   rescue ArgumentError => e
     flash[:error] = e.message
   end
 
 private
+
+  def upload_file(path)
+    absolute_path = check_path_exist(path)
+    if absolute_path === BASE_DIRECTORY
+      flash[:error] = "You cannot upload files in the root course directory " \
+         "#{view_context.link_to 'here', new_course_url, method: 'get'}" \
+         " if you want to create a new course."
+      flash[:html_safe] = true
+    else
+      raise ActionController::ForbiddenError unless File.directory?(absolute_path)
+
+      if check_instructor(absolute_path)
+        if params[:name] != ""
+          # Creating a folder
+          dir = "#{absolute_path}/#{params[:name]}"
+          FileUtils.mkdir_p(dir) unless File.directory?(dir)
+          flash[:success] = "Successfully created folder"
+        else
+          # Uploading a file
+          input_file = params[:file]
+          return unless input_file
+          all_filenames = Dir.entries(absolute_path)
+          if all_filenames.include?(input_file.original_filename)
+            flash[:error] = "File with name #{input_file.original_filename} already exists"
+          else
+            File.open(Rails.root.join(absolute_path, input_file.original_filename), 'wb') do |file|
+              file.write(input_file.read)
+            end
+            flash[:success] = "Successfully uploaded file(s)"
+          end
+        end
+      end
+    end
+  end
 
   def my_escape(string)
     string.gsub(/([^ a-zA-Z0-9_.-]+)/) do
@@ -147,30 +175,6 @@ private
       raise ArgumentError, 'Should not be parent of root'
     end
     tested_path
-  end
-
-  def upload_file(path)
-    absolute_path = check_path_exist(path)
-    if absolute_path === BASE_DIRECTORY
-      flash[:error] = "You cannot upload files in the root course directory " \
-         "#{view_context.link_to 'here', new_course_url, method: 'get'}" \
-         " if you want to create a new course."
-      flash[:html_safe] = true
-    else
-      raise ActionController::ForbiddenError unless File.directory?(absolute_path)
-
-      if check_instructor(absolute_path)
-        input_file = params[:file]
-        return unless input_file
-
-        all_filenames = Dir.entries(absolute_path)
-        @duplicated_file = all_filenames.include?(input_file.original_filename)
-
-        File.open(Rails.root.join(absolute_path, input_file.original_filename), 'wb') do |file|
-          file.write(input_file.read)
-        end
-      end
-    end
   end
 
   def check_path_exist(path)
