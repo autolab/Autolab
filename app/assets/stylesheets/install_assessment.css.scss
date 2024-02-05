@@ -7,8 +7,6 @@
 }
 
 .install-asmt-table-container {
-  border: 1px solid black;
-  border-radius: 15px;
   margin-top: 20px;
   margin-bottom: 20px;
 }
@@ -22,21 +20,19 @@
 }
 
 .assessment-import-table {
-  border-collapse: collapse;
-  border-radius: 15px;
-  overflow:hidden;
+  overflow: hidden;
   width: 100%;
-  border: 1px solid black;
+  box-shadow: none;
 }
 
-.assessment-import-table tr{
-  border-bottom: 1px solid black;
+.assessment-import-table tr {
+  border: 1px solid #ddd;
+  border-radius: 15px;
 }
 
-.assessment-import-table td, .assessment-import-table th{
-  padding: 10px  10px;
+.assessment-import-table td, .assessment-import-table th {
+  padding: 10px 1rem 10px 1rem;
   vertical-align: middle;
-  border-left: 1px solid black;
 }
 
 .assessment-import-table th {
