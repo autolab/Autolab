@@ -20,34 +20,34 @@
               $("#selectAll").addClass("disabled");
 
               let checkedAsmts = $(".cbox").filter(':checked');
-              let checkedAsmtNames = $.map(checkedAsmts, function(cbox){
-                  return $(cbox).attr('name')
+              let checkedAsmtNames = $.map(checkedAsmts, function(cbox) {
+                  return $(cbox).attr('name');
               })
               $.each(checkedAsmts, (i, cbox) => {
-                  $(cbox).prop("disabled", true)
+                  $(cbox).prop("disabled", true);
               })
-              $.post(importAsmtsUrl, {assessment_names: checkedAsmtNames}, function(data){
+              $.post(importAsmtsUrl, {assessment_names: checkedAsmtNames}, function(data) {
                   const errored = data.filter((entry) => entry.status === "FAIL").length > 0;
                   if (errored) {
-                      $('#error-install-help').show()
+                      $('#error-install-help').show();
                   }
                   $.each(checkedAsmts, (i, cbox) => {
-                      const closest_tr = $(cbox).closest("tr")
-                      $(cbox).closest(".import-incomplete").removeClass("import-incomplete").addClass("import-complete")
+                      const closest_tr = $(cbox).closest("tr");
+                      $(cbox).closest(".import-incomplete").removeClass("import-incomplete").addClass("import-complete");
                       if (data[i].status === `<%= AssessmentsController::IMPORT_ASMT_SUCCESS_STATUS %>`) {
-                          closest_tr.addClass("import-success")
+                          closest_tr.addClass("import-success");
                           if (data[i].messages.length > 0) {
                               closest_tr.find('.import-success-messages').css('display', 'flex');
-                              closest_tr.find('.messages-dropdown').text(data[i].messages.toString())
-                              $(cbox).parent().hide()
+                              closest_tr.find('.messages-dropdown').text(data[i].messages.toString());
+                              $(cbox).parent().hide();
                           } else {
-                              closest_tr.find('.install-success-p').show()
+                              closest_tr.find('.install-success-p').show();
                           }
                       } else if (data[i].status === `<%= AssessmentsController::IMPORT_ASMT_FAILURE_STATUS %>`) {
-                          closest_tr.addClass("import-failure")
-                          closest_tr.find('.install-failure-p').show()
-                          closest_tr.find('.messages-dropdown').text(data[i].errors.toString())
-                          $(cbox).parent().hide()
+                          closest_tr.addClass("import-failure");
+                          closest_tr.find('.install-failure-p').show();
+                          closest_tr.find('.messages-dropdown').text(data[i].errors.toString());
+                          $(cbox).parent().hide();
                       }
 
                   })
@@ -61,10 +61,10 @@
       });
       $(function() {
           $("#selectAll").click(function(e) {
-              $(".cbox").prop("checked", true)
+              $(".cbox").prop("checked", true);
           })
           $("#unselectAll").click(function(e) {
-              $(".cbox").prop("checked", false)
+              $(".cbox").prop("checked", false);
           })
       })
   </script>

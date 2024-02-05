@@ -202,7 +202,7 @@ class AssessmentsController < ApplicationController
       return
     end
     import_results = importAssessmentsFromFileSystem(params[:assessment_names], false)
-    import_results = import_results.each(&:to_json)
+    import_results = import_results.map(&:to_json)
     render json: import_results
   end
 
@@ -210,7 +210,7 @@ class AssessmentsController < ApplicationController
   action_auth_level :import_assessment, :instructor
 
   def import_assessment
-    if params[:assessment_name].nil?
+    if params[:assessment_name].blank?
       flash[:error] = "No assessment name specified."
       redirect_to(install_assessment_course_assessments_path(@course))
     end
