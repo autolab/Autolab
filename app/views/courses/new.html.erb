@@ -1,12 +1,8 @@
-<% content_for :javascripts do %>
-  <%= javascript_include_tag "import_course" %>
-<% end %>
-
 <% active_tab = params.with_defaults(active: 'new-course')[:active] %>
 
 <div class="row">
   <div class="col s12">
-    <ul class="tabs" id="config-tabs">
+    <ul class="tabs">
       <li class="tab col s6"><a <% if active_tab == 'new-course' %> class="active" <% end %> href="#new-course">Create New Course</a></li>
       <li class="tab col s6"><a <% if active_tab == 'import-course' %> class="active" <% end %> href="#import-course">Import Course</a></li>
     </ul>

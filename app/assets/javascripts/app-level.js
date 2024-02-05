@@ -26,6 +26,8 @@ $(document).ready(function() {
     
     /* Materialize Initializations */
     $('select').formSelect();
+
+	$('.tabs').tabs();
 });
 
 
