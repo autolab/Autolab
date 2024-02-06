@@ -25,8 +25,8 @@ class AssessmentsController < ApplicationController
   # this is inherited from ApplicationController
   before_action :set_assessment, except: %i[index new create install_assessment
                                             import_asmt_from_tar import_assessment
-                                            log_submit local_submit autograde_done import_assessments
-                                            course_onboard_install_asmt]
+                                            log_submit local_submit autograde_done
+                                            import_assessments course_onboard_install_asmt]
   before_action :set_submission, only: [:viewFeedback]
 
   # We have to do this here, because the modules don't inherit ApplicationController.

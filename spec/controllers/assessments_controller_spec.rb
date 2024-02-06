@@ -99,8 +99,8 @@ RSpec.describe AssessmentsController, type: :controller do
         end
         file = Rack::Test::UploadedFile.new("tmp/test.tar")
         post :import_asmt_from_tar, params: { course_name: course_2_hash[:course].name,
-                                           name: course_2_hash[:assessment].name,
-                                           tarFile: file }
+                                              name: course_2_hash[:assessment].name,
+                                              tarFile: file }
 
         expect(response).to have_http_status(302)
         expect(flash[:success]).to be_present
@@ -115,7 +115,7 @@ RSpec.describe AssessmentsController, type: :controller do
       it "properly dumps imported data" do
         file = fixture_file_upload("assessments/all-fields-filled.tar")
         post :import_asmt_from_tar, params: { course_name: course_2_hash[:course].name,
-                                           tarFile: file }
+                                              tarFile: file }
         expect(response).to have_http_status(302)
         expect(flash[:success]).to be_present
         File.open(Rails.root.join(file_fixture_path, "assessments", "all-fields-filled.tar"),
@@ -139,15 +139,15 @@ RSpec.describe AssessmentsController, type: :controller do
       end
       it "handles nil tarfile" do
         post :import_asmt_from_tar, params: { course_name: course_2_hash[:course].name,
-                                           name: course_2_hash[:assessment].name }
+                                              name: course_2_hash[:assessment].name }
         expect(response).to have_http_status(302)
         expect(flash[:error]).to be_present
         expect(flash[:error]).to match(/Please select an assessment tarball for uploading/m)
       end
       it "handles bad tarfile" do
         post :import_asmt_from_tar, params: { course_name: course_2_hash[:course].name,
-                                           name: course_2_hash[:assessment].name,
-                                           tarFile: nil }
+                                              name: course_2_hash[:assessment].name,
+                                              tarFile: nil }
         expect(response).to have_http_status(302)
         expect(flash[:error]).to be_present
         expect(flash[:error]).to match(/Error while reading the tarball/m)
@@ -155,8 +155,8 @@ RSpec.describe AssessmentsController, type: :controller do
       it "handles yaml file name mismatch" do
         file = fixture_file_upload("assessments/homework02-file-mismatch.tar")
         post :import_asmt_from_tar, params: { course_name: course_2_hash[:course].name,
-                                           name: course_2_hash[:assessment].name,
-                                           tarFile: file }
+                                              name: course_2_hash[:assessment].name,
+                                              tarFile: file }
         expect(response).to have_http_status(302)
         expect(flash[:error]).to be_present
         expect(flash[:error]).to match(/Assessment yml file/m)
@@ -164,16 +164,16 @@ RSpec.describe AssessmentsController, type: :controller do
       it "handles legal assessment name" do
         file = fixture_file_upload("assessments/homework02-legal-name-no-config.tar")
         post :import_asmt_from_tar, params: { course_name: course_2_hash[:course].name,
-                                           name: course_2_hash[:assessment].name,
-                                           tarFile: file }
+                                              name: course_2_hash[:assessment].name,
+                                              tarFile: file }
         expect(response).to have_http_status(302)
         expect(flash[:success]).to be_present
       end
       it "handles mismatched module name" do
         file = fixture_file_upload("assessments/homework02-module-mismatch.tar")
         post :import_asmt_from_tar, params: { course_name: course_2_hash[:course].name,
-                                           name: course_2_hash[:assessment].name,
-                                           tarFile: file }
+                                              name: course_2_hash[:assessment].name,
+                                              tarFile: file }
         expect(response).to have_http_status(302)
         expect(flash[:success]).to be_present
         expect(File).to exist(course_2_hash[:assessment].unique_config_file_path)
@@ -186,8 +186,8 @@ RSpec.describe AssessmentsController, type: :controller do
       it "handles module with bad syntax" do
         file = fixture_file_upload("assessments/homework02_badsyntax.tar")
         post :import_asmt_from_tar, params: { course_name: course_2_hash[:course].name,
-                                           name: course_2_hash[:assessment].name,
-                                           tarFile: file }
+                                              name: course_2_hash[:assessment].name,
+                                              tarFile: file }
         expect(response).to have_http_status(302)
         expect(flash[:error]).to be_present
         expect(flash[:error]).to match(/syntax error/m)
@@ -195,13 +195,13 @@ RSpec.describe AssessmentsController, type: :controller do
       it "handles existing assessment reupload" do
         file = fixture_file_upload("assessments/homework02-correct.tar")
         post :import_asmt_from_tar, params: { course_name: course_2_hash[:course].name,
-                                           name: course_2_hash[:assessment].name,
-                                           tarFile: file }
+                                              name: course_2_hash[:assessment].name,
+                                              tarFile: file }
         expect(response).to have_http_status(302)
         expect(flash[:success]).to be_present
         post :import_asmt_from_tar, params: { course_name: course_2_hash[:course].name,
-                                           name: course_2_hash[:assessment].name,
-                                           tarFile: file }
+                                              name: course_2_hash[:assessment].name,
+                                              tarFile: file }
         expect(response).to have_http_status(302)
         expect(flash[:success]).to be_present
         expect(flash[:success]).to match(/IMPORTANT:/m)

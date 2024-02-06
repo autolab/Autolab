@@ -208,50 +208,48 @@ class CoursesController < ApplicationController
       render(action: "new") && return
     end
 
-    if @newCourse.save
-      instructor = User.where(email: params[:instructor_email]).first
-
-      # create a new user as instructor if they didn't exist
-      if instructor.nil?
-        begin
-          instructor = User.instructor_create(params[:instructor_email],
-                                              @newCourse.name)
-        rescue StandardError => e
-          # roll back course creation
-          @newCourse.destroy
-          flash[:error] = "Can't create instructor for the course: #{e}"
-          render(action: "new") && return
-        end
-
-      end
-
-      new_cud = @newCourse.course_user_data.new
-      new_cud.user = instructor
-      new_cud.instructor = true
-
-      unless new_cud.save
-        # roll back course creation
-        @newCourse.destroy
-        flash[:error] = "Can't create instructor for the course."
-        render(action: "new") && return
-      end
-
-      begin
-        @newCourse.reload_course_config
-      rescue StandardError, SyntaxError
-        # roll back course creation and instruction creation
-        new_cud.destroy
-        @newCourse.destroy
-        flash[:error] = "Can't load course config for #{@newCourse.name}."
-        render(action: "new") && return
-      else
-        flash[:success] = "New Course #{@newCourse.name} successfully created!"
-        redirect_to(course_onboard_install_asmt_course_assessments_path(@newCourse)) && return
-      end
-
-    else
+    unless @newCourse.save
       flash[:error] = "Course creation failed. Check all fields"
       render(action: "new") && return
+    end
+
+    instructor = User.where(email: params[:instructor_email]).first
+
+    # create a new user as instructor if they didn't exist
+    if instructor.nil?
+      begin
+        instructor = User.instructor_create(params[:instructor_email],
+                                            @newCourse.name)
+      rescue StandardError => e
+        # roll back course creation
+        @newCourse.destroy
+        flash[:error] = "Can't create instructor for the course: #{e}"
+        render(action: "new") && return
+      end
+    end
+
+    new_cud = @newCourse.course_user_data.new
+    new_cud.user = instructor
+    new_cud.instructor = true
+
+    unless new_cud.save
+      # roll back course creation
+      @newCourse.destroy
+      flash[:error] = "Can't create instructor for the course."
+      render(action: "new") && return
+    end
+
+    begin
+      @newCourse.reload_course_config
+    rescue StandardError, SyntaxError
+      # roll back course creation and instruction creation
+      new_cud.destroy
+      @newCourse.destroy
+      flash[:error] = "Can't load course config for #{@newCourse.name}."
+      render(action: "new") && return
+    else
+      flash[:success] = "New Course #{@newCourse.name} successfully created!"
+      redirect_to(course_onboard_install_asmt_course_assessments_path(@newCourse)) && return
     end
   end
 
