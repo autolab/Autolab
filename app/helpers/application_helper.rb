@@ -186,7 +186,9 @@ module ApplicationHelper
     when "semantic-ui-accordion"
       version = "2.4.1"
       javascript_include_tag "//#{cloudflare}/semantic-ui/#{version}/components/accordion.min.js"
-
+    when "clipboardjs"
+      version = "2.0.11"
+      javascript_include_tag "#{cloudflare}/clipboard.js/#{version}/clipboard.min.js"
     end
   end
 

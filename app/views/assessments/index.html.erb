@@ -5,6 +5,7 @@
             end %>
 
 <% content_for :javascripts do %>
+  <%= external_javascript_include_tag "clipboardjs" %>
   <script>
       jQuery(function() {
           /* a way to mimic nested anchor tags */
@@ -33,6 +34,10 @@
               }
           });
           <% end %>
+          const clipboard = new ClipboardJS('.btn-copy');
+          clipboard.on('success', function() {
+              M.toast({html: 'Direct join link copied to clipboard', displayLength: 1000});
+          });
       });
   </script>
 <% end %>
@@ -64,8 +69,12 @@
         <h3 style="border-bottom: 4px solid #dddddd"></h3>
         <% if @cud.instructor? %>
           <% if @course.access_code.present? %>
-            <p style="font-size: 18px">Access Code: <b><%= @course.access_code %></b></p>
-            <p style="font-size: 18px">Direct Join Link: <%= join_course_courses_url(access_code: @course.access_code) %> </p>
+            <p style="font-size: 18px">
+              Access Code: <b><%= @course.access_code %></b>
+              <a class="btn btn-floating btn-copy" data-clipboard-text="<%= join_course_courses_url(access_code: @course.access_code) %>">
+                <i class="material-icons left">content_copy</i>
+              </a>
+            </p>
           <% else %>
             <p style="font-size: 18px">Access Code: <b>(self-enrollment disabled)</b></p>
           <% end %>
