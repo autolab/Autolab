@@ -166,7 +166,7 @@ class CourseUserDataController < ApplicationController
       # error details are shown separately in the view
       flash[:error] = "Update failed.<br>"
       flash[:error] += @editCUD.errors.full_messages.join("<br>")
-      flash[:notice] = ""
+      flash.delete(:notice)
       flash[:html_safe] = true
       redirect_to(action: :edit) && return
     end

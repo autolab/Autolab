@@ -16,13 +16,16 @@ function formvalidation(form){
   }
 }
 
-// User can only be one of the following: instructor, course assistant, or dropped (student)
-function mutual_exclusion() {
-  const $instructor = $('#course_user_datum_instructor');
-  const $course_assistant = $('#course_user_datum_course_assistant');
-  const $dropped = $('#course_user_datum_dropped');
-  const fields = [$instructor, $course_assistant, $dropped];
+// User can be at most one of the following: instructor, course assistant, or dropped (student)
+const $instructor_checkbox = $('#course_user_datum_instructor');
+const $course_assistant_checkbox = $('#course_user_datum_course_assistant');
+const $dropped_checkbox = $('#course_user_datum_dropped');
+const mutually_exclusive_fields = [
+  $instructor_checkbox, $course_assistant_checkbox, $dropped_checkbox
+];
 
+function mutual_exclusion() {
+  const fields = mutually_exclusive_fields; // For brevity
   // Enable all fields
   fields.forEach((field) => field.prop('disabled', false));
 
@@ -46,7 +49,5 @@ $(document).ready(function(){
   });
 
   mutual_exclusion();
-  $('#course_user_datum_instructor').on("click", mutual_exclusion);
-  $('#course_user_datum_course_assistant').on("click", mutual_exclusion);
-  $('#course_user_datum_dropped').on("click", mutual_exclusion);
+  mutually_exclusive_fields.forEach((field) => field.on("click", mutual_exclusion));
 });
