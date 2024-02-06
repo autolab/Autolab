@@ -213,8 +213,8 @@ ActiveRecord::Schema.define(version: 2024_02_05_211415) do
     t.datetime "updated_at", null: false
     t.string "membership_url"
     t.string "platform"
-    t.boolean "auto_sync"
-    t.boolean "drop_missing_students"
+    t.boolean "auto_sync", default: false
+    t.boolean "drop_missing_students", default: false
   end
 
   create_table "module_data", force: :cascade do |t|
