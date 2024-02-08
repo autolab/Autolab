@@ -10,7 +10,7 @@ class DockersController < ApplicationController
     image_file = params[:image_file]
     if image_name.nil? || image_name.empty?
       flash[:error] = "Please specify an image name."
-    elsif %r{^[a-z0-9](_{0,2}[a-z0-9])*(/[a-z0-9](_{0,2}[a-z0-9])*)?$}.match(image_name).nil?
+    elsif %r{\A[a-z0-9](_{0,2}[a-z0-9])*(/[a-z0-9](_{0,2}[a-z0-9])*)?\z}.match(image_name).nil?
       flash[:error] =
         "Please specify a valid image name comprised of lowercase letters, digits, and \
          underscores. You may use one forward slash separator."
