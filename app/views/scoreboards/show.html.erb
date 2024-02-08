@@ -11,9 +11,7 @@
   <strong>There are currently no submissions.</strong>
 <% else %>
   <strong>
-    <% if @scoreboard.banner.blank? %>
-      Here are the most recent scores for the class.
-    <% else %>
+    <% unless @scoreboard.banner.blank? %>
       <%= sanitize @scoreboard.banner %>
     <% end %>
   </strong>
@@ -73,7 +71,7 @@
             <% if grade[:entry].is_a?(Array) && grade[:entry][i] != "-" %>
               <% grade[:entry].each do |column| %>
                 <td><%= column %></td>
-              <% end %>q
+              <% end %>
             <% else %>
               <%= render 'error_icon' %>
             <% end %>
