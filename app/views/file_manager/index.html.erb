@@ -109,68 +109,81 @@
 
 <div class="div-row">
   <%= form_tag({}, multipart: true) do %>
-    <input type="file" name="files" id="fileInput" multiple>
-    <input type="submit" onclick="uploadAllFiles('<%= @directory[1][:relative] %>')" value="Upload">
+    <div class="div-row-cols">
+      <span class="btn button-file">
+        <i class="material-icons left">cloud_upload</i>
+        Upload Files
+        <input type="file" name="files" id="fileInput" multiple onchange="uploadAllFiles('<%= @directory[1][:relative] %>')">
+      </span>
+    </div>
   <% end %>
-  <label for="delete-selected"></label>
-  <input type="submit" id="delete-selected" value="Delete Selected">
-  <label for="download-selected"></label>
-  <input type="submit" id="download-selected" value="Download Selected">
+  <span class="btn button-file">
+    <i class="material-icons left">folder</i>
+    Create Folder
+    <input type="submit" id="create-folder"
+           onclick="create_folder('<%= @directory[1][:relative] %>')" class="btn primary">
+  </span>
+  <span class="btn button-file">
+    <i class="material-icons left">download</i>
+    Download Selected
+    <input type="submit" id="download-selected" class="btn primary">
+  </span>
+  <span class="btn button-file">
+    <i class="material-icons left">delete</i>
+    Delete Selected
+    <input type="submit" id="delete-selected" class="btn primary">
+  </span>
 </div>
-<div class="div-row-2">
-  <label for="create-folder"></label>
-  <input type="submit" id="create-folder" value="Create Folder"
-         onclick="create_folder('<%= @directory[1][:relative] %>')">
-</div>
-<table class="table">
-  <thead>
-  <tr>
-    <th></th>
-    <th>Filename</th>
-    <th>Size</th>
-    <th>Date</th>
-    <th>Rename</th>
-    <th>Delete</th>
-  </tr>
-  </thead>
-  <tbody>
-  <% @directory.each do |entry| %>
-    <% if entry[:instructor] && entry[:entry] != './' %>
-      <tr class="table-row-center">
-        <td class="table-col-center">
-          <%= check_box_tag 'selected_files[]', entry[:relative], false, { html: { data: { path: entry[:relative] }}} %>
-        </td>
-        <td>
-          <%= link_to entry[:relative].to_s do %>
-            <i class='material-icons left middle'><%= entry[:type] == :file ? 'article' : 'folder' %></i>
-            <span><%= entry[:entry] %></span>
-          <% end %>
-        </td>
-        <td>
-          <%= entry[:size] %>
-        </td>
-        <td>
-          <%= entry[:date] %>
-        </td>
-        <td>
-          <% if entry[:entry] != './' && entry[:entry] != '../' %>
-            <%= link_to "#", id: "rename-file", onclick: "rename('#{entry[:relative]}')" do %>
-              <i class='material-icons left align-middle'>I</i>
-              Rename
+<div class="table-scroll">
+  <table class="table">
+    <thead>
+    <tr>
+      <th></th>
+      <th>Filename</th>
+      <th>Bytes</th>
+      <th>Date</th>
+      <th>Rename</th>
+      <th>Delete</th>
+    </tr>
+    </thead>
+    <tbody>
+    <% @directory.each do |entry| %>
+      <% if entry[:instructor] && entry[:entry] != './' %>
+        <tr class="table-row-center">
+          <td>
+            <%= check_box_tag 'selected_files[]', entry[:relative], false, { html: { data: { path: entry[:relative] }}} %>
+          <td>
+            <%= link_to entry[:relative].to_s do %>
+              <i class='material-icons left middle'><%= entry[:type] == :file ? 'article' : 'folder' %></i>
+              <span><%= entry[:entry] %></span>
             <% end %>
-          <% end %>
-        </td>
-        <td>
-          <% if entry[:entry] != './' && entry[:entry] != '../' %>
-            <%= link_to "#", id: "delete-file", data: { confirm: "Are you sure you want to delete `#{entry[:absolute]}`?" }, onclick: "deleteSelected('#{entry[:relative]}')" do %>
-              <i class='material-icons left middle'>delete</i>
-              Delete
+          </td>
+          <td>
+            <%= entry[:size] %>
+          </td>
+          <td>
+            <%= entry[:date] %>
+          </td>
+          <td class="table-row-icon">
+            <% if entry[:entry] != './' && entry[:entry] != '../' %>
+              <%= link_to "#", id: "rename-file", onclick: "rename('#{entry[:relative]}')" do %>
+                <i class='material-icons left align-middle'>drive_file_rename_outline</i>
+                Rename
+              <% end %>
             <% end %>
-          <% end %>
-        </td>
-      </tr>
+          </td>
+          <td>
+            <% if entry[:entry] != './' && entry[:entry] != '../' %>
+              <%= link_to "#", id: "delete-file", data: { confirm: "Are you sure you want to delete `#{entry[:absolute]}`?" }, onclick: "deleteSelected('#{entry[:relative]}')" do %>
+                <i class='material-icons left align-middle'>delete</i>
+                Delete
+              <% end %>
+            <% end %>
+          </td>
+        </tr>
+      <% end %>
     <% end %>
-  <% end %>
-  </tbody>
-</table>
+    </tbody>
+  </table>
+</div>
 
