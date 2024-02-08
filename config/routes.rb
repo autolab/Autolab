@@ -102,6 +102,11 @@ Rails.application.routes.draw do
       post "update_watchlist_configuration"
     end
 
+    resource :dockers, only: :index do
+      get "index"
+      post "uploadDockerImage"
+    end
+
     resources :jobs, only: :index do
       get "getjob", on: :member
 
