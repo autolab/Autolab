@@ -6,7 +6,9 @@
     <p>
       <%= link_to "Click here", tango_status_course_jobs_path %> to view the list of VM pools currently being used.
     </p>
-    <%= f.text_field :image_name, help_text: "Name of docker image. Any existing image with the same name will be overwritten." %>
+    <%= f.text_field :image_name,
+                     pattern: "^[a-z0-9](_{0,2}[a-z0-9])*(/[a-z0-9](_{0,2}[a-z0-9])*)?$",
+                     help_text: "Name of docker image. Any existing image with the same name will be overwritten." %>
     <%= f.file_field :image_file, button_text: "Choose Image" %>
     <%= f.submit "Upload Image" %>
   <% end %>
