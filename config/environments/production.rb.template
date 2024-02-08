@@ -109,7 +109,7 @@ Autolab3::Application.configure do
     }
 
   # Feature flag for docker image upload
-  config.docker_image_upload_enabled = false
+  config.x.docker_image_upload_enabled = false
 
   # ID for Heap Analytics
   config.x.analytics_id = nil

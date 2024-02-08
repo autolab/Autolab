@@ -72,7 +72,7 @@ Rails.application.configure do
   # config.file_watcher = ActiveSupport::EventedFileUpdateChecker
 
   # Feature flag for docker image upload
-  config.docker_image_upload_enabled = true
+  config.x.docker_image_upload_enabled = true
 
   # Uncomment if you wish to allow Action Cable access from any origin.
   # config.action_cable.disable_request_forgery_protection = true
