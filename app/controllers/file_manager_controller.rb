@@ -26,7 +26,7 @@ class FileManagerController < ApplicationController
       populate_directory(absolute_path, "#{params[:path]}/")
       render 'file_manager/index'
     elsif File.file?(absolute_path) && check_instructor(absolute_path)
-      if (File.size(absolute_path) > 1_000_000 || params[:download])
+      if File.size(absolute_path) > 1_000_000 || params[:download]
         send_file absolute_path
       else
         @file = File.read(absolute_path)
