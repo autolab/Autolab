@@ -44,8 +44,8 @@ class CoursesController < ApplicationController
     # GET + access_code when using direct join link
     # POST + access_code when using join course form
 
-    access_code = params[:access_code]
-    unless access_code.match(/\A[A-Z0-9]{6}\z/)
+    access_code = params[:access_code].upcase
+    unless Course::VALID_CODE_REGEX.match?(access_code)
       flash[:error] = "Invalid access code format"
       redirect_to(join_course_courses_path) && return
     end
