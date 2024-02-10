@@ -144,6 +144,8 @@ Rails.application.routes.draw do
           get "destroyConfirm"
           get "download"
           get "view"
+          get "releaseSubmission"
+          get "unreleaseSubmission"
         end
 
         collection do

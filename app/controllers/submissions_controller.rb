@@ -7,7 +7,8 @@ require "tempfile"
 class SubmissionsController < ApplicationController
   # inherited from ApplicationController
   before_action :set_assessment
-  before_action :set_submission, only: %i[destroy destroyConfirm download edit update view]
+  before_action :set_submission, 
+only: %i[destroy destroyConfirm download edit update view releaseSubmission unreleaseSubmission]
   before_action :get_submission_file, only: %i[download view]
 
   # this page loads.  links/functionality may be/are off
@@ -609,6 +610,28 @@ class SubmissionsController < ApplicationController
     end
   end
 
+  action_auth_level :releaseSubmission, :course_assistant
+  def releaseSubmission
+    p_scores = @submission.problems_to_scores
+    @assessment.problems.each_with_index do |p,i|
+      p_score = p_scores[p.id]
+      p_score&.released = true
+      p_score.save
+    end
+    redirect_back(fallback_location: root_path)
+  end
+
+  action_auth_level :unreleaseSubmission, :course_assistant
+  def unreleaseSubmission
+    p_scores = @submission.problems_to_scores
+    @assessment.problems.each_with_index do |p,i|
+      p_score = p_scores[p.id]
+      p_score&.released = false
+      p_score.save
+    end
+    redirect_back(fallback_location: root_path)
+  end
+
 private
 
   def new_submission_params
@@ -653,4 +676,5 @@ private
 
     true
   end
+
 end
