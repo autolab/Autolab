@@ -1,41 +1,56 @@
+<% @title = if @course.disabled?
+              "#{@course.full_name} (Course Disabled)"
+            else
+              @course.full_name
+            end %>
+
 <% content_for :javascripts do %>
+  <%= external_javascript_include_tag "clipboardjs" %>
   <script>
-      jQuery(function() {
-          /* a way to mimic nested anchor tags */
-          $('a.collection-item span.new.badge').each(function(idx, obj) {
-              $(obj).on("click", function() {
-                  if (obj.dataset.url)
-                    window.location = obj.dataset.url;
-                  return false;  // prevent click propagation
-              });
-          });
-          <% if (@cud.instructor? || @cud.course_assistant? && @course.watchlist_allow_ca) %>
-          $.getJSON('metrics/get_num_pending_instances',function(data, status){
-              if(status=='success' && data['num_pending'] != 0){
-                  // when there is a non-zero number of pending instances
-                  var pending_instances_str =
-                      `<div class='col s1 metrics'>
-                <i class='material-icons left metrics'>assessment</i>
-              </div>
-              <div class='col s4 metrics'>
-                <span class='new badge metrics-badge' data-badge-caption='${data["num_pending"]}'></span>
-              </div>
-              <h7 class='metrics'>
-                Student Metrics
-              </h7>`;
-                  $('.row.metrics').empty().append(pending_instances_str);
-              }
-          });
-          <% end %>
+    jQuery(function() {
+      /* a way to mimic nested anchor tags */
+      $('a.collection-item span.new.badge').each(function(idx, obj) {
+        $(obj).on("click", function() {
+          if (obj.dataset.url)
+            window.location = obj.dataset.url;
+          return false;  // prevent click propagation
+        });
       });
+      <% if (@cud.instructor? || @cud.course_assistant? && @course.watchlist_allow_ca) %>
+      $.getJSON('metrics/get_num_pending_instances',function(data, status){
+        if (status === 'success' && data['num_pending'] !== 0){
+          // when there is a non-zero number of pending instances
+          const pending_instances_str =
+            `<div class='col s1 metrics'>
+        <i class='material-icons left metrics'>assessment</i>
+      </div>
+      <div class='col s4 metrics'>
+        <span class='new badge metrics-badge' data-badge-caption='${data["num_pending"]}'></span>
+      </div>
+      <h7 class='metrics'>
+        Student Metrics
+      </h7>`;
+          $('.row.metrics').empty().append(pending_instances_str);
+        }
+      });
+      <% end %>
+      new ClipboardJS('#copy-access-code')
+      .on('success', function() {
+        M.toast({html: 'Access code copied to clipboard', displayLength: 1000});
+      });
+      new ClipboardJS('#copy-join-link')
+      .on('success', function() {
+        M.toast({html: 'Direct join link copied to clipboard', displayLength: 1000});
+      });
+    });
   </script>
 <% end %>
 
 <% content_for :stylesheets do %>
   <style>
-      .collection-item {
-          overflow: auto;
-      }
+    .collection-item {
+      overflow: auto;
+    }
   </style>
   <%= stylesheet_link_tag "assessments" %>
 <% end %>
@@ -56,6 +71,21 @@
       <div class="card-content white">
         <span class="card-title black-text" style="font-size: 40px"><b><%= "#{@course.display_name} #{@course.semester? ? "(#{@course.semester})" : ''} " %></b></span>
         <h3 style="border-bottom: 4px solid #dddddd"></h3>
+        <% if @cud.instructor? %>
+          <% if @course.access_code.present? %>
+            <p style="font-size: 18px">
+              Access Code: <b><%= @course.access_code %></b>
+              <a id="copy-access-code" class="btn btn-floating" data-clipboard-text="<%= @course.access_code %>">
+                <i class="material-icons left">content_copy</i>
+              </a>
+              <a id="copy-join-link" class="btn btn-floating btn-copy" data-clipboard-text="<%= join_course_courses_url(access_code: @course.access_code) %>">
+                <i class="material-icons left">link</i>
+              </a>
+            </p>
+          <% else %>
+            <p style="font-size: 18px">Access Code: <b>(self-enrollment disabled)</b></p>
+          <% end %>
+        <% end %>
         <p style="font-size: 18px">Section: <b><%= @cud.section.to_s %></b></p>
         <p style="font-size: 18px">Number of grace days remaining: <b><%= @cud.global_grace_days_left.to_s %></b></p><br>
 

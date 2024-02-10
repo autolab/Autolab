@@ -1,4 +1,4 @@
-<% @title = "Course Admin" %>
+<% @title = "Manage Course" %>
 
 <% content_for :stylesheets do %>
   <%= stylesheet_link_tag "student_gradebook" %>
@@ -34,10 +34,6 @@
             <li>
               <%= link_to "Send bulk email", email_course_path(@course),
                           { title: "Send an email to everyone in the class" } %>
-            </li>
-            <li>
-              <%= link_to "Manage course attachments", course_attachments_path(@course),
-                          { title: "Distribute files to your students" } %>
             </li>
             <li>
               <%= link_to "Manage announcements", course_announcements_path(@course),

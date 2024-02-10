@@ -77,6 +77,12 @@ Rails.application.configure do
   # Uncomment if you wish to allow Action Cable access from any origin.
   # config.action_cable.disable_request_forgery_protection = true
 
+  # ID for Heap Analytics
+  config.x.analytics_id = nil
+
+  # ID for Google Analytics
+  config.x.google_analytics_id = nil
+
   # OAuth2 Application Configuration for Github
   # See https://docs.autolabproject.com/installation/github_integration/
   config.x.github.client_id = ENV['GITHUB_CLIENT_ID']
