@@ -1,0 +1,13 @@
+<% @title = "Github Access Token" %>
+
+<h2>Github Update Access Token</h2>
+<% if GithubIntegration.connected %>
+  <%= form_with url: github_token_user_path do |form| %>
+    <div class="input-field">
+      <%= form.text_field :access_token, required: true %>
+      <%= form.label :access_token, "Access Token" %>
+      <span class="helper-text">Helpful description here</span>
+    </div>
+    <%= form.submit "Update Token", { class: "btn primary" } %>
+  <% end %>
+<% end %>
