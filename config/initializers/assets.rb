@@ -36,6 +36,7 @@ Rails.application.config.assets.precompile += %w( style.css.scss )
 Rails.application.config.assets.precompile += %w( eventdrops.css )
 Rails.application.config.assets.precompile += %w( metricsgraphics.scss )
 Rails.application.config.assets.precompile += %w( users.css.scss )
+Rails.application.config.assets.precompile += %w( bootstrap-datetimepicker.css )
 
 Rails.application.config.assets.precompile += %w( *.js )
 Rails.application.config.assets.precompile += %w( annotations.js )

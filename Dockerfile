@@ -9,10 +9,8 @@
 #
 FROM phusion/passenger-ruby32:2.6.1
 
-MAINTAINER Autolab Development Team "autolab-dev@andrew.cmu.edu"
-
 # Change to your time zone here
-RUN ln -fs /usr/share/zoneinfo/America/New_York /etc/localtime
+RUN ln -fs /usr/share/zoneinfo/America/Los_Angeles /etc/localtime
 
 # Install dependencies
 ENV DEBIAN_FRONTEND=noninteractive
@@ -55,11 +53,14 @@ RUN mkdir -p /home/app/webapp/log && \
   chmod 0664 /home/app/webapp/log/production.log && \
   chown -R app:app .
 
-USER app
+USER root
+RUN chown -R app:app .
+
+#WORKDIR /home/app/webapp
 
 # precompile the Rails assets
-ENV SECRET_KEY_BASE=dummy_secret_key_base
-RUN RAILS_ENV=production bundle exec rails assets:precompile
+ENV SECRET_KEY_BASE="ekz0nrn_DPG6ucv5ukw"
+#RUN RAILS_ENV=production bundle exec rails assets:precompile
 
 # Clean up APT when done.
 USER root

@@ -63,6 +63,12 @@
   <% end %>
   <% if GithubIntegration.connected %>
     <% if @user.github_integration && @user.github_integration.is_connected %>
+      <%= link_to github_update_user_path(@user) do %>
+        <span class="btn primary">
+          Update Github Token
+        </span>
+      <% end %>
+      
       <%= link_to github_revoke_user_path(@user), data: { method: "post" } do %>
         <span class="btn primary">
           Revoke Github Token
