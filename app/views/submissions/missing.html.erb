@@ -1,13 +1,11 @@
+<% @title = "Missing Submissions" %>
+
 <% content_for :javascripts do %>
   <%= javascript_include_tag "sorttable" %>
 <% end %>
 
-<h2>Missing Submissions for <%= link_to @assessment.display_name, course_assessment_path(@course, @assessment) %> </h2>
+<h4>Missing Submissions for <%= link_to @assessment.display_name, course_assessment_path(@course, @assessment) %> </h4>
 
-<%= link_to "Back to Manage Submissions",
-            course_assessment_submissions_path(@course, @assessment),
-            { title: "Return to the previous page" } %>
-|
 <%= link_to "Manage Extensions",
             course_assessment_extensions_path(@course, @assessment),
             { title: "Grant extensions to students" } %>

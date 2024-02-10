@@ -31,9 +31,12 @@
                     title: "View your user profile for the current course" %>
       </li>
     <% end %>
+    <li role="presentation">
+      <%= link_to "Join Course", join_course_courses_path, title: "Join Course" %>
+    </li>
     <% if Rails.env.development? %>
       <li role="presentation">
-        <a href='/home/developer_login'>Dev Login</a>
+        <%= link_to "Dev Login", home_developer_login_path %>
       </li>
     <% end %>
     <li role="presentation" class="divider"></li>
@@ -106,7 +109,7 @@
       </a>
 
       <ul class="right hide-on-med-and-down">
-        <% if session[:sudo] && @cud then %>
+        <% if session[:sudo] && @cud %>
           <li>
             <%= link_to "(#{@cud.display_name}) Return to instructor view",
                         unsudo_course_course_user_datum_path(@course, @cud),
@@ -124,7 +127,7 @@
           <% elsif @cud.instructor? || @cud.student? %>
             <li>
               <%= link_to "<i class='material-icons left'>grading</i> Gradebook".html_safe,
-                          [@course, @cud, :gradebook], title: "View your gradebook" %>
+                          course_course_user_datum_gradebook_path(@course, @cud), title: "View your gradebook" %>
             </li>
           <% end %>
 
@@ -152,7 +155,7 @@
         <% if user_signed_in? %>
           <li>
             <a class="dropdown-trigger" href="#!" data-target="dropdown1" data-beloworigin="true" data-hover="false">
-              <%= current_user.display_name %><i class="material-icons right">arrow_drop_down</i>
+              <i class='material-icons left'>person</i><%= current_user.display_name %><i class="material-icons right">arrow_drop_down</i>
             </a>
           </li>
         <% end %>
@@ -166,33 +169,36 @@
           <div class="dropdown-toggle" id="dropdownMenu1">
             <%= current_user.display_name %>
           </div>
-        <% unless current_user.nil? %>
+          <% unless current_user.nil? %>
+            <li role="presentation">
+              <%= link_to "<i class='material-icons left'>account_circle</i> Account".html_safe,
+                          user_path(current_user), title: "View your account info" %>
+            </li>
+          <% end %>
+          <% if @cud %>
+            <li role="presentation">
+              <%= link_to "<i class='material-icons left'>assignment_ind</i> Course Profile".html_safe,
+                          course_course_user_data_path(@course, @cud),
+                          title: "View your user profile for the current course" %>
+            </li>
+          <% end %>
           <li role="presentation">
-            <%= link_to "<i class='material-icons left'>account_circle</i> Account".html_safe,
-                        user_path(current_user), title: "View your account info" %>
+            <%= link_to "<i class='material-icons left'>add</i> Join Course".html_safe, join_course_courses_path, title: "Join Course" %>
           </li>
-        <% end %>
-        <% if @cud %>
+          <% if Rails.env.development? %>
+            <li role="presentation">
+              <%= link_to "<i class='material-icons left'>developer_mode</i> Dev Login".html_safe, home_developer_login_path %>
+            </li>
+          <% end %>
+          <li role="presentation" class="divider"></li>
           <li role="presentation">
-            <%= link_to "<i class='material-icons left'>assignment_ind</i> Course Profile".html_safe,
-                        course_course_user_data_path(@course, @cud),
-                        title: "View your user profile for the current course" %>
-          </li>
-        <% end %>
-        <li role="presentation">
-          <%= link_to "<i class='material-icons left'>exit_to_app</i> Log out".html_safe,
-                      destroy_user_session_path, method: :delete %>
-        </li>
-        <li role="presentation" class="divider"></li>
-        <% end %>
-        <% if Rails.env.development? %>
-          <li role="presentation">
-            <a href='/home/developer_login'>Dev Login</a>
+            <%= link_to "<i class='material-icons left'>exit_to_app</i> Log out".html_safe,
+                        destroy_user_session_path, method: :delete %>
           </li>
         <% end %>
       </div>
         <!-- Usual Navbar Items -->
-        <% if session[:sudo] && @cud then %>
+        <% if session[:sudo] && @cud %>
           <li>
             <%= link_to "(#{@cud.display_name}) Return to instructor view",
                         unsudo_course_course_user_datum_path(@course, @cud), data: { method: "post" } %>
@@ -245,16 +251,16 @@
 
 </div>
 
-<% unless @breadcrumbs.blank? then %>
+<% unless @breadcrumbs.blank? && @title.blank? %>
   <div class="sub-navigation">
     <span class="left-nav">
       <span class="item">
         <a title="Go to Courses Home" href="/courses"><i class="material-icons home-icon">home</i></a>
       </span>
-      <% @breadcrumbs.each do |b| %>
+      <% @breadcrumbs&.each do |b| %>
         <span class="item"><%= b %></span>
       <% end %>
-      <% if @title then %>
+      <% if @title %>
         <span class="item"><span class="title"><%= @title %></span></span>
       <% end %>
     </span>

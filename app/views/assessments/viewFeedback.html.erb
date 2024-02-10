@@ -1,7 +1,7 @@
 <% if @jsonFeedback.nil? %>
-  <h2><%= @score&.grader&.user ? "Grading" : "Autograding" %> Result for
+  <h4><%= @score&.grader&.user ? "Grading" : "Autograding" %> Result for
       <%= @score.nil? ? @assessment.display_name : "#{@assessment.display_name} - #{@score.problem.name} (#{@score.submission.course_user_datum.user.email})" %>
-  </h2>
+  </h4>
   <div class="result-container">
     <div class="feedback-container">
       <div class="result-pane">

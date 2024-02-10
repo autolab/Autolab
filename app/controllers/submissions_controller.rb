@@ -7,6 +7,8 @@ require "tempfile"
 class SubmissionsController < ApplicationController
   # inherited from ApplicationController
   before_action :set_assessment
+  before_action :set_assessment_breadcrumb
+  before_action :set_manage_submissions_breadcrumb, except: %i[index]
   before_action :set_submission, only: %i[destroy destroyConfirm download edit update view]
   before_action :get_submission_file, only: %i[download view]
 
@@ -652,5 +654,12 @@ private
     end
 
     true
+  end
+
+  def set_manage_submissions_breadcrumb
+    return if @course.nil? || @assessment.nil? || !@cud.instructor
+
+    @breadcrumbs << (view_context.link_to "Manage Submissions",
+                                          course_assessment_submissions_path(@course, @assessment))
   end
 end
