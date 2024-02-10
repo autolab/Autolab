@@ -6,11 +6,9 @@ class DeviceFlowActivationController < ApplicationController
   skip_before_action :authenticate_for_action
   skip_before_action :update_persistent_announcements
   before_action :set_users_list_breadcrumb
+  before_action :set_user_breadcrumb, only: %i[index]
 
-  def index
-    # Do it ad-hoc here, since this is the only place we need it
-    @breadcrumbs << (view_context.link_to current_user.display_name, user_path(current_user))
-  end
+  def index; end
 
   # target for the form on the index page
   def resolve
@@ -58,5 +56,13 @@ class DeviceFlowActivationController < ApplicationController
     req.grant_request(current_user.id, params[:code])
     flash[:success] = "Access granted"
     redirect_to(action: :index) && return
+  end
+
+private
+
+  def set_user_breadcrumb
+    return if current_user.nil?
+
+    @breadcrumbs << (view_context.link_to current_user.display_name, user_path(current_user))
   end
 end
