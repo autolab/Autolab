@@ -12,6 +12,7 @@ class Course < ApplicationRecord
   validates :name, format: { with: /\A(\w|-)+\z/, on: :create }
   # validates course website format if there exists one
   validate :valid_website?
+  validates :access_code, uniqueness: true, allow_nil: true
 
   has_many :course_user_data, dependent: :destroy
   has_many :assessments, dependent: :destroy
@@ -28,11 +29,17 @@ class Course < ApplicationRecord
   has_one :watchlist_configuration, dependent: :destroy
   has_one :lti_course_datum, dependent: :destroy
 
-  accepts_nested_attributes_for :late_penalty, :version_penalty
-
+  # Callbacks
   before_save :cgdub_dependencies_updated, if: :grace_days_or_late_slack_changed?
   before_create :cgdub_dependencies_updated
   after_create :init_course_folder
+
+  # Constants
+  VALID_CODE_REGEX = /\A[A-Z0-9]{6}\z/ # String is transformed to uppercase
+  VALID_CODE_REGEX_HTML = "[a-zA-Z0-9]{6}".freeze # For use in HTML
+
+  # Misc.
+  accepts_nested_attributes_for :late_penalty, :version_penalty
 
   def config_file_path
     Rails.root.join("courseConfig", "#{sanitized_name}.rb")
@@ -102,7 +109,6 @@ class Course < ApplicationRecord
       # roll back course and CUD creation
       newCUD.destroy
       newCourse.destroy
-      raise "Failed to load course config for new course #{newCourse.name}"
     end
 
     newCourse
@@ -301,6 +307,61 @@ class Course < ApplicationRecord
     watchlist_configuration.allow_ca
   end
 
+  def dump_yaml(include_metrics)
+    YAML.dump(serialize(include_metrics))
+  end
+
+  def generate_tar(export_configs)
+    base_path = Rails.root.join("courses", name).to_s
+    course_dir = name
+    rb_path = "course.rb"
+    config_path = "#{name}.yml"
+    mode = 0o755
+
+    begin
+      tarStream = StringIO.new("")
+      Gem::Package::TarWriter.new(tarStream) do |tar|
+        tar.mkdir course_dir, File.stat(base_path).mode
+
+        # save course.rb
+        source_file = File.open(File.join(base_path, rb_path), 'rb')
+        tar.add_file File.join(course_dir, rb_path), File.stat(source_file).mode do |tar_file|
+          tar_file.write(source_file.read)
+        end
+        source_file.close
+
+        # save course and metrics config
+        tar.add_file File.join(course_dir, config_path), mode do |tar_file|
+          tar_file.write(dump_yaml(export_configs&.include?('metrics_config')))
+        end
+
+        # save assessments
+        if export_configs&.include?('assessments')
+          assessments.each do |assessment|
+            asmt_dir = assessment.name
+            assessment.dump_yaml
+            Dir[File.join(base_path, asmt_dir, "**")].each do |file|
+              mode = File.stat(file).mode
+              relative_path = File.join(course_dir, file.sub(%r{^#{Regexp.escape base_path}/?}, ""))
+
+              if File.directory?(file)
+                tar.mkdir relative_path, mode
+              elsif !relative_path.starts_with? File.join(asmt_dir,
+                                                          assessment.handin_directory)
+                tar.add_file relative_path, mode do |tar_file|
+                  File.open(file, "rb") { |f| tar_file.write f.read }
+                end
+              end
+            end
+          end
+        end
+      end
+      tarStream.rewind
+      tarStream.close
+      tarStream
+    end
+  end
+
 private
 
   def saved_change_to_grade_related_fields?
@@ -333,6 +394,35 @@ private
 
   def config_module_name
     "Course#{sanitized_name.camelize}"
+  end
+
+  def serialize(include_metrics)
+    s = {}
+    s["general"] = serialize_general
+    s["general"]["late_penalty"] = late_penalty.serialize unless late_penalty.nil?
+    s["general"]["version_penalty"] = version_penalty.serialize unless version_penalty.nil?
+    s["attachments"] = attachments.map(&:serialize) if attachments.exists?
+
+    if include_metrics
+      if risk_conditions.exists?
+        s["risk_conditions"] = risk_conditions.map(&:serialize)
+        latest_version = risk_conditions.order(version: :desc).first.version
+        s["risk_conditions"] = risk_conditions.where(version: latest_version).map(&:serialize)
+      end
+
+      if watchlist_configuration.present?
+        s["watchlist_configuration"] =
+          watchlist_configuration.serialize
+      end
+    end
+    s
+  end
+
+  GENERAL_SERIALIZABLE = Set.new %w[name semester late_slack grace_days display_name start_date
+                                    end_date disabled exam_in_progress version_threshold
+                                    gb_message website]
+  def serialize_general
+    Utilities.serializable attributes, GENERAL_SERIALIZABLE
   end
 
   include CourseAssociationCache

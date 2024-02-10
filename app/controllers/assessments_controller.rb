@@ -26,6 +26,9 @@ class AssessmentsController < ApplicationController
   before_action :set_assessment, except: %i[index new create install_assessment
                                             importAsmtFromTar importAssessment
                                             log_submit local_submit autograde_done]
+  skip_before_action :set_breadcrumbs, only: %i[index]
+  before_action :set_assessment_breadcrumb, except: %i[index show install_assessment]
+  before_action :set_manage_course_breadcrumb, only: %i[install_assessment]
   before_action :set_submission, only: [:viewFeedback]
 
   # We have to do this here, because the modules don't inherit ApplicationController.
@@ -166,12 +169,7 @@ class AssessmentsController < ApplicationController
     end
 
     # Check if the assessment already exists.
-    unless @course.assessments.find_by(name: asmt_name).nil?
-      flash[:error] =
-        "An assessment with the same name already exists for the course. "\
-        "Please use a different name."
-      redirect_to(action: "install_assessment") && return
-    end
+    existing_asmt = @course.assessments.find_by(name: asmt_name)
 
     # If all requirements are satisfied, extract assessment files.
     begin
@@ -185,6 +183,8 @@ class AssessmentsController < ApplicationController
         # Ensure file will lie within course, otherwise skip
         # Allow equality for the main directory to be created
         next unless Archive.in_dir?(Pathname(entry_file), Pathname(assessment_path), strict: false)
+        next if existing_asmt && Archive.in_dir?(Pathname(entry_file),
+                                                 existing_asmt.handin_directory_path, strict: false)
 
         if entry.directory?
           FileUtils.mkdir_p(entry_file,
@@ -193,6 +193,11 @@ class AssessmentsController < ApplicationController
           FileUtils.chmod entry.header.mode, entry_file,
                           verbose: false
         elsif entry.file?
+          # Skip config files
+          next if existing_asmt && (entry_file == existing_asmt.asmt_yaml_path.to_s ||
+            entry_file == existing_asmt.unique_source_config_file_path.to_s ||
+            entry_file == existing_asmt.log_path.to_s)
+
           # Default to 0755 so that directory is writeable, mode will be updated later
           FileUtils.mkdir_p(File.dirname(entry_file),
                             mode: 0o755, verbose: false)
@@ -213,6 +218,7 @@ class AssessmentsController < ApplicationController
 
     params[:assessment_name] = asmt_name
     params[:cleanup_on_failure] = true
+    params[:overwrite] = existing_asmt
     importAssessment && return
   end
 
@@ -222,6 +228,14 @@ class AssessmentsController < ApplicationController
   action_auth_level :importAssessment, :instructor
 
   def importAssessment
+    if params[:overwrite]
+      flash[:success] = "IMPORTANT: Successfully uploaded files for existing assessment
+                         #{params[:assessment_name]}. The YAML and config file were NOT reuploaded.
+                         If you would like to edit these fields, do so via 'Edit assessment'."
+      @assessment = @course.assessments.find_by(name: params[:assessment_name])
+      redirect_to(course_assessment_path(@course, @assessment)) && return
+    end
+
     cleanup_on_failure = params[:cleanup_on_failure]
     @assessment = @course.assessments.new(name: params[:assessment_name])
     assessment_path = Rails.root.join("courses/#{@course.name}/#{@assessment.name}")
@@ -514,7 +528,7 @@ class AssessmentsController < ApplicationController
     set_handin
     begin
       extend_config_module(@assessment, @submission, @cud)
-    rescue AutogradeError => e
+    rescue StandardError => e
       if @cud.has_auth_level? :instructor
         flash[:error] = "Error loading the config file: "
         flash[:error] += e.message

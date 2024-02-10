@@ -6,6 +6,7 @@ require "base64"
 class ExtensionsController < ApplicationController
   # inherited from ApplicationController
   before_action :set_assessment
+  before_action :set_assessment_breadcrumb
 
   # TODO
   action_auth_level :index, :instructor

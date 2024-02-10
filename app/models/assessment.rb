@@ -94,12 +94,20 @@ class Assessment < ApplicationRecord
     Rails.root.join("courses", course.name, name)
   end
 
+  def asmt_yaml_path
+    path "#{name}.yml"
+  end
+
   def handout_path
     path handout
   end
 
   def handin_directory_path
     path handin_directory
+  end
+
+  def log_path
+    path "log.txt"
   end
 
   def writeup_path
@@ -223,23 +231,6 @@ class Assessment < ApplicationRecord
   # WILL NOT WORK ON NEW, UNSAVED ASSESSMENTS!!!
   #
   def load_config_file
-    # migrate old source config file path, in dir check to ensure that we are not trying to migrate
-    # a different module in a different folder that has a asmt name that maps to the old system
-    if (File.exist? source_config_file_path) &&
-       (source_config_file_path != unique_source_config_file_path) &&
-       Archive.in_dir?(source_config_file_path, folder_path)
-      # read from source
-      config_source = File.open(source_config_file_path, "r", &:read)
-      RubyVM::InstructionSequence.compile(config_source)
-      # rename module name if it doesn't match new unique naming scheme
-      if config_source !~ /\b#{unique_config_module_name}\b/
-        match = config_source.match(/module\s+(\w+)/)
-        config_source = config_source.sub(match[0], "module #{unique_config_module_name}")
-      end
-      File.open(unique_source_config_file_path, "w"){ |f| f.write(config_source) }
-      File.rename(source_config_file_path, source_config_file_backup_path)
-    end
-
     # read from source
     config_source = File.open(unique_source_config_file_path, "r", &:read)
 
@@ -252,7 +243,18 @@ class Assessment < ApplicationRecord
     # uniquely rename module (so that it's unique among all assessment modules loaded in Autolab)
     if config_source !~ /\b#{unique_config_module_name}\b/
       match = config_source.match(/module\s+(\w+)/)
-      config_source = config_source.sub(match[0], "module #{unique_config_module_name}")
+      if match.nil?
+        # no module found in the source, so we will add a template config to assessmentConfig
+        # (assuming that there is no important code, since there isn't even a module)
+
+        # Open and read the default assessment config file, fill in with assessment name
+        default_config_file_path = Rails.root.join("lib/__defaultAssessment.rb")
+        config_source = File.open(default_config_file_path, "r", &:read)
+        config_source.gsub!("##NAME_CAMEL##", unique_config_module_name)
+        config_source.gsub!("##NAME_LOWER##", name)
+      else
+        config_source = config_source.sub(match[0], "module #{unique_config_module_name}")
+      end
     end
 
     # backup old *unique* configs
@@ -267,6 +269,7 @@ class Assessment < ApplicationRecord
 
     # config file might have an updated custom raw score function: clear raw score cache
     invalidate_raw_scores
+    dump_yaml
     logger.info "Loaded #{unique_config_file_path}"
   end
 
@@ -288,7 +291,7 @@ class Assessment < ApplicationRecord
   # writes the properties of the assessment in YAML format to the assessment's yaml file
   #
   def dump_yaml
-    File.open(path("#{name}.yml"), "w") { |f| f.write(YAML.dump(sort_hash(serialize))) }
+    File.open(asmt_yaml_path, "w") { |f| f.write(YAML.dump(sort_hash(serialize))) }
   end
 
   ##
@@ -298,7 +301,7 @@ class Assessment < ApplicationRecord
   def load_yaml
     return unless new_record?
 
-    props = YAML.safe_load(File.open(path("#{name}.yml"), "r", &:read))
+    props = YAML.safe_load(File.open(asmt_yaml_path, "r", &:read))
     backwards_compatibility(props)
     deserialize(props)
   end
@@ -413,7 +416,7 @@ class Assessment < ApplicationRecord
 
   # name is already sanitized during the creation process
   def unique_source_config_file_path
-    Rails.root.join("courses", course.name, name, "#{name}.rb")
+    path "#{name}.rb"
   end
 
   def source_config_file_backup_path
@@ -558,19 +561,29 @@ private
     self.quizData = ""
     update!(s["general"])
     Problem.deserialize_list(self, s["problems"]) if s["problems"]
-    Autograder.find_or_initialize_by(assessment_id: id).update(s["autograder"]) if s["autograder"]
-    Scoreboard.find_or_initialize_by(assessment_id: id).update(s["scoreboard"]) if s["scoreboard"]
 
-    # rubocop:disable Style/GuardClause
+    if s["autograder"]
+      autograder = Autograder.find_or_initialize_by(assessment_id: id)
+      autograder.update(s["autograder"])
+      self.autograder = autograder
+    end
+    if s["scoreboard"]
+      scoreboard = Scoreboard.find_or_initialize_by(assessment_id: id)
+      scoreboard.update(s["scoreboard"])
+      self.scoreboard = scoreboard
+    end
     if s["late_penalty"]
       late_penalty ||= Penalty.new
       late_penalty.update(s["late_penalty"])
+      self.late_penalty = late_penalty
     end
     if s["version_penalty"]
       version_penalty ||= Penalty.new
       version_penalty.update(s["version_penalty"])
+      self.version_penalty = version_penalty
     end
-    # rubocop:enable Style/GuardClause
+    # necessary for penaltu data to be saved properly
+    save!
   end
 
   def default_max_score

@@ -1,4 +1,6 @@
-<h2>Import Course Roster</h2>
+<% @title = "Import Course Roster" %>
+
+<h4>Import Course Roster</h4>
 <% if params[:upload] then %>
   <%= render partial: 'updateRosterPreview', locals: { cuds: @cuds, sorted_cuds: @sorted_cuds } %>
 <% else %>
