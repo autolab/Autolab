@@ -1,6 +1,7 @@
 class CourseUserDataController < ApplicationController
   before_action :set_manage_course_breadcrumb
   before_action :set_manage_course_users_breadcrumb, except: %i[sudo]
+  # :set_course_user_breadcrumb called from within edit
 
   action_auth_level :index, :student
   def index
@@ -112,9 +113,8 @@ class CourseUserDataController < ApplicationController
       redirect_to(action: "index") && return
     end
 
-    # Do it ad-hoc here, since this is the only place we need it
-    @breadcrumbs << (view_context.link_to @editCUD.user.full_name,
-                                          course_course_user_datum_path(@course, @editCUD))
+    # This can't be a before_action callback since @editCUD is only defined here
+    set_course_user_breadcrumb
 
     @editCUD.tweak ||= Tweak.new
   end
@@ -268,5 +268,12 @@ private
       params.require(:course_user_datum).permit(:nickname)
       # user_attributes: [:first_name, :last_name])
     end
+  end
+
+  def set_course_user_breadcrumb
+    return if @course.nil? || @editCUD.nil?
+
+    @breadcrumbs << (view_context.link_to @editCUD.user.full_name,
+                                          course_course_user_datum_path(@course, @editCUD))
   end
 end
