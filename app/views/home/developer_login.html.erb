@@ -1,8 +1,14 @@
-<h2>Development Autolab</h2>
+<% @title = "Developer Login" %>
 
-<h3>Sign in as user</h3>
+<h4>Development Autolab</h4>
+<p>
+  Enter the email of the user you wish to sign in as.
+</p>
+
 <%= form_tag do %>
-  Email: <%= email_field_tag 'email', "", autocomplete: "email" %>
-  <br><br><br>
+  <div class="input-field">
+    <%= email_field_tag :email, nil, autocomplete: "email" %>
+    <label for="email">Email</label>
+  </div>
   <%= submit_tag 'Sign In', { class: "btn primary" } %>
 <% end %>

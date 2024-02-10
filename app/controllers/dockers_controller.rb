@@ -1,6 +1,8 @@
 require "tango_client"
 
 class DockersController < ApplicationController
+  before_action :set_manage_course_breadcrumb
+
   action_auth_level :index, :instructor
   def index; end
 

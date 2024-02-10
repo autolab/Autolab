@@ -29,9 +29,9 @@
   </script>
 <% end %>
 
-<% @title = "Enroll User" %>
+<% @title = "Add User to Course" %>
 
-<h4>Enroll User in <%= @course.display_name %></h4>
+<h4>Add User to <%= @course.display_name %></h4>
 
 <%= form_for @newCUD, url: course_course_user_data_path, builder: FormBuilderWithDateTimeInput do |f| %>
 
@@ -39,6 +39,6 @@
   <%= render partial: "fields", locals: { f:, cud: @newCUD, edit: false } %>
 
   <br>
-  <input id="user_submit" class="btn primary" name="commit" type="submit" value="Save Changes" onclick="formvalidation(this.closest('form')); return false;">
+  <input id="user_submit" class="btn primary" name="commit" type="submit" value="Save Changes">
 
 <% end %>

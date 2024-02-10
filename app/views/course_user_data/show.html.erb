@@ -1,4 +1,6 @@
-<h2>
+<% @title = @requestedUser.full_name %>
+
+<h4>
   <%= @requestedUser.full_name %> (<%= @requestedUser.nickname %>)
   <% if @cud.instructor? && @requestedUser.dropped? %>
     -
@@ -6,7 +8,7 @@
       (dropped)
     </span>
   <% end %>
-</h2>
+</h4>
 <ul class="gray-box">
   <li><b>Contact</b><br>
     <a href="mailto:<%= @requestedUser.email %>"><%= @requestedUser.email %></a></li>

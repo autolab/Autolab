@@ -1,6 +1,6 @@
-<br><br>
+<% @title = "Edit Account Details" %>
 
-<h2>Editing Account Details for <%= @user.email %></h2>
+<h4>Editing Account Details for <%= @user.email %></h4>
 <%= form_for @user, url: user_path(@user), builder: FormBuilderWithDateTimeInput do |f| %>
 
 <% if @user.errors.any? %>
