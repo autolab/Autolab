@@ -1,5 +1,5 @@
 <span id="release-grades">
-    <%unless released(@assessment, @submission)%>
+    <% unless released(@assessment, @submission) %>
       <%= link_to(releaseSubmission_course_assessment_submission_path(@course, @assessment, @submission),
                 class: "btn small", title: "Release Grades") do %>
       Release Grades
