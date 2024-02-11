@@ -9,8 +9,8 @@ class SubmissionsController < ApplicationController
   before_action :set_assessment
   before_action :set_assessment_breadcrumb
   before_action :set_manage_submissions_breadcrumb, except: %i[index]
-  before_action :set_submission, 
-only: %i[destroy destroyConfirm download edit update view releaseSubmission unreleaseSubmission]
+  before_action :set_submission, only: %i[destroy destroyConfirm download edit
+                                          update view releaseSubmission unreleaseSubmission]
   before_action :get_submission_file, only: %i[download view]
 
   # this page loads.  links/functionality may be/are off
@@ -615,7 +615,7 @@ only: %i[destroy destroyConfirm download edit update view releaseSubmission unre
   action_auth_level :releaseSubmission, :course_assistant
   def releaseSubmission
     p_scores = @submission.problems_to_scores
-    @assessment.problems.each_with_index do |p,i|
+    @assessment.problems.each_with_index do |p, _i|
       p_score = p_scores[p.id]
       p_score&.released = true
       p_score.save
@@ -626,7 +626,7 @@ only: %i[destroy destroyConfirm download edit update view releaseSubmission unre
   action_auth_level :unreleaseSubmission, :course_assistant
   def unreleaseSubmission
     p_scores = @submission.problems_to_scores
-    @assessment.problems.each_with_index do |p,i|
+    @assessment.problems.each_with_index do |p, _i|
       p_score = p_scores[p.id]
       p_score&.released = false
       p_score.save
