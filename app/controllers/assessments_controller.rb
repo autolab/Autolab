@@ -1166,5 +1166,4 @@ private
       [s.problem.name, s.score]
     }.to_h
   end
-
 end
