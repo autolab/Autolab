@@ -1,13 +1,13 @@
 <span id="release-grades">
-    <% unless released(@assessment, @submission) %>
-      <%= link_to(releaseSubmission_course_assessment_submission_path(@course, @assessment, @submission),
+  <% unless released(@assessment, @submission) %>
+    <%= link_to(releaseSubmission_course_assessment_submission_path(@course, @assessment, @submission),
                 class: "btn small", title: "Release Grades") do %>
-      Release Grades
+    Release Grades
     <% end %>
-    <% else %>
+  <% else %>
     <%= link_to(unreleaseSubmission_course_assessment_submission_path(@course, @assessment, @submission),
                 class: "btn small", title: "Unrelease Grades") do %>
-      Unrelease Grades
+    Unrelease Grades
     <% end %>
-    <% end %>
+  <% end %>
 </span>
