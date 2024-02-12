@@ -427,14 +427,14 @@ class Assessment < ApplicationRecord
     date.strftime("%b %e at %l:%M%P")
   end
 
-  def load_dir_to_tar(dir_path, asmt_dir, tar, filter=[])
+  def load_dir_to_tar(dir_path, asmt_dir, tar, filters=[])
     Dir[File.join(dir_path, asmt_dir, "**")].each do |file|
       mode = File.stat(file).mode
       relative_path = file.sub(%r{^#{Regexp.escape dir_path}/?}, "")
 
       if File.directory?(file)
-        tar.mkdir relative_path, mode
-        unless filter.include?(File.basename(file))
+        if filters.all? {|filter| !Archive.in_dir?(Pathname.new(filter), Pathname.new(file), strict: false)}
+          tar.mkdir relative_path, mode
           load_dir_to_tar(dir_path, relative_path, tar)
         end
       elsif !relative_path.starts_with? File.join(:name.to_s,
