@@ -2,6 +2,8 @@
 # dealing with Announcements.
 class AnnouncementsController < ApplicationController
   before_action :set_announcement, except: %i[index new create]
+  before_action :set_manage_course_breadcrumb
+  before_action :set_manage_announcement_breadcrumb, except: %i[index]
 
   action_auth_level :index, :instructor
   def index
@@ -79,5 +81,12 @@ private
   def announcement_params
     params.require(:announcement).permit(:title, :description, :start_date,
                                          :end_date, :system, :persistent)
+  end
+
+  def set_manage_announcement_breadcrumb
+    return if @course.nil?
+
+    @breadcrumbs << (view_context.link_to "Manage Announcements",
+                                          course_announcements_path(@course))
   end
 end

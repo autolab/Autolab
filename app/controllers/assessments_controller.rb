@@ -27,6 +27,9 @@ class AssessmentsController < ApplicationController
                                             import_asmt_from_tar import_assessment
                                             log_submit local_submit autograde_done
                                             import_assessments course_onboard_install_asmt]
+  skip_before_action :set_breadcrumbs, only: %i[index]
+  before_action :set_assessment_breadcrumb, except: %i[index show install_assessment]
+  before_action :set_manage_course_breadcrumb, only: %i[install_assessment]
   before_action :set_submission, only: [:viewFeedback]
 
   # We have to do this here, because the modules don't inherit ApplicationController.
