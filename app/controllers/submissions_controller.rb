@@ -450,7 +450,17 @@ class SubmissionsController < ApplicationController
             end
 
     @problems = @assessment.problems.to_a
-    @problems.sort! { |a, b| a.id <=> b.id }
+    @problems.sort! do |a, b|
+      if a.favorite && b.favorite
+        a.name <=> b.name
+      elsif a.favorite
+        -1 # a comes first
+      elsif b.favorite
+        1  # b comes first
+      else
+        a.name <=> b.name
+      end
+    end
 
     # Allow scores to be assessed by the view
     @scores = Score.where(submission_id: @submission.id)

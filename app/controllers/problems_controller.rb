@@ -76,6 +76,6 @@ private
 
   # this function says which problem attributes can be mass-assigned to, and which cannot
   def problem_params
-    params.require(:problem).permit(:name, :description, :max_score, :optional)
+    params.require(:problem).permit(:name, :description, :max_score, :optional, :favorite)
   end
 end
