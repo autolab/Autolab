@@ -1,12 +1,12 @@
 <span id="release-grades">
   <% unless released(@assessment, @submission) %>
-    <%= link_to(releaseSubmission_course_assessment_submission_path(@course, @assessment, @submission),
-                class: "btn small", title: "Release Grades") do %>
+    <%= link_to(release_student_grade_course_assessment_submission_path(@course, @assessment, @submission),
+                class: "btn small", title: "Release scores for current student") do %>
     Release Grades
     <% end %>
   <% else %>
-    <%= link_to(unreleaseSubmission_course_assessment_submission_path(@course, @assessment, @submission),
-                class: "btn small", title: "Unrelease Grades") do %>
+    <%= link_to(unrelease_student_grade_course_assessment_submission_path(@course, @assessment, @submission),
+                class: "btn small", title: "Unrelease scores for current student") do %>
     Unrelease Grades
     <% end %>
   <% end %>

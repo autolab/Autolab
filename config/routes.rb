@@ -151,8 +151,8 @@ Rails.application.routes.draw do
           get "destroyConfirm"
           get "download"
           get "view"
-          get "releaseSubmission"
-          get "unreleaseSubmission"
+          get "release_student_grade"
+          get "unrelease_student_grade"
         end
 
         collection do

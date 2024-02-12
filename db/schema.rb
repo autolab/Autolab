@@ -417,4 +417,5 @@ ActiveRecord::Schema.define(version: 2024_01_27_172855) do
     t.index ["course_user_datum_id"], name: "index_watchlist_instances_on_course_user_datum_id"
     t.index ["risk_condition_id"], name: "index_watchlist_instances_on_risk_condition_id"
   end
+
 end
