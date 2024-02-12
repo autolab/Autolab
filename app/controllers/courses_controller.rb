@@ -864,7 +864,7 @@ private
 
     return if rosterErrors.empty?
 
-    flash[:roster_error] = rosterErrors
+    @roster_error = rosterErrors
     fail "Roster validation error"
   end
 
@@ -960,15 +960,15 @@ private
       cloned_cuds = Marshal.load(Marshal.dump(@cuds))
       begin
         write_cuds(cloned_cuds)
-      rescue StandardError => e
-        redirect_to(action: "upload_roster")
+        @sorted_cuds = @cuds.sort_by { |cud| cud[:color] || "z" }
+        @cud_view = @sorted_cuds
+      rescue StandardError
+        # Renders upload_roster
+        return
       ensure
         raise ActiveRecord::Rollback
       end
     end
-
-    @sorted_cuds = @cuds.sort_by { |cud| cud[:color] || "z" }
-    @cud_view = @sorted_cuds
   end
 
   # detect_and_convert_roster - Detect the type of a roster based on roster

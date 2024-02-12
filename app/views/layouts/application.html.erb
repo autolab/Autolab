@@ -72,16 +72,9 @@
           <% html_safe = flash[:html_safe] %>
           <% flash.delete(:html_safe) %>
           <% flash.each do |name, msg| %>
-            <% if name == "roster_error" %>
-              <div class="error" id="flash_error">
-                <%= render partial: 'courses/uploadError',
-                           locals: { roster_errors: msg } %>
-              </div>
-            <% else %>
-              <% msg = msg.html_safe if html_safe %>
-              <%= content_tag :div, msg, id: "flash_#{name}",
-                                         class: name.to_s %>
-            <% end %>
+            <% msg = msg.html_safe if html_safe %>
+            <%= content_tag :div, msg, id: "flash_#{name}",
+                                       class: name.to_s %>
           <% end %>
           <noscript>
               <div id="flash_error" class="error">
