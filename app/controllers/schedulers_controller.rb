@@ -4,6 +4,9 @@
 # hasn't ran in more than its period's time, it's function is run.  This is awful.
 #
 class SchedulersController < ApplicationController
+  before_action :set_manage_course_breadcrumb
+  before_action :set_manage_scheduler_breadcrumb, except: %i[index]
+
   action_auth_level :index, :instructor
   def index
     @schedulers = Scheduler.where(course_id: @course.id)
@@ -109,5 +112,11 @@ private
 
   def scheduler_params
     params.require(:scheduler).permit(:action, :next, :until, :interval, :disabled)
+  end
+
+  def set_manage_scheduler_breadcrumb
+    return if @course.nil?
+
+    @breadcrumbs << (view_context.link_to "Manage Schedulers", course_schedulers_path(@course))
   end
 end

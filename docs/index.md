@@ -74,4 +74,4 @@ Because it defaults to accepting `.c` files, we would like to change it to `*.pd
 2. Look at your submission using the magnifying glass icon
 
 ### 4. Grading submissions
-Click on `Grade Submissions`, and then the arrow button to open up student submissions. For details on the relevant features for an Instructor, go to [Guide for Instructors](/instructors).
+Click on `View Gradesheet`, and then the arrow button to open up student submissions. For details on the relevant features for an Instructor, go to [Guide for Instructors](/instructors).

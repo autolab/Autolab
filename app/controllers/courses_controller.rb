@@ -5,11 +5,15 @@ require "pathname"
 require "statistics"
 
 class CoursesController < ApplicationController
-  skip_before_action :set_course, only: %i[courses_redirect index new create]
+  skip_before_action :set_course, only: %i[courses_redirect index new create join_course]
   # you need to be able to pick a course to be authorized for it
-  skip_before_action :authorize_user_for_course, only: %i[courses_redirect index new create]
+  skip_before_action :authorize_user_for_course,
+                     only: %i[courses_redirect index new create join_course]
   # if there's no course, there are no persistent announcements for that course
-  skip_before_action :update_persistent_announcements, only: %i[courses_redirect index new create]
+  skip_before_action :update_persistent_announcements,
+                     only: %i[courses_redirect index new create join_course]
+  before_action :set_manage_course_breadcrumb, only: %i[edit users moss email upload_roster export]
+  before_action :set_manage_course_users_breadcrumb, only: %i[upload_roster]
 
   def index
     courses_for_user = User.courses_for_user current_user
@@ -32,6 +36,42 @@ class CoursesController < ApplicationController
     else
       redirect_to(action: :index)
     end
+  end
+
+  def join_course
+    return unless params[:access_code]
+
+    # GET + access_code when using direct join link
+    # POST + access_code when using join course form
+
+    access_code = params[:access_code].upcase
+    unless Course::VALID_CODE_REGEX.match?(access_code)
+      flash[:error] = "Invalid access code format"
+      redirect_to(join_course_courses_path) && return
+    end
+
+    course = Course.find_by(access_code:)
+    if course.nil?
+      flash[:error] = "Invalid access code"
+      redirect_to(join_course_courses_path) && return
+    end
+
+    cud = course.course_user_data.find_by(user_id: current_user.id)
+
+    if cud.nil?
+      cud = course.course_user_data.new
+      cud.user = current_user
+      unless cud.save
+        flash[:error] = "An error occurred while joining the course"
+        redirect_to(join_course_courses_path) && return
+      end
+      # else, no point setting a flash because they will be redirected
+      # to set their nickname
+    else
+      flash[:success] = "You are already enrolled in this course"
+    end
+
+    redirect_to course_path(course)
   end
 
   action_auth_level :show, :student
@@ -616,11 +656,32 @@ private
   end
 
   def edit_course_params
-    params.require(:editCourse).permit(:semester, :website, :late_slack,
-                                       :grace_days, :display_name, :start_date, :end_date,
-                                       :disabled, :exam_in_progress, :version_threshold,
-                                       :gb_message, late_penalty_attributes: %i[kind value],
-                                                    version_penalty_attributes: %i[kind value])
+    att = params.require(:editCourse).permit(:semester, :website, :late_slack,
+                                             :grace_days, :display_name, :start_date, :end_date,
+                                             :disabled, :exam_in_progress, :allow_self_enrollment,
+                                             :version_threshold, :gb_message,
+                                             late_penalty_attributes: %i[kind value],
+                                             version_penalty_attributes: %i[kind value])
+
+    handle_self_enrollment(att)
+  end
+
+  def handle_self_enrollment(att)
+    if params[:allow_self_enrollment] && @course.access_code.blank?
+      att.merge!(access_code: generate_access_code)
+    elsif !params[:allow_self_enrollment]
+      att.merge!(access_code: nil)
+    end
+    att.except(:allow_self_enrollment)
+  end
+
+  def generate_access_code
+    loop do
+      code = SecureRandom.alphanumeric(6).upcase
+
+      # Possible race condition, but we also have a uniqueness validation
+      break code unless Course.where(access_code: code).exists?
+    end
   end
 
   def categorize_courses_for_listing(courses)

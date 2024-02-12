@@ -47,6 +47,7 @@
 
   <body class="autolab">
     <%= external_javascript_include_tag "jquery" %>
+    <%= external_javascript_include_tag "jquery-migrate" %>
     <%= content_for :js_widget_patch %>
     <%= javascript_include_tag 'application' %>
 
@@ -61,7 +62,7 @@
       <div id="pageBody" class="container">
 
         <% if @cud&.dropped?
-             flash[:error] = "You seem to have dropped this course. Please email your instructor if this is incorrect."
+             flash.now[:error] = "You seem to have dropped this course. Please email your instructor if this is incorrect."
            end %>
 
         <!-- Flashes -->

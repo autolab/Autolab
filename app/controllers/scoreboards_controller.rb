@@ -3,7 +3,8 @@
 #
 class ScoreboardsController < ApplicationController
   before_action :set_assessment
-  before_action :set_assessment_breadcrumb, only: [:edit]
+  before_action :set_assessment_breadcrumb
+  before_action :set_edit_assessment_breadcrumb, only: [:edit]
   before_action :set_scoreboard, except: [:create]
 
   action_auth_level :create, :instructor
@@ -161,10 +162,6 @@ class ScoreboardsController < ApplicationController
   def help; end
 
 private
-
-  def set_assessment_breadcrumb
-    @breadcrumbs << (view_context.link_to "Edit Assessment", [:edit, @course, @assessment])
-  end
 
   def set_scoreboard
     @scoreboard = @assessment.scoreboard

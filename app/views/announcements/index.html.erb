@@ -1,5 +1,6 @@
-<h2>Manage Announcements</h2>
-<h3>Current Announcements</h3>
+<% @title = "Manage Announcements" %>
+
+<h4>Current Announcements</h4>
 <ul class="gray-box">
   <% if !@announcements.nil? && @announcements.length > 0 %>
     <%= render @announcements %>
