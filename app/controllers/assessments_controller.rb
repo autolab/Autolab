@@ -191,6 +191,14 @@ class AssessmentsController < ApplicationController
       redirect_to(action: "install_assessment") && return
     end
 
+    if existing_asmt
+      flash[:success] = "IMPORTANT: Successfully uploaded files for existing assessment
+                         #{asmt_name}. The YAML and config file were NOT reuploaded.
+                         If you would like to edit these fields, do so via 'Edit assessment'."
+      @assessment = @course.assessments.find_by(name: asmt_name)
+      redirect_to(course_assessment_path(@course, @assessment)) && return
+    end
+
     # asmt files now in file system, so finish import via file system
     import_result = importAssessmentsFromFileSystem([asmt_name], true)
     handleImportResults(import_result, asmt_name)
@@ -205,7 +213,7 @@ class AssessmentsController < ApplicationController
       return
     end
     import_results = importAssessmentsFromFileSystem(params[:assessment_names], false)
-    import_results = import_results.map(&:to_json)
+    import_results = import_results.each(&:to_json)
     render json: import_results
   end
 
