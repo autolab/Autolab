@@ -100,7 +100,7 @@ RSpec.describe "Instructor can create new assessment", type: :feature do
         click_on "Go to Courses Home"
         click_on "Go to Course Page"
         click_on existing_asmt_name
-        click_on "Grade submissions"
+        click_on "View Gradesheet"
 
         # click on student's submission
         td = page.find(:css, 'td.id', text: student.email)

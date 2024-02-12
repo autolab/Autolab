@@ -5,8 +5,8 @@ include ControllerMacros
 
 RSpec.describe "manage submissions user flow", type: :feature do
   describe "click button", js: true do
+    include_context "controllers shared context"
     context "when user is Instructor" do
-      include_context "controllers shared context"
       # can't use login_as for features
       let(:user) do
         @instructor_user
