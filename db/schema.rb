@@ -10,11 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-<<<<<<< HEAD
-ActiveRecord::Schema.define(version: 2024_01_27_172855) do
-=======
 ActiveRecord::Schema.define(version: 2024_02_10_172734) do
->>>>>>> 525a021d (adds option and functionality to select problems to prioritize when annotating submissions)
 
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
