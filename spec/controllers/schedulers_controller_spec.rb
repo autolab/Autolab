@@ -9,9 +9,7 @@ RSpec.describe SchedulersController, type: :controller do
   shared_examples "index_success" do
     it "renders successfully" do
       sign_in(user)
-      cid = get_first_cid_by_uid(user.id)
-      cname = Course.find(cid).name
-      get :index, params: { course_name: cname }
+      get :index, params: { course_name: @course.name }
       expect(response).to be_successful
       expect(response.body).to match(/Manage Schedulers/m)
     end
@@ -20,9 +18,7 @@ RSpec.describe SchedulersController, type: :controller do
   shared_examples "index_failure" do |login: false|
     it "renders with failure" do
       sign_in(user) if login
-      cid = get_first_cid_by_uid(user.id)
-      cname = Course.find(cid).name
-      get :index, params: { course_name: cname }
+      get :index, params: { course_name: @course.name }
       expect(response).not_to be_successful
       expect(response.body).not_to match(/Manage Schedulers/m)
     end
@@ -31,9 +27,7 @@ RSpec.describe SchedulersController, type: :controller do
   shared_examples "new_success" do
     it "renders successfully" do
       sign_in(user)
-      cid = get_first_cid_by_uid(user.id)
-      cname = Course.find(cid).name
-      get :new, params: { course_name: cname }
+      get :new, params: { course_name: @course.name }
       expect(response).to be_successful
       expect(response.body).to match(/New scheduler/m)
     end
@@ -42,9 +36,7 @@ RSpec.describe SchedulersController, type: :controller do
   shared_examples "new_failure" do |login: false|
     it "renders with failure" do
       sign_in(user) if login
-      cid = get_first_cid_by_uid(user.id)
-      cname = Course.find(cid).name
-      get :new, params: { course_name: cname }
+      get :new, params: { course_name: @course.name }
       expect(response).not_to be_successful
       expect(response.body).not_to match(/New scheduler/m)
     end
@@ -53,10 +45,8 @@ RSpec.describe SchedulersController, type: :controller do
   shared_examples "edit_success" do
     it "renders successfully" do
       sign_in(user)
-      cid = get_first_cid_by_uid(user.id)
-      cname = Course.find(cid).name
-      s = create_scheduler_with_cid(cid)
-      get :edit, params: { course_name: cname, id: s.id }
+      s = create_scheduler_with_cid(@course.id)
+      get :edit, params: { course_name: @course.name, id: s.id }
       expect(response).to be_successful
       expect(response.body).to match(/Editing scheduler/m)
     end
@@ -65,10 +55,8 @@ RSpec.describe SchedulersController, type: :controller do
   shared_examples "edit_failure" do |login: false|
     it "renders with failure" do
       sign_in(user) if login
-      cid = get_first_cid_by_uid(user.id)
-      cname = Course.find(cid).name
-      s = create_scheduler_with_cid(cid)
-      get :edit, params: { course_name: cname, id: s.id }
+      s = create_scheduler_with_cid(@course.id)
+      get :edit, params: { course_name: @course.name, id: s.id }
       expect(response).not_to be_successful
       expect(response.body).not_to match(/Editing scheduler/m)
     end
@@ -77,10 +65,8 @@ RSpec.describe SchedulersController, type: :controller do
   shared_examples "show_success" do
     it "renders successfully" do
       sign_in(user)
-      cid = get_first_cid_by_uid(user.id)
-      cname = Course.find(cid).name
-      s = create_scheduler_with_cid(cid)
-      get :show, params: { course_name: cname, id: s.id }
+      s = create_scheduler_with_cid(@course.id)
+      get :show, params: { course_name: @course.name, id: s.id }
       expect(response).to be_successful
       expect(response.body).to match(/Action:/m)
       expect(response.body).to match(/Interval:/m)
@@ -90,10 +76,8 @@ RSpec.describe SchedulersController, type: :controller do
   shared_examples "show_failure" do |login: false|
     it "renders successfully" do
       sign_in(user) if login
-      cid = get_first_cid_by_uid(user.id)
-      cname = Course.find(cid).name
-      s = create_scheduler_with_cid(cid)
-      get :show, params: { course_name: cname, id: s.id }
+      s = create_scheduler_with_cid(@course.id)
+      get :show, params: { course_name: @course.name, id: s.id }
       expect(response).not_to be_successful
       expect(response.body).not_to match(/Action:/m)
       expect(response.body).not_to match(/Interval:/m)
