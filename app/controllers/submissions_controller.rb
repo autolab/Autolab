@@ -452,16 +452,8 @@ class SubmissionsController < ApplicationController
             end
 
     @problems = @assessment.problems.to_a
-    @problems.sort! do |a, b|
-      if a.favorite && b.favorite
-        a.name <=> b.name
-      elsif a.favorite
-        -1 # a comes first
-      elsif b.favorite
-        1  # b comes first
-      else
-        a.name <=> b.name
-      end
+    @problems.sort_by! do |problem|
+      [problem.favorite ? 0 : 1, problem.name]
     end
 
     # Allow scores to be assessed by the view
