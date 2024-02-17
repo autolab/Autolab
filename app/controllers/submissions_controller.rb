@@ -218,7 +218,9 @@ class SubmissionsController < ApplicationController
 
     elsif params[:annotated]
       @problems = @assessment.problems.to_a
-      @problems.sort! { |a, b| a.id <=> b.id }
+      @problems.sort_by! do |problem|
+        [problem.favorite ? 0 : 1, problem.name]
+      end
 
       # Only show annotations if grades have been released or the user is an instructor
       @annotations = []
