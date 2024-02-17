@@ -41,6 +41,7 @@ class ScoreboardsController < ApplicationController
     result = ActiveRecord::Base.connection.select_all(problemQuery)
     @grades = {}
     result.each do |row|
+      Rails.logger.debug("ROWW", row)
       uid = row["course_user_datum_id"].to_i
       unless @grades.key?(uid)
         user = @course.course_user_data.find(uid)
@@ -81,10 +82,11 @@ class ScoreboardsController < ApplicationController
                         )
                       end
     rescue StandardError => e
-      # Screw 'em! usually this means the grader failed.
-      grade[:entry] = {}
-      # But, if this was an instructor, we want them to know about
-      # this.
+      # the scoreboard autoresult wasn't correctly formatted
+      # so we just return an empty array, which will be handled
+      # by the #show view code
+      grade[:entry] = []
+
       if @cud.instructor?
         # not using flash because could be too large of a message to pass
         @errorMessage = "An error occurred while calling " \
@@ -92,7 +94,6 @@ class ScoreboardsController < ApplicationController
           "#{grade[:autoresult]})"
         @error = e
         Rails.logger.error("Scoreboard error in #{@course.name}/#{@assessment.name}: #{@error}")
-        render("scoreboards/edit") && return
       end
     end
 
@@ -105,22 +106,68 @@ class ScoreboardsController < ApplicationController
 
     # Catch errors along the way. An instructor will get the errors, a
     # student will simply see an unsorted scoreboard.
-    @sortedGrades = @grades.values.sort do |a, b|
-      if @assessment.overwrites_method?(:scoreboardOrderSubmissions)
-        @assessment.config_module.scoreboardOrderSubmissions(a, b)
-      else
-        scoreboardOrderSubmissions(a, b)
+    begin
+      @sortedGrades = @grades.values.sort do |a, b|
+        # we add a default sort, in the case that the scoreboard entry could
+        # not be generated correctly (which results in a empty array)
+        if a[:entry].empty? || b[:entry].empty?
+          b[:entry].length <=> a[:entry].length
+        elsif @assessment.overwrites_method?(:scoreboardOrderSubmissions)
+          begin
+            @assessment.config_module.scoreboardOrderSubmissions(a, b)
+          rescue StandardError => e
+            if @cud.instructor?
+              # not using flash because could be too large of a message to pass
+              @errorMessage = "An error occurred while calling "\
+                "custom hook scoreboardOrderSubmissions(#{a.inspect},\n"\
+                "#{b.inspect})"
+              @error = e
+              Rails.logger.error("Custom scoreboard error in " \
+                                   "#{@course.name}/#{@assessment.name}: #{@error}")
+              render("scoreboards/edit") && return
+            else
+              flash[:error] =
+                "The scoreboard cannot be viewed due to an error. Please contact your instructor."
+              redirect_to(course_assessment_path(@course, @assessment)) && return
+            end
+          end
+        else
+          begin
+            scoreboardOrderSubmissions(a, b)
+          rescue StandardError => e
+            # this is a catch all if sorting in general just doesn't work
+            if @cud.instructor?
+              # not using flash because could be too large of a message to pass
+              @errorMessage = "An error occurred while calling "\
+                "scoreboardOrderSubmissions(#{a.inspect},\n"\
+                "#{b.inspect})"
+              @error = e
+              Rails.logger.error("scoreboard order error in #{@course.name}/#{@assessment.name}: " \
+                                   "#{@error}")
+              render("scoreboards/edit") && return
+            else
+              flash[:error] =
+                "The scoreboard cannot be viewed due to an error. Please contact your instructor."
+              redirect_to(course_assessment_path(@course, @assessment)) && return
+            end
+          end
+        end
       end
-    rescue StandardError => e
+    rescue ArgumentError => e
       if @cud.instructor?
         # not using flash because could be too large of a message to pass
-        @errorMessage = "An error occurred while calling "\
-          "scoreboardOrderSubmissions(#{a.inspect},\n"\
-          "#{b.inspect})"
+        @errorMessage = "An error occurred while sorting "\
+          "submissions . Please make sure your scoreboard results are returned " \
+          "as an array of numbers. If you are using a custom scoreboard order, ensure your " \
+          "hook is functioning correctly."
         @error = e
+        Rails.logger.error("scoreboard error in #{@course.name}/#{@assessment.name}: #{@error}")
         render("scoreboards/edit") && return
+      else
+        flash[:error] =
+          "The scoreboard cannot be viewed due to an error. Please contact your instructor."
+        redirect_to(course_assessment_path(@course, @assessment)) && return
       end
-      0 # Just say they're equal!
     end
 
     @colspec = nil
@@ -246,44 +293,33 @@ private
     # At this point we have an autograded assessment with a
     # customized scoreboard. Extract the scoreboard entry
     # from the scoreboard array object in the JSON autoresult.
-    begin
-      parsed = ActiveSupport::JSON.decode(autoresult)
-      if !parsed["scoreboard"].is_a?(Array) && @cud.instructor?
-        flash[:error] = "Error parsing scoreboard for autograded assessment: scoreboard result is"\
-          " not an array. Please ensure that the autograder returns scoreboard results as an array."
-      end
+
+    parsed = ActiveSupport::JSON.decode(autoresult)
+
+    # ensure that the parsed result is a hash with scoreboard field, where scoreboard is an array
+    if (!parsed || !parsed.is_a?(Hash) || !parsed["scoreboard"] ||
+        !parsed["scoreboard"].is_a?(Array)) &&
+
+       if @cud.instructor?
+         (flash.now[:error] = "Error parsing scoreboard for autograded assessment: " \
+           "scoreboard result is not an array. Please ensure that the autograder returns " \
+           "scoreboard results as an array.")
+       end
       Rails.logger.error("Scoreboard error in #{@course.name}/#{@assessment.name}: " \
                            "Scoreboard result is not an array")
-      raise if !parsed || !parsed["scoreboard"] || !parsed["scoreboard"].is_a?(Array)
-    rescue StandardError
-      # If there is no autoresult for this student (typically
-      # because their code did not compile or it segfaulted and
-      # the instructor's autograder did not catch it) then
-      # return a nicely formatted nil result.
-      begin
-        parsed = ActiveSupport::JSON.decode(@scoreboard.colspec)
-        raise if !parsed || !parsed["scoreboard"]
-
-        entry = []
-        parsed["scoreboard"].each do |_item|
-          entry << "-"
-        end
-        return entry
-      rescue StandardError
-        if @cud.instructor?
-          flash[:error] = "Error parsing scoreboard for autograded assessment: Please ensure the"\
-          " scoreboard results from the autograder are formatted to be an array, and the colspec"\
-          " matches the expected format."
-          Rails.logger.error("Scoreboard error in #{@course.name}/#{@assessment.name}: " \
-                               "Scoreboard could not be parsed")
-        end
-        # Give up and bail
-        return ["-"]
-      end
     end
+
+    # If there is no autoresult for this student (typically
+    # because their code did not compile or it segfaulted and
+    # the instructor's autograder did not catch it) then
+    # raise an error, will be handled by caller
+    raise if !parsed || !parsed.is_a?(Hash) || !parsed["scoreboard"] ||
+             !parsed["scoreboard"].is_a?(Array)
+
     # Found a valid scoreboard array, so simply return it. If we
     # wanted to be really careful, we would verify that the size
     # was the same size as the column specification.
+    # 2-17-2024: size of entry is checked on #show
     parsed["scoreboard"]
   end
 
