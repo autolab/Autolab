@@ -501,10 +501,6 @@
 }
 
 /* Diff Viewer Styling CSS */
-#diff-box {
-  padding: 15px;
-}
-
 #diff-viewer tr {
   border-bottom: none;
 }
@@ -513,6 +509,10 @@
 }
 #diff-viewer .hljs {
   overflow-x: visible;
+}
+
+#diff-viewer .d2h-changed {
+  display: none;
 }
 
 /* Annotation Pane Styling CSS */

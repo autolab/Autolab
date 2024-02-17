@@ -15,9 +15,17 @@
     <pre id="diff-viewer-contents" style="display: none;"><%= diff_str %></pre>
     <div id="diff-viewer"></div>
     <% rescue %>
-    <span>Unable to generate diff.</span>
+    <ul class="collection">
+      <li class="collection-item">
+        Unable to generate a diff for this file.
+      </li>
+    </ul>
     <% end %>
   <% else %>
-    <span>There is no previous version.</span>
+    <ul class="collection">
+      <li class="collection-item">
+        There is no previous version for this file.
+      </li>
+    </ul>
   <% end %>
 </div>
