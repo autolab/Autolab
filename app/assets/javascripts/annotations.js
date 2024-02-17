@@ -104,8 +104,12 @@ function loadFile(newFile) {
   // Update version buttons
   $('#version-links').replaceWith(newFile.versionLinks);
 
+  // Update diff viewer
+  $('#diff-box').replaceWith(newFile.diffBox);
+
   displayAnnotations();
   attachEvents();
+  drawDiffViewer();
 }
 
 // Returns true if the file was cached, false otherwise
@@ -129,6 +133,7 @@ function purgeCurrentPageCache() {
     symbolTree: `<div id="symbol-tree-container">${$('#symbol-tree-container').html()}</div>`,
     versionLinks: `<span id="version-links">${$('#version-links').html()}</span>`,
     versionDropdown: `<span id="version-dropdown">${$('#version-dropdown').html()}</span>`,
+    diffBox: `<div id="diff-box">${$('#diff-box').html()}</div>`,
     url: window.location.href,
   };
 }

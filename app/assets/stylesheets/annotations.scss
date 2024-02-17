@@ -500,6 +500,21 @@
   margin-bottom:10px;
 }
 
+/* Diff Viewer Styling CSS */
+#diff-box {
+  padding: 15px;
+}
+
+#diff-viewer tr {
+  border-bottom: none;
+}
+#diff-viewer td {
+  padding: 0;
+}
+#diff-viewer .hljs {
+  overflow-x: visible;
+}
+
 /* Annotation Pane Styling CSS */
 #annotationPane{
   display: flex;
