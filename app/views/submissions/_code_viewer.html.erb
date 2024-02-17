@@ -84,8 +84,7 @@
       <p>
         Sorry, we could not parse your file because it contains non-UTF8 characters. Please
         <%= link_to download_course_assessment_submission_path(@course, @assessment, @submission, header_position: @header_position),
-                    data: { toggle: "tooltip", placement: "top" },
-                    title: "Download Submission" do %>
+                    title: "Download File" do %>
           download the file
         <% end %>
         to view the source.
