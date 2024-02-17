@@ -212,8 +212,8 @@ ActiveRecord::Schema.define(version: 2024_01_27_172855) do
     t.string "context_id"
     t.integer "course_id"
     t.datetime "last_synced"
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.string "membership_url"
     t.string "platform"
     t.boolean "auto_sync", default: false
@@ -312,7 +312,7 @@ ActiveRecord::Schema.define(version: 2024_01_27_172855) do
     t.integer "course_id"
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.datetime "until"
+    t.datetime "until", default: -> { "CURRENT_TIMESTAMP" }
     t.boolean "disabled", default: false
   end
 
@@ -417,4 +417,5 @@ ActiveRecord::Schema.define(version: 2024_01_27_172855) do
     t.index ["course_user_datum_id"], name: "index_watchlist_instances_on_course_user_datum_id"
     t.index ["risk_condition_id"], name: "index_watchlist_instances_on_risk_condition_id"
   end
+
 end
