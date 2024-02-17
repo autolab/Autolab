@@ -41,7 +41,6 @@ class ScoreboardsController < ApplicationController
     result = ActiveRecord::Base.connection.select_all(problemQuery)
     @grades = {}
     result.each do |row|
-      Rails.logger.debug("ROWW", row)
       uid = row["course_user_datum_id"].to_i
       unless @grades.key?(uid)
         user = @course.course_user_data.find(uid)
