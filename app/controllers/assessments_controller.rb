@@ -465,7 +465,6 @@ class AssessmentsController < ApplicationController
       @assessment.dump_embedded_quiz
       # Pack assessment directory into a tarball.
       tarStream = StringIO.new("")
-      tar = Gem::Package::TarWriter.new(tarStream)
       Gem::Package::TarWriter.new(tarStream) do |tar|
         tar.mkdir asmt_dir, File.stat(File.join(dir_path, asmt_dir)).mode
         filter = [File.join(dir_path, asmt_dir, @assessment.handin_directory)]
