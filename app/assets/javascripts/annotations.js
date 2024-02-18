@@ -66,8 +66,12 @@ function retrieveSharedComments() {
 function resizeCodeTable() {
   // Resize code table if announcements are shown
   if ($(".announcement.gray-box").length > 0) {
-    $('.code-table').css("max-height", $(window).height() - $(".announcement.gray-box").height() - 250);
-    $('#annotationPane').css("max-height", $(window).height() - $(".announcement.gray-box").height() - 200);
+    // Value determined empirically, so that the values below match those in annotations.scss
+    const baseHeight = $(window).height() - $(".announcement.gray-box").height() - 17;
+    $('.code-table').css("max-height", baseHeight - 260);
+    $('#diff-viewer .d2h-file-side-diff').css("max-height", baseHeight - 235);
+    $('#speedgrader').css("max-height", baseHeight - 178);
+    myLayout.updateSize();
   }
 }
 
