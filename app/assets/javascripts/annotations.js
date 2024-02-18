@@ -65,7 +65,7 @@ function retrieveSharedComments() {
 
 function resizeCodeTable() {
   // Resize code table if announcements are shown
-  if ($(".announcement.gray-box")) {
+  if ($(".announcement.gray-box").length > 0) {
     $('.code-table').css("max-height", $(window).height() - $(".announcement.gray-box").height() - 250);
     $('#annotationPane').css("max-height", $(window).height() - $(".announcement.gray-box").height() - 200);
   }
