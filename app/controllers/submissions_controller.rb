@@ -696,7 +696,12 @@ private
       file, = Archive.get_nth_file(handin_file_path, header_position.to_i)
       file
     else
-      submission.handin_file.read
+      handin_file = submission.handin_file
+      if handin_file.nil?
+        "Could not find submission file for previous version."
+      else
+        handin_file.read
+      end
     end
   end
 
