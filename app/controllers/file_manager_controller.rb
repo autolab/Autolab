@@ -127,7 +127,7 @@ private
 
   def upload_file(path)
     absolute_path = check_path_exist(path)
-    if absolute_path.isEqual(BASE_DIRECTORY)
+    if absolute_path.equal?(BASE_DIRECTORY)
       flash[:error] = "You cannot upload files in the root course directory " \
          "#{view_context.link_to 'here', new_course_url, method: 'get'}" \
          " if you want to create a new course."
