@@ -81,7 +81,7 @@
             <% if grade[:entry].is_a?(Array) && grade[:entry].length > i %>
               <% grade[:entry].each do |column| %>
                 <td><%= column %></td>
-              <% end %>q
+              <% end %>
             <% else %>
               <%= render 'error_icon' %>
             <% end %>
