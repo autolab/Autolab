@@ -40,7 +40,7 @@ ActiveRecord::Schema.define(version: 2024_02_19_175942) do
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
   end
 
-  create_table "annotations", id: :integer, force: :cascade do |t|
+  create_table "annotations", force: :cascade do |t|
     t.integer "submission_id"
     t.string "filename"
     t.integer "position"
@@ -56,7 +56,7 @@ ActiveRecord::Schema.define(version: 2024_02_19_175942) do
     t.boolean "global_comment", default: false
   end
 
-  create_table "announcements", id: :integer, force: :cascade do |t|
+  create_table "announcements", force: :cascade do |t|
     t.string "title"
     t.text "description"
     t.timestamp "start_date"
@@ -69,7 +69,7 @@ ActiveRecord::Schema.define(version: 2024_02_19_175942) do
     t.boolean "system", default: false, null: false
   end
 
-  create_table "assessment_user_data", id: :integer, force: :cascade do |t|
+  create_table "assessment_user_data", force: :cascade do |t|
     t.integer "course_user_datum_id", null: false
     t.integer "assessment_id", null: false
     t.integer "latest_submission_id"
@@ -86,7 +86,7 @@ ActiveRecord::Schema.define(version: 2024_02_19_175942) do
     t.index ["latest_submission_id"], name: "index_assessment_user_data_on_latest_submission_id", unique: true
   end
 
-  create_table "assessments", id: :integer, force: :cascade do |t|
+  create_table "assessments", force: :cascade do |t|
     t.timestamp "due_at"
     t.timestamp "end_at"
     t.timestamp "start_at"
@@ -123,7 +123,7 @@ ActiveRecord::Schema.define(version: 2024_02_19_175942) do
     t.boolean "disable_network", default: false
   end
 
-  create_table "attachments", id: :integer, force: :cascade do |t|
+  create_table "attachments", force: :cascade do |t|
     t.string "filename"
     t.string "mime_type"
     t.string "name"
@@ -136,7 +136,7 @@ ActiveRecord::Schema.define(version: 2024_02_19_175942) do
     t.index ["assessment_id"], name: "index_attachments_on_assessment_id"
   end
 
-  create_table "authentications", id: :integer, force: :cascade do |t|
+  create_table "authentications", force: :cascade do |t|
     t.string "provider", null: false
     t.string "uid", null: false
     t.integer "user_id"
@@ -144,14 +144,14 @@ ActiveRecord::Schema.define(version: 2024_02_19_175942) do
     t.datetime "updated_at"
   end
 
-  create_table "autograders", id: :integer, force: :cascade do |t|
+  create_table "autograders", force: :cascade do |t|
     t.integer "assessment_id"
     t.integer "autograde_timeout"
     t.string "autograde_image"
     t.boolean "release_score"
   end
 
-  create_table "course_user_data", id: :integer, force: :cascade do |t|
+  create_table "course_user_data", force: :cascade do |t|
     t.string "lecture"
     t.string "section", default: ""
     t.string "grade_policy", default: ""
@@ -167,7 +167,7 @@ ActiveRecord::Schema.define(version: 2024_02_19_175942) do
     t.string "course_number", default: ""
   end
 
-  create_table "courses", id: :integer, force: :cascade do |t|
+  create_table "courses", force: :cascade do |t|
     t.string "name"
     t.string "semester"
     t.integer "late_slack"
@@ -186,7 +186,7 @@ ActiveRecord::Schema.define(version: 2024_02_19_175942) do
     t.string "access_code"
   end
 
-  create_table "extensions", id: :integer, force: :cascade do |t|
+  create_table "extensions", force: :cascade do |t|
     t.integer "course_user_datum_id"
     t.integer "assessment_id"
     t.integer "days"
@@ -203,7 +203,7 @@ ActiveRecord::Schema.define(version: 2024_02_19_175942) do
     t.index ["user_id"], name: "index_github_integrations_on_user_id", unique: true
   end
 
-  create_table "groups", id: :integer, force: :cascade do |t|
+  create_table "groups", force: :cascade do |t|
     t.string "name"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -221,19 +221,19 @@ ActiveRecord::Schema.define(version: 2024_02_19_175942) do
     t.boolean "drop_missing_students", default: false
   end
 
-  create_table "module_data", id: :integer, force: :cascade do |t|
+  create_table "module_data", force: :cascade do |t|
     t.integer "field_id"
     t.integer "data_id"
     t.binary "data"
   end
 
-  create_table "module_fields", id: :integer, force: :cascade do |t|
+  create_table "module_fields", force: :cascade do |t|
     t.integer "user_module_id"
     t.string "name"
     t.string "data_type"
   end
 
-  create_table "oauth_access_grants", id: :integer, force: :cascade do |t|
+  create_table "oauth_access_grants", force: :cascade do |t|
     t.integer "resource_owner_id", null: false
     t.integer "application_id", null: false
     t.string "token", null: false
@@ -246,7 +246,7 @@ ActiveRecord::Schema.define(version: 2024_02_19_175942) do
     t.index ["token"], name: "index_oauth_access_grants_on_token", unique: true
   end
 
-  create_table "oauth_access_tokens", id: :integer, force: :cascade do |t|
+  create_table "oauth_access_tokens", force: :cascade do |t|
     t.integer "resource_owner_id"
     t.integer "application_id"
     t.string "token", null: false
@@ -262,7 +262,7 @@ ActiveRecord::Schema.define(version: 2024_02_19_175942) do
     t.index ["token"], name: "index_oauth_access_tokens_on_token", unique: true
   end
 
-  create_table "oauth_applications", id: :integer, force: :cascade do |t|
+  create_table "oauth_applications", force: :cascade do |t|
     t.string "name", null: false
     t.string "uid", null: false
     t.string "secret", null: false
@@ -274,7 +274,7 @@ ActiveRecord::Schema.define(version: 2024_02_19_175942) do
     t.index ["uid"], name: "index_oauth_applications_on_uid", unique: true
   end
 
-  create_table "oauth_device_flow_requests", id: :integer, force: :cascade do |t|
+  create_table "oauth_device_flow_requests", force: :cascade do |t|
     t.integer "application_id", null: false
     t.string "scopes", default: "", null: false
     t.string "device_code", null: false
@@ -289,7 +289,7 @@ ActiveRecord::Schema.define(version: 2024_02_19_175942) do
     t.index ["user_code"], name: "index_oauth_device_flow_requests_on_user_code", unique: true
   end
 
-  create_table "problems", id: :integer, force: :cascade do |t|
+  create_table "problems", force: :cascade do |t|
     t.string "name"
     t.text "description"
     t.integer "assessment_id"
@@ -309,7 +309,7 @@ ActiveRecord::Schema.define(version: 2024_02_19_175942) do
     t.integer "course_id"
   end
 
-  create_table "scheduler", id: :integer, force: :cascade do |t|
+  create_table "scheduler", force: :cascade do |t|
     t.string "action"
     t.timestamp "next"
     t.integer "interval"
@@ -320,19 +320,19 @@ ActiveRecord::Schema.define(version: 2024_02_19_175942) do
     t.boolean "disabled", default: false
   end
 
-  create_table "score_adjustments", id: :integer, force: :cascade do |t|
+  create_table "score_adjustments", force: :cascade do |t|
     t.integer "kind", null: false
     t.float "value", null: false
     t.string "type", default: "Tweak", null: false
   end
 
-  create_table "scoreboards", id: :integer, force: :cascade do |t|
+  create_table "scoreboards", force: :cascade do |t|
     t.integer "assessment_id"
     t.text "banner"
     t.text "colspec"
   end
 
-  create_table "scores", id: :integer, force: :cascade do |t|
+  create_table "scores", force: :cascade do |t|
     t.integer "submission_id"
     t.float "score"
     t.text "feedback", size: :medium
@@ -345,7 +345,7 @@ ActiveRecord::Schema.define(version: 2024_02_19_175942) do
     t.index ["submission_id"], name: "index_scores_on_submission_id"
   end
 
-  create_table "submissions", id: :integer, force: :cascade do |t|
+  create_table "submissions", force: :cascade do |t|
     t.integer "version"
     t.integer "course_user_datum_id"
     t.integer "assessment_id"
@@ -370,7 +370,7 @@ ActiveRecord::Schema.define(version: 2024_02_19_175942) do
     t.index ["course_user_datum_id"], name: "index_submissions_on_course_user_datum_id"
   end
 
-  create_table "users", id: :integer, force: :cascade do |t|
+  create_table "users", force: :cascade do |t|
     t.string "email", default: "", null: false
     t.string "first_name", default: "", null: false
     t.string "last_name", default: "", null: false
