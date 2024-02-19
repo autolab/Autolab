@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2024_02_19_175942) do
+ActiveRecord::Schema.define(version: 2024_01_27_172855) do
 
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
@@ -59,8 +59,8 @@ ActiveRecord::Schema.define(version: 2024_02_19_175942) do
   create_table "announcements", force: :cascade do |t|
     t.string "title"
     t.text "description"
-    t.timestamp "start_date"
-    t.timestamp "end_date"
+    t.datetime "start_date"
+    t.datetime "end_date"
     t.integer "course_user_datum_id"
     t.integer "course_id"
     t.datetime "created_at"
@@ -87,9 +87,9 @@ ActiveRecord::Schema.define(version: 2024_02_19_175942) do
   end
 
   create_table "assessments", force: :cascade do |t|
-    t.timestamp "due_at"
-    t.timestamp "end_at"
-    t.timestamp "start_at"
+    t.datetime "due_at"
+    t.datetime "end_at"
+    t.datetime "start_at"
     t.string "name"
     t.text "description"
     t.datetime "created_at"
@@ -117,10 +117,9 @@ ActiveRecord::Schema.define(version: 2024_02_19_175942) do
     t.integer "group_size", default: 1
     t.text "embedded_quiz_form_data"
     t.boolean "embedded_quiz"
-    t.boolean "github_submission_enabled", default: true
     t.boolean "allow_student_assign_group", default: true
+    t.boolean "github_submission_enabled", default: true
     t.boolean "is_positive_grading", default: false
-    t.boolean "disable_network", default: false
   end
 
   create_table "attachments", force: :cascade do |t|
@@ -213,8 +212,8 @@ ActiveRecord::Schema.define(version: 2024_02_19_175942) do
     t.string "context_id"
     t.integer "course_id"
     t.datetime "last_synced"
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.string "membership_url"
     t.string "platform"
     t.boolean "auto_sync", default: false
@@ -242,7 +241,6 @@ ActiveRecord::Schema.define(version: 2024_02_19_175942) do
     t.datetime "created_at", null: false
     t.datetime "revoked_at"
     t.string "scopes"
-    t.index ["application_id"], name: "fk_rails_b4b53e07b8"
     t.index ["token"], name: "index_oauth_access_grants_on_token", unique: true
   end
 
@@ -256,7 +254,6 @@ ActiveRecord::Schema.define(version: 2024_02_19_175942) do
     t.datetime "created_at", null: false
     t.string "scopes"
     t.string "previous_refresh_token", default: "", null: false
-    t.index ["application_id"], name: "fk_rails_732cb83ab7"
     t.index ["refresh_token"], name: "index_oauth_access_tokens_on_refresh_token", unique: true
     t.index ["resource_owner_id"], name: "index_oauth_access_tokens_on_resource_owner_id"
     t.index ["token"], name: "index_oauth_access_tokens_on_token", unique: true
@@ -284,7 +281,6 @@ ActiveRecord::Schema.define(version: 2024_02_19_175942) do
     t.datetime "resolved_at"
     t.integer "resource_owner_id"
     t.string "access_code"
-    t.index ["application_id"], name: "fk_rails_4035c6e0ed"
     t.index ["device_code"], name: "index_oauth_device_flow_requests_on_device_code", unique: true
     t.index ["user_code"], name: "index_oauth_device_flow_requests_on_user_code", unique: true
   end
@@ -311,7 +307,7 @@ ActiveRecord::Schema.define(version: 2024_02_19_175942) do
 
   create_table "scheduler", force: :cascade do |t|
     t.string "action"
-    t.timestamp "next"
+    t.datetime "next"
     t.integer "interval"
     t.integer "course_id"
     t.datetime "created_at"
@@ -401,7 +397,7 @@ ActiveRecord::Schema.define(version: 2024_02_19_175942) do
   create_table "watchlist_configurations", force: :cascade do |t|
     t.json "category_blocklist"
     t.json "assessment_blocklist"
-    t.bigint "course_id"
+    t.integer "course_id"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.boolean "allow_ca", default: false
@@ -409,9 +405,9 @@ ActiveRecord::Schema.define(version: 2024_02_19_175942) do
   end
 
   create_table "watchlist_instances", force: :cascade do |t|
-    t.bigint "course_user_datum_id"
-    t.bigint "course_id"
-    t.bigint "risk_condition_id"
+    t.integer "course_user_datum_id"
+    t.integer "course_id"
+    t.integer "risk_condition_id"
     t.integer "status", default: 0
     t.boolean "archived", default: false
     t.datetime "created_at", null: false
@@ -422,10 +418,4 @@ ActiveRecord::Schema.define(version: 2024_02_19_175942) do
     t.index ["risk_condition_id"], name: "index_watchlist_instances_on_risk_condition_id"
   end
 
-  add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
-  add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
-  add_foreign_key "github_integrations", "users"
-  add_foreign_key "oauth_access_grants", "oauth_applications", column: "application_id"
-  add_foreign_key "oauth_access_tokens", "oauth_applications", column: "application_id"
-  add_foreign_key "oauth_device_flow_requests", "oauth_applications", column: "application_id"
 end
