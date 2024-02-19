@@ -115,6 +115,14 @@ module TangoClient
     end
   end
 
+  def self.build(name, file)
+    handle_exceptions do
+      url = "/build/#{api_key}/"
+      headers = { "Content-Type": "application/octet-stream", "imageName": name }
+      ClientObj.post(url, headers: headers, body: file)
+    end
+  end
+
   def self.api_key
     RESTFUL_KEY
   end

@@ -1,9 +1,10 @@
-<% path =
-     if @is_assessment
-       course_assessment_attachments_path(@course, @assessment)
-     else
-       course_attachments_path(@course)
-     end %>
+<% @title = "Create Attachment" %>
+
+<% path = if @is_assessment
+            course_assessment_attachments_path(@course, @assessment)
+          else
+            course_attachments_path(@course)
+          end %>
 
 <div class="row">
   <div class="col-md-6">

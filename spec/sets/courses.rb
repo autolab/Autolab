@@ -10,10 +10,11 @@ module Contexts
         @instructor_cud = create_cud(user: instructor_user, course: new_course, role: 'instructor')
         create_cud(user: admin_user, course: new_course)
         create_cud(user: course_assistant_user, course: new_course, role: 'course_assistant')
+        @students_cud = []
         students.each do |student|
           # students in this course are given nicknames to bypass
           # initial cud edit redirect that occurs when no nickname is given
-          create_cud(user: student, course: new_course, role: 'student')
+          @students_cud.append(create_cud(user: student, course: new_course, role: 'student'))
         end
       end
     end

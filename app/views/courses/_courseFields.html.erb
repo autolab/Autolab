@@ -41,6 +41,13 @@
 
 <%= f.check_box :exam_in_progress, help_text: "While checked, students are not allowed to view their previous
   submissions for any assessment in this class." %>
+<%= label_tag(:allow_self_enrollment) do %>
+  <%= check_box_tag :allow_self_enrollment, "1", @course.access_code.present? %>
+  <%= content_tag("span", "Allow self-enrollment") %>
+<% end %>
+<p class="help-block">
+  Generate an access code for students to self-enroll in the course.
+</p>
 
 <%= f.text_area :gb_message, class: "materialize-textarea",
                              help_text: "An optional message that is displayed to students at the top of

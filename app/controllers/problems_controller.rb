@@ -5,12 +5,12 @@
 class ProblemsController < ApplicationController
   # inherited from ApplicationController
   before_action :set_assessment
+  before_action :set_assessment_breadcrumb
+  before_action :set_edit_assessment_breadcrumb
   before_action :set_problem, only: %i[edit update destroy]
 
   action_auth_level :new, :instructor
-  def new
-    @breadcrumbs << (view_context.link_to "Problems", problems_index)
-  end
+  def new; end
 
   action_auth_level :create, :instructor
   def create
@@ -63,8 +63,6 @@ private
 
   def set_problem
     @problem = @assessment.problems.find(params[:id])
-
-    @breadcrumbs << (view_context.link_to "Problems", problems_index)
   end
 
   ##
@@ -77,5 +75,11 @@ private
   # this function says which problem attributes can be mass-assigned to, and which cannot
   def problem_params
     params.require(:problem).permit(:name, :description, :max_score, :optional)
+  end
+
+  # Different from the one in application_controller.rb,
+  # so that we bring the user directly to the problems tab
+  def set_edit_assessment_breadcrumb
+    @breadcrumbs << (view_context.link_to "Edit Assessment", problems_index)
   end
 end

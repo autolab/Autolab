@@ -1,0 +1,14 @@
+<% @title = "Join Course" %>
+
+<h4>Join Course</h4>
+<p>
+  Use your instructor-provided access code to enroll in the course.
+</p>
+
+<%= form_tag do %>
+<div class="input-field">
+  <%= text_field_tag :access_code, nil, placeholder: "Enter your six-character course access code", autocomplete: "off", pattern: Course::VALID_CODE_REGEX_HTML %>
+  <label for="access_code">Access Code</label>
+</div>
+<%= submit_tag "Join Course", { class: "btn primary" } %>
+<% end %>
