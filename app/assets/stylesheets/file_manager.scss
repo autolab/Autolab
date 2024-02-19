@@ -10,7 +10,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  pointer-events: painted;
+  pointer-events: auto;
 }
 
 [type="checkbox"]:checked {

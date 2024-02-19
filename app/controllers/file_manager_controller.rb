@@ -48,7 +48,7 @@ class FileManagerController < ApplicationController
         FileUtils.rm(absolute_path)
       end
     end
-    flash[:success] = "Successfully deleted file(s)"
+    flash[:success] = "Successfully deleted"
   end
 
   def rename
@@ -90,11 +90,44 @@ class FileManagerController < ApplicationController
     flash[:error] = e.message
   end
 
+  def download_tar
+    path = params[:path]&.split("/")&.drop(2)&.join("/")
+    path = CGI.unescape(path)
+    absolute_path = check_path_exist(path).to_s
+    if File.directory?(absolute_path)
+      tar_stream = StringIO.new("")
+      Gem::Package::TarWriter.new(tar_stream) do |tar|
+        Dir[File.join(absolute_path, '**', '**')].each do |file|
+          mode = File.stat(file).mode
+          relative_path = file.sub(%r{^#{Regexp.escape(absolute_path)}/?}, '')
+          if File.directory?(file)
+            tar.mkdir relative_path, mode
+          else
+            tar.add_file relative_path, mode do |tar_file|
+              File.open(file, "rb") { |f| tar_file.write f.read }
+            end
+          end
+        end
+      end
+      tar_stream.rewind
+      tar_stream.close
+      send_data tar_stream.string.force_encoding("binary"),
+                filename: "file_manager.tar",
+                type: "application/x-tar",
+                disposition: "attachment"
+    else
+      send_file(absolute_path,
+                filename: File.basename(absolute_path),
+                disposition: 'attachment')
+    end
+    flash[:success] = "Download successful"
+  end
+
 private
 
   def upload_file(path)
     absolute_path = check_path_exist(path)
-    if absolute_path === BASE_DIRECTORY
+    if absolute_path.isEqual(BASE_DIRECTORY)
       flash[:error] = "You cannot upload files in the root course directory " \
          "#{view_context.link_to 'here', new_course_url, method: 'get'}" \
          " if you want to create a new course."
@@ -112,6 +145,7 @@ private
           # Uploading a file
           input_file = params[:file]
           return unless input_file
+
           all_filenames = Dir.entries(absolute_path)
           if all_filenames.include?(input_file.original_filename)
             flash[:error] = "File with name #{input_file.original_filename} already exists"
@@ -174,6 +208,7 @@ private
     unless (current_directory == tested_path) || Archive.in_dir?(tested_path, current_directory)
       raise ArgumentError, 'Should not be parent of root'
     end
+
     tested_path
   end
 
