@@ -16,11 +16,11 @@ class ScoreboardsController < ApplicationController
     end
     begin
       @scoreboard.save!
-      flash[:notice] = "Scoreboard Created"
+      flash[:success] = "Created scoreboard successfully."
     rescue ActiveRecord::RecordInvalid => e
       flash[:error] = "Unable to create scoreboard: #{e.message}"
     end
-    redirect_to(action: :edit) && return
+    redirect_to(edit_course_assessment_scoreboard_path(@course, @assessment))
   end
 
   action_auth_level :show, :student
@@ -185,8 +185,8 @@ class ScoreboardsController < ApplicationController
   action_auth_level :update, :instructor
   def update
     if @scoreboard.update(scoreboard_params)
-      flash[:notice] =
-        "Saved!"
+      flash[:success] =
+        "Scoreboard saved."
     else
       flash[:error] =
         @scoreboard.errors.full_messages.join("")
@@ -197,21 +197,18 @@ class ScoreboardsController < ApplicationController
   action_auth_level :destroy, :instructor
   def destroy
     if @scoreboard.destroy
-      flash[:notice] = "Destroyed!"
+      flash[:success] = "Scoreboard successfully deleted."
     else
-      flash[:error] = "Unable to destroy scoreboard"
+      flash[:error] = "Unable to destroy scoreboard."
     end
-    redirect_to([:edit, @course, @assessment]) && return
+    redirect_to(edit_course_assessment_path(@course, @assessment))
   end
-
-  action_auth_level :help, :instructor
-  def help; end
 
 private
 
   def set_scoreboard
     @scoreboard = @assessment.scoreboard
-    redirect_to([@course, @assessment]) if @scoreboard.nil?
+    redirect_to(course_assessment_path(@course, @assessment)) if @scoreboard.nil?
   end
 
   def scoreboard_params
@@ -312,8 +309,8 @@ private
     # because their code did not compile or it segfaulted and
     # the instructor's autograder did not catch it) then
     # raise an error, will be handled by caller
-    raise if !parsed || !parsed.is_a?(Hash) || !parsed["scoreboard"] ||
-             !parsed["scoreboard"].is_a?(Array)
+    raise StandardError if !parsed || !parsed.is_a?(Hash) || !parsed["scoreboard"] ||
+                           !parsed["scoreboard"].is_a?(Array)
 
     # Found a valid scoreboard array, so simply return it. If we
     # wanted to be really careful, we would verify that the size
