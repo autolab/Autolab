@@ -71,11 +71,4 @@ class ExtensionsController < ApplicationController
     flash[:success] = "Extension deleted for user #{cud.email}."
     redirect_to(action: :index)
   end
-
-private
-
-  def extension_params
-    params.require(:extension).permit(:course_user_datum_id, :days, :infinite,
-                                      :commit, :course_id, :assessment_id)
-  end
 end
