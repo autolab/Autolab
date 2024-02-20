@@ -68,9 +68,12 @@ function resizeCodeTable() {
   if ($(".announcement.gray-box").length > 0) {
     // Value determined empirically, so that the values below match those in annotations.scss
     const baseHeight = $(window).height() - $(".announcement.gray-box").height() - 17;
-    $('.code-table').css("max-height", baseHeight - 260);
-    $('#diff-viewer .d2h-file-side-diff').css("max-height", baseHeight - 235);
-    $('#speedgrader').css("max-height", baseHeight - 178);
+    const CODE_TABLE_OFFSET = 260;
+    const DIFF_VIEWER_OFFSET = 235;
+    const SPEEDGRADER_OFFSET = 178;
+    $('.code-table').css("max-height", baseHeight - CODE_TABLE_OFFSET);
+    $('#diff-viewer .d2h-file-side-diff').css("max-height", baseHeight - DIFF_VIEWER_OFFSET);
+    $('#speedgrader').css("max-height", baseHeight - SPEEDGRADER_OFFSET);
     myLayout.updateSize();
   }
 }
