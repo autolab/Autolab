@@ -1,19 +1,18 @@
 require "rails_helper"
 require_relative("../support/controller_macros")
+require_relative("../controllers/controllers_shared_context")
 include ControllerMacros
 
 RSpec.describe "manage submissions user flow", type: :feature do
   describe "click button", js: true do
+    include_context "controllers shared context"
     context "when user is Instructor" do
       # can't use login_as for features
       let(:user) do
-        create_course_with_users
         @instructor_user
       end
       let(:assessment_name) do
-        cud = get_first_cud_by_uid(user)
-        assessment_id = get_first_aid_by_cud(cud)
-        Assessment.find(assessment_id).display_name
+        @assessment.display_name
       end
       it "allows editing manage session" do
         # Simulates user log in

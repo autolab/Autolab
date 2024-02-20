@@ -40,6 +40,14 @@ Instructors and course assistants are never marked as dropped. User accounts are
 
 Once a student is added to the roster for a course, then that course becomes visible to the student when they visit the Autolab site. A student can be enrolled in an arbitrary number of Autolab courses.
 
+## Access Codes
+
+To allow students to self-enroll in a course, you can generate an _access code_ for the course. The access code is a short string of letters and digits that is unique to the course.
+
+To do so, select the "Allow self-enrollment" checkbox on the course settings page. The access code will be displayed on the course homepage.
+
+Students can then enroll in the course by clicking the "Join Course" button in the user dropdown menu and entering the access code.
+
 ## Labs (Assessments)
 
 A _lab_ (or _assessment_) is broadly defined as a submission set; it is anything that your students make submissions (handins) for. This could be a programming assignment, a typed homework, or even an in-class exam. You can create labs from scratch, or reuse them from previous semesters. See the companion [Guide For Lab Authors](/lab/) for info on writing and installing labs.

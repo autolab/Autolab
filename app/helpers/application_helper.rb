@@ -5,10 +5,6 @@ module ApplicationHelper
     course_assessment_path(@course, @assessment)
   end
 
-  def current_assessment_link
-    link_to @assessment.display_name, course_assessment_path(@course, @assessment)
-  end
-
   # Older Helpers
   def sort_td_class_helper(param)
     result = 'class="sortup"' if params[:sort] == param
@@ -147,17 +143,19 @@ module ApplicationHelper
     # Update versions manually as-and-when newer versions become available on the CDN
     case library
     when "jquery-ui"
-      version = "1.12.1"
+      version = "1.13.2"
       stylesheet_link_tag "#{cloudflare}/jqueryui/#{version}/themes/smoothness/jquery-ui.min.css"
     when "flatpickr"
       version = "4.6.13"
       stylesheet_link_tag "#{cloudflare}/flatpickr/#{version}/flatpickr.min.css"
     when "golden-layout-base"
-      stylesheet_link_tag "//golden-layout.com/files/latest/css/goldenlayout-base.css"
+      version = "1.5.9" # latest is "2.6.0"
+      stylesheet_link_tag "#{cloudflare}/golden-layout/#{version}/css/goldenlayout-base.css"
     when "golden-layout-theme"
-      stylesheet_link_tag "//golden-layout.com/files/latest/css/goldenlayout-light-theme.css"
+      version = "1.5.9" # latest is "2.6.0"
+      stylesheet_link_tag "#{cloudflare}/golden-layout/#{version}/css/goldenlayout-light-theme.css"
     when "semantic-ui"
-      version = "2.4.1"
+      version = "2.5.0"
       stylesheet_link_tag "#{cloudflare}/semantic-ui/#{version}/semantic.min.css"
     end
   end
@@ -168,10 +166,15 @@ module ApplicationHelper
     # Update versions manually as-and-when newer versions become available on the CDN
     case library
     when "jquery"
-      version = "2.2.4" # latest is "3.6.0"
+      version = "3.7.1"
       javascript_include_tag "#{cloudflare}/jquery/#{version}/jquery.min.js"
+    when "jquery-migrate"
+      # Added for compatibility since we are migrating from jquery 2.2.4
+      # Remove once there are no more warnings
+      migrate_version = "3.4.1"
+      javascript_include_tag "#{cloudflare}/jquery-migrate/#{migrate_version}/jquery-migrate.js"
     when "jquery-ui"
-      version = "1.12.1"
+      version = "1.13.2"
       javascript_include_tag "#{cloudflare}/jqueryui/#{version}/jquery-ui.min.js"
     when "lodash"
       version = "3.10.1" # latest is "4.17.21"
@@ -186,11 +189,14 @@ module ApplicationHelper
       version = "2.1.3"
       javascript_include_tag "#{cloudflare}/jquery-scrollTo/#{version}/jquery.scrollTo.min.js"
     when "golden-layout"
-      javascript_include_tag "//golden-layout.com/files/latest/js/goldenlayout.min.js"
+      version = "1.5.9" # latest is "2.6.0"
+      javascript_include_tag "#{cloudflare}/golden-layout/#{version}/goldenlayout.min.js"
     when "semantic-ui-accordion"
-      version = "2.4.1"
-      javascript_include_tag "//#{cloudflare}/semantic-ui/#{version}/components/accordion.min.js"
-
+      version = "2.5.0"
+      javascript_include_tag "#{cloudflare}/semantic-ui/#{version}/components/accordion.min.js"
+    when "clipboardjs"
+      version = "2.0.11"
+      javascript_include_tag "#{cloudflare}/clipboard.js/#{version}/clipboard.min.js"
     end
   end
 

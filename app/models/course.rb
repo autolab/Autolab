@@ -12,6 +12,7 @@ class Course < ApplicationRecord
   validates :name, format: { with: /\A(\w|-)+\z/, on: :create }
   # validates course website format if there exists one
   validate :valid_website?
+  validates :access_code, uniqueness: true, allow_nil: true
 
   has_many :course_user_data, dependent: :destroy
   has_many :assessments, dependent: :destroy
@@ -28,11 +29,17 @@ class Course < ApplicationRecord
   has_one :watchlist_configuration, dependent: :destroy
   has_one :lti_course_datum, dependent: :destroy
 
-  accepts_nested_attributes_for :late_penalty, :version_penalty
-
+  # Callbacks
   before_save :cgdub_dependencies_updated, if: :grace_days_or_late_slack_changed?
   before_create :cgdub_dependencies_updated
   after_create :init_course_folder
+
+  # Constants
+  VALID_CODE_REGEX = /\A[A-Z0-9]{6}\z/ # String is transformed to uppercase
+  VALID_CODE_REGEX_HTML = "[a-zA-Z0-9]{6}".freeze # For use in HTML
+
+  # Misc.
+  accepts_nested_attributes_for :late_penalty, :version_penalty
 
   def config_file_path
     Rails.root.join("courseConfig", "#{sanitized_name}.rb")

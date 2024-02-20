@@ -1,3 +1,5 @@
+include ControllerMacros
+
 RSpec.shared_context "controllers shared context" do
   let!(:course_hash) do
     create_course_with_users_as_hash
@@ -19,5 +21,9 @@ RSpec.shared_context "controllers shared context" do
   end
   let(:assessment) do
     course_hash[:assessment]
+  end
+
+  after(:each) do
+    delete_course_files(course_hash[:course])
   end
 end
