@@ -38,12 +38,15 @@ RSpec.describe ExtensionsController, type: :controller do
 
       it "renders updates on create and delete" do
         sign_in(instructor_user)
-        student_user = @students[0]
+        cud = CourseUserDatum.find_by(course_id: @course.id, instructor: false,
+                                      course_assistant: false)
+        student_id = cud.id
+        student_email = User.find_by(id: cud.user_id).email
         extension_days = 10
         post :create, params: {
           course_name: @course.name,
           assessment_name: @assessment.name,
-          course_user_data: student_user.id,
+          course_user_data: student_id,
           extension: {
             days: extension_days,
             infinite: false
@@ -52,11 +55,11 @@ RSpec.describe ExtensionsController, type: :controller do
         get :index, params: { course_name: @course.name, assessment_name: @assessment.name }
         expect(response).to be_successful
         expect(response.body).to match(/Current Extensions \(1\)/m)
-        expect(response.body).to match(/#{student_user.email}/m)
+        expect(response.body).to match(/#{student_email}/m)
         expect(response.body).to match(/#{extension_days} days/m)
 
         extension = Extension.find_by(assessment_id: @assessment.id,
-                                      course_user_datum_id: student_user.id)
+                                      course_user_datum_id: student_id)
         delete :destroy, params: {
           course_name: @course.name,
           assessment_name: @assessment.name,
@@ -95,7 +98,8 @@ RSpec.describe ExtensionsController, type: :controller do
       end
 
       it "flashes error when user not in course specified" do
-        valid_uid = User.maximum(:id)
+        valid_uid = CourseUserDatum.where(course_id: @course.id, instructor: false,
+                                          course_assistant: false).maximum(:id)
         invalid_uid = valid_uid + 1
         cud = "#{valid_uid},#{invalid_uid}"
         post :create,
@@ -106,39 +110,42 @@ RSpec.describe ExtensionsController, type: :controller do
       end
 
       it "adds new extension and updates existing extension successfully" do
-        uid = @students[0].id
+        cud = CourseUserDatum.find_by(course_id: @course.id, instructor: false,
+                                      course_assistant: false).id
         post :create, params: {
           course_name: @course.name,
           assessment_name: @assessment.name,
-          course_user_data: uid,
+          course_user_data: cud,
           extension: {
             days: 10,
             infinite: false
           }
         }
-        extension = Extension.find_by(assessment_id: @assessment.id, course_user_datum_id: uid)
+        extension = Extension.find_by(assessment_id: @assessment.id, course_user_datum_id: cud)
         expect(extension.days).to equal(10)
         expect(extension.infinite).to be false
 
         post :create, params: {
           course_name: @course.name,
           assessment_name: @assessment.name,
-          course_user_data: uid,
+          course_user_data: cud,
           extension: {
             days: 5,
             infinite: true
           }
         }
-        extension = Extension.find_by(assessment_id: @assessment.id, course_user_datum_id: uid)
+        extension = Extension.find_by(assessment_id: @assessment.id, course_user_datum_id: cud)
         expect(extension.days).to equal(5)
         expect(extension.infinite).to be true
       end
 
       it "flashes error on invalid record" do
+        cud = CourseUserDatum.find_by(course_id: @course.id, instructor: false,
+                                      course_assistant: false).id
         post :create, params: {
           course_name: @course.name,
           assessment_name: @assessment.name,
-          course_user_data: @students[0].id,
+          course_user_data: cud,
           extension: {
             days: [],
             infinite: false
@@ -154,17 +161,18 @@ RSpec.describe ExtensionsController, type: :controller do
     context "when instructor" do
       it "deletes extension successfully" do
         sign_in(instructor_user)
-        uid = @students[0].id
+        cud = CourseUserDatum.find_by(course_id: @course.id, instructor: false,
+                                      course_assistant: false).id
         post :create, params: {
           course_name: @course.name,
           assessment_name: @assessment.name,
-          course_user_data: uid,
+          course_user_data: cud,
           extension: {
             days: 10,
             infinite: false
           }
         }
-        extension = Extension.find_by(assessment_id: @assessment.id, course_user_datum_id: uid)
+        extension = Extension.find_by(assessment_id: @assessment.id, course_user_datum_id: cud)
         expect(extension.days).to equal(10)
         expect(extension.infinite).to be false
 
@@ -173,7 +181,7 @@ RSpec.describe ExtensionsController, type: :controller do
           assessment_name: @assessment.name,
           id: extension.id
         }
-        extension = Extension.find_by(assessment_id: @assessment.id, course_user_datum_id: uid)
+        extension = Extension.find_by(assessment_id: @assessment.id, course_user_datum_id: cud)
         expect(extension).to be_nil
       end
     end
