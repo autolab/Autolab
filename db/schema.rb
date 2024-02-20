@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2024_01_27_172855) do
+ActiveRecord::Schema.define(version: 2024_02_19_175942) do
 
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
@@ -120,6 +120,7 @@ ActiveRecord::Schema.define(version: 2024_01_27_172855) do
     t.boolean "allow_student_assign_group", default: true
     t.boolean "github_submission_enabled", default: true
     t.boolean "is_positive_grading", default: false
+    t.boolean "disable_network", default: false
   end
 
   create_table "attachments", force: :cascade do |t|
