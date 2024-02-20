@@ -66,6 +66,9 @@ Rails.application.configure do
 
   config.lti_config_location  = Rails.root.join('spec/fixtures/lti_config_files').to_s
 
+  # Feature flag for docker image upload
+  config.x.docker_image_upload_enabled = true
+
   # Use custom routes for error pages
   config.exceptions_app = self.routes
 end

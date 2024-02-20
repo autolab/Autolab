@@ -296,7 +296,6 @@ module AssessmentAutogradeCore
 
     # send the tango upload requests
     upload_file_list = tango_upload(course, assessment, submissions[0], existing_files)
-
     dave = save_daves(submissions)
 
     output_file = get_output_file(assessment, submissions[0])

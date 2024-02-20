@@ -228,7 +228,6 @@ protected
       redirect_to(course_assessments_path(@course)) && return
     end
 
-    @breadcrumbs << (view_context.current_assessment_link)
     ASSESSMENT_LOGGER.setAssessment(@assessment)
   end
 
@@ -310,10 +309,41 @@ protected
                     end
   end
 
-  def pluralize(count, singular, plural = nil)
-    "#{count || 0} " +
-      (count == 1 || count =~ /^1(\.0+)?$/ ? singular : (plural || singular.pluralize))
+  ## Helpers for breadcrumbs
+
+  # Guarded against nil @assessment, so safe to use regardless of whether set_assessment was called
+  def set_assessment_breadcrumb
+    return if @course.nil? || @assessment.nil?
+
+    @breadcrumbs << (view_context.link_to @assessment.display_name,
+                                          course_assessment_path(@course, @assessment))
   end
+
+  def set_edit_assessment_breadcrumb
+    return if @course.nil? || @assessment.nil? || !@cud.instructor
+
+    @breadcrumbs << (view_context.link_to "Edit Assessment",
+                                          edit_course_assessment_path(@course, @assessment))
+  end
+
+  def set_manage_course_breadcrumb
+    return if @course.nil? || !@cud.instructor
+
+    @breadcrumbs << (view_context.link_to "Manage Course",
+                                          manage_course_path(@course))
+  end
+
+  def set_manage_course_users_breadcrumb
+    return if @course.nil? || !@cud.instructor
+
+    @breadcrumbs << (view_context.link_to "Manage Course Users",
+                                          users_course_path(@course))
+  end
+
+  def set_users_list_breadcrumb
+    @breadcrumbs << (view_context.link_to "Users List", users_path)
+  end
+  ### END HELPERS
 
   # make_dlist - Creates a string of emails that can be added as b/cc field.
   # @param section The section to email.  nil if we should email the entire

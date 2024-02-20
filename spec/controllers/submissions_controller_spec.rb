@@ -8,12 +8,7 @@ RSpec.describe SubmissionsController, type: :controller do
   shared_examples "index_success" do
     it "renders successfully" do
       sign_in(user)
-      cud = get_first_cud_by_uid(user)
-      cid = get_first_cid_by_uid(user)
-      course_name = Course.find(cid).name
-      assessment_id = get_first_aid_by_cud(cud)
-      assessment_name = Assessment.find(assessment_id).name
-      get :index, params: { course_name:, assessment_name: }
+      get :index, params: { course_name: @course.name, assessment_name: @assessment.name }
       expect(response).to be_successful
       expect(response.body).to match(/Manage Submissions/m)
     end
@@ -22,12 +17,7 @@ RSpec.describe SubmissionsController, type: :controller do
   shared_examples "index_failure" do
     it "renders with failure" do
       sign_in(user)
-      cud = get_first_cud_by_uid(user)
-      cid = get_first_cid_by_uid(user)
-      course_name = Course.find(cid).name
-      assessment_id = get_first_aid_by_cud(cud)
-      assessment_name = Assessment.find(assessment_id).name
-      get :index, params: { course_name:, assessment_name: }
+      get :index, params: { course_name: @course.name, assessment_name: @assessment.name }
       expect(response).not_to be_successful
       expect(response.body).not_to match(/Manage Submissions/m)
     end

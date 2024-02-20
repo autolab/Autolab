@@ -29,7 +29,7 @@ class JobsController < ApplicationController
       raw_live_jobs = TangoClient.jobs
       raw_dead_jobs = TangoClient.jobs(1)
     rescue TangoClient::TangoException => e
-      flash[:error] = "Error while getting job list: #{e.message}"
+      flash.now[:error] = "Error while getting job list: #{e.message}"
     end
 
     # Build formatted lists of the running, waiting, and dead jobs

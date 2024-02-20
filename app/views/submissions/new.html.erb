@@ -1,11 +1,9 @@
-<h2>Create Submission for <%= link_to @assessment.display_name, [@course, @assessment] %> </h2>
+<% @title = "Create New Submission" %>
 
-<p>
-<%= link_to "Manage Submissions", course_assessment_submissions_path(@course, @assessment) %>
-</p>
+<h4>Create Submission for <%= link_to @assessment.display_name, course_assessment_path(@course, @assessment) %></h4>
 
 <%= form_for @submission, as: :submission,
-                          url: [@course, @assessment, @submission], method: :post,
+                          url: course_assessment_submissions_path(@course, @assessment), method: :post,
                           builder: FormBuilderWithDateTimeInput,
                           html: { multipart: true } do |f| %>
 

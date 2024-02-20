@@ -180,6 +180,7 @@ ActiveRecord::Schema.define(version: 2024_02_05_211415) do
     t.datetime "cgdub_dependencies_updated_at"
     t.text "gb_message"
     t.string "website"
+    t.string "access_code"
   end
 
   create_table "extensions", force: :cascade do |t|
