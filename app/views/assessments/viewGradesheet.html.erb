@@ -47,9 +47,9 @@
               "course_number": "<%= s.course_user_datum.course_number %>",
               "lec-sec": "<%= s.course_user_datum.lecture %>/<%= s.course_user_datum.section %>",
               "actions": <% if s.filename %>
-                  `<%= render partial: "downloadSubmission", locals: { sub: s, can_always_download: true } %>`
-                      <% else %>
-                      ` no file found `
+                `<%= render partial: "downloadSubmission", locals: { sub: s, can_always_download: true } %>`
+                  <% else %>
+                  ` no file found `
               <% end %>,
               <% p_scores = s.problems_to_scores %>
               <% @assessment.problems.each_with_index do |p,i| %>
