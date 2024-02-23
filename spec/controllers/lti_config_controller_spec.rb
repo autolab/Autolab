@@ -1,4 +1,5 @@
 require "rails_helper"
+require_relative "controllers_shared_context"
 
 RSpec.describe LtiConfigController, type: :controller do
   render_views
@@ -31,9 +32,9 @@ RSpec.describe LtiConfigController, type: :controller do
   end
 
   describe "#update_config" do
+    include_context "controllers shared context"
     context "when user is Autolab admin" do
       let!(:user_id) do
-        create_users
         @admin_user
       end
       before(:each) do
@@ -106,9 +107,9 @@ RSpec.describe LtiConfigController, type: :controller do
   end
 
   describe "#index" do
+    include_context "controllers shared context"
     context "when user is Autolab admin" do
       let!(:user_id) do
-        create_users
         @admin_user
       end
       before(:each) do
@@ -123,7 +124,6 @@ RSpec.describe LtiConfigController, type: :controller do
 
     context "when user is Instructor" do
       let!(:user_id) do
-        create_course_with_users
         @instructor_user
       end
       before(:each) do
@@ -138,7 +138,6 @@ RSpec.describe LtiConfigController, type: :controller do
 
     context "when user is student" do
       let!(:user_id) do
-        create_course_with_users
         @students.first
       end
       before(:each) do
@@ -153,7 +152,6 @@ RSpec.describe LtiConfigController, type: :controller do
 
     context "when user is course assistant" do
       let!(:user_id) do
-        create_course_with_users
         @course_assistant_user
       end
       before(:each) do

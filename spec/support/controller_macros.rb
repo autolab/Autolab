@@ -98,4 +98,16 @@ module ControllerMacros
   def create_assess_att_with_cid_aid(cid, aid, released)
     FactoryBot.create(:attachment, **assess_att_with_cid_aid(cid, aid, released))
   end
+
+  def delete_course_files(course)
+    course_path = Rails.root.join("courses", course.name)
+    if File.directory?(course_path)
+      FileUtils.rm_rf(course_path)
+    end
+    Assessment.where(course_id: course.id).find_each do |asmt|
+      if File.exist?(Rails.root.join("assessmentConfig", asmt.unique_config_file_path))
+        File.delete(Rails.root.join("assessmentConfig", asmt.unique_config_file_path))
+      end
+    end
+  end
 end

@@ -1,9 +1,13 @@
+require_relative("../../support/controller_macros")
+
 RSpec.shared_context "api shared context" do
   let!(:course) do
     create_autograded_course_with_users
     @course
   end
-
+  after(:each) do
+    delete_course_files(@course)
+  end
   let(:user) {
     all_users = CourseUserDatum.joins(:user).where(
       :course => course, "users.administrator" => false,
@@ -107,6 +111,9 @@ RSpec.shared_context "api handin context" do
     @ap_student = @ap_cud.user
     # The adder.py Assessment
     @adder_asm = Assessment.where(course: @ap_course).first
+  end
+  after(:each) do
+    delete_course_files(@course)
   end
 
   let!(:bad_application) {
