@@ -22,6 +22,7 @@
   local machines will be copied." %>
 <% end %>
 
+<%= f.check_box :disable_network, help_text: "Disable network access for autograding containers." %>
 <%= f.check_box :allow_unofficial,
                 help_text: "Allow unofficial submission. Unless you know what you're doing, leave this unchecked." %>
 <%= f.check_box :embedded_quiz,
