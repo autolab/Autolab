@@ -156,7 +156,7 @@ class ScoreboardsController < ApplicationController
       if @cud.instructor?
         # not using flash because could be too large of a message to pass
         @errorMessage = "An error occurred while sorting "\
-          "submissions . Please make sure your scoreboard results are returned " \
+          "submissions. Please make sure your scoreboard results are returned " \
           "as an array of numbers. If you are using a custom scoreboard order, ensure your " \
           "hook is functioning correctly."
         @error = e
@@ -293,29 +293,22 @@ private
     parsed = ActiveSupport::JSON.decode(autoresult)
 
     # ensure that the parsed result is a hash with scoreboard field, where scoreboard is an array
-    if (!parsed || !parsed.is_a?(Hash) || !parsed["scoreboard"] ||
-        !parsed["scoreboard"].is_a?(Array)) &&
-
-       if @cud.instructor?
-         (flash.now[:error] = "Error parsing scoreboard for autograded assessment: " \
-           "scoreboard result is not an array. Please ensure that the autograder returns " \
-           "scoreboard results as an array.")
-       end
+    if !parsed || !parsed.is_a?(Hash) || !parsed["scoreboard"] ||
+       !parsed["scoreboard"].is_a?(Array)
+      # If there is no autoresult for this student (typically
+      # because their code did not compile or it segfaulted and
+      # the instructor's autograder did not catch it) then
+      # raise an error, will be handled by caller
+      if @cud.instructor?
+        (flash.now[:error] = "Error parsing scoreboard for autograded assessment: " \
+          "scoreboard result is not an array. Please ensure that the autograder returns " \
+          "scoreboard results as an array.")
+      end
       Rails.logger.error("Scoreboard error in #{@course.name}/#{@assessment.name}: " \
                            "Scoreboard result is not an array")
+      raise StandardError
     end
 
-    # If there is no autoresult for this student (typically
-    # because their code did not compile or it segfaulted and
-    # the instructor's autograder did not catch it) then
-    # raise an error, will be handled by caller
-    raise StandardError if !parsed || !parsed.is_a?(Hash) || !parsed["scoreboard"] ||
-                           !parsed["scoreboard"].is_a?(Array)
-
-    # Found a valid scoreboard array, so simply return it. If we
-    # wanted to be really careful, we would verify that the size
-    # was the same size as the column specification.
-    # 2-17-2024: size of entry is checked on #show
     parsed["scoreboard"]
   end
 

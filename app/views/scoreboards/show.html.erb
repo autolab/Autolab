@@ -8,8 +8,7 @@
 <% unless @errorMessage.nil? %>
   <h4 class="error-header">Error Rendering Scoreboard:</h4>
   <div>
-    <pre style="text-wrap: wrap;"><%= @errorMessage %></pre>
-    <pre><%= @error %></pre>
+    <pre style="white-space: pre-wrap"><%= @errorMessage %></pre>
   </div>
 <% end %>
 
@@ -69,7 +68,7 @@
               <% if c["img"] %>
                 <td><img src="data:image/png;base64,<%= grade[:entry][i] %>"></td>
               <% else %>
-                <% if grade[:entry].is_a?(Array)  && grade[:entry].length > i %>
+                <% if grade[:entry].is_a?(Array) && grade[:entry].length > i %>
                   <td><%= grade[:entry][i] %></td>
                 <% else %>
                   <%= render 'error_icon' %>
