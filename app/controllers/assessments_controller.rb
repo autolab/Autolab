@@ -56,13 +56,6 @@ class AssessmentsController < ApplicationController
   action_no_auth :log_submit
   action_no_auth :local_submit
 
-  # SVN
-  autolab_require Rails.root.join("app/controllers/assessment/svn.rb")
-  include AssessmentSVN
-  action_auth_level :admin_svn, :instructor
-  action_auth_level :set_repo, :instructor
-  action_auth_level :import_svn, :instructor
-
   def index
     @is_instructor = @cud.has_auth_level? :instructor
     announcements_tmp = Announcement.where("start_date < :now AND end_date > :now",
@@ -1020,8 +1013,7 @@ private
   def new_assessment_params
     ass = params.require(:assessment)
     ass[:category_name] = params[:new_category] if params[:new_category].present?
-    ass.permit(:name, :display_name, :category_name, :has_svn, :has_lang, :group_size,
-               :github_submission_enabled)
+    ass.permit(:name, :display_name, :category_name, :group_size, :github_submission_enabled)
   end
 
   def edit_assessment_params
