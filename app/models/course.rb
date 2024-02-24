@@ -340,7 +340,7 @@ class Course < ApplicationRecord
           assessments.each do |assessment|
             asmt_dir = assessment.name
             assessment.dump_yaml
-            filter = [File.join(base_path, asmt_dir, assessment.handin_directory)]
+            filter = [assessment.handin_directory_path]
             assessment.load_dir_to_tar(base_path, asmt_dir, tar, filter, course_dir)
           end
         end

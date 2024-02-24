@@ -467,7 +467,7 @@ class AssessmentsController < ApplicationController
       tarStream = StringIO.new("")
       Gem::Package::TarWriter.new(tarStream) do |tar|
         tar.mkdir asmt_dir, File.stat(File.join(dir_path, asmt_dir)).mode
-        filter = [File.join(dir_path, asmt_dir, @assessment.handin_directory)]
+        filter = [@assessment.handin_directory_path]
         @assessment.load_dir_to_tar(dir_path, asmt_dir, tar, filter)
       end
       tarStream.rewind
