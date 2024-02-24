@@ -13,6 +13,13 @@ FactoryBot.define do
     end
     factory :admin_user do
       administrator { true }
+      first_name { "Admin" }
+    end
+    factory :instructor_user do
+      first_name { "Instructor" }
+    end
+    factory :ca_user do
+      first_name { "CA" }
     end
   end
 end
