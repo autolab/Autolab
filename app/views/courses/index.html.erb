@@ -1,3 +1,7 @@
+<% content_for :stylesheets do %>
+  <%= stylesheet_link_tag "courses" %>
+<% end %>
+
 <h2>Courses</h2>
 
 <% @listing.each do |category, list| %>
@@ -26,9 +30,13 @@
             <% end %>
 
             <% if category != :completed %>
-              <div class="collection red darken-3">
+              <div class="collection red darken-3 date">
                 <% course.current_assessments.ordered.each do |asmt| %>
-                  <%= link_to asmt.display_name, course_assessment_path(course, asmt), class: "collection-item grey-text text-darken-4" %>
+                  <%= link_to course_assessment_path(course, asmt), class: "collection-item grey-text text-darken-4 date" do%>
+                  <b><%= asmt.display_name %></b>
+                  <p class="date"><b>Start:</b>&ensp;<%= asmt.date_to_s(asmt.start_at) %>&ensp;|
+                    &ensp;<b>Due:</b>&ensp;<%= asmt.date_to_s(asmt.due_at) %></p>
+                  <% end %>
                 <% end %>
               </div>
             <% end %>
