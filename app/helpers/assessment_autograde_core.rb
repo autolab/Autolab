@@ -165,7 +165,8 @@ module AssessmentAutogradeCore
                        "output_file" => output_file,
                        "timeout" => @autograde_prop.autograde_timeout,
                        "callback_url" => callback_url,
-                       "jobName" => job_name }.to_json
+                       "jobName" => job_name,
+                       "disable_network" => assessment.disable_network }.to_json
     begin
       response = TangoClient.addjob("#{course.name}-#{assessment.name}", job_properties)
     rescue TangoClient::TangoException => e

@@ -127,13 +127,13 @@ RSpec.describe "Instructor can create new assessment", type: :feature do
         click_on "Add annotation"
 
         # verify that score was changed
+        expect(page).to have_css('div.annotation-badge', text: score_adjust)
         problem_name = page.find(:css, 'div.problem_name', text: /#{problem.name}:/i)
         problem_score = problem_name.find(:xpath, './following-sibling::div')
         within problem_score do
           test = problem_score.find(:css, 'b.student_score')
           expect(test).to have_content(old_score + score_adjust)
         end
-        expect(page).to have_css('div.annotation-badge', text: score_adjust)
       end
     end
   end
