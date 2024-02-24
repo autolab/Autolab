@@ -135,9 +135,7 @@ Rails.application.routes.draw do
         post "import", on: :collection
       end
       resources :problems, except: [:index, :show]
-      resource :scoreboard, except: [:new] do
-        get "help", on: :member
-      end
+      resource :scoreboard, except: [:new]
       resources :submissions do
         resources :annotations, only: [:create, :update, :destroy] do
           collection do
