@@ -427,6 +427,31 @@ class Assessment < ApplicationRecord
     date.strftime("%b %e at %l:%M%P")
   end
 
+  def load_dir_to_tar(dir_path, asmt_dir, tar, filters = [], export_dir = "")
+    Dir[File.join(dir_path, asmt_dir, "**")].each do |file|
+      mode = File.stat(file).mode
+      relative_path = file.sub(%r{^#{Regexp.escape dir_path}/?}, "")
+      export_path = if export_dir == ""
+                      relative_path
+                    else
+                      File.join(export_dir, relative_path)
+                    end
+
+      if File.directory?(file)
+        if filters.all? { |filter|
+          !Archive.in_dir?(Pathname.new(filter), Pathname.new(file), strict: false)
+        }
+          tar.mkdir export_path, mode
+          load_dir_to_tar(dir_path, relative_path, tar, filters, export_dir)
+        end
+      else
+        tar.add_file export_path, mode do |tarFile|
+          File.open(file, "rb") { |f| tarFile.write f.read }
+        end
+      end
+    end
+  end
+
 private
 
   def saved_change_to_grade_related_fields?
