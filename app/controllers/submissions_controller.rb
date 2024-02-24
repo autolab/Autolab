@@ -28,7 +28,7 @@ class SubmissionsController < ApplicationController
       begin
         @cuds = @course.course_user_data.find(cud_ids)
       rescue ActiveRecord::RecordNotFound
-        flash[:error] = "Couldn't find all course_user_data in #{cud_ids}. " \
+        flash[:error] = "Couldn't find all course_user_data IDs in #{cud_ids}. " \
           "Make sure the CUD ids are correct."
         redirect_to(course_assessment_submissions_path(@course, @assessment))
       end
@@ -39,15 +39,23 @@ class SubmissionsController < ApplicationController
 
   action_auth_level :create, :instructor
   def create
+    if params[:submission].nil? || params[:submission][:course_user_datum_id].nil? ||
+       !params[:submission][:course_user_datum_id].is_a?(String) ||
+       params[:submission][:tweak_attributes].nil? ||
+       params[:submission]["notes"].nil?
+      flash[:error] = "Could not create submission: submission params not well formed"
+      redirect_to(course_assessment_submissions_path(@course, @assessment)) && return
+    end
     @submission = @assessment.submissions.new
-
     cud_ids = params[:submission][:course_user_datum_id].split(",")
     # Validate all users before we start
-    @cuds = @course.course_user_data.find(cud_ids)
-    if @cuds.size != cud_ids.size
+    begin
+      @cuds = @course.course_user_data.find_by(id: cud_ids)
+    rescue ActiveRecord::RecordNotFound
       flash[:error] = "Invalid CourseUserDatum ID in #{cud_ids}"
       redirect_to(course_assessment_submissions_path(@course, @assessment)) && return
     end
+
     cud_ids.each do |cud_id|
       @submission = Submission.new(assessment_id: @assessment.id)
       @submission.course_user_datum_id = cud_id
@@ -58,8 +66,18 @@ class SubmissionsController < ApplicationController
       end
       @submission.special_type = params[:submission]["special_type"]
       @submission.submitted_by_id = @cud.id
-      next unless @submission.save! # Now we have a version number!
-
+      begin
+        @submission.save! # Now we have a version number!
+      rescue ActiveRecord::RecordInvalid
+        flash[:error] =
+          "There were errors creating the submission for student "  \
+        "#{@submission.course_user_datum.email}"
+        @submission.errors.full_messages.each do |msg|
+          flash[:error] += "<br>#{msg}"
+        end
+        flash[:html_safe] = true
+        redirect_to(course_assessment_submissions_path(@course, @assessment)) && return
+      end
       if params[:submission]["file"].present?
         @submission.save_file(params[:submission])
       end
@@ -76,7 +94,13 @@ class SubmissionsController < ApplicationController
 
   action_auth_level :update, :instructor
   def update
-    flash[:error] = "Cannot update nil submission" if @submission.nil?
+    if @submission.nil? ||
+       params[:submission].nil? ||
+       params[:submission][:tweak_attributes].nil? ||
+       params[:submission]["notes"].nil?
+      flash[:error] = "Could not update submission: submission params not well formed"
+      redirect_to(course_assessment_submissions_path(@course, @assessment)) && return
+    end
 
     if params[:submission][:tweak_attributes][:value].blank?
       params[:submission][:tweak_attributes][:_destroy] = true
@@ -88,7 +112,8 @@ class SubmissionsController < ApplicationController
     end
 
     # Error case
-    flash[:error] = "Error: There were errors updating the submission."
+    flash[:error] = "Error: There were errors updating the submission for student " \
+        "#{@submission.course_user_datum.email}"
     @submission.errors.full_messages.each do |msg|
       flash[:error] += "<br>#{msg}"
     end
@@ -604,7 +629,7 @@ class SubmissionsController < ApplicationController
 
 private
 
-  def new_submission_params
+  def create_submission_params
     params.require(:submission).permit(:course_used_datum_id, :notes, :file,
                                        tweak_attributes: %i[_destroy kind value])
   end
