@@ -8,7 +8,6 @@
   <% end %>
   <%= f.error_messages %>
   <h3>Scoreboard Settings</h3>
-  <hr>
 
   <%= f.text_field :banner,
                    size: 80,
@@ -17,6 +16,7 @@
   <%= f.text_area :colspec,
                   class: "materialize-textarea",
                   placeholder: "Optional JSON string that describes your customized scoreboard columns. Leave blank for default.",
+                  help_text: 'Learn more about how to configure <a href="https://docs.autolabproject.com/features/scoreboards/">custom scoreboards here.</a>'.html_safe,
                   display_name: "Column Specification",
                   rows: 5,
                   cols: 80 %>
@@ -26,26 +26,19 @@
     <b>{"scoreboard": [ {"hdr":"Score"}, {"hdr":"Ops", "asc":1} ] }</b>
   </p>
 
-  <br>
-  <%= f.check_box :include_instructors,
-                  display_name: "Include instructors",
-                  help_text: "Include instructors and course assistants on the scoreboard.
-                  By default, only students are shown." %>
-
   <h4>Column summary</h4>
   <p><%= @column_summary %></p>
   <p class="help-block">
     <b>[desc]/[asc]</b>: Indicates that the column is in descending or ascending order.
   <p>
+  <%= f.check_box :include_instructors,
+                  display_name: "Include instructors",
+                  help_text: "Include instructors and course assistants on the scoreboard.
+                By default, only students are shown." %>
 
-    <%= f.submit "Save", { class: "btn primary" } %>
-    <%= link_to "Delete", [@course, @assessment, :scoreboard],
-                method: :delete,
-                class: "btn danger",
-                data: { confirm: "Are you sure you want to delete the Scoreboard for this assessment?" } %>
-
-  <p>
-    Learn more about how to configure custom scoreboards in the
-    <a href="https://docs.autolabproject.com/features/scoreboards/">CMU documentation</a>
-  </p>
+  <%= f.submit "Save", { class: "btn primary" } %>
+  <%= link_to "Delete", [@course, @assessment, :scoreboard],
+              method: :delete,
+              class: "btn danger",
+              data: { confirm: "Are you sure you want to delete the Scoreboard for this assessment?" } %>
 <% end %>
