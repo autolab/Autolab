@@ -185,11 +185,6 @@ Rails.application.routes.draw do
         post "regradeBatch"
         post "regradeAll"
 
-        # SVN actions
-        get "admin_svn"
-        post "import_svn"
-        post "set_repo"
-
         # gradesheet ajax actions
         post "quickSetScore"
         post "quickSetScoreDetails"
