@@ -1,5 +1,7 @@
 require "rails_helper"
 include ControllerMacros
+require_relative "controllers_shared_context"
+
 RSpec.describe AssessmentsController, type: :controller do
   render_views
   describe "GET index" do
@@ -12,9 +14,7 @@ RSpec.describe AssessmentsController, type: :controller do
 
   describe "Create Assessment" do
     context "when user is Instructor" do
-      let!(:course_hash) do
-        create_course_with_users_as_hash
-      end
+      include_context "controllers shared context"
       let!(:stub_assessment) do
         stubAssessment = build(:assessment)
         stubAssessment.display_name = "../"
@@ -72,6 +72,10 @@ RSpec.describe AssessmentsController, type: :controller do
       before(:each) do
         instructor = get_instructor_by_cid(course_hash[:course].id)
         sign_in(instructor)
+      end
+      after(:each) do
+        delete_course_files(course_hash[:course])
+        delete_course_files(course_2_hash[:course])
       end
 
       it "successfully imports an exported assessment" do
