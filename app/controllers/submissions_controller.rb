@@ -12,7 +12,6 @@ class SubmissionsController < ApplicationController
   before_action :set_submission, only: %i[destroy destroyConfirm download edit update view]
   before_action :get_submission_file, only: %i[download view]
 
-  # this page loads.  links/functionality may be/are off
   action_auth_level :index, :instructor
   def index
     @submissions = @assessment.submissions.includes({ course_user_datum: :user })
@@ -20,26 +19,24 @@ class SubmissionsController < ApplicationController
     @autograded = @assessment.has_autograder?
   end
 
-  # this works
   action_auth_level :new, :instructor
   def new
     @submission = @assessment.submissions.new(tweak: Tweak.new)
 
     if !params["course_user_datum_id"].nil?
       cud_ids = params["course_user_datum_id"].split(",")
-      @cuds = @course.course_user_data.find(cud_ids)
-      if @cuds.size != cud_ids.size
-        @errorMessage = "Couldn't find all course_user_data in #{cuds_ids}. " \
-          "Expected #{cud_ids.size} course_user_data, but only found " \
-          "#{@cuds.size} course_user_data."
-        render([@course, @assessment, :submissions]) && return
+      begin
+        @cuds = @course.course_user_data.find(cud_ids)
+      rescue ActiveRecord::RecordNotFound
+        flash[:error] = "Couldn't find all course_user_data in #{cud_ids}. " \
+          "Make sure the CUD ids are correct."
+        redirect_to(course_assessment_submissions_path(@course, @assessment))
       end
     else
       @users, @usersEncoded = @course.get_autocomplete_data
     end
   end
 
-  # this seems to work to.
   action_auth_level :create, :instructor
   def create
     @submission = @assessment.submissions.new
@@ -48,8 +45,8 @@ class SubmissionsController < ApplicationController
     # Validate all users before we start
     @cuds = @course.course_user_data.find(cud_ids)
     if @cuds.size != cud_ids.size
-      @errorMessage = "Invalid CourseUserDatum ID in #{cud_ids}"
-      render([@course, @assessment, :submissions]) && return
+      flash[:error] = "Invalid CourseUserDatum ID in #{cud_ids}"
+      redirect_to(course_assessment_submissions_path(@course, @assessment)) && return
     end
     cud_ids.each do |cud_id|
       @submission = Submission.new(assessment_id: @assessment.id)
@@ -67,20 +64,16 @@ class SubmissionsController < ApplicationController
         @submission.save_file(params[:submission])
       end
     end
-    flash[:success] = "#{pluralize(cud_ids.size, 'Submission')} Created"
+    flash[:success] =
+      "#{ActionController::Base.helpers.pluralize(cud_ids.size, 'Submission')} Created"
     redirect_to course_assessment_submissions_path(@course, @assessment)
   end
 
-  action_auth_level :show, :student
-  def show; end
-
-  # this loads and looks good
   action_auth_level :edit, :instructor
   def edit
     @submission.tweak ||= Tweak.new
   end
 
-  # this is good
   action_auth_level :update, :instructor
   def update
     flash[:error] = "Cannot update nil submission" if @submission.nil?
@@ -101,26 +94,22 @@ class SubmissionsController < ApplicationController
     end
     flash[:html_safe] = true
     redirect_to(edit_course_assessment_submission_path(@submission.course_user_datum.course,
-                                                       @assessment, @submission)) && return
+                                                       @assessment, @submission))
   end
 
-  # this is good
   action_auth_level :destroy, :instructor
   def destroy
-    if params[:yes]
-      if @submission.destroy
-        flash[:success] = "Submission successfully destroyed"
-      else
-        flash[:error] = "Submission failed to be destroyed"
-      end
+    if @submission.destroy
+      flash[:success] = "Submission successfully destroyed"
     else
-      flash[:error] = "There was an error deleting the submission."
+      flash[:error] = "Submission failed to be destroyed"
     end
     redirect_to(course_assessment_submissions_path(@submission.course_user_datum.course,
-                                                   @submission.assessment)) && return
+                                                   @submission.assessment))
   end
 
-  # this is good
+  # page to show to instructor to confirm that they would like to
+  # remove a given submission for a student
   action_auth_level :destroyConfirm, :instructor
   def destroyConfirm; end
 
@@ -287,7 +276,7 @@ class SubmissionsController < ApplicationController
         @header_position = params[:header_position].to_i
       rescue StandardError
         flash[:error] = "Could not read archive."
-        redirect_to [@course, @assessment] and return false
+        redirect_to course_assessment_path(@course, @assessment) and return false
       end
     else
       @files = [{
@@ -323,7 +312,7 @@ class SubmissionsController < ApplicationController
 
       unless file && pathname
         flash[:error] = "Could not read archive."
-        redirect_to [@course, @assessment] and return false
+        redirect_to course_assessment_path(@course, @assessment) and return false
       end
 
       @displayFilename = pathname
@@ -333,16 +322,18 @@ class SubmissionsController < ApplicationController
         firstFile = Archive.get_files(@submission.handin_file_path).find do |archive_file|
           archive_file[:mac_bs_file] == false and archive_file[:directory] == false
         end || { header_position: 0 }
-        redirect_to(url_for([:view, @course, @assessment, @submission, {
-                              header_position: firstFile[:header_position]
-                            }])) && return
+        redirect_to(view_course_assessment_submission_path(
+                      @course, @assessment, @submission,
+                      header_position: firstFile[:header_position]
+                    )) && return
 
       # redirect to header_pos = 0, which is the first file,
       # if there's autograder and no header_position
       elsif !@submission.autograde_file.nil? && !params.include?(:header_position)
-        redirect_to(url_for([:view, @course, @assessment, @submission, {
-                              header_position: 0
-                            }])) && return
+        redirect_to(view_course_assessment_submission_path(
+                      @course, @assessment, @submission,
+                      header_position: 0
+                    )) && return
       end
 
       file = @submission.handin_file.read
@@ -636,7 +627,7 @@ private
   def get_submission_file
     unless @submission.filename
       flash[:error] = "No file associated with submission."
-      redirect_to [@course, @assessment] and return false
+      redirect_to course_assessment_path(@course, @assessment) and return false
     end
 
     @filename = @submission.handin_file_path
@@ -650,7 +641,7 @@ private
 
     unless File.exist? @filename
       flash[:error] = "Could not find submission file."
-      redirect_to [@course, @assessment] and return false
+      redirect_to course_assessment_path(@course, @assessment) and return false
     end
 
     true
