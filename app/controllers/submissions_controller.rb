@@ -219,7 +219,7 @@ class SubmissionsController < ApplicationController
     elsif params[:annotated]
       @problems = @assessment.problems.to_a
       @problems.sort_by! do |problem|
-        [problem.favorite ? 0 : 1, problem.name]
+        [problem.starred ? 0 : 1, problem.name]
       end
 
       # Only show annotations if grades have been released or the user is an instructor
@@ -455,7 +455,7 @@ class SubmissionsController < ApplicationController
 
     @problems = @assessment.problems.to_a
     @problems.sort_by! do |problem|
-      [problem.favorite ? 0 : 1, problem.name]
+      [problem.starred ? 0 : 1, problem.name]
     end
 
     # Allow scores to be assessed by the view

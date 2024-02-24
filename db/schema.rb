@@ -293,7 +293,7 @@ ActiveRecord::Schema.define(version: 2024_02_10_172734) do
     t.datetime "updated_at"
     t.float "max_score", default: 0.0
     t.boolean "optional", default: false
-    t.boolean "favorite"
+    t.boolean "starred", default: false
     t.index ["assessment_id", "name"], name: "problem_uniq", unique: true
   end
 
