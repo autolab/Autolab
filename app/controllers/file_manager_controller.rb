@@ -174,6 +174,9 @@ private
       is_file = stat.file?
       if [".", ".."].include?(file)
         inst = true
+        if current_directory == BASE_DIRECTORY
+          inst = false
+        end
       else
         abs_path = Pathname.new(abs_path_str)
         inst = check_instructor(abs_path)
