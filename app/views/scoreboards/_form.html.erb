@@ -1,12 +1,12 @@
-<%= form_for [@course, @assessment, @scoreboard], builder: FormBuilderWithDateTimeInput do |f| %>
+<%= form_for @scoreboard, url: course_assessment_scoreboard_path(@course, @assessment),
+                          builder: FormBuilderWithDateTimeInput do |f| %>
   <% unless @errorMessage.nil? %>
     <h4 class="error-header">Error Rendering Scoreboard:</h4>
     <div>
-      <pre style="text-wrap: wrap;"><%= @errorMessage %></pre>
+      <pre style="white-space: pre-wrap"><%= @errorMessage %></pre>
       <pre><%= @error %></pre>
     </div>
   <% end %>
-  <%= f.error_messages %>
   <h3>Scoreboard Settings</h3>
   <p>
     Learn more about how to configure <a href="https://docs.autolabproject.com/features/scoreboards/">custom scoreboards here.</a>
@@ -33,7 +33,7 @@
   <p>
 
   <%= f.submit "Save", { class: "btn primary" } %>
-  <%= link_to "Delete", [@course, @assessment, :scoreboard], method: :delete, class: "btn danger",
-                                                             data: { confirm: "Are you sure you want to delete the Scoreboard for this assessment?" } %>
+  <%= link_to "Delete", course_assessment_scoreboard_path(@course, @assessment), method: :delete, class: "btn danger",
+                                                                                 data: { confirm: "Are you sure you want to delete the Scoreboard for this assessment?" } %>
 
 <% end %>

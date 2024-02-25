@@ -56,13 +56,6 @@ class AssessmentsController < ApplicationController
   action_no_auth :log_submit
   action_no_auth :local_submit
 
-  # SVN
-  autolab_require Rails.root.join("app/controllers/assessment/svn.rb")
-  include AssessmentSVN
-  action_auth_level :admin_svn, :instructor
-  action_auth_level :set_repo, :instructor
-  action_auth_level :import_svn, :instructor
-
   def index
     @is_instructor = @cud.has_auth_level? :instructor
     announcements_tmp = Announcement.where("start_date < :now AND end_date > :now",
@@ -467,19 +460,8 @@ class AssessmentsController < ApplicationController
       tarStream = StringIO.new("")
       Gem::Package::TarWriter.new(tarStream) do |tar|
         tar.mkdir asmt_dir, File.stat(File.join(dir_path, asmt_dir)).mode
-        Dir[File.join(dir_path, asmt_dir, "**")].each do |file|
-          mode = File.stat(file).mode
-          relative_path = file.sub(%r{^#{Regexp.escape dir_path}/?}, "")
-
-          if File.directory?(file)
-            tar.mkdir relative_path, mode
-          elsif !relative_path.starts_with? File.join(@assessment.name,
-                                                      @assessment.handin_directory)
-            tar.add_file relative_path, mode do |tarFile|
-              File.open(file, "rb") { |f| tarFile.write f.read }
-            end
-          end
-        end
+        filter = [@assessment.handin_directory_path]
+        @assessment.load_dir_to_tar(dir_path, asmt_dir, tar, filter)
       end
       tarStream.rewind
       tarStream.close
@@ -1020,8 +1002,7 @@ private
   def new_assessment_params
     ass = params.require(:assessment)
     ass[:category_name] = params[:new_category] if params[:new_category].present?
-    ass.permit(:name, :display_name, :category_name, :has_svn, :has_lang, :group_size,
-               :github_submission_enabled)
+    ass.permit(:name, :display_name, :category_name, :group_size, :github_submission_enabled)
   end
 
   def edit_assessment_params
