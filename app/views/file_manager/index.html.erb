@@ -38,7 +38,9 @@
   <table class="table">
     <thead>
     <tr>
-      <th></th>
+      <th>
+        <%= check_box_tag "check-all", "check-all", false, { class: "check-all" } %>
+      </th>
       <th>Filename</th>
       <th>Bytes</th>
       <th>Date</th>
@@ -52,7 +54,7 @@
         <tr class="table-row-center">
           <td>
             <% if entry[:entry] != '../' %>
-              <%= check_box_tag 'selected_files[]', entry[:relative], false, { html: { data: { path: entry[:relative] }}} %>
+              <%= check_box_tag 'selected_files[]', entry[:relative], false, { class: "check", html: { data: { path: entry[:relative] }}} %>
           <% end %>
           <td>
             <%= link_to entry[:relative].to_s do %>

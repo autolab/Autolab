@@ -109,3 +109,15 @@ function handleDeleteSelected() {
         });
     }
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+    const otherCheckboxes = document.querySelectorAll('.check');
+
+    $(".check-all").click(function() {
+        console.log("clicked");
+        const isChecked = this.checked;
+        otherCheckboxes.forEach(function(checkbox) {
+            checkbox.checked = isChecked;
+        });
+    });
+});
