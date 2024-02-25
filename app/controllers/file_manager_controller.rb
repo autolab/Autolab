@@ -54,37 +54,30 @@ class FileManagerController < ApplicationController
   def rename
     absolute_path = check_path_exist(params[:relative_path])
     if check_instructor(absolute_path)
-      dir_name = File.dirname(params[:relative_path])
+      if absolute_path.equal?(BASE_DIRECTORY)
+        flash[:error] = "Unable to rename courses in the root directory."
+      else
+        dir_name = File.dirname(params[:relative_path])
 
-      if params[:new_name].empty?
-        raise ArgumentError, "New name not provided,
+        if params[:new_name].empty?
+          raise ArgumentError, "New name not provided,
         new name cannot be blank"
-      end
+        end
 
-      unless params[:new_name].match(/^[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)?$/)
-        raise ArgumentError, "Invalid characters. Only letters,
+        unless params[:new_name].match(/^[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)?$/)
+          raise ArgumentError, "Invalid characters. Only letters,
         numbers, underscores, and hyphens are allowed."
+        end
+
+        new_path = safe_expand_path("#{dir_name}/#{params[:new_name]}")
+        parent = new_path.split[0..-2].join('/')
+
+        raise ArgumentError, "A file with that name already exists" if File.exist?(new_path)
+
+        FileUtils.mkdir_p(parent)
+        FileUtils.mv(absolute_path, new_path)
+        flash[:success] = "Successfully renamed file to #{params[:new_name]}"
       end
-
-      new_path = safe_expand_path("#{dir_name}/#{params[:new_name]}")
-      parent = new_path.split[0..-2].join('/')
-
-      original_has_extension = !File.extname(absolute_path).empty?
-
-      if original_has_extension && File.extname(params[:new_name]).empty?
-        raise ArgumentError,
-              "You cannot name a file a folder"
-      end
-      if !original_has_extension && !File.extname(params[:new_name]).empty?
-        raise ArgumentError,
-              "You cannot name a folder a file"
-      end
-
-      raise ArgumentError, "A file with that name already exists" if File.exist?(new_path)
-
-      FileUtils.mkdir_p(parent)
-      FileUtils.mv(absolute_path, new_path)
-      flash[:success] = "Successfully renamed file to #{params[:new_name]}"
     end
   rescue ArgumentError => e
     flash[:error] = e.message
@@ -128,7 +121,7 @@ private
   def upload_file(path)
     absolute_path = check_path_exist(path)
     if absolute_path.equal?(BASE_DIRECTORY)
-      flash[:error] = "You cannot upload files in the root course directory " \
+      flash[:error] = "You cannot upload files/create folders in the root directory " \
          "#{view_context.link_to 'here', new_course_url, method: 'get'}" \
          " if you want to create a new course."
       flash[:html_safe] = true
@@ -172,7 +165,7 @@ private
       abs_path_str = "#{current_directory}/#{file}"
       stat = File.stat(abs_path_str)
       is_file = stat.file?
-      if [".", ".."].include?(file)
+      if %w[. ..].include?(file)
         inst = true
         if current_directory == BASE_DIRECTORY
           inst = false
