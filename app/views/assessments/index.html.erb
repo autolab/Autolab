@@ -17,15 +17,11 @@
         } else {
             num_columns = 1;
         }
-        console.log(num_columns);
         const clearfixDiv = document.createElement('div');
         clearfixDiv.className = 'clearfix hide-on-small-only'
 
         for (let i = 0; i < cards.length; i++) {
-            console.log(i)
-            console.log(cards[i])
             if (i % num_columns === 0) {
-                console.log("inserting clearfix")
                 cards[i].parentNode.insertBefore(clearfixDiv, cards[i]);
             }
         }
