@@ -29,6 +29,7 @@ class FileManagerController < ApplicationController
         send_file absolute_path
       else
         @file = File.read(absolute_path)
+        @parent = './'
         render :file, formats: :html
       end
     end

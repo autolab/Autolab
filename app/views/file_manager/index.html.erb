@@ -55,7 +55,7 @@
           <td>
             <% if entry[:entry] != '../' %>
               <%= check_box_tag 'selected_files[]', entry[:relative], false, { class: "check", html: { data: { path: entry[:relative] } } } %>
-          <% end %>
+            <% end %>
           <td>
             <%= link_to entry[:relative].to_s do %>
               <i class='material-icons left middle'><%= entry[:type] == :file ? 'article' : 'folder' %></i>
