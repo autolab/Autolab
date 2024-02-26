@@ -446,15 +446,26 @@ module AssessmentAutogradeCore
           end
         end
 
+        missing_problems = []
         scores.keys.each do |key|
           problem = @assessment.problems.find_by(name: key)
-          raise AutogradeError, "Problem \"" + key + "\" not found." unless problem
+          unless problem
+            missing_problems << key
+            next
+          end
+
           score = submission.scores.find_or_initialize_by(problem_id: problem.id)
           score.score = scores[key]
           score.feedback = feedback 
           score.released = @autograde_prop.release_score
           score.grader_id = 0
           score.save!
+        end
+        submission.missing_problems = missing_problems.join(', ')
+        submission.save!
+
+        if missing_problems
+          raise AutogradeError, "Problems \"#{submission.missing_problems}\" found in autograder result, but not defined by assessment."
         end
       end
 
