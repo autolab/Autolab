@@ -21,21 +21,10 @@
         // Update the corresponding problem.starred attribute
         var problemId = icon.getAttribute('data-problem-id');
         var dataUrl = icon.parentNode.parentNode.getAttribute('data-url');
-        console.log('Is it starred: ', starred);
-        console.log('What is the problemId? ', problemId);
-        console.log("Current Node: ", icon);
-        console.log("Parent Node: ", icon.parentNode.parentNode);
-        console.log("Here is the dataUrl: ", dataUrl);
         $.ajax({
             url: dataUrl,
             type: 'PATCH',
-            data: {problem: {starred: starred_bool}},
-            success: function (response) {
-                console.log('problem.starred updated successfully:', response);
-            },
-            error: function (error) {
-                console.error('Error updating problem.starred:', error);
-            }
+            data: {problem: {starred: starred_bool}}
         });
     }
 </script>
@@ -62,7 +51,6 @@
 <table class="bordered responsive-table">
   <thead>
     <tr>
-        <th data-field="starred">Star</th>
         <th data-field="problem_name">Problem</th>
         <th data-field="max_score">Max Score</th>
         <th data-field="optional">Optional?</th>
@@ -74,9 +62,8 @@
       <tr>
         <td data-url="<%= course_assessment_problem_path(@course, @assessment, problem) %>">
           <%= link_to "<i class=\"material-icons left star-icon\" data-problem-id=\"#{problem.id}\" data-starred=\"#{problem.starred ? 'yes' : 'no'}\">#{problem.starred ? 'star' : 'star_border'}</i>".html_safe, "javascript:void(0);", class: "small star-toggle", remote: true %>
-          <%= problem.starred ? "yes" : "no" %>
+          <%= problem.name %>
         </td>
-        <td><%= problem.name %></td>
         <td><%= problem.max_score %></td>
         <td><%= problem.optional ? "yes" : "no" %></td>
         <td>
