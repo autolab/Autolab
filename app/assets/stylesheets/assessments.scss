@@ -24,3 +24,13 @@
   font-size: 0.85rem;
   color: #676464;
 }
+
+.hover p {
+  display: none;
+}
+
+.collection-item:hover {
+  .hover {
+    display: block;
+  }
+}

@@ -10,13 +10,13 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2024_02_19_175942) do
+ActiveRecord::Schema.define(version: 2024_02_26_083719) do
 
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
-    t.bigint "record_id", null: false
-    t.bigint "blob_id", null: false
+    t.integer "record_id", null: false
+    t.integer "blob_id", null: false
     t.datetime "created_at", null: false
     t.index ["blob_id"], name: "index_active_storage_attachments_on_blob_id"
     t.index ["record_type", "record_id", "name", "blob_id"], name: "index_active_storage_attachments_uniqueness", unique: true
@@ -27,7 +27,7 @@ ActiveRecord::Schema.define(version: 2024_02_19_175942) do
     t.string "filename", null: false
     t.string "content_type"
     t.text "metadata"
-    t.bigint "byte_size", null: false
+    t.integer "byte_size", null: false
     t.string "checksum", null: false
     t.datetime "created_at", null: false
     t.string "service_name", null: false
@@ -35,7 +35,7 @@ ActiveRecord::Schema.define(version: 2024_02_19_175942) do
   end
 
   create_table "active_storage_variant_records", force: :cascade do |t|
-    t.bigint "blob_id", null: false
+    t.integer "blob_id", null: false
     t.string "variation_digest", null: false
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
   end
@@ -130,7 +130,7 @@ ActiveRecord::Schema.define(version: 2024_02_19_175942) do
     t.integer "course_id"
     t.integer "assessment_id"
     t.string "category_name", default: "General"
-    t.datetime "release_at", default: -> { "CURRENT_TIMESTAMP" }
+    t.datetime "release_at"
     t.index ["assessment_id"], name: "index_attachments_on_assessment_id"
   end
 
@@ -215,8 +215,8 @@ ActiveRecord::Schema.define(version: 2024_02_19_175942) do
     t.datetime "updated_at", null: false
     t.string "membership_url"
     t.string "platform"
-    t.boolean "auto_sync", default: false
-    t.boolean "drop_missing_students", default: false
+    t.boolean "auto_sync"
+    t.boolean "drop_missing_students"
   end
 
   create_table "module_data", force: :cascade do |t|
@@ -311,7 +311,7 @@ ActiveRecord::Schema.define(version: 2024_02_19_175942) do
     t.integer "course_id"
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.datetime "until", default: -> { "CURRENT_TIMESTAMP" }
+    t.datetime "until"
     t.boolean "disabled", default: false
   end
 
@@ -323,14 +323,14 @@ ActiveRecord::Schema.define(version: 2024_02_19_175942) do
 
   create_table "scoreboards", force: :cascade do |t|
     t.integer "assessment_id"
-    t.text "banner"
-    t.text "colspec"
+    t.text "banner", limit: 65535
+    t.text "colspec", limit: 65535
   end
 
   create_table "scores", force: :cascade do |t|
     t.integer "submission_id"
     t.float "score"
-    t.text "feedback", size: :medium
+    t.text "feedback", limit: 16777215
     t.integer "problem_id"
     t.datetime "created_at"
     t.datetime "updated_at"
@@ -356,7 +356,7 @@ ActiveRecord::Schema.define(version: 2024_02_19_175942) do
     t.string "submitter_ip", limit: 40
     t.integer "tweak_id"
     t.boolean "ignored", default: false, null: false
-    t.string "dave"
+    t.string "dave", limit: 255
     t.text "embedded_quiz_form_answer"
     t.integer "submitted_by_app_id"
     t.string "group_key", default: ""
@@ -388,6 +388,7 @@ ActiveRecord::Schema.define(version: 2024_02_19_175942) do
     t.string "school"
     t.string "major"
     t.string "year"
+    t.boolean "hover_assessment_date"
     t.index ["confirmation_token"], name: "index_users_on_confirmation_token", unique: true
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
