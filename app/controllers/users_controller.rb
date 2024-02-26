@@ -383,7 +383,7 @@ class UsersController < ApplicationController
       flash[:success] = "Successfully updated display settings"
       (redirect_to user_path(id: @user.id)) && return
     else
-      flash[:error] = "#{@user.errors[:hover_assessment_date][0]}"
+      flash[:error] = @user.errors[:hover_assessment_date][0].to_s
     end
   end
 

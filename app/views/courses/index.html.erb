@@ -32,7 +32,7 @@
             <% if category != :completed %>
               <div class="collection red darken-3 date">
                 <% course.current_assessments.ordered.each do |asmt| %>
-                  <%= link_to course_assessment_path(course, asmt), class: "collection-item grey-text text-darken-4 date" do%>
+                  <%= link_to course_assessment_path(course, asmt), class: "collection-item grey-text text-darken-4 date" do %>
                   <%= asmt.display_name %>
                   <p class="date"><b>Start:</b>&ensp;<%= asmt.date_to_s(asmt.start_at) %>&ensp;|
                     &ensp;<b>Due:</b>&ensp;<%= asmt.date_to_s(asmt.due_at) %></p>
