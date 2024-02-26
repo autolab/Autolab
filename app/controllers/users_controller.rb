@@ -376,7 +376,7 @@ class UsersController < ApplicationController
 
   action_auth_level :update_display_settings, :student
   def update_display_settings
-    @user = User.find(params[:id])
+    @user = current_user
     return if params[:user].nil? || params[:user].is_a?(String) || @user.nil?
 
     if @user.update(hover_assessment_date: params[:user][:hover_assessment_date])
