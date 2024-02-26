@@ -1,7 +1,13 @@
 <% @title = "Import Course Roster" %>
 
+<% if @roster_error %>
+<div class="error" id="flash_error">
+  <%= render partial: 'courses/uploadError',
+             locals: { roster_errors: @roster_error } %>
+</div>
+<% end %>
 <h4>Import Course Roster</h4>
-<% if params[:upload] then %>
+<% if params[:upload] && !@roster_error %>
   <%= render partial: 'updateRosterPreview', locals: { cuds: @cuds, sorted_cuds: @sorted_cuds } %>
 <% else %>
   <p>
