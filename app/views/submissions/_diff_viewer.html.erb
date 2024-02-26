@@ -4,12 +4,7 @@
     <% diff_header = "--- #{title}\n+++ #{title}\n" %>
     <% begin %>
     <% diff_str = Diffy::Diff.new(@prev_file_contents, @file_contents, include_diff_info: true).to_s(:text) %>
-    <% if diff_str.present? %>
-      <% diff_str = [diff_header] + diff_str.lines.slice(2..-1) %>
-      <% diff_str = diff_str.join("") %>
-    <% else %>
-      <% diff_str = diff_header %>
-    <% end %>
+    <% diff_str = ([diff_header] + (diff_str.lines.slice(2..-1) || [])).join("") %>
     <% diff_str.gsub!("\\", "\\\\") %>
 
     <pre id="diff-viewer-contents" style="display: none;"><%= diff_str %></pre>
