@@ -330,7 +330,7 @@ ActiveRecord::Schema.define(version: 2024_02_26_083719) do
   create_table "scores", force: :cascade do |t|
     t.integer "submission_id"
     t.float "score"
-    t.text "feedback", limit: 16777215
+    t.text "feedback", size: medium
     t.integer "problem_id"
     t.datetime "created_at"
     t.datetime "updated_at"
