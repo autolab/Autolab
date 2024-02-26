@@ -5,6 +5,13 @@
   <%= javascript_include_tag "sorttable" %>
 <% end %>
 
+<% unless @errorMessage.nil? %>
+  <h4 class="error-header">Error Rendering Scoreboard:</h4>
+  <div>
+    <pre style="white-space: pre-wrap"><%= @errorMessage %></pre>
+  </div>
+<% end %>
+
 <h4>Scoreboard</h4>
 
 <% if @grades.values.empty? %>
@@ -59,7 +66,7 @@
               <% if c["img"] %>
                 <td><img src="data:image/png;base64,<%= grade[:entry][i] %>"></td>
               <% else %>
-                <% if grade[:entry].is_a?(Array) && grade[:entry][i] != "-" %>
+                <% if grade[:entry].is_a?(Array) && grade[:entry].length > i %>
                   <td><%= grade[:entry][i] %></td>
                 <% else %>
                   <%= render 'error_icon' %>
@@ -68,7 +75,7 @@
             <% end %>
           <% else %>
             <%# this should be guaranteed to be an array, but for redundancy, check that entry is array %>
-            <% if grade[:entry].is_a?(Array) && grade[:entry][i] != "-" %>
+            <% if grade[:entry].is_a?(Array) && grade[:entry].length > i %>
               <% grade[:entry].each do |column| %>
                 <td><%= column %></td>
               <% end %>
