@@ -104,6 +104,9 @@ function loadFile(newFile) {
   // Update version buttons
   $('#version-links').replaceWith(newFile.versionLinks);
 
+  // Update release grade button
+  $('#release-grades').replaceWith(newFile.releaseGrades);
+
   displayAnnotations();
   attachEvents();
 }
@@ -130,6 +133,7 @@ function purgeCurrentPageCache() {
     versionLinks: `<span id="version-links">${$('#version-links').html()}</span>`,
     versionDropdown: `<span id="version-dropdown">${$('#version-dropdown').html()}</span>`,
     url: window.location.href,
+    releaseGrades: `<span id="release-grades">${$('#release-grades').html()}</span>`,
   };
 }
 
@@ -184,6 +188,7 @@ function fillAnnotationBox() {
     $('.problemGrades').html($page.find('.problemGrades'));
     $('#annotationPane').html($page.find(' #annotationPane'));
     $('.collapsible').collapsible({ accordion: false });
+    $('#release-grades').html($page.find('#release-grades'));
     $('#loadScreen').hide();
     attachChangeFileEvents();
     attachAnnotationPaneEvents();
