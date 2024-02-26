@@ -464,7 +464,7 @@ module AssessmentAutogradeCore
         submission.missing_problems = missing_problems.join(', ')
         submission.save!
 
-        if missing_problems
+        unless submission.missing_problems.empty?
           raise AutogradeError, "Problems \"#{submission.missing_problems}\" found in autograder result, but not defined by assessment."
         end
       end
@@ -483,11 +483,12 @@ module AssessmentAutogradeCore
       @assessment.problems.each do |p|
         submissions.each do |submission|
           score = submission.scores.find_or_initialize_by(problem_id: p.id)
-          next unless score.new_record? # don't overwrite scores
-          score.score = 0
           score.feedback = feedback_str
-          score.released = true
-          score.grader_id = -1
+          if score.new_record? # don't overwrite scores
+            score.score = 0
+            score.released = true
+            score.grader_id = -1
+          end
           score.save!
         end
       end
