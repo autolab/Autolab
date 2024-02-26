@@ -325,6 +325,7 @@ ActiveRecord::Schema.define(version: 2024_02_26_194217) do
     t.integer "assessment_id"
     t.text "banner"
     t.text "colspec"
+    t.boolean "include_instructors", default: false
   end
 
   create_table "scores", force: :cascade do |t|
