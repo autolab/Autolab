@@ -14,11 +14,6 @@
       changes = true;
     });
 
-    $(document).ready(function(){
-      $('.tabs').tabs();
-    });
-    
-
     window.onbeforeunload = function() {
       if (changes) {
         return 'It looks like you might have unsubmitted changes. Are you sure you want to continue?';
