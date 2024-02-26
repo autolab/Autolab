@@ -76,7 +76,6 @@ ActiveRecord::Schema.define(version: 2024_02_19_175942) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.integer "grade_type", default: 0, null: false
-    t.string "repository"
     t.integer "group_id"
     t.integer "membership_status", limit: 1, default: 0
     t.integer "version_number"
@@ -109,7 +108,6 @@ ActiveRecord::Schema.define(version: 2024_02_19_175942) do
     t.integer "version_threshold"
     t.integer "late_penalty_id"
     t.integer "version_penalty_id"
-    t.boolean "has_svn"
     t.boolean "quiz", default: false
     t.text "quizData"
     t.string "remote_handin_path"
@@ -419,4 +417,6 @@ ActiveRecord::Schema.define(version: 2024_02_19_175942) do
     t.index ["risk_condition_id"], name: "index_watchlist_instances_on_risk_condition_id"
   end
 
+  add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
 end

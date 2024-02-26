@@ -135,9 +135,7 @@ Rails.application.routes.draw do
         post "import", on: :collection
       end
       resources :problems, except: [:index, :show]
-      resource :scoreboard, except: [:new] do
-        get "help", on: :member
-      end
+      resource :scoreboard, except: [:new]
       resources :submissions do
         resources :annotations, only: [:create, :update, :destroy] do
           collection do
@@ -186,11 +184,6 @@ Rails.application.routes.draw do
         post "regrade"
         post "regradeBatch"
         post "regradeAll"
-
-        # SVN actions
-        get "admin_svn"
-        post "import_svn"
-        post "set_repo"
 
         # gradesheet ajax actions
         post "quickSetScore"
