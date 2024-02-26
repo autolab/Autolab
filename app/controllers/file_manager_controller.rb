@@ -86,6 +86,8 @@ class FileManagerController < ApplicationController
     path = params[:path]&.split("/")&.drop(2)&.join("/")
     path = CGI.unescape(path)
     absolute_path = check_path_exist(path).to_s
+    return unless check_instructor(absolute_path)
+
     if File.directory?(absolute_path)
       tar_stream = StringIO.new("")
       Gem::Package::TarWriter.new(tar_stream) do |tar|
