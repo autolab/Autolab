@@ -1,3 +1,17 @@
+function rename(path) {
+    let new_name = prompt("Enter the new name:");
+    let rel_path = path.split("/file_manager/")[1].replace(/%40/g, '@');
+    $.ajax({
+        url: "/file_manager/" + rel_path,
+        type: "PUT",
+        data: { new_name: new_name, relative_path: rel_path},
+        success: function(data) {
+            console.log(`Renamed: ${rel_path}`)
+            location.reload();
+        }
+    });
+}
+
 function deleteSelected(path) {
     $.ajax({
         url: path,
