@@ -21,38 +21,7 @@
 
     <div class="row">
       <div class="col s12">
-        <% if @assessment.has_svn then %>
-          <%= form_for @submission, url: { action: :handin },
-                                    html: { name: "submissionForm", onclick: "return validateIntegrity();" },
-                                    method: :post do |f| %>
-
-            <!-- Academic integrity checkbox -->
-            <%= label_tag(:integrity_checkbox) do %>
-                <%= check_box_tag(:integrity_checkbox) %>
-                <%= content_tag("span", "I affirm that I have complied with this course's academic integrity
-                policy as defined in the syllabus#{late_confirm}.") %>
-            <% end %>
-
-            <% if @aud.past_due_at? then %>
-              <table style="width:100%">
-                <td>
-                  <%= f.submit("Checkout Repository", class: "btn primary handin-btn",
-                                                      data: { confirm: "Are you sure you want to submit late?" },
-                                                      onclick: "setSubmitClicked()") %>
-                </td>
-                <td id="submission_error" style="color:red"></td>
-              </table>
-            <% else %>
-              <table style="width:100%">
-                <td>
-                  <%= f.submit("Checkout Repository", class: "btn primary handin-btn",
-                                                      onclick: "setSubmitClicked()") %>
-                </td>
-                <td id="submission_error" style="color:red"></td>
-              </table>
-            <% end %>
-          <% end %>
-        <% elsif ! @assessment.disable_handins? and !@assessment.embedded_quiz then %>
+        <% if !@assessment.disable_handins? and !@assessment.embedded_quiz then %>
           <%= form_for @submission, url: { action: :handin },
                                     html: { name: "submissionForm", onclick: "return validateIntegrity();" },
                                     multipart: true do |f| %>
