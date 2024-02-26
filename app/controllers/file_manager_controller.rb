@@ -4,7 +4,6 @@ require 'pathname'
 
 class FileManagerController < ApplicationController
   BASE_DIRECTORY = Rails.root.join('courses')
-  before_action :set_base_url
   skip_before_action :set_course
   skip_before_action :authorize_user_for_course
   skip_before_action :update_persistent_announcements
@@ -116,8 +115,6 @@ class FileManagerController < ApplicationController
     flash[:success] = "Download successful"
   end
 
-private
-
   def upload_file(path)
     absolute_path = check_path_exist(path)
     if absolute_path.equal?(BASE_DIRECTORY)
@@ -214,10 +211,6 @@ private
     raise ActionController::RoutingError, 'Not Found' unless File.exist?(@absolute_path)
 
     @absolute_path
-  end
-
-  def set_base_url
-    @base_url = '/file_manager'
   end
 
   def check_instructor(path)

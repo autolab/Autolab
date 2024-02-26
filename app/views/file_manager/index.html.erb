@@ -54,7 +54,7 @@
         <tr class="table-row-center">
           <td>
             <% if entry[:entry] != '../' %>
-              <%= check_box_tag 'selected_files[]', entry[:relative], false, { class: "check", html: { data: { path: entry[:relative] }}} %>
+              <%= check_box_tag 'selected_files[]', entry[:relative], false, { class: "check", html: { data: { path: entry[:relative] } } } %>
           <% end %>
           <td>
             <%= link_to entry[:relative].to_s do %>
@@ -90,4 +90,3 @@
     </tbody>
   </table>
 </div>
-

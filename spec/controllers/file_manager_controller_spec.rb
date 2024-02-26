@@ -73,17 +73,9 @@ RSpec.describe FileManagerController, type: :controller do
     end
   end
 
-  shared_examples "rename_unsuccessful" do |login: true|
-    before(:each) { sign_in(u) if login }
-    it "renames successfully" do
-      put :rename, params: { path: "test_course_1/testassessment", new_name: "testassessment1" }
-      expect(response).to be_successful
-    end
-  end
-
   shared_examples "rename_failure" do |login: true|
     before(:each) { sign_in(u) if login }
-    it "renames successfully" do
+    it "renames unsuccessfully" do
       put :rename, params: { path: "test_course_1/testassessment", new_name: "testassessment1" }
       expect(response).to_not be_successful
     end
@@ -103,7 +95,6 @@ RSpec.describe FileManagerController, type: :controller do
       let!(:u) { student_user }
       it_behaves_like "index_success"
       it_behaves_like "index_empty"
-      it_behaves_like "rename_unsuccessful"
     end
 
     context "when user is not logged in" do
