@@ -5,7 +5,6 @@ newFile = {
     url: '<%= url_for(params.permit(:header_position, :action, :controller).to_h) %>',
     versionLinks: '<%= j render("version_links") %>',
     versionDropdown: '<%= j render("version_dropdown") %>',
-    releaseGrades: '<%= j render("release_grades") %>'
 };
 
 <% if @is_pdf %>

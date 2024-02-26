@@ -104,9 +104,6 @@ function loadFile(newFile) {
   // Update version buttons
   $('#version-links').replaceWith(newFile.versionLinks);
 
-  // Update release grade button
-  $('#release-grades').replaceWith(newFile.releaseGrades);
-
   displayAnnotations();
   attachEvents();
 }
@@ -132,8 +129,7 @@ function purgeCurrentPageCache() {
     symbolTree: `<div id="symbol-tree-container">${$('#symbol-tree-container').html()}</div>`,
     versionLinks: `<span id="version-links">${$('#version-links').html()}</span>`,
     versionDropdown: `<span id="version-dropdown">${$('#version-dropdown').html()}</span>`,
-    url: window.location.href,
-    releaseGrades: `<span id="release-grades">${$('#release-grades').html()}</span>`,
+    url: window.location.href
   };
 }
 
