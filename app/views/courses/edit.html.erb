@@ -23,6 +23,7 @@
       <% end %>
 
       <%= render partial: "courseFields", locals: { f:, course: @course } %>
+
       <%= f.submit 'Save', { class: "btn primary" } %>
       <% if current_user.administrator? %>
         <%= link_to "Delete Course", course_path(@course), method: :delete,

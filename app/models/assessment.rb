@@ -201,7 +201,11 @@ class Assessment < ApplicationRecord
   def construct_folder
     # this should construct the assessment folder and the handin folder
     FileUtils.mkdir_p(handin_directory_path)
-    dump_yaml if construct_default_config_file
+    constructed_default_config_file = construct_default_config_file
+    if constructed_default_config_file
+      dump_yaml
+    end
+    constructed_default_config_file
   end
 
   ##
@@ -235,7 +239,11 @@ class Assessment < ApplicationRecord
     config_source = File.open(unique_source_config_file_path, "r", &:read)
 
     # validate syntax of config
-    RubyVM::InstructionSequence.compile(config_source)
+    begin
+      RubyVM::InstructionSequence.compile(config_source)
+    rescue SyntaxError => e
+      raise StandardError, e
+    end
 
     # ensure source_config_module_name is an actual module in the assessment config rb file
     # otherwise loading the file on subsequent calls to config_module will result in an exception
@@ -709,8 +717,9 @@ private
                  "handout_filename" => "handout",
                  "writeup_filename" => "writeup",
                  "has_autograde" => nil,
-                 "has_scoreboard" => nil }.freeze
-  BACKWORDS_COMPATIBILITY = { "autograding_setup" => "autograder",
+                 "has_scoreboard" => nil,
+                 "has_svn" => nil }.freeze
+  BACKWARDS_COMPATIBILITY = { "autograding_setup" => "autograder",
                               "scoreboard_setup" => "scoreboard" }.freeze
   def backwards_compatibility(props)
     GENERAL_BC.each do |old, new|
@@ -719,7 +728,7 @@ private
       props["general"][new] = props["general"][old] unless new.nil?
       props["general"].delete(old)
     end
-    BACKWORDS_COMPATIBILITY.each do |old, new|
+    BACKWARDS_COMPATIBILITY.each do |old, new|
       next unless props.key?(old)
 
       props[new] = props[old]

@@ -1,29 +1,29 @@
-<%= form_for [@course, @assessment, @scoreboard], builder: FormBuilderWithDateTimeInput do |f| %>
+<%= form_for @scoreboard, url: course_assessment_scoreboard_path(@course, @assessment),
+                          builder: FormBuilderWithDateTimeInput do |f| %>
   <% unless @errorMessage.nil? %>
     <h4 class="error-header">Error Rendering Scoreboard:</h4>
     <div>
-      <pre style="text-wrap: wrap;"><%= @errorMessage %></pre>
+      <pre style="white-space: pre-wrap"><%= @errorMessage %></pre>
       <pre><%= @error %></pre>
     </div>
   <% end %>
-  <%= f.error_messages %>
   <h3>Scoreboard Settings</h3>
-  <p>
-    Learn more about how to configure <a href="https://docs.autolabproject.com/features/scoreboards/">custom scoreboards here.</a>
-  </p>
-  <hr>
 
-  <%= f.text_field :banner, size: 80,
-                            placeholder: "Optional HTML banner text. Leave blank for default." %>
+  <%= f.text_field :banner,
+                   size: 80,
+                   placeholder: "Optional HTML banner text. Leave blank for default." %>
 
-  <%= f.text_area :colspec, class: "materialize-textarea",
-                            placeholder: "Optional JSON string that describes your customized scoreboard columns. Leave blank for default.",
-                            display_name: "Column Specification",
-                            rows: 5, cols: 80 %>
+  <%= f.text_area :colspec,
+                  class: "materialize-textarea",
+                  placeholder: "Optional JSON string that describes your customized scoreboard columns. Leave blank for default.",
+                  help_text: 'Learn more about how to configure <a href="https://docs.autolabproject.com/features/scoreboards/">custom scoreboards here.</a>'.html_safe,
+                  display_name: "Column Specification",
+                  rows: 5,
+                  cols: 80 %>
   <p class="help-block">
-  <b>Example: </b>A scoreboard with two columns "Score" and "Ops" with "Ops" sorted in ascending order.
-  <br>
-  <b>{"scoreboard": [ {"hdr":"Score"}, {"hdr":"Ops", "asc":1} ] }</b>
+    <b>Example: </b>A scoreboard with two columns "Score" and "Ops" with "Ops" sorted in ascending order.
+    <br>
+    <b>{"scoreboard": [ {"hdr":"Score"}, {"hdr":"Ops", "asc":1} ] }</b>
   </p>
 
   <h4>Column summary</h4>
@@ -31,9 +31,14 @@
   <p class="help-block">
     <b>[desc]/[asc]</b>: Indicates that the column is in descending or ascending order.
   <p>
+  <%= f.check_box :include_instructors,
+                  display_name: "Include instructors",
+                  help_text: "Include instructors and course assistants on the scoreboard.
+                By default, only students are shown." %>
 
   <%= f.submit "Save", { class: "btn primary" } %>
-  <%= link_to "Delete", [@course, @assessment, :scoreboard], method: :delete, class: "btn danger",
-                                                             data: { confirm: "Are you sure you want to delete the Scoreboard for this assessment?" } %>
-
+  <%= link_to "Delete", [@course, @assessment, :scoreboard],
+              method: :delete,
+              class: "btn danger",
+              data: { confirm: "Are you sure you want to delete the Scoreboard for this assessment?" } %>
 <% end %>
