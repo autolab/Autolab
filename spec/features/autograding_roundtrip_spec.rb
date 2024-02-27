@@ -9,13 +9,13 @@ RSpec.describe "autograding", type: :feature do
     @instructor_user
   end
   let(:assessment_name) do
-    cud = get_first_cud_by_uid(user)
-    assessment_id = get_first_aid_by_cud(cud)
-    Assessment.find(assessment_id).display_name
+    @assessment.display_name
   end
   let(:course_name) do
-    cid = get_first_cid_by_uid(user)
-    Course.find(cid).display_name
+    @course.display_name
+  end
+  after(:each) do
+    delete_course_files(@course)
   end
   it "runs through successfully" do
     # Simulates user log in
@@ -24,9 +24,9 @@ RSpec.describe "autograding", type: :feature do
     fill_in "user_password", with: "testPassword"
     click_button "Sign in"
     expect(page).to have_content "Signed in successfully."
-
     # TODO: fix this so that we can test autograded assessment
     # Goes into assessment submission page
+    visit "/courses"
     click_link course_name
     click_link assessment_name
 

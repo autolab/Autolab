@@ -14,7 +14,6 @@
     <div class="sub header right floated"> <%= @score.submission.course_user_datum.user.email %></div>
   </h2>
 
-
   <div class="ui accordion">
     <div class="title">
       <h4 class="ui clearing segment">
@@ -95,7 +94,7 @@
         <td>Autograding Total:</td>
         <td><%= @scoreHash["_total"] %></td>
       </tr>
-      <% if @score.grader&.user%>
+      <% if @score.grader&.user %>
         <tr>
           <td>Graded By:</td>
           <td><%= @score.grader.user.email %></td>
@@ -105,4 +104,3 @@
   </table>
   <% end %>
 </div>
-

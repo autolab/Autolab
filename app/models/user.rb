@@ -35,7 +35,7 @@ class User < ApplicationRecord
 
     cuds.each do |cud|
       next unless cud.instructor?
-      return true unless cud.course.course_user_data.where(user: user).empty?
+      return true unless cud.course.course_user_data.where(user:).empty?
     end
 
     false
@@ -84,19 +84,19 @@ class User < ApplicationRecord
   def self.find_for_facebook_oauth(auth, _signed_in_resource = nil)
     authentication = Authentication.find_by(provider: auth.provider,
                                             uid: auth.uid)
-    return authentication.user if authentication&.user
+    authentication.user if authentication&.user
   end
 
   def self.find_for_google_oauth2_oauth(auth, _signed_in_resource = nil)
     authentication = Authentication.find_by(provider: auth.provider,
                                             uid: auth.uid)
-    return authentication.user if authentication&.user
+    authentication.user if authentication&.user
   end
 
   def self.find_for_shibboleth_oauth(auth, _signed_in_resource = nil)
     authentication = Authentication.find_by(provider: "CMU-Shibboleth",
                                             uid: auth.uid)
-    return authentication.user if authentication&.user
+    authentication.user if authentication&.user
   end
 
   def self.new_with_session(params, session)
@@ -142,9 +142,6 @@ class User < ApplicationRecord
     user.password_confirmation = temp_pass
     user.skip_confirmation!
 
-    Rails.logger.debug("user email: #{user.email}")
-    Rails.logger.debug("user pswd: #{user.password}")
-
     user.save!
     user
   end
@@ -184,7 +181,7 @@ class User < ApplicationRecord
     require "net/ldap"
 
     host = "ldap.cmu.edu"
-    ldap = Net::LDAP.new(host: host, port: 389)
+    ldap = Net::LDAP.new(host:, port: 389)
 
     user = ldap.search(base: "uid=#{andrew_id},ou=AndrewPerson,dc=andrew,dc=cmu,dc=edu")[0]
 

@@ -6,9 +6,7 @@ require "base64"
 class ExtensionsController < ApplicationController
   # inherited from ApplicationController
   before_action :set_assessment
-  rescue_from ActionView::MissingTemplate do |_exception|
-    redirect_to("/home/error_404")
-  end
+  before_action :set_assessment_breadcrumb
 
   # TODO
   action_auth_level :index, :instructor
@@ -47,8 +45,8 @@ class ExtensionsController < ApplicationController
           existing_ext.save!
         else
           new_ext = @assessment.extensions.create(
-            days: days,
-            infinite: infinite,
+            days:,
+            infinite:,
             course_user_datum_id: cud_id,
             assessment_id: params[:extension][:assessment_id]
           )
@@ -72,12 +70,5 @@ class ExtensionsController < ApplicationController
     extension.destroy
     flash[:success] = "Extension deleted for user #{cud.email}."
     redirect_to(action: :index)
-  end
-
-private
-
-  def extension_params
-    params.require(:extension).permit(:course_user_datum_id, :days, :infinite,
-                                      :commit, :course_id, :assessment_id)
   end
 end

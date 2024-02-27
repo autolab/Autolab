@@ -6,9 +6,6 @@ class ScoresController < ApplicationController
   before_action :set_assessment
   before_action :set_submission
   before_action :set_score, except: [:create]
-  rescue_from ActionView::MissingTemplate do |_exception|
-    redirect_to("/home/error_404")
-  end
 
   action_auth_level :create, :course_assistant
   def create

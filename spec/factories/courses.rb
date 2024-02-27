@@ -12,5 +12,13 @@ FactoryBot.define do
     end_date { 100.days.from_now.to_s(:db) }
     disabled { false }
     association :lti_course_datum, factory: :lti_course_datum
+
+    trait :with_attachment do
+      after(:create) do |course|
+        create(:attachment, course:)
+      end
+    end
+
+    factory :course_with_attachment, traits: [:with_attachment]
   end
 end

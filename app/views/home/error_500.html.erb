@@ -1,0 +1,38 @@
+<h2>500 &ndash; Internal error</h2>
+
+<h2 style="margin-bottom:0px"><%= @errorMessage %></h2>
+
+<% if flash[:error] %><p><b><%= flash[:error] %></b></p><% end %>
+
+<p><b>Oops!</b> Autolab seems to have done something wrong. We have been notified about this and will look into it. If you would like to file a Bug Report, you may email us at <a href="mailto:<%= Rails.configuration.school['support_email'] %>"><%= Rails.configuration.school['support_email'] %></a> or open an issue in our <a href="https://github.com/autolab/Autolab/issues/">issue tracker</a> on GitHub.</p>
+
+<%= image_tag "DonkeyKong.jpg", width: '200px' %>
+
+<% if @error then %>
+  <br><br>
+  <p><i>Remember that if you modify any config files, you'll need to reload them for the changes to take effect.</i><br>
+    <% if @course_name then %>
+      <b><%= link_to "Reload Course Config",
+                     reload_course_path(name: @course_name), data: { method: "post" } %></b><br>
+      <% if @assessment_name then %>
+        <b><%= link_to "Reload Assessment Config",
+                       reload_course_assessment_path(course_name: @course_name,
+                                                     name: @assessment_name), data: { method: "post" } %></b>
+      <% end %>
+    <% end %>
+  </p>
+
+  <p>
+    <h3>Error Information</h3>
+    <pre><%= debug(@error) %></pre>
+  </p>
+  <p>
+    <h3>Stack Dump</h3>
+    <pre><%= processStackDump(@error.backtrace).join("<br>").html_safe %></pre>
+  </p>
+<% end %>
+
+<div>
+  <a href="/"><%= Rails.configuration.school['school_short_name'] %> Autolab</a>
+  <p>Questions or problems? Please <a href="/home/contact">contact us</a>.</p>
+</div>

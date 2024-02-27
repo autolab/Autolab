@@ -18,16 +18,19 @@ jobs:
     
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       
       - name: Install Ruby
-        uses: ruby/setup-ruby@v1.134.0
+        uses: ruby/setup-ruby@v1
         with:
           bundler-cache: true
           cache-version: 3
           
       - name: Rubocop
         run: bundle exec rubocop
+
+      - name: Erblint
+        run: bundle exec erblint --lint-all
 
   test:
     runs-on: ubuntu-latest
@@ -39,10 +42,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install Ruby
-        uses: ruby/setup-ruby@v1.134.0
+        uses: ruby/setup-ruby@v1
         with:
           bundler-cache: true
           cache-version: 3
@@ -53,7 +56,7 @@ jobs:
           cp config/school.yml.template config/school.yml
           cp config/autogradeConfig.rb.template config/autogradeConfig.rb
           cp .env.template .env
-          mkdir attachments/ tmp/
+          mkdir tmp/
 
       - name: Set up database
         run: |

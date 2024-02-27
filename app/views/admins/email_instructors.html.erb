@@ -38,8 +38,8 @@
 
   <h3>This email will be sent to the following users:</h3>
   <ul>
-    <% @cuds.each do |cud| %>
-      <li><%= cud.email %></li>
+    <% @users.each do |user| %>
+      <li><%= user.email %></li>
     <% end %>
   </ul>
 <% end %>

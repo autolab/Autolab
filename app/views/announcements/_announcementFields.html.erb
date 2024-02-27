@@ -4,26 +4,25 @@
 <% end %>
 
 <%= f.text_field :title,
-  help_text: "The best titles are short and sweet." %>
+                 help_text: "The best titles are short and sweet." %>
 
 <%= f.text_area :description, class: "materialize-textarea",
-  help_text: "There'll also be limited space for the description text. If you need something long-form, perhaps link to a longer announcement posted on external media." %>
+                              help_text: "There'll also be limited space for the description text. If you need something long-form, perhaps link to a longer announcement posted on external media." %>
 
 <%= f.datetime_select :start_date,
-  help_text: "When should the announcement appear?",
-  less_than: "announcement_end_date" %>
+                      help_text: "When should the announcement appear?",
+                      less_than: "announcement_end_date" %>
 
 <%= f.datetime_select :end_date,
-  help_text: "When should the announcement come down?",
-  greater_than: "announcement_start_date" %>
+                      help_text: "When should the announcement come down?",
+                      greater_than: "announcement_start_date" %>
 
-<!-- TODO: custom title 'Persistent Announcement?' -->
-<%= f.check_box :persistent,
-  help_text: "A persistent announcement is shown on every page in the course." %>
+<%= f.check_box :persistent, display_name: "Make persistent",
+                             help_text: "A persistent announcement is shown on every page in the course." %>
 
 <% if @cud.administrator? then %>
-  <%= f.check_box :system,
-    help_text: "Check this to make a system-wide announcement." %>
+  <%= f.check_box :system, display_name: "Make system-wide",
+                           help_text: "Check this to make a system-wide announcement." %>
 <% end %>
 
 <%= f.submit 'Submit' %>

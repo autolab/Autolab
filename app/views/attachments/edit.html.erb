@@ -1,3 +1,5 @@
+<% @title = "Edit Attachment" %>
+
 <% path = if @is_assessment
             course_assessment_attachment_path(@course, @attachment.assessment, @attachment)
           else
@@ -6,6 +8,6 @@
 
 <div class="row">
   <div class="col-md-6">
-    <%= render partial: "form", locals: {path: path} %>
+    <%= render partial: "form", locals: { path: } %>
   </div>
 </div>

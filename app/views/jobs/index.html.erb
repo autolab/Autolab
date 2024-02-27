@@ -1,3 +1,5 @@
+<% @title = "Jobs" %>
+
 <% content_for :javascripts do %>
   <%= javascript_include_tag "sorttable" %>
 <% end %>
@@ -9,7 +11,7 @@
   <% end %>
 </p>
 
-<h2>Currently Running Jobs</h2>
+<h4>Currently Running Jobs</h4>
 
 <% if @running_jobs.blank? or @running_jobs == [] then %>
   None
@@ -38,7 +40,7 @@
   </table>
 <% end %>
 
-<h2>Jobs Waiting to Run</h2>
+<h4>Jobs Waiting to Run</h4>
 
 <% if @waiting_jobs.blank? or @waiting_jobs == [] then %>
   None
@@ -77,11 +79,11 @@ end
 %>
 
 <% if @cud.user.administrator? then %>
-  <h2>Recently Completed Jobs (since <span class="moment-date-time"><%= since %></span>)</h2>
+  <h4>Recently Completed Jobs (since <span class="moment-date-time"><%= since %></span>)</h4>
 <% elsif @cud.instructor? then %>
-  <h2>Recently Completed Jobs For This Course (since <span class="moment-date-time"><%= since %></span>)</h2>
+  <h4>Recently Completed Jobs For This Course (since <span class="moment-date-time"><%= since %></span>)</h4>
 <% else %>
-  <h2>Your Recently Completed Jobs (since <span class="moment-date-time"><%= since %></span>)</h2>
+  <h4>Your Recently Completed Jobs (since <span class="moment-date-time"><%= since %></span>)</h4>
 <% end %>
 
 <% if @dead_jobs_view.blank? or @dead_jobs == [] then %>

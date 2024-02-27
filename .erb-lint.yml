@@ -1,5 +1,7 @@
 glob: "app/**/*.{html,text,js}{+*,}.erb"
 EnableDefaultLinters: true
+exclude:
+  - '**/javascripts/*'
 linters:
   HardCodedString:
     enabled: false

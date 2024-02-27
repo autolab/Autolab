@@ -3,13 +3,11 @@ class UsersController < ApplicationController
   skip_before_action :authorize_user_for_course
   skip_before_action :authenticate_for_action
   skip_before_action :update_persistent_announcements
-  rescue_from ActionView::MissingTemplate do |_exception|
-    redirect_to("/home/error_404")
-  end
   before_action :set_gh_oauth_client, only: [:github_oauth, :github_oauth_callback]
   before_action :set_user,
                 only: [:github_oauth, :github_revoke, :lti_launch_initialize,
                        :lti_launch_link_course]
+  before_action :set_users_list_breadcrumb, except: %i[index]
 
   # GET /users
   action_auth_level :index, :student
@@ -35,7 +33,7 @@ class UsersController < ApplicationController
   def show
     user = User.find_by id: params[:id]
     if user.nil?
-      flash[:error] = "User does not exist"
+      flash[:error] = "Failed to show user: user does not exist."
       redirect_to(users_path) && return
     end
 
@@ -52,7 +50,7 @@ class UsersController < ApplicationController
         next unless cud.instructor?
 
         user_cud =
-          cud.course.course_user_data.where(user: user).first
+          cud.course.course_user_data.where(user:).first
         user_cuds << user_cud unless user_cud.nil?
       end
 
@@ -62,7 +60,7 @@ class UsersController < ApplicationController
         @cuds = user_cuds
       elsif user != current_user
         # current user is not instructor to user
-        flash[:error] = "Permission denied"
+        flash[:error] = "Permission denied: you are not allowed to view this user."
         redirect_to(users_path) && return
       else
         @user = current_user
@@ -79,7 +77,7 @@ class UsersController < ApplicationController
       @user = User.new
     else
       # current user is a normal user. Permission denied
-      flash[:error] = "Permission denied"
+      flash[:error] = "Permission denied: you are not allowed to view this page."
       redirect_to(users_path) && return
     end
   end
@@ -95,7 +93,7 @@ class UsersController < ApplicationController
       @user = User.new(new_user_params)
     else
       # current user is a normal user. Permission denied
-      flash[:error] = "Permission denied"
+      flash[:error] = "Permission denied: you are not allowed to view this page."
       redirect_to(users_path) && return
     end
 
@@ -106,19 +104,19 @@ class UsersController < ApplicationController
     save_worked = false
     begin
       save_worked = @user.save
-      flash[:error] = "User creation failed" unless save_worked
+      flash[:error] = "Failed to create user." unless save_worked
     rescue StandardError => e
       error_message = e.message
       flash[:error] = if error_message.include?("Duplicate entry") && error_message.include?("@")
-                        "User with email #{@user.email} already exists"
+                        "Failed to create user: User with email #{@user.email} already exists."
                       else
-                        "User creation failed"
+                        "Failed to create user."
                       end
       save_worked = false
     end
     if save_worked
       @user.send_reset_password_instructions
-      flash[:success] = "User creation success"
+      flash[:success] = "Successfully created user."
       redirect_to(users_path) && return
     else
       render action: "new"
@@ -130,7 +128,7 @@ class UsersController < ApplicationController
   def edit
     user = User.find(params[:id])
     if user.nil?
-      flash[:error] = "User does not exist"
+      flash[:error] = "Failed to edit user: user does not exist."
       redirect_to(users_path) && return
     end
 
@@ -138,11 +136,14 @@ class UsersController < ApplicationController
       @user = user
     elsif user != current_user
       # current user can only edit himself if he's neither role
-      flash[:error] = "Permission denied"
+      flash[:error] = "Permission denied: you are not allowed to edit this user."
       redirect_to(users_path) && return
     else
       @user = current_user
     end
+
+    # Do it ad-hoc here, since this is the only place we need it
+    @breadcrumbs << (view_context.link_to @user.display_name, user_path(@user))
   end
 
   # PATCH users/:id/
@@ -150,7 +151,7 @@ class UsersController < ApplicationController
   def update
     user = User.find(params[:id])
     if user.nil?
-      flash[:error] = "User does not exist"
+      flash[:error] = "Failed to update user: user does not exist."
       redirect_to(users_path) && return
     end
 
@@ -159,7 +160,7 @@ class UsersController < ApplicationController
       @user = user
     elsif user != current_user
       # current user can only edit himself if he's neither role
-      flash[:error] = "Permission denied"
+      flash[:error] = "Permission denied: you are not allowed to update this user."
       redirect_to(users_path) && return
     else
       @user = current_user
@@ -170,10 +171,10 @@ class UsersController < ApplicationController
                    else
                      user_params
                    end)
-      flash[:success] = "User was successfully updated."
+      flash[:success] = "Successfully updated user."
       redirect_to(users_path) && return
     else
-      flash[:error] = "User update failed. Check all fields"
+      flash[:error] = "Failed to update user. Check all fields and try again."
       redirect_to(edit_user_path(user)) && return
     end
   end
@@ -182,32 +183,32 @@ class UsersController < ApplicationController
   action_auth_level :destroy, :administrator
   def destroy
     unless current_user.administrator?
-      flash[:error] = "Permission denied."
+      flash[:error] = "Permission denied: you are not allowed to delete this user."
       redirect_to(users_path) && return
     end
 
     if current_user.id == params[:id].to_i
-      flash[:error] = "You cannot delete yourself."
+      flash[:error] = "Failed to delete user: you cannot delete yourself."
       redirect_to(users_path) && return
     end
 
     user = User.find(params[:id])
     if user.nil?
-      flash[:error] = "User doesn't exist."
+      flash[:error] = "Failed to delete user: user doesn't exist."
       redirect_to(users_path) && return
     end
 
     # TODO: Need to cleanup user resources here
 
     user.destroy
-    flash[:success] = "User destroyed."
+    flash[:success] = "Successfully destroyed user."
     redirect_to(users_path) && return
   end
 
   def lti_launch_initialize
     unless params[:course_title].present? && params[:context_id].present? &&
            params[:course_memberships_url].present? && params[:platform].present?
-      raise LtiLaunchController::LtiError.new("Unable launch LTI link, missing parameters",
+      raise LtiLaunchController::LtiError.new("Unable to launch LTI link, missing parameters",
                                               :bad_request)
     end
 
@@ -236,7 +237,7 @@ class UsersController < ApplicationController
   def lti_launch_link_course
     unless params[:context_id].present? && params[:course_memberships_url].present? &&
            params[:platform].present?
-      raise LtiLaunchController::LtiError.new("Unable link course, missing parameters",
+      raise LtiLaunchController::LtiError.new("Unable to link course, missing parameters",
                                               :bad_request)
     end
 
@@ -249,7 +250,7 @@ class UsersController < ApplicationController
     )
 
     course = Course.find(params[:course_id])
-    flash[:success] = "#{course.name} successfully linked"
+    flash[:success] = "#{course.name} successfully linked."
     redirect_to(course)
   end
 
@@ -284,7 +285,7 @@ class UsersController < ApplicationController
     authorize_url_params = {
       redirect_uri: "#{hostname}/users/github_oauth_callback",
       scope: "repo",
-      state: state
+      state:
     }
     redirect_to @gh_client.auth_code.authorize_url(authorize_url_params)
   end
@@ -307,6 +308,7 @@ class UsersController < ApplicationController
       flash[:error] = "Error with Github OAuth (invalid state), please try again."
       redirect_to(root_path) && return
     end
+    oauth_user = github_integration.user
 
     begin
       # Results in exception if invalid
@@ -318,9 +320,9 @@ class UsersController < ApplicationController
     end
 
     access_token = token.to_hash[:access_token]
-    github_integration.update!(access_token: access_token, oauth_state: nil)
+    github_integration.update!(access_token:, oauth_state: nil)
     flash[:success] = "Successfully connected with Github."
-    redirect_to(root_path) && return
+    redirect_to(user_path(id: oauth_user.id)) && return
   end
 
   action_auth_level :github_revoke, :student
@@ -334,6 +336,40 @@ class UsersController < ApplicationController
       flash[:notice] = "Github not connected, revocation unnecessary"
     end
     (redirect_to user_path(id: @user.id)) && return
+  end
+
+  action_auth_level :change_password_for_user, :administrator
+  def change_password_for_user
+    user = User.find(params[:id])
+    raw, enc = Devise.token_generator.generate(User, :reset_password_token)
+    user.reset_password_token = enc
+    user.reset_password_sent_at = Time.current
+    user.save(validate: false)
+    Devise.sign_in_after_reset_password = false
+    user_reset_link = edit_password_url(user, reset_password_token: raw)
+    admin_reset_link = update_password_for_user_user_path(user:)
+    flash[:success] =
+      "Click " \
+      "#{view_context.link_to 'here', admin_reset_link, method: 'get'} " \
+      "to reset #{user.display_name}'s password " \
+      "<br>Or copy this link for the user to reset their own password: "\
+      "#{user_reset_link}"
+    flash[:html_safe] = true
+    redirect_to(user_path)
+  end
+
+  def update_password_for_user
+    @user = User.find(params[:id])
+    return if params[:user].nil? || params[:user].is_a?(String) || @user.nil?
+
+    if params[:user][:password] != params[:user][:password_confirmation]
+      flash[:error] = "Passwords do not match"
+    elsif @user.update(password: params[:user][:password])
+      flash[:success] = "Password changed successfully"
+      redirect_to(root_path)
+    else
+      flash[:error] = "Password #{@user.errors[:password][0]}"
+    end
   end
 
 private

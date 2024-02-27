@@ -10,10 +10,6 @@ class AssessmentsController < ApplicationController
   include ActiveSupport::Callbacks
   include AssessmentAutogradeCore
 
-  rescue_from ActionView::MissingTemplate do |_exception|
-    redirect_to("/home/error_404")
-  end
-
   autolab_require Rails.root.join("app/controllers/assessment/handin.rb")
   include AssessmentHandin
 
@@ -28,8 +24,12 @@ class AssessmentsController < ApplicationController
 
   # this is inherited from ApplicationController
   before_action :set_assessment, except: %i[index new create install_assessment
-                                            importAsmtFromTar importAssessment
-                                            log_submit local_submit autograde_done]
+                                            import_asmt_from_tar import_assessment
+                                            log_submit local_submit autograde_done
+                                            import_assessments course_onboard_install_asmt]
+  skip_before_action :set_breadcrumbs, only: %i[index]
+  before_action :set_assessment_breadcrumb, except: %i[index show install_assessment]
+  before_action :set_manage_course_breadcrumb, only: %i[install_assessment]
   before_action :set_submission, only: [:viewFeedback]
 
   # We have to do this here, because the modules don't inherit ApplicationController.
@@ -41,7 +41,6 @@ class AssessmentsController < ApplicationController
   action_auth_level :submission_popover, :course_assistant
   action_auth_level :score_grader_info, :course_assistant
   action_auth_level :viewGradesheet, :course_assistant
-  action_auth_level :viewGradesheet2, :course_assistant
   action_auth_level :quickGetTotal, :course_assistant
   action_auth_level :statistics, :instructor
 
@@ -58,12 +57,8 @@ class AssessmentsController < ApplicationController
   action_no_auth :log_submit
   action_no_auth :local_submit
 
-  # SVN
-  autolab_require Rails.root.join("app/controllers/assessment/svn.rb")
-  include AssessmentSVN
-  action_auth_level :admin_svn, :instructor
-  action_auth_level :set_repo, :instructor
-  action_auth_level :import_svn, :instructor
+  IMPORT_ASMT_FAILURE_STATUS = "FAIL".freeze
+  IMPORT_ASMT_SUCCESS_STATUS = "SUCCESS".freeze
 
   def index
     @is_instructor = @cud.has_auth_level? :instructor
@@ -72,20 +67,12 @@ class AssessmentsController < ApplicationController
                                     .where(persistent: false)
     @announcements = announcements_tmp.where(course_id: @course.id)
                                       .or(announcements_tmp.where(system: true)).order(:start_date)
-    @attachments = if @cud.instructor?
-                     @course.attachments
-                   else
-                     # Attachments that are released, and whose related assessment is also released
-                     course_attachments = @course.attachments
-                                                 .where(released: true)
-                                                 .left_outer_joins(:assessment)
-
-                     # Either assessment_id is nil (i.e. course attachment)
-                     # Or the assessment has started
-                     course_attachments.where(assessment_id: nil)
-                                       .or(course_attachments.where("assessments.start_at < ?",
-                                                                    Time.current))
-                   end
+    # Only display course attachments on course landing page
+    @course_attachments = if @cud.instructor?
+                            @course.attachments.where(assessment_id: nil)
+                          else
+                            @course.attachments.where(assessment_id: nil).released
+                          end
   end
 
   # GET /assessments/new
@@ -107,43 +94,17 @@ class AssessmentsController < ApplicationController
   # tar file with the assessment directory.
   action_auth_level :install_assessment, :instructor
   def install_assessment
-    dir_path = @course.directory_path
-    @unused_config_files = []
-    Dir.foreach(dir_path) do |filename|
-      # skip if not directory in folder
-      next if !File.directory?(File.join(dir_path,
-                                         filename)) || (filename == "..") || (filename == ".")
-
-      # assessment names must be only lowercase letters and digits
-      if filename =~ /[^a-z0-9]/
-        # add line break if adding to existing error message
-        flash.now[:error] = flash.now[:error] ? "#{flash.now[:error]} <br>" : ""
-        flash.now[:error] += "An error occurred while trying to display an existing assessment " \
-            "on file directory #{filename}: assessment file names must only contain lowercase " \
-            "letters and digits with no spaces"
-        flash.now[:html_safe] = true
-        next
-      end
-
-      # each assessment must have an associated yaml file
-      unless File.exist?(File.join(dir_path, filename, "#{filename}.yml"))
-        flash.now[:error] = flash.now[:error] ? "#{flash.now[:error]} <br>" : ""
-        flash.now[:error] += "An error occurred while trying to display an existing assessment " \
-          "on file directory #{filename}: #{filename}.yml does not exist"
-        flash.now[:html_safe] = true
-        next
-      end
-
-      # Only list assessments that aren't installed yet
-      assessment_exists = @course.assessments.exists?(name: filename)
-      @unused_config_files << filename unless assessment_exists
-    end
-    @unused_config_files.sort!
+    get_unimported_asmts_from_dir
   end
 
-  action_auth_level :importAsmtFromTar, :instructor
+  action_auth_level :course_onboard_install_asmt, :instructor
+  def course_onboard_install_asmt
+    get_unimported_asmts_from_dir
+  end
 
-  def importAsmtFromTar
+  action_auth_level :import_asmt_from_tar, :instructor
+
+  def import_asmt_from_tar
     tarFile = params["tarFile"]
     if tarFile.nil?
       flash[:error] = "Please select an assessment tarball for uploading."
@@ -161,7 +122,7 @@ class AssessmentsController < ApplicationController
         flash[:error] +=
           "<br>Invalid tarball. A valid assessment tar has a single root "\
           "directory that's named after the assessment, containing an "\
-          "assessment yaml file and an assessment ruby file."
+          "assessment yaml file"
         flash[:html_safe] = true
         redirect_to(action: "install_assessment") && return
       end
@@ -177,12 +138,7 @@ class AssessmentsController < ApplicationController
     end
 
     # Check if the assessment already exists.
-    unless @course.assessments.find_by(name: asmt_name).nil?
-      flash[:error] =
-        "An assessment with the same name already exists for the course. "\
-        "Please use a different name."
-      redirect_to(action: "install_assessment") && return
-    end
+    existing_asmt = @course.assessments.find_by(name: asmt_name)
 
     # If all requirements are satisfied, extract assessment files.
     begin
@@ -196,6 +152,8 @@ class AssessmentsController < ApplicationController
         # Ensure file will lie within course, otherwise skip
         # Allow equality for the main directory to be created
         next unless Archive.in_dir?(Pathname(entry_file), Pathname(assessment_path), strict: false)
+        next if existing_asmt && Archive.in_dir?(Pathname(entry_file),
+                                                 existing_asmt.handin_directory_path, strict: false)
 
         if entry.directory?
           FileUtils.mkdir_p(entry_file,
@@ -204,6 +162,11 @@ class AssessmentsController < ApplicationController
           FileUtils.chmod entry.header.mode, entry_file,
                           verbose: false
         elsif entry.file?
+          # Skip config files
+          next if existing_asmt && (entry_file == existing_asmt.asmt_yaml_path.to_s ||
+            entry_file == existing_asmt.unique_source_config_file_path.to_s ||
+            entry_file == existing_asmt.log_path.to_s)
+
           # Default to 0755 so that directory is writeable, mode will be updated later
           FileUtils.mkdir_p(File.dirname(entry_file),
                             mode: 0o755, verbose: false)
@@ -222,16 +185,50 @@ class AssessmentsController < ApplicationController
       redirect_to(action: "install_assessment") && return
     end
 
-    params[:assessment_name] = asmt_name
-    importAssessment && return
+    if existing_asmt
+      flash[:success] = "IMPORTANT: Successfully uploaded files for existing assessment
+                         #{asmt_name}. The YAML and config file were NOT reuploaded.
+                         If you would like to edit these fields, do so via 'Edit assessment'."
+      @assessment = @course.assessments.find_by(name: asmt_name)
+      redirect_to(course_assessment_path(@course, @assessment)) && return
+    end
+
+    # asmt files now in file system, so finish import via file system
+    import_result = importAssessmentsFromFileSystem([asmt_name], true)
+    handleImportResults(import_result, asmt_name)
   end
 
-  # importAssessment - Imports an existing assessment from local file.
-  # The main task of this function is to decide what category a newly
-  # installed assessment should be assigned to.
-  action_auth_level :importAssessment, :instructor
+  # import_assessments - Allows for multiple simultaneous imports of asmts
+  # from file system, returning results of each import
+  action_auth_level :import_assessments, :instructor
+  def import_assessments
+    if params[:assessment_names].nil? || !params[:assessment_names].is_a?(Array)
+      render json: { error: "Did not receive array of assessment names" }, status: :bad_request
+      return
+    end
+    import_results = importAssessmentsFromFileSystem(params[:assessment_names], false)
+    import_results = import_results.each(&:to_json)
+    render json: import_results
+  end
 
-  def importAssessment
+  # import_assessment - Imports an existing assessment from local file system
+  action_auth_level :import_assessment, :instructor
+
+  def import_assessment
+    if params[:assessment_name].blank?
+      flash[:error] = "No assessment name specified."
+      redirect_to(install_assessment_course_assessments_path(@course))
+    end
+
+    if params[:overwrite]
+      flash[:success] = "IMPORTANT: Successfully uploaded files for existing assessment
+                         #{params[:assessment_name]}. The YAML and config file were NOT reuploaded.
+                         If you would like to edit these fields, do so via 'Edit assessment'."
+      @assessment = @course.assessments.find_by(name: params[:assessment_name])
+      redirect_to(course_assessment_path(@course, @assessment)) && return
+    end
+
+    cleanup_on_failure = params[:cleanup_on_failure]
     @assessment = @course.assessments.new(name: params[:assessment_name])
     assessment_path = Rails.root.join("courses/#{@course.name}/#{@assessment.name}")
     # not sure if this check is 100% necessary anymore, but is a last resort
@@ -241,33 +238,95 @@ class AssessmentsController < ApplicationController
                        but assessment file name is #{params[:assessment_name]}"
       # destroy model
       destroy_no_redirect
-      # need to delete explicitly b/c the paths don't match
-      FileUtils.rm_rf(assessment_path)
+      # delete files explicitly b/c the paths don't match ONLY if
+      # import was from tarball
+      FileUtils.rm_rf(assessment_path) if cleanup_on_failure
       redirect_to(install_assessment_course_assessments_path(@course)) && return
     end
+    import_result = importAssessmentsFromFileSystem([params[:assessment_name]], true)
+    handleImportResults(import_result, params[:assessment_name])
+  end
 
-    begin
-      @assessment.load_yaml # this will save the assessment
-    rescue StandardError => e
-      flash[:error] = "Error loading yaml: #{e}"
-      destroy_no_redirect
-      # need to delete explicitly b/c the paths don't match
-      FileUtils.rm_rf(assessment_path)
-      redirect_to(install_assessment_course_assessments_path(@course)) && return
+  # helper function that finalizes importing assessments, using files in file system
+  # called by both import_asmt_from_tar and importAssessment
+  # can import multiple assessments at once, returning statuses of import and any errors
+  def importAssessmentsFromFileSystem(assessment_names, cleanup_on_failure)
+    import_statuses = Array.new(assessment_names.length)
+    import_statuses = import_statuses.map do |_status|
+      {
+        status: AssessmentsController::IMPORT_ASMT_SUCCESS_STATUS,
+        errors: "",
+        messages: []
+      }
     end
-    @assessment.load_embedded_quiz # this will check and load embedded quiz
-    @assessment.construct_folder # make sure there's a handin folder, just in case
-    begin
-      @assessment.load_config_file # only call this on saved assessments
-    rescue StandardError => e
-      flash[:error] = "Error loading config module: #{e}"
-      destroy_no_redirect
-      # need to delete explicitly b/c the paths don't match
-      FileUtils.rm_rf(assessment_path)
-      redirect_to(install_assessment_course_assessments_path(@course)) && return
+    assessment_names.each_with_index do |assessment_name, i|
+      new_assessment = @course.assessments.new(name: assessment_name)
+      assessment_path = Rails.root.join("courses/#{@course.name}/#{new_assessment.name}")
+      # not sure if this check is 100% necessary anymore, but is a last resort
+      # against creating an invalid assessment
+      if assessment_name != new_assessment.name
+        import_statuses[i][:errors] = "Error creating assessment: Config module is
+            named #{new_assessment.name} but assessment file name is #{assessment_name}"
+        import_statuses[i][:status] = AssessmentsController::IMPORT_ASMT_FAILURE_STATUS
+        # destroy model
+        destroy_no_redirect(new_assessment)
+        # delete files explicitly b/c the paths don't match ONLY if
+        # import was from tarball
+        FileUtils.rm_rf(assessment_path) if cleanup_on_failure
+        next
+      end
+
+      begin
+        new_assessment.load_yaml # this will save the assessment
+      rescue StandardError => e
+        import_statuses[i][:errors] = "Error loading yaml: #{e}"
+        import_statuses[i][:status] = AssessmentsController::IMPORT_ASMT_FAILURE_STATUS
+        destroy_no_redirect(new_assessment)
+        # delete files explicitly b/c the paths don't match ONLY if
+        # import was from tarball
+        FileUtils.rm_rf(assessment_path) if cleanup_on_failure
+        next
+      end
+      new_assessment.load_embedded_quiz # this will check and load embedded quiz
+      constructed_config_file = new_assessment.construct_folder # make sure there's a handin folder
+      if constructed_config_file
+        import_statuses[i][:messages].append(
+          "Could not find config file, constructed default config file."
+        )
+      end
+      begin
+        new_assessment.load_config_file # only call this on saved assessments
+      rescue StandardError => e
+        import_statuses[i][:errors] = "Error loading config module: #{e}"
+        import_statuses[i][:status] = AssessmentsController::IMPORT_ASMT_FAILURE_STATUS
+        destroy_no_redirect(new_assessment)
+        # delete files explicitly b/c the paths don't match ONLY if
+        # import was from tarball
+        FileUtils.rm_rf(assessment_path) if cleanup_on_failure
+        next
+      end
     end
-    flash[:success] = "Successfully imported #{@assessment.name}"
-    redirect_to([@course, @assessment])
+    import_statuses
+  end
+
+  # helper function to take importAssessments results and show flashes / error messages
+  # currently only supports 1 import result (since used by legacy import functions)
+  def handleImportResults(import_result, asmt_name)
+    return unless import_result.length == 1
+
+    import_result = import_result[0]
+    if import_result[:status] == AssessmentsController::IMPORT_ASMT_SUCCESS_STATUS
+      @assessment = @course.assessments.find_by!(name: asmt_name)
+      flash[:success] = "Successfully imported #{asmt_name}."
+      unless import_result[:messages].empty?
+        flash[:html_safe] = true
+        flash[:notice] = import_result[:messages].join("<br>")
+      end
+      redirect_to(course_assessment_path(@course, @assessment))
+    else
+      flash[:error] = import_result[:errors]
+      redirect_to(install_assessment_course_assessments_path(@course))
+    end
   end
 
   # create - Creates an assessment from an assessment directory
@@ -276,20 +335,39 @@ class AssessmentsController < ApplicationController
 
   def create
     @assessment = @course.assessments.new(new_assessment_params)
-
     if @assessment.name.blank?
-      # Validate the name
-      ass_name = @assessment.display_name.downcase.gsub(/[^a-z0-9]/, "")
+      # Validate the name, very similar to valid Ruby identifiers, but also allowing hyphens
+      # We just want to prevent file traversal attacks here, and stop names that break routing
+      # first regex - try to sanitize input, allow special characters in display name but not name
+      # if the sanitized doesn't match the required identifier structure, then we reject
+      begin
+        # Attempt name generation, try to match to a substring that is valid within the display name
+        match = @assessment.display_name.match(Assessment::VALID_NAME_SANITIZER_REGEX)
+        unless match.nil?
+          sanitized_display_name = match.captures[0]
+        end
 
-      if ass_name.blank?
+        if sanitized_display_name !~ Assessment::VALID_NAME_REGEX
+          flash[:error] =
+            "Assessment name is blank or contains disallowed characters. Find more information on "\
+            "valid assessment names "\
+            '<a href="https://docs.autolabproject.com/lab/#assessment-naming-rules">here</a>'
+          flash[:html_safe] = true
+          redirect_to(action: :install_assessment)
+          return
+        end
+      rescue StandardError
         flash[:error] =
-          "Assessment name is blank or contains characters that are not lowercase letters or digits"
+          "Error creating name from display name. Find more information on "\
+          "valid assessment names "\
+          '<a href="https://docs.autolabproject.com/lab/#assessment-naming-rules">here</a>'
+        flash[:html_safe] = true
         redirect_to(action: :install_assessment)
         return
       end
 
       # Update name in object
-      @assessment.name = ass_name
+      @assessment.name = sanitized_display_name
     end
 
     # fill in other fields
@@ -302,24 +380,12 @@ class AssessmentsController < ApplicationController
                                     "handin.c"
                                   end
 
-    @assessment.visible_at = Time.current + 1.day
     @assessment.start_at = Time.current + 1.day
     @assessment.due_at = Time.current + 1.day
     @assessment.end_at = Time.current + 1.day
-    @assessment.grading_deadline = Time.current + 1.day
     @assessment.quiz = false
     @assessment.quizData = ""
     @assessment.max_submissions = params.include?(:max_submissions) ? params[:max_submissions] : -1
-
-    if @assessment.embedded_quiz
-      begin
-        @assessment.embedded_quiz_form_data = params[:assessment][:embedded_quiz_form].read
-      rescue StandardError
-        flash[:error] = "Embedded quiz form cannot be empty!"
-        redirect_to(action: :install_assessment)
-        return
-      end
-    end
 
     begin
       @assessment.construct_folder
@@ -350,7 +416,12 @@ class AssessmentsController < ApplicationController
 
     flash[:success] = "Successfully installed #{@assessment.name}."
     # reload the course config file
-    @course.reload_course_config
+    begin
+      @course.reload_course_config
+    rescue StandardError, SyntaxError => e
+      @error = e
+      render("reload") && return
+    end
 
     redirect_to([@course, @assessment]) && return
   end
@@ -369,7 +440,6 @@ class AssessmentsController < ApplicationController
     @start_at = @assessment.start_at
     @due_at = @assessment.due_at
     @end_at = @assessment.end_at
-    @visible_at = @assessment.visible_at
     @id = @assessment.id
   end
 
@@ -448,19 +518,8 @@ class AssessmentsController < ApplicationController
       tarStream = StringIO.new("")
       Gem::Package::TarWriter.new(tarStream) do |tar|
         tar.mkdir asmt_dir, File.stat(File.join(dir_path, asmt_dir)).mode
-        Dir[File.join(dir_path, asmt_dir, "**")].each do |file|
-          mode = File.stat(file).mode
-          relative_path = file.sub(%r{^#{Regexp.escape dir_path}/?}, "")
-
-          if File.directory?(file)
-            tar.mkdir relative_path, mode
-          elsif !relative_path.starts_with? File.join(@assessment.name,
-                                                      @assessment.handin_directory)
-            tar.add_file relative_path, mode do |tarFile|
-              File.open(file, "rb") { |f| tarFile.write f.read }
-            end
-          end
-        end
+        filter = [@assessment.handin_directory_path]
+        @assessment.load_dir_to_tar(dir_path, asmt_dir, tar, filter)
       end
       tarStream.rewind
       tarStream.close
@@ -490,6 +549,12 @@ class AssessmentsController < ApplicationController
     if File.exist? @assessment.config_backup_file_path
       File.delete @assessment.config_backup_file_path
     end
+    if File.exist? @assessment.unique_config_file_path
+      File.delete @assessment.unique_config_file_path
+    end
+    if File.exist? @assessment.unique_config_backup_file_path
+      File.delete @assessment.unique_config_backup_file_path
+    end
 
     name = @assessment.display_name
     @assessment.destroy # awwww!!!!
@@ -501,7 +566,21 @@ class AssessmentsController < ApplicationController
 
   def show
     set_handin
-    extend_config_module(@assessment, @submission, @cud)
+    begin
+      extend_config_module(@assessment, @submission, @cud)
+    rescue StandardError => e
+      if @cud.has_auth_level? :instructor
+        flash[:error] = "Error loading the config file: "
+        flash[:error] += e.message
+        flash[:error] += "<br/> Try reloading the course config file," \
+      " or re-upload the course config file in order to recover your assessment."
+        flash[:html_safe] = true
+        redirect_to(edit_course_assessment_path(@course, @assessment)) && return
+      else
+        flash[:error] = "Error loading #{@assessment.display_name}. Please contact your instructor."
+        redirect_to(course_path(@course)) && return
+      end
+    end
 
     @aud = @assessment.aud_for @cud.id
 
@@ -525,7 +604,7 @@ class AssessmentsController < ApplicationController
     @attachments = if @cud.instructor?
                      @assessment.attachments
                    else
-                     @assessment.attachments.where(released: true)
+                     @assessment.attachments.released
                    end
     @submissions = @assessment.submissions.where(course_user_datum_id: @effectiveCud.id)
                               .order("version DESC")
@@ -561,10 +640,9 @@ class AssessmentsController < ApplicationController
 
     @repos = GithubIntegration.find_by(user_id: @cud.user.id)&.repositories
 
-    return unless @assessment.invalid?
+    return unless @assessment.invalid? && @cud.instructor?
 
-    # On the off-chance that the assessment has validation errors, let the user know
-    # as otherwise submissions would silently fail
+    # If the assessment has validation errors, let the instructor know
     flash.now[:error] = "This assessment is invalid due to the following error(s):<br/>"
     flash.now[:error] += @assessment.errors.full_messages.join("<br/>")
     flash.now[:html_safe] = true
@@ -625,16 +703,17 @@ class AssessmentsController < ApplicationController
   def viewFeedback
     # User requested to view feedback on a score
     @score = @submission.scores.find_by(problem_id: params[:feedback])
+    autograded_scores = @submission.scores.includes(:problem).where(grader_id: 0)
     # Checks whether at least one problem has finished being auto-graded
-    @finishedAutograding = @submission.scores.where.not(feedback: nil).where(grader_id: 0)
+    finishedAutograding = @submission.scores.where.not(feedback: nil).where(grader_id: 0)
     @job_id = @submission["jobid"]
     @submission_id = params[:submission_id]
 
     # Autograding is not in-progress and no score is available
     if @score.nil?
-      if !@finishedAutograding.empty?
+      if !finishedAutograding.empty?
         redirect_to(action: "viewFeedback",
-                    feedback: @finishedAutograding.first.problem_id,
+                    feedback: finishedAutograding.first.problem_id,
                     submission_id: params[:submission_id]) && return
       end
 
@@ -648,12 +727,14 @@ class AssessmentsController < ApplicationController
     return if @score.nil?
 
     @jsonFeedback = parseFeedback(@score.feedback)
-    @scoreHash = parseScore(@score.feedback)
+
+    raw_score_hash = scoreHashFromScores(autograded_scores) if @score.grader_id <= 0
+    @scoreHash = parseScore(raw_score_hash) unless raw_score_hash.nil?
+
     if Archive.archive? @submission.handin_file_path
       @files = Archive.get_files @submission.handin_file_path
     end
-    @problemReleased = @submission.scores.pluck(:released).all? &&
-                       !@assessment.before_grading_deadline?
+
     # get_correct_filename is protected, so we wrap around controller-specific call
     @get_correct_filename = ->(annotation) {
       get_correct_filename(annotation, @files, @submission)
@@ -688,28 +769,17 @@ class AssessmentsController < ApplicationController
   # TODO: Take into account any modifications by :parseAutoresult and :modifySubmissionScores
   # We should probably read the final scores directly
   # See: assessment_autograde_core.rb's saveAutograde
-  def parseScore(feedback)
-    return if feedback.nil?
+  def parseScore(score_hash)
+    total = 0
+    return if score_hash.nil?
 
-    lines = feedback.rstrip.lines
-    feedback = lines[lines.length - 1]
-
-    return unless valid_json_hash?(feedback)
-
-    score_hash = JSON.parse(feedback)
-    score_hash = score_hash["scores"]
     if @jsonFeedback&.key?("_scores_order") == false
       @jsonFeedback["_scores_order"] = score_hash.keys
     end
-    @total = 0
     score_hash.keys.each do |k|
-      @total += score_hash[k].to_f
-    rescue NoMethodError
-      flash.now[:error] ||= ""
-      flash.now[:error] += "The score for #{k} could not be parsed.<br>"
-      flash.now[:html_safe] = true
+      total += score_hash[k].to_f if score_hash[k]
     end
-    score_hash["_total"] = @total
+    score_hash["_total"] = total
     score_hash
   end
 
@@ -754,7 +824,7 @@ class AssessmentsController < ApplicationController
     @assessment.load_config_file
   rescue StandardError, SyntaxError => e
     @error = e
-    # let the reload view render
+  # let the reload view render
   else
     flash[:success] = "Success: Assessment config file reloaded!"
     redirect_to(action: :show) && return
@@ -771,13 +841,38 @@ class AssessmentsController < ApplicationController
       params[:active_tab] = "basic"
     end
 
-    # make sure the penalties are set up
-    @assessment.late_penalty ||= Penalty.new(kind: "points")
-    @assessment.version_penalty ||= Penalty.new(kind: "points")
-
     @has_annotations = @assessment.submissions.any? { |s| !s.annotations.empty? }
 
     @is_positive_grading = @assessment.is_positive_grading
+
+    # warn instructors if the assessment is configured to allow late submissions
+    # but the settings do not make sense
+    if @assessment.end_at > @assessment.due_at
+      warn_messages = []
+      if @assessment.max_grace_days == 0
+        warn_messages << "- Max grace days = 0: students can't use grace days"
+      end
+      if @assessment.effective_late_penalty.value == 0
+        warn_messages << "- Late penalty = 0: late submissions made \
+                          without grace days are not penalized"
+      end
+      unless warn_messages.empty?
+        flash.now[:error] = "Late submissions are allowed, but<br>#{warn_messages.join('<br>')}"
+        flash.now[:html_safe] = true
+      end
+    end
+
+    # Used for the penalties tab
+    @has_unlimited_submissions = @assessment.max_submissions == -1
+    @has_unlimited_grace_days = @assessment.max_grace_days.nil?
+    @uses_default_version_threshold = @assessment.version_threshold.nil?
+    @uses_default_late_penalty = @assessment.late_penalty.nil?
+    @uses_default_version_penalty = @assessment.version_penalty.nil?
+
+    # make sure the penalties are set up
+    # placed after the check above, so that effective_late_penalty displays the correct result
+    @assessment.late_penalty ||= Penalty.new(kind: "points")
+    @assessment.version_penalty ||= Penalty.new(kind: "points")
   end
 
   action_auth_level :update, :instructor
@@ -792,7 +887,7 @@ class AssessmentsController < ApplicationController
     unless uploaded_config_file.nil?
       config_source = uploaded_config_file.read
 
-      assessment_config_file_path = @assessment.source_config_file_path
+      assessment_config_file_path = @assessment.unique_source_config_file_path
       File.open(assessment_config_file_path, "w") do |f|
         f.write(config_source)
       end
@@ -810,8 +905,9 @@ class AssessmentsController < ApplicationController
       flash[:success] = "Assessment configuration updated!"
 
       redirect_to(tab_index) && return
-    rescue ActiveRecord::RecordInvalid => e
-      flash[:error] = e.message.sub!("Validation failed: ", "")
+    rescue ActiveRecord::RecordInvalid
+      flash[:error] = @assessment.errors.full_messages.join("<br>")
+      flash[:html_safe] = true
 
       redirect_to(tab_index) && return
     end
@@ -826,7 +922,7 @@ class AssessmentsController < ApplicationController
     if num_released > 0
       flash[:success] =
         format("%<num_released>d %<plurality>s released.",
-               num_released: num_released,
+               num_released:,
                plurality: (num_released > 1 ? "grades were" : "grade was"))
     else
       flash[:error] = "No grades were released. They might have all already been released."
@@ -851,7 +947,7 @@ class AssessmentsController < ApplicationController
     if num_released > 0
       flash[:success] =
         format("%<num_released>d %<plurality>s released.",
-               num_released: num_released,
+               num_released:,
                plurality: (num_released > 1 ? "grades were" : "grade was"))
     else
       flash[:error] = "No grades were released. " \
@@ -859,7 +955,7 @@ class AssessmentsController < ApplicationController
                       "might be assigned to a lecture " \
                       "and/or section that doesn't exist. Please contact an instructor."
     end
-    redirect_to action: "viewGradesheet"
+    redirect_to url_for(action: 'viewGradesheet', section: '1')
   end
 
   action_auth_level :withdrawAllGrades, :instructor
@@ -894,6 +990,7 @@ class AssessmentsController < ApplicationController
     end
 
     if @assessment.writeup_is_file?
+      # Note: writeup_is_file? validates that the writeup lies within the assessment folder
       filename = @assessment.writeup_path
       send_file(filename,
                 type: mime_type_from_ext(File.extname(filename)),
@@ -963,8 +1060,7 @@ private
   def new_assessment_params
     ass = params.require(:assessment)
     ass[:category_name] = params[:new_category] if params[:new_category].present?
-    ass.permit(:name, :display_name, :category_name, :has_svn, :has_lang, :group_size,
-               :embedded_quiz, :embedded_quiz_form_data, :github_submission_enabled)
+    ass.permit(:name, :display_name, :category_name, :group_size, :github_submission_enabled)
   end
 
   def edit_assessment_params
@@ -981,19 +1077,41 @@ private
       @assessment.version_penalty&.destroy
     end
 
+    if params[:unlimited_submissions].to_boolean == true
+      ass[:max_submissions] = -1
+    end
+
+    if params[:unlimited_grace_days].to_boolean == true
+      ass[:max_grace_days] = ""
+    end
+
+    if params[:use_default_late_penalty].to_boolean == true
+      ass.delete(:late_penalty_attributes)
+      @assessment.late_penalty&.destroy
+    end
+
+    if params[:use_default_version_penalty].to_boolean == true
+      ass.delete(:version_penalty_attributes)
+      @assessment.version_penalty&.destroy
+    end
+
+    if params[:use_default_version_threshold].to_boolean == true
+      ass[:version_threshold] = ""
+    end
+
     ass.delete(:name)
     ass.delete(:config_file)
+    ass.delete(:embedded_quiz_form)
 
     ass.permit!
   end
 
   ##
   # a valid assessment tar has a single root directory that's named after the
-  # assessment, containing an assessment yaml file and an assessment ruby file
+  # assessment, containing an assessment yaml file
   #
   def valid_asmt_tar(tar_extract)
     asmt_name = nil
-    asmt_rb_exists = false
     asmt_yml_exists = false
     asmt_name_is_valid = true
     tar_extract.each do |entry|
@@ -1006,11 +1124,19 @@ private
       pathname.chomp!("/") if entry.directory?
       # nested directories are okay
       if entry.directory? && pathname.count("/") == 0
-        return false if asmt_name
+        if asmt_name
+          flash[:error] = "Error in tarball: Found root directory #{asmt_name}
+                           but also found root directory #{pathname}. Ensure
+                           there is only one root directory in the tarball."
+          return false
+        end
 
         asmt_name = pathname
       else
-        return false unless asmt_name
+        if !asmt_name
+          flash[:error] = "Error in tarball: No root directory found."
+          return false
+        end
 
         if pathname == "#{asmt_name}/#{asmt_name}.rb"
           # We only ever read once, so no need to rewind after
@@ -1018,8 +1144,6 @@ private
 
           # validate syntax of config
           RubyVM::InstructionSequence.compile(config_source)
-
-          asmt_rb_exists = true
         end
         asmt_yml_exists = true if pathname == "#{asmt_name}/#{asmt_name}.yml"
       end
@@ -1027,22 +1151,20 @@ private
     # it is possible that the assessment path does not match the
     # the expected assessment path when the Ruby config file
     # has a different name then the pathname
-    if !asmt_name.nil? && asmt_name =~ /[^a-z0-9]/
+    if !asmt_name.nil? && asmt_name !~ Assessment::VALID_NAME_REGEX
       flash[:error] = "Errors found in tarball: Assessment name #{asmt_name} is invalid.
-                       Assessment file names must only contain lowercase
-                       letters and digits with no spaces."
+                       Find more information on valid assessment names "\
+          '<a href="https://docs.autolabproject.com/lab/#assessment-naming-rules">here</a> <br>'
+      flash[:html_safe] = true
       asmt_name_is_valid = false
     end
-    if !(asmt_rb_exists && asmt_yml_exists && !asmt_name.nil?)
+    if !(asmt_yml_exists && !asmt_name.nil?)
       flash[:error] = "Errors found in tarball:"
       if !asmt_yml_exists && !asmt_name.nil?
         flash[:error] += "<br>Assessment yml file #{asmt_name}/#{asmt_name}.yml was not found"
       end
-      if !asmt_rb_exists && !asmt_name.nil?
-        flash[:error] += "<br>Assessment rb file #{asmt_name}/#{asmt_name}.rb was not found"
-      end
     end
-    [asmt_rb_exists && asmt_yml_exists && !asmt_name.nil? && asmt_name_is_valid, asmt_name]
+    [asmt_yml_exists && !asmt_name.nil? && asmt_name_is_valid, asmt_name]
   end
 
   def tab_index
@@ -1062,7 +1184,11 @@ private
     "#{edit_course_assessment_path(@course, @assessment)}/#tab_#{tab_name}"
   end
 
-  def destroy_no_redirect
+  def destroy_no_redirect(assessment)
+    unless assessment.nil?
+      @assessment = assessment
+    end
+
     @assessment.submissions.each(&:destroy)
 
     @assessment.attachments.each(&:destroy)
@@ -1076,5 +1202,48 @@ private
     end
 
     @assessment.destroy # awwww!!!!
+  end
+
+  def get_unimported_asmts_from_dir
+    dir_path = @course.directory_path
+    @unused_config_files = []
+    Dir.foreach(dir_path) do |filename|
+      # skip if not directory in folder
+      next if !File.directory?(File.join(dir_path,
+                                         filename)) || (filename == "..") || (filename == ".")
+
+      # assessment names must be only lowercase letters and digits
+      if filename !~ Assessment::VALID_NAME_REGEX
+        # add line break if adding to existing error message
+        flash.now[:error] = flash.now[:error] ? "#{flash.now[:error]} <br>" : ""
+        flash.now[:error] += "An error occurred while trying to display an existing assessment " \
+            "from file directory #{filename}: Invalid assessment name. "\
+            "Find more information on valid assessment names "\
+            '<a href="https://docs.autolabproject.com/lab/#assessment-naming-rules">here</a><br>'
+        flash.now[:html_safe] = true
+        next
+      end
+
+      # each assessment must have an associated yaml file,
+      # and it must have a name field that matches its filename
+      unless File.exist?(File.join(dir_path, filename, "#{filename}.yml"))
+        flash.now[:error] = flash.now[:error] ? "#{flash.now[:error]} <br>" : ""
+        flash.now[:error] += "An error occurred while trying to display an existing assessment " \
+          "from file directory #{filename}: #{filename}.yml does not exist"
+        flash.now[:html_safe] = true
+        next
+      end
+
+      # Only list assessments that aren't installed yet
+      assessment_exists = @course.assessments.exists?(name: filename)
+      @unused_config_files << filename unless assessment_exists
+    end
+    @unused_config_files.sort!
+  end
+
+  def scoreHashFromScores(scores)
+    scores.map { |s|
+      [s.problem.name, s.score]
+    }.to_h
   end
 end

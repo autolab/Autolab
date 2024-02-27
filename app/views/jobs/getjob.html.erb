@@ -1,3 +1,5 @@
+<% @title = "Job #{@job[:id]} details" %>
+
 <% content_for :javascripts do %>
   <%= javascript_include_tag "sorttable" %>
 <% end %>
@@ -88,7 +90,7 @@
           Output File
         </td>
         <td>
-          <%= @job[:rjob]["outputFile"].sub(%r{/afs/cs\.cmu\.edu/academic/autolab/autolab2}, "[autolab]") %>
+          <%= @job[:rjob]["outputFile"].sub(%r{courselabs/(.*?)-}, "courselabs/[redacted]-") %>
         </td>
       </tr>
       <tr>
@@ -130,7 +132,7 @@
       <tr>
         <td>
           <code>
-            <%= item["localFile"].sub(%r{/afs/cs\.cmu\.edu/academic/autolab/autolab2/courses}, "[autolab courses]") %>
+            <%= item["localFile"].sub(%r{courselabs/(.*?)-}, "courselabs/[redacted]-") %>
           </code>
         </td>
         <td>

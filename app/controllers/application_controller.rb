@@ -20,10 +20,6 @@ class ApplicationController < ActionController::Base
   before_action :update_persistent_announcements
   before_action :set_breadcrumbs
 
-  rescue_from ActionView::MissingTemplate do |_exception|
-    redirect_to("/home/error_404")
-  end
-
   # this is where Error Handling is configured. this routes exceptions to
   # the error handler in the HomeController, unless we're in development mode
   #
@@ -146,14 +142,14 @@ protected
                   (params[:controller] == "courses" ? params[:name] : nil)
     @course = Course.find_by(name: course_name) if course_name
 
-    render file: Rails.root.join("public/404.html"), status: :not_found and return unless @course
+    render("home/error_404") && return unless @course
 
     # set course logger
     begin
       COURSE_LOGGER.setCourse(@course)
     rescue StandardError => e
       flash[:error] = e.to_s
-      redirect_to(controller: :home, action: :error) && return
+      render("home/error_500") && return
     end
     ASSESSMENT_LOGGER.setCourse(@course)
   end
@@ -179,7 +175,7 @@ protected
 
     when :admin_created
       @cud = cud
-      flash[:notice] = "Administrator user added to course"
+      flash.now[:notice] = "Administrator user added to course"
 
     when :admin_creation_error
       flash[:error] = "Error adding administrator #{current_user.email} to course"
@@ -224,15 +220,14 @@ protected
       @assessment = @course.assessments.find_by!(name: params[:assessment_name] || params[:name])
     rescue StandardError
       flash[:error] = "The assessment was not found for this course."
-      redirect_to(action: :index) && return
+      redirect_to(course_assessments_path(@course)) && return
     end
 
     if @cud.student? && !@assessment.released?
       flash[:error] = "You are not authorized to view this assessment."
-      redirect_to(action: :index) && return
+      redirect_to(course_assessments_path(@course)) && return
     end
 
-    @breadcrumbs << (view_context.current_assessment_link)
     ASSESSMENT_LOGGER.setAssessment(@assessment)
   end
 
@@ -314,10 +309,41 @@ protected
                     end
   end
 
-  def pluralize(count, singular, plural = nil)
-    "#{count || 0} " +
-      (count == 1 || count =~ /^1(\.0+)?$/ ? singular : (plural || singular.pluralize))
+  ## Helpers for breadcrumbs
+
+  # Guarded against nil @assessment, so safe to use regardless of whether set_assessment was called
+  def set_assessment_breadcrumb
+    return if @course.nil? || @assessment.nil?
+
+    @breadcrumbs << (view_context.link_to @assessment.display_name,
+                                          course_assessment_path(@course, @assessment))
   end
+
+  def set_edit_assessment_breadcrumb
+    return if @course.nil? || @assessment.nil? || !@cud.instructor
+
+    @breadcrumbs << (view_context.link_to "Edit Assessment",
+                                          edit_course_assessment_path(@course, @assessment))
+  end
+
+  def set_manage_course_breadcrumb
+    return if @course.nil? || !@cud.instructor
+
+    @breadcrumbs << (view_context.link_to "Manage Course",
+                                          manage_course_path(@course))
+  end
+
+  def set_manage_course_users_breadcrumb
+    return if @course.nil? || !@cud.instructor
+
+    @breadcrumbs << (view_context.link_to "Manage Course Users",
+                                          users_course_path(@course))
+  end
+
+  def set_users_list_breadcrumb
+    @breadcrumbs << (view_context.link_to "Users List", users_path)
+  end
+  ### END HELPERS
 
   # make_dlist - Creates a string of emails that can be added as b/cc field.
   # @param section The section to email.  nil if we should email the entire
@@ -381,7 +407,7 @@ private
           end
         end
 
-        render "home/error"
+        render "home/error_500"
       end
       format.json { head :internal_server_error }
       format.js { head :internal_server_error }

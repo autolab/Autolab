@@ -129,7 +129,7 @@ function purgeCurrentPageCache() {
     symbolTree: `<div id="symbol-tree-container">${$('#symbol-tree-container').html()}</div>`,
     versionLinks: `<span id="version-links">${$('#version-links').html()}</span>`,
     versionDropdown: `<span id="version-dropdown">${$('#version-dropdown').html()}</span>`,
-    url: window.location.href,
+    url: window.location.href
   };
 }
 
@@ -184,6 +184,7 @@ function fillAnnotationBox() {
     $('.problemGrades').html($page.find('.problemGrades'));
     $('#annotationPane').html($page.find(' #annotationPane'));
     $('.collapsible').collapsible({ accordion: false });
+    $('#release-grades').html($page.find('#release-grades'));
     $('#loadScreen').hide();
     attachChangeFileEvents();
     attachAnnotationPaneEvents();
@@ -316,7 +317,7 @@ function make_editable($editable) {
 }
 
 
-/* Highlights lines longer than 80 characters autolab red color */
+/* Highlights lines longer than 80 characters Autolab red color */
 var highlightLines = function (highlight) {
   var highlightColor = "rgba(255, 255, 0, 0.3)"
   $("#code-box > .code-table > .code-line > .code").each(function () {
@@ -510,7 +511,6 @@ function elt(t, a) {
 function createAnnotation() {
   var annObj = {
     filename: fileNameStr,
-    submitted_by: cudEmailStr,
   };
 
   if (currentHeaderPos || currentHeaderPos === 0) {

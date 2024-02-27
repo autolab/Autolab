@@ -44,17 +44,20 @@ module AssessmentAutogradeCore
         COURSE_LOGGER.log("Error while uploading autograding files for #{submission.id}: missing file #{name_of_file}")
         raise AutogradeError.new("Error while uploading autograding files", :missing_autograder_file, name_of_file)
       end
+      if f["remoteFile"].nil?
+        f["remoteFile"] = File.basename(f["localFile"])
+      end
     end
 
     # now actually send all of the upload requests
     upload_file_list.each do |f|
       md5hash = Digest::MD5.file(f["localFile"]).to_s
-      next if (existing_files.has_key?(File.basename(f["localFile"])) &&
-          existing_files[File.basename(f["localFile"])] == md5hash)
+      next if (existing_files.has_key?(f["remoteFile"]) &&
+          existing_files[f["remoteFile"]] == md5hash)
 
       begin
         TangoClient.upload("#{course.name}-#{assessment.name}",
-                           File.basename(f["localFile"]),
+                           f["remoteFile"],
                            File.open(f["localFile"], "rb").read)
       rescue TangoClient::TangoException => e
         COURSE_LOGGER.log("Error while uploading autograding files for #{submission.id}: #{e.message}")
@@ -156,13 +159,14 @@ module AssessmentAutogradeCore
   def tango_add_job(course, assessment, upload_file_list, callback_url, job_name, output_file)
     job_properties = { "image" => @autograde_prop.autograde_image,
                        "files" => upload_file_list.map do |f|
-                         { "localFile" => File.basename(f["localFile"]),
+                         { "localFile" => f["remoteFile"],
                            "destFile" => Pathname.new(f["destFile"]).basename.to_s }
                        end,
                        "output_file" => output_file,
                        "timeout" => @autograde_prop.autograde_timeout,
                        "callback_url" => callback_url,
-                       "jobName" => job_name }.to_json
+                       "jobName" => job_name,
+                       "disable_network" => assessment.disable_network }.to_json
     begin
       response = TangoClient.addjob("#{course.name}-#{assessment.name}", job_properties)
     rescue TangoClient::TangoException => e
@@ -293,7 +297,6 @@ module AssessmentAutogradeCore
 
     # send the tango upload requests
     upload_file_list = tango_upload(course, assessment, submissions[0], existing_files)
-
     dave = save_daves(submissions)
 
     output_file = get_output_file(assessment, submissions[0])
@@ -303,7 +306,7 @@ module AssessmentAutogradeCore
     response_json = tango_add_job(course, assessment, upload_file_list,
                                           callback_url, job_name, output_file)
 
-    # If autolab user opts not to use a callback URL, we poll the job for 80 seconds
+    # If Autolab user opts not to use a callback URL, we poll the job for 80 seconds
     if callback_url.blank?
       tango_poll(course, assessment, submissions, output_file)
     end
@@ -322,12 +325,13 @@ module AssessmentAutogradeCore
   # Can be overridden in the lab config file.
   #
   def autogradeInputFiles(ass_dir, assessment, submission)
-    # Absolute path names on the local autolab server of the input
+    # Absolute path names on the local Autolab server of the input
     # autograding input files: 1) The student's handin file, 2)
     # The makefile that runs the process, 3) The tarfile with all
     # of files needed by the autograder. Can be overridden in the
     # lab config file.
     local_handin = submission.handin_file_path
+    remote_handin = submission.handin_file_long_filename
     local_makefile = File.join(ass_dir, "autograde-Makefile")
     local_autograde = File.join(ass_dir, "autograde.tar")
 
@@ -335,7 +339,9 @@ module AssessmentAutogradeCore
     dest_handin = assessment.handin_filename
 
     # Construct the array of input files.
-    handin = { "localFile" => local_handin, "destFile" => dest_handin }
+    handin = { "localFile" => local_handin,
+               "remoteFile" => remote_handin,
+               "destFile" => dest_handin }
     makefile = { "localFile" => local_makefile, "destFile" => "Makefile" }
     autograde = { "localFile" => local_autograde, "destFile" => "autograde.tar" }
 
@@ -348,10 +354,8 @@ module AssessmentAutogradeCore
   # submission is confirmed via dave key to have been created by Autolab
   #
   def autogradeDone(submissions, feedback)
-    ass_dir = @assessment.folder_path
-
     submissions.each do |submission|
-      feedback_file = submission.autograde_feedback_path
+      feedback_file = submission.create_user_directory_and_return_autograde_feedback_path
       COURSE_LOGGER.log("Looking for feedback file:" + feedback_file)
 
       feedback.force_encoding("UTF-8")
@@ -444,7 +448,7 @@ module AssessmentAutogradeCore
 
         scores.keys.each do |key|
           problem = @assessment.problems.find_by(name: key)
-          raise AutogradeError.new("Problem \"" + key + "\" not found.") unless problem
+          raise AutogradeError, "Problem \"" + key + "\" not found." unless problem
           score = submission.scores.find_or_initialize_by(problem_id: problem.id)
           score.score = scores[key]
           score.feedback = feedback 
@@ -496,7 +500,19 @@ module AssessmentAutogradeCore
   end
 
   def extend_config_module(assessment, submission, cud)
-    require assessment.config_file_path
+    # autograde core calls might be called before migration to unique module name occurs, so need to add check
+    begin
+      if @assessment.use_unique_module_name
+        require assessment.unique_config_file_path
+      else
+        require assessment.config_file_path
+      end
+    rescue TypeError => e
+      raise AutogradeError, "could not find the assessment config file: #{e}"
+    rescue LoadError => e
+      raise AutogradeError, "could not load the assessment config file: #{e}"
+    end
+
 
     # casted to local variable so that
     # they can be passed into `module_eval`
@@ -534,7 +550,6 @@ module AssessmentAutogradeCore
       @start_at = @assessment.start_at
       @due_at = @assessment.due_at
       @end_at = @assessment.end_at
-      @visible_at = @assessment.visible_at
       @id = @assessment.id
 
       # we iterate over all the methods

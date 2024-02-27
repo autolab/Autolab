@@ -13,9 +13,11 @@ Here are some resources to get you started.
     <div class="col l6">
       <h3>How can I join a course?</h3>
       <p>
-      For most types of courses, students can't enroll themselves. Fire off an
-      email to your instructor and they can make sure that you get added.
+      If your instructor has provided you with an access code, you can join the course via the button below.
+
+      Otherwise, fire off an email to your instructor and they can make sure that you get added.
       </p>
+      <%= link_to "<i class='material-icons left'>add</i> Join Course".html_safe, join_course_courses_path, title: "Join Course", class: "btn btn-large red darken-3" %>
     </div>
   </div><!-- row -->
 </div><!-- container -->
@@ -67,7 +69,7 @@ Here are some resources to get you started.
       <p>
       We have a Rake task that you can run where your app is deployed to promote
       any user to the admin level. Just run <code>rake
-      'promote_to_admin[you@example.com]'</code> to give a user administrative
+      'admin:promote_user[you@example.com]'</code> to give a user administrative
       privileges. Note that the user has to exist already.
       </p>
     </div>

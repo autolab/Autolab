@@ -7,11 +7,11 @@ require "tempfile"
 class SubmissionsController < ApplicationController
   # inherited from ApplicationController
   before_action :set_assessment
-  before_action :set_submission, only: %i[destroy destroyConfirm download edit update view]
+  before_action :set_assessment_breadcrumb
+  before_action :set_manage_submissions_breadcrumb, except: %i[index]
+  before_action :set_submission, only: %i[destroy destroyConfirm download edit update
+                                          view release_student_grade unrelease_student_grade]
   before_action :get_submission_file, only: %i[download view]
-  rescue_from ActionView::MissingTemplate do |_exception|
-    redirect_to("/home/error_404")
-  end
 
   # this page loads.  links/functionality may be/are off
   action_auth_level :index, :instructor
@@ -64,7 +64,7 @@ class SubmissionsController < ApplicationController
       @submission.submitted_by_id = @cud.id
       next unless @submission.save! # Now we have a version number!
 
-      if params[:submission]["file"]&.present?
+      if params[:submission]["file"].present?
         @submission.save_file(params[:submission])
       end
     end
@@ -152,23 +152,24 @@ class SubmissionsController < ApplicationController
   # should be okay, but untested
   action_auth_level :downloadAll, :course_assistant
   def downloadAll
-    flash[:error] = "Cannot index submissions for nil assessment" if @assessment.nil?
+    failure_redirect_path = if @cud.course_assistant
+                              course_assessment_path(@course, @assessment)
+                            else
+                              course_assessment_submissions_path(@course, @assessment)
+                            end
 
     unless @assessment.valid?
+      flash[:error] = "The assessment has errors which must be rectified."
       @assessment.errors.full_messages.each do |msg|
         flash[:error] += "<br>#{msg}"
       end
       flash[:html_safe] = true
+      redirect_to failure_redirect_path and return
     end
 
     if @assessment.disable_handins
       flash[:error] = "There are no submissions to download."
-      if @cud.course_assistant
-        redirect_to([@course, @assessment])
-      else
-        redirect_to([@course, @assessment, :submissions])
-      end
-      return
+      redirect_to failure_redirect_path and return
     end
 
     submissions = if params[:final]
@@ -177,20 +178,21 @@ class SubmissionsController < ApplicationController
                     @assessment.submissions.includes(:course_user_datum)
                   end
 
-    submissions = submissions.select { |s| @cud.can_administer?(s.course_user_datum) }
-    paths = submissions.collect(&:handin_file_path)
-    paths = paths.select { |p| !p.nil? && File.exist?(p) && File.readable?(p) }
+    submissions = submissions.select do |s|
+      p = s.handin_file_path
+      @cud.can_administer?(s.course_user_datum) && !p.nil? && File.exist?(p) && File.readable?(p)
+    end
+    filedata = submissions.collect do |s|
+      p = s.handin_file_path
+      email = s.course_user_datum.user.email
+      [p, download_filename(p, email)]
+    end
 
-    result = Archive.create_zip paths # result is stringIO to be sent
+    result = Archive.create_zip filedata # result is stringIO to be sent
 
     if result.nil?
       flash[:error] = "There are no submissions to download."
-      if @cud.course_assistant
-        redirect_to([@course, @assessment])
-      else
-        redirect_to([@course, @assessment, :submissions])
-      end
-      return
+      redirect_to failure_redirect_path and return
     end
 
     send_data(result.read, # to read from stringIO object returned by create_zip
@@ -208,7 +210,7 @@ class SubmissionsController < ApplicationController
       file, pathname = Archive.get_nth_file(@filename, params[:header_position].to_i)
       unless file && pathname
         flash[:error] = "Could not read archive."
-        redirect_to [@course, @assessment] and return false
+        redirect_to course_assessment_path(@course, @assessment) and return
       end
 
       send_data file,
@@ -216,16 +218,12 @@ class SubmissionsController < ApplicationController
                 disposition: "inline"
 
     elsif params[:annotated]
-
-      @filename_annotated = @submission.handin_annotated_file_path
-      @basename_annotated = File.basename @filename_annotated
-
       @problems = @assessment.problems.to_a
       @problems.sort! { |a, b| a.id <=> b.id }
 
       # Only show annotations if grades have been released or the user is an instructor
       @annotations = []
-      if !@assessment.before_grading_deadline? || @cud.instructor || @cud.course_assistant
+      if @submission.grades_released?(@cud)
         @annotations = @submission.annotations.to_a
       end
 
@@ -270,7 +268,6 @@ class SubmissionsController < ApplicationController
       send_file @filename,
                 filename: @basename,
                 disposition: "inline"
-      #  :type => mime
     end
   end
 
@@ -437,9 +434,6 @@ class SubmissionsController < ApplicationController
       end
     end
 
-    @problemReleased = @submission.scores.pluck(:released).all? &&
-                       !@assessment.before_grading_deadline?
-
     @annotations = @submission.annotations.to_a
     unless @submission.group_key.empty?
       group_submissions = @submission.group_associated_submissions
@@ -450,7 +444,7 @@ class SubmissionsController < ApplicationController
     @annotations.sort! { |a, b| a.line.to_i <=> b.line.to_i }
 
     # Only show annotations if grades have been released or the user is an instructor
-    unless !@assessment.before_grading_deadline? || @cud.instructor || @cud.course_assistant
+    unless @submission.grades_released?(@cud)
       @annotations = []
     end
 
@@ -530,8 +524,8 @@ class SubmissionsController < ApplicationController
       annotations_by_file = annotations_by_file.sort_by{ |a| [a[6], a[2]] }.group_by { |a| a[6] }
 
       @problemAnnotations[problem] = {
-        global_annotations: global_annotations,
-        annotations_by_file: annotations_by_file
+        global_annotations:,
+        annotations_by_file:
       }
     end
 
@@ -585,8 +579,8 @@ class SubmissionsController < ApplicationController
 
         matchedVersions << {
           version: submission.version,
-          header_position: header_position,
-          submission: submission
+          header_position:,
+          submission:
         }
       end
 
@@ -618,6 +612,24 @@ class SubmissionsController < ApplicationController
     end
   end
 
+  action_auth_level :release_student_grade, :course_assistant
+  def release_student_grade
+    @submission.scores.each do |score|
+      score.released = true
+      score.save
+    end
+    redirect_back(fallback_location: root_path)
+  end
+
+  action_auth_level :unrelease_student_grade, :course_assistant
+  def unrelease_student_grade
+    @submission.scores.each do |score|
+      score.released = false
+      score.save
+    end
+    redirect_back(fallback_location: root_path)
+  end
+
 private
 
   def new_submission_params
@@ -630,6 +642,16 @@ private
                                        tweak_attributes: %i[_destroy kind value])
   end
 
+  # Given the path to a file, return the filename to use when the user downloads it
+  # path should be of the form .../<ver>_<handin> or .../annotated_<ver>_<handin>
+  # returns <email>_<ver>_<handin> or annotated_<email>_<ver>_<handin>
+  def download_filename(path, student_email)
+    basename = File.basename path
+    basename_parts = basename.split("_")
+    basename_parts.insert(-3, student_email)
+    basename_parts.join("_")
+  end
+
   def get_submission_file
     unless @submission.filename
       flash[:error] = "No file associated with submission."
@@ -637,12 +659,13 @@ private
     end
 
     @filename = @submission.handin_file_path
-    @basename = File.basename @filename
+    @basename = download_filename(@filename, @submission.course_user_datum.user.email)
 
-    basename_parts = @basename.split("_")
-    basename_parts.insert(-3, @assessment.name)
-
-    @basename = basename_parts.join("_")
+    unless @submission.handin_annotated_file_path.nil?
+      @filename_annotated = @submission.handin_annotated_file_path
+      @basename_annotated = download_filename(@filename_annotated,
+                                              @submission.course_user_datum.user.email)
+    end
 
     unless File.exist? @filename
       flash[:error] = "Could not find submission file."
@@ -652,24 +675,10 @@ private
     true
   end
 
-  # Extract the andrewID from a filename.
-  # Filename format is andrewID_version_assessment.ext
-  def extractAndrewID(filename)
-    underscoreInd = filename.index("_")
-    return filename[0...underscoreInd] unless underscoreInd.nil?
+  def set_manage_submissions_breadcrumb
+    return if @course.nil? || @assessment.nil? || !@cud.instructor
 
-    nil
-  end
-
-  # Extract the version from a filename
-  # Filename format is andrewID_version_assessment.ext
-  def extractVersion(filename)
-    firstUnderscoreInd = filename.index("_")
-    return nil if firstUnderscoreInd.nil?
-
-    secondUnderscoreInd = filename.index("_", firstUnderscoreInd + 1)
-    return nil if secondUnderscoreInd.nil?
-
-    filename[firstUnderscoreInd + 1...secondUnderscoreInd].to_i
+    @breadcrumbs << (view_context.link_to "Manage Submissions",
+                                          course_assessment_submissions_path(@course, @assessment))
   end
 end

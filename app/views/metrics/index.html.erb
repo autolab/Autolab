@@ -1,4 +1,4 @@
-<% @title = "Student Metrics"%>
+<% @title = "Student Metrics" %>
 <% content_for :stylesheets do %>
   <%= stylesheet_link_tag "metrics" %>
 <% end %>
@@ -7,7 +7,7 @@
   <%= external_javascript_include_tag "lodash" %>
   <%= javascript_include_tag "watchlist" %>
   <%= javascript_include_tag "metrics" %>
-  <%= javascript_include_tag "metrics_config"%>
+  <%= javascript_include_tag "metrics_config" %>
 <% end %>
 
 <div id="message_area">
@@ -22,7 +22,7 @@
     <span class="select-all-chip" id="select_all_checkbox">
       <!-- hacky way to get checkbox aligned perfectly vertically, spaced -->
       <div class="ui checkbox select_all">
-        <input type="checkbox"/>
+        <input type="checkbox">
       </div>
       Select All
     </span>
@@ -62,7 +62,7 @@
           <div class="ui secondary segment" id="pending_header" hidden>
             <div class="ui right aligned scrolling search" id="pending_search">
               <div class="ui icon input">
-                <input class="prompt" type="text" placeholder="Search students...">
+                <input class="prompt" type="text" placeholder="Search students..." autocomplete="off">
                 <i class="search icon"></i>
               </div>
               <div class="results"></div>
@@ -75,7 +75,7 @@
           <div class="ui secondary segment" id="contacted_header" hidden>
             <div class="ui right aligned scrolling search" id="contacted_search">
               <div class="ui icon input">
-                <input class="prompt" type="text" placeholder="Search students...">
+                <input class="prompt" type="text" placeholder="Search students..." autocomplete="off">
                 <i class="search icon"></i>
               </div>
               <div class="results"></div>
@@ -88,7 +88,7 @@
           <div class="ui secondary segment" id="resolved_header" hidden>
             <div class="ui right aligned scrolling search" id="resolved_search">
               <div class="ui icon input">
-                <input class="prompt" type="text" placeholder="Search students...">
+                <input class="prompt" type="text" placeholder="Search students..." autocomplete="off">
                 <i class="search icon"></i>
               </div>
               <div class="results"></div>
@@ -101,7 +101,7 @@
           <div class="ui secondary segment" id="archived_header" hidden>
             <div class="ui right aligned scrolling search" id="archived_search">
               <div class="ui icon input">
-                <input class="prompt" type="text" placeholder="Search students...">
+                <input class="prompt" type="text" placeholder="Search students..." autocomplete="off">
                 <i class="search icon"></i>
               </div>
               <div class="results"></div>
@@ -113,7 +113,7 @@
       </div>
       <div class="ui tab segments active" id="undefined_metrics" style="display:none">
         <center>
-          <i class="huge inbox icon"></i> 
+          <i class="huge inbox icon"></i>
             <h3> You have not defined your student metrics </h3>
             You can define metrics to identify students in need of attention using the <b>Student Metrics</b> tab. <br>
         </center>
@@ -122,7 +122,7 @@
   </div>
 </div>
 <div class="ui tab" data-tab="student metrics">
-  <h6> 
+  <h6>
     Select one or more of the following metrics that you want to use to identify students in need of attention.
   </h6>
   <br>
@@ -139,8 +139,8 @@
             <i class="dropdown icon"></i>
             <div class="default text">0</div>
             <div class="menu">
-              <% for i in 1..@course_grace_days do%>
-                <div class="item" data-value="<%=i%>"><%=i%></div>
+              <% for i in 1..@course_grace_days do %>
+                <div class="item" data-value="<%= i %>"><%= i %></div>
               <% end %>
             </div>
           </div>
@@ -150,7 +150,7 @@
           <div class="ui calendar" id="grace_days_by_date">
             <div class="ui input left icon">
               <i class="calendar icon"></i>
-              <input type="text" placeholder="Date">
+              <input type="text" placeholder="Date" autocomplete="off">
             </div>
           </div>
         </span>
@@ -165,7 +165,7 @@
         </div>
         Students whose grades have dropped by
         <span class="padded-span">
-          <input type="text" placeholder="0" id='grade_drop_percentage'>
+          <input type="text" placeholder="0" id='grade_drop_percentage' autocomplete="off">
         </span>
         percent within
         <span class="padded-span">
@@ -174,8 +174,8 @@
             <i class="dropdown icon"></i>
             <div class="default text">0</div>
             <div class="menu">
-              <% for i in 2..@max_consecutive_assessments do%>
-                <div class="item" data-value="<%=i%>"><%=i%></div>
+              <% for i in 2..@max_consecutive_assessments do %>
+                <div class="item" data-value="<%= i %>"><%= i %></div>
               <% end %>
             </div>
           </div>
@@ -196,9 +196,9 @@
             <input type="hidden" name="number">
             <i class="dropdown icon"></i>
             <div class="default text">0</div>
-            <div class="menu" >
-              <% for i in 1..@num_assessments do%>
-                <div class="item" data-value="<%=i%>"><%=i%></div>
+            <div class="menu">
+              <% for i in 1..@num_assessments do %>
+                <div class="item" data-value="<%= i %>"><%= i %></div>
               <% end %>
             </div>
           </div>
@@ -220,15 +220,15 @@
             <i class="dropdown icon"></i>
             <div class="default text">0</div>
             <div class="menu">
-              <% for i in 1..@num_assessments do%>
-                <div class="item" data-value="<%=i%>"><%=i%></div>
+              <% for i in 1..@num_assessments do %>
+                <div class="item" data-value="<%= i %>"><%= i %></div>
               <% end %>
             </div>
           </div>
         </span>
         submitted assignment(s) below a percentage of
         <span class="padded-span">
-          <input type="text" placeholder="0" id='low_grades_percentage'>
+          <input type="text" placeholder="0" id='low_grades_percentage' autocomplete="off">
         </span>
       </div>
     </div>
@@ -241,7 +241,7 @@
         </div>
         Students who have greater than or equal to
         <span class="padded-span">
-          <input type="text" placeholder="1" id='extension_requests_count'>
+          <input type="text" placeholder="1" id='extension_requests_count' autocomplete="off">
         </span>
         extensions.
       </div>
@@ -251,7 +251,7 @@
     <% if @cud.instructor? %>
       <button class="ui disabled submit button" id="save">SAVE</button>
     <% else %>
-      <button class= "ui disabled submit button">SAVE</button>
+      <button class="ui disabled submit button">SAVE</button>
       <label> You do not have permission to edit student metrics </label>
     <% end %>
   </div>
@@ -265,22 +265,22 @@
     <div class="five wide column">
       <h3> Included </h3>
       <div id="included_categories">
-        <% for category in @course_assessment_categories do%>
-          <div class="item" id="included_<%=category%>" style="visibility: hidden;"><%=category%></div><br />
+        <% for category in @course_assessment_categories do %>
+          <div class="item" id="included_<%= category %>" style="visibility: hidden;"><%= category %></div><br>
         <% end %>
       </div>
     </div>
     <div class="four wide column">
-      <h3><br /></h3>
-      <% for category in @course_assessment_categories do%>
-        <i class="exchange alternate icon" data-value="<%=category%>"></i><br /><br />
+      <h3><br></h3>
+      <% for category in @course_assessment_categories do %>
+        <i class="exchange alternate icon" data-value="<%= category %>"></i><br><br>
       <% end %>
     </div>
     <div class="five wide column">
       <h3> Excluded </h3>
       <div id="excluded_categories">
-        <% for category in @course_assessment_categories do%>
-          <div class="item" id="excluded_<%=category%>" style="visibility: hidden;"><%=category%></div><br />
+        <% for category in @course_assessment_categories do %>
+          <div class="item" id="excluded_<%= category %>" style="visibility: hidden;"><%= category %></div><br>
         <% end %>
       </div>
     </div>
@@ -291,15 +291,15 @@
   </h6>
   <div>
     <div class="ui checkbox" id="allow_ca">
-      <input type="checkbox" />
+      <input type="checkbox">
       <label>Allow CAs to access the watchlist</label>
     </div>
   </div>
-  <br/>
+  <br>
   <% if @cud.instructor? %>
     <button class="ui disabled submit button" id="save_configs_btn">SAVE</button>
   <% else %>
-    <button class= "ui disabled submit button">SAVE</button>
+    <button class="ui disabled submit button">SAVE</button>
     <label> You do not have permission to edit metrics configurations </label>
   <% end %>
 </div>

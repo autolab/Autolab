@@ -20,7 +20,7 @@ module Contexts
     end
     create_course
     puts "Built courses"
-    create_assessment(asmt_name: asmt_name)
+    create_assessment(asmt_name:)
     puts "Built assessments"
     create_problems
     puts "Built problems"
@@ -44,9 +44,19 @@ module Contexts
   end
 
   def create_course_with_users_as_hash(asmt_name: "testassessment2")
-    create_course_with_users(asmt_name: asmt_name)
+    create_course_with_users(asmt_name:)
     { course: @course, admin_user: @admin_user,
       instructor_user: @instructor_user, course_assistant_user: @course_assistant_user,
       students_cud: @students, assessment: @assessment }
+  end
+
+  def create_course_with_attachment_as_hash
+    create_users
+    puts "Built users"
+    create_course_with_attachment
+    puts "Built course"
+    { course: @course, admin_user: @admin_user,
+      instructor_user: @instructor_user, course_assistant_user: @course_assistant_user,
+      students_cud: @students, assessment: @assessment, attachment: @attachment }
   end
 end

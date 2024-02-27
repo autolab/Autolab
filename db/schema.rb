@@ -2,15 +2,43 @@
 # of editing this file, please use the migrations feature of Active Record to
 # incrementally modify your database, and then regenerate this schema definition.
 #
-# This file is the source Rails uses to define your schema when running `rails
-# db:schema:load`. When creating a new database, `rails db:schema:load` tends to
+# This file is the source Rails uses to define your schema when running `bin/rails
+# db:schema:load`. When creating a new database, `bin/rails db:schema:load` tends to
 # be faster and is potentially less error prone than running all of your
 # migrations from scratch. Old migrations may fail to apply correctly if those
 # migrations use external dependencies or application code.
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2023_06_03_073633) do
+ActiveRecord::Schema.define(version: 2024_02_19_175942) do
+
+  create_table "active_storage_attachments", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "record_type", null: false
+    t.bigint "record_id", null: false
+    t.bigint "blob_id", null: false
+    t.datetime "created_at", null: false
+    t.index ["blob_id"], name: "index_active_storage_attachments_on_blob_id"
+    t.index ["record_type", "record_id", "name", "blob_id"], name: "index_active_storage_attachments_uniqueness", unique: true
+  end
+
+  create_table "active_storage_blobs", force: :cascade do |t|
+    t.string "key", null: false
+    t.string "filename", null: false
+    t.string "content_type"
+    t.text "metadata"
+    t.bigint "byte_size", null: false
+    t.string "checksum", null: false
+    t.datetime "created_at", null: false
+    t.string "service_name", null: false
+    t.index ["key"], name: "index_active_storage_blobs_on_key", unique: true
+  end
+
+  create_table "active_storage_variant_records", force: :cascade do |t|
+    t.bigint "blob_id", null: false
+    t.string "variation_digest", null: false
+    t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
+  end
 
   create_table "annotations", force: :cascade do |t|
     t.integer "submission_id"
@@ -48,9 +76,9 @@ ActiveRecord::Schema.define(version: 2023_06_03_073633) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.integer "grade_type", default: 0, null: false
-    t.string "repository", limit: 255
     t.integer "group_id"
     t.integer "membership_status", limit: 1, default: 0
+    t.integer "version_number"
     t.index ["assessment_id"], name: "index_assessment_user_data_on_assessment_id"
     t.index ["course_user_datum_id", "assessment_id"], name: "index_AUDs_on_CUD_id_and_assessment_id"
     t.index ["course_user_datum_id"], name: "index_assessment_user_data_on_course_user_datum_id"
@@ -60,7 +88,6 @@ ActiveRecord::Schema.define(version: 2023_06_03_073633) do
   create_table "assessments", force: :cascade do |t|
     t.datetime "due_at"
     t.datetime "end_at"
-    t.datetime "visible_at"
     t.datetime "start_at"
     t.string "name"
     t.text "description"
@@ -81,10 +108,6 @@ ActiveRecord::Schema.define(version: 2023_06_03_073633) do
     t.integer "version_threshold"
     t.integer "late_penalty_id"
     t.integer "version_penalty_id"
-    t.datetime "grading_deadline", null: false
-    t.boolean "has_autograde_old"
-    t.boolean "has_scoreboard_old"
-    t.boolean "has_svn"
     t.boolean "quiz", default: false
     t.text "quizData"
     t.string "remote_handin_path"
@@ -92,21 +115,22 @@ ActiveRecord::Schema.define(version: 2023_06_03_073633) do
     t.integer "group_size", default: 1
     t.text "embedded_quiz_form_data"
     t.boolean "embedded_quiz"
-    t.binary "embedded_quiz_form"
     t.boolean "allow_student_assign_group", default: true
     t.boolean "github_submission_enabled", default: true
     t.boolean "is_positive_grading", default: false
+    t.boolean "disable_network", default: false
   end
 
   create_table "attachments", force: :cascade do |t|
     t.string "filename"
     t.string "mime_type"
-    t.boolean "released"
     t.string "name"
     t.datetime "created_at"
     t.datetime "updated_at"
     t.integer "course_id"
     t.integer "assessment_id"
+    t.string "category_name", default: "General"
+    t.datetime "release_at", default: -> { "CURRENT_TIMESTAMP" }
     t.index ["assessment_id"], name: "index_attachments_on_assessment_id"
   end
 
@@ -157,6 +181,7 @@ ActiveRecord::Schema.define(version: 2023_06_03_073633) do
     t.datetime "cgdub_dependencies_updated_at"
     t.text "gb_message"
     t.string "website"
+    t.string "access_code"
   end
 
   create_table "extensions", force: :cascade do |t|
@@ -190,8 +215,8 @@ ActiveRecord::Schema.define(version: 2023_06_03_073633) do
     t.datetime "updated_at", null: false
     t.string "membership_url"
     t.string "platform"
-    t.boolean "auto_sync"
-    t.boolean "drop_missing_students"
+    t.boolean "auto_sync", default: false
+    t.boolean "drop_missing_students", default: false
   end
 
   create_table "module_data", force: :cascade do |t|
@@ -267,6 +292,7 @@ ActiveRecord::Schema.define(version: 2023_06_03_073633) do
     t.datetime "updated_at"
     t.float "max_score", default: 0.0
     t.boolean "optional", default: false
+    t.index ["assessment_id", "name"], name: "problem_uniq", unique: true
   end
 
   create_table "risk_conditions", force: :cascade do |t|
@@ -297,14 +323,15 @@ ActiveRecord::Schema.define(version: 2023_06_03_073633) do
 
   create_table "scoreboards", force: :cascade do |t|
     t.integer "assessment_id"
-    t.text "banner", limit: 65535
-    t.text "colspec", limit: 65535
+    t.text "banner"
+    t.text "colspec"
+    t.boolean "include_instructors", default: false
   end
 
   create_table "scores", force: :cascade do |t|
     t.integer "submission_id"
     t.float "score"
-    t.text "feedback", limit: 16777215
+    t.text "feedback", size: :medium
     t.integer "problem_id"
     t.datetime "created_at"
     t.datetime "updated_at"
@@ -330,7 +357,7 @@ ActiveRecord::Schema.define(version: 2023_06_03_073633) do
     t.string "submitter_ip", limit: 40
     t.integer "tweak_id"
     t.boolean "ignored", default: false, null: false
-    t.string "dave", limit: 255
+    t.string "dave"
     t.text "embedded_quiz_form_answer"
     t.integer "submitted_by_app_id"
     t.string "group_key", default: ""
@@ -391,4 +418,6 @@ ActiveRecord::Schema.define(version: 2023_06_03_073633) do
     t.index ["risk_condition_id"], name: "index_watchlist_instances_on_risk_condition_id"
   end
 
+  add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
 end

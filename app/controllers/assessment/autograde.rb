@@ -28,7 +28,11 @@ module AssessmentAutograde
 
     extend_config_module(@assessment, submissions[0], @cud)
 
-    require_relative(Rails.root.join("assessmentConfig", "#{@course.name}-#{@assessment.name}.rb"))
+    if (@assessment.use_unique_module_name)
+      require_relative(@assessment.unique_config_file_path)
+    else
+      require_relative(Rails.root.join("assessmentConfig", "#{@course.name}-#{@assessment.name}.rb"))
+    end
 
     if @assessment.overwrites_method?(:autogradeDone)
       @assessment.config_module.autogradeDone(submissions, feedback_str)
@@ -100,7 +104,7 @@ module AssessmentAutograde
 
     failure_jobs = failed_list.length
     if failure_jobs > 0
-      flash[:error] = "Warning: Could not regrade #{pluralize(failure_jobs, "submission")}:<br>"
+      flash[:error] = "Warning: Could not regrade #{ActionController::Base.helpers.pluralize(failure_jobs, "submission")}:<br>"
       failed_list.each do |failure|
         if failure[:error].error_code == :nil_submission
           flash[:error] += "Unrecognized submission ID<br>"
@@ -112,7 +116,7 @@ module AssessmentAutograde
 
     success_jobs = submission_ids.size - failure_jobs
     if success_jobs > 0
-      link = "<a href=\"#{url_for(controller: 'jobs')}\">#{pluralize(success_jobs, "submission")}</a>"
+      link = "<a href=\"#{url_for(controller: 'jobs')}\">#{ActionController::Base.helpers.pluralize(success_jobs, "submission")}</a>"
       flash[:success] = ("Regrading #{link}")
     end
 
@@ -147,7 +151,7 @@ module AssessmentAutograde
 
     failure_jobs = failed_list.length
     if failure_jobs > 0
-      flash[:error] = "Warning: Could not regrade #{pluralize(failure_jobs, "submission")}:<br>"
+      flash[:error] = "Warning: Could not regrade #{ActionController::Base.helpers.pluralize(failure_jobs, "submission")}:<br>"
       failed_list.each do |failure|
         if failure[:error].error_code == :nil_submission
           flash[:error] += "Unrecognized submission ID<br>"
@@ -159,7 +163,7 @@ module AssessmentAutograde
 
     success_jobs = last_submissions.size - failure_jobs
     if success_jobs > 0
-      link = "<a href=\"#{url_for(controller: 'jobs')}\">#{pluralize(success_jobs, "student")}</a>"
+      link = "<a href=\"#{url_for(controller: 'jobs')}\">#{ActionController::Base.helpers.pluralize(success_jobs, "student")}</a>"
       flash[:success] = ("Regrading the most recent submissions from #{link}")
     end
 

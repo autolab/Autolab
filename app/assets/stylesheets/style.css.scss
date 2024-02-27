@@ -237,7 +237,7 @@ div.main-header img {
 }
 
 /* Custom Form Styling */
-.input-field,
+.input-field:not(.no-padding-bottom),
 form > div {
   padding-bottom: 1rem !important;
 }
@@ -626,33 +626,48 @@ p.attention {
 }
 
 /**
- * ULs on the moss page
+ * Moss Page Styling
  **/
+.moss-dropdown {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  text-align: center;
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+.moss-dropdown h5 {
+  margin: 0;
+}
+.moss-dropdown i {
+  font-size: 32px;
+}
 ul.moss-list {
   list-style: none;
-  padding: 0;
+  border-radius: 5px;
 }
 ul.moss-list > li {
-  background: $autolab-subtle-gray;
-  border: 1px solid $autolab-highlight-gray;
   cursor: pointer;
-  margin: 5px;
-  padding: 4px;
+  background: $autolab-subtle-gray;
+  padding: 15px;
+  margin-bottom: 15px;
 }
 ul.moss-list > li > h5 {
-  color: #00a;
   font-weight: bold;
   margin: 0;
+  padding-bottom: 10px;
 }
 ul.moss-inner-list {
   list-style: none;
   padding: 0;
 }
 ul.moss-inner-list > li {
-  background: linear-gradient(to top, $autolab-subtle-gray, #fff);
-  border: 1px solid $autolab-highlight-gray;
+  background: $autolab-white;
   cursor: default;
-  padding: 2px;
+  padding: 10px;
+  margin: 5px;
+  border-radius: 5px;
 }
 ul.moss-inner-list > li > h5 {
   margin: 0;
@@ -885,7 +900,12 @@ body.autolab {
   .h3,
   .h4,
   .h5,
-  .h6 {
+  .h6,
+  button,
+  input,
+  optgroup,
+  select,
+  textarea {
     font-family: "Source Sans Pro", sans-serif;
   }
 
@@ -1465,4 +1485,8 @@ table.sub td, th {
 
 .submission-history-button:hover {
   color: white !important;
+}
+
+.error-header {
+  color: $autolab-red;
 }

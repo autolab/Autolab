@@ -2,7 +2,7 @@
   <% if @is_pdf %>
     <div type="checkbox" id="highlightLongLines" style="display: none"></div>
   <% else %>
-    <label style="padding-left:0.8rem" >
+    <label style="padding-left:0.8rem">
       <input type="checkbox" id="highlightLongLines" checked>
       <span>Highlight lines longer than 80 characters</span>
     </label>
@@ -17,44 +17,44 @@
     </div>
     <% if( !(params.has_key?(:header_position) && params[:header_position].to_i < 0) ) %>
       <div class="file-button">
-        <%= link_to [:download, @course, @assessment, @submission, header_position: @header_position ],
-                      data: {toggle: "tooltip", placement:"top"},
-                      title: "Download Submission" do %>
+        <%= link_to download_course_assessment_submission_path(@course, @assessment, @submission, header_position: @header_position),
+                    data: { toggle: "tooltip", placement: "top" },
+                    title: "Download Submission" do %>
             Download File
         <% end %>
       </div>
     <% end %>
     <% if @is_pdf %>
-    <div class="file-button">
-      <%= link_to [:download, @course, @assessment, @submission, header_position: @header_position, annotated: true ],
-                    data: {toggle: "tooltip", placement:"top"},
+      <div class="file-button">
+        <%= link_to download_course_assessment_submission_path(@course, @assessment, @submission, header_position: @header_position, annotated: true),
+                    data: { toggle: "tooltip", placement: "top" },
                     title: "Download Annotated Submission" do %>
-          Download Annotated
-      <% end %>
-    </div>
+            Download Annotated
+        <% end %>
+      </div>
     <% else %>
-    <div class="file-button">
-      <a href="#" onclick="copyFileToClipboard()">Copy Code</a>
-    </div>
+      <div class="file-button">
+        <a href="#" onclick="copyFileToClipboard()">Copy Code</a>
+      </div>
     <% end %>
   </div>
 
   <% success = true %>
   <% if @is_pdf %>
-  <div class="code-table">
-    <div id="pdf-doc" style="text-align: center;"></div>
-  </div>
+    <div class="code-table">
+      <div id="pdf-doc" style="text-align: center;"></div>
+    </div>
   <% else %>
     <div class="code-table">
         <% @data.each_with_index do |(code, annotation), index| %>
           <% if code.valid_encoding? %>
-            <div class="code-line" id="line-<%=index%>" data-line-id="<%=index%>">
+            <div class="code-line" id="line-<%= index %>" data-line-id="<%= index %>">
               <div class="line-sticky">
-                <div class="line-number"><%= index+1 %></div>
+                <div class="line-number"><%= index + 1 %></div>
                 <div class="code-separator"></div>
               </div>
               <div class="add-comment">
-                <% if @cud.instructor? or @cud.course_assistant? then %><div class="add-button-container"><button class="add-button" id="add-btn-<%= index+1 %>" title="Annotate this line"><i class="material-icons">add_comment</i></button></div><% end %>
+                <% if @cud.instructor? or @cud.course_assistant? then %><div class="add-button-container"><button class="add-button" id="add-btn-<%= index + 1 %>" title="Annotate this line"><i class="material-icons">add_comment</i></button></div><% end %>
               </div>
               <% begin %>
               <div class="code"><pre><code class="<%= @displayFilename.split(".")[-1].downcase %>"><%= code %></code></pre></div>
@@ -64,7 +64,7 @@
                 <% break %>
               <% end %>
             </div>
-            <div class="annotation-container" id="annotation-line-<%=index%>" data-line-id="<%=index%>">
+            <div class="annotation-container" id="annotation-line-<%= index %>" data-line-id="<%= index %>">
             </div>
           <% else %>
             <% success = false %>
@@ -73,18 +73,23 @@
     </div>
   <% end %>
   <% if success == false %>
-    <div id="code_error"> Sorry, we could not parse your file because it contains non-UTF8 characters. Please <%= link_to [:download, @course, @assessment, @submission, header_position: @header_position ],
-                    data: {toggle: "tooltip", placement:"top"},
+    <div id="code_error">
+      <p>
+        Sorry, we could not parse your file because it contains non-UTF8 characters. Please
+        <%= link_to download_course_assessment_submission_path(@course, @assessment, @submission, header_position: @header_position),
+                    data: { toggle: "tooltip", placement: "top" },
                     title: "Download Submission" do %>
           download the file
-      <% end %> to view the source. </div>
+        <% end %>
+        to view the source.
+      </p>
+    </div>
     <script> $('.code-table').hide() </script>
   <% end %>
 </div>
 
-
 <% if @is_pdf %>
-<script>
-$(document).ready(function () { renderPdf(); });
-</script>
+  <script>
+  $(document).ready(function () { renderPdf(); });
+  </script>
 <% end %>

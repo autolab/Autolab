@@ -210,16 +210,17 @@ module Archive
   end
 
   ##
-  # returns a zip archive containing every file in the given path array
+  # returns a zip archive containing every file in the given filedata array
+  # each entry in the filedata array is of the form [filepath, filename]
   #
-  def self.create_zip(paths)
-    return nil if paths.nil? || paths.empty?
+  def self.create_zip(filedata)
+    return nil if filedata.nil? || filedata.empty?
 
     # don't create a tempfile, just stream it to client for download
     zip_stream = Zip::OutputStream.write_buffer do |zos|
-      paths.each do |filepath|
+      filedata.each do |(filepath, filename)|
         ctimestamp = Zip::DOSTime.at(File.open(filepath,"r").ctime) # use creation time of submitted file
-        zip_entry = Zip::Entry.new(zos, "#{File.basename(filepath)}", nil, nil, nil, nil, nil, nil,
+        zip_entry = Zip::Entry.new(zos, filename, nil, nil, nil, nil, nil, nil,
                     ctimestamp)
         zos.put_next_entry(zip_entry)
         zos.print File.read(filepath)

@@ -5,15 +5,16 @@ require "pathname"
 require "statistics"
 
 class CoursesController < ApplicationController
-  skip_before_action :set_course, only: %i[courses_redirect index new create]
+  skip_before_action :set_course,
+                     only: %i[courses_redirect index new create create_from_tar join_course]
   # you need to be able to pick a course to be authorized for it
-  skip_before_action :authorize_user_for_course, only: %i[courses_redirect index new create]
+  skip_before_action :authorize_user_for_course,
+                     only: %i[courses_redirect index new create create_from_tar join_course]
   # if there's no course, there are no persistent announcements for that course
-  skip_before_action :update_persistent_announcements, only: %i[courses_redirect index new create]
-
-  rescue_from ActionView::MissingTemplate do |_exception|
-    redirect_to("/home/error_404")
-  end
+  skip_before_action :update_persistent_announcements,
+                     only: %i[courses_redirect index new create create_from_tar join_course]
+  before_action :set_manage_course_breadcrumb, only: %i[edit users moss email upload_roster export]
+  before_action :set_manage_course_users_breadcrumb, only: %i[upload_roster]
 
   def index
     courses_for_user = User.courses_for_user current_user
@@ -36,6 +37,42 @@ class CoursesController < ApplicationController
     else
       redirect_to(action: :index)
     end
+  end
+
+  def join_course
+    return unless params[:access_code]
+
+    # GET + access_code when using direct join link
+    # POST + access_code when using join course form
+
+    access_code = params[:access_code].upcase
+    unless Course::VALID_CODE_REGEX.match?(access_code)
+      flash[:error] = "Invalid access code format"
+      redirect_to(join_course_courses_path) && return
+    end
+
+    course = Course.find_by(access_code:)
+    if course.nil?
+      flash[:error] = "Invalid access code"
+      redirect_to(join_course_courses_path) && return
+    end
+
+    cud = course.course_user_data.find_by(user_id: current_user.id)
+
+    if cud.nil?
+      cud = course.course_user_data.new
+      cud.user = current_user
+      unless cud.save
+        flash[:error] = "An error occurred while joining the course"
+        redirect_to(join_course_courses_path) && return
+      end
+      # else, no point setting a flash because they will be redirected
+      # to set their nickname
+    else
+      flash[:success] = "You are already enrolled in this course"
+    end
+
+    redirect_to course_path(course)
   end
 
   action_auth_level :show, :student
@@ -83,6 +120,7 @@ class CoursesController < ApplicationController
     end
   end
 
+  action_auth_level :new, :administrator
   def new
     # check for permission
     unless current_user.administrator?
@@ -130,7 +168,7 @@ class CoursesController < ApplicationController
         rescue StandardError => e
           # roll back course creation
           @newCourse.destroy
-          flash[:error] = "Can't create instructor for the course: #{e}"
+          flash.now[:error] = "Can't create instructor for the course: #{e}"
           render(action: "new") && return
         end
 
@@ -147,7 +185,7 @@ class CoursesController < ApplicationController
           # roll back course creation and instruction creation
           new_cud.destroy
           @newCourse.destroy
-          flash[:error] = "Can't load course config for #{@newCourse.name}."
+          flash.now[:error] = "Can't load course config for #{@newCourse.name}."
           render(action: "new") && return
         else
           flash[:success] = "New Course #{@newCourse.name} successfully created!"
@@ -156,13 +194,101 @@ class CoursesController < ApplicationController
       else
         # roll back course creation
         @newCourse.destroy
-        flash[:error] = "Can't create instructor for the course."
+        flash.now[:error] = "Can't create instructor for the course."
         render(action: "new") && return
       end
 
     else
+      flash.now[:error] = "Course creation failed. Check all fields"
+      render(action: "new") && return
+    end
+  end
+
+  action_auth_level :create_from_tar, :administrator
+  def create_from_tar
+    tarFile = params[:tarFile]
+    if tarFile.nil?
+      flash[:error] = "Please select a course tarball for uploading."
+      render(action: "new") && return
+    end
+
+    begin
+      tarFile = File.new(tarFile.open, "rb")
+      tar_extract = Gem::Package::TarReader.new(tarFile)
+      tar_extract.rewind
+      unless valid_course_tar(tar_extract)
+        flash[:error] +=
+          "<br>Invalid tarball. A valid course tar has a single root "\
+            "directory that's named after the course, containing a "\
+            "course yaml file"
+        flash[:html_safe] = true
+        render(action: "new") && return
+      end
+      tar_extract.close
+    rescue SyntaxError => e
+      flash[:error] = "Error parsing course configuration file:"
+      # escape so that <compiled> doesn't get treated as a html tag
+      flash[:error] += "<br><pre>#{CGI.escapeHTML e.to_s}</pre>"
+      flash[:html_safe] = true
+      render(action: "new") && return
+    rescue StandardError => e
+      flash[:error] = "Error while reading the tarball -- #{e.message}."
+      render(action: "new") && return
+    end
+
+    begin
+      tar_extract.rewind
+      @newCourse = get_course_from_config(tar_extract)
+      # save assessment directories
+      save_assessments_from_tar(tar_extract)
+      tar_extract.close
+    rescue StandardError => e
+      flash[:error] = "Error while extracting course to server -- #{e.message}."
+      render(action: "new") && return
+    end
+
+    unless @newCourse.save
       flash[:error] = "Course creation failed. Check all fields"
       render(action: "new") && return
+    end
+
+    instructor = User.where(email: params[:instructor_email]).first
+
+    # create a new user as instructor if they didn't exist
+    if instructor.nil?
+      begin
+        instructor = User.instructor_create(params[:instructor_email],
+                                            @newCourse.name)
+      rescue StandardError => e
+        # roll back course creation
+        @newCourse.destroy
+        flash[:error] = "Can't create instructor for the course: #{e}"
+        render(action: "new") && return
+      end
+    end
+
+    new_cud = @newCourse.course_user_data.new
+    new_cud.user = instructor
+    new_cud.instructor = true
+
+    unless new_cud.save
+      # roll back course creation
+      @newCourse.destroy
+      flash[:error] = "Can't create instructor for the course."
+      render(action: "new") && return
+    end
+
+    begin
+      @newCourse.reload_course_config
+    rescue StandardError, SyntaxError
+      # roll back course creation and instruction creation
+      new_cud.destroy
+      @newCourse.destroy
+      flash[:error] = "Can't load course config for #{@newCourse.name}."
+      render(action: "new") && return
+    else
+      flash[:success] = "New Course #{@newCourse.name} successfully created!"
+      redirect_to(course_onboard_install_asmt_course_assessments_path(@newCourse)) && return
     end
   end
 
@@ -292,7 +418,7 @@ class CoursesController < ApplicationController
         { first_name: Regexp.last_match(1), email: Regexp.last_match(2) }
         # when it's first name last name <email>
       else
-        { email: email }
+        { email: }
       end
     end
 
@@ -450,7 +576,7 @@ class CoursesController < ApplicationController
       # to_csv avoids issues with commas
       output += [@course.semester, cud.user.email, user.last_name, user.first_name,
                  cud.school, cud.major, cud.year, cud.grade_policy,
-                 @course.name, cud.lecture, cud.section].to_csv
+                 cud.course_number, cud.lecture, cud.section].to_csv
     end
     send_data output, filename: "roster.csv", type: "text/csv", disposition: "inline"
   end
@@ -465,7 +591,7 @@ class CoursesController < ApplicationController
 
     # don't email kids who dropped!
     @cuds = if section
-              @course.course_user_data.where(dropped: false, section: section)
+              @course.course_user_data.where(dropped: false, section:)
             else
               @course.course_user_data.where(dropped: false)
             end
@@ -484,7 +610,14 @@ class CoursesController < ApplicationController
   end
 
   action_auth_level :moss, :instructor
-  def moss; end
+  def moss
+    @courses = if @cud.user.administrator?
+                 Course.all
+               else
+                 Course.joins(:course_user_data)
+                       .where(course_user_data: { user_id: @cud.user.id, instructor: true })
+               end
+  end
 
   LANGUAGE_WHITELIST = %w[c cc java ml pascal ada lisp scheme haskell fortran ascii vhdl perl
                           matlab python mips prolog spice vb csharp modula2 a8086 javascript plsql
@@ -575,7 +708,9 @@ class CoursesController < ApplicationController
     system("chmod -R a+r #{tmp_dir}")
     ActiveRecord::Base.clear_active_connections!
     # Remove non text files when making a moss run
-    `~/Autolab/script/cleanMoss #{tmp_dir}`
+    Dir.chdir(Rails.root.join("script")) do
+      system("./cleanMoss #{tmp_dir}")
+    end
     # Now run the Moss command
     @mossCmdString = @mossCmd.join(" ")
     @mossOutput = `#{@mossCmdString} 2>&1`
@@ -585,6 +720,25 @@ class CoursesController < ApplicationController
     `rm -rf #{tmp_dir}`
   end
 
+  action_auth_level :export, :instructor
+  def export; end
+
+  action_auth_level :export_selected, :instructor
+  def export_selected
+    tar_stream = @course.generate_tar(params[:export_configs])
+
+    send_data tar_stream.string.force_encoding("binary"),
+              filename: "#{@course.name}_#{Time.current.strftime('%Y%m%d')}.tar",
+              type: "application/x-tar",
+              disposition: 'attachment'
+  rescue SystemCallError => e
+    flash[:error] = "Unable to create the config YAML file: #{e.message}"
+    redirect_to(action: :export)
+  rescue StandardError => e
+    flash[:error] = "Unable to generate tarball -- #{e.message}"
+    redirect_to(action: :export)
+  end
+
 private
 
   def new_course_params
@@ -592,11 +746,32 @@ private
   end
 
   def edit_course_params
-    params.require(:editCourse).permit(:semester, :website, :late_slack,
-                                       :grace_days, :display_name, :start_date, :end_date,
-                                       :disabled, :exam_in_progress, :version_threshold,
-                                       :gb_message, late_penalty_attributes: %i[kind value],
-                                                    version_penalty_attributes: %i[kind value])
+    att = params.require(:editCourse).permit(:semester, :website, :late_slack,
+                                             :grace_days, :display_name, :start_date, :end_date,
+                                             :disabled, :exam_in_progress, :allow_self_enrollment,
+                                             :version_threshold, :gb_message,
+                                             late_penalty_attributes: %i[kind value],
+                                             version_penalty_attributes: %i[kind value])
+
+    handle_self_enrollment(att)
+  end
+
+  def handle_self_enrollment(att)
+    if params[:allow_self_enrollment] && @course.access_code.blank?
+      att.merge!(access_code: generate_access_code)
+    elsif !params[:allow_self_enrollment]
+      att.merge!(access_code: nil)
+    end
+    att.except(:allow_self_enrollment)
+  end
+
+  def generate_access_code
+    loop do
+      code = SecureRandom.alphanumeric(6).upcase
+
+      # Possible race condition, but we also have a uniqueness validation
+      break code unless Course.where(access_code: code).exists?
+    end
   end
 
   def categorize_courses_for_listing(courses)
@@ -642,7 +817,7 @@ private
         major = new_cud[:major]
         year = new_cud[:year]
 
-        if (user = User.where(email: email).first).nil?
+        if (user = User.where(email:).first).nil?
           begin
             # Create a new user
             user = User.roster_create(email, first_name, last_name, school,
@@ -672,7 +847,7 @@ private
           end
         end
 
-        existing = @course.course_user_data.where(user: user).first
+        existing = @course.course_user_data.where(user:).first
         # Make sure this user doesn't have a cud in the course
         if existing
           duplicates.add(new_cud[:email])
@@ -779,7 +954,7 @@ private
 
     return if rosterErrors.empty?
 
-    flash[:roster_error] = rosterErrors
+    @roster_error = rosterErrors
     fail "Roster validation error"
   end
 
@@ -875,15 +1050,15 @@ private
       cloned_cuds = Marshal.load(Marshal.dump(@cuds))
       begin
         write_cuds(cloned_cuds)
-      rescue StandardError => e
-        redirect_to(action: "upload_roster")
+        @sorted_cuds = @cuds.sort_by { |cud| cud[:color] || "z" }
+        @cud_view = @sorted_cuds
+      rescue StandardError
+        # Renders upload_roster
+        return
       ensure
         raise ActiveRecord::Rollback
       end
     end
-
-    @sorted_cuds = @cuds.sort_by { |cud| cud[:color] || "z" }
-    @cud_view = @sorted_cuds
   end
 
   # detect_and_convert_roster - Detect the type of a roster based on roster
@@ -1114,5 +1289,116 @@ private
     else
       @basefiles = File.join(baseFilesDir, "*")
     end
+  end
+
+  def get_course_from_config(tar_extract)
+    tar_extract.rewind
+
+    tar_extract.each do |entry|
+      next unless entry.file? && entry.full_name.count('/') == 1
+      # there should only be one file in the main directory with .yml extension
+      next unless File.extname(entry.full_name) == '.yml'
+
+      config = YAML.safe_load(entry.read, permitted_classes: [Date])
+      general_config = config["general"]
+      course = Course.new(general_config.except("late_penalty", "version_penalty"))
+      course.late_penalty = Penalty.new(general_config["late_penalty"])
+      course.version_penalty = Penalty.new(general_config["version_penalty"])
+
+      # metrics import if exists in the file
+      config["risk_conditions"]&.each do |condition|
+        options = { course_id: course.id, condition_type: condition["condition_type"],
+                    parameters: condition["parameters"].to_hash, version: condition["version"] }
+        course.risk_conditions << RiskCondition.new(options)
+      end
+
+      if config["watchlist_configuration"]
+        wl_config = config["watchlist_configuration"]
+        course.watchlist_configuration = WatchlistConfiguration.new
+        course.watchlist_configuration.category_blocklist = wl_config["category_blocklist"]
+        course.watchlist_configuration.assessment_blocklist = wl_config["assessment_blocklist"]
+        course.watchlist_configuration.allow_ca = wl_config["allow_ca"]
+      end
+      return course
+    end
+  end
+
+  def save_assessments_from_tar(tar_extract)
+    tar_extract.rewind
+    src_directory = File.join(@newCourse.name, "assessments")
+    dest_directory = Rails.root.join("courses", @newCourse.name)
+
+    tar_extract.each do |entry|
+      next unless File.dirname(entry.full_name).start_with?(src_directory)
+
+      relative_path = entry.full_name.gsub(/\A#{Regexp.escape(src_directory)}/, '')
+      destination_path = File.join(dest_directory, relative_path)
+      if entry.directory?
+        FileUtils.mkdir_p(destination_path)
+      elsif entry.file?
+        FileUtils.mkdir_p(File.dirname(destination_path))
+        File.open(destination_path, 'wb') { |dest_file| dest_file.write(entry.read) }
+      end
+    end
+
+    params[:cleanup_on_failure] = true
+  end
+
+  # same as assessment import check, ensures the tar has a single root directory
+  # named after the course with a course yml file
+  def valid_course_tar(tar_extract)
+    course_name = nil
+    course_yml_exists = false
+    course_name_is_valid = true
+    tar_extract.each do |entry|
+      pathname = entry.full_name
+      next if pathname.start_with? "."
+
+      # Removes file created by Mac when tar'ed
+      next if pathname.start_with? "PaxHeader"
+
+      pathname.chomp!("/") if entry.directory?
+      # nested directories are okay
+      if entry.directory? && pathname.count("/") == 0
+        if course_name
+          flash[:error] = "Error in tarball: Found root directory #{course_name}
+                           but also found root directory #{pathname}. Ensure
+                           there is only one root directory in the tarball."
+          return false
+        end
+
+        course_name = pathname
+      else
+        if !course_name
+          flash[:error] = "Error in tarball: No root directory found."
+          return false
+        end
+
+        if pathname == "#{course_name}/course.rb"
+          # We only ever read once, so no need to rewind after
+          config_source = entry.read
+
+          # validate syntax of config
+          RubyVM::InstructionSequence.compile(config_source)
+        end
+        course_yml_exists = true if pathname == "#{course_name}/#{course_name}.yml"
+      end
+    end
+    # it is possible that the course path does not match the
+    # the expected course path when the Ruby config file
+    # has a different name then the pathname
+    if !course_name.nil? && course_name !~ /\A(\w|-)+\z/
+      flash[:error] = "Errors found in tarball: Course name is invalid. Valid course names consist
+                  of letters, numbers, and hyphens, starting and ending with a letter or number."
+      return false
+    end
+    if !(course_yml_exists && !course_name.nil?)
+      flash[:error] = "Errors found in tarball:"
+      if !course_yml_exists && !course_name.nil?
+        flash[:error] += "<br>Course yml file #{course_name}/#{course_name}.yml was not found"
+      end
+      flash[:html_safe] = true
+    end
+    course_yml_exists && !course_name.nil? && course_name_is_valid
   end
 end

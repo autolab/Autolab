@@ -22,7 +22,7 @@ RSpec.configure do |config|
   config.include ActionDispatch::TestProcess
   # Remove this line if you're not using ActiveRecord or ActiveRecord fixtures
   config.fixture_path = Rails.root.join("spec/fixtures")
-
+  config.file_fixture_path = Rails.root.join("spec/fixtures")
   # If you're not using ActiveRecord, or you'd prefer not to run each of your
   # examples within a transaction, remove the following line or assign false
   # instead of true.
@@ -46,13 +46,15 @@ RSpec.configure do |config|
   end
 
   Capybara.register_driver :headless_chrome do |app|
-    capabilities = Selenium::WebDriver::Remote::Capabilities.chrome(
-      'goog:chromeOptions': { args: %w[headless] }
+    options = Selenium::WebDriver::Chrome::Options.new(
+      args: %w[headless no-sandbox disable-gpu disable-dev-shm-usage],
     )
 
-    Capybara::Selenium::Driver.new app,
-                                   browser: :chrome,
-                                   capabilities: capabilities
+    Capybara::Selenium::Driver.new(
+      app,
+      browser: :chrome,
+      options:
+    )
   end
   # change to chrome to see execution on browser
   Capybara.javascript_driver = :headless_chrome

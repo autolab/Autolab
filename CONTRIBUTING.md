@@ -90,7 +90,7 @@
   git rebase origin/master
   ```
 
-7. Push branch to autolab repo
+7. Push branch to Autolab repo
 
   ```
   git push origin <YOUR_BRANCH_NAME>

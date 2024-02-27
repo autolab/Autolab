@@ -2,8 +2,8 @@
 <%= form_for @user do |f| %>
   <% if @user.errors.any? %>
     <div id="error_explanation">
-      <h2><%= pluralize(@user.errors.count, "error") %>
-      prohibited this user from being saved:</h2>
+      <h3><%= pluralize(@user.errors.count, "error") %>
+      prohibited this user from being saved:</h3>
 
       <ul>
       <% @user.errors.full_messages.each do |msg| %>
@@ -37,7 +37,7 @@
   <% end %>
 
   <div class="actions">
-    <%= f.submit "Create User" , {:class=>"btn primary" } %>
+    <%= f.submit "Create User", { class: "btn primary" } %>
   </div>
 <% end %>
 </div>
