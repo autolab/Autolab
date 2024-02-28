@@ -206,7 +206,7 @@ class SubmissionsController < ApplicationController
   # try to send the file at that position in the archive.
   action_auth_level :download, :student
   def download
-    if Archive.archive?(@submission.handin_file_path) && params[:header_position]
+    if Archive.archive?(@filename) && params[:header_position]
       file, pathname = Archive.get_nth_file(@filename, params[:header_position].to_i)
       unless file && pathname
         flash[:error] = "Could not read archive."
@@ -302,20 +302,17 @@ class SubmissionsController < ApplicationController
     end
 
     viewing_autograder_output = params.include?(:header_position) &&
-                                (params[:header_position].to_i == -1) &&
-                                !@submission.autograde_file.nil?
+                                (params[:header_position].to_i == -1)
 
-    # Adds autograded file as first option if it exist
-    # We are mapping Autograder to header_position -1
-    unless @submission.autograde_file.nil?
-      @files.prepend({ pathname: "Autograder Output",
-                       header_position: -1,
-                       mac_bs_file: false,
-                       directory: false })
-    end
+    # We are mapping autograder output to header_position -1
+    # If it doesn't exist, we will display a message accordingly
+    @files.prepend({ pathname: "Autograder Output",
+                     header_position: -1,
+                     mac_bs_file: false,
+                     directory: false })
 
     if viewing_autograder_output
-      file = @submission.autograde_file.read || "Empty Autograder Output"
+      file = get_autograder_output(@submission)
       @displayFilename = "Autograder Output"
     elsif params.include?(:header_position) && Archive.archive?(@submission.handin_file_path)
       file, pathname = Archive.get_nth_file(@submission.handin_file_path,
@@ -352,8 +349,8 @@ class SubmissionsController < ApplicationController
 
     return unless file
 
-    mm = MimeMagic.by_magic(file)
-    file = "Binary file not displayed" if mm.present? && (!mm.text? && (mm.subtype != "pdf"))
+    @file_contents = file # Keep this for the diff viewer
+    file = "Binary file not displayed" if is_binary_file?(file)
 
     unless PDF.pdf?(file)
       # begin
@@ -548,52 +545,31 @@ class SubmissionsController < ApplicationController
                                .where(course_user_datum_id: @submission.course_user_datum_id)
                                .order("version DESC")
 
-    # Autograder Output is a dummy file
-    # If we are viewing autograder output, don't attempt to match versions
-    # and let @prevVersion = @nextVersion = nil
-    unless viewing_autograder_output
-      # Find user submissions that contain the same pathname
-      matchedVersions = []
-      @userVersions.each do |submission|
-        submission_path = submission.handin_file_path
-
-        # Find corresponding header position
-        header_position = if Archive.archive? submission_path
-                            submission_files = Archive.get_files(submission_path)
-                            matched_file = submission_files.detect { |submission_file|
-                              submission_file[:pathname] == @displayFilename
-                            }
-                            # Skip if file doesn't exist
-                            next if matched_file.nil?
-
-                            matched_file[:header_position]
-                          end
-        # If not an archive, we have header_position = nil
-        # This means that in _version_links.html.erb, header_position is not set in the querystring
-        # for the prev / next button urls
-        # This is fine since #download ignores header_position for non-archives
-
-        if @submission.version != submission.version
-          submission.header_position = header_position
-        end
-
-        matchedVersions << {
-          version: submission.version,
-          header_position:,
-          submission:
-        }
+    if viewing_autograder_output
+      # Autograder Output is a dummy file
+      # If we are viewing autograder output, just don't filter
+      matchedVersions = @userVersions.map do |submission|
+        { version: submission.version, header_position: -1, submission: }
       end
-
-      @curVersionIndex = matchedVersions.index do |submission|
+      curVersionIndex = @userVersions.index do |submission|
         submission[:version] == @submission.version
       end
-      # Previous and next versions
-      @prevVersion = if @curVersionIndex < (matchedVersions.size - 1)
-                       matchedVersions[@curVersionIndex + 1]
-                     end
-      @nextVersion = if @curVersionIndex > 0
-                       matchedVersions[@curVersionIndex - 1]
-                     end
+    else
+      matchedVersions, curVersionIndex = find_versions_with_file(@displayFilename, @userVersions,
+                                                                 @submission.version)
+    end
+
+    # Previous and next versions
+    @prevVersion = if curVersionIndex < (matchedVersions.size - 1)
+                     matchedVersions[curVersionIndex + 1]
+                   end
+    @nextVersion = if curVersionIndex > 0
+                     matchedVersions[curVersionIndex - 1]
+                   end
+
+    # For diff viewer
+    if @prevVersion
+      @prev_file_contents = get_file(@prevVersion[:submission], @prevVersion[:header_position])
     end
 
     # Rendering this page fails. Often. Mostly due to PDFs.
@@ -673,6 +649,84 @@ private
     end
 
     true
+  end
+
+  # Helper method to retrieve all submission versions by a student that contain a file
+  def find_versions_with_file(pathname, versions, current_version)
+    matchedVersions = []
+    versions.each do |submission|
+      submission_path = submission.handin_file_path
+
+      # Find corresponding header position
+      header_position = if Archive.archive? submission_path
+                          submission_files = Archive.get_files(submission_path)
+                          matched_file = submission_files.detect { |submission_file|
+                            submission_file[:pathname] == pathname
+                          }
+                          # Skip if file doesn't exist
+                          next if matched_file.nil?
+
+                          matched_file[:header_position]
+                        end
+      # If not an archive, we have header_position = nil
+      # This means that in _version_links.html.erb, header_position is not set in the querystring
+      # for the prev / next button urls
+      # This is fine since #download ignores header_position for non-archives
+
+      # Mainly so that we don't display an asterisk next to the current version
+      # On the view submission page's version dropdown
+      if current_version != submission.version
+        submission.header_position = header_position
+      end
+
+      matchedVersions << {
+        version: submission.version,
+        header_position:,
+        submission:
+      }
+    end
+
+    curVersionIndex = matchedVersions.index do |submission|
+      submission[:version] == current_version
+    end
+
+    [matchedVersions, curVersionIndex]
+  end
+
+  def get_autograder_output(submission)
+    if submission.autograde_file.nil?
+      if submission.assessment.autograder.nil?
+        "There is no autograding output for this submission, and no autograder is defined."
+      else
+        "There is no autograding output for this submission.\n" \
+          "Try running the autograder by clicking the \"Run Autograder\" button above."
+      end
+    else
+      submission.autograde_file.read || "Empty autograder output."
+    end
+  end
+
+  def get_file(submission, header_position)
+    handin_file_path = submission.handin_file_path
+
+    if header_position == -1
+      get_autograder_output(submission)
+    elsif Archive.archive?(handin_file_path)
+      file, = Archive.get_nth_file(handin_file_path, header_position.to_i)
+      file
+    else
+      handin_file = submission.handin_file
+      if handin_file.nil?
+        "Could not find submission file for previous version."
+      else
+        handin_file.read
+      end
+    end
+  end
+
+  def is_binary_file?(file)
+    mm = MimeMagic.by_magic(file)
+    mm.present? && (!mm.text? && (mm.subtype != "pdf"))
   end
 
   def set_manage_submissions_breadcrumb

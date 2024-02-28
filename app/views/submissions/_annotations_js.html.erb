@@ -1,11 +1,12 @@
-<%= javascript_include_tag "annotations.js" %>
-<%= javascript_include_tag "submission_view.js" %>
+<%= javascript_include_tag "annotations" %>
+<%= javascript_include_tag "diff_viewer" %>
 <script type="text/javascript">
   setActiveFilePos(currentHeaderPos)
   initializeAnnotationsForCode();
   attachEvents();
   attachChangeFileEvents();
   attachAnnotationPaneEvents();
+  drawDiffViewer();
 </script>
 
 <script>
