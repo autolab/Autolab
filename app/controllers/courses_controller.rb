@@ -5,13 +5,14 @@ require "pathname"
 require "statistics"
 
 class CoursesController < ApplicationController
-  skip_before_action :set_course, only: %i[courses_redirect index new create join_course]
+  skip_before_action :set_course,
+                     only: %i[courses_redirect index new create create_from_tar join_course]
   # you need to be able to pick a course to be authorized for it
   skip_before_action :authorize_user_for_course,
-                     only: %i[courses_redirect index new create join_course]
+                     only: %i[courses_redirect index new create create_from_tar join_course]
   # if there's no course, there are no persistent announcements for that course
   skip_before_action :update_persistent_announcements,
-                     only: %i[courses_redirect index new create join_course]
+                     only: %i[courses_redirect index new create create_from_tar join_course]
   before_action :set_manage_course_breadcrumb, only: %i[edit users moss email upload_roster export]
   before_action :set_manage_course_users_breadcrumb, only: %i[upload_roster]
 
@@ -119,6 +120,7 @@ class CoursesController < ApplicationController
     end
   end
 
+  action_auth_level :new, :administrator
   def new
     # check for permission
     unless current_user.administrator?
@@ -199,6 +201,94 @@ class CoursesController < ApplicationController
     else
       flash.now[:error] = "Course creation failed. Check all fields"
       render(action: "new") && return
+    end
+  end
+
+  action_auth_level :create_from_tar, :administrator
+  def create_from_tar
+    tarFile = params[:tarFile]
+    if tarFile.nil?
+      flash[:error] = "Please select a course tarball for uploading."
+      render(action: "new") && return
+    end
+
+    begin
+      tarFile = File.new(tarFile.open, "rb")
+      tar_extract = Gem::Package::TarReader.new(tarFile)
+      tar_extract.rewind
+      unless valid_course_tar(tar_extract)
+        flash[:error] +=
+          "<br>Invalid tarball. A valid course tar has a single root "\
+            "directory that's named after the course, containing a "\
+            "course yaml file"
+        flash[:html_safe] = true
+        render(action: "new") && return
+      end
+      tar_extract.close
+    rescue SyntaxError => e
+      flash[:error] = "Error parsing course configuration file:"
+      # escape so that <compiled> doesn't get treated as a html tag
+      flash[:error] += "<br><pre>#{CGI.escapeHTML e.to_s}</pre>"
+      flash[:html_safe] = true
+      render(action: "new") && return
+    rescue StandardError => e
+      flash[:error] = "Error while reading the tarball -- #{e.message}."
+      render(action: "new") && return
+    end
+
+    begin
+      tar_extract.rewind
+      @newCourse = get_course_from_config(tar_extract)
+      # save assessment directories
+      save_assessments_from_tar(tar_extract)
+      tar_extract.close
+    rescue StandardError => e
+      flash[:error] = "Error while extracting course to server -- #{e.message}."
+      render(action: "new") && return
+    end
+
+    unless @newCourse.save
+      flash[:error] = "Course creation failed. Check all fields"
+      render(action: "new") && return
+    end
+
+    instructor = User.where(email: params[:instructor_email]).first
+
+    # create a new user as instructor if they didn't exist
+    if instructor.nil?
+      begin
+        instructor = User.instructor_create(params[:instructor_email],
+                                            @newCourse.name)
+      rescue StandardError => e
+        # roll back course creation
+        @newCourse.destroy
+        flash[:error] = "Can't create instructor for the course: #{e}"
+        render(action: "new") && return
+      end
+    end
+
+    new_cud = @newCourse.course_user_data.new
+    new_cud.user = instructor
+    new_cud.instructor = true
+
+    unless new_cud.save
+      # roll back course creation
+      @newCourse.destroy
+      flash[:error] = "Can't create instructor for the course."
+      render(action: "new") && return
+    end
+
+    begin
+      @newCourse.reload_course_config
+    rescue StandardError, SyntaxError
+      # roll back course creation and instruction creation
+      new_cud.destroy
+      @newCourse.destroy
+      flash[:error] = "Can't load course config for #{@newCourse.name}."
+      render(action: "new") && return
+    else
+      flash[:success] = "New Course #{@newCourse.name} successfully created!"
+      redirect_to(course_onboard_install_asmt_course_assessments_path(@newCourse)) && return
     end
   end
 
@@ -1199,5 +1289,116 @@ private
     else
       @basefiles = File.join(baseFilesDir, "*")
     end
+  end
+
+  def get_course_from_config(tar_extract)
+    tar_extract.rewind
+
+    tar_extract.each do |entry|
+      next unless entry.file? && entry.full_name.count('/') == 1
+      # there should only be one file in the main directory with .yml extension
+      next unless File.extname(entry.full_name) == '.yml'
+
+      config = YAML.safe_load(entry.read, permitted_classes: [Date])
+      general_config = config["general"]
+      course = Course.new(general_config.except("late_penalty", "version_penalty"))
+      course.late_penalty = Penalty.new(general_config["late_penalty"])
+      course.version_penalty = Penalty.new(general_config["version_penalty"])
+
+      # metrics import if exists in the file
+      config["risk_conditions"]&.each do |condition|
+        options = { course_id: course.id, condition_type: condition["condition_type"],
+                    parameters: condition["parameters"].to_hash, version: condition["version"] }
+        course.risk_conditions << RiskCondition.new(options)
+      end
+
+      if config["watchlist_configuration"]
+        wl_config = config["watchlist_configuration"]
+        course.watchlist_configuration = WatchlistConfiguration.new
+        course.watchlist_configuration.category_blocklist = wl_config["category_blocklist"]
+        course.watchlist_configuration.assessment_blocklist = wl_config["assessment_blocklist"]
+        course.watchlist_configuration.allow_ca = wl_config["allow_ca"]
+      end
+      return course
+    end
+  end
+
+  def save_assessments_from_tar(tar_extract)
+    tar_extract.rewind
+    src_directory = File.join(@newCourse.name, "assessments")
+    dest_directory = Rails.root.join("courses", @newCourse.name)
+
+    tar_extract.each do |entry|
+      next unless File.dirname(entry.full_name).start_with?(src_directory)
+
+      relative_path = entry.full_name.gsub(/\A#{Regexp.escape(src_directory)}/, '')
+      destination_path = File.join(dest_directory, relative_path)
+      if entry.directory?
+        FileUtils.mkdir_p(destination_path)
+      elsif entry.file?
+        FileUtils.mkdir_p(File.dirname(destination_path))
+        File.open(destination_path, 'wb') { |dest_file| dest_file.write(entry.read) }
+      end
+    end
+
+    params[:cleanup_on_failure] = true
+  end
+
+  # same as assessment import check, ensures the tar has a single root directory
+  # named after the course with a course yml file
+  def valid_course_tar(tar_extract)
+    course_name = nil
+    course_yml_exists = false
+    course_name_is_valid = true
+    tar_extract.each do |entry|
+      pathname = entry.full_name
+      next if pathname.start_with? "."
+
+      # Removes file created by Mac when tar'ed
+      next if pathname.start_with? "PaxHeader"
+
+      pathname.chomp!("/") if entry.directory?
+      # nested directories are okay
+      if entry.directory? && pathname.count("/") == 0
+        if course_name
+          flash[:error] = "Error in tarball: Found root directory #{course_name}
+                           but also found root directory #{pathname}. Ensure
+                           there is only one root directory in the tarball."
+          return false
+        end
+
+        course_name = pathname
+      else
+        if !course_name
+          flash[:error] = "Error in tarball: No root directory found."
+          return false
+        end
+
+        if pathname == "#{course_name}/course.rb"
+          # We only ever read once, so no need to rewind after
+          config_source = entry.read
+
+          # validate syntax of config
+          RubyVM::InstructionSequence.compile(config_source)
+        end
+        course_yml_exists = true if pathname == "#{course_name}/#{course_name}.yml"
+      end
+    end
+    # it is possible that the course path does not match the
+    # the expected course path when the Ruby config file
+    # has a different name then the pathname
+    if !course_name.nil? && course_name !~ /\A(\w|-)+\z/
+      flash[:error] = "Errors found in tarball: Course name is invalid. Valid course names consist
+                  of letters, numbers, and hyphens, starting and ending with a letter or number."
+      return false
+    end
+    if !(course_yml_exists && !course_name.nil?)
+      flash[:error] = "Errors found in tarball:"
+      if !course_yml_exists && !course_name.nil?
+        flash[:error] += "<br>Course yml file #{course_name}/#{course_name}.yml was not found"
+      end
+      flash[:html_safe] = true
+    end
+    course_yml_exists && !course_name.nil? && course_name_is_valid
   end
 end

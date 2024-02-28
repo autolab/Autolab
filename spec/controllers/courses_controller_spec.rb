@@ -300,6 +300,72 @@ RSpec.describe CoursesController, type: :controller do
     end
   end
 
+  describe "#import_course" do
+    include_context "controllers shared context"
+    context "when user is administrator" do
+      before(:each) do
+        user = get_admin
+        sign_in(user)
+        @instructor_email = "instructor@gmail.com"
+        @course_name = "course"
+      end
+      it "successfully creates course from valid tar" do
+        file = fixture_file_upload("courses/course-valid.tar")
+        post :create_from_tar, params: { instructor_email: @instructor_email,
+                                         tarFile: file }
+        expect(response).to have_http_status(302)
+        expect(flash[:success]).to be_present
+        expect(Course.find_by(name: @course_name)).to be_an_instance_of(Course)
+      end
+      it "handles nil tarfile" do
+        post :create_from_tar, params: { instructor_email: @instructor_email }
+        expect(response).to have_http_status(200)
+        expect(flash[:error]).to be_present
+        expect(flash[:error]).to match(/Please select a course tarball for uploading/m)
+      end
+      it "handles invalid course tarball" do
+        file = fixture_file_upload("courses/course-invalid.tar")
+        post :create_from_tar, params: { instructor_email: @instructor_email,
+                                         tarFile: file }
+        expect(response).to have_http_status(200)
+        expect(flash[:error]).to be_present
+        expect(flash[:error]).to match(/Error while reading the tarball/m)
+      end
+      it "handles missing course yml" do
+        file = fixture_file_upload("courses/course-missing-yml.tar")
+        post :create_from_tar, params: { instructor_email: @instructor_email,
+                                         tarFile: file }
+        expect(response).to have_http_status(200)
+        expect(flash[:error]).to be_present
+        expect(flash[:error]).to match(/.yml was not found/m)
+      end
+      it "handles wrong course yml name" do
+        file = fixture_file_upload("courses/course-mismatch-yml.tar")
+        post :create_from_tar, params: { instructor_email: @instructor_email,
+                                         tarFile: file }
+        expect(response).to have_http_status(200)
+        expect(flash[:error]).to be_present
+        expect(flash[:error]).to match(/\.yml was not found/m)
+      end
+      it "handles bad config file syntax" do
+        file = fixture_file_upload("courses/course-bad-config-syntax.tar")
+        post :create_from_tar, params: { instructor_email: @instructor_email,
+                                         tarFile: file }
+        expect(response).to have_http_status(200)
+        expect(flash[:error]).to be_present
+        expect(flash[:error]).to match(/syntax error/m)
+      end
+      it "handles tar with invalid directory structure" do
+        file = fixture_file_upload("courses/course-no-root.tar")
+        post :create_from_tar, params: { instructor_email: @instructor_email,
+                                         tarFile: file }
+        expect(response).to have_http_status(200)
+        expect(flash[:error]).to be_present
+        expect(flash[:error]).to match(/there is only one root directory in the tarball/m)
+      end
+    end
+  end
+
   shared_examples "export_success" do
     before(:each) do
       sign_in(user)

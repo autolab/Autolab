@@ -399,10 +399,13 @@ class Submission < ApplicationRecord
     json
   end
 
+  def problems_released?
+    scores.pluck(:released).all?
+  end
+
   def grades_released?(as_seen_by)
     include_unreleased = as_seen_by.course_assistant? || as_seen_by.instructor?
-    released = scores.pluck(:released).all?
-    released || include_unreleased
+    problems_released? || include_unreleased
   end
 
   # easy access to AUD

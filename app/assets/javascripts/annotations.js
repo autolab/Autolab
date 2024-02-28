@@ -141,7 +141,7 @@ function purgeCurrentPageCache() {
     versionLinks: `<span id="version-links">${$('#version-links').html()}</span>`,
     versionDropdown: `<span id="version-dropdown">${$('#version-dropdown').html()}</span>`,
     diffBox: `<div id="diff-box">${$('#diff-box').html()}</div>`,
-    url: window.location.href,
+    url: window.location.href
   };
 }
 
@@ -196,6 +196,7 @@ function fillAnnotationBox() {
     $('.problemGrades').html($page.find('.problemGrades'));
     $('#annotationPane').html($page.find(' #annotationPane'));
     $('.collapsible').collapsible({ accordion: false });
+    $('#release-grades').html($page.find('#release-grades'));
     $('#loadScreen').hide();
     attachChangeFileEvents();
     attachAnnotationPaneEvents();
