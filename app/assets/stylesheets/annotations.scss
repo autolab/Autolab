@@ -7,8 +7,8 @@
   overflow: hidden;
 }
 
-.row {
-  max-height: calc(100vh - 173px);
+#speedgrader {
+  max-height: calc(100vh - 178px);
 }
 
 .submission-controls select {
@@ -35,7 +35,7 @@
 .code-table {
   background: #fcfcfc;
   border: 1px solid $autolab-highlight-gray;
-  max-height: calc(100vh - 230px);
+  max-height: calc(100vh - 260px);
   overflow: auto;
 }
 
@@ -498,6 +498,31 @@
 
 .collapse_expand{
   margin-bottom:10px;
+}
+
+/* Diff Viewer Styling CSS */
+#diff-viewer tr {
+  border-bottom: none;
+}
+#diff-viewer td {
+  padding: 0;
+}
+#diff-viewer .hljs {
+  overflow-x: visible;
+}
+
+// Hide the "changed" box
+#diff-viewer .d2h-changed {
+  display: none;
+}
+
+// Make the diff viewer scrollable
+#diff-viewer .d2h-file-side-diff {
+  overflow-y: scroll;
+  max-height: calc(100vh - 235px);
+}
+#diff-viewer .d2h-code-side-linenumber {
+  position: static;
 }
 
 /* Annotation Pane Styling CSS */
