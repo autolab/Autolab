@@ -60,8 +60,8 @@ RSpec.describe SubmissionsController, type: :controller do
         AssessmentUserDatum.find_by(assessment_id: @assessment.id,
                                     course_user_datum_id: student_cud.id)
       )
-      allow_any_instance_of(ActiveRecord::Associations::CollectionProxy).to
-      receive(:find).and_return(nil)
+      allow_any_instance_of(ActiveRecord::Associations::CollectionProxy)
+        .to receive(:find).and_return(nil)
       post(:create, params: { course_name: @course.name, assessment_name: @assessment.name,
                               submission: { course_user_datum_id: student_user.id.to_s,
                                             tweak_attributes: { kind: "points" },
@@ -77,8 +77,8 @@ RSpec.describe SubmissionsController, type: :controller do
         AssessmentUserDatum.find_by(assessment_id: @assessment.id,
                                     course_user_datum_id: student_cud.id)
       )
-      allow_any_instance_of(ActiveRecord::Associations::CollectionProxy).to
-      receive(:find).and_return(nil)
+      allow_any_instance_of(ActiveRecord::Associations::CollectionProxy)
+        .to receive(:find).and_return(nil)
       post(:create, params: { course_name: @course.name, assessment_name: @assessment.name,
                               submission: { course_user_datum_id: student_user.id.to_s,
                                             tweak_attributes: { kind: "points" },
