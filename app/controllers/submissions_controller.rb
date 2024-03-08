@@ -50,7 +50,7 @@ class SubmissionsController < ApplicationController
     cud_ids = params[:submission][:course_user_datum_id].split(",")
     # Validate all users before we start
     begin
-      @cuds = @course.course_user_data.find_by(id: cud_ids)
+      @cuds = @course.course_user_data.find(cud_ids)
     rescue ActiveRecord::RecordNotFound
       flash[:error] = "Invalid CourseUserDatum ID in #{cud_ids}"
       redirect_to(course_assessment_submissions_path(@course, @assessment)) && return
@@ -628,11 +628,6 @@ class SubmissionsController < ApplicationController
   end
 
 private
-
-  def create_submission_params
-    params.require(:submission).permit(:course_used_datum_id, :notes, :file,
-                                       tweak_attributes: %i[_destroy kind value])
-  end
 
   def edit_submission_params
     params.require(:submission).permit(:notes,

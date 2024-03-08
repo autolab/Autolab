@@ -55,8 +55,8 @@ RSpec.describe SubmissionsController, type: :controller do
       sign_in(user)
       student_cud = CourseUserDatum.find_by(user_id: student_user.id, course_id: @course.id)
       # these stubs are necessary for the submission to go through
-      Submission.any_instance.stub(:course_user_datum).and_return(student_cud)
-      Submission.any_instance.stub(:aud).and_return(
+      allow_any_instance_of(Submission).to receive(:course_user_datum).and_return(student_cud)
+      allow_any_instance_of(Submission).to receive(:aud).and_return(
         AssessmentUserDatum.find_by(assessment_id: @assessment.id,
                                     course_user_datum_id: student_cud.id)
       )
@@ -70,8 +70,8 @@ RSpec.describe SubmissionsController, type: :controller do
     it "creates assessment with file correctly" do
       sign_in(user)
       student_cud = CourseUserDatum.find_by(user_id: student_user.id, course_id: @course.id)
-      Submission.any_instance.stub(:course_user_datum).and_return(student_cud)
-      Submission.any_instance.stub(:aud).and_return(
+      allow_any_instance_of(Submission).to receive(:course_user_datum).and_return(student_cud)
+      allow_any_instance_of(Submission).to receive(:aud).and_return(
         AssessmentUserDatum.find_by(assessment_id: @assessment.id,
                                     course_user_datum_id: student_cud.id)
       )
@@ -128,6 +128,7 @@ RSpec.describe SubmissionsController, type: :controller do
       it_behaves_like "index_failure"
     end
   end
+
   describe "#new" do
     include_context "controllers shared context"
     context "when user is Autolab admin" do

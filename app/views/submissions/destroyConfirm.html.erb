@@ -4,9 +4,7 @@
   <script>
       $(function() {
           $("#destroy-confirm-check").on("click", function () {
-              console.log("hELLO", $(this))
               if ($(this).prop("checked")) {
-                  console.log("hello")
                   $("#destroy-submit").attr("disabled", false);
               } else {
                   $("#destroy-submit").attr("disabled", true);
