@@ -15,11 +15,19 @@
         <%= @displayFilename %> (<%= @submission.created_at.in_time_zone.strftime('%b %e %y, %l:%M:%S%P %:z').to_s %>)
       </span>
     </div>
-    <% if( !(params.has_key?(:header_position) && params[:header_position].to_i < 0) ) %>
+    <% if !@assessment.autograder.nil? && params[:header_position].to_i == -1 %>
+      <div class="file-button">
+        <%= link_to regrade_course_assessment_path(@course, @assessment, submission_id: @submission.id),
+                    title: "Rerun the autograder on this submission",
+                    method: :post do %>
+            Run Autograder
+        <% end %>
+      </div>
+    <% end %>
+    <% if !(params.has_key?(:header_position) && params[:header_position].to_i < 0) %>
       <div class="file-button">
         <%= link_to download_course_assessment_submission_path(@course, @assessment, @submission, header_position: @header_position),
-                    data: { toggle: "tooltip", placement: "top" },
-                    title: "Download Submission" do %>
+                    title: "Download File" do %>
             Download File
         <% end %>
       </div>
@@ -27,7 +35,6 @@
     <% if @is_pdf %>
       <div class="file-button">
         <%= link_to download_course_assessment_submission_path(@course, @assessment, @submission, header_position: @header_position, annotated: true),
-                    data: { toggle: "tooltip", placement: "top" },
                     title: "Download Annotated Submission" do %>
             Download Annotated
         <% end %>
@@ -77,8 +84,7 @@
       <p>
         Sorry, we could not parse your file because it contains non-UTF8 characters. Please
         <%= link_to download_course_assessment_submission_path(@course, @assessment, @submission, header_position: @header_position),
-                    data: { toggle: "tooltip", placement: "top" },
-                    title: "Download Submission" do %>
+                    title: "Download File" do %>
           download the file
         <% end %>
         to view the source.
