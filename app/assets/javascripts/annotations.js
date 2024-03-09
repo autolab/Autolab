@@ -532,8 +532,21 @@ function newAnnotationFormCode() {
     problemGraderId[score.problem_id] = score.grader_id;
   });
 
+  var processStarred = false;
   _.each(problems, function (problem) {
     if (problemGraderId[problem.id] !== 0) { // Because grader == 0 is autograder
+      if(problem.starred && !processStarred){
+        box.find('select').append(
+            $('<option disabled></option>').text('Starred Problems')
+        );
+        processStarred=true;
+      }
+      if(!problem.starred && processStarred){
+        box.find('select').append(
+            $('<option disabled></option>').text('-------------------')
+        );
+        processStarred=false;
+      }
       box.find("select").append(
           $("<option />").val(problem.id).text(problem.name)
       );
@@ -694,8 +707,21 @@ function initializeBoxForm(box, annotation) {
     problemGraderId[score.problem_id] = score.grader_id;
   });
 
+  var processStarred = false;
   _.each(problems, function (problem) {
     if (problemGraderId[problem.id] !== 0) { // Because grader == 0 is autograder
+      if(problem.starred && !processStarred){
+        box.find('select').append(
+            $('<option disabled></option>').text('Starred Problems')
+        );
+        processStarred=true;
+      }
+      if(!problem.starred && processStarred){
+        box.find('select').append(
+            $('<option disabled></option>').text('-------------------')
+        );
+        processStarred=false;
+      }
       box.find("select").append(
           $("<option />").val(problem.id).text(problem.name)
       );
