@@ -1,33 +1,35 @@
-<script type="text/javascript">
-    is_positive_grading = <%= @is_positive_grading %>;
-    has_annotations = <%= @has_annotations %>;
+<% content_for :javascripts do %>
+    <script type="text/javascript">
+        is_positive_grading = <%= @is_positive_grading %>;
+        has_annotations = <%= @has_annotations %>;
 
-    document.addEventListener('DOMContentLoaded', function() {
-        var starToggleIcons = document.querySelectorAll('.star-icon');
+        document.addEventListener('DOMContentLoaded', function() {
+            var starToggleIcons = document.querySelectorAll('.star-icon');
 
-        starToggleIcons.forEach(function(icon) {
-            icon.addEventListener('click', function() {
-                toggleStar(icon);
+            starToggleIcons.forEach(function(icon) {
+                icon.addEventListener('click', function() {
+                    toggleStar(icon);
+                });
             });
         });
-    });
 
-    function toggleStar(icon) {
-        var starred = icon.getAttribute('data-starred');
-        starred = (starred === 'yes') ? 'no' : 'yes';
-        icon.innerHTML = (starred === 'yes') ? 'star' : 'star_border';
-        icon.setAttribute('data-starred', starred);
-        var starred_bool = (starred==='yes') ? 'true' : 'false';
-        // Update the corresponding problem.starred attribute
-        var problemId = icon.getAttribute('data-problem-id');
-        var dataUrl = icon.parentNode.parentNode.getAttribute('data-url');
-        $.ajax({
-            url: dataUrl,
-            type: 'PATCH',
-            data: {problem: {starred: starred_bool}}
-        });
-    }
-</script>
+        function toggleStar(icon) {
+            var starred = icon.getAttribute('data-starred');
+            starred = (starred === 'yes') ? 'no' : 'yes';
+            icon.innerHTML = (starred === 'yes') ? 'star' : 'star_border';
+            icon.setAttribute('data-starred', starred);
+            var starred_bool = (starred==='yes') ? 'true' : 'false';
+            // Update the corresponding problem.starred attribute
+            var problemId = icon.getAttribute('data-problem-id');
+            var dataUrl = icon.parentNode.parentNode.getAttribute('data-url');
+            $.ajax({
+                url: dataUrl,
+                type: 'PATCH',
+                data: {problem: {starred: starred_bool}}
+            });
+        }
+    </script>
+<% end %>
 
 <div class="switch">
   <label>
