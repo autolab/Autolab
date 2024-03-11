@@ -44,7 +44,7 @@ class ScoreboardsController < ApplicationController
       uid = row["course_user_datum_id"].to_i
       unless @grades.key?(uid)
         user = @course.course_user_data.find(uid)
-        next unless user.student?
+        next unless user.student? || @scoreboard.include_instructors
 
         @grades[uid] = {}
         @grades[uid][:nickname] = user.nickname
@@ -212,7 +212,7 @@ private
   end
 
   def scoreboard_params
-    params[:scoreboard].permit(:banner, :colspec)
+    params[:scoreboard].permit(:banner, :colspec, :include_instructors)
   end
 
   # emitColSpec - Emits a text summary of a column specification string.

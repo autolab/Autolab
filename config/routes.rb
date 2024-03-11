@@ -150,6 +150,8 @@ Rails.application.routes.draw do
           get "destroyConfirm"
           get "download"
           get "view"
+          post "release_student_grade"
+          post "unrelease_student_grade"
         end
 
         collection do
@@ -198,8 +200,10 @@ Rails.application.routes.draw do
 
       collection do
         get "install_assessment"
-        post "importAssessment"
-        post "importAsmtFromTar"
+        get "course_onboard_install_asmt"
+        post "import_assessment"
+        post "import_assessments"
+        post "import_asmt_from_tar"
       end
     end
 
@@ -238,6 +242,10 @@ Rails.application.routes.draw do
       post "add_users_from_emails"
       get "user_lookup"
       get "users"
+    end
+
+    collection do
+      post "create_from_tar"
     end
   end
 

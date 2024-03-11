@@ -6,4 +6,5 @@ module SubmissionHelper
       sprintf("%.2f", f.round(2))
     end
   end
+
 end

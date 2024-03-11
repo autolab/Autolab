@@ -11,6 +11,15 @@
           <b> &ndash; </b>
         <% end %>
         <b> / <%= p.max_score ? sprintf("%.2f", p.max_score.round(2)) : raw("&ndash;") %></b>
+        <b>
+          <% if p_score != nil and (@cud.instructor? or @cud.course_assistant?) %>
+            <% if p_score.released %>
+              (Released)
+            <% else %>
+              (Unreleased)
+            <% end %>
+          <% end %>
+        </b>
       </div>
     </div>
   <% end %>

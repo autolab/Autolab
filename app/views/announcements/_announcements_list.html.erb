@@ -1,4 +1,4 @@
-<% if local_assigns[:announcements] && params[:controller] != 'announcements' then %>
+<% if local_assigns[:announcements]&.present? && params[:controller] != 'announcements' %>
   <ul class="announcement gray-box">
     <%= render local_assigns[:announcements] %>
   </ul>
