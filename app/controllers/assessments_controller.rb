@@ -443,29 +443,6 @@ class AssessmentsController < ApplicationController
     @id = @assessment.id
   end
 
-  # installProblems - If there are no problems defined yet for this
-  # assessment, then create them using the list defined by the #
-  # assessmentInitialize() function in the user's assessment.rb
-  # file.
-  #
-  # Note: this is only here for backward compatibility. In the
-  # current system, problems definitions are imported from the
-  # assessment properties yaml file.
-  def installProblems
-    redirect_to(action: "index") && return unless @cud.instructor?
-
-    return unless @assessment.problems.count == 0
-
-    @problems.each do |problem|
-      @assessment.problems.create do |p|
-        p.name = problem["name"]
-        p.description = problem["description"]
-        p.max_score = problem["max_score"]
-        p.optional = problem["optional"]
-      end
-    end
-  end
-
   # raw_score
   # @param map of problem names to problem scores
   # @return score on this assignment not including any tweak or late penalty.
