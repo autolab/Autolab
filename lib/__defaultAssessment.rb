@@ -15,7 +15,7 @@ module ##NAME_CAMEL##
   #   brief: modify calculated scores for a submission
   #   params: scores, previous_submissions, problems
   #   returns: hash of problem names to problem scores, the new submission scores
-  #   more details: https://docs.autolabproject.com/lab/#overriding-modify-submission-score
+  #   details: https://docs.autolabproject.com/lab/#overriding-modify-submission-score
   #
   # raw_score
   #   brief: modify how raw scores are calculated
