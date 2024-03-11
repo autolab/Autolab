@@ -24,8 +24,9 @@ class AssessmentsController < ApplicationController
 
   # this is inherited from ApplicationController
   before_action :set_assessment, except: %i[index new create install_assessment
-                                            importAsmtFromTar importAssessment
-                                            log_submit local_submit autograde_done]
+                                            import_asmt_from_tar import_assessment
+                                            log_submit local_submit autograde_done
+                                            import_assessments course_onboard_install_asmt]
   skip_before_action :set_breadcrumbs, only: %i[index]
   before_action :set_assessment_breadcrumb, except: %i[index show install_assessment]
   before_action :set_manage_course_breadcrumb, only: %i[install_assessment]
@@ -55,6 +56,9 @@ class AssessmentsController < ApplicationController
   action_auth_level :regradeAll, :instructor
   action_no_auth :log_submit
   action_no_auth :local_submit
+
+  IMPORT_ASMT_FAILURE_STATUS = "FAIL".freeze
+  IMPORT_ASMT_SUCCESS_STATUS = "SUCCESS".freeze
 
   def index
     @is_instructor = @cud.has_auth_level? :instructor
@@ -90,45 +94,17 @@ class AssessmentsController < ApplicationController
   # tar file with the assessment directory.
   action_auth_level :install_assessment, :instructor
   def install_assessment
-    dir_path = @course.directory_path
-    @unused_config_files = []
-    Dir.foreach(dir_path) do |filename|
-      # skip if not directory in folder
-      next if !File.directory?(File.join(dir_path,
-                                         filename)) || (filename == "..") || (filename == ".")
-
-      # assessment names must be only lowercase letters and digits
-      if filename !~ Assessment::VALID_NAME_REGEX
-        # add line break if adding to existing error message
-        flash.now[:error] = flash.now[:error] ? "#{flash.now[:error]} <br>" : ""
-        flash.now[:error] += "An error occurred while trying to display an existing assessment " \
-            "from file directory #{filename}: Invalid assessment name. "\
-            "Find more information on valid assessment names "\
-            '<a href="https://docs.autolabproject.com/lab/#assessment-naming-rules">here</a><br>'
-        flash.now[:html_safe] = true
-        next
-      end
-
-      # each assessment must have an associated yaml file,
-      # and it must have a name field that matches its filename
-      unless File.exist?(File.join(dir_path, filename, "#{filename}.yml"))
-        flash.now[:error] = flash.now[:error] ? "#{flash.now[:error]} <br>" : ""
-        flash.now[:error] += "An error occurred while trying to display an existing assessment " \
-          "from file directory #{filename}: #{filename}.yml does not exist"
-        flash.now[:html_safe] = true
-        next
-      end
-
-      # Only list assessments that aren't installed yet
-      assessment_exists = @course.assessments.exists?(name: filename)
-      @unused_config_files << filename unless assessment_exists
-    end
-    @unused_config_files.sort!
+    get_unimported_asmts_from_dir
   end
 
-  action_auth_level :importAsmtFromTar, :instructor
+  action_auth_level :course_onboard_install_asmt, :instructor
+  def course_onboard_install_asmt
+    get_unimported_asmts_from_dir
+  end
 
-  def importAsmtFromTar
+  action_auth_level :import_asmt_from_tar, :instructor
+
+  def import_asmt_from_tar
     tarFile = params["tarFile"]
     if tarFile.nil?
       flash[:error] = "Please select an assessment tarball for uploading."
@@ -209,18 +185,41 @@ class AssessmentsController < ApplicationController
       redirect_to(action: "install_assessment") && return
     end
 
-    params[:assessment_name] = asmt_name
-    params[:cleanup_on_failure] = true
-    params[:overwrite] = existing_asmt
-    importAssessment && return
+    if existing_asmt
+      flash[:success] = "IMPORTANT: Successfully uploaded files for existing assessment
+                         #{asmt_name}. The YAML and config file were NOT reuploaded.
+                         If you would like to edit these fields, do so via 'Edit assessment'."
+      @assessment = @course.assessments.find_by(name: asmt_name)
+      redirect_to(course_assessment_path(@course, @assessment)) && return
+    end
+
+    # asmt files now in file system, so finish import via file system
+    import_result = importAssessmentsFromFileSystem([asmt_name], true)
+    handleImportResults(import_result, asmt_name)
   end
 
-  # importAssessment - Imports an existing assessment from local file.
-  # The main task of this function is to decide what category a newly
-  # installed assessment should be assigned to.
-  action_auth_level :importAssessment, :instructor
+  # import_assessments - Allows for multiple simultaneous imports of asmts
+  # from file system, returning results of each import
+  action_auth_level :import_assessments, :instructor
+  def import_assessments
+    if params[:assessment_names].nil? || !params[:assessment_names].is_a?(Array)
+      render json: { error: "Did not receive array of assessment names" }, status: :bad_request
+      return
+    end
+    import_results = importAssessmentsFromFileSystem(params[:assessment_names], false)
+    import_results = import_results.each(&:to_json)
+    render json: import_results
+  end
 
-  def importAssessment
+  # import_assessment - Imports an existing assessment from local file system
+  action_auth_level :import_assessment, :instructor
+
+  def import_assessment
+    if params[:assessment_name].blank?
+      flash[:error] = "No assessment name specified."
+      redirect_to(install_assessment_course_assessments_path(@course))
+    end
+
     if params[:overwrite]
       flash[:success] = "IMPORTANT: Successfully uploaded files for existing assessment
                          #{params[:assessment_name]}. The YAML and config file were NOT reuploaded.
@@ -244,31 +243,90 @@ class AssessmentsController < ApplicationController
       FileUtils.rm_rf(assessment_path) if cleanup_on_failure
       redirect_to(install_assessment_course_assessments_path(@course)) && return
     end
+    import_result = importAssessmentsFromFileSystem([params[:assessment_name]], true)
+    handleImportResults(import_result, params[:assessment_name])
+  end
 
-    begin
-      @assessment.load_yaml # this will save the assessment
-    rescue StandardError => e
-      flash[:error] = "Error loading yaml: #{e}"
-      destroy_no_redirect
-      # delete files explicitly b/c the paths don't match ONLY if
-      # import was from tarball
-      FileUtils.rm_rf(assessment_path) if cleanup_on_failure
-      redirect_to(install_assessment_course_assessments_path(@course)) && return
+  # helper function that finalizes importing assessments, using files in file system
+  # called by both import_asmt_from_tar and importAssessment
+  # can import multiple assessments at once, returning statuses of import and any errors
+  def importAssessmentsFromFileSystem(assessment_names, cleanup_on_failure)
+    import_statuses = Array.new(assessment_names.length)
+    import_statuses = import_statuses.map do |_status|
+      {
+        status: AssessmentsController::IMPORT_ASMT_SUCCESS_STATUS,
+        errors: "",
+        messages: []
+      }
     end
-    @assessment.load_embedded_quiz # this will check and load embedded quiz
-    @assessment.construct_folder # make sure there's a handin folder, just in case
-    begin
-      @assessment.load_config_file # only call this on saved assessments
-    rescue StandardError => e
-      flash[:error] = "Error loading config module: #{e}"
-      destroy_no_redirect
-      # delete files explicitly b/c the paths don't match ONLY if
-      # import was from tarball
-      FileUtils.rm_rf(assessment_path) if cleanup_on_failure
-      redirect_to(install_assessment_course_assessments_path(@course)) && return
+    assessment_names.each_with_index do |assessment_name, i|
+      new_assessment = @course.assessments.new(name: assessment_name)
+      assessment_path = Rails.root.join("courses/#{@course.name}/#{new_assessment.name}")
+      # not sure if this check is 100% necessary anymore, but is a last resort
+      # against creating an invalid assessment
+      if assessment_name != new_assessment.name
+        import_statuses[i][:errors] = "Error creating assessment: Config module is
+            named #{new_assessment.name} but assessment file name is #{assessment_name}"
+        import_statuses[i][:status] = AssessmentsController::IMPORT_ASMT_FAILURE_STATUS
+        # destroy model
+        destroy_no_redirect(new_assessment)
+        # delete files explicitly b/c the paths don't match ONLY if
+        # import was from tarball
+        FileUtils.rm_rf(assessment_path) if cleanup_on_failure
+        next
+      end
+
+      begin
+        new_assessment.load_yaml # this will save the assessment
+      rescue StandardError => e
+        import_statuses[i][:errors] = "Error loading yaml: #{e}"
+        import_statuses[i][:status] = AssessmentsController::IMPORT_ASMT_FAILURE_STATUS
+        destroy_no_redirect(new_assessment)
+        # delete files explicitly b/c the paths don't match ONLY if
+        # import was from tarball
+        FileUtils.rm_rf(assessment_path) if cleanup_on_failure
+        next
+      end
+      new_assessment.load_embedded_quiz # this will check and load embedded quiz
+      constructed_config_file = new_assessment.construct_folder # make sure there's a handin folder
+      if constructed_config_file
+        import_statuses[i][:messages].append(
+          "Could not find config file, constructed default config file."
+        )
+      end
+      begin
+        new_assessment.load_config_file # only call this on saved assessments
+      rescue StandardError => e
+        import_statuses[i][:errors] = "Error loading config module: #{e}"
+        import_statuses[i][:status] = AssessmentsController::IMPORT_ASMT_FAILURE_STATUS
+        destroy_no_redirect(new_assessment)
+        # delete files explicitly b/c the paths don't match ONLY if
+        # import was from tarball
+        FileUtils.rm_rf(assessment_path) if cleanup_on_failure
+        next
+      end
     end
-    flash[:success] = "Successfully imported #{@assessment.name}"
-    redirect_to course_assessment_path(@course, @assessment)
+    import_statuses
+  end
+
+  # helper function to take importAssessments results and show flashes / error messages
+  # currently only supports 1 import result (since used by legacy import functions)
+  def handleImportResults(import_result, asmt_name)
+    return unless import_result.length == 1
+
+    import_result = import_result[0]
+    if import_result[:status] == AssessmentsController::IMPORT_ASMT_SUCCESS_STATUS
+      @assessment = @course.assessments.find_by!(name: asmt_name)
+      flash[:success] = "Successfully imported #{asmt_name}."
+      unless import_result[:messages].empty?
+        flash[:html_safe] = true
+        flash[:notice] = import_result[:messages].join("<br>")
+      end
+      redirect_to(course_assessment_path(@course, @assessment))
+    else
+      flash[:error] = import_result[:errors]
+      redirect_to(install_assessment_course_assessments_path(@course))
+    end
   end
 
   # create - Creates an assessment from an assessment directory
@@ -1126,7 +1184,11 @@ private
     "#{edit_course_assessment_path(@course, @assessment)}/#tab_#{tab_name}"
   end
 
-  def destroy_no_redirect
+  def destroy_no_redirect(assessment)
+    unless assessment.nil?
+      @assessment = assessment
+    end
+
     @assessment.submissions.each(&:destroy)
 
     @assessment.attachments.each(&:destroy)
@@ -1140,6 +1202,43 @@ private
     end
 
     @assessment.destroy # awwww!!!!
+  end
+
+  def get_unimported_asmts_from_dir
+    dir_path = @course.directory_path
+    @unused_config_files = []
+    Dir.foreach(dir_path) do |filename|
+      # skip if not directory in folder
+      next if !File.directory?(File.join(dir_path,
+                                         filename)) || (filename == "..") || (filename == ".")
+
+      # assessment names must be only lowercase letters and digits
+      if filename !~ Assessment::VALID_NAME_REGEX
+        # add line break if adding to existing error message
+        flash.now[:error] = flash.now[:error] ? "#{flash.now[:error]} <br>" : ""
+        flash.now[:error] += "An error occurred while trying to display an existing assessment " \
+            "from file directory #{filename}: Invalid assessment name. "\
+            "Find more information on valid assessment names "\
+            '<a href="https://docs.autolabproject.com/lab/#assessment-naming-rules">here</a><br>'
+        flash.now[:html_safe] = true
+        next
+      end
+
+      # each assessment must have an associated yaml file,
+      # and it must have a name field that matches its filename
+      unless File.exist?(File.join(dir_path, filename, "#{filename}.yml"))
+        flash.now[:error] = flash.now[:error] ? "#{flash.now[:error]} <br>" : ""
+        flash.now[:error] += "An error occurred while trying to display an existing assessment " \
+          "from file directory #{filename}: #{filename}.yml does not exist"
+        flash.now[:html_safe] = true
+        next
+      end
+
+      # Only list assessments that aren't installed yet
+      assessment_exists = @course.assessments.exists?(name: filename)
+      @unused_config_files << filename unless assessment_exists
+    end
+    @unused_config_files.sort!
   end
 
   def scoreHashFromScores(scores)

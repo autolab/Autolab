@@ -18,9 +18,7 @@
   <strong>There are currently no submissions.</strong>
 <% else %>
   <strong>
-    <% if @scoreboard.banner.blank? %>
-      Here are the most recent scores for the class.
-    <% else %>
+    <% unless @scoreboard.banner.blank? %>
       <%= sanitize @scoreboard.banner %>
     <% end %>
   </strong>

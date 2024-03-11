@@ -115,8 +115,8 @@ ActiveRecord::Schema.define(version: 2024_02_26_083719) do
     t.integer "group_size", default: 1
     t.text "embedded_quiz_form_data"
     t.boolean "embedded_quiz"
-    t.boolean "allow_student_assign_group", default: true
     t.boolean "github_submission_enabled", default: true
+    t.boolean "allow_student_assign_group", default: true
     t.boolean "is_positive_grading", default: false
     t.boolean "disable_network", default: false
   end
@@ -325,6 +325,7 @@ ActiveRecord::Schema.define(version: 2024_02_26_083719) do
     t.integer "assessment_id"
     t.text "banner"
     t.text "colspec"
+    t.boolean "include_instructors", default: false
   end
 
   create_table "scores", force: :cascade do |t|
@@ -361,6 +362,7 @@ ActiveRecord::Schema.define(version: 2024_02_26_083719) do
     t.integer "submitted_by_app_id"
     t.string "group_key", default: ""
     t.integer "jobid"
+    t.text "missing_problems"
     t.index ["assessment_id"], name: "index_submissions_on_assessment_id"
     t.index ["course_user_datum_id"], name: "index_submissions_on_course_user_datum_id"
   end

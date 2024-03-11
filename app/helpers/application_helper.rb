@@ -157,6 +157,8 @@ module ApplicationHelper
     when "semantic-ui"
       version = "2.5.0"
       stylesheet_link_tag "#{cloudflare}/semantic-ui/#{version}/semantic.min.css"
+    when "diff2html"
+      stylesheet_link_tag "//cdn.jsdelivr.net/npm/diff2html/bundles/css/diff2html.min.css"
     end
   end
 
@@ -171,8 +173,8 @@ module ApplicationHelper
     when "jquery-migrate"
       # Added for compatibility since we are migrating from jquery 2.2.4
       # Remove once there are no more warnings
-      migrate_version = "3.4.1"
-      javascript_include_tag "#{cloudflare}/jquery-migrate/#{migrate_version}/jquery-migrate.js"
+      version = "3.4.1"
+      javascript_include_tag "#{cloudflare}/jquery-migrate/#{version}/jquery-migrate.js"
     when "jquery-ui"
       version = "1.13.2"
       javascript_include_tag "#{cloudflare}/jqueryui/#{version}/jquery-ui.min.js"
@@ -197,6 +199,8 @@ module ApplicationHelper
     when "clipboardjs"
       version = "2.0.11"
       javascript_include_tag "#{cloudflare}/clipboard.js/#{version}/clipboard.min.js"
+    when "diff2html"
+      javascript_include_tag "//cdn.jsdelivr.net/npm/diff2html/bundles/js/diff2html-ui.min.js"
     end
   end
 
