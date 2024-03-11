@@ -326,8 +326,6 @@ namespace :autolab do
       problem_string = "@problems = [#{problem_hashes}]"
 
       config_file_string = assessment_template.gsub("##NAME_CAMEL##", a.name.downcase.capitalize)
-                                              .gsub("##NAME_LOWER##", a.name)
-                                              .gsub("##PROBLEMS##", problem_string)
 
       config_file_path = File.join(assessment_dir, "#{a.name}.rb")
       File.open(config_file_path, "w") do |f|

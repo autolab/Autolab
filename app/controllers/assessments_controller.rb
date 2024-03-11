@@ -426,23 +426,6 @@ class AssessmentsController < ApplicationController
     redirect_to([@course, @assessment]) && return
   end
 
-  def assessmentInitialize(assignName)
-    @assessment = @course.assessments.find_by(name: assignName)
-    raise "Assessment #{assignName} does not exist!" unless @assessment
-
-    if @assessment.nil?
-      flash[:error] = "Error: Invalid assessment"
-      redirect_to([@course, :assessments]) && return
-    end
-
-    @name = @assessment.name
-    @description = @assessment.description
-    @start_at = @assessment.start_at
-    @due_at = @assessment.due_at
-    @end_at = @assessment.end_at
-    @id = @assessment.id
-  end
-
   # raw_score
   # @param map of problem names to problem scores
   # @return score on this assignment not including any tweak or late penalty.
