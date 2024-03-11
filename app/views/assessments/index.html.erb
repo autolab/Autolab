@@ -7,24 +7,25 @@
 <% content_for :javascripts do %>
   <%= external_javascript_include_tag "clipboardjs" %>
   <script>
-      function addClearFix() {
-        let num_columns;
-        const cards = document.querySelectorAll('.assessments');
-        if (window.innerWidth >= 1200) {
-          num_columns = 3;
-        } else if (window.innerWidth >= 992) {
-            num_columns = 2;
-        } else {
-            num_columns = 1;
-        }
-        const clearfixDiv = document.createElement('div');
-        clearfixDiv.className = 'clearfix hide-on-small-only'
+    /* Calculates where to insert clearfix depending on window size */
+    function addClearFix() {
+      let num_columns;
+      const cards = document.querySelectorAll('.assessments');
+      if (window.innerWidth >= 1200) {
+        num_columns = 3;
+      } else if (window.innerWidth >= 992) {
+          num_columns = 2;
+      } else {
+          num_columns = 1;
+      }
+      const clearfixDiv = document.createElement('div');
+      clearfixDiv.className = 'clearfix hide-on-small-only'
 
-        for (let i = 0; i < cards.length; i++) {
-            if (i % num_columns === 0) {
-                cards[i].parentNode.insertBefore(clearfixDiv, cards[i]);
-            }
-        }
+      for (let i = 0; i < cards.length; i++) {
+          if (i % num_columns === 0) {
+              cards[i].parentNode.insertBefore(clearfixDiv.cloneNode(true), cards[i]);
+          }
+      }
     }
 
     addClearFix();
@@ -75,6 +76,7 @@
     }
   </style>
   <%= stylesheet_link_tag "assessments" %>
+  <%= stylesheet_link_tag "assessment_date" %>
 <% end %>
 
 <%= render partial: "announcements/announcements_list",

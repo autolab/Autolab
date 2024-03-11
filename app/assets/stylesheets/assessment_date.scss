@@ -1,3 +1,5 @@
+@import 'variables';
+
 .date .collection-item {
   padding-left: 24px !important;
   padding-right: 24px !important;
@@ -10,5 +12,5 @@
 .date p {
   margin: 0;
   font-size: 0.85rem;
-  color: #676464;
+  color: $autolab-gray-text;
 }
