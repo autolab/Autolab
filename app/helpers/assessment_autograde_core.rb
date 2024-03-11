@@ -465,7 +465,7 @@ module AssessmentAutogradeCore
         submission.save!
 
         unless submission.missing_problems.empty?
-          raise AutogradeError, "Problems \"#{submission.missing_problems}\" found in autograder result, but not defined by assessment."
+          raise AutogradeError, "Problems \"#{submission.missing_problems}\" found in autograder result, but not defined by assessment. Instructor should add missing problems to assessment and regrade submissions."
         end
       end
 
