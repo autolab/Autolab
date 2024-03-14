@@ -75,12 +75,7 @@
                              else
                                @course.course_user_data
                              end %>
-        <% url = request.original_url %>
-        <% uri = URI.parse(url) %>
-        <% params = URI.decode_www_form(uri.query || '') %>
-
-        <% viewall = params.assoc('viewall') %>
-        <% if viewall %>
+        <% if params[:viewall] %>
           <% for c in matching_students.where.not(id: has_submissions) do %>
             { "id": "",
             "name": {
@@ -246,60 +241,44 @@ Interaction between gradesheet and annotations
 <span id="interaction_badge" class="badge" data-badge-caption="Feature Information"></span></a>
 </div>
 
-<script type="text/javascript">
-    var loadFunc = (elem) => {
-        console.log("Value saved is: "+ localStorage.getItem("savedValue"));
-        if(localStorage.getItem("savedValue")){ //checks if value is saved or not
-            elem.checked = localStorage.getItem("savedValue");
-        }
-    }
-    var clickFunc = (elem) => {
-        localStorage.setItem("savedValue", elem.checked);
-    }
-</script>
-
 <div class="switch">
   <label>
     <b>Show students with completed submissions</b>
     <% if params[:viewall] == "true" %>
-      <input type="checkbox" onclick="clickFunc(this)" id="view_all_checkbox" checked>
+      <input type="checkbox" id="view_all_checkbox" checked>
     <% else %>
-      <input type="checkbox" onclick="clickFunc(this)" id="view_all_checkbox">
+      <input type="checkbox" id="view_all_checkbox">
     <% end %>
     <span class="lever"></span>
-    <b>Show all students </b>
+    <b> Show all students </b>
   </label>
 </div>
 <label for="switch">
   All students includes those with missing submissions
 </label>
 
-<script defer>
-    document.addEventListener('DOMContentLoaded', function() {
-        var checkBox = document.getElementById('view_all_checkbox');
+<% content_for :javascripts do %>
+  <script type="text/javascript">
+      $(document).ready(function() {
+          const $checkBox = $('#view_all_checkbox');
 
-        function updateURL() {
-            var url = new URL(window.location.href);
-            if (checkBox.checked) {
-                url.searchParams.set('viewall', 'true');
-            } else {
-                url.searchParams.delete('viewall');
-            }
-            window.history.replaceState({}, '', url);
-            window.location.reload();
-        }
+          var viewAllParam = '<%= params[:viewall] %>';
+          if (viewAllParam === "true") {
+              $checkBox.prop('checked', true);
+          }
 
-        var viewAllParam = new URLSearchParams(window.location.search).get('viewall');
-        if (viewAllParam === "true") {
-            checkBox.checked = true;
-        }
-
-        checkBox.addEventListener('change', function() {
-            localStorage.setItem("clicked", checkBox.checked);
-            updateURL();
-        });
-    });
-</script>
+          $checkBox.on('change', function() {
+              var url = new URL(window.location.href);
+              if ($checkBox.prop('checked')) {
+                  url.searchParams.set('viewall', 'true');
+              } else {
+                  url.searchParams.delete('viewall');
+              }
+              window.location.href = url.toString();
+          });
+      });
+  </script>
+<% end %>
 
 <div id="table_container">
   <table id="grades" style="width:100%"></table>
