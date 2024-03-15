@@ -448,10 +448,7 @@ class SubmissionsController < ApplicationController
               Archive.get_files(@filename)
             end
 
-    @problems = @assessment.problems.to_a
-    @problems.sort_by! do |problem|
-      [problem.starred ? 0 : 1, problem.name]
-    end
+    @problems = @assessment.problems.ordered.to_a
 
     # Allow scores to be assessed by the view
     @scores = Score.where(submission_id: @submission.id)
