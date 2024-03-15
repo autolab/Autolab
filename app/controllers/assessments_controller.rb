@@ -404,6 +404,7 @@ class AssessmentsController < ApplicationController
         p.description = problem["description"]
         p.max_score = problem["max_score"]
         p.optional = problem["optional"]
+        p.starred = problem["starred"]
       end
     end
   end
