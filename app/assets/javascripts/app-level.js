@@ -23,9 +23,12 @@ $(document).ready(function() {
 
 	/* Activating Tooltips */
 	$('.tooltipped').tooltip({delay: 50});
-    
-    /* Materialize Initializations */
-    $('select').formSelect();
+
+	/* Materialize Initializations */
+	$('select').formSelect();
+
+	/* Initialize tabs */
+	$('.tabs').tabs();
 });
 
 

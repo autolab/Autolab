@@ -1,0 +1,26 @@
+<div id="diff-box">
+  <% if @prevVersion %>
+    <% title = "Diff with previous version of #{@displayFilename} (version #{@prevVersion[:version]})" %>
+    <% diff_header = "--- #{title}\n+++ #{title}\n" %>
+    <% begin %>
+    <% diff_str = Diffy::Diff.new(@prev_file_contents, @file_contents, include_diff_info: true).to_s(:text) %>
+    <% diff_str = ([diff_header] + (diff_str.lines.slice(2..-1) || [])).join("") %>
+    <% diff_str.gsub!("\\", "\\\\") %>
+
+    <pre id="diff-viewer-contents" style="display: none;"><%= diff_str %></pre>
+    <div id="diff-viewer"></div>
+    <% rescue %>
+    <ul class="collection">
+      <li class="collection-item">
+        Unable to generate a diff for this file.
+      </li>
+    </ul>
+    <% end %>
+  <% else %>
+    <ul class="collection">
+      <li class="collection-item">
+        There is no previous version for this file.
+      </li>
+    </ul>
+  <% end %>
+</div>

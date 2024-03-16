@@ -154,6 +154,9 @@ gem 'byebug', '>=3.5.1'
 # and it is crucial for us
 gem 'prawn', '0.13.0'
 
+# for submission diffs
+gem 'diffy'
+
 # LDAP Lookup
 gem 'net-ldap'
 

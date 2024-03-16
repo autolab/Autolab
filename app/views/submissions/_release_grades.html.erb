@@ -1,0 +1,13 @@
+<span id="release-grades">
+  <% unless @submission.problems_released? %>
+    <%= link_to(release_student_grade_course_assessment_submission_path(@course, @assessment, @submission),
+                class: "btn small", title: "Release scores for current student", method: :post) do %>
+    Release Grade
+    <% end %>
+  <% else %>
+    <%= link_to(unrelease_student_grade_course_assessment_submission_path(@course, @assessment, @submission),
+                class: "btn small", title: "Unrelease scores for current student", method: :post) do %>
+    Unrelease Grade
+    <% end %>
+  <% end %>
+</span>
