@@ -117,12 +117,12 @@ RSpec.describe AssessmentsController, type: :controller do
         FileUtils.rm(course_2_hash[:assessment].unique_config_file_path)
       end
       it "properly dumps imported data" do
-        file = fixture_file_upload("assessments/all-fields-filled.tar")
+        file = fixture_file_upload("assessments/all-fields-filled-2.tar")
         post :import_asmt_from_tar, params: { course_name: course_2_hash[:course].name,
                                               tarFile: file }
         expect(response).to have_http_status(302)
         expect(flash[:success]).to be_present
-        File.open(Rails.root.join(file_fixture_path, "assessments", "all-fields-filled.tar"),
+        File.open(Rails.root.join(file_fixture_path, "assessments", "all-fields-filled-2.tar"),
                   encoding: 'ASCII-8BIT') do |exportTarFile|
           Gem::Package::TarReader.new(exportTarFile) do |tar|
             tar.seek("hellotar-2/hellotar-2.yml") do |entry|
