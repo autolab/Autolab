@@ -117,7 +117,7 @@ RSpec.describe AssessmentsController, type: :controller do
         FileUtils.rm(course_2_hash[:assessment].unique_config_file_path)
       end
       it "properly dumps imported data" do
-        file = fixture_file_upload("assessments/all-fields-filled.tar")
+        file = fixture_file_upload("assessments/test.tar")
         post :importAsmtFromTar, params: { course_name: course_2_hash[:course].name,
                                            tarFile: file }
         expect(response).to have_http_status(302)
