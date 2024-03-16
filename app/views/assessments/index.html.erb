@@ -75,10 +75,11 @@
           <% if @course.access_code.present? %>
             <p style="font-size: 18px">
               Access Code: <b><%= @course.access_code %></b>
-              <a id="copy-access-code" class="btn btn-floating" data-clipboard-text="<%= @course.access_code %>">
+              <a id="copy-access-code" class="btn btn-floating" data-clipboard-text="<%= @course.access_code %>" title="Copy access code">
                 <i class="material-icons left">content_copy</i>
               </a>
-              <a id="copy-join-link" class="btn btn-floating btn-copy" data-clipboard-text="<%= join_course_courses_url(access_code: @course.access_code) %>">
+              <a id="copy-join-link" class="btn btn-floating btn-copy"
+                 data-clipboard-text="<%= join_course_courses_url(access_code: @course.access_code) %>" title="Copy direct join link">
                 <i class="material-icons left">link</i>
               </a>
             </p>

@@ -1,0 +1,81 @@
+<% @unused_config_files = asmt_names %>
+<% @course = course %>
+
+<% content_for :stylesheets do %>
+  <%= stylesheet_link_tag "install_assessment" %>
+<% end %>
+
+<% content_for :javascripts do %>
+  <%= javascript_include_tag "dropdown" %>
+<% end %>
+
+<% render "install_assessment_table_js" %>
+
+<div class="install-asmt-container">
+  <div>
+    <a id="unselectAll" class="btn">Unselect All</a>
+    <a id="selectAll" class="btn">Select All</a>
+  </div>
+  <div class="install-asmt-table-container">
+    <table id="assessment_names" class="assessment-import-table import-incomplete">
+      <colgroup>
+        <col span="1">
+        <col span="1">
+      </colgroup>
+      <tbody>
+      <tr>
+        <th>Assessment Name</th>
+      </tr>
+      <% @unused_config_files.each do |asmt_file| %>
+        <tr class="assessment-field">
+          <td>
+            <div
+              class="error-dropdown"
+              id="error-dropdown-<%= asmt_file %>"
+              onclick="toggleInstallDropdownOptions('error-dropdown-<%= asmt_file %>', '<%= asmt_file %>-messages-dropdown')">
+              <b class="install-success-p">
+                Installed!
+              </b>
+              <b class="import-success-messages">
+                Installed (with conditions)
+                <i class="material-icons icon">
+                  info
+                </i>
+              </b>
+              <b class="install-failure-p">
+                Failed to Install
+              </b>
+              <label>
+                <%= check_box_tag asmt_file, asmt_file, true, class: 'cbox', id: "#{asmt_file}_checkbox" %>
+                <span />
+              </label>
+              <%= asmt_file %>
+              <i class="material-icons expand-more">
+                expand_more
+              </i>
+              <i class="material-icons expand-less" style="display: none">
+                expand_less
+              </i>
+            </div>
+            <div
+              id="<%= asmt_file %>-messages-dropdown"
+              class="messages-dropdown"
+              style="display: none;">
+              No error messages returned.
+            </div>
+          </td>
+        </tr>
+      <% end %>
+      </tbody>
+    </table>
+  </div>
+
+  <div id="error-install-help" style="display: none;">
+    In order to fix failing assessment installs, go into the file system for the Autolab install and overwrite the
+    files causing errors.
+  </div>
+
+  <div>
+    <a id="installSelected" class="btn">Install Selected</a>
+  </div>
+</div>
