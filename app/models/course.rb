@@ -154,7 +154,11 @@ class Course < ApplicationRecord
     if now < start_date
       :upcoming
     elsif now > end_date
-      :completed
+      if disable_on_end
+        :disabled
+      else
+        :completed
+      end
     else
       :current
     end
