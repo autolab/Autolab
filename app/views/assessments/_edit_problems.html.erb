@@ -24,6 +24,8 @@
                 url: dataUrl,
                 type: 'PATCH',
                 data: {problem: {starred: starred_bool}}
+            }).fail(function() {
+                alert('Failed to update the starred status. Please try again.');
             });
         }
     </script>
