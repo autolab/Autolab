@@ -72,7 +72,7 @@ class AssessmentUserDatum < ApplicationRecord
     # see: http://dev.mysql.com/doc/refman/5.0/en/innodb-locking-reads.html
   end
 
-  # Calculate latest unignored submission (i.e. with latest creation date and unignored)
+  # Calculate latest unignored submission (i.e. with latest max version and unignored)
   def latest_submission!
     if (max_version = Submission.where(assessment_id:,
                                        course_user_datum_id:,
