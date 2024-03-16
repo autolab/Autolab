@@ -10,6 +10,12 @@
     <%= text_field_tag :member_email, nil, class: "form-control", autocomplete: "email" %>
     <p class="help-block">The email of your desired partner. They will need to confirm their membership.</p>
   </div>
+  <% if !@assessment.allow_student_assign_group && !@cud.student? %>
+    <p>
+      Students are currently not allowed to create groups.
+      As an instructor, you will not be added to the group and any added members will be automatically confirmed.
+    </p>
+  <% end %>
 
   <%= submit_tag "Create Group", class: "btn btn-primary" %>
 <% end %>
