@@ -390,6 +390,7 @@ ActiveRecord::Schema.define(version: 2024_02_26_194217) do
     t.string "school"
     t.string "major"
     t.string "year"
+    t.boolean "hover_assessment_date", default: false, null: false
     t.index ["confirmation_token"], name: "index_users_on_confirmation_token", unique: true
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
