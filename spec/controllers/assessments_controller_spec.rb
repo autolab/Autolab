@@ -82,8 +82,8 @@ RSpec.describe AssessmentsController, type: :controller do
         get :export,
             params: { course_name: course_hash[:course].name, name: course_hash[:assessment].name }
         expect(response).to have_http_status(200)
-        File.binwrite("tmp/test.tar", response.parsed_body)
-        File.open("tmp/test.tar", encoding: 'ASCII-8BIT') do |file|
+        File.binwrite("tmp/all-fields-filled-2.tar", response.parsed_body)
+        File.open("tmp/all-fields-filled-2.tar", encoding: 'ASCII-8BIT') do |file|
           Gem::Package::TarReader.new(file) do |tar|
             tar.seek("#{course_hash[:assessment].name}/#{course_hash[:assessment].name}.yml") do
               |entry|
@@ -101,7 +101,7 @@ RSpec.describe AssessmentsController, type: :controller do
             end
           end
         end
-        file = Rack::Test::UploadedFile.new("tmp/test.tar")
+        file = Rack::Test::UploadedFile.new("tmp/all-fields-filled-2.tar")
         post :importAsmtFromTar, params: { course_name: course_2_hash[:course].name,
                                            name: course_2_hash[:assessment].name,
                                            tarFile: file }
@@ -112,17 +112,17 @@ RSpec.describe AssessmentsController, type: :controller do
         config_source = File.open(course_2_hash[:assessment].unique_config_file_path,
                                   "r", &:read)
         expect config_source.include? course_2_hash[:assessment].unique_config_module_name
-        FileUtils.rm("tmp/test.tar")
+        FileUtils.rm("tmp/all-fields-filled-2.tar")
         # cleanup assessmentConfig
         FileUtils.rm(course_2_hash[:assessment].unique_config_file_path)
       end
       it "properly dumps imported data" do
-        file = fixture_file_upload("assessments/test.tar")
+        file = fixture_file_upload("assessments/all-fields-filled-2.tar")
         post :importAsmtFromTar, params: { course_name: course_2_hash[:course].name,
                                            tarFile: file }
         expect(response).to have_http_status(302)
         expect(flash[:success]).to be_present
-        File.open(Rails.root.join(file_fixture_path, "assessments", "all-fields-filled.tar"),
+        File.open(Rails.root.join(file_fixture_path, "assessments", "all-fields-filled-2.tar"),
                   encoding: 'ASCII-8BIT') do |exportTarFile|
           Gem::Package::TarReader.new(exportTarFile) do |tar|
             tar.seek("hellotar-2/hellotar-2.yml") do |entry|
