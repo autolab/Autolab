@@ -63,7 +63,7 @@
   <tbody>
     <% for problem in @assessment.problems do %>
       <tr>
-        <td data-url="<%= course_assessment_problem_path(@course, @assessment, problem) %>">
+        <td data-url="<%= course_assessment_problem_path(@course, @assessment, problem, ajax: true) %>">
           <%= link_to "<i class=\"material-icons left star-icon\" data-problem-id=\"#{problem.id}\" data-starred=\"#{problem.starred ? 'yes' : 'no'}\" title=\"Toggle 'starred' status of problem\">#{problem.starred ? 'star' : 'star_border'}</i>".html_safe, "javascript:void(0);", class: "small star-toggle" %>
           <%= problem.name %>
         </td>
