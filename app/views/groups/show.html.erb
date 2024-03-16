@@ -53,7 +53,7 @@
   <% end %>
 </ul>
 
-<% if @group.is_member(@aud) or @cud.instructor %>
+<% if (@group.is_member(@aud) && @assessment.allow_student_assign_group) or @cud.instructor %>
   <% if @group.assessment_user_data.size < @assessment.group_size %>
     <h4>Invite Another Student to Join This Group</h4>
     <%= form_tag add_course_assessment_group_path(@course, @assessment, @group) do %>
@@ -65,7 +65,14 @@
 
       <%= submit_tag "Invite to Group", class: "btn btn-primary" %>
     <% end %>
+  <% else %>
+    <p>No more members can be added as the group is already at the maximum size.</p>
   <% end %>
+<% elsif !@assessment.allow_student_assign_group %>
+  <p>
+    You are not allowed to add members to your group for this assessment.
+    Contact your instructor for group assignment.
+  </p>
 <% end %>
 
 <div style="margin-top: 1em">
