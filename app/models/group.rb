@@ -19,8 +19,11 @@ class Group < ApplicationRecord
     aud.group_id == id || size < group_size
   end
 
-  def no_confirmed_members
-    assessment_user_data.where(membership_status: AssessmentUserDatum::CONFIRMED).empty?
+  # If the only members left in the group are those pending group confirmation,
+  # then the group is as good as empty since only confirmed members can potentially add them
+  def no_future_members
+    assessment_user_data.where(membership_status: [AssessmentUserDatum::GROUP_CONFIRMED,
+                                                   AssessmentUserDatum::CONFIRMED]).empty?
   end
 
 private

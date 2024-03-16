@@ -198,9 +198,9 @@ class GroupsController < ApplicationController
     unless @group.is_member(@assessment.aud_for(@cud.id)) || @cud.instructor
       redirect_to(course_assessment_groups_path(@course, @assessment)) && return
     end
-    unless cud = get_member_cud
-      redirect_to(course_assessment_group_path(@course, @assessment, @group)) && return
-    end
+
+    cud = get_member_cud || @cud
+    flash.delete(:error) # clear the error from get_member_cud
 
     newMemberAUD = @assessment.aud_for cud.id
 
@@ -297,8 +297,15 @@ class GroupsController < ApplicationController
       can_remove &&= leaver.group_id == @group.id
 
       if can_remove
-        flash[:success] = "Successfully removed #{cud.user.full_name} from group."
         leaver.clear_group
+        if @group.no_future_members
+          @group.destroy!
+          flash[:success] = "Successfully removed #{cud.user.full_name} from group and disbanded " \
+                            "group as all remaining members (if any) require group confirmation."
+        else
+          flash[:success] = "Successfully removed #{cud.user.full_name} from group."
+        end
+
       end
     else
       leaver = @assessment.aud_for(@cud.id)
@@ -311,10 +318,11 @@ class GroupsController < ApplicationController
 
       ActiveRecord::Base.transaction do
         leaver.clear_group
-        if @group.no_confirmed_members
+        if @group.no_future_members
           @group.destroy!
           flash[:success] =
-            "Successfully left and disbanded group as there are no other confirmed members."
+            "Successfully left and disbanded group as all remaining members (if any) "\
+              "require group confirmation."
         else
           flash[:success] = "Successfully left group."
         end
