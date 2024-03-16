@@ -139,7 +139,8 @@ class Api::V1::BaseApiController < ActionController::Base
       raise ApiError.new("User is not in this course", :forbidden)
     end
 
-    if @course.disabled? && !@cud.has_auth_level?(:instructor)
+    if (@course.disabled? || (@course.disable_on_end? && DateTime.now > @course.end_date)) &&
+       !@cud.has_auth_level?(:instructor)
       raise ApiError.new("Your course has been disabled by your instructor. "\
         "Please contact them directly if you have any questions", :forbidden)
     end

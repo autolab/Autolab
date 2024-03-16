@@ -1,4 +1,5 @@
-<% @title = if @course.disabled?
+<% @title = if @course.disabled? ||
+               @course.disable_on_end? && DateTime.now > @course.end_date
               "#{@course.full_name} (Course Disabled)"
             else
               @course.full_name

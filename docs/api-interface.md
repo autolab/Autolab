@@ -349,7 +349,7 @@ Example json object
     "student1@andrew.cmu.edu" : {
         "1": {
             "problem1": 100.0,
-            "problem2": 10.0
+            "problem2": 10.0    
         },
         "2": {
             "problem1": 100.0,
