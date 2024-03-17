@@ -1,7 +1,16 @@
 <% @title = "Groups" %>
 
 <h4>Groups</h4>
-<% if @groups.size > 0 then %>
+<% unless @assessment.allow_student_assign_group %>
+  <ul class="collection">
+    <li class="collection-item">
+      Students are not allowed to self-assign groups for this assessment.
+      <br>
+      For convenience, you will not be added to groups that you create and students do not need to confirm their membership.
+    </li>
+  </ul>
+<% end %>
+<% if @groups.size > 0 %>
 
   <table class=prettyBorder>
     <tr>
@@ -65,7 +74,7 @@
 
 <% if @groupAssessments.size > 0 %>
   <h4>Load Groups from Another Assessment</h4>
-  <%= form_tag [:import, @course, @assessment, :groups] do %>
+  <%= form_tag import_course_assessment_groups_path(@course, @assessment) do %>
     <%= select_tag :ass, options_from_collection_for_select(@groupAssessments, :id, :name) %>
     <%= submit_tag 'Import Groups', class: "btn btn-primary" %>
   <% end %>
