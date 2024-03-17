@@ -164,6 +164,10 @@ class Course < ApplicationRecord
     end
   end
 
+  def is_disabled?
+    disabled? or (disable_on_end? && DateTime.now > end_date)
+  end
+
   def current_assessments(now = DateTime.now)
     assessments.where("start_at < :now AND end_at > :now", now:)
   end
