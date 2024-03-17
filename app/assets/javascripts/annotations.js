@@ -65,9 +65,16 @@ function retrieveSharedComments() {
 
 function resizeCodeTable() {
   // Resize code table if announcements are shown
-  if ($(".announcement.gray-box")) {
-    $('.code-table').css("max-height", $(window).height() - $(".announcement.gray-box").height() - 250);
-    $('#annotationPane').css("max-height", $(window).height() - $(".announcement.gray-box").height() - 200);
+  if ($(".announcement.gray-box").length > 0) {
+    // Value determined empirically, so that the values below match those in annotations.scss
+    const baseHeight = $(window).height() - $(".announcement.gray-box").height() - 17;
+    const CODE_TABLE_OFFSET = 260;
+    const DIFF_VIEWER_OFFSET = 235;
+    const SPEEDGRADER_OFFSET = 178;
+    $('.code-table').css("max-height", baseHeight - CODE_TABLE_OFFSET);
+    $('#diff-viewer .d2h-file-side-diff').css("max-height", baseHeight - DIFF_VIEWER_OFFSET);
+    $('#speedgrader').css("max-height", baseHeight - SPEEDGRADER_OFFSET);
+    myLayout.updateSize();
   }
 }
 
@@ -104,8 +111,12 @@ function loadFile(newFile) {
   // Update version buttons
   $('#version-links').replaceWith(newFile.versionLinks);
 
+  // Update diff viewer
+  $('#diff-box').replaceWith(newFile.diffBox);
+
   displayAnnotations();
   attachEvents();
+  drawDiffViewer();
 }
 
 // Returns true if the file was cached, false otherwise
@@ -129,6 +140,7 @@ function purgeCurrentPageCache() {
     symbolTree: `<div id="symbol-tree-container">${$('#symbol-tree-container').html()}</div>`,
     versionLinks: `<span id="version-links">${$('#version-links').html()}</span>`,
     versionDropdown: `<span id="version-dropdown">${$('#version-dropdown').html()}</span>`,
+    diffBox: `<div id="diff-box">${$('#diff-box').html()}</div>`,
     url: window.location.href
   };
 }

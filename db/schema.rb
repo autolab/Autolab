@@ -363,6 +363,7 @@ ActiveRecord::Schema.define(version: 2024_03_16_162826) do
     t.integer "submitted_by_app_id"
     t.string "group_key", default: ""
     t.integer "jobid"
+    t.text "missing_problems"
     t.index ["assessment_id"], name: "index_submissions_on_assessment_id"
     t.index ["course_user_datum_id"], name: "index_submissions_on_course_user_datum_id"
   end
@@ -390,6 +391,7 @@ ActiveRecord::Schema.define(version: 2024_03_16_162826) do
     t.string "school"
     t.string "major"
     t.string "year"
+    t.boolean "hover_assessment_date", default: false, null: false
     t.index ["confirmation_token"], name: "index_users_on_confirmation_token", unique: true
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true

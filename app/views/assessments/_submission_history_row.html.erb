@@ -4,6 +4,8 @@
   <td>
     <% if submission.version == 0 then %>
       <font size=-2>Unofficial</font>
+    <% elsif submission.missing_problems && !submission.missing_problems.empty? %>
+      <div title='Problems "<%= submission.missing_problems %>" found in autograder result, but not defined by assessment. Instructor should add missing problems to assessment and regrade submissions.' style="font-weight: 900; color: red; cursor: help"><%= submission.version %> <i class="material-icons" style="vertical-align: bottom">warning</i></div>
     <% else %>
       <%= submission.version %>
     <% end %>

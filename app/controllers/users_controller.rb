@@ -37,6 +37,8 @@ class UsersController < ApplicationController
       redirect_to(users_path) && return
     end
 
+    @hover_assessment_date = user.hover_assessment_date
+
     if current_user.administrator?
       # if current user is admin, show whatever he requests
       @user = user
@@ -369,6 +371,19 @@ class UsersController < ApplicationController
       redirect_to(root_path)
     else
       flash[:error] = "Password #{@user.errors[:password][0]}"
+    end
+  end
+
+  action_auth_level :update_display_settings, :student
+  def update_display_settings
+    @user = current_user
+    return if params[:user].nil? || params[:user].is_a?(String) || @user.nil?
+
+    if @user.update(hover_assessment_date: params[:user][:hover_assessment_date])
+      flash[:success] = "Successfully updated display settings"
+      (redirect_to user_path(id: @user.id)) && return
+    else
+      flash[:error] = @user.errors[:hover_assessment_date][0].to_s
     end
   end
 

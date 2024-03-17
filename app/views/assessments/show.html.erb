@@ -127,7 +127,7 @@
             <% end %>
             <% if @assessment.has_groups? %>
               <% if @aud.membership_status != AssessmentUserDatum::UNCONFIRMED %>
-                <li><%= link_to "Group options", course_assessment_groups_path(@course, @assessment, @aud.group), title: "Check your group settings." %></li>
+                <li><%= link_to "Group options", course_assessment_group_path(@course, @assessment, @aud.group), title: "Check your group settings." %></li>
               <% else %>
                 <li><%= link_to "Group options", new_course_assessment_group_path(@course, @assessment), title: "Check your group settings." %></li>
               <% end %>
