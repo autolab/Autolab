@@ -246,7 +246,7 @@ class AssessmentUserDatum < ApplicationRecord
     self.version_number
   end
 
-  def clear_group
+  def leave_group
     self.group_id = nil
     self.membership_status = UNCONFIRMED
     save!

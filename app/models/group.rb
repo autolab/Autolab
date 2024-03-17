@@ -21,7 +21,7 @@ class Group < ApplicationRecord
 
   # If the only members left in the group are those pending group confirmation,
   # then the group is as good as empty since only confirmed members can potentially add them
-  def no_future_members
+  def is_effectively_empty
     assessment_user_data.where(membership_status: [AssessmentUserDatum::GROUP_CONFIRMED,
                                                    AssessmentUserDatum::CONFIRMED]).empty?
   end
@@ -29,6 +29,6 @@ class Group < ApplicationRecord
 private
 
   def clear_members
-    assessment_user_data.each(&:clear_group)
+    assessment_user_data.each(&:leave_group)
   end
 end

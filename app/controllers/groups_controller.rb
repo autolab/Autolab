@@ -298,8 +298,8 @@ class GroupsController < ApplicationController
       can_remove &&= leaver.group_id == @group.id
 
       if can_remove
-        leaver.clear_group
-        if @group.no_future_members
+        leaver.leave_group
+        if @group.is_effectively_empty
           @group.destroy!
           flash[:success] = "Successfully removed #{cud.user.full_name} from group and disbanded " \
                             "group as all remaining members (if any) require group confirmation."
@@ -318,8 +318,8 @@ class GroupsController < ApplicationController
       end
 
       ActiveRecord::Base.transaction do
-        leaver.clear_group
-        if @group.no_future_members
+        leaver.leave_group
+        if @group.is_effectively_empty
           @group.destroy!
           flash[:success] =
             "Successfully left and disbanded group as all remaining members (if any) "\
