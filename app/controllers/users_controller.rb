@@ -224,7 +224,7 @@ class UsersController < ApplicationController
     @listing = { current: [], completed: [], upcoming: [] }
 
     courses_for_user.each do |course|
-      next if course.disabled? || @course.disable_on_end? && DateTime.now > @course.end_date
+      next if course.disabled? || course.disable_on_end? && DateTime.now > course.end_date
 
       course_cud = CourseUserDatum.find_cud_for_course(course, @user.id)
       next unless course_cud.has_auth_level?(:course_assistant)
