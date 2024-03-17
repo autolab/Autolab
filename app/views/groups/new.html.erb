@@ -2,16 +2,23 @@
 
 <h4>Create New Group</h4>
 
-<%= render "new_form" %>
+<% if @assessment.allow_student_assign_group || @cud.instructor %>
+  <%= render "new_form" %>
 
-<% if @unfullGroups.size > 0 %>
-  <h4>Join a Group</h4>
+  <% if @unfullGroups.size > 0 %>
+    <h4>Join a Group</h4>
 
-  <ul class="gray-box">
-    <% @unfullGroups.each do |group| %>
-      <%= render "list_item", { group: } %>
-    <% end %>
-  </ul>
+    <ul class="gray-box">
+      <% @unfullGroups.each do |group| %>
+        <%= render "list_item", { group: } %>
+      <% end %>
+    </ul>
+  <% end %>
+<% else %>
+  <p>
+    Sorry, you are not allowed to create or join groups for this assessment.
+    Contact your instructor for group assignment.
+  </p>
 <% end %>
 
 <div style="margin-top: 1em">
