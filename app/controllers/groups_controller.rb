@@ -140,6 +140,7 @@ class GroupsController < ApplicationController
   def destroy
     ActiveRecord::Base.transaction do
       @group.destroy!
+      flash[:success] = "Group was successfully disbanded."
     end
     respond_with(@course, @assessment, @group)
   end
