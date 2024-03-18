@@ -137,7 +137,7 @@ Rails.application.routes.draw do
       end
       resources :problems, except: [:index, :show]
       resource :scoreboard, except: [:new]
-      resources :submissions do
+      resources :submissions, except: [:show] do
         resources :annotations, only: [:create, :update, :destroy] do
           collection do
             get "shared_comments"
