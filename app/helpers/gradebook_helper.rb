@@ -1,12 +1,14 @@
 require "utilities"
 
 module GradebookHelper
+
+
   def gradebook_columns(matrix, course)
     # user info columns
     columns = [
       { id: "number", name: "#", field: "", width: 50 },
       { id: "email", name: "Email", field: "email",
-        sortable: true, width: 200, cssClass: "email",
+        sortable: true, width: 100, cssClass: "email",
         headerCssClass: "email" },
       { id: "first_name", name: "First", field: "first_name",
         sortable: true, width: 100, cssClass: "first_name",
