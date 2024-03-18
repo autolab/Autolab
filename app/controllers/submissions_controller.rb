@@ -232,9 +232,6 @@ class SubmissionsController < ApplicationController
                 disposition: "inline"
 
     elsif params[:annotated]
-      @problems = @assessment.problems.to_a
-      @problems.sort! { |a, b| a.id <=> b.id }
-
       # Only show annotations if grades have been released or the user is an instructor
       @annotations = []
       if @submission.grades_released?(@cud)
@@ -465,8 +462,7 @@ class SubmissionsController < ApplicationController
               Archive.get_files(@filename)
             end
 
-    @problems = @assessment.problems.to_a
-    @problems.sort! { |a, b| a.id <=> b.id }
+    @problems = @assessment.problems.ordered.to_a
 
     # Allow scores to be assessed by the view
     @scores = Score.where(submission_id: @submission.id)
