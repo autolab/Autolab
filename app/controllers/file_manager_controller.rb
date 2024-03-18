@@ -115,7 +115,6 @@ class FileManagerController < ApplicationController
                 filename: File.basename(absolute_path),
                 disposition: 'attachment')
     end
-    flash[:success] = "Download successful"
   end
 
   def upload_file(path)
