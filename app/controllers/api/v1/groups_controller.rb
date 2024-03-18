@@ -5,12 +5,37 @@ class Api::V1::GroupsController < Api::V1::BaseApiController
 
   # endpoint to obtain all groups
   def index
-    groups = @assessment.groups
+    show_members = params[:show_members].to_boolean
+    groups = @assessment.groups(show_members: show_members)
+
+    if show_members
+      groups_json = []
+      groups.each do |group|
+        group_json = get_group_json(group)
+        groups_json << group_json
+      end
+    else
+      groups_json = groups.as_json
+    end
+
     group_size = @assessment.group_size
 
     respond_with({ group_size: group_size,
-                   groups: groups,
+                   groups: groups_json,
                    assessment: @assessment })
+  end
+
+  def show
+    require_params([:id])
+    group = @assessment.groups(show_members: true).find_by(id: params[:id])
+
+    if group.nil?
+      raise ApiError.new("Couldn't find group with id #{params[:id]}", :bad_request)
+    end
+
+    group_json = get_group_json(group)
+
+    respond_with group_json
   end
 
   # create group endpoint
@@ -71,5 +96,19 @@ class Api::V1::GroupsController < Api::V1::BaseApiController
       group.destroy!
     end
     respond_with_hash(message: "Group #{params[:id]} successfully deleted")
+  end
+
+private
+
+  def get_group_json(group)
+    members = []
+    group.assessment_user_data.each do |assessment_user_datum|
+      user_json = assessment_user_datum.course_user_datum.user.as_json
+      user_json[:course_user_datum_id] = assessment_user_datum.course_user_datum_id
+      members << user_json
+    end
+
+    group_json = group.as_json
+    group_json[:members] = members
   end
 end

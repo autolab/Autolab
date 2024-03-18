@@ -50,8 +50,8 @@ class SubmissionsController < ApplicationController
 
     render json: { submissions: submission_info,
                    scores: submission_id_to_score_data,
-                   tweaks: tweaks,
-                   autograded: autograded }, status: :ok
+                   tweaks:,
+                   autograded: }, status: :ok
   rescue StandardError => e
     render json: { error: e.message }, status: :not_found
     nil
@@ -100,7 +100,7 @@ class SubmissionsController < ApplicationController
       @submission.submitted_by_id = @cud.id
       next unless @submission.save! # Now we have a version number!
 
-      if params[:submission]["file"]&.present?
+      if params[:submission]["file"].present?
         @submission.save_file(params[:submission])
       end
     end
@@ -188,23 +188,24 @@ class SubmissionsController < ApplicationController
   # should be okay, but untested
   action_auth_level :downloadAll, :course_assistant
   def downloadAll
-    flash[:error] = "Cannot index submissions for nil assessment" if @assessment.nil?
+    failure_redirect_path = if @cud.course_assistant
+                              course_assessment_path(@course, @assessment)
+                            else
+                              course_assessment_submissions_path(@course, @assessment)
+                            end
 
     unless @assessment.valid?
+      flash[:error] = "The assessment has errors which must be rectified."
       @assessment.errors.full_messages.each do |msg|
         flash[:error] += "<br>#{msg}"
       end
       flash[:html_safe] = true
+      redirect_to failure_redirect_path and return
     end
 
     if @assessment.disable_handins
       flash[:error] = "There are no submissions to download."
-      if @cud.course_assistant
-        redirect_to course_assessment_path(@course, @assessment)
-      else
-        redirect_to course_assessment_submissions_path(@course, @assessment)
-      end
-      return
+      redirect_to failure_redirect_path and return
     end
 
     submissions = if params[:final]
@@ -227,12 +228,7 @@ class SubmissionsController < ApplicationController
 
     if result.nil?
       flash[:error] = "There are no submissions to download."
-      if @cud.course_assistant
-        redirect_to course_assessment_path(@course, @assessment)
-      else
-        redirect_to course_assessment_submissions_path(@course, @assessment)
-      end
-      return
+      redirect_to failure_redirect_path and return
     end
 
     send_data(result.read, # to read from stringIO object returned by create_zip
@@ -270,7 +266,7 @@ class SubmissionsController < ApplicationController
 
       # Only show annotations if grades have been released or the user is an instructor
       @annotations = []
-      if !@assessment.before_grading_deadline? || @cud.instructor || @cud.course_assistant
+      if @submission.grades_released?(@cud)
         @annotations = @submission.annotations.to_a
       end
 
@@ -481,9 +477,6 @@ class SubmissionsController < ApplicationController
       end
     end
 
-    @problemReleased = @submission.scores.pluck(:released).all? &&
-                       !@assessment.before_grading_deadline?
-
     @annotations = @submission.annotations.to_a
     unless @submission.group_key.empty?
       group_submissions = @submission.group_associated_submissions
@@ -494,7 +487,7 @@ class SubmissionsController < ApplicationController
     @annotations.sort! { |a, b| a.line.to_i <=> b.line.to_i }
 
     # Only show annotations if grades have been released or the user is an instructor
-    unless !@assessment.before_grading_deadline? || @cud.instructor || @cud.course_assistant
+    unless @submission.grades_released?(@cud)
       @annotations = []
     end
 
@@ -574,8 +567,8 @@ class SubmissionsController < ApplicationController
       annotations_by_file = annotations_by_file.sort_by{ |a| [a[6], a[2]] }.group_by { |a| a[6] }
 
       @problemAnnotations[problem] = {
-        global_annotations: global_annotations,
-        annotations_by_file: annotations_by_file
+        global_annotations:,
+        annotations_by_file:
       }
     end
 
@@ -629,8 +622,8 @@ class SubmissionsController < ApplicationController
 
         matchedVersions << {
           version: submission.version,
-          header_position: header_position,
-          submission: submission
+          header_position:,
+          submission:
         }
       end
 

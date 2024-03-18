@@ -237,7 +237,7 @@ div.main-header img {
 }
 
 /* Custom Form Styling */
-.input-field,
+.input-field:not(.no-padding-bottom),
 form > div {
   padding-bottom: 1rem !important;
 }
@@ -645,12 +645,13 @@ p.attention {
 }
 ul.moss-list {
   list-style: none;
-  background: $autolab-subtle-gray;
   border-radius: 5px;
 }
 ul.moss-list > li {
   cursor: pointer;
+  background: $autolab-subtle-gray;
   padding: 15px;
+  margin-bottom: 15px;
 }
 ul.moss-list > li > h5 {
   font-weight: bold;
@@ -948,7 +949,12 @@ body.autolab {
   .h3,
   .h4,
   .h5,
-  .h6 {
+  .h6,
+  button,
+  input,
+  optgroup,
+  select,
+  textarea {
     font-family: "Source Sans Pro", sans-serif;
   }
 
@@ -1526,6 +1532,11 @@ table.sub td, th {
 .submission-history-button:hover {
   color: white !important;
 }
+
+.error-header {
+  color: $autolab-red;
+}
+
 
 /* Manage Submissions */
 

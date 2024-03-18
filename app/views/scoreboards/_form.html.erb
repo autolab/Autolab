@@ -1,4 +1,11 @@
 <%= form_for [@course, @assessment, @scoreboard], builder: FormBuilderWithDateTimeInput do |f| %>
+  <% unless @errorMessage.nil? %>
+    <h4 class="error-header">Error Rendering Scoreboard:</h4>
+    <div>
+      <pre style="text-wrap: wrap;"><%= @errorMessage %></pre>
+      <pre><%= @error %></pre>
+    </div>
+  <% end %>
   <%= f.error_messages %>
   <h3>Scoreboard Settings</h3>
   <p>
