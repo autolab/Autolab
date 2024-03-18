@@ -114,6 +114,7 @@
   </script>
 
   <% if not @preview_mode then %>
+    <%= javascript_include_tag "annotations_helpers.js" %>
     <%= javascript_include_tag "annotations.js" %>
   <% end %>
 

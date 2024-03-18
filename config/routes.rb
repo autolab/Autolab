@@ -144,6 +144,7 @@ Rails.application.routes.draw do
           get "destroyConfirm"
           get "download"
           get "view"
+          get "tweak_total"
         end
 
         collection do

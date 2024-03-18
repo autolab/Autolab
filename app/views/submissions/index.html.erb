@@ -4,13 +4,37 @@
   <%= stylesheet_link_tag "datatable.adapter" %>
   <%= stylesheet_link_tag "datatables-rows" %>
   <%= stylesheet_link_tag "manage_submissions" %>
+  <%= stylesheet_link_tag "annotations" %>
+  <%= external_stylesheet_link_tag "jquery-ui" %>
 <% end %>
+
+<script>
+/**
+ * initialization of global variables used across manage_submissions.js,
+ * annotations_helpers.js, annotations.js, and annotations_popup.js
+ */
+let basePath = "";
+
+// a json list of scores for this assessment
+var scores = [];
+
+// a json list of problems for this assessment
+let problems = <%= raw @problems.to_json %>;
+let localCache = {};
+var cudEmailStr = "<%= @cud.email %>";
+var fileNameStr = null;
+var currentHeaderPos = null;
+</script>
 
 <% content_for :javascripts do %>
   <%= external_javascript_include_tag "lodash" %>
   <%= javascript_include_tag "sorttable" %>
+  <%= external_javascript_include_tag "jquery-ui" %>
   <%= external_javascript_include_tag "jquery.dataTables" %>
   <%= external_javascript_include_tag "datatables-buttons" %>
+  <%= javascript_include_tag "autolab_component" %>
+  <%= javascript_include_tag "annotations_helpers" %>
+  <%= javascript_include_tag "annotations_popup" %>
   <%= javascript_include_tag "manage_submissions" %>
   <%= javascript_include_tag "datatables-rows" %>
 <% end %>
@@ -191,4 +215,12 @@
     <hr>
     <div id="score-details-content"></div>
   </div>
+</div>
+
+<div id="annotation-modal" class="modal">
+  <div class="modal-header">
+    <a href="#!" class="modal-close btn-flat"><i class="material-icons">close</i>
+    </a>
+  </div>
+  <%= render "annotation_popup" %>
 </div>

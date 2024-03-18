@@ -1,3 +1,17 @@
+var submission_info = {}
+let tweaks = [];
+const EditTweakButton = (totalSum) => {
+  if (totalSum == null) {
+    return `
+      <span>-</span>
+      <i class="material-icons submissions-tweak-button">edit</i>
+    `
+  }
+  return `
+    <div class="submissions-tweak-points">${totalSum < 0 ? "" : "+"}${totalSum} points</div>
+  `
+}
+
 const manage_submissions_endpoints = {
   'score_details': 'submissions/score_details',
 }
@@ -18,8 +32,34 @@ function get_score_details(course_user_datum_id) {
   });
 }
 
-$(document).ready(function () {
+const selectSubmission = (data) => {
+  submission_info = data
+  basePath = data?.base_path;
+  sharedCommentsPath = `${basePath}/shared_comments`;
+  createPath = basePath + ".json";
+  updatePath = function (ann) {
+    return [basePath, "/", ann.id, ".json"].join("");
+  };
+  scores = data?.scores;
+  deletePath = updatePath;
+}
 
+const selectTweak = submissions => {
+  const submissionsById = Object.fromEntries(submissions.map(sub => [sub.id, sub]))
+
+  return function () {
+      $('#annotation-modal').modal('open');
+      const $student = $(this);
+      const submission = $student.data('submissionid');
+      selectSubmission(submissionsById[submission]);
+      retrieveSharedComments(() => {
+        const newForm = newAnnotationFormCode();
+        $('#active-annotation-form').html(newForm);
+      });
+  }
+}
+
+$(document).ready(function () {
   $('.modal').modal();
 
   $('.score-details').on('click', function () {
@@ -44,10 +84,9 @@ $(document).ready(function () {
 
     // Fetch data and render it in the modal 
     get_score_details(course_user_datum_id).then((data) => {
-
       const problem_headers = data.submissions[0].problems.map((problem) => {
         const max_score = problem.max_score;
-        const autograded = problem.grader_id < 0 ? " (Autograded)" : "";
+        const autograded = problem.grader_id == null || problem.grader_id < 0 ? " (Autograded)" : "";
         return `<th class="submission-th">
                   ${problem.name}
                   <br>
@@ -55,8 +94,15 @@ $(document).ready(function () {
                 </th>`;
       }).join('');
 
+      tweaks = [];
+
       const submissions_body = data.submissions.map((submission) => {
-        
+        const Tweak = new AutolabComponent(`tweak-value-${submission.id}`, { amount: null });
+        Tweak.template = function () {
+          return EditTweakButton( this.state.amount );
+        }
+        tweaks.push({tweak: Tweak, submission_id: submission.id, submission});
+
         let tweak_value = data?.tweaks[submission.id]?.value ?? "None";
         if (tweak_value != "None" && tweak_value > 0) {
           tweak_value = `+${tweak_value}`;
@@ -95,7 +141,6 @@ $(document).ready(function () {
                     </a>
                     <p>Download</p>
                   </div>`;
-
         return `
             <tr id="row-${submission.id}" class="submission-row">
               <td class="submissions-td">
@@ -109,15 +154,14 @@ $(document).ready(function () {
               </td>
               ${submission.problems.
               map((problem) =>
-                `<td class="submissions-td">${data.scores[submission.id][problem.id]?.['score']}</td>`
+                `<td class="submissions-td">${data.scores[submission.id]?.[problem.id]?.['score'] ?? "-"}</td>`
               ).join('')}
               <td class="submissions-td">
                 ${submission.late_penalty}
               </td>
               <td class="submissions-td">
-                <a href="submissions/${submission.id}/edit">
-                  ${tweak_value}
-                </a>
+                <div class="tweak-button" data-submissionid="${submission.id}" id="tweak-value-${submission.id}">
+                </div>
               </td>
               <td class="submissions-td">
                 ${view_button}
@@ -147,12 +191,18 @@ $(document).ready(function () {
         `;
 
       $('#score-details-content').html(`<div> ${submissions_table} </div>`);
+
+      updateEditTweakButtons();
       $('#score-details-table').DataTable({
         "order": [[0, "desc"]],
         "paging": false,
         "info": false,
         "searching": false,});
 
+      return data.submissions;
+
+    }).then((submissions) => {
+      $('.tweak-button').on('click', selectTweak(submissions));
     }).catch((err) => {
       $('#score-details-content').html(`
         <div class="row">

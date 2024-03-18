@@ -7,7 +7,8 @@ require "tempfile"
 class SubmissionsController < ApplicationController
   # inherited from ApplicationController
   before_action :set_assessment
-  before_action :set_submission, only: %i[destroy destroyConfirm download edit update view]
+  before_action :set_submission,
+                only: %i[destroy destroyConfirm download edit update view tweak_total]
   before_action :get_submission_file, only: %i[download view]
 
   # this page loads.  links/functionality may be/are off
@@ -16,6 +17,7 @@ class SubmissionsController < ApplicationController
     @submissions = @assessment.submissions.includes({ course_user_datum: :user })
                               .order("created_at DESC")
     @autograded = @assessment.has_autograder?
+    @problems = @assessment.problems.to_a
   end
 
   action_auth_level :score_details, :instructor
@@ -34,17 +36,22 @@ class SubmissionsController < ApplicationController
     end
 
     tweaks = {}
-    submissions.each do |submission|
+    submission_info = submissions.as_json
+    submissions.each_with_index do |submission, index|
       tweaks[submission.id] = submission.tweak
+      submission_info[index]["base_path"] =
+        course_assessment_submission_annotations_path(@course, @assessment, submission)
+      submission_info[index]["scores"] = Score.where(submission_id: submission.id)
+      submission_info[index]["tweak_total"] =
+        submission.global_annotations.empty? ? nil : submission.global_annotations.sum(:value)
     end
 
     autograded = @assessment.has_autograder?
-    submissions = submissions.as_json(seen_by: @cud)
 
-    render json: { submissions: submissions,
+    render json: { submissions: submission_info,
                    scores: submission_id_to_score_data,
-                   tweaks: tweaks,
-                   autograded: autograded }, status: :ok
+                   tweaks:,
+                   autograded: }, status: :ok
   rescue StandardError => e
     render json: { error: e.message }, status: :not_found
     nil
@@ -228,6 +235,13 @@ class SubmissionsController < ApplicationController
               type: "application/zip",
               disposition: "attachment", # tell browser to download
               filename: "#{@course.name}_#{@course.semester}_#{@assessment.name}_submissions.zip")
+  end
+
+  action_auth_level :submission_info, :instructor
+  def tweak_total
+    tweak =
+      @submission.global_annotations.empty? ? nil : @submission.global_annotations.sum(:value)
+    render json: tweak
   end
 
   # Action to be taken when the user wants do download a submission but

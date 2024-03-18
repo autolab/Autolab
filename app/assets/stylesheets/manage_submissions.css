@@ -16,3 +16,13 @@
 .submissions-td {
     padding-left: 0.6rem !important;
 }
+
+.tweak-button:hover {
+  cursor: pointer;
+}
+
+.tweak-button {
+  display: flex;
+  align-content: center;
+}
+
