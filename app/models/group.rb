@@ -5,12 +5,6 @@ class Group < ApplicationRecord
 
   delegate :size, to: :assessment_user_data
 
-  # User requested to join group but has not been confirmed by the group
-  def is_pending_member(aud)
-    aud.group_id == id && aud.group_confirmed(AssessmentUserDatum::MEMBER_CONFIRMED) &&
-      !aud.group_confirmed(AssessmentUserDatum::CONFIRMED)
-  end
-
   def is_member(aud)
     aud.group_id == id && aud.group_confirmed(AssessmentUserDatum::CONFIRMED)
   end

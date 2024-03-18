@@ -4,8 +4,12 @@
 <% if @aud.group_id == @group.id %>
   <% if (@aud.membership_status & AssessmentUserDatum::MEMBER_CONFIRMED) == 0 %>
     <p>You have not confirmed your group membership yet.</p>
-    <%= link_to "Confirm Membership", join_course_assessment_group_path(@course, @assessment, @group), method: :post %> |
-    <%= link_to "Deny Membership", leave_course_assessment_group_path(@course, @assessment, @group), method: :post %>
+    <% if @assessment.allow_student_assign_group || @cud.instructor %>
+      <%= link_to "Confirm Membership", join_course_assessment_group_path(@course, @assessment, @group), method: :post %> |
+      <%= link_to "Deny Membership", leave_course_assessment_group_path(@course, @assessment, @group), method: :post %>
+    <% else %>
+      <p>Contact your instructor to confirm your group membership.</p>
+    <% end %>
   <% elsif (@aud.membership_status & AssessmentUserDatum::GROUP_CONFIRMED) == 0 %>
     <p>Your group has not confirmed your membership yet.</p>
   <% end %>
@@ -23,7 +27,7 @@
       <strong><%= "#{cud.full_name} (#{cud.email})" %></strong>
       <% if !aud.group_confirmed(AssessmentUserDatum::MEMBER_CONFIRMED) %>
         <p>This member has not confirmed their membership yet.</p>
-        <% if @group.is_member(@aud) or @cud.instructor %>
+        <% if user_can_edit_group? %>
           <p>
             <%= link_to "Cancel Request",
                         leave_course_assessment_group_path(@course, @assessment, @group, member_id: cud.id),
@@ -32,7 +36,7 @@
         <% end %>
       <% elsif !aud.group_confirmed(AssessmentUserDatum::GROUP_CONFIRMED) %>
         <p>This member has not been confirmed by the group yet.</p>
-        <% if @group.is_member(@aud) or @cud.instructor %>
+        <% if user_can_edit_group? %>
           <p>
             <%= link_to "Confirm Membership",
                         add_course_assessment_group_path(@course, @assessment, @group, member_id: cud.id),
@@ -53,7 +57,7 @@
   <% end %>
 </ul>
 
-<% if (@group.is_member(@aud) && @assessment.allow_student_assign_group) || @cud.instructor %>
+<% if user_can_edit_group? %>
   <% if @group.assessment_user_data.size < @assessment.group_size %>
     <h4>Invite Another Student to Join This Group</h4>
     <%= form_tag add_course_assessment_group_path(@course, @assessment, @group) do %>
@@ -73,17 +77,18 @@
   <% else %>
     <p>No more members can be added as the group is already at the maximum size.</p>
   <% end %>
-
-  <div style="margin-top: 1em">
-    <% if @group.is_member(@aud) || @group.is_pending_member(@aud) %>
-      <%= link_to "Leave Group", leave_course_assessment_group_path(@course, @assessment, @group),
-                  { method: :post, data: { confirm: "Are you sure you want to leave your group?" } } %> |
-    <% end %>
-    <%= groups_back_link %>
-  </div>
-<% elsif !@assessment.allow_student_assign_group %>
+<% elsif @group.is_member(@aud) && !@assessment.allow_student_assign_group %>
   <p>
     You are not allowed to add members to your group for this assessment.
     Contact your instructor for group assignment.
   </p>
 <% end %>
+<%# else: student assignment is allowed, but user is not a member of the group yet. We don't have to display anything %>
+
+<div style="margin-top: 1em">
+  <% if aud.group_id == id && (@assessment.allow_student_assign_group || @cud.instructor) %>
+    <%= link_to "Leave Group", leave_course_assessment_group_path(@course, @assessment, @group),
+                { method: :post, data: { confirm: "Are you sure you want to leave your group?" } } %> |
+  <% end %>
+  <%= groups_back_link %>
+</div>
