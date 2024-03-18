@@ -1,6 +1,6 @@
 <% content_for :javascripts do %>
     <script type="text/javascript">
-        let is_positive_grading = <%= @is_positive_grading %>;
+        const is_positive_grading = <%= @is_positive_grading %>;
         const has_annotations = <%= @has_annotations %>;
 
         $(document).ready(function() {
@@ -40,9 +40,9 @@
   </label>
 </div>
 <label for="switch">
-  Negative Grading is where you grade by deducting from the max score. Positive Grading is where you grade by adding to 0.<br>
+  Negative Grading is where you grade by deducting from the max score. Positive Grading is where you grade by adding to 0.
 </label>
-
+<br>
 <label>
   Starred status immediately updated upon toggling.
 </label>
