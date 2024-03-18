@@ -1,29 +1,33 @@
 function rename(path) {
     let new_name = prompt("Enter the new name:");
-    let rel_path = path.split("/file_manager/")[1].replace(/%40/g, '@');
-    $.ajax({
-        url: "/file_manager/" + rel_path,
-        type: "PUT",
-        data: { new_name: new_name, relative_path: rel_path},
-        success: function(data) {
-            console.log(`Renamed: ${rel_path}`)
-            location.reload();
-        }
-    });
+    if (new_name !== null) {
+        let rel_path = path.split("/file_manager/")[1].replace(/%40/g, '@');
+        $.ajax({
+            url: "/file_manager/" + rel_path,
+            type: "PUT",
+            data: { new_name: new_name, relative_path: rel_path},
+            success: function(data) {
+                console.log(`Renamed: ${rel_path}`)
+                location.reload();
+            }
+        });
+    }
 }
 
 function deleteSelected(path) {
-    $.ajax({
-        url: path,
-        type: "DELETE",
-        success: function () {
-            console.log(`Deleted: ${path}`);
-            location.reload();
-        },
-        error: function (xhr, status, error) {
-            console.error(`Failed to delete ${path}: ${error}`);
-        }
-    });
+    if (path !== null && path !== "") {
+        $.ajax({
+            url: path,
+            type: "DELETE",
+            success: function () {
+                console.log(`Deleted: ${path}`);
+                location.reload();
+            },
+            error: function (xhr, status, error) {
+                console.error(`Failed to delete ${path}: ${error}`);
+            }
+        });
+    }
 }
 
 function downloadSelected(path) {
@@ -91,7 +95,7 @@ function uploadAllFiles(path) {
 }
 
 function getSelectedItems() {
-    let selectedItems = $("input[type='checkbox']:checked");
+    let selectedItems = $("input[type='checkbox'][class='check']:checked");
     let paths = [];
     selectedItems.each(function(index, element) {
         paths.push(jQuery(element).prop('value'));
@@ -101,7 +105,7 @@ function getSelectedItems() {
 
 function createFolder(path) {
     let name = prompt("Name of folder: ");
-    if (name !== "") {
+    if (name !== "" && name !== null) {
         uploadFile("", path, name);
     }
 }
@@ -121,6 +125,12 @@ function handleDeleteSelected() {
         paths.forEach(path => {
             deleteSelected(path);
         });
+    }
+}
+
+function selectDeleteSelected(path) {
+    if (path !== null && path !== "" && confirm ("Delete selected file")) {
+        deleteSelected(path)
     }
 }
 

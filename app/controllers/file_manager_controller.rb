@@ -59,7 +59,7 @@ class FileManagerController < ApplicationController
       else
         dir_name = File.dirname(params[:relative_path])
 
-        if params[:new_name].empty?
+        if params[:new_name].empty? || params[:name].nil?
           raise ArgumentError, "New name not provided,
         new name cannot be blank"
         end
@@ -128,7 +128,7 @@ class FileManagerController < ApplicationController
     else
       raise ActionController::ForbiddenError unless File.directory?(absolute_path)
 
-      if check_instructor(absolute_path)
+      if check_instructor(absolute_path) && !params[:name].nil?
         if params[:name] != ""
           # Creating a folder
           dir = "#{absolute_path}/#{params[:name]}"

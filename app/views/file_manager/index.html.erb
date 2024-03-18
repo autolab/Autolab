@@ -1,3 +1,5 @@
+<% @title = "File Manager" %>
+
 <% content_for :javascripts do %>
   <%= javascript_include_tag "file_manager.js" %>
 <% end %>
@@ -78,7 +80,7 @@
           </td>
           <td>
             <% if entry[:entry] != './' && entry[:entry] != '../' %>
-              <%= link_to "#", id: "delete-file", data: { confirm: "Are you sure you want to delete `#{entry[:absolute]}`?" }, onclick: "deleteSelected('#{entry[:relative]}')" do %>
+              <%= link_to "#", id: "delete-file", onclick: "selectDeleteSelected('#{entry[:relative]}')" do %>
                 <i class='material-icons left align-middle'>delete</i>
                 Delete
               <% end %>
