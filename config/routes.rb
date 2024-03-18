@@ -82,6 +82,7 @@ Rails.application.routes.draw do
     get "github_oauth_callback", on: :collection
     match "update_password_for_user", on: :member, via: [:get, :put]
     post "change_password_for_user", on: :member
+    patch "update_display_settings", on: :member
   end
 
   resources :courses, param: :name do
@@ -136,7 +137,7 @@ Rails.application.routes.draw do
       end
       resources :problems, except: [:index, :show]
       resource :scoreboard, except: [:new]
-      resources :submissions do
+      resources :submissions, except: [:show] do
         resources :annotations, only: [:create, :update, :destroy] do
           collection do
             get "shared_comments"
