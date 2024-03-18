@@ -72,7 +72,7 @@ class AssessmentUserDatum < ApplicationRecord
     # see: http://dev.mysql.com/doc/refman/5.0/en/innodb-locking-reads.html
   end
 
-  # Calculate latest unignored submission (i.e. with max version and unignored)
+  # Calculate latest unignored submission (i.e. with latest max version and unignored)
   def latest_submission!
     if (max_version = Submission.where(assessment_id:,
                                        course_user_datum_id:,
@@ -241,6 +241,21 @@ class AssessmentUserDatum < ApplicationRecord
       else
         self.version_number += 1
       end
+      save!
+    end
+    self.version_number
+  end
+
+  def delete_version_number
+    with_lock do
+      max_version = Submission.where(assessment_id:,
+                                     course_user_datum_id:,
+                                     ignored: false).maximum(:version)
+      self.version_number = if max_version.nil?
+                              0
+                            else
+                              max_version
+                            end
       save!
     end
     self.version_number

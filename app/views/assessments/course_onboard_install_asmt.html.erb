@@ -1,0 +1,15 @@
+<%# to be used during course import onboarding %>
+
+<% @title = "Create New Course" %>
+
+<h3> Import Assessments </h3>
+
+<% if @unused_config_files.empty? %>
+  <p>
+    There are no uninstalled assessments available for importing.
+  </p>
+<% else %>
+  <h4> The following assessments were detected successfully. Please select the assessments you would like to install: </h4>
+  <%= render "install_assessment_table", asmt_names: @unused_config_files, course: @course %>
+  <%= link_to "Continue Course Creation", edit_course_path(@course), class: "btn secondary" %>
+<% end %>

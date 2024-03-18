@@ -1,5 +1,7 @@
-<h2>Edit <%= @submission.course_user_datum.email %>'s Submission
-#<%= @submission.version %> for <%= link_to @assessment.display_name, course_assessment_path(@submission.course_user_datum.course, @assessment) %></h2>
+<% @title = "Edit Submission" %>
+
+<h4>Edit <%= @submission.course_user_datum.email %>'s Submission
+#<%= @submission.version %> for <%= link_to @assessment.display_name, course_assessment_path(@submission.course_user_datum.course, @assessment) %></h4>
 
 <%= form_for @submission, url: [@submission.course_user_datum.course, @assessment, @submission],
                           builder: FormBuilderWithDateTimeInput,

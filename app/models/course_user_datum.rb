@@ -31,7 +31,7 @@ class CourseUserDatum < ApplicationRecord
   accepts_nested_attributes_for :tweak, allow_destroy: true
   accepts_nested_attributes_for :user, allow_destroy: false
   validate :valid_nickname?
-  validate :instructor_or_ca_or_dropped
+  validate :instructor_or_ca_not_dropped
   after_create :create_AUDs_modulo_callbacks
 
   def self.conditions_by_like(value, *columns)
@@ -75,13 +75,11 @@ class CourseUserDatum < ApplicationRecord
     errors.add("nickname", "can only contain ASCII characters")
   end
 
-  # User can be at most one of the following: instructor, course assistant, or dropped (student)
-  def instructor_or_ca_or_dropped
-    status_count = [instructor?, course_assistant?, dropped?].count(true)
+  # User can't be dropped if they are an instructor or course assistant
+  def instructor_or_ca_not_dropped
+    return unless dropped? && (instructor? || course_assistant?)
 
-    return if status_count <= 1
-
-    errors.add(:base, "User can be at most one of instructor, course assistant, or dropped")
+    errors.add(:base, "User can't be dropped if they are an instructor or course assistant")
   end
 
   ##
