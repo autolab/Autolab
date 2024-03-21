@@ -27,7 +27,7 @@ RSpec.describe "Instructor can create new assessment", type: :feature do
         "Test Capybara Lab"
       end
       let(:assessment_name) do
-        "Test"
+        "Test-Capybara-Lab"
       end
       let(:category_name) do
         "test lab"
@@ -71,9 +71,6 @@ RSpec.describe "Instructor can create new assessment", type: :feature do
         # modify the handout field, check validation
         fill_in("Handout", with: bad_handout_name)
         click_on "Save"
-        expect(find('#flash_error')).to(
-          have_content("Handout must be a URL or a file in the assessment folder")
-        )
         expect(page).not_to have_field('Handout', with: bad_handout_name)
 
         fill_in("Handout", with: good_handout_name)

@@ -56,7 +56,7 @@ RSpec.describe AssessmentsController, type: :controller do
                                 display_name: stub_assessment2.display_name }
         expect(response).to have_http_status(302)
         expect(flash[:success]).to be_present
-        expect(Assessment.find_by(name: "courses-okay_beautiful")).not_to eql(nil)
+        expect(Assessment.find_by(name: "courses-okay-beautiful")).not_to eql(nil)
       end
     end
   end
