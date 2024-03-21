@@ -341,8 +341,18 @@ class AssessmentsController < ApplicationController
       # first regex - try to sanitize input, allow special characters in display name but not name
       # if the sanitized doesn't match the required identifier structure, then we reject
       begin
-        # Attempt name generation, try to match to a substring that is valid within the display name
-        match = @assessment.display_name.match(Assessment::VALID_NAME_SANITIZER_REGEX)
+        # Attempt name generation, try to match to a substring that is valid within the
+        # display name.
+        # UB Update Feb 13, 2024: Automatically replace invalid unique name characters with dashes
+        # instead of only taking the characters up to the first invalid character.
+        display_name_dashed = @assessment.display_name.gsub(/[^a-zA-Z0-9-]/, "-")
+        while display_name_dashed.include?("--")
+          # Remove double dashes
+          display_name_dashed = display_name_dashed.gsub("--", "-")
+        end
+        display_name_dashed = display_name_dashed.delete_prefix("-")
+        display_name_dashed = display_name_dashed.delete_suffix("-")
+        match = display_name_dashed.match(Assessment::VALID_NAME_SANITIZER_REGEX)
         unless match.nil?
           sanitized_display_name = match.captures[0]
         end
