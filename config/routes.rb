@@ -82,6 +82,7 @@ Rails.application.routes.draw do
     get "github_oauth_callback", on: :collection
     match "update_password_for_user", on: :member, via: [:get, :put]
     post "change_password_for_user", on: :member
+    patch "update_display_settings", on: :member
   end
 
   resources :courses, param: :name do
@@ -135,10 +136,8 @@ Rails.application.routes.draw do
         post "import", on: :collection
       end
       resources :problems, except: [:index, :show]
-      resource :scoreboard, except: [:new] do
-        get "help", on: :member
-      end
-      resources :submissions do
+      resource :scoreboard, except: [:new]
+      resources :submissions, except: [:show] do
         resources :annotations, only: [:create, :update, :destroy] do
           collection do
             get "shared_comments"
@@ -151,6 +150,8 @@ Rails.application.routes.draw do
           get "destroyConfirm"
           get "download"
           get "view"
+          post "release_student_grade"
+          post "unrelease_student_grade"
         end
 
         collection do
@@ -185,11 +186,6 @@ Rails.application.routes.draw do
         post "regradeBatch"
         post "regradeAll"
 
-        # SVN actions
-        get "admin_svn"
-        post "import_svn"
-        post "set_repo"
-
         # gradesheet ajax actions
         post "quickSetScore"
         post "quickSetScoreDetails"
@@ -204,8 +200,10 @@ Rails.application.routes.draw do
 
       collection do
         get "install_assessment"
-        post "importAssessment"
-        post "importAsmtFromTar"
+        get "course_onboard_install_asmt"
+        post "import_assessment"
+        post "import_assessments"
+        post "import_asmt_from_tar"
       end
     end
 
@@ -244,6 +242,10 @@ Rails.application.routes.draw do
       post "add_users_from_emails"
       get "user_lookup"
       get "users"
+    end
+
+    collection do
+      post "create_from_tar"
     end
   end
 

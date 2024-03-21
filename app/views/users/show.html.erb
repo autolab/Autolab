@@ -89,4 +89,19 @@
       Managed Authorized Clients
     </span>
   <% end %>
+  <h4>Display Settings</h4>
+  <%= form_for @user, url: update_display_settings_user_path(@user) do |f| %>
+    <ul class="gray-box">
+      <li>
+        Hover to show assessment dates on course page
+        <div class="switch" style="float: right;">
+          <label>
+            <%= f.check_box :hover_assessment_date, default: false %>
+            <span class="lever" style="vertical-align: center; margin-bottom:0.5rem;"></span>
+          </label>
+        </div><br>
+      </li>
+    </ul>
+    <%= f.submit 'Save', { class: "btn primary" } %>
+  <% end %>
 <% end %>

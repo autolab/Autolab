@@ -340,19 +340,8 @@ class Course < ApplicationRecord
           assessments.each do |assessment|
             asmt_dir = assessment.name
             assessment.dump_yaml
-            Dir[File.join(base_path, asmt_dir, "**")].each do |file|
-              mode = File.stat(file).mode
-              relative_path = File.join(course_dir, file.sub(%r{^#{Regexp.escape base_path}/?}, ""))
-
-              if File.directory?(file)
-                tar.mkdir relative_path, mode
-              elsif !relative_path.starts_with? File.join(asmt_dir,
-                                                          assessment.handin_directory)
-                tar.add_file relative_path, mode do |tar_file|
-                  File.open(file, "rb") { |f| tar_file.write f.read }
-                end
-              end
-            end
+            filter = [assessment.handin_directory_path]
+            assessment.load_dir_to_tar(base_path, asmt_dir, tar, filter, course_dir)
           end
         end
       end

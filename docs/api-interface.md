@@ -288,11 +288,12 @@ Endpoint `GET /courses/{course_name}/assessments/{assessment_name}/problems`
 A list of problems. Each problem contains:
 
 | key         | type    | description                              |
-| ----------- | ------- | ---------------------------------------- |
+|-------------| ------- |------------------------------------------|
 | name        | string  | Full name of the problem.                |
 | description | string  | Brief description of the problem.        |
 | max_score   | float   | Maximum possible score for this problem. |
 | optional    | boolean | Is this problem optional?                |
+| starred     | boolean | Is this problem starred?                 |
 
 ---
 
