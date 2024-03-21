@@ -61,7 +61,7 @@ class FileManagerController < ApplicationController
       else
         dir_name = File.dirname(params[:relative_path])
 
-        if params[:new_name].empty? || params[:name].nil?
+        if params[:new_name].empty? || params[:new_name].nil?
           raise ArgumentError, "New name not provided"
         end
 

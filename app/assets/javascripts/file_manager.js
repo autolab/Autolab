@@ -1,7 +1,7 @@
 function rename(path) {
     let new_name = prompt("Enter the new name:");
     if (new_name !== null) {
-        let rel_path = path.split("/file_manager/")[1].replace(/%40/g, '@');
+        let rel_path = decodeURIComponent(path.split("/file_manager/")[1]);
         $.ajax({
             url: "/file_manager/" + rel_path,
             type: "PUT",
