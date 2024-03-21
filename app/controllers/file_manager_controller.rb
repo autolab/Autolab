@@ -62,8 +62,7 @@ class FileManagerController < ApplicationController
         dir_name = File.dirname(params[:relative_path])
 
         if params[:new_name].empty? || params[:name].nil?
-          raise ArgumentError, "New name not provided,
-        new name cannot be blank"
+          raise ArgumentError, "New name not provided"
         end
 
         unless params[:new_name].match(/^[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)?$/)
@@ -117,7 +116,6 @@ class FileManagerController < ApplicationController
                 filename: File.basename(absolute_path),
                 disposition: 'attachment')
     end
-    flash[:success] = "Download successful"
   end
 
   def upload_file(path)
