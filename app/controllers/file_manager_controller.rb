@@ -54,7 +54,9 @@ class FileManagerController < ApplicationController
   def rename
     absolute_path = check_path_exist(params[:relative_path])
     if check_instructor(absolute_path)
-      if absolute_path.equal?(BASE_DIRECTORY)
+      current_path = Pathname.new(absolute_path)
+      parent = current_path.parent
+      if parent == BASE_DIRECTORY
         flash[:error] = "Unable to rename courses in the root directory."
       else
         dir_name = File.dirname(params[:relative_path])
@@ -120,7 +122,7 @@ class FileManagerController < ApplicationController
 
   def upload_file(path)
     absolute_path = check_path_exist(path)
-    if absolute_path.equal?(BASE_DIRECTORY)
+    if absolute_path == BASE_DIRECTORY
       flash[:error] = "You cannot upload files/create folders in the root directory " \
          "#{view_context.link_to 'here', new_course_url, method: 'get'}" \
          " if you want to create a new course."
