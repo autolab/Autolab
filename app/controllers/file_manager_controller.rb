@@ -122,26 +122,32 @@ class FileManagerController < ApplicationController
     absolute_path = check_path_exist(path)
     if absolute_path == BASE_DIRECTORY
       flash[:error] = "You cannot upload files/create folders in the root directory " \
-         "#{view_context.link_to 'here', new_course_url, method: 'get'}" \
-         " if you want to create a new course."
+        "#{view_context.link_to 'here', new_course_url, method: 'get'}" \
+        " if you want to create a new course."
       flash[:html_safe] = true
     else
       raise ActionController::ForbiddenError unless File.directory?(absolute_path)
 
       if check_instructor(absolute_path) && !params[:name].nil?
+        all_filenames = Dir.entries(absolute_path)
         if params[:name] != ""
-          # Creating a folder
-          dir = "#{absolute_path}/#{params[:name]}"
-          FileUtils.mkdir_p(dir) unless File.directory?(dir)
-          flash[:success] = "Successfully created folder"
+          if all_filenames.include?(params[:name].to_s)
+            flash[:error] = "File/folder with name #{params[:name]} already exists"
+          else
+            # Creating a folder
+            dir = "#{absolute_path}/#{params[:name]}"
+            FileUtils.mkdir_p(dir)
+            flash[:success] = "Successfully created folder"
+          end
         else
           # Uploading a file
           input_file = params[:file]
-          return unless input_file
 
-          all_filenames = Dir.entries(absolute_path)
+          return unless input_file
           if all_filenames.include?(input_file.original_filename)
             flash[:error] = "File with name #{input_file.original_filename} already exists"
+          elsif input_file.size >= 1.gigabyte
+            flash[:error] = "File size is too large. Upload a file that is smaller than 1 GB."
           else
             File.open(Rails.root.join(absolute_path, input_file.original_filename), 'wb') do |file|
               file.write(input_file.read)
@@ -186,10 +192,10 @@ class FileManagerController < ApplicationController
                end),
         type: (is_file ? :file : :directory),
         date: begin
-          stat.mtime.strftime('%d %b %Y %H:%M')
-        rescue StandardError
-          '-'
-        end,
+                stat.mtime.strftime('%d %b %Y %H:%M')
+              rescue StandardError
+                '-'
+              end,
         relative: my_escape("/file_manager/#{current_url}#{file}").gsub('%2F', '/'),
         entry: "#{file}#{is_file ? '' : '/'}",
         absolute: abs_path_str,
