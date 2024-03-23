@@ -436,46 +436,6 @@ class AssessmentsController < ApplicationController
     redirect_to([@course, @assessment]) && return
   end
 
-  def assessmentInitialize(assignName)
-    @assessment = @course.assessments.find_by(name: assignName)
-    raise "Assessment #{assignName} does not exist!" unless @assessment
-
-    if @assessment.nil?
-      flash[:error] = "Error: Invalid assessment"
-      redirect_to([@course, :assessments]) && return
-    end
-
-    @name = @assessment.name
-    @description = @assessment.description
-    @start_at = @assessment.start_at
-    @due_at = @assessment.due_at
-    @end_at = @assessment.end_at
-    @id = @assessment.id
-  end
-
-  # installProblems - If there are no problems defined yet for this
-  # assessment, then create them using the list defined by the #
-  # assessmentInitialize() function in the user's assessment.rb
-  # file.
-  #
-  # Note: this is only here for backward compatibility. In the
-  # current system, problems definitions are imported from the
-  # assessment properties yaml file.
-  def installProblems
-    redirect_to(action: "index") && return unless @cud.instructor?
-
-    return unless @assessment.problems.count == 0
-
-    @problems.each do |problem|
-      @assessment.problems.create do |p|
-        p.name = problem["name"]
-        p.description = problem["description"]
-        p.max_score = problem["max_score"]
-        p.optional = problem["optional"]
-      end
-    end
-  end
-
   # raw_score
   # @param map of problem names to problem scores
   # @return score on this assignment not including any tweak or late penalty.
