@@ -1,5 +1,13 @@
 <% @title = "File Manager" %>
 
+<% @extra_title = [] %>
+<% @extra_title << link_to("File Manager", file_manager_index_path) %>
+<% parts =  @path.split('/') %>
+<% parts.each_with_index do |part, index| %>
+  <% path = @path.split('/').slice(0, index + 1).join("/")%>
+  <% @extra_title << link_to(part, '/file_manager/' + path) %>
+<% end %>
+
 <% content_for :stylesheets do %>
   <%= stylesheet_link_tag "file_manager" %>
 <% end %>

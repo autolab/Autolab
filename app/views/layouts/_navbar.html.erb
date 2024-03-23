@@ -261,7 +261,11 @@
       <% @breadcrumbs&.each do |b| %>
         <span class="item"><%= b %></span>
       <% end %>
-      <% if @title %>
+      <% if @extra_title %>
+        <% @extra_title&.each do |e| %>
+          <span class="item"><span class="title"><%= e %></span></span>
+        <% end %>
+      <% elsif @title %>
         <span class="item"><span class="title"><%= @title %></span></span>
       <% end %>
     </span>

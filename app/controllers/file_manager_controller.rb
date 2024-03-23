@@ -29,6 +29,7 @@ class FileManagerController < ApplicationController
         send_file absolute_path
       else
         @file = File.read(absolute_path)
+        @path = params[:path]
         @parent = './'
         render :file, formats: :html
       end
@@ -142,7 +143,6 @@ class FileManagerController < ApplicationController
         else
           # Uploading a file
           input_file = params[:file]
-
           return unless input_file
           if all_filenames.include?(input_file.original_filename)
             flash[:error] = "File with name #{input_file.original_filename} already exists"

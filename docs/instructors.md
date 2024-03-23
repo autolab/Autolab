@@ -243,3 +243,5 @@ Manually assigned grades are by default not released, and therefore not visible 
 ## File Manager
 
 Displays files within a course and allows you to rename, delete, and add files automatically via an interface.
+
+You can access the File Manager via the Manage Course dropdown.

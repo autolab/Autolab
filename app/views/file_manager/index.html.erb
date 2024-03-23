@@ -1,11 +1,23 @@
-<% @title = "File Manager" %>
-
 <% content_for :javascripts do %>
   <%= javascript_include_tag "file_manager.js" %>
 <% end %>
 
 <% content_for :stylesheets do %>
   <%= stylesheet_link_tag "file_manager" %>
+  <%= stylesheet_link_tag "style" %>
+<% end %>
+
+<% @title = "File Manager" %>
+<% @extra_title = [] %>
+<% @extra_title << link_to("File Manager", file_manager_index_path) %>
+<% parts =  @directory[1][:relative].split('/') %>
+<% parts.shift %>
+<% parts.pop %>
+<% parts.each_with_index do |part, index| %>
+  <% if index != 0 %>
+    <% path = @directory[1][:relative].split('/').slice(0, index + 2).join("/")%>
+    <% @extra_title << link_to(part, path) %>
+  <% end %>
 <% end %>
 
 <div class="div-row">
