@@ -250,6 +250,7 @@ class AssessmentUserDatum < ApplicationRecord
     self.group_id = nil
     self.membership_status = UNCONFIRMED
     save!
+  end
 
   def delete_version_number
     with_lock do
