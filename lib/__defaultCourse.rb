@@ -53,10 +53,3 @@ end
 def courseAverage(_user)
   0
 end
-
-#
-# 3. gradebookMessage - Displays a message on the student gradebook
-#
-def gradebookMessage
-  " "
-end
