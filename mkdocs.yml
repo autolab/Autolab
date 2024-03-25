@@ -22,6 +22,7 @@ nav:
         - Autolab Frontend:
             - Guide for Instructors: instructors.md
             - Guide for Lab Authors: lab.md
+            - Lab Hooks: lab-hooks.md
             - Features:
                 - Formatted Feedback: features/formatted-feedback.md
                 - Scoreboards: features/scoreboards.md

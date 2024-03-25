@@ -15,19 +15,19 @@ module ##NAME_CAMEL##
   #   brief: modify calculated scores for a submission
   #   params: scores, previous_submissions, problems
   #   returns: hash of problem names to problem scores, the new submission scores
-  #   details: https://docs.autolabproject.com/lab/#overriding-modify-submission-score
+  #   details: https://docs.autolabproject.com/lab-hooks/#modify-submission-score
   #
   # raw_score
   #   brief: modify how raw scores are calculated
   #   params: score (hash of problem names to problem scores)
   #   returns: float, score on this assessment excluding any penalties
-  #   details: https://docs.autolabproject.com/instructors/#overriding-raw-score-calculations
+  #   details: https://docs.autolabproject.com/lab-hooks/#raw-score-calculations
   #
   # checkMimeType
   #   brief: reject files that are not of the correct type
   #   params: contentType (string), fileName (string)
   #   returns: boolean, true if the file is of the correct type, false otherwise
-  #   details: https://docs.autolabproject.com/instructors/#customizing-submision-file-mime-type-check
+  #   details: https://docs.autolabproject.com/lab-hooks/#raw-score-calculations
   #
   # handout
   #   brief: provide a handout file for the assessment
