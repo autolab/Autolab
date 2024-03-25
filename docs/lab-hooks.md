@@ -110,3 +110,35 @@ end
 ```
 
 Note that this function does not have access to Rails controller attributes such as `flash` or `params`. Attempts to access what's beyond the arguments passed to the function will result in an error.
+
+## Lab Handout
+
+Hook: `handout`
+
+## On Autograde Completion
+
+Hook: `autogradeDone`
+
+## List Options
+
+Hook: `listOptions`
+
+## Scoreboard Header
+
+Hook: `scoreboardHeader`
+
+## Scoreboard Entries
+
+Hook: `createScoreboardEntry`
+
+## Scoreboard Ordering
+
+Hook: `scoreboardOrderSubmissions`
+
+## Autograding Input Files
+
+Hook: `autogradeInputFiles`
+
+## Autoresult parsing
+
+Hook: `parseAutoresult`
