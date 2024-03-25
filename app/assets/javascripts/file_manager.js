@@ -15,19 +15,17 @@ function rename(path) {
 }
 
 function deleteSelected(path) {
-    if (path !== null && path !== "") {
-        $.ajax({
-            url: path,
-            type: "DELETE",
-            success: function () {
-                console.log(`Deleted: ${path}`);
-                location.reload();
-            },
-            error: function (xhr, status, error) {
-                console.error(`Failed to delete ${path}: ${error}`);
-            }
-        });
-    }
+    $.ajax({
+        url: path,
+        type: "DELETE",
+        success: function () {
+            console.log(`Deleted: ${path}`);
+            location.reload();
+        },
+        error: function (xhr, status, error) {
+            console.error(`Failed to delete ${path}: ${error}`);
+        }
+    });
 }
 
 function downloadSelected(path) {
@@ -129,7 +127,7 @@ function handleDeleteSelected() {
 }
 
 function selectDeleteSelected(path) {
-    if (path !== null && path !== "" && confirm ("Delete selected file")) {
+    if (confirm ("Delete selected file")) {
         deleteSelected(path)
     }
 }
@@ -138,7 +136,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const otherCheckboxes = document.querySelectorAll('.check');
 
     $(".check-all").click(function() {
-        console.log("clicked");
         const isChecked = this.checked;
         otherCheckboxes.forEach(function(checkbox) {
             checkbox.checked = isChecked;

@@ -39,7 +39,6 @@ class FileManagerController < ApplicationController
       absolute_path = check_path_exist(params[:path])
       current_path = Pathname.new(absolute_path)
       parent = current_path.parent
-      byebug
       if parent == BASE_DIRECTORY
         flash[:error] = "Unable to delete courses in the root directory."
       else
@@ -208,7 +207,7 @@ class FileManagerController < ApplicationController
   def safe_expand_path(path)
     current_directory = Pathname.new(BASE_DIRECTORY)
     tested_path = Pathname.new(File.join(BASE_DIRECTORY, path))
-    unless (current_directory == tested_path) || Archive.in_dir?(tested_path, current_directory)
+    unless Archive.in_dir?(tested_path, current_directory, strict: false)
       raise ArgumentError, 'Should not be parent of root'
     end
 
