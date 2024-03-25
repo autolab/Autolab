@@ -6,6 +6,8 @@ Lab hooks are defined in the lab's configuration file, `<labname>.rb`. The confi
 
 To make changes live, you must select the "Reload config file" option on the lab's index page. You can also upload a new config file from the lab's setting page.
 
+To debug the hooks, you can make use of the `ASSESSMENT_LOGGER.log(<expr>)` method to print output into the lab's `log.txt` file.
+
 ## Modify Submission Score
 
 Hook: `modifySubmissionScores`
@@ -73,7 +75,7 @@ def raw_score(score)
 end
 ```
 
-This particular lab has four problems called "Autograded Score", "Heap Checker", "Style", and "CorrectnessDeductions". An "Autograded Score" less than 50 is set to zero when the raw score is calculated.
+This particular lab has four problems called "Autograded Score", "Heap Checker", "Style", and "CorrectnessDeductions". The code snippet above sets an "Autograded Score" of less than 50 to zero when the raw score is calculated.
 
 ## Submission File MIME Type Check
 
@@ -114,6 +116,24 @@ Note that this function does not have access to Rails controller attributes such
 ## Lab Handout
 
 Hook: `handout`
+
+By default, the handout provided to students when they click on "Download handout" is the file path or URL specified in the lab settings. This hook allows you to run custom code when the button is clicked and then return a path to the handout. This can be useful in creating customized handouts on a per-student basis.
+
+!!! info "Restrictions on Handout Path"
+    For security reasons, the handout path returned by the hook must reside within the lab folder.
+
+```ruby
+def handout
+    course = @assessment.course.name
+    asmt = @assessment.name
+    file = "autograde-Makefile"
+    
+    file_path = "courses/#{course}/#{asmt}/#{file}"
+    Hash["fullpath", file_path, "filename", "makefile"]
+end
+```
+
+The code snippet above downloads the `autograde-Makefile` (assuming it resides at the root of the lab directory) as the file `makefile`.
 
 ## On Autograde Completion
 
