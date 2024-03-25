@@ -749,7 +749,7 @@ private
     att = params.require(:editCourse).permit(:semester, :website, :late_slack,
                                              :grace_days, :display_name, :start_date, :end_date,
                                              :disabled, :exam_in_progress, :allow_self_enrollment,
-                                             :version_threshold, :gb_message,
+                                             :version_threshold, :gb_message, :disable_on_end,
                                              late_penalty_attributes: %i[kind value],
                                              version_penalty_attributes: %i[kind value])
 

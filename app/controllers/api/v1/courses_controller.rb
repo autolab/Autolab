@@ -13,7 +13,7 @@ class Api::V1::CoursesController < Api::V1::BaseApiController
 
     if params.has_key?(:state)
       if params[:state] == "disabled"
-        courses_for_user = courses_for_user.select { |course| course.disabled? }
+        courses_for_user = courses_for_user.select { |course| course.is_disabled?}
       elsif ["completed", "current", "upcoming"].include? params[:state]
         state = params[:state].to_sym
         courses_for_user = courses_for_user.select { |course| course.temporal_status == state }
