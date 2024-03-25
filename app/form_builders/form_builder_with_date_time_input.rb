@@ -17,7 +17,6 @@ class FormBuilderWithDateTimeInput < ActionView::Helpers::FormBuilder
       unless options.include?(:placeholder)
         options[:placeholder] = ""
       end
-
       field = super name, *(args + [options])
 
       wrap_field name, field, options
@@ -138,7 +137,8 @@ private
   def wrap_field(name, field, options = {})
     @template.content_tag :div, class: options[:wrap_class] || "input-field" do
       label(name, options[:display_name], class: "control-label") +
-        field + help_text(name, options[:help_text])
+        field + help_text(name, options[:help_text]) +
+        error_text(name, options[:error_text])
     end
   end
 
@@ -147,6 +147,14 @@ private
       ""
     else
       @template.content_tag :p, help_text, class: "help-block"
+    end
+  end
+
+  def error_text(_name, error_text)
+    if error_text.nil?
+      ""
+    else
+      @template.content_tag :p, error_text, class: "error-block"
     end
   end
 

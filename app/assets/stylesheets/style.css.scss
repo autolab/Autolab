@@ -1008,6 +1008,14 @@ form p:last-child {
   margin-bottom: 10px;
 }
 
+.error-block,
+form p:last-child {
+  color: red;
+  font-size: 15px;
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+
 .autolab select.form-control {
   height: 34px;
 }

@@ -9,7 +9,8 @@ class Course < ApplicationRecord
   validates :grace_days, numericality: { greater_than_or_equal_to: 0 }
   validates :version_threshold, numericality: { only_integer: true, greater_than_or_equal_to: -1 }
   validate :order_of_dates
-  validates :name, format: { with: /\A(\w|-)+\z/, on: :create }
+  validate :valid_name?, on: :create
+  # validates :name, format: { with: /\A(\w|-)+\z/, on: :create }
   # validates course website format if there exists one
   validate :valid_website?
   validates :access_code, uniqueness: true, allow_nil: true
@@ -137,6 +138,19 @@ class Course < ApplicationRecord
     return if start_date.nil? || end_date.nil?
 
     errors.add(:start_date, "must come before end date") if start_date > end_date
+  end
+
+  def valid_name?
+    if /\A(\w|-)+\z/.match?(name)
+      true
+    else
+      suggest_name = name.gsub(/(\s+)/) { '-' }
+      suggest_name = suggest_name.gsub(/([^\w-]+)/) { '' }
+      errors.add("name",
+                 "cannot include characters other than alphanumeric characters, hyphens, "\
+                   "and underscores. Suggestion: #{suggest_name}")
+      false
+    end
   end
 
   def valid_website?
