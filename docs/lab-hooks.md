@@ -75,7 +75,7 @@ end
 
 This particular lab has four problems called "Autograded Score", "Heap Checker", "Style", and "CorrectnessDeductions". An "Autograded Score" less than 50 is set to zero when the raw score is calculated.
 
-## Customizing Submission File MIME Type Check
+## Submission File MIME Type Check
 
 Hook: `checkMimeType`
 

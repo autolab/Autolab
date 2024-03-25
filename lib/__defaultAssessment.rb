@@ -27,7 +27,7 @@ module ##NAME_CAMEL##
   #   brief: reject files that are not of the correct type
   #   params: contentType (string), fileName (string)
   #   returns: boolean, true if the file is of the correct type, false otherwise
-  #   details: https://docs.autolabproject.com/lab-hooks/#raw-score-calculations
+  #   details: https://docs.autolabproject.com/lab-hooks/#submission-file-mime-type-check
   #
   # handout
   #   brief: provide a handout file for the assessment
