@@ -7,16 +7,14 @@
   <%= stylesheet_link_tag "style" %>
 <% end %>
 
-<% @title = "File Manager" %>
-<% @extra_title = [] %>
-<% @extra_title << link_to("File Manager", file_manager_index_path) %>
+<% @breadcrumbs << link_to("File Manager", file_manager_index_path) %>
 <% parts =  @directory[1][:relative].split('/') %>
 <% parts.shift %>
 <% parts.pop %>
 <% parts.each_with_index do |part, index| %>
-  <% if index != 0 %>
+  <% if index != 0 && part != "" %>
     <% path = @directory[1][:relative].split('/').slice(0, index + 2).join("/")%>
-    <% @extra_title << link_to(part, path) %>
+    <% @breadcrumbs << link_to(part, path) %>
   <% end %>
 <% end %>
 
@@ -64,12 +62,10 @@
     </thead>
     <tbody>
     <% @directory.each do |entry| %>
-      <% if entry[:instructor] && entry[:entry] != './' %>
+      <% if entry[:instructor] && entry[:entry] != './' && entry[:entry] != '../' %>
         <tr class="table-row-center">
           <td>
-            <% if entry[:entry] != '../' %>
-              <%= check_box_tag 'selected_files[]', entry[:relative], false, { class: "check", html: { data: { path: entry[:relative] } } } %>
-            <% end %>
+            <%= check_box_tag 'selected_files[]', entry[:relative], false, { class: "check", html: { data: { path: entry[:relative] } } } %>
           <td>
             <%= link_to entry[:relative].to_s do %>
               <i class='material-icons left middle'><%= entry[:type] == :file ? 'article' : 'folder' %></i>

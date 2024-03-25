@@ -127,7 +127,7 @@ function handleDeleteSelected() {
 }
 
 function selectDeleteSelected(path) {
-    if (confirm ("Delete selected file")) {
+    if (confirm("Delete selected file")) {
         deleteSelected(path)
     }
 }

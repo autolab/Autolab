@@ -9,21 +9,17 @@ class FileManagerController < ApplicationController
   skip_before_action :update_persistent_announcements
 
   def index
-    check_path_exist('')
-    populate_directory(BASE_DIRECTORY, '')
-  end
-
-  def path
-    absolute_path = check_path_exist(params[:path].nil? ? "" : params[:path])
-    if File.directory?(absolute_path) && check_instructor(absolute_path)
-      populate_directory(absolute_path, "#{params[:path]}/")
+    path = params[:path].nil? ? "" : params[:path]
+    absolute_path = check_path_exist(path)
+    if (File.directory?(absolute_path) && check_instructor(absolute_path) )|| path == ""
+      populate_directory(absolute_path, "#{path}/")
       render 'file_manager/index'
     elsif File.file?(absolute_path) && check_instructor(absolute_path)
       if File.size(absolute_path) > 1_000_000 || params[:download]
         send_file absolute_path
       else
         @file = File.read(absolute_path)
-        @path = params[:path]
+        @path = path
         render :file, formats: :html
       end
     end
@@ -42,11 +38,7 @@ class FileManagerController < ApplicationController
       if parent == BASE_DIRECTORY
         flash[:error] = "Unable to delete courses in the root directory."
       else
-        if File.directory?(absolute_path)
-          FileUtils.rm_rf(absolute_path)
-        else
-          FileUtils.rm(absolute_path)
-        end
+        FileUtils.rm_rf(absolute_path)
         flash[:success] = "Successfully deleted"
       end
     end
@@ -231,7 +223,7 @@ class FileManagerController < ApplicationController
     end
     courses.map do |course|
       course_path = Pathname.new("#{BASE_DIRECTORY}/#{course.name}")
-      if path == course_path || Archive.in_dir?(path, course_path)
+      if Archive.in_dir?(path, course_path, strict: false)
         return true
       end
     end
