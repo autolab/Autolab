@@ -69,7 +69,6 @@ Rails.application.routes.draw do
 
   resources :file_manager, param: :path, path: 'file_manager', only: [:index] do
     collection do
-      post 'upload_index', to: 'file_manager#upload_index'
       post 'upload', to: 'file_manager#upload'
       post '/', to: 'file_manager#upload'
       post 'download_tar', to: 'file_manager#download_tar'

@@ -13,12 +13,6 @@ class FileManagerController < ApplicationController
     populate_directory(BASE_DIRECTORY, '')
   end
 
-  def upload_index
-    upload_file('')
-    populate_directory(BASE_DIRECTORY, '')
-    render 'file_manager/index'
-  end
-
   def path
     absolute_path = check_path_exist(params[:path].nil? ? "" : params[:path])
     if File.directory?(absolute_path) && check_instructor(absolute_path)
@@ -30,7 +24,6 @@ class FileManagerController < ApplicationController
       else
         @file = File.read(absolute_path)
         @path = params[:path]
-        @parent = './'
         render :file, formats: :html
       end
     end
@@ -43,13 +36,21 @@ class FileManagerController < ApplicationController
   def delete
     absolute_path = check_path_exist(params[:path])
     if check_instructor(absolute_path)
-      if File.directory?(absolute_path)
-        FileUtils.rm_rf(absolute_path)
+      absolute_path = check_path_exist(params[:path])
+      current_path = Pathname.new(absolute_path)
+      parent = current_path.parent
+      byebug
+      if parent == BASE_DIRECTORY
+        flash[:error] = "Unable to delete courses in the root directory."
       else
-        FileUtils.rm(absolute_path)
+        if File.directory?(absolute_path)
+          FileUtils.rm_rf(absolute_path)
+        else
+          FileUtils.rm(absolute_path)
+        end
+        flash[:success] = "Successfully deleted"
       end
     end
-    flash[:success] = "Successfully deleted"
   end
 
   def rename
@@ -66,7 +67,7 @@ class FileManagerController < ApplicationController
           raise ArgumentError, "New name not provided"
         end
 
-        unless params[:new_name].match(/^[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)?$/)
+        unless params[:new_name].match(/\A[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)?\Z/)
           raise ArgumentError, "Invalid characters. Only letters,
         numbers, underscores, and hyphens are allowed."
         end
@@ -122,7 +123,7 @@ class FileManagerController < ApplicationController
   def upload_file(path)
     absolute_path = check_path_exist(path)
     if absolute_path == BASE_DIRECTORY
-      flash[:error] = "You cannot upload files/create folders in the root directory " \
+      flash[:error] = "You cannot upload files/create folders in the root directory click " \
         "#{view_context.link_to 'here', new_course_url, method: 'get'}" \
         " if you want to create a new course."
       flash[:html_safe] = true
@@ -196,7 +197,7 @@ class FileManagerController < ApplicationController
               rescue StandardError
                 '-'
               end,
-        relative: my_escape("/file_manager/#{current_url}#{file}").gsub('%2F', '/'),
+        relative: CGI.unescape(my_escape("/file_manager/#{current_url}#{file}")),
         entry: "#{file}#{is_file ? '' : '/'}",
         absolute: abs_path_str,
         instructor: inst,
@@ -205,8 +206,8 @@ class FileManagerController < ApplicationController
   end
 
   def safe_expand_path(path)
-    current_directory = Pathname.new(File.expand_path(BASE_DIRECTORY))
-    tested_path = Pathname.new(File.expand_path(path, BASE_DIRECTORY))
+    current_directory = Pathname.new(BASE_DIRECTORY)
+    tested_path = Pathname.new(File.join(BASE_DIRECTORY, path))
     unless (current_directory == tested_path) || Archive.in_dir?(tested_path, current_directory)
       raise ArgumentError, 'Should not be parent of root'
     end
