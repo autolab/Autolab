@@ -187,7 +187,7 @@ protected
     end
 
     # check if course was disabled
-    if @course.is_disabled?
+    if @course.is_disabled? && !@cud.has_auth_level?(:instructor)
       flash[:error] = "Your course has been disabled by your instructor.
                        Please contact them directly if you have any questions"
       redirect_to(controller: :courses, action: :index) && return
