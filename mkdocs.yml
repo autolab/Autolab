@@ -52,21 +52,27 @@ theme:
     features:
         - navigation.tabs
         - toc.integrate
+        - content.code.copy
 repo_name: "Autolab"
 repo_url: "https://github.com/Autolab/autolab"
 extra:
     social:
         - icon: fontawesome/brands/github-alt
           link: https://github.com/Autolab
-        - icon: fontawesome/brands/facebook
-          link: "https://facebook.com/autolabproject"
+        - icon: fontawesome/brands/slack
+          link: https://communityinviter.com/apps/autolab/autolab-project
     analytics:
         provider: google
         property: G-PH5EYTKBNQ
 markdown_extensions:
     - admonition
-    - codehilite
-      #linenums: true
+    - pymdownx.highlight:
+          anchor_linenums: true
+          line_spans: __span
+          pygments_lang_class: true
+    - pymdownx.inlinehilite
+    - pymdownx.snippets
+    - pymdownx.superfences
 strict: true
 plugins:
   - search
