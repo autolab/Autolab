@@ -101,34 +101,6 @@ _Grades_ come in a number of different forms:
 
 Submissions can be classified as one of three types: "Normal", "No Grade" or "Excused". A "No Grade" submission will show up in the gradebook as NG and a zero will be used when calculating averages. An "Excused" submission will show up in the gradebook as EXC and will not be used when calculating averages.
 
-## Overriding Raw Score Calculations
-
-Autolab computes raw scores for a lab with a Ruby function called `raw_score`. The default is the sum of the individual problem scores. But you can change this by providing your own `raw_score` function in `<labname>.rb` file. For example, to override the raw_score calculation for a lab called `malloclab`, you might add the following `raw_score` function to `malloclab/malloclab.rb`:
-
-```ruby
-# In malloclab/malloclab.rb file
-def raw_score(score)
-    perfindex = score["Autograded Score"].to_f()
-    heap = score["Heap Checker"].to_f()
-    style = score["Style"].to_f()
-    deduct = score["CorrectnessDeductions"].to_f()
-    perfpoints = perfindex
-
-    # perfindex below 50 gets autograded score of 0.
-    if perfindex < 50.0 then
-        perfpoints = 0
-    else
-        perfpoints = perfindex
-    end
-
-    return perfpoints + heap + style + deduct
-end
-```
-
-This particular lab has four problems called "Autograded Score", "Heap Checker", "Style", and "CorrectnessDeductions". An "Autograded Score" less than 50 is set to zero when the raw score is calculated.
-
-Note: To make this change live, you must select the "Reload config file" option on the `malloclab` page.
-
 ## Overriding Category and Course Averages
 
 The average for a category `foo` is calculated by a default Ruby function called `fooAverage`, which you can override in the `course.rb` file. For example, in our course, we prefer to report the "average" as the total number of normalized points (out of 100) that the student has accrued so far. This helps them understand where they stand in the class, e.g., "Going into the final exam (worth 30 normalized points), I have 60 normalized points, so the only way to get an A is to get 100% on the final." Here's the Ruby function for category "Lab":
@@ -175,44 +147,6 @@ end
 In this course, the course average is the sum of the category averages for "Lab" and "Exam".
 
 Note: To make these changes live, you must select "Reload course config file" on the "Manage course" page.
-
-## Customizing Submision File MIME Type Check
-
-By default, Autolab does not perform MIME type check for submission files. However, it allows instructors to define their own MIME type check method in the assessment config file. The corresponding function is `checkMimeType` in `<labname>.rb` file. For example, to prevent students from submitting a binary file to the assessment `malloclab`, you might add the following `checkMimeType` function to `malloclab/malloclab.rb`:
-
-```ruby
-# In malloclab/malloclab.rb file
-def checkMimeType(contentType, fileName)
-    return contentType != "application/octet-stream"
-end
-```
-
-As of now, the only way to provide a more informative message to student is to raise an error:
-
-```ruby
-# In malloclab/malloclab.rb file
-def checkMimeType(contentType, fileName)
-    raise "Do not submit binary files!" if contentType == "application/octet-stream"
-    
-    return true
-end
-```
-
-This results in the following error message to students when they attempt to submit binary files.
-
-![MIME Type Check](/images/mime_type_check.png)
-
-Alternatively, you can use the file name to do file type check. The following snippet prevents students from submitting python files:
-
-```ruby
-def checkMimeType(contentType, fileName)
-    return fileName.split(".")[-1] != "py"
-end
-```
-
-Note that this function does not have access to Rails controller attributes such as `flash` or `params`. Attempts to access what's beyond the arguments passed to the function will result in an error.
-
-Note: To make this change live, you must select the "Reload config file" option on the `malloclab` page.
 
 ## Handin History
 
