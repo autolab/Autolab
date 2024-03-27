@@ -7,14 +7,22 @@
   <%= stylesheet_link_tag "style" %>
 <% end %>
 
-<% @breadcrumbs << link_to("File Manager", file_manager_index_path) %>
 <% parts =  @directory[1][:relative].split('/') %>
 <% parts.shift %>
 <% parts.pop %>
+<% if parts.length == 1 %>
+  <% @title = "File Manager" %>
+<% else %>
+  <% @breadcrumbs << link_to("File Manager", file_manager_index_path) %>
+<% end %>
 <% parts.each_with_index do |part, index| %>
   <% if index != 0 && part != "" %>
-    <% path = @directory[1][:relative].split('/').slice(0, index + 2).join("/")%>
-    <% @breadcrumbs << link_to(part, path) %>
+    <% if index + 1 == parts.length %>
+      <% @title = part %>
+    <% else %>
+      <% path = @directory[1][:relative].split('/').slice(0, index + 2).join("/")%>
+      <% @breadcrumbs << link_to(part, path) %>
+    <% end %>
   <% end %>
 <% end %>
 

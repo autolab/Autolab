@@ -15,44 +15,50 @@ function rename(path) {
 }
 
 function deleteSelected(path) {
-    $.ajax({
-        url: path,
-        type: "DELETE",
-        success: function () {
-            console.log(`Deleted: ${path}`);
-            location.reload();
-        },
-        error: function (xhr, status, error) {
-            console.error(`Failed to delete ${path}: ${error}`);
-        }
-    });
+    return new Promise(function(resolve, reject) {
+        $.ajax({
+            url: path,
+            type: "DELETE",
+            success: function () {
+                console.log(`Deleted: ${path}`);
+                resolve();
+            },
+            error: function (xhr, status, error) {
+                reject(error);
+            }
+        });
+    })
 }
 
 function downloadSelected(path) {
-    $.ajax({
-        url: '/file_manager/download_tar/',
-        type: "POST",
-        data: {
-            path: path
-        },
-        success: function (data) {
-            let blob = new Blob([data], { type: 'application/x-tar' });
-            let url = URL.createObjectURL(blob);
-            let a = document.createElement('a');
-            a.href = url;
-            let parts = path.split("/")
-            a.download = parts[parts.length - 1]
-            a.style.display = 'none';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            console.log(`Downloaded: ${data.filename}`);
-        },
-        error: function (xhr, status, error) {
-            console.error(`Failed to download ${path}: ${error}`);
-        }
-    });
+    return new Promise(function(resolve, reject) {
+        $.ajax({
+            url: '/file_manager/download_tar/',
+            type: "POST",
+            data: {
+                path: path
+            },
+            success: function (data) {
+                let blob = new Blob([data], { type: 'application/x-tar' });
+                let url = URL.createObjectURL(blob);
+                let a = document.createElement('a');
+                a.href = url;
+                let parts = path.split("/")
+                a.download = parts[parts.length - 1]
+                a.style.display = 'none';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                console.log(`Downloaded: ${data.filename}`);
+                resolve();
+            },
+            error: function (xhr, status, error) {
+                console.error(`Failed to download ${path}: ${error}`);
+                reject(error);
+            }
+        });
+    })
 }
 
 function uploadFile(file, path, name) {
@@ -63,30 +69,43 @@ function uploadFile(file, path, name) {
     formData = new FormData();
     formData.append('file', file);
     formData.append('name', name);
-    $.ajax({
-        url: modifiedPath,
-        type: "POST",
-        data: formData,
-        contentType: false,
-        processData: false,
-        success: function () {
-            console.log("Uploaded files successfully");
-            location.reload();
-        },
-        error: function (xhr, status, error) {
-            console.error(`Failed to upload files: ${error}`);
-        }
+    return new Promise(function(resolve, reject) {
+        $.ajax({
+            url: modifiedPath,
+            type: "POST",
+            data: formData,
+            contentType: false,
+            processData: false,
+            success: function () {
+                console.log("Uploaded file successfully");
+                resolve();
+            },
+            error: function (xhr, status, error) {
+                console.error(`Failed to upload file: ${error}`);
+                reject(error);
+            }
+        });
     });
 }
 
 function uploadAllFiles(path) {
     let inputElement = document.getElementById('fileInput');
     let files = inputElement.files;
+    const uploadPromises = [];
+    for (let i = 0; i < files.length; i++) {
+        let file = files[i];
+        uploadPromises.push(uploadFile(file, path, ""));
+    }
     if (files.length > 0) {
-        for (let i = 0; i < files.length; i++) {
-            let file = files[i];
-            uploadFile(file, path, "");
-        }
+        Promise.all(uploadPromises)
+        .then(() => {
+            alert("All files uploaded successfully.");
+            location.reload();
+        })
+        .catch((error) => {
+            alert("Some files failed to upload successfully. Ensure that you are not in the root directory, the file is smaller than 1 GB, and does not already exist.");
+            location.reload();
+        });
     } else {
         console.log('No files selected.');
     }
@@ -104,31 +123,65 @@ function getSelectedItems() {
 function createFolder(path) {
     let name = prompt("Name of folder: ");
     if (name !== "" && name !== null) {
-        uploadFile("", path, name);
+        uploadFile("", path, name)
+            .then(() => {
+                alert("Folder created successfully.");
+                location.reload();
+            })
+            .catch((error) => {
+                alert("Failed to create folder. Check that you are not in the root directory and that the tile/folder does not already exist.");
+            })
+        ;
     }
 }
 
 function handleDownloadClick() {
     let paths = getSelectedItems();
     if (paths.length > 0 && confirm("Download selected files?")) {
+        let downloadPromises = [];
         paths.forEach(path => {
-            downloadSelected(path);
+            downloadPromises.push(downloadSelected(path));
         });
+        Promise.all(downloadPromises)
+            .then(() => {
+                alert("All files downloaded successfully.");
+            })
+            .catch((error) => {
+                alert("Some files failed to download.");
+            });
     }
 }
 
 function handleDeleteSelected() {
     let paths = getSelectedItems();
     if (paths.length > 0 && confirm("Delete selected files?")) {
+        let deletePromises = [];
         paths.forEach(path => {
-            deleteSelected(path);
+            deletePromises.push(deleteSelected(path));
         });
+        Promise.all(deletePromises)
+            .then(() => {
+                alert("All files deleted successfully.");
+                location.reload();
+            })
+            .catch((error) => {
+                alert("Unable to delete files in the root directory.")
+                location.reload();
+            });
     }
 }
 
 function selectDeleteSelected(path) {
     if (confirm("Delete selected file")) {
         deleteSelected(path)
+            .then(() => {
+                alert("File deleted successfully.")
+                location.reload();
+            })
+            .catch(() => {
+                alert("Unable to delete files in the root directory.")
+                location.reload();
+            })
     }
 }
 

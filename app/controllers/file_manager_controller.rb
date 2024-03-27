@@ -36,10 +36,9 @@ class FileManagerController < ApplicationController
       current_path = Pathname.new(absolute_path)
       parent = current_path.parent
       if parent == BASE_DIRECTORY
-        flash[:error] = "Unable to delete courses in the root directory."
+        raise "Unable to delete courses in the root directory."
       else
         FileUtils.rm_rf(absolute_path)
-        flash[:success] = "Successfully deleted"
       end
     end
   end
@@ -113,11 +112,10 @@ class FileManagerController < ApplicationController
 
   def upload_file(path)
     absolute_path = check_path_exist(path)
-    if absolute_path == BASE_DIRECTORY
-      flash[:error] = "You cannot upload files/create folders in the root directory click " \
+    if Archive.in_dir?(BASE_DIRECTORY, absolute_path, strict: false)
+      raise "You cannot upload files/create folders in the root directory click " \
         "#{view_context.link_to 'here', new_course_url, method: 'get'}" \
         " if you want to create a new course."
-      flash[:html_safe] = true
     else
       raise ActionController::ForbiddenError unless File.directory?(absolute_path)
 
@@ -125,26 +123,24 @@ class FileManagerController < ApplicationController
         all_filenames = Dir.entries(absolute_path)
         if params[:name] != ""
           if all_filenames.include?(params[:name].to_s)
-            flash[:error] = "File/folder with name #{params[:name]} already exists"
+            raise "File with name #{input_file.original_filename} already exists."
           else
             # Creating a folder
             dir = "#{absolute_path}/#{params[:name]}"
             FileUtils.mkdir_p(dir)
-            flash[:success] = "Successfully created folder"
           end
         else
           # Uploading a file
           input_file = params[:file]
           return unless input_file
           if all_filenames.include?(input_file.original_filename)
-            flash[:error] = "File with name #{input_file.original_filename} already exists"
+            raise "File with name #{input_file.original_filename} already exists."
           elsif input_file.size >= 1.gigabyte
-            flash[:error] = "File size is too large. Upload a file that is smaller than 1 GB."
+            raise "File size is too large. Upload a file that is smaller than 1 GB."
           else
             File.open(Rails.root.join(absolute_path, input_file.original_filename), 'wb') do |file|
               file.write(input_file.read)
             end
-            flash[:success] = "Successfully uploaded file(s)"
           end
         end
       end
@@ -159,6 +155,7 @@ class FileManagerController < ApplicationController
 
   def populate_directory(current_directory, current_url)
     directory = Dir.entries(current_directory)
+    new_url = current_url == '/' ? current_url = '' : current_url
     @directory = directory.map do |file|
       abs_path_str = "#{current_directory}/#{file}"
       stat = File.stat(abs_path_str)
@@ -188,7 +185,7 @@ class FileManagerController < ApplicationController
               rescue StandardError
                 '-'
               end,
-        relative: CGI.unescape(my_escape("/file_manager/#{current_url}#{file}")),
+        relative: CGI.unescape(my_escape("/file_manager/#{new_url}#{file}")),
         entry: "#{file}#{is_file ? '' : '/'}",
         absolute: abs_path_str,
         instructor: inst,
