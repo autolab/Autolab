@@ -1,4 +1,4 @@
-<% parts =  @path.split('/') %>
+<% parts = @path.split('/') %>
 <% if parts.length == 1 %>
   <% @title = "File Manager" %>
 <% else %>
@@ -8,8 +8,8 @@
   <% if index + 1 == parts.length %>
     <% @title = part %>
   <% else %>
-    <% path = @path.split('/').slice(0, index + 1).join("/")%>
-    <% @breadcrumbs << link_to(part, '/file_manager/' + path) %>
+    <% path = @path.split('/').slice(0, index + 1).join("/") %>
+    <% @breadcrumbs << link_to(part, "/file_manager/#{path}") %>
   <% end %>
 <% end %>
 

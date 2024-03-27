@@ -7,7 +7,7 @@
   <%= stylesheet_link_tag "style" %>
 <% end %>
 
-<% parts =  @directory[1][:relative].split('/') %>
+<% parts = @directory[1][:relative].split('/') %>
 <% parts.shift %>
 <% parts.pop %>
 <% if parts.length == 1 %>
@@ -20,7 +20,7 @@
     <% if index + 1 == parts.length %>
       <% @title = part %>
     <% else %>
-      <% path = @directory[1][:relative].split('/').slice(0, index + 2).join("/")%>
+      <% path = @directory[1][:relative].split('/').slice(0, index + 2).join("/") %>
       <% @breadcrumbs << link_to(part, path) %>
     <% end %>
   <% end %>
