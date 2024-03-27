@@ -67,6 +67,18 @@ Rails.application.routes.draw do
   get "device_flow_resolve", to: "device_flow_activation#resolve"
   get "device_flow_auth_cb", to: "device_flow_activation#authorization_callback"
 
+  resources :file_manager, param: :path, path: 'file_manager', only: [:index] do
+    collection do
+      post 'upload', to: 'file_manager#upload'
+      post '/', to: 'file_manager#upload'
+      post 'download_tar', to: 'file_manager#download_tar'
+      get ':path', to: 'file_manager#index', constraints: { path: /.+/ }, as: :path_file_manager
+      put ':path', to: 'file_manager#rename', constraints: { path: /.+/ }, as: :rename_file_manager
+      post ':path', to: 'file_manager#upload', constraints: { path: /.+/ }, as: :upload_file_manager
+      delete ':path', to: 'file_manager#delete', constraints: { path: /.+/ }, as: :delete_file_manager
+    end
+  end
+
   resource :admin, :except => [:show] do
     match "email_instructors", via: [:get, :post]
     match "github_integration", via: [:get]

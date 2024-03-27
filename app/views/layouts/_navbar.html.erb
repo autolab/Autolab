@@ -68,6 +68,8 @@
 
       <li role="presentation"><%= link_to "Clear Cache", clear_cache_admin_url,
                                           title: "Clear Cache", data: { method: "post" } %></li>
+
+      <li role="presentation"><%= link_to "File Manager", file_manager_index_path, title: "File manager" %></li>
     </ul>
   <% end %>
 
@@ -96,6 +98,7 @@
                                           clear_cache_admin_url,
                                           title: "Clear Cache", data: { method: "post" } %></li>
 
+      <li role="presentation"><%= link_to "File Manager", file_manager_index_path, title: "File manager" %></li>
     </ul>
   <% end %>
 

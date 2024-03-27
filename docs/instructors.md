@@ -239,3 +239,9 @@ For the gradebook calculations, submissions are classified as one of three types
 ## Releasing Grades
 
 Manually assigned grades are by default not released, and therefore not visible to students. You can release grades on an individual basis while grading, or release all available grades in bulk by using the "Release all grades" option. You can also reverse this process using the "Withdraw all grades" option. (The word "withdraw" is perhaps unfortunate. No grades are ever deleted. They are simply withdrawn from the student's view.)
+
+## File Manager
+
+Displays files within a course and allows you to rename, delete, and add files automatically via an interface.
+
+You can access the File Manager via the Manage Autolab dropdown.
