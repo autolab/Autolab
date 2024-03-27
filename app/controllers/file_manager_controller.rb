@@ -11,7 +11,7 @@ class FileManagerController < ApplicationController
   def index
     path = params[:path].nil? ? "" : params[:path]
     absolute_path = check_path_exist(path)
-    if (File.directory?(absolute_path) && check_instructor(absolute_path) )|| path == ""
+    if (File.directory?(absolute_path) && check_instructor(absolute_path) ) || path == ""
       populate_directory(absolute_path, "#{path}/")
       render 'file_manager/index'
     elsif File.file?(absolute_path) && check_instructor(absolute_path)
@@ -31,16 +31,14 @@ class FileManagerController < ApplicationController
 
   def delete
     absolute_path = check_path_exist(params[:path])
-    if check_instructor(absolute_path)
-      absolute_path = check_path_exist(params[:path])
-      current_path = Pathname.new(absolute_path)
-      parent = current_path.parent
-      if parent == BASE_DIRECTORY
-        raise "Unable to delete courses in the root directory."
-      else
-        FileUtils.rm_rf(absolute_path)
-      end
-    end
+    return unless check_instructor(absolute_path)
+
+    absolute_path = check_path_exist(params[:path])
+    current_path = Pathname.new(absolute_path)
+    parent = current_path.parent
+    raise "Unable to delete courses in the root directory." if parent == BASE_DIRECTORY
+
+    FileUtils.rm_rf(absolute_path)
   end
 
   def rename
@@ -124,11 +122,12 @@ class FileManagerController < ApplicationController
         if params[:name] != ""
           if all_filenames.include?(params[:name].to_s)
             raise "File with name #{input_file.original_filename} already exists."
-          else
-            # Creating a folder
-            dir = "#{absolute_path}/#{params[:name]}"
-            FileUtils.mkdir_p(dir)
           end
+
+          # Creating a folder
+          dir = "#{absolute_path}/#{params[:name]}"
+          FileUtils.mkdir_p(dir)
+
         else
           # Uploading a file
           input_file = params[:file]
@@ -155,7 +154,7 @@ class FileManagerController < ApplicationController
 
   def populate_directory(current_directory, current_url)
     directory = Dir.entries(current_directory)
-    new_url = current_url == '/' ? current_url = '' : current_url
+    new_url = current_url == '/' ? '' : current_url
     @directory = directory.map do |file|
       abs_path_str = "#{current_directory}/#{file}"
       stat = File.stat(abs_path_str)
@@ -181,10 +180,10 @@ class FileManagerController < ApplicationController
                end),
         type: (is_file ? :file : :directory),
         date: begin
-                stat.mtime.strftime('%d %b %Y %H:%M')
-              rescue StandardError
-                '-'
-              end,
+          stat.mtime.strftime('%d %b %Y %H:%M')
+        rescue StandardError
+          '-'
+        end,
         relative: CGI.unescape(my_escape("/file_manager/#{new_url}#{file}")),
         entry: "#{file}#{is_file ? '' : '/'}",
         absolute: abs_path_str,
