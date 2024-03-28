@@ -1,4 +1,6 @@
-<h2>Create new assessment</h2>
+<% @title = "Create new assessment" %>
+
+<h4>Create new assessment</h4>
 <%= form_for @assessment, url: course_assessments_path, builder: FormBuilderWithDateTimeInput do |f| %>
   <% if @assessment.errors.any? %>
     <div id="error_explanation">
@@ -27,6 +29,10 @@
                      help_text: "Set the maximum size of groups for this assessment. If group size is 1, the
   assessment is solo. If the size is decreased, groups that are too large will not be broken up. If the size is set to
   1, groups will be saved, but the assessment will be solo." %>
+    <%= f.check_box :allow_student_assign_group,
+                    display_name: "Allow student to self assign groups",
+                    help_text: "Allow students to self assign and create their own groups. Uncheck if you don't want
+  students to create/edit their own groups." %>
     <% if GithubIntegration.connected %>
       <%= f.check_box :github_submission_enabled,
                       display_name: "Allow Github submissions",

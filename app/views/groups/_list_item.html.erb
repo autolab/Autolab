@@ -1,9 +1,9 @@
 <li>
-  <h3><%= group.name %></h3>
+  <h4><%= group.name %></h4>
   <p><b><%= group.assessment_user_data.all.map{ |aud| aud.course_user_datum.full_name }.join(", ") %></b></p>
   <p>
     <%= link_to "Ask to Join Group", join_course_assessment_group_path(@course, @assessment, group), method: :post %>
-    <% if @cud.instructor then %>
+    <% if @cud.instructor %>
       | <%= link_to "View", course_assessment_group_path(@course, @assessment, group) %>
       | <%= link_to "Destroy", course_assessment_group_path(@course, @assessment, group),
                     method: :delete, data: { confirm: "Are you sure you want to disband this group?" } %>

@@ -3,7 +3,7 @@
                              <br>If set to -1, unlimited submissions are allowed.".html_safe,
                  placeholder: "10",
                  wrap_class: %w[input-field no-padding-bottom] %>
-<%= label_tag(:unlimited_submissions, nil, class: "input-default") do %>
+<%= label_tag(:unlimited_submissions) do %>
   <%= check_box_tag :unlimited_submissions, "1", @has_unlimited_submissions %>
   <%= content_tag("span", "Allow unlimited submissions.") %>
 <% end %>
