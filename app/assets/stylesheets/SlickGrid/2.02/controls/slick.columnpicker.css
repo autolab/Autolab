@@ -1,11 +1,12 @@
 .slick-columnpicker {
   border: 1px solid #718BB7;
-  background: #f0f0f0;
-  padding: 6px;
+  background: white;
   -moz-box-shadow: 2px 2px 2px silver;
   -webkit-box-shadow: 2px 2px 2px silver;
   min-width: 100px;
-  cursor: default;
+  max-height: 60vh;
+  padding-top: 10px;
+  overflow-y: scroll;
 }
 
 .slick-columnpicker li {
@@ -15,16 +16,39 @@
   background: none;
 }
 
-.slick-columnpicker input {
+.slick-columnpicker li label {
+  padding: 6px;
+  margin: 4px;
+  cursor: pointer;
+}
+
+.slick-columnpicker li:hover {
+  background: #f0f0f0;
+}
+
+.slick-columnpicker li {
+  cursor: pointer;
   margin: 4px;
 }
 
-.slick-columnpicker li a {
-  display: block;
-  padding: 4px;
-  font-weight: bold;
+.slick-columnpicker li label {
+  padding: 1px;
+  width: 100%;
+  display: inline-flex;
+  cursor: pointer;
 }
 
-.slick-columnpicker li a:hover {
-  background: white;
+.slick-columnpicker li label input[type=checkbox] {
+  display: none; /* to hide the checkbox itself */
 }
+
+.slick-columnpicker span {
+  margin-left: 10px;
+  margin-bottom: 4px;
+  margin-right: 10px;
+}
+
+.slick-columnpicker li label input[type=checkbox]:checked + span:before{
+  opacity: 1;
+}
+

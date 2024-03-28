@@ -25,29 +25,33 @@
       $menu.empty();
       columnCheckboxes = [];
 
-      var $li, $input;
+      var $li, $input, $span;
+      $("<span />").text("Toggle on/off").appendTo($menu)
       for (var i = 0; i < columns.length; i++) {
-        
+
         $li = $("<li />").appendTo($menu);
 
-        $input = $("<input type='checkbox' />").data("column-id", columns[i].id);
+        $input = $("<input type='checkbox'/>").data("column-id", columns[i].id).attr("data-id", i);
         columnCheckboxes.push($input);
         if (grid.getColumnIndex(columns[i].id) != null) {
           $input.attr("checked", "checked");
         }
 
+        $span = $("<span />").text(columns[i].name)
+
         $("<label />")
-            .text(columns[i].name)
             .prepend($input)
+            .append($span)
             .appendTo($li);
       }
 
       $("<hr/>").appendTo($menu);
       $li = $("<li />").appendTo($menu);
       $input = $("<input type='checkbox' />").data("option", "autoresize");
+      $span = $("<span />").text("Force fit columns")
       $("<label />")
-          .text("Force fit columns")
           .prepend($input)
+          .append($span)
           .appendTo($li);
       if (grid.getOptions().forceFitColumns) {
         $input.attr("checked", "checked");
@@ -55,9 +59,10 @@
 
       $li = $("<li />").appendTo($menu);
       $input = $("<input type='checkbox' />").data("option", "syncresize");
+      $span = $("<span />").text("Synchronous resize")
       $("<label />")
-          .text("Synchronous resize")
           .prepend($input)
+          .append($span)
           .appendTo($li);
       if (grid.getOptions().syncColumnCellResize) {
         $input.attr("checked", "checked");
@@ -70,6 +75,17 @@
     }
 
     function updateColumn(e) {
+
+      var assessment_versions = {}
+      for (var i = 0; i < columns.length; i++) {
+        var underscoreIndex = columns[i].name.lastIndexOf('_');
+        var version = columns[i].name.substring(underscoreIndex + 1);
+        if (version === "Version") {
+          assessment_versions[i] = [i, i-1];
+          assessment_versions[i-1] = [i, i-1];
+        }
+      }
+
       if ($(e.target).data("option") == "autoresize") {
         if (e.target.checked) {
           grid.setOptions({forceFitColumns:true});
@@ -88,6 +104,16 @@
         }
         return;
       }
+
+      $("input").click(function(event) {
+        var column_index = event.target.dataset.id
+        if (column_index in assessment_versions) {
+          var checked = event.target.checked
+          columnCheckboxes[assessment_versions[column_index][0]].prop("checked", checked)
+          columnCheckboxes[assessment_versions[column_index][1]].prop("checked", checked)
+        }
+      })
+
 
       if ($(e.target).is(":checkbox")) {
         var visibleColumns = [];
