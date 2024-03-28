@@ -86,7 +86,7 @@
 <%# else: student assignment is allowed, but user is not a member of the group yet. We don't have to display anything %>
 
 <div style="margin-top: 1em">
-  <% if aud.group_id == id && (@assessment.allow_student_assign_group || @cud.instructor) %>
+  <% if @aud.group_id == @group.id && (@assessment.allow_student_assign_group || @cud.instructor) %>
     <%= link_to "Leave Group", leave_course_assessment_group_path(@course, @assessment, @group),
                 { method: :post, data: { confirm: "Are you sure you want to leave your group?" } } %> |
   <% end %>
