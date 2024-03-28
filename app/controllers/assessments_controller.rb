@@ -1030,7 +1030,8 @@ private
   def new_assessment_params
     ass = params.require(:assessment)
     ass[:category_name] = params[:new_category] if params[:new_category].present?
-    ass.permit(:name, :display_name, :category_name, :group_size, :github_submission_enabled)
+    ass.permit(:name, :display_name, :category_name, :group_size, :github_submission_enabled,
+               :allow_student_assign_group)
   end
 
   def edit_assessment_params
