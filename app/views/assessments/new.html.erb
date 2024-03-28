@@ -1,4 +1,6 @@
-<h2>Create new assessment</h2>
+<% @title = "Create new assessment" %>
+
+<h4>Create new assessment</h4>
 <%= form_for @assessment, url: course_assessments_path, builder: FormBuilderWithDateTimeInput do |f| %>
   <% if @assessment.errors.any? %>
     <div id="error_explanation">
