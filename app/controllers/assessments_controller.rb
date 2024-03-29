@@ -29,7 +29,8 @@ class AssessmentsController < ApplicationController
                                             import_assessments course_onboard_install_asmt]
   skip_before_action :set_breadcrumbs, only: %i[index]
   before_action :set_assessment_breadcrumb, except: %i[index show install_assessment]
-  before_action :set_manage_course_breadcrumb, only: %i[install_assessment]
+  before_action :set_manage_course_breadcrumb, only: %i[install_assessment new]
+  before_action :set_install_asmt_breadcrumb, only: %i[new]
   before_action :set_submission, only: [:viewFeedback]
 
   # We have to do this here, because the modules don't inherit ApplicationController.
@@ -1030,7 +1031,8 @@ private
   def new_assessment_params
     ass = params.require(:assessment)
     ass[:category_name] = params[:new_category] if params[:new_category].present?
-    ass.permit(:name, :display_name, :category_name, :group_size, :github_submission_enabled)
+    ass.permit(:name, :display_name, :category_name, :group_size, :github_submission_enabled,
+               :allow_student_assign_group)
   end
 
   def edit_assessment_params
@@ -1215,5 +1217,12 @@ private
     scores.map { |s|
       [s.problem.name, s.score]
     }.to_h
+  end
+
+  def set_install_asmt_breadcrumb
+    return if @course.nil?
+
+    @breadcrumbs << (view_context.link_to "Install Assessment",
+                                          install_assessment_course_assessments_path(@course))
   end
 end
