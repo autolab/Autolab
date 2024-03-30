@@ -110,6 +110,15 @@ RSpec.describe SubmissionsController, type: :controller do
     end
   end
 
+  shared_examples "missing_success" do
+    it "renders with success" do
+      sign_in(user)
+      get :missing, params: { course_name: @course.name, assessment_name: @assessment.name }
+      expect(response).to be_successful
+      expect(response.body).to match(/No Missing Submissions!/m)
+      puts(@missing)
+    end
+  end
   describe "#index" do
     include_context "controllers shared context"
     context "when user is Autolab admin" do
@@ -207,6 +216,66 @@ RSpec.describe SubmissionsController, type: :controller do
     context "when user is Course Assistant" do
       let!(:user) { course_assistant_user }
       it_behaves_like "edit_failure"
+    end
+  end
+  describe "#downloadAll" do
+    include_context "controllers shared context"
+    context "when user is Instructor of class with submissions" do
+      let!(:user) { instructor_user }
+      it "gets missing submissions" do
+        sign_in(user)
+        get :downloadAll, params: { course_name: @course.name, assessment_name: @assessment.name }
+        expect(response).to be_successful
+        puts(@submissions.filename)
+        File.binwrite("tmp/test.tar", response.parsed_body)
+        puts("test/#{@submissions.filename}")
+        File.open("tmp/test.tar", "rb") do |file|
+          Gem::Package::TarReader.new(file) do |tar|
+            tar.seek("test/#{@submissions.filename}") do |entry|
+              puts(entry.read)
+            end
+          end
+        end
+      end
+    end
+  end
+  describe "#missing" do
+    include_context "controllers shared context"
+    context "when user is student" do
+      let!(:user) { student_user }
+      it "gets missing submissions" do
+        sign_in(user)
+        get :missing, params: { course_name: @course.name, assessment_name: @assessment.name }
+        expect(response).not_to be_successful
+        expect(response.body).not_to match(/Missing Submissions/m)
+      end
+    end
+    context "when user is Instructor of class with submissions" do
+      let!(:user) { instructor_user }
+      it "fails to render" do
+        sign_in(user)
+        get :missing, params: { course_name: @course.name, assessment_name: @assessment.name }
+        expect(response).to be_successful
+        expect(response.body).to match(/Missing Submissions/m)
+        expect(response.body).to match(/No Missing Submissions!/m)
+        @students.each do |student|
+          expect(response.body).not_to match(/#{student.email}/m)
+        end
+      end
+    end
+    context "when user is Instructor of asmt no submissions" do
+      let!(:hash) { create_course_no_submissions_hash }
+      let!(:user) { instructor_user }
+      it "gets missing subs" do
+        sign_in(user)
+        get :missing, params: { course_name: @course.name, assessment_name: @assessment.name }
+        expect(response).to be_successful
+        expect(response.body).to match(/Missing Submissions/m)
+        expect(response.body).not_to match(/No Missing Submissions!/m)
+        @students.each do |student|
+          expect(response.body).to match(/#{student.email}/m)
+        end
+      end
     end
   end
 end
