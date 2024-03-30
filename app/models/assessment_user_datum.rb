@@ -246,6 +246,12 @@ class AssessmentUserDatum < ApplicationRecord
     self.version_number
   end
 
+  def leave_group
+    self.group_id = nil
+    self.membership_status = UNCONFIRMED
+    save!
+  end
+
   def delete_version_number
     with_lock do
       max_version = Submission.where(assessment_id:,
