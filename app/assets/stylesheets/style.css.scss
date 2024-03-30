@@ -688,14 +688,6 @@ ul.moss-inner-list > li > input[type="checkbox"]:checked ~ div {
   text-decoration: underline;
 }
 
-div.field_with_errors {
-  display: inline;
-}
-
-div.field_with_errors {
-  display: inline;
-}
-
 .table-info {
   margin-bottom: auto;
   display: flex;
@@ -1000,17 +992,16 @@ input[type="search"] {
   }
 }
 
+.error-block {
+  color: red !important;
+  font-size: 15px !important;
+  margin-top: 0 !important;
+  margin-bottom: 10px !important;
+}
+
 .help-block,
 form p:last-child {
   color: black;
-  font-size: 15px;
-  margin-top: 0;
-  margin-bottom: 10px;
-}
-
-.error-block,
-form p:last-child {
-  color: red;
   font-size: 15px;
   margin-top: 0;
   margin-bottom: 10px;

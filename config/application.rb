@@ -96,7 +96,7 @@ module Autolab3
 
     # Customize form control error state: controls with erroneous input get wrapped with this
     config.action_view.field_error_proc = Proc.new { |html_tag, instance|
-      "<div class=\"field_with_errors has-error\">#{html_tag}</div>".html_safe
+      html_tag.html_safe
     }
 
     # Allow embedding as iFrame on external sites
