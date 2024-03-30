@@ -8,6 +8,10 @@ To make changes live, you must select the "Reload config file" option on the lab
 
 To debug the hooks, you can make use of the `ASSESSMENT_LOGGER.log(<expr>)` method to print output into the lab's `log.txt` file.
 
+!!! Danger "Function Arity"
+    When defining the hooks below, be sure that they take the correct number of arguments.
+    Failure to do so might leave your assessment in a hard-to-recover state. 
+
 ## Modify Submission Score
 
 Hook: `modifySubmissionScores`
@@ -129,7 +133,8 @@ def handout
     file = "autograde-Makefile"
     
     file_path = "courses/#{course}/#{asmt}/#{file}"
-    Hash["fullpath", file_path, "filename", "makefile"]
+    filename = "makefile"
+    Hash["fullpath", file_path, "filename", filename]
 end
 ```
 
@@ -142,6 +147,50 @@ Hook: `autogradeDone`
 ## List Options
 
 Hook: `listOptions`
+
+By default, the following options are displayed to students when viewing an assessment:
+
+- View handin history
+- View writeup (if the assessment has a writeup defined)
+- Download handout (if the assessment has a handout defined)
+- Group options (if the assessment has groups enabled)
+- View scoreboard (if the assessment has a scoreboard)
+
+This hook allows you to disable the display of these options and/or display your own options.
+
+!!! info "Only affects the dropdown"
+    Even if certain options are hidden from the "Options" dropdown through this hook,
+    students can still navigate directly to the corresponding pages if they so wish. 
+
+```ruby
+def listOptions(list)
+    # The default options are: history, writeup, handout, groups, scoreboard
+    # Delete the options that you do not want to show
+    list.delete("history") # hides "View handin history"
+    
+    # You can display your own options
+    # list[<key>] = <value> where <key> is the url route and <value> is the text to display for the option
+    # (Non-exhaustive) possible values for <key>: history, writeup, handout
+    list["history"] = "View your official scores"
+    list["writeup"] = "View the writeup"
+    list["handout"] = "Download your bomb"
+    
+    # Avoid setting custom keys to a value of nil, as that is how the code distinguishes default options.
+    return list
+end
+```
+
+The code snippet above hides the default option "View handin history" and defines three custom options `history`, `writeup`, and `handout`.
+In particular, the link to `history` now has the text "View your official scores".
+
+!!! info "Valid keys for options"
+    Other than `history`, `writeup`, and `handout`, a valid key could technically be any route associated with assessments.
+    However, many of these routes are not visible to students and it would not make sense to list them.
+
+    For this reason, the following keys are explicitly ignored (but this is not comprehensive):
+    `edit`, `viewGradesheet`, `reload`
+
+    Invalid keys will be marked as such.
 
 ## Scoreboard Header
 
@@ -171,6 +220,32 @@ Thus, other than the `Rank` column, the number of columns and their names can be
 ## Scoreboard Entries
 
 Hook: `createScoreboardEntry`
+
+By default, each scoreboard row, corresponding to a user, follows the following format: `Rank`, `Nickname`, `Version`, `Time`, `Total`, followed by the score for each problem in the assessment.
+
+This hook allows for greater flexibility in the values displayed for each student.
+In particular, the values displayed for the columns beyond `Rank`, `Nickname`, `Version`, and `Time` can be configured.
+This hook should most likely be used in conjunction with the `scoreboardHeader` hook or a custom column specification.
+
+```ruby
+def createScoreboardEntry(scores, autoresult)
+    defused = 0
+    explosions = 0
+    scores.each_pair do |name, value|
+        if name == "explosion"
+            explosions = value.to_i()
+        else
+            defused += value.to_i()
+        end
+    end
+    totalscore = raw_score(scores)
+    [defused, explosions, totalscore]
+end
+```
+
+Assuming a suitable `raw_score` method is defined, the code snippet above displays a student's score,
+together with statistics such as the value associated with the problem `explosion` and the sum of values associated
+with the other problems.
 
 ## Scoreboard Ordering
 
