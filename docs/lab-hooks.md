@@ -240,7 +240,7 @@ By default, each scoreboard row, corresponding to a user, follows the following 
 
 This hook allows for greater flexibility in the values displayed for each student.
 In particular, the values displayed for the columns beyond `Rank`, `Nickname`, `Version`, and `Time` can be configured.
-This hook should most likely be used in conjunction with the `scoreboardHeader` hook or a custom column specification.
+This hook should most likely be used in conjunction with the `scoreboardHeader` hook or a [custom column specification](/features/scoreboards/#custom-scoreboards).
 
 ```ruby
 def createScoreboardEntry(scores, autoresult)
@@ -265,6 +265,40 @@ with the other problems.
 ## Scoreboard Ordering
 
 Hook: `scoreboardOrderSubmissions`
+
+By default, scoreboard rows are sorted as follows:
+
+- If a [custom column specification](/features/scoreboards/#custom-scoreboards) is provided (and an autograder is defined): Sort the columns from left to right in descending/ascending order (depending on the column specification) 
+- Otherwise: Sort by decreasing total score, followed by increasing submission time
+
+This hook allows for greater flexibility in the sorting logic.
+
+```ruby
+# The hash contains the following keys:
+# {:nickname, :andrewID, :fullName, :problems, :time, :version, :autoresult, :entry}
+# where :entry is the scoreboard entry array returned by createScoreboardEntry
+def scoreboardOrderSubmissions(a, b)
+    # In this example, assume that each entry has the format [defused, explosions, totalscore]
+
+    # Entry A ranks higher than entry B if it has more defused phases.
+    rank = -(a[:entry][0] <=> b[:entry][0])
+    if rank != 0
+        return rank
+    end
+
+    # If defused phases are equal, entry A ranks higher than entry
+    # B if it has _fewer_ explosions.
+    rank = a[:entry][1] <=> b[:entry][1]
+    if rank != 0
+        return -rank
+    end
+
+    # As a final tiebreaker, earlier submissions rank higher.
+    -(a[:time] <=> b[:time])
+end
+```
+
+The code snippet above sorts by the first column (`defused`) in decreasing order, followed by the second column (`explosions`) in increasing order. As a final tiebreaker, it sorts by time.
 
 ## Autograding Input Files
 

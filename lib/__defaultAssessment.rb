@@ -65,7 +65,7 @@ module ##NAME_CAMEL##
   # scoreboardOrderSubmissions
   #   brief: define ordering for the scoreboard
   #   params: a (hash), b (hash)
-  #           The hash contains the following keys: {:uid, :andrewID, :version, :time, :problems, :entry}
+  #           The hash contains the following keys: {:nickname, :andrewID, :fullName, :problems, :time, :version, :autoresult, :entry}
   #           where :entry is the scoreboard entry array
   #   returns: integer, -1 if a should be ranked higher, 1 if b should be ranked higher, 0 if they are tied
   #   details: https://docs.autolabproject.com/lab-hooks/#scoreboard-ordering
