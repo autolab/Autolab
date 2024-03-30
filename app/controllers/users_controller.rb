@@ -152,14 +152,14 @@ class UsersController < ApplicationController
   def download_all_submissions
     user = User.find(params[:id])
     submissions = Submission.where(course_user_datum: CourseUserDatum.where(user_id: user))
-    ###
-    # submissions = submissions.select do |s|
-    #  p = s.handin_file_path
-    #  !p.nil? && File.exist?(p) && File.readable?(p)
-    #  puts "HELLO"
-    #  puts p
-    # end
-    ###
+    submissions = submissions.select do |s|
+      p = s.handin_file_path
+      !p.nil? && File.exist?(p) && File.readable?(p)
+    end
+    if submissions.empty?
+      flash[:error] = "There are no submissions to download."
+      return
+    end
     filedata = submissions.collect do |s|
       p = s.handin_file_path
       course_name = s.course_user_datum.course.name
@@ -427,7 +427,8 @@ private
     basename_parts = basename.split("_")
     basename_parts.insert(-3, course_name)
     basename_parts.insert(-3, assignment_name)
-    basename_parts.join("_")
+    download_name = basename_parts[-4..]
+    download_name.join("_")
   end
 
   def new_user_params
