@@ -148,6 +148,34 @@ class UsersController < ApplicationController
     @breadcrumbs << (view_context.link_to @user.display_name, user_path(@user))
   end
 
+  action_auth_level :download_all_submissions, :student
+  def download_all_submissions
+    user = User.find(params[:id])
+    submissions = Submission.where(course_user_datum: CourseUserDatum.where(user_id: user))
+    ###
+    # submissions = submissions.select do |s|
+    #  p = s.handin_file_path
+    #  !p.nil? && File.exist?(p) && File.readable?(p)
+    #  puts "HELLO"
+    #  puts p
+    # end
+    ###
+    filedata = submissions.collect do |s|
+      p = s.handin_file_path
+      email = s.course_user_datum.user.email
+      [p, download_filename(p, email)]
+    end
+    result = Archive.create_zip filedata
+    if result.nil?
+      flash[:error] = "There are no submissions to download."
+      return
+    end
+    send_data(result.read, # to read from stringIO object returned by create_zip
+              type: "application/zip",
+              disposition: "attachment", # tell browser to download
+              filename: "submissions.zip")
+  end
+
   # PATCH users/:id/
   action_auth_level :update, :student
   def update
@@ -388,6 +416,16 @@ class UsersController < ApplicationController
   end
 
 private
+
+  # Given the path to a file, return the filename to use when the user downloads it
+  # path should be of the form .../<ver>_<handin> or .../annotated_<ver>_<handin>
+  # returns <email>_<ver>_<handin> or annotated_<email>_<ver>_<handin>
+  def download_filename(path, student_email)
+    basename = File.basename path
+    basename_parts = basename.split("_")
+    basename_parts.insert(-3, student_email)
+    basename_parts.join("_")
+  end
 
   def new_user_params
     params.require(:user).permit(:email, :first_name, :last_name)
