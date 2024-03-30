@@ -147,6 +147,27 @@ Hook: `listOptions`
 
 Hook: `scoreboardHeader`
 
+By default, the scoreboard header follows the following format:
+
+- If a [custom column specification](/features/scoreboards/#custom-scoreboards) is provided: `Rank`, `Nickname`, `Version`, `Time`, followed by the columns defined in the column specification
+- Otherwise: `Rank`, `Nickname`, `Version`, `Time`, `Total`, followed by the name of each problem in the assessment
+
+This hook allows for even greater flexibility in the definition of the scoreboard header.
+If defined, it takes precedence over a custom column specification.
+
+!!! info "Restrictions on HTML tags"
+    Only `th` and `td` tags can be used, all other tags will be stripped.
+
+```ruby
+def scoreboardHeader
+    "<th>Nickname</th><th>Version</th><th>Time</th><th>Total</th><th>Problem 1</th><th>Problem 2</th>"
+end
+```
+
+The code snippet above defines a scoreboard whose header consists of the fields `Rank`, `Nickname`, `Version`, `Time`, `Total`, `Problem 1`, `Problem 2`.
+
+Thus, other than the `Rank` column, the number of columns and their names can be fully customized.
+
 ## Scoreboard Entries
 
 Hook: `createScoreboardEntry`
