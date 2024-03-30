@@ -162,8 +162,9 @@ class UsersController < ApplicationController
     ###
     filedata = submissions.collect do |s|
       p = s.handin_file_path
-      email = s.course_user_datum.user.email
-      [p, download_filename(p, email)]
+      course_name = s.course_user_datum.course.name
+      assignment_name = s.assessment.name
+      [p, download_filename(p, course_name, assignment_name)]
     end
     result = Archive.create_zip filedata
     if result.nil?
@@ -173,7 +174,7 @@ class UsersController < ApplicationController
     send_data(result.read, # to read from stringIO object returned by create_zip
               type: "application/zip",
               disposition: "attachment", # tell browser to download
-              filename: "submissions.zip")
+              filename: "autolab_submissions.zip")
   end
 
   # PATCH users/:id/
@@ -419,11 +420,13 @@ private
 
   # Given the path to a file, return the filename to use when the user downloads it
   # path should be of the form .../<ver>_<handin> or .../annotated_<ver>_<handin>
-  # returns <email>_<ver>_<handin> or annotated_<email>_<ver>_<handin>
-  def download_filename(path, student_email)
+  # returns <course_name>_<assignment_name>_<ver>_<handin>
+  # or annotated_<course_name>_<assignment_name>_<ver>_<handin>
+  def download_filename(path, course_name, assignment_name)
     basename = File.basename path
     basename_parts = basename.split("_")
-    basename_parts.insert(-3, student_email)
+    basename_parts.insert(-3, course_name)
+    basename_parts.insert(-3, assignment_name)
     basename_parts.join("_")
   end
 
