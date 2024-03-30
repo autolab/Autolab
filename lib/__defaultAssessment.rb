@@ -13,7 +13,9 @@ module ##NAME_CAMEL##
   # ===================================
   # modifySubmissionScores
   #   brief: modify calculated scores for a submission
-  #   params: scores, previous_submissions, problems
+  #   params: scores (hash of problem names to problem scores),
+  #           previous_submissions (array of ActiveRecord Submission objects),
+  #           problems (array of ActiveRecord Problem objects)
   #   returns: hash of problem names to problem scores, the new submission scores
   #   details: https://docs.autolabproject.com/lab-hooks/#modify-submission-score
   #
@@ -70,7 +72,9 @@ module ##NAME_CAMEL##
   #
   # autogradeInputFiles
   #   brief: define list of input files for the autograder
-  #   params: ass_dir (Pathname)
+  #   params: ass_dir (Pathname),
+  #           assessment (ActiveRecord Assessment object),
+  #           submission (ActiveRecord Submission object)
   #   returns: array of hashes, the list of input files for the autograder
   #            The hash contains the following keys: {:localFile, :remoteFile, :destFile}
   #            - localFile: path to file on local machine

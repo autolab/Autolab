@@ -144,6 +144,21 @@ The code snippet above downloads the `autograde-Makefile` (assuming it resides a
 
 Hook: `autogradeDone`
 
+By default, upon autograding completion, the feedback is saved to the feedback file and submission(s) scores are updated, amongst other things.
+
+This hook allows you to override this behavior. Unless you know what you're doing, you should probably leave this hook alone.
+
+```ruby
+def autogradeDone(submissions, feedback)
+    # submissions: all the submissions connected to this feedback (could be multiple if this was a group submission)
+    # feedback: feedback string from the autograder
+    
+    # default behavior - write feedback into feedback file
+    
+    saveAutograde(submissions, feedback) # you should probably call this
+end
+```
+
 ## List Options
 
 Hook: `listOptions`
@@ -255,6 +270,49 @@ Hook: `scoreboardOrderSubmissions`
 
 Hook: `autogradeInputFiles`
 
-## Autoresult parsing
+By default, the following autograding input files are sent to Tango
+
+1. The student's handin file
+2. The makefile that runs the process
+3. The tarfile with all of the first needed by the autograder
+
+This hook allows you to define a custom list of input files to be sent instead.
+
+```ruby
+def autogradeInputFiles(ass_dir, assessment, submission)
+    local_handin = submission.handin_file_path
+    remote_handin = submission.handin_file_long_filename
+    dest_handin = assessment.handin_filename
+    
+    # localFile: path to file on local machine
+    # remoteFile: name of the file on the Tango machine
+    # - if this file is unique per-submission (e.g. student's code), then the filename should also be unique per-submission
+    #   so as to avoid name-collisions
+    # - if undefined, value of localFile will be used instead
+    # destFile: name of the file on the destination machine (e.g. docker container)
+    
+    handin = {
+            "localFile" => local_handin,
+            "remoteFile" => remote_handin,
+            "destFile" => dest_handin
+    }
+    
+    [handin] # and any other files required
+end
+```
+
+## Autoresult Parsing
 
 Hook: `parseAutoresult`
+
+By default, the autoresult string from the autograder (the last non-empty line) is assumed to be encode in JSON and is parsed as such.
+If a different format is used for the autoresult string, this hook allows you to define custom parsing logic.
+
+```ruby
+# _isOfficial is true except for log submissions
+# If "Allow unofficial" is disabled, don't worry about this.
+def parseAutoresult(autoresult, _isOfficial)
+    # Return a hash of problem name to scores
+    { "Problem 1": 1, "Problem 2": 2, "Problem 3": 3, "Problem 4": 4, "Problem 5": 5, "Problem 6": 6 }
+end
+```
