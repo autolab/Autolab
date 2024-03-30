@@ -21,17 +21,17 @@
     <!-- Row index is set using CSS. -->
     <% rowList.each do |errorRow| %>
       <tr class="user-row">
-        <td><%= errorRow["row_num"] %></td>
-        <td><%= errorRow["email"] %></td>
-        <td><%= errorRow["first_name"] %></td>
-        <td><%= errorRow["last_name"] %></td>
-        <td><%= errorRow["course_number"] %></td>
-        <td><%= errorRow["lecture"] %></td>
-        <td><%= errorRow["section"] %></td>
-        <td><%= errorRow["school"] %></td>
-        <td><%= errorRow["major"] %></td>
-        <td><%= errorRow["year"] %></td>
-        <td><%= errorRow["grade_policy"] %></td>
+        <td><%= errorRow[:row_num] %></td>
+        <td><%= errorRow[:email] %></td>
+        <td><%= errorRow[:first_name] %></td>
+        <td><%= errorRow[:last_name] %></td>
+        <td><%= errorRow[:course_number] %></td>
+        <td><%= errorRow[:lecture] %></td>
+        <td><%= errorRow[:section] %></td>
+        <td><%= errorRow[:school] %></td>
+        <td><%= errorRow[:major] %></td>
+        <td><%= errorRow[:year] %></td>
+        <td><%= errorRow[:grade_policy] %></td>
       </tr>
     <% end %>
   </table>

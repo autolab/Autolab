@@ -165,7 +165,8 @@ module AssessmentAutogradeCore
                        "output_file" => output_file,
                        "timeout" => @autograde_prop.autograde_timeout,
                        "callback_url" => callback_url,
-                       "jobName" => job_name }.to_json
+                       "jobName" => job_name,
+                       "disable_network" => assessment.disable_network }.to_json
     begin
       response = TangoClient.addjob("#{course.name}-#{assessment.name}", job_properties)
     rescue TangoClient::TangoException => e
@@ -296,7 +297,6 @@ module AssessmentAutogradeCore
 
     # send the tango upload requests
     upload_file_list = tango_upload(course, assessment, submissions[0], existing_files)
-
     dave = save_daves(submissions)
 
     output_file = get_output_file(assessment, submissions[0])
@@ -306,7 +306,7 @@ module AssessmentAutogradeCore
     response_json = tango_add_job(course, assessment, upload_file_list,
                                           callback_url, job_name, output_file)
 
-    # If autolab user opts not to use a callback URL, we poll the job for 80 seconds
+    # If Autolab user opts not to use a callback URL, we poll the job for 80 seconds
     if callback_url.blank?
       tango_poll(course, assessment, submissions, output_file)
     end
@@ -325,7 +325,7 @@ module AssessmentAutogradeCore
   # Can be overridden in the lab config file.
   #
   def autogradeInputFiles(ass_dir, assessment, submission)
-    # Absolute path names on the local autolab server of the input
+    # Absolute path names on the local Autolab server of the input
     # autograding input files: 1) The student's handin file, 2)
     # The makefile that runs the process, 3) The tarfile with all
     # of files needed by the autograder. Can be overridden in the
@@ -446,15 +446,26 @@ module AssessmentAutogradeCore
           end
         end
 
+        missing_problems = []
         scores.keys.each do |key|
           problem = @assessment.problems.find_by(name: key)
-          raise AutogradeError, "Problem \"" + key + "\" not found." unless problem
+          unless problem
+            missing_problems << key
+            next
+          end
+
           score = submission.scores.find_or_initialize_by(problem_id: problem.id)
           score.score = scores[key]
           score.feedback = feedback 
           score.released = @autograde_prop.release_score
           score.grader_id = 0
           score.save!
+        end
+        submission.missing_problems = missing_problems.join(', ')
+        submission.save!
+
+        unless submission.missing_problems.empty?
+          raise AutogradeError, "Problems \"#{submission.missing_problems}\" found in autograder result, but not defined by assessment. Instructor should add missing problems to assessment and regrade submissions."
         end
       end
 
@@ -472,11 +483,12 @@ module AssessmentAutogradeCore
       @assessment.problems.each do |p|
         submissions.each do |submission|
           score = submission.scores.find_or_initialize_by(problem_id: p.id)
-          next unless score.new_record? # don't overwrite scores
-          score.score = 0
           score.feedback = feedback_str
-          score.released = true
-          score.grader_id = -1
+          if score.new_record? # don't overwrite scores
+            score.score = 0
+            score.released = true
+            score.grader_id = -1
+          end
           score.save!
         end
       end

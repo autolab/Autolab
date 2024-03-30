@@ -1,3 +1,5 @@
+require "utilities"
+
 class RiskCondition < ApplicationRecord
   serialize :parameters, Hash
   enum condition_type: { no_condition_selected: 0, grace_day_usage: 1, grade_drop: 2,
@@ -185,5 +187,10 @@ class RiskCondition < ApplicationRecord
     else
       max_version
     end
+  end
+
+  SERIALIZABLE = Set.new %w[condition_type parameters version]
+  def serialize
+    Utilities.serializable attributes, SERIALIZABLE
   end
 end

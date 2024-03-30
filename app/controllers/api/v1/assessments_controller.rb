@@ -22,8 +22,9 @@ class Api::V1::AssessmentsController < Api::V1::BaseApiController
   end
 
   def show
-    allowed = [:name, :display_name, :description, :start_at, :due_at, :end_at, :updated_at, :max_grace_days, :max_submissions,
-      :disable_handins, :category_name, :group_size, :writeup_format, :handout_format, :has_scoreboard, :has_autograder, :max_unpenalized_submissions]
+    allowed = [:name, :display_name, :description, :start_at, :due_at, :end_at, :updated_at, :max_grace_days,
+               :max_submissions, :disable_handins, :category_name, :group_size, :writeup_format, :handout_format,
+               :has_scoreboard, :has_autograder, :max_unpenalized_submissions, :max_total_score, :max_scores]
 
     result = @assessment.attributes.symbolize_keys
     result.merge!(:has_scoreboard => @assessment.has_scoreboard?)
@@ -44,7 +45,19 @@ class Api::V1::AssessmentsController < Api::V1::BaseApiController
       result.merge!(:handout_format => "none")
     end
 
-    respond_with result, only: allowed
+    result.merge!(:max_total_score => @assessment.default_total_score)
+
+    result.filter! do |member|
+      allowed.include?(member)
+    end
+
+    max_scores = {}
+    @assessment.problems.each do |prob|
+      max_scores[prob.name] = prob.max_score
+    end
+    result.merge!(:max_scores => max_scores)
+
+    respond_with result
   end
 
   # endpoint for obtaining the writeup

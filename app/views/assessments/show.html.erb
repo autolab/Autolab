@@ -1,3 +1,5 @@
+<% @title = @assessment.display_name %>
+
 <% content_for :javascripts do %>
   <%= javascript_include_tag 'validateIntegrity' %>
   <%= javascript_include_tag 'collapsible' %>
@@ -43,7 +45,7 @@
                           { title: "View and modify the properties for this assessment, including its problems", class: "" } %>
             </li>
             <li>
-              <%= link_to "Grade submissions",
+              <%= link_to "View Gradesheet",
                           viewGradesheet_course_assessment_path(@course, @assessment),
                           { title: "View and enter grades on the gradesheet" } %>
             </li>
@@ -125,7 +127,7 @@
             <% end %>
             <% if @assessment.has_groups? %>
               <% if @aud.membership_status != AssessmentUserDatum::UNCONFIRMED %>
-                <li><%= link_to "Group options", course_assessment_groups_path(@course, @assessment, @aud.group), title: "Check your group settings." %></li>
+                <li><%= link_to "Group options", course_assessment_group_path(@course, @assessment, @aud.group), title: "Check your group settings." %></li>
               <% else %>
                 <li><%= link_to "Group options", new_course_assessment_group_path(@course, @assessment), title: "Check your group settings." %></li>
               <% end %>

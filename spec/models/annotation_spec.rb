@@ -8,6 +8,9 @@ RSpec.describe Annotation, type: :model do
       [CourseUserDatum.where(user: @students.first).first,
        CourseUserDatum.where(user: @students.second).first]
     end
+    after(:each) do
+      delete_course_files(@course)
+    end
     it "updates score correctly when annotations for non-autograded problem applied" do
       submission = Submission.where(course_user_datum: users[0]).first
       score = submission.scores.order(:problem_id).first

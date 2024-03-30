@@ -120,25 +120,27 @@ Show detailed information of an assessment.
 
 **Response:**
 
-| key              | type     | description                                                                                               |
-| ---------------- | -------- | --------------------------------------------------------------------------------------------------------- |
-| name             | string   | The unique url-safe name.                                                                                 |
-| display_name     | string   | The full name of the assessments.                                                                         |
-| description      | string   | A short description of the assessment.                                                                    |
-| start_at         | datetime | The time this assessment is released to students.                                                         |
-| due_at           | datetime | Students can submit before this time without being penalized or using grace days.                         |
-| end_at           | datetime | Last possible time that students can submit (except those granted extensions.)                            |
-| updated_at       | datetime | The last time an update was made to the assessment.                                                       |
-| max_grace_days   | integer  | Maximum number of grace days that a student can spend on this assessment.                                 |
-| max_submissions  | integer  | The maximum number of times a student can submit the assessment.<br>-1 means unlimited submissions.       |
-| max_unpenalized_submissions  | integer  | The maximum number of times the assessment can be submitted without incurring a penalty.<br>-1 means unlimited submissions.|
-| disable_handins  | boolean  | Are handins disallowed by students?                                                                       |
-| category_name    | string   | Name of the category this assessment belongs to.                                                          |
-| group_size       | integer  | The maximum size of groups for this assessment.                                                           |
-| writeup_format   | string   | The format of this assessment's writeup.<br>One of 'none', 'url', or 'file'.                              |
-| handout_format   | string   | The format of this assessment's handout.<br>One of 'none', 'url', or 'file'.                              |
-| has_scoreboard   | boolean  | Does this assessment have a scoreboard?                                                                   |
-| has_autograder   | boolean  | Does this assessment use an autograder?                                                                   |
+| key                         | type     | description                                                                                                                 |
+|-----------------------------|----------|-----------------------------------------------------------------------------------------------------------------------------|
+| name                        | string   | The unique url-safe name.                                                                                                   |
+| display_name                | string   | The full name of the assessments.                                                                                           |
+| description                 | string   | A short description of the assessment.                                                                                      |
+| start_at                    | datetime | The time this assessment is released to students.                                                                           |
+| due_at                      | datetime | Students can submit before this time without being penalized or using grace days.                                           |
+| end_at                      | datetime | Last possible time that students can submit (except those granted extensions.)                                              |
+| updated_at                  | datetime | The last time an update was made to the assessment.                                                                         |
+| max_grace_days              | integer  | Maximum number of grace days that a student can spend on this assessment.                                                   |
+| max_submissions             | integer  | The maximum number of times a student can submit the assessment.<br>-1 means unlimited submissions.                         |
+| max_unpenalized_submissions | integer  | The maximum number of times the assessment can be submitted without incurring a penalty.<br>-1 means unlimited submissions. |
+| disable_handins             | boolean  | Are handins disallowed by students?                                                                                         |
+| category_name               | string   | Name of the category this assessment belongs to.                                                                            |
+| group_size                  | integer  | The maximum size of groups for this assessment.                                                                             |
+| writeup_format              | string   | The format of this assessment's writeup.<br>One of 'none', 'url', or 'file'.                                                |
+| handout_format              | string   | The format of this assessment's handout.<br>One of 'none', 'url', or 'file'.                                                |
+| has_scoreboard              | boolean  | Does this assessment have a scoreboard?                                                                                     |
+| has_autograder              | boolean  | Does this assessment use an autograder?                                                                                     |
+| max_total_score             | float    | The maximum total score for this assessment                                                                                 |
+| max_scores                  | object   | An object with the problem name as the key, and the maximum score for the problem as the value                              |
 
 ---
 
@@ -176,11 +178,37 @@ List all groups in an assessment
 
 **Endpoint:** `GET /courses/{course name}/assessments/{assessment name}/groups`
 
-**Parameters:** [none]
+**Parameters:**
+
+
+`show_members`
+
+| key          |          | type    | description                                          |
+| ------------ |----------|---------|------------------------------------------------------|
+| show_members | optional | boolean | whether to retrieve the members of each group or not |
+
+---
 
 **Response:**
 
 A JSON object containing the group_size, a list of groups, and the assessment containing the groups.
+If `show_members` is set to true, each group will have a list `members` of user objects that are members of that group.
+
+
+#### show
+
+Show the details of a group and its members
+
+**Scope:** 'instructor_all'
+
+**Endpoint:** `GET /courses/{course name}/assessments/{assessment name}/groups/{id}`
+
+**Parameters:** [none]
+
+**Response:**
+
+The requested group object. It contains a list `members` of user objects that are members of that group.
+
 
 #### create
 
@@ -262,11 +290,12 @@ Endpoint `GET /courses/{course_name}/assessments/{assessment_name}/problems`
 A list of problems. Each problem contains:
 
 | key         | type    | description                              |
-| ----------- | ------- | ---------------------------------------- |
+|-------------| ------- |------------------------------------------|
 | name        | string  | Full name of the problem.                |
 | description | string  | Brief description of the problem.        |
 | max_score   | float   | Maximum possible score for this problem. |
 | optional    | boolean | Is this problem optional?                |
+| starred     | boolean | Is this problem starred?                 |
 
 ---
 

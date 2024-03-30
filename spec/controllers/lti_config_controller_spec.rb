@@ -1,4 +1,5 @@
 require "rails_helper"
+require_relative "controllers_shared_context"
 
 RSpec.describe LtiConfigController, type: :controller do
   render_views
@@ -31,9 +32,9 @@ RSpec.describe LtiConfigController, type: :controller do
   end
 
   describe "#update_config" do
+    include_context "controllers shared context"
     context "when user is Autolab admin" do
       let!(:user_id) do
-        create_users
         @admin_user
       end
       before(:each) do
@@ -93,6 +94,73 @@ RSpec.describe LtiConfigController, type: :controller do
         }
         expect(response).to have_http_status(302)
         expect(flash[:success]).to be_present
+      end
+      it "loads existing config correctly" do
+        File.open("#{Rails.configuration.lti_config_location}/lti_config.yml", "w") do |file|
+          file.write(YAML.dump(@lti_config_hash.deep_stringify_keys))
+        end
+        get :index
+        expect(response).to be_successful
+        expect(response.body).to match(/LTI Configuration Settings/m)
+      end
+    end
+  end
+
+  describe "#index" do
+    include_context "controllers shared context"
+    context "when user is Autolab admin" do
+      let!(:user_id) do
+        @admin_user
+      end
+      before(:each) do
+        sign_in(user_id)
+      end
+      it "renders successfully" do
+        get :index
+        expect(response).to be_successful
+        expect(response.body).to match(/LTI Configuration Settings/m)
+      end
+    end
+
+    context "when user is Instructor" do
+      let!(:user_id) do
+        @instructor_user
+      end
+      before(:each) do
+        sign_in(user_id)
+      end
+      it "renders with failure" do
+        get :index
+        expect(response).not_to be_successful
+        expect(response.body).not_to match(/LTI Configuration Settings/m)
+      end
+    end
+
+    context "when user is student" do
+      let!(:user_id) do
+        @students.first
+      end
+      before(:each) do
+        sign_in(user_id)
+      end
+      it "renders with failure" do
+        get :index
+        expect(response).not_to be_successful
+        expect(response.body).not_to match(/LTI Configuration Settings/m)
+      end
+    end
+
+    context "when user is course assistant" do
+      let!(:user_id) do
+        @course_assistant_user
+      end
+      before(:each) do
+        sign_in(user_id)
+      end
+      it "renders with failure" do
+        get :index
+        expect(response).not_to be_successful
+        expect(response.body).not_to match(/LTI Configuration Settings/m)
       end
     end
   end

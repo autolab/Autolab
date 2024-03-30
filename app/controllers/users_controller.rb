@@ -7,6 +7,7 @@ class UsersController < ApplicationController
   before_action :set_user,
                 only: [:github_oauth, :github_revoke, :lti_launch_initialize,
                        :lti_launch_link_course]
+  before_action :set_users_list_breadcrumb, except: %i[index]
 
   # GET /users
   action_auth_level :index, :student
@@ -35,6 +36,8 @@ class UsersController < ApplicationController
       flash[:error] = "Failed to show user: user does not exist."
       redirect_to(users_path) && return
     end
+
+    @hover_assessment_date = user.hover_assessment_date
 
     if current_user.administrator?
       # if current user is admin, show whatever he requests
@@ -140,6 +143,9 @@ class UsersController < ApplicationController
     else
       @user = current_user
     end
+
+    # Do it ad-hoc here, since this is the only place we need it
+    @breadcrumbs << (view_context.link_to @user.display_name, user_path(@user))
   end
 
   # PATCH users/:id/
@@ -304,6 +310,7 @@ class UsersController < ApplicationController
       flash[:error] = "Error with Github OAuth (invalid state), please try again."
       redirect_to(root_path) && return
     end
+    oauth_user = github_integration.user
 
     begin
       # Results in exception if invalid
@@ -317,7 +324,7 @@ class UsersController < ApplicationController
     access_token = token.to_hash[:access_token]
     github_integration.update!(access_token:, oauth_state: nil)
     flash[:success] = "Successfully connected with Github."
-    redirect_to(root_path) && return
+    redirect_to(user_path(id: oauth_user.id)) && return
   end
 
   action_auth_level :github_revoke, :student
@@ -364,6 +371,19 @@ class UsersController < ApplicationController
       redirect_to(root_path)
     else
       flash[:error] = "Password #{@user.errors[:password][0]}"
+    end
+  end
+
+  action_auth_level :update_display_settings, :student
+  def update_display_settings
+    @user = current_user
+    return if params[:user].nil? || params[:user].is_a?(String) || @user.nil?
+
+    if @user.update(hover_assessment_date: params[:user][:hover_assessment_date])
+      flash[:success] = "Successfully updated display settings"
+      (redirect_to user_path(id: @user.id)) && return
+    else
+      flash[:error] = @user.errors[:hover_assessment_date][0].to_s
     end
   end
 

@@ -6,9 +6,10 @@ class AttachmentsController < ApplicationController
   # inherited from ApplicationController
   # this will also set an @is_assessment variable based on the result of is_assessment?
   before_action :set_assessment, if: :assessment?
+  before_action :set_assessment_breadcrumb
   before_action :set_attachment, except: %i[index new create]
-  before_action :add_attachments_breadcrumb
 
+  # This page shouldn't really be used
   action_auth_level :index, :instructor
   def index
     @attachments = if @is_assessment
@@ -148,15 +149,6 @@ private
     else
       redirect_to course_path(@course)
     end
-  end
-
-  def add_attachments_breadcrumb
-    @breadcrumbs << if @is_assessment
-                      view_context.link_to "Assessment Attachments",
-                                           course_assessment_attachments_path(@course, @assessment)
-                    else
-                      view_context.link_to "Course Attachments", course_attachments_path(@course)
-                    end
   end
 
   def attachment_params

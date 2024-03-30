@@ -4,7 +4,7 @@ tmp/cache/
 tmp/
 !tmp/restart.txt
 
-# autolab configs
+# Autolab configs
 config/autogradeConfig.rb
 assessmentConfig/
 courseConfig/
@@ -12,7 +12,6 @@ config/environments/production.rb
 coverage/
 /courses/
 /courses
-/gradebooks/
 config/database.yml
 config/school.yml
 config/lti_config.yml
@@ -22,7 +21,7 @@ config/smtp_config.yml
 config/github_config.yml
 config/oauth_config.yml
 
-# autolab user documents
+# Autolab user documents
 app/views/home/_topannounce.html.erb
 attachments/
 doc/

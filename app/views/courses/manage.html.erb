@@ -1,4 +1,4 @@
-<% @title = "Course Admin" %>
+<% @title = "Manage Course" %>
 
 <% content_for :stylesheets do %>
   <%= stylesheet_link_tag "student_gradebook" %>
@@ -36,10 +36,6 @@
                           { title: "Send an email to everyone in the class" } %>
             </li>
             <li>
-              <%= link_to "Manage course attachments", course_attachments_path(@course),
-                          { title: "Distribute files to your students" } %>
-            </li>
-            <li>
               <%= link_to "Manage announcements", course_announcements_path(@course),
                           { title: "Manage announcements via banners on either front page or all pages (persistent)." } %>
             </li>
@@ -55,6 +51,16 @@
             <li>
               <%= link_to "Run Moss cheat checker", moss_course_path(@course),
                           { title: "Use the Stanford Moss server to detect copying" } %>
+            </li>
+            <% if Rails.configuration.x.docker_image_upload_enabled.presence %>
+              <li>
+                <%= link_to "Upload docker image", course_dockers_path(@course),
+                            { title: "Upload docker image for autograding assessments" } %>
+              </li>
+            <% end %>
+            <li>
+              <%= link_to "Export course", export_course_path(@course),
+                          { title: "Export course configurations and assessments" } %>
             </li>
 
             <li class="collection-item red-text danger-bottom no-hover"><h4>Danger Zone</h4></li>

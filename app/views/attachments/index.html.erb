@@ -1,7 +1,13 @@
+<% @title = if @is_assessment
+              "Assessment Attachments"
+            else
+              "Course Attachments"
+            end %>
+
 <% if @is_assessment %>
-  <h2>Listing <%= link_to @assessment.display_name, course_assessment_path(@course, @assessment) %> Attachments</h2>
+  <h4>Listing <%= link_to @assessment.display_name, course_assessment_path(@course, @assessment) %> Attachments</h4>
 <% else %>
-  <h2>Listing <%= link_to @course.full_name, course_path(@course) %> Attachments</h2>
+  <h4>Listing <%= link_to @course.full_name, course_path(@course) %> Attachments</h4>
 <% end %>
 
 <ul class="collection with-header attachments">

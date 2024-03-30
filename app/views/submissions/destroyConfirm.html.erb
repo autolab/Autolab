@@ -1,17 +1,33 @@
-<% if ! @submission then %>
+<% @title = "Delete Submission" %>
+
+<% content_for :javascripts do %>
+  <script>
+      $(function() {
+          $("#destroy-confirm-check").on("click", function () {
+              if ($(this).prop("checked")) {
+                  $("#destroy-submit").attr("disabled", false);
+              } else {
+                  $("#destroy-submit").attr("disabled", true);
+              }
+          })
+      })
+  </script>
+<% end %>
+
+<% if !@submission %>
   No such Submission
 <% else %>
-  <h2>
+  <h4>
     Destroy <%= @submission.course_user_datum.email %>'s Submission
     #<%= @submission.version %> for <%= @submission.assessment.display_name %>
-  </h2>
-  <b>This will destroy their submission and scores.  This cannot be undone!</b>
+  </h4>
+  <b>Deleting a student's submission will destroy their scores for that submission as well.  This cannot be undone!</b>
   <%= form_tag(course_assessment_submission_path(@course, @assessment, @submission), method: :delete) %>
   <br>
   <label>
-    <%= check_box_tag "yes", class: "filled-in" %>
-    <span>Yes! Destroy this submission!</span>
+    <%= check_box_tag "destroy-confirm-check", class: "filled-in" %>
+    <span>I understand the above and wish to destroy this submission.</span>
   </label>
   <br><br>
-  <%= submit_tag("Destroy!", class: "btn primary") %>
+  <%= submit_tag("Destroy #{@submission.course_user_datum.email}'s Submission ", class: "btn primary", id: "destroy-submit", disabled: true) %>
 <% end %>
