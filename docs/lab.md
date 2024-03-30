@@ -350,7 +350,7 @@ Autolab always shows the stdout output of running make, even when the program cr
 
 #### Why is Autolab not able to stream my stdout output? The output only seems to be displayed when autograding is completed.
 
-Autolab can only stream stdout. Many programming languages do buffered writes to `stdout`, so you would have to guarantee that you are writing to stdout by flushing the buffer accordingly (e.g. [Python `print`'s flush flag](https://docs.python.org/3/library/functions.html#print), [C's `fflush`](https://www.tutorialspoint.com/c_standard_library/c_function_fflush.htm), [CPP's `fflush` ](https://en.cppreference.com/w/cpp/io/c/fflush))
+Autolab can only stream stdout. Many programming languages do buffered writes to `stdout`, so you would have to guarantee that you are writing to stdout by flushing the buffer accordingly (e.g. [Python `print`'s flush flag](https://docs.python.org/3/library/functions.html#print), [C's `fflush`](https://www.tutorialspoint.com/c_standard_library/c_function_fflush.htm), [CPP's `fflush`](https://en.cppreference.com/w/cpp/io/c/fflush))
 
 #### Why is my assessment failing to be imported?
 

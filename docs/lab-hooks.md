@@ -2,7 +2,7 @@
 
 This document provides a summary of all the lab (aka assessment) hooks available to an instructor.
 
-Lab hooks are defined in the lab's configuration file, `<labname>.rb`. The configuration file is located in the lab's directory, `<coursename>/<labname>/<labname>.rb`.
+Lab hooks are defined in the lab's configuration file, `<labname>.rb`. The configuration file is located in the lab's directory, at the path `<coursename>/<labname>/<labname>.rb`.
 
 To make changes live, you must select the "Reload config file" option on the lab's index page. You can also upload a new config file from the lab's setting page.
 
@@ -339,7 +339,7 @@ end
 
 Hook: `parseAutoresult`
 
-By default, the autoresult string from the autograder (the last non-empty line) is assumed to be encode in JSON and is parsed as such.
+By default, the autoresult string from the autograder (the last non-empty line) is assumed to be encoded in JSON and is parsed as such.
 If a different format is used for the autoresult string, this hook allows you to define custom parsing logic.
 
 ```ruby
