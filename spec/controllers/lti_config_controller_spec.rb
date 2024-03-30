@@ -96,7 +96,7 @@ RSpec.describe LtiConfigController, type: :controller do
         expect(flash[:success]).to be_present
       end
       it "loads existing config correctly" do
-        File.open("#{Rails.configuration.lti_config_location}/lti_config.yml", "w") do |file|
+        File.open("#{Rails.configuration.config_location}/lti_config.yml", "w") do |file|
           file.write(YAML.dump(@lti_config_hash.deep_stringify_keys))
         end
         get :index

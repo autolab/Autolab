@@ -49,7 +49,7 @@ RSpec.describe AdminsController, type: :controller do
     describe "lti_config" do
       context "when user is Autolab admin" do
         user_id = get_admin
-        login_as(user_id)
+        sign_in(user_id)
         it "renders successfully" do
           get :autolab_config, params: { active: :lti }
           expect(response).to be_successful
@@ -87,7 +87,7 @@ RSpec.describe AdminsController, type: :controller do
 
       context "when user is Instructor" do
         user_id = get_instructor
-        login_as(user_id)
+        sign_in(user_id)
         it "renders with failure" do
           get :autolab_config, params: { active: :lti }
           expect(response).not_to be_successful
@@ -97,7 +97,7 @@ RSpec.describe AdminsController, type: :controller do
 
       context "when user is student" do
         user_id = get_user
-        login_as(user_id)
+        sign_in(user_id)
         it "renders with failure" do
           get :autolab_config, params: { active: :lti }
           expect(response).not_to be_successful
@@ -107,7 +107,7 @@ RSpec.describe AdminsController, type: :controller do
 
       context "when user is course assistant" do
         user_id = get_course_assistant_only
-        login_as(user_id)
+        sign_in(user_id)
         it "renders with failure" do
           get :autolab_config, params: { active: :lti }
           expect(response).not_to be_successful
