@@ -52,7 +52,7 @@ RSpec.describe FileManagerController, type: :controller do
   shared_examples "path_success" do |login: true|
     before(:each) { sign_in(u) if login }
     it "path links successfully" do
-      get :path, params: { path: "test_course_1" }
+      get :index, params: { path: "test_course_1" }
       expect(response).to have_http_status(:success)
     end
   end
@@ -60,7 +60,7 @@ RSpec.describe FileManagerController, type: :controller do
   shared_examples "path_failure" do |login: true|
     before(:each) { sign_in(u) if login }
     it "path links unsuccessfully" do
-      get :path, params: { path: "test_course_1" }
+      get :index, params: { path: "test_course_1" }
       expect(response).to_not be_successful
     end
   end

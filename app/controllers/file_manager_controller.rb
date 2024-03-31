@@ -1,6 +1,7 @@
 # Code for file manager adapted from: adrientoub/file-explorer
 require 'archive'
 require 'pathname'
+require 'mimemagic'
 
 class FileManagerController < ApplicationController
   BASE_DIRECTORY = Rails.root.join('courses')
@@ -10,17 +11,35 @@ class FileManagerController < ApplicationController
 
   def index
     path = params[:path].nil? ? "" : params[:path]
+    new_url = "#{path}/"
+    parts = new_url.split('/')
+    if parts.empty?
+      @title = "File Manager"
+    else
+      @breadcrumbs << view_context.link_to("File Manager", file_manager_index_path)
+    end
+    parts.each_with_index do |part, index|
+      path = new_url.split('/').slice(0, index + 1).join("/")
+      @breadcrumbs << view_context.link_to(part, "/file_manager/#{path}")
+    end
     absolute_path = check_path_exist(path)
-    if (File.directory?(absolute_path) && check_instructor(absolute_path) ) || path == ""
-      populate_directory(absolute_path, "#{path}/")
+    if (File.directory?(absolute_path) && check_instructor(absolute_path)) || path == ""
+      populate_directory(absolute_path, new_url)
       render 'file_manager/index'
     elsif File.file?(absolute_path) && check_instructor(absolute_path)
       if File.size(absolute_path) > 1_000_000 || params[:download]
         send_file absolute_path
       else
-        @file = File.read(absolute_path)
-        @path = path
-        render :file, formats: :html
+        mime_type = MimeMagic.by_path(absolute_path).type
+        if mime_type.split('/').first == 'text'
+          @path = path
+          @file = absolute_path.read
+          render :file, formats: :html
+        else
+          send_file(absolute_path,
+                    filename: File.basename(absolute_path),
+                    disposition: 'attachment')
+        end
       end
     end
   end
@@ -33,9 +52,7 @@ class FileManagerController < ApplicationController
     absolute_path = check_path_exist(params[:path])
     return unless check_instructor(absolute_path)
 
-    absolute_path = check_path_exist(params[:path])
-    current_path = Pathname.new(absolute_path)
-    parent = current_path.parent
+    parent = absolute_path.parent
     raise "Unable to delete courses in the root directory." if parent == BASE_DIRECTORY
 
     FileUtils.rm_rf(absolute_path)
@@ -44,14 +61,13 @@ class FileManagerController < ApplicationController
   def rename
     absolute_path = check_path_exist(params[:relative_path])
     if check_instructor(absolute_path)
-      current_path = Pathname.new(absolute_path)
-      parent = current_path.parent
+      parent = absolute_path.parent
       if parent == BASE_DIRECTORY
         flash[:error] = "Unable to rename courses in the root directory."
       else
         dir_name = File.dirname(params[:relative_path])
 
-        if params[:new_name].empty? || params[:new_name].nil?
+        if params[:new_name].nil? || params[:new_name].empty?
           raise ArgumentError, "New name not provided"
         end
 
@@ -77,7 +93,7 @@ class FileManagerController < ApplicationController
   def download_tar
     path = params[:path]&.split("/")&.drop(2)&.join("/")
     path = CGI.unescape(path)
-    absolute_path = check_path_exist(path).to_s
+    absolute_path = check_path_exist(path)
     return unless check_instructor(absolute_path)
 
     if File.directory?(absolute_path)
@@ -212,11 +228,8 @@ class FileManagerController < ApplicationController
 
   def check_instructor(path)
     current_user_id = current_user.id
-    path = Pathname.new(path)
     cuds = CourseUserDatum.where(user_id: current_user_id, instructor: true)
-    courses = cuds.map do |cud|
-      Course.find_by(id: cud.course_id)
-    end
+    courses = Course.where(id: cuds.map(&:course_id))
     courses.map do |course|
       course_path = Pathname.new("#{BASE_DIRECTORY}/#{course.name}")
       if Archive.in_dir?(path, course_path, strict: false)

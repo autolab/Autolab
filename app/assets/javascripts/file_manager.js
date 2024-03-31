@@ -185,13 +185,38 @@ function selectDeleteSelected(path) {
     }
 }
 
+function updateButtonStatesAndStyle(button, parent) {
+    parent.style.backgroundColor = button.disabled ? "grey" : "rgba(153, 0, 0, 0.9)";
+    parent.style.pointerEvents = button.disabled ? "none" : "auto";
+}
+
+function handleSelectionChange() {
+    const downloadBtn = document.getElementById('download-selected');
+    const deleteBtn = document.getElementById('delete-selected');
+    const downloadParent = document.getElementById('download-parent');
+    const deleteParent = document.getElementById('delete-parent');
+
+    let selectedItems = getSelectedItems();
+    downloadBtn.disabled = selectedItems.length === 0;
+    updateButtonStatesAndStyle(downloadBtn, downloadParent);
+
+    deleteBtn.disabled = selectedItems.length === 0;
+    updateButtonStatesAndStyle(deleteBtn, deleteParent);
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     const otherCheckboxes = document.querySelectorAll('.check');
+    handleSelectionChange();
 
     $(".check-all").click(function() {
         const isChecked = this.checked;
         otherCheckboxes.forEach(function(checkbox) {
             checkbox.checked = isChecked;
         });
+        handleSelectionChange();
     });
+
+    $(".check").click(function() {
+        handleSelectionChange();
+    })
 });

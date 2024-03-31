@@ -40,11 +40,13 @@
   position: relative;
   overflow: hidden;
 }
+
 .button-file input[type=submit] {
   left: -10px;
   right: 0;
   padding: 0;
 }
+
 .button-file input {
   position: absolute;
   top: 0;
@@ -63,3 +65,27 @@
 .button-file a {
   color: white;
 }
+
+@media screen and (max-width: 1164px) {
+  .div-row {
+    display: grid;
+    grid-template-columns: auto auto;
+    gap: 1rem;
+  }
+  .button-file {
+    width: 200px;
+  }
+  .div-row-cols {
+    margin: 0;
+    padding: 0;
+  }
+}
+
+@media screen and (max-width: 478px) {
+  .div-row {
+    display: grid;
+    grid-template-columns: auto;
+    gap: 1rem;
+  }
+}
+

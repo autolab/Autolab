@@ -1,18 +1,3 @@
-<% parts = @path.split('/') %>
-<% if parts.length == 1 %>
-  <% @title = "File Manager" %>
-<% else %>
-  <% @breadcrumbs << link_to("File Manager", file_manager_index_path) %>
-<% end %>
-<% parts.each_with_index do |part, index| %>
-  <% if index + 1 == parts.length %>
-    <% @title = part %>
-  <% else %>
-    <% path = @path.split('/').slice(0, index + 1).join("/") %>
-    <% @breadcrumbs << link_to(part, "/file_manager/#{path}") %>
-  <% end %>
-<% end %>
-
 <% content_for :stylesheets do %>
   <%= stylesheet_link_tag "file_manager" %>
 <% end %>
