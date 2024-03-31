@@ -47,15 +47,16 @@ RSpec.describe AdminsController, type: :controller do
 
   describe "#autolab_config" do
     describe "lti_config" do
+      include_context "controllers shared context"
       context "when user is Autolab admin" do
-        user_id = get_admin
-        sign_in(user_id)
         it "renders successfully" do
+          sign_in(admin_user)
           get :autolab_config, params: { active: :lti }
           expect(response).to be_successful
           expect(response.body).to match(/LTI Configuration Settings/m)
         end
         it "loads existing config correctly" do
+          sign_in(admin_user)
           @lti_config_hash = YAML.safe_load(
             File.read("#{Rails.configuration.config_location}/lti_config_template.yml")
           )
@@ -86,9 +87,8 @@ RSpec.describe AdminsController, type: :controller do
       end
 
       context "when user is Instructor" do
-        user_id = get_instructor
-        sign_in(user_id)
         it "renders with failure" do
+          sign_in(instructor_user)
           get :autolab_config, params: { active: :lti }
           expect(response).not_to be_successful
           expect(response.body).not_to match(/LTI Configuration Settings/m)
@@ -96,9 +96,8 @@ RSpec.describe AdminsController, type: :controller do
       end
 
       context "when user is student" do
-        user_id = get_user
-        sign_in(user_id)
         it "renders with failure" do
+          sign_in(student_user)
           get :autolab_config, params: { active: :lti }
           expect(response).not_to be_successful
           expect(response.body).not_to match(/LTI Configuration Settings/m)
@@ -106,9 +105,8 @@ RSpec.describe AdminsController, type: :controller do
       end
 
       context "when user is course assistant" do
-        user_id = get_course_assistant_only
-        sign_in(user_id)
         it "renders with failure" do
+          sign_in(course_assistant_user)
           get :autolab_config, params: { active: :lti }
           expect(response).not_to be_successful
           expect(response.body).not_to match(/LTI Configuration Settings/m)
