@@ -71,7 +71,7 @@ class FileManagerController < ApplicationController
           raise ArgumentError, "New name not provided"
         end
 
-        unless params[:new_name].match(/\A[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)?\Z/)
+        unless params[:new_name].match(/\A[a-zA-Z0-9_\-.\s]+\Z/)
           raise ArgumentError, "Invalid characters. Only letters,
         numbers, underscores, and hyphens are allowed."
         end
