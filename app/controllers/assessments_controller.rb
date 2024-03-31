@@ -29,7 +29,8 @@ class AssessmentsController < ApplicationController
                                             import_assessments course_onboard_install_asmt]
   skip_before_action :set_breadcrumbs, only: %i[index]
   before_action :set_assessment_breadcrumb, except: %i[index show install_assessment]
-  before_action :set_manage_course_breadcrumb, only: %i[install_assessment]
+  before_action :set_manage_course_breadcrumb, only: %i[install_assessment new]
+  before_action :set_install_asmt_breadcrumb, only: %i[new]
   before_action :set_submission, only: [:viewFeedback]
 
   # We have to do this here, because the modules don't inherit ApplicationController.
@@ -341,8 +342,18 @@ class AssessmentsController < ApplicationController
       # first regex - try to sanitize input, allow special characters in display name but not name
       # if the sanitized doesn't match the required identifier structure, then we reject
       begin
-        # Attempt name generation, try to match to a substring that is valid within the display name
-        match = @assessment.display_name.match(Assessment::VALID_NAME_SANITIZER_REGEX)
+        # Attempt name generation, try to match to a substring that is valid within the
+        # display name.
+        # UB Update Feb 13, 2024: Automatically replace invalid unique name characters with dashes
+        # instead of only taking the characters up to the first invalid character.
+        display_name_dashed = @assessment.display_name.gsub(/[^a-zA-Z0-9-]/, "-")
+        while display_name_dashed.include?("--")
+          # Remove double dashes
+          display_name_dashed = display_name_dashed.gsub("--", "-")
+        end
+        display_name_dashed = display_name_dashed.delete_prefix("-")
+        display_name_dashed = display_name_dashed.delete_suffix("-")
+        match = display_name_dashed.match(Assessment::VALID_NAME_SANITIZER_REGEX)
         unless match.nil?
           sanitized_display_name = match.captures[0]
         end
@@ -424,46 +435,6 @@ class AssessmentsController < ApplicationController
     end
 
     redirect_to([@course, @assessment]) && return
-  end
-
-  def assessmentInitialize(assignName)
-    @assessment = @course.assessments.find_by(name: assignName)
-    raise "Assessment #{assignName} does not exist!" unless @assessment
-
-    if @assessment.nil?
-      flash[:error] = "Error: Invalid assessment"
-      redirect_to([@course, :assessments]) && return
-    end
-
-    @name = @assessment.name
-    @description = @assessment.description
-    @start_at = @assessment.start_at
-    @due_at = @assessment.due_at
-    @end_at = @assessment.end_at
-    @id = @assessment.id
-  end
-
-  # installProblems - If there are no problems defined yet for this
-  # assessment, then create them using the list defined by the #
-  # assessmentInitialize() function in the user's assessment.rb
-  # file.
-  #
-  # Note: this is only here for backward compatibility. In the
-  # current system, problems definitions are imported from the
-  # assessment properties yaml file.
-  def installProblems
-    redirect_to(action: "index") && return unless @cud.instructor?
-
-    return unless @assessment.problems.count == 0
-
-    @problems.each do |problem|
-      @assessment.problems.create do |p|
-        p.name = problem["name"]
-        p.description = problem["description"]
-        p.max_score = problem["max_score"]
-        p.optional = problem["optional"]
-      end
-    end
   end
 
   # raw_score
@@ -1060,7 +1031,8 @@ private
   def new_assessment_params
     ass = params.require(:assessment)
     ass[:category_name] = params[:new_category] if params[:new_category].present?
-    ass.permit(:name, :display_name, :category_name, :group_size, :github_submission_enabled)
+    ass.permit(:name, :display_name, :category_name, :group_size, :github_submission_enabled,
+               :allow_student_assign_group)
   end
 
   def edit_assessment_params
@@ -1245,5 +1217,12 @@ private
     scores.map { |s|
       [s.problem.name, s.score]
     }.to_h
+  end
+
+  def set_install_asmt_breadcrumb
+    return if @course.nil?
+
+    @breadcrumbs << (view_context.link_to "Install Assessment",
+                                          install_assessment_course_assessments_path(@course))
   end
 end

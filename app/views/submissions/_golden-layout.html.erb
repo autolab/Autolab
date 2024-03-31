@@ -15,6 +15,9 @@
     myLayout.registerComponent("grades", function (container, state) {
       container.getElement().html("<%= j render(partial: 'grades') %>");
     });
+    myLayout.registerComponent("diff_viewer", function (container, state) {
+      container.getElement().html("<%= j render(partial: 'diff_viewer') %>");
+    });
   }
 
   function resizeGradeList() {
@@ -60,9 +63,19 @@
 
   var content = [
       {
-        type: "component",
-        componentName: "code_viewer",
-        title: "Code",
+        type: "stack",
+        content: [
+          {
+            type: "component",
+            componentName: "code_viewer",
+            title: "Code",
+          },
+          {
+            type: "component",
+            componentName: "diff_viewer",
+            title: "Diff Viewer",
+          }
+        ]
       },
       {
         type: "column",

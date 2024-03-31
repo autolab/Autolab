@@ -9,13 +9,13 @@ class Api::V1::ProblemsController < Api::V1::BaseApiController
   def index
     problems = @assessment.problems
 
-    respond_with problems, only: [:name, :description, :max_score, :optional]
+    respond_with problems, only: [:name, :description, :max_score, :optional, :starred]
   end
 
   # endpoint for creating a problem for an assessment
   def create
     require_params([:name, :max_score])
-    set_default_params({ description: "", optional: false })
+    set_default_params({ description: "", optional: false, starred: false })
 
     problem = @assessment.problems.new(problem_params)
     unless problem.save
@@ -29,10 +29,10 @@ private
 
   # this function says which problem attributes can be mass-assigned to, and which cannot
   def problem_params
-    params.permit(:name, :description, :max_score, :optional)
+    params.permit(:name, :description, :max_score, :optional, :starred)
   end
 
   def format_problem_response(problem)
-    problem.as_json(only: [:name, :description, :max_score, :optional])
+    problem.as_json(only: [:name, :description, :max_score, :optional, :starred])
   end
 end

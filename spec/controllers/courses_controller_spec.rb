@@ -337,7 +337,7 @@ RSpec.describe CoursesController, type: :controller do
                                          tarFile: file }
         expect(response).to have_http_status(200)
         expect(flash[:error]).to be_present
-        expect(flash[:error]).to match(/.yml was not found/m)
+        expect(flash[:error]).to match(/\.yml was not found/m)
       end
       it "handles wrong course yml name" do
         file = fixture_file_upload("courses/course-mismatch-yml.tar")

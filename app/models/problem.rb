@@ -14,9 +14,11 @@ class Problem < ApplicationRecord
   validates :name, uniqueness: { case_sensitive: false, scope: :assessment_id }
   validates_associated :assessment
 
+  scope :ordered, -> { order(starred: :desc, name: :asc) }
+
   after_commit -> { assessment.dump_yaml }
 
-  SERIALIZABLE = Set.new %w[name description max_score optional]
+  SERIALIZABLE = Set.new %w[name description max_score optional starred]
   def serialize
     Utilities.serializable attributes, SERIALIZABLE
   end

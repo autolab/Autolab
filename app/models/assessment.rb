@@ -222,7 +222,6 @@ class Assessment < ApplicationRecord
 
     # Update with this assessment information
     config_source.gsub!("##NAME_CAMEL##", unique_config_module_name)
-    config_source.gsub!("##NAME_LOWER##", name)
     # Write the new config out to the right file.
     File.open(assessment_config_file_path, "w") { |f| f.write(config_source) }
     true
@@ -259,7 +258,6 @@ class Assessment < ApplicationRecord
         default_config_file_path = Rails.root.join("lib/__defaultAssessment.rb")
         config_source = File.open(default_config_file_path, "r", &:read)
         config_source.gsub!("##NAME_CAMEL##", unique_config_module_name)
-        config_source.gsub!("##NAME_LOWER##", name)
       else
         config_source = config_source.sub(match[0], "module #{unique_config_module_name}")
       end

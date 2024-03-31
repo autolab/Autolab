@@ -13,7 +13,6 @@ class SubmissionsController < ApplicationController
                                           view release_student_grade unrelease_student_grade]
   before_action :get_submission_file, only: %i[download view]
 
-  # this page loads.  links/functionality may be/are off
   action_auth_level :index, :instructor
   def index
     @submissions = @assessment.submissions.includes({ course_user_datum: :user })
@@ -21,37 +20,43 @@ class SubmissionsController < ApplicationController
     @autograded = @assessment.has_autograder?
   end
 
-  # this works
   action_auth_level :new, :instructor
   def new
     @submission = @assessment.submissions.new(tweak: Tweak.new)
 
     if !params["course_user_datum_id"].nil?
       cud_ids = params["course_user_datum_id"].split(",")
-      @cuds = @course.course_user_data.find(cud_ids)
-      if @cuds.size != cud_ids.size
-        @errorMessage = "Couldn't find all course_user_data in #{cuds_ids}. " \
-          "Expected #{cud_ids.size} course_user_data, but only found " \
-          "#{@cuds.size} course_user_data."
-        render([@course, @assessment, :submissions]) && return
+      begin
+        @cuds = @course.course_user_data.find(cud_ids)
+      rescue ActiveRecord::RecordNotFound
+        flash[:error] = "Couldn't find all course_user_data IDs in #{cud_ids}. " \
+          "Make sure the CUD ids are correct."
+        redirect_to(course_assessment_submissions_path(@course, @assessment))
       end
     else
       @users, @usersEncoded = @course.get_autocomplete_data
     end
   end
 
-  # this seems to work to.
   action_auth_level :create, :instructor
   def create
+    if params[:submission].nil? || params[:submission][:course_user_datum_id].nil? ||
+       !params[:submission][:course_user_datum_id].is_a?(String) ||
+       params[:submission][:tweak_attributes].nil? ||
+       params[:submission]["notes"].nil?
+      flash[:error] = "Could not create submission: submission params not well formed"
+      redirect_to(course_assessment_submissions_path(@course, @assessment)) && return
+    end
     @submission = @assessment.submissions.new
-
     cud_ids = params[:submission][:course_user_datum_id].split(",")
     # Validate all users before we start
-    @cuds = @course.course_user_data.find(cud_ids)
-    if @cuds.size != cud_ids.size
-      @errorMessage = "Invalid CourseUserDatum ID in #{cud_ids}"
-      render([@course, @assessment, :submissions]) && return
+    begin
+      @cuds = @course.course_user_data.find(cud_ids)
+    rescue ActiveRecord::RecordNotFound
+      flash[:error] = "Invalid CourseUserDatum ID in #{cud_ids}"
+      redirect_to(course_assessment_submissions_path(@course, @assessment)) && return
     end
+
     cud_ids.each do |cud_id|
       @submission = Submission.new(assessment_id: @assessment.id)
       @submission.course_user_datum_id = cud_id
@@ -62,29 +67,41 @@ class SubmissionsController < ApplicationController
       end
       @submission.special_type = params[:submission]["special_type"]
       @submission.submitted_by_id = @cud.id
-      next unless @submission.save! # Now we have a version number!
-
+      begin
+        @submission.save! # Now we have a version number!
+      rescue ActiveRecord::RecordInvalid
+        flash[:error] =
+          "There were errors creating the submission for student "  \
+        "#{@submission.course_user_datum.email}"
+        @submission.errors.full_messages.each do |msg|
+          flash[:error] += "<br>#{msg}"
+        end
+        flash[:html_safe] = true
+        redirect_to(course_assessment_submissions_path(@course, @assessment)) && return
+      end
       if params[:submission]["file"].present?
         @submission.save_file(params[:submission])
       end
     end
-    flash[:success] = "#{pluralize(cud_ids.size, 'Submission')} Created"
+    flash[:success] =
+      "#{ActionController::Base.helpers.pluralize(cud_ids.size, 'Submission')} Created"
     redirect_to course_assessment_submissions_path(@course, @assessment)
   end
 
-  action_auth_level :show, :student
-  def show; end
-
-  # this loads and looks good
   action_auth_level :edit, :instructor
   def edit
     @submission.tweak ||= Tweak.new
   end
 
-  # this is good
   action_auth_level :update, :instructor
   def update
-    flash[:error] = "Cannot update nil submission" if @submission.nil?
+    if @submission.nil? ||
+       params[:submission].nil? ||
+       params[:submission][:tweak_attributes].nil? ||
+       params[:submission]["notes"].nil?
+      flash[:error] = "Could not update submission: submission params not well formed"
+      redirect_to(course_assessment_submissions_path(@course, @assessment)) && return
+    end
 
     if params[:submission][:tweak_attributes][:value].blank?
       params[:submission][:tweak_attributes][:_destroy] = true
@@ -96,32 +113,29 @@ class SubmissionsController < ApplicationController
     end
 
     # Error case
-    flash[:error] = "Error: There were errors updating the submission."
+    flash[:error] = "Error: There were errors updating the submission for student " \
+        "#{@submission.course_user_datum.email}"
     @submission.errors.full_messages.each do |msg|
       flash[:error] += "<br>#{msg}"
     end
     flash[:html_safe] = true
     redirect_to(edit_course_assessment_submission_path(@submission.course_user_datum.course,
-                                                       @assessment, @submission)) && return
+                                                       @assessment, @submission))
   end
 
-  # this is good
   action_auth_level :destroy, :instructor
   def destroy
-    if params[:yes]
-      if @submission.destroy
-        flash[:success] = "Submission successfully destroyed"
-      else
-        flash[:error] = "Submission failed to be destroyed"
-      end
+    if @submission.destroy
+      flash[:success] = "Submission successfully destroyed"
     else
-      flash[:error] = "There was an error deleting the submission."
+      flash[:error] = "Submission failed to be destroyed"
     end
     redirect_to(course_assessment_submissions_path(@submission.course_user_datum.course,
-                                                   @submission.assessment)) && return
+                                                   @submission.assessment))
   end
 
-  # this is good
+  # page to show to instructor to confirm that they would like to
+  # remove a given submission for a student
   action_auth_level :destroyConfirm, :instructor
   def destroyConfirm; end
 
@@ -206,7 +220,7 @@ class SubmissionsController < ApplicationController
   # try to send the file at that position in the archive.
   action_auth_level :download, :student
   def download
-    if Archive.archive?(@submission.handin_file_path) && params[:header_position]
+    if Archive.archive?(@filename) && params[:header_position]
       file, pathname = Archive.get_nth_file(@filename, params[:header_position].to_i)
       unless file && pathname
         flash[:error] = "Could not read archive."
@@ -218,9 +232,6 @@ class SubmissionsController < ApplicationController
                 disposition: "inline"
 
     elsif params[:annotated]
-      @problems = @assessment.problems.to_a
-      @problems.sort! { |a, b| a.id <=> b.id }
-
       # Only show annotations if grades have been released or the user is an instructor
       @annotations = []
       if @submission.grades_released?(@cud)
@@ -288,7 +299,7 @@ class SubmissionsController < ApplicationController
         @header_position = params[:header_position].to_i
       rescue StandardError
         flash[:error] = "Could not read archive."
-        redirect_to [@course, @assessment] and return false
+        redirect_to course_assessment_path(@course, @assessment) and return false
       end
     else
       @files = [{
@@ -302,20 +313,17 @@ class SubmissionsController < ApplicationController
     end
 
     viewing_autograder_output = params.include?(:header_position) &&
-                                (params[:header_position].to_i == -1) &&
-                                !@submission.autograde_file.nil?
+                                (params[:header_position].to_i == -1)
 
-    # Adds autograded file as first option if it exist
-    # We are mapping Autograder to header_position -1
-    unless @submission.autograde_file.nil?
-      @files.prepend({ pathname: "Autograder Output",
-                       header_position: -1,
-                       mac_bs_file: false,
-                       directory: false })
-    end
+    # We are mapping autograder output to header_position -1
+    # If it doesn't exist, we will display a message accordingly
+    @files.prepend({ pathname: "Autograder Output",
+                     header_position: -1,
+                     mac_bs_file: false,
+                     directory: false })
 
     if viewing_autograder_output
-      file = @submission.autograde_file.read || "Empty Autograder Output"
+      file = get_autograder_output(@submission)
       @displayFilename = "Autograder Output"
     elsif params.include?(:header_position) && Archive.archive?(@submission.handin_file_path)
       file, pathname = Archive.get_nth_file(@submission.handin_file_path,
@@ -324,7 +332,7 @@ class SubmissionsController < ApplicationController
 
       unless file && pathname
         flash[:error] = "Could not read archive."
-        redirect_to [@course, @assessment] and return false
+        redirect_to course_assessment_path(@course, @assessment) and return false
       end
 
       @displayFilename = pathname
@@ -334,16 +342,18 @@ class SubmissionsController < ApplicationController
         firstFile = Archive.get_files(@submission.handin_file_path).find do |archive_file|
           archive_file[:mac_bs_file] == false and archive_file[:directory] == false
         end || { header_position: 0 }
-        redirect_to(url_for([:view, @course, @assessment, @submission, {
-                              header_position: firstFile[:header_position]
-                            }])) && return
+        redirect_to(view_course_assessment_submission_path(
+                      @course, @assessment, @submission,
+                      header_position: firstFile[:header_position]
+                    )) && return
 
       # redirect to header_pos = 0, which is the first file,
       # if there's autograder and no header_position
       elsif !@submission.autograde_file.nil? && !params.include?(:header_position)
-        redirect_to(url_for([:view, @course, @assessment, @submission, {
-                              header_position: 0
-                            }])) && return
+        redirect_to(view_course_assessment_submission_path(
+                      @course, @assessment, @submission,
+                      header_position: 0
+                    )) && return
       end
 
       file = @submission.handin_file.read
@@ -352,8 +362,8 @@ class SubmissionsController < ApplicationController
 
     return unless file
 
-    mm = MimeMagic.by_magic(file)
-    file = "Binary file not displayed" if mm.present? && (!mm.text? && (mm.subtype != "pdf"))
+    @file_contents = file # Keep this for the diff viewer
+    file = "Binary file not displayed" if is_binary_file?(file)
 
     unless PDF.pdf?(file)
       # begin
@@ -452,8 +462,7 @@ class SubmissionsController < ApplicationController
               Archive.get_files(@filename)
             end
 
-    @problems = @assessment.problems.to_a
-    @problems.sort! { |a, b| a.id <=> b.id }
+    @problems = @assessment.problems.ordered.to_a
 
     # Allow scores to be assessed by the view
     @scores = Score.where(submission_id: @submission.id)
@@ -548,52 +557,31 @@ class SubmissionsController < ApplicationController
                                .where(course_user_datum_id: @submission.course_user_datum_id)
                                .order("version DESC")
 
-    # Autograder Output is a dummy file
-    # If we are viewing autograder output, don't attempt to match versions
-    # and let @prevVersion = @nextVersion = nil
-    unless viewing_autograder_output
-      # Find user submissions that contain the same pathname
-      matchedVersions = []
-      @userVersions.each do |submission|
-        submission_path = submission.handin_file_path
-
-        # Find corresponding header position
-        header_position = if Archive.archive? submission_path
-                            submission_files = Archive.get_files(submission_path)
-                            matched_file = submission_files.detect { |submission_file|
-                              submission_file[:pathname] == @displayFilename
-                            }
-                            # Skip if file doesn't exist
-                            next if matched_file.nil?
-
-                            matched_file[:header_position]
-                          end
-        # If not an archive, we have header_position = nil
-        # This means that in _version_links.html.erb, header_position is not set in the querystring
-        # for the prev / next button urls
-        # This is fine since #download ignores header_position for non-archives
-
-        if @submission.version != submission.version
-          submission.header_position = header_position
-        end
-
-        matchedVersions << {
-          version: submission.version,
-          header_position:,
-          submission:
-        }
+    if viewing_autograder_output
+      # Autograder Output is a dummy file
+      # If we are viewing autograder output, just don't filter
+      matchedVersions = @userVersions.map do |submission|
+        { version: submission.version, header_position: -1, submission: }
       end
-
-      @curVersionIndex = matchedVersions.index do |submission|
+      curVersionIndex = @userVersions.index do |submission|
         submission[:version] == @submission.version
       end
-      # Previous and next versions
-      @prevVersion = if @curVersionIndex < (matchedVersions.size - 1)
-                       matchedVersions[@curVersionIndex + 1]
-                     end
-      @nextVersion = if @curVersionIndex > 0
-                       matchedVersions[@curVersionIndex - 1]
-                     end
+    else
+      matchedVersions, curVersionIndex = find_versions_with_file(@displayFilename, @userVersions,
+                                                                 @submission.version)
+    end
+
+    # Previous and next versions
+    @prevVersion = if curVersionIndex < (matchedVersions.size - 1)
+                     matchedVersions[curVersionIndex + 1]
+                   end
+    @nextVersion = if curVersionIndex > 0
+                     matchedVersions[curVersionIndex - 1]
+                   end
+
+    # For diff viewer
+    if @prevVersion
+      @prev_file_contents = get_file(@prevVersion[:submission], @prevVersion[:header_position])
     end
 
     # Rendering this page fails. Often. Mostly due to PDFs.
@@ -632,11 +620,6 @@ class SubmissionsController < ApplicationController
 
 private
 
-  def new_submission_params
-    params.require(:submission).permit(:course_used_datum_id, :notes, :file,
-                                       tweak_attributes: %i[_destroy kind value])
-  end
-
   def edit_submission_params
     params.require(:submission).permit(:notes,
                                        tweak_attributes: %i[_destroy kind value])
@@ -655,7 +638,7 @@ private
   def get_submission_file
     unless @submission.filename
       flash[:error] = "No file associated with submission."
-      redirect_to [@course, @assessment] and return false
+      redirect_to course_assessment_path(@course, @assessment) and return false
     end
 
     @filename = @submission.handin_file_path
@@ -669,10 +652,88 @@ private
 
     unless File.exist? @filename
       flash[:error] = "Could not find submission file."
-      redirect_to [@course, @assessment] and return false
+      redirect_to course_assessment_path(@course, @assessment) and return false
     end
 
     true
+  end
+
+  # Helper method to retrieve all submission versions by a student that contain a file
+  def find_versions_with_file(pathname, versions, current_version)
+    matchedVersions = []
+    versions.each do |submission|
+      submission_path = submission.handin_file_path
+
+      # Find corresponding header position
+      header_position = if Archive.archive? submission_path
+                          submission_files = Archive.get_files(submission_path)
+                          matched_file = submission_files.detect { |submission_file|
+                            submission_file[:pathname] == pathname
+                          }
+                          # Skip if file doesn't exist
+                          next if matched_file.nil?
+
+                          matched_file[:header_position]
+                        end
+      # If not an archive, we have header_position = nil
+      # This means that in _version_links.html.erb, header_position is not set in the querystring
+      # for the prev / next button urls
+      # This is fine since #download ignores header_position for non-archives
+
+      # Mainly so that we don't display an asterisk next to the current version
+      # On the view submission page's version dropdown
+      if current_version != submission.version
+        submission.header_position = header_position
+      end
+
+      matchedVersions << {
+        version: submission.version,
+        header_position:,
+        submission:
+      }
+    end
+
+    curVersionIndex = matchedVersions.index do |submission|
+      submission[:version] == current_version
+    end
+
+    [matchedVersions, curVersionIndex]
+  end
+
+  def get_autograder_output(submission)
+    if submission.autograde_file.nil?
+      if submission.assessment.autograder.nil?
+        "There is no autograding output for this submission, and no autograder is defined."
+      else
+        "There is no autograding output for this submission.\n" \
+          "Try running the autograder by clicking the \"Run Autograder\" button above."
+      end
+    else
+      submission.autograde_file.read || "Empty autograder output."
+    end
+  end
+
+  def get_file(submission, header_position)
+    handin_file_path = submission.handin_file_path
+
+    if header_position == -1
+      get_autograder_output(submission)
+    elsif Archive.archive?(handin_file_path)
+      file, = Archive.get_nth_file(handin_file_path, header_position.to_i)
+      file
+    else
+      handin_file = submission.handin_file
+      if handin_file.nil?
+        "Could not find submission file for previous version."
+      else
+        handin_file.read
+      end
+    end
+  end
+
+  def is_binary_file?(file)
+    mm = MimeMagic.by_magic(file)
+    mm.present? && (!mm.text? && (mm.subtype != "pdf"))
   end
 
   def set_manage_submissions_breadcrumb
