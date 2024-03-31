@@ -32,6 +32,16 @@ class ProblemsController < ApplicationController
 
   action_auth_level :update, :instructor
   def update
+    # if ajax called update, don't set a flash or perform a redirect_to
+    if params.include?(:ajax)
+      if @problem.update(problem_params)
+        render json: { success: true }
+      else
+        render json: { success: false, errors: @problem.errors.full_messages },
+               status: :unprocessable_entity
+      end
+      return
+    end
     if @problem.update(problem_params)
       flash[:success] = "Success: Problem saved"
     else
@@ -74,7 +84,7 @@ private
 
   # this function says which problem attributes can be mass-assigned to, and which cannot
   def problem_params
-    params.require(:problem).permit(:name, :description, :max_score, :optional)
+    params.require(:problem).permit(:name, :description, :max_score, :optional, :starred)
   end
 
   # Different from the one in application_controller.rb,
