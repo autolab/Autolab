@@ -7,7 +7,7 @@ This guide explains how to create autograded programming assignments (labs) for 
 An _autograder_ is a program that takes a student's work as input, and generates some quantitative evaluation of that work as output. The student's work consists of one or more source files written in an arbitrary programming language. The autograder processes these files and generates arbitrary text lines on stdout. What's written to stdout will be displayed to the students as **autograder feedback**.
 
 !!! info "Streaming Output"
-	As of Autolab v2.10, any output written into the stdout will be streamed directly for students to see, so students can see the live progress of the autograding. Many programming languages do buffered writes to `stdout`, so if you want live progress, you would have to guarantee that you are writing to stdout by flushing the buffer accordingly (e.g. [Python `print`'s flush flag](https://docs.python.org/3/library/functions.html#print), [C's `fflush`](https://www.tutorialspoint.com/c_standard_library/c_function_fflush.htm), [CPP's `fflush` ](https://en.cppreference.com/w/cpp/io/c/fflush)) 
+	As of Autolab v2.10, any output written into the stdout will be streamed directly for students to see, so students can see the live progress of the autograding. Many programming languages do buffered writes to `stdout`, so if you want live progress, you would have to guarantee that you are writing to stdout by flushing the buffer accordingly (e.g. [Python `print`'s flush flag](https://docs.python.org/3/library/functions.html#print), [C's `fflush`](https://www.tutorialspoint.com/c_standard_library/c_function_fflush.htm), [CPP's `fflush`](https://en.cppreference.com/w/cpp/io/c/fflush)) 
 
 The last text line on stdout must be a JSON string, called an _autoresult_, that assigns an autograded score to one or more problems, and optionally, generates the scoreboard entries for this submission.
 
@@ -19,7 +19,7 @@ The JSON autoresult is a "scores" hash that assigns a numerical score to one or 
 
 assigns 10 points to "Prob1" and 5 points to "Prob2" for this submission. The names of the problems must exactly match the names of the problems for this lab on the Autolab website. Not all problems need to be autograded. For example, there might be a problem for this assessment called "Style" that you grade manually after the due date.
 
-If you used the Autolab web site to configure a scoreboard for this lab with three columns called "Prob1", "Prob2", and "Total", then the autoresult might be:
+If you used the Autolab website to configure a scoreboard for this lab with three columns called "Prob1", "Prob2", and "Total", then the autoresult might be:
 
 ```json
 { "scores": { "Prob1": 10, "Prob2": 5 }, "scoreboard": [10, 5, 15] }
@@ -33,7 +33,7 @@ To format your autoresult feedback provided to the students, use the [formatted 
 
 ## Installing Autograded Labs
 
-After you've written and tested the autograder, you then use the Autolab web site to create the autograded lab. Autolab supports creating new labs from scratch, or reusing labs from previous semesters. We'll describe each of these in turn.
+After you've written and tested the autograder, you then use the Autolab website to create the autograded lab. Autolab supports creating new labs from scratch, or reusing labs from previous semesters. We'll describe each of these in turn.
 
 ### Creating an Autograded Lab from Scratch
 
