@@ -172,15 +172,17 @@ class LtiLaunchController < ApplicationController
       # make a GET request to public JWK endpoint
       response = conn.get("")
       if response.body["keys"].nil?
-        LtiError.new("No keys were found from public JWK url", :internal_server_error)
+        raise LtiError.new("No keys were found from public JWK url", :internal_server_error)
       end
+
       platform_public_jwks = JSON.parse(response.body)["keys"]
     elsif File.exist?("#{Rails.configuration.config_location}/lti_platform_jwk.json")
       # static platform public key, so take key from yml
       platform_public_key_file =
         File.read("#{Rails.configuration.config_location}/lti_platform_jwk.json")
     else
-      LtiError.new("No platform public key or public JWK url provided", :internal_server_error)
+      raise LtiError.new("No platform public key or public JWK url provided",
+                         :internal_server_error)
     end
     rsa_public_key = get_public_key(platform_public_key_file, platform_public_jwks)
     if rsa_public_key.nil?
