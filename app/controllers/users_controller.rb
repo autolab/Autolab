@@ -154,7 +154,8 @@ class UsersController < ApplicationController
     submissions = Submission.where(course_user_datum: CourseUserDatum.where(user_id: user))
     submissions = submissions.select do |s|
       p = s.handin_file_path
-      !p.nil? && File.exist?(p) && File.readable?(p)
+      is_disabled = s.course_user_datum.course.disabled
+      !p.nil? && File.exist?(p) && File.readable?(p) && !is_disabled
     end
     if submissions.empty?
       flash[:error] = "There are no submissions to download."
