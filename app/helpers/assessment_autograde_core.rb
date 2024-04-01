@@ -157,6 +157,7 @@ module AssessmentAutogradeCore
   # Returns the Tango response
   #
   def tango_add_job(course, assessment, upload_file_list, callback_url, job_name, output_file)
+    allowed_outgoing_ips = if assessment.allowed_outgoing_ips.nil? then "" else assessment.allowed_outgoing_ips.split(/\s*,\s*/) end
     job_properties = { "image" => @autograde_prop.autograde_image,
                        "files" => upload_file_list.map do |f|
                          { "localFile" => f["remoteFile"],
@@ -166,7 +167,8 @@ module AssessmentAutogradeCore
                        "timeout" => @autograde_prop.autograde_timeout,
                        "callback_url" => callback_url,
                        "jobName" => job_name,
-                       "disable_network" => assessment.disable_network }.to_json
+                       "disable_network" => assessment.disable_network,
+                       "allowed_outgoing_ips" => allowed_outgoing_ips }.to_json
     begin
       response = TangoClient.addjob("#{course.name}-#{assessment.name}", job_properties)
     rescue TangoClient::TangoException => e
