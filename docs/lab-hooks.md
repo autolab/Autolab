@@ -79,7 +79,7 @@ def raw_score(score)
 end
 ```
 
-This particular lab has four problems called "Autograded Score", "Heap Checker", "Style", and "CorrectnessDeductions". The code snippet above sets an "Autograded Score" of less than 50 to zero when the raw score is calculated.
+This particular lab has four problems called "Autograded Score", "Heap Checker", "Style", and "CorrectnessDeductions". The code snippet above sets an "Autograded Score" of less than 50 to 0 when the raw score is calculated.
 
 ## Submission File MIME Type Check
 
@@ -93,7 +93,7 @@ def checkMimeType(contentType, fileName)
 end
 ```
 
-As of now, the only way to provide a more informative message to student is to raise an error:
+As of now, the only way to provide a more informative message to students is to raise an error:
 
 ```ruby
 def checkMimeType(contentType, fileName)
@@ -103,11 +103,11 @@ def checkMimeType(contentType, fileName)
 end
 ```
 
-This results in the following error message to students when they attempt to submit binary files.
+This results in the following error message being displayed to students when they attempt to submit binary files.
 
 ![MIME Type Check](/images/mime_type_check.png)
 
-Alternatively, you can use the file name to do file type check. The following snippet prevents students from submitting python files:
+Alternatively, you can use the file name to do file type checks. The following snippet prevents students from submitting python files:
 
 ```ruby
 def checkMimeType(contentType, fileName)
@@ -308,7 +308,7 @@ By default, the following autograding input files are sent to Tango
 
 1. The student's handin file
 2. The makefile that runs the process
-3. The tarfile with all of the first needed by the autograder
+3. The tarfile with all of the files needed by the autograder
 
 This hook allows you to define a custom list of input files to be sent instead.
 
