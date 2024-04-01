@@ -158,7 +158,7 @@ class UsersController < ApplicationController
     end
     if submissions.empty?
       flash[:error] = "There are no submissions to download."
-      return
+      redirect_to(user_path(user)) && return
     end
     filedata = submissions.collect do |s|
       p = s.handin_file_path
