@@ -17,7 +17,7 @@ The JSON autoresult is a "scores" hash that assigns a numerical score to one or 
 { "scores": { "Prob1": 10, "Prob2": 5 } }
 ```
 
-assigns 10 points to "Prob1" and 5 points to "Prob2" for this submission. The names of the problems must exactly match the names of the problems for this lab on the Autolab web site. Not all problems need to be autograded. For example, there might be a problem for this assessment called "Style" that you grade manually after the due date.
+assigns 10 points to "Prob1" and 5 points to "Prob2" for this submission. The names of the problems must exactly match the names of the problems for this lab on the Autolab website. Not all problems need to be autograded. For example, there might be a problem for this assessment called "Style" that you grade manually after the due date.
 
 If you used the Autolab web site to configure a scoreboard for this lab with three columns called "Prob1", "Prob2", and "Total", then the autoresult might be:
 
