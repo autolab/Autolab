@@ -48,8 +48,7 @@ class SmtpConfigController < ApplicationController
       next if params[param].present?
 
       flash[:error] = "#{param} field was missing"
-      redirect_to(autolab_config_admin_path(active: :smtp,
-                                            tmp_smtp_config: tmpfile.path)) && return
+      redirect_to(autolab_config_admin_path(active: :smtp)) && return
     end
 
     # Save old settings to be restored
