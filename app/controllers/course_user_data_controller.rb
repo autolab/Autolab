@@ -88,23 +88,25 @@ class CourseUserDataController < ApplicationController
 
   action_auth_level :show, :student
   def show
-    @requestedUser = @cud.course.course_user_data.find(params[:id])
+    @requestedUser = @cud.course.course_user_data.find_by(id: params[:id])
+    if @requestedUser.nil?
+      flash[:error] = "Could not find user #{params[:id]}"
+      redirect_to([:users, @course]) && return
+    end
     respond_to do |format|
       if @requestedUser
         format.html
         format.json { render json: @requestedUser.to_json }
-      else
-        format.json { head :bad_request }
       end
     end
   end
 
   action_auth_level :edit, :student
   def edit
-    @editCUD = @course.course_user_data.find(params[:id])
+    @editCUD = @course.course_user_data.find_by(id: params[:id])
     if @editCUD.nil?
       flash[:error] = "Can't find user in the course"
-      redirect_to(action: "index") && return
+      redirect_to(action: "show") && return
     end
 
     if (@editCUD.id != @cud.id) && !@cud.instructor? &&
@@ -124,7 +126,7 @@ class CourseUserDataController < ApplicationController
     # ensure presence of nickname
     # isn't a User model validation since users can start off without nicknames
     # application_controller's authenticate_user redirects here if nickname isn't set
-    @editCUD = @course.course_user_data.find(params[:id])
+    @editCUD = @course.course_user_data.find_by(id: params[:id])
     redirect_to(action: "index") && return if @editCUD.nil?
 
     if @cud.student?
@@ -174,7 +176,7 @@ class CourseUserDataController < ApplicationController
 
   action_auth_level :destroy, :instructor
   def destroy
-    @destroyCUD = @course.course_user_data.find(params[:id])
+    @destroyCUD = @course.course_user_data.find_by(id: params[:id])
     if @destroyCUD && @destroyCUD != @cud && params[:yes1] && params[:yes2] && params[:yes3]
       @destroyCUD.destroy # awwww!!!
     end
@@ -187,7 +189,7 @@ class CourseUserDataController < ApplicationController
   # this GET page confirms that the instructor wants to destroy the user
   action_auth_level :destroyConfirm, :instructor
   def destroyConfirm
-    @destroyCUD = @course.course_user_data.find(params[:id])
+    @destroyCUD = @course.course_user_data.find_by(id: params[:id])
     return unless @destroyCUD.nil?
 
     flash[:error] = "The user to be deleted is not in the course"

@@ -294,7 +294,13 @@ end
   end
 
   def score_grader_info
-    score = Score.find(params[:score_id])
+    score = Score.find_by(id: params[:score_id])
+    if score.nil?
+      flash[:error] = "Could not find score #{params[:score_id]}."
+      redirect_to action: :show
+      return
+    end
+
     grader = (if score then score.grader else nil end)
     grader_info = ""
     if grader

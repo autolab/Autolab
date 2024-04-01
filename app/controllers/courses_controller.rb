@@ -635,7 +635,7 @@ class CoursesController < ApplicationController
 
     # First, validate access on each of the requested assessments
     assessmentIDs&.keys&.each do |aid|
-      assessment = Assessment.find(aid)
+      assessment = Assessment.find_by(id: aid)
       unless assessment
         flash[:error] = "Invalid Assessment ID: #{aid}"
         redirect_to(action: :moss) && return

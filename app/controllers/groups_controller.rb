@@ -152,7 +152,7 @@ class GroupsController < ApplicationController
   #
   action_auth_level :import, :instructor
   def import
-    ass = @course.assessments.find(params[:ass])
+    ass = @course.assessments.find_by(id: params[:ass])
     if !ass
       flash[:error] = "Assessment not found."
       redirect_to(action: :index) && return
@@ -360,7 +360,7 @@ private
   #
   def get_member_cud
     cud = if params[:member_id]
-            @course.course_user_data.find(params[:member_id].to_i)
+            @course.course_user_data.find_by(id: params[:member_id].to_i)
           elsif params[:member_email]
             @course.course_user_data.joins(:user).find_by(users: { email: params[:member_email] })
           end

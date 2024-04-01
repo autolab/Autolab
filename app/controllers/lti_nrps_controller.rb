@@ -89,7 +89,7 @@ class LtiNrpsController < ApplicationController
   # NRPS endpoint for Autolab to send an NRPS request to LTI Advantage Platform
   action_auth_level :sync_roster, :instructor
   def sync_roster
-    lcd = LtiCourseDatum.find(params[:lcd_id])
+    lcd = LtiCourseDatum.find_by(id: params[:lcd_id])
     if lcd.nil? || lcd.membership_url.nil? || lcd.course_id.nil?
       raise LtiLaunchController::LtiError.new("Unable to update roster", :bad_request)
     end

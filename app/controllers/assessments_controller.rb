@@ -455,8 +455,14 @@ class AssessmentsController < ApplicationController
   end
 
   def grade
-    @problem = @assessment.problems.find(params[:problem])
-    @submission = @assessment.submissions.find(params[:submission])
+    @problem = @assessment.problems.find_by(params[:problem])
+    if @problem.nil?
+      flash[:error] = "Could not find problem #{params[:problem]}"
+    end
+    @submission = @assessment.submissions.find_by(params[:submission])
+    if @submission.nil?
+      flash[:error] = "Could not find submission #{params[:submission]}"
+    end
     # Shows a form which has the submission on top, and feedback on bottom
     begin
       subFile = Rails.root.join("courses", @course.name, @assessment.name,
