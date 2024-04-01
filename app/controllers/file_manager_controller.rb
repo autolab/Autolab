@@ -20,7 +20,11 @@ class FileManagerController < ApplicationController
     end
     parts.each_with_index do |part, index|
       path = new_url.split('/').slice(0, index + 1).join("/")
-      @breadcrumbs << view_context.link_to(part, "/file_manager/#{path}")
+      if index == parts.length - 1
+        @title = part
+      else
+        @breadcrumbs << view_context.link_to(part, "/file_manager/#{path}")
+      end
     end
     absolute_path = check_path_exist(path)
     if (File.directory?(absolute_path) && check_instructor(absolute_path)) || path == ""
@@ -65,7 +69,7 @@ class FileManagerController < ApplicationController
       if parent == BASE_DIRECTORY
         flash[:error] = "Unable to rename courses in the root directory."
       else
-        dir_name = File.dirname(params[:relative_path])
+        dir_name = File.dirname(params[:relative_path].to_s)
 
         if params[:new_name].nil? || params[:new_name].empty?
           raise ArgumentError, "New name not provided"
@@ -99,9 +103,9 @@ class FileManagerController < ApplicationController
     if File.directory?(absolute_path)
       tar_stream = StringIO.new("")
       Gem::Package::TarWriter.new(tar_stream) do |tar|
-        Dir[File.join(absolute_path, '**', '**')].each do |file|
+        Dir[File.join(absolute_path.to_s, '**', '**')].each do |file|
           mode = File.stat(file).mode
-          relative_path = file.sub(%r{^#{Regexp.escape(absolute_path)}/?}, '')
+          relative_path = file.sub(%r{^#{Regexp.escape(absolute_path.to_s)}/?}, '')
           if File.directory?(file)
             tar.mkdir relative_path, mode
           else
@@ -200,7 +204,7 @@ class FileManagerController < ApplicationController
         rescue StandardError
           '-'
         end,
-        relative: CGI.unescape(my_escape("/file_manager/#{new_url}#{file}")),
+        relative: CGI.unescape("/file_manager/#{new_url}#{file}"),
         entry: "#{file}#{is_file ? '' : '/'}",
         absolute: abs_path_str,
         instructor: inst,
