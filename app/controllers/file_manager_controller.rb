@@ -166,12 +166,6 @@ class FileManagerController < ApplicationController
     end
   end
 
-  def my_escape(string)
-    string.gsub(/([^ a-zA-Z0-9_.-]+)/) do
-      "%#{$1.unpack('H2' * $1.bytesize).join('%').upcase}"
-    end
-  end
-
   def populate_directory(current_directory, current_url)
     directory = Dir.entries(current_directory)
     new_url = current_url == '/' ? '' : current_url
