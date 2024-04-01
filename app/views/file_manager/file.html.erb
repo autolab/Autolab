@@ -1,0 +1,11 @@
+<% content_for :stylesheets do %>
+  <%= stylesheet_link_tag "file_manager" %>
+<% end %>
+<span class="btn button-file">
+  <%= link_to './' do %>
+    Back
+  <% end %>
+</span>
+<pre>
+<%= @file %>
+</pre>
