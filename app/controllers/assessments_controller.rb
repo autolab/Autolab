@@ -60,6 +60,7 @@ class AssessmentsController < ApplicationController
 
   IMPORT_ASMT_FAILURE_STATUS = "FAIL".freeze
   IMPORT_ASMT_SUCCESS_STATUS = "SUCCESS".freeze
+  DISALLOWED_LIST_OPTIONS = %w[edit reload viewGradesheet].freeze
 
   def index
     @is_instructor = @cud.has_auth_level? :instructor
@@ -555,13 +556,23 @@ class AssessmentsController < ApplicationController
 
     @aud = @assessment.aud_for @cud.id
 
-    @list = {}
-    @list_title = {}
+    # These are the default items displayed
+    @list = {
+      "history" => nil,
+      "writeup" => nil,
+      "handout" => nil,
+      "groups" => nil,
+      "scoreboard" => nil
+    }
 
     if @assessment.overwrites_method?(:listOptions)
       list = @list
       @list = @assessment.config_module.listOptions(list)
     end
+
+    # Explicitly disallow certain options that should not be displayed to students
+    # This list is not exhaustive, but students wouldn't be able to view other links anyway
+    @list.except!(*DISALLOWED_LIST_OPTIONS)
 
     # Remember the student ID in case the user wants visit the gradesheet
     session["gradeUser#{@assessment.id}"] = params[:cud_id] if params[:cud_id]

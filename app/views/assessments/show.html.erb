@@ -5,21 +5,6 @@
   <%= javascript_include_tag 'collapsible' %>
 <% end %>
 
-<%# Make sure these options are not on the general user options list.  %>
-<%# We have to do this because we exposed the internal interface for building options lists %>
-<%# and some users have fiddled with this in their assessment.rb file %>
-
-<%# These options have been eliminated %>
-<% @list.delete("listAdmin") %>
-
-<%# These options should only be on the admin list %>
-<% @list.delete("edit") %>
-<% @list.delete("viewGradesheet") %>
-<% @list.delete("attachments") %>
-<% @list.delete("extension") %>
-<% @list.delete("submission") %>
-<% @list.delete("reload") %>
-
 <div>
 <div class="row">
   <div class="col s12 m12">
@@ -118,26 +103,36 @@
         <div class="collapsible-header"><h5>Options</h5></div>
         <div class="collapsible-body">
           <ul class="options">
-            <li><%= link_to "View handin history", history_course_assessment_path(@course, @assessment), { title: "View your submissions, scores, and feedback from the course staff" } %> </li>
-            <% if @assessment.has_writeup? %>
+            <% default_opts = @list.select { |_, v| v.nil? } %>
+            <% if default_opts.key?("history") %>
+              <li><%= link_to "View handin history", history_course_assessment_path(@course, @assessment), { title: "View your submissions, scores, and feedback from the course staff" } %> </li>
+            <% end %>
+            <% if default_opts.key?("writeup") && @assessment.has_writeup? %>
               <li><%= link_to "View writeup", writeup_course_assessment_path(@course, @assessment), { title: "View the assessment writeup" } %> </li>
             <% end %>
-            <% if @assessment.has_handout? %>
+            <% if default_opts.key?("handout") && @assessment.has_handout? %>
               <li><%= link_to "Download handout", handout_course_assessment_path(@course, @assessment), { title: "Download handout materials and starter code" } %> </li>
             <% end %>
-            <% if @assessment.has_groups? %>
+            <% if default_opts.key?("groups") && @assessment.has_groups? %>
               <% if @aud.membership_status != AssessmentUserDatum::UNCONFIRMED %>
                 <li><%= link_to "Group options", course_assessment_group_path(@course, @assessment, @aud.group), title: "Check your group settings." %></li>
               <% else %>
                 <li><%= link_to "Group options", new_course_assessment_group_path(@course, @assessment), title: "Check your group settings." %></li>
               <% end %>
             <% end %>
-            <% if @assessment.has_scoreboard? %>
+            <% if default_opts.key?("scoreboard") && @assessment.has_scoreboard? %>
               <li><%= link_to "View scoreboard", course_assessment_scoreboard_path(@course, @assessment), title: "View the assessment scoreboard" %></li>
             <% end %>
+            <% @list.compact! # Remove the nil values, which correspond to default items %>
             <% @list.sort { |a, b| a[1] <=> b[1] }.each { |key, value| %>
               <% if value.size > 0 %>
-                <li><%= link_to value, { action: key }, { title: @list_title[key] || "" } %> </li>
+                <li>
+                  <% begin %>
+                  <%= link_to value, { action: key }, { title: value } %>
+                  <% rescue %>
+                  Invalid option "<%= key %>"
+                  <% end %>
+                </li>
               <% end %>
             <% } %>
           </ul>
