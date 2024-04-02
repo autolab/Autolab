@@ -39,7 +39,7 @@ After you've written and tested the autograder, you then use the Autolab website
 
 #### Step 1: Create the new lab.
 
-Create a new lab by clicking the "Install Assessment" button and choosing "Option 1: Create a New Assessment from Scratch." For course `<course>` and lab `<lab>`, this will create a <i>lab directory</i> in the Autolab file hierarchy called `courses/<course>/<lab>`. This initial directory contains a couple of config files and a directory called `<lab>/handin` that will contain all of the student handin files. In general, you should never modify any of these.
+Create a new lab by clicking the "Install Assessment" button and choosing "Option 1: Create a New Assessment from Scratch." For course `<course>` and lab `<lab>`, this will create a <i>lab directory</i> in the Autolab file hierarchy called `courses/<course>/<lab>`. This initial directory contains a couple of config files and a directory called `<lab>/handin` that will contain all student handin files. In general, you should never modify any of these.
 
 !!! warning "Attention CMU Lab Authors"
 	At CMU, the lab directory is called `/afs/cs/academic/class/<course>/autolab/<lab>`. For example: `/afs/cs/academic/class/15213-f16/autolab/foo` is the lab directory for the lab named `foo` for the Fall 2016 instance of 15-213. All lab-related files must go in this `autolab` directory to avoid permissions issues.
