@@ -8,7 +8,11 @@ Rails.application.routes.draw do
     get 'lti_launch/launch', to: "lti_launch#launch"
     post 'lti_nrps/sync_roster', to: "lti_nrps#sync_roster"
   get 'lti_config/index', to: "lti_config#index"
+  post 'github_config/update_config', to: "github_config#update_config"
   post 'lti_config/update_config', to: "lti_config#update_config"
+  post 'smtp_config/update_config', to: "smtp_config#update_config"
+  post 'smtp_config/send_test_email', to: "smtp_config#send_test_email"
+  post 'oauth_config/update_oauth', to: "oauth_config#update_oauth_config"
 
   namespace :oauth, { defaults: { format: :json } } do
     get "device_flow_init", to: "device_flow#init"
@@ -81,8 +85,8 @@ Rails.application.routes.draw do
 
   resource :admin, :except => [:show] do
     match "email_instructors", via: [:get, :post]
-    match "github_integration", via: [:get]
     post "clear_cache"
+    get "autolab_config"
   end
 
   resources :users do

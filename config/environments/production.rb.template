@@ -75,26 +75,6 @@ Autolab3::Application.configure do
   # with SQLite, MySQL, and PostgreSQL)
   # config.active_record.auto_explain_threshold_in_seconds = 0.5
 
-  config.action_mailer.perform_deliveries = true
-  config.action_mailer.raise_delivery_errors = true
-
-  # Provide context to the email generator about the host
-  config.action_mailer.default_url_options = {
-    protocol: ENV.fetch('HOST_PROTOCOL','http'), 
-    host: ENV.fetch('HOST_DOMAIN','yourhost.com') 
-  }
-
-  # Use a custom smtp server, such as gmail, mailgun, sendgrid
-  config.action_mailer.smtp_settings = {
-    address:              ENV.fetch('SMTP_SETTINGS_ADDRESS','smtp.example.com'),
-    port:                 ENV.fetch('SMTP_SETTINGS_PORT',25),
-    enable_starttls_auto: ENV.fetch('SMTP_SETTINGS_ENABLE_STARTTLS_AUTO','true') == 'true',
-    authentication:       ENV.fetch('SMTP_SETTINGS_AUTHENTICATION','login'),
-    user_name:            ENV.fetch('SMTP_SETTINGS_USER_NAME','example'),
-    password:             ENV.fetch('SMTP_SETTINGS_PASSWORD','example'),
-    domain:               ENV.fetch('SMTP_SETTINGS_DOMAIN','example.com'),
-  }
-
   # default from 
   ActionMailer::Base.default :from => ENV.fetch('SMTP_DEFAULT_FROM','something@example.com') 
 
@@ -119,10 +99,55 @@ Autolab3::Application.configure do
 
   # OAuth2 Application Configuration for Github
   # See https://docs.autolabproject.com/installation/github_integration/
-  config.x.github.client_id = ENV['GITHUB_CLIENT_ID']
-  config.x.github.client_secret = ENV['GITHUB_CLIENT_SECRET']
-  # LTI configuration file storage location. Needs to be in a private folder
-  config.lti_config_location  = Rails.root.join('config').to_s
+  if File.exist?("#{Rails.configuration.config_location}/github_config.yml")
+    config_hash = YAML.safe_load(File.read("#{Rails.configuration.config_location}/github_config.yml"))
+    config.x.github.client_id = config_hash['github']['client_id']
+    config.x.github.client_secret = config_hash['github']['client_secret']
+  end
+
+  # Configuration file storage location. Needs to be in a private folder
+  config.config_location = Rails.root.join('config').to_s
+
+  # Use a custom smtp server, such as gmail, mailgun, sendgrid
+  if File.exist?("#{Rails.configuration.config_location}/smtp_config.yml")
+    config_hash = YAML.safe_load(File.read("#{Rails.configuration.config_location}/smtp_config.yml"))
+
+    config.action_mailer.perform_deliveries = true
+    config.action_mailer.raise_delivery_errors = true
+    config.action_mailer.delivery_method = :smtp
+
+    config.action_mailer.default_url_options = {
+      protocol: config_hash['protocol'],
+      host: config_hash['host']
+    }
+
+    config.action_mailer.default_options = {
+      from: config_hash['from']
+    }
+
+    smtp_settings = {
+      address: config_hash['address'],
+      port: config_hash['port'],
+      enable_starttls_auto: config_hash['enable_starttls_auto'],
+      authentication: config_hash['plain'],
+      user_name: config_hash['user_name'],
+      password: config_hash['password']
+    }
+
+    if config_hash.key?('domain') && !config_hash['domain'].empty?
+      smtp_settings[:domain] = config_hash['domain']
+    end
+
+    if config_hash.key? 'ssl'
+      smtp_settings[:ssl] = config_hash['ssl']
+    end
+
+    if config_hash.key? 'tls'
+      smtp_settings[:tls] = config_hash['tls']
+    end
+
+    config.action_mailer.smtp_settings = smtp_settings
+  end
 
   # Use custom routes for error pages
   config.exceptions_app = self.routes

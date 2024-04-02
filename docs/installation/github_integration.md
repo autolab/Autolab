@@ -23,22 +23,8 @@ In order to setup Github submission, you will first need to create a Github Appl
 ## Configuring Github Integration for Autolab
 1. Ensure that you already have the Github application credentials set up [based on the previous section](#creating-your-github-application)
 
-2. If you do not have a `.env` file in your Autolab root yet (it may not be present on older installations), create it by running the following script from the Autolab root directory:
+2. On Autolab, navigate to `Manage Autolab > Configure Autolab > Github Integration`
 
-        :::bash
-    	./bin/initialize_secrets.sh
+3. Enter your Github Client ID and Client Secret into the corresponding fields and click `Save`
 
-3. Open up `.env` in your favorite editor, and update `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET` to use the client ID and client secrets generated previously:
-
-        :::bash
-        GITHUB_CLIENT_ID=replace_with_your_client_ID
-        GITHUB_CLIENT_SECRET=replace_with_your_client_secret
-
-## Verifying Github Integration
-In order to verify whether your deployment has been setup correctly,
-
-1. Login as an Autolab administrator user
-
-2. Navigate to the Manage Autolab tab on the top navigation bar
-
-3. Select Github Integration link. It will detect whether your credentials have been supplied correctly by testing against the API limits that you are entitled to, and report whether your installation is successfully integrated with Github.
+4. Under `Github Integration Status`, you should now see `Autolab is connected to Github!`

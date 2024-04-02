@@ -1485,6 +1485,10 @@ table.sub td, th {
   color: white !important;
 }
 
+.oauth-btn:hover {
+  background-color: $autolab-subtle-gray !important;
+}
+
 .error-header {
   color: $autolab-red;
 }

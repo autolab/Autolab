@@ -85,8 +85,51 @@ Rails.application.configure do
 
   # OAuth2 Application Configuration for Github
   # See https://docs.autolabproject.com/installation/github_integration/
-  config.x.github.client_id = ENV['GITHUB_CLIENT_ID']
-  config.x.github.client_secret = ENV['GITHUB_CLIENT_SECRET']
+  if File.exist?("#{Rails.configuration.config_location}/github_config.yml")
+    config_hash = YAML.safe_load(File.read("#{Rails.configuration.config_location}/github_config.yml"))
+    config.x.github.client_id = config_hash['github']['client_id']
+    config.x.github.client_secret = config_hash['github']['client_secret']
+  end
+
+  if File.exist?("#{Rails.configuration.config_location}/smtp_config.yml")
+    config_hash = YAML.safe_load(File.read("#{Rails.configuration.config_location}/smtp_config.yml"))
+
+    config.action_mailer.perform_deliveries = true
+    config.action_mailer.raise_delivery_errors = true
+    config.action_mailer.delivery_method = :smtp
+
+    config.action_mailer.default_url_options = {
+      protocol: config_hash['protocol'],
+      host: config_hash['host']
+    }
+
+    config.action_mailer.default_options = {
+      from: config_hash['from']
+    }
+
+    smtp_settings = {
+      address: config_hash['address'],
+      port: config_hash['port'],
+      enable_starttls_auto: config_hash['enable_starttls_auto'],
+      authentication: config_hash['plain'],
+      user_name: config_hash['user_name'],
+      password: config_hash['password']
+    }
+
+    if config_hash.key?('domain') && !config_hash['domain'].empty?
+      smtp_settings[:domain] = config_hash['domain']
+    end
+
+    if config_hash.key? 'ssl'
+      smtp_settings[:ssl] = config_hash['ssl']
+    end
+
+    if config_hash.key? 'tls'
+      smtp_settings[:tls] = config_hash['tls']
+    end
+
+    config.action_mailer.smtp_settings = smtp_settings
+  end
 
   # Use custom routes for error pages
   config.exceptions_app = self.routes

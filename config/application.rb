@@ -131,8 +131,8 @@ module Autolab3
       end
     end
 
-    # lti configuration file path, keep it private
-    config.lti_config_location = Rails.root.join("config").to_s
+    # Configuration file path, keep it private
+    config.config_location = Rails.root.join("config").to_s
 
     # Ensures correct error message if no secret_key_base is defined
     if !ENV['SECRET_KEY_BASE'].nil? && ENV['SECRET_KEY_BASE'].empty?
