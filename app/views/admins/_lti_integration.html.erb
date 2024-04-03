@@ -36,16 +36,16 @@
       <h5>
         Upload Autolab's JWK as a JSON file
       </h5>
-      <% if File.exist?("config/lti_tool_jwk.json") %>
+      <% if File.size?("config/lti_tool_jwk.json") %>
         <p> File already uploaded. Uploading will rewrite the previous JWK </p>
       <% end %>
-      <%= form.file_field :tool_jwk, accept: 'text/json', required: !File.exist?("config/lti_tool_jwk.json") %>
+      <%= form.file_field :tool_jwk, accept: 'text/json', required: !File.size?("config/lti_tool_jwk.json") %>
     </div>
       <div class="lti-upload-container">
         <h5>
           Upload the Platform's Public JWK (Unnecessary if public JWK URL specified)
         </h5>
-        <% if File.exist?("config/lti_platform_jwk.json") %>
+        <% if File.size?("config/lti_platform_jwk.json") %>
           <p> File already uploaded. Uploading will rewrite the previous JWK </p>
         <% end %>
         <%= form.file_field :platform_public_jwk_json, accept: 'text/json', required: false %>

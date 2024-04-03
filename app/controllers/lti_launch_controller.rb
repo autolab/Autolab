@@ -176,7 +176,7 @@ class LtiLaunchController < ApplicationController
       end
 
       platform_public_jwks = JSON.parse(response.body)["keys"]
-    elsif File.exist?("#{Rails.configuration.config_location}/lti_platform_jwk.json")
+    elsif File.size?("#{Rails.configuration.config_location}/lti_platform_jwk.json")
       # static platform public key, so take key from yml
       platform_public_key_file =
         File.read("#{Rails.configuration.config_location}/lti_platform_jwk.json")
@@ -206,7 +206,7 @@ class LtiLaunchController < ApplicationController
   def launch
     # Code based on:
     # https://github.com/IMSGlobal/lti-1-3-php-library/blob/master/src/lti/LTI_Message_Launch.php
-    unless File.exist?("#{Rails.configuration.config_location}/lti_config.yml")
+    unless File.size?("#{Rails.configuration.config_location}/lti_config.yml")
       raise LtiError.new("LTI configuration not found on Autolab Server", :internal_server_error)
     end
 
@@ -240,7 +240,7 @@ class LtiLaunchController < ApplicationController
   # build our authentication response and redirect back to
   # platform
   def oidc_login
-    unless File.exist?("#{Rails.configuration.config_location}/lti_config.yml")
+    unless File.size?("#{Rails.configuration.config_location}/lti_config.yml")
       raise LtiError.new("LTI configuration not found on Autolab Server", :internal_server_error)
     end
 

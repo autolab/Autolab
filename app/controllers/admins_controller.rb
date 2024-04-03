@@ -37,7 +37,7 @@ class AdminsController < ApplicationController
   def autolab_config
     @github_integration = GithubIntegration.check_github_authorization
 
-    if File.exist?("#{Rails.configuration.config_location}/lti_config.yml")
+    if File.size?("#{Rails.configuration.config_location}/lti_config.yml")
       @lti_config_hash =
         YAML.safe_load(File.read("#{Rails.configuration.config_location}/lti_config.yml"))
     end
@@ -45,7 +45,7 @@ class AdminsController < ApplicationController
     if Rails.cache.exist?(:tmp_smtp_config)
       @smtp_config_hash = Rails.cache.read(:tmp_smtp_config)
       Rails.cache.delete(:tmp_smtp_config)
-    elsif File.exist?("#{Rails.configuration.config_location}/smtp_config.yml")
+    elsif File.size?("#{Rails.configuration.config_location}/smtp_config.yml")
       @smtp_config_hash =
         YAML.safe_load(File.read("#{Rails.configuration.config_location}/smtp_config.yml"))
       @smtp_config_hash.symbolize_keys!
