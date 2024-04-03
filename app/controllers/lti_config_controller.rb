@@ -25,7 +25,7 @@ class LtiConfigController < ApplicationController
     }
     uploaded_tool_jwk_file = params['tool_jwk']
     # Ensure user uploaded private JWK for config, or it already exists
-    if !File.exist?("#{Rails.configuration.config_location}/lti_tool_jwk.json") &&
+    if !File.size?("#{Rails.configuration.config_location}/lti_tool_jwk.json") &&
        uploaded_tool_jwk_file.nil?
       flash[:error] = "No tool JWK JSON file was uploaded"
       redirect_to(autolab_config_admin_path(active: :lti)) && return

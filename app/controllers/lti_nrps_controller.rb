@@ -13,7 +13,7 @@ class LtiNrpsController < ApplicationController
   action_auth_level :request_access_token, :instructor
   def request_access_token
     # get private key from JSON file to sign Autolab's client assertion as a JWK
-    unless File.exist?("#{Rails.configuration.config_location}/lti_tool_jwk.json")
+    unless File.size?("#{Rails.configuration.config_location}/lti_tool_jwk.json")
       flash[:error] = "Autolab's JWK JSON file was not found"
       redirect_to([:users, @course]) && return
     end
@@ -97,7 +97,7 @@ class LtiNrpsController < ApplicationController
     @lti_context_membership_url = lcd.membership_url
     @course = lcd.course
 
-    unless File.exist?("#{Rails.configuration.config_location}/lti_config.yml")
+    unless File.size?("#{Rails.configuration.config_location}/lti_config.yml")
       flash[:error] = "Could not find LTI Configuration"
       redirect_to([:users, @course]) && return
     end

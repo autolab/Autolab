@@ -18,7 +18,7 @@ class OauthConfigController < ApplicationController
     end
 
     yaml_hash = {}
-    if File.exist?("#{Rails.configuration.config_location}/oauth_config.yml")
+    if File.size?("#{Rails.configuration.config_location}/oauth_config.yml")
       yaml_hash = YAML.safe_load(
         File.read("#{Rails.configuration.config_location}/oauth_config.yml")
       )
@@ -42,7 +42,7 @@ class OauthConfigController < ApplicationController
 
   def self.get_oauth_providers
     Rails.cache.fetch(:oauth_providers) do
-      return [] unless File.exist?("#{Rails.configuration.config_location}/oauth_config.yml")
+      return [] unless File.size?("#{Rails.configuration.config_location}/oauth_config.yml")
 
       config_hash = YAML.safe_load(
         File.read("#{Rails.configuration.config_location}/oauth_config.yml")
@@ -59,7 +59,7 @@ class OauthConfigController < ApplicationController
 
   def self.get_oauth_credentials(provider)
     oauth_config = Rails.cache.fetch(:oauth_config) do
-      return {} unless File.exist?("#{Rails.configuration.config_location}/oauth_config.yml")
+      return {} unless File.size?("#{Rails.configuration.config_location}/oauth_config.yml")
 
       YAML.safe_load(
         File.read("#{Rails.configuration.config_location}/oauth_config.yml")
