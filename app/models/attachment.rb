@@ -48,7 +48,7 @@ class Attachment < ApplicationRecord
 
   # Regenerate slug whenever the name changes
   def should_generate_new_friendly_id?
-    name_changed?
+    name_changed? && name.present?
   end
 
   def after_create
