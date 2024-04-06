@@ -75,12 +75,12 @@ class FormBuilderWithDateTimeInput < ActionView::Helpers::FormBuilder
       (@template.content_tag :h6 do
         options[:label_text] || ""
       end) +
-      (@template.content_tag :div, class: "btn" do
-        (@template.content_tag :span do
-          options[:button_text] || "Choose File"
+        (@template.content_tag :div, class: "btn" do
+          (@template.content_tag :span do
+            options[:button_text] || "Choose File"
+          end) +
+            vanilla_file_field(name, options)
         end) +
-          vanilla_file_field(name, options)
-      end) +
         (@template.content_tag :div, class: "file-path-wrapper" do
           (@template.content_tag :input, nil, class: "file-path validate", type: "text", value: "No file selected") +
             help_text(name, options[:help_text])
@@ -104,7 +104,7 @@ class FormBuilderWithDateTimeInput < ActionView::Helpers::FormBuilder
     date_helper name, options, strftime, date_format, alt_format
   end
 
-private
+  private
 
   # Pass space-delimited list of IDs of datepickers on the :less_than and
   # :greater_than properties to initialize relationships between datepicker
@@ -154,7 +154,7 @@ private
     if error_text.nil?
       ""
     else
-      @template.content_tag :p, error_text, class: "error-block"
+      @template.content_tag :p, error_text, id: "error-block"
     end
   end
 
