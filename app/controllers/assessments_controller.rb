@@ -839,7 +839,9 @@ class AssessmentsController < ApplicationController
                           without grace days are not penalized"
       end
       unless warn_messages.empty?
-        flash.now[:error] = "Late submissions are allowed, but<br>#{warn_messages.join('<br>')}"
+        flash.now[:notice] = "Late submissions are allowed, but<br>"
+        flash.now[:notice] += warn_messages.join('<br>')
+        flash.now[:notice] += "<br>Please make sure that this was intended."
         flash.now[:html_safe] = true
       end
     end
@@ -888,7 +890,8 @@ class AssessmentsController < ApplicationController
 
       redirect_to(tab_index) && return
     rescue ActiveRecord::RecordInvalid
-      flash[:error] = @assessment.errors.full_messages.join("<br>")
+      flash[:error] = "Assessment configuration could not be updated.<br>"
+      flash[:error] += @assessment.errors.full_messages.join("<br>")
       flash[:html_safe] = true
 
       redirect_to(tab_index) && return
