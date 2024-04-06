@@ -2,22 +2,41 @@
   function SlickColumnPicker(columns, grid, options) {
     var $menu;
     var columnCheckboxes;
+    var visibleColumns = [];
+    var hiddenColumns = [];
 
     var defaults = {
-      fadeSpeed:250
+      fadeSpeed: 250
     };
 
     function init() {
       grid.onHeaderContextMenu.subscribe(handleHeaderContextMenu);
       options = $.extend({}, defaults, options);
-
       $menu = $("<span class='slick-columnpicker' style='display:none;position:absolute;z-index:20;' />").appendTo(document.body);
 
-      $menu.bind("mouseleave", function (e) {
-        $(this).fadeOut(options.fadeSpeed)
-      });
-      $menu.bind("click", updateColumn);
+      grid.onHeaderContextMenu.subscribe (function (e, args) {
+        $menu.empty();
+        e.preventDefault();
+        let item = args.column;
+        $("<button />").text("Hide Column").appendTo($menu).on("click", function() {
+          hiddenColumns.push(item);
+        });
 
+        $("body").one("click", function () {
+          $("#contextMenu").hide();
+        });
+
+        $menu
+            .css("top", e.pageY - 10)
+            .css("left", e.pageX - 10)
+            .fadeIn(options.fadeSpeed);
+      })
+
+      $menu.bind("mouseleave", function (e) {
+        $(this).fadeOut(options.fadeSpeed);
+      });
+
+      $menu.bind("click", updateColumn);
     }
 
     function handleHeaderContextMenu(e, args) {
@@ -36,11 +55,10 @@
         if (grid.getColumnIndex(columns[i].id) != null) {
           $input.attr("checked", "checked");
         }
-
         $span = $("<span />").text(columns[i].name)
 
         $("<label />")
-            .prepend($input)
+            .append($input)
             .append($span)
             .appendTo($li);
       }
@@ -59,7 +77,7 @@
 
       $li = $("<li />").appendTo($menu);
       $input = $("<input type='checkbox' />").data("option", "syncresize");
-      $span = $("<span />").text("Synchronous resize")
+      $span = $("<span />").text("c")
       $("<label />")
           .prepend($input)
           .append($span)
@@ -81,31 +99,31 @@
         var underscoreIndex = columns[i].name.lastIndexOf('_');
         var version = columns[i].name.substring(underscoreIndex + 1);
         if (version === "Version") {
-          assessment_versions[i] = [i, i-1];
-          assessment_versions[i-1] = [i, i-1];
+          assessment_versions[i] = [i, i - 1];
+          assessment_versions[i - 1] = [i, i - 1];
         }
       }
 
       if ($(e.target).data("option") == "autoresize") {
         if (e.target.checked) {
-          grid.setOptions({forceFitColumns:true});
+          grid.setOptions({forceFitColumns: true});
           grid.autosizeColumns();
         } else {
-          grid.setOptions({forceFitColumns:false});
+          grid.setOptions({forceFitColumns: false});
         }
         return;
       }
 
       if ($(e.target).data("option") == "syncresize") {
         if (e.target.checked) {
-          grid.setOptions({syncColumnCellResize:true});
+          grid.setOptions({syncColumnCellResize: true});
         } else {
-          grid.setOptions({syncColumnCellResize:false});
+          grid.setOptions({syncColumnCellResize: false});
         }
         return;
       }
 
-      $("input").click(function(event) {
+      $("input").click(function (event) {
         var column_index = event.target.dataset.id
         if (column_index in assessment_versions) {
           var checked = event.target.checked
@@ -116,7 +134,6 @@
 
 
       if ($(e.target).is(":checkbox")) {
-        var visibleColumns = [];
         $.each(columnCheckboxes, function (i, e) {
           if ($(this).is(":checked")) {
             visibleColumns.push(columns[i]);
@@ -136,5 +153,5 @@
   }
 
   // Slick.Controls.ColumnPicker
-  $.extend(true, window, { Slick:{ Controls:{ ColumnPicker:SlickColumnPicker }}});
+  $.extend(true, window, {Slick: {Controls: {ColumnPicker: SlickColumnPicker}}});
 })(jQuery);
