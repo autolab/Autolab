@@ -46,6 +46,11 @@ class Attachment < ApplicationRecord
     self.mime_type = upload.content_type
   end
 
+  # Regenerate slug whenever the name changes
+  def should_generate_new_friendly_id?
+    name_changed?
+  end
+
   def after_create
     COURSE_LOGGER.log("Created Attachment #{id}:#{filename} (#{mime_type}) as \"#{name}\")")
   end
