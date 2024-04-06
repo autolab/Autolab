@@ -6,6 +6,8 @@ require "utilities"
 # handout files to students through Autolab.
 #
 class Attachment < ApplicationRecord
+  include FriendlyId
+  friendly_id :name, use: :slugged
   validates :name, presence: true
   validates :category_name, presence: true
   validates :filename, presence: true

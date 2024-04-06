@@ -131,9 +131,11 @@ private
 
   def set_attachment
     @attachment = if @is_assessment
-                    @course.attachments.find_by(assessment_id: @assessment.id, id: params[:id])
+                    @course.attachments.where(assessment_id: @assessment.id).friendly.find(
+                      params[:id], allow_nil: true
+                    )
                   else
-                    @course.attachments.find_by(id: params[:id])
+                    @course.attachments.friendly.find(params[:id], allow_nil: true)
                   end
 
     return unless @attachment.nil?
