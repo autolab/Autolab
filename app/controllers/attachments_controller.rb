@@ -96,13 +96,9 @@ class AttachmentsController < ApplicationController
       flash[:success] = "Attachment updated"
       redirect_to_index
     else
-      error_msg = "Attachment update failed:"
-      if !@attachment.valid?
-        @attachment.errors.full_messages.each do |msg|
-          error_msg += "<br>#{msg}"
-        end
-      else
-        error_msg += "<br>Unknown error"
+      error_msg = "Attachment update failed."
+      @attachment.errors.full_messages.each do |msg|
+        error_msg += "<br>#{msg}"
       end
       flash[:error] = error_msg
       flash[:html_safe] = true
