@@ -10,7 +10,6 @@ class Course < ApplicationRecord
   validates :version_threshold, numericality: { only_integer: true, greater_than_or_equal_to: -1 }
   validate :order_of_dates
   validate :valid_name?, on: :create
-  # validates :name, format: { with: /\A(\w|-)+\z/, on: :create }
   # validates course website format if there exists one
   validate :valid_website?
   validates :access_code, uniqueness: true, allow_nil: true
@@ -146,9 +145,14 @@ class Course < ApplicationRecord
     else
       suggest_name = name.gsub(/(\s+)/) { '-' }
       suggest_name = suggest_name.gsub(/([^\w-]+)/) { '' }
-      errors.add("name",
-                 "cannot include characters other than alphanumeric characters, hyphens, "\
-                   "and underscores. Suggestion: #{suggest_name}")
+      name_error = if !suggest_name.empty?
+                     "cannot include characters other than alphanumeric characters, hyphens, "\
+                       "and underscores. Suggestion: #{suggest_name}"
+                   else
+                     "cannot include characters other than alphanumeric characters, hyphens, "\
+                       "and underscores."
+                   end
+      errors.add("name", name_error)
       false
     end
   end
