@@ -75,9 +75,6 @@ gem 'doorkeeper'
 # For block and throttling abusive requests
 gem 'rack-attack'
 
-# Adds It also adds f.error_messages and f.error_message_on to form builders
-gem 'dynamic_form'
-
 # Supports zip file generation.
 gem 'rubyzip'
 
