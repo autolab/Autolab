@@ -151,7 +151,11 @@ class UsersController < ApplicationController
   action_auth_level :download_all_submissions, :student
   def download_all_submissions
     user = User.find(params[:id])
-    submissions = Submission.where(course_user_datum: CourseUserDatum.where(user_id: user))
+    submissions = if params[:final]
+                    Submission.latest.where(course_user_datum: CourseUserDatum.where(user_id: user))
+                  else
+                    Submission.where(course_user_datum: CourseUserDatum.where(user_id: user))
+                  end
     submissions = submissions.select do |s|
       p = s.handin_file_path
       is_disabled = s.course_user_datum.course.disabled
