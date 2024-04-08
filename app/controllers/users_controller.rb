@@ -165,20 +165,24 @@ class UsersController < ApplicationController
       flash[:error] = "There are no submissions to download."
       redirect_to(user_path(user)) && return
     end
-    filedata = submissions.collect do |s|
-      p = s.handin_file_path
-      course_name = s.course_user_datum.course.name
-      assignment_name = s.assessment.name
-      [p, download_filename(p, course_name, assignment_name)]
+
+    temp_file = Tempfile.new("autolab_submissions.zip")
+    Zip::File.open(temp_file.path, Zip::File::CREATE) do |zipfile|
+      submissions.each do |s|
+        p = s.handin_file_path
+        course_name = s.course_user_datum.course.name
+        assignment_name = s.assessment.name
+        wrapper_directory = "auto_submissions"
+        course_directory = "#{wrapper_directory}/#{course_name}"
+        assignment_directory = "#{course_directory}/#{assignment_name}"
+        entry_name = download_filename(p, assignment_name)
+        zipfile.add(File.join(assignment_directory, entry_name), p)
+      end
     end
-    result = Archive.create_zip filedata
-    if result.nil?
-      flash[:error] = "There are no submissions to download."
-      return
-    end
-    send_data(result.read, # to read from stringIO object returned by create_zip
+
+    send_file(temp_file.path,
               type: "application/zip",
-              disposition: "attachment", # tell browser to download
+              disposition: "attachment",
               filename: "autolab_submissions.zip")
   end
 
@@ -427,12 +431,11 @@ private
   # path should be of the form .../<ver>_<handin> or .../annotated_<ver>_<handin>
   # returns <course_name>_<assignment_name>_<ver>_<handin>
   # or annotated_<course_name>_<assignment_name>_<ver>_<handin>
-  def download_filename(path, course_name, assignment_name)
+  def download_filename(path, assignment_name)
     basename = File.basename path
     basename_parts = basename.split("_")
-    basename_parts.insert(-3, course_name)
     basename_parts.insert(-3, assignment_name)
-    download_name = basename_parts[-4..]
+    download_name = basename_parts[-3..]
     download_name.join("_")
   end
 
