@@ -1,7 +1,7 @@
 <h3>Create New Course</h3>
 
 <%= form_for :newCourse, url: courses_path, builder: FormBuilderWithDateTimeInput do |f| %>
-  <%= f.text_field :name, size: 3, required: true,
+  <%= f.text_field :name, required: true,
                           help_text: "The course ID used in URLs and DB keys. This field must be unique
       and URL-able. Typically includes the course number and semester. Examples:
       15213-f12, 15110-s11",
@@ -11,7 +11,7 @@
                                         @newCourse.errors.full_messages_for(:name)[0]
                                       end %>
 
-  <%= f.text_field :semester, size: 3, required: true,
+  <%= f.text_field :semester, required: true,
                               help_text: "The current semester. Examples: f12, s13, m13" %>
 
   <div class="input-field">
