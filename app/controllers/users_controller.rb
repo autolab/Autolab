@@ -166,14 +166,20 @@ class UsersController < ApplicationController
       redirect_to(user_path(user)) && return
     end
 
+    current_time = Time.current
+    filename = if params[:final]
+                 "autolab_final_submissions_#{current_time.strftime('%Y-%m-%d')}"
+               else
+                 "autolab_all_submissions_#{current_time.strftime('%Y-%m-%d')}"
+               end
+
     temp_file = Tempfile.new("autolab_submissions.zip")
     Zip::File.open(temp_file.path, Zip::File::CREATE) do |zipfile|
       submissions.each do |s|
         p = s.handin_file_path
         course_name = s.course_user_datum.course.name
         assignment_name = s.assessment.name
-        wrapper_directory = "auto_submissions"
-        course_directory = "#{wrapper_directory}/#{course_name}"
+        course_directory = "#{filename}/#{course_name}"
         assignment_directory = "#{course_directory}/#{assignment_name}"
         entry_name = download_filename(p, assignment_name)
         zipfile.add(File.join(assignment_directory, entry_name), p)
@@ -182,8 +188,8 @@ class UsersController < ApplicationController
 
     send_file(temp_file.path,
               type: "application/zip",
-              disposition: "attachment",
-              filename: "autolab_submissions.zip")
+              disposition: "attachment", # tell browser to download
+              filename: "#{filename}.zip")
   end
 
   # PATCH users/:id/
