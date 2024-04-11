@@ -584,9 +584,9 @@ class AssessmentsController < ApplicationController
                       @cud
                     end
     @attachments = if @cud.instructor?
-                     @assessment.attachments
+                     @assessment.attachments.ordered
                    else
-                     @assessment.attachments.released
+                     @assessment.attachments.released.ordered
                    end
     @submissions = @assessment.submissions.where(course_user_datum_id: @effectiveCud.id)
                               .order("version DESC")
